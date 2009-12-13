@@ -5,9 +5,11 @@ token IF ELSE THEN
 token NEWLINE
 token NUMBER
 token STRING
+token REGEX
 token TRUE FALSE NULL
 token IDENTIFIER PROPERTY_ACCESS
 token CODE
+token RETURN
 
 prechigh
   nonassoc UMINUS NOT '!'
@@ -57,6 +59,7 @@ rule
   | Operation
   | Array
   | If
+  | Return
   ;
 
   # All tokens that can terminate an expression
@@ -69,6 +72,7 @@ rule
   Literal:
     NUMBER                            { result = LiteralNode.new(val[0]) }
   | STRING                            { result = LiteralNode.new(val[0]) }
+  | REGEX                             { result = LiteralNode.new(val[0]) }
   | TRUE                              { result = LiteralNode.new(true) }
   | FALSE                             { result = LiteralNode.new(false) }
   | NULL                              { result = LiteralNode.new(nil) }
@@ -82,6 +86,11 @@ rule
   # Assignment within an object literal.
   AssignObj:
     IDENTIFIER ":" Expression         { result = AssignNode.new(val[0], val[2], :object) }
+  ;
+
+  # A Return statement.
+  Return:
+    RETURN Expression                 { result = ReturnNode.new(val[1]) }
   ;
 
   # Arithmetic and logical operators
@@ -115,8 +124,6 @@ rule
   | Expression AND Expression         { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression OR Expression          { result = OpNode.new(val[1], val[0], val[2]) }
 
-  # Add ternary?
-
   | Expression '-=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '+=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '/=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
@@ -146,6 +153,7 @@ rule
 
   Object:
     "{" "}"                           { result = ObjectNode.new([]) }
+  | "{" Terminator "}"                { result = ObjectNode.new([]) }
   | "{" AssignList "}"                { result = ObjectNode.new(val[1]) }
   | "{" Terminator AssignList
         Terminator "}"                { result = ObjectNode.new(val[2]) }
@@ -177,12 +185,12 @@ rule
 
   If:
     IF Expression
-       THEN Expression "."            { result = TernaryNode.new(val[1], val[3]) }
+       THEN Expression "."            { result = IfNode.new(val[1], val[3]) }
   | IF Expression Terminator
        Expressions "."                { result = IfNode.new(val[1], val[3]) }
   | IF Expression
        THEN Expression
-       ELSE Expression "."            { result = TernaryNode.new(val[1], val[3], val[5]) }
+       ELSE Expression "."            { result = IfNode.new(val[1], val[3], val[5]) }
   | IF Expression Terminator
        Expressions Terminator
        ELSE Expressions "."           { result = IfNode.new(val[1], val[3], val[6]) }

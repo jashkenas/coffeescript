@@ -1,2 +1,2 @@
 require "lexer"
-p Lexer.new.tokenize(File.read('code.jaa'))
+p Lexer.new.tokenize(File.read('documents.jaa'))

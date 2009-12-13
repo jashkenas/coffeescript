@@ -4,7 +4,7 @@
 
 # Parse and print "code.jaa".
 require "parser.rb"
-js = Parser.new.parse(File.read('code.jaa')).compile
+js = Parser.new.parse(File.read('documents.jaa')).compile
 puts "\n\n"
 puts js
 

@@ -1,8 +1,14 @@
-# Tabs are two spaces for pretty-printing.
-TAB = '  '
+class Node
+  # Tabs are two spaces for pretty-printing.
+  TAB = '  '
+
+  def line_ending
+    ';'
+  end
+end
 
 # Collection of nodes each one representing an expression.
-class Nodes
+class Nodes < Node
   attr_reader :nodes
   def initialize(nodes)
     @nodes = nodes
@@ -21,21 +27,29 @@ class Nodes
   end
 
   def compile(indent='')
-    reduce.map { |node|
-      indent + node.compile(indent) + (node.is_a?(IfNode) ? '' : ';')
-    }.join("\n")
+    reduce.map {|n| indent + n.compile(indent) + n.line_ending }.join("\n")
   end
 end
 
 # Literals are static values that have a Ruby representation, eg.: a string, a number,
 # true, false, nil, etc.
-class LiteralNode
+class LiteralNode < Node
   def initialize(value)
     @value = value
   end
 
   def compile(indent)
     @value.to_s
+  end
+end
+
+class ReturnNode < Node
+  def initialize(expression)
+    @expression = expression
+  end
+
+  def compile(indent)
+    "return #{@expression.compile(indent)};"
   end
 end
 
@@ -46,7 +60,7 @@ end
 #   receiver.method
 #   receiver.method(argument1, argument2)
 #
-class CallNode
+class CallNode < Node
   def initialize(variable, arguments=[])
     @variable, @arguments = variable, arguments
   end
@@ -57,7 +71,7 @@ class CallNode
   end
 end
 
-class VariableNode
+class VariableNode < Node
   def initialize(name)
     @name = name
     @properties = []
@@ -68,25 +82,31 @@ class VariableNode
     self
   end
 
+  def properties?
+    return !@properties.empty?
+  end
+
   def compile(indent)
     [@name, @properties].flatten.join('.')
   end
 end
 
 # Setting the value of a local variable.
-class AssignNode
+class AssignNode < Node
   def initialize(variable, value, context=nil)
     @variable, @value, @context = variable, value, context
   end
 
   def compile(indent)
     return "#{@variable}: #{@value.compile(indent + TAB)}" if @context == :object
-    "var #{@variable.compile(indent)} = #{@value.compile(indent)}"
+    var_part = @variable.compile(indent)
+    var_part = "var " + var_part unless @variable.properties?
+    "#{var_part} = #{@value.compile(indent)}"
   end
 end
 
 # Simple Arithmetic and logical operations
-class OpNode
+class OpNode < Node
   CONVERSIONS = {
     "=="    => "===",
     "!="    => "!==",
@@ -112,22 +132,24 @@ class OpNode
 end
 
 # Method definition.
-class CodeNode
+class CodeNode < Node
   def initialize(params, body)
     @params = params
     @body = body
   end
 
   def compile(indent)
-    nodes = @body.reduce
-    exprs = nodes.map {|n| n.compile(indent + TAB) }
-    exprs[-1] = "return #{exprs[-1]};"
-    exprs = exprs.map {|e| indent + TAB + e }
-    "function(#{@params.join(', ')}) {\n#{exprs.join(";\n")}\n#{indent}}"
+    nodes   = @body.reduce
+    code    = nodes.map { |node|
+      line  = node.compile(indent + TAB)
+      line  = "return #{line}" if node == nodes.last
+      indent + TAB + line + node.line_ending
+    }.join("\n")
+    "function(#{@params.join(', ')}) {\n#{code}\n#{indent}}"
   end
 end
 
-class ObjectNode
+class ObjectNode < Node
   def initialize(properties = [])
     @properties = properties
   end
@@ -138,7 +160,7 @@ class ObjectNode
   end
 end
 
-class ArrayNode
+class ArrayNode < Node
   def initialize(objects=[])
     @objects = objects
   end
@@ -151,24 +173,32 @@ end
 
 # "if-else" control structure. Look at this node if you want to implement other control
 # structures like while, for, loop, etc.
-class IfNode
+class IfNode < Node
+  FORCE_STATEMENT = [Nodes, ReturnNode]
+
   def initialize(condition, body, else_body=nil)
     @condition, @body, @else_body = condition, body, else_body
   end
 
+  def statement?
+    FORCE_STATEMENT.include?(@body.class) || FORCE_STATEMENT.include?(@else_body.class)
+  end
+
+  def line_ending
+    statement? ? '' : ';'
+  end
+
   def compile(indent)
-    if_part   = "if (#{@condition.compile(indent)}) {\n#{@body.compile(indent + TAB)}\n#{indent}}"
+    statement? ? compile_statement(indent) : compile_ternary(indent)
+  end
+
+  def compile_statement(indent)
+    if_part   = "if (#{@condition.compile(indent)}) {\n#{indent + TAB}#{@body.compile(indent + TAB)}\n#{indent}}"
     else_part = @else_body ? " else {\n#{@else_body.compile(indent + TAB)}\n#{indent}}" : ''
     if_part + else_part
   end
-end
 
-class TernaryNode
-  def initialize(condition, body, else_body=nil)
-    @condition, @body, @else_body = condition, body, else_body
-  end
-
-  def compile(indent)
+  def compile_ternary(indent)
     if_part   = "#{@condition.compile(indent)} ? #{@body.compile(indent)}"
     else_part = @else_body ? "#{@else_body.compile(indent)}" : 'null'
     "#{if_part} : #{else_part}"
