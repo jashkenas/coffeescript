@@ -1,0 +1,40 @@
+# I'm a comment and I'm ok.
+# Return
+# Case
+
+square: x => x * x.
+
+sum: x, y => x + y.
+
+odd: x => x % 2 is 0.
+
+even: x => x % 2 aint 0.
+
+object_literal: {one: 1, two: 2, three: 3}
+
+multiline_object: {
+  pi: 3.14159
+  list: [1, 2, 3, 4]
+  three: 3
+  inner_obj: {
+    freedom: => _.freedom().
+  }
+}
+
+run_loop: =>
+  fire_events(e => e.stopPropagation().)
+  listen()
+  wait().
+
+if submarine.shields_up
+  full_speed_ahead()
+  weapons.fire_torpedos()
+else
+  run_away().
+
+eldest: if 25 > 21 then liz else marge.
+
+
+
+
+

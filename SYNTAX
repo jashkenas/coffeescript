@@ -1,0 +1,30 @@
+Every line is an expression. Multiple expressions on a single line can be
+separated by a ";" character.
+
+NUM:      1
+          1.0
+          
+STRING:   "hello"
+          'hello'
+          
+OBJECT:   {one : 1, two : 2}
+          
+ARRAY:    [1, 2, 3]
+          
+CODE:     a, b => a * b.
+          
+IF:       return x if x > 1
+            
+          if (x > 1) return x
+              
+ASSIGN:   a : b
+              
+LOGICAL:  x && y
+          x and y
+          x || y
+          x or y
+
+
+
+          
+
