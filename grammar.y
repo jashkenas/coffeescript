@@ -34,16 +34,16 @@ rule
 
   # All parsing will end in this rule, being the trunk of the AST.
   Root:
-    /* nothing */                      { result = Nodes.new([]) }
-  | Expressions                        { result = val[0] }
+    /* nothing */                     { result = Nodes.new([]) }
+  | Expressions                       { result = val[0] }
   ;
 
   # Any list of expressions or method body, seperated by line breaks.
   Expressions:
-    Expression                         { result = Nodes.new(val) }
-  | Expressions Terminator Expression  { result = val[0] << val[2] }
-  | Expressions Terminator             { result = Nodes.new([val[0]]) }
-  | Terminator Expressions             { result = Nodes.new([val[1]]) }
+    Expression                        { result = Nodes.new(val) }
+  | Expressions Terminator Expression { result = val[0] << val[2] }
+  | Expressions Terminator            { result = Nodes.new([val[0]]) }
+  | Terminator Expressions            { result = Nodes.new([val[1]]) }
   ;
 
   # All types of expressions in our language
@@ -67,87 +67,88 @@ rule
 
   # All hard-coded values
   Literal:
-    NUMBER                        { result = LiteralNode.new(val[0]) }
-  | STRING                        { result = LiteralNode.new(val[0]) }
-  | TRUE                          { result = LiteralNode.new(true) }
-  | FALSE                         { result = LiteralNode.new(false) }
-  | NULL                          { result = LiteralNode.new(nil) }
+    NUMBER                            { result = LiteralNode.new(val[0]) }
+  | STRING                            { result = LiteralNode.new(val[0]) }
+  | TRUE                              { result = LiteralNode.new(true) }
+  | FALSE                             { result = LiteralNode.new(false) }
+  | NULL                              { result = LiteralNode.new(nil) }
   ;
 
   # Assign to a variable
   Assign:
-    Variable ":" Expression       { result = AssignNode.new(val[0], val[2]) }
+    Variable ":" Expression           { result = AssignNode.new(val[0], val[2]) }
   ;
 
   # Assignment within an object literal.
   AssignObj:
-    IDENTIFIER ":" Expression     { result = AssignNode.new(val[0], val[2], :object) }
+    IDENTIFIER ":" Expression         { result = AssignNode.new(val[0], val[2], :object) }
   ;
 
   # Arithmetic and logical operators
   # For Ruby's Operator precedence, see:
   # https://www.cs.auckland.ac.nz/references/ruby/ProgrammingRuby/language.html
   Operation:
-    '!' Expression              { result = OpNode.new(val[0], val[1]) }
-  | '-' Expression = UMINUS     { result = OpNode.new(val[0], val[1]) }
-  | NOT Expression              { result = OpNode.new(val[0], val[1]) }
+    '!' Expression                    { result = OpNode.new(val[0], val[1]) }
+  | '-' Expression = UMINUS           { result = OpNode.new(val[0], val[1]) }
+  | NOT Expression                    { result = OpNode.new(val[0], val[1]) }
 
 
-  | Expression '*' Expression   { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression '/' Expression   { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression '%' Expression   { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '*' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '/' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '%' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
 
-  | Expression '+' Expression   { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression '-' Expression   { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '+' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '-' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
 
-  | Expression '<=' Expression  { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression '<' Expression   { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression '>' Expression   { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression '>=' Expression  { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '<=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '<' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '>' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '>=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
 
-  | Expression '==' Expression  { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression '!=' Expression  { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression IS Expression    { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression AINT Expression  { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '==' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '!=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression IS Expression          { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression AINT Expression        { result = OpNode.new(val[1], val[0], val[2]) }
 
-  | Expression '&&' Expression  { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression '||' Expression  { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression AND Expression   { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression OR Expression    { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '&&' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '||' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression AND Expression         { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression OR Expression          { result = OpNode.new(val[1], val[0], val[2]) }
 
   # Add ternary?
 
-  | Expression '-=' Expression  { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression '+=' Expression  { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression '/=' Expression  { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression '*=' Expression  { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '-=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '+=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '/=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '*=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   # Add ||= &&=
   ;
 
 
   # Method definition
   Code:
-    "=>" Expressions "."     { result = CodeNode.new([], val[1]) }
+    "=>" Expressions "."              { result = CodeNode.new([], val[1]) }
   | ParamList
-      "=>" Expressions "."   { result = CodeNode.new(val[0], val[2]) }
+      "=>" Expressions "."            { result = CodeNode.new(val[0], val[2]) }
   ;
 
   ParamList:
-    /* nothing */                 { result = [] }
-  | IDENTIFIER                    { result = val }
-  | ParamList "," IDENTIFIER      { result = val[0] << val[2] }
+    /* nothing */                     { result = [] }
+  | IDENTIFIER                        { result = val }
+  | ParamList "," IDENTIFIER          { result = val[0] << val[2] }
   ;
 
   Variable:
-    IDENTIFIER                              { result = VariableNode.new(val) }
-  | Variable PROPERTY_ACCESS IDENTIFIER     { result = val[0] << val[2] }
+    IDENTIFIER                        { result = VariableNode.new(val) }
+  | Variable PROPERTY_ACCESS
+      IDENTIFIER                      { result = val[0] << val[2] }
   ;
 
   Object:
-    "{" "}"                       { result = ObjectNode.new([]) }
-  | "{" AssignList "}"            { result = ObjectNode.new(val[1]) }
+    "{" "}"                           { result = ObjectNode.new([]) }
+  | "{" AssignList "}"                { result = ObjectNode.new(val[1]) }
   | "{" Terminator AssignList
-        Terminator "}"            { result = ObjectNode.new(val[2]) }
+        Terminator "}"                { result = ObjectNode.new(val[2]) }
   ;
 
   AssignList:
@@ -169,22 +170,22 @@ rule
 
   # A list of arguments to a method call.
   ArgList:
-    /* nothing */                 { result = [] }
-  | Expression                    { result = val }
-  | ArgList "," Expression        { result = val[0] << val[2] }
+    /* nothing */                     { result = [] }
+  | Expression                        { result = val }
+  | ArgList "," Expression            { result = val[0] << val[2] }
   ;
 
   If:
     IF Expression
-       THEN Expression "."              { result = TernaryNode.new(val[1], val[3]) }
+       THEN Expression "."            { result = TernaryNode.new(val[1], val[3]) }
   | IF Expression Terminator
-       Expressions "."                  { result = IfNode.new(val[1], val[3]) }
+       Expressions "."                { result = IfNode.new(val[1], val[3]) }
   | IF Expression
        THEN Expression
-       ELSE Expression "."              { result = TernaryNode.new(val[1], val[3], val[5]) }
+       ELSE Expression "."            { result = TernaryNode.new(val[1], val[3], val[5]) }
   | IF Expression Terminator
        Expressions Terminator
-       ELSE Expressions "."             { result = IfNode.new(val[1], val[3], val[6]) }
+       ELSE Expressions "."           { result = IfNode.new(val[1], val[3], val[6]) }
   ;
 
 end
