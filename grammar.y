@@ -44,8 +44,8 @@ rule
   Expressions:
     Expression                        { result = Nodes.new(val) }
   | Expressions Terminator Expression { result = val[0] << val[2] }
-  | Expressions Terminator            { result = Nodes.new([val[0]]) }
-  | Terminator Expressions            { result = Nodes.new([val[1]]) }
+  | Expressions Terminator            { result = val[0] }
+  | Terminator Expressions            { result = val[1] }
   ;
 
   # All types of expressions in our language
