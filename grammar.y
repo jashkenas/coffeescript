@@ -60,6 +60,7 @@ rule
   | Array
   | If
   | Return
+  | Parenthetical
   ;
 
   # All tokens that can terminate an expression
@@ -135,8 +136,7 @@ rule
 
   # Method definition
   Code:
-  ParamList "=>" Expression           { result = CodeNode.new(val[0], val[2]) }
-  | ParamList "=>" Expressions "."    { result = CodeNode.new(val[0], val[2]) }
+    ParamList "=>" Expressions "."    { result = CodeNode.new(val[0], val[2]) }
   ;
 
   ParamList:
@@ -205,6 +205,10 @@ rule
   | IF Expression Terminator
        Expressions Terminator
        ELSE Expressions "."           { result = IfNode.new(val[1], val[3], val[6]) }
+  ;
+
+  Parenthetical:
+    "(" Expressions ")"               { result = ParentheticalNode.new(val[1]) }
   ;
 
 end

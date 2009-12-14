@@ -172,7 +172,7 @@ class CodeNode < Node
   end
 
   def compile(indent, last=false)
-    nodes   = @body.reduce
+    nodes   = @body.respond_to?(:reduce) ? @body.reduce : [@body]
     code    = nodes.map { |node|
       last  = node == nodes.last
       line  = node.compile(indent + TAB, last)
@@ -236,5 +236,17 @@ class IfNode < Node
     if_part   = "#{@condition.compile(indent)} ? #{@body.compile(indent)}"
     else_part = @else_body ? "#{@else_body.compile(indent)}" : 'null'
     "#{if_part} : #{else_part}"
+  end
+end
+
+class ParentheticalNode < Node
+  def initialize(expressions)
+    @expressions = expressions
+  end
+
+  def compile(indent, last=false)
+    compiled = @expressions.compile(indent)
+    compiled = compiled[0...-1] if compiled[-1..-1] == ';'
+    "(#{compiled})"
   end
 end
