@@ -177,8 +177,12 @@ rule
 
   # A method call.
   Call:
-    Variable "(" ArgList ")"          { result = CallNode.new(val[0], val[2]) }
-  | NEW Variable "(" ArgList ")"      { result = CallNode.new(val[1], val[3], true) }
+    Variable Invocation               { result = CallNode.new(val[0], val[1]) }
+  | NEW Variable Invocation           { result = CallNode.new(val[1], val[2], true) }
+  ;
+
+  Invocation:
+    "(" ArgList ")"                   { result = val[1] }
   ;
 
   # An Array.
