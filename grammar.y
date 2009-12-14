@@ -137,11 +137,11 @@ rule
   # Method definition
   Code:
     ParamList "=>" Expressions "."    { result = CodeNode.new(val[0], val[2]) }
+  | "=>" Expressions "."              { result = CodeNode.new([], val[1]) }
   ;
 
   ParamList:
-    /* nothing */                     { result = [] }
-  | PARAM                             { result = val }
+    PARAM                             { result = val }
   | ParamList "," PARAM               { result = val[0] << val[2] }
   ;
 
@@ -177,12 +177,12 @@ rule
 
   # A method call.
   Call:
-    Variable Invocation               { result = CallNode.new(val[0], val[1]) }
-  | NEW Variable Invocation           { result = CallNode.new(val[1], val[2], true) }
+    Invocation                        { result = val[0] }
+  | NEW Invocation                    { result = val[0].new_instance }
   ;
 
   Invocation:
-    "(" ArgList ")"                   { result = val[1] }
+    Variable "(" ArgList ")"          { result = CallNode.new(val[0], val[2]) }
   ;
 
   # An Array.

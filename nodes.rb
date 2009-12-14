@@ -64,8 +64,12 @@ end
 #   receiver.method(argument1, argument2)
 #
 class CallNode < Node
-  def initialize(variable, arguments=[], new_instance=false)
-    @variable, @arguments, @new = variable, arguments, new_instance
+  def initialize(variable, arguments=[])
+    @variable, @arguments = variable, arguments
+  end
+
+  def new_instance
+    @new = true
   end
 
   def compile(indent, last=false)
