@@ -5,6 +5,9 @@ class Node
   def line_ending
     ';'
   end
+
+  def compile(indent='', last=false)
+  end
 end
 
 # Collection of nodes each one representing an expression.
@@ -38,7 +41,7 @@ class LiteralNode < Node
     @value = value
   end
 
-  def compile(indent)
+  def compile(indent, last=false)
     @value.to_s
   end
 end
@@ -48,8 +51,8 @@ class ReturnNode < Node
     @expression = expression
   end
 
-  def compile(indent)
-    "return #{@expression.compile(indent)};"
+  def compile(indent, last=false)
+    "#{indent}return #{@expression.compile(indent)};"
   end
 end
 
@@ -61,20 +64,20 @@ end
 #   receiver.method(argument1, argument2)
 #
 class CallNode < Node
-  def initialize(variable, arguments=[])
-    @variable, @arguments = variable, arguments
+  def initialize(variable, arguments=[], new_instance=false)
+    @variable, @arguments, @new = variable, arguments, new_instance
   end
 
-  def compile(indent)
+  def compile(indent, last=false)
     args = @arguments.map{|a| a.compile(indent) }.join(', ')
-    "#{@variable.compile(indent)}(#{args})"
+    prefix = @new ? "new " : ''
+    "#{prefix}#{@variable.compile(indent)}(#{args})"
   end
 end
 
 class VariableNode < Node
-  def initialize(name)
-    @name = name
-    @properties = []
+  def initialize(name, properties=[])
+    @name, @properties = name, properties
   end
 
   def <<(other)
@@ -86,8 +89,30 @@ class VariableNode < Node
     return !@properties.empty?
   end
 
-  def compile(indent)
-    [@name, @properties].flatten.join('.')
+  def compile(indent, last=false)
+    [@name, @properties].flatten.map { |v|
+      v.respond_to?(:compile) ? v.compile(indent) : v.to_s
+    }.join('')
+  end
+end
+
+class AccessorNode
+  def initialize(name)
+    @name = name
+  end
+
+  def compile(indent, last=false)
+    ".#{@name}"
+  end
+end
+
+class IndexNode
+  def initialize(index)
+    @index = index
+  end
+
+  def compile(indent, last=false)
+    "[#{@index.compile(indent)}]"
   end
 end
 
@@ -97,10 +122,10 @@ class AssignNode < Node
     @variable, @value, @context = variable, value, context
   end
 
-  def compile(indent)
+  def compile(indent, last=false)
     return "#{@variable}: #{@value.compile(indent + TAB)}" if @context == :object
     var_part = @variable.compile(indent)
-    var_part = "var " + var_part unless @variable.properties?
+    var_part = "var " + var_part unless @variable.properties? || last
     "#{var_part} = #{@value.compile(indent)}"
   end
 end
@@ -116,6 +141,7 @@ class OpNode < Node
     "aint"  => "!==",
     'not'   => '!',
   }
+  CONDITIONALS = ['||=', '&&=']
 
   def initialize(operator, first, second=nil)
     @first, @second = first, second
@@ -126,8 +152,15 @@ class OpNode < Node
     @second.nil?
   end
 
-  def compile(indent)
+  def compile(indent, last=false)
+    return compile_conditional(indent) if CONDITIONALS.include?(@operator)
     "(#{@first.compile(indent)} #{@operator} #{@second.compile(indent)})"
+  end
+
+  def compile_conditional(indent)
+    first, second = @first.compile(indent), @second.compile(indent)
+    sym = @operator[0..1]
+    "(#{first} = #{first} #{sym} #{second})"
   end
 end
 
@@ -138,11 +171,12 @@ class CodeNode < Node
     @body = body
   end
 
-  def compile(indent)
+  def compile(indent, last=false)
     nodes   = @body.reduce
     code    = nodes.map { |node|
-      line  = node.compile(indent + TAB)
-      line  = "return #{line}" if node == nodes.last
+      last  = node == nodes.last
+      line  = node.compile(indent + TAB, last)
+      line  = "return #{line}" if last
       indent + TAB + line + node.line_ending
     }.join("\n")
     "function(#{@params.join(', ')}) {\n#{code}\n#{indent}}"
@@ -154,7 +188,7 @@ class ObjectNode < Node
     @properties = properties
   end
 
-  def compile(indent)
+  def compile(indent, last=false)
     props = @properties.map {|p| indent + TAB + p.compile(indent) }.join(",\n")
     "{\n#{props}\n#{indent}}"
   end
@@ -165,7 +199,7 @@ class ArrayNode < Node
     @objects = objects
   end
 
-  def compile(indent)
+  def compile(indent, last=false)
     objects = @objects.map {|o| o.compile(indent) }.join(', ')
     "[#{objects}]"
   end
@@ -188,12 +222,12 @@ class IfNode < Node
     statement? ? '' : ';'
   end
 
-  def compile(indent)
+  def compile(indent, last=false)
     statement? ? compile_statement(indent) : compile_ternary(indent)
   end
 
   def compile_statement(indent)
-    if_part   = "if (#{@condition.compile(indent)}) {\n#{indent + TAB}#{@body.compile(indent + TAB)}\n#{indent}}"
+    if_part   = "if (#{@condition.compile(indent)}) {\n#{@body.compile(indent + TAB)}\n#{indent}}"
     else_part = @else_body ? " else {\n#{@else_body.compile(indent + TAB)}\n#{indent}}" : ''
     if_part + else_part
   end

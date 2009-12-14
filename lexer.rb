@@ -3,11 +3,11 @@ class Lexer
   KEYWORDS   = ["if", "else", "then",
                 "true", "false", "null",
                 "and", "or", "is", "aint", "not",
-                "return"]
+                "new", "return"]
 
   IDENTIFIER = /\A([a-zA-Z$_]\w*)/
   NUMBER     = /\A([0-9]+(\.[0-9]+)?)/
-  STRING     = /\A["'](.*?)["']/
+  STRING     = /\A("(.*?)"|'(.*?)')/
   OPERATOR   = /\A([+\*&|\/\-%=<>]+)/
   WHITESPACE = /\A([ \t\r]+)/
   NEWLINE    = /\A([\r\n]+)/
@@ -61,7 +61,7 @@ class Lexer
   def string_token
     return false unless string = @chunk[STRING, 1]
     @tokens << [:STRING, string]
-    @i += string.length + 2
+    @i += string.length
   end
 
   def regex_token
@@ -91,9 +91,22 @@ class Lexer
       return @i += value.length
     end
     value = @chunk[OPERATOR, 1]
+    tag_parameters if value && value.match(CODE)
     value ||= @chunk[0,1]
     @tokens << [value, value]
     @i += value.length
+  end
+
+  # The main source of ambiguity in our grammar was Parameter lists (as opposed
+  # to argument lists in method calls). Tag parameter identifiers to avoid this.
+  def tag_parameters
+    index = 0
+    loop do
+      tok = @tokens[index -= 1]
+      next if tok[0] == ','
+      return if tok[0] != :IDENTIFIER
+      tok[0] = :PARAM
+    end
   end
 
 end

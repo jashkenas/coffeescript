@@ -1,6 +1,5 @@
 # TODO: switch/case statements
-# new Function()
-# Regexes
+# Better block delimiters
 
 # Functions:
 square: x => x * x.
@@ -49,6 +48,10 @@ race: =>
   crawl()
   if tired then return sleep().
   race().
+
+# Conditional operators:
+good ||= evil
+wine &&= cheese
 
 
 

@@ -8,8 +8,8 @@ token STRING
 token REGEX
 token TRUE FALSE NULL
 token IDENTIFIER PROPERTY_ACCESS
-token CODE
-token RETURN
+token CODE PARAM
+token NEW RETURN
 
 prechigh
   nonassoc UMINUS NOT '!'
@@ -128,27 +128,36 @@ rule
   | Expression '+=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '/=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '*=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
-  # Add ||= &&=
+  | Expression '||=' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '&&=' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
   ;
 
 
   # Method definition
   Code:
-    "=>" Expressions "."              { result = CodeNode.new([], val[1]) }
-  | ParamList
-      "=>" Expressions "."            { result = CodeNode.new(val[0], val[2]) }
+  ParamList "=>" Expression           { result = CodeNode.new(val[0], val[2]) }
+  | ParamList "=>" Expressions "."    { result = CodeNode.new(val[0], val[2]) }
   ;
 
   ParamList:
     /* nothing */                     { result = [] }
-  | IDENTIFIER                        { result = val }
-  | ParamList "," IDENTIFIER          { result = val[0] << val[2] }
+  | PARAM                             { result = val }
+  | ParamList "," PARAM               { result = val[0] << val[2] }
   ;
 
   Variable:
     IDENTIFIER                        { result = VariableNode.new(val) }
-  | Variable PROPERTY_ACCESS
-      IDENTIFIER                      { result = val[0] << val[2] }
+  | Variable Accessor                 { result = val[0] << val[1] }
+  | Call Accessor                     { result = VariableNode.new(val[0], [val[1]]) }
+  ;
+
+  Accessor:
+    PROPERTY_ACCESS IDENTIFIER        { result = AccessorNode.new(val[1]) }
+  | Index                             { result = val[0] }
+  ;
+
+  Index:
+    "[" Literal "]"                   { result = IndexNode.new(val[1]) }
   ;
 
   Object:
@@ -169,6 +178,7 @@ rule
   # A method call.
   Call:
     Variable "(" ArgList ")"          { result = CallNode.new(val[0], val[2]) }
+  | NEW Variable "(" ArgList ")"      { result = CallNode.new(val[1], val[3], true) }
   ;
 
   # An Array.
@@ -181,6 +191,7 @@ rule
     /* nothing */                     { result = [] }
   | Expression                        { result = val }
   | ArgList "," Expression            { result = val[0] << val[2] }
+  | ArgList Terminator Expression     { result = val[0] << val[2] }
   ;
 
   If:
