@@ -8,15 +8,15 @@ dc.model.Document: dc.Model.extend({
   # The import process will take care of this in the future, but the inline
   # version of the summary has all runs of whitespace squeezed out.
   displaySummary: =>
-    text: this.get('highlight') or this.get('summary')
-    if text then text.replace(/\s+/g, ' ') else ''..
+    text: this.get('highlight') or this.get('summary') or ''
+    text and text.replace(/\s+/g, ' ').
 
   # Return a list of the document's metadata. Think about caching this on the
   # document by binding to Metadata, instead of on-the-fly.
   metadata: =>
     docId: this.id
     _.select(Metadata.models()
-      datum => _.any(datum.get('instances')
+      meta => _.any(meta.get('instances')
         instance => instance.document_id == docId.).).
 
   bookmark: pageNumber =>

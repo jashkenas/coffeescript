@@ -1,5 +1,9 @@
 # TODO: switch/case statements
 # Better block delimiters
+# Flow: For loops, while loops, etc.
+# Exceptions: throw catch.
+# When an if statement is the last thing in a function, need to be able to
+# send the return down to the last expression in the if and else bodies.
 
 # Functions:
 square: x => x * x.
@@ -11,7 +15,7 @@ odd: x => x % 2 is 0.
 even: x => x % 2 aint 0.
 
 run_loop: =>
-  fire_events(e => e.stopPropagation().)
+  fire_events( e => e.stopPropagation(). )
   listen()
   wait().
 
@@ -21,7 +25,7 @@ object_literal: {one: 1, two: 2, three: 3}
 multiline_object: {
   pi: 3.14159
   list: [1, 2, 3, 4]
-  three: 3
+  three: new Idea()
   inner_obj: {
     freedom: => _.freedom().
   }
@@ -56,6 +60,11 @@ wine &&= cheese
 # Nested property access and calls.
 ((moon.turn(360))).shapes[3].move({x: 45, y: 30}).position
 
+# Try/Catch/Finally.
+try
+  all_hell_breaks_loose()
+  dogs_and_cats_living_together()
+catch error
+  print( error ).
 
-
-
+try all_hell_breaks_loose() catch error then print(error).

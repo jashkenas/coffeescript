@@ -10,6 +10,7 @@ token TRUE FALSE NULL
 token IDENTIFIER PROPERTY_ACCESS
 token CODE PARAM
 token NEW RETURN
+token TRY CATCH FINALLY THROW
 
 prechigh
   nonassoc UMINUS NOT '!'
@@ -51,16 +52,14 @@ rule
   # All types of expressions in our language
   Expression:
     Literal
-  | Variable
+  | Value
   | Call
   | Assign
-  | Object
   | Code
   | Operation
-  | Array
   | If
+  | Try
   | Return
-  | Parenthetical
   ;
 
   # All tokens that can terminate an expression
@@ -81,7 +80,7 @@ rule
 
   # Assign to a variable
   Assign:
-    Variable ":" Expression           { result = AssignNode.new(val[0], val[2]) }
+    Value ":" Expression           { result = AssignNode.new(val[0], val[2]) }
   ;
 
   # Assignment within an object literal.
@@ -145,11 +144,13 @@ rule
   | ParamList "," PARAM               { result = val[0] << val[2] }
   ;
 
-  Variable:
-    IDENTIFIER                        { result = VariableNode.new(val) }
-  | Variable Accessor                 { result = val[0] << val[1] }
-  | Invocation Accessor               { result = VariableNode.new(val[0], [val[1]]) }
-  | Parenthetical Accessor            { result = VariableNode.new(val[0], [val[1]]) }
+  Value:
+    IDENTIFIER                        { result = ValueNode.new(val) }
+  | Array                             { result = ValueNode.new(val) }
+  | Object                            { result = ValueNode.new(val) }
+  | Parenthetical                     { result = ValueNode.new(val) }
+  | Value Accessor                    { result = val[0] << val[1] }
+  | Invocation Accessor               { result = ValueNode.new(val[0], [val[1]]) }
   ;
 
   Accessor:
@@ -179,11 +180,11 @@ rule
   # A method call.
   Call:
     Invocation                        { result = val[0] }
-  | NEW Invocation                    { result = val[0].new_instance }
+  | NEW Invocation                    { result = val[1].new_instance }
   ;
 
   Invocation:
-    Variable "(" ArgList ")"          { result = CallNode.new(val[0], val[2]) }
+    Value "(" ArgList ")"          { result = CallNode.new(val[0], val[2]) }
   ;
 
   # An Array.
@@ -210,6 +211,13 @@ rule
   | IF Expression Terminator
        Expressions Terminator
        ELSE Expressions "."           { result = IfNode.new(val[1], val[3], val[6]) }
+  ;
+
+  Try:
+    TRY Expressions CATCH IDENTIFIER
+      Terminator Expressions "."      { result = TryNode.new(val[1], val[3], val[5]) }
+  | TRY Expression CATCH IDENTIFIER
+      THEN Expression "."             { result = TryNode.new(val[1], val[3], val[5]) }
   ;
 
   Parenthetical:

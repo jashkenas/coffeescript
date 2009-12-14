@@ -70,6 +70,7 @@ class CallNode < Node
 
   def new_instance
     @new = true
+    self
   end
 
   def compile(indent, last=false)
@@ -79,7 +80,7 @@ class CallNode < Node
   end
 end
 
-class VariableNode < Node
+class ValueNode < Node
   def initialize(name, properties=[])
     @name, @properties = name, properties
   end
@@ -240,6 +241,28 @@ class IfNode < Node
     if_part   = "#{@condition.compile(indent)} ? #{@body.compile(indent)}"
     else_part = @else_body ? "#{@else_body.compile(indent)}" : 'null'
     "#{if_part} : #{else_part}"
+  end
+end
+
+class TryNode < Node
+  def initialize(try, error, recovery)
+    @try, @error, @recovery = try, error, recovery
+  end
+
+  def line_ending
+    ''
+  end
+
+  def compile(indent, last=false)
+    @try.is_a?(Nodes) ? compile_expressions(indent) : compile_raw(indent)
+  end
+
+  def compile_expressions(indent)
+    "try {\n#{@try.compile(indent + TAB)}\n#{indent}} catch (#{@error}) {\n#{@recovery.compile(indent + TAB)}\n#{indent}}"
+  end
+
+  def compile_raw(indent)
+    "try {\n#{indent}#{TAB}#{@try.compile(indent)}#{@try.line_ending}\n#{indent}} catch (#{@error}) {\n#{indent}#{TAB}#{@recovery.compile(indent)}#{@recovery.line_ending}\n#{indent}}"
   end
 end
 

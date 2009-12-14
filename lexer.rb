@@ -3,7 +3,8 @@ class Lexer
   KEYWORDS   = ["if", "else", "then",
                 "true", "false", "null",
                 "and", "or", "is", "aint", "not",
-                "new", "return"]
+                "new", "return",
+                "try", "catch", "finally", "throw"]
 
   IDENTIFIER = /\A([a-zA-Z$_]\w*)/
   NUMBER     = /\A([0-9]+(\.[0-9]+)?)/
