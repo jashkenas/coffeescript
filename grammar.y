@@ -148,7 +148,8 @@ rule
   Variable:
     IDENTIFIER                        { result = VariableNode.new(val) }
   | Variable Accessor                 { result = val[0] << val[1] }
-  | Call Accessor                     { result = VariableNode.new(val[0], [val[1]]) }
+  | Invocation Accessor               { result = VariableNode.new(val[0], [val[1]]) }
+  | Parenthetical Accessor            { result = VariableNode.new(val[0], [val[1]]) }
   ;
 
   Accessor:
