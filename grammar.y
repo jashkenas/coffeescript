@@ -7,6 +7,7 @@ token TRUE FALSE NULL
 token IDENTIFIER PROPERTY_ACCESS
 token CODE PARAM NEW RETURN
 token TRY CATCH FINALLY THROW
+token BREAK CONTINUE
 token NEWLINE
 
 prechigh
@@ -74,6 +75,8 @@ rule
   | TRUE                              { result = LiteralNode.new(true) }
   | FALSE                             { result = LiteralNode.new(false) }
   | NULL                              { result = LiteralNode.new(nil) }
+  | BREAK                             { result = LiteralNode.new(val[0]) }
+  | CONTINUE                          { result = LiteralNode.new(val[0]) }
   ;
 
   # Assign to a variable

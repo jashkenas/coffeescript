@@ -4,7 +4,8 @@ class Lexer
                 "true", "false", "null",
                 "and", "or", "is", "aint", "not",
                 "new", "return",
-                "try", "catch", "finally", "throw"]
+                "try", "catch", "finally", "throw",
+                "break", "continue"]
 
   IDENTIFIER = /\A([a-zA-Z$_]\w*)/
   NUMBER     = /\A([0-9]+(\.[0-9]+)?)/
