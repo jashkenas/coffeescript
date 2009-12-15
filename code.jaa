@@ -1,5 +1,8 @@
 # TODO: switch/case statements
-# Flow: For loops, while loops, etc.
+# Flow: For loops, etc.
+# ++ and -- (prefix and postfix)
+# postfix ifs and unlesses
+# Fix array comprehensions -- they're mad busted.
 
 # Functions:
 square: x => x * x.
@@ -67,3 +70,19 @@ finally
   clean_up().
 
 try all_hell_breaks_loose() catch error print(error) finally clean_up().
+
+# While loops.
+while demand > supply
+  sell()
+  restock().
+
+while supply > demand then buy().
+
+# Unary operators.
+!!true
+
+# For loops.
+foods: ['toast', 'wine', 'cheese']
+print(item.capitalize()) for item in foods.
+
+drink(item) for item in foods if item is 'wine'.

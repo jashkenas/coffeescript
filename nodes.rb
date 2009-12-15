@@ -17,6 +17,11 @@ end
 # Collection of nodes each one representing an expression.
 class Nodes < Node
   attr_reader :nodes
+
+  def self.wrap(node)
+    node.is_a?(Nodes) ? node : Nodes.new([node])
+  end
+
   def initialize(nodes)
     @nodes = nodes
   end
@@ -26,10 +31,12 @@ class Nodes < Node
     self
   end
 
-  #   line  = node.compile(indent + TAB, {:last => last})
-  #   line  = "return #{line}" if last
-  #   indent + TAB + line + node.line_ending
+  def flatten
+    @nodes.length == 1 ? @nodes.first : self
+  end
 
+  # Fancy to handle pushing down returns recursively to the final lines of
+  # inner statements (to make expressions out of them).
   def compile(indent='', opts={})
     @nodes.map { |n|
       if opts[:return] && n == @nodes.last
@@ -63,7 +70,7 @@ class ReturnNode < Node
   end
 
   def compile(indent, opts={})
-    "#{indent}return #{@expression.compile(indent)};"
+    "return #{@expression.compile(indent)}"
   end
 end
 
@@ -170,6 +177,7 @@ class OpNode < Node
 
   def compile(indent, opts={})
     return compile_conditional(indent) if CONDITIONALS.include?(@operator)
+    return compile_unary(indent) if unary?
     op = "#{@first.compile(indent)} #{@operator} #{@second.compile(indent)}"
     opts[:no_paren] ? op : "(#{op})"
   end
@@ -178,6 +186,10 @@ class OpNode < Node
     first, second = @first.compile(indent), @second.compile(indent)
     sym = @operator[0..1]
     "(#{first} = #{first} #{sym} #{second})"
+  end
+
+  def compile_unary(indent)
+    "#{@operator}#{@first.compile(indent)}"
   end
 end
 
@@ -229,7 +241,9 @@ class IfNode < Node
   FORCE_STATEMENT = [Nodes, ReturnNode]
 
   def initialize(condition, body, else_body=nil)
-    @condition, @body, @else_body = condition, body, else_body
+    @condition = condition
+    @body      = body && body.flatten
+    @else_body = else_body && else_body.flatten
   end
 
   def statement?
@@ -245,8 +259,8 @@ class IfNode < Node
   end
 
   def compile_statement(indent, opts)
-    if_part   = "if (#{@condition.compile(indent, :no_paren => true)}) {\n#{@body.compile(indent + TAB, opts)}\n#{indent}}"
-    else_part = @else_body ? " else {\n#{@else_body.compile(indent + TAB, opts)}\n#{indent}}" : ''
+    if_part   = "if (#{@condition.compile(indent, :no_paren => true)}) {\n#{Nodes.wrap(@body).compile(indent + TAB, opts)}\n#{indent}}"
+    else_part = @else_body ? " else {\n#{Nodes.wrap(@else_body).compile(indent + TAB, opts)}\n#{indent}}" : ''
     if_part + else_part
   end
 
@@ -254,6 +268,49 @@ class IfNode < Node
     if_part   = "#{@condition.compile(indent)} ? #{@body.compile(indent)}"
     else_part = @else_body ? "#{@else_body.compile(indent)}" : 'null'
     "#{if_part} : #{else_part}"
+  end
+end
+
+class WhileNode < Node
+  def initialize(condition, body)
+    @condition, @body = condition, body
+  end
+
+  def line_ending
+    ''
+  end
+
+  def statement?
+    true
+  end
+
+  def compile(indent, opts={})
+    "while (#{@condition.compile(indent, :no_paren => true)}) {\n#{@body.compile(indent + TAB)}\n#{indent}}"
+  end
+end
+
+class ForNode < Node
+  I = "__i__"
+  L = "__l__"
+  S = "__s__"
+
+  def initialize(body, name, source, condition=nil)
+    @body, @name, @source, @condition = body, name, source, condition
+  end
+
+  def line_ending
+    ''
+  end
+
+  def statement?
+    true
+  end
+
+  def compile(indent, opts={})
+    source_part = "var #{S} = #{@source.compile(indent)};"
+    for_part = "var #{I}=0, #{L}=#{S}.length; #{I}<#{L}; #{I}++"
+    var_part = "\n#{indent + TAB}var #{@name} = #{S}[#{I}];"
+    "#{source_part}\n#{indent}for (#{for_part}) {#{var_part}\n#{indent + TAB}#{@body.compile(indent + TAB)};\n#{indent}}"
   end
 end
 

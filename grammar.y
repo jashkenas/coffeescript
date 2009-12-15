@@ -8,6 +8,7 @@ token IDENTIFIER PROPERTY_ACCESS
 token CODE PARAM NEW RETURN
 token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
+token FOR IN WHILE
 token NEWLINE
 
 prechigh
@@ -59,12 +60,20 @@ rule
   | Try
   | Throw
   | Return
+  | While
+  | For
   ;
 
   # All tokens that can terminate an expression
   Terminator:
     "\n"
   | ";"
+  ;
+
+  # All tokens that can serve to begin the second block
+  Then:
+    THEN
+  | Terminator
   ;
 
   # All hard-coded values
@@ -164,11 +173,18 @@ rule
   ;
 
   Object:
-    "{" "}"                           { result = ObjectNode.new([]) }
-  | "{" Terminator "}"                { result = ObjectNode.new([]) }
-  | "{" AssignList "}"                { result = ObjectNode.new(val[1]) }
-  | "{" Terminator AssignList
-        Terminator "}"                { result = ObjectNode.new(val[2]) }
+    ObjectStart ObjectEnd             { result = ObjectNode.new([]) }
+  | ObjectStart AssignList ObjectEnd  { result = ObjectNode.new(val[1]) }
+  ;
+
+  ObjectStart:
+    "{"                               { result = nil }
+  | "{" "\n"                          { result = nil }
+  ;
+
+  ObjectEnd:
+    "}"                               { result = nil }
+  | "\n" "}"                          { result = nil }
   ;
 
   AssignList:
@@ -185,7 +201,7 @@ rule
   ;
 
   Invocation:
-    Value "(" ArgList ")"          { result = CallNode.new(val[0], val[2]) }
+    Value "(" ArgList ")"             { result = CallNode.new(val[0], val[2]) }
   ;
 
   # An Array.
@@ -203,15 +219,10 @@ rule
 
   If:
     IF Expression
-       THEN Expression "."            { result = IfNode.new(val[1], val[3]) }
-  | IF Expression Terminator
-       Expressions "."                { result = IfNode.new(val[1], val[3]) }
+       Then Expressions "."           { result = IfNode.new(val[1], val[3]) }
   | IF Expression
-       THEN Expression
-       ELSE Expression "."            { result = IfNode.new(val[1], val[3], val[5]) }
-  | IF Expression Terminator
-       Expressions Terminator
-       ELSE Expressions "."           { result = IfNode.new(val[1], val[3], val[6]) }
+       Then Expressions
+       ELSE Expressions "."           { result = IfNode.new(val[1], val[3], val[5]) }
   ;
 
   Try:
@@ -230,6 +241,19 @@ rule
 
   Parenthetical:
     "(" Expressions ")"               { result = ParentheticalNode.new(val[1]) }
+  ;
+
+  While:
+    WHILE Expression Then
+      Expressions "."                 { result = WhileNode.new(val[1], val[3]) }
+  ;
+
+  For:
+    Expression FOR IDENTIFIER
+      IN Expression "."               { result = ForNode.new(val[0], val[2], val[4]) }
+  | Expression FOR IDENTIFIER
+      IN Expression
+      IF Expression "."               { result = ForNode.new(IfNode.new(val[6], Nodes.new([val[0]])), val[2], val[4]) }
   ;
 
 end
