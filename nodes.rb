@@ -1,19 +1,32 @@
 class Scope
 
-  attr_reader :parent
+  attr_reader :parent, :temp_variable
 
   def initialize(parent=nil)
     @parent = parent
     @variables = {}
+    @temp_variable = @parent ? @parent.temp_variable : 'a'
   end
 
   # Look up a variable in lexical scope, or declare it if not found.
   def find(name, remote=false)
-    return name if @variables[name]
-    found = @parent && @parent.find(name, true)
+    found = check(name, remote)
     return found if found || remote
     @variables[name] = true
     found
+  end
+
+  # Just check for the pre-definition of a variable.
+  def check(name, remote=false)
+    return true if @variables[name]
+    @parent && @parent.find(name, true)
+  end
+
+  # Find an available, short variable name.
+  def free_variable
+    @temp_variable.succ! while check(@temp_variable)
+    @variables[@temp_variable] = true
+    @temp_variable.dup
   end
 
 end
@@ -318,9 +331,6 @@ class WhileNode < Node
 end
 
 class ForNode < Node
-  I = "__i__"
-  L = "__l__"
-  S = "__s__"
 
   def initialize(body, name, source, condition=nil)
     @body, @name, @source, @condition = body, name, source, condition
@@ -335,9 +345,13 @@ class ForNode < Node
   end
 
   def compile(indent, scope, opts={})
-    source_part = "var #{S} = #{@source.compile(indent, scope)};"
-    for_part = "var #{I}=0, #{L}=#{S}.length; #{I}<#{L}; #{I}++"
-    var_part = "\n#{indent + TAB}var #{@name} = #{S}[#{I}];"
+    svar = scope.free_variable
+    ivar = scope.free_variable
+    lvar = scope.free_variable
+    name_part = scope.find(@name) ? @name : "var #{@name}"
+    source_part = "var #{svar} = #{@source.compile(indent, scope)};"
+    for_part = "var #{ivar}=0, #{lvar}=#{svar}.length; #{ivar}<#{lvar}; #{ivar}++"
+    var_part = "\n#{indent + TAB}#{name_part} = #{svar}[#{ivar}];"
     "#{source_part}\n#{indent}for (#{for_part}) {#{var_part}\n#{indent + TAB}#{@body.compile(indent + TAB, scope)};\n#{indent}}"
   end
 end

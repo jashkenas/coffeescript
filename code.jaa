@@ -1,6 +1,4 @@
 # TODO: switch/case statements
-# Flow: For loops, etc.
-# Fix array comprehensions -- they're mad busted.
 # Think of a name for this crazy thing.
 
 # Functions:
@@ -96,8 +94,8 @@ change_a_and_set_b: =>
   b: 15.
 b: 20
 
-# For loops.
-# foods: ['toast', 'wine', 'cheese']
-# print(item.capitalize()) for item in foods.
-#
-# drink(item) for item in foods if item is 'wine'.
+# Array comprehensions.
+print(food.capitalize()) for food in ['toast', 'wine', 'cheese'].
+
+cooler: ['soda', 'wine', 'lemonade']
+drink(bottle) for bottle in cooler if bottle is 'lemonade'.
