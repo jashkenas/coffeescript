@@ -11,12 +11,15 @@ class Lexer
   IDENTIFIER = /\A([a-zA-Z$_]\w*)/
   NUMBER     = /\A([0-9]+(\.[0-9]+)?)/
   STRING     = /\A("(.*?)"|'(.*?)')/
+  JS         = /\A(`(.*?)`)/
   OPERATOR   = /\A([+\*&|\/\-%=<>]+)/
   WHITESPACE = /\A([ \t\r]+)/
   NEWLINE    = /\A([\r\n]+)/
   COMMENT    = /\A(#[^\r\n]*)/
   CODE       = /\A(=>)/
   REGEX      = /\A(\/(.*?)\/[imgy]{0,4})/
+
+  JS_CLEANER = /(\A`|`\Z)/
 
   # This is how to implement a very simple scanner.
   # Scan one caracter at the time until you find something to parse.
@@ -35,6 +38,7 @@ class Lexer
     return if identifier_token
     return if number_token
     return if string_token
+    return if js_token
     return if regex_token
     return if remove_comment
     return if whitespace_token
@@ -65,6 +69,12 @@ class Lexer
     return false unless string = @chunk[STRING, 1]
     @tokens << [:STRING, string]
     @i += string.length
+  end
+
+  def js_token
+    return false unless script = @chunk[JS, 1]
+    @tokens << [:JS, script.gsub(JS_CLEANER, '')]
+    @i += script.length
   end
 
   def regex_token

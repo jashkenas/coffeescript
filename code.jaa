@@ -1,9 +1,9 @@
 # TODO: switch/case statements
 # Flow: For loops, etc.
 # ++ and -- (prefix and postfix)
-# postfix ifs and unlesses
 # Fix array comprehensions -- they're mad busted.
 # Start looking up all free assignments in scope -- to var or not to var.
+# Literal javascript interpolation.
 # Think of a name for this crazy thing.
 
 # Functions:
@@ -64,6 +64,11 @@ wine &&= cheese
 
 # Nested property access and calls.
 ((moon.turn(360))).shapes[3].move({x: 45, y: 30}).position
+
+# Embedded JavaScript.
+callback(
+  `function(e) { e.stop(); }`
+)
 
 # Try/Catch/Finally/Throw.
 try

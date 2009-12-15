@@ -10,6 +10,7 @@ token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
 token FOR IN WHILE
 token NEWLINE
+token JS
 
 prechigh
   nonassoc UMINUS NOT '!'
@@ -82,6 +83,7 @@ rule
   Literal:
     NUMBER                            { result = LiteralNode.new(val[0]) }
   | STRING                            { result = LiteralNode.new(val[0]) }
+  | JS                                { result = LiteralNode.new(val[0]) }
   | REGEX                             { result = LiteralNode.new(val[0]) }
   | TRUE                              { result = LiteralNode.new(true) }
   | FALSE                             { result = LiteralNode.new(false) }
@@ -179,16 +181,6 @@ rule
   | ObjectStart AssignList ObjectEnd  { result = ObjectNode.new(val[1]) }
   ;
 
-  ObjectStart:
-    "{"                               { result = nil }
-  | "{" "\n"                          { result = nil }
-  ;
-
-  ObjectEnd:
-    "}"                               { result = nil }
-  | "\n" "}"                          { result = nil }
-  ;
-
   AssignList:
     /* nothing */                     { result = []}
   | AssignObj                         { result = val }
@@ -203,12 +195,12 @@ rule
   ;
 
   Invocation:
-    Value "(" ArgList ")"             { result = CallNode.new(val[0], val[2]) }
+    Value ParenStart ArgList ParenEnd { result = CallNode.new(val[0], val[2]) }
   ;
 
   # An Array.
   Array:
-    "[" ArgList "]"                   { result = ArrayNode.new(val[1]) }
+    ArrayStart ArgList ArrayEnd       { result = ArrayNode.new(val[1]) }
   ;
 
   # A list of arguments to a method call.
@@ -244,7 +236,7 @@ rule
   ;
 
   Parenthetical:
-    "(" Expressions ")"               { result = ParentheticalNode.new(val[1]) }
+    ParenStart Expressions ParenEnd   { result = ParentheticalNode.new(val[1]) }
   ;
 
   While:
@@ -258,6 +250,36 @@ rule
   | Expression FOR IDENTIFIER
       IN Expression
       IF Expression "."               { result = ForNode.new(IfNode.new(val[6], Nodes.new([val[0]])), val[2], val[4]) }
+  ;
+
+  ObjectStart:
+    "{"                               { result = nil }
+  | "{" "\n"                          { result = nil }
+  ;
+
+  ObjectEnd:
+    "}"                               { result = nil }
+  | "\n" "}"                          { result = nil }
+  ;
+
+  ParenStart:
+    "("                               { result = nil }
+  | "(" "\n"                          { result = nil }
+  ;
+
+  ParenEnd:
+    ")"                               { result = nil }
+  | "\n" ")"                          { result = nil }
+  ;
+
+  ArrayStart:
+    "["                               { result = nil }
+  | "[" "\n"                          { result = nil }
+  ;
+
+  ArrayEnd:
+    "]"                               { result = nil }
+  | "\n" "]"                          { result = nil }
   ;
 
 end
