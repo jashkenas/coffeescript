@@ -40,6 +40,7 @@ rule
   # All parsing will end in this rule, being the trunk of the AST.
   Root:
     /* nothing */                     { result = Nodes.new([]) }
+  | Terminator                        { result = Nodes.new([]) }
   | Expressions                       { result = val[0] }
   ;
 

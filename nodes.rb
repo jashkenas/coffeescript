@@ -1,17 +1,34 @@
+class Scope
+
+  attr_reader :parent
+
+  def initialize(parent=nil)
+    @parent = parent
+    @variables = {}
+  end
+
+  # Look up a variable in lexical scope, or declare it if not found.
+  def find(name, remote=false)
+    return name if @variables[name]
+    found = @parent && @parent.find(name, true)
+    return found if found || remote
+    @variables[name] = true
+    found
+  end
+
+end
+
 class Node
   # Tabs are two spaces for pretty-printing.
   TAB = '  '
 
-  def line_ending
-    ';'
-  end
+  def line_ending;      ';';    end
 
-  def statement?
-    false
-  end
+  def statement?;       false;  end
 
-  def compile(indent='', opts={})
-  end
+  def custom_return?;   false;   end
+
+  def compile(indent='', scope=nil, opts={}); end
 end
 
 # Collection of nodes each one representing an expression.
@@ -35,18 +52,23 @@ class Nodes < Node
     @nodes.length == 1 ? @nodes.first : self
   end
 
+  def begin_compile
+    "(function(){\n#{compile(TAB, Scope.new)}\n})();"
+  end
+
   # Fancy to handle pushing down returns recursively to the final lines of
   # inner statements (to make expressions out of them).
-  def compile(indent='', opts={})
+  def compile(indent='', scope=nil, opts={})
+    return begin_compile unless scope
     @nodes.map { |n|
-      if opts[:return] && n == @nodes.last
+      if opts[:return] && n == @nodes.last && !n.custom_return?
         if n.statement?
-          "#{indent}#{n.compile(indent, {:return => true})}#{n.line_ending}"
+          "#{indent}#{n.compile(indent, scope, opts)}#{n.line_ending}"
         else
-          "#{indent}return #{n.compile(indent)}#{n.line_ending}"
+          "#{indent}return #{n.compile(indent, scope, opts)}#{n.line_ending}"
         end
       else
-        "#{indent}#{n.compile(indent)}#{n.line_ending}"
+        "#{indent}#{n.compile(indent, scope, opts)}#{n.line_ending}"
       end
     }.join("\n")
   end
@@ -59,7 +81,7 @@ class LiteralNode < Node
     @value = value
   end
 
-  def compile(indent, opts={})
+  def compile(indent, scope, opts={})
     @value.to_s
   end
 end
@@ -69,8 +91,12 @@ class ReturnNode < Node
     @expression = expression
   end
 
-  def compile(indent, opts={})
-    "return #{@expression.compile(indent)}"
+  def custom_return?
+    true
+  end
+
+  def compile(indent, scope, opts={})
+    "return #{@expression.compile(indent, scope)}"
   end
 end
 
@@ -91,10 +117,10 @@ class CallNode < Node
     self
   end
 
-  def compile(indent, opts={})
-    args = @arguments.map{|a| a.compile(indent, :no_paren => true) }.join(', ')
+  def compile(indent, scope, opts={})
+    args = @arguments.map{|a| a.compile(indent, scope, :no_paren => true) }.join(', ')
     prefix = @new ? "new " : ''
-    "#{prefix}#{@variable.compile(indent)}(#{args})"
+    "#{prefix}#{@variable.compile(indent, scope)}(#{args})"
   end
 end
 
@@ -112,9 +138,9 @@ class ValueNode < Node
     return !@properties.empty?
   end
 
-  def compile(indent, opts={})
+  def compile(indent, scope, opts={})
     [@name, @properties].flatten.map { |v|
-      v.respond_to?(:compile) ? v.compile(indent) : v.to_s
+      v.respond_to?(:compile) ? v.compile(indent, scope) : v.to_s
     }.join('')
   end
 end
@@ -124,7 +150,7 @@ class AccessorNode
     @name = name
   end
 
-  def compile(indent, opts={})
+  def compile(indent, scope, opts={})
     ".#{@name}"
   end
 end
@@ -134,8 +160,8 @@ class IndexNode
     @index = index
   end
 
-  def compile(indent, opts={})
-    "[#{@index.compile(indent)}]"
+  def compile(indent, scope, opts={})
+    "[#{@index.compile(indent, scope)}]"
   end
 end
 
@@ -145,11 +171,19 @@ class AssignNode < Node
     @variable, @value, @context = variable, value, context
   end
 
-  def compile(indent, opts={})
-    return "#{@variable}: #{@value.compile(indent + TAB)}" if @context == :object
-    var_part = @variable.compile(indent)
-    var_part = "var " + var_part unless @variable.properties? || opts[:last]
-    "#{var_part} = #{@value.compile(indent)}"
+  def custom_return?
+    true
+  end
+
+  def compile(indent, scope, opts={})
+    value = @value.compile(indent, scope)
+    return "#{@variable}: #{value}" if @context == :object
+    name = @variable.compile(indent, scope)
+    return "#{name} = #{value}" if @variable.properties?
+    defined = scope.find(name)
+    postfix = !defined && opts[:return] ? ";\n#{indent}return #{name}" : ''
+    name = "var #{name}" if !defined
+    "#{name} = #{@value.compile(indent, scope)}#{postfix}"
   end
 end
 
@@ -175,21 +209,21 @@ class OpNode < Node
     @second.nil?
   end
 
-  def compile(indent, opts={})
-    return compile_conditional(indent) if CONDITIONALS.include?(@operator)
-    return compile_unary(indent) if unary?
-    op = "#{@first.compile(indent)} #{@operator} #{@second.compile(indent)}"
+  def compile(indent, scope, opts={})
+    return compile_conditional(indent, scope) if CONDITIONALS.include?(@operator)
+    return compile_unary(indent, scope) if unary?
+    op = "#{@first.compile(indent, scope)} #{@operator} #{@second.compile(indent, scope)}"
     opts[:no_paren] ? op : "(#{op})"
   end
 
-  def compile_conditional(indent)
-    first, second = @first.compile(indent), @second.compile(indent)
+  def compile_conditional(indent, scope)
+    first, second = @first.compile(indent, scope), @second.compile(indent, scope)
     sym = @operator[0..1]
     "(#{first} = #{first} #{sym} #{second})"
   end
 
-  def compile_unary(indent)
-    "#{@operator}#{@first.compile(indent)}"
+  def compile_unary(indent, scope)
+    "#{@operator}#{@first.compile(indent, scope)}"
   end
 end
 
@@ -200,15 +234,8 @@ class CodeNode < Node
     @body = body
   end
 
-  def compile(indent, opts={})
-    # nodes   = @body.respond_to?(:reduce) ? @body.reduce : [@body]
-    # code    = nodes.map { |node|
-    #   last  = node == nodes.last
-    #   line  = node.compile(indent + TAB, {:last => last})
-    #   line  = "return #{line}" if last
-    #   indent + TAB + line + node.line_ending
-    # }.join("\n")
-    code = @body.compile(indent + TAB, {:return => true})
+  def compile(indent, scope, opts={})
+    code = @body.compile(indent + TAB, Scope.new(scope), {:return => true})
     "function(#{@params.join(', ')}) {\n#{code}\n#{indent}}"
   end
 end
@@ -218,8 +245,8 @@ class ObjectNode < Node
     @properties = properties
   end
 
-  def compile(indent, opts={})
-    props = @properties.map {|p| indent + TAB + p.compile(indent) }.join(",\n")
+  def compile(indent, scope, opts={})
+    props = @properties.map {|p| indent + TAB + p.compile(indent, scope) }.join(",\n")
     "{\n#{props}\n#{indent}}"
   end
 end
@@ -229,8 +256,8 @@ class ArrayNode < Node
     @objects = objects
   end
 
-  def compile(indent, opts={})
-    objects = @objects.map {|o| o.compile(indent) }.join(', ')
+  def compile(indent, scope, opts={})
+    objects = @objects.map {|o| o.compile(indent, scope) }.join(', ')
     "[#{objects}]"
   end
 end
@@ -255,19 +282,19 @@ class IfNode < Node
     statement? ? '' : ';'
   end
 
-  def compile(indent, opts={})
-    statement? ? compile_statement(indent, opts) : compile_ternary(indent)
+  def compile(indent, scope, opts={})
+    statement? ? compile_statement(indent, scope, opts) : compile_ternary(indent, scope)
   end
 
-  def compile_statement(indent, opts)
-    if_part   = "if (#{@condition.compile(indent, :no_paren => true)}) {\n#{Nodes.wrap(@body).compile(indent + TAB, opts)}\n#{indent}}"
-    else_part = @else_body ? " else {\n#{Nodes.wrap(@else_body).compile(indent + TAB, opts)}\n#{indent}}" : ''
+  def compile_statement(indent, scope, opts)
+    if_part   = "if (#{@condition.compile(indent, scope, :no_paren => true)}) {\n#{Nodes.wrap(@body).compile(indent + TAB, scope, opts)}\n#{indent}}"
+    else_part = @else_body ? " else {\n#{Nodes.wrap(@else_body).compile(indent + TAB, scope, opts)}\n#{indent}}" : ''
     if_part + else_part
   end
 
-  def compile_ternary(indent)
-    if_part   = "#{@condition.compile(indent)} ? #{@body.compile(indent)}"
-    else_part = @else_body ? "#{@else_body.compile(indent)}" : 'null'
+  def compile_ternary(indent, scope)
+    if_part   = "#{@condition.compile(indent, scope)} ? #{@body.compile(indent, scope)}"
+    else_part = @else_body ? "#{@else_body.compile(indent, scope)}" : 'null'
     "#{if_part} : #{else_part}"
   end
 end
@@ -285,8 +312,8 @@ class WhileNode < Node
     true
   end
 
-  def compile(indent, opts={})
-    "while (#{@condition.compile(indent, :no_paren => true)}) {\n#{@body.compile(indent + TAB)}\n#{indent}}"
+  def compile(indent, scope, opts={})
+    "while (#{@condition.compile(indent, scope, :no_paren => true)}) {\n#{@body.compile(indent + TAB, scope)}\n#{indent}}"
   end
 end
 
@@ -307,11 +334,11 @@ class ForNode < Node
     true
   end
 
-  def compile(indent, opts={})
-    source_part = "var #{S} = #{@source.compile(indent)};"
+  def compile(indent, scope, opts={})
+    source_part = "var #{S} = #{@source.compile(indent, scope)};"
     for_part = "var #{I}=0, #{L}=#{S}.length; #{I}<#{L}; #{I}++"
     var_part = "\n#{indent + TAB}var #{@name} = #{S}[#{I}];"
-    "#{source_part}\n#{indent}for (#{for_part}) {#{var_part}\n#{indent + TAB}#{@body.compile(indent + TAB)};\n#{indent}}"
+    "#{source_part}\n#{indent}for (#{for_part}) {#{var_part}\n#{indent + TAB}#{@body.compile(indent + TAB, scope)};\n#{indent}}"
   end
 end
 
@@ -328,10 +355,10 @@ class TryNode < Node
     true
   end
 
-  def compile(indent, opts={})
-    catch_part = @recovery &&  " catch (#{@error}) {\n#{@recovery.compile(indent + TAB, opts)}\n#{indent}}"
-    finally_part = @finally && " finally {\n#{@finally.compile(indent + TAB, opts)}\n#{indent}}"
-    "try {\n#{@try.compile(indent + TAB, opts)}\n#{indent}}#{catch_part}#{finally_part}"
+  def compile(indent, scope, opts={})
+    catch_part = @recovery &&  " catch (#{@error}) {\n#{@recovery.compile(indent + TAB, scope, opts)}\n#{indent}}"
+    finally_part = @finally && " finally {\n#{@finally.compile(indent + TAB, scope, opts)}\n#{indent}}"
+    "try {\n#{@try.compile(indent + TAB, scope, opts)}\n#{indent}}#{catch_part}#{finally_part}"
   end
 end
 
@@ -340,8 +367,8 @@ class ThrowNode < Node
     @expression = expression
   end
 
-  def compile(indent, opts={})
-    "throw #{@expression.compile(indent)}"
+  def compile(indent, scope, opts={})
+    "throw #{@expression.compile(indent, scope)}"
   end
 end
 
@@ -350,8 +377,8 @@ class ParentheticalNode < Node
     @expressions = expressions
   end
 
-  def compile(indent, opts={})
-    compiled = @expressions.compile(indent)
+  def compile(indent, scope, opts={})
+    compiled = @expressions.flatten.compile(indent, scope)
     compiled = compiled[0...-1] if compiled[-1..-1] == ';'
     opts[:no_paren] ? compiled : "(#{compiled})"
   end

@@ -1,9 +1,6 @@
 # TODO: switch/case statements
 # Flow: For loops, etc.
-# ++ and -- (prefix and postfix)
 # Fix array comprehensions -- they're mad busted.
-# Start looking up all free assignments in scope -- to var or not to var.
-# Literal javascript interpolation.
 # Think of a name for this crazy thing.
 
 # Functions:
@@ -91,6 +88,13 @@ while supply > demand then buy().
 
 # Unary operators.
 !!true
+
+# Lexical scoping.
+a: 5
+change_a_and_set_b: =>
+  a: 10
+  b: 15.
+b: 20
 
 # For loops.
 # foods: ['toast', 'wine', 'cheese']

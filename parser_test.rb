@@ -1,6 +1,6 @@
 # Recompile the Parser.
 # With debugging and verbose: -v -g
-`racc -v -o parser.rb grammar.y`
+`racc -o parser.rb grammar.y`
 
 # Parse and print "code.jaa".
 require "parser.rb"
