@@ -238,16 +238,17 @@ end
 # "if-else" control structure. Look at this node if you want to implement other control
 # structures like while, for, loop, etc.
 class IfNode < Node
-  FORCE_STATEMENT = [Nodes, ReturnNode]
+  FORCE_STATEMENT = [Nodes, ReturnNode, AssignNode]
 
-  def initialize(condition, body, else_body=nil)
+  def initialize(condition, body, else_body=nil, tag=nil)
     @condition = condition
     @body      = body && body.flatten
     @else_body = else_body && else_body.flatten
+    @condition = OpNode.new("!", @condition) if tag == :invert
   end
 
   def statement?
-    FORCE_STATEMENT.include?(@body.class) || FORCE_STATEMENT.include?(@else_body.class)
+    @is_statement ||= (FORCE_STATEMENT.include?(@body.class) || FORCE_STATEMENT.include?(@else_body.class))
   end
 
   def line_ending

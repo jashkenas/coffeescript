@@ -1,6 +1,6 @@
 class Lexer
 
-  KEYWORDS   = ["if", "else", "then",
+  KEYWORDS   = ["if", "else", "then", "unless",
                 "true", "false", "null",
                 "and", "or", "is", "aint", "not",
                 "new", "return",

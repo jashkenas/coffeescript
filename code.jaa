@@ -46,6 +46,10 @@ else
 
 eldest: if 25 > 21 then liz else marge.
 
+decoration: medal_of_honor if war_hero
+
+go_to_sleep() unless coffee
+
 # Returning early:
 race: =>
   run()
@@ -84,7 +88,7 @@ while supply > demand then buy().
 !!true
 
 # For loops.
-foods: ['toast', 'wine', 'cheese']
-print(item.capitalize()) for item in foods.
-
-drink(item) for item in foods if item is 'wine'.
+# foods: ['toast', 'wine', 'cheese']
+# print(item.capitalize()) for item in foods.
+#
+# drink(item) for item in foods if item is 'wine'.

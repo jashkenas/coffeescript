@@ -1,7 +1,7 @@
 class Parser
 
 # Declare tokens produced by the lexer
-token IF ELSE THEN
+token IF ELSE THEN UNLESS
 token NUMBER STRING REGEX
 token TRUE FALSE NULL
 token IDENTIFIER PROPERTY_ACCESS
@@ -18,7 +18,9 @@ prechigh
   left     '<=' '<' '>' '>='
   right    '==' '!=' IS AINT
   left     '&&' '||' AND OR
+  left     ':'
   right    '-=' '+=' '/=' '*='
+  nonassoc IF
 preclow
 
 rule
@@ -223,6 +225,8 @@ rule
   | IF Expression
        Then Expressions
        ELSE Expressions "."           { result = IfNode.new(val[1], val[3], val[5]) }
+  | Expression IF Expression          { result = IfNode.new(val[2], Nodes.new([val[0]])) }
+  | Expression UNLESS Expression      { result = IfNode.new(val[2], Nodes.new([val[0]]), nil, :invert) }
   ;
 
   Try:
