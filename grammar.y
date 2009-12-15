@@ -246,11 +246,18 @@ rule
   ;
 
   For:
-    Expression FOR IDENTIFIER
-      IN Expression "."               { result = ForNode.new(val[0], val[2], val[4]) }
+  Expression FOR IDENTIFIER
+    IN Expression "."                 { result = ForNode.new(val[0], val[4], val[2]) }
+  | Expression FOR
+      IDENTIFIER "," IDENTIFIER
+      IN Expression "."               { result = ForNode.new(val[0], val[6], val[2], val[4]) }
   | Expression FOR IDENTIFIER
       IN Expression
-      IF Expression "."               { result = ForNode.new(IfNode.new(val[6], Nodes.new([val[0]])), val[2], val[4]) }
+      IF Expression "."               { result = ForNode.new(IfNode.new(val[6], Nodes.new([val[0]])), val[4], val[2]) }
+  | Expression FOR
+      IDENTIFIER "," IDENTIFIER
+      IN Expression
+      IF Expression "."               { result = ForNode.new(IfNode.new(val[8], Nodes.new([val[0]])), val[6], val[2], val[4]) }
   ;
 
   ObjectStart:

@@ -1,4 +1,5 @@
 # TODO: switch/case statements
+# Make array comprehensions expressions. (return the computed array).
 # Think of a name for this crazy thing.
 
 # Functions:
@@ -100,4 +101,4 @@ b: 20
 print(food.capitalize()) for food in ['toast', 'wine', 'cheese'].
 
 cooler: ['soda', 'wine', 'lemonade']
-drink(bottle) for bottle in cooler if bottle is 'lemonade'.
+drink(bottle) for bottle, i in cooler if even(i).

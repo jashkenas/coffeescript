@@ -332,8 +332,8 @@ end
 
 class ForNode < Node
 
-  def initialize(body, name, source, condition=nil)
-    @body, @name, @source, @condition = body, name, source, condition
+  def initialize(body, source, name, index=nil)
+    @body, @source, @name, @index = body, source, name, index
   end
 
   def line_ending
@@ -345,14 +345,16 @@ class ForNode < Node
   end
 
   def compile(indent, scope, opts={})
-    svar = scope.free_variable
-    ivar = scope.free_variable
-    lvar = scope.free_variable
-    name_part = scope.find(@name) ? @name : "var #{@name}"
+    svar        = scope.free_variable
+    ivar        = scope.free_variable
+    lvar        = scope.free_variable
+    name_part   = scope.find(@name) ? @name : "var #{@name}"
+    index_name  = @index ? (scope.find(@index) ? @index : "var #{@index}") : nil
     source_part = "var #{svar} = #{@source.compile(indent, scope)};"
-    for_part = "var #{ivar}=0, #{lvar}=#{svar}.length; #{ivar}<#{lvar}; #{ivar}++"
-    var_part = "\n#{indent + TAB}#{name_part} = #{svar}[#{ivar}];"
-    "#{source_part}\n#{indent}for (#{for_part}) {#{var_part}\n#{indent + TAB}#{@body.compile(indent + TAB, scope)};\n#{indent}}"
+    for_part    = "var #{ivar}=0, #{lvar}=#{svar}.length; #{ivar}<#{lvar}; #{ivar}++"
+    var_part    = "\n#{indent + TAB}#{name_part} = #{svar}[#{ivar}];\n"
+    index_part  = @index ? "#{indent + TAB}#{index_name} = #{ivar};\n" : ''
+    "#{source_part}\n#{indent}for (#{for_part}) {#{var_part}#{index_part}#{indent + TAB}#{@body.compile(indent + TAB, scope)};\n#{indent}}"
   end
 end
 
