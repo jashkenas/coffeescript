@@ -74,14 +74,14 @@ class Nodes < Node
   def compile(indent='', scope=nil, opts={})
     return begin_compile unless scope
     @nodes.map { |n|
-      if opts[:return] && n == @nodes.last && !n.custom_return?
-        if n.statement?
+      if opts[:return] && n == @nodes.last
+        if n.statement? || n.custom_return?
           "#{indent}#{n.compile(indent, scope, opts)}#{n.line_ending}"
         else
           "#{indent}return #{n.compile(indent, scope, opts)}#{n.line_ending}"
         end
       else
-        "#{indent}#{n.compile(indent, scope, opts)}#{n.line_ending}"
+        "#{indent}#{n.compile(indent, scope)}#{n.line_ending}"
       end
     }.join("\n")
   end
@@ -109,7 +109,8 @@ class ReturnNode < Node
   end
 
   def compile(indent, scope, opts={})
-    "return #{@expression.compile(indent, scope)}"
+    compiled = @expression.compile(indent, scope)
+    @expression.statement? ? "#{compiled}\n#{indent}return null" : "return #{compiled}"
   end
 end
 

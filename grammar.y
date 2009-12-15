@@ -174,7 +174,7 @@ rule
   ;
 
   Index:
-    "[" Literal "]"                   { result = IndexNode.new(val[1]) }
+    "[" Expression "]"                { result = IndexNode.new(val[1]) }
   ;
 
   Object:

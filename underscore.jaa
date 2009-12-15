@@ -47,15 +47,12 @@
   _.each: obj, iterator, context =>
     index: 0
     try
-      return obj.forEach(iterator, context) if obj.forEach
-      canLoop: _.isArray(obj) or _.isArguments(obj)
-      return for (i=0, l=obj.length; i<l; i++) iterator.call(context, obj[i], i, obj) if canLoop
-      keys = _.keys(obj)
-      l    = keys.length
-      for (var i=0; i<l; i++) iterator.call(context, obj[keys[i]], keys[i], obj)
-    catch(e)
-      throw e if (e != breaker)
-    return obj;
+      if obj.forEach then return obj.forEach(iterator, context).
+      if _.isArray(obj) or _.isArguments(obj) then return iterator.call(context, item, i, obj) for item, i in obj..
+      iterator.call(context, obj[key], key, obj) for key in _.keys(obj).
+    catch e
+      throw e if e aint breaker.
+    obj.
 
   # Return the results of applying the iterator to each element. Use JavaScript
   # 1.6's version of map, if possible.

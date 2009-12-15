@@ -1,5 +1,6 @@
 # TODO: switch/case statements
 # Make array comprehensions expressions. (return the computed array).
+# Make arbitrary-length if else if else if chains possible.
 # Think of a name for this crazy thing.
 
 # Functions:
