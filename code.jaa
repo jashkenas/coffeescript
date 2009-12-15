@@ -1,9 +1,5 @@
 # TODO: switch/case statements
-# Better block delimiters
 # Flow: For loops, while loops, etc.
-# Exceptions: throw catch.
-# When an if statement is the last thing in a function, need to be able to
-# send the return down to the last expression in the if and else bodies.
 
 # Functions:
 square: x => x * x.
@@ -60,11 +56,14 @@ wine &&= cheese
 # Nested property access and calls.
 ((moon.turn(360))).shapes[3].move({x: 45, y: 30}).position
 
-# Try/Catch/Finally.
+# Try/Catch/Finally/Throw.
 try
   all_hell_breaks_loose()
   dogs_and_cats_living_together()
+  throw "up"
 catch error
-  print( error ).
+  print( error )
+finally
+  clean_up().
 
-try all_hell_breaks_loose() catch error then print(error).
+try all_hell_breaks_loose() catch error print(error) finally clean_up().

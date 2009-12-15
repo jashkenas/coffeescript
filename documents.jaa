@@ -17,7 +17,7 @@ dc.model.Document: dc.Model.extend({
     docId: this.id
     _.select(Metadata.models()
       meta => _.any(meta.get('instances')
-        instance => instance.document_id == docId.).).
+        instance => instance.document_id is docId.).).
 
   bookmark: pageNumber =>
     bookmark: new dc.model.Bookmark({title: this.get('title'), page_number: pageNumber, document_id: this.id})

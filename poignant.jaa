@@ -31,7 +31,7 @@ LotteryTicket: {
 #   end
 # end
 
-WishScanner : {
+WishScanner: {
   scan_for_a_wish: =>
     wish: this.read().detect( thought => thought.index('wish: ') is 0. )
     wish.replace('wish: ', '').
@@ -100,7 +100,6 @@ Creature : {
     if enemy.life > 0
       enemy_hit: Math.rand( enemy.strength + enemy.weapon )
       puts( "[Your enemy hit with " + enemy_hit + "points of damage!]" )
-      this.hit( enemy_hit ).
-    this.
+      this.hit( enemy_hit )..
 
 }

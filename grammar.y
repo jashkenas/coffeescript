@@ -2,15 +2,12 @@ class Parser
 
 # Declare tokens produced by the lexer
 token IF ELSE THEN
-token NEWLINE
-token NUMBER
-token STRING
-token REGEX
+token NUMBER STRING REGEX
 token TRUE FALSE NULL
 token IDENTIFIER PROPERTY_ACCESS
-token CODE PARAM
-token NEW RETURN
+token CODE PARAM NEW RETURN
 token TRY CATCH FINALLY THROW
+token NEWLINE
 
 prechigh
   nonassoc UMINUS NOT '!'
@@ -59,6 +56,7 @@ rule
   | Operation
   | If
   | Try
+  | Throw
   | Return
   ;
 
@@ -80,7 +78,7 @@ rule
 
   # Assign to a variable
   Assign:
-    Value ":" Expression           { result = AssignNode.new(val[0], val[2]) }
+    Value ":" Expression              { result = AssignNode.new(val[0], val[2]) }
   ;
 
   # Assignment within an object literal.
@@ -215,9 +213,16 @@ rule
 
   Try:
     TRY Expressions CATCH IDENTIFIER
-      Terminator Expressions "."      { result = TryNode.new(val[1], val[3], val[5]) }
-  | TRY Expression CATCH IDENTIFIER
-      THEN Expression "."             { result = TryNode.new(val[1], val[3], val[5]) }
+      Expressions "."                 { result = TryNode.new(val[1], val[3], val[4]) }
+  | TRY Expressions FINALLY
+      Expressions "."                 { result = TryNode.new(val[1], nil, nil, val[3]) }
+  | TRY Expressions CATCH IDENTIFIER
+      Expressions
+      FINALLY Expressions "."         { result = TryNode.new(val[1], val[3], val[4], val[6]) }
+  ;
+
+  Throw:
+    THROW Expression                  { result = ThrowNode.new(val[1]) }
   ;
 
   Parenthetical:
