@@ -37,7 +37,8 @@ exponents : [x => x., x => x * x., x => x * x * x.]
 # Conditionals and ternaries.
 if submarine.shields_up
   full_speed_ahead()
-  weapons.fire_torpedos()
+# else if submarine.fully_loaded
+  fire_torpedos()
 else
   run_away().
 

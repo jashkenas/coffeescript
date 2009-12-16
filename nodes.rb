@@ -190,7 +190,7 @@ class AssignNode < Node
   end
 
   def compile(indent, scope, opts={})
-    value = @value.compile(indent, scope)
+    value = @value.compile(indent + TAB, scope)
     return "#{@variable}: #{value}" if @context == :object
     name = @variable.compile(indent, scope)
     return "#{name} = #{value}" if @variable.properties?
@@ -286,6 +286,11 @@ class IfNode < Node
     @body      = body && body.flatten
     @else_body = else_body && else_body.flatten
     @condition = OpNode.new("!", @condition) if tag == :invert
+  end
+
+  def <<(else_body)
+    @else_body = else_body && else_body.flatten
+    self
   end
 
   def statement?
