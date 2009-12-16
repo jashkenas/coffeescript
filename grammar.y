@@ -13,6 +13,7 @@ token SWITCH CASE DEFAULT
 token NEWLINE
 token JS
 
+# Declare order of operations (mostly taken from Ruby).
 prechigh
   nonassoc UMINUS NOT '!'
   left     '*' '/' '%'
@@ -21,22 +22,11 @@ prechigh
   right    '==' '!=' IS AINT
   left     '&&' '||' AND OR
   left     ':'
-  right    '-=' '+=' '/=' '*='
+  right    '-=' '+=' '/=' '*=' '||=' '&&='
   nonassoc IF
 preclow
 
 rule
-  # All rules are declared in this format:
-  #
-  #   RuleName:
-  #     OtherRule TOKEN AnotherRule    { code to run when this matches }
-  #   | OtherRule                      { ... }
-  #   ;
-  #
-  # In the code section (inside the {...} on the right):
-  # - Assign to "result" the value returned by the rule.
-  # - Use val[index of expression] to reference expressions on the left.
-
 
   # All parsing will end in this rule, being the trunk of the AST.
   Root:
