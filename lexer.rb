@@ -6,7 +6,8 @@ class Lexer
                 "new", "return",
                 "try", "catch", "finally", "throw",
                 "break", "continue",
-                "for", "in", "while"]
+                "for", "in", "while",
+                "switch", "case", "default"]
 
   IDENTIFIER = /\A([a-zA-Z$_]\w*)/
   NUMBER     = /\A([0-9]+(\.[0-9]+)?)/

@@ -35,6 +35,7 @@ class Node
   # Tabs are two spaces for pretty-printing.
   TAB = '  '
 
+  def flatten;          self;   end
   def line_ending;      ';';    end
   def statement?;       false;  end
   def custom_return?;   false;  end
@@ -280,7 +281,7 @@ end
 # "if-else" control structure. Look at this node if you want to implement other control
 # structures like while, for, loop, etc.
 class IfNode < Node
-  FORCE_STATEMENT = [Nodes, ReturnNode, AssignNode]
+  FORCE_STATEMENT = [Nodes, ReturnNode, AssignNode, IfNode]
 
   def initialize(condition, body, else_body=nil, tag=nil)
     @condition = condition
@@ -290,8 +291,26 @@ class IfNode < Node
   end
 
   def <<(else_body)
-    @else_body = else_body && else_body.flatten
+    eb = else_body.flatten
+    @else_body ? @else_body << eb : @else_body = eb
     self
+  end
+
+  # Rewrite a chain of IfNodes with their switch condition for equality.
+  def rewrite_condition(expression)
+    @condition = OpNode.new("is", expression, @condition)
+    @else_body.rewrite_condition(expression) if chain?
+    self
+  end
+
+  # Rewrite a chain of IfNodes to add a default case as the final else.
+  def add_default(expressions)
+    chain? ? @else_body.add_default(expressions) : @else_body = expressions
+    self
+  end
+
+  def chain?
+    @chain ||= @else_body && @else_body.is_a?(IfNode)
   end
 
   def statement?

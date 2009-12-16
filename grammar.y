@@ -9,6 +9,7 @@ token CODE PARAM NEW RETURN
 token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
 token FOR IN WHILE
+token SWITCH CASE DEFAULT
 token NEWLINE
 token JS
 
@@ -66,6 +67,7 @@ rule
   | Return
   | While
   | For
+  | Switch
   ;
 
   # All tokens that can terminate an expression
@@ -258,6 +260,22 @@ rule
       IDENTIFIER "," IDENTIFIER
       IN Expression
       IF Expression "."               { result = ForNode.new(IfNode.new(val[8], Nodes.new([val[0]])), val[6], val[2], val[4]) }
+  ;
+
+  Switch:
+    SWITCH Expression Then
+      Cases "."                       { result = val[3].rewrite_condition(val[1]) }
+  | SWITCH Expression Then
+      Cases DEFAULT Expressions "."   { result = val[3].rewrite_condition(val[1]).add_default(val[5]) }
+  ;
+
+  Cases:
+    Case                              { result = val[0] }
+  | Cases Case                        { result = val[0] << val[1] }
+  ;
+
+  Case:
+    CASE Expression Then Expressions  { result = IfNode.new(val[1], val[3]) }
   ;
 
   ObjectStart:

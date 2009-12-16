@@ -1,5 +1,4 @@
-# TODO: switch/case statements
-# Think of a name for this crazy thing.
+# TODO: Think of a name for this crazy thing.
 
 # Functions:
 square: x => x * x.
@@ -100,3 +99,14 @@ b: 20
 supper: food.capitalize() for food in ['toast', 'cheese', 'wine'].
 
 drink(bottle) for bottle, i in ['soda', 'wine', 'lemonade'] if even(i).
+
+# Switch statements.
+switch day
+case "Tuesday"   then eat_breakfast()
+case "Sunday"    then go_to_church()
+case "Saturday"  then go_to_the_park().
+case "Wednesday"
+  eat_breakfast()
+  go_to_work()
+  eat_dinner()
+default go_to_work().
