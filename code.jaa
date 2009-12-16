@@ -104,7 +104,7 @@ drink(bottle) for bottle, i in ['soda', 'wine', 'lemonade'] if even(i).
 switch day
 case "Tuesday"   then eat_breakfast()
 case "Sunday"    then go_to_church()
-case "Saturday"  then go_to_the_park().
+case "Saturday"  then go_to_the_park()
 case "Wednesday"
   eat_breakfast()
   go_to_work()
