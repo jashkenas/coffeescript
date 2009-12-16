@@ -24,7 +24,13 @@ prechigh
   left     ':'
   right    '-=' '+=' '/=' '*=' '||=' '&&='
   nonassoc IF
+  left     UNLESS
+  right    RETURN THROW FOR WHILE
 preclow
+
+# We expect 10 shift/reduce errors for optional syntax.
+# There used to be 252 -- greatly improved.
+expect 10
 
 rule
 
