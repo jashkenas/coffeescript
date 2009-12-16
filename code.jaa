@@ -1,5 +1,4 @@
 # TODO: switch/case statements
-# Make array comprehensions expressions. (return the computed array).
 # Make arbitrary-length if else if else if chains possible.
 # Think of a name for this crazy thing.
 
@@ -37,7 +36,6 @@ exponents : [x => x., x => x * x., x => x * x * x.]
 # Conditionals and ternaries.
 if submarine.shields_up
   full_speed_ahead()
-# else if submarine.fully_loaded
   fire_torpedos()
 else
   run_away().
@@ -100,7 +98,6 @@ change_a_and_set_b: =>
 b: 20
 
 # Array comprehensions.
-print(food.capitalize()) for food in ['toast', 'wine', 'cheese'].
+supper: food.capitalize() for food in ['toast', 'cheese', 'wine'].
 
-cooler: ['soda', 'wine', 'lemonade']
-drink(bottle) for bottle, i in cooler if even(i).
+drink(bottle) for bottle, i in ['soda', 'wine', 'lemonade'] if even(i).

@@ -36,10 +36,9 @@ class Node
   TAB = '  '
 
   def line_ending;      ';';    end
-
   def statement?;       false;  end
-
-  def custom_return?;   false;   end
+  def custom_return?;   false;  end
+  def custom_assign?;   false;  end
 
   def compile(indent='', scope=nil, opts={}); end
 end
@@ -196,8 +195,10 @@ class AssignNode < Node
     return "#{name} = #{value}" if @variable.properties?
     defined = scope.find(name)
     postfix = !defined && opts[:return] ? ";\n#{indent}return #{name}" : ''
-    name = "var #{name}" if !defined
-    "#{name} = #{@value.compile(indent, scope)}#{postfix}"
+    def_part = defined ? "" : "var #{name};\n#{indent}"
+    return def_part + @value.compile(indent, scope, opts.merge(:assign => name)) if @value.custom_assign?
+    def_part = defined ? name : "var #{name}"
+    "#{def_part} = #{@value.compile(indent, scope)}#{postfix}"
   end
 end
 
@@ -346,7 +347,11 @@ class ForNode < Node
     ''
   end
 
-  def statement?
+  def custom_return?
+    true
+  end
+
+  def custom_assign?
     true
   end
 
@@ -360,7 +365,22 @@ class ForNode < Node
     for_part    = "var #{ivar}=0, #{lvar}=#{svar}.length; #{ivar}<#{lvar}; #{ivar}++"
     var_part    = "\n#{indent + TAB}#{name_part} = #{svar}[#{ivar}];\n"
     index_part  = @index ? "#{indent + TAB}#{index_name} = #{ivar};\n" : ''
-    "#{source_part}\n#{indent}for (#{for_part}) {#{var_part}#{index_part}#{indent + TAB}#{@body.compile(indent + TAB, scope)};\n#{indent}}"
+
+    set_result    = ''
+    save_result   = ''
+    return_result = ''
+    if opts[:return] || opts[:assign]
+      rvar          = scope.free_variable
+      set_result    = "var #{rvar} = [];\n#{indent}"
+      save_result   = "#{rvar}[#{ivar}] = "
+      return_result = rvar
+      return_result = "#{opts[:assign]} = #{return_result}" if opts[:assign]
+      return_result = "return #{return_result}" if opts[:return]
+      return_result = "\n#{indent}#{return_result}"
+    end
+
+    body = @body.compile(indent + TAB, scope)
+    "#{source_part}\n#{indent}#{set_result}for (#{for_part}) {#{var_part}#{index_part}#{indent + TAB}#{save_result}#{body};\n#{indent}}#{return_result}"
   end
 end
 
