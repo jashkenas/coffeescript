@@ -18,7 +18,7 @@ class Lexer
   NEWLINE    = /\A([\r\n]+)/
   COMMENT    = /\A(#[^\r\n]*)/
   CODE       = /\A(=>)/
-  REGEX      = /\A(\/(.*?)\/[imgy]{0,4})/
+  REGEX      = /\A(\/(.*?)[^\\]\/[imgy]{0,4})/
 
   JS_CLEANER = /(\A`|`\Z)/
   MULTILINER = /[\r\n]/
