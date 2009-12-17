@@ -245,8 +245,10 @@ class CodeNode < Node
   end
 
   def compile(indent, scope, opts={})
-    opts = opts.merge(:return => true)
-    code = @body.compile(indent + TAB, Scope.new(scope), opts)
+    scope = Scope.new(scope)
+    @params.each {|id| scope.find(id) }
+    opts  = opts.merge(:return => true)
+    code  = @body.compile(indent + TAB, scope, opts)
     "function(#{@params.join(', ')}) {\n#{code}\n#{indent}}"
   end
 end
@@ -270,66 +272,6 @@ class ArrayNode < Node
   def compile(indent, scope, opts={})
     objects = @objects.map {|o| o.compile(indent, scope) }.join(', ')
     "[#{objects}]"
-  end
-end
-
-# "if-else" control structure. Look at this node if you want to implement other control
-# structures like while, for, loop, etc.
-class IfNode < Node
-  FORCE_STATEMENT = [Nodes, ReturnNode, AssignNode, IfNode]
-
-  def initialize(condition, body, else_body=nil, tag=nil)
-    @condition = condition
-    @body      = body && body.flatten
-    @else_body = else_body && else_body.flatten
-    @condition = OpNode.new("!", @condition) if tag == :invert
-  end
-
-  def <<(else_body)
-    eb = else_body.flatten
-    @else_body ? @else_body << eb : @else_body = eb
-    self
-  end
-
-  # Rewrite a chain of IfNodes with their switch condition for equality.
-  def rewrite_condition(expression)
-    @condition = OpNode.new("is", expression, @condition)
-    @else_body.rewrite_condition(expression) if chain?
-    self
-  end
-
-  # Rewrite a chain of IfNodes to add a default case as the final else.
-  def add_default(expressions)
-    chain? ? @else_body.add_default(expressions) : @else_body = expressions
-    self
-  end
-
-  def chain?
-    @chain ||= @else_body && @else_body.is_a?(IfNode)
-  end
-
-  def statement?
-    @is_statement ||= (FORCE_STATEMENT.include?(@body.class) || FORCE_STATEMENT.include?(@else_body.class))
-  end
-
-  def line_ending
-    statement? ? '' : ';'
-  end
-
-  def compile(indent, scope, opts={})
-    statement? ? compile_statement(indent, scope, opts) : compile_ternary(indent, scope)
-  end
-
-  def compile_statement(indent, scope, opts)
-    if_part   = "if (#{@condition.compile(indent, scope, :no_paren => true)}) {\n#{Nodes.wrap(@body).compile(indent + TAB, scope, opts)}\n#{indent}}"
-    else_part = @else_body ? " else {\n#{Nodes.wrap(@else_body).compile(indent + TAB, scope, opts)}\n#{indent}}" : ''
-    if_part + else_part
-  end
-
-  def compile_ternary(indent, scope)
-    if_part   = "#{@condition.compile(indent, scope)} ? #{@body.compile(indent, scope)}"
-    else_part = @else_body ? "#{@else_body.compile(indent, scope)}" : 'null'
-    "#{if_part} : #{else_part}"
   end
 end
 
@@ -366,6 +308,10 @@ class ForNode < Node
   end
 
   def custom_assign?
+    true
+  end
+
+  def statement?
     true
   end
 
@@ -437,5 +383,65 @@ class ParentheticalNode < Node
     compiled = @expressions.flatten.compile(indent, scope)
     compiled = compiled[0...-1] if compiled[-1..-1] == ';'
     opts[:no_paren] ? compiled : "(#{compiled})"
+  end
+end
+
+# "if-else" control structure. Look at this node if you want to implement other control
+# structures like while, for, loop, etc.
+class IfNode < Node
+  FORCE_STATEMENT = [Nodes, ReturnNode, AssignNode, IfNode, ForNode, ThrowNode, WhileNode]
+
+  def initialize(condition, body, else_body=nil, tag=nil)
+    @condition = condition
+    @body      = body && body.flatten
+    @else_body = else_body && else_body.flatten
+    @condition = OpNode.new("!", @condition) if tag == :invert
+  end
+
+  def <<(else_body)
+    eb = else_body.flatten
+    @else_body ? @else_body << eb : @else_body = eb
+    self
+  end
+
+  # Rewrite a chain of IfNodes with their switch condition for equality.
+  def rewrite_condition(expression)
+    @condition = OpNode.new("is", expression, @condition)
+    @else_body.rewrite_condition(expression) if chain?
+    self
+  end
+
+  # Rewrite a chain of IfNodes to add a default case as the final else.
+  def add_default(expressions)
+    chain? ? @else_body.add_default(expressions) : @else_body = expressions
+    self
+  end
+
+  def chain?
+    @chain ||= @else_body && @else_body.is_a?(IfNode)
+  end
+
+  def statement?
+    @is_statement ||= (FORCE_STATEMENT.include?(@body.class) || FORCE_STATEMENT.include?(@else_body.class))
+  end
+
+  def line_ending
+    statement? ? '' : ';'
+  end
+
+  def compile(indent, scope, opts={})
+    statement? ? compile_statement(indent, scope, opts) : compile_ternary(indent, scope)
+  end
+
+  def compile_statement(indent, scope, opts)
+    if_part   = "if (#{@condition.compile(indent, scope, :no_paren => true)}) {\n#{Nodes.wrap(@body).compile(indent + TAB, scope, opts)}\n#{indent}}"
+    else_part = @else_body ? " else {\n#{Nodes.wrap(@else_body).compile(indent + TAB, scope, opts)}\n#{indent}}" : ''
+    if_part + else_part
+  end
+
+  def compile_ternary(indent, scope)
+    if_part   = "#{@condition.compile(indent, scope)} ? #{@body.compile(indent, scope)}"
+    else_part = @else_body ? "#{@else_body.compile(indent, scope)}" : 'null'
+    "#{if_part} : #{else_part}"
   end
 end
