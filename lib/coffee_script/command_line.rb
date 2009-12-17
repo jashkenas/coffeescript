@@ -31,7 +31,7 @@ Usage:
     def compile_javascript
       @sources.each do |source|
         next tokens(source) if @options[:tokens]
-        contents = CoffeeScript.compile(File.open(source))
+        contents = compile(source)
         next puts(contents) if @options[:print]
         next lint(contents) if @options[:lint]
         File.open(path_for(source), 'w+') {|f| f.write(contents) }
@@ -58,6 +58,15 @@ Usage:
 
     def tokens(source)
       puts Lexer.new.tokenize(File.read(source)).inspect
+    end
+
+    def compile(source)
+      begin
+        CoffeeScript.compile(File.open(source))
+      rescue CoffeeScript::ParseError => e
+        STDERR.puts e.message(source)
+        exit(1)
+      end
     end
 
     # Write out JavaScript alongside CoffeeScript unless an output directory
