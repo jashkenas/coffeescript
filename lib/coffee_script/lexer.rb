@@ -11,7 +11,7 @@ class Lexer
 
   IDENTIFIER = /\A([a-zA-Z$_]\w*)/
   NUMBER     = /\A([0-9]+(\.[0-9]+)?)/
-  STRING     = /\A("(.*?)"|'(.*?)')/m
+  STRING     = /\A("(.*?)[^\\]"|'(.*?)[^\\]')/m
   JS         = /\A(`(.*?)`)/
   OPERATOR   = /\A([+\*&|\/\-%=<>]+)/
   WHITESPACE = /\A([ \t\r]+)/
