@@ -30,6 +30,7 @@ Usage:
 
     def compile_javascript
       @sources.each do |source|
+        next tokens(source) if @options[:tokens]
         contents = CoffeeScript.compile(File.open(source))
         next puts(contents) if @options[:print]
         next lint(contents) if @options[:lint]
@@ -55,6 +56,10 @@ Usage:
       stdout.close and stderr.close
     end
 
+    def tokens(source)
+      puts Lexer.new.tokenize(File.read(source)).inspect
+    end
+
     # Write out JavaScript alongside CoffeeScript unless an output directory
     # is specified.
     def path_for(source)
@@ -75,6 +80,9 @@ Usage:
         end
         opts.on('-l', '--lint', 'pipe the compiled javascript through JSLint') do |l|
           @options[:lint] = true
+        end
+        opts.on('-t', '--tokens', 'print the tokens that the lexer produces') do |t|
+          @options[:tokens] = true
         end
         opts.on_tail('-v', '--version', 'display coffee-script version') do
           puts "coffee-script version #{CoffeeScript::VERSION}"

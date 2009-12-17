@@ -11,7 +11,7 @@ class Lexer
 
   IDENTIFIER = /\A([a-zA-Z$_]\w*)/
   NUMBER     = /\A([0-9]+(\.[0-9]+)?)/
-  STRING     = /\A("(.*?)"|'(.*?)')/
+  STRING     = /\A("(.*?)"|'(.*?)')/m
   JS         = /\A(`(.*?)`)/
   OPERATOR   = /\A([+\*&|\/\-%=<>]+)/
   WHITESPACE = /\A([ \t\r]+)/
@@ -21,6 +21,7 @@ class Lexer
   REGEX      = /\A(\/(.*?)\/[imgy]{0,4})/
 
   JS_CLEANER = /(\A`|`\Z)/
+  MULTILINER = /[\r\n]/
 
   EXP_START  = ['{', '(', '[']
   EXP_END    = ['}', ')', ']']
@@ -71,7 +72,7 @@ class Lexer
 
   def string_token
     return false unless string = @chunk[STRING, 1]
-    @tokens << [:STRING, string]
+    @tokens << [:STRING, string.gsub(MULTILINER, "\\\n")]
     @i += string.length
   end
 
