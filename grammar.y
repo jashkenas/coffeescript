@@ -29,9 +29,9 @@ prechigh
   nonassoc "."
 preclow
 
-# We expect 8 shift/reduce errors for optional syntax.
+# We expect 3 shift/reduce errors for optional syntax.
 # There used to be 252 -- greatly improved.
-expect 8
+expect 3
 
 rule
 
@@ -177,8 +177,8 @@ rule
   ;
 
   Object:
-    ObjectStart ObjectEnd             { result = ObjectNode.new([]) }
-  | ObjectStart AssignList ObjectEnd  { result = ObjectNode.new(val[1]) }
+    "{" "}"                           { result = ObjectNode.new([]) }
+  | "{" AssignList "}"                { result = ObjectNode.new(val[1]) }
   ;
 
   AssignList:
@@ -195,12 +195,12 @@ rule
   ;
 
   Invocation:
-    Value ParenStart ArgList ParenEnd { result = CallNode.new(val[0], val[2]) }
+    Value "(" ArgList ")"             { result = CallNode.new(val[0], val[2]) }
   ;
 
   # An Array.
   Array:
-    ArrayStart ArgList ArrayEnd       { result = ArrayNode.new(val[1]) }
+    "[" ArgList "]"                   { result = ArrayNode.new(val[1]) }
   ;
 
   # A list of arguments to a method call.
@@ -236,7 +236,7 @@ rule
   ;
 
   Parenthetical:
-    ParenStart Expressions ParenEnd   { result = ParentheticalNode.new(val[1]) }
+    "(" Expressions ")"               { result = ParentheticalNode.new(val[1]) }
   ;
 
   While:
@@ -273,36 +273,6 @@ rule
 
   Case:
     CASE Expression Then Expressions  { result = IfNode.new(val[1], val[3]) }
-  ;
-
-  ObjectStart:
-    "{"                               { result = nil }
-  | "{" "\n"                          { result = nil }
-  ;
-
-  ObjectEnd:
-    "}"                               { result = nil }
-  | "\n" "}"                          { result = nil }
-  ;
-
-  ParenStart:
-    "("                               { result = nil }
-  | "(" "\n"                          { result = nil }
-  ;
-
-  ParenEnd:
-    ")"                               { result = nil }
-  | "\n" ")"                          { result = nil }
-  ;
-
-  ArrayStart:
-    "["                               { result = nil }
-  | "[" "\n"                          { result = nil }
-  ;
-
-  ArrayEnd:
-    "]"                               { result = nil }
-  | "\n" "]"                          { result = nil }
   ;
 
 end

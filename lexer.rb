@@ -22,6 +22,9 @@ class Lexer
 
   JS_CLEANER = /(\A`|`\Z)/
 
+  EXP_START  = ['{', '(', '[']
+  EXP_END    = ['}', ')', ']']
+
   # This is how to implement a very simple scanner.
   # Scan one caracter at the time until you find something to parse.
   def tokenize(code)
@@ -107,6 +110,8 @@ class Lexer
     value = @chunk[OPERATOR, 1]
     tag_parameters if value && value.match(CODE)
     value ||= @chunk[0,1]
+    skip_following_newlines if EXP_START.include?(value)
+    remove_leading_newlines if EXP_END.include?(value)
     @tokens << [value, value]
     @i += value.length
   end
@@ -121,6 +126,15 @@ class Lexer
       return if tok[0] != :IDENTIFIER
       tok[0] = :PARAM
     end
+  end
+
+  def skip_following_newlines
+    newlines = @code[(@i+1)..-1][NEWLINE, 1]
+    @i += newlines.length if newlines
+  end
+
+  def remove_leading_newlines
+    @tokens.pop if @tokens.last[1] == "\n"
   end
 
 end

@@ -1,29 +1,34 @@
 # TODO: Add range indexing: array[5..7] => array.slice(5, 7)
 
 # Functions:
-square: x => x * x.
+# square: x => x * x.
+#
+# sum: x, y => x + y.
+#
+# odd: x => x % 2 is 0.
+#
+# even: x => x % 2 aint 0.
+#
+# run_loop: =>
+#   fire_events( e => e.stopPropagation(). )
+#   listen()
+#   wait().
+#
+# # Objects:
+# dense_object_literal: {one: 1, two: 2, three: 3}
 
-sum: x, y => x + y.
+spaced_out_multiline_object: {
 
-odd: x => x % 2 is 0.
-
-even: x => x % 2 aint 0.
-
-run_loop: =>
-  fire_events( e => e.stopPropagation(). )
-  listen()
-  wait().
-
-# Objects:
-object_literal: {one: 1, two: 2, three: 3}
-
-multiline_object: {
   pi: 3.14159
+
   list: [1, 2, 3, 4]
+
   three: new Idea()
+
   inner_obj: {
     freedom: => _.freedom().
   }
+
 }
 
 # Arrays:
