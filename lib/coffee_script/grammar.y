@@ -10,6 +10,7 @@ token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
 token FOR IN WHILE
 token SWITCH CASE DEFAULT
+token SUPER
 token NEWLINE
 token JS
 
@@ -149,9 +150,15 @@ rule
 
   # Method definition
   Code:
-    ParamList "=>" Expressions "."    { result = CodeNode.new(val[0], val[2]) }
-  | "=>" Expressions "."              { result = CodeNode.new([], val[1]) }
+    ParamList "=>" CodeBody "."       { result = CodeNode.new(val[0], val[2]) }
+  | "=>" CodeBody "."                 { result = CodeNode.new([], val[1]) }
   ;
+
+  CodeBody:
+    /* nothing */                     { result = Nodes.new([]) }
+  | Expressions                       { result = val[0] }
+  ;
+
 
   ParamList:
     PARAM                             { result = val }
@@ -196,10 +203,15 @@ rule
   Call:
     Invocation                        { result = val[0] }
   | NEW Invocation                    { result = val[1].new_instance }
+  | Super                             { result = val[0] }
   ;
 
   Invocation:
     Value "(" ArgList ")"             { result = CallNode.new(val[0], val[2]) }
+  ;
+
+  Super:
+    SUPER "(" ArgList ")"             { result = CallNode.new(:super, val[2]) }
   ;
 
   # An Array.
