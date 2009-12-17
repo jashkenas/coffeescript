@@ -8,15 +8,18 @@ require 'racc/parser.rb'
 class Parser < Racc::Parser
 
 module_eval(<<'...end grammar.y/module_eval...', 'grammar.y', 297)
-  def parse(code, show_tokens=false)
+  def parse(code)
     # @yydebug = true
     @tokens = Lexer.new.tokenize(code)
-    puts @tokens.inspect if show_tokens
     do_parse
   end
 
   def next_token
     @tokens.shift
+  end
+
+  def on_error(error_token_id, error_value, value_stack)
+    raise CoffeeScript::ParseError.new(token_to_str(error_token_id), error_value, value_stack)
   end
 ...end grammar.y/module_eval...
 ##### State transition tables begin ###

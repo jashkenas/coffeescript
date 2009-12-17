@@ -1,7 +1,5 @@
 TODO:
 
-* Need *way* better syntax errors.
-
 * Is it possible to close blocks (functions, ifs, trys) without an explicit
   block delimiter or significant whitespace?
   
