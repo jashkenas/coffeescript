@@ -32,6 +32,7 @@ class Lexer
   def tokenize(code)
     @code = code.chomp    # Cleanup code by remove extra line breaks
     @i = 0                # Current character position we're parsing
+    @line = 1             # The current line.
     @tokens = []          # Collection of all parsed tokens in the form [:TOKEN_TYPE, value]
     while @i < @code.length
       @chunk = @code[@i..-1]
@@ -57,35 +58,37 @@ class Lexer
     # Keywords are special identifiers tagged with their own name, 'if' will result
     # in an [:IF, "if"] token
     tag = KEYWORDS.include?(identifier) ? identifier.upcase.to_sym : :IDENTIFIER
-    if tag == :IDENTIFIER && @tokens[-1] && @tokens[-1][1] == '.'
-      @tokens[-1] = [:PROPERTY_ACCESS, '.']
-    end
-    @tokens << [tag, identifier]
+    @tokens[-1][0] = :PROPERTY_ACCESS if tag == :IDENTIFIER && last_value == '.'
+    token(tag, identifier)
     @i += identifier.length
   end
 
   def number_token
     return false unless number = @chunk[NUMBER, 1]
     float = number.include?('.')
-    @tokens << [:NUMBER, float ? number.to_f : number.to_i]
+    token(:NUMBER, float ? number.to_f : number.to_i)
     @i += number.length
   end
 
   def string_token
     return false unless string = @chunk[STRING, 1]
-    @tokens << [:STRING, string.gsub(MULTILINER, "\\\n")]
+    escaped = string.gsub(MULTILINER) do |match|
+      @line += 1
+      "\\\n"
+    end
+    token(:STRING, escaped)
     @i += string.length
   end
 
   def js_token
     return false unless script = @chunk[JS, 1]
-    @tokens << [:JS, script.gsub(JS_CLEANER, '')]
+    token(:JS, script.gsub(JS_CLEANER, ''))
     @i += script.length
   end
 
   def regex_token
     return false unless regex = @chunk[REGEX, 1]
-    @tokens << [:REGEX, regex]
+    token(:REGEX, regex)
     @i += regex.length
   end
 
@@ -106,7 +109,8 @@ class Lexer
   def literal_token
     value = @chunk[NEWLINE, 1]
     if value
-      @tokens << ["\n", "\n"] unless @tokens.last && @tokens.last[0] == "\n"
+      @line += value.length
+      token("\n", "\n") unless last_value == "\n"
       return @i += value.length
     end
     value = @chunk[OPERATOR, 1]
@@ -114,8 +118,16 @@ class Lexer
     value ||= @chunk[0,1]
     skip_following_newlines if EXP_START.include?(value)
     remove_leading_newlines if EXP_END.include?(value)
-    @tokens << [value, value]
+    token(value, value)
     @i += value.length
+  end
+
+  def token(tag, value)
+    @tokens << [tag, value]
+  end
+
+  def last_value
+    @tokens.last && @tokens.last[1]
   end
 
   # The main source of ambiguity in our grammar was Parameter lists (as opposed
@@ -132,11 +144,14 @@ class Lexer
 
   def skip_following_newlines
     newlines = @code[(@i+1)..-1][NEWLINE, 1]
-    @i += newlines.length if newlines
+    if newlines
+      @line += newlines.length
+      @i += newlines.length
+    end
   end
 
   def remove_leading_newlines
-    @tokens.pop if @tokens.last[1] == "\n"
+    @tokens.pop if last_value == "\n"
   end
 
 end

@@ -1,7 +1,5 @@
 TODO:
 
-* Super in methods. (reserve it).
-
 * Need *way* better syntax errors.
 
 * Is it possible to close blocks (functions, ifs, trys) without an explicit
