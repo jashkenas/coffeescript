@@ -123,7 +123,7 @@ class Lexer
   end
 
   def token(tag, value)
-    @tokens << [tag, value]
+    @tokens << [tag, Value.new(value, @line)]
   end
 
   def last_value

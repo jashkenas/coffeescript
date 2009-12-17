@@ -1,4 +1,6 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__))
+require "coffee_script/value"
+require "coffee_script/scope"
 require "coffee_script/lexer"
 require "coffee_script/parser"
 require "coffee_script/nodes"
