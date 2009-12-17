@@ -29,9 +29,9 @@ prechigh
   nonassoc "."
 preclow
 
-# We expect 3 shift/reduce errors for optional syntax.
+# We expect 2 shift/reduce errors for optional syntax.
 # There used to be 252 -- greatly improved.
-expect 3
+expect 2
 
 rule
 
@@ -42,7 +42,7 @@ rule
   | Expressions                       { result = val[0] }
   ;
 
-  # Any list of expressions or method body, seperated by line breaks.
+  # Any list of expressions or method body, seperated by line breaks or semis.
   Expressions:
     Expression                        { result = Nodes.new(val) }
   | Expressions Terminator Expression { result = val[0] << val[2] }
@@ -177,8 +177,7 @@ rule
   ;
 
   Object:
-    "{" "}"                           { result = ObjectNode.new([]) }
-  | "{" AssignList "}"                { result = ObjectNode.new(val[1]) }
+    "{" AssignList "}"                { result = ObjectNode.new(val[1]) }
   ;
 
   AssignList:
