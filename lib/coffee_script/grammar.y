@@ -24,9 +24,9 @@ prechigh
   left     '&&' '||' AND OR
   left     ':'
   right    '-=' '+=' '/=' '*=' '||=' '&&='
-  nonassoc IF
-  left     UNLESS
   right    RETURN THROW FOR WHILE
+  left     UNLESS
+  nonassoc IF
   nonassoc "."
 preclow
 
