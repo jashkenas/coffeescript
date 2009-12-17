@@ -281,10 +281,6 @@ rule
 
 end
 
----- header
-  require "lexer"
-  require "nodes"
-
 ---- inner
   def parse(code, show_tokens=false)
     # @yydebug = true

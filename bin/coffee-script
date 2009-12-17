@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require "#{File.dirname(__FILE__)}/../lib/coffee_script/command_line.rb"
+
+CoffeeScript::CommandLine.new
