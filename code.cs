@@ -1,4 +1,4 @@
-# TODO: Think of a name for this crazy thing.
+# TODO: Add range indexing: array[5..7] => array.slice(5, 7)
 
 # Functions:
 square: x => x * x.

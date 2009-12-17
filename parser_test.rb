@@ -2,9 +2,9 @@
 # With debugging and verbose: -v -g
 `racc -v -o parser.rb grammar.y`
 
-# Parse and print "code.jaa".
+# Parse and print the compiled CoffeeScript source.
 require "parser.rb"
-js = Parser.new.parse(File.read('code.jaa')).compile
+js = Parser.new.parse(File.read('code.cs')).compile
 puts "\n\n"
 puts js
 
