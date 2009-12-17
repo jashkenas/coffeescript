@@ -179,6 +179,16 @@ class IndexNode
   end
 end
 
+class SliceNode
+  def initialize(from, to)
+    @from, @to = from, to
+  end
+
+  def compile(indent, scope, opts={})
+    ".slice(#{@from.compile(indent, scope, opts)}, #{@to.compile(indent, scope, opts)} + 1)"
+  end
+end
+
 # Setting the value of a local variable.
 class AssignNode < Node
   def initialize(variable, value, context=nil)

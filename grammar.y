@@ -170,10 +170,15 @@ rule
   Accessor:
     PROPERTY_ACCESS IDENTIFIER        { result = AccessorNode.new(val[1]) }
   | Index                             { result = val[0] }
+  | Slice                             { result = val[0] }
   ;
 
   Index:
     "[" Expression "]"                { result = IndexNode.new(val[1]) }
+  ;
+
+  Slice:
+    "[" Expression "," Expression "]" { result = SliceNode.new(val[1], val[3]) }
   ;
 
   Object:

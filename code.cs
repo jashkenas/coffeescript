@@ -120,3 +120,7 @@ default go_to_work().
 
 # Semicolons can optionally be used instead of newlines.
 wednesday: => eat_breakfast(); go_to_work(); eat_dinner(); .
+
+# Array slice literals.
+zero_to_nine: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+three_to_six: zero_to_nine[3, 6]
