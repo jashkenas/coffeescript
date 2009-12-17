@@ -124,6 +124,6 @@ zero_to_nine: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 three_to_six: zero_to_nine[3, 6]
 
 # Multiline strings.
-story: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit,
+story: "Lorem ips\"um dolor sit amet, consectetuer adipiscing elit,
 sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna
 aliquam erat volutpat. Ut wisi enim ad."
