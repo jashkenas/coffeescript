@@ -21,6 +21,8 @@ spaced_out_multiline_object: {
 
   list: [1, 2, 3, 4]
 
+  regex: /match[ing](every|thing|\/)/gi
+
   three: new Idea()
 
   inner_obj: {
