@@ -129,3 +129,11 @@ three_to_six: zero_to_nine[3, 6]
 story: "Lorem ipsum dolor \"sit\" amet, consectetuer adipiscing elit,
 sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna
 aliquam erat volutpat. Ut wisi enim ad."
+
+# Calling super from an overridden method.
+Greeter: => .                                            # Create the parent object.
+Greeter.prototype.hello: name => alert('Hello ' + name). # Define a "hello" method.
+Exclaimer: name => this.name: name.                      # Create the child object.
+Exclaimer.prototype: new Greeter()                       # Set the child to inherit from the parent.
+Exclaimer.prototype.hello: => super(this.name + "!").    # The child's "hello" calls the parent's via "super".
+(new Exclaimer('Bob')).hello()                           # Run it.

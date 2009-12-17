@@ -122,6 +122,8 @@ end
 #   receiver.method(argument1, argument2)
 #
 class CallNode < Node
+  LEADING_DOT = /\A\./
+
   def initialize(variable, arguments=[])
     @variable, @arguments = variable, arguments
   end
@@ -131,14 +133,26 @@ class CallNode < Node
     self
   end
 
+  def super?
+    @variable == :super
+  end
+
   def compile(indent, scope, opts={})
     args = @arguments.map{|a| a.compile(indent, scope, :no_paren => true) }.join(', ')
+    return compile_super(args, indent, scope, opts) if super?
     prefix = @new ? "new " : ''
     "#{prefix}#{@variable.compile(indent, scope)}(#{args})"
+  end
+
+  def compile_super(args, indent, scope, opts)
+    methname = opts[:last_assign].sub(LEADING_DOT, '')
+    "this.constructor.prototype.#{methname}.call(this, #{args})"
   end
 end
 
 class ValueNode < Node
+  attr_reader :last
+
   def initialize(name, properties=[])
     @name, @properties = name, properties
   end
@@ -153,9 +167,11 @@ class ValueNode < Node
   end
 
   def compile(indent, scope, opts={})
-    [@name, @properties].flatten.map { |v|
+    parts = [@name, @properties].flatten.map do |v|
       v.respond_to?(:compile) ? v.compile(indent, scope) : v.to_s
-    }.join('')
+    end
+    @last = parts.last
+    parts.join('')
   end
 end
 
@@ -200,16 +216,18 @@ class AssignNode < Node
   end
 
   def compile(indent, scope, opts={})
-    value = @value.compile(indent + TAB, scope)
+    name      = @variable.compile(indent, scope) if @variable.respond_to?(:compile)
+    last      = @variable.respond_to?(:last) ? @variable.last : name
+    opts      = opts.merge({:assign => name, :last_assign => last})
+    value     = @value.compile(indent, scope, opts)
     return "#{@variable}: #{value}" if @context == :object
-    name = @variable.compile(indent, scope)
     return "#{name} = #{value}" if @variable.properties?
-    defined = scope.find(name)
-    postfix = !defined && opts[:return] ? ";\n#{indent}return #{name}" : ''
-    def_part = defined ? "" : "var #{name};\n#{indent}"
-    return def_part + @value.compile(indent, scope, opts.merge(:assign => name)) if @value.custom_assign?
-    def_part = defined ? name : "var #{name}"
-    "#{def_part} = #{@value.compile(indent, scope)}#{postfix}"
+    defined   = scope.find(name)
+    postfix   = !defined && opts[:return] ? ";\n#{indent}return #{name}" : ''
+    def_part  = defined ? "" : "var #{name};\n#{indent}"
+    return def_part + @value.compile(indent, scope, opts) if @value.custom_assign?
+    def_part  = defined ? name : "var #{name}"
+    "#{def_part} = #{@value.compile(indent, scope, opts)}#{postfix}"
   end
 end
 
@@ -260,7 +278,8 @@ class CodeNode < Node
   end
 
   def compile(indent, scope, opts={})
-    code = @body.compile(indent + TAB, Scope.new(scope), {:return => true})
+    opts = opts.merge(:return => true)
+    code = @body.compile(indent + TAB, Scope.new(scope), opts)
     "function(#{@params.join(', ')}) {\n#{code}\n#{indent}}"
   end
 end
