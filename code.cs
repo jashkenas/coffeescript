@@ -110,3 +110,6 @@ case "Wednesday"
   go_to_work()
   eat_dinner()
 default go_to_work().
+
+# Semicolons can optionally be used instead of newlines.
+wednesday: => eat_breakfast(); go_to_work(); eat_dinner(); .

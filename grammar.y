@@ -13,7 +13,7 @@ token SWITCH CASE DEFAULT
 token NEWLINE
 token JS
 
-# Declare order of operations (mostly taken from Ruby).
+# Declare order of operations.
 prechigh
   nonassoc UMINUS NOT '!'
   left     '*' '/' '%'
@@ -26,11 +26,12 @@ prechigh
   nonassoc IF
   left     UNLESS
   right    RETURN THROW FOR WHILE
+  nonassoc "."
 preclow
 
-# We expect 10 shift/reduce errors for optional syntax.
+# We expect 8 shift/reduce errors for optional syntax.
 # There used to be 252 -- greatly improved.
-expect 10
+expect 8
 
 rule
 

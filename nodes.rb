@@ -228,14 +228,13 @@ class OpNode < Node
   def compile(indent, scope, opts={})
     return compile_conditional(indent, scope) if CONDITIONALS.include?(@operator)
     return compile_unary(indent, scope) if unary?
-    op = "#{@first.compile(indent, scope)} #{@operator} #{@second.compile(indent, scope)}"
-    opts[:no_paren] ? op : "(#{op})"
+    "#{@first.compile(indent, scope)} #{@operator} #{@second.compile(indent, scope)}"
   end
 
   def compile_conditional(indent, scope)
     first, second = @first.compile(indent, scope), @second.compile(indent, scope)
     sym = @operator[0..1]
-    "(#{first} = #{first} #{sym} #{second})"
+    "#{first} = #{first} #{sym} #{second}"
   end
 
   def compile_unary(indent, scope)
