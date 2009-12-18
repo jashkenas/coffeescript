@@ -59,7 +59,7 @@ race: =>
   if tired then return sleep().
   race().
 
-# Conditional operators:
+# Conditional assignment:
 good ||= evil
 wine &&= cheese
 
@@ -143,11 +143,11 @@ Exclaimer.prototype.hello: => super(this.name + "!").    # The child's "hello" c
 (new Exclaimer('Bob')).hello()                           # Run it.
 
 # Numbers.
-a_googol: 1e100
-
-hex: 0xff0000
-
-negative: -1.0
+a_googol:   1e100
+hex:        0xff0000
+negative:   -1.0
+infinity:   Infinity
+nan:        NaN
 
 # Deleting.
 delete secret.identity

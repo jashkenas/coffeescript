@@ -98,24 +98,33 @@ Usage:
       File.join(dir, filename)
     end
 
+    def install_bundle
+      bundle_dir = File.expand_path('~/Library/Application Support/TextMate/Bundles/')
+      FileUtils.cp_r(File.dirname(__FILE__) + '/CoffeeScript.tmbundle', bundle_dir)
+    end
+
     def parse_options
       @options = {}
       @option_parser = OptionParser.new do |opts|
-        opts.on('-o', '--output [DIR]', 'set the directory for compiled javascript') do |d|
+        opts.on('-o', '--output [DIR]', 'set the directory for compiled JavaScript') do |d|
           @options[:output] = d
           FileUtils.mkdir_p(d) unless File.exists?(d)
         end
         opts.on('-w', '--watch', 'watch scripts for changes, and recompile') do |w|
           @options[:watch] = true
         end
-        opts.on('-p', '--print', 'print the compiled javascript to stdout') do |d|
+        opts.on('-p', '--print', 'print the compiled JavaScript to stdout') do |d|
           @options[:print] = true
         end
-        opts.on('-l', '--lint', 'pipe the compiled javascript through JSLint') do |l|
+        opts.on('-l', '--lint', 'pipe the compiled JavaScript through JSLint') do |l|
           @options[:lint] = true
         end
         opts.on('-t', '--tokens', 'print the tokens that the lexer produces') do |t|
           @options[:tokens] = true
+        end
+        opts.on_tail('--install-bundle', 'install the CoffeeScript TextMate bundle') do |i|
+          install_bundle
+          exit
         end
         opts.on_tail('-v', '--version', 'display coffee-script version') do
           puts "coffee-script version #{CoffeeScript::VERSION}"
