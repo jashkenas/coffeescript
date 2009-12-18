@@ -42,6 +42,8 @@ multiline: [
 if submarine.shields_up
   full_speed_ahead()
   fire_torpedos()
+else if submarine.sinking
+  abandon_ship()
 else
   run_away().
 

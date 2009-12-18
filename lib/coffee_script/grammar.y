@@ -27,8 +27,7 @@ prechigh
   right    '-=' '+=' '/=' '*=' '||=' '&&='
   right    DELETE
   right    RETURN THROW FOR WHILE
-  left     UNLESS
-  left     IF
+  left     UNLESS IF ELSE
   nonassoc "."
 preclow
 
@@ -238,17 +237,6 @@ rule
   | ArgList Terminator Expression     { result = val[0] << val[2] }
   ;
 
-  # If statements, including post-fix ifs and unlesses.
-  If:
-    IF Expression
-       Then Expressions "."           { result = IfNode.new(val[1], val[3]) }
-  | IF Expression
-       Then Expressions
-       ELSE Expressions "."           { result = IfNode.new(val[1], val[3], val[5]) }
-  | Expression IF Expression          { result = IfNode.new(val[2], Expressions.new([val[0]])) }
-  | Expression UNLESS Expression      { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, :invert) }
-  ;
-
   # Try/catch/finally exception handling blocks.
   Try:
     TRY Expressions CATCH IDENTIFIER
@@ -309,6 +297,41 @@ rule
   # An individual case.
   Case:
     CASE Expression Then Expressions  { result = IfNode.new(val[1], val[3]) }
+  ;
+
+  # All of the following nutso if-else destructuring is to make the
+  # grammar expand unambiguously.
+
+  # An elsif portion of an if-else block.
+  ElsIf:
+    ELSE IF Expression
+      Then Expressions                { result = IfNode.new(val[2], val[4]) }
+  ;
+
+  # Multiple elsifs can be chained together.
+  ElsIfs:
+    ElsIf                             { result = val[0] }
+  | ElsIfs ElsIf                      { result = val[0].add_else(val[1]) }
+  ;
+
+  # Terminating else bodies are strictly optional.
+  ElseBody
+    "."                               { result = nil }
+  | ELSE Expressions "."              { result = val[1] }
+  ;
+
+  # All the alternatives for ending an if-else block.
+  IfEnd:
+    ElseBody                          { result = val[0] }
+  | ElsIfs ElseBody                   { result = val[0].add_else(val[1]) }
+  ;
+
+  # The full complement of if blocks, including postfix one-liner ifs and unlesses.
+  If:
+    IF Expression
+      Then Expressions IfEnd          { result = IfNode.new(val[1], val[3], val[4]) }
+  | Expression IF Expression          { result = IfNode.new(val[2], Expressions.new([val[0]])) }
+  | Expression UNLESS Expression      { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, :invert) }
   ;
 
 end
