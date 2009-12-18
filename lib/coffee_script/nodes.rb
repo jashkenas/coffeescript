@@ -252,7 +252,8 @@ class OpNode < Node
   end
 
   def compile_unary(indent, scope)
-    "#{@operator}#{@first.compile(indent, scope)}"
+    space = @operator == 'delete' ? ' ' : ''
+    "#{@operator}#{space}#{@first.compile(indent, scope)}"
   end
 end
 

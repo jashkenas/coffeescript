@@ -148,3 +148,6 @@ a_googol: 1e100
 hex: 0xff0000
 
 negative: -1.0
+
+# Deleting.
+delete secret.identity

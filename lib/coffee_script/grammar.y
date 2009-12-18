@@ -11,6 +11,7 @@ token BREAK CONTINUE
 token FOR IN WHILE
 token SWITCH CASE
 token SUPER
+token DELETE
 token NEWLINE
 token JS
 
@@ -24,6 +25,7 @@ prechigh
   left     '&&' '||' AND OR
   left     ':'
   right    '-=' '+=' '/=' '*=' '||=' '&&='
+  right    DELETE
   right    RETURN THROW FOR WHILE
   left     UNLESS
   nonassoc IF
@@ -116,7 +118,6 @@ rule
   | '-' Expression = UMINUS           { result = OpNode.new(val[0], val[1]) }
   | NOT Expression                    { result = OpNode.new(val[0], val[1]) }
 
-
   | Expression '*' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '/' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '%' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
@@ -145,6 +146,8 @@ rule
   | Expression '*=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '||=' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '&&=' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
+
+  | DELETE Expression                 { result = OpNode.new(val[0], val[1]) }
   ;
 
 

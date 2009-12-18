@@ -8,7 +8,8 @@ class Lexer
                 "break", "continue",
                 "for", "in", "while",
                 "switch", "case",
-                "super"]
+                "super",
+                "delete"]
 
   IDENTIFIER = /\A([a-zA-Z$_]\w*)/
   NUMBER     = /\A\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?))\b/i
