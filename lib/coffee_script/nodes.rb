@@ -76,6 +76,7 @@ class ReturnNode < Node
   end
 
   def compile(indent, scope, opts={})
+    return @expression.compile(indent, scope, opts.merge(:return => true)) if @expression.custom_return?
     compiled = @expression.compile(indent, scope)
     @expression.statement? ? "#{compiled}\n#{indent}return null" : "return #{compiled}"
   end

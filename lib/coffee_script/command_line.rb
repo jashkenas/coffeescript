@@ -14,10 +14,14 @@ Usage:
   coffee-script path/to/script.cs
     EOS
 
+    WATCH_INTERVAL = 0.5
+
     def initialize
+      @mtimes = {}
       parse_options
       check_sources
-      compile_javascript
+      @sources.each {|source| compile_javascript(source) }
+      watch_coffee_scripts if @options[:watch]
     end
 
     def usage
@@ -28,14 +32,30 @@ Usage:
 
     private
 
-    def compile_javascript
-      @sources.each do |source|
-        next tokens(source) if @options[:tokens]
-        contents = compile(source)
-        next puts(contents) if @options[:print]
-        next lint(contents) if @options[:lint]
-        File.open(path_for(source), 'w+') {|f| f.write(contents) }
+    def compile_javascript(source)
+      return tokens(source) if @options[:tokens]
+      contents = compile(source)
+      return unless contents
+      return puts(contents) if @options[:print]
+      return lint(contents) if @options[:lint]
+      File.open(path_for(source), 'w+') {|f| f.write(contents) }
+    end
+
+    def watch_coffee_scripts
+      watch_thread = Thread.start do
+        loop do
+          @sources.each do |source|
+            mtime = File.stat(source).mtime
+            @mtimes[source] ||= mtime
+            if mtime > @mtimes[source]
+              @mtimes[source] = mtime
+              compile_javascript(source)
+            end
+          end
+          sleep WATCH_INTERVAL
+        end
       end
+      watch_thread.join
     end
 
     def check_sources
@@ -52,7 +72,7 @@ Usage:
       stdin, stdout, stderr = Open3.popen3('jsl -nologo -stdin')
       stdin.write(js)
       stdin.close
-      print stdout.read
+      puts stdout.read.tr("\n", '')
       stdout.close and stderr.close
     end
 
@@ -65,7 +85,8 @@ Usage:
         CoffeeScript.compile(File.open(source))
       rescue CoffeeScript::ParseError => e
         STDERR.puts e.message(source)
-        exit(1)
+        exit(1) unless @options[:watch]
+        nil
       end
     end
 
@@ -83,6 +104,9 @@ Usage:
         opts.on('-o', '--output [DIR]', 'set the directory for compiled javascript') do |d|
           @options[:output] = d
           FileUtils.mkdir_p(d) unless File.exists?(d)
+        end
+        opts.on('-w', '--watch', 'watch scripts for changes, and recompile') do |w|
+          @options[:watch] = true
         end
         opts.on('-p', '--print', 'print the compiled javascript to stdout') do |d|
           @options[:print] = true
