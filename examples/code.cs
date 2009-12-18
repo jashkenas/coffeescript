@@ -19,9 +19,7 @@ spaced_out_multiline_object: {
 
   pi: 3.14159
 
-  a_googol: 1e100
-
-  list: [-1, 0, 1, 2, 3, 4]
+  list: [1, 2, 3, 4]
 
   regex: /match[ing](every|thing|\/)/gi
 
@@ -139,3 +137,10 @@ Exclaimer: name => this.name: name.                      # Create the child obje
 Exclaimer.prototype: new Greeter()                       # Set the child to inherit from the parent.
 Exclaimer.prototype.hello: => super(this.name + "!").    # The child's "hello" calls the parent's via "super".
 (new Exclaimer('Bob')).hello()                           # Run it.
+
+# Numbers.
+a_googol: 1e100
+
+hex: 0xff0000
+
+negative: -1.0
