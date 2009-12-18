@@ -40,14 +40,14 @@ rule
 
   # All parsing will end in this rule, being the trunk of the AST.
   Root:
-    /* nothing */                     { result = Nodes.new([]) }
-  | Terminator                        { result = Nodes.new([]) }
+    /* nothing */                     { result = Expressions.new([]) }
+  | Terminator                        { result = Expressions.new([]) }
   | Expressions                       { result = val[0] }
   ;
 
   # Any list of expressions or method body, seperated by line breaks or semis.
   Expressions:
-    Expression                        { result = Nodes.new(val) }
+    Expression                        { result = Expressions.new(val) }
   | Expressions Terminator Expression { result = val[0] << val[2] }
   | Expressions Terminator            { result = val[0] }
   | Terminator Expressions            { result = val[1] }
@@ -158,7 +158,7 @@ rule
 
   # The body of a function.
   CodeBody:
-    /* nothing */                     { result = Nodes.new([]) }
+    /* nothing */                     { result = Expressions.new([]) }
   | Expressions                       { result = val[0] }
   ;
 
@@ -245,8 +245,8 @@ rule
   | IF Expression
        Then Expressions
        ELSE Expressions "."           { result = IfNode.new(val[1], val[3], val[5]) }
-  | Expression IF Expression          { result = IfNode.new(val[2], Nodes.new([val[0]])) }
-  | Expression UNLESS Expression      { result = IfNode.new(val[2], Nodes.new([val[0]]), nil, :invert) }
+  | Expression IF Expression          { result = IfNode.new(val[2], Expressions.new([val[0]])) }
+  | Expression UNLESS Expression      { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, :invert) }
   ;
 
   # Try/catch/finally exception handling blocks.
@@ -285,11 +285,11 @@ rule
       IN Expression "."               { result = ForNode.new(val[0], val[6], val[2], val[4]) }
   | Expression FOR IDENTIFIER
       IN Expression
-      IF Expression "."               { result = ForNode.new(IfNode.new(val[6], Nodes.new([val[0]])), val[4], val[2]) }
+      IF Expression "."               { result = ForNode.new(IfNode.new(val[6], Expressions.new([val[0]])), val[4], val[2]) }
   | Expression FOR
       IDENTIFIER "," IDENTIFIER
       IN Expression
-      IF Expression "."               { result = ForNode.new(IfNode.new(val[8], Nodes.new([val[0]])), val[6], val[2], val[4]) }
+      IF Expression "."               { result = ForNode.new(IfNode.new(val[8], Expressions.new([val[0]])), val[6], val[2], val[4]) }
   ;
 
   # Switch/Case blocks.
@@ -297,7 +297,7 @@ rule
     SWITCH Expression Then
       Cases "."                       { result = val[3].rewrite_condition(val[1]) }
   | SWITCH Expression Then
-      Cases ELSE Expressions "."   { result = val[3].rewrite_condition(val[1]).add_else(val[5]) }
+      Cases ELSE Expressions "."      { result = val[3].rewrite_condition(val[1]).add_else(val[5]) }
   ;
 
   # The inner list of cases.
