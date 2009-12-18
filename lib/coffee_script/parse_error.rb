@@ -1,5 +1,8 @@
 module CoffeeScript
 
+  # Racc will raise this Exception whenever a syntax error occurs. The main
+  # benefit over the Racc::ParseError is that the CoffeeScript::ParseError is
+  # line-number aware.
   class ParseError < Racc::ParseError
 
     def initialize(token_id, value, stack)

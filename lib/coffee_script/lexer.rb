@@ -1,7 +1,11 @@
 module CoffeeScript
 
+  # The lexer reads a stream of CoffeeScript and divvys it up into tagged
+  # tokens. A minor bit of the ambiguity in the grammar has been avoided by
+  # pushing some extra smarts into the Lexer.
   class Lexer
 
+    # The list of keywords passed verbatim to the parser.
     KEYWORDS   = ["if", "else", "then", "unless",
                   "true", "false", "null",
                   "and", "or", "is", "aint", "not",
@@ -13,6 +17,7 @@ module CoffeeScript
                   "super",
                   "delete"]
 
+    # Token matching regexes.
     IDENTIFIER = /\A([a-zA-Z$_]\w*)/
     NUMBER     = /\A\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?))\b/i
     STRING     = /\A("(.*?)[^\\]"|'(.*?)[^\\]')/m
@@ -24,19 +29,22 @@ module CoffeeScript
     CODE       = /\A(=>)/
     REGEX      = /\A(\/(.*?)[^\\]\/[imgy]{0,4})/
 
+    # Token cleaning regexes.
     JS_CLEANER = /(\A`|`\Z)/
     MULTILINER = /[\r\n]/
 
+    # Tokens that always constitute the start of an expression.
     EXP_START  = ['{', '(', '[']
+
+    # Tokens that always constitute the end of an expression.
     EXP_END    = ['}', ')', ']']
 
-    # This is how to implement a very simple scanner.
-    # Scan one caracter at the time until you find something to parse.
+    # Scan by attempting to match tokens one character at a time. Slow and steady.
     def tokenize(code)
-      @code = code.chomp    # Cleanup code by remove extra line breaks
-      @i = 0                # Current character position we're parsing
-      @line = 1             # The current line.
-      @tokens = []          # Collection of all parsed tokens in the form [:TOKEN_TYPE, value]
+      @code = code.chomp  # Cleanup code by remove extra line breaks
+      @i = 0              # Current character position we're parsing
+      @line = 1           # The current line.
+      @tokens = []        # Collection of all parsed tokens in the form [:TOKEN_TYPE, value]
       while @i < @code.length
         @chunk = @code[@i..-1]
         extract_next_token
@@ -44,6 +52,8 @@ module CoffeeScript
       @tokens
     end
 
+    # At every position, run this list of match attempts, short-circuiting if
+    # any of them succeed.
     def extract_next_token
       return if identifier_token
       return if number_token
@@ -55,7 +65,7 @@ module CoffeeScript
       return    literal_token
     end
 
-    # Matching if, print, method names, etc.
+    # Matches identifying literals: variables, keywords, method names, etc.
     def identifier_token
       return false unless identifier = @chunk[IDENTIFIER, 1]
       # Keywords are special identifiers tagged with their own name, 'if' will result
@@ -66,12 +76,14 @@ module CoffeeScript
       @i += identifier.length
     end
 
+    # Matches numbers, including decimals, hex, and exponential notation.
     def number_token
       return false unless number = @chunk[NUMBER, 1]
       token(:NUMBER, number)
       @i += number.length
     end
 
+    # Matches strings, including multi-line strings.
     def string_token
       return false unless string = @chunk[STRING, 1]
       escaped = string.gsub(MULTILINER) do |match|
@@ -82,24 +94,27 @@ module CoffeeScript
       @i += string.length
     end
 
+    # Matches interpolated JavaScript.
     def js_token
       return false unless script = @chunk[JS, 1]
       token(:JS, script.gsub(JS_CLEANER, ''))
       @i += script.length
     end
 
+    # Matches regular expression literals.
     def regex_token
       return false unless regex = @chunk[REGEX, 1]
       token(:REGEX, regex)
       @i += regex.length
     end
 
+    # Matches and consumes comments.
     def remove_comment
       return false unless comment = @chunk[COMMENT, 1]
       @i += comment.length
     end
 
-    # Ignore whitespace
+    # Matches and consumes non-meaningful whitespace.
     def whitespace_token
       return false unless whitespace = @chunk[WHITESPACE, 1]
       @i += whitespace.length
@@ -107,7 +122,7 @@ module CoffeeScript
 
     # We treat all other single characters as a token. Eg.: ( ) , . !
     # Multi-character operators are also literal tokens, so that Racc can assign
-    # the proper order of operations. Multiple newlines get merged.
+    # the proper order of operations. Multiple newlines get merged together.
     def literal_token
       value = @chunk[NEWLINE, 1]
       if value
@@ -124,16 +139,20 @@ module CoffeeScript
       @i += value.length
     end
 
+    # Add a token to the results, taking note of the line number for syntax
+    # errors later in the parse.
     def token(tag, value)
       @tokens << [tag, Value.new(value, @line)]
     end
 
+    # Peek at the previous token.
     def last_value
       @tokens.last && @tokens.last[1]
     end
 
-    # The main source of ambiguity in our grammar was Parameter lists (as opposed
-    # to argument lists in method calls). Tag parameter identifiers to avoid this.
+    # A source of ambiguity in our grammar was parameter lists in function
+    # definitions (as opposed to argument lists in function calls). Tag
+    # parameter identifiers in order to avoid this.
     def tag_parameters
       index = 0
       loop do
@@ -144,6 +163,7 @@ module CoffeeScript
       end
     end
 
+    # Consume and ignore newlines immediately after this point.
     def skip_following_newlines
       newlines = @code[(@i+1)..-1][NEWLINE, 1]
       if newlines
@@ -152,6 +172,7 @@ module CoffeeScript
       end
     end
 
+    # Discard newlines immediately before this point.
     def remove_leading_newlines
       @tokens.pop if last_value == "\n"
     end
