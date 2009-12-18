@@ -1,0 +1,147 @@
+pre.amy .PolymorphicVariants {
+   color: #60B0FF;
+   font-style: italic;
+}
+pre.amy .KeywordDecorator {
+   color: #D0D0FF;
+}
+pre.amy .Punctuation {
+   color: #805080;
+}
+pre.amy .InheritedClass {
+}
+pre.amy .InvalidDepricated {
+   background-color: #CC66FF;
+   color: #200020;
+}
+pre.amy .LibraryVariable {
+}
+pre.amy .TokenReferenceOcamlyacc {
+   color: #3CB0D0;
+}
+pre.amy .Storage {
+   color: #B0FFF0;
+}
+pre.amy .KeywordOperator {
+   color: #A0A0FF;
+}
+pre.amy .CharacterConstant {
+   color: #666666;
+}
+pre.amy .line-numbers {
+   background-color: #800000;
+   color: #000000;
+}
+pre.amy .ClassName {
+   color: #70E080;
+}
+pre.amy .Int64Constant {
+   font-style: italic;
+}
+pre.amy .NonTerminalReferenceOcamlyacc {
+   color: #C0F0F0;
+}
+pre.amy .TokenDefinitionOcamlyacc {
+   color: #3080A0;
+}
+pre.amy .ClassType {
+   color: #70E0A0;
+}
+pre.amy .ControlKeyword {
+   color: #80A0FF;
+}
+pre.amy .LineNumberDirectives {
+   text-decoration: underline;
+   color: #C080C0;
+}
+pre.amy .FloatingPointConstant {
+   text-decoration: underline;
+}
+pre.amy .Int32Constant {
+   font-weight: bold;
+}
+pre.amy .TagName {
+   color: #009090;
+}
+pre.amy .ModuleTypeDefinitions {
+   text-decoration: underline;
+   color: #B000B0;
+}
+pre.amy .Integer {
+   color: #7090B0;
+}
+pre.amy .Camlp4TempParser {
+}
+pre.amy .InvalidIllegal {
+   font-weight: bold;
+   background-color: #FFFF00;
+   color: #400080;
+}
+pre.amy .LibraryConstant {
+   background-color: #200020;
+}
+pre.amy .ModuleDefinitions {
+   color: #B000B0;
+}
+pre.amy .Variants {
+   color: #60B0FF;
+}
+pre.amy .CompilerDirectives {
+   color: #C080C0;
+}
+pre.amy .FloatingPointInfixOperator {
+   text-decoration: underline;
+}
+pre.amy .BuiltInConstant1 {
+}
+pre.amy {
+   background-color: #200020;
+   color: #D0D0FF;
+}
+pre.amy .FunctionArgument {
+   color: #80B0B0;
+}
+pre.amy .FloatingPointPrefixOperator {
+   text-decoration: underline;
+}
+pre.amy .NativeintConstant {
+   font-weight: bold;
+}
+pre.amy .BuiltInConstant {
+   color: #707090;
+}
+pre.amy .BooleanConstant {
+   color: #8080A0;
+}
+pre.amy .LibraryClassType {
+}
+pre.amy .TagAttribute {
+}
+pre.amy .Keyword {
+   color: #A080FF;
+}
+pre.amy .UserDefinedConstant {
+}
+pre.amy .String {
+   color: #999999;
+}
+pre.amy .Camlp4Code {
+   background-color: #350060;
+}
+pre.amy .NonTerminalDefinitionOcamlyacc {
+   color: #90E0E0;
+}
+pre.amy .FunctionName {
+   color: #50A0A0;
+}
+pre.amy .SupportModules {
+   color: #A00050;
+}
+pre.amy .Variable {
+   color: #008080;
+}
+pre.amy .Comment {
+   background-color: #200020;
+   color: #404080;
+   font-style: italic;
+}
