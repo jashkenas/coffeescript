@@ -238,6 +238,7 @@ rule
   | ArgList Terminator Expression     { result = val[0] << val[2] }
   ;
 
+  # If statements, including post-fix ifs and unlesses.
   If:
     IF Expression
        Then Expressions "."           { result = IfNode.new(val[1], val[3]) }
@@ -248,6 +249,7 @@ rule
   | Expression UNLESS Expression      { result = IfNode.new(val[2], Nodes.new([val[0]]), nil, :invert) }
   ;
 
+  # Try/catch/finally exception handling blocks.
   Try:
     TRY Expressions CATCH IDENTIFIER
       Expressions "."                 { result = TryNode.new(val[1], val[3], val[4]) }
@@ -258,19 +260,23 @@ rule
       FINALLY Expressions "."         { result = TryNode.new(val[1], val[3], val[4], val[6]) }
   ;
 
+  # Throw an exception.
   Throw:
     THROW Expression                  { result = ThrowNode.new(val[1]) }
   ;
 
+  # Parenthetical expressions.
   Parenthetical:
     "(" Expressions ")"               { result = ParentheticalNode.new(val[1]) }
   ;
 
+  # The while loop. (there is no do..while).
   While:
     WHILE Expression Then
       Expressions "."                 { result = WhileNode.new(val[1], val[3]) }
   ;
 
+  # Array comprehensions, including guard and current index.
   For:
   Expression FOR IDENTIFIER
     IN Expression "."                 { result = ForNode.new(val[0], val[4], val[2]) }
@@ -286,6 +292,7 @@ rule
       IF Expression "."               { result = ForNode.new(IfNode.new(val[8], Nodes.new([val[0]])), val[6], val[2], val[4]) }
   ;
 
+  # Switch/Case blocks.
   Switch:
     SWITCH Expression Then
       Cases "."                       { result = val[3].rewrite_condition(val[1]) }
@@ -293,11 +300,13 @@ rule
       Cases ELSE Expressions "."   { result = val[3].rewrite_condition(val[1]).add_else(val[5]) }
   ;
 
+  # The inner list of cases.
   Cases:
     Case                              { result = val[0] }
   | Cases Case                        { result = val[0] << val[1] }
   ;
 
+  # An individual case.
   Case:
     CASE Expression Then Expressions  { result = IfNode.new(val[1], val[3]) }
   ;
@@ -308,16 +317,21 @@ end
 module CoffeeScript
 
 ---- inner
+  # Lex and parse a CoffeeScript.
   def parse(code)
+    # Uncomment the following line to enable grammar debugging, in combination
+    # with the -g flag in the Rake build task.
     # @yydebug = true
     @tokens = Lexer.new.tokenize(code)
     do_parse
   end
 
+  # Retrieve the next token from the list.
   def next_token
     @tokens.shift
   end
 
+  # Raise a custom error class that knows about line numbers.
   def on_error(error_token_id, error_value, value_stack)
     raise ParseError.new(token_to_str(error_token_id), error_value, value_stack)
   end

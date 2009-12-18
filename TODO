@@ -4,6 +4,8 @@ TODO:
 
 * Code Cleanup.
 
+* Figure out how not to have to close each if statement individually.
+
 * Is it possible to close blocks (functions, ifs, trys) without an explicit
   block delimiter or significant whitespace?
   
