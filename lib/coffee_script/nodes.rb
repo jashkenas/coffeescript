@@ -300,7 +300,7 @@ module CoffeeScript
 
     def compile(indent, scope, opts={})
       scope = Scope.new(scope)
-      @params.each {|id| scope.find(id) }
+      @params.each {|id| scope.find(id.to_s) }
       opts  = opts.merge(:return => true)
       code  = @body.compile(indent + TAB, scope, opts)
       "function(#{@params.join(', ')}) {\n#{code}\n#{indent}}"
