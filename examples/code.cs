@@ -19,7 +19,9 @@ spaced_out_multiline_object: {
 
   pi: 3.14159
 
-  list: [1, 2, 3, 4]
+  a_googol: 1e100
+
+  list: [-1, 0, 1, 2, 3, 4]
 
   regex: /match[ing](every|thing|\/)/gi
 
