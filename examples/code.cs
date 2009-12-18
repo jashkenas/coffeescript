@@ -85,12 +85,16 @@ finally
 
 try all_hell_breaks_loose() catch error print(error) finally clean_up().
 
-# While loops.
+# While loops, break and continue.
 while demand > supply
   sell()
   restock().
 
 while supply > demand then buy().
+
+while true
+  break if broken
+  continue if continuing.
 
 # Unary operators.
 !!true

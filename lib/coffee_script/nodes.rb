@@ -36,6 +36,10 @@ class Nodes < Node
     "(function(){\n#{compile(TAB, Scope.new)}\n})();"
   end
 
+  def statement?
+    true
+  end
+
   # Fancy to handle pushing down returns recursively to the final lines of
   # inner statements (to make expressions out of them).
   def compile(indent='', scope=nil, opts={})
@@ -57,8 +61,14 @@ end
 # Literals are static values that have a Ruby representation, eg.: a string, a number,
 # true, false, nil, etc.
 class LiteralNode < Node
+  STATEMENTS = ['break', 'continue']
+
   def initialize(value)
     @value = value
+  end
+
+  def statement?
+    STATEMENTS.include?(@value.to_s)
   end
 
   def compile(indent, scope, opts={})
@@ -69,6 +79,10 @@ end
 class ReturnNode < Node
   def initialize(expression)
     @expression = expression
+  end
+
+  def statement?
+    true
   end
 
   def custom_return?
@@ -180,6 +194,10 @@ class AssignNode < Node
   end
 
   def custom_return?
+    true
+  end
+
+  def statement?
     true
   end
 
@@ -370,6 +388,10 @@ class ThrowNode < Node
     @expression = expression
   end
 
+  def statement?
+    true
+  end
+
   def compile(indent, scope, opts={})
     "throw #{@expression.compile(indent, scope)}"
   end
@@ -390,8 +412,6 @@ end
 # "if-else" control structure. Look at this node if you want to implement other control
 # structures like while, for, loop, etc.
 class IfNode < Node
-  FORCE_STATEMENT = [Nodes, ReturnNode, AssignNode, IfNode, ForNode, ThrowNode, WhileNode]
-
   def initialize(condition, body, else_body=nil, tag=nil)
     @condition = condition
     @body      = body && body.flatten
@@ -423,7 +443,7 @@ class IfNode < Node
   end
 
   def statement?
-    @is_statement ||= (FORCE_STATEMENT.include?(@body.class) || FORCE_STATEMENT.include?(@else_body.class))
+    @is_statement ||= (@body.statement? || (@else_body && @else_body.statement?))
   end
 
   def line_ending
