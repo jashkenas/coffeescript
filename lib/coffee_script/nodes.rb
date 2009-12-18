@@ -5,19 +5,40 @@ module CoffeeScript
     # Tabs are two spaces for pretty-printing.
     TAB = '  '
 
-    def flatten;          self;   end
-    def line_ending;      ';';    end
-    def statement?;       false;  end
-    def custom_return?;   false;  end
-    def custom_assign?;   false;  end
+    # Tag this node as a statement, meaning that it can't be used directly as
+    # the result of an expression.
+    def self.statement
+      class_eval "def statement?; true; end"
+    end
 
-    def compile(indent='', scope=nil, opts={}); end
+    # Tag this node as having a custom return, meaning that instead of returning
+    # it from the outside, you ask it to return itself, and it obliges.
+    def self.custom_return
+      class_eval "def custom_return?; true; end"
+    end
+
+    # Tag this node as having a custom assignment, meaning that instead of
+    # assigning it to a variable name from the outside, you pass it the variable
+    # name and let it take care of it.
+    def self.custom_assign
+      class_eval "def custom_assign?; true; end"
+    end
+
+    # Default implementations of the common node methods.
+    def unwrap;                                 self;   end
+    def line_ending;                            ';';    end
+    def statement?;                             false;  end
+    def custom_return?;                         false;  end
+    def custom_assign?;                         false;  end
+    def compile(indent='', scope=nil, opts={});         end
   end
 
   # A collection of nodes, each one representing an expression.
   class Expressions < Node
+    statement
     attr_reader :expressions
 
+    # Wrap up a node as an Expressions, unless it already is.
     def self.wrap(node)
       node.is_a?(Expressions) ? node : Expressions.new([node])
     end
@@ -26,27 +47,26 @@ module CoffeeScript
       @expressions = nodes
     end
 
+    # Tack an expression onto the end of this node.
     def <<(node)
       @expressions << node
       self
     end
 
-    def flatten
+    # If this Expressions consists of a single node, pull it back out.
+    def unwrap
       @expressions.length == 1 ? @expressions.first : self
     end
 
-    def begin_compile
+    # If this is the top-level Expressions, wrap everything in a safety closure.
+    def root_compile
       "(function(){\n#{compile(TAB, Scope.new)}\n})();"
     end
 
-    def statement?
-      true
-    end
-
-    # Fancy to handle pushing down returns recursively to the final lines of
-    # inner statements (to make expressions out of them).
+    # The extra fancy is to handle pushing down returns recursively to the
+    # final lines of inner statements (so as to make expressions out of them).
     def compile(indent='', scope=nil, opts={})
-      return begin_compile unless scope
+      return root_compile unless scope
       @expressions.map { |n|
         if opts[:return] && n == @expressions.last
           if n.statement? || n.custom_return?
@@ -79,17 +99,13 @@ module CoffeeScript
     end
   end
 
+  # Try to return your expression, or tell it to return itself.
   class ReturnNode < Node
+    statement
+    custom_return
+
     def initialize(expression)
       @expression = expression
-    end
-
-    def statement?
-      true
-    end
-
-    def custom_return?
-      true
     end
 
     def compile(indent, scope, opts={})
@@ -99,13 +115,8 @@ module CoffeeScript
     end
   end
 
-  # Node of a method call or local variable access, can take any of these forms:
-  #
-  #   method # this form can also be a local variable
-  #   method(argument1, argument2)
-  #   receiver.method
-  #   receiver.method(argument1, argument2)
-  #
+  # Node for a function invocation. Takes care of converting super() calls into
+  # calls against the prototype's function of the same name.
   class CallNode < Node
     LEADING_DOT = /\A\./
 
@@ -135,6 +146,7 @@ module CoffeeScript
     end
   end
 
+  # A value, indexed or dotted into or vanilla.
   class ValueNode < Node
     attr_reader :last
 
@@ -160,6 +172,7 @@ module CoffeeScript
     end
   end
 
+  # A dotted accessor into a part of a value.
   class AccessorNode
     def initialize(name)
       @name = name
@@ -170,6 +183,7 @@ module CoffeeScript
     end
   end
 
+  # An indexed accessor into a part of an array or object.
   class IndexNode
     def initialize(index)
       @index = index
@@ -180,6 +194,9 @@ module CoffeeScript
     end
   end
 
+  # An array slice literal. Unlike JavaScript's Array#slice, the second parameter
+  # specifies the index of the end of the slice (just like the first parameter)
+  # is the index of the beginning.
   class SliceNode
     def initialize(from, to)
       @from, @to = from, to
@@ -190,18 +207,13 @@ module CoffeeScript
     end
   end
 
-  # Setting the value of a local variable.
+  # Setting the value of a local variable, or the value of an object property.
   class AssignNode < Node
+    statement
+    custom_return
+
     def initialize(variable, value, context=nil)
       @variable, @value, @context = variable, value, context
-    end
-
-    def custom_return?
-      true
-    end
-
-    def statement?
-      true
     end
 
     def compile(indent, scope, opts={})
@@ -220,7 +232,8 @@ module CoffeeScript
     end
   end
 
-  # Simple Arithmetic and logical operations
+  # Simple Arithmetic and logical operations. Performs some conversion from
+  # CoffeeScript operations into their JavaScript equivalents.
   class OpNode < Node
     CONVERSIONS = {
       "=="    => "===",
@@ -260,7 +273,7 @@ module CoffeeScript
     end
   end
 
-  # Method definition.
+  # A function definition. The only node that creates a new Scope.
   class CodeNode < Node
     def initialize(params, body)
       @params = params
@@ -276,6 +289,7 @@ module CoffeeScript
     end
   end
 
+  # An object literal.
   class ObjectNode < Node
     def initialize(properties = [])
       @properties = properties
@@ -287,6 +301,7 @@ module CoffeeScript
     end
   end
 
+  # An array literal.
   class ArrayNode < Node
     def initialize(objects=[])
       @objects = objects
@@ -298,7 +313,11 @@ module CoffeeScript
     end
   end
 
+  # A while loop, the only sort of low-level loop exposed by CoffeeScript. From
+  # it, all other loops can be manufactured.
   class WhileNode < Node
+    statement
+
     def initialize(condition, body)
       @condition, @body = condition, body
     end
@@ -307,16 +326,19 @@ module CoffeeScript
       ''
     end
 
-    def statement?
-      true
-    end
-
     def compile(indent, scope, opts={})
       "while (#{@condition.compile(indent, scope, :no_paren => true)}) {\n#{@body.compile(indent + TAB, scope)}\n#{indent}}"
     end
   end
 
+  # The replacement for the for loop is an array comprehension (that compiles)
+  # into a for loop. Also acts as an expression, able to return the result
+  # of the comprehenion. Unlike Python array comprehensions, it's able to pass
+  # the current index of the loop as a second parameter.
   class ForNode < Node
+    statement
+    custom_return
+    custom_assign
 
     def initialize(body, source, name, index=nil)
       @body, @source, @name, @index = body, source, name, index
@@ -324,18 +346,6 @@ module CoffeeScript
 
     def line_ending
       ''
-    end
-
-    def custom_return?
-      true
-    end
-
-    def custom_assign?
-      true
-    end
-
-    def statement?
-      true
     end
 
     def compile(indent, scope, opts={})
@@ -367,17 +377,16 @@ module CoffeeScript
     end
   end
 
+  # A try/catch/finally block.
   class TryNode < Node
+    statement
+
     def initialize(try, error, recovery, finally=nil)
       @try, @error, @recovery, @finally = try, error, recovery, finally
     end
 
     def line_ending
       ''
-    end
-
-    def statement?
-      true
     end
 
     def compile(indent, scope, opts={})
@@ -387,13 +396,12 @@ module CoffeeScript
     end
   end
 
+  # Throw an exception.
   class ThrowNode < Node
+    statement
+
     def initialize(expression)
       @expression = expression
-    end
-
-    def statement?
-      true
     end
 
     def compile(indent, scope, opts={})
@@ -401,30 +409,33 @@ module CoffeeScript
     end
   end
 
+  # An extra set of parenthesis, supplied by the script source.
   class ParentheticalNode < Node
     def initialize(expressions)
       @expressions = expressions
     end
 
     def compile(indent, scope, opts={})
-      compiled = @expressions.flatten.compile(indent, scope)
+      compiled = @expressions.unwrap.compile(indent, scope)
       compiled = compiled[0...-1] if compiled[-1..-1] == ';'
       opts[:no_paren] ? compiled : "(#{compiled})"
     end
   end
 
-  # "if-else" control structure. Look at this node if you want to implement other control
-  # structures like while, for, loop, etc.
+  # If/else statements. Switch/cases get compiled into these. Acts as an
+  # expression by pushing down requested returns to the expression bodies.
+  # Single-expression IfNodes are compiled into ternary operators if possible,
+  # because ternaries are first-class returnable assignable expressions.
   class IfNode < Node
     def initialize(condition, body, else_body=nil, tag=nil)
       @condition = condition
-      @body      = body && body.flatten
-      @else_body = else_body && else_body.flatten
+      @body      = body && body.unwrap
+      @else_body = else_body && else_body.unwrap
       @condition = OpNode.new("!", @condition) if tag == :invert
     end
 
     def <<(else_body)
-      eb = else_body.flatten
+      eb = else_body.unwrap
       @else_body ? @else_body << eb : @else_body = eb
       self
     end
