@@ -2,9 +2,9 @@ TODO:
 
 * Write some tests.
 
-* Code Cleanup.
+* Finish the examples.
 
-* Figure out how not to have to close each if statement individually.
+* Create the documentation page.
 
 * Is it possible to close blocks (functions, ifs, trys) without an explicit
   block delimiter or significant whitespace?
