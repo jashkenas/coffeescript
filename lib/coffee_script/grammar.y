@@ -53,7 +53,7 @@ rule
   | Terminator Expressions            { result = val[1] }
   ;
 
-  # All types of expressions in our language
+  # All types of expressions in our language.
   Expression:
     Literal
   | Value
@@ -70,19 +70,19 @@ rule
   | Switch
   ;
 
-  # All tokens that can terminate an expression
+  # All tokens that can terminate an expression.
   Terminator:
     "\n"
   | ";"
   ;
 
-  # All tokens that can serve to begin the second block
+  # All tokens that can serve to begin the second block of a multi-part expression.
   Then:
     THEN
   | Terminator
   ;
 
-  # All hard-coded values
+  # All hard-coded values.
   Literal:
     NUMBER                            { result = LiteralNode.new(val[0]) }
   | STRING                            { result = LiteralNode.new(val[0]) }
@@ -95,7 +95,7 @@ rule
   | CONTINUE                          { result = LiteralNode.new(val[0]) }
   ;
 
-  # Assign to a variable
+  # Assignment to a variable.
   Assign:
     Value ":" Expression              { result = AssignNode.new(val[0], val[2]) }
   ;
@@ -105,7 +105,7 @@ rule
     IDENTIFIER ":" Expression         { result = AssignNode.new(val[0], val[2], :object) }
   ;
 
-  # A Return statement.
+  # A return statement.
   Return:
     RETURN Expression                 { result = ReturnNode.new(val[1]) }
   ;
@@ -150,24 +150,25 @@ rule
   | DELETE Expression                 { result = OpNode.new(val[0], val[1]) }
   ;
 
-
-  # Method definition
+  # Function definition.
   Code:
     ParamList "=>" CodeBody "."       { result = CodeNode.new(val[0], val[2]) }
   | "=>" CodeBody "."                 { result = CodeNode.new([], val[1]) }
   ;
 
+  # The body of a function.
   CodeBody:
     /* nothing */                     { result = Nodes.new([]) }
   | Expressions                       { result = val[0] }
   ;
 
-
+  # The parameters to a function definition.
   ParamList:
     PARAM                             { result = val }
   | ParamList "," PARAM               { result = val[0] << val[2] }
   ;
 
+  # Expressions that can be treated as values.
   Value:
     IDENTIFIER                        { result = ValueNode.new(val) }
   | Array                             { result = ValueNode.new(val) }
@@ -177,24 +178,29 @@ rule
   | Invocation Accessor               { result = ValueNode.new(val[0], [val[1]]) }
   ;
 
+  # Accessing into an object or array, through dot or index notation.
   Accessor:
     PROPERTY_ACCESS IDENTIFIER        { result = AccessorNode.new(val[1]) }
   | Index                             { result = val[0] }
   | Slice                             { result = val[0] }
   ;
 
+  # Indexing into an object or array.
   Index:
     "[" Expression "]"                { result = IndexNode.new(val[1]) }
   ;
 
+  # Array slice literal.
   Slice:
     "[" Expression "," Expression "]" { result = SliceNode.new(val[1], val[3]) }
   ;
 
+  # An object literal.
   Object:
     "{" AssignList "}"                { result = ObjectNode.new(val[1]) }
   ;
 
+  # Assignment within an object literal (comma or newline separated).
   AssignList:
     /* nothing */                     { result = []}
   | AssignObj                         { result = val }
@@ -202,27 +208,29 @@ rule
   | AssignList Terminator AssignObj   { result = val[0] << val[2] }
   ;
 
-  # A method call.
+  # All flavors of function call (instantiation, super, and regular).
   Call:
     Invocation                        { result = val[0] }
   | NEW Invocation                    { result = val[1].new_instance }
   | Super                             { result = val[0] }
   ;
 
+  # A generic function invocation.
   Invocation:
     Value "(" ArgList ")"             { result = CallNode.new(val[0], val[2]) }
   ;
 
+  # Calling super.
   Super:
     SUPER "(" ArgList ")"             { result = CallNode.new(:super, val[2]) }
   ;
 
-  # An Array.
+  # The array literal.
   Array:
     "[" ArgList "]"                   { result = ArrayNode.new(val[1]) }
   ;
 
-  # A list of arguments to a method call.
+  # A list of arguments to a method call, or as the contents of an array.
   ArgList:
     /* nothing */                     { result = [] }
   | Expression                        { result = val }
@@ -296,6 +304,9 @@ rule
 
 end
 
+---- header
+module CoffeeScript
+
 ---- inner
   def parse(code)
     # @yydebug = true
@@ -308,5 +319,8 @@ end
   end
 
   def on_error(error_token_id, error_value, value_stack)
-    raise CoffeeScript::ParseError.new(token_to_str(error_token_id), error_value, value_stack)
+    raise ParseError.new(token_to_str(error_token_id), error_value, value_stack)
   end
+
+---- footer
+end

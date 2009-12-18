@@ -205,7 +205,7 @@ class AssignNode < Node
     name      = @variable.compile(indent, scope) if @variable.respond_to?(:compile)
     last      = @variable.respond_to?(:last) ? @variable.last : name
     opts      = opts.merge({:assign => name, :last_assign => last})
-    value     = @value.compile(indent, scope, opts)
+    value     = @value.compile(indent + TAB, scope, opts)
     return "#{@variable}: #{value}" if @context == :object
     return "#{name} = #{value}" if @variable.properties?
     defined   = scope.find(name)

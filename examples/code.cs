@@ -16,19 +16,14 @@ run_loop: =>
 dense_object_literal: {one: 1, two: 2, three: 3}
 
 spaced_out_multiline_object: {
-
   pi: 3.14159
-
   list: [1, 2, 3, 4]
-
   regex: /match[ing](every|thing|\/)/gi
-
   three: new Idea()
 
   inner_obj: {
     freedom: => _.freedom().
   }
-
 }
 
 # Arrays:
@@ -37,6 +32,11 @@ stooges : [{moe: 45}, {curly: 43}, {larry: 46}]
 exponents : [x => x., x => x * x., x => x * x * x.]
 
 empty: []
+
+multiline: [
+  'line one'
+  'line two'
+]
 
 # Conditionals and ternaries.
 if submarine.shields_up
@@ -64,7 +64,7 @@ good ||= evil
 wine &&= cheese
 
 # Nested property access and calls.
-((moon.turn(360))).shapes[3].move({x: 45, y: 30}).position
+((moon.turn(360))).shapes[3].move({x: 45, y: 30}).position['top'].offset('x')
 
 a: b: c: 5
 

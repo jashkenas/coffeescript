@@ -5,9 +5,12 @@
 #
 
 require 'racc/parser.rb'
+
+module CoffeeScript
+
 class Parser < Racc::Parser
 
-module_eval(<<'...end grammar.y/module_eval...', 'grammar.y', 300)
+module_eval(<<'...end grammar.y/module_eval...', 'grammar.y', 303)
   def parse(code)
     # @yydebug = true
     @tokens = Lexer.new.tokenize(code)
@@ -19,8 +22,9 @@ module_eval(<<'...end grammar.y/module_eval...', 'grammar.y', 300)
   end
 
   def on_error(error_token_id, error_value, value_stack)
-    raise CoffeeScript::ParseError.new(token_to_str(error_token_id), error_value, value_stack)
+    raise ParseError.new(token_to_str(error_token_id), error_value, value_stack)
   end
+
 ...end grammar.y/module_eval...
 ##### State transition tables begin ###
 
@@ -1538,3 +1542,5 @@ def _reduce_none(val, _values, result)
 end
 
 end   # class Parser
+
+end
