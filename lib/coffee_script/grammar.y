@@ -9,7 +9,7 @@ token CODE PARAM NEW RETURN
 token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
 token FOR IN WHILE
-token SWITCH CASE DEFAULT
+token SWITCH CASE
 token SUPER
 token NEWLINE
 token JS
@@ -279,7 +279,7 @@ rule
     SWITCH Expression Then
       Cases "."                       { result = val[3].rewrite_condition(val[1]) }
   | SWITCH Expression Then
-      Cases DEFAULT Expressions "."   { result = val[3].rewrite_condition(val[1]).add_default(val[5]) }
+      Cases ELSE Expressions "."   { result = val[3].rewrite_condition(val[1]).add_else(val[5]) }
   ;
 
   Cases:

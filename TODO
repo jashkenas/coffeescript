@@ -4,8 +4,6 @@ TODO:
 
 * Code Cleanup.
 
-* Add JS-style exponential number literals.
-
 * Is it possible to close blocks (functions, ifs, trys) without an explicit
   block delimiter or significant whitespace?
   

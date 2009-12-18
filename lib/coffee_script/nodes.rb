@@ -433,8 +433,8 @@ class IfNode < Node
   end
 
   # Rewrite a chain of IfNodes to add a default case as the final else.
-  def add_default(expressions)
-    chain? ? @else_body.add_default(expressions) : @else_body = expressions
+  def add_else(expressions)
+    chain? ? @else_body.add_else(expressions) : @else_body = expressions
     self
   end
 

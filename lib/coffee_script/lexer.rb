@@ -7,7 +7,7 @@ class Lexer
                 "try", "catch", "finally", "throw",
                 "break", "continue",
                 "for", "in", "while",
-                "switch", "case", "default",
+                "switch", "case",
                 "super"]
 
   IDENTIFIER = /\A([a-zA-Z$_]\w*)/
