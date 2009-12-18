@@ -157,8 +157,9 @@ module CoffeeScript
       index = 0
       loop do
         tok = @tokens[index -= 1]
-        return if !tok || tok[0] != :IDENTIFIER
+        return if !tok
         next if tok[0] == ','
+        return if tok[0] != :IDENTIFIER
         tok[0] = :PARAM
       end
     end

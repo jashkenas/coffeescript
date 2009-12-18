@@ -7,15 +7,18 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_parsing_an_empty_string
-    puts @par.parse("").inspect
+    nodes = @par.parse("")
+    assert nodes.is_a? Expressions
+    assert nodes.expressions.empty?
   end
 
-  # def test_lexing_basic_assignment
-  #   code = "a: 'one'; b: [1, 2]"
-  #   assert @lex.tokenize(code) == [[:IDENTIFIER, "a"], [":", ":"],
-  #     [:STRING, "'one'"], [";", ";"], [:IDENTIFIER, "b"], [":", ":"],
-  #     ["[", "["], [:NUMBER, "1"], [",", ","], [:NUMBER, "2"], ["]", "]"]]
-  # end
+  def test_parsing_a_basic_assignment
+    nodes = @par.parse("a: 'one'")
+    assert nodes.expressions.length == 1
+    assign = nodes.expressions.first
+    assert assign.is_a? AssignNode
+    assert assign.variable.name == 'a'
+  end
   #
   # def test_lexing_object_literal
   #   code = "{one : 1}"

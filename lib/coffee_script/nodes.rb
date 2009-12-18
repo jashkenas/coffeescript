@@ -148,7 +148,7 @@ module CoffeeScript
 
   # A value, indexed or dotted into or vanilla.
   class ValueNode < Node
-    attr_reader :last
+    attr_reader :name, :properties, :last
 
     def initialize(name, properties=[])
       @name, @properties = name, properties
@@ -211,6 +211,8 @@ module CoffeeScript
   class AssignNode < Node
     statement
     custom_return
+
+    attr_reader :variable, :value, :context
 
     def initialize(variable, value, context=nil)
       @variable, @value, @context = variable, value, context
