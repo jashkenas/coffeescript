@@ -1,5 +1,7 @@
 TODO:
 
+* Write some tests.
+
 * Code Cleanup.
 
 * Is it possible to close blocks (functions, ifs, trys) without an explicit
