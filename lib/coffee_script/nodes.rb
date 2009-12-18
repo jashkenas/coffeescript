@@ -1,5 +1,6 @@
 module CoffeeScript
 
+  # The abstract base class for all CoffeeScript nodes.
   class Node
     # Tabs are two spaces for pretty-printing.
     TAB = '  '
@@ -13,25 +14,25 @@ module CoffeeScript
     def compile(indent='', scope=nil, opts={}); end
   end
 
-  # Collection of nodes each one representing an expression.
-  class Nodes < Node
-    attr_reader :nodes
+  # A collection of nodes, each one representing an expression.
+  class Expressions < Node
+    attr_reader :expressions
 
     def self.wrap(node)
-      node.is_a?(Nodes) ? node : Nodes.new([node])
+      node.is_a?(Expressions) ? node : Expressions.new([node])
     end
 
     def initialize(nodes)
-      @nodes = nodes
+      @expressions = nodes
     end
 
     def <<(node)
-      @nodes << node
+      @expressions << node
       self
     end
 
     def flatten
-      @nodes.length == 1 ? @nodes.first : self
+      @expressions.length == 1 ? @expressions.first : self
     end
 
     def begin_compile
@@ -46,8 +47,8 @@ module CoffeeScript
     # inner statements (to make expressions out of them).
     def compile(indent='', scope=nil, opts={})
       return begin_compile unless scope
-      @nodes.map { |n|
-        if opts[:return] && n == @nodes.last
+      @expressions.map { |n|
+        if opts[:return] && n == @expressions.last
           if n.statement? || n.custom_return?
             "#{indent}#{n.compile(indent, scope, opts)}#{n.line_ending}"
           else
@@ -458,8 +459,8 @@ module CoffeeScript
     end
 
     def compile_statement(indent, scope, opts)
-      if_part   = "if (#{@condition.compile(indent, scope, :no_paren => true)}) {\n#{Nodes.wrap(@body).compile(indent + TAB, scope, opts)}\n#{indent}}"
-      else_part = @else_body ? " else {\n#{Nodes.wrap(@else_body).compile(indent + TAB, scope, opts)}\n#{indent}}" : ''
+      if_part   = "if (#{@condition.compile(indent, scope, :no_paren => true)}) {\n#{Expressions.wrap(@body).compile(indent + TAB, scope, opts)}\n#{indent}}"
+      else_part = @else_body ? " else {\n#{Expressions.wrap(@else_body).compile(indent + TAB, scope, opts)}\n#{indent}}" : ''
       if_part + else_part
     end
 

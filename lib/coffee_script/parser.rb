@@ -831,14 +831,14 @@ Racc_debug_parser = false
 
 module_eval(<<'.,.,', 'grammar.y', 42)
   def _reduce_1(val, _values, result)
-     result = Nodes.new([]) 
+     result = Expressions.new([]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'grammar.y', 43)
   def _reduce_2(val, _values, result)
-     result = Nodes.new([]) 
+     result = Expressions.new([]) 
     result
   end
 .,.,
@@ -852,7 +852,7 @@ module_eval(<<'.,.,', 'grammar.y', 44)
 
 module_eval(<<'.,.,', 'grammar.y', 49)
   def _reduce_4(val, _values, result)
-     result = Nodes.new(val) 
+     result = Expressions.new(val) 
     result
   end
 .,.,
@@ -1201,7 +1201,7 @@ module_eval(<<'.,.,', 'grammar.y', 155)
 
 module_eval(<<'.,.,', 'grammar.y', 160)
   def _reduce_66(val, _values, result)
-     result = Nodes.new([]) 
+     result = Expressions.new([]) 
     result
   end
 .,.,
@@ -1425,14 +1425,14 @@ module_eval(<<'.,.,', 'grammar.y', 246)
 
 module_eval(<<'.,.,', 'grammar.y', 247)
   def _reduce_98(val, _values, result)
-     result = IfNode.new(val[2], Nodes.new([val[0]])) 
+     result = IfNode.new(val[2], Expressions.new([val[0]])) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'grammar.y', 248)
   def _reduce_99(val, _values, result)
-     result = IfNode.new(val[2], Nodes.new([val[0]]), nil, :invert) 
+     result = IfNode.new(val[2], Expressions.new([val[0]]), nil, :invert) 
     result
   end
 .,.,
@@ -1495,14 +1495,14 @@ module_eval(<<'.,.,', 'grammar.y', 284)
 
 module_eval(<<'.,.,', 'grammar.y', 287)
   def _reduce_108(val, _values, result)
-     result = ForNode.new(IfNode.new(val[6], Nodes.new([val[0]])), val[4], val[2]) 
+     result = ForNode.new(IfNode.new(val[6], Expressions.new([val[0]])), val[4], val[2]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'grammar.y', 291)
   def _reduce_109(val, _values, result)
-     result = ForNode.new(IfNode.new(val[8], Nodes.new([val[0]])), val[6], val[2], val[4]) 
+     result = ForNode.new(IfNode.new(val[8], Expressions.new([val[0]])), val[6], val[2], val[4]) 
     result
   end
 .,.,
