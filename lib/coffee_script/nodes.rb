@@ -464,20 +464,25 @@ module CoffeeScript
       @is_statement ||= (@body.statement? || (@else_body && @else_body.statement?))
     end
 
+    def custom_return?
+      statement?
+    end
+
     def line_ending
       statement? ? '' : ';'
     end
 
     def compile(indent, scope, opts={})
-      statement? ? compile_statement(indent, scope, opts) : compile_ternary(indent, scope)
+      opts[:statement] || statement? ? compile_statement(indent, scope, opts) : compile_ternary(indent, scope)
     end
 
-    # Compile the IfNode as a regular if-else statement.
+    # Compile the IfNode as a regular if-else statement. Flattened chains
+    # force sub-else bodies into statement form.
     def compile_statement(indent, scope, opts)
       if_part   = "if (#{@condition.compile(indent, scope, :no_paren => true)}) {\n#{Expressions.wrap(@body).compile(indent + TAB, scope, opts)}\n#{indent}}"
       return if_part unless @else_body
       else_part = chain? ?
-        " else #{@else_body.compile(indent, scope, opts)}" :
+        " else #{@else_body.compile(indent, scope, opts.merge(:statement => true))}" :
         " else {\n#{Expressions.wrap(@else_body).compile(indent + TAB, scope, opts)}\n#{indent}}"
       if_part + else_part
     end
