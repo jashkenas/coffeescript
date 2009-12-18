@@ -36,15 +36,22 @@ class ParserTest < Test::Unit::TestCase
     assert body.operator == '*'
   end
 
-  # def test_lexing_if_statement
-  #   code = "clap_your_hands() if happy"
-  #   assert @lex.tokenize(code) == [[:IDENTIFIER, "clap_your_hands"], ["(", "("],
-  #     [")", ")"], [:IF, "if"], [:IDENTIFIER, "happy"]]
-  # end
-  #
-  # def test_lexing
-  #   tokens = @lex.tokenize(File.read('test/fixtures/each.cs'))
-  #   assert tokens.inspect == File.read('test/fixtures/each.tokens')
-  # end
+  def test_lexing_if_statement
+    the_if = @par.parse("clap_your_hands() if happy").expressions.first
+    assert the_if.is_a? IfNode
+    assert the_if.condition.literal == 'happy'
+    assert the_if.body.is_a? CallNode
+    assert the_if.body.variable.literal == 'clap_your_hands'
+  end
+
+  def test_parsing
+    nodes = @par.parse(File.read('test/fixtures/each.cs'))
+    assign = nodes.expressions.first
+    assert assign.is_a? AssignNode
+    assert assign.variable.literal == '_'
+    assert assign.value.is_a? CodeNode
+    assert assign.value.params == ['obj', 'iterator', 'context']
+    assert nodes.compile == File.read('test/fixtures/each.js')
+  end
 
 end
