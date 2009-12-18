@@ -1,7 +1,5 @@
 TODO:
 
-* Add TextMate syntax highlighter to the download.
-
 * Code Cleanup.
 
 * Is it possible to close blocks (functions, ifs, trys) without an explicit
