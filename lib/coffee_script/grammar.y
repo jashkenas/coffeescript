@@ -28,7 +28,7 @@ prechigh
   right    DELETE
   right    RETURN THROW FOR WHILE
   left     UNLESS
-  nonassoc IF
+  left     IF
   nonassoc "."
 preclow
 

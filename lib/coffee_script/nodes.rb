@@ -220,7 +220,7 @@ module CoffeeScript
       name      = @variable.compile(indent, scope) if @variable.respond_to?(:compile)
       last      = @variable.respond_to?(:last) ? @variable.last : name
       opts      = opts.merge({:assign => name, :last_assign => last})
-      value     = @value.compile(indent + TAB, scope, opts)
+      value     = @value.compile(indent, scope, opts)
       return "#{@variable}: #{value}" if @context == :object
       return "#{name} = #{value}" if @variable.properties?
       defined   = scope.find(name)
@@ -296,7 +296,7 @@ module CoffeeScript
     end
 
     def compile(indent, scope, opts={})
-      props = @properties.map {|p| indent + TAB + p.compile(indent, scope) }.join(",\n")
+      props = @properties.map {|p| indent + TAB + p.compile(indent + TAB, scope) }.join(",\n")
       "{\n#{props}\n#{indent}}"
     end
   end
