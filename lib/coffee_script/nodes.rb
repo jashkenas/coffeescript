@@ -86,6 +86,8 @@ module CoffeeScript
   class LiteralNode < Node
     STATEMENTS = ['break', 'continue']
 
+    attr_reader :value
+
     def initialize(value)
       @value = value
     end
@@ -104,6 +106,8 @@ module CoffeeScript
     statement
     custom_return
 
+    attr_reader :expression
+
     def initialize(expression)
       @expression = expression
     end
@@ -119,6 +123,8 @@ module CoffeeScript
   # calls against the prototype's function of the same name.
   class CallNode < Node
     LEADING_DOT = /\A\./
+
+    attr_reader :variable, :arguments
 
     def initialize(variable, arguments=[])
       @variable, @arguments = variable, arguments
@@ -148,10 +154,10 @@ module CoffeeScript
 
   # A value, indexed or dotted into or vanilla.
   class ValueNode < Node
-    attr_reader :name, :properties, :last
+    attr_reader :literal, :properties, :last
 
-    def initialize(name, properties=[])
-      @name, @properties = name, properties
+    def initialize(literal, properties=[])
+      @literal, @properties = literal, properties
     end
 
     def <<(other)
@@ -164,7 +170,7 @@ module CoffeeScript
     end
 
     def compile(indent, scope, opts={})
-      parts = [@name, @properties].flatten.map do |v|
+      parts = [@literal, @properties].flatten.map do |v|
         v.respond_to?(:compile) ? v.compile(indent, scope) : v.to_s
       end
       @last = parts.last
@@ -174,6 +180,8 @@ module CoffeeScript
 
   # A dotted accessor into a part of a value.
   class AccessorNode
+    attr_reader :name
+
     def initialize(name)
       @name = name
     end
@@ -185,6 +193,8 @@ module CoffeeScript
 
   # An indexed accessor into a part of an array or object.
   class IndexNode
+    attr_reader :index
+
     def initialize(index)
       @index = index
     end
@@ -198,6 +208,8 @@ module CoffeeScript
   # specifies the index of the end of the slice (just like the first parameter)
   # is the index of the beginning.
   class SliceNode
+    attr_reader :from, :to
+
     def initialize(from, to)
       @from, @to = from, to
     end
@@ -248,6 +260,8 @@ module CoffeeScript
     }
     CONDITIONALS = ['||=', '&&=']
 
+    attr_reader :operator, :first, :second
+
     def initialize(operator, first, second=nil)
       @first, @second = first, second
       @operator = CONVERSIONS[operator] || operator
@@ -277,6 +291,8 @@ module CoffeeScript
 
   # A function definition. The only node that creates a new Scope.
   class CodeNode < Node
+    attr_reader :params, :body
+
     def initialize(params, body)
       @params = params
       @body = body
@@ -293,6 +309,8 @@ module CoffeeScript
 
   # An object literal.
   class ObjectNode < Node
+    attr_reader :properties
+
     def initialize(properties = [])
       @properties = properties
     end
@@ -305,6 +323,8 @@ module CoffeeScript
 
   # An array literal.
   class ArrayNode < Node
+    attr_reader :objects
+
     def initialize(objects=[])
       @objects = objects
     end
@@ -319,6 +339,8 @@ module CoffeeScript
   # it, all other loops can be manufactured.
   class WhileNode < Node
     statement
+
+    attr_reader :condition, :body
 
     def initialize(condition, body)
       @condition, @body = condition, body
@@ -341,6 +363,8 @@ module CoffeeScript
     statement
     custom_return
     custom_assign
+
+    attr_reader :body, :source, :name, :index
 
     def initialize(body, source, name, index=nil)
       @body, @source, @name, @index = body, source, name, index
@@ -383,6 +407,8 @@ module CoffeeScript
   class TryNode < Node
     statement
 
+    attr_reader :try, :error, :recovery, :finally
+
     def initialize(try, error, recovery, finally=nil)
       @try, @error, @recovery, @finally = try, error, recovery, finally
     end
@@ -402,6 +428,8 @@ module CoffeeScript
   class ThrowNode < Node
     statement
 
+    attr_reader :expression
+
     def initialize(expression)
       @expression = expression
     end
@@ -413,6 +441,8 @@ module CoffeeScript
 
   # An extra set of parenthesis, supplied by the script source.
   class ParentheticalNode < Node
+    attr_reader :expressions
+
     def initialize(expressions)
       @expressions = expressions
     end
@@ -429,6 +459,8 @@ module CoffeeScript
   # Single-expression IfNodes are compiled into ternary operators if possible,
   # because ternaries are first-class returnable assignable expressions.
   class IfNode < Node
+    attr_reader :condition, :body, :else_body
+
     def initialize(condition, body, else_body=nil, tag=nil)
       @condition = condition
       @body      = body && body.unwrap

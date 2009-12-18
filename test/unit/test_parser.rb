@@ -13,25 +13,29 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_parsing_a_basic_assignment
-    nodes = @par.parse("a: 'one'")
-    assert nodes.expressions.length == 1
-    assign = nodes.expressions.first
+    nodes = @par.parse("a: 'one'").expressions
+    assert nodes.length == 1
+    assign = nodes.first
     assert assign.is_a? AssignNode
-    assert assign.variable.name == 'a'
+    assert assign.variable.literal == 'a'
   end
-  #
-  # def test_lexing_object_literal
-  #   code = "{one : 1}"
-  #   assert @lex.tokenize(code) == [["{", "{"], [:IDENTIFIER, "one"], [":", ":"],
-  #     [:NUMBER, "1"], ["}", "}"]]
-  # end
-  #
-  # def test_lexing_function_definition
-  #   code = "x => x * x."
-  #   assert @lex.tokenize(code) == [[:PARAM, "x"], ["=>", "=>"],
-  #     [:IDENTIFIER, "x"], ["*", "*"], [:IDENTIFIER, "x"], [".", "."]]
-  # end
-  #
+
+  def test_parsing_an_object_literal
+    nodes = @par.parse("{one : 1 \n two : 2}").expressions
+    obj = nodes.first.literal
+    assert obj.is_a? ObjectNode
+    assert obj.properties.first.variable == "one"
+    assert obj.properties.last.variable == "two"
+  end
+
+  def test_parsing_an_function_definition
+    code = @par.parse("x, y => x * y.").expressions.first
+    assert code.params == ['x', 'y']
+    body = code.body.expressions.first
+    assert body.is_a? OpNode
+    assert body.operator == '*'
+  end
+
   # def test_lexing_if_statement
   #   code = "clap_your_hands() if happy"
   #   assert @lex.tokenize(code) == [[:IDENTIFIER, "clap_your_hands"], ["(", "("],
