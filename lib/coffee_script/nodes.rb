@@ -453,10 +453,13 @@ module CoffeeScript
       self
     end
 
+    # If the else_body is an IfNode itself, then we've got an if-else chain.
     def chain?
       @chain ||= @else_body && @else_body.is_a?(IfNode)
     end
 
+    # The IfNode only compiles into a statement if either of the bodies needs
+    # to be a statement.
     def statement?
       @is_statement ||= (@body.statement? || (@else_body && @else_body.statement?))
     end
@@ -469,12 +472,17 @@ module CoffeeScript
       statement? ? compile_statement(indent, scope, opts) : compile_ternary(indent, scope)
     end
 
+    # Compile the IfNode as a regular if-else statement.
     def compile_statement(indent, scope, opts)
       if_part   = "if (#{@condition.compile(indent, scope, :no_paren => true)}) {\n#{Expressions.wrap(@body).compile(indent + TAB, scope, opts)}\n#{indent}}"
-      else_part = @else_body ? " else {\n#{Expressions.wrap(@else_body).compile(indent + TAB, scope, opts)}\n#{indent}}" : ''
+      return if_part unless @else_body
+      else_part = chain? ?
+        " else #{@else_body.compile(indent, scope, opts)}" :
+        " else {\n#{Expressions.wrap(@else_body).compile(indent + TAB, scope, opts)}\n#{indent}}"
       if_part + else_part
     end
 
+    # Compile the IfNode into a ternary operator.
     def compile_ternary(indent, scope)
       if_part   = "#{@condition.compile(indent, scope)} ? #{@body.compile(indent, scope)}"
       else_part = @else_body ? "#{@else_body.compile(indent, scope)}" : 'null'
