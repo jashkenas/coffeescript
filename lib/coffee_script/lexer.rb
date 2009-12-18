@@ -11,7 +11,7 @@ class Lexer
                 "super"]
 
   IDENTIFIER = /\A([a-zA-Z$_]\w*)/
-  NUMBER     = /\A([0-9]+(\.[0-9]+)?)/
+  NUMBER     = /\A\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?))\b/i
   STRING     = /\A("(.*?)[^\\]"|'(.*?)[^\\]')/m
   JS         = /\A(`(.*?)`)/
   OPERATOR   = /\A([+\*&|\/\-%=<>]+)/
@@ -65,8 +65,7 @@ class Lexer
 
   def number_token
     return false unless number = @chunk[NUMBER, 1]
-    float = number.include?('.')
-    token(:NUMBER, float ? number.to_f : number.to_i)
+    token(:NUMBER, number)
     @i += number.length
   end
 
