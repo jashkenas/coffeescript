@@ -1,0 +1,43 @@
+require 'test_helper'
+
+class ParserTest < Test::Unit::TestCase
+
+  def setup
+    @par = Parser.new
+  end
+
+  def test_parsing_an_empty_string
+    puts @par.parse("").inspect
+  end
+
+  # def test_lexing_basic_assignment
+  #   code = "a: 'one'; b: [1, 2]"
+  #   assert @lex.tokenize(code) == [[:IDENTIFIER, "a"], [":", ":"],
+  #     [:STRING, "'one'"], [";", ";"], [:IDENTIFIER, "b"], [":", ":"],
+  #     ["[", "["], [:NUMBER, "1"], [",", ","], [:NUMBER, "2"], ["]", "]"]]
+  # end
+  #
+  # def test_lexing_object_literal
+  #   code = "{one : 1}"
+  #   assert @lex.tokenize(code) == [["{", "{"], [:IDENTIFIER, "one"], [":", ":"],
+  #     [:NUMBER, "1"], ["}", "}"]]
+  # end
+  #
+  # def test_lexing_function_definition
+  #   code = "x => x * x."
+  #   assert @lex.tokenize(code) == [[:PARAM, "x"], ["=>", "=>"],
+  #     [:IDENTIFIER, "x"], ["*", "*"], [:IDENTIFIER, "x"], [".", "."]]
+  # end
+  #
+  # def test_lexing_if_statement
+  #   code = "clap_your_hands() if happy"
+  #   assert @lex.tokenize(code) == [[:IDENTIFIER, "clap_your_hands"], ["(", "("],
+  #     [")", ")"], [:IF, "if"], [:IDENTIFIER, "happy"]]
+  # end
+  #
+  # def test_lexing
+  #   tokens = @lex.tokenize(File.read('test/fixtures/each.cs'))
+  #   assert tokens.inspect == File.read('test/fixtures/each.tokens')
+  # end
+
+end
