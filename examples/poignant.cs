@@ -103,3 +103,51 @@ Creature : {
       this.hit( enemy_hit )..
 
 }
+
+
+
+# # Get evil idea and swap in code words
+# print "Enter your new idea: "
+# idea = gets
+# code_words.each do |real, code|
+#   idea.gsub!( real, code )
+# end
+#
+# # Save the jibberish to a new file
+# print "File encoded.  Please enter a name for this idea: "
+# idea_name = gets.strip
+# File::open( "idea-" + idea_name + ".txt", "w" ) do |f|
+#   f << idea
+# end
+
+# Get evil idea and swap in code words
+print("Enter your new idea: ")
+idea: gets()
+code_words.each( real, code => idea.replace(real, code). )
+
+# Save the jibberish to a new file
+print("File encoded. Please enter a name for this idea: ")
+idea_name: gets().strip()
+File.open("idea-" + idea_name + '.txt', 'w', file => file.write(idea). )
+
+
+
+# def wipe_mutterings_from( sentence )
+#   unless sentence.respond_to? :include?
+#     raise ArgumentError,
+#       "cannot wipe mutterings from a #{ sentence.class }"
+#   end
+#   while sentence.include? '('
+#     open = sentence.index( '(' )
+#     close = sentence.index( ')', open )
+#     sentence[open..close] = '' if close
+#   end
+# end
+
+wipe_mutterings_from: sentence =>
+  throw new Error("cannot wipe mutterings") unless sentence.indexOf
+  while sentence.indexOf('(') >= 0
+    open:     sentence.indexOf('(') - 1
+    close:    sentence.indexOf(')') + 1
+    sentence: sentence[0, open] + sentence[close, sentence.length].
+    sentence.

@@ -61,7 +61,7 @@
 			<key>comment</key>
 			<string>match stuff like: a =&gt; … </string>
 			<key>match</key>
-			<string>([a-zA-Z_?.$]*)\s*(=&gt;)</string>
+			<string>([a-zA-Z_?., $]*)\s*(=&gt;)</string>
 			<key>name</key>
 			<string>meta.inline.function.cs</string>
 		</dict>
