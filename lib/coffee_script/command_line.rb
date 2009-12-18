@@ -5,6 +5,8 @@ require File.expand_path(File.dirname(__FILE__) + '/../coffee-script')
 
 module CoffeeScript
 
+  # The CommandLine handles all of the functionality of the `coffee-script`
+  # utility.
   class CommandLine
 
     BANNER = <<-EOS
@@ -14,8 +16,10 @@ Usage:
   coffee-script path/to/script.cs
     EOS
 
+    # Seconds to pause between checks for changed source files.
     WATCH_INTERVAL = 0.5
 
+    # Run the CommandLine off the contents of ARGV.
     def initialize
       @mtimes = {}
       parse_options
@@ -24,6 +28,7 @@ Usage:
       watch_coffee_scripts if @options[:watch]
     end
 
+    # The "--help" usage message.
     def usage
       puts "\n#{@option_parser}\n"
       exit
@@ -32,6 +37,8 @@ Usage:
 
     private
 
+    # Compiles (or partially compiles) the source CoffeeScript file, returning
+    # the desired JS, tokens, or lint results.
     def compile_javascript(source)
       return tokens(source) if @options[:tokens]
       contents = compile(source)
@@ -41,6 +48,8 @@ Usage:
       File.open(path_for(source), 'w+') {|f| f.write(contents) }
     end
 
+    # Spins up a watcher thread to keep track of the modification times of the
+    # source files, recompiling them whenever they're saved.
     def watch_coffee_scripts
       watch_thread = Thread.start do
         loop do
@@ -58,6 +67,7 @@ Usage:
       watch_thread.join
     end
 
+    # Ensure that all of the source files exist.
     def check_sources
       usage if @sources.empty?
       missing = @sources.detect {|s| !File.exists?(s) }
@@ -67,19 +77,23 @@ Usage:
       end
     end
 
-    # Pipe compiled JS through JSLint.
+    # Pipe compiled JS through JSLint (requires a working 'jsl' command).
     def lint(js)
       stdin, stdout, stderr = Open3.popen3('jsl -nologo -stdin')
       stdin.write(js)
       stdin.close
       puts stdout.read.tr("\n", '')
+      errs = stderr.read.chomp
+      puts errs unless errs.empty?
       stdout.close and stderr.close
     end
 
+    # Print the tokens that the lexer generates from a source script.
     def tokens(source)
       puts Lexer.new.tokenize(File.read(source)).inspect
     end
 
+    # Compile a single source file to JavaScript.
     def compile(source)
       begin
         CoffeeScript.compile(File.open(source))
@@ -98,11 +112,13 @@ Usage:
       File.join(dir, filename)
     end
 
+    # Install the CoffeeScript TextMate bundle to ~/Library.
     def install_bundle
       bundle_dir = File.expand_path('~/Library/Application Support/TextMate/Bundles/')
       FileUtils.cp_r(File.dirname(__FILE__) + '/CoffeeScript.tmbundle', bundle_dir)
     end
 
+    # Use OptionParser for all the options.
     def parse_options
       @options = {}
       @option_parser = OptionParser.new do |opts|
