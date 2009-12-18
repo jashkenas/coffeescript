@@ -24,9 +24,9 @@ class LexerTest < Test::Unit::TestCase
   end
 
   def test_lexing_function_definition
-    code = "x => x * x."
-    assert @lex.tokenize(code) == [[:PARAM, "x"], ["=>", "=>"],
-      [:IDENTIFIER, "x"], ["*", "*"], [:IDENTIFIER, "x"], [".", "."]]
+    code = "x, y => x * y."
+    assert @lex.tokenize(code) == [[:PARAM, "x"], [",", ","], [:PARAM, "y"],
+      ["=>", "=>"], [:IDENTIFIER, "x"], ["*", "*"], [:IDENTIFIER, "y"], [".", "."]]
   end
 
   def test_lexing_if_statement

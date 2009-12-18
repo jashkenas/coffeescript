@@ -169,10 +169,10 @@ rule
 
   # Expressions that can be treated as values.
   Value:
-    IDENTIFIER                        { result = ValueNode.new(val) }
-  | Array                             { result = ValueNode.new(val) }
-  | Object                            { result = ValueNode.new(val) }
-  | Parenthetical                     { result = ValueNode.new(val) }
+    IDENTIFIER                        { result = ValueNode.new(val[0]) }
+  | Array                             { result = ValueNode.new(val[0]) }
+  | Object                            { result = ValueNode.new(val[0]) }
+  | Parenthetical                     { result = ValueNode.new(val[0]) }
   | Value Accessor                    { result = val[0] << val[1] }
   | Invocation Accessor               { result = ValueNode.new(val[0], [val[1]]) }
   ;

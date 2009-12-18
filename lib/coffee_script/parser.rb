@@ -1274,28 +1274,28 @@ module_eval(<<'.,.,', 'grammar.y', 166)
 
 module_eval(<<'.,.,', 'grammar.y', 171)
   def _reduce_70(val, _values, result)
-     result = ValueNode.new(val) 
+     result = ValueNode.new(val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'grammar.y', 172)
   def _reduce_71(val, _values, result)
-     result = ValueNode.new(val) 
+     result = ValueNode.new(val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'grammar.y', 173)
   def _reduce_72(val, _values, result)
-     result = ValueNode.new(val) 
+     result = ValueNode.new(val[0]) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'grammar.y', 174)
   def _reduce_73(val, _values, result)
-     result = ValueNode.new(val) 
+     result = ValueNode.new(val[0]) 
     result
   end
 .,.,
