@@ -2,7 +2,8 @@ TODO:
 
 * Finish the examples.
 
-* Create the documentation page.
+* Create the documentation page. (amy, idle)
+  uv -c . -s coffeescript -t amy --no-lines examples/code.cs > code.html
 
 * Is it possible to close blocks (functions, ifs, trys) without an explicit
   block delimiter or significant whitespace?
