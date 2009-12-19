@@ -112,6 +112,10 @@ module CoffeeScript
       @expression = expression
     end
 
+    def line_ending
+      @expression.custom_return? ? '' : ';'
+    end
+
     def compile(indent, scope, opts={})
       return @expression.compile(indent, scope, opts.merge(:return => true)) if @expression.custom_return?
       compiled = @expression.compile(indent, scope)
@@ -407,12 +411,12 @@ module CoffeeScript
         set_result    = "var #{rvar} = [];\n#{indent}"
         save_result += "#{rvar}[#{ivar}] = "
         return_result = rvar
-        return_result = "#{opts[:assign]} = #{return_result}" if opts[:assign]
-        return_result = "return #{return_result}" if opts[:return]
+        return_result = "#{opts[:assign]} = #{return_result};" if opts[:assign]
+        return_result = "return #{return_result};" if opts[:return]
         return_result = "\n#{indent}#{return_result}"
         if @filter
           body = CallNode.new(ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [@body])
-          body = @filter ? IfNode.new(@filter, body, nil, :statement) : body
+          body = IfNode.new(@filter, body, nil, :statement)
           save_result = ''
           suffix = ''
         end
@@ -495,12 +499,12 @@ module CoffeeScript
   class IfNode < Node
     attr_reader :condition, :body, :else_body
 
-    def initialize(condition, body, else_body=nil, tag=nil)
+    def initialize(condition, body, else_body=nil, tags={})
       @condition = condition
       @body      = body && body.unwrap
       @else_body = else_body && else_body.unwrap
-      @tag       = tag
-      @condition = OpNode.new("!", @condition) if @tag == :invert
+      @tags      = tags
+      @condition = OpNode.new("!", @condition) if @tags[:invert]
     end
 
     def <<(else_body)
@@ -530,7 +534,7 @@ module CoffeeScript
     # The IfNode only compiles into a statement if either of the bodies needs
     # to be a statement.
     def statement?
-      @is_statement ||= ((@tag == :statement) || @body.statement? || (@else_body && @else_body.statement?))
+      @is_statement ||= !!(@tags[:statement] || @body.statement? || (@else_body && @else_body.statement?))
     end
 
     def custom_return?

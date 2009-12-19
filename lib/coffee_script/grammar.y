@@ -23,12 +23,13 @@ prechigh
   left     '<=' '<' '>' '>='
   right    '==' '!=' IS AINT
   left     '&&' '||' AND OR
-  left     ':'
   right    '-=' '+=' '/=' '*=' '||=' '&&='
   right    DELETE
-  right    RETURN THROW FOR IN WHILE
+  left     "."
+  right    THROW FOR IN WHILE
   left     UNLESS IF ELSE
-  nonassoc "."
+  left     ":"
+  right    RETURN
 preclow
 
 # We expect 4 shift/reduce errors for optional syntax.
@@ -340,8 +341,8 @@ rule
   If:
     IF Expression
       Then Expressions IfEnd          { result = IfNode.new(val[1], val[3], val[4]) }
-  | Expression IF Expression          { result = IfNode.new(val[2], Expressions.new([val[0]])) }
-  | Expression UNLESS Expression      { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, :invert) }
+  | Expression IF Expression          { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true}) }
+  | Expression UNLESS Expression      { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true, :invert => true}) }
   ;
 
 end
