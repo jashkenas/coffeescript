@@ -338,7 +338,8 @@ module CoffeeScript
     def compile(indent, scope, opts={})
       scope = Scope.new(scope)
       @params.each {|id| scope.find(id.to_s) }
-      opts  = opts.merge(:return => true)
+      opts[:return] = true
+      opts.delete(:assign)
       code  = @body.compile(indent + TAB, scope, opts)
       write("function(#{@params.join(', ')}) {\n#{code}\n#{indent}}")
     end
