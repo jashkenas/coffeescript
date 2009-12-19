@@ -26,14 +26,14 @@ prechigh
   left     ':'
   right    '-=' '+=' '/=' '*=' '||=' '&&='
   right    DELETE
-  right    RETURN THROW FOR WHILE
+  right    RETURN THROW FOR IN WHILE
   left     UNLESS IF ELSE
   nonassoc "."
 preclow
 
-# We expect 2 shift/reduce errors for optional syntax.
+# We expect 4 shift/reduce errors for optional syntax.
 # There used to be 252 -- greatly improved.
-expect 2
+expect 4
 
 rule
 
@@ -54,12 +54,22 @@ rule
 
   # All types of expressions in our language.
   Expression:
+    PureExpression
+  | Statement
+  ;
+
+  # The parts that are natural JavaScript expressions.
+  PureExpression:
     Literal
   | Value
   | Call
-  | Assign
   | Code
   | Operation
+  ;
+
+  # We have to take extra care to convert these statements into expressions.
+  Statement:
+    Assign
   | If
   | Try
   | Throw
@@ -267,17 +277,17 @@ rule
   # Array comprehensions, including guard and current index.
   For:
   Expression FOR IDENTIFIER
-    IN Expression "."                 { result = ForNode.new(val[0], val[4], val[2]) }
+    IN PureExpression "."             { result = ForNode.new(val[0], val[4], val[2], nil) }
   | Expression FOR
       IDENTIFIER "," IDENTIFIER
-      IN Expression "."               { result = ForNode.new(val[0], val[6], val[2], val[4]) }
+      IN PureExpression "."           { result = ForNode.new(val[0], val[6], val[2], nil, val[4]) }
   | Expression FOR IDENTIFIER
-      IN Expression
-      IF Expression "."               { result = ForNode.new(IfNode.new(val[6], Expressions.new([val[0]])), val[4], val[2]) }
+      IN PureExpression
+      IF Expression "."               { result = ForNode.new(val[0], val[4], val[2], val[6]) }
   | Expression FOR
       IDENTIFIER "," IDENTIFIER
-      IN Expression
-      IF Expression "."               { result = ForNode.new(IfNode.new(val[8], Expressions.new([val[0]])), val[6], val[2], val[4]) }
+      IN PureExpression
+      IF Expression "."               { result = ForNode.new(val[0], val[6], val[2], val[8], val[4]) }
   ;
 
   # Switch/Case blocks.

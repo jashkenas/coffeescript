@@ -36,12 +36,20 @@ class ParserTest < Test::Unit::TestCase
     assert body.operator == '*'
   end
 
-  def test_lexing_if_statement
+  def test_parsing_if_statement
     the_if = @par.parse("clap_your_hands() if happy").expressions.first
     assert the_if.is_a? IfNode
     assert the_if.condition.literal == 'happy'
     assert the_if.body.is_a? CallNode
     assert the_if.body.variable.literal == 'clap_your_hands'
+  end
+
+  def test_parsing_array_comprehension
+    nodes = @par.parse("i for x, i in [10, 9, 8, 7, 6, 5] if i % 2 is 0.").expressions
+    assert nodes.first.is_a? ForNode
+    assert nodes.first.body.literal == 'i'
+    assert nodes.first.filter.operator == '==='
+    assert nodes.first.source.literal.objects.last.value == "5"
   end
 
   def test_parsing

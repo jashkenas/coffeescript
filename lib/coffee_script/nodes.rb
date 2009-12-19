@@ -169,9 +169,21 @@ module CoffeeScript
       return !@properties.empty?
     end
 
+    def statement?
+      @literal.is_a?(Node) && @literal.statement? && !properties?
+    end
+
+    def custom_assign?
+      @literal.is_a?(Node) && @literal.custom_assign? && !properties?
+    end
+
+    def custom_return?
+      @literal.is_a?(Node) && @literal.custom_return? && !properties?
+    end
+
     def compile(indent, scope, opts={})
       parts = [@literal, @properties].flatten.map do |v|
-        v.respond_to?(:compile) ? v.compile(indent, scope) : v.to_s
+        v.respond_to?(:compile) ? v.compile(indent, scope, opts) : v.to_s
       end
       @last = parts.last
       parts.join('')
@@ -364,10 +376,10 @@ module CoffeeScript
     custom_return
     custom_assign
 
-    attr_reader :body, :source, :name, :index
+    attr_reader :body, :source, :name, :filter, :index
 
-    def initialize(body, source, name, index=nil)
-      @body, @source, @name, @index = body, source, name, index
+    def initialize(body, source, name, filter, index=nil)
+      @body, @source, @name, @filter, @index = body, source, name, filter, index
     end
 
     def line_ending
@@ -388,18 +400,28 @@ module CoffeeScript
       set_result    = ''
       save_result   = ''
       return_result = ''
+      body = @body
+      suffix = ';'
       if opts[:return] || opts[:assign]
         rvar          = scope.free_variable
         set_result    = "var #{rvar} = [];\n#{indent}"
-        save_result   = "#{rvar}[#{ivar}] = "
+        save_result += "#{rvar}[#{ivar}] = "
         return_result = rvar
         return_result = "#{opts[:assign]} = #{return_result}" if opts[:assign]
         return_result = "return #{return_result}" if opts[:return]
         return_result = "\n#{indent}#{return_result}"
+        if @filter
+          body = CallNode.new(ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [@body])
+          body = @filter ? IfNode.new(@filter, body, nil, :statement) : body
+          save_result = ''
+          suffix = ''
+        end
+      elsif @filter
+        body = IfNode.new(@filter, @body)
       end
 
-      body = @body.compile(indent + TAB, scope)
-      "#{source_part}\n#{indent}#{set_result}for (#{for_part}) {#{var_part}#{index_part}#{indent + TAB}#{save_result}#{body};\n#{indent}}#{return_result}"
+      body = body.compile(indent + TAB, scope)
+      "#{source_part}\n#{indent}#{set_result}for (#{for_part}) {#{var_part}#{index_part}#{indent + TAB}#{save_result}#{body}#{suffix}\n#{indent}}#{return_result}"
     end
   end
 
@@ -444,13 +466,25 @@ module CoffeeScript
     attr_reader :expressions
 
     def initialize(expressions)
-      @expressions = expressions
+      @expressions = expressions.unwrap
+    end
+
+    def statement?
+      @expressions.statement?
+    end
+
+    def custom_assign?
+      @expressions.custom_assign?
+    end
+
+    def custom_return?
+      @expressions.custom_return?
     end
 
     def compile(indent, scope, opts={})
-      compiled = @expressions.unwrap.compile(indent, scope)
+      compiled = @expressions.compile(indent, scope, opts)
       compiled = compiled[0...-1] if compiled[-1..-1] == ';'
-      opts[:no_paren] ? compiled : "(#{compiled})"
+      opts[:no_paren] || statement? ? compiled : "(#{compiled})"
     end
   end
 
@@ -465,7 +499,8 @@ module CoffeeScript
       @condition = condition
       @body      = body && body.unwrap
       @else_body = else_body && else_body.unwrap
-      @condition = OpNode.new("!", @condition) if tag == :invert
+      @tag       = tag
+      @condition = OpNode.new("!", @condition) if @tag == :invert
     end
 
     def <<(else_body)
@@ -495,7 +530,7 @@ module CoffeeScript
     # The IfNode only compiles into a statement if either of the bodies needs
     # to be a statement.
     def statement?
-      @is_statement ||= (@body.statement? || (@else_body && @else_body.statement?))
+      @is_statement ||= ((@tag == :statement) || @body.statement? || (@else_body && @else_body.statement?))
     end
 
     def custom_return?
