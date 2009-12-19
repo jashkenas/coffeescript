@@ -14,6 +14,10 @@ module CoffeeScript
     end
     alias_method :to_s, :to_str
 
+    def to_sym
+      to_str.to_sym
+    end
+
     def inspect
       @value.inspect
     end

@@ -18,20 +18,25 @@ module CoffeeScript
     def find(name, remote=false)
       found = check(name, remote)
       return found if found || remote
-      @variables[name] = true
+      @variables[name.to_sym] = true
       found
     end
 
     # Just check to see if a variable has already been declared.
     def check(name, remote=false)
-      return true if @variables[name]
+      return true if @variables[name.to_sym]
       @parent && @parent.find(name, true)
+    end
+
+    # You can reset a found variable on the immediate scope.
+    def reset(name)
+      @variables[name.to_sym] = false
     end
 
     # Find an available, short, name for a compiler-generated variable.
     def free_variable
       @temp_variable.succ! while check(@temp_variable)
-      @variables[@temp_variable] = true
+      @variables[@temp_variable.to_sym] = true
       @temp_variable.dup
     end
 
