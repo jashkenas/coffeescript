@@ -109,9 +109,9 @@ change_a_and_set_b: =>
 b: 20
 
 # Array comprehensions.
-supper: [food.capitalize() for food in ['toast', 'cheese', 'wine']]
+supper: food.capitalize() for food in ['toast', 'cheese', 'wine'].
 
-[drink(bottle) for bottle, i in ['soda', 'wine', 'lemonade'] if even(i)]
+drink(bottle) for bottle, i in ['soda', 'wine', 'lemonade'] if even(i).
 
 # Switch statements ("else" serves as a default).
 switch day
