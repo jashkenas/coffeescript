@@ -138,11 +138,14 @@ Usage:
         opts.on('-t', '--tokens', 'print the tokens that the lexer produces') do |t|
           @options[:tokens] = true
         end
+        opts.on('-v', '--verbose', 'print at every step of code generation') do |v|
+          ENV['VERBOSE'] = 'true'
+        end
         opts.on_tail('--install-bundle', 'install the CoffeeScript TextMate bundle') do |i|
           install_bundle
           exit
         end
-        opts.on_tail('-v', '--version', 'display coffee-script version') do
+        opts.on_tail('--version', 'display coffee-script version') do
           puts "coffee-script version #{CoffeeScript::VERSION}"
           exit
         end
