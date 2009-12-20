@@ -23,6 +23,7 @@ Usage:
     def initialize
       @mtimes = {}
       parse_options
+      return eval_scriptlet if @options[:eval]
       check_sources
       @sources.each {|source| compile_javascript(source) }
       watch_coffee_scripts if @options[:watch]
@@ -88,6 +89,11 @@ Usage:
       stdout.close and stderr.close
     end
 
+    # Eval a little piece of CoffeeScript directly from the command line.
+    def eval_scriptlet
+      puts CoffeeScript.compile(@sources.join(' '))
+    end
+
     # Print the tokens that the lexer generates from a source script.
     def tokens(source)
       puts Lexer.new.tokenize(File.read(source)).inspect
@@ -134,6 +140,9 @@ Usage:
         end
         opts.on('-l', '--lint', 'pipe the compiled JavaScript through JSLint') do |l|
           @options[:lint] = true
+        end
+        opts.on('-e', '--eval', 'eval a little scriptlet directly from the cli') do |e|
+          @options[:eval] = true
         end
         opts.on('-t', '--tokens', 'print the tokens that the lexer produces') do |t|
           @options[:tokens] = true

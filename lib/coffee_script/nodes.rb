@@ -68,8 +68,8 @@ module CoffeeScript
       "(function(){\n#{compile(TAB, Scope.new)}\n})();"
     end
 
-    # The extra fancy is to handle pushing down returns recursively to the
-    # final lines of inner statements (so as to make expressions out of them).
+    # The extra fancy is to handle pushing down returns and assignments
+    # recursively to the final lines of inner statements.
     def compile(indent='', scope=nil, opts={})
       return root_compile unless scope
       code = @expressions.map { |n|
@@ -171,7 +171,7 @@ module CoffeeScript
     end
   end
 
-  # A value, indexed or dotted into or vanilla.
+  # A value, indexed or dotted into, or vanilla.
   class ValueNode < Node
     attr_reader :literal, :properties, :last
 
