@@ -17,8 +17,16 @@ end
 
 desc "Build the documentation page"
 task :doc do
-  rendered = ERB.new(File.read('documentation/index.html.erb')).result(binding)
-  File.open('index.html', 'w+') {|f| f.write(rendered) }
+  source = 'documentation/index.html.erb'
+  loop do
+    mtime = File.stat(source).mtime
+    if !@mtime || mtime > @mtime
+      rendered = ERB.new(File.read(source)).result(binding)
+      File.open('index.html', 'w+') {|f| f.write(rendered) }
+    end
+    @mtime = mtime
+    sleep 1
+  end
 end
 
 namespace :gem do

@@ -7,10 +7,12 @@ TODO:
 * Figure out a generic way to transform statements into expressions, and
   use it recursively for returns and assigns on whiles, fors, ifs, etc.
   
-* If we manage to get array comprehensions working ... object comprehensions?
-
 * Create the documentation page. (amy, idle)
   uv -c . -s coffeescript -t amy --no-lines examples/code.cs > code.html
+  
+* Object comprehensions would be easy to add to array comprehensions -- if
+  we knew that the variable in question is, indeed, an object. Check for
+  length? Special syntax to tag it?
 
 * Is it possible to close blocks (functions, ifs, trys) without an explicit
   block delimiter or significant whitespace?
