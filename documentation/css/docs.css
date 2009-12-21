@@ -1,40 +1,34 @@
 body {
-  font-size: 16px;
-  line-height: 24px;
-  background: #f0f0e5;
-  color: #252519;
-  font-family: "Palatino Linotype", "Book Antiqua", Palatino, FreeSerif, serif;
+  font-size: 14px;
+  line-height: 20px;
+  background: #efefef;
+  color: #191933;
+  font-family: Arial, Helvetica, sans-serif;
 }
 div.container {
-  width: 720px;
+  width: 850px;
   margin: 50px 0 50px 50px;
 }
 p {
-  width: 550px;
+  padding-left: 13px;
+  width: 625px;
 }
-  #documentation p {
-    margin-bottom: 4px;
-  }
-a, a:visited {
-  padding: 0 2px;
-  text-decoration: none;
-  background: #dadaba;
-  color: #252519;
-}
-a:active, a:hover {
-  color: #000;
-  background: #f0c095;
+a {
+  color: #000055;
 }
 h1, h2, h3, h4, h5, h6 {
+  padding-left: 13px;
   margin-top: 40px;
 }
-b.header {
-  font-size: 18px;
+br.clear {
+  height: 0;
+  clear: both;
 }
-span.alias {
-  font-size: 14px;
-  font-style: italic;
-  margin-left: 20px;
+b.header {
+  color: #000055;
+  display: block;
+  margin: 40px 0 5px 0;
+  font-size: 16px;
 }
 table, tr, td {
   margin: 0; padding: 0;
@@ -53,7 +47,24 @@ code, pre, tt {
   }
   pre {
     font-size: 12px;
-    padding: 2px 0 2px 12px;
-    border-left: 6px solid #aaaa99;
-    margin: 0px 0 30px;
+    padding: 0 0 0 12px;
+    margin: 0;
+    width: 410px;
+    float: left;
+    border-left: 1px dotted #559;
+  }
+    pre:first-child {
+      border-left: 0;
+    }
+div.code {
+  position: relative;
+  border: 1px solid #cacaca;
+  background: #fff;
+  padding: 7px 0 10px 0;
+  -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px;
+  -webkit-box-shadow: 0px 0px 7px #cacaca;
+}
+  div.code button {
+    position: absolute;
+    right: 8px; bottom: 8px;
   }

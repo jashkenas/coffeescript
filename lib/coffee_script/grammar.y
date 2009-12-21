@@ -10,7 +10,7 @@ token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
 token FOR IN WHILE
 token SWITCH CASE
-token SUPER
+token EXTENDS SUPER
 token DELETE
 token NEWLINE
 token JS
@@ -28,8 +28,8 @@ prechigh
   right    '-=' '+=' '/=' '*=' '||=' '&&='
   right    DELETE
   left     "."
-  right    THROW FOR IN WHILE
-  left     UNLESS IF ELSE
+  right    THROW FOR IN WHILE NEW
+  left     UNLESS IF ELSE EXTENDS
   left     ":"
   right    RETURN
 preclow
@@ -68,6 +68,7 @@ rule
   | Call
   | Code
   | Operation
+  | Extend
   ;
 
   # We have to take extra care to convert these statements into expressions.
@@ -244,6 +245,11 @@ rule
   # Calling super.
   Super:
     SUPER "(" ArgList ")"             { result = CallNode.new(:super, val[2]) }
+  ;
+
+  # Extending a class.
+  Extend:
+    IDENTIFIER EXTENDS Expression     { result = ExtendNode.new(val[0], val[2]) }
   ;
 
   # The array literal.

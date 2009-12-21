@@ -1,21 +1,483 @@
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
   <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
-  <title>CoffeeScript</title>
-  <link rel="stylesheet" type="text/css" href="documentation/css/docs.css" />  
+  <title>CoffeeScript, briefly...</title>
+  <link rel="stylesheet" type="text/css" href="documentation/css/docs.css" />
+  <link rel="stylesheet" type="text/css" href="documentation/css/idle.css" />
 </head>
 <body>
 
   <div class="container">
 
-    <h1>CoffeeScript</h1>
-    
+    <h1><sub style="font-size: 100px;">&#9749;</sub> CoffeeScript</h1>
+
     <p>
       CoffeeScript is a little language that compiles into JavaScript. Think
       of it as JavaScript's simpleminded kid brother &mdash; the same genes,
-      the same accent, but another kind of way of doing things.
+      the same accent, but a different sense of style. Apart from a handful of
+      bonus goodies, statements in CoffeeScript correspond one-to-one with their
+      JavaScript equivalent, it's just another way of saying it.
     </p>
+
+    <!-- -->
+
+    <p>
+      <b>Disclaimer:</b><br />
+      CoffeeScript is just for fun and seriously alpha. <i>There is no guarantee,
+      explicit or implied, of its suitability for any purpose.</i> That said, it
+      compiles into pretty-printed JavaScript (the good parts) that can pass through
+      <a href="http://www.jslint.com/">JSLint</a> warning-free.
+    </p>
+
+    <h2>Table of Contents</h2>
+
+    <p>
+      <i>
+        This document is structured so that it can be read from top to bottom,
+        if you like. Later sections use ideas and syntax previously introduced.
+      </i>
+    </p>
+
+    <p>
+      <a href="#punctuation">Punctuation Primer</a><br />
+      <a href="#functions">Functions and Invocation</a><br />
+      <a href="#objects_and_arrays">Objects and Arrays</a><br />
+      <a href="#assignment">Assignment</a><br />
+      <a href="#lexical_scope">Lexical Scoping and Variable Safety</a><br />
+      <a href="#conditionals">Conditionals, Ternaries, and Conditional Assignment</a><br />
+      <a href="#expressions">Everything is an Expression</a><br />
+      <a href="#while">While Loops</a><br />
+      <a href="#array_comprehensions">Array Comprehensions</a><br />
+      <a href="#slice">Array Slice Literals</a><br />
+      <a href="#inheritance">Inheritance, and Calling Super from a Subclass</a>
+      <a href="#embedded">Embedded JavaScript</a><br />
+      <a href="#switch">Switch/Case/Else</a><br />
+      <a href="#try">Try/Catch/Finally</a><br />
+      <a href="#strings">Multiline Strings</a><br />
+    </p>
+
+    <p>
+      In all of the following examples, the source CoffeeScript is provided on
+      the left, and the direct compilation into JavaScript is on the right.
+    </p>
+
+    <div id="documentation">
+
+      <p id="punctuation">
+        <b class="header">Punctuation Primer</b>
+        You don't need to use semicolons to (<b>;</b>) terminate expressions, ending
+        the line will do just as well. So newlines can matter, but whitespace is
+        not otherwise significant. Instead of using curly braces (<b>{ }</b>)
+        to delimit blocks of code, a period (<b>.</b>) marks the end of a
+        function, if statement, or try/catch.
+      </p>
+      <!--  -->
+
+      <p id="functions">
+        <b class="header">Functions and Invocation</b>
+        Let's start with the best part, shall we? Function literals are my
+        absolute favorite thing about CoffeeScript.
+      </p>
+      <div class='code'><pre class="idle"><span class="FunctionName">square</span><span class="Keyword">:</span> <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> x <span class="Keyword">*</span> x.
+<span class="FunctionName">cube</span><span class="Keyword">:</span>   <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> square(x) <span class="Keyword">*</span> x.
+</pre><pre class="idle"><span class="Storage">var</span> <span class="FunctionName">square</span> = <span class="Storage">function</span>(<span class="FunctionArgument">x</span>) {
+  <span class="Keyword">return</span> x <span class="Keyword">*</span> x;
+};
+<span class="Storage">var</span> <span class="FunctionName">cube</span> = <span class="Storage">function</span>(<span class="FunctionArgument">x</span>) {
+  <span class="Keyword">return</span> square(x) <span class="Keyword">*</span> x;
+};
+</pre><button onclick='javascript: var square = function(x) {
+  return x * x;
+};
+var cube = function(x) {
+  return square(x) * x;
+};
+;alert(cube(5));'>run: cube(5)</button><br class='clear' /></div>
+
+      <p id="objects_arrays">
+        <b class="header">Objects and Arrays</b>
+        Object and Array literals look very similar. When you spread out
+        each assignment on a separate line, the commas are optional.
+      </p>
+      <div class='code'><pre class="idle">song<span class="Keyword">:</span> [<span class="String"><span class="String">&quot;</span>do<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>re<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>mi<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>fa<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>so<span class="String">&quot;</span></span>]
+ages<span class="Keyword">:</span> {
+  max<span class="Keyword">:</span> <span class="Number">10</span>
+  ida<span class="Keyword">:</span> <span class="Number">9</span>
+  tim<span class="Keyword">:</span> <span class="Number">11</span>
+}
+</pre><pre class="idle"><span class="Storage">var</span> song <span class="Keyword">=</span> [<span class="String"><span class="String">&quot;</span>do<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>re<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>mi<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>fa<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>so<span class="String">&quot;</span></span>];
+<span class="Storage">var</span> ages <span class="Keyword">=</span> {
+  max: <span class="Number">10</span>,
+  ida: <span class="Number">9</span>,
+  tim: <span class="Number">11</span>
+};
+</pre><button onclick='javascript: var song = ["do", "re", "mi", "fa", "so"];
+var ages = {
+  max: 10,
+  ida: 9,
+  tim: 11
+};
+;alert(song.join(","));'>run: song.join(",")</button><br class='clear' /></div>
+      <p>
+      </p>
+
+      <p id="assignment">
+        <b class="header">Assignment</b>
+        All assignment in CoffeeScript, whether to a variable or to an object
+        property, uses a colon. Equal signs are only needed for mathy things.
+      </p>
+      <div class='code'><pre class="idle">greeting<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Hello CoffeeScript<span class="String">&quot;</span></span>
+difficulty<span class="Keyword">:</span> <span class="Number">0.5</span>
+</pre><pre class="idle"><span class="Storage">var</span> greeting <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Hello CoffeeScript<span class="String">&quot;</span></span>;
+<span class="Storage">var</span> difficulty <span class="Keyword">=</span> <span class="Number">0.5</span>;
+</pre><button onclick='javascript: var greeting = "Hello CoffeeScript";
+var difficulty = 0.5;
+;alert(greeting);'>run: greeting</button><br class='clear' /></div>
+      <p>
+      </p>
+
+      <p id="lexical_scope">
+        <b class="header">Lexical Scoping and Variable Safety</b>
+        The CoffeeScript compiler takes care to make sure that all of your variables
+        are properly defined within lexical scope &mdash; you never need to declare
+        <i>var</i> yourself.
+      </p>
+      <div class='code'><pre class="idle">num<span class="Keyword">:</span> <span class="Number">1</span>
+<span class="FunctionName">change_numbers</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
+  num<span class="Keyword">:</span> <span class="Number">2</span>
+  new_num<span class="Keyword">:</span> <span class="Number">3</span>.
+new_num<span class="Keyword">:</span> change_numbers()
+</pre><pre class="idle"><span class="Storage">var</span> num <span class="Keyword">=</span> <span class="Number">1</span>;
+<span class="Storage">var</span> <span class="FunctionName">change_numbers</span> = <span class="Storage">function</span>() {
+  num <span class="Keyword">=</span> <span class="Number">2</span>;
+  <span class="Storage">var</span> new_num <span class="Keyword">=</span> <span class="Number">3</span>;
+  <span class="Keyword">return</span> new_num;
+};
+<span class="Storage">var</span> new_num <span class="Keyword">=</span> change_numbers();
+</pre><button onclick='javascript: var num = 1;
+var change_numbers = function() {
+  num = 2;
+  var new_num = 3;
+  return new_num;
+};
+var new_num = change_numbers();
+;alert(new_num);'>run: new_num</button><br class='clear' /></div>
+      <p>
+        Notice how the variables are declared with <i>var</i> the first time
+        they appear. The second reference of <b>num</b>, within the function,
+        is not redeclared because <b>num</b> is still in scope. As opposed
+        to the second <b>new_num</b>, in the last line.
+      </p>
+
+      <p id="conditionals">
+        <b class="header">Conditionals, Ternaries, and Conditional Assignment</b>
+      </p>
+      <div class='code'><pre class="idle">mood<span class="Keyword">:</span> greatly_improved <span class="Keyword">if</span> singing
+
+<span class="Keyword">if</span> happy <span class="Keyword">and</span> knows_it
+  claps_hands()
+  cha_cha_cha().
+
+date<span class="Keyword">:</span> <span class="Keyword">if</span> friday <span class="Keyword">then</span> sue <span class="Keyword">else</span> jill.
+
+expensive <span class="Keyword">||</span><span class="Keyword">=</span> do_the_math()
+</pre><pre class="idle"><span class="Storage">var</span> mood;
+<span class="Keyword">if</span> (singing) {
+  mood <span class="Keyword">=</span> greatly_improved;
+}
+<span class="Keyword">if</span> (happy <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> knows_it) {
+  claps_hands();
+  cha_cha_cha();
+}
+<span class="Storage">var</span> date <span class="Keyword">=</span> friday ? sue : jill;
+expensive <span class="Keyword">=</span> expensive <span class="Keyword">||</span> do_the_math();
+</pre><br class='clear' /></div>
+      <p>
+      </p>
+
+      <p id="expressions">
+        <b class="header">Everything is an Expression</b>
+        You might have noticed how even though we don't add return statements
+        to CoffeScript functions, they nonetheless return their final value.
+        The CoffeeScript compiler tries to make sure that every little language
+        construct can be used as an expression.
+      </p>
+      <div class='code'><pre class="idle"><span class="FunctionName">grade</span><span class="Keyword">:</span> <span class="FunctionArgument">student</span> <span class="Storage">=&gt;</span>
+  <span class="Keyword">if</span> student.excellent_work
+    <span class="String"><span class="String">&quot;</span>A+<span class="String">&quot;</span></span>
+  <span class="Keyword">else</span> <span class="Keyword">if</span> student.okay_stuff
+    <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span>
+  <span class="Keyword">else</span>
+    <span class="String"><span class="String">&quot;</span>C<span class="String">&quot;</span></span>..
+
+eldest<span class="Keyword">:</span> <span class="Keyword">if</span> <span class="Number">24</span> <span class="Keyword">&gt;</span> <span class="Number">21</span> <span class="Keyword">then</span> <span class="String"><span class="String">&quot;</span>Liz<span class="String">&quot;</span></span> <span class="Keyword">else</span> <span class="String"><span class="String">&quot;</span>Ike<span class="String">&quot;</span></span>.
+</pre><pre class="idle"><span class="Storage">var</span> <span class="FunctionName">grade</span> = <span class="Storage">function</span>(<span class="FunctionArgument">student</span>) {
+  <span class="Keyword">if</span> (student.excellent_work) {
+    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>A+<span class="String">&quot;</span></span>;
+  } <span class="Keyword">else</span> <span class="Keyword">if</span> (student.okay_stuff) {
+    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span>;
+  } <span class="Keyword">else</span> {
+    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>C<span class="String">&quot;</span></span>;
+  }
+};
+<span class="Storage">var</span> eldest <span class="Keyword">=</span> <span class="Number">24</span> <span class="Keyword">&gt;</span> <span class="Number">21</span> ? <span class="String"><span class="String">&quot;</span>Liz<span class="String">&quot;</span></span> : <span class="String"><span class="String">&quot;</span>Ike<span class="String">&quot;</span></span>;
+</pre><button onclick='javascript: var grade = function(student) {
+  if (student.excellent_work) {
+    return "A+";
+  } else if (student.okay_stuff) {
+    return "B";
+  } else {
+    return "C";
+  }
+};
+var eldest = 24 > 21 ? "Liz" : "Ike";
+;alert(eldest);'>run: eldest</button><br class='clear' /></div>
+      <p>
+        When compiling a function definition, CoffeeScript tries to push down
+        the return statement to each of the potential final lines of the function.
+        It uses the same mechanism to push down assignment statements. If statement
+        are compiled into ternary operators when possible, so that they can be used
+        as expressions.
+      </p>
+
+      <p id="while">
+        <b class="header">While Loops</b>
+        The only low-level loop that CoffeeScript provides is the while loop.
+      </p>
+      <div class='code'><pre class="idle"><span class="Keyword">while</span> demand <span class="Keyword">&gt;</span> supply
+  sell()
+  restock().
+
+<span class="Keyword">while</span> supply <span class="Keyword">&gt;</span> demand <span class="Keyword">then</span> buy().
+</pre><pre class="idle"><span class="Keyword">while</span> (demand <span class="Keyword">&gt;</span> supply) {
+  sell();
+  restock();
+}
+<span class="Keyword">while</span> (supply <span class="Keyword">&gt;</span> demand) {
+  buy();
+}
+</pre><br class='clear' /></div>
+
+      <p id="array_comprehensions">
+        <b class="header">Array Comprehensions</b>
+        Most of your looping needs should be handled by array comprehensions.
+        They replace (and compile into) for loops, handling
+        <b>each</b>/<b>forEach</b> style loops, as well as <b>select</b>/<b>filter</b>.
+        Unlike for loops, array comprehensions are expressions, and can be returned
+        and assigned.
+      </p>
+      <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> Eat lunch.</span>
+lunch<span class="Keyword">:</span> food.eat() <span class="Keyword">for</span> food <span class="Keyword">in</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>].
+
+<span class="Comment"><span class="Comment">#</span> Zebra-stripe a table.</span>
+highlight(row) <span class="Keyword">for</span> row, i <span class="Keyword">in</span> table <span class="Keyword">if</span> i <span class="Keyword">%</span> <span class="Number">2</span> <span class="Keyword">is</span> <span class="Number">0</span>.
+</pre><pre class="idle"><span class="Storage">var</span> lunch;
+<span class="Storage">var</span> a <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
+<span class="Storage">var</span> d <span class="Keyword">=</span> [];
+<span class="Keyword">for</span> (<span class="Storage">var</span> b<span class="Keyword">=</span><span class="Number">0</span>, c<span class="Keyword">=</span>a.<span class="LibraryConstant">length</span>; b<span class="Keyword">&lt;</span>c; b<span class="Keyword">++</span>) {
+  <span class="Storage">var</span> food <span class="Keyword">=</span> a[b];
+  d[b] <span class="Keyword">=</span> food.eat();
+}
+lunch <span class="Keyword">=</span> d;
+<span class="Storage">var</span> e <span class="Keyword">=</span> table;
+<span class="Keyword">for</span> (<span class="Storage">var</span> f<span class="Keyword">=</span><span class="Number">0</span>, g<span class="Keyword">=</span>e.<span class="LibraryConstant">length</span>; f<span class="Keyword">&lt;</span>g; f<span class="Keyword">++</span>) {
+  <span class="Storage">var</span> row <span class="Keyword">=</span> e[f];
+  <span class="Storage">var</span> i <span class="Keyword">=</span> f;
+  i <span class="Keyword">%</span> <span class="Number">2</span> <span class="Keyword">===</span> <span class="Number">0</span> ? highlight(row) : <span class="BuiltInConstant">null</span>;
+}
+</pre><br class='clear' /></div>
+
+      <p id="slice">
+        <b class="header">Array Slice Literals</b>
+        CoffeeScript includes a literal syntax for extracting slices of arrays.
+        The first argument is the index of the first element in the slice, and
+        the second is the index of the last one.
+      </p>
+      <div class='code'><pre class="idle">nums<span class="Keyword">:</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>]
+three_to_six<span class="Keyword">:</span> nums[<span class="Number">3</span>, <span class="Number">6</span>]
+</pre><pre class="idle"><span class="Storage">var</span> nums <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
+<span class="Storage">var</span> three_to_six <span class="Keyword">=</span> nums.<span class="LibraryFunction">slice</span>(<span class="Number">3</span>, <span class="Number">6</span> <span class="Keyword">+</span> <span class="Number">1</span>);
+</pre><button onclick='javascript: var nums = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+var three_to_six = nums.slice(3, 6 + 1);
+;alert(three_to_six);'>run: three_to_six</button><br class='clear' /></div>
+
+      <p id="inheritance">
+        <b class="header">Inheritance, and Calling Super from a Subclass</b>
+        JavaScript's prototypal inheritance has always been a bit of a
+        brain-bender, with a whole family tree of libraries (Base2, Prototype
+        ).
+      </p>
+      <div class='code'><pre class="idle"><span class="FunctionName">Animal</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span> .
+<span class="FunctionName">Animal.prototype.move</span><span class="Keyword">:</span> <span class="FunctionArgument">meters</span> <span class="Storage">=&gt;</span>
+  alert(<span class="Variable">this</span>.name <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>).
+
+<span class="FunctionName">Snake</span><span class="Keyword">:</span> <span class="FunctionArgument">name</span> <span class="Storage">=&gt;</span> <span class="Variable">this</span>.name<span class="Keyword">:</span> name.
+Snake <span class="Variable">extends</span> <span class="Keyword">new</span> <span class="TypeName">Animal</span>()
+<span class="FunctionName">Snake.prototype.move</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
+  alert(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>)
+  <span class="Variable">super</span>(<span class="Number">5</span>).
+
+<span class="FunctionName">Horse</span><span class="Keyword">:</span> <span class="FunctionArgument">name</span> <span class="Storage">=&gt;</span> <span class="Variable">this</span>.name<span class="Keyword">:</span> name.
+Horse <span class="Variable">extends</span> <span class="Keyword">new</span> <span class="TypeName">Animal</span>()
+<span class="FunctionName">Horse.prototype.move</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
+  alert(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>)
+  <span class="Variable">super</span>(<span class="Number">45</span>).
+
+sam<span class="Keyword">:</span> <span class="Keyword">new</span> <span class="TypeName">Snake</span>(<span class="String"><span class="String">&quot;</span>Sammy the Python<span class="String">&quot;</span></span>)
+tom<span class="Keyword">:</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span>(<span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>)
+
+sam.move()
+tom.move()
+</pre><pre class="idle"><span class="Storage">var</span> <span class="FunctionName">Animal</span> = <span class="Storage">function</span>() {
+
+};
+<span class="LibraryClassType">Animal</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>(<span class="FunctionArgument">meters</span>) {
+  <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>);
+};
+<span class="Storage">var</span> <span class="FunctionName">Snake</span> = <span class="Storage">function</span>(<span class="FunctionArgument">name</span>) {
+  <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
+};
+<span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">Animal</span>();
+<span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>() {
+  <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>);
+  <span class="Keyword">return</span> <span class="Variable">this</span>.<span class="LibraryConstant">constructor</span>.<span class="LibraryConstant">prototype</span>.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">5</span>);
+};
+<span class="Storage">var</span> <span class="FunctionName">Horse</span> = <span class="Storage">function</span>(<span class="FunctionArgument">name</span>) {
+  <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
+};
+<span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">Animal</span>();
+<span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>() {
+  <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>);
+  <span class="Keyword">return</span> <span class="Variable">this</span>.<span class="LibraryConstant">constructor</span>.<span class="LibraryConstant">prototype</span>.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">45</span>);
+};
+<span class="Storage">var</span> sam <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Snake</span>(<span class="String"><span class="String">&quot;</span>Sammy the Python<span class="String">&quot;</span></span>);
+<span class="Storage">var</span> tom <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span>(<span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>);
+sam.move();
+tom.move();
+</pre><button onclick='javascript: var Animal = function() {
+
+};
+Animal.prototype.move = function(meters) {
+  return alert(this.name + " moved " + meters + "m.");
+};
+var Snake = function(name) {
+  this.name = name;
+};
+Snake.prototype = new Animal();
+Snake.prototype.move = function() {
+  alert("Slithering...");
+  return this.constructor.prototype.move.call(this, 5);
+};
+var Horse = function(name) {
+  this.name = name;
+};
+Horse.prototype = new Animal();
+Horse.prototype.move = function() {
+  alert("Galloping...");
+  return this.constructor.prototype.move.call(this, 45);
+};
+var sam = new Snake("Sammy the Python");
+var tom = new Horse("Tommy the Palomino");
+sam.move();
+tom.move();
+;'>run</button><br class='clear' /></div>
+
+      <p id="embedded">
+        <b class="header">Embedded JavaScript</b>
+        If you ever need to interpolate literal JavaScript snippets, you can
+        use backticks to pass JavaScript straight through.
+      </p>
+      <div class='code'><pre class="idle"><span class="FunctionName">js</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span> <span class="String"><span class="String">`</span>alert(&quot;Hello JavaScript&quot;);<span class="String">`</span></span>.
+
+js() <span class="Keyword">if</span> <span class="Number">10</span> <span class="Keyword">&gt;</span> <span class="Number">9</span>
+</pre><pre class="idle"><span class="Storage">var</span> <span class="FunctionName">js</span> = <span class="Storage">function</span>() {
+  <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Hello JavaScript<span class="String">&quot;</span></span>);
+};
+<span class="Keyword">if</span> (<span class="Number">10</span> <span class="Keyword">&gt;</span> <span class="Number">9</span>) {
+  js();
+}
+</pre><button onclick='javascript: var js = function() {
+  return alert("Hello JavaScript");
+};
+if (10 > 9) {
+  js();
+}
+;'>run</button><br class='clear' /></div>
+
+      <p id="switch">
+        <b class="header">Switch/Case/Else</b>
+        Switch statements in JavaScript are fundamentally broken. You can only
+        do string comparisons, and need to break at the end of each case
+        statment to prevent falling through to the default case. CoffeeScript
+        compiles switch statements into if-else chains, allowing you to
+        compare any object (via <b>===</b>), preventing fall-through, and resulting
+        in a returnable expression.
+      </p>
+      <div class='code'><pre class="idle"><span class="Keyword">switch</span> day
+<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Tuesday<span class="String">&quot;</span></span>   <span class="Keyword">then</span> eat_breakfast()
+<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Wednesday<span class="String">&quot;</span></span> <span class="Keyword">then</span> go_to_the_park()
+<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Saturday<span class="String">&quot;</span></span>
+  <span class="Keyword">if</span> day <span class="Keyword">is</span> bingo_day <span class="Keyword">then</span> go_to_bingo().
+<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Sunday<span class="String">&quot;</span></span>    <span class="Keyword">then</span> go_to_church()
+<span class="Keyword">else</span> go_to_work().
+</pre><pre class="idle"><span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Tuesday<span class="String">&quot;</span></span>) {
+  eat_breakfast();
+} <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Wednesday<span class="String">&quot;</span></span>) {
+  go_to_the_park();
+} <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Saturday<span class="String">&quot;</span></span>) {
+  day <span class="Keyword">===</span> bingo_day ? go_to_bingo() : <span class="BuiltInConstant">null</span>;
+} <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Sunday<span class="String">&quot;</span></span>) {
+  go_to_church();
+} <span class="Keyword">else</span> {
+  go_to_work();
+}
+</pre><br class='clear' /></div>
+
+      <p id="try">
+        <b class="header">Try/Catch/Finally</b>
+        Try/catch statements just about the same as JavaScript (although
+        they work as expressions). No braces required.
+      </p>
+      <div class='code'><pre class="idle"><span class="Keyword">try</span>
+  all_hell_breaks_loose()
+  cats_and_dogs_living_together()
+<span class="Keyword">catch</span> error
+  print( error )
+<span class="Keyword">finally</span>
+  clean_up().
+</pre><pre class="idle"><span class="Keyword">try</span> {
+  all_hell_breaks_loose();
+  cats_and_dogs_living_together();
+} <span class="Keyword">catch</span> (error) {
+  <span class="LibraryFunction">print</span>(error);
+} <span class="Keyword">finally</span> {
+  clean_up();
+}
+</pre><br class='clear' /></div>
+
+      <p id="try">
+        <b class="header">Multiline Strings</b>
+        Multiline strings are allowed in CoffeeScript.
+      </p>
+      <div class='code'><pre class="idle">moby_dick<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago --</span>
+<span class="String">never mind how long precisely -- having little</span>
+<span class="String">or no money in my purse, and nothing particular</span>
+<span class="String">to interest me on shore, I thought I would sail</span>
+<span class="String">about a little and see the watery part of the</span>
+<span class="String">world...<span class="String">&quot;</span></span>
+</pre><pre class="idle"><span class="Storage">var</span> moby_dick <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago --\</span>
+<span class="String">never mind how long precisely -- having little\</span>
+<span class="String">or no money in my purse, and nothing particular\</span>
+<span class="String">to interest me on shore, I thought I would sail\</span>
+<span class="String">about a little and see the watery part of the\</span>
+<span class="String">world...<span class="String">&quot;</span></span>;
+</pre><br class='clear' /></div>
+
+    </div>
 
   </div>
 

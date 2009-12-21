@@ -18,6 +18,7 @@ end
 desc "Build the documentation page"
 task :doc do
   source = 'documentation/index.html.erb'
+  Thread.new { `bin/coffee-script documentation/cs/*.cs -o documentation/js -w` }
   loop do
     mtime = File.stat(source).mtime
     if !@mtime || mtime > @mtime
