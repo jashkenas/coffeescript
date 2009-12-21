@@ -65,6 +65,7 @@ Usage:
           sleep WATCH_INTERVAL
         end
       end
+      Signal.trap("INT") { watch_thread.kill }
       watch_thread.join
     end
 

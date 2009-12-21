@@ -18,7 +18,9 @@ end
 desc "Build the documentation page"
 task :doc do
   source = 'documentation/index.html.erb'
-  Thread.new { `bin/coffee-script documentation/cs/*.cs -o documentation/js -w` }
+  child = fork { exec "bin/coffee-script documentation/cs/*.cs -o documentation/js -w" }
+  at_exit { Process.kill("INT", child) }
+  Signal.trap("INT") { exit }
   loop do
     mtime = File.stat(source).mtime
     if !@mtime || mtime > @mtime
