@@ -110,6 +110,10 @@ module CoffeeScript
       STATEMENTS.include?(@value.to_s)
     end
 
+    def line_ending
+      @value.to_s[-1..-1] == ';' ? '' : ';'
+    end
+
     def compile(indent, scope, opts={})
       code = @value.to_s
       write(code)
@@ -169,6 +173,20 @@ module CoffeeScript
       methname = opts[:last_assign].sub(LEADING_DOT, '')
       "this.constructor.prototype.#{methname}.call(this, #{args})"
     end
+  end
+
+  class ExtendNode < Node
+
+    attr_reader :subclass, :superclass
+
+    def initialize(subclass, superclass)
+      @subclass, @superclass = subclass, superclass
+    end
+
+    def compile(indent, scope, opts={})
+      "#{@subclass}.prototype = #{@superclass.compile(indent, scope, opts)}"
+    end
+
   end
 
   # A value, indexed or dotted into, or vanilla.
@@ -269,7 +287,7 @@ module CoffeeScript
 
     def compile(indent, scope, opts={})
       name      = @variable.respond_to?(:compile) ? @variable.compile(indent, scope) : @variable
-      last      = @variable.respond_to?(:last) ? @variable.last : name
+      last      = @variable.respond_to?(:last) ? @variable.last.to_s : name.to_s
       opts      = opts.merge({:assign => name, :last_assign => last})
       return write("#{@variable}: #{@value.compile(indent, scope, opts)}") if @context == :object
       return write("#{name} = #{@value.compile(indent, scope, opts)}") if @variable.properties?
