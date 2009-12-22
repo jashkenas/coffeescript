@@ -35,6 +35,12 @@ class LexerTest < Test::Unit::TestCase
       [")", ")"], [:IF, "if"], [:IDENTIFIER, "happy"]]
   end
 
+  def test_lexing_comment
+    code = "a: 1\n # comment\n # on two lines\nb: 2"
+    token = @lex.tokenize(code).detect {|t| t[1].comment }
+    assert token[1].comment == ['comment', 'on two lines']
+  end
+
   def test_lexing
     tokens = @lex.tokenize(File.read('test/fixtures/each.cs'))
     assert tokens.inspect == File.read('test/fixtures/each.tokens')
