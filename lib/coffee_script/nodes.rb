@@ -648,7 +648,7 @@ module CoffeeScript
 
     def compile(o={})
       o = super(o)
-      write(o[:statement] || statement? ? compile_statement(o) : compile_ternary(o))
+      write(statement? ? compile_statement(o) : compile_ternary(o))
     end
 
     # Compile the IfNode as a regular if-else statement. Flattened chains
@@ -659,7 +659,7 @@ module CoffeeScript
       if_part   = "if (#{@condition.compile(o.merge(:no_paren => true))}) {\n#{Expressions.wrap(@body).compile(o)}\n#{indent}}"
       return if_part unless @else_body
       else_part = chain? ?
-        " else #{@else_body.compile(o.merge(:statement => true, :indent => indent))}" :
+        " else #{@else_body.compile(o.merge(:indent => indent))}" :
         " else {\n#{Expressions.wrap(@else_body).compile(o)}\n#{indent}}"
       if_part + else_part
     end

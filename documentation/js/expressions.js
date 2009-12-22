@@ -3,7 +3,11 @@
     if (student.excellent_work) {
       return "A+";
     } else if (student.okay_stuff) {
-      return "B";
+      return if (student.tried_hard) {
+        return "B";
+      } else {
+        return "B-";
+      };
     } else {
       return "C";
     }

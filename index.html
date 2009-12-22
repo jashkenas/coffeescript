@@ -26,7 +26,7 @@
     <!-- -->
 
     <p>
-      <b>Disclaimer:</b><br />
+      <b>Disclaimer:</b>
       CoffeeScript is just for fun and seriously alpha. <i>There is no guarantee,
       explicit or implied, of its suitability for any purpose.</i> That said, it
       compiles into pretty-printed JavaScript (the good parts) that can pass through
@@ -210,7 +210,7 @@ expensive <span class="Keyword">=</span> expensive <span class="Keyword">||</spa
   <span class="Keyword">if</span> student.excellent_work
     <span class="String"><span class="String">&quot;</span>A+<span class="String">&quot;</span></span>
   <span class="Keyword">else</span> <span class="Keyword">if</span> student.okay_stuff
-    <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span>
+    <span class="Keyword">if</span> student.tried_hard <span class="Keyword">then</span> <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span> <span class="Keyword">else</span> <span class="String"><span class="String">&quot;</span>B-<span class="String">&quot;</span></span>.
   <span class="Keyword">else</span>
     <span class="String"><span class="String">&quot;</span>C<span class="String">&quot;</span></span>..
 
@@ -219,7 +219,11 @@ eldest<span class="Keyword">:</span> <span class="Keyword">if</span> <span class
   <span class="Keyword">if</span> (student.excellent_work) {
     <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>A+<span class="String">&quot;</span></span>;
   } <span class="Keyword">else</span> <span class="Keyword">if</span> (student.okay_stuff) {
-    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span>;
+    <span class="Keyword">return</span> <span class="Keyword">if</span> (student.tried_hard) {
+      <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span>;
+    } <span class="Keyword">else</span> {
+      <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>B-<span class="String">&quot;</span></span>;
+    };
   } <span class="Keyword">else</span> {
     <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>C<span class="String">&quot;</span></span>;
   }
@@ -229,7 +233,11 @@ eldest<span class="Keyword">:</span> <span class="Keyword">if</span> <span class
   if (student.excellent_work) {
     return "A+";
   } else if (student.okay_stuff) {
-    return "B";
+    return if (student.tried_hard) {
+      return "B";
+    } else {
+      return "B-";
+    };
   } else {
     return "C";
   }
@@ -319,13 +327,13 @@ var three_to_six = nums.slice(3, 6 + 1);
   alert(<span class="Variable">this</span>.name <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>).
 
 <span class="FunctionName">Snake</span><span class="Keyword">:</span> <span class="FunctionArgument">name</span> <span class="Storage">=&gt;</span> <span class="Variable">this</span>.name<span class="Keyword">:</span> name.
-Snake <span class="Variable">extends</span> <span class="Keyword">new</span> <span class="TypeName">Animal</span>()
+Snake.prototype<span class="Keyword">:</span> <span class="Keyword">new</span> <span class="TypeName">Animal</span>()
 <span class="FunctionName">Snake.prototype.move</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
   alert(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>)
   <span class="Variable">super</span>(<span class="Number">5</span>).
 
 <span class="FunctionName">Horse</span><span class="Keyword">:</span> <span class="FunctionArgument">name</span> <span class="Storage">=&gt;</span> <span class="Variable">this</span>.name<span class="Keyword">:</span> name.
-Horse <span class="Variable">extends</span> <span class="Keyword">new</span> <span class="TypeName">Animal</span>()
+Horse.prototype<span class="Keyword">:</span> <span class="Keyword">new</span> <span class="TypeName">Animal</span>()
 <span class="FunctionName">Horse.prototype.move</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
   alert(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>)
   <span class="Variable">super</span>(<span class="Number">45</span>).

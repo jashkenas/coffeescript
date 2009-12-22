@@ -2,7 +2,7 @@ grade: student =>
   if student.excellent_work
     "A+"
   else if student.okay_stuff
-    "B"
+    if student.tried_hard then "B" else "B-".
   else
     "C"..
 
