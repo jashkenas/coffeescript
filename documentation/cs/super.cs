@@ -3,13 +3,13 @@ Animal.prototype.move: meters =>
   alert(this.name + " moved " + meters + "m.").
 
 Snake: name => this.name: name.
-Snake extends new Animal()
+Snake.prototype: new Animal()
 Snake.prototype.move: =>
   alert("Slithering...")
   super(5).
 
 Horse: name => this.name: name.
-Horse extends new Animal()
+Horse.prototype: new Animal()
 Horse.prototype.move: =>
   alert("Galloping...")
   super(45).

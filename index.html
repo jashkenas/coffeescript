@@ -275,7 +275,9 @@ lunch<span class="Keyword">:</span> food.eat() <span class="Keyword">for</span> 
 
 <span class="Comment"><span class="Comment">#</span> Zebra-stripe a table.</span>
 highlight(row) <span class="Keyword">for</span> row, i <span class="Keyword">in</span> table <span class="Keyword">if</span> i <span class="Keyword">%</span> <span class="Number">2</span> <span class="Keyword">is</span> <span class="Number">0</span>.
-</pre><pre class="idle"><span class="Storage">var</span> lunch;
+</pre><pre class="idle">
+<span class="Comment"><span class="Comment">//</span> Eat lunch.</span>
+<span class="Storage">var</span> lunch;
 <span class="Storage">var</span> a <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
 <span class="Storage">var</span> d <span class="Keyword">=</span> [];
 <span class="Keyword">for</span> (<span class="Storage">var</span> b<span class="Keyword">=</span><span class="Number">0</span>, c<span class="Keyword">=</span>a.<span class="LibraryConstant">length</span>; b<span class="Keyword">&lt;</span>c; b<span class="Keyword">++</span>) {
@@ -283,6 +285,7 @@ highlight(row) <span class="Keyword">for</span> row, i <span class="Keyword">in<
   d[b] <span class="Keyword">=</span> food.eat();
 }
 lunch <span class="Keyword">=</span> d;
+<span class="Comment"><span class="Comment">//</span> Zebra-stripe a table.</span>
 <span class="Storage">var</span> e <span class="Keyword">=</span> table;
 <span class="Keyword">for</span> (<span class="Storage">var</span> f<span class="Keyword">=</span><span class="Number">0</span>, g<span class="Keyword">=</span>e.<span class="LibraryConstant">length</span>; f<span class="Keyword">&lt;</span>g; f<span class="Keyword">++</span>) {
   <span class="Storage">var</span> row <span class="Keyword">=</span> e[f];
@@ -333,7 +336,6 @@ tom<span class="Keyword">:</span> <span class="Keyword">new</span> <span class="
 sam.move()
 tom.move()
 </pre><pre class="idle"><span class="Storage">var</span> <span class="FunctionName">Animal</span> = <span class="Storage">function</span>() {
-
 };
 <span class="LibraryClassType">Animal</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>(<span class="FunctionArgument">meters</span>) {
   <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>);
@@ -359,7 +361,6 @@ tom.move()
 sam.move();
 tom.move();
 </pre><button onclick='javascript: var Animal = function() {
-
 };
 Animal.prototype.move = function(meters) {
   return alert(this.name + " moved " + meters + "m.");
@@ -429,7 +430,9 @@ if (10 > 9) {
 } <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Wednesday<span class="String">&quot;</span></span>) {
   go_to_the_park();
 } <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Saturday<span class="String">&quot;</span></span>) {
-  day <span class="Keyword">===</span> bingo_day ? go_to_bingo() : <span class="BuiltInConstant">null</span>;
+  <span class="Keyword">if</span> (day <span class="Keyword">===</span> bingo_day) {
+    go_to_bingo();
+  };
 } <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Sunday<span class="String">&quot;</span></span>) {
   go_to_church();
 } <span class="Keyword">else</span> {
