@@ -1,6 +1,5 @@
 (function(){
   var Animal = function() {
-
   };
   Animal.prototype.move = function(meters) {
     return alert(this.name + " moved " + meters + "m.");

@@ -213,21 +213,6 @@ module CoffeeScript
     end
   end
 
-  class ExtendNode < Node
-
-    attr_reader :subclass, :superclass
-
-    def initialize(subclass, superclass)
-      @subclass, @superclass = subclass, superclass
-    end
-
-    def compile(o={})
-      o = super(o)
-      "#{@subclass}.prototype = #{@superclass.compile(o)}"
-    end
-
-  end
-
   # A value, indexed or dotted into, or vanilla.
   class ValueNode < Node
     attr_reader :literal, :properties, :last

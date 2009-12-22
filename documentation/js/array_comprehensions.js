@@ -1,4 +1,6 @@
 (function(){
+
+  // Eat lunch.
   var lunch;
   var a = ['toast', 'cheese', 'wine'];
   var d = [];
@@ -7,6 +9,7 @@
     d[b] = food.eat();
   }
   lunch = d;
+  // Zebra-stripe a table.
   var e = table;
   for (var f=0, g=e.length; f<g; f++) {
     var row = e[f];
