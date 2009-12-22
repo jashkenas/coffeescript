@@ -423,7 +423,10 @@ module CoffeeScript
       o = super(o)
       indent = o[:indent]
       o[:indent] += TAB
-      props = @properties.map {|p| o[:indent] + p.compile(o) }.join(",\n")
+      props = @properties.map { |prop|
+        joiner = prop == @properties.last ? '' : prop.is_a?(CommentNode) ? "\n" : ",\n"
+        o[:indent] + prop.compile(o) + joiner
+      }.join('')
       write("{\n#{props}\n#{indent}}")
     end
   end
@@ -438,8 +441,12 @@ module CoffeeScript
 
     def compile(o={})
       o = super(o)
-      objects = @objects.map {|obj| obj.compile(o) }.join(', ')
-      write("[#{objects}]")
+      objects = @objects.map { |obj|
+        joiner = obj.is_a?(CommentNode) ? "\n#{o[:indent] + TAB}" : obj == @objects.last ? '' : ', '
+        obj.compile(o.merge(:indent => o[:indent] + TAB)) + joiner
+      }.join('')
+      ending = objects.include?("\n") ? "\n#{o[:indent]}]" : ']'
+      write("[#{objects}#{ending}")
     end
   end
 

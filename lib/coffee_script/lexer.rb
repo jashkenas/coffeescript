@@ -32,7 +32,7 @@ module CoffeeScript
     # Token cleaning regexes.
     JS_CLEANER = /(\A`|`\Z)/
     MULTILINER = /\n/
-    COMMENT_CLEANER = /^\s*#/
+    COMMENT_CLEANER = /(^\s*#|\n\s*$)/
 
     # Tokens that always constitute the start of an expression.
     EXP_START  = ['{', '(', '[']

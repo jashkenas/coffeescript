@@ -57,6 +57,11 @@ class ParserTest < Test::Unit::TestCase
     assert nodes[1].is_a? CommentNode
   end
 
+  def test_parsing_inner_comments
+    nodes = @par.parse(File.read('test/fixtures/inner_comments.cs'))
+    assert nodes.compile == File.read('test/fixtures/inner_comments.js')
+  end
+
   def test_parsing
     nodes = @par.parse(File.read('test/fixtures/each.cs'))
     assign = nodes.expressions[1]
