@@ -46,6 +46,8 @@ module CoffeeScript
     statement
     attr_reader :expressions
 
+    STRIP_TRAILING_WHITESPACE = /\s+$/
+
     # Wrap up a node as an Expressions, unless it already is.
     def self.wrap(node)
       node.is_a?(Expressions) ? node : Expressions.new([node])
@@ -66,10 +68,17 @@ module CoffeeScript
       @expressions.length == 1 ? @expressions.first : self
     end
 
+    # Is the node last in this block of expressions.
+    def last?(node)
+      @last_index ||= @expressions.last.is_a?(CommentNode) ? -2 : -1
+      node == @expressions[@last_index]
+    end
+
     # If this is the top-level Expressions, wrap everything in a safety closure.
     def root_compile
-      options = {:indent => TAB, :scope => Scope.new}
-      "(function(){\n#{compile(options)}\n})();"
+      code = compile(:indent => TAB, :scope => Scope.new)
+      code.gsub!(STRIP_TRAILING_WHITESPACE, '')
+      "(function(){\n#{code}\n})();"
     end
 
     # The extra fancy is to handle pushing down returns and assignments
@@ -78,7 +87,7 @@ module CoffeeScript
       return root_compile unless options[:scope]
       code = @expressions.map { |node|
         o = super(options)
-        if node == @expressions.last && (o[:return] || o[:assign])
+        if last?(node) && (o[:return] || o[:assign])
           if o[:return]
             if node.statement? || node.custom_return?
               "#{o[:indent]}#{node.compile(o)}#{node.line_ending}"
@@ -147,6 +156,27 @@ module CoffeeScript
       compiled = @expression.compile(o)
       write(@expression.statement? ? "#{compiled}\n#{indent}return null" : "return #{compiled}")
     end
+  end
+
+  # Pass through CoffeeScript comments into JavaScript comments at the
+  # same position.
+  class CommentNode < Node
+    statement
+
+    def initialize(lines)
+      @lines = lines.value
+    end
+
+    def line_ending
+      ''
+    end
+
+    def compile(o={})
+      delimiter = "\n#{o[:indent]}//"
+      comment   = "#{delimiter}#{@lines.join(delimiter)}"
+      write(comment)
+    end
+
   end
 
   # Node for a function invocation. Takes care of converting super() calls into

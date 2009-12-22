@@ -1,4 +1,7 @@
 (function(){
+
+  // The cornerstone, an each implementation.
+  // Handles objects implementing forEach, arrays, and raw objects.
   _.each = function(obj, iterator, context) {
     var index = 0;
     try {

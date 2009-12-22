@@ -54,13 +54,12 @@ class ParserTest < Test::Unit::TestCase
 
   def test_parsing_comment
     nodes = @par.parse("a: 1\n # comment\nb: 2").expressions
-    # Comments are being passed through to the raw values,
-    # but are not yet properly exposed within the nodes.
+    assert nodes[1].is_a? CommentNode
   end
 
   def test_parsing
     nodes = @par.parse(File.read('test/fixtures/each.cs'))
-    assign = nodes.expressions.first
+    assign = nodes.expressions[1]
     assert assign.is_a? AssignNode
     assert assign.variable.literal == '_'
     assert assign.value.is_a? CodeNode

@@ -37,8 +37,9 @@ class LexerTest < Test::Unit::TestCase
 
   def test_lexing_comment
     code = "a: 1\n # comment\n # on two lines\nb: 2"
-    token = @lex.tokenize(code).detect {|t| t[1].comment }
-    assert token[1].comment == ['comment', 'on two lines']
+    assert @lex.tokenize(code) == [[:IDENTIFIER, "a"], [":", ":"], [:NUMBER, "1"],
+    ["\n", "\n"], [:COMMENT, [" comment", " on two lines"]], ["\n", "\n"],
+    [:IDENTIFIER, "b"], [":", ":"], [:NUMBER, "2"]]
   end
 
   def test_lexing
