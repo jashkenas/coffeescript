@@ -114,14 +114,17 @@ supper: food.capitalize() for food in ['toast', 'cheese', 'wine'].
 drink(bottle) for bottle, i in ['soda', 'wine', 'lemonade'] if even(i).
 
 # Switch statements ("else" serves as a default).
-switch day
+activity: switch day
 case "Tuesday"   then eat_breakfast()
 case "Sunday"    then go_to_church()
 case "Saturday"  then go_to_the_park()
 case "Wednesday"
-  eat_breakfast()
-  go_to_work()
-  eat_dinner()
+  if day is bingo_day
+    go_to_bingo()
+  else
+    eat_breakfast()
+    go_to_work()
+    eat_dinner().
 else go_to_work().
 
 # Semicolons can optionally be used instead of newlines.
