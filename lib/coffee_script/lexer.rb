@@ -32,6 +32,7 @@ module CoffeeScript
     # Token cleaning regexes.
     JS_CLEANER = /(\A`|`\Z)/
     MULTILINER = /[\r\n]/
+    COMMENT_CLEANER = /^\s*#\s*/
 
     # Tokens that always constitute the start of an expression.
     EXP_START  = ['{', '(', '[']
@@ -111,6 +112,8 @@ module CoffeeScript
     # Matches and consumes comments.
     def remove_comment
       return false unless comment = @chunk[COMMENT, 1]
+      cleaned = comment.gsub(COMMENT_CLEANER, '')
+      @prev_comment ? @prev_comment << cleaned : @prev_comment = [cleaned]
       @i += comment.length
     end
 
@@ -139,10 +142,12 @@ module CoffeeScript
       @i += value.length
     end
 
-    # Add a token to the results, taking note of the line number for syntax
-    # errors later in the parse.
+    # Add a token to the results, taking note of the line number, and
+    # immediately-preceding comment.
     def token(tag, value)
-      @tokens << [tag, Value.new(value, @line)]
+      comment = @prev_comment
+      @prev_comment = nil
+      @tokens << [tag, Value.new(value, @line, comment)]
     end
 
     # Peek at the previous token.
