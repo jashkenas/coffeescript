@@ -13,6 +13,7 @@ token SWITCH CASE
 token EXTENDS SUPER
 token DELETE
 token NEWLINE
+token COMMENT
 token JS
 
 # Declare order of operations.
@@ -81,6 +82,7 @@ rule
   | While
   | For
   | Switch
+  | Comment
   ;
 
   # All tokens that can terminate an expression.
@@ -121,6 +123,11 @@ rule
   # A return statement.
   Return:
     RETURN Expression                 { result = ReturnNode.new(val[1]) }
+  ;
+
+  # A comment.
+  Comment:
+    COMMENT                           { result = CommentNode.new(val[0]) }
   ;
 
   # Arithmetic and logical operators

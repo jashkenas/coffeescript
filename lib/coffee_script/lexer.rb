@@ -24,15 +24,15 @@ module CoffeeScript
     JS         = /\A(`(.*?)`)/
     OPERATOR   = /\A([+\*&|\/\-%=<>]+)/
     WHITESPACE = /\A([ \t\r]+)/
-    NEWLINE    = /\A([\r\n]+)/
-    COMMENT    = /\A(#[^\r\n]*)/
+    NEWLINE    = /\A(\n+)/
+    COMMENT    = /\A((#[^\n]*\s*)+)/m
     CODE       = /\A(=>)/
     REGEX      = /\A(\/(.*?)[^\\]\/[imgy]{0,4})/
 
     # Token cleaning regexes.
     JS_CLEANER = /(\A`|`\Z)/
-    MULTILINER = /[\r\n]/
-    COMMENT_CLEANER = /^\s*#\s*/
+    MULTILINER = /\n/
+    COMMENT_CLEANER = /^\s*#/
 
     # Tokens that always constitute the start of an expression.
     EXP_START  = ['{', '(', '[']
@@ -61,7 +61,7 @@ module CoffeeScript
       return if string_token
       return if js_token
       return if regex_token
-      return if remove_comment
+      return if comment_token
       return if whitespace_token
       return    literal_token
     end
@@ -110,10 +110,10 @@ module CoffeeScript
     end
 
     # Matches and consumes comments.
-    def remove_comment
+    def comment_token
       return false unless comment = @chunk[COMMENT, 1]
-      cleaned = comment.gsub(COMMENT_CLEANER, '')
-      @prev_comment ? @prev_comment << cleaned : @prev_comment = [cleaned]
+      token(:COMMENT, comment.gsub(COMMENT_CLEANER, '').split(MULTILINER))
+      token("\n", "\n")
       @i += comment.length
     end
 
@@ -145,9 +145,7 @@ module CoffeeScript
     # Add a token to the results, taking note of the line number, and
     # immediately-preceding comment.
     def token(tag, value)
-      comment = @prev_comment
-      @prev_comment = nil
-      @tokens << [tag, Value.new(value, @line, comment)]
+      @tokens << [tag, Value.new(value, @line)]
     end
 
     # Peek at the previous token.
