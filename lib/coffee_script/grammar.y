@@ -118,6 +118,7 @@ rule
   # Assignment within an object literal.
   AssignObj:
     IDENTIFIER ":" Expression         { result = AssignNode.new(val[0], val[2], :object) }
+  | Comment                           { result = val[0] }
   ;
 
   # A return statement.
