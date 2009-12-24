@@ -122,6 +122,7 @@ module CoffeeScript
       @i += comment.length
     end
 
+    # Record tokens for indentation differing from the previous line.
     def indent_token
       return false unless indent = @chunk[INDENT, 1]
       size = indent.size
@@ -132,8 +133,8 @@ module CoffeeScript
         @indents << @indent
       else
         tag = :OUTDENT
-        @indents.pop
-        @indent = @indents.first || 0
+        @indents.pop while @indents.last && ((@indents.last || 0) > size)
+        @indent = @indents.last || 0
       end
       @i += (size + 1)
       token(tag, size)
