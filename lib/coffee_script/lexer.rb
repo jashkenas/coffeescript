@@ -28,6 +28,7 @@ module CoffeeScript
     COMMENT    = /\A((#[^\n]*\s*)+)/m
     CODE       = /\A(=>)/
     REGEX      = /\A(\/(.*?)[^\\]\/[imgy]{0,4})/
+    INDENT     = /\A\n( *)/
 
     # Token cleaning regexes.
     JS_CLEANER = /(\A`|`\Z)/
@@ -45,6 +46,8 @@ module CoffeeScript
       @code = code.chomp  # Cleanup code by remove extra line breaks
       @i = 0              # Current character position we're parsing
       @line = 1           # The current line.
+      @indent = 0         # The current indent level.
+      @indents = []       # The stack of all indent levels we are currently within.
       @tokens = []        # Collection of all parsed tokens in the form [:TOKEN_TYPE, value]
       while @i < @code.length
         @chunk = @code[@i..-1]
@@ -62,6 +65,7 @@ module CoffeeScript
       return if js_token
       return if regex_token
       return if comment_token
+      return if indent_token
       return if whitespace_token
       return    literal_token
     end
@@ -116,6 +120,23 @@ module CoffeeScript
       token(:COMMENT, comment.gsub(COMMENT_CLEANER, '').split(MULTILINER))
       token("\n", "\n")
       @i += comment.length
+    end
+
+    def indent_token
+      return false unless indent = @chunk[INDENT, 1]
+      size = indent.size
+      return literal_token if size == @indent
+      if size > @indent
+        tag = :INDENT
+        @indent = size
+        @indents << @indent
+      else
+        tag = :OUTDENT
+        @indents.pop
+        @indent = @indents.first || 0
+      end
+      @i += (size + 1)
+      token(tag, size)
     end
 
     # Matches and consumes non-meaningful whitespace.
@@ -180,6 +201,13 @@ module CoffeeScript
     # Discard newlines immediately before this point.
     def remove_leading_newlines
       @tokens.pop if last_value == "\n"
+    end
+
+    # Close up all remaining open blocks.
+    def close_indentation
+      while indent = @indents.pop
+        token(:OUTDENT, @indents.first || 0)
+      end
     end
 
   end
