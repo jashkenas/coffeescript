@@ -211,13 +211,13 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\btrue\b</string>
+			<string>\b(true|on|yes)\b</string>
 			<key>name</key>
 			<string>constant.language.boolean.true.cs</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\bfalse\b</string>
+			<string>\b(false|off|no)\b</string>
 			<key>name</key>
 			<string>constant.language.boolean.false.cs</string>
 		</dict>

@@ -601,7 +601,7 @@ module CoffeeScript
       @body      = body && body.unwrap
       @else_body = else_body && else_body.unwrap
       @tags      = tags
-      @condition = OpNode.new("!", @condition) if @tags[:invert]
+      @condition = OpNode.new("!", ParentheticalNode.new(@condition)) if @tags[:invert]
     end
 
     def <<(else_body)
@@ -656,7 +656,7 @@ module CoffeeScript
     def compile_statement(o)
       indent = o[:indent]
       o[:indent] += TAB
-      if_part   = "if (#{@condition.compile(o.merge(:no_paren => true))}) {\n#{Expressions.wrap(@body).compile(o)}\n#{indent}}"
+      if_part   = "if (#{@condition.compile(o)}) {\n#{Expressions.wrap(@body).compile(o)}\n#{indent}}"
       return if_part unless @else_body
       else_part = chain? ?
         " else #{@else_body.compile(o.merge(:indent => indent))}" :
