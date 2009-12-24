@@ -26,7 +26,7 @@ breaker: if typeof(StopIteration) is 'undefined' then '__break__' else StopItera
 _: root._: obj => new wrapper(obj).
 
 # Export the Underscore object for CommonJS.
-exports._: _ if typeof(exports) aint 'undefined'
+if typeof(exports) != 'undefined' then exports._: _.
 
 # Create quick reference variables for speed access to core prototypes.
 slice:                Array.prototype.slice
