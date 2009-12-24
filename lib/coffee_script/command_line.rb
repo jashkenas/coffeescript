@@ -10,7 +10,7 @@ module CoffeeScript
   class CommandLine
 
     BANNER = <<-EOS
-coffee-script compiles CoffeeScript files into JavaScript.
+coffee-script compiles CoffeeScript source files into JavaScript.
 
 Usage:
   coffee-script path/to/script.cs
