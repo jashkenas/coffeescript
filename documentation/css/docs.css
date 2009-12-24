@@ -30,32 +30,34 @@ b.header {
   margin: 40px 0 5px 0;
   font-size: 16px;
 }
-table, tr, td {
-  margin: 0; padding: 0;
+table {
+  margin: 16px 0 0 13px; padding: 0;
+  width: 625px;
 }
-  td {
-    padding: 2px 12px 2px 0;
+  tr, td {
+    margin: 0; padding: 0;
   }
+    td {
+      padding: 9px 15px 9px 0;
+    }
 code, pre, tt {
   font-family: Monaco, Consolas, "Lucida Console", monospace;
   font-size: 12px;
   line-height: 18px;
-  color: #555529;
+  color: #191955;
 }
-  code {
-    margin-left: 20px;
+  tt {
+    background: #f8f8ff;
+    border: 1px solid #dedede;
+    font-size: 85%;
+    padding: 0px 0.2em;
   }
   pre {
+    border-left: 6px solid #222255;
+    margin-left: 13px;
+    padding: 3px 0 3px 12px;
     font-size: 12px;
-    padding: 0 0 0 12px;
-    margin: 0;
-    width: 410px;
-    float: left;
-    border-left: 1px dotted #559;
   }
-    pre:first-child {
-      border-left: 0;
-    }
 div.code {
   position: relative;
   border: 1px solid #cacaca;
@@ -68,3 +70,13 @@ div.code {
     position: absolute;
     right: 8px; bottom: 8px;
   }
+  div.code pre {
+    float: left;
+    width: 410px;
+    border-left: 1px dotted #559;
+    padding: 0 0 0 12px;
+    margin: 0;
+  }
+    div.code pre:first-child {
+      border-left: 0;
+    }

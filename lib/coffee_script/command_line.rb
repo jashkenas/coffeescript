@@ -41,12 +41,13 @@ Usage:
     # Compiles (or partially compiles) the source CoffeeScript file, returning
     # the desired JS, tokens, or lint results.
     def compile_javascript(source)
-      return tokens(source) if @options[:tokens]
-      contents = compile(source)
-      return unless contents
-      return puts(contents) if @options[:print]
-      return lint(contents) if @options[:lint]
-      File.open(path_for(source), 'w+') {|f| f.write(contents) }
+      script = File.read(source)
+      return tokens(script) if @options[:tokens]
+      js = compile(script, source)
+      return unless js
+      return puts(js) if @options[:print]
+      return lint(js) if @options[:lint]
+      File.open(path_for(source), 'w+') {|f| f.write(js) }
     end
 
     # Spins up a watcher thread to keep track of the modification times of the
@@ -92,18 +93,22 @@ Usage:
 
     # Eval a little piece of CoffeeScript directly from the command line.
     def eval_scriptlet
-      puts CoffeeScript.compile(@sources.join(' '))
+      script = @sources.join(' ')
+      return tokens(script) if @options[:tokens]
+      js = compile(script)
+      return lint(js) if @options[:lint]
+      puts js
     end
 
     # Print the tokens that the lexer generates from a source script.
-    def tokens(source)
-      puts Lexer.new.tokenize(File.read(source)).inspect
+    def tokens(script)
+      puts Lexer.new.tokenize(script).inspect
     end
 
     # Compile a single source file to JavaScript.
-    def compile(source)
+    def compile(script, source='')
       begin
-        CoffeeScript.compile(File.open(source))
+        CoffeeScript.compile(script)
       rescue CoffeeScript::ParseError => e
         STDERR.puts e.message(source)
         exit(1) unless @options[:watch]

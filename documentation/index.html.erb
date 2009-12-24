@@ -2,6 +2,7 @@
   require 'uv'
   def code_for(file, executable=false)
     @stripper ||= /(\A\(function\(\)\{\n|\}\)\(\);\Z|^  )/
+    return '' unless File.exists?("documentation/js/#{file}.js")
     cs = File.read("documentation/cs/#{file}.cs")
     js = File.read("documentation/js/#{file}.js").gsub(@stripper, '')
     cshtml = Uv.parse(cs, 'xhtml', 'coffeescript', false, 'idle', false)
@@ -30,10 +31,10 @@
 
     <p>
       CoffeeScript is a little language that compiles into JavaScript. Think
-      of it as JavaScript's simpleminded kid brother &mdash; the same genes,
+      of it as JavaScript's less ostentatious kid brother &mdash; the same genes,
       the same accent, but a different sense of style. Apart from a handful of
-      bonus goodies, statements in CoffeeScript correspond one-to-one with their
-      JavaScript equivalent, it's just another way of saying it.
+      bonus goodies, statements in CoffeeScript correspond one-to-one with their 
+      equivalent in JavaScript, it's just another way of saying it.
     </p>
 
     <!-- <%# code_for('intro') %>-->
@@ -41,181 +42,303 @@
     <p>
       <b>Disclaimer:</b>
       CoffeeScript is just for fun and seriously alpha. <i>There is no guarantee,
-      explicit or implied, of its suitability for any purpose.</i> That said, it
-      compiles into pretty-printed JavaScript (the good parts) that can pass through
-      <a href="http://www.jslint.com/">JSLint</a> warning-free.
+      explicit or implied, of its suitability for any purpose.</i> That said,
+      it compiles into clean JavaScript (the good parts) that can use existing
+      JavaScript libraries seamlessly, and can pass through
+      <a href="http://www.jslint.com/">JSLint</a> without warnings. The compiled
+      scripts are quite readable &mdash; pretty-printed, with comments
+      preserved intact.
     </p>
 
     <h2>Table of Contents</h2>
 
     <p>
-      <i>
-        This document is structured so that it can be read from top to bottom,
-        if you like. Later sections use ideas and syntax previously introduced.
-      </i>
-    </p>
-
-    <p>
+      <a href="#overview">Mini Overview</a><br />
+      <a href="#installation">Installation and Usage</a><br />
       <a href="#punctuation">Punctuation Primer</a><br />
       <a href="#functions">Functions and Invocation</a><br />
-      <a href="#objects_and_arrays">Objects and Arrays</a><br />
       <a href="#assignment">Assignment</a><br />
+      <a href="#objects_and_arrays">Objects and Arrays</a><br />
       <a href="#lexical_scope">Lexical Scoping and Variable Safety</a><br />
       <a href="#conditionals">Conditionals, Ternaries, and Conditional Assignment</a><br />
       <a href="#expressions">Everything is an Expression</a><br />
       <a href="#while">While Loops</a><br />
       <a href="#array_comprehensions">Array Comprehensions</a><br />
       <a href="#slice">Array Slice Literals</a><br />
-      <a href="#inheritance">Inheritance, and Calling Super from a Subclass</a>
+      <a href="#super">Calling Super from a Subclass</a><br />
       <a href="#embedded">Embedded JavaScript</a><br />
+      <a href="#aliases">Aliases</a><br />
       <a href="#switch">Switch/Case/Else</a><br />
       <a href="#try">Try/Catch/Finally</a><br />
       <a href="#strings">Multiline Strings</a><br />
     </p>
 
+    <h2 id="overview">Mini Overview</h2>
+
+    <p><i>CoffeeScript on the left, compiled JavaScript output on the right.</i></p>
+
+    <%= code_for('overview', 'cubed_list') %>
+
+    <h2 id="installation">Installation and Usage</h2>
+
+    <pre>
+sudo gem install coffee-script</pre>
+
     <p>
-      In all of the following examples, the source CoffeeScript is provided on
-      the left, and the direct compilation into JavaScript is on the right.
+      Installing the gem provides the <tt>coffee-script</tt> command, which can
+      be used to compile CoffeeScript <tt>.cs</tt> files into JavaScript, as
+      well as debug. By default, <tt>coffee-script</tt> writes out the
+      JavaScript as <tt>.js</tt> files in the same directory, but output
+      can be customized with the following options:
     </p>
 
-    <div id="documentation">
+    <table>
+      <tr>
+        <td width="25%"><code>-o, --output [DIR]</code></td>
+        <td>
+          Write out all compiled JavaScript files into the specified directory.
+        </td>
+      </tr>
+      <tr>
+        <td><code>-w, --watch</code></td>
+        <td>
+          Watch the modification times of the named scripts, recompiling as
+          soon as a change occurs.
+        </td>
+      </tr>
+      <tr>
+        <td><code>-p, --print</code></td>
+        <td>
+          Instead of writing out the JavaScript as a file, print it
+          directly to <b>stdout</b>.
+        </td>
+      </tr>
+      <tr>
+        <td><code>-l, --lint</code></td>
+        <td>
+          If the <tt>jsl</tt> (JavaScript Lint) command is installed, use it
+          to check the compilation of a CoffeeScript file.
+        </td>
+      </tr>
+      <tr>
+        <td><code>-e, --eval</code></td>
+        <td>
+          Compile and print a little snippet of CoffeeScript directly from the
+          command line. For example:<br /><tt>coffee-script -e "square: x => x * x."</tt>
+        </td>
+      </tr>
+      <tr>
+        <td><code>-t, --tokens</code></td>
+        <td>
+          Instead of parsing the CoffeeScript, just lex it, and print out the
+          token stream: <tt>[:IDENTIFIER, "square"], [":", ":"], [:PARAM, "x"]</tt> ...
+        </td>
+      </tr>
+      <tr>
+        <td><code>-v, --verbose</code></td>
+        <td>
+          As the JavaScript is being generated, print out every step of code
+          generation, including lexical scope and the node in the
+          AST.
+        </td>
+      </tr>
+    </table>
 
-      <p id="punctuation">
-        <b class="header">Punctuation Primer</b>
-        You don't need to use semicolons to (<b>;</b>) terminate expressions, ending
-        the line will do just as well. So newlines can matter, but whitespace is
-        not otherwise significant. Instead of using curly braces (<b>{ }</b>)
-        to delimit blocks of code, a period (<b>.</b>) marks the end of a
-        function, if statement, or try/catch.
-      </p>
-      <!-- <%# code_for('punctuation') %> -->
+    <p>
+      <b>Examples:</b>
+    </p>
 
-      <p id="functions">
-        <b class="header">Functions and Invocation</b>
-        Let's start with the best part, shall we? Function literals are my
-        absolute favorite thing about CoffeeScript.
-      </p>
-      <%= code_for('functions', 'cube(5)') %>
+    <pre>
+coffee-script path/to/script.cs
+coffee-script --watch --lint experimental.cs
+coffee-script --print app/scripts/*.cs > concatenation.js</pre>
 
-      <p id="objects_arrays">
-        <b class="header">Objects and Arrays</b>
-        Object and Array literals look very similar. When you spread out
-        each assignment on a separate line, the commas are optional.
-      </p>
-      <%= code_for('objects_and_arrays', 'song.join(",")') %>
-      <p>
-      </p>
+    <h2>Language Reference</h2>
 
-      <p id="assignment">
-        <b class="header">Assignment</b>
-        All assignment in CoffeeScript, whether to a variable or to an object
-        property, uses a colon. Equal signs are only needed for mathy things.
-      </p>
-      <%= code_for('assignment', 'greeting') %>
-      <p>
-      </p>
+    <p>
+      <i>
+        This document is structured so that it can be read from top to bottom,
+        if you like. Later sections use ideas and syntax previously introduced.
+        In all of the following examples, the source CoffeeScript is provided on
+        the left, and the direct compilation into JavaScript is on the right.
+        Familiarity with JavaScript is assumed, although it would certainly
+        be nice to have a tutorial that builds from the ground up in the future.
+      </i>
+    </p>
 
-      <p id="lexical_scope">
-        <b class="header">Lexical Scoping and Variable Safety</b>
-        The CoffeeScript compiler takes care to make sure that all of your variables
-        are properly defined within lexical scope &mdash; you never need to declare
-        <i>var</i> yourself.
-      </p>
-      <%= code_for('scope', 'new_num') %>
-      <p>
-        Notice how the variables are declared with <i>var</i> the first time
-        they appear. The second reference of <b>num</b>, within the function,
-        is not redeclared because <b>num</b> is still in scope. As opposed
-        to the second <b>new_num</b>, in the last line.
-      </p>
+    <p id="punctuation">
+      <b class="header">Punctuation Primer</b>
+      You don't need to use semicolons <tt>;</tt> to terminate expressions, ending
+      the line will do just as well. All other whitespace is
+      not significant. Instead of using curly braces <tt>{ }</tt>
+      to delimit a block of code, use a period <tt>.</tt> to mark the end of a
+      function, if-statement, switch, or try/catch.
+    </p>
 
-      <p id="conditionals">
-        <b class="header">Conditionals, Ternaries, and Conditional Assignment</b>
-      </p>
-      <%= code_for('conditionals') %>
-      <p>
-      </p>
+    <p id="functions">
+      <b class="header">Functions and Invocation</b>
+      Let's start with the best part, shall we? Functions are defined
+      by a list of parameters, an arrow, and the function body. The empty
+      function looks like this: <tt>=>.</tt>
+    </p>
+    <%= code_for('functions', 'cube(5)') %>
 
-      <p id="expressions">
-        <b class="header">Everything is an Expression</b>
-        You might have noticed how even though we don't add return statements
-        to CoffeScript functions, they nonetheless return their final value.
-        The CoffeeScript compiler tries to make sure that every little language
-        construct can be used as an expression.
-      </p>
-      <%= code_for('expressions', 'eldest') %>
-      <p>
-        When compiling a function definition, CoffeeScript tries to push down
-        the return statement to each of the potential final lines of the function.
-        It uses the same mechanism to push down assignment statements. If statement
-        are compiled into ternary operators when possible, so that they can be used
-        as expressions.
-      </p>
+    <p id="assignment">
+      <b class="header">Assignment</b>
+      Use a colon <tt>:</tt> to assign, as in
+      <a href="http://json.org">JSON</a>. Equal signs are only needed for
+      mathy things.
+    </p>
+    <%= code_for('assignment', 'greeting') %>
 
-      <p id="while">
-        <b class="header">While Loops</b>
-        The only low-level loop that CoffeeScript provides is the while loop.
-      </p>
-      <%= code_for('while') %>
+    <p id="objects_and_arrays">
+      <b class="header">Objects and Arrays</b>
+      Object and Array literals look very similar to their JavaScript cousins.
+      When you spread out each assignment on a separate line, the commas are
+      optional. In this way, assigning object properties looks the same as
+      assigning local variables.
+    </p>
+    <%= code_for('objects_and_arrays', 'song.join(",")') %>
 
-      <p id="array_comprehensions">
-        <b class="header">Array Comprehensions</b>
-        Most of your looping needs should be handled by array comprehensions.
-        They replace (and compile into) for loops, handling
-        <b>each</b>/<b>forEach</b> style loops, as well as <b>select</b>/<b>filter</b>.
-        Unlike for loops, array comprehensions are expressions, and can be returned
-        and assigned.
-      </p>
-      <%= code_for('array_comprehensions') %>
+    <p id="lexical_scope">
+      <b class="header">Lexical Scoping and Variable Safety</b>
+      The CoffeeScript compiler takes care to make sure that all of your variables
+      are properly defined within lexical scope &mdash; you never need to declare
+      <i>var</i> yourself.
+    </p>
+    <%= code_for('scope', 'new_num') %>
+    <p>
+      Notice how the variables are declared with <tt>var</tt> the first time
+      they appear. The second reference of <b>num</b>, within the function,
+      is not redeclared because <b>num</b> is still in scope. As opposed
+      to the second <b>new_num</b>, in the last line.
+    </p>
+    <p>
+      Although suppressed within this documentation, all
+      CoffeeScript output is wrapped in an anonymous function:
+      <tt>(function(){ ... })();</tt> This safety wrapper, combined with the
+      automatic generation of the <tt>var</tt> keyword, make it exceedingly difficult
+      to pollute the global namespace by accident.
+    </p>
 
-      <p id="slice">
-        <b class="header">Array Slice Literals</b>
-        CoffeeScript includes a literal syntax for extracting slices of arrays.
-        The first argument is the index of the first element in the slice, and
-        the second is the index of the last one.
-      </p>
-      <%= code_for('slices', 'three_to_six') %>
+    <p id="conditionals">
+      <b class="header">Conditionals, Ternaries, and Conditional Assignment</b>
+      If/else statements can be written without the use of parenthesis and
+      curly brackets. As with functions and other block expressions, conditionals
+      are closed with periods. No period is necessary when using the single-line
+      postfix form, with the <tt>if</tt> at the end.
+    </p>
+    <%= code_for('conditionals') %>
+    <p>
+      CoffeeScript includes the conditional assignment operators: <tt>||:</tt>,
+      which only assigns a value to a variable if the variable's current value
+      is falsy, and <tt>&amp;&amp;:</tt>, which will only replace the value of
+      truthy variables.
+    </p>
 
-      <p id="inheritance">
-        <b class="header">Inheritance, and Calling Super from a Subclass</b>
-        JavaScript's prototypal inheritance has always been a bit of a
-        brain-bender, with a whole family tree of libraries (Base2, Prototype
-        ).
-      </p>
-      <%= code_for('super', true) %>
+    <p id="expressions">
+      <b class="header">Everything is an Expression (at least, as much as possible)</b>
+      You might have noticed how even though we don't add return statements
+      to CoffeScript functions, they nonetheless return their final value.
+      The CoffeeScript compiler tries to make sure that all statements in the
+      language can be used as expressions. Watch how the <tt>return</tt> gets
+      pushed down into each possible branch of execution, in the function
+      below.
+    </p>
+    <%= code_for('expressions', 'eldest') %>
+    <p>
+      The same mechanism is used to push down assignment statements, switch
+      statements, and if-elses (although the ternary operator is preferred).
+    </p>
 
-      <p id="embedded">
-        <b class="header">Embedded JavaScript</b>
-        If you ever need to interpolate literal JavaScript snippets, you can
-        use backticks to pass JavaScript straight through.
-      </p>
-      <%= code_for('embedded', true) %>
+    <p id="while">
+      <b class="header">While Loops</b>
+      The only low-level loop that CoffeeScript provides is the while loop.
+    </p>
+    <%= code_for('while') %>
+    <p>
+      Other JavaScript loops, such as <b>for</b> loops and <b>do-while</b> loops 
+      can be mimicked by variations on <b>while</b>, but the hope is that you 
+      won't need to do that with CoffeeScript, either because you're using 
+      <b>each</b> (<b>forEach</b>) style iterators, or...
+    </p>
 
-      <p id="switch">
-        <b class="header">Switch/Case/Else</b>
-        Switch statements in JavaScript are fundamentally broken. You can only
-        do string comparisons, and need to break at the end of each case
-        statment to prevent falling through to the default case. CoffeeScript
-        compiles switch statements into if-else chains, allowing you to
-        compare any object (via <b>===</b>), preventing fall-through, and resulting
-        in a returnable expression.
-      </p>
-      <%= code_for('switch') %>
+    <p id="array_comprehensions">
+      <b class="header">Array Comprehensions</b>
+      For your looping needs, CoffeeScript provides array comprehensions 
+      similar to Python's. They replace (and compile into) <b>for</b> loops, with
+      optional guard clauses and the value of the current array index.
+      Unlike for loops, array comprehensions are expressions, and can be returned
+      and assigned. They should be able to handle most places where you otherwise
+      would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>.
+    </p>
+    <%= code_for('array_comprehensions') %>
 
-      <p id="try">
-        <b class="header">Try/Catch/Finally</b>
-        Try/catch statements just about the same as JavaScript (although
-        they work as expressions). No braces required.
-      </p>
-      <%= code_for('try') %>
+    <p id="slice">
+      <b class="header">Array Slice Literals</b>
+      CoffeeScript includes syntax for extracting slices of arrays.
+      The first argument is the index of the first element in the slice, and
+      the second is the index of the last one.
+    </p>
+    <%= code_for('slices', 'three_to_six') %>
 
-      <p id="try">
-        <b class="header">Multiline Strings</b>
-        Multiline strings are allowed in CoffeeScript.
-      </p>
-      <%= code_for('strings') %>
+    <p id="super">
+      <b class="header">Calling Super from a Subclass</b>
+      JavaScript's prototypal inheritance has always been a bit of a
+      brain-bender, with a whole family tree of libraries that provide a cleaner
+      syntax for classical inheritance on top of JavaScript's prototypes:
+      <a href="http://code.google.com/p/base2/">Base2</a>, 
+      <a href="http://prototypejs.org/">Prototype.js</a>,
+      <a href="http://jsclass.jcoglan.com/">JS.Class</a>, etc.
+    </p>
+    <%= code_for('super', true) %>
 
-    </div>
+    <p id="embedded">
+      <b class="header">Embedded JavaScript</b>
+      If you ever need to interpolate literal JavaScript snippets, you can
+      use backticks to pass JavaScript straight through.
+    </p>
+    <%= code_for('embedded', true) %>
+
+    <p id="aliases">
+      <b class="header">Aliases</b>
+      Because the <tt>==</tt> operator frequently causes undesirable coercion, 
+      is intransitive, and has a different meaning than in other languages,
+      CoffeeScript compiles <tt>==</tt> into <tt>===</tt>, and <tt>!=</tt> into
+      <tt>!==</tt>.
+    </p>
+    <p>
+      <tt>is</tt> also compiles into <tt>===</tt>, 
+      and <tt>aint</tt> into <tt>!==</tt>.
+    </p>
+    <p>
+      
+    </p>
+    <!-- <%# code_for('punctuation') %> -->
+    
+    <p id="switch">
+      <b class="header">Switch/Case/Else</b>
+      Switch statements in JavaScript are fundamentally broken. You can only
+      do string comparisons, and need to break at the end of each case
+      statment to prevent falling through to the default case. CoffeeScript
+      compiles switch statements into if-else chains, allowing you to
+      compare any object (via <b>===</b>), preventing fall-through, and resulting
+      in a returnable expression.
+    </p>
+    <%= code_for('switch') %>
+
+    <p id="try">
+      <b class="header">Try/Catch/Finally</b>
+      Try/catch statements just about the same as JavaScript (although
+      they work as expressions). No braces required.
+    </p>
+    <%= code_for('try') %>
+
+    <p id="try">
+      <b class="header">Multiline Strings</b>
+      Multiline strings are allowed in CoffeeScript.
+    </p>
+    <%= code_for('strings') %>
 
   </div>
 
