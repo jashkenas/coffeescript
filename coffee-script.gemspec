@@ -1,12 +1,12 @@
 Gem::Specification.new do |s|
   s.name      = 'coffee-script'
   s.version   = '0.1.0'         # Keep version in sync with coffee-script.rb
-  s.date      = '2009-12-16'
+  s.date      = '2009-12-24'
 
   s.homepage    = "http://jashkenas.github.com/coffee-script/"
   s.summary     = "The CoffeeScript Compiler"
   s.description = <<-EOS
-    ...
+    CoffeeScript is a little language that compiles into JavaScript.
   EOS
 
   s.authors           = ['Jeremy Ashkenas']
