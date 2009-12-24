@@ -5,8 +5,6 @@ square: x =>
 
 elements.each(el =>
   el.click(event =>
-    el.show()
-  )
-)
+    el.show()))
 
 a: 5

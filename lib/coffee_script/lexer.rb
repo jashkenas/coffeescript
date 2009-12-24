@@ -136,6 +136,7 @@ module CoffeeScript
         @indents.pop while @indents.last && ((@indents.last || 0) > size)
         @indent = @indents.last || 0
       end
+      @line += 1
       @i += (size + 1)
       token(tag, size)
     end
