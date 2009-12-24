@@ -505,6 +505,12 @@ var three_to_six = nums.slice(3, 6 + 1);
       <a href="http://code.google.com/p/base2/">Base2</a>,
       <a href="http://prototypejs.org/">Prototype.js</a>,
       <a href="http://jsclass.jcoglan.com/">JS.Class</a>, etc.
+      The libraries provide syntactic sugar, but the built-in inheritance would
+      be completely usable if it weren't for one small exception:
+      it's very awkward to call <b>super</b>, the prototype object's 
+      implementation of the current function. CoffeeScript converts
+      <tt>super()</tt> calls into calls against the immediate ancestor's
+      method of the same name.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">Animal</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span> .
 <span class="FunctionName">Animal.prototype.move</span><span class="Keyword">:</span> <span class="FunctionArgument">meters</span> <span class="Storage">=&gt;</span>
@@ -631,18 +637,22 @@ let_the_wild_rumpus_begin() <span class="Keyword">unless</span> answer <span cla
 
     <p id="switch">
       <b class="header">Switch/Case/Else</b>
-      Switch statements in JavaScript are fundamentally broken. You can only
-      do string comparisons, and need to break at the end of each case
-      statment to prevent falling through to the default case. CoffeeScript
-      compiles switch statements into if-else chains, allowing you to
+      Switch statements in JavaScript are rather broken. You can only
+      do string comparisons, and need to remember to <b>break</b> at the end of 
+      every <b>case</b> statement to avoid accidentally falling through to 
+      the default case. CoffeeScript
+      compiles <b>switch</b> statements into JavaScript if-else chains, allowing you to
       compare any object (via <b>===</b>), preventing fall-through, and resulting
-      in a returnable expression.
+      in a returnable, assignable expression. To specify the default case, just
+      use <tt>else</tt>.
     </p>
     <div class='code'><pre class="idle"><span class="Keyword">switch</span> day
 <span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Tuesday<span class="String">&quot;</span></span>   <span class="Keyword">then</span> eat_breakfast()
 <span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Wednesday<span class="String">&quot;</span></span> <span class="Keyword">then</span> go_to_the_park()
 <span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Saturday<span class="String">&quot;</span></span>
-  <span class="Keyword">if</span> day <span class="Keyword">is</span> bingo_day <span class="Keyword">then</span> go_to_bingo().
+  <span class="Keyword">if</span> day <span class="Keyword">is</span> bingo_day
+    go_to_bingo()
+    go_dancing().
 <span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Sunday<span class="String">&quot;</span></span>    <span class="Keyword">then</span> go_to_church()
 <span class="Keyword">else</span> go_to_work().
 </pre><pre class="idle"><span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Tuesday<span class="String">&quot;</span></span>) {
@@ -650,7 +660,10 @@ let_the_wild_rumpus_begin() <span class="Keyword">unless</span> answer <span cla
 } <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Wednesday<span class="String">&quot;</span></span>) {
   go_to_the_park();
 } <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Saturday<span class="String">&quot;</span></span>) {
-  day <span class="Keyword">===</span> bingo_day ? go_to_bingo() : <span class="BuiltInConstant">null</span>;
+  <span class="Keyword">if</span> (day <span class="Keyword">===</span> bingo_day) {
+    go_to_bingo();
+    go_dancing();
+  }
 } <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Sunday<span class="String">&quot;</span></span>) {
   go_to_church();
 } <span class="Keyword">else</span> {
