@@ -112,7 +112,7 @@ Usage:
     # Compile a single source file to JavaScript.
     def compile(script, source='')
       begin
-        CoffeeScript.compile(script)
+        CoffeeScript.compile(script, :no_wrap => @options[:no_wrap])
       rescue CoffeeScript::ParseError => e
         STDERR.puts e.message(source)
         exit(1) unless @options[:watch]
@@ -159,6 +159,9 @@ Usage:
         end
         opts.on('-v', '--verbose', 'print at every step of code generation') do |v|
           ENV['VERBOSE'] = 'true'
+        end
+        opts.on('-n', '--no-wrap', 'suppress the top-level safety function wrapper') do |n|
+          @options[:no_wrap] = true
         end
         opts.on_tail('--install-bundle', 'install the CoffeeScript TextMate bundle') do |i|
           install_bundle

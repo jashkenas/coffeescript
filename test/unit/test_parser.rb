@@ -72,4 +72,9 @@ class ParserTest < Test::Unit::TestCase
     assert nodes.compile == File.read('test/fixtures/each.js')
   end
 
+  def test_no_wrap
+    nodes = @par.parse(File.read('test/fixtures/each.cs'))
+    assert nodes.compile(:no_wrap => true) == File.read('test/fixtures/each_no_wrap.js')
+  end
+
 end

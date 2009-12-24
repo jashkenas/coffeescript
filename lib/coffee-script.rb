@@ -12,9 +12,9 @@ module CoffeeScript
   VERSION = '0.1.1'   # Keep in sync with the gemspec.
 
   # Compile a script (String or IO) to JavaScript.
-  def self.compile(script)
+  def self.compile(script, options={})
     script = script.read if script.respond_to?(:read)
-    Parser.new.parse(script).compile
+    Parser.new.parse(script).compile(options)
   end
 
 end
