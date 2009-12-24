@@ -594,7 +594,7 @@ module CoffeeScript
     end
   end
 
-  # If/else statements. Switch/cases get compiled into these. Acts as an
+  # If/else statements. Switch/whens get compiled into these. Acts as an
   # expression by pushing down requested returns to the expression bodies.
   # Single-expression IfNodes are compiled into ternary operators if possible,
   # because ternaries are first-class returnable assignable expressions.

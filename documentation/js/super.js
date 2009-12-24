@@ -6,6 +6,7 @@
   };
   var Snake = function(name) {
     this.name = name;
+    return this.name;
   };
   Snake.prototype = new Animal();
   Snake.prototype.move = function() {
@@ -14,6 +15,7 @@
   };
   var Horse = function(name) {
     this.name = name;
+    return this.name;
   };
   Horse.prototype = new Animal();
   Horse.prototype.move = function() {

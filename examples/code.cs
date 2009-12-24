@@ -115,10 +115,10 @@ drink(bottle) for bottle, i in ['soda', 'wine', 'lemonade'] if even(i).
 
 # Switch statements ("else" serves as a default).
 activity: switch day
-case "Tuesday"   then eat_breakfast()
-case "Sunday"    then go_to_church()
-case "Saturday"  then go_to_the_park()
-case "Wednesday"
+when "Tuesday"   then eat_breakfast()
+when "Sunday"    then go_to_church()
+when "Saturday"  then go_to_the_park()
+when "Wednesday"
   if day is bingo_day
     go_to_bingo()
   else

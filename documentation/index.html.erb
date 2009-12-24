@@ -69,7 +69,7 @@
       <a href="#slice">Array Slice Literals</a><br />
       <a href="#super">Calling Super from a Subclass</a><br />
       <a href="#embedded">Embedded JavaScript</a><br />
-      <a href="#switch">Switch/Case/Else</a><br />
+      <a href="#switch">Switch/When/Else</a><br />
       <a href="#try">Try/Catch/Finally</a><br />
       <a href="#strings">Multiline Strings</a><br />
       <a href="#change_log">Change Log</a><br />
@@ -279,6 +279,11 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
       You can use <tt>not</tt> as an alias for <tt>!</tt>.
     </p>
     <p>
+      Instead of a newline or semicolon, <tt>then</tt> can be used to separate
+      conditions from expressions, in <b>while</b>, 
+      <b>if</b>/<b>else</b>, and <b>switch</b>/<b>when</b> statements.
+    </p>
+    <p>
       As in <a href="http://yaml.org/">YAML</a>, <tt>on</tt> and <tt>yes</tt>
       are the same as boolean <tt>true</tt>, while <tt>off</tt> and <tt>no</tt> are boolean <tt>false</tt>.
     </p>
@@ -343,15 +348,14 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
     <%= code_for('embedded', 'hi()') %>
 
     <p id="switch">
-      <b class="header">Switch/Case/Else</b>
+      <b class="header">Switch/When/Else</b>
       <b>Switch</b> statements in JavaScript are rather broken. You can only
       do comparisons based on string equality, and need to remember to <b>break</b> at the end of
       every <b>case</b> statement to avoid accidentally falling through to
-      the default case. CoffeeScript
-      compiles <b>switch</b> statements into JavaScript if-else chains, allowing you to
+      the default case. CoffeeScript compiles <b>switch</b> statements into JavaScript if-else chains, allowing you to
       compare any object (via <b>===</b>), preventing fall-through, and resulting
-      in a returnable, assignable expression. To specify the default case, just
-      use <tt>else</tt>.
+      in a returnable, assignable expression. The format is: <tt>switch</tt> condition,
+      <tt>when</tt> clauses, <tt>else</tt> the default case.
     </p>
     <%= code_for('switch') %>
 
