@@ -507,7 +507,7 @@ module CoffeeScript
         return_result = "\n#{o[:indent]}#{return_result}"
         if @filter
           body = CallNode.new(ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [@body])
-          body = IfNode.new(@filter, body, nil, :statement)
+          body = IfNode.new(@filter, body, nil, :statement => true)
           save_result = ''
           suffix = ''
         end

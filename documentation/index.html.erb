@@ -32,7 +32,7 @@
     <p>
       CoffeeScript is a little language that compiles into JavaScript. Think
       of it as JavaScript's less ostentatious kid brother &mdash; the same genes,
-      the same accent, but a different sense of style. Apart from a handful of
+      roughly the same height, but a different sense of style. Apart from a handful of
       bonus goodies, statements in CoffeeScript correspond one-to-one with their
       equivalent in JavaScript, it's just another way of saying it.
     </p>
@@ -72,6 +72,7 @@
       <a href="#switch">Switch/Case/Else</a><br />
       <a href="#try">Try/Catch/Finally</a><br />
       <a href="#strings">Multiline Strings</a><br />
+      <a href="#change_log">Change Log</a><br />
     </p>
 
     <h2 id="overview">Mini Overview</h2>
@@ -81,9 +82,14 @@
     <%= code_for('overview', 'cubed_list') %>
 
     <h2 id="installation">Installation and Usage</h2>
+    
+    <p>
+      The CoffeeScript compiler is written in pure Ruby, and is available
+      as a Ruby Gem.
+    </p>
 
     <pre>
-sudo gem install coffee-script</pre>
+gem install coffee-script</pre>
 
     <p>
       Installing the gem provides the <tt>coffee-script</tt> command, which can
@@ -339,7 +345,7 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
     <p id="switch">
       <b class="header">Switch/Case/Else</b>
       <b>Switch</b> statements in JavaScript are rather broken. You can only
-      do string comparisons, and need to remember to <b>break</b> at the end of
+      do comparisons based on string equality, and need to remember to <b>break</b> at the end of
       every <b>case</b> statement to avoid accidentally falling through to
       the default case. CoffeeScript
       compiles <b>switch</b> statements into JavaScript if-else chains, allowing you to
@@ -352,7 +358,7 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
     <p id="try">
       <b class="header">Try/Catch/Finally</b>
       Try/catch statements are just about the same as JavaScript (although
-      they work as expressions). No braces required.
+      they work as expressions).
     </p>
     <%= code_for('try') %>
 
@@ -361,6 +367,13 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
       Multiline strings are allowed in CoffeeScript.
     </p>
     <%= code_for('strings', 'moby_dick') %>
+    
+    <h2 id="change_log">Change Log</h2>
+    
+    <p>
+      <b class="header" style="margin-top: 25px;">0.1.0</b>
+      Initial CoffeeScript release.
+    </p>
 
   </div>
 
