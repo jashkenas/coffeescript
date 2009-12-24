@@ -13,7 +13,7 @@ module CoffeeScript
                   "try", "catch", "finally", "throw",
                   "break", "continue",
                   "for", "in", "while",
-                  "switch", "case",
+                  "switch", "when",
                   "super",
                   "delete"]
 

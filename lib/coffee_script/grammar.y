@@ -9,7 +9,7 @@ token CODE PARAM NEW RETURN
 token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
 token FOR IN WHILE
-token SWITCH CASE
+token SWITCH WHEN
 token SUPER
 token DELETE
 token NEWLINE
@@ -320,23 +320,23 @@ rule
       IF Expression "."               { result = ForNode.new(val[0], val[6], val[2], val[8], val[4]) }
   ;
 
-  # Switch/Case blocks.
+  # Switch/When blocks.
   Switch:
     SWITCH Expression Then
-      Cases "."                       { result = val[3].rewrite_condition(val[1]) }
+      Whens "."                       { result = val[3].rewrite_condition(val[1]) }
   | SWITCH Expression Then
-      Cases ELSE Expressions "."      { result = val[3].rewrite_condition(val[1]).add_else(val[5]) }
+      Whens ELSE Expressions "."      { result = val[3].rewrite_condition(val[1]).add_else(val[5]) }
   ;
 
-  # The inner list of cases.
-  Cases:
-    Case                              { result = val[0] }
-  | Cases Case                        { result = val[0] << val[1] }
+  # The inner list of whens.
+  Whens:
+    When                              { result = val[0] }
+  | Whens When                        { result = val[0] << val[1] }
   ;
 
-  # An individual case.
-  Case:
-    CASE Expression Then Expressions  { result = IfNode.new(val[1], val[3]) }
+  # An individual when.
+  When:
+    WHEN Expression Then Expressions  { result = IfNode.new(val[1], val[3]) }
   ;
 
   # All of the following nutso if-else destructuring is to make the

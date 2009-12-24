@@ -205,7 +205,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(break|case|catch|continue|else|finally|for|if|return|switch|then|throw|try|unless|while)\b</string>
+			<string>\b(break|when|catch|continue|else|finally|for|if|return|switch|then|throw|try|unless|while)\b</string>
 			<key>name</key>
 			<string>keyword.control.cs</string>
 		</dict>

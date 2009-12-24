@@ -55,7 +55,7 @@
       <a href="#slice">Array Slice Literals</a><br />
       <a href="#super">Calling Super from a Subclass</a><br />
       <a href="#embedded">Embedded JavaScript</a><br />
-      <a href="#switch">Switch/Case/Else</a><br />
+      <a href="#switch">Switch/When/Else</a><br />
       <a href="#try">Try/Catch/Finally</a><br />
       <a href="#strings">Multiline Strings</a><br />
       <a href="#change_log">Change Log</a><br />
@@ -454,6 +454,11 @@ var eldest = 24 > 21 ? "Liz" : "Ike";
       You can use <tt>not</tt> as an alias for <tt>!</tt>.
     </p>
     <p>
+      Instead of a newline or semicolon, <tt>then</tt> can be used to separate
+      conditions from expressions, in <b>while</b>, 
+      <b>if</b>/<b>else</b>, and <b>switch</b>/<b>when</b> statements.
+    </p>
+    <p>
       As in <a href="http://yaml.org/">YAML</a>, <tt>on</tt> and <tt>yes</tt>
       are the same as boolean <tt>true</tt>, while <tt>off</tt> and <tt>no</tt> are boolean <tt>false</tt>.
     </p>
@@ -465,6 +470,8 @@ var eldest = 24 > 21 ? "Liz" : "Ike";
 volume<span class="Keyword">:</span> <span class="Number">10</span> <span class="Keyword">if</span> band <span class="Keyword">aint</span> spinal_tap
 
 let_the_wild_rumpus_begin() <span class="Keyword">unless</span> answer <span class="Keyword">is</span> <span class="BuiltInConstant">no</span>
+
+<span class="Keyword">if</span> car.speed <span class="Keyword">&lt;</span> speed_limit <span class="Keyword">then</span> accelerate().
 </pre><pre class="idle"><span class="Keyword">if</span> (ignition <span class="Keyword">===</span> <span class="BuiltInConstant">true</span>) {
   launch();
 }
@@ -475,6 +482,7 @@ let_the_wild_rumpus_begin() <span class="Keyword">unless</span> answer <span cla
 <span class="Keyword">if</span> (<span class="Keyword">!</span>(answer <span class="Keyword">===</span> <span class="BuiltInConstant">false</span>)) {
   let_the_wild_rumpus_begin();
 }
+car.speed <span class="Keyword">&lt;</span> speed_limit ? accelerate() : <span class="BuiltInConstant">null</span>;
 </pre><br class='clear' /></div>
 
     <p id="while">
@@ -595,6 +603,7 @@ tom.move()
 };
 <span class="Storage">var</span> <span class="FunctionName">Snake</span> = <span class="Storage">function</span>(<span class="FunctionArgument">name</span>) {
   <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
+  <span class="Keyword">return</span> <span class="Variable">this</span>.<span class="LibraryConstant">name</span>;
 };
 <span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">Animal</span>();
 <span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>() {
@@ -603,6 +612,7 @@ tom.move()
 };
 <span class="Storage">var</span> <span class="FunctionName">Horse</span> = <span class="Storage">function</span>(<span class="FunctionArgument">name</span>) {
   <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
+  <span class="Keyword">return</span> <span class="Variable">this</span>.<span class="LibraryConstant">name</span>;
 };
 <span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">Animal</span>();
 <span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>() {
@@ -620,6 +630,7 @@ Animal.prototype.move = function(meters) {
 };
 var Snake = function(name) {
   this.name = name;
+  return this.name;
 };
 Snake.prototype = new Animal();
 Snake.prototype.move = function() {
@@ -628,6 +639,7 @@ Snake.prototype.move = function() {
 };
 var Horse = function(name) {
   this.name = name;
+  return this.name;
 };
 Horse.prototype = new Animal();
 Horse.prototype.move = function() {
@@ -658,24 +670,23 @@ return [document.title, "Hello JavaScript"].join(": ");
 ;alert(hi());'>run: hi()</button><br class='clear' /></div>
 
     <p id="switch">
-      <b class="header">Switch/Case/Else</b>
+      <b class="header">Switch/When/Else</b>
       <b>Switch</b> statements in JavaScript are rather broken. You can only
       do comparisons based on string equality, and need to remember to <b>break</b> at the end of
       every <b>case</b> statement to avoid accidentally falling through to
-      the default case. CoffeeScript
-      compiles <b>switch</b> statements into JavaScript if-else chains, allowing you to
+      the default case. CoffeeScript compiles <b>switch</b> statements into JavaScript if-else chains, allowing you to
       compare any object (via <b>===</b>), preventing fall-through, and resulting
-      in a returnable, assignable expression. To specify the default case, just
-      use <tt>else</tt>.
+      in a returnable, assignable expression. The format is: <tt>switch</tt> condition,
+      <tt>when</tt> clauses, <tt>else</tt> the default case.
     </p>
     <div class='code'><pre class="idle"><span class="Keyword">switch</span> day
-<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Tuesday<span class="String">&quot;</span></span>   <span class="Keyword">then</span> eat_breakfast()
-<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Wednesday<span class="String">&quot;</span></span> <span class="Keyword">then</span> go_to_the_park()
-<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Saturday<span class="String">&quot;</span></span>
+when <span class="String"><span class="String">&quot;</span>Tuesday<span class="String">&quot;</span></span>   <span class="Keyword">then</span> eat_breakfast()
+when <span class="String"><span class="String">&quot;</span>Wednesday<span class="String">&quot;</span></span> <span class="Keyword">then</span> go_to_the_park()
+when <span class="String"><span class="String">&quot;</span>Saturday<span class="String">&quot;</span></span>
   <span class="Keyword">if</span> day <span class="Keyword">is</span> bingo_day
     go_to_bingo()
     go_dancing().
-<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Sunday<span class="String">&quot;</span></span>    <span class="Keyword">then</span> go_to_church()
+when <span class="String"><span class="String">&quot;</span>Sunday<span class="String">&quot;</span></span>    <span class="Keyword">then</span> go_to_church()
 <span class="Keyword">else</span> go_to_work().
 </pre><pre class="idle"><span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Tuesday<span class="String">&quot;</span></span>) {
   eat_breakfast();
