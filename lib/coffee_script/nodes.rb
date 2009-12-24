@@ -342,7 +342,8 @@ module CoffeeScript
       "aint"  => "!==",
       'not'   => '!',
     }
-    CONDITIONALS = ['||:', '&&:']
+    CONDITIONALS     = ['||:', '&&:']
+    PREFIX_OPERATORS = ['typeof', 'delete']
 
     attr_reader :operator, :first, :second
 
@@ -369,7 +370,7 @@ module CoffeeScript
     end
 
     def compile_unary(o)
-      space = @operator.to_s == 'delete' ? ' ' : ''
+      space = PREFIX_OPERATORS.include?(@operator.to_s) ? ' ' : ''
       parts = [@operator.to_s, space, @first.compile(o)]
       parts.reverse! if @flip
       parts.join('')
