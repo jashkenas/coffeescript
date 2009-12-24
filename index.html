@@ -28,10 +28,10 @@
     <p>
       <b>Disclaimer:</b>
       CoffeeScript is just for fun and seriously alpha. I'm sure that there are still
-      plenty of holes in the walls and leaks in the syntax. <i>There is no guarantee,
+      plenty of holes in the lexer and leaks in the syntax. <i>There is no guarantee,
       explicit or implied, of its suitability for any purpose.</i> That said,
       it compiles into clean JavaScript (the good parts) that can use existing
-      JavaScript libraries seamlessly, and can pass through
+      JavaScript libraries seamlessly, and passes through
       <a href="http://www.jslint.com/">JSLint</a> without warnings. The compiled
       output is quite readable &mdash; pretty-printed, with comments
       preserved intact.
@@ -49,12 +49,12 @@
       <a href="#lexical_scope">Lexical Scoping and Variable Safety</a><br />
       <a href="#conditionals">Conditionals, Ternaries, and Conditional Assignment</a><br />
       <a href="#expressions">Everything is an Expression</a><br />
+      <a href="#aliases">Aliases</a><br />
       <a href="#while">While Loops</a><br />
       <a href="#array_comprehensions">Array Comprehensions</a><br />
       <a href="#slice">Array Slice Literals</a><br />
       <a href="#super">Calling Super from a Subclass</a><br />
       <a href="#embedded">Embedded JavaScript</a><br />
-      <a href="#aliases">Aliases</a><br />
       <a href="#switch">Switch/Case/Else</a><br />
       <a href="#try">Try/Catch/Finally</a><br />
       <a href="#strings">Multiline Strings</a><br />
@@ -158,7 +158,7 @@ sudo gem install coffee-script</pre>
     <p>
       Installing the gem provides the <tt>coffee-script</tt> command, which can
       be used to compile CoffeeScript <tt>.cs</tt> files into JavaScript, as
-      well as debug. By default, <tt>coffee-script</tt> writes out the
+      well as debug them. By default, <tt>coffee-script</tt> writes out the
       JavaScript as <tt>.js</tt> files in the same directory, but output
       can be customized with the following options:
     </p>
@@ -173,7 +173,7 @@ sudo gem install coffee-script</pre>
       <tr>
         <td><code>-w, --watch</code></td>
         <td>
-          Watch the modification times of the named scripts, recompiling as
+          Watch the modification times of the coffee-scripts, recompiling as
           soon as a change occurs.
         </td>
       </tr>
@@ -188,14 +188,15 @@ sudo gem install coffee-script</pre>
         <td><code>-l, --lint</code></td>
         <td>
           If the <tt>jsl</tt> (JavaScript Lint) command is installed, use it
-          to check the compilation of a CoffeeScript file.
+          to check the compilation of a CoffeeScript file. (Handy in 
+          conjunction with <tt>--watch</tt>)
         </td>
       </tr>
       <tr>
         <td><code>-e, --eval</code></td>
         <td>
           Compile and print a little snippet of CoffeeScript directly from the
-          command line. For example:<br /><tt>coffee-script -e "square: x => x * x."</tt>
+          command line (or from <b>stdin</b>). For example:<br /><tt>coffee-script -e "square: x => x * x."</tt>
         </td>
       </tr>
       <tr>
@@ -211,6 +212,12 @@ sudo gem install coffee-script</pre>
           As the JavaScript is being generated, print out every step of code
           generation, including lexical scope and the node in the
           AST.
+        </td>
+      </tr>
+      <tr>
+        <td><code>--install-bundle</code></td>
+        <td>
+          Install the TextMate bundle for CoffeeScript syntax highlighting.
         </td>
       </tr>
     </table>
@@ -230,10 +237,9 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
       <i>
         This document is structured so that it can be read from top to bottom,
         if you like. Later sections use ideas and syntax previously introduced.
+        Familiarity with JavaScript is assumed.
         In all of the following examples, the source CoffeeScript is provided on
         the left, and the direct compilation into JavaScript is on the right.
-        Familiarity with JavaScript is assumed, although it would certainly
-        be nice to have a tutorial that builds from the ground up in the future.
       </i>
     </p>
 
@@ -243,7 +249,7 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
       the line will do just as well. All other whitespace is
       not significant. Instead of using curly braces <tt>{ }</tt>
       to delimit a block of code, use a period <tt>.</tt> to mark the end of a
-      block for 
+      block, for 
       <a href="#functions">functions</a>, 
       <a href="#conditionals">if-statements</a>, 
       <a href="#switch">switch</a>, and <a href="#try">try/catch</a>.
@@ -251,9 +257,8 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
 
     <p id="functions">
       <b class="header">Functions and Invocation</b>
-      Let's start with the best part of CoffeeScript, shall we? Functions are defined
-      by a list of parameters, an arrow, and the function body. The empty
-      function looks like this: <tt>=>.</tt>
+      Functions are defined by a list of parameters, an arrow, and the 
+      function body. The empty function looks like this: <tt>=>.</tt>
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">square</span><span class="Keyword">:</span> <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> x <span class="Keyword">*</span> x.
 <span class="FunctionName">cube</span><span class="Keyword">:</span>   <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> square(x) <span class="Keyword">*</span> x.
@@ -315,8 +320,8 @@ var ages = {
     <p id="lexical_scope">
       <b class="header">Lexical Scoping and Variable Safety</b>
       The CoffeeScript compiler takes care to make sure that all of your variables
-      are properly defined within lexical scope &mdash; you never need to declare
-      <i>var</i> yourself.
+      are properly declared within lexical scope &mdash; you never need to write
+      <tt>var</tt> yourself.
     </p>
     <div class='code'><pre class="idle">num<span class="Keyword">:</span> <span class="Number">1</span>
 <span class="FunctionName">change_numbers</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
@@ -342,10 +347,10 @@ var new_num = change_numbers();
       Notice how the variables are declared with <tt>var</tt> the first time
       they appear. The second reference of <b>num</b>, within the function,
       is not redeclared because <b>num</b> is still in scope. As opposed
-      to the second <b>new_num</b>, in the last line.
+      to the second occurrence of <b>new_num</b>, in the last line.
     </p>
     <p>
-      Although suppressed within this documentation, all
+      Although suppressed within this documentation for clarity, all
       CoffeeScript output is wrapped in an anonymous function:
       <tt>(function(){ ... })();</tt> This safety wrapper, combined with the
       automatic generation of the <tt>var</tt> keyword, make it exceedingly difficult
@@ -389,7 +394,7 @@ expensive <span class="Keyword">=</span> expensive <span class="Keyword">||</spa
     <p id="expressions">
       <b class="header">Everything is an Expression (at least, as much as possible)</b>
       You might have noticed how even though we don't add return statements
-      to CoffeScript functions, they nonetheless return their final value.
+      to CoffeeScript functions, they nonetheless return their final value.
       The CoffeeScript compiler tries to make sure that all statements in the
       language can be used as expressions. Watch how the <tt>return</tt> gets
       pushed down into each possible branch of execution, in the function
@@ -426,9 +431,45 @@ eldest<span class="Keyword">:</span> <span class="Keyword">if</span> <span class
 var eldest = 24 > 21 ? "Liz" : "Ike";
 ;alert(eldest);'>run: eldest</button><br class='clear' /></div>
     <p>
-      The same mechanism is used to push down assignment statements, switch
-      statements, and if-elses (although the ternary operator is preferred).
+      The same mechanism is used to push down assignment through <b>switch</b>
+      statements, and <b>if-elses</b> (although the ternary operator is preferred).
     </p>
+    
+    <p id="aliases">
+      <b class="header">Aliases</b>
+      Because the <tt>==</tt> operator frequently causes undesirable coercion,
+      is intransitive, and has a different meaning than in other languages,
+      CoffeeScript compiles <tt>==</tt> into <tt>===</tt>, and <tt>!=</tt> into
+      <tt>!==</tt>.
+      In addition, <tt>is</tt> compiles into <tt>===</tt>,
+      and <tt>aint</tt> into <tt>!==</tt>.
+    </p>
+    <p>
+      You can use <tt>not</tt> as an alias for <tt>!</tt>.
+    </p>
+    <p>
+      As in <a href="http://yaml.org/">YAML</a>, <tt>on</tt> and <tt>yes</tt>
+      are the same as boolean <tt>true</tt>, while <tt>off</tt> and <tt>no</tt> are boolean <tt>false</tt>.
+    </p>
+    <p>
+      For single-line statements, <tt>unless</tt> can be used as the inverse of <tt>if</tt>.
+    </p>
+    <div class='code'><pre class="idle">launch() <span class="Keyword">if</span> ignition <span class="Keyword">is</span> <span class="BuiltInConstant">on</span>
+
+volume<span class="Keyword">:</span> <span class="Number">10</span> <span class="Keyword">if</span> band <span class="Keyword">aint</span> spinal_tap
+
+let_the_wild_rumpus_begin() <span class="Keyword">unless</span> answer <span class="Keyword">is</span> <span class="BuiltInConstant">no</span>
+</pre><pre class="idle"><span class="Keyword">if</span> (ignition <span class="Keyword">===</span> <span class="BuiltInConstant">true</span>) {
+  launch();
+}
+<span class="Storage">var</span> volume;
+<span class="Keyword">if</span> (band <span class="Keyword">!</span><span class="Keyword">==</span> spinal_tap) {
+  volume <span class="Keyword">=</span> <span class="Number">10</span>;
+}
+<span class="Keyword">if</span> (<span class="Keyword">!</span>(answer <span class="Keyword">===</span> <span class="BuiltInConstant">false</span>)) {
+  let_the_wild_rumpus_begin();
+}
+</pre><br class='clear' /></div>
 
     <p id="while">
       <b class="header">While Loops</b>
@@ -537,6 +578,10 @@ tom<span class="Keyword">:</span> <span class="Keyword">new</span> <span class="
 
 sam.move()
 tom.move()
+
+
+
+
 </pre><pre class="idle"><span class="Storage">var</span> <span class="FunctionName">Animal</span> = <span class="Storage">function</span>() {
 };
 <span class="LibraryClassType">Animal</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>(<span class="FunctionArgument">meters</span>) {
@@ -606,45 +651,9 @@ return [document.title, "Hello JavaScript"].join(": ");
 };
 ;alert(hi());'>run: hi()</button><br class='clear' /></div>
 
-    <p id="aliases">
-      <b class="header">Aliases</b>
-      Because the <tt>==</tt> operator frequently causes undesirable coercion,
-      is intransitive, and has a different meaning than in other languages,
-      CoffeeScript compiles <tt>==</tt> into <tt>===</tt>, and <tt>!=</tt> into
-      <tt>!==</tt>.
-      In addition, <tt>is</tt> compiles into <tt>===</tt>,
-      and <tt>aint</tt> into <tt>!==</tt>.
-    </p>
-    <p>
-      You can use <tt>not</tt> as an alias for <tt>!</tt>.
-    </p>
-    <p>
-      As in <a href="http://yaml.org/">YAML</a>, <tt>on</tt> and <tt>yes</tt>
-      are the same as boolean <tt>true</tt>, while <tt>off</tt> and <tt>no</tt> are boolean <tt>false</tt>.
-    </p>
-    <p>
-      For single-line statements, <tt>unless</tt> can be used as the inverse of <tt>if</tt>.
-    </p>
-    <div class='code'><pre class="idle">launch() <span class="Keyword">if</span> ignition <span class="Keyword">is</span> <span class="BuiltInConstant">on</span>
-
-volume<span class="Keyword">:</span> <span class="Number">10</span> <span class="Keyword">if</span> band <span class="Keyword">aint</span> spinal_tap
-
-let_the_wild_rumpus_begin() <span class="Keyword">unless</span> answer <span class="Keyword">is</span> <span class="BuiltInConstant">no</span>
-</pre><pre class="idle"><span class="Keyword">if</span> (ignition <span class="Keyword">===</span> <span class="BuiltInConstant">true</span>) {
-  launch();
-}
-<span class="Storage">var</span> volume;
-<span class="Keyword">if</span> (band <span class="Keyword">!</span><span class="Keyword">==</span> spinal_tap) {
-  volume <span class="Keyword">=</span> <span class="Number">10</span>;
-}
-<span class="Keyword">if</span> (<span class="Keyword">!</span>(answer <span class="Keyword">===</span> <span class="BuiltInConstant">false</span>)) {
-  let_the_wild_rumpus_begin();
-}
-</pre><br class='clear' /></div>
-
     <p id="switch">
       <b class="header">Switch/Case/Else</b>
-      Switch statements in JavaScript are rather broken. You can only
+      <b>Switch</b> statements in JavaScript are rather broken. You can only
       do string comparisons, and need to remember to <b>break</b> at the end of
       every <b>case</b> statement to avoid accidentally falling through to
       the default case. CoffeeScript
@@ -680,7 +689,7 @@ let_the_wild_rumpus_begin() <span class="Keyword">unless</span> answer <span cla
 
     <p id="try">
       <b class="header">Try/Catch/Finally</b>
-      Try/catch statements just about the same as JavaScript (although
+      Try/catch statements are just about the same as JavaScript (although
       they work as expressions). No braces required.
     </p>
     <div class='code'><pre class="idle"><span class="Keyword">try</span>

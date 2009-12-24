@@ -273,13 +273,15 @@ rule
 
   # Try/catch/finally exception handling blocks.
   Try:
-    TRY Expressions CATCH IDENTIFIER
-      Expressions "."                 { result = TryNode.new(val[1], val[3], val[4]) }
-  | TRY Expressions FINALLY
-      Expressions "."                 { result = TryNode.new(val[1], nil, nil, val[3]) }
-  | TRY Expressions CATCH IDENTIFIER
-      Expressions
-      FINALLY Expressions "."         { result = TryNode.new(val[1], val[3], val[4], val[6]) }
+    TRY Expressions Catch "."         { result = TryNode.new(val[1], val[2][0], val[2][1]) }
+  | TRY Expressions Catch
+    FINALLY Then Expressions "."      { result = TryNode.new(val[1], val[2][0], val[2][1], val[5]) }
+  ;
+
+  # A catch clause.
+  Catch:
+    /* nothing */                     { result = [nil, nil] }
+  | CATCH IDENTIFIER Then Expressions { result = [val[1], val[3]] }
   ;
 
   # Throw an exception.
