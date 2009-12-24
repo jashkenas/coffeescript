@@ -26,12 +26,12 @@ prechigh
   left     '<=' '<' '>' '>='
   right    '==' '!=' IS AINT
   left     '&&' '||' AND OR
-  right    '-=' '+=' '/=' '*=' '||=' '&&='
+  right    '-=' '+=' '/=' '*='
   right    DELETE
   left     "."
   right    THROW FOR IN WHILE NEW
   left     UNLESS IF ELSE
-  left     ":"
+  left     ":" '||:' '&&:'
   right    RETURN
 preclow
 
@@ -173,8 +173,8 @@ rule
   | Expression '+=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '/=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '*=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression '||=' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression '&&=' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '||:' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '&&:' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
 
   | DELETE Expression                 { result = OpNode.new(val[0], val[1]) }
   ;

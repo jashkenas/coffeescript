@@ -342,7 +342,7 @@ module CoffeeScript
       "aint"  => "!==",
       'not'   => '!',
     }
-    CONDITIONALS = ['||=', '&&=']
+    CONDITIONALS = ['||:', '&&:']
 
     attr_reader :operator, :first, :second
 

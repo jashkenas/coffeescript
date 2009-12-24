@@ -112,6 +112,7 @@ module CoffeeScript
     # Matches and consumes comments.
     def comment_token
       return false unless comment = @chunk[COMMENT, 1]
+      @line += comment.scan(MULTILINER).length
       token(:COMMENT, comment.gsub(COMMENT_CLEANER, '').split(MULTILINER))
       token("\n", "\n")
       @i += comment.length
