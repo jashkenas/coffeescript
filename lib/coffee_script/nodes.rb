@@ -524,6 +524,8 @@ module CoffeeScript
   # A try/catch/finally block.
   class TryNode < Node
     statement
+    custom_return
+    custom_assign
 
     attr_reader :try, :error, :recovery, :finally
 
@@ -540,7 +542,7 @@ module CoffeeScript
       indent = o[:indent]
       o[:indent] += TAB
       catch_part = @recovery &&  " catch (#{@error}) {\n#{@recovery.compile(o)}\n#{indent}}"
-      finally_part = @finally && " finally {\n#{@finally.compile(o)}\n#{indent}}"
+      finally_part = @finally && " finally {\n#{@finally.compile(o.merge(:assign => nil, :return => nil))}\n#{indent}}"
       write("try {\n#{@try.compile(o)}\n#{indent}}#{catch_part}#{finally_part}")
     end
   end
