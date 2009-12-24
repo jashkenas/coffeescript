@@ -318,11 +318,11 @@ module CoffeeScript
       name      = @variable.respond_to?(:compile) ? @variable.compile(o) : @variable
       last      = @variable.respond_to?(:last) ? @variable.last.to_s : name.to_s
       o         = o.merge(:assign => name, :last_assign => last)
+      postfix   = o[:return] ? ";\n#{o[:indent]}return #{name}" : ''
       return write("#{@variable}: #{@value.compile(o)}") if @context == :object
-      return write("#{name} = #{@value.compile(o)}") if @variable.properties?
+      return write("#{name} = #{@value.compile(o)}#{postfix}") if @variable.properties? && !@value.custom_assign?
       defined   = o[:scope].find(name)
-      postfix   = !defined && o[:return] ? ";\n#{o[:indent]}return #{name}" : ''
-      def_part  = defined ? "" : "var #{name};\n#{o[:indent]}"
+      def_part  = defined || @variable.properties? ? "" : "var #{name};\n#{o[:indent]}"
       return write(def_part + @value.compile(o)) if @value.custom_assign?
       def_part  = defined ? name : "var #{name}"
       val_part  = @value.compile(o).sub(LEADING_VAR, '')
@@ -346,8 +346,8 @@ module CoffeeScript
 
     attr_reader :operator, :first, :second
 
-    def initialize(operator, first, second=nil)
-      @first, @second = first, second
+    def initialize(operator, first, second=nil, flip=false)
+      @first, @second, @flip = first, second, flip
       @operator = CONVERSIONS[operator] || operator
     end
 
@@ -369,8 +369,10 @@ module CoffeeScript
     end
 
     def compile_unary(o)
-      space = @operator == 'delete' ? ' ' : ''
-      "#{@operator}#{space}#{@first.compile(o)}"
+      space = @operator.to_s == 'delete' ? ' ' : ''
+      parts = [@operator.to_s, space, @first.compile(o)]
+      parts.reverse! if @flip
+      parts.join('')
     end
   end
 

@@ -8,6 +8,7 @@ class ExecutionTest < Test::Unit::TestCase
     starting_place = File.expand_path(Dir.pwd)
     Dir.chdir('/Users/jashkenas/Desktop/Beauty/Code/v8')
     sources.each do |source|
+      # puts `./shell #{source}`
       assert `./shell #{source}`.chomp.to_sym == :true
     end
   ensure

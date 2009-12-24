@@ -18,7 +18,7 @@ token JS
 
 # Declare order of operations.
 prechigh
-  nonassoc UMINUS NOT '!' '!!' '~'
+  nonassoc UMINUS NOT '!' '!!' '~' '++' '--'
   left     '*' '/' '%'
   left     '+' '-'
   left     '<<' '>>' '>>>'
@@ -142,6 +142,10 @@ rule
   | '-' Expression = UMINUS           { result = OpNode.new(val[0], val[1]) }
   | NOT Expression                    { result = OpNode.new(val[0], val[1]) }
   | '~' Expression                    { result = OpNode.new(val[0], val[1]) }
+  | '--' Expression                    { result = OpNode.new(val[0], val[1]) }
+  | '++' Expression                    { result = OpNode.new(val[0], val[1]) }
+  | Expression '--'                    { result = OpNode.new(val[1], val[0], nil, true) }
+  | Expression '++'                    { result = OpNode.new(val[1], val[0], nil, true) }
 
   | Expression '*' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '/' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
