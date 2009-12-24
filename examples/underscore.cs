@@ -78,28 +78,24 @@ _.reduceRight: obj, memo, iterator, context =>
   _.each(reversed, reverser)
   memo.
 
-#   # Return the first value which passes a truth test.
-#   _.detect = function(obj, iterator, context) {
-#     var result;
-#     _.each(obj, function(value, index, list) {
-#       if (iterator.call(context, value, index, list)) {
-#         result = value;
-#         _.breakLoop();
-#       }
-#     });
-#     return result;
-#   };
-#
-#   # Return all the elements that pass a truth test. Use JavaScript 1.6's
-#   # filter(), if it exists.
-#   _.select = function(obj, iterator, context) {
-#     if (obj && _.isFunction(obj.filter)) return obj.filter(iterator, context);
-#     var results = [];
-#     _.each(obj, function(value, index, list) {
-#       iterator.call(context, value, index, list) && results.push(value);
-#     });
-#     return results;
-#   };
+  # Return the first value which passes a truth test.
+  _.detect: obj, iterator, context =>
+    result: null
+    _.each(obj, (value, index, list =>
+      if iterator.call(context, value, index, list)
+        result: value
+        _.breakLoop()..))
+    result.
+
+  # Return all the elements that pass a truth test. Use JavaScript 1.6's
+  # filter(), if it exists.
+  _.select: obj, iterator, context =>
+    if obj and _.isFunction(obj.filter) then return obj.filter(iterator, context).
+    results: []
+    _.each(obj, (value, index, list =>
+      iterator.call(context, value, index, list) and results.push(value).))
+    results.
+
 #
 #   # Return all the elements for which a truth test fails.
 #   _.reject = function(obj, iterator, context) {

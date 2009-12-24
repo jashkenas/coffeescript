@@ -99,7 +99,7 @@ while true
   continue if continuing.
 
 # Unary operators.
-!!true
+!true
 
 # Lexical scoping.
 a: 5
