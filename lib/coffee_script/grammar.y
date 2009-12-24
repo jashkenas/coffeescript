@@ -10,7 +10,7 @@ token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
 token FOR IN WHILE
 token SWITCH WHEN
-token DELETE INSTANCEOF
+token DELETE INSTANCEOF TYPEOF
 token SUPER
 token NEWLINE
 token COMMENT
@@ -27,7 +27,7 @@ prechigh
   right    '==' '!=' IS AINT
   left     '&&' '||' AND OR
   right    '-=' '+=' '/=' '*='
-  right    DELETE INSTANCEOF
+  right    DELETE INSTANCEOF TYPEOF
   left     "."
   right    THROW FOR IN WHILE NEW
   left     UNLESS IF ELSE
@@ -185,6 +185,7 @@ rule
   | Expression '&&:' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
 
   | DELETE Expression                 { result = OpNode.new(val[0], val[1]) }
+  | TYPEOF Expression                 { result = OpNode.new(val[0], val[1]) }
   | Expression INSTANCEOF Expression  { result = OpNode.new(val[1], val[0], val[2]) }
   ;
 
