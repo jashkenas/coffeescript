@@ -1,3 +1,4 @@
-js: => `alert("Hello JavaScript");`.
+hi: `function() {
+  return [document.title, "Hello JavaScript"].join(": ");
+}`
 
-js() if 10 > 9

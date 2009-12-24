@@ -5,7 +5,7 @@
 <html>
 <head>
   <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
-  <title>CoffeeScript, briefly...</title>
+  <title>CoffeeScript</title>
   <link rel="stylesheet" type="text/css" href="documentation/css/docs.css" />
   <link rel="stylesheet" type="text/css" href="documentation/css/idle.css" />
 </head>
@@ -19,7 +19,7 @@
       CoffeeScript is a little language that compiles into JavaScript. Think
       of it as JavaScript's less ostentatious kid brother &mdash; the same genes,
       the same accent, but a different sense of style. Apart from a handful of
-      bonus goodies, statements in CoffeeScript correspond one-to-one with their 
+      bonus goodies, statements in CoffeeScript correspond one-to-one with their
       equivalent in JavaScript, it's just another way of saying it.
     </p>
 
@@ -363,7 +363,7 @@ var new_num = change_numbers();
 
 date<span class="Keyword">:</span> <span class="Keyword">if</span> friday <span class="Keyword">then</span> sue <span class="Keyword">else</span> jill.
 
-expensive <span class="Keyword">||</span><span class="Keyword">=</span> do_the_math()
+expensive <span class="Keyword">||</span><span class="Keyword">:</span> do_the_math()
 </pre><pre class="idle"><span class="Storage">var</span> mood;
 <span class="Keyword">if</span> (singing) {
   mood <span class="Keyword">=</span> greatly_improved;
@@ -378,7 +378,7 @@ expensive <span class="Keyword">=</span> expensive <span class="Keyword">||</spa
     <p>
       CoffeeScript includes the conditional assignment operators: <tt>||:</tt>,
       which only assigns a value to a variable if the variable's current value
-      is falsy, and <tt>&amp;&amp;:</tt>, which will only replace the value of
+      is falsy, and <tt>&amp;&amp;:</tt>, which only replaces the value of
       truthy variables.
     </p>
 
@@ -444,15 +444,15 @@ var eldest = 24 > 21 ? "Liz" : "Ike";
 }
 </pre><br class='clear' /></div>
     <p>
-      Other JavaScript loops, such as <b>for</b> loops and <b>do-while</b> loops 
-      can be mimicked by variations on <b>while</b>, but the hope is that you 
-      won't need to do that with CoffeeScript, either because you're using 
+      Other JavaScript loops, such as <b>for</b> loops and <b>do-while</b> loops
+      can be mimicked by variations on <b>while</b>, but the hope is that you
+      won't need to do that with CoffeeScript, either because you're using
       <b>each</b> (<b>forEach</b>) style iterators, or...
     </p>
 
     <p id="array_comprehensions">
       <b class="header">Array Comprehensions</b>
-      For your looping needs, CoffeeScript provides array comprehensions 
+      For your looping needs, CoffeeScript provides array comprehensions
       similar to Python's. They replace (and compile into) <b>for</b> loops, with
       optional guard clauses and the value of the current array index.
       Unlike for loops, array comprehensions are expressions, and can be returned
@@ -502,7 +502,7 @@ var three_to_six = nums.slice(3, 6 + 1);
       JavaScript's prototypal inheritance has always been a bit of a
       brain-bender, with a whole family tree of libraries that provide a cleaner
       syntax for classical inheritance on top of JavaScript's prototypes:
-      <a href="http://code.google.com/p/base2/">Base2</a>, 
+      <a href="http://code.google.com/p/base2/">Base2</a>,
       <a href="http://prototypejs.org/">Prototype.js</a>,
       <a href="http://jsclass.jcoglan.com/">JS.Class</a>, etc.
     </p>
@@ -584,39 +584,51 @@ tom.move();
       If you ever need to interpolate literal JavaScript snippets, you can
       use backticks to pass JavaScript straight through.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">js</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span> <span class="String"><span class="String">`</span>alert(&quot;Hello JavaScript&quot;);<span class="String">`</span></span>.
+    <div class='code'><pre class="idle">hi<span class="Keyword">:</span> <span class="String"><span class="String">`</span>function() {</span>
+<span class="String">  return [document.title, &quot;Hello JavaScript&quot;].join(&quot;: &quot;);</span>
+<span class="String">}<span class="String">`</span></span>
 
-js() <span class="Keyword">if</span> <span class="Number">10</span> <span class="Keyword">&gt;</span> <span class="Number">9</span>
-</pre><pre class="idle"><span class="Storage">var</span> <span class="FunctionName">js</span> = <span class="Storage">function</span>() {
-  <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Hello JavaScript<span class="String">&quot;</span></span>);
+</pre><pre class="idle"><span class="Storage">var</span> <span class="FunctionName">hi</span> = <span class="Storage">function</span>() {
+<span class="Keyword">return</span> [<span class="LibraryClassType">document</span>.<span class="LibraryConstant">title</span>, <span class="String"><span class="String">&quot;</span>Hello JavaScript<span class="String">&quot;</span></span>].<span class="LibraryFunction">join</span>(<span class="String"><span class="String">&quot;</span>: <span class="String">&quot;</span></span>);
 };
-<span class="Keyword">if</span> (<span class="Number">10</span> <span class="Keyword">&gt;</span> <span class="Number">9</span>) {
-  js();
-}
-</pre><button onclick='javascript: var js = function() {
-  return alert("Hello JavaScript");
+</pre><button onclick='javascript: var hi = function() {
+return [document.title, "Hello JavaScript"].join(": ");
 };
-if (10 > 9) {
-  js();
-}
-;'>run</button><br class='clear' /></div>
+;alert(hi());'>run: hi()</button><br class='clear' /></div>
 
     <p id="aliases">
       <b class="header">Aliases</b>
-      Because the <tt>==</tt> operator frequently causes undesirable coercion, 
+      Because the <tt>==</tt> operator frequently causes undesirable coercion,
       is intransitive, and has a different meaning than in other languages,
       CoffeeScript compiles <tt>==</tt> into <tt>===</tt>, and <tt>!=</tt> into
       <tt>!==</tt>.
-    </p>
-    <p>
-      <tt>is</tt> also compiles into <tt>===</tt>, 
+      In addition, <tt>is</tt> compiles into <tt>===</tt>,
       and <tt>aint</tt> into <tt>!==</tt>.
     </p>
     <p>
-      
+      As in <a href="http://yaml.org/">YAML</a>, <tt>on</tt> and <tt>yes</tt>
+      are the same as boolean <tt>true</tt>, while <tt>off</tt> and <tt>no</tt> are boolean <tt>false</tt>.
     </p>
-    <!--  -->
-    
+    <p>
+      For single-line statements, <tt>unless</tt> can be used as the inverse of <tt>if</tt>.
+    </p>
+    <div class='code'><pre class="idle">launch() <span class="Keyword">if</span> ignition <span class="Keyword">is</span> <span class="BuiltInConstant">on</span>
+
+volume<span class="Keyword">:</span> <span class="Number">10</span> <span class="Keyword">if</span> band <span class="Keyword">aint</span> spinal_tap
+
+let_the_wild_rumpus_begin() <span class="Keyword">unless</span> answer <span class="Keyword">is</span> <span class="BuiltInConstant">no</span>
+</pre><pre class="idle"><span class="Keyword">if</span> (ignition <span class="Keyword">===</span> <span class="BuiltInConstant">true</span>) {
+  launch();
+}
+<span class="Storage">var</span> volume;
+<span class="Keyword">if</span> (band <span class="Keyword">!</span><span class="Keyword">==</span> spinal_tap) {
+  volume <span class="Keyword">=</span> <span class="Number">10</span>;
+}
+<span class="Keyword">if</span> (<span class="Keyword">!</span>(answer <span class="Keyword">===</span> <span class="BuiltInConstant">false</span>)) {
+  let_the_wild_rumpus_begin();
+}
+</pre><br class='clear' /></div>
+
     <p id="switch">
       <b class="header">Switch/Case/Else</b>
       Switch statements in JavaScript are fundamentally broken. You can only

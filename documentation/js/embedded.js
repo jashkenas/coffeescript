@@ -1,8 +1,5 @@
 (function(){
-  var js = function() {
-    return alert("Hello JavaScript");
-  };
-  if (10 > 9) {
-    js();
-  }
+  var hi = function() {
+  return [document.title, "Hello JavaScript"].join(": ");
+};
 })();

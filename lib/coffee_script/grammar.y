@@ -3,7 +3,7 @@ class Parser
 # Declare tokens produced by the lexer
 token IF ELSE THEN UNLESS
 token NUMBER STRING REGEX
-token TRUE FALSE NULL
+token TRUE FALSE YES NO ON OFF
 token IDENTIFIER PROPERTY_ACCESS
 token CODE PARAM NEW RETURN
 token TRY CATCH FINALLY THROW
@@ -102,11 +102,14 @@ rule
   | STRING                            { result = LiteralNode.new(val[0]) }
   | JS                                { result = LiteralNode.new(val[0]) }
   | REGEX                             { result = LiteralNode.new(val[0]) }
-  | TRUE                              { result = LiteralNode.new(true) }
-  | FALSE                             { result = LiteralNode.new(false) }
-  | NULL                              { result = LiteralNode.new(nil) }
   | BREAK                             { result = LiteralNode.new(val[0]) }
   | CONTINUE                          { result = LiteralNode.new(val[0]) }
+  | TRUE                              { result = LiteralNode.new(true) }
+  | FALSE                             { result = LiteralNode.new(false) }
+  | YES                               { result = LiteralNode.new(true) }
+  | NO                                { result = LiteralNode.new(false) }
+  | ON                                { result = LiteralNode.new(true) }
+  | OFF                               { result = LiteralNode.new(false) }
   ;
 
   # Assignment to a variable.

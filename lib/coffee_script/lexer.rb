@@ -7,7 +7,7 @@ module CoffeeScript
 
     # The list of keywords passed verbatim to the parser.
     KEYWORDS   = ["if", "else", "then", "unless",
-                  "true", "false", "null",
+                  "true", "false", "yes", "no", "on", "off",
                   "and", "or", "is", "aint", "not",
                   "new", "return",
                   "try", "catch", "finally", "throw",
@@ -21,7 +21,7 @@ module CoffeeScript
     IDENTIFIER = /\A([a-zA-Z$_]\w*)/
     NUMBER     = /\A\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?))\b/i
     STRING     = /\A(""|''|"(.*?)[^\\]"|'(.*?)[^\\]')/m
-    JS         = /\A(`(.*?)`)/
+    JS         = /\A(``|`(.*?)[^\\]`)/m
     OPERATOR   = /\A([+\*&|\/\-%=<>:]+)/
     WHITESPACE = /\A([ \t\r]+)/
     NEWLINE    = /\A(\n+)/
