@@ -279,13 +279,13 @@ rule
   Try:
     TRY Expressions Catch "."         { result = TryNode.new(val[1], val[2][0], val[2][1]) }
   | TRY Expressions Catch
-    FINALLY Then Expressions "."      { result = TryNode.new(val[1], val[2][0], val[2][1], val[5]) }
+    FINALLY Expressions "."           { result = TryNode.new(val[1], val[2][0], val[2][1], val[4]) }
   ;
 
   # A catch clause.
   Catch:
     /* nothing */                     { result = [nil, nil] }
-  | CATCH IDENTIFIER Then Expressions { result = [val[1], val[3]] }
+  | CATCH IDENTIFIER Expressions      { result = [val[1], val[2]] }
   ;
 
   # Throw an exception.
