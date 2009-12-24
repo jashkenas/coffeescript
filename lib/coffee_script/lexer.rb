@@ -15,7 +15,7 @@ module CoffeeScript
                   "for", "in", "while",
                   "switch", "when",
                   "super",
-                  "delete"]
+                  "delete", "instanceof"]
 
     # Token matching regexes.
     IDENTIFIER = /\A([a-zA-Z$_]\w*)/
