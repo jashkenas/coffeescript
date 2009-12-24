@@ -75,16 +75,17 @@ module CoffeeScript
     end
 
     # If this is the top-level Expressions, wrap everything in a safety closure.
-    def root_compile
-      code = compile(:indent => TAB, :scope => Scope.new)
+    def root_compile(o={})
+      indent = o[:no_wrap] ? '' : TAB
+      code = compile(:indent => indent, :scope => Scope.new)
       code.gsub!(STRIP_TRAILING_WHITESPACE, '')
-      "(function(){\n#{code}\n})();"
+      o[:no_wrap] ? code : "(function(){\n#{code}\n})();"
     end
 
     # The extra fancy is to handle pushing down returns and assignments
     # recursively to the final lines of inner statements.
     def compile(options={})
-      return root_compile unless options[:scope]
+      return root_compile(options) unless options[:scope]
       code = @expressions.map { |node|
         o = super(options)
         if last?(node) && (o[:return] || o[:assign])
