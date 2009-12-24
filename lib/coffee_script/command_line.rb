@@ -93,7 +93,7 @@ Usage:
 
     # Eval a little piece of CoffeeScript directly from the command line.
     def eval_scriptlet
-      script = @sources.join(' ')
+      script = STDIN.tty? ? @sources.join(' ') : STDIN.read
       return tokens(script) if @options[:tokens]
       js = compile(script)
       return lint(js) if @options[:lint]
