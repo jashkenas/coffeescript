@@ -151,7 +151,7 @@ Usage:
         opts.on('-l', '--lint', 'pipe the compiled JavaScript through JSLint') do |l|
           @options[:lint] = true
         end
-        opts.on('-e', '--eval', 'eval a little scriptlet directly from the cli') do |e|
+        opts.on('-e', '--eval', 'eval a little scriptlet or read from stdin') do |e|
           @options[:eval] = true
         end
         opts.on('-t', '--tokens', 'print the tokens that the lexer produces') do |t|
