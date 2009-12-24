@@ -1,0 +1,38 @@
+=                              
+            {                   
+         }   }   {              
+        {   {  }  }             
+         }   }{  {               
+        {  }{  }  }                    _____       __  __           
+       ( }{ }{  { )                   / ____|     / _|/ _|          
+     .- { { }  { }} -.               | |     ___ | |_| |_ ___  ___ 
+    (  ( } { } { } }  )              | |    / _ \|  _|  _/ _ \/ _ \ 
+    |`-..________ ..-'|              | |___| (_) | | | ||  __/  __/ 
+    |                 |               \_____\___/|_| |_| \___|\___|
+    |                 ;--.           
+    |                (__  \            _____           _       _   
+    |                 | )  )          / ____|         (_)     | |  
+    |                 |/  /          | (___   ___ _ __ _ _ __ | |_ 
+    |                 (  /            \___ \ / __| '__| | '_ \| __|
+    |                 |/              ____) | (__| |  | | |_) | |_ 
+    |                 |              |_____/ \___|_|  |_| .__/ \__|
+     `-.._________..-'                                  | |        
+                                                        |_|
+                  
+                                                        
+  CoffeeScript is a little language that compiles into JavaScript.
+  
+  Install the compiler:
+  gem install coffee-script
+  
+  Compile a script:
+  coffee-script /path/to/script.cs
+  
+  For documentation, usage, and examples, see:
+  http://jashkenas.github.com/coffee-script/
+  
+  To suggest a feature or report a bug:
+  http://github.com/jashkenas/coffee-script/issues/
+
+  The source repository:
+  git://github.com/jashkenas/coffee-script.git
