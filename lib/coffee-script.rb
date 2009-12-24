@@ -9,7 +9,7 @@ require "coffee_script/parse_error"
 # Namespace for all CoffeeScript internal classes.
 module CoffeeScript
 
-  VERSION = '0.1.0'   # Keep in sync with the gemspec.
+  VERSION = '0.1.1'   # Keep in sync with the gemspec.
 
   # Compile a script (String or IO) to JavaScript.
   def self.compile(script)
