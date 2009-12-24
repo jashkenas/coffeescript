@@ -27,7 +27,7 @@
 
     <p>
       <b>Disclaimer:</b>
-      CoffeeScript is just for fun and seriously alpha. I'm sure that there are still 
+      CoffeeScript is just for fun and seriously alpha. I'm sure that there are still
       plenty of holes in the walls and leaks in the syntax. <i>There is no guarantee,
       explicit or implied, of its suitability for any purpose.</i> That said,
       it compiles into clean JavaScript (the good parts) that can use existing
@@ -243,12 +243,15 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
       the line will do just as well. All other whitespace is
       not significant. Instead of using curly braces <tt>{ }</tt>
       to delimit a block of code, use a period <tt>.</tt> to mark the end of a
-      function, if-statement, switch, or try/catch.
+      block for 
+      <a href="#functions">functions</a>, 
+      <a href="#conditionals">if-statements</a>, 
+      <a href="#switch">switch</a>, and <a href="#try">try/catch</a>.
     </p>
 
     <p id="functions">
       <b class="header">Functions and Invocation</b>
-      Let's start with the best part, shall we? Functions are defined
+      Let's start with the best part of CoffeeScript, shall we? Functions are defined
       by a list of parameters, an arrow, and the function body. The empty
       function looks like this: <tt>=>.</tt>
     </p>
@@ -508,7 +511,7 @@ var three_to_six = nums.slice(3, 6 + 1);
       <a href="http://jsclass.jcoglan.com/">JS.Class</a>, etc.
       The libraries provide syntactic sugar, but the built-in inheritance would
       be completely usable if it weren't for one small exception:
-      it's very awkward to call <b>super</b>, the prototype object's 
+      it's very awkward to call <b>super</b>, the prototype object's
       implementation of the current function. CoffeeScript converts
       <tt>super()</tt> calls into calls against the immediate ancestor's
       method of the same name.
@@ -642,8 +645,8 @@ let_the_wild_rumpus_begin() <span class="Keyword">unless</span> answer <span cla
     <p id="switch">
       <b class="header">Switch/Case/Else</b>
       Switch statements in JavaScript are rather broken. You can only
-      do string comparisons, and need to remember to <b>break</b> at the end of 
-      every <b>case</b> statement to avoid accidentally falling through to 
+      do string comparisons, and need to remember to <b>break</b> at the end of
+      every <b>case</b> statement to avoid accidentally falling through to
       the default case. CoffeeScript
       compiles <b>switch</b> statements into JavaScript if-else chains, allowing you to
       compare any object (via <b>===</b>), preventing fall-through, and resulting
@@ -707,13 +710,20 @@ let_the_wild_rumpus_begin() <span class="Keyword">unless</span> answer <span cla
 <span class="String">to interest me on shore, I thought I would sail</span>
 <span class="String">about a little and see the watery part of the</span>
 <span class="String">world...<span class="String">&quot;</span></span>
-</pre><pre class="idle"><span class="Storage">var</span> moby_dick <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago --\</span>
-<span class="String">never mind how long precisely -- having little\</span>
-<span class="String">or no money in my purse, and nothing particular\</span>
-<span class="String">to interest me on shore, I thought I would sail\</span>
-<span class="String">about a little and see the watery part of the\</span>
+
+</pre><pre class="idle"><span class="Storage">var</span> moby_dick <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago -- \</span>
+<span class="String">never mind how long precisely -- having little \</span>
+<span class="String">or no money in my purse, and nothing particular \</span>
+<span class="String">to interest me on shore, I thought I would sail \</span>
+<span class="String">about a little and see the watery part of the \</span>
 <span class="String">world...<span class="String">&quot;</span></span>;
-</pre><br class='clear' /></div>
+</pre><button onclick='javascript: var moby_dick = "Call me Ishmael. Some years ago -- \
+never mind how long precisely -- having little \
+or no money in my purse, and nothing particular \
+to interest me on shore, I thought I would sail \
+about a little and see the watery part of the \
+world...";
+;alert(moby_dick);'>run: moby_dick</button><br class='clear' /></div>
 
   </div>
 

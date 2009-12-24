@@ -89,7 +89,7 @@ module CoffeeScript
       return false unless string = @chunk[STRING, 1]
       escaped = string.gsub(MULTILINER) do |match|
         @line += 1
-        "\\\n"
+        " \\\n"
       end
       token(:STRING, escaped)
       @i += string.length
