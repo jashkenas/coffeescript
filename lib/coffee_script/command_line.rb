@@ -41,11 +41,15 @@ Usage:
     # Compiles (or partially compiles) the source CoffeeScript file, returning
     # the desired JS, tokens, or lint results.
     def compile_javascript(source)
-      script = File.read(source)
+      if source == "-"
+        script = STDIN.read
+      else
+        script = File.read(source)
+      end
       return tokens(script) if @options[:tokens]
       js = compile(script, source)
       return unless js
-      return puts(js) if @options[:print]
+      return puts(js) if @options[:print] or source == "-"
       return lint(js) if @options[:lint]
       File.open(path_for(source), 'w+') {|f| f.write(js) }
     end
@@ -73,7 +77,7 @@ Usage:
     # Ensure that all of the source files exist.
     def check_sources
       usage if @sources.empty?
-      missing = @sources.detect {|s| !File.exists?(s) }
+      missing = @sources.detect {|s| !File.exists?(s) and s != "-" }
       if missing
         STDERR.puts("File not found: '#{missing}'")
         exit(1)
