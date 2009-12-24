@@ -22,7 +22,7 @@ module CoffeeScript
     NUMBER     = /\A\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?))\b/i
     STRING     = /\A(""|''|"(.*?)[^\\]"|'(.*?)[^\\]')/m
     JS         = /\A(`(.*?)`)/
-    OPERATOR   = /\A([+\*&|\/\-%=<>]+)/
+    OPERATOR   = /\A([+\*&|\/\-%=<>:]+)/
     WHITESPACE = /\A([ \t\r]+)/
     NEWLINE    = /\A(\n+)/
     COMMENT    = /\A((#[^\n]*\s*)+)/m
