@@ -15,6 +15,7 @@ token SUPER
 token NEWLINE
 token COMMENT
 token JS
+token INDENT OUTDENT
 
 # Declare order of operations.
 prechigh
@@ -32,7 +33,8 @@ prechigh
   right    THROW FOR IN WHILE NEW
   left     UNLESS IF ELSE
   left     ":" '||:' '&&:'
-  right    RETURN
+  right    RETURN INDENT
+  left     OUTDENT
 preclow
 
 # We expect 4 shift/reduce errors for optional syntax.
@@ -82,6 +84,11 @@ rule
   | For
   | Switch
   | Comment
+  ;
+
+  Block:
+    Expression Terminator             { result = Expressions.new([val[0]]) }
+  | INDENT Expressions OUTDENT        { result = val[1] }
   ;
 
   # All tokens that can terminate an expression.
@@ -191,14 +198,14 @@ rule
 
   # Function definition.
   Code:
-    ParamList "=>" CodeBody "."       { result = CodeNode.new(val[0], val[2]) }
-  | "=>" CodeBody "."                 { result = CodeNode.new([], val[1]) }
+    ParamList "=>" CodeBody           { result = CodeNode.new(val[0], val[2]) }
+  | "=>" CodeBody                     { result = CodeNode.new([], val[1]) }
   ;
 
   # The body of a function.
   CodeBody:
     /* nothing */                     { result = Expressions.new([]) }
-  | Expressions                       { result = val[0] }
+  | Block                             { result = val[0] }
   ;
 
   # The parameters to a function definition.
@@ -279,15 +286,15 @@ rule
 
   # Try/catch/finally exception handling blocks.
   Try:
-    TRY Expressions Catch "."         { result = TryNode.new(val[1], val[2][0], val[2][1]) }
+    TRY Expressions Catch             { result = TryNode.new(val[1], val[2][0], val[2][1]) }
   | TRY Expressions Catch
-    FINALLY Expressions "."           { result = TryNode.new(val[1], val[2][0], val[2][1], val[4]) }
+    FINALLY Block                     { result = TryNode.new(val[1], val[2][0], val[2][1], val[4]) }
   ;
 
   # A catch clause.
   Catch:
     /* nothing */                     { result = [nil, nil] }
-  | CATCH IDENTIFIER Expressions      { result = [val[1], val[2]] }
+  | CATCH IDENTIFIER Block            { result = [val[1], val[2]] }
   ;
 
   # Throw an exception.
@@ -302,32 +309,31 @@ rule
 
   # The while loop. (there is no do..while).
   While:
-    WHILE Expression Then
-      Expressions "."                 { result = WhileNode.new(val[1], val[3]) }
+    WHILE Expression Then Block       { result = WhileNode.new(val[1], val[3]) }
   ;
 
   # Array comprehensions, including guard and current index.
   For:
   Expression FOR IDENTIFIER
-    IN PureExpression "."             { result = ForNode.new(val[0], val[4], val[2], nil) }
+    IN PureExpression                 { result = ForNode.new(val[0], val[4], val[2], nil) }
   | Expression FOR
       IDENTIFIER "," IDENTIFIER
-      IN PureExpression "."           { result = ForNode.new(val[0], val[6], val[2], nil, val[4]) }
+      IN PureExpression               { result = ForNode.new(val[0], val[6], val[2], nil, val[4]) }
   | Expression FOR IDENTIFIER
       IN PureExpression
-      IF Expression "."               { result = ForNode.new(val[0], val[4], val[2], val[6]) }
+      IF Expression                   { result = ForNode.new(val[0], val[4], val[2], val[6]) }
   | Expression FOR
       IDENTIFIER "," IDENTIFIER
       IN PureExpression
-      IF Expression "."               { result = ForNode.new(val[0], val[6], val[2], val[8], val[4]) }
+      IF Expression                   { result = ForNode.new(val[0], val[6], val[2], val[8], val[4]) }
   ;
 
   # Switch/When blocks.
   Switch:
     SWITCH Expression Then
-      Whens "."                       { result = val[3].rewrite_condition(val[1]) }
+      Whens                           { result = val[3].rewrite_condition(val[1]) }
   | SWITCH Expression Then
-      Whens ELSE Expressions "."      { result = val[3].rewrite_condition(val[1]).add_else(val[5]) }
+      Whens ELSE Block                { result = val[3].rewrite_condition(val[1]).add_else(val[5]) }
   ;
 
   # The inner list of whens.
@@ -338,7 +344,7 @@ rule
 
   # An individual when.
   When:
-    WHEN Expression Then Expressions  { result = IfNode.new(val[1], val[3]) }
+    WHEN Expression Then Block        { result = IfNode.new(val[1], val[3]) }
   ;
 
   # All of the following nutso if-else destructuring is to make the
@@ -358,8 +364,8 @@ rule
 
   # Terminating else bodies are strictly optional.
   ElseBody
-    "."                               { result = nil }
-  | ELSE Expressions "."              { result = val[1] }
+    /* nothing */                     { result = nil }
+  | ELSE Block                        { result = val[1] }
   ;
 
   # All the alternatives for ending an if-else block.
