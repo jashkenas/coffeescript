@@ -3,14 +3,14 @@ var OS = require("os");
 
 exports.run = function(args) {
     // TODO: non-REPL
-    
+
     args.shift();
-    
+
     if (args.length) {
         require(FILE.absolute(args[0]));
         return;
     }
-    
+
     while (true)
     {
         try {
@@ -20,7 +20,7 @@ exports.run = function(args) {
 
             if (result !== undefined)
                 print(result);
-                
+
         } catch (e) {
             print(e);
         }
@@ -41,7 +41,7 @@ exports.compileFile = function(path) {
 }
 
 exports.compile = function(source) {
-    var coffee = OS.popen([coffeePath, "-"]);
+    var coffee = OS.popen([coffeePath, "-e"]);
 
     coffee.stdin.write(source).flush().close();
 
@@ -55,30 +55,30 @@ exports.compile = function(source) {
 // implemented as a call to coffee and objj_eval/make_narwhal_factory
 exports.cs_eval = function(source) {
     init();
-    
+
     var code = exports.compile(source);
-    
+
     // strip the function wrapper, we add our own.
     // TODO: this is very fragile
     code = code.split("\n").slice(1,-2).join("\n");
-    
+
     return eval(code);
 }
 
 exports.make_narwhal_factory = function(path) {
     init();
-    
+
     var code = exports.compileFile(path);
-    
+
     // strip the function wrapper, we add our own.
     // TODO: this is very fragile
     code = code.split("\n").slice(1,-2).join("\n");
-    
+
     var factoryText = "function(require,exports,module,system,print){" + code + "/**/\n}";
 
     if (system.engine === "rhino")
         return Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(global, factoryText, path, 0, null);
-    
+
     // eval requires parenthesis, but parenthesis break compileFunction.
     else
         return eval("(" + factoryText + ")");
