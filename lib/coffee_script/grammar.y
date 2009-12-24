@@ -87,7 +87,7 @@ rule
   ;
 
   Block:
-    Expression Terminator             { result = Expressions.new([val[0]]) }
+    Expression                        { result = Expressions.new(val) }
   | INDENT Expressions OUTDENT        { result = val[1] }
   ;
 
