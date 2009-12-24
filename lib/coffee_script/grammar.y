@@ -88,7 +88,12 @@ rule
 
   Block:
     Expression                        { result = Expressions.new(val) }
-  | INDENT Expressions OUTDENT        { result = val[1] }
+  | INDENT Expressions Outdent        { result = val[1] }
+  ;
+
+  Outdent:
+    /* nothing */
+  | OUTDENT
   ;
 
   # All tokens that can terminate an expression.
