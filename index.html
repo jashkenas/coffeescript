@@ -365,10 +365,14 @@ var new_num = change_numbers();
 
     <p id="conditionals">
       <b class="header">Conditionals, Ternaries, and Conditional Assignment</b>
-      If/else statements can be written without the use of parenthesis and
+      <b>If/else</b> statements can be written without the use of parenthesis and
       curly brackets. As with functions and other block expressions, conditionals
       are closed with periods. No period is necessary when using the single-line
       postfix form, with the <tt>if</tt> at the end.
+    </p>
+    <p>
+      CoffeeScript will compile <b>if</b> statements using the ternary operator
+      when possible, to make it easier to use the result as an expression.
     </p>
     <div class='code'><pre class="idle">mood<span class="Keyword">:</span> greatly_improved <span class="Keyword">if</span> singing
 
@@ -391,7 +395,7 @@ expensive <span class="Keyword">||</span><span class="Keyword">:</span> do_the_m
 expensive <span class="Keyword">=</span> expensive <span class="Keyword">||</span> do_the_math();
 </pre><br class='clear' /></div>
     <p>
-      CoffeeScript includes the conditional assignment operators: <tt>||:</tt>,
+      The conditional assignment operators are available: <tt>||:</tt>,
       which only assigns a value to a variable if the variable's current value
       is falsy, and <tt>&amp;&amp;:</tt>, which only replaces the value of
       truthy variables.
