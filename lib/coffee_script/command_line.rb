@@ -105,12 +105,18 @@ Usage:
     # Use Narwhal to run an interactive CoffeeScript session.
     def launch_repl
       exec "narwhal lib/coffee_script/narwhal/js/launcher.js"
+    rescue Errno::ENOENT
+      puts "Error: Narwhal must be installed to use the interactive REPL."
+      exit(1)
     end
 
     # Use Narwhal to compile and execute CoffeeScripts.
     def run_scripts
       sources = @sources.join(' ')
       exec "narwhal lib/coffee_script/narwhal/js/launcher.js #{sources}"
+    rescue Errno::ENOENT
+      puts "Error: Narwhal must be installed in order to execute CoffeeScripts."
+      exit(1)
     end
 
     # Print the tokens that the lexer generates from a source script.
