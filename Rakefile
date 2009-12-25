@@ -17,10 +17,9 @@ namespace :build do
     sh "racc #{args[:extra_args]} -o lib/coffee_script/parser.rb lib/coffee_script/grammar.y"
   end
 
-  desc "Compile the Narwhal interface for bin/cs"
+  desc "Compile the Narwhal interface for --interactive and --run"
   task :narwhal do
-    sh "bin/coffee-script lib/coffee_script/narwhal/coffee-script.cs --print > lib-js/coffee-script.js"
-    sh "bin/coffee-script lib/coffee_script/narwhal/loader.cs --print > lib-js/coffee-script/loader.js"
+    sh "bin/coffee-script lib/coffee_script/narwhal/*.cs -o lib/coffee_script/narwhal/js"
   end
 
 end

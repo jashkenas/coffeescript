@@ -1,3 +1,0 @@
-#!/usr/bin/env narwhal
-
-require("coffee-script").run(system.args);

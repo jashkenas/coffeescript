@@ -9,7 +9,7 @@ File:     require('file')
 Readline: require('readline')
 
 # The path to the CoffeeScript Compiler.
-coffeePath: File.path(module.path).dirname().dirname().join('bin', 'coffee-script')
+coffeePath: File.path(module.path).dirname().dirname().dirname().dirname().dirname().join('bin', 'coffee-script')
 
 # Our general-purpose error handler.
 checkForErrors: coffeeProcess =>

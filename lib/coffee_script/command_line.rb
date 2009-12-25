@@ -23,8 +23,10 @@ Usage:
     def initialize
       @mtimes = {}
       parse_options
+      return launch_repl if @options[:interactive]
       return eval_scriptlet if @options[:eval]
       check_sources
+      return run_scripts if @options[:run]
       @sources.each {|source| compile_javascript(source) }
       watch_coffee_scripts if @options[:watch]
     end
@@ -100,6 +102,17 @@ Usage:
       puts js
     end
 
+    # Use Narwhal to run an interactive CoffeeScript session.
+    def launch_repl
+      exec "narwhal lib/coffee_script/narwhal/js/launcher.js"
+    end
+
+    # Use Narwhal to compile and execute CoffeeScripts.
+    def run_scripts
+      sources = @sources.join(' ')
+      exec "narwhal lib/coffee_script/narwhal/js/launcher.js #{sources}"
+    end
+
     # Print the tokens that the lexer generates from a source script.
     def tokens(script)
       puts Lexer.new.tokenize(script).inspect
@@ -134,6 +147,12 @@ Usage:
     def parse_options
       @options = {}
       @option_parser = OptionParser.new do |opts|
+        opts.on('-i', '--interactive', 'run a CoffeeScript REPL (requires Narwhal)') do |i|
+          @options[:interactive] = true
+        end
+        opts.on('-r', '--run', 'compile and run a script (requires Narwhal)') do |r|
+          @options[:run] = true
+        end
         opts.on('-o', '--output [DIR]', 'set the directory for compiled JavaScript') do |d|
           @options[:output] = d
           FileUtils.mkdir_p(d) unless File.exists?(d)
@@ -147,7 +166,7 @@ Usage:
         opts.on('-l', '--lint', 'pipe the compiled JavaScript through JSLint') do |l|
           @options[:lint] = true
         end
-        opts.on('-e', '--eval', 'eval a little scriptlet or read from stdin') do |e|
+        opts.on('-e', '--eval', 'compile a cli scriptlet or read from stdin') do |e|
           @options[:eval] = true
         end
         opts.on('-t', '--tokens', 'print the tokens that the lexer produces') do |t|

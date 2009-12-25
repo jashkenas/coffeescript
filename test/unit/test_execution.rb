@@ -7,7 +7,7 @@ class ExecutionTest < Test::Unit::TestCase
 
   def test_execution_of_coffeescript
     sources = ['test/fixtures/execution/*.cs'].join(' ')
-    assert `bin/cs #{sources}`.match(ALLS_WELL)
+    assert `bin/coffee-script -r #{sources}`.match(ALLS_WELL)
   end
 
   def test_lintless_coffeescript
