@@ -35,9 +35,9 @@ prechigh
   right    RETURN
 preclow
 
-# We expect 4 shift/reduce errors for optional syntax.
+# We expect 3 shift/reduce errors for optional syntax.
 # There used to be 252 -- greatly improved.
-expect 4
+expect 3
 
 rule
 
@@ -317,18 +317,19 @@ rule
 
   # Array comprehensions, including guard and current index.
   For:
-  Expression FOR IDENTIFIER
-    IN PureExpression "."             { result = ForNode.new(val[0], val[4], val[2], nil) }
-  | Expression FOR
-      IDENTIFIER "," IDENTIFIER
-      IN PureExpression "."           { result = ForNode.new(val[0], val[6], val[2], nil, val[4]) }
-  | Expression FOR IDENTIFIER
-      IN PureExpression
-      IF Expression "."               { result = ForNode.new(val[0], val[4], val[2], val[6]) }
-  | Expression FOR
-      IDENTIFIER "," IDENTIFIER
-      IN PureExpression
-      IF Expression "."               { result = ForNode.new(val[0], val[6], val[2], val[8], val[4]) }
+    Expression FOR
+      ForVariables ForBody            { result = ForNode.new(val[0], val[3][0], val[2][0], val[3][1], val[2][1]) }
+  ;
+
+  ForVariables:
+    IDENTIFIER                        { result = val }
+  | IDENTIFIER "," IDENTIFIER         { result = [val[0], val[2]] }
+  ;
+
+  ForBody:
+    IN PureExpression "."             { result = [val[1]] }
+  | IN PureExpression
+    IF Expression "."                 { result = [val[1], val[3]] }
   ;
 
   # Switch/When blocks.
