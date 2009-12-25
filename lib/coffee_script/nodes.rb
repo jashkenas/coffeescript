@@ -215,6 +215,20 @@ module CoffeeScript
     end
   end
 
+  # Node to extend an object's prototype with an ancestor object.
+  class ExtendsNode < Node
+    attr_reader :sub_object, :super_object
+
+    def initialize(sub_object, super_object)
+      @sub_object, @super_object = sub_object, super_object
+    end
+
+    def compile(o={})
+      "#{@sub_object.compile(o)}.prototype.__proto__ = #{@super_object.compile(o)}"
+    end
+
+  end
+
   # A value, indexed or dotted into, or vanilla.
   class ValueNode < Node
     attr_reader :literal, :properties, :last

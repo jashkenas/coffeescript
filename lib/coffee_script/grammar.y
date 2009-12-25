@@ -11,7 +11,7 @@ token BREAK CONTINUE
 token FOR IN WHILE
 token SWITCH WHEN
 token DELETE INSTANCEOF TYPEOF
-token SUPER
+token SUPER EXTENDS
 token NEWLINE
 token COMMENT
 token JS
@@ -29,8 +29,8 @@ prechigh
   right    '-=' '+=' '/=' '*='
   right    DELETE INSTANCEOF TYPEOF
   left     "."
-  right    THROW FOR IN WHILE NEW
-  left     UNLESS IF ELSE
+  right    THROW FOR IN WHILE NEW SUPER
+  left     UNLESS IF ELSE EXTENDS
   left     ":" '||:' '&&:'
   right    RETURN
 preclow
@@ -81,6 +81,7 @@ rule
   | While
   | For
   | Switch
+  | Extends
   | Comment
   ;
 
@@ -252,6 +253,11 @@ rule
     Invocation                        { result = val[0] }
   | NEW Invocation                    { result = val[1].new_instance }
   | Super                             { result = val[0] }
+  ;
+
+  # Extending an object's prototype.
+  Extends:
+    Value EXTENDS Expression      { result = ExtendsNode.new(val[0], val[2]) }
   ;
 
   # A generic function invocation.
