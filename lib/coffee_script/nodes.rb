@@ -358,14 +358,9 @@ module CoffeeScript
       'or'    => '||',
       'is'    => '===',
       "isnt"  => "!==",
-      'not'   => '!',
-      '+:'    => '+=',
-      '-:'    => '-=',
-      '*:'    => '*=',
-      '/:'    => '/=',
-      '%:'    => '%='
+      'not'   => '!'
     }
-    CONDITIONALS     = ['||:', '&&:']
+    CONDITIONALS     = ['||=', '&&=']
     PREFIX_OPERATORS = ['typeof', 'delete']
 
     attr_reader :operator, :first, :second
