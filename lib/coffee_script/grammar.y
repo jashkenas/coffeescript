@@ -26,7 +26,7 @@ prechigh
   left     '<=' '<' '>' '>='
   right    '==' '!=' IS ISNT
   left     '&&' '||' AND OR
-  right    '-=' '+=' '/=' '*='
+  right    '-:' '+:' '/:' '*:' '%:'
   right    DELETE INSTANCEOF TYPEOF
   left     "."
   right    THROW FOR IN WHILE NEW SUPER
@@ -179,10 +179,11 @@ rule
   | Expression AND Expression         { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression OR Expression          { result = OpNode.new(val[1], val[0], val[2]) }
 
-  | Expression '-=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression '+=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression '/=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression '*=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '-:' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '+:' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '/:' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '*:' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '%:' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '||:' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '&&:' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
 
