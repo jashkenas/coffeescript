@@ -23,11 +23,11 @@
   };
   // Array comprehensions:
   var cubed_list;
-  var a = list;
-  var d = [];
-  for (var b=0, c=a.length; b<c; b++) {
-    var num = a[b];
-    d[b] = math.cube(num);
+  var __a = list;
+  var __d = [];
+  for (var __b=0, __c=__a.length; __b<__c; __b++) {
+    var num = __a[__b];
+    __d[__b] = math.cube(num);
   }
-  cubed_list = d;
+  cubed_list = __d;
 })();
