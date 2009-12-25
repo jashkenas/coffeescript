@@ -8,7 +8,7 @@ module CoffeeScript
     # The list of keywords passed verbatim to the parser.
     KEYWORDS   = ["if", "else", "then", "unless",
                   "true", "false", "yes", "no", "on", "off",
-                  "and", "or", "is", "aint", "not",
+                  "and", "or", "is", "isnt", "not",
                   "new", "return",
                   "try", "catch", "finally", "throw",
                   "break", "continue",

@@ -5,7 +5,7 @@ sum: x, y => x + y.
 
 odd: x => x % 2 is 0.
 
-even: x => x % 2 aint 0.
+even: x => x % 2 isnt 0.
 
 run_loop: =>
   fire_events( e => e.stopPropagation(). )
