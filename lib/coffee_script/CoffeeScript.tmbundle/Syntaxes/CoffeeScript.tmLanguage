@@ -6,8 +6,7 @@
 	<string>CoffeeScript Syntax: version 1</string>
 	<key>fileTypes</key>
 	<array>
-		<string>cs</string>
-		<string>coffeescript</string>
+		<string>coffee</string>
 	</array>
 	<key>name</key>
 	<string>CoffeeScript</string>
@@ -19,22 +18,22 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>entity.name.function.cs</string>
+					<string>entity.name.function.coffee</string>
 				</dict>
 				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>keyword.operator.cs</string>
+					<string>keyword.operator.coffee</string>
 				</dict>
 				<key>3</key>
 				<dict>
 					<key>name</key>
-					<string>variable.parameter.function.cs</string>
+					<string>variable.parameter.function.coffee</string>
 				</dict>
 				<key>4</key>
 				<dict>
 					<key>name</key>
-					<string>storage.type.function.cs</string>
+					<string>storage.type.function.coffee</string>
 				</dict>
 			</dict>
 			<key>comment</key>
@@ -42,7 +41,7 @@
 			<key>match</key>
 			<string>([a-zA-Z_?.$]*)\s*(=|:)\s*([\w,\s]*?)\s*(=&gt;)</string>
 			<key>name</key>
-			<string>meta.function.cs</string>
+			<string>meta.function.coffee</string>
 		</dict>
 		<dict>
 			<key>captures</key>
@@ -50,12 +49,12 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>variable.parameter.function.cs</string>
+					<string>variable.parameter.function.coffee</string>
 				</dict>
 				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>storage.type.function.cs</string>
+					<string>storage.type.function.coffee</string>
 				</dict>
 			</dict>
 			<key>comment</key>
@@ -63,7 +62,7 @@
 			<key>match</key>
 			<string>([a-zA-Z_?., $]*)\s*(=&gt;)</string>
 			<key>name</key>
-			<string>meta.inline.function.cs</string>
+			<string>meta.inline.function.coffee</string>
 		</dict>
 		<dict>
 			<key>captures</key>
@@ -71,12 +70,12 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>keyword.operator.new.cs</string>
+					<string>keyword.operator.new.coffee</string>
 				</dict>
 				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>entity.name.type.instance.cs</string>
+					<string>entity.name.type.instance.coffee</string>
 				</dict>
 			</dict>
 			<key>match</key>
@@ -88,7 +87,7 @@
 			<key>match</key>
 			<string>\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?))\b</string>
 			<key>name</key>
-			<string>constant.numeric.cs</string>
+			<string>constant.numeric.coffee</string>
 		</dict>
 		<dict>
 			<key>begin</key>
@@ -98,7 +97,7 @@
 				<key>0</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.string.begin.cs</string>
+					<string>punctuation.definition.string.begin.coffee</string>
 				</dict>
 			</dict>
 			<key>end</key>
@@ -108,18 +107,18 @@
 				<key>0</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.string.end.cs</string>
+					<string>punctuation.definition.string.end.coffee</string>
 				</dict>
 			</dict>
 			<key>name</key>
-			<string>string.quoted.single.cs</string>
+			<string>string.quoted.single.coffee</string>
 			<key>patterns</key>
 			<array>
 				<dict>
 					<key>match</key>
 					<string>\\(x\h{2}|[0-2][0-7]{,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.)</string>
 					<key>name</key>
-					<string>constant.character.escape.cs</string>
+					<string>constant.character.escape.coffee</string>
 				</dict>
 			</array>
 		</dict>
@@ -131,7 +130,7 @@
 				<key>0</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.string.begin.cs</string>
+					<string>punctuation.definition.string.begin.coffee</string>
 				</dict>
 			</dict>
 			<key>end</key>
@@ -141,18 +140,18 @@
 				<key>0</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.string.end.cs</string>
+					<string>punctuation.definition.string.end.coffee</string>
 				</dict>
 			</dict>
 			<key>name</key>
-			<string>string.quoted.double.cs</string>
+			<string>string.quoted.double.coffee</string>
 			<key>patterns</key>
 			<array>
 				<dict>
 					<key>match</key>
 					<string>\\(x\h{2}|[0-2][0-7]{,2}|3[0-6][0-7]|37[0-7]?|[4-7][0-7]?|.)</string>
 					<key>name</key>
-					<string>constant.character.escape.cs</string>
+					<string>constant.character.escape.coffee</string>
 				</dict>
 			</array>
 		</dict>
@@ -164,7 +163,7 @@
 				<key>0</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.string.begin.cs</string>
+					<string>punctuation.definition.string.begin.coffee</string>
 				</dict>
 			</dict>
 			<key>end</key>
@@ -174,18 +173,18 @@
 				<key>0</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.string.end.cs</string>
+					<string>punctuation.definition.string.end.coffee</string>
 				</dict>
 			</dict>
 			<key>name</key>
-			<string>string.quoted.script.cs</string>
+			<string>string.quoted.script.coffee</string>
 			<key>patterns</key>
 			<array>
 				<dict>
 					<key>match</key>
 					<string>\\(x\h{2}|[0-2][0-7]{,2}|3[0-6][0-7]|37[0-7]?|[4-7][0-7]?|.)</string>
 					<key>name</key>
-					<string>constant.character.escape.cs</string>
+					<string>constant.character.escape.coffee</string>
 				</dict>
 			</array>
 		</dict>
@@ -195,61 +194,61 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.comment.cs</string>
+					<string>punctuation.definition.comment.coffee</string>
 				</dict>
 			</dict>
 			<key>match</key>
 			<string>(#).*$\n?</string>
 			<key>name</key>
-			<string>comment.line.cs</string>
+			<string>comment.line.coffee</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\b(break|when|catch|continue|else|finally|for|if|return|switch|then|throw|try|unless|while)\b</string>
 			<key>name</key>
-			<string>keyword.control.cs</string>
+			<string>keyword.control.coffee</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\b(true|on|yes)\b</string>
 			<key>name</key>
-			<string>constant.language.boolean.true.cs</string>
+			<string>constant.language.boolean.true.coffee</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\b(false|off|no)\b</string>
 			<key>name</key>
-			<string>constant.language.boolean.false.cs</string>
+			<string>constant.language.boolean.false.coffee</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\bnull\b</string>
 			<key>name</key>
-			<string>constant.language.null.cs</string>
+			<string>constant.language.null.coffee</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\b(super|this|extends)\b</string>
 			<key>name</key>
-			<string>variable.language.cs</string>
+			<string>variable.language.coffee</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\b(debugger)\b</string>
 			<key>name</key>
-			<string>keyword.other.cs</string>
+			<string>keyword.other.coffee</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>!|\$|%|&amp;|\*|\-\-|\-|\+\+|\+|~|===|==|=|!=|!==|&lt;=|&gt;=|&lt;&lt;=|&gt;&gt;=|&gt;&gt;&gt;=|&lt;&gt;|&lt;|&gt;|!|&amp;&amp;|\?|\|\||\:|\*=|(?&lt;!\()/=|%=|\+=|\-=|&amp;=|\^=|\b(in|instanceof|new|delete|typeof|and|or|is|isnt|not)\b</string>
 			<key>name</key>
-			<string>keyword.operator.cs</string>
+			<string>keyword.operator.coffee</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\b(Infinity|NaN|undefined)\b</string>
 			<key>name</key>
-			<string>constant.language.cs</string>
+			<string>constant.language.coffee</string>
 		</dict>
 		<dict>
 			<key>begin</key>
@@ -259,7 +258,7 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.string.begin.cs</string>
+					<string>punctuation.definition.string.begin.coffee</string>
 				</dict>
 			</dict>
 			<key>end</key>
@@ -269,18 +268,18 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.string.end.cs</string>
+					<string>punctuation.definition.string.end.coffee</string>
 				</dict>
 			</dict>
 			<key>name</key>
-			<string>string.regexp.cs</string>
+			<string>string.regexp.coffee</string>
 			<key>patterns</key>
 			<array>
 				<dict>
 					<key>match</key>
 					<string>\\.</string>
 					<key>name</key>
-					<string>constant.character.escape.cs</string>
+					<string>constant.character.escape.coffee</string>
 				</dict>
 			</array>
 		</dict>
@@ -288,41 +287,41 @@
 			<key>match</key>
 			<string>\;</string>
 			<key>name</key>
-			<string>punctuation.terminator.statement.cs</string>
+			<string>punctuation.terminator.statement.coffee</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>,[ |\t]*</string>
 			<key>name</key>
-			<string>meta.delimiter.object.comma.cs</string>
+			<string>meta.delimiter.object.comma.coffee</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\.</string>
 			<key>name</key>
-			<string>meta.delimiter.method.period.cs</string>
+			<string>meta.delimiter.method.period.coffee</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\{|\}</string>
 			<key>name</key>
-			<string>meta.brace.curly.cs</string>
+			<string>meta.brace.curly.coffee</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\(|\)</string>
 			<key>name</key>
-			<string>meta.brace.round.cs</string>
+			<string>meta.brace.round.coffee</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\[|\]</string>
 			<key>name</key>
-			<string>meta.brace.square.cs</string>
+			<string>meta.brace.square.coffee</string>
 		</dict>
 	</array>
 	<key>scopeName</key>
-	<string>source.cs</string>
+	<string>source.coffee</string>
 	<key>uuid</key>
 	<string>5B520980-A7D5-4E10-8582-1A4C889A8DE5</string>
 </dict>

@@ -1,4 +1,4 @@
-# This (javascript) file is generated from lib/coffee_script/narwhal/coffee-script.cs
+# This (javascript) file is generated from lib/coffee_script/narwhal/coffee-script.coffee
 
 # Executes the `coffee-script` Ruby program to convert from CoffeeScript
 # to Javascript. Eventually this will hopefully happen entirely within JS.

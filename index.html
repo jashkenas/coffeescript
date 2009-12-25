@@ -162,11 +162,11 @@ gem install coffee-script</pre>
 
     <p>
       Installing the gem provides the <tt>coffee-script</tt> command, which can
-      be used to compile CoffeeScript <tt>.cs</tt> files into JavaScript, as
-      well as debug them. In conjunction with 
+      be used to compile CoffeeScript <tt>.coffee</tt> files into JavaScript, as
+      well as debug them. In conjunction with
       <a href="http://narwhaljs.org/">Narwhal</a>, the <tt>coffee-script</tt>
-      command also provides direct evaluation and an interactive REPL. 
-      When compiling to JavaScript, <tt>coffee-script</tt> writes the output 
+      command also provides direct evaluation and an interactive REPL.
+      When compiling to JavaScript, <tt>coffee-script</tt> writes the output
       as <tt>.js</tt> files in the same directory by default, but output
       can be customized with the following options:
     </p>
@@ -175,7 +175,7 @@ gem install coffee-script</pre>
       <tr>
         <td width="25%"><code>-i, --interactive</code></td>
         <td>
-          Launch an interactive CoffeeScript session. 
+          Launch an interactive CoffeeScript session.
           Requires <a href="http://narwhaljs.org/">Narwhal</a>.
         </td>
       </tr>
@@ -257,9 +257,9 @@ gem install coffee-script</pre>
     </p>
 
     <pre>
-coffee-script path/to/script.cs
-coffee-script --watch --lint experimental.cs
-coffee-script --print app/scripts/*.cs > concatenation.js</pre>
+coffee-script path/to/script.coffee
+coffee-script --watch --lint experimental.coffee
+coffee-script --print app/scripts/*.coffee > concatenation.js</pre>
 
     <h2>Language Reference</h2>
 
@@ -829,18 +829,18 @@ world...";
     </ul>
 
     <h2 id="change_log">Change Log</h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.1.3</b>
-      The <tt>coffee-script</tt> command now includes <tt>--interactive</tt>, 
+      The <tt>coffee-script</tt> command now includes <tt>--interactive</tt>,
       which launches an interactive CoffeeScript session, and <tt>--run</tt>,
       which directly compiles and executes a script. Both options depend on a
       working installation of Narwhal.
-      The <tt>aint</tt> keyword has been replaced by <tt>isnt</tt>, which goes 
+      The <tt>aint</tt> keyword has been replaced by <tt>isnt</tt>, which goes
       together a little smoother with <tt>is</tt>.
       Quoted strings are now allowed as identifiers within object literals: eg.
       <tt>{"5+5": 10}</tt>.
-      All assignment operators now use a colon: <tt>+:</tt>, <tt>-:</tt>, 
+      All assignment operators now use a colon: <tt>+:</tt>, <tt>-:</tt>,
       <tt>*:</tt>, etc.
     </p>
 

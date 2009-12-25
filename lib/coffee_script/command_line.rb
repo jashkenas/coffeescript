@@ -13,7 +13,7 @@ module CoffeeScript
 coffee-script compiles CoffeeScript source files into JavaScript.
 
 Usage:
-  coffee-script path/to/script.cs
+  coffee-script path/to/script.coffee
     EOS
 
     # Seconds to pause between checks for changed source files.

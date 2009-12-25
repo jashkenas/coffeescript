@@ -506,32 +506,28 @@ module CoffeeScript
 
     def compile(o={})
       o = super(o)
-      scope       = o[:scope]
-      name_found  = scope.find(@name)
-      index_found = @index && scope.find(@index)
-      svar        = scope.free_variable
-      ivar        = scope.free_variable
-      lvar        = scope.free_variable
-      name_part   = name_found ? @name : "var #{@name}"
-      index_name  = @index ? (index_found ? @index : "var #{@index}") : nil
-      source_part = "var #{svar} = #{@source.compile(o)};"
-      for_part    = "var #{ivar}=0, #{lvar}=#{svar}.length; #{ivar}<#{lvar}; #{ivar}++"
-      var_part    = "\n#{o[:indent] + TAB}#{name_part} = #{svar}[#{ivar}];\n"
-      index_part  = @index ? "#{o[:indent] + TAB}#{index_name} = #{ivar};\n" : ''
+      scope         = o[:scope]
+      name_found    = scope.find(@name)
+      index_found   = @index && scope.find(@index)
+      svar          = scope.free_variable
+      ivar          = scope.free_variable
+      lvar          = scope.free_variable
+      rvar          = scope.free_variable
+      name_part     = name_found ? @name : "var #{@name}"
+      index_name    = @index ? (index_found ? @index : "var #{@index}") : nil
+      source_part   = "var #{svar} = #{@source.compile(o)};"
+      for_part      = "var #{ivar}=0, #{lvar}=#{svar}.length; #{ivar}<#{lvar}; #{ivar}++"
+      var_part      = "\n#{o[:indent] + TAB}#{name_part} = #{svar}[#{ivar}];\n"
+      index_part    = @index ? "#{o[:indent] + TAB}#{index_name} = #{ivar};\n" : ''
+      body          = @body
+      suffix        = ';'
+      set_result    = "var #{rvar} = [];\n#{o[:indent]}"
+      save_result   = "#{rvar}[#{ivar}] = "
+      return_result = rvar
 
-      set_result    = ''
-      save_result   = ''
-      return_result = ''
-      body = @body
-      suffix = ';'
       if o[:return] || o[:assign]
-        rvar          = scope.free_variable
-        set_result    = "var #{rvar} = [];\n#{o[:indent]}"
-        save_result  += "#{rvar}[#{ivar}] = "
-        return_result = rvar
-        return_result = "#{o[:assign]} = #{return_result};" if o[:assign]
-        return_result = "return #{return_result};" if o[:return]
-        return_result = "\n#{o[:indent]}#{return_result}"
+        return_result = "#{o[:assign]} = #{return_result}" if o[:assign]
+        return_result = "return #{return_result}" if o[:return]
         if @filter
           body = CallNode.new(ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [@body])
           body = IfNode.new(@filter, body, nil, :statement => true)
@@ -542,6 +538,7 @@ module CoffeeScript
         body = IfNode.new(@filter, @body)
       end
 
+      return_result = "\n#{o[:indent]}#{return_result};"
       indent = o[:indent] + TAB
       body = body.compile(o.merge(:indent => indent))
       write("#{source_part}\n#{o[:indent]}#{set_result}for (#{for_part}) {#{var_part}#{index_part}#{indent}#{save_result}#{body}#{suffix}\n#{o[:indent]}}#{return_result}")
