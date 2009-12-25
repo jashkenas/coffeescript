@@ -1,9 +1,9 @@
 {
-    "name": "coffee-script",
-    "lib": "lib-js",
-    "preload": ["coffee-script/loader"],
-    "description": "Unfancy JavaScript",
-    "keywords": ["javascript", "language"],
-    "author": "Jeremy Ashkenas",
-    "version": "0.1.1"
+    "name":         "coffee-script",
+    "lib":          "lib-js",
+    "preload":      ["coffee-script/loader"],
+    "description":  "Unfancy JavaScript",
+    "keywords":     ["javascript", "language"],
+    "author":       "Jeremy Ashkenas",
+    "version":      "0.1.2"
 }

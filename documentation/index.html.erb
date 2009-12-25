@@ -421,12 +421,24 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
     <h2 id="change_log">Change Log</h2>
     
     <p>
-      <b class="header" style="margin-top: 25px;">0.1.1</b>
+      <b class="header" style="margin-top: 20px;">0.1.2</b>
+      Fixed a bug with calling <tt>super()</tt> through more than one level of 
+      inheritance, with the re-addition of the <tt>extends</tt> keyword.
+      Added experimental <a href="http://narwhaljs.org/">Narwhal</a> 
+      support (as a Tusk package), contributed by 
+      <a href="http://tlrobinson.net/">Tom Robinson</a>, including
+      <b>bin/cs</b> as a CoffeeScript REPL and interpreter.
+      New <tt>--no-wrap</tt> option to suppress the safety function
+      wrapper.
+    </p>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.1.1</b>
       Added <tt>instanceof</tt> and <tt>typeof</tt> as operators.
     </p>
     
     <p>
-      <b class="header" style="margin-top: 25px;">0.1.0</b>
+      <b class="header" style="margin-top: 20px;">0.1.0</b>
       Initial CoffeeScript release.
     </p>
 
