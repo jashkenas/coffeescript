@@ -211,11 +211,12 @@ module CoffeeScript
     def compile_super(args, o)
       methname = o[:last_assign].sub(LEADING_DOT, '')
       arg_part = args.empty? ? '' : ", #{args}"
-      "#{o[:proto_assign]}.prototype.__proto__.#{methname}.call(this#{arg_part})"
+      "#{o[:proto_assign]}.__superClass__.#{methname}.call(this#{arg_part})"
     end
   end
 
   # Node to extend an object's prototype with an ancestor object.
+  # After goog.inherits from the Closure Library.
   class ExtendsNode < Node
     attr_reader :sub_object, :super_object
 
@@ -224,7 +225,10 @@ module CoffeeScript
     end
 
     def compile(o={})
-      "#{@sub_object.compile(o)}.prototype.__proto__ = #{@super_object.compile(o)}"
+      sub, sup = @sub_object.compile(o), @super_object.compile(o)
+      "#{sub}.__superClass__ = #{sup}.prototype;\n#{o[:indent]}" +
+      "#{sub}.prototype = new #{sup}();\n#{o[:indent]}" +
+      "#{sub}.prototype.constructor = #{sub}"
     end
 
   end

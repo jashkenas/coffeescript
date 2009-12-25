@@ -3,17 +3,17 @@ Base.prototype.func: string =>
   'zero/' + string.
 
 FirstChild: => .
-FirstChild extends new Base()
+FirstChild extends Base
 FirstChild.prototype.func: string =>
   super('one/') + string.
 
 SecondChild: => .
-SecondChild extends new FirstChild()
+SecondChild extends FirstChild
 SecondChild.prototype.func: string =>
   super('two/') + string.
 
 ThirdChild: => .
-ThirdChild extends new SecondChild()
+ThirdChild extends SecondChild
 ThirdChild.prototype.func: string =>
   super('three/') + string.
 

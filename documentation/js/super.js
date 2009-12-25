@@ -8,19 +8,23 @@
     this.name = name;
     return this.name;
   };
-  Snake.prototype.__proto__ = new Animal();
+  Snake.__superClass__ = Animal.prototype;
+  Snake.prototype = new Animal();
+  Snake.prototype.constructor = Snake;
   Snake.prototype.move = function() {
     alert("Slithering...");
-    return Snake.prototype.__proto__.move.call(this, 5);
+    return Snake.__superClass__.move.call(this, 5);
   };
   var Horse = function(name) {
     this.name = name;
     return this.name;
   };
-  Horse.prototype.__proto__ = new Animal();
+  Horse.__superClass__ = Animal.prototype;
+  Horse.prototype = new Animal();
+  Horse.prototype.constructor = Horse;
   Horse.prototype.move = function() {
     alert("Galloping...");
-    return Horse.prototype.__proto__.move.call(this, 45);
+    return Horse.__superClass__.move.call(this, 45);
   };
   var sam = new Snake("Sammy the Python");
   var tom = new Horse("Tommy the Palomino");
