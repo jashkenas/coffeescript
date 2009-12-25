@@ -156,7 +156,7 @@ Usage:
         opts.on('-v', '--verbose', 'print at every step of code generation') do |v|
           ENV['VERBOSE'] = 'true'
         end
-        opts.on('-n', '--no-wrap', 'suppress the top-level safety function wrapper') do |n|
+        opts.on('-n', '--no-wrap', 'raw output, no safety wrapper or vars') do |n|
           @options[:no_wrap] = true
         end
         opts.on_tail('--install-bundle', 'install the CoffeeScript TextMate bundle') do |i|
