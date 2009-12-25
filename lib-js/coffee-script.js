@@ -34,8 +34,10 @@ var coffeePath = FILE.path(module.path).dirname().dirname().join("bin", "coffee-
 exports.compileFile = function(path) {
     var coffee = OS.popen([coffeePath, "--print", "--no-wrap", path]);
 
-    if (coffee.wait() !== 0)
-        throw new Error("coffee compiler error");
+    if (coffee.wait() !== 0) {
+        system.stderr.print(coffee.stderr.read());
+        throw new Error("coffee-script compile error");
+    }
 
     return coffee.stdout.read();
 }
@@ -45,8 +47,10 @@ exports.compile = function(source) {
 
     coffee.stdin.write(source).flush().close();
 
-    if (coffee.wait() !== 0)
-        throw new Error("coffee compiler error");
+    if (coffee.wait() !== 0) {
+        system.stderr.print(coffee.stderr.read());
+        throw new Error("coffee-script compile error");
+    }
 
     return coffee.stdout.read();
 }
