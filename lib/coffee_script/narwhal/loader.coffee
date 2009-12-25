@@ -1,4 +1,4 @@
-# This (javascript) file is generated from lib/coffee_script/narwhal/loader.cs
+# This (javascript) file is generated from lib/coffee_script/narwhal/loader.coffee
 
 coffeescript: null
 factories: {}
@@ -16,4 +16,4 @@ loader: {
 
 }
 
-require.loader.loaders.unshift([".cs", loader])
+require.loader.loaders.unshift([".coffee", loader])

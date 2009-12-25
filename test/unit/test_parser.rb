@@ -58,12 +58,12 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_parsing_inner_comments
-    nodes = @par.parse(File.read('test/fixtures/inner_comments.cs'))
+    nodes = @par.parse(File.read('test/fixtures/inner_comments.coffee'))
     assert nodes.compile == File.read('test/fixtures/inner_comments.js')
   end
 
   def test_parsing
-    nodes = @par.parse(File.read('test/fixtures/each.cs'))
+    nodes = @par.parse(File.read('test/fixtures/each.coffee'))
     assign = nodes.expressions[1]
     assert assign.is_a? AssignNode
     assert assign.variable.literal == '_'
@@ -73,7 +73,7 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_no_wrap
-    nodes = @par.parse(File.read('test/fixtures/each.cs'))
+    nodes = @par.parse(File.read('test/fixtures/each.coffee'))
     assert nodes.compile(:no_wrap => true) == File.read('test/fixtures/each_no_wrap.js')
   end
 

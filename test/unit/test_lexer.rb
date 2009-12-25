@@ -43,7 +43,7 @@ class LexerTest < Test::Unit::TestCase
   end
 
   def test_lexing
-    tokens = @lex.tokenize(File.read('test/fixtures/each.cs'))
+    tokens = @lex.tokenize(File.read('test/fixtures/each.coffee'))
     assert tokens.inspect == File.read('test/fixtures/each.tokens')
   end
 
