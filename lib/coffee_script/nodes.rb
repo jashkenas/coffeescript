@@ -479,6 +479,7 @@ module CoffeeScript
 
     def compile(o={})
       o = super(o)
+      o.delete(:return)
       indent = o[:indent] + TAB
       cond = @condition.compile(o.merge(:no_paren => true))
       write("while (#{cond}) {\n#{@body.compile(o.merge(:indent => indent))}\n#{o[:indent]}}")

@@ -11,7 +11,7 @@ module CoffeeScript
     def initialize(parent=nil)
       @parent = parent
       @variables = {}
-      @temp_variable = @parent ? @parent.temp_variable : 'a'
+      @temp_variable = @parent ? @parent.temp_variable : '__a'
     end
 
     # Look up a variable in lexical scope, or declare it if not found.
