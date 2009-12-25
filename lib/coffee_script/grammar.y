@@ -259,12 +259,13 @@ rule
 
   # Extending an object's prototype.
   Extends:
-    Value EXTENDS Expression      { result = ExtendsNode.new(val[0], val[2]) }
+    Value EXTENDS Expression          { result = ExtendsNode.new(val[0], val[2]) }
   ;
 
   # A generic function invocation.
   Invocation:
     Value "(" ArgList ")"             { result = CallNode.new(val[0], val[2]) }
+  | Invocation "(" ArgList ")"        { result = CallNode.new(val[0], val[2]) }
   ;
 
   # Calling super.
