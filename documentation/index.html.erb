@@ -188,6 +188,7 @@ gem install coffee-script</pre>
 
     <pre>
 coffee-script path/to/script.coffee
+coffee-script --interactive
 coffee-script --watch --lint experimental.coffee
 coffee-script --print app/scripts/*.coffee > concatenation.js</pre>
 
@@ -442,6 +443,18 @@ coffee-script --print app/scripts/*.coffee > concatenation.js</pre>
     </ul>
 
     <h2 id="change_log">Change Log</h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.1.4</b>
+      The official CoffeeScript extension is now <tt>.coffee</tt> instead of
+      <tt>.cs</tt>, which properly belongs to 
+      <a href="http://en.wikipedia.org/wiki/C_Sharp_(programming_language)">C#</a>.
+      Due to popular demand, you can now also use <tt>=</tt> to assign. Unlike
+      JavaScript, <tt>=</tt> can also be used within object literals, interchangeably
+      with <tt>:</tt>. Made a grammatical fix for chained function calls 
+      like <tt>func(1)(2)(3)(4)</tt>. Inheritance and super no longer use 
+      <tt>__proto__</tt>, so they should be IE-compatible now. 
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.1.3</b>
