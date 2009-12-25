@@ -1,8 +1,24 @@
 # This (javascript) file is generated from lib/coffee_script/narwhal/coffee-script.cs
 
-File: require('file')
-OS:   require('os')
+# Executes the `coffee-script` Ruby program to convert from CoffeeScript
+# to Javascript. Eventually this will hopefully happen entirely within JS.
 
+# Require external dependencies.
+OS:       require('os')
+File:     require('file')
+Readline: require('readline')
+
+# The path to the CoffeeScript Compiler.
+coffeePath: File.path(module.path).dirname().dirname().join('bin', 'coffee-script')
+
+# Our general-purpose error handler.
+checkForErrors: coffeeProcess =>
+  return true if coffeeProcess.wait() is 0
+  system.stderr.print(coffeeProcess.stderr.read())
+  throw new Error("coffee-script compile error").
+
+# Run a simple REPL, round-tripping to the CoffeeScript compiler for every
+# command.
 exports.run: args =>
   args.shift()
   return require(File.absolute(args[0])) if args.length
@@ -10,54 +26,34 @@ exports.run: args =>
   while true
     try
       system.stdout.write('cs> ').flush()
-      result: exports.cs_eval(require('readline').readline())
+      result: exports.evalCS(Readline.readline())
       print(result) if result isnt undefined
     catch e
       print(e)...
 
-# executes the coffee-script Ruby program to convert from CoffeeScript to Objective-J.
-# eventually this will hopefully be replaced by a JavaScript program.
-coffeePath: File.path(module.path).dirname().dirname().join('bin', 'coffee-script')
-
+# Compile a given CoffeeScript file into JavaScript.
 exports.compileFile: path =>
   coffee: OS.popen([coffeePath, "--print", "--no-wrap", path])
-
-  if coffee.wait() isnt 0
-    system.stderr.print(coffee.stderr.read())
-    throw new Error("coffee-script compile error").
-
+  checkForErrors(coffee)
   coffee.stdout.read().
 
+# Compile a string of CoffeeScript into JavaScript.
 exports.compile: source =>
-    coffee: OS.popen([coffeePath, "--eval", "--no-wrap"])
+  coffee: OS.popen([coffeePath, "--eval", "--no-wrap"])
+  coffee.stdin.write(source).flush().close()
+  checkForErrors(coffee)
+  coffee.stdout.read().
 
-    coffee.stdin.write(source).flush().close()
+# Evaluating a string of CoffeeScript first compiles it externally.
+exports.evalCS: source =>
+  eval(exports.compile(source)).
 
-    if coffee.wait() isnt 0
-      system.stderr.print(coffee.stderr.read())
-      throw new Error("coffee-script compile error").
-
-    coffee.stdout.read().
-
-# these two functions are equivalent to objective-j's objj_eval/make_narwhal_factory.
-# implemented as a call to coffee and objj_eval/make_narwhal_factory
-exports.cs_eval: source =>
-    init()
-    eval(exports.compile(source)).
-
-exports.make_narwhal_factory: path =>
-    init()
+# Make a factory for the CoffeeScript environment.
+exports.makeNarwhalFactory: path =>
     code: exports.compileFile(path)
-
     factoryText: "function(require,exports,module,system,print){" + code + "/**/\n}"
-
     if system.engine is "rhino"
       Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(global, factoryText, path, 0, null)
     else
       # eval requires parenthesis, but parenthesis break compileFunction.
       eval("(" + factoryText + ")")..
-
-
-init: =>
-  # make sure it's only done once
-  init: => ..

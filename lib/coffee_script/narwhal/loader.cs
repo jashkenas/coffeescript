@@ -1,20 +1,19 @@
 # This (javascript) file is generated from lib/coffee_script/narwhal/loader.cs
 
 coffeescript: null
+factories: {}
 
-CoffeeScriptLoader: =>
-  loader: {}
-  factories: {}
+loader: {
 
-  loader.reload: topId, path =>
+  # Reload the coffee-script environment from source.
+  reload: topId, path =>
     coffeescript ||: require('coffee-script')
-    # print("loading objective-j: " + topId + " (" + path + ")");
-    factories[topId]: coffeescript.make_narwhal_factory(path).
+    factories[topId]: coffeescript.makeNarwhalFactory(path).
 
-  loader.load: topId, path =>
-    loader.reload(topId, path) unless factories.hasOwnProperty(topId)
-    factories[topId].
+  # Ensure that the coffee-script environment is loaded.
+  load: topId, path =>
+    factories[topId] ||: this.reload(topId, path).
 
-  loader.
+}
 
-require.loader.loaders.unshift([".cs", CoffeeScriptLoader()])
+require.loader.loaders.unshift([".cs", loader])
