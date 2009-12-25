@@ -37,8 +37,6 @@
       equivalent in JavaScript, it's just another way of saying it.
     </p>
 
-    <!-- <%# code_for('intro') %>-->
-
     <p>
       <b>Disclaimer:</b>
       CoffeeScript is just for fun and seriously alpha. I'm sure that there are still
@@ -95,14 +93,31 @@ gem install coffee-script</pre>
     <p>
       Installing the gem provides the <tt>coffee-script</tt> command, which can
       be used to compile CoffeeScript <tt>.cs</tt> files into JavaScript, as
-      well as debug them. By default, <tt>coffee-script</tt> writes out the
-      JavaScript as <tt>.js</tt> files in the same directory, but output
+      well as debug them. In conjunction with 
+      <a href="http://narwhaljs.org/">Narwhal</a>, the <tt>coffee-script</tt>
+      command also provides direct evaluation and an interactive REPL. 
+      When compiling to JavaScript, <tt>coffee-script</tt> writes the output 
+      as <tt>.js</tt> files in the same directory by default, but output
       can be customized with the following options:
     </p>
 
     <table>
       <tr>
-        <td width="25%"><code>-o, --output [DIR]</code></td>
+        <td width="25%"><code>-i, --interactive</code></td>
+        <td>
+          Launch an interactive CoffeeScript session. 
+          Requires <a href="http://narwhaljs.org/">Narwhal</a>.
+        </td>
+      </tr>
+      <tr>
+        <td><code>-r, --run</code></td>
+        <td>
+          Compile and execute the CoffeeScripts without saving the intermediate
+          JavaScript. Requires <a href="http://narwhaljs.org/">Narwhal</a>.
+        </td>
+      </tr>
+      <tr>
+        <td><code>-o, --output [DIR]</code></td>
         <td>
           Write out all compiled JavaScript files into the specified directory.
         </td>
@@ -427,6 +442,20 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
     </ul>
 
     <h2 id="change_log">Change Log</h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.1.3</b>
+      The <tt>coffee-script</tt> command now includes <tt>--interactive</tt>, 
+      which launches an interactive CoffeeScript session, and <tt>--run</tt>,
+      which directly compiles and executes a script. Both options depend on a
+      working installation of Narwhal.
+      The <tt>aint</tt> keyword has been replaced by <tt>isnt</tt>, which goes 
+      together a little smoother with <tt>is</tt>.
+      Quoted strings are now allowed as identifiers within object literals: eg.
+      <tt>{"5+5": 10}</tt>.
+      All assignment operators now use a colon: <tt>+:</tt>, <tt>-:</tt>, 
+      <tt>*:</tt>, etc.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.1.2</b>
