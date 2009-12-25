@@ -359,6 +359,11 @@ module CoffeeScript
       'is'    => '===',
       "isnt"  => "!==",
       'not'   => '!',
+      '+:'    => '+=',
+      '-:'    => '-=',
+      '*:'    => '*=',
+      '/:'    => '/=',
+      '%:'    => '%='
     }
     CONDITIONALS     = ['||:', '&&:']
     PREFIX_OPERATORS = ['typeof', 'delete']

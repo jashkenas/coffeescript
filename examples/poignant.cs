@@ -81,9 +81,9 @@ Creature : {
   hit: damage =>
     p_up: Math.rand( this.charisma )
     if p_up % 9 is 7
-      this.life += p_up / 4
+      this.life +: p_up / 4
       puts( "[" + this.name + " magick powers up " + p_up + "!]" ).
-    this.life -= damage
+    this.life -: damage
     if this.life <= 0 then puts( "[" + this.name + " has died.]" )..
 
   # This method takes one turn in a fight.
