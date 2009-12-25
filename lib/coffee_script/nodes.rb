@@ -77,7 +77,7 @@ module CoffeeScript
     # If this is the top-level Expressions, wrap everything in a safety closure.
     def root_compile(o={})
       indent = o[:no_wrap] ? '' : TAB
-      code = compile(:indent => indent, :scope => Scope.new)
+      code = compile(o.merge(:indent => indent, :scope => Scope.new))
       code.gsub!(STRIP_TRAILING_WHITESPACE, '')
       o[:no_wrap] ? code : "(function(){\n#{code}\n})();"
     end
@@ -340,9 +340,9 @@ module CoffeeScript
       return write("#{@variable}: #{@value.compile(o)}") if @context == :object
       return write("#{name} = #{@value.compile(o)}#{postfix}") if @variable.properties? && !@value.custom_assign?
       defined   = o[:scope].find(name)
-      def_part  = defined || @variable.properties? ? "" : "var #{name};\n#{o[:indent]}"
+      def_part  = defined || @variable.properties? || o[:no_wrap] ? "" : "var #{name};\n#{o[:indent]}"
       return write(def_part + @value.compile(o)) if @value.custom_assign?
-      def_part  = defined ? name : "var #{name}"
+      def_part  = defined || o[:no_wrap] ? name : "var #{name}"
       val_part  = @value.compile(o).sub(LEADING_VAR, '')
       write("#{def_part} = #{val_part}#{postfix}")
     end
@@ -411,6 +411,7 @@ module CoffeeScript
       indent = o[:indent]
       o[:indent] += TAB
       o.delete(:assign)
+      o.delete(:no_wrap)
       @params.each {|id| o[:scope].find(id.to_s) }
       code = @body.compile(o)
       write("function(#{@params.join(', ')}) {\n#{code}\n#{indent}}")
