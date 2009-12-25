@@ -7,7 +7,7 @@
       a--;
     }
     var c = {
-      text: b
+      "text": b
     };
     if (!(42 > 41)) {
       c = 'error';
