@@ -258,6 +258,7 @@ gem install coffee-script</pre>
 
     <pre>
 coffee-script path/to/script.coffee
+coffee-script --interactive
 coffee-script --watch --lint experimental.coffee
 coffee-script --print app/scripts/*.coffee > concatenation.js</pre>
 
@@ -567,11 +568,13 @@ highlight(row) <span class="Keyword">for</span> row, i <span class="Keyword">in<
 lunch <span class="Keyword">=</span> __d;
 <span class="Comment"><span class="Comment">//</span> Zebra-stripe a table.</span>
 <span class="Storage">var</span> __e <span class="Keyword">=</span> table;
+<span class="Storage">var</span> __h <span class="Keyword">=</span> [];
 <span class="Keyword">for</span> (<span class="Storage">var</span> __f<span class="Keyword">=</span><span class="Number">0</span>, __g<span class="Keyword">=</span>__e.<span class="LibraryConstant">length</span>; __f<span class="Keyword">&lt;</span>__g; __f<span class="Keyword">++</span>) {
   <span class="Storage">var</span> row <span class="Keyword">=</span> __e[__f];
   <span class="Storage">var</span> i <span class="Keyword">=</span> __f;
-  i <span class="Keyword">%</span> <span class="Number">2</span> <span class="Keyword">===</span> <span class="Number">0</span> ? highlight(row) : <span class="BuiltInConstant">null</span>;
+  __h[__f] <span class="Keyword">=</span> i <span class="Keyword">%</span> <span class="Number">2</span> <span class="Keyword">===</span> <span class="Number">0</span> ? highlight(row) : <span class="BuiltInConstant">null</span>;
 }
+__h;
 </pre><br class='clear' /></div>
 
     <p id="slice">
@@ -829,6 +832,18 @@ world...";
     </ul>
 
     <h2 id="change_log">Change Log</h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.1.4</b>
+      The official CoffeeScript extension is now <tt>.coffee</tt> instead of
+      <tt>.cs</tt>, which properly belongs to 
+      <a href="http://en.wikipedia.org/wiki/C_Sharp_(programming_language)">C#</a>.
+      Due to popular demand, you can now also use <tt>=</tt> to assign. Unlike
+      JavaScript, <tt>=</tt> can also be used within object literals, interchangeably
+      with <tt>:</tt>. Made a grammatical fix for chained function calls 
+      like <tt>func(1)(2)(3)(4)</tt>. Inheritance and super no longer use 
+      <tt>__proto__</tt>, so they should be IE-compatible now. 
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.1.3</b>

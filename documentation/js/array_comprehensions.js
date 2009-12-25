@@ -11,9 +11,11 @@
   lunch = __d;
   // Zebra-stripe a table.
   var __e = table;
+  var __h = [];
   for (var __f=0, __g=__e.length; __f<__g; __f++) {
     var row = __e[__f];
     var i = __f;
-    i % 2 === 0 ? highlight(row) : null;
+    __h[__f] = i % 2 === 0 ? highlight(row) : null;
   }
+  __h;
 })();
