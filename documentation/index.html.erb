@@ -83,7 +83,7 @@
     <%= code_for('overview', 'cubed_list') %>
 
     <h2 id="installation">Installation and Usage</h2>
-    
+
     <p>
       The CoffeeScript compiler is written in pure Ruby, and is available
       as a Ruby Gem.
@@ -125,7 +125,7 @@ gem install coffee-script</pre>
         <td><code>-l, --lint</code></td>
         <td>
           If the <tt>jsl</tt> (JavaScript Lint) command is installed, use it
-          to check the compilation of a CoffeeScript file. (Handy in 
+          to check the compilation of a CoffeeScript file. (Handy in
           conjunction with <tt>--watch</tt>)
         </td>
       </tr>
@@ -194,15 +194,15 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
       the line will do just as well. All other whitespace is
       not significant. Instead of using curly braces <tt>{ }</tt>
       to delimit a block of code, use a period <tt>.</tt> to mark the end of a
-      block, for 
-      <a href="#functions">functions</a>, 
-      <a href="#conditionals">if-statements</a>, 
+      block, for
+      <a href="#functions">functions</a>,
+      <a href="#conditionals">if-statements</a>,
       <a href="#switch">switch</a>, and <a href="#try">try/catch</a>.
     </p>
 
     <p id="functions">
       <b class="header">Functions and Invocation</b>
-      Functions are defined by a list of parameters, an arrow, and the 
+      Functions are defined by a list of parameters, an arrow, and the
       function body. The empty function looks like this: <tt>=>.</tt>
     </p>
     <%= code_for('functions', 'cube(5)') %>
@@ -278,7 +278,7 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
       The same mechanism is used to push down assignment through <b>switch</b>
       statements, and <b>if-elses</b> (although the ternary operator is preferred).
     </p>
-    
+
     <p id="aliases">
       <b class="header">Aliases</b>
       Because the <tt>==</tt> operator frequently causes undesirable coercion,
@@ -297,7 +297,7 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
     </p>
     <p>
       Instead of a newline or semicolon, <tt>then</tt> can be used to separate
-      conditions from expressions, in <b>while</b>, 
+      conditions from expressions, in <b>while</b>,
       <b>if</b>/<b>else</b>, and <b>switch</b>/<b>when</b> statements.
     </p>
     <p>
@@ -390,14 +390,14 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
       Multiline strings are allowed in CoffeeScript.
     </p>
     <%= code_for('strings', 'moby_dick') %>
-    
+
     <h2 id="contributing">Contributing</h2>
-    
+
     <p>
       Here's a wish list of things that would be wonderful to have in
       CoffeeScript:
     </p>
-    
+
     <ul>
       <li>
         A JavaScript version of the compiler, perhaps using Alessandro Warth's
@@ -412,7 +412,7 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
         should be able to compile properly.
       </li>
       <li>
-        A tutorial that introduces CoffeeScript from the ground up for folks 
+        A tutorial that introduces CoffeeScript from the ground up for folks
         without knowledge of JavaScript.
       </li>
       <li>
@@ -420,31 +420,31 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
         having a JavaScript version of the compiler).
       </li>
       <li>
-        A lot of the code generation in <tt>nodes.rb</tt> gets into messy 
+        A lot of the code generation in <tt>nodes.rb</tt> gets into messy
         string manipulation. Techniques for cleaning this up across the board
         would be appreciated.
       </li>
     </ul>
-    
+
     <h2 id="change_log">Change Log</h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.1.2</b>
-      Fixed a bug with calling <tt>super()</tt> through more than one level of 
+      Fixed a bug with calling <tt>super()</tt> through more than one level of
       inheritance, with the re-addition of the <tt>extends</tt> keyword.
-      Added experimental <a href="http://narwhaljs.org/">Narwhal</a> 
-      support (as a Tusk package), contributed by 
+      Added experimental <a href="http://narwhaljs.org/">Narwhal</a>
+      support (as a Tusk package), contributed by
       <a href="http://tlrobinson.net/">Tom Robinson</a>, including
       <b>bin/cs</b> as a CoffeeScript REPL and interpreter.
       New <tt>--no-wrap</tt> option to suppress the safety function
       wrapper.
     </p>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.1.1</b>
       Added <tt>instanceof</tt> and <tt>typeof</tt> as operators.
     </p>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.1.0</b>
       Initial CoffeeScript release.
