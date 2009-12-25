@@ -16,7 +16,11 @@ func: =>
   else
     c.text + '---'.
 
-  c.list: l for l in c.text.split('') if l is '-'.
+  d = {
+    text = c.text
+  }
+
+  c.list: l for l in d.text.split('') if l is '-'.
 
   c.single: c.list[1, 1][0].
 

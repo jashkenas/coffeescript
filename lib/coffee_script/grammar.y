@@ -28,10 +28,10 @@ prechigh
   left     '&&' '||' AND OR
   right    '-=' '+=' '/=' '*=' '%='
   right    DELETE INSTANCEOF TYPEOF
-  left     "."
+  left     '.'
   right    THROW FOR IN WHILE NEW SUPER
   left     UNLESS IF ELSE EXTENDS
-  left     ':' '=' '||=' '&&='
+  left     ASSIGN '||=' '&&='
   right    RETURN
 preclow
 
@@ -115,14 +115,13 @@ rule
 
   # Assignment to a variable.
   Assign:
-    Value ":" Expression              { result = AssignNode.new(val[0], val[2]) }
-  | Value "=" Expression              { result = AssignNode.new(val[0], val[2]) }
+    Value ASSIGN Expression         { result = AssignNode.new(val[0], val[2]) }
   ;
 
   # Assignment within an object literal.
   AssignObj:
-    IDENTIFIER ":" Expression         { result = AssignNode.new(val[0], val[2], :object) }
-  | STRING ":" Expression             { result = AssignNode.new(val[0], val[2], :object) }
+    IDENTIFIER ASSIGN Expression    { result = AssignNode.new(val[0], val[2], :object) }
+  | STRING ASSIGN Expression        { result = AssignNode.new(val[0], val[2], :object) }
   | Comment                           { result = val[0] }
   ;
 

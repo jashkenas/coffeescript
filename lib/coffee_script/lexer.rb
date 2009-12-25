@@ -40,6 +40,9 @@ module CoffeeScript
     # Tokens that always constitute the end of an expression.
     EXP_END    = ['}', ')', ']']
 
+    # Assignment tokens.
+    ASSIGN     = [':', '=']
+
     # Scan by attempting to match tokens one character at a time. Slow and steady.
     def tokenize(code)
       @code = code.chomp  # Cleanup code by remove extra line breaks
@@ -139,7 +142,8 @@ module CoffeeScript
       value ||= @chunk[0,1]
       skip_following_newlines if EXP_START.include?(value)
       remove_leading_newlines if EXP_END.include?(value)
-      token(value, value)
+      tag = ASSIGN.include?(value) ? :ASSIGN : value
+      token(tag, value)
       @i += value.length
     end
 
