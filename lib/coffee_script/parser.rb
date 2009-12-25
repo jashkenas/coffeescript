@@ -10,7 +10,7 @@ module CoffeeScript
 
 class Parser < Racc::Parser
 
-module_eval(<<'...end grammar.y/module_eval...', 'grammar.y', 395)
+module_eval(<<'...end grammar.y/module_eval...', 'grammar.y', 397)
   # Lex and parse a CoffeeScript.
   def parse(code)
     # Uncomment the following line to enable grammar debugging, in combination
@@ -1164,7 +1164,7 @@ Racc_token_to_s_table = [
   "ArgList",
   "Catch",
   "ForVariables",
-  "ForBody",
+  "ForSource",
   "Whens",
   "When",
   "ElsIf",
@@ -1983,133 +1983,133 @@ module_eval(<<'.,.,', 'grammar.y', 320)
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 324)
+module_eval(<<'.,.,', 'grammar.y', 325)
   def _reduce_131(val, _values, result)
      result = val 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 325)
+module_eval(<<'.,.,', 'grammar.y', 326)
   def _reduce_132(val, _values, result)
      result = [val[0], val[2]] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 329)
+module_eval(<<'.,.,', 'grammar.y', 331)
   def _reduce_133(val, _values, result)
      result = [val[1]] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 331)
+module_eval(<<'.,.,', 'grammar.y', 333)
   def _reduce_134(val, _values, result)
      result = [val[1], val[3]] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 337)
+module_eval(<<'.,.,', 'grammar.y', 339)
   def _reduce_135(val, _values, result)
      result = val[3].rewrite_condition(val[1]) 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 339)
+module_eval(<<'.,.,', 'grammar.y', 341)
   def _reduce_136(val, _values, result)
      result = val[3].rewrite_condition(val[1]).add_else(val[5]) 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 344)
+module_eval(<<'.,.,', 'grammar.y', 346)
   def _reduce_137(val, _values, result)
      result = val[0] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 345)
+module_eval(<<'.,.,', 'grammar.y', 347)
   def _reduce_138(val, _values, result)
      result = val[0] << val[1] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 350)
+module_eval(<<'.,.,', 'grammar.y', 352)
   def _reduce_139(val, _values, result)
      result = IfNode.new(val[1], val[3]) 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 359)
+module_eval(<<'.,.,', 'grammar.y', 361)
   def _reduce_140(val, _values, result)
      result = IfNode.new(val[2], val[4]) 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 364)
+module_eval(<<'.,.,', 'grammar.y', 366)
   def _reduce_141(val, _values, result)
      result = val[0] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 365)
+module_eval(<<'.,.,', 'grammar.y', 367)
   def _reduce_142(val, _values, result)
      result = val[0].add_else(val[1]) 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 370)
+module_eval(<<'.,.,', 'grammar.y', 372)
   def _reduce_143(val, _values, result)
      result = nil 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 371)
+module_eval(<<'.,.,', 'grammar.y', 373)
   def _reduce_144(val, _values, result)
      result = val[1] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 376)
+module_eval(<<'.,.,', 'grammar.y', 378)
   def _reduce_145(val, _values, result)
      result = val[0] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 377)
+module_eval(<<'.,.,', 'grammar.y', 379)
   def _reduce_146(val, _values, result)
      result = val[0].add_else(val[1]) 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 383)
+module_eval(<<'.,.,', 'grammar.y', 385)
   def _reduce_147(val, _values, result)
      result = IfNode.new(val[1], val[3], val[4]) 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 384)
+module_eval(<<'.,.,', 'grammar.y', 386)
   def _reduce_148(val, _values, result)
      result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true}) 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'grammar.y', 385)
+module_eval(<<'.,.,', 'grammar.y', 387)
   def _reduce_149(val, _values, result)
      result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true, :invert => true}) 
     result
