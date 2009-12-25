@@ -210,7 +210,8 @@ module CoffeeScript
 
     def compile_super(args, o)
       methname = o[:last_assign].sub(LEADING_DOT, '')
-      "this.constructor.prototype.#{methname}.call(this, #{args})"
+      arg_part = args.empty? ? '' : ", #{args}"
+      "#{o[:proto_assign]}.prototype.__proto__.#{methname}.call(this#{arg_part})"
     end
   end
 
@@ -299,7 +300,8 @@ module CoffeeScript
 
   # Setting the value of a local variable, or the value of an object property.
   class AssignNode < Node
-    LEADING_VAR = /\Avar\s+/
+    LEADING_VAR  = /\Avar\s+/
+    PROTO_ASSIGN = /\A(\S+)\.prototype/
 
     statement
     custom_return
@@ -316,9 +318,10 @@ module CoffeeScript
 
     def compile(o={})
       o = super(o)
-      name      = @variable.respond_to?(:compile) ? @variable.compile(o) : @variable
+      name      = @variable.respond_to?(:compile) ? @variable.compile(o) : @variable.to_s
       last      = @variable.respond_to?(:last) ? @variable.last.to_s : name.to_s
-      o         = o.merge(:assign => name, :last_assign => last)
+      proto     = name[PROTO_ASSIGN, 1]
+      o         = o.merge(:assign => name, :last_assign => last, :proto_assign => proto)
       postfix   = o[:return] ? ";\n#{o[:indent]}return #{name}" : ''
       return write("#{@variable}: #{@value.compile(o)}") if @context == :object
       return write("#{name} = #{@value.compile(o)}#{postfix}") if @variable.properties? && !@value.custom_assign?
