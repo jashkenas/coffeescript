@@ -13,8 +13,8 @@ end
 namespace :build do
 
   desc "Recompile the Racc parser (pass -v and -g for verbose debugging)"
-  task :parser, :extra_args do |t, args|
-    sh "racc #{args[:extra_args]} -o lib/coffee_script/parser.rb lib/coffee_script/grammar.y"
+  task :parser, :racc_args do |t, args|
+    sh "racc #{args[:racc_args]} -o lib/coffee_script/parser.rb lib/coffee_script/grammar.y"
   end
 
   desc "Compile the Narwhal interface for --interactive and --run"

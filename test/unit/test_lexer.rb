@@ -12,14 +12,14 @@ class LexerTest < Test::Unit::TestCase
 
   def test_lexing_basic_assignment
     code = "a: 'one'; b: [1, 2]"
-    assert @lex.tokenize(code) == [[:IDENTIFIER, "a"], [":", ":"],
-      [:STRING, "'one'"], [";", ";"], [:IDENTIFIER, "b"], [":", ":"],
+    assert @lex.tokenize(code) == [[:IDENTIFIER, "a"], [:ASSIGN, ":"],
+      [:STRING, "'one'"], [";", ";"], [:IDENTIFIER, "b"], [:ASSIGN, ":"],
       ["[", "["], [:NUMBER, "1"], [",", ","], [:NUMBER, "2"], ["]", "]"]]
   end
 
   def test_lexing_object_literal
     code = "{one : 1}"
-    assert @lex.tokenize(code) == [["{", "{"], [:IDENTIFIER, "one"], [":", ":"],
+    assert @lex.tokenize(code) == [["{", "{"], [:IDENTIFIER, "one"], [:ASSIGN, ":"],
       [:NUMBER, "1"], ["}", "}"]]
   end
 
@@ -37,9 +37,9 @@ class LexerTest < Test::Unit::TestCase
 
   def test_lexing_comment
     code = "a: 1\n # comment\n # on two lines\nb: 2"
-    assert @lex.tokenize(code) == [[:IDENTIFIER, "a"], [":", ":"], [:NUMBER, "1"],
+    assert @lex.tokenize(code) == [[:IDENTIFIER, "a"], [:ASSIGN, ":"], [:NUMBER, "1"],
     ["\n", "\n"], [:COMMENT, [" comment", " on two lines"]], ["\n", "\n"],
-    [:IDENTIFIER, "b"], [":", ":"], [:NUMBER, "2"]]
+    [:IDENTIFIER, "b"], [:ASSIGN, ":"], [:NUMBER, "2"]]
   end
 
   def test_lexing
