@@ -67,7 +67,7 @@
       <a href="#while">While Loops</a><br />
       <a href="#array_comprehensions">Array Comprehensions</a><br />
       <a href="#slice">Array Slice Literals</a><br />
-      <a href="#super">Calling Super from a Subclass</a><br />
+      <a href="#inheritance">Inheritance, and Calling Super from a Subclass</a><br />
       <a href="#embedded">Embedded JavaScript</a><br />
       <a href="#switch">Switch/When/Else</a><br />
       <a href="#try">Try/Catch/Finally</a><br />
@@ -332,8 +332,8 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
     </p>
     <%= code_for('slices', 'three_to_six') %>
 
-    <p id="super">
-      <b class="header">Calling Super from a Subclass</b>
+    <p id="inheritance">
+      <b class="header">Inheritance, and Calling Super from a Subclass</b>
       JavaScript's prototypal inheritance has always been a bit of a
       brain-bender, with a whole family tree of libraries that provide a cleaner
       syntax for classical inheritance on top of JavaScript's prototypes:
@@ -341,9 +341,11 @@ coffee-script --print app/scripts/*.cs > concatenation.js</pre>
       <a href="http://prototypejs.org/">Prototype.js</a>,
       <a href="http://jsclass.jcoglan.com/">JS.Class</a>, etc.
       The libraries provide syntactic sugar, but the built-in inheritance would
-      be completely usable if it weren't for one small exception:
-      it's very awkward to call <b>super</b>, the prototype object's
-      implementation of the current function. CoffeeScript converts
+      be completely usable if it weren't for a couple of small exceptions:
+      it's awkward to call <b>super</b> (the prototype object's
+      implementation of the current function), and it's awkward to correctly
+      set the prototype chain. CoffeeScript provides <tt>extends</tt>
+      to help with prototype setup, and converts
       <tt>super()</tt> calls into calls against the immediate ancestor's
       method of the same name.
     </p>
