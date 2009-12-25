@@ -259,7 +259,7 @@ rule
 
   # Extending an object's prototype.
   Extends:
-    Value EXTENDS Expression          { result = ExtendsNode.new(val[0], val[2]) }
+    Value EXTENDS Value               { result = ExtendsNode.new(val[0], val[2]) }
   ;
 
   # A generic function invocation.
@@ -316,6 +316,7 @@ rule
   ;
 
   # Array comprehensions, including guard and current index.
+  # Looks a little confusing, check nodes.rb for the arguments to ForNode.
   For:
     Expression FOR
       ForVariables ForSource          { result = ForNode.new(val[0], val[3][0], val[2][0], val[3][1], val[2][1]) }
