@@ -32,7 +32,7 @@ exports.run = function(args) {
 var coffeePath = FILE.path(module.path).dirname().dirname().join("bin", "coffee-script");
 
 exports.compileFile = function(path) {
-    var coffee = OS.popen([coffeePath, "--print", path]);
+    var coffee = OS.popen([coffeePath, "--print", "--no-wrap", path]);
 
     if (coffee.wait() !== 0)
         throw new Error("coffee compiler error");
@@ -41,7 +41,7 @@ exports.compileFile = function(path) {
 }
 
 exports.compile = function(source) {
-    var coffee = OS.popen([coffeePath, "-e"]);
+    var coffee = OS.popen([coffeePath, "--eval", "--no-wrap"]);
 
     coffee.stdin.write(source).flush().close();
 
@@ -58,10 +58,6 @@ exports.cs_eval = function(source) {
 
     var code = exports.compile(source);
 
-    // strip the function wrapper, we add our own.
-    // TODO: this is very fragile
-    code = code.split("\n").slice(1,-2).join("\n");
-
     return eval(code);
 }
 
@@ -69,10 +65,6 @@ exports.make_narwhal_factory = function(path) {
     init();
 
     var code = exports.compileFile(path);
-
-    // strip the function wrapper, we add our own.
-    // TODO: this is very fragile
-    code = code.split("\n").slice(1,-2).join("\n");
 
     var factoryText = "function(require,exports,module,system,print){" + code + "/**/\n}";
 
