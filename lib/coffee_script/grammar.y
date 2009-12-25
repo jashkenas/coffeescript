@@ -24,7 +24,7 @@ prechigh
   left     '<<' '>>' '>>>'
   left     '&' '|' '^'
   left     '<=' '<' '>' '>='
-  right    '==' '!=' IS AINT
+  right    '==' '!=' IS ISNT
   left     '&&' '||' AND OR
   right    '-=' '+=' '/=' '*='
   right    DELETE INSTANCEOF TYPEOF
@@ -172,7 +172,7 @@ rule
   | Expression '==' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '!=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression IS Expression          { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression AINT Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression ISNT Expression        { result = OpNode.new(val[1], val[0], val[2]) }
 
   | Expression '&&' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '||' Expression        { result = OpNode.new(val[1], val[0], val[2]) }

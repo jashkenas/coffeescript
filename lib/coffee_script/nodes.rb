@@ -357,7 +357,7 @@ module CoffeeScript
       'and'   => '&&',
       'or'    => '||',
       'is'    => '===',
-      "aint"  => "!==",
+      "isnt"  => "!==",
       'not'   => '!',
     }
     CONDITIONALS     = ['||:', '&&:']

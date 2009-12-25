@@ -49,7 +49,7 @@ _.each: obj, iterator, context =>
     return iterator.call(context, item, i, obj) for item, i in obj. if _.isArray(obj) or _.isArguments(obj)
     iterator.call(context, obj[key], key, obj) for key in _.keys(obj).
   catch e
-    throw e if e aint breaker.
+    throw e if e isnt breaker.
   obj.
 
 # Return the results of applying the iterator to each element. Use JavaScript
