@@ -31,7 +31,7 @@ prechigh
   left     "."
   right    THROW FOR IN WHILE NEW SUPER
   left     UNLESS IF ELSE EXTENDS
-  left     ":" '||=' '&&='
+  left     ':' '=' '||=' '&&='
   right    RETURN
 preclow
 
@@ -116,6 +116,7 @@ rule
   # Assignment to a variable.
   Assign:
     Value ":" Expression              { result = AssignNode.new(val[0], val[2]) }
+  | Value "=" Expression              { result = AssignNode.new(val[0], val[2]) }
   ;
 
   # Assignment within an object literal.
