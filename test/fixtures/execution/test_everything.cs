@@ -6,7 +6,7 @@ func: =>
     a--.
 
   c: {
-    text: b
+    "text": b
   }
 
   c: 'error' unless 42 > 41
