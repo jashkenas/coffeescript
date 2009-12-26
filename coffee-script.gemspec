@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   s.has_rdoc          = false
 
   s.require_paths     = ['lib']
-  s.executables       = ['coffee-script']
+  s.executables       = ['coffee']
 
   s.files = Dir['bin/*', 'examples/*', 'lib/**/*', 'coffee-script.gemspec', 'LICENSE', 'README']
 end

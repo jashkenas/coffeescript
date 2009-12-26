@@ -159,12 +159,12 @@ cubed_list = __d;
 gem install coffee-script</pre>
 
     <p>
-      Installing the gem provides the <tt>coffee-script</tt> command, which can
+      Installing the gem provides the <tt>coffee</tt> command, which can
       be used to compile CoffeeScript <tt>.coffee</tt> files into JavaScript, as
       well as debug them. In conjunction with
-      <a href="http://narwhaljs.org/">Narwhal</a>, the <tt>coffee-script</tt>
+      <a href="http://narwhaljs.org/">Narwhal</a>, the <tt>coffee</tt>
       command also provides direct evaluation and an interactive REPL.
-      When compiling to JavaScript, <tt>coffee-script</tt> writes the output
+      When compiling to JavaScript, <tt>coffee</tt> writes the output
       as <tt>.js</tt> files in the same directory by default, but output
       can be customized with the following options:
     </p>
@@ -216,7 +216,7 @@ gem install coffee-script</pre>
         <td><code>-e, --eval</code></td>
         <td>
           Compile and print a little snippet of CoffeeScript directly from the
-          command line (or from <b>stdin</b>). For example:<br /><tt>coffee-script -e "square: x => x * x."</tt>
+          command line (or from <b>stdin</b>). For example:<br /><tt>coffee -e "square: x => x * x."</tt>
         </td>
       </tr>
       <tr>
@@ -255,10 +255,10 @@ gem install coffee-script</pre>
     </p>
 
     <pre>
-coffee-script path/to/script.coffee
-coffee-script --interactive
-coffee-script --watch --lint experimental.coffee
-coffee-script --print app/scripts/*.coffee > concatenation.js</pre>
+coffee path/to/script.coffee
+coffee --interactive
+coffee --watch --lint experimental.coffee
+coffee --print app/scripts/*.coffee > concatenation.js</pre>
 
     <h2>Language Reference</h2>
 
@@ -580,7 +580,10 @@ lunch<span class="Keyword">:</span> food.eat() <span class="Keyword">for</span> 
 
 <span class="Comment"><span class="Comment">#</span> Zebra-stripe a table.</span>
 highlight(row) <span class="Keyword">for</span> row, i <span class="Keyword">in</span> table <span class="Keyword">if</span> i <span class="Keyword">%</span> <span class="Number">2</span> <span class="Keyword">is</span> <span class="Number">0</span>.
-</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, __e, __f, __g, __h, food, i, lunch, row;
+
+<span class="Comment"><span class="Comment">#</span> Check the first one hundred combinations.</span>
+lockpick(combinations[i]) <span class="Keyword">for</span> i <span class="Keyword">in</span> [<span class="Number">1</span>..<span class="Number">100</span>].
+</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, __e, __f, __g, __h, __i, __j, __k, __l, food, i, lunch, row;
 <span class="Comment"><span class="Comment">//</span> Eat lunch.</span>
 __a <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
 __d <span class="Keyword">=</span> [];
@@ -598,6 +601,12 @@ __h <span class="Keyword">=</span> [];
   __h[__f] <span class="Keyword">=</span> i <span class="Keyword">%</span> <span class="Number">2</span> <span class="Keyword">===</span> <span class="Number">0</span> ? highlight(row) : <span class="BuiltInConstant">null</span>;
 }
 __h;
+<span class="Comment"><span class="Comment">//</span> Check the first one hundred combinations.</span>
+__k <span class="Keyword">=</span> [];
+<span class="Keyword">for</span> (__l<span class="Keyword">=</span><span class="Number">0</span>, i<span class="Keyword">=</span><span class="Number">1</span>, __j<span class="Keyword">=</span><span class="Number">100</span>; i<span class="Keyword">&lt;=</span>__j; i<span class="Keyword">++</span>, __l<span class="Keyword">++</span>) {
+  __k[__l] <span class="Keyword">=</span> lockpick(combinations[i]);
+}
+__k;
 </pre><br class='clear' /></div>
 
     <p id="slice">
@@ -889,7 +898,7 @@ world...";
 
     <p>
       <b class="header" style="margin-top: 20px;">0.1.3</b>
-      The <tt>coffee-script</tt> command now includes <tt>--interactive</tt>,
+      The <tt>coffee</tt> command now includes <tt>--interactive</tt>,
       which launches an interactive CoffeeScript session, and <tt>--run</tt>,
       which directly compiles and executes a script. Both options depend on a
       working installation of Narwhal.

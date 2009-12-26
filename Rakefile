@@ -19,7 +19,7 @@ namespace :build do
 
   desc "Compile the Narwhal interface for --interactive and --run"
   task :narwhal do
-    sh "bin/coffee-script lib/coffee_script/narwhal/*.coffee -o lib/coffee_script/narwhal/js"
+    sh "bin/coffee lib/coffee_script/narwhal/*.coffee -o lib/coffee_script/narwhal/js"
   end
 
 end
@@ -27,7 +27,7 @@ end
 desc "Build the documentation page"
 task :doc do
   source = 'documentation/index.html.erb'
-  child = fork { exec "bin/coffee-script documentation/coffee/*.coffee -o documentation/js -w" }
+  child = fork { exec "bin/coffee documentation/coffee/*.coffee -o documentation/js -w" }
   at_exit { Process.kill("INT", child) }
   Signal.trap("INT") { exit }
   loop do

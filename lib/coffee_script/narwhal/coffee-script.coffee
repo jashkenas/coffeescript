@@ -1,6 +1,6 @@
 # This (javascript) file is generated from lib/coffee_script/narwhal/coffee-script.coffee
 
-# Executes the `coffee-script` Ruby program to convert from CoffeeScript
+# Executes the `coffee` Ruby program to convert from CoffeeScript
 # to Javascript. Eventually this will hopefully happen entirely within JS.
 
 # Require external dependencies.
@@ -9,13 +9,13 @@ File:     require('file')
 Readline: require('readline')
 
 # The path to the CoffeeScript Compiler.
-coffeePath: File.path(module.path).dirname().dirname().dirname().dirname().dirname().join('bin', 'coffee-script')
+coffeePath: File.path(module.path).dirname().dirname().dirname().dirname().dirname().join('bin', 'coffee')
 
 # Our general-purpose error handler.
 checkForErrors: coffeeProcess =>
   return true if coffeeProcess.wait() is 0
   system.stderr.print(coffeeProcess.stderr.read())
-  throw new Error("coffee-script compile error").
+  throw new Error("CoffeeScript compile error").
 
 # Run a simple REPL, round-tripping to the CoffeeScript compiler for every
 # command.
