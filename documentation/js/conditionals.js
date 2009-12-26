@@ -1,5 +1,5 @@
 (function(){
-  var mood;
+  var date, mood;
   if (singing) {
     mood = greatly_improved;
   }
@@ -7,6 +7,6 @@
     claps_hands();
     cha_cha_cha();
   }
-  var date = friday ? sue : jill;
+  date = friday ? sue : jill;
   expensive = expensive || do_the_math();
 })();

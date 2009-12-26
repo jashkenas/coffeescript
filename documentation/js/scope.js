@@ -1,9 +1,11 @@
 (function(){
-  var num = 1;
-  var change_numbers = function() {
+  var change_numbers, new_num, num;
+  num = 1;
+  change_numbers = function() {
+    var new_num;
     num = 2;
-    var new_num = 3;
+    new_num = 3;
     return new_num;
   };
-  var new_num = change_numbers();
+  new_num = change_numbers();
 })();

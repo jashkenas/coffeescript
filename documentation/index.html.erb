@@ -230,6 +230,10 @@ coffee-script --print app/scripts/*.coffee > concatenation.js</pre>
       mathy things.
     </p>
     <%= code_for('assignment', 'greeting') %>
+    <p>
+      Declarations of new variables are pushed up to the top of the current scope,
+      so that assignments may always be used within expressions.
+    </p>
 
     <p id="objects_and_arrays">
       <b class="header">Objects and Arrays</b>
@@ -293,7 +297,12 @@ coffee-script --print app/scripts/*.coffee > concatenation.js</pre>
     <p>
       The same mechanism is used to push down assignment through <b>switch</b>
       statements, and <b>if-elses</b> (although the ternary operator is preferred).
+      Another part of manipulating assignment statements is
+      CoffeeScript's declaration of new variables at the top of the
+      current scope. This allows assignment to be used as a piece of an
+      expression.
     </p>
+    <%= code_for('expressions_assignment', 'six') %>
 
     <p id="aliases">
       <b class="header">Aliases</b>
