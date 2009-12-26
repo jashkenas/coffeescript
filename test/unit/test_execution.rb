@@ -7,21 +7,21 @@ class ExecutionTest < Test::Unit::TestCase
 
   def test_execution_of_coffeescript
     sources = ['test/fixtures/execution/*.coffee'].join(' ')
-    assert `bin/coffee-script -r #{sources}`.match(ALLS_WELL)
+    assert `bin/coffee -r #{sources}`.match(ALLS_WELL)
   end
 
   def test_lintless_coffeescript
-    lint_results = `bin/coffee-script -l test/fixtures/execution/*.coffee`
+    lint_results = `bin/coffee -l test/fixtures/execution/*.coffee`
     assert lint_results.match(NO_WARNINGS)
   end
 
   def test_lintless_examples
-    lint_results = `bin/coffee-script -l examples/*.coffee`
+    lint_results = `bin/coffee -l examples/*.coffee`
     assert lint_results.match(NO_WARNINGS)
   end
 
   def test_lintless_documentation
-    lint_results = `bin/coffee-script -l documentation/coffee/*.coffee`
+    lint_results = `bin/coffee -l documentation/coffee/*.coffee`
     assert lint_results.match(NO_WARNINGS)
   end
 

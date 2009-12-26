@@ -320,6 +320,13 @@ module CoffeeScript
       @exclusive
     end
 
+    # TODO -- figure out if we can detect if a range runs negative.
+    def downward?
+
+    end
+
+    # TODO -- figure out if we can expand ranges into the corresponding array,
+    # as an expression, reliably.
     def compile(o={})
       write()
     end

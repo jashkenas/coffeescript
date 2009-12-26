@@ -5,15 +5,15 @@ require File.expand_path(File.dirname(__FILE__) + '/../coffee-script')
 
 module CoffeeScript
 
-  # The CommandLine handles all of the functionality of the `coffee-script`
+  # The CommandLine handles all of the functionality of the `coffee`
   # utility.
   class CommandLine
 
     BANNER = <<-EOS
-coffee-script compiles CoffeeScript source files into JavaScript.
+coffee compiles CoffeeScript source files into JavaScript.
 
 Usage:
-  coffee-script path/to/script.coffee
+  coffee path/to/script.coffee
     EOS
 
     # Seconds to pause between checks for changed source files.
@@ -190,8 +190,8 @@ Usage:
           install_bundle
           exit
         end
-        opts.on_tail('--version', 'display coffee-script version') do
-          puts "coffee-script version #{CoffeeScript::VERSION}"
+        opts.on_tail('--version', 'display CoffeeScript version') do
+          puts "CoffeeScript version #{CoffeeScript::VERSION}"
           exit
         end
         opts.on_tail('-h', '--help', 'display this help message') do
