@@ -5,7 +5,7 @@ module CoffeeScript
   # whether a variable has been seen before or if it needs to be declared.
   class Scope
 
-    attr_reader :parent, :temp_variable
+    attr_reader :parent, :variables, :temp_variable
 
     # Initialize a scope with its parent, for lookups up the chain.
     def initialize(parent=nil)
@@ -18,8 +18,14 @@ module CoffeeScript
     def find(name, remote=false)
       found = check(name, remote)
       return found if found || remote
-      @variables[name.to_sym] = true
+      @variables[name.to_sym] = :var
       found
+    end
+
+    # Define a local variable as originating from a parameter in current scope
+    # -- no var required.
+    def parameter(name)
+      @variables[name.to_sym] = :param
     end
 
     # Just check to see if a variable has already been declared.
@@ -36,8 +42,17 @@ module CoffeeScript
     # Find an available, short, name for a compiler-generated variable.
     def free_variable
       @temp_variable.succ! while check(@temp_variable)
-      @variables[@temp_variable.to_sym] = true
+      @variables[@temp_variable.to_sym] = :var
       @temp_variable.dup
+    end
+
+    def any_declared?
+      !declared_variables.empty?
+    end
+
+    # Return the list of variables first declared in current scope.
+    def declared_variables
+      @variables.select {|k, v| v == :var }.map {|pair| pair[0].to_s }.sort
     end
 
   end

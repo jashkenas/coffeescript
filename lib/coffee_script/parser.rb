@@ -1350,14 +1350,14 @@ module_eval(<<'.,.,', 'grammar.y', 116)
 
 module_eval(<<'.,.,', 'grammar.y', 121)
   def _reduce_41(val, _values, result)
-     result = AssignNode.new(val[0], val[2], :object) 
+     result = AssignNode.new(ValueNode.new(val[0]), val[2], :object) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'grammar.y', 122)
   def _reduce_42(val, _values, result)
-     result = AssignNode.new(val[0], val[2], :object) 
+     result = AssignNode.new(ValueNode.new(LiteralNode.new(val[0])), val[2], :object) 
     result
   end
 .,.,

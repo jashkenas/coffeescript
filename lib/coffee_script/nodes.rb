@@ -77,16 +77,18 @@ module CoffeeScript
     # If this is the top-level Expressions, wrap everything in a safety closure.
     def root_compile(o={})
       indent = o[:no_wrap] ? '' : TAB
-      code = compile(o.merge(:indent => indent, :scope => Scope.new))
+      code = compile(o.merge(:indent => indent, :scope => Scope.new), o[:no_wrap] ? nil : :code)
       code.gsub!(STRIP_TRAILING_WHITESPACE, '')
       o[:no_wrap] ? code : "(function(){\n#{code}\n})();"
     end
 
     # The extra fancy is to handle pushing down returns and assignments
     # recursively to the final lines of inner statements.
-    def compile(options={})
+    # Variables first defined within the Expressions body have their
+    # declarations pushed up to the top scope.
+    def compile(options={}, parent=nil)
       return root_compile(options) unless options[:scope]
-      code = @expressions.map { |node|
+      compiled = @expressions.map do |node|
         o = super(options)
         if last?(node) && (o[:return] || o[:assign])
           if o[:return]
@@ -99,14 +101,17 @@ module CoffeeScript
             if node.statement? || node.custom_assign?
               "#{o[:indent]}#{node.compile(o)}#{node.line_ending}"
             else
-              "#{o[:indent]}#{AssignNode.new(ValueNode.new(LiteralNode.new(o[:assign])), node).compile(o)};"
+              "#{o[:indent]}#{AssignNode.new(o[:assign], node).compile(o)};"
             end
           end
         else
           o.delete(:return) and o.delete(:assign)
           "#{o[:indent]}#{node.compile(o)}#{node.line_ending}"
         end
-      }.join("\n")
+      end
+      scope = options[:scope]
+      declarations = scope.any_declared? && parent == :code ? "#{options[:indent]}var #{scope.declared_variables.join(', ')};\n" : ''
+      code = declarations + compiled.join("\n")
       write(code)
     end
   end
@@ -338,10 +343,8 @@ module CoffeeScript
 
   # Setting the value of a local variable, or the value of an object property.
   class AssignNode < Node
-    LEADING_VAR  = /\Avar\s+/
     PROTO_ASSIGN = /\A(\S+)\.prototype/
 
-    statement
     custom_return
 
     attr_reader :variable, :value, :context
@@ -356,19 +359,16 @@ module CoffeeScript
 
     def compile(o={})
       o = super(o)
-      name      = @variable.respond_to?(:compile) ? @variable.compile(o) : @variable.to_s
-      last      = @variable.respond_to?(:last) ? @variable.last.to_s : name.to_s
+      name      = @variable.compile(o)
+      last      = @variable.last.to_s
       proto     = name[PROTO_ASSIGN, 1]
-      o         = o.merge(:assign => name, :last_assign => last, :proto_assign => proto)
+      o         = o.merge(:assign => @variable, :last_assign => last, :proto_assign => proto)
       postfix   = o[:return] ? ";\n#{o[:indent]}return #{name}" : ''
-      return write("#{@variable}: #{@value.compile(o)}") if @context == :object
+      return write("#{name}: #{@value.compile(o)}") if @context == :object
       return write("#{name} = #{@value.compile(o)}#{postfix}") if @variable.properties? && !@value.custom_assign?
-      defined   = o[:scope].find(name)
-      def_part  = defined || @variable.properties? || o[:no_wrap] ? "" : "var #{name};\n#{o[:indent]}"
-      return write(def_part + @value.compile(o)) if @value.custom_assign?
-      def_part  = defined || o[:no_wrap] ? name : "var #{name}"
-      val_part  = @value.compile(o).sub(LEADING_VAR, '')
-      write("#{def_part} = #{val_part}#{postfix}")
+      o[:scope].find(name) unless @variable.properties?
+      return write(@value.compile(o)) if @value.custom_assign?
+      write("#{name} = #{@value.compile(o)}#{postfix}")
     end
   end
 
@@ -436,8 +436,8 @@ module CoffeeScript
       o[:indent] += TAB
       o.delete(:assign)
       o.delete(:no_wrap)
-      @params.each {|id| o[:scope].find(id.to_s) }
-      code = @body.compile(o)
+      @params.each {|id| o[:scope].parameter(id.to_s) }
+      code = @body.compile(o, :code)
       write("function(#{@params.join(', ')}) {\n#{code}\n#{indent}}")
     end
   end
@@ -533,20 +533,19 @@ module CoffeeScript
       ivar          = scope.free_variable
       lvar          = scope.free_variable
       rvar          = scope.free_variable
-      name_part     = name_found ? @name : "var #{@name}"
-      index_name    = @index ? (index_found ? @index : "var #{@index}") : nil
-      source_part   = "var #{svar} = #{@source.compile(o)};"
-      for_part      = "var #{ivar}=0, #{lvar}=#{svar}.length; #{ivar}<#{lvar}; #{ivar}++"
-      var_part      = "\n#{o[:indent] + TAB}#{name_part} = #{svar}[#{ivar}];\n"
+      index_name    = @index ? @index : nil
+      source_part   = "#{svar} = #{@source.compile(o)};"
+      for_part      = "#{ivar}=0, #{lvar}=#{svar}.length; #{ivar}<#{lvar}; #{ivar}++"
+      var_part      = "\n#{o[:indent] + TAB}#{@name} = #{svar}[#{ivar}];\n"
       index_part    = @index ? "#{o[:indent] + TAB}#{index_name} = #{ivar};\n" : ''
       body          = @body
       suffix        = ';'
-      set_result    = "var #{rvar} = [];\n#{o[:indent]}"
+      set_result    = "#{rvar} = [];\n#{o[:indent]}"
       save_result   = "#{rvar}[#{ivar}] = "
       return_result = rvar
 
       if o[:return] || o[:assign]
-        return_result = "#{o[:assign]} = #{return_result}" if o[:assign]
+        return_result = "#{o[:assign].compile(o)} = #{return_result}" if o[:assign]
         return_result = "return #{return_result}" if o[:return]
         if @filter
           body = CallNode.new(ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [@body])
