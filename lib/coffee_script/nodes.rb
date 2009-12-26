@@ -542,10 +542,12 @@ module CoffeeScript
       if range
         source_part = ''
         operator    = @source.exclusive? ? '<' : '<='
-        for_part    = "#{ivar}=#{@source.from.compile(o)}, #{lvar}=#{@source.to.compile(o)}; #{ivar}#{operator}#{lvar}; #{ivar}++"
+        index_var   = scope.free_variable
+        for_part    = "#{index_var}=0, #{ivar}=#{@source.from.compile(o)}, #{lvar}=#{@source.to.compile(o)}; #{ivar}#{operator}#{lvar}; #{ivar}++, #{index_var}++"
         var_part    = ''
         index_part  = ''
       else
+        index_var   = nil
         source_part = "#{svar} = #{@source.compile(o)};\n#{o[:indent]}"
         for_part    = "#{ivar}=0, #{lvar}=#{svar}.length; #{ivar}<#{lvar}; #{ivar}++"
         var_part    = "\n#{o[:indent] + TAB}#{@name} = #{svar}[#{ivar}];"
@@ -554,7 +556,7 @@ module CoffeeScript
       body          = @body
       suffix        = ';'
       set_result    = "#{rvar} = [];\n#{o[:indent]}"
-      save_result   = "#{rvar}[#{ivar}] = "
+      save_result   = "#{rvar}[#{index_var || ivar}] = "
       return_result = rvar
 
       if o[:return] || o[:assign]
