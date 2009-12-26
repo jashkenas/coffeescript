@@ -25,7 +25,7 @@ exports.run: args =>
 
   while true
     try
-      system.stdout.write('cs> ').flush()
+      system.stdout.write('coffee> ').flush()
       result: exports.evalCS(Readline.readline())
       print(result) if result isnt undefined
     catch e
