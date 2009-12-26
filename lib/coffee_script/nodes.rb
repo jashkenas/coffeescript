@@ -302,6 +302,8 @@ module CoffeeScript
 
   # A range literal. Ranges can be used to extract portions (slices) of arrays,
   # or to specify a range for array comprehensions.
+  # Because there's no corresponding concept in JavaScript, RangeNodes are never
+  # compiled directly, just used by other nodes that accept ranges.
   class RangeNode
     attr_reader :from, :to
 
