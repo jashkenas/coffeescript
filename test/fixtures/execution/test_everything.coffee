@@ -22,6 +22,6 @@ func: =>
 
   c.list: l for l in d.text.split('') if l is '-'.
 
-  c.single: c.list[1, 1][0].
+  c.single: c.list[1..1][0].
 
 print(func() == '-')

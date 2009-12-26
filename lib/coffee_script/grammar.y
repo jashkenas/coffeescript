@@ -64,8 +64,7 @@ rule
 
   # The parts that are natural JavaScript expressions.
   PureExpression:
-    Literal
-  | Value
+    Value
   | Call
   | Code
   | Operation
@@ -213,6 +212,7 @@ rule
   # Expressions that can be treated as values.
   Value:
     IDENTIFIER                        { result = ValueNode.new(val[0]) }
+  | Literal                           { result = ValueNode.new(val[0]) }
   | Array                             { result = ValueNode.new(val[0]) }
   | Object                            { result = ValueNode.new(val[0]) }
   | Parenthetical                     { result = ValueNode.new(val[0]) }
@@ -234,7 +234,7 @@ rule
 
   # Array slice literal.
   Slice:
-    "[" Expression "," Expression "]" { result = SliceNode.new(val[1], val[3]) }
+    "[" Range "]"                     { result = SliceNode.new(val[1]) }
   ;
 
   # An object literal.
@@ -271,6 +271,12 @@ rule
   # Calling super.
   Super:
     SUPER "(" ArgList ")"             { result = CallNode.new(:super, val[2]) }
+  ;
+
+  # The range literal.
+  Range:
+    Value "." "." Value             { result = RangeNode.new(val[0], val[3]) }
+  | Value "." "." "." Value         { result = RangeNode.new(val[0], val[4], true) }
   ;
 
   # The array literal.
