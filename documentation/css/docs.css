@@ -48,6 +48,8 @@ code, pre, tt {
   font-size: 12px;
   line-height: 18px;
   color: #191955;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
   tt {
     background: #f8f8ff;

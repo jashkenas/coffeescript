@@ -8,13 +8,13 @@ module CoffeeScript
     # The list of keywords passed verbatim to the parser.
     KEYWORDS   = ["if", "else", "then", "unless",
                   "true", "false", "yes", "no", "on", "off",
-                  "and", "or", "is", "aint", "not",
+                  "and", "or", "is", "isnt", "not",
                   "new", "return",
                   "try", "catch", "finally", "throw",
                   "break", "continue",
                   "for", "in", "while",
                   "switch", "when",
-                  "super",
+                  "super", "extends",
                   "delete", "instanceof", "typeof"]
 
     # Token matching regexes.
@@ -40,6 +40,9 @@ module CoffeeScript
 
     # Tokens that always constitute the end of an expression.
     EXP_END    = ['}', ')', ']']
+
+    # Assignment tokens.
+    ASSIGN     = [':', '=']
 
     # Scan by attempting to match tokens one character at a time. Slow and steady.
     def tokenize(code)
@@ -76,7 +79,7 @@ module CoffeeScript
       # Keywords are special identifiers tagged with their own name, 'if' will result
       # in an [:IF, "if"] token
       tag = KEYWORDS.include?(identifier) ? identifier.upcase.to_sym : :IDENTIFIER
-      @tokens[-1][0] = :PROPERTY_ACCESS if tag == :IDENTIFIER && last_value == '.'
+      @tokens[-1][0] = :PROPERTY_ACCESS if tag == :IDENTIFIER && last_value == '.' && !(@tokens[-2][1] == '.')
       token(tag, identifier)
       @i += identifier.length
     end
@@ -150,11 +153,13 @@ module CoffeeScript
     # We treat all other single characters as a token. Eg.: ( ) , . !
     # Multi-character operators are also literal tokens, so that Racc can assign
     # the proper order of operations. Multiple newlines get merged together.
+    # Use a trailing \ to escape newlines.
     def literal_token
       value = @chunk[NEWLINE, 1]
       if value
         @line += value.length
-        token("\n", "\n") unless last_value == "\n"
+        token("\n", "\n") unless ["\n", "\\"].include?(last_value)
+        @tokens.pop if last_value == "\\"
         return @i += value.length
       end
       value = @chunk[OPERATOR, 1]
@@ -162,7 +167,8 @@ module CoffeeScript
       value ||= @chunk[0,1]
       skip_following_newlines if EXP_START.include?(value)
       remove_leading_newlines if EXP_END.include?(value)
-      token(value, value)
+      tag = ASSIGN.include?(value) ? :ASSIGN : value
+      token(tag, value)
       @i += value.length
     end
 

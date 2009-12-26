@@ -1,8 +1,8 @@
 (function(){
+  var volume;
   if (ignition === true) {
     launch();
   }
-  var volume;
   if (band !== spinal_tap) {
     volume = 10;
   }

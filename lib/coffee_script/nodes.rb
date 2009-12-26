@@ -75,17 +75,20 @@ module CoffeeScript
     end
 
     # If this is the top-level Expressions, wrap everything in a safety closure.
-    def root_compile
-      code = compile(:indent => TAB, :scope => Scope.new)
+    def root_compile(o={})
+      indent = o[:no_wrap] ? '' : TAB
+      code = compile(o.merge(:indent => indent, :scope => Scope.new), o[:no_wrap] ? nil : :code)
       code.gsub!(STRIP_TRAILING_WHITESPACE, '')
-      "(function(){\n#{code}\n})();"
+      o[:no_wrap] ? code : "(function(){\n#{code}\n})();"
     end
 
     # The extra fancy is to handle pushing down returns and assignments
     # recursively to the final lines of inner statements.
-    def compile(options={})
-      return root_compile unless options[:scope]
-      code = @expressions.map { |node|
+    # Variables first defined within the Expressions body have their
+    # declarations pushed up to the top scope.
+    def compile(options={}, parent=nil)
+      return root_compile(options) unless options[:scope]
+      compiled = @expressions.map do |node|
         o = super(options)
         if last?(node) && (o[:return] || o[:assign])
           if o[:return]
@@ -98,14 +101,17 @@ module CoffeeScript
             if node.statement? || node.custom_assign?
               "#{o[:indent]}#{node.compile(o)}#{node.line_ending}"
             else
-              "#{o[:indent]}#{AssignNode.new(ValueNode.new(LiteralNode.new(o[:assign])), node).compile(o)};"
+              "#{o[:indent]}#{AssignNode.new(o[:assign], node).compile(o)};"
             end
           end
         else
           o.delete(:return) and o.delete(:assign)
           "#{o[:indent]}#{node.compile(o)}#{node.line_ending}"
         end
-      }.join("\n")
+      end
+      scope = options[:scope]
+      declarations = scope.any_declared? && parent == :code ? "#{options[:indent]}var #{scope.declared_variables.join(', ')};\n" : ''
+      code = declarations + compiled.join("\n")
       write(code)
     end
   end
@@ -209,8 +215,27 @@ module CoffeeScript
 
     def compile_super(args, o)
       methname = o[:last_assign].sub(LEADING_DOT, '')
-      "this.constructor.prototype.#{methname}.call(this, #{args})"
+      arg_part = args.empty? ? '' : ", #{args}"
+      "#{o[:proto_assign]}.__superClass__.#{methname}.call(this#{arg_part})"
     end
+  end
+
+  # Node to extend an object's prototype with an ancestor object.
+  # After goog.inherits from the Closure Library.
+  class ExtendsNode < Node
+    attr_reader :sub_object, :super_object
+
+    def initialize(sub_object, super_object)
+      @sub_object, @super_object = sub_object, super_object
+    end
+
+    def compile(o={})
+      sub, sup = @sub_object.compile(o), @super_object.compile(o)
+      "#{sub}.__superClass__ = #{sup}.prototype;\n#{o[:indent]}" +
+      "#{sub}.prototype = new #{sup}();\n#{o[:indent]}" +
+      "#{sub}.prototype.constructor = #{sub}"
+    end
+
   end
 
   # A value, indexed or dotted into, or vanilla.
@@ -280,27 +305,57 @@ module CoffeeScript
     end
   end
 
+  # A range literal. Ranges can be used to extract portions (slices) of arrays,
+  # or to specify a range for array comprehensions.
+  # RangeNodes get expanded into the equivalent array, if not used to index
+  # a slice or define an array comprehension.
+  class RangeNode
+    attr_reader :from, :to
+
+    def initialize(from, to, exclusive=false)
+      @from, @to, @exclusive = from, to, exclusive
+    end
+
+    def exclusive?
+      @exclusive
+    end
+
+    # TODO -- figure out if we can detect if a range runs negative.
+    def downward?
+
+    end
+
+    # TODO -- figure out if we can expand ranges into the corresponding array,
+    # as an expression, reliably.
+    def compile(o={})
+      write()
+    end
+
+  end
+
   # An array slice literal. Unlike JavaScript's Array#slice, the second parameter
   # specifies the index of the end of the slice (just like the first parameter)
   # is the index of the beginning.
   class SliceNode < Node
-    attr_reader :from, :to
+    attr_reader :range
 
-    def initialize(from, to)
-      @from, @to = from, to
+    def initialize(range)
+      @range = range
     end
 
     def compile(o={})
-      o = super(o)
-      write(".slice(#{@from.compile(o)}, #{@to.compile(o)} + 1)")
+      o         = super(o)
+      from      = @range.from.compile(o)
+      to        = @range.to.compile(o)
+      plus_part = @range.exclusive? ? '' : ' + 1'
+      write(".slice(#{from}, #{to}#{plus_part})")
     end
   end
 
   # Setting the value of a local variable, or the value of an object property.
   class AssignNode < Node
-    LEADING_VAR = /\Avar\s+/
+    PROTO_ASSIGN = /\A(\S+)\.prototype/
 
-    statement
     custom_return
 
     attr_reader :variable, :value, :context
@@ -315,18 +370,16 @@ module CoffeeScript
 
     def compile(o={})
       o = super(o)
-      name      = @variable.respond_to?(:compile) ? @variable.compile(o) : @variable
-      last      = @variable.respond_to?(:last) ? @variable.last.to_s : name.to_s
-      o         = o.merge(:assign => name, :last_assign => last)
+      name      = @variable.compile(o)
+      last      = @variable.last.to_s
+      proto     = name[PROTO_ASSIGN, 1]
+      o         = o.merge(:assign => @variable, :last_assign => last, :proto_assign => proto)
       postfix   = o[:return] ? ";\n#{o[:indent]}return #{name}" : ''
-      return write("#{@variable}: #{@value.compile(o)}") if @context == :object
+      return write("#{name}: #{@value.compile(o)}") if @context == :object
       return write("#{name} = #{@value.compile(o)}#{postfix}") if @variable.properties? && !@value.custom_assign?
-      defined   = o[:scope].find(name)
-      def_part  = defined || @variable.properties? ? "" : "var #{name};\n#{o[:indent]}"
-      return write(def_part + @value.compile(o)) if @value.custom_assign?
-      def_part  = defined ? name : "var #{name}"
-      val_part  = @value.compile(o).sub(LEADING_VAR, '')
-      write("#{def_part} = #{val_part}#{postfix}")
+      o[:scope].find(name) unless @variable.properties?
+      return write(@value.compile(o)) if @value.custom_assign?
+      write("#{name} = #{@value.compile(o)}#{postfix}")
     end
   end
 
@@ -339,10 +392,10 @@ module CoffeeScript
       'and'   => '&&',
       'or'    => '||',
       'is'    => '===',
-      "aint"  => "!==",
-      'not'   => '!',
+      "isnt"  => "!==",
+      'not'   => '!'
     }
-    CONDITIONALS     = ['||:', '&&:']
+    CONDITIONALS     = ['||=', '&&=']
     PREFIX_OPERATORS = ['typeof', 'delete']
 
     attr_reader :operator, :first, :second
@@ -393,8 +446,9 @@ module CoffeeScript
       indent = o[:indent]
       o[:indent] += TAB
       o.delete(:assign)
-      @params.each {|id| o[:scope].find(id.to_s) }
-      code = @body.compile(o)
+      o.delete(:no_wrap)
+      @params.each {|id| o[:scope].parameter(id.to_s) }
+      code = @body.compile(o, :code)
       write("function(#{@params.join(', ')}) {\n#{code}\n#{indent}}")
     end
   end
@@ -455,6 +509,7 @@ module CoffeeScript
 
     def compile(o={})
       o = super(o)
+      o.delete(:return)
       indent = o[:indent] + TAB
       cond = @condition.compile(o.merge(:no_paren => true))
       write("while (#{cond}) {\n#{@body.compile(o.merge(:indent => indent))}\n#{o[:indent]}}")
@@ -482,32 +537,38 @@ module CoffeeScript
 
     def compile(o={})
       o = super(o)
-      scope       = o[:scope]
-      name_found  = scope.find(@name)
-      index_found = @index && scope.find(@index)
-      svar        = scope.free_variable
-      ivar        = scope.free_variable
-      lvar        = scope.free_variable
-      name_part   = name_found ? @name : "var #{@name}"
-      index_name  = @index ? (index_found ? @index : "var #{@index}") : nil
-      source_part = "var #{svar} = #{@source.compile(o)};"
-      for_part    = "var #{ivar}=0, #{lvar}=#{svar}.length; #{ivar}<#{lvar}; #{ivar}++"
-      var_part    = "\n#{o[:indent] + TAB}#{name_part} = #{svar}[#{ivar}];\n"
-      index_part  = @index ? "#{o[:indent] + TAB}#{index_name} = #{ivar};\n" : ''
+      range         = @source.is_a?(RangeNode)
+      scope         = o[:scope]
+      name_found    = scope.find(@name)
+      index_found   = @index && scope.find(@index)
+      svar          = scope.free_variable
+      ivar          = range ? name : scope.free_variable
+      lvar          = scope.free_variable
+      rvar          = scope.free_variable
+      index_name    = @index ? @index : nil
+      if range
+        source_part = ''
+        operator    = @source.exclusive? ? '<' : '<='
+        index_var   = scope.free_variable
+        for_part    = "#{index_var}=0, #{ivar}=#{@source.from.compile(o)}, #{lvar}=#{@source.to.compile(o)}; #{ivar}#{operator}#{lvar}; #{ivar}++, #{index_var}++"
+        var_part    = ''
+        index_part  = ''
+      else
+        index_var   = nil
+        source_part = "#{svar} = #{@source.compile(o)};\n#{o[:indent]}"
+        for_part    = "#{ivar}=0, #{lvar}=#{svar}.length; #{ivar}<#{lvar}; #{ivar}++"
+        var_part    = "\n#{o[:indent] + TAB}#{@name} = #{svar}[#{ivar}];"
+        index_part  = @index ? "\n#{o[:indent] + TAB}#{index_name} = #{ivar};" : ''
+      end
+      body          = @body
+      suffix        = ';'
+      set_result    = "#{rvar} = [];\n#{o[:indent]}"
+      save_result   = "#{rvar}[#{index_var || ivar}] = "
+      return_result = rvar
 
-      set_result    = ''
-      save_result   = ''
-      return_result = ''
-      body = @body
-      suffix = ';'
       if o[:return] || o[:assign]
-        rvar          = scope.free_variable
-        set_result    = "var #{rvar} = [];\n#{o[:indent]}"
-        save_result  += "#{rvar}[#{ivar}] = "
-        return_result = rvar
-        return_result = "#{o[:assign]} = #{return_result};" if o[:assign]
-        return_result = "return #{return_result};" if o[:return]
-        return_result = "\n#{o[:indent]}#{return_result}"
+        return_result = "#{o[:assign].compile(o)} = #{return_result}" if o[:assign]
+        return_result = "return #{return_result}" if o[:return]
         if @filter
           body = CallNode.new(ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [@body])
           body = IfNode.new(@filter, body, nil, :statement => true)
@@ -518,9 +579,10 @@ module CoffeeScript
         body = IfNode.new(@filter, @body)
       end
 
+      return_result = "\n#{o[:indent]}#{return_result};"
       indent = o[:indent] + TAB
       body = body.compile(o.merge(:indent => indent))
-      write("#{source_part}\n#{o[:indent]}#{set_result}for (#{for_part}) {#{var_part}#{index_part}#{indent}#{save_result}#{body}#{suffix}\n#{o[:indent]}}#{return_result}")
+      write("#{source_part}#{set_result}for (#{for_part}) {#{var_part}#{index_part}\n#{indent}#{save_result}#{body}#{suffix}\n#{o[:indent]}}#{return_result}")
     end
   end
 
@@ -567,7 +629,9 @@ module CoffeeScript
     end
   end
 
-  # An extra set of parenthesis, supplied by the script source.
+  # An extra set of parentheses, supplied by the script source.
+  # You can't wrap parentheses around bits that get compiled into JS statements,
+  # unfortunately.
   class ParentheticalNode < Node
     attr_reader :expressions
 
@@ -576,7 +640,7 @@ module CoffeeScript
     end
 
     def statement?
-      @expressions.statement?
+      @expressions.unwrap.statement?
     end
 
     def custom_assign?
@@ -588,10 +652,11 @@ module CoffeeScript
     end
 
     def compile(o={})
+      raise SyntaxError, "parentheses can't be wrapped around a statement" if statement?
       o = super(o)
       compiled = @expressions.compile(o)
       compiled = compiled[0...-1] if compiled[-1..-1] == ';'
-      write(o[:no_paren] || statement? ? compiled : "(#{compiled})")
+      write(o[:no_paren] ? compiled : "(#{compiled})")
     end
   end
 

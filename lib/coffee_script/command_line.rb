@@ -5,15 +5,15 @@ require File.expand_path(File.dirname(__FILE__) + '/../coffee-script')
 
 module CoffeeScript
 
-  # The CommandLine handles all of the functionality of the `coffee-script`
+  # The CommandLine handles all of the functionality of the `coffee`
   # utility.
   class CommandLine
 
     BANNER = <<-EOS
-coffee-script compiles CoffeeScript source files into JavaScript.
+coffee compiles CoffeeScript source files into JavaScript.
 
 Usage:
-  coffee-script path/to/script.cs
+  coffee path/to/script.coffee
     EOS
 
     # Seconds to pause between checks for changed source files.
@@ -23,8 +23,10 @@ Usage:
     def initialize
       @mtimes = {}
       parse_options
+      return launch_repl if @options[:interactive]
       return eval_scriptlet if @options[:eval]
       check_sources
+      return run_scripts if @options[:run]
       @sources.each {|source| compile_javascript(source) }
       watch_coffee_scripts if @options[:watch]
     end
@@ -100,17 +102,36 @@ Usage:
       puts js
     end
 
+    # Use Narwhal to run an interactive CoffeeScript session.
+    def launch_repl
+      exec "narwhal lib/coffee_script/narwhal/js/launcher.js"
+    rescue Errno::ENOENT
+      puts "Error: Narwhal must be installed to use the interactive REPL."
+      exit(1)
+    end
+
+    # Use Narwhal to compile and execute CoffeeScripts.
+    def run_scripts
+      sources = @sources.join(' ')
+      exec "narwhal lib/coffee_script/narwhal/js/launcher.js #{sources}"
+    rescue Errno::ENOENT
+      puts "Error: Narwhal must be installed in order to execute CoffeeScripts."
+      exit(1)
+    end
+
     # Print the tokens that the lexer generates from a source script.
     def tokens(script)
       puts Lexer.new.tokenize(script).inspect
     end
 
     # Compile a single source file to JavaScript.
-    def compile(script, source='')
+    def compile(script, source='error')
       begin
-        CoffeeScript.compile(script)
-      rescue CoffeeScript::ParseError => e
-        STDERR.puts e.message(source)
+        options = {}
+        options[:no_wrap] = true if @options[:no_wrap]
+        CoffeeScript.compile(script, options)
+      rescue CoffeeScript::ParseError, SyntaxError => e
+        STDERR.puts "#{source}: #{e.message}"
         exit(1) unless @options[:watch]
         nil
       end
@@ -134,6 +155,12 @@ Usage:
     def parse_options
       @options = {}
       @option_parser = OptionParser.new do |opts|
+        opts.on('-i', '--interactive', 'run a CoffeeScript REPL (requires Narwhal)') do |i|
+          @options[:interactive] = true
+        end
+        opts.on('-r', '--run', 'compile and run a script (requires Narwhal)') do |r|
+          @options[:run] = true
+        end
         opts.on('-o', '--output [DIR]', 'set the directory for compiled JavaScript') do |d|
           @options[:output] = d
           FileUtils.mkdir_p(d) unless File.exists?(d)
@@ -147,7 +174,7 @@ Usage:
         opts.on('-l', '--lint', 'pipe the compiled JavaScript through JSLint') do |l|
           @options[:lint] = true
         end
-        opts.on('-e', '--eval', 'eval a little scriptlet directly from the cli') do |e|
+        opts.on('-e', '--eval', 'compile a cli scriptlet or read from stdin') do |e|
           @options[:eval] = true
         end
         opts.on('-t', '--tokens', 'print the tokens that the lexer produces') do |t|
@@ -156,12 +183,15 @@ Usage:
         opts.on('-v', '--verbose', 'print at every step of code generation') do |v|
           ENV['VERBOSE'] = 'true'
         end
+        opts.on('-n', '--no-wrap', 'raw output, no safety wrapper or vars') do |n|
+          @options[:no_wrap] = true
+        end
         opts.on_tail('--install-bundle', 'install the CoffeeScript TextMate bundle') do |i|
           install_bundle
           exit
         end
-        opts.on_tail('--version', 'display coffee-script version') do
-          puts "coffee-script version #{CoffeeScript::VERSION}"
+        opts.on_tail('--version', 'display CoffeeScript version') do
+          puts "CoffeeScript version #{CoffeeScript::VERSION}"
           exit
         end
         opts.on_tail('-h', '--help', 'display this help message') do

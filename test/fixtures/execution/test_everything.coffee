@@ -6,7 +6,7 @@ func: =>
     a--.
 
   c: {
-    text: b
+    "text": b
   }
 
   c: 'error' unless 42 > 41
@@ -16,8 +16,12 @@ func: =>
   else
     c.text + '---'.
 
-  c.list: let for let in c.text.split('') if let is '-'.
+  d = {
+    text = c.text
+  }
 
-  c.single: c.list[1, 1][0].
+  c.list: l for l in d.text.split('') if l is '-'.
+
+  c.single: c.list[1..1][0].
 
 print(func() == '-')
