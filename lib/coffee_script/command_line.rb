@@ -127,7 +127,9 @@ Usage:
     # Compile a single source file to JavaScript.
     def compile(script, source='')
       begin
-        CoffeeScript.compile(script, :no_wrap => @options[:no_wrap])
+        options = {}
+        options[:no_wrap] = true if @options[:no_wrap]
+        CoffeeScript.compile(script, options)
       rescue CoffeeScript::ParseError => e
         STDERR.puts e.message(source)
         exit(1) unless @options[:watch]
