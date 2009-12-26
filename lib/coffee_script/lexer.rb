@@ -24,11 +24,11 @@ module CoffeeScript
     JS         = /\A(``|`(.*?)[^\\]`)/m
     OPERATOR   = /\A([+\*&|\/\-%=<>:!]+)/
     WHITESPACE = /\A([ \t\r]+)/
-    NEWLINE    = /\A(\n+)/
+    NEWLINE    = /\A(\n+)(?![ \t\r]+)/
     COMMENT    = /\A((#[^\n]*\s*)+)/m
     CODE       = /\A(=>)/
     REGEX      = /\A(\/(.*?)[^\\]\/[imgy]{0,4})/
-    INDENT     = /\A\n( *)/
+    INDENT     = /\A\n([ \t\r]*)/
 
     # Token cleaning regexes.
     JS_CLEANER = /(\A`|`\Z)/
@@ -56,6 +56,9 @@ module CoffeeScript
         @chunk = @code[@i..-1]
         extract_next_token
       end
+      close_indentation
+      remove_empty_outdents
+      rewrite_closing_parens
       @tokens
     end
 
@@ -129,7 +132,7 @@ module CoffeeScript
     def indent_token
       return false unless indent = @chunk[INDENT, 1]
       size = indent.size
-      return literal_token if size == @indent
+      return newline_token(indent) if size == @indent
       if size > @indent
         token(:INDENT, size - @indent)
         @indents << size - @indent
@@ -222,6 +225,45 @@ module CoffeeScript
     # Close up all remaining open blocks.
     def close_indentation
       outdent_token(@indent)
+    end
+
+    # Rewrite the token stream, looking one token ahead and behind.
+    def rewrite_tokens
+      i = 0
+      while i < @tokens.length - 1
+        yield(@tokens[i - 1], @tokens[i], @tokens[i + 1], i)
+        i += 1
+      end
+    end
+
+    # You should be able to put blank lines within indented expressions.
+    # To that end, remove redundant outdent/indents from the token stream.
+    def remove_empty_outdents
+      rewrite_tokens do |prev, token, post, i|
+        match = (prev[0] == :OUTDENT && token[1] == "\n" && post[0] == :INDENT)
+        match = match && prev[1] == post[1]
+        next unless match
+        @tokens.delete_at(i + 1)
+        @tokens.delete_at(i - 1)
+      end
+    end
+
+    # We'd like to support syntax like this:
+    #    el.click(event =>
+    #      el.hide())
+    # In order to accomplish this, move outdents that follow closing parens
+    # inwards, safely.
+    def rewrite_closing_parens
+      rewrite_tokens do |prev, token, post, i|
+        next(i += 1) unless token[1] == ')'
+        before_outdent = post && post[0] == :OUTDENT
+        after_outdent  = prev && prev[0] == :OUTDENT
+        if before_outdent && !after_outdent
+          insert_index = i
+          insert_index -= 1 while @tokens[insert_index][1] == ')' && (@tokens[insert_index - 1][0] != :OUTDENT)
+          @tokens.insert(insert_index + 1, @tokens.delete_at(i + 1))
+        end
+      end
     end
 
   end
