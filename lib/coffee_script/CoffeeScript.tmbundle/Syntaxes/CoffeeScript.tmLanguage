@@ -234,7 +234,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(debugger)\b</string>
+			<string>\b(debugger|\\)\b</string>
 			<key>name</key>
 			<string>keyword.other.coffee</string>
 		</dict>

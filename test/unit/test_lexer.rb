@@ -38,8 +38,14 @@ class LexerTest < Test::Unit::TestCase
   def test_lexing_comment
     code = "a: 1\n # comment\n # on two lines\nb: 2"
     assert @lex.tokenize(code) == [[:IDENTIFIER, "a"], [:ASSIGN, ":"], [:NUMBER, "1"],
-    ["\n", "\n"], [:COMMENT, [" comment", " on two lines"]], ["\n", "\n"],
-    [:IDENTIFIER, "b"], [:ASSIGN, ":"], [:NUMBER, "2"]]
+      ["\n", "\n"], [:COMMENT, [" comment", " on two lines"]], ["\n", "\n"],
+      [:IDENTIFIER, "b"], [:ASSIGN, ":"], [:NUMBER, "2"]]
+  end
+
+  def test_lexing_newline_escaper
+    code = "two: 1 + \\\n\n 1"
+    assert @lex.tokenize(code) == [[:IDENTIFIER, "two"], [:ASSIGN, ":"],
+      [:NUMBER, "1"], ["+", "+"], [:NUMBER, "1"]]
   end
 
   def test_lexing
