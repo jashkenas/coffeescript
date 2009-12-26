@@ -307,8 +307,8 @@ module CoffeeScript
 
   # A range literal. Ranges can be used to extract portions (slices) of arrays,
   # or to specify a range for array comprehensions.
-  # Because there's no corresponding concept in JavaScript, RangeNodes are never
-  # compiled directly, just used by other nodes that accept ranges.
+  # RangeNodes get expanded into the equivalent array, if not used to index
+  # a slice or define an array comprehension.
   class RangeNode
     attr_reader :from, :to
 
@@ -318,6 +318,10 @@ module CoffeeScript
 
     def exclusive?
       @exclusive
+    end
+
+    def compile(o={})
+      write()
     end
 
   end
@@ -526,18 +530,27 @@ module CoffeeScript
 
     def compile(o={})
       o = super(o)
+      range         = @source.is_a?(RangeNode)
       scope         = o[:scope]
       name_found    = scope.find(@name)
       index_found   = @index && scope.find(@index)
       svar          = scope.free_variable
-      ivar          = scope.free_variable
+      ivar          = range ? name : scope.free_variable
       lvar          = scope.free_variable
       rvar          = scope.free_variable
       index_name    = @index ? @index : nil
-      source_part   = "#{svar} = #{@source.compile(o)};"
-      for_part      = "#{ivar}=0, #{lvar}=#{svar}.length; #{ivar}<#{lvar}; #{ivar}++"
-      var_part      = "\n#{o[:indent] + TAB}#{@name} = #{svar}[#{ivar}];\n"
-      index_part    = @index ? "#{o[:indent] + TAB}#{index_name} = #{ivar};\n" : ''
+      if range
+        source_part = ''
+        operator    = @source.exclusive? ? '<' : '<='
+        for_part    = "#{ivar}=#{@source.from.compile(o)}, #{lvar}=#{@source.to.compile(o)}; #{ivar}#{operator}#{lvar}; #{ivar}++"
+        var_part    = ''
+        index_part  = ''
+      else
+        source_part = "#{svar} = #{@source.compile(o)};\n#{o[:indent]}"
+        for_part    = "#{ivar}=0, #{lvar}=#{svar}.length; #{ivar}<#{lvar}; #{ivar}++"
+        var_part    = "\n#{o[:indent] + TAB}#{@name} = #{svar}[#{ivar}];"
+        index_part  = @index ? "\n#{o[:indent] + TAB}#{index_name} = #{ivar};" : ''
+      end
       body          = @body
       suffix        = ';'
       set_result    = "#{rvar} = [];\n#{o[:indent]}"
@@ -560,7 +573,7 @@ module CoffeeScript
       return_result = "\n#{o[:indent]}#{return_result};"
       indent = o[:indent] + TAB
       body = body.compile(o.merge(:indent => indent))
-      write("#{source_part}\n#{o[:indent]}#{set_result}for (#{for_part}) {#{var_part}#{index_part}#{indent}#{save_result}#{body}#{suffix}\n#{o[:indent]}}#{return_result}")
+      write("#{source_part}#{set_result}for (#{for_part}) {#{var_part}#{index_part}\n#{indent}#{save_result}#{body}#{suffix}\n#{o[:indent]}}#{return_result}")
     end
   end
 
