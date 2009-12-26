@@ -50,7 +50,7 @@
       <a href="#aliases">Aliases</a><br />
       <a href="#while">While Loops</a><br />
       <a href="#array_comprehensions">Array Comprehensions</a><br />
-      <a href="#slice">Array Slice Literals</a><br />
+      <a href="#slice">Slicing Arrays with Ranges</a><br />
       <a href="#inheritance">Inheritance, and Calling Super from a Subclass</a><br />
       <a href="#embedded">Embedded JavaScript</a><br />
       <a href="#switch">Switch/When/Else</a><br />
@@ -578,18 +578,27 @@ __h;
 </pre><br class='clear' /></div>
 
     <p id="slice">
-      <b class="header">Array Slice Literals</b>
-      CoffeeScript includes syntax for extracting slices of arrays.
-      The first argument is the index of the first element in the slice, and
-      the second is the index of the last one.
+      <b class="header">Slicing Arrays with Ranges</b>
+      CoffeeScript borrows Ruby's
+      <a href="http://ruby-doc.org/core/classes/Range.html">range syntax</a>
+      for extracting slices of arrays. With two dots (<tt>3..5</tt>), the range
+      is inclusive: the first argument is the index of the first element in
+      the slice, and the second is the index of the last one. Three dots signify
+      a range that excludes the end.
     </p>
-    <div class='code'><pre class="idle">nums<span class="Keyword">:</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>]
-three_to_six<span class="Keyword">:</span> nums[<span class="Number">3</span>, <span class="Number">6</span>]
-</pre><pre class="idle"><span class="Storage">var</span> nums <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
-<span class="Storage">var</span> three_to_six <span class="Keyword">=</span> nums.<span class="LibraryFunction">slice</span>(<span class="Number">3</span>, <span class="Number">6</span> <span class="Keyword">+</span> <span class="Number">1</span>);
-</pre><button onclick='javascript: var nums = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-var three_to_six = nums.slice(3, 6 + 1);
-;alert(three_to_six);'>run: three_to_six</button><br class='clear' /></div>
+    <div class='code'><pre class="idle">numbers<span class="Keyword">:</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>]
+
+three_to_six<span class="Keyword">:</span> numbers[<span class="Number">3</span>..<span class="Number">6</span>]
+
+numbers_copy<span class="Keyword">:</span> numbers[<span class="Number">0</span>...numbers.length]
+
+</pre><pre class="idle"><span class="Storage">var</span> numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
+<span class="Storage">var</span> three_to_six <span class="Keyword">=</span> numbers.<span class="LibraryFunction">slice</span>(<span class="Number">3</span>, <span class="Number">6</span> <span class="Keyword">+</span> <span class="Number">1</span>);
+<span class="Storage">var</span> numbers_copy <span class="Keyword">=</span> numbers.<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, numbers.<span class="LibraryConstant">length</span>);
+</pre><button onclick='javascript: var numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+var three_to_six = numbers.slice(3, 6 + 1);
+var numbers_copy = numbers.slice(0, numbers.length);
+;alert(numbers_copy);'>run: numbers_copy</button><br class='clear' /></div>
 
     <p id="inheritance">
       <b class="header">Inheritance, and Calling Super from a Subclass</b>
@@ -832,17 +841,17 @@ world...";
     </ul>
 
     <h2 id="change_log">Change Log</h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.1.4</b>
       The official CoffeeScript extension is now <tt>.coffee</tt> instead of
-      <tt>.cs</tt>, which properly belongs to 
+      <tt>.cs</tt>, which properly belongs to
       <a href="http://en.wikipedia.org/wiki/C_Sharp_(programming_language)">C#</a>.
       Due to popular demand, you can now also use <tt>=</tt> to assign. Unlike
       JavaScript, <tt>=</tt> can also be used within object literals, interchangeably
-      with <tt>:</tt>. Made a grammatical fix for chained function calls 
-      like <tt>func(1)(2)(3)(4)</tt>. Inheritance and super no longer use 
-      <tt>__proto__</tt>, so they should be IE-compatible now. 
+      with <tt>:</tt>. Made a grammatical fix for chained function calls
+      like <tt>func(1)(2)(3)(4)</tt>. Inheritance and super no longer use
+      <tt>__proto__</tt>, so they should be IE-compatible now.
     </p>
 
     <p>
