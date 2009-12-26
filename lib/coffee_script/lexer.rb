@@ -131,17 +131,16 @@ module CoffeeScript
       size = indent.size
       return literal_token if size == @indent
       if size > @indent
-        tag = :INDENT
+        token(:INDENT, size - @indent)
         @indent = size
         @indents << @indent
       else
-        tag = :OUTDENT
+        token(:OUTDENT, @indent - size)
         @indents.pop while @indents.last && ((@indents.last || 0) > size)
         @indent = @indents.last || 0
       end
       @line += 1
       @i += (size + 1)
-      token(tag, size)
     end
 
     # Matches and consumes non-meaningful whitespace.
@@ -150,18 +149,20 @@ module CoffeeScript
       @i += whitespace.length
     end
 
+    # Multiple newlines get merged together.
+    # Use a trailing \ to escape newlines.
+    def newline_token(newlines)
+      return false unless newlines = @chunk[NEWLINE, 1]
+      @line += newlines.length
+      token("\n", "\n") unless ["\n", "\\"].include?(last_value)
+      @tokens.pop if last_value == "\\"
+      @i += newlines.length
+    end
+
     # We treat all other single characters as a token. Eg.: ( ) , . !
     # Multi-character operators are also literal tokens, so that Racc can assign
-    # the proper order of operations. Multiple newlines get merged together.
-    # Use a trailing \ to escape newlines.
+    # the proper order of operations.
     def literal_token
-      value = @chunk[NEWLINE, 1]
-      if value
-        @line += value.length
-        token("\n", "\n") unless ["\n", "\\"].include?(last_value)
-        @tokens.pop if last_value == "\\"
-        return @i += value.length
-      end
       value = @chunk[OPERATOR, 1]
       tag_parameters if value && value.match(CODE)
       value ||= @chunk[0,1]

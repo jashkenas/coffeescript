@@ -33,7 +33,7 @@ prechigh
   right    THROW FOR IN WHILE NEW SUPER
   left     UNLESS IF ELSE EXTENDS
   left     ASSIGN '||=' '&&='
-  right    RETURN
+  right    RETURN INDENT
   left     OUTDENT
 preclow
 
@@ -88,8 +88,8 @@ rule
   ;
 
   Block:
-    Expression                        { result = Expressions.new(val) }
-  | INDENT Expressions Outdent        { result = val[1] }
+    # Expression                        { result = Expressions.new(val) }
+    INDENT Expressions Outdent        { result = val[1] }
   ;
 
   Outdent:
