@@ -24,8 +24,8 @@ class ParserTest < Test::Unit::TestCase
     nodes = @par.parse("{one : 1 \n two : 2}").expressions
     obj = nodes.first.literal
     assert obj.is_a? ObjectNode
-    assert obj.properties.first.variable == "one"
-    assert obj.properties.last.variable == "two"
+    assert obj.properties.first.variable.literal.value == "one"
+    assert obj.properties.last.variable.literal.value == "two"
   end
 
   def test_parsing_an_function_definition
@@ -79,7 +79,7 @@ class ParserTest < Test::Unit::TestCase
 
   def test_no_wrapping_parens_around_statements
     assert_raises(SyntaxError) do
-      @par.parse("(a: 1)").compile
+      @par.parse("(try thing() catch error fail().)").compile
     end
   end
 

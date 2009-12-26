@@ -119,8 +119,8 @@ rule
 
   # Assignment within an object literal.
   AssignObj:
-    IDENTIFIER ASSIGN Expression    { result = AssignNode.new(val[0], val[2], :object) }
-  | STRING ASSIGN Expression        { result = AssignNode.new(val[0], val[2], :object) }
+    IDENTIFIER ASSIGN Expression    { result = AssignNode.new(ValueNode.new(val[0]), val[2], :object) }
+  | STRING ASSIGN Expression        { result = AssignNode.new(ValueNode.new(LiteralNode.new(val[0])), val[2], :object) }
   | Comment                           { result = val[0] }
   ;
 
@@ -143,10 +143,10 @@ rule
   | '-' Expression = UMINUS           { result = OpNode.new(val[0], val[1]) }
   | NOT Expression                    { result = OpNode.new(val[0], val[1]) }
   | '~' Expression                    { result = OpNode.new(val[0], val[1]) }
-  | '--' Expression                    { result = OpNode.new(val[0], val[1]) }
-  | '++' Expression                    { result = OpNode.new(val[0], val[1]) }
-  | Expression '--'                    { result = OpNode.new(val[1], val[0], nil, true) }
-  | Expression '++'                    { result = OpNode.new(val[1], val[0], nil, true) }
+  | '--' Expression                   { result = OpNode.new(val[0], val[1]) }
+  | '++' Expression                   { result = OpNode.new(val[0], val[1]) }
+  | Expression '--'                   { result = OpNode.new(val[1], val[0], nil, true) }
+  | Expression '++'                   { result = OpNode.new(val[1], val[0], nil, true) }
 
   | Expression '*' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '/' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
