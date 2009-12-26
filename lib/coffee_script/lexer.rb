@@ -132,15 +132,22 @@ module CoffeeScript
       return literal_token if size == @indent
       if size > @indent
         token(:INDENT, size - @indent)
+        @indents << size - @indent
         @indent = size
-        @indents << @indent
       else
-        token(:OUTDENT, @indent - size)
-        @indents.pop while @indents.last && ((@indents.last || 0) > size)
-        @indent = @indents.last || 0
+        outdent_token(@indent - size)
       end
       @line += 1
       @i += (size + 1)
+    end
+
+    def outdent_token(move_out)
+      while move_out > 0
+        last_indent = @indents.pop
+        token(:OUTDENT, last_indent)
+        move_out -= last_indent
+      end
+      @indent = @indents.last || 0
     end
 
     # Matches and consumes non-meaningful whitespace.
@@ -214,9 +221,7 @@ module CoffeeScript
 
     # Close up all remaining open blocks.
     def close_indentation
-      while indent = @indents.pop
-        token(:OUTDENT, @indents.first || 0)
-      end
+      outdent_token(@indent)
     end
 
   end
