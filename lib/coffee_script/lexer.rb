@@ -130,11 +130,13 @@ module CoffeeScript
     # We treat all other single characters as a token. Eg.: ( ) , . !
     # Multi-character operators are also literal tokens, so that Racc can assign
     # the proper order of operations. Multiple newlines get merged together.
+    # Use a trailing \ to escape newlines.
     def literal_token
       value = @chunk[NEWLINE, 1]
       if value
         @line += value.length
-        token("\n", "\n") unless last_value == "\n"
+        token("\n", "\n") unless ["\n", "\\"].include?(last_value)
+        @tokens.pop if last_value == "\\"
         return @i += value.length
       end
       value = @chunk[OPERATOR, 1]
