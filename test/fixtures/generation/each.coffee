@@ -10,5 +10,5 @@ _.each: obj, iterator, context =>
     else
       iterator.call(context, obj[key], key, obj) for key in _.keys(obj)..
   catch e
-    throw e if e aint breaker.
+    throw e if e isnt breaker.
   obj.

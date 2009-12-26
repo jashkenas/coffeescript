@@ -5,7 +5,7 @@
 	<key>name</key>
 	<string>comments</string>
 	<key>scope</key>
-	<string>source.cs</string>
+	<string>source.coffee</string>
 	<key>settings</key>
 	<dict>
 		<key>shellVariables</key>

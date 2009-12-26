@@ -24,8 +24,8 @@ class ParserTest < Test::Unit::TestCase
     nodes = @par.parse("{one : 1 \n two : 2}").expressions
     obj = nodes.first.literal
     assert obj.is_a? ObjectNode
-    assert obj.properties.first.variable == "one"
-    assert obj.properties.last.variable == "two"
+    assert obj.properties.first.variable.literal.value == "one"
+    assert obj.properties.last.variable.literal.value == "two"
   end
 
   def test_parsing_an_function_definition
@@ -49,7 +49,7 @@ class ParserTest < Test::Unit::TestCase
     assert nodes.first.is_a? ForNode
     assert nodes.first.body.literal == 'i'
     assert nodes.first.filter.operator == '==='
-    assert nodes.first.source.literal.objects.last.value == "5"
+    assert nodes.first.source.literal.objects.last.literal.value == "5"
   end
 
   def test_parsing_comment
@@ -58,18 +58,29 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_parsing_inner_comments
-    nodes = @par.parse(File.read('test/fixtures/inner_comments.cs'))
-    assert nodes.compile == File.read('test/fixtures/inner_comments.js')
+    nodes = @par.parse(File.read('test/fixtures/generation/inner_comments.coffee'))
+    assert nodes.compile == File.read('test/fixtures/generation/inner_comments.js')
   end
 
   def test_parsing
-    nodes = @par.parse(File.read('test/fixtures/each.cs'))
+    nodes = @par.parse(File.read('test/fixtures/generation/each.coffee'))
     assign = nodes.expressions[1]
     assert assign.is_a? AssignNode
     assert assign.variable.literal == '_'
     assert assign.value.is_a? CodeNode
     assert assign.value.params == ['obj', 'iterator', 'context']
-    assert nodes.compile == File.read('test/fixtures/each.js')
+    assert nodes.compile == File.read('test/fixtures/generation/each.js')
+  end
+
+  def test_no_wrap
+    nodes = @par.parse(File.read('test/fixtures/generation/each.coffee'))
+    assert nodes.compile(:no_wrap => true) == File.read('test/fixtures/generation/each_no_wrap.js')
+  end
+
+  def test_no_wrapping_parens_around_statements
+    assert_raises(SyntaxError) do
+      @par.parse("(try thing() catch error fail().)").compile
+    end
   end
 
 end

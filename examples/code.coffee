@@ -5,7 +5,7 @@ sum: x, y => x + y.
 
 odd: x => x % 2 is 0.
 
-even: x => x % 2 aint 0.
+even: x => x % 2 isnt 0.
 
 run_loop: =>
   fire_events( e => e.stopPropagation(). )
@@ -62,8 +62,8 @@ race: =>
   race().
 
 # Conditional assignment:
-good ||: evil
-wine &&: cheese
+good ||= evil
+wine &&= cheese
 
 # Nested property access and calls.
 ((moon.turn(360))).shapes[3].move({x: 45, y: 30}).position['top'].offset('x')
@@ -132,7 +132,7 @@ wednesday: => eat_breakfast(); go_to_work(); eat_dinner(); .
 
 # Array slice literals.
 zero_to_nine: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-three_to_six: zero_to_nine[3, 6]
+three_to_six: zero_to_nine[3..6]
 
 # Multiline strings with inner quotes.
 story: "Lorem ipsum dolor \"sit\" amet, consectetuer adipiscing elit,
@@ -145,13 +145,13 @@ Animal.prototype.move: meters =>
   alert(this.name + " moved " + meters + "m.").
 
 Snake: name => this.name: name.
-Snake.prototype: Animal
+Snake extends Animal
 Snake.prototype.move: =>
   alert('Slithering...')
   super(5).
 
 Horse: name => this.name: name.
-Horse.prototype: Animal
+Horse extends Animal
 Horse.prototype.move: =>
   alert('Galloping...')
   super(45).

@@ -10,15 +10,24 @@ task :test do
   Dir['test/*/**/test_*.rb'].each {|test| require test }
 end
 
-desc "Recompile the Racc parser (pass -v and -g for verbose debugging)"
-task :build, :extra_args do |t, args|
-  sh "racc #{args[:extra_args]} -o lib/coffee_script/parser.rb lib/coffee_script/grammar.y"
+namespace :build do
+
+  desc "Recompile the Racc parser (pass -v and -g for verbose debugging)"
+  task :parser, :racc_args do |t, args|
+    sh "racc #{args[:racc_args]} -o lib/coffee_script/parser.rb lib/coffee_script/grammar.y"
+  end
+
+  desc "Compile the Narwhal interface for --interactive and --run"
+  task :narwhal do
+    sh "bin/coffee lib/coffee_script/narwhal/*.coffee -o lib/coffee_script/narwhal/js"
+  end
+
 end
 
 desc "Build the documentation page"
 task :doc do
   source = 'documentation/index.html.erb'
-  child = fork { exec "bin/coffee-script documentation/cs/*.cs -o documentation/js -w" }
+  child = fork { exec "bin/coffee documentation/coffee/*.coffee -o documentation/js -w" }
   at_exit { Process.kill("INT", child) }
   Signal.trap("INT") { exit }
   loop do

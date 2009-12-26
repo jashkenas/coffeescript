@@ -3,27 +3,25 @@ require 'test_helper'
 class ExecutionTest < Test::Unit::TestCase
 
   NO_WARNINGS = /\A(0 error\(s\), 0 warning\(s\)\n)+\Z/
+  ALLS_WELL   = /\A\n?(true\n)+\Z/m
 
   def test_execution_of_coffeescript
-    `bin/coffee-script test/fixtures/execution/*.cs`
-    sources = Dir['test/fixtures/execution/*.js'].map {|f| File.expand_path(f) }
-    starting_place = File.expand_path(Dir.pwd)
-    Dir.chdir('/Users/jashkenas/Desktop/Beauty/Code/v8')
-    sources.each do |source|
-      # puts `./shell #{source}`
-      assert `./shell #{source}`.chomp.to_sym == :true
-    end
-  ensure
-    Dir.chdir(starting_place)
+    sources = ['test/fixtures/execution/*.coffee'].join(' ')
+    assert `bin/coffee -r #{sources}`.match(ALLS_WELL)
   end
 
   def test_lintless_coffeescript
-    lint_results = `bin/coffee-script -l test/fixtures/execution/*.cs`
+    lint_results = `bin/coffee -l test/fixtures/execution/*.coffee`
     assert lint_results.match(NO_WARNINGS)
   end
 
   def test_lintless_examples
-    lint_results = `bin/coffee-script -l examples/*.cs`
+    lint_results = `bin/coffee -l examples/*.coffee`
+    assert lint_results.match(NO_WARNINGS)
+  end
+
+  def test_lintless_documentation
+    lint_results = `bin/coffee -l documentation/coffee/*.coffee`
     assert lint_results.match(NO_WARNINGS)
   end
 

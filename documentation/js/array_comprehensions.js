@@ -1,19 +1,26 @@
 (function(){
-
+  var __a, __b, __c, __d, __e, __f, __g, __h, __i, __j, __k, __l, food, i, lunch, row;
   // Eat lunch.
-  var lunch;
-  var a = ['toast', 'cheese', 'wine'];
-  var d = [];
-  for (var b=0, c=a.length; b<c; b++) {
-    var food = a[b];
-    d[b] = food.eat();
+  __a = ['toast', 'cheese', 'wine'];
+  __d = [];
+  for (__b=0, __c=__a.length; __b<__c; __b++) {
+    food = __a[__b];
+    __d[__b] = food.eat();
   }
-  lunch = d;
+  lunch = __d;
   // Zebra-stripe a table.
-  var e = table;
-  for (var f=0, g=e.length; f<g; f++) {
-    var row = e[f];
-    var i = f;
-    i % 2 === 0 ? highlight(row) : null;
+  __e = table;
+  __h = [];
+  for (__f=0, __g=__e.length; __f<__g; __f++) {
+    row = __e[__f];
+    i = __f;
+    __h[__f] = i % 2 === 0 ? highlight(row) : null;
   }
+  __h;
+  // Check the first one hundred combinations.
+  __k = [];
+  for (__l=0, i=1, __j=100; i<=__j; i++, __l++) {
+    __k[__l] = lockpick(combinations[i]);
+  }
+  __k;
 })();

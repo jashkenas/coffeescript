@@ -11,7 +11,7 @@ token BREAK CONTINUE
 token FOR IN WHILE
 token SWITCH WHEN
 token DELETE INSTANCEOF TYPEOF
-token SUPER
+token SUPER EXTENDS
 token NEWLINE
 token COMMENT
 token JS
@@ -25,21 +25,21 @@ prechigh
   left     '<<' '>>' '>>>'
   left     '&' '|' '^'
   left     '<=' '<' '>' '>='
-  right    '==' '!=' IS AINT
+  right    '==' '!=' IS ISNT
   left     '&&' '||' AND OR
-  right    '-=' '+=' '/=' '*='
+  right    '-=' '+=' '/=' '*=' '%='
   right    DELETE INSTANCEOF TYPEOF
-  left     "."
-  right    THROW FOR IN WHILE NEW
-  left     UNLESS IF ELSE
-  left     ":" '||:' '&&:'
-  right    RETURN INDENT
+  left     '.'
+  right    THROW FOR IN WHILE NEW SUPER
+  left     UNLESS IF ELSE EXTENDS
+  left     ASSIGN '||=' '&&='
+  right    RETURN
   left     OUTDENT
 preclow
 
-# We expect 4 shift/reduce errors for optional syntax.
+# We expect 3 shift/reduce errors for optional syntax.
 # There used to be 252 -- greatly improved.
-expect 4
+expect 3
 
 rule
 
@@ -66,11 +66,11 @@ rule
 
   # The parts that are natural JavaScript expressions.
   PureExpression:
-    Literal
-  | Value
+    Value
   | Call
   | Code
   | Operation
+  | Range
   ;
 
   # We have to take extra care to convert these statements into expressions.
@@ -83,6 +83,7 @@ rule
   | While
   | For
   | Switch
+  | Extends
   | Comment
   ;
 
@@ -126,12 +127,13 @@ rule
 
   # Assignment to a variable.
   Assign:
-    Value ":" Expression              { result = AssignNode.new(val[0], val[2]) }
+    Value ASSIGN Expression         { result = AssignNode.new(val[0], val[2]) }
   ;
 
   # Assignment within an object literal.
   AssignObj:
-    IDENTIFIER ":" Expression         { result = AssignNode.new(val[0], val[2], :object) }
+    IDENTIFIER ASSIGN Expression    { result = AssignNode.new(ValueNode.new(val[0]), val[2], :object) }
+  | STRING ASSIGN Expression        { result = AssignNode.new(ValueNode.new(LiteralNode.new(val[0])), val[2], :object) }
   | Comment                           { result = val[0] }
   ;
 
@@ -154,10 +156,10 @@ rule
   | '-' Expression = UMINUS           { result = OpNode.new(val[0], val[1]) }
   | NOT Expression                    { result = OpNode.new(val[0], val[1]) }
   | '~' Expression                    { result = OpNode.new(val[0], val[1]) }
-  | '--' Expression                    { result = OpNode.new(val[0], val[1]) }
-  | '++' Expression                    { result = OpNode.new(val[0], val[1]) }
-  | Expression '--'                    { result = OpNode.new(val[1], val[0], nil, true) }
-  | Expression '++'                    { result = OpNode.new(val[1], val[0], nil, true) }
+  | '--' Expression                   { result = OpNode.new(val[0], val[1]) }
+  | '++' Expression                   { result = OpNode.new(val[0], val[1]) }
+  | Expression '--'                   { result = OpNode.new(val[1], val[0], nil, true) }
+  | Expression '++'                   { result = OpNode.new(val[1], val[0], nil, true) }
 
   | Expression '*' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '/' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
@@ -182,7 +184,7 @@ rule
   | Expression '==' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '!=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression IS Expression          { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression AINT Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression ISNT Expression        { result = OpNode.new(val[1], val[0], val[2]) }
 
   | Expression '&&' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '||' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
@@ -193,8 +195,9 @@ rule
   | Expression '+=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '/=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '*=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression '||:' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
-  | Expression '&&:' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '%=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '||=' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '&&=' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
 
   | DELETE Expression                 { result = OpNode.new(val[0], val[1]) }
   | TYPEOF Expression                 { result = OpNode.new(val[0], val[1]) }
@@ -222,6 +225,7 @@ rule
   # Expressions that can be treated as values.
   Value:
     IDENTIFIER                        { result = ValueNode.new(val[0]) }
+  | Literal                           { result = ValueNode.new(val[0]) }
   | Array                             { result = ValueNode.new(val[0]) }
   | Object                            { result = ValueNode.new(val[0]) }
   | Parenthetical                     { result = ValueNode.new(val[0]) }
@@ -233,17 +237,12 @@ rule
   Accessor:
     PROPERTY_ACCESS IDENTIFIER        { result = AccessorNode.new(val[1]) }
   | Index                             { result = val[0] }
-  | Slice                             { result = val[0] }
+  | Range                             { result = SliceNode.new(val[0]) }
   ;
 
   # Indexing into an object or array.
   Index:
     "[" Expression "]"                { result = IndexNode.new(val[1]) }
-  ;
-
-  # Array slice literal.
-  Slice:
-    "[" Expression "," Expression "]" { result = SliceNode.new(val[1], val[3]) }
   ;
 
   # An object literal.
@@ -266,14 +265,26 @@ rule
   | Super                             { result = val[0] }
   ;
 
+  # Extending an object's prototype.
+  Extends:
+    Value EXTENDS Value               { result = ExtendsNode.new(val[0], val[2]) }
+  ;
+
   # A generic function invocation.
   Invocation:
     Value "(" ArgList ")"             { result = CallNode.new(val[0], val[2]) }
+  | Invocation "(" ArgList ")"        { result = CallNode.new(val[0], val[2]) }
   ;
 
   # Calling super.
   Super:
     SUPER "(" ArgList ")"             { result = CallNode.new(:super, val[2]) }
+  ;
+
+  # The range literal.
+  Range:
+    "[" Value "." "." Value "]"       { result = RangeNode.new(val[1], val[4]) }
+  | "[" Value "." "." "." Value "]"   { result = RangeNode.new(val[1], val[5], true) }
   ;
 
   # The array literal.
@@ -318,19 +329,23 @@ rule
   ;
 
   # Array comprehensions, including guard and current index.
+  # Looks a little confusing, check nodes.rb for the arguments to ForNode.
   For:
-  Expression FOR IDENTIFIER
-    IN PureExpression                 { result = ForNode.new(val[0], val[4], val[2], nil) }
-  | Expression FOR
-      IDENTIFIER "," IDENTIFIER
-      IN PureExpression               { result = ForNode.new(val[0], val[6], val[2], nil, val[4]) }
-  | Expression FOR IDENTIFIER
-      IN PureExpression
-      IF Expression                   { result = ForNode.new(val[0], val[4], val[2], val[6]) }
-  | Expression FOR
-      IDENTIFIER "," IDENTIFIER
-      IN PureExpression
-      IF Expression                   { result = ForNode.new(val[0], val[6], val[2], val[8], val[4]) }
+    Expression FOR
+      ForVariables ForSource          { result = ForNode.new(val[0], val[3][0], val[2][0], val[3][1], val[2][1]) }
+  ;
+
+  # An array comprehension has variables for the current element and index.
+  ForVariables:
+    IDENTIFIER                        { result = val }
+  | IDENTIFIER "," IDENTIFIER         { result = [val[0], val[2]] }
+  ;
+
+  # The source of the array comprehension can optionally be filtered.
+  ForSource:
+    IN PureExpression "."             { result = [val[1]] }
+  | IN PureExpression
+    IF Expression "."                 { result = [val[1], val[3]] }
   ;
 
   # Switch/When blocks.
