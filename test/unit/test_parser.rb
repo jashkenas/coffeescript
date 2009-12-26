@@ -49,7 +49,7 @@ class ParserTest < Test::Unit::TestCase
     assert nodes.first.is_a? ForNode
     assert nodes.first.body.literal == 'i'
     assert nodes.first.filter.operator == '==='
-    assert nodes.first.source.literal.objects.last.value == "5"
+    assert nodes.first.source.literal.objects.last.literal.value == "5"
   end
 
   def test_parsing_comment
@@ -58,23 +58,23 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_parsing_inner_comments
-    nodes = @par.parse(File.read('test/fixtures/inner_comments.coffee'))
-    assert nodes.compile == File.read('test/fixtures/inner_comments.js')
+    nodes = @par.parse(File.read('test/fixtures/generation/inner_comments.coffee'))
+    assert nodes.compile == File.read('test/fixtures/generation/inner_comments.js')
   end
 
   def test_parsing
-    nodes = @par.parse(File.read('test/fixtures/each.coffee'))
+    nodes = @par.parse(File.read('test/fixtures/generation/each.coffee'))
     assign = nodes.expressions[1]
     assert assign.is_a? AssignNode
     assert assign.variable.literal == '_'
     assert assign.value.is_a? CodeNode
     assert assign.value.params == ['obj', 'iterator', 'context']
-    assert nodes.compile == File.read('test/fixtures/each.js')
+    assert nodes.compile == File.read('test/fixtures/generation/each.js')
   end
 
   def test_no_wrap
-    nodes = @par.parse(File.read('test/fixtures/each.coffee'))
-    assert nodes.compile(:no_wrap => true) == File.read('test/fixtures/each_no_wrap.js')
+    nodes = @par.parse(File.read('test/fixtures/generation/each.coffee'))
+    assert nodes.compile(:no_wrap => true) == File.read('test/fixtures/generation/each_no_wrap.js')
   end
 
 end

@@ -300,19 +300,37 @@ module CoffeeScript
     end
   end
 
+  # A range literal. Ranges can be used to extract portions (slices) of arrays,
+  # or to specify a range for array comprehensions.
+  class RangeNode
+    attr_reader :from, :to
+
+    def initialize(from, to, exclusive=false)
+      @from, @to, @exclusive = from, to, exclusive
+    end
+
+    def exclusive?
+      @exclusive
+    end
+
+  end
+
   # An array slice literal. Unlike JavaScript's Array#slice, the second parameter
   # specifies the index of the end of the slice (just like the first parameter)
   # is the index of the beginning.
   class SliceNode < Node
-    attr_reader :from, :to
+    attr_reader :range
 
-    def initialize(from, to)
-      @from, @to = from, to
+    def initialize(range)
+      @range = range
     end
 
     def compile(o={})
-      o = super(o)
-      write(".slice(#{@from.compile(o)}, #{@to.compile(o)} + 1)")
+      o         = super(o)
+      from      = @range.from.compile(o)
+      to        = @range.to.compile(o)
+      plus_part = @range.exclusive? ? '' : ' + 1'
+      write(".slice(#{from}, #{to}#{plus_part})")
     end
   end
 
