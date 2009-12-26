@@ -207,7 +207,7 @@ module CoffeeScript
 
     def compile(o={})
       o = super(o)
-      args = @arguments.map{|a| a.compile(o.merge(:no_paren => true)) }.join(', ')
+      args = @arguments.map{|a| a.compile(o) }.join(', ')
       return write(compile_super(args, o)) if super?
       prefix = @new ? "new " : ''
       write("#{prefix}#{@variable.compile(o)}(#{args})")
@@ -511,7 +511,7 @@ module CoffeeScript
       o = super(o)
       o.delete(:return)
       indent = o[:indent] + TAB
-      cond = @condition.compile(o.merge(:no_paren => true))
+      cond = @condition.compile(o)
       write("while (#{cond}) {\n#{@body.compile(o.merge(:indent => indent))}\n#{o[:indent]}}")
     end
   end
@@ -656,7 +656,7 @@ module CoffeeScript
       o = super(o)
       compiled = @expressions.compile(o)
       compiled = compiled[0...-1] if compiled[-1..-1] == ';'
-      write(o[:no_paren] ? compiled : "(#{compiled})")
+      write("(#{compiled})")
     end
   end
 
