@@ -9,9 +9,9 @@ module CoffeeScript
       @token_id, @value, @stack = token_id, value, stack
     end
 
-    def message(source_file=nil)
+    def message
       line      = @value.respond_to?(:line) ? @value.line : "END"
-      line_part = source_file ? "#{source_file}:#{line}:" : "line #{line}:"
+      line_part = "line #{line}:"
       id_part   = @token_id != @value.inspect ? ", unexpected #{@token_id.downcase}" : ""
       "#{line_part} syntax error for '#{@value.to_s}'#{id_part}"
     end

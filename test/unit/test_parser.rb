@@ -77,4 +77,10 @@ class ParserTest < Test::Unit::TestCase
     assert nodes.compile(:no_wrap => true) == File.read('test/fixtures/generation/each_no_wrap.js')
   end
 
+  def test_no_wrapping_parens_around_statements
+    assert_raises(SyntaxError) do
+      @par.parse("(a: 1)").compile
+    end
+  end
+
 end

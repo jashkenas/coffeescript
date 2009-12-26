@@ -608,7 +608,9 @@ module CoffeeScript
     end
   end
 
-  # An extra set of parenthesis, supplied by the script source.
+  # An extra set of parentheses, supplied by the script source.
+  # You can't wrap parentheses around bits that get compiled into JS statements,
+  # unfortunately.
   class ParentheticalNode < Node
     attr_reader :expressions
 
@@ -617,7 +619,7 @@ module CoffeeScript
     end
 
     def statement?
-      @expressions.statement?
+      @expressions.unwrap.statement?
     end
 
     def custom_assign?
@@ -629,10 +631,11 @@ module CoffeeScript
     end
 
     def compile(o={})
+      raise SyntaxError, "parentheses can't be wrapped around a statement" if statement?
       o = super(o)
       compiled = @expressions.compile(o)
       compiled = compiled[0...-1] if compiled[-1..-1] == ';'
-      write(o[:no_paren] || statement? ? compiled : "(#{compiled})")
+      write(o[:no_paren] ? compiled : "(#{compiled})")
     end
   end
 
