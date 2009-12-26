@@ -125,13 +125,13 @@ Usage:
     end
 
     # Compile a single source file to JavaScript.
-    def compile(script, source='')
+    def compile(script, source='error')
       begin
         options = {}
         options[:no_wrap] = true if @options[:no_wrap]
         CoffeeScript.compile(script, options)
-      rescue CoffeeScript::ParseError => e
-        STDERR.puts e.message(source)
+      rescue CoffeeScript::ParseError, SyntaxError => e
+        STDERR.puts "#{source}: #{e.message}"
         exit(1) unless @options[:watch]
         nil
       end
