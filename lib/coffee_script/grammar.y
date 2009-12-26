@@ -68,6 +68,7 @@ rule
   | Call
   | Code
   | Operation
+  | Range
   ;
 
   # We have to take extra care to convert these statements into expressions.
@@ -224,17 +225,12 @@ rule
   Accessor:
     PROPERTY_ACCESS IDENTIFIER        { result = AccessorNode.new(val[1]) }
   | Index                             { result = val[0] }
-  | Slice                             { result = val[0] }
+  | Range                             { result = SliceNode.new(val[0]) }
   ;
 
   # Indexing into an object or array.
   Index:
     "[" Expression "]"                { result = IndexNode.new(val[1]) }
-  ;
-
-  # Array slice literal.
-  Slice:
-    "[" Range "]"                     { result = SliceNode.new(val[1]) }
   ;
 
   # An object literal.
@@ -275,8 +271,8 @@ rule
 
   # The range literal.
   Range:
-    Value "." "." Value             { result = RangeNode.new(val[0], val[3]) }
-  | Value "." "." "." Value         { result = RangeNode.new(val[0], val[4], true) }
+    "[" Value "." "." Value "]"       { result = RangeNode.new(val[1], val[4]) }
+  | "[" Value "." "." "." Value "]"   { result = RangeNode.new(val[1], val[5], true) }
   ;
 
   # The array literal.

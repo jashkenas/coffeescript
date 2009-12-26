@@ -20,4 +20,9 @@ class ExecutionTest < Test::Unit::TestCase
     assert lint_results.match(NO_WARNINGS)
   end
 
+  def test_lintless_documentation
+    lint_results = `bin/coffee-script -l documentation/coffee/*.coffee`
+    assert lint_results.match(NO_WARNINGS)
+  end
+
 end
