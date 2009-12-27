@@ -581,10 +581,7 @@ lunch<span class="Keyword">:</span> food.eat() <span class="Keyword">for</span> 
 
 <span class="Comment"><span class="Comment">#</span> Zebra-stripe a table.</span>
 highlight(row) <span class="Keyword">for</span> row, i <span class="Keyword">in</span> table <span class="Keyword">if</span> i <span class="Keyword">%</span> <span class="Number">2</span> <span class="Keyword">is</span> <span class="Number">0</span>.
-
-<span class="Comment"><span class="Comment">#</span> Check the first one hundred combinations.</span>
-lockpick(combinations[i]) <span class="Keyword">for</span> i <span class="Keyword">in</span> [<span class="Number">1</span>..<span class="Number">100</span>].
-</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, __e, __f, __g, __h, __i, __j, __k, __l, food, i, lunch, row;
+</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, __e, __f, __g, __h, food, i, lunch, row;
 <span class="Comment"><span class="Comment">//</span> Eat lunch.</span>
 __a <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
 __d <span class="Keyword">=</span> [];
@@ -602,13 +599,12 @@ __h <span class="Keyword">=</span> [];
   __h[__f] <span class="Keyword">=</span> i <span class="Keyword">%</span> <span class="Number">2</span> <span class="Keyword">===</span> <span class="Number">0</span> ? highlight(row) : <span class="BuiltInConstant">null</span>;
 }
 __h;
-<span class="Comment"><span class="Comment">//</span> Check the first one hundred combinations.</span>
-__k <span class="Keyword">=</span> [];
-<span class="Keyword">for</span> (__l<span class="Keyword">=</span><span class="Number">0</span>, i<span class="Keyword">=</span><span class="Number">1</span>, __j<span class="Keyword">=</span><span class="Number">100</span>; i<span class="Keyword">&lt;=</span>__j; i<span class="Keyword">++</span>, __l<span class="Keyword">++</span>) {
-  __k[__l] <span class="Keyword">=</span> lockpick(combinations[i]);
-}
-__k;
 </pre><br class='clear' /></div>
+    <p>
+      If you're not iterating over an actual array, you can use a range to 
+      specify the start and end of an array comprehension: 
+      <tt>coundown(i) for i in [10..1].</tt>
+    </p>
 
     <p id="slice">
       <b class="header">Slicing Arrays with Ranges</b>
