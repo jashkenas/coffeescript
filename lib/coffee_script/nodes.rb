@@ -377,12 +377,11 @@ module CoffeeScript
       last      = @variable.last.to_s
       proto     = name[PROTO_ASSIGN, 1]
       o         = o.merge(:assign => @variable, :last_assign => last, :proto_assign => proto)
-      postfix   = o[:return] ? ";\n#{o[:indent]}return #{name}" : ''
       return write("#{name}: #{@value.compile(o)}") if @context == :object
-      return write("#{name} = #{@value.compile(o)}#{postfix}") if @variable.properties? && !@value.custom_assign?
       o[:scope].find(name) unless @variable.properties?
       return write(@value.compile(o)) if @value.custom_assign?
-      write("#{name} = #{@value.compile(o)}#{postfix}")
+      val = "#{name} = #{@value.compile(o)}"
+      write(o[:return] && !@value.custom_return? ? "return (#{val})" : val)
     end
   end
 
@@ -728,8 +727,11 @@ module CoffeeScript
     # force sub-else bodies into statement form.
     def compile_statement(o)
       indent = o[:indent]
+      cond_o = o.dup
+      cond_o.delete(:assign)
+      cond_o.delete(:return)
       o[:indent] += TAB
-      if_part   = "if (#{@condition.compile(o)}) {\n#{Expressions.wrap(@body).compile(o)}\n#{indent}}"
+      if_part   = "if (#{@condition.compile(cond_o)}) {\n#{Expressions.wrap(@body).compile(o)}\n#{indent}}"
       return if_part unless @else_body
       else_part = chain? ?
         " else #{@else_body.compile(o.merge(:indent => indent))}" :
