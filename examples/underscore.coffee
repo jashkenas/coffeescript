@@ -113,52 +113,43 @@ _.reduceRight: obj, memo, iterator, context =>
       _.breakLoop() unless result: result and iterator.call(context, value, index, list).))
     result.
 
-#   # Determine if at least one element in the object matches a truth test. Use
-#   # JavaScript 1.6's some(), if it exists.
-#   _.any = function(obj, iterator, context) {
-#     iterator = iterator || _.identity;
-#     if (obj && _.isFunction(obj.some)) return obj.some(iterator, context);
-#     var result = false;
-#     _.each(obj, function(value, index, list) {
-#       if (result = iterator.call(context, value, index, list)) _.breakLoop();
-#     });
-#     return result;
-#   };
-#
-#   # Determine if a given value is included in the array or object,
-#   # based on '==='.
-#   _.include = function(obj, target) {
-#     if (_.isArray(obj)) return _.indexOf(obj, target) != -1;
-#     var found = false;
-#     _.each(obj, function(value) {
-#       if (found = value === target) _.breakLoop();
-#     });
-#     return found;
-#   };
-#
-#   # Invoke a method with arguments on every item in a collection.
-#   _.invoke = function(obj, method) {
-#     var args = _.rest(arguments, 2);
-#     return _.map(obj, function(value) {
-#       return (method ? value[method] : value).apply(value, args);
-#     });
-#   };
-#
-#   # Convenience version of a common use case of map: fetching a property.
-#   _.pluck = function(obj, key) {
-#     return _.map(obj, function(value){ return value[key]; });
-#   };
-#
-#   # Return the maximum item or (item-based computation).
-#   _.max = function(obj, iterator, context) {
-#     if (!iterator && _.isArray(obj)) return Math.max.apply(Math, obj);
-#     var result = {computed : -Infinity};
-#     _.each(obj, function(value, index, list) {
-#       var computed = iterator ? iterator.call(context, value, index, list) : value;
-#       computed >= result.computed && (result = {value : value, computed : computed});
-#     });
-#     return result.value;
-#   };
+  # Determine if at least one element in the object matches a truth test. Use
+  # JavaScript 1.6's some(), if it exists.
+  _.any: obj, iterator, context =>
+    iterator ||= _.identity
+    return obj.some(iterator, context) if obj and _.isFunction(obj.some)
+    result: false
+    _.each(obj, (value, index, list =>
+      _.breakLoop() if (result: iterator.call(context, value, index, list)).))
+    result.
+
+  # Determine if a given value is included in the array or object,
+  # based on '==='.
+  _.include: obj, target =>
+    return _.indexOf(obj, target) isnt -1 if _.isArray(obj)
+    found: false
+    _.each(obj, (value =>
+      _.breakLoop() if (found: value is target).))
+    found.
+
+  # Invoke a method with arguments on every item in a collection.
+  _.invoke: obj, method =>
+    args: _.rest(arguments, 2)
+    _.map(obj, (value =>
+      (if method then value[method] else value.).apply(value, args).)).
+
+  # Convenience version of a common use case of map: fetching a property.
+  _.pluck: obj, key =>
+    _.map(obj, (value => value[key].)).
+
+  # Return the maximum item or (item-based computation).
+  _.max: obj, iterator, context =>
+    return Math.max.apply(Math, obj) if !iterator and _.isArray(obj)
+    result: {computed: -Infinity}
+    _.each(obj, (value, index, list =>
+      computed: if iterator then iterator.call(context, value, index, list) else value.
+      computed >= result.computed and (result: {value: value, computed: computed}).))
+    result.value.
 #
 #   # Return the minimum element (or element-based computation).
 #   _.min = function(obj, iterator, context) {
