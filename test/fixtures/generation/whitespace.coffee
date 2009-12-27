@@ -3,10 +3,6 @@ f1: x =>
   x * x
   f2: y =>
     y * x
-
-
-
-
   f3: 3
 
 # Parens can close on the proper level.

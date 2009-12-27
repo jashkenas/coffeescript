@@ -150,6 +150,7 @@ module CoffeeScript
         token(:OUTDENT, last_indent)
         move_out -= last_indent
       end
+      token("\n", "\n")
       @indent = @indents.last || 0
     end
 
