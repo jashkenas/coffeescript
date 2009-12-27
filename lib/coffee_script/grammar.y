@@ -88,13 +88,8 @@ rule
   ;
 
   Block:
-    # Expression                        { result = Expressions.new(val) }
-    INDENT Expressions Outdent        { result = val[1] }
-  ;
-
-  Outdent:
-    /* nothing */
-  | OUTDENT
+    Then Expression                   { result = Expressions.new([val[1]]) }
+  | INDENT Expressions OUTDENT        { result = val[1] }
   ;
 
   # All tokens that can terminate an expression.
@@ -302,8 +297,8 @@ rule
 
   # Try/catch/finally exception handling blocks.
   Try:
-    TRY Expressions Catch             { result = TryNode.new(val[1], val[2][0], val[2][1]) }
-  | TRY Expressions Catch
+    TRY Block Catch                   { result = TryNode.new(val[1], val[2][0], val[2][1]) }
+  | TRY Block Catch
     FINALLY Block                     { result = TryNode.new(val[1], val[2][0], val[2][1], val[4]) }
   ;
 
@@ -320,12 +315,12 @@ rule
 
   # Parenthetical expressions.
   Parenthetical:
-    "(" Expressions ")"               { result = ParentheticalNode.new(val[1]) }
+    "(" Expression ")"                { result = ParentheticalNode.new(val[1]) }
   ;
 
   # The while loop. (there is no do..while).
   While:
-    WHILE Expression Then Block       { result = WhileNode.new(val[1], val[3]) }
+    WHILE Expression Block            { result = WhileNode.new(val[1], val[3]) }
   ;
 
   # Array comprehensions, including guard and current index.
@@ -372,8 +367,7 @@ rule
 
   # An elsif portion of an if-else block.
   ElsIf:
-    ELSE IF Expression
-      Then Expressions                { result = IfNode.new(val[2], val[4]) }
+    ELSE IF Expression Block          { result = IfNode.new(val[2], val[4]) }
   ;
 
   # Multiple elsifs can be chained together.
@@ -396,8 +390,7 @@ rule
 
   # The full complement of if blocks, including postfix one-liner ifs and unlesses.
   If:
-    IF Expression
-      Then Expressions IfEnd          { result = IfNode.new(val[1], val[3], val[4]) }
+    IF Expression Block IfEnd         { result = IfNode.new(val[1], val[3], val[4]) }
   | Expression IF Expression          { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true}) }
   | Expression UNLESS Expression      { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true, :invert => true}) }
   ;
