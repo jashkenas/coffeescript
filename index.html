@@ -373,8 +373,7 @@ num <span class="Keyword">=</span> <span class="Number">1</span>;
 <span class="FunctionName">change_numbers</span> = <span class="Storage">function</span>() {
   <span class="Storage">var</span> new_num;
   num <span class="Keyword">=</span> <span class="Number">2</span>;
-  new_num <span class="Keyword">=</span> <span class="Number">3</span>;
-  <span class="Keyword">return</span> new_num;
+  <span class="Keyword">return</span> (new_num <span class="Keyword">=</span> <span class="Number">3</span>);
 };
 new_num <span class="Keyword">=</span> change_numbers();
 </pre><button onclick='javascript: var change_numbers, new_num, num;
@@ -382,8 +381,7 @@ num = 1;
 change_numbers = function() {
   var new_num;
   num = 2;
-  new_num = 3;
-  return new_num;
+  return (new_num = 3);
 };
 new_num = change_numbers();
 ;alert(new_num);'>run: new_num</button><br class='clear' /></div>
@@ -680,8 +678,7 @@ tom.move()
   <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>);
 };
 <span class="FunctionName">Snake</span> = <span class="Storage">function</span>(<span class="FunctionArgument">name</span>) {
-  <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
-  <span class="Keyword">return</span> <span class="Variable">this</span>.<span class="LibraryConstant">name</span>;
+  <span class="Keyword">return</span> (<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name);
 };
 Snake.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryConstant">prototype</span>;
 <span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">Animal</span>();
@@ -691,8 +688,7 @@ Snake.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryC
   <span class="Keyword">return</span> Snake.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">5</span>);
 };
 <span class="FunctionName">Horse</span> = <span class="Storage">function</span>(<span class="FunctionArgument">name</span>) {
-  <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
-  <span class="Keyword">return</span> <span class="Variable">this</span>.<span class="LibraryConstant">name</span>;
+  <span class="Keyword">return</span> (<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name);
 };
 Horse.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryConstant">prototype</span>;
 <span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">Animal</span>();
@@ -712,8 +708,7 @@ Animal.prototype.move = function(meters) {
   return alert(this.name + " moved " + meters + "m.");
 };
 Snake = function(name) {
-  this.name = name;
-  return this.name;
+  return (this.name = name);
 };
 Snake.__superClass__ = Animal.prototype;
 Snake.prototype = new Animal();
@@ -723,8 +718,7 @@ Snake.prototype.move = function() {
   return Snake.__superClass__.move.call(this, 5);
 };
 Horse = function(name) {
-  this.name = name;
-  return this.name;
+  return (this.name = name);
 };
 Horse.__superClass__ = Animal.prototype;
 Horse.prototype = new Animal();
@@ -888,6 +882,13 @@ world...";
     </ul>
 
     <h2 id="change_log">Change Log</h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.1.6</b>
+      Bugfix for running <tt>coffee --interactive</tt> and <tt>--run</tt>
+      from outside of the CoffeeScript directory. Bugfix for nested 
+      function/if-statements. 
+    </p>
     
     <p>
       <b class="header" style="margin-top: 20px;">0.1.5</b>
