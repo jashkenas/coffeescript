@@ -1,1 +1,1 @@
-require("coffee-script").run(system.args)
+require("./coffee-script").run(system.args)

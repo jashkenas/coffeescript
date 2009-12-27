@@ -21,7 +21,9 @@ checkForErrors: coffeeProcess =>
 # command.
 exports.run: args =>
   args.shift()
-  return require(File.absolute(args[0])) if args.length
+  if args.length
+    exports.evalCS(File.read(path)) for path in args.
+    return true.
 
   while true
     try
@@ -51,7 +53,7 @@ exports.evalCS: source =>
 # Make a factory for the CoffeeScript environment.
 exports.makeNarwhalFactory: path =>
     code: exports.compileFile(path)
-    factoryText: "function(require,exports,module,system,print){" + code + "/**/\n}"
+    factoryText: "function(require,exports,module,system,print){ 1 + 1 /**/\n}"
     if system.engine is "rhino"
       Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(global, factoryText, path, 0, null)
     else
