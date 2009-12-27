@@ -93,31 +93,26 @@ _.reduceRight: obj, memo, iterator, context =>
     if obj and _.isFunction(obj.filter) then return obj.filter(iterator, context).
     results: []
     _.each(obj, (value, index, list =>
-      iterator.call(context, value, index, list) and results.push(value).))
+      results.push(value) if iterator.call(context, value, index, list).))
     results.
 
-#
-#   # Return all the elements for which a truth test fails.
-#   _.reject = function(obj, iterator, context) {
-#     var results = [];
-#     _.each(obj, function(value, index, list) {
-#       !iterator.call(context, value, index, list) && results.push(value);
-#     });
-#     return results;
-#   };
-#
-#   # Determine whether all of the elements match a truth test. Delegate to
-#   # JavaScript 1.6's every(), if it is present.
-#   _.all = function(obj, iterator, context) {
-#     iterator = iterator || _.identity;
-#     if (obj && _.isFunction(obj.every)) return obj.every(iterator, context);
-#     var result = true;
-#     _.each(obj, function(value, index, list) {
-#       if (!(result = result && iterator.call(context, value, index, list))) _.breakLoop();
-#     });
-#     return result;
-#   };
-#
+  # Return all the elements for which a truth test fails.
+  _.reject: obj, iterator, context =>
+    results: []
+    _.each(obj, (value, index, list =>
+      results.push(value) if not iterator.call(context, value, index, list).))
+    results.
+
+  # Determine whether all of the elements match a truth test. Delegate to
+  # JavaScript 1.6's every(), if it is present.
+  _.all: obj, iterator, context =>
+    iterator ||= _.identity
+    return obj.every(iterator, context) if obj and _.isFunction(obj.every)
+    result: true
+    _.each(obj, (value, index, list =>
+      _.breakLoop() unless result: result and iterator.call(context, value, index, list).))
+    result.
+
 #   # Determine if at least one element in the object matches a truth test. Use
 #   # JavaScript 1.6's some(), if it exists.
 #   _.any = function(obj, iterator, context) {
