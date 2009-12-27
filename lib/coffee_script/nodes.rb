@@ -95,6 +95,7 @@ module CoffeeScript
             if node.statement? || node.custom_return?
               "#{o[:indent]}#{node.compile(o)}#{node.line_ending}"
             else
+              o.delete(:return)
               "#{o[:indent]}return #{node.compile(o)}#{node.line_ending}"
             end
           elsif o[:assign]
