@@ -307,8 +307,6 @@ module CoffeeScript
 
   # A range literal. Ranges can be used to extract portions (slices) of arrays,
   # or to specify a range for array comprehensions.
-  # RangeNodes get expanded into the equivalent array, if not used to index
-  # a slice or define an array comprehension.
   class RangeNode
     attr_reader :from, :to
 
@@ -320,15 +318,20 @@ module CoffeeScript
       @exclusive
     end
 
-    # TODO -- figure out if we can detect if a range runs negative.
-    def downward?
-
+    def less_operator
+      @exclusive ? '<' : '<='
     end
 
-    # TODO -- figure out if we can expand ranges into the corresponding array,
-    # as an expression, reliably.
-    def compile(o={})
-      write()
+    def greater_operator
+      @exclusive ? '>' : '>='
+    end
+
+    def compile(o, fv, tv)
+      fvv, tvv = @from.compile(o), @to.compile(o)
+      vars     = "#{fv}=#{fvv}, #{tv}=#{tvv}"
+      compare  = "(#{fvv} <= #{tvv} ? #{fv} #{less_operator} #{tv} : #{fv} #{greater_operator} #{tv})"
+      incr     = "(#{fvv} <= #{tvv} ? #{fv} += 1 : #{fv} -= 1)"
+      "#{vars}; #{compare}; #{incr}"
     end
 
   end
@@ -548,11 +551,10 @@ module CoffeeScript
       index_name    = @index ? @index : nil
       if range
         source_part = ''
-        operator    = @source.exclusive? ? '<' : '<='
-        index_var   = scope.free_variable
-        for_part    = "#{index_var}=0, #{ivar}=#{@source.from.compile(o)}, #{lvar}=#{@source.to.compile(o)}; #{ivar}#{operator}#{lvar}; #{ivar}++, #{index_var}++"
         var_part    = ''
         index_part  = ''
+        index_var   = scope.free_variable
+        for_part    = "#{index_var}=0, #{@source.compile(o, ivar, lvar)}, #{index_var}++"
       else
         index_var   = nil
         source_part = "#{svar} = #{@source.compile(o)};\n#{o[:indent]}"
