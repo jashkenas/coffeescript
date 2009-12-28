@@ -20,7 +20,7 @@ Usage:
     WATCH_INTERVAL = 0.5
 
     # Command to execute in Narwhal
-    PACKAGE = File.dirname(File.dirname(File.dirname(__FILE__)))
+    PACKAGE = File.expand_path(File.dirname(__FILE__) + '/../..')
     LAUNCHER = "narwhal -p #{PACKAGE} -e 'require(\"coffee-script\").run(system.args);'"
 
     # Run the CommandLine off the contents of ARGV.
