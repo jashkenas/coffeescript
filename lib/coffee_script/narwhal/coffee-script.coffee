@@ -53,7 +53,7 @@ exports.evalCS: source =>
 # Make a factory for the CoffeeScript environment.
 exports.makeNarwhalFactory: path =>
     code: exports.compileFile(path)
-    factoryText: "function(require,exports,module,system,print){ 1 + 1 /**/\n}"
+    factoryText: "function(require,exports,module,system,print){ "+code+" /**/\n}"
     if system.engine is "rhino"
       Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(global, factoryText, path, 0, null)
     else
