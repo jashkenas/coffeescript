@@ -20,7 +20,8 @@ Usage:
     WATCH_INTERVAL = 0.5
 
     # Command to execute in Narwhal
-    LAUNCHER = "narwhal -e 'require(\"coffee-script\").run(system.args);'"
+    PACKAGE = File.dirname(File.dirname(File.dirname(__FILE__)))
+    LAUNCHER = "narwhal -p #{PACKAGE} -e 'require(\"coffee-script\").run(system.args);'"
 
     # Run the CommandLine off the contents of ARGV.
     def initialize
