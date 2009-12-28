@@ -571,6 +571,8 @@ module CoffeeScript
       if o[:return] || o[:assign]
         return_result = "#{o[:assign].compile(o)} = #{return_result}" if o[:assign]
         return_result = "return #{return_result}" if o[:return]
+        o.delete(:assign)
+        o.delete(:return)
         if @filter
           body = CallNode.new(ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [@body])
           body = IfNode.new(@filter, body, nil, :statement => true)
