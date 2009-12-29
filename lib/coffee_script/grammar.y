@@ -221,6 +221,8 @@ rule
   | AssignObj                         { result = val }
   | AssignList "," AssignObj          { result = val[0] << val[2] }
   | AssignList Terminator AssignObj   { result = val[0] << val[2] }
+  | AssignList ","
+      Terminator AssignObj            { result = val[0] << val[3] }
   | INDENT AssignList OUTDENT         { result = val[1] }
   ;
 
@@ -264,6 +266,7 @@ rule
   | Expression                        { result = val }
   | ArgList "," Expression            { result = val[0] << val[2] }
   | ArgList Terminator Expression     { result = val[0] << val[2] }
+  | ArgList "," Terminator Expression { result = val[0] << val[3] }
   | INDENT ArgList OUTDENT            { result = val[1] }
   ;
 
