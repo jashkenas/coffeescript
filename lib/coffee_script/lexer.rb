@@ -139,11 +139,11 @@ module CoffeeScript
       return newline_token(indent) if size == @indent
       if size > @indent
         token(:INDENT, size - @indent)
-        @indents << size - @indent
-        @indent = size
+        @indents << (size - @indent)
       else
         outdent_token(@indent - size)
       end
+      @indent = size
       @line += 1
       @i += (size + 1)
     end
@@ -154,6 +154,8 @@ module CoffeeScript
         token(:OUTDENT, last_indent)
         move_out -= last_indent
       end
+      # TODO: Figure out what to do about blocks that close, ending the expression
+      # versus blocks that occur mid-expression.
       # token("\n", "\n")
       @indent = @indents.last || 0
     end
@@ -245,7 +247,7 @@ module CoffeeScript
     # To that end, remove redundant outdent/indents from the token stream.
     def remove_empty_outdents
       scan_tokens do |prev, token, post, i|
-        if prev[0] == :OUTDENT && token[1] == "\n" && post[0] == :INDENT && prev[1] == post[1]
+        if prev && post && prev[0] == :OUTDENT && token[1] == "\n" && post[0] == :INDENT && prev[1] == post[1]
           @tokens.delete_at(i + 1)
           @tokens.delete_at(i - 1)
         end

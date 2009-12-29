@@ -6,9 +6,9 @@ _.each: obj, iterator, context =>
     if obj.forEach
       obj.forEach(iterator, context)
     else if _.isArray(obj) or _.isArguments(obj)
-      iterator.call(context, item, i, obj) for item, i in obj.
+      iterator.call(context, item, i, obj) for item, i in obj
     else
-      iterator.call(context, obj[key], key, obj) for key in _.keys(obj)..
+      iterator.call(context, obj[key], key, obj) for key in _.keys(obj)
   catch e
-    throw e if e isnt breaker.
-  obj.
+    throw e if e isnt breaker
+  obj
