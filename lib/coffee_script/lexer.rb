@@ -12,7 +12,7 @@ module CoffeeScript
                   "new", "return",
                   "try", "catch", "finally", "throw",
                   "break", "continue",
-                  "for", "in", "while",
+                  "for", "in", "where", "while",
                   "switch", "when",
                   "super", "extends",
                   "delete", "instanceof", "typeof"]
@@ -24,11 +24,11 @@ module CoffeeScript
     JS         = /\A(``|`(.*?)[^\\]`)/m
     OPERATOR   = /\A([+\*&|\/\-%=<>:!]+)/
     WHITESPACE = /\A([ \t\r]+)/
-    NEWLINE    = /\A(\n+)(?![ \t\r]+)/
     COMMENT    = /\A((#[^\n]*\s*)+)/m
     CODE       = /\A(=>)/
     REGEX      = /\A(\/(.*?)[^\\]\/[imgy]{0,4})/
     INDENT     = /\A\n([ \t\r]*)/
+    NEWLINE    = /\A(\n+)([ \t\r]*)/
 
     # Token cleaning regexes.
     JS_CLEANER = /(\A`|`\Z)/
@@ -245,11 +245,15 @@ module CoffeeScript
     # To that end, remove redundant outdent/indents from the token stream.
     def remove_empty_outdents
       scan_tokens do |prev, token, post, i|
-        match = (prev[0] == :OUTDENT && token[1] == "\n" && post[0] == :INDENT)
-        match = match && prev[1] == post[1]
-        next unless match
-        @tokens.delete_at(i + 1)
-        @tokens.delete_at(i - 1)
+        if prev[0] == :OUTDENT && token[1] == "\n" && post[0] == :INDENT && prev[1] == post[1]
+          @tokens.delete_at(i + 1)
+          @tokens.delete_at(i - 1)
+        end
+        if prev[0] == :OUTDENT && token[0] == :INDENT && prev[1] == token[1]
+          @tokens.delete_at(i)
+          @tokens.delete_at(i - 1)
+          @tokens.insert(i - 1, ["\n", Value.new("\n", prev[1].line)])
+        end
       end
     end
 
