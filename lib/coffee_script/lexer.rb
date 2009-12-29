@@ -248,33 +248,6 @@ module CoffeeScript
       end
     end
 
-    # We'd like to support syntax like this:
-    #    el.click(event =>
-    #      el.hide())
-    # In order to accomplish this, move outdents that follow closing parens
-    # inwards, safely. The steps to accomplish this are:
-    #
-    # 1. Check that parentheses are balanced and in order.
-    # 2. Check that indent/outdents are balanced and in order.
-    # 3. Rewrite the stream with a stack: if you see an '(' or INDENT, add it
-    #    to the stack. If you see an ')' or OUTDENT, pop the stack and replace
-    #    it with the inverse of what we've just popped.
-    #
-    def rewrite_closing_parens
-      stack = []
-      scan_tokens do |prev, token, post, i|
-        stack.push(token) if [:INDENT, '('].include?(token[0])
-        if [:OUTDENT, ')'].include?(token[0])
-          reciprocal = stack.pop
-          if reciprocal[0] == :INDENT
-            @tokens[i] = [:OUTDENT, Value.new(reciprocal[1], token[1].line)]
-          else
-            @tokens[i] = [')', Value.new(')', token[1].line)]
-          end
-        end
-      end
-    end
-
     # Ensure that all listed pairs of tokens are correctly balanced throughout
     # the course of the token stream.
     def ensure_balance(*pairs)
@@ -289,6 +262,38 @@ module CoffeeScript
       end
       unclosed = levels.detect {|k, v| v > 0 }
       raise SyntaxError, "unclosed '#{unclosed[0]}'" if unclosed
+    end
+
+    # We'd like to support syntax like this:
+    #    el.click(event =>
+    #      el.hide())
+    # In order to accomplish this, move outdents that follow closing parens
+    # inwards, safely. The steps to accomplish this are:
+    #
+    # 1. Check that all paired tokens are balanced and in order.
+    # 2. Rewrite the stream with a stack: if you see an '(' or INDENT, add it
+    #    to the stack. If you see an ')' or OUTDENT, pop the stack and replace
+    #    it with the inverse of what we've just popped.
+    # 3. Keep track of "debt" for tokens that we fake, to make sure we end
+    #    up balanced in the end.
+    # 4. Make sure that we don't accidentally break trailing commas, which
+    #    should be before OUTDENTS, but after parens.
+    #
+    def rewrite_closing_parens
+      stack, debt = [], []
+      scan_tokens do |prev, token, post, i|
+        stack.push(token) if [:INDENT, '('].include?(token[0])
+        if [:OUTDENT, ')'].include?(token[0])
+          reciprocal = stack.pop
+          if reciprocal[0] == :INDENT
+            @tokens[i] = [:OUTDENT, Value.new(reciprocal[1], token[1].line)]
+          else
+            index = prev[0] == ',' ? i - 1 : i
+            @tokens.delete_at(i)
+            @tokens.insert(index, [')', Value.new(')', token[1].line)])
+          end
+        end
+      end
     end
 
   end
