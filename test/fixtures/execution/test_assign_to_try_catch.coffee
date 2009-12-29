@@ -1,6 +1,6 @@
 result: try
   nonexistent * missing
 catch error
-  true.
+  true
 
 print(result)
