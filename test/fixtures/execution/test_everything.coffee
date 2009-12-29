@@ -16,7 +16,6 @@ func: =>
     'error'
   else
     c.text + '---'
-
   d = {
     text = c.text
   }
