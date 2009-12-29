@@ -1,5 +1,5 @@
-nums: n * n for n in [1, 2, 3] if n % 2 isnt 0.
-results: n * 2 for n in nums.
+nums: n * n for n in [1, 2, 3] where n % 2 isnt 0
+results: n * 2 for n in nums
 
 # next: for n in [1, 2, 3] if n % 2 isnt 0
 #   print('hi') if false

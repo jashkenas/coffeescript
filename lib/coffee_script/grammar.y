@@ -8,7 +8,7 @@ token IDENTIFIER PROPERTY_ACCESS
 token CODE PARAM NEW RETURN
 token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
-token FOR IN WHILE
+token FOR IN WHERE WHILE
 token SWITCH WHEN
 token DELETE INSTANCEOF TYPEOF
 token SUPER EXTENDS
@@ -32,7 +32,7 @@ prechigh
   left     '.'
   right    INDENT
   left     OUTDENT
-  right    THROW FOR IN WHILE NEW SUPER
+  right    THROW FOR IN WHERE WHILE NEW SUPER
   left     UNLESS IF ELSE EXTENDS
   left     ASSIGN '||=' '&&='
   right    RETURN
@@ -178,7 +178,7 @@ rule
   | ParamList "=>" Expression         { result = CodeNode.new(val[0], Expressions.new([val[2]])) }
   | "=>" Block                        { result = CodeNode.new([], val[1]) }
   | "=>" Expression                   { result = CodeNode.new([], Expressions.new([val[1]])) }
-  | "=>"                              { result = CodeNode.new([], nil) }
+  | "=>"                              { result = CodeNode.new([], Expressions.new([])) }
   ;
 
   # The parameters to a function definition.
@@ -290,14 +290,14 @@ rule
 
   # The while loop. (there is no do..while).
   While:
-    WHILE PureExpression Block        { result = WhileNode.new(val[1], val[3]) }
+    WHILE PureExpression Block        { result = WhileNode.new(val[1], val[2]) }
   ;
 
   # Array comprehensions, including guard and current index.
   # Looks a little confusing, check nodes.rb for the arguments to ForNode.
   For:
     Expression FOR
-      ForVariables ForSource "."      { result = ForNode.new(val[0], val[3][0], val[2][0], val[3][1], val[2][1]) }
+      ForVariables ForSource          { result = ForNode.new(val[0], val[3][0], val[2][0], val[3][1], val[2][1]) }
   | FOR ForVariables ForSource Block  { result = ForNode.new(val[3], val[2][0], val[1][0], val[2][1], val[1][1]) }
   ;
 
@@ -311,7 +311,7 @@ rule
   ForSource:
     IN PureExpression                 { result = [val[1]] }
   | IN PureExpression
-    IF Expression                     { result = [val[1], val[3]] }
+    WHERE Expression                  { result = [val[1], val[3]] }
   ;
 
   # Switch/When blocks.
@@ -376,8 +376,8 @@ rule
   # The full complement of if blocks, including postfix one-liner ifs and unlesses.
   If:
     IfBlock IfEnd                     { result = val[0].add_else(val[1]) }
-  | Block IfClause               { result = IfNode.new(val[1], Expressions.new([val[0]]), nil, {:statement => true}) }
-  | Block UNLESS PureExpression  { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true, :invert => true}) }
+  | Expression IfClause               { result = IfNode.new(val[1], Expressions.new([val[0]]), nil, {:statement => true}) }
+  | Expression UNLESS PureExpression  { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true, :invert => true}) }
   ;
 
 end
