@@ -56,5 +56,5 @@ exports.makeNarwhalFactory: path =>
     if system.engine is "rhino"
       Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(global, factoryText, path, 0, null)
     else
-      # eval requires parenthesis, but parenthesis break compileFunction.
+      # eval requires parentheses, but parentheses break compileFunction.
       eval("(" + factoryText + ")")..

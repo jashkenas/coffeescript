@@ -2114,7 +2114,7 @@ module_eval(<<'.,.,', 'grammar.y', 389)
 
 module_eval(<<'.,.,', 'grammar.y', 394)
   def _reduce_152(val, _values, result)
-     result = IfNode.new(val[1], val[3], val[4]) 
+     result = IfNode.new(val[1], val[2], val[3]) 
     result
   end
 .,.,
