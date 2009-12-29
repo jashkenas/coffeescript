@@ -1,9 +1,9 @@
 {
     "name":         "coffee-script",
-    "lib":          "lib/coffee_script/narwhal/js",
-    "preload":      ["loader"],
+    "lib":          "lib/coffee_script/narwhal/lib",
+    "preload":      ["coffee-script/loader"],
     "description":  "Unfancy JavaScript",
     "keywords":     ["javascript", "language"],
     "author":       "Jeremy Ashkenas",
-    "version":      "0.1.4"
+    "version":      "0.1.6"
 }

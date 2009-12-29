@@ -357,6 +357,11 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>.
     </p>
     <%= code_for('array_comprehensions') %>
+    <p>
+      If you're not iterating over an actual array, you can use a range to 
+      specify the start and end of an array comprehension: 
+      <tt>coundown(i) for i in [10..1].</tt>
+    </p>
 
     <p id="slice">
       <b class="header">Slicing Arrays with Ranges</b>
@@ -464,6 +469,22 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </ul>
 
     <h2 id="change_log">Change Log</h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.1.6</b>
+      Bugfix for running <tt>coffee --interactive</tt> and <tt>--run</tt>
+      from outside of the CoffeeScript directory. Bugfix for nested 
+      function/if-statements. 
+    </p>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.1.5</b>
+      Array slice literals and array comprehensions can now both take Ruby-style
+      ranges to specify the start and end. JavaScript variable declaration is 
+      now pushed up to the top of the scope, making all assignment statements into 
+      expressions. You can use <tt>\</tt> to escape newlines.
+      The <tt>coffee-script</tt> command is now called <tt>coffee</tt>.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.1.4</b>

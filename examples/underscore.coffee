@@ -93,77 +93,63 @@ _.reduceRight: obj, memo, iterator, context =>
     if obj and _.isFunction(obj.filter) then return obj.filter(iterator, context).
     results: []
     _.each(obj, (value, index, list =>
-      iterator.call(context, value, index, list) and results.push(value).))
+      results.push(value) if iterator.call(context, value, index, list).))
     results.
 
-#
-#   # Return all the elements for which a truth test fails.
-#   _.reject = function(obj, iterator, context) {
-#     var results = [];
-#     _.each(obj, function(value, index, list) {
-#       !iterator.call(context, value, index, list) && results.push(value);
-#     });
-#     return results;
-#   };
-#
-#   # Determine whether all of the elements match a truth test. Delegate to
-#   # JavaScript 1.6's every(), if it is present.
-#   _.all = function(obj, iterator, context) {
-#     iterator = iterator || _.identity;
-#     if (obj && _.isFunction(obj.every)) return obj.every(iterator, context);
-#     var result = true;
-#     _.each(obj, function(value, index, list) {
-#       if (!(result = result && iterator.call(context, value, index, list))) _.breakLoop();
-#     });
-#     return result;
-#   };
-#
-#   # Determine if at least one element in the object matches a truth test. Use
-#   # JavaScript 1.6's some(), if it exists.
-#   _.any = function(obj, iterator, context) {
-#     iterator = iterator || _.identity;
-#     if (obj && _.isFunction(obj.some)) return obj.some(iterator, context);
-#     var result = false;
-#     _.each(obj, function(value, index, list) {
-#       if (result = iterator.call(context, value, index, list)) _.breakLoop();
-#     });
-#     return result;
-#   };
-#
-#   # Determine if a given value is included in the array or object,
-#   # based on '==='.
-#   _.include = function(obj, target) {
-#     if (_.isArray(obj)) return _.indexOf(obj, target) != -1;
-#     var found = false;
-#     _.each(obj, function(value) {
-#       if (found = value === target) _.breakLoop();
-#     });
-#     return found;
-#   };
-#
-#   # Invoke a method with arguments on every item in a collection.
-#   _.invoke = function(obj, method) {
-#     var args = _.rest(arguments, 2);
-#     return _.map(obj, function(value) {
-#       return (method ? value[method] : value).apply(value, args);
-#     });
-#   };
-#
-#   # Convenience version of a common use case of map: fetching a property.
-#   _.pluck = function(obj, key) {
-#     return _.map(obj, function(value){ return value[key]; });
-#   };
-#
-#   # Return the maximum item or (item-based computation).
-#   _.max = function(obj, iterator, context) {
-#     if (!iterator && _.isArray(obj)) return Math.max.apply(Math, obj);
-#     var result = {computed : -Infinity};
-#     _.each(obj, function(value, index, list) {
-#       var computed = iterator ? iterator.call(context, value, index, list) : value;
-#       computed >= result.computed && (result = {value : value, computed : computed});
-#     });
-#     return result.value;
-#   };
+  # Return all the elements for which a truth test fails.
+  _.reject: obj, iterator, context =>
+    results: []
+    _.each(obj, (value, index, list =>
+      results.push(value) if not iterator.call(context, value, index, list).))
+    results.
+
+  # Determine whether all of the elements match a truth test. Delegate to
+  # JavaScript 1.6's every(), if it is present.
+  _.all: obj, iterator, context =>
+    iterator ||= _.identity
+    return obj.every(iterator, context) if obj and _.isFunction(obj.every)
+    result: true
+    _.each(obj, (value, index, list =>
+      _.breakLoop() unless result: result and iterator.call(context, value, index, list).))
+    result.
+
+  # Determine if at least one element in the object matches a truth test. Use
+  # JavaScript 1.6's some(), if it exists.
+  _.any: obj, iterator, context =>
+    iterator ||= _.identity
+    return obj.some(iterator, context) if obj and _.isFunction(obj.some)
+    result: false
+    _.each(obj, (value, index, list =>
+      _.breakLoop() if (result: iterator.call(context, value, index, list)).))
+    result.
+
+  # Determine if a given value is included in the array or object,
+  # based on '==='.
+  _.include: obj, target =>
+    return _.indexOf(obj, target) isnt -1 if _.isArray(obj)
+    found: false
+    _.each(obj, (value =>
+      _.breakLoop() if (found: value is target).))
+    found.
+
+  # Invoke a method with arguments on every item in a collection.
+  _.invoke: obj, method =>
+    args: _.rest(arguments, 2)
+    _.map(obj, (value =>
+      (if method then value[method] else value.).apply(value, args).)).
+
+  # Convenience version of a common use case of map: fetching a property.
+  _.pluck: obj, key =>
+    _.map(obj, (value => value[key].)).
+
+  # Return the maximum item or (item-based computation).
+  _.max: obj, iterator, context =>
+    return Math.max.apply(Math, obj) if !iterator and _.isArray(obj)
+    result: {computed: -Infinity}
+    _.each(obj, (value, index, list =>
+      computed: if iterator then iterator.call(context, value, index, list) else value.
+      computed >= result.computed and (result: {value: value, computed: computed}).))
+    result.value.
 #
 #   # Return the minimum element (or element-based computation).
 #   _.min = function(obj, iterator, context) {
@@ -320,18 +306,15 @@ _.reduceRight: obj, memo, iterator, context =>
 #       range[idx++] = i;
 #     }
 #   };
-#
-#   /* ----------------------- Function Functions: -----------------------------*/
-#
-#   # Create a function bound to a given object (assigning 'this', and arguments,
-#   # optionally). Binding with arguments is also known as 'curry'.
-#   _.bind = function(func, obj) {
-#     var args = _.rest(arguments, 2);
-#     return function() {
-#       return func.apply(obj || root, args.concat(_.toArray(arguments)));
-#     };
-#   };
-#
+
+  # ----------------------- Function Functions: -----------------------------
+
+  # Create a function bound to a given object (assigning 'this', and arguments,
+  # optionally). Binding with arguments is also known as 'curry'.
+  _.bind: func, obj =>
+    args: _.rest(arguments, 2)
+    => func.apply(obj or root, args.concat(_.toArray(arguments)))..
+
 #   # Bind all of an object's methods to that object. Useful for ensuring that
 #   # all callbacks defined on an object belong to it.
 #   _.bindAll = function(obj) {
@@ -347,36 +330,27 @@ _.reduceRight: obj, memo, iterator, context =>
 #     var args = _.rest(arguments, 2);
 #     return setTimeout(function(){ return func.apply(func, args); }, wait);
 #   };
-#
-#   # Defers a function, scheduling it to run after the current call stack has
-#   # cleared.
-#   _.defer = function(func) {
-#     return _.delay.apply(_, [func, 1].concat(_.rest(arguments)));
-#   };
-#
-#   # Returns the first function passed as an argument to the second,
-#   # allowing you to adjust arguments, run code before and after, and
-#   # conditionally execute the original function.
-#   _.wrap = function(func, wrapper) {
-#     return function() {
-#       var args = [func].concat(_.toArray(arguments));
-#       return wrapper.apply(wrapper, args);
-#     };
-#   };
-#
-#   # Returns a function that is the composition of a list of functions, each
-#   # consuming the return value of the function that follows.
-#   _.compose = function() {
-#     var funcs = _.toArray(arguments);
-#     return function() {
-#       var args = _.toArray(arguments);
-#       for (var i=funcs.length-1; i >= 0; i--) {
-#         args = [funcs[i].apply(this, args)];
-#       }
-#       return args[0];
-#     };
-#   };
-#
+
+  # Defers a function, scheduling it to run after the current call stack has
+  # cleared.
+  _.defer: func =>
+    _.delay.apply(_, [func, 1].concat(_.rest(arguments))).
+
+  # Returns the first function passed as an argument to the second,
+  # allowing you to adjust arguments, run code before and after, and
+  # conditionally execute the original function.
+  _.wrap: func, wrapper =>
+    => wrapper.apply(wrapper, [func].concat(_.toArray(arguments)))..
+
+  # Returns a function that is the composition of a list of functions, each
+  # consuming the return value of the function that follows.
+  _.compose: =>
+    funcs: _.toArray(arguments)
+    =>
+      args: _.toArray(arguments)
+      args: [funcs[i]].apply(this, args) for i in [(funcs.length - 1)..0].
+      args[0]..
+
 #   /* ------------------------- Object Functions: ---------------------------- */
 #
 #   # Retrieve the names of an object's properties.
@@ -408,81 +382,67 @@ _.reduceRight: obj, memo, iterator, context =>
 #     if (_.isArray(obj)) return obj.slice(0);
 #     return _.extend({}, obj);
 #   };
-#
-#   # Perform a deep comparison to check if two objects are equal.
-#   _.isEqual = function(a, b) {
-#     # Check object identity.
-#     if (a === b) return true;
-#     # Different types?
-#     var atype = typeof(a), btype = typeof(b);
-#     if (atype != btype) return false;
-#     # Basic equality test (watch out for coercions).
-#     if (a == b) return true;
-#     # One is falsy and the other truthy.
-#     if ((!a && b) || (a && !b)) return false;
-#     # One of them implements an isEqual()?
-#     if (a.isEqual) return a.isEqual(b);
-#     # Check dates' integer values.
-#     if (_.isDate(a) && _.isDate(b)) return a.getTime() === b.getTime();
-#     # Both are NaN?
-#     if (_.isNaN(a) && _.isNaN(b)) return true;
-#     # Compare regular expressions.
-#     if (_.isRegExp(a) && _.isRegExp(b))
-#       return a.source     === b.source &&
-#              a.global     === b.global &&
-#              a.ignoreCase === b.ignoreCase &&
-#              a.multiline  === b.multiline;
-#     # If a is not an object by this point, we can't handle it.
-#     if (atype !== 'object') return false;
-#     # Check for different array lengths before comparing contents.
-#     if (a.length && (a.length !== b.length)) return false;
-#     # Nothing else worked, deep compare the contents.
-#     var aKeys = _.keys(a), bKeys = _.keys(b);
-#     # Different object sizes?
-#     if (aKeys.length != bKeys.length) return false;
-#     # Recursive comparison of contents.
-#     for (var key in a) if (!_.isEqual(a[key], b[key])) return false;
-#     return true;
-#   };
-#
-#   # Is a given array or object empty?
-#   _.isEmpty = function(obj) {
-#     return _.keys(obj).length == 0;
-#   };
-#
-#   # Is a given value a DOM element?
-#   _.isElement = function(obj) {
-#     return !!(obj && obj.nodeType == 1);
-#   };
-#
-#   # Is a given variable an arguments object?
-#   _.isArguments = function(obj) {
-#     return obj && _.isNumber(obj.length) && !_.isArray(obj) && !propertyIsEnumerable.call(obj, 'length');
-#   };
-#
-#   # Is the given value NaN -- this one is interesting. NaN != NaN, and
-#   # isNaN(undefined) == true, so we make sure it's a number first.
-#   _.isNaN = function(obj) {
-#     return _.isNumber(obj) && isNaN(obj);
-#   };
-#
-#   # Is a given value equal to null?
-#   _.isNull = function(obj) {
-#     return obj === null;
-#   };
-#
-#   # Is a given variable undefined?
-#   _.isUndefined = function(obj) {
-#     return typeof obj == 'undefined';
-#   };
-#
-#   # Invokes interceptor with the obj, and then returns obj.
-#   # The primary purpose of this method is to "tap into" a method chain, in order to perform operations on intermediate results within the chain.
-#   _.tap = function(obj, interceptor) {
-#     interceptor(obj);
-#     return obj;
-#   }
-#
+
+  # Perform a deep comparison to check if two objects are equal.
+  _.isEqual: a, b =>
+    # Check object identity.
+    return true if a is b
+    # Different types?
+    atype: typeof(a); btype: typeof(b)
+    return false if atype isnt btype
+    # Basic equality test (watch out for coercions).
+    return true if `a == b`
+    # One is falsy and the other truthy.
+    return false if (!a and b) or (a and !b)
+    # One of them implements an isEqual()?
+    return a.isEqual(b) if a.isEqual
+    # Check dates' integer values.
+    return a.getTime() is b.getTime() if _.isDate(a) and _.isDate(b)
+    # Both are NaN?
+    return true if _.isNaN(a) and _.isNaN(b)
+    # Compare regular expressions.
+    if _.isRegExp(a) and _.isRegExp(b)
+      return a.source     is b.source and \
+             a.global     is b.global and \
+             a.ignoreCase is b.ignoreCase and \
+             a.multiline  is b.multiline.
+    # If a is not an object by this point, we can't handle it.
+    return false if atype isnt 'object'
+    # Check for different array lengths before comparing contents.
+    return false if a.length and (a.length isnt b.length)
+    # Nothing else worked, deep compare the contents.
+    aKeys: _.keys(a); bKeys: _.keys(b)
+    # Different object sizes?
+    return false if aKeys.length isnt bKeys.length
+    # Recursive comparison of contents.
+    # for (var key in a) if (!_.isEqual(a[key], b[key])) return false;
+    return true.
+
+  # Is a given array or object empty?
+  _.isEmpty: obj => _.keys(obj).length is 0.
+
+  # Is a given value a DOM element?
+  _.isElement: obj => !!(obj and obj.nodeType is 1).
+
+  # Is a given variable an arguments object?
+  _.isArguments: obj => obj and _.isNumber(obj.length) and !_.isArray(obj) and !propertyIsEnumerable.call(obj, 'length').
+
+  # Is the given value NaN -- this one is interesting. NaN != NaN, and
+  # isNaN(undefined) == true, so we make sure it's a number first.
+  _.isNaN: obj => _.isNumber(obj) and isNaN(obj).
+
+  # Is a given value equal to null?
+  _.isNull: obj => obj is null.
+
+  # Is a given variable undefined?
+  _.isUndefined: obj => typeof obj is 'undefined'.
+
+  # Invokes interceptor with the obj, and then returns obj.
+  # The primary purpose of this method is to "tap into" a method chain, in order to perform operations on intermediate results within the chain.
+  _.tap: obj, interceptor =>
+    interceptor(obj)
+    obj.
+
 #   # Define the isArray, isDate, isFunction, isNumber, isRegExp, and isString
 #   # functions based on their toString identifiers.
 #   var types = ['Array', 'Date', 'Function', 'Number', 'RegExp', 'String'];
@@ -492,26 +452,21 @@ _.reduceRight: obj, memo, iterator, context =>
 #       _['is' + types[i]] = function(obj) { return toString.call(obj) == identifier; };
 #     })();
 #   }
-#
-#   /* -------------------------- Utility Functions: -------------------------- */
-#
-#   # Run Underscore.js in noConflict mode, returning the '_' variable to its
-#   # previous owner. Returns a reference to the Underscore object.
-#   _.noConflict = function() {
-#     root._ = previousUnderscore;
-#     return this;
-#   };
-#
-#   # Keep the identity function around for default iterators.
-#   _.identity = function(value) {
-#     return value;
-#   };
-#
-#   # Break out of the middle of an iteration.
-#   _.breakLoop = function() {
-#     throw breaker;
-#   };
-#
+
+  # -------------------------- Utility Functions: --------------------------
+
+  # Run Underscore.js in noConflict mode, returning the '_' variable to its
+  # previous owner. Returns a reference to the Underscore object.
+  _.noConflict: =>
+    root._: previousUnderscore
+    this.
+
+  # Keep the identity function around for default iterators.
+  _.identity: value => value.
+
+  # Break out of the middle of an iteration.
+  _.breakLoop: => throw breaker.
+
 #   # Generate a unique integer id (unique within the entire client session).
 #   # Useful for temporary DOM ids.
 #   var idCounter = 0;
@@ -537,19 +492,19 @@ _.reduceRight: obj, memo, iterator, context =>
 #     + "');}return p.join('');");
 #     return data ? fn(data) : fn;
 #   };
-#
-#   /*------------------------------- Aliases ----------------------------------*/
-#
-#   _.forEach  = _.each;
-#   _.foldl    = _.inject       = _.reduce;
-#   _.foldr    = _.reduceRight;
-#   _.filter   = _.select;
-#   _.every    = _.all;
-#   _.some     = _.any;
-#   _.head     = _.first;
-#   _.tail     = _.rest;
-#   _.methods  = _.functions;
-#
+
+  # ------------------------------- Aliases ----------------------------------
+
+  _.forEach: _.each
+  _.foldl:   _.inject:      _.reduce
+  _.foldr:   _.reduceRight
+  _.filter:  _.select
+  _.every:   _.all
+  _.some:    _.any
+  _.head:    _.first
+  _.tail:    _.rest
+  _.methods: _.functions
+
 #   /*------------------------ Setup the OOP Wrapper: --------------------------*/
 #
 #   # Helper function to continue chaining intermediate results.

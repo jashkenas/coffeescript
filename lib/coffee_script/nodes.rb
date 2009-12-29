@@ -95,6 +95,7 @@ module CoffeeScript
             if node.statement? || node.custom_return?
               "#{o[:indent]}#{node.compile(o)}#{node.line_ending}"
             else
+              o.delete(:return)
               "#{o[:indent]}return #{node.compile(o)}#{node.line_ending}"
             end
           elsif o[:assign]
@@ -307,8 +308,6 @@ module CoffeeScript
 
   # A range literal. Ranges can be used to extract portions (slices) of arrays,
   # or to specify a range for array comprehensions.
-  # RangeNodes get expanded into the equivalent array, if not used to index
-  # a slice or define an array comprehension.
   class RangeNode
     attr_reader :from, :to
 
@@ -320,15 +319,20 @@ module CoffeeScript
       @exclusive
     end
 
-    # TODO -- figure out if we can detect if a range runs negative.
-    def downward?
-
+    def less_operator
+      @exclusive ? '<' : '<='
     end
 
-    # TODO -- figure out if we can expand ranges into the corresponding array,
-    # as an expression, reliably.
-    def compile(o={})
-      write()
+    def greater_operator
+      @exclusive ? '>' : '>='
+    end
+
+    def compile(o, fv, tv)
+      fvv, tvv = @from.compile(o), @to.compile(o)
+      vars     = "#{fv}=#{fvv}, #{tv}=#{tvv}"
+      compare  = "(#{fvv} <= #{tvv} ? #{fv} #{less_operator} #{tv} : #{fv} #{greater_operator} #{tv})"
+      incr     = "(#{fvv} <= #{tvv} ? #{fv} += 1 : #{fv} -= 1)"
+      "#{vars}; #{compare}; #{incr}"
     end
 
   end
@@ -374,12 +378,11 @@ module CoffeeScript
       last      = @variable.last.to_s
       proto     = name[PROTO_ASSIGN, 1]
       o         = o.merge(:assign => @variable, :last_assign => last, :proto_assign => proto)
-      postfix   = o[:return] ? ";\n#{o[:indent]}return #{name}" : ''
       return write("#{name}: #{@value.compile(o)}") if @context == :object
-      return write("#{name} = #{@value.compile(o)}#{postfix}") if @variable.properties? && !@value.custom_assign?
       o[:scope].find(name) unless @variable.properties?
       return write(@value.compile(o)) if @value.custom_assign?
-      write("#{name} = #{@value.compile(o)}#{postfix}")
+      val = "#{name} = #{@value.compile(o)}"
+      write(o[:return] && !@value.custom_return? ? "return (#{val})" : val)
     end
   end
 
@@ -548,11 +551,10 @@ module CoffeeScript
       index_name    = @index ? @index : nil
       if range
         source_part = ''
-        operator    = @source.exclusive? ? '<' : '<='
-        index_var   = scope.free_variable
-        for_part    = "#{index_var}=0, #{ivar}=#{@source.from.compile(o)}, #{lvar}=#{@source.to.compile(o)}; #{ivar}#{operator}#{lvar}; #{ivar}++, #{index_var}++"
         var_part    = ''
         index_part  = ''
+        index_var   = scope.free_variable
+        for_part    = "#{index_var}=0, #{@source.compile(o, ivar, lvar)}, #{index_var}++"
       else
         index_var   = nil
         source_part = "#{svar} = #{@source.compile(o)};\n#{o[:indent]}"
@@ -569,6 +571,8 @@ module CoffeeScript
       if o[:return] || o[:assign]
         return_result = "#{o[:assign].compile(o)} = #{return_result}" if o[:assign]
         return_result = "return #{return_result}" if o[:return]
+        o.delete(:assign)
+        o.delete(:return)
         if @filter
           body = CallNode.new(ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [@body])
           body = IfNode.new(@filter, body, nil, :statement => true)
@@ -726,8 +730,11 @@ module CoffeeScript
     # force sub-else bodies into statement form.
     def compile_statement(o)
       indent = o[:indent]
+      cond_o = o.dup
+      cond_o.delete(:assign)
+      cond_o.delete(:return)
       o[:indent] += TAB
-      if_part   = "if (#{@condition.compile(o)}) {\n#{Expressions.wrap(@body).compile(o)}\n#{indent}}"
+      if_part   = "if (#{@condition.compile(cond_o)}) {\n#{Expressions.wrap(@body).compile(o)}\n#{indent}}"
       return if_part unless @else_body
       else_part = chain? ?
         " else #{@else_body.compile(o.merge(:indent => indent))}" :

@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name      = 'coffee-script'
-  s.version   = '0.1.4'         # Keep version in sync with coffee-script.rb
-  s.date      = '2009-12-25'
+  s.version   = '0.1.6'         # Keep version in sync with coffee-script.rb
+  s.date      = '2009-12-27'
 
   s.homepage    = "http://jashkenas.github.com/coffee-script/"
   s.summary     = "The CoffeeScript Compiler"
@@ -22,5 +22,5 @@ Gem::Specification.new do |s|
   s.require_paths     = ['lib']
   s.executables       = ['coffee']
 
-  s.files = Dir['bin/*', 'examples/*', 'lib/**/*', 'coffee-script.gemspec', 'LICENSE', 'README']
+  s.files = Dir['bin/*', 'examples/*', 'lib/**/*', 'coffee-script.gemspec', 'LICENSE', 'README', 'package.json']
 end

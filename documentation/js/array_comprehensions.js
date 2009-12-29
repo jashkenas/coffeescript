@@ -1,5 +1,5 @@
 (function(){
-  var __a, __b, __c, __d, __e, __f, __g, __h, __i, __j, __k, __l, food, i, lunch, row;
+  var __a, __b, __c, __d, __e, __f, __g, __h, food, i, lunch, row;
   // Eat lunch.
   __a = ['toast', 'cheese', 'wine'];
   __d = [];
@@ -17,10 +17,4 @@
     __h[__f] = i % 2 === 0 ? highlight(row) : null;
   }
   __h;
-  // Check the first one hundred combinations.
-  __k = [];
-  for (__l=0, i=1, __j=100; i<=__j; i++, __l++) {
-    __k[__l] = lockpick(combinations[i]);
-  }
-  __k;
 })();

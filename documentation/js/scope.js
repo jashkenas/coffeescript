@@ -4,8 +4,7 @@
   change_numbers = function() {
     var new_num;
     num = 2;
-    new_num = 3;
-    return new_num;
+    return (new_num = 3);
   };
   new_num = change_numbers();
 })();

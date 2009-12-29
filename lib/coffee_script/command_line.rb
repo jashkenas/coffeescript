@@ -19,6 +19,10 @@ Usage:
     # Seconds to pause between checks for changed source files.
     WATCH_INTERVAL = 0.5
 
+    # Command to execute in Narwhal
+    PACKAGE = File.expand_path(File.dirname(__FILE__) + '/../..')
+    LAUNCHER = "narwhal -p #{PACKAGE} -e 'require(\"coffee-script\").run(system.args);'"
+
     # Run the CommandLine off the contents of ARGV.
     def initialize
       @mtimes = {}
@@ -104,7 +108,7 @@ Usage:
 
     # Use Narwhal to run an interactive CoffeeScript session.
     def launch_repl
-      exec "narwhal lib/coffee_script/narwhal/js/launcher.js"
+      exec "#{LAUNCHER}"
     rescue Errno::ENOENT
       puts "Error: Narwhal must be installed to use the interactive REPL."
       exit(1)
@@ -113,7 +117,7 @@ Usage:
     # Use Narwhal to compile and execute CoffeeScripts.
     def run_scripts
       sources = @sources.join(' ')
-      exec "narwhal lib/coffee_script/narwhal/js/launcher.js #{sources}"
+      exec "#{LAUNCHER} #{sources}"
     rescue Errno::ENOENT
       puts "Error: Narwhal must be installed in order to execute CoffeeScripts."
       exit(1)
