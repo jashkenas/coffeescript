@@ -268,7 +268,15 @@ module CoffeeScript
     def rewrite_closing_parens
       stack = []
       scan_tokens do |prev, token, post, i|
-
+        stack.push(token) if [:INDENT, '('].include?(token[0])
+        if [:OUTDENT, ')'].include?(token[0])
+          reciprocal = stack.pop
+          if reciprocal[0] == :INDENT
+            @tokens[i] = [:OUTDENT, Value.new(reciprocal[1], token[1].line)]
+          else
+            @tokens[i] = [')', Value.new(')', token[1].line)]
+          end
+        end
       end
     end
 
