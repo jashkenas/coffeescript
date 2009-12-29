@@ -35,17 +35,15 @@ module CoffeeScript
     MULTILINER = /\n/
     COMMENT_CLEANER = /(^\s*#|\n\s*$)/
 
-    # Tokens that always constitute the start of an expression.
-    # EXP_START  = ['{', '(', '[']
-
-    # Tokens that always constitute the end of an expression.
-    # EXP_END    = ['}', ')', ']']
-
     # Assignment tokens.
     ASSIGN     = [':', '=']
 
     # Tokens that must be balanced.
     BALANCED_PAIRS = [['(', ')'], ['[', ']'], ['{', '}'], [:INDENT, :OUTDENT]]
+
+    # Outdents that come before these tokens don't signify the end of the
+    # expression. TODO: Is this safe?
+    EXPRESSION_TAIL = [:CATCH, :WHEN, :ELSE, ')', ']', '}']
 
     # Scan by attempting to match tokens one character at a time. Slow and steady.
     def tokenize(code)
@@ -61,6 +59,7 @@ module CoffeeScript
       end
       close_indentation
       remove_empty_outdents
+      remove_mid_expression_newlines
       ensure_balance(*BALANCED_PAIRS)
       rewrite_closing_parens
       @tokens
@@ -154,9 +153,7 @@ module CoffeeScript
         token(:OUTDENT, last_indent)
         move_out -= last_indent
       end
-      # TODO: Figure out what to do about blocks that close, ending the expression
-      # versus blocks that occur mid-expression.
-      # token("\n", "\n")
+      token("\n", "\n")
       @indent = @indents.last || 0
     end
 
@@ -183,8 +180,6 @@ module CoffeeScript
       value = @chunk[OPERATOR, 1]
       tag_parameters if value && value.match(CODE)
       value ||= @chunk[0,1]
-      # skip_following_newlines if EXP_START.include?(value)
-      # remove_leading_newlines if EXP_END.include?(value)
       tag = ASSIGN.include?(value) ? :ASSIGN : value
       token(tag, value)
       @i += value.length
@@ -214,20 +209,6 @@ module CoffeeScript
         tok[0] = :PARAM
       end
     end
-
-    # Consume and ignore newlines immediately after this point.
-    # def skip_following_newlines
-    #   newlines = @code[(@i+1)..-1][NEWLINE, 1]
-    #   if newlines
-    #     @line += newlines.length
-    #     @i += newlines.length
-    #   end
-    # end
-
-    # Discard newlines immediately before this point.
-    # def remove_leading_newlines
-    #   @tokens.pop if last_value == "\n"
-    # end
 
     # Close up all remaining open blocks.
     def close_indentation
@@ -259,6 +240,14 @@ module CoffeeScript
       end
     end
 
+    # Some blocks occur in the middle of expressions -- when we're expecting
+    # this, remove their trailing newlines.
+    def remove_mid_expression_newlines
+      scan_tokens do |prev, token, post, i|
+        @tokens.delete_at(i) if post && EXPRESSION_TAIL.include?(post[0]) && token[0] == "\n" && prev[0] == :OUTDENT
+      end
+    end
+
     # We'd like to support syntax like this:
     #    el.click(event =>
     #      el.hide())
@@ -286,6 +275,8 @@ module CoffeeScript
       end
     end
 
+    # Ensure that all listed pairs of tokens are correctly balanced throughout
+    # the course of the token stream.
     def ensure_balance(*pairs)
       levels = Hash.new(0)
       scan_tokens do |prev, token, post, i|
