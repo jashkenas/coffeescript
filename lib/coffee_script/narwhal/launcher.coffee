@@ -1,1 +1,0 @@
-require("coffee-script").run(system.args)

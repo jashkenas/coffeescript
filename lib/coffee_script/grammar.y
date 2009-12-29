@@ -327,7 +327,9 @@ rule
   # Looks a little confusing, check nodes.rb for the arguments to ForNode.
   For:
     Expression FOR
-      ForVariables ForSource          { result = ForNode.new(val[0], val[3][0], val[2][0], val[3][1], val[2][1]) }
+      ForVariables ForSource "."      { result = ForNode.new(val[0], val[3][0], val[2][0], val[3][1], val[2][1]) }
+  | FOR ForVariables ForSource
+      Terminator Expressions "."      { result = ForNode.new(val[4], val[2][0], val[1][0], val[2][1], val[1][1]) }
   ;
 
   # An array comprehension has variables for the current element and index.
@@ -338,9 +340,9 @@ rule
 
   # The source of the array comprehension can optionally be filtered.
   ForSource:
-    IN PureExpression "."             { result = [val[1]] }
+    IN PureExpression                 { result = [val[1]] }
   | IN PureExpression
-    IF Expression "."                 { result = [val[1], val[3]] }
+    IF Expression                     { result = [val[1], val[3]] }
   ;
 
   # Switch/When blocks.
