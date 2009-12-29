@@ -36,10 +36,10 @@ module CoffeeScript
     COMMENT_CLEANER = /(^\s*#|\n\s*$)/
 
     # Tokens that always constitute the start of an expression.
-    EXP_START  = ['{', '(', '[']
+    # EXP_START  = ['{', '(', '[']
 
     # Tokens that always constitute the end of an expression.
-    EXP_END    = ['}', ')', ']']
+    # EXP_END    = ['}', ')', ']']
 
     # Assignment tokens.
     ASSIGN     = [':', '=']
@@ -183,8 +183,8 @@ module CoffeeScript
       value = @chunk[OPERATOR, 1]
       tag_parameters if value && value.match(CODE)
       value ||= @chunk[0,1]
-      skip_following_newlines if EXP_START.include?(value)
-      remove_leading_newlines if EXP_END.include?(value)
+      # skip_following_newlines if EXP_START.include?(value)
+      # remove_leading_newlines if EXP_END.include?(value)
       tag = ASSIGN.include?(value) ? :ASSIGN : value
       token(tag, value)
       @i += value.length
@@ -216,18 +216,18 @@ module CoffeeScript
     end
 
     # Consume and ignore newlines immediately after this point.
-    def skip_following_newlines
-      newlines = @code[(@i+1)..-1][NEWLINE, 1]
-      if newlines
-        @line += newlines.length
-        @i += newlines.length
-      end
-    end
+    # def skip_following_newlines
+    #   newlines = @code[(@i+1)..-1][NEWLINE, 1]
+    #   if newlines
+    #     @line += newlines.length
+    #     @i += newlines.length
+    #   end
+    # end
 
     # Discard newlines immediately before this point.
-    def remove_leading_newlines
-      @tokens.pop if last_value == "\n"
-    end
+    # def remove_leading_newlines
+    #   @tokens.pop if last_value == "\n"
+    # end
 
     # Close up all remaining open blocks.
     def close_indentation
