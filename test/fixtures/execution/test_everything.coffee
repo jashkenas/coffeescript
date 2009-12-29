@@ -21,7 +21,7 @@ func: =>
     text = c.text
   }
 
-  c.list: l for l in d.text.split('') where l is '-'
+  c.list: l for l in d.text.split('') when l is '-'
 
   c.single: c.list[1..1][0]
 

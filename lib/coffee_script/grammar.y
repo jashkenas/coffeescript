@@ -8,7 +8,7 @@ token IDENTIFIER PROPERTY_ACCESS
 token CODE PARAM NEW RETURN
 token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
-token FOR IN WHERE WHILE
+token FOR IN WHILE
 token SWITCH WHEN
 token DELETE INSTANCEOF TYPEOF
 token SUPER EXTENDS
@@ -32,7 +32,7 @@ prechigh
   left     '.'
   right    INDENT
   left     OUTDENT
-  right    THROW FOR IN WHERE WHILE NEW SUPER
+  right    THROW FOR IN WHILE WHEN NEW SUPER
   left     UNLESS IF ELSE EXTENDS
   left     ASSIGN '||=' '&&='
   right    RETURN
@@ -313,7 +313,7 @@ rule
   ForSource:
     IN PureExpression                 { result = [val[1]] }
   | IN PureExpression
-    WHERE Expression                  { result = [val[1], val[3]] }
+    WHEN Expression                  { result = [val[1], val[3]] }
   ;
 
   # Switch/When blocks.
