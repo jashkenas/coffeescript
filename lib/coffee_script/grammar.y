@@ -392,7 +392,7 @@ rule
 
   # The full complement of if blocks, including postfix one-liner ifs and unlesses.
   If:
-    IF Expression Block IfEnd         { result = IfNode.new(val[1], val[3], val[4]) }
+    IF Expression Block IfEnd         { result = IfNode.new(val[1], val[2], val[3]) }
   | Expression IF Expression          { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true}) }
   | Expression UNLESS Expression      { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true, :invert => true}) }
   ;

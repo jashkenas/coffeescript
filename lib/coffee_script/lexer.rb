@@ -44,6 +44,9 @@ module CoffeeScript
     # Assignment tokens.
     ASSIGN     = [':', '=']
 
+    # Tokens that must be balanced.
+    BALANCED_PAIRS = [['(', ')'], ['[', ']'], ['{', '}'], [:INDENT, :OUTDENT]]
+
     # Scan by attempting to match tokens one character at a time. Slow and steady.
     def tokenize(code)
       @code = code.chomp  # Cleanup code by remove extra line breaks
@@ -58,6 +61,7 @@ module CoffeeScript
       end
       close_indentation
       remove_empty_outdents
+      ensure_balance(*BALANCED_PAIRS)
       rewrite_closing_parens
       @tokens
     end
@@ -150,7 +154,7 @@ module CoffeeScript
         token(:OUTDENT, last_indent)
         move_out -= last_indent
       end
-      token("\n", "\n")
+      # token("\n", "\n")
       @indent = @indents.last || 0
     end
 
@@ -229,9 +233,9 @@ module CoffeeScript
     end
 
     # Rewrite the token stream, looking one token ahead and behind.
-    def rewrite_tokens
+    def scan_tokens
       i = 0
-      while i < @tokens.length - 1
+      while i < @tokens.length
         yield(@tokens[i - 1], @tokens[i], @tokens[i + 1], i)
         i += 1
       end
@@ -240,7 +244,7 @@ module CoffeeScript
     # You should be able to put blank lines within indented expressions.
     # To that end, remove redundant outdent/indents from the token stream.
     def remove_empty_outdents
-      rewrite_tokens do |prev, token, post, i|
+      scan_tokens do |prev, token, post, i|
         match = (prev[0] == :OUTDENT && token[1] == "\n" && post[0] == :INDENT)
         match = match && prev[1] == post[1]
         next unless match
@@ -253,18 +257,33 @@ module CoffeeScript
     #    el.click(event =>
     #      el.hide())
     # In order to accomplish this, move outdents that follow closing parens
-    # inwards, safely.
+    # inwards, safely. The steps to accomplish this are:
+    #
+    # 1. Check that parentheses are balanced and in order.
+    # 2. Check that indent/outdents are balanced and in order.
+    # 3. Rewrite the stream with a stack: if you see an '(' or INDENT, add it
+    #    to the stack. If you see an ')' or OUTDENT, pop the stack and replace
+    #    it with the inverse of what we've just popped.
+    #
     def rewrite_closing_parens
-      rewrite_tokens do |prev, token, post, i|
-        next(i += 1) unless token[1] == ')'
-        before_outdent = post && post[0] == :OUTDENT
-        after_outdent  = prev && prev[0] == :OUTDENT
-        if before_outdent && !after_outdent
-          insert_index = i
-          insert_index -= 1 while @tokens[insert_index][1] == ')' && (@tokens[insert_index - 1][0] != :OUTDENT)
-          @tokens.insert(insert_index + 1, @tokens.delete_at(i + 1))
+      stack = []
+      scan_tokens do |prev, token, post, i|
+
+      end
+    end
+
+    def ensure_balance(*pairs)
+      levels = Hash.new(0)
+      scan_tokens do |prev, token, post, i|
+        pairs.each do |pair|
+          open, close = *pair
+          levels[open] += 1 if token[0] == open
+          levels[open] -= 1 if token[0] == close
+          raise ParseError.new(token[0], token[1], nil) if levels[open] < 0
         end
       end
+      unclosed = levels.detect {|k, v| v > 0 }
+      raise SyntaxError, "unclosed '#{unclosed[0]}'" if unclosed
     end
 
   end
