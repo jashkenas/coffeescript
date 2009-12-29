@@ -217,10 +217,11 @@ rule
 
   # Assignment within an object literal (comma or newline separated).
   AssignList:
-    /* nothing */                     { result = []}
+    /* nothing */                     { result = [] }
   | AssignObj                         { result = val }
   | AssignList "," AssignObj          { result = val[0] << val[2] }
   | AssignList Terminator AssignObj   { result = val[0] << val[2] }
+  | INDENT AssignList OUTDENT         { result = val[1] }
   ;
 
   # All flavors of function call (instantiation, super, and regular).
@@ -263,6 +264,7 @@ rule
   | Expression                        { result = val }
   | ArgList "," Expression            { result = val[0] << val[2] }
   | ArgList Terminator Expression     { result = val[0] << val[2] }
+  | INDENT ArgList OUTDENT            { result = val[1] }
   ;
 
   # Try/catch/finally exception handling blocks.
