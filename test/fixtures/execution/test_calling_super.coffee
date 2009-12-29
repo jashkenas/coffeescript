@@ -1,21 +1,21 @@
-Base: => .
+Base: =>
 Base.prototype.func: string =>
-  'zero/' + string.
+  'zero/' + string
 
-FirstChild: => .
+FirstChild: =>
 FirstChild extends Base
 FirstChild.prototype.func: string =>
-  super('one/') + string.
+  super('one/') + string
 
-SecondChild: => .
+SecondChild: =>
 SecondChild extends FirstChild
 SecondChild.prototype.func: string =>
-  super('two/') + string.
+  super('two/') + string
 
-ThirdChild: => .
+ThirdChild: =>
 ThirdChild extends SecondChild
 ThirdChild.prototype.func: string =>
-  super('three/') + string.
+  super('three/') + string
 
 result: (new ThirdChild()).func('four')
 

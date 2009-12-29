@@ -3,9 +3,8 @@ c: false
 
 result: if a
   if b
-    if c then false
-    else
+    if c then false else
       if d
-        true....
+        true
 
 print(result)

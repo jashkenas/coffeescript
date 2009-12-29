@@ -3,7 +3,7 @@ func: =>
   b: []
   while a >= 0
     b.push('o')
-    a--.
+    a--
 
   c: {
     "text": b
@@ -14,14 +14,14 @@ func: =>
   c.text: if false
     'error'
   else
-    c.text + '---'.
+    c.text + '---'
 
   d = {
     text = c.text
   }
 
-  c.list: l for l in d.text.split('') if l is '-'.
+  c.list: l for l in d.text.split('') if l is '-'
 
-  c.single: c.list[1..1][0].
+  c.single: c.list[1..1][0]
 
 print(func() == '-')
