@@ -42,13 +42,13 @@ module CoffeeScript
     BALANCED_PAIRS = [['(', ')'], ['[', ']'], ['{', '}'], [:INDENT, :OUTDENT]]
 
     # Outdents that come before these tokens don't signify the end of the
-    # expression. TODO: Is this safe?
-    EXPRESSION_TAIL = [:CATCH, :WHEN, :ELSE, ')', ']', '}']
+    # expression.
+    EXPRESSION_TAIL = [:CATCH, :WHEN, :ELSE, :FINALLY, ')', ']', '}']
     
     # Single-line flavors of block expressions that have unclosed endings.
     # The grammar can't disambiguate them, so we insert the implicit indentation.
     SINGLE_LINERS  = [:ELSE, "=>", :TRY, :FINALLY, :THEN]
-    SINGLE_CLOSERS = ["\n", :CATCH, :FINALLY, :ELSE]
+    SINGLE_CLOSERS = ["\n", :CATCH, :FINALLY, :ELSE, :OUTDENT]
 
     # The inverse mappings of token pairs we're trying to fix up.
     INVERSES = {:INDENT => :OUTDENT, :OUTDENT => :INDENT, '(' => ')', ')' => '('}

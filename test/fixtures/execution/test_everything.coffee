@@ -8,6 +8,8 @@ func: =>
 
   c: {
     "text": b
+    other: null
+    something_else: x => x + 5
   }
 
   c: 'error' unless 42 > 41
