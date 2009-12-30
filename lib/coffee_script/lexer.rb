@@ -63,6 +63,7 @@ module CoffeeScript
       close_indentation
       remove_mid_expression_newlines
       move_commas_outside_outdents
+      add_implicit_indentation
       ensure_balance(*BALANCED_PAIRS)
       rewrite_closing_parens
       @tokens
@@ -241,6 +242,25 @@ module CoffeeScript
         next unless token[0] == :OUTDENT && prev[0] == ','
         @tokens.delete_at(i)
         @tokens.insert(i - 1, token)
+      end
+    end
+    
+    # Because our grammar is LALR(1), it can't handle some single-line 
+    # expressions that lack ending delimiters. Use the lexer to add the implicit
+    # blocks, so it doesn't need to.
+    def add_implicit_indentation
+      scan_tokens do |prev, token, post, i|
+        if token[0] == :ELSE && post[0] != :INDENT
+          line = token[1].line
+          @tokens.insert(i + 1, [:INDENT, Value.new(2, line)])
+          loop do
+            i += 1
+            if !@tokens[i] || ["\n", ")", :OUTDENT].include?(@tokens[i][0])
+              @tokens.insert(i, [:OUTDENT, Value.new(2, line)])
+              break
+            end
+          end
+        end
       end
     end
 
