@@ -15,14 +15,14 @@ coffeePath: File.path(module.path).dirname().dirname().dirname().dirname().dirna
 checkForErrors: coffeeProcess =>
   return true if coffeeProcess.wait() is 0
   system.stderr.print(coffeeProcess.stderr.read())
-  throw new Error("CoffeeScript compile error").
+  throw new Error("CoffeeScript compile error")
 
 # Run a simple REPL, round-tripping to the CoffeeScript compiler for every
 # command.
 exports.run: args =>
   if args.length
-    exports.evalCS(File.read(path)) for path in args.
-    return true.
+    exports.evalCS(File.read(path)) for path in args
+    return true
 
   while true
     try
@@ -30,24 +30,24 @@ exports.run: args =>
       result: exports.evalCS(Readline.readline())
       print(result) if result isnt undefined
     catch e
-      print(e)...
+      print(e)
 
 # Compile a given CoffeeScript file into JavaScript.
 exports.compileFile: path =>
   coffee: OS.popen([coffeePath, "--print", "--no-wrap", path])
   checkForErrors(coffee)
-  coffee.stdout.read().
+  coffee.stdout.read()
 
 # Compile a string of CoffeeScript into JavaScript.
 exports.compile: source =>
   coffee: OS.popen([coffeePath, "--eval", "--no-wrap"])
   coffee.stdin.write(source).flush().close()
   checkForErrors(coffee)
-  coffee.stdout.read().
+  coffee.stdout.read()
 
 # Evaluating a string of CoffeeScript first compiles it externally.
 exports.evalCS: source =>
-  eval(exports.compile(source)).
+  eval(exports.compile(source))
 
 # Make a factory for the CoffeeScript environment.
 exports.makeNarwhalFactory: path =>
@@ -57,4 +57,4 @@ exports.makeNarwhalFactory: path =>
       Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(global, factoryText, path, 0, null)
     else
       # eval requires parentheses, but parentheses break compileFunction.
-      eval("(" + factoryText + ")")..
+      eval("(" + factoryText + ")")
