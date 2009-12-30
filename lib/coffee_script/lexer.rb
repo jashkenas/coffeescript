@@ -148,7 +148,7 @@ module CoffeeScript
     end
 
     def outdent_token(move_out)
-      while move_out > 0
+      while move_out > 0 && !@indents.empty?
         last_indent = @indents.pop
         token(:OUTDENT, last_indent)
         move_out -= last_indent
@@ -276,8 +276,8 @@ module CoffeeScript
     #    it with the inverse of what we've just popped.
     # 3. Keep track of "debt" for tokens that we fake, to make sure we end
     #    up balanced in the end.
-    # 4. Make sure that we don't accidentally break trailing commas, which
-    #    should be before OUTDENTS, but after parens.
+    # 4. Make sure that we don't accidentally break trailing commas, which need
+    #    to go on the outside of expression closers.
     #
     def rewrite_closing_parens
       stack, debt = [], []
@@ -285,13 +285,11 @@ module CoffeeScript
         stack.push(token) if [:INDENT, '('].include?(token[0])
         if [:OUTDENT, ')'].include?(token[0])
           reciprocal = stack.pop
-          if reciprocal[0] == :INDENT
-            @tokens[i] = [:OUTDENT, Value.new(reciprocal[1], token[1].line)]
-          else
-            index = prev[0] == ',' ? i - 1 : i
-            @tokens.delete_at(i)
-            @tokens.insert(index, [')', Value.new(')', token[1].line)])
-          end
+          tok = reciprocal[0] == :INDENT ? [:OUTDENT, Value.new(reciprocal[1], token[1].line)] :
+                                           [')', Value.new(')', token[1].line)]
+          index = prev[0] == ',' ? i - 1 : i
+          @tokens.delete_at(i)
+          @tokens.insert(index, tok)
         end
       end
     end
