@@ -23,12 +23,12 @@ module CoffeeScript
     STRING     = /\A(""|''|"(.*?)[^\\]"|'(.*?)[^\\]')/m
     JS         = /\A(``|`(.*?)[^\\]`)/m
     OPERATOR   = /\A([+\*&|\/\-%=<>:!]+)/
-    WHITESPACE = /\A([ \t\r]+)/
+    WHITESPACE = /\A([ \t]+)/
     COMMENT    = /\A((#[^\n]*\s*)+)/m
     CODE       = /\A(=>)/
     REGEX      = /\A(\/(.*?)[^\\]\/[imgy]{0,4})/
-    INDENT     = /\A\n([ \t\r]*)/
-    NEWLINE    = /\A(\n+)([ \t\r]*)/
+    MULTI_DENT = /\A((\n+[ \t]*)+)/
+    LAST_DENT  = /\n+([ \t]*)\Z/
 
     # Token cleaning regexes.
     JS_CLEANER = /(\A`|`\Z)/
@@ -61,7 +61,6 @@ module CoffeeScript
         extract_next_token
       end
       close_indentation
-      remove_empty_outdents
       remove_mid_expression_newlines
       move_commas_outside_outdents
       ensure_balance(*BALANCED_PAIRS)
@@ -137,8 +136,10 @@ module CoffeeScript
 
     # Record tokens for indentation differing from the previous line.
     def indent_token
-      return false unless indent = @chunk[INDENT, 1]
-      size = indent.size
+      return false unless indent = @chunk[MULTI_DENT, 1]
+      @line += indent.scan(MULTILINER).size
+      @i += indent.size
+      size = indent[LAST_DENT, 1].length
       return newline_token(indent) if size == @indent
       if size > @indent
         token(:INDENT, size - @indent)
@@ -147,8 +148,6 @@ module CoffeeScript
         outdent_token(@indent - size)
       end
       @indent = size
-      @line += 1
-      @i += (size + 1)
     end
 
     def outdent_token(move_out)
@@ -158,7 +157,6 @@ module CoffeeScript
         move_out -= last_indent
       end
       token("\n", "\n")
-      @indent = @indents.last || 0
     end
 
     # Matches and consumes non-meaningful whitespace.
@@ -170,11 +168,11 @@ module CoffeeScript
     # Multiple newlines get merged together.
     # Use a trailing \ to escape newlines.
     def newline_token(newlines)
-      return false unless newlines = @chunk[NEWLINE, 1]
-      @line += newlines.length
+      lines = newlines.scan(MULTILINER).length
+      @line += lines
       token("\n", "\n") unless ["\n", "\\"].include?(last_value)
       @tokens.pop if last_value == "\\"
-      @i += newlines.length
+      true
     end
 
     # We treat all other single characters as a token. Eg.: ( ) , . !
@@ -225,22 +223,6 @@ module CoffeeScript
       while i < @tokens.length
         yield(@tokens[i - 1], @tokens[i], @tokens[i + 1], i)
         i += 1
-      end
-    end
-
-    # You should be able to put blank lines within indented expressions.
-    # To that end, remove redundant outdent/indents from the token stream.
-    def remove_empty_outdents
-      scan_tokens do |prev, token, post, i|
-        if prev && post && prev[0] == :OUTDENT && token[1] == "\n" && post[0] == :INDENT && prev[1] == post[1]
-          @tokens.delete_at(i + 1)
-          @tokens.delete_at(i - 1)
-        end
-        if prev[0] == :OUTDENT && token[0] == :INDENT && prev[1] == token[1]
-          @tokens.delete_at(i)
-          @tokens.delete_at(i - 1)
-          @tokens.insert(i - 1, ["\n", Value.new("\n", prev[1].line)])
-        end
       end
     end
 
