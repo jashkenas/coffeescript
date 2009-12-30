@@ -45,7 +45,7 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_parsing_array_comprehension
-    nodes = @par.parse("i for x, i in [10, 9, 8, 7, 6, 5] if i % 2 is 0").expressions
+    nodes = @par.parse("i for x, i in [10, 9, 8, 7, 6, 5] when i % 2 is 0").expressions
     assert nodes.first.is_a? ForNode
     assert nodes.first.body.literal == 'i'
     assert nodes.first.filter.operator == '==='
@@ -78,6 +78,7 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_no_wrapping_parens_around_statements
+    @par.parse("try thing() catch error fail()").compile
     assert_raises(SyntaxError) do
       @par.parse("(try thing() catch error fail())").compile
     end

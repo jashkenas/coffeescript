@@ -32,8 +32,8 @@ prechigh
   left     '.'
   right    INDENT
   left     OUTDENT
-  right    THROW FOR IN WHILE WHEN NEW SUPER IF THEN ELSE
-  left     UNLESS EXTENDS
+  right    THROW FOR IN WHILE WHEN NEW SUPER THEN ELSE
+  left     UNLESS EXTENDS IF
   left     ASSIGN '||=' '&&='
   right    RETURN '=>'
 preclow
@@ -284,14 +284,14 @@ rule
   # Try/catch/finally exception handling blocks.
   Try:
     TRY Block Catch                   { result = TryNode.new(val[1], val[2][0], val[2][1]) }
+  | TRY Block FINALLY Block           { result = TryNode.new(val[1], nil, nil, val[3]) }
   | TRY Block Catch
       FINALLY Block                   { result = TryNode.new(val[1], val[2][0], val[2][1], val[4]) }
   ;
 
   # A catch clause.
   Catch:
-    /* nothing */                     { result = [nil, nil] }
-  | CATCH IDENTIFIER Block            { result = [val[1], val[2]] }
+    CATCH IDENTIFIER Block            { result = [val[1], val[2]] }
   ;
 
   # Throw an exception.

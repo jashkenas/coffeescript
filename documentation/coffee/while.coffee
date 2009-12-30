@@ -1,5 +1,5 @@
 while demand > supply
   sell()
-  restock().
+  restock()
 
-while supply > demand then buy().
+while supply > demand then buy()
