@@ -255,7 +255,8 @@ module CoffeeScript
     # blocks, so it doesn't need to.
     def add_implicit_indentation
       scan_tokens do |prev, token, post, i|
-        if SINGLE_LINERS.include?(token[0]) && post[0] != :INDENT
+        if SINGLE_LINERS.include?(token[0]) && post[0] != :INDENT && 
+          !(token[0] == :ELSE && post[0] == :IF) # Elsifs shouldn't get blocks.
           line = token[1].line
           @tokens.insert(i + 1, [:INDENT, Value.new(2, line)])
           idx = i + 1
