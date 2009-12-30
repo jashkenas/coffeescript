@@ -21,7 +21,7 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_parsing_an_object_literal
-    nodes = @par.parse("{one : 1 \n two : 2}").expressions
+    nodes = @par.parse("{one : 1\ntwo : 2}").expressions
     obj = nodes.first.literal
     assert obj.is_a? ObjectNode
     assert obj.properties.first.variable.literal.value == "one"
@@ -29,7 +29,7 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_parsing_an_function_definition
-    code = @par.parse("x, y => x * y.").expressions.first
+    code = @par.parse("x, y => x * y").expressions.first
     assert code.params == ['x', 'y']
     body = code.body.expressions.first
     assert body.is_a? OpNode
@@ -45,7 +45,7 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_parsing_array_comprehension
-    nodes = @par.parse("i for x, i in [10, 9, 8, 7, 6, 5] if i % 2 is 0.").expressions
+    nodes = @par.parse("i for x, i in [10, 9, 8, 7, 6, 5] if i % 2 is 0").expressions
     assert nodes.first.is_a? ForNode
     assert nodes.first.body.literal == 'i'
     assert nodes.first.filter.operator == '==='
@@ -53,7 +53,7 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_parsing_comment
-    nodes = @par.parse("a: 1\n # comment\nb: 2").expressions
+    nodes = @par.parse("a: 1\n# comment\nb: 2").expressions
     assert nodes[1].is_a? CommentNode
   end
 
@@ -79,7 +79,7 @@ class ParserTest < Test::Unit::TestCase
 
   def test_no_wrapping_parens_around_statements
     assert_raises(SyntaxError) do
-      @par.parse("(try thing() catch error fail().)").compile
+      @par.parse("(try thing() catch error fail())").compile
     end
   end
 
