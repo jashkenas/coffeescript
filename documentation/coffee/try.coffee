@@ -4,4 +4,4 @@ try
 catch error
   print(error)
 finally
-  clean_up().
+  clean_up()
