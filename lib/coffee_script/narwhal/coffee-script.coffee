@@ -20,9 +20,7 @@ checkForErrors: coffeeProcess =>
 # Run a simple REPL, round-tripping to the CoffeeScript compiler for every
 # command.
 exports.run: args =>
-  if args.length
-    exports.evalCS(File.read(path)) for path in args
-    return true
+  return true if args.length
 
   while true
     try
