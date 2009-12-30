@@ -150,7 +150,7 @@ Snake.prototype.move: =>
   alert('Slithering...')
   super(5)
 
-Horse: name => this.name: name.
+Horse: name => this.name: name
 Horse extends Animal
 Horse.prototype.move: =>
   alert('Galloping...')
