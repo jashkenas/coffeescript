@@ -390,22 +390,22 @@ module CoffeeScript
   # CoffeeScript operations into their JavaScript equivalents.
   class OpNode < Node
     CONVERSIONS = {
-      "=="    => "===",
-      "!="    => "!==",
-      'and'   => '&&',
-      'or'    => '||',
-      'is'    => '===',
-      "isnt"  => "!==",
-      'not'   => '!'
+      :==     => "===",
+      :'!='   => "!==",
+      :and    => '&&',
+      :or     => '||',
+      :is     => '===',
+      :isnt   => "!==",
+      :not    => '!'
     }
-    CONDITIONALS     = ['||=', '&&=']
-    PREFIX_OPERATORS = ['typeof', 'delete']
+    CONDITIONALS     = [:'||=', :'&&=']
+    PREFIX_OPERATORS = [:typeof, :delete]
 
     attr_reader :operator, :first, :second
 
     def initialize(operator, first, second=nil, flip=false)
       @first, @second, @flip = first, second, flip
-      @operator = CONVERSIONS[operator] || operator
+      @operator = CONVERSIONS[operator.to_sym] || operator
     end
 
     def unary?
@@ -414,7 +414,7 @@ module CoffeeScript
 
     def compile(o={})
       o = super(o)
-      return write(compile_conditional(o)) if CONDITIONALS.include?(@operator)
+      return write(compile_conditional(o)) if CONDITIONALS.include?(@operator.to_sym)
       return write(compile_unary(o)) if unary?
       write("#{@first.compile(o)} #{@operator} #{@second.compile(o)}")
     end
@@ -426,7 +426,7 @@ module CoffeeScript
     end
 
     def compile_unary(o)
-      space = PREFIX_OPERATORS.include?(@operator.to_s) ? ' ' : ''
+      space = PREFIX_OPERATORS.include?(@operator.to_sym) ? ' ' : ''
       parts = [@operator.to_s, space, @first.compile(o)]
       parts.reverse! if @flip
       parts.join('')
