@@ -27,7 +27,7 @@ module CoffeeScript
     COMMENT    = /\A((#[^\n]*\s*)+)/m
     CODE       = /\A(=>)/
     REGEX      = /\A(\/(.*?)[^\\]\/[imgy]{0,4})/
-    MULTI_DENT = /\A((\n+([ \t]*(?=\S)))+)/
+    MULTI_DENT = /\A((\n+([ \t]*(?=\S))?)+)/
     LAST_DENT  = /\n+([ \t]*)\Z/
 
     # Token cleaning regexes.
@@ -47,7 +47,8 @@ module CoffeeScript
     
     # Single-line flavors of block expressions that have unclosed endings.
     # The grammar can't disambiguate them, so we insert the implicit indentation.
-    SINGLE_LINERS = [:ELSE, "=>"]
+    SINGLE_LINERS  = [:ELSE, "=>", :TRY, :FINALLY, :THEN]
+    SINGLE_CLOSERS = ["\n", :CATCH, :FINALLY, :ELSE]
 
     # The inverse mappings of token pairs we're trying to fix up.
     INVERSES = {:INDENT => :OUTDENT, :OUTDENT => :INDENT, '(' => ')', ')' => '('}
@@ -257,13 +258,15 @@ module CoffeeScript
         if SINGLE_LINERS.include?(token[0]) && post[0] != :INDENT
           line = token[1].line
           @tokens.insert(i + 1, [:INDENT, Value.new(2, line)])
+          idx = i + 1
           loop do
-            i += 1
-            if !@tokens[i] || @tokens[i][0] == "\n"
-              @tokens.insert(i, [:OUTDENT, Value.new(2, line)])
+            idx += 1
+            if !@tokens[idx] || SINGLE_CLOSERS.include?(@tokens[idx][0])
+              @tokens.insert(idx, [:OUTDENT, Value.new(2, line)])
               break
             end
           end
+          @tokens.delete_at(i) if token[0] == :THEN
         end
       end
     end
