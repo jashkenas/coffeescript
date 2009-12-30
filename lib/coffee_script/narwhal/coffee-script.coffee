@@ -22,6 +22,7 @@ checkForErrors: coffeeProcess =>
 exports.run: args =>
   if args.length
     exports.evalCS(File.read(path)) for path in args
+    delete args[i] for path, i in args
     return true
 
   while true
@@ -48,3 +49,13 @@ exports.compile: source =>
 # Evaluating a string of CoffeeScript first compiles it externally.
 exports.evalCS: source =>
   eval(exports.compile(source))
+
+# Make a factory for the CoffeeScript environment.
+exports.makeNarwhalFactory: path =>
+  code: exports.compileFile(path)
+  factoryText: "function(require,exports,module,system,print){" + code + "/**/\n}"
+  if system.engine is "rhino"
+    Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(global, factoryText, path, 0, null)
+  else
+    # eval requires parentheses, but parentheses break compileFunction.
+    eval("(" + factoryText + ")")
