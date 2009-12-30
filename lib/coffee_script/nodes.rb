@@ -693,8 +693,8 @@ module CoffeeScript
     end
 
     # Rewrite a chain of IfNodes to add a default case as the final else.
-    def add_else(expressions)
-      chain? ? @else_body.add_else(expressions) : @else_body = expressions.unwrap
+    def add_else(exprs)
+      chain? ? @else_body.add_else(exprs) : @else_body = (exprs && exprs.unwrap)
       self
     end
 

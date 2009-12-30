@@ -44,6 +44,10 @@ module CoffeeScript
     # Outdents that come before these tokens don't signify the end of the
     # expression. TODO: Is this safe?
     EXPRESSION_TAIL = [:CATCH, :WHEN, :ELSE, ')', ']', '}']
+    
+    # Single-line flavors of block expressions that have unclosed endings.
+    # The grammar can't disambiguate them, so we insert the implicit indentation.
+    SINGLE_LINERS = [:ELSE, "=>"]
 
     # The inverse mappings of token pairs we're trying to fix up.
     INVERSES = {:INDENT => :OUTDENT, :OUTDENT => :INDENT, '(' => ')', ')' => '('}
@@ -250,12 +254,12 @@ module CoffeeScript
     # blocks, so it doesn't need to.
     def add_implicit_indentation
       scan_tokens do |prev, token, post, i|
-        if token[0] == :ELSE && post[0] != :INDENT
+        if SINGLE_LINERS.include?(token[0]) && post[0] != :INDENT
           line = token[1].line
           @tokens.insert(i + 1, [:INDENT, Value.new(2, line)])
           loop do
             i += 1
-            if !@tokens[i] || ["\n", ")", :OUTDENT].include?(@tokens[i][0])
+            if !@tokens[i] || @tokens[i][0] == "\n"
               @tokens.insert(i, [:OUTDENT, Value.new(2, line)])
               break
             end

@@ -20,7 +20,9 @@ checkForErrors: coffeeProcess =>
 # Run a simple REPL, round-tripping to the CoffeeScript compiler for every
 # command.
 exports.run: args =>
-  return true if args.length
+  if args.length
+    exports.evalCS(File.read(path)) for path in args
+    return true
 
   while true
     try
@@ -46,13 +48,3 @@ exports.compile: source =>
 # Evaluating a string of CoffeeScript first compiles it externally.
 exports.evalCS: source =>
   eval(exports.compile(source))
-
-# Make a factory for the CoffeeScript environment.
-exports.makeNarwhalFactory: path =>
-    code: exports.compileFile(path)
-    factoryText: "function(require,exports,module,system,print){" + code + "/**/\n}"
-    if system.engine is "rhino"
-      Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(global, factoryText, path, 0, null)
-    else
-      # eval requires parentheses, but parentheses break compileFunction.
-      eval("(" + factoryText + ")")
