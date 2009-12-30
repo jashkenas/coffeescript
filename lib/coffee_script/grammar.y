@@ -353,7 +353,7 @@ rule
 
   # An elsif portion of an if-else block.
   ElsIf:
-    ELSE IfBlock                      { result = val[1] }
+    ELSE IfBlock                      { result = val[1].force_statement }
   ;
 
   # Multiple elsifs can be chained together.

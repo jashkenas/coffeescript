@@ -684,6 +684,11 @@ module CoffeeScript
       @else_body ? @else_body << eb : @else_body = eb
       self
     end
+    
+    def force_statement
+      @tags[:statement] = true
+      self
+    end
 
     # Rewrite a chain of IfNodes with their switch condition for equality.
     def rewrite_condition(expression)

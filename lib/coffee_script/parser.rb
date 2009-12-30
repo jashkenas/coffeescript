@@ -2022,7 +2022,7 @@ module_eval(<<'.,.,', 'grammar.y', 350)
 
 module_eval(<<'.,.,', 'grammar.y', 355)
   def _reduce_145(val, _values, result)
-     result = val[1] 
+     result = val[1].force_statement 
     result
   end
 .,.,
