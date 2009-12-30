@@ -45,6 +45,9 @@ module CoffeeScript
     # expression. TODO: Is this safe?
     EXPRESSION_TAIL = [:CATCH, :WHEN, :ELSE, ')', ']', '}']
 
+    # The inverse mappings of token pairs we're trying to fix up.
+    INVERSES = {:INDENT => :OUTDENT, :OUTDENT => :INDENT, '(' => ')', ')' => '('}
+
     # Scan by attempting to match tokens one character at a time. Slow and steady.
     def tokenize(code)
       @code = code.chomp  # Cleanup code by remove extra line breaks
@@ -60,6 +63,7 @@ module CoffeeScript
       close_indentation
       remove_empty_outdents
       remove_mid_expression_newlines
+      move_commas_outside_outdents
       ensure_balance(*BALANCED_PAIRS)
       rewrite_closing_parens
       @tokens
@@ -248,6 +252,16 @@ module CoffeeScript
       end
     end
 
+    # Make sure that we don't accidentally break trailing commas, which need
+    # to go on the outside of expression closers.
+    def move_commas_outside_outdents
+      scan_tokens do |prev, token, post, i|
+        next unless token[0] == :OUTDENT && prev[0] == ','
+        @tokens.delete_at(i)
+        @tokens.insert(i - 1, token)
+      end
+    end
+
     # Ensure that all listed pairs of tokens are correctly balanced throughout
     # the course of the token stream.
     def ensure_balance(*pairs)
@@ -276,20 +290,28 @@ module CoffeeScript
     #    it with the inverse of what we've just popped.
     # 3. Keep track of "debt" for tokens that we fake, to make sure we end
     #    up balanced in the end.
-    # 4. Make sure that we don't accidentally break trailing commas, which need
-    #    to go on the outside of expression closers.
     #
     def rewrite_closing_parens
-      stack, debt = [], []
+      stack, debt = [], Hash.new(0)
       scan_tokens do |prev, token, post, i|
-        stack.push(token) if [:INDENT, '('].include?(token[0])
-        if [:OUTDENT, ')'].include?(token[0])
-          reciprocal = stack.pop
-          tok = reciprocal[0] == :INDENT ? [:OUTDENT, Value.new(reciprocal[1], token[1].line)] :
-                                           [')', Value.new(')', token[1].line)]
-          index = prev[0] == ',' ? i - 1 : i
-          @tokens.delete_at(i)
-          @tokens.insert(index, tok)
+        tag, inv = token[0], INVERSES[token[0]]
+        stack.push(token) if [:INDENT, '('].include?(tag)
+        if [:OUTDENT, ')'].include?(tag)
+          # If the tag is already in our debt, swallow it.
+          if debt[inv] > 0
+            debt[inv] -= 1
+            @tokens.delete_at(i)
+            next
+          end
+          # Pop the stack of open delimiters.
+          match = stack.pop
+          mtag  = match[0]
+          # Continue onwards if it's the expected tag.
+          next if tag == INVERSES[mtag]
+          # Unexpected close, insert correct close, adding to the debt.
+          debt[mtag] += 1
+          val = mtag == :INDENT ? match[1] : ')'
+          @tokens.insert(i, [INVERSES[mtag], Value.new(val, token[1].line)])
         end
       end
     end
