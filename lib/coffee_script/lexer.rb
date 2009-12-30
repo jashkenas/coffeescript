@@ -48,7 +48,7 @@ module CoffeeScript
     # Single-line flavors of block expressions that have unclosed endings.
     # The grammar can't disambiguate them, so we insert the implicit indentation.
     SINGLE_LINERS  = [:ELSE, "=>", :TRY, :FINALLY, :THEN]
-    SINGLE_CLOSERS = ["\n", ")", :CATCH, :FINALLY, :ELSE, :OUTDENT]
+    SINGLE_CLOSERS = ["\n", :CATCH, :FINALLY, :ELSE, :OUTDENT]
 
     # The inverse mappings of token pairs we're trying to fix up.
     INVERSES = {:INDENT => :OUTDENT, :OUTDENT => :INDENT, '(' => ')', ')' => '('}
@@ -252,6 +252,7 @@ module CoffeeScript
     # Because our grammar is LALR(1), it can't handle some single-line 
     # expressions that lack ending delimiters. Use the lexer to add the implicit
     # blocks, so it doesn't need to.
+    # ')' can close a single-line block, but we need to make sure it's balanced.
     def add_implicit_indentation
       scan_tokens do |prev, token, post, i|
         if SINGLE_LINERS.include?(token[0]) && post[0] != :INDENT && 
@@ -259,12 +260,17 @@ module CoffeeScript
           line = token[1].line
           @tokens.insert(i + 1, [:INDENT, Value.new(2, line)])
           idx = i + 1
+          parens = 0
           loop do
             idx += 1
-            if !@tokens[idx] || SINGLE_CLOSERS.include?(@tokens[idx][0])
+            tok = @tokens[idx]
+            if !tok || SINGLE_CLOSERS.include?(tok[0]) || 
+                (tok[0] == ')' && parens == 0)
               @tokens.insert(idx, [:OUTDENT, Value.new(2, line)])
               break
             end
+            parens += 1 if tok[0] == '('
+            parens -= 1 if tok[0] == ')'
           end
           @tokens.delete_at(i) if token[0] == :THEN
         end
@@ -301,24 +307,34 @@ module CoffeeScript
     #    up balanced in the end.
     #
     def rewrite_closing_parens
+      verbose = ENV['VERBOSE']
       stack, debt = [], Hash.new(0)
+      stack_stats = lambda { "stack: #{stack.inspect} debt: #{debt.inspect}" }
+      puts "original stream: #{@tokens.inspect}" if verbose
       scan_tokens do |prev, token, post, i|
         tag, inv = token[0], INVERSES[token[0]]
-        stack.push(token) if [:INDENT, '('].include?(tag)
-        if [:OUTDENT, ')'].include?(tag)
+        if [:INDENT, '('].include?(tag)
+          stack.push(token)
+          puts "pushing #{tag} #{stack_stats[]}" if verbose
+        elsif [:OUTDENT, ')'].include?(tag)
           # If the tag is already in our debt, swallow it.
           if debt[inv] > 0
             debt[inv] -= 1
             @tokens.delete_at(i)
+            puts "tag in debt #{tag} #{stack_stats[]}" if verbose
             next
           end
           # Pop the stack of open delimiters.
           match = stack.pop
           mtag  = match[0]
           # Continue onwards if it's the expected tag.
-          next if tag == INVERSES[mtag]
+          if tag == INVERSES[mtag]
+            puts "expected tag #{tag} #{stack_stats[]}" if verbose
+            next
+          end
           # Unexpected close, insert correct close, adding to the debt.
           debt[mtag] += 1
+          puts "unexpected #{tag}, replacing with #{INVERSES[mtag]} #{stack_stats[]}" if verbose
           val = mtag == :INDENT ? match[1] : ')'
           @tokens.insert(i, [INVERSES[mtag], Value.new(val, token[1].line)])
         end
