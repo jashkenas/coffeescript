@@ -9,5 +9,5 @@ result: switch num
   when 10 then true
   when 11 then false
   else false
-
+  
 print(result)

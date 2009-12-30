@@ -1,7 +1,7 @@
 class Parser
 
 # Declare tokens produced by the lexer
-token IF ELSE THEN UNLESS
+token IF ELSE UNLESS
 token NUMBER STRING REGEX
 token TRUE FALSE YES NO ON OFF
 token IDENTIFIER PROPERTY_ACCESS
@@ -32,15 +32,15 @@ prechigh
   left     '.'
   right    INDENT
   left     OUTDENT
-  right    THROW FOR IN WHILE WHEN NEW SUPER THEN ELSE
+  right    THROW FOR IN WHILE WHEN NEW SUPER ELSE
   left     UNLESS EXTENDS IF
   left     ASSIGN '||=' '&&='
   right    RETURN '=>'
 preclow
 
-# We expect 4 shift/reduce errors for optional syntax.
+# We expect 2 shift/reduce errors for optional syntax.
 # There used to be 252 -- greatly improved.
-expect 4
+expect 2
 
 rule
 
@@ -344,9 +344,9 @@ rule
 
   # An individual when.
   When:
-    WHEN Expression Block        { result = IfNode.new(val[1], val[2], nil, {:statement => true}) }
-  | WHEN Expression
-      THEN Expression Terminator     { result = IfNode.new(val[1], val[3], nil, {:statement => true}) }
+    WHEN Expression Block             { result = IfNode.new(val[1], val[2], nil, {:statement => true}) }
+  | WHEN Expression Block Terminator  { result = IfNode.new(val[1], val[2], nil, {:statement => true}) }
+  | Comment
   ;
 
   # All of the following nutso if-else destructuring is to make the
@@ -354,7 +354,6 @@ rule
 
   IfBlock:
     IF Expression Block               { result = IfNode.new(val[1], val[2]) }
-  | IF Expression THEN Expression     { result = IfNode.new(val[1], val[3]) }
   ;
 
   # An elsif portion of an if-else block.
