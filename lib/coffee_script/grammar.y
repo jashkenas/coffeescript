@@ -32,15 +32,15 @@ prechigh
   left     '.'
   right    INDENT
   left     OUTDENT
-  right    THROW FOR IN WHILE WHEN NEW SUPER
-  left     UNLESS IF ELSE EXTENDS
+  right    THROW FOR IN WHILE WHEN NEW SUPER IF THEN ELSE
+  left     UNLESS EXTENDS
   left     ASSIGN '||=' '&&='
-  right    RETURN
+  right    RETURN '=>'
 preclow
 
-# We expect 3 shift/reduce errors for optional syntax.
+# We expect 4 shift/reduce errors for optional syntax.
 # There used to be 252 -- greatly improved.
-expect 3
+expect 4
 
 rule
 
@@ -61,22 +61,12 @@ rule
 
   # All types of expressions in our language.
   Expression:
-    PureExpression
-  | Statement
-  ;
-
-  # The parts that are natural JavaScript expressions.
-  PureExpression:
     Value
   | Call
   | Code
   | Operation
   | Range
-  ;
-
-  # We have to take extra care to convert these statements into expressions.
-  Statement:
-    Assign
+  | Assign
   | If
   | Try
   | Throw
@@ -140,36 +130,57 @@ rule
   # For Ruby's Operator precedence, see:
   # https://www.cs.auckland.ac.nz/references/ruby/ProgrammingRuby/language.html
   Operation:
-    PrefixOperation
-  | InfixOperation
-  | PostfixOperation
-  ;
+    '!' Expression                    { result = OpNode.new(val[0], val[1]) }
+  | '!!' Expression                   { result = OpNode.new(val[0], val[1]) }
+  | '-' Expression = UMINUS           { result = OpNode.new(val[0], val[1]) }
+  | NOT Expression                    { result = OpNode.new(val[0], val[1]) }
+  | '~' Expression                    { result = OpNode.new(val[0], val[1]) }
+  | '--' Expression                   { result = OpNode.new(val[0], val[1]) }
+  | '++' Expression                   { result = OpNode.new(val[0], val[1]) }
+  | DELETE Expression                 { result = OpNode.new(val[0], val[1]) }
+  | TYPEOF Expression                 { result = OpNode.new(val[0], val[1]) }
+  | Expression '--'                   { result = OpNode.new(val[1], val[0], nil, true) }
+  | Expression '++'                   { result = OpNode.new(val[1], val[0], nil, true) }
 
-  PrefixOperation:
-    PrefixSymbol PureExpression       { result = OpNode.new(val[0], val[1]) }
-  ;
+  | Expression '*' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '/' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '%' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
 
-  PostfixOperation:
-    PureExpression PostfixSymbol      { result = OpNode.new(val[1], val[0], nil, true) }
-  ;
+  | Expression '+' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '-' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
 
-  InfixOperation:
-    PureExpression
-      InfixSymbol PureExpression      { result = OpNode.new(val[1], val[0], val[2]) }
-  ;
+  | Expression '<<' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '>>' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '>>>' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
 
-  PrefixSymbol:
-    '!' | '!!' | '-' = UMINUS | NOT | '~' | '--' | '++' | DELETE | TYPEOF
-  ;
+  | Expression '&' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '|' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '^' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
 
-  PostfixSymbol:
-    '--' | '++'
-  ;
+  | Expression '<=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '<' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '>' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '>=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
 
-  InfixSymbol:
-    '*' | '/' | '%' | '+' | '-' | '<<' | '>>' | '>>>' | '&' | '|' | '^'
-  | '<=' | '<' | '>' | '>=' | '==' | '!=' | IS | ISNT | '&&' | '||'
-  | AND | OR | '-=' | '+=' | '/=' | '*=' | '%=' | '||=' | '&&=' | INSTANCEOF
+  | Expression '==' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '!=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression IS Expression          { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression ISNT Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+
+  | Expression '&&' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '||' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression AND Expression         { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression OR Expression          { result = OpNode.new(val[1], val[0], val[2]) }
+
+  | Expression '-=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '+=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '/=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '*=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '%=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '||=' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '&&=' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
+
+  | Expression INSTANCEOF Expression  { result = OpNode.new(val[1], val[0], val[2]) }
   ;
 
   # Function definition.
@@ -285,7 +296,7 @@ rule
 
   # Throw an exception.
   Throw:
-    THROW PureExpression              { result = ThrowNode.new(val[1]) }
+    THROW Expression              { result = ThrowNode.new(val[1]) }
   ;
 
   # Parenthetical expressions.
@@ -295,7 +306,7 @@ rule
 
   # The while loop. (there is no do..while).
   While:
-    WHILE PureExpression Block        { result = WhileNode.new(val[1], val[2]) }
+    WHILE Expression Block        { result = WhileNode.new(val[1], val[2]) }
   ;
 
   # Array comprehensions, including guard and current index.
@@ -314,8 +325,8 @@ rule
 
   # The source of the array comprehension can optionally be filtered.
   ForSource:
-    IN PureExpression                 { result = [val[1]] }
-  | IN PureExpression
+    IN Expression                 { result = [val[1]] }
+  | IN Expression
     WHEN Expression                  { result = [val[1], val[3]] }
   ;
 
@@ -337,22 +348,17 @@ rule
 
   # An individual when.
   When:
-    WHEN PureExpression Block        { result = IfNode.new(val[1], val[2], nil, {:statement => true}) }
-  | WHEN PureExpression
+    WHEN Expression Block        { result = IfNode.new(val[1], val[2], nil, {:statement => true}) }
+  | WHEN Expression
       THEN Expression Terminator     { result = IfNode.new(val[1], val[3], nil, {:statement => true}) }
   ;
 
   # All of the following nutso if-else destructuring is to make the
   # grammar expand unambiguously.
 
-  # The condition itself.
-  IfClause:
-    IF PureExpression                 { result = val[1] }
-  ;
-
   IfBlock:
-    IfClause Block                    { result = IfNode.new(val[0], val[1]) }
-  | IfClause THEN Expression          { result = IfNode.new(val[0], val[2]) }
+    IF Expression Block               { result = IfNode.new(val[1], val[2]) }
+  | IF Expression THEN Expression     { result = IfNode.new(val[1], val[3]) }
   ;
 
   # An elsif portion of an if-else block.
@@ -381,8 +387,8 @@ rule
   # The full complement of if blocks, including postfix one-liner ifs and unlesses.
   If:
     IfBlock IfEnd                     { result = val[0].add_else(val[1]) }
-  | Expression IfClause               { result = IfNode.new(val[1], Expressions.new([val[0]]), nil, {:statement => true}) }
-  | Expression UNLESS PureExpression  { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true, :invert => true}) }
+  | Expression IF Expression        { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true}) }
+  | Expression UNLESS Expression  { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true, :invert => true}) }
   ;
 
 end
