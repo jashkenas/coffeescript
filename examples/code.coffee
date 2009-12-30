@@ -1,16 +1,16 @@
 # Functions:
-square: x => x * x.
+square: x => x * x
 
-sum: x, y => x + y.
+sum: x, y => x + y
 
-odd: x => x % 2 is 0.
+odd: x => x % 2 is 0
 
-even: x => x % 2 isnt 0.
+even: x => x % 2 isnt 0
 
 run_loop: =>
-  fire_events( e => e.stopPropagation(). )
+  fire_events(e => e.stopPropagation())
   listen()
-  wait().
+  wait()
 
 # Objects:
 dense_object_literal: {one: 1, two: 2, three: 3}
@@ -22,14 +22,14 @@ spaced_out_multiline_object: {
   three: new Idea()
 
   inner_obj: {
-    freedom: => _.freedom().
+    freedom: => _.freedom()
   }
 }
 
 # Arrays:
 stooges : [{moe: 45}, {curly: 43}, {larry: 46}]
 
-exponents : [x => x., x => x * x., x => x * x * x.]
+exponents : [(x => x), (x => x * x), (x => x * x * x)]
 
 empty: []
 
@@ -45,9 +45,9 @@ if submarine.shields_up
 else if submarine.sinking
   abandon_ship()
 else
-  run_away().
+  run_away()
 
-eldest: if 25 > 21 then liz else marge.
+eldest: if 25 > 21 then liz else marge
 
 decoration: medal_of_honor if war_hero
 
@@ -58,8 +58,8 @@ race: =>
   run()
   walk()
   crawl()
-  if tired then return sleep().
-  race().
+  if tired then return sleep()
+  race()
 
 # Conditional assignment:
 good ||= evil
@@ -81,22 +81,22 @@ try
   dogs_and_cats_living_together()
   throw "up"
 catch error
-  print( error )
+  print(error)
 finally
-  clean_up().
+  clean_up()
 
-try all_hell_breaks_loose() catch error print(error) finally clean_up().
+try all_hell_breaks_loose() catch error then print(error) finally clean_up()
 
 # While loops, break and continue.
 while demand > supply
   sell()
-  restock().
+  restock()
 
-while supply > demand then buy().
+while supply > demand then buy()
 
 while true
   break if broken
-  continue if continuing.
+  continue if continuing
 
 # Unary operators.
 !!true
@@ -105,30 +105,30 @@ while true
 a: 5
 change_a_and_set_b: =>
   a: 10
-  b: 15.
+  b: 15
 b: 20
 
 # Array comprehensions.
-supper: food.capitalize() for food in ['toast', 'cheese', 'wine'].
+supper: food.capitalize() for food in ['toast', 'cheese', 'wine']
 
-drink(bottle) for bottle, i in ['soda', 'wine', 'lemonade'] if even(i).
+drink(bottle) for bottle, i in ['soda', 'wine', 'lemonade'] when even(i)
 
 # Switch statements ("else" serves as a default).
 activity: switch day
-when "Tuesday"   then eat_breakfast()
-when "Sunday"    then go_to_church()
-when "Saturday"  then go_to_the_park()
-when "Wednesday"
-  if day is bingo_day
-    go_to_bingo()
-  else
-    eat_breakfast()
-    go_to_work()
-    eat_dinner().
-else go_to_work().
+  when "Tuesday"   then eat_breakfast()
+  when "Sunday"    then go_to_church()
+  when "Saturday"  then go_to_the_park()
+  when "Wednesday"
+    if day is bingo_day
+      go_to_bingo()
+    else
+      eat_breakfast()
+      go_to_work()
+      eat_dinner()
+  else go_to_work()
 
 # Semicolons can optionally be used instead of newlines.
-wednesday: => eat_breakfast(); go_to_work(); eat_dinner(); .
+wednesday: => eat_breakfast(); go_to_work(); eat_dinner()
 
 # Array slice literals.
 zero_to_nine: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -140,21 +140,21 @@ sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna
 aliquam erat volutpat. Ut wisi enim ad."
 
 # Inheritance and calling super.
-Animal: => .
+Animal: =>
 Animal.prototype.move: meters =>
-  alert(this.name + " moved " + meters + "m.").
+  alert(this.name + " moved " + meters + "m.")
 
-Snake: name => this.name: name.
+Snake: name => this.name: name
 Snake extends Animal
 Snake.prototype.move: =>
   alert('Slithering...')
-  super(5).
+  super(5)
 
 Horse: name => this.name: name.
 Horse extends Animal
 Horse.prototype.move: =>
   alert('Galloping...')
-  super(45).
+  super(45)
 
 sam: new Snake("Sammy the Snake")
 tom: new Horse("Tommy the Horse")

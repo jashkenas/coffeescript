@@ -48,7 +48,7 @@ module CoffeeScript
     # Single-line flavors of block expressions that have unclosed endings.
     # The grammar can't disambiguate them, so we insert the implicit indentation.
     SINGLE_LINERS  = [:ELSE, "=>", :TRY, :FINALLY, :THEN]
-    SINGLE_CLOSERS = ["\n", :CATCH, :FINALLY, :ELSE, :OUTDENT]
+    SINGLE_CLOSERS = ["\n", ")", :CATCH, :FINALLY, :ELSE, :OUTDENT]
 
     # The inverse mappings of token pairs we're trying to fix up.
     INVERSES = {:INDENT => :OUTDENT, :OUTDENT => :INDENT, '(' => ')', ')' => '('}
@@ -175,7 +175,6 @@ module CoffeeScript
     # Use a trailing \ to escape newlines.
     def newline_token(newlines)
       lines = newlines.scan(MULTILINER).length
-      @line += lines
       token("\n", "\n") unless ["\n", "\\"].include?(last_value)
       @tokens.pop if last_value == "\\"
       true
