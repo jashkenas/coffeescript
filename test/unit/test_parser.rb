@@ -78,9 +78,9 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_no_wrapping_parens_around_statements
-    @par.parse("try thing() catch error fail()").compile
+    @par.parse("try thing() catch error then fail()").compile
     assert_raises(SyntaxError) do
-      @par.parse("(try thing() catch error fail())").compile
+      @par.parse("(try thing() catch error then fail())").compile
     end
   end
 
