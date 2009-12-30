@@ -80,6 +80,7 @@ rule
 
   Block:
     INDENT Expressions OUTDENT        { result = val[1] }
+  | INDENT OUTDENT                    { result = Expressions.new([]) }
   ;
 
   # All tokens that can terminate an expression.
@@ -186,10 +187,7 @@ rule
   # Function definition.
   Code:
     ParamList "=>" Block              { result = CodeNode.new(val[0], val[2]) }
-  | ParamList "=>" Expression         { result = CodeNode.new(val[0], Expressions.new([val[2]])) }
   | "=>" Block                        { result = CodeNode.new([], val[1]) }
-  | "=>" Expression                   { result = CodeNode.new([], Expressions.new([val[1]])) }
-  | "=>"                              { result = CodeNode.new([], Expressions.new([])) }
   ;
 
   # The parameters to a function definition.
@@ -306,7 +304,7 @@ rule
 
   # The while loop. (there is no do..while).
   While:
-    WHILE Expression Block        { result = WhileNode.new(val[1], val[2]) }
+    WHILE Expression Block            { result = WhileNode.new(val[1], val[2]) }
   ;
 
   # Array comprehensions, including guard and current index.
@@ -325,9 +323,9 @@ rule
 
   # The source of the array comprehension can optionally be filtered.
   ForSource:
-    IN Expression                 { result = [val[1]] }
+    IN Expression                     { result = [val[1]] }
   | IN Expression
-    WHEN Expression                  { result = [val[1], val[3]] }
+    WHEN Expression                   { result = [val[1], val[3]] }
   ;
 
   # Switch/When blocks.
@@ -336,8 +334,6 @@ rule
       Whens OUTDENT                   { result = val[3].rewrite_condition(val[1]) }
   | SWITCH Expression INDENT
       Whens ELSE Block OUTDENT        { result = val[3].rewrite_condition(val[1]).add_else(val[5]) }
-  | SWITCH Expression INDENT
-      Whens ELSE Expression OUTDENT   { result = val[3].rewrite_condition(val[1]).add_else(val[5]) }
   ;
 
   # The inner list of whens.
@@ -387,8 +383,8 @@ rule
   # The full complement of if blocks, including postfix one-liner ifs and unlesses.
   If:
     IfBlock IfEnd                     { result = val[0].add_else(val[1]) }
-  | Expression IF Expression        { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true}) }
-  | Expression UNLESS Expression  { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true, :invert => true}) }
+  | Expression IF Expression          { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true}) }
+  | Expression UNLESS Expression      { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true, :invert => true}) }
   ;
 
 end
