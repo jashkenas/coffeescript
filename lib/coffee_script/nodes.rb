@@ -464,13 +464,20 @@ module CoffeeScript
       @properties = properties
     end
 
+    # All the mucking about with commas is to make sure that CommentNodes and
+    # AssignNodes get interleaved correctly, with no trailing commas or
+    # commas affixed to comments. TODO: Extract this and add it to ArrayNode.
     def compile(o={})
       o = super(o)
       indent = o[:indent]
       o[:indent] += TAB
+      joins = Hash.new("\n")
+      non_comments = @properties.select {|p| !p.is_a?(CommentNode) }
+      non_comments.each {|p| joins[p] = p == non_comments.last ? "\n" : ",\n" }
       props = @properties.map { |prop|
-        joiner = prop == @properties.first ? '' : prop.is_a?(CommentNode) ? "\n" : ",\n"
-        joiner + o[:indent] + prop.compile(o)
+        join = joins[prop]
+        join = '' if prop == @properties.last
+        o[:indent] + prop.compile(o) + join
       }.join('')
       write("{\n#{props}\n#{indent}}")
     end
