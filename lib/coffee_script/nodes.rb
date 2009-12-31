@@ -469,8 +469,8 @@ module CoffeeScript
       indent = o[:indent]
       o[:indent] += TAB
       props = @properties.map { |prop|
-        joiner = prop == @properties.last ? '' : prop.is_a?(CommentNode) ? "\n" : ",\n"
-        o[:indent] + prop.compile(o) + joiner
+        joiner = prop == @properties.first ? '' : prop.is_a?(CommentNode) ? "\n" : ",\n"
+        joiner + o[:indent] + prop.compile(o)
       }.join('')
       write("{\n#{props}\n#{indent}}")
     end
