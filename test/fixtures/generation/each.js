@@ -14,7 +14,7 @@
         for (i in __a) {
           if (__a.hasOwnProperty(i)) {
             item = __a[i];
-            __b[i] = iterator.call(context, item, i, obj);
+            __b.push(iterator.call(context, item, i, obj));
           }
         }
         __b;
@@ -24,7 +24,7 @@
         for (__d in __c) {
           if (__c.hasOwnProperty(__d)) {
             key = __c[__d];
-            __e[__d] = iterator.call(context, obj[key], key, obj);
+            __e.push(iterator.call(context, obj[key], key, obj));
           }
         }
         __e;

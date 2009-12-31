@@ -574,8 +574,8 @@ module CoffeeScript
       body          = @body
       suffix        = ';'
       set_result    = "#{rvar} = [];\n#{o[:indent]}"
-      save_result   = "#{rvar}[#{index_var || ivar}] = "
       return_result = rvar
+      body = CallNode.new(ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [@body])
 
       if o[:return] || o[:assign]
         return_result = "#{o[:assign].compile(o)} = #{return_result}" if o[:assign]
@@ -583,9 +583,7 @@ module CoffeeScript
         o.delete(:assign)
         o.delete(:return)
         if @filter
-          body = CallNode.new(ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [@body])
           body = IfNode.new(@filter, body, nil, :statement => true)
-          save_result = ''
           suffix = ''
         end
       elsif @filter
@@ -594,7 +592,7 @@ module CoffeeScript
 
       return_result = "\n#{o[:indent]}#{return_result};"
       body = body.compile(o.merge(:indent => body_dent))
-      write("#{source_part}#{set_result}for (#{for_part}) {#{pre_cond}#{var_part}\n#{body_dent}#{save_result}#{body}#{suffix}#{post_cond}\n#{o[:indent]}}#{return_result}")
+      write("#{source_part}#{set_result}for (#{for_part}) {#{pre_cond}#{var_part}\n#{body_dent}#{body}#{suffix}#{post_cond}\n#{o[:indent]}}#{return_result}")
     end
   end
 
