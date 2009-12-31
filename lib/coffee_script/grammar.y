@@ -294,7 +294,7 @@ rule
 
   # Parenthetical expressions.
   Parenthetical:
-    "(" Expression ")"                { result = ParentheticalNode.new(val[1]) }
+    "(" Expression ")"                { result = ParentheticalNode.new(val[1], val[0].line) }
   ;
 
   # The while loop. (there is no do..while).

@@ -46,7 +46,8 @@ _.each: obj, iterator, context =>
   index: 0
   try
     return obj.forEach(iterator, context) if obj.forEach
-    (return iterator.call(context, item, i, obj) for item, i in obj) if _.isArray(obj) or _.isArguments(obj)
+    if _.isArray(obj) or _.isArguments(obj)
+      return iterator.call(context, item, i, obj) for item, i in obj 
     iterator.call(context, obj[key], key, obj) for key in _.keys(obj)
   catch e
     throw e if e isnt breaker
