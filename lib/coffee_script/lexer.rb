@@ -51,7 +51,7 @@ module CoffeeScript
       end
       puts "original stream: #{@tokens.inspect}" if ENV['VERBOSE']
       close_indentation
-      Rewriter.new(self).rewrite(@tokens)
+      Rewriter.new.rewrite(@tokens)
     end
 
     # At every position, run this list of match attempts, short-circuiting if
