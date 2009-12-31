@@ -403,9 +403,9 @@ _.isEqual: a, b =>
   return true if _.isNaN(a) and _.isNaN(b)
   # Compare regular expressions.
   if _.isRegExp(a) and _.isRegExp(b)
-    return a.source     is b.source and \
-           a.global     is b.global and \
-           a.ignoreCase is b.ignoreCase and \
+    return a.source     is b.source and
+           a.global     is b.global and
+           a.ignoreCase is b.ignoreCase and
            a.multiline  is b.multiline
   # If a is not an object by this point, we can't handle it.
   return false if atype isnt 'object'
