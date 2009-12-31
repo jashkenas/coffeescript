@@ -24,11 +24,11 @@ module CoffeeScript
     JS         = /\A(``|`(.*?)[^\\]`)/m
     OPERATOR   = /\A([+\*&|\/\-%=<>:!]+)/
     WHITESPACE = /\A([ \t]+)/
-    COMMENT    = /\A(((\n[ \t]*)?#.*$)+)/
+    COMMENT    = /\A(((\n?[ \t]*)?#.*$)+)/
     CODE       = /\A(=>)/
     REGEX      = /\A(\/(.*?)[^\\]\/[imgy]{0,4})/
-    MULTI_DENT = /\A((\n([ \t]*(?=\S))?)+)/
-    LAST_DENT  = /\n+([ \t]*)\Z/
+    MULTI_DENT = /\A((\n([ \t]*)?)+)/
+    LAST_DENT  = /\n([ \t]*)/
 
     # Token cleaning regexes.
     JS_CLEANER = /(\A`|`\Z)/
@@ -156,7 +156,7 @@ module CoffeeScript
       return false unless indent = @chunk[MULTI_DENT, 1]
       @line += indent.scan(MULTILINER).size
       @i += indent.size
-      size = indent[LAST_DENT, 1].length
+      size = indent.scan(LAST_DENT).last.last.length
       return newline_token(indent) if size == @indent
       if size > @indent
         token(:INDENT, size - @indent)
