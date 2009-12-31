@@ -94,21 +94,21 @@ module CoffeeScript
         if last?(node) && (o[:return] || o[:assign])
           if o[:return]
             if node.statement? || node.custom_return?
-              "#{o[:indent]}#{node.compile(o)}#{node.line_ending}"
+              "#{node.compile(o)}#{node.line_ending}"
             else
               o.delete(:return)
               "#{o[:indent]}return #{node.compile(o)}#{node.line_ending}"
             end
           elsif o[:assign]
             if node.statement? || node.custom_assign?
-              "#{o[:indent]}#{node.compile(o)}#{node.line_ending}"
+              "#{node.compile(o)}#{node.line_ending}"
             else
               "#{o[:indent]}#{AssignNode.new(o[:assign], node).compile(o)};"
             end
           end
         else
           o.delete(:return) and o.delete(:assign)
-          indent = node.statement? ? '' : o[:indent]
+          indent = node.unwrap.statement? ? '' : o[:indent]
           "#{indent}#{node.compile(o)}#{node.line_ending}"
         end
       end
@@ -140,7 +140,8 @@ module CoffeeScript
 
     def compile(o={})
       o = super(o)
-      write(@value.to_s)
+      indent = statement? ? o[:indent] : ''
+      write(indent + @value.to_s)
     end
   end
 
@@ -163,7 +164,7 @@ module CoffeeScript
       o = super(o)
       return write(@expression.compile(o.merge(:return => true))) if @expression.custom_return?
       compiled = @expression.compile(o)
-      write(@expression.statement? ? "#{compiled}\n#{indent}return null" : "return #{compiled}")
+      write(@expression.statement? ? "#{compiled}\n#{o[:indent]}return null" : "#{o[:indent]}return #{compiled}")
     end
   end
 
@@ -530,7 +531,7 @@ module CoffeeScript
       o.delete(:return)
       indent = o[:indent] + TAB
       cond = @condition.compile(o)
-      write("while (#{cond}) {\n#{@body.compile(o.merge(:indent => indent))}\n#{o[:indent]}}")
+      write("#{o[:indent]}while (#{cond}) {\n#{@body.compile(o.merge(:indent => indent))}\n#{o[:indent]}}")
     end
   end
 
@@ -572,7 +573,7 @@ module CoffeeScript
       else
         index_var   = nil
         body_dent   = o[:indent] + TAB + TAB
-        source_part = "#{svar} = #{@source.compile(o)};\n#{o[:indent]}"
+        source_part = "#{o[:indent]}#{svar} = #{@source.compile(o)};\n#{o[:indent]}"
         for_part    = "#{ivar} in #{svar}"
         pre_cond    = "\n#{o[:indent] + TAB}if (#{svar}.hasOwnProperty(#{ivar})) {"
         var_part    = "\n#{body_dent}#{@name} = #{svar}[#{ivar}];"
@@ -593,7 +594,7 @@ module CoffeeScript
         o.delete(:return)
         body = IfNode.new(@filter, body, nil, :statement => true) if @filter
       elsif @filter
-        body = IfNode.new(@filter, @body)
+        body = Expressions.wrap(IfNode.new(@filter, @body))
       end
 
       return_result = "\n#{o[:indent]}#{return_result};"
@@ -625,7 +626,7 @@ module CoffeeScript
       error_part = @error ? " (#{@error}) " : ' '
       catch_part = @recovery &&  " catch#{error_part}{\n#{@recovery.compile(o)}\n#{indent}}"
       finally_part = @finally && " finally {\n#{@finally.compile(o.merge(:assign => nil, :return => nil))}\n#{indent}}"
-      write("try {\n#{@try.compile(o)}\n#{indent}}#{catch_part}#{finally_part}")
+      write("#{indent}try {\n#{@try.compile(o)}\n#{indent}}#{catch_part}#{finally_part}")
     end
   end
 
@@ -641,7 +642,7 @@ module CoffeeScript
 
     def compile(o={})
       o = super(o)
-      write("throw #{@expression.compile(o)}")
+      write("#{o[:indent]}throw #{@expression.compile(o)}")
     end
   end
 
@@ -748,14 +749,16 @@ module CoffeeScript
     # force sub-else bodies into statement form.
     def compile_statement(o)
       indent = o[:indent]
+      child  = o.delete(:chain_child)
       cond_o = o.dup
       cond_o.delete(:assign)
       cond_o.delete(:return)
       o[:indent] += TAB
-      if_part   = "if (#{@condition.compile(cond_o)}) {\n#{Expressions.wrap(@body).compile(o)}\n#{indent}}"
+      if_dent = child ? '' : indent
+      if_part = "#{if_dent}if (#{@condition.compile(cond_o)}) {\n#{Expressions.wrap(@body).compile(o)}\n#{indent}}"
       return if_part unless @else_body
       else_part = chain? ?
-        " else #{@else_body.compile(o.merge(:indent => indent))}" :
+        " else #{@else_body.compile(o.merge(:indent => indent, :chain_child => true))}" :
         " else {\n#{Expressions.wrap(@else_body).compile(o)}\n#{indent}}"
       if_part + else_part
     end
