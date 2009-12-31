@@ -156,6 +156,10 @@ module CoffeeScript
       return false unless indent = @chunk[MULTI_DENT, 1]
       @line += indent.scan(MULTILINER).size
       @i += indent.size
+      if last_value == "\\"
+        @tokens.pop
+        return true
+      end
       size = indent.scan(LAST_DENT).last.last.length
       return newline_token(indent) if size == @indent
       if size > @indent
@@ -185,9 +189,7 @@ module CoffeeScript
     # Multiple newlines get merged together.
     # Use a trailing \ to escape newlines.
     def newline_token(newlines)
-      lines = newlines.scan(MULTILINER).length
-      token("\n", "\n") unless ["\n", "\\"].include?(last_value)
-      @tokens.pop if last_value == "\\"
+      token("\n", "\n") unless last_value == "\n"
       true
     end
 
