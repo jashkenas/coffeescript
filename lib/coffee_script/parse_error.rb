@@ -13,7 +13,8 @@ module CoffeeScript
       line      = @value.respond_to?(:line) ? @value.line : "END"
       line_part = "line #{line}:"
       id_part   = @token_id != @value.inspect ? ", unexpected #{@token_id.downcase}" : ""
-      "#{line_part} syntax error for '#{@value.to_s}'#{id_part}"
+      val_part  = ['INDENT', 'OUTDENT'].include?(@token_id) ? '' : " for '#{@value.to_s}'" 
+      "#{line_part} syntax error#{val_part}#{id_part}"
     end
     alias_method :inspect, :message
 
