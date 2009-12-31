@@ -2,7 +2,7 @@
 
 # ['toast', 'cheese', 'wine'].each { |food| print food.capitalize }
 
-['toast', 'wine', 'cheese'].each( food => print(food.capitalize()). )
+['toast', 'wine', 'cheese'].each(food => print(food.capitalize()))
 
 
 
@@ -14,10 +14,10 @@
 # end
 
 LotteryTicket: {
-  get_picks:    => this.picks.
-  set_picks:    nums => this.picks: nums.
-  get_purchase: => this.purchase.
-  set_purchase: amount => this.purchase: amount.
+  get_picks:    => this.picks
+  set_picks:    nums => this.picks: nums
+  get_purchase: => this.purchase
+  set_purchase: amount => this.purchase: amount
 }
 
 
@@ -33,8 +33,8 @@ LotteryTicket: {
 
 WishScanner: {
   scan_for_a_wish: =>
-    wish: this.read().detect( thought => thought.index('wish: ') is 0. )
-    wish.replace('wish: ', '').
+    wish: this.read().detect(thought => thought.index('wish: ') is 0)
+    wish.replace('wish: ', '')
 }
 
 
@@ -79,28 +79,28 @@ Creature : {
 
   # This method applies a hit taken during a fight.
   hit: damage =>
-    p_up: Math.rand( this.charisma )
+    p_up: Math.rand(this.charisma)
     if p_up % 9 is 7
       this.life += p_up / 4
-      puts( "[" + this.name + " magick powers up " + p_up + "!]" ).
+      puts("[" + this.name + " magick powers up " + p_up + "!]")
     this.life -= damage
-    if this.life <= 0 then puts( "[" + this.name + " has died.]" )..
+    if this.life <= 0 then puts("[" + this.name + " has died.]")
 
   # This method takes one turn in a fight.
   fight: enemy, weapon =>
-    if this.life <= 0 then return puts( "[" + this.name + "is too dead to fight!]" ).
+    if this.life <= 0 then return puts("[" + this.name + "is too dead to fight!]")
 
     # Attack the opponent.
-    your_hit: Math.rand( this.strength + weapon )
-    puts( "[You hit with " + your_hit + "points of damage!]" )
-    enemy.hit( your_hit )
+    your_hit: Math.rand(this.strength + weapon)
+    puts("[You hit with " + your_hit + "points of damage!]")
+    enemy.hit(your_hit)
 
     # Retaliation.
-    puts( enemy )
+    puts(enemy)
     if enemy.life > 0
-      enemy_hit: Math.rand( enemy.strength + enemy.weapon )
-      puts( "[Your enemy hit with " + enemy_hit + "points of damage!]" )
-      this.hit( enemy_hit )..
+      enemy_hit: Math.rand(enemy.strength + enemy.weapon)
+      puts("[Your enemy hit with " + enemy_hit + "points of damage!]")
+      this.hit(enemy_hit)
 
 }
 
@@ -123,12 +123,12 @@ Creature : {
 # Get evil idea and swap in code words
 print("Enter your new idea: ")
 idea: gets()
-code_words.each( real, code => idea.replace(real, code). )
+code_words.each(real, code => idea.replace(real, code))
 
 # Save the jibberish to a new file
 print("File encoded. Please enter a name for this idea: ")
 idea_name: gets().strip()
-File.open("idea-" + idea_name + '.txt', 'w', file => file.write(idea). )
+File.open("idea-" + idea_name + '.txt', 'w', file => file.write(idea))
 
 
 
@@ -149,5 +149,5 @@ wipe_mutterings_from: sentence =>
   while sentence.indexOf('(') >= 0
     open:     sentence.indexOf('(') - 1
     close:    sentence.indexOf(')') + 1
-    sentence: sentence[0..open] + sentence[close..sentence.length].
-    sentence.
+    sentence: sentence[0..open] + sentence[close..sentence.length]
+    sentence
