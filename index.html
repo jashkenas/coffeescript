@@ -65,28 +65,28 @@
 
     <p><i>CoffeeScript on the left, compiled JavaScript output on the right.</i></p>
 
-    <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> Assignment:</span>
-number<span class="Keyword">:</span> <span class="Number">42</span>
-opposite_day<span class="Keyword">:</span> <span class="BuiltInConstant">true</span>
+    <div class='code'><pre class="idle"># Assignment:
+number: <span class="Number">42</span>
+opposite_day: <span class="BuiltInConstant">true</span>
 
-<span class="Comment"><span class="Comment">#</span> Conditions:</span>
-number<span class="Keyword">:</span> <span class="Keyword">-</span><span class="Number">42</span> <span class="Keyword">if</span> opposite_day
+# Conditions:
+number: <span class="Keyword">-</span><span class="Number">42</span> <span class="Keyword">if</span> opposite_day
 
-<span class="Comment"><span class="Comment">#</span> Functions:</span>
-<span class="FunctionName">square</span><span class="Keyword">:</span> <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> x <span class="Keyword">*</span> x.
+# Functions:
+square: x <span class="Keyword">=</span><span class="Keyword">&gt;</span> x <span class="Keyword">*</span> x
 
-<span class="Comment"><span class="Comment">#</span> Arrays:</span>
-list<span class="Keyword">:</span> [<span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>]
+# Arrays:
+list: [<span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>]
 
-<span class="Comment"><span class="Comment">#</span> Objects:</span>
-math<span class="Keyword">:</span> {
-  root<span class="Keyword">:</span>   Math.sqrt
-  square<span class="Keyword">:</span> square
-  <span class="FunctionName">cube</span><span class="Keyword">:</span>   <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> x <span class="Keyword">*</span> square(x).
+# Objects:
+math: {
+  root:   <span class="LibraryClassType">Math</span>.sqrt
+  square: square
+  cube:   x <span class="Keyword">=</span><span class="Keyword">&gt;</span> x <span class="Keyword">*</span> square(x)
 }
 
-<span class="Comment"><span class="Comment">#</span> Array comprehensions:</span>
-cubed_list<span class="Keyword">:</span> math.cube(num) <span class="Keyword">for</span> num <span class="Keyword">in</span> list.
+# <span class="LibraryClassType">Array</span> comprehensions:
+cubed_list: math.cube(num) <span class="Keyword">for</span> num <span class="Keyword">in</span> list
 </pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, cubed_list, list, math, num, number, opposite_day, square;
 <span class="Comment"><span class="Comment">//</span> Assignment:</span>
 number <span class="Keyword">=</span> <span class="Number">42</span>;
@@ -96,7 +96,7 @@ opposite_day <span class="Keyword">=</span> <span class="BuiltInConstant">true</
   number <span class="Keyword">=</span> <span class="Keyword">-</span><span class="Number">42</span>;
 }
 <span class="Comment"><span class="Comment">//</span> Functions:</span>
-<span class="FunctionName">square</span> = <span class="Storage">function</span>(<span class="FunctionArgument">x</span>) {
+square <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">square</span>(<span class="FunctionArgument">x</span>) {
   <span class="Keyword">return</span> x <span class="Keyword">*</span> x;
 };
 <span class="Comment"><span class="Comment">//</span> Arrays:</span>
@@ -105,7 +105,7 @@ list <span class="Keyword">=</span> [<span class="Number">1</span>, <span class=
 math <span class="Keyword">=</span> {
   root: <span class="LibraryClassType">Math</span>.sqrt,
   square: square,
-  <span class="FunctionName">cube</span>: <span class="Storage">function</span>(<span class="FunctionArgument">x</span>) {
+  cube: <span class="Storage">function</span> <span class="FunctionName">cube</span>(<span class="FunctionArgument">x</span>) {
     <span class="Keyword">return</span> x <span class="Keyword">*</span> square(x);
   }
 };
@@ -126,7 +126,7 @@ if (opposite_day) {
   number = -42;
 }
 // Functions:
-square = function(x) {
+square = function square(x) {
   return x * x;
 };
 // Arrays:
@@ -135,7 +135,7 @@ list = [1, 2, 3, 4, 5];
 math = {
   root: Math.sqrt,
   square: square,
-  cube: function(x) {
+  cube: function cube(x) {
     return x * square(x);
   }
 };
@@ -290,20 +290,20 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       Functions are defined by a list of parameters, an arrow, and the
       function body. The empty function looks like this: <tt>=>.</tt>
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">square</span><span class="Keyword">:</span> <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> x <span class="Keyword">*</span> x.
-<span class="FunctionName">cube</span><span class="Keyword">:</span>   <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> square(x) <span class="Keyword">*</span> x.
+    <div class='code'><pre class="idle">square: x <span class="Keyword">=</span><span class="Keyword">&gt;</span> x <span class="Keyword">*</span> x
+cube:   x <span class="Keyword">=</span><span class="Keyword">&gt;</span> square(x) <span class="Keyword">*</span> x
 </pre><pre class="idle"><span class="Storage">var</span> cube, square;
-<span class="FunctionName">square</span> = <span class="Storage">function</span>(<span class="FunctionArgument">x</span>) {
+square <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">square</span>(<span class="FunctionArgument">x</span>) {
   <span class="Keyword">return</span> x <span class="Keyword">*</span> x;
 };
-<span class="FunctionName">cube</span> = <span class="Storage">function</span>(<span class="FunctionArgument">x</span>) {
+cube <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">cube</span>(<span class="FunctionArgument">x</span>) {
   <span class="Keyword">return</span> square(x) <span class="Keyword">*</span> x;
 };
 </pre><button onclick='javascript: var cube, square;
-square = function(x) {
+square = function square(x) {
   return x * x;
 };
-cube = function(x) {
+cube = function cube(x) {
   return square(x) * x;
 };
 ;alert(cube(5));'>run: cube(5)</button><br class='clear' /></div>
@@ -314,8 +314,8 @@ cube = function(x) {
       <a href="http://json.org">JSON</a>. Equal signs are only needed for
       mathy things.
     </p>
-    <div class='code'><pre class="idle">greeting<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Hello CoffeeScript<span class="String">&quot;</span></span>
-difficulty<span class="Keyword">:</span> <span class="Number">0.5</span>
+    <div class='code'><pre class="idle">greeting: <span class="String"><span class="String">&quot;</span>Hello CoffeeScript<span class="String">&quot;</span></span>
+difficulty: <span class="Number">0.5</span>
 </pre><pre class="idle"><span class="Storage">var</span> difficulty, greeting;
 greeting <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Hello CoffeeScript<span class="String">&quot;</span></span>;
 difficulty <span class="Keyword">=</span> <span class="Number">0.5</span>;
@@ -335,11 +335,11 @@ difficulty = 0.5;
       optional. In this way, assigning object properties looks the same as
       assigning local variables.
     </p>
-    <div class='code'><pre class="idle">song<span class="Keyword">:</span> [<span class="String"><span class="String">&quot;</span>do<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>re<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>mi<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>fa<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>so<span class="String">&quot;</span></span>]
-ages<span class="Keyword">:</span> {
-  max<span class="Keyword">:</span> <span class="Number">10</span>
-  ida<span class="Keyword">:</span> <span class="Number">9</span>
-  tim<span class="Keyword">:</span> <span class="Number">11</span>
+    <div class='code'><pre class="idle">song: [<span class="String"><span class="String">&quot;</span>do<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>re<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>mi<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>fa<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>so<span class="String">&quot;</span></span>]
+ages: {
+  max: <span class="Number">10</span>
+  ida: <span class="Number">9</span>
+  tim: <span class="Number">11</span>
 }
 </pre><pre class="idle"><span class="Storage">var</span> ages, song;
 song <span class="Keyword">=</span> [<span class="String"><span class="String">&quot;</span>do<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>re<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>mi<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>fa<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>so<span class="String">&quot;</span></span>];
@@ -363,14 +363,14 @@ ages = {
       are properly declared within lexical scope &mdash; you never need to write
       <tt>var</tt> yourself.
     </p>
-    <div class='code'><pre class="idle">num<span class="Keyword">:</span> <span class="Number">1</span>
-<span class="FunctionName">change_numbers</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
-  num<span class="Keyword">:</span> <span class="Number">2</span>
-  new_num<span class="Keyword">:</span> <span class="Number">3</span>.
-new_num<span class="Keyword">:</span> change_numbers()
+    <div class='code'><pre class="idle">num: <span class="Number">1</span>
+change_numbers: <span class="Keyword">=</span><span class="Keyword">&gt;</span>
+  num: <span class="Number">2</span>
+  new_num: <span class="Number">3</span>
+new_num: change_numbers()
 </pre><pre class="idle"><span class="Storage">var</span> change_numbers, new_num, num;
 num <span class="Keyword">=</span> <span class="Number">1</span>;
-<span class="FunctionName">change_numbers</span> = <span class="Storage">function</span>() {
+change_numbers <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">change_numbers</span>() {
   <span class="Storage">var</span> new_num;
   num <span class="Keyword">=</span> <span class="Number">2</span>;
   <span class="Keyword">return</span> (new_num <span class="Keyword">=</span> <span class="Number">3</span>);
@@ -378,7 +378,7 @@ num <span class="Keyword">=</span> <span class="Number">1</span>;
 new_num <span class="Keyword">=</span> change_numbers();
 </pre><button onclick='javascript: var change_numbers, new_num, num;
 num = 1;
-change_numbers = function() {
+change_numbers = function change_numbers() {
   var new_num;
   num = 2;
   return (new_num = 3);
@@ -410,13 +410,13 @@ new_num = change_numbers();
       CoffeeScript will compile <b>if</b> statements using the ternary operator
       when possible, to make it easier to use the result as an expression.
     </p>
-    <div class='code'><pre class="idle">mood<span class="Keyword">:</span> greatly_improved <span class="Keyword">if</span> singing
+    <div class='code'><pre class="idle">mood: greatly_improved <span class="Keyword">if</span> singing
 
-<span class="Keyword">if</span> happy <span class="Keyword">and</span> knows_it
+<span class="Keyword">if</span> happy and knows_it
   claps_hands()
-  cha_cha_cha().
+  cha_cha_cha()
 
-date<span class="Keyword">:</span> <span class="Keyword">if</span> friday <span class="Keyword">then</span> sue <span class="Keyword">else</span> jill.
+date: <span class="Keyword">if</span> friday then sue <span class="Keyword">else</span> jill
 
 expensive <span class="Keyword">||</span><span class="Keyword">=</span> do_the_math()
 </pre><pre class="idle"><span class="Storage">var</span> date, mood;
@@ -446,17 +446,17 @@ expensive <span class="Keyword">=</span> expensive <span class="Keyword">||</spa
       pushed down into each possible branch of execution, in the function
       below.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">grade</span><span class="Keyword">:</span> <span class="FunctionArgument">student</span> <span class="Storage">=&gt;</span>
+    <div class='code'><pre class="idle">grade: student <span class="Keyword">=</span><span class="Keyword">&gt;</span>
   <span class="Keyword">if</span> student.excellent_work
     <span class="String"><span class="String">&quot;</span>A+<span class="String">&quot;</span></span>
   <span class="Keyword">else</span> <span class="Keyword">if</span> student.okay_stuff
-    <span class="Keyword">if</span> student.tried_hard <span class="Keyword">then</span> <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span> <span class="Keyword">else</span> <span class="String"><span class="String">&quot;</span>B-<span class="String">&quot;</span></span>.
+    <span class="Keyword">if</span> student.tried_hard then <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span> <span class="Keyword">else</span> <span class="String"><span class="String">&quot;</span>B-<span class="String">&quot;</span></span>
   <span class="Keyword">else</span>
-    <span class="String"><span class="String">&quot;</span>C<span class="String">&quot;</span></span>..
+    <span class="String"><span class="String">&quot;</span>C<span class="String">&quot;</span></span>
 
-eldest<span class="Keyword">:</span> <span class="Keyword">if</span> <span class="Number">24</span> <span class="Keyword">&gt;</span> <span class="Number">21</span> <span class="Keyword">then</span> <span class="String"><span class="String">&quot;</span>Liz<span class="String">&quot;</span></span> <span class="Keyword">else</span> <span class="String"><span class="String">&quot;</span>Ike<span class="String">&quot;</span></span>.
+eldest: <span class="Keyword">if</span> <span class="Number">24</span> <span class="Keyword">&gt;</span> <span class="Number">21</span> then <span class="String"><span class="String">&quot;</span>Liz<span class="String">&quot;</span></span> <span class="Keyword">else</span> <span class="String"><span class="String">&quot;</span>Ike<span class="String">&quot;</span></span>
 </pre><pre class="idle"><span class="Storage">var</span> eldest, grade;
-<span class="FunctionName">grade</span> = <span class="Storage">function</span>(<span class="FunctionArgument">student</span>) {
+grade <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">grade</span>(<span class="FunctionArgument">student</span>) {
   <span class="Keyword">if</span> (student.excellent_work) {
     <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>A+<span class="String">&quot;</span></span>;
   } <span class="Keyword">else</span> <span class="Keyword">if</span> (student.okay_stuff) {
@@ -467,7 +467,7 @@ eldest<span class="Keyword">:</span> <span class="Keyword">if</span> <span class
 };
 eldest <span class="Keyword">=</span> <span class="Number">24</span> <span class="Keyword">&gt;</span> <span class="Number">21</span> ? <span class="String"><span class="String">&quot;</span>Liz<span class="String">&quot;</span></span> : <span class="String"><span class="String">&quot;</span>Ike<span class="String">&quot;</span></span>;
 </pre><button onclick='javascript: var eldest, grade;
-grade = function(student) {
+grade = function grade(student) {
   if (student.excellent_work) {
     return "A+";
   } else if (student.okay_stuff) {
@@ -486,7 +486,7 @@ eldest = 24 > 21 ? "Liz" : "Ike";
       current scope. This allows assignment to be used as a piece of an
       expression.
     </p>
-    <div class='code'><pre class="idle">six<span class="Keyword">:</span> (one<span class="Keyword">:</span> <span class="Number">1</span>) <span class="Keyword">+</span> (two<span class="Keyword">:</span> <span class="Number">2</span>) <span class="Keyword">+</span> (three<span class="Keyword">:</span> <span class="Number">3</span>)
+    <div class='code'><pre class="idle">six: (one: <span class="Number">1</span>) <span class="Keyword">+</span> (two: <span class="Number">2</span>) <span class="Keyword">+</span> (three: <span class="Number">3</span>)
 </pre><pre class="idle"><span class="Storage">var</span> one, six, three, two;
 six <span class="Keyword">=</span> (one <span class="Keyword">=</span> <span class="Number">1</span>) <span class="Keyword">+</span> (two <span class="Keyword">=</span> <span class="Number">2</span>) <span class="Keyword">+</span> (three <span class="Keyword">=</span> <span class="Number">3</span>);
 </pre><button onclick='javascript: var one, six, three, two;
@@ -521,13 +521,13 @@ six = (one = 1) + (two = 2) + (three = 3);
     <p>
       For single-line statements, <tt>unless</tt> can be used as the inverse of <tt>if</tt>.
     </p>
-    <div class='code'><pre class="idle">launch() <span class="Keyword">if</span> ignition <span class="Keyword">is</span> <span class="BuiltInConstant">on</span>
+    <div class='code'><pre class="idle">launch() <span class="Keyword">if</span> ignition is on
 
-volume<span class="Keyword">:</span> <span class="Number">10</span> <span class="Keyword">if</span> band <span class="Keyword">isnt</span> spinal_tap
+volume: <span class="Number">10</span> <span class="Keyword">if</span> band isnt spinal_tap
 
-let_the_wild_rumpus_begin() <span class="Keyword">unless</span> answer <span class="Keyword">is</span> <span class="BuiltInConstant">no</span>
+let_the_wild_rumpus_begin() unless answer is no
 
-<span class="Keyword">if</span> car.speed <span class="Keyword">&lt;</span> speed_limit <span class="Keyword">then</span> accelerate().
+<span class="Keyword">if</span> car.speed <span class="Keyword">&lt;</span> speed_limit then accelerate()
 </pre><pre class="idle"><span class="Storage">var</span> volume;
 <span class="Keyword">if</span> (ignition <span class="Keyword">===</span> <span class="BuiltInConstant">true</span>) {
   launch();
@@ -547,9 +547,9 @@ car.speed <span class="Keyword">&lt;</span> speed_limit ? accelerate() : <span c
     </p>
     <div class='code'><pre class="idle"><span class="Keyword">while</span> demand <span class="Keyword">&gt;</span> supply
   sell()
-  restock().
+  restock()
 
-<span class="Keyword">while</span> supply <span class="Keyword">&gt;</span> demand <span class="Keyword">then</span> buy().
+<span class="Keyword">while</span> supply <span class="Keyword">&gt;</span> demand then buy()
 </pre><pre class="idle"><span class="Keyword">while</span> (demand <span class="Keyword">&gt;</span> supply) {
   sell();
   restock();
@@ -574,11 +574,11 @@ car.speed <span class="Keyword">&lt;</span> speed_limit ? accelerate() : <span c
       and assigned. They should be able to handle most places where you otherwise
       would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>.
     </p>
-    <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> Eat lunch.</span>
-lunch<span class="Keyword">:</span> food.eat() <span class="Keyword">for</span> food <span class="Keyword">in</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>].
+    <div class='code'><pre class="idle"># Eat lunch.
+lunch: food.eat() <span class="Keyword">for</span> food <span class="Keyword">in</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>]
 
-<span class="Comment"><span class="Comment">#</span> Zebra-stripe a table.</span>
-highlight(row) <span class="Keyword">for</span> row, i <span class="Keyword">in</span> table <span class="Keyword">if</span> i <span class="Keyword">%</span> <span class="Number">2</span> <span class="Keyword">is</span> <span class="Number">0</span>.
+# Zebra<span class="Keyword">-</span>stripe a table.
+highlight(row) <span class="Keyword">for</span> row, i <span class="Keyword">in</span> table when i <span class="Keyword">%</span> <span class="Number">2</span> is <span class="Number">0</span>
 </pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, __e, __f, __g, __h, food, i, lunch, row;
 <span class="Comment"><span class="Comment">//</span> Eat lunch.</span>
 __a <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
@@ -613,11 +613,11 @@ __h;
       the slice, and the second is the index of the last one. Three dots signify
       a range that excludes the end.
     </p>
-    <div class='code'><pre class="idle">numbers<span class="Keyword">:</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>]
+    <div class='code'><pre class="idle">numbers: [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>]
 
-three_to_six<span class="Keyword">:</span> numbers[<span class="Number">3</span>..<span class="Number">6</span>]
+three_to_six: numbers[<span class="Number">3</span>..<span class="Number">6</span>]
 
-numbers_copy<span class="Keyword">:</span> numbers[<span class="Number">0</span>...numbers.length]
+numbers_copy: numbers[<span class="Number">0</span>...numbers.<span class="LibraryConstant">length</span>]
 
 </pre><pre class="idle"><span class="Storage">var</span> numbers, numbers_copy, three_to_six;
 numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
@@ -646,24 +646,24 @@ numbers_copy = numbers.slice(0, numbers.length);
       <tt>super()</tt> calls into calls against the immediate ancestor's
       method of the same name.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">Animal</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span> .
-<span class="FunctionName">Animal.prototype.move</span><span class="Keyword">:</span> <span class="FunctionArgument">meters</span> <span class="Storage">=&gt;</span>
-  alert(<span class="Variable">this</span>.name <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>).
+    <div class='code'><pre class="idle">Animal: <span class="Keyword">=</span><span class="Keyword">&gt;</span>
+Animal.<span class="LibraryConstant">prototype</span>.move: meters <span class="Keyword">=</span><span class="Keyword">&gt;</span>
+  <span class="LibraryFunction">alert</span>(<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>)
 
-<span class="FunctionName">Snake</span><span class="Keyword">:</span> <span class="FunctionArgument">name</span> <span class="Storage">=&gt;</span> <span class="Variable">this</span>.name<span class="Keyword">:</span> name.
-Snake <span class="Variable">extends</span> Animal
-<span class="FunctionName">Snake.prototype.move</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
-  alert(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>)
-  <span class="Variable">super</span>(<span class="Number">5</span>).
+Snake: name <span class="Keyword">=</span><span class="Keyword">&gt;</span> <span class="Variable">this</span>.<span class="LibraryConstant">name</span>: name
+Snake <span class="Storage">extends</span> Animal
+Snake.<span class="LibraryConstant">prototype</span>.move: <span class="Keyword">=</span><span class="Keyword">&gt;</span>
+  <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>)
+  <span class="Variable">super</span>(<span class="Number">5</span>)
 
-<span class="FunctionName">Horse</span><span class="Keyword">:</span> <span class="FunctionArgument">name</span> <span class="Storage">=&gt;</span> <span class="Variable">this</span>.name<span class="Keyword">:</span> name.
-Horse <span class="Variable">extends</span> Animal
-<span class="FunctionName">Horse.prototype.move</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
-  alert(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>)
-  <span class="Variable">super</span>(<span class="Number">45</span>).
+Horse: name <span class="Keyword">=</span><span class="Keyword">&gt;</span> <span class="Variable">this</span>.<span class="LibraryConstant">name</span>: name
+Horse <span class="Storage">extends</span> Animal
+Horse.<span class="LibraryConstant">prototype</span>.move: <span class="Keyword">=</span><span class="Keyword">&gt;</span>
+  <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>)
+  <span class="Variable">super</span>(<span class="Number">45</span>)
 
-sam<span class="Keyword">:</span> <span class="Keyword">new</span> <span class="TypeName">Snake</span>(<span class="String"><span class="String">&quot;</span>Sammy the Python<span class="String">&quot;</span></span>)
-tom<span class="Keyword">:</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span>(<span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>)
+sam: <span class="Keyword">new</span> <span class="TypeName">Snake</span>(<span class="String"><span class="String">&quot;</span>Sammy the Python<span class="String">&quot;</span></span>)
+tom: <span class="Keyword">new</span> <span class="TypeName">Horse</span>(<span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>)
 
 sam.move()
 tom.move()
@@ -672,28 +672,28 @@ tom.move()
 
 
 </pre><pre class="idle"><span class="Storage">var</span> Animal, Horse, Snake, sam, tom;
-<span class="FunctionName">Animal</span> = <span class="Storage">function</span>() {
+Animal <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Animal</span>() {
 };
-<span class="LibraryClassType">Animal</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>(<span class="FunctionArgument">meters</span>) {
+<span class="LibraryClassType">Animal</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span> <span class="FunctionName">move</span>(<span class="FunctionArgument">meters</span>) {
   <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>);
 };
-<span class="FunctionName">Snake</span> = <span class="Storage">function</span>(<span class="FunctionArgument">name</span>) {
+Snake <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Snake</span>(<span class="FunctionArgument">name</span>) {
   <span class="Keyword">return</span> (<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name);
 };
 Snake.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryConstant">prototype</span>;
 <span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">Animal</span>();
 <span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">constructor</span> = Snake;
-<span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>() {
+<span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span> <span class="FunctionName">move</span>() {
   <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>);
   <span class="Keyword">return</span> Snake.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">5</span>);
 };
-<span class="FunctionName">Horse</span> = <span class="Storage">function</span>(<span class="FunctionArgument">name</span>) {
+Horse <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Horse</span>(<span class="FunctionArgument">name</span>) {
   <span class="Keyword">return</span> (<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name);
 };
 Horse.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryConstant">prototype</span>;
 <span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">Animal</span>();
 <span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">constructor</span> = Horse;
-<span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>() {
+<span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span> <span class="FunctionName">move</span>() {
   <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>);
   <span class="Keyword">return</span> Horse.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">45</span>);
 };
@@ -702,28 +702,28 @@ tom <span class="Keyword">=</span> <span class="Keyword">new</span> <span class=
 sam.move();
 tom.move();
 </pre><button onclick='javascript: var Animal, Horse, Snake, sam, tom;
-Animal = function() {
+Animal = function Animal() {
 };
-Animal.prototype.move = function(meters) {
+Animal.prototype.move = function move(meters) {
   return alert(this.name + " moved " + meters + "m.");
 };
-Snake = function(name) {
+Snake = function Snake(name) {
   return (this.name = name);
 };
 Snake.__superClass__ = Animal.prototype;
 Snake.prototype = new Animal();
 Snake.prototype.constructor = Snake;
-Snake.prototype.move = function() {
+Snake.prototype.move = function move() {
   alert("Slithering...");
   return Snake.__superClass__.move.call(this, 5);
 };
-Horse = function(name) {
+Horse = function Horse(name) {
   return (this.name = name);
 };
 Horse.__superClass__ = Animal.prototype;
 Horse.prototype = new Animal();
 Horse.prototype.constructor = Horse;
-Horse.prototype.move = function() {
+Horse.prototype.move = function move() {
   alert("Galloping...");
   return Horse.__superClass__.move.call(this, 45);
 };
@@ -738,9 +738,9 @@ tom.move();
       If you ever need to interpolate literal JavaScript snippets, you can
       use backticks to pass JavaScript straight through.
     </p>
-    <div class='code'><pre class="idle">hi<span class="Keyword">:</span> <span class="String"><span class="String">`</span>function() {</span>
-<span class="String">  return [document.title, &quot;Hello JavaScript&quot;].join(&quot;: &quot;);</span>
-<span class="String">}<span class="String">`</span></span>
+    <div class='code'><pre class="idle">hi: `<span class="Storage">function</span>() {
+  <span class="Keyword">return</span> [<span class="LibraryClassType">document</span>.<span class="LibraryConstant">title</span>, <span class="String"><span class="String">&quot;</span>Hello JavaScript<span class="String">&quot;</span></span>].<span class="LibraryFunction">join</span>(<span class="String"><span class="String">&quot;</span>: <span class="String">&quot;</span></span>);
+}`
 
 
 </pre><pre class="idle"><span class="Storage">var</span> hi;
@@ -764,14 +764,14 @@ return [document.title, "Hello JavaScript"].join(": ");
       <tt>when</tt> clauses, <tt>else</tt> the default case.
     </p>
     <div class='code'><pre class="idle"><span class="Keyword">switch</span> day
-when <span class="String"><span class="String">&quot;</span>Tuesday<span class="String">&quot;</span></span>   <span class="Keyword">then</span> eat_breakfast()
-when <span class="String"><span class="String">&quot;</span>Wednesday<span class="String">&quot;</span></span> <span class="Keyword">then</span> go_to_the_park()
-when <span class="String"><span class="String">&quot;</span>Saturday<span class="String">&quot;</span></span>
-  <span class="Keyword">if</span> day <span class="Keyword">is</span> bingo_day
-    go_to_bingo()
-    go_dancing().
-when <span class="String"><span class="String">&quot;</span>Sunday<span class="String">&quot;</span></span>    <span class="Keyword">then</span> go_to_church()
-<span class="Keyword">else</span> go_to_work().
+  when <span class="String"><span class="String">&quot;</span>Tuesday<span class="String">&quot;</span></span>   then eat_breakfast()
+  when <span class="String"><span class="String">&quot;</span>Wednesday<span class="String">&quot;</span></span> then go_to_the_park()
+  when <span class="String"><span class="String">&quot;</span>Saturday<span class="String">&quot;</span></span>
+    <span class="Keyword">if</span> day is bingo_day
+      go_to_bingo()
+      go_dancing()
+  when <span class="String"><span class="String">&quot;</span>Sunday<span class="String">&quot;</span></span>    then go_to_church()
+  <span class="Keyword">else</span> go_to_work()
 </pre><pre class="idle"><span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Tuesday<span class="String">&quot;</span></span>) {
   eat_breakfast();
 } <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Wednesday<span class="String">&quot;</span></span>) {
@@ -797,9 +797,9 @@ when <span class="String"><span class="String">&quot;</span>Sunday<span class="S
   all_hell_breaks_loose()
   cats_and_dogs_living_together()
 <span class="Keyword">catch</span> error
-  print(error)
+  <span class="LibraryFunction">print</span>(error)
 <span class="Keyword">finally</span>
-  clean_up().
+  clean_up()
 </pre><pre class="idle"><span class="Keyword">try</span> {
   all_hell_breaks_loose();
   cats_and_dogs_living_together();
@@ -814,7 +814,7 @@ when <span class="String"><span class="String">&quot;</span>Sunday<span class="S
       <b class="header">Multiline Strings</b>
       Multiline strings are allowed in CoffeeScript.
     </p>
-    <div class='code'><pre class="idle">moby_dick<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago --</span>
+    <div class='code'><pre class="idle">moby_dick: <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago --</span>
 <span class="String">never mind how long precisely -- having little</span>
 <span class="String">or no money in my purse, and nothing particular</span>
 <span class="String">to interest me on shore, I thought I would sail</span>
