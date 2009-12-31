@@ -34,6 +34,7 @@ module CoffeeScript
     JS_CLEANER = /(\A`|`\Z)/
     MULTILINER = /\n/
     COMMENT_CLEANER = /(^\s*#|\n\s*$)/
+    NO_NEWLINE = /\A([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)\Z/
 
     # Assignment tokens.
     ASSIGN     = [':', '=']
@@ -157,10 +158,7 @@ module CoffeeScript
       return false unless indent = @chunk[MULTI_DENT, 1]
       @line += indent.scan(MULTILINER).size
       @i += indent.size
-      if last_value == "\\"
-        @tokens.pop
-        return true
-      end
+      return suppress_newlines(indent) if last_value.to_s.match(NO_NEWLINE) && last_value != "=>" 
       size = indent.scan(LAST_DENT).last.last.length
       return newline_token(indent) if size == @indent
       if size > @indent
@@ -191,6 +189,12 @@ module CoffeeScript
     # Use a trailing \ to escape newlines.
     def newline_token(newlines)
       token("\n", "\n") unless last_value == "\n"
+      true
+    end
+    
+    # Tokens to explicitly escape newlines are removed once their job is done.
+    def suppress_newlines(newlines)
+      @tokens.pop if last_value == "\\"
       true
     end
 
