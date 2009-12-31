@@ -74,7 +74,7 @@
       <a href="#contributing">Contributing</a><br />
       <a href="#change_log">Change Log</a><br />
     </p>
-    
+
     <h2 id="overview">Mini Overview</h2>
 
     <p><i>CoffeeScript on the left, compiled JavaScript output on the right.</i></p>
@@ -358,8 +358,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('array_comprehensions') %>
     <p>
-      If you're not iterating over an actual array, you can use a range to 
-      specify the start and end of an array comprehension: 
+      If you're not iterating over an actual array, you can use a range to
+      specify the start and end of an array comprehension:
       <tt>coundown(i) for i in [10..1].</tt>
     </p>
 
@@ -424,9 +424,9 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       Multiline strings are allowed in CoffeeScript.
     </p>
     <%= code_for('strings', 'moby_dick') %>
-    
+
     <h2 id="resources">Resources</h2>
-    
+
     <p>
       <a href="http://github.com/jashkenas/coffee-script/">Source Code</a><br />
       <a href="http://github.com/jashkenas/coffee-script/issues">Bugs and Feature Requests</a><br />
@@ -441,13 +441,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
 
     <ul>
       <li>
-        A JavaScript version of the compiler, perhaps using Alessandro Warth's
+        A CoffeeScript version of the compiler, perhaps using Alessandro Warth's
         <a href="http://tinlizzie.org/ometa/">OMeta</a>.
-      </li>
-      <li>
-        Ideas for alternate syntax to end blocks of expressions &mdash; the periods
-        can look a little weird with deeply nested structure. (There's now a
-        'whitespace' branch &mdash; help add significant whitespace over there.)
       </li>
       <li>
         Test cases for any syntax errors you encounter that you think CoffeeScript
@@ -469,19 +464,19 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </ul>
 
     <h2 id="change_log">Change Log</h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.1.6</b>
       Bugfix for running <tt>coffee --interactive</tt> and <tt>--run</tt>
-      from outside of the CoffeeScript directory. Bugfix for nested 
-      function/if-statements. 
+      from outside of the CoffeeScript directory. Bugfix for nested
+      function/if-statements.
     </p>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.1.5</b>
       Array slice literals and array comprehensions can now both take Ruby-style
-      ranges to specify the start and end. JavaScript variable declaration is 
-      now pushed up to the top of the scope, making all assignment statements into 
+      ranges to specify the start and end. JavaScript variable declaration is
+      now pushed up to the top of the scope, making all assignment statements into
       expressions. You can use <tt>\</tt> to escape newlines.
       The <tt>coffee-script</tt> command is now called <tt>coffee</tt>.
     </p>
