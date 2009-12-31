@@ -111,12 +111,15 @@ math <span class="Keyword">=</span> {
 };
 <span class="Comment"><span class="Comment">//</span> Array comprehensions:</span>
 __a <span class="Keyword">=</span> list;
-__d <span class="Keyword">=</span> [];
-<span class="Keyword">for</span> (__b<span class="Keyword">=</span><span class="Number">0</span>, __c<span class="Keyword">=</span>__a.<span class="LibraryConstant">length</span>; __b<span class="Keyword">&lt;</span>__c; __b<span class="Keyword">++</span>) {
-  num <span class="Keyword">=</span> __a[__b];
-  __d[__b] <span class="Keyword">=</span> math.cube(num);
+__c <span class="Keyword">=</span> [];
+<span class="Keyword">for</span> (__b <span class="Keyword">in</span> __a) {
+  <span class="Keyword">if</span> (__a.hasOwnProperty(__b)) {
+    num <span class="Keyword">=</span> __a[__b];
+    __d <span class="Keyword">=</span> math.cube(num);
+    __c.<span class="LibraryFunction">push</span>(__d);
+  }
 }
-cubed_list <span class="Keyword">=</span> __d;
+cubed_list <span class="Keyword">=</span> __c;
 </pre><button onclick='javascript: var __a, __b, __c, __d, cubed_list, list, math, num, number, opposite_day, square;
 // Assignment:
 number = 42;
@@ -141,12 +144,15 @@ math = {
 };
 // Array comprehensions:
 __a = list;
-__d = [];
-for (__b=0, __c=__a.length; __b<__c; __b++) {
-  num = __a[__b];
-  __d[__b] = math.cube(num);
+__c = [];
+for (__b in __a) {
+  if (__a.hasOwnProperty(__b)) {
+    num = __a[__b];
+    __d = math.cube(num);
+    __c.push(__d);
+  }
 }
-cubed_list = __d;
+cubed_list = __c;
 ;alert(cubed_list);'>run: cubed_list</button><br class='clear' /></div>
 
     <h2 id="installation">Installation and Usage</h2>
@@ -373,7 +379,7 @@ num <span class="Keyword">=</span> <span class="Number">1</span>;
 change_numbers <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">change_numbers</span>() {
   <span class="Storage">var</span> new_num;
   num <span class="Keyword">=</span> <span class="Number">2</span>;
-  <span class="Keyword">return</span> (new_num <span class="Keyword">=</span> <span class="Number">3</span>);
+<span class="Keyword">return</span> (new_num <span class="Keyword">=</span> <span class="Number">3</span>);
 };
 new_num <span class="Keyword">=</span> change_numbers();
 </pre><button onclick='javascript: var change_numbers, new_num, num;
@@ -381,7 +387,7 @@ num = 1;
 change_numbers = function change_numbers() {
   var new_num;
   num = 2;
-  return (new_num = 3);
+return (new_num = 3);
 };
 new_num = change_numbers();
 ;alert(new_num);'>run: new_num</button><br class='clear' /></div>
@@ -579,24 +585,28 @@ lunch<span class="Keyword">:</span> food.eat() <span class="Keyword">for</span> 
 
 <span class="Comment"><span class="Comment">#</span> Zebra-stripe a table.</span>
 highlight(row) <span class="Keyword">for</span> row, i <span class="Keyword">in</span> table <span class="Keyword">when</span> i <span class="Keyword">%</span> <span class="Number">2</span> <span class="Keyword">is</span> <span class="Number">0</span>
-</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, __e, __f, __g, __h, food, i, lunch, row;
+</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, __e, __f, __g, food, i, lunch, row;
 <span class="Comment"><span class="Comment">//</span> Eat lunch.</span>
 __a <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
-__d <span class="Keyword">=</span> [];
-<span class="Keyword">for</span> (__b<span class="Keyword">=</span><span class="Number">0</span>, __c<span class="Keyword">=</span>__a.<span class="LibraryConstant">length</span>; __b<span class="Keyword">&lt;</span>__c; __b<span class="Keyword">++</span>) {
-  food <span class="Keyword">=</span> __a[__b];
-  __d[__b] <span class="Keyword">=</span> food.eat();
+__c <span class="Keyword">=</span> [];
+<span class="Keyword">for</span> (__b <span class="Keyword">in</span> __a) {
+  <span class="Keyword">if</span> (__a.hasOwnProperty(__b)) {
+    food <span class="Keyword">=</span> __a[__b];
+    __d <span class="Keyword">=</span> food.eat();
+    __c.<span class="LibraryFunction">push</span>(__d);
+  }
 }
-lunch <span class="Keyword">=</span> __d;
+lunch <span class="Keyword">=</span> __c;
 <span class="Comment"><span class="Comment">//</span> Zebra-stripe a table.</span>
 __e <span class="Keyword">=</span> table;
-__h <span class="Keyword">=</span> [];
-<span class="Keyword">for</span> (__f<span class="Keyword">=</span><span class="Number">0</span>, __g<span class="Keyword">=</span>__e.<span class="LibraryConstant">length</span>; __f<span class="Keyword">&lt;</span>__g; __f<span class="Keyword">++</span>) {
-  row <span class="Keyword">=</span> __e[__f];
-  i <span class="Keyword">=</span> __f;
-  __h[__f] <span class="Keyword">=</span> i <span class="Keyword">%</span> <span class="Number">2</span> <span class="Keyword">===</span> <span class="Number">0</span> ? highlight(row) : <span class="BuiltInConstant">null</span>;
+__f <span class="Keyword">=</span> [];
+<span class="Keyword">for</span> (i <span class="Keyword">in</span> __e) {
+  <span class="Keyword">if</span> (__e.hasOwnProperty(i)) {
+    row <span class="Keyword">=</span> __e[i];
+    i <span class="Keyword">%</span> <span class="Number">2</span> <span class="Keyword">===</span> <span class="Number">0</span> ? highlight(row) : <span class="BuiltInConstant">null</span>;
+  }
 }
-__h;
+__f;
 </pre><br class='clear' /></div>
     <p>
       If you're not iterating over an actual array, you can use a range to
@@ -678,7 +688,7 @@ Animal <span class="Keyword">=</span> <span class="Storage">function</span> <spa
   <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>);
 };
 Snake <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Snake</span>(<span class="FunctionArgument">name</span>) {
-  <span class="Keyword">return</span> (<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name);
+<span class="Keyword">return</span> (<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name);
 };
 Snake.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryConstant">prototype</span>;
 <span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">Animal</span>();
@@ -688,7 +698,7 @@ Snake.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryC
   <span class="Keyword">return</span> Snake.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">5</span>);
 };
 Horse <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Horse</span>(<span class="FunctionArgument">name</span>) {
-  <span class="Keyword">return</span> (<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name);
+<span class="Keyword">return</span> (<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name);
 };
 Horse.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryConstant">prototype</span>;
 <span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">Animal</span>();
@@ -708,7 +718,7 @@ Animal.prototype.move = function move(meters) {
   return alert(this.name + " moved " + meters + "m.");
 };
 Snake = function Snake(name) {
-  return (this.name = name);
+return (this.name = name);
 };
 Snake.__superClass__ = Animal.prototype;
 Snake.prototype = new Animal();
@@ -718,7 +728,7 @@ Snake.prototype.move = function move() {
   return Snake.__superClass__.move.call(this, 5);
 };
 Horse = function Horse(name) {
-  return (this.name = name);
+return (this.name = name);
 };
 Horse.__superClass__ = Animal.prototype;
 Horse.prototype = new Animal();

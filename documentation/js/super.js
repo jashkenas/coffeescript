@@ -6,7 +6,7 @@
     return alert(this.name + " moved " + meters + "m.");
   };
   Snake = function Snake(name) {
-    return (this.name = name);
+return (this.name = name);
   };
   Snake.__superClass__ = Animal.prototype;
   Snake.prototype = new Animal();
@@ -16,7 +16,7 @@
     return Snake.__superClass__.move.call(this, 5);
   };
   Horse = function Horse(name) {
-    return (this.name = name);
+return (this.name = name);
   };
   Horse.__superClass__ = Animal.prototype;
   Horse.prototype = new Animal();

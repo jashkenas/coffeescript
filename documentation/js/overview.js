@@ -23,10 +23,13 @@
   };
   // Array comprehensions:
   __a = list;
-  __d = [];
-  for (__b=0, __c=__a.length; __b<__c; __b++) {
-    num = __a[__b];
-    __d[__b] = math.cube(num);
+  __c = [];
+  for (__b in __a) {
+    if (__a.hasOwnProperty(__b)) {
+      num = __a[__b];
+      __d = math.cube(num);
+      __c.push(__d);
+    }
   }
-  cubed_list = __d;
+  cubed_list = __c;
 })();
