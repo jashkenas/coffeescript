@@ -189,8 +189,6 @@ module CoffeeScript
   # Node for a function invocation. Takes care of converting super() calls into
   # calls against the prototype's function of the same name.
   class CallNode < Node
-    LEADING_DOT = /\A\./
-
     attr_reader :variable, :arguments
 
     def initialize(variable, arguments=[])
@@ -215,7 +213,7 @@ module CoffeeScript
     end
 
     def compile_super(args, o)
-      methname = o[:last_assign].sub(LEADING_DOT, '')
+      methname = o[:last_assign]
       arg_part = args.empty? ? '' : ", #{args}"
       "#{o[:proto_assign]}.__superClass__.#{methname}.call(this#{arg_part})"
     end
@@ -359,6 +357,7 @@ module CoffeeScript
   # Setting the value of a local variable, or the value of an object property.
   class AssignNode < Node
     PROTO_ASSIGN = /\A(\S+)\.prototype/
+    LEADING_DOT = /\A\./
 
     custom_return
 
@@ -375,9 +374,10 @@ module CoffeeScript
     def compile(o={})
       o = super(o)
       name      = @variable.compile(o)
-      last      = @variable.last.to_s
+      last      = @variable.last.to_s.sub(LEADING_DOT, '')
       proto     = name[PROTO_ASSIGN, 1]
       o         = o.merge(:assign => @variable, :last_assign => last, :proto_assign => proto)
+      o[:immediate_assign] = last if @value.is_a?(CodeNode)
       return write("#{name}: #{@value.compile(o)}") if @context == :object
       o[:scope].find(name) unless @variable.properties?
       return write(@value.compile(o)) if @value.custom_assign?
@@ -450,9 +450,11 @@ module CoffeeScript
       o[:indent] += TAB
       o.delete(:assign)
       o.delete(:no_wrap)
+      name = o.delete(:immediate_assign)
       @params.each {|id| o[:scope].parameter(id.to_s) }
       code = @body.compile(o, :code)
-      write("function(#{@params.join(', ')}) {\n#{code}\n#{indent}}")
+      name_part = name ? " #{name}" : ''
+      write("function#{name_part}(#{@params.join(', ')}) {\n#{code}\n#{indent}}")
     end
   end
 
