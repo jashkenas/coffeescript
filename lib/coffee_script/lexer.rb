@@ -190,15 +190,23 @@ module CoffeeScript
 
     # A source of ambiguity in our grammar was parameter lists in function
     # definitions (as opposed to argument lists in function calls). Tag
-    # parameter identifiers in order to avoid this.
+    # parameter identifiers in order to avoid this. Also, parameter lists can
+    # make use of splats.
     def tag_parameters
-      index = 0
+      i = 0
       loop do
-        tok = @tokens[index -= 1]
+        i -= 1
+        tok, prev = @tokens[i], @tokens[i - 1]
         return if !tok
         next if tok[0] == ','
         return if tok[0] != :IDENTIFIER
-        tok[0] = :PARAM
+        if prev && prev[0] == '*'
+          tok[0] = :SPLAT
+          @tokens.delete_at(i - 1)
+          i -= 1
+        else
+          tok[0] = :PARAM
+        end
       end
     end
 
