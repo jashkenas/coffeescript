@@ -77,6 +77,7 @@ module CoffeeScript
       end
       puts "original stream: #{@tokens.inspect}" if ENV['VERBOSE']
       close_indentation
+      adjust_comments
       remove_mid_expression_newlines
       move_commas_outside_outdents
       add_implicit_indentation
@@ -241,6 +242,24 @@ module CoffeeScript
       while i < @tokens.length
         yield(@tokens[i - 1], @tokens[i], @tokens[i + 1], i)
         i += 1
+      end
+    end
+
+    # Massage newlines and indentations so that comments don't have to be
+    # correctly indented, or appear on their own line.
+    def adjust_comments
+      scan_tokens do |prev, token, post, i|
+        next unless token[0] == :COMMENT
+        before, after = @tokens[i - 2], @tokens[i + 2]
+        if before && after &&
+            ((before[0] == :INDENT && after[0] == :OUTDENT) ||
+            (before[0] == :OUTDENT && after[0] == :INDENT)) &&
+            before[1] == after[1]
+          @tokens.delete_at(i + 2)
+          @tokens.delete_at(i - 2)
+        elsif !["\n", :INDENT, :OUTDENT].include?(prev[0])
+          @tokens.insert(i, ["\n", Value.new("\n", token[1].line)])
+        end
       end
     end
 
