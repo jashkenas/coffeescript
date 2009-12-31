@@ -325,10 +325,10 @@ module CoffeeScript
       @exclusive ? '>' : '>='
     end
 
-    def compile(o, fv, tv)
+    def compile(o, fv)
       fvv, tvv = @from.compile(o), @to.compile(o)
-      vars     = "#{fv}=#{fvv}, #{tv}=#{tvv}"
-      compare  = "(#{fvv} <= #{tvv} ? #{fv} #{less_operator} #{tv} : #{fv} #{greater_operator} #{tv})"
+      vars     = "#{fv}=#{fvv}"
+      compare  = "(#{fvv} <= #{tvv} ? #{fv} #{less_operator} #{tvv} : #{fv} #{greater_operator} #{tvv})"
       incr     = "(#{fvv} <= #{tvv} ? #{fv} += 1 : #{fv} -= 1)"
       "#{vars}; #{compare}; #{incr}"
     end
@@ -554,22 +554,22 @@ module CoffeeScript
       name_found    = scope.find(@name)
       index_found   = @index && scope.find(@index)
       svar          = scope.free_variable
-      ivar          = range ? name : scope.free_variable
-      lvar          = scope.free_variable
+      ivar          = range ? name : @index ? @index : scope.free_variable
       rvar          = scope.free_variable
-      index_name    = @index ? @index : nil
       if range
-        source_part = ''
-        var_part    = ''
-        index_part  = ''
+        body_dent   = o[:indent] + TAB
+        source_part, var_part = '', '', ''
+        pre_cond, post_cond = '', ''
         index_var   = scope.free_variable
-        for_part    = "#{index_var}=0, #{@source.compile(o, ivar, lvar)}, #{index_var}++"
+        for_part    = "#{index_var}=0, #{@source.compile(o, ivar)}, #{index_var}++"
       else
         index_var   = nil
+        body_dent   = o[:indent] + TAB + TAB
         source_part = "#{svar} = #{@source.compile(o)};\n#{o[:indent]}"
-        for_part    = "#{ivar}=0, #{lvar}=#{svar}.length; #{ivar}<#{lvar}; #{ivar}++"
-        var_part    = "\n#{o[:indent] + TAB}#{@name} = #{svar}[#{ivar}];"
-        index_part  = @index ? "\n#{o[:indent] + TAB}#{index_name} = #{ivar};" : ''
+        for_part    = "#{ivar} in #{svar}"
+        pre_cond    = "\n#{o[:indent] + TAB}if (#{svar}.hasOwnProperty(#{ivar})) {"
+        var_part    = "\n#{body_dent}#{@name} = #{svar}[#{ivar}];"
+        post_cond   = "\n#{o[:indent] + TAB}}"
       end
       body          = @body
       suffix        = ';'
@@ -593,9 +593,8 @@ module CoffeeScript
       end
 
       return_result = "\n#{o[:indent]}#{return_result};"
-      indent = o[:indent] + TAB
-      body = body.compile(o.merge(:indent => indent))
-      write("#{source_part}#{set_result}for (#{for_part}) {#{var_part}#{index_part}\n#{indent}#{save_result}#{body}#{suffix}\n#{o[:indent]}}#{return_result}")
+      body = body.compile(o.merge(:indent => body_dent))
+      write("#{source_part}#{set_result}for (#{for_part}) {#{pre_cond}#{var_part}\n#{body_dent}#{save_result}#{body}#{suffix}#{post_cond}\n#{o[:indent]}}#{return_result}")
     end
   end
 
@@ -694,7 +693,7 @@ module CoffeeScript
       @else_body ? @else_body << eb : @else_body = eb
       self
     end
-    
+
     def force_statement
       @tags[:statement] = true
       self
