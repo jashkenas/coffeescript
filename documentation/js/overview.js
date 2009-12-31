@@ -8,7 +8,7 @@
     number = -42;
   }
   // Functions:
-  square = function(x) {
+  square = function square(x) {
     return x * x;
   };
   // Arrays:
@@ -17,7 +17,7 @@
   math = {
     root: Math.sqrt,
     square: square,
-    cube: function(x) {
+    cube: function cube(x) {
       return x * square(x);
     }
   };

@@ -1,9 +1,9 @@
 (function(){
   var cube, square;
-  square = function(x) {
+  square = function square(x) {
     return x * x;
   };
-  cube = function(x) {
+  cube = function cube(x) {
     return square(x) * x;
   };
 })();
