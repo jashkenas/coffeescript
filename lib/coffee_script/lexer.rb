@@ -29,15 +29,13 @@ module CoffeeScript
     REGEX      = /\A(\/(.*?)[^\\]\/[imgy]{0,4})/
     MULTI_DENT = /\A((\n([ \t]*)?)+)/
     LAST_DENT  = /\n([ \t]*)/
+    ASSIGNMENT = /\A(:|=)\Z/
 
     # Token cleaning regexes.
     JS_CLEANER = /(\A`|`\Z)/
     MULTILINER = /\n/
     COMMENT_CLEANER = /(^\s*#|\n\s*$)/
     NO_NEWLINE = /\A([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)\Z/
-
-    # Assignment tokens.
-    ASSIGN     = [':', '=']
 
     # Scan by attempting to match tokens one character at a time. Slow and steady.
     def tokenize(code)
@@ -174,7 +172,7 @@ module CoffeeScript
       value = @chunk[OPERATOR, 1]
       tag_parameters if value && value.match(CODE)
       value ||= @chunk[0,1]
-      tag = ASSIGN.include?(value) ? :ASSIGN : value
+      tag = value.match(ASSIGNMENT) ? :ASSIGN : value
       token(tag, value)
       @i += value.length
     end
