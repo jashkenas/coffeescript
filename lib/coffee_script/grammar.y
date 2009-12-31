@@ -5,7 +5,7 @@ token IF ELSE UNLESS
 token NUMBER STRING REGEX
 token TRUE FALSE YES NO ON OFF
 token IDENTIFIER PROPERTY_ACCESS
-token CODE PARAM NEW RETURN
+token CODE PARAM SPLAT NEW RETURN
 token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
 token FOR IN WHILE
@@ -187,8 +187,13 @@ rule
 
   # The parameters to a function definition.
   ParamList:
-    PARAM                             { result = val }
-  | ParamList "," PARAM               { result = val[0] << val[2] }
+    Param                             { result = val }
+  | ParamList "," Param               { result = val[0] << val[2] }
+  ;
+
+  Param:
+    PARAM
+  | SPLAT                             { result = SplatNode.new(val[0]) }
   ;
 
   # Expressions that can be treated as values.

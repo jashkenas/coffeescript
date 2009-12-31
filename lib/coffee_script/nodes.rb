@@ -64,6 +64,11 @@ module CoffeeScript
       self
     end
 
+    def unshift(node)
+      @expressions.unshift(node)
+      self
+    end
+
     # If this Expressions consists of a single node, pull it back out.
     def unwrap
       @expressions.length == 1 ? @expressions.first : self
@@ -389,7 +394,7 @@ module CoffeeScript
       o[:scope].find(name) unless @variable.properties?
       return write(@value.compile(o)) if @value.custom_assign?
       val = "#{name} = #{@value.compile(o)}"
-      write(o[:return] && !@value.custom_return? ? "return (#{val})" : val)
+      write(o[:return] && !@value.custom_return? ? "#{o[:indent]}return (#{val})" : val)
     end
   end
 
@@ -459,9 +464,32 @@ module CoffeeScript
       o.delete(:no_wrap)
       name = o.delete(:immediate_assign)
       @params.each {|id| o[:scope].parameter(id.to_s) }
+      if @params.last.is_a?(SplatNode)
+        splat = @params.pop
+        splat.index = @params.length
+        @body.unshift(splat)
+      end
       code = @body.compile(o, :code)
       name_part = name ? " #{name}" : ''
       write("function#{name_part}(#{@params.join(', ')}) {\n#{code}\n#{indent}}")
+    end
+  end
+
+  # A parameter splat in a function definition.
+  class SplatNode < Node
+    attr_accessor :index
+    attr_reader :name
+
+    def initialize(name)
+      @name = name
+    end
+
+    def to_s
+      @name
+    end
+
+    def compile(o={})
+      "var #{@name} = Array.prototype.slice.call(arguments, #{@index})"
     end
   end
 
