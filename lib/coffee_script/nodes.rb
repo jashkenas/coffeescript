@@ -463,12 +463,12 @@ module CoffeeScript
       o.delete(:assign)
       o.delete(:no_wrap)
       name = o.delete(:immediate_assign)
-      @params.each {|id| o[:scope].parameter(id.to_s) }
       if @params.last.is_a?(SplatNode)
         splat = @params.pop
         splat.index = @params.length
         @body.unshift(splat)
       end
+      @params.each {|id| o[:scope].parameter(id.to_s) }
       code = @body.compile(o, :code)
       name_part = name ? " #{name}" : ''
       write("function#{name_part}(#{@params.join(', ')}) {\n#{code}\n#{indent}}")
@@ -484,12 +484,9 @@ module CoffeeScript
       @name = name
     end
 
-    def to_s
-      @name
-    end
-
     def compile(o={})
-      "var #{@name} = Array.prototype.slice.call(arguments, #{@index})"
+      o[:scope].find(@name)
+      "#{@name} = Array.prototype.slice.call(arguments, #{@index})"
     end
   end
 
