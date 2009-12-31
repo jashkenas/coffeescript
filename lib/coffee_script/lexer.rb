@@ -24,10 +24,10 @@ module CoffeeScript
     JS         = /\A(``|`(.*?)[^\\]`)/m
     OPERATOR   = /\A([+\*&|\/\-%=<>:!]+)/
     WHITESPACE = /\A([ \t]+)/
-    COMMENT    = /\A((#[^\n]*(\s(?=#))*)+)/m
+    COMMENT    = /\A(((\n[ \t]*)?#.*$)+)/
     CODE       = /\A(=>)/
     REGEX      = /\A(\/(.*?)[^\\]\/[imgy]{0,4})/
-    MULTI_DENT = /\A((\n+([ \t]*(?=\S))?)+)/
+    MULTI_DENT = /\A((\n([ \t]*(?=[^$]))?)+)/
     LAST_DENT  = /\n+([ \t]*)\Z/
 
     # Token cleaning regexes.
