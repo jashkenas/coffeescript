@@ -17,16 +17,16 @@ previousUnderscore: root._
 # If Underscore is called as a function, it returns a wrapped object that
 # can be used OO-style. This wrapper holds altered versions of all the
 # underscore functions. Wrapped objects may be chained.
-wrapper: obj => this._wrapped: obj.
+wrapper: obj => this._wrapped: obj
 
 # Establish the object that gets thrown to break out of a loop iteration.
-breaker: if typeof(StopIteration) is 'undefined' then '__break__' else StopIteration.
+breaker: if typeof(StopIteration) is 'undefined' then '__break__' else StopIteration
 
 # Create a safe reference to the Underscore object for reference below.
-_: root._: obj => new wrapper(obj).
+_: root._: obj => new wrapper(obj)
 
 # Export the Underscore object for CommonJS.
-if typeof(exports) != 'undefined' then exports._: _.
+if typeof(exports) != 'undefined' then exports._: _
 
 # Create quick reference variables for speed access to core prototypes.
 slice:                Array.prototype.slice
@@ -46,37 +46,37 @@ _.each: obj, iterator, context =>
   index: 0
   try
     return obj.forEach(iterator, context) if obj.forEach
-    return iterator.call(context, item, i, obj) for item, i in obj. if _.isArray(obj) or _.isArguments(obj)
-    iterator.call(context, obj[key], key, obj) for key in _.keys(obj).
+    (return iterator.call(context, item, i, obj) for item, i in obj) if _.isArray(obj) or _.isArguments(obj)
+    iterator.call(context, obj[key], key, obj) for key in _.keys(obj)
   catch e
-    throw e if e isnt breaker.
-  obj.
+    throw e if e isnt breaker
+  obj
 
 # Return the results of applying the iterator to each element. Use JavaScript
 # 1.6's version of map, if possible.
 _.map: obj, iterator, context =>
   return obj.map(iterator, context) if (obj and _.isFunction(obj.map))
   results: []
-  mapper: value, index, list => results.push(iterator.call(context, value, index, list)).
+  mapper: value, index, list => results.push(iterator.call(context, value, index, list))
   _.each(obj, mapper)
-  results.
+  results
 
 # Reduce builds up a single result from a list of values. Also known as
 # inject, or foldl. Uses JavaScript 1.8's version of reduce, if possible.
 _.reduce: obj, memo, iterator, context =>
   return obj.reduce(_.bind(iterator, context), memo) if (obj and _.isFunction(obj.reduce))
-  reducer: value, index, list => memo: iterator.call(context, memo, value, index, list).
+  reducer: value, index, list => memo: iterator.call(context, memo, value, index, list)
   _.each(obj, reducer)
-  memo.
+  memo
 
 # The right-associative version of reduce, also known as foldr. Uses
 # JavaScript 1.8's version of reduceRight, if available.
 _.reduceRight: obj, memo, iterator, context =>
   return obj.reduceRight(_.bind(iterator, context), memo) if (obj and _.isFunction(obj.reduceRight))
   reversed: _.clone(_.toArray(obj)).reverse()
-  reverser: value, index => memo: iterator.call(context, memo, value, index, obj).
+  reverser: value, index => memo: iterator.call(context, memo, value, index, obj)
   _.each(reversed, reverser)
-  memo.
+  memo
 
   # Return the first value which passes a truth test.
   _.detect: obj, iterator, context =>
@@ -84,24 +84,24 @@ _.reduceRight: obj, memo, iterator, context =>
     _.each(obj, (value, index, list =>
       if iterator.call(context, value, index, list)
         result: value
-        _.breakLoop()..))
-    result.
+        _.breakLoop()))
+    result
 
   # Return all the elements that pass a truth test. Use JavaScript 1.6's
   # filter(), if it exists.
   _.select: obj, iterator, context =>
-    if obj and _.isFunction(obj.filter) then return obj.filter(iterator, context).
+    if obj and _.isFunction(obj.filter) then return obj.filter(iterator, context)
     results: []
     _.each(obj, (value, index, list =>
-      results.push(value) if iterator.call(context, value, index, list).))
-    results.
+      results.push(value) if iterator.call(context, value, index, list)))
+    results
 
   # Return all the elements for which a truth test fails.
   _.reject: obj, iterator, context =>
     results: []
     _.each(obj, (value, index, list =>
-      results.push(value) if not iterator.call(context, value, index, list).))
-    results.
+      results.push(value) if not iterator.call(context, value, index, list)))
+    results
 
   # Determine whether all of the elements match a truth test. Delegate to
   # JavaScript 1.6's every(), if it is present.
@@ -110,8 +110,8 @@ _.reduceRight: obj, memo, iterator, context =>
     return obj.every(iterator, context) if obj and _.isFunction(obj.every)
     result: true
     _.each(obj, (value, index, list =>
-      _.breakLoop() unless result: result and iterator.call(context, value, index, list).))
-    result.
+      _.breakLoop() unless result: result and iterator.call(context, value, index, list)))
+    result
 
   # Determine if at least one element in the object matches a truth test. Use
   # JavaScript 1.6's some(), if it exists.
@@ -120,8 +120,8 @@ _.reduceRight: obj, memo, iterator, context =>
     return obj.some(iterator, context) if obj and _.isFunction(obj.some)
     result: false
     _.each(obj, (value, index, list =>
-      _.breakLoop() if (result: iterator.call(context, value, index, list)).))
-    result.
+      _.breakLoop() if (result: iterator.call(context, value, index, list))))
+    result
 
   # Determine if a given value is included in the array or object,
   # based on '==='.
@@ -129,28 +129,28 @@ _.reduceRight: obj, memo, iterator, context =>
     return _.indexOf(obj, target) isnt -1 if _.isArray(obj)
     found: false
     _.each(obj, (value =>
-      _.breakLoop() if (found: value is target).))
-    found.
+      _.breakLoop() if (found: value is target)))
+    found
 
   # Invoke a method with arguments on every item in a collection.
   _.invoke: obj, method =>
     args: _.rest(arguments, 2)
     _.map(obj, (value =>
-      (if method then value[method] else value.).apply(value, args).)).
+      (if method then value[method] else value).apply(value, args)))
 
   # Convenience version of a common use case of map: fetching a property.
   _.pluck: obj, key =>
-    _.map(obj, (value => value[key].)).
+    _.map(obj, (value => value[key]))
 
   # Return the maximum item or (item-based computation).
   _.max: obj, iterator, context =>
     return Math.max.apply(Math, obj) if !iterator and _.isArray(obj)
     result: {computed: -Infinity}
     _.each(obj, (value, index, list =>
-      computed: if iterator then iterator.call(context, value, index, list) else value.
-      computed >= result.computed and (result: {value: value, computed: computed}).))
-    result.value.
-#
+      computed: if iterator then iterator.call(context, value, index, list) else value
+      computed >= result.computed and (result: {value: value, computed: computed})))
+    result.value
+
 #   # Return the minimum element (or element-based computation).
 #   _.min = function(obj, iterator, context) {
 #     if (!iterator && _.isArray(obj)) return Math.min.apply(Math, obj);
@@ -313,7 +313,7 @@ _.reduceRight: obj, memo, iterator, context =>
   # optionally). Binding with arguments is also known as 'curry'.
   _.bind: func, obj =>
     args: _.rest(arguments, 2)
-    => func.apply(obj or root, args.concat(_.toArray(arguments)))..
+    => func.apply(obj or root, args.concat(_.toArray(arguments)))
 
 #   # Bind all of an object's methods to that object. Useful for ensuring that
 #   # all callbacks defined on an object belong to it.
@@ -334,13 +334,13 @@ _.reduceRight: obj, memo, iterator, context =>
   # Defers a function, scheduling it to run after the current call stack has
   # cleared.
   _.defer: func =>
-    _.delay.apply(_, [func, 1].concat(_.rest(arguments))).
+    _.delay.apply(_, [func, 1].concat(_.rest(arguments)))
 
   # Returns the first function passed as an argument to the second,
   # allowing you to adjust arguments, run code before and after, and
   # conditionally execute the original function.
   _.wrap: func, wrapper =>
-    => wrapper.apply(wrapper, [func].concat(_.toArray(arguments)))..
+    => wrapper.apply(wrapper, [func].concat(_.toArray(arguments)))
 
   # Returns a function that is the composition of a list of functions, each
   # consuming the return value of the function that follows.
@@ -348,8 +348,8 @@ _.reduceRight: obj, memo, iterator, context =>
     funcs: _.toArray(arguments)
     =>
       args: _.toArray(arguments)
-      args: [funcs[i]].apply(this, args) for i in [(funcs.length - 1)..0].
-      args[0]..
+      args: [funcs[i]].apply(this, args) for i in [(funcs.length - 1)..0]
+      args[0]
 
 #   /* ------------------------- Object Functions: ---------------------------- */
 #
@@ -405,7 +405,7 @@ _.reduceRight: obj, memo, iterator, context =>
       return a.source     is b.source and \
              a.global     is b.global and \
              a.ignoreCase is b.ignoreCase and \
-             a.multiline  is b.multiline.
+             a.multiline  is b.multiline
     # If a is not an object by this point, we can't handle it.
     return false if atype isnt 'object'
     # Check for different array lengths before comparing contents.
@@ -416,32 +416,32 @@ _.reduceRight: obj, memo, iterator, context =>
     return false if aKeys.length isnt bKeys.length
     # Recursive comparison of contents.
     # for (var key in a) if (!_.isEqual(a[key], b[key])) return false;
-    return true.
+    return true
 
   # Is a given array or object empty?
-  _.isEmpty: obj => _.keys(obj).length is 0.
+  _.isEmpty: obj => _.keys(obj).length is 0
 
   # Is a given value a DOM element?
-  _.isElement: obj => !!(obj and obj.nodeType is 1).
+  _.isElement: obj => !!(obj and obj.nodeType is 1)
 
   # Is a given variable an arguments object?
-  _.isArguments: obj => obj and _.isNumber(obj.length) and !_.isArray(obj) and !propertyIsEnumerable.call(obj, 'length').
+  _.isArguments: obj => obj and _.isNumber(obj.length) and !_.isArray(obj) and !propertyIsEnumerable.call(obj, 'length')
 
   # Is the given value NaN -- this one is interesting. NaN != NaN, and
   # isNaN(undefined) == true, so we make sure it's a number first.
-  _.isNaN: obj => _.isNumber(obj) and isNaN(obj).
+  _.isNaN: obj => _.isNumber(obj) and isNaN(obj)
 
   # Is a given value equal to null?
-  _.isNull: obj => obj is null.
+  _.isNull: obj => obj is null
 
   # Is a given variable undefined?
-  _.isUndefined: obj => typeof obj is 'undefined'.
+  _.isUndefined: obj => typeof obj is 'undefined'
 
   # Invokes interceptor with the obj, and then returns obj.
   # The primary purpose of this method is to "tap into" a method chain, in order to perform operations on intermediate results within the chain.
   _.tap: obj, interceptor =>
     interceptor(obj)
-    obj.
+    obj
 
 #   # Define the isArray, isDate, isFunction, isNumber, isRegExp, and isString
 #   # functions based on their toString identifiers.
@@ -459,13 +459,13 @@ _.reduceRight: obj, memo, iterator, context =>
   # previous owner. Returns a reference to the Underscore object.
   _.noConflict: =>
     root._: previousUnderscore
-    this.
+    this
 
   # Keep the identity function around for default iterators.
-  _.identity: value => value.
+  _.identity: value => value
 
   # Break out of the middle of an iteration.
-  _.breakLoop: => throw breaker.
+  _.breakLoop: => throw breaker
 
 #   # Generate a unique integer id (unique within the entire client session).
 #   # Useful for temporary DOM ids.
