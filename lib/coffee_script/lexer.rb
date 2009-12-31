@@ -24,7 +24,7 @@ module CoffeeScript
     JS         = /\A(``|`(.*?)[^\\]`)/m
     OPERATOR   = /\A([+\*&|\/\-%=<>:!]+)/
     WHITESPACE = /\A([ \t]+)/
-    COMMENT    = /\A((#[^\n]*\s*)+)/m
+    COMMENT    = /\A((#[^\n]*(\s(?=#))*)+)/m
     CODE       = /\A(=>)/
     REGEX      = /\A(\/(.*?)[^\\]\/[imgy]{0,4})/
     MULTI_DENT = /\A((\n+([ \t]*(?=\S))?)+)/
@@ -43,12 +43,13 @@ module CoffeeScript
 
     # Outdents that come before these tokens don't signify the end of the
     # expression.
-    EXPRESSION_TAIL = [:CATCH, :WHEN, :ELSE, :FINALLY, ')', ']', '}']
+    EXPRESSION_START = [:INDENT, '{', '(', '[']
+    EXPRESSION_TAIL  = [:CATCH, :OUTDENT, :WHEN, :ELSE, :FINALLY, ')', ']', '}']
     
     # Single-line flavors of block expressions that have unclosed endings.
     # The grammar can't disambiguate them, so we insert the implicit indentation.
     SINGLE_LINERS  = [:ELSE, "=>", :TRY, :FINALLY, :THEN]
-    SINGLE_CLOSERS = ["\n", :CATCH, :FINALLY, :ELSE, :OUTDENT]
+    SINGLE_CLOSERS = ["\n", :CATCH, :FINALLY, :ELSE, :OUTDENT, :WHEN]
 
     # The inverse mappings of token pairs we're trying to fix up.
     INVERSES = {:INDENT => :OUTDENT, :OUTDENT => :INDENT, '(' => ')', ')' => '('}
@@ -65,6 +66,7 @@ module CoffeeScript
         @chunk = @code[@i..-1]
         extract_next_token
       end
+      puts "original stream: #{@tokens.inspect}" if ENV['VERBOSE']
       close_indentation
       remove_mid_expression_newlines
       move_commas_outside_outdents
@@ -235,7 +237,9 @@ module CoffeeScript
     # this, remove their trailing newlines.
     def remove_mid_expression_newlines
       scan_tokens do |prev, token, post, i|
-        @tokens.delete_at(i) if post && EXPRESSION_TAIL.include?(post[0]) && token[0] == "\n" && prev[0] == :OUTDENT
+        @tokens.delete_at(i) if post && EXPRESSION_TAIL.include?(post[0]) &&
+                                        token[0] == "\n" # &&
+                                        # EXPRESSION_START.include?(prev[0])
       end
     end
 
@@ -310,7 +314,6 @@ module CoffeeScript
       verbose = ENV['VERBOSE']
       stack, debt = [], Hash.new(0)
       stack_stats = lambda { "stack: #{stack.inspect} debt: #{debt.inspect}" }
-      puts "original stream: #{@tokens.inspect}" if verbose
       scan_tokens do |prev, token, post, i|
         tag, inv = token[0], INVERSES[token[0]]
         if [:INDENT, '('].include?(tag)
