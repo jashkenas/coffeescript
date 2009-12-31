@@ -23,6 +23,12 @@ namespace :build do
     sh "mv lib/coffee_script/narwhal/lib/coffee-script/coffee-script.js lib/coffee_script/narwhal/lib/coffee-script.js"
   end
 
+  desc "Compile and install the Ultraviolet syntax highlighter"
+  task :ultraviolet do
+    sh "plist2syntax lib/coffee_script/CoffeeScript.tmbundle/Syntaxes/CoffeeScript.tmLanguage"
+    sh "sudo mv coffeescript.yaml /usr/local/lib/ruby/gems/1.8/gems/ultraviolet-0.10.2/syntax/coffeescript.syntax"
+  end
+
 end
 
 desc "Build the documentation page"
