@@ -166,10 +166,12 @@ module CoffeeScript
       puts "rewrite_closing_original: #{@tokens.inspect}" if verbose
       scan_tokens do |prev, token, post, i|
         tag, inv = token[0], INVERSES[token[0]]
+        # Push openers onto the stack.
         if EXPRESSION_START.include?(tag)
           stack.push(token)
           puts "pushing #{tag} #{stack_stats[]}" if verbose
           next 1
+        # The end of an expression, check stack and debt for a pair.
         elsif EXPRESSION_TAIL.include?(tag)
           puts @tokens[i..-1].inspect if verbose
           # If the tag is already in our debt, swallow it.
