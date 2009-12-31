@@ -379,7 +379,7 @@ num <span class="Keyword">=</span> <span class="Number">1</span>;
 change_numbers <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">change_numbers</span>() {
   <span class="Storage">var</span> new_num;
   num <span class="Keyword">=</span> <span class="Number">2</span>;
-<span class="Keyword">return</span> (new_num <span class="Keyword">=</span> <span class="Number">3</span>);
+  <span class="Keyword">return</span> (new_num <span class="Keyword">=</span> <span class="Number">3</span>);
 };
 new_num <span class="Keyword">=</span> change_numbers();
 </pre><button onclick='javascript: var change_numbers, new_num, num;
@@ -387,7 +387,7 @@ num = 1;
 change_numbers = function change_numbers() {
   var new_num;
   num = 2;
-return (new_num = 3);
+  return (new_num = 3);
 };
 new_num = change_numbers();
 ;alert(new_num);'>run: new_num</button><br class='clear' /></div>
@@ -688,7 +688,7 @@ Animal <span class="Keyword">=</span> <span class="Storage">function</span> <spa
   <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>);
 };
 Snake <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Snake</span>(<span class="FunctionArgument">name</span>) {
-<span class="Keyword">return</span> (<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name);
+  <span class="Keyword">return</span> (<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name);
 };
 Snake.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryConstant">prototype</span>;
 <span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">Animal</span>();
@@ -698,7 +698,7 @@ Snake.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryC
   <span class="Keyword">return</span> Snake.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">5</span>);
 };
 Horse <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Horse</span>(<span class="FunctionArgument">name</span>) {
-<span class="Keyword">return</span> (<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name);
+  <span class="Keyword">return</span> (<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name);
 };
 Horse.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryConstant">prototype</span>;
 <span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">Animal</span>();
@@ -718,7 +718,7 @@ Animal.prototype.move = function move(meters) {
   return alert(this.name + " moved " + meters + "m.");
 };
 Snake = function Snake(name) {
-return (this.name = name);
+  return (this.name = name);
 };
 Snake.__superClass__ = Animal.prototype;
 Snake.prototype = new Animal();
@@ -728,7 +728,7 @@ Snake.prototype.move = function move() {
   return Snake.__superClass__.move.call(this, 5);
 };
 Horse = function Horse(name) {
-return (this.name = name);
+  return (this.name = name);
 };
 Horse.__superClass__ = Animal.prototype;
 Horse.prototype = new Animal();
@@ -850,10 +850,17 @@ world...";
 
     <h2 id="resources">Resources</h2>
 
-    <p>
-      <a href="http://github.com/jashkenas/coffee-script/">Source Code</a><br />
-      <a href="http://github.com/jashkenas/coffee-script/issues">Bugs and Feature Requests</a><br />
-    </p>
+    <ul>
+      <li>
+        <a href="http://github.com/jashkenas/coffee-script/">Source Code</a><br />
+        Use <tt>bin/coffee</tt> to test your changes, or <tt>rake gem:install</tt> to
+        create and install a custom version of the gem. If you're hacking on the
+        parser, use <tt>rake build:parser</tt> to rebuild it.
+      </li>
+      <li>
+        <a href="http://github.com/jashkenas/coffee-script/issues">Bugs and Feature Requests</a>
+      </li>
+    </ul>
 
     <h2 id="contributing">Contributing</h2>
 
