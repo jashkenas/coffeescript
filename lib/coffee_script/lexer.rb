@@ -41,10 +41,14 @@ module CoffeeScript
     # Tokens that must be balanced.
     BALANCED_PAIRS = [['(', ')'], ['[', ']'], ['{', '}'], [:INDENT, :OUTDENT]]
 
-    # Outdents that come before these tokens don't signify the end of the
-    # expression.
-    EXPRESSION_START = [:INDENT, '{', '(', '[']
-    EXPRESSION_TAIL  = [:CATCH, :OUTDENT, :WHEN, :ELSE, :FINALLY, ')', ']', '}']
+    # Tokens that signal the start of a balanced pair.
+    EXPRESSION_START = [:INDENT,  '{', '(', '[']
+    
+    # Tokens that signal the end of a balanced pair.
+    EXPRESSION_TAIL  = [:OUTDENT, '}', ')', ']']
+    
+    # Tokens that indicate the close of a clause of an expression.
+    EXPRESSION_CLOSE = [:CATCH, :WHEN, :ELSE, :FINALLY] + EXPRESSION_TAIL
     
     # Single-line flavors of block expressions that have unclosed endings.
     # The grammar can't disambiguate them, so we insert the implicit indentation.
@@ -52,7 +56,12 @@ module CoffeeScript
     SINGLE_CLOSERS = ["\n", :CATCH, :FINALLY, :ELSE, :OUTDENT, :WHEN]
 
     # The inverse mappings of token pairs we're trying to fix up.
-    INVERSES = {:INDENT => :OUTDENT, :OUTDENT => :INDENT, '(' => ')', ')' => '('}
+    INVERSES = {
+      :INDENT => :OUTDENT, :OUTDENT => :INDENT, 
+      '(' => ')', ')' => '(',
+      '{' => '}', '}' => '{', 
+      '[' => ']', ']' => '['
+    }
 
     # Scan by attempting to match tokens one character at a time. Slow and steady.
     def tokenize(code)
@@ -237,9 +246,7 @@ module CoffeeScript
     # this, remove their trailing newlines.
     def remove_mid_expression_newlines
       scan_tokens do |prev, token, post, i|
-        @tokens.delete_at(i) if post && EXPRESSION_TAIL.include?(post[0]) &&
-                                        token[0] == "\n" # &&
-                                        # EXPRESSION_START.include?(prev[0])
+        @tokens.delete_at(i) if post && EXPRESSION_CLOSE.include?(post[0]) && token[0] == "\n"
       end
     end
 
@@ -313,33 +320,44 @@ module CoffeeScript
     def rewrite_closing_parens
       verbose = ENV['VERBOSE']
       stack, debt = [], Hash.new(0)
-      stack_stats = lambda { "stack: #{stack.inspect} debt: #{debt.inspect}" }
-      scan_tokens do |prev, token, post, i|
+      stack_stats = lambda { "stack: #{stack.inspect} debt: #{debt.inspect}\n\n" }
+      puts "rewrite_closing_original: #{@tokens.inspect}" if verbose
+      i = 0
+      loop do
+        prev, token, post = @tokens[i-1], @tokens[i], @tokens[i+1]
+        break unless token
         tag, inv = token[0], INVERSES[token[0]]
-        if [:INDENT, '('].include?(tag)
+        if EXPRESSION_START.include?(tag)
           stack.push(token)
+          i += 1
           puts "pushing #{tag} #{stack_stats[]}" if verbose
-        elsif [:OUTDENT, ')'].include?(tag)
+        elsif EXPRESSION_TAIL.include?(tag)
+          puts @tokens[i..-1].inspect if verbose
           # If the tag is already in our debt, swallow it.
           if debt[inv] > 0
             debt[inv] -= 1
             @tokens.delete_at(i)
             puts "tag in debt #{tag} #{stack_stats[]}" if verbose
-            next
+          else
+            # Pop the stack of open delimiters.
+            match = stack.pop
+            mtag  = match[0]
+            # Continue onwards if it's the expected tag.
+            if tag == INVERSES[mtag]
+              puts "expected tag #{tag} #{stack_stats[]}" if verbose
+              i += 1
+            else
+              # Unexpected close, insert correct close, adding to the debt.
+              debt[mtag] += 1
+              puts "unexpected #{tag}, replacing with #{INVERSES[mtag]} #{stack_stats[]}" if verbose
+              val = mtag == :INDENT ? match[1] : INVERSES[mtag]
+              @tokens.insert(i, [INVERSES[mtag], Value.new(val, token[1].line)])
+              i += 1
+            end
           end
-          # Pop the stack of open delimiters.
-          match = stack.pop
-          mtag  = match[0]
-          # Continue onwards if it's the expected tag.
-          if tag == INVERSES[mtag]
-            puts "expected tag #{tag} #{stack_stats[]}" if verbose
-            next
-          end
-          # Unexpected close, insert correct close, adding to the debt.
-          debt[mtag] += 1
-          puts "unexpected #{tag}, replacing with #{INVERSES[mtag]} #{stack_stats[]}" if verbose
-          val = mtag == :INDENT ? match[1] : ')'
-          @tokens.insert(i, [INVERSES[mtag], Value.new(val, token[1].line)])
+        else
+          # Uninteresting token:
+          i += 1
         end
       end
     end
