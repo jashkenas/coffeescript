@@ -5,6 +5,9 @@ class ExecutionTest < Test::Unit::TestCase
   NO_WARNINGS = /\A(0 error\(s\), 0 warning\(s\)\n)+\Z/
   ALLS_WELL   = /\A\n?(true\n)+\Z/m
 
+  # This is by far the most important test. It evaluates all of the
+  # CoffeeScript in test/fixtures/execution, ensuring that all our
+  # syntax actually works.
   def test_execution_of_coffeescript
     sources = ['test/fixtures/execution/*.coffee'].join(' ')
     assert `bin/coffee -r #{sources}`.match(ALLS_WELL)
