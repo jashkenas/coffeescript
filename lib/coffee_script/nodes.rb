@@ -646,8 +646,9 @@ module CoffeeScript
   class ParentheticalNode < Node
     attr_reader :expressions
 
-    def initialize(expressions)
+    def initialize(expressions, line=nil)
       @expressions = expressions.unwrap
+      @line = line
     end
 
     def statement?
@@ -663,7 +664,7 @@ module CoffeeScript
     end
 
     def compile(o={})
-      raise SyntaxError, "parentheses can't be wrapped around a statement" if statement?
+      raise SyntaxError, "line #{@line}: parentheses can't be wrapped around a statement" if statement?
       o = super(o)
       compiled = @expressions.compile(o)
       compiled = compiled[0...-1] if compiled[-1..-1] == ';'

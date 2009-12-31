@@ -1915,7 +1915,7 @@ module_eval(<<'.,.,', 'grammar.y', 291)
 
 module_eval(<<'.,.,', 'grammar.y', 296)
   def _reduce_129(val, _values, result)
-     result = ParentheticalNode.new(val[1]) 
+     result = ParentheticalNode.new(val[1], val[0].line) 
     result
   end
 .,.,
