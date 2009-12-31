@@ -29,10 +29,9 @@ module CoffeeScript
     SINGLE_LINERS  = [:ELSE, "=>", :TRY, :FINALLY, :THEN]
     SINGLE_CLOSERS = ["\n", :CATCH, :FINALLY, :ELSE, :OUTDENT, :WHEN]
 
-    def initialize(lexer)
-      @lexer = lexer
-    end
-
+    # Rewrite the token stream in multiple passes, one logical filter at
+    # a time. This could certainly be changed into a single pass through the
+    # stream, with a big ol' efficient switch, but it's much nicer like this.
     def rewrite(tokens)
       @tokens = tokens
       adjust_comments
@@ -45,11 +44,15 @@ module CoffeeScript
     end
 
     # Rewrite the token stream, looking one token ahead and behind.
+    # Allow the return value of the block to tell us how many tokens to move
+    # forwards (or backwards) in the stream, to make sure we don't miss anything
+    # as the stream changes length under our feet.
     def scan_tokens
       i = 0
-      while i < @tokens.length
-        yield(@tokens[i - 1], @tokens[i], @tokens[i + 1], i)
-        i += 1
+      loop do
+        break unless @tokens[i]
+        move = yield(@tokens[i - 1], @tokens[i], @tokens[i + 1], i)
+        i += move
       end
     end
 
@@ -57,7 +60,7 @@ module CoffeeScript
     # correctly indented, or appear on their own line.
     def adjust_comments
       scan_tokens do |prev, token, post, i|
-        next unless token[0] == :COMMENT
+        next 1 unless token[0] == :COMMENT
         before, after = @tokens[i - 2], @tokens[i + 2]
         if before && after &&
             ((before[0] == :INDENT && after[0] == :OUTDENT) ||
@@ -65,8 +68,12 @@ module CoffeeScript
             before[1] == after[1]
           @tokens.delete_at(i + 2)
           @tokens.delete_at(i - 2)
+          next 0
         elsif !["\n", :INDENT, :OUTDENT].include?(prev[0])
           @tokens.insert(i, ["\n", Value.new("\n", token[1].line)])
+          next 2
+        else
+          next 1
         end
       end
     end
@@ -75,7 +82,9 @@ module CoffeeScript
     # this, remove their trailing newlines.
     def remove_mid_expression_newlines
       scan_tokens do |prev, token, post, i|
-        @tokens.delete_at(i) if post && EXPRESSION_CLOSE.include?(post[0]) && token[0] == "\n"
+        next 1 unless post && EXPRESSION_CLOSE.include?(post[0]) && token[0] == "\n"
+        @tokens.delete_at(i)
+        next 0
       end
     end
 
@@ -83,9 +92,11 @@ module CoffeeScript
     # to go on the outside of expression closers.
     def move_commas_outside_outdents
       scan_tokens do |prev, token, post, i|
-        next unless token[0] == :OUTDENT && prev[0] == ','
-        @tokens.delete_at(i)
-        @tokens.insert(i - 1, token)
+        if token[0] == :OUTDENT && prev[0] == ','
+          @tokens.delete_at(i)
+          @tokens.insert(i - 1, token)
+        end
+        next 1
       end
     end
 
@@ -95,25 +106,26 @@ module CoffeeScript
     # ')' can close a single-line block, but we need to make sure it's balanced.
     def add_implicit_indentation
       scan_tokens do |prev, token, post, i|
-        if SINGLE_LINERS.include?(token[0]) && post[0] != :INDENT &&
+        next 1 unless SINGLE_LINERS.include?(token[0]) && post[0] != :INDENT &&
           !(token[0] == :ELSE && post[0] == :IF) # Elsifs shouldn't get blocks.
-          line = token[1].line
-          @tokens.insert(i + 1, [:INDENT, Value.new(2, line)])
-          idx = i + 1
-          parens = 0
-          loop do
-            idx += 1
-            tok = @tokens[idx]
-            if !tok || SINGLE_CLOSERS.include?(tok[0]) ||
-                (tok[0] == ')' && parens == 0)
-              @tokens.insert(idx, [:OUTDENT, Value.new(2, line)])
-              break
-            end
-            parens += 1 if tok[0] == '('
-            parens -= 1 if tok[0] == ')'
+        line = token[1].line
+        @tokens.insert(i + 1, [:INDENT, Value.new(2, line)])
+        idx = i + 1
+        parens = 0
+        loop do
+          idx += 1
+          tok = @tokens[idx]
+          if !tok || SINGLE_CLOSERS.include?(tok[0]) ||
+              (tok[0] == ')' && parens == 0)
+            @tokens.insert(idx, [:OUTDENT, Value.new(2, line)])
+            break
           end
-          @tokens.delete_at(i) if token[0] == :THEN
+          parens += 1 if tok[0] == '('
+          parens -= 1 if tok[0] == ')'
         end
+        next 1 unless token[0] == :THEN
+        @tokens.delete_at(i)
+        next 0
       end
     end
 
@@ -128,6 +140,7 @@ module CoffeeScript
           levels[open] -= 1 if token[0] == close
           raise ParseError.new(token[0], token[1], nil) if levels[open] < 0
         end
+        next 1
       end
       unclosed = levels.detect {|k, v| v > 0 }
       raise SyntaxError, "unclosed '#{unclosed[0]}'" if unclosed
@@ -151,15 +164,12 @@ module CoffeeScript
       stack, debt = [], Hash.new(0)
       stack_stats = lambda { "stack: #{stack.inspect} debt: #{debt.inspect}\n\n" }
       puts "rewrite_closing_original: #{@tokens.inspect}" if verbose
-      i = 0
-      loop do
-        prev, token, post = @tokens[i-1], @tokens[i], @tokens[i+1]
-        break unless token
+      scan_tokens do |prev, token, post, i|
         tag, inv = token[0], INVERSES[token[0]]
         if EXPRESSION_START.include?(tag)
           stack.push(token)
-          i += 1
           puts "pushing #{tag} #{stack_stats[]}" if verbose
+          next 1
         elsif EXPRESSION_TAIL.include?(tag)
           puts @tokens[i..-1].inspect if verbose
           # If the tag is already in our debt, swallow it.
@@ -167,6 +177,7 @@ module CoffeeScript
             debt[inv] -= 1
             @tokens.delete_at(i)
             puts "tag in debt #{tag} #{stack_stats[]}" if verbose
+            next 0
           else
             # Pop the stack of open delimiters.
             match = stack.pop
@@ -174,19 +185,19 @@ module CoffeeScript
             # Continue onwards if it's the expected tag.
             if tag == INVERSES[mtag]
               puts "expected tag #{tag} #{stack_stats[]}" if verbose
-              i += 1
+              next 1
             else
               # Unexpected close, insert correct close, adding to the debt.
               debt[mtag] += 1
               puts "unexpected #{tag}, replacing with #{INVERSES[mtag]} #{stack_stats[]}" if verbose
               val = mtag == :INDENT ? match[1] : INVERSES[mtag]
               @tokens.insert(i, [INVERSES[mtag], Value.new(val, token[1].line)])
-              i += 1
+              next 1
             end
           end
         else
           # Uninteresting token:
-          i += 1
+          next 1
         end
       end
     end
