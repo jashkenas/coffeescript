@@ -44,6 +44,7 @@ module CoffeeScript
   # A collection of nodes, each one representing an expression.
   class Expressions < Node
     statement
+    custom_assign
     attr_reader :expressions
 
     STRIP_TRAILING_WHITESPACE = /\s+$/
@@ -107,7 +108,8 @@ module CoffeeScript
           end
         else
           o.delete(:return) and o.delete(:assign)
-          "#{o[:indent]}#{node.compile(o)}#{node.line_ending}"
+          indent = node.statement? ? '' : o[:indent]
+          "#{indent}#{node.compile(o)}#{node.line_ending}"
         end
       end
       scope = options[:scope]
@@ -371,6 +373,10 @@ module CoffeeScript
       @value.custom_assign? ? '' : ';'
     end
 
+    def statement?
+      @value.custom_assign?
+    end
+
     def compile(o={})
       o = super(o)
       name      = @variable.compile(o)
@@ -556,6 +562,7 @@ module CoffeeScript
       svar          = scope.free_variable
       ivar          = range ? name : @index ? @index : scope.free_variable
       rvar          = scope.free_variable
+      tvar          = scope.free_variable
       if range
         body_dent   = o[:indent] + TAB
         source_part, var_part = '', '', ''
@@ -572,27 +579,26 @@ module CoffeeScript
         post_cond   = "\n#{o[:indent] + TAB}}"
       end
       body          = @body
-      suffix        = ';'
       set_result    = "#{rvar} = [];\n#{o[:indent]}"
       return_result = rvar
-      body = CallNode.new(ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [@body])
-
+      temp_var      = ValueNode.new(LiteralNode.new(tvar))
+      body = Expressions.new([
+        AssignNode.new(temp_var, @body),
+        CallNode.new(ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [temp_var])
+      ])
       if o[:return] || o[:assign]
         return_result = "#{o[:assign].compile(o)} = #{return_result}" if o[:assign]
         return_result = "return #{return_result}" if o[:return]
         o.delete(:assign)
         o.delete(:return)
-        if @filter
-          body = IfNode.new(@filter, body, nil, :statement => true)
-          suffix = ''
-        end
+        body = IfNode.new(@filter, body, nil, :statement => true) if @filter
       elsif @filter
         body = IfNode.new(@filter, @body)
       end
 
       return_result = "\n#{o[:indent]}#{return_result};"
       body = body.compile(o.merge(:indent => body_dent))
-      write("#{source_part}#{set_result}for (#{for_part}) {#{pre_cond}#{var_part}\n#{body_dent}#{body}#{suffix}#{post_cond}\n#{o[:indent]}}#{return_result}")
+      write("#{source_part}#{set_result}for (#{for_part}) {#{pre_cond}#{var_part}\n#{body}#{post_cond}\n#{o[:indent]}}#{return_result}")
     end
   end
 
