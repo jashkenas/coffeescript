@@ -93,8 +93,8 @@ module CoffeeScript
       return if string_token
       return if js_token
       return if regex_token
-      return if comment_token
       return if indent_token
+      return if comment_token
       return if whitespace_token
       return    literal_token
     end
