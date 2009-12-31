@@ -27,7 +27,7 @@ module CoffeeScript
     COMMENT    = /\A(((\n[ \t]*)?#.*$)+)/
     CODE       = /\A(=>)/
     REGEX      = /\A(\/(.*?)[^\\]\/[imgy]{0,4})/
-    MULTI_DENT = /\A((\n([ \t]*(?=[^$]))?)+)/
+    MULTI_DENT = /\A((\n([ \t]*(?=\S))?)+)/
     LAST_DENT  = /\n+([ \t]*)\Z/
 
     # Token cleaning regexes.
