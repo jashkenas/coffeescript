@@ -19,7 +19,7 @@ token INDENT OUTDENT
 
 # Declare order of operations.
 prechigh
-  nonassoc UMINUS SPLAT NOT '!' '!!' '~' '++' '--'
+  nonassoc UMINUS SPLAT NOT '!' '!!' '~' '++' '--' '?'
   left     '*' '/' '%'
   left     '+' '-'
   left     '<<' '>>' '>>>'
@@ -72,6 +72,7 @@ rule
   | Switch
   | Extends
   | Splat
+  | Existence
   | Comment
   ;
 
@@ -179,6 +180,10 @@ rule
   | Expression '&&=' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
 
   | Expression INSTANCEOF Expression  { result = OpNode.new(val[1], val[0], val[2]) }
+  ;
+
+  Existence:
+    Expression '?'                    { result = ExistenceNode.new(val[0]) }
   ;
 
   # Function definition.
