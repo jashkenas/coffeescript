@@ -196,17 +196,11 @@ module CoffeeScript
       i = 0
       loop do
         i -= 1
-        tok, prev = @tokens[i], @tokens[i - 1]
+        tok = @tokens[i]
         return if !tok
-        next if tok[0] == ','
+        next if ['*', ','].include?(tok[0])
         return if tok[0] != :IDENTIFIER
-        if prev && prev[0] == '*'
-          tok[0] = :SPLAT
-          @tokens.delete_at(i - 1)
-          i -= 1
-        else
-          tok[0] = :PARAM
-        end
+        tok[0] = :PARAM
       end
     end
 

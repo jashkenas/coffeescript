@@ -212,11 +212,16 @@ module CoffeeScript
       @variable == :super
     end
 
+    def prefix
+      @new ? "new " : ''
+    end
+
     def compile(o={})
       o = super(o)
+      @splat = @arguments.detect {|a| a.is_a?(ArgSplatNode) }
+      return write(compile_splat(o)) if @splat
       args = @arguments.map{|a| a.compile(o) }.join(', ')
       return write(compile_super(args, o)) if super?
-      prefix = @new ? "new " : ''
       write("#{prefix}#{@variable.compile(o)}(#{args})")
     end
 
@@ -224,6 +229,17 @@ module CoffeeScript
       methname = o[:last_assign]
       arg_part = args.empty? ? '' : ", #{args}"
       "#{o[:proto_assign]}.__superClass__.#{methname}.call(this#{arg_part})"
+    end
+
+    def compile_splat(o)
+      meth = @variable.compile(o)
+      obj  = @variable.source || 'this'
+      args = @arguments.map do |arg|
+        code = arg.compile(o)
+        code = arg == @splat ? code : "[#{code}]"
+        arg.equal?(@arguments.first) ? code : ".concat(#{code})"
+      end
+      "#{prefix}#{meth}.apply(#{obj}, #{args.join('')})"
     end
   end
 
@@ -247,7 +263,7 @@ module CoffeeScript
 
   # A value, indexed or dotted into, or vanilla.
   class ValueNode < Node
-    attr_reader :literal, :properties, :last
+    attr_reader :literal, :properties, :last, :source
 
     def initialize(literal, properties=[])
       @literal, @properties = literal, properties
@@ -280,6 +296,7 @@ module CoffeeScript
         val.respond_to?(:compile) ? val.compile(o) : val.to_s
       end
       @last = parts.last
+      @source = parts.length > 1 ? parts[0...-1].join('') : nil
       write(parts.join(''))
     end
   end
@@ -463,7 +480,7 @@ module CoffeeScript
       o.delete(:assign)
       o.delete(:no_wrap)
       name = o.delete(:immediate_assign)
-      if @params.last.is_a?(SplatNode)
+      if @params.last.is_a?(ParamSplatNode)
         splat = @params.pop
         splat.index = @params.length
         @body.unshift(splat)
@@ -476,7 +493,7 @@ module CoffeeScript
   end
 
   # A parameter splat in a function definition.
-  class SplatNode < Node
+  class ParamSplatNode < Node
     attr_accessor :index
     attr_reader :name
 
@@ -486,8 +503,21 @@ module CoffeeScript
 
     def compile(o={})
       o[:scope].find(@name)
-      "#{@name} = Array.prototype.slice.call(arguments, #{@index})"
+      write("#{@name} = Array.prototype.slice.call(arguments, #{@index})")
     end
+  end
+
+  class ArgSplatNode < Node
+    attr_reader :value
+
+    def initialize(value)
+      @value = value
+    end
+
+    def compile(o={})
+      write(@value.compile(o))
+    end
+
   end
 
   # An object literal.
