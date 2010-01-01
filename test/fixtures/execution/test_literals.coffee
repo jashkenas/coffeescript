@@ -7,3 +7,8 @@ regex: /match/i
 words: "I think there is a match in here."
 
 print(!!words.match(regex))
+
+
+neg: (3 -4)
+
+print(neg is -1)
