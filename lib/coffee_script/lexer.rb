@@ -19,7 +19,7 @@ module CoffeeScript
 
     # Token matching regexes.
     IDENTIFIER = /\A([a-zA-Z$_]\w*)/
-    NUMBER     = /\A((\b|-)((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
+    NUMBER     = /\A(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
     STRING     = /\A(""|''|"(.*?)[^\\]"|'(.*?)[^\\]')/m
     JS         = /\A(``|`(.*?)[^\\]`)/m
     OPERATOR   = /\A([+\*&|\/\-%=<>:!]+)/

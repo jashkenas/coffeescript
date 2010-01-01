@@ -265,8 +265,10 @@ rule
 
   # The range literal.
   Range:
-    "[" Value "." "." Value "]"       { result = RangeNode.new(val[1], val[4]) }
-  | "[" Value "." "." "." Value "]"   { result = RangeNode.new(val[1], val[5], true) }
+    "[" Expression
+      "." "." Expression "]"          { result = RangeNode.new(val[1], val[4]) }
+  | "[" Expression
+      "." "." "." Expression "]"      { result = RangeNode.new(val[1], val[5], true) }
   ;
 
   # The array literal.
