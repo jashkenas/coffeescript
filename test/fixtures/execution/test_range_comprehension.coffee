@@ -13,3 +13,8 @@ result: for j in [j..(j+3)]
   j
 
 print(result.join(' ') is '5 6 7 8')
+
+# With range comprehensions, you can loop in steps.
+results: x for x in [0..25] by 5
+
+print(results.join(' ') is '0 5 10 15 20 25')

@@ -360,11 +360,12 @@ module CoffeeScript
       write("#{idt}#{@from_var} = #{from_val};\n#{idt}#{@to_var} = #{to_val};\n#{idt}")
     end
 
-    def compile(o, idx=nil)
+    def compile(o, idx=nil, step=nil)
       raise SyntaxError, "unexpected range literal" unless idx
       vars     = "#{idx}=#{@from_var}"
+      step     = step ? step.compile(o) : '1'
       compare  = "(#{@from_var} <= #{@to_var} ? #{idx} #{less_operator} #{@to_var} : #{idx} #{greater_operator} #{@to_var})"
-      incr     = "(#{@from_var} <= #{@to_var} ? #{idx} += 1 : #{idx} -= 1)"
+      incr     = "(#{@from_var} <= #{@to_var} ? #{idx} += #{step} : #{idx} -= #{step})"
       write("#{vars}; #{compare}; #{incr}")
     end
 
@@ -609,10 +610,13 @@ module CoffeeScript
     custom_return
     custom_assign
 
-    attr_reader :body, :source, :name, :filter, :index
+    attr_reader :body, :source, :name, :index, :filter, :step
 
-    def initialize(body, source, name, filter, index=nil)
-      @body, @source, @name, @filter, @index = body, source, name, filter, index
+    def initialize(body, source, name, index=nil)
+      @body, @name, @index = body, name, index
+      @source = source[:source]
+      @filter = source[:filter]
+      @step   = source[:step]
     end
 
     def line_ending
@@ -634,7 +638,7 @@ module CoffeeScript
         var_part, pre_cond, post_cond = '', '', ''
         index_var   = scope.free_variable
         source_part = @source.compile_variables(o)
-        for_part    = "#{index_var}=0, #{@source.compile(o, ivar)}, #{index_var}++"
+        for_part    = "#{index_var}=0, #{@source.compile(o, ivar, @step)}, #{index_var}++"
       else
         index_var   = nil
         body_dent   = o[:indent] + TAB + TAB
