@@ -280,10 +280,12 @@ rule
   ArgList:
     /* nothing */                     { result = [] }
   | Expression                        { result = val }
+  | INDENT Expression                 { result = [val[1]] }
   | ArgList "," Expression            { result = val[0] << val[2] }
   | ArgList Terminator Expression     { result = val[0] << val[2] }
   | ArgList "," Terminator Expression { result = val[0] << val[3] }
-  | INDENT ArgList OUTDENT            { result = val[1] }
+  | ArgList "," INDENT Expression     { result = val[0] << val[3] }
+  | ArgList OUTDENT                   { result = val[0] }
   ;
 
   # Try/catch/finally exception handling blocks.
