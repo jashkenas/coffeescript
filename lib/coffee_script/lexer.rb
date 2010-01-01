@@ -37,9 +37,14 @@ module CoffeeScript
     COMMENT_CLEANER = /(^\s*#|\n\s*$)/
     NO_NEWLINE = /\A([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)\Z/
 
-    # Tokens which a regular expression will never immediately follow.
+    # Tokens which a regular expression will never immediately follow, but which
+    # a division operator might.
     # See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
-    NOT_REGEX  = [:IDENTIFIER, :NUMBER, :STRING]
+    NOT_REGEX  = [
+      :IDENTIFIER, :NUMBER, :REGEX, :STRING,
+      ')', '++', '--', ']', '}',
+      :FALSE, :NULL, :THIS, :TRUE
+    ]
 
     # Scan by attempting to match tokens one character at a time. Slow and steady.
     def tokenize(code)
