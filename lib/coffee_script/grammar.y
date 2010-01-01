@@ -8,7 +8,7 @@ token IDENTIFIER PROPERTY_ACCESS
 token CODE PARAM NEW RETURN
 token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
-token FOR IN WHILE
+token FOR IN BY WHILE
 token SWITCH WHEN
 token DELETE INSTANCEOF TYPEOF
 token SUPER EXTENDS
@@ -32,7 +32,7 @@ prechigh
   left     '.'
   right    INDENT
   left     OUTDENT
-  right    WHEN IN
+  right    WHEN IN BY
   right    THROW FOR WHILE NEW SUPER ELSE
   left     UNLESS EXTENDS IF
   left     ASSIGN '||=' '&&='
@@ -321,8 +321,8 @@ rule
   # Looks a little confusing, check nodes.rb for the arguments to ForNode.
   For:
     Expression FOR
-      ForVariables ForSource          { result = ForNode.new(val[0], val[3][0], val[2][0], val[3][1], val[2][1]) }
-  | FOR ForVariables ForSource Block  { result = ForNode.new(val[3], val[2][0], val[1][0], val[2][1], val[1][1]) }
+      ForVariables ForSource          { result = ForNode.new(val[0], val[3], val[2][0], val[2][1]) }
+  | FOR ForVariables ForSource Block  { result = ForNode.new(val[3], val[2], val[1][0], val[1][1]) }
   ;
 
   # An array comprehension has variables for the current element and index.
@@ -333,9 +333,11 @@ rule
 
   # The source of the array comprehension can optionally be filtered.
   ForSource:
-    IN Expression                     { result = [val[1]] }
-  | IN Expression
-    WHEN Expression                   { result = [val[1], val[3]] }
+    IN Expression                     { result = {:source => val[1]} }
+  | ForSource
+    WHEN Expression                   { result = val[0].merge(:filter => val[2]) }
+  | ForSource
+    BY Expression                     { result = val[0].merge(:step => val[2]) }
   ;
 
   # Switch/When blocks.
