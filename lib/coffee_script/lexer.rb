@@ -37,6 +37,10 @@ module CoffeeScript
     COMMENT_CLEANER = /(^\s*#|\n\s*$)/
     NO_NEWLINE = /\A([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)\Z/
 
+    # Tokens which a regular expression will never immediately follow.
+    # See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
+    NOT_REGEX  = [:IDENTIFIER, :NUMBER, :STRING]
+
     # Scan by attempting to match tokens one character at a time. Slow and steady.
     def tokenize(code)
       @code = code.chomp  # Cleanup code by remove extra line breaks
@@ -107,6 +111,7 @@ module CoffeeScript
     # Matches regular expression literals.
     def regex_token
       return false unless regex = @chunk[REGEX, 1]
+      return false if NOT_REGEX.include?(last_tag)
       token(:REGEX, regex)
       @i += regex.length
     end
@@ -183,9 +188,14 @@ module CoffeeScript
       @tokens << [tag, Value.new(value, @line)]
     end
 
-    # Peek at the previous token.
+    # Peek at the previous token's value.
     def last_value
       @tokens.last && @tokens.last[1]
+    end
+
+    # Peek at the previous token's tag.
+    def last_tag
+      @tokens.last && @tokens.last[0]
     end
 
     # A source of ambiguity in our grammar was parameter lists in function
