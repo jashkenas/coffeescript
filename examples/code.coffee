@@ -27,9 +27,9 @@ spaced_out_multiline_object: {
 }
 
 # Arrays:
-stooges : [{moe: 45}, {curly: 43}, {larry: 46}]
+stooges: [{moe: 45}, {curly: 43}, {larry: 46}]
 
-exponents : [(x => x), (x => x * x), (x => x * x * x)]
+exponents: [(x => x), (x => x * x), (x => x * x * x)]
 
 empty: []
 
