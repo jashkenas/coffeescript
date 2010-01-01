@@ -216,10 +216,13 @@ module CoffeeScript
       @new ? "new " : ''
     end
 
+    def splat?
+      @arguments.any? {|a| a.is_a?(ArgSplatNode) }
+    end
+
     def compile(o={})
       o = super(o)
-      @splat = @arguments.detect {|a| a.is_a?(ArgSplatNode) }
-      return write(compile_splat(o)) if @splat
+      return write(compile_splat(o)) if splat?
       args = @arguments.map{|a| a.compile(o) }.join(', ')
       return write(compile_super(args, o)) if super?
       write("#{prefix}#{@variable.compile(o)}(#{args})")
@@ -236,7 +239,7 @@ module CoffeeScript
       obj  = @variable.source || 'this'
       args = @arguments.map do |arg|
         code = arg.compile(o)
-        code = arg == @splat ? code : "[#{code}]"
+        code = arg.is_a?(ArgSplatNode) ? code : "[#{code}]"
         arg.equal?(@arguments.first) ? code : ".concat(#{code})"
       end
       "#{prefix}#{meth}.apply(#{obj}, #{args.join('')})"
