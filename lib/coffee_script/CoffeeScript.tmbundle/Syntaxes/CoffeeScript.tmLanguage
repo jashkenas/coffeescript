@@ -210,6 +210,25 @@
 		</dict>
 		<dict>
 			<key>match</key>
+			<string>\b([a-zA-Z$_]\w*)(\:)\s</string>
+			<key>name</key>
+			<string>variable.assignment.coffee</string>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>entity.name.function.coffee</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.operator.coffee</string>
+				</dict>
+			</dict>
+		</dict>
+		<dict>
+			<key>match</key>
 			<string>\b(true|on|yes)\b</string>
 			<key>name</key>
 			<string>constant.language.boolean.true.coffee</string>
