@@ -6,3 +6,10 @@ negs: negs[0..2]
 result: nums.concat(negs).join(', ')
 
 print(result is '3, 6, 9, -20, -19, -18')
+
+# Ensure that ranges are safe. This used to infinite loop:
+j = 5
+result: for j in [j..(j+3)]
+  j
+
+print(result.join(' ') is '5 6 7 8')
