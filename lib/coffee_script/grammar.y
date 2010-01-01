@@ -32,7 +32,8 @@ prechigh
   left     '.'
   right    INDENT
   left     OUTDENT
-  right    THROW FOR IN WHILE WHEN NEW SUPER ELSE
+  right    WHEN IN
+  right    THROW FOR WHILE NEW SUPER ELSE
   left     UNLESS EXTENDS IF
   left     ASSIGN '||=' '&&='
   right    RETURN '=>'

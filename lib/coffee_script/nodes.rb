@@ -360,10 +360,11 @@ module CoffeeScript
       write("#{idt}#{@from_var} = #{from_val};\n#{idt}#{@to_var} = #{to_val};\n#{idt}")
     end
 
-    def compile(o, fv)
-      vars     = "#{fv}=#{@from_var}"
-      compare  = "(#{@from_var} <= #{@to_var} ? #{fv} #{less_operator} #{@to_var} : #{fv} #{greater_operator} #{@to_var})"
-      incr     = "(#{@from_var} <= #{@to_var} ? #{fv} += 1 : #{fv} -= 1)"
+    def compile(o, idx=nil)
+      raise SyntaxError, "unexpected range literal" unless idx
+      vars     = "#{idx}=#{@from_var}"
+      compare  = "(#{@from_var} <= #{@to_var} ? #{idx} #{less_operator} #{@to_var} : #{idx} #{greater_operator} #{@to_var})"
+      incr     = "(#{@from_var} <= #{@to_var} ? #{idx} += 1 : #{idx} -= 1)"
       write("#{vars}; #{compare}; #{incr}")
     end
 
