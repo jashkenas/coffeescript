@@ -63,8 +63,8 @@ module CoffeeScript
       Rewriter.new.rewrite(@tokens)
     end
 
-    # At every position, run this list of match attempts, short-circuiting if
-    # any of them succeed.
+    # At every position, run through this list of attempted matches,
+    # short-circuiting if any of them succeed.
     def extract_next_token
       return if identifier_token
       return if number_token
@@ -77,11 +77,13 @@ module CoffeeScript
       return    literal_token
     end
 
+    # Tokenizers ==========================================================
+
     # Matches identifying literals: variables, keywords, method names, etc.
     def identifier_token
       return false unless identifier = @chunk[IDENTIFIER, 1]
-      # Keywords are special identifiers tagged with their own name, 'if' will result
-      # in an [:IF, "if"] token
+      # Keywords are special identifiers tagged with their own name,
+      # 'if' will result in an [:IF, "if"] token.
       tag = KEYWORDS.include?(identifier) ? identifier.upcase.to_sym : :IDENTIFIER
       @tokens[-1][0] = :PROPERTY_ACCESS if tag == :IDENTIFIER && last_value == '.' && !(@tokens[-2][1] == '.')
       token(tag, identifier)
@@ -147,6 +149,8 @@ module CoffeeScript
       @indent = size
     end
 
+    # Record an oudent token or tokens, if we're moving back inwards past
+    # multiple recorded indents.
     def outdent_token(move_out)
       while move_out > 0 && !@indents.empty?
         last_indent = @indents.pop
@@ -186,6 +190,8 @@ module CoffeeScript
       token(tag, value)
       @i += value.length
     end
+
+    # Helpers ==========================================================
 
     # Add a token to the results, taking note of the line number, and
     # immediately-preceding comment.
