@@ -334,7 +334,7 @@ module CoffeeScript
 
   # A range literal. Ranges can be used to extract portions (slices) of arrays,
   # or to specify a range for array comprehensions.
-  class RangeNode
+  class RangeNode < Node
     attr_reader :from, :to
 
     def initialize(from, to, exclusive=false)
@@ -353,12 +353,18 @@ module CoffeeScript
       @exclusive ? '>' : '>='
     end
 
+    def compile_variables(o)
+      idt = o[:indent]
+      @from_var, @to_var = o[:scope].free_variable, o[:scope].free_variable
+      from_val,  to_val  = @from.compile(o), @to.compile(o)
+      write("#{idt}#{@from_var} = #{from_val};\n#{idt}#{@to_var} = #{to_val};\n#{idt}")
+    end
+
     def compile(o, fv)
-      fvv, tvv = @from.compile(o), @to.compile(o)
-      vars     = "#{fv}=#{fvv}"
-      compare  = "(#{fvv} <= #{tvv} ? #{fv} #{less_operator} #{tvv} : #{fv} #{greater_operator} #{tvv})"
-      incr     = "(#{fvv} <= #{tvv} ? #{fv} += 1 : #{fv} -= 1)"
-      "#{vars}; #{compare}; #{incr}"
+      vars     = "#{fv}=#{@from_var}"
+      compare  = "(#{@from_var} <= #{@to_var} ? #{fv} #{less_operator} #{@to_var} : #{fv} #{greater_operator} #{@to_var})"
+      incr     = "(#{@from_var} <= #{@to_var} ? #{fv} += 1 : #{fv} -= 1)"
+      write("#{vars}; #{compare}; #{incr}")
     end
 
   end
@@ -624,9 +630,9 @@ module CoffeeScript
       tvar          = scope.free_variable
       if range
         body_dent   = o[:indent] + TAB
-        source_part, var_part = '', '', ''
-        pre_cond, post_cond = '', ''
+        var_part, pre_cond, post_cond = '', '', ''
         index_var   = scope.free_variable
+        source_part = @source.compile_variables(o)
         for_part    = "#{index_var}=0, #{@source.compile(o, ivar)}, #{index_var}++"
       else
         index_var   = nil
