@@ -724,7 +724,8 @@ module CoffeeScript
     end
 
     def compile(o={})
-      write("(#{@expression.compile(super(o))} != undefined)")
+      val = @expression.compile(super(o))
+      write("(typeof #{val} !== 'undefined' && #{val} !== null)")
     end
   end
 
