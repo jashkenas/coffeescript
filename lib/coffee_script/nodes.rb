@@ -715,6 +715,19 @@ module CoffeeScript
     end
   end
 
+  # Check an expression for existence (meaning not null or undefined).
+  class ExistenceNode < Node
+    attr_reader :expression
+
+    def initialize(expression)
+      @expression = expression
+    end
+
+    def compile(o={})
+      write("(#{@expression.compile(super(o))} != undefined)")
+    end
+  end
+
   # An extra set of parentheses, supplied by the script source.
   # You can't wrap parentheses around bits that get compiled into JS statements,
   # unfortunately.
