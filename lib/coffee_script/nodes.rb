@@ -417,7 +417,7 @@ module CoffeeScript
       last      = @variable.last.to_s.sub(LEADING_DOT, '')
       proto     = name[PROTO_ASSIGN, 1]
       o         = o.merge(:assign => @variable, :last_assign => last, :proto_assign => proto)
-      o[:immediate_assign] = last if @value.is_a?(CodeNode)
+      o[:immediate_assign] = last if @value.is_a?(CodeNode) && last.match(Lexer::IDENTIFIER)
       return write("#{name}: #{@value.compile(o)}") if @context == :object
       o[:scope].find(name) unless @variable.properties?
       return write(@value.compile(o)) if @value.custom_assign?
