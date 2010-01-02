@@ -294,8 +294,10 @@ module CoffeeScript
     end
 
     def compile(o={})
-      o = super(o)
-      parts = [@literal, @properties].flatten.map do |val|
+      o     = super(o)
+      only  = o.delete(:only_first)
+      props = only ? @properties[0...-1] : @properties
+      parts = [@literal, props].flatten.map do |val|
         val.respond_to?(:compile) ? val.compile(o) : val.to_s
       end
       @last = parts.last
@@ -413,6 +415,7 @@ module CoffeeScript
 
     def compile(o={})
       o = super(o)
+      return compile_splice(o) if @variable.properties.last.is_a?(SliceNode)
       name      = @variable.compile(o)
       last      = @variable.last.to_s.sub(LEADING_DOT, '')
       proto     = name[PROTO_ASSIGN, 1]
@@ -423,6 +426,15 @@ module CoffeeScript
       return write(@value.compile(o)) if @value.custom_assign?
       val = "#{name} = #{@value.compile(o)}"
       write(o[:return] && !@value.custom_return? ? "#{o[:indent]}return (#{val})" : val)
+    end
+
+    def compile_splice(o)
+      var   = @variable.compile(o.merge(:only_first => true))
+      range = @variable.properties.last.range
+      plus  = range.exclusive? ? '' : ' + 1'
+      from  = range.from.compile(o)
+      to    = "#{range.to.compile(o)} - #{from}#{plus}"
+      write("#{var}.splice.apply(#{var}, [#{from}, #{to}].concat(#{@value.compile(o)}))")
     end
   end
 
