@@ -581,7 +581,7 @@ car.speed <span class="Keyword">&lt;</span> speed_limit ? accelerate() : <span c
       would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>.
     </p>
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> Eat lunch.</span>
-lunch<span class="Keyword">:</span> food.eat() <span class="Keyword">for</span> food <span class="Keyword">in</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>]
+lunch<span class="Keyword">:</span> <span class="Variable">this</span>.eat(food) <span class="Keyword">for</span> food <span class="Keyword">in</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>]
 
 <span class="Comment"><span class="Comment">#</span> Zebra-stripe a table.</span>
 highlight(row) <span class="Keyword">for</span> row, i <span class="Keyword">in</span> table <span class="Keyword">when</span> i <span class="Keyword">%</span> <span class="Number">2</span> <span class="Keyword">is</span> <span class="Number">0</span>
@@ -592,7 +592,7 @@ __c <span class="Keyword">=</span> [];
 <span class="Keyword">for</span> (__b <span class="Keyword">in</span> __a) {
   <span class="Keyword">if</span> (__a.hasOwnProperty(__b)) {
     food <span class="Keyword">=</span> __a[__b];
-    __d <span class="Keyword">=</span> food.eat();
+    __d <span class="Keyword">=</span> <span class="Variable">this</span>.eat(food);
     __c.<span class="LibraryFunction">push</span>(__d);
   }
 }

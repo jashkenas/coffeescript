@@ -6,7 +6,7 @@
   for (__b in __a) {
     if (__a.hasOwnProperty(__b)) {
       food = __a[__b];
-      __d = food.eat();
+      __d = this.eat(food);
       __c.push(__d);
     }
   }
