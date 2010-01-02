@@ -21,8 +21,9 @@ checkForErrors: coffeeProcess =>
 # command.
 exports.run: args =>
   if args.length
-    exports.evalCS(File.read(path)) for path in args
-    delete args[i] for path, i in args
+    for path, i in args
+      exports.evalCS(File.read(path))
+      delete args[i]
     return true
 
   while true
