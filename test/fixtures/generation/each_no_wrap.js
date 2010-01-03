@@ -1,6 +1,4 @@
-
-// The cornerstone, an each implementation.
-// Handles objects implementing forEach, arrays, and raw objects.
+// The cornerstone, an each implementation.// Handles objects implementing forEach, arrays, and raw objects.
 _.each = function each(obj, iterator, context) {
   var __a, __b, __c, __d, __e, __f, __g, i, index, item, key;
   index = 0;
