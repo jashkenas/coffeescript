@@ -179,7 +179,7 @@ module CoffeeScript
     end
 
     def compile_node(o={})
-      delimiter = "\n#{o[:indent]}//"
+      delimiter = "#{o[:indent]}//"
       comment   = "#{delimiter}#{@lines.join(delimiter)}"
       write(comment)
     end
