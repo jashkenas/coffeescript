@@ -1201,14 +1201,14 @@ Racc_debug_parser = false
 
 module_eval(<<'.,.,', 'grammar.y', 45)
   def _reduce_1(val, _values, result)
-     result = Expressions.new([]) 
+     result = Expressions.new 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'grammar.y', 46)
   def _reduce_2(val, _values, result)
-     result = Expressions.new([]) 
+     result = Expressions.new 
     result
   end
 .,.,
@@ -1222,7 +1222,7 @@ module_eval(<<'.,.,', 'grammar.y', 47)
 
 module_eval(<<'.,.,', 'grammar.y', 52)
   def _reduce_4(val, _values, result)
-     result = Expressions.new(val) 
+     result = Expressions.wrap(val) 
     result
   end
 .,.,
@@ -1284,7 +1284,7 @@ module_eval(<<'.,.,', 'grammar.y', 79)
 
 module_eval(<<'.,.,', 'grammar.y', 80)
   def _reduce_25(val, _values, result)
-     result = Expressions.new([]) 
+     result = Expressions.new 
     result
   end
 .,.,
@@ -2237,14 +2237,14 @@ module_eval(<<'.,.,', 'grammar.y', 406)
 
 module_eval(<<'.,.,', 'grammar.y', 407)
   def _reduce_164(val, _values, result)
-     result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true}) 
+     result = IfNode.new(val[2], Expressions.wrap(val[0]), nil, {:statement => true}) 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'grammar.y', 408)
   def _reduce_165(val, _values, result)
-     result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true, :invert => true}) 
+     result = IfNode.new(val[2], Expressions.wrap(val[0]), nil, {:statement => true, :invert => true}) 
     result
   end
 .,.,

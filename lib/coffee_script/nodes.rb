@@ -11,17 +11,11 @@ module CoffeeScript
       class_eval "def statement?; true; end"
     end
 
-    # Tag this node as having a custom return, meaning that instead of returning
-    # it from the outside, you ask it to return itself, and it obliges.
-    def self.custom_return
-      class_eval "def custom_return?; true; end"
-    end
-
-    # Tag this node as having a custom assignment, meaning that instead of
-    # assigning it to a variable name from the outside, you pass it the variable
-    # name and let it take care of it.
-    def self.custom_assign
-      class_eval "def custom_assign?; true; end"
+    # Tag this node as a statement that cannot be transformed into an expression.
+    # (break, continue, etc.) It doesn't make sense to try to transform it.
+    def self.statement_only
+      statement
+      class_eval "def statement_only?; true; end"
     end
 
     def write(code)
@@ -33,29 +27,31 @@ module CoffeeScript
       @options = o.dup
     end
 
+    def compile_closure(o={})
+      "(#{CodeNode.new([], Expressions.wrap(self)).compile(o, o[:scope])})()"
+    end
+
     # Default implementations of the common node methods.
-    def unwrap;                                 self;   end
-    def line_ending;                            ';';    end
-    def statement?;                             false;  end
-    def custom_return?;                         false;  end
-    def custom_assign?;                         false;  end
+    def unwrap;           self;   end
+    def statement?;       false;  end
+    def statement_only?;  false;  end
   end
 
   # A collection of nodes, each one representing an expression.
   class Expressions < Node
     statement
-    custom_assign
     attr_reader :expressions
 
     STRIP_TRAILING_WHITESPACE = /\s+$/
 
     # Wrap up a node as an Expressions, unless it already is.
-    def self.wrap(node)
-      node.is_a?(Expressions) ? node : Expressions.new([node])
+    def self.wrap(*nodes)
+      return nodes[0] if nodes.length == 1 && nodes[0].is_a?(Expressions)
+      Expressions.new(*nodes)
     end
 
-    def initialize(nodes)
-      @expressions = nodes
+    def initialize(*nodes)
+      @expressions = nodes.flatten
     end
 
     # Tack an expression onto the end of this node.
@@ -83,43 +79,36 @@ module CoffeeScript
     # If this is the top-level Expressions, wrap everything in a safety closure.
     def root_compile(o={})
       indent = o[:no_wrap] ? '' : TAB
-      code = compile(o.merge(:indent => indent, :scope => Scope.new), o[:no_wrap] ? nil : :code)
+      code = compile(o.merge(:indent => indent, :scope => Scope.new(nil, self)), o[:no_wrap] ? nil : :code)
       code.gsub!(STRIP_TRAILING_WHITESPACE, '')
       o[:no_wrap] ? code : "(function(){\n#{code}\n})();"
     end
 
-    # The extra fancy is to handle pushing down returns and assignments
-    # recursively to the final lines of inner statements.
-    # Variables first defined within the Expressions body have their
-    # declarations pushed up to the top scope.
+    # The extra fancy is to handle pushing down returns to the final lines of
+    # inner statements. Variables first defined within the Expressions body
+    # have their declarations pushed up top of the closest scope.
     def compile(options={}, parent=nil)
       return root_compile(options) unless options[:scope]
       compiled = @expressions.map do |node|
         o = super(options)
-        if last?(node) && (o[:return] || o[:assign])
-          if o[:return]
-            if node.statement? || node.custom_return?
-              "#{node.compile(o)}#{node.line_ending}"
-            else
-              o.delete(:return)
-              "#{o[:indent]}return #{node.compile(o)}#{node.line_ending}"
-            end
-          elsif o[:assign]
-            if node.statement? || node.custom_assign?
-              "#{node.compile(o)}#{node.line_ending}"
-            else
-              "#{o[:indent]}#{AssignNode.new(o[:assign], node).compile(o)};"
-            end
+        returns = o.delete(:return)
+        code = node.compile(o)
+        if last?(node) && returns && !node.statement_only?
+          if node.statement?
+            node.compile(o.merge(:return => true))
+          else
+            "#{o[:indent]}return #{node.compile(o)};"
           end
         else
-          o.delete(:return) and o.delete(:assign)
-          indent = node.unwrap.statement? ? '' : o[:indent]
-          "#{indent}#{node.compile(o)}#{node.line_ending}"
+          ending = node.statement_only? ? '' : ';'
+          indent = node.statement? ? '' : o[:indent]
+          "#{indent}#{node.compile(o)}#{ending}"
         end
       end
       scope = options[:scope]
-      declarations = scope.any_declared? && parent == :code ? "#{options[:indent]}var #{scope.declared_variables.join(', ')};\n" : ''
-      code = declarations + compiled.join("\n")
+      decls = ''
+      decls = "#{options[:indent]}var #{scope.declared_variables.join(', ')};\n" if parent == :code && scope.declarations?(self)
+      code = decls + compiled.join("\n")
       write(code)
     end
   end
@@ -138,10 +127,7 @@ module CoffeeScript
     def statement?
       STATEMENTS.include?(@value.to_s)
     end
-
-    def line_ending
-      @value.to_s[-1..-1] == ';' ? '' : ';'
-    end
+    alias_method :statement_only?, :statement?
 
     def compile(o={})
       o = super(o)
@@ -152,17 +138,12 @@ module CoffeeScript
 
   # Try to return your expression, or tell it to return itself.
   class ReturnNode < Node
-    statement
-    custom_return
+    statement_only
 
     attr_reader :expression
 
     def initialize(expression)
       @expression = expression
-    end
-
-    def line_ending
-      @expression.custom_return? ? '' : ';'
     end
 
     def compile(o={})
@@ -176,14 +157,10 @@ module CoffeeScript
   # Pass through CoffeeScript comments into JavaScript comments at the
   # same position.
   class CommentNode < Node
-    statement
+    statement_only
 
     def initialize(lines)
       @lines = lines.value
-    end
-
-    def line_ending
-      ''
     end
 
     def compile(o={})
@@ -253,6 +230,7 @@ module CoffeeScript
   # Node to extend an object's prototype with an ancestor object.
   # After goog.inherits from the Closure Library.
   class ExtendsNode < Node
+    statement
     attr_reader :sub_object, :super_object
 
     def initialize(sub_object, super_object)
@@ -287,14 +265,6 @@ module CoffeeScript
 
     def statement?
       @literal.is_a?(Node) && @literal.statement? && !properties?
-    end
-
-    def custom_assign?
-      @literal.is_a?(Node) && @literal.custom_assign? && !properties?
-    end
-
-    def custom_return?
-      @literal.is_a?(Node) && @literal.custom_return? && !properties?
     end
 
     def compile(o={})
@@ -401,20 +371,10 @@ module CoffeeScript
     PROTO_ASSIGN = /\A(\S+)\.prototype/
     LEADING_DOT = /\A\./
 
-    custom_return
-
     attr_reader :variable, :value, :context
 
     def initialize(variable, value, context=nil)
       @variable, @value, @context = variable, value, context
-    end
-
-    def line_ending
-      @value.custom_assign? ? '' : ';'
-    end
-
-    def statement?
-      @value.custom_assign?
     end
 
     def compile(o={})
@@ -423,13 +383,13 @@ module CoffeeScript
       name      = @variable.compile(o)
       last      = @variable.last.to_s.sub(LEADING_DOT, '')
       proto     = name[PROTO_ASSIGN, 1]
-      o         = o.merge(:assign => @variable, :last_assign => last, :proto_assign => proto)
+      o         = o.merge(:last_assign => last, :proto_assign => proto)
       o[:immediate_assign] = last if @value.is_a?(CodeNode) && last.match(Lexer::IDENTIFIER)
       return write("#{name}: #{@value.compile(o)}") if @context == :object
       o[:scope].find(name) unless @variable.properties?
-      return write(@value.compile(o)) if @value.custom_assign?
-      val = "#{name} = #{@value.compile(o)}"
-      write(o[:return] && !@value.custom_return? ? "#{o[:indent]}return (#{val})" : val)
+      code = @value.statement? ? @value.compile_closure(o) : @value.compile(o)
+      val = "#{name} = #{code}"
+      write(o[:return] ? "#{o[:indent]}return (#{val})" : val)
     end
 
     def compile_splice(o)
@@ -498,13 +458,12 @@ module CoffeeScript
       @body = body
     end
 
-    def compile(o={})
+    def compile(o={}, shared_scope=nil)
       o = super(o)
-      o[:scope] = Scope.new(o[:scope])
+      o[:scope] = shared_scope || Scope.new(o[:scope], @body)
       o[:return] = true
       indent = o[:indent]
       o[:indent] += TAB
-      o.delete(:assign)
       o.delete(:no_wrap)
       name = o.delete(:immediate_assign)
       if @params.last.is_a?(ParamSplatNode)
@@ -604,10 +563,6 @@ module CoffeeScript
       @condition, @body = condition, body
     end
 
-    def line_ending
-      ''
-    end
-
     def compile(o={})
       o = super(o)
       o.delete(:return)
@@ -623,8 +578,6 @@ module CoffeeScript
   # the current index of the loop as a second parameter.
   class ForNode < Node
     statement
-    custom_return
-    custom_assign
 
     attr_reader :body, :source, :name, :index, :filter, :step
 
@@ -633,10 +586,6 @@ module CoffeeScript
       @source = source[:source]
       @filter = source[:filter]
       @step   = source[:step]
-    end
-
-    def line_ending
-      ''
     end
 
     def compile(o={})
@@ -668,14 +617,12 @@ module CoffeeScript
       set_result    = "#{rvar} = [];\n#{o[:indent]}"
       return_result = rvar
       temp_var      = ValueNode.new(LiteralNode.new(tvar))
-      body = Expressions.new([
+      body = Expressions.wrap(
         AssignNode.new(temp_var, @body),
         CallNode.new(ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [temp_var])
-      ])
-      if o[:return] || o[:assign]
-        return_result = "#{o[:assign].compile(o)} = #{return_result}" if o[:assign]
+      )
+      if o[:return]
         return_result = "return #{return_result}" if o[:return]
-        o.delete(:assign)
         o.delete(:return)
         body = IfNode.new(@filter, body, nil, :statement => true) if @filter
       elsif @filter
@@ -691,17 +638,11 @@ module CoffeeScript
   # A try/catch/finally block.
   class TryNode < Node
     statement
-    custom_return
-    custom_assign
 
     attr_reader :try, :error, :recovery, :finally
 
     def initialize(try, error, recovery, finally=nil)
       @try, @error, @recovery, @finally = try, error, recovery, finally
-    end
-
-    def line_ending
-      ''
     end
 
     def compile(o={})
@@ -710,14 +651,14 @@ module CoffeeScript
       o[:indent] += TAB
       error_part = @error ? " (#{@error}) " : ' '
       catch_part = @recovery &&  " catch#{error_part}{\n#{@recovery.compile(o)}\n#{indent}}"
-      finally_part = @finally && " finally {\n#{@finally.compile(o.merge(:assign => nil, :return => nil))}\n#{indent}}"
+      finally_part = @finally && " finally {\n#{@finally.compile(o.merge(:return => nil))}\n#{indent}}"
       write("#{indent}try {\n#{@try.compile(o)}\n#{indent}}#{catch_part}#{finally_part}")
     end
   end
 
   # Throw an exception.
   class ThrowNode < Node
-    statement
+    statement_only
 
     attr_reader :expression
 
@@ -758,14 +699,6 @@ module CoffeeScript
 
     def statement?
       @expressions.unwrap.statement?
-    end
-
-    def custom_assign?
-      @expressions.custom_assign?
-    end
-
-    def custom_return?
-      @expressions.custom_return?
     end
 
     def compile(o={})
@@ -827,18 +760,6 @@ module CoffeeScript
       @is_statement ||= !!(@tags[:statement] || @body.statement? || (@else_body && @else_body.statement?))
     end
 
-    def custom_return?
-      statement?
-    end
-
-    def custom_assign?
-      statement?
-    end
-
-    def line_ending
-      statement? ? '' : ';'
-    end
-
     def compile(o={})
       o = super(o)
       write(statement? ? compile_statement(o) : compile_ternary(o))
@@ -850,7 +771,6 @@ module CoffeeScript
       indent = o[:indent]
       child  = o.delete(:chain_child)
       cond_o = o.dup
-      cond_o.delete(:assign)
       cond_o.delete(:return)
       o[:indent] += TAB
       if_dent = child ? '' : indent
