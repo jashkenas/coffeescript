@@ -96,7 +96,6 @@ module CoffeeScript
       compiled = @expressions.map do |node|
         o = options.dup
         returns = o.delete(:return)
-        code = node.compile(o)
         if last?(node) && returns && !node.statement_only?
           if node.statement?
             node.compile(o.merge(:return => true))
