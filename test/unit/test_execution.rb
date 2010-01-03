@@ -14,8 +14,8 @@ class ExecutionTest < Test::Unit::TestCase
     end
   end
 
-  def test_lintless_coffeescript
-    no_warnings `bin/coffee -l test/fixtures/execution/*.coffee`
+  def test_lintless_tests
+    no_warnings `bin/coffee -l test/fixtures/*/*.coffee`
   end
 
   def test_lintless_examples

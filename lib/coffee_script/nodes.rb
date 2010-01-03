@@ -575,12 +575,13 @@ module CoffeeScript
     end
 
     def compile_node(o)
-      o.delete(:return)
+      returns     = o.delete(:return)
       indent      = o[:indent]
       o[:indent] += TAB
       o[:top]     = true
       cond        = @condition.compile(o)
-      write("#{indent}while (#{cond}) {\n#{@body.compile(o)}\n#{indent}}")
+      post        = returns ? "\n#{indent}return null;" : ''
+      write("#{indent}while (#{cond}) {\n#{@body.compile(o)}\n#{indent}}#{post}")
     end
   end
 
