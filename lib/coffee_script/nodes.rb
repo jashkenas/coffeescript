@@ -32,7 +32,7 @@ module CoffeeScript
     def compile_closure(o={})
       indent = o[:indent]
       o[:indent] += TAB
-      "(function() {\n#{compile_node(o)}\n#{indent}})()"
+      "(function() {\n#{compile_node(o.merge(:return => true))}\n#{indent}})()"
     end
 
     # Default implementations of the common node methods.
@@ -81,7 +81,7 @@ module CoffeeScript
     end
 
     def compile(o={})
-      o[:scope] ? compile_node(o) : compile_root(o)
+      o[:scope] ? super(o) : compile_root(o)
     end
 
     # The extra fancy is to handle pushing down returns to the final lines of
@@ -99,7 +99,7 @@ module CoffeeScript
             "#{o[:indent]}return #{node.compile(o)};"
           end
         else
-          ending = node.statement_only? ? '' : ';'
+          ending = node.statement? ? '' : ';'
           indent = node.statement? ? '' : o[:indent]
           "#{indent}#{node.compile(o.merge(:top => true))}#{ending}"
         end
@@ -247,9 +247,9 @@ module CoffeeScript
 
     def compile_node(o={})
       sub, sup = @sub_object.compile(o), @super_object.compile(o)
-      "#{sub}.__superClass__ = #{sup}.prototype;\n#{o[:indent]}" +
+      "#{o[:indent]}#{sub}.__superClass__ = #{sup}.prototype;\n#{o[:indent]}" +
       "#{sub}.prototype = new #{sup}();\n#{o[:indent]}" +
-      "#{sub}.prototype.constructor = #{sub}"
+      "#{sub}.prototype.constructor = #{sub};"
     end
 
   end
@@ -565,9 +565,11 @@ module CoffeeScript
 
     def compile_node(o)
       o.delete(:return)
-      indent = o[:indent] + TAB
-      cond = @condition.compile(o)
-      write("#{o[:indent]}while (#{cond}) {\n#{@body.compile(o.merge(:indent => indent))}\n#{o[:indent]}}")
+      indent      = o[:indent]
+      o[:indent] += TAB
+      o[:top]     = true
+      cond        = @condition.compile(o)
+      write("#{indent}while (#{cond}) {\n#{@body.compile(o)}\n#{indent}}")
     end
   end
 
@@ -616,7 +618,7 @@ module CoffeeScript
       return_result = rvar
       temp_var      = ValueNode.new(LiteralNode.new(tvar))
       body = Expressions.wrap(
-        AssignNode.new(temp_var, @body),
+        AssignNode.new(temp_var, @body.unwrap),
         CallNode.new(ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [temp_var])
       )
       if o[:return]
@@ -628,7 +630,7 @@ module CoffeeScript
       end
 
       return_result = "\n#{o[:indent]}#{return_result};"
-      body = body.compile(o.merge(:indent => body_dent))
+      body = body.compile(o.merge(:indent => body_dent, :top => true))
       write("#{source_part}#{set_result}for (#{for_part}) {#{pre_cond}#{var_part}\n#{body}#{post_cond}\n#{o[:indent]}}#{return_result}")
     end
   end
@@ -646,6 +648,7 @@ module CoffeeScript
     def compile_node(o)
       indent = o[:indent]
       o[:indent] += TAB
+      o[:top] = true
       error_part = @error ? " (#{@error}) " : ' '
       catch_part = @recovery &&  " catch#{error_part}{\n#{@recovery.compile(o)}\n#{indent}}"
       finally_part = @finally && " finally {\n#{@finally.compile(o.merge(:return => nil))}\n#{indent}}"
@@ -762,6 +765,7 @@ module CoffeeScript
       cond_o = o.dup
       cond_o.delete(:return)
       o[:indent] += TAB
+      o[:top] = true
       if_dent = child ? '' : indent
       if_part = "#{if_dent}if (#{@condition.compile(cond_o)}) {\n#{Expressions.wrap(@body).compile(o)}\n#{indent}}"
       return if_part unless @else_body
