@@ -220,6 +220,10 @@ module CoffeeScript
       @arguments.any? {|a| a.is_a?(ArgSplatNode) }
     end
 
+    def <<(argument)
+      @arguments << argument
+    end
+
     def compile(o={})
       o = super(o)
       return write(compile_splat(o)) if splat?
