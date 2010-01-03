@@ -122,9 +122,10 @@ module CoffeeScript
     end
 
     def compile_with_declarations(o={})
+      code  = compile_node(o)
       decls = ''
       decls = "#{o[:indent]}var #{o[:scope].declared_variables.join(', ')};\n" if o[:scope].declarations?(self)
-      code  = decls + compile_node(o)
+      decls + code
     end
 
   end
