@@ -33,11 +33,10 @@ prechigh
   right    INDENT
   left     OUTDENT
   right    WHEN IN BY
-  right    THROW FOR WHILE NEW SUPER ELSE IF
+  right    THROW FOR NEW SUPER
   left     EXTENDS
   left     ASSIGN '||=' '&&='
-  right    RETURN '=>'
-  right    UNLESS POSTFIX_IF
+  right    RETURN '=>' UNLESS IF ELSE WHILE
 preclow
 
 rule
@@ -406,8 +405,7 @@ rule
   # The full complement of if blocks, including postfix one-liner ifs and unlesses.
   If:
     IfBlock IfEnd                     { result = val[0].add_else(val[1]) }
-  | Expression
-      IF Expression = POSTFIX_IF      { result = IfNode.new(val[2], Expressions.wrap(val[0]), nil, {:statement => true}) }
+  | Expression IF Expression          { result = IfNode.new(val[2], Expressions.wrap(val[0]), nil, {:statement => true}) }
   | Expression UNLESS Expression      { result = IfNode.new(val[2], Expressions.wrap(val[0]), nil, {:statement => true, :invert => true}) }
   ;
 
