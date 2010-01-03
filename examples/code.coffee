@@ -102,11 +102,11 @@ while true
 !!true
 
 # Lexical scoping.
-a: 5
+v_1: 5
 change_a_and_set_b: =>
-  a: 10
-  b: 15
-b: 20
+  v_1: 10
+  v_2: 15
+v_2: 20
 
 # Array comprehensions.
 supper: food.capitalize() for food in ['toast', 'cheese', 'wine']
