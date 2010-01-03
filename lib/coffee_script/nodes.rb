@@ -533,10 +533,11 @@ module CoffeeScript
       joins = Hash.new("\n")
       non_comments = @properties.select {|p| !p.is_a?(CommentNode) }
       non_comments.each {|p| joins[p] = p == non_comments.last ? "\n" : ",\n" }
-      props = @properties.map { |prop|
+      props  = @properties.map { |prop|
         join = joins[prop]
         join = '' if prop == @properties.last
-        o[:indent] + prop.compile(o) + join
+        idt  = prop.is_a?(CommentNode) ? '' : o[:indent]
+        "#{idt}#{prop.compile(o)}#{join}"
       }.join('')
       write("{\n#{props}\n#{indent}}")
     end
@@ -551,11 +552,14 @@ module CoffeeScript
     end
 
     def compile_node(o)
+      indent = o[:indent]
+      o[:indent] += TAB
       objects = @objects.map { |obj|
-        joiner = obj.is_a?(CommentNode) ? "\n#{o[:indent] + TAB}" : obj == @objects.last ? '' : ', '
-        obj.compile(o.merge(:indent => o[:indent] + TAB)) + joiner
+        code = obj.compile(o)
+        obj.is_a?(CommentNode) ? "\n#{code}\n#{o[:indent]}" :
+        obj == @objects.last   ? code : "#{code}, "
       }.join('')
-      ending = objects.include?("\n") ? "\n#{o[:indent]}]" : ']'
+      ending = objects.include?("\n") ? "\n#{indent}]" : ']'
       write("[#{objects}#{ending}")
     end
   end
