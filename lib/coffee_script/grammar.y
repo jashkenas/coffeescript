@@ -17,6 +17,9 @@ token COMMENT
 token JS
 token INDENT OUTDENT
 
+# We expect one shift-reduce conflict. Because of the lexer, it will never occur.
+expect 1
+
 # Declare order of operations.
 prechigh
   nonassoc UMINUS SPLAT NOT '!' '!!' '~' '++' '--' '?'
@@ -260,8 +263,14 @@ rule
 
   # A generic function invocation.
   Invocation:
-    Value "(" ArgList ")"             { result = CallNode.new(val[0], val[2]) }
-  | Invocation "(" ArgList ")"        { result = CallNode.new(val[0], val[2]) }
+    Value Arguments                   { result = CallNode.new(val[0], val[1]) }
+  | Invocation Arguments              { result = CallNode.new(val[0], val[1]) }
+  # | Invocation Code                   { result = val[0] << val[1] }
+  ;
+
+  Arguments:
+    "(" ArgList ")"                   { result = val[1] }
+  | "(" ArgList ")" Code              { result = val[1] << val[3] }
   ;
 
   # Calling super.
