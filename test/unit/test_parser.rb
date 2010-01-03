@@ -77,11 +77,4 @@ class ParserTest < Test::Unit::TestCase
     assert nodes.compile(:no_wrap => true) == File.read('test/fixtures/generation/each_no_wrap.js')
   end
 
-  def test_no_wrapping_parens_around_statements
-    @par.parse("try thing() catch error then fail()").compile
-    assert_raises(SyntaxError) do
-      @par.parse("(try thing() catch error then fail())").compile
-    end
-  end
-
 end

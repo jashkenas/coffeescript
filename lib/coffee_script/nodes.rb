@@ -23,10 +23,15 @@ module CoffeeScript
       code
     end
 
+    # This is extremely important -- we convert JS statements into expressions
+    # by wrapping them in a closure, only if it's possible, and we're not at
+    # the top level of a block (which would be unnecessary), and we haven't
+    # already been asked to return the result.
     def compile(o={})
       @options = o.dup
       top = @options.delete(:top)
-      statement? && !statement_only? && !top ? compile_closure(@options) : compile_node(@options)
+      closure = statement? && !statement_only? && !top && !@options[:return]
+      closure ? compile_closure(@options) : compile_node(@options)
     end
 
     def compile_closure(o={})
@@ -142,7 +147,8 @@ module CoffeeScript
 
     def compile_node(o)
       indent = statement? ? o[:indent] : ''
-      write(indent + @value.to_s)
+      ending = statement? ? ';' : ''
+      write(indent + @value.to_s + ending)
     end
   end
 
@@ -159,7 +165,7 @@ module CoffeeScript
     def compile_node(o)
       return write(@expression.compile(o.merge(:return => true))) if @expression.statement?
       compiled = @expression.compile(o)
-      write(@expression.statement? ? "#{compiled}\n#{o[:indent]}return null" : "#{o[:indent]}return #{compiled}")
+      write(@expression.statement? ? "#{compiled}\n#{o[:indent]}return null;" : "#{o[:indent]}return #{compiled};")
     end
   end
 
@@ -462,9 +468,10 @@ module CoffeeScript
 
     def compile_node(o)
       shared_scope = o.delete(:shared_scope)
+      indent       = o[:indent]
       o[:scope]    = shared_scope || Scope.new(o[:scope], @body)
       o[:return]   = true
-      indent       = o[:indent]
+      o[:top]      = true
       o[:indent]  += TAB
       o.delete(:no_wrap)
       name = o.delete(:immediate_assign)
@@ -667,7 +674,7 @@ module CoffeeScript
     end
 
     def compile_node(o)
-      write("#{o[:indent]}throw #{@expression.compile(o)}")
+      write("#{o[:indent]}throw #{@expression.compile(o)};")
     end
   end
 
