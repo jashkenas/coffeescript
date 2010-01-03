@@ -25,10 +25,14 @@ module CoffeeScript
 
     def compile(o={})
       @options = o.dup
+      top = @options.delete(:top)
+      statement? && !statement_only? && !top ? compile_closure(@options) : compile_node(@options)
     end
 
     def compile_closure(o={})
-      "(#{CodeNode.new([], Expressions.wrap(self)).compile(o, o[:scope])})()"
+      indent = o[:indent]
+      o[:indent] += TAB
+      "(function() {\n#{compile_node(o)}\n#{indent}})()"
     end
 
     # Default implementations of the common node methods.
@@ -76,21 +80,16 @@ module CoffeeScript
       node == @expressions[@last_index]
     end
 
-    # If this is the top-level Expressions, wrap everything in a safety closure.
-    def root_compile(o={})
-      indent = o[:no_wrap] ? '' : TAB
-      code = compile(o.merge(:indent => indent, :scope => Scope.new(nil, self)), o[:no_wrap] ? nil : :code)
-      code.gsub!(STRIP_TRAILING_WHITESPACE, '')
-      o[:no_wrap] ? code : "(function(){\n#{code}\n})();"
+    def compile(o={})
+      o[:scope] ? compile_node(o) : compile_root(o)
     end
 
     # The extra fancy is to handle pushing down returns to the final lines of
     # inner statements. Variables first defined within the Expressions body
     # have their declarations pushed up top of the closest scope.
-    def compile(options={}, parent=nil)
-      return root_compile(options) unless options[:scope]
+    def compile_node(options={})
       compiled = @expressions.map do |node|
-        o = super(options)
+        o = options.dup
         returns = o.delete(:return)
         code = node.compile(o)
         if last?(node) && returns && !node.statement_only?
@@ -102,15 +101,27 @@ module CoffeeScript
         else
           ending = node.statement_only? ? '' : ';'
           indent = node.statement? ? '' : o[:indent]
-          "#{indent}#{node.compile(o)}#{ending}"
+          "#{indent}#{node.compile(o.merge(:top => true))}#{ending}"
         end
       end
-      scope = options[:scope]
-      decls = ''
-      decls = "#{options[:indent]}var #{scope.declared_variables.join(', ')};\n" if parent == :code && scope.declarations?(self)
-      code = decls + compiled.join("\n")
-      write(code)
+      write(compiled.join("\n"))
     end
+
+    # If this is the top-level Expressions, wrap everything in a safety closure.
+    def compile_root(o={})
+      indent = o[:no_wrap] ? '' : TAB
+      o.merge!(:indent => indent, :scope => Scope.new(nil, self))
+      code = o[:no_wrap] ? compile_node(o) : compile_with_declarations(o)
+      code.gsub!(STRIP_TRAILING_WHITESPACE, '')
+      o[:no_wrap] ? code : "(function(){\n#{code}\n})();"
+    end
+
+    def compile_with_declarations(o={})
+      decls = ''
+      decls = "#{o[:indent]}var #{o[:scope].declared_variables.join(', ')};\n" if o[:scope].declarations?(self)
+      code  = decls + compile_node(o)
+    end
+
   end
 
   # Literals are static values that have a Ruby representation, eg.: a string, a number,
@@ -129,8 +140,7 @@ module CoffeeScript
     end
     alias_method :statement_only?, :statement?
 
-    def compile(o={})
-      o = super(o)
+    def compile_node(o)
       indent = statement? ? o[:indent] : ''
       write(indent + @value.to_s)
     end
@@ -146,9 +156,8 @@ module CoffeeScript
       @expression = expression
     end
 
-    def compile(o={})
-      o = super(o)
-      return write(@expression.compile(o.merge(:return => true))) if @expression.custom_return?
+    def compile_node(o)
+      return write(@expression.compile(o.merge(:return => true))) if @expression.statement?
       compiled = @expression.compile(o)
       write(@expression.statement? ? "#{compiled}\n#{o[:indent]}return null" : "#{o[:indent]}return #{compiled}")
     end
@@ -163,7 +172,7 @@ module CoffeeScript
       @lines = lines.value
     end
 
-    def compile(o={})
+    def compile_node(o={})
       delimiter = "\n#{o[:indent]}//"
       comment   = "#{delimiter}#{@lines.join(delimiter)}"
       write(comment)
@@ -201,8 +210,7 @@ module CoffeeScript
       @arguments << argument
     end
 
-    def compile(o={})
-      o = super(o)
+    def compile_node(o)
       return write(compile_splat(o)) if splat?
       args = @arguments.map{|a| a.compile(o) }.join(', ')
       return write(compile_super(args, o)) if super?
@@ -237,7 +245,7 @@ module CoffeeScript
       @sub_object, @super_object = sub_object, super_object
     end
 
-    def compile(o={})
+    def compile_node(o={})
       sub, sup = @sub_object.compile(o), @super_object.compile(o)
       "#{sub}.__superClass__ = #{sup}.prototype;\n#{o[:indent]}" +
       "#{sub}.prototype = new #{sup}();\n#{o[:indent]}" +
@@ -267,8 +275,7 @@ module CoffeeScript
       @literal.is_a?(Node) && @literal.statement? && !properties?
     end
 
-    def compile(o={})
-      o     = super(o)
+    def compile_node(o)
       only  = o.delete(:only_first)
       props = only ? @properties[0...-1] : @properties
       parts = [@literal, props].flatten.map do |val|
@@ -288,8 +295,7 @@ module CoffeeScript
       @name = name
     end
 
-    def compile(o={})
-      o = super(o)
+    def compile_node(o)
       write(".#{@name}")
     end
   end
@@ -302,8 +308,7 @@ module CoffeeScript
       @index = index
     end
 
-    def compile(o={})
-      o = super(o)
+    def compile_node(o)
       write("[#{@index.compile(o)}]")
     end
   end
@@ -336,7 +341,8 @@ module CoffeeScript
       write("#{idt}#{@from_var} = #{from_val};\n#{idt}#{@to_var} = #{to_val};\n#{idt}")
     end
 
-    def compile(o, idx=nil, step=nil)
+    def compile_node(o)
+      idx, step = o.delete(:index), o.delete(:step)
       raise SyntaxError, "unexpected range literal" unless idx
       vars     = "#{idx}=#{@from_var}"
       step     = step ? step.compile(o) : '1'
@@ -357,8 +363,7 @@ module CoffeeScript
       @range = range
     end
 
-    def compile(o={})
-      o         = super(o)
+    def compile_node(o)
       from      = @range.from.compile(o)
       to        = @range.to.compile(o)
       plus_part = @range.exclusive? ? '' : ' + 1'
@@ -377,8 +382,7 @@ module CoffeeScript
       @variable, @value, @context = variable, value, context
     end
 
-    def compile(o={})
-      o = super(o)
+    def compile_node(o)
       return compile_splice(o) if @variable.properties.last.is_a?(SliceNode)
       name      = @variable.compile(o)
       last      = @variable.last.to_s.sub(LEADING_DOT, '')
@@ -387,8 +391,7 @@ module CoffeeScript
       o[:immediate_assign] = last if @value.is_a?(CodeNode) && last.match(Lexer::IDENTIFIER)
       return write("#{name}: #{@value.compile(o)}") if @context == :object
       o[:scope].find(name) unless @variable.properties?
-      code = @value.statement? ? @value.compile_closure(o) : @value.compile(o)
-      val = "#{name} = #{code}"
+      val = "#{name} = #{@value.compile(o)}"
       write(o[:return] ? "#{o[:indent]}return (#{val})" : val)
     end
 
@@ -428,8 +431,7 @@ module CoffeeScript
       @second.nil?
     end
 
-    def compile(o={})
-      o = super(o)
+    def compile_node(o)
       return write(compile_conditional(o)) if CONDITIONALS.include?(@operator.to_sym)
       return write(compile_unary(o)) if unary?
       write("#{@first.compile(o)} #{@operator} #{@second.compile(o)}")
@@ -458,12 +460,12 @@ module CoffeeScript
       @body = body
     end
 
-    def compile(o={}, shared_scope=nil)
-      o = super(o)
-      o[:scope] = shared_scope || Scope.new(o[:scope], @body)
-      o[:return] = true
-      indent = o[:indent]
-      o[:indent] += TAB
+    def compile_node(o)
+      shared_scope = o.delete(:shared_scope)
+      o[:scope]    = shared_scope || Scope.new(o[:scope], @body)
+      o[:return]   = true
+      indent       = o[:indent]
+      o[:indent]  += TAB
       o.delete(:no_wrap)
       name = o.delete(:immediate_assign)
       if @params.last.is_a?(ParamSplatNode)
@@ -472,7 +474,7 @@ module CoffeeScript
         @body.unshift(splat)
       end
       @params.each {|id| o[:scope].parameter(id.to_s) }
-      code = @body.compile(o, :code)
+      code = @body.compile_with_declarations(o)
       name_part = name ? " #{name}" : ''
       write("function#{name_part}(#{@params.join(', ')}) {\n#{code}\n#{indent}}")
     end
@@ -487,7 +489,7 @@ module CoffeeScript
       @name = name
     end
 
-    def compile(o={})
+    def compile_node(o={})
       o[:scope].find(@name)
       write("#{@name} = Array.prototype.slice.call(arguments, #{@index})")
     end
@@ -500,7 +502,7 @@ module CoffeeScript
       @value = value
     end
 
-    def compile(o={})
+    def compile_node(o={})
       write(@value.compile(o))
     end
 
@@ -517,8 +519,7 @@ module CoffeeScript
     # All the mucking about with commas is to make sure that CommentNodes and
     # AssignNodes get interleaved correctly, with no trailing commas or
     # commas affixed to comments. TODO: Extract this and add it to ArrayNode.
-    def compile(o={})
-      o = super(o)
+    def compile_node(o)
       indent = o[:indent]
       o[:indent] += TAB
       joins = Hash.new("\n")
@@ -541,8 +542,7 @@ module CoffeeScript
       @objects = objects
     end
 
-    def compile(o={})
-      o = super(o)
+    def compile_node(o)
       objects = @objects.map { |obj|
         joiner = obj.is_a?(CommentNode) ? "\n#{o[:indent] + TAB}" : obj == @objects.last ? '' : ', '
         obj.compile(o.merge(:indent => o[:indent] + TAB)) + joiner
@@ -563,8 +563,7 @@ module CoffeeScript
       @condition, @body = condition, body
     end
 
-    def compile(o={})
-      o = super(o)
+    def compile_node(o)
       o.delete(:return)
       indent = o[:indent] + TAB
       cond = @condition.compile(o)
@@ -588,8 +587,7 @@ module CoffeeScript
       @step   = source[:step]
     end
 
-    def compile(o={})
-      o = super(o)
+    def compile_node(o)
       range         = @source.is_a?(RangeNode)
       scope         = o[:scope]
       name_found    = scope.find(@name)
@@ -603,7 +601,7 @@ module CoffeeScript
         var_part, pre_cond, post_cond = '', '', ''
         index_var   = scope.free_variable
         source_part = @source.compile_variables(o)
-        for_part    = "#{index_var}=0, #{@source.compile(o, ivar, @step)}, #{index_var}++"
+        for_part    = "#{index_var}=0, #{@source.compile(o.merge(:index => ivar, :step => @step))}, #{index_var}++"
       else
         index_var   = nil
         body_dent   = o[:indent] + TAB + TAB
@@ -645,8 +643,7 @@ module CoffeeScript
       @try, @error, @recovery, @finally = try, error, recovery, finally
     end
 
-    def compile(o={})
-      o = super(o)
+    def compile_node(o)
       indent = o[:indent]
       o[:indent] += TAB
       error_part = @error ? " (#{@error}) " : ' '
@@ -666,8 +663,7 @@ module CoffeeScript
       @expression = expression
     end
 
-    def compile(o={})
-      o = super(o)
+    def compile_node(o)
       write("#{o[:indent]}throw #{@expression.compile(o)}")
     end
   end
@@ -680,8 +676,8 @@ module CoffeeScript
       @expression = expression
     end
 
-    def compile(o={})
-      val = @expression.compile(super(o))
+    def compile_node(o)
+      val = @expression.compile(o)
       write("(typeof #{val} !== 'undefined' && #{val} !== null)")
     end
   end
@@ -697,13 +693,7 @@ module CoffeeScript
       @line = line
     end
 
-    def statement?
-      @expressions.unwrap.statement?
-    end
-
-    def compile(o={})
-      raise SyntaxError, "line #{@line}: parentheses can't be wrapped around a statement" if statement?
-      o = super(o)
+    def compile_node(o)
       compiled = @expressions.compile(o)
       compiled = compiled[0...-1] if compiled[-1..-1] == ';'
       write("(#{compiled})")
@@ -760,8 +750,7 @@ module CoffeeScript
       @is_statement ||= !!(@tags[:statement] || @body.statement? || (@else_body && @else_body.statement?))
     end
 
-    def compile(o={})
-      o = super(o)
+    def compile_node(o)
       write(statement? ? compile_statement(o) : compile_ternary(o))
     end
 
