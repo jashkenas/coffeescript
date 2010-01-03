@@ -43,14 +43,14 @@ rule
 
   # All parsing will end in this rule, being the trunk of the AST.
   Root:
-    /* nothing */                     { result = Expressions.new([]) }
-  | Terminator                        { result = Expressions.new([]) }
+    /* nothing */                     { result = Expressions.new }
+  | Terminator                        { result = Expressions.new }
   | Expressions                       { result = val[0] }
   ;
 
   # Any list of expressions or method body, seperated by line breaks or semis.
   Expressions:
-    Expression                        { result = Expressions.new(val) }
+    Expression                        { result = Expressions.wrap(val) }
   | Expressions Terminator Expression { result = val[0] << val[2] }
   | Expressions Terminator            { result = val[0] }
   ;
@@ -78,7 +78,7 @@ rule
 
   Block:
     INDENT Expressions OUTDENT        { result = val[1] }
-  | INDENT OUTDENT                    { result = Expressions.new([]) }
+  | INDENT OUTDENT                    { result = Expressions.new }
   ;
 
   # All tokens that can terminate an expression.
@@ -405,8 +405,8 @@ rule
   # The full complement of if blocks, including postfix one-liner ifs and unlesses.
   If:
     IfBlock IfEnd                     { result = val[0].add_else(val[1]) }
-  | Expression IF Expression          { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true}) }
-  | Expression UNLESS Expression      { result = IfNode.new(val[2], Expressions.new([val[0]]), nil, {:statement => true, :invert => true}) }
+  | Expression IF Expression          { result = IfNode.new(val[2], Expressions.wrap(val[0]), nil, {:statement => true}) }
+  | Expression UNLESS Expression      { result = IfNode.new(val[2], Expressions.wrap(val[0]), nil, {:statement => true, :invert => true}) }
   ;
 
 end

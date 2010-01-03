@@ -5,11 +5,12 @@ module CoffeeScript
   # whether a variable has been seen before or if it needs to be declared.
   class Scope
 
-    attr_reader :parent, :variables, :temp_variable
+    attr_reader :parent, :expressions, :variables, :temp_variable
 
-    # Initialize a scope with its parent, for lookups up the chain.
-    def initialize(parent=nil)
-      @parent = parent
+    # Initialize a scope with its parent, for lookups up the chain,
+    # as well as the Expressions body where it should declare its variables.
+    def initialize(parent, expressions)
+      @parent, @expressions = parent, expressions
       @variables = {}
       @temp_variable = @parent ? @parent.temp_variable : '__a'
     end
@@ -46,8 +47,8 @@ module CoffeeScript
       @temp_variable.dup
     end
 
-    def any_declared?
-      !declared_variables.empty?
+    def declarations?(body)
+      !declared_variables.empty? && body == @expressions
     end
 
     # Return the list of variables first declared in current scope.
