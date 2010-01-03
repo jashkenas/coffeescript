@@ -5,7 +5,7 @@ token IF ELSE UNLESS
 token NUMBER STRING REGEX
 token TRUE FALSE YES NO ON OFF
 token IDENTIFIER PROPERTY_ACCESS
-token CODE PARAM NEW RETURN
+token CODE PARAM PARAM_SPLAT NEW RETURN
 token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
 token FOR IN BY WHILE
@@ -17,12 +17,9 @@ token COMMENT
 token JS
 token INDENT OUTDENT
 
-# We expect one shift-reduce conflict. Because of the lexer, it will never occur.
-expect 1
-
 # Declare order of operations.
 prechigh
-  nonassoc UMINUS SPLAT NOT '!' '!!' '~' '++' '--' '?'
+  nonassoc UMINUS PARAM_SPLAT SPLAT NOT '!' '!!' '~' '++' '--' '?'
   left     '*' '/' '%'
   left     '+' '-'
   left     '<<' '>>' '>>>'
@@ -203,7 +200,7 @@ rule
 
   Param:
     PARAM
-  | '*' PARAM = SPLAT                 { result = ParamSplatNode.new(val[1]) }
+  | PARAM_SPLAT PARAM                 { result = ParamSplatNode.new(val[1]) }
   ;
 
   Splat:
