@@ -18,10 +18,6 @@ module CoffeeScript
       class_eval "def statement_only?; true; end"
     end
 
-    def self.no_return
-      class_eval "def returns?; false; end"
-    end
-
     def write(code)
       puts "#{self.class.to_s}:\n#{@options.inspect}\n#{code}\n\n" if ENV['VERBOSE']
       code
@@ -33,7 +29,7 @@ module CoffeeScript
     # already been asked to return the result.
     def compile(o={})
       @options = o.dup
-      top = @options.delete(:top)
+      top = self.is_a?(ForNode) ? @options[:top] : @options.delete(:top)
       closure = statement? && !statement_only? && !top && !@options[:return]
       closure ? compile_closure(@options) : compile_node(@options)
     end
@@ -42,10 +38,6 @@ module CoffeeScript
       indent = o[:indent]
       o[:indent] += TAB
       "(function() {\n#{compile_node(o.merge(:return => true))}\n#{indent}})()"
-    end
-
-    def returns?
-      children.any? {|node| node && node.returns? }
     end
 
     # Default implementations of the common node methods.
@@ -58,7 +50,6 @@ module CoffeeScript
   class Expressions < Node
     statement
     attr_reader :expressions
-    alias_method :children, :expressions
 
     STRIP_TRAILING_WHITESPACE = /\s+$/
 
@@ -141,7 +132,6 @@ module CoffeeScript
   # Literals are static values that have a Ruby representation, eg.: a string, a number,
   # true, false, nil, etc.
   class LiteralNode < Node
-    no_return
     STATEMENTS = ['break', 'continue']
 
     attr_reader :value
@@ -172,10 +162,6 @@ module CoffeeScript
       @expression = expression
     end
 
-    def returns?
-      true
-    end
-
     def compile_node(o)
       return write(@expression.compile(o.merge(:return => true))) if @expression.statement?
       compiled = @expression.compile(o)
@@ -187,14 +173,13 @@ module CoffeeScript
   # same position.
   class CommentNode < Node
     statement_only
-    no_return
 
     def initialize(lines)
       @lines = lines.value
     end
 
     def compile_node(o={})
-      delimiter = "#{o[:indent]}//"
+      delimiter = "\n#{o[:indent]}//"
       comment   = "#{delimiter}#{@lines.join(delimiter)}"
       write(comment)
     end
@@ -204,7 +189,6 @@ module CoffeeScript
   # Node for a function invocation. Takes care of converting super() calls into
   # calls against the prototype's function of the same name.
   class CallNode < Node
-    no_return
     attr_reader :variable, :arguments
 
     def initialize(variable, arguments=[])
@@ -261,7 +245,6 @@ module CoffeeScript
   # After goog.inherits from the Closure Library.
   class ExtendsNode < Node
     statement
-    no_return
     attr_reader :sub_object, :super_object
 
     def initialize(sub_object, super_object)
@@ -279,7 +262,6 @@ module CoffeeScript
 
   # A value, indexed or dotted into, or vanilla.
   class ValueNode < Node
-    no_return
     attr_reader :literal, :properties, :last, :source
 
     def initialize(literal, properties=[])
@@ -313,7 +295,6 @@ module CoffeeScript
 
   # A dotted accessor into a part of a value.
   class AccessorNode < Node
-    no_return
     attr_reader :name
 
     def initialize(name)
@@ -327,7 +308,6 @@ module CoffeeScript
 
   # An indexed accessor into a part of an array or object.
   class IndexNode < Node
-    no_return
     attr_reader :index
 
     def initialize(index)
@@ -342,7 +322,6 @@ module CoffeeScript
   # A range literal. Ranges can be used to extract portions (slices) of arrays,
   # or to specify a range for array comprehensions.
   class RangeNode < Node
-    no_return
     attr_reader :from, :to
 
     def initialize(from, to, exclusive=false)
@@ -384,7 +363,6 @@ module CoffeeScript
   # specifies the index of the end of the slice (just like the first parameter)
   # is the index of the beginning.
   class SliceNode < Node
-    no_return
     attr_reader :range
 
     def initialize(range)
@@ -408,10 +386,6 @@ module CoffeeScript
 
     def initialize(variable, value, context=nil)
       @variable, @value, @context = variable, value, context
-    end
-
-    def children
-      [@value]
     end
 
     def compile_node(o)
@@ -459,10 +433,6 @@ module CoffeeScript
       @operator = CONVERSIONS[operator.to_sym] || operator
     end
 
-    def children
-      [@first, @second]
-    end
-
     def unary?
       @second.nil?
     end
@@ -489,7 +459,6 @@ module CoffeeScript
 
   # A function definition. The only node that creates a new Scope.
   class CodeNode < Node
-    no_return
     attr_reader :params, :body
 
     def initialize(params, body)
@@ -520,7 +489,6 @@ module CoffeeScript
 
   # A parameter splat in a function definition.
   class ParamSplatNode < Node
-    no_return
     attr_accessor :index
     attr_reader :name
 
@@ -535,7 +503,6 @@ module CoffeeScript
   end
 
   class ArgSplatNode < Node
-    no_return
     attr_reader :value
 
     def initialize(value)
@@ -550,7 +517,6 @@ module CoffeeScript
 
   # An object literal.
   class ObjectNode < Node
-    no_return
     attr_reader :properties
 
     def initialize(properties = [])
@@ -578,7 +544,6 @@ module CoffeeScript
 
   # An array literal.
   class ArrayNode < Node
-    no_return
     attr_reader :objects
 
     def initialize(objects=[])
@@ -609,10 +574,6 @@ module CoffeeScript
       @condition, @body = condition, body
     end
 
-    def children
-      [@body]
-    end
-
     def compile_node(o)
       returns     = o.delete(:return)
       indent      = o[:indent]
@@ -640,18 +601,15 @@ module CoffeeScript
       @step   = source[:step]
     end
 
-    def children
-      [@body]
-    end
-
     def compile_node(o)
+      top_level     = o.delete(:top) && !o[:return]
       range         = @source.is_a?(RangeNode)
       scope         = o[:scope]
       name_found    = scope.find(@name)
       index_found   = @index && scope.find(@index)
       svar          = scope.free_variable
       ivar          = range ? name : @index ? @index : scope.free_variable
-      rvar          = scope.free_variable
+      rvar          = scope.free_variable unless top_level
       tvar          = scope.free_variable
       if range
         body_dent   = o[:indent] + TAB
@@ -669,10 +627,12 @@ module CoffeeScript
         post_cond   = "\n#{o[:indent] + TAB}}"
       end
       body          = @body
-      set_result    = "#{rvar} = [];\n#{o[:indent]}"
-      return_result = rvar
+      set_result    = rvar ? "#{rvar} = [];\n#{o[:indent]}" : ''
+      return_result = rvar || ''
       temp_var      = ValueNode.new(LiteralNode.new(tvar))
-      unless @body.returns?
+      if top_level
+        body = Expressions.wrap(body)
+      else
         body = Expressions.wrap(
           AssignNode.new(temp_var, @body.unwrap),
           CallNode.new(ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [temp_var])
@@ -686,7 +646,7 @@ module CoffeeScript
         body = Expressions.wrap(IfNode.new(@filter, @body))
       end
 
-      return_result = "\n#{o[:indent]}#{return_result};"
+      return_result = "\n#{o[:indent]}#{return_result};" unless top_level
       body = body.compile(o.merge(:indent => body_dent, :top => true))
       write("#{source_part}#{set_result}for (#{for_part}) {#{pre_cond}#{var_part}\n#{body}#{post_cond}\n#{o[:indent]}}#{return_result}")
     end
@@ -702,10 +662,6 @@ module CoffeeScript
       @try, @error, @recovery, @finally = try, error, recovery, finally
     end
 
-    def children
-      [@try, @recovery, @finally]
-    end
-
     def compile_node(o)
       indent = o[:indent]
       o[:indent] += TAB
@@ -719,7 +675,6 @@ module CoffeeScript
 
   # Throw an exception.
   class ThrowNode < Node
-    no_return
     statement_only
 
     attr_reader :expression
@@ -735,7 +690,6 @@ module CoffeeScript
 
   # Check an expression for existence (meaning not null or undefined).
   class ExistenceNode < Node
-    no_return
     attr_reader :expression
 
     def initialize(expression)
@@ -759,10 +713,6 @@ module CoffeeScript
       @line = line
     end
 
-    def children
-      [@expressions]
-    end
-
     def compile_node(o)
       compiled = @expressions.compile(o)
       compiled = compiled[0...-1] if compiled[-1..-1] == ';'
@@ -783,10 +733,6 @@ module CoffeeScript
       @else_body = else_body && else_body.unwrap
       @tags      = tags
       @condition = OpNode.new("!", ParentheticalNode.new(@condition)) if @tags[:invert]
-    end
-
-    def children
-      [@body, @else_body]
     end
 
     def <<(else_body)
