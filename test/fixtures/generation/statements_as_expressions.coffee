@@ -9,3 +9,6 @@ print(3 + try
     print(error)
     3
 )
+
+func: x =>
+  return throw x
