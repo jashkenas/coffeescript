@@ -49,7 +49,7 @@ _.each: obj, iterator, context =>
   try
     return obj.forEach(iterator, context) if obj.forEach
     if _.isArray(obj) or _.isArguments(obj)
-      return (iterator.call(context, obj[i], i, obj) for i in [0...obj.length])
+      return iterator.call(context, obj[i], i, obj) for i in [0...obj.length]
     iterator.call(context, val, key, obj) for val, key in obj
   catch e
     throw e if e isnt breaker
@@ -129,10 +129,9 @@ _.any: obj, iterator, context =>
 # based on '==='.
 _.include: obj, target =>
   return _.indexOf(obj, target) isnt -1 if _.isArray(obj)
-  found: false
-  _.each(obj) value =>
-    _.breakLoop() if found: value is target
-  found
+  for val in obj
+    return true if val is target
+  false
 
 # Invoke a method with arguments on every item in a collection.
 _.invoke: obj, method =>
@@ -247,7 +246,8 @@ _.zip: =>
   args:       _.toArray(arguments)
   length:     _.max(_.pluck(args, 'length'))
   results:    new Array(length)
-  (results[i]: _.pluck(args, String(i))) for i in [0...length]
+  for i in [0...length]
+    results[i]: _.pluck(args, String(i))
   results
 
 # If the browser doesn't supply us with indexOf (I'm looking at you, MSIE),
@@ -326,7 +326,8 @@ _.compose: =>
   funcs: _.toArray(arguments)
   =>
     args: _.toArray(arguments)
-    (args: [funcs[i].apply(this, args)]) for i in [(funcs.length - 1)..0]
+    for i in [(funcs.length - 1)..0]
+      args: [funcs[i].apply(this, args)]
     args[0]
 
 # ------------------------- Object Functions: ----------------------------
@@ -346,7 +347,8 @@ _.functions: obj =>
 
 # Extend a given object with all of the properties in a source object.
 _.extend: destination, source =>
-  (destination[key]: val) for val, key in source
+  for val, key in source
+    destination[key]: val
   destination
 
 # Create a (shallow-cloned) duplicate of an object.

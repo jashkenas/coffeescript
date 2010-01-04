@@ -18,6 +18,10 @@ module CoffeeScript
       class_eval "def statement_only?; true; end"
     end
 
+    def self.no_return
+      class_eval "def returns?; false; end"
+    end
+
     def write(code)
       puts "#{self.class.to_s}:\n#{@options.inspect}\n#{code}\n\n" if ENV['VERBOSE']
       code
@@ -40,6 +44,10 @@ module CoffeeScript
       "(function() {\n#{compile_node(o.merge(:return => true))}\n#{indent}})()"
     end
 
+    def returns?
+      children.any? {|node| node && node.returns? }
+    end
+
     # Default implementations of the common node methods.
     def unwrap;           self;   end
     def statement?;       false;  end
@@ -50,6 +58,7 @@ module CoffeeScript
   class Expressions < Node
     statement
     attr_reader :expressions
+    alias_method :children, :expressions
 
     STRIP_TRAILING_WHITESPACE = /\s+$/
 
@@ -132,6 +141,7 @@ module CoffeeScript
   # Literals are static values that have a Ruby representation, eg.: a string, a number,
   # true, false, nil, etc.
   class LiteralNode < Node
+    no_return
     STATEMENTS = ['break', 'continue']
 
     attr_reader :value
@@ -162,6 +172,10 @@ module CoffeeScript
       @expression = expression
     end
 
+    def returns?
+      true
+    end
+
     def compile_node(o)
       return write(@expression.compile(o.merge(:return => true))) if @expression.statement?
       compiled = @expression.compile(o)
@@ -173,6 +187,7 @@ module CoffeeScript
   # same position.
   class CommentNode < Node
     statement_only
+    no_return
 
     def initialize(lines)
       @lines = lines.value
@@ -189,6 +204,7 @@ module CoffeeScript
   # Node for a function invocation. Takes care of converting super() calls into
   # calls against the prototype's function of the same name.
   class CallNode < Node
+    no_return
     attr_reader :variable, :arguments
 
     def initialize(variable, arguments=[])
@@ -245,6 +261,7 @@ module CoffeeScript
   # After goog.inherits from the Closure Library.
   class ExtendsNode < Node
     statement
+    no_return
     attr_reader :sub_object, :super_object
 
     def initialize(sub_object, super_object)
@@ -262,6 +279,7 @@ module CoffeeScript
 
   # A value, indexed or dotted into, or vanilla.
   class ValueNode < Node
+    no_return
     attr_reader :literal, :properties, :last, :source
 
     def initialize(literal, properties=[])
@@ -295,6 +313,7 @@ module CoffeeScript
 
   # A dotted accessor into a part of a value.
   class AccessorNode < Node
+    no_return
     attr_reader :name
 
     def initialize(name)
@@ -308,6 +327,7 @@ module CoffeeScript
 
   # An indexed accessor into a part of an array or object.
   class IndexNode < Node
+    no_return
     attr_reader :index
 
     def initialize(index)
@@ -322,6 +342,7 @@ module CoffeeScript
   # A range literal. Ranges can be used to extract portions (slices) of arrays,
   # or to specify a range for array comprehensions.
   class RangeNode < Node
+    no_return
     attr_reader :from, :to
 
     def initialize(from, to, exclusive=false)
@@ -363,6 +384,7 @@ module CoffeeScript
   # specifies the index of the end of the slice (just like the first parameter)
   # is the index of the beginning.
   class SliceNode < Node
+    no_return
     attr_reader :range
 
     def initialize(range)
@@ -386,6 +408,10 @@ module CoffeeScript
 
     def initialize(variable, value, context=nil)
       @variable, @value, @context = variable, value, context
+    end
+
+    def children
+      [@value]
     end
 
     def compile_node(o)
@@ -433,6 +459,10 @@ module CoffeeScript
       @operator = CONVERSIONS[operator.to_sym] || operator
     end
 
+    def children
+      [@first, @second]
+    end
+
     def unary?
       @second.nil?
     end
@@ -459,6 +489,7 @@ module CoffeeScript
 
   # A function definition. The only node that creates a new Scope.
   class CodeNode < Node
+    no_return
     attr_reader :params, :body
 
     def initialize(params, body)
@@ -489,6 +520,7 @@ module CoffeeScript
 
   # A parameter splat in a function definition.
   class ParamSplatNode < Node
+    no_return
     attr_accessor :index
     attr_reader :name
 
@@ -503,6 +535,7 @@ module CoffeeScript
   end
 
   class ArgSplatNode < Node
+    no_return
     attr_reader :value
 
     def initialize(value)
@@ -517,6 +550,7 @@ module CoffeeScript
 
   # An object literal.
   class ObjectNode < Node
+    no_return
     attr_reader :properties
 
     def initialize(properties = [])
@@ -544,6 +578,7 @@ module CoffeeScript
 
   # An array literal.
   class ArrayNode < Node
+    no_return
     attr_reader :objects
 
     def initialize(objects=[])
@@ -574,6 +609,10 @@ module CoffeeScript
       @condition, @body = condition, body
     end
 
+    def children
+      [@body]
+    end
+
     def compile_node(o)
       returns     = o.delete(:return)
       indent      = o[:indent]
@@ -599,6 +638,10 @@ module CoffeeScript
       @source = source[:source]
       @filter = source[:filter]
       @step   = source[:step]
+    end
+
+    def children
+      [@body]
     end
 
     def compile_node(o)
@@ -629,10 +672,12 @@ module CoffeeScript
       set_result    = "#{rvar} = [];\n#{o[:indent]}"
       return_result = rvar
       temp_var      = ValueNode.new(LiteralNode.new(tvar))
-      body = Expressions.wrap(
-        AssignNode.new(temp_var, @body.unwrap),
-        CallNode.new(ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [temp_var])
-      )
+      unless @body.returns?
+        body = Expressions.wrap(
+          AssignNode.new(temp_var, @body.unwrap),
+          CallNode.new(ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [temp_var])
+        )
+      end
       if o[:return]
         return_result = "return #{return_result}" if o[:return]
         o.delete(:return)
@@ -657,6 +702,10 @@ module CoffeeScript
       @try, @error, @recovery, @finally = try, error, recovery, finally
     end
 
+    def children
+      [@try, @recovery, @finally]
+    end
+
     def compile_node(o)
       indent = o[:indent]
       o[:indent] += TAB
@@ -670,6 +719,7 @@ module CoffeeScript
 
   # Throw an exception.
   class ThrowNode < Node
+    no_return
     statement_only
 
     attr_reader :expression
@@ -685,6 +735,7 @@ module CoffeeScript
 
   # Check an expression for existence (meaning not null or undefined).
   class ExistenceNode < Node
+    no_return
     attr_reader :expression
 
     def initialize(expression)
@@ -708,6 +759,10 @@ module CoffeeScript
       @line = line
     end
 
+    def children
+      [@expressions]
+    end
+
     def compile_node(o)
       compiled = @expressions.compile(o)
       compiled = compiled[0...-1] if compiled[-1..-1] == ';'
@@ -728,6 +783,10 @@ module CoffeeScript
       @else_body = else_body && else_body.unwrap
       @tags      = tags
       @condition = OpNode.new("!", ParentheticalNode.new(@condition)) if @tags[:invert]
+    end
+
+    def children
+      [@body, @else_body]
     end
 
     def <<(else_body)
