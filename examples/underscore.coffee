@@ -17,7 +17,9 @@ previousUnderscore: root._
 # If Underscore is called as a function, it returns a wrapped object that
 # can be used OO-style. This wrapper holds altered versions of all the
 # underscore functions. Wrapped objects may be chained.
-wrapper: obj => this._wrapped: obj
+wrapper: obj =>
+  this._wrapped: obj
+  this
 
 # Establish the object that gets thrown to break out of a loop iteration.
 breaker: if typeof(StopIteration) is 'undefined' then '__break__' else StopIteration
@@ -36,7 +38,7 @@ hasOwnProperty:       Object.prototype.hasOwnProperty
 propertyIsEnumerable: Object.prototype.propertyIsEnumerable
 
 # Current version.
-_.VERSION: '0.5.1'
+_.VERSION: '0.5.2'
 
 # ------------------------ Collection Functions: ---------------------------
 
@@ -92,15 +94,15 @@ _.detect: obj, iterator, context =>
 _.select: obj, iterator, context =>
   if obj and _.isFunction(obj.filter) then return obj.filter(iterator, context)
   results: []
-  _.each(obj, (value, index, list =>
-    results.push(value) if iterator.call(context, value, index, list)))
+  _.each(obj) value, index, list =>
+    results.push(value) if iterator.call(context, value, index, list)
   results
 
 # Return all the elements for which a truth test fails.
 _.reject: obj, iterator, context =>
   results: []
-  _.each(obj, (value, index, list =>
-    results.push(value) if not iterator.call(context, value, index, list)))
+  _.each(obj) value, index, list =>
+    results.push(value) if not iterator.call(context, value, index, list)
   results
 
 # Determine whether all of the elements match a truth test. Delegate to
@@ -109,8 +111,8 @@ _.all: obj, iterator, context =>
   iterator ||= _.identity
   return obj.every(iterator, context) if obj and _.isFunction(obj.every)
   result: true
-  _.each(obj, (value, index, list =>
-    _.breakLoop() unless result: result and iterator.call(context, value, index, list)))
+  _.each(obj) value, index, list =>
+    _.breakLoop() unless (result: result and iterator.call(context, value, index, list))
   result
 
 # Determine if at least one element in the object matches a truth test. Use
@@ -119,8 +121,8 @@ _.any: obj, iterator, context =>
   iterator ||= _.identity
   return obj.some(iterator, context) if obj and _.isFunction(obj.some)
   result: false
-  _.each(obj, (value, index, list =>
-    _.breakLoop() if (result: iterator.call(context, value, index, list))))
+  _.each(obj) value, index, list =>
+    _.breakLoop() if (result: iterator.call(context, value, index, list))
   result
 
 # Determine if a given value is included in the array or object,
@@ -128,15 +130,15 @@ _.any: obj, iterator, context =>
 _.include: obj, target =>
   return _.indexOf(obj, target) isnt -1 if _.isArray(obj)
   found: false
-  _.each(obj, (value =>
-    _.breakLoop() if (found: value is target)))
+  _.each(obj) value =>
+    _.breakLoop() if found: value is target
   found
 
 # Invoke a method with arguments on every item in a collection.
 _.invoke: obj, method =>
   args: _.rest(arguments, 2)
-  _.map(obj, (value =>
-    (if method then value[method] else value).apply(value, args)))
+  _.map(obj) value =>
+    (if method then value[method] else value).apply(value, args)
 
 # Convenience version of a common use case of map: fetching a property.
 _.pluck: obj, key =>
@@ -144,48 +146,40 @@ _.pluck: obj, key =>
 
 # Return the maximum item or (item-based computation).
 _.max: obj, iterator, context =>
-  return Math.max.apply(Math, obj) if !iterator and _.isArray(obj)
+  return Math.max.apply(Math, obj) if not iterator and _.isArray(obj)
   result: {computed: -Infinity}
-  _.each(obj, (value, index, list =>
+  _.each(obj) value, index, list =>
     computed: if iterator then iterator.call(context, value, index, list) else value
-    computed >= result.computed and (result: {value: value, computed: computed})))
+    computed >= result.computed and (result: {value: value, computed: computed})
   result.value
 
-#   # Return the minimum element (or element-based computation).
-#   _.min = function(obj, iterator, context) {
-#     if (!iterator && _.isArray(obj)) return Math.min.apply(Math, obj);
-#     var result = {computed : Infinity};
-#     _.each(obj, function(value, index, list) {
-#       var computed = iterator ? iterator.call(context, value, index, list) : value;
-#       computed < result.computed && (result = {value : value, computed : computed});
-#     });
-#     return result.value;
-#   };
-#
-#   # Sort the object's values by a criteria produced by an iterator.
-#   _.sortBy = function(obj, iterator, context) {
-#     return _.pluck(_.map(obj, function(value, index, list) {
-#       return {
-#         value : value,
-#         criteria : iterator.call(context, value, index, list)
-#       };
-#     }).sort(function(left, right) {
-#       var a = left.criteria, b = right.criteria;
-#       return a < b ? -1 : a > b ? 1 : 0;
-#     }), 'value');
-#   };
-#
-#   # Use a comparator function to figure out at what index an object should
-#   # be inserted so as to maintain order. Uses binary search.
-#   _.sortedIndex = function(array, obj, iterator) {
-#     iterator = iterator || _.identity;
-#     var low = 0, high = array.length;
-#     while (low < high) {
-#       var mid = (low + high) >> 1;
-#       iterator(array[mid]) < iterator(obj) ? low = mid + 1 : high = mid;
-#     }
-#     return low;
-#   };
+# Return the minimum element (or element-based computation).
+_.min: obj, iterator, context =>
+  return Math.min.apply(Math, obj) if not iterator and _.isArray(obj)
+  result: {computed: Infinity}
+  _.each(obj) value, index, list =>
+    computed: if iterator then iterator.call(context, value, index, list) else value
+    computed < result.computed and (result: {value: value, computed: computed})
+  result.value
+
+# Sort the object's values by a criteria produced by an iterator.
+_.sortBy: obj, iterator, context =>
+  _.pluck(((_.map(obj) value, index, list =>
+    {value: value, criteria: iterator.call(context, value, index, list)}
+  ).sort() left, right =>
+    a: left.criteria; b: right.criteria
+    if a < b then -1 else if a > b then 1 else 0
+  ), 'value')
+
+# Use a comparator function to figure out at what index an object should
+# be inserted so as to maintain order. Uses binary search.
+_.sortedIndex: array, obj, iterator =>
+  iterator ||= _.identity
+  low: 0; high: array.length
+  while low < high
+    mid: (low + high) >> 1
+    if iterator(array[mid]) < iterator(obj) then low: mid + 1 else high: mid
+  low
 
 # Convert anything iterable into a real, live array.
 _.toArray: iterable =>
@@ -239,60 +233,60 @@ _.uniq: array, isSorted =>
       memo.push(el)
     memo
 
-#   # Produce an array that contains every item shared between all the
-#   # passed-in arrays.
-#   _.intersect = function(array) {
-#     var rest = _.rest(arguments);
-#     return _.select(_.uniq(array), function(item) {
-#       return _.all(rest, function(other) {
-#         return _.indexOf(other, item) >= 0;
-#       });
-#     });
-#   };
-#
-#   # Zip together multiple lists into a single array -- elements that share
-#   # an index go together.
-#   _.zip = function() {
-#     var args = _.toArray(arguments);
-#     var length = _.max(_.pluck(args, 'length'));
-#     var results = new Array(length);
-#     for (var i=0; i<length; i++) results[i] = _.pluck(args, String(i));
-#     return results;
-#   };
-#
-#   # If the browser doesn't supply us with indexOf (I'm looking at you, MSIE),
-#   # we need this function. Return the position of the first occurence of an
-#   # item in an array, or -1 if the item is not included in the array.
-#   _.indexOf = function(array, item) {
-#     if (array.indexOf) return array.indexOf(item);
-#     for (var i=0, l=array.length; i<l; i++) if (array[i] === item) return i;
-#     return -1;
-#   };
-#
-#   # Provide JavaScript 1.6's lastIndexOf, delegating to the native function,
-#   # if possible.
-#   _.lastIndexOf = function(array, item) {
-#     if (array.lastIndexOf) return array.lastIndexOf(item);
-#     var i = array.length;
-#     while (i--) if (array[i] === item) return i;
-#     return -1;
-#   };
-#
-#   # Generate an integer Array containing an arithmetic progression. A port of
-#   # the native Python range() function. See:
-#   # http://docs.python.org/library/functions.html#range
-#   _.range = function(start, stop, step) {
-#     var a     = _.toArray(arguments);
-#     var solo  = a.length <= 1;
-#     var start = solo ? 0 : a[0], stop = solo ? a[0] : a[1], step = a[2] || 1;
-#     var len   = Math.ceil((stop - start) / step);
-#     if (len <= 0) return [];
-#     var range = new Array(len);
-#     for (var i = start, idx = 0; true; i += step) {
-#       if ((step > 0 ? i - stop : stop - i) >= 0) return range;
-#       range[idx++] = i;
-#     }
-#   };
+# Produce an array that contains every item shared between all the
+# passed-in arrays.
+_.intersect: array =>
+  rest: _.rest(arguments)
+  _.select(_.uniq(array)) item =>
+    _.all(rest) other =>
+      _.indexOf(other, item) >= 0
+
+# Zip together multiple lists into a single array -- elements that share
+# an index go together.
+_.zip: =>
+  args:       _.toArray(arguments)
+  length:     _.max(_.pluck(args, 'length'))
+  results:    new Array(length)
+  results[i]: _.pluck(args, String(i)) for i in [0...length]
+  results
+
+# If the browser doesn't supply us with indexOf (I'm looking at you, MSIE),
+# we need this function. Return the position of the first occurence of an
+# item in an array, or -1 if the item is not included in the array.
+_.indexOf: array, item =>
+  return array.indexOf(item) if array.indexOf
+  i: 0; l: array.length
+  while l - i
+    if array[i] is item then return i else i++
+  -1
+
+# Provide JavaScript 1.6's lastIndexOf, delegating to the native function,
+# if possible.
+_.lastIndexOf: array, item =>
+  return array.lastIndexOf(item) if array.lastIndexOf
+  i: array.length
+  while i
+    if array[i] is item then return i else i--
+  -1
+
+# Generate an integer Array containing an arithmetic progression. A port of
+# the native Python range() function. See:
+# http://docs.python.org/library/functions.html#range
+_.range: start, stop, step =>
+  a:        _.toArray(arguments)
+  solo:     a.length <= 1
+  i: start: if solo then 0 else a[0];
+  stop:     if solo then a[0] else a[1];
+  step:     a[2] or 1
+  len:      Math.ceil((stop - start) / step)
+  return [] if len <= 0
+  range:    new Array(len)
+  idx:      0
+  while true
+    return range if (if step > 0 then i - stop else stop - i) >= 0
+    idx++
+    range[idx]: i
+    i+= step
 
 # ----------------------- Function Functions: -----------------------------
 
@@ -332,7 +326,7 @@ _.compose: =>
   funcs: _.toArray(arguments)
   =>
     args: _.toArray(arguments)
-    args: [funcs[i]].apply(this, args) for i in [(funcs.length - 1)..0]
+    args: funcs[i].apply(this, args) for i in [(funcs.length - 1)..0]
     args[0]
 
 # ------------------------- Object Functions: ----------------------------
@@ -352,13 +346,19 @@ _.functions: obj =>
 
 # Extend a given object with all of the properties in a source object.
 _.extend: destination, source =>
-  destination[key]: val for val, key in source
+  (destination[key]: val) for val, key in source
   destination
 
 # Create a (shallow-cloned) duplicate of an object.
 _.clone: obj =>
-  return obj.slice(0) if _.isArray(ob)
+  return obj.slice(0) if _.isArray(obj)
   _.extend({}, obj)
+
+# Invokes interceptor with the obj, and then returns obj.
+# The primary purpose of this method is to "tap into" a method chain, in order to perform operations on intermediate results within the chain.
+_.tap: obj, interceptor =>
+  interceptor(obj)
+  obj
 
 # Perform a deep comparison to check if two objects are equal.
 _.isEqual: a, b =>
@@ -396,29 +396,41 @@ _.isEqual: a, b =>
   return true
 
 # Is a given array or object empty?
-_.isEmpty: obj => _.keys(obj).length is 0
+_.isEmpty:      obj => _.keys(obj).length is 0
 
 # Is a given value a DOM element?
-_.isElement: obj => !!(obj and obj.nodeType is 1)
+_.isElement:    obj => !!(obj and obj.nodeType is 1)
+
+# Is a given value an array?
+_.isArray:      obj => !!(obj and obj.concat and obj.unshift)
 
 # Is a given variable an arguments object?
-_.isArguments: obj => obj and _.isNumber(obj.length) and !_.isArray(obj) and !propertyIsEnumerable.call(obj, 'length')
+_.isArguments:  obj => !!(obj and _.isNumber(obj.length) and !_.isArray(obj) and !propertyIsEnumerable.call(obj, 'length'))
+
+# Is the given value a function?
+_.isFunction:   obj => !!(obj and obj.constructor and obj.call and obj.apply)
+
+# Is the given value a string?
+_.isString:     obj => !!(obj is '' or (obj and obj.charCodeAt and obj.substr))
+
+# Is a given value a number?
+_.isNumber:     obj => !!(toString.call(obj) is '[object Number]')
+
+# Is a given value a Date?
+_.isDate:       obj => !!(obj and obj.getTimezoneOffset and obj.setUTCFullYear)
+
+# Is the given value a regular expression?
+_.isRegExp:     obj => !!(obj and obj.exec and (obj.ignoreCase or obj.ignoreCase is false))
 
 # Is the given value NaN -- this one is interesting. NaN != NaN, and
 # isNaN(undefined) == true, so we make sure it's a number first.
-_.isNaN: obj => _.isNumber(obj) and isNaN(obj)
+_.isNaN:        obj => !!(_.isNumber(obj) and window.isNaN(obj))
 
 # Is a given value equal to null?
-_.isNull: obj => obj is null
+_.isNull:       obj => obj is null
 
 # Is a given variable undefined?
-_.isUndefined: obj => typeof obj is 'undefined'
-
-# Invokes interceptor with the obj, and then returns obj.
-# The primary purpose of this method is to "tap into" a method chain, in order to perform operations on intermediate results within the chain.
-_.tap: obj, interceptor =>
-  interceptor(obj)
-  obj
+_.isUndefined:  obj => typeof obj is 'undefined'
 
 # -------------------------- Utility Functions: --------------------------
 
@@ -434,31 +446,28 @@ _.identity: value => value
 # Break out of the middle of an iteration.
 _.breakLoop: => throw breaker
 
-#   # Generate a unique integer id (unique within the entire client session).
-#   # Useful for temporary DOM ids.
-#   var idCounter = 0;
-#   _.uniqueId = function(prefix) {
-#     var id = idCounter++;
-#     return prefix ? prefix + id : id;
-#   };
-#
-#   # JavaScript templating a-la ERB, pilfered from John Resig's
-#   # "Secrets of the JavaScript Ninja", page 83.
-#   _.template = function(str, data) {
-#     var fn = new Function('obj',
-#       'var p=[],print=function(){p.push.apply(p,arguments);};' +
-#       'with(obj){p.push(\'' +
-#       str
-#         .replace(/[\r\t\n]/g, " ")
-#         .split("<%").join("\t")
-#         .replace(/((^|%>)[^\t]*)'/g, "$1\r")
-#         .replace(/\t=(.*?)%>/g, "',$1,'")
-#         .split("\t").join("');")
-#         .split("%>").join("p.push('")
-#         .split("\r").join("\\'")
-#     + "');}return p.join('');");
-#     return data ? fn(data) : fn;
-#   };
+# Generate a unique integer id (unique within the entire client session).
+# Useful for temporary DOM ids.
+idCounter: 0
+_.uniqueId: prefix =>
+  (prefix or '') + idCounter++
+
+# JavaScript templating a-la ERB, pilfered from John Resig's
+# "Secrets of the JavaScript Ninja", page 83.
+_.template: str, data =>
+  `var fn = new Function('obj',
+    'var p=[],print=function(){p.push.apply(p,arguments);};' +
+    'with(obj){p.push(\'' +
+    str.
+      replace(/[\r\t\n]/g, " ").
+      split("<%").join("\t").
+      replace(/((^|%>)[^\t]*)'/g, "$1\r").
+      replace(/\t=(.*?)%>/g, "',$1,'").
+      split("\t").join("');").
+      split("%>").join("p.push('").
+      split("\r").join("\\'") +
+    "');}return p.join('');")`
+  if data then fn(data) else fn
 
 # ------------------------------- Aliases ----------------------------------
 
@@ -478,24 +487,19 @@ _.methods: _.functions
 result: obj, chain =>
   if chain then _(obj).chain() else obj
 
-#
-#   # Add all of the Underscore functions to the wrapper object.
-#   _.each(_.functions(_), function(name) {
-#     var method = _[name];
-#     wrapper.prototype[name] = function() {
-#       unshift.call(arguments, this._wrapped);
-#       return result(method.apply(_, arguments), this._chain);
-#     };
-#   });
-#
-#   # Add all mutator Array functions to the wrapper.
-#   _.each(['pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift'], function(name) {
-#     var method = Array.prototype[name];
-#     wrapper.prototype[name] = function() {
-#       method.apply(this._wrapped, arguments);
-#       return result(this._wrapped, this._chain);
-#     };
-#   });
+# Add all of the Underscore functions to the wrapper object.
+_.each(_.functions(_)) name =>
+  method: _[name]
+  wrapper.prototype[name]: =>
+    unshift.call(arguments, this._wrapped)
+    result(method.apply(_, arguments), this._chain)
+
+# Add all mutator Array functions to the wrapper.
+_.each(['pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift']) name =>
+  method: Array.prototype[name]
+  wrapper.prototype[name]: =>
+    method.apply(this._wrapped, arguments)
+    result(this._wrapped, this._chain)
 
 # Add all accessor Array functions to the wrapper.
 _.each(['concat', 'join', 'slice']) name =>
