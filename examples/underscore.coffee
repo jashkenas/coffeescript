@@ -47,7 +47,7 @@ _.each: obj, iterator, context =>
   try
     return obj.forEach(iterator, context) if obj.forEach
     if _.isArray(obj) or _.isArguments(obj)
-      return iterator.call(context, item, i, obj) for item, i in obj 
+      return iterator.call(context, item, i, obj) for item, i in obj
     iterator.call(context, obj[key], key, obj) for key in _.keys(obj)
   catch e
     throw e if e isnt breaker
@@ -58,34 +58,33 @@ _.each: obj, iterator, context =>
 _.map: obj, iterator, context =>
   return obj.map(iterator, context) if (obj and _.isFunction(obj.map))
   results: []
-  mapper: value, index, list => results.push(iterator.call(context, value, index, list))
-  _.each(obj, mapper)
+  _.each(obj) value, index, list =>
+    results.push(iterator.call(context, value, index, list))
   results
 
 # Reduce builds up a single result from a list of values. Also known as
 # inject, or foldl. Uses JavaScript 1.8's version of reduce, if possible.
 _.reduce: obj, memo, iterator, context =>
   return obj.reduce(_.bind(iterator, context), memo) if (obj and _.isFunction(obj.reduce))
-  reducer: value, index, list => memo: iterator.call(context, memo, value, index, list)
-  _.each(obj, reducer)
+  _.each(obj) value, index, list =>
+    memo: iterator.call(context, memo, value, index, list)
   memo
 
 # The right-associative version of reduce, also known as foldr. Uses
 # JavaScript 1.8's version of reduceRight, if available.
 _.reduceRight: obj, memo, iterator, context =>
   return obj.reduceRight(_.bind(iterator, context), memo) if (obj and _.isFunction(obj.reduceRight))
-  reversed: _.clone(_.toArray(obj)).reverse()
-  reverser: value, index => memo: iterator.call(context, memo, value, index, obj)
-  _.each(reversed, reverser)
+  _.each(_.clone(_.toArray(obj)).reverse()) value, index =>
+    memo: iterator.call(context, memo, value, index, obj)
   memo
 
 # Return the first value which passes a truth test.
 _.detect: obj, iterator, context =>
   result: null
-  _.each(obj, (value, index, list =>
+  _.each(obj) value, index, list =>
     if iterator.call(context, value, index, list)
       result: value
-      _.breakLoop()))
+      _.breakLoop()
   result
 
 # Return all the elements that pass a truth test. Use JavaScript 1.6's
@@ -187,72 +186,59 @@ _.max: obj, iterator, context =>
 #     }
 #     return low;
 #   };
-#
-#   # Convert anything iterable into a real, live array.
-#   _.toArray = function(iterable) {
-#     if (!iterable)                return [];
-#     if (iterable.toArray)         return iterable.toArray();
-#     if (_.isArray(iterable))      return iterable;
-#     if (_.isArguments(iterable))  return slice.call(iterable);
-#     return _.map(iterable, function(val){ return val; });
-#   };
-#
-#   # Return the number of elements in an object.
-#   _.size = function(obj) {
-#     return _.toArray(obj).length;
-#   };
-#
-#   /*-------------------------- Array Functions: ------------------------------*/
-#
-#   # Get the first element of an array. Passing "n" will return the first N
-#   # values in the array. Aliased as "head". The "guard" check allows it to work
-#   # with _.map.
-#   _.first = function(array, n, guard) {
-#     return n && !guard ? slice.call(array, 0, n) : array[0];
-#   };
-#
-#   # Returns everything but the first entry of the array. Aliased as "tail".
-#   # Especially useful on the arguments object. Passing an "index" will return
-#   # the rest of the values in the array from that index onward. The "guard"
-#    //check allows it to work with _.map.
-#   _.rest = function(array, index, guard) {
-#     return slice.call(array, _.isUndefined(index) || guard ? 1 : index);
-#   };
-#
-#   # Get the last element of an array.
-#   _.last = function(array) {
-#     return array[array.length - 1];
-#   };
-#
-#   # Trim out all falsy values from an array.
-#   _.compact = function(array) {
-#     return _.select(array, function(value){ return !!value; });
-#   };
-#
-#   # Return a completely flattened version of an array.
-#   _.flatten = function(array) {
-#     return _.reduce(array, [], function(memo, value) {
-#       if (_.isArray(value)) return memo.concat(_.flatten(value));
-#       memo.push(value);
-#       return memo;
-#     });
-#   };
-#
-#   # Return a version of the array that does not contain the specified value(s).
-#   _.without = function(array) {
-#     var values = _.rest(arguments);
-#     return _.select(array, function(value){ return !_.include(values, value); });
-#   };
-#
-#   # Produce a duplicate-free version of the array. If the array has already
-#   # been sorted, you have the option of using a faster algorithm.
-#   _.uniq = function(array, isSorted) {
-#     return _.reduce(array, [], function(memo, el, i) {
-#       if (0 == i || (isSorted === true ? _.last(memo) != el : !_.include(memo, el))) memo.push(el);
-#       return memo;
-#     });
-#   };
-#
+
+# Convert anything iterable into a real, live array.
+_.toArray: iterable =>
+  return []                   if (!iterable)
+  return iterable.toArray()   if (iterable.toArray)
+  return iterable             if (_.isArray(iterable))
+  return slice.call(iterable) if (_.isArguments(iterable))
+  _.values(iterable)
+
+# Return the number of elements in an object.
+_.size: obj => _.toArray(obj).length
+
+# -------------------------- Array Functions: ------------------------------
+
+# Get the first element of an array. Passing "n" will return the first N
+# values in the array. Aliased as "head". The "guard" check allows it to work
+# with _.map.
+_.first: array, n, guard =>
+  if n and not guard then slice.call(array, 0, n) else array[0]
+
+# Returns everything but the first entry of the array. Aliased as "tail".
+# Especially useful on the arguments object. Passing an "index" will return
+# the rest of the values in the array from that index onward. The "guard"
+# check allows it to work with _.map.
+_.rest: array, index, guard =>
+  slice.call(array, if _.isUndefined(index) or guard then 1 else index)
+
+# Get the last element of an array.
+_.last: array => array[array.length - 1]
+
+# Trim out all falsy values from an array.
+_.compact: array => el for el in array when el
+
+# Return a completely flattened version of an array.
+_.flatten: array =>
+  _.reduce(array, []) memo, value =>
+    return memo.concat(_.flatten(value)) if _.isArray(value)
+    memo.push(value)
+    memo
+
+# Return a version of the array that does not contain the specified value(s).
+_.without: array =>
+  values: _.rest(arguments)
+  _.select(array, (value => not _.include(values, value)))
+
+# Produce a duplicate-free version of the array. If the array has already
+# been sorted, you have the option of using a faster algorithm.
+_.uniq: array, isSorted =>
+  _.reduce(array, []) memo, el, i =>
+    if (i is 0 || (if isSorted is true then _.last(memo) isnt el else not _.include(memo, el)))
+      memo.push(el)
+    memo
+
 #   # Produce an array that contains every item shared between all the
 #   # passed-in arrays.
 #   _.intersect = function(array) {
@@ -316,21 +302,18 @@ _.bind: func, obj =>
   args: _.rest(arguments, 2)
   => func.apply(obj or root, args.concat(_.toArray(arguments)))
 
-#   # Bind all of an object's methods to that object. Useful for ensuring that
-#   # all callbacks defined on an object belong to it.
-#   _.bindAll = function(obj) {
-#     var funcs = _.rest(arguments);
-#     if (funcs.length == 0) funcs = _.functions(obj);
-#     _.each(funcs, function(f) { obj[f] = _.bind(obj[f], obj); });
-#     return obj;
-#   };
-#
-#   # Delays a function for the given number of milliseconds, and then calls
-#   # it with the arguments supplied.
-#   _.delay = function(func, wait) {
-#     var args = _.rest(arguments, 2);
-#     return setTimeout(function(){ return func.apply(func, args); }, wait);
-#   };
+# Bind all of an object's methods to that object. Useful for ensuring that
+# all callbacks defined on an object belong to it.
+_.bindAll: obj =>
+  funcs: if arguments.length > 1 then _.rest(arguments) else _.functions(obj)
+  _.each(funcs, (f => obj[f]: _.bind(obj[f], obj)))
+  obj
+
+# Delays a function for the given number of milliseconds, and then calls
+# it with the arguments supplied.
+_.delay: func, wait =>
+  args: _.rest(arguments, 2)
+  setTimeout((=> func.apply(func, args)), wait)
 
 # Defers a function, scheduling it to run after the current call stack has
 # cleared.
@@ -352,37 +335,30 @@ _.compose: =>
     args: [funcs[i]].apply(this, args) for i in [(funcs.length - 1)..0]
     args[0]
 
-#   /* ------------------------- Object Functions: ---------------------------- */
-#
-#   # Retrieve the names of an object's properties.
-#   _.keys = function(obj) {
-#     if(_.isArray(obj)) return _.range(0, obj.length);
-#     var keys = [];
-#     for (var key in obj) if (hasOwnProperty.call(obj, key)) keys.push(key);
-#     return keys;
-#   };
-#
-#   # Retrieve the values of an object's properties.
-#   _.values = function(obj) {
-#     return _.map(obj, _.identity);
-#   };
-#
-#   # Return a sorted list of the function names available in Underscore.
-#   _.functions = function(obj) {
-#     return _.select(_.keys(obj), function(key){ return _.isFunction(obj[key]); }).sort();
-#   };
-#
-#   # Extend a given object with all of the properties in a source object.
-#   _.extend = function(destination, source) {
-#     for (var property in source) destination[property] = source[property];
-#     return destination;
-#   };
-#
-#   # Create a (shallow-cloned) duplicate of an object.
-#   _.clone = function(obj) {
-#     if (_.isArray(obj)) return obj.slice(0);
-#     return _.extend({}, obj);
-#   };
+# ------------------------- Object Functions: ----------------------------
+
+# Retrieve the names of an object's properties.
+_.keys: obj =>
+  return _.range(0, obj.length) if _.isArray(obj)
+  key for val, key in obj
+
+# Retrieve the values of an object's properties.
+_.values: obj =>
+  _.map(obj, _.identity)
+
+# Return a sorted list of the function names available in Underscore.
+_.functions: obj =>
+  _.select(_.keys(obj), key => _.isFunction(obj[key])).sort()
+
+# Extend a given object with all of the properties in a source object.
+_.extend: destination, source =>
+  destination[key]: val for val, key in source
+  destination
+
+# Create a (shallow-cloned) duplicate of an object.
+_.clone: obj =>
+  return obj.slice(0) if _.isArray(ob)
+  _.extend({}, obj)
 
 # Perform a deep comparison to check if two objects are equal.
 _.isEqual: a, b =>
@@ -444,16 +420,6 @@ _.tap: obj, interceptor =>
   interceptor(obj)
   obj
 
-#   # Define the isArray, isDate, isFunction, isNumber, isRegExp, and isString
-#   # functions based on their toString identifiers.
-#   var types = ['Array', 'Date', 'Function', 'Number', 'RegExp', 'String'];
-#   for (var i=0, l=types.length; i<l; i++) {
-#     (function() {
-#       var identifier = '[object ' + types[i] + ']';
-#       _['is' + types[i]] = function(obj) { return toString.call(obj) == identifier; };
-#     })();
-#   }
-
 # -------------------------- Utility Functions: --------------------------
 
 # Run Underscore.js in noConflict mode, returning the '_' variable to its
@@ -507,11 +473,11 @@ _.tail:    _.rest
 _.methods: _.functions
 
 #   /*------------------------ Setup the OOP Wrapper: --------------------------*/
-#
-#   # Helper function to continue chaining intermediate results.
-#   var result = function(obj, chain) {
-#     return chain ? _(obj).chain() : obj;
-#   };
+
+# Helper function to continue chaining intermediate results.
+result: obj, chain =>
+  if chain then _(obj).chain() else obj
+
 #
 #   # Add all of the Underscore functions to the wrapper object.
 #   _.each(_.functions(_), function(name) {
@@ -530,24 +496,17 @@ _.methods: _.functions
 #       return result(this._wrapped, this._chain);
 #     };
 #   });
-#
-#   # Add all accessor Array functions to the wrapper.
-#   _.each(['concat', 'join', 'slice'], function(name) {
-#     var method = Array.prototype[name];
-#     wrapper.prototype[name] = function() {
-#       return result(method.apply(this._wrapped, arguments), this._chain);
-#     };
-#   });
-#
-#   # Start chaining a wrapped Underscore object.
-#   wrapper.prototype.chain = function() {
-#     this._chain = true;
-#     return this;
-#   };
-#
-#   # Extracts the result from a wrapped and chained object.
-#   wrapper.prototype.value = function() {
-#     return this._wrapped;
-#   };
-#
-#
+
+# Add all accessor Array functions to the wrapper.
+_.each(['concat', 'join', 'slice']) name =>
+  method: Array.prototype[name]
+  wrapper.prototype[name]: =>
+    result(method.apply(this._wrapped, arguments), this._chain)
+
+# Start chaining a wrapped Underscore object.
+wrapper.prototype.chain: =>
+  this._chain: true
+  this
+
+# Extracts the result from a wrapped and chained object.
+wrapper.prototype.value: => this._wrapped
