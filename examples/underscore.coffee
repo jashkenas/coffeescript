@@ -49,8 +49,8 @@ _.each: obj, iterator, context =>
   try
     return obj.forEach(iterator, context) if obj.forEach
     if _.isArray(obj) or _.isArguments(obj)
-      return iterator.call(context, item, i, obj) for item, i in obj
-    iterator.call(context, obj[key], key, obj) for key in _.keys(obj)
+      return (iterator.call(context, obj[i], i, obj) for i in [0...obj.length])
+    iterator.call(context, val, key, obj) for val, key in obj
   catch e
     throw e if e isnt breaker
   obj
@@ -211,7 +211,7 @@ _.rest: array, index, guard =>
 _.last: array => array[array.length - 1]
 
 # Trim out all falsy values from an array.
-_.compact: array => el for el in array when el
+_.compact: array => array[i] for i in [0...array.length] when array[i]
 
 # Return a completely flattened version of an array.
 _.flatten: array =>
@@ -247,7 +247,7 @@ _.zip: =>
   args:       _.toArray(arguments)
   length:     _.max(_.pluck(args, 'length'))
   results:    new Array(length)
-  results[i]: _.pluck(args, String(i)) for i in [0...length]
+  (results[i]: _.pluck(args, String(i))) for i in [0...length]
   results
 
 # If the browser doesn't supply us with indexOf (I'm looking at you, MSIE),
@@ -284,8 +284,8 @@ _.range: start, stop, step =>
   idx:      0
   while true
     return range if (if step > 0 then i - stop else stop - i) >= 0
-    idx++
     range[idx]: i
+    idx++
     i+= step
 
 # ----------------------- Function Functions: -----------------------------
@@ -326,7 +326,7 @@ _.compose: =>
   funcs: _.toArray(arguments)
   =>
     args: _.toArray(arguments)
-    args: funcs[i].apply(this, args) for i in [(funcs.length - 1)..0]
+    (args: [funcs[i].apply(this, args)]) for i in [(funcs.length - 1)..0]
     args[0]
 
 # ------------------------- Object Functions: ----------------------------
