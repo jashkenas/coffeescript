@@ -12,12 +12,12 @@ module CoffeeScript
     def initialize(parent, expressions)
       @parent, @expressions = parent, expressions
       @variables = {}
-      @temp_variable = @parent ? @parent.temp_variable : '__a'
+      @temp_variable = @parent ? @parent.temp_variable.dup : '__a'
     end
 
     # Look up a variable in lexical scope, or declare it if not found.
     def find(name, remote=false)
-      found = check(name, remote)
+      found = check(name)
       return found if found || remote
       @variables[name.to_sym] = :var
       found
@@ -30,9 +30,9 @@ module CoffeeScript
     end
 
     # Just check to see if a variable has already been declared.
-    def check(name, remote=false)
+    def check(name)
       return true if @variables[name.to_sym]
-      @parent && @parent.find(name, true)
+      !!(@parent && @parent.check(name))
     end
 
     # You can reset a found variable on the immediate scope.
