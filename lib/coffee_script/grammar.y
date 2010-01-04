@@ -8,8 +8,8 @@ token IDENTIFIER PROPERTY_ACCESS
 token CODE PARAM PARAM_SPLAT NEW RETURN
 token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
-token FOR IN BY WHILE
-token SWITCH WHEN
+token FOR IN BY WHEN WHILE
+token SWITCH LEADING_WHEN
 token DELETE INSTANCEOF TYPEOF
 token SUPER EXTENDS
 token NEWLINE
@@ -32,7 +32,7 @@ prechigh
   left     '.'
   right    INDENT
   left     OUTDENT
-  right    WHEN IN BY
+  right    WHEN LEADING_WHEN IN BY
   right    THROW FOR NEW SUPER
   left     EXTENDS
   left     ASSIGN '||=' '&&='
@@ -367,8 +367,9 @@ rule
 
   # An individual when.
   When:
-    WHEN Expression Block             { result = IfNode.new(val[1], val[2], nil, {:statement => true}) }
-  | WHEN Expression Block Terminator  { result = IfNode.new(val[1], val[2], nil, {:statement => true}) }
+    LEADING_WHEN Expression Block     { result = IfNode.new(val[1], val[2], nil, {:statement => true}) }
+  | LEADING_WHEN Expression Block 
+      Terminator                      { result = IfNode.new(val[1], val[2], nil, {:statement => true}) }
   | Comment
   ;
 

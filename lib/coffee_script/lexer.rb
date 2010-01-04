@@ -85,6 +85,7 @@ module CoffeeScript
       # Keywords are special identifiers tagged with their own name,
       # 'if' will result in an [:IF, "if"] token.
       tag = KEYWORDS.include?(identifier) ? identifier.upcase.to_sym : :IDENTIFIER
+      tag = :LEADING_WHEN if tag == :WHEN && [:OUTDENT, :INDENT, "\n"].include?(last_tag)
       @tokens[-1][0] = :PROPERTY_ACCESS if tag == :IDENTIFIER && last_value == '.' && !(@tokens[-2][1] == '.')
       token(tag, identifier)
       @i += identifier.length
