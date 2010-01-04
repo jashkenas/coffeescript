@@ -56,6 +56,10 @@ module CoffeeScript
       @variables.select {|k, v| v == :var }.map {|pair| pair[0].to_s }.sort
     end
 
+    def inspect
+      "<Scope:#{__id__} #{@variables.inspect}>"
+    end
+
   end
 
 end
