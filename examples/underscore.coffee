@@ -136,12 +136,11 @@ _.include: obj, target =>
 # Invoke a method with arguments on every item in a collection.
 _.invoke: obj, method =>
   args: _.rest(arguments, 2)
-  _.map(obj) value =>
-    (if method then value[method] else value).apply(value, args)
+  (if method then val[method] else val).apply(val, args) for val in obj
 
 # Convenience version of a common use case of map: fetching a property.
 _.pluck: obj, key =>
-  _.map(obj, (value => value[key]))
+  _.map(obj, (val => val[key]))
 
 # Return the maximum item or (item-based computation).
 _.max: obj, iterator, context =>
@@ -222,15 +221,15 @@ _.flatten: array =>
 # Return a version of the array that does not contain the specified value(s).
 _.without: array =>
   values: _.rest(arguments)
-  _.select(array, (value => not _.include(values, value)))
+  val for val in _.toArray(array) when not _.include(values, val)
 
 # Produce a duplicate-free version of the array. If the array has already
 # been sorted, you have the option of using a faster algorithm.
 _.uniq: array, isSorted =>
-  _.reduce(array, []) memo, el, i =>
-    if (i is 0 || (if isSorted is true then _.last(memo) isnt el else not _.include(memo, el)))
-      memo.push(el)
-    memo
+  memo: []
+  for el, i in _.toArray(array)
+    memo.push(el) if i is 0 || (if isSorted is true then _.last(memo) isnt el else not _.include(memo, el))
+  memo
 
 # Produce an array that contains every item shared between all the
 # passed-in arrays.
