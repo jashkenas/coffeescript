@@ -47,6 +47,7 @@ rule
     /* nothing */                     { result = Expressions.new }
   | Terminator                        { result = Expressions.new }
   | Expressions                       { result = val[0] }
+  | Block Terminator                  { result = val[0] }
   ;
 
   # Any list of expressions or method body, seperated by line breaks or semis.

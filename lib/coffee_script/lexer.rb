@@ -227,7 +227,8 @@ module CoffeeScript
       end
     end
 
-    # Close up all remaining open blocks.
+    # Close up all remaining open blocks. IF the first token is an indent,
+    # axe it.
     def close_indentation
       outdent_token(@indent)
     end

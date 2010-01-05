@@ -54,11 +54,11 @@
       <a href="#lexical_scope">Lexical Scoping and Variable Safety</a><br />
       <a href="#conditionals">Conditionals, Ternaries, and Conditional Assignment</a><br />
       <a href="#existence">The Existence Operator</a><br />
-      <a href="#expressions">Everything is an Expression</a><br />
       <a href="#aliases">Aliases</a><br />
       <a href="#while">While Loops</a><br />
       <a href="#comprehensions">Comprehensions (Arrays, Objects, and Ranges)</a><br />
       <a href="#slice_splice">Array Slicing and Splicing with Ranges</a><br />
+      <a href="#expressions">Everything is an Expression</a><br />
       <a href="#inheritance">Inheritance, and Calling Super from a Subclass</a><br />
       <a href="#embedded">Embedded JavaScript</a><br />
       <a href="#switch">Switch/When/Else</a><br />
@@ -166,6 +166,13 @@ cubed_list = (function() {
   return __c;
 })();
 ;alert(cubed_list);'>run: cubed_list</button><br class='clear' /></div>
+    
+    <p>
+      For a longer CoffeeScript example, check out 
+      <a href="documentation/underscore.html">Underscore.coffee</a>, a port
+      of <a href="http://documentcloud.github.com/underscore/">Underscore.js</a>
+      to CoffeeScript, which, when compiled, passes the complete Underscore test suite.
+    </p>
 
     <h2 id="installation">Installation and Usage</h2>
 
@@ -484,121 +491,6 @@ expensive <span class="Keyword">=</span> expensive <span class="Keyword">||</spa
 }
 </pre><br class='clear' /></div>
 
-    <p id="expressions">
-      <b class="header">Everything is an Expression (at least, as much as possible)</b>
-      You might have noticed how even though we don't add return statements
-      to CoffeeScript functions, they nonetheless return their final value.
-      The CoffeeScript compiler tries to make sure that all statements in the
-      language can be used as expressions. Watch how the <tt>return</tt> gets
-      pushed down into each possible branch of execution, in the function
-      below.
-    </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">grade</span><span class="Keyword">:</span> <span class="FunctionArgument">student</span> <span class="Storage">=&gt;</span>
-  <span class="Keyword">if</span> student.excellent_work
-    <span class="String"><span class="String">&quot;</span>A+<span class="String">&quot;</span></span>
-  <span class="Keyword">else</span> <span class="Keyword">if</span> student.okay_stuff
-    <span class="Keyword">if</span> student.tried_hard <span class="Keyword">then</span> <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span> <span class="Keyword">else</span> <span class="String"><span class="String">&quot;</span>B-<span class="String">&quot;</span></span>
-  <span class="Keyword">else</span>
-    <span class="String"><span class="String">&quot;</span>C<span class="String">&quot;</span></span>
-
-eldest<span class="Keyword">:</span> <span class="Keyword">if</span> <span class="Number">24</span> <span class="Keyword">&gt;</span> <span class="Number">21</span> <span class="Keyword">then</span> <span class="String"><span class="String">&quot;</span>Liz<span class="String">&quot;</span></span> <span class="Keyword">else</span> <span class="String"><span class="String">&quot;</span>Ike<span class="String">&quot;</span></span>
-</pre><pre class="idle"><span class="Storage">var</span> eldest, grade;
-grade <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">grade</span>(<span class="FunctionArgument">student</span>) {
-  <span class="Keyword">if</span> (student.excellent_work) {
-    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>A+<span class="String">&quot;</span></span>;
-  } <span class="Keyword">else</span> <span class="Keyword">if</span> (student.okay_stuff) {
-    <span class="Keyword">return</span> student.tried_hard ? <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span> : <span class="String"><span class="String">&quot;</span>B-<span class="String">&quot;</span></span>;
-  } <span class="Keyword">else</span> {
-    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>C<span class="String">&quot;</span></span>;
-  }
-};
-eldest <span class="Keyword">=</span> <span class="Number">24</span> <span class="Keyword">&gt;</span> <span class="Number">21</span> ? <span class="String"><span class="String">&quot;</span>Liz<span class="String">&quot;</span></span> : <span class="String"><span class="String">&quot;</span>Ike<span class="String">&quot;</span></span>;
-</pre><button onclick='javascript: var eldest, grade;
-grade = function grade(student) {
-  if (student.excellent_work) {
-    return "A+";
-  } else if (student.okay_stuff) {
-    return student.tried_hard ? "B" : "B-";
-  } else {
-    return "C";
-  }
-};
-eldest = 24 > 21 ? "Liz" : "Ike";
-;alert(eldest);'>run: eldest</button><br class='clear' /></div>
-    <p>
-      Because variable declarations occur at the top of scope, assignment can
-      be used within expressions, even for variables that haven't been seen before:
-    </p>
-    <div class='code'><pre class="idle">six<span class="Keyword">:</span> (one<span class="Keyword">:</span> <span class="Number">1</span>) <span class="Keyword">+</span> (two<span class="Keyword">:</span> <span class="Number">2</span>) <span class="Keyword">+</span> (three<span class="Keyword">:</span> <span class="Number">3</span>)
-</pre><pre class="idle"><span class="Storage">var</span> one, six, three, two;
-six <span class="Keyword">=</span> (one <span class="Keyword">=</span> <span class="Number">1</span>) <span class="Keyword">+</span> (two <span class="Keyword">=</span> <span class="Number">2</span>) <span class="Keyword">+</span> (three <span class="Keyword">=</span> <span class="Number">3</span>);
-</pre><button onclick='javascript: var one, six, three, two;
-six = (one = 1) + (two = 2) + (three = 3);
-;alert(six);'>run: six</button><br class='clear' /></div>
-    <p>
-      Things that would otherwise be statements in JavaScript, when used
-      as part of an expression in CoffeeScript, are converted into expressions
-      by wrapping them in a closure. This lets you do useful things, like assign
-      the result of a comprehension to a variable:
-    </p>
-    <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> The first ten global properties.</span>
-
-globals<span class="Keyword">:</span> (name <span class="Keyword">for</span> property, name <span class="Keyword">in</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
-</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, globals, name, property;
-<span class="Comment"><span class="Comment">//</span> The first ten global properties.</span>
-globals <span class="Keyword">=</span> ((<span class="Storage">function</span>() {
-  __a <span class="Keyword">=</span> <span class="LibraryClassType">window</span>;
-  __b <span class="Keyword">=</span> [];
-  <span class="Keyword">for</span> (name <span class="Keyword">in</span> __a) {
-    <span class="Keyword">if</span> (__a.hasOwnProperty(name)) {
-      property <span class="Keyword">=</span> __a[name];
-      __c <span class="Keyword">=</span> name;
-      __b.<span class="LibraryFunction">push</span>(__c);
-    }
-  }
-  <span class="Keyword">return</span> __b;
-})()).<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
-</pre><button onclick='javascript: var __a, __b, __c, globals, name, property;
-// The first ten global properties.
-globals = ((function() {
-  __a = window;
-  __b = [];
-  for (name in __a) {
-    if (__a.hasOwnProperty(name)) {
-      property = __a[name];
-      __c = name;
-      __b.push(__c);
-    }
-  }
-  return __b;
-})()).slice(0, 10);
-;alert(globals);'>run: globals</button><br class='clear' /></div>
-    <p>
-      As well as silly things, like passing a <b>try/catch</b> statement directly
-      into a function call:
-    </p>
-    <div class='code'><pre class="idle">alert(
-  <span class="Keyword">try</span>
-    nonexistent <span class="Keyword">/</span> <span class="BuiltInConstant">undefined</span>
-  <span class="Keyword">catch</span> error
-    <span class="String"><span class="String">&quot;</span>The error is: <span class="String">&quot;</span></span> <span class="Keyword">+</span> error
-)
-</pre><pre class="idle"><span class="LibraryFunction">alert</span>((<span class="Storage">function</span>() {
-  <span class="Keyword">try</span> {
-    <span class="Keyword">return</span> nonexistent / undefined;
-  } <span class="Keyword">catch</span> (error) {
-    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>The error is: <span class="String">&quot;</span></span> <span class="Keyword">+</span> error;
-  }
-})());
-</pre><button onclick='javascript: alert((function() {
-  try {
-    return nonexistent / undefined;
-  } catch (error) {
-    return "The error is: " + error;
-  }
-})());
-;'>run</button><br class='clear' /></div>
-
     <p id="aliases">
       <b class="header">Aliases</b>
       Because the <tt>==</tt> operator frequently causes undesirable coercion,
@@ -821,6 +713,121 @@ numbers.splice.<span class="LibraryFunction">apply</span>(numbers, [<span class=
 numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 numbers.splice.apply(numbers, [3, 6 - 3 + 1].concat([-3, -4, -5, -6]));
 ;alert(numbers);'>run: numbers</button><br class='clear' /></div>
+    
+    <p id="expressions">
+      <b class="header">Everything is an Expression (at least, as much as possible)</b>
+      You might have noticed how even though we don't add return statements
+      to CoffeeScript functions, they nonetheless return their final value.
+      The CoffeeScript compiler tries to make sure that all statements in the
+      language can be used as expressions. Watch how the <tt>return</tt> gets
+      pushed down into each possible branch of execution, in the function
+      below.
+    </p>
+    <div class='code'><pre class="idle"><span class="FunctionName">grade</span><span class="Keyword">:</span> <span class="FunctionArgument">student</span> <span class="Storage">=&gt;</span>
+  <span class="Keyword">if</span> student.excellent_work
+    <span class="String"><span class="String">&quot;</span>A+<span class="String">&quot;</span></span>
+  <span class="Keyword">else</span> <span class="Keyword">if</span> student.okay_stuff
+    <span class="Keyword">if</span> student.tried_hard <span class="Keyword">then</span> <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span> <span class="Keyword">else</span> <span class="String"><span class="String">&quot;</span>B-<span class="String">&quot;</span></span>
+  <span class="Keyword">else</span>
+    <span class="String"><span class="String">&quot;</span>C<span class="String">&quot;</span></span>
+
+eldest<span class="Keyword">:</span> <span class="Keyword">if</span> <span class="Number">24</span> <span class="Keyword">&gt;</span> <span class="Number">21</span> <span class="Keyword">then</span> <span class="String"><span class="String">&quot;</span>Liz<span class="String">&quot;</span></span> <span class="Keyword">else</span> <span class="String"><span class="String">&quot;</span>Ike<span class="String">&quot;</span></span>
+</pre><pre class="idle"><span class="Storage">var</span> eldest, grade;
+grade <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">grade</span>(<span class="FunctionArgument">student</span>) {
+  <span class="Keyword">if</span> (student.excellent_work) {
+    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>A+<span class="String">&quot;</span></span>;
+  } <span class="Keyword">else</span> <span class="Keyword">if</span> (student.okay_stuff) {
+    <span class="Keyword">return</span> student.tried_hard ? <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span> : <span class="String"><span class="String">&quot;</span>B-<span class="String">&quot;</span></span>;
+  } <span class="Keyword">else</span> {
+    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>C<span class="String">&quot;</span></span>;
+  }
+};
+eldest <span class="Keyword">=</span> <span class="Number">24</span> <span class="Keyword">&gt;</span> <span class="Number">21</span> ? <span class="String"><span class="String">&quot;</span>Liz<span class="String">&quot;</span></span> : <span class="String"><span class="String">&quot;</span>Ike<span class="String">&quot;</span></span>;
+</pre><button onclick='javascript: var eldest, grade;
+grade = function grade(student) {
+  if (student.excellent_work) {
+    return "A+";
+  } else if (student.okay_stuff) {
+    return student.tried_hard ? "B" : "B-";
+  } else {
+    return "C";
+  }
+};
+eldest = 24 > 21 ? "Liz" : "Ike";
+;alert(eldest);'>run: eldest</button><br class='clear' /></div>
+    <p>
+      Because variable declarations occur at the top of scope, assignment can
+      be used within expressions, even for variables that haven't been seen before:
+    </p>
+    <div class='code'><pre class="idle">six<span class="Keyword">:</span> (one<span class="Keyword">:</span> <span class="Number">1</span>) <span class="Keyword">+</span> (two<span class="Keyword">:</span> <span class="Number">2</span>) <span class="Keyword">+</span> (three<span class="Keyword">:</span> <span class="Number">3</span>)
+</pre><pre class="idle"><span class="Storage">var</span> one, six, three, two;
+six <span class="Keyword">=</span> (one <span class="Keyword">=</span> <span class="Number">1</span>) <span class="Keyword">+</span> (two <span class="Keyword">=</span> <span class="Number">2</span>) <span class="Keyword">+</span> (three <span class="Keyword">=</span> <span class="Number">3</span>);
+</pre><button onclick='javascript: var one, six, three, two;
+six = (one = 1) + (two = 2) + (three = 3);
+;alert(six);'>run: six</button><br class='clear' /></div>
+    <p>
+      Things that would otherwise be statements in JavaScript, when used
+      as part of an expression in CoffeeScript, are converted into expressions
+      by wrapping them in a closure. This lets you do useful things, like assign
+      the result of a comprehension to a variable:
+    </p>
+    <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> The first ten global properties.</span>
+
+globals<span class="Keyword">:</span> (name <span class="Keyword">for</span> property, name <span class="Keyword">in</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
+</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, globals, name, property;
+<span class="Comment"><span class="Comment">//</span> The first ten global properties.</span>
+globals <span class="Keyword">=</span> ((<span class="Storage">function</span>() {
+  __a <span class="Keyword">=</span> <span class="LibraryClassType">window</span>;
+  __b <span class="Keyword">=</span> [];
+  <span class="Keyword">for</span> (name <span class="Keyword">in</span> __a) {
+    <span class="Keyword">if</span> (__a.hasOwnProperty(name)) {
+      property <span class="Keyword">=</span> __a[name];
+      __c <span class="Keyword">=</span> name;
+      __b.<span class="LibraryFunction">push</span>(__c);
+    }
+  }
+  <span class="Keyword">return</span> __b;
+})()).<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
+</pre><button onclick='javascript: var __a, __b, __c, globals, name, property;
+// The first ten global properties.
+globals = ((function() {
+  __a = window;
+  __b = [];
+  for (name in __a) {
+    if (__a.hasOwnProperty(name)) {
+      property = __a[name];
+      __c = name;
+      __b.push(__c);
+    }
+  }
+  return __b;
+})()).slice(0, 10);
+;alert(globals);'>run: globals</button><br class='clear' /></div>
+    <p>
+      As well as silly things, like passing a <b>try/catch</b> statement directly
+      into a function call:
+    </p>
+    <div class='code'><pre class="idle">alert(
+  <span class="Keyword">try</span>
+    nonexistent <span class="Keyword">/</span> <span class="BuiltInConstant">undefined</span>
+  <span class="Keyword">catch</span> error
+    <span class="String"><span class="String">&quot;</span>The error is: <span class="String">&quot;</span></span> <span class="Keyword">+</span> error
+)
+</pre><pre class="idle"><span class="LibraryFunction">alert</span>((<span class="Storage">function</span>() {
+  <span class="Keyword">try</span> {
+    <span class="Keyword">return</span> nonexistent / undefined;
+  } <span class="Keyword">catch</span> (error) {
+    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>The error is: <span class="String">&quot;</span></span> <span class="Keyword">+</span> error;
+  }
+})());
+</pre><button onclick='javascript: alert((function() {
+  try {
+    return nonexistent / undefined;
+  } catch (error) {
+    return "The error is: " + error;
+  }
+})());
+;'>run</button><br class='clear' /></div>
 
     <p id="inheritance">
       <b class="header">Inheritance, and Calling Super from a Subclass</b>

@@ -81,11 +81,11 @@
       <a href="#lexical_scope">Lexical Scoping and Variable Safety</a><br />
       <a href="#conditionals">Conditionals, Ternaries, and Conditional Assignment</a><br />
       <a href="#existence">The Existence Operator</a><br />
-      <a href="#expressions">Everything is an Expression</a><br />
       <a href="#aliases">Aliases</a><br />
       <a href="#while">While Loops</a><br />
       <a href="#comprehensions">Comprehensions (Arrays, Objects, and Ranges)</a><br />
       <a href="#slice_splice">Array Slicing and Splicing with Ranges</a><br />
+      <a href="#expressions">Everything is an Expression</a><br />
       <a href="#inheritance">Inheritance, and Calling Super from a Subclass</a><br />
       <a href="#embedded">Embedded JavaScript</a><br />
       <a href="#switch">Switch/When/Else</a><br />
@@ -101,6 +101,13 @@
     <p><i>CoffeeScript on the left, compiled JavaScript output on the right.</i></p>
 
     <%= code_for('overview', 'cubed_list') %>
+    
+    <p>
+      For a longer CoffeeScript example, check out 
+      <a href="documentation/underscore.html">Underscore.coffee</a>, a port
+      of <a href="http://documentcloud.github.com/underscore/">Underscore.js</a>
+      to CoffeeScript, which, when compiled, passes the complete Underscore test suite.
+    </p>
 
     <h2 id="installation">Installation and Usage</h2>
 
@@ -321,34 +328,6 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('existence') %>
 
-    <p id="expressions">
-      <b class="header">Everything is an Expression (at least, as much as possible)</b>
-      You might have noticed how even though we don't add return statements
-      to CoffeeScript functions, they nonetheless return their final value.
-      The CoffeeScript compiler tries to make sure that all statements in the
-      language can be used as expressions. Watch how the <tt>return</tt> gets
-      pushed down into each possible branch of execution, in the function
-      below.
-    </p>
-    <%= code_for('expressions', 'eldest') %>
-    <p>
-      Because variable declarations occur at the top of scope, assignment can
-      be used within expressions, even for variables that haven't been seen before:
-    </p>
-    <%= code_for('expressions_assignment', 'six') %>
-    <p>
-      Things that would otherwise be statements in JavaScript, when used
-      as part of an expression in CoffeeScript, are converted into expressions
-      by wrapping them in a closure. This lets you do useful things, like assign
-      the result of a comprehension to a variable:
-    </p>
-    <%= code_for('expressions_comprehension', 'globals') %>
-    <p>
-      As well as silly things, like passing a <b>try/catch</b> statement directly
-      into a function call:
-    </p>
-    <%= code_for('expressions_try', true) %>
-
     <p id="aliases">
       <b class="header">Aliases</b>
       Because the <tt>==</tt> operator frequently causes undesirable coercion,
@@ -428,6 +407,34 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       array with new values (to splice it).
     </p>
     <%= code_for('splices', 'numbers') %>
+    
+    <p id="expressions">
+      <b class="header">Everything is an Expression (at least, as much as possible)</b>
+      You might have noticed how even though we don't add return statements
+      to CoffeeScript functions, they nonetheless return their final value.
+      The CoffeeScript compiler tries to make sure that all statements in the
+      language can be used as expressions. Watch how the <tt>return</tt> gets
+      pushed down into each possible branch of execution, in the function
+      below.
+    </p>
+    <%= code_for('expressions', 'eldest') %>
+    <p>
+      Because variable declarations occur at the top of scope, assignment can
+      be used within expressions, even for variables that haven't been seen before:
+    </p>
+    <%= code_for('expressions_assignment', 'six') %>
+    <p>
+      Things that would otherwise be statements in JavaScript, when used
+      as part of an expression in CoffeeScript, are converted into expressions
+      by wrapping them in a closure. This lets you do useful things, like assign
+      the result of a comprehension to a variable:
+    </p>
+    <%= code_for('expressions_comprehension', 'globals') %>
+    <p>
+      As well as silly things, like passing a <b>try/catch</b> statement directly
+      into a function call:
+    </p>
+    <%= code_for('expressions_try', true) %>
 
     <p id="inheritance">
       <b class="header">Inheritance, and Calling Super from a Subclass</b>
