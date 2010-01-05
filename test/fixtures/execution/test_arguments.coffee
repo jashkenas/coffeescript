@@ -15,3 +15,10 @@ print(area(
   x1
   y1
 ) is 100)
+
+
+# Arguments are turned into arrays.
+curried: =>
+  print(area.apply(this, arguments.concat(20, 20)) is 100)
+
+curried(10, 10)
