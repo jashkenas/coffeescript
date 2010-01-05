@@ -19,7 +19,8 @@ token INDENT OUTDENT
 
 # Declare order of operations.
 prechigh
-  nonassoc UMINUS PARAM_SPLAT SPLAT NOT '!' '!!' '~' '++' '--' '?'
+  left     '?'
+  nonassoc UMINUS PARAM_SPLAT SPLAT NOT '!' '!!' '~' '++' '--'
   left     '*' '/' '%'
   left     '+' '-'
   left     '<<' '>>' '>>>'
@@ -368,7 +369,7 @@ rule
   # An individual when.
   When:
     LEADING_WHEN Expression Block     { result = IfNode.new(val[1], val[2], nil, {:statement => true}) }
-  | LEADING_WHEN Expression Block 
+  | LEADING_WHEN Expression Block
       Terminator                      { result = IfNode.new(val[1], val[2], nil, {:statement => true}) }
   | Comment
   ;

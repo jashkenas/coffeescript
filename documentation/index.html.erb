@@ -63,7 +63,7 @@
       output is quite readable &mdash; pretty-printed, with comments
       preserved intact.
     </p>
-    
+
     <p>
       <b>Latest Version:</b>
       <a href="http://gemcutter.org/gems/coffee-script">0.2.0</a>
@@ -74,17 +74,18 @@
     <p>
       <a href="#overview">Mini Overview</a><br />
       <a href="#installation">Installation and Usage</a><br />
-      <a href="#punctuation">Punctuation Primer</a><br />
+      <a href="#whitespace">Significant Whitespace</a><br />
       <a href="#functions">Functions and Invocation</a><br />
       <a href="#assignment">Assignment</a><br />
       <a href="#objects_and_arrays">Objects and Arrays</a><br />
       <a href="#lexical_scope">Lexical Scoping and Variable Safety</a><br />
       <a href="#conditionals">Conditionals, Ternaries, and Conditional Assignment</a><br />
+      <a href="#existence">The Existence Operator</a><br />
       <a href="#expressions">Everything is an Expression</a><br />
       <a href="#aliases">Aliases</a><br />
       <a href="#while">While Loops</a><br />
-      <a href="#array_comprehensions">Array Comprehensions</a><br />
-      <a href="#slice">Slicing Arrays with Ranges</a><br />
+      <a href="#comprehensions">Comprehensions (Arrays, Objects, and Ranges)</a><br />
+      <a href="#slice_splice">Array Slicing and Splicing with Ranges</a><br />
       <a href="#inheritance">Inheritance, and Calling Super from a Subclass</a><br />
       <a href="#embedded">Embedded JavaScript</a><br />
       <a href="#switch">Switch/When/Else</a><br />
@@ -225,22 +226,22 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       </i>
     </p>
 
-    <p id="punctuation">
-      <b class="header">Punctuation Primer</b>
-      You don't need to use semicolons <tt>;</tt> to terminate expressions, ending
-      the line will do just as well. All other whitespace is
-      not significant. Instead of using curly braces <tt>{ }</tt>
-      to delimit a block of code, use a period <tt>.</tt> to mark the end of a
-      block, for
-      <a href="#functions">functions</a>,
+    <p id="whitespace">
+      <b class="header">Significant Whitespace</b>
+      CoffeeScript uses Python-style significant whitespace: You don't need to
+      use semicolons <tt>;</tt> to terminate expressions, ending
+      the line will do just as well. Semicolons can still be used to fit
+      multiple expressions onto a single line. Instead of using curly braces
+      <tt>{ }</tt> to delimit a block of code (like <a href="#functions">functions</a>,
       <a href="#conditionals">if-statements</a>,
-      <a href="#switch">switch</a>, and <a href="#try">try/catch</a>.
+      <a href="#switch">switch</a>, and <a href="#try">try/catch</a>),
+      use indentation.
     </p>
 
     <p id="functions">
       <b class="header">Functions and Invocation</b>
       Functions are defined by a list of parameters, an arrow, and the
-      function body. The empty function looks like this: <tt>=>.</tt>
+      function body. The empty function looks like this: <tt>=></tt>
     </p>
     <%= code_for('functions', 'cube(5)') %>
 
@@ -252,8 +253,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('assignment', 'greeting') %>
     <p>
-      Declarations of new variables are pushed up to the top of the current scope,
-      so that assignments may always be used within expressions.
+      Declarations of new variables are pushed up to the top of the nearest
+      lexical scope, so that assignment may always be used within expressions.
     </p>
 
     <p id="objects_and_arrays">
@@ -261,7 +262,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       Object and Array literals look very similar to their JavaScript cousins.
       When you spread out each assignment on a separate line, the commas are
       optional. In this way, assigning object properties looks the same as
-      assigning local variables.
+      assigning local variables, and can be moved around freely. You can mix
+      and match the two styles.
     </p>
     <%= code_for('objects_and_arrays', 'song.join(",")') %>
 
@@ -273,25 +275,29 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('scope', 'new_num') %>
     <p>
-      Notice how the variables are declared with <tt>var</tt> the first time
-      they appear. The second reference of <b>num</b>, within the function,
-      is not redeclared because <b>num</b> is still in scope. As opposed
-      to the second occurrence of <b>new_num</b>, in the last line.
+      Notice how the all of the variable declarations have been pushed up to
+      the top of the closest scope, the first time they appear.
+      <b>num</b> is not redeclared within the inner function, because it's
+      already in scope; the <b>new_num</b> within the function, on the other hand,
+      should not be able to change the value of the external variable of the same name, and
+      therefore has a declaration of its own.
     </p>
     <p>
       Although suppressed within this documentation for clarity, all
       CoffeeScript output is wrapped in an anonymous function:
       <tt>(function(){ ... })();</tt> This safety wrapper, combined with the
       automatic generation of the <tt>var</tt> keyword, make it exceedingly difficult
-      to pollute the global namespace by accident.
+      to pollute the global namespace by accident. If you'd like to create
+      global variables, attach them as properties on <b>window</b>,
+      or on the <b>exports</b> object in CommonJS.
     </p>
 
     <p id="conditionals">
       <b class="header">Conditionals, Ternaries, and Conditional Assignment</b>
       <b>If/else</b> statements can be written without the use of parentheses and
-      curly brackets. As with functions and other block expressions, conditionals
-      are closed with periods. No period is necessary when using the single-line
-      postfix form, with the <tt>if</tt> at the end.
+      curly brackets. As with functions and other block expressions,
+      multi-line conditionals are delimited by indentation. There's also a handy
+      postfix form, with the <tt>if</tt> or <tt>unless</tt> at the end.
     </p>
     <p>
       CoffeeScript will compile <b>if</b> statements using the ternary operator
@@ -299,11 +305,21 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('conditionals') %>
     <p>
-      The conditional assignment operators are available: <tt>||=</tt>,
+      The conditional assignment operators are included: <tt>||=</tt>,
       which only assigns a value to a variable if the variable's current value
       is falsy, and <tt>&amp;&amp;=</tt>, which only replaces the value of
       truthy variables.
     </p>
+
+    <p id="existence">
+      <b class="header">The Existence Operator</b>
+      It's a little difficult to check for the existence of a variable in
+      JavaScript. <tt>if (variable) ...</tt> comes close, but fails for zero,
+      the empty string, and false. The existence operator <tt>?</tt> returns true unless
+      a variable is <b>null</b> or <b>undefined</b>, which makes it analogous
+      to <b>nil?</b> in Ruby.
+    </p>
+    <%= code_for('existence') %>
 
     <p id="expressions">
       <b class="header">Everything is an Expression (at least, as much as possible)</b>
@@ -316,14 +332,22 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('expressions', 'eldest') %>
     <p>
-      The same mechanism is used to push down assignment through <b>switch</b>
-      statements, and <b>if-elses</b> (although the ternary operator is preferred).
-      Another part of manipulating assignment statements is
-      CoffeeScript's declaration of new variables at the top of the
-      current scope. This allows assignment to be used as a piece of an
-      expression.
+      Because variable declarations occur at the top of scope, assignment can
+      be used within expressions, even for variables that haven't been seen before:
     </p>
     <%= code_for('expressions_assignment', 'six') %>
+    <p>
+      Things that would otherwise be statements in JavaScript, when used
+      as part of an expression in CoffeeScript, are converted into expressions
+      by wrapping them in a closure. This lets you do useful things, like assign
+      the result of a comprehension to a variable:
+    </p>
+    <%= code_for('expressions_comprehension', 'globals') %>
+    <p>
+      As well as silly things, like passing a <b>try/catch</b> statement directly
+      into a function call:
+    </p>
+    <%= code_for('expressions_try', true) %>
 
     <p id="aliases">
       <b class="header">Aliases</b>
@@ -367,8 +391,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <b>each</b> (<b>forEach</b>) style iterators, or...
     </p>
 
-    <p id="array_comprehensions">
-      <b class="header">Array Comprehensions</b>
+    <p id="comprehensions">
+      <b class="header">Comprehensions (Arrays, Objects, and Ranges)</b>
       For your looping needs, CoffeeScript provides array comprehensions
       similar to Python's. They replace (and compile into) <b>for</b> loops, with
       optional guard clauses and the value of the current array index.
@@ -378,13 +402,19 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('array_comprehensions') %>
     <p>
-      If you're not iterating over an actual array, you can use a range to
-      specify the start and end of an array comprehension:
-      <tt>coundown(i) for i in [10..1].</tt>
+      If you know the start and end of your loop, or would like to step through
+      in fixed-size increments, you can use a range to specify the start and
+      end of your comprehension:
     </p>
+    <%= code_for('range_comprehensions') %>
+    <p>
+      Comprehensions can also be used to iterate over the values and keys in
+      an object:
+    </p>
+    <%= code_for('object_comprehensions', 'ages.join(", ")') %>
 
-    <p id="slice">
-      <b class="header">Slicing Arrays with Ranges</b>
+    <p id="slice_splice">
+      <b class="header">Array Slicing and Splicing with Ranges</b>
       CoffeeScript borrows Ruby's
       <a href="http://ruby-doc.org/core/classes/Range.html">range syntax</a>
       for extracting slices of arrays. With two dots (<tt>3..5</tt>), the range
@@ -393,6 +423,11 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       a range that excludes the end.
     </p>
     <%= code_for('slices', 'numbers_copy') %>
+    <p>
+      The same syntax can be used with assignment to replace a segment of an
+      array with new values (to splice it).
+    </p>
+    <%= code_for('splices', 'numbers') %>
 
     <p id="inheritance">
       <b class="header">Inheritance, and Calling Super from a Subclass</b>
