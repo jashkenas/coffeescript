@@ -134,6 +134,10 @@ module CoffeeScript
   class LiteralNode < Node
     STATEMENTS = ['break', 'continue']
 
+    CONVERSIONS = {
+      'arguments' => 'Array.prototype.slice.call(arguments, 0)'
+    }
+
     attr_reader :value
 
     def initialize(value)
@@ -146,9 +150,10 @@ module CoffeeScript
     alias_method :statement_only?, :statement?
 
     def compile_node(o)
+      val    = CONVERSIONS[@value.to_s] || @value.to_s
       indent = statement? ? o[:indent] : ''
       ending = statement? ? ';' : ''
-      write(indent + @value.to_s + ending)
+      write("#{indent}#{val}#{ending}")
     end
   end
 

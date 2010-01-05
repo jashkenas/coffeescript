@@ -15,6 +15,7 @@ module CoffeeScript
                   "for", "in", "by", "where", "while",
                   "switch", "when",
                   "super", "extends",
+                  "arguments",
                   "delete", "instanceof", "typeof"]
 
     # Token matching regexes.

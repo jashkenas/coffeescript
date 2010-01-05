@@ -12,6 +12,7 @@ token FOR IN BY WHEN WHILE
 token SWITCH LEADING_WHEN
 token DELETE INSTANCEOF TYPEOF
 token SUPER EXTENDS
+token ARGUMENTS
 token NEWLINE
 token COMMENT
 token JS
@@ -97,6 +98,7 @@ rule
   | REGEX                             { result = LiteralNode.new(val[0]) }
   | BREAK                             { result = LiteralNode.new(val[0]) }
   | CONTINUE                          { result = LiteralNode.new(val[0]) }
+  | ARGUMENTS                         { result = LiteralNode.new(val[0]) }
   | TRUE                              { result = LiteralNode.new(true) }
   | FALSE                             { result = LiteralNode.new(false) }
   | YES                               { result = LiteralNode.new(true) }
