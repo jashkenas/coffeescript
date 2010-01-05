@@ -37,6 +37,7 @@ task :doc do
   child = fork { exec "bin/coffee documentation/coffee/*.coffee -o documentation/js -w" }
   at_exit { Process.kill("INT", child) }
   Signal.trap("INT") { exit }
+  # `uv -t idle -s coffeescript -h examples/underscore.coffee > documentation/underscore.html`
   loop do
     mtime = File.stat(source).mtime
     if !@mtime || mtime > @mtime
