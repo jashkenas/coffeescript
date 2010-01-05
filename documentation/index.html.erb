@@ -82,11 +82,13 @@
       <a href="#conditionals">Conditionals, Ternaries, and Conditional Assignment</a><br />
       <a href="#existence">The Existence Operator</a><br />
       <a href="#aliases">Aliases</a><br />
+      <a href="#splats">Splats</a><br />
       <a href="#while">While Loops</a><br />
       <a href="#comprehensions">Comprehensions (Arrays, Objects, and Ranges)</a><br />
       <a href="#slice_splice">Array Slicing and Splicing with Ranges</a><br />
       <a href="#expressions">Everything is an Expression</a><br />
       <a href="#inheritance">Inheritance, and Calling Super from a Subclass</a><br />
+      <a href="#blocks">Blocks</a><br />
       <a href="#embedded">Embedded JavaScript</a><br />
       <a href="#switch">Switch/When/Else</a><br />
       <a href="#try">Try/Catch/Finally</a><br />
@@ -101,9 +103,9 @@
     <p><i>CoffeeScript on the left, compiled JavaScript output on the right.</i></p>
 
     <%= code_for('overview', 'cubed_list') %>
-    
+
     <p>
-      For a longer CoffeeScript example, check out 
+      For a longer CoffeeScript example, check out
       <a href="documentation/underscore.html">Underscore.coffee</a>, a port
       of <a href="http://documentcloud.github.com/underscore/">Underscore.js</a>
       to CoffeeScript, which, when compiled, passes the complete Underscore test suite.
@@ -141,7 +143,7 @@ gem install coffee-script</pre>
       <tr>
         <td><code>-r, --run</code></td>
         <td>
-          Compile and execute the CoffeeScripts without saving the intermediate
+          Compile and execute scripts without saving the intermediate
           JavaScript. Requires <a href="http://narwhaljs.org/">Narwhal</a>.
         </td>
       </tr>
@@ -177,7 +179,7 @@ gem install coffee-script</pre>
         <td><code>-e, --eval</code></td>
         <td>
           Compile and print a little snippet of CoffeeScript directly from the
-          command line (or from <b>stdin</b>). For example:<br /><tt>coffee -e "square: x => x * x."</tt>
+          command line (or from <b>stdin</b>). For example:<br /><tt>coffee -e "square: x => x * x"</tt>
         </td>
       </tr>
       <tr>
@@ -248,7 +250,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <p id="functions">
       <b class="header">Functions and Invocation</b>
       Functions are defined by a list of parameters, an arrow, and the
-      function body. The empty function looks like this: <tt>=></tt>
+      function body. The empty function looks like this: <tt>=></tt>. All
+      functions in CoffeeScript are named, for the benefit of debug messages.
     </p>
     <%= code_for('functions', 'cube(5)') %>
 
@@ -261,7 +264,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <%= code_for('assignment', 'greeting') %>
     <p>
       Declarations of new variables are pushed up to the top of the nearest
-      lexical scope, so that assignment may always be used within expressions.
+      lexical scope, so that assignment may always be performed within expressions.
     </p>
 
     <p id="objects_and_arrays">
@@ -358,6 +361,15 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('aliases') %>
 
+    <p id="splats">
+      <b class="header">Splats</b>
+      The JavaScript <b>arguments object</b> is a useful way to work with
+      functions that accept variable numbers of arguments. CoffeeScript provides
+      splats <tt>*</tt>, both for function definition as well as invocation,
+      making variable arguments a little bit more palatable.
+    </p>
+    <%= code_for('splats', true) %>
+
     <p id="while">
       <b class="header">While Loops</b>
       The only low-level loop that CoffeeScript provides is the while loop.
@@ -407,7 +419,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       array with new values (to splice it).
     </p>
     <%= code_for('splices', 'numbers') %>
-    
+
     <p id="expressions">
       <b class="header">Everything is an Expression (at least, as much as possible)</b>
       You might have noticed how even though we don't add return statements
@@ -455,6 +467,15 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('super', true) %>
 
+    <p id="blocks">
+      <b class="header">Blocks</b>
+      Many common looping functions (in Prototype, jQuery, and Underscore,
+      for example) take a single function as their final argument. To functions
+      easier to pass, CoffeeScript includes Ruby-style block syntax, so you don't
+      have to close the parentheses on the other side.
+    </p>
+    <%= code_for('blocks') %>
+
     <p id="embedded">
       <b class="header">Embedded JavaScript</b>
       If you ever need to interpolate literal JavaScript snippets, you can
@@ -498,6 +519,11 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       </li>
       <li>
         <a href="http://github.com/jashkenas/coffee-script/issues">Bugs and Feature Requests</a>
+      </li>
+      <li>
+        <a href="http://github.com/jnicklas/bistro_car">BistroCar</a><br />
+        A Rails plugin by Jonas Nicklas that includes CoffeeScript helpers,
+        bundling and minification.
       </li>
     </ul>
 
