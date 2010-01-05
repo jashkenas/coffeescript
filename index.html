@@ -56,6 +56,7 @@
       <a href="#existence">The Existence Operator</a><br />
       <a href="#aliases">Aliases</a><br />
       <a href="#splats">Splats</a><br />
+      <a href="#arguments">Arguments are Arrays</a><br />
       <a href="#while">While Loops</a><br />
       <a href="#comprehensions">Comprehensions (Arrays, Objects, and Ranges)</a><br />
       <a href="#slice_splice">Array Slicing and Splicing with Ranges</a><br />
@@ -201,7 +202,7 @@ cubed_list = (function() {
       <a href="documentation/underscore.html">Underscore.coffee</a>, a port
       of <a href="http://documentcloud.github.com/underscore/">Underscore.js</a>
       to CoffeeScript, which, when compiled, can pass the complete Underscore test suite.
-      Or, clone the source and take a look in the 
+      Or, clone the source and take a look in the
       <a href="http://github.com/jashkenas/coffee-script/tree/master/examples/">examples</a> folder.
     </p>
 
@@ -633,6 +634,29 @@ alert("Silver: " + silver);
 alert("The Field: " + the_field);
 ;'>run</button><br class='clear' /></div>
 
+    <p id="arguments">
+      <b class="header">Arguments are Arrays</b>
+      If you reference the <b>arguments object</b> directly, it will be converted
+      into a real Array, making all of the 
+      <a href="https://developer.mozilla.org/En/Core_JavaScript_1.5_Reference/Objects/Array">Array methods</a> 
+      available.
+    </p>
+    <div class='code'><pre class="idle"><span class="FunctionName">backwards</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
+  alert(arguments.reverse())
+
+backwards(<span class="String"><span class="String">&quot;</span>stairway<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>to<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>heaven<span class="String">&quot;</span></span>)
+</pre><pre class="idle"><span class="Storage">var</span> backwards;
+backwards <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">backwards</span>() {
+  <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">0</span>).<span class="LibraryFunction">reverse</span>());
+};
+backwards(<span class="String"><span class="String">&quot;</span>stairway<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>to<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>heaven<span class="String">&quot;</span></span>);
+</pre><button onclick='javascript: var backwards;
+backwards = function backwards() {
+  return alert(Array.prototype.slice.call(arguments, 0).reverse());
+};
+backwards("stairway", "to", "heaven");
+;'>run</button><br class='clear' /></div>
+
     <p id="while">
       <b class="header">While Loops</b>
       The only low-level loop that CoffeeScript provides is the while loop.
@@ -1030,8 +1054,8 @@ tom.move();
     <p id="blocks">
       <b class="header">Blocks</b>
       Many common looping functions (in Prototype, jQuery, and Underscore,
-      for example) take a single function as their final argument. To make 
-      final functions easier to pass, CoffeeScript includes block syntax, 
+      for example) take a single function as their final argument. To make
+      final functions easier to pass, CoffeeScript includes block syntax,
       so you don't have to close the parentheses on the other side.
     </p>
     <div class='code'><pre class="idle"><span class="Keyword">$</span>(<span class="String"><span class="String">'</span>table.list<span class="String">'</span></span>).each()<span class="FunctionArgument"> table </span><span class="Storage">=&gt;</span>
@@ -1165,7 +1189,7 @@ world...";
       </li>
       <li>
         <a href="http://github.com/jnicklas/bistro_car">BistroCar</a><br />
-        A Rails plugin by 
+        A Rails plugin by
         <a href="http://github.com/jnicklas">Jonas Nicklas</a>
         that includes CoffeeScript helpers,
         bundling and minification.
@@ -1182,7 +1206,7 @@ world...";
     <ul>
       <li>
         A clean, safe syntax for manipulating the prototype chain, and performing
-        inheritance. <a href="#inheritance"><b>extends</b> and <b>super</b></a> are the start of this, but 
+        inheritance. <a href="#inheritance"><b>extends</b> and <b>super</b></a> are the start of this, but
         aren't a complete answer.
       </li>
       <li>
@@ -1211,11 +1235,16 @@ world...";
     <h2 id="change_log">Change Log</h2>
 
     <p>
+      <b class="header" style="margin-top: 20px;">0.2.1</b>
+      Arguments objects are now converted into real arrays when referenced.
+    </p>
+
+    <p>
       <b class="header" style="margin-top: 20px;">0.2.0</b>
       Major release. Significant whitespace. Better statement-to-expression
       conversion. Splats. Splice literals. Object comprehensions. Blocks.
       The existence operator. Many thanks to all the folks who posted issues,
-      with special thanks to 
+      with special thanks to
       <a href="http://github.com/kamatsu">Liam O'Connor-Davis</a> for whitespace
       and expression help.
     </p>
