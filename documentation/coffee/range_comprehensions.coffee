@@ -1,0 +1,3 @@
+for i in [0...eggs.length] by 12
+  dozen_eggs: eggs[i...i+12]
+  deliver(new egg_carton(dozen))
