@@ -18,5 +18,12 @@ math: {
   cube:   x => x * square(x)
 }
 
+# Splats:
+race: winner, *runners =>
+  print(winner, runners)
+
+# Existence:
+alert("I knew it!") if elvis?
+
 # Array comprehensions:
 cubed_list: math.cube(num) for num in list

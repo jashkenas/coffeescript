@@ -1,5 +1,5 @@
 (function(){
-  var __a, __b, __c, __d, cubed_list, list, math, num, number, opposite_day, square;
+  var __a, __b, __c, __d, cubed_list, list, math, num, number, opposite_day, race, square;
   // Assignment:
   number = 42;
   opposite_day = true;
@@ -21,6 +21,16 @@
       return x * square(x);
     }
   };
+  // Splats:
+  race = function race(winner) {
+    var runners;
+    runners = Array.prototype.slice.call(arguments, 1);
+    return print(winner, runners);
+  };
+  // Existence:
+  if ((typeof elvis !== "undefined" && elvis !== null)) {
+    alert("I knew it!");
+  }
   // Array comprehensions:
   cubed_list = (function() {
     __a = list;

@@ -95,9 +95,16 @@ math<span class="Keyword">:</span> {
   <span class="FunctionName">cube</span><span class="Keyword">:</span>   <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> x <span class="Keyword">*</span> square(x)
 }
 
+<span class="Comment"><span class="Comment">#</span> Splats:</span>
+race<span class="Keyword">:</span><span class="FunctionArgument"> winner, *runners </span><span class="Storage">=&gt;</span>
+  print(winner, runners)
+
+<span class="Comment"><span class="Comment">#</span> Existence:</span>
+alert(<span class="String"><span class="String">&quot;</span>I knew it!<span class="String">&quot;</span></span>) <span class="Keyword">if</span> elvis<span class="Keyword">?</span>
+
 <span class="Comment"><span class="Comment">#</span> Array comprehensions:</span>
 cubed_list<span class="Keyword">:</span> math.cube(num) <span class="Keyword">for</span> num <span class="Keyword">in</span> list
-</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, cubed_list, list, math, num, number, opposite_day, square;
+</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, cubed_list, list, math, num, number, opposite_day, race, square;
 <span class="Comment"><span class="Comment">//</span> Assignment:</span>
 number <span class="Keyword">=</span> <span class="Number">42</span>;
 opposite_day <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
@@ -119,6 +126,16 @@ math <span class="Keyword">=</span> {
     <span class="Keyword">return</span> x <span class="Keyword">*</span> square(x);
   }
 };
+<span class="Comment"><span class="Comment">//</span> Splats:</span>
+race <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">race</span>(<span class="FunctionArgument">winner</span>) {
+  <span class="Storage">var</span> runners;
+  runners <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">1</span>);
+  <span class="Keyword">return</span> <span class="LibraryFunction">print</span>(winner, runners);
+};
+<span class="Comment"><span class="Comment">//</span> Existence:</span>
+<span class="Keyword">if</span> ((<span class="Keyword">typeof</span> elvis <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> elvis <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>)) {
+  <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>I knew it!<span class="String">&quot;</span></span>);
+}
 <span class="Comment"><span class="Comment">//</span> Array comprehensions:</span>
 cubed_list <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   __a <span class="Keyword">=</span> list;
@@ -132,7 +149,7 @@ cubed_list <span class="Keyword">=</span> (<span class="Storage">function</span>
   }
   <span class="Keyword">return</span> __c;
 })();
-</pre><button onclick='javascript: var __a, __b, __c, __d, cubed_list, list, math, num, number, opposite_day, square;
+</pre><button onclick='javascript: var __a, __b, __c, __d, cubed_list, list, math, num, number, opposite_day, race, square;
 // Assignment:
 number = 42;
 opposite_day = true;
@@ -154,6 +171,16 @@ math = {
     return x * square(x);
   }
 };
+// Splats:
+race = function race(winner) {
+  var runners;
+  runners = Array.prototype.slice.call(arguments, 1);
+  return print(winner, runners);
+};
+// Existence:
+if ((typeof elvis !== "undefined" && elvis !== null)) {
+  alert("I knew it!");
+}
 // Array comprehensions:
 cubed_list = (function() {
   __a = list;
@@ -173,7 +200,7 @@ cubed_list = (function() {
       For a longer CoffeeScript example, check out
       <a href="documentation/underscore.html">Underscore.coffee</a>, a port
       of <a href="http://documentcloud.github.com/underscore/">Underscore.js</a>
-      to CoffeeScript, which, when compiled, passes the complete Underscore test suite.
+      to CoffeeScript, which, when compiled, can pass the complete Underscore test suite.
     </p>
 
     <h2 id="installation">Installation and Usage</h2>
@@ -489,7 +516,7 @@ expensive <span class="Keyword">=</span> expensive <span class="Keyword">||</spa
     </p>
     <div class='code'><pre class="idle">solipsism<span class="Keyword">:</span> <span class="BuiltInConstant">true</span> <span class="Keyword">if</span> mind<span class="Keyword">?</span> <span class="Keyword">and</span> <span class="Keyword">not</span> world<span class="Keyword">?</span>
 </pre><pre class="idle"><span class="Storage">var</span> solipsism;
-<span class="Keyword">if</span> ((<span class="Keyword">typeof</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">'</span>undefined<span class="String">'</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> <span class="Keyword">!</span>(<span class="Keyword">typeof</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">'</span>undefined<span class="String">'</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>)) {
+<span class="Keyword">if</span> ((<span class="Keyword">typeof</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> <span class="Keyword">!</span>(<span class="Keyword">typeof</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>)) {
   solipsism <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
 }
 </pre><br class='clear' /></div>
@@ -1151,6 +1178,11 @@ world...";
     </p>
 
     <ul>
+      <li>
+        A clean, safe syntax for manipulating the prototype chain, and performing
+        inheritance. <a href="#inheritance"><b>extends</b> and <b>super</b></a> are the start of this, but 
+        aren't a complete answer.
+      </li>
       <li>
         A CoffeeScript version of the compiler, perhaps using Alessandro Warth's
         <a href="http://tinlizzie.org/ometa/">OMeta</a>.
