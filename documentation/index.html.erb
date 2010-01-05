@@ -241,7 +241,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       use semicolons <tt>;</tt> to terminate expressions, ending
       the line will do just as well. Semicolons can still be used to fit
       multiple expressions onto a single line. Instead of using curly braces
-      <tt>{ }</tt> to delimit a block of code (like <a href="#functions">functions</a>,
+      <tt>{ }</tt> to delimit blocks of code (like <a href="#functions">functions</a>,
       <a href="#conditionals">if-statements</a>,
       <a href="#switch">switch</a>, and <a href="#try">try/catch</a>),
       use indentation.
@@ -327,7 +327,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       JavaScript. <tt>if (variable) ...</tt> comes close, but fails for zero,
       the empty string, and false. The existence operator <tt>?</tt> returns true unless
       a variable is <b>null</b> or <b>undefined</b>, which makes it analogous
-      to <b>nil?</b> in Ruby.
+      to Ruby's <tt>nil?</tt>
     </p>
     <%= code_for('existence') %>
 
@@ -470,9 +470,9 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <p id="blocks">
       <b class="header">Blocks</b>
       Many common looping functions (in Prototype, jQuery, and Underscore,
-      for example) take a single function as their final argument. To functions
-      easier to pass, CoffeeScript includes Ruby-style block syntax, so you don't
-      have to close the parentheses on the other side.
+      for example) take a single function as their final argument. To make 
+      final functions easier to pass, CoffeeScript includes block syntax, 
+      so you don't have to close the parentheses on the other side.
     </p>
     <%= code_for('blocks') %>
 
@@ -502,7 +502,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('try') %>
 
-    <p id="try">
+    <p id="strings">
       <b class="header">Multiline Strings</b>
       Multiline strings are allowed in CoffeeScript.
     </p>
@@ -522,7 +522,9 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       </li>
       <li>
         <a href="http://github.com/jnicklas/bistro_car">BistroCar</a><br />
-        A Rails plugin by Jonas Nicklas that includes CoffeeScript helpers,
+        A Rails plugin by 
+        <a href="http://github.com/jnicklas">Jonas Nicklas</a>
+        that includes CoffeeScript helpers,
         bundling and minification.
       </li>
     </ul>
@@ -559,6 +561,16 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </ul>
 
     <h2 id="change_log">Change Log</h2>
+
+    <p>
+      <b class="header" style="margin-top: 20px;">0.2.0</b>
+      Major release. Significant whitespace. Better statement-to-expression
+      conversion. Splats. Splice literals. Object comprehensions. Blocks.
+      The existence operator. Many thanks to all the folks who posted issues,
+      with special thanks to 
+      <a href="http://github.com/kamatsu">Liam O'Connor-Davis</a> for whitespace
+      and expression help.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.1.6</b>
