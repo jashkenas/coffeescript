@@ -1,3 +1,4 @@
 test.coffee
 parser.output
+test/fixtures/underscore
 *.gem

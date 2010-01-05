@@ -22,14 +22,16 @@
     }
   };
   // Array comprehensions:
-  __a = list;
-  __c = [];
-  for (__b in __a) {
-    if (__a.hasOwnProperty(__b)) {
-      num = __a[__b];
-      __d = math.cube(num);
-      __c.push(__d);
+  cubed_list = (function() {
+    __a = list;
+    __c = [];
+    for (__b in __a) {
+      if (__a.hasOwnProperty(__b)) {
+        num = __a[__b];
+        __d = math.cube(num);
+        __c.push(__d);
+      }
     }
-  }
-  cubed_list = __c;
+    return __c;
+  })();
 })();
