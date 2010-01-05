@@ -108,7 +108,7 @@
       For a longer CoffeeScript example, check out
       <a href="documentation/underscore.html">Underscore.coffee</a>, a port
       of <a href="http://documentcloud.github.com/underscore/">Underscore.js</a>
-      to CoffeeScript, which, when compiled, passes the complete Underscore test suite.
+      to CoffeeScript, which, when compiled, can pass the complete Underscore test suite.
     </p>
 
     <h2 id="installation">Installation and Usage</h2>
@@ -537,6 +537,11 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
 
     <ul>
+      <li>
+        A clean, safe syntax for manipulating the prototype chain, and performing
+        inheritance. <a href="#inheritance"><b>extends</b> and <b>super</b></a> are the start of this, but 
+        aren't a complete answer.
+      </li>
       <li>
         A CoffeeScript version of the compiler, perhaps using Alessandro Warth's
         <a href="http://tinlizzie.org/ometa/">OMeta</a>.

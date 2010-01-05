@@ -698,7 +698,7 @@ module CoffeeScript
 
     def compile_node(o)
       val = @expression.compile(o)
-      write("(typeof #{val} !== 'undefined' && #{val} !== null)")
+      write("(typeof #{val} !== \"undefined\" && #{val} !== null)")
     end
   end
 
