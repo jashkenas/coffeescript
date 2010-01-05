@@ -55,11 +55,13 @@
       <a href="#conditionals">Conditionals, Ternaries, and Conditional Assignment</a><br />
       <a href="#existence">The Existence Operator</a><br />
       <a href="#aliases">Aliases</a><br />
+      <a href="#splats">Splats</a><br />
       <a href="#while">While Loops</a><br />
       <a href="#comprehensions">Comprehensions (Arrays, Objects, and Ranges)</a><br />
       <a href="#slice_splice">Array Slicing and Splicing with Ranges</a><br />
       <a href="#expressions">Everything is an Expression</a><br />
       <a href="#inheritance">Inheritance, and Calling Super from a Subclass</a><br />
+      <a href="#blocks">Blocks</a><br />
       <a href="#embedded">Embedded JavaScript</a><br />
       <a href="#switch">Switch/When/Else</a><br />
       <a href="#try">Try/Catch/Finally</a><br />
@@ -166,9 +168,9 @@ cubed_list = (function() {
   return __c;
 })();
 ;alert(cubed_list);'>run: cubed_list</button><br class='clear' /></div>
-    
+
     <p>
-      For a longer CoffeeScript example, check out 
+      For a longer CoffeeScript example, check out
       <a href="documentation/underscore.html">Underscore.coffee</a>, a port
       of <a href="http://documentcloud.github.com/underscore/">Underscore.js</a>
       to CoffeeScript, which, when compiled, passes the complete Underscore test suite.
@@ -206,7 +208,7 @@ gem install coffee-script</pre>
       <tr>
         <td><code>-r, --run</code></td>
         <td>
-          Compile and execute the CoffeeScripts without saving the intermediate
+          Compile and execute scripts without saving the intermediate
           JavaScript. Requires <a href="http://narwhaljs.org/">Narwhal</a>.
         </td>
       </tr>
@@ -242,7 +244,7 @@ gem install coffee-script</pre>
         <td><code>-e, --eval</code></td>
         <td>
           Compile and print a little snippet of CoffeeScript directly from the
-          command line (or from <b>stdin</b>). For example:<br /><tt>coffee -e "square: x => x * x."</tt>
+          command line (or from <b>stdin</b>). For example:<br /><tt>coffee -e "square: x => x * x"</tt>
         </td>
       </tr>
       <tr>
@@ -313,7 +315,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <p id="functions">
       <b class="header">Functions and Invocation</b>
       Functions are defined by a list of parameters, an arrow, and the
-      function body. The empty function looks like this: <tt>=></tt>
+      function body. The empty function looks like this: <tt>=></tt>. All
+      functions in CoffeeScript are named, for the benefit of debug messages.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">square</span><span class="Keyword">:</span> <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> x <span class="Keyword">*</span> x
 <span class="FunctionName">cube</span><span class="Keyword">:</span>   <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> square(x) <span class="Keyword">*</span> x
@@ -350,7 +353,7 @@ difficulty = 0.5;
 ;alert(greeting);'>run: greeting</button><br class='clear' /></div>
     <p>
       Declarations of new variables are pushed up to the top of the nearest
-      lexical scope, so that assignment may always be used within expressions.
+      lexical scope, so that assignment may always be performed within expressions.
     </p>
 
     <p id="objects_and_arrays">
@@ -539,6 +542,68 @@ let_the_wild_rumpus_begin() <span class="Keyword">unless</span> answer <span cla
 car.speed <span class="Keyword">&lt;</span> speed_limit ? accelerate() : <span class="BuiltInConstant">null</span>;
 </pre><br class='clear' /></div>
 
+    <p id="splats">
+      <b class="header">Splats</b>
+      The JavaScript <b>arguments object</b> is a useful way to work with
+      functions that accept variable numbers of arguments. CoffeeScript provides
+      splats <tt>*</tt>, both for function definition as well as invocation,
+      making variable arguments a little bit more palatable.
+    </p>
+    <div class='code'><pre class="idle">gold<span class="Keyword">:</span> silver<span class="Keyword">:</span> the_field<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>unknown<span class="String">&quot;</span></span>
+
+medalists<span class="Keyword">:</span><span class="FunctionArgument"> first, second, *rest </span><span class="Storage">=&gt;</span>
+  gold<span class="Keyword">:</span>       first
+  silver<span class="Keyword">:</span>     second
+  the_field<span class="Keyword">:</span>  rest
+
+contenders<span class="Keyword">:</span> [
+  <span class="String"><span class="String">&quot;</span>Michael Phelps<span class="String">&quot;</span></span>
+  <span class="String"><span class="String">&quot;</span>Liu Xiang<span class="String">&quot;</span></span>
+  <span class="String"><span class="String">&quot;</span>Yao Ming<span class="String">&quot;</span></span>
+  <span class="String"><span class="String">&quot;</span>Allyson Felix<span class="String">&quot;</span></span>
+  <span class="String"><span class="String">&quot;</span>Shawn Johnson<span class="String">&quot;</span></span>
+  <span class="String"><span class="String">&quot;</span>Roman Sebrle<span class="String">&quot;</span></span>
+  <span class="String"><span class="String">&quot;</span>Guo Jingjing<span class="String">&quot;</span></span>
+  <span class="String"><span class="String">&quot;</span>Tyson Gay<span class="String">&quot;</span></span>
+  <span class="String"><span class="String">&quot;</span>Asafa Powell<span class="String">&quot;</span></span>
+  <span class="String"><span class="String">&quot;</span>Usain Bolt<span class="String">&quot;</span></span>
+]
+
+medalists(<span class="Keyword">*</span>contenders)
+
+alert(<span class="String"><span class="String">&quot;</span>Gold: <span class="String">&quot;</span></span> <span class="Keyword">+</span> gold)
+alert(<span class="String"><span class="String">&quot;</span>Silver: <span class="String">&quot;</span></span> <span class="Keyword">+</span> silver)
+alert(<span class="String"><span class="String">&quot;</span>The Field: <span class="String">&quot;</span></span> <span class="Keyword">+</span> the_field)
+</pre><pre class="idle"><span class="Storage">var</span> contenders, gold, medalists, silver, the_field;
+gold <span class="Keyword">=</span> silver <span class="Keyword">=</span> the_field <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>unknown<span class="String">&quot;</span></span>;
+medalists <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">medalists</span>(<span class="FunctionArgument">first, second</span>) {
+  <span class="Storage">var</span> rest;
+  rest <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">2</span>);
+  gold <span class="Keyword">=</span> first;
+  silver <span class="Keyword">=</span> second;
+  <span class="Keyword">return</span> the_field <span class="Keyword">=</span> rest;
+};
+contenders <span class="Keyword">=</span> [<span class="String"><span class="String">&quot;</span>Michael Phelps<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Liu Xiang<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Yao Ming<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Allyson Felix<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Shawn Johnson<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Roman Sebrle<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Guo Jingjing<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Tyson Gay<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Asafa Powell<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Usain Bolt<span class="String">&quot;</span></span>];
+medalists.<span class="LibraryFunction">apply</span>(<span class="Variable">this</span>, contenders);
+<span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Gold: <span class="String">&quot;</span></span> <span class="Keyword">+</span> gold);
+<span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Silver: <span class="String">&quot;</span></span> <span class="Keyword">+</span> silver);
+<span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>The Field: <span class="String">&quot;</span></span> <span class="Keyword">+</span> the_field);
+</pre><button onclick='javascript: var contenders, gold, medalists, silver, the_field;
+gold = silver = the_field = "unknown";
+medalists = function medalists(first, second) {
+  var rest;
+  rest = Array.prototype.slice.call(arguments, 2);
+  gold = first;
+  silver = second;
+  return the_field = rest;
+};
+contenders = ["Michael Phelps", "Liu Xiang", "Yao Ming", "Allyson Felix", "Shawn Johnson", "Roman Sebrle", "Guo Jingjing", "Tyson Gay", "Asafa Powell", "Usain Bolt"];
+medalists.apply(this, contenders);
+alert("Gold: " + gold);
+alert("Silver: " + silver);
+alert("The Field: " + the_field);
+;'>run</button><br class='clear' /></div>
+
     <p id="while">
       <b class="header">While Loops</b>
       The only low-level loop that CoffeeScript provides is the while loop.
@@ -713,7 +778,7 @@ numbers.splice.<span class="LibraryFunction">apply</span>(numbers, [<span class=
 numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 numbers.splice.apply(numbers, [3, 6 - 3 + 1].concat([-3, -4, -5, -6]));
 ;alert(numbers);'>run: numbers</button><br class='clear' /></div>
-    
+
     <p id="expressions">
       <b class="header">Everything is an Expression (at least, as much as possible)</b>
       You might have noticed how even though we don't add return statements
@@ -933,6 +998,25 @@ sam.move();
 tom.move();
 ;'>run</button><br class='clear' /></div>
 
+    <p id="blocks">
+      <b class="header">Blocks</b>
+      Many common looping functions (in Prototype, jQuery, and Underscore,
+      for example) take a single function as their final argument. To functions
+      easier to pass, CoffeeScript includes Ruby-style block syntax, so you don't
+      have to close the parentheses on the other side.
+    </p>
+    <div class='code'><pre class="idle"><span class="Keyword">$</span>(<span class="String"><span class="String">'</span>table.list<span class="String">'</span></span>).each()<span class="FunctionArgument"> table </span><span class="Storage">=&gt;</span>
+  <span class="Keyword">$</span>(<span class="String"><span class="String">'</span>tr.account<span class="String">'</span></span>, table).each()<span class="FunctionArgument"> row </span><span class="Storage">=&gt;</span>
+    row.show()
+    row.highlight()
+</pre><pre class="idle"><span class="Keyword">$</span>(<span class="String"><span class="String">'</span>table.list<span class="String">'</span></span>).each(<span class="Storage">function</span>(table) {
+  <span class="Keyword">return</span> <span class="Keyword">$</span>(<span class="String"><span class="String">'</span>tr.account<span class="String">'</span></span>, table).each(<span class="Storage">function</span>(row) {
+    row.show();
+    <span class="Keyword">return</span> row.highlight();
+  });
+});
+</pre><br class='clear' /></div>
+
     <p id="embedded">
       <b class="header">Embedded JavaScript</b>
       If you ever need to interpolate literal JavaScript snippets, you can
@@ -1049,6 +1133,11 @@ world...";
       </li>
       <li>
         <a href="http://github.com/jashkenas/coffee-script/issues">Bugs and Feature Requests</a>
+      </li>
+      <li>
+        <a href="http://github.com/jnicklas/bistro_car">BistroCar</a><br />
+        A Rails plugin by Jonas Nicklas that includes CoffeeScript helpers,
+        bundling and minification.
       </li>
     </ul>
 
