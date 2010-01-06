@@ -10,6 +10,10 @@
 	</array>
 	<key>name</key>
 	<string>CoffeeScript</string>
+	<key>foldingStartMarker</key>
+	<string>^.*: \{[^}]*</string>
+	<key>foldingStopMarker</key>
+	<string>^\s*\}</string>
 	<key>patterns</key>
 	<array>
 		<dict>
