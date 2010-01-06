@@ -69,6 +69,10 @@ module CoffeeScript
           @tokens.delete_at(i + 2)
           @tokens.delete_at(i - 2)
           next 0
+        elsif prev[0] == "\n" && [:INDENT, :OUTDENT].include?(after[0])
+          @tokens.delete_at(i + 2)
+          @tokens[i - 1] = after
+          next 1
         elsif !["\n", :INDENT, :OUTDENT].include?(prev[0])
           @tokens.insert(i, ["\n", Value.new("\n", token[1].line)])
           next 2
