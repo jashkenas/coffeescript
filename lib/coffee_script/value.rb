@@ -5,7 +5,7 @@ module CoffeeScript
   class Value
     attr_reader :value, :line
 
-    def initialize(value, line)
+    def initialize(value, line=nil)
       @value, @line = value, line
     end
 

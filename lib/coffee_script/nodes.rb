@@ -354,12 +354,21 @@ module CoffeeScript
 
     def compile_node(o)
       idx, step = o.delete(:index), o.delete(:step)
-      raise SyntaxError, "unexpected range literal" unless idx
+      return compile_array(o) unless idx
       vars     = "#{idx}=#{@from_var}"
       step     = step ? step.compile(o) : '1'
       compare  = "(#{@from_var} <= #{@to_var} ? #{idx} #{less_operator} #{@to_var} : #{idx} #{greater_operator} #{@to_var})"
       incr     = "(#{@from_var} <= #{@to_var} ? #{idx} += #{step} : #{idx} -= #{step})"
       write("#{vars}; #{compare}; #{incr}")
+    end
+
+    # Expand the range into the equivalent array, if it's not being used as
+    # part of a comprehension, slice, or splice.
+    # TODO: This generates pretty ugly code ... shrink it.
+    def compile_array(o)
+      body = Expressions.wrap(LiteralNode.new(Value.new('i')))
+      arr  = Expressions.wrap(ForNode.new(body, {:source => self}, Value.new('i')))
+      ParentheticalNode.new(CallNode.new(CodeNode.new([], arr))).compile(o)
     end
 
   end
