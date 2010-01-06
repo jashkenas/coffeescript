@@ -1,8 +1,6 @@
 
 
 
-
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -55,7 +53,7 @@
       <a href="#conditionals">Conditionals, Ternaries, and Conditional Assignment</a><br />
       <a href="#existence">The Existence Operator</a><br />
       <a href="#aliases">Aliases</a><br />
-      <a href="#splats">Splats</a><br />
+      <a href="#splats">Splats...</a><br />
       <a href="#arguments">Arguments are Arrays</a><br />
       <a href="#while">While Loops</a><br />
       <a href="#comprehensions">Comprehensions (Arrays, Objects, and Ranges)</a><br />
@@ -97,7 +95,7 @@ math<span class="Keyword">:</span> {
 }
 
 <span class="Comment"><span class="Comment">#</span> Splats:</span>
-race<span class="Keyword">:</span><span class="FunctionArgument"> winner, *runners </span><span class="Storage">=&gt;</span>
+race<span class="Keyword">:</span><span class="FunctionArgument"> winner, runners... </span><span class="Storage">=&gt;</span>
   print(winner, runners)
 
 <span class="Comment"><span class="Comment">#</span> Existence:</span>
@@ -342,6 +340,13 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       use indentation.
     </p>
 
+    <p>
+      You can use newlines to break up your expression into smaller pieces,
+      as long as CoffeeScript can tell that the line hasn't finished 
+      (similar to how Ruby handles it). For example,
+      if the line ends in an operator, dot, or keyword.
+    </p>
+
     <p id="functions">
       <b class="header">Functions and Invocation</b>
       Functions are defined by a list of parameters, an arrow, and the
@@ -573,15 +578,15 @@ car.speed <span class="Keyword">&lt;</span> speed_limit ? accelerate() : <span c
 </pre><br class='clear' /></div>
 
     <p id="splats">
-      <b class="header">Splats</b>
+      <b class="header">Splats...</b>
       The JavaScript <b>arguments object</b> is a useful way to work with
       functions that accept variable numbers of arguments. CoffeeScript provides
-      splats <tt>*</tt>, both for function definition as well as invocation,
+      splats <tt>...</tt>, both for function definition as well as invocation,
       making variable arguments a little bit more palatable.
     </p>
     <div class='code'><pre class="idle">gold<span class="Keyword">:</span> silver<span class="Keyword">:</span> the_field<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>unknown<span class="String">&quot;</span></span>
 
-medalists<span class="Keyword">:</span><span class="FunctionArgument"> first, second, *rest </span><span class="Storage">=&gt;</span>
+medalists<span class="Keyword">:</span><span class="FunctionArgument"> first, second, rest... </span><span class="Storage">=&gt;</span>
   gold<span class="Keyword">:</span>       first
   silver<span class="Keyword">:</span>     second
   the_field<span class="Keyword">:</span>  rest
@@ -599,7 +604,7 @@ contenders<span class="Keyword">:</span> [
   <span class="String"><span class="String">&quot;</span>Usain Bolt<span class="String">&quot;</span></span>
 ]
 
-medalists(<span class="Keyword">*</span>contenders)
+medalists(contenders...)
 
 alert(<span class="String"><span class="String">&quot;</span>Gold: <span class="String">&quot;</span></span> <span class="Keyword">+</span> gold)
 alert(<span class="String"><span class="String">&quot;</span>Silver: <span class="String">&quot;</span></span> <span class="Keyword">+</span> silver)
@@ -637,8 +642,8 @@ alert("The Field: " + the_field);
     <p id="arguments">
       <b class="header">Arguments are Arrays</b>
       If you reference the <b>arguments object</b> directly, it will be converted
-      into a real Array, making all of the 
-      <a href="https://developer.mozilla.org/En/Core_JavaScript_1.5_Reference/Objects/Array">Array methods</a> 
+      into a real Array, making all of the
+      <a href="https://developer.mozilla.org/En/Core_JavaScript_1.5_Reference/Objects/Array">Array methods</a>
       available.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">backwards</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>

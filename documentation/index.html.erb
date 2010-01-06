@@ -1,18 +1,3 @@
-<%#
-  TODO:
-  Multiline and nested array comprehensions (and filters with 'when').
-  Range comprehension examples (expression endpoints), with steps.
-  Object comprehension examples.
-  Significant Whitespace Rules.
-  Newline-delimited Matrix.
-  Automatic newline escaping.
-  All functions are named functions.
-  Splats in function definitions.
-  (Multiple) splats as arguments to a function call.
-  Exists?
-  Array assignment splice literals.
-%>
-
 <%
   require 'uv'
   def code_for(file, executable=false)
@@ -82,7 +67,7 @@
       <a href="#conditionals">Conditionals, Ternaries, and Conditional Assignment</a><br />
       <a href="#existence">The Existence Operator</a><br />
       <a href="#aliases">Aliases</a><br />
-      <a href="#splats">Splats</a><br />
+      <a href="#splats">Splats...</a><br />
       <a href="#arguments">Arguments are Arrays</a><br />
       <a href="#while">While Loops</a><br />
       <a href="#comprehensions">Comprehensions (Arrays, Objects, and Ranges)</a><br />
@@ -250,6 +235,13 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       use indentation.
     </p>
 
+    <p>
+      You can use newlines to break up your expression into smaller pieces,
+      as long as CoffeeScript can tell that the line hasn't finished 
+      (similar to how Ruby handles it). For example,
+      if the line ends in an operator, dot, or keyword.
+    </p>
+
     <p id="functions">
       <b class="header">Functions and Invocation</b>
       Functions are defined by a list of parameters, an arrow, and the
@@ -365,10 +357,10 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <%= code_for('aliases') %>
 
     <p id="splats">
-      <b class="header">Splats</b>
+      <b class="header">Splats...</b>
       The JavaScript <b>arguments object</b> is a useful way to work with
       functions that accept variable numbers of arguments. CoffeeScript provides
-      splats <tt>*</tt>, both for function definition as well as invocation,
+      splats <tt>...</tt>, both for function definition as well as invocation,
       making variable arguments a little bit more palatable.
     </p>
     <%= code_for('splats', true) %>
@@ -376,8 +368,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <p id="arguments">
       <b class="header">Arguments are Arrays</b>
       If you reference the <b>arguments object</b> directly, it will be converted
-      into a real Array, making all of the 
-      <a href="https://developer.mozilla.org/En/Core_JavaScript_1.5_Reference/Objects/Array">Array methods</a> 
+      into a real Array, making all of the
+      <a href="https://developer.mozilla.org/En/Core_JavaScript_1.5_Reference/Objects/Array">Array methods</a>
       available.
     </p>
     <%= code_for('arguments', true) %>

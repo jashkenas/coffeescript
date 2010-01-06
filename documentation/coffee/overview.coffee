@@ -19,7 +19,7 @@ math: {
 }
 
 # Splats:
-race: winner, *runners =>
+race: winner, runners... =>
   print(winner, runners)
 
 # Existence:

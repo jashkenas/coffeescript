@@ -221,8 +221,7 @@ module CoffeeScript
         i -= 1
         tok = @tokens[i]
         return if !tok
-        next if tok[0] == ','
-        next tok[0] = :PARAM_SPLAT if tok[0] == '*'
+        next if ['.', ','].include?(tok[0])
         return if tok[0] != :IDENTIFIER
         tok[0] = :PARAM
       end

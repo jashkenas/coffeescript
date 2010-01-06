@@ -5,7 +5,7 @@ token IF ELSE UNLESS
 token NUMBER STRING REGEX
 token TRUE FALSE YES NO ON OFF
 token IDENTIFIER PROPERTY_ACCESS
-token CODE PARAM PARAM_SPLAT NEW RETURN
+token CODE PARAM NEW RETURN
 token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
 token FOR IN BY WHEN WHILE
@@ -21,7 +21,7 @@ token INDENT OUTDENT
 # Declare order of operations.
 prechigh
   left     '?'
-  nonassoc UMINUS PARAM_SPLAT SPLAT NOT '!' '!!' '~' '++' '--'
+  nonassoc UMINUS NOT '!' '!!' '~' '++' '--'
   left     '*' '/' '%'
   left     '+' '-'
   left     '<<' '>>' '>>>'
@@ -204,11 +204,11 @@ rule
 
   Param:
     PARAM
-  | PARAM_SPLAT PARAM                 { result = ParamSplatNode.new(val[1]) }
+  | PARAM "." "." "."                 { result = ParamSplatNode.new(val[0]) }
   ;
 
   Splat:
-    '*' Value = SPLAT                 { result = ArgSplatNode.new(val[1]) }
+    Expression "." "." "."            { result = ArgSplatNode.new(val[0])}
   ;
 
   # Expressions that can be treated as values.
