@@ -1,6 +1,6 @@
 class Parser
 
-# Declare tokens produced by the lexer
+# Declare terminal tokens produced by the lexer.
 token IF ELSE UNLESS
 token NUMBER STRING REGEX
 token TRUE FALSE YES NO ON OFF
@@ -58,7 +58,8 @@ rule
   | Expressions Terminator            { result = val[0] }
   ;
 
-  # All types of expressions in our language.
+  # All types of expressions in our language. The basic unit of CoffeeScript
+  # is the expression.
   Expression:
     Value
   | Call
@@ -78,18 +79,20 @@ rule
   | Comment
   ;
 
+  # A block of expressions. Note that the Rewriter will convert some postfix
+  # forms into blocks for us, by altering the token stream.
   Block:
     INDENT Expressions OUTDENT        { result = val[1] }
   | INDENT OUTDENT                    { result = Expressions.new }
   ;
 
-  # All tokens that can terminate an expression.
+  # Tokens that can terminate an expression.
   Terminator:
     "\n"
   | ";"
   ;
 
-  # All hard-coded values.
+  # All hard-coded values. These can be printed straight to JavaScript.
   Literal:
     NUMBER                            { result = LiteralNode.new(val[0]) }
   | STRING                            { result = LiteralNode.new(val[0]) }
@@ -106,12 +109,12 @@ rule
   | OFF                               { result = LiteralNode.new(false) }
   ;
 
-  # Assignment to a variable.
+  # Assignment to a variable (or index).
   Assign:
     Value ASSIGN Expression           { result = AssignNode.new(val[0], val[2]) }
   ;
 
-  # Assignment within an object literal.
+  # Assignment within an object literal (can be quoted).
   AssignObj:
     IDENTIFIER ASSIGN Expression      { result = AssignNode.new(ValueNode.new(val[0]), val[2], :object) }
   | STRING ASSIGN Expression          { result = AssignNode.new(ValueNode.new(LiteralNode.new(val[0])), val[2], :object) }
@@ -186,6 +189,7 @@ rule
   | Expression IN Expression          { result = OpNode.new(val[1], val[0], val[2]) }
   ;
 
+  # The existence operator.
   Existence:
     Expression '?'                    { result = ExistenceNode.new(val[0]) }
   ;
@@ -202,11 +206,13 @@ rule
   | ParamList "," Param               { result = val[0] << val[2] }
   ;
 
+  # A Parameter (or ParamSplat) in a function definition.
   Param:
     PARAM
   | PARAM "." "." "."                 { result = ParamSplatNode.new(val[0]) }
   ;
 
+  # A regular splat.
   Splat:
     Expression "." "." "."            { result = ArgSplatNode.new(val[0])}
   ;
@@ -270,6 +276,7 @@ rule
   # | Invocation Code                   { result = val[0] << val[1] }
   ;
 
+  # The list of arguments to a function invocation.
   Arguments:
     "(" ArgList ")"                   { result = val[1] }
   | "(" ArgList ")" Code              { result = val[1] << val[3] }
@@ -378,9 +385,7 @@ rule
   | Comment
   ;
 
-  # All of the following nutso if-else destructuring is to make the
-  # grammar expand unambiguously.
-
+  # The most basic form of "if".
   IfBlock:
     IF Expression Block               { result = IfNode.new(val[1], val[2]) }
   ;
