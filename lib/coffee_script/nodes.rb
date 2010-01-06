@@ -367,7 +367,7 @@ module CoffeeScript
     # TODO: This generates pretty ugly code ... shrink it.
     def compile_array(o)
       body = Expressions.wrap(LiteralNode.new(Value.new('i')))
-      arr  = Expressions.wrap(ForNode.new(body, {:source => self}, Value.new('i')))
+      arr  = Expressions.wrap(ForNode.new(body, {:source => ValueNode.new(self)}, Value.new('i')))
       ParentheticalNode.new(CallNode.new(CodeNode.new([], arr))).compile(o)
     end
 
@@ -617,7 +617,8 @@ module CoffeeScript
 
     def compile_node(o)
       top_level     = o.delete(:top) && !o[:return]
-      range         = @source.is_a?(RangeNode)
+      range         = @source.is_a?(ValueNode) && @source.literal.is_a?(RangeNode) && @source.properties.empty?
+      source        = range ? @source.literal : @source
       scope         = o[:scope]
       name_found    = scope.find(@name)
       index_found   = @index && scope.find(@index)
@@ -629,12 +630,12 @@ module CoffeeScript
         body_dent   = o[:indent] + TAB
         var_part, pre_cond, post_cond = '', '', ''
         index_var   = scope.free_variable
-        source_part = @source.compile_variables(o)
-        for_part    = "#{index_var}=0, #{@source.compile(o.merge(:index => ivar, :step => @step))}, #{index_var}++"
+        source_part = source.compile_variables(o)
+        for_part    = "#{index_var}=0, #{source.compile(o.merge(:index => ivar, :step => @step))}, #{index_var}++"
       else
         index_var   = nil
         body_dent   = o[:indent] + TAB + TAB
-        source_part = "#{o[:indent]}#{svar} = #{@source.compile(o)};\n#{o[:indent]}"
+        source_part = "#{o[:indent]}#{svar} = #{source.compile(o)};\n#{o[:indent]}"
         for_part    = "#{ivar} in #{svar}"
         pre_cond    = "\n#{o[:indent] + TAB}if (#{svar}.hasOwnProperty(#{ivar})) {"
         var_part    = "\n#{body_dent}#{@name} = #{svar}[#{ivar}];"

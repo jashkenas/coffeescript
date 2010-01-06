@@ -64,7 +64,6 @@ rule
   | Call
   | Code
   | Operation
-  | Range
   | Assign
   | If
   | Try
@@ -218,6 +217,7 @@ rule
   | Array                             { result = ValueNode.new(val[0]) }
   | Object                            { result = ValueNode.new(val[0]) }
   | Parenthetical                     { result = ValueNode.new(val[0]) }
+  | Range                             { result = ValueNode.new(val[0]) }
   | Value Accessor                    { result = val[0] << val[1] }
   | Invocation Accessor               { result = ValueNode.new(val[0], [val[1]]) }
   ;
