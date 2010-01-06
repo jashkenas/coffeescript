@@ -183,6 +183,7 @@ rule
   | Expression '&&=' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
 
   | Expression INSTANCEOF Expression  { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression IN Expression          { result = OpNode.new(val[1], val[0], val[2]) }
   ;
 
   Existence:

@@ -19,3 +19,7 @@ evens: for num in [1, 2, 3, 4, 5, 6] when num % 2 is 0
 
 print(evens.join(', ') is '4, 6, 8')
 
+# Make sure that the "in" operator still works.
+
+print(2 in evens)
+
