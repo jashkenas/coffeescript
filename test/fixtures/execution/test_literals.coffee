@@ -18,3 +18,9 @@ func: =>
   return if true
 
 print(func() is null)
+
+
+str: "\\"
+reg: /\\/
+
+print(reg(str) and str is '\\')

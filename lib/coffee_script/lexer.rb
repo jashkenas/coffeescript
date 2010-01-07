@@ -21,13 +21,13 @@ module CoffeeScript
     # Token matching regexes.
     IDENTIFIER = /\A([a-zA-Z$_]\w*)/
     NUMBER     = /\A(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
-    STRING     = /\A(""|''|"(.*?)[^\\]"|'(.*?)[^\\]')/m
-    JS         = /\A(``|`(.*?)[^\\]`)/m
+    STRING     = /\A(""|''|"(.*?)([^\\]|\\\\)"|'(.*?)([^\\]|\\\\)')/m
+    JS         = /\A(``|`(.*?)([^\\]|\\\\)`)/m
     OPERATOR   = /\A([+\*&|\/\-%=<>:!]+)/
     WHITESPACE = /\A([ \t]+)/
     COMMENT    = /\A(((\n?[ \t]*)?#.*$)+)/
     CODE       = /\A(=>)/
-    REGEX      = /\A(\/(.*?)[^\\]\/[imgy]{0,4})/
+    REGEX      = /\A(\/(.*?)([^\\]|\\\\)\/[imgy]{0,4})/
     MULTI_DENT = /\A((\n([ \t]*)?)+)/
     LAST_DENT  = /\n([ \t]*)/
     ASSIGNMENT = /\A(:|=)\Z/
