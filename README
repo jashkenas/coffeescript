@@ -36,3 +36,8 @@
 
   The source repository:
   git://github.com/jashkenas/coffee-script.git
+  
+  Warning:
+  If you're building CoffeeScript from source, the Racc-generated 
+  parser.rb was recently removed from revision control. Use 
+  `rake build:parser` to regenerate it.
