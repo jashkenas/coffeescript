@@ -100,7 +100,9 @@ module CoffeeScript
           if node.statement?
             node.compile(o.merge(:return => true))
           else
-            "#{o[:indent]}return #{node.compile(o)};"
+            constructor = o[:top] && o[:last_assign] && o[:last_assign][0..0][/[A-Z]/]
+            prefix = constructor ? "if (#{o[:last_assign]} !== this.constructor) " : ''
+            "#{o[:indent]}#{prefix}return #{node.compile(o)};"
           end
         else
           ending = node.statement? ? '' : ';'
