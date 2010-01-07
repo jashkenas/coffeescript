@@ -38,7 +38,8 @@ prechigh
   right    THROW FOR NEW SUPER
   left     EXTENDS
   left     ASSIGN '||=' '&&='
-  right    RETURN '=>' UNLESS IF ELSE WHILE
+  right    RETURN
+  right    '=>' UNLESS IF ELSE WHILE
 preclow
 
 rule
@@ -124,6 +125,7 @@ rule
   # A return statement.
   Return:
     RETURN Expression                 { result = ReturnNode.new(val[1]) }
+  | RETURN                            { result = ReturnNode.new(ValueNode.new(Value.new('null'))) }
   ;
 
   # A comment.
