@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+  <title>Quickie CoffeeScript Speed Tests</title>
+  <script type="text/javascript" src="http://www.broofa.com/Tools/JSLitmus/JSLitmus.js"></script>
+</head>
+<body>
+
+  <h1>Quickie CoffeeScript Speed Tests</h1>
+
+  <script type="text/javascript">
+    var num = 1000;
+    var arr = [];
+    while (num--) arr.push(num);
+
+    JSLitmus.test('current comprehensions', function() {
+      __a = arr;
+      __c = [];
+      for (__b in __a) {
+        if (__a.hasOwnProperty(__b)) {
+          num = __a[__b];
+          __d = num;
+          __c.push(num);
+        }
+      }
+    });
+
+    JSLitmus.test('raw for loop (best we can do)', function() {
+      __a = arr;
+      __c = new Array(__a.length);
+      for (__b=0; __b < __a.length; __b++) {
+        __c[__b] = __a[__b];
+      }
+    });
+
+    JSLitmus.test('current without hasOwnProperty check', function() {
+      __a = arr;
+      __c = [];
+      for (__b in __a) {
+        num = __a[__b];
+        __d = num;
+        __c.push(num);
+      }
+    });
+
+    JSLitmus.test('raw for..in loop', function() {
+      __a = arr;
+      __c = new Array(__a.length);
+      for (__b in __a) {
+        __c[__b] = __a[__b];
+      }
+    });
+  </script>
+
+</body>
+</html>
