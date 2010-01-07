@@ -1,7 +1,13 @@
 require 'optparse'
 require 'fileutils'
 require 'open3'
-require File.expand_path(File.dirname(__FILE__) + '/../coffee-script')
+begin
+  require File.expand_path(File.dirname(__FILE__) + '/../coffee-script')
+rescue LoadError => e
+  puts(e.message)
+  puts("use \"rake build:parser\" to regenerate parser.rb")
+  exit(1)
+end
 
 module CoffeeScript
 
