@@ -243,7 +243,9 @@ module CoffeeScript
     def compile_super(args, o)
       methname = o[:last_assign]
       arg_part = args.empty? ? '' : ", #{args}"
-      "#{o[:proto_assign]}.__superClass__.#{methname}.call(this#{arg_part})"
+      meth     = o[:proto_assign] ? "#{o[:proto_assign]}.__superClass__.#{methname}" :
+                                    "#{methname}.__superClass__.constructor"
+      "#{meth}.call(this#{arg_part})"
     end
 
     def compile_splat(o)

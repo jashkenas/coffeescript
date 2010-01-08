@@ -22,3 +22,17 @@ result: (new ThirdChild()).func('four')
 
 print(result is 'zero/one/two/three/four')
 
+
+TopClass: arg =>
+  this.prop: 'top-' + arg
+
+SuperClass: arg =>
+  super('super-' + arg)
+
+SubClass: =>
+  super('sub')
+
+SuperClass extends TopClass
+SubClass extends SuperClass
+
+print((new SubClass()).prop is 'top-super-sub')
