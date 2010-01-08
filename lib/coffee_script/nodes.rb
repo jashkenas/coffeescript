@@ -269,9 +269,12 @@ module CoffeeScript
     end
 
     def compile_node(o={})
+      constructor = o[:scope].free_variable
       sub, sup = @sub_object.compile(o), @super_object.compile(o)
-      "#{idt}#{sub}.__superClass__ = #{sup}.prototype;\n#{idt}" +
-      "#{sub}.prototype = new #{sup}();\n#{idt}" +
+      "#{idt}#{constructor} = function(){};\n#{idt}" +
+      "#{constructor}.prototype = #{sup}.prototype;\n#{idt}" +
+      "#{sub}.__superClass__ = #{sup}.prototype;\n#{idt}" +
+      "#{sub}.prototype = new #{constructor}();\n#{idt}" +
       "#{sub}.prototype.constructor = #{sub};"
     end
 
