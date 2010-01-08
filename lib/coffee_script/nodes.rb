@@ -354,7 +354,7 @@ module CoffeeScript
       idt = o[:indent]
       @from_var, @to_var = o[:scope].free_variable, o[:scope].free_variable
       from_val,  to_val  = @from.compile(o), @to.compile(o)
-      write("#{idt}#{@from_var} = #{from_val};\n#{idt}#{@to_var} = #{to_val};\n#{idt}")
+      write("#{@from_var} = #{from_val}; #{@to_var} = #{to_val};\n#{idt}")
     end
 
     def compile_node(o)
@@ -625,38 +625,30 @@ module CoffeeScript
       range         = @source.is_a?(ValueNode) && @source.literal.is_a?(RangeNode) && @source.properties.empty?
       source        = range ? @source.literal : @source
       scope         = o[:scope]
-      name_found    = scope.find(@name)
       index_found   = @index && scope.find(@index)
+      body_dent     = o[:indent] + TAB
       svar          = scope.free_variable
       ivar          = range ? name : @index ? @index : scope.free_variable
       rvar          = scope.free_variable unless top_level
-      tvar          = scope.free_variable
+      fvar          = scope.free_variable
       if range
-        body_dent   = o[:indent] + TAB
-        var_part, pre_cond, post_cond = '', '', ''
         index_var   = scope.free_variable
         source_part = source.compile_variables(o)
         for_part    = "#{index_var}=0, #{source.compile(o.merge(:index => ivar, :step => @step))}, #{index_var}++"
       else
         index_var   = nil
-        body_dent   = o[:indent] + TAB + TAB
-        source_part = "#{o[:indent]}#{svar} = #{source.compile(o)};\n#{o[:indent]}"
-        for_part    = "#{ivar} in #{svar}"
-        pre_cond    = "\n#{o[:indent] + TAB}if (#{svar}.hasOwnProperty(#{ivar})) {"
-        var_part    = "\n#{body_dent}#{@name} = #{svar}[#{ivar}];"
-        post_cond   = "\n#{o[:indent] + TAB}}"
+        source_part = "#{svar} = #{source.compile(o)};\n#{o[:indent]}"
+        for_part    = "#{ivar}=0; #{ivar}<#{svar}.length; #{ivar}++"
       end
       body          = @body
-      set_result    = rvar ? "#{rvar} = [];\n#{o[:indent]}" : ''
+      set_result    = rvar ? "#{o[:indent]}#{rvar} = []; " : o[:indent]
       return_result = rvar || ''
-      temp_var      = ValueNode.new(LiteralNode.new(tvar))
       if top_level
         body = Expressions.wrap(body)
       else
-        body = Expressions.wrap(
-          AssignNode.new(temp_var, @body.unwrap),
-          CallNode.new(ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [temp_var])
-        )
+        body = Expressions.wrap(CallNode.new(
+          ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [@body.unwrap]
+        ))
       end
       if o[:return]
         return_result = "return #{return_result}" if o[:return]
@@ -668,7 +660,14 @@ module CoffeeScript
 
       return_result = "\n#{o[:indent]}#{return_result};" unless top_level
       body = body.compile(o.merge(:indent => body_dent, :top => true))
-      write("#{source_part}#{set_result}for (#{for_part}) {#{pre_cond}#{var_part}\n#{body}#{post_cond}\n#{o[:indent]}}#{return_result}")
+      vars = range ? @name : "#{@name}, #{ivar}"
+      func = "#{fvar} = function(#{vars}) {\n#{body}\n#{o[:indent]}};\n#{o[:indent]}"
+      return write(set_result + source_part + func + "for (#{for_part}) #{fvar}(#{ivar});\n#{o[:indent]}#{return_result}") if range
+
+      call = "#{fvar}(#{svar}[#{ivar}], #{ivar})"
+      fast = "if (#{svar} instanceof Array) {\n#{o[:indent] + TAB}for (#{for_part}) #{call};\n#{o[:indent]}} else {\n#{o[:indent] + TAB}"
+      slow = "for (#{ivar} in #{svar}) { if (#{svar}.hasOwnProperty(#{ivar})) #{call}; }\n#{o[:indent]}}\n#{o[:indent]}#{return_result}"
+      write(set_result + source_part + func + fast + slow)
     end
   end
 

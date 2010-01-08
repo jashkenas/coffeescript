@@ -69,12 +69,6 @@ class ParserTest < Test::Unit::TestCase
     assert assign.variable.literal == '_'
     assert assign.value.is_a?(CodeNode)
     assert assign.value.params == ['obj', 'iterator', 'context']
-    assert nodes.compile == File.read('test/fixtures/generation/each.js')
-  end
-
-  def test_no_wrap
-    nodes = @par.parse(File.read('test/fixtures/generation/each.coffee'))
-    assert nodes.compile(:no_wrap => true) == File.read('test/fixtures/generation/each_no_wrap.js')
   end
 
 end
