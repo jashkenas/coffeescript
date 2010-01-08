@@ -29,15 +29,20 @@ module CoffeeScript
     # already been asked to return the result.
     def compile(o={})
       @options = o.dup
+      @indent  = o[:indent]
       top = self.is_a?(ForNode) ? @options[:top] : @options.delete(:top)
       closure = statement? && !statement_only? && !top && !@options[:return]
       closure ? compile_closure(@options) : compile_node(@options)
     end
 
     def compile_closure(o={})
-      indent = o[:indent]
       o[:indent] += TAB
-      "(function() {\n#{compile_node(o.merge(:return => true))}\n#{indent}})()"
+      "(function() {\n#{compile_node(o.merge(:return => true))}\n#{idt}})()"
+    end
+
+    # Quick method for the current indentation level, plus tabs out.
+    def idt(tabs=0)
+      @indent + (TAB * tabs)
     end
 
     # Default implementations of the common node methods.
@@ -95,6 +100,7 @@ module CoffeeScript
     def compile_node(options={})
       compiled = @expressions.map do |node|
         o = options.dup
+        @indent = o[:indent]
         returns = o.delete(:return)
         if last?(node) && returns && !node.statement_only?
           if node.statement?
@@ -102,14 +108,14 @@ module CoffeeScript
           else
             if o[:top] && o[:last_assign] && o[:last_assign][0..0][/[A-Z]/]
               temp = o[:scope].free_variable
-              "#{o[:indent]}#{temp} = #{node.compile(o)};\n#{o[:indent]}return #{o[:last_assign]} === this.constructor ? this : #{temp};"
+              "#{idt}#{temp} = #{node.compile(o)};\n#{idt}return #{o[:last_assign]} === this.constructor ? this : #{temp};"
             else
-              "#{o[:indent]}return #{node.compile(o)};"
+              "#{idt}return #{node.compile(o)};"
             end
           end
         else
           ending = node.statement? ? '' : ';'
-          indent = node.statement? ? '' : o[:indent]
+          indent = node.statement? ? '' : idt
           "#{indent}#{node.compile(o.merge(:top => true))}#{ending}"
         end
       end
@@ -119,6 +125,7 @@ module CoffeeScript
     # If this is the top-level Expressions, wrap everything in a safety closure.
     def compile_root(o={})
       indent = o[:no_wrap] ? '' : TAB
+      @indent = indent
       o.merge!(:indent => indent, :scope => Scope.new(nil, self))
       code = o[:no_wrap] ? compile_node(o) : compile_with_declarations(o)
       code.gsub!(STRIP_TRAILING_WHITESPACE, '')
@@ -128,7 +135,7 @@ module CoffeeScript
     def compile_with_declarations(o={})
       code  = compile_node(o)
       decls = ''
-      decls = "#{o[:indent]}var #{o[:scope].declared_variables.join(', ')};\n" if o[:scope].declarations?(self)
+      decls = "#{idt}var #{o[:scope].declared_variables.join(', ')};\n" if o[:scope].declarations?(self)
       decls + code
     end
 
@@ -156,7 +163,7 @@ module CoffeeScript
 
     def compile_node(o)
       val    = CONVERSIONS[@value.to_s] || @value.to_s
-      indent = statement? ? o[:indent] : ''
+      indent = statement? ? idt : ''
       ending = statement? ? ';' : ''
       write("#{indent}#{val}#{ending}")
     end
@@ -175,7 +182,7 @@ module CoffeeScript
     def compile_node(o)
       return write(@expression.compile(o.merge(:return => true))) if @expression.statement?
       compiled = @expression.compile(o)
-      write(@expression.statement? ? "#{compiled}\n#{o[:indent]}return null;" : "#{o[:indent]}return #{compiled};")
+      write(@expression.statement? ? "#{compiled}\n#{idt}return null;" : "#{idt}return #{compiled};")
     end
   end
 
@@ -189,7 +196,7 @@ module CoffeeScript
     end
 
     def compile_node(o={})
-      delimiter = "\n#{o[:indent]}//"
+      delimiter = "\n#{idt}//"
       comment   = "#{delimiter}#{@lines.join(delimiter)}"
       write(comment)
     end
@@ -263,8 +270,8 @@ module CoffeeScript
 
     def compile_node(o={})
       sub, sup = @sub_object.compile(o), @super_object.compile(o)
-      "#{o[:indent]}#{sub}.__superClass__ = #{sup}.prototype;\n#{o[:indent]}" +
-      "#{sub}.prototype = new #{sup}();\n#{o[:indent]}" +
+      "#{idt}#{sub}.__superClass__ = #{sup}.prototype;\n#{idt}" +
+      "#{sub}.prototype = new #{sup}();\n#{idt}" +
       "#{sub}.prototype.constructor = #{sub};"
     end
 
@@ -351,7 +358,7 @@ module CoffeeScript
     end
 
     def compile_variables(o)
-      idt = o[:indent]
+      @indent = o[:indent]
       @from_var, @to_var = o[:scope].free_variable, o[:scope].free_variable
       from_val,  to_val  = @from.compile(o), @to.compile(o)
       write("#{@from_var} = #{from_val}; #{@to_var} = #{to_val};\n#{idt}")
@@ -417,7 +424,7 @@ module CoffeeScript
       return write("#{name}: #{@value.compile(o)}") if @context == :object
       o[:scope].find(name) unless @variable.properties?
       val = "#{name} = #{@value.compile(o)}"
-      write(o[:return] ? "#{o[:indent]}return (#{val})" : val)
+      write(o[:return] ? "#{idt}return (#{val})" : val)
     end
 
     def compile_splice(o)
@@ -487,7 +494,6 @@ module CoffeeScript
 
     def compile_node(o)
       shared_scope = o.delete(:shared_scope)
-      indent       = o[:indent]
       o[:scope]    = shared_scope || Scope.new(o[:scope], @body)
       o[:return]   = true
       o[:top]      = true
@@ -502,7 +508,7 @@ module CoffeeScript
       @params.each {|id| o[:scope].parameter(id.to_s) }
       code = @body.compile_with_declarations(o)
       name_part = name ? " #{name}" : ''
-      write("function#{name_part}(#{@params.join(', ')}) {\n#{code}\n#{indent}}")
+      write("function#{name_part}(#{@params.join(', ')}) {\n#{code}\n#{idt}}")
     end
   end
 
@@ -546,7 +552,6 @@ module CoffeeScript
     # AssignNodes get interleaved correctly, with no trailing commas or
     # commas affixed to comments. TODO: Extract this and add it to ArrayNode.
     def compile_node(o)
-      indent = o[:indent]
       o[:indent] += TAB
       joins = Hash.new("\n")
       non_comments = @properties.select {|p| !p.is_a?(CommentNode) }
@@ -554,10 +559,10 @@ module CoffeeScript
       props  = @properties.map { |prop|
         join = joins[prop]
         join = '' if prop == @properties.last
-        idt  = prop.is_a?(CommentNode) ? '' : o[:indent]
-        "#{idt}#{prop.compile(o)}#{join}"
+        indent = prop.is_a?(CommentNode) ? '' : idt(1)
+        "#{indent}#{prop.compile(o)}#{join}"
       }.join('')
-      write("{\n#{props}\n#{indent}}")
+      write("{\n#{props}\n#{idt}}")
     end
   end
 
@@ -570,14 +575,13 @@ module CoffeeScript
     end
 
     def compile_node(o)
-      indent = o[:indent]
       o[:indent] += TAB
       objects = @objects.map { |obj|
         code = obj.compile(o)
         obj.is_a?(CommentNode) ? "\n#{code}\n#{o[:indent]}" :
         obj == @objects.last   ? code : "#{code}, "
       }.join('')
-      ending = objects.include?("\n") ? "\n#{indent}]" : ']'
+      ending = objects.include?("\n") ? "\n#{idt}]" : ']'
       write("[#{objects}#{ending}")
     end
   end
@@ -595,12 +599,11 @@ module CoffeeScript
 
     def compile_node(o)
       returns     = o.delete(:return)
-      indent      = o[:indent]
       o[:indent] += TAB
       o[:top]     = true
       cond        = @condition.compile(o)
-      post        = returns ? "\n#{indent}return null;" : ''
-      write("#{indent}while (#{cond}) {\n#{@body.compile(o)}\n#{indent}}#{post}")
+      post        = returns ? "\n#{idt}return null;" : ''
+      write("#{idt}while (#{cond}) {\n#{@body.compile(o)}\n#{idt}}#{post}")
     end
   end
 
@@ -626,7 +629,7 @@ module CoffeeScript
       source        = range ? @source.literal : @source
       scope         = o[:scope]
       index_found   = @index && scope.find(@index)
-      body_dent     = o[:indent] + TAB
+      body_dent     = idt(1)
       svar          = scope.free_variable
       ivar          = range ? name : @index ? @index : scope.free_variable
       rvar          = scope.free_variable unless top_level
@@ -637,11 +640,11 @@ module CoffeeScript
         for_part    = "#{index_var}=0, #{source.compile(o.merge(:index => ivar, :step => @step))}, #{index_var}++"
       else
         index_var   = nil
-        source_part = "#{svar} = #{source.compile(o)};\n#{o[:indent]}"
+        source_part = "#{svar} = #{source.compile(o)};\n#{idt}"
         for_part    = "#{ivar}=0; #{ivar}<#{svar}.length; #{ivar}++"
       end
       body          = @body
-      set_result    = rvar ? "#{o[:indent]}#{rvar} = []; " : o[:indent]
+      set_result    = rvar ? "#{idt}#{rvar} = []; " : idt
       return_result = rvar || ''
       if top_level
         body = Expressions.wrap(body)
@@ -658,15 +661,15 @@ module CoffeeScript
         body = Expressions.wrap(IfNode.new(@filter, @body))
       end
 
-      return_result = "\n#{o[:indent]}#{return_result};" unless top_level
+      return_result = "\n#{idt}#{return_result};" unless top_level
       body = body.compile(o.merge(:indent => body_dent, :top => true))
       vars = range ? @name : "#{@name}, #{ivar}"
-      func = "#{fvar} = function(#{vars}) {\n#{body}\n#{o[:indent]}};\n#{o[:indent]}"
-      return write(set_result + source_part + func + "for (#{for_part}) #{fvar}(#{ivar});\n#{o[:indent]}#{return_result}") if range
+      func = "#{fvar} = function(#{vars}) {\n#{body}\n#{idt}};\n#{idt}"
+      return write(set_result + source_part + func + "for (#{for_part}) #{fvar}(#{ivar});\n#{idt}#{return_result}") if range
 
       call = "#{fvar}(#{svar}[#{ivar}], #{ivar})"
-      fast = "if (#{svar} instanceof Array) {\n#{o[:indent] + TAB}for (#{for_part}) #{call};\n#{o[:indent]}} else {\n#{o[:indent] + TAB}"
-      slow = "for (#{ivar} in #{svar}) { if (#{svar}.hasOwnProperty(#{ivar})) #{call}; }\n#{o[:indent]}}\n#{o[:indent]}#{return_result}"
+      fast = "if (#{svar} instanceof Array) {\n#{idt(1)}for (#{for_part}) #{call};\n#{idt}} else {\n#{idt(1)}"
+      slow = "for (#{ivar} in #{svar}) { if (#{svar}.hasOwnProperty(#{ivar})) #{call}; }\n#{idt}}\n#{idt}#{return_result}"
       write(set_result + source_part + func + fast + slow)
     end
   end
@@ -682,13 +685,12 @@ module CoffeeScript
     end
 
     def compile_node(o)
-      indent = o[:indent]
       o[:indent] += TAB
       o[:top] = true
       error_part = @error ? " (#{@error}) " : ' '
-      catch_part = @recovery &&  " catch#{error_part}{\n#{@recovery.compile(o)}\n#{indent}}"
-      finally_part = @finally && " finally {\n#{@finally.compile(o.merge(:return => nil))}\n#{indent}}"
-      write("#{indent}try {\n#{@try.compile(o)}\n#{indent}}#{catch_part}#{finally_part}")
+      catch_part = @recovery &&  " catch#{error_part}{\n#{@recovery.compile(o)}\n#{idt}}"
+      finally_part = @finally && " finally {\n#{@finally.compile(o.merge(:return => nil))}\n#{idt}}"
+      write("#{idt}try {\n#{@try.compile(o)}\n#{idt}}#{catch_part}#{finally_part}")
     end
   end
 
@@ -703,7 +705,7 @@ module CoffeeScript
     end
 
     def compile_node(o)
-      write("#{o[:indent]}throw #{@expression.compile(o)};")
+      write("#{idt}throw #{@expression.compile(o)};")
     end
   end
 
@@ -796,18 +798,17 @@ module CoffeeScript
     # Compile the IfNode as a regular if-else statement. Flattened chains
     # force sub-else bodies into statement form.
     def compile_statement(o)
-      indent = o[:indent]
       child  = o.delete(:chain_child)
       cond_o = o.dup
       cond_o.delete(:return)
       o[:indent] += TAB
       o[:top] = true
-      if_dent = child ? '' : indent
-      if_part = "#{if_dent}if (#{@condition.compile(cond_o)}) {\n#{Expressions.wrap(@body).compile(o)}\n#{indent}}"
+      if_dent = child ? '' : idt
+      if_part = "#{if_dent}if (#{@condition.compile(cond_o)}) {\n#{Expressions.wrap(@body).compile(o)}\n#{idt}}"
       return if_part unless @else_body
       else_part = chain? ?
-        " else #{@else_body.compile(o.merge(:indent => indent, :chain_child => true))}" :
-        " else {\n#{Expressions.wrap(@else_body).compile(o)}\n#{indent}}"
+        " else #{@else_body.compile(o.merge(:indent => idt, :chain_child => true))}" :
+        " else {\n#{Expressions.wrap(@else_body).compile(o)}\n#{idt}}"
       if_part + else_part
     end
 
