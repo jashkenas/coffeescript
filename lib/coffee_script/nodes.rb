@@ -36,7 +36,7 @@ module CoffeeScript
     end
 
     def compile_closure(o={})
-      o[:indent] += TAB
+      o[:indent] += idt(1)
       "(function() {\n#{compile_node(o.merge(:return => true))}\n#{idt}})()"
     end
 
@@ -497,7 +497,7 @@ module CoffeeScript
       o[:scope]    = shared_scope || Scope.new(o[:scope], @body)
       o[:return]   = true
       o[:top]      = true
-      o[:indent]  += TAB
+      o[:indent]   = idt(1)
       o.delete(:no_wrap)
       name = o.delete(:immediate_assign)
       if @params.last.is_a?(ParamSplatNode)
@@ -552,7 +552,7 @@ module CoffeeScript
     # AssignNodes get interleaved correctly, with no trailing commas or
     # commas affixed to comments. TODO: Extract this and add it to ArrayNode.
     def compile_node(o)
-      o[:indent] += TAB
+      o[:indent] = idt(1)
       joins = Hash.new("\n")
       non_comments = @properties.select {|p| !p.is_a?(CommentNode) }
       non_comments.each {|p| joins[p] = p == non_comments.last ? "\n" : ",\n" }
@@ -575,7 +575,7 @@ module CoffeeScript
     end
 
     def compile_node(o)
-      o[:indent] += TAB
+      o[:indent] = idt(1)
       objects = @objects.map { |obj|
         code = obj.compile(o)
         obj.is_a?(CommentNode) ? "\n#{code}\n#{o[:indent]}" :
@@ -599,7 +599,7 @@ module CoffeeScript
 
     def compile_node(o)
       returns     = o.delete(:return)
-      o[:indent] += TAB
+      o[:indent]  = idt(1)
       o[:top]     = true
       cond        = @condition.compile(o)
       post        = returns ? "\n#{idt}return null;" : ''
@@ -685,7 +685,7 @@ module CoffeeScript
     end
 
     def compile_node(o)
-      o[:indent] += TAB
+      o[:indent] = idt(1)
       o[:top] = true
       error_part = @error ? " (#{@error}) " : ' '
       catch_part = @recovery &&  " catch#{error_part}{\n#{@recovery.compile(o)}\n#{idt}}"
@@ -798,13 +798,13 @@ module CoffeeScript
     # Compile the IfNode as a regular if-else statement. Flattened chains
     # force sub-else bodies into statement form.
     def compile_statement(o)
-      child  = o.delete(:chain_child)
-      cond_o = o.dup
+      child       = o.delete(:chain_child)
+      cond_o      = o.dup
       cond_o.delete(:return)
-      o[:indent] += TAB
-      o[:top] = true
-      if_dent = child ? '' : idt
-      if_part = "#{if_dent}if (#{@condition.compile(cond_o)}) {\n#{Expressions.wrap(@body).compile(o)}\n#{idt}}"
+      o[:indent]  = idt(1)
+      o[:top]     = true
+      if_dent     = child ? '' : idt
+      if_part     = "#{if_dent}if (#{@condition.compile(cond_o)}) {\n#{Expressions.wrap(@body).compile(o)}\n#{idt}}"
       return if_part unless @else_body
       else_part = chain? ?
         " else #{@else_body.compile(o.merge(:indent => idt, :chain_child => true))}" :
