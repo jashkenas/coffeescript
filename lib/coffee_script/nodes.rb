@@ -127,7 +127,7 @@ module CoffeeScript
       indent = o[:no_wrap] ? '' : TAB
       @indent = indent
       o.merge!(:indent => indent, :scope => Scope.new(nil, self))
-      code = o[:no_wrap] ? compile_node(o) : compile_with_declarations(o)
+      code = o[:globals] ? compile_node(o) : compile_with_declarations(o)
       code.gsub!(STRIP_TRAILING_WHITESPACE, '')
       o[:no_wrap] ? code : "(function(){\n#{code}\n})();"
     end
@@ -499,6 +499,7 @@ module CoffeeScript
       o[:top]      = true
       o[:indent]   = idt(1)
       o.delete(:no_wrap)
+      o.delete(:globals)
       name = o.delete(:immediate_assign)
       if @params.last.is_a?(ParamSplatNode)
         splat = @params.pop

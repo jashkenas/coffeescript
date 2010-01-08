@@ -29,7 +29,7 @@ exports.run: args =>
   while true
     try
       system.stdout.write('coffee> ').flush()
-      result: exports.evalCS(Readline.readline())
+      result: exports.evalCS(Readline.readline(), ['--globals'])
       print(result) if result isnt undefined
     catch e
       print(e)
@@ -41,15 +41,15 @@ exports.compileFile: path =>
   coffee.stdout.read()
 
 # Compile a string of CoffeeScript into JavaScript.
-exports.compile: source =>
-  coffee: OS.popen([coffeePath, "--eval", "--no-wrap"])
+exports.compile: source, flags =>
+  coffee: OS.popen([coffeePath, "--eval", "--no-wrap"].concat(flags or []))
   coffee.stdin.write(source).flush().close()
   checkForErrors(coffee)
   coffee.stdout.read()
 
 # Evaluating a string of CoffeeScript first compiles it externally.
-exports.evalCS: source =>
-  eval(exports.compile(source))
+exports.evalCS: source, flags =>
+  eval(exports.compile(source, flags))
 
 # Make a factory for the CoffeeScript environment.
 exports.makeNarwhalFactory: path =>

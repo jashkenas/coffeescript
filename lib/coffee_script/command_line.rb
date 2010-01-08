@@ -139,6 +139,7 @@ Usage:
       begin
         options = {}
         options[:no_wrap] = true if @options[:no_wrap]
+        options[:globals] = true if @options[:globals]
         CoffeeScript.compile(script, options)
       rescue CoffeeScript::ParseError, SyntaxError => e
         STDERR.puts "#{source}: #{e.message}"
@@ -193,8 +194,11 @@ Usage:
         opts.on('-v', '--verbose', 'print at every step of code generation') do |v|
           ENV['VERBOSE'] = 'true'
         end
-        opts.on('-n', '--no-wrap', 'raw output, no safety wrapper or vars') do |n|
+        opts.on('-n', '--no-wrap', 'raw output, no function safety wrapper') do |n|
           @options[:no_wrap] = true
+        end
+        opts.on('-g', '--globals', 'attach all top-level variable as globals') do |n|
+          @options[:globals] = true
         end
         opts.on_tail('--install-bundle', 'install the CoffeeScript TextMate bundle') do |i|
           install_bundle
