@@ -14,9 +14,9 @@
 # end
 
 LotteryTicket: {
-  get_picks:    => this.picks
-  set_picks:    nums => this.picks: nums
-  get_purchase: => this.purchase
+  get_picks:           => this.picks
+  set_picks:      nums => this.picks: nums
+  get_purchase:        => this.purchase
   set_purchase: amount => this.purchase: amount
 }
 

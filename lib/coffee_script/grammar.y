@@ -340,6 +340,7 @@ rule
   # The while loop. (there is no do..while).
   While:
     WHILE Expression Block            { result = WhileNode.new(val[1], val[2]) }
+  | WHILE Expression                  { result = WhileNode.new(val[1], nil) }
   ;
 
   # Array comprehensions, including guard and current index.

@@ -609,6 +609,7 @@ module CoffeeScript
       o[:top]     = true
       cond        = @condition.compile(o)
       post        = returns ? "\n#{idt}return null;" : ''
+      return write("#{idt}while (#{cond});#{post}") if @body.nil?
       write("#{idt}while (#{cond}) {\n#{@body.compile(o)}\n#{idt}}#{post}")
     end
   end
