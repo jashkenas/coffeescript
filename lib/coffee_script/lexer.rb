@@ -28,7 +28,7 @@ module CoffeeScript
     COMMENT    = /\A(((\n?[ \t]*)?#.*$)+)/
     CODE       = /\A(=>)/
     REGEX      = /\A(\/(.*?)([^\\]|\\\\)\/[imgy]{0,4})/
-    MULTI_DENT = /\A((\n([ \t]*)?)+)/
+    MULTI_DENT = /\A((\n([ \t]*))+)(\.)?/
     LAST_DENT  = /\n([ \t]*)/
     ASSIGNMENT = /\A(:|=)\Z/
 
@@ -139,7 +139,9 @@ module CoffeeScript
       return false unless indent = @chunk[MULTI_DENT, 1]
       @line += indent.scan(MULTILINER).size
       @i += indent.size
-      return suppress_newlines(indent) if last_value.to_s.match(NO_NEWLINE) && last_value != "=>"
+      next_character = @chunk[MULTI_DENT, 4]
+      no_newlines = next_character == '.' || (last_value.to_s.match(NO_NEWLINE) && last_value != "=>")
+      return suppress_newlines(indent) if no_newlines
       size = indent.scan(LAST_DENT).last.last.length
       return newline_token(indent) if size == @indent
       if size > @indent
