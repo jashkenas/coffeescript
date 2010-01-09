@@ -24,3 +24,9 @@ str: "\\"
 reg: /\\/
 
 print(reg(str) and str is '\\')
+
+
+i: 10
+while i -= 1
+
+print(i is 0)
