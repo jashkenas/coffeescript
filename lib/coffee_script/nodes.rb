@@ -769,6 +769,11 @@ module CoffeeScript
       self
     end
 
+    def add_comment(comment)
+      @comment = comment
+      self
+    end
+
     def force_statement
       @tags[:statement] = true
       self
@@ -795,7 +800,7 @@ module CoffeeScript
     # The IfNode only compiles into a statement if either of the bodies needs
     # to be a statement.
     def statement?
-      @is_statement ||= !!(@tags[:statement] || @body.statement? || (@else_body && @else_body.statement?))
+      @is_statement ||= !!(@comment || @tags[:statement] || @body.statement? || (@else_body && @else_body.statement?))
     end
 
     def compile_node(o)
@@ -811,7 +816,9 @@ module CoffeeScript
       o[:indent]  = idt(1)
       o[:top]     = true
       if_dent     = child ? '' : idt
-      if_part     = "#{if_dent}if (#{@condition.compile(cond_o)}) {\n#{Expressions.wrap(@body).compile(o)}\n#{idt}}"
+      com_dent    = child ? idt : ''
+      prefix      = @comment ? @comment.compile(cond_o) + "\n#{com_dent}" : ''
+      if_part     = "#{prefix}#{if_dent}if (#{@condition.compile(cond_o)}) {\n#{Expressions.wrap(@body).compile(o)}\n#{idt}}"
       return if_part unless @else_body
       else_part = chain? ?
         " else #{@else_body.compile(o.merge(:indent => idt, :chain_child => true))}" :

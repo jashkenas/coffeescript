@@ -7,7 +7,11 @@ result: switch num
     true
     false
   when 10 then true
+
+
+  # Mid-switch comment with whitespace
+  # and multi line
   when 11 then false
   else false
-  
+
 print(result)

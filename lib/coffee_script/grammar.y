@@ -385,7 +385,7 @@ rule
     LEADING_WHEN Expression Block     { result = IfNode.new(val[1], val[2], nil, {:statement => true}) }
   | LEADING_WHEN Expression Block
       Terminator                      { result = IfNode.new(val[1], val[2], nil, {:statement => true}) }
-  | Comment
+  | Comment Terminator When           { result = val[2].add_comment(val[0]) }
   ;
 
   # The most basic form of "if".
