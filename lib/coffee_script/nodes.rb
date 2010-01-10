@@ -36,8 +36,9 @@ module CoffeeScript
     end
 
     def compile_closure(o={})
-      o[:indent] += idt(1)
-      "(function() {\n#{compile_node(o.merge(:return => true))}\n#{idt}})()"
+      indent = o[:indent]
+      @indent = (o[:indent] = idt(1))
+      "(function() {\n#{compile_node(o.merge(:return => true))}\n#{indent}})()"
     end
 
     # Quick method for the current indentation level, plus tabs out.
