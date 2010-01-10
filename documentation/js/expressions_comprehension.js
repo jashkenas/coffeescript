@@ -1,5 +1,5 @@
 (function(){
-  var __a, __b, globals, name;
+  var __a, __b, globals, name, property;
   // The first ten global properties.
   globals = ((function() {
     __b = []; __a = window;

@@ -30,7 +30,7 @@
   breaker: if typeof(StopIteration) is 'undefined' then '__break__' else StopIteration
 
 
-  # Create a safe reference to the Underscore object for reference below.
+  # Create a safe reference to the Underscore object forreference below.
   _: root._: obj => new wrapper(obj)
 
 
@@ -60,7 +60,7 @@
       return obj.forEach(iterator, context) if obj.forEach
       if _.isArray(obj) or _.isArguments(obj)
         return iterator.call(context, obj[i], i, obj) for i in [0...obj.length]
-      iterator.call(context, val, key, obj) for val, key in obj
+      iterator.call(context, val, key, obj) for key, val ino obj
     catch e
       throw e if e isnt breaker
     obj
@@ -148,7 +148,7 @@
   # based on '==='.
   _.include: obj, target =>
     return _.indexOf(obj, target) isnt -1 if _.isArray(obj)
-    for val in obj
+    for key, val ino obj
       return true if val is target
     false
 
@@ -380,7 +380,7 @@
   # Retrieve the names of an object's properties.
   _.keys: obj =>
     return _.range(0, obj.length) if _.isArray(obj)
-    key for val, key in obj
+    key for key, val ino obj
 
 
   # Retrieve the values of an object's properties.
@@ -395,7 +395,7 @@
 
   # Extend a given object with all of the properties in a source object.
   _.extend: destination, source =>
-    for val, key in source
+    for key, val ino source
       destination[key]: val
     destination
 
@@ -564,8 +564,9 @@
   _.each(_.functions(_)) name =>
     method: _[name]
     wrapper.prototype[name]: =>
-      unshift.call(arguments, this._wrapped)
-      result(method.apply(_, arguments), this._chain)
+      args: _.toArray(arguments)
+      unshift.call(args, this._wrapped)
+      result(method.apply(_, args), this._chain)
 
 
   # Add all mutator Array functions to the wrapper.

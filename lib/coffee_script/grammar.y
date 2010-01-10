@@ -8,7 +8,7 @@ token IDENTIFIER PROPERTY_ACCESS
 token CODE PARAM NEW RETURN
 token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
-token FOR IN BY WHEN WHILE
+token FOR IN INO BY WHEN WHILE
 token SWITCH LEADING_WHEN
 token DELETE INSTANCEOF TYPEOF
 token SUPER EXTENDS
@@ -34,7 +34,7 @@ prechigh
   left     '.'
   right    INDENT
   left     OUTDENT
-  right    WHEN LEADING_WHEN IN BY
+  right    WHEN LEADING_WHEN IN INO BY
   right    THROW FOR NEW SUPER
   left     EXTENDS
   left     ASSIGN '||=' '&&='
@@ -360,6 +360,7 @@ rule
   # The source of the array comprehension can optionally be filtered.
   ForSource:
     IN Expression                     { result = {:source => val[1]} }
+  | INO Expression                    { result = {:source => val[1], :object => true} }
   | ForSource
     WHEN Expression                   { result = val[0].merge(:filter => val[2]) }
   | ForSource

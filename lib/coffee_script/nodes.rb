@@ -153,6 +153,10 @@ module CoffeeScript
 
     attr_reader :value
 
+    def self.wrap(string)
+      self.new(Value.new(string))
+    end
+
     def initialize(value)
       @value = value
     end
@@ -384,7 +388,7 @@ module CoffeeScript
     # part of a comprehension, slice, or splice.
     # TODO: This generates pretty ugly code ... shrink it.
     def compile_array(o)
-      body = Expressions.wrap(LiteralNode.new(Value.new('i')))
+      body = Expressions.wrap(LiteralNode.wrap('i'))
       arr  = Expressions.wrap(ForNode.new(body, {:source => ValueNode.new(self)}, Value.new('i')))
       ParentheticalNode.new(CallNode.new(CodeNode.new([], arr))).compile(o)
     end
@@ -629,6 +633,8 @@ module CoffeeScript
       @source = source[:source]
       @filter = source[:filter]
       @step   = source[:step]
+      @object = !!source[:object]
+      @name, @index = @index, @name if @object
     end
 
     def compile_node(o)
@@ -636,6 +642,7 @@ module CoffeeScript
       range         = @source.is_a?(ValueNode) && @source.literal.is_a?(RangeNode) && @source.properties.empty?
       source        = range ? @source.literal : @source
       scope         = o[:scope]
+      scope.find(@name)
       index_found   = @index && scope.find(@index)
       body_dent     = idt(1)
       svar          = scope.free_variable
@@ -650,6 +657,7 @@ module CoffeeScript
         index_var   = nil
         source_part = "#{svar} = #{source.compile(o)};\n#{idt}"
         for_part    = "#{ivar}=0; #{ivar}<#{svar}.length; #{ivar}++"
+        for_part    = "#{@index} in #{svar}" if @object
         var_part    = "#{body_dent}#{@name} = #{svar}[#{ivar}];\n"
       end
       body          = @body
@@ -659,7 +667,7 @@ module CoffeeScript
         body = Expressions.wrap(body)
       else
         body = Expressions.wrap(CallNode.new(
-          ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [@body.unwrap]
+          ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [body.unwrap]
         ))
       end
       if o[:return]
@@ -667,7 +675,15 @@ module CoffeeScript
         o.delete(:return)
         body = IfNode.new(@filter, body, nil, :statement => true) if @filter
       elsif @filter
-        body = Expressions.wrap(IfNode.new(@filter, @body))
+        body = Expressions.wrap(IfNode.new(@filter, body))
+      end
+      if @object
+        body = Expressions.wrap(IfNode.new(
+          CallNode.new(ValueNode.new(LiteralNode.wrap(svar), [AccessorNode.new(Value.new('hasOwnProperty'))]), [LiteralNode.wrap(@index)]),
+          Expressions.wrap(body),
+          nil,
+          {:statement => true}
+        ))
       end
 
       return_result = "\n#{idt}#{return_result};" unless top_level

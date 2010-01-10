@@ -12,14 +12,14 @@ module CoffeeScript
                   "new", "return",
                   "try", "catch", "finally", "throw",
                   "break", "continue",
-                  "for", "in", "by", "where", "while",
+                  "for", "in", "ino", "by", "where", "while",
                   "switch", "when",
                   "super", "extends",
                   "arguments",
                   "delete", "instanceof", "typeof"]
 
     # Token matching regexes.
-    IDENTIFIER = /\A([a-zA-Z$_]\w*)/
+    IDENTIFIER = /\A([a-zA-Z$_](\w|\$)*)/
     NUMBER     = /\A(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
     STRING     = /\A(""|''|"(.*?)([^\\]|\\\\)"|'(.*?)([^\\]|\\\\)')/m
     JS         = /\A(``|`(.*?)([^\\]|\\\\)`)/m

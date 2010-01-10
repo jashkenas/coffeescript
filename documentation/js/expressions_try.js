@@ -3,7 +3,7 @@
     try {
       return nonexistent / undefined;
     } catch (error) {
-      return "The error is: " + error;
+      return "Caught an error: " + error;
     }
   })());
 })();

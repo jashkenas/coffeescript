@@ -103,7 +103,7 @@ alert(<span class="String"><span class="String">&quot;</span>I knew it!<span cla
 
 <span class="Comment"><span class="Comment">#</span> Array comprehensions:</span>
 cubed_list<span class="Keyword">:</span> math.cube(num) <span class="Keyword">for</span> num <span class="Keyword">in</span> list
-</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, cubed_list, list, math, number, opposite_day, race, square;
+</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, cubed_list, list, math, num, number, opposite_day, race, square;
 <span class="Comment"><span class="Comment">//</span> Assignment:</span>
 number <span class="Keyword">=</span> <span class="Number">42</span>;
 opposite_day <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
@@ -144,7 +144,7 @@ cubed_list <span class="Keyword">=</span> (<span class="Storage">function</span>
   }
   <span class="Keyword">return</span> __c;
 })();
-</pre><button onclick='javascript: var __a, __b, __c, cubed_list, list, math, number, opposite_day, race, square;
+</pre><button onclick='javascript: var __a, __b, __c, cubed_list, list, math, num, number, opposite_day, race, square;
 // Assignment:
 number = 42;
 opposite_day = true;
@@ -694,7 +694,7 @@ lunch<span class="Keyword">:</span> eat(food) <span class="Keyword">for</span> f
 <span class="Keyword">for</span> roid <span class="Keyword">in</span> asteroids
   <span class="Keyword">for</span> roid2 <span class="Keyword">in</span> asteroids <span class="Keyword">when</span> roid <span class="Keyword">isnt</span> roid2
     roid.explode() <span class="Keyword">if</span> roid.overlaps(roid2)
-</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, __e, __f, __g, lunch;
+</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, __e, __f, __g, food, lunch, roid, roid2;
 <span class="Comment"><span class="Comment">//</span> Eat lunch.</span>
 lunch <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   __c <span class="Keyword">=</span> []; __a <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
@@ -722,23 +722,95 @@ __d <span class="Keyword">=</span> asteroids;
     <p>
       If you know the start and end of your loop, or would like to step through
       in fixed-size increments, you can use a range to specify the start and
-      end of your comprehension:
+      end of your comprehension. (The long line-breaking "for" definitions in
+      the compiled JS below allow ranges to count downwards, as well as upwards).
     </p>
-    <div class='code'><pre class="idle"><span class="Keyword">for</span> i <span class="Keyword">in</span> [<span class="Number">0</span>...eggs.length] <span class="Keyword">by</span> <span class="Number">12</span>
-  dozen_eggs<span class="Keyword">:</span> eggs[i...i<span class="Keyword">+</span><span class="Number">12</span>]
-  deliver(<span class="Keyword">new</span> <span class="TypeName">egg_carton</span>(dozen))
-</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, dozen_eggs;
-__c <span class="Keyword">=</span> <span class="Number">0</span>; __d <span class="Keyword">=</span> eggs.<span class="LibraryConstant">length</span>;
-<span class="Keyword">for</span> (__b<span class="Keyword">=</span><span class="Number">0</span>, i<span class="Keyword">=</span>__c; (__c <span class="Keyword">&lt;=</span> __d ? i <span class="Keyword">&lt;</span> __d : i <span class="Keyword">&gt;</span> __d); (__c <span class="Keyword">&lt;=</span> __d ? i <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">12</span> : i <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">12</span>), __b<span class="Keyword">++</span>) {
-  dozen_eggs <span class="Keyword">=</span> eggs.<span class="LibraryFunction">slice</span>(i, i <span class="Keyword">+</span> <span class="Number">12</span>);
-  deliver(<span class="Keyword">new</span> <span class="TypeName">egg_carton</span>(dozen));
-}
-</pre><br class='clear' /></div>
+    <div class='code'><pre class="idle">countdown<span class="Keyword">:</span> num <span class="Keyword">for</span> num <span class="Keyword">in</span> [<span class="Number">10</span>..<span class="Number">1</span>]
+
+<span class="FunctionName">egg_delivery</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
+  <span class="Keyword">for</span> i <span class="Keyword">in</span> [<span class="Number">0</span>...eggs.length] <span class="Keyword">by</span> <span class="Number">12</span>
+    dozen_eggs<span class="Keyword">:</span> eggs[i...i<span class="Keyword">+</span><span class="Number">12</span>]
+    deliver(<span class="Keyword">new</span> <span class="TypeName">egg_carton</span>(dozen))
+</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, __e, countdown, egg_delivery, num;
+countdown <span class="Keyword">=</span> (<span class="Storage">function</span>() {
+  __b <span class="Keyword">=</span> []; __d <span class="Keyword">=</span> <span class="Number">10</span>; __e <span class="Keyword">=</span> <span class="Number">1</span>;
+  <span class="Keyword">for</span> (__c<span class="Keyword">=</span><span class="Number">0</span>, num<span class="Keyword">=</span>__d; (__d <span class="Keyword">&lt;=</span> __e ? num <span class="Keyword">&lt;=</span> __e : num <span class="Keyword">&gt;=</span> __e); (__d <span class="Keyword">&lt;=</span> __e ? num <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">1</span> : num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>), __c<span class="Keyword">++</span>) {
+    __b.<span class="LibraryFunction">push</span>(num);
+  }
+  <span class="Keyword">return</span> __b;
+})();
+egg_delivery <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">egg_delivery</span>() {
+  <span class="Storage">var</span> __f, __g, __h, __i, __j, dozen_eggs, i;
+  __g <span class="Keyword">=</span> []; __i <span class="Keyword">=</span> <span class="Number">0</span>; __j <span class="Keyword">=</span> eggs.<span class="LibraryConstant">length</span>;
+  <span class="Keyword">for</span> (__h<span class="Keyword">=</span><span class="Number">0</span>, i<span class="Keyword">=</span>__i; (__i <span class="Keyword">&lt;=</span> __j ? i <span class="Keyword">&lt;</span> __j : i <span class="Keyword">&gt;</span> __j); (__i <span class="Keyword">&lt;=</span> __j ? i <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">12</span> : i <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">12</span>), __h<span class="Keyword">++</span>) {
+    __g.<span class="LibraryFunction">push</span>((<span class="Storage">function</span>() {
+      dozen_eggs <span class="Keyword">=</span> eggs.<span class="LibraryFunction">slice</span>(i, i <span class="Keyword">+</span> <span class="Number">12</span>);
+      <span class="Keyword">return</span> deliver(<span class="Keyword">new</span> <span class="TypeName">egg_carton</span>(dozen));
+    })());
+  }
+  <span class="Keyword">return</span> __g;
+};
+</pre><button onclick='javascript: var __a, __b, __c, __d, __e, countdown, egg_delivery, num;
+countdown = (function() {
+  __b = []; __d = 10; __e = 1;
+  for (__c=0, num=__d; (__d <= __e ? num <= __e : num >= __e); (__d <= __e ? num += 1 : num -= 1), __c++) {
+    __b.push(num);
+  }
+  return __b;
+})();
+egg_delivery = function egg_delivery() {
+  var __f, __g, __h, __i, __j, dozen_eggs, i;
+  __g = []; __i = 0; __j = eggs.length;
+  for (__h=0, i=__i; (__i <= __j ? i < __j : i > __j); (__i <= __j ? i += 12 : i -= 12), __h++) {
+    __g.push((function() {
+      dozen_eggs = eggs.slice(i, i + 12);
+      return deliver(new egg_carton(dozen));
+    })());
+  }
+  return __g;
+};
+;alert(countdown);'>run: countdown</button><br class='clear' /></div>
     <p>
-      Comprehensions can also be used to iterate over the values and keys in
-      an object:
+      Comprehensions can also be used to iterate over the keys and values in
+      an object. Use <tt>ino</tt> to signal comprehension over an object instead
+      of an array.
     </p>
-    
+    <div class='code'><pre class="idle">years_old<span class="Keyword">:</span> {max<span class="Keyword">:</span> <span class="Number">10</span>, ida<span class="Keyword">:</span> <span class="Number">9</span>, tim<span class="Keyword">:</span> <span class="Number">11</span>}
+
+ages<span class="Keyword">:</span> child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age <span class="Keyword">for</span> child, age ino years_old
+</pre><pre class="idle"><span class="Storage">var</span> __a, __b, age, ages, child, years_old;
+years_old <span class="Keyword">=</span> {
+  max: <span class="Number">10</span>,
+  ida: <span class="Number">9</span>,
+  tim: <span class="Number">11</span>
+};
+ages <span class="Keyword">=</span> (<span class="Storage">function</span>() {
+  __b <span class="Keyword">=</span> []; __a <span class="Keyword">=</span> years_old;
+  <span class="Keyword">for</span> (child <span class="Keyword">in</span> __a) {
+    age <span class="Keyword">=</span> __a[child];
+    <span class="Keyword">if</span> (__a.hasOwnProperty(child)) {
+      __b.<span class="LibraryFunction">push</span>(child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age);
+    }
+  }
+  <span class="Keyword">return</span> __b;
+})();
+</pre><button onclick='javascript: var __a, __b, age, ages, child, years_old;
+years_old = {
+  max: 10,
+  ida: 9,
+  tim: 11
+};
+ages = (function() {
+  __b = []; __a = years_old;
+  for (child in __a) {
+    age = __a[child];
+    if (__a.hasOwnProperty(child)) {
+      __b.push(child + " is " + age);
+    }
+  }
+  return __b;
+})();
+;alert(ages.join(", "));'>run: ages.join(", ")</button><br class='clear' /></div>
 
     <p id="slice_splice">
       <b class="header">Array Slicing and Splicing with Ranges</b>
@@ -841,7 +913,7 @@ six = (one = 1) + (two = 2) + (three = 3);
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> The first ten global properties.</span>
 
 globals<span class="Keyword">:</span> (name <span class="Keyword">for</span> property, name <span class="Keyword">in</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
-</pre><pre class="idle"><span class="Storage">var</span> __a, __b, globals, name;
+</pre><pre class="idle"><span class="Storage">var</span> __a, __b, globals, name, property;
 <span class="Comment"><span class="Comment">//</span> The first ten global properties.</span>
 globals <span class="Keyword">=</span> ((<span class="Storage">function</span>() {
   __b <span class="Keyword">=</span> []; __a <span class="Keyword">=</span> <span class="LibraryClassType">window</span>;
@@ -851,7 +923,7 @@ globals <span class="Keyword">=</span> ((<span class="Storage">function</span>()
   }
   <span class="Keyword">return</span> __b;
 })()).<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
-</pre><button onclick='javascript: var __a, __b, globals, name;
+</pre><button onclick='javascript: var __a, __b, globals, name, property;
 // The first ten global properties.
 globals = ((function() {
   __b = []; __a = window;
@@ -870,20 +942,20 @@ globals = ((function() {
   <span class="Keyword">try</span>
     nonexistent <span class="Keyword">/</span> <span class="BuiltInConstant">undefined</span>
   <span class="Keyword">catch</span> error
-    <span class="String"><span class="String">&quot;</span>The error is: <span class="String">&quot;</span></span> <span class="Keyword">+</span> error
+    <span class="String"><span class="String">&quot;</span>Caught an error: <span class="String">&quot;</span></span> <span class="Keyword">+</span> error
 )
 </pre><pre class="idle"><span class="LibraryFunction">alert</span>((<span class="Storage">function</span>() {
   <span class="Keyword">try</span> {
     <span class="Keyword">return</span> nonexistent / undefined;
   } <span class="Keyword">catch</span> (error) {
-    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>The error is: <span class="String">&quot;</span></span> <span class="Keyword">+</span> error;
+    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>Caught an error: <span class="String">&quot;</span></span> <span class="Keyword">+</span> error;
   }
 })());
 </pre><button onclick='javascript: alert((function() {
   try {
     return nonexistent / undefined;
   } catch (error) {
-    return "The error is: " + error;
+    return "Caught an error: " + error;
   }
 })());
 ;'>run</button><br class='clear' /></div>

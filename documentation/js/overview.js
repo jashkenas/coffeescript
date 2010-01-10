@@ -1,5 +1,5 @@
 (function(){
-  var __a, __b, __c, cubed_list, list, math, number, opposite_day, race, square;
+  var __a, __b, __c, cubed_list, list, math, num, number, opposite_day, race, square;
   // Assignment:
   number = 42;
   opposite_day = true;

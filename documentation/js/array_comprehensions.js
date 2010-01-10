@@ -1,5 +1,5 @@
 (function(){
-  var __a, __b, __c, __d, __e, __f, __g, lunch;
+  var __a, __b, __c, __d, __e, __f, __g, food, lunch, roid, roid2;
   // Eat lunch.
   lunch = (function() {
     __c = []; __a = ['toast', 'cheese', 'wine'];

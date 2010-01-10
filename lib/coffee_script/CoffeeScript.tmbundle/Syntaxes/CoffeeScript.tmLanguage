@@ -214,7 +214,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b([a-zA-Z$_]\w*)(\:)\s</string>
+			<string>\b([a-zA-Z$_](\w|\$)*)(\:)\s</string>
 			<key>name</key>
 			<string>variable.assignment.coffee</string>
 			<key>captures</key>
@@ -224,7 +224,7 @@
 					<key>name</key>
 					<string>entity.name.function.coffee</string>
 				</dict>
-				<key>2</key>
+				<key>3</key>
 				<dict>
 					<key>name</key>
 					<string>keyword.operator.coffee</string>
@@ -263,7 +263,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>!|\$|%|&amp;|\*|\/|\-\-|\-|\+\+|\+|~|===|==|=|!=|!==|&lt;=|&gt;=|&lt;&lt;=|&gt;&gt;=|&gt;&gt;&gt;=|&lt;&gt;|&lt;|&gt;|!|&amp;&amp;|\?|\|\||\:|\*=|(?&lt;!\()/=|%=|\+=|\-=|&amp;=|\^=|\b(in|instanceof|new|delete|typeof|and|or|is|isnt|not)\b</string>
+			<string>!|%|&amp;|\*|\/|\-\-|\-|\+\+|\+|~|===|==|=|!=|!==|&lt;=|&gt;=|&lt;&lt;=|&gt;&gt;=|&gt;&gt;&gt;=|&lt;&gt;|&lt;|&gt;|!|&amp;&amp;|\?|\|\||\:|\*=|(?&lt;!\()/=|%=|\+=|\-=|&amp;=|\^=|\b(in|ino|instanceof|new|delete|typeof|and|or|is|isnt|not)\b</string>
 			<key>name</key>
 			<string>keyword.operator.coffee</string>
 		</dict>

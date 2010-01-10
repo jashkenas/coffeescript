@@ -30,3 +30,8 @@ i: 10
 while i -= 1
 
 print(i is 0)
+
+
+money$: 'dollars'
+
+print(money$ is 'dollars')

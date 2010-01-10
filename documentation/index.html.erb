@@ -399,12 +399,14 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <p>
       If you know the start and end of your loop, or would like to step through
       in fixed-size increments, you can use a range to specify the start and
-      end of your comprehension:
+      end of your comprehension. (The long line-breaking "for" definitions in
+      the compiled JS below allow ranges to count downwards, as well as upwards).
     </p>
-    <%= code_for('range_comprehensions') %>
+    <%= code_for('range_comprehensions', 'countdown') %>
     <p>
-      Comprehensions can also be used to iterate over the values and keys in
-      an object:
+      Comprehensions can also be used to iterate over the keys and values in
+      an object. Use <tt>ino</tt> to signal comprehension over an object instead
+      of an array.
     </p>
     <%= code_for('object_comprehensions', 'ages.join(", ")') %>
 
