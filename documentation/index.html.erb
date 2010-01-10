@@ -40,8 +40,8 @@
     <p>
       <b>Disclaimer:</b>
       CoffeeScript is just for fun and seriously alpha. I'm sure that there are still
-      plenty of holes in the lexer and leaks in the syntax. <i>There is no guarantee,
-      explicit or implied, of its suitability for any purpose.</i> That said,
+      plenty of holes in the walls and leaks in the roof. <i>There are no guarantees
+      that the syntax won't change between versions.</i> That said,
       it compiles into clean JavaScript (the good parts) that can use existing
       JavaScript libraries seamlessly, and passes through
       <a href="http://www.jslint.com/">JSLint</a> without warnings. The compiled
@@ -537,12 +537,15 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <ul>
       <li>
         <a href="http://github.com/jashkenas/coffee-script/">Source Code</a><br />
-        Use <tt>bin/coffee</tt> to test your changes, or <tt>rake gem:install</tt> to
-        create and install a custom version of the gem. If you're hacking on the
-        parser, use <tt>rake build:parser</tt> to rebuild it.
+        After checking out the source, make sure to run <tt>rake build:parser</tt>
+        to generate an up-to-date version of the Racc parser.
+        Use <tt>bin/coffee</tt> to test your changes, 
+        <tt>rake test</tt> to run the test suite,
+        and <tt>rake gem:install</tt> to
+        create and install a custom version of the gem.
       </li>
       <li>
-        <a href="http://github.com/jashkenas/coffee-script/issues">Bugs and Feature Requests</a>
+        <a href="http://github.com/jashkenas/coffee-script/issues">Bugs, Feature Requests, and General Discussion</a>
       </li>
       <li>
         <a href="http://github.com/jnicklas/bistro_car">BistroCar</a><br />
