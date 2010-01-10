@@ -47,7 +47,7 @@
 
 
   # Current version.
-  _.VERSION: '0.5.3'
+  _.VERSION: '0.5.5'
 
 
   # ------------------------ Collection Functions: ---------------------------

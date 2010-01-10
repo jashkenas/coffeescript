@@ -29,6 +29,11 @@ namespace :build do
     sh "sudo mv coffeescript.yaml /usr/local/lib/ruby/gems/1.8/gems/ultraviolet-0.10.2/syntax/coffeescript.syntax"
   end
 
+  desc "Rebuild the Underscore.coffee documentation page"
+  task :underscore do
+    sh "uv -s coffeescript -t idle -h examples/underscore.coffee > documentation/underscore.html"
+  end
+
 end
 
 desc "Build the documentation page"

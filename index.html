@@ -75,34 +75,34 @@
     <p><i>CoffeeScript on the left, compiled JavaScript output on the right.</i></p>
 
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> Assignment:</span>
-number<span class="Keyword">:</span> <span class="Number">42</span>
-opposite_day<span class="Keyword">:</span> <span class="BuiltInConstant">true</span>
+<span class="FunctionName">number</span><span class="Keyword">:</span> <span class="Number">42</span>
+<span class="FunctionName">opposite_day</span><span class="Keyword">:</span> <span class="BuiltInConstant">true</span>
 
 <span class="Comment"><span class="Comment">#</span> Conditions:</span>
-number<span class="Keyword">:</span> <span class="Keyword">-</span><span class="Number">42</span> <span class="Keyword">if</span> opposite_day
+<span class="FunctionName">number</span><span class="Keyword">:</span> <span class="Keyword">-</span><span class="Number">42</span> <span class="Keyword">if</span> opposite_day
 
 <span class="Comment"><span class="Comment">#</span> Functions:</span>
 <span class="FunctionName">square</span><span class="Keyword">:</span> <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> x <span class="Keyword">*</span> x
 
 <span class="Comment"><span class="Comment">#</span> Arrays:</span>
-list<span class="Keyword">:</span> [<span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>]
+<span class="FunctionName">list</span><span class="Keyword">:</span> [<span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>]
 
 <span class="Comment"><span class="Comment">#</span> Objects:</span>
-math<span class="Keyword">:</span> {
-  root<span class="Keyword">:</span>   Math.sqrt
-  square<span class="Keyword">:</span> square
-  <span class="FunctionName">cube</span><span class="Keyword">:</span>   <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> x <span class="Keyword">*</span> square(x)
+<span class="FunctionName">math</span><span class="Keyword">:</span> {
+  <span class="FunctionName">root</span><span class="Keyword">:</span>   Math.sqrt
+  <span class="FunctionName">square</span><span class="Keyword">:</span> square
+<span class="FunctionArgument">  cube:   x </span><span class="Storage">=&gt;</span> x <span class="Keyword">*</span> square(x)
 }
 
 <span class="Comment"><span class="Comment">#</span> Splats:</span>
-race<span class="Keyword">:</span><span class="FunctionArgument"> winner, runners... </span><span class="Storage">=&gt;</span>
+<span class="FunctionArgument">race: winner, runners... </span><span class="Storage">=&gt;</span>
   print(winner, runners)
 
 <span class="Comment"><span class="Comment">#</span> Existence:</span>
 alert(<span class="String"><span class="String">&quot;</span>I knew it!<span class="String">&quot;</span></span>) <span class="Keyword">if</span> elvis<span class="Keyword">?</span>
 
 <span class="Comment"><span class="Comment">#</span> Array comprehensions:</span>
-cubed_list<span class="Keyword">:</span> math.cube(num) <span class="Keyword">for</span> num <span class="Keyword">in</span> list
+<span class="FunctionName">cubed_list</span><span class="Keyword">:</span> math.cube(num) <span class="Keyword">for</span> num <span class="Keyword">in</span> list
 </pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, cubed_list, list, math, num, number, opposite_day, race, square;
 <span class="Comment"><span class="Comment">//</span> Assignment:</span>
 number <span class="Keyword">=</span> <span class="Number">42</span>;
@@ -379,8 +379,8 @@ cube = function cube(x) {
       <a href="http://json.org">JSON</a>. Equal signs are only needed for
       mathy things.
     </p>
-    <div class='code'><pre class="idle">greeting<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Hello CoffeeScript<span class="String">&quot;</span></span>
-difficulty<span class="Keyword">:</span> <span class="Number">0.5</span>
+    <div class='code'><pre class="idle"><span class="FunctionName">greeting</span><span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Hello CoffeeScript<span class="String">&quot;</span></span>
+<span class="FunctionName">difficulty</span><span class="Keyword">:</span> <span class="Number">0.5</span>
 </pre><pre class="idle"><span class="Storage">var</span> difficulty, greeting;
 greeting <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Hello CoffeeScript<span class="String">&quot;</span></span>;
 difficulty <span class="Keyword">=</span> <span class="Number">0.5</span>;
@@ -401,15 +401,15 @@ difficulty = 0.5;
       assigning local variables, and can be moved around freely. You can mix
       and match the two styles.
     </p>
-    <div class='code'><pre class="idle">song<span class="Keyword">:</span> [<span class="String"><span class="String">&quot;</span>do<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>re<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>mi<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>fa<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>so<span class="String">&quot;</span></span>]
+    <div class='code'><pre class="idle"><span class="FunctionName">song</span><span class="Keyword">:</span> [<span class="String"><span class="String">&quot;</span>do<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>re<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>mi<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>fa<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>so<span class="String">&quot;</span></span>]
 
-ages<span class="Keyword">:</span> {
-  max<span class="Keyword">:</span> <span class="Number">10</span>
-  ida<span class="Keyword">:</span> <span class="Number">9</span>
-  tim<span class="Keyword">:</span> <span class="Number">11</span>
+<span class="FunctionName">ages</span><span class="Keyword">:</span> {
+  <span class="FunctionName">max</span><span class="Keyword">:</span> <span class="Number">10</span>
+  <span class="FunctionName">ida</span><span class="Keyword">:</span> <span class="Number">9</span>
+  <span class="FunctionName">tim</span><span class="Keyword">:</span> <span class="Number">11</span>
 }
 
-matrix<span class="Keyword">:</span> [
+<span class="FunctionName">matrix</span><span class="Keyword">:</span> [
   <span class="Number">1</span>, <span class="Number">0</span>, <span class="Number">1</span>
   <span class="Number">0</span>, <span class="Number">0</span>, <span class="Number">1</span>
   <span class="Number">1</span>, <span class="Number">1</span>, <span class="Number">0</span>
@@ -438,11 +438,11 @@ matrix = [1, 0, 1, 0, 0, 1, 1, 1, 0];
       are properly declared within lexical scope &mdash; you never need to write
       <tt>var</tt> yourself.
     </p>
-    <div class='code'><pre class="idle">num<span class="Keyword">:</span> <span class="Number">1</span>
+    <div class='code'><pre class="idle"><span class="FunctionName">num</span><span class="Keyword">:</span> <span class="Number">1</span>
 <span class="FunctionName">change_numbers</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
-  new_num<span class="Keyword">:</span> <span class="Keyword">-</span><span class="Number">1</span>
-  num<span class="Keyword">:</span> <span class="Number">10</span>
-new_num<span class="Keyword">:</span> change_numbers()
+  <span class="FunctionName">new_num</span><span class="Keyword">:</span> <span class="Keyword">-</span><span class="Number">1</span>
+  <span class="FunctionName">num</span><span class="Keyword">:</span> <span class="Number">10</span>
+<span class="FunctionName">new_num</span><span class="Keyword">:</span> change_numbers()
 </pre><pre class="idle"><span class="Storage">var</span> change_numbers, new_num, num;
 num <span class="Keyword">=</span> <span class="Number">1</span>;
 change_numbers <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">change_numbers</span>() {
@@ -489,13 +489,13 @@ new_num = change_numbers();
       CoffeeScript will compile <b>if</b> statements using the ternary operator
       when possible, to make it easier to use the result as an expression.
     </p>
-    <div class='code'><pre class="idle">mood<span class="Keyword">:</span> greatly_improved <span class="Keyword">if</span> singing
+    <div class='code'><pre class="idle"><span class="FunctionName">mood</span><span class="Keyword">:</span> greatly_improved <span class="Keyword">if</span> singing
 
 <span class="Keyword">if</span> happy <span class="Keyword">and</span> knows_it
   claps_hands()
   cha_cha_cha()
 
-date<span class="Keyword">:</span> <span class="Keyword">if</span> friday <span class="Keyword">then</span> sue <span class="Keyword">else</span> jill
+<span class="FunctionName">date</span><span class="Keyword">:</span> <span class="Keyword">if</span> friday <span class="Keyword">then</span> sue <span class="Keyword">else</span> jill
 
 expensive <span class="Keyword">||</span><span class="Keyword">=</span> do_the_math()
 </pre><pre class="idle"><span class="Storage">var</span> date, mood;
@@ -524,7 +524,7 @@ expensive <span class="Keyword">=</span> expensive <span class="Keyword">||</spa
       a variable is <b>null</b> or <b>undefined</b>, which makes it analogous
       to Ruby's <tt>nil?</tt>
     </p>
-    <div class='code'><pre class="idle">solipsism<span class="Keyword">:</span> <span class="BuiltInConstant">true</span> <span class="Keyword">if</span> mind<span class="Keyword">?</span> <span class="Keyword">and</span> <span class="Keyword">not</span> world<span class="Keyword">?</span>
+    <div class='code'><pre class="idle"><span class="FunctionName">solipsism</span><span class="Keyword">:</span> <span class="BuiltInConstant">true</span> <span class="Keyword">if</span> mind<span class="Keyword">?</span> <span class="Keyword">and</span> <span class="Keyword">not</span> world<span class="Keyword">?</span>
 </pre><pre class="idle"><span class="Storage">var</span> solipsism;
 <span class="Keyword">if</span> ((<span class="Keyword">typeof</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> <span class="Keyword">!</span>(<span class="Keyword">typeof</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>)) {
   solipsism <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
@@ -561,7 +561,7 @@ expensive <span class="Keyword">=</span> expensive <span class="Keyword">||</spa
     </p>
     <div class='code'><pre class="idle">launch() <span class="Keyword">if</span> ignition <span class="Keyword">is</span> <span class="BuiltInConstant">on</span>
 
-volume<span class="Keyword">:</span> <span class="Number">10</span> <span class="Keyword">if</span> band <span class="Keyword">isnt</span> spinal_tap
+<span class="FunctionName">volume</span><span class="Keyword">:</span> <span class="Number">10</span> <span class="Keyword">if</span> band <span class="Keyword">isnt</span> spinal_tap
 
 let_the_wild_rumpus_begin() <span class="Keyword">unless</span> answer <span class="Keyword">is</span> <span class="BuiltInConstant">no</span>
 
@@ -586,14 +586,14 @@ car.speed <span class="Keyword">&lt;</span> speed_limit ? accelerate() : <span c
       splats <tt>...</tt>, both for function definition as well as invocation,
       making variable arguments a little bit more palatable.
     </p>
-    <div class='code'><pre class="idle">gold<span class="Keyword">:</span> silver<span class="Keyword">:</span> the_field<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>unknown<span class="String">&quot;</span></span>
+    <div class='code'><pre class="idle"><span class="FunctionName">gold</span><span class="Keyword">:</span> <span class="FunctionName">silver</span><span class="Keyword">:</span> <span class="FunctionName">the_field</span><span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>unknown<span class="String">&quot;</span></span>
 
-medalists<span class="Keyword">:</span><span class="FunctionArgument"> first, second, rest... </span><span class="Storage">=&gt;</span>
-  gold<span class="Keyword">:</span>       first
-  silver<span class="Keyword">:</span>     second
-  the_field<span class="Keyword">:</span>  rest
+<span class="FunctionArgument">medalists: first, second, rest... </span><span class="Storage">=&gt;</span>
+  <span class="FunctionName">gold</span><span class="Keyword">:</span>       first
+  <span class="FunctionName">silver</span><span class="Keyword">:</span>     second
+  <span class="FunctionName">the_field</span><span class="Keyword">:</span>  rest
 
-contenders<span class="Keyword">:</span> [
+<span class="FunctionName">contenders</span><span class="Keyword">:</span> [
   <span class="String"><span class="String">&quot;</span>Michael Phelps<span class="String">&quot;</span></span>
   <span class="String"><span class="String">&quot;</span>Liu Xiang<span class="String">&quot;</span></span>
   <span class="String"><span class="String">&quot;</span>Yao Ming<span class="String">&quot;</span></span>
@@ -698,7 +698,7 @@ backwards("stairway", "to", "heaven");
       would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>.
     </p>
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> Eat lunch.</span>
-lunch<span class="Keyword">:</span> eat(food) <span class="Keyword">for</span> food <span class="Keyword">in</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>]
+<span class="FunctionName">lunch</span><span class="Keyword">:</span> eat(food) <span class="Keyword">for</span> food <span class="Keyword">in</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>]
 
 <span class="Comment"><span class="Comment">#</span> Naive collision detection.</span>
 <span class="Keyword">for</span> roid <span class="Keyword">in</span> asteroids
@@ -735,11 +735,11 @@ __d <span class="Keyword">=</span> asteroids;
       end of your comprehension. (The long line-breaking "for" definitions in
       the compiled JS below allow ranges to count downwards, as well as upwards).
     </p>
-    <div class='code'><pre class="idle">countdown<span class="Keyword">:</span> num <span class="Keyword">for</span> num <span class="Keyword">in</span> [<span class="Number">10</span>..<span class="Number">1</span>]
+    <div class='code'><pre class="idle"><span class="FunctionName">countdown</span><span class="Keyword">:</span> num <span class="Keyword">for</span> num <span class="Keyword">in</span> [<span class="Number">10</span>..<span class="Number">1</span>]
 
 <span class="FunctionName">egg_delivery</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
   <span class="Keyword">for</span> i <span class="Keyword">in</span> [<span class="Number">0</span>...eggs.length] <span class="Keyword">by</span> <span class="Number">12</span>
-    dozen_eggs<span class="Keyword">:</span> eggs[i...i<span class="Keyword">+</span><span class="Number">12</span>]
+    <span class="FunctionName">dozen_eggs</span><span class="Keyword">:</span> eggs[i...i<span class="Keyword">+</span><span class="Number">12</span>]
     deliver(<span class="Keyword">new</span> <span class="TypeName">egg_carton</span>(dozen))
 </pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, __e, countdown, egg_delivery, num;
 countdown <span class="Keyword">=</span> (<span class="Storage">function</span>() {
@@ -785,9 +785,9 @@ egg_delivery = function egg_delivery() {
       an object. Use <tt>ino</tt> to signal comprehension over an object instead
       of an array.
     </p>
-    <div class='code'><pre class="idle">years_old<span class="Keyword">:</span> {max<span class="Keyword">:</span> <span class="Number">10</span>, ida<span class="Keyword">:</span> <span class="Number">9</span>, tim<span class="Keyword">:</span> <span class="Number">11</span>}
+    <div class='code'><pre class="idle"><span class="FunctionName">years_old</span><span class="Keyword">:</span> {<span class="FunctionName">max</span><span class="Keyword">:</span> <span class="Number">10</span>, <span class="FunctionName">ida</span><span class="Keyword">:</span> <span class="Number">9</span>, <span class="FunctionName">tim</span><span class="Keyword">:</span> <span class="Number">11</span>}
 
-ages<span class="Keyword">:</span> child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age <span class="Keyword">for</span> child, age ino years_old
+<span class="FunctionName">ages</span><span class="Keyword">:</span> child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age <span class="Keyword">for</span> child, age <span class="Keyword">ino</span> years_old
 </pre><pre class="idle"><span class="Storage">var</span> __a, __b, age, ages, child, years_old;
 years_old <span class="Keyword">=</span> {
   max: <span class="Number">10</span>,
@@ -831,11 +831,11 @@ ages = (function() {
       the slice, and the second is the index of the last one. Three dots signify
       a range that excludes the end.
     </p>
-    <div class='code'><pre class="idle">numbers<span class="Keyword">:</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>]
+    <div class='code'><pre class="idle"><span class="FunctionName">numbers</span><span class="Keyword">:</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>]
 
-three_to_six<span class="Keyword">:</span> numbers[<span class="Number">3</span>..<span class="Number">6</span>]
+<span class="FunctionName">three_to_six</span><span class="Keyword">:</span> numbers[<span class="Number">3</span>..<span class="Number">6</span>]
 
-numbers_copy<span class="Keyword">:</span> numbers[<span class="Number">0</span>...numbers.length]
+<span class="FunctionName">numbers_copy</span><span class="Keyword">:</span> numbers[<span class="Number">0</span>...numbers.length]
 
 </pre><pre class="idle"><span class="Storage">var</span> numbers, numbers_copy, three_to_six;
 numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
@@ -850,7 +850,7 @@ numbers_copy = numbers.slice(0, numbers.length);
       The same syntax can be used with assignment to replace a segment of an
       array with new values (to splice it).
     </p>
-    <div class='code'><pre class="idle">numbers<span class="Keyword">:</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>]
+    <div class='code'><pre class="idle"><span class="FunctionName">numbers</span><span class="Keyword">:</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>]
 
 numbers[<span class="Number">3</span>..<span class="Number">6</span>]<span class="Keyword">:</span> [<span class="Keyword">-</span><span class="Number">3</span>, <span class="Keyword">-</span><span class="Number">4</span>, <span class="Keyword">-</span><span class="Number">5</span>, <span class="Keyword">-</span><span class="Number">6</span>]
 
@@ -880,7 +880,7 @@ numbers.splice.apply(numbers, [3, 6 - 3 + 1].concat([-3, -4, -5, -6]));
   <span class="Keyword">else</span>
     <span class="String"><span class="String">&quot;</span>C<span class="String">&quot;</span></span>
 
-eldest<span class="Keyword">:</span> <span class="Keyword">if</span> <span class="Number">24</span> <span class="Keyword">&gt;</span> <span class="Number">21</span> <span class="Keyword">then</span> <span class="String"><span class="String">&quot;</span>Liz<span class="String">&quot;</span></span> <span class="Keyword">else</span> <span class="String"><span class="String">&quot;</span>Ike<span class="String">&quot;</span></span>
+<span class="FunctionName">eldest</span><span class="Keyword">:</span> <span class="Keyword">if</span> <span class="Number">24</span> <span class="Keyword">&gt;</span> <span class="Number">21</span> <span class="Keyword">then</span> <span class="String"><span class="String">&quot;</span>Liz<span class="String">&quot;</span></span> <span class="Keyword">else</span> <span class="String"><span class="String">&quot;</span>Ike<span class="String">&quot;</span></span>
 </pre><pre class="idle"><span class="Storage">var</span> eldest, grade;
 grade <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">grade</span>(<span class="FunctionArgument">student</span>) {
   <span class="Keyword">if</span> (student.excellent_work) {
@@ -913,7 +913,7 @@ eldest = 24 > 21 ? "Liz" : "Ike";
       Because variable declarations occur at the top of scope, assignment can
       be used within expressions, even for variables that haven't been seen before:
     </p>
-    <div class='code'><pre class="idle">six<span class="Keyword">:</span> (one<span class="Keyword">:</span> <span class="Number">1</span>) <span class="Keyword">+</span> (two<span class="Keyword">:</span> <span class="Number">2</span>) <span class="Keyword">+</span> (three<span class="Keyword">:</span> <span class="Number">3</span>)
+    <div class='code'><pre class="idle"><span class="FunctionName">six</span><span class="Keyword">:</span> (<span class="FunctionName">one</span><span class="Keyword">:</span> <span class="Number">1</span>) <span class="Keyword">+</span> (<span class="FunctionName">two</span><span class="Keyword">:</span> <span class="Number">2</span>) <span class="Keyword">+</span> (<span class="FunctionName">three</span><span class="Keyword">:</span> <span class="Number">3</span>)
 </pre><pre class="idle"><span class="Storage">var</span> one, six, three, two;
 six <span class="Keyword">=</span> (one <span class="Keyword">=</span> <span class="Number">1</span>) <span class="Keyword">+</span> (two <span class="Keyword">=</span> <span class="Number">2</span>) <span class="Keyword">+</span> (three <span class="Keyword">=</span> <span class="Number">3</span>);
 </pre><button onclick='javascript: var one, six, three, two;
@@ -927,7 +927,7 @@ six = (one = 1) + (two = 2) + (three = 3);
     </p>
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> The first ten global properties.</span>
 
-globals<span class="Keyword">:</span> (name <span class="Keyword">for</span> property, name <span class="Keyword">in</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
+<span class="FunctionName">globals</span><span class="Keyword">:</span> (name <span class="Keyword">for</span> property, name <span class="Keyword">in</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
 </pre><pre class="idle"><span class="Storage">var</span> __a, __b, globals, name, property;
 <span class="Comment"><span class="Comment">//</span> The first ten global properties.</span>
 globals <span class="Keyword">=</span> ((<span class="Storage">function</span>() {
@@ -996,23 +996,23 @@ globals = ((function() {
       the immediate ancestor's method of the same name.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">Animal</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
-Animal<span class="Keyword">:</span><span class="Keyword">:</span><span class="FunctionName">move</span><span class="Keyword">:</span> <span class="FunctionArgument">meters</span> <span class="Storage">=&gt;</span>
+<span class="FunctionName">Animal::move</span><span class="Keyword">:</span> <span class="FunctionArgument">meters</span> <span class="Storage">=&gt;</span>
   alert(<span class="Variable">this</span>.name <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>)
 
-<span class="FunctionName">Snake</span><span class="Keyword">:</span> <span class="FunctionArgument">name</span> <span class="Storage">=&gt;</span> <span class="Variable">this</span>.name<span class="Keyword">:</span> name
+<span class="FunctionName">Snake</span><span class="Keyword">:</span> <span class="FunctionArgument">name</span> <span class="Storage">=&gt;</span> <span class="Variable">this</span>.<span class="FunctionName">name</span><span class="Keyword">:</span> name
 Snake <span class="Variable">extends</span> Animal
-Snake<span class="Keyword">:</span><span class="Keyword">:</span><span class="FunctionName">move</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
+<span class="FunctionName">Snake::move</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
   alert(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>)
   <span class="Variable">super</span>(<span class="Number">5</span>)
 
-<span class="FunctionName">Horse</span><span class="Keyword">:</span> <span class="FunctionArgument">name</span> <span class="Storage">=&gt;</span> <span class="Variable">this</span>.name<span class="Keyword">:</span> name
+<span class="FunctionName">Horse</span><span class="Keyword">:</span> <span class="FunctionArgument">name</span> <span class="Storage">=&gt;</span> <span class="Variable">this</span>.<span class="FunctionName">name</span><span class="Keyword">:</span> name
 Horse <span class="Variable">extends</span> Animal
-Horse<span class="Keyword">:</span><span class="Keyword">:</span><span class="FunctionName">move</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
+<span class="FunctionName">Horse::move</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
   alert(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>)
   <span class="Variable">super</span>(<span class="Number">45</span>)
 
-sam<span class="Keyword">:</span> <span class="Keyword">new</span> <span class="TypeName">Snake</span>(<span class="String"><span class="String">&quot;</span>Sammy the Python<span class="String">&quot;</span></span>)
-tom<span class="Keyword">:</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span>(<span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>)
+<span class="FunctionName">sam</span><span class="Keyword">:</span> <span class="Keyword">new</span> <span class="TypeName">Snake</span>(<span class="String"><span class="String">&quot;</span>Sammy the Python<span class="String">&quot;</span></span>)
+<span class="FunctionName">tom</span><span class="Keyword">:</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span>(<span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>)
 
 sam.move()
 tom.move()
@@ -1105,8 +1105,8 @@ tom.move();
       final functions easier to pass, CoffeeScript includes block syntax,
       so you don't have to close the parentheses on the other side.
     </p>
-    <div class='code'><pre class="idle"><span class="Keyword">$</span>(<span class="String"><span class="String">'</span>table.list<span class="String">'</span></span>).each()<span class="FunctionArgument"> table </span><span class="Storage">=&gt;</span>
-  <span class="Keyword">$</span>(<span class="String"><span class="String">'</span>tr.account<span class="String">'</span></span>, table).each()<span class="FunctionArgument"> row </span><span class="Storage">=&gt;</span>
+    <div class='code'><pre class="idle">$(<span class="String"><span class="String">'</span>table.list<span class="String">'</span></span>).each()<span class="FunctionArgument"> table </span><span class="Storage">=&gt;</span>
+  $(<span class="String"><span class="String">'</span>tr.account<span class="String">'</span></span>, table).each()<span class="FunctionArgument"> row </span><span class="Storage">=&gt;</span>
     row.show()
     row.highlight()
 </pre><pre class="idle"><span class="Keyword">$</span>(<span class="String"><span class="String">'</span>table.list<span class="String">'</span></span>).each(<span class="Storage">function</span>(table) {
@@ -1122,7 +1122,7 @@ tom.move();
       If you ever need to interpolate literal JavaScript snippets, you can
       use backticks to pass JavaScript straight through.
     </p>
-    <div class='code'><pre class="idle">hi<span class="Keyword">:</span> <span class="String"><span class="String">`</span>function() {</span>
+    <div class='code'><pre class="idle"><span class="FunctionName">hi</span><span class="Keyword">:</span> <span class="String"><span class="String">`</span>function() {</span>
 <span class="String">  return [document.title, &quot;Hello JavaScript&quot;].join(&quot;: &quot;);</span>
 <span class="String">}<span class="String">`</span></span>
 
@@ -1198,7 +1198,7 @@ return [document.title, "Hello JavaScript"].join(": ");
       <b class="header">Multiline Strings</b>
       Multiline strings are allowed in CoffeeScript.
     </p>
-    <div class='code'><pre class="idle">moby_dick<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago --</span>
+    <div class='code'><pre class="idle"><span class="FunctionName">moby_dick</span><span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago --</span>
 <span class="String">never mind how long precisely -- having little</span>
 <span class="String">or no money in my purse, and nothing particular</span>
 <span class="String">to interest me on shore, I thought I would sail</span>
