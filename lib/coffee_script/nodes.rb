@@ -324,12 +324,13 @@ module CoffeeScript
   class AccessorNode < Node
     attr_reader :name
 
-    def initialize(name)
-      @name = name
+    def initialize(name, prototype=false)
+      @name, @prototype = name, prototype
     end
 
     def compile_node(o)
-      write(".#{@name}")
+      proto = @prototype ? "prototype." : ''
+      write(".#{proto}#{@name}")
     end
   end
 
@@ -416,7 +417,7 @@ module CoffeeScript
   # Setting the value of a local variable, or the value of an object property.
   class AssignNode < Node
     PROTO_ASSIGN = /\A(\S+)\.prototype/
-    LEADING_DOT = /\A\./
+    LEADING_DOT = /\A\.(prototype\.)?/
 
     attr_reader :variable, :value, :context
 

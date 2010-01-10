@@ -973,23 +973,23 @@ globals = ((function() {
       it's awkward to call <b>super</b> (the prototype object's
       implementation of the current function), and it's awkward to correctly
       set the prototype chain. CoffeeScript provides <tt>extends</tt>
-      to help with prototype setup, and converts
-      <tt>super()</tt> calls into calls against the immediate ancestor's
-      method of the same name.
+      to help with prototype setup, <tt>::</tt> for quick access to an
+      object's prototype, and converts <tt>super()</tt> calls into calls against 
+      the immediate ancestor's method of the same name.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">Animal</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
-<span class="FunctionName">Animal.prototype.move</span><span class="Keyword">:</span> <span class="FunctionArgument">meters</span> <span class="Storage">=&gt;</span>
+Animal<span class="Keyword">:</span><span class="Keyword">:</span><span class="FunctionName">move</span><span class="Keyword">:</span> <span class="FunctionArgument">meters</span> <span class="Storage">=&gt;</span>
   alert(<span class="Variable">this</span>.name <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>)
 
 <span class="FunctionName">Snake</span><span class="Keyword">:</span> <span class="FunctionArgument">name</span> <span class="Storage">=&gt;</span> <span class="Variable">this</span>.name<span class="Keyword">:</span> name
 Snake <span class="Variable">extends</span> Animal
-<span class="FunctionName">Snake.prototype.move</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
+Snake<span class="Keyword">:</span><span class="Keyword">:</span><span class="FunctionName">move</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
   alert(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>)
   <span class="Variable">super</span>(<span class="Number">5</span>)
 
 <span class="FunctionName">Horse</span><span class="Keyword">:</span> <span class="FunctionArgument">name</span> <span class="Storage">=&gt;</span> <span class="Variable">this</span>.name<span class="Keyword">:</span> name
 Horse <span class="Variable">extends</span> Animal
-<span class="FunctionName">Horse.prototype.move</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
+Horse<span class="Keyword">:</span><span class="Keyword">:</span><span class="FunctionName">move</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
   alert(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>)
   <span class="Variable">super</span>(<span class="Number">45</span>)
 
@@ -1265,11 +1265,21 @@ world...";
 
     <p>
       <b class="header" style="margin-top: 20px;">0.2.2</b>
+      When performing a comprehension over an object, use <tt>ino</tt>, instead
+      of <tt>in</tt>, which helps us generate smaller, more efficient code at
+      compile time.
+      <br />
+      Added <tt>::</tt> as a shorthand for saying <tt>.prototype.</tt>
+      <br />
       The "splat" symbol has been changed from a prefix asterisk <tt>*</tt>, to
-      a postfix ellipsis <tt>...</tt>. Added JavaScript's <tt>in</tt> operator,
+      a postfix ellipsis <tt>...</tt>
+      <br />
+      Added JavaScript's <tt>in</tt> operator,
       empty <tt>return</tt> statements, and empty <tt>while</tt> loops.
+      <br />
       Constructor functions that start with capital letters now include a
       safety check to make sure that the new instance of the object is returned.
+      <br />
       The <tt>extends</tt> keyword now functions identically to <tt>goog.inherits</tt>
       in Google's Closure Library.
     </p>

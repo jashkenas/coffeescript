@@ -1,21 +1,21 @@
 Base: =>
-Base.prototype.func: string =>
+Base::func: string =>
   'zero/' + string
 
 FirstChild: =>
 FirstChild extends Base
-FirstChild.prototype.func: string =>
+FirstChild::func: string =>
   super('one/') + string
 
 SecondChild: =>
 SecondChild extends FirstChild
-SecondChild.prototype.func: string =>
+SecondChild::func: string =>
   super('two/') + string
 
 ThirdChild: =>
   this.array: [1, 2, 3]
 ThirdChild extends SecondChild
-ThirdChild.prototype.func: string =>
+ThirdChild::func: string =>
   super('three/') + string
 
 result: (new ThirdChild()).func('four')

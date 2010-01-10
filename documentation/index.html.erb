@@ -467,9 +467,9 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       it's awkward to call <b>super</b> (the prototype object's
       implementation of the current function), and it's awkward to correctly
       set the prototype chain. CoffeeScript provides <tt>extends</tt>
-      to help with prototype setup, and converts
-      <tt>super()</tt> calls into calls against the immediate ancestor's
-      method of the same name.
+      to help with prototype setup, <tt>::</tt> for quick access to an
+      object's prototype, and converts <tt>super()</tt> calls into calls against 
+      the immediate ancestor's method of the same name.
     </p>
     <%= code_for('super', true) %>
 
@@ -575,11 +575,21 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.2.2</b>
+      When performing a comprehension over an object, use <tt>ino</tt>, instead
+      of <tt>in</tt>, which helps us generate smaller, more efficient code at
+      compile time.
+      <br />
+      Added <tt>::</tt> as a shorthand for saying <tt>.prototype.</tt>
+      <br />
       The "splat" symbol has been changed from a prefix asterisk <tt>*</tt>, to
-      a postfix ellipsis <tt>...</tt>. Added JavaScript's <tt>in</tt> operator,
+      a postfix ellipsis <tt>...</tt>
+      <br />
+      Added JavaScript's <tt>in</tt> operator,
       empty <tt>return</tt> statements, and empty <tt>while</tt> loops.
+      <br />
       Constructor functions that start with capital letters now include a
       safety check to make sure that the new instance of the object is returned.
+      <br />
       The <tt>extends</tt> keyword now functions identically to <tt>goog.inherits</tt>
       in Google's Closure Library.
     </p>

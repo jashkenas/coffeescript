@@ -1,16 +1,16 @@
 Animal: =>
-Animal.prototype.move: meters =>
+Animal::move: meters =>
   alert(this.name + " moved " + meters + "m.")
 
 Snake: name => this.name: name
 Snake extends Animal
-Snake.prototype.move: =>
+Snake::move: =>
   alert("Slithering...")
   super(5)
 
 Horse: name => this.name: name
 Horse extends Animal
-Horse.prototype.move: =>
+Horse::move: =>
   alert("Galloping...")
   super(45)
 

@@ -4,7 +4,7 @@ class Parser
 token IF ELSE UNLESS
 token NUMBER STRING REGEX
 token TRUE FALSE YES NO ON OFF
-token IDENTIFIER PROPERTY_ACCESS
+token IDENTIFIER PROPERTY_ACCESS PROTOTYPE_ACCESS
 token CODE PARAM NEW RETURN
 token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
@@ -234,6 +234,7 @@ rule
   # Accessing into an object or array, through dot or index notation.
   Accessor:
     PROPERTY_ACCESS IDENTIFIER        { result = AccessorNode.new(val[1]) }
+  | PROTOTYPE_ACCESS IDENTIFIER       { result = AccessorNode.new(val[1], true) }
   | Index                             { result = val[0] }
   | Range                             { result = SliceNode.new(val[0]) }
   ;

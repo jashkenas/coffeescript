@@ -39,11 +39,11 @@
 
 
   # Create quick reference variables for speed access to core prototypes.
-  slice:                Array.prototype.slice
-  unshift:              Array.prototype.unshift
-  toString:             Object.prototype.toString
-  hasOwnProperty:       Object.prototype.hasOwnProperty
-  propertyIsEnumerable: Object.prototype.propertyIsEnumerable
+  slice:                Array::slice
+  unshift:              Array::unshift
+  toString:             Object::toString
+  hasOwnProperty:       Object::hasOwnProperty
+  propertyIsEnumerable: Object::propertyIsEnumerable
 
 
   # Current version.
@@ -585,10 +585,10 @@
 
 
   # Start chaining a wrapped Underscore object.
-  wrapper.prototype.chain: =>
+  wrapper::chain: =>
     this._chain: true
     this
 
 
   # Extracts the result from a wrapped and chained object.
-  wrapper.prototype.value: => this._wrapped
+  wrapper::value: => this._wrapped
