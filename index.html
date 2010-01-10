@@ -927,24 +927,26 @@ six = (one = 1) + (two = 2) + (three = 3);
     </p>
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> The first ten global properties.</span>
 
-<span class="FunctionName">globals</span><span class="Keyword">:</span> (name <span class="Keyword">for</span> property, name <span class="Keyword">in</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
-</pre><pre class="idle"><span class="Storage">var</span> __a, __b, globals, name, property;
+<span class="FunctionName">globals</span><span class="Keyword">:</span> (name <span class="Keyword">for</span> name <span class="Keyword">ino</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
+</pre><pre class="idle"><span class="Storage">var</span> __a, __b, globals, name;
 <span class="Comment"><span class="Comment">//</span> The first ten global properties.</span>
 globals <span class="Keyword">=</span> ((<span class="Storage">function</span>() {
   __b <span class="Keyword">=</span> []; __a <span class="Keyword">=</span> <span class="LibraryClassType">window</span>;
-  <span class="Keyword">for</span> (name<span class="Keyword">=</span><span class="Number">0</span>; name<span class="Keyword">&lt;</span>__a.<span class="LibraryConstant">length</span>; name<span class="Keyword">++</span>) {
-    property <span class="Keyword">=</span> __a[name];
-    __b.<span class="LibraryFunction">push</span>(name);
+  <span class="Keyword">for</span> (name <span class="Keyword">in</span> __a) {
+    <span class="Keyword">if</span> (__a.hasOwnProperty(name)) {
+      __b.<span class="LibraryFunction">push</span>(name);
+    }
   }
   <span class="Keyword">return</span> __b;
 })()).<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
-</pre><button onclick='javascript: var __a, __b, globals, name, property;
+</pre><button onclick='javascript: var __a, __b, globals, name;
 // The first ten global properties.
 globals = ((function() {
   __b = []; __a = window;
-  for (name=0; name<__a.length; name++) {
-    property = __a[name];
-    __b.push(name);
+  for (name in __a) {
+    if (__a.hasOwnProperty(name)) {
+      __b.push(name);
+    }
   }
   return __b;
 })()).slice(0, 10);

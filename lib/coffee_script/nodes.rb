@@ -643,7 +643,7 @@ module CoffeeScript
       range         = @source.is_a?(ValueNode) && @source.literal.is_a?(RangeNode) && @source.properties.empty?
       source        = range ? @source.literal : @source
       scope         = o[:scope]
-      scope.find(@name)
+      name_found    = @name  && scope.find(@name)
       index_found   = @index && scope.find(@index)
       body_dent     = idt(1)
       svar          = scope.free_variable
@@ -658,8 +658,8 @@ module CoffeeScript
         index_var   = nil
         source_part = "#{svar} = #{source.compile(o)};\n#{idt}"
         for_part    = "#{ivar}=0; #{ivar}<#{svar}.length; #{ivar}++"
-        for_part    = "#{@index} in #{svar}" if @object
-        var_part    = "#{body_dent}#{@name} = #{svar}[#{ivar}];\n"
+        for_part    = "#{ivar} in #{svar}" if @object
+        var_part    = @name ? "#{body_dent}#{@name} = #{svar}[#{ivar}];\n" : ''
       end
       body          = @body
       set_result    = rvar ? "#{idt}#{rvar} = []; " : idt
@@ -680,7 +680,7 @@ module CoffeeScript
       end
       if @object
         body = Expressions.wrap(IfNode.new(
-          CallNode.new(ValueNode.new(LiteralNode.wrap(svar), [AccessorNode.new(Value.new('hasOwnProperty'))]), [LiteralNode.wrap(@index)]),
+          CallNode.new(ValueNode.new(LiteralNode.wrap(svar), [AccessorNode.new(Value.new('hasOwnProperty'))]), [LiteralNode.wrap(ivar)]),
           Expressions.wrap(body),
           nil,
           {:statement => true}

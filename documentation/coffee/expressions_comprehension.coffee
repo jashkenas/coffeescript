@@ -1,3 +1,3 @@
 # The first ten global properties.
 
-globals: (name for property, name in window)[0...10]
+globals: (name for name ino window)[0...10]
