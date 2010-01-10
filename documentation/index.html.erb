@@ -93,9 +93,13 @@
     <p>
       For a longer CoffeeScript example, check out
       <a href="documentation/underscore.html">Underscore.coffee</a>, a port
-      of <a href="http://documentcloud.github.com/underscore/">Underscore.js</a>
-      to CoffeeScript, which, when compiled, can pass the complete Underscore test suite.
-      Or, clone the source and take a look in the
+      of the <a href="http://documentcloud.github.com/underscore/">Underscore.js</a>
+      library of helper functions. Underscore.coffee can pass the entire Underscore.js
+      test suite. The CoffeeScript version is faster than the original for a number 
+      of methods (in general, due to the speed of CoffeeScript's array comprehensions), and
+      after being minified and gzipped, is only 241 bytes larger than the original
+      JavaScript version.
+      Additional examples are included in the source repository, inside the
       <a href="http://github.com/jashkenas/coffee-script/tree/master/examples/">examples</a> folder.
     </p>
 
@@ -188,9 +192,15 @@ gem install coffee-script</pre>
       <tr>
         <td><code>-n, --no-wrap</code></td>
         <td>
-          Compile the JavaScript without the top-level function safety wrapper
-          or var declarations, for situations where you want to add every
-          variable to global scope.
+          Compile the JavaScript without the top-level function safety wrapper.
+          (Used for CoffeeScript as a Narwhal module.)
+        </td>
+      </tr>
+      <tr>
+        <td><code>-g, --globals</code></td>
+        <td>
+          Suppress all variable declarations at the top-level, effectively adding
+          those variables to the global scope. (Used by the REPL.)
         </td>
       </tr>
       <tr>
@@ -437,6 +447,11 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('expressions', 'eldest') %>
     <p>
+      Even though functions will always return their final value, it's both possible
+      and encouraged to return early from a function body writing out the explicit
+      return (<tt>return value</tt>), when you know that you're done.
+    </p>
+    <p>
       Because variable declarations occur at the top of scope, assignment can
       be used within expressions, even for variables that haven't been seen before:
     </p>
@@ -466,9 +481,12 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       be completely usable if it weren't for a couple of small exceptions:
       it's awkward to call <b>super</b> (the prototype object's
       implementation of the current function), and it's awkward to correctly
-      set the prototype chain. CoffeeScript provides <tt>extends</tt>
+      set the prototype chain. 
+    </p>
+    <p>
+      CoffeeScript provides <tt>extends</tt>
       to help with prototype setup, <tt>::</tt> for quick access to an
-      object's prototype, and converts <tt>super()</tt> calls into calls against 
+      object's prototype, and converts <tt>super()</tt> into a call against 
       the immediate ancestor's method of the same name.
     </p>
     <%= code_for('super', true) %>
@@ -538,19 +556,14 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <h2 id="contributing">Contributing</h2>
 
     <p>
-      Here's a wish list of things that would be wonderful to have in
-      CoffeeScript:
+      Here's a wish list of things that would be wonderful to have contributed:
     </p>
 
     <ul>
       <li>
-        A clean, safe syntax for manipulating the prototype chain, and performing
-        inheritance. <a href="#inheritance"><b>extends</b> and <b>super</b></a> are the start of this, but
-        aren't a complete answer.
-      </li>
-      <li>
-        A CoffeeScript version of the compiler, perhaps using Alessandro Warth's
-        <a href="http://tinlizzie.org/ometa/">OMeta</a>.
+        <a href="http://github.com/jashkenas/coffee-script/issues#issue/8">
+          A CoffeeScript version of the compiler.
+        </a>
       </li>
       <li>
         Test cases for any syntax errors you encounter that you think CoffeeScript
