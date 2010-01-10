@@ -37,7 +37,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://gemcutter.org/gems/coffee-script">0.2.1</a>
+      <a href="http://gemcutter.org/gems/coffee-script">0.2.2</a>
     </p>
 
     <h2>Table of Contents</h2>
@@ -103,7 +103,7 @@ alert(<span class="String"><span class="String">&quot;</span>I knew it!<span cla
 
 <span class="Comment"><span class="Comment">#</span> Array comprehensions:</span>
 cubed_list<span class="Keyword">:</span> math.cube(num) <span class="Keyword">for</span> num <span class="Keyword">in</span> list
-</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, cubed_list, list, math, num, number, opposite_day, race, square;
+</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, cubed_list, list, math, number, opposite_day, race, square;
 <span class="Comment"><span class="Comment">//</span> Assignment:</span>
 number <span class="Keyword">=</span> <span class="Number">42</span>;
 opposite_day <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
@@ -137,18 +137,14 @@ race <span class="Keyword">=</span> <span class="Storage">function</span> <span 
 }
 <span class="Comment"><span class="Comment">//</span> Array comprehensions:</span>
 cubed_list <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  __a <span class="Keyword">=</span> list;
-  __c <span class="Keyword">=</span> [];
-  <span class="Keyword">for</span> (__b <span class="Keyword">in</span> __a) {
-    <span class="Keyword">if</span> (__a.hasOwnProperty(__b)) {
-      num <span class="Keyword">=</span> __a[__b];
-      __d <span class="Keyword">=</span> math.cube(num);
-      __c.<span class="LibraryFunction">push</span>(__d);
-    }
+  __c <span class="Keyword">=</span> []; __a <span class="Keyword">=</span> list;
+  <span class="Keyword">for</span> (__b<span class="Keyword">=</span><span class="Number">0</span>; __b<span class="Keyword">&lt;</span>__a.<span class="LibraryConstant">length</span>; __b<span class="Keyword">++</span>) {
+    num <span class="Keyword">=</span> __a[__b];
+    __c.<span class="LibraryFunction">push</span>(math.cube(num));
   }
   <span class="Keyword">return</span> __c;
 })();
-</pre><button onclick='javascript: var __a, __b, __c, __d, cubed_list, list, math, num, number, opposite_day, race, square;
+</pre><button onclick='javascript: var __a, __b, __c, cubed_list, list, math, number, opposite_day, race, square;
 // Assignment:
 number = 42;
 opposite_day = true;
@@ -182,14 +178,10 @@ if ((typeof elvis !== "undefined" && elvis !== null)) {
 }
 // Array comprehensions:
 cubed_list = (function() {
-  __a = list;
-  __c = [];
-  for (__b in __a) {
-    if (__a.hasOwnProperty(__b)) {
-      num = __a[__b];
-      __d = math.cube(num);
-      __c.push(__d);
-    }
+  __c = []; __a = list;
+  for (__b=0; __b<__a.length; __b++) {
+    num = __a[__b];
+    __c.push(math.cube(num));
   }
   return __c;
 })();
@@ -342,7 +334,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
 
     <p>
       You can use newlines to break up your expression into smaller pieces,
-      as long as CoffeeScript can tell that the line hasn't finished 
+      as long as CoffeeScript can tell that the line hasn't finished
       (similar to how Ruby handles it). For example,
       if the line ends in an operator, dot, or keyword.
     </p>
@@ -702,34 +694,26 @@ lunch<span class="Keyword">:</span> eat(food) <span class="Keyword">for</span> f
 <span class="Keyword">for</span> roid <span class="Keyword">in</span> asteroids
   <span class="Keyword">for</span> roid2 <span class="Keyword">in</span> asteroids <span class="Keyword">when</span> roid <span class="Keyword">isnt</span> roid2
     roid.explode() <span class="Keyword">if</span> roid.overlaps(roid2)
-</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, __e, __f, __g, __h, __i, __j, food, lunch, roid, roid2;
+</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, __e, __f, __g, lunch;
 <span class="Comment"><span class="Comment">//</span> Eat lunch.</span>
 lunch <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  __a <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
-  __c <span class="Keyword">=</span> [];
-  <span class="Keyword">for</span> (__b <span class="Keyword">in</span> __a) {
-    <span class="Keyword">if</span> (__a.hasOwnProperty(__b)) {
-      food <span class="Keyword">=</span> __a[__b];
-      __d <span class="Keyword">=</span> eat(food);
-      __c.<span class="LibraryFunction">push</span>(__d);
-    }
+  __c <span class="Keyword">=</span> []; __a <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
+  <span class="Keyword">for</span> (__b<span class="Keyword">=</span><span class="Number">0</span>; __b<span class="Keyword">&lt;</span>__a.<span class="LibraryConstant">length</span>; __b<span class="Keyword">++</span>) {
+    food <span class="Keyword">=</span> __a[__b];
+    __c.<span class="LibraryFunction">push</span>(eat(food));
   }
   <span class="Keyword">return</span> __c;
 })();
 <span class="Comment"><span class="Comment">//</span> Naive collision detection.</span>
-__e <span class="Keyword">=</span> asteroids;
-<span class="Keyword">for</span> (__f <span class="Keyword">in</span> __e) {
-  <span class="Keyword">if</span> (__e.hasOwnProperty(__f)) {
-    roid <span class="Keyword">=</span> __e[__f];
-    __h <span class="Keyword">=</span> asteroids;
-    <span class="Keyword">for</span> (__i <span class="Keyword">in</span> __h) {
-      <span class="Keyword">if</span> (__h.hasOwnProperty(__i)) {
-        roid2 <span class="Keyword">=</span> __h[__i];
-        <span class="Keyword">if</span> (roid <span class="Keyword">!</span><span class="Keyword">==</span> roid2) {
-          <span class="Keyword">if</span> (roid.overlaps(roid2)) {
-            roid.explode();
-          }
-        }
+__d <span class="Keyword">=</span> asteroids;
+<span class="Keyword">for</span> (__e<span class="Keyword">=</span><span class="Number">0</span>; __e<span class="Keyword">&lt;</span>__d.<span class="LibraryConstant">length</span>; __e<span class="Keyword">++</span>) {
+  roid <span class="Keyword">=</span> __d[__e];
+  __f <span class="Keyword">=</span> asteroids;
+  <span class="Keyword">for</span> (__g<span class="Keyword">=</span><span class="Number">0</span>; __g<span class="Keyword">&lt;</span>__f.<span class="LibraryConstant">length</span>; __g<span class="Keyword">++</span>) {
+    roid2 <span class="Keyword">=</span> __f[__g];
+    <span class="Keyword">if</span> (roid <span class="Keyword">!</span><span class="Keyword">==</span> roid2) {
+      <span class="Keyword">if</span> (roid.overlaps(roid2)) {
+        roid.explode();
       }
     }
   }
@@ -743,10 +727,9 @@ __e <span class="Keyword">=</span> asteroids;
     <div class='code'><pre class="idle"><span class="Keyword">for</span> i <span class="Keyword">in</span> [<span class="Number">0</span>...eggs.length] <span class="Keyword">by</span> <span class="Number">12</span>
   dozen_eggs<span class="Keyword">:</span> eggs[i...i<span class="Keyword">+</span><span class="Number">12</span>]
   deliver(<span class="Keyword">new</span> <span class="TypeName">egg_carton</span>(dozen))
-</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, __e, dozen_eggs, i;
-__d <span class="Keyword">=</span> <span class="Number">0</span>;
-__e <span class="Keyword">=</span> eggs.<span class="LibraryConstant">length</span>;
-<span class="Keyword">for</span> (__c<span class="Keyword">=</span><span class="Number">0</span>, i<span class="Keyword">=</span>__d; (__d <span class="Keyword">&lt;=</span> __e ? i <span class="Keyword">&lt;</span> __e : i <span class="Keyword">&gt;</span> __e); (__d <span class="Keyword">&lt;=</span> __e ? i <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">12</span> : i <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">12</span>), __c<span class="Keyword">++</span>) {
+</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, dozen_eggs;
+__c <span class="Keyword">=</span> <span class="Number">0</span>; __d <span class="Keyword">=</span> eggs.<span class="LibraryConstant">length</span>;
+<span class="Keyword">for</span> (__b<span class="Keyword">=</span><span class="Number">0</span>, i<span class="Keyword">=</span>__c; (__c <span class="Keyword">&lt;=</span> __d ? i <span class="Keyword">&lt;</span> __d : i <span class="Keyword">&gt;</span> __d); (__c <span class="Keyword">&lt;=</span> __d ? i <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">12</span> : i <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">12</span>), __b<span class="Keyword">++</span>) {
   dozen_eggs <span class="Keyword">=</span> eggs.<span class="LibraryFunction">slice</span>(i, i <span class="Keyword">+</span> <span class="Number">12</span>);
   deliver(<span class="Keyword">new</span> <span class="TypeName">egg_carton</span>(dozen));
 }
@@ -755,46 +738,7 @@ __e <span class="Keyword">=</span> eggs.<span class="LibraryConstant">length</sp
       Comprehensions can also be used to iterate over the values and keys in
       an object:
     </p>
-    <div class='code'><pre class="idle">years_old<span class="Keyword">:</span> {max<span class="Keyword">:</span> <span class="Number">10</span>, ida<span class="Keyword">:</span> <span class="Number">9</span>, tim<span class="Keyword">:</span> <span class="Number">11</span>}
-
-ages<span class="Keyword">:</span> child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age <span class="Keyword">for</span> age, child <span class="Keyword">in</span> years_old
-</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, age, ages, child, years_old;
-years_old <span class="Keyword">=</span> {
-  max: <span class="Number">10</span>,
-  ida: <span class="Number">9</span>,
-  tim: <span class="Number">11</span>
-};
-ages <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  __a <span class="Keyword">=</span> years_old;
-  __b <span class="Keyword">=</span> [];
-  <span class="Keyword">for</span> (child <span class="Keyword">in</span> __a) {
-    <span class="Keyword">if</span> (__a.hasOwnProperty(child)) {
-      age <span class="Keyword">=</span> __a[child];
-      __c <span class="Keyword">=</span> child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age;
-      __b.<span class="LibraryFunction">push</span>(__c);
-    }
-  }
-  <span class="Keyword">return</span> __b;
-})();
-</pre><button onclick='javascript: var __a, __b, __c, age, ages, child, years_old;
-years_old = {
-  max: 10,
-  ida: 9,
-  tim: 11
-};
-ages = (function() {
-  __a = years_old;
-  __b = [];
-  for (child in __a) {
-    if (__a.hasOwnProperty(child)) {
-      age = __a[child];
-      __c = child + " is " + age;
-      __b.push(__c);
-    }
-  }
-  return __b;
-})();
-;alert(ages.join(", "));'>run: ages.join(", ")</button><br class='clear' /></div>
+    
 
     <p id="slice_splice">
       <b class="header">Array Slicing and Splicing with Ranges</b>
@@ -897,31 +841,23 @@ six = (one = 1) + (two = 2) + (three = 3);
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> The first ten global properties.</span>
 
 globals<span class="Keyword">:</span> (name <span class="Keyword">for</span> property, name <span class="Keyword">in</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
-</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, globals, name, property;
+</pre><pre class="idle"><span class="Storage">var</span> __a, __b, globals, name;
 <span class="Comment"><span class="Comment">//</span> The first ten global properties.</span>
 globals <span class="Keyword">=</span> ((<span class="Storage">function</span>() {
-  __a <span class="Keyword">=</span> <span class="LibraryClassType">window</span>;
-  __b <span class="Keyword">=</span> [];
-  <span class="Keyword">for</span> (name <span class="Keyword">in</span> __a) {
-    <span class="Keyword">if</span> (__a.hasOwnProperty(name)) {
-      property <span class="Keyword">=</span> __a[name];
-      __c <span class="Keyword">=</span> name;
-      __b.<span class="LibraryFunction">push</span>(__c);
-    }
+  __b <span class="Keyword">=</span> []; __a <span class="Keyword">=</span> <span class="LibraryClassType">window</span>;
+  <span class="Keyword">for</span> (name<span class="Keyword">=</span><span class="Number">0</span>; name<span class="Keyword">&lt;</span>__a.<span class="LibraryConstant">length</span>; name<span class="Keyword">++</span>) {
+    property <span class="Keyword">=</span> __a[name];
+    __b.<span class="LibraryFunction">push</span>(name);
   }
   <span class="Keyword">return</span> __b;
 })()).<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
-</pre><button onclick='javascript: var __a, __b, __c, globals, name, property;
+</pre><button onclick='javascript: var __a, __b, globals, name;
 // The first ten global properties.
 globals = ((function() {
-  __a = window;
-  __b = [];
-  for (name in __a) {
-    if (__a.hasOwnProperty(name)) {
-      property = __a[name];
-      __c = name;
-      __b.push(__c);
-    }
+  __b = []; __a = window;
+  for (name=0; name<__a.length; name++) {
+    property = __a[name];
+    __b.push(name);
   }
   return __b;
 })()).slice(0, 10);
@@ -994,7 +930,7 @@ tom.move()
 
 
 
-</pre><pre class="idle"><span class="Storage">var</span> Animal, Horse, Snake, sam, tom;
+</pre><pre class="idle"><span class="Storage">var</span> Animal, Horse, Snake, __a, __b, sam, tom;
 Animal <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Animal</span>() {
 };
 <span class="LibraryClassType">Animal</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span> <span class="FunctionName">move</span>(<span class="FunctionArgument">meters</span>) {
@@ -1005,20 +941,24 @@ Snake <span class="Keyword">=</span> <span class="Storage">function</span> <span
   __a <span class="Keyword">=</span> <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
   <span class="Keyword">return</span> Snake <span class="Keyword">===</span> <span class="Variable">this</span>.<span class="LibraryConstant">constructor</span> ? <span class="Variable">this</span> : __a;
 };
+<span class="FunctionName">__a</span> = <span class="Storage">function</span>(){};
+<span class="LibraryClassType">__a</span>.<span class="LibraryConstant">prototype</span> = Animal.<span class="LibraryConstant">prototype</span>;
 Snake.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryConstant">prototype</span>;
-<span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">Animal</span>();
+<span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">__a</span>();
 <span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">constructor</span> = Snake;
 <span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span> <span class="FunctionName">move</span>() {
   <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>);
   <span class="Keyword">return</span> Snake.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">5</span>);
 };
 Horse <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Horse</span>(<span class="FunctionArgument">name</span>) {
-  <span class="Storage">var</span> __a;
-  __a <span class="Keyword">=</span> <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
-  <span class="Keyword">return</span> Horse <span class="Keyword">===</span> <span class="Variable">this</span>.<span class="LibraryConstant">constructor</span> ? <span class="Variable">this</span> : __a;
+  <span class="Storage">var</span> __b;
+  __b <span class="Keyword">=</span> <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
+  <span class="Keyword">return</span> Horse <span class="Keyword">===</span> <span class="Variable">this</span>.<span class="LibraryConstant">constructor</span> ? <span class="Variable">this</span> : __b;
 };
+<span class="FunctionName">__b</span> = <span class="Storage">function</span>(){};
+<span class="LibraryClassType">__b</span>.<span class="LibraryConstant">prototype</span> = Animal.<span class="LibraryConstant">prototype</span>;
 Horse.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryConstant">prototype</span>;
-<span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">Animal</span>();
+<span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">__b</span>();
 <span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">constructor</span> = Horse;
 <span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span> <span class="FunctionName">move</span>() {
   <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>);
@@ -1028,7 +968,7 @@ sam <span class="Keyword">=</span> <span class="Keyword">new</span> <span class=
 tom <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span>(<span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>);
 sam.move();
 tom.move();
-</pre><button onclick='javascript: var Animal, Horse, Snake, sam, tom;
+</pre><button onclick='javascript: var Animal, Horse, Snake, __a, __b, sam, tom;
 Animal = function Animal() {
 };
 Animal.prototype.move = function move(meters) {
@@ -1039,20 +979,24 @@ Snake = function Snake(name) {
   __a = this.name = name;
   return Snake === this.constructor ? this : __a;
 };
+__a = function(){};
+__a.prototype = Animal.prototype;
 Snake.__superClass__ = Animal.prototype;
-Snake.prototype = new Animal();
+Snake.prototype = new __a();
 Snake.prototype.constructor = Snake;
 Snake.prototype.move = function move() {
   alert("Slithering...");
   return Snake.__superClass__.move.call(this, 5);
 };
 Horse = function Horse(name) {
-  var __a;
-  __a = this.name = name;
-  return Horse === this.constructor ? this : __a;
+  var __b;
+  __b = this.name = name;
+  return Horse === this.constructor ? this : __b;
 };
+__b = function(){};
+__b.prototype = Animal.prototype;
 Horse.__superClass__ = Animal.prototype;
-Horse.prototype = new Animal();
+Horse.prototype = new __b();
 Horse.prototype.constructor = Horse;
 Horse.prototype.move = function move() {
   alert("Galloping...");
@@ -1246,6 +1190,17 @@ world...";
     </ul>
 
     <h2 id="change_log">Change Log</h2>
+
+    <p>
+      <b class="header" style="margin-top: 20px;">0.2.2</b>
+      The "splat" symbol has been changed from a prefix asterisk <tt>*</tt>, to
+      a postfix ellipsis <tt>...</tt>. Added JavaScript's <tt>in</tt> operator,
+      empty <tt>return</tt> statements, and empty <tt>while</tt> loops.
+      Constructor functions that start with capital letters now include a
+      safety check to make sure that the new instance of the object is returned.
+      The <tt>extends</tt> keyword now functions identically to <tt>goog.inherits</tt>
+      in Google's Closure Library.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.2.1</b>

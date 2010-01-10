@@ -51,7 +51,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://gemcutter.org/gems/coffee-script">0.2.1</a>
+      <a href="http://gemcutter.org/gems/coffee-script">0.2.2</a>
     </p>
 
     <h2>Table of Contents</h2>
@@ -237,7 +237,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
 
     <p>
       You can use newlines to break up your expression into smaller pieces,
-      as long as CoffeeScript can tell that the line hasn't finished 
+      as long as CoffeeScript can tell that the line hasn't finished
       (similar to how Ruby handles it). For example,
       if the line ends in an operator, dot, or keyword.
     </p>
@@ -570,6 +570,17 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </ul>
 
     <h2 id="change_log">Change Log</h2>
+
+    <p>
+      <b class="header" style="margin-top: 20px;">0.2.2</b>
+      The "splat" symbol has been changed from a prefix asterisk <tt>*</tt>, to
+      a postfix ellipsis <tt>...</tt>. Added JavaScript's <tt>in</tt> operator,
+      empty <tt>return</tt> statements, and empty <tt>while</tt> loops.
+      Constructor functions that start with capital letters now include a
+      safety check to make sure that the new instance of the object is returned.
+      The <tt>extends</tt> keyword now functions identically to <tt>goog.inherits</tt>
+      in Google's Closure Library.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.2.1</b>

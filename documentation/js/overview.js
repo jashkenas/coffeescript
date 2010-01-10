@@ -1,5 +1,5 @@
 (function(){
-  var __a, __b, __c, __d, cubed_list, list, math, num, number, opposite_day, race, square;
+  var __a, __b, __c, cubed_list, list, math, number, opposite_day, race, square;
   // Assignment:
   number = 42;
   opposite_day = true;
@@ -33,14 +33,10 @@
   }
   // Array comprehensions:
   cubed_list = (function() {
-    __a = list;
-    __c = [];
-    for (__b in __a) {
-      if (__a.hasOwnProperty(__b)) {
-        num = __a[__b];
-        __d = math.cube(num);
-        __c.push(__d);
-      }
+    __c = []; __a = list;
+    for (__b=0; __b<__a.length; __b++) {
+      num = __a[__b];
+      __c.push(math.cube(num));
     }
     return __c;
   })();

@@ -641,15 +641,16 @@ module CoffeeScript
       svar          = scope.free_variable
       ivar          = range ? name : @index ? @index : scope.free_variable
       rvar          = scope.free_variable unless top_level
-      fvar          = scope.free_variable
       if range
         index_var   = scope.free_variable
         source_part = source.compile_variables(o)
         for_part    = "#{index_var}=0, #{source.compile(o.merge(:index => ivar, :step => @step))}, #{index_var}++"
+        var_part    = ''
       else
         index_var   = nil
         source_part = "#{svar} = #{source.compile(o)};\n#{idt}"
         for_part    = "#{ivar}=0; #{ivar}<#{svar}.length; #{ivar}++"
+        var_part    = "#{body_dent}#{@name} = #{svar}[#{ivar}];\n"
       end
       body          = @body
       set_result    = rvar ? "#{idt}#{rvar} = []; " : idt
@@ -672,13 +673,7 @@ module CoffeeScript
       return_result = "\n#{idt}#{return_result};" unless top_level
       body = body.compile(o.merge(:indent => body_dent, :top => true))
       vars = range ? @name : "#{@name}, #{ivar}"
-      func = "#{fvar} = function(#{vars}) {\n#{body}\n#{idt}};\n#{idt}"
-      return write(set_result + source_part + func + "for (#{for_part}) #{fvar}(#{ivar});\n#{idt}#{return_result}") if range
-
-      call = "#{fvar}(#{svar}[#{ivar}], #{ivar})"
-      fast = "if (#{svar} instanceof Array) {\n#{idt(1)}for (#{for_part}) #{call};\n#{idt}} else {\n#{idt(1)}"
-      slow = "for (#{ivar} in #{svar}) { if (#{svar}.hasOwnProperty(#{ivar})) #{call}; }\n#{idt}}\n#{idt}#{return_result}"
-      write(set_result + source_part + func + fast + slow)
+      return write(set_result + source_part + "for (#{for_part}) {\n#{var_part}#{body}\n#{idt}}\n#{idt}#{return_result}")
     end
   end
 
