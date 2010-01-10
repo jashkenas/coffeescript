@@ -52,7 +52,7 @@
       }
     });
 
-    JSLitmus.test('the new comprehensions', function() {
+    JSLitmus.test('weepy\'s comprehensions', function() {
       __c = []; __a = arr;
       __d = function(num, __b) {
         __c.push(num);
@@ -61,6 +61,14 @@
         for (__b=0; __b<__a.length; __b++) __d(__a[__b], __b);
       } else {
         for (__b in __a) { if (__a.hasOwnProperty(__b)) __d(__a[__b], __b); }
+      }
+    });
+
+    JSLitmus.test('CoffeeScript 0.2.2 comprehensions', function() {
+      __c = []; __a = arr;
+      for (__b=0; __b<__a.length; __b++) {
+        num = __a[__b];
+        __c.push(num);
       }
     });
   </script>
