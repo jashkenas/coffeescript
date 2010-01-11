@@ -33,11 +33,11 @@
   }
   // Array comprehensions:
   cubed_list = (function() {
-    __c = []; __a = list;
-    for (__b=0; __b<__a.length; __b++) {
-      num = __a[__b];
-      __c.push(math.cube(num));
+    __a = []; __b = list;
+    for (__c=0; __c<__b.length; __c++) {
+      num = __b[__c];
+      __a.push(math.cube(num));
     }
-    return __c;
+    return __a;
   })();
 })();

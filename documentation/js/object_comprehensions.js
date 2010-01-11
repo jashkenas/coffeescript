@@ -6,13 +6,13 @@
     tim: 11
   };
   ages = (function() {
-    __b = []; __a = years_old;
-    for (child in __a) {
-      age = __a[child];
-      if (__a.hasOwnProperty(child)) {
-        __b.push(child + " is " + age);
+    __a = []; __b = years_old;
+    for (child in __b) {
+      age = __b[child];
+      if (__b.hasOwnProperty(child)) {
+        __a.push(child + " is " + age);
       }
     }
-    return __b;
+    return __a;
   })();
 })();

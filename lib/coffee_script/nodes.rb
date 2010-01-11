@@ -655,9 +655,9 @@ module CoffeeScript
       name_found    = @name  && scope.find(@name)
       index_found   = @index && scope.find(@index)
       body_dent     = idt(1)
+      rvar          = scope.free_variable unless top_level
       svar          = scope.free_variable
       ivar          = range ? name : @index ? @index : scope.free_variable
-      rvar          = scope.free_variable unless top_level
       if range
         index_var   = scope.free_variable
         source_part = source.compile_variables(o)

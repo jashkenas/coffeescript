@@ -137,12 +137,12 @@ race <span class="Keyword">=</span> <span class="Storage">function</span> <span 
 }
 <span class="Comment"><span class="Comment">//</span> Array comprehensions:</span>
 cubed_list <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  __c <span class="Keyword">=</span> []; __a <span class="Keyword">=</span> list;
-  <span class="Keyword">for</span> (__b<span class="Keyword">=</span><span class="Number">0</span>; __b<span class="Keyword">&lt;</span>__a.<span class="LibraryConstant">length</span>; __b<span class="Keyword">++</span>) {
-    num <span class="Keyword">=</span> __a[__b];
-    __c.<span class="LibraryFunction">push</span>(math.cube(num));
+  __a <span class="Keyword">=</span> []; __b <span class="Keyword">=</span> list;
+  <span class="Keyword">for</span> (__c<span class="Keyword">=</span><span class="Number">0</span>; __c<span class="Keyword">&lt;</span>__b.<span class="LibraryConstant">length</span>; __c<span class="Keyword">++</span>) {
+    num <span class="Keyword">=</span> __b[__c];
+    __a.<span class="LibraryFunction">push</span>(math.cube(num));
   }
-  <span class="Keyword">return</span> __c;
+  <span class="Keyword">return</span> __a;
 })();
 </pre><button onclick='javascript: var __a, __b, __c, cubed_list, list, math, num, number, opposite_day, race, square;
 // Assignment:
@@ -178,12 +178,12 @@ if ((typeof elvis !== "undefined" && elvis !== null)) {
 }
 // Array comprehensions:
 cubed_list = (function() {
-  __c = []; __a = list;
-  for (__b=0; __b<__a.length; __b++) {
-    num = __a[__b];
-    __c.push(math.cube(num));
+  __a = []; __b = list;
+  for (__c=0; __c<__b.length; __c++) {
+    num = __b[__c];
+    __a.push(math.cube(num));
   }
-  return __c;
+  return __a;
 })();
 ;alert(cubed_list);'>run: cubed_list</button><br class='clear' /></div>
 
@@ -707,12 +707,12 @@ backwards("stairway", "to", "heaven");
 </pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, __e, __f, __g, food, lunch, roid, roid2;
 <span class="Comment"><span class="Comment">//</span> Eat lunch.</span>
 lunch <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  __c <span class="Keyword">=</span> []; __a <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
-  <span class="Keyword">for</span> (__b<span class="Keyword">=</span><span class="Number">0</span>; __b<span class="Keyword">&lt;</span>__a.<span class="LibraryConstant">length</span>; __b<span class="Keyword">++</span>) {
-    food <span class="Keyword">=</span> __a[__b];
-    __c.<span class="LibraryFunction">push</span>(eat(food));
+  __a <span class="Keyword">=</span> []; __b <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
+  <span class="Keyword">for</span> (__c<span class="Keyword">=</span><span class="Number">0</span>; __c<span class="Keyword">&lt;</span>__b.<span class="LibraryConstant">length</span>; __c<span class="Keyword">++</span>) {
+    food <span class="Keyword">=</span> __b[__c];
+    __a.<span class="LibraryFunction">push</span>(eat(food));
   }
-  <span class="Keyword">return</span> __c;
+  <span class="Keyword">return</span> __a;
 })();
 <span class="Comment"><span class="Comment">//</span> Naive collision detection.</span>
 __d <span class="Keyword">=</span> asteroids;
@@ -743,41 +743,41 @@ __d <span class="Keyword">=</span> asteroids;
     deliver(<span class="Keyword">new</span> <span class="TypeName">egg_carton</span>(dozen))
 </pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, __d, __e, countdown, egg_delivery, num;
 countdown <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  __b <span class="Keyword">=</span> []; __d <span class="Keyword">=</span> <span class="Number">10</span>; __e <span class="Keyword">=</span> <span class="Number">1</span>;
+  __a <span class="Keyword">=</span> []; __d <span class="Keyword">=</span> <span class="Number">10</span>; __e <span class="Keyword">=</span> <span class="Number">1</span>;
   <span class="Keyword">for</span> (__c<span class="Keyword">=</span><span class="Number">0</span>, num<span class="Keyword">=</span>__d; (__d <span class="Keyword">&lt;=</span> __e ? num <span class="Keyword">&lt;=</span> __e : num <span class="Keyword">&gt;=</span> __e); (__d <span class="Keyword">&lt;=</span> __e ? num <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">1</span> : num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>), __c<span class="Keyword">++</span>) {
-    __b.<span class="LibraryFunction">push</span>(num);
+    __a.<span class="LibraryFunction">push</span>(num);
   }
-  <span class="Keyword">return</span> __b;
+  <span class="Keyword">return</span> __a;
 })();
 egg_delivery <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">egg_delivery</span>() {
   <span class="Storage">var</span> __f, __g, __h, __i, __j, dozen_eggs, i;
-  __g <span class="Keyword">=</span> []; __i <span class="Keyword">=</span> <span class="Number">0</span>; __j <span class="Keyword">=</span> eggs.<span class="LibraryConstant">length</span>;
+  __f <span class="Keyword">=</span> []; __i <span class="Keyword">=</span> <span class="Number">0</span>; __j <span class="Keyword">=</span> eggs.<span class="LibraryConstant">length</span>;
   <span class="Keyword">for</span> (__h<span class="Keyword">=</span><span class="Number">0</span>, i<span class="Keyword">=</span>__i; (__i <span class="Keyword">&lt;=</span> __j ? i <span class="Keyword">&lt;</span> __j : i <span class="Keyword">&gt;</span> __j); (__i <span class="Keyword">&lt;=</span> __j ? i <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">12</span> : i <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">12</span>), __h<span class="Keyword">++</span>) {
-    __g.<span class="LibraryFunction">push</span>((<span class="Storage">function</span>() {
+    __f.<span class="LibraryFunction">push</span>((<span class="Storage">function</span>() {
       dozen_eggs <span class="Keyword">=</span> eggs.<span class="LibraryFunction">slice</span>(i, i <span class="Keyword">+</span> <span class="Number">12</span>);
       <span class="Keyword">return</span> deliver(<span class="Keyword">new</span> <span class="TypeName">egg_carton</span>(dozen));
     })());
   }
-  <span class="Keyword">return</span> __g;
+  <span class="Keyword">return</span> __f;
 };
 </pre><button onclick='javascript: var __a, __b, __c, __d, __e, countdown, egg_delivery, num;
 countdown = (function() {
-  __b = []; __d = 10; __e = 1;
+  __a = []; __d = 10; __e = 1;
   for (__c=0, num=__d; (__d <= __e ? num <= __e : num >= __e); (__d <= __e ? num += 1 : num -= 1), __c++) {
-    __b.push(num);
+    __a.push(num);
   }
-  return __b;
+  return __a;
 })();
 egg_delivery = function egg_delivery() {
   var __f, __g, __h, __i, __j, dozen_eggs, i;
-  __g = []; __i = 0; __j = eggs.length;
+  __f = []; __i = 0; __j = eggs.length;
   for (__h=0, i=__i; (__i <= __j ? i < __j : i > __j); (__i <= __j ? i += 12 : i -= 12), __h++) {
-    __g.push((function() {
+    __f.push((function() {
       dozen_eggs = eggs.slice(i, i + 12);
       return deliver(new egg_carton(dozen));
     })());
   }
-  return __g;
+  return __f;
 };
 ;alert(countdown);'>run: countdown</button><br class='clear' /></div>
     <p>
@@ -796,14 +796,14 @@ years_old <span class="Keyword">=</span> {
   tim: <span class="Number">11</span>
 };
 ages <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  __b <span class="Keyword">=</span> []; __a <span class="Keyword">=</span> years_old;
-  <span class="Keyword">for</span> (child <span class="Keyword">in</span> __a) {
-    age <span class="Keyword">=</span> __a[child];
-    <span class="Keyword">if</span> (__a.hasOwnProperty(child)) {
-      __b.<span class="LibraryFunction">push</span>(child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age);
+  __a <span class="Keyword">=</span> []; __b <span class="Keyword">=</span> years_old;
+  <span class="Keyword">for</span> (child <span class="Keyword">in</span> __b) {
+    age <span class="Keyword">=</span> __b[child];
+    <span class="Keyword">if</span> (__b.hasOwnProperty(child)) {
+      __a.<span class="LibraryFunction">push</span>(child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age);
     }
   }
-  <span class="Keyword">return</span> __b;
+  <span class="Keyword">return</span> __a;
 })();
 </pre><button onclick='javascript: var __a, __b, age, ages, child, years_old;
 years_old = {
@@ -812,14 +812,14 @@ years_old = {
   tim: 11
 };
 ages = (function() {
-  __b = []; __a = years_old;
-  for (child in __a) {
-    age = __a[child];
-    if (__a.hasOwnProperty(child)) {
-      __b.push(child + " is " + age);
+  __a = []; __b = years_old;
+  for (child in __b) {
+    age = __b[child];
+    if (__b.hasOwnProperty(child)) {
+      __a.push(child + " is " + age);
     }
   }
-  return __b;
+  return __a;
 })();
 ;alert(ages.join(", "));'>run: ages.join(", ")</button><br class='clear' /></div>
 
@@ -932,24 +932,24 @@ six = (one = 1) + (two = 2) + (three = 3);
 </pre><pre class="idle"><span class="Storage">var</span> __a, __b, globals, name;
 <span class="Comment"><span class="Comment">//</span> The first ten global properties.</span>
 globals <span class="Keyword">=</span> ((<span class="Storage">function</span>() {
-  __b <span class="Keyword">=</span> []; __a <span class="Keyword">=</span> <span class="LibraryClassType">window</span>;
-  <span class="Keyword">for</span> (name <span class="Keyword">in</span> __a) {
-    <span class="Keyword">if</span> (__a.hasOwnProperty(name)) {
-      __b.<span class="LibraryFunction">push</span>(name);
+  __a <span class="Keyword">=</span> []; __b <span class="Keyword">=</span> <span class="LibraryClassType">window</span>;
+  <span class="Keyword">for</span> (name <span class="Keyword">in</span> __b) {
+    <span class="Keyword">if</span> (__b.hasOwnProperty(name)) {
+      __a.<span class="LibraryFunction">push</span>(name);
     }
   }
-  <span class="Keyword">return</span> __b;
+  <span class="Keyword">return</span> __a;
 })()).<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
 </pre><button onclick='javascript: var __a, __b, globals, name;
 // The first ten global properties.
 globals = ((function() {
-  __b = []; __a = window;
-  for (name in __a) {
-    if (__a.hasOwnProperty(name)) {
-      __b.push(name);
+  __a = []; __b = window;
+  for (name in __b) {
+    if (__b.hasOwnProperty(name)) {
+      __a.push(name);
     }
   }
-  return __b;
+  return __a;
 })()).slice(0, 10);
 ;alert(globals);'>run: globals</button><br class='clear' /></div>
     <p>

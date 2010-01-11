@@ -2,12 +2,12 @@
   var __a, __b, __c, __d, __e, __f, __g, food, lunch, roid, roid2;
   // Eat lunch.
   lunch = (function() {
-    __c = []; __a = ['toast', 'cheese', 'wine'];
-    for (__b=0; __b<__a.length; __b++) {
-      food = __a[__b];
-      __c.push(eat(food));
+    __a = []; __b = ['toast', 'cheese', 'wine'];
+    for (__c=0; __c<__b.length; __c++) {
+      food = __b[__c];
+      __a.push(eat(food));
     }
-    return __c;
+    return __a;
   })();
   // Naive collision detection.
   __d = asteroids;
