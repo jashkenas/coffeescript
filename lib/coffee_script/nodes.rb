@@ -41,7 +41,7 @@ module CoffeeScript
       "(function() {\n#{compile_node(o.merge(:return => true))}\n#{indent}})()"
     end
 
-    # Quick method for the current indentation level, plus tabs out.
+    # Quick short method for the current indentation level, plus tabbing in.
     def idt(tabs=0)
       @indent + (TAB * tabs)
     end
@@ -57,7 +57,8 @@ module CoffeeScript
     statement
     attr_reader :expressions
 
-    STRIP_TRAILING_WHITESPACE = /\s+$/
+    TRAILING_WHITESPACE = /\s+$/
+    UPPERCASE           = /[A-Z]/
 
     # Wrap up a node as an Expressions, unless it already is.
     def self.wrap(*nodes)
@@ -69,12 +70,13 @@ module CoffeeScript
       @expressions = nodes.flatten
     end
 
-    # Tack an expression onto the end of this node.
+    # Tack an expression on to the end of this expression list.
     def <<(node)
       @expressions << node
       self
     end
 
+    # Tack an expression on to the beginning of this expression list.
     def unshift(node)
       @expressions.unshift(node)
       self
@@ -91,36 +93,19 @@ module CoffeeScript
       node == @expressions[@last_index]
     end
 
+    # Determine if this is the expressions body within a constructor function.
+    # Constructors are capitalized by CoffeeScript convention.
+    def constructor?(o)
+      o[:top] && o[:last_assign] && o[:last_assign][0..0][UPPERCASE]
+    end
+
     def compile(o={})
       o[:scope] ? super(o) : compile_root(o)
     end
 
-    # The extra fancy is to handle pushing down returns to the final lines of
-    # inner statements. Variables first defined within the Expressions body
-    # have their declarations pushed up top of the closest scope.
+    # Compile each expression in the Expressions body.
     def compile_node(options={})
-      compiled = @expressions.map do |node|
-        o = options.dup
-        @indent = o[:indent]
-        returns = o.delete(:return)
-        if last?(node) && returns && !node.statement_only?
-          if node.statement?
-            node.compile(o.merge(:return => true))
-          else
-            if o[:top] && o[:last_assign] && o[:last_assign][0..0][/[A-Z]/]
-              temp = o[:scope].free_variable
-              "#{idt}#{temp} = #{node.compile(o)};\n#{idt}return #{o[:last_assign]} === this.constructor ? this : #{temp};"
-            else
-              "#{idt}return #{node.compile(o)};"
-            end
-          end
-        else
-          ending = node.statement? ? '' : ';'
-          indent = node.statement? ? '' : idt
-          "#{indent}#{node.compile(o.merge(:top => true))}#{ending}"
-        end
-      end
-      write(compiled.join("\n"))
+      write(@expressions.map {|n| compile_expression(n, options.dup) }.join("\n"))
     end
 
     # If this is the top-level Expressions, wrap everything in a safety closure.
@@ -129,7 +114,7 @@ module CoffeeScript
       @indent = indent
       o.merge!(:indent => indent, :scope => Scope.new(nil, self))
       code = o[:globals] ? compile_node(o) : compile_with_declarations(o)
-      code.gsub!(STRIP_TRAILING_WHITESPACE, '')
+      code.gsub!(TRAILING_WHITESPACE, '')
       o[:no_wrap] ? code : "(function(){\n#{code}\n})();"
     end
 
@@ -140,19 +125,39 @@ module CoffeeScript
       decls + code
     end
 
+    def compile_expression(node, o)
+      @indent = o[:indent]
+      stmt    = node.statement?
+      # We need to return the result if this is the last node in the expressions body.
+      returns = o.delete(:return) && last?(node) && !node.statement_only?
+      # Return the regular compile of the node, unless we need to return the result.
+      return "#{stmt ? '' : idt}#{node.compile(o.merge(:top => true))}#{stmt ? '' : ';'}" unless returns
+      # If it's a statement, the node knows how to return itself.
+      return node.compile(o.merge(:return => true)) if node.statement?
+      # If it's not part of a constructor, we can just return the value of the expression.
+      return "#{idt}return #{node.compile(o)};" unless constructor?(o)
+      # It's the last line of a constructor, add a safety check.
+      temp = o[:scope].free_variable
+      "#{idt}#{temp} = #{node.compile(o)};\n#{idt}return #{o[:last_assign]} === this.constructor ? this : #{temp};"
+    end
+
   end
 
   # Literals are static values that have a Ruby representation, eg.: a string, a number,
   # true, false, nil, etc.
   class LiteralNode < Node
+
+    # Values of a literal node that much be treated as a statement -- no
+    # sense returning or assigning them.
     STATEMENTS = ['break', 'continue']
 
-    CONVERSIONS = {
-      'arguments' => 'Array.prototype.slice.call(arguments, 0)'
-    }
+    # If we get handed a literal reference to an arguments object, convert
+    # it to an array.
+    ARG_ARRAY  = 'Array.prototype.slice.call(arguments, 0)'
 
     attr_reader :value
 
+    # Wrap up a compiler-generated string as a LiteralNode.
     def self.wrap(string)
       self.new(Value.new(string))
     end
@@ -167,14 +172,14 @@ module CoffeeScript
     alias_method :statement_only?, :statement?
 
     def compile_node(o)
-      val    = CONVERSIONS[@value.to_s] || @value.to_s
+      @value = ARG_ARRAY if @value.to_s.to_sym == :arguments
       indent = statement? ? idt : ''
       ending = statement? ? ';' : ''
-      write("#{indent}#{val}#{ending}")
+      write "#{indent}#{@value}#{ending}"
     end
   end
 
-  # Try to return your expression, or tell it to return itself.
+  # Return an expression, or wrap it in a closure and return it.
   class ReturnNode < Node
     statement_only
 
@@ -657,8 +662,7 @@ module CoffeeScript
       else
         index_var   = nil
         source_part = "#{svar} = #{source.compile(o)};\n#{idt}"
-        for_part    = "#{ivar}=0; #{ivar}<#{svar}.length; #{ivar}++"
-        for_part    = "#{ivar} in #{svar}" if @object
+        for_part    = @object ? "#{ivar} in #{svar}" : "#{ivar}=0; #{ivar}<#{svar}.length; #{ivar}++"
         var_part    = @name ? "#{body_dent}#{@name} = #{svar}[#{ivar}];\n" : ''
       end
       body          = @body
