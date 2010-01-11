@@ -87,7 +87,7 @@ module CoffeeScript
       # 'if' will result in an [:IF, "if"] token.
       tag = KEYWORDS.include?(identifier) ? identifier.upcase.to_sym : :IDENTIFIER
       tag = :LEADING_WHEN if tag == :WHEN && [:OUTDENT, :INDENT, "\n"].include?(last_tag)
-      @tokens[-1][0] = :PROPERTY_ACCESS if tag == :IDENTIFIER && last_value == '.' && !(@tokens[-2][1] == '.')
+      @tokens[-1][0] = :PROPERTY_ACCESS if tag == :IDENTIFIER && last_value == '.' && !(@tokens[-2] && @tokens[-2][1] == '.')
       @tokens[-1][0] = :PROTOTYPE_ACCESS if tag == :IDENTIFIER && last_value == '::'
       token(tag, identifier)
       @i += identifier.length
