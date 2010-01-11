@@ -37,7 +37,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://gemcutter.org/gems/coffee-script">0.2.2</a>
+      <a href="http://gemcutter.org/gems/coffee-script">0.2.3</a>
     </p>
 
     <h2>Table of Contents</h2>
@@ -782,12 +782,12 @@ egg_delivery = function egg_delivery() {
 ;alert(countdown);'>run: countdown</button><br class='clear' /></div>
     <p>
       Comprehensions can also be used to iterate over the keys and values in
-      an object. Use <tt>ino</tt> to signal comprehension over an object instead
-      of an array.
+      an object. Use <tt>of</tt> to signal comprehension over the properties of 
+      an object instead of the values in an array.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">years_old</span><span class="Keyword">:</span> {<span class="FunctionName">max</span><span class="Keyword">:</span> <span class="Number">10</span>, <span class="FunctionName">ida</span><span class="Keyword">:</span> <span class="Number">9</span>, <span class="FunctionName">tim</span><span class="Keyword">:</span> <span class="Number">11</span>}
 
-<span class="FunctionName">ages</span><span class="Keyword">:</span> <span class="Keyword">for</span> child, age <span class="Keyword">ino</span> years_old
+<span class="FunctionName">ages</span><span class="Keyword">:</span> <span class="Keyword">for</span> child, age <span class="Keyword">of</span> years_old
   child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age
 </pre><pre class="idle"><span class="Storage">var</span> __a, __b, age, ages, child, years_old;
 years_old <span class="Keyword">=</span> {
@@ -928,7 +928,7 @@ six = (one = 1) + (two = 2) + (three = 3);
     </p>
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> The first ten global properties.</span>
 
-<span class="FunctionName">globals</span><span class="Keyword">:</span> (name <span class="Keyword">for</span> name <span class="Keyword">ino</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
+<span class="FunctionName">globals</span><span class="Keyword">:</span> (name <span class="Keyword">for</span> name <span class="Keyword">of</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
 </pre><pre class="idle"><span class="Storage">var</span> __a, __b, globals, name;
 <span class="Comment"><span class="Comment">//</span> The first ten global properties.</span>
 globals <span class="Keyword">=</span> ((<span class="Storage">function</span>() {
@@ -1002,13 +1002,13 @@ globals = ((function() {
 <span class="FunctionName">Animal::move</span><span class="Keyword">:</span> <span class="FunctionArgument">meters</span> <span class="Storage">=&gt;</span>
   alert(<span class="Variable">this</span>.name <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>)
 
-<span class="FunctionName">Snake</span><span class="Keyword">:</span> <span class="FunctionArgument">name</span> <span class="Storage">=&gt;</span> <span class="Variable">this</span>.<span class="FunctionName">name</span><span class="Keyword">:</span> name
+<span class="FunctionName">Snake</span><span class="Keyword">:</span> <span class="FunctionArgument">name</span> <span class="Storage">=&gt;</span> <span class="FunctionName">this.name</span><span class="Keyword">:</span> name
 Snake <span class="Variable">extends</span> Animal
 <span class="FunctionName">Snake::move</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
   alert(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>)
   <span class="Variable">super</span>(<span class="Number">5</span>)
 
-<span class="FunctionName">Horse</span><span class="Keyword">:</span> <span class="FunctionArgument">name</span> <span class="Storage">=&gt;</span> <span class="Variable">this</span>.<span class="FunctionName">name</span><span class="Keyword">:</span> name
+<span class="FunctionName">Horse</span><span class="Keyword">:</span> <span class="FunctionArgument">name</span> <span class="Storage">=&gt;</span> <span class="FunctionName">this.name</span><span class="Keyword">:</span> name
 Horse <span class="Variable">extends</span> Animal
 <span class="FunctionName">Horse::move</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
   alert(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>)
@@ -1281,6 +1281,12 @@ world...";
     </ul>
 
     <h2 id="change_log">Change Log</h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.2.3</b>
+      Axed the unsatisfactory <tt>ino</tt> keyword, replacing it with <tt>of</tt> for
+      object comprehensions. They now look like: <tt>for key, value of object</tt>.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.2.2</b>

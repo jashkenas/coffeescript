@@ -12,7 +12,7 @@ module CoffeeScript
                   "new", "return",
                   "try", "catch", "finally", "throw",
                   "break", "continue",
-                  "for", "in", "ino", "by", "where", "while",
+                  "for", "in", "of", "by", "where", "while",
                   "switch", "when",
                   "super", "extends",
                   "arguments",

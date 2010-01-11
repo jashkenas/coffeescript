@@ -51,7 +51,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://gemcutter.org/gems/coffee-script">0.2.2</a>
+      <a href="http://gemcutter.org/gems/coffee-script">0.2.3</a>
     </p>
 
     <h2>Table of Contents</h2>
@@ -415,8 +415,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <%= code_for('range_comprehensions', 'countdown') %>
     <p>
       Comprehensions can also be used to iterate over the keys and values in
-      an object. Use <tt>ino</tt> to signal comprehension over an object instead
-      of an array.
+      an object. Use <tt>of</tt> to signal comprehension over the properties of 
+      an object instead of the values in an array.
     </p>
     <%= code_for('object_comprehensions', 'ages.join(", ")') %>
 
@@ -588,6 +588,12 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </ul>
 
     <h2 id="change_log">Change Log</h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.2.3</b>
+      Axed the unsatisfactory <tt>ino</tt> keyword, replacing it with <tt>of</tt> for
+      object comprehensions. They now look like: <tt>for key, value of object</tt>.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.2.2</b>

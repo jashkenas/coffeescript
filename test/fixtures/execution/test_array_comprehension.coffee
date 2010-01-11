@@ -5,8 +5,8 @@ print(results.join(',') is '2,18')
 
 
 obj:   {one: 1, two: 2, three: 3}
-names: key + '!' for key ino obj
-odds:  key + '!' for key, value ino obj when value % 2 isnt 0
+names: key + '!' for key of obj
+odds:  key + '!' for key, value of obj when value % 2 isnt 0
 
 print(names.join(' ') is "one! two! three!")
 print(odds.join(' ')  is "one! three!")

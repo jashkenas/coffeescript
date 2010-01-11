@@ -208,7 +208,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(break|by|catch|continue|else|finally|for|if|return|switch|then|throw|try|unless|when|while)\b</string>
+			<string>\b(break|by|catch|continue|else|finally|for|in|of|if|return|switch|then|throw|try|unless|when|while)\b</string>
 			<key>name</key>
 			<string>keyword.control.coffee</string>
 		</dict>
@@ -263,7 +263,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>!|%|&amp;|\*|\/|\-\-|\-|\+\+|\+|~|===|==|=|!=|!==|&lt;=|&gt;=|&lt;&lt;=|&gt;&gt;=|&gt;&gt;&gt;=|&lt;&gt;|&lt;|&gt;|!|&amp;&amp;|\?|\|\||\:|\*=|(?&lt;!\()/=|%=|\+=|\-=|&amp;=|\^=|\b(in|ino|instanceof|new|delete|typeof|and|or|is|isnt|not)\b</string>
+			<string>!|%|&amp;|\*|\/|\-\-|\-|\+\+|\+|~|===|==|=|!=|!==|&lt;=|&gt;=|&lt;&lt;=|&gt;&gt;=|&gt;&gt;&gt;=|&lt;&gt;|&lt;|&gt;|!|&amp;&amp;|\?|\|\||\:|\*=|(?&lt;!\()/=|%=|\+=|\-=|&amp;=|\^=|\b(instanceof|new|delete|typeof|and|or|is|isnt|not)\b</string>
 			<key>name</key>
 			<string>keyword.operator.coffee</string>
 		</dict>

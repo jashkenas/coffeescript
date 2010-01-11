@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name      = 'coffee-script'
-  s.version   = '0.2.2'         # Keep version in sync with coffee-script.rb
+  s.version   = '0.2.3'         # Keep version in sync with coffee-script.rb
   s.date      = '2010-1-10'
 
   s.homepage    = "http://jashkenas.github.com/coffee-script/"

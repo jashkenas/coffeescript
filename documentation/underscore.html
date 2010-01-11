@@ -41,7 +41,7 @@
 <span class="line-numbers">  22 </span>   <span class="Comment"><span class="Comment">#</span> can be used OO-style. This wrapper holds altered versions of all the</span>
 <span class="line-numbers">  23 </span>   <span class="Comment"><span class="Comment">#</span> underscore functions. Wrapped objects may be chained.</span>
 <span class="line-numbers">  24 </span> <span class="FunctionArgument">  wrapper: obj </span><span class="Storage">=&gt;</span>
-<span class="line-numbers">  25 </span>     <span class="Variable">this</span>.<span class="FunctionName">_wrapped</span><span class="Keyword">:</span> obj
+<span class="line-numbers">  25 </span>     <span class="FunctionName">this._wrapped</span><span class="Keyword">:</span> obj
 <span class="line-numbers">  26 </span>     <span class="Variable">this</span>
 <span class="line-numbers">  27 </span>
 <span class="line-numbers">  28 </span>
@@ -54,7 +54,7 @@
 <span class="line-numbers">  35 </span>
 <span class="line-numbers">  36 </span>
 <span class="line-numbers">  37 </span>   <span class="Comment"><span class="Comment">#</span> Export the Underscore object for CommonJS.</span>
-<span class="line-numbers">  38 </span>   <span class="Keyword">if</span> <span class="Keyword">typeof</span>(exports) <span class="Keyword">!</span><span class="Keyword">=</span> <span class="String"><span class="String">'</span>undefined<span class="String">'</span></span> <span class="Keyword">then</span> exports.<span class="FunctionName">_</span><span class="Keyword">:</span> _
+<span class="line-numbers">  38 </span>   <span class="Keyword">if</span> <span class="Keyword">typeof</span>(exports) <span class="Keyword">!</span><span class="Keyword">=</span> <span class="String"><span class="String">'</span>undefined<span class="String">'</span></span> <span class="Keyword">then</span> <span class="FunctionName">exports._</span><span class="Keyword">:</span> _
 <span class="line-numbers">  39 </span>
 <span class="line-numbers">  40 </span>
 <span class="line-numbers">  41 </span>   <span class="Comment"><span class="Comment">#</span> Create quick reference variables for speed access to core prototypes.</span>
@@ -66,7 +66,7 @@
 <span class="line-numbers">  47 </span>
 <span class="line-numbers">  48 </span>
 <span class="line-numbers">  49 </span>   <span class="Comment"><span class="Comment">#</span> Current version.</span>
-<span class="line-numbers">  50 </span>   _.<span class="FunctionName">VERSION</span><span class="Keyword">:</span> <span class="String"><span class="String">'</span>0.5.5<span class="String">'</span></span>
+<span class="line-numbers">  50 </span>   <span class="FunctionName">_.VERSION</span><span class="Keyword">:</span> <span class="String"><span class="String">'</span>0.5.5<span class="String">'</span></span>
 <span class="line-numbers">  51 </span>
 <span class="line-numbers">  52 </span>
 <span class="line-numbers">  53 </span>   <span class="Comment"><span class="Comment">#</span> ------------------------ Collection Functions: ---------------------------</span>
@@ -79,7 +79,7 @@
 <span class="line-numbers">  60 </span>       <span class="Keyword">return</span> obj.forEach(iterator, context) <span class="Keyword">if</span> obj.forEach
 <span class="line-numbers">  61 </span>       <span class="Keyword">if</span> _.isArray(obj) <span class="Keyword">or</span> _.isArguments(obj)
 <span class="line-numbers">  62 </span>         <span class="Keyword">return</span> iterator.call(context, obj[i], i, obj) <span class="Keyword">for</span> i <span class="Keyword">in</span> [<span class="Number">0</span>...obj.length]
-<span class="line-numbers">  63 </span>       iterator.call(context, val, key, obj) <span class="Keyword">for</span> key, val <span class="Keyword">ino</span> obj
+<span class="line-numbers">  63 </span>       iterator.call(context, val, key, obj) <span class="Keyword">for</span> key, val <span class="Keyword">of</span> obj
 <span class="line-numbers">  64 </span>     <span class="Keyword">catch</span> e
 <span class="line-numbers">  65 </span>       <span class="Keyword">throw</span> e <span class="Keyword">if</span> e <span class="Keyword">isnt</span> breaker
 <span class="line-numbers">  66 </span>     obj
@@ -167,7 +167,7 @@
 <span class="line-numbers"> 148 </span>   <span class="Comment"><span class="Comment">#</span> based on '==='.</span>
 <span class="line-numbers"> 149 </span> <span class="FunctionArgument">  _.include: obj, target </span><span class="Storage">=&gt;</span>
 <span class="line-numbers"> 150 </span>     <span class="Keyword">return</span> _.indexOf(obj, target) <span class="Keyword">isnt</span> <span class="Keyword">-</span><span class="Number">1</span> <span class="Keyword">if</span> _.isArray(obj)
-<span class="line-numbers"> 151 </span>     <span class="Keyword">for</span> key, val <span class="Keyword">ino</span> obj
+<span class="line-numbers"> 151 </span>     <span class="Keyword">for</span> key, val <span class="Keyword">of</span> obj
 <span class="line-numbers"> 152 </span>       <span class="Keyword">return</span> <span class="BuiltInConstant">true</span> <span class="Keyword">if</span> val <span class="Keyword">is</span> target
 <span class="line-numbers"> 153 </span>     <span class="BuiltInConstant">false</span>
 <span class="line-numbers"> 154 </span>
@@ -399,7 +399,7 @@
 <span class="line-numbers"> 380 </span>   <span class="Comment"><span class="Comment">#</span> Retrieve the names of an object's properties.</span>
 <span class="line-numbers"> 381 </span> <span class="FunctionArgument">  _.keys: obj </span><span class="Storage">=&gt;</span>
 <span class="line-numbers"> 382 </span>     <span class="Keyword">return</span> _.range(<span class="Number">0</span>, obj.length) <span class="Keyword">if</span> _.isArray(obj)
-<span class="line-numbers"> 383 </span>     key <span class="Keyword">for</span> key, val <span class="Keyword">ino</span> obj
+<span class="line-numbers"> 383 </span>     key <span class="Keyword">for</span> key, val <span class="Keyword">of</span> obj
 <span class="line-numbers"> 384 </span>
 <span class="line-numbers"> 385 </span>
 <span class="line-numbers"> 386 </span>   <span class="Comment"><span class="Comment">#</span> Retrieve the values of an object's properties.</span>
@@ -414,7 +414,7 @@
 <span class="line-numbers"> 395 </span>
 <span class="line-numbers"> 396 </span>   <span class="Comment"><span class="Comment">#</span> Extend a given object with all of the properties in a source object.</span>
 <span class="line-numbers"> 397 </span> <span class="FunctionArgument">  _.extend: destination, source </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 398 </span>     <span class="Keyword">for</span> key, val <span class="Keyword">ino</span> source
+<span class="line-numbers"> 398 </span>     <span class="Keyword">for</span> key, val <span class="Keyword">of</span> source
 <span class="line-numbers"> 399 </span>       destination[key]<span class="Keyword">:</span> val
 <span class="line-numbers"> 400 </span>     destination
 <span class="line-numbers"> 401 </span>
@@ -522,7 +522,7 @@
 <span class="line-numbers"> 503 </span>   <span class="Comment"><span class="Comment">#</span> Run Underscore.js in noConflict mode, returning the '_' variable to its</span>
 <span class="line-numbers"> 504 </span>   <span class="Comment"><span class="Comment">#</span> previous owner. Returns a reference to the Underscore object.</span>
 <span class="line-numbers"> 505 </span> <span class="FunctionArgument">  _.noConflict: </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 506 </span>     root.<span class="FunctionName">_</span><span class="Keyword">:</span> previousUnderscore
+<span class="line-numbers"> 506 </span>     <span class="FunctionName">root._</span><span class="Keyword">:</span> previousUnderscore
 <span class="line-numbers"> 507 </span>     <span class="Variable">this</span>
 <span class="line-numbers"> 508 </span>
 <span class="line-numbers"> 509 </span>
@@ -561,15 +561,15 @@
 <span class="line-numbers"> 542 </span>
 <span class="line-numbers"> 543 </span>   <span class="Comment"><span class="Comment">#</span> ------------------------------- Aliases ----------------------------------</span>
 <span class="line-numbers"> 544 </span>
-<span class="line-numbers"> 545 </span>   _.<span class="FunctionName">forEach</span><span class="Keyword">:</span> _.each
-<span class="line-numbers"> 546 </span>   _.<span class="FunctionName">foldl</span><span class="Keyword">:</span>   _.<span class="FunctionName">inject</span><span class="Keyword">:</span>      _.reduce
-<span class="line-numbers"> 547 </span>   _.<span class="FunctionName">foldr</span><span class="Keyword">:</span>   _.reduceRight
-<span class="line-numbers"> 548 </span>   _.<span class="FunctionName">filter</span><span class="Keyword">:</span>  _.select
-<span class="line-numbers"> 549 </span>   _.<span class="FunctionName">every</span><span class="Keyword">:</span>   _.all
-<span class="line-numbers"> 550 </span>   _.<span class="FunctionName">some</span><span class="Keyword">:</span>    _.any
-<span class="line-numbers"> 551 </span>   _.<span class="FunctionName">head</span><span class="Keyword">:</span>    _.first
-<span class="line-numbers"> 552 </span>   _.<span class="FunctionName">tail</span><span class="Keyword">:</span>    _.rest
-<span class="line-numbers"> 553 </span>   _.<span class="FunctionName">methods</span><span class="Keyword">:</span> _.functions
+<span class="line-numbers"> 545 </span>   <span class="FunctionName">_.forEach</span><span class="Keyword">:</span> _.each
+<span class="line-numbers"> 546 </span>   <span class="FunctionName">_.foldl</span><span class="Keyword">:</span>   <span class="FunctionName">_.inject</span><span class="Keyword">:</span>      _.reduce
+<span class="line-numbers"> 547 </span>   <span class="FunctionName">_.foldr</span><span class="Keyword">:</span>   _.reduceRight
+<span class="line-numbers"> 548 </span>   <span class="FunctionName">_.filter</span><span class="Keyword">:</span>  _.select
+<span class="line-numbers"> 549 </span>   <span class="FunctionName">_.every</span><span class="Keyword">:</span>   _.all
+<span class="line-numbers"> 550 </span>   <span class="FunctionName">_.some</span><span class="Keyword">:</span>    _.any
+<span class="line-numbers"> 551 </span>   <span class="FunctionName">_.head</span><span class="Keyword">:</span>    _.first
+<span class="line-numbers"> 552 </span>   <span class="FunctionName">_.tail</span><span class="Keyword">:</span>    _.rest
+<span class="line-numbers"> 553 </span>   <span class="FunctionName">_.methods</span><span class="Keyword">:</span> _.functions
 <span class="line-numbers"> 554 </span>
 <span class="line-numbers"> 555 </span>
 <span class="line-numbers"> 556 </span>   <span class="Comment"><span class="Comment">#</span>   /*------------------------ Setup the OOP Wrapper: --------------------------*/</span>
@@ -605,7 +605,7 @@
 <span class="line-numbers"> 586 </span>
 <span class="line-numbers"> 587 </span>   <span class="Comment"><span class="Comment">#</span> Start chaining a wrapped Underscore object.</span>
 <span class="line-numbers"> 588 </span> <span class="FunctionArgument">  wrapper::chain: </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 589 </span>     <span class="Variable">this</span>.<span class="FunctionName">_chain</span><span class="Keyword">:</span> <span class="BuiltInConstant">true</span>
+<span class="line-numbers"> 589 </span>     <span class="FunctionName">this._chain</span><span class="Keyword">:</span> <span class="BuiltInConstant">true</span>
 <span class="line-numbers"> 590 </span>     <span class="Variable">this</span>
 <span class="line-numbers"> 591 </span>
 <span class="line-numbers"> 592 </span>

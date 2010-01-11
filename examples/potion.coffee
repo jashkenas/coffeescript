@@ -45,7 +45,7 @@ foods[2]
 # (dog='canine', cat='feline', fox='vulpine') each (key, val):
 #   (key, ' is a ', val) join print.
 
-for key, val ino {dog: 'canine', cat: 'feline', fox: 'vulpine'}
+for key, val of {dog: 'canine', cat: 'feline', fox: 'vulpine'}
   print(key + ' is a ' + val)
 
 

@@ -60,7 +60,7 @@
       return obj.forEach(iterator, context) if obj.forEach
       if _.isArray(obj) or _.isArguments(obj)
         return iterator.call(context, obj[i], i, obj) for i in [0...obj.length]
-      iterator.call(context, val, key, obj) for key, val ino obj
+      iterator.call(context, val, key, obj) for key, val of obj
     catch e
       throw e if e isnt breaker
     obj
@@ -148,7 +148,7 @@
   # based on '==='.
   _.include: obj, target =>
     return _.indexOf(obj, target) isnt -1 if _.isArray(obj)
-    for key, val ino obj
+    for key, val of obj
       return true if val is target
     false
 
@@ -380,7 +380,7 @@
   # Retrieve the names of an object's properties.
   _.keys: obj =>
     return _.range(0, obj.length) if _.isArray(obj)
-    key for key, val ino obj
+    key for key, val of obj
 
 
   # Retrieve the values of an object's properties.
@@ -395,7 +395,7 @@
 
   # Extend a given object with all of the properties in a source object.
   _.extend: destination, source =>
-    for key, val ino source
+    for key, val of source
       destination[key]: val
     destination
 
