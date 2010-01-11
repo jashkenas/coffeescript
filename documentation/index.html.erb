@@ -499,11 +499,17 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       so you don't have to close the parentheses on the other side.
     </p>
     <%= code_for('blocks') %>
+    <p>
+      If you prefer not to use blocks, you'll need to add a pair of parentheses 
+      to help distinguish the arguments from the definition of the function:
+      <tt>_.map(array, (num => num * 2))</tt>
+    </p>
 
     <p id="embedded">
       <b class="header">Embedded JavaScript</b>
-      If you ever need to interpolate literal JavaScript snippets, you can
-      use backticks to pass JavaScript straight through.
+      Hopefully, you'll never need to use it, but if you ever need to intersperse 
+      snippets of JavaScript within your CoffeeScript, you can
+      use backticks to pass it straight through.
     </p>
     <%= code_for('embedded', 'hi()') %>
 

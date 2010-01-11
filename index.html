@@ -1119,11 +1119,17 @@ tom.move();
   });
 });
 </pre><br class='clear' /></div>
+    <p>
+      If you prefer not to use blocks, you'll need to add a pair of parentheses 
+      to help distinguish the arguments from the definition of the function:
+      <tt>_.map(array, (num => num * 2))</tt>
+    </p>
 
     <p id="embedded">
       <b class="header">Embedded JavaScript</b>
-      If you ever need to interpolate literal JavaScript snippets, you can
-      use backticks to pass JavaScript straight through.
+      Hopefully, you'll never need to use it, but if you ever need to intersperse 
+      snippets of JavaScript within your CoffeeScript, you can
+      use backticks to pass it straight through.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">hi</span><span class="Keyword">:</span> <span class="String"><span class="String">`</span>function() {</span>
 <span class="String">  return [document.title, &quot;Hello JavaScript&quot;].join(&quot;: &quot;);</span>
@@ -1285,7 +1291,7 @@ world...";
     <p>
       <b class="header" style="margin-top: 20px;">0.2.3</b>
       Axed the unsatisfactory <tt>ino</tt> keyword, replacing it with <tt>of</tt> for
-      object comprehensions. They now look like: <tt>for key, value of object</tt>.
+      object comprehensions. They now look like: <tt>for prop, value of object</tt>.
     </p>
 
     <p>
