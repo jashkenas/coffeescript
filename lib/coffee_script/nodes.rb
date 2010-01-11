@@ -1,6 +1,12 @@
 module CoffeeScript
 
   # The abstract base class for all CoffeeScript nodes.
+  # All nodes are implement a "compile_node" method, which performs the
+  # code generation for that node. To compile a node, call the "compile"
+  # method, which wraps "compile_node" in some extra smarts, to know when the
+  # generated code should be wrapped up in a closure. An options hash is passed
+  # and cloned throughout, containing messages from higher in the AST,
+  # information about the current scope, and indentation level.
   class Node
     # Tabs are two spaces for pretty-printing.
     TAB = '  '
@@ -115,16 +121,18 @@ module CoffeeScript
       o.merge!(:indent => indent, :scope => Scope.new(nil, self))
       code = o[:globals] ? compile_node(o) : compile_with_declarations(o)
       code.gsub!(TRAILING_WHITESPACE, '')
-      o[:no_wrap] ? code : "(function(){\n#{code}\n})();"
+      write(o[:no_wrap] ? code : "(function(){\n#{code}\n})();")
     end
 
+    # Compile the expressions body, with declarations of all inner variables
+    # at the top.
     def compile_with_declarations(o={})
       code  = compile_node(o)
-      decls = ''
-      decls = "#{idt}var #{o[:scope].declared_variables.join(', ')};\n" if o[:scope].declarations?(self)
-      decls + code
+      return code unless o[:scope].declarations?(self)
+      write("#{idt}var #{o[:scope].declared_variables.join(', ')};\n#{code}")
     end
 
+    # Compiles a single expression within the expression list.
     def compile_expression(node, o)
       @indent = o[:indent]
       stmt    = node.statement?
@@ -207,8 +215,7 @@ module CoffeeScript
 
     def compile_node(o={})
       delimiter = "\n#{idt}//"
-      comment   = "#{delimiter}#{@lines.join(delimiter)}"
-      write(comment)
+      write("#{delimiter}#{@lines.join(delimiter)}")
     end
 
   end
@@ -243,6 +250,7 @@ module CoffeeScript
       @arguments << argument
     end
 
+    # Compile a vanilla function call.
     def compile_node(o)
       return write(compile_splat(o)) if splat?
       args = @arguments.map{|a| a.compile(o) }.join(', ')
@@ -250,6 +258,7 @@ module CoffeeScript
       write("#{prefix}#{@variable.compile(o)}(#{args})")
     end
 
+    # Compile a call against the superclass's implementation of the current function.
     def compile_super(args, o)
       methname = o[:last_assign]
       arg_part = args.empty? ? '' : ", #{args}"
@@ -258,6 +267,7 @@ module CoffeeScript
       "#{meth}.call(this#{arg_part})"
     end
 
+    # Compile a function call being passed variable arguments.
     def compile_splat(o)
       meth = @variable.compile(o)
       obj  = @variable.source || 'this'
@@ -280,6 +290,7 @@ module CoffeeScript
       @sub_object, @super_object = sub_object, super_object
     end
 
+    # Hooking one constructor into another's prototype chain.
     def compile_node(o={})
       constructor = o[:scope].free_variable
       sub, sup = @sub_object.compile(o), @super_object.compile(o)
@@ -294,10 +305,10 @@ module CoffeeScript
 
   # A value, indexed or dotted into, or vanilla.
   class ValueNode < Node
-    attr_reader :literal, :properties, :last, :source
+    attr_reader :base, :properties, :last, :source
 
-    def initialize(literal, properties=[])
-      @literal, @properties = literal, properties
+    def initialize(base, properties=[])
+      @base, @properties = base, properties
     end
 
     def <<(other)
@@ -309,23 +320,23 @@ module CoffeeScript
       return !@properties.empty?
     end
 
+    # Values are statements if their base is a statement.
     def statement?
-      @literal.is_a?(Node) && @literal.statement? && !properties?
+      @base.is_a?(Node) && @base.statement? && !properties?
     end
 
     def compile_node(o)
       only  = o.delete(:only_first)
       props = only ? @properties[0...-1] : @properties
-      parts = [@literal, props].flatten.map do |val|
-        val.respond_to?(:compile) ? val.compile(o) : val.to_s
-      end
+      parts = [@base, props].flatten.map {|val| val.compile(o) }
       @last = parts.last
       @source = parts.length > 1 ? parts[0...-1].join('') : nil
       write(parts.join(''))
     end
   end
 
-  # A dotted accessor into a part of a value.
+  # A dotted accessor into a part of a value, or the :: shorthand for
+  # an accessor into the object's prototype.
   class AccessorNode < Node
     attr_reader :name
 
@@ -365,14 +376,6 @@ module CoffeeScript
       @exclusive
     end
 
-    def less_operator
-      @exclusive ? '<' : '<='
-    end
-
-    def greater_operator
-      @exclusive ? '>' : '>='
-    end
-
     def compile_variables(o)
       @indent = o[:indent]
       @from_var, @to_var = o[:scope].free_variable, o[:scope].free_variable
@@ -381,12 +384,13 @@ module CoffeeScript
     end
 
     def compile_node(o)
+      return compile_array(o) unless o[:index]
       idx, step = o.delete(:index), o.delete(:step)
-      return compile_array(o) unless idx
-      vars     = "#{idx}=#{@from_var}"
-      step     = step ? step.compile(o) : '1'
-      compare  = "(#{@from_var} <= #{@to_var} ? #{idx} #{less_operator} #{@to_var} : #{idx} #{greater_operator} #{@to_var})"
-      incr     = "(#{@from_var} <= #{@to_var} ? #{idx} += #{step} : #{idx} -= #{step})"
+      vars      = "#{idx}=#{@from_var}"
+      step      = step ? step.compile(o) : '1'
+      equals    = @exclusive ? '' : '='
+      compare   = "(#{@from_var} <= #{@to_var} ? #{idx} <#{equals} #{@to_var} : #{idx} >#{equals} #{@to_var})"
+      incr      = "(#{@from_var} <= #{@to_var} ? #{idx} += #{step} : #{idx} -= #{step})"
       write("#{vars}; #{compare}; #{incr}")
     end
 
@@ -645,8 +649,8 @@ module CoffeeScript
 
     def compile_node(o)
       top_level     = o.delete(:top) && !o[:return]
-      range         = @source.is_a?(ValueNode) && @source.literal.is_a?(RangeNode) && @source.properties.empty?
-      source        = range ? @source.literal : @source
+      range         = @source.is_a?(ValueNode) && @source.base.is_a?(RangeNode) && @source.properties.empty?
+      source        = range ? @source.base : @source
       scope         = o[:scope]
       name_found    = @name  && scope.find(@name)
       index_found   = @index && scope.find(@index)

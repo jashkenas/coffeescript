@@ -17,15 +17,15 @@ class ParserTest < Test::Unit::TestCase
     assert nodes.length == 1
     assign = nodes.first
     assert assign.is_a?(AssignNode)
-    assert assign.variable.literal == 'a'
+    assert assign.variable.base == 'a'
   end
 
   def test_parsing_an_object_literal
     nodes = @par.parse("{one : 1\ntwo : 2}").expressions
-    obj = nodes.first.literal
+    obj = nodes.first.base
     assert obj.is_a?(ObjectNode)
-    assert obj.properties.first.variable.literal.value == "one"
-    assert obj.properties.last.variable.literal.value == "two"
+    assert obj.properties.first.variable.base.value == "one"
+    assert obj.properties.last.variable.base.value == "two"
   end
 
   def test_parsing_an_function_definition
@@ -39,17 +39,17 @@ class ParserTest < Test::Unit::TestCase
   def test_parsing_if_statement
     the_if = @par.parse("clap_your_hands() if happy").expressions.first
     assert the_if.is_a?(IfNode)
-    assert the_if.condition.literal == 'happy'
+    assert the_if.condition.base == 'happy'
     assert the_if.body.is_a?(CallNode)
-    assert the_if.body.variable.literal == 'clap_your_hands'
+    assert the_if.body.variable.base == 'clap_your_hands'
   end
 
   def test_parsing_array_comprehension
     nodes = @par.parse("i for x, i in [10, 9, 8, 7, 6, 5] when i % 2 is 0").expressions
     assert nodes.first.is_a?(ForNode)
-    assert nodes.first.body.literal == 'i'
+    assert nodes.first.body.base == 'i'
     assert nodes.first.filter.operator == '==='
-    assert nodes.first.source.literal.objects.last.literal.value == "5"
+    assert nodes.first.source.base.objects.last.base.value == "5"
   end
 
   def test_parsing_comment
@@ -66,7 +66,7 @@ class ParserTest < Test::Unit::TestCase
     nodes = @par.parse(File.read('test/fixtures/generation/each.coffee'))
     assign = nodes.expressions[1]
     assert assign.is_a?(AssignNode)
-    assert assign.variable.literal == '_'
+    assert assign.variable.base == '_'
     assert assign.value.is_a?(CodeNode)
     assert assign.value.params == ['obj', 'iterator', 'context']
   end

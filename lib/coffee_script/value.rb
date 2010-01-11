@@ -18,6 +18,10 @@ module CoffeeScript
       to_str.to_sym
     end
 
+    def compile(o={})
+      to_s
+    end
+
     def inspect
       @value.inspect
     end
