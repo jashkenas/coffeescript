@@ -35,6 +35,7 @@ module CoffeeScript
     def rewrite(tokens)
       @tokens = tokens
       adjust_comments
+      remove_leading_newlines
       remove_mid_expression_newlines
       move_commas_outside_outdents
       add_implicit_indentation
@@ -80,6 +81,12 @@ module CoffeeScript
           next 1
         end
       end
+    end
+
+    # Leading newlines would introduce an ambiguity in the grammar, so we
+    # dispatch them here.
+    def remove_leading_newlines
+      @tokens.shift if @tokens[0][0] == "\n"
     end
 
     # Some blocks occur in the middle of expressions -- when we're expecting
