@@ -37,7 +37,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://gemcutter.org/gems/coffee-script">0.2.3</a>
+      <a href="http://gemcutter.org/gems/coffee-script">0.2.4</a>
     </p>
 
     <h2>Table of Contents</h2>
@@ -1128,8 +1128,8 @@ tom.move();
 
     <p id="pattern_matching">
       <b class="header">Pattern Matching (Destructuring Assignment)</b>
-      To make working with complex arrays and objects more convenient,
-      CoffeeScript provides ECMAScript Harmony's proposed
+      To make extracting values from complex arrays and objects more convenient,
+      CoffeeScript implements ECMAScript Harmony's proposed
       <a href="http://wiki.ecmascript.org/doku.php?id=harmony:destructuring">destructuring assignment</a>
       syntax. When you assign an array or object literal to a value, CoffeeScript
       breaks up and matches both sides against each other, assigning the values
@@ -1183,7 +1183,7 @@ forecast = __a[2];
 ;alert(forecast);'>run: forecast</button><br class='clear' /></div>
     <p>
       Pattern matching can be used with any depth of array and object nesting,
-      to help cleanly extract deeply nested properties.
+      to help pull out deeply nested properties.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">futurists</span><span class="Keyword">:</span> {
   <span class="FunctionName">sculptor</span><span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Umberto Boccioni<span class="String">&quot;</span></span>
@@ -1406,6 +1406,13 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">&q
     </ul>
 
     <h2 id="change_log">Change Log</h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.2.4</b>
+      Added ECMAScript Harmony style destructuring assignment, for dealing with
+      extracting values from nested arrays and objects. Added indentation-sensitive
+      heredocs for nicely formatted strings or chunks of code.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.2.3</b>
