@@ -7,14 +7,14 @@ class LexerTest < Test::Unit::TestCase
   end
 
   def test_lexing_an_empty_string
-    assert @lex.tokenize("") == [["\n", "\n"]]
+    assert @lex.tokenize("") == []
   end
 
   def test_lexing_basic_assignment
     code = "a: 'one'\nb: [1, 2]"
-    assert @lex.tokenize(code) == [[:IDENTIFIER, "a"], [:ASSIGN, ":"], 
-      [:STRING, "'one'"], ["\n", "\n"], [:IDENTIFIER, "b"], [:ASSIGN, ":"], 
-      ["[", "["], [:NUMBER, "1"], [",", ","], [:NUMBER, "2"], ["]", "]"], 
+    assert @lex.tokenize(code) == [[:IDENTIFIER, "a"], [:ASSIGN, ":"],
+      [:STRING, "'one'"], ["\n", "\n"], [:IDENTIFIER, "b"], [:ASSIGN, ":"],
+      ["[", "["], [:NUMBER, "1"], [",", ","], [:NUMBER, "2"], ["]", "]"],
       ["\n", "\n"]]
   end
 
@@ -27,7 +27,7 @@ class LexerTest < Test::Unit::TestCase
   def test_lexing_function_definition
     code = "x, y => x * y"
     assert @lex.tokenize(code) == [[:PARAM, "x"], [",", ","], [:PARAM, "y"],
-      ["=>", "=>"], [:INDENT, 2], [:IDENTIFIER, "x"], ["*", "*"], 
+      ["=>", "=>"], [:INDENT, 2], [:IDENTIFIER, "x"], ["*", "*"],
       [:IDENTIFIER, "y"], [:OUTDENT, 2], ["\n", "\n"]]
   end
 
