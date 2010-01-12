@@ -47,13 +47,38 @@ module CoffeeScript
       @temp_variable.dup
     end
 
+    # Ensure that an assignment is made at the top-level scope.
+    # Takes two strings.
+    def top_level_assign(name, value)
+      return @parent.top_level_assign(name, value) if @parent
+      @variables[name.to_sym] = Value.new(value)
+    end
+
     def declarations?(body)
       !declared_variables.empty? && body == @expressions
+    end
+
+    def assignments?(body)
+      !assigned_variables.empty? && body == @expressions
     end
 
     # Return the list of variables first declared in current scope.
     def declared_variables
       @variables.select {|k, v| v == :var }.map {|pair| pair[0].to_s }.sort
+    end
+
+    # Return the list of variables that are supposed to be assigned at the top
+    # of scope.
+    def assigned_variables
+      @variables.select {|k, v| v.is_a?(Value) }.sort_by {|pair| pair[0].to_s }
+    end
+
+    def compiled_declarations
+      declared_variables.join(', ')
+    end
+
+    def compiled_assignments
+      assigned_variables.map {|name, val| "#{name} = #{val}"}.join(', ')
     end
 
     def inspect

@@ -128,8 +128,9 @@ module CoffeeScript
     # at the top.
     def compile_with_declarations(o={})
       code  = compile_node(o)
-      return code unless o[:scope].declarations?(self)
-      write("#{idt}var #{o[:scope].declared_variables.join(', ')};\n#{code}")
+      code  = "#{idt}var #{o[:scope].compiled_assignments};\n#{code}"   if o[:scope].assignments?(self)
+      code  = "#{idt}var #{o[:scope].compiled_declarations};\n#{code}"  if o[:scope].declarations?(self)
+      write(code)
     end
 
     # Compiles a single expression within the expression list.
@@ -724,8 +725,9 @@ module CoffeeScript
         body = Expressions.wrap(IfNode.new(@filter, body))
       end
       if @object
+        o[:scope].top_level_assign("__hasProp", "Object.prototype.hasOwnProperty")
         body = Expressions.wrap(IfNode.new(
-          CallNode.new(ValueNode.new(LiteralNode.wrap(svar), [AccessorNode.new(Value.new('hasOwnProperty'))]), [LiteralNode.wrap(ivar)]),
+          CallNode.new(ValueNode.new(LiteralNode.wrap("__hasProp"), [AccessorNode.new(Value.new('call'))]), [LiteralNode.wrap(svar), LiteralNode.wrap(ivar)]),
           Expressions.wrap(body),
           nil,
           {:statement => true}
