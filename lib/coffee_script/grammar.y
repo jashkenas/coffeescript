@@ -20,6 +20,7 @@ token INDENT OUTDENT
 
 # Declare order of operations.
 prechigh
+  right    NEW
   left     '?'
   nonassoc UMINUS NOT '!' '!!' '~' '++' '--'
   left     '*' '/' '%'
@@ -35,7 +36,7 @@ prechigh
   right    INDENT
   left     OUTDENT
   right    WHEN LEADING_WHEN IN OF BY
-  right    THROW FOR NEW SUPER
+  right    THROW FOR SUPER
   left     EXTENDS
   left     ASSIGN '||=' '&&='
   right    RETURN
