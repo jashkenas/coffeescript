@@ -320,6 +320,18 @@ module CoffeeScript
       return !@properties.empty?
     end
 
+    def array?
+      @base.is_a?(ArrayNode) && !properties?
+    end
+
+    def object?
+      @base.is_a?(ObjectNode) && !properties?
+    end
+
+    def splice?
+      properties? && @properties.last.is_a?(SliceNode)
+    end
+
     # Values are statements if their base is a statement.
     def statement?
       @base.is_a?(Node) && @base.statement? && !properties?
@@ -435,7 +447,9 @@ module CoffeeScript
     end
 
     def compile_node(o)
-      return compile_splice(o) if @variable.properties.last.is_a?(SliceNode)
+      return compile_pattern_match(o) if @variable.array? || @variable.object?
+      return compile_splice(o) if @variable.splice?
+      stmt      = o.delete(:as_statement)
       name      = @variable.compile(o)
       last      = @variable.last.to_s.sub(LEADING_DOT, '')
       proto     = name[PROTO_ASSIGN, 1]
@@ -444,7 +458,31 @@ module CoffeeScript
       return write("#{name}: #{@value.compile(o)}") if @context == :object
       o[:scope].find(name) unless @variable.properties?
       val = "#{name} = #{@value.compile(o)}"
+      return write("#{idt}#{val};") if stmt
       write(o[:return] ? "#{idt}return (#{val})" : val)
+    end
+
+    def statement?
+      @variable.array? || @variable.object?
+    end
+
+    def compile_pattern_match(o)
+      val_var = o[:scope].free_variable
+      assigns = ["#{idt}#{val_var} = #{@value.compile(o)};"]
+      @variable.base.objects.each_with_index do |obj, i|
+        if @variable.array?
+          assigns << AssignNode.new(obj, ValueNode.new(Value.new(val_var), [IndexNode.new(Value.new(i.to_s))])).compile(o.merge(:top => true, :as_statement => true))
+        elsif @variable.object?
+          obj, i = obj.value, obj.variable.base
+          assigns << AssignNode.new(obj, ValueNode.new(Value.new(val_var), [AccessorNode.new(Value.new(i.to_s))])).compile(o.merge(:top => true, :as_statement => true))
+        else
+          left = obj.compile(o)
+          o[:scope].find(left) if obj.base.is_a?(Value)
+          access = @variable.object? ? ".#{i}" : "[#{i}]"
+          assigns << "#{idt}#{left} = #{val_var}#{access};"
+        end
+      end
+      write(assigns.join("\n"))
     end
 
     def compile_splice(o)
@@ -564,6 +602,7 @@ module CoffeeScript
   # An object literal.
   class ObjectNode < Node
     attr_reader :properties
+    alias_method :objects, :properties
 
     def initialize(properties = [])
       @properties = properties
