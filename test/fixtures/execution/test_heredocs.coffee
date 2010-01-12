@@ -8,11 +8,11 @@ print(a is "basic heredoc\non two lines")
 
 a: '''
    a
-     b
+     "b
    c
    '''
 
-print(a is "a\n  b\nc")
+print(a is "a\n  \"b\nc")
 
 
 a: '''one-liner'''

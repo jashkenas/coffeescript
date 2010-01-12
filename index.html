@@ -65,7 +65,7 @@
       <a href="#embedded">Embedded JavaScript</a><br />
       <a href="#switch">Switch/When/Else</a><br />
       <a href="#try">Try/Catch/Finally</a><br />
-      <a href="#strings">Multiline Strings</a><br />
+      <a href="#strings">Multiline Strings and Heredocs</a><br />
       <a href="#resources">Resources</a><br />
       <a href="#contributing">Contributing</a><br />
       <a href="#change_log">Change Log</a><br />
@@ -1309,7 +1309,7 @@ return [document.title, "Hello JavaScript"].join(": ");
 </pre><br class='clear' /></div>
 
     <p id="strings">
-      <b class="header">Multiline Strings</b>
+      <b class="header">Multiline Strings and Heredocs</b>
       Multiline strings are allowed in CoffeeScript.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">moby_dick</span><span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago --</span>
@@ -1335,6 +1335,20 @@ to interest me on shore, I thought I would sail \
 about a little and see the watery part of the \
 world...";
 ;alert(moby_dick);'>run: moby_dick</button><br class='clear' /></div>
+    <p>
+      Heredocs can be used to hold formatted or indentation-sensitive text
+      (or, if you just don't feel like escaping quotes and apostrophes). The
+      indentation level that begins the heredoc is maintained throughout, so
+      you can keep it all aligned with the body of your code.
+    </p>
+    <div class='code'><pre class="idle"><span class="FunctionName">html</span><span class="Keyword">:</span> <span class="String"><span class="String">'</span><span class="String">'</span></span><span class="String"><span class="String">'</span></span>
+<span class="String">      &lt;strong&gt;</span>
+<span class="String">        cup of coffeescript</span>
+<span class="String">      &lt;/strong&gt;</span>
+<span class="String">      <span class="String">'</span></span><span class="String"><span class="String">'</span><span class="String">'</span></span>
+</pre><pre class="idle"><span class="Storage">var</span> html;
+html <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>&lt;strong&gt;<span class="UserDefinedConstant">\n</span>  cup of coffeescript<span class="UserDefinedConstant">\n</span>&lt;/strong&gt;<span class="String">&quot;</span></span>;
+</pre><br class='clear' /></div>
 
     <h2 id="resources">Resources</h2>
 

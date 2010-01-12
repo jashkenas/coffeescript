@@ -79,7 +79,7 @@
       <a href="#embedded">Embedded JavaScript</a><br />
       <a href="#switch">Switch/When/Else</a><br />
       <a href="#try">Try/Catch/Finally</a><br />
-      <a href="#strings">Multiline Strings</a><br />
+      <a href="#strings">Multiline Strings and Heredocs</a><br />
       <a href="#resources">Resources</a><br />
       <a href="#contributing">Contributing</a><br />
       <a href="#change_log">Change Log</a><br />
@@ -556,10 +556,17 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <%= code_for('try') %>
 
     <p id="strings">
-      <b class="header">Multiline Strings</b>
+      <b class="header">Multiline Strings and Heredocs</b>
       Multiline strings are allowed in CoffeeScript.
     </p>
     <%= code_for('strings', 'moby_dick') %>
+    <p>
+      Heredocs can be used to hold formatted or indentation-sensitive text
+      (or, if you just don't feel like escaping quotes and apostrophes). The
+      indentation level that begins the heredoc is maintained throughout, so
+      you can keep it all aligned with the body of your code.
+    </p>
+    <%= code_for('heredocs') %>
 
     <h2 id="resources">Resources</h2>
 
