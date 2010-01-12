@@ -276,7 +276,6 @@ rule
   Invocation:
     Value Arguments                   { result = CallNode.new(val[0], val[1]) }
   | Invocation Arguments              { result = CallNode.new(val[0], val[1]) }
-  # | Invocation Code                   { result = val[0] << val[1] }
   ;
 
   # The list of arguments to a function invocation.
