@@ -466,21 +466,19 @@ module CoffeeScript
       @variable.array? || @variable.object?
     end
 
+    # Implementation of recursive pattern matching, when assigning array or
+    # object literals to a value. Peeks at their properties to assign inner names.
+    # See: http://wiki.ecmascript.org/doku.php?id=harmony:destructuring
     def compile_pattern_match(o)
       val_var = o[:scope].free_variable
       assigns = ["#{idt}#{val_var} = #{@value.compile(o)};"]
       @variable.base.objects.each_with_index do |obj, i|
-        if @variable.array?
-          assigns << AssignNode.new(obj, ValueNode.new(Value.new(val_var), [IndexNode.new(Value.new(i.to_s))])).compile(o.merge(:top => true, :as_statement => true))
-        elsif @variable.object?
-          obj, i = obj.value, obj.variable.base
-          assigns << AssignNode.new(obj, ValueNode.new(Value.new(val_var), [AccessorNode.new(Value.new(i.to_s))])).compile(o.merge(:top => true, :as_statement => true))
-        else
-          left = obj.compile(o)
-          o[:scope].find(left) if obj.base.is_a?(Value)
-          access = @variable.object? ? ".#{i}" : "[#{i}]"
-          assigns << "#{idt}#{left} = #{val_var}#{access};"
-        end
+        obj, i = obj.value, obj.variable.base if @variable.object?
+        access_class = @variable.array? ? IndexNode : AccessorNode
+        assigns << AssignNode.new(
+          obj,
+          ValueNode.new(Value.new(val_var), [access_class.new(Value.new(i.to_s))])
+        ).compile(o.merge(:top => true, :as_statement => true))
       end
       write(assigns.join("\n"))
     end
