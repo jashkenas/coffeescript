@@ -472,13 +472,13 @@ module CoffeeScript
     def compile_pattern_match(o)
       val_var = o[:scope].free_variable
       assigns = ["#{idt}#{val_var} = #{@value.compile(o)};"]
+      o.merge!(:top => true, :as_statement => true)
       @variable.base.objects.each_with_index do |obj, i|
         obj, i = obj.value, obj.variable.base if @variable.object?
         access_class = @variable.array? ? IndexNode : AccessorNode
         assigns << AssignNode.new(
-          obj,
-          ValueNode.new(Value.new(val_var), [access_class.new(Value.new(i.to_s))])
-        ).compile(o.merge(:top => true, :as_statement => true))
+          obj, ValueNode.new(Value.new(val_var), [access_class.new(Value.new(i.to_s))])
+        ).compile(o)
       end
       write(assigns.join("\n"))
     end
