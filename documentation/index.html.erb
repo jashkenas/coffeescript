@@ -75,6 +75,7 @@
       <a href="#expressions">Everything is an Expression</a><br />
       <a href="#inheritance">Inheritance, and Calling Super from a Subclass</a><br />
       <a href="#blocks">Blocks</a><br />
+      <a href="#pattern_matching">Pattern Matching</a><br />
       <a href="#embedded">Embedded JavaScript</a><br />
       <a href="#switch">Switch/When/Else</a><br />
       <a href="#try">Try/Catch/Finally</a><br />
@@ -95,7 +96,7 @@
       <a href="documentation/underscore.html">Underscore.coffee</a>, a port
       of the <a href="http://documentcloud.github.com/underscore/">Underscore.js</a>
       library of helper functions. Underscore.coffee can pass the entire Underscore.js
-      test suite. The CoffeeScript version is faster than the original for a number 
+      test suite. The CoffeeScript version is faster than the original for a number
       of methods (in general, due to the speed of CoffeeScript's array comprehensions), and
       after being minified and gzipped, is only 241 bytes larger than the original
       JavaScript version.
@@ -415,7 +416,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <%= code_for('range_comprehensions', 'countdown') %>
     <p>
       Comprehensions can also be used to iterate over the keys and values in
-      an object. Use <tt>of</tt> to signal comprehension over the properties of 
+      an object. Use <tt>of</tt> to signal comprehension over the properties of
       an object instead of the values in an array.
     </p>
     <%= code_for('object_comprehensions', 'ages.join(", ")') %>
@@ -481,12 +482,12 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       be completely usable if it weren't for a couple of small exceptions:
       it's awkward to call <b>super</b> (the prototype object's
       implementation of the current function), and it's awkward to correctly
-      set the prototype chain. 
+      set the prototype chain.
     </p>
     <p>
       CoffeeScript provides <tt>extends</tt>
       to help with prototype setup, <tt>::</tt> for quick access to an
-      object's prototype, and converts <tt>super()</tt> into a call against 
+      object's prototype, and converts <tt>super()</tt> into a call against
       the immediate ancestor's method of the same name.
     </p>
     <%= code_for('super', true) %>
@@ -500,14 +501,36 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('blocks') %>
     <p>
-      If you prefer not to use blocks, you'll need to add a pair of parentheses 
+      If you prefer not to use blocks, you'll need to add a pair of parentheses
       to help distinguish the arguments from the definition of the function:
       <tt>_.map(array, (num => num * 2))</tt>
     </p>
 
+    <p id="pattern_matching">
+      <b class="header">Pattern Matching (Destructuring Assignment)</b>
+      To make working with complex arrays and objects more convenient,
+      CoffeeScript provides ECMAScript Harmony's proposed
+      <a href="http://wiki.ecmascript.org/doku.php?id=harmony:destructuring">destructuring assignment</a>
+      syntax. When you assign an array or object literal to a value, CoffeeScript
+      breaks up and matches both sides against each other, assigning the values
+      on the right to the variables on the left. In the simplest case, it can be
+      used for parallel assignment:
+    </p>
+    <%= code_for('parallel_assignment', 'bait') %>
+    <p>
+      But it's also helpful for dealing with functions that return multiple
+      values.
+    </p>
+    <%= code_for('multiple_return_values', 'forecast') %>
+    <p>
+      Pattern matching can be used with any depth of array and object nesting,
+      to help cleanly extract deeply nested properties.
+    </p>
+    <%= code_for('object_extraction', 'poet + " — " + street') %>
+
     <p id="embedded">
       <b class="header">Embedded JavaScript</b>
-      Hopefully, you'll never need to use it, but if you ever need to intersperse 
+      Hopefully, you'll never need to use it, but if you ever need to intersperse
       snippets of JavaScript within your CoffeeScript, you can
       use backticks to pass it straight through.
     </p>
@@ -545,7 +568,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
         <a href="http://github.com/jashkenas/coffee-script/">Source Code</a><br />
         After checking out the source, make sure to run <tt>rake build:parser</tt>
         to generate an up-to-date version of the Racc parser.
-        Use <tt>bin/coffee</tt> to test your changes, 
+        Use <tt>bin/coffee</tt> to test your changes,
         <tt>rake test</tt> to run the test suite,
         and <tt>rake gem:install</tt> to
         create and install a custom version of the gem.
@@ -594,7 +617,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </ul>
 
     <h2 id="change_log">Change Log</h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.2.3</b>
       Axed the unsatisfactory <tt>ino</tt> keyword, replacing it with <tt>of</tt> for

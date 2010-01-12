@@ -61,6 +61,7 @@
       <a href="#expressions">Everything is an Expression</a><br />
       <a href="#inheritance">Inheritance, and Calling Super from a Subclass</a><br />
       <a href="#blocks">Blocks</a><br />
+      <a href="#pattern_matching">Pattern Matching</a><br />
       <a href="#embedded">Embedded JavaScript</a><br />
       <a href="#switch">Switch/When/Else</a><br />
       <a href="#try">Try/Catch/Finally</a><br />
@@ -192,7 +193,7 @@ cubed_list = (function() {
       <a href="documentation/underscore.html">Underscore.coffee</a>, a port
       of the <a href="http://documentcloud.github.com/underscore/">Underscore.js</a>
       library of helper functions. Underscore.coffee can pass the entire Underscore.js
-      test suite. The CoffeeScript version is faster than the original for a number 
+      test suite. The CoffeeScript version is faster than the original for a number
       of methods (in general, due to the speed of CoffeeScript's array comprehensions), and
       after being minified and gzipped, is only 241 bytes larger than the original
       JavaScript version.
@@ -782,7 +783,7 @@ egg_delivery = function egg_delivery() {
 ;alert(countdown);'>run: countdown</button><br class='clear' /></div>
     <p>
       Comprehensions can also be used to iterate over the keys and values in
-      an object. Use <tt>of</tt> to signal comprehension over the properties of 
+      an object. Use <tt>of</tt> to signal comprehension over the properties of
       an object instead of the values in an array.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">years_old</span><span class="Keyword">:</span> {<span class="FunctionName">max</span><span class="Keyword">:</span> <span class="Number">10</span>, <span class="FunctionName">ida</span><span class="Keyword">:</span> <span class="Number">9</span>, <span class="FunctionName">tim</span><span class="Keyword">:</span> <span class="Number">11</span>}
@@ -990,12 +991,12 @@ globals = ((function() {
       be completely usable if it weren't for a couple of small exceptions:
       it's awkward to call <b>super</b> (the prototype object's
       implementation of the current function), and it's awkward to correctly
-      set the prototype chain. 
+      set the prototype chain.
     </p>
     <p>
       CoffeeScript provides <tt>extends</tt>
       to help with prototype setup, <tt>::</tt> for quick access to an
-      object's prototype, and converts <tt>super()</tt> into a call against 
+      object's prototype, and converts <tt>super()</tt> into a call against
       the immediate ancestor's method of the same name.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">Animal</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
@@ -1120,14 +1121,118 @@ tom.move();
 });
 </pre><br class='clear' /></div>
     <p>
-      If you prefer not to use blocks, you'll need to add a pair of parentheses 
+      If you prefer not to use blocks, you'll need to add a pair of parentheses
       to help distinguish the arguments from the definition of the function:
       <tt>_.map(array, (num => num * 2))</tt>
     </p>
 
+    <p id="pattern_matching">
+      <b class="header">Pattern Matching (Destructuring Assignment)</b>
+      To make working with complex arrays and objects more convenient,
+      CoffeeScript provides ECMAScript Harmony's proposed
+      <a href="http://wiki.ecmascript.org/doku.php?id=harmony:destructuring">destructuring assignment</a>
+      syntax. When you assign an array or object literal to a value, CoffeeScript
+      breaks up and matches both sides against each other, assigning the values
+      on the right to the variables on the left. In the simplest case, it can be
+      used for parallel assignment:
+    </p>
+    <div class='code'><pre class="idle"><span class="FunctionName">bait</span><span class="Keyword">:</span> <span class="Number">1000</span>
+<span class="FunctionName">and_switch</span><span class="Keyword">:</span> <span class="Number">0</span>
+
+[bait, and_switch]<span class="Keyword">:</span> [and_switch, bait]
+</pre><pre class="idle"><span class="Storage">var</span> __a, and_switch, bait;
+bait <span class="Keyword">=</span> <span class="Number">1000</span>;
+and_switch <span class="Keyword">=</span> <span class="Number">0</span>;
+__a <span class="Keyword">=</span> [and_switch, bait];
+bait <span class="Keyword">=</span> __a[<span class="Number">0</span>];
+and_switch <span class="Keyword">=</span> __a[<span class="Number">1</span>];
+</pre><button onclick='javascript: var __a, and_switch, bait;
+bait = 1000;
+and_switch = 0;
+__a = [and_switch, bait];
+bait = __a[0];
+and_switch = __a[1];
+;alert(bait);'>run: bait</button><br class='clear' /></div>
+    <p>
+      But it's also helpful for dealing with functions that return multiple
+      values.
+    </p>
+    <div class='code'><pre class="idle"><span class="FunctionName">weather_report</span><span class="Keyword">:</span> <span class="FunctionArgument">location</span> <span class="Storage">=&gt;</span>
+  <span class="Comment"><span class="Comment">#</span> Make an Ajax request to fetch the weather...</span>
+  [location, <span class="Number">72</span>, <span class="String"><span class="String">&quot;</span>Mostly Sunny<span class="String">&quot;</span></span>]
+
+[city, temp, forecast]<span class="Keyword">:</span> weather_report(<span class="String"><span class="String">&quot;</span>Berkeley, CA<span class="String">&quot;</span></span>)
+</pre><pre class="idle"><span class="Storage">var</span> __a, city, forecast, temp, weather_report;
+weather_report <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">weather_report</span>(<span class="FunctionArgument">location</span>) {
+  <span class="Comment"><span class="Comment">//</span> Make an Ajax request to fetch the weather...</span>
+  <span class="Keyword">return</span> [location, <span class="Number">72</span>, <span class="String"><span class="String">&quot;</span>Mostly Sunny<span class="String">&quot;</span></span>];
+};
+__a <span class="Keyword">=</span> weather_report(<span class="String"><span class="String">&quot;</span>Berkeley, CA<span class="String">&quot;</span></span>);
+city <span class="Keyword">=</span> __a[<span class="Number">0</span>];
+temp <span class="Keyword">=</span> __a[<span class="Number">1</span>];
+forecast <span class="Keyword">=</span> __a[<span class="Number">2</span>];
+</pre><button onclick='javascript: var __a, city, forecast, temp, weather_report;
+weather_report = function weather_report(location) {
+  // Make an Ajax request to fetch the weather...
+  return [location, 72, "Mostly Sunny"];
+};
+__a = weather_report("Berkeley, CA");
+city = __a[0];
+temp = __a[1];
+forecast = __a[2];
+;alert(forecast);'>run: forecast</button><br class='clear' /></div>
+    <p>
+      Pattern matching can be used with any depth of array and object nesting,
+      to help cleanly extract deeply nested properties.
+    </p>
+    <div class='code'><pre class="idle"><span class="FunctionName">futurists</span><span class="Keyword">:</span> {
+  <span class="FunctionName">sculptor</span><span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Umberto Boccioni<span class="String">&quot;</span></span>
+  <span class="FunctionName">painter</span><span class="Keyword">:</span>  <span class="String"><span class="String">&quot;</span>Vladimir Burliuk<span class="String">&quot;</span></span>
+  <span class="FunctionName">poet</span><span class="Keyword">:</span> {
+    <span class="FunctionName">name</span><span class="Keyword">:</span>   <span class="String"><span class="String">&quot;</span>F.T. Marinetti<span class="String">&quot;</span></span>
+    <span class="FunctionName">address</span><span class="Keyword">:</span> [
+      <span class="String"><span class="String">&quot;</span>Via Roma 42R<span class="String">&quot;</span></span>
+      <span class="String"><span class="String">&quot;</span>Bellagio, Italy 22021<span class="String">&quot;</span></span>
+    ]
+  }
+}
+
+{<span class="FunctionName">poet</span><span class="Keyword">:</span> {<span class="FunctionName">name</span><span class="Keyword">:</span> poet, <span class="FunctionName">address</span><span class="Keyword">:</span> [street, city]}}<span class="Keyword">:</span> futurists
+</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, city, futurists, poet, street;
+futurists <span class="Keyword">=</span> {
+  sculptor: <span class="String"><span class="String">&quot;</span>Umberto Boccioni<span class="String">&quot;</span></span>,
+  painter: <span class="String"><span class="String">&quot;</span>Vladimir Burliuk<span class="String">&quot;</span></span>,
+  poet: {
+    name: <span class="String"><span class="String">&quot;</span>F.T. Marinetti<span class="String">&quot;</span></span>,
+    address: [<span class="String"><span class="String">&quot;</span>Via Roma 42R<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Bellagio, Italy 22021<span class="String">&quot;</span></span>]
+  }
+};
+__a <span class="Keyword">=</span> futurists;
+__b <span class="Keyword">=</span> __a.poet;
+poet <span class="Keyword">=</span> __b.<span class="LibraryConstant">name</span>;
+__c <span class="Keyword">=</span> __b.address;
+street <span class="Keyword">=</span> __c[<span class="Number">0</span>];
+city <span class="Keyword">=</span> __c[<span class="Number">1</span>];
+</pre><button onclick='javascript: var __a, __b, __c, city, futurists, poet, street;
+futurists = {
+  sculptor: "Umberto Boccioni",
+  painter: "Vladimir Burliuk",
+  poet: {
+    name: "F.T. Marinetti",
+    address: ["Via Roma 42R", "Bellagio, Italy 22021"]
+  }
+};
+__a = futurists;
+__b = __a.poet;
+poet = __b.name;
+__c = __b.address;
+street = __c[0];
+city = __c[1];
+;alert(poet + " — " + street);'>run: poet + " — " + street</button><br class='clear' /></div>
+
     <p id="embedded">
       <b class="header">Embedded JavaScript</b>
-      Hopefully, you'll never need to use it, but if you ever need to intersperse 
+      Hopefully, you'll never need to use it, but if you ever need to intersperse
       snippets of JavaScript within your CoffeeScript, you can
       use backticks to pass it straight through.
     </p>
@@ -1238,7 +1343,7 @@ world...";
         <a href="http://github.com/jashkenas/coffee-script/">Source Code</a><br />
         After checking out the source, make sure to run <tt>rake build:parser</tt>
         to generate an up-to-date version of the Racc parser.
-        Use <tt>bin/coffee</tt> to test your changes, 
+        Use <tt>bin/coffee</tt> to test your changes,
         <tt>rake test</tt> to run the test suite,
         and <tt>rake gem:install</tt> to
         create and install a custom version of the gem.
@@ -1287,7 +1392,7 @@ world...";
     </ul>
 
     <h2 id="change_log">Change Log</h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.2.3</b>
       Axed the unsatisfactory <tt>ino</tt> keyword, replacing it with <tt>of</tt> for
