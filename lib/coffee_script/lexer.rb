@@ -22,6 +22,7 @@ module CoffeeScript
     IDENTIFIER = /\A([a-zA-Z$_](\w|\$)*)/
     NUMBER     = /\A(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
     STRING     = /\A(""|''|"(.*?)([^\\]|\\\\)"|'(.*?)([^\\]|\\\\)')/m
+    HEREDOC    = /\A("{6}|'{6}|"{3}\n?(\s*)(.*?)\n?(\s*)"{3}|'{3}\n?(\s*)(.*?)\n?(\s*)'{3})/m
     JS         = /\A(``|`(.*?)([^\\]|\\\\)`)/m
     OPERATOR   = /\A([+\*&|\/\-%=<>:!]+)/
     WHITESPACE = /\A([ \t]+)/
@@ -69,6 +70,7 @@ module CoffeeScript
     def extract_next_token
       return if identifier_token
       return if number_token
+      return if heredoc_token
       return if string_token
       return if js_token
       return if regex_token
@@ -103,12 +105,22 @@ module CoffeeScript
     # Matches strings, including multi-line strings.
     def string_token
       return false unless string = @chunk[STRING, 1]
-      escaped = string.gsub(MULTILINER) do |match|
-        @line += 1
-        " \\\n"
-      end
+      escaped = string.gsub(MULTILINER, " \\\n")
       token(:STRING, escaped)
+      @line += string.count("\n")
       @i += string.length
+    end
+
+    # Matches heredocs, adjusting indentation to the correct level.
+    def heredoc_token
+      return false unless match = @chunk.match(HEREDOC)
+      indent  = match[2] || match[5]
+      doc     = match[3] || match[6]
+      doc.gsub!(/\n#{indent}/, "\\n")
+      doc.gsub!('"', '\\"')
+      token(:STRING, "\"#{doc}\"")
+      @line += match[1].count("\n")
+      @i += match[1].length
     end
 
     # Matches interpolated JavaScript.

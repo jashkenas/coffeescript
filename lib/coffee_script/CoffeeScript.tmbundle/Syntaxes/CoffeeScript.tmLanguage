@@ -93,6 +93,30 @@
 			<key>name</key>
 			<string>constant.numeric.coffee</string>
 		</dict>
+    <dict>
+      <key>name</key>
+      <string>string.quoted.heredoc.coffee</string>
+      <key>begin</key>
+      <string>("""|''')</string>
+      <key>end</key>
+      <string>("""|''')</string>
+      <key>beginCaptures</key>
+      <dict>
+				<key>0</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.begin.coffee</string>
+				</dict>
+			</dict>
+      <key>endCaptures</key>
+      <dict>
+				<key>0</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.end.coffee</string>
+				</dict>
+			</dict>
+    </dict>
 		<dict>
 			<key>begin</key>
 			<string>'</string>
