@@ -448,23 +448,27 @@ module CoffeeScript
     end
 
     def compile_node(o)
-      return compile_pattern_match(o) if @variable.array? || @variable.object?
-      return compile_splice(o) if @variable.splice?
+      return compile_pattern_match(o) if statement?
+      return compile_splice(o) if value? && @variable.splice?
       stmt      = o.delete(:as_statement)
       name      = @variable.compile(o)
-      last      = @variable.last.to_s.sub(LEADING_DOT, '')
+      last      = value? ? @variable.last.to_s.sub(LEADING_DOT, '') : name
       proto     = name[PROTO_ASSIGN, 1]
       o         = o.merge(:last_assign => last, :proto_assign => proto)
       o[:immediate_assign] = last if @value.is_a?(CodeNode) && last.match(Lexer::IDENTIFIER)
       return write("#{name}: #{@value.compile(o)}") if @context == :object
-      o[:scope].find(name) unless @variable.properties?
+      o[:scope].find(name) unless value? && @variable.properties?
       val = "#{name} = #{@value.compile(o)}"
       return write("#{idt}#{val};") if stmt
       write(o[:return] ? "#{idt}return (#{val})" : val)
     end
 
+    def value?
+      @variable.is_a?(ValueNode)
+    end
+
     def statement?
-      @variable.array? || @variable.object?
+      value? && (@variable.array? || @variable.object?)
     end
 
     # Implementation of recursive pattern matching, when assigning array or
