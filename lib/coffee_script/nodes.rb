@@ -244,7 +244,7 @@ module CoffeeScript
     end
 
     def splat?
-      @arguments.any? {|a| a.is_a?(ArgSplatNode) }
+      @arguments.any? {|a| a.is_a?(SplatNode) }
     end
 
     def <<(argument)
@@ -274,7 +274,7 @@ module CoffeeScript
       obj  = @variable.source || 'this'
       args = @arguments.map do |arg|
         code = arg.compile(o)
-        code = arg.is_a?(ArgSplatNode) ? code : "[#{code}]"
+        code = arg.is_a?(SplatNode) ? code : "[#{code}]"
         arg.equal?(@arguments.first) ? code : ".concat(#{code})"
       end
       "#{prefix}#{meth}.apply(#{obj}, #{args.join('')})"
@@ -562,7 +562,7 @@ module CoffeeScript
       o.delete(:no_wrap)
       o.delete(:globals)
       name = o.delete(:immediate_assign)
-      if @params.last.is_a?(ParamSplatNode)
+      if @params.last.is_a?(SplatNode)
         splat = @params.pop
         splat.index = @params.length
         @body.unshift(splat)
@@ -574,8 +574,9 @@ module CoffeeScript
     end
   end
 
-  # A parameter splat in a function definition.
-  class ParamSplatNode < Node
+  # A splat, either as a parameter to a function, an argument to a call,
+  # or in a destructuring assignment.
+  class SplatNode < Node
     attr_accessor :index
     attr_reader :name
 
@@ -584,20 +585,16 @@ module CoffeeScript
     end
 
     def compile_node(o={})
+      write(@index ? compile_param(o) : compile_arg(o))
+    end
+
+    def compile_param(o)
       o[:scope].find(@name)
-      write("#{@name} = Array.prototype.slice.call(arguments, #{@index})")
-    end
-  end
-
-  class ArgSplatNode < Node
-    attr_reader :value
-
-    def initialize(value)
-      @value = value
+      "#{@name} = Array.prototype.slice.call(arguments, #{@index})"
     end
 
-    def compile_node(o={})
-      write(@value.compile(o))
+    def compile_arg(o)
+      @name.compile(o)
     end
 
   end

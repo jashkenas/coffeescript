@@ -211,12 +211,12 @@ rule
   # A Parameter (or ParamSplat) in a function definition.
   Param:
     PARAM
-  | PARAM "." "." "."                 { result = ParamSplatNode.new(val[0]) }
+  | PARAM "." "." "."                 { result = SplatNode.new(val[0]) }
   ;
 
   # A regular splat.
   Splat:
-    Expression "." "." "."            { result = ArgSplatNode.new(val[0])}
+    Expression "." "." "."            { result = SplatNode.new(val[0]) }
   ;
 
   # Expressions that can be treated as values.
