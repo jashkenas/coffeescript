@@ -22,7 +22,7 @@ module CoffeeScript
     IDENTIFIER = /\A([a-zA-Z$_](\w|\$)*)/
     NUMBER     = /\A(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
     STRING     = /\A(""|''|"(.*?)([^\\]|\\\\)"|'(.*?)([^\\]|\\\\)')/m
-    HEREDOC    = /\A("{6}|'{6}|"{3}\n?(\s*)(.*?)\n?(\s*)"{3}|'{3}\n?(\s*)(.*?)\n?(\s*)'{3})/m
+    HEREDOC    = /\A("{6}|'{6}|"{3}\n?(.*?)\n?(\s*)"{3}|'{3}\n?(.*?)\n?(\s*)'{3})/m
     JS         = /\A(``|`(.*?)([^\\]|\\\\)`)/m
     OPERATOR   = /\A([+\*&|\/\-%=<>:!]+)/
     WHITESPACE = /\A([ \t]+)/
@@ -38,6 +38,7 @@ module CoffeeScript
     MULTILINER = /\n/
     COMMENT_CLEANER = /(^\s*#|\n\s*$)/
     NO_NEWLINE = /\A([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)\Z/
+    HEREDOC_INDENT = /^\s+/
 
     # Tokens which a regular expression will never immediately follow, but which
     # a division operator might.
@@ -50,12 +51,12 @@ module CoffeeScript
 
     # Scan by attempting to match tokens one character at a time. Slow and steady.
     def tokenize(code)
-      @code = code.chomp  # Cleanup code by remove extra line breaks
-      @i = 0              # Current character position we're parsing
-      @line = 1           # The current line.
-      @indent = 0         # The current indent level.
-      @indents = []       # The stack of all indent levels we are currently within.
-      @tokens = []        # Collection of all parsed tokens in the form [:TOKEN_TYPE, value]
+      @code    = code.chomp # Cleanup code by remove extra line breaks
+      @i       = 0          # Current character position we're parsing
+      @line    = 1          # The current line.
+      @indent  = 0          # The current indent level.
+      @indents = []         # The stack of all indent levels we are currently within.
+      @tokens  = []         # Collection of all parsed tokens in the form [:TOKEN_TYPE, value]
       while @i < @code.length
         @chunk = @code[@i..-1]
         extract_next_token
@@ -114,9 +115,10 @@ module CoffeeScript
     # Matches heredocs, adjusting indentation to the correct level.
     def heredoc_token
       return false unless match = @chunk.match(HEREDOC)
-      indent  = match[2] || match[5]
-      doc     = match[3] || match[6]
-      doc.gsub!(/\n#{indent}/, "\\n")
+      doc = match[2] || match[4]
+      indent = doc.scan(HEREDOC_INDENT).min
+      doc.gsub!(/^#{indent}/, "")
+      doc.gsub!("\n", "\\n")
       doc.gsub!('"', '\\"')
       token(:STRING, "\"#{doc}\"")
       @line += match[1].count("\n")

@@ -26,3 +26,12 @@ a: """
 """
 
 print(a is "out\nhere")
+
+
+a: '''
+      a
+    b
+  c
+   '''
+
+print(a is "    a\n  b\nc")

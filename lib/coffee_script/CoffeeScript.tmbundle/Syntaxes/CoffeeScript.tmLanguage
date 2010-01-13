@@ -64,7 +64,7 @@
 			<key>comment</key>
 			<string>match stuff like: a =&gt; … </string>
 			<key>match</key>
-			<string>([a-zA-Z0-9_?., $:*]*)\s*(=&gt;)</string>
+			<string>([a-zA-Z0-9_?., $*]*)\s*(=&gt;)</string>
 			<key>name</key>
 			<string>meta.inline.function.coffee</string>
 		</dict>
