@@ -750,7 +750,7 @@ module CoffeeScript
       else
         index_var   = nil
         source_part = "#{svar} = #{source.compile(o)};\n#{idt}"
-        for_part    = @object ? "#{ivar} in #{svar}" : "#{ivar}=0; #{ivar}<#{svar}.length; #{ivar}++"
+        for_part    = @object ? "#{ivar} in #{svar}" : "#{ivar} = 0; #{ivar} < #{svar}.length; #{ivar}++"
         var_part    = @name ? "#{body_dent}#{@name} = #{svar}[#{ivar}];\n" : ''
       end
       body          = @body

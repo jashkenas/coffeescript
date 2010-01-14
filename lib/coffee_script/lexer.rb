@@ -34,11 +34,12 @@ module CoffeeScript
     ASSIGNMENT = /\A(:|=)\Z/
 
     # Token cleaning regexes.
-    JS_CLEANER = /(\A`|`\Z)/
-    MULTILINER = /\n/
+    JS_CLEANER      = /(\A`|`\Z)/
+    MULTILINER      = /\n/
+    STRING_NEWLINES = /\n\s*/
     COMMENT_CLEANER = /(^\s*#|\n\s*$)/
-    NO_NEWLINE = /\A([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)\Z/
-    HEREDOC_INDENT = /^\s+/
+    NO_NEWLINE      = /\A([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)\Z/
+    HEREDOC_INDENT  = /^\s+/
 
     # Tokens which a regular expression will never immediately follow, but which
     # a division operator might.
@@ -106,7 +107,7 @@ module CoffeeScript
     # Matches strings, including multi-line strings.
     def string_token
       return false unless string = @chunk[STRING, 1]
-      escaped = string.gsub(MULTILINER, " \\\n")
+      escaped = string.gsub(STRING_NEWLINES, " \\\n")
       token(:STRING, escaped)
       @line += string.count("\n")
       @i += string.length

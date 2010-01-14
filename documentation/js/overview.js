@@ -34,7 +34,7 @@
   // Array comprehensions:
   cubed_list = (function() {
     __a = []; __b = list;
-    for (__c=0; __c<__b.length; __c++) {
+    for (__c = 0; __c < __b.length; __c++) {
       num = __b[__c];
       __a.push(math.cube(num));
     }

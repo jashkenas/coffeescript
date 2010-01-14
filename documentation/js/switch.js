@@ -1,14 +1,16 @@
 (function(){
-  if (day === "Tuesday") {
-    eat_breakfast();
-  } else if (day === "Wednesday") {
+  if (day === "Mon") {
+    go_to_work();
+  } else if (day === "Tue") {
     go_to_the_park();
-  } else if (day === "Saturday") {
+  } else if (day === "Thu") {
+    go_ice_fishing();
+  } else if (day === "Fri" || day === "Sat") {
     if (day === bingo_day) {
       go_to_bingo();
       go_dancing();
     }
-  } else if (day === "Sunday") {
+  } else if (day === "Sun") {
     go_to_church();
   } else {
     go_to_work();

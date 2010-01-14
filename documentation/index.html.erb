@@ -51,7 +51,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://gemcutter.org/gems/coffee-script">0.2.4</a>
+      <a href="http://gemcutter.org/gems/coffee-script">0.2.5</a>
     </p>
 
     <h2>Table of Contents</h2>
@@ -76,6 +76,7 @@
       <a href="#inheritance">Inheritance, and Calling Super from a Subclass</a><br />
       <a href="#blocks">Blocks</a><br />
       <a href="#pattern_matching">Pattern Matching</a><br />
+      <a href="#long_arrow">Function Binding</a><br />
       <a href="#embedded">Embedded JavaScript</a><br />
       <a href="#switch">Switch/When/Else</a><br />
       <a href="#try">Try/Catch/Finally</a><br />
@@ -387,9 +388,12 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
 
     <p id="while">
       <b class="header">While Loops</b>
-      The only low-level loop that CoffeeScript provides is the while loop.
+      The only low-level loop that CoffeeScript provides is the <b>while</b> loop. The
+      main difference from JavaScript is that the <b>while</b> loop can be used
+      as an expression, returning an array containing the result of each iteration
+      through the loop.
     </p>
-    <%= code_for('while') %>
+    <%= code_for('while', 'lyrics.join("\n")') %>
     <p>
       Other JavaScript loops, such as <b>for</b> loops and <b>do-while</b> loops
       can be mimicked by variations on <b>while</b>, but the hope is that you
@@ -528,6 +532,17 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('object_extraction', 'poet + " — " + street') %>
 
+    <p id="long_arrow">
+      <b class="header">Function binding</b>
+      The long arrow <tt>==></tt> can be used to both define a function, and to bind
+      it to the current value of <tt>this</tt>, right on the spot. This is helpful
+      when using callback-based libraries like Prototype or jQuery, for creating
+      iterator functions to pass to <tt>each</tt>, or event-handler functions
+      to use with <tt>bind</tt>. Functions created with the long arrow are able to access
+      properties of the <tt>this</tt> where they're defined.
+    </p>
+    <%= code_for('long_arrow') %>
+
     <p id="embedded">
       <b class="header">Embedded JavaScript</b>
       Hopefully, you'll never need to use it, but if you ever need to intersperse
@@ -545,6 +560,11 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       compare any object (via <b>===</b>), preventing fall-through, and resulting
       in a returnable, assignable expression. The format is: <tt>switch</tt> condition,
       <tt>when</tt> clauses, <tt>else</tt> the default case.
+    </p>
+    <p>
+      As in Ruby, <b>switch</b> statements in CoffeeScript can take multiple
+      values for each <b>when</b> clause. If any of the values match, the clause
+      runs.
     </p>
     <%= code_for('switch') %>
 
@@ -624,7 +644,16 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </ul>
 
     <h2 id="change_log">Change Log</h2>
-    
+
+    <p>
+      <b class="header" style="margin-top: 20px;">0.2.5</b>
+      The conditions in switch statements can now take multiple values at once &mdash;
+      If any of them are true, the case will run. Added the long arrow <tt>==></tt>,
+      which defines and immediately binds a function to <tt>this</tt>. While loops can
+      now be used as expressions, in the same way that comprehensions can. Splats
+      can be used within pattern matches to soak up the rest of an array.
+    </p>
+
     <p>
       <b class="header" style="margin-top: 20px;">0.2.4</b>
       Added ECMAScript Harmony style destructuring assignment, for dealing with

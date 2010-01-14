@@ -37,7 +37,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://gemcutter.org/gems/coffee-script">0.2.4</a>
+      <a href="http://gemcutter.org/gems/coffee-script">0.2.5</a>
     </p>
 
     <h2>Table of Contents</h2>
@@ -62,6 +62,7 @@
       <a href="#inheritance">Inheritance, and Calling Super from a Subclass</a><br />
       <a href="#blocks">Blocks</a><br />
       <a href="#pattern_matching">Pattern Matching</a><br />
+      <a href="#long_arrow">Function Binding</a><br />
       <a href="#embedded">Embedded JavaScript</a><br />
       <a href="#switch">Switch/When/Else</a><br />
       <a href="#try">Try/Catch/Finally</a><br />
@@ -139,7 +140,7 @@ race <span class="Keyword">=</span> <span class="Storage">function</span> <span 
 <span class="Comment"><span class="Comment">//</span> Array comprehensions:</span>
 cubed_list <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   __a <span class="Keyword">=</span> []; __b <span class="Keyword">=</span> list;
-  <span class="Keyword">for</span> (__c<span class="Keyword">=</span><span class="Number">0</span>; __c<span class="Keyword">&lt;</span>__b.<span class="LibraryConstant">length</span>; __c<span class="Keyword">++</span>) {
+  <span class="Keyword">for</span> (__c <span class="Keyword">=</span> <span class="Number">0</span>; __c <span class="Keyword">&lt;</span> __b.<span class="LibraryConstant">length</span>; __c<span class="Keyword">++</span>) {
     num <span class="Keyword">=</span> __b[__c];
     __a.<span class="LibraryFunction">push</span>(math.cube(num));
   }
@@ -180,7 +181,7 @@ if ((typeof elvis !== "undefined" && elvis !== null)) {
 // Array comprehensions:
 cubed_list = (function() {
   __a = []; __b = list;
-  for (__c=0; __c<__b.length; __c++) {
+  for (__c = 0; __c < __b.length; __c++) {
     num = __b[__c];
     __a.push(math.cube(num));
   }
@@ -667,21 +668,56 @@ backwards("stairway", "to", "heaven");
 
     <p id="while">
       <b class="header">While Loops</b>
-      The only low-level loop that CoffeeScript provides is the while loop.
+      The only low-level loop that CoffeeScript provides is the <b>while</b> loop. The
+      main difference from JavaScript is that the <b>while</b> loop can be used
+      as an expression, returning an array containing the result of each iteration
+      through the loop.
     </p>
-    <div class='code'><pre class="idle"><span class="Keyword">while</span> demand <span class="Keyword">&gt;</span> supply
-  sell()
-  restock()
+    <div class='code'><pre class="idle"><span class="Keyword">if</span> <span class="Variable">this</span>.studying_economics
+  <span class="Keyword">while</span> supply <span class="Keyword">&gt;</span> demand <span class="Keyword">then</span> buy()
+  <span class="Keyword">while</span> supply <span class="Keyword">&lt;</span> demand <span class="Keyword">then</span> sell()
 
-<span class="Keyword">while</span> supply <span class="Keyword">&gt;</span> demand <span class="Keyword">then</span> buy()
-</pre><pre class="idle"><span class="Keyword">while</span> (demand <span class="Keyword">&gt;</span> supply) {
-  sell();
-  restock();
+<span class="FunctionName">num</span><span class="Keyword">:</span> <span class="Number">6</span>
+<span class="FunctionName">lyrics</span><span class="Keyword">:</span> <span class="Keyword">while</span> num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>
+  num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed.</span>
+<span class="String">    One fell out and bumped his head.<span class="String">&quot;</span></span>
+</pre><pre class="idle"><span class="Storage">var</span> __a, lyrics, num;
+<span class="Keyword">if</span> (<span class="Variable">this</span>.studying_economics) {
+  <span class="Keyword">while</span> (supply <span class="Keyword">&gt;</span> demand) {
+    buy();
+  }
+  <span class="Keyword">while</span> (supply <span class="Keyword">&lt;</span> demand) {
+    sell();
+  }
 }
-<span class="Keyword">while</span> (supply <span class="Keyword">&gt;</span> demand) {
-  buy();
+num <span class="Keyword">=</span> <span class="Number">6</span>;
+lyrics <span class="Keyword">=</span> (<span class="Storage">function</span>() {
+  __a <span class="Keyword">=</span> [];
+  <span class="Keyword">while</span> (num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>) {
+    __a.<span class="LibraryFunction">push</span>(num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed. \</span>
+<span class="String">One fell out and bumped his head.<span class="String">&quot;</span></span>);
+  }
+  <span class="Keyword">return</span> __a;
+})();
+</pre><button onclick='javascript: var __a, lyrics, num;
+if (this.studying_economics) {
+  while (supply > demand) {
+    buy();
+  }
+  while (supply < demand) {
+    sell();
+  }
 }
-</pre><br class='clear' /></div>
+num = 6;
+lyrics = (function() {
+  __a = [];
+  while (num -= 1) {
+    __a.push(num + " little monkeys, jumping on the bed. \
+One fell out and bumped his head.");
+  }
+  return __a;
+})();
+;alert(lyrics.join("\n"));'>run: lyrics.join("\n")</button><br class='clear' /></div>
     <p>
       Other JavaScript loops, such as <b>for</b> loops and <b>do-while</b> loops
       can be mimicked by variations on <b>while</b>, but the hope is that you
@@ -709,7 +745,7 @@ backwards("stairway", "to", "heaven");
 <span class="Comment"><span class="Comment">//</span> Eat lunch.</span>
 lunch <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   __a <span class="Keyword">=</span> []; __b <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
-  <span class="Keyword">for</span> (__c<span class="Keyword">=</span><span class="Number">0</span>; __c<span class="Keyword">&lt;</span>__b.<span class="LibraryConstant">length</span>; __c<span class="Keyword">++</span>) {
+  <span class="Keyword">for</span> (__c <span class="Keyword">=</span> <span class="Number">0</span>; __c <span class="Keyword">&lt;</span> __b.<span class="LibraryConstant">length</span>; __c<span class="Keyword">++</span>) {
     food <span class="Keyword">=</span> __b[__c];
     __a.<span class="LibraryFunction">push</span>(eat(food));
   }
@@ -717,10 +753,10 @@ lunch <span class="Keyword">=</span> (<span class="Storage">function</span>() {
 })();
 <span class="Comment"><span class="Comment">//</span> Naive collision detection.</span>
 __d <span class="Keyword">=</span> asteroids;
-<span class="Keyword">for</span> (__e<span class="Keyword">=</span><span class="Number">0</span>; __e<span class="Keyword">&lt;</span>__d.<span class="LibraryConstant">length</span>; __e<span class="Keyword">++</span>) {
+<span class="Keyword">for</span> (__e <span class="Keyword">=</span> <span class="Number">0</span>; __e <span class="Keyword">&lt;</span> __d.<span class="LibraryConstant">length</span>; __e<span class="Keyword">++</span>) {
   roid <span class="Keyword">=</span> __d[__e];
   __f <span class="Keyword">=</span> asteroids;
-  <span class="Keyword">for</span> (__g<span class="Keyword">=</span><span class="Number">0</span>; __g<span class="Keyword">&lt;</span>__f.<span class="LibraryConstant">length</span>; __g<span class="Keyword">++</span>) {
+  <span class="Keyword">for</span> (__g <span class="Keyword">=</span> <span class="Number">0</span>; __g <span class="Keyword">&lt;</span> __f.<span class="LibraryConstant">length</span>; __g<span class="Keyword">++</span>) {
     roid2 <span class="Keyword">=</span> __f[__g];
     <span class="Keyword">if</span> (roid <span class="Keyword">!</span><span class="Keyword">==</span> roid2) {
       <span class="Keyword">if</span> (roid.overlaps(roid2)) {
@@ -791,6 +827,7 @@ egg_delivery = function egg_delivery() {
 <span class="FunctionName">ages</span><span class="Keyword">:</span> <span class="Keyword">for</span> child, age <span class="Keyword">of</span> years_old
   child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age
 </pre><pre class="idle"><span class="Storage">var</span> __a, __b, age, ages, child, years_old;
+<span class="Storage">var</span> __hasProp <span class="Keyword">=</span> <span class="LibraryClassType">Object</span>.<span class="LibraryConstant">prototype</span>.hasOwnProperty;
 years_old <span class="Keyword">=</span> {
   max: <span class="Number">10</span>,
   ida: <span class="Number">9</span>,
@@ -800,13 +837,14 @@ ages <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   __a <span class="Keyword">=</span> []; __b <span class="Keyword">=</span> years_old;
   <span class="Keyword">for</span> (child <span class="Keyword">in</span> __b) {
     age <span class="Keyword">=</span> __b[child];
-    <span class="Keyword">if</span> (__b.hasOwnProperty(child)) {
+    <span class="Keyword">if</span> (__hasProp.<span class="LibraryFunction">call</span>(__b, child)) {
       __a.<span class="LibraryFunction">push</span>(child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age);
     }
   }
   <span class="Keyword">return</span> __a;
 })();
 </pre><button onclick='javascript: var __a, __b, age, ages, child, years_old;
+var __hasProp = Object.prototype.hasOwnProperty;
 years_old = {
   max: 10,
   ida: 9,
@@ -816,7 +854,7 @@ ages = (function() {
   __a = []; __b = years_old;
   for (child in __b) {
     age = __b[child];
-    if (__b.hasOwnProperty(child)) {
+    if (__hasProp.call(__b, child)) {
       __a.push(child + " is " + age);
     }
   }
@@ -931,22 +969,24 @@ six = (one = 1) + (two = 2) + (three = 3);
 
 <span class="FunctionName">globals</span><span class="Keyword">:</span> (name <span class="Keyword">for</span> name <span class="Keyword">of</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
 </pre><pre class="idle"><span class="Storage">var</span> __a, __b, globals, name;
+<span class="Storage">var</span> __hasProp <span class="Keyword">=</span> <span class="LibraryClassType">Object</span>.<span class="LibraryConstant">prototype</span>.hasOwnProperty;
 <span class="Comment"><span class="Comment">//</span> The first ten global properties.</span>
 globals <span class="Keyword">=</span> ((<span class="Storage">function</span>() {
   __a <span class="Keyword">=</span> []; __b <span class="Keyword">=</span> <span class="LibraryClassType">window</span>;
   <span class="Keyword">for</span> (name <span class="Keyword">in</span> __b) {
-    <span class="Keyword">if</span> (__b.hasOwnProperty(name)) {
+    <span class="Keyword">if</span> (__hasProp.<span class="LibraryFunction">call</span>(__b, name)) {
       __a.<span class="LibraryFunction">push</span>(name);
     }
   }
   <span class="Keyword">return</span> __a;
 })()).<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
 </pre><button onclick='javascript: var __a, __b, globals, name;
+var __hasProp = Object.prototype.hasOwnProperty;
 // The first ten global properties.
 globals = ((function() {
   __a = []; __b = window;
   for (name in __b) {
-    if (__b.hasOwnProperty(name)) {
+    if (__hasProp.call(__b, name)) {
       __a.push(name);
     }
   }
@@ -1230,6 +1270,41 @@ street = __c[0];
 city = __c[1];
 ;alert(poet + " — " + street);'>run: poet + " — " + street</button><br class='clear' /></div>
 
+    <p id="long_arrow">
+      <b class="header">Function binding</b>
+      The long arrow <tt>==></tt> can be used to both define a function, and to bind
+      it to the current value of <tt>this</tt>, right on the spot. This is helpful
+      when using callback-based libraries like Prototype or jQuery, for creating
+      iterator functions to pass to <tt>each</tt>, or event-handler functions
+      to use with <tt>bind</tt>. Functions created with the long arrow are able to access
+      properties of the <tt>this</tt> where they're defined.
+    </p>
+    <div class='code'><pre class="idle"><span class="FunctionName">Account</span><span class="Keyword">:</span> <span class="FunctionArgument">customer, cart</span> <span class="Storage">=&gt;</span>
+  <span class="FunctionName">this.customer</span><span class="Keyword">:</span> customer
+  <span class="FunctionName">this.cart</span><span class="Keyword">:</span> cart
+
+  $(<span class="String"><span class="String">'</span>.shopping_cart<span class="String">'</span></span>).bind(<span class="String"><span class="String">'</span>click<span class="String">'</span></span>) <span class="FunctionName">event</span> <span class="Keyword">=</span><span class="Storage">=&gt;</span>
+    <span class="Variable">this</span>.customer.purchase(<span class="Variable">this</span>.cart)
+</pre><pre class="idle"><span class="Storage">var</span> Account;
+Account <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Account</span>(<span class="FunctionArgument">customer, cart</span>) {
+  <span class="Storage">var</span> __a, __b;
+  <span class="Storage">var</span> __this <span class="Keyword">=</span> <span class="Variable">this</span>;
+  <span class="Variable">this</span>.customer <span class="Keyword">=</span> customer;
+  <span class="Variable">this</span>.cart <span class="Keyword">=</span> cart;
+  __a <span class="Keyword">=</span> <span class="Keyword">$</span>(<span class="String"><span class="String">'</span>.shopping_cart<span class="String">'</span></span>).bind(<span class="String"><span class="String">'</span>click<span class="String">'</span></span>, (<span class="Storage">function</span>() {
+    <span class="FunctionName">__b</span> = <span class="Storage">function</span>(<span class="FunctionArgument">event</span>) {
+      <span class="Storage">var</span> __c;
+      __c <span class="Keyword">=</span> <span class="Variable">this</span>.customer.purchase(<span class="Variable">this</span>.cart);
+      <span class="Keyword">return</span> Account <span class="Keyword">===</span> <span class="Variable">this</span>.<span class="LibraryConstant">constructor</span> ? <span class="Variable">this</span> : __c;
+    };
+    <span class="Keyword">return</span> (<span class="Storage">function</span>() {
+      <span class="Keyword">return</span> __b.<span class="LibraryFunction">apply</span>(__this, arguments);
+    });
+  })());
+  <span class="Keyword">return</span> Account <span class="Keyword">===</span> <span class="Variable">this</span>.<span class="LibraryConstant">constructor</span> ? <span class="Variable">this</span> : __a;
+};
+</pre><br class='clear' /></div>
+
     <p id="embedded">
       <b class="header">Embedded JavaScript</b>
       Hopefully, you'll never need to use it, but if you ever need to intersperse
@@ -1261,25 +1336,33 @@ return [document.title, "Hello JavaScript"].join(": ");
       in a returnable, assignable expression. The format is: <tt>switch</tt> condition,
       <tt>when</tt> clauses, <tt>else</tt> the default case.
     </p>
+    <p>
+      As in Ruby, <b>switch</b> statements in CoffeeScript can take multiple
+      values for each <b>when</b> clause. If any of the values match, the clause
+      runs.
+    </p>
     <div class='code'><pre class="idle"><span class="Keyword">switch</span> day
-  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Tuesday<span class="String">&quot;</span></span>   <span class="Keyword">then</span> eat_breakfast()
-  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Wednesday<span class="String">&quot;</span></span> <span class="Keyword">then</span> go_to_the_park()
-  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Saturday<span class="String">&quot;</span></span>
+  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Mon<span class="String">&quot;</span></span> <span class="Keyword">then</span> go_to_work()
+  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Tue<span class="String">&quot;</span></span> <span class="Keyword">then</span> go_to_the_park()
+  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Thu<span class="String">&quot;</span></span> <span class="Keyword">then</span> go_ice_fishing()
+  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Fri<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Sat<span class="String">&quot;</span></span>
     <span class="Keyword">if</span> day <span class="Keyword">is</span> bingo_day
       go_to_bingo()
       go_dancing()
-  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Sunday<span class="String">&quot;</span></span>    <span class="Keyword">then</span> go_to_church()
+  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Sun<span class="String">&quot;</span></span> <span class="Keyword">then</span> go_to_church()
   <span class="Keyword">else</span> go_to_work()
-</pre><pre class="idle"><span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Tuesday<span class="String">&quot;</span></span>) {
-  eat_breakfast();
-} <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Wednesday<span class="String">&quot;</span></span>) {
+</pre><pre class="idle"><span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Mon<span class="String">&quot;</span></span>) {
+  go_to_work();
+} <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Tue<span class="String">&quot;</span></span>) {
   go_to_the_park();
-} <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Saturday<span class="String">&quot;</span></span>) {
+} <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Thu<span class="String">&quot;</span></span>) {
+  go_ice_fishing();
+} <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Fri<span class="String">&quot;</span></span> <span class="Keyword">||</span> day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Sat<span class="String">&quot;</span></span>) {
   <span class="Keyword">if</span> (day <span class="Keyword">===</span> bingo_day) {
     go_to_bingo();
     go_dancing();
   }
-} <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Sunday<span class="String">&quot;</span></span>) {
+} <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Sun<span class="String">&quot;</span></span>) {
   go_to_church();
 } <span class="Keyword">else</span> {
   go_to_work();
@@ -1406,7 +1489,16 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">&q
     </ul>
 
     <h2 id="change_log">Change Log</h2>
-    
+
+    <p>
+      <b class="header" style="margin-top: 20px;">0.2.5</b>
+      The conditions in switch statements can now take multiple values at once &mdash;
+      If any of them are true, the case will run. Added the long arrow <tt>==></tt>,
+      which defines and immediately binds a function to <tt>this</tt>. While loops can
+      now be used as expressions, in the same way that comprehensions can. Splats
+      can be used within pattern matches to soak up the rest of an array.
+    </p>
+
     <p>
       <b class="header" style="margin-top: 20px;">0.2.4</b>
       Added ECMAScript Harmony style destructuring assignment, for dealing with
