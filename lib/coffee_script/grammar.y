@@ -353,6 +353,7 @@ rule
   While:
     WHILE Expression Block            { result = WhileNode.new(val[1], val[2]) }
   | WHILE Expression                  { result = WhileNode.new(val[1], nil) }
+  | Expression WHILE Expression       { result = WhileNode.new(val[2], Expressions.wrap(val[0])) }
   ;
 
   # Array comprehensions, including guard and current index.

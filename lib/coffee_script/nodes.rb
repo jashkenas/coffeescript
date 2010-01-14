@@ -36,9 +36,9 @@ module CoffeeScript
     def compile(o={})
       @options = o.dup
       @indent  = o[:indent]
-      top = self.is_a?(ForNode) ? @options[:top] : @options.delete(:top)
-      closure = statement? && !statement_only? && !top && !@options[:return]
-      closure ? compile_closure(@options) : compile_node(@options)
+      top      = self.top_sensitive? ? @options[:top] : @options.delete(:top)
+      closure  = statement? && !statement_only? && !top && !@options[:return]
+      closure  ? compile_closure(@options) : compile_node(@options)
     end
 
     def compile_closure(o={})
@@ -56,6 +56,7 @@ module CoffeeScript
     def unwrap;           self;   end
     def statement?;       false;  end
     def statement_only?;  false;  end
+    def top_sensitive?;   false;  end
   end
 
   # A collection of nodes, each one representing an expression.
@@ -668,14 +669,27 @@ module CoffeeScript
       @condition, @body = condition, body
     end
 
+    def top_sensitive?
+      true
+    end
+
     def compile_node(o)
       returns     = o.delete(:return)
+      top         = o.delete(:top) && !returns
       o[:indent]  = idt(1)
       o[:top]     = true
       cond        = @condition.compile(o)
-      post        = returns ? "\n#{idt}return null;" : ''
-      return write("#{idt}while (#{cond}) null;#{post}") if @body.nil?
-      write("#{idt}while (#{cond}) {\n#{@body.compile(o)}\n#{idt}}#{post}")
+      set         = ''
+      if !top
+        rvar      = o[:scope].free_variable
+        set       = "#{idt}#{rvar} = [];\n"
+        @body = Expressions.wrap(CallNode.new(
+          ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [@body.unwrap]
+        ))
+      end
+      post        = returns ? "\n#{idt}return #{rvar};" : ''
+      return write("#{set}#{idt}while (#{cond}) null;#{post}") if @body.nil?
+      write("#{set}#{idt}while (#{cond}) {\n#{@body.compile(o)}\n#{idt}}#{post}")
     end
   end
 
@@ -695,6 +709,10 @@ module CoffeeScript
       @step   = source[:step]
       @object = !!source[:object]
       @name, @index = @index, @name if @object
+    end
+
+    def top_sensitive?
+      true
     end
 
     def compile_node(o)

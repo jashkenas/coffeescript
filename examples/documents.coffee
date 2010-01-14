@@ -15,8 +15,8 @@ dc.model.Document: dc.Model.extend({
   # document by binding to Metadata, instead of on-the-fly.
   metadata: =>
     docId: this.id
-    _.select(Metadata.models(), (meta => 
-      _.any(meta.get('instances'), instance => 
+    _.select(Metadata.models(), (meta =>
+      _.any(meta.get('instances'), instance =>
         instance.document_id is docId)))
 
   bookmark: pageNumber =>
@@ -60,7 +60,7 @@ dc.model.DocumentSet: dc.model.RESTfulSet.extend({
   # change their selected state.
   _onModelEvent: e, model =>
     this.base(e, model)
-    fire: e == dc.Model.CHANGED and model.hasChanged('selected')
+    fire: e is dc.Model.CHANGED and model.hasChanged('selected')
     if fire then _.defer(_(this.fire).bind(this, this.SELECTION_CHANGED, this))
 
 })
