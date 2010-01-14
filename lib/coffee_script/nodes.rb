@@ -558,20 +558,12 @@ module CoffeeScript
       @bound  = tag == :boundfunc
     end
 
-    def statement?
-      @bound
-    end
-
     def compile_node(o)
-      if @bound
-        o[:scope].assign("__this", "this")
-        fvar = o[:scope].free_variable
-      end
       shared_scope = o.delete(:shared_scope)
       o[:scope]    = shared_scope || Scope.new(o[:scope], @body)
       o[:return]   = true
       o[:top]      = true
-      o[:indent]   = idt(1)
+      o[:indent]   = idt(@bound ? 2 : 1)
       o.delete(:no_wrap)
       o.delete(:globals)
       name = o.delete(:immediate_assign)
@@ -583,9 +575,9 @@ module CoffeeScript
       @params.each {|id| o[:scope].parameter(id.to_s) }
       code = "\n#{@body.compile_with_declarations(o)}\n"
       name_part = name ? " #{name}" : ''
-      func = "function#{@bound ? '' : name_part}(#{@params.join(', ')}) {#{code}#{idt}}"
+      func = "function#{@bound ? '' : name_part}(#{@params.join(', ')}) {#{code}#{idt(@bound ? 1 : 0)}}"
       return write(func) unless @bound
-      write("#{idt}#{fvar} = #{func};\n#{idt}#{o[:return] ? 'return ' : ''}(function#{name_part}() {\n#{idt(1)}return #{fvar}.apply(__this, arguments);\n#{idt}});")
+      write("(function(__this) {\n#{idt(1)}var __func = #{func};\n#{idt(1)}return (function#{name_part}() {\n#{idt(2)}return __func.apply(__this, arguments);\n#{idt(1)}});\n#{idt}})(this)")
     end
   end
 
