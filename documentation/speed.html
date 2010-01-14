@@ -14,63 +14,39 @@
     var arr = [];
     while (num--) arr.push(num);
 
-    JSLitmus.test('current comprehensions', function() {
-      __a = arr;
-      __c = [];
-      for (__b in __a) {
-        if (__a.hasOwnProperty(__b)) {
-          num = __a[__b];
-          __d = num;
-          __c.push(num);
-        }
-      }
+    var f1 = function f1() {
+      return arr;
+    };
+
+    JSLitmus.test('regular function', function() {
+      f1();
     });
 
-    JSLitmus.test('raw for loop (best we can do)', function() {
-      __a = arr;
-      __c = new Array(__a.length);
-      for (__b=0; __b < __a.length; __b++) {
-        __c[__b] = __a[__b];
-      }
+    var __this = this;
+
+    var f2 = function f2() {
+      return (function() {
+        return arr;
+      }).apply(__this, arguments);
+    };
+
+    JSLitmus.test('bound function', function() {
+      f2();
     });
 
-    JSLitmus.test('current without hasOwnProperty check', function() {
-      __a = arr;
-      __c = [];
-      for (__b in __a) {
-        num = __a[__b];
-        __d = num;
-        __c.push(num);
-      }
-    });
-
-    JSLitmus.test('raw for..in loop', function() {
-      __a = arr;
-      __c = new Array(__a.length);
-      for (__b in __a) {
-        __c[__b] = __a[__b];
-      }
-    });
-
-    JSLitmus.test('weepy\'s comprehensions', function() {
-      __c = []; __a = arr;
-      __d = function(num, __b) {
-        __c.push(num);
+    var f3 = (function() {
+      __b = function() {
+        return arr;
       };
-      if (__a instanceof Array) {
-        for (__b=0; __b<__a.length; __b++) __d(__a[__b], __b);
-      } else {
-        for (__b in __a) { if (__a.hasOwnProperty(__b)) __d(__a[__b], __b); }
-      }
+      return (function f2() {
+        return __b.apply(__this, arguments);
+      });
+    })();
+
+    JSLitmus.test('prebound function', function() {
+      f3();
     });
 
-    JSLitmus.test('CoffeeScript 0.2.2 comprehensions', function() {
-      __c = []; __a = arr;
-      for (__b=0; __b<__a.length; __b++) {
-        num = __a[__b];
-        __c.push(num);
-      }
-    });
   </script>
 
 </body>

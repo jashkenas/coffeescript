@@ -47,10 +47,10 @@ module CoffeeScript
       @temp_variable.dup
     end
 
-    # Ensure that an assignment is made at the top-level scope.
-    # Takes two strings.
-    def top_level_assign(name, value)
-      return @parent.top_level_assign(name, value) if @parent
+    # Ensure that an assignment is made at the top of scope (or top-level
+    # scope, if requested).
+    def assign(name, value, top=false)
+      return @parent.assign(name, value, top) if top && @parent
       @variables[name.to_sym] = Value.new(value)
     end
 

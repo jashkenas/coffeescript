@@ -546,14 +546,23 @@ module CoffeeScript
 
   # A function definition. The only node that creates a new Scope.
   class CodeNode < Node
-    attr_reader :params, :body
+    attr_reader :params, :body, :bound
 
-    def initialize(params, body)
+    def initialize(params, body, tag=nil)
       @params = params
-      @body = body
+      @body   = body
+      @bound  = tag == :boundfunc
+    end
+
+    def statement?
+      @bound
     end
 
     def compile_node(o)
+      if @bound
+        o[:scope].assign("__this", "this")
+        fvar = o[:scope].free_variable
+      end
       shared_scope = o.delete(:shared_scope)
       o[:scope]    = shared_scope || Scope.new(o[:scope], @body)
       o[:return]   = true
@@ -568,9 +577,11 @@ module CoffeeScript
         @body.unshift(splat)
       end
       @params.each {|id| o[:scope].parameter(id.to_s) }
-      code = @body.compile_with_declarations(o)
+      code = "\n#{@body.compile_with_declarations(o)}\n"
       name_part = name ? " #{name}" : ''
-      write("function#{name_part}(#{@params.join(', ')}) {\n#{code}\n#{idt}}")
+      func = "function#{@bound ? '' : name_part}(#{@params.join(', ')}) {#{code}#{idt}}"
+      return write(func) unless @bound
+      write("#{idt}#{fvar} = #{func};\n#{idt}#{o[:return] ? 'return ' : ''}(function#{name_part}() {\n#{idt(1)}return #{fvar}.apply(__this, arguments);\n#{idt}});")
     end
   end
 
@@ -726,7 +737,7 @@ module CoffeeScript
         body = Expressions.wrap(IfNode.new(@filter, body))
       end
       if @object
-        o[:scope].top_level_assign("__hasProp", "Object.prototype.hasOwnProperty")
+        o[:scope].assign("__hasProp", "Object.prototype.hasOwnProperty", true)
         body = Expressions.wrap(IfNode.new(
           CallNode.new(ValueNode.new(LiteralNode.wrap("__hasProp"), [AccessorNode.new(Value.new('call'))]), [LiteralNode.wrap(svar), LiteralNode.wrap(ivar)]),
           Expressions.wrap(body),

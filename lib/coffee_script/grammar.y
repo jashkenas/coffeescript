@@ -39,7 +39,7 @@ prechigh
   left     EXTENDS
   left     ASSIGN '||=' '&&='
   right    RETURN
-  right    '=>' UNLESS IF ELSE WHILE
+  right    '=>' '==>' UNLESS IF ELSE WHILE
 preclow
 
 rule
@@ -198,8 +198,14 @@ rule
 
   # Function definition.
   Code:
-    ParamList "=>" Block              { result = CodeNode.new(val[0], val[2]) }
-  | "=>" Block                        { result = CodeNode.new([], val[1]) }
+    ParamList FuncGlyph Block         { result = CodeNode.new(val[0], val[2], val[1]) }
+  | FuncGlyph Block                   { result = CodeNode.new([], val[1], val[0]) }
+  ;
+
+  # The symbols to signify functions, and bound functions.
+  FuncGlyph:
+    '=>'                              { result = :func }
+  | '==>'                             { result = :boundfunc }
   ;
 
   # The parameters to a function definition.

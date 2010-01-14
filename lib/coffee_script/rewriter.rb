@@ -26,7 +26,7 @@ module CoffeeScript
 
     # Single-line flavors of block expressions that have unclosed endings.
     # The grammar can't disambiguate them, so we insert the implicit indentation.
-    SINGLE_LINERS  = [:ELSE, "=>", :TRY, :FINALLY, :THEN]
+    SINGLE_LINERS  = [:ELSE, "=>", "==>", :TRY, :FINALLY, :THEN]
     SINGLE_CLOSERS = ["\n", :CATCH, :FINALLY, :ELSE, :OUTDENT, :LEADING_WHEN]
 
     # Rewrite the token stream in multiple passes, one logical filter at

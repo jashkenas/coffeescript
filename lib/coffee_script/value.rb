@@ -41,6 +41,10 @@ module CoffeeScript
     def hash
       @value.hash
     end
+
+    def match(regex)
+      @value.match(regex)
+    end
   end
 
 end

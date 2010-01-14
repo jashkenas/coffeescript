@@ -27,7 +27,7 @@ module CoffeeScript
     OPERATOR   = /\A([+\*&|\/\-%=<>:!]+)/
     WHITESPACE = /\A([ \t]+)/
     COMMENT    = /\A(((\n?[ \t]*)?#.*$)+)/
-    CODE       = /\A(=>)/
+    CODE       = /\A(=?=>)/
     REGEX      = /\A(\/(.*?)([^\\]|\\\\)\/[imgy]{0,4})/
     MULTI_DENT = /\A((\n([ \t]*))+)(\.)?/
     LAST_DENT  = /\n([ \t]*)/
@@ -155,7 +155,7 @@ module CoffeeScript
       @line += indent.scan(MULTILINER).size
       @i += indent.size
       next_character = @chunk[MULTI_DENT, 4]
-      no_newlines = next_character == '.' || (last_value.to_s.match(NO_NEWLINE) && last_value != "=>")
+      no_newlines = next_character == '.' || (last_value.to_s.match(NO_NEWLINE) && !last_value.match(CODE))
       return suppress_newlines(indent) if no_newlines
       size = indent.scan(LAST_DENT).last.last.length
       return newline_token(indent) if size == @indent
