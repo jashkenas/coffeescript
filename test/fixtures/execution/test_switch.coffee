@@ -15,3 +15,17 @@ result: switch num
   else false
 
 print(result)
+
+
+func: num =>
+  switch num
+    when 2, 4, 6
+      true
+    when 1, 3, 5
+      false
+    else false
+
+print(func(2))
+print(func(6))
+print(!func(3))
+print(!func(8))

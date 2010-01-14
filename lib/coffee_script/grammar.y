@@ -314,6 +314,12 @@ rule
   | ArgList OUTDENT                   { result = val[0] }
   ;
 
+  # Just simple, comma-separated, required arguments (no fancy syntax).
+  SimpleArgs:
+    Expression                        { result = val[0] }
+  | SimpleArgs "," Expression         { result = ([val[0]] << val[2]).flatten }
+  ;
+
   # Try/catch/finally exception handling blocks.
   Try:
     TRY Block Catch                   { result = TryNode.new(val[1], val[2][0], val[2][1]) }
@@ -383,8 +389,8 @@ rule
 
   # An individual when.
   When:
-    LEADING_WHEN Expression Block     { result = IfNode.new(val[1], val[2], nil, {:statement => true}) }
-  | LEADING_WHEN Expression Block
+    LEADING_WHEN SimpleArgs Block     { result = IfNode.new(val[1], val[2], nil, {:statement => true}) }
+  | LEADING_WHEN SimpleArgs Block
       Terminator                      { result = IfNode.new(val[1], val[2], nil, {:statement => true}) }
   | Comment Terminator When           { result = val[2].add_comment(val[0]) }
   ;

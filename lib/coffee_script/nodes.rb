@@ -821,6 +821,7 @@ module CoffeeScript
       @body      = body && body.unwrap
       @else_body = else_body && else_body.unwrap
       @tags      = tags
+      @multiple  = true if @condition.is_a?(Array)
       @condition = OpNode.new("!", ParentheticalNode.new(@condition)) if @tags[:invert]
     end
 
@@ -842,7 +843,8 @@ module CoffeeScript
 
     # Rewrite a chain of IfNodes with their switch condition for equality.
     def rewrite_condition(expression)
-      @condition = OpNode.new("is", expression, @condition)
+      @condition = @multiple ? @condition.map {|c| OpNode.new("is", expression, c) } :
+                               OpNode.new("is", expression, @condition)
       @else_body.rewrite_condition(expression) if chain?
       self
     end
@@ -864,6 +866,10 @@ module CoffeeScript
       @is_statement ||= !!(@comment || @tags[:statement] || @body.statement? || (@else_body && @else_body.statement?))
     end
 
+    def compile_condition(o)
+      [@condition].flatten.map {|c| c.compile(o) }.join(' || ')
+    end
+
     def compile_node(o)
       write(statement? ? compile_statement(o) : compile_ternary(o))
     end
@@ -879,7 +885,7 @@ module CoffeeScript
       if_dent     = child ? '' : idt
       com_dent    = child ? idt : ''
       prefix      = @comment ? @comment.compile(cond_o) + "\n#{com_dent}" : ''
-      if_part     = "#{prefix}#{if_dent}if (#{@condition.compile(cond_o)}) {\n#{Expressions.wrap(@body).compile(o)}\n#{idt}}"
+      if_part     = "#{prefix}#{if_dent}if (#{compile_condition(cond_o)}) {\n#{Expressions.wrap(@body).compile(o)}\n#{idt}}"
       return if_part unless @else_body
       else_part = chain? ?
         " else #{@else_body.compile(o.merge(:indent => idt, :chain_child => true))}" :
