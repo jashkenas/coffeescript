@@ -658,6 +658,17 @@ module CoffeeScript
     end
   end
 
+  # A faux-node that is never created by the grammar, but is used during
+  # code generation to generate a quick "array.push(value)" tree of nodes.
+  class PushNode
+    def self.wrap(array, expressions)
+      Expressions.wrap(CallNode.new(
+        ValueNode.new(LiteralNode.new(array), [AccessorNode.new('push')]),
+        [expressions.unwrap]
+      ))
+    end
+  end
+
   # A while loop, the only sort of low-level loop exposed by CoffeeScript. From
   # it, all other loops can be manufactured.
   class WhileNode < Node
@@ -683,9 +694,7 @@ module CoffeeScript
       if !top
         rvar      = o[:scope].free_variable
         set       = "#{idt}#{rvar} = [];\n"
-        @body = Expressions.wrap(CallNode.new(
-          ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [@body.unwrap]
-        ))
+        @body     = PushNode.wrap(rvar, @body)
       end
       post        = returns ? "\n#{idt}return #{rvar};" : ''
       return write("#{set}#{idt}while (#{cond}) null;#{post}") if @body.nil?
@@ -743,9 +752,7 @@ module CoffeeScript
       if top_level
         body = Expressions.wrap(body)
       else
-        body = Expressions.wrap(CallNode.new(
-          ValueNode.new(LiteralNode.new(rvar), [AccessorNode.new('push')]), [body.unwrap]
-        ))
+        body = PushNode.wrap(rvar, body)
       end
       if o[:return]
         return_result = "return #{return_result}" if o[:return]
