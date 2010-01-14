@@ -44,3 +44,19 @@ person: {
 
 print(a is "Bob")
 print(b is "Moquasset NY, 10021")
+
+
+test: {
+  person: {
+    address: [
+      "------"
+      "Street 101"
+      "Apt 101"
+      "City 101"
+    ]
+  }
+}
+
+{person: {address: [ignore, addr...]}}: test
+
+print(addr.join(', ') is "Street 101, Apt 101, City 101")

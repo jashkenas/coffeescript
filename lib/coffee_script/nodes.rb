@@ -482,9 +482,12 @@ module CoffeeScript
       @variable.base.objects.each_with_index do |obj, i|
         obj, i = obj.value, obj.variable.base if @variable.object?
         access_class = @variable.array? ? IndexNode : AccessorNode
-        assigns << AssignNode.new(
-          obj, ValueNode.new(Value.new(val_var), [access_class.new(Value.new(i.to_s))])
-        ).compile(o)
+        if obj.is_a?(SplatNode)
+          val = LiteralNode.wrap(obj.compile_value(o, val_var, @variable.base.objects.index(obj)))
+        else
+          val = ValueNode.new(Value.new(val_var), [access_class.new(Value.new(i.to_s))])
+        end
+        assigns << AssignNode.new(obj, val).compile(o)
       end
       write(assigns.join("\n"))
     end
@@ -607,6 +610,10 @@ module CoffeeScript
 
     def compile_arg(o)
       @name.compile(o)
+    end
+
+    def compile_value(o, name, index)
+      "Array.prototype.slice.call(#{name}, #{index})"
     end
 
   end
