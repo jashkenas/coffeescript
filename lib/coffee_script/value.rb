@@ -45,6 +45,10 @@ module CoffeeScript
     def match(regex)
       @value.match(regex)
     end
+
+    def children
+      []
+    end
   end
 
 end

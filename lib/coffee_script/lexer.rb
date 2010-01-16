@@ -13,10 +13,11 @@ module CoffeeScript
                   "try", "catch", "finally", "throw",
                   "break", "continue",
                   "for", "in", "of", "by", "where", "while",
+                  "delete", "instanceof", "typeof",
                   "switch", "when",
                   "super", "extends",
                   "arguments",
-                  "delete", "instanceof", "typeof"]
+                  "this"]
 
     # Token matching regexes.
     IDENTIFIER = /\A([a-zA-Z$_](\w|\$)*)/

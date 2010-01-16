@@ -16,6 +16,7 @@ token ARGUMENTS
 token NEWLINE
 token COMMENT
 token JS
+token THIS
 token INDENT OUTDENT
 
 # Declare order of operations.
@@ -102,12 +103,12 @@ rule
   | BREAK                             { result = LiteralNode.new(val[0]) }
   | CONTINUE                          { result = LiteralNode.new(val[0]) }
   | ARGUMENTS                         { result = LiteralNode.new(val[0]) }
-  | TRUE                              { result = LiteralNode.new(true) }
-  | FALSE                             { result = LiteralNode.new(false) }
-  | YES                               { result = LiteralNode.new(true) }
-  | NO                                { result = LiteralNode.new(false) }
-  | ON                                { result = LiteralNode.new(true) }
-  | OFF                               { result = LiteralNode.new(false) }
+  | TRUE                              { result = LiteralNode.new(Value.new(true)) }
+  | FALSE                             { result = LiteralNode.new(Value.new(false)) }
+  | YES                               { result = LiteralNode.new(Value.new(true)) }
+  | NO                                { result = LiteralNode.new(Value.new(false)) }
+  | ON                                { result = LiteralNode.new(Value.new(true)) }
+  | OFF                               { result = LiteralNode.new(Value.new(false)) }
   ;
 
   # Assignment to a variable (or index).
@@ -235,6 +236,7 @@ rule
   | Range                             { result = ValueNode.new(val[0]) }
   | Value Accessor                    { result = val[0] << val[1] }
   | Invocation Accessor               { result = ValueNode.new(val[0], [val[1]]) }
+  | THIS                              { result = ValueNode.new(ThisNode.new) }
   ;
 
   # Accessing into an object or array, through dot or index notation.

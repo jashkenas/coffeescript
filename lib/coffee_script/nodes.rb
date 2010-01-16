@@ -24,6 +24,13 @@ module CoffeeScript
       class_eval "def statement_only?; true; end"
     end
 
+    # Provide a quick implementation of a children method.
+    def self.children(*attributes)
+      attr_reader *attributes
+      attrs = attributes.map {|a| "[@#{a}]" }.join(', ')
+      class_eval "def children; [#{attrs}].flatten.compact; end"
+    end
+
     def write(code)
       puts "#{self.class.to_s}:\n#{@options.inspect}\n#{code}\n\n" if ENV['VERBOSE']
       code
@@ -42,14 +49,30 @@ module CoffeeScript
     end
 
     def compile_closure(o={})
-      indent = o[:indent]
-      @indent = (o[:indent] = idt(1))
-      "(function() {\n#{compile_node(o.merge(:return => true))}\n#{indent}})()"
+      indent    = o[:indent]
+      @indent   = (o[:indent] = idt(1))
+      pass_this = !o[:closure] && contains? {|node| node.is_a?(ThisNode) }
+      param     = pass_this ? '__this' : ''
+      "(function(#{param}) {\n#{compile_node(o.merge(:return => true, :closure => true))}\n#{indent}})(#{pass_this ? 'this' : ''})"
     end
 
     # Quick short method for the current indentation level, plus tabbing in.
     def idt(tabs=0)
       @indent + (TAB * tabs)
+    end
+
+    # Does this node, or any of it's children, contain a node of a certain kind?
+    def contains?(&block)
+      children.each do |node|
+        return true if yield(node)
+        node.is_a?(Node) && node.contains?(&block)
+        false
+      end
+    end
+
+    # All Nodes must implement a "children" method that returns child nodes.
+    def children
+      raise NotImplementedError, "#{self.class} is missing a 'children' method"
     end
 
     # Default implementations of the common node methods.
@@ -62,7 +85,7 @@ module CoffeeScript
   # A collection of nodes, each one representing an expression.
   class Expressions < Node
     statement
-    attr_reader :expressions
+    children :expressions
 
     TRAILING_WHITESPACE = /\s+$/
     UPPERCASE           = /[A-Z]/
@@ -156,6 +179,7 @@ module CoffeeScript
   # Literals are static values that have a Ruby representation, eg.: a string, a number,
   # true, false, nil, etc.
   class LiteralNode < Node
+    children :value
 
     # Values of a literal node that much be treated as a statement -- no
     # sense returning or assigning them.
@@ -164,8 +188,6 @@ module CoffeeScript
     # If we get handed a literal reference to an arguments object, convert
     # it to an array.
     ARG_ARRAY  = 'Array.prototype.slice.call(arguments, 0)'
-
-    attr_reader :value
 
     # Wrap up a compiler-generated string as a LiteralNode.
     def self.wrap(string)
@@ -192,8 +214,7 @@ module CoffeeScript
   # Return an expression, or wrap it in a closure and return it.
   class ReturnNode < Node
     statement_only
-
-    attr_reader :expression
+    children :expression
 
     def initialize(expression)
       @expression = expression
@@ -225,7 +246,7 @@ module CoffeeScript
   # Node for a function invocation. Takes care of converting super() calls into
   # calls against the prototype's function of the same name.
   class CallNode < Node
-    attr_reader :variable, :arguments
+    children :variable, :arguments
 
     def initialize(variable, arguments=[])
       @variable, @arguments = variable, arguments
@@ -285,8 +306,8 @@ module CoffeeScript
   # Node to extend an object's prototype with an ancestor object.
   # After goog.inherits from the Closure Library.
   class ExtendsNode < Node
+    children :sub_object, :super_object
     statement
-    attr_reader :sub_object, :super_object
 
     def initialize(sub_object, super_object)
       @sub_object, @super_object = sub_object, super_object
@@ -307,7 +328,8 @@ module CoffeeScript
 
   # A value, indexed or dotted into, or vanilla.
   class ValueNode < Node
-    attr_reader :base, :properties, :last, :source
+    children :base, :properties
+    attr_reader :last, :source
 
     def initialize(base, properties=[])
       @base, @properties = base, properties
@@ -352,7 +374,7 @@ module CoffeeScript
   # A dotted accessor into a part of a value, or the :: shorthand for
   # an accessor into the object's prototype.
   class AccessorNode < Node
-    attr_reader :name
+    children :name
 
     def initialize(name, prototype=false)
       @name, @prototype = name, prototype
@@ -366,7 +388,7 @@ module CoffeeScript
 
   # An indexed accessor into a part of an array or object.
   class IndexNode < Node
-    attr_reader :index
+    children :index
 
     def initialize(index)
       @index = index
@@ -377,10 +399,20 @@ module CoffeeScript
     end
   end
 
+  # A node to represent a reference to "this". Needs to be transformed into a
+  # reference to the correct value of "this", when used within a closure wrapper.
+  class ThisNode < Node
+
+    def compile_node(o)
+      write(o[:closure] ? "__this" : "this")
+    end
+
+  end
+
   # A range literal. Ranges can be used to extract portions (slices) of arrays,
   # or to specify a range for array comprehensions.
   class RangeNode < Node
-    attr_reader :from, :to
+    children :from, :to
 
     def initialize(from, to, exclusive=false)
       @from, @to, @exclusive = from, to, exclusive
@@ -423,7 +455,7 @@ module CoffeeScript
   # specifies the index of the end of the slice (just like the first parameter)
   # is the index of the beginning.
   class SliceNode < Node
-    attr_reader :range
+    children :range
 
     def initialize(range)
       @range = range
@@ -439,10 +471,10 @@ module CoffeeScript
 
   # Setting the value of a local variable, or the value of an object property.
   class AssignNode < Node
+    children :variable, :value
+
     PROTO_ASSIGN = /\A(\S+)\.prototype/
     LEADING_DOT = /\A\.(prototype\.)?/
-
-    attr_reader :variable, :value, :context
 
     def initialize(variable, value, context=nil)
       @variable, @value, @context = variable, value, context
@@ -505,6 +537,9 @@ module CoffeeScript
   # Simple Arithmetic and logical operations. Performs some conversion from
   # CoffeeScript operations into their JavaScript equivalents.
   class OpNode < Node
+    children :first, :second
+    attr_reader :operator
+
     CONVERSIONS = {
       :==     => "===",
       :'!='   => "!==",
@@ -516,8 +551,6 @@ module CoffeeScript
     }
     CONDITIONALS     = [:'||=', :'&&=']
     PREFIX_OPERATORS = [:typeof, :delete]
-
-    attr_reader :operator, :first, :second
 
     def initialize(operator, first, second=nil, flip=false)
       @first, @second, @flip = first, second, flip
@@ -550,7 +583,8 @@ module CoffeeScript
 
   # A function definition. The only node that creates a new Scope.
   class CodeNode < Node
-    attr_reader :params, :body, :bound
+    children :params, :body
+    attr_reader :bound
 
     def initialize(params, body, tag=nil)
       @params = params
@@ -566,6 +600,7 @@ module CoffeeScript
       o[:indent]   = idt(@bound ? 2 : 1)
       o.delete(:no_wrap)
       o.delete(:globals)
+      o.delete(:closure)
       name = o.delete(:immediate_assign)
       if @params.last.is_a?(SplatNode)
         splat = @params.pop
@@ -584,8 +619,8 @@ module CoffeeScript
   # A splat, either as a parameter to a function, an argument to a call,
   # or in a destructuring assignment.
   class SplatNode < Node
+    children :name
     attr_accessor :index
-    attr_reader :name
 
     def initialize(name)
       @name = name
@@ -612,7 +647,7 @@ module CoffeeScript
 
   # An object literal.
   class ObjectNode < Node
-    attr_reader :properties
+    children :properties
     alias_method :objects, :properties
 
     def initialize(properties = [])
@@ -639,7 +674,7 @@ module CoffeeScript
 
   # An array literal.
   class ArrayNode < Node
-    attr_reader :objects
+    children :objects
 
     def initialize(objects=[])
       @objects = objects
@@ -672,9 +707,8 @@ module CoffeeScript
   # A while loop, the only sort of low-level loop exposed by CoffeeScript. From
   # it, all other loops can be manufactured.
   class WhileNode < Node
+    children :condition, :body
     statement
-
-    attr_reader :condition, :body
 
     def initialize(condition, body)
       @condition, @body = condition, body
@@ -707,9 +741,9 @@ module CoffeeScript
   # of the comprehenion. Unlike Python array comprehensions, it's able to pass
   # the current index of the loop as a second parameter.
   class ForNode < Node
+    children :body, :source, :filter
+    attr_reader :name, :index, :step
     statement
-
-    attr_reader :body, :source, :name, :index, :filter, :step
 
     def initialize(body, source, name, index=nil)
       @body, @name, @index = body, name, index
@@ -780,9 +814,9 @@ module CoffeeScript
 
   # A try/catch/finally block.
   class TryNode < Node
+    children :try, :recovery, :finally
+    attr_reader :error
     statement
-
-    attr_reader :try, :error, :recovery, :finally
 
     def initialize(try, error, recovery, finally=nil)
       @try, @error, @recovery, @finally = try, error, recovery, finally
@@ -800,9 +834,8 @@ module CoffeeScript
 
   # Throw an exception.
   class ThrowNode < Node
+    children :expression
     statement_only
-
-    attr_reader :expression
 
     def initialize(expression)
       @expression = expression
@@ -815,7 +848,7 @@ module CoffeeScript
 
   # Check an expression for existence (meaning not null or undefined).
   class ExistenceNode < Node
-    attr_reader :expression
+    children :expression
 
     def initialize(expression)
       @expression = expression
@@ -831,7 +864,7 @@ module CoffeeScript
   # You can't wrap parentheses around bits that get compiled into JS statements,
   # unfortunately.
   class ParentheticalNode < Node
-    attr_reader :expressions
+    children :expressions
 
     def initialize(expressions, line=nil)
       @expressions = expressions.unwrap
@@ -850,7 +883,7 @@ module CoffeeScript
   # Single-expression IfNodes are compiled into ternary operators if possible,
   # because ternaries are first-class returnable assignable expressions.
   class IfNode < Node
-    attr_reader :condition, :body, :else_body
+    children :condition, :body, :else_body
 
     def initialize(condition, body, else_body=nil, tags={})
       @condition = condition
