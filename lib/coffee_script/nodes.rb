@@ -149,8 +149,11 @@ module CoffeeScript
     # at the top.
     def compile_with_declarations(o={})
       code  = compile_node(o)
-      code  = "#{idt}var #{o[:scope].compiled_assignments};\n#{code}"   if o[:scope].assignments?(self)
-      code  = "#{idt}var #{o[:scope].compiled_declarations};\n#{code}"  if o[:scope].declarations?(self)
+      args  = self.contains? {|n| n.is_a?(LiteralNode) && n.arguments? }
+      argv  = args && o[:scope].check('arguments') ? '' : 'var '
+      code  = "#{idt}#{argv}arguments = Array.prototype.slice.call(arguments, 0);\n#{code}" if args
+      code  = "#{idt}var #{o[:scope].compiled_assignments};\n#{code}" if o[:scope].assignments?(self)
+      code  = "#{idt}var #{o[:scope].compiled_declarations};\n#{code}" if o[:scope].declarations?(self)
       write(code)
     end
 
@@ -182,10 +185,6 @@ module CoffeeScript
     # sense returning or assigning them.
     STATEMENTS = ['break', 'continue']
 
-    # If we get handed a literal reference to an arguments object, convert
-    # it to an array.
-    ARG_ARRAY  = 'Array.prototype.slice.call(arguments, 0)'
-
     # Wrap up a compiler-generated string as a LiteralNode.
     def self.wrap(string)
       self.new(Value.new(string))
@@ -200,8 +199,11 @@ module CoffeeScript
     end
     alias_method :statement_only?, :statement?
 
+    def arguments?
+      @value.to_s == 'arguments'
+    end
+
     def compile_node(o)
-      @value = ARG_ARRAY if @value.to_s.to_sym == :arguments
       indent = statement? ? idt : ''
       ending = statement? ? ';' : ''
       write "#{indent}#{@value}#{ending}"
