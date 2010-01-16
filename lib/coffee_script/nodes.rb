@@ -568,7 +568,7 @@ module CoffeeScript
     end
 
     def chainable?
-      CHAINABLE.include?(operator.to_sym) && !unary?
+      CHAINABLE.include?(operator.to_sym)
     end
 
     def compile_node(o)
