@@ -24,3 +24,25 @@ obj: {
 
 obj.unbound()
 obj.bound()
+
+
+# The named function should be cleared out before a call occurs:
+
+# Python decorator style wrapper that memoizes any function
+memoize: fn =>
+  cache: {}
+  self: this
+  args... =>
+    key: args.toString()
+    return cache[key] if cache[key]
+    cache[key] = fn.apply(self, args)
+
+Math: {
+  Add: a, b => a + b
+  AnonymousAdd: (a, b => a + b)
+  FastAdd: memoize() a, b => a + b
+}
+
+print(Math.Add(5, 5) is 10)
+print(Math.AnonymousAdd(10, 10) is 20)
+print(Math.FastAdd(20, 20) is 40)

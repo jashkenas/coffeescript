@@ -83,9 +83,9 @@ module CoffeeScript
   class Expressions < Node
     statement
     children :expressions
+    attr_accessor :function
 
     TRAILING_WHITESPACE = /\s+$/
-    UPPERCASE           = /[A-Z]/
 
     # Wrap up a node as an Expressions, unless it already is.
     def self.wrap(*nodes)
@@ -125,12 +125,6 @@ module CoffeeScript
       node == @expressions[@last_index]
     end
 
-    # Determine if this is the expressions body within a constructor function.
-    # Constructors are capitalized by CoffeeScript convention.
-    def constructor?(o)
-      o[:top] && o[:last_assign] && o[:last_assign][0..0][UPPERCASE]
-    end
-
     def compile(o={})
       o[:scope] ? super(o) : compile_root(o)
     end
@@ -144,7 +138,7 @@ module CoffeeScript
     def compile_root(o={})
       indent = o[:no_wrap] ? '' : TAB
       @indent = indent
-      o.merge!(:indent => indent, :scope => Scope.new(nil, self))
+      o.merge!(:indent => indent, :scope => Scope.new(nil, self, nil))
       code = o[:globals] ? compile_node(o) : compile_with_declarations(o)
       code.gsub!(TRAILING_WHITESPACE, '')
       write(o[:no_wrap] ? code : "(function(){\n#{code}\n})();")
@@ -173,10 +167,10 @@ module CoffeeScript
       # If it's a statement, the node knows how to return itself.
       return node.compile(o.merge(:return => true)) if node.statement?
       # If it's not part of a constructor, we can just return the value of the expression.
-      return "#{idt}return #{node.compile(o)};" unless constructor?(o)
+      return "#{idt}return #{node.compile(o)};" unless o[:scope].function && o[:scope].function.constructor?
       # It's the last line of a constructor, add a safety check.
       temp = o[:scope].free_variable
-      "#{idt}#{temp} = #{node.compile(o)};\n#{idt}return #{o[:last_assign]} === this.constructor ? this : #{temp};"
+      "#{idt}#{temp} = #{node.compile(o)};\n#{idt}return #{o[:scope].function.name} === this.constructor ? this : #{temp};"
     end
 
   end
@@ -287,10 +281,11 @@ module CoffeeScript
 
     # Compile a call against the superclass's implementation of the current function.
     def compile_super(args, o)
-      methname = o[:last_assign]
+      methname = o[:scope].function.name
       arg_part = args.empty? ? '' : ", #{args}"
-      meth     = o[:proto_assign] ? "#{o[:proto_assign]}.__superClass__.#{methname}" :
-                                    "#{methname}.__superClass__.constructor"
+      meth     = o[:scope].function.proto ?
+                    "#{o[:scope].function.proto}.__superClass__.#{methname}" :
+                    "#{methname}.__superClass__.constructor"
       "#{meth}.call(this#{arg_part})"
     end
 
@@ -487,12 +482,14 @@ module CoffeeScript
     def compile_node(o)
       return compile_pattern_match(o) if statement?
       return compile_splice(o) if value? && @variable.splice?
-      stmt      = o.delete(:as_statement)
-      name      = @variable.compile(o)
-      last      = value? ? @variable.last.to_s.sub(LEADING_DOT, '') : name
-      proto     = name[PROTO_ASSIGN, 1]
-      o         = o.merge(:last_assign => last, :proto_assign => proto)
-      o[:immediate_assign] = last if @value.is_a?(CodeNode) && last.match(Lexer::IDENTIFIER)
+      stmt        = o.delete(:as_statement)
+      name        = @variable.compile(o)
+      last        = value? ? @variable.last.to_s.sub(LEADING_DOT, '') : name
+      proto       = name[PROTO_ASSIGN, 1]
+      if @value.is_a?(CodeNode)
+        @value.name  = last  if last.match(Lexer::IDENTIFIER)
+        @value.proto = proto if proto
+      end
       return write("#{name}: #{@value.compile(o)}") if @context == :object
       o[:scope].find(name) unless value? && @variable.properties?
       val = "#{name} = #{@value.compile(o)}"
@@ -588,8 +585,11 @@ module CoffeeScript
   # A function definition. The only node that creates a new Scope.
   # A CodeNode does not have any children -- they're within the new scope.
   class CodeNode < Node
-    attr_reader :params, :body
-    attr_reader :bound
+    attr_reader :params, :body, :bound
+    attr_accessor :name, :proto
+
+    # Constructor functions start with an uppercase letter, by convention.
+    UPPERCASE = /[A-Z]/
 
     def initialize(params, body, tag=nil)
       @params = params
@@ -601,17 +601,20 @@ module CoffeeScript
       true
     end
 
+    def constructor?
+      @name && @name[0..0][UPPERCASE]
+    end
+
     def compile_node(o)
       shared_scope = o.delete(:shared_scope)
       top          = o.delete(:top)
-      o[:scope]    = shared_scope || Scope.new(o[:scope], @body)
+      o[:scope]    = shared_scope || Scope.new(o[:scope], @body, self)
       o[:return]   = true
       o[:top]      = true
       o[:indent]   = idt(@bound ? 2 : 1)
       o.delete(:no_wrap)
       o.delete(:globals)
       o.delete(:closure)
-      name = o.delete(:immediate_assign)
       if @params.last.is_a?(SplatNode)
         splat = @params.pop
         splat.index = @params.length
@@ -619,7 +622,7 @@ module CoffeeScript
       end
       @params.each {|id| o[:scope].parameter(id.to_s) }
       code = @body.empty? ? "" : "\n#{@body.compile_with_declarations(o)}\n"
-      name_part = name ? " #{name}" : ''
+      name_part = @name ? " #{@name}" : ''
       func = "function#{@bound ? '' : name_part}(#{@params.join(', ')}) {#{code}#{idt(@bound ? 1 : 0)}}"
       func = "(#{func})" if top && !@bound
       return write(func) unless @bound
