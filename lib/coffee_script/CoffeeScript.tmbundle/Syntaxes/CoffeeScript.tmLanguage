@@ -231,6 +231,39 @@
 			<string>comment.line.coffee</string>
 		</dict>
 		<dict>
+			<key>begin</key>
+			<string>(?&lt;=[=(:]|^|return)\s*(/)(?![/*+{}?])</string>
+			<key>beginCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.begin.coffee</string>
+				</dict>
+			</dict>
+			<key>end</key>
+			<string>(/)[igm]*</string>
+			<key>endCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.end.coffee</string>
+				</dict>
+			</dict>
+			<key>name</key>
+			<string>string.regexp.coffee</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>match</key>
+					<string>\\.</string>
+					<key>name</key>
+					<string>constant.character.escape.coffee</string>
+				</dict>
+			</array>
+		</dict>
+		<dict>
 			<key>match</key>
 			<string>\b(break|by|catch|continue|else|finally|for|in|of|if|return|switch|then|throw|try|unless|when|while)\b</string>
 			<key>name</key>
@@ -238,7 +271,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b([a-zA-Z$_](\w|\$|:|\.)*)(\:)\s</string>
+			<string>\b([a-zA-Z$_](\w|\$|:|\.)*\s*(?=\:))</string>
 			<key>name</key>
 			<string>variable.assignment.coffee</string>
 			<key>captures</key>
@@ -247,11 +280,6 @@
 				<dict>
 					<key>name</key>
 					<string>entity.name.function.coffee</string>
-				</dict>
-				<key>3</key>
-				<dict>
-					<key>name</key>
-					<string>keyword.operator.coffee</string>
 				</dict>
 			</dict>
 		</dict>
@@ -296,39 +324,6 @@
 			<string>\b(Infinity|NaN|undefined)\b</string>
 			<key>name</key>
 			<string>constant.language.coffee</string>
-		</dict>
-		<dict>
-			<key>begin</key>
-			<string>(?&lt;=[=(:]|^|return)\s*(/)(?![/*+{}?])</string>
-			<key>beginCaptures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>punctuation.definition.string.begin.coffee</string>
-				</dict>
-			</dict>
-			<key>end</key>
-			<string>(/)[igm]*</string>
-			<key>endCaptures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>punctuation.definition.string.end.coffee</string>
-				</dict>
-			</dict>
-			<key>name</key>
-			<string>string.regexp.coffee</string>
-			<key>patterns</key>
-			<array>
-				<dict>
-					<key>match</key>
-					<string>\\.</string>
-					<key>name</key>
-					<string>constant.character.escape.coffee</string>
-				</dict>
-			</array>
 		</dict>
 		<dict>
 			<key>match</key>
