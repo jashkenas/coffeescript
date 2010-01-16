@@ -8,6 +8,10 @@ print(y.x() is 3)
 print(y.x.name is 'x')
 
 
+# The empty function should not cause a syntax error.
+=>
+
+
 obj: {
   name: "Fred"
 

@@ -114,6 +114,11 @@ module CoffeeScript
       @expressions.length == 1 ? @expressions.first : self
     end
 
+    # Is this an empty block of code?
+    def empty?
+      @expressions.empty?
+    end
+
     # Is the node last in this block of expressions.
     def last?(node)
       @last_index ||= @expressions.last.is_a?(CommentNode) ? -2 : -1
@@ -592,8 +597,13 @@ module CoffeeScript
       @bound  = tag == :boundfunc
     end
 
+    def top_sensitive?
+      true
+    end
+
     def compile_node(o)
       shared_scope = o.delete(:shared_scope)
+      top          = o.delete(:top)
       o[:scope]    = shared_scope || Scope.new(o[:scope], @body)
       o[:return]   = true
       o[:top]      = true
@@ -608,9 +618,10 @@ module CoffeeScript
         @body.unshift(splat)
       end
       @params.each {|id| o[:scope].parameter(id.to_s) }
-      code = "\n#{@body.compile_with_declarations(o)}\n"
+      code = @body.empty? ? "" : "\n#{@body.compile_with_declarations(o)}\n"
       name_part = name ? " #{name}" : ''
       func = "function#{@bound ? '' : name_part}(#{@params.join(', ')}) {#{code}#{idt(@bound ? 1 : 0)}}"
+      func = "(#{func})" if top && !@bound
       return write(func) unless @bound
       write("(function(__this) {\n#{idt(1)}var __func = #{func};\n#{idt(1)}return (function#{name_part}() {\n#{idt(2)}return __func.apply(__this, arguments);\n#{idt(1)}});\n#{idt}})(this)")
     end
