@@ -44,7 +44,7 @@ module CoffeeScript
     def free_variable
       @temp_variable.succ! while check(@temp_variable)
       @variables[@temp_variable.to_sym] = :var
-      @temp_variable.dup
+      Value.new(@temp_variable.dup)
     end
 
     # Ensure that an assignment is made at the top of scope (or top-level

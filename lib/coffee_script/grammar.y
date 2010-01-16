@@ -294,7 +294,7 @@ rule
 
   # Calling super.
   Super:
-    SUPER "(" ArgList ")"             { result = CallNode.new(:super, val[2]) }
+    SUPER "(" ArgList ")"             { result = CallNode.new(Value.new('super'), val[2]) }
   ;
 
   # The range literal.

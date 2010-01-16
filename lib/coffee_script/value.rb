@@ -2,6 +2,8 @@ module CoffeeScript
 
   # Instead of producing raw Ruby objects, the Lexer produces values of this
   # class, wrapping native objects tagged with line number information.
+  # Values masquerade as both strings and nodes -- being used both as nodes in
+  # the AST, and as literally-interpolated values in the generated code.
   class Value
     attr_reader :value, :line
 
@@ -48,6 +50,10 @@ module CoffeeScript
 
     def children
       []
+    end
+
+    def statement_only?
+      false
     end
   end
 

@@ -44,7 +44,8 @@ module CoffeeScript
       @options = o.dup
       @indent  = o[:indent]
       top      = self.top_sensitive? ? @options[:top] : @options.delete(:top)
-      closure  = statement? && !statement_only? && !top && !@options[:return]
+      closure  = statement? && !statement_only? && !top && !@options[:return] && !self.is_a?(CommentNode)
+      closure  &&= !contains? {|n| n.statement_only? }
       closure  ? compile_closure(@options) : compile_node(@options)
     end
 
@@ -65,18 +66,14 @@ module CoffeeScript
     def contains?(&block)
       children.each do |node|
         return true if yield(node)
-        node.is_a?(Node) && node.contains?(&block)
-        false
+        return true if node.is_a?(Node) && node.contains?(&block)
       end
-    end
-
-    # All Nodes must implement a "children" method that returns child nodes.
-    def children
-      raise NotImplementedError, "#{self.class} is missing a 'children' method"
+      false
     end
 
     # Default implementations of the common node methods.
     def unwrap;           self;   end
+    def children;         [];     end
     def statement?;       false;  end
     def statement_only?;  false;  end
     def top_sensitive?;   false;  end
@@ -230,7 +227,7 @@ module CoffeeScript
   # Pass through CoffeeScript comments into JavaScript comments at the
   # same position.
   class CommentNode < Node
-    statement_only
+    statement
 
     def initialize(lines)
       @lines = lines.value
@@ -258,7 +255,7 @@ module CoffeeScript
     end
 
     def super?
-      @variable == :super
+      @variable == 'super'
     end
 
     def prefix
@@ -517,7 +514,7 @@ module CoffeeScript
         if obj.is_a?(SplatNode)
           val = LiteralNode.wrap(obj.compile_value(o, val_var, @variable.base.objects.index(obj)))
         else
-          val = ValueNode.new(Value.new(val_var), [access_class.new(Value.new(i.to_s))])
+          val = ValueNode.new(val_var, [access_class.new(Value.new(i.to_s))])
         end
         assigns << AssignNode.new(obj, val).compile(o)
       end
@@ -582,8 +579,9 @@ module CoffeeScript
   end
 
   # A function definition. The only node that creates a new Scope.
+  # A CodeNode does not have any children -- they're within the new scope.
   class CodeNode < Node
-    children :params, :body
+    attr_reader :params, :body
     attr_reader :bound
 
     def initialize(params, body, tag=nil)
@@ -696,10 +694,11 @@ module CoffeeScript
   # code generation to generate a quick "array.push(value)" tree of nodes.
   class PushNode
     def self.wrap(array, expressions)
-      return expressions if expressions.unwrap.statement_only?
+      expr = expressions.unwrap
+      return expressions if expr.statement_only? || expr.contains? {|n| n.statement_only? }
       Expressions.wrap(CallNode.new(
-        ValueNode.new(LiteralNode.new(array), [AccessorNode.new('push')]),
-        [expressions.unwrap]
+        ValueNode.new(LiteralNode.new(array), [AccessorNode.new(Value.new('push'))]),
+        [expr]
       ))
     end
   end
