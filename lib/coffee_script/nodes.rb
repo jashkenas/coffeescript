@@ -26,7 +26,7 @@ module CoffeeScript
 
     # Provide a quick implementation of a children method.
     def self.children(*attributes)
-      attr_reader *attributes
+      attr_reader(*attributes)
       attrs = attributes.map {|a| "[@#{a}]" }.join(', ')
       class_eval "def children; [#{attrs}].flatten.compact; end"
     end
@@ -205,7 +205,7 @@ module CoffeeScript
     def compile_node(o)
       indent = statement? ? idt : ''
       ending = statement? ? ';' : ''
-      write "#{indent}#{@value}#{ending}"
+      "#{indent}#{@value}#{ending}"
     end
   end
 
@@ -353,6 +353,10 @@ module CoffeeScript
 
     def splice?
       properties? && @properties.last.is_a?(SliceNode)
+    end
+
+    def unwrap
+      @properties.empty? ? @base : self
     end
 
     # Values are statements if their base is a statement.
@@ -550,6 +554,7 @@ module CoffeeScript
       :isnt   => "!==",
       :not    => '!'
     }
+    CHAINABLE        = [:<, :>, :>=, :<=, :===, :'!===']
     CONDITIONALS     = [:'||=', :'&&=']
     PREFIX_OPERATORS = [:typeof, :delete]
 
@@ -562,10 +567,21 @@ module CoffeeScript
       @second.nil?
     end
 
+    def chainable?
+      CHAINABLE.include?(operator.to_sym) && !unary?
+    end
+
     def compile_node(o)
+      return write(compile_chain(o)) if chainable? && @first.unwrap.is_a?(OpNode) && @first.unwrap.chainable?
       return write(compile_conditional(o)) if CONDITIONALS.include?(@operator.to_sym)
       return write(compile_unary(o)) if unary?
       write("#{@first.compile(o)} #{@operator} #{@second.compile(o)}")
+    end
+
+    # Mimic Python's chained comparisons. See:
+    # http://docs.python.org/reference/expressions.html#notin
+    def compile_chain(o)
+      write("(#{@first.compile(o)}) && (#{@first.unwrap.second.compile(o)} #{@operator} #{@second.compile(o)})")
     end
 
     def compile_conditional(o)

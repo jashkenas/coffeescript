@@ -55,6 +55,10 @@ module CoffeeScript
     def statement_only?
       false
     end
+
+    def contains?
+      false
+    end
   end
 
 end
