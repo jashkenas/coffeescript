@@ -661,6 +661,7 @@ module CoffeeScript
   # code generation to generate a quick "array.push(value)" tree of nodes.
   class PushNode
     def self.wrap(array, expressions)
+      return expressions if expressions.unwrap.statement_only?
       Expressions.wrap(CallNode.new(
         ValueNode.new(LiteralNode.new(array), [AccessorNode.new('push')]),
         [expressions.unwrap]
