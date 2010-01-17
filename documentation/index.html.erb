@@ -250,19 +250,20 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
 
     <p>
       You can use newlines to break up your expression into smaller pieces,
-      as long as CoffeeScript can tell that the line hasn't finished
-      (similar to how Ruby handles it). For example,
-      if the line ends in an operator, dot, or keyword.
+      as long as CoffeeScript can determine that the line hasn't finished yet.
     </p>
 
     <p id="functions">
       <b class="header">Functions and Invocation</b>
       Functions are defined by a list of parameters, an arrow, and the
       function body. The empty function looks like this: <tt>=></tt>. All
-      functions in CoffeeScript are named by default, for the benefit of debug messages.
-      If you'd like to create an anonymous function, just wrap it in parentheses.
+      functions in CoffeeScript are named by default, for easier debugging.
     </p>
     <%= code_for('functions', 'cube(5)') %>
+    <p>
+      If you'd like to create an anonymous function, just wrap it in parentheses:
+      <tt>(x => x * x)</tt>
+    </p>
 
     <p id="assignment">
       <b class="header">Assignment</b>
@@ -272,7 +273,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('assignment', 'greeting') %>
     <p>
-      Declarations of new variables are pushed up to the top of the nearest
+      Declaration of new variables are pushed up to the top of the nearest
       lexical scope, so that assignment may always be performed within expressions.
     </p>
 
@@ -281,7 +282,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       Object and Array literals look very similar to their JavaScript cousins.
       When you spread out each assignment on a separate line, the commas are
       optional. In this way, assigning object properties looks the same as
-      assigning local variables, and can be moved around freely. You can mix
+      assigning local variables, and can be moved around freely. Feel free to mix
       and match the two styles.
     </p>
     <%= code_for('objects_and_arrays', 'song.join(",")') %>
@@ -306,9 +307,14 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       CoffeeScript output is wrapped in an anonymous function:
       <tt>(function(){ ... })();</tt> This safety wrapper, combined with the
       automatic generation of the <tt>var</tt> keyword, make it exceedingly difficult
-      to pollute the global namespace by accident. If you'd like to create
-      global variables, attach them as properties on <b>window</b>,
-      or on the <b>exports</b> object in CommonJS.
+      to pollute the global namespace by accident. 
+    </p>
+    <p>  
+      If you'd like to create top-level variables for other scripts to use, 
+      attach them as properties on <b>window</b>, or on the <b>exports</b> 
+      object in CommonJS. The <b>existential operator</b> (below), gives you a 
+      reliable way to figure out where to add them, if you're targeting both
+      CommonJS and the browser: <tt>root: exports ? this</tt>
     </p>
 
     <p id="conditionals">
@@ -379,7 +385,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       The JavaScript <b>arguments object</b> is a useful way to work with
       functions that accept variable numbers of arguments. CoffeeScript provides
       splats <tt>...</tt>, both for function definition as well as invocation,
-      making variable arguments a little bit more palatable.
+      making variable numbers of arguments a little bit more palatable.
     </p>
     <%= code_for('splats', true) %>
 
@@ -481,7 +487,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <%= code_for('expressions_try', true) %>
     <p>
       There are a handful of statements in JavaScript that can't be meaningfully
-      converted into expressions: <tt>break</tt>, <tt>continue</tt>, 
+      converted into expressions, namely <tt>break</tt>, <tt>continue</tt>, 
       and <tt>return</tt>. If you make use of them within a block of code, 
       CoffeeScript won't try to perform the conversion.
     </p>

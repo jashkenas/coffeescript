@@ -6,7 +6,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 div.container {
-  width: 850px;
+  width: 950px;
   margin: 50px 0 50px 50px;
 }
 p {
@@ -77,7 +77,7 @@ div.code {
   }
   div.code pre {
     float: left;
-    width: 410px;
+    width: 450px;
     border-left: 1px dotted #559;
     padding: 0 0 0 12px;
     margin: 0;

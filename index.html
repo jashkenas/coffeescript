@@ -347,17 +347,14 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
 
     <p>
       You can use newlines to break up your expression into smaller pieces,
-      as long as CoffeeScript can tell that the line hasn't finished
-      (similar to how Ruby handles it). For example,
-      if the line ends in an operator, dot, or keyword.
+      as long as CoffeeScript can determine that the line hasn't finished yet.
     </p>
 
     <p id="functions">
       <b class="header">Functions and Invocation</b>
       Functions are defined by a list of parameters, an arrow, and the
       function body. The empty function looks like this: <tt>=></tt>. All
-      functions in CoffeeScript are named by default, for the benefit of debug messages.
-      If you'd like to create an anonymous function, just wrap it in parentheses.
+      functions in CoffeeScript are named by default, for easier debugging.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">square</span><span class="Keyword">:</span> <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> x <span class="Keyword">*</span> x
 <span class="FunctionName">cube</span><span class="Keyword">:</span>   <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> square(x) <span class="Keyword">*</span> x
@@ -376,6 +373,10 @@ cube = function cube(x) {
   return square(x) * x;
 };
 ;alert(cube(5));'>run: cube(5)</button><br class='clear' /></div>
+    <p>
+      If you'd like to create an anonymous function, just wrap it in parentheses:
+      <tt>(x => x * x)</tt>
+    </p>
 
     <p id="assignment">
       <b class="header">Assignment</b>
@@ -393,7 +394,7 @@ greeting = "Hello CoffeeScript";
 difficulty = 0.5;
 ;alert(greeting);'>run: greeting</button><br class='clear' /></div>
     <p>
-      Declarations of new variables are pushed up to the top of the nearest
+      Declaration of new variables are pushed up to the top of the nearest
       lexical scope, so that assignment may always be performed within expressions.
     </p>
 
@@ -402,7 +403,7 @@ difficulty = 0.5;
       Object and Array literals look very similar to their JavaScript cousins.
       When you spread out each assignment on a separate line, the commas are
       optional. In this way, assigning object properties looks the same as
-      assigning local variables, and can be moved around freely. You can mix
+      assigning local variables, and can be moved around freely. Feel free to mix
       and match the two styles.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">song</span><span class="Keyword">:</span> [<span class="String"><span class="String">&quot;</span>do<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>re<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>mi<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>fa<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>so<span class="String">&quot;</span></span>]
@@ -477,9 +478,14 @@ new_num = change_numbers();
       CoffeeScript output is wrapped in an anonymous function:
       <tt>(function(){ ... })();</tt> This safety wrapper, combined with the
       automatic generation of the <tt>var</tt> keyword, make it exceedingly difficult
-      to pollute the global namespace by accident. If you'd like to create
-      global variables, attach them as properties on <b>window</b>,
-      or on the <b>exports</b> object in CommonJS.
+      to pollute the global namespace by accident. 
+    </p>
+    <p>  
+      If you'd like to create top-level variables for other scripts to use, 
+      attach them as properties on <b>window</b>, or on the <b>exports</b> 
+      object in CommonJS. The <b>existential operator</b> (below), gives you a 
+      reliable way to figure out where to add them, if you're targeting both
+      CommonJS and the browser: <tt>root: exports ? this</tt>
     </p>
 
     <p id="conditionals">
@@ -605,7 +611,7 @@ car.speed <span class="Keyword">&lt;</span> speed_limit ? accelerate() : <span c
       The JavaScript <b>arguments object</b> is a useful way to work with
       functions that accept variable numbers of arguments. CoffeeScript provides
       splats <tt>...</tt>, both for function definition as well as invocation,
-      making variable arguments a little bit more palatable.
+      making variable numbers of arguments a little bit more palatable.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">gold</span><span class="Keyword">:</span> <span class="FunctionName">silver</span><span class="Keyword">:</span> <span class="FunctionName">the_field</span><span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>unknown<span class="String">&quot;</span></span>
 
@@ -694,15 +700,18 @@ backwards("stairway", "to", "heaven");
       as an expression, returning an array containing the result of each iteration
       through the loop.
     </p>
-    <div class='code'><pre class="idle"><span class="Keyword">if</span> <span class="Variable">this</span>.studying_economics
+    <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> Econ 101</span>
+<span class="Keyword">if</span> <span class="Variable">this</span>.studying_economics
   <span class="Keyword">while</span> supply <span class="Keyword">&gt;</span> demand <span class="Keyword">then</span> buy()
   <span class="Keyword">while</span> supply <span class="Keyword">&lt;</span> demand <span class="Keyword">then</span> sell()
 
+<span class="Comment"><span class="Comment">#</span> Nursery Rhyme</span>
 <span class="FunctionName">num</span><span class="Keyword">:</span> <span class="Number">6</span>
 <span class="FunctionName">lyrics</span><span class="Keyword">:</span> <span class="Keyword">while</span> num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>
   num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed.</span>
 <span class="String">    One fell out and bumped his head.<span class="String">&quot;</span></span>
 </pre><pre class="idle"><span class="Storage">var</span> __a, lyrics, num;
+<span class="Comment"><span class="Comment">//</span> Econ 101</span>
 <span class="Keyword">if</span> (<span class="Variable">this</span>.studying_economics) {
   <span class="Keyword">while</span> (supply <span class="Keyword">&gt;</span> demand) {
     buy();
@@ -711,6 +720,7 @@ backwards("stairway", "to", "heaven");
     sell();
   }
 }
+<span class="Comment"><span class="Comment">//</span> Nursery Rhyme</span>
 num <span class="Keyword">=</span> <span class="Number">6</span>;
 lyrics <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   __a <span class="Keyword">=</span> [];
@@ -721,6 +731,7 @@ lyrics <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   <span class="Keyword">return</span> __a;
 })();
 </pre><button onclick='javascript: var __a, lyrics, num;
+// Econ 101
 if (this.studying_economics) {
   while (supply > demand) {
     buy();
@@ -729,6 +740,7 @@ if (this.studying_economics) {
     sell();
   }
 }
+// Nursery Rhyme
 num = 6;
 lyrics = (function() {
   __a = [];
@@ -1022,26 +1034,26 @@ globals = ((function() {
   <span class="Keyword">try</span>
     nonexistent <span class="Keyword">/</span> <span class="BuiltInConstant">undefined</span>
   <span class="Keyword">catch</span> error
-    <span class="String"><span class="String">&quot;</span>Caught an error: <span class="String">&quot;</span></span> <span class="Keyword">+</span> error
+    <span class="String"><span class="String">&quot;</span>And the error is ... <span class="String">&quot;</span></span> <span class="Keyword">+</span> error
 )
 </pre><pre class="idle"><span class="LibraryFunction">alert</span>((<span class="Storage">function</span>() {
   <span class="Keyword">try</span> {
     <span class="Keyword">return</span> nonexistent / undefined;
   } <span class="Keyword">catch</span> (error) {
-    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>Caught an error: <span class="String">&quot;</span></span> <span class="Keyword">+</span> error;
+    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>And the error is ... <span class="String">&quot;</span></span> <span class="Keyword">+</span> error;
   }
 })());
 </pre><button onclick='javascript: alert((function() {
   try {
     return nonexistent / undefined;
   } catch (error) {
-    return "Caught an error: " + error;
+    return "And the error is ... " + error;
   }
 })());
 ;'>run</button><br class='clear' /></div>
     <p>
       There are a handful of statements in JavaScript that can't be meaningfully
-      converted into expressions: <tt>break</tt>, <tt>continue</tt>, 
+      converted into expressions, namely <tt>break</tt>, <tt>continue</tt>, 
       and <tt>return</tt>. If you make use of them within a block of code, 
       CoffeeScript won't try to perform the conversion.
     </p>
