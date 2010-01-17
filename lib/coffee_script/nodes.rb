@@ -24,6 +24,12 @@ module CoffeeScript
       class_eval "def statement_only?; true; end"
     end
 
+    # This node needs to know if it's being compiled as a top-level statement,
+    # in order to compile without special expression conversion.
+    def self.top_sensitive
+      class_eval "def top_sensitive?; true; end"
+    end
+
     # Provide a quick implementation of a children method.
     def self.children(*attributes)
       attr_reader(*attributes)
@@ -474,6 +480,7 @@ module CoffeeScript
 
   # Setting the value of a local variable, or the value of an object property.
   class AssignNode < Node
+    top_sensitive
     children :variable, :value
 
     PROTO_ASSIGN = /\A(\S+)\.prototype/
@@ -484,6 +491,7 @@ module CoffeeScript
     end
 
     def compile_node(o)
+      top = o.delete(:top)
       return compile_pattern_match(o) if statement?
       return compile_splice(o) if value? && @variable.splice?
       stmt        = o.delete(:as_statement)
@@ -498,7 +506,9 @@ module CoffeeScript
       o[:scope].find(name) unless value? && @variable.properties?
       val = "#{name} = #{@value.compile(o)}"
       return write("#{idt}#{val};") if stmt
-      write(o[:return] ? "#{idt}return (#{val})" : val)
+      val = "(#{val})" if !top || o[:return]
+      val = "#{idt}return #{val}" if o[:return]
+      write(val)
     end
 
     def value?
@@ -616,6 +626,7 @@ module CoffeeScript
   # A function definition. The only node that creates a new Scope.
   # A CodeNode does not have any children -- they're within the new scope.
   class CodeNode < Node
+    top_sensitive
     attr_reader :params, :body, :bound
     attr_accessor :name, :proto
 
@@ -626,10 +637,6 @@ module CoffeeScript
       @params = params
       @body   = body
       @bound  = tag == :boundfunc
-    end
-
-    def top_sensitive?
-      true
     end
 
     def constructor?
@@ -753,15 +760,12 @@ module CoffeeScript
   # A while loop, the only sort of low-level loop exposed by CoffeeScript. From
   # it, all other loops can be manufactured.
   class WhileNode < Node
+    top_sensitive
     children :condition, :body
     statement
 
     def initialize(condition, body)
       @condition, @body = condition, body
-    end
-
-    def top_sensitive?
-      true
     end
 
     def compile_node(o)
@@ -787,6 +791,7 @@ module CoffeeScript
   # of the comprehenion. Unlike Python array comprehensions, it's able to pass
   # the current index of the loop as a second parameter.
   class ForNode < Node
+    top_sensitive
     children :body, :source, :filter
     attr_reader :name, :index, :step
     statement
@@ -798,10 +803,6 @@ module CoffeeScript
       @step   = source[:step]
       @object = !!source[:object]
       @name, @index = @index, @name if @object
-    end
-
-    def top_sensitive?
-      true
     end
 
     def compile_node(o)
