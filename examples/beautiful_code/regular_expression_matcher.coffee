@@ -1,5 +1,5 @@
-# Beautiful Code, chapter 1.
-# Implements a regular expression matcher that supports characters,
+# Beautiful Code, Chapter 1.
+# Implements a regular expression matcher that supports character matches,
 # '.', '^', '$', and '*'.
 
 # Search for the regexp anywhere in the text.
