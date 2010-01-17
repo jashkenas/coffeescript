@@ -1,6 +1,6 @@
 (function(){
   var contenders, gold, medalists, silver, the_field;
-  gold = silver = the_field = "unknown";
+  gold = (silver = (the_field = "unknown"));
   medalists = function medalists(first, second) {
     var rest;
     rest = Array.prototype.slice.call(arguments, 2);

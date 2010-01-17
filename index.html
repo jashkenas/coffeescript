@@ -37,7 +37,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://gemcutter.org/gems/coffee-script">0.2.5</a>
+      <a href="http://gemcutter.org/gems/coffee-script">0.2.6</a>
     </p>
 
     <h2>Table of Contents</h2>
@@ -51,7 +51,7 @@
       <a href="#objects_and_arrays">Objects and Arrays</a><br />
       <a href="#lexical_scope">Lexical Scoping and Variable Safety</a><br />
       <a href="#conditionals">Conditionals, Ternaries, and Conditional Assignment</a><br />
-      <a href="#existence">The Existence Operator</a><br />
+      <a href="#existence">The Existential Operator</a><br />
       <a href="#aliases">Aliases</a><br />
       <a href="#splats">Splats...</a><br />
       <a href="#arguments">Arguments are Arrays</a><br />
@@ -66,6 +66,7 @@
       <a href="#embedded">Embedded JavaScript</a><br />
       <a href="#switch">Switch/When/Else</a><br />
       <a href="#try">Try/Catch/Finally</a><br />
+      <a href="#comparisons">Chained Comparisons</a><br />
       <a href="#strings">Multiline Strings and Heredocs</a><br />
       <a href="#resources">Resources</a><br />
       <a href="#contributing">Contributing</a><br />
@@ -355,7 +356,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <b class="header">Functions and Invocation</b>
       Functions are defined by a list of parameters, an arrow, and the
       function body. The empty function looks like this: <tt>=></tt>. All
-      functions in CoffeeScript are named, for the benefit of debug messages.
+      functions in CoffeeScript are named by default, for the benefit of debug messages.
+      If you'd like to create an anonymous function, just wrap it in parentheses.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">square</span><span class="Keyword">:</span> <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> x <span class="Keyword">*</span> x
 <span class="FunctionName">cube</span><span class="Keyword">:</span>   <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> square(x) <span class="Keyword">*</span> x
@@ -500,7 +502,7 @@ new_num = change_numbers();
 <span class="FunctionName">date</span><span class="Keyword">:</span> <span class="Keyword">if</span> friday <span class="Keyword">then</span> sue <span class="Keyword">else</span> jill
 
 expensive <span class="Keyword">||</span><span class="Keyword">=</span> do_the_math()
-</pre><pre class="idle"><span class="Storage">var</span> date, mood;
+</pre><pre class="idle"><span class="Storage">var</span> date, expensive, mood;
 <span class="Keyword">if</span> (singing) {
   mood <span class="Keyword">=</span> greatly_improved;
 }
@@ -519,19 +521,36 @@ expensive <span class="Keyword">=</span> expensive <span class="Keyword">||</spa
     </p>
 
     <p id="existence">
-      <b class="header">The Existence Operator</b>
+      <b class="header">The Existential Operator</b>
       It's a little difficult to check for the existence of a variable in
       JavaScript. <tt>if (variable) ...</tt> comes close, but fails for zero,
-      the empty string, and false. The existence operator <tt>?</tt> returns true unless
+      the empty string, and false. The existential operator <tt>?</tt> returns true unless
       a variable is <b>null</b> or <b>undefined</b>, which makes it analogous
       to Ruby's <tt>nil?</tt>
     </p>
+    <p>
+      It can also be used for safer conditional assignment than <tt>||=</tt>
+      provides, for cases where you may be handling numbers or strings.
+    </p>
     <div class='code'><pre class="idle"><span class="FunctionName">solipsism</span><span class="Keyword">:</span> <span class="BuiltInConstant">true</span> <span class="Keyword">if</span> mind<span class="Keyword">?</span> <span class="Keyword">and</span> <span class="Keyword">not</span> world<span class="Keyword">?</span>
-</pre><pre class="idle"><span class="Storage">var</span> solipsism;
+
+speed <span class="Keyword">?</span><span class="Keyword">=</span> <span class="Number">140</span>
+
+
+
+
+
+</pre><pre class="idle"><span class="Storage">var</span> solipsism, speed;
 <span class="Keyword">if</span> ((<span class="Keyword">typeof</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> <span class="Keyword">!</span>(<span class="Keyword">typeof</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>)) {
   solipsism <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
 }
-</pre><br class='clear' /></div>
+speed <span class="Keyword">=</span> (<span class="Keyword">typeof</span> speed <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> speed <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) ? speed : <span class="Number">140</span>;
+</pre><button onclick='javascript: var solipsism, speed;
+if ((typeof mind !== "undefined" && mind !== null) && !(typeof world !== "undefined" && world !== null)) {
+  solipsism = true;
+}
+speed = (typeof speed !== "undefined" && speed !== null) ? speed : 140;
+;alert(speed);'>run: speed</button><br class='clear' /></div>
 
     <p id="aliases">
       <b class="header">Aliases</b>
@@ -614,7 +633,7 @@ alert(<span class="String"><span class="String">&quot;</span>Gold: <span class="
 alert(<span class="String"><span class="String">&quot;</span>Silver: <span class="String">&quot;</span></span> <span class="Keyword">+</span> silver)
 alert(<span class="String"><span class="String">&quot;</span>The Field: <span class="String">&quot;</span></span> <span class="Keyword">+</span> the_field)
 </pre><pre class="idle"><span class="Storage">var</span> contenders, gold, medalists, silver, the_field;
-gold <span class="Keyword">=</span> silver <span class="Keyword">=</span> the_field <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>unknown<span class="String">&quot;</span></span>;
+gold <span class="Keyword">=</span> (silver <span class="Keyword">=</span> (the_field <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>unknown<span class="String">&quot;</span></span>));
 medalists <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">medalists</span>(<span class="FunctionArgument">first, second</span>) {
   <span class="Storage">var</span> rest;
   rest <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">2</span>);
@@ -628,7 +647,7 @@ medalists.<span class="LibraryFunction">apply</span>(<span class="Variable">this
 <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Silver: <span class="String">&quot;</span></span> <span class="Keyword">+</span> silver);
 <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>The Field: <span class="String">&quot;</span></span> <span class="Keyword">+</span> the_field);
 </pre><button onclick='javascript: var contenders, gold, medalists, silver, the_field;
-gold = silver = the_field = "unknown";
+gold = (silver = (the_field = "unknown"));
 medalists = function medalists(first, second) {
   var rest;
   rest = Array.prototype.slice.call(arguments, 2);
@@ -656,12 +675,14 @@ alert("The Field: " + the_field);
 backwards(<span class="String"><span class="String">&quot;</span>stairway<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>to<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>heaven<span class="String">&quot;</span></span>)
 </pre><pre class="idle"><span class="Storage">var</span> backwards;
 backwards <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">backwards</span>() {
-  <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">0</span>).<span class="LibraryFunction">reverse</span>());
+  <span class="Storage">var</span> arguments <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">0</span>);
+  <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(arguments.<span class="LibraryFunction">reverse</span>());
 };
 backwards(<span class="String"><span class="String">&quot;</span>stairway<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>to<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>heaven<span class="String">&quot;</span></span>);
 </pre><button onclick='javascript: var backwards;
 backwards = function backwards() {
-  return alert(Array.prototype.slice.call(arguments, 0).reverse());
+  var arguments = Array.prototype.slice.call(arguments, 0);
+  return alert(arguments.reverse());
 };
 backwards("stairway", "to", "heaven");
 ;'>run</button><br class='clear' /></div>
@@ -955,9 +976,9 @@ eldest = 24 > 21 ? "Liz" : "Ike";
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">six</span><span class="Keyword">:</span> (<span class="FunctionName">one</span><span class="Keyword">:</span> <span class="Number">1</span>) <span class="Keyword">+</span> (<span class="FunctionName">two</span><span class="Keyword">:</span> <span class="Number">2</span>) <span class="Keyword">+</span> (<span class="FunctionName">three</span><span class="Keyword">:</span> <span class="Number">3</span>)
 </pre><pre class="idle"><span class="Storage">var</span> one, six, three, two;
-six <span class="Keyword">=</span> (one <span class="Keyword">=</span> <span class="Number">1</span>) <span class="Keyword">+</span> (two <span class="Keyword">=</span> <span class="Number">2</span>) <span class="Keyword">+</span> (three <span class="Keyword">=</span> <span class="Number">3</span>);
+six <span class="Keyword">=</span> ((one <span class="Keyword">=</span> <span class="Number">1</span>)) <span class="Keyword">+</span> ((two <span class="Keyword">=</span> <span class="Number">2</span>)) <span class="Keyword">+</span> ((three <span class="Keyword">=</span> <span class="Number">3</span>));
 </pre><button onclick='javascript: var one, six, three, two;
-six = (one = 1) + (two = 2) + (three = 3);
+six = ((one = 1)) + ((two = 2)) + ((three = 3));
 ;alert(six);'>run: six</button><br class='clear' /></div>
     <p>
       Things that would otherwise be statements in JavaScript, when used
@@ -1018,6 +1039,12 @@ globals = ((function() {
   }
 })());
 ;'>run</button><br class='clear' /></div>
+    <p>
+      There are a handful of statements in JavaScript that can't be meaningfully
+      converted into expressions: <tt>break</tt>, <tt>continue</tt>, 
+      and <tt>return</tt>. If you make use of them within a block of code, 
+      CoffeeScript won't try to perform the conversion.
+    </p>
 
     <p id="inheritance">
       <b class="header">Inheritance, and Calling Super from a Subclass</b>
@@ -1065,8 +1092,7 @@ tom.move()
 
 
 </pre><pre class="idle"><span class="Storage">var</span> Animal, Horse, Snake, __a, __b, sam, tom;
-Animal <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Animal</span>() {
-};
+Animal <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Animal</span>() {  };
 <span class="LibraryClassType">Animal</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span> <span class="FunctionName">move</span>(<span class="FunctionArgument">meters</span>) {
   <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>);
 };
@@ -1103,8 +1129,7 @@ tom <span class="Keyword">=</span> <span class="Keyword">new</span> <span class=
 sam.move();
 tom.move();
 </pre><button onclick='javascript: var Animal, Horse, Snake, __a, __b, sam, tom;
-Animal = function Animal() {
-};
+Animal = function Animal() {  };
 Animal.prototype.move = function move(meters) {
   return alert(this.name + " moved " + meters + "m.");
 };
@@ -1292,9 +1317,7 @@ Account <span class="Keyword">=</span> <span class="Storage">function</span> <sp
   <span class="Variable">this</span>.cart <span class="Keyword">=</span> cart;
   __a <span class="Keyword">=</span> <span class="Keyword">$</span>(<span class="String"><span class="String">'</span>.shopping_cart<span class="String">'</span></span>).bind(<span class="String"><span class="String">'</span>click<span class="String">'</span></span>, (<span class="Storage">function</span>(__this) {
     <span class="Storage">var</span> <span class="FunctionName">__func</span> = <span class="Storage">function</span>(<span class="FunctionArgument">event</span>) {
-      <span class="Storage">var</span> __b;
-      __b <span class="Keyword">=</span> <span class="Variable">this</span>.customer.purchase(<span class="Variable">this</span>.cart);
-      <span class="Keyword">return</span> Account <span class="Keyword">===</span> <span class="Variable">this</span>.<span class="LibraryConstant">constructor</span> ? <span class="Variable">this</span> : __b;
+      <span class="Keyword">return</span> <span class="Variable">this</span>.customer.purchase(<span class="Variable">this</span>.cart);
     };
     <span class="Keyword">return</span> (<span class="Storage">function</span>() {
       <span class="Keyword">return</span> __func.<span class="LibraryFunction">apply</span>(__this, arguments);
@@ -1390,6 +1413,26 @@ return [document.title, "Hello JavaScript"].join(": ");
 }
 </pre><br class='clear' /></div>
 
+    <p id="comparisons">
+      <b class="header">Chained Comparisons</b>
+      CoffeeScript borrows
+      <a href="http://docs.python.org/reference/expressions.html#notin">chained comparisons</a>
+      from Python &mdash; making it easy to test if a value falls within a
+      certain range.
+    </p>
+    <div class='code'><pre class="idle"><span class="FunctionName">cholesterol</span><span class="Keyword">:</span> <span class="Number">127</span>
+
+<span class="FunctionName">healthy</span><span class="Keyword">:</span> <span class="Number">200</span> <span class="Keyword">&gt;</span> cholesterol <span class="Keyword">&gt;</span> <span class="Number">60</span>
+
+
+</pre><pre class="idle"><span class="Storage">var</span> cholesterol, healthy;
+cholesterol <span class="Keyword">=</span> <span class="Number">127</span>;
+healthy <span class="Keyword">=</span> (<span class="Number">200</span> <span class="Keyword">&gt;</span> cholesterol) <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> (cholesterol <span class="Keyword">&gt;</span> <span class="Number">60</span>);
+</pre><button onclick='javascript: var cholesterol, healthy;
+cholesterol = 127;
+healthy = (200 > cholesterol) && (cholesterol > 60);
+;alert(healthy);'>run: healthy</button><br class='clear' /></div>
+
     <p id="strings">
       <b class="header">Multiline Strings and Heredocs</b>
       Multiline strings are allowed in CoffeeScript.
@@ -1456,7 +1499,7 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">&q
       </li>
       <li>
         <a href="http://github.com/inem/coffee-haml-filter">coffee-haml-filter</a><br />
-        A custom <a href="http://haml-lang.com/">HAML</a> filter, by 
+        A custom <a href="http://haml-lang.com/">HAML</a> filter, by
         <a href="http://github.com/inem">Ivan Nemytchenko</a>, that embeds
         snippets of CoffeeScript within your HAML templates.
       </li>
@@ -1494,6 +1537,14 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">&q
     </ul>
 
     <h2 id="change_log">Change Log</h2>
+
+    <p>
+      <b class="header" style="margin-top: 20px;">0.2.6</b>
+      Added Python-style chained comparisons, the conditional existence
+      operator <tt>?=</tt>, and some examples from <i>Beautiful Code</i>.
+      Bugfixes relating to statement-to-expression conversion, arguments-to-array
+      conversion, and the TextMate syntax highlighter.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.2.5</b>
@@ -1547,7 +1598,7 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">&q
       <b class="header" style="margin-top: 20px;">0.2.0</b>
       Major release. Significant whitespace. Better statement-to-expression
       conversion. Splats. Splice literals. Object comprehensions. Blocks.
-      The existence operator. Many thanks to all the folks who posted issues,
+      The existential operator. Many thanks to all the folks who posted issues,
       with special thanks to
       <a href="http://github.com/kamatsu">Liam O'Connor-Davis</a> for whitespace
       and expression help.

@@ -1,7 +1,6 @@
 (function(){
   var Animal, Horse, Snake, __a, __b, sam, tom;
-  Animal = function Animal() {
-  };
+  Animal = function Animal() {  };
   Animal.prototype.move = function move(meters) {
     return alert(this.name + " moved " + meters + "m.");
   };

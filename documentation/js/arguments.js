@@ -1,7 +1,8 @@
 (function(){
   var backwards;
   backwards = function backwards() {
-    return alert(Array.prototype.slice.call(arguments, 0).reverse());
+    var arguments = Array.prototype.slice.call(arguments, 0);
+    return alert(arguments.reverse());
   };
   backwards("stairway", "to", "heaven");
 })();

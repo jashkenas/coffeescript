@@ -51,7 +51,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://gemcutter.org/gems/coffee-script">0.2.5</a>
+      <a href="http://gemcutter.org/gems/coffee-script">0.2.6</a>
     </p>
 
     <h2>Table of Contents</h2>
@@ -65,7 +65,7 @@
       <a href="#objects_and_arrays">Objects and Arrays</a><br />
       <a href="#lexical_scope">Lexical Scoping and Variable Safety</a><br />
       <a href="#conditionals">Conditionals, Ternaries, and Conditional Assignment</a><br />
-      <a href="#existence">The Existence Operator</a><br />
+      <a href="#existence">The Existential Operator</a><br />
       <a href="#aliases">Aliases</a><br />
       <a href="#splats">Splats...</a><br />
       <a href="#arguments">Arguments are Arrays</a><br />
@@ -80,6 +80,7 @@
       <a href="#embedded">Embedded JavaScript</a><br />
       <a href="#switch">Switch/When/Else</a><br />
       <a href="#try">Try/Catch/Finally</a><br />
+      <a href="#comparisons">Chained Comparisons</a><br />
       <a href="#strings">Multiline Strings and Heredocs</a><br />
       <a href="#resources">Resources</a><br />
       <a href="#contributing">Contributing</a><br />
@@ -258,7 +259,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <b class="header">Functions and Invocation</b>
       Functions are defined by a list of parameters, an arrow, and the
       function body. The empty function looks like this: <tt>=></tt>. All
-      functions in CoffeeScript are named, for the benefit of debug messages.
+      functions in CoffeeScript are named by default, for the benefit of debug messages.
+      If you'd like to create an anonymous function, just wrap it in parentheses.
     </p>
     <%= code_for('functions', 'cube(5)') %>
 
@@ -329,14 +331,18 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
 
     <p id="existence">
-      <b class="header">The Existence Operator</b>
+      <b class="header">The Existential Operator</b>
       It's a little difficult to check for the existence of a variable in
       JavaScript. <tt>if (variable) ...</tt> comes close, but fails for zero,
-      the empty string, and false. The existence operator <tt>?</tt> returns true unless
+      the empty string, and false. The existential operator <tt>?</tt> returns true unless
       a variable is <b>null</b> or <b>undefined</b>, which makes it analogous
       to Ruby's <tt>nil?</tt>
     </p>
-    <%= code_for('existence') %>
+    <p>
+      It can also be used for safer conditional assignment than <tt>||=</tt>
+      provides, for cases where you may be handling numbers or strings.
+    </p>
+    <%= code_for('existence', 'speed') %>
 
     <p id="aliases">
       <b class="header">Aliases</b>
@@ -473,6 +479,12 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       into a function call:
     </p>
     <%= code_for('expressions_try', true) %>
+    <p>
+      There are a handful of statements in JavaScript that can't be meaningfully
+      converted into expressions: <tt>break</tt>, <tt>continue</tt>, 
+      and <tt>return</tt>. If you make use of them within a block of code, 
+      CoffeeScript won't try to perform the conversion.
+    </p>
 
     <p id="inheritance">
       <b class="header">Inheritance, and Calling Super from a Subclass</b>
@@ -575,6 +587,15 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('try') %>
 
+    <p id="comparisons">
+      <b class="header">Chained Comparisons</b>
+      CoffeeScript borrows
+      <a href="http://docs.python.org/reference/expressions.html#notin">chained comparisons</a>
+      from Python &mdash; making it easy to test if a value falls within a
+      certain range.
+    </p>
+    <%= code_for('comparisons', 'healthy') %>
+
     <p id="strings">
       <b class="header">Multiline Strings and Heredocs</b>
       Multiline strings are allowed in CoffeeScript.
@@ -612,7 +633,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       </li>
       <li>
         <a href="http://github.com/inem/coffee-haml-filter">coffee-haml-filter</a><br />
-        A custom <a href="http://haml-lang.com/">HAML</a> filter, by 
+        A custom <a href="http://haml-lang.com/">HAML</a> filter, by
         <a href="http://github.com/inem">Ivan Nemytchenko</a>, that embeds
         snippets of CoffeeScript within your HAML templates.
       </li>
@@ -650,6 +671,14 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </ul>
 
     <h2 id="change_log">Change Log</h2>
+
+    <p>
+      <b class="header" style="margin-top: 20px;">0.2.6</b>
+      Added Python-style chained comparisons, the conditional existence
+      operator <tt>?=</tt>, and some examples from <i>Beautiful Code</i>.
+      Bugfixes relating to statement-to-expression conversion, arguments-to-array
+      conversion, and the TextMate syntax highlighter.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.2.5</b>
@@ -703,7 +732,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <b class="header" style="margin-top: 20px;">0.2.0</b>
       Major release. Significant whitespace. Better statement-to-expression
       conversion. Splats. Splice literals. Object comprehensions. Blocks.
-      The existence operator. Many thanks to all the folks who posted issues,
+      The existential operator. Many thanks to all the folks who posted issues,
       with special thanks to
       <a href="http://github.com/kamatsu">Liam O'Connor-Davis</a> for whitespace
       and expression help.

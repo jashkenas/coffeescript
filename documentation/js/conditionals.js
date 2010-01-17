@@ -1,5 +1,5 @@
 (function(){
-  var date, mood;
+  var date, expensive, mood;
   if (singing) {
     mood = greatly_improved;
   }

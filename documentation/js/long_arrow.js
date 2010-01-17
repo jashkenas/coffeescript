@@ -6,9 +6,7 @@
     this.cart = cart;
     __a = $('.shopping_cart').bind('click', (function(__this) {
       var __func = function(event) {
-        var __b;
-        __b = this.customer.purchase(this.cart);
-        return Account === this.constructor ? this : __b;
+        return this.customer.purchase(this.cart);
       };
       return (function() {
         return __func.apply(__this, arguments);
