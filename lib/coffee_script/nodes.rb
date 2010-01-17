@@ -544,6 +544,7 @@ module CoffeeScript
   class OpNode < Node
     children :first, :second
     attr_reader :operator
+    attr_accessor :second
 
     CONVERSIONS = {
       :==     => "===",
@@ -581,7 +582,13 @@ module CoffeeScript
     # Mimic Python's chained comparisons. See:
     # http://docs.python.org/reference/expressions.html#notin
     def compile_chain(o)
-      write("(#{@first.compile(o)}) && (#{@first.unwrap.second.compile(o)} #{@operator} #{@second.compile(o)})")
+      shared = @first.unwrap.second
+      if shared.is_a?(CallNode)
+        temp = o[:scope].free_variable
+        @first.second = ParentheticalNode.new(AssignNode.new(temp, shared))
+        shared = temp
+      end
+      write("(#{@first.compile(o)}) && (#{shared.compile(o)} #{@operator} #{@second.compile(o)})")
     end
 
     def compile_conditional(o)
