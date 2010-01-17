@@ -595,7 +595,7 @@ module CoffeeScript
       first, second = @first.compile(o), @second.compile(o)
       o[:scope].find(first) if @first.unwrap.is_a?(Value)
       sym = @operator[0..1]
-      return "#{first} = (typeof #{first} !== \"undefined\" && #{first} !== null) ? #{first} : #{second}" if @operator == '?='
+      return "#{first} = (#{first} !== undefined && #{first} !== null) ? #{first} : #{second}" if @operator == '?='
       "#{first} = #{first} #{sym} #{second}"
     end
 
