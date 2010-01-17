@@ -3,4 +3,5 @@ test.coffee
 parser.output
 lib/coffee_script/parser.rb
 test/fixtures/underscore
+examples/beautiful_code/parse.coffee
 *.gem
