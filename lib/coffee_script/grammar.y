@@ -179,6 +179,7 @@ rule
   | Expression '||' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression AND Expression         { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression OR Expression          { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '?' Expression         { result = OpNode.new(val[1], val[0], val[2]) }
 
   | Expression '-=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '+=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }

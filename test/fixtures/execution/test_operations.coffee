@@ -16,13 +16,3 @@ i: 0
 func: => i++
 
 print(1 > func() < 1)
-
-
-# The conditional assignment based on existence.
-
-a: 5
-a: null
-a ?= 10
-b ?= 10
-
-print(a is 10 and b is 10)

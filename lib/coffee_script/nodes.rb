@@ -556,7 +556,7 @@ module CoffeeScript
       :not    => '!'
     }
     CHAINABLE        = [:<, :>, :>=, :<=, :===, :'!===']
-    CONDITIONALS     = [:'||=', :'&&=', :'?=']
+    ASSIGNMENT       = [:'||=', :'&&=', :'?=']
     PREFIX_OPERATORS = [:typeof, :delete]
 
     def initialize(operator, first, second=nil, flip=false)
@@ -574,8 +574,9 @@ module CoffeeScript
 
     def compile_node(o)
       return write(compile_chain(o)) if chainable? && @first.unwrap.is_a?(OpNode) && @first.unwrap.chainable?
-      return write(compile_conditional(o)) if CONDITIONALS.include?(@operator.to_sym)
+      return write(compile_assignment(o)) if ASSIGNMENT.include?(@operator.to_sym)
       return write(compile_unary(o)) if unary?
+      return write(compile_existence(o)) if @operator == '?'
       write("#{@first.compile(o)} #{@operator} #{@second.compile(o)}")
     end
 
@@ -588,15 +589,20 @@ module CoffeeScript
         @first.second = ParentheticalNode.new(AssignNode.new(temp, shared))
         shared = temp
       end
-      write("(#{@first.compile(o)}) && (#{shared.compile(o)} #{@operator} #{@second.compile(o)})")
+      "(#{@first.compile(o)}) && (#{shared.compile(o)} #{@operator} #{@second.compile(o)})"
     end
 
-    def compile_conditional(o)
+    def compile_assignment(o)
       first, second = @first.compile(o), @second.compile(o)
       o[:scope].find(first) if @first.unwrap.is_a?(Value)
       sym = @operator[0..1]
-      return "#{first} = (#{first} !== undefined && #{first} !== null) ? #{first} : #{second}" if @operator == '?='
+      return "#{first} = #{ExistenceNode.compile_test(first)} ? #{first} : #{second}" if @operator == '?='
       "#{first} = #{first} #{sym} #{second}"
+    end
+
+    def compile_existence(o)
+      first, second = @first.compile(o), @second.compile(o)
+      "#{ExistenceNode.compile_test(first)} ? #{first} : #{second}"
     end
 
     def compile_unary(o)
@@ -890,13 +896,16 @@ module CoffeeScript
   class ExistenceNode < Node
     children :expression
 
+    def self.compile_test(variable)
+      "(typeof #{variable} !== \"undefined\" && #{variable} !== null)"
+    end
+
     def initialize(expression)
       @expression = expression
     end
 
     def compile_node(o)
-      val = @expression.compile(o)
-      write("(typeof #{val} !== \"undefined\" && #{val} !== null)")
+      write(ExistenceNode.compile_test(@expression.compile(o)))
     end
   end
 
