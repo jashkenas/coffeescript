@@ -306,6 +306,14 @@ module CoffeeScript
       end
       "#{prefix}#{meth}.apply(#{obj}, #{args.join('')})"
     end
+
+    # If the code generation wished to use the result of a function call
+    # in multiple places, ensure that the function is only ever called once.
+    def compile_double_reference(o)
+      reference = o[:scope].free_variable
+      call = ParentheticalNode.new(AssignNode.new(reference, self))
+      return call, reference
+    end
   end
 
   # Node to extend an object's prototype with an ancestor object.
@@ -594,11 +602,7 @@ module CoffeeScript
     # http://docs.python.org/reference/expressions.html#notin
     def compile_chain(o)
       shared = @first.unwrap.second
-      if shared.is_a?(CallNode)
-        temp = o[:scope].free_variable
-        @first.second = ParentheticalNode.new(AssignNode.new(temp, shared))
-        shared = temp
-      end
+      @first.second, shared = *shared.compile_double_reference(o) if shared.is_a?(CallNode)
       "(#{@first.compile(o)}) && (#{shared.compile(o)} #{@operator} #{@second.compile(o)})"
     end
 
@@ -606,13 +610,13 @@ module CoffeeScript
       first, second = @first.compile(o), @second.compile(o)
       o[:scope].find(first) if @first.unwrap.is_a?(Value)
       sym = @operator[0..1]
-      return "#{first} = #{ExistenceNode.compile_test(first)} ? #{first} : #{second}" if @operator == '?='
+      return "#{first} = #{ExistenceNode.compile_test(o, @first)} ? #{first} : #{second}" if @operator == '?='
       "#{first} = #{first} #{sym} #{second}"
     end
 
     def compile_existence(o)
       first, second = @first.compile(o), @second.compile(o)
-      "#{ExistenceNode.compile_test(first)} ? #{first} : #{second}"
+      "#{ExistenceNode.compile_test(o, @first)} ? #{first} : #{second}"
     end
 
     def compile_unary(o)
@@ -897,8 +901,10 @@ module CoffeeScript
   class ExistenceNode < Node
     children :expression
 
-    def self.compile_test(variable)
-      "(typeof #{variable} !== \"undefined\" && #{variable} !== null)"
+    def self.compile_test(o, variable)
+      first, second = variable, variable
+      first, second = *variable.compile_double_reference(o) if variable.is_a?(CallNode)
+      "(typeof #{first.compile(o)} !== \"undefined\" && #{second.compile(o)} !== null)"
     end
 
     def initialize(expression)
@@ -906,7 +912,7 @@ module CoffeeScript
     end
 
     def compile_node(o)
-      write(ExistenceNode.compile_test(@expression.compile(o)))
+      write(ExistenceNode.compile_test(o, @expression))
     end
   end
 

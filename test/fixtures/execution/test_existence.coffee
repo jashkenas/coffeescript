@@ -21,3 +21,13 @@ z: null
 x: z ? "EX"
 
 print(z is null and x is "EX")
+
+
+# Only evaluate once.
+
+counter: 0
+get_next_node: =>
+  throw "up" if counter
+  counter++
+
+print(if get_next_node()? then true else false)
