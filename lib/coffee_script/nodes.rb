@@ -45,7 +45,7 @@ module CoffeeScript
       @indent  = o[:indent]
       top      = self.top_sensitive? ? @options[:top] : @options.delete(:top)
       closure  = statement? && !statement_only? && !top && !@options[:return] && !self.is_a?(CommentNode)
-      closure  &&= !contains? {|n| n.is_a?(ReturnNode) }
+      closure  &&= !contains? {|n| n.statement_only? }
       closure  ? compile_closure(@options) : compile_node(@options)
     end
 
