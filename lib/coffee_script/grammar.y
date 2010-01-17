@@ -38,7 +38,7 @@ prechigh
   right    WHEN LEADING_WHEN IN OF BY
   right    THROW FOR NEW SUPER
   left     EXTENDS
-  left     ASSIGN '||=' '&&='
+  left     ASSIGN '||=' '&&=' '?='
   right    RETURN
   right    '=>' '==>' UNLESS IF ELSE WHILE
 preclow
@@ -187,6 +187,7 @@ rule
   | Expression '%=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '||=' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression '&&=' Expression       { result = OpNode.new(val[1], val[0], val[2]) }
+  | Expression '?=' Expression        { result = OpNode.new(val[1], val[0], val[2]) }
 
   | Expression INSTANCEOF Expression  { result = OpNode.new(val[1], val[0], val[2]) }
   | Expression IN Expression          { result = OpNode.new(val[1], val[0], val[2]) }

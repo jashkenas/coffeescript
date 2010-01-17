@@ -556,7 +556,7 @@ module CoffeeScript
       :not    => '!'
     }
     CHAINABLE        = [:<, :>, :>=, :<=, :===, :'!===']
-    CONDITIONALS     = [:'||=', :'&&=']
+    CONDITIONALS     = [:'||=', :'&&=', :'?=']
     PREFIX_OPERATORS = [:typeof, :delete]
 
     def initialize(operator, first, second=nil, flip=false)
@@ -593,7 +593,9 @@ module CoffeeScript
 
     def compile_conditional(o)
       first, second = @first.compile(o), @second.compile(o)
+      o[:scope].find(first) if @first.unwrap.is_a?(Value)
       sym = @operator[0..1]
+      return "#{first} = (typeof #{first} !== \"undefined\" && #{first} !== null) ? #{first} : #{second}" if @operator == '?='
       "#{first} = #{first} #{sym} #{second}"
     end
 
