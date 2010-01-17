@@ -60,7 +60,8 @@ module CoffeeScript
       @indent   = (o[:indent] = idt(1))
       pass_this = !o[:closure] && contains? {|node| node.is_a?(ThisNode) }
       param     = pass_this ? '__this' : ''
-      "(function(#{param}) {\n#{compile_node(o.merge(:return => true, :closure => true))}\n#{indent}})(#{pass_this ? 'this' : ''})"
+      body      = compile_node(o.merge(:return => true, :closure => true))
+      "(function(#{param}) {\n#{body}\n#{indent}})(#{pass_this ? 'this' : ''})"
     end
 
     # Quick short method for the current indentation level, plus tabbing in.
@@ -254,35 +255,25 @@ module CoffeeScript
 
     def initialize(variable, arguments=[])
       @variable, @arguments = variable, arguments
+      @prefix = ''
     end
 
     def new_instance
-      @new = true
+      @prefix = "new "
       self
-    end
-
-    def super?
-      @variable == 'super'
-    end
-
-    def prefix
-      @new ? "new " : ''
-    end
-
-    def splat?
-      @arguments.any? {|a| a.is_a?(SplatNode) }
     end
 
     def <<(argument)
       @arguments << argument
+      self
     end
 
     # Compile a vanilla function call.
     def compile_node(o)
-      return write(compile_splat(o)) if splat?
+      return write(compile_splat(o)) if @arguments.any? {|a| a.is_a?(SplatNode) }
       args = @arguments.map{|a| a.compile(o) }.join(', ')
-      return write(compile_super(args, o)) if super?
-      write("#{prefix}#{@variable.compile(o)}(#{args})")
+      return write(compile_super(args, o)) if @variable == 'super'
+      write("#{@prefix}#{@variable.compile(o)}(#{args})")
     end
 
     # Compile a call against the superclass's implementation of the current function.
@@ -304,7 +295,7 @@ module CoffeeScript
         code = arg.is_a?(SplatNode) ? code : "[#{code}]"
         arg.equal?(@arguments.first) ? code : ".concat(#{code})"
       end
-      "#{prefix}#{meth}.apply(#{obj}, #{args.join('')})"
+      "#{@prefix}#{meth}.apply(#{obj}, #{args.join('')})"
     end
 
     # If the code generation wished to use the result of a function call
@@ -663,12 +654,13 @@ module CoffeeScript
         @body.unshift(splat)
       end
       @params.each {|id| o[:scope].parameter(id.to_s) }
-      code = @body.empty? ? "" : "\n#{@body.compile_with_declarations(o)}\n"
+      code  = @body.empty? ? "" : "\n#{@body.compile_with_declarations(o)}\n"
       name_part = @name ? " #{@name}" : ''
-      func = "function#{@bound ? '' : name_part}(#{@params.join(', ')}) {#{code}#{idt(@bound ? 1 : 0)}}"
-      func = "(#{func})" if top && !@bound
+      func  = "function#{@bound ? '' : name_part}(#{@params.join(', ')}) {#{code}#{idt(@bound ? 1 : 0)}}"
+      func  = "(#{func})" if top && !@bound
       return write(func) unless @bound
-      write("(function(__this) {\n#{idt(1)}var __func = #{func};\n#{idt(1)}return (function#{name_part}() {\n#{idt(2)}return __func.apply(__this, arguments);\n#{idt(1)}});\n#{idt}})(this)")
+      inner = "(function#{name_part}() {\n#{idt(2)}return __func.apply(__this, arguments);\n#{idt(1)}});"
+      write("(function(__this) {\n#{idt(1)}var __func = #{func};\n#{idt(1)}return #{inner}\n#{idt}})(this)")
     end
   end
 
@@ -683,16 +675,12 @@ module CoffeeScript
     end
 
     def compile_node(o={})
-      write(@index ? compile_param(o) : compile_arg(o))
+      write(@index ? compile_param(o) : @name.compile(o))
     end
 
     def compile_param(o)
       o[:scope].find(@name)
       "#{@name} = Array.prototype.slice.call(arguments, #{@index})"
-    end
-
-    def compile_arg(o)
-      @name.compile(o)
     end
 
     def compile_value(o, name, index)
@@ -849,10 +837,11 @@ module CoffeeScript
       if @object
         o[:scope].assign("__hasProp", "Object.prototype.hasOwnProperty", true)
         body = Expressions.wrap(IfNode.new(
-          CallNode.new(ValueNode.new(LiteralNode.wrap("__hasProp"), [AccessorNode.new(Value.new('call'))]), [LiteralNode.wrap(svar), LiteralNode.wrap(ivar)]),
-          Expressions.wrap(body),
-          nil,
-          {:statement => true}
+          CallNode.new(
+            ValueNode.new(LiteralNode.wrap("__hasProp"), [AccessorNode.new(Value.new('call'))]),
+            [LiteralNode.wrap(svar), LiteralNode.wrap(ivar)]
+          ),
+          Expressions.wrap(body), nil, {:statement => true}
         ))
       end
 
@@ -1010,7 +999,8 @@ module CoffeeScript
       if_dent     = child ? '' : idt
       com_dent    = child ? idt : ''
       prefix      = @comment ? @comment.compile(cond_o) + "\n#{com_dent}" : ''
-      if_part     = "#{prefix}#{if_dent}if (#{compile_condition(cond_o)}) {\n#{Expressions.wrap(@body).compile(o)}\n#{idt}}"
+      body        = Expressions.wrap(@body).compile(o)
+      if_part     = "#{prefix}#{if_dent}if (#{compile_condition(cond_o)}) {\n#{body}\n#{idt}}"
       return if_part unless @else_body
       else_part = chain? ?
         " else #{@else_body.compile(o.merge(:indent => idt, :chain_child => true))}" :
