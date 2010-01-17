@@ -309,7 +309,7 @@ module CoffeeScript
 
     # If the code generation wished to use the result of a function call
     # in multiple places, ensure that the function is only ever called once.
-    def compile_double_reference(o)
+    def compile_reference(o)
       reference = o[:scope].free_variable
       call = ParentheticalNode.new(AssignNode.new(reference, self))
       return call, reference
@@ -602,7 +602,7 @@ module CoffeeScript
     # http://docs.python.org/reference/expressions.html#notin
     def compile_chain(o)
       shared = @first.unwrap.second
-      @first.second, shared = *shared.compile_double_reference(o) if shared.is_a?(CallNode)
+      @first.second, shared = *shared.compile_reference(o) if shared.is_a?(CallNode)
       "(#{@first.compile(o)}) && (#{shared.compile(o)} #{@operator} #{@second.compile(o)})"
     end
 
@@ -903,7 +903,7 @@ module CoffeeScript
 
     def self.compile_test(o, variable)
       first, second = variable, variable
-      first, second = *variable.compile_double_reference(o) if variable.is_a?(CallNode)
+      first, second = *variable.compile_reference(o) if variable.is_a?(CallNode)
       "(typeof #{first.compile(o)} !== \"undefined\" && #{second.compile(o)} !== null)"
     end
 
