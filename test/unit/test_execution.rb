@@ -4,12 +4,16 @@ class ExecutionTest < Test::Unit::TestCase
 
   NO_WARNINGS = "0 error(s), 0 warning(s)"
 
+  SOURCES = [
+    'test/fixtures/execution/*.coffee',
+    'examples/beautiful_code/*.coffee'
+  ]
+
   # This is by far the most important test. It evaluates all of the
-  # CoffeeScript in test/fixtures/execution, ensuring that all our
-  # syntax actually works.
+  # CoffeeScript in test/fixtures/execution, as well as examples/beautiful_code,
+  # ensuring that all our syntax actually works.
   def test_execution_of_coffeescript
-    sources = ['test/fixtures/execution/*.coffee'].join(' ')
-    (`bin/coffee -r #{sources}`).split("\n").each do |line|
+    (`bin/coffee -r #{SOURCES.join(' ')}`).split("\n").each do |line|
       assert line == "true"
     end
   end
