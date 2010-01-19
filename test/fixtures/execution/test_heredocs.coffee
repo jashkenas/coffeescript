@@ -35,3 +35,12 @@ a: '''
    '''
 
 print(a is "    a\n  b\nc")
+
+a: '''
+a
+
+
+b c
+'''
+
+print(a is "a\n\n\nb c")

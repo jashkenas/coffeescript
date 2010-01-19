@@ -23,7 +23,7 @@ module CoffeeScript
     IDENTIFIER = /\A([a-zA-Z$_](\w|\$)*)/
     NUMBER     = /\A(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
     STRING     = /\A(""|''|"(.*?)([^\\]|\\\\)"|'(.*?)([^\\]|\\\\)')/m
-    HEREDOC    = /\A("{6}|'{6}|"{3}\n?(.*?)\n?(\s*)"{3}|'{3}\n?(.*?)\n?(\s*)'{3})/m
+    HEREDOC    = /\A("{6}|'{6}|"{3}\n?(.*?)\n?([ \t]*)"{3}|'{3}\n?(.*?)\n?([ \t]*)'{3})/m
     JS         = /\A(``|`(.*?)([^\\]|\\\\)`)/m
     OPERATOR   = /\A([+\*&|\/\-%=<>:!?]+)/
     WHITESPACE = /\A([ \t]+)/
@@ -37,10 +37,10 @@ module CoffeeScript
     # Token cleaning regexes.
     JS_CLEANER      = /(\A`|`\Z)/
     MULTILINER      = /\n/
-    STRING_NEWLINES = /\n\s*/
-    COMMENT_CLEANER = /(^\s*#|\n\s*$)/
+    STRING_NEWLINES = /\n[ \t]*/
+    COMMENT_CLEANER = /(^[ \t]*#|\n[ \t]*$)/
     NO_NEWLINE      = /\A([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)\Z/
-    HEREDOC_INDENT  = /^\s+/
+    HEREDOC_INDENT  = /^[ \t]+/
 
     # Tokens which a regular expression will never immediately follow, but which
     # a division operator might.
