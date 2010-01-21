@@ -14,4 +14,8 @@ switch 'string'
   when null
     something_else()
 
+=>
+  code()
+  # comment
+
 print(func())

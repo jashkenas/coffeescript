@@ -70,7 +70,7 @@ module CoffeeScript
           @tokens.delete_at(i + 2)
           @tokens.delete_at(i - 2)
           next 0
-        elsif prev[0] == "\n" && [:INDENT, :OUTDENT].include?(after[0])
+        elsif prev[0] == "\n" && [:INDENT].include?(after[0])
           @tokens.delete_at(i + 2)
           @tokens[i - 1] = after
           next 1
