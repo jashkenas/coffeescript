@@ -19,7 +19,24 @@ evens: for num in [1, 2, 3, 4, 5, 6] when num % 2 is 0
 
 print(evens.join(', ') is '4, 6, 8')
 
+
 # Make sure that the "in" operator still works.
 
 print(2 in evens)
 
+
+# When functions are being defined within the body of a comprehension, make
+# sure that their safely wrapped in a closure to preserve local variables.
+
+obj: {}
+
+methods: ['one', 'two', 'three']
+
+for method in methods
+  name: method
+  obj[name]: =>
+    "I'm " + name
+
+print(obj.one()   is "I'm one")
+print(obj.two()   is "I'm two")
+print(obj.three() is "I'm three")

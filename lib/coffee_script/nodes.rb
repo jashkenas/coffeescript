@@ -749,6 +749,14 @@ module CoffeeScript
     end
   end
 
+  # A faux-node used to wrap an expressions body in a closure.
+  class ClosureNode
+    def self.wrap(expressions)
+      Expressions.wrap(CallNode.new(ParentheticalNode.new(
+        ValueNode.new(CodeNode.new([], Expressions.wrap(expressions))))))
+    end
+  end
+
   # A while loop, the only sort of low-level loop exposed by CoffeeScript. From
   # it, all other loops can be manufactured.
   class WhileNode < Node
@@ -808,25 +816,23 @@ module CoffeeScript
       rvar          = scope.free_variable unless top_level
       svar          = scope.free_variable
       ivar          = range ? name : @index ? @index : scope.free_variable
+      var_part      = ''
+      body          = Expressions.wrap(@body)
       if range
         index_var   = scope.free_variable
         source_part = source.compile_variables(o)
         for_part    = "#{index_var}=0, #{source.compile(o.merge(:index => ivar, :step => @step))}, #{index_var}++"
-        var_part    = ''
       else
         index_var   = nil
         source_part = "#{svar} = #{source.compile(o)};\n#{idt}"
         for_part    = @object ? "#{ivar} in #{svar}" : "#{ivar} = 0; #{ivar} < #{svar}.length; #{ivar}++"
-        var_part    = @name ? "#{body_dent}#{@name} = #{svar}[#{ivar}];\n" : ''
+        var_part    = "#{body_dent}#{@name} = #{svar}[#{ivar}];\n" if @name
+        # body.unshift(AssignNode.new(@name, ValueNode.new(svar, [IndexNode.new(ivar)]))) if @name
       end
-      body          = @body
       set_result    = rvar ? "#{idt}#{rvar} = []; " : idt
       return_result = rvar || ''
-      if top_level
-        body = Expressions.wrap(body)
-      else
-        body = PushNode.wrap(rvar, body)
-      end
+      body = ClosureNode.wrap(body) if top_level && contains? {|n| n.is_a? CodeNode }
+      body = PushNode.wrap(rvar, body) unless top_level
       if o[:return]
         return_result = "return #{return_result}" if o[:return]
         o.delete(:return)
