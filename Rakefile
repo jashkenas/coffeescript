@@ -58,6 +58,8 @@ namespace :gem do
 
   desc 'Build and install the coffee-script gem'
   task :install do
+    verbose = "lib/coffee_script/parser.output"
+    FileUtils.rm(verbose) if File.exists?(verbose)
     sh "gem build coffee-script.gemspec"
     sh "sudo gem install #{Dir['*.gem'].join(' ')} --local --no-ri --no-rdoc"
   end
