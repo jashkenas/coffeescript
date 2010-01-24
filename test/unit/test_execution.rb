@@ -6,7 +6,8 @@ class ExecutionTest < Test::Unit::TestCase
 
   SOURCES = [
     'test/fixtures/execution/*.coffee',
-    'examples/beautiful_code/*.coffee'
+    'examples/beautiful_code/*.coffee',
+    'examples/computer_science/*.coffee'
   ]
 
   # This is by far the most important test. It evaluates all of the

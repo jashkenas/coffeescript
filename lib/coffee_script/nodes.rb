@@ -332,6 +332,9 @@ module CoffeeScript
     children :base, :properties
     attr_reader :last, :source
 
+    # Soak up undefined properties and call attempts.
+    SOAK = " == undefined ? undefined : "
+
     def initialize(base, properties=[])
       @base, @properties = base, [properties].flatten
     end
@@ -375,14 +378,19 @@ module CoffeeScript
       props.each do |prop|
         if prop.is_a?(AccessorNode) && prop.soak
           soaked = true
-          parts[-1] << " == undefined ? undefined : #{baseline += prop.compile(o)}"
+          if @base.is_a?(CallNode) && prop == props.first
+            temp = o[:scope].free_variable
+            parts[-1] = "(#{temp} = #{baseline})#{SOAK}#{baseline = temp.to_s + prop.compile(o)}"
+          else
+            parts[-1] << "#{SOAK}#{baseline += prop.compile(o)}"
+          end
         else
           parts << prop.compile(o)
         end
       end
       @last = parts.last
       @source = parts.length > 1 ? parts[0...-1].join('') : nil
-      code = parts.join('')
+      code = parts.join('').gsub(')())', '()))')
       write(soaked ? "(#{code})" : code)
     end
   end

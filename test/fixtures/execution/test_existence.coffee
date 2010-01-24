@@ -42,3 +42,13 @@ obj: {
 print(obj?.prop is "hello")
 
 print(obj?.prop?.non?.existent?.property is undefined)
+
+
+# Soaks and caches method calls as well.
+
+arr: ["--", "----"]
+
+print(arr.pop()?.length is 4)
+print(arr.pop()?.length is 2)
+print(arr.pop()?.length is undefined)
+print(arr.pop()?.length?.non?.existent()?.property is undefined)
