@@ -37,8 +37,8 @@ prechigh
   right    WHEN LEADING_WHEN IN OF BY
   right    THROW FOR NEW SUPER
   left     EXTENDS
-  left     ASSIGN '||=' '&&=' '?='
-  right    RETURN
+  left     '||=' '&&=' '?='
+  right    ASSIGN RETURN
   right    '=>' '==>' UNLESS IF ELSE WHILE
 preclow
 
