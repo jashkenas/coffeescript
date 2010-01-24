@@ -333,7 +333,7 @@ module CoffeeScript
     attr_reader :last, :source
 
     def initialize(base, properties=[])
-      @base, @properties = base, properties
+      @base, @properties = base, [properties].flatten
     end
 
     def <<(other)
@@ -367,12 +367,23 @@ module CoffeeScript
     end
 
     def compile_node(o)
-      only  = o.delete(:only_first)
-      props = only ? @properties[0...-1] : @properties
-      parts = [@base, props].flatten.map {|val| val.compile(o) }
+      soaked    = false
+      only      = o.delete(:only_first)
+      props     = only ? @properties[0...-1] : @properties
+      baseline  = @base.compile(o)
+      parts     = [baseline.dup]
+      props.each do |prop|
+        if prop.is_a?(AccessorNode) && prop.soak
+          soaked = true
+          parts[-1] << " == undefined ? undefined : #{baseline += prop.compile(o)}"
+        else
+          parts << prop.compile(o)
+        end
+      end
       @last = parts.last
       @source = parts.length > 1 ? parts[0...-1].join('') : nil
-      write(parts.join(''))
+      code = parts.join('')
+      write(soaked ? "(#{code})" : code)
     end
   end
 
@@ -380,9 +391,12 @@ module CoffeeScript
   # an accessor into the object's prototype.
   class AccessorNode < Node
     children :name
+    attr_reader :soak
 
-    def initialize(name, prototype=false)
-      @name, @prototype = name, prototype
+    def initialize(name, tag=nil)
+      @name       = name
+      @prototype  = tag == :prototype
+      @soak       = tag == :soak
     end
 
     def compile_node(o)

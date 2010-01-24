@@ -31,3 +31,14 @@ get_next_node: =>
   counter++
 
 print(if get_next_node()? then true else false)
+
+
+# Existence chains, soaking up undefined properties:
+
+obj: {
+  prop: "hello"
+}
+
+print(obj?.prop is "hello")
+
+print(obj?.prop?.non?.existent?.property is undefined)
