@@ -16,8 +16,7 @@ module CoffeeScript
                   "delete", "instanceof", "typeof",
                   "switch", "when",
                   "super", "extends",
-                  "arguments",
-                  "this"]
+                  "arguments"]
 
     # Token matching regexes.
     IDENTIFIER = /\A([a-zA-Z$_](\w|\$)*)/
@@ -48,7 +47,7 @@ module CoffeeScript
     NOT_REGEX  = [
       :IDENTIFIER, :NUMBER, :REGEX, :STRING,
       ')', '++', '--', ']', '}',
-      :FALSE, :NULL, :THIS, :TRUE
+      :FALSE, :NULL, :TRUE
     ]
 
     # Scan by attempting to match tokens one character at a time. Slow and steady.

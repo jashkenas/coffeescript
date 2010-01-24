@@ -16,7 +16,6 @@ token ARGUMENTS
 token NEWLINE
 token COMMENT
 token JS
-token THIS
 token INDENT OUTDENT
 
 # Declare order of operations.
@@ -238,7 +237,6 @@ rule
   | Range                             { result = ValueNode.new(val[0]) }
   | Value Accessor                    { result = val[0] << val[1] }
   | Invocation Accessor               { result = ValueNode.new(val[0], [val[1]]) }
-  | THIS                              { result = ValueNode.new(ThisNode.new) }
   ;
 
   # Accessing into an object or array, through dot or index notation.

@@ -56,12 +56,9 @@ module CoffeeScript
     end
 
     def compile_closure(o={})
-      indent    = o[:indent]
-      @indent   = (o[:indent] = idt(1))
-      pass_this = !o[:closure] && contains? {|node| node.is_a?(ThisNode) }
-      param     = pass_this ? '__this' : ''
-      body      = compile_node(o.merge(:return => true, :closure => true))
-      "(function(#{param}) {\n#{body}\n#{indent}})(#{pass_this ? 'this' : ''})"
+      indent     = o[:indent]
+      @indent    = (o[:indent] = idt(1))
+      ClosureNode.wrap(self).compile(o)
     end
 
     # Quick short method for the current indentation level, plus tabbing in.
@@ -407,16 +404,6 @@ module CoffeeScript
     end
   end
 
-  # A node to represent a reference to "this". Needs to be transformed into a
-  # reference to the correct value of "this", when used within a closure wrapper.
-  class ThisNode < Node
-
-    def compile_node(o)
-      write(o[:closure] ? "__this" : "this")
-    end
-
-  end
-
   # A range literal. Ranges can be used to extract portions (slices) of arrays,
   # or to specify a range for array comprehensions.
   class RangeNode < Node
@@ -647,7 +634,6 @@ module CoffeeScript
       o[:indent]   = idt(@bound ? 2 : 1)
       o.delete(:no_wrap)
       o.delete(:globals)
-      o.delete(:closure)
       if @params.last.is_a?(SplatNode)
         splat = @params.pop
         splat.index = @params.length
@@ -751,9 +737,10 @@ module CoffeeScript
 
   # A faux-node used to wrap an expressions body in a closure.
   class ClosureNode
-    def self.wrap(expressions)
-      Expressions.wrap(CallNode.new(ParentheticalNode.new(
-        ValueNode.new(CodeNode.new([], Expressions.wrap(expressions))))))
+    def self.wrap(expressions, statement=false)
+      func = ParentheticalNode.new(CodeNode.new([], Expressions.wrap(expressions)))
+      call = CallNode.new(ValueNode.new(func, AccessorNode.new(Value.new('call'))), [Value.new('this')])
+      statement ? Expressions.wrap(call) : call
     end
   end
 
@@ -831,7 +818,7 @@ module CoffeeScript
       end
       set_result    = rvar ? "#{idt}#{rvar} = []; " : idt
       return_result = rvar || ''
-      body = ClosureNode.wrap(body) if top_level && contains? {|n| n.is_a? CodeNode }
+      body = ClosureNode.wrap(body, true) if top_level && contains? {|n| n.is_a? CodeNode }
       body = PushNode.wrap(rvar, body) unless top_level
       if o[:return]
         return_result = "return #{return_result}" if o[:return]
