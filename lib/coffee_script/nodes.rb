@@ -55,10 +55,11 @@ module CoffeeScript
       closure  ? compile_closure(@options) : compile_node(@options)
     end
 
+    # Statements converted into expressions share scope with their parent
+    # closure, to preserve JavaScript-style lexical scope.
     def compile_closure(o={})
-      indent     = o[:indent]
-      @indent    = (o[:indent] = idt(1))
-      ClosureNode.wrap(self).compile(o)
+      @indent = o[:indent]
+      ClosureNode.wrap(self).compile(o.merge(:shared_scope => o[:scope]))
     end
 
     # Quick short method for the current indentation level, plus tabbing in.

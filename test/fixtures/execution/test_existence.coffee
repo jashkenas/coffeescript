@@ -51,4 +51,5 @@ arr: ["--", "----"]
 print(arr.pop()?.length is 4)
 print(arr.pop()?.length is 2)
 print(arr.pop()?.length is undefined)
+print(arr[0]?.length is undefined)
 print(arr.pop()?.length?.non?.existent()?.property is undefined)
