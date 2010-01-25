@@ -46,3 +46,9 @@ Math: {
 print Math.Add(5, 5) is 10
 print Math.AnonymousAdd(10, 10) is 20
 print Math.FastAdd(20, 20) is 40
+
+
+# Parens are optional on simple function calls.
+print 100 > 1 if 1 > 0
+print true unless false
+print true for i in [1..3]

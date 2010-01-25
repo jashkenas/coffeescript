@@ -19,6 +19,7 @@ module CoffeeScript
 
     # Tokens pairs that, in immediate succession, indicate an implicit call.
     IMPLICIT_FUNC = [:IDENTIFIER, :SUPER]
+    IMPLICIT_END  = [:IF, :UNLESS, :FOR, :WHILE, "\n"]
     IMPLICIT_CALL = [:IDENTIFIER, :NUMBER, :STRING, :JS, :REGEX, :NEW, :PARAM,
                      :TRY, :DELETE, :INSTANCEOF, :TYPEOF, :SWITCH, :ARGUMENTS,
                      :TRUE, :FALSE, :YES, :NO, :ON, :OFF, '!', '!!', :NOT]
@@ -153,7 +154,7 @@ module CoffeeScript
     def add_implicit_parentheses
       open = false
       scan_tokens do |prev, token, post, i|
-        if open && token[0] == "\n"
+        if open && IMPLICIT_END.include?(token[0])
           @tokens.insert(i, [')', Value.new(')', token[1].line)])
           open = false
           next 2
