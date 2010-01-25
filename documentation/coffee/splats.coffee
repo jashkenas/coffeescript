@@ -18,8 +18,8 @@ contenders: [
   "Usain Bolt"
 ]
 
-medalists(contenders...)
+medalists contenders...
 
-alert("Gold: " + gold)
-alert("Silver: " + silver)
-alert("The Field: " + the_field)
+alert "Gold: " + gold
+alert "Silver: " + silver
+alert "The Field: " + the_field

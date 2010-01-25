@@ -39,5 +39,5 @@
       __a.push(math.cube(num));
     }
     return __a;
-  })();
+  }).call(this);
 })();

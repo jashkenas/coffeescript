@@ -6,7 +6,7 @@
       __a.push(num);
     }
     return __a;
-  })();
+  }).call(this);
   egg_delivery = function egg_delivery() {
     var __f, __g, __h, __i, __j, dozen_eggs, i;
     __f = []; __i = 0; __j = eggs.length;
@@ -14,7 +14,7 @@
       __f.push((function() {
         dozen_eggs = eggs.slice(i, i + 12);
         return deliver(new egg_carton(dozen));
-      })());
+      }).call(this));
     }
     return __f;
   };

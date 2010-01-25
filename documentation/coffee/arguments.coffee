@@ -1,4 +1,4 @@
 backwards: =>
-  alert(arguments.reverse())
+  alert arguments.reverse()
 
-backwards("stairway", "to", "heaven")
+backwards "stairway", "to", "heaven"

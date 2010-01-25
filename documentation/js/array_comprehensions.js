@@ -8,7 +8,7 @@
       __a.push(eat(food));
     }
     return __a;
-  })();
+  }).call(this);
   // Naive collision detection.
   __d = asteroids;
   for (__e = 0; __e < __d.length; __e++) {

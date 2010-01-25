@@ -3,4 +3,4 @@ Account: customer, cart =>
   this.cart: cart
 
   $('.shopping_cart').bind('click') event ==>
-    this.customer.purchase(this.cart)
+    this.customer.purchase this.cart

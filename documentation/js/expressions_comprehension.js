@@ -10,5 +10,5 @@
       }
     }
     return __a;
-  })()).slice(0, 10);
+  }).call(this)).slice(0, 10);
 })();

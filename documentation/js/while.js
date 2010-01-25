@@ -18,5 +18,5 @@
 One fell out and bumped his head.");
     }
     return __a;
-  })();
+  }).call(this);
 })();
