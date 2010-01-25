@@ -22,6 +22,39 @@ LotteryTicket: {
 
 
 
+# class << LotteryDraw
+#   def play
+#     result = LotteryTicket.new_random
+#     winners = {}
+#     @@tickets.each do |buyer, ticket_list|
+#       ticket_list.each do |ticket|
+#         score = ticket.score( result )
+#         next if score.zero?
+#         winners[buyer] ||= []
+#         winners[buyer] << [ ticket, score ]
+#       end
+#     end
+#     @@tickets.clear
+#     winners
+#   end
+# end
+
+LotteryDraw: {
+  play: =>
+    result:   LotteryTicket.new_random()
+    winners:  {}
+    this.tickets.each() buyer, ticket_list =>
+      ticket_list.each() ticket =>
+        score: ticket.score(result)
+        return if score is 0
+        winners[buyer] ||= []
+        winners[buyer].push([ticket, score])
+    this.tickets: {}
+    winners
+}
+
+
+
 # module WishScanner
 #   def scan_for_a_wish
 #     wish = self.read.detect do |thought|
