@@ -7,4 +7,4 @@ result: if a
       if d
         true
 
-print(result)
+print result

@@ -14,8 +14,7 @@ result: switch num
   when 11 then false
   else false
 
-print(result)
-
+print result
 
 func: num =>
   switch num
@@ -25,7 +24,7 @@ func: num =>
       false
     else false
 
-print(func(2))
-print(func(6))
-print(!func(3))
-print(!func(8))
+print func(2)
+print func(6)
+print !func(3)
+print !func(8)

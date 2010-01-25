@@ -163,7 +163,7 @@ module CoffeeScript
       @line += indent.scan(MULTILINER).size
       @i += indent.size
       next_character = @chunk[MULTI_DENT, 4]
-      no_newlines = next_character == '.' || (last_value.to_s.match(NO_NEWLINE) && !last_value.match(CODE))
+      no_newlines = next_character == '.' || (last_value.to_s.match(NO_NEWLINE) && @tokens[-2][0] != '.'  && !last_value.match(CODE))
       return suppress_newlines(indent) if no_newlines
       size = indent.scan(LAST_DENT).last.last.length
       return newline_token(indent) if size == @indent
@@ -242,13 +242,19 @@ module CoffeeScript
     # make use of splats.
     def tag_parameters
       i = 0
+      tagged = false
       loop do
         i -= 1
         tok = @tokens[i]
         return if !tok
-        next if ['.', ','].include?(tok[0])
+        if ['.', ','].include?(tok[0])
+          tagged = false
+          next
+        end
+        return if tagged
         return if tok[0] != :IDENTIFIER
         tok[0] = :PARAM
+        tagged = true
       end
     end
 

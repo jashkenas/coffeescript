@@ -55,7 +55,7 @@
 					<key>name</key>
 					<string>variable.parameter.function.coffee</string>
 				</dict>
-				<key>2</key>
+				<key>3</key>
 				<dict>
 					<key>name</key>
 					<string>storage.type.function.coffee</string>
@@ -64,7 +64,7 @@
 			<key>comment</key>
 			<string>match stuff like: a =&gt; … </string>
 			<key>match</key>
-			<string>([a-zA-Z0-9_?., $*]*)\s*(=+&gt;)</string>
+			<string>([a-zA-Z0-9_?.$]*(,\s*[a-zA-Z0-9_?.$]+)*)\s*(=+&gt;)</string>
 			<key>name</key>
 			<string>meta.inline.function.coffee</string>
 		</dict>

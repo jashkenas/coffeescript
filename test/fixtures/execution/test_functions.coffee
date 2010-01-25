@@ -2,10 +2,10 @@ x: 1
 y: {}
 y.x: => 3
 
-print(x is 1)
-print(typeof(y.x) is 'function')
-print(y.x() is 3)
-print(y.x.name is 'x')
+print x is 1
+print typeof(y.x) is 'function'
+print y.x() is 3
+print y.x.name is 'x'
 
 
 # The empty function should not cause a syntax error.
@@ -40,9 +40,9 @@ memoize: fn =>
 Math: {
   Add: a, b => a + b
   AnonymousAdd: (a, b => a + b)
-  FastAdd: memoize() a, b => a + b
+  FastAdd: memoize a, b => a + b
 }
 
-print(Math.Add(5, 5) is 10)
-print(Math.AnonymousAdd(10, 10) is 20)
-print(Math.FastAdd(20, 20) is 40)
+print Math.Add(5, 5) is 10
+print Math.AnonymousAdd(10, 10) is 20
+print Math.FastAdd(20, 20) is 40

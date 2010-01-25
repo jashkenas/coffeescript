@@ -18,4 +18,4 @@ switch 'string'
   code()
   # comment
 
-print(func())
+print func()

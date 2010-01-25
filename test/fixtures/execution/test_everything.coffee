@@ -3,7 +3,7 @@ func: =>
   b: []
 
   while a >= 0
-    b.push('o')
+    b.push 'o'
     a--
 
   c: {
@@ -26,4 +26,4 @@ func: =>
 
   c.single: c.list[1..1][0]
 
-print(func() is '-')
+print func() is '-'

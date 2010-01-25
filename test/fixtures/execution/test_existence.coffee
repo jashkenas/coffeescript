@@ -12,7 +12,7 @@ a: null
 a ?= 10
 b ?= 10
 
-print(a is 10 and b is 10)
+print a is 10 and b is 10
 
 
 # The existential operator.
@@ -20,7 +20,7 @@ print(a is 10 and b is 10)
 z: null
 x: z ? "EX"
 
-print(z is null and x is "EX")
+print z is null and x is "EX"
 
 
 # Only evaluate once.
@@ -39,17 +39,17 @@ obj: {
   prop: "hello"
 }
 
-print(obj?.prop is "hello")
+print obj?.prop is "hello"
 
-print(obj?.prop?.non?.existent?.property is undefined)
+print obj?.prop?.non?.existent?.property is undefined
 
 
 # Soaks and caches method calls as well.
 
 arr: ["--", "----"]
 
-print(arr.pop()?.length is 4)
-print(arr.pop()?.length is 2)
-print(arr.pop()?.length is undefined)
-print(arr[0]?.length is undefined)
-print(arr.pop()?.length?.non?.existent()?.property is undefined)
+print arr.pop()?.length is 4
+print arr.pop()?.length is 2
+print arr.pop()?.length is undefined
+print arr[0]?.length is undefined
+print arr.pop()?.length?.non?.existent()?.property is undefined

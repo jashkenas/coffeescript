@@ -17,9 +17,11 @@ module CoffeeScript
     # Tokens that indicate the close of a clause of an expression.
     EXPRESSION_CLOSE = [:CATCH, :WHEN, :ELSE, :FINALLY] + EXPRESSION_TAIL
 
-    # Tokens that, when immediately following an identifier, activate an
-    # implicit method call.
-    IMPLICIT_CALL = [:IDENTIFIER, :NUMBER, :STRING, :JS, :REGEX]
+    # Tokens pairs that, in immediate succession, indicate an implicit call.
+    IMPLICIT_FUNC = [:IDENTIFIER, :SUPER]
+    IMPLICIT_CALL = [:IDENTIFIER, :NUMBER, :STRING, :JS, :REGEX, :NEW, :PARAM,
+                     :TRY, :DELETE, :INSTANCEOF, :TYPEOF, :SWITCH, :ARGUMENTS,
+                     :TRUE, :FALSE, :YES, :NO, :ON, :OFF, '!', '!!', :NOT]
 
     # The inverse mappings of token pairs we're trying to fix up.
     INVERSES = BALANCED_PAIRS.inject({}) do |memo, pair|
@@ -42,8 +44,8 @@ module CoffeeScript
       remove_leading_newlines
       remove_mid_expression_newlines
       move_commas_outside_outdents
-      add_implicit_indentation
       add_implicit_parentheses
+      add_implicit_indentation
       ensure_balance(*BALANCED_PAIRS)
       rewrite_closing_parens
       @tokens
@@ -156,7 +158,7 @@ module CoffeeScript
           open = false
           next 2
         end
-        next 1 unless prev[0] == :IDENTIFIER && IMPLICIT_CALL.include?(token[0])
+        next 1 unless IMPLICIT_FUNC.include?(prev[0]) && IMPLICIT_CALL.include?(token[0])
         @tokens.insert(i, ['(', Value.new('(', token[1].line)])
         open = true
         next 2
