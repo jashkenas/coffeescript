@@ -241,6 +241,7 @@ module CoffeeScript
     # parameter identifiers in order to avoid this. Also, parameter lists can
     # make use of splats.
     def tag_parameters
+      return if last_tag != ')'
       i = 0
       loop do
         i -= 1

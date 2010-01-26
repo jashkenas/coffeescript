@@ -34,7 +34,7 @@ methods: ['one', 'two', 'three']
 
 for method in methods
   name: method
-  obj[name]: () =>
+  obj[name]: =>
     "I'm " + name
 
 print obj.one()   is "I'm one"

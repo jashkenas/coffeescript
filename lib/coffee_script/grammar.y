@@ -202,8 +202,7 @@ rule
   Code:
     PARAM_START ParamList PARAM_END
       FuncGlyph Block                 { result = CodeNode.new(val[1], val[4], val[3]) }
-  | PARAM_START PARAM_END
-      FuncGlyph Block                 { result = CodeNode.new([], val[3], val[2]) }
+  | FuncGlyph Block                   { result = CodeNode.new([], val[1], val[0]) }
   ;
 
   # The symbols to signify functions, and bound functions.

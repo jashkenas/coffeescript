@@ -53,8 +53,8 @@ for key, val of {dog: 'canine', cat: 'feline', fox: 'vulpine'}
 # Person print = ():
 #   ('My name is ', /name, '.') join print.
 
-Person: () =>
-Person::print: () =>
+Person: =>
+Person::print: =>
   print('My name is ' + this.name + '.')
 
 
@@ -73,7 +73,7 @@ print(p.name)
 
 Policeman: (rank) => this.rank: rank
 Policeman extends Person
-Policeman::print: () =>
+Policeman::print: =>
   print('My name is ' + this.name + " and I'm a " + this.rank + '.')
 
 print(new Policeman('Constable'))
@@ -115,13 +115,13 @@ table: {
 # String length = (): 10.
 
 # this foul business...
-String::length: () => 10
+String::length: => 10
 
 
 # block = :
 #   'potion' print.
 
-block: () =>
+block: =>
   print('potion')
 
 
@@ -187,7 +187,7 @@ HomePage::get: (url) =>
 # b /left = BTree ()
 # b /right = BTree ()
 
-BTree:    () =>
+BTree:    =>
 b:        new BTree()
 b.left:   new BTree()
 b.right:  new BTree()
@@ -199,7 +199,7 @@ b.right:  new BTree()
 # if (b ? /left):
 #   'left path found!' print.
 
-BTree: () =>
+BTree: =>
 b: new BTree()
 
 print('left path found!') if b.left?

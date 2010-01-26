@@ -17,7 +17,7 @@ print findit(items) is "bacon"
 
 obj: {
   num: 5
-  func: () =>
+  func: =>
     this.result: if false
       10
     else

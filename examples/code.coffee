@@ -7,7 +7,7 @@ odd: (x) => x % 2 isnt 0
 
 even: (x) => x % 2 is 0
 
-run_loop: () =>
+run_loop: =>
   fire_events((e) => e.stopPropagation())
   listen()
   wait()
@@ -22,7 +22,7 @@ spaced_out_multiline_object: {
   three: new Idea()
 
   inner_obj: {
-    freedom: () => _.freedom()
+    freedom: => _.freedom()
   }
 }
 
@@ -54,7 +54,7 @@ decoration: medal_of_honor if war_hero
 go_to_sleep() unless coffee
 
 # Returning early:
-race: () =>
+race: =>
   run()
   walk()
   crawl()
@@ -103,7 +103,7 @@ while true
 
 # Lexical scoping.
 v_1: 5
-change_a_and_set_b: () =>
+change_a_and_set_b: =>
   v_1: 10
   v_2: 15
 v_2: 20
@@ -128,7 +128,7 @@ activity: switch day
   else go_to_work()
 
 # Semicolons can optionally be used instead of newlines.
-wednesday: () => eat_breakfast(); go_to_work(); eat_dinner()
+wednesday: => eat_breakfast(); go_to_work(); eat_dinner()
 
 # Array slice literals.
 zero_to_nine: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -140,19 +140,19 @@ sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna
 aliquam erat volutpat. Ut wisi enim ad."
 
 # Inheritance and calling super.
-Animal: () =>
+Animal: =>
 Animal::move: (meters) =>
   alert(this.name + " moved " + meters + "m.")
 
 Snake: (name) => this.name: name
 Snake extends Animal
-Snake::move: () =>
+Snake::move: =>
   alert('Slithering...')
   super(5)
 
 Horse: (name) => this.name: name
 Horse extends Animal
-Horse::move: () =>
+Horse::move: =>
   alert('Galloping...')
   super(45)
 

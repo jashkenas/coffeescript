@@ -1,18 +1,18 @@
-Base: () =>
+Base: =>
 Base::func: (string) =>
   'zero/' + string
 
-FirstChild: () =>
+FirstChild: =>
 FirstChild extends Base
 FirstChild::func: (string) =>
   super('one/') + string
 
-SecondChild: () =>
+SecondChild: =>
 SecondChild extends FirstChild
 SecondChild::func: (string) =>
   super('two/') + string
 
-ThirdChild: () =>
+ThirdChild: =>
   this.array: [1, 2, 3]
 ThirdChild extends SecondChild
 ThirdChild::func: (string) =>
@@ -29,7 +29,7 @@ TopClass: (arg) =>
 SuperClass: (arg) =>
   super 'super-' + arg
 
-SubClass: () =>
+SubClass: =>
   super 'sub'
 
 SuperClass extends TopClass

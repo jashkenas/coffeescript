@@ -1,5 +1,5 @@
 # "Classic" linked list implementation that doesn't keep track of its size.
-LinkedList: () =>
+LinkedList: =>
   this._head: null # Pointer to the first item in the list.
 
 
@@ -60,7 +60,7 @@ LinkedList::remove: (index) =>
 
 
 # Calculate the number of items in the list.
-LinkedList::size: () =>
+LinkedList::size: =>
   current: this._head
   count:   0
 
@@ -72,7 +72,7 @@ LinkedList::size: () =>
 
 
 # Convert the list into an array.
-LinkedList::toArray: () =>
+LinkedList::toArray: =>
   result:   []
   current:  this._head
 
@@ -84,7 +84,7 @@ LinkedList::toArray: () =>
 
 
 # The string representation of the linked list.
-LinkedList::toString: () => this.toArray().toString()
+LinkedList::toString: => this.toArray().toString()
 
 
 # Tests.

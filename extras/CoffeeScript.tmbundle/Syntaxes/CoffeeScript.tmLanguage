@@ -22,7 +22,7 @@
 			  <key>1</key>
 				<dict>
 					<key>name</key>
-					<string>storage.type.function.coffee</string>
+					<string>variable.parameter.function.coffee</string>
 				</dict>
 				<key>2</key>
 				<dict>
@@ -32,7 +32,7 @@
 				<key>4</key>
 				<dict>
 					<key>name</key>
-					<string>storage.type.function.coffee</string>
+					<string>variable.parameter.function.coffee</string>
 				</dict>
 				<key>5</key>
 				<dict>
@@ -291,6 +291,12 @@
 			<string>\b(debugger|\\)\b</string>
 			<key>name</key>
 			<string>keyword.other.coffee</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>=+&gt;</string>
+			<key>name</key>
+			<string>storage.type.function.coffee</string>
 		</dict>
 		<dict>
 			<key>match</key>

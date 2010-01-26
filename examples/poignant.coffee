@@ -14,9 +14,9 @@
 # end
 
 LotteryTicket: {
-  get_picks:          () => this.picks
+  get_picks:          => this.picks
   set_picks:      (nums) => this.picks: nums
-  get_purchase:       () => this.purchase
+  get_purchase:       => this.purchase
   set_purchase: (amount) => this.purchase: amount
 }
 
@@ -40,7 +40,7 @@ LotteryTicket: {
 # end
 
 LotteryDraw: {
-  play: () =>
+  play: =>
     result:   LotteryTicket.new_random()
     winners:  {}
     this.tickets.each (buyer, ticket_list) =>
@@ -65,7 +65,7 @@ LotteryDraw: {
 # end
 
 WishScanner: {
-  scan_for_a_wish: () =>
+  scan_for_a_wish: =>
     wish: this.read().detect((thought) => thought.index('wish: ') is 0)
     wish.replace('wish: ', '')
 }

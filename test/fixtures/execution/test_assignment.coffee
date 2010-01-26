@@ -12,7 +12,7 @@ print result is true and result2 is true
 
 # Assign to conditional.
 
-get_x: () => 10
+get_x: => 10
 
 if x: get_x() then 100
 

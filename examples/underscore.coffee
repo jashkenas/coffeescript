@@ -71,7 +71,7 @@
   _.map: (obj, iterator, context) =>
     return obj.map(iterator, context) if (obj and _.isFunction(obj.map))
     results: []
-    _.each(obj) (value, index, list) =>
+    _.each obj, (value, index, list) =>
       results.push(iterator.call(context, value, index, list))
     results
 
@@ -80,7 +80,7 @@
   # inject, or foldl. Uses JavaScript 1.8's version of reduce, if possible.
   _.reduce: (obj, memo, iterator, context) =>
     return obj.reduce(_.bind(iterator, context), memo) if (obj and _.isFunction(obj.reduce))
-    _.each(obj) (value, index, list) =>
+    _.each obj, (value, index, list) =>
       memo: iterator.call(context, memo, value, index, list)
     memo
 
@@ -89,7 +89,7 @@
   # JavaScript 1.8's version of reduceRight, if available.
   _.reduceRight: (obj, memo, iterator, context) =>
     return obj.reduceRight(_.bind(iterator, context), memo) if (obj and _.isFunction(obj.reduceRight))
-    _.each(_.clone(_.toArray(obj)).reverse()) (value, index) =>
+    _.each _.clone(_.toArray(obj)).reverse(), (value, index) =>
       memo: iterator.call(context, memo, value, index, obj)
     memo
 
@@ -97,7 +97,7 @@
   # Return the first value which passes a truth test.
   _.detect: (obj, iterator, context) =>
     result: null
-    _.each(obj) (value, index, list) =>
+    _.each obj, (value, index, list) =>
       if iterator.call(context, value, index, list)
         result: value
         _.breakLoop()
@@ -109,7 +109,7 @@
   _.select: (obj, iterator, context) =>
     if obj and _.isFunction(obj.filter) then return obj.filter(iterator, context)
     results: []
-    _.each(obj) (value, index, list) =>
+    _.each obj, (value, index, list) =>
       results.push(value) if iterator.call(context, value, index, list)
     results
 
@@ -117,7 +117,7 @@
   # Return all the elements for which a truth test fails.
   _.reject: (obj, iterator, context) =>
     results: []
-    _.each(obj) (value, index, list) =>
+    _.each obj, (value, index, list) =>
       results.push(value) if not iterator.call(context, value, index, list)
     results
 
@@ -128,7 +128,7 @@
     iterator ||= _.identity
     return obj.every(iterator, context) if obj and _.isFunction(obj.every)
     result: true
-    _.each(obj) (value, index, list) =>
+    _.each obj, (value, index, list) =>
       _.breakLoop() unless (result: result and iterator.call(context, value, index, list))
     result
 
@@ -139,7 +139,7 @@
     iterator ||= _.identity
     return obj.some(iterator, context) if obj and _.isFunction(obj.some)
     result: false
-    _.each(obj) (value, index, list) =>
+    _.each obj, (value, index, list) =>
       _.breakLoop() if (result: iterator.call(context, value, index, list))
     result
 
@@ -168,7 +168,7 @@
   _.max: (obj, iterator, context) =>
     return Math.max.apply(Math, obj) if not iterator and _.isArray(obj)
     result: {computed: -Infinity}
-    _.each(obj) (value, index, list) =>
+    _.each obj, (value, index, list) =>
       computed: if iterator then iterator.call(context, value, index, list) else value
       computed >= result.computed and (result: {value: value, computed: computed})
     result.value
@@ -178,7 +178,7 @@
   _.min: (obj, iterator, context) =>
     return Math.min.apply(Math, obj) if not iterator and _.isArray(obj)
     result: {computed: Infinity}
-    _.each(obj) (value, index, list) =>
+    _.each obj, (value, index, list) =>
       computed: if iterator then iterator.call(context, value, index, list) else value
       computed < result.computed and (result: {value: value, computed: computed})
     result.value
@@ -186,12 +186,12 @@
 
   # Sort the object's values by a criteria produced by an iterator.
   _.sortBy: (obj, iterator, context) =>
-    _.pluck(((_.map(obj) (value, index, list) =>
+    _.pluck(((_.map obj, (value, index, list) =>
       {value: value, criteria: iterator.call(context, value, index, list)}
-    ).sort() (left, right) =>
+    ).sort((left, right) =>
       a: left.criteria; b: right.criteria
       if a < b then -1 else if a > b then 1 else 0
-    ), 'value')
+    )), 'value')
 
 
   # Use a comparator function to figure out at what index an object should
@@ -245,7 +245,7 @@
 
   # Return a completely flattened version of an array.
   _.flatten: (array) =>
-    _.reduce(array, []) (memo, value) =>
+    _.reduce array, [], (memo, value) =>
       return memo.concat(_.flatten(value)) if _.isArray(value)
       memo.push(value)
       memo
@@ -270,14 +270,14 @@
   # passed-in arrays.
   _.intersect: (array) =>
     rest: _.rest(arguments)
-    _.select(_.uniq(array)) (item) =>
-      _.all(rest) (other) =>
+    _.select _.uniq(array), (item) =>
+      _.all rest, (other) =>
         _.indexOf(other, item) >= 0
 
 
   # Zip together multiple lists into a single array -- elements that share
   # an index go together.
-  _.zip: () =>
+  _.zip: =>
     length:     _.max(_.pluck(arguments, 'length'))
     results:    new Array(length)
     for i in [0...length]
@@ -332,7 +332,7 @@
   # optionally). Binding with arguments is also known as 'curry'.
   _.bind: (func, obj) =>
     args: _.rest(arguments, 2)
-    () => func.apply(obj or root, args.concat(arguments))
+    => func.apply(obj or root, args.concat(arguments))
 
 
   # Bind all of an object's methods to that object. Useful for ensuring that
@@ -347,7 +347,7 @@
   # it with the arguments supplied.
   _.delay: (func, wait) =>
     args: _.rest(arguments, 2)
-    setTimeout((() => func.apply(func, args)), wait)
+    setTimeout((=> func.apply(func, args)), wait)
 
 
   # Defers a function, scheduling it to run after the current call stack has
@@ -360,14 +360,14 @@
   # allowing you to adjust arguments, run code before and after, and
   # conditionally execute the original function.
   _.wrap: (func, wrapper) =>
-    () => wrapper.apply(wrapper, [func].concat(arguments))
+    => wrapper.apply(wrapper, [func].concat(arguments))
 
 
   # Returns a function that is the composition of a list of functions, each
   # consuming the return value of the function that follows.
-  _.compose: () =>
+  _.compose: =>
     funcs: arguments
-    () =>
+    =>
       args: arguments
       for i in [(funcs.length - 1)..0]
         args: [funcs[i].apply(this, args)]
@@ -501,7 +501,7 @@
 
   # Run Underscore.js in noConflict mode, returning the '_' variable to its
   # previous owner. Returns a reference to the Underscore object.
-  _.noConflict: () =>
+  _.noConflict: =>
     root._: previousUnderscore
     this
 
@@ -511,7 +511,7 @@
 
 
   # Break out of the middle of an iteration.
-  _.breakLoop: () => throw breaker
+  _.breakLoop: => throw breaker
 
 
   # Generate a unique integer id (unique within the entire client session).
@@ -560,9 +560,9 @@
 
 
   # Add all of the Underscore functions to the wrapper object.
-  _.each(_.functions(_)) (name) =>
+  _.each _.functions(_), (name) =>
     method: _[name]
-    wrapper.prototype[name]: () =>
+    wrapper.prototype[name]: =>
       unshift.call(arguments, this._wrapped)
       result(method.apply(_, args), this._chain)
 
@@ -570,7 +570,7 @@
   # Add all mutator Array functions to the wrapper.
   _.each(['pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift']) (name) =>
     method: Array.prototype[name]
-    wrapper.prototype[name]: () =>
+    wrapper.prototype[name]: =>
       method.apply(this._wrapped, arguments)
       result(this._wrapped, this._chain)
 
@@ -578,15 +578,15 @@
   # Add all accessor Array functions to the wrapper.
   _.each(['concat', 'join', 'slice']) (name) =>
     method: Array.prototype[name]
-    wrapper.prototype[name]: () =>
+    wrapper.prototype[name]: =>
       result(method.apply(this._wrapped, arguments), this._chain)
 
 
   # Start chaining a wrapped Underscore object.
-  wrapper::chain: () =>
+  wrapper::chain: =>
     this._chain: true
     this
 
 
   # Extracts the result from a wrapped and chained object.
-  wrapper::value: () => this._wrapped
+  wrapper::value: => this._wrapped

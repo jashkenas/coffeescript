@@ -19,7 +19,7 @@ module CoffeeScript
 
     # Tokens pairs that, in immediate succession, indicate an implicit call.
     IMPLICIT_FUNC = [:IDENTIFIER, :SUPER]
-    IMPLICIT_END  = [:IF, :UNLESS, :FOR, :WHILE, "\n", :PARAM_START]
+    IMPLICIT_END  = [:IF, :UNLESS, :FOR, :WHILE, "\n", :PARAM_START, :OUTDENT]
     IMPLICIT_CALL = [:IDENTIFIER, :NUMBER, :STRING, :JS, :REGEX, :NEW, :PARAM_START,
                      :TRY, :DELETE, :INSTANCEOF, :TYPEOF, :SWITCH, :ARGUMENTS,
                      :TRUE, :FALSE, :YES, :NO, :ON, :OFF, '!', '!!', :NOT]
@@ -155,16 +155,20 @@ module CoffeeScript
     # Insert the implicit parentheses here, so that the parser doesn't have to
     # deal with them.
     def add_implicit_parentheses
-      open = false
+      stack = [0]
       scan_tokens do |prev, token, post, i|
-        if open && IMPLICIT_END.include?(token[0])
-          @tokens.insert(i, [')', Value.new(')', token[1].line)])
-          open = false
-          next 2
+        stack.push(0) if token[0] == :INDENT
+        if (stack.last > 0 && (IMPLICIT_END.include?(token[0]) || post.nil?)) &&
+           !(token[0] == :PARAM_START && prev[0] == ',')
+          idx = token[0] == :OUTDENT ? i + 1 : i
+          stack.last.times { @tokens.insert(idx, [')', Value.new(')', token[1].line)]) }
+          size, stack[-1] = stack[-1] + 1, 0
+          next size
         end
+        stack.pop if token[0] == :OUTDENT
         next 1 unless IMPLICIT_FUNC.include?(prev[0]) && IMPLICIT_CALL.include?(token[0])
         @tokens.insert(i, ['(', Value.new('(', token[1].line)])
-        open = true
+        stack[-1] += 1
         next token[0] == :PARAM_START ? 1 : 2
       end
     end

@@ -1,5 +1,5 @@
   # comment
-func: () =>
+func: =>
 # comment
   false
   false   # comment
@@ -14,7 +14,7 @@ switch 'string'
   when null
     something_else()
 
-() =>
+=>
   code()
   # comment
 
