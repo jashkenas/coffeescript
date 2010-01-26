@@ -127,6 +127,7 @@ module CoffeeScript
       scan_tokens do |prev, token, post, i|
         next 1 unless SINGLE_LINERS.include?(token[0]) && post[0] != :INDENT &&
           !(token[0] == :ELSE && post[0] == :IF) # Elsifs shouldn't get blocks.
+        starter = token[0]
         line = token[1].line
         @tokens.insert(i + 1, [:INDENT, Value.new(2, line)])
         idx = i + 1
@@ -134,8 +135,9 @@ module CoffeeScript
         loop do
           idx += 1
           tok = @tokens[idx]
-          if !tok || SINGLE_CLOSERS.include?(tok[0]) ||
-              (tok[0] == ')' && parens == 0)
+          if (!tok || SINGLE_CLOSERS.include?(tok[0]) ||
+              (tok[0] == ')' && parens == 0)) &&
+              !(starter == :ELSE && tok[0] == :ELSE)
             @tokens.insert(idx, [:OUTDENT, Value.new(2, line)])
             break
           end

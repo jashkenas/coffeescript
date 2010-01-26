@@ -8,3 +8,9 @@ result: if a
         true
 
 print result
+
+
+first: if false then false else second: if false then false else true
+
+print first
+print second
