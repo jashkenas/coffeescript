@@ -2,7 +2,7 @@
 # numbers, national insurance numbers, etc.
 # See: http://en.wikipedia.org/wiki/Luhn_algorithm
 
-is_valid_identifier: identifier =>
+is_valid_identifier: (identifier) =>
 
   sum: 0
   alt: false

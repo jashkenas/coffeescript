@@ -85,7 +85,7 @@
 <span class="FunctionName">number</span><span class="Keyword">:</span> <span class="Keyword">-</span><span class="Number">42</span> <span class="Keyword">if</span> opposite_day
 
 <span class="Comment"><span class="Comment">#</span> Functions:</span>
-<span class="FunctionName">square</span><span class="Keyword">:</span> <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> x <span class="Keyword">*</span> x
+<span class="FunctionName">square</span><span class="Keyword">:</span> (x) <span class="Storage">=&gt;</span> x <span class="Keyword">*</span> x
 
 <span class="Comment"><span class="Comment">#</span> Arrays:</span>
 <span class="FunctionName">list</span><span class="Keyword">:</span> [<span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>]
@@ -94,11 +94,11 @@
 <span class="FunctionName">math</span><span class="Keyword">:</span> {
   <span class="FunctionName">root</span><span class="Keyword">:</span>   Math.sqrt
   <span class="FunctionName">square</span><span class="Keyword">:</span> square
-  <span class="FunctionName">cube</span><span class="Keyword">:</span>   <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> x <span class="Keyword">*</span> square(x)
+  <span class="FunctionName">cube</span><span class="Keyword">:</span>   (x) <span class="Storage">=&gt;</span> x <span class="Keyword">*</span> square x
 }
 
 <span class="Comment"><span class="Comment">#</span> Splats:</span>
-<span class="FunctionName">race</span><span class="Keyword">:</span> <span class="FunctionArgument">winner, runners...</span> <span class="Storage">=&gt;</span>
+<span class="FunctionName">race</span><span class="Keyword">:</span> (winner, runners...) <span class="Storage">=&gt;</span>
   print winner, runners
 
 <span class="Comment"><span class="Comment">#</span> Existence:</span>
@@ -271,7 +271,7 @@ gem install coffee-script</pre>
         <td><code>-e, --eval</code></td>
         <td>
           Compile and print a little snippet of CoffeeScript directly from the
-          command line (or from <b>stdin</b>). For example:<br /><tt>coffee -e "square: x => x * x"</tt>
+          command line (or from <b>stdin</b>). For example:<br /><tt>coffee -e "square: (x) => x * x"</tt>
         </td>
       </tr>
       <tr>
@@ -356,8 +356,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       function body. The empty function looks like this: <tt>=></tt>. All
       functions in CoffeeScript are named by default, for easier debugging.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">square</span><span class="Keyword">:</span> <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> x <span class="Keyword">*</span> x
-<span class="FunctionName">cube</span><span class="Keyword">:</span>   <span class="FunctionArgument">x</span> <span class="Storage">=&gt;</span> square(x) <span class="Keyword">*</span> x
+    <div class='code'><pre class="idle"><span class="FunctionName">square</span><span class="Keyword">:</span> (x) <span class="Storage">=&gt;</span> x <span class="Keyword">*</span> x
+<span class="FunctionName">cube</span><span class="Keyword">:</span>   (x) <span class="Storage">=&gt;</span> square(x) <span class="Keyword">*</span> x
 </pre><pre class="idle"><span class="Storage">var</span> cube, square;
 square <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">square</span>(<span class="FunctionArgument">x</span>) {
   <span class="Keyword">return</span> x <span class="Keyword">*</span> x;
@@ -375,7 +375,7 @@ cube = function cube(x) {
 ;alert(cube(5));'>run: cube(5)</button><br class='clear' /></div>
     <p>
       If you'd like to create an anonymous function, just wrap it in parentheses:
-      <tt>(x => x * x)</tt>
+      <tt>((x) => x * x)</tt>
     </p>
 
     <p id="assignment">
@@ -444,7 +444,7 @@ matrix = [1, 0, 1, 0, 0, 1, 1, 1, 0];
       <tt>var</tt> yourself.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">num</span><span class="Keyword">:</span> <span class="Number">1</span>
-<span class="FunctionName">change_numbers</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
+<span class="FunctionName">change_numbers</span><span class="Keyword">:</span> () <span class="Storage">=&gt;</span>
   <span class="FunctionName">new_num</span><span class="Keyword">:</span> <span class="Keyword">-</span><span class="Number">1</span>
   <span class="FunctionName">num</span><span class="Keyword">:</span> <span class="Number">10</span>
 <span class="FunctionName">new_num</span><span class="Keyword">:</span> change_numbers()
@@ -615,7 +615,7 @@ car.speed <span class="Keyword">&lt;</span> speed_limit ? accelerate() : <span c
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">gold</span><span class="Keyword">:</span> <span class="FunctionName">silver</span><span class="Keyword">:</span> <span class="FunctionName">the_field</span><span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>unknown<span class="String">&quot;</span></span>
 
-<span class="FunctionName">medalists</span><span class="Keyword">:</span> <span class="FunctionArgument">first, second, rest...</span> <span class="Storage">=&gt;</span>
+<span class="FunctionName">medalists</span><span class="Keyword">:</span> (first, second, rest...) <span class="Storage">=&gt;</span>
   <span class="FunctionName">gold</span><span class="Keyword">:</span>       first
   <span class="FunctionName">silver</span><span class="Keyword">:</span>     second
   <span class="FunctionName">the_field</span><span class="Keyword">:</span>  rest
@@ -675,7 +675,7 @@ alert("The Field: " + the_field);
       <a href="https://developer.mozilla.org/En/Core_JavaScript_1.5_Reference/Objects/Array">Array methods</a>
       available.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">backwards</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
+    <div class='code'><pre class="idle"><span class="FunctionName">backwards</span><span class="Keyword">:</span> () <span class="Storage">=&gt;</span>
   alert arguments.reverse()
 
 backwards <span class="String"><span class="String">&quot;</span>stairway<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>to<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>heaven<span class="String">&quot;</span></span>
@@ -807,7 +807,7 @@ __d <span class="Keyword">=</span> asteroids;
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">countdown</span><span class="Keyword">:</span> num <span class="Keyword">for</span> num <span class="Keyword">in</span> [<span class="Number">10</span>..<span class="Number">1</span>]
 
-<span class="FunctionName">egg_delivery</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
+<span class="FunctionName">egg_delivery</span><span class="Keyword">:</span> () <span class="Storage">=&gt;</span>
   <span class="Keyword">for</span> i <span class="Keyword">in</span> [<span class="Number">0</span>...eggs.length] <span class="Keyword">by</span> <span class="Number">12</span>
     <span class="FunctionName">dozen_eggs</span><span class="Keyword">:</span> eggs[i...i<span class="Keyword">+</span><span class="Number">12</span>]
     deliver <span class="Keyword">new</span> <span class="TypeName">egg_carton</span>(dozen)
@@ -945,7 +945,7 @@ numbers.splice.apply(numbers, [3, 6 - 3 + 1].concat([-3, -4, -5, -6]));
       pushed down into each possible branch of execution, in the function
       below.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">grade</span><span class="Keyword">:</span> <span class="FunctionArgument">student</span> <span class="Storage">=&gt;</span>
+    <div class='code'><pre class="idle"><span class="FunctionName">grade</span><span class="Keyword">:</span> (student) <span class="Storage">=&gt;</span>
   <span class="Keyword">if</span> student.excellent_work
     <span class="String"><span class="String">&quot;</span>A+<span class="String">&quot;</span></span>
   <span class="Keyword">else</span> <span class="Keyword">if</span> student.okay_stuff
@@ -1078,19 +1078,19 @@ globals = ((function() {
       object's prototype, and converts <tt>super()</tt> into a call against
       the immediate ancestor's method of the same name.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">Animal</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
-<span class="FunctionName">Animal::move</span><span class="Keyword">:</span> <span class="FunctionArgument">meters</span> <span class="Storage">=&gt;</span>
+    <div class='code'><pre class="idle"><span class="FunctionName">Animal</span><span class="Keyword">:</span> () <span class="Storage">=&gt;</span>
+<span class="FunctionName">Animal::move</span><span class="Keyword">:</span> (meters) <span class="Storage">=&gt;</span>
   alert <span class="Variable">this</span>.name <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>
 
-<span class="FunctionName">Snake</span><span class="Keyword">:</span> <span class="FunctionArgument">name</span> <span class="Storage">=&gt;</span> <span class="FunctionName">this.name</span><span class="Keyword">:</span> name
+<span class="FunctionName">Snake</span><span class="Keyword">:</span> (name) <span class="Storage">=&gt;</span> <span class="FunctionName">this.name</span><span class="Keyword">:</span> name
 Snake <span class="Variable">extends</span> Animal
-<span class="FunctionName">Snake::move</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
+<span class="FunctionName">Snake::move</span><span class="Keyword">:</span> () <span class="Storage">=&gt;</span>
   alert <span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>
   <span class="Variable">super</span> <span class="Number">5</span>
 
-<span class="FunctionName">Horse</span><span class="Keyword">:</span> <span class="FunctionArgument">name</span> <span class="Storage">=&gt;</span> <span class="FunctionName">this.name</span><span class="Keyword">:</span> name
+<span class="FunctionName">Horse</span><span class="Keyword">:</span> (name) <span class="Storage">=&gt;</span> <span class="FunctionName">this.name</span><span class="Keyword">:</span> name
 Horse <span class="Variable">extends</span> Animal
-<span class="FunctionName">Horse::move</span><span class="Keyword">:</span> <span class="Storage">=&gt;</span>
+<span class="FunctionName">Horse::move</span><span class="Keyword">:</span> () <span class="Storage">=&gt;</span>
   alert <span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>
   <span class="Variable">super</span> <span class="Number">45</span>
 
@@ -1186,8 +1186,8 @@ tom.move();
       final functions easier to pass, CoffeeScript includes block syntax,
       so you don't have to close the parentheses on the other side.
     </p>
-    <div class='code'><pre class="idle">$(<span class="String"><span class="String">'</span>table.list<span class="String">'</span></span>).each() <span class="FunctionArgument">table</span> <span class="Storage">=&gt;</span>
-  $(<span class="String"><span class="String">'</span>tr.account<span class="String">'</span></span>, table).each() <span class="FunctionArgument">row</span> <span class="Storage">=&gt;</span>
+    <div class='code'><pre class="idle">$(<span class="String"><span class="String">'</span>table.list<span class="String">'</span></span>).each (table) <span class="Storage">=&gt;</span>
+  $(<span class="String"><span class="String">'</span>tr.account<span class="String">'</span></span>, table).each (row) <span class="Storage">=&gt;</span>
     row.show()
     row.highlight()
 </pre><pre class="idle"><span class="Keyword">$</span>(<span class="String"><span class="String">'</span>table.list<span class="String">'</span></span>).each(<span class="Storage">function</span>(table) {
@@ -1197,11 +1197,6 @@ tom.move();
   });
 });
 </pre><br class='clear' /></div>
-    <p>
-      If you prefer not to use blocks, you'll need to add a pair of parentheses
-      to help distinguish the arguments from the definition of the function:
-      <tt>_.map(array, (num => num * 2))</tt>
-    </p>
 
     <p id="pattern_matching">
       <b class="header">Pattern Matching (Destructuring Assignment)</b>
@@ -1234,7 +1229,7 @@ and_switch = __a[1];
       But it's also helpful for dealing with functions that return multiple
       values.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">weather_report</span><span class="Keyword">:</span> <span class="FunctionArgument">location</span> <span class="Storage">=&gt;</span>
+    <div class='code'><pre class="idle"><span class="FunctionName">weather_report</span><span class="Keyword">:</span> (location) <span class="Storage">=&gt;</span>
   <span class="Comment"><span class="Comment">#</span> Make an Ajax request to fetch the weather...</span>
   [location, <span class="Number">72</span>, <span class="String"><span class="String">&quot;</span>Mostly Sunny<span class="String">&quot;</span></span>]
 
@@ -1316,11 +1311,11 @@ city = __c[1];
       to use with <tt>bind</tt>. Functions created with the long arrow are able to access
       properties of the <tt>this</tt> where they're defined.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">Account</span><span class="Keyword">:</span> <span class="FunctionArgument">customer, cart</span> <span class="Storage">=&gt;</span>
+    <div class='code'><pre class="idle"><span class="FunctionName">Account</span><span class="Keyword">:</span> (customer, cart) <span class="Storage">=&gt;</span>
   <span class="FunctionName">this.customer</span><span class="Keyword">:</span> customer
   <span class="FunctionName">this.cart</span><span class="Keyword">:</span> cart
 
-  $(<span class="String"><span class="String">'</span>.shopping_cart<span class="String">'</span></span>).bind(<span class="String"><span class="String">'</span>click<span class="String">'</span></span>) <span class="FunctionArgument">event</span> <span class="Storage">==&gt;</span>
+  $(<span class="String"><span class="String">'</span>.shopping_cart<span class="String">'</span></span>).bind(<span class="String"><span class="String">'</span>click<span class="String">'</span></span>) (event) <span class="Storage">==&gt;</span>
     <span class="Variable">this</span>.customer.purchase <span class="Variable">this</span>.cart
 </pre><pre class="idle"><span class="Storage">var</span> Account;
 Account <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Account</span>(<span class="FunctionArgument">customer, cart</span>) {

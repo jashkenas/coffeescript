@@ -174,7 +174,7 @@ gem install coffee-script</pre>
         <td><code>-e, --eval</code></td>
         <td>
           Compile and print a little snippet of CoffeeScript directly from the
-          command line (or from <b>stdin</b>). For example:<br /><tt>coffee -e "square: x => x * x"</tt>
+          command line (or from <b>stdin</b>). For example:<br /><tt>coffee -e "square: (x) => x * x"</tt>
         </td>
       </tr>
       <tr>
@@ -262,7 +262,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <%= code_for('functions', 'cube(5)') %>
     <p>
       If you'd like to create an anonymous function, just wrap it in parentheses:
-      <tt>(x => x * x)</tt>
+      <tt>((x) => x * x)</tt>
     </p>
 
     <p id="assignment">
@@ -522,11 +522,6 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       so you don't have to close the parentheses on the other side.
     </p>
     <%= code_for('blocks') %>
-    <p>
-      If you prefer not to use blocks, you'll need to add a pair of parentheses
-      to help distinguish the arguments from the definition of the function:
-      <tt>_.map(array, (num => num * 2))</tt>
-    </p>
 
     <p id="pattern_matching">
       <b class="header">Pattern Matching (Destructuring Assignment)</b>

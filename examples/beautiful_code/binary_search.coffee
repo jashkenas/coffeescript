@@ -2,7 +2,7 @@
 # The implementation of binary search that is tested.
 
 # Return the index of an element in a sorted list. (or -1, if not present)
-index: list, target =>
+index: (list, target) =>
   [low, high]: [0, list.length]
   while low < high
     mid: (low + high) >> 1

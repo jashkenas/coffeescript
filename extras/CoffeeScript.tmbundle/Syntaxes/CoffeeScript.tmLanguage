@@ -19,17 +19,12 @@
 		<dict>
 			<key>captures</key>
 			<dict>
-				<key>1</key>
+			  <key>1</key>
 				<dict>
 					<key>name</key>
-					<string>entity.name.function.coffee</string>
+					<string>storage.type.function.coffee</string>
 				</dict>
 				<key>2</key>
-				<dict>
-					<key>name</key>
-					<string>keyword.operator.coffee</string>
-				</dict>
-				<key>3</key>
 				<dict>
 					<key>name</key>
 					<string>variable.parameter.function.coffee</string>
@@ -39,23 +34,7 @@
 					<key>name</key>
 					<string>storage.type.function.coffee</string>
 				</dict>
-			</dict>
-			<key>comment</key>
-			<string>match stuff like: funcName: =&gt; … </string>
-			<key>match</key>
-			<string>([a-zA-Z0-9_?.$:*]*?)\s*(=\b|:\b)\s*([\w,\s]*?)\s*(=+&gt;)</string>
-			<key>name</key>
-			<string>meta.function.coffee</string>
-		</dict>
-		<dict>
-			<key>captures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>variable.parameter.function.coffee</string>
-				</dict>
-				<key>3</key>
+				<key>5</key>
 				<dict>
 					<key>name</key>
 					<string>storage.type.function.coffee</string>
@@ -64,7 +43,7 @@
 			<key>comment</key>
 			<string>match stuff like: a =&gt; … </string>
 			<key>match</key>
-			<string>([a-zA-Z0-9_?.$]*(,\s*[a-zA-Z0-9_?.$]+)*)\s*(=+&gt;)</string>
+			<string>(\()([a-zA-Z0-9_?.$]*(,\s*[a-zA-Z0-9_?.$]+)*)(\))\s*(=+&gt;)</string>
 			<key>name</key>
 			<string>meta.inline.function.coffee</string>
 		</dict>

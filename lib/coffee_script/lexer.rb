@@ -242,19 +242,15 @@ module CoffeeScript
     # make use of splats.
     def tag_parameters
       i = 0
-      tagged = false
       loop do
         i -= 1
         tok = @tokens[i]
         return if !tok
-        if ['.', ','].include?(tok[0])
-          tagged = false
-          next
+        case tok[0]
+        when :IDENTIFIER  then tok[0] = :PARAM
+        when ')'          then tok[0] = :PARAM_END
+        when '('          then return tok[0] = :PARAM_START
         end
-        return if tagged
-        return if tok[0] != :IDENTIFIER
-        tok[0] = :PARAM
-        tagged = true
       end
     end
 

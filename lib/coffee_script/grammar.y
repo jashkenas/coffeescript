@@ -5,7 +5,7 @@ token IF ELSE UNLESS
 token NUMBER STRING REGEX
 token TRUE FALSE YES NO ON OFF
 token IDENTIFIER PROPERTY_ACCESS PROTOTYPE_ACCESS SOAK_ACCESS
-token CODE PARAM NEW RETURN
+token CODE PARAM_START PARAM PARAM_END NEW RETURN
 token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
 token FOR IN OF BY WHEN WHILE
@@ -200,8 +200,10 @@ rule
 
   # Function definition.
   Code:
-    ParamList FuncGlyph Block         { result = CodeNode.new(val[0], val[2], val[1]) }
-  | FuncGlyph Block                   { result = CodeNode.new([], val[1], val[0]) }
+    PARAM_START ParamList PARAM_END
+      FuncGlyph Block                 { result = CodeNode.new(val[1], val[4], val[3]) }
+  | PARAM_START PARAM_END
+      FuncGlyph Block                 { result = CodeNode.new([], val[3], val[2]) }
   ;
 
   # The symbols to signify functions, and bound functions.

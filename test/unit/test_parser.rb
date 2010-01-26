@@ -29,7 +29,7 @@ class ParserTest < Test::Unit::TestCase
   end
 
   def test_parsing_an_function_definition
-    code = @par.parse("x, y => x * y").expressions.first
+    code = @par.parse("(x, y) => x * y").expressions.first
     assert code.params == ['x', 'y']
     body = code.body.expressions.first
     assert body.is_a?(OpNode)

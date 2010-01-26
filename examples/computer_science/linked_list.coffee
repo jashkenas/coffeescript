@@ -1,11 +1,11 @@
 # "Classic" linked list implementation that doesn't keep track of its size.
-LinkedList: =>
+LinkedList: () =>
   this._head: null # Pointer to the first item in the list.
 
 
 # Appends some data to the end of the list. This method traverses the existing
 # list and places the value at the end in a new node.
-LinkedList::add: data =>
+LinkedList::add: (data) =>
 
   # Create a new node object to wrap the data.
   node: {data: data, next: null}
@@ -20,7 +20,7 @@ LinkedList::add: data =>
 
 
 # Retrieves the data at the given position in the list.
-LinkedList::item: index =>
+LinkedList::item: (index) =>
 
   # Check for out-of-bounds values.
   return null if index < 0
@@ -36,7 +36,7 @@ LinkedList::item: index =>
 
 
 # Remove the item from the given location in the list.
-LinkedList::remove: index =>
+LinkedList::remove: (index) =>
 
   # Check for out-of-bounds values.
   return null if index < 0
@@ -60,7 +60,7 @@ LinkedList::remove: index =>
 
 
 # Calculate the number of items in the list.
-LinkedList::size: =>
+LinkedList::size: () =>
   current: this._head
   count:   0
 
@@ -72,7 +72,7 @@ LinkedList::size: =>
 
 
 # Convert the list into an array.
-LinkedList::toArray: =>
+LinkedList::toArray: () =>
   result:   []
   current:  this._head
 
@@ -84,7 +84,7 @@ LinkedList::toArray: =>
 
 
 # The string representation of the linked list.
-LinkedList::toString: => this.toArray().toString()
+LinkedList::toString: () => this.toArray().toString()
 
 
 # Tests.

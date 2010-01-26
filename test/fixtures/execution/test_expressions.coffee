@@ -5,7 +5,7 @@ items: [1, 2, 3, "bacon", 4, 5]
 for item in items
   break if item is "bacon"
 
-findit: items =>
+findit: (items) =>
   for item in items
     return item if item is "bacon"
 
@@ -17,7 +17,7 @@ print findit(items) is "bacon"
 
 obj: {
   num: 5
-  func: =>
+  func: () =>
     this.result: if false
       10
     else

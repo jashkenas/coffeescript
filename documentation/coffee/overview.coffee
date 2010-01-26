@@ -6,7 +6,7 @@ opposite_day: true
 number: -42 if opposite_day
 
 # Functions:
-square: x => x * x
+square: (x) => x * x
 
 # Arrays:
 list: [1, 2, 3, 4, 5]
@@ -15,11 +15,11 @@ list: [1, 2, 3, 4, 5]
 math: {
   root:   Math.sqrt
   square: square
-  cube:   x => x * square(x)
+  cube:   (x) => x * square x
 }
 
 # Splats:
-race: winner, runners... =>
+race: (winner, runners...) =>
   print winner, runners
 
 # Existence:

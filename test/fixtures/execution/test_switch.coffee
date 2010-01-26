@@ -16,7 +16,7 @@ result: switch num
 
 print result
 
-func: num =>
+func: (num) =>
   switch num
     when 2, 4, 6
       true

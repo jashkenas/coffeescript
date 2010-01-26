@@ -6,7 +6,7 @@ module CoffeeScript
   class Rewriter
 
     # Tokens that must be balanced.
-    BALANCED_PAIRS = [['(', ')'], ['[', ']'], ['{', '}'], [:INDENT, :OUTDENT]]
+    BALANCED_PAIRS = [['(', ')'], ['[', ']'], ['{', '}'], [:INDENT, :OUTDENT], [:PARAM_START, :PARAM_END]]
 
     # Tokens that signal the start of a balanced pair.
     EXPRESSION_START = BALANCED_PAIRS.map {|pair| pair.first }
@@ -19,8 +19,8 @@ module CoffeeScript
 
     # Tokens pairs that, in immediate succession, indicate an implicit call.
     IMPLICIT_FUNC = [:IDENTIFIER, :SUPER]
-    IMPLICIT_END  = [:IF, :UNLESS, :FOR, :WHILE, "\n"]
-    IMPLICIT_CALL = [:IDENTIFIER, :NUMBER, :STRING, :JS, :REGEX, :NEW, :PARAM,
+    IMPLICIT_END  = [:IF, :UNLESS, :FOR, :WHILE, "\n", :PARAM_START]
+    IMPLICIT_CALL = [:IDENTIFIER, :NUMBER, :STRING, :JS, :REGEX, :NEW, :PARAM_START,
                      :TRY, :DELETE, :INSTANCEOF, :TYPEOF, :SWITCH, :ARGUMENTS,
                      :TRUE, :FALSE, :YES, :NO, :ON, :OFF, '!', '!!', :NOT]
 
@@ -34,7 +34,7 @@ module CoffeeScript
     # Single-line flavors of block expressions that have unclosed endings.
     # The grammar can't disambiguate them, so we insert the implicit indentation.
     SINGLE_LINERS  = [:ELSE, "=>", "==>", :TRY, :FINALLY, :THEN]
-    SINGLE_CLOSERS = ["\n", :CATCH, :FINALLY, :ELSE, :OUTDENT, :LEADING_WHEN]
+    SINGLE_CLOSERS = ["\n", :CATCH, :FINALLY, :ELSE, :OUTDENT, :LEADING_WHEN, :PARAM_START]
 
     # Rewrite the token stream in multiple passes, one logical filter at
     # a time. This could certainly be changed into a single pass through the
@@ -138,7 +138,8 @@ module CoffeeScript
           if (!tok || SINGLE_CLOSERS.include?(tok[0]) ||
               (tok[0] == ')' && parens == 0)) &&
               !(starter == :ELSE && tok[0] == :ELSE)
-            @tokens.insert(idx, [:OUTDENT, Value.new(2, line)])
+            insertion = @tokens[idx - 1][0] == "," ? idx - 1 : idx
+            @tokens.insert(insertion, [:OUTDENT, Value.new(2, line)])
             break
           end
           parens += 1 if tok[0] == '('
@@ -164,7 +165,7 @@ module CoffeeScript
         next 1 unless IMPLICIT_FUNC.include?(prev[0]) && IMPLICIT_CALL.include?(token[0])
         @tokens.insert(i, ['(', Value.new('(', token[1].line)])
         open = true
-        next 2
+        next token[0] == :PARAM_START ? 1 : 2
       end
     end
 
@@ -188,7 +189,7 @@ module CoffeeScript
     end
 
     # We'd like to support syntax like this:
-    #    el.click(event =>
+    #    el.click((event) =>
     #      el.hide())
     # In order to accomplish this, move outdents that follow closing parens
     # inwards, safely. The steps to accomplish this are:

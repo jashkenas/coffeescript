@@ -1,4 +1,4 @@
-func: first, second, rest... =>
+func: (first, second, rest...) =>
   rest.join ' '
 
 result: func 1, 2, 3, 4, 5
@@ -8,7 +8,7 @@ print result is "3 4 5"
 
 gold: silver: bronze: the_field: null
 
-medalists: first, second, third, rest... =>
+medalists: (first, second, third, rest...) =>
   gold:       first
   silver:     second
   bronze:     third

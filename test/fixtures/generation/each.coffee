@@ -1,6 +1,6 @@
 # The cornerstone, an each implementation.
 # Handles objects implementing forEach, arrays, and raw objects.
-_.each: obj, iterator, context =>
+_.each: (obj, iterator, context) =>
   index: 0
   try
     if obj.forEach

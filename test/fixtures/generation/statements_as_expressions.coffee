@@ -10,7 +10,7 @@ catch error
   3
 )
 
-func: x =>
+func: (x) =>
   return throw x
 
 print(x * x for x in [1..100])

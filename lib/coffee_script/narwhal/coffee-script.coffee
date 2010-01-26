@@ -12,14 +12,14 @@ Readline: require('readline')
 coffeePath: File.path(module.path).dirname().dirname().dirname().dirname().dirname().join('bin', 'coffee')
 
 # Our general-purpose error handler.
-checkForErrors: coffeeProcess =>
+checkForErrors: (coffeeProcess) =>
   return true if coffeeProcess.wait() is 0
   system.stderr.print(coffeeProcess.stderr.read())
   throw new Error("CoffeeScript compile error")
 
 # Run a simple REPL, round-tripping to the CoffeeScript compiler for every
 # command.
-exports.run: args =>
+exports.run: (args) =>
   if args.length
     for path, i in args
       exports.evalCS(File.read(path))
@@ -35,24 +35,24 @@ exports.run: args =>
       print(e)
 
 # Compile a given CoffeeScript file into JavaScript.
-exports.compileFile: path =>
+exports.compileFile: (path) =>
   coffee: OS.popen([coffeePath, "--print", "--no-wrap", path])
   checkForErrors(coffee)
   coffee.stdout.read()
 
 # Compile a string of CoffeeScript into JavaScript.
-exports.compile: source, flags =>
+exports.compile: (source, flags) =>
   coffee: OS.popen([coffeePath, "--eval", "--no-wrap"].concat(flags or []))
   coffee.stdin.write(source).flush().close()
   checkForErrors(coffee)
   coffee.stdout.read()
 
 # Evaluating a string of CoffeeScript first compiles it externally.
-exports.evalCS: source, flags =>
+exports.evalCS: (source, flags) =>
   eval(exports.compile(source, flags))
 
 # Make a factory for the CoffeeScript environment.
-exports.makeNarwhalFactory: path =>
+exports.makeNarwhalFactory: (path) =>
   code: exports.compileFile(path)
   factoryText: "function(require,exports,module,system,print){" + code + "/**/\n}"
   if system.engine is "rhino"
