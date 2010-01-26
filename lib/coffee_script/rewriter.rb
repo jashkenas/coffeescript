@@ -171,18 +171,20 @@ module CoffeeScript
     # Ensure that all listed pairs of tokens are correctly balanced throughout
     # the course of the token stream.
     def ensure_balance(*pairs)
-      levels = Hash.new(0)
+      levels, lines = Hash.new(0), Hash.new
       scan_tokens do |prev, token, post, i|
         pairs.each do |pair|
           open, close = *pair
           levels[open] += 1 if token[0] == open
           levels[open] -= 1 if token[0] == close
+          lines[token[0]] = token[1].line
           raise ParseError.new(token[0], token[1], nil) if levels[open] < 0
         end
         next 1
       end
       unclosed = levels.detect {|k, v| v > 0 }
-      raise SyntaxError, "unclosed '#{unclosed[0]}'" if unclosed
+      sym = unclosed && unclosed[0]
+      raise ParseError.new(sym, Value.new(sym, lines[sym]), nil, "unclosed '#{sym}'") if unclosed
     end
 
     # We'd like to support syntax like this:

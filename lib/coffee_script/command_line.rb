@@ -141,7 +141,7 @@ Usage:
         options[:no_wrap] = true if @options[:no_wrap]
         options[:globals] = true if @options[:globals]
         CoffeeScript.compile(script, options)
-      rescue CoffeeScript::ParseError, SyntaxError => e
+      rescue CoffeeScript::ParseError => e
         STDERR.puts "#{source}: #{e.message}"
         exit(1) unless @options[:watch]
         nil
