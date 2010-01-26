@@ -8,7 +8,7 @@ print("Odelay!") for i in [1..5]
 # add = (x, y): x + y.
 # add(2, 4) string print
 
-add: (x, y) => x + y
+add: (x, y) -> x + y
 print(add(2, 4))
 
 
@@ -31,7 +31,7 @@ print({language: 'Potion', pointless: true}['language'])
 # minus = (x, y): x - y.
 # minus (y=10, x=6)
 
-minus: (x, y) => x - y
+minus: (x, y) -> x - y
 minus(6, 10)
 
 
@@ -53,8 +53,8 @@ for key, val of {dog: 'canine', cat: 'feline', fox: 'vulpine'}
 # Person print = ():
 #   ('My name is ', /name, '.') join print.
 
-Person: =>
-Person::print: =>
+Person: ->
+Person::print: ->
   print('My name is ' + this.name + '.')
 
 
@@ -71,9 +71,9 @@ print(p.name)
 #
 # Policeman ('Constable') print
 
-Policeman: (rank) => this.rank: rank
+Policeman: (rank) -> this.rank: rank
 Policeman extends Person
-Policeman::print: =>
+Policeman::print: ->
   print('My name is ' + this.name + " and I'm a " + this.rank + '.')
 
 print(new Policeman('Constable'))
@@ -115,13 +115,13 @@ table: {
 # String length = (): 10.
 
 # this foul business...
-String::length: => 10
+String::length: -> 10
 
 
 # block = :
 #   'potion' print.
 
-block: =>
+block: ->
   print('potion')
 
 
@@ -178,7 +178,7 @@ if (3).gender?
 # HomePage get = (url):
 #   session = url query ? at ('session').
 
-HomePage::get: (url) =>
+HomePage::get: (url) ->
   session: url.query.session if url.query?
 
 
@@ -187,7 +187,7 @@ HomePage::get: (url) =>
 # b /left = BTree ()
 # b /right = BTree ()
 
-BTree:    =>
+BTree:    ->
 b:        new BTree()
 b.left:   new BTree()
 b.right:  new BTree()
@@ -199,7 +199,7 @@ b.right:  new BTree()
 # if (b ? /left):
 #   'left path found!' print.
 
-BTree: =>
+BTree: ->
 b: new BTree()
 
 print('left path found!') if b.left?

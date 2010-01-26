@@ -1,4 +1,4 @@
-a: [(x) => x, (x) => x * x]
+a: [(x) -> x, (x) -> x * x]
 
 print a.length is 2
 
@@ -14,7 +14,7 @@ neg: (3 -4)
 print neg is -1
 
 
-func: =>
+func: ->
   return if true
 
 print func() is null

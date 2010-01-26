@@ -6,12 +6,12 @@ factories: {}
 loader: {
 
   # Reload the coffee-script environment from source.
-  reload: (topId, path) =>
+  reload: (topId, path) ->
     coffeescript ||= require('coffee-script')
-    factories[topId]: => coffeescript.makeNarwhalFactory(path)
+    factories[topId]: -> coffeescript.makeNarwhalFactory(path)
 
   # Ensure that the coffee-script environment is loaded.
-  load: (topId, path) =>
+  load: (topId, path) ->
     factories[topId] ||= this.reload(topId, path)
 
 }

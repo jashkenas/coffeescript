@@ -1,16 +1,16 @@
-Animal: =>
-Animal::move: (meters) =>
+Animal: ->
+Animal::move: (meters) ->
   alert this.name + " moved " + meters + "m."
 
-Snake: (name) => this.name: name
+Snake: (name) -> this.name: name
 Snake extends Animal
-Snake::move: =>
+Snake::move: ->
   alert "Slithering..."
   super 5
 
-Horse: (name) => this.name: name
+Horse: (name) -> this.name: name
 Horse extends Animal
-Horse::move: =>
+Horse::move: ->
   alert "Galloping..."
   super 45
 

@@ -174,7 +174,7 @@ gem install coffee-script</pre>
         <td><code>-e, --eval</code></td>
         <td>
           Compile and print a little snippet of CoffeeScript directly from the
-          command line (or from <b>stdin</b>). For example:<br /><tt>coffee -e "square: (x) => x * x"</tt>
+          command line (or from <b>stdin</b>). For example:<br /><tt>coffee -e "square: (x) -> x * x"</tt>
         </td>
       </tr>
       <tr>
@@ -256,13 +256,13 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <p id="functions">
       <b class="header">Functions and Invocation</b>
       Functions are defined by a list of parameters, an arrow, and the
-      function body. The empty function looks like this: <tt>=></tt>. All
+      function body. The empty function looks like this: <tt>-></tt>. All
       functions in CoffeeScript are named by default, for easier debugging.
     </p>
     <%= code_for('functions', 'cube(5)') %>
     <p>
       If you'd like to create an anonymous function, just wrap it in parentheses:
-      <tt>((x) => x * x)</tt>
+      <tt>((x) -> x * x)</tt>
     </p>
 
     <p id="assignment">
@@ -547,7 +547,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
 
     <p id="long_arrow">
       <b class="header">Function binding</b>
-      The long arrow <tt>==></tt> can be used to both define a function, and to bind
+      The long arrow <tt>=></tt> can be used to both define a function, and to bind
       it to the current value of <tt>this</tt>, right on the spot. This is helpful
       when using callback-based libraries like Prototype or jQuery, for creating
       iterator functions to pass to <tt>each</tt>, or event-handler functions

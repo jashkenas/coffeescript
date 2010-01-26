@@ -13,6 +13,6 @@ print 50 > 10 > 5 is parseInt('5', 10)
 # more than once.
 
 i: 0
-func: => i++
+func: -> i++
 
 print 1 > func() < 1

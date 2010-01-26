@@ -22,7 +22,7 @@ module CoffeeScript
     IMPLICIT_END  = [:IF, :UNLESS, :FOR, :WHILE, "\n", :PARAM_START, :OUTDENT]
     IMPLICIT_CALL = [:IDENTIFIER, :NUMBER, :STRING, :JS, :REGEX, :NEW, :PARAM_START,
                      :TRY, :DELETE, :INSTANCEOF, :TYPEOF, :SWITCH, :ARGUMENTS,
-                     :TRUE, :FALSE, :YES, :NO, :ON, :OFF, '!', '!!', :NOT, '=>', '==>']
+                     :TRUE, :FALSE, :YES, :NO, :ON, :OFF, '!', '!!', :NOT, '->', '=>']
 
     # The inverse mappings of token pairs we're trying to fix up.
     INVERSES = BALANCED_PAIRS.inject({}) do |memo, pair|
@@ -33,7 +33,7 @@ module CoffeeScript
 
     # Single-line flavors of block expressions that have unclosed endings.
     # The grammar can't disambiguate them, so we insert the implicit indentation.
-    SINGLE_LINERS  = [:ELSE, "=>", "==>", :TRY, :FINALLY, :THEN]
+    SINGLE_LINERS  = [:ELSE, "->", "=>", :TRY, :FINALLY, :THEN]
     SINGLE_CLOSERS = ["\n", :CATCH, :FINALLY, :ELSE, :OUTDENT, :LEADING_WHEN, :PARAM_START]
 
     # Rewrite the token stream in multiple passes, one logical filter at
@@ -193,7 +193,7 @@ module CoffeeScript
     end
 
     # We'd like to support syntax like this:
-    #    el.click((event) =>
+    #    el.click((event) ->
     #      el.hide())
     # In order to accomplish this, move outdents that follow closing parens
     # inwards, safely. The steps to accomplish this are:

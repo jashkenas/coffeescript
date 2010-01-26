@@ -26,7 +26,7 @@ print z is null and x is "EX"
 # Only evaluate once.
 
 counter: 0
-get_next_node: =>
+get_next_node: ->
   throw "up" if counter
   counter++
 

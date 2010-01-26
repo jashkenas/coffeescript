@@ -2,7 +2,7 @@
 
 # ['toast', 'cheese', 'wine'].each { |food| print food.capitalize }
 
-['toast', 'wine', 'cheese'].each (food) => print(food.capitalize())
+['toast', 'wine', 'cheese'].each (food) -> print(food.capitalize())
 
 
 
@@ -14,10 +14,10 @@
 # end
 
 LotteryTicket: {
-  get_picks:          => this.picks
-  set_picks:      (nums) => this.picks: nums
-  get_purchase:       => this.purchase
-  set_purchase: (amount) => this.purchase: amount
+  get_picks:          -> this.picks
+  set_picks:      (nums) -> this.picks: nums
+  get_purchase:       -> this.purchase
+  set_purchase: (amount) -> this.purchase: amount
 }
 
 
@@ -40,11 +40,11 @@ LotteryTicket: {
 # end
 
 LotteryDraw: {
-  play: =>
+  play: ->
     result:   LotteryTicket.new_random()
     winners:  {}
-    this.tickets.each (buyer, ticket_list) =>
-      ticket_list.each (ticket) =>
+    this.tickets.each (buyer, ticket_list) ->
+      ticket_list.each (ticket) ->
         score: ticket.score(result)
         return if score is 0
         winners[buyer] ||= []
@@ -65,8 +65,8 @@ LotteryDraw: {
 # end
 
 WishScanner: {
-  scan_for_a_wish: =>
-    wish: this.read().detect((thought) => thought.index('wish: ') is 0)
+  scan_for_a_wish: ->
+    wish: this.read().detect((thought) -> thought.index('wish: ') is 0)
     wish.replace('wish: ', '')
 }
 
@@ -111,7 +111,7 @@ WishScanner: {
 Creature : {
 
   # This method applies a hit taken during a fight.
-  hit: (damage) =>
+  hit: (damage) ->
     p_up: Math.rand(this.charisma)
     if p_up % 9 is 7
       this.life += p_up / 4
@@ -120,7 +120,7 @@ Creature : {
     if this.life <= 0 then puts("[" + this.name + " has died.]")
 
   # This method takes one turn in a fight.
-  fight: (enemy, weapon) =>
+  fight: (enemy, weapon) ->
     if this.life <= 0 then return puts("[" + this.name + "is too dead to fight!]")
 
     # Attack the opponent.
@@ -156,12 +156,12 @@ Creature : {
 # Get evil idea and swap in code words
 print("Enter your new idea: ")
 idea: gets()
-code_words.each((real, code) => idea.replace(real, code))
+code_words.each((real, code) -> idea.replace(real, code))
 
 # Save the jibberish to a new file
 print("File encoded. Please enter a name for this idea: ")
 idea_name: gets().strip()
-File.open("idea-" + idea_name + '.txt', 'w', (file) => file.write(idea))
+File.open("idea-" + idea_name + '.txt', 'w', (file) -> file.write(idea))
 
 
 
@@ -177,7 +177,7 @@ File.open("idea-" + idea_name + '.txt', 'w', (file) => file.write(idea))
 #   end
 # end
 
-wipe_mutterings_from: (sentence) =>
+wipe_mutterings_from: (sentence) ->
   throw new Error("cannot wipe mutterings") unless sentence.indexOf
   while sentence.indexOf('(') >= 0
     open:     sentence.indexOf('(') - 1

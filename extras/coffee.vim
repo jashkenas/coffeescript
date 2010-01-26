@@ -29,7 +29,7 @@ syn match   coffeeNumber	       "-\=\<\d\+L\=\>\|0[xX][0-9a-fA-F]\+\>"
 syn region  coffeeRegexpString     start=+/[^/*]+me=e-1 skip=+\\\\\|\\/+ end=+/[gi]\{0,2\}\s*$+ end=+/[gi]\{0,2\}\s*[;.,)\]}]+me=e-1 contains=@htmlPreproc oneline
 
 syn match coffeePrototypeAccess "::"
-syn match coffeeFunction "=>"
+syn match coffeeFunction "->"
 
 syn keyword coffeeExtends   extends
 syn keyword coffeeConditional	if else switch then

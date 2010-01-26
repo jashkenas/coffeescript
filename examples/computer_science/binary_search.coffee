@@ -1,5 +1,5 @@
 # Uses a binary search algorithm to locate a value in the specified array.
-binary_search: (items, value) =>
+binary_search: (items, value) ->
 
   start: 0
   stop:  items.length - 1

@@ -39,7 +39,7 @@ prechigh
   left     EXTENDS
   left     '||=' '&&=' '?='
   right    ASSIGN RETURN
-  right    '=>' '==>' UNLESS IF ELSE WHILE
+  right    '->' '=>' UNLESS IF ELSE WHILE
 preclow
 
 rule
@@ -207,8 +207,8 @@ rule
 
   # The symbols to signify functions, and bound functions.
   FuncGlyph:
-    '=>'                              { result = :func }
-  | '==>'                             { result = :boundfunc }
+    '->'                              { result = :func }
+  | '=>'                              { result = :boundfunc }
   ;
 
   # The parameters to a function definition.

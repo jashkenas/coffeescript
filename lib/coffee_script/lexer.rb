@@ -27,7 +27,7 @@ module CoffeeScript
     OPERATOR   = /\A([+\*&|\/\-%=<>:!?]+)/
     WHITESPACE = /\A([ \t]+)/
     COMMENT    = /\A(((\n?[ \t]*)?#.*$)+)/
-    CODE       = /\A(=?=>)/
+    CODE       = /\A((-|=)>)/
     REGEX      = /\A(\/(.*?)([^\\]|\\\\)\/[imgy]{0,4})/
     MULTI_DENT = /\A((\n([ \t]*))+)(\.)?/
     LAST_DENT  = /\n([ \t]*)/

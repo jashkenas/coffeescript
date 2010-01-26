@@ -1,5 +1,5 @@
 # An in-place selection sort.
-selection_sort: (list) =>
+selection_sort: (list) ->
   len: list.length
 
   # For each item in the list.

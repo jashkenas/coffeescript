@@ -1,5 +1,5 @@
 # Sorts an array in ascending natural order using merge sort.
-merge_sort: (list) =>
+merge_sort: (list) ->
 
   return list if list.length is 1
 
