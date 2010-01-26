@@ -25,9 +25,11 @@ Usage:
     # Seconds to pause between checks for changed source files.
     WATCH_INTERVAL = 0.5
 
+    # Path to the root of the CoffeeScript install.
+    ROOT = File.expand_path(File.dirname(__FILE__) + '/../..')
+
     # Command to execute in Narwhal
-    PACKAGE = File.expand_path(File.dirname(__FILE__) + '/../..')
-    LAUNCHER = "narwhal -p #{PACKAGE} -e 'require(\"coffee-script\").run(system.args);'"
+    LAUNCHER = "narwhal -p #{ROOT} -e 'require(\"coffee-script\").run(system.args);'"
 
     # Run the CommandLine off the contents of ARGV.
     def initialize
@@ -159,7 +161,7 @@ Usage:
     # Install the CoffeeScript TextMate bundle to ~/Library.
     def install_bundle
       bundle_dir = File.expand_path('~/Library/Application Support/TextMate/Bundles/')
-      FileUtils.cp_r(File.dirname(__FILE__) + '/CoffeeScript.tmbundle', bundle_dir)
+      FileUtils.cp_r("#{ROOT}/extras/CoffeeScript.tmbundle", bundle_dir)
     end
 
     # Use OptionParser for all the options.

@@ -22,5 +22,6 @@ Gem::Specification.new do |s|
   s.require_paths     = ['lib']
   s.executables       = ['coffee']
 
-  s.files = Dir['bin/*', 'examples/*', 'lib/**/*', 'coffee-script.gemspec', 'LICENSE', 'README', 'package.json']
+  s.files = Dir['bin/*', 'examples/*', 'extras/**/*', 'lib/**/*',
+                'coffee-script.gemspec', 'LICENSE', 'README', 'package.json']
 end

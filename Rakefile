@@ -25,7 +25,7 @@ namespace :build do
 
   desc "Compile and install the Ultraviolet syntax highlighter"
   task :ultraviolet do
-    sh "plist2syntax lib/coffee_script/CoffeeScript.tmbundle/Syntaxes/CoffeeScript.tmLanguage"
+    sh "plist2syntax extras/CoffeeScript.tmbundle/Syntaxes/CoffeeScript.tmLanguage"
     sh "sudo mv coffeescript.yaml /usr/local/lib/ruby/gems/1.8/gems/ultraviolet-0.10.2/syntax/coffeescript.syntax"
   end
 
