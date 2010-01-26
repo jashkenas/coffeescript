@@ -55,3 +55,12 @@ print true for i in [1..3]
 
 print_func: (f) -> print(f())
 print_func -> true
+
+# Optional parens can be used in a nested fashion.
+call: (func) -> func()
+
+result: call ->
+  inner: call ->
+    Math.Add(5, 5)
+
+print result is 10

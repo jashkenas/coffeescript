@@ -158,6 +158,10 @@ module CoffeeScript
       stack = [0]
       scan_tokens do |prev, token, post, i|
         stack.push(0) if token[0] == :INDENT
+        if token[0] == :OUTDENT
+          last = stack.pop
+          stack[-1] += last
+        end
         if (stack.last > 0 && (IMPLICIT_END.include?(token[0]) || post.nil?)) &&
            !(token[0] == :PARAM_START && prev[0] == ',')
           idx = token[0] == :OUTDENT ? i + 1 : i
@@ -165,7 +169,6 @@ module CoffeeScript
           size, stack[-1] = stack[-1] + 1, 0
           next size
         end
-        stack.pop if token[0] == :OUTDENT
         next 1 unless IMPLICIT_FUNC.include?(prev[0]) && IMPLICIT_CALL.include?(token[0])
         @tokens.insert(i, ['(', Value.new('(', token[1].line)])
         stack[-1] += 1
@@ -176,6 +179,7 @@ module CoffeeScript
     # Ensure that all listed pairs of tokens are correctly balanced throughout
     # the course of the token stream.
     def ensure_balance(*pairs)
+      puts "\nbefore ensure_balance: #{@tokens.inspect}" if ENV['VERBOSE']
       levels, lines = Hash.new(0), Hash.new
       scan_tokens do |prev, token, post, i|
         pairs.each do |pair|
