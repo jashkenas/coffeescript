@@ -22,7 +22,7 @@ module CoffeeScript
     IMPLICIT_END  = [:IF, :UNLESS, :FOR, :WHILE, "\n", :PARAM_START, :OUTDENT]
     IMPLICIT_CALL = [:IDENTIFIER, :NUMBER, :STRING, :JS, :REGEX, :NEW, :PARAM_START,
                      :TRY, :DELETE, :INSTANCEOF, :TYPEOF, :SWITCH, :ARGUMENTS,
-                     :TRUE, :FALSE, :YES, :NO, :ON, :OFF, '!', '!!', :NOT, '=>']
+                     :TRUE, :FALSE, :YES, :NO, :ON, :OFF, '!', '!!', :NOT, '=>', '==>']
 
     # The inverse mappings of token pairs we're trying to fix up.
     INVERSES = BALANCED_PAIRS.inject({}) do |memo, pair|
