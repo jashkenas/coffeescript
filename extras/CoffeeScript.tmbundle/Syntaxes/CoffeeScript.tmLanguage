@@ -41,9 +41,9 @@
 				</dict>
 			</dict>
 			<key>comment</key>
-			<string>match stuff like: a =&gt; … </string>
+			<string>match stuff like: a -&gt; … </string>
 			<key>match</key>
-			<string>(\()([a-zA-Z0-9_?.$]*(,\s*[a-zA-Z0-9_?.$]+)*)(\))\s*(=+&gt;)</string>
+			<string>(\()([a-zA-Z0-9_?.$]*(,\s*[a-zA-Z0-9_?.$]+)*)(\))\s*((=|-)&gt;)</string>
 			<key>name</key>
 			<string>meta.inline.function.coffee</string>
 		</dict>
@@ -294,7 +294,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>=+&gt;</string>
+			<string>(=|-)&gt;</string>
 			<key>name</key>
 			<string>storage.type.function.coffee</string>
 		</dict>
