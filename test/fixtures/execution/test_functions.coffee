@@ -52,3 +52,6 @@ print Math.FastAdd(20, 20) is 40
 print 100 > 1 if 1 > 0
 print true unless false
 print true for i in [1..3]
+
+print_func: (f) => print(f())
+print_func => true
