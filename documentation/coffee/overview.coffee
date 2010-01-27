@@ -26,4 +26,4 @@ race: (winner, runners...) ->
 alert "I knew it!" if elvis?
 
 # Array comprehensions:
-cubed_list: math.cube(num) for num in list
+cubed_list: math.cube num for num in list

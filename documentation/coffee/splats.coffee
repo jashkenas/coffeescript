@@ -1,6 +1,6 @@
 gold: silver: the_field: "unknown"
 
-medalists: (first, second, rest...) ->
+award_medals: (first, second, rest...) ->
   gold:       first
   silver:     second
   the_field:  rest
@@ -18,7 +18,7 @@ contenders: [
   "Usain Bolt"
 ]
 
-medalists contenders...
+award_medals contenders...
 
 alert "Gold: " + gold
 alert "Silver: " + silver

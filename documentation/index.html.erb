@@ -51,7 +51,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://gemcutter.org/gems/coffee-script">0.2.6</a>
+      <a href="http://gemcutter.org/gems/coffee-script">0.3.0</a>
     </p>
 
     <h2>Table of Contents</h2>
@@ -65,7 +65,6 @@
       <a href="#objects_and_arrays">Objects and Arrays</a><br />
       <a href="#lexical_scope">Lexical Scoping and Variable Safety</a><br />
       <a href="#conditionals">Conditionals, Ternaries, and Conditional Assignment</a><br />
-      <a href="#existence">The Existential Operator</a><br />
       <a href="#aliases">Aliases</a><br />
       <a href="#splats">Splats...</a><br />
       <a href="#arguments">Arguments are Arrays</a><br />
@@ -73,17 +72,16 @@
       <a href="#comprehensions">Comprehensions (Arrays, Objects, and Ranges)</a><br />
       <a href="#slice_splice">Array Slicing and Splicing with Ranges</a><br />
       <a href="#expressions">Everything is an Expression</a><br />
+      <a href="#existence">The Existential Operator</a><br />
       <a href="#inheritance">Inheritance, and Calling Super from a Subclass</a><br />
-      <a href="#blocks">Blocks</a><br />
       <a href="#pattern_matching">Pattern Matching</a><br />
-      <a href="#long_arrow">Function Binding</a><br />
+      <a href="#fat_arrow">Function Binding</a><br />
       <a href="#embedded">Embedded JavaScript</a><br />
       <a href="#switch">Switch/When/Else</a><br />
       <a href="#try">Try/Catch/Finally</a><br />
       <a href="#comparisons">Chained Comparisons</a><br />
       <a href="#strings">Multiline Strings and Heredocs</a><br />
       <a href="#resources">Resources</a><br />
-      <a href="#contributing">Contributing</a><br />
       <a href="#change_log">Change Log</a><br />
     </p>
 
@@ -188,7 +186,7 @@ gem install coffee-script</pre>
         <td><code>-v, --verbose</code></td>
         <td>
           As the JavaScript is being generated, print out every step of code
-          generation, including lexical scope and the node in the
+          generation, including lexical scope and the nodes in the
           AST.
         </td>
       </tr>
@@ -246,6 +244,11 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <a href="#conditionals">if-statements</a>,
       <a href="#switch">switch</a>, and <a href="#try">try/catch</a>),
       use indentation.
+    </p>
+
+    <p>
+      You don't need to use parentheses to invoke a function, if you're passing
+      arguments:<br /><tt>print "coffee"</tt>
     </p>
 
     <p>
@@ -307,12 +310,12 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       CoffeeScript output is wrapped in an anonymous function:
       <tt>(function(){ ... })();</tt> This safety wrapper, combined with the
       automatic generation of the <tt>var</tt> keyword, make it exceedingly difficult
-      to pollute the global namespace by accident. 
+      to pollute the global namespace by accident.
     </p>
-    <p>  
-      If you'd like to create top-level variables for other scripts to use, 
-      attach them as properties on <b>window</b>, or on the <b>exports</b> 
-      object in CommonJS. The <b>existential operator</b> (below), gives you a 
+    <p>
+      If you'd like to create top-level variables for other scripts to use,
+      attach them as properties on <b>window</b>, or on the <b>exports</b>
+      object in CommonJS. The <b>existential operator</b> (below), gives you a
       reliable way to figure out where to add them, if you're targeting both
       CommonJS and the browser: <tt>root: exports ? this</tt>
     </p>
@@ -335,20 +338,6 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       is falsy, and <tt>&amp;&amp;=</tt>, which only replaces the value of
       truthy variables.
     </p>
-
-    <p id="existence">
-      <b class="header">The Existential Operator</b>
-      It's a little difficult to check for the existence of a variable in
-      JavaScript. <tt>if (variable) ...</tt> comes close, but fails for zero,
-      the empty string, and false. The existential operator <tt>?</tt> returns true unless
-      a variable is <b>null</b> or <b>undefined</b>, which makes it analogous
-      to Ruby's <tt>nil?</tt>
-    </p>
-    <p>
-      It can also be used for safer conditional assignment than <tt>||=</tt>
-      provides, for cases where you may be handling numbers or strings.
-    </p>
-    <%= code_for('existence', 'speed') %>
 
     <p id="aliases">
       <b class="header">Aliases</b>
@@ -487,9 +476,38 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <%= code_for('expressions_try', true) %>
     <p>
       There are a handful of statements in JavaScript that can't be meaningfully
-      converted into expressions, namely <tt>break</tt>, <tt>continue</tt>, 
-      and <tt>return</tt>. If you make use of them within a block of code, 
+      converted into expressions, namely <tt>break</tt>, <tt>continue</tt>,
+      and <tt>return</tt>. If you make use of them within a block of code,
       CoffeeScript won't try to perform the conversion.
+    </p>
+    
+    <p id="existence">
+      <b class="header">The Existential Operator</b>
+      It's a little difficult to check for the existence of a variable in
+      JavaScript. <tt>if (variable) ...</tt> comes close, but fails for zero,
+      the empty string, and false. CoffeeScript's existential operator <tt>?</tt> returns true unless
+      a variable is <b>null</b> or <b>undefined</b>, which makes it analogous
+      to Ruby's <tt>nil?</tt>
+    </p>
+    <p>
+      It can also be used for safer conditional assignment than <tt>||=</tt>
+      provides, for cases where you may be handling numbers or strings.
+    </p>
+    <%= code_for('existence', 'speed') %>
+    <p>
+      The accessor variant of the existential operator <tt>?.</tt> can be used to soak
+      up null references in a chain of properties. Use it instead
+      of the dot accessor <tt>.</tt> in cases where the base value may be <b>null</b>
+      or <b>undefined</b>. If all of the properties exist then you'll get the expected
+      result, if the chain is broken, <b>undefined</b> is returned instead of
+      the <b>TypeError</b> that would be raised otherwise.
+    </p>
+    <%= code_for('soaks') %>
+    <p>
+      Soaking up nulls is similar to Ruby's 
+      <a href="http://andand.rubyforge.org/">andand gem</a>, and to the 
+      <a href="http://groovy.codehaus.org/Operators#Operators-SafeNavigationOperator%28%3F.%29">safe navigation operator</a>
+      in Groovy.
     </p>
 
     <p id="inheritance">
@@ -514,15 +532,6 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('super', true) %>
 
-    <p id="blocks">
-      <b class="header">Blocks</b>
-      Many common looping functions (in Prototype, jQuery, and Underscore,
-      for example) take a single function as their final argument. To make
-      final functions easier to pass, CoffeeScript includes block syntax,
-      so you don't have to close the parentheses on the other side.
-    </p>
-    <%= code_for('blocks') %>
-
     <p id="pattern_matching">
       <b class="header">Pattern Matching (Destructuring Assignment)</b>
       To make extracting values from complex arrays and objects more convenient,
@@ -545,16 +554,16 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('object_extraction', 'poet + " — " + street') %>
 
-    <p id="long_arrow">
+    <p id="fat_arrow">
       <b class="header">Function binding</b>
-      The long arrow <tt>=></tt> can be used to both define a function, and to bind
+      The fat arrow <tt>=></tt> can be used to both define a function, and to bind
       it to the current value of <tt>this</tt>, right on the spot. This is helpful
       when using callback-based libraries like Prototype or jQuery, for creating
       iterator functions to pass to <tt>each</tt>, or event-handler functions
-      to use with <tt>bind</tt>. Functions created with the long arrow are able to access
+      to use with <tt>bind</tt>. Functions created with the fat arrow are able to access
       properties of the <tt>this</tt> where they're defined.
     </p>
-    <%= code_for('long_arrow') %>
+    <%= code_for('fat_arrow') %>
 
     <p id="embedded">
       <b class="header">Embedded JavaScript</b>
@@ -626,6 +635,12 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
         <a href="http://github.com/jashkenas/coffee-script/issues">Bugs, Feature Requests, and General Discussion</a>
       </li>
       <li>
+        <a href="http://github.com/creationix/coffeepot">CoffeePot</a><br />
+        An implementation of CoffeeScript, written in CoffeeScript, by
+        <a href="http://github.com/creationix">Tim Caswell</a>. Compiles just
+        a limited subset at this point.
+      </li>
+      <li>
         <a href="http://github.com/jnicklas/bistro_car">BistroCar</a><br />
         A Rails plugin by
         <a href="http://github.com/jnicklas">Jonas Nicklas</a>
@@ -640,38 +655,23 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       </li>
     </ul>
 
-    <h2 id="contributing">Contributing</h2>
+    <h2 id="change_log">Change Log</h2>
 
     <p>
-      Here's a wish list of things that would be wonderful to have contributed:
+      <b class="header" style="margin-top: 20px;">0.3.0</b>
+      CoffeeScript 0.3 includes major syntax changes:
+      <br />
+      The function symbol was changed to
+      <tt>-></tt>, and the bound function symbol is now <tt>=></tt>.
+      <br />
+      Parameter lists in function definitions must now be wrapped in parentheses.
+      <br />
+      Added property soaking, with the <tt>?.</tt> operator.
+      <br />
+      Made parentheses optional, when invoking functions with arguments.
+      <br />
+      Removed the obsolete block literal syntax.
     </p>
-
-    <ul>
-      <li>
-        <a href="http://github.com/jashkenas/coffee-script/issues#issue/8">
-          A CoffeeScript version of the compiler.
-        </a>
-      </li>
-      <li>
-        Test cases for any syntax errors you encounter that you think CoffeeScript
-        should be able to compile properly.
-      </li>
-      <li>
-        A tutorial that introduces CoffeeScript from the ground up for folks
-        without knowledge of JavaScript.
-      </li>
-      <li>
-        Integration with Processing.js's JavaScript API (this would depend on
-        having a JavaScript version of the compiler).
-      </li>
-      <li>
-        A lot of the code generation in <tt>nodes.rb</tt> gets into messy
-        string manipulation. Techniques for cleaning this up across the board
-        would be appreciated.
-      </li>
-    </ul>
-
-    <h2 id="change_log">Change Log</h2>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.2.6</b>
