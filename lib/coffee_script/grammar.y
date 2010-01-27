@@ -292,7 +292,6 @@ rule
   # The list of arguments to a function invocation.
   Arguments:
     CALL_START ArgList CALL_END       { result = val[1] }
-  | CALL_START ArgList CALL_END Code  { result = val[1] << val[3] }
   ;
 
   # Calling super.

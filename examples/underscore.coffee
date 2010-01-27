@@ -568,7 +568,7 @@
 
 
   # Add all mutator Array functions to the wrapper.
-  _.each(['pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift']) (name) ->
+  _.each ['pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift'], (name) ->
     method: Array.prototype[name]
     wrapper.prototype[name]: ->
       method.apply(this._wrapped, arguments)
@@ -576,7 +576,7 @@
 
 
   # Add all accessor Array functions to the wrapper.
-  _.each(['concat', 'join', 'slice']) (name) ->
+  _.each ['concat', 'join', 'slice'], (name) ->
     method: Array.prototype[name]
     wrapper.prototype[name]: ->
       result(method.apply(this._wrapped, arguments), this._chain)

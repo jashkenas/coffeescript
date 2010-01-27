@@ -20,10 +20,11 @@ module CoffeeScript
 
     # Tokens pairs that, in immediate succession, indicate an implicit call.
     IMPLICIT_FUNC = [:IDENTIFIER, :SUPER]
-    IMPLICIT_END  = [:IF, :UNLESS, :FOR, :WHILE, "\n", :PARAM_START, :OUTDENT]
+    IMPLICIT_END  = [:IF, :UNLESS, :FOR, :WHILE, "\n", :OUTDENT]
     IMPLICIT_CALL = [:IDENTIFIER, :NUMBER, :STRING, :JS, :REGEX, :NEW, :PARAM_START,
                      :TRY, :DELETE, :INSTANCEOF, :TYPEOF, :SWITCH, :ARGUMENTS,
-                     :TRUE, :FALSE, :YES, :NO, :ON, :OFF, '!', '!!', :NOT, '->', '=>']
+                     :TRUE, :FALSE, :YES, :NO, :ON, :OFF, '!', '!!', :NOT,
+                     '->', '=>', '[', '(', '{']
 
     # The inverse mappings of token pairs we're trying to fix up.
     INVERSES = BALANCED_PAIRS.inject({}) do |memo, pair|
@@ -193,8 +194,7 @@ module CoffeeScript
           last = stack.pop
           stack[-1] += last
         end
-        if (stack.last > 0 && (IMPLICIT_END.include?(token[0]) || post.nil?)) &&
-           !(token[0] == :PARAM_START && prev[0] == ',')
+        if stack.last > 0 && (IMPLICIT_END.include?(token[0]) || post.nil?)
           idx = token[0] == :OUTDENT ? i + 1 : i
           stack.last.times { @tokens.insert(idx, [:CALL_END, Value.new(')', token[1].line)]) }
           size, stack[-1] = stack[-1] + 1, 0
@@ -203,7 +203,7 @@ module CoffeeScript
         next 1 unless IMPLICIT_FUNC.include?(prev[0]) && IMPLICIT_CALL.include?(token[0])
         @tokens.insert(i, [:CALL_START, Value.new('(', token[1].line)])
         stack[-1] += 1
-        next token[0] == :PARAM_START ? 1 : 2
+        next 2
       end
     end
 
