@@ -28,6 +28,7 @@ pre.idle .LibraryConstant {
    color: #A535AE;
 }
 pre.idle .FunctionArgument {
+   color: #0076ad;
 }
 pre.idle .BuiltInConstant {
    color: #A535AE;

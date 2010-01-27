@@ -22,7 +22,7 @@ token INDENT OUTDENT
 # Declare order of operations.
 prechigh
   left     '?'
-  nonassoc UMINUS NOT '!' '!!' '~' '++' '--'
+  nonassoc UMINUS UPLUS NOT '!' '!!' '~' '++' '--'
   left     '*' '/' '%'
   left     '+' '-'
   left     '<<' '>>' '>>>'
@@ -141,6 +141,7 @@ rule
     '!' Expression                    { result = OpNode.new(val[0], val[1]) }
   | '!!' Expression                   { result = OpNode.new(val[0], val[1]) }
   | '-' Expression = UMINUS           { result = OpNode.new(val[0], val[1]) }
+  | '+' Expression = UPLUS            { result = OpNode.new(val[0], val[1]) }
   | NOT Expression                    { result = OpNode.new(val[0], val[1]) }
   | '~' Expression                    { result = OpNode.new(val[0], val[1]) }
   | '--' Expression                   { result = OpNode.new(val[0], val[1]) }

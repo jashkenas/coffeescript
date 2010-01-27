@@ -19,7 +19,7 @@
 <body>
 <pre class="idle"><span class="line-numbers">   1 </span>
 <span class="line-numbers">   2 </span>   <span class="Comment"><span class="Comment">#</span> Underscore.coffee</span>
-<span class="line-numbers">   3 </span>   <span class="Comment"><span class="Comment">#</span> (c) 2009 Jeremy Ashkenas, DocumentCloud Inc.</span>
+<span class="line-numbers">   3 </span>   <span class="Comment"><span class="Comment">#</span> (c) 2010 Jeremy Ashkenas, DocumentCloud Inc.</span>
 <span class="line-numbers">   4 </span>   <span class="Comment"><span class="Comment">#</span> Underscore is freely distributable under the terms of the MIT license.</span>
 <span class="line-numbers">   5 </span>   <span class="Comment"><span class="Comment">#</span> Portions of Underscore are inspired by or borrowed from Prototype.js,</span>
 <span class="line-numbers">   6 </span>   <span class="Comment"><span class="Comment">#</span> Oliver Steele's Functional, and John Resig's Micro-Templating.</span>
@@ -40,7 +40,7 @@
 <span class="line-numbers">  21 </span>   <span class="Comment"><span class="Comment">#</span> If Underscore is called as a function, it returns a wrapped object that</span>
 <span class="line-numbers">  22 </span>   <span class="Comment"><span class="Comment">#</span> can be used OO-style. This wrapper holds altered versions of all the</span>
 <span class="line-numbers">  23 </span>   <span class="Comment"><span class="Comment">#</span> underscore functions. Wrapped objects may be chained.</span>
-<span class="line-numbers">  24 </span> <span class="FunctionArgument">  wrapper: obj </span><span class="Storage">=&gt;</span>
+<span class="line-numbers">  24 </span>   <span class="FunctionName">wrapper</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers">  25 </span>     <span class="FunctionName">this._wrapped</span><span class="Keyword">:</span> obj
 <span class="line-numbers">  26 </span>     <span class="Variable">this</span>
 <span class="line-numbers">  27 </span>
@@ -50,7 +50,7 @@
 <span class="line-numbers">  31 </span>
 <span class="line-numbers">  32 </span>
 <span class="line-numbers">  33 </span>   <span class="Comment"><span class="Comment">#</span> Create a safe reference to the Underscore object forreference below.</span>
-<span class="line-numbers">  34 </span> <span class="FunctionArgument">  _: root._: obj </span><span class="Storage">=&gt;</span> <span class="Keyword">new</span> <span class="TypeName">wrapper</span>(obj)
+<span class="line-numbers">  34 </span>   <span class="FunctionName">_</span><span class="Keyword">:</span> <span class="FunctionName">root._</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> <span class="Keyword">new</span> <span class="TypeName">wrapper</span>(obj)
 <span class="line-numbers">  35 </span>
 <span class="line-numbers">  36 </span>
 <span class="line-numbers">  37 </span>   <span class="Comment"><span class="Comment">#</span> Export the Underscore object for CommonJS.</span>
@@ -58,22 +58,22 @@
 <span class="line-numbers">  39 </span>
 <span class="line-numbers">  40 </span>
 <span class="line-numbers">  41 </span>   <span class="Comment"><span class="Comment">#</span> Create quick reference variables for speed access to core prototypes.</span>
-<span class="line-numbers">  42 </span>   <span class="FunctionName">slice</span><span class="Keyword">:</span>                Array<span class="Keyword">:</span><span class="Keyword">:</span>slice
-<span class="line-numbers">  43 </span>   <span class="FunctionName">unshift</span><span class="Keyword">:</span>              Array<span class="Keyword">:</span><span class="Keyword">:</span>unshift
-<span class="line-numbers">  44 </span>   <span class="FunctionName">toString</span><span class="Keyword">:</span>             Object<span class="Keyword">:</span><span class="Keyword">:</span>toString
-<span class="line-numbers">  45 </span>   <span class="FunctionName">hasOwnProperty</span><span class="Keyword">:</span>       Object<span class="Keyword">:</span><span class="Keyword">:</span>hasOwnProperty
-<span class="line-numbers">  46 </span>   <span class="FunctionName">propertyIsEnumerable</span><span class="Keyword">:</span> Object<span class="Keyword">:</span><span class="Keyword">:</span>propertyIsEnumerable
+<span class="line-numbers">  42 </span>   <span class="FunctionName">slice</span><span class="Keyword">:</span>                <span class="FunctionName">Array:</span><span class="Keyword">:</span>slice
+<span class="line-numbers">  43 </span>   <span class="FunctionName">unshift</span><span class="Keyword">:</span>              <span class="FunctionName">Array:</span><span class="Keyword">:</span>unshift
+<span class="line-numbers">  44 </span>   <span class="FunctionName">toString</span><span class="Keyword">:</span>             <span class="FunctionName">Object:</span><span class="Keyword">:</span>toString
+<span class="line-numbers">  45 </span>   <span class="FunctionName">hasOwnProperty</span><span class="Keyword">:</span>       <span class="FunctionName">Object:</span><span class="Keyword">:</span>hasOwnProperty
+<span class="line-numbers">  46 </span>   <span class="FunctionName">propertyIsEnumerable</span><span class="Keyword">:</span> <span class="FunctionName">Object:</span><span class="Keyword">:</span>propertyIsEnumerable
 <span class="line-numbers">  47 </span>
 <span class="line-numbers">  48 </span>
 <span class="line-numbers">  49 </span>   <span class="Comment"><span class="Comment">#</span> Current version.</span>
-<span class="line-numbers">  50 </span>   <span class="FunctionName">_.VERSION</span><span class="Keyword">:</span> <span class="String"><span class="String">'</span>0.5.5<span class="String">'</span></span>
+<span class="line-numbers">  50 </span>   <span class="FunctionName">_.VERSION</span><span class="Keyword">:</span> <span class="String"><span class="String">'</span>0.5.7<span class="String">'</span></span>
 <span class="line-numbers">  51 </span>
 <span class="line-numbers">  52 </span>
 <span class="line-numbers">  53 </span>   <span class="Comment"><span class="Comment">#</span> ------------------------ Collection Functions: ---------------------------</span>
 <span class="line-numbers">  54 </span>
 <span class="line-numbers">  55 </span>   <span class="Comment"><span class="Comment">#</span> The cornerstone, an each implementation.</span>
 <span class="line-numbers">  56 </span>   <span class="Comment"><span class="Comment">#</span> Handles objects implementing forEach, arrays, and raw objects.</span>
-<span class="line-numbers">  57 </span> <span class="FunctionArgument">  _.each: obj, iterator, context </span><span class="Storage">=&gt;</span>
+<span class="line-numbers">  57 </span>   <span class="FunctionName">_.each</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj, iterator, context</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers">  58 </span>     <span class="FunctionName">index</span><span class="Keyword">:</span> <span class="Number">0</span>
 <span class="line-numbers">  59 </span>     <span class="Keyword">try</span>
 <span class="line-numbers">  60 </span>       <span class="Keyword">return</span> obj.forEach(iterator, context) <span class="Keyword">if</span> obj.forEach
@@ -87,36 +87,36 @@
 <span class="line-numbers">  68 </span>
 <span class="line-numbers">  69 </span>   <span class="Comment"><span class="Comment">#</span> Return the results of applying the iterator to each element. Use JavaScript</span>
 <span class="line-numbers">  70 </span>   <span class="Comment"><span class="Comment">#</span> 1.6's version of map, if possible.</span>
-<span class="line-numbers">  71 </span> <span class="FunctionArgument">  _.map: obj, iterator, context </span><span class="Storage">=&gt;</span>
+<span class="line-numbers">  71 </span>   <span class="FunctionName">_.map</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj, iterator, context</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers">  72 </span>     <span class="Keyword">return</span> obj.map(iterator, context) <span class="Keyword">if</span> (obj <span class="Keyword">and</span> _.isFunction(obj.map))
 <span class="line-numbers">  73 </span>     <span class="FunctionName">results</span><span class="Keyword">:</span> []
-<span class="line-numbers">  74 </span>     _.each(obj)<span class="FunctionArgument"> value, index, list </span><span class="Storage">=&gt;</span>
+<span class="line-numbers">  74 </span>     _.each obj, <span class="FunctionArgument">(</span><span class="FunctionArgument">value, index, list</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers">  75 </span>       results.push(iterator.call(context, value, index, list))
 <span class="line-numbers">  76 </span>     results
 <span class="line-numbers">  77 </span>
 <span class="line-numbers">  78 </span>
 <span class="line-numbers">  79 </span>   <span class="Comment"><span class="Comment">#</span> Reduce builds up a single result from a list of values. Also known as</span>
 <span class="line-numbers">  80 </span>   <span class="Comment"><span class="Comment">#</span> inject, or foldl. Uses JavaScript 1.8's version of reduce, if possible.</span>
-<span class="line-numbers">  81 </span> <span class="FunctionArgument">  _.reduce: obj, memo, iterator, context </span><span class="Storage">=&gt;</span>
+<span class="line-numbers">  81 </span>   <span class="FunctionName">_.reduce</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj, memo, iterator, context</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers">  82 </span>     <span class="Keyword">return</span> obj.reduce(_.bind(iterator, context), memo) <span class="Keyword">if</span> (obj <span class="Keyword">and</span> _.isFunction(obj.reduce))
-<span class="line-numbers">  83 </span>     _.each(obj)<span class="FunctionArgument"> value, index, list </span><span class="Storage">=&gt;</span>
+<span class="line-numbers">  83 </span>     _.each obj, <span class="FunctionArgument">(</span><span class="FunctionArgument">value, index, list</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers">  84 </span>       <span class="FunctionName">memo</span><span class="Keyword">:</span> iterator.call(context, memo, value, index, list)
 <span class="line-numbers">  85 </span>     memo
 <span class="line-numbers">  86 </span>
 <span class="line-numbers">  87 </span>
 <span class="line-numbers">  88 </span>   <span class="Comment"><span class="Comment">#</span> The right-associative version of reduce, also known as foldr. Uses</span>
 <span class="line-numbers">  89 </span>   <span class="Comment"><span class="Comment">#</span> JavaScript 1.8's version of reduceRight, if available.</span>
-<span class="line-numbers">  90 </span> <span class="FunctionArgument">  _.reduceRight: obj, memo, iterator, context </span><span class="Storage">=&gt;</span>
+<span class="line-numbers">  90 </span>   <span class="FunctionName">_.reduceRight</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj, memo, iterator, context</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers">  91 </span>     <span class="Keyword">return</span> obj.reduceRight(_.bind(iterator, context), memo) <span class="Keyword">if</span> (obj <span class="Keyword">and</span> _.isFunction(obj.reduceRight))
-<span class="line-numbers">  92 </span>     _.each(_.clone(_.toArray(obj)).reverse())<span class="FunctionArgument"> value, index </span><span class="Storage">=&gt;</span>
+<span class="line-numbers">  92 </span>     _.each _.clone(_.toArray(obj)).reverse(), <span class="FunctionArgument">(</span><span class="FunctionArgument">value, index</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers">  93 </span>       <span class="FunctionName">memo</span><span class="Keyword">:</span> iterator.call(context, memo, value, index, obj)
 <span class="line-numbers">  94 </span>     memo
 <span class="line-numbers">  95 </span>
 <span class="line-numbers">  96 </span>
 <span class="line-numbers">  97 </span>   <span class="Comment"><span class="Comment">#</span> Return the first value which passes a truth test.</span>
-<span class="line-numbers">  98 </span> <span class="FunctionArgument">  _.detect: obj, iterator, context </span><span class="Storage">=&gt;</span>
+<span class="line-numbers">  98 </span>   <span class="FunctionName">_.detect</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj, iterator, context</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers">  99 </span>     <span class="FunctionName">result</span><span class="Keyword">:</span> <span class="BuiltInConstant">null</span>
-<span class="line-numbers"> 100 </span>     _.each(obj)<span class="FunctionArgument"> value, index, list </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 100 </span>     _.each obj, <span class="FunctionArgument">(</span><span class="FunctionArgument">value, index, list</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 101 </span>       <span class="Keyword">if</span> iterator.call(context, value, index, list)
 <span class="line-numbers"> 102 </span>         <span class="FunctionName">result</span><span class="Keyword">:</span> value
 <span class="line-numbers"> 103 </span>         _.breakLoop()
@@ -125,47 +125,47 @@
 <span class="line-numbers"> 106 </span>
 <span class="line-numbers"> 107 </span>   <span class="Comment"><span class="Comment">#</span> Return all the elements that pass a truth test. Use JavaScript 1.6's</span>
 <span class="line-numbers"> 108 </span>   <span class="Comment"><span class="Comment">#</span> filter(), if it exists.</span>
-<span class="line-numbers"> 109 </span> <span class="FunctionArgument">  _.select: obj, iterator, context </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 109 </span>   <span class="FunctionName">_.select</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj, iterator, context</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 110 </span>     <span class="Keyword">if</span> obj <span class="Keyword">and</span> _.isFunction(obj.filter) <span class="Keyword">then</span> <span class="Keyword">return</span> obj.filter(iterator, context)
 <span class="line-numbers"> 111 </span>     <span class="FunctionName">results</span><span class="Keyword">:</span> []
-<span class="line-numbers"> 112 </span>     _.each(obj)<span class="FunctionArgument"> value, index, list </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 112 </span>     _.each obj, <span class="FunctionArgument">(</span><span class="FunctionArgument">value, index, list</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 113 </span>       results.push(value) <span class="Keyword">if</span> iterator.call(context, value, index, list)
 <span class="line-numbers"> 114 </span>     results
 <span class="line-numbers"> 115 </span>
 <span class="line-numbers"> 116 </span>
 <span class="line-numbers"> 117 </span>   <span class="Comment"><span class="Comment">#</span> Return all the elements for which a truth test fails.</span>
-<span class="line-numbers"> 118 </span> <span class="FunctionArgument">  _.reject: obj, iterator, context </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 118 </span>   <span class="FunctionName">_.reject</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj, iterator, context</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 119 </span>     <span class="FunctionName">results</span><span class="Keyword">:</span> []
-<span class="line-numbers"> 120 </span>     _.each(obj)<span class="FunctionArgument"> value, index, list </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 120 </span>     _.each obj, <span class="FunctionArgument">(</span><span class="FunctionArgument">value, index, list</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 121 </span>       results.push(value) <span class="Keyword">if</span> <span class="Keyword">not</span> iterator.call(context, value, index, list)
 <span class="line-numbers"> 122 </span>     results
 <span class="line-numbers"> 123 </span>
 <span class="line-numbers"> 124 </span>
 <span class="line-numbers"> 125 </span>   <span class="Comment"><span class="Comment">#</span> Determine whether all of the elements match a truth test. Delegate to</span>
 <span class="line-numbers"> 126 </span>   <span class="Comment"><span class="Comment">#</span> JavaScript 1.6's every(), if it is present.</span>
-<span class="line-numbers"> 127 </span> <span class="FunctionArgument">  _.all: obj, iterator, context </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 127 </span>   <span class="FunctionName">_.all</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj, iterator, context</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 128 </span>     iterator <span class="Keyword">||</span><span class="Keyword">=</span> _.identity
 <span class="line-numbers"> 129 </span>     <span class="Keyword">return</span> obj.every(iterator, context) <span class="Keyword">if</span> obj <span class="Keyword">and</span> _.isFunction(obj.every)
 <span class="line-numbers"> 130 </span>     <span class="FunctionName">result</span><span class="Keyword">:</span> <span class="BuiltInConstant">true</span>
-<span class="line-numbers"> 131 </span>     _.each(obj)<span class="FunctionArgument"> value, index, list </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 131 </span>     _.each obj, <span class="FunctionArgument">(</span><span class="FunctionArgument">value, index, list</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 132 </span>       _.breakLoop() <span class="Keyword">unless</span> (<span class="FunctionName">result</span><span class="Keyword">:</span> result <span class="Keyword">and</span> iterator.call(context, value, index, list))
 <span class="line-numbers"> 133 </span>     result
 <span class="line-numbers"> 134 </span>
 <span class="line-numbers"> 135 </span>
 <span class="line-numbers"> 136 </span>   <span class="Comment"><span class="Comment">#</span> Determine if at least one element in the object matches a truth test. Use</span>
 <span class="line-numbers"> 137 </span>   <span class="Comment"><span class="Comment">#</span> JavaScript 1.6's some(), if it exists.</span>
-<span class="line-numbers"> 138 </span> <span class="FunctionArgument">  _.any: obj, iterator, context </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 138 </span>   <span class="FunctionName">_.any</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj, iterator, context</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 139 </span>     iterator <span class="Keyword">||</span><span class="Keyword">=</span> _.identity
 <span class="line-numbers"> 140 </span>     <span class="Keyword">return</span> obj.some(iterator, context) <span class="Keyword">if</span> obj <span class="Keyword">and</span> _.isFunction(obj.some)
 <span class="line-numbers"> 141 </span>     <span class="FunctionName">result</span><span class="Keyword">:</span> <span class="BuiltInConstant">false</span>
-<span class="line-numbers"> 142 </span>     _.each(obj)<span class="FunctionArgument"> value, index, list </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 142 </span>     _.each obj, <span class="FunctionArgument">(</span><span class="FunctionArgument">value, index, list</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 143 </span>       _.breakLoop() <span class="Keyword">if</span> (<span class="FunctionName">result</span><span class="Keyword">:</span> iterator.call(context, value, index, list))
 <span class="line-numbers"> 144 </span>     result
 <span class="line-numbers"> 145 </span>
 <span class="line-numbers"> 146 </span>
 <span class="line-numbers"> 147 </span>   <span class="Comment"><span class="Comment">#</span> Determine if a given value is included in the array or object,</span>
 <span class="line-numbers"> 148 </span>   <span class="Comment"><span class="Comment">#</span> based on '==='.</span>
-<span class="line-numbers"> 149 </span> <span class="FunctionArgument">  _.include: obj, target </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 149 </span>   <span class="FunctionName">_.include</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj, target</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 150 </span>     <span class="Keyword">return</span> _.indexOf(obj, target) <span class="Keyword">isnt</span> <span class="Keyword">-</span><span class="Number">1</span> <span class="Keyword">if</span> _.isArray(obj)
 <span class="line-numbers"> 151 </span>     <span class="Keyword">for</span> key, val <span class="Keyword">of</span> obj
 <span class="line-numbers"> 152 </span>       <span class="Keyword">return</span> <span class="BuiltInConstant">true</span> <span class="Keyword">if</span> val <span class="Keyword">is</span> target
@@ -173,49 +173,49 @@
 <span class="line-numbers"> 154 </span>
 <span class="line-numbers"> 155 </span>
 <span class="line-numbers"> 156 </span>   <span class="Comment"><span class="Comment">#</span> Invoke a method with arguments on every item in a collection.</span>
-<span class="line-numbers"> 157 </span> <span class="FunctionArgument">  _.invoke: obj, method </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 157 </span>   <span class="FunctionName">_.invoke</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj, method</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 158 </span>     <span class="FunctionName">args</span><span class="Keyword">:</span> _.rest(arguments, <span class="Number">2</span>)
 <span class="line-numbers"> 159 </span>     (<span class="Keyword">if</span> method <span class="Keyword">then</span> val[method] <span class="Keyword">else</span> val).apply(val, args) <span class="Keyword">for</span> val <span class="Keyword">in</span> obj
 <span class="line-numbers"> 160 </span>
 <span class="line-numbers"> 161 </span>
 <span class="line-numbers"> 162 </span>   <span class="Comment"><span class="Comment">#</span> Convenience version of a common use case of map: fetching a property.</span>
-<span class="line-numbers"> 163 </span> <span class="FunctionArgument">  _.pluck: obj, key </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 164 </span>     _.map(obj, (<span class="FunctionArgument">val </span><span class="Storage">=&gt;</span> val[key]))
+<span class="line-numbers"> 163 </span>   <span class="FunctionName">_.pluck</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj, key</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 164 </span>     _.map(obj, (<span class="FunctionArgument">(</span><span class="FunctionArgument">val</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> val[key]))
 <span class="line-numbers"> 165 </span>
 <span class="line-numbers"> 166 </span>
 <span class="line-numbers"> 167 </span>   <span class="Comment"><span class="Comment">#</span> Return the maximum item or (item-based computation).</span>
-<span class="line-numbers"> 168 </span> <span class="FunctionArgument">  _.max: obj, iterator, context </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 168 </span>   <span class="FunctionName">_.max</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj, iterator, context</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 169 </span>     <span class="Keyword">return</span> Math.max.apply(Math, obj) <span class="Keyword">if</span> <span class="Keyword">not</span> iterator <span class="Keyword">and</span> _.isArray(obj)
 <span class="line-numbers"> 170 </span>     <span class="FunctionName">result</span><span class="Keyword">:</span> {<span class="FunctionName">computed</span><span class="Keyword">:</span> <span class="Keyword">-</span><span class="BuiltInConstant">Infinity</span>}
-<span class="line-numbers"> 171 </span>     _.each(obj)<span class="FunctionArgument"> value, index, list </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 171 </span>     _.each obj, <span class="FunctionArgument">(</span><span class="FunctionArgument">value, index, list</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 172 </span>       <span class="FunctionName">computed</span><span class="Keyword">:</span> <span class="Keyword">if</span> iterator <span class="Keyword">then</span> iterator.call(context, value, index, list) <span class="Keyword">else</span> value
 <span class="line-numbers"> 173 </span>       computed <span class="Keyword">&gt;=</span> result.computed <span class="Keyword">and</span> (<span class="FunctionName">result</span><span class="Keyword">:</span> {<span class="FunctionName">value</span><span class="Keyword">:</span> value, <span class="FunctionName">computed</span><span class="Keyword">:</span> computed})
 <span class="line-numbers"> 174 </span>     result.value
 <span class="line-numbers"> 175 </span>
 <span class="line-numbers"> 176 </span>
 <span class="line-numbers"> 177 </span>   <span class="Comment"><span class="Comment">#</span> Return the minimum element (or element-based computation).</span>
-<span class="line-numbers"> 178 </span> <span class="FunctionArgument">  _.min: obj, iterator, context </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 178 </span>   <span class="FunctionName">_.min</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj, iterator, context</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 179 </span>     <span class="Keyword">return</span> Math.min.apply(Math, obj) <span class="Keyword">if</span> <span class="Keyword">not</span> iterator <span class="Keyword">and</span> _.isArray(obj)
 <span class="line-numbers"> 180 </span>     <span class="FunctionName">result</span><span class="Keyword">:</span> {<span class="FunctionName">computed</span><span class="Keyword">:</span> <span class="BuiltInConstant">Infinity</span>}
-<span class="line-numbers"> 181 </span>     _.each(obj)<span class="FunctionArgument"> value, index, list </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 181 </span>     _.each obj, <span class="FunctionArgument">(</span><span class="FunctionArgument">value, index, list</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 182 </span>       <span class="FunctionName">computed</span><span class="Keyword">:</span> <span class="Keyword">if</span> iterator <span class="Keyword">then</span> iterator.call(context, value, index, list) <span class="Keyword">else</span> value
 <span class="line-numbers"> 183 </span>       computed <span class="Keyword">&lt;</span> result.computed <span class="Keyword">and</span> (<span class="FunctionName">result</span><span class="Keyword">:</span> {<span class="FunctionName">value</span><span class="Keyword">:</span> value, <span class="FunctionName">computed</span><span class="Keyword">:</span> computed})
 <span class="line-numbers"> 184 </span>     result.value
 <span class="line-numbers"> 185 </span>
 <span class="line-numbers"> 186 </span>
 <span class="line-numbers"> 187 </span>   <span class="Comment"><span class="Comment">#</span> Sort the object's values by a criteria produced by an iterator.</span>
-<span class="line-numbers"> 188 </span> <span class="FunctionArgument">  _.sortBy: obj, iterator, context </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 189 </span>     _.pluck(((_.map(obj)<span class="FunctionArgument"> value, index, list </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 188 </span>   <span class="FunctionName">_.sortBy</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj, iterator, context</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 189 </span>     _.pluck(((_.map obj, <span class="FunctionArgument">(</span><span class="FunctionArgument">value, index, list</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 190 </span>       {<span class="FunctionName">value</span><span class="Keyword">:</span> value, <span class="FunctionName">criteria</span><span class="Keyword">:</span> iterator.call(context, value, index, list)}
-<span class="line-numbers"> 191 </span>     ).sort()<span class="FunctionArgument"> left, right </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 191 </span>     ).sort(<span class="FunctionArgument">(</span><span class="FunctionArgument">left, right</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 192 </span>       <span class="FunctionName">a</span><span class="Keyword">:</span> left.criteria; <span class="FunctionName">b</span><span class="Keyword">:</span> right.criteria
 <span class="line-numbers"> 193 </span>       <span class="Keyword">if</span> a <span class="Keyword">&lt;</span> b <span class="Keyword">then</span> <span class="Keyword">-</span><span class="Number">1</span> <span class="Keyword">else</span> <span class="Keyword">if</span> a <span class="Keyword">&gt;</span> b <span class="Keyword">then</span> <span class="Number">1</span> <span class="Keyword">else</span> <span class="Number">0</span>
-<span class="line-numbers"> 194 </span>     ), <span class="String"><span class="String">'</span>value<span class="String">'</span></span>)
+<span class="line-numbers"> 194 </span>     )), <span class="String"><span class="String">'</span>value<span class="String">'</span></span>)
 <span class="line-numbers"> 195 </span>
 <span class="line-numbers"> 196 </span>
 <span class="line-numbers"> 197 </span>   <span class="Comment"><span class="Comment">#</span> Use a comparator function to figure out at what index an object should</span>
 <span class="line-numbers"> 198 </span>   <span class="Comment"><span class="Comment">#</span> be inserted so as to maintain order. Uses binary search.</span>
-<span class="line-numbers"> 199 </span> <span class="FunctionArgument">  _.sortedIndex: array, obj, iterator </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 199 </span>   <span class="FunctionName">_.sortedIndex</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">array, obj, iterator</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 200 </span>     iterator <span class="Keyword">||</span><span class="Keyword">=</span> _.identity
 <span class="line-numbers"> 201 </span>     <span class="FunctionName">low</span><span class="Keyword">:</span> <span class="Number">0</span>; <span class="FunctionName">high</span><span class="Keyword">:</span> array.length
 <span class="line-numbers"> 202 </span>     <span class="Keyword">while</span> low <span class="Keyword">&lt;</span> high
@@ -225,7 +225,7 @@
 <span class="line-numbers"> 206 </span>
 <span class="line-numbers"> 207 </span>
 <span class="line-numbers"> 208 </span>   <span class="Comment"><span class="Comment">#</span> Convert anything iterable into a real, live array.</span>
-<span class="line-numbers"> 209 </span> <span class="FunctionArgument">  _.toArray: iterable </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 209 </span>   <span class="FunctionName">_.toArray</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">iterable</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 210 </span>     <span class="Keyword">return</span> []                   <span class="Keyword">if</span> (<span class="Keyword">!</span>iterable)
 <span class="line-numbers"> 211 </span>     <span class="Keyword">return</span> iterable.toArray()   <span class="Keyword">if</span> (iterable.toArray)
 <span class="line-numbers"> 212 </span>     <span class="Keyword">return</span> iterable             <span class="Keyword">if</span> (_.isArray(iterable))
@@ -234,7 +234,7 @@
 <span class="line-numbers"> 215 </span>
 <span class="line-numbers"> 216 </span>
 <span class="line-numbers"> 217 </span>   <span class="Comment"><span class="Comment">#</span> Return the number of elements in an object.</span>
-<span class="line-numbers"> 218 </span> <span class="FunctionArgument">  _.size: obj </span><span class="Storage">=&gt;</span> _.toArray(obj).length
+<span class="line-numbers"> 218 </span>   <span class="FunctionName">_.size</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> _.toArray(obj).length
 <span class="line-numbers"> 219 </span>
 <span class="line-numbers"> 220 </span>
 <span class="line-numbers"> 221 </span>   <span class="Comment"><span class="Comment">#</span> -------------------------- Array Functions: ------------------------------</span>
@@ -242,7 +242,7 @@
 <span class="line-numbers"> 223 </span>   <span class="Comment"><span class="Comment">#</span> Get the first element of an array. Passing &quot;n&quot; will return the first N</span>
 <span class="line-numbers"> 224 </span>   <span class="Comment"><span class="Comment">#</span> values in the array. Aliased as &quot;head&quot;. The &quot;guard&quot; check allows it to work</span>
 <span class="line-numbers"> 225 </span>   <span class="Comment"><span class="Comment">#</span> with _.map.</span>
-<span class="line-numbers"> 226 </span> <span class="FunctionArgument">  _.first: array, n, guard </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 226 </span>   <span class="FunctionName">_.first</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">array, n, guard</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 227 </span>     <span class="Keyword">if</span> n <span class="Keyword">and</span> <span class="Keyword">not</span> guard <span class="Keyword">then</span> slice.call(array, <span class="Number">0</span>, n) <span class="Keyword">else</span> array[<span class="Number">0</span>]
 <span class="line-numbers"> 228 </span>
 <span class="line-numbers"> 229 </span>
@@ -250,35 +250,35 @@
 <span class="line-numbers"> 231 </span>   <span class="Comment"><span class="Comment">#</span> Especially useful on the arguments object. Passing an &quot;index&quot; will return</span>
 <span class="line-numbers"> 232 </span>   <span class="Comment"><span class="Comment">#</span> the rest of the values in the array from that index onward. The &quot;guard&quot;</span>
 <span class="line-numbers"> 233 </span>   <span class="Comment"><span class="Comment">#</span> check allows it to work with _.map.</span>
-<span class="line-numbers"> 234 </span> <span class="FunctionArgument">  _.rest: array, index, guard </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 234 </span>   <span class="FunctionName">_.rest</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">array, index, guard</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 235 </span>     slice.call(array, <span class="Keyword">if</span> _.isUndefined(index) <span class="Keyword">or</span> guard <span class="Keyword">then</span> <span class="Number">1</span> <span class="Keyword">else</span> index)
 <span class="line-numbers"> 236 </span>
 <span class="line-numbers"> 237 </span>
 <span class="line-numbers"> 238 </span>   <span class="Comment"><span class="Comment">#</span> Get the last element of an array.</span>
-<span class="line-numbers"> 239 </span> <span class="FunctionArgument">  _.last: array </span><span class="Storage">=&gt;</span> array[array.length <span class="Keyword">-</span> <span class="Number">1</span>]
+<span class="line-numbers"> 239 </span>   <span class="FunctionName">_.last</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">array</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> array[array.length <span class="Keyword">-</span> <span class="Number">1</span>]
 <span class="line-numbers"> 240 </span>
 <span class="line-numbers"> 241 </span>
 <span class="line-numbers"> 242 </span>   <span class="Comment"><span class="Comment">#</span> Trim out all falsy values from an array.</span>
-<span class="line-numbers"> 243 </span> <span class="FunctionArgument">  _.compact: array </span><span class="Storage">=&gt;</span> array[i] <span class="Keyword">for</span> i <span class="Keyword">in</span> [<span class="Number">0</span>...array.length] <span class="Keyword">when</span> array[i]
+<span class="line-numbers"> 243 </span>   <span class="FunctionName">_.compact</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">array</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> array[i] <span class="Keyword">for</span> i <span class="Keyword">in</span> [<span class="Number">0</span>...array.length] <span class="Keyword">when</span> array[i]
 <span class="line-numbers"> 244 </span>
 <span class="line-numbers"> 245 </span>
 <span class="line-numbers"> 246 </span>   <span class="Comment"><span class="Comment">#</span> Return a completely flattened version of an array.</span>
-<span class="line-numbers"> 247 </span> <span class="FunctionArgument">  _.flatten: array </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 248 </span>     _.reduce(array, [])<span class="FunctionArgument"> memo, value </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 247 </span>   <span class="FunctionName">_.flatten</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">array</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 248 </span>     _.reduce array, [], <span class="FunctionArgument">(</span><span class="FunctionArgument">memo, value</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 249 </span>       <span class="Keyword">return</span> memo.concat(_.flatten(value)) <span class="Keyword">if</span> _.isArray(value)
 <span class="line-numbers"> 250 </span>       memo.push(value)
 <span class="line-numbers"> 251 </span>       memo
 <span class="line-numbers"> 252 </span>
 <span class="line-numbers"> 253 </span>
 <span class="line-numbers"> 254 </span>   <span class="Comment"><span class="Comment">#</span> Return a version of the array that does not contain the specified value(s).</span>
-<span class="line-numbers"> 255 </span> <span class="FunctionArgument">  _.without: array </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 255 </span>   <span class="FunctionName">_.without</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">array</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 256 </span>     <span class="FunctionName">values</span><span class="Keyword">:</span> _.rest(arguments)
 <span class="line-numbers"> 257 </span>     val <span class="Keyword">for</span> val <span class="Keyword">in</span> _.toArray(array) <span class="Keyword">when</span> <span class="Keyword">not</span> _.include(values, val)
 <span class="line-numbers"> 258 </span>
 <span class="line-numbers"> 259 </span>
 <span class="line-numbers"> 260 </span>   <span class="Comment"><span class="Comment">#</span> Produce a duplicate-free version of the array. If the array has already</span>
 <span class="line-numbers"> 261 </span>   <span class="Comment"><span class="Comment">#</span> been sorted, you have the option of using a faster algorithm.</span>
-<span class="line-numbers"> 262 </span> <span class="FunctionArgument">  _.uniq: array, isSorted </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 262 </span>   <span class="FunctionName">_.uniq</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">array, isSorted</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 263 </span>     <span class="FunctionName">memo</span><span class="Keyword">:</span> []
 <span class="line-numbers"> 264 </span>     <span class="Keyword">for</span> el, i <span class="Keyword">in</span> _.toArray(array)
 <span class="line-numbers"> 265 </span>       memo.push(el) <span class="Keyword">if</span> i <span class="Keyword">is</span> <span class="Number">0</span> <span class="Keyword">||</span> (<span class="Keyword">if</span> isSorted <span class="Keyword">is</span> <span class="BuiltInConstant">true</span> <span class="Keyword">then</span> _.last(memo) <span class="Keyword">isnt</span> el <span class="Keyword">else</span> <span class="Keyword">not</span> _.include(memo, el))
@@ -287,330 +287,339 @@
 <span class="line-numbers"> 268 </span>
 <span class="line-numbers"> 269 </span>   <span class="Comment"><span class="Comment">#</span> Produce an array that contains every item shared between all the</span>
 <span class="line-numbers"> 270 </span>   <span class="Comment"><span class="Comment">#</span> passed-in arrays.</span>
-<span class="line-numbers"> 271 </span> <span class="FunctionArgument">  _.intersect: array </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 271 </span>   <span class="FunctionName">_.intersect</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">array</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 272 </span>     <span class="FunctionName">rest</span><span class="Keyword">:</span> _.rest(arguments)
-<span class="line-numbers"> 273 </span>     _.select(_.uniq(array))<span class="FunctionArgument"> item </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 274 </span>       _.all(rest)<span class="FunctionArgument"> other </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 273 </span>     _.select _.uniq(array), <span class="FunctionArgument">(</span><span class="FunctionArgument">item</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 274 </span>       _.all rest, <span class="FunctionArgument">(</span><span class="FunctionArgument">other</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 275 </span>         _.indexOf(other, item) <span class="Keyword">&gt;=</span> <span class="Number">0</span>
 <span class="line-numbers"> 276 </span>
 <span class="line-numbers"> 277 </span>
 <span class="line-numbers"> 278 </span>   <span class="Comment"><span class="Comment">#</span> Zip together multiple lists into a single array -- elements that share</span>
 <span class="line-numbers"> 279 </span>   <span class="Comment"><span class="Comment">#</span> an index go together.</span>
-<span class="line-numbers"> 280 </span> <span class="FunctionArgument">  _.zip: </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 281 </span>     <span class="FunctionName">args</span><span class="Keyword">:</span>       _.toArray(arguments)
-<span class="line-numbers"> 282 </span>     <span class="FunctionName">length</span><span class="Keyword">:</span>     _.max(_.pluck(args, <span class="String"><span class="String">'</span>length<span class="String">'</span></span>))
-<span class="line-numbers"> 283 </span>     <span class="FunctionName">results</span><span class="Keyword">:</span>    <span class="Keyword">new</span> <span class="TypeName">Array</span>(length)
-<span class="line-numbers"> 284 </span>     <span class="Keyword">for</span> i <span class="Keyword">in</span> [<span class="Number">0</span>...length]
-<span class="line-numbers"> 285 </span>       results[i]<span class="Keyword">:</span> _.pluck(args, String(i))
-<span class="line-numbers"> 286 </span>     results
+<span class="line-numbers"> 280 </span>   <span class="FunctionName">_.zip</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 281 </span>     <span class="FunctionName">length</span><span class="Keyword">:</span>     _.max(_.pluck(arguments, <span class="String"><span class="String">'</span>length<span class="String">'</span></span>))
+<span class="line-numbers"> 282 </span>     <span class="FunctionName">results</span><span class="Keyword">:</span>    <span class="Keyword">new</span> <span class="TypeName">Array</span>(length)
+<span class="line-numbers"> 283 </span>     <span class="Keyword">for</span> i <span class="Keyword">in</span> [<span class="Number">0</span>...length]
+<span class="line-numbers"> 284 </span>       results[i]<span class="Keyword">:</span> _.pluck(arguments, String(i))
+<span class="line-numbers"> 285 </span>     results
+<span class="line-numbers"> 286 </span>
 <span class="line-numbers"> 287 </span>
-<span class="line-numbers"> 288 </span>
-<span class="line-numbers"> 289 </span>   <span class="Comment"><span class="Comment">#</span> If the browser doesn't supply us with indexOf (I'm looking at you, MSIE),</span>
-<span class="line-numbers"> 290 </span>   <span class="Comment"><span class="Comment">#</span> we need this function. Return the position of the first occurence of an</span>
-<span class="line-numbers"> 291 </span>   <span class="Comment"><span class="Comment">#</span> item in an array, or -1 if the item is not included in the array.</span>
-<span class="line-numbers"> 292 </span> <span class="FunctionArgument">  _.indexOf: array, item </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 293 </span>     <span class="Keyword">return</span> array.indexOf(item) <span class="Keyword">if</span> array.indexOf
-<span class="line-numbers"> 294 </span>     <span class="FunctionName">i</span><span class="Keyword">:</span> <span class="Number">0</span>; <span class="FunctionName">l</span><span class="Keyword">:</span> array.length
-<span class="line-numbers"> 295 </span>     <span class="Keyword">while</span> l <span class="Keyword">-</span> i
-<span class="line-numbers"> 296 </span>       <span class="Keyword">if</span> array[i] <span class="Keyword">is</span> item <span class="Keyword">then</span> <span class="Keyword">return</span> i <span class="Keyword">else</span> i<span class="Keyword">++</span>
-<span class="line-numbers"> 297 </span>     <span class="Keyword">-</span><span class="Number">1</span>
+<span class="line-numbers"> 288 </span>   <span class="Comment"><span class="Comment">#</span> If the browser doesn't supply us with indexOf (I'm looking at you, MSIE),</span>
+<span class="line-numbers"> 289 </span>   <span class="Comment"><span class="Comment">#</span> we need this function. Return the position of the first occurence of an</span>
+<span class="line-numbers"> 290 </span>   <span class="Comment"><span class="Comment">#</span> item in an array, or -1 if the item is not included in the array.</span>
+<span class="line-numbers"> 291 </span>   <span class="FunctionName">_.indexOf</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">array, item</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 292 </span>     <span class="Keyword">return</span> array.indexOf(item) <span class="Keyword">if</span> array.indexOf
+<span class="line-numbers"> 293 </span>     <span class="FunctionName">i</span><span class="Keyword">:</span> <span class="Number">0</span>; <span class="FunctionName">l</span><span class="Keyword">:</span> array.length
+<span class="line-numbers"> 294 </span>     <span class="Keyword">while</span> l <span class="Keyword">-</span> i
+<span class="line-numbers"> 295 </span>       <span class="Keyword">if</span> array[i] <span class="Keyword">is</span> item <span class="Keyword">then</span> <span class="Keyword">return</span> i <span class="Keyword">else</span> i<span class="Keyword">++</span>
+<span class="line-numbers"> 296 </span>     <span class="Keyword">-</span><span class="Number">1</span>
+<span class="line-numbers"> 297 </span>
 <span class="line-numbers"> 298 </span>
-<span class="line-numbers"> 299 </span>
-<span class="line-numbers"> 300 </span>   <span class="Comment"><span class="Comment">#</span> Provide JavaScript 1.6's lastIndexOf, delegating to the native function,</span>
-<span class="line-numbers"> 301 </span>   <span class="Comment"><span class="Comment">#</span> if possible.</span>
-<span class="line-numbers"> 302 </span> <span class="FunctionArgument">  _.lastIndexOf: array, item </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 303 </span>     <span class="Keyword">return</span> array.lastIndexOf(item) <span class="Keyword">if</span> array.lastIndexOf
-<span class="line-numbers"> 304 </span>     <span class="FunctionName">i</span><span class="Keyword">:</span> array.length
-<span class="line-numbers"> 305 </span>     <span class="Keyword">while</span> i
-<span class="line-numbers"> 306 </span>       <span class="Keyword">if</span> array[i] <span class="Keyword">is</span> item <span class="Keyword">then</span> <span class="Keyword">return</span> i <span class="Keyword">else</span> i<span class="Keyword">--</span>
-<span class="line-numbers"> 307 </span>     <span class="Keyword">-</span><span class="Number">1</span>
+<span class="line-numbers"> 299 </span>   <span class="Comment"><span class="Comment">#</span> Provide JavaScript 1.6's lastIndexOf, delegating to the native function,</span>
+<span class="line-numbers"> 300 </span>   <span class="Comment"><span class="Comment">#</span> if possible.</span>
+<span class="line-numbers"> 301 </span>   <span class="FunctionName">_.lastIndexOf</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">array, item</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 302 </span>     <span class="Keyword">return</span> array.lastIndexOf(item) <span class="Keyword">if</span> array.lastIndexOf
+<span class="line-numbers"> 303 </span>     <span class="FunctionName">i</span><span class="Keyword">:</span> array.length
+<span class="line-numbers"> 304 </span>     <span class="Keyword">while</span> i
+<span class="line-numbers"> 305 </span>       <span class="Keyword">if</span> array[i] <span class="Keyword">is</span> item <span class="Keyword">then</span> <span class="Keyword">return</span> i <span class="Keyword">else</span> i<span class="Keyword">--</span>
+<span class="line-numbers"> 306 </span>     <span class="Keyword">-</span><span class="Number">1</span>
+<span class="line-numbers"> 307 </span>
 <span class="line-numbers"> 308 </span>
-<span class="line-numbers"> 309 </span>
-<span class="line-numbers"> 310 </span>   <span class="Comment"><span class="Comment">#</span> Generate an integer Array containing an arithmetic progression. A port of</span>
-<span class="line-numbers"> 311 </span>   <span class="Comment"><span class="Comment">#</span> the native Python range() function. See:</span>
-<span class="line-numbers"> 312 </span>   <span class="Comment"><span class="Comment">#</span> http://docs.python.org/library/functions.html#range</span>
-<span class="line-numbers"> 313 </span> <span class="FunctionArgument">  _.range: start, stop, step </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 314 </span>     <span class="FunctionName">a</span><span class="Keyword">:</span>        _.toArray(arguments)
-<span class="line-numbers"> 315 </span>     <span class="FunctionName">solo</span><span class="Keyword">:</span>     a.length <span class="Keyword">&lt;=</span> <span class="Number">1</span>
-<span class="line-numbers"> 316 </span>     <span class="FunctionName">i</span><span class="Keyword">:</span> <span class="FunctionName">start</span><span class="Keyword">:</span> <span class="Keyword">if</span> solo <span class="Keyword">then</span> <span class="Number">0</span> <span class="Keyword">else</span> a[<span class="Number">0</span>];
-<span class="line-numbers"> 317 </span>     <span class="FunctionName">stop</span><span class="Keyword">:</span>     <span class="Keyword">if</span> solo <span class="Keyword">then</span> a[<span class="Number">0</span>] <span class="Keyword">else</span> a[<span class="Number">1</span>];
-<span class="line-numbers"> 318 </span>     <span class="FunctionName">step</span><span class="Keyword">:</span>     a[<span class="Number">2</span>] <span class="Keyword">or</span> <span class="Number">1</span>
-<span class="line-numbers"> 319 </span>     <span class="FunctionName">len</span><span class="Keyword">:</span>      Math.ceil((stop <span class="Keyword">-</span> start) <span class="Keyword">/</span> step)
-<span class="line-numbers"> 320 </span>     <span class="Keyword">return</span> [] <span class="Keyword">if</span> len <span class="Keyword">&lt;=</span> <span class="Number">0</span>
-<span class="line-numbers"> 321 </span>     <span class="FunctionName">range</span><span class="Keyword">:</span>    <span class="Keyword">new</span> <span class="TypeName">Array</span>(len)
-<span class="line-numbers"> 322 </span>     <span class="FunctionName">idx</span><span class="Keyword">:</span>      <span class="Number">0</span>
-<span class="line-numbers"> 323 </span>     <span class="Keyword">while</span> <span class="BuiltInConstant">true</span>
-<span class="line-numbers"> 324 </span>       <span class="Keyword">return</span> range <span class="Keyword">if</span> (<span class="Keyword">if</span> step <span class="Keyword">&gt;</span> <span class="Number">0</span> <span class="Keyword">then</span> i <span class="Keyword">-</span> stop <span class="Keyword">else</span> stop <span class="Keyword">-</span> i) <span class="Keyword">&gt;=</span> <span class="Number">0</span>
-<span class="line-numbers"> 325 </span>       range[idx]<span class="Keyword">:</span> i
-<span class="line-numbers"> 326 </span>       idx<span class="Keyword">++</span>
-<span class="line-numbers"> 327 </span>       i<span class="Keyword">+</span><span class="Keyword">=</span> step
+<span class="line-numbers"> 309 </span>   <span class="Comment"><span class="Comment">#</span> Generate an integer Array containing an arithmetic progression. A port of</span>
+<span class="line-numbers"> 310 </span>   <span class="Comment"><span class="Comment">#</span> the native Python range() function. See:</span>
+<span class="line-numbers"> 311 </span>   <span class="Comment"><span class="Comment">#</span> http://docs.python.org/library/functions.html#range</span>
+<span class="line-numbers"> 312 </span>   <span class="FunctionName">_.range</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">start, stop, step</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 313 </span>     <span class="FunctionName">a</span><span class="Keyword">:</span>        arguments
+<span class="line-numbers"> 314 </span>     <span class="FunctionName">solo</span><span class="Keyword">:</span>     a.length <span class="Keyword">&lt;=</span> <span class="Number">1</span>
+<span class="line-numbers"> 315 </span>     <span class="FunctionName">i</span><span class="Keyword">:</span> <span class="FunctionName">start</span><span class="Keyword">:</span> <span class="Keyword">if</span> solo <span class="Keyword">then</span> <span class="Number">0</span> <span class="Keyword">else</span> a[<span class="Number">0</span>];
+<span class="line-numbers"> 316 </span>     <span class="FunctionName">stop</span><span class="Keyword">:</span>     <span class="Keyword">if</span> solo <span class="Keyword">then</span> a[<span class="Number">0</span>] <span class="Keyword">else</span> a[<span class="Number">1</span>];
+<span class="line-numbers"> 317 </span>     <span class="FunctionName">step</span><span class="Keyword">:</span>     a[<span class="Number">2</span>] <span class="Keyword">or</span> <span class="Number">1</span>
+<span class="line-numbers"> 318 </span>     <span class="FunctionName">len</span><span class="Keyword">:</span>      Math.ceil((stop <span class="Keyword">-</span> start) <span class="Keyword">/</span> step)
+<span class="line-numbers"> 319 </span>     <span class="Keyword">return</span> [] <span class="Keyword">if</span> len <span class="Keyword">&lt;=</span> <span class="Number">0</span>
+<span class="line-numbers"> 320 </span>     <span class="FunctionName">range</span><span class="Keyword">:</span>    <span class="Keyword">new</span> <span class="TypeName">Array</span>(len)
+<span class="line-numbers"> 321 </span>     <span class="FunctionName">idx</span><span class="Keyword">:</span>      <span class="Number">0</span>
+<span class="line-numbers"> 322 </span>     <span class="Keyword">while</span> <span class="BuiltInConstant">true</span>
+<span class="line-numbers"> 323 </span>       <span class="Keyword">return</span> range <span class="Keyword">if</span> (<span class="Keyword">if</span> step <span class="Keyword">&gt;</span> <span class="Number">0</span> <span class="Keyword">then</span> i <span class="Keyword">-</span> stop <span class="Keyword">else</span> stop <span class="Keyword">-</span> i) <span class="Keyword">&gt;=</span> <span class="Number">0</span>
+<span class="line-numbers"> 324 </span>       range[idx]<span class="Keyword">:</span> i
+<span class="line-numbers"> 325 </span>       idx<span class="Keyword">++</span>
+<span class="line-numbers"> 326 </span>       i<span class="Keyword">+</span><span class="Keyword">=</span> step
+<span class="line-numbers"> 327 </span>
 <span class="line-numbers"> 328 </span>
-<span class="line-numbers"> 329 </span>
-<span class="line-numbers"> 330 </span>   <span class="Comment"><span class="Comment">#</span> ----------------------- Function Functions: -----------------------------</span>
-<span class="line-numbers"> 331 </span>
-<span class="line-numbers"> 332 </span>   <span class="Comment"><span class="Comment">#</span> Create a function bound to a given object (assigning 'this', and arguments,</span>
-<span class="line-numbers"> 333 </span>   <span class="Comment"><span class="Comment">#</span> optionally). Binding with arguments is also known as 'curry'.</span>
-<span class="line-numbers"> 334 </span> <span class="FunctionArgument">  _.bind: func, obj </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 335 </span>     <span class="FunctionName">args</span><span class="Keyword">:</span> _.rest(arguments, <span class="Number">2</span>)
-<span class="line-numbers"> 336 </span> <span class="FunctionArgument">    </span><span class="Storage">=&gt;</span> func.apply(obj <span class="Keyword">or</span> root, args.concat(_.toArray(arguments)))
+<span class="line-numbers"> 329 </span>   <span class="Comment"><span class="Comment">#</span> ----------------------- Function Functions: -----------------------------</span>
+<span class="line-numbers"> 330 </span>
+<span class="line-numbers"> 331 </span>   <span class="Comment"><span class="Comment">#</span> Create a function bound to a given object (assigning 'this', and arguments,</span>
+<span class="line-numbers"> 332 </span>   <span class="Comment"><span class="Comment">#</span> optionally). Binding with arguments is also known as 'curry'.</span>
+<span class="line-numbers"> 333 </span>   <span class="FunctionName">_.bind</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">func, obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 334 </span>     <span class="FunctionName">args</span><span class="Keyword">:</span> _.rest(arguments, <span class="Number">2</span>)
+<span class="line-numbers"> 335 </span>     <span class="Storage">-&gt;</span> func.apply(obj <span class="Keyword">or</span> root, args.concat(arguments))
+<span class="line-numbers"> 336 </span>
 <span class="line-numbers"> 337 </span>
-<span class="line-numbers"> 338 </span>
-<span class="line-numbers"> 339 </span>   <span class="Comment"><span class="Comment">#</span> Bind all of an object's methods to that object. Useful for ensuring that</span>
-<span class="line-numbers"> 340 </span>   <span class="Comment"><span class="Comment">#</span> all callbacks defined on an object belong to it.</span>
-<span class="line-numbers"> 341 </span> <span class="FunctionArgument">  _.bindAll: obj </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 342 </span>     <span class="FunctionName">funcs</span><span class="Keyword">:</span> <span class="Keyword">if</span> arguments.length <span class="Keyword">&gt;</span> <span class="Number">1</span> <span class="Keyword">then</span> _.rest(arguments) <span class="Keyword">else</span> _.functions(obj)
-<span class="line-numbers"> 343 </span>     _.each(funcs, (<span class="FunctionArgument">f </span><span class="Storage">=&gt;</span> obj[f]<span class="Keyword">:</span> _.bind(obj[f], obj)))
-<span class="line-numbers"> 344 </span>     obj
+<span class="line-numbers"> 338 </span>   <span class="Comment"><span class="Comment">#</span> Bind all of an object's methods to that object. Useful for ensuring that</span>
+<span class="line-numbers"> 339 </span>   <span class="Comment"><span class="Comment">#</span> all callbacks defined on an object belong to it.</span>
+<span class="line-numbers"> 340 </span>   <span class="FunctionName">_.bindAll</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 341 </span>     <span class="FunctionName">funcs</span><span class="Keyword">:</span> <span class="Keyword">if</span> arguments.length <span class="Keyword">&gt;</span> <span class="Number">1</span> <span class="Keyword">then</span> _.rest(arguments) <span class="Keyword">else</span> _.functions(obj)
+<span class="line-numbers"> 342 </span>     _.each(funcs, <span class="FunctionArgument">(</span><span class="FunctionArgument">f</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> obj[f]<span class="Keyword">:</span> _.bind(obj[f], obj))
+<span class="line-numbers"> 343 </span>     obj
+<span class="line-numbers"> 344 </span>
 <span class="line-numbers"> 345 </span>
-<span class="line-numbers"> 346 </span>
-<span class="line-numbers"> 347 </span>   <span class="Comment"><span class="Comment">#</span> Delays a function for the given number of milliseconds, and then calls</span>
-<span class="line-numbers"> 348 </span>   <span class="Comment"><span class="Comment">#</span> it with the arguments supplied.</span>
-<span class="line-numbers"> 349 </span> <span class="FunctionArgument">  _.delay: func, wait </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 350 </span>     <span class="FunctionName">args</span><span class="Keyword">:</span> _.rest(arguments, <span class="Number">2</span>)
-<span class="line-numbers"> 351 </span>     setTimeout((<span class="Storage">=&gt;</span> func.apply(func, args)), wait)
+<span class="line-numbers"> 346 </span>   <span class="Comment"><span class="Comment">#</span> Delays a function for the given number of milliseconds, and then calls</span>
+<span class="line-numbers"> 347 </span>   <span class="Comment"><span class="Comment">#</span> it with the arguments supplied.</span>
+<span class="line-numbers"> 348 </span>   <span class="FunctionName">_.delay</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">func, wait</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 349 </span>     <span class="FunctionName">args</span><span class="Keyword">:</span> _.rest(arguments, <span class="Number">2</span>)
+<span class="line-numbers"> 350 </span>     setTimeout((<span class="Storage">-&gt;</span> func.apply(func, args)), wait)
+<span class="line-numbers"> 351 </span>
 <span class="line-numbers"> 352 </span>
-<span class="line-numbers"> 353 </span>
-<span class="line-numbers"> 354 </span>   <span class="Comment"><span class="Comment">#</span> Defers a function, scheduling it to run after the current call stack has</span>
-<span class="line-numbers"> 355 </span>   <span class="Comment"><span class="Comment">#</span> cleared.</span>
-<span class="line-numbers"> 356 </span> <span class="FunctionArgument">  _.defer: func </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 357 </span>     _.delay.apply(_, [func, <span class="Number">1</span>].concat(_.rest(arguments)))
+<span class="line-numbers"> 353 </span>   <span class="Comment"><span class="Comment">#</span> Defers a function, scheduling it to run after the current call stack has</span>
+<span class="line-numbers"> 354 </span>   <span class="Comment"><span class="Comment">#</span> cleared.</span>
+<span class="line-numbers"> 355 </span>   <span class="FunctionName">_.defer</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">func</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 356 </span>     _.delay.apply(_, [func, <span class="Number">1</span>].concat(_.rest(arguments)))
+<span class="line-numbers"> 357 </span>
 <span class="line-numbers"> 358 </span>
-<span class="line-numbers"> 359 </span>
-<span class="line-numbers"> 360 </span>   <span class="Comment"><span class="Comment">#</span> Returns the first function passed as an argument to the second,</span>
-<span class="line-numbers"> 361 </span>   <span class="Comment"><span class="Comment">#</span> allowing you to adjust arguments, run code before and after, and</span>
-<span class="line-numbers"> 362 </span>   <span class="Comment"><span class="Comment">#</span> conditionally execute the original function.</span>
-<span class="line-numbers"> 363 </span> <span class="FunctionArgument">  _.wrap: func, wrapper </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 364 </span> <span class="FunctionArgument">    </span><span class="Storage">=&gt;</span> wrapper.apply(wrapper, [func].concat(_.toArray(arguments)))
+<span class="line-numbers"> 359 </span>   <span class="Comment"><span class="Comment">#</span> Returns the first function passed as an argument to the second,</span>
+<span class="line-numbers"> 360 </span>   <span class="Comment"><span class="Comment">#</span> allowing you to adjust arguments, run code before and after, and</span>
+<span class="line-numbers"> 361 </span>   <span class="Comment"><span class="Comment">#</span> conditionally execute the original function.</span>
+<span class="line-numbers"> 362 </span>   <span class="FunctionName">_.wrap</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">func, wrapper</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 363 </span>     <span class="Storage">-&gt;</span> wrapper.apply(wrapper, [func].concat(arguments))
+<span class="line-numbers"> 364 </span>
 <span class="line-numbers"> 365 </span>
-<span class="line-numbers"> 366 </span>
-<span class="line-numbers"> 367 </span>   <span class="Comment"><span class="Comment">#</span> Returns a function that is the composition of a list of functions, each</span>
-<span class="line-numbers"> 368 </span>   <span class="Comment"><span class="Comment">#</span> consuming the return value of the function that follows.</span>
-<span class="line-numbers"> 369 </span> <span class="FunctionArgument">  _.compose: </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 370 </span>     <span class="FunctionName">funcs</span><span class="Keyword">:</span> _.toArray(arguments)
-<span class="line-numbers"> 371 </span> <span class="FunctionArgument">    </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 372 </span>       <span class="FunctionName">args</span><span class="Keyword">:</span> _.toArray(arguments)
-<span class="line-numbers"> 373 </span>       <span class="Keyword">for</span> i <span class="Keyword">in</span> [(funcs.length <span class="Keyword">-</span> <span class="Number">1</span>)..<span class="Number">0</span>]
-<span class="line-numbers"> 374 </span>         <span class="FunctionName">args</span><span class="Keyword">:</span> [funcs[i].apply(<span class="Variable">this</span>, args)]
-<span class="line-numbers"> 375 </span>       args[<span class="Number">0</span>]
+<span class="line-numbers"> 366 </span>   <span class="Comment"><span class="Comment">#</span> Returns a function that is the composition of a list of functions, each</span>
+<span class="line-numbers"> 367 </span>   <span class="Comment"><span class="Comment">#</span> consuming the return value of the function that follows.</span>
+<span class="line-numbers"> 368 </span>   <span class="FunctionName">_.compose</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 369 </span>     <span class="FunctionName">funcs</span><span class="Keyword">:</span> arguments
+<span class="line-numbers"> 370 </span>     <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 371 </span>       <span class="FunctionName">args</span><span class="Keyword">:</span> arguments
+<span class="line-numbers"> 372 </span>       <span class="Keyword">for</span> i <span class="Keyword">in</span> [(funcs.length <span class="Keyword">-</span> <span class="Number">1</span>)..<span class="Number">0</span>]
+<span class="line-numbers"> 373 </span>         <span class="FunctionName">args</span><span class="Keyword">:</span> [funcs[i].apply(<span class="Variable">this</span>, args)]
+<span class="line-numbers"> 374 </span>       args[<span class="Number">0</span>]
+<span class="line-numbers"> 375 </span>
 <span class="line-numbers"> 376 </span>
-<span class="line-numbers"> 377 </span>
-<span class="line-numbers"> 378 </span>   <span class="Comment"><span class="Comment">#</span> ------------------------- Object Functions: ----------------------------</span>
-<span class="line-numbers"> 379 </span>
-<span class="line-numbers"> 380 </span>   <span class="Comment"><span class="Comment">#</span> Retrieve the names of an object's properties.</span>
-<span class="line-numbers"> 381 </span> <span class="FunctionArgument">  _.keys: obj </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 382 </span>     <span class="Keyword">return</span> _.range(<span class="Number">0</span>, obj.length) <span class="Keyword">if</span> _.isArray(obj)
-<span class="line-numbers"> 383 </span>     key <span class="Keyword">for</span> key, val <span class="Keyword">of</span> obj
+<span class="line-numbers"> 377 </span>   <span class="Comment"><span class="Comment">#</span> ------------------------- Object Functions: ----------------------------</span>
+<span class="line-numbers"> 378 </span>
+<span class="line-numbers"> 379 </span>   <span class="Comment"><span class="Comment">#</span> Retrieve the names of an object's properties.</span>
+<span class="line-numbers"> 380 </span>   <span class="FunctionName">_.keys</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 381 </span>     <span class="Keyword">return</span> _.range(<span class="Number">0</span>, obj.length) <span class="Keyword">if</span> _.isArray(obj)
+<span class="line-numbers"> 382 </span>     key <span class="Keyword">for</span> key, val <span class="Keyword">of</span> obj
+<span class="line-numbers"> 383 </span>
 <span class="line-numbers"> 384 </span>
-<span class="line-numbers"> 385 </span>
-<span class="line-numbers"> 386 </span>   <span class="Comment"><span class="Comment">#</span> Retrieve the values of an object's properties.</span>
-<span class="line-numbers"> 387 </span> <span class="FunctionArgument">  _.values: obj </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 388 </span>     _.map(obj, _.identity)
+<span class="line-numbers"> 385 </span>   <span class="Comment"><span class="Comment">#</span> Retrieve the values of an object's properties.</span>
+<span class="line-numbers"> 386 </span>   <span class="FunctionName">_.values</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 387 </span>     _.map(obj, _.identity)
+<span class="line-numbers"> 388 </span>
 <span class="line-numbers"> 389 </span>
-<span class="line-numbers"> 390 </span>
-<span class="line-numbers"> 391 </span>   <span class="Comment"><span class="Comment">#</span> Return a sorted list of the function names available in Underscore.</span>
-<span class="line-numbers"> 392 </span> <span class="FunctionArgument">  _.functions: obj </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 393 </span>     _.select(_.keys(obj)<span class="FunctionArgument">, key </span><span class="Storage">=&gt;</span> _.isFunction(obj[key])).sort()
+<span class="line-numbers"> 390 </span>   <span class="Comment"><span class="Comment">#</span> Return a sorted list of the function names available in Underscore.</span>
+<span class="line-numbers"> 391 </span>   <span class="FunctionName">_.functions</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 392 </span>     _.select(_.keys(obj), <span class="FunctionArgument">(</span><span class="FunctionArgument">key</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> _.isFunction(obj[key])).sort()
+<span class="line-numbers"> 393 </span>
 <span class="line-numbers"> 394 </span>
-<span class="line-numbers"> 395 </span>
-<span class="line-numbers"> 396 </span>   <span class="Comment"><span class="Comment">#</span> Extend a given object with all of the properties in a source object.</span>
-<span class="line-numbers"> 397 </span> <span class="FunctionArgument">  _.extend: destination, source </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 398 </span>     <span class="Keyword">for</span> key, val <span class="Keyword">of</span> source
-<span class="line-numbers"> 399 </span>       destination[key]<span class="Keyword">:</span> val
-<span class="line-numbers"> 400 </span>     destination
+<span class="line-numbers"> 395 </span>   <span class="Comment"><span class="Comment">#</span> Extend a given object with all of the properties in a source object.</span>
+<span class="line-numbers"> 396 </span>   <span class="FunctionName">_.extend</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">destination, source</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 397 </span>     <span class="Keyword">for</span> key, val <span class="Keyword">of</span> source
+<span class="line-numbers"> 398 </span>       destination[key]<span class="Keyword">:</span> val
+<span class="line-numbers"> 399 </span>     destination
+<span class="line-numbers"> 400 </span>
 <span class="line-numbers"> 401 </span>
-<span class="line-numbers"> 402 </span>
-<span class="line-numbers"> 403 </span>   <span class="Comment"><span class="Comment">#</span> Create a (shallow-cloned) duplicate of an object.</span>
-<span class="line-numbers"> 404 </span> <span class="FunctionArgument">  _.clone: obj </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 405 </span>     <span class="Keyword">return</span> obj.slice(<span class="Number">0</span>) <span class="Keyword">if</span> _.isArray(obj)
-<span class="line-numbers"> 406 </span>     _.extend({}, obj)
+<span class="line-numbers"> 402 </span>   <span class="Comment"><span class="Comment">#</span> Create a (shallow-cloned) duplicate of an object.</span>
+<span class="line-numbers"> 403 </span>   <span class="FunctionName">_.clone</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 404 </span>     <span class="Keyword">return</span> obj.slice(<span class="Number">0</span>) <span class="Keyword">if</span> _.isArray(obj)
+<span class="line-numbers"> 405 </span>     _.extend({}, obj)
+<span class="line-numbers"> 406 </span>
 <span class="line-numbers"> 407 </span>
-<span class="line-numbers"> 408 </span>
-<span class="line-numbers"> 409 </span>   <span class="Comment"><span class="Comment">#</span> Invokes interceptor with the obj, and then returns obj.</span>
-<span class="line-numbers"> 410 </span>   <span class="Comment"><span class="Comment">#</span> The primary purpose of this method is to &quot;tap into&quot; a method chain, in order to perform operations on intermediate results within the chain.</span>
-<span class="line-numbers"> 411 </span> <span class="FunctionArgument">  _.tap: obj, interceptor </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 412 </span>     interceptor(obj)
-<span class="line-numbers"> 413 </span>     obj
+<span class="line-numbers"> 408 </span>   <span class="Comment"><span class="Comment">#</span> Invokes interceptor with the obj, and then returns obj.</span>
+<span class="line-numbers"> 409 </span>   <span class="Comment"><span class="Comment">#</span> The primary purpose of this method is to &quot;tap into&quot; a method chain, in order to perform operations on intermediate results within the chain.</span>
+<span class="line-numbers"> 410 </span>   <span class="FunctionName">_.tap</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj, interceptor</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 411 </span>     interceptor(obj)
+<span class="line-numbers"> 412 </span>     obj
+<span class="line-numbers"> 413 </span>
 <span class="line-numbers"> 414 </span>
-<span class="line-numbers"> 415 </span>
-<span class="line-numbers"> 416 </span>   <span class="Comment"><span class="Comment">#</span> Perform a deep comparison to check if two objects are equal.</span>
-<span class="line-numbers"> 417 </span> <span class="FunctionArgument">  _.isEqual: a, b </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 418 </span>     <span class="Comment"><span class="Comment">#</span> Check object identity.</span>
-<span class="line-numbers"> 419 </span>     <span class="Keyword">return</span> <span class="BuiltInConstant">true</span> <span class="Keyword">if</span> a <span class="Keyword">is</span> b
-<span class="line-numbers"> 420 </span>     <span class="Comment"><span class="Comment">#</span> Different types?</span>
-<span class="line-numbers"> 421 </span>     <span class="FunctionName">atype</span><span class="Keyword">:</span> <span class="Keyword">typeof</span>(a); <span class="FunctionName">btype</span><span class="Keyword">:</span> <span class="Keyword">typeof</span>(b)
-<span class="line-numbers"> 422 </span>     <span class="Keyword">return</span> <span class="BuiltInConstant">false</span> <span class="Keyword">if</span> atype <span class="Keyword">isnt</span> btype
-<span class="line-numbers"> 423 </span>     <span class="Comment"><span class="Comment">#</span> Basic equality test (watch out for coercions).</span>
-<span class="line-numbers"> 424 </span>     <span class="Keyword">return</span> <span class="BuiltInConstant">true</span> <span class="Keyword">if</span> <span class="String"><span class="String">`</span>a == b<span class="String">`</span></span>
-<span class="line-numbers"> 425 </span>     <span class="Comment"><span class="Comment">#</span> One is falsy and the other truthy.</span>
-<span class="line-numbers"> 426 </span>     <span class="Keyword">return</span> <span class="BuiltInConstant">false</span> <span class="Keyword">if</span> (<span class="Keyword">!</span>a <span class="Keyword">and</span> b) <span class="Keyword">or</span> (a <span class="Keyword">and</span> <span class="Keyword">!</span>b)
-<span class="line-numbers"> 427 </span>     <span class="Comment"><span class="Comment">#</span> One of them implements an isEqual()?</span>
-<span class="line-numbers"> 428 </span>     <span class="Keyword">return</span> a.isEqual(b) <span class="Keyword">if</span> a.isEqual
-<span class="line-numbers"> 429 </span>     <span class="Comment"><span class="Comment">#</span> Check dates' integer values.</span>
-<span class="line-numbers"> 430 </span>     <span class="Keyword">return</span> a.getTime() <span class="Keyword">is</span> b.getTime() <span class="Keyword">if</span> _.isDate(a) <span class="Keyword">and</span> _.isDate(b)
-<span class="line-numbers"> 431 </span>     <span class="Comment"><span class="Comment">#</span> Both are NaN?</span>
-<span class="line-numbers"> 432 </span>     <span class="Keyword">return</span> <span class="BuiltInConstant">true</span> <span class="Keyword">if</span> _.isNaN(a) <span class="Keyword">and</span> _.isNaN(b)
-<span class="line-numbers"> 433 </span>     <span class="Comment"><span class="Comment">#</span> Compare regular expressions.</span>
-<span class="line-numbers"> 434 </span>     <span class="Keyword">if</span> _.isRegExp(a) <span class="Keyword">and</span> _.isRegExp(b)
-<span class="line-numbers"> 435 </span>       <span class="Keyword">return</span> a.source     <span class="Keyword">is</span> b.source <span class="Keyword">and</span>
-<span class="line-numbers"> 436 </span>              a.global     <span class="Keyword">is</span> b.global <span class="Keyword">and</span>
-<span class="line-numbers"> 437 </span>              a.ignoreCase <span class="Keyword">is</span> b.ignoreCase <span class="Keyword">and</span>
-<span class="line-numbers"> 438 </span>              a.multiline  <span class="Keyword">is</span> b.multiline
-<span class="line-numbers"> 439 </span>     <span class="Comment"><span class="Comment">#</span> If a is not an object by this point, we can't handle it.</span>
-<span class="line-numbers"> 440 </span>     <span class="Keyword">return</span> <span class="BuiltInConstant">false</span> <span class="Keyword">if</span> atype <span class="Keyword">isnt</span> <span class="String"><span class="String">'</span>object<span class="String">'</span></span>
-<span class="line-numbers"> 441 </span>     <span class="Comment"><span class="Comment">#</span> Check for different array lengths before comparing contents.</span>
-<span class="line-numbers"> 442 </span>     <span class="Keyword">return</span> <span class="BuiltInConstant">false</span> <span class="Keyword">if</span> a.length <span class="Keyword">and</span> (a.length <span class="Keyword">isnt</span> b.length)
-<span class="line-numbers"> 443 </span>     <span class="Comment"><span class="Comment">#</span> Nothing else worked, deep compare the contents.</span>
-<span class="line-numbers"> 444 </span>     <span class="FunctionName">aKeys</span><span class="Keyword">:</span> _.keys(a); <span class="FunctionName">bKeys</span><span class="Keyword">:</span> _.keys(b)
-<span class="line-numbers"> 445 </span>     <span class="Comment"><span class="Comment">#</span> Different object sizes?</span>
-<span class="line-numbers"> 446 </span>     <span class="Keyword">return</span> <span class="BuiltInConstant">false</span> <span class="Keyword">if</span> aKeys.length <span class="Keyword">isnt</span> bKeys.length
-<span class="line-numbers"> 447 </span>     <span class="Comment"><span class="Comment">#</span> Recursive comparison of contents.</span>
-<span class="line-numbers"> 448 </span>     <span class="Comment"><span class="Comment">#</span> for (var key in a) if (!_.isEqual(a[key], b[key])) return false;</span>
-<span class="line-numbers"> 449 </span>     <span class="Keyword">return</span> <span class="BuiltInConstant">true</span>
+<span class="line-numbers"> 415 </span>   <span class="Comment"><span class="Comment">#</span> Perform a deep comparison to check if two objects are equal.</span>
+<span class="line-numbers"> 416 </span>   <span class="FunctionName">_.isEqual</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">a, b</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 417 </span>     <span class="Comment"><span class="Comment">#</span> Check object identity.</span>
+<span class="line-numbers"> 418 </span>     <span class="Keyword">return</span> <span class="BuiltInConstant">true</span> <span class="Keyword">if</span> a <span class="Keyword">is</span> b
+<span class="line-numbers"> 419 </span>     <span class="Comment"><span class="Comment">#</span> Different types?</span>
+<span class="line-numbers"> 420 </span>     <span class="FunctionName">atype</span><span class="Keyword">:</span> <span class="Keyword">typeof</span>(a); <span class="FunctionName">btype</span><span class="Keyword">:</span> <span class="Keyword">typeof</span>(b)
+<span class="line-numbers"> 421 </span>     <span class="Keyword">return</span> <span class="BuiltInConstant">false</span> <span class="Keyword">if</span> atype <span class="Keyword">isnt</span> btype
+<span class="line-numbers"> 422 </span>     <span class="Comment"><span class="Comment">#</span> Basic equality test (watch out for coercions).</span>
+<span class="line-numbers"> 423 </span>     <span class="Keyword">return</span> <span class="BuiltInConstant">true</span> <span class="Keyword">if</span> <span class="String"><span class="String">`</span>a == b<span class="String">`</span></span>
+<span class="line-numbers"> 424 </span>     <span class="Comment"><span class="Comment">#</span> One is falsy and the other truthy.</span>
+<span class="line-numbers"> 425 </span>     <span class="Keyword">return</span> <span class="BuiltInConstant">false</span> <span class="Keyword">if</span> (<span class="Keyword">!</span>a <span class="Keyword">and</span> b) <span class="Keyword">or</span> (a <span class="Keyword">and</span> <span class="Keyword">!</span>b)
+<span class="line-numbers"> 426 </span>     <span class="Comment"><span class="Comment">#</span> One of them implements an isEqual()?</span>
+<span class="line-numbers"> 427 </span>     <span class="Keyword">return</span> a.isEqual(b) <span class="Keyword">if</span> a.isEqual
+<span class="line-numbers"> 428 </span>     <span class="Comment"><span class="Comment">#</span> Check dates' integer values.</span>
+<span class="line-numbers"> 429 </span>     <span class="Keyword">return</span> a.getTime() <span class="Keyword">is</span> b.getTime() <span class="Keyword">if</span> _.isDate(a) <span class="Keyword">and</span> _.isDate(b)
+<span class="line-numbers"> 430 </span>     <span class="Comment"><span class="Comment">#</span> Both are NaN?</span>
+<span class="line-numbers"> 431 </span>     <span class="Keyword">return</span> <span class="BuiltInConstant">true</span> <span class="Keyword">if</span> _.isNaN(a) <span class="Keyword">and</span> _.isNaN(b)
+<span class="line-numbers"> 432 </span>     <span class="Comment"><span class="Comment">#</span> Compare regular expressions.</span>
+<span class="line-numbers"> 433 </span>     <span class="Keyword">if</span> _.isRegExp(a) <span class="Keyword">and</span> _.isRegExp(b)
+<span class="line-numbers"> 434 </span>       <span class="Keyword">return</span> a.source     <span class="Keyword">is</span> b.source <span class="Keyword">and</span>
+<span class="line-numbers"> 435 </span>              a.global     <span class="Keyword">is</span> b.global <span class="Keyword">and</span>
+<span class="line-numbers"> 436 </span>              a.ignoreCase <span class="Keyword">is</span> b.ignoreCase <span class="Keyword">and</span>
+<span class="line-numbers"> 437 </span>              a.multiline  <span class="Keyword">is</span> b.multiline
+<span class="line-numbers"> 438 </span>     <span class="Comment"><span class="Comment">#</span> If a is not an object by this point, we can't handle it.</span>
+<span class="line-numbers"> 439 </span>     <span class="Keyword">return</span> <span class="BuiltInConstant">false</span> <span class="Keyword">if</span> atype <span class="Keyword">isnt</span> <span class="String"><span class="String">'</span>object<span class="String">'</span></span>
+<span class="line-numbers"> 440 </span>     <span class="Comment"><span class="Comment">#</span> Check for different array lengths before comparing contents.</span>
+<span class="line-numbers"> 441 </span>     <span class="Keyword">return</span> <span class="BuiltInConstant">false</span> <span class="Keyword">if</span> a.length <span class="Keyword">and</span> (a.length <span class="Keyword">isnt</span> b.length)
+<span class="line-numbers"> 442 </span>     <span class="Comment"><span class="Comment">#</span> Nothing else worked, deep compare the contents.</span>
+<span class="line-numbers"> 443 </span>     <span class="FunctionName">aKeys</span><span class="Keyword">:</span> _.keys(a); <span class="FunctionName">bKeys</span><span class="Keyword">:</span> _.keys(b)
+<span class="line-numbers"> 444 </span>     <span class="Comment"><span class="Comment">#</span> Different object sizes?</span>
+<span class="line-numbers"> 445 </span>     <span class="Keyword">return</span> <span class="BuiltInConstant">false</span> <span class="Keyword">if</span> aKeys.length <span class="Keyword">isnt</span> bKeys.length
+<span class="line-numbers"> 446 </span>     <span class="Comment"><span class="Comment">#</span> Recursive comparison of contents.</span>
+<span class="line-numbers"> 447 </span>     <span class="Comment"><span class="Comment">#</span> for (var key in a) if (!_.isEqual(a[key], b[key])) return false;</span>
+<span class="line-numbers"> 448 </span>     <span class="Keyword">return</span> <span class="BuiltInConstant">true</span>
+<span class="line-numbers"> 449 </span>
 <span class="line-numbers"> 450 </span>
-<span class="line-numbers"> 451 </span>
-<span class="line-numbers"> 452 </span>   <span class="Comment"><span class="Comment">#</span> Is a given array or object empty?</span>
-<span class="line-numbers"> 453 </span> <span class="FunctionArgument">  _.isEmpty:      obj </span><span class="Storage">=&gt;</span> _.keys(obj).length <span class="Keyword">is</span> <span class="Number">0</span>
+<span class="line-numbers"> 451 </span>   <span class="Comment"><span class="Comment">#</span> Is a given array or object empty?</span>
+<span class="line-numbers"> 452 </span>   <span class="FunctionName">_.isEmpty</span><span class="Keyword">:</span>      <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> _.keys(obj).length <span class="Keyword">is</span> <span class="Number">0</span>
+<span class="line-numbers"> 453 </span>
 <span class="line-numbers"> 454 </span>
-<span class="line-numbers"> 455 </span>
-<span class="line-numbers"> 456 </span>   <span class="Comment"><span class="Comment">#</span> Is a given value a DOM element?</span>
-<span class="line-numbers"> 457 </span> <span class="FunctionArgument">  _.isElement:    obj </span><span class="Storage">=&gt;</span> obj <span class="Keyword">and</span> obj.nodeType <span class="Keyword">is</span> <span class="Number">1</span>
+<span class="line-numbers"> 455 </span>   <span class="Comment"><span class="Comment">#</span> Is a given value a DOM element?</span>
+<span class="line-numbers"> 456 </span>   <span class="FunctionName">_.isElement</span><span class="Keyword">:</span>    <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> obj <span class="Keyword">and</span> obj.nodeType <span class="Keyword">is</span> <span class="Number">1</span>
+<span class="line-numbers"> 457 </span>
 <span class="line-numbers"> 458 </span>
-<span class="line-numbers"> 459 </span>
-<span class="line-numbers"> 460 </span>   <span class="Comment"><span class="Comment">#</span> Is a given value an array?</span>
-<span class="line-numbers"> 461 </span> <span class="FunctionArgument">  _.isArray:      obj </span><span class="Storage">=&gt;</span> <span class="Keyword">!</span><span class="Keyword">!</span>(obj <span class="Keyword">and</span> obj.concat <span class="Keyword">and</span> obj.unshift)
+<span class="line-numbers"> 459 </span>   <span class="Comment"><span class="Comment">#</span> Is a given value an array?</span>
+<span class="line-numbers"> 460 </span>   <span class="FunctionName">_.isArray</span><span class="Keyword">:</span>      <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> <span class="Keyword">!</span><span class="Keyword">!</span>(obj <span class="Keyword">and</span> obj.concat <span class="Keyword">and</span> obj.unshift)
+<span class="line-numbers"> 461 </span>
 <span class="line-numbers"> 462 </span>
-<span class="line-numbers"> 463 </span>
-<span class="line-numbers"> 464 </span>   <span class="Comment"><span class="Comment">#</span> Is a given variable an arguments object?</span>
-<span class="line-numbers"> 465 </span> <span class="FunctionArgument">  _.isArguments:  obj </span><span class="Storage">=&gt;</span> obj <span class="Keyword">and</span> _.isNumber(obj.length) <span class="Keyword">and</span> <span class="Keyword">!</span>_.isArray(obj) <span class="Keyword">and</span> <span class="Keyword">!</span>propertyIsEnumerable.call(obj, <span class="String"><span class="String">'</span>length<span class="String">'</span></span>)
+<span class="line-numbers"> 463 </span>   <span class="Comment"><span class="Comment">#</span> Is a given variable an arguments object?</span>
+<span class="line-numbers"> 464 </span>   <span class="FunctionName">_.isArguments</span><span class="Keyword">:</span>  <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> obj <span class="Keyword">and</span> _.isNumber(obj.length) <span class="Keyword">and</span> <span class="Keyword">not</span> obj.concat <span class="Keyword">and</span>
+<span class="line-numbers"> 465 </span>                            <span class="Keyword">not</span> obj.substr <span class="Keyword">and</span> <span class="Keyword">not</span> obj.apply <span class="Keyword">and</span> <span class="Keyword">not</span> propertyIsEnumerable.call(obj, <span class="String"><span class="String">'</span>length<span class="String">'</span></span>)
 <span class="line-numbers"> 466 </span>
 <span class="line-numbers"> 467 </span>
 <span class="line-numbers"> 468 </span>   <span class="Comment"><span class="Comment">#</span> Is the given value a function?</span>
-<span class="line-numbers"> 469 </span> <span class="FunctionArgument">  _.isFunction:   obj </span><span class="Storage">=&gt;</span> <span class="Keyword">!</span><span class="Keyword">!</span>(obj <span class="Keyword">and</span> obj.constructor <span class="Keyword">and</span> obj.call <span class="Keyword">and</span> obj.apply)
+<span class="line-numbers"> 469 </span>   <span class="FunctionName">_.isFunction</span><span class="Keyword">:</span>   <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> <span class="Keyword">!</span><span class="Keyword">!</span>(obj <span class="Keyword">and</span> obj.constructor <span class="Keyword">and</span> obj.call <span class="Keyword">and</span> obj.apply)
 <span class="line-numbers"> 470 </span>
 <span class="line-numbers"> 471 </span>
 <span class="line-numbers"> 472 </span>   <span class="Comment"><span class="Comment">#</span> Is the given value a string?</span>
-<span class="line-numbers"> 473 </span> <span class="FunctionArgument">  _.isString:     obj </span><span class="Storage">=&gt;</span> <span class="Keyword">!</span><span class="Keyword">!</span>(obj <span class="Keyword">is</span> <span class="String"><span class="String">'</span><span class="String">'</span></span> <span class="Keyword">or</span> (obj <span class="Keyword">and</span> obj.charCodeAt <span class="Keyword">and</span> obj.substr))
+<span class="line-numbers"> 473 </span>   <span class="FunctionName">_.isString</span><span class="Keyword">:</span>     <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> <span class="Keyword">!</span><span class="Keyword">!</span>(obj <span class="Keyword">is</span> <span class="String"><span class="String">'</span><span class="String">'</span></span> <span class="Keyword">or</span> (obj <span class="Keyword">and</span> obj.charCodeAt <span class="Keyword">and</span> obj.substr))
 <span class="line-numbers"> 474 </span>
 <span class="line-numbers"> 475 </span>
 <span class="line-numbers"> 476 </span>   <span class="Comment"><span class="Comment">#</span> Is a given value a number?</span>
-<span class="line-numbers"> 477 </span> <span class="FunctionArgument">  _.isNumber:     obj </span><span class="Storage">=&gt;</span> toString.call(obj) <span class="Keyword">is</span> <span class="String"><span class="String">'</span>[object Number]<span class="String">'</span></span>
+<span class="line-numbers"> 477 </span>   <span class="FunctionName">_.isNumber</span><span class="Keyword">:</span>     <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> (obj <span class="Keyword">is</span> <span class="Keyword">+</span>obj) <span class="Keyword">or</span> toString.call(obj) <span class="Keyword">is</span> <span class="String"><span class="String">'</span>[object Number]<span class="String">'</span></span>
 <span class="line-numbers"> 478 </span>
 <span class="line-numbers"> 479 </span>
 <span class="line-numbers"> 480 </span>   <span class="Comment"><span class="Comment">#</span> Is a given value a Date?</span>
-<span class="line-numbers"> 481 </span> <span class="FunctionArgument">  _.isDate:       obj </span><span class="Storage">=&gt;</span> <span class="Keyword">!</span><span class="Keyword">!</span>(obj <span class="Keyword">and</span> obj.getTimezoneOffset <span class="Keyword">and</span> obj.setUTCFullYear)
+<span class="line-numbers"> 481 </span>   <span class="FunctionName">_.isDate</span><span class="Keyword">:</span>       <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> <span class="Keyword">!</span><span class="Keyword">!</span>(obj <span class="Keyword">and</span> obj.getTimezoneOffset <span class="Keyword">and</span> obj.setUTCFullYear)
 <span class="line-numbers"> 482 </span>
 <span class="line-numbers"> 483 </span>
 <span class="line-numbers"> 484 </span>   <span class="Comment"><span class="Comment">#</span> Is the given value a regular expression?</span>
-<span class="line-numbers"> 485 </span> <span class="FunctionArgument">  _.isRegExp:     obj </span><span class="Storage">=&gt;</span> <span class="Keyword">!</span><span class="Keyword">!</span>(obj <span class="Keyword">and</span> obj.exec <span class="Keyword">and</span> (obj.ignoreCase <span class="Keyword">or</span> obj.ignoreCase <span class="Keyword">is</span> <span class="BuiltInConstant">false</span>))
+<span class="line-numbers"> 485 </span>   <span class="FunctionName">_.isRegExp</span><span class="Keyword">:</span>     <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> <span class="Keyword">!</span><span class="Keyword">!</span>(obj <span class="Keyword">and</span> obj.exec <span class="Keyword">and</span> (obj.ignoreCase <span class="Keyword">or</span> obj.ignoreCase <span class="Keyword">is</span> <span class="BuiltInConstant">false</span>))
 <span class="line-numbers"> 486 </span>
 <span class="line-numbers"> 487 </span>
 <span class="line-numbers"> 488 </span>   <span class="Comment"><span class="Comment">#</span> Is the given value NaN -- this one is interesting. NaN != NaN, and</span>
 <span class="line-numbers"> 489 </span>   <span class="Comment"><span class="Comment">#</span> isNaN(undefined) == true, so we make sure it's a number first.</span>
-<span class="line-numbers"> 490 </span> <span class="FunctionArgument">  _.isNaN:        obj </span><span class="Storage">=&gt;</span> _.isNumber(obj) <span class="Keyword">and</span> window.isNaN(obj)
+<span class="line-numbers"> 490 </span>   <span class="FunctionName">_.isNaN</span><span class="Keyword">:</span>        <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> _.isNumber(obj) <span class="Keyword">and</span> window.isNaN(obj)
 <span class="line-numbers"> 491 </span>
 <span class="line-numbers"> 492 </span>
 <span class="line-numbers"> 493 </span>   <span class="Comment"><span class="Comment">#</span> Is a given value equal to null?</span>
-<span class="line-numbers"> 494 </span> <span class="FunctionArgument">  _.isNull:       obj </span><span class="Storage">=&gt;</span> obj <span class="Keyword">is</span> <span class="BuiltInConstant">null</span>
+<span class="line-numbers"> 494 </span>   <span class="FunctionName">_.isNull</span><span class="Keyword">:</span>       <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> obj <span class="Keyword">is</span> <span class="BuiltInConstant">null</span>
 <span class="line-numbers"> 495 </span>
 <span class="line-numbers"> 496 </span>
 <span class="line-numbers"> 497 </span>   <span class="Comment"><span class="Comment">#</span> Is a given variable undefined?</span>
-<span class="line-numbers"> 498 </span> <span class="FunctionArgument">  _.isUndefined:  obj </span><span class="Storage">=&gt;</span> <span class="Keyword">typeof</span> obj <span class="Keyword">is</span> <span class="String"><span class="String">'</span>undefined<span class="String">'</span></span>
+<span class="line-numbers"> 498 </span>   <span class="FunctionName">_.isUndefined</span><span class="Keyword">:</span>  <span class="FunctionArgument">(</span><span class="FunctionArgument">obj</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> <span class="Keyword">typeof</span> obj <span class="Keyword">is</span> <span class="String"><span class="String">'</span>undefined<span class="String">'</span></span>
 <span class="line-numbers"> 499 </span>
 <span class="line-numbers"> 500 </span>
 <span class="line-numbers"> 501 </span>   <span class="Comment"><span class="Comment">#</span> -------------------------- Utility Functions: --------------------------</span>
 <span class="line-numbers"> 502 </span>
 <span class="line-numbers"> 503 </span>   <span class="Comment"><span class="Comment">#</span> Run Underscore.js in noConflict mode, returning the '_' variable to its</span>
 <span class="line-numbers"> 504 </span>   <span class="Comment"><span class="Comment">#</span> previous owner. Returns a reference to the Underscore object.</span>
-<span class="line-numbers"> 505 </span> <span class="FunctionArgument">  _.noConflict: </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 505 </span>   <span class="FunctionName">_.noConflict</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 506 </span>     <span class="FunctionName">root._</span><span class="Keyword">:</span> previousUnderscore
 <span class="line-numbers"> 507 </span>     <span class="Variable">this</span>
 <span class="line-numbers"> 508 </span>
 <span class="line-numbers"> 509 </span>
 <span class="line-numbers"> 510 </span>   <span class="Comment"><span class="Comment">#</span> Keep the identity function around for default iterators.</span>
-<span class="line-numbers"> 511 </span> <span class="FunctionArgument">  _.identity: value </span><span class="Storage">=&gt;</span> value
+<span class="line-numbers"> 511 </span>   <span class="FunctionName">_.identity</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">value</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> value
 <span class="line-numbers"> 512 </span>
 <span class="line-numbers"> 513 </span>
 <span class="line-numbers"> 514 </span>   <span class="Comment"><span class="Comment">#</span> Break out of the middle of an iteration.</span>
-<span class="line-numbers"> 515 </span> <span class="FunctionArgument">  _.breakLoop: </span><span class="Storage">=&gt;</span> <span class="Keyword">throw</span> breaker
+<span class="line-numbers"> 515 </span>   <span class="FunctionName">_.breakLoop</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span> <span class="Keyword">throw</span> breaker
 <span class="line-numbers"> 516 </span>
 <span class="line-numbers"> 517 </span>
 <span class="line-numbers"> 518 </span>   <span class="Comment"><span class="Comment">#</span> Generate a unique integer id (unique within the entire client session).</span>
 <span class="line-numbers"> 519 </span>   <span class="Comment"><span class="Comment">#</span> Useful for temporary DOM ids.</span>
 <span class="line-numbers"> 520 </span>   <span class="FunctionName">idCounter</span><span class="Keyword">:</span> <span class="Number">0</span>
-<span class="line-numbers"> 521 </span> <span class="FunctionArgument">  _.uniqueId: prefix </span><span class="Storage">=&gt;</span>
+<span class="line-numbers"> 521 </span>   <span class="FunctionName">_.uniqueId</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">prefix</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 522 </span>     (prefix <span class="Keyword">or</span> <span class="String"><span class="String">'</span><span class="String">'</span></span>) <span class="Keyword">+</span> idCounter<span class="Keyword">++</span>
 <span class="line-numbers"> 523 </span>
 <span class="line-numbers"> 524 </span>
-<span class="line-numbers"> 525 </span>   <span class="Comment"><span class="Comment">#</span> JavaScript templating a-la ERB, pilfered from John Resig's</span>
-<span class="line-numbers"> 526 </span>   <span class="Comment"><span class="Comment">#</span> &quot;Secrets of the JavaScript Ninja&quot;, page 83.</span>
-<span class="line-numbers"> 527 </span> <span class="FunctionArgument">  _.template: str, data </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 528 </span>     <span class="String"><span class="String">`</span>var fn = new Function('obj',</span>
-<span class="line-numbers"> 529 </span> <span class="String">      'var p=[],print=function(){p.push.apply(p,arguments);};' +</span>
-<span class="line-numbers"> 530 </span> <span class="String">      'with(obj){p.push(<span class="UserDefinedConstant">\'</span>' +</span>
-<span class="line-numbers"> 531 </span> <span class="String">      str.</span>
-<span class="line-numbers"> 532 </span> <span class="String">        replace(/[<span class="UserDefinedConstant">\r</span><span class="UserDefinedConstant">\t</span><span class="UserDefinedConstant">\n</span>]/g, &quot; &quot;).</span>
-<span class="line-numbers"> 533 </span> <span class="String">        split(&quot;&lt;%&quot;).join(&quot;<span class="UserDefinedConstant">\t</span>&quot;).</span>
-<span class="line-numbers"> 534 </span> <span class="String">        replace(/((^|%&gt;)[^<span class="UserDefinedConstant">\t</span>]*)'/g, &quot;$1<span class="UserDefinedConstant">\r</span>&quot;).</span>
-<span class="line-numbers"> 535 </span> <span class="String">        replace(/<span class="UserDefinedConstant">\t</span>=(.*?)%&gt;/g, &quot;',$1,'&quot;).</span>
-<span class="line-numbers"> 536 </span> <span class="String">        split(&quot;<span class="UserDefinedConstant">\t</span>&quot;).join(&quot;');&quot;).</span>
-<span class="line-numbers"> 537 </span> <span class="String">        split(&quot;%&gt;&quot;).join(&quot;p.push('&quot;).</span>
-<span class="line-numbers"> 538 </span> <span class="String">        split(&quot;<span class="UserDefinedConstant">\r</span>&quot;).join(&quot;<span class="UserDefinedConstant">\\</span>'&quot;) +</span>
-<span class="line-numbers"> 539 </span> <span class="String">      &quot;');}return p.join('');&quot;)<span class="String">`</span></span>
-<span class="line-numbers"> 540 </span>     <span class="Keyword">if</span> data <span class="Keyword">then</span> fn(data) <span class="Keyword">else</span> fn
-<span class="line-numbers"> 541 </span>
-<span class="line-numbers"> 542 </span>
-<span class="line-numbers"> 543 </span>   <span class="Comment"><span class="Comment">#</span> ------------------------------- Aliases ----------------------------------</span>
-<span class="line-numbers"> 544 </span>
-<span class="line-numbers"> 545 </span>   <span class="FunctionName">_.forEach</span><span class="Keyword">:</span> _.each
-<span class="line-numbers"> 546 </span>   <span class="FunctionName">_.foldl</span><span class="Keyword">:</span>   <span class="FunctionName">_.inject</span><span class="Keyword">:</span>      _.reduce
-<span class="line-numbers"> 547 </span>   <span class="FunctionName">_.foldr</span><span class="Keyword">:</span>   _.reduceRight
-<span class="line-numbers"> 548 </span>   <span class="FunctionName">_.filter</span><span class="Keyword">:</span>  _.select
-<span class="line-numbers"> 549 </span>   <span class="FunctionName">_.every</span><span class="Keyword">:</span>   _.all
-<span class="line-numbers"> 550 </span>   <span class="FunctionName">_.some</span><span class="Keyword">:</span>    _.any
-<span class="line-numbers"> 551 </span>   <span class="FunctionName">_.head</span><span class="Keyword">:</span>    _.first
-<span class="line-numbers"> 552 </span>   <span class="FunctionName">_.tail</span><span class="Keyword">:</span>    _.rest
-<span class="line-numbers"> 553 </span>   <span class="FunctionName">_.methods</span><span class="Keyword">:</span> _.functions
+<span class="line-numbers"> 525 </span>   <span class="Comment"><span class="Comment">#</span> By default, Underscore uses ERB-style template delimiters, change the</span>
+<span class="line-numbers"> 526 </span>   <span class="Comment"><span class="Comment">#</span> following template settings to use alternative delimiters.</span>
+<span class="line-numbers"> 527 </span>   <span class="FunctionName">_.templateSettings</span><span class="Keyword">:</span> {
+<span class="line-numbers"> 528 </span>     <span class="FunctionName">start</span><span class="Keyword">:</span>        <span class="String"><span class="String">'</span>&lt;%<span class="String">'</span></span>
+<span class="line-numbers"> 529 </span>     <span class="FunctionName">end</span><span class="Keyword">:</span>          <span class="String"><span class="String">'</span>%&gt;<span class="String">'</span></span>
+<span class="line-numbers"> 530 </span>     <span class="FunctionName">interpolate</span><span class="Keyword">:</span><span class="String">  <span class="String">/</span>&lt;%=(.+?)%&gt;<span class="String">/</span>g</span>
+<span class="line-numbers"> 531 </span>   }
+<span class="line-numbers"> 532 </span>
+<span class="line-numbers"> 533 </span>
+<span class="line-numbers"> 534 </span>   <span class="Comment"><span class="Comment">#</span> JavaScript templating a-la ERB, pilfered from John Resig's</span>
+<span class="line-numbers"> 535 </span>   <span class="Comment"><span class="Comment">#</span> &quot;Secrets of the JavaScript Ninja&quot;, page 83.</span>
+<span class="line-numbers"> 536 </span>   <span class="Comment"><span class="Comment">#</span> Single-quotea fix from Rick Strahl's version.</span>
+<span class="line-numbers"> 537 </span>   <span class="FunctionName">_.template</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">str, data</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 538 </span>     <span class="FunctionName">c</span><span class="Keyword">:</span> _.templateSettings
+<span class="line-numbers"> 539 </span>     <span class="FunctionName">fn</span><span class="Keyword">:</span> <span class="Keyword">new</span> <span class="TypeName">Function</span> <span class="String"><span class="String">'</span>obj<span class="String">'</span></span>,
+<span class="line-numbers"> 540 </span>       <span class="String"><span class="String">'</span>var p=[],print=function(){p.push.apply(p,arguments);};<span class="String">'</span></span> <span class="Keyword">+</span>
+<span class="line-numbers"> 541 </span>       <span class="String"><span class="String">'</span>with(obj){p.push(<span class="UserDefinedConstant">\'</span><span class="String">'</span></span> <span class="Keyword">+</span>
+<span class="line-numbers"> 542 </span>       str.replace(<span class="String"><span class="String">/</span>[<span class="UserDefinedConstant">\r</span><span class="UserDefinedConstant">\t</span><span class="UserDefinedConstant">\n</span>]<span class="String">/</span>g</span>, <span class="String"><span class="String">&quot;</span> <span class="String">&quot;</span></span>)
+<span class="line-numbers"> 543 </span>          .replace(<span class="Keyword">new</span> <span class="TypeName">RegExp</span>(<span class="String"><span class="String">&quot;</span>'(?=[^<span class="String">&quot;</span></span><span class="Keyword">+</span>c.end[<span class="Number">0</span>]<span class="Keyword">+</span><span class="String"><span class="String">&quot;</span>]*<span class="String">&quot;</span></span><span class="Keyword">+</span>c.end<span class="Keyword">+</span><span class="String"><span class="String">&quot;</span>)<span class="String">&quot;</span></span>,<span class="String"><span class="String">&quot;</span>g<span class="String">&quot;</span></span>),<span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\t</span><span class="String">&quot;</span></span>)
+<span class="line-numbers"> 544 </span>          .split(<span class="String"><span class="String">&quot;</span>'<span class="String">&quot;</span></span>).join(<span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>'<span class="String">&quot;</span></span>)
+<span class="line-numbers"> 545 </span>          .split(<span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\t</span><span class="String">&quot;</span></span>).join(<span class="String"><span class="String">&quot;</span>'<span class="String">&quot;</span></span>)
+<span class="line-numbers"> 546 </span>          .replace(c.interpolate, <span class="String"><span class="String">&quot;</span>',$1,'<span class="String">&quot;</span></span>)
+<span class="line-numbers"> 547 </span>          .split(c.start).join(<span class="String"><span class="String">&quot;</span>');<span class="String">&quot;</span></span>)
+<span class="line-numbers"> 548 </span>          .split(c.end).join(<span class="String"><span class="String">&quot;</span>p.push('<span class="String">&quot;</span></span>) <span class="Keyword">+</span>
+<span class="line-numbers"> 549 </span>          <span class="String"><span class="String">&quot;</span>');}return p.join('');<span class="String">&quot;</span></span>
+<span class="line-numbers"> 550 </span>     <span class="Keyword">if</span> data <span class="Keyword">then</span> fn(data) <span class="Keyword">else</span> fn
+<span class="line-numbers"> 551 </span>
+<span class="line-numbers"> 552 </span>
+<span class="line-numbers"> 553 </span>   <span class="Comment"><span class="Comment">#</span> ------------------------------- Aliases ----------------------------------</span>
 <span class="line-numbers"> 554 </span>
-<span class="line-numbers"> 555 </span>
-<span class="line-numbers"> 556 </span>   <span class="Comment"><span class="Comment">#</span>   /*------------------------ Setup the OOP Wrapper: --------------------------*/</span>
-<span class="line-numbers"> 557 </span>
-<span class="line-numbers"> 558 </span>   <span class="Comment"><span class="Comment">#</span> Helper function to continue chaining intermediate results.</span>
-<span class="line-numbers"> 559 </span> <span class="FunctionArgument">  result: obj, chain </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 560 </span>     <span class="Keyword">if</span> chain <span class="Keyword">then</span> _(obj).chain() <span class="Keyword">else</span> obj
-<span class="line-numbers"> 561 </span>
-<span class="line-numbers"> 562 </span>
-<span class="line-numbers"> 563 </span>   <span class="Comment"><span class="Comment">#</span> Add all of the Underscore functions to the wrapper object.</span>
-<span class="line-numbers"> 564 </span>   _.each(_.functions(_))<span class="FunctionArgument"> name </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 565 </span>     <span class="FunctionName">method</span><span class="Keyword">:</span> _[name]
-<span class="line-numbers"> 566 </span>     wrapper.prototype[name]<span class="Keyword">:</span> <span class="Storage">=&gt;</span>
-<span class="line-numbers"> 567 </span>       <span class="FunctionName">args</span><span class="Keyword">:</span> _.toArray(arguments)
-<span class="line-numbers"> 568 </span>       unshift.call(args, <span class="Variable">this</span>._wrapped)
-<span class="line-numbers"> 569 </span>       result(method.apply(_, args), <span class="Variable">this</span>._chain)
-<span class="line-numbers"> 570 </span>
+<span class="line-numbers"> 555 </span>   <span class="FunctionName">_.forEach</span><span class="Keyword">:</span> _.each
+<span class="line-numbers"> 556 </span>   <span class="FunctionName">_.foldl</span><span class="Keyword">:</span>   <span class="FunctionName">_.inject</span><span class="Keyword">:</span>      _.reduce
+<span class="line-numbers"> 557 </span>   <span class="FunctionName">_.foldr</span><span class="Keyword">:</span>   _.reduceRight
+<span class="line-numbers"> 558 </span>   <span class="FunctionName">_.filter</span><span class="Keyword">:</span>  _.select
+<span class="line-numbers"> 559 </span>   <span class="FunctionName">_.every</span><span class="Keyword">:</span>   _.all
+<span class="line-numbers"> 560 </span>   <span class="FunctionName">_.some</span><span class="Keyword">:</span>    _.any
+<span class="line-numbers"> 561 </span>   <span class="FunctionName">_.head</span><span class="Keyword">:</span>    _.first
+<span class="line-numbers"> 562 </span>   <span class="FunctionName">_.tail</span><span class="Keyword">:</span>    _.rest
+<span class="line-numbers"> 563 </span>   <span class="FunctionName">_.methods</span><span class="Keyword">:</span> _.functions
+<span class="line-numbers"> 564 </span>
+<span class="line-numbers"> 565 </span>
+<span class="line-numbers"> 566 </span>   <span class="Comment"><span class="Comment">#</span>   /*------------------------ Setup the OOP Wrapper: --------------------------*/</span>
+<span class="line-numbers"> 567 </span>
+<span class="line-numbers"> 568 </span>   <span class="Comment"><span class="Comment">#</span> Helper function to continue chaining intermediate results.</span>
+<span class="line-numbers"> 569 </span>   <span class="FunctionName">result</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">obj, chain</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 570 </span>     <span class="Keyword">if</span> chain <span class="Keyword">then</span> _(obj).chain() <span class="Keyword">else</span> obj
 <span class="line-numbers"> 571 </span>
-<span class="line-numbers"> 572 </span>   <span class="Comment"><span class="Comment">#</span> Add all mutator Array functions to the wrapper.</span>
-<span class="line-numbers"> 573 </span>   _.each([<span class="String"><span class="String">'</span>pop<span class="String">'</span></span>, <span class="String"><span class="String">'</span>push<span class="String">'</span></span>, <span class="String"><span class="String">'</span>reverse<span class="String">'</span></span>, <span class="String"><span class="String">'</span>shift<span class="String">'</span></span>, <span class="String"><span class="String">'</span>sort<span class="String">'</span></span>, <span class="String"><span class="String">'</span>splice<span class="String">'</span></span>, <span class="String"><span class="String">'</span>unshift<span class="String">'</span></span>])<span class="FunctionArgument"> name </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 574 </span>     <span class="FunctionName">method</span><span class="Keyword">:</span> Array.prototype[name]
-<span class="line-numbers"> 575 </span>     wrapper.prototype[name]<span class="Keyword">:</span> <span class="Storage">=&gt;</span>
-<span class="line-numbers"> 576 </span>       method.apply(<span class="Variable">this</span>._wrapped, arguments)
-<span class="line-numbers"> 577 </span>       result(<span class="Variable">this</span>._wrapped, <span class="Variable">this</span>._chain)
-<span class="line-numbers"> 578 </span>
+<span class="line-numbers"> 572 </span>
+<span class="line-numbers"> 573 </span>   <span class="Comment"><span class="Comment">#</span> Add all of the Underscore functions to the wrapper object.</span>
+<span class="line-numbers"> 574 </span>   _.each _.functions(_), <span class="FunctionArgument">(</span><span class="FunctionArgument">name</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 575 </span>     <span class="FunctionName">method</span><span class="Keyword">:</span> _[name]
+<span class="line-numbers"> 576 </span>     wrapper.prototype[name]<span class="Keyword">:</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 577 </span>       unshift.call(arguments, <span class="Variable">this</span>._wrapped)
+<span class="line-numbers"> 578 </span>       result(method.apply(_, arguments), <span class="Variable">this</span>._chain)
 <span class="line-numbers"> 579 </span>
-<span class="line-numbers"> 580 </span>   <span class="Comment"><span class="Comment">#</span> Add all accessor Array functions to the wrapper.</span>
-<span class="line-numbers"> 581 </span>   _.each([<span class="String"><span class="String">'</span>concat<span class="String">'</span></span>, <span class="String"><span class="String">'</span>join<span class="String">'</span></span>, <span class="String"><span class="String">'</span>slice<span class="String">'</span></span>])<span class="FunctionArgument"> name </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 582 </span>     <span class="FunctionName">method</span><span class="Keyword">:</span> Array.prototype[name]
-<span class="line-numbers"> 583 </span>     wrapper.prototype[name]<span class="Keyword">:</span> <span class="Storage">=&gt;</span>
-<span class="line-numbers"> 584 </span>       result(method.apply(<span class="Variable">this</span>._wrapped, arguments), <span class="Variable">this</span>._chain)
-<span class="line-numbers"> 585 </span>
-<span class="line-numbers"> 586 </span>
-<span class="line-numbers"> 587 </span>   <span class="Comment"><span class="Comment">#</span> Start chaining a wrapped Underscore object.</span>
-<span class="line-numbers"> 588 </span> <span class="FunctionArgument">  wrapper::chain: </span><span class="Storage">=&gt;</span>
-<span class="line-numbers"> 589 </span>     <span class="FunctionName">this._chain</span><span class="Keyword">:</span> <span class="BuiltInConstant">true</span>
-<span class="line-numbers"> 590 </span>     <span class="Variable">this</span>
-<span class="line-numbers"> 591 </span>
-<span class="line-numbers"> 592 </span>
-<span class="line-numbers"> 593 </span>   <span class="Comment"><span class="Comment">#</span> Extracts the result from a wrapped and chained object.</span>
-<span class="line-numbers"> 594 </span> <span class="FunctionArgument">  wrapper::value: </span><span class="Storage">=&gt;</span> <span class="Variable">this</span>._wrapped
+<span class="line-numbers"> 580 </span>
+<span class="line-numbers"> 581 </span>   <span class="Comment"><span class="Comment">#</span> Add all mutator Array functions to the wrapper.</span>
+<span class="line-numbers"> 582 </span>   _.each [<span class="String"><span class="String">'</span>pop<span class="String">'</span></span>, <span class="String"><span class="String">'</span>push<span class="String">'</span></span>, <span class="String"><span class="String">'</span>reverse<span class="String">'</span></span>, <span class="String"><span class="String">'</span>shift<span class="String">'</span></span>, <span class="String"><span class="String">'</span>sort<span class="String">'</span></span>, <span class="String"><span class="String">'</span>splice<span class="String">'</span></span>, <span class="String"><span class="String">'</span>unshift<span class="String">'</span></span>], <span class="FunctionArgument">(</span><span class="FunctionArgument">name</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 583 </span>     <span class="FunctionName">method</span><span class="Keyword">:</span> Array.prototype[name]
+<span class="line-numbers"> 584 </span>     wrapper.prototype[name]<span class="Keyword">:</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 585 </span>       method.apply(<span class="Variable">this</span>._wrapped, arguments)
+<span class="line-numbers"> 586 </span>       result(<span class="Variable">this</span>._wrapped, <span class="Variable">this</span>._chain)
+<span class="line-numbers"> 587 </span>
+<span class="line-numbers"> 588 </span>
+<span class="line-numbers"> 589 </span>   <span class="Comment"><span class="Comment">#</span> Add all accessor Array functions to the wrapper.</span>
+<span class="line-numbers"> 590 </span>   _.each [<span class="String"><span class="String">'</span>concat<span class="String">'</span></span>, <span class="String"><span class="String">'</span>join<span class="String">'</span></span>, <span class="String"><span class="String">'</span>slice<span class="String">'</span></span>], <span class="FunctionArgument">(</span><span class="FunctionArgument">name</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 591 </span>     <span class="FunctionName">method</span><span class="Keyword">:</span> Array.prototype[name]
+<span class="line-numbers"> 592 </span>     wrapper.prototype[name]<span class="Keyword">:</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 593 </span>       result(method.apply(<span class="Variable">this</span>._wrapped, arguments), <span class="Variable">this</span>._chain)
+<span class="line-numbers"> 594 </span>
+<span class="line-numbers"> 595 </span>
+<span class="line-numbers"> 596 </span>   <span class="Comment"><span class="Comment">#</span> Start chaining a wrapped Underscore object.</span>
+<span class="line-numbers"> 597 </span>   <span class="FunctionName">wrapper::chain</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
+<span class="line-numbers"> 598 </span>     <span class="FunctionName">this._chain</span><span class="Keyword">:</span> <span class="BuiltInConstant">true</span>
+<span class="line-numbers"> 599 </span>     <span class="Variable">this</span>
+<span class="line-numbers"> 600 </span>
+<span class="line-numbers"> 601 </span>
+<span class="line-numbers"> 602 </span>   <span class="Comment"><span class="Comment">#</span> Extracts the result from a wrapped and chained object.</span>
+<span class="line-numbers"> 603 </span>   <span class="FunctionName">wrapper::value</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span> <span class="Variable">this</span>._wrapped
 </pre>  <p>
     <a href="http://validator.w3.org/check?uri=referer">
       <img style="border:0"

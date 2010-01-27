@@ -1,6 +1,6 @@
 
   # Underscore.coffee
-  # (c) 2009 Jeremy Ashkenas, DocumentCloud Inc.
+  # (c) 2010 Jeremy Ashkenas, DocumentCloud Inc.
   # Underscore is freely distributable under the terms of the MIT license.
   # Portions of Underscore are inspired by or borrowed from Prototype.js,
   # Oliver Steele's Functional, and John Resig's Micro-Templating.
@@ -47,7 +47,7 @@
 
 
   # Current version.
-  _.VERSION: '0.5.5'
+  _.VERSION: '0.5.7'
 
 
   # ------------------------ Collection Functions: ---------------------------
@@ -461,7 +461,8 @@
 
 
   # Is a given variable an arguments object?
-  _.isArguments:  (obj) -> obj and _.isNumber(obj.length) and !_.isArray(obj) and !propertyIsEnumerable.call(obj, 'length')
+  _.isArguments:  (obj) -> obj and _.isNumber(obj.length) and not obj.concat and
+                           not obj.substr and not obj.apply and not propertyIsEnumerable.call(obj, 'length')
 
 
   # Is the given value a function?
@@ -473,7 +474,7 @@
 
 
   # Is a given value a number?
-  _.isNumber:     (obj) -> toString.call(obj) is '[object Number]'
+  _.isNumber:     (obj) -> (obj is +obj) or toString.call(obj) is '[object Number]'
 
 
   # Is a given value a Date?
@@ -521,21 +522,31 @@
     (prefix or '') + idCounter++
 
 
+  # By default, Underscore uses ERB-style template delimiters, change the
+  # following template settings to use alternative delimiters.
+  _.templateSettings: {
+    start:        '<%'
+    end:          '%>'
+    interpolate:  /<%=(.+?)%>/g
+  }
+
+
   # JavaScript templating a-la ERB, pilfered from John Resig's
   # "Secrets of the JavaScript Ninja", page 83.
+  # Single-quotea fix from Rick Strahl's version.
   _.template: (str, data) ->
-    `var fn = new Function('obj',
+    c: _.templateSettings
+    fn: new Function 'obj',
       'var p=[],print=function(){p.push.apply(p,arguments);};' +
       'with(obj){p.push(\'' +
-      str.
-        replace(/[\r\t\n]/g, " ").
-        split("<%").join("\t").
-        replace(/((^|%>)[^\t]*)'/g, "$1\r").
-        replace(/\t=(.*?)%>/g, "',$1,'").
-        split("\t").join("');").
-        split("%>").join("p.push('").
-        split("\r").join("\\'") +
-      "');}return p.join('');")`
+      str.replace(/[\r\t\n]/g, " ")
+         .replace(new RegExp("'(?=[^"+c.end[0]+"]*"+c.end+")","g"),"\t")
+         .split("'").join("\\'")
+         .split("\t").join("'")
+         .replace(c.interpolate, "',$1,'")
+         .split(c.start).join("');")
+         .split(c.end).join("p.push('") +
+         "');}return p.join('');"
     if data then fn(data) else fn
 
 
@@ -564,7 +575,7 @@
     method: _[name]
     wrapper.prototype[name]: ->
       unshift.call(arguments, this._wrapped)
-      result(method.apply(_, args), this._chain)
+      result(method.apply(_, arguments), this._chain)
 
 
   # Add all mutator Array functions to the wrapper.
