@@ -64,3 +64,15 @@ result: call ->
     Math.Add(5, 5)
 
 print result is 10
+
+
+# And even with strange things like this:
+
+funcs:  [(x) -> x, (x) -> x * x]
+result: funcs[1] 5
+
+print result is 25
+
+result: ("hello".slice) 3
+
+print result is 'lo'

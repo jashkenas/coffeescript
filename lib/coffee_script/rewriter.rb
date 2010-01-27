@@ -19,7 +19,7 @@ module CoffeeScript
     EXPRESSION_CLOSE = [:CATCH, :WHEN, :ELSE, :FINALLY] + EXPRESSION_TAIL
 
     # Tokens pairs that, in immediate succession, indicate an implicit call.
-    IMPLICIT_FUNC = [:IDENTIFIER, :SUPER]
+    IMPLICIT_FUNC = [:IDENTIFIER, :SUPER, ')', :CALL_END, ']', :INDEX_END]
     IMPLICIT_END  = [:IF, :UNLESS, :FOR, :WHILE, "\n", :OUTDENT]
     IMPLICIT_CALL = [:IDENTIFIER, :NUMBER, :STRING, :JS, :REGEX, :NEW, :PARAM_START,
                      :TRY, :DELETE, :INSTANCEOF, :TYPEOF, :SWITCH, :ARGUMENTS,
