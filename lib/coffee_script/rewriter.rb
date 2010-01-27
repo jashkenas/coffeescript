@@ -22,7 +22,7 @@ module CoffeeScript
     IMPLICIT_FUNC = [:IDENTIFIER, :SUPER, ')', :CALL_END, ']', :INDEX_END]
     IMPLICIT_END  = [:IF, :UNLESS, :FOR, :WHILE, "\n", :OUTDENT]
     IMPLICIT_CALL = [:IDENTIFIER, :NUMBER, :STRING, :JS, :REGEX, :NEW, :PARAM_START,
-                     :TRY, :DELETE, :INSTANCEOF, :TYPEOF, :SWITCH, :ARGUMENTS,
+                     :TRY, :DELETE, :TYPEOF, :SWITCH, :ARGUMENTS,
                      :TRUE, :FALSE, :YES, :NO, :ON, :OFF, '!', '!!', :NOT,
                      '->', '=>', '[', '(', '{']
 
