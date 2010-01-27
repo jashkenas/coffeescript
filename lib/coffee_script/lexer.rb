@@ -50,6 +50,9 @@ module CoffeeScript
       :FALSE, :NULL, :TRUE
     ]
 
+    # Tokens which could legitimately be invoked or indexed.
+    CALLABLE = [:IDENTIFIER, :SUPER, ')', ']', '}', :STRING]
+
     # Scan by attempting to match tokens one character at a time. Slow and steady.
     def tokenize(code)
       @code    = code.chomp # Cleanup code by remove extra line breaks
@@ -58,6 +61,7 @@ module CoffeeScript
       @indent  = 0          # The current indent level.
       @indents = []         # The stack of all indent levels we are currently within.
       @tokens  = []         # Collection of all parsed tokens in the form [:TOKEN_TYPE, value]
+      @spaced  = nil        # The last value that has a space following it.
       while @i < @code.length
         @chunk = @code[@i..-1]
         extract_next_token
@@ -190,6 +194,7 @@ module CoffeeScript
     # Matches and consumes non-meaningful whitespace.
     def whitespace_token
       return false unless whitespace = @chunk[WHITESPACE, 1]
+      @spaced = last_value
       @i += whitespace.length
     end
 
@@ -214,6 +219,10 @@ module CoffeeScript
       tag_parameters if value && value.match(CODE)
       value ||= @chunk[0,1]
       tag = value.match(ASSIGNMENT) ? :ASSIGN : value
+      if !@spaced.equal?(last_value) && CALLABLE.include?(last_tag)
+        tag = :CALL_START  if value == '('
+        tag = :INDEX_START if value == '['
+      end
       token(tag, value)
       @i += value.length
     end

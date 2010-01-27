@@ -6,6 +6,7 @@ token NUMBER STRING REGEX
 token TRUE FALSE YES NO ON OFF
 token IDENTIFIER PROPERTY_ACCESS PROTOTYPE_ACCESS SOAK_ACCESS
 token CODE PARAM_START PARAM PARAM_END NEW RETURN
+token CALL_START CALL_END INDEX_START INDEX_END
 token TRY CATCH FINALLY THROW
 token BREAK CONTINUE
 token FOR IN OF BY WHEN WHILE
@@ -246,12 +247,12 @@ rule
   | PROTOTYPE_ACCESS IDENTIFIER       { result = AccessorNode.new(val[1], :prototype) }
   | SOAK_ACCESS IDENTIFIER            { result = AccessorNode.new(val[1], :soak) }
   | Index                             { result = val[0] }
-  | Range                             { result = SliceNode.new(val[0]) }
+  | Slice                             { result = SliceNode.new(val[0]) }
   ;
 
   # Indexing into an object or array.
   Index:
-    "[" Expression "]"                { result = IndexNode.new(val[1]) }
+    INDEX_START Expression INDEX_END  { result = IndexNode.new(val[1]) }
   ;
 
   # An object literal.
@@ -290,13 +291,13 @@ rule
 
   # The list of arguments to a function invocation.
   Arguments:
-    "(" ArgList ")"                   { result = val[1] }
-  | "(" ArgList ")" Code              { result = val[1] << val[3] }
+    CALL_START ArgList CALL_END       { result = val[1] }
+  | CALL_START ArgList CALL_END Code  { result = val[1] << val[3] }
   ;
 
   # Calling super.
   Super:
-    SUPER "(" ArgList ")"             { result = CallNode.new(Value.new('super'), val[2]) }
+    SUPER CALL_START ArgList CALL_END { result = CallNode.new(Value.new('super'), val[2]) }
   ;
 
   # The range literal.
@@ -305,6 +306,14 @@ rule
       "." "." Expression "]"          { result = RangeNode.new(val[1], val[4]) }
   | "[" Expression
       "." "." "." Expression "]"      { result = RangeNode.new(val[1], val[5], true) }
+  ;
+
+  # The slice literal.
+  Slice:
+    INDEX_START Expression "." "."
+      Expression INDEX_END            { result = RangeNode.new(val[1], val[4]) }
+  | INDEX_START Expression "." "." "."
+      Expression INDEX_END            { result = RangeNode.new(val[1], val[5], true) }
   ;
 
   # The array literal.

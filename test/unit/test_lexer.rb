@@ -34,8 +34,8 @@ class LexerTest < Test::Unit::TestCase
 
   def test_lexing_if_statement
     code = "clap_your_hands() if happy"
-    assert @lex.tokenize(code) == [[:IDENTIFIER, "clap_your_hands"], ["(", "("],
-      [")", ")"], [:IF, "if"], [:IDENTIFIER, "happy"], ["\n", "\n"]]
+    assert @lex.tokenize(code) == [[:IDENTIFIER, "clap_your_hands"], [:CALL_START, "("],
+      [:CALL_END, ")"], [:IF, "if"], [:IDENTIFIER, "happy"], ["\n", "\n"]]
   end
 
   def test_lexing_comment

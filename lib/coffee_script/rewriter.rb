@@ -6,7 +6,8 @@ module CoffeeScript
   class Rewriter
 
     # Tokens that must be balanced.
-    BALANCED_PAIRS = [['(', ')'], ['[', ']'], ['{', '}'], [:INDENT, :OUTDENT], [:PARAM_START, :PARAM_END]]
+    BALANCED_PAIRS = [['(', ')'], ['[', ']'], ['{', '}'], [:INDENT, :OUTDENT],
+      [:PARAM_START, :PARAM_END], [:CALL_START, :CALL_END], [:INDEX_START, :INDEX_END]]
 
     # Tokens that signal the start of a balanced pair.
     EXPRESSION_START = BALANCED_PAIRS.map {|pair| pair.first }
@@ -45,6 +46,7 @@ module CoffeeScript
       remove_leading_newlines
       remove_mid_expression_newlines
       move_commas_outside_outdents
+      close_open_calls_and_indexes
       add_implicit_parentheses
       add_implicit_indentation
       ensure_balance(*BALANCED_PAIRS)
@@ -119,6 +121,35 @@ module CoffeeScript
       end
     end
 
+    # We've tagged the opening parenthesis of a method call, and the opening
+    # bracket of an indexing operation. Match them with their close.
+    def close_open_calls_and_indexes
+      parens, brackets = [0], [0]
+      scan_tokens do |prev, token, post, i|
+        case token[0]
+        when :CALL_START  then parens.push(0)
+        when :INDEX_START then brackets.push(0)
+        when '('          then parens[-1] += 1
+        when '['          then brackets[-1] += 1
+        when ')'
+          if parens.last == 0
+            parens.pop
+            token[0] = :CALL_END
+          else
+            parens[-1] -= 1
+          end
+        when ']'
+          if brackets.last == 0
+            brackets.pop
+            token[0] = :INDEX_END
+          else
+            brackets[-1] -= 1
+          end
+        end
+        next 1
+      end
+    end
+
     # Because our grammar is LALR(1), it can't handle some single-line
     # expressions that lack ending delimiters. Use the lexer to add the implicit
     # blocks, so it doesn't need to.
@@ -165,12 +196,12 @@ module CoffeeScript
         if (stack.last > 0 && (IMPLICIT_END.include?(token[0]) || post.nil?)) &&
            !(token[0] == :PARAM_START && prev[0] == ',')
           idx = token[0] == :OUTDENT ? i + 1 : i
-          stack.last.times { @tokens.insert(idx, [')', Value.new(')', token[1].line)]) }
+          stack.last.times { @tokens.insert(idx, [:CALL_END, Value.new(')', token[1].line)]) }
           size, stack[-1] = stack[-1] + 1, 0
           next size
         end
         next 1 unless IMPLICIT_FUNC.include?(prev[0]) && IMPLICIT_CALL.include?(token[0])
-        @tokens.insert(i, ['(', Value.new('(', token[1].line)])
+        @tokens.insert(i, [:CALL_START, Value.new('(', token[1].line)])
         stack[-1] += 1
         next token[0] == :PARAM_START ? 1 : 2
       end
