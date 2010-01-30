@@ -22,9 +22,9 @@ lex.KEYWORDS: [
 # Token matching regexes.
 lex.IDENTIFIER : /^([a-zA-Z$_](\w|\$)*)/
 lex.NUMBER     : /^(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
-lex.STRING     : /^(""|''|"(.*?)([^\\]|\\\\)"|'(.*?)([^\\]|\\\\)')/m
-lex.HEREDOC    : /^("{6}|'{6}|"{3}\n?(.*?)\n?([ \t]*)"{3}|'{3}\n?(.*?)\n?([ \t]*)'{3})/m
-lex.JS         : /^(``|`(.*?)([^\\]|\\\\)`)/m
+lex.STRING     : /^(""|''|"([\s\S]*?)([^\\]|\\\\)"|'([\s\S]*?)([^\\]|\\\\)')/
+lex.HEREDOC    : /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
+lex.JS         : /^(``|`([\s\S]*?)([^\\]|\\\\)`)/
 lex.OPERATOR   : /^([+\*&|\/\-%=<>:!?]+)/
 lex.WHITESPACE : /^([ \t]+)/
 lex.COMMENT    : /^(((\n?[ \t]*)?#.*$)+)/
@@ -84,9 +84,37 @@ lex::extract_next_token: ->
   return if this.whitespace_token()
   return    this.literal_token()
 
+# Look at a tag in the current token stream.
+lex::tag: (index, tag) ->
+  return unless tok: this.tokens[index || -1]
+  return tok[0]: tag if tag?
+  tok[0]
+
+# Look at a value in the current token stream.
+lex::value: (index, val) ->
+  return unless tok: this.tokens[index || -1]
+  return tok[1]: val if val?
+  tok[1]
+
 # Tokenizers ==========================================================
 
-
+# Matches identifying literals: variables, keywords, method names, etc.
+lex::identifier_token: ->
+  match: this.chunk.match(lex.IDENTIFIER)
+  return false unless match and id: match[1]
+  # Keywords are special identifiers tagged with their own name,
+  # 'if' will result in an ['IF', "if"] token.
+  tag: if this.KEYWORDS.indexOf(id) >= 0 then id.toUpperCase() else 'IDENTIFIER'
+  tag: 'LEADING_WHEN' if tag is 'WHEN' and (this.tag() is 'OUTDENT' or this.tag() is 'INDENT')
+  this.tag(-1, 'PROTOTYPE_ACCESS') if tag is 'IDENTIFIER' and this.value() is '::'
+  if tag is 'IDENTIFIER' and this.value() is '.' and !(this.value(-2) is '.')
+    if this.tag(-2) is '?'
+      this.tag(-1, 'SOAK_ACCESS')
+      this.tokens.splice(-2, 1)
+    else
+      this.tag(-1, 'PROPERTY_ACCESS')
+  this.token(tag, id)
+  this.i += id.length
 
 
 
