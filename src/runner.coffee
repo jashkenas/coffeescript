@@ -1,5 +1,6 @@
 # Quickie script to compile and run all the files given as arguments.
 
+process.mixin require 'sys'
 coffee: require './coffee-script'
 
 paths: process.ARGV
