@@ -45,7 +45,7 @@ re::rewrite: (tokens) ->
   this.remove_mid_expression_newlines()
   this.move_commas_outside_outdents()
   this.close_open_calls_and_indexes()
-  # this.add_implicit_parentheses()
+  this.add_implicit_parentheses()
   this.add_implicit_indentation()
   # this.ensure_balance(BALANCED_PAIRS)
   # this.rewrite_closing_parens()
@@ -131,6 +131,28 @@ re::close_open_calls_and_indexes: ->
         else
           brackets[brackets.length - 1] -= 1
     return 1
+
+# Methods may be optionally called without parentheses, for simple cases.
+# Insert the implicit parentheses here, so that the parser doesn't have to
+# deal with them.
+re::add_implicit_parentheses: ->
+  stack: [0]
+  this.scan_tokens (prev, token, post, i) =>
+    stack.push(0) if token[0] is 'INDENT'
+    if token[0] is 'OUTDENT'
+      last: stack.pop()
+      stack[stack.length - 1] += last
+    if stack[stack.length - 1] > 0 and (IMPLICIT_END.indexOf(token[0]) >= 0 or !post?)
+      idx: if token[0] is 'OUTDENT' then i + 1 else i
+      for tmp in [0...stack[stack.length - 1]]
+        this.tokens.splice(idx, 0, ['CALL_END', ')'])
+      size: stack[stack.length - 1] + 1
+      stack[stack.length - 1]: 0
+      return size
+    return 1 unless prev and IMPLICIT_FUNC.indexOf(prev[0]) >= 0 and IMPLICIT_CALL.indexOf(token[0]) >= 0
+    this.tokens.splice(i, 0, ['CALL_START', '('])
+    stack[stack.length - 1] += 1
+    return 2
 
 # Because our grammar is LALR(1), it can't handle some single-line
 # expressions that lack ending delimiters. Use the lexer to add the implicit
