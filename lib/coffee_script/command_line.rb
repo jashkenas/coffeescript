@@ -118,7 +118,7 @@ Usage:
     def launch_repl
       exec "#{LAUNCHER}"
     rescue Errno::ENOENT
-      puts "Error: Narwhal must be installed to use the interactive REPL."
+      puts "Error: Node.js must be installed to use the interactive REPL."
       exit(1)
     end
 
