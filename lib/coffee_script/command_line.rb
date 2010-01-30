@@ -116,7 +116,7 @@ Usage:
 
     # Use Narwhal to run an interactive CoffeeScript session.
     def launch_repl
-      exec "#{LAUNCHER}"
+      exec "node #{ROOT}/lib/coffee_script/repl.js"
     rescue Errno::ENOENT
       puts "Error: Node.js must be installed to use the interactive REPL."
       exit(1)
