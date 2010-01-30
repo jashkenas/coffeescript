@@ -229,8 +229,7 @@ module CoffeeScript
 
     # Helpers ==========================================================
 
-    # Add a token to the results, taking note of the line number, and
-    # immediately-preceding comment.
+    # Add a token to the results, taking note of the line number.
     def token(tag, value)
       @tokens << [tag, Value.new(value, @line)]
     end
