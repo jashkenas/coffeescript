@@ -28,9 +28,6 @@ Usage:
     # Path to the root of the CoffeeScript install.
     ROOT = File.expand_path(File.dirname(__FILE__) + '/../..')
 
-    # Command to execute in Narwhal
-    LAUNCHER = "narwhal -p #{ROOT} -e 'require(\"coffee-script\").run(system.args);'"
-
     # Run the CommandLine off the contents of ARGV.
     def initialize
       @mtimes = {}
@@ -114,7 +111,7 @@ Usage:
       puts js
     end
 
-    # Use Narwhal to run an interactive CoffeeScript session.
+    # Use Node.js to run an interactive CoffeeScript session.
     def launch_repl
       exec "node #{ROOT}/lib/coffee_script/repl.js"
     rescue Errno::ENOENT
@@ -122,12 +119,12 @@ Usage:
       exit(1)
     end
 
-    # Use Narwhal to compile and execute CoffeeScripts.
+    # Use Node.js to compile and execute CoffeeScripts.
     def run_scripts
       sources = @sources.join(' ')
-      exec "#{LAUNCHER} #{sources}"
+      exec "node #{ROOT}/lib/coffee_script/runner.js #{sources}"
     rescue Errno::ENOENT
-      puts "Error: Narwhal must be installed in order to execute CoffeeScripts."
+      puts "Error: Node.js must be installed in order to execute scripts."
       exit(1)
     end
 
@@ -168,10 +165,10 @@ Usage:
     def parse_options
       @options = {}
       @option_parser = OptionParser.new do |opts|
-        opts.on('-i', '--interactive', 'run a CoffeeScript REPL (requires Narwhal)') do |i|
+        opts.on('-i', '--interactive', 'run a CoffeeScript REPL (requires Node.js)') do |i|
           @options[:interactive] = true
         end
-        opts.on('-r', '--run', 'compile and run a script (requires Narwhal)') do |r|
+        opts.on('-r', '--run', 'compile and run a script (requires Node.js)') do |r|
           @options[:run] = true
         end
         opts.on('-o', '--output [DIR]', 'set the directory for compiled JavaScript') do |d|

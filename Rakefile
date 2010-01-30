@@ -17,10 +17,9 @@ namespace :build do
     sh "racc #{args[:racc_args]} -o lib/coffee_script/parser.rb lib/coffee_script/grammar.y"
   end
 
-  desc "Compile the Narwhal interface for --interactive and --run"
-  task :narwhal do
-    sh "bin/coffee lib/coffee_script/narwhal/*.coffee -o lib/coffee_script/narwhal/lib/coffee-script"
-    sh "mv lib/coffee_script/narwhal/lib/coffee-script/coffee-script.js lib/coffee_script/narwhal/lib/coffee-script.js"
+  desc "Continually compile the CoffeeScript/Node.js components with --watch"
+  task :node do
+    sh "bin/coffee -w src/*.coffee -o lib/coffee_script/"
   end
 
   desc "Compile and install the Ultraviolet syntax highlighter"

@@ -7,10 +7,10 @@ result: if a
       if d
         true
 
-print result
+puts result
 
 
 first: if false then false else second: if false then false else true
 
-print first
-print second
+puts first
+puts second

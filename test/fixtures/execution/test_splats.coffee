@@ -3,7 +3,7 @@ func: (first, second, rest...) ->
 
 result: func 1, 2, 3, 4, 5
 
-print result is "3 4 5"
+puts result is "3 4 5"
 
 
 gold: silver: bronze: the_field: null
@@ -29,7 +29,7 @@ contenders: [
 
 medalists "Mighty Mouse", contenders...
 
-print gold is "Mighty Mouse"
-print silver is "Michael Phelps"
-print bronze is "Liu Xiang"
-print the_field.length is 8
+puts gold is "Mighty Mouse"
+puts silver is "Michael Phelps"
+puts bronze is "Liu Xiang"
+puts the_field.length is 8
