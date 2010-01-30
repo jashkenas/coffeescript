@@ -1,6 +1,5 @@
 # Executes the `coffee` Ruby program to convert from CoffeeScript to JavaScript.
 
-sys:  require('sys')
 path: require('path')
 
 # The path to the CoffeeScript executable.

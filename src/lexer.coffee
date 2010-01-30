@@ -1,4 +1,5 @@
 sys: require 'sys'
+Rewriter: require('./rewriter').Rewriter
 
 # The lexer reads a stream of CoffeeScript and divvys it up into tagged
 # tokens. A minor bit of the ambiguity in the grammar has been avoided by
@@ -70,8 +71,7 @@ lex::tokenize: (code) ->
     this.extract_next_token()
   # sys.puts "original stream: " + this.tokens if process.ENV['VERBOSE']
   this.close_indentation()
-  # (new Rewriter()).rewrite(this.tokens)
-  this.tokens
+  (new Rewriter()).rewrite this.tokens
 
 # At every position, run through this list of attempted matches,
 # short-circuiting if any of them succeed.
@@ -105,12 +105,14 @@ lex::identifier_token: ->
       this.tag(-1, 'PROPERTY_ACCESS')
   this.token(tag, id)
   this.i += id.length
+  true
 
 # Matches numbers, including decimals, hex, and exponential notation.
 lex::number_token: ->
   return false unless number: this.match NUMBER, 1
   this.token 'NUMBER', number
   this.i += number.length
+  true
 
 # Matches strings, including multi-line strings.
 lex::string_token: ->
@@ -119,6 +121,7 @@ lex::string_token: ->
   this.token 'STRING', escaped
   this.line += this.count string, "\n"
   this.i += string.length
+  true
 
 # Matches heredocs, adjusting indentation to the correct level.
 lex::heredoc_token: ->
@@ -131,12 +134,14 @@ lex::heredoc_token: ->
   this.token 'STRING', '"' + doc + '"'
   this.line += this.count match[1], "\n"
   this.i += match[1].length
+  true
 
 # Matches interpolated JavaScript.
 lex::js_token: ->
   return false unless script: this.match JS, 1
   this.token 'JS', script.replace(JS_CLEANER, '')
   this.i += script.length
+  true
 
 # Matches regular expression literals.
 lex::regex_token: ->
@@ -144,6 +149,7 @@ lex::regex_token: ->
   return false if NOT_REGEX.indexOf(this.tag()) >= 0
   this.token 'REGEX', regex
   this.i += regex.length
+  true
 
 # Matches and conumes comments.
 lex::comment_token: ->
@@ -152,6 +158,7 @@ lex::comment_token: ->
   this.token 'COMMENT', comment.replace(COMMENT_CLEANER, '').split(MULTILINER)
   this.token "\n", "\n"
   this.i += comment.length
+  true
 
 # Record tokens for indentation differing from the previous line.
 lex::indent_token: ->
@@ -170,6 +177,7 @@ lex::indent_token: ->
   else
     this.outdent_token this.indent - size
   this.indent: size
+  true
 
 # Record an oudent token or tokens, if we're moving back inwards past
 # multiple recorded indents.
@@ -179,12 +187,14 @@ lex::outdent_token: (move_out) ->
     this.token 'OUTDENT', last_indent
     move_out -= last_indent
   this.token "\n", "\n"
+  true
 
 # Matches and consumes non-meaningful whitespace.
 lex::whitespace_token: ->
   return false unless space: this.match WHITESPACE, 1
   this.value().spaced: true
   this.i += space.length
+  true
 
 # Multiple newlines get merged together.
 # Use a trailing \ to escape newlines.
@@ -211,6 +221,7 @@ lex::literal_token: ->
     tag: 'INDEX_START' if value is '['
   this.token tag, value
   this.i += value.length
+  true
 
 # Helpers =============================================================
 
