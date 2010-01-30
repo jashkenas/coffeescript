@@ -66,6 +66,7 @@ lex::tokenize: (code) ->
   this.indent  : 0          # The current indent level.
   this.indents : []         # The stack of all indent levels we are currently within.
   this.tokens  : []         # Collection of all parsed tokens in the form [:TOKEN_TYPE, value]
+  this.spaced  : null       # The last token that has a space following it.
   while this.i < this.code.length
     this.chunk: this.code.slice(this.i)
     this.extract_next_token()
@@ -192,7 +193,7 @@ lex::outdent_token: (move_out) ->
 # Matches and consumes non-meaningful whitespace.
 lex::whitespace_token: ->
   return false unless space: this.match WHITESPACE, 1
-  this.value().spaced: true
+  this.spaced: this.value()
   this.i += space.length
   true
 
@@ -216,7 +217,7 @@ lex::literal_token: ->
   this.tag_parameters() if value and value.match(CODE)
   value ||= this.chunk.substr(0, 1)
   tag: if value.match(ASSIGNMENT) then 'ASSIGN' else value
-  if this.value() and !this.value().spaced and CALLABLE.indexOf(this.tag() >= 0)
+  if this.value() isnt this.spaced and CALLABLE.indexOf(this.tag()) >= 0
     tag: 'CALL_START'  if value is '('
     tag: 'INDEX_START' if value is '['
   this.token tag, value
@@ -272,6 +273,7 @@ lex::tag_parameters: ->
       when 'IDENTIFIER' then tok[0]: 'PARAM'
       when ')'          then tok[0]: 'PARAM_END'
       when '('          then return tok[0]: 'PARAM_START'
+  true
 
 # Close up all remaining open blocks. IF the first token is an indent,
 # axe it.

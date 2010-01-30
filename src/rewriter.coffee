@@ -47,8 +47,8 @@ re::rewrite: (tokens) ->
   this.close_open_calls_and_indexes()
   this.add_implicit_parentheses()
   this.add_implicit_indentation()
-  # this.ensure_balance(BALANCED_PAIRS)
-  # this.rewrite_closing_parens()
+  this.ensure_balance(BALANCED_PAIRS)
+  this.rewrite_closing_parens()
   this.tokens
 
 # Rewrite the token stream, looking one token ahead and behind.
@@ -116,11 +116,11 @@ re::close_open_calls_and_indexes: ->
     switch token[0]
       when 'CALL_START'  then parens.push(0)
       when 'INDEX_START' then brackets.push(0)
-      when '('           then parens[-1] += 1
-      when '['           then brackets[-1] += 1
+      when '('           then parens[parens.length - 1] += 1
+      when '['           then brackets[brackets.length - 1] += 1
       when ')'
         if parens[parens.length - 1] is 0
-          parens.pop
+          parens.pop()
           token[0]: 'CALL_END'
         else
           parens[parens.length - 1] -= 1
@@ -181,42 +181,64 @@ re::add_implicit_indentation: ->
     this.tokens.splice(i, 1)
     return 0
 
+# Ensure that all listed pairs of tokens are correctly balanced throughout
+# the course of the token stream.
+re::ensure_balance: (pairs) ->
+  levels: {}
+  this.scan_tokens (prev, token, post, i) =>
+    for pair in pairs
+      [open, close]: pair
+      levels[open] ||= 0
+      levels[open] += 1 if token[0] is open
+      levels[open] -= 1 if token[0] is close
+      throw "too many " + token[1] if levels[open] < 0
+    return 1
+  unclosed: key for key, value of levels when value > 0
+  throw "unclosed " + unclosed[0] if unclosed.length
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# We'd like to support syntax like this:
+#    el.click((event) ->
+#      el.hide())
+# In order to accomplish this, move outdents that follow closing parens
+# inwards, safely. The steps to accomplish this are:
+#
+# 1. Check that all paired tokens are balanced and in order.
+# 2. Rewrite the stream with a stack: if you see an '(' or INDENT, add it
+#    to the stack. If you see an ')' or OUTDENT, pop the stack and replace
+#    it with the inverse of what we've just popped.
+# 3. Keep track of "debt" for tokens that we fake, to make sure we end
+#    up balanced in the end.
+#
+re::rewrite_closing_parens: ->
+  stack: []
+  debt:  {}
+  (debt[key]: 0) for key, val of INVERSES
+  this.scan_tokens (prev, token, post, i) =>
+    tag: token[0]
+    inv: INVERSES[token[0]]
+    # Push openers onto the stack.
+    if EXPRESSION_START.indexOf(tag) >= 0
+      stack.push(token)
+      return 1
+      # The end of an expression, check stack and debt for a pair.
+    else if EXPRESSION_TAIL.indexOf(tag) >= 0
+      # If the tag is already in our debt, swallow it.
+      if debt[inv] > 0
+        debt[inv] -= 1
+        this.tokens.splice(i, 1)
+        return 0
+      else
+        # Pop the stack of open delimiters.
+        match: stack.pop()
+        mtag:  match[0]
+        # Continue onwards if it's the expected tag.
+        if tag is INVERSES[mtag]
+          return 1
+        else
+          # Unexpected close, insert correct close, adding to the debt.
+          debt[mtag] += 1
+          val: if mtag is 'INDENT' then match[1] else INVERSES[mtag]
+          this.tokens.splice(i, 0, [INVERSES[mtag], val])
+          return 1
+    else
+      return 1
