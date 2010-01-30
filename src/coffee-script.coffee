@@ -23,7 +23,11 @@ exports.compile_files: (paths, callback) ->
   coffee: process.createChildProcess compiler, ['--print'].concat(paths)
   coffee.addListener 'output', (results) ->
     js += results if results?
+  # NB: we have to add a mutex to make sure it doesn't get called twice.
+  exit_ran: false
   coffee.addListener 'exit', ->
+    return if exit_ran
+    exit_ran: true
     callback(js)
 
 

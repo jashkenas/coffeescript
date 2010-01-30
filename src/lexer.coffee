@@ -5,8 +5,10 @@ sys: require 'sys'
 # pushing some extra smarts into the Lexer.
 exports.Lexer: lex: ->
 
+# Constants ============================================================
+
 # The list of keywords passed verbatim to the parser.
-lex.KEYWORDS: [
+KEYWORDS: [
   "if", "else", "then", "unless",
   "true", "false", "yes", "no", "on", "off",
   "and", "or", "is", "isnt", "not",
@@ -20,39 +22,40 @@ lex.KEYWORDS: [
 ]
 
 # Token matching regexes.
-lex.IDENTIFIER : /^([a-zA-Z$_](\w|\$)*)/
-lex.NUMBER     : /^(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
-lex.STRING     : /^(""|''|"([\s\S]*?)([^\\]|\\\\)"|'([\s\S]*?)([^\\]|\\\\)')/
-lex.HEREDOC    : /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
-lex.JS         : /^(``|`([\s\S]*?)([^\\]|\\\\)`)/
-lex.OPERATOR   : /^([+\*&|\/\-%=<>:!?]+)/
-lex.WHITESPACE : /^([ \t]+)/
-lex.COMMENT    : /^(((\n?[ \t]*)?#.*$)+)/
-lex.CODE       : /^((-|=)>)/
-lex.REGEX      : /^(\/(.*?)([^\\]|\\\\)\/[imgy]{0,4})/
-lex.MULTI_DENT : /^((\n([ \t]*))+)(\.)?/
-lex.LAST_DENT  : /\n([ \t]*)/
-lex.ASSIGNMENT : /^(:|=)$/
+IDENTIFIER : /^([a-zA-Z$_](\w|\$)*)/
+NUMBER     : /^(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
+STRING     : /^(""|''|"([\s\S]*?)([^\\]|\\\\)"|'([\s\S]*?)([^\\]|\\\\)')/
+HEREDOC    : /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
+JS         : /^(``|`([\s\S]*?)([^\\]|\\\\)`)/
+OPERATOR   : /^([+\*&|\/\-%=<>:!?]+)/
+WHITESPACE : /^([ \t]+)/
+COMMENT    : /^(((\n?[ \t]*)?#.*$)+)/
+CODE       : /^((-|=)>)/
+REGEX      : /^(\/(.*?)([^\\]|\\\\)\/[imgy]{0,4})/
+MULTI_DENT : /^((\n([ \t]*))+)(\.)?/
+LAST_DENTS : /\n([ \t]*)/g
+LAST_DENT  : /\n([ \t]*)/
+ASSIGNMENT : /^(:|=)$/
 
 # Token cleaning regexes.
-lex.JS_CLEANER      : /(^`|`$)/g
-lex.MULTILINER      : /\n/g
-lex.STRING_NEWLINES : /\n[ \t]*/g
-lex.COMMENT_CLEANER : /(^[ \t]*#|\n[ \t]*$)/mg
-lex.NO_NEWLINE      : /^([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)$/
-lex.HEREDOC_INDENT  : /^[ \t]+/g
+JS_CLEANER      : /(^`|`$)/g
+MULTILINER      : /\n/g
+STRING_NEWLINES : /\n[ \t]*/g
+COMMENT_CLEANER : /(^[ \t]*#|\n[ \t]*$)/mg
+NO_NEWLINE      : /^([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)$/
+HEREDOC_INDENT  : /^[ \t]+/g
 
 # Tokens which a regular expression will never immediately follow, but which
 # a division operator might.
 # See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
-lex.NOT_REGEX: [
+NOT_REGEX: [
   'IDENTIFIER', 'NUMBER', 'REGEX', 'STRING',
   ')', '++', '--', ']', '}',
   'FALSE', 'NULL', 'TRUE'
 ]
 
 # Tokens which could legitimately be invoked or indexed.
-lex.CALLABLE: ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING']
+CALLABLE: ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING']
 
 # Scan by attempting to match tokens one character at a time. Slow and steady.
 lex::tokenize: (code) ->
@@ -65,8 +68,8 @@ lex::tokenize: (code) ->
   while this.i < this.code.length
     this.chunk: this.code.slice(this.i)
     this.extract_next_token()
-  # sys.puts "original stream: #{@tokens.inspect}" if process.ENV['VERBOSE']
-  # this.close_indentation()
+  # sys.puts "original stream: " + this.tokens if process.ENV['VERBOSE']
+  this.close_indentation()
   # (new Rewriter()).rewrite(this.tokens)
   this.tokens
 
@@ -79,7 +82,7 @@ lex::extract_next_token: ->
   return if this.string_token()
   return if this.js_token()
   return if this.regex_token()
-  # return if this.indent_token()
+  return if this.indent_token()
   return if this.comment_token()
   return if this.whitespace_token()
   return    this.literal_token()
@@ -88,10 +91,10 @@ lex::extract_next_token: ->
 
 # Matches identifying literals: variables, keywords, method names, etc.
 lex::identifier_token: ->
-  return false unless id: this.match lex.IDENTIFIER, 1
+  return false unless id: this.match IDENTIFIER, 1
   # Keywords are special identifiers tagged with their own name,
   # 'if' will result in an ['IF', "if"] token.
-  tag: if lex.KEYWORDS.indexOf(id) >= 0 then id.toUpperCase() else 'IDENTIFIER'
+  tag: if KEYWORDS.indexOf(id) >= 0 then id.toUpperCase() else 'IDENTIFIER'
   tag: 'LEADING_WHEN' if tag is 'WHEN' and (this.tag() is 'OUTDENT' or this.tag() is 'INDENT')
   this.tag(-1, 'PROTOTYPE_ACCESS') if tag is 'IDENTIFIER' and this.value() is '::'
   if tag is 'IDENTIFIER' and this.value() is '.' and !(this.value(-2) is '.')
@@ -105,13 +108,13 @@ lex::identifier_token: ->
 
 # Matches numbers, including decimals, hex, and exponential notation.
 lex::number_token: ->
-  return false unless number: this.match lex.NUMBER, 1
+  return false unless number: this.match NUMBER, 1
   this.token 'NUMBER', number
   this.i += number.length
 
 # Matches strings, including multi-line strings.
 lex::string_token: ->
-  return false unless string: this.match lex.STRING, 1
+  return false unless string: this.match STRING, 1
   escaped: string.replace STRING_NEWLINES, " \\\n"
   this.token 'STRING', escaped
   this.line += this.count string, "\n"
@@ -119,11 +122,11 @@ lex::string_token: ->
 
 # Matches heredocs, adjusting indentation to the correct level.
 lex::heredoc_token: ->
-  return false unless match = this.chunk.match(lex.HEREDOC)
+  return false unless match = this.chunk.match(HEREDOC)
   doc: match[2] or match[4]
-  indent: doc.match(lex.HEREDOC_INDENT).sort()[0]
+  indent: doc.match(HEREDOC_INDENT).sort()[0]
   doc: doc.replace(new RegExp("^" + indent, 'g'), '')
-          .replace(lex.MULTILINER, "\\n")
+          .replace(MULTILINER, "\\n")
           .replace('"', '\\"')
   this.token 'STRING', '"' + doc + '"'
   this.line += this.count match[1], "\n"
@@ -131,45 +134,79 @@ lex::heredoc_token: ->
 
 # Matches interpolated JavaScript.
 lex::js_token: ->
-  return false unless script: this.match lex.JS, 1
-  this.token 'JS', script.replace(lex.JS_CLEANER, '')
+  return false unless script: this.match JS, 1
+  this.token 'JS', script.replace(JS_CLEANER, '')
   this.i += script.length
 
 # Matches regular expression literals.
 lex::regex_token: ->
-  return false unless regex: this.match lex.REGEX, 1
-  return false if lex.NOT_REGEX.indexOf(this.tag()) >= 0
+  return false unless regex: this.match REGEX, 1
+  return false if NOT_REGEX.indexOf(this.tag()) >= 0
   this.token 'REGEX', regex
   this.i += regex.length
 
 # Matches and conumes comments.
 lex::comment_token: ->
-  return false unless comment: this.match lex.COMMENT, 1
-  this.line += comment.match(lex.MULTILINER).length
-  this.token 'COMMENT', comment.replace(lex.COMMENT_CLEANER, '').split(lex.MULTILINER)
+  return false unless comment: this.match COMMENT, 1
+  this.line += comment.match(MULTILINER).length
+  this.token 'COMMENT', comment.replace(COMMENT_CLEANER, '').split(MULTILINER)
   this.token "\n", "\n"
   this.i += comment.length
 
+# Record tokens for indentation differing from the previous line.
+lex::indent_token: ->
+  return false unless indent: this.match MULTI_DENT, 1
+  this.line += indent.match(MULTILINER).length
+  this.i    += indent.length
+  next_character: this.chunk.match(MULTI_DENT)[4]
+  no_newlines: next_character is '.' or (this.value().match(NO_NEWLINE) and this.tokens[this.tokens.length - 2][0] isnt '.' and not this.value().match(CODE))
+  return this.suppress_newlines(indent) if no_newlines
+  size: indent.match(LAST_DENTS).reverse()[0].match(LAST_DENT)[1].length
+  return this.newline_token(indent) if size is this.indent
+  if size > this.indent
+    diff: size - this.indent
+    this.token 'INDENT', diff
+    this.indents.push diff
+  else
+    this.outdent_token this.indent - size
+  this.indent: size
 
-
-
+# Record an oudent token or tokens, if we're moving back inwards past
+# multiple recorded indents.
+lex::outdent_token: (move_out) ->
+  while move_out > 0 and this.indents.length
+    last_indent: this.indents.pop()
+    this.token 'OUTDENT', last_indent
+    move_out -= last_indent
+  this.token "\n", "\n"
 
 # Matches and consumes non-meaningful whitespace.
 lex::whitespace_token: ->
-  return false unless space: this.match lex.WHITESPACE, 1
+  return false unless space: this.match WHITESPACE, 1
   this.value().spaced: true
   this.i += space.length
+
+# Multiple newlines get merged together.
+# Use a trailing \ to escape newlines.
+lex::newline_token: (newlines) ->
+  this.token "\n", "\n" unless this.value() is "\n"
+  true
+
+# Tokens to explicitly escape newlines are removed once their job is done.
+lex::suppress_newlines: (newlines) ->
+  this.tokens.pop() if this.value() is "\\"
+  true
 
 # We treat all other single characters as a token. Eg.: ( ) , . !
 # Multi-character operators are also literal tokens, so that Racc can assign
 # the proper order of operations.
 lex::literal_token: ->
-  match: this.chunk.match(lex.OPERATOR)
+  match: this.chunk.match(OPERATOR)
   value: match and match[1]
-  tag_parameters() if value and value.match(lex.CODE)
+  this.tag_parameters() if value and value.match(CODE)
   value ||= this.chunk.substr(0, 1)
-  tag: if value.match(lex.ASSIGNMENT) then 'ASSIGN' else value
-  if this.value() and this.value().spaced and lex.CALLABLE.indexOf(this.tag() >= 0)
+  tag: if value.match(ASSIGNMENT) then 'ASSIGN' else value
+  if this.value() and this.value().spaced and CALLABLE.indexOf(this.tag() >= 0)
     tag: 'CALL_START'  if value is '('
     tag: 'INDEX_START' if value is '['
   this.token tag, value
@@ -209,30 +246,23 @@ lex::match: (regex, index) ->
   return false unless m: this.chunk.match(regex)
   if m then m[index] else false
 
+# A source of ambiguity in our grammar was parameter lists in function
+# definitions (as opposed to argument lists in function calls). Tag
+# parameter identifiers in order to avoid this. Also, parameter lists can
+# make use of splats.
+lex::tag_parameters: ->
+  return if this.tag() isnt ')'
+  i: 0
+  while true
+    i += 1
+    tok: this.tokens[this.tokens.length - i]
+    return if not tok
+    switch tok[0]
+      when 'IDENTIFIER' then tok[0]: 'PARAM'
+      when ')'          then tok[0]: 'PARAM_END'
+      when '('          then return tok[0]: 'PARAM_START'
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Close up all remaining open blocks. IF the first token is an indent,
+# axe it.
+lex::close_indentation: ->
+  this.outdent_token(this.indent)
