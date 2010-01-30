@@ -151,6 +151,30 @@ module CoffeeScript
       end
     end
 
+    # Methods may be optionally called without parentheses, for simple cases.
+    # Insert the implicit parentheses here, so that the parser doesn't have to
+    # deal with them.
+    def add_implicit_parentheses
+      stack = [0]
+      scan_tokens do |prev, token, post, i|
+        stack.push(0) if token[0] == :INDENT
+        if token[0] == :OUTDENT
+          last = stack.pop
+          stack[-1] += last
+        end
+        if stack.last > 0 && (IMPLICIT_END.include?(token[0]) || post.nil?)
+          idx = token[0] == :OUTDENT ? i + 1 : i
+          stack.last.times { @tokens.insert(idx, [:CALL_END, Value.new(')', token[1].line)]) }
+          size, stack[-1] = stack[-1] + 1, 0
+          next size
+        end
+        next 1 unless IMPLICIT_FUNC.include?(prev[0]) && IMPLICIT_CALL.include?(token[0])
+        @tokens.insert(i, [:CALL_START, Value.new('(', token[1].line)])
+        stack[-1] += 1
+        next 2
+      end
+    end
+
     # Because our grammar is LALR(1), it can't handle some single-line
     # expressions that lack ending delimiters. Use the lexer to add the implicit
     # blocks, so it doesn't need to.
@@ -180,30 +204,6 @@ module CoffeeScript
         next 1 unless token[0] == :THEN
         @tokens.delete_at(i)
         next 0
-      end
-    end
-
-    # Methods may be optionally called without parentheses, for simple cases.
-    # Insert the implicit parentheses here, so that the parser doesn't have to
-    # deal with them.
-    def add_implicit_parentheses
-      stack = [0]
-      scan_tokens do |prev, token, post, i|
-        stack.push(0) if token[0] == :INDENT
-        if token[0] == :OUTDENT
-          last = stack.pop
-          stack[-1] += last
-        end
-        if stack.last > 0 && (IMPLICIT_END.include?(token[0]) || post.nil?)
-          idx = token[0] == :OUTDENT ? i + 1 : i
-          stack.last.times { @tokens.insert(idx, [:CALL_END, Value.new(')', token[1].line)]) }
-          size, stack[-1] = stack[-1] + 1, 0
-          next size
-        end
-        next 1 unless IMPLICIT_FUNC.include?(prev[0]) && IMPLICIT_CALL.include?(token[0])
-        @tokens.insert(i, [:CALL_START, Value.new('(', token[1].line)])
-        stack[-1] += 1
-        next 2
       end
     end
 

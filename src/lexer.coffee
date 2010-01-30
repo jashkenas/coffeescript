@@ -216,7 +216,7 @@ lex::literal_token: ->
   this.tag_parameters() if value and value.match(CODE)
   value ||= this.chunk.substr(0, 1)
   tag: if value.match(ASSIGNMENT) then 'ASSIGN' else value
-  if this.value() and this.value().spaced and CALLABLE.indexOf(this.tag() >= 0)
+  if this.value() and !this.value().spaced and CALLABLE.indexOf(this.tag() >= 0)
     tag: 'CALL_START'  if value is '('
     tag: 'INDEX_START' if value is '['
   this.token tag, value
