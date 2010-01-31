@@ -13,6 +13,31 @@ o: (pattern_string, func) ->
   else
     [pattern_string, '$$ = $1;']
 
+# Precedence ===========================================================
+
+operators: [
+  ["left",   '?']
+  ["right",  'NOT', '!', '!!', '~', '++', '--']
+  ["left",   '*', '/', '%']
+  ["left",   '+', '-']
+  ["left",   '<<', '>>', '>>>']
+  ["left",   '&', '|', '^']
+  ["left",   '<=', '<', '>', '>=']
+  ["right",  '==', '!=', 'IS', 'ISNT']
+  ["left",   '&&', '||', 'AND', 'OR']
+  ["right",  '-=', '+=', '/=', '*=', '%=']
+  ["right",  'DELETE', 'INSTANCEOF', 'TYPEOF']
+  ["left",   '.']
+  ["right",  'INDENT']
+  ["left",   'OUTDENT']
+  ["right",  'WHEN', 'LEADING_WHEN', 'IN', 'OF', 'BY']
+  ["right",  'THROW', 'FOR', 'NEW', 'SUPER']
+  ["left",   'EXTENDS']
+  ["left",   '||=', '&&=', '?=']
+  ["right",  'ASSIGN', 'RETURN']
+  ["right",  '->', '=>', 'UNLESS', 'IF', 'ELSE', 'WHILE']
+]
+
 # Grammar ==============================================================
 
 grammar: {
@@ -166,6 +191,61 @@ grammar: {
     o "Expression INSTANCEOF Expression",       -> new OpNode($2, $1, $3)
     o "Expression IN Expression",               -> new OpNode($2, $1, $3)
   ]
+
+  # Try abbreviated expressions to make the grammar build faster:
+
+  # UnaryOp: [
+  #   o "!"
+  #   o "!!"
+  #   o "NOT"
+  #   o "~"
+  #   o "--"
+  #   o "++"
+  #   o "DELETE"
+  #   o "TYPEOF"
+  # ]
+  #
+  # BinaryOp: [
+  #   o "*"
+  #   o "/"
+  #   o "%"
+  #   o "+"
+  #   o "-"
+  #   o "<<"
+  #   o ">>"
+  #   o ">>>"
+  #   o "&"
+  #   o "|"
+  #   o "^"
+  #   o "<="
+  #   o "<"
+  #   o ">"
+  #   o ">="
+  #   o "=="
+  #   o "!="
+  #   o "IS"
+  #   o "ISNT"
+  #   o "&&"
+  #   o "||"
+  #   o "AND"
+  #   o "OR"
+  #   o "?"
+  #   o "-="
+  #   o "+="
+  #   o "/="
+  #   o "*="
+  #   o "%="
+  #   o "||="
+  #   o "&&="
+  #   o "?="
+  #   o "INSTANCEOF"
+  #   o "IN"
+  # ]
+  #
+  # Operation: [
+  #   o "Expression BinaryOp Expression",         -> new OpNode($2, $1, $3)
+  #   o "UnaryOp Expression",                     -> new OpNode($1, $2)
+  # ]
 
   # The existence operator.
   Existence: [
@@ -426,7 +506,7 @@ for name, non_terminal of grammar
       option[1] = "return " + option[1]
     option
 tokens: tokens.join(" ")
-parser: new Parser({tokens: tokens, bnf: bnf}, {debug: false})
+parser: new Parser({tokens: tokens, bnf: bnf, operators: operators}, {debug: false})
 
 # Thin wrapper around the real lexer
 parser.lexer: {
