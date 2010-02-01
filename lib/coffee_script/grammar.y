@@ -21,24 +21,20 @@ token INDENT OUTDENT
 
 # Declare order of operations.
 prechigh
-  left     '?'
   nonassoc UMINUS UPLUS NOT '!' '!!' '~' '++' '--'
-  left     '*' '/' '%'
+  left     '*' '/' '%' '?' '.'
   left     '+' '-'
-  left     '<<' '>>' '>>>'
-  left     '&' '|' '^'
+  left     '<<' '>>' '>>>' '&' '|' '^'
   left     '<=' '<' '>' '>='
   right    '==' '!=' IS ISNT
   left     '&&' '||' AND OR
-  right    '-=' '+=' '/=' '*=' '%='
+  right    '-=' '+=' '/=' '*=' '%=' '||=' '&&=' '?='
   right    DELETE INSTANCEOF TYPEOF
-  left     '.'
   right    INDENT
   left     OUTDENT
   right    WHEN LEADING_WHEN IN OF BY
   right    THROW FOR NEW SUPER
   left     EXTENDS
-  left     '||=' '&&=' '?='
   right    ASSIGN RETURN
   right    '->' '=>' UNLESS IF ELSE WHILE
 preclow
