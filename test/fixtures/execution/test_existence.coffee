@@ -41,6 +41,8 @@ obj: {
 
 print obj?.prop is "hello"
 
+print obj.prop?.length is 5
+
 print obj?.prop?.non?.existent?.property is undefined
 
 
