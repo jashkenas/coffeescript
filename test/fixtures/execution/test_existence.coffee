@@ -41,9 +41,9 @@ obj: {
 
 puts obj?.prop is "hello"
 
-print obj.prop?.length is 5
+puts obj.prop?.length is 5
 
-print obj?.prop?.non?.existent?.property is undefined
+puts obj?.prop?.non?.existent?.property is undefined
 
 
 # Soaks and caches method calls as well.
