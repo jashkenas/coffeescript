@@ -386,7 +386,9 @@ module CoffeeScript
             parts[-1] << "#{SOAK}#{baseline += prop.compile(o)}"
           end
         else
-          parts << prop.compile(o)
+          part = prop.compile(o)
+          baseline += part
+          parts << part
         end
       end
       @last = parts.last
