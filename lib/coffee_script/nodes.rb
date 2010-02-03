@@ -429,6 +429,18 @@ module CoffeeScript
     end
   end
 
+  # A this-reference, using '@'.
+  class ThisNode < Node
+    def initialize(property=nil)
+      @property = property
+    end
+
+    def compile_node(o)
+      prop = @property ? ".#{@property}" : ''
+      write("this#{prop}")
+    end
+  end
+
   # A range literal. Ranges can be used to extract portions (slices) of arrays,
   # or to specify a range for array comprehensions.
   class RangeNode < Node

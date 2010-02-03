@@ -35,3 +35,14 @@ puts i is 0
 money$: 'dollars'
 
 puts money$ is 'dollars'
+
+
+bob: {
+  name:  'Bob'
+  greet: (salutation) ->
+    salutation + " " + @name
+  hello: ->
+    @greet("Hello")
+}
+
+puts bob.hello() is "Hello Bob"
