@@ -238,6 +238,7 @@ rule
   | Object                            { result = ValueNode.new(val[0]) }
   | Parenthetical                     { result = ValueNode.new(val[0]) }
   | Range                             { result = ValueNode.new(val[0]) }
+  | This                              { result = ValueNode.new(val[0]) }
   | Value Accessor                    { result = val[0] << val[1] }
   | Invocation Accessor               { result = ValueNode.new(val[0], [val[1]]) }
   ;
@@ -298,6 +299,12 @@ rule
   # Calling super.
   Super:
     SUPER CALL_START ArgList CALL_END { result = CallNode.new(Value.new('super'), val[2]) }
+  ;
+
+  # This references, either naked or to a property.
+  This:
+    '@'                               { result = ThisNode.new }
+  | '@' IDENTIFIER                    { result = ThisNode.new(val[1]) }
   ;
 
   # The range literal.

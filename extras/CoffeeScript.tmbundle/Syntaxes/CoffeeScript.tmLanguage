@@ -72,6 +72,12 @@
 			<key>name</key>
 			<string>constant.numeric.coffee</string>
 		</dict>
+		<dict>
+		  <key>match</key>
+		  <string>(@)[a-zA-Z_$]\w*</string>
+		  <key>name</key>
+		  <string>variable.other.readwrite.instance.coffee</string>
+		</dict>
     <dict>
       <key>name</key>
       <string>string.quoted.heredoc.coffee</string>

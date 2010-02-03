@@ -35,3 +35,14 @@ print i is 0
 money$: 'dollars'
 
 print money$ is 'dollars'
+
+
+bob: {
+  name:  'Bob'
+  greet: (salutation) ->
+    salutation + " " + @name
+  hello: ->
+    @greet("Hello")
+}
+
+print bob.hello() is "Hello Bob"
