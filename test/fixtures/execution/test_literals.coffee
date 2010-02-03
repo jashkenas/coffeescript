@@ -42,7 +42,7 @@ bob: {
   greet: (salutation) ->
     salutation + " " + @name
   hello: ->
-    @greet("Hello")
+    @greet "Hello"
 }
 
 print bob.hello() is "Hello Bob"
