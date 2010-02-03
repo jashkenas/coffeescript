@@ -346,7 +346,7 @@ module CoffeeScript
     end
 
     def properties?
-      return !@properties.empty?
+      return !@properties.empty? || @base.is_a?(ThisNode)
     end
 
     def array?
