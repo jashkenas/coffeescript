@@ -13,7 +13,7 @@ SecondChild::func: (string) ->
   super('two/') + string
 
 ThirdChild: ->
-  this.array: [1, 2, 3]
+  @array: [1, 2, 3]
 ThirdChild extends SecondChild
 ThirdChild::func: (string) ->
   super('three/') + string
@@ -24,7 +24,7 @@ print result is 'zero/one/two/three/four'
 
 
 TopClass: (arg) ->
-  this.prop: 'top-' + arg
+  @prop: 'top-' + arg
 
 SuperClass: (arg) ->
   super 'super-' + arg
