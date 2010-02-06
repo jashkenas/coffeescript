@@ -30,3 +30,8 @@ func: ->
   arguments
 
 puts func(100) is 25
+
+
+# Arguments can be accessed as a property.
+this.arguments: 10
+puts @arguments is 10

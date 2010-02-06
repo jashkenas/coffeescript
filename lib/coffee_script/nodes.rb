@@ -153,7 +153,7 @@ module CoffeeScript
     # at the top.
     def compile_with_declarations(o={})
       code  = compile_node(o)
-      args  = self.contains? {|n| n.is_a?(LiteralNode) && n.arguments? }
+      args  = self.contains? {|n| n.is_a?(ValueNode) && n.arguments? }
       argv  = args && o[:scope].check('arguments') ? '' : 'var '
       code  = "#{idt}#{argv}arguments = Array.prototype.slice.call(arguments, 0);\n#{code}" if args
       code  = "#{idt}var #{o[:scope].compiled_assignments};\n#{code}" if o[:scope].assignments?(self)
@@ -202,10 +202,6 @@ module CoffeeScript
       STATEMENTS.include?(@value.to_s)
     end
     alias_method :statement_only?, :statement?
-
-    def arguments?
-      @value.to_s == 'arguments'
-    end
 
     def compile_node(o)
       indent = statement? ? idt : ''
@@ -359,6 +355,10 @@ module CoffeeScript
 
     def splice?
       properties? && @properties.last.is_a?(SliceNode)
+    end
+
+    def arguments?
+      @base.to_s == 'arguments'
     end
 
     def unwrap
