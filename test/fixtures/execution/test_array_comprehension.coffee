@@ -40,3 +40,9 @@ for method in methods
 print obj.one()   is "I'm one"
 print obj.two()   is "I'm two"
 print obj.three() is "I'm three"
+
+
+# Steps should work for array comprehensions.
+
+array: [0..10]
+print num % 2 is 0 for num in array by 2
