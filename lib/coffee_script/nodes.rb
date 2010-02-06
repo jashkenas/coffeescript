@@ -848,8 +848,9 @@ module CoffeeScript
         for_part    = "#{index_var}=0, #{source.compile(o.merge(:index => ivar, :step => @step))}, #{index_var}++"
       else
         index_var   = nil
-        source_part = "#{svar} = #{source.compile(o)};\n#{idt}"
-        for_part    = @object ? "#{ivar} in #{svar}" : "#{ivar} = 0; #{ivar} < #{svar}.length; #{ivar}++"
+        source_part = "#{svar} = #{@source.compile(o)};\n#{idt}"
+        step_part   = @step ? "#{ivar} += #{@step.compile(o)}" : "#{ivar}++"
+        for_part    = @object ? "#{ivar} in #{svar}" : "#{ivar} = 0; #{ivar} < #{svar}.length; #{step_part}"
         var_part    = "#{body_dent}#{@name} = #{svar}[#{ivar}];\n" if @name
         # body.unshift(AssignNode.new(@name, ValueNode.new(svar, [IndexNode.new(ivar)]))) if @name
       end

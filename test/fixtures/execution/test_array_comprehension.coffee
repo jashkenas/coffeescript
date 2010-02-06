@@ -40,3 +40,9 @@ for method in methods
 puts obj.one()   is "I'm one"
 puts obj.two()   is "I'm two"
 puts obj.three() is "I'm three"
+
+
+# Steps should work for array comprehensions.
+
+array: [0..10]
+puts num % 2 is 0 for num in array by 2
