@@ -30,3 +30,8 @@ func: ->
   arguments
 
 print func(100) is 25
+
+
+# Arguments can be accessed as a property.
+this.arguments: 10
+print @arguments is 10
