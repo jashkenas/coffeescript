@@ -216,21 +216,21 @@ grammar: {
     o "PARAM . . .",                            -> new SplatNode(yytext)
   ]
 
-  # # A regular splat.
-  # Splat: [
-  #   o "Expression . . .",                       -> new SplatNode($1)
-  # ]
+  # A regular splat.
+  Splat: [
+    o "Expression . . .",                       -> new SplatNode($1)
+  ]
 
   # Expressions that can be treated as values.
   Value: [
     o "IDENTIFIER",                             -> new ValueNode(yytext)
     o "Literal",                                -> new ValueNode($1)
-    # o "Array",                                  -> new ValueNode($1)
-    # o "Object",                                 -> new ValueNode($1)
-    # o "Parenthetical",                          -> new ValueNode($1)
-    # o "Range",                                  -> new ValueNode($1)
+    o "Array",                                  -> new ValueNode($1)
+    o "Object",                                 -> new ValueNode($1)
+    o "Parenthetical",                          -> new ValueNode($1)
+    o "Range",                                  -> new ValueNode($1)
     # o "Value Accessor",                         -> $1.push($2)
-    # o "Invocation Accessor",                    -> new ValueNode($1, [$2])
+    o "Invocation Accessor",                    -> new ValueNode($1, [$2])
   ]
 
   # # Accessing into an object or array, through dot or index notation.
