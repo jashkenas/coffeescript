@@ -3,7 +3,7 @@ identity_wrap: (x) ->
 
 result: identity_wrap(identity_wrap(true))()()
 
-print result
+puts result
 
 
 str: 'god'
@@ -14,7 +14,7 @@ result: str.
   reverse().
   reverse()
 
-print result.join('') is 'dog'
+puts result.join('') is 'dog'
 
 result: str
   .split('')
@@ -22,4 +22,4 @@ result: str
   .reverse()
   .reverse()
 
-print result.join('') is 'dog'
+puts result.join('') is 'dog'

@@ -26,4 +26,4 @@ func: ->
 
   c.single: c.list[1..1][0]
 
-print func() is '-'
+puts func() is '-'

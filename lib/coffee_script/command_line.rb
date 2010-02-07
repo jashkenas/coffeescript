@@ -28,8 +28,11 @@ Usage:
     # Path to the root of the CoffeeScript install.
     ROOT = File.expand_path(File.dirname(__FILE__) + '/../..')
 
-    # Command to execute in Narwhal
-    LAUNCHER = "narwhal -p #{ROOT} -e 'require(\"coffee-script\").run(system.args);'"
+    # Commands to execute CoffeeScripts.
+    RUNNERS = {
+      :node     => "node #{ROOT}/lib/coffee_script/runner.js",
+      :narwhal  => "narwhal -p #{ROOT} -e 'require(\"coffee-script\").run(system.args);'"
+    }
 
     # Run the CommandLine off the contents of ARGV.
     def initialize
@@ -114,20 +117,20 @@ Usage:
       puts js
     end
 
-    # Use Narwhal to run an interactive CoffeeScript session.
+    # Use Node.js or Narwhal to run an interactive CoffeeScript session.
     def launch_repl
-      exec "#{LAUNCHER}"
+      exec "#{RUNNERS[@options[:runner]]}"
     rescue Errno::ENOENT
-      puts "Error: Narwhal must be installed to use the interactive REPL."
+      puts "Error: #{@options[:runner]} must be installed to use the interactive REPL."
       exit(1)
     end
 
-    # Use Narwhal to compile and execute CoffeeScripts.
+    # Use Node.js or Narwhal to compile and execute CoffeeScripts.
     def run_scripts
       sources = @sources.join(' ')
-      exec "#{LAUNCHER} #{sources}"
+      exec "#{RUNNERS[@options[:runner]]} #{sources}"
     rescue Errno::ENOENT
-      puts "Error: Narwhal must be installed in order to execute CoffeeScripts."
+      puts "Error: #{@options[:runner]} must be installed in order to execute scripts."
       exit(1)
     end
 
@@ -166,12 +169,12 @@ Usage:
 
     # Use OptionParser for all the options.
     def parse_options
-      @options = {}
+      @options = {:runner => :node}
       @option_parser = OptionParser.new do |opts|
-        opts.on('-i', '--interactive', 'run a CoffeeScript REPL (requires Narwhal)') do |i|
+        opts.on('-i', '--interactive', 'run an interactive CoffeeScript REPL') do |i|
           @options[:interactive] = true
         end
-        opts.on('-r', '--run', 'compile and run a script (requires Narwhal)') do |r|
+        opts.on('-r', '--run', 'compile and run a CoffeeScript') do |r|
           @options[:run] = true
         end
         opts.on('-o', '--output [DIR]', 'set the directory for compiled JavaScript') do |d|
@@ -201,6 +204,9 @@ Usage:
         end
         opts.on('-g', '--globals', 'attach all top-level variable as globals') do |n|
           @options[:globals] = true
+        end
+        opts.on_tail('--narwhal', 'use Narwhal instead of Node.js') do |n|
+          @options[:runner] = :narwhal
         end
         opts.on_tail('--install-bundle', 'install the CoffeeScript TextMate bundle') do |i|
           install_bundle

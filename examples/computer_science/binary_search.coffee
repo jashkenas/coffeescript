@@ -19,7 +19,7 @@ binary_search: (items, value) ->
 
 
 # Test the function.
-print(2 is binary_search([10, 20, 30, 40, 50], 30))
-print(4 is binary_search([-97, 35, 67, 88, 1200], 1200))
-print(0 is binary_search([0, 45, 70], 0))
-print(-1 is binary_search([0, 45, 70], 10))
+puts(2 is binary_search([10, 20, 30, 40, 50], 30))
+puts(4 is binary_search([-97, 35, 67, 88, 1200], 1200))
+puts(0 is binary_search([0, 45, 70], 0))
+puts(-1 is binary_search([0, 45, 70], 10))

@@ -3,4 +3,4 @@ six:
   2 +
   3
 
-print six is 6
+puts six is 6

@@ -1,40 +1,40 @@
 a: [(x) -> x, (x) -> x * x]
 
-print a.length is 2
+puts a.length is 2
 
 
 regex: /match/i
 words: "I think there is a match in here."
 
-print !!words.match(regex)
+puts !!words.match(regex)
 
 
 neg: (3 -4)
 
-print neg is -1
+puts neg is -1
 
 
 func: ->
   return if true
 
-print func() is null
+puts func() is null
 
 
 str: "\\"
 reg: /\\/
 
-print reg(str) and str is '\\'
+puts reg(str) and str is '\\'
 
 
 i: 10
 while i -= 1
 
-print i is 0
+puts i is 0
 
 
 money$: 'dollars'
 
-print money$ is 'dollars'
+puts money$ is 'dollars'
 
 
 bob: {
@@ -45,4 +45,4 @@ bob: {
     @greet "Hello"
 }
 
-print bob.hello() is "Hello Bob"
+puts bob.hello() is "Hello Bob"

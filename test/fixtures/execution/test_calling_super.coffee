@@ -20,7 +20,7 @@ ThirdChild::func: (string) ->
 
 result: (new ThirdChild()).func 'four'
 
-print result is 'zero/one/two/three/four'
+puts result is 'zero/one/two/three/four'
 
 
 TopClass: (arg) ->
@@ -35,4 +35,4 @@ SubClass: ->
 SuperClass extends TopClass
 SubClass extends SuperClass
 
-print((new SubClass()).prop is 'top-super-sub')
+puts((new SubClass()).prop is 'top-super-sub')

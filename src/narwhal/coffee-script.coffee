@@ -14,6 +14,9 @@ checkForErrors: (coffeeProcess) ->
   system.stderr.print coffeeProcess.stderr.read()
   throw new Error "CoffeeScript compile error"
 
+# Alias print to "puts", for Node.js compatibility:
+puts: print
+
 # Run a simple REPL, round-tripping to the CoffeeScript compiler for every
 # command.
 exports.run: (args) ->

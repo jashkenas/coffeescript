@@ -7,5 +7,5 @@ bubble_sort: (list) ->
 
 
 # Test the function.
-print(bubble_sort([3, 2, 1]).join(' ') is '1 2 3')
-print(bubble_sort([9, 2, 7, 0, 1]).join(' ') is '0 1 2 7 9')
+puts(bubble_sort([3, 2, 1]).join(' ') is '1 2 3')
+puts(bubble_sort([9, 2, 7, 0, 1]).join(' ') is '0 1 2 7 9')

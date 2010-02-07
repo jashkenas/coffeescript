@@ -19,6 +19,13 @@ class ExecutionTest < Test::Unit::TestCase
     end
   end
 
+  # Test all of the code examples under Narwhal as well.
+  def test_execution_with_narwhal
+    (`bin/coffee -r --narwhal #{SOURCES.join(' ')}`).split("\n").each do |line|
+      assert line == "true"
+    end
+  end
+
   def test_lintless_tests
     no_warnings `bin/coffee -l test/fixtures/*/*.coffee`
   end
