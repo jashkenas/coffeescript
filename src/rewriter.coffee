@@ -18,7 +18,7 @@ EXPRESSION_CLOSE: ['CATCH', 'WHEN', 'ELSE', 'FINALLY'].concat(EXPRESSION_TAIL)
 
 # Tokens pairs that, in immediate succession, indicate an implicit call.
 IMPLICIT_FUNC: ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END']
-IMPLICIT_END:  ['IF', 'UNLESS', 'FOR', 'WHILE', "\n", 'OUTDENT']
+IMPLICIT_END:  ['IF', 'UNLESS', 'FOR', 'WHILE', 'TERMINATOR', 'OUTDENT']
 IMPLICIT_CALL: ['IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START',
                  'TRY', 'DELETE', 'TYPEOF', 'SWITCH', 'ARGUMENTS',
                  'TRUE', 'FALSE', 'YES', 'NO', 'ON', 'OFF', '!', '!!', 'NOT',
@@ -33,7 +33,7 @@ for pair in BALANCED_PAIRS
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.
 SINGLE_LINERS: ['ELSE', "->", "=>", 'TRY', 'FINALLY', 'THEN']
-SINGLE_CLOSERS: ["\n", 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN', 'PARAM_START']
+SINGLE_CLOSERS: ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN', 'PARAM_START']
 
 # Rewrite the token stream in multiple passes, one logical filter at
 # a time. This could certainly be changed into a single pass through the
@@ -55,11 +55,11 @@ re::rewrite: (tokens) ->
 # Allow the return value of the block to tell us how many tokens to move
 # forwards (or backwards) in the stream, to make sure we don't miss anything
 # as the stream changes length under our feet.
-re::scan_tokens: (yield) ->
+re::scan_tokens: (block) ->
   i: 0
   while true
     break unless this.tokens[i]
-    move: yield(this.tokens[i - 1], this.tokens[i], this.tokens[i + 1], i)
+    move: block(this.tokens[i - 1], this.tokens[i], this.tokens[i + 1], i)
     i += move
   true
 
@@ -77,12 +77,12 @@ re::adjust_comments: ->
       this.tokens.splice(i + 2, 1)
       this.tokens.splice(i - 2, 1)
       return 0
-    else if prev[0] is "\n" and after[0] is 'INDENT'
+    else if prev[0] is 'TERMINATOR' and after[0] is 'INDENT'
       this.tokens.splice(i + 2, 1)
       this.tokens[i - 1]: after
       return 1
-    else if prev[0] isnt "\n" and prev[0] isnt 'INDENT' and prev[0] isnt 'OUTDENT'
-      this.tokens.splice(i, 0, ["\n", "\n"])
+    else if prev[0] isnt 'TERMINATOR' and prev[0] isnt 'INDENT' and prev[0] isnt 'OUTDENT'
+      this.tokens.splice(i, 0, ['TERMINATOR', "\n", prev[2]])
       return 2
     else
       return 1
@@ -90,13 +90,13 @@ re::adjust_comments: ->
 # Leading newlines would introduce an ambiguity in the grammar, so we
 # dispatch them here.
 re::remove_leading_newlines: ->
-  this.tokens.shift() if this.tokens[0][0] is "\n"
+  this.tokens.shift() if this.tokens[0][0] is 'TERMINATOR'
 
 # Some blocks occur in the middle of expressions -- when we're expecting
 # this, remove their trailing newlines.
 re::remove_mid_expression_newlines: ->
   this.scan_tokens (prev, token, post, i) =>
-    return 1 unless post and EXPRESSION_CLOSE.indexOf(post[0]) >= 0 and token[0] is "\n"
+    return 1 unless post and EXPRESSION_CLOSE.indexOf(post[0]) >= 0 and token[0] is 'TERMINATOR'
     this.tokens.splice(i, 1)
     return 0
 

@@ -1,4 +1,5 @@
-exports.Node: -> this.values: arguments
+exports.Node: -> @values: arguments
+exports.Node.wrap: (values) -> @values: values
 
 exports.Expressions : exports.Node
 exports.LiteralNode : exports.Node

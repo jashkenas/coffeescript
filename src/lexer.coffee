@@ -1,4 +1,3 @@
-sys: require 'sys'
 Rewriter: require('./rewriter').Rewriter
 
 # The lexer reads a stream of CoffeeScript and divvys it up into tagged
@@ -70,7 +69,6 @@ lex::tokenize: (code) ->
   while this.i < this.code.length
     this.chunk: this.code.slice(this.i)
     this.extract_next_token()
-  # sys.puts "original stream: " + this.tokens if process.ENV['VERBOSE']
   this.close_indentation()
   (new Rewriter()).rewrite this.tokens
 
@@ -157,7 +155,7 @@ lex::comment_token: ->
   return false unless comment: this.match COMMENT, 1
   this.line += comment.match(MULTILINER).length
   this.token 'COMMENT', comment.replace(COMMENT_CLEANER, '').split(MULTILINER)
-  this.token "\n", "\n"
+  this.token 'TERMINATOR', "\n"
   this.i += comment.length
   true
 
@@ -187,7 +185,7 @@ lex::outdent_token: (move_out) ->
     last_indent: this.indents.pop()
     this.token 'OUTDENT', last_indent
     move_out -= last_indent
-  this.token "\n", "\n"
+  this.token 'TERMINATOR', "\n"
   true
 
 # Matches and consumes non-meaningful whitespace.
@@ -200,7 +198,7 @@ lex::whitespace_token: ->
 # Multiple newlines get merged together.
 # Use a trailing \ to escape newlines.
 lex::newline_token: (newlines) ->
-  this.token "\n", "\n" unless this.value() is "\n"
+  this.token 'TERMINATOR', "\n" unless this.value() is "\n"
   true
 
 # Tokens to explicitly escape newlines are removed once their job is done.
@@ -217,6 +215,7 @@ lex::literal_token: ->
   this.tag_parameters() if value and value.match(CODE)
   value ||= this.chunk.substr(0, 1)
   tag: if value.match(ASSIGNMENT) then 'ASSIGN' else value
+  tag: 'TERMINATOR' if value == ';'
   if this.value() isnt this.spaced and CALLABLE.indexOf(this.tag()) >= 0
     tag: 'CALL_START'  if value is '('
     tag: 'INDEX_START' if value is '['
@@ -244,12 +243,12 @@ lex::value: (index, val) ->
   tok[1]
 
 # Count the occurences of a character in a string.
-lex::count: (string, char) ->
+lex::count: (string, letter) ->
   num: 0
-  pos: string.indexOf(char)
+  pos: string.indexOf(letter)
   while pos isnt -1
     count += 1
-    pos: string.indexOf(char, pos + 1)
+    pos: string.indexOf(letter, pos + 1)
   count
 
 # Attempt to match a string against the current chunk, returning the indexed
