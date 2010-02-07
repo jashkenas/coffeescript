@@ -19,8 +19,7 @@ namespace :build do
 
   desc "Compile the Narwhal interface for --interactive and --run"
   task :narwhal do
-    sh "bin/coffee lib/coffee_script/narwhal/*.coffee -o lib/coffee_script/narwhal/lib/coffee-script"
-    sh "mv lib/coffee_script/narwhal/lib/coffee-script/coffee-script.js lib/coffee_script/narwhal/lib/coffee-script.js"
+    sh "bin/coffee lib/coffee_script/narwhal/*.coffee -o lib/coffee_script/narwhal"
   end
 
   desc "Compile and install the Ultraviolet syntax highlighter"
