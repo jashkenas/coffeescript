@@ -60,7 +60,7 @@ exports.makeNarwhalFactory: (path) ->
 
 # The Narwhal loader for '.coffee' files.
 factories: {}
-loader:     {}
+loader:    {}
 
 # Reload the coffee-script environment from source.
 loader.reload: (topId, path) ->
