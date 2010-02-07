@@ -62,39 +62,39 @@ grammar: {
   # is the expression.
   Expression: [
     o "Value"
-    # o "Call"
-    # o "Code"
-    # o "Operation"
-    # o "Assign"
-    # o "If"
-    # o "Try"
-    # o "Throw"
-    # o "Return"
-    # o "While"
-    # o "For"
-    # o "Switch"
-    # o "Extends"
-    # o "Splat"
-    # o "Existence"
-    # o "Comment"
+    o "Call"
+    o "Code"
+    o "Operation"
+    o "Assign"
+    o "If"
+    o "Try"
+    o "Throw"
+    o "Return"
+    o "While"
+    o "For"
+    o "Switch"
+    o "Extends"
+    o "Splat"
+    o "Existence"
+    o "Comment"
   ]
 
-  # # A block of expressions. Note that the Rewriter will convert some postfix
-  # # forms into blocks for us, by altering the token stream.
-  # Block: [
-  #   o "INDENT Expressions OUTDENT",             -> $2
-  #   o "INDENT OUTDENT",                         -> new Expressions()
-  # ]
+  # A block of expressions. Note that the Rewriter will convert some postfix
+  # forms into blocks for us, by altering the token stream.
+  Block: [
+    o "INDENT Expressions OUTDENT",             -> $2
+    o "INDENT OUTDENT",                         -> new Expressions()
+  ]
 
   # All hard-coded values. These can be printed straight to JavaScript.
   Literal: [
     o "NUMBER",                                 -> new LiteralNode(yytext)
-    o "STRING",                                 -> new LiteralNode($1)
-    o "JS",                                     -> new LiteralNode($1)
-    o "REGEX",                                  -> new LiteralNode($1)
-    o "BREAK",                                  -> new LiteralNode($1)
-    o "CONTINUE",                               -> new LiteralNode($1)
-    o "ARGUMENTS",                              -> new LiteralNode($1)
+    o "STRING",                                 -> new LiteralNode(yytext)
+    o "JS",                                     -> new LiteralNode(yytext)
+    o "REGEX",                                  -> new LiteralNode(yytext)
+    o "BREAK",                                  -> new LiteralNode(yytext)
+    o "CONTINUE",                               -> new LiteralNode(yytext)
+    o "ARGUMENTS",                              -> new LiteralNode(yytext)
     o "TRUE",                                   -> new LiteralNode(true)
     o "FALSE",                                  -> new LiteralNode(false)
     o "YES",                                    -> new LiteralNode(true)
@@ -103,28 +103,28 @@ grammar: {
     o "OFF",                                    -> new LiteralNode(false)
   ]
 
-  # # Assignment to a variable (or index).
-  # Assign: [
-  #   o "Value ASSIGN Expression",                -> new AssignNode($1, $3)
-  # ]
-  #
-  # # Assignment within an object literal (can be quoted).
-  # AssignObj: [
-  #   o "IDENTIFIER ASSIGN Expression",           -> new AssignNode(new ValueNode($1), $3, 'object')
-  #   o "STRING ASSIGN Expression",               -> new AssignNode(new ValueNode(new LiteralNode($1)), $3, 'object')
-  #   o "Comment"
-  # ]
-  #
-  # # A return statement.
-  # Return: [
-  #   o "RETURN Expression",                      -> new ReturnNode($2)
-  #   o "RETURN",                                 -> new ReturnNode(new ValueNode(new LiteralNode('null')))
-  # ]
-  #
-  # # A comment.
-  # Comment: [
-  #   o "COMMENT",                                -> new CommentNode($1)
-  # ]
+  # Assignment to a variable (or index).
+  Assign: [
+    o "Value ASSIGN Expression",                -> new AssignNode($1, $3)
+  ]
+
+  # Assignment within an object literal (can be quoted).
+  AssignObj: [
+    o "IDENTIFIER ASSIGN Expression",           -> new AssignNode(new ValueNode(yytext), $3, 'object')
+    o "STRING ASSIGN Expression",               -> new AssignNode(new ValueNode(new LiteralNode(yytext)), $3, 'object')
+    o "Comment"
+  ]
+
+  # A return statement.
+  Return: [
+    o "RETURN Expression",                      -> new ReturnNode($2)
+    o "RETURN",                                 -> new ReturnNode(new ValueNode(new LiteralNode('null')))
+  ]
+
+  # A comment.
+  Comment: [
+    o "COMMENT",                                -> new CommentNode(yytext)
+  ]
   #
   # # Arithmetic and logical operators
   # # For Ruby's Operator precedence, see: [
@@ -186,91 +186,36 @@ grammar: {
   #   o "Expression INSTANCEOF Expression",       -> new OpNode($2, $1, $3)
   #   o "Expression IN Expression",               -> new OpNode($2, $1, $3)
   # ]
-  #
-  # # Try abbreviated expressions to make the grammar build faster:
-  #
-  # # UnaryOp: [
-  # #   o "!"
-  # #   o "!!"
-  # #   o "NOT"
-  # #   o "~"
-  # #   o "--"
-  # #   o "++"
-  # #   o "DELETE"
-  # #   o "TYPEOF"
-  # # ]
-  # #
-  # # BinaryOp: [
-  # #   o "*"
-  # #   o "/"
-  # #   o "%"
-  # #   o "+"
-  # #   o "-"
-  # #   o "<<"
-  # #   o ">>"
-  # #   o ">>>"
-  # #   o "&"
-  # #   o "|"
-  # #   o "^"
-  # #   o "<="
-  # #   o "<"
-  # #   o ">"
-  # #   o ">="
-  # #   o "=="
-  # #   o "!="
-  # #   o "IS"
-  # #   o "ISNT"
-  # #   o "&&"
-  # #   o "||"
-  # #   o "AND"
-  # #   o "OR"
-  # #   o "?"
-  # #   o "-="
-  # #   o "+="
-  # #   o "/="
-  # #   o "*="
-  # #   o "%="
-  # #   o "||="
-  # #   o "&&="
-  # #   o "?="
-  # #   o "INSTANCEOF"
-  # #   o "IN"
-  # # ]
-  # #
-  # # Operation: [
-  # #   o "Expression BinaryOp Expression",         -> new OpNode($2, $1, $3)
-  # #   o "UnaryOp Expression",                     -> new OpNode($1, $2)
-  # # ]
-  #
-  # # The existence operator.
-  # Existence: [
-  #   o "Expression ?",                           -> new ExistenceNode($1)
-  # ]
-  #
-  # # Function definition.
-  # Code: [
-  #   o "PARAM_START ParamList PARAM_END FuncGlyph Block", -> new CodeNode($2, $5, $4)
-  #   o "FuncGlyph Block",                        -> new CodeNode([], $2, $1)
-  # ]
-  #
-  # # The symbols to signify functions, and bound functions.
-  # FuncGlyph: [
-  #   o "->",                                     -> 'func'
-  #   o "=>",                                     -> 'boundfunc'
-  # ]
-  #
-  # # The parameters to a function definition.
-  # ParamList: [
-  #   o "Param",                                  -> [$1]
-  #   o "ParamList , Param",                      -> $1.push($3)
-  # ]
-  #
-  # # A Parameter (or ParamSplat) in a function definition.
-  # Param: [
-  #   o "PARAM"
-  #   o "PARAM . . .",                            -> new SplatNode($1)
-  # ]
-  #
+
+  # The existence operator.
+  Existence: [
+    o "Expression ?",                           -> new ExistenceNode($1)
+  ]
+
+  # Function definition.
+  Code: [
+    o "PARAM_START ParamList PARAM_END FuncGlyph Block", -> new CodeNode($2, $5, $4)
+    o "FuncGlyph Block",                        -> new CodeNode([], $2, $1)
+  ]
+
+  # The symbols to signify functions, and bound functions.
+  FuncGlyph: [
+    o "->",                                     -> 'func'
+    o "=>",                                     -> 'boundfunc'
+  ]
+
+  # The parameters to a function definition.
+  ParamList: [
+    o "Param",                                  -> [$1]
+    o "ParamList , Param",                      -> $1.push($3)
+  ]
+
+  # A Parameter (or ParamSplat) in a function definition.
+  Param: [
+    o "PARAM",                                  -> yytext
+    o "PARAM . . .",                            -> new SplatNode(yytext)
+  ]
+
   # # A regular splat.
   # Splat: [
   #   o "Expression . . .",                       -> new SplatNode($1)

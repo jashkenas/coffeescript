@@ -1,31 +1,30 @@
-exports.Node: -> @values: arguments
-exports.Node.wrap: (values) -> @values: values
+exports.Node: -> @values: arguments; @name: this.constructor.name
 
-exports.Expressions : exports.Node
-exports.LiteralNode : exports.Node
-exports.ReturnNode : exports.Node
-exports.CommentNode : exports.Node
-exports.CallNode : exports.Node
-exports.ExtendsNode : exports.Node
-exports.ValueNode : exports.Node
-exports.AccessorNode : exports.Node
-exports.IndexNode : exports.Node
-exports.RangeNode : exports.Node
-exports.SliceNode : exports.Node
-exports.AssignNode : exports.Node
-exports.OpNode : exports.Node
-exports.CodeNode : exports.Node
-exports.SplatNode : exports.Node
-exports.ObjectNode : exports.Node
-exports.ArrayNode : exports.Node
-exports.PushNode : exports.Node
-exports.ClosureNode : exports.Node
-exports.WhileNode : exports.Node
-exports.ForNode : exports.Node
-exports.TryNode : exports.Node
-exports.ThrowNode : exports.Node
-exports.ExistenceNode : exports.Node
-exports.ParentheticalNode : exports.Node
-exports.IfNode : exports.Node
+exports.Expressions       : -> @name: this.constructor.name; @values: arguments
+exports.LiteralNode       : -> @name: this.constructor.name; @values: arguments
+exports.ReturnNode        : -> @name: this.constructor.name; @values: arguments
+exports.CommentNode       : -> @name: this.constructor.name; @values: arguments
+exports.CallNode          : -> @name: this.constructor.name; @values: arguments
+exports.ExtendsNode       : -> @name: this.constructor.name; @values: arguments
+exports.ValueNode         : -> @name: this.constructor.name; @values: arguments
+exports.AccessorNode      : -> @name: this.constructor.name; @values: arguments
+exports.IndexNode         : -> @name: this.constructor.name; @values: arguments
+exports.RangeNode         : -> @name: this.constructor.name; @values: arguments
+exports.SliceNode         : -> @name: this.constructor.name; @values: arguments
+exports.AssignNode        : -> @name: this.constructor.name; @values: arguments
+exports.OpNode            : -> @name: this.constructor.name; @values: arguments
+exports.CodeNode          : -> @name: this.constructor.name; @values: arguments
+exports.SplatNode         : -> @name: this.constructor.name; @values: arguments
+exports.ObjectNode        : -> @name: this.constructor.name; @values: arguments
+exports.ArrayNode         : -> @name: this.constructor.name; @values: arguments
+exports.PushNode          : -> @name: this.constructor.name; @values: arguments
+exports.ClosureNode       : -> @name: this.constructor.name; @values: arguments
+exports.WhileNode         : -> @name: this.constructor.name; @values: arguments
+exports.ForNode           : -> @name: this.constructor.name; @values: arguments
+exports.TryNode           : -> @name: this.constructor.name; @values: arguments
+exports.ThrowNode         : -> @name: this.constructor.name; @values: arguments
+exports.ExistenceNode     : -> @name: this.constructor.name; @values: arguments
+exports.ParentheticalNode : -> @name: this.constructor.name; @values: arguments
+exports.IfNode            : -> @name: this.constructor.name; @values: arguments
 
-
+exports.Expressions.wrap  : (values) -> @values: values
