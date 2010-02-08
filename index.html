@@ -37,7 +37,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://gemcutter.org/gems/coffee-script">0.3.1</a>
+      <a href="http://gemcutter.org/gems/coffee-script">0.3.2</a>
     </p>
 
     <h2>Table of Contents</h2>
@@ -215,7 +215,7 @@ gem install coffee-script</pre>
       Installing the gem provides the <tt>coffee</tt> command, which can
       be used to compile CoffeeScript <tt>.coffee</tt> files into JavaScript, as
       well as debug them. In conjunction with
-      <a href="http://nodejs.org/">Node.js</a>, the <tt>coffee</tt>
+      <a href="http://nodejs.org/">Node.js</a> (or <a href="http://narwhaljs.org/">Narwhal</a>), the <tt>coffee</tt>
       command also provides direct evaluation and an interactive REPL.
       When compiling to JavaScript, <tt>coffee</tt> writes the output
       as <tt>.js</tt> files in the same directory by default, but output
@@ -227,14 +227,16 @@ gem install coffee-script</pre>
         <td width="25%"><code>-i, --interactive</code></td>
         <td>
           Launch an interactive CoffeeScript session.
-          Requires <a href="http://nodejs.org/">Node.js</a>.
+          Requires <a href="http://nodejs.org/">Node.js</a>,
+          or <a href="http://narwhaljs.org/">Narwhal</a>, with <tt>--narwhal</tt>.
         </td>
       </tr>
       <tr>
         <td><code>-r, --run</code></td>
         <td>
           Compile and execute scripts without saving the intermediate
-          JavaScript. Requires <a href="http://nodejs.org/">Node.js</a>.
+          JavaScript. Requires <a href="http://nodejs.org/">Node.js</a>,
+          or <a href="http://narwhaljs.org/">Narwhal</a>, with <tt>--narwhal</tt>.
         </td>
       </tr>
       <tr>
@@ -557,6 +559,9 @@ expensive <span class="Keyword">=</span> expensive <span class="Keyword">||</spa
     <p>
       For single-line statements, <tt>unless</tt> can be used as the inverse of <tt>if</tt>.
     </p>
+    <p>
+      As a shortcut for <tt>this.property</tt>, you can use <tt>@property</tt>.
+    </p>
     <div class='code'><pre class="idle">launch() <span class="Keyword">if</span> ignition <span class="Keyword">is</span> <span class="BuiltInConstant">on</span>
 
 <span class="FunctionName">volume</span><span class="Keyword">:</span> <span class="Number">10</span> <span class="Keyword">if</span> band <span class="Keyword">isnt</span> spinal_tap
@@ -564,6 +569,8 @@ expensive <span class="Keyword">=</span> expensive <span class="Keyword">||</spa
 let_the_wild_rumpus_begin() <span class="Keyword">unless</span> answer <span class="Keyword">is</span> <span class="BuiltInConstant">no</span>
 
 <span class="Keyword">if</span> car.speed <span class="Keyword">&lt;</span> speed_limit <span class="Keyword">then</span> accelerate()
+
+print <span class="String"><span class="String">&quot;</span>My name is <span class="String">&quot;</span></span> <span class="Keyword">+</span> <span class="Variable">@name</span>
 </pre><pre class="idle"><span class="Storage">var</span> volume;
 <span class="Keyword">if</span> (ignition <span class="Keyword">===</span> <span class="BuiltInConstant">true</span>) {
   launch();
@@ -575,6 +582,7 @@ let_the_wild_rumpus_begin() <span class="Keyword">unless</span> answer <span cla
   let_the_wild_rumpus_begin();
 }
 car.speed <span class="Keyword">&lt;</span> speed_limit ? accelerate() : <span class="BuiltInConstant">null</span>;
+<span class="LibraryFunction">print</span>(<span class="String"><span class="String">&quot;</span>My name is <span class="String">&quot;</span></span> <span class="Keyword">+</span> <span class="Variable">this</span>.<span class="LibraryConstant">name</span>);
 </pre><br class='clear' /></div>
 
     <p id="splats">
@@ -1050,12 +1058,12 @@ speed <span class="Keyword">?</span><span class="Keyword">=</span> <span class="
 
 
 </pre><pre class="idle"><span class="Storage">var</span> solipsism, speed;
-<span class="Keyword">if</span> ((<span class="Keyword">typeof</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> <span class="Keyword">!</span>(<span class="Keyword">typeof</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>)) {
+<span class="Keyword">if</span> ((<span class="Keyword">typeof</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> (<span class="Keyword">typeof</span> <span class="Keyword">!</span>world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> <span class="Keyword">!</span>world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>)) {
   solipsism <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
 }
 speed <span class="Keyword">=</span> (<span class="Keyword">typeof</span> speed <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> speed <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) ? speed : <span class="Number">140</span>;
 </pre><button onclick='javascript: var solipsism, speed;
-if ((typeof mind !== "undefined" && mind !== null) && !(typeof world !== "undefined" && world !== null)) {
+if ((typeof mind !== "undefined" && mind !== null) && (typeof !world !== "undefined" && !world !== null)) {
   solipsism = true;
 }
 speed = (typeof speed !== "undefined" && speed !== null) ? speed : 140;
@@ -1101,15 +1109,15 @@ speed = (typeof speed !== "undefined" && speed !== null) ? speed : 140;
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">Animal</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
 <span class="FunctionName">Animal::move</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">meters</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
-  alert <span class="Variable">this</span>.name <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>
+  alert <span class="Variable">@name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>
 
-<span class="FunctionName">Snake</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">name</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> <span class="FunctionName">this.name</span><span class="Keyword">:</span> name
+<span class="FunctionName">Snake</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">name</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> <span class="Variable">@name</span><span class="Keyword">:</span> name
 Snake <span class="Variable">extends</span> Animal
 <span class="FunctionName">Snake::move</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
   alert <span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>
   <span class="Variable">super</span> <span class="Number">5</span>
 
-<span class="FunctionName">Horse</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">name</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> <span class="FunctionName">this.name</span><span class="Keyword">:</span> name
+<span class="FunctionName">Horse</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">name</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> <span class="Variable">@name</span><span class="Keyword">:</span> name
 Horse <span class="Variable">extends</span> Animal
 <span class="FunctionName">Horse::move</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
   alert <span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>
@@ -1314,11 +1322,11 @@ city = __c[1];
       properties of the <tt>this</tt> where they're defined.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">Account</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">customer, cart</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
-  <span class="FunctionName">this.customer</span><span class="Keyword">:</span> customer
-  <span class="FunctionName">this.cart</span><span class="Keyword">:</span> cart
+  <span class="Variable">@customer</span><span class="Keyword">:</span> customer
+  <span class="Variable">@cart</span><span class="Keyword">:</span> cart
 
   $(<span class="String"><span class="String">'</span>.shopping_cart<span class="String">'</span></span>).bind <span class="String"><span class="String">'</span>click<span class="String">'</span></span>, <span class="FunctionArgument">(</span><span class="FunctionArgument">event</span><span class="FunctionArgument">)</span> <span class="Storage">=&gt;</span>
-    <span class="Variable">this</span>.customer.purchase <span class="Variable">this</span>.cart
+    <span class="Variable">@customer</span>.purchase <span class="Variable">@cart</span>
 </pre><pre class="idle"><span class="Storage">var</span> Account;
 Account <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Account</span>(<span class="FunctionArgument">customer, cart</span>) {
   <span class="Storage">var</span> __a;
@@ -1489,10 +1497,10 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">&q
     <ul>
       <li>
         <a href="http://github.com/jashkenas/coffee-script/">Source Code</a><br />
-        After checking out the source, make sure to run <tt>rake build:parser</tt>
-        to generate an up-to-date version of the Racc parser.
         Use <tt>bin/coffee</tt> to test your changes,
         <tt>rake test</tt> to run the test suite,
+        <tt>rake build:parser</tt> to regenerate the Racc parser if you're
+        working on the grammar,
         and <tt>rake gem:install</tt> to
         create and install a custom version of the gem.
       </li>
@@ -1528,6 +1536,13 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">&q
     </ul>
 
     <h2 id="change_log">Change Log</h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.3.2</b>
+      <tt>@property</tt> is now a shorthand for <tt>this.property</tt>.<br />
+      Switched the default JavaScript engine from Narwhal to Node.js. Pass
+      the <tt>--narwhal</tt> flag if you'd like to continue using it.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.3.0</b>

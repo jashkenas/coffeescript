@@ -10,4 +10,5 @@
     let_the_wild_rumpus_begin();
   }
   car.speed < speed_limit ? accelerate() : null;
+  print("My name is " + this.name);
 })();

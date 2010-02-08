@@ -51,7 +51,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://gemcutter.org/gems/coffee-script">0.3.1</a>
+      <a href="http://gemcutter.org/gems/coffee-script">0.3.2</a>
     </p>
 
     <h2>Table of Contents</h2>
@@ -118,7 +118,7 @@ gem install coffee-script</pre>
       Installing the gem provides the <tt>coffee</tt> command, which can
       be used to compile CoffeeScript <tt>.coffee</tt> files into JavaScript, as
       well as debug them. In conjunction with
-      <a href="http://nodejs.org/">Node.js</a>, the <tt>coffee</tt>
+      <a href="http://nodejs.org/">Node.js</a> (or <a href="http://narwhaljs.org/">Narwhal</a>), the <tt>coffee</tt>
       command also provides direct evaluation and an interactive REPL.
       When compiling to JavaScript, <tt>coffee</tt> writes the output
       as <tt>.js</tt> files in the same directory by default, but output
@@ -130,14 +130,16 @@ gem install coffee-script</pre>
         <td width="25%"><code>-i, --interactive</code></td>
         <td>
           Launch an interactive CoffeeScript session.
-          Requires <a href="http://nodejs.org/">Node.js</a>.
+          Requires <a href="http://nodejs.org/">Node.js</a>,
+          or <a href="http://narwhaljs.org/">Narwhal</a>, with <tt>--narwhal</tt>.
         </td>
       </tr>
       <tr>
         <td><code>-r, --run</code></td>
         <td>
           Compile and execute scripts without saving the intermediate
-          JavaScript. Requires <a href="http://nodejs.org/">Node.js</a>.
+          JavaScript. Requires <a href="http://nodejs.org/">Node.js</a>,
+          or <a href="http://narwhaljs.org/">Narwhal</a>, with <tt>--narwhal</tt>.
         </td>
       </tr>
       <tr>
@@ -366,6 +368,9 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <p>
       For single-line statements, <tt>unless</tt> can be used as the inverse of <tt>if</tt>.
+    </p>
+    <p>
+      As a shortcut for <tt>this.property</tt>, you can use <tt>@property</tt>.
     </p>
     <%= code_for('aliases') %>
 
@@ -624,10 +629,10 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <ul>
       <li>
         <a href="http://github.com/jashkenas/coffee-script/">Source Code</a><br />
-        After checking out the source, make sure to run <tt>rake build:parser</tt>
-        to generate an up-to-date version of the Racc parser.
         Use <tt>bin/coffee</tt> to test your changes,
         <tt>rake test</tt> to run the test suite,
+        <tt>rake build:parser</tt> to regenerate the Racc parser if you're
+        working on the grammar,
         and <tt>rake gem:install</tt> to
         create and install a custom version of the gem.
       </li>
@@ -663,6 +668,13 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </ul>
 
     <h2 id="change_log">Change Log</h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.3.2</b>
+      <tt>@property</tt> is now a shorthand for <tt>this.property</tt>.<br />
+      Switched the default JavaScript engine from Narwhal to Node.js. Pass
+      the <tt>--narwhal</tt> flag if you'd like to continue using it.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.3.0</b>
