@@ -112,6 +112,7 @@ grammar: {
   AssignObj: [
     o "IDENTIFIER ASSIGN Expression",           -> new AssignNode(new ValueNode(yytext), $3, 'object')
     o "STRING ASSIGN Expression",               -> new AssignNode(new ValueNode(new LiteralNode(yytext)), $3, 'object')
+    o "NUMBER ASSIGN Expression",               -> new AssignNode(new ValueNode(new LiteralNode(yytext)), $3, 'object')
     o "Comment"
   ]
 

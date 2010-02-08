@@ -43,6 +43,8 @@ bob: {
     salutation + " " + @name
   hello: ->
     @greet "Hello"
+  10: 'number'
 }
 
 puts bob.hello() is "Hello Bob"
+puts bob[10] is 'number'
