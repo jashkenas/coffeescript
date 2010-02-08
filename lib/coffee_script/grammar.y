@@ -21,8 +21,9 @@ token INDENT OUTDENT
 
 # Declare order of operations.
 prechigh
+  left     '?'
   nonassoc UMINUS UPLUS NOT '!' '!!' '~' '++' '--'
-  left     '*' '/' '%' '?' '.'
+  left     '*' '/' '%' '.'
   left     '+' '-'
   left     '<<' '>>' '>>>' '&' '|' '^'
   left     '<=' '<' '>' '>='
