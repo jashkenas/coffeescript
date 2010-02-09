@@ -14,6 +14,7 @@ SecondChild::func: (string) ->
 
 ThirdChild: ->
   @array: [1, 2, 3]
+  this
 ThirdChild extends SecondChild
 ThirdChild::func: (string) ->
   super('three/') + string
@@ -25,12 +26,15 @@ puts result is 'zero/one/two/three/four'
 
 TopClass: (arg) ->
   @prop: 'top-' + arg
+  this
 
 SuperClass: (arg) ->
   super 'super-' + arg
+  this
 
 SubClass: ->
   super 'sub'
+  this
 
 SuperClass extends TopClass
 SubClass extends SuperClass

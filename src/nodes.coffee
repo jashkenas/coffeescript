@@ -220,11 +220,9 @@ Expressions: exports.Expressions: inherit Node, {
     return (if stmt then '' else @idt()) + node.compile(merge(o, {top: true})) + (if stmt then '' else ';') unless returns
     # If it's a statement, the node knows how to return itself.
     return node.compile(merge(o, {returns: true})) if node.is_statement()
-    # If it's not part of a constructor, we can just return the value of the expression.
-    return @idt() + 'return ' + node.compile(o) unless o.scope.method?.is_constructor()
-    # It's the last line of a constructor, add a safety check.
-    temp: o.scope.free_variable()
-    @idt() + temp + ' = ' + node.compile(o) + ";\n" + @idt() + "return " + o.scope.method.name + ' === this.constructor ? this : ' + temp + ';'
+    # Otherwise, we can just return the value of the expression.
+    return @idt() + 'return ' + node.compile(o)
+
 }
 
 # Wrap up a node as an Expressions, unless it already is one.
