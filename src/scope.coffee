@@ -1,49 +1,80 @@
-dup: (input) ->
-  output: null
-  if input instanceof Array
-    output: []
-    for val in input
-      output.push(val)
-  else
-    output: {}
-    for key, val of input
-      output.key: val
-    output
-  output
-
-# scope objects form a tree corresponding to the shape of the function
+# Scope objects form a tree corresponding to the shape of the function
 # definitions present in the script. They provide lexical scope, to determine
 # whether a variable has been seen before or if it needs to be declared.
-exports.Scope: (parent, expressions, func) ->
-  # Initialize a scope with its parent, for lookups up the chain,
-  # as well as the Expressions body where it should declare its variables,
-  # and the function that it wraps.
-  this.parent: parent
-  this.expressions: expressions
-  this.function: func
-  this.variables: {}
-  this.temp_variable: if this.parent then dup(this.parent.temp_variable) else '__a'
+#
+# Initialize a scope with its parent, for lookups up the chain,
+# as well as the Expressions body where it should declare its variables,
+# and the function that it wraps.
+Scope: exports.Scope: (parent, expressions, method) ->
+  @parent: parent
+  @expressions: expressions
+  @method: method
+  @variables: {}
+  @temp_variable: if @parent then @parent.temp_variable else '__a'
+  this
 
 # Look up a variable in lexical scope, or declare it if not found.
-exports.Scope::find: (name, rem) ->
-  remote: if rem? then rem else false
-  found: this.check(name)
-  return found if found || remote
-  this.variables[name]: 'var'
+Scope::find: (name, remote) ->
+  found: @check name
+  return found if found or remote
+  @variables[name]: 'var'
   found
 
 # Define a local variable as originating from a parameter in current scope
 # -- no var required.
-exports.Scope::parameter: (name) ->
-  this.variables[name]: 'param'
+Scope::parameter: (name) ->
+  @variables[name]: 'param'
 
 # Just check to see if a variable has already been declared.
-exports.Scope::check: (name) ->
-  return true if this.variables[name]?
-  # TODO: what does that ruby !! mean..? need to follow up
-  # .. this next line is prolly wrong ..
-  not not (this.parent and this.parent.check(name))
+Scope::check: (name) ->
+  return true if @variables[name]
+  !!(@parent and @parent.check(name))
 
 # You can reset a found variable on the immediate scope.
-exports.Scope::reset: (name) ->
-  this.variables[name]: undefined
+Scope::reset: (name) ->
+  delete @variables[name]
+
+# Find an available, short, name for a compiler-generated variable.
+Scope::free_variable: ->
+  (@temp_variable: succ(@temp_variable)) while check @temp_variable
+  @variables[@temp_variable]: 'var'
+  @temp_variable
+
+# Ensure that an assignment is made at the top of scope (or top-level
+# scope, if requested).
+Scope::assign: (name, value, top_level) ->
+  return @parent.assign(name, value, top_level) if top_level and @parent
+  @variables[name]: {value: value, assigned: true}
+
+# Does this scope reference any variables that need to be declared in the
+# given function body?
+Scope::has_declarations: (body) ->
+  body is @expressions and @declared_variables().length
+
+# Does this scope reference any assignments that need to be declared at the
+# top of the given function body?
+Scope::has_assignments: (body) ->
+  body is @expressions and @assigned_variables().length
+
+# Return the list of variables first declared in current scope.
+Scope::declared_variables: ->
+  (key for key, val of @variables when val is 'var').sort()
+
+# Return the list of variables that are supposed to be assigned at the top
+# of scope.
+Scope::assigned_variables: ->
+  ([key, val.value] for key, val of @variables when val.assigned).sort()
+
+Scope::compiled_declarations: ->
+  @declared_variables().join(', ')
+
+Scope::compiled_assignments: ->
+  (t[0] + ' = ' + t[1] for t in @assigned_variables()).join(', ')
+
+
+# Helper functions:
+
+# The next character alphabetically, to produce the following string.
+succ: (str) ->
+  str.slice(0, str.length - 1) +
+    String.fromCharCode(str.charCodeAt(str.length - 1) + 1)

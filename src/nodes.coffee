@@ -1,3 +1,5 @@
+process.mixin require './scope'
+
 # The abstract base class for all CoffeeScript nodes.
 # All nodes are implement a "compile_node" method, which performs the
 # code generation for that node. To compile a node, call the "compile"
@@ -79,7 +81,7 @@ inherit: (parent, props) ->
   klass: props.constructor
   delete props.constructor
   klass extends parent
-  klass.prototype[name]: prop for name, prop of props
+  (klass.prototype[name]: prop) for name, prop of props
   klass
 
 # # Provide a quick implementation of a children method.
@@ -147,14 +149,10 @@ Node::top_sensitive:      -> false
 # A collection of nodes, each one representing an expression.
 Expressions: exports.Expressions: inherit Node, {
 
-  constructor: (nodes...) ->
+  constructor: (nodes) ->
     @expressions: flatten nodes
     @children: @expressions
-
-  # Wrap up a node as an Expressions, unless it already is.
-  wrap: (nodes...) ->
-    return nodes[0] if nodes.length is 1 and nodes[0] instanceof Expressions
-    new Expressions(nodes...)
+    this
 
   # Tack an expression on to the end of this expression list.
   push: (node) ->
@@ -218,29 +216,41 @@ Expressions: exports.Expressions: inherit Node, {
     # If it's a statement, the node knows how to return itself.
     return node.compile(merge(o, {returns: true})) if node.is_statement()
     # If it's not part of a constructor, we can just return the value of the expression.
-    return @idt() + 'return ' + node.compile(o) unless o.scope.function?.is_constructor()
+    return @idt() + 'return ' + node.compile(o) unless o.scope.method?.is_constructor()
     # It's the last line of a constructor, add a safety check.
     temp: o.scope.free_variable()
-    @idt() + temp + ' = ' + node.compile(o) + ";\n" + @idt() + "return " + o.scope.function.name + ' === this.constructor ? this : ' + temp + ';'
+    @idt() + temp + ' = ' + node.compile(o) + ";\n" + @idt() + "return " + o.scope.method.name + ' === this.constructor ? this : ' + temp + ';'
 }
+
+# Wrap up a node as an Expressions, unless it already is one.
+Expressions.wrap: (nodes) ->
+  return nodes[0] if nodes.length is 1 and nodes[0] instanceof Expressions
+  new Expressions(nodes)
 
 statement Expressions
 
 
 # Literals are static values that can be passed through directly into
 # JavaScript without translation, eg.: strings, numbers, true, false, null...
-LiteralNode: exports.LiteralNode: (value) ->
-  @value: value
-  @children: [value]
+LiteralNode: exports.LiteralNode: inherit Node, {
 
-# Break and continue must be treated as statements -- they lose their meaning
-# when wrapped in a closure.
-LiteralNode::is_statement: ->
-  @value is 'break' or @value is 'continue'
+  constructor: (value) ->
+    @value: value
+    @children: [value]
+
+  # Break and continue must be treated as statements -- they lose their meaning
+  # when wrapped in a closure.
+  is_statement: ->
+    @value is 'break' or @value is 'continue'
+
+  compile_node: (o) ->
+    idt: if @is_statement() then @idt() else ''
+    end: if @is_statement() then ';' else ''
+    idt + @value + end
+
+}
 
 LiteralNode::is_statement_only: LiteralNode::is_statement
-
-LiteralNode::compile_node: (o) ->
 
 
 

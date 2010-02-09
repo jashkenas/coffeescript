@@ -180,8 +180,8 @@ module CoffeeScript
 
   end
 
-  # Literals are static values that have a Ruby representation, eg.: a string, a number,
-  # true, false, nil, etc.
+  # Literals are static values that can be passed through directly into
+  # JavaScript without translation, eg.: strings, numbers, true, false, null...
   class LiteralNode < Node
     children :value
 

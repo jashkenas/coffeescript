@@ -353,7 +353,7 @@ grammar: {
   While: [
     o "WHILE Expression Block",                 -> new WhileNode($2, $3)
     o "WHILE Expression",                       -> new WhileNode($2, null)
-    o "Expression WHILE Expression",            -> new WhileNode($3, Expressions.wrap($1))
+    o "Expression WHILE Expression",            -> new WhileNode($3, Expressions.wrap([$1]))
   ]
 
   # Array comprehensions, including guard and current index.
@@ -427,8 +427,8 @@ grammar: {
   # The full complement of if blocks, including postfix one-liner ifs and unlesses.
   If: [
     o "IfBlock IfEnd",                          -> $1.add_else($2)
-    o "Expression IF Expression",               -> new IfNode($3, Expressions.wrap($1), null, {statement: true})
-    o "Expression UNLESS Expression",           -> new IfNode($3, Expressions.wrap($1), null, {statement: true, invert: true})
+    o "Expression IF Expression",               -> new IfNode($3, Expressions.wrap([$1]), null, {statement: true})
+    o "Expression UNLESS Expression",           -> new IfNode($3, Expressions.wrap([$1]), null, {statement: true, invert: true})
   ]
 
 }

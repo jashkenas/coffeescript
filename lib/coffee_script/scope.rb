@@ -55,10 +55,14 @@ module CoffeeScript
       @variables[name.to_sym] = Value.new(value)
     end
 
+    # Does this scope reference any variables that need to be declared in the
+    # given function body?
     def declarations?(body)
       !declared_variables.empty? && body == @expressions
     end
 
+    # Does this scope reference any assignments that need to be declared at the
+    # top of the given function body?
     def assignments?(body)
       !assigned_variables.empty? && body == @expressions
     end
