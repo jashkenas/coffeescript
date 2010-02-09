@@ -96,12 +96,12 @@ lex::identifier_token: ->
   tag: if KEYWORDS.indexOf(id) >= 0 then id.toUpperCase() else 'IDENTIFIER'
   tag: 'LEADING_WHEN' if tag is 'WHEN' and (this.tag() is 'OUTDENT' or this.tag() is 'INDENT')
   this.tag(-1, 'PROTOTYPE_ACCESS') if tag is 'IDENTIFIER' and this.value() is '::'
-  if tag is 'IDENTIFIER' and this.value() is '.' and !(this.value(-2) is '.')
-    if this.tag(-2) is '?'
-      this.tag(-1, 'SOAK_ACCESS')
+  if tag is 'IDENTIFIER' and this.value() is '.' and !(this.value(2) is '.')
+    if this.tag(2) is '?'
+      this.tag(1, 'SOAK_ACCESS')
       this.tokens.splice(-2, 1)
     else
-      this.tag(-1, 'PROPERTY_ACCESS')
+      this.tag(1, 'PROPERTY_ACCESS')
   this.token(tag, id)
   this.i += id.length
   true

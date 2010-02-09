@@ -290,6 +290,7 @@ ValueNode: exports.ValueNode: inherit Node, {
   push: (prop) ->
     @properties.push(prop)
     @children.push(prop)
+    this
 
   has_properties: ->
     @properties.length or @base instanceof ThisNode
@@ -377,6 +378,7 @@ CallNode: exports.CallNode: inherit Node, {
   push: (arg) ->
     @args.push(arg)
     @children.push(arg)
+    this
 
   # Compile a vanilla function call.
   compile_node: (o) ->
@@ -440,6 +442,22 @@ ExtendsNode: exports.ExtendsNode: inherit Node, {
 
 statement ExtendsNode
 
+
+# A dotted accessor into a part of a value, or the :: shorthand for
+# an accessor into the object's prototype.
+AccessorNode: exports.AccessorNode: inherit Node, {
+
+  constructor: (name, tag) ->
+    @name:      name
+    @children:  [@name]
+    @prototype: tag is 'prototype'
+    @soak:      tag is 'soak'
+    this
+
+  compile_node: (o) ->
+    '.' + (if @prototype then 'prototype.' else '') + @name.compile(o)
+
+}
 
 
 
