@@ -63,11 +63,24 @@ dup: (input) ->
     (output[key]: val) for key, val of input
     output
 
+# Merge objects.
+merge: (src, dest) ->
+  dest[key]: val for key, val of src
+  dest
+
 # Delete a key from an object, returning the value.
 del: (obj, key) ->
   val: obj[key]
   delete obj[key]
   val
+
+# Quickie inheritance convenience wrapper to reduce typing.
+inherit: (parent, props) ->
+  klass: props.constructor
+  delete props.constructor
+  klass extends parent
+  klass.prototype[name]: prop for name, prop of props
+  klass
 
 # # Provide a quick implementation of a children method.
 # children: (klass, attrs...) ->
@@ -77,8 +90,8 @@ del: (obj, key) ->
 
 # Mark a node as a statement, or a statement only.
 statement: (klass, only) ->
-  klass::statement:       -> true
-  klass::statement_only:  -> true if only
+  klass::is_statement:       -> true
+  klass::is_statement_only:  -> true if only
 
 
 # The abstract base class for all CoffeeScript nodes.
@@ -98,9 +111,9 @@ Node::compile: (o) ->
   @options: dup(o || {})
   @indent:  o.indent
   top:      if @top_sensitive() then o.top else del obj 'top'
-  closure:  @statement() and not @statement_only() and not top and
+  closure:  @is_statement() and not @is_statement_only() and not top and
             not o.returns and not this instanceof CommentNode and
-            not @contains (node) -> node.statement_only()
+            not @contains (node) -> node.is_statement_only()
   if closure then @compile_closure(@options) else @compile_node(@options)
 
 # Statements converted into expressions share scope with their parent
@@ -124,64 +137,124 @@ Node::contains: (block) ->
   false
 
 # Default implementations of the common node methods.
-Node::unwrap:         -> this
-Node::children:       []
-Node::statement:      -> false
-Node::statement_only: -> false
-Node::top_sensitive:  -> false
+Node::unwrap:             -> this
+Node::children:           []
+Node::is_statement:       -> false
+Node::is_statement_only:  -> false
+Node::top_sensitive:      -> false
 
 
 # A collection of nodes, each one representing an expression.
-Expressions: exports.Expressions: (nodes...) ->
-  @expressions: flatten nodes
-  @children: @expressions
+Expressions: exports.Expressions: inherit Node, {
 
-Expressions extends Node
+  constructor: (nodes...) ->
+    @expressions: flatten nodes
+    @children: @expressions
+
+  # Wrap up a node as an Expressions, unless it already is.
+  wrap: (nodes...) ->
+    return nodes[0] if nodes.length is 1 and nodes[0] instanceof Expressions
+    new Expressions(nodes...)
+
+  # Tack an expression on to the end of this expression list.
+  push: (node) ->
+    @expressions.push(node)
+    this
+
+  # Tack an expression on to the beginning of this expression list.
+  unshift: (node) ->
+    @expressions.unshift(node)
+    this
+
+  # If this Expressions consists of a single node, pull it back out.
+  unwrap: ->
+    if @expressions.length is 1 then @expressions[0] else this
+
+  # Is this an empty block of code?
+  empty: ->
+    @expressions.length is 0
+
+  # Is the node last in this block of expressions?
+  is_last: (node) ->
+    l: @expressions.length
+    @last_index ||= if @expressions[l - 1] instanceof CommentNode then -2 else -1
+    node is @expressions[l - @last_index]
+
+  compile: (o) ->
+    if o.scope then super(o) else @compile_root(o)
+
+  # Compile each expression in the Expressions body.
+  compile_node: (o) ->
+    (@compile_expression(node, dup(o)) for node in @expressions).join("\n")
+
+  # If this is the top-level Expressions, wrap everything in a safety closure.
+  compile_root: (o) ->
+    o.indent: @indent: indent: if o.no_wrap then '' else TAB
+    o.scope: new Scope(null, this, null)
+    code: if o.globals then @compile_node(o) else @compile_with_declarations(o)
+    code: code.replace(TRAILING_WHITESPACE, '')
+    if o.no_wrap then code else "(function(){\n"+code+"\n})();"
+
+  # Compile the expressions body, with declarations of all inner variables
+  # pushed up to the top.
+  compile_with_declarations: (o) ->
+    code: @compile_node(o)
+    args: @contains (node) -> node instanceof ValueNode and node.arguments()
+    argv: if args and o.scope.check('arguments') then '' else 'var '
+    code: @idt() + argv + "arguments = Array.prototype.slice.call(arguments, 0);\n" + code if args
+    code: @idt() + 'var ' + o.scope.compiled_assignments() + ";\n" + code  if o.scope.has_assignments(this)
+    code: @idt() + 'var ' + o.scope.compiled_declarations() + ";\n" + code if o.scope.has_declarations(this)
+    code
+
+  # Compiles a single expression within the expressions body.
+  compile_expression: (node, o) ->
+    @indent: o.indent
+    stmt:    node.is_statement()
+    # We need to return the result if this is the last node in the expressions body.
+    returns: o.returns and @is_last(node) and not node.is_statement_only()
+    delete o.returns
+    # Return the regular compile of the node, unless we need to return the result.
+    return (if stmt then '' else @idt()) + node.compile(merge(o, {top: true})) + (if stmt then '' else ';') unless returns
+    # If it's a statement, the node knows how to return itself.
+    return node.compile(merge(o, {returns: true})) if node.is_statement()
+    # If it's not part of a constructor, we can just return the value of the expression.
+    return @idt() + 'return ' + node.compile(o) unless o.scope.function?.is_constructor()
+    # It's the last line of a constructor, add a safety check.
+    temp: o.scope.free_variable()
+    @idt() + temp + ' = ' + node.compile(o) + ";\n" + @idt() + "return " + o.scope.function.name + ' === this.constructor ? this : ' + temp + ';'
+}
+
 statement Expressions
 
-# Wrap up a node as an Expressions, unless it already is.
-Expressions::wrap: (nodes...) ->
-  return nodes[0] if nodes.length is 1 and nodes[0] instanceof Expressions
-  new Expressions(nodes...)
 
-# Tack an expression on to the end of this expression list.
-Expressions::push: (node) ->
-  @expressions.push(node)
-  this
+# Literals are static values that can be passed through directly into
+# JavaScript without translation, eg.: strings, numbers, true, false, null...
+LiteralNode: exports.LiteralNode: (value) ->
+  @value: value
+  @children: [value]
 
-# Tack an expression on to the beginning of this expression list.
-Expressions::unshift: (node) ->
-  @expressions.unshift(node)
-  this
+# Break and continue must be treated as statements -- they lose their meaning
+# when wrapped in a closure.
+LiteralNode::is_statement: ->
+  @value is 'break' or @value is 'continue'
 
-# If this Expressions consists of a single node, pull it back out.
-Expressions::unwrap: ->
-  if @expressions.length is 1 then @expressions[0] else this
+LiteralNode::is_statement_only: LiteralNode::is_statement
 
-# Is this an empty block of code?
-Expressions::empty: ->
-  @expressions.length is 0
+LiteralNode::compile_node: (o) ->
 
-# Is the node last in this block of expressions?
-Expressions::is_last: (node) ->
-  l: @expressions.length
-  @last_index ||= if @expressions[l - 1] instanceof CommentNode then -2 else -1
-  node is @expressions[l - @last_index]
 
-Expressions::compile: (o) ->
-  if o.scope then super(o) else @compile_root(o)
 
-# Compile each expression in the Expressions body.
-Expressions::compile_node: (o) ->
-  (@compile_expression(node, dup(o)) for node in @expressions).join("\n")
 
-# If this is the top-level Expressions, wrap everything in a safety closure.
-Expressions::compile_root: (o) ->
-  o.indent: @indent: indent: if o.no_wrap then '' else TAB
-  o.scope: new Scope(null, this, null)
-  code: if o.globals then @compile_node(o) else @compile_with_declarations(o)
-  code: code.replace(TRAILING_WHITESPACE, '')
-  if o.no_wrap then code else "(function(){\n"+code+"\n})();"
+
+
+
+
+
+
+
+
+
+
 
 
 

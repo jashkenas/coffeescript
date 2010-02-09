@@ -150,7 +150,7 @@ module CoffeeScript
     end
 
     # Compile the expressions body, with declarations of all inner variables
-    # at the top.
+    # pushed up to the top.
     def compile_with_declarations(o={})
       code  = compile_node(o)
       args  = self.contains? {|n| n.is_a?(ValueNode) && n.arguments? }
@@ -161,7 +161,7 @@ module CoffeeScript
       write(code)
     end
 
-    # Compiles a single expression within the expression list.
+    # Compiles a single expression within the expressions body.
     def compile_expression(node, o)
       @indent = o[:indent]
       stmt    = node.statement?
