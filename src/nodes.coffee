@@ -460,6 +460,19 @@ AccessorNode: exports.AccessorNode: inherit Node, {
 }
 
 
+# An indexed accessor into a part of an array or object.
+IndexNode: exports.IndexNode: inherit Node, {
+
+  constructor: (index) ->
+    @children: [@index: index]
+    this
+
+  compile_node: (o) ->
+    '[' + @index.compile(o) + ']'
+
+}
+
+
 
 
 
