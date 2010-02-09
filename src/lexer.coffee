@@ -232,13 +232,13 @@ lex::token: (tag, value) ->
 
 # Look at a tag in the current token stream.
 lex::tag: (index, tag) ->
-  return unless tok: this.tokens[this.tokens.length - (index || 1)]
+  return unless tok: this.tokens[this.tokens.length - (index or 1)]
   return tok[0]: tag if tag?
   tok[0]
 
 # Look at a value in the current token stream.
 lex::value: (index, val) ->
-  return unless tok: this.tokens[this.tokens.length - (index || 1)]
+  return unless tok: this.tokens[this.tokens.length - (index or 1)]
   return tok[1]: val if val?
   tok[1]
 

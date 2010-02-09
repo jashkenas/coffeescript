@@ -67,7 +67,7 @@ module CoffeeScript
       @indent + (TAB * tabs)
     end
 
-    # Does this node, or any of it's children, contain a node of a certain kind?
+    # Does this node, or any of its children, contain a node of a certain kind?
     def contains?(&block)
       children.each do |node|
         return true if yield(node)
@@ -124,7 +124,7 @@ module CoffeeScript
       @expressions.empty?
     end
 
-    # Is the node last in this block of expressions.
+    # Is the node last in this block of expressions?
     def last?(node)
       @last_index ||= @expressions.last.is_a?(CommentNode) ? -2 : -1
       node == @expressions[@last_index]
@@ -135,8 +135,8 @@ module CoffeeScript
     end
 
     # Compile each expression in the Expressions body.
-    def compile_node(options={})
-      write(@expressions.map {|n| compile_expression(n, options.dup) }.join("\n"))
+    def compile_node(o={})
+      write(@expressions.map {|n| compile_expression(n, o.dup) }.join("\n"))
     end
 
     # If this is the top-level Expressions, wrap everything in a safety closure.

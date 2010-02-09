@@ -5,7 +5,6 @@
 # generated code should be wrapped up in a closure. An options hash is passed
 # and cloned throughout, containing messages from higher in the AST,
 # information about the current scope, and indentation level.
-exports.Node              : -> @values: arguments; @name: this.constructor.name
 
 exports.Expressions       : -> @name: this.constructor.name; @values: arguments
 exports.LiteralNode       : -> @name: this.constructor.name; @values: arguments
@@ -39,176 +38,179 @@ exports.Expressions.wrap  : (values) -> @values: values
 
 # Some helper functions
 
-# TODO -- shallow (1 deep) flatten..
-# need recursive version..
-flatten: (aggList, newList) ->
-  for item in newList
-    aggList.push(item)
-  aggList
+# Tabs are two spaces for pretty printing.
+TAB: '  '
+TRAILING_WHITESPACE: /\s+$/g
 
+# Flatten nested arrays recursively.
+flatten: (list) ->
+  memo: []
+  for item in list
+    return memo.concat(flatten(item)) if item instanceof Array
+    memo.push(item)
+    memo
+
+# Remove all null values from an array.
 compact: (input) ->
-  compected: []
-  for item in input
-    if item?
-      compacted.push(item)
+  item for item in input when item?
 
+# Dup an array or object.
 dup: (input) ->
-  output: null
   if input instanceof Array
-    output: []
-    for val in input
-      output.push(val)
+    val for val in input
   else
     output: {}
-    for key, val of input
-      output.key: val
+    (output[key]: val) for key, val of input
     output
-  output
 
-exports.Node::TAB: '  '
+# Delete a key from an object, returning the value.
+del: (obj, key) ->
+  val: obj[key]
+  delete obj[key]
+  val
 
-# Tag this node as a statement, meaning that it can't be used directly as
-# the result of an expression.
-exports.Node::mark_as_statement: ->
-  this.is_statement: -> true
+# # Provide a quick implementation of a children method.
+# children: (klass, attrs...) ->
+#   klass::children: ->
+#     nodes: this[attr] for attr in attrs
+#     compact flatten nodes
 
-# Tag this node as a statement that cannot be transformed into an expression.
-# (break, continue, etc.) It doesn't make sense to try to transform it.
-exports.Node::mark_as_statement_only: ->
-  this.mark_as_statement()
-  this.is_statement_only: -> true
+# Mark a node as a statement, or a statement only.
+statement: (klass, only) ->
+  klass::statement:       -> true
+  klass::statement_only:  -> true if only
 
-# This node needs to know if it's being compiled as a top-level statement,
-# in order to compile without special expression conversion.
-exports.Node::mark_as_top_sensitive: ->
-  this.is_top_sensitive: -> true
 
-# Provide a quick implementation of a children method.
-exports.Node::children: (attributes) ->
-  # TODO -- are these optimal impls of flatten and compact
-  # .. do better ones exist in a stdlib?
-  agg: []
-  for item in attributes
-    agg: flatten agg, item
-  compacted: compact agg
-  this.children: ->
-    compacted
-
-exports.Node::write: (code) ->
-  # hm..
-  # TODO -- should print to STDOUT in "VERBOSE" how to
-  # go about this.. ? jsonify 'this'?
-  # use node's puts ??
-  code
+# The abstract base class for all CoffeeScript nodes.
+# All nodes are implement a "compile_node" method, which performs the
+# code generation for that node. To compile a node, call the "compile"
+# method, which wraps "compile_node" in some extra smarts, to know when the
+# generated code should be wrapped up in a closure. An options hash is passed
+# and cloned throughout, containing messages from higher in the AST,
+# information about the current scope, and indentation level.
+Node: exports.Node: ->
 
 # This is extremely important -- we convert JS statements into expressions
 # by wrapping them in a closure, only if it's possible, and we're not at
 # the top level of a block (which would be unnecessary), and we haven't
 # already been asked to return the result.
-exports.Node::compile: (o) ->
-  # TODO -- need JS dup/clone
-  opts: if not o? then {} else o
-  this.options: opts
-  this.indent: opts.indent
-  top: this.options.top
-  if not this.is_top_sentitive()
-    this.options.top: undefined
-  closure: this.is_statement() and not this.is_statement_only() and not top and typeof(this) == "CommentNode"
-  closure &&= not this.do_i_contain (n) -> n.is_statement_only()
-  if closure then this.compile_closure(this.options) else compile_node(this.options)
+Node::compile: (o) ->
+  @options: dup(o || {})
+  @indent:  o.indent
+  top:      if @top_sensitive() then o.top else del obj 'top'
+  closure:  @statement() and not @statement_only() and not top and
+            not o.returns and not this instanceof CommentNode and
+            not @contains (node) -> node.statement_only()
+  if closure then @compile_closure(@options) else @compile_node(@options)
 
 # Statements converted into expressions share scope with their parent
 # closure, to preserve JavaScript-style lexical scope.
-exports.Node::compile_closure: (o) ->
-  opts: if not o? then {} else o
-  this.indent: opts.indent
-  opts.shared_scope: o.scope
-  exports.ClosureNode.wrap(this).compile(opts)
+Node::compile_closure: (o) ->
+  @indent: o.indent
+  o.shared_scope: o.scope
+  ClosureNode.wrap(this).compile(o)
 
 # Quick short method for the current indentation level, plus tabbing in.
-exports.Node::idt: (tLvl) ->
-  tabs: if tLvl? then tLvl else 0
-  tabAmt: ''
-  for x in [0...tabs]
-    tabAmt: tabAmt + this.TAB
-  this.indent + tabAmt
+Node::idt: (tabs) ->
+  idt: @indent
+  idt += TAB for i in [0..(tabs or 0)]
+  idt
 
-#Does this node, or any of it's children, contain a node of a certain kind?
-exports.Node::do_i_contain: (block) ->
-  for node in this.children
+# Does this node, or any of its children, contain a node of a certain kind?
+Node::contains: (block) ->
+  for node in @children
     return true if block(node)
-    return true if node instanceof exports.Node and node.do_i_contain(block)
+    return true if node instanceof Node and node.contains block
   false
 
 # Default implementations of the common node methods.
-exports.Node::unwrap: -> this
-exports.Node::children: []
-exports.Node::is_a_statement: -> false
-exports.Node::is_a_statement_only: -> false
-exports.Node::is_top_sensitive: -> false
+Node::unwrap:         -> this
+Node::children:       []
+Node::statement:      -> false
+Node::statement_only: -> false
+Node::top_sensitive:  -> false
+
 
 # A collection of nodes, each one representing an expression.
-# exports.Expressions: (nodes) ->
-#   this.mark_as_statement()
-#   this.expressions: []
-#   this.children([this.expressions])
-#   for n in nodes
-#     this.expressions: flatten this.expressions, n
-# exports.Expressions extends exports.Node
+Expressions: exports.Expressions: (nodes...) ->
+  @expressions: flatten nodes
+  @children: @expressions
 
-exports.Expressions::TRAILING_WHITESPACE: /\s+$/
+Expressions extends Node
+statement Expressions
 
 # Wrap up a node as an Expressions, unless it already is.
-exports.Expressions::wrap: (nodes) ->
-  return nodes[0] if nodes.length == 1 and nodes[0] instanceof exports.Expressions
-  new Expressions(nodes)
+Expressions::wrap: (nodes...) ->
+  return nodes[0] if nodes.length is 1 and nodes[0] instanceof Expressions
+  new Expressions(nodes...)
 
 # Tack an expression on to the end of this expression list.
-exports.Expressions::push: (node) ->
-  this.expressions.push(node)
+Expressions::push: (node) ->
+  @expressions.push(node)
   this
 
 # Tack an expression on to the beginning of this expression list.
-exports.Expressions::unshift: (node) ->
-  this.expressions.unshift(node)
+Expressions::unshift: (node) ->
+  @expressions.unshift(node)
   this
 
 # If this Expressions consists of a single node, pull it back out.
-exports.Expressions::unwrap: ->
-  if this.expressions.length == 1 then this.expressions[0] else this
+Expressions::unwrap: ->
+  if @expressions.length is 1 then @expressions[0] else this
 
 # Is this an empty block of code?
-exports.Expressions::is_empty: ->
-  this.expressions.length == 0
+Expressions::empty: ->
+  @expressions.length is 0
 
-# Is the node last in this block of expressions.
-exports.Expressions::is_last: (node) ->
-  arr_length: this.expressions.length
-  this.last_index ||= if this.expressions[arr_length - 1] instanceof exports.CommentNode then -2 else -1
-  node == this.expressions[arr_length - this.last_index]
+# Is the node last in this block of expressions?
+Expressions::is_last: (node) ->
+  l: @expressions.length
+  @last_index ||= if @expressions[l - 1] instanceof CommentNode then -2 else -1
+  node is @expressions[l - @last_index]
 
-exports.Expressions::compile: (o) ->
-  opts: if o? then o else {}
-  if opts.scope then super(dup(opts)) else this.compile_root(o)
+Expressions::compile: (o) ->
+  if o.scope then super(o) else @compile_root(o)
 
 # Compile each expression in the Expressions body.
-exports.Expressions::compile_node: (options) ->
-  opts: if options? then options else {}
-  compiled: []
-  for e in this.expressions
-    compiled.push(this.compile_expression(e, dup(options)))
-  code: ''
-  for line in compiled
-    code: code + line + '\n'
+Expressions::compile_node: (o) ->
+  (@compile_expression(node, dup(o)) for node in @expressions).join("\n")
 
 # If this is the top-level Expressions, wrap everything in a safety closure.
-exports.Expressions::compile_root: (o) ->
-  opts: if o? then o else {}
-  indent: if opts.no_wrap then '' else this.TAB
-  this.indent: indent
-  opts.indent: indent
-  opts.scope: new Scope(null, this, null)
-  code: if opts.globals then compile_node(opts) else compile_with_declarations(opts)
-  code.replace(this.TRAILING_WHITESPACE, '')
-  this.write(if opts.no_wrap then code else "(function(){\n"+code+"\n})();")
+Expressions::compile_root: (o) ->
+  o.indent: @indent: indent: if o.no_wrap then '' else TAB
+  o.scope: new Scope(null, this, null)
+  code: if o.globals then @compile_node(o) else @compile_with_declarations(o)
+  code: code.replace(TRAILING_WHITESPACE, '')
+  if o.no_wrap then code else "(function(){\n"+code+"\n})();"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
