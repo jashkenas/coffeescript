@@ -116,7 +116,7 @@ Node: exports.Node: ->
 # the top level of a block (which would be unnecessary), and we haven't
 # already been asked to return the result.
 Node::compile: (o) ->
-  @options: dup(o || {})
+  @options: dup(o or {})
   @indent:  o.indent
   top:      if @top_sensitive() then o.top else del o, 'top'
   closure:  @is_statement() and not @is_statement_only() and not top and
@@ -185,6 +185,7 @@ Expressions: exports.Expressions: inherit Node, {
     node is @expressions[l - @last_index]
 
   compile: (o) ->
+    o ||= {}
     if o.scope then super(o) else @compile_root(o)
 
   # Compile each expression in the Expressions body.
