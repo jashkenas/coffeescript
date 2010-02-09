@@ -69,7 +69,7 @@ dup: (input) ->
 
 # Merge objects.
 merge: (src, dest) ->
-  dest[key]: val for key, val of src
+  (dest[key]: val) for key, val of src
   dest
 
 # Do any of the elements in the list pass a truth test?
@@ -134,7 +134,7 @@ Node::compile_closure: (o) ->
 # Quick short method for the current indentation level, plus tabbing in.
 Node::idt: (tabs) ->
   idt: (@indent || '')
-  idt += TAB for i in [0..(tabs or 0)]
+  idt += TAB for i in [0...(tabs or 0)]
   idt
 
 # Does this node, or any of its children, contain a node of a certain kind?
@@ -413,6 +413,32 @@ CallNode: exports.CallNode: inherit Node, {
     [call, reference]
 
 }
+
+
+# Node to extend an object's prototype with an ancestor object.
+# After goog.inherits from the Closure Library.
+ExtendsNode: exports.ExtendsNode: inherit Node, {
+
+  constructor: (child, parent) ->
+    @child:     child
+    @parent:    parent
+    @children:  [child, parent]
+    this
+
+  # Hooking one constructor into another's prototype chain.
+  compile_node: (o) ->
+    constructor:  o.scope.free_variable()
+    child:        @child.compile(o)
+    parent:       @parent.compile(o)
+    @idt() + constructor + ' = function(){};\n' + @idt() +
+      constructor + '.prototype = ' + parent + ".prototype;\n" + @idt() +
+      child + '.__superClass__ = ' + parent + ".prototype;\n" + @idt() +
+      child + '.prototype = new ' + constructor + "();\n" + @idt() +
+      child + '.prototype.constructor = ' + child + ';'
+
+}
+
+statement ExtendsNode
 
 
 

@@ -36,7 +36,7 @@ Scope::reset: (name) ->
 
 # Find an available, short, name for a compiler-generated variable.
 Scope::free_variable: ->
-  (@temp_variable: succ(@temp_variable)) while check @temp_variable
+  (@temp_variable: succ(@temp_variable)) while @check @temp_variable
   @variables[@temp_variable]: 'var'
   @temp_variable
 
