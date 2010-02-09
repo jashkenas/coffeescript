@@ -222,7 +222,7 @@ module CoffeeScript
     def compile_node(o)
       return write(@expression.compile(o.merge(:return => true))) if @expression.statement?
       compiled = @expression.compile(o)
-      write(@expression.statement? ? "#{compiled}\n#{idt}return null;" : "#{idt}return #{compiled};")
+      write("#{idt}return #{compiled};")
     end
   end
 
