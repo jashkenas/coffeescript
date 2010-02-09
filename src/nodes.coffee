@@ -19,6 +19,7 @@ exports.AccessorNode      : -> @name: this.constructor.name; @values: arguments
 exports.IndexNode         : -> @name: this.constructor.name; @values: arguments
 exports.RangeNode         : -> @name: this.constructor.name; @values: arguments
 exports.SliceNode         : -> @name: this.constructor.name; @values: arguments
+exports.ThisNode          : -> @name: this.constructor.name; @values: arguments
 exports.AssignNode        : -> @name: this.constructor.name; @values: arguments
 exports.OpNode            : -> @name: this.constructor.name; @values: arguments
 exports.CodeNode          : -> @name: this.constructor.name; @values: arguments
@@ -51,6 +52,7 @@ flatten: (list) ->
     return memo.concat(flatten(item)) if item instanceof Array
     memo.push(item)
     memo
+  memo
 
 # Remove all null values from an array.
 compact: (input) ->
@@ -78,8 +80,7 @@ del: (obj, key) ->
 
 # Quickie inheritance convenience wrapper to reduce typing.
 inherit: (parent, props) ->
-  klass: props.constructor
-  delete props.constructor
+  klass: del(props, 'constructor')
   klass extends parent
   (klass.prototype[name]: prop) for name, prop of props
   klass
@@ -93,7 +94,7 @@ inherit: (parent, props) ->
 # Mark a node as a statement, or a statement only.
 statement: (klass, only) ->
   klass::is_statement:       -> true
-  klass::is_statement_only:  -> true if only
+  (klass::is_statement_only:  -> true) if only
 
 
 # The abstract base class for all CoffeeScript nodes.
@@ -112,7 +113,7 @@ Node: exports.Node: ->
 Node::compile: (o) ->
   @options: dup(o || {})
   @indent:  o.indent
-  top:      if @top_sensitive() then o.top else del obj 'top'
+  top:      if @top_sensitive() then o.top else del o, 'top'
   closure:  @is_statement() and not @is_statement_only() and not top and
             not o.returns and not this instanceof CommentNode and
             not @contains (node) -> node.is_statement_only()
@@ -127,7 +128,7 @@ Node::compile_closure: (o) ->
 
 # Quick short method for the current indentation level, plus tabbing in.
 Node::idt: (tabs) ->
-  idt: @indent
+  idt: (@indent || '')
   idt += TAB for i in [0..(tabs or 0)]
   idt
 
@@ -197,7 +198,7 @@ Expressions: exports.Expressions: inherit Node, {
   # pushed up to the top.
   compile_with_declarations: (o) ->
     code: @compile_node(o)
-    args: @contains (node) -> node instanceof ValueNode and node.arguments()
+    args: @contains (node) -> node instanceof ValueNode and node.is_arguments()
     argv: if args and o.scope.check('arguments') then '' else 'var '
     code: @idt() + argv + "arguments = Array.prototype.slice.call(arguments, 0);\n" + code if args
     code: @idt() + 'var ' + o.scope.compiled_assignments() + ";\n" + code  if o.scope.has_assignments(this)
@@ -209,8 +210,7 @@ Expressions: exports.Expressions: inherit Node, {
     @indent: o.indent
     stmt:    node.is_statement()
     # We need to return the result if this is the last node in the expressions body.
-    returns: o.returns and @is_last(node) and not node.is_statement_only()
-    delete o.returns
+    returns: del(o, 'returns') and @is_last(node) and not node.is_statement_only()
     # Return the regular compile of the node, unless we need to return the result.
     return (if stmt then '' else @idt()) + node.compile(merge(o, {top: true})) + (if stmt then '' else ';') unless returns
     # If it's a statement, the node knows how to return itself.
@@ -237,6 +237,7 @@ LiteralNode: exports.LiteralNode: inherit Node, {
   constructor: (value) ->
     @value: value
     @children: [value]
+    this
 
   # Break and continue must be treated as statements -- they lose their meaning
   # when wrapped in a closure.
@@ -253,7 +254,104 @@ LiteralNode: exports.LiteralNode: inherit Node, {
 LiteralNode::is_statement_only: LiteralNode::is_statement
 
 
+# Return an expression, or wrap it in a closure and return it.
+ReturnNode: exports.ReturnNode: inherit Node, {
 
+  constructor: (expression) ->
+    @expression: expression
+    @children: [expression]
+    this
+
+  compile_node: (o) ->
+    return @expression.compile(merge(o, {returns: true})) if @expression.is_statement()
+    @idt() + 'return ' + @expression.compile(o) + ';'
+
+}
+
+statement ReturnNode, true
+
+
+# A value, indexed or dotted into, or vanilla.
+ValueNode: exports.ValueNode: inherit Node, {
+
+  SOAK: " == undefined ? undefined : "
+
+  constructor: (base, properties) ->
+    @base:       base
+    @properties: flatten(properties or [])
+    @children:   flatten(@base, @properties)
+    this
+
+  push: (prop) ->
+    @properties.push(prop)
+    @children.push(prop)
+
+  has_properties: ->
+    @properties.length or @base instanceof ThisNode
+
+  is_array: ->
+    @base instanceof ArrayNode and not @has_properties()
+
+  is_object: ->
+    @base instanceof ObjectNode and not @has_properties()
+
+  is_splice: ->
+    @has_properties() and @properties[@properties.length - 1] instanceof SliceNode
+
+  is_arguments: ->
+    @base is 'arguments'
+
+  unwrap: ->
+    if @properties.length then this else @base
+
+  # Values are statements if their base is a statement.
+  is_statement: ->
+    @base.is_statement and @base.is_statement() and not @has_properties()
+
+  compile_node: (o) ->
+    soaked:   false
+    only:     del(o, 'only_first')
+    props:    if only then @properties[0...@properties.length] else @properties
+    baseline: @base.compile o
+    parts:    [baseline]
+
+    for prop in props
+      if prop instanceof AccessorNode and prop.soak
+        soaked: true
+        if @base instanceof CallNode and prop is props[0]
+          temp: o.scope.free_variable()
+          parts[parts.length - 1]: '(' + temp + ' = ' + baseline + ')' + @SOAK + (baseline: temp + prop.compile(o))
+        else
+          parts[parts.length - 1]: @SOAK + (baseline += prop.compile(o))
+      else
+        part: prop.compile(o)
+        baseline += part
+        parts.push(part)
+
+    @last: parts[parts.length - 1]
+    @source: if parts.length > 1 then parts[0...parts.length].join('') else null
+    code: parts.join('').replace(/\)\(\)\)/, '()))')
+    return code unless soaked
+    '(' + code + ')'
+
+}
+
+
+# Pass through CoffeeScript comments into JavaScript comments at the
+# same position.
+CommentNode: exports.CommentNode: inherit Node, {
+
+  constructor: (lines) ->
+    @lines: lines
+    this
+
+  compile_node: (o) ->
+    delimiter: "\n" + @idt() + '//'
+    delimiter + @lines.join(delimiter)
+
+}
+
+statement CommentNode
 
 
 

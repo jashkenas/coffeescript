@@ -29,7 +29,7 @@ HEREDOC    : /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?(
 JS         : /^(``|`([\s\S]*?)([^\\]|\\\\)`)/
 OPERATOR   : /^([+\*&|\/\-%=<>:!?]+)/
 WHITESPACE : /^([ \t]+)/
-COMMENT    : /^(((\n?[ \t]*)?#.*$)+)/
+COMMENT    : /^(((\n?[ \t]*)?#[^\n]*)+)/
 CODE       : /^((-|=)>)/
 REGEX      : /^(\/(.*?)([^\\]|\\\\)\/[imgy]{0,4})/
 MULTI_DENT : /^((\n([ \t]*))+)(\.)?/
@@ -153,7 +153,7 @@ lex::regex_token: ->
 # Matches and conumes comments.
 lex::comment_token: ->
   return false unless comment: this.match COMMENT, 1
-  this.line += comment.match(MULTILINER).length
+  this.line += (comment.match(MULTILINER) or []).length
   this.token 'COMMENT', comment.replace(COMMENT_CLEANER, '').split(MULTILINER)
   this.token 'TERMINATOR', "\n"
   this.i += comment.length

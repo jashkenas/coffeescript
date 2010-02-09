@@ -226,6 +226,80 @@ module CoffeeScript
     end
   end
 
+  # A value, indexed or dotted into, or vanilla.
+  class ValueNode < Node
+    children :base, :properties
+    attr_reader :last, :source
+
+    # Soak up undefined properties and call attempts.
+    SOAK = " == undefined ? undefined : "
+
+    def initialize(base, properties=[])
+      @base, @properties = base, [properties].flatten
+    end
+
+    def <<(other)
+      @properties << other
+      self
+    end
+
+    def properties?
+      return !@properties.empty? || @base.is_a?(ThisNode)
+    end
+
+    def array?
+      @base.is_a?(ArrayNode) && !properties?
+    end
+
+    def object?
+      @base.is_a?(ObjectNode) && !properties?
+    end
+
+    def splice?
+      properties? && @properties.last.is_a?(SliceNode)
+    end
+
+    def arguments?
+      @base.to_s == 'arguments'
+    end
+
+    def unwrap
+      @properties.empty? ? @base : self
+    end
+
+    # Values are statements if their base is a statement.
+    def statement?
+      @base.is_a?(Node) && @base.statement? && !properties?
+    end
+
+    def compile_node(o)
+      soaked    = false
+      only      = o.delete(:only_first)
+      props     = only ? @properties[0...-1] : @properties
+      baseline  = @base.compile(o)
+      parts     = [baseline.dup]
+      props.each do |prop|
+        if prop.is_a?(AccessorNode) && prop.soak
+          soaked = true
+          if @base.is_a?(CallNode) && prop == props.first
+            temp = o[:scope].free_variable
+            parts[-1] = "(#{temp} = #{baseline})#{SOAK}#{baseline = temp.to_s + prop.compile(o)}"
+          else
+            parts[-1] << "#{SOAK}#{baseline += prop.compile(o)}"
+          end
+        else
+          part = prop.compile(o)
+          baseline += part
+          parts << part
+        end
+      end
+      @last = parts.last
+      @source = parts.length > 1 ? parts[0...-1].join('') : nil
+      code = parts.join('').gsub(')())', '()))')
+      write(soaked ? "(#{code})" : code)
+    end
+  end
+
   # Pass through CoffeeScript comments into JavaScript comments at the
   # same position.
   class CommentNode < Node
@@ -322,80 +396,6 @@ module CoffeeScript
       "#{sub}.prototype.constructor = #{sub};"
     end
 
-  end
-
-  # A value, indexed or dotted into, or vanilla.
-  class ValueNode < Node
-    children :base, :properties
-    attr_reader :last, :source
-
-    # Soak up undefined properties and call attempts.
-    SOAK = " == undefined ? undefined : "
-
-    def initialize(base, properties=[])
-      @base, @properties = base, [properties].flatten
-    end
-
-    def <<(other)
-      @properties << other
-      self
-    end
-
-    def properties?
-      return !@properties.empty? || @base.is_a?(ThisNode)
-    end
-
-    def array?
-      @base.is_a?(ArrayNode) && !properties?
-    end
-
-    def object?
-      @base.is_a?(ObjectNode) && !properties?
-    end
-
-    def splice?
-      properties? && @properties.last.is_a?(SliceNode)
-    end
-
-    def arguments?
-      @base.to_s == 'arguments'
-    end
-
-    def unwrap
-      @properties.empty? ? @base : self
-    end
-
-    # Values are statements if their base is a statement.
-    def statement?
-      @base.is_a?(Node) && @base.statement? && !properties?
-    end
-
-    def compile_node(o)
-      soaked    = false
-      only      = o.delete(:only_first)
-      props     = only ? @properties[0...-1] : @properties
-      baseline  = @base.compile(o)
-      parts     = [baseline.dup]
-      props.each do |prop|
-        if prop.is_a?(AccessorNode) && prop.soak
-          soaked = true
-          if @base.is_a?(CallNode) && prop == props.first
-            temp = o[:scope].free_variable
-            parts[-1] = "(#{temp} = #{baseline})#{SOAK}#{baseline = temp.to_s + prop.compile(o)}"
-          else
-            parts[-1] << "#{SOAK}#{baseline += prop.compile(o)}"
-          end
-        else
-          part = prop.compile(o)
-          baseline += part
-          parts << part
-        end
-      end
-      @last = parts.last
-      @source = parts.length > 1 ? parts[0...-1].join('') : nil
-      code = parts.join('').gsub(')())', '()))')
-      write(soaked ? "(#{code})" : code)
-    end
   end
 
   # A dotted accessor into a part of a value, or the :: shorthand for

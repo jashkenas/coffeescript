@@ -77,11 +77,11 @@ re::adjust_comments: ->
       this.tokens.splice(i + 2, 1)
       this.tokens.splice(i - 2, 1)
       return 0
-    else if prev[0] is 'TERMINATOR' and after[0] is 'INDENT'
+    else if prev and prev[0] is 'TERMINATOR' and after[0] is 'INDENT'
       this.tokens.splice(i + 2, 1)
       this.tokens[i - 1]: after
       return 1
-    else if prev[0] isnt 'TERMINATOR' and prev[0] isnt 'INDENT' and prev[0] isnt 'OUTDENT'
+    else if prev and prev[0] isnt 'TERMINATOR' and prev[0] isnt 'INDENT' and prev[0] isnt 'OUTDENT'
       this.tokens.splice(i, 0, ['TERMINATOR', "\n", prev[2]])
       return 2
     else
