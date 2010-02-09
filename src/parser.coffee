@@ -230,6 +230,7 @@ grammar: {
     o "Object",                                 -> new ValueNode($1)
     o "Parenthetical",                          -> new ValueNode($1)
     o "Range",                                  -> new ValueNode($1)
+    o "This",                                   -> new ValueNode($1)
     o "Value Accessor",                         -> $1.push($2)
     o "Invocation Accessor",                    -> new ValueNode($1, [$2])
   ]
@@ -289,6 +290,12 @@ grammar: {
   # Calling super.
   Super: [
     o "SUPER CALL_START ArgList CALL_END",      -> new CallNode('super', $3)
+  ]
+
+  # This references, either naked or to a property.
+  This: [
+    o "@",                                      -> new ThisNode()
+    o "@ IDENTIFIER",                           -> new ThisNode(yytext)
   ]
 
   # The range literal.

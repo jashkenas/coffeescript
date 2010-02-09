@@ -473,6 +473,18 @@ IndexNode: exports.IndexNode: inherit Node, {
 }
 
 
+# A this-reference, using '@'.
+ThisNode: exports.ThisNode: inherit Node, {
+
+  constructor: (property) ->
+    @property: property or null
+
+  compile_node: (o) ->
+    'this' + (if @property then '.' + @property else '')
+
+}
+
+
 
 
 
