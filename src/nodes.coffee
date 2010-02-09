@@ -72,6 +72,11 @@ merge: (src, dest) ->
   dest[key]: val for key, val of src
   dest
 
+# Do any of the elements in the list pass a truth test?
+any: (list, test) ->
+  result: true for item in list when test(item)
+  !!result.length
+
 # Delete a key from an object, returning the value.
 del: (obj, key) ->
   val: obj[key]
@@ -354,7 +359,60 @@ CommentNode: exports.CommentNode: inherit Node, {
 statement CommentNode
 
 
+# Node for a function invocation. Takes care of converting super() calls into
+# calls against the prototype's function of the same name.
+CallNode: exports.CallNode: inherit Node, {
 
+  constructor: (variable, args) ->
+    @variable:  variable
+    @args:      args or []
+    @children:  flatten([@variable, @args])
+    @prefix:    ''
+    this
+
+  new_instance: ->
+    @prefix: 'new '
+    this
+
+  push: (arg) ->
+    @args.push(arg)
+    @children.push(arg)
+
+  # Compile a vanilla function call.
+  compile_node: (o) ->
+    return @compile_splat(o) if any @args, (a) -> a instanceof SplatNode
+    args: (arg.compile(o) for arg in @args).join(', ')
+    return @compile_super(args, o) if @variable is 'super'
+    @prefix + @variable.compile(o) + '(' + args + ')'
+
+  # Compile a call against the superclass's implementation of the current function.
+  compile_super: (args, o) ->
+    methname: o.scope.method.name
+    arg_part: if args.length then ', ' + args else ''
+    meth: if o.scope.method.proto
+      o.scope.method.proto + '.__superClass__.' + methname
+    else
+      methname + '.__superClass__.constructor'
+    meth + '.call(this' + arg_part + ')'
+
+  # Compile a function call being passed variable arguments.
+  compile_splat: (o) ->
+    meth: @variable.compile o
+    obj:  @variable.source or 'this'
+    args: for arg, i in @args
+      code: arg.compile o
+      code: if arg instanceof SplatNode then code else '[' + code + ']'
+      if i is 0 then code else '.concat(' + code + ')'
+    @prefix + meth + '.apply(' + obj + ', ' + args.join('') + ')'
+
+  # If the code generation wished to use the result of a function call
+  # in multiple places, ensure that the function is only ever called once.
+  compile_reference: (o) ->
+    reference: o.scope.free_variable()
+    call: new ParentheticalNode(new AssignNode(reference, this))
+    [call, reference]
+
+}
 
 
 

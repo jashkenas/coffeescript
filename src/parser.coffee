@@ -110,7 +110,7 @@ grammar: {
 
   # Assignment within an object literal (can be quoted).
   AssignObj: [
-    o "IDENTIFIER ASSIGN Expression",           -> new AssignNode(new ValueNode(yytext), $3, 'object')
+    o "IDENTIFIER ASSIGN Expression",           -> new AssignNode(new ValueNode(new LiteralNode(yytext)), $3, 'object')
     o "STRING ASSIGN Expression",               -> new AssignNode(new ValueNode(new LiteralNode(yytext)), $3, 'object')
     o "NUMBER ASSIGN Expression",               -> new AssignNode(new ValueNode(new LiteralNode(yytext)), $3, 'object')
     o "Comment"
@@ -213,7 +213,7 @@ grammar: {
 
   # A Parameter (or ParamSplat) in a function definition.
   Param: [
-    o "PARAM",                                  -> yytext
+    o "PARAM",                                  -> new LiteralNode(yytext)
     o "PARAM . . .",                            -> new SplatNode(yytext)
   ]
 
@@ -224,7 +224,7 @@ grammar: {
 
   # Expressions that can be treated as values.
   Value: [
-    o "IDENTIFIER",                             -> new ValueNode(yytext)
+    o "IDENTIFIER",                             -> new ValueNode(new LiteralNode(yytext))
     o "Literal",                                -> new ValueNode($1)
     o "Array",                                  -> new ValueNode($1)
     o "Object",                                 -> new ValueNode($1)
@@ -236,9 +236,9 @@ grammar: {
 
   # Accessing into an object or array, through dot or index notation.
   Accessor: [
-    o "PROPERTY_ACCESS IDENTIFIER",             -> new AccessorNode(yytext)
-    o "PROTOTYPE_ACCESS IDENTIFIER",            -> new AccessorNode(yytext, 'prototype')
-    o "SOAK_ACCESS IDENTIFIER",                 -> new AccessorNode(yytext, 'soak')
+    o "PROPERTY_ACCESS IDENTIFIER",             -> new AccessorNode(new LiteralNode(yytext))
+    o "PROTOTYPE_ACCESS IDENTIFIER",            -> new AccessorNode(new LiteralNode(yytext), 'prototype')
+    o "SOAK_ACCESS IDENTIFIER",                 -> new AccessorNode(new LiteralNode(yytext), 'soak')
     o "Index"
     o "Slice",                                  -> new SliceNode($1)
   ]
@@ -311,7 +311,7 @@ grammar: {
   # A list of arguments to a method call, or as the contents of an array.
   ArgList: [
     o "",                                       -> []
-    o "Expression",                             -> val
+    o "Expression",                             -> [$1]
     o "INDENT Expression",                      -> [$2]
     o "ArgList , Expression",                   -> $1.push $3
     o "ArgList TERMINATOR Expression",          -> $1.push $3
