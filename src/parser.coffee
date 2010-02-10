@@ -7,18 +7,18 @@ process.mixin require './nodes'
 unwrap: /function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 
 # Quickie DSL for Jison access.
-o: (pattern_string, func) ->
+o: (pattern_string, func, options) ->
   if func
     func: if match: (func + "").match(unwrap) then match[1] else '(' + func + '())'
-    [pattern_string, '$$ = ' + func + ';']
+    [pattern_string, '$$ = ' + func + ';', options]
   else
-    [pattern_string, '$$ = $1;']
+    [pattern_string, '$$ = $1;', options]
 
 # Precedence ===========================================================
 
 operators: [
   ["left",   '?']
-  ["right",  'NOT', '!', '!!', '~', '++', '--']
+  ["right",  'UMINUS', 'UPLUS', 'NOT', '!', '!!', '~', '++', '--']
   ["left",   '*', '/', '%']
   ["left",   '+', '-']
   ["left",   '<<', '>>', '>>>']
@@ -27,14 +27,13 @@ operators: [
   ["right",  'DELETE', 'INSTANCEOF', 'TYPEOF']
   ["right",  '==', '!=', 'IS', 'ISNT']
   ["left",   '&&', '||', 'AND', 'OR']
-  ["right",  '-=', '+=', '/=', '*=', '%=']
+  ["right",  '-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=']
   ["left",   '.']
   ["right",  'INDENT']
   ["left",   'OUTDENT']
   ["right",  'WHEN', 'LEADING_WHEN', 'IN', 'OF', 'BY']
   ["right",  'THROW', 'FOR', 'NEW', 'SUPER']
   ["left",   'EXTENDS']
-  ["left",   '||=', '&&=', '?=']
   ["right",  'ASSIGN', 'RETURN']
   ["right",  '->', '=>', 'UNLESS', 'IF', 'ELSE', 'WHILE']
 ]
@@ -133,45 +132,45 @@ grammar: {
   Comment: [
     o "COMMENT",                                -> new CommentNode(yytext)
   ]
-  #
-  # # Arithmetic and logical operators
-  # # For Ruby's Operator precedence, see: [
-  # # https://www.cs.auckland.ac.nz/references/ruby/ProgrammingRuby/language.html
-  # Operation: [
-  #   o "! Expression",                           -> new OpNode($1, $2)
-  #   o "!! Expression",                          -> new OpNode($1, $2)
-  #   o "- Expression",                           -> new OpNode($1, $2)
-  #   o "+ Expression",                           -> new OpNode($1, $2)
-  #   o "NOT Expression",                         -> new OpNode($1, $2)
-  #   o "~ Expression",                           -> new OpNode($1, $2)
-  #   o "-- Expression",                          -> new OpNode($1, $2)
-  #   o "++ Expression",                          -> new OpNode($1, $2)
-  #   o "DELETE Expression",                      -> new OpNode($1, $2)
-  #   o "TYPEOF Expression",                      -> new OpNode($1, $2)
-  #   o "Expression --",                          -> new OpNode($2, $1, null, true)
-  #   o "Expression ++",                          -> new OpNode($2, $1, null, true)
-  #
-  #   o "Expression * Expression",                -> new OpNode($2, $1, $3)
-  #   o "Expression / Expression",                -> new OpNode($2, $1, $3)
-  #   o "Expression % Expression",                -> new OpNode($2, $1, $3)
-  #
-  #   o "Expression + Expression",                -> new OpNode($2, $1, $3)
-  #   o "Expression - Expression",                -> new OpNode($2, $1, $3)
-  #
-  #   o "Expression << Expression",               -> new OpNode($2, $1, $3)
-  #   o "Expression >> Expression",               -> new OpNode($2, $1, $3)
-  #   o "Expression >>> Expression",              -> new OpNode($2, $1, $3)
-  #
-  #   o "Expression & Expression",                -> new OpNode($2, $1, $3)
-  #   o "Expression | Expression",                -> new OpNode($2, $1, $3)
-  #   o "Expression ^ Expression",                -> new OpNode($2, $1, $3)
-  #
-  #   o "Expression <= Expression",               -> new OpNode($2, $1, $3)
-  #   o "Expression < Expression",                -> new OpNode($2, $1, $3)
-  #   o "Expression > Expression",                -> new OpNode($2, $1, $3)
-  #   o "Expression >= Expression",               -> new OpNode($2, $1, $3)
-  #
-  #   o "Expression == Expression",               -> new OpNode($2, $1, $3)
+
+  # Arithmetic and logical operators
+  # For Ruby's Operator precedence, see: [
+  # https://www.cs.auckland.ac.nz/references/ruby/ProgrammingRuby/language.html
+  Operation: [
+    o "! Expression",                           -> new OpNode('!', $2)
+    o "!! Expression",                          -> new OpNode('!!', $2)
+    o "- Expression",                           (-> new OpNode('-', $2)), {prec: 'UMINUS'}
+    o "+ Expression",                           (-> new OpNode('+', $2)), {prec: 'UPLUS'}
+    o "NOT Expression",                         -> new OpNode('not', $2)
+    o "~ Expression",                           -> new OpNode('~', $2)
+    o "-- Expression",                          -> new OpNode('--', $2)
+    o "++ Expression",                          -> new OpNode('++', $2)
+    o "DELETE Expression",                      -> new OpNode('delete', $2)
+    o "TYPEOF Expression",                      -> new OpNode('typeof', $2)
+    o "Expression --",                          -> new OpNode('--', $1, null, true)
+    o "Expression ++",                          -> new OpNode('++', $1, null, true)
+
+    o "Expression * Expression",                -> new OpNode('*', $1, $3)
+    o "Expression / Expression",                -> new OpNode('/', $1, $3)
+    o "Expression % Expression",                -> new OpNode('%', $1, $3)
+
+    o "Expression + Expression",                -> new OpNode('+', $1, $3)
+    o "Expression - Expression",                -> new OpNode('-', $1, $3)
+
+    o "Expression << Expression",               -> new OpNode('<<', $1, $3)
+    o "Expression >> Expression",               -> new OpNode('>>', $1, $3)
+    o "Expression >>> Expression",              -> new OpNode('>>>', $1, $3)
+
+    o "Expression & Expression",                -> new OpNode('&', $1, $3)
+    o "Expression | Expression",                -> new OpNode('|', $1, $3)
+    o "Expression ^ Expression",                -> new OpNode('^', $1, $3)
+
+    o "Expression <= Expression",               -> new OpNode('<=', $1, $3)
+    o "Expression < Expression",                -> new OpNode('<', $1, $3)
+    o "Expression > Expression",                -> new OpNode('>', $1, $3)
+    o "Expression >= Expression",               -> new OpNode('>=', $1, $3)
+
+    o "Expression == Expression",               -> new OpNode('==', $1, $3)
   #   o "Expression != Expression",               -> new OpNode($2, $1, $3)
   #   o "Expression IS Expression",               -> new OpNode($2, $1, $3)
   #   o "Expression ISNT Expression",             -> new OpNode($2, $1, $3)
@@ -193,7 +192,7 @@ grammar: {
   #
   #   o "Expression INSTANCEOF Expression",       -> new OpNode($2, $1, $3)
   #   o "Expression IN Expression",               -> new OpNode($2, $1, $3)
-  # ]
+  ]
 
   # The existence operator.
   Existence: [

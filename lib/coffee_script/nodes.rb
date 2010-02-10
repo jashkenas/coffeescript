@@ -783,9 +783,8 @@ module CoffeeScript
     def compile_assignment(o)
       first, second = @first.compile(o), @second.compile(o)
       o[:scope].find(first) if @first.unwrap.is_a?(Value)
-      sym = @operator[0..1]
       return "#{first} = #{ExistenceNode.compile_test(o, @first)} ? #{first} : #{second}" if @operator == '?='
-      "#{first} = #{first} #{sym} #{second}"
+      "#{first} = #{first} #{@operator[0..1]} #{second}"
     end
 
     def compile_existence(o)

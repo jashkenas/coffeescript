@@ -44,6 +44,9 @@ exports.Expressions.wrap  : (values) -> @values: values
 TAB: '  '
 TRAILING_WHITESPACE: /\s+$/g
 
+# Keep the identifier regex in sync with the Lexer.
+IDENTIFIER:   /^[a-zA-Z$_](\w|\$)*$/
+
 # Flatten nested arrays recursively.
 flatten: (list) ->
   memo: []
@@ -587,8 +590,6 @@ ClosureNode: exports.ClosureNode: {
 # Setting the value of a local variable, or the value of an object property.
 AssignNode: exports.AssignNode: inherit Node, {
 
-  # Keep the identifier regex in sync with the Lexer.
-  IDENTIFIER:   /^([a-zA-Z$_](\w|\$)*)/
   PROTO_ASSIGN: /^(\S+)\.prototype/
   LEADING_DOT:  /^\.(prototype\.)?/
 
@@ -616,7 +617,7 @@ AssignNode: exports.AssignNode: inherit Node, {
     match:  name.match(@PROTO_ASSIGN)
     proto:  match and match[1]
     if @value instanceof CodeNode
-      @value.name:  last  if last.match(@IDENTIFIER)
+      @value.name:  last  if last.match(IDENTIFIER)
       @value.proto: proto if proto
     return name + ': ' + @value.compile(o) if @context is 'object'
     o.scope.find(name) unless @is_value() and @variable.has_properties()
@@ -773,8 +774,34 @@ OpNode: exports.OpNode: inherit Node, {
     @CHAINABLE.indexOf(@operator) >= 0
 
   compile_node: (o) ->
-    return @compile_chain(o) if @is_chainable() and (@first.unwrap() instanceof OpNode) and @first.unwrap().is_chainable()
+    return @compile_chain(o)      if @is_chainable() and @first.unwrap() instanceof OpNode and @first.unwrap().is_chainable()
+    return @compile_assignment(o) if @ASSIGNMENT.indexOf(@operator) >= 0
+    return @compile_unary(o)      if @is_unary()
+    return @compile_existence(o)  if @operator is '?'
+    @first.compile(o) + ' ' + @operator + ' ' + @second.compile(o)
 
+  # Mimic Python's chained comparisons. See:
+  # http://docs.python.org/reference/expressions.html#notin
+  compile_chain: (o) ->
+    shared: @first.unwrap().second
+    [@first.second, shared]: shared.compile_reference(o) if shared instanceof CallNode
+    '(' + @first.compile(o) + ') && (' + shared.compile(o) + ' ' + @operator + ' ' + @second.compile(o) + ')'
+
+  compile_assignment: (o) ->
+    [first, second]: [@first.compile(o), @second.compile(o)]
+    o.scope.find(first) if @first.unwrap.match(IDENTIFIER)
+    return first + ' = ' + ExistenceNode.compile_test(o, @first) + ' ? ' + first + ' : ' + second if @operator is '?='
+    first + ' = ' + first + ' ' + @operator.substr(0, 2) + ' ' + second
+
+  compile_existence: (o) ->
+    [first, second]: [@first.compile(o), @second.compile(o)]
+    ExistenceNode.compile_test(o, @first) + ' ? ' + first + ' : ' + second
+
+  compile_unary: (o) ->
+    space: if @PREFIX_OPERATORS.indexOf(@operator) >= 0 then ' ' else ''
+    parts: [@operator, space, @first.compile(o)]
+    parts: parts.reverse() if @flip
+    parts.join('')
 
 }
 
