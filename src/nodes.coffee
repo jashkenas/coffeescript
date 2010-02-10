@@ -538,7 +538,28 @@ ObjectNode: exports.ObjectNode: inherit Node, {
 
 }
 
+# An array literal.
+ArrayNode: exports.ArrayNode: inherit Node, {
 
+  constructor: (objects) ->
+    @children: @objects: objects or []
+    this
+
+  compile_node: (o) ->
+    o.indent: @idt(1)
+    objects: for obj, i in @objects
+      code: obj.compile(o)
+      if obj instanceof CommentNode
+        '\n' + code + '\n' + o.indent
+      else if i is @objects.length - 1
+        code
+      else
+        code + ', '
+    objects: objects.join('')
+    ending: if objects.indexOf('\n') >= 0 then "\n" + @idt() + ']' else ']'
+    '[' + objects + ending
+
+}
 
 
 
