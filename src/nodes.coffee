@@ -742,7 +742,41 @@ WhileNode: exports.WhileNode: inherit Node, {
 
 statement WhileNode
 
+# Simple Arithmetic and logical operations. Performs some conversion from
+# CoffeeScript operations into their JavaScript equivalents.
+OpNode: exports.OpNode: inherit Node, {
 
+  CONVERSIONS: {
+    '==':   '==='
+    '!=':   '!=='
+    'and':  '&&'
+    'or':   '||'
+    'is':   '==='
+    'isnt': '!=='
+    'not':  '!'
+  }
+
+  CHAINABLE:        ['<', '>', '>=', '<=', '===', '!==']
+  ASSIGNMENT:       ['||=', '&&=', '?=']
+  PREFIX_OPERATORS: ['typeof', 'delete']
+
+  constructor: (operator, first, second, flip) ->
+    @children: [@first: first, @second: second]
+    @operator: @CONVERSIONS[operator] or operator
+    @flip: !!flip
+    this
+
+  is_unary: ->
+    not @second
+
+  is_chainable: ->
+    @CHAINABLE.indexOf(@operator) >= 0
+
+  compile_node: (o) ->
+    return @compile_chain(o) if @is_chainable() and (@first.unwrap() instanceof OpNode) and @first.unwrap().is_chainable()
+
+
+}
 
 
 

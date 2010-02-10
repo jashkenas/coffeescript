@@ -27,10 +27,10 @@ prechigh
   left     '+' '-'
   left     '<<' '>>' '>>>' '&' '|' '^'
   left     '<=' '<' '>' '>='
+  right    DELETE INSTANCEOF TYPEOF
   right    '==' '!=' IS ISNT
   left     '&&' '||' AND OR
   right    '-=' '+=' '/=' '*=' '%=' '||=' '&&=' '?='
-  right    DELETE INSTANCEOF TYPEOF
   right    INDENT
   left     OUTDENT
   right    WHEN LEADING_WHEN IN OF BY

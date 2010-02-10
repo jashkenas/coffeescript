@@ -747,7 +747,7 @@ module CoffeeScript
       :isnt   => "!==",
       :not    => '!'
     }
-    CHAINABLE        = [:<, :>, :>=, :<=, :===, :'!===']
+    CHAINABLE        = [:<, :>, :>=, :<=, :===, :'!==']
     ASSIGNMENT       = [:'||=', :'&&=', :'?=']
     PREFIX_OPERATORS = [:typeof, :delete]
 
