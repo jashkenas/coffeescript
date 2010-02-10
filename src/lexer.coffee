@@ -246,9 +246,9 @@ lex::count: (string, letter) ->
   num: 0
   pos: string.indexOf(letter)
   while pos isnt -1
-    count += 1
+    num += 1
     pos: string.indexOf(letter, pos + 1)
-  count
+  num
 
 # Attempt to match a string against the current chunk, returning the indexed
 # match.

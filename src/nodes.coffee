@@ -182,7 +182,7 @@ Expressions: exports.Expressions: inherit Node, {
 
   compile: (o) ->
     o ||= {}
-    if o.scope then super(o) else @compile_root(o)
+    if o.scope then Node::compile.call(this, o) else @compile_root(o)
 
   # Compile each expression in the Expressions body.
   compile_node: (o) ->
@@ -710,6 +710,37 @@ SplatNode: exports.SplatNode: inherit Node, {
     "Array.prototype.slice.call(" + @name + ', ' + @index + ')'
 
 }
+
+# A while loop, the only sort of low-level loop exposed by CoffeeScript. From
+# it, all other loops can be manufactured.
+WhileNode: exports.WhileNode: inherit Node, {
+
+  constructor: (condition, body) ->
+    @children:[@condition: condition, @body: body]
+    this
+
+  top_sensitive: ->
+    true
+
+  compile_node: (o) ->
+    returns:    del(o, 'returns')
+    top:        del(o, 'top') and not returns
+    o.indent:   @idt(1)
+    o.top:      true
+    cond:       @condition.compile(o)
+    set:        ''
+    if not top
+      rvar:     o.scope.free_variable()
+      set:      @idt() + rvar + ' = [];\n'
+      @body:    PushNode.wrap(rvar, @body)
+    post:       if returns then '\n' + @idt() + 'return ' + rvar + ';' else ''
+    pre:        set + @idt() + 'while (' + cond + ')'
+    return pre + ' null;' + post if not @body
+    pre + ' {\n' + @body.compile(o) + '\n' + @idt() + '}' + post
+
+}
+
+statement WhileNode
 
 
 
