@@ -38,7 +38,6 @@ exports.IfNode            : -> @name: this.constructor.name; @values: arguments
 
 exports.Expressions.wrap  : (values) -> @values: values
 
-
 # Some helper functions
 
 # Tabs are two spaces for pretty printing.
@@ -101,7 +100,6 @@ statement: (klass, only) ->
   klass::is_statement:       -> true
   (klass::is_statement_only:  -> true) if only
 
-
 # The abstract base class for all CoffeeScript nodes.
 # All nodes are implement a "compile_node" method, which performs the
 # code generation for that node. To compile a node, call the "compile"
@@ -150,7 +148,6 @@ Node::children:           []
 Node::is_statement:       -> false
 Node::is_statement_only:  -> false
 Node::top_sensitive:      -> false
-
 
 # A collection of nodes, each one representing an expression.
 Expressions: exports.Expressions: inherit Node, {
@@ -233,7 +230,6 @@ Expressions.wrap: (nodes) ->
 
 statement Expressions
 
-
 # Literals are static values that can be passed through directly into
 # JavaScript without translation, eg.: strings, numbers, true, false, null...
 LiteralNode: exports.LiteralNode: inherit Node, {
@@ -257,7 +253,6 @@ LiteralNode: exports.LiteralNode: inherit Node, {
 
 LiteralNode::is_statement_only: LiteralNode::is_statement
 
-
 # Return an expression, or wrap it in a closure and return it.
 ReturnNode: exports.ReturnNode: inherit Node, {
 
@@ -273,7 +268,6 @@ ReturnNode: exports.ReturnNode: inherit Node, {
 }
 
 statement ReturnNode, true
-
 
 # A value, indexed or dotted into, or vanilla.
 ValueNode: exports.ValueNode: inherit Node, {
@@ -341,7 +335,6 @@ ValueNode: exports.ValueNode: inherit Node, {
 
 }
 
-
 # Pass through CoffeeScript comments into JavaScript comments at the
 # same position.
 CommentNode: exports.CommentNode: inherit Node, {
@@ -357,7 +350,6 @@ CommentNode: exports.CommentNode: inherit Node, {
 }
 
 statement CommentNode
-
 
 # Node for a function invocation. Takes care of converting super() calls into
 # calls against the prototype's function of the same name.
@@ -415,7 +407,6 @@ CallNode: exports.CallNode: inherit Node, {
 
 }
 
-
 # Node to extend an object's prototype with an ancestor object.
 # After goog.inherits from the Closure Library.
 ExtendsNode: exports.ExtendsNode: inherit Node, {
@@ -441,7 +432,6 @@ ExtendsNode: exports.ExtendsNode: inherit Node, {
 
 statement ExtendsNode
 
-
 # A dotted accessor into a part of a value, or the :: shorthand for
 # an accessor into the object's prototype.
 AccessorNode: exports.AccessorNode: inherit Node, {
@@ -458,7 +448,6 @@ AccessorNode: exports.AccessorNode: inherit Node, {
 
 }
 
-
 # An indexed accessor into a part of an array or object.
 IndexNode: exports.IndexNode: inherit Node, {
 
@@ -471,17 +460,81 @@ IndexNode: exports.IndexNode: inherit Node, {
 
 }
 
-
 # A this-reference, using '@'.
 ThisNode: exports.ThisNode: inherit Node, {
 
   constructor: (property) ->
     @property: property or null
+    this
 
   compile_node: (o) ->
     'this' + (if @property then '.' + @property else '')
 
 }
+
+# A range literal. Ranges can be used to extract portions (slices) of arrays,
+# or to specify a range for list comprehensions.
+RangeNode: exports.RangeNode: inherit Node, {
+
+  constructor: (from, to, exclusive) ->
+    @from:      from
+    @to:        to
+    @children:  [from, to]
+    @exclusive: !!exclusive
+    this
+
+  compile_variables: (o) ->
+    @indent:   o.indent
+    @from_var: o.scope.free_variable()
+    @to_var:   o.scope.free_variable()
+    @from_var + ' = ' + @from.compile(o) + '; ' + @to_var + ' = ' + @to.compile(o) + ";\n" + @idt()
+
+  compile_node: (o) ->
+    return    @compile_array(o) unless o.index
+    idx:      del o, 'index'
+    step:     del o, 'step'
+    equals:   if @exclusive then '' else '='
+    intro:    '(' + @from_var + ' <= ' + @to_var + ' ? ' + idx
+    compare:  intro + ' <' + equals + ' ' + @to_var + ' : ' + idx + ' >' + equals + ' ' + @to_var + ')'
+    incr:     intro + ' += ' + step + ' : ' + idx + ' -= ' + step + ')'
+    vars + '; ' + compare + '; ' + incr
+
+  # Expand the range into the equivalent array, if it's not being used as
+  # part of a comprehension, slice, or splice.
+  # TODO: This generates pretty ugly code ... shrink it.
+  compile_array: (o) ->
+    body: Expressions.wrap(new LiteralNode 'i')
+    arr:  Expressions.wrap(new ForNode(body, {source: (new ValueNode(this))}, 'i'))
+    (new ParentheticalNode(new CallNode(new CodeNode([], arr)))).compile(o)
+
+}
+
+# An array slice literal. Unlike JavaScript's Array#slice, the second parameter
+# specifies the index of the end of the slice (just like the first parameter)
+# is the index of the beginning.
+SliceNode: exports.SliceNode: inherit Node, {
+
+  constructor: (range) ->
+    @children: [@range: range]
+    this
+
+  compile_node: (o) ->
+    from:       @range.from.compile(o)
+    to:         @range.to.compile(o)
+    plus_part:  if @range.exclusive then '' else ' + 1'
+    ".slice(" + from + ', ' + to + plus_part + ')'
+
+}
+
+
+
+
+
+
+
+
+
+
 
 
 

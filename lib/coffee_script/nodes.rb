@@ -439,7 +439,7 @@ module CoffeeScript
   end
 
   # A range literal. Ranges can be used to extract portions (slices) of arrays,
-  # or to specify a range for array comprehensions.
+  # or to specify a range for list comprehensions.
   class RangeNode < Node
     children :from, :to
 
@@ -464,8 +464,9 @@ module CoffeeScript
       vars      = "#{idx}=#{@from_var}"
       step      = step ? step.compile(o) : '1'
       equals    = @exclusive ? '' : '='
-      compare   = "(#{@from_var} <= #{@to_var} ? #{idx} <#{equals} #{@to_var} : #{idx} >#{equals} #{@to_var})"
-      incr      = "(#{@from_var} <= #{@to_var} ? #{idx} += #{step} : #{idx} -= #{step})"
+      intro     = "(#{@from_var} <= #{@to_var} ? #{idx}"
+      compare   = "#{intro} <#{equals} #{@to_var} : #{idx} >#{equals} #{@to_var})"
+      incr      = "#{intro} += #{step} : #{idx} -= #{step})"
       write("#{vars}; #{compare}; #{incr}")
     end
 
