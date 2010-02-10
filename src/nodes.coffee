@@ -805,7 +805,25 @@ OpNode: exports.OpNode: inherit Node, {
 
 }
 
+# A try/catch/finally block.
+TryNode: exports.TryNode: inherit Node, {
 
+  constructor: (attempt, error, recovery, ensure) ->
+    @children: [@attempt: attempt, @recovery: recovery, @ensure: ensure]
+    @error: error
+    this
+
+  compile_node: (o) ->
+    o.indent:     @idt(1)
+    o.top:        true
+    error_part:   if @error then ' (' + @error.compile(o) + ') ' else ' '
+    catch_part:   (@recovery or '') and ' catch' + error_part + '{\n' + @recovery.compile(o) + '\n' + @idt() + '}'
+    finally_part: (@ensure or '') and ' finally {\n' + @ensure.compile(merge(o, {returns: null})) + '\n' + @idt() + '}'
+    @idt() + 'try {\n' + @attempt.compile(o) + '\n' + @idt() + '}' + catch_part + finally_part
+
+}
+
+statement TryNode
 
 
 

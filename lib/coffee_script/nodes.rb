@@ -800,6 +800,77 @@ module CoffeeScript
     end
   end
 
+  # A try/catch/finally block.
+  class TryNode < Node
+    children :try, :recovery, :finally
+    attr_reader :error
+    statement
+
+    def initialize(try, error, recovery, finally=nil)
+      @try, @error, @recovery, @finally = try, error, recovery, finally
+    end
+
+    def compile_node(o)
+      o[:indent] = idt(1)
+      o[:top] = true
+      error_part = @error ? " (#{@error}) " : ' '
+      catch_part = @recovery &&  " catch#{error_part}{\n#{@recovery.compile(o)}\n#{idt}}"
+      finally_part = @finally && " finally {\n#{@finally.compile(o.merge(:return => nil))}\n#{idt}}"
+      write("#{idt}try {\n#{@try.compile(o)}\n#{idt}}#{catch_part}#{finally_part}")
+    end
+  end
+
+  # Throw an exception.
+  class ThrowNode < Node
+    children :expression
+    statement_only
+
+    def initialize(expression)
+      @expression = expression
+    end
+
+    def compile_node(o)
+      write("#{idt}throw #{@expression.compile(o)};")
+    end
+  end
+
+  # Check an expression for existence (meaning not null or undefined).
+  class ExistenceNode < Node
+    children :expression
+
+    def self.compile_test(o, variable)
+      first, second = variable, variable
+      first, second = *variable.compile_reference(o) if variable.is_a?(CallNode)
+      "(typeof #{first.compile(o)} !== \"undefined\" && #{second.compile(o)} !== null)"
+    end
+
+    def initialize(expression)
+      @expression = expression
+    end
+
+    def compile_node(o)
+      write(ExistenceNode.compile_test(o, @expression))
+    end
+  end
+
+  # An extra set of parentheses, supplied by the script source.
+  # You can't wrap parentheses around bits that get compiled into JS statements,
+  # unfortunately.
+  class ParentheticalNode < Node
+    children :expressions
+
+    def initialize(expressions, line=nil)
+      @expressions = expressions.unwrap
+      @line = line
+    end
+
+    def compile_node(o)
+      compiled = @expressions.compile(o)
+      compiled = compiled[0...-1] if compiled[-1..-1] == ';'
+      write("(#{compiled})")
+    end
+  end
+
   # The replacement for the for loop is an array comprehension (that compiles)
   # into a for loop. Also acts as an expression, able to return the result
   # of the comprehenion. Unlike Python array comprehensions, it's able to pass
@@ -870,77 +941,6 @@ module CoffeeScript
       body = body.compile(o.merge(:indent => body_dent, :top => true))
       vars = range ? @name : "#{@name}, #{ivar}"
       return write(set_result + source_part + "for (#{for_part}) {\n#{var_part}#{body}\n#{idt}}\n#{idt}#{return_result}")
-    end
-  end
-
-  # A try/catch/finally block.
-  class TryNode < Node
-    children :try, :recovery, :finally
-    attr_reader :error
-    statement
-
-    def initialize(try, error, recovery, finally=nil)
-      @try, @error, @recovery, @finally = try, error, recovery, finally
-    end
-
-    def compile_node(o)
-      o[:indent] = idt(1)
-      o[:top] = true
-      error_part = @error ? " (#{@error}) " : ' '
-      catch_part = @recovery &&  " catch#{error_part}{\n#{@recovery.compile(o)}\n#{idt}}"
-      finally_part = @finally && " finally {\n#{@finally.compile(o.merge(:return => nil))}\n#{idt}}"
-      write("#{idt}try {\n#{@try.compile(o)}\n#{idt}}#{catch_part}#{finally_part}")
-    end
-  end
-
-  # Throw an exception.
-  class ThrowNode < Node
-    children :expression
-    statement_only
-
-    def initialize(expression)
-      @expression = expression
-    end
-
-    def compile_node(o)
-      write("#{idt}throw #{@expression.compile(o)};")
-    end
-  end
-
-  # Check an expression for existence (meaning not null or undefined).
-  class ExistenceNode < Node
-    children :expression
-
-    def self.compile_test(o, variable)
-      first, second = variable, variable
-      first, second = *variable.compile_reference(o) if variable.is_a?(CallNode)
-      "(typeof #{first.compile(o)} !== \"undefined\" && #{second.compile(o)} !== null)"
-    end
-
-    def initialize(expression)
-      @expression = expression
-    end
-
-    def compile_node(o)
-      write(ExistenceNode.compile_test(o, @expression))
-    end
-  end
-
-  # An extra set of parentheses, supplied by the script source.
-  # You can't wrap parentheses around bits that get compiled into JS statements,
-  # unfortunately.
-  class ParentheticalNode < Node
-    children :expressions
-
-    def initialize(expressions, line=nil)
-      @expressions = expressions.unwrap
-      @line = line
-    end
-
-    def compile_node(o)
-      compiled = @expressions.compile(o)
-      compiled = compiled[0...-1] if compiled[-1..-1] == ';'
-      write("(#{compiled})")
     end
   end
 
