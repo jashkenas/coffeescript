@@ -691,6 +691,25 @@ CodeNode: exports.CodeNode: inherit Node, {
 
 }
 
+# A splat, either as a parameter to a function, an argument to a call,
+# or in a destructuring assignment.
+SplatNode: exports.SplatNode: inherit Node, {
+
+  constructor: (name) ->
+    @children: [@name: name]
+    this
+
+  compile_node: (o) ->
+    if @index then @compile_param(o) else @name.compile(o)
+
+  compile_param: (o) ->
+    o.scope.find @name
+    @name + ' = Array.prototype.slice.call(arguments, ' + @index + ')'
+
+  compile_value: (o, name, index) ->
+    "Array.prototype.slice.call(" + @name + ', ' + @index + ')'
+
+}
 
 
 
