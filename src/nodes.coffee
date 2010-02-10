@@ -153,8 +153,7 @@ Node::top_sensitive:      -> false
 Expressions: exports.Expressions: inherit Node, {
 
   constructor: (nodes) ->
-    @expressions: flatten nodes
-    @children: @expressions
+    @children: @expressions: flatten nodes
     this
 
   # Tack an expression on to the end of this expression list.
@@ -235,8 +234,7 @@ statement Expressions
 LiteralNode: exports.LiteralNode: inherit Node, {
 
   constructor: (value) ->
-    @value: value
-    @children: [value]
+    @children: [@value: value]
     this
 
   # Break and continue must be treated as statements -- they lose their meaning
@@ -257,8 +255,7 @@ LiteralNode::is_statement_only: LiteralNode::is_statement
 ReturnNode: exports.ReturnNode: inherit Node, {
 
   constructor: (expression) ->
-    @expression: expression
-    @children: [expression]
+    @children: [@expression: expression]
     this
 
   compile_node: (o) ->
@@ -275,9 +272,7 @@ ValueNode: exports.ValueNode: inherit Node, {
   SOAK: " == undefined ? undefined : "
 
   constructor: (base, properties) ->
-    @base:       base
-    @properties: flatten(properties or [])
-    @children:   flatten(@base, @properties)
+    @children:   flatten(@base: base, @properties: (properties or []))
     this
 
   push: (prop) ->
@@ -356,9 +351,7 @@ statement CommentNode
 CallNode: exports.CallNode: inherit Node, {
 
   constructor: (variable, args) ->
-    @variable:  variable
-    @args:      args or []
-    @children:  flatten([@variable, @args])
+    @children:  flatten [@variable: variable, @args: (args or [])]
     @prefix:    ''
     this
 
@@ -412,9 +405,7 @@ CallNode: exports.CallNode: inherit Node, {
 ExtendsNode: exports.ExtendsNode: inherit Node, {
 
   constructor: (child, parent) ->
-    @child:     child
-    @parent:    parent
-    @children:  [child, parent]
+    @children:  [@child: child, @parent: parent]
     this
 
   # Hooking one constructor into another's prototype chain.
@@ -437,8 +428,7 @@ statement ExtendsNode
 AccessorNode: exports.AccessorNode: inherit Node, {
 
   constructor: (name, tag) ->
-    @name:      name
-    @children:  [@name]
+    @children:  [@name: name]
     @prototype: tag is 'prototype'
     @soak:      tag is 'soak'
     this
@@ -477,9 +467,7 @@ ThisNode: exports.ThisNode: inherit Node, {
 RangeNode: exports.RangeNode: inherit Node, {
 
   constructor: (from, to, exclusive) ->
-    @from:      from
-    @to:        to
-    @children:  [from, to]
+    @children:  [@from: from, @to: to]
     @exclusive: !!exclusive
     this
 
@@ -523,6 +511,106 @@ SliceNode: exports.SliceNode: inherit Node, {
     to:         @range.to.compile(o)
     plus_part:  if @range.exclusive then '' else ' + 1'
     ".slice(" + from + ', ' + to + plus_part + ')'
+
+}
+
+# An object literal.
+ObjectNode: exports.ObjectNode: inherit Node, {
+
+  constructor: (props) ->
+    @objects: @properties: props or []
+    this
+
+  # All the mucking about with commas is to make sure that CommentNodes and
+  # AssignNodes get interleaved correctly, with no trailing commas or
+  # commas affixed to comments. TODO: Extract this and add it to ArrayNode.
+  compile_node: (o) ->
+    o.indent: @idt(1)
+    non_comments: prop for prop in @properties when not (prop instanceof CommentNode)
+    last_noncom:  non_comments[non_comments.length - 1]
+    props: for prop, i in @properties
+      join:   ",\n"
+      join:   "\n" if prop is last_noncom or prop instanceof CommentNode
+      join:   '' if i is non_comments.length - 1
+      indent: if prop instanceof CommentNode then '' else @idt(1)
+      indent + prop.compile(o) + join
+    '{\n' + props.join('') + '\n' + @idt() + '}'
+
+}
+
+
+
+
+
+
+
+# Setting the value of a local variable, or the value of an object property.
+AssignNode: exports.AssignNode: inherit Node, {
+
+  # Keep the identifier regex in sync with the Lexer.
+  IDENTIFIER:   /^([a-zA-Z$_](\w|\$)*)/
+  PROTO_ASSIGN: /^(\S+)\.prototype/
+  LEADING_DOT:  /^\.(prototype\.)?/
+
+  constructor: (variable, value, context) ->
+    @children: [@variable: variable, @value: value]
+    @context: context
+    this
+
+  top_sensitive: ->
+    true
+
+  is_value: ->
+    @variable instanceof ValueNode
+
+  is_statement: ->
+    @is_value() and (@variable.is_array() or @variable.is_object())
+
+  compile_node: (o) ->
+    top:    del o, 'top'
+    return  @compile_pattern_match(o) if @is_statement()
+    return  @compile_splice(o) if @is_value() and @variable.is_splice()
+    stmt:   del o, 'as_statement'
+    name:   @variable.compile(o)
+    last:   if @is_value() then @variable.last.replace(@LEADING_DOT, '') else name
+    match:  name.match(@PROTO_ASSIGN)
+    proto:  match and match[1]
+    if @value instanceof CodeNode
+      @value.name:  last  if last.match(@IDENTIFIER)
+      @value.proto: proto if proto
+    return name + ': ' + @value.compile(o) if @context is 'object'
+    o.scope.find(name) unless @is_value() and @variable.has_properties()
+    val: name + ' = ' + @value.compile(o)
+    return @idt() + val + ';' if stmt
+    val: '(' + val + ')' if not top or o.returns
+    val: @idt() + 'return ' + val if o.returns
+    val
+
+  # Implementation of recursive pattern matching, when assigning array or
+  # object literals to a value. Peeks at their properties to assign inner names.
+  # See: http://wiki.ecmascript.org/doku.php?id=harmony:destructuring
+  compile_pattern_match: (o) ->
+    val_var: o.scope.free_variable()
+    assigns: [@idt() + val_var + ' = ' + @value.compile(o) + ';']
+    o.top: true
+    o.as_statement: true
+    for obj, i in @variable.base.objects
+      [obj, i]: [obj.value, obj.variable.base] if @variable.is_object()
+      access_class: if @variable.is_array() then IndexNode else AccessorNode
+      if obj instanceof SplatNode
+        val: new LiteralNode(obj.compile_value(o, val_var, @variable.base.objects.indexOf(obj)))
+      else
+        val: new ValueNode(val_var, [new access_class(new LiteralNode(i))])
+      assigns.push(new AssignNode(obj, val).compile(o))
+    assigns.join("\n")
+
+  compile_splice: (o) ->
+    name:   @variable.compile(merge(o, {only_first: true}))
+    range:  @variable.properties.last.range
+    plus:   if range.exclusive then '' else ' + 1'
+    from:   range.from.compile(o)
+    to:     range.to.compile(o) + ' - ' + from + plus
+    name + '.splice.apply(' + name + ', [' + from + ', ' + to + '].concat(' + @value.compile(o) + '))'
 
 }
 

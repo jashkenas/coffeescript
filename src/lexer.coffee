@@ -21,7 +21,7 @@ KEYWORDS: [
   "super", "extends"
 ]
 
-# Token matching regexes.
+# Token matching regexes. (keep the IDENTIFIER regex in sync with AssignNode.)
 IDENTIFIER : /^([a-zA-Z$_](\w|\$)*)/
 NUMBER     : /^(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
 STRING     : /^(""|''|"([\s\S]*?)([^\\]|\\\\)"|'([\s\S]*?)([^\\]|\\\\)')/

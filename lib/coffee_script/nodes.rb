@@ -499,6 +499,75 @@ module CoffeeScript
     end
   end
 
+  # An object literal.
+  class ObjectNode < Node
+    children :properties
+    alias_method :objects, :properties
+
+    def initialize(properties = [])
+      @properties = properties
+    end
+
+    # All the mucking about with commas is to make sure that CommentNodes and
+    # AssignNodes get interleaved correctly, with no trailing commas or
+    # commas affixed to comments. TODO: Extract this and add it to ArrayNode.
+    def compile_node(o)
+      o[:indent] = idt(1)
+      joins = Hash.new("\n")
+      non_comments = @properties.select {|p| !p.is_a?(CommentNode) }
+      non_comments.each {|p| joins[p] = p == non_comments.last ? "\n" : ",\n" }
+      props  = @properties.map { |prop|
+        join = joins[prop]
+        join = '' if prop == @properties.last
+        indent = prop.is_a?(CommentNode) ? '' : idt(1)
+        "#{indent}#{prop.compile(o)}#{join}"
+      }.join('')
+      write("{\n#{props}\n#{idt}}")
+    end
+  end
+
+  # An array literal.
+  class ArrayNode < Node
+    children :objects
+
+    def initialize(objects=[])
+      @objects = objects
+    end
+
+    def compile_node(o)
+      o[:indent] = idt(1)
+      objects = @objects.map { |obj|
+        code = obj.compile(o)
+        obj.is_a?(CommentNode) ? "\n#{code}\n#{o[:indent]}" :
+        obj == @objects.last   ? code : "#{code}, "
+      }.join('')
+      ending = objects.include?("\n") ? "\n#{idt}]" : ']'
+      write("[#{objects}#{ending}")
+    end
+  end
+
+  # A faux-node that is never created by the grammar, but is used during
+  # code generation to generate a quick "array.push(value)" tree of nodes.
+  class PushNode
+    def self.wrap(array, expressions)
+      expr = expressions.unwrap
+      return expressions if expr.statement_only? || expr.contains? {|n| n.statement_only? }
+      Expressions.wrap(CallNode.new(
+        ValueNode.new(LiteralNode.new(array), [AccessorNode.new(Value.new('push'))]),
+        [expr]
+      ))
+    end
+  end
+
+  # A faux-node used to wrap an expressions body in a closure.
+  class ClosureNode
+    def self.wrap(expressions, statement=false)
+      func = ParentheticalNode.new(CodeNode.new([], Expressions.wrap(expressions)))
+      call = CallNode.new(ValueNode.new(func, AccessorNode.new(Value.new('call'))), [Value.new('this')])
+      statement ? Expressions.wrap(call) : call
+    end
+  end
+
   # Setting the value of a local variable, or the value of an object property.
   class AssignNode < Node
     top_sensitive
@@ -511,14 +580,22 @@ module CoffeeScript
       @variable, @value, @context = variable, value, context
     end
 
+    def value?
+      @variable.is_a?(ValueNode)
+    end
+
+    def statement?
+      value? && (@variable.array? || @variable.object?)
+    end
+
     def compile_node(o)
-      top = o.delete(:top)
-      return compile_pattern_match(o) if statement?
-      return compile_splice(o) if value? && @variable.splice?
-      stmt        = o.delete(:as_statement)
-      name        = @variable.compile(o)
-      last        = value? ? @variable.last.to_s.sub(LEADING_DOT, '') : name
-      proto       = name[PROTO_ASSIGN, 1]
+      top   = o.delete(:top)
+      return  compile_pattern_match(o) if statement?
+      return  compile_splice(o) if value? && @variable.splice?
+      stmt  = o.delete(:as_statement)
+      name  = @variable.compile(o)
+      last  = value? ? @variable.last.to_s.sub(LEADING_DOT, '') : name
+      proto = name[PROTO_ASSIGN, 1]
       if @value.is_a?(CodeNode)
         @value.name  = last  if last.match(Lexer::IDENTIFIER)
         @value.proto = proto if proto
@@ -530,14 +607,6 @@ module CoffeeScript
       val = "(#{val})" if !top || o[:return]
       val = "#{idt}return #{val}" if o[:return]
       write(val)
-    end
-
-    def value?
-      @variable.is_a?(ValueNode)
-    end
-
-    def statement?
-      value? && (@variable.array? || @variable.object?)
     end
 
     # Implementation of recursive pattern matching, when assigning array or
@@ -708,75 +777,6 @@ module CoffeeScript
       "Array.prototype.slice.call(#{name}, #{index})"
     end
 
-  end
-
-  # An object literal.
-  class ObjectNode < Node
-    children :properties
-    alias_method :objects, :properties
-
-    def initialize(properties = [])
-      @properties = properties
-    end
-
-    # All the mucking about with commas is to make sure that CommentNodes and
-    # AssignNodes get interleaved correctly, with no trailing commas or
-    # commas affixed to comments. TODO: Extract this and add it to ArrayNode.
-    def compile_node(o)
-      o[:indent] = idt(1)
-      joins = Hash.new("\n")
-      non_comments = @properties.select {|p| !p.is_a?(CommentNode) }
-      non_comments.each {|p| joins[p] = p == non_comments.last ? "\n" : ",\n" }
-      props  = @properties.map { |prop|
-        join = joins[prop]
-        join = '' if prop == @properties.last
-        indent = prop.is_a?(CommentNode) ? '' : idt(1)
-        "#{indent}#{prop.compile(o)}#{join}"
-      }.join('')
-      write("{\n#{props}\n#{idt}}")
-    end
-  end
-
-  # An array literal.
-  class ArrayNode < Node
-    children :objects
-
-    def initialize(objects=[])
-      @objects = objects
-    end
-
-    def compile_node(o)
-      o[:indent] = idt(1)
-      objects = @objects.map { |obj|
-        code = obj.compile(o)
-        obj.is_a?(CommentNode) ? "\n#{code}\n#{o[:indent]}" :
-        obj == @objects.last   ? code : "#{code}, "
-      }.join('')
-      ending = objects.include?("\n") ? "\n#{idt}]" : ']'
-      write("[#{objects}#{ending}")
-    end
-  end
-
-  # A faux-node that is never created by the grammar, but is used during
-  # code generation to generate a quick "array.push(value)" tree of nodes.
-  class PushNode
-    def self.wrap(array, expressions)
-      expr = expressions.unwrap
-      return expressions if expr.statement_only? || expr.contains? {|n| n.statement_only? }
-      Expressions.wrap(CallNode.new(
-        ValueNode.new(LiteralNode.new(array), [AccessorNode.new(Value.new('push'))]),
-        [expr]
-      ))
-    end
-  end
-
-  # A faux-node used to wrap an expressions body in a closure.
-  class ClosureNode
-    def self.wrap(expressions, statement=false)
-      func = ParentheticalNode.new(CodeNode.new([], Expressions.wrap(expressions)))
-      call = CallNode.new(ValueNode.new(func, AccessorNode.new(Value.new('call'))), [Value.new('this')])
-      statement ? Expressions.wrap(call) : call
-    end
   end
 
   # A while loop, the only sort of low-level loop exposed by CoffeeScript. From

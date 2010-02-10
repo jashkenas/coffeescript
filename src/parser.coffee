@@ -86,10 +86,18 @@ grammar: {
     o "INDENT OUTDENT",                         -> new Expressions()
   ]
 
-  # All hard-coded values. These can be printed straight to JavaScript.
-  Literal: [
+  Identifier: [
+    o "IDENTIFIER",                             -> new LiteralNode(yytext)
+  ]
+
+  AlphaNumeric: [
     o "NUMBER",                                 -> new LiteralNode(yytext)
     o "STRING",                                 -> new LiteralNode(yytext)
+  ]
+
+  # All hard-coded values. These can be printed straight to JavaScript.
+  Literal: [
+    o "AlphaNumeric",                           -> $1
     o "JS",                                     -> new LiteralNode(yytext)
     o "REGEX",                                  -> new LiteralNode(yytext)
     o "BREAK",                                  -> new LiteralNode(yytext)
@@ -110,9 +118,8 @@ grammar: {
 
   # Assignment within an object literal (can be quoted).
   AssignObj: [
-    o "IDENTIFIER ASSIGN Expression",           -> new AssignNode(new ValueNode(new LiteralNode(yytext)), $3, 'object')
-    o "STRING ASSIGN Expression",               -> new AssignNode(new ValueNode(new LiteralNode(yytext)), $3, 'object')
-    o "NUMBER ASSIGN Expression",               -> new AssignNode(new ValueNode(new LiteralNode(yytext)), $3, 'object')
+    o "Identifier ASSIGN Expression",           -> new AssignNode(new ValueNode($1), $3, 'object')
+    o "AlphaNumeric ASSIGN Expression",         -> new AssignNode(new ValueNode($1), $3, 'object')
     o "Comment"
   ]
 
@@ -224,7 +231,7 @@ grammar: {
 
   # Expressions that can be treated as values.
   Value: [
-    o "IDENTIFIER",                             -> new ValueNode(new LiteralNode(yytext))
+    o "Identifier",                             -> new ValueNode($1)
     o "Literal",                                -> new ValueNode($1)
     o "Array",                                  -> new ValueNode($1)
     o "Object",                                 -> new ValueNode($1)
@@ -237,9 +244,9 @@ grammar: {
 
   # Accessing into an object or array, through dot or index notation.
   Accessor: [
-    o "PROPERTY_ACCESS IDENTIFIER",             -> new AccessorNode(new LiteralNode(yytext))
-    o "PROTOTYPE_ACCESS IDENTIFIER",            -> new AccessorNode(new LiteralNode(yytext), 'prototype')
-    o "SOAK_ACCESS IDENTIFIER",                 -> new AccessorNode(new LiteralNode(yytext), 'soak')
+    o "PROPERTY_ACCESS Identifier",             -> new AccessorNode($2)
+    o "PROTOTYPE_ACCESS Identifier",            -> new AccessorNode($2, 'prototype')
+    o "SOAK_ACCESS Identifier",                 -> new AccessorNode($2, 'soak')
     o "Index"
     o "Slice",                                  -> new SliceNode($1)
   ]
@@ -258,9 +265,9 @@ grammar: {
   AssignList: [
     o "",                                       -> []
     o "AssignObj",                              -> [$1]
-    o "AssignList , AssignObj",                 -> $1.push $3
-    o "AssignList TERMINATOR AssignObj",        -> $1.push $3
-    o "AssignList , TERMINATOR AssignObj",      -> $1.push $4
+    o "AssignList , AssignObj",                 -> $1.concat [$3]
+    o "AssignList TERMINATOR AssignObj",        -> $1.concat [$3]
+    o "AssignList , TERMINATOR AssignObj",      -> $1.concat [$4]
     o "INDENT AssignList OUTDENT",              -> $2
   ]
 
@@ -295,7 +302,7 @@ grammar: {
   # This references, either naked or to a property.
   This: [
     o "@",                                      -> new ThisNode()
-    o "@ IDENTIFIER",                           -> new ThisNode(yytext)
+    o "@ Identifier",                           -> new ThisNode($2)
   ]
 
   # The range literal.
@@ -320,10 +327,10 @@ grammar: {
     o "",                                       -> []
     o "Expression",                             -> [$1]
     o "INDENT Expression",                      -> [$2]
-    o "ArgList , Expression",                   -> $1.push $3
-    o "ArgList TERMINATOR Expression",          -> $1.push $3
-    o "ArgList , TERMINATOR Expression",        -> $1.push $4
-    o "ArgList , INDENT Expression",            -> $1.push $4
+    o "ArgList , Expression",                   -> $1.concat [$3]
+    o "ArgList TERMINATOR Expression",          -> $1.concat [$3]
+    o "ArgList , TERMINATOR Expression",        -> $1.concat [$4]
+    o "ArgList , INDENT Expression",            -> $1.concat [$4]
     o "ArgList OUTDENT",                        -> $1
   ]
 
@@ -343,7 +350,7 @@ grammar: {
 
   # A catch clause.
   Catch: [
-    o "CATCH IDENTIFIER Block",                 -> [$2, $3]
+    o "CATCH Identifier Block",                 -> [$2, $3]
   ]
 
   # Throw an exception.
@@ -372,8 +379,8 @@ grammar: {
 
   # An array comprehension has variables for the current element and index.
   ForVariables: [
-    o "IDENTIFIER",                             -> [$1]
-    o "IDENTIFIER , IDENTIFIER",                -> [$1, $3]
+    o "Identifier",                             -> [$1]
+    o "Identifier , Identifier",                -> [$1, $3]
   ]
 
   # The source of the array comprehension can optionally be filtered.
