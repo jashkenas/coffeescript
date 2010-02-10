@@ -215,12 +215,12 @@ grammar: {
   # The parameters to a function definition.
   ParamList: [
     o "Param",                                  -> [$1]
-    o "ParamList , Param",                      -> $1.push($3)
+    o "ParamList , Param",                      -> $1.concat [$3]
   ]
 
   # A Parameter (or ParamSplat) in a function definition.
   Param: [
-    o "PARAM",                                  -> new LiteralNode(yytext)
+    o "PARAM",                                  -> yytext
     o "PARAM . . .",                            -> new SplatNode(yytext)
   ]
 

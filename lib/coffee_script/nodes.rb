@@ -639,76 +639,6 @@ module CoffeeScript
     end
   end
 
-  # Simple Arithmetic and logical operations. Performs some conversion from
-  # CoffeeScript operations into their JavaScript equivalents.
-  class OpNode < Node
-    children :first, :second
-    attr_reader :operator
-    attr_accessor :second
-
-    CONVERSIONS = {
-      :==     => "===",
-      :'!='   => "!==",
-      :and    => '&&',
-      :or     => '||',
-      :is     => '===',
-      :isnt   => "!==",
-      :not    => '!'
-    }
-    CHAINABLE        = [:<, :>, :>=, :<=, :===, :'!===']
-    ASSIGNMENT       = [:'||=', :'&&=', :'?=']
-    PREFIX_OPERATORS = [:typeof, :delete]
-
-    def initialize(operator, first, second=nil, flip=false)
-      @first, @second, @flip = first, second, flip
-      @operator = CONVERSIONS[operator.to_sym] || operator
-    end
-
-    def unary?
-      @second.nil?
-    end
-
-    def chainable?
-      CHAINABLE.include?(operator.to_sym)
-    end
-
-    def compile_node(o)
-      return write(compile_chain(o)) if chainable? && @first.unwrap.is_a?(OpNode) && @first.unwrap.chainable?
-      return write(compile_assignment(o)) if ASSIGNMENT.include?(@operator.to_sym)
-      return write(compile_unary(o)) if unary?
-      return write(compile_existence(o)) if @operator == '?'
-      write("#{@first.compile(o)} #{@operator} #{@second.compile(o)}")
-    end
-
-    # Mimic Python's chained comparisons. See:
-    # http://docs.python.org/reference/expressions.html#notin
-    def compile_chain(o)
-      shared = @first.unwrap.second
-      @first.second, shared = *shared.compile_reference(o) if shared.is_a?(CallNode)
-      "(#{@first.compile(o)}) && (#{shared.compile(o)} #{@operator} #{@second.compile(o)})"
-    end
-
-    def compile_assignment(o)
-      first, second = @first.compile(o), @second.compile(o)
-      o[:scope].find(first) if @first.unwrap.is_a?(Value)
-      sym = @operator[0..1]
-      return "#{first} = #{ExistenceNode.compile_test(o, @first)} ? #{first} : #{second}" if @operator == '?='
-      "#{first} = #{first} #{sym} #{second}"
-    end
-
-    def compile_existence(o)
-      first, second = @first.compile(o), @second.compile(o)
-      "#{ExistenceNode.compile_test(o, @first)} ? #{first} : #{second}"
-    end
-
-    def compile_unary(o)
-      space = PREFIX_OPERATORS.include?(@operator.to_sym) ? ' ' : ''
-      parts = [@operator.to_s, space, @first.compile(o)]
-      parts.reverse! if @flip
-      parts.join('')
-    end
-  end
-
   # A function definition. The only node that creates a new Scope.
   # A CodeNode does not have any children -- they're within the new scope.
   class CodeNode < Node
@@ -716,17 +646,10 @@ module CoffeeScript
     attr_reader :params, :body, :bound
     attr_accessor :name, :proto
 
-    # Constructor functions start with an uppercase letter, by convention.
-    UPPERCASE = /[A-Z]/
-
     def initialize(params, body, tag=nil)
       @params = params
       @body   = body
       @bound  = tag == :boundfunc
-    end
-
-    def constructor?
-      @name && @name[0..0][UPPERCASE]
     end
 
     def compile_node(o)
@@ -805,6 +728,76 @@ module CoffeeScript
       post        = returns ? "\n#{idt}return #{rvar};" : ''
       return write("#{set}#{idt}while (#{cond}) null;#{post}") if @body.nil?
       write("#{set}#{idt}while (#{cond}) {\n#{@body.compile(o)}\n#{idt}}#{post}")
+    end
+  end
+
+  # Simple Arithmetic and logical operations. Performs some conversion from
+  # CoffeeScript operations into their JavaScript equivalents.
+  class OpNode < Node
+    children :first, :second
+    attr_reader :operator
+    attr_accessor :second
+
+    CONVERSIONS = {
+      :==     => "===",
+      :'!='   => "!==",
+      :and    => '&&',
+      :or     => '||',
+      :is     => '===',
+      :isnt   => "!==",
+      :not    => '!'
+    }
+    CHAINABLE        = [:<, :>, :>=, :<=, :===, :'!===']
+    ASSIGNMENT       = [:'||=', :'&&=', :'?=']
+    PREFIX_OPERATORS = [:typeof, :delete]
+
+    def initialize(operator, first, second=nil, flip=false)
+      @first, @second, @flip = first, second, flip
+      @operator = CONVERSIONS[operator.to_sym] || operator
+    end
+
+    def unary?
+      @second.nil?
+    end
+
+    def chainable?
+      CHAINABLE.include?(operator.to_sym)
+    end
+
+    def compile_node(o)
+      return write(compile_chain(o)) if chainable? && @first.unwrap.is_a?(OpNode) && @first.unwrap.chainable?
+      return write(compile_assignment(o)) if ASSIGNMENT.include?(@operator.to_sym)
+      return write(compile_unary(o)) if unary?
+      return write(compile_existence(o)) if @operator == '?'
+      write("#{@first.compile(o)} #{@operator} #{@second.compile(o)}")
+    end
+
+    # Mimic Python's chained comparisons. See:
+    # http://docs.python.org/reference/expressions.html#notin
+    def compile_chain(o)
+      shared = @first.unwrap.second
+      @first.second, shared = *shared.compile_reference(o) if shared.is_a?(CallNode)
+      "(#{@first.compile(o)}) && (#{shared.compile(o)} #{@operator} #{@second.compile(o)})"
+    end
+
+    def compile_assignment(o)
+      first, second = @first.compile(o), @second.compile(o)
+      o[:scope].find(first) if @first.unwrap.is_a?(Value)
+      sym = @operator[0..1]
+      return "#{first} = #{ExistenceNode.compile_test(o, @first)} ? #{first} : #{second}" if @operator == '?='
+      "#{first} = #{first} #{sym} #{second}"
+    end
+
+    def compile_existence(o)
+      first, second = @first.compile(o), @second.compile(o)
+      "#{ExistenceNode.compile_test(o, @first)} ? #{first} : #{second}"
+    end
+
+    def compile_unary(o)
+      space = PREFIX_OPERATORS.include?(@operator.to_sym) ? ' ' : ''
+      parts = [@operator.to_s, space, @first.compile(o)]
+      parts.reverse! if @flip
+      parts.join('')
     end
   end
 

@@ -177,7 +177,7 @@ Expressions: exports.Expressions: inherit Node, {
   # Is the node last in this block of expressions?
   is_last: (node) ->
     l: @expressions.length
-    @last_index ||= if @expressions[l - 1] instanceof CommentNode then -2 else -1
+    @last_index ||= if @expressions[l - 1] instanceof CommentNode then 2 else 1
     node is @expressions[l - @last_index]
 
   compile: (o) ->
@@ -218,7 +218,7 @@ Expressions: exports.Expressions: inherit Node, {
     # If it's a statement, the node knows how to return itself.
     return node.compile(merge(o, {returns: true})) if node.is_statement()
     # Otherwise, we can just return the value of the expression.
-    return @idt() + 'return ' + node.compile(o)
+    return @idt() + 'return ' + node.compile(o) + ';'
 
 }
 
@@ -561,9 +561,28 @@ ArrayNode: exports.ArrayNode: inherit Node, {
 
 }
 
+# A faux-node that is never created by the grammar, but is used during
+# code generation to generate a quick "array.push(value)" tree of nodes.
+PushNode: exports.PushNode: {
 
+  wrap: (array, expressions) ->
+    expr: expressions.unwrap()
+    return expressions if expr.is_statement_only() or expr.contains (n) -> n.is_statement_only()
+    Expressions.wrap(new CallNode(
+      new ValueNode(new LiteralNode(array), [new AccessorNode(new LiteralNode('push'))]), [expr]
+    ))
 
+}
 
+# A faux-node used to wrap an expressions body in a closure.
+ClosureNode: exports.ClosureNode: {
+
+  wrap: (expressions, statement) ->
+    func: new ParentheticalNode(new CodeNode([], Expressions.wrap(expressions)))
+    call: new CallNode(new ValueNode(func, new AccessorNode(new LiteralNode('call'))), [new LiteralNode('this')])
+    if statement then Expressions.wrap(call) else call
+
+}
 
 # Setting the value of a local variable, or the value of an object property.
 AssignNode: exports.AssignNode: inherit Node, {
@@ -635,8 +654,42 @@ AssignNode: exports.AssignNode: inherit Node, {
 
 }
 
+# A function definition. The only node that creates a new Scope.
+# A CodeNode does not have any children -- they're within the new scope.
+CodeNode: exports.CodeNode: inherit Node, {
 
+  constructor: (params, body, tag) ->
+    @params:  params
+    @body:    body
+    @bound:   tag is 'boundfunc'
+    this
 
+  compile_node: (o) ->
+    shared_scope: del o, 'shared_scope'
+    top:          del o, 'top'
+    o.scope:      shared_scope or new Scope(o.scope, @body, this)
+    o.returns:    true
+    o.top:        true
+    o.indent:     @idt(if @bound then 2 else 1)
+    del o, 'no_wrap'
+    del o, 'globals'
+    if @params[@params.length - 1] instanceof SplatNode
+      splat: @params.pop()
+      splat.index: @params.length
+      @body.unshift(splat)
+    (o.scope.parameter(param)) for param in @params
+    code: if @body.expressions.length then '\n' + @body.compile_with_declarations(o) + '\n' else ''
+    name_part: if @name then ' ' + @name else ''
+    func: 'function' + (if @bound then '' else name_part) + '(' + @params.join(', ') + ') {' + code + @idt(if @bound then 1 else 0) + '}'
+    func: '(' + func + ')' if top and not @bound
+    return func unless @bound
+    inner: '(function' + name_part + '() {\n' + @idt(2) + 'return __func.apply(__this, arguments);\n' + @idt(1) + '});'
+    '(function(__this) {\n' + @idt(1) + 'var __func = ' + func + ';\n' + @idt(1) + 'return ' + inner + '\n' + @idt() + '})(this)'
+
+  top_sensitive: ->
+    true
+
+}
 
 
 
