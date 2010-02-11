@@ -599,7 +599,7 @@ AssignNode: exports.AssignNode: inherit Node, {
       if obj instanceof SplatNode
         val: new LiteralNode(obj.compile_value(o, val_var, @variable.base.objects.indexOf(obj)))
       else
-        val: new ValueNode(val_var, [new access_class(new LiteralNode(i))])
+        val: new ValueNode(new LiteralNode(val_var), [new access_class(new LiteralNode(i))])
       assigns.push(new AssignNode(obj, val).compile(o))
     assigns.join("\n")
 
