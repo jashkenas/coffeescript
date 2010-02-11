@@ -1,5 +1,4 @@
 Parser: require('jison').Parser
-process.mixin require './nodes'
 
 # DSL ===================================================================
 
@@ -138,59 +137,59 @@ grammar: {
   # https://www.cs.auckland.ac.nz/references/ruby/ProgrammingRuby/language.html
   Operation: [
     o "! Expression",                           -> new OpNode('!', $2)
-    # o "!! Expression",                          -> new OpNode('!!', $2)
+    o "!! Expression",                          -> new OpNode('!!', $2)
     o "- Expression",                           (-> new OpNode('-', $2)), {prec: 'UMINUS'}
-    # o "+ Expression",                           (-> new OpNode('+', $2)), {prec: 'UPLUS'}
+    o "+ Expression",                           (-> new OpNode('+', $2)), {prec: 'UPLUS'}
     o "NOT Expression",                         -> new OpNode('not', $2)
-    # o "~ Expression",                           -> new OpNode('~', $2)
-    # o "-- Expression",                          -> new OpNode('--', $2)
-    # o "++ Expression",                          -> new OpNode('++', $2)
+    o "~ Expression",                           -> new OpNode('~', $2)
+    o "-- Expression",                          -> new OpNode('--', $2)
+    o "++ Expression",                          -> new OpNode('++', $2)
     o "DELETE Expression",                      -> new OpNode('delete', $2)
     o "TYPEOF Expression",                      -> new OpNode('typeof', $2)
-    # o "Expression --",                          -> new OpNode('--', $1, null, true)
-    # o "Expression ++",                          -> new OpNode('++', $1, null, true)
+    o "Expression --",                          -> new OpNode('--', $1, null, true)
+    o "Expression ++",                          -> new OpNode('++', $1, null, true)
 
     o "Expression * Expression",                -> new OpNode('*', $1, $3)
     o "Expression / Expression",                -> new OpNode('/', $1, $3)
-    # o "Expression % Expression",                -> new OpNode('%', $1, $3)
+    o "Expression % Expression",                -> new OpNode('%', $1, $3)
 
     o "Expression + Expression",                -> new OpNode('+', $1, $3)
     o "Expression - Expression",                -> new OpNode('-', $1, $3)
 
-    # o "Expression << Expression",               -> new OpNode('<<', $1, $3)
-    # o "Expression >> Expression",               -> new OpNode('>>', $1, $3)
-    # o "Expression >>> Expression",              -> new OpNode('>>>', $1, $3)
-    # o "Expression & Expression",                -> new OpNode('&', $1, $3)
-    # o "Expression | Expression",                -> new OpNode('|', $1, $3)
-    # o "Expression ^ Expression",                -> new OpNode('^', $1, $3)
+    o "Expression << Expression",               -> new OpNode('<<', $1, $3)
+    o "Expression >> Expression",               -> new OpNode('>>', $1, $3)
+    o "Expression >>> Expression",              -> new OpNode('>>>', $1, $3)
+    o "Expression & Expression",                -> new OpNode('&', $1, $3)
+    o "Expression | Expression",                -> new OpNode('|', $1, $3)
+    o "Expression ^ Expression",                -> new OpNode('^', $1, $3)
 
     o "Expression <= Expression",               -> new OpNode('<=', $1, $3)
     o "Expression < Expression",                -> new OpNode('<', $1, $3)
     o "Expression > Expression",                -> new OpNode('>', $1, $3)
     o "Expression >= Expression",               -> new OpNode('>=', $1, $3)
 
-    # o "Expression == Expression",               -> new OpNode('==', $1, $3)
-    # o "Expression != Expression",               -> new OpNode($2, $1, $3)
-    o "Expression IS Expression",               -> new OpNode($2, $1, $3)
-    o "Expression ISNT Expression",             -> new OpNode($2, $1, $3)
+    o "Expression == Expression",               -> new OpNode('==', $1, $3)
+    o "Expression != Expression",               -> new OpNode('!=', $1, $3)
+    o "Expression IS Expression",               -> new OpNode('IS', $1, $3)
+    o "Expression ISNT Expression",             -> new OpNode('ISNT', $1, $3)
 
-    # o "Expression && Expression",               -> new OpNode($2, $1, $3)
-    # o "Expression || Expression",               -> new OpNode($2, $1, $3)
-    o "Expression AND Expression",              -> new OpNode($2, $1, $3)
-    o "Expression OR Expression",               -> new OpNode($2, $1, $3)
-    o "Expression ? Expression",                -> new OpNode($2, $1, $3)
+    o "Expression && Expression",               -> new OpNode('&&', $1, $3)
+    o "Expression || Expression",               -> new OpNode('||', $1, $3)
+    o "Expression AND Expression",              -> new OpNode('AND', $1, $3)
+    o "Expression OR Expression",               -> new OpNode('OR', $1, $3)
+    o "Expression ? Expression",                -> new OpNode('?', $1, $3)
 
-    o "Expression -= Expression",               -> new OpNode($2, $1, $3)
-    o "Expression += Expression",               -> new OpNode($2, $1, $3)
-  #   o "Expression /= Expression",               -> new OpNode($2, $1, $3)
-  #   o "Expression *= Expression",               -> new OpNode($2, $1, $3)
-  #   o "Expression %= Expression",               -> new OpNode($2, $1, $3)
-    o "Expression ||= Expression",              -> new OpNode($2, $1, $3)
-    o "Expression &&= Expression",              -> new OpNode($2, $1, $3)
-    # o "Expression ?= Expression",               -> new OpNode($2, $1, $3)
+    o "Expression -= Expression",               -> new OpNode('-=', $1, $3)
+    o "Expression += Expression",               -> new OpNode('+=', $1, $3)
+    o "Expression /= Expression",               -> new OpNode('/=', $1, $3)
+    o "Expression *= Expression",               -> new OpNode('*=', $1, $3)
+    o "Expression %= Expression",               -> new OpNode('%=', $1, $3)
+    o "Expression ||= Expression",              -> new OpNode('||=', $1, $3)
+    o "Expression &&= Expression",              -> new OpNode('&&=', $1, $3)
+    o "Expression ?= Expression",               -> new OpNode('?=', $1, $3)
 
-    o "Expression INSTANCEOF Expression",       -> new OpNode($2, $1, $3)
-    # o "Expression IN Expression",               -> new OpNode($2, $1, $3)
+    o "Expression INSTANCEOF Expression",       -> new OpNode('INSTANCEOF', $1, $3)
+    o "Expression IN Expression",               -> new OpNode('IN', $1, $3)
   ]
 
   # The existence operator.
@@ -461,21 +460,8 @@ for name, non_terminal of grammar
 tokens: tokens.join(" ")
 parser: new Parser({tokens: tokens, bnf: bnf, operators: operators, startSymbol: 'Root'}, {debug: false})
 
-# Thin wrapper around the real lexer
-parser.lexer: {
-  lex: ->
-    token: this.tokens[this.pos] or [""]
-    this.pos += 1
-    this.yylineno: token[2]
-    this.yytext:   token[1]
-    token[0]
-  setInput: (tokens) ->
-    this.tokens = tokens
-    this.pos = 0
-  upcomingInput: -> ""
-  showPosition: -> this.pos
-}
-
-exports.Parser: ->
-
-exports.Parser::parse: (tokens) -> parser.parse(tokens)
+# Save the parser to a file.
+puts parser.generate()
+posix: require 'posix'
+posix.open('parser.js', process.O_CREAT | process.O_WRONLY, 0755).addCallback (fd) ->
+  posix.write(fd, parser.generate())
