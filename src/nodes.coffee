@@ -36,8 +36,6 @@ exports.ExistenceNode     : -> @name: this.constructor.name; @values: arguments
 exports.ParentheticalNode : -> @name: this.constructor.name; @values: arguments
 exports.IfNode            : -> @name: this.constructor.name; @values: arguments
 
-exports.Expressions.wrap  : (values) -> @values: values
-
 # Some helper functions
 
 # Tabs are two spaces for pretty printing.
@@ -71,8 +69,10 @@ dup: (input) ->
 
 # Merge objects.
 merge: (src, dest) ->
-  (dest[key]: val) for key, val of src
-  dest
+  fresh: {}
+  (fresh[key]: val) for key, val of src
+  (fresh[key]: val) for key, val of dest
+  fresh
 
 # Do any of the elements in the list pass a truth test?
 any: (list, test) ->
@@ -494,8 +494,8 @@ RangeNode: exports.RangeNode: inherit Node, {
   # part of a comprehension, slice, or splice.
   # TODO: This generates pretty ugly code ... shrink it.
   compile_array: (o) ->
-    body: Expressions.wrap(new LiteralNode 'i')
-    arr:  Expressions.wrap(new ForNode(body, {source: (new ValueNode(this))}, 'i'))
+    body: Expressions.wrap([new LiteralNode('i')])
+    arr:  Expressions.wrap([new ForNode(body, {source: (new ValueNode(this))}, 'i')])
     (new ParentheticalNode(new CallNode(new CodeNode([], arr)))).compile(o)
 
 }
@@ -571,9 +571,9 @@ PushNode: exports.PushNode: {
   wrap: (array, expressions) ->
     expr: expressions.unwrap()
     return expressions if expr.is_statement_only() or expr.contains (n) -> n.is_statement_only()
-    Expressions.wrap(new CallNode(
+    Expressions.wrap([new CallNode(
       new ValueNode(new LiteralNode(array), [new AccessorNode(new LiteralNode('push'))]), [expr]
-    ))
+    )])
 
 }
 
@@ -581,9 +581,9 @@ PushNode: exports.PushNode: {
 ClosureNode: exports.ClosureNode: {
 
   wrap: (expressions, statement) ->
-    func: new ParentheticalNode(new CodeNode([], Expressions.wrap(expressions)))
+    func: new ParentheticalNode(new CodeNode([], Expressions.wrap([expressions])))
     call: new CallNode(new ValueNode(func, new AccessorNode(new LiteralNode('call'))), [new LiteralNode('this')])
-    if statement then Expressions.wrap(call) else call
+    if statement then Expressions.wrap([call]) else call
 
 }
 
@@ -870,6 +870,83 @@ ParentheticalNode: exports.ParentheticalNode: inherit Node, {
     '(' + code + ')'
 
 }
+
+# The replacement for the for loop is an array comprehension (that compiles)
+# into a for loop. Also acts as an expression, able to return the result
+# of the comprehenion. Unlike Python array comprehensions, it's able to pass
+# the current index of the loop as a second parameter.
+ForNode: exports.ForNode: inherit Node, {
+
+  constructor: (body, source, name, index) ->
+    @body:    body
+    @name:    name
+    @index:   index or null
+    @source:  source.source
+    @filter:  source.filter
+    @step:    source.step
+    @object:  !!source.object
+    [@name, @index]: [@index, @name] if @object
+    @children: [@body, @source, @filter]
+    this
+
+  top_sensitive: ->
+    true
+
+  compile_node: (o) ->
+    top_level:      del(o, 'top') and not o.returns
+    range:          @source instanceof ValueNode and @source.base instanceof RangeNode and not @source.properties.length
+    source:         if range then @source.base else @source
+    scope:          o.scope
+    name:           @name and @name.compile(o)
+    index:          @index and @index.compile(o)
+    name_found:     name and scope.find(name)
+    index_found:    index and scope.find(index)
+    body_dent:      @idt(1)
+    rvar:           scope.free_variable() unless top_level
+    svar:           scope.free_variable()
+    ivar:           if range then name else index or scope.free_variable()
+    var_part:       ''
+    body:           Expressions.wrap([@body])
+    if range
+      index_var:    scope.free_variable()
+      source_part:  source.compile_variables(o)
+      for_part:     index_var + '=0, ' + source.compile(merge(o, {index: ivar, step: @step})) + ', ' + index_var + '++'
+    else
+      index_var:    null
+      source_part:  svar + ' = ' + @source.compile(o) + ';\n' + @idt()
+      step_part:    if @step then ivar + ' += ' + @step.compile(o) else ivar + '++'
+      for_part:     if @object then ivar + ' in ' + svar else ivar + ' = 0; ' + ivar + ' < ' + svar + '.length; ' + step_part
+      var_part:     body_dent + name + ' = ' + svar + '[' + ivar + '];\n' if name
+    set_result:     if rvar then @idt() + rvar + ' = []; ' else @idt()
+    return_result:  rvar or ''
+    body:           ClosureNode.wrap(body, true) if top_level and @contains (n) -> n instanceof CodeNode
+    body:           PushNode.wrap(rvar, body) unless top_level
+    if o.returns
+      return_result: 'return ' + return_result
+      del o, 'returns'
+      body:         new IfNode(@filter, body, null, {statement: true}) if @filter
+    else if @filter
+      body:         Expressions.wrap([new IfNode(@filter, body)])
+    if @object
+      o.scope.assign('__hasProp', 'Object.prototype.hasOwnProperty', true)
+      call: new CallNode(
+        new ValueNode(new LiteralNode('__hasProp'), [new AccessorNode(new LiteralNode('call'))])
+        [new LiteralNode(svar), new LiteralNode(ivar)]
+      )
+      body: Expressions.wrap([new IfNode(
+        call, Expressions.wrap([body]), null, {statement: true}
+      )])
+    return_result:  '\n' + @idt() + return_result + ';' unless top_level
+    body:           body.compile(merge(o, {indent: body_dent, top: true}))
+    vars:           if range then name else name + ', ' + ivar
+    set_result + source_part + 'for (' + for_part + ') {\n' + var_part + body + '\n' + @idt() + '}\n' + @idt() + return_result
+
+}
+
+statement ForNode
+
+
+
 
 
 

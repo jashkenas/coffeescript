@@ -911,14 +911,13 @@ module CoffeeScript
         step_part   = @step ? "#{ivar} += #{@step.compile(o)}" : "#{ivar}++"
         for_part    = @object ? "#{ivar} in #{svar}" : "#{ivar} = 0; #{ivar} < #{svar}.length; #{step_part}"
         var_part    = "#{body_dent}#{@name} = #{svar}[#{ivar}];\n" if @name
-        # body.unshift(AssignNode.new(@name, ValueNode.new(svar, [IndexNode.new(ivar)]))) if @name
       end
       set_result    = rvar ? "#{idt}#{rvar} = []; " : idt
       return_result = rvar || ''
       body = ClosureNode.wrap(body, true) if top_level && contains? {|n| n.is_a? CodeNode }
       body = PushNode.wrap(rvar, body) unless top_level
       if o[:return]
-        return_result = "return #{return_result}" if o[:return]
+        return_result = "return #{return_result}"
         o.delete(:return)
         body = IfNode.new(@filter, body, nil, :statement => true) if @filter
       elsif @filter
