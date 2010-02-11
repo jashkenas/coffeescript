@@ -825,6 +825,51 @@ TryNode: exports.TryNode: inherit Node, {
 
 statement TryNode
 
+# Throw an exception.
+ThrowNode: exports.ThrowNode: inherit Node, {
+
+  constructor: (expression) ->
+    @children: [@expression: expression]
+    this
+
+  compile_node: (o) ->
+    @idt() + 'throw ' + @expression.compile(o) + ';'
+
+}
+
+statement ThrowNode, true
+
+# Check an expression for existence (meaning not null or undefined).
+ExistenceNode: exports.ExistenceNode: inherit Node, {
+
+  constructor: (expression) ->
+    @children: [@expression: expression]
+    this
+
+  compile_node: (o) ->
+    ExistenceNode.compile_test(o, @expression)
+
+}
+
+ExistenceNode.compile_test: (o, variable) ->
+  [first, second]: [variable, variable]
+  [first, second]: variable.compile_reference(o) if variable instanceof CallNode
+  '(typeof ' + first.compile(o) + ' !== "undefined" && ' + second.compile(o) + ' !== null)'
+
+# An extra set of parentheses, specified explicitly in the source.
+ParentheticalNode: exports.ParentheticalNode: inherit Node, {
+
+  constructor: (expressions) ->
+    @children: [@expressions: expressions]
+    this
+
+  compile_node: (o) ->
+    code: @expressions.compile(o)
+    l:    code.length
+    code: code.substr(o, l-1) if code.substr(l-1, 1) is ';'
+    '(' + code + ')'
+
+}
 
 
 

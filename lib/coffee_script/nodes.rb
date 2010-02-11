@@ -853,9 +853,7 @@ module CoffeeScript
     end
   end
 
-  # An extra set of parentheses, supplied by the script source.
-  # You can't wrap parentheses around bits that get compiled into JS statements,
-  # unfortunately.
+  # An extra set of parentheses, specified explicitly in the source.
   class ParentheticalNode < Node
     children :expressions
 
