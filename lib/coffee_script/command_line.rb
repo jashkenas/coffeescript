@@ -202,7 +202,7 @@ Usage:
         opts.on('-n', '--no-wrap', 'raw output, no function safety wrapper') do |n|
           @options[:no_wrap] = true
         end
-        opts.on('-g', '--globals', 'attach all top-level variable as globals') do |n|
+        opts.on('-g', '--globals', 'attach all top-level variables as globals') do |n|
           @options[:globals] = true
         end
         opts.on_tail('--narwhal', 'use Narwhal instead of Node.js') do |n|

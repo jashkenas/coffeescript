@@ -170,13 +170,13 @@ grammar: {
 
     o "Expression == Expression",               -> new OpNode('==', $1, $3)
     o "Expression != Expression",               -> new OpNode('!=', $1, $3)
-    o "Expression IS Expression",               -> new OpNode('IS', $1, $3)
-    o "Expression ISNT Expression",             -> new OpNode('ISNT', $1, $3)
+    o "Expression IS Expression",               -> new OpNode('is', $1, $3)
+    o "Expression ISNT Expression",             -> new OpNode('isnt', $1, $3)
 
     o "Expression && Expression",               -> new OpNode('&&', $1, $3)
     o "Expression || Expression",               -> new OpNode('||', $1, $3)
-    o "Expression AND Expression",              -> new OpNode('AND', $1, $3)
-    o "Expression OR Expression",               -> new OpNode('OR', $1, $3)
+    o "Expression AND Expression",              -> new OpNode('and', $1, $3)
+    o "Expression OR Expression",               -> new OpNode('or', $1, $3)
     o "Expression ? Expression",                -> new OpNode('?', $1, $3)
 
     o "Expression -= Expression",               -> new OpNode('-=', $1, $3)
@@ -188,8 +188,8 @@ grammar: {
     o "Expression &&= Expression",              -> new OpNode('&&=', $1, $3)
     o "Expression ?= Expression",               -> new OpNode('?=', $1, $3)
 
-    o "Expression INSTANCEOF Expression",       -> new OpNode('INSTANCEOF', $1, $3)
-    o "Expression IN Expression",               -> new OpNode('IN', $1, $3)
+    o "Expression INSTANCEOF Expression",       -> new OpNode('instanceof', $1, $3)
+    o "Expression IN Expression",               -> new OpNode('in', $1, $3)
   ]
 
   # The existence operator.
@@ -461,7 +461,7 @@ tokens: tokens.join(" ")
 parser: new Parser({tokens: tokens, bnf: bnf, operators: operators, startSymbol: 'Root'}, {debug: false})
 
 # Save the parser to a file.
-puts parser.generate()
+# puts parser.generate()
 posix: require 'posix'
 posix.open('parser.js', process.O_CREAT | process.O_WRONLY, 0755).addCallback (fd) ->
   posix.write(fd, parser.generate())

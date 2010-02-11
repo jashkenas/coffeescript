@@ -7,6 +7,6 @@ paths: process.ARGV
 paths: paths[2...paths.length]
 
 if paths.length
-  coffee.compile_files paths, (js) -> eval(js)
+  coffee.ruby_compile_files paths, (js) -> eval(js)
 else
   require './repl'

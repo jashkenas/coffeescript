@@ -1,41 +1,5 @@
 process.mixin require './scope'
 
-# The abstract base class for all CoffeeScript nodes.
-# All nodes are implement a "compile_node" method, which performs the
-# code generation for that node. To compile a node, call the "compile"
-# method, which wraps "compile_node" in some extra smarts, to know when the
-# generated code should be wrapped up in a closure. An options hash is passed
-# and cloned throughout, containing messages from higher in the AST,
-# information about the current scope, and indentation level.
-
-exports.Expressions       : -> @name: this.constructor.name; @values: arguments
-exports.LiteralNode       : -> @name: this.constructor.name; @values: arguments
-exports.ReturnNode        : -> @name: this.constructor.name; @values: arguments
-exports.CommentNode       : -> @name: this.constructor.name; @values: arguments
-exports.CallNode          : -> @name: this.constructor.name; @values: arguments
-exports.ExtendsNode       : -> @name: this.constructor.name; @values: arguments
-exports.ValueNode         : -> @name: this.constructor.name; @values: arguments
-exports.AccessorNode      : -> @name: this.constructor.name; @values: arguments
-exports.IndexNode         : -> @name: this.constructor.name; @values: arguments
-exports.RangeNode         : -> @name: this.constructor.name; @values: arguments
-exports.SliceNode         : -> @name: this.constructor.name; @values: arguments
-exports.ThisNode          : -> @name: this.constructor.name; @values: arguments
-exports.AssignNode        : -> @name: this.constructor.name; @values: arguments
-exports.OpNode            : -> @name: this.constructor.name; @values: arguments
-exports.CodeNode          : -> @name: this.constructor.name; @values: arguments
-exports.SplatNode         : -> @name: this.constructor.name; @values: arguments
-exports.ObjectNode        : -> @name: this.constructor.name; @values: arguments
-exports.ArrayNode         : -> @name: this.constructor.name; @values: arguments
-exports.PushNode          : -> @name: this.constructor.name; @values: arguments
-exports.ClosureNode       : -> @name: this.constructor.name; @values: arguments
-exports.WhileNode         : -> @name: this.constructor.name; @values: arguments
-exports.ForNode           : -> @name: this.constructor.name; @values: arguments
-exports.TryNode           : -> @name: this.constructor.name; @values: arguments
-exports.ThrowNode         : -> @name: this.constructor.name; @values: arguments
-exports.ExistenceNode     : -> @name: this.constructor.name; @values: arguments
-exports.ParentheticalNode : -> @name: this.constructor.name; @values: arguments
-exports.IfNode            : -> @name: this.constructor.name; @values: arguments
-
 # Some helper functions
 
 # Tabs are two spaces for pretty printing.
@@ -91,12 +55,6 @@ inherit: (parent, props) ->
   klass extends parent
   (klass.prototype[name]: prop) for name, prop of props
   klass
-
-# # Provide a quick implementation of a children method.
-# children: (klass, attrs...) ->
-#   klass::children: ->
-#     nodes: this[attr] for attr in attrs
-#     compact flatten nodes
 
 # Mark a node as a statement, or a statement only.
 statement: (klass, only) ->
@@ -308,7 +266,7 @@ ValueNode: exports.ValueNode: inherit Node, {
   compile_node: (o) ->
     soaked:   false
     only:     del(o, 'only_first')
-    props:    if only then @properties[0...@properties.length] else @properties
+    props:    if only then @properties[0...@properties.length - 1] else @properties
     baseline: @base.compile o
     parts:    [baseline]
 
@@ -647,7 +605,8 @@ AssignNode: exports.AssignNode: inherit Node, {
 
   compile_splice: (o) ->
     name:   @variable.compile(merge(o, {only_first: true}))
-    range:  @variable.properties.last.range
+    l:      @variable.properties.length
+    range:  @variable.properties[l - 1].range
     plus:   if range.exclusive then '' else ' + 1'
     from:   range.from.compile(o)
     to:     range.to.compile(o) + ' - ' + from + plus

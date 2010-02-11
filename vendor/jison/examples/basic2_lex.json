@@ -1,0 +1,16 @@
+{
+    "comment": "Basic grammar that contains a nullable A nonterminal.",
+
+    "lex": {
+        "rules": [
+           ["\\s+", "/* skip whitespace */"],
+           ["x", "return 'x';"]
+        ]
+    },
+
+    "tokens": "x",
+    "bnf": {
+        "A" :[ "A x",
+               "" ]
+    }
+}

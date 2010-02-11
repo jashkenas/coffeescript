@@ -1,0 +1,15 @@
+{
+    "lex": {
+        "rules": [
+           ["\\s+", "/* skip whitespace */"],
+           ["[0-9]+", "return 'NAT';"],
+           ["\\+", "return '+';"]
+        ]
+    },
+
+    "bnf": {
+        "E" :[ "E + T",
+               "T" ],
+        "T" :[ "NAT" ]
+    }
+}

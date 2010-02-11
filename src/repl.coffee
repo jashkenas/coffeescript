@@ -9,7 +9,7 @@ prompt: 'coffee> '
 quit:   -> process.stdio.close()
 
 # The main REPL function. Called everytime a line of code is entered.
-readline: (code) -> coffee.compile code, run
+readline: (code) -> coffee.ruby_compile code, run
 
 # Attempt to evaluate the command. If there's an exception, print it.
 run: (js) ->

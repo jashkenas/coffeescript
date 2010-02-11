@@ -1,0 +1,26 @@
+{
+    "comment": "Grammar showing precedence operators and semantic actions.",
+
+    "lex": {
+        "rules": [
+           ["\\s+", "/* skip whitespace */"],
+           ["[0-9]+", "return 'NAT';"],
+           ["\\+", "return '+';"],
+           ["\\*", "return '*';"],
+           ["$", "return 'EOF';"]
+        ]
+    },
+
+    "tokens": "NAT + * EOF",
+    "operators": [
+        ["left", "+"],
+        ["left", "*"]
+    ],
+    "bnf": {
+        "S" :[[ "e EOF",   "return $1;"  ]],
+        "e" :[[ "e + e",   "$$ = [$1,'+', $3];" ],
+              [ "e * e",   "$$ = [$1, '*', $3];" ],
+              [ "NAT",     "$$ = parseInt(yytext);" ]]
+    }
+}
+

@@ -1,0 +1,9 @@
+{
+    "comment": "Basic grammar that contains a nullable A nonterminal.",
+
+    "tokens": "x",
+    "bnf": {
+        "A" :[ "A x",
+               "" ]
+    }
+}

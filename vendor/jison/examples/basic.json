@@ -1,0 +1,8 @@
+{
+    "tokens": "ZERO PLUS",
+    "bnf": {
+        "E" :[ "E PLUS T",
+               "T" ],
+        "T" :[ "ZERO" ]
+    }
+}
