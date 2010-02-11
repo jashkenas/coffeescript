@@ -77,9 +77,9 @@ Node: exports.Node: ->
 Node::compile: (o) ->
   @options: dup(o or {})
   @indent:  o.indent
-  top:      if @top_sensitive() then o.top else del o, 'top'
+  top:      if @top_sensitive() then @options.top else del @options, 'top'
   closure:  @is_statement() and not @is_statement_only() and not top and
-            not o.returns and not this instanceof CommentNode and
+            not @options.returns and not (this instanceof CommentNode) and
             not @contains (node) -> node.is_statement_only()
   if closure then @compile_closure(@options) else @compile_node(@options)
 
@@ -114,7 +114,7 @@ Node::top_sensitive:      -> false
 Expressions: exports.Expressions: inherit Node, {
 
   constructor: (nodes) ->
-    @children: @expressions: flatten nodes
+    @children: @expressions: compact flatten nodes
     this
 
   # Tack an expression on to the end of this expression list.
@@ -970,12 +970,12 @@ IfNode: exports.IfNode: inherit Node, {
     com_dent:     if child then @idt() else ''
     prefix:       if @comment then @comment.compile(cond_o) + '\n' + com_dent else ''
     body:         Expressions.wrap([body]).compile(o)
-    if_part:      prefix + if_dent + 'if (' + compile_condition(cond_o) + ') {\n' + body + '\n' + @idt() + '}'
+    if_part:      prefix + if_dent + 'if (' + @compile_condition(cond_o) + ') {\n' + body + '\n' + @idt() + '}'
     return if_part unless @else_body
     else_part: if @is_chain()
       ' else ' + @else_body.compile(merge(o, {indent: @idt(), chain_child: true}))
     else
-      ' else {\n' + Expressions.wrap(@else_body).compile(o) + '\n' + @idt() + '}'
+      ' else {\n' + Expressions.wrap([@else_body]).compile(o) + '\n' + @idt() + '}'
     if_part + else_part
 
   # Compile the IfNode into a ternary operator.
@@ -985,44 +985,3 @@ IfNode: exports.IfNode: inherit Node, {
     if_part + ' : ' + else_part
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

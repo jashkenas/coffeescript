@@ -21,9 +21,11 @@ exports.VERSION: '0.5.0'
 
 # Compile CoffeeScript to JavaScript, using the Coffee/Jison compiler.
 exports.compile: (code) ->
-  tokens: lexer.tokenize code
-  nodes: parser.parse tokens
-  nodes.compile()
+  (parser.parse lexer.tokenize code).compile()
+
+# Just the tokens.
+exports.tokenize: (code) ->
+  lexer.tokenize code
 
 
 #---------- Below this line is obsolete, for the Ruby compiler. ----------------

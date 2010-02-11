@@ -59,10 +59,12 @@ exports.compile: (script, source) ->
 # or JSLint results.
 exports.compile_scripts: ->
   return unless source: @sources.shift()
-  posix.cat(source).addCallback (code) =>
-    js: coffee.compile code
-    return eval js if @options.run
-    return puts js if @options.print
+  opts: @options
+  posix.cat(source).addCallback (code) ->
+    return puts coffee.tokenize(code).join(' ') if opts.tokens
+    js:    coffee.compile code
+    return eval js if opts.run
+    return puts js if opts.print
     exports.compile_scripts()
 
 
