@@ -945,7 +945,87 @@ ForNode: exports.ForNode: inherit Node, {
 
 statement ForNode
 
+# If/else statements. Switch/whens get compiled into these. Acts as an
+# expression by pushing down requested returns to the expression bodies.
+# Single-expression IfNodes are compiled into ternary operators if possible,
+# because ternaries are first-class returnable assignable expressions.
+IfNode: exports.IfNode: inherit Node, {
 
+  constructor: (condition, body, else_body, tags) ->
+    @condition: condition
+    @body:      body and body.unwrap()
+    @else_body: else_body and else_body.unwrap()
+    @children:  [@condition, @body, @else_body]
+    @tags:      tags or {}
+    @multiple:  true if @condition instanceof Array
+    @condition: new OpNode('!', new ParentheticalNode(@condition)) if @tags.invert
+    this
+
+  push: (else_body) ->
+    eb: else_body.unwrap()
+    if @else_body then @else_body.push(eb) else @else_body: eb
+    this
+
+  force_statement: ->
+    @tags.statement: true
+    this
+
+  # Rewrite a chain of IfNodes with their switch condition for equality.
+  rewrite_condition: (expression) ->
+    @condition: if @multiple
+      new OpNode('is', expression, cond) for cond in @condition
+    else
+      new OpNode('is', expression, @condition)
+    @else_body.rewrite_condition(expression) if @is_chain()
+    this
+
+  # Rewrite a chain of IfNodes to add a default case as the final else.
+  add_else: (exprs) ->
+    if @is_chain() then @else_body.add_else(exprs) else @else_body: exprs and exprs.unwrap()
+    this
+
+  # If the else_body is an IfNode itself, then we've got an if-else chain.
+  is_chain: ->
+    @chain ||= @else_body and @else_body instanceof IfNode
+
+  # The IfNode only compiles into a statement if either of the bodies needs
+  # to be a statement.
+  is_statement: ->
+    @statement ||= !!(@comment or @tags.statement or @body.is_statement() or (@else_body and @else_body.is_statement()))
+
+  compile_condition: (o) ->
+    (cond.compile(o) for cond in flatten(@condition)).join(' || ')
+
+  compile_node: (o) ->
+    if @is_statement() then @compile_statement(o) else @compile_ternary(o)
+
+  # Compile the IfNode as a regular if-else statement. Flattened chains
+  # force sub-else bodies into statement form.
+  compile_statement: (o) ->
+    child:        del o, 'chain_child'
+    cond_o:       dup o
+    del cond_o, 'returns'
+    o.indent:     @idt(1)
+    o.top:        true
+    if_dent:      if child then '' else @idt()
+    com_dent:     if child then @idt() else ''
+    prefix:       if @comment then @comment.compile(cond_o) + '\n' + com_dent else ''
+    body:         Expressions.wrap([body]).compile(o)
+    if_part:      prefix + if_dent + 'if (' + compile_condition(cond_o) + ') {\n' + body + '\n' + @idt() + '}'
+    return if_part unless @else_body
+    else_part: if @is_chain()
+      ' else ' + @else_body.compile(merge(o, {indent: @idt(), chain_child: true}))
+    else
+      ' else {\n' + Expressions.wrap(@else_body).compile(o) + '\n' + @idt() + '}'
+    if_part + else_part
+
+  # Compile the IfNode into a ternary operator.
+  compile_ternary: (o) ->
+    if_part:    @condition.compile(o) + ' ? ' + @body.compile(o)
+    else_part:  if @else_body then @else_body.compile(o) else 'null'
+    if_part + ' : ' + else_part
+
+}
 
 
 

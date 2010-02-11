@@ -1029,7 +1029,7 @@ module CoffeeScript
     # Compile the IfNode into a ternary operator.
     def compile_ternary(o)
       if_part   = "#{@condition.compile(o)} ? #{@body.compile(o)}"
-      else_part = @else_body ? "#{@else_body.compile(o)}" : 'null'
+      else_part = @else_body ? @else_body.compile(o) : 'null'
       "#{if_part} : #{else_part}"
     end
   end
