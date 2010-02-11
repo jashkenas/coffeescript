@@ -594,12 +594,13 @@ AssignNode: exports.AssignNode: inherit Node, {
     o.top: true
     o.as_statement: true
     for obj, i in @variable.base.objects
-      [obj, i]: [obj.value, obj.variable.base] if @variable.is_object()
+      idx: i
+      [obj, idx]: [obj.value, obj.variable.base] if @variable.is_object()
       access_class: if @variable.is_array() then IndexNode else AccessorNode
       if obj instanceof SplatNode
         val: new LiteralNode(obj.compile_value(o, val_var, @variable.base.objects.indexOf(obj)))
       else
-        val: new ValueNode(new LiteralNode(val_var), [new access_class(new LiteralNode(i))])
+        val: new ValueNode(new LiteralNode(val_var), [new access_class(idx)])
       assigns.push(new AssignNode(obj, val).compile(o))
     assigns.join("\n")
 
