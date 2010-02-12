@@ -16,6 +16,7 @@ result: switch num
 
 puts result
 
+
 func: (num) ->
   switch num
     when 2, 4, 6

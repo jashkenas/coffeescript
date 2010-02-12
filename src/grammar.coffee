@@ -335,7 +335,7 @@ grammar: {
   SimpleArgs: [
     o "Expression",                             -> $1
     o "SimpleArgs , Expression",                ->
-      ([$1].push($3)).reduce (a, b) -> a.concat(b)
+      if $1 instanceof Array then $1.concat([$3]) else [$1].concat([$3])
   ]
 
   # Try/catch/finally exception handling blocks.
@@ -384,8 +384,10 @@ grammar: {
   ForSource: [
     o "IN Expression",                          -> {source:   $2}
     o "OF Expression",                          -> {source:   $2, object: true}
-    o "ForSource WHEN Expression",              -> $1.filter: $3; $1
-    o "ForSource BY Expression",                -> $1.step:   $3; $1
+    o "ForSource WHEN Expression",              ->
+      $1.filter: $3; $1
+    o "ForSource BY Expression",                ->
+      $1.step:   $3; $1
   ]
 
   # Switch/When blocks.

@@ -57,6 +57,9 @@ NOT_REGEX: [
 # Tokens which could legitimately be invoked or indexed.
 CALLABLE: ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING']
 
+# Tokens that, when immediately preceding a 'WHEN', indicate that its leading.
+BEFORE_WHEN: ['INDENT', 'OUTDENT', 'TERMINATOR']
+
 # Scan by attempting to match tokens one character at a time. Slow and steady.
 lex::tokenize: (code) ->
   @code    : code       # Cleanup code by remove extra line breaks, TODO: chomp
@@ -94,7 +97,7 @@ lex::identifier_token: ->
   # Keywords are special identifiers tagged with their own name,
   # 'if' will result in an ['IF', "if"] token.
   tag: if KEYWORDS.indexOf(id) >= 0 then id.toUpperCase() else 'IDENTIFIER'
-  tag: 'LEADING_WHEN' if tag is 'WHEN' and (@tag() is 'OUTDENT' or @tag() is 'INDENT')
+  tag: 'LEADING_WHEN' if tag is 'WHEN' and BEFORE_WHEN.indexOf(@tag()) >= 0
   @tag(-1, 'PROTOTYPE_ACCESS') if tag is 'IDENTIFIER' and @value() is '::'
   if tag is 'IDENTIFIER' and @value() is '.' and !(@value(2) is '.')
     if @tag(2) is '?'
