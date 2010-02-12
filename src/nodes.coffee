@@ -434,7 +434,7 @@ ThisNode: exports.ThisNode: inherit Node, {
     this
 
   compile_node: (o) ->
-    'this' + (if @property then '.' + @property else '')
+    'this' + (if @property then '.' + @property.compile(o) else '')
 
 }
 
