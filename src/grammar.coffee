@@ -406,7 +406,8 @@ grammar: {
   When: [
     o "LEADING_WHEN SimpleArgs Block",          -> new IfNode($2, $3, null, {statement: true})
     o "LEADING_WHEN SimpleArgs Block TERMINATOR", -> new IfNode($2, $3, null, {statement: true})
-    o "Comment TERMINATOR When",                -> $3.comment: $1
+    o "Comment TERMINATOR When",                ->
+      $3.comment: $1; $3
   ]
 
   # The most basic form of "if".
