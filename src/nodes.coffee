@@ -664,10 +664,11 @@ CodeNode: exports.CodeNode: inherit Node, {
       splat: @params.pop()
       splat.index: @params.length
       @body.unshift(splat)
-    (o.scope.parameter(param)) for param in @params
+    params: (param.compile(o) for param in @params)
+    (o.scope.parameter(param)) for param in params
     code: if @body.expressions.length then '\n' + @body.compile_with_declarations(o) + '\n' else ''
     name_part: if @name then ' ' + @name else ''
-    func: 'function' + (if @bound then '' else name_part) + '(' + @params.join(', ') + ') {' + code + @idt(if @bound then 1 else 0) + '}'
+    func: 'function' + (if @bound then '' else name_part) + '(' + params.join(', ') + ') {' + code + @idt(if @bound then 1 else 0) + '}'
     func: '(' + func + ')' if top and not @bound
     return func unless @bound
     inner: '(function' + name_part + '() {\n' + @idt(2) + 'return __func.apply(__this, arguments);\n' + @idt(1) + '});'

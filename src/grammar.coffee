@@ -463,5 +463,5 @@ parser: new Parser({tokens: tokens, bnf: bnf, operators: operators.reverse(), st
 # Save the parser to a file.
 # puts parser.generate()
 posix: require 'posix'
-posix.open('parser.js', process.O_CREAT | process.O_WRONLY, 0755).addCallback (fd) ->
+posix.open('lib/coffee_script/parser.js', process.O_CREAT | process.O_WRONLY, 0755).addCallback (fd) ->
   posix.write(fd, parser.generate())
