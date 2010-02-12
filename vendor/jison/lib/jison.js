@@ -208,7 +208,7 @@ generator.buildProductions = function buildProductions(bnf, productions, nonterm
             if (handle.constructor === Array) {
                 if (typeof handle[0] === 'string')
                     rhs = handle[0].trim().split(' ');
-                else
+                else 
                     rhs = handle[0].slice(0);
 
                 for (i=0; i<rhs.length; i++) if (!symbols_[rhs[i]]) {
@@ -355,13 +355,13 @@ lookaheadMixin.followSets = function followSets () {
             var ctx = !!self.go_;
 
             var set = [],oldcount;
-            for (var i=0,n=0,t;t=production.handle[i];++i) {
+            for (var i=0,t;t=production.handle[i];++i) {
                 if (!nonterminals[t]) continue;
 
-                // for Simple LALR algorithm, self.go_ checks if
+                // for Simple LALR algorithm, self.go_ checks if 
                 if (ctx)
                     q = self.go_(production.symbol, production.handle.slice(0, i));
-                var bool = !ctx || q === parseInt(t.split(":")[0]);
+                var bool = !ctx || q === parseInt(self.nterms_[t]);
 
                 if (i === production.handle.length+1 && bool) {
                     set = nonterminals[production.symbol].follows
@@ -369,8 +369,8 @@ lookaheadMixin.followSets = function followSets () {
                     var part = production.handle.slice(i+1);
 
                     set = self.first(part);
-                    if (self.nullable(part) && bool) {
-                        set.push.apply(set, nonterminals[production.symbol].follows);
+                    if (set.length === 0 && bool) { // set was nullable
+                        set = nonterminals[production.symbol].follows;
                     }
                 }
                 oldcount = nonterminals[t].follows.length;
@@ -391,10 +391,10 @@ lookaheadMixin.first = function first (symbol) {
     // RHS
     } else if (symbol instanceof Array) {
         var firsts = [];
-        for (var i=0,n=0,t;t=symbol[i];++i) {
-            this.first(t).forEach(function (e) {
+        for (var i=0,t;t=symbol[i];++i) {
+            this.first(t).forEach(function first_forEach (e) {
                 if (firsts.indexOf(e)===-1)
-                firsts.push(e);
+                    firsts.push(e);
             });
             if (!this.nullable(t))
                 break;
@@ -534,7 +534,7 @@ lrGeneratorMixin.Item = typal.construct({
     constructor: function Item(production, dot, f, predecessor) {
         this.production = production;
         this.dotPosition = dot || 0;
-        this.follows = f || [];
+        this.follows = f || []; 
         this.predecessor = predecessor;
         this.id = parseInt(production.id+'a'+this.dotPosition, 36);
         this.markedSymbol = this.production.handle[this.dotPosition];
@@ -561,6 +561,25 @@ lrGeneratorMixin.ItemSet = Set.prototype.construct({
         this.edges = {};
         this.shifts = false;
         this.inadequate = false;
+        this.hash_ = {};
+        for (var i=this._items.length-1;i >=0;i--) {
+            this.hash_[this._items[i].id] = true; //i;
+        }
+    },
+    concat: function concat (set) {
+        var a = set._items || set;
+        for (var i=a.length-1;i >=0;i--) {
+            this.hash_[a[i].id] = true; //i;
+        }
+        this._items.push.apply(this._items, a); 
+        return this; 
+    },
+    push: function (item) {
+        this.hash_[item.id] = true;
+        return this._items.push(item);
+    },
+    contains: function (item) {
+        return this.hash_[item.id];
     },
     toValue: function toValue () {
         var v = this.items_.sort().join('|');
@@ -584,7 +603,7 @@ lrGeneratorMixin.closureOperation = function closureOperation (itemSet /*, closu
         // if token is a non-terminal, recursively add closures
         if (symbol && self.nonterminals[symbol]) {
             if(!syms[symbol]) {
-                self.nonterminals[symbol].productions.forEach(function CO_forEach (production) {
+                self.nonterminals[symbol].productions.forEach(function CO_nt_forEach (production) {
                     var newItem = new self.Item(production, 0);
                     if(!closureSet.contains(newItem))
                         itemQueue.push(newItem);
@@ -654,7 +673,7 @@ lrGeneratorMixin.canonicalCollectionInsert = function canonicalCollectionInsert 
         var i = states.indexOf(g);
         if (i === -1) {
             itemSet.edges[symbol] = states.size(); // store goto transition for table
-            states.push(g);
+            states.push(g); 
             g.predecessors[symbol] = [stateNum];
         } else {
             itemSet.edges[symbol] = i; // store goto transition for table
@@ -686,7 +705,7 @@ lrGeneratorMixin.parseTable = function parseTable (itemSets) {
                     if (nonterminals[stackSymbol]) {
                         // store state to go to after a reduce
                         //self.trace(k, stackSymbol, 'g'+gotoState);
-                        state[self.symbols_[stackSymbol]] = gotoState;
+                        state[self.symbols_[stackSymbol]] = gotoState; 
                     } else {
                         //self.trace(k, stackSymbol, 's'+gotoState);
                         state[self.symbols_[stackSymbol]] = [[s,gotoState]];
@@ -699,7 +718,7 @@ lrGeneratorMixin.parseTable = function parseTable (itemSets) {
         itemSet.forEach(function (item, j) {
             if (item.markedSymbol == self.EOF) {
                 // accept
-                state[self.symbols_[self.EOF]] = [[a]];
+                state[self.symbols_[self.EOF]] = [[a]]; 
                 //self.trace(k, self.EOF, state[self.EOF]);
             }
         });
@@ -899,7 +918,7 @@ lrGeneratorMixin.createParser = function createParser () {
     var p = parser.beget();
 
     p.init({
-        table: this.table,
+        table: this.table, 
         productions_: this.productions_,
         symbols_: this.symbols_,
         terminals_: this.terminals,
@@ -955,7 +974,7 @@ parser.parse = function parse (input) {
     };
 
     var symbol, state, action, a, r, yyval={},p,len,ip=0,newState, expected;
-    symbol = lex();
+    symbol = lex(); 
     while (true) {
         this.trace('stack:',JSON.stringify(stack), '\n\t\t\tinput:', this.lexer._input);
         this.trace('vstack:',JSON.stringify(vstack));
@@ -982,7 +1001,7 @@ parser.parse = function parse (input) {
             throw new Error('Parse Error: multiple actions possible at state: '+state+', token: '+symbol);
         }
 
-        a = action[0];
+        a = action[0]; 
 
         switch (a[0]) {
 
@@ -993,7 +1012,7 @@ parser.parse = function parse (input) {
                 yyleng = this.lexer.yyleng;
                 yytext = this.lexer.yytext;
                 yylineno = this.lexer.yylineno;
-                symbol = lex();
+                symbol = lex(); 
                 vstack.push(null); // semantic values or junk only, no terminals
                 stack.push(a[1]); // push state
                 break;
@@ -1071,14 +1090,16 @@ var lalr = generator.beget(lookaheadMixin, lrGeneratorMixin, {
     type: "LALR(1)",
 
     afterconstructor: function (grammar, options) {
-        if (this.DEBUG) this.mix(lrGeneratorDebug); // mixin debug methods
+        if (this.DEBUG) this.mix(lrGeneratorDebug, lalrGeneratorDebug); // mixin debug methods
 
         options = options || {};
         this.states = this.canonicalCollection();
+        this.terms_ = {};
 
         var newg = this.newg = typal.beget(lookaheadMixin,{
             oldg: this,
             trace: this.trace,
+            nterms_: {},
             DEBUG: false,
             go_: function (r, B) {
                 r = r.split(":")[0]; // grab state #
@@ -1113,11 +1134,14 @@ var lalr = generator.beget(lookaheadMixin, lrGeneratorMixin, {
         return q;
     },
     goPath: function LALR_goPath (p, w) {
-        var q = parseInt(p),
+        var q = parseInt(p),t,
             path = [];
         for (var i=0;i<w.length;i++) {
-            path.push(w[i] ? q+":"+w[i] : '');
+            t = w[i] ? q+":"+w[i] : '';
+            if (t) this.newg.nterms_[t] = q;
+            path.push(t);
             q = this.states.item(q).edges[w[i]] || q;
+            this.terms_[t] = w[i];
         }
         return {path: path, endState: q};
     },
@@ -1131,6 +1155,8 @@ var lalr = generator.beget(lookaheadMixin, lrGeneratorMixin, {
                 if (item.dotPosition === 0) {
                     // new symbols are a combination of state and transition symbol
                     var symbol = i+":"+item.production.symbol;
+                    self.terms_[symbol] = item.production.symbol;
+                    newg.nterms_[symbol] = i;
                     if (!newg.nonterminals[symbol])
                         newg.nonterminals[symbol] = new Nonterminal(symbol);
                     var pathInfo = self.goPath(i, item.production.handle);
@@ -1140,9 +1166,10 @@ var lalr = generator.beget(lookaheadMixin, lrGeneratorMixin, {
 
                     // store the transition that get's 'backed up to' after reduction on path
                     var handle = item.production.handle.join(' ');
-                    if (!self.states.item(pathInfo.endState).goes[handle])
-                        self.states.item(pathInfo.endState).goes[handle] = [];
-                    self.states.item(pathInfo.endState).goes[handle].push(symbol);
+                    var goes = self.states.item(pathInfo.endState).goes;
+                    if (!goes[handle])
+                        goes[handle] = [];
+                    goes[handle].push(symbol);
 
                     //self.trace('new production:',p);
                 }
@@ -1159,12 +1186,19 @@ var lalr = generator.beget(lookaheadMixin, lrGeneratorMixin, {
         states.forEach(function union_states_forEach (i) {
             var state = typeof i === 'number' ? self.states.item(i) : i,
                 follows = [];
+            if (state.reductions.length)
             state.reductions.forEach(function union_reduction_forEach (item) {
+                var follows = {};
+                for (var k=0;k<item.follows.length;k++) {
+                    follows[item.follows[k]] = true;
+                }
                 state.goes[item.production.handle.join(' ')].forEach(function reduction_goes_forEach (symbol) {
                     newg.nonterminals[symbol].follows.forEach(function goes_follows_forEach (symbol) {
-                        var terminal = symbol.slice(symbol.indexOf(":")+1);
-                        if (item.follows.indexOf(terminal) === -1)
+                        var terminal = self.terms_[symbol];
+                        if (!follows[terminal]) {
+                            follows[terminal]=true;
                             item.follows.push(terminal);
+                        }
                     });
                 });
                 //self.trace('unioned item', item);
@@ -1190,7 +1224,7 @@ var lalrGeneratorDebug = {
     }
 };
 
-/*
+/* 
  * Lookahead parser definitions
  *
  * Define base type
@@ -1224,9 +1258,11 @@ var lr1 = lrLookaheadGenerator.beget({
         return item.follows;
     },
     Item: lrGeneratorMixin.Item.prototype.construct({
+        afterconstructor: function () {
+            this.id = this.production.id+'a'+this.dotPosition+'a'+this.follows.sort().join(',');
+        },
         eq: function (e) {
-            return e.production && e.dotPosition !=null && this.production===e.production && this.dotPosition === e.dotPosition &&
-                this.follows.length === Set.union(e.follows.slice(0),this.follows).length;
+            return e.id === this.id;
         }
     }),
 
@@ -1356,6 +1392,7 @@ exports.main = function main (args) {
     }
 
     var opt = grammar.options || {};
+    opt.debug = true;
 
     // lexer file
     if (args[2]) {

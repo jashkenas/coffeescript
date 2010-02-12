@@ -12,11 +12,11 @@ var setMixin = {
             this._items = [].slice.call(arguments,0);
     },
     concat: function concat (setB) {
-        this._items.push.apply(this._items, setB._items || setB);
-        return this;
+        this._items.push.apply(this._items, setB._items || setB); 
+        return this; 
     },
     eq: function eq (set) {
-        return this._items.length === set._items.length && this.subset(set);
+        return this._items.length === set._items.length && this.subset(set); 
     },
     indexOf: function indexOf (item) {
         if(item && item.eq) {
@@ -45,7 +45,7 @@ var setMixin = {
         var cont = true;
         for (var i=0; i<this._items.length && cont;i++) {
             cont = cont && set.contains(this._items[i]);
-        }
+        };
         return cont;
     },
     superset: function superset (set) {
