@@ -754,7 +754,7 @@ OpNode: exports.OpNode: inherit Node, {
   PREFIX_OPERATORS: ['typeof', 'delete']
 
   constructor: (operator, first, second, flip) ->
-    @children: [@first: first, @second: second]
+    @children: compact [@first: first, @second: second]
     @operator: @CONVERSIONS[operator] or operator
     @flip: !!flip
     this
