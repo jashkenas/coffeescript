@@ -263,7 +263,7 @@ ValueNode: exports.ValueNode: inherit Node, {
     @has_properties() and @properties[@properties.length - 1] instanceof SliceNode
 
   is_arguments: ->
-    @base is 'arguments'
+    @base.value is 'arguments'
 
   unwrap: ->
     if @properties.length then this else @base

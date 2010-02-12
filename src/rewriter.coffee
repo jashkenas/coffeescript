@@ -20,9 +20,9 @@ EXPRESSION_CLOSE: ['CATCH', 'WHEN', 'ELSE', 'FINALLY'].concat(EXPRESSION_TAIL)
 IMPLICIT_FUNC: ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END']
 IMPLICIT_END:  ['IF', 'UNLESS', 'FOR', 'WHILE', 'TERMINATOR', 'OUTDENT']
 IMPLICIT_CALL: ['IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START',
-                 'TRY', 'DELETE', 'TYPEOF', 'SWITCH', 'ARGUMENTS',
+                 'TRY', 'DELETE', 'TYPEOF', 'SWITCH',
                  'TRUE', 'FALSE', 'YES', 'NO', 'ON', 'OFF', '!', '!!', 'NOT',
-                 '->', '=>', '[', '(', '{']
+                 '@', '->', '=>', '[', '(', '{']
 
 # The inverse mappings of token pairs we're trying to fix up.
 INVERSES: {}

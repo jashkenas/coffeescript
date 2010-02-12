@@ -12,7 +12,7 @@ KEYWORDS: [
   "if", "else", "then", "unless",
   "true", "false", "yes", "no", "on", "off",
   "and", "or", "is", "isnt", "not",
-  "new", "return", "arguments",
+  "new", "return",
   "try", "catch", "finally", "throw",
   "break", "continue",
   "for", "in", "of", "by", "where", "while",

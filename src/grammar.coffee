@@ -100,7 +100,6 @@ grammar: {
     o "REGEX",                                  -> new LiteralNode(yytext)
     o "BREAK",                                  -> new LiteralNode(yytext)
     o "CONTINUE",                               -> new LiteralNode(yytext)
-    o "ARGUMENTS",                              -> new LiteralNode(yytext)
     o "TRUE",                                   -> new LiteralNode(true)
     o "FALSE",                                  -> new LiteralNode(false)
     o "YES",                                    -> new LiteralNode(true)
