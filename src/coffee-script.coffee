@@ -27,6 +27,10 @@ exports.compile: (code) ->
 exports.tokenize: (code) ->
   lexer.tokenize code
 
+# Just the nodes.
+exports.tree: (code) ->
+  parser.parse lexer.tokenize code
+
 
 #---------- Below this line is obsolete, for the Ruby compiler. ----------------
 

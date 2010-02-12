@@ -58,8 +58,8 @@ inherit: (parent, props) ->
 
 # Mark a node as a statement, or a statement only.
 statement: (klass, only) ->
-  klass::is_statement:       -> true
-  (klass::is_statement_only:  -> true) if only
+  klass::is_statement: -> true
+  (klass::is_statement_only: -> true) if only
 
 # The abstract base class for all CoffeeScript nodes.
 # All nodes are implement a "compile_node" method, which performs the
@@ -103,6 +103,11 @@ Node::contains: (block) ->
     return true if node instanceof Node and node.contains block
   false
 
+# toString representation of the node, for inspecting the parse tree.
+Node::toString: (idt) ->
+  idt ||= ''
+  (@type || 'anon') + "\n" + (idt + TAB + child.toString(idt + TAB) for child in @children)
+
 # Default implementations of the common node methods.
 Node::unwrap:             -> this
 Node::children:           []
@@ -112,6 +117,7 @@ Node::top_sensitive:      -> false
 
 # A collection of nodes, each one representing an expression.
 Expressions: exports.Expressions: inherit Node, {
+  type: 'Expressions'
 
   constructor: (nodes) ->
     @children: @expressions: compact flatten nodes
@@ -193,6 +199,7 @@ statement Expressions
 # Literals are static values that can be passed through directly into
 # JavaScript without translation, eg.: strings, numbers, true, false, null...
 LiteralNode: exports.LiteralNode: inherit Node, {
+  type: 'Literal'
 
   constructor: (value) ->
     @value: value
@@ -214,6 +221,7 @@ LiteralNode::is_statement_only: LiteralNode::is_statement
 
 # Return an expression, or wrap it in a closure and return it.
 ReturnNode: exports.ReturnNode: inherit Node, {
+  type: 'Return'
 
   constructor: (expression) ->
     @children: [@expression: expression]
@@ -229,6 +237,7 @@ statement ReturnNode, true
 
 # A value, indexed or dotted into, or vanilla.
 ValueNode: exports.ValueNode: inherit Node, {
+  type: 'Value'
 
   SOAK: " == undefined ? undefined : "
 
@@ -294,6 +303,7 @@ ValueNode: exports.ValueNode: inherit Node, {
 # Pass through CoffeeScript comments into JavaScript comments at the
 # same position.
 CommentNode: exports.CommentNode: inherit Node, {
+  type: 'Comment'
 
   constructor: (lines) ->
     @lines: lines
@@ -310,6 +320,7 @@ statement CommentNode
 # Node for a function invocation. Takes care of converting super() calls into
 # calls against the prototype's function of the same name.
 CallNode: exports.CallNode: inherit Node, {
+  type: 'Call'
 
   constructor: (variable, args) ->
     @children:  flatten [@variable: variable, @args: (args or [])]
@@ -364,6 +375,7 @@ CallNode: exports.CallNode: inherit Node, {
 # Node to extend an object's prototype with an ancestor object.
 # After goog.inherits from the Closure Library.
 ExtendsNode: exports.ExtendsNode: inherit Node, {
+  type: 'Extends'
 
   constructor: (child, parent) ->
     @children:  [@child: child, @parent: parent]
@@ -387,6 +399,7 @@ statement ExtendsNode
 # A dotted accessor into a part of a value, or the :: shorthand for
 # an accessor into the object's prototype.
 AccessorNode: exports.AccessorNode: inherit Node, {
+  type: 'Accessor'
 
   constructor: (name, tag) ->
     @children:  [@name: name]
@@ -401,6 +414,7 @@ AccessorNode: exports.AccessorNode: inherit Node, {
 
 # An indexed accessor into a part of an array or object.
 IndexNode: exports.IndexNode: inherit Node, {
+  type: 'Index'
 
   constructor: (index) ->
     @children: [@index: index]
@@ -413,6 +427,7 @@ IndexNode: exports.IndexNode: inherit Node, {
 
 # A this-reference, using '@'.
 ThisNode: exports.ThisNode: inherit Node, {
+  type: 'This'
 
   constructor: (property) ->
     @property: property or null
@@ -426,6 +441,7 @@ ThisNode: exports.ThisNode: inherit Node, {
 # A range literal. Ranges can be used to extract portions (slices) of arrays,
 # or to specify a range for list comprehensions.
 RangeNode: exports.RangeNode: inherit Node, {
+  type: 'Range'
 
   constructor: (from, to, exclusive) ->
     @children:  [@from: from, @to: to]
@@ -464,6 +480,7 @@ RangeNode: exports.RangeNode: inherit Node, {
 # specifies the index of the end of the slice (just like the first parameter)
 # is the index of the beginning.
 SliceNode: exports.SliceNode: inherit Node, {
+  type: 'Slice'
 
   constructor: (range) ->
     @children: [@range: range]
@@ -479,6 +496,7 @@ SliceNode: exports.SliceNode: inherit Node, {
 
 # An object literal.
 ObjectNode: exports.ObjectNode: inherit Node, {
+  type: 'Object'
 
   constructor: (props) ->
     @objects: @properties: props or []
@@ -503,6 +521,7 @@ ObjectNode: exports.ObjectNode: inherit Node, {
 
 # An array literal.
 ArrayNode: exports.ArrayNode: inherit Node, {
+  type: 'Array'
 
   constructor: (objects) ->
     @children: @objects: objects or []
@@ -549,6 +568,7 @@ ClosureNode: exports.ClosureNode: {
 
 # Setting the value of a local variable, or the value of an object property.
 AssignNode: exports.AssignNode: inherit Node, {
+  type: 'Assign'
 
   PROTO_ASSIGN: /^(\S+)\.prototype/
   LEADING_DOT:  /^\.(prototype\.)?/
@@ -621,6 +641,7 @@ AssignNode: exports.AssignNode: inherit Node, {
 # A function definition. The only node that creates a new Scope.
 # A CodeNode does not have any children -- they're within the new scope.
 CodeNode: exports.CodeNode: inherit Node, {
+  type: 'Code'
 
   constructor: (params, body, tag) ->
     @params:  params
@@ -658,6 +679,7 @@ CodeNode: exports.CodeNode: inherit Node, {
 # A splat, either as a parameter to a function, an argument to a call,
 # or in a destructuring assignment.
 SplatNode: exports.SplatNode: inherit Node, {
+  type: 'Splat'
 
   constructor: (name) ->
     @children: [@name: name]
@@ -679,6 +701,7 @@ SplatNode: exports.SplatNode: inherit Node, {
 # A while loop, the only sort of low-level loop exposed by CoffeeScript. From
 # it, all other loops can be manufactured.
 WhileNode: exports.WhileNode: inherit Node, {
+  type: 'While'
 
   constructor: (condition, body) ->
     @children:[@condition: condition, @body: body]
@@ -710,6 +733,7 @@ statement WhileNode
 # Simple Arithmetic and logical operations. Performs some conversion from
 # CoffeeScript operations into their JavaScript equivalents.
 OpNode: exports.OpNode: inherit Node, {
+  type: 'Op'
 
   CONVERSIONS: {
     '==':   '==='
@@ -771,6 +795,7 @@ OpNode: exports.OpNode: inherit Node, {
 
 # A try/catch/finally block.
 TryNode: exports.TryNode: inherit Node, {
+  type: 'Try'
 
   constructor: (attempt, error, recovery, ensure) ->
     @children: [@attempt: attempt, @recovery: recovery, @ensure: ensure]
@@ -791,6 +816,7 @@ statement TryNode
 
 # Throw an exception.
 ThrowNode: exports.ThrowNode: inherit Node, {
+  type: 'Throw'
 
   constructor: (expression) ->
     @children: [@expression: expression]
@@ -805,6 +831,7 @@ statement ThrowNode, true
 
 # Check an expression for existence (meaning not null or undefined).
 ExistenceNode: exports.ExistenceNode: inherit Node, {
+  type: 'Existence'
 
   constructor: (expression) ->
     @children: [@expression: expression]
@@ -822,6 +849,7 @@ ExistenceNode.compile_test: (o, variable) ->
 
 # An extra set of parentheses, specified explicitly in the source.
 ParentheticalNode: exports.ParentheticalNode: inherit Node, {
+  type: 'Paren'
 
   constructor: (expressions) ->
     @children: [@expressions: expressions]
@@ -840,6 +868,7 @@ ParentheticalNode: exports.ParentheticalNode: inherit Node, {
 # of the comprehenion. Unlike Python array comprehensions, it's able to pass
 # the current index of the loop as a second parameter.
 ForNode: exports.ForNode: inherit Node, {
+  type: 'For'
 
   constructor: (body, source, name, index) ->
     @body:    body
@@ -914,6 +943,7 @@ statement ForNode
 # Single-expression IfNodes are compiled into ternary operators if possible,
 # because ternaries are first-class returnable assignable expressions.
 IfNode: exports.IfNode: inherit Node, {
+  type: 'If'
 
   constructor: (condition, body, else_body, tags) ->
     @condition: condition

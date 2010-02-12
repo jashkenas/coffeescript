@@ -18,6 +18,7 @@ SWITCHES: [
   ['-l', '--lint',          'pipe the compiled JavaScript through JSLint']
   ['-e', '--eval',          'compile a cli scriptlet or read from stdin']
   ['-t', '--tokens',        'print the tokens that the lexer produces']
+  [      '--tree',          'print the parse tree that Jison produces']
   ['-n', '--no-wrap',       'raw output, no function safety wrapper']
   ['-g', '--globals',       'attach all top-level variables as globals']
   ['-v', '--version',       'display CoffeeScript version']
@@ -62,9 +63,9 @@ exports.compile_scripts: ->
   opts: @options
   posix.cat(source).addCallback (code) ->
     return puts coffee.tokenize(code).join(' ') if opts.tokens
-    js:    coffee.compile code
-    return eval js if opts.run
-    return puts js if opts.print
+    return puts coffee.tree(code).toString()    if opts.tree
+    return eval coffee.compile code             if opts.run
+    return puts coffee.compile code             if opts.print
     exports.compile_scripts()
 
 
@@ -82,6 +83,7 @@ exports.parse_options: ->
   oparser.add 'lint',         -> opts.lint:        true
   oparser.add 'eval',         -> opts.eval:        true
   oparser.add 'tokens',       -> opts.tokens:      true
+  oparser.add 'tree',         -> opts.tree:        true
   oparser.add 'help',         => @usage()
   oparser.add 'version',      => @version()
 
