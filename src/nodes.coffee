@@ -366,7 +366,7 @@ CallNode: exports.CallNode: inherit Node, {
   # If the code generation wished to use the result of a function call
   # in multiple places, ensure that the function is only ever called once.
   compile_reference: (o) ->
-    reference: o.scope.free_variable()
+    reference: new LiteralNode(o.scope.free_variable())
     call: new ParentheticalNode(new AssignNode(reference, this))
     [call, reference]
 
