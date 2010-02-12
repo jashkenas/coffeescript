@@ -120,7 +120,7 @@ Expressions: exports.Expressions: inherit Node, {
   type: 'Expressions'
 
   constructor: (nodes) ->
-    @children: @expressions: compact flatten nodes
+    @children: @expressions: compact flatten nodes or []
     this
 
   # Tack an expression on to the end of this expression list.
