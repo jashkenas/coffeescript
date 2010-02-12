@@ -286,7 +286,7 @@ ValueNode: exports.ValueNode: inherit Node, {
           temp: o.scope.free_variable()
           parts[parts.length - 1]: '(' + temp + ' = ' + baseline + ')' + @SOAK + (baseline: temp + prop.compile(o))
         else
-          parts[parts.length - 1]: @SOAK + (baseline += prop.compile(o))
+          parts[parts.length - 1] += (@SOAK + (baseline += prop.compile(o)))
       else
         part: prop.compile(o)
         baseline += part
@@ -781,7 +781,7 @@ OpNode: exports.OpNode: inherit Node, {
 
   compile_assignment: (o) ->
     [first, second]: [@first.compile(o), @second.compile(o)]
-    o.scope.find(first) if @first.unwrap.match(IDENTIFIER)
+    o.scope.find(first) if first.match(IDENTIFIER)
     return first + ' = ' + ExistenceNode.compile_test(o, @first) + ' ? ' + first + ' : ' + second if @operator is '?='
     first + ' = ' + first + ' ' + @operator.substr(0, 2) + ' ' + second
 
