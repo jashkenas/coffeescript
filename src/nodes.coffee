@@ -802,7 +802,7 @@ TryNode: exports.TryNode: inherit Node, {
   type: 'Try'
 
   constructor: (attempt, error, recovery, ensure) ->
-    @children: [@attempt: attempt, @recovery: recovery, @ensure: ensure]
+    @children: compact [@attempt: attempt, @recovery: recovery, @ensure: ensure]
     @error: error
     this
 
