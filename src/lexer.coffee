@@ -43,7 +43,7 @@ MULTILINER      : /\n/g
 STRING_NEWLINES : /\n[ \t]*/g
 COMMENT_CLEANER : /(^[ \t]*#|\n[ \t]*$)/mg
 NO_NEWLINE      : /^([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)$/
-HEREDOC_INDENT  : /^[ \t]+/g
+HEREDOC_INDENT  : /^[ \t]+/mg
 
 # Tokens which a regular expression will never immediately follow, but which
 # a division operator might.
@@ -126,8 +126,8 @@ lex::string_token: ->
 lex::heredoc_token: ->
   return false unless match = @chunk.match(HEREDOC)
   doc: match[2] or match[4]
-  indent: doc.match(HEREDOC_INDENT).sort()[0]
-  doc: doc.replace(new RegExp("^" + indent, 'g'), '')
+  indent: (doc.match(HEREDOC_INDENT) or ['']).sort()[0]
+  doc: doc.replace(new RegExp("^" + indent, 'gm'), '')
           .replace(MULTILINER, "\\n")
           .replace('"', '\\"')
   @token 'STRING', '"' + doc + '"'
