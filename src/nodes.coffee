@@ -883,7 +883,7 @@ ForNode: exports.ForNode: inherit Node, {
     @step:    source.step
     @object:  !!source.object
     [@name, @index]: [@index, @name] if @object
-    @children: [@body, @source, @filter]
+    @children: compact [@body, @source, @filter]
     this
 
   top_sensitive: ->
