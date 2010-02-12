@@ -458,7 +458,7 @@ for name, non_terminal of grammar
       option[1] = "return " + option[1]
     option
 tokens: tokens.join(" ")
-parser: new Parser({tokens: tokens, bnf: bnf, operators: operators, startSymbol: 'Root'}, {debug: false})
+parser: new Parser({tokens: tokens, bnf: bnf, operators: operators.reverse(), startSymbol: 'Root'}, {debug: false})
 
 # Save the parser to a file.
 # puts parser.generate()

@@ -105,8 +105,8 @@ Node::contains: (block) ->
 
 # toString representation of the node, for inspecting the parse tree.
 Node::toString: (idt) ->
-  idt ||= ''
-  (@type || 'anon') + "\n" + (idt + TAB + child.toString(idt + TAB) for child in @children)
+  idt: (idt || '') + TAB
+  @type + "\n" + (idt + child.toString(idt) for child in @children).join('')
 
 # Default implementations of the common node methods.
 Node::unwrap:             -> this
