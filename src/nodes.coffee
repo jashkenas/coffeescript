@@ -195,7 +195,7 @@ statement Expressions
 LiteralNode: exports.LiteralNode: inherit Node, {
 
   constructor: (value) ->
-    @children: [@value: value]
+    @value: value
     this
 
   # Break and continue must be treated as statements -- they lose their meaning
@@ -442,6 +442,8 @@ RangeNode: exports.RangeNode: inherit Node, {
     return    @compile_array(o) unless o.index
     idx:      del o, 'index'
     step:     del o, 'step'
+    vars:     idx + '=' + @from_var
+    step:     if step then step.compile(o) else '1'
     equals:   if @exclusive then '' else '='
     intro:    '(' + @from_var + ' <= ' + @to_var + ' ? ' + idx
     compare:  intro + ' <' + equals + ' ' + @to_var + ' : ' + idx + ' >' + equals + ' ' + @to_var + ')'
@@ -453,7 +455,7 @@ RangeNode: exports.RangeNode: inherit Node, {
   # TODO: This generates pretty ugly code ... shrink it.
   compile_array: (o) ->
     body: Expressions.wrap([new LiteralNode('i')])
-    arr:  Expressions.wrap([new ForNode(body, {source: (new ValueNode(this))}, 'i')])
+    arr:  Expressions.wrap([new ForNode(body, {source: (new ValueNode(this))}, new LiteralNode('i'))])
     (new ParentheticalNode(new CallNode(new CodeNode([], arr)))).compile(o)
 
 }
