@@ -217,7 +217,7 @@ grammar: {
 
   # A Parameter (or ParamSplat) in a function definition.
   Param: [
-    o "PARAM",                                  -> yytext
+    o "PARAM",                                  -> new LiteralNode(yytext)
     o "Param . . .",                            -> new SplatNode($1)
   ]
 

@@ -144,8 +144,8 @@ Expressions: exports.Expressions: inherit Node, {
   # Is the node last in this block of expressions?
   is_last: (node) ->
     l: @expressions.length
-    @last_index ||= if @expressions[l - 1] instanceof CommentNode then 2 else 1
-    node is @expressions[l - @last_index]
+    last_index: if @expressions[l - 1] instanceof CommentNode then 2 else 1
+    node is @expressions[l - last_index]
 
   compile: (o) ->
     o ||= {}
@@ -310,7 +310,7 @@ CommentNode: exports.CommentNode: inherit Node, {
     this
 
   compile_node: (o) ->
-    delimiter: "\n" + @idt() + '//'
+    delimiter: @idt() + '//'
     delimiter + @lines.join(delimiter)
 
 }
@@ -515,7 +515,9 @@ ObjectNode: exports.ObjectNode: inherit Node, {
       join:   '' if i is non_comments.length - 1
       indent: if prop instanceof CommentNode then '' else @idt(1)
       indent + prop.compile(o) + join
-    '{\n' + props.join('') + '\n' + @idt() + '}'
+    props: props.join('')
+    inner: if props then '\n' + props + '\n' + @idt() else ''
+    '{' + inner + '}'
 
 }
 
@@ -682,11 +684,12 @@ SplatNode: exports.SplatNode: inherit Node, {
   type: 'Splat'
 
   constructor: (name) ->
+    name: new LiteralNode(name) unless name.compile
     @children: [@name: name]
     this
 
   compile_node: (o) ->
-    if @index then @compile_param(o) else @name.compile(o)
+    if @index? then @compile_param(o) else @name.compile(o)
 
   compile_param: (o) ->
     name: @name.compile(o)
@@ -988,7 +991,7 @@ IfNode: exports.IfNode: inherit Node, {
     @statement ||= !!(@comment or @tags.statement or @body.is_statement() or (@else_body and @else_body.is_statement()))
 
   compile_condition: (o) ->
-    (cond.compile(o) for cond in flatten(@condition)).join(' || ')
+    (cond.compile(o) for cond in flatten([@condition])).join(' || ')
 
   compile_node: (o) ->
     if @is_statement() then @compile_statement(o) else @compile_ternary(o)
@@ -1004,7 +1007,7 @@ IfNode: exports.IfNode: inherit Node, {
     if_dent:      if child then '' else @idt()
     com_dent:     if child then @idt() else ''
     prefix:       if @comment then @comment.compile(cond_o) + '\n' + com_dent else ''
-    body:         Expressions.wrap([body]).compile(o)
+    body:         Expressions.wrap([@body]).compile(o)
     if_part:      prefix + if_dent + 'if (' + @compile_condition(cond_o) + ') {\n' + body + '\n' + @idt() + '}'
     return if_part unless @else_body
     else_part: if @is_chain()
