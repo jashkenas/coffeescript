@@ -563,7 +563,7 @@ ClosureNode: exports.ClosureNode: {
 
   wrap: (expressions, statement) ->
     func: new ParentheticalNode(new CodeNode([], Expressions.wrap([expressions])))
-    call: new CallNode(new ValueNode(func, new AccessorNode(new LiteralNode('call'))), [new LiteralNode('this')])
+    call: new CallNode(new ValueNode(func, [new AccessorNode(new LiteralNode('call'))]), [new LiteralNode('this')])
     if statement then Expressions.wrap([call]) else call
 
 }
@@ -953,7 +953,7 @@ IfNode: exports.IfNode: inherit Node, {
     @condition: condition
     @body:      body and body.unwrap()
     @else_body: else_body and else_body.unwrap()
-    @children:  [@condition, @body, @else_body]
+    @children:  compact [@condition, @body, @else_body]
     @tags:      tags or {}
     @multiple:  true if @condition instanceof Array
     @condition: new OpNode('!', new ParentheticalNode(@condition)) if @tags.invert
