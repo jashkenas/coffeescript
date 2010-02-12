@@ -600,6 +600,7 @@ AssignNode: exports.AssignNode: inherit Node, {
       if obj instanceof SplatNode
         val: new LiteralNode(obj.compile_value(o, val_var, @variable.base.objects.indexOf(obj)))
       else
+        idx: new LiteralNode(idx) unless typeof idx is 'object'
         val: new ValueNode(new LiteralNode(val_var), [new access_class(idx)])
       assigns.push(new AssignNode(obj, val).compile(o))
     assigns.join("\n")
@@ -664,11 +665,12 @@ SplatNode: exports.SplatNode: inherit Node, {
     if @index then @compile_param(o) else @name.compile(o)
 
   compile_param: (o) ->
-    o.scope.find @name
-    @name + ' = Array.prototype.slice.call(arguments, ' + @index + ')'
+    name: @name.compile(o)
+    o.scope.find name
+    name + ' = Array.prototype.slice.call(arguments, ' + @index + ')'
 
   compile_value: (o, name, index) ->
-    "Array.prototype.slice.call(" + @name + ', ' + @index + ')'
+    "Array.prototype.slice.call(" + name + ', ' + index + ')'
 
 }
 
