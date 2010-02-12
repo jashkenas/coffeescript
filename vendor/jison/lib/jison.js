@@ -737,6 +737,7 @@ lrGeneratorMixin.parseTable = function parseTable (itemSets) {
                 if (action.length) {
                     var sol = resolveConflict(item.production, op, [r,item.production.id], action[0]);
                     self.resolutions.push([k,stackSymbol,sol]);
+                    //self.trace(sol.msg);
                     if (sol.bydefault) {
                         self.conflicts++;
                         if (!self.DEBUG) {
@@ -752,6 +753,7 @@ lrGeneratorMixin.parseTable = function parseTable (itemSets) {
                     action.push([r,item.production.id]);
                 }
                 if (action && action.length) {
+                    //self.trace(k, stackSymbol, action);
                     state[self.symbols_[stackSymbol]] = action;
                 }
             });
@@ -891,12 +893,12 @@ var lrGeneratorDebug = {
     afterparseTable: function () {
         var self = this;
         if (this.conflicts > 0) {
+            this.trace("\n"+this.conflicts+" Conflict(s) found in grammar:");
             this.resolutions.forEach(function (r, i) {
                 if (r[2].bydefault) {
-                    self.warn('Conflict at state:',r[0], ', Token:',r[1], "\n  ", printAction(r[2].r, self), "\n  ", printAction(r[2].s, self));
+                    self.warn('State:',r[0], ', Token:',r[1], "\n  ", printAction(r[2].r, self), "\n  ", printAction(r[2].s, self));
                 }
             });
-            this.trace("\n"+this.conflicts+" Conflict(s) found in grammar.");
         }
         this.trace("Done.");
     },
@@ -974,6 +976,8 @@ parser.parse = function parse (input) {
     var symbol, state, action, a, r, yyval={},p,len,ip=0,newState, expected;
     symbol = lex(); 
     while (true) {
+        this.trace('stack:',JSON.stringify(stack), '\n\t\t\tinput:', this.lexer._input);
+        this.trace('vstack:',JSON.stringify(vstack));
         // set first input
         state = stack[stack.length-1];
         // read action for current state and first input
@@ -984,6 +988,8 @@ parser.parse = function parse (input) {
             for (p in table[state]) if (this.terminals_[p] && p != 1) {
                 expected.push("'"+this.terminals_[p]+"'");
             }
+            self.trace("stack:",JSON.stringify(stack), 'symbol:',symbol, 'input', this.lexer.upcomingInput());
+            if (this.lexer.upcomingInput) self.trace('input', this.lexer.upcomingInput());
             parseError('Parse error on line '+(yylineno+1)+'. Expecting: '+expected.join(', ')+"\n"+(this.lexer.showPosition && this.lexer.showPosition()),
                     {text: this.lexer.match, token: symbol, line: this.lexer.yylineno});
         }
@@ -1015,6 +1021,7 @@ parser.parse = function parse (input) {
                 reductions++;
 
                 len = this.productions_[a[1]][1];
+                this.trace('reduce by: ', this.productions ? this.productions[a[1]] : a[1]);
 
                 // perform semantic action
                 yyval.$ = vstack[vstack.length-len]; // default to $$ = $1
@@ -1024,8 +1031,11 @@ parser.parse = function parse (input) {
                     return r;
                 }
 
+                this.trace('yyval=',JSON.stringify(yyval.$));
+
                 // pop off stack
                 if (len) {
+                    this.trace('production length:',len);
                     stack = stack.slice(0,-1*len*2);
                     vstack = vstack.slice(0, -1*len);
                 }
@@ -1039,8 +1049,10 @@ parser.parse = function parse (input) {
 
             case 3: // accept
 
-                this.reductionCount = reductions;
-                this.shiftCount = shifts;
+                this.trace('stack:',stack, '\n\tinput:', this.lexer._input);
+                this.trace('vstack:',JSON.stringify(vstack));
+                this.trace('Total reductions:', reductions);
+                this.trace('Total shifts:', shifts);
                 return true;
         }
 
@@ -1380,6 +1392,7 @@ exports.main = function main (args) {
     }
 
     var opt = grammar.options || {};
+    opt.debug = true;
 
     // lexer file
     if (args[2]) {
