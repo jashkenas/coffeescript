@@ -47,7 +47,7 @@
 
 
   # Current version.
-  _.VERSION: '0.5.7'
+  _.VERSION: '0.5.8'
 
 
   # ------------------------ Collection Functions: ---------------------------
@@ -58,7 +58,7 @@
     index: 0
     try
       return obj.forEach(iterator, context) if obj.forEach
-      if _.isArray(obj) or _.isArguments(obj)
+      if _.isNumber(obj.length)
         return iterator.call(context, obj[i], i, obj) for i in [0...obj.length]
       iterator.call(context, val, key, obj) for key, val of obj
     catch e
@@ -147,7 +147,7 @@
   # Determine if a given value is included in the array or object,
   # based on '==='.
   _.include: (obj, target) ->
-    return _.indexOf(obj, target) isnt -1 if _.isArray(obj)
+    return _.indexOf(obj, target) isnt -1 if obj and _.isFunction(obj.indexOf)
     for key, val of obj
       return true if val is target
     false
