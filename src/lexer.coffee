@@ -98,7 +98,7 @@ lex::identifier_token: ->
   # 'if' will result in an ['IF', "if"] token.
   tag: if KEYWORDS.indexOf(id) >= 0 then id.toUpperCase() else 'IDENTIFIER'
   tag: 'LEADING_WHEN' if tag is 'WHEN' and BEFORE_WHEN.indexOf(@tag()) >= 0
-  @tag(-1, 'PROTOTYPE_ACCESS') if tag is 'IDENTIFIER' and @value() is '::'
+  @tag(1, 'PROTOTYPE_ACCESS') if tag is 'IDENTIFIER' and @value() is '::'
   if tag is 'IDENTIFIER' and @value() is '.' and !(@value(2) is '.')
     if @tag(2) is '?'
       @tag(1, 'SOAK_ACCESS')
