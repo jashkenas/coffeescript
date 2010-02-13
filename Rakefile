@@ -35,7 +35,7 @@ namespace :build do
 
   desc "Rebuild the Underscore.coffee documentation page"
   task :underscore do
-    sh "uv -s coffeescript -t idle -h examples/underscore.coffee > documentation/underscore.html"
+    sh "uv -s coffeescript -t idle -h src/underscore.coffee > documentation/underscore.html"
   end
 
 end
@@ -46,7 +46,6 @@ task :doc do
   child = fork { exec "bin/coffee documentation/coffee/*.coffee -o documentation/js -w" }
   at_exit { Process.kill("INT", child) }
   Signal.trap("INT") { exit }
-  # `uv -t idle -s coffeescript -h examples/underscore.coffee > documentation/underscore.html`
   loop do
     mtime = File.stat(source).mtime
     if !@mtime || mtime > @mtime
