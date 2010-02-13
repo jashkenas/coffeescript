@@ -43,7 +43,7 @@ table {
     td {
       padding: 9px 15px 9px 0;
     }
-code, pre, tt {
+code, pre, tt, textarea {
   font-family: Monaco, Consolas, "Lucida Console", monospace;
   font-size: 12px;
   line-height: 18px;
@@ -75,7 +75,7 @@ div.code {
     position: absolute;
     right: 8px; bottom: 8px;
   }
-  div.code pre {
+  div.code pre, div.code textarea {
     float: left;
     width: 450px;
     border-left: 1px dotted #559;
@@ -85,3 +85,14 @@ div.code {
     div.code pre:first-child {
       border-left: 0;
     }
+
+#repl_source {
+  border: 0;
+  padding: 5px 7px;
+  margin-left: 5px;
+  height: 250px;
+  resize: none;
+}
+#repl_results {
+  height: 260px;
+}

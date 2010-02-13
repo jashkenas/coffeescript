@@ -45,6 +45,7 @@
     <p>
       <a href="#overview">Mini Overview</a><br />
       <a href="#installation">Installation and Usage</a><br />
+      <a href="#repl">Try CoffeeScript</a><br />
       <a href="#whitespace">Significant Whitespace</a><br />
       <a href="#functions">Functions and Invocation</a><br />
       <a href="#assignment">Assignment</a><br />
@@ -320,6 +321,25 @@ coffee path/to/script.coffee
 coffee --interactive
 coffee --watch --lint experimental.coffee
 coffee --print app/scripts/*.coffee > concatenation.js</pre>
+
+    <h2 id="repl">Try CoffeeScript</h2>
+
+    <p>
+      Here's a live version of the CoffeeScript compiler, running within
+      your browser.<br /> Hit the <b>compile</b> button to generate JavaScript 
+      on the right-hand side.
+      You can also paste in any of the examples from below.
+    </p>
+
+    <div class="code repl_wrapper">
+      <textarea id="repl_source">reverse: (string) -> 
+  string.split('').reverse()
+
+print reverse 'tpircseeffoc'</textarea>
+      <pre id="repl_results"></pre>
+      <button onclick="javascript: repl_compile();">compile</button>
+      <br class="clear" />
+    </div>
 
     <h2>Language Reference</h2>
 
@@ -1702,6 +1722,19 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">&q
   <script type="text/javascript" src="lib/coffee_script/scope.js"></script>
   <script type="text/javascript" src="lib/coffee_script/nodes.js"></script>
   <script type="text/javascript" src="lib/coffee_script/coffee-script.js"></script>
+
+  <script type="text/javascript">
+    window.repl_compile = function() {
+      var source = document.getElementById('repl_source').value;
+      var js = '';
+      try {
+        js = compile(source, {no_wrap: true});
+      } catch(error) {
+        alert(error);
+      }
+      document.getElementById('repl_results').innerHTML = js;
+    }
+  </script>
 
 </body>
 </html>

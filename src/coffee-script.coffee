@@ -1,3 +1,4 @@
+# Set up for both the browser and the server.
 if process?
   process.mixin require './nodes'
   path:         require('path')
@@ -22,6 +23,10 @@ parser.lexer: {
   upcomingInput: -> ""
   showPosition: -> @pos
 }
+
+# Improved error messages.
+parser.parseError: (message, hash) ->
+  throw new Error 'Unexpected ' + hash.token + ' on line ' + hash.line
 
 exports.VERSION: '0.5.0'
 
@@ -78,7 +83,3 @@ exports.ruby_compile_files: (paths, callback) ->
     return unless message
     puts message
     throw new Error "CoffeeScript compile error"
-
-
-
-
