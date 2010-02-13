@@ -1,6 +1,12 @@
-process.mixin require './nodes'
-lexer:  new (require('./lexer').Lexer)()
-parser: require('./parser').parser
+if process?
+  process.mixin require './nodes'
+  path:         require('path')
+  lexer:   new (require('./lexer').Lexer)()
+  parser:       require('./parser').parser
+else
+  this.exports: this
+  lexer: new Lexer()
+  parser: exports.parser
 
 # Thin wrapper for Jison compatibility around the real lexer.
 parser.lexer: {
@@ -34,16 +40,14 @@ exports.tree: (code) ->
 
 #---------- Below this line is obsolete, for the Ruby compiler. ----------------
 
-# Executes the `coffee` Ruby program to convert from CoffeeScript to JavaScript.
-path: require('path')
-
 # The path to the CoffeeScript executable.
-compiler: path.normalize(path.dirname(__filename) + '/../../bin/coffee')
+compiler: ->
+  path.normalize(path.dirname(__filename) + '/../../bin/coffee')
 
 # Compile a string over stdin, with global variables, for the REPL.
 exports.ruby_compile: (code, callback) ->
   js: ''
-  coffee: process.createChildProcess compiler, ['--eval', '--no-wrap', '--globals']
+  coffee: process.createChildProcess compiler(), ['--eval', '--no-wrap', '--globals']
 
   coffee.addListener 'output', (results) ->
     js += results if results?
@@ -58,7 +62,7 @@ exports.ruby_compile: (code, callback) ->
 # Compile a list of CoffeeScript files on disk.
 exports.ruby_compile_files: (paths, callback) ->
   js: ''
-  coffee: process.createChildProcess compiler, ['--print'].concat(paths)
+  coffee: process.createChildProcess compiler(), ['--print'].concat(paths)
 
   coffee.addListener 'output', (results) ->
     js += results if results?

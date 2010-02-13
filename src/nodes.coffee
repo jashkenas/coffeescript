@@ -1,5 +1,9 @@
-process.mixin require './scope'
-_: require('./underscore')._
+if process?
+  process.mixin require './scope'
+  _: require('./underscore')._
+else
+  this.exports: this
+  _: this._
 
 # Some helper functions
 

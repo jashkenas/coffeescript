@@ -1036,7 +1036,7 @@ globals = ((function() {
       and <tt>return</tt>. If you make use of them within a block of code,
       CoffeeScript won't try to perform the conversion.
     </p>
-    
+
     <p id="existence">
       <b class="header">The Existential Operator</b>
       It's a little difficult to check for the existence of a variable in
@@ -1058,12 +1058,12 @@ speed <span class="Keyword">?</span><span class="Keyword">=</span> <span class="
 
 
 </pre><pre class="idle"><span class="Storage">var</span> solipsism, speed;
-<span class="Keyword">if</span> ((<span class="Keyword">typeof</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> (<span class="Keyword">typeof</span> <span class="Keyword">!</span>world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> <span class="Keyword">!</span>world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>)) {
+<span class="Keyword">if</span> ((<span class="Keyword">typeof</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> <span class="Keyword">!</span>(<span class="Keyword">typeof</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>)) {
   solipsism <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
 }
 speed <span class="Keyword">=</span> (<span class="Keyword">typeof</span> speed <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> speed <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) ? speed : <span class="Number">140</span>;
 </pre><button onclick='javascript: var solipsism, speed;
-if ((typeof mind !== "undefined" && mind !== null) && (typeof !world !== "undefined" && !world !== null)) {
+if ((typeof mind !== "undefined" && mind !== null) && !(typeof world !== "undefined" && world !== null)) {
   solipsism = true;
 }
 speed = (typeof speed !== "undefined" && speed !== null) ? speed : 140;
@@ -1081,8 +1081,8 @@ speed = (typeof speed !== "undefined" && speed !== null) ? speed : 140;
 ((__a <span class="Keyword">=</span> lottery.draw_winner()) <span class="Keyword">==</span> undefined ? undefined : __a.address <span class="Keyword">==</span> undefined ? undefined : __a.address.zipcode);
 </pre><br class='clear' /></div>
     <p>
-      Soaking up nulls is similar to Ruby's 
-      <a href="http://andand.rubyforge.org/">andand gem</a>, and to the 
+      Soaking up nulls is similar to Ruby's
+      <a href="http://andand.rubyforge.org/">andand gem</a>, and to the
       <a href="http://groovy.codehaus.org/Operators#Operators-SafeNavigationOperator%28%3F.%29">safe navigation operator</a>
       in Groovy.
     </p>
@@ -1108,20 +1108,29 @@ speed = (typeof speed !== "undefined" && speed !== null) ? speed : 140;
       the immediate ancestor's method of the same name.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">Animal</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
+
 <span class="FunctionName">Animal::move</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">meters</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
   alert <span class="Variable">@name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>
 
-<span class="FunctionName">Snake</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">name</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> <span class="Variable">@name</span><span class="Keyword">:</span> name
-Snake <span class="Variable">extends</span> Animal
+<span class="FunctionName">Snake</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">name</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+  <span class="Variable">@name</span><span class="Keyword">:</span> name
+  <span class="Variable">this</span>
+
 <span class="FunctionName">Snake::move</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
   alert <span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>
   <span class="Variable">super</span> <span class="Number">5</span>
 
-<span class="FunctionName">Horse</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">name</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> <span class="Variable">@name</span><span class="Keyword">:</span> name
-Horse <span class="Variable">extends</span> Animal
+Snake <span class="Variable">extends</span> Animal
+
+<span class="FunctionName">Horse</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">name</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+  <span class="Variable">@name</span><span class="Keyword">:</span> name
+  <span class="Variable">this</span>
+
 <span class="FunctionName">Horse::move</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
   alert <span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>
   <span class="Variable">super</span> <span class="Number">45</span>
+
+Horse <span class="Variable">extends</span> Animal
 
 <span class="FunctionName">sam</span><span class="Keyword">:</span> <span class="Keyword">new</span> <span class="TypeName">Snake</span> <span class="String"><span class="String">&quot;</span>Sammy the Python<span class="String">&quot;</span></span>
 <span class="FunctionName">tom</span><span class="Keyword">:</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span> <span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>
@@ -1138,33 +1147,31 @@ Animal <span class="Keyword">=</span> <span class="Storage">function</span> <spa
   <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>);
 };
 Snake <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Snake</span>(<span class="FunctionArgument">name</span>) {
-  <span class="Storage">var</span> __a;
-  __a <span class="Keyword">=</span> <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
-  <span class="Keyword">return</span> Snake <span class="Keyword">===</span> <span class="Variable">this</span>.<span class="LibraryConstant">constructor</span> ? <span class="Variable">this</span> : __a;
+  <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
+  <span class="Keyword">return</span> <span class="Variable">this</span>;
+};
+<span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span> <span class="FunctionName">move</span>() {
+  <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>);
+  <span class="Keyword">return</span> Snake.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">5</span>);
 };
 <span class="FunctionName">__a</span> = <span class="Storage">function</span>(){};
 <span class="LibraryClassType">__a</span>.<span class="LibraryConstant">prototype</span> = Animal.<span class="LibraryConstant">prototype</span>;
 Snake.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryConstant">prototype</span>;
 <span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">__a</span>();
 <span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">constructor</span> = Snake;
-<span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span> <span class="FunctionName">move</span>() {
-  <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>);
-  <span class="Keyword">return</span> Snake.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">5</span>);
-};
 Horse <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Horse</span>(<span class="FunctionArgument">name</span>) {
-  <span class="Storage">var</span> __b;
-  __b <span class="Keyword">=</span> <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
-  <span class="Keyword">return</span> Horse <span class="Keyword">===</span> <span class="Variable">this</span>.<span class="LibraryConstant">constructor</span> ? <span class="Variable">this</span> : __b;
+  <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
+  <span class="Keyword">return</span> <span class="Variable">this</span>;
+};
+<span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span> <span class="FunctionName">move</span>() {
+  <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>);
+  <span class="Keyword">return</span> Horse.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">45</span>);
 };
 <span class="FunctionName">__b</span> = <span class="Storage">function</span>(){};
 <span class="LibraryClassType">__b</span>.<span class="LibraryConstant">prototype</span> = Animal.<span class="LibraryConstant">prototype</span>;
 Horse.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryConstant">prototype</span>;
 <span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">__b</span>();
 <span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">constructor</span> = Horse;
-<span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span> <span class="FunctionName">move</span>() {
-  <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>);
-  <span class="Keyword">return</span> Horse.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">45</span>);
-};
 sam <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Snake</span>(<span class="String"><span class="String">&quot;</span>Sammy the Python<span class="String">&quot;</span></span>);
 tom <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span>(<span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>);
 sam.move();
@@ -1175,33 +1182,31 @@ Animal.prototype.move = function move(meters) {
   return alert(this.name + " moved " + meters + "m.");
 };
 Snake = function Snake(name) {
-  var __a;
-  __a = this.name = name;
-  return Snake === this.constructor ? this : __a;
+  this.name = name;
+  return this;
+};
+Snake.prototype.move = function move() {
+  alert("Slithering...");
+  return Snake.__superClass__.move.call(this, 5);
 };
 __a = function(){};
 __a.prototype = Animal.prototype;
 Snake.__superClass__ = Animal.prototype;
 Snake.prototype = new __a();
 Snake.prototype.constructor = Snake;
-Snake.prototype.move = function move() {
-  alert("Slithering...");
-  return Snake.__superClass__.move.call(this, 5);
-};
 Horse = function Horse(name) {
-  var __b;
-  __b = this.name = name;
-  return Horse === this.constructor ? this : __b;
+  this.name = name;
+  return this;
+};
+Horse.prototype.move = function move() {
+  alert("Galloping...");
+  return Horse.__superClass__.move.call(this, 45);
 };
 __b = function(){};
 __b.prototype = Animal.prototype;
 Horse.__superClass__ = Animal.prototype;
 Horse.prototype = new __b();
 Horse.prototype.constructor = Horse;
-Horse.prototype.move = function move() {
-  alert("Galloping...");
-  return Horse.__superClass__.move.call(this, 45);
-};
 sam = new Snake("Sammy the Python");
 tom = new Horse("Tommy the Palomino");
 sam.move();
@@ -1329,10 +1334,9 @@ city = __c[1];
     <span class="Variable">@customer</span>.purchase <span class="Variable">@cart</span>
 </pre><pre class="idle"><span class="Storage">var</span> Account;
 Account <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Account</span>(<span class="FunctionArgument">customer, cart</span>) {
-  <span class="Storage">var</span> __a;
   <span class="Variable">this</span>.customer <span class="Keyword">=</span> customer;
   <span class="Variable">this</span>.cart <span class="Keyword">=</span> cart;
-  __a <span class="Keyword">=</span> <span class="Keyword">$</span>(<span class="String"><span class="String">'</span>.shopping_cart<span class="String">'</span></span>).bind(<span class="String"><span class="String">'</span>click<span class="String">'</span></span>, (<span class="Storage">function</span>(__this) {
+  <span class="Keyword">return</span> <span class="Keyword">$</span>(<span class="String"><span class="String">'</span>.shopping_cart<span class="String">'</span></span>).bind(<span class="String"><span class="String">'</span>click<span class="String">'</span></span>, (<span class="Storage">function</span>(__this) {
     <span class="Storage">var</span> <span class="FunctionName">__func</span> = <span class="Storage">function</span>(<span class="FunctionArgument">event</span>) {
       <span class="Keyword">return</span> <span class="Variable">this</span>.customer.purchase(<span class="Variable">this</span>.cart);
     };
@@ -1340,7 +1344,6 @@ Account <span class="Keyword">=</span> <span class="Storage">function</span> <sp
       <span class="Keyword">return</span> __func.<span class="LibraryFunction">apply</span>(__this, arguments);
     });
   })(<span class="Variable">this</span>));
-  <span class="Keyword">return</span> Account <span class="Keyword">===</span> <span class="Variable">this</span>.<span class="LibraryConstant">constructor</span> ? <span class="Variable">this</span> : __a;
 };
 </pre><br class='clear' /></div>
 
@@ -1536,7 +1539,7 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">&q
     </ul>
 
     <h2 id="change_log">Change Log</h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.3.2</b>
       <tt>@property</tt> is now a shorthand for <tt>this.property</tt>.<br />
@@ -1691,6 +1694,14 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">&q
     </p>
 
   </div>
+
+  <script type="text/javascript" src="lib/coffee_script/underscore.js"></script>
+  <script type="text/javascript" src="lib/coffee_script/rewriter.js"></script>
+  <script type="text/javascript" src="lib/coffee_script/lexer.js"></script>
+  <script type="text/javascript" src="lib/coffee_script/parser.js"></script>
+  <script type="text/javascript" src="lib/coffee_script/scope.js"></script>
+  <script type="text/javascript" src="lib/coffee_script/nodes.js"></script>
+  <script type="text/javascript" src="lib/coffee_script/coffee-script.js"></script>
 
 </body>
 </html>
