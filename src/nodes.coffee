@@ -310,8 +310,7 @@ CommentNode: exports.CommentNode: inherit Node, {
     this
 
   compile_node: (o) ->
-    delimiter: @idt() + '//'
-    delimiter + @lines.join(delimiter)
+    @idt() + '//' + @lines.join('\n' + @idt() + '//')
 
 }
 
