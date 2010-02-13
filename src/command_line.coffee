@@ -63,11 +63,14 @@ exports.compile_scripts: ->
   return unless source: @sources.shift()
   opts: @options
   posix.cat(source).addCallback (code) ->
-    if      opts.tokens then puts coffee.tokenize(code).join(' ')
-    else if opts.tree   then puts coffee.tree(code).toString()
-    else if opts.run    then eval coffee.compile code
-    else if opts.print  then puts coffee.compile code
-    else                     exports.write_js source, coffee.compile code
+    if      opts.tokens   then puts coffee.tokenize(code).join(' ')
+    else if opts.tree     then puts coffee.tree(code).toString()
+    else
+      js: coffee.compile code
+      if      opts.run    then eval js
+      else if opts.print  then puts js
+      else if opts.lint   then exports.lint js
+      else                     exports.write_js source, coffee.compile code
     exports.compile_scripts()
 
 # Write out a JavaScript source file with the compiled code.
@@ -77,6 +80,16 @@ exports.write_js: (source, js) ->
   js_path:  path.join dir, filename
   posix.open(js_path, process.O_CREAT | process.O_WRONLY | process.O_TRUNC, 0755).addCallback (fd) ->
     posix.write(fd, js)
+
+# Pipe compiled JS through JSLint (requires a working 'jsl' command).
+exports.lint: (js) ->
+  jsl: process.createChildProcess('jsl', ['-nologo', '-stdin'])
+  jsl.addListener 'output', (result) ->
+    puts result.replace(/\n/g, '') if result
+  jsl.addListener 'errror', (result) ->
+    puts result if result
+  jsl.write js
+  jsl.close()
 
 # Use OptionParser for all the options.
 exports.parse_options: ->
