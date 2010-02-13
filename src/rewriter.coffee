@@ -145,12 +145,12 @@ re::add_implicit_parentheses: ->
     if stack[stack.length - 1] > 0 and (IMPLICIT_END.indexOf(token[0]) >= 0 or !post?)
       idx: if token[0] is 'OUTDENT' then i + 1 else i
       for tmp in [0...stack[stack.length - 1]]
-        this.tokens.splice(idx, 0, ['CALL_END', ')'])
+        this.tokens.splice(idx, 0, ['CALL_END', ')', token[2]])
       size: stack[stack.length - 1] + 1
       stack[stack.length - 1]: 0
       return size
     return 1 unless prev and IMPLICIT_FUNC.indexOf(prev[0]) >= 0 and IMPLICIT_CALL.indexOf(token[0]) >= 0
-    this.tokens.splice(i, 0, ['CALL_START', '('])
+    this.tokens.splice(i, 0, ['CALL_START', '(', token[2]])
     stack[stack.length - 1] += 1
     return 2
 
@@ -163,7 +163,7 @@ re::add_implicit_indentation: ->
     return 1 unless SINGLE_LINERS.indexOf(token[0]) >= 0 and post[0] isnt 'INDENT' and
       not (token[0] is 'ELSE' and post[0] is 'IF')
     starter: token[0]
-    this.tokens.splice(i + 1, 0, ['INDENT', 2])
+    this.tokens.splice(i + 1, 0, ['INDENT', 2, token[2]])
     idx: i + 1
     parens: 0
     while true
@@ -173,7 +173,7 @@ re::add_implicit_indentation: ->
           (tok[0] is ')' && parens is 0)) and
           not (starter is 'ELSE' and tok[0] is 'ELSE')
         insertion: if this.tokens[idx - 1][0] is "," then idx - 1 else idx
-        this.tokens.splice(insertion, 0, ['OUTDENT', 2])
+        this.tokens.splice(insertion, 0, ['OUTDENT', 2, token[2]])
         break
       parens += 1 if tok[0] is '('
       parens -= 1 if tok[0] is ')'

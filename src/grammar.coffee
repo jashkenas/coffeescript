@@ -45,15 +45,15 @@ grammar: {
   Root: [
     o "",                                  -> new Expressions()
     o "TERMINATOR",                        -> new Expressions()
-    o "Expressions"
-    o "Block TERMINATOR"
+    o "Expressions",                       -> $1
+    o "Block TERMINATOR",                  -> $1
   ]
 
   # Any list of expressions or method body, seperated by line breaks or semis.
   Expressions: [
     o "Expression",                        -> Expressions.wrap([$1])
     o "Expressions TERMINATOR Expression", -> $1.push($3)
-    o "Expressions TERMINATOR"
+    o "Expressions TERMINATOR",            -> $1
   ]
 
   # All types of expressions in our language. The basic unit of CoffeeScript
@@ -461,9 +461,10 @@ for name, non_terminal of grammar
     option
 tokens: tokens.join(" ")
 parser: new Parser({tokens: tokens, bnf: bnf, operators: operators.reverse(), startSymbol: 'Root'}, {debug: false})
+js: parser.generate()
 
 # Save the parser to a file.
 # puts parser.generate()
 posix: require 'posix'
 posix.open('lib/coffee_script/parser.js', process.O_CREAT | process.O_WRONLY, 0755).addCallback (fd) ->
-  posix.write(fd, parser.generate())
+  posix.write(fd, js)

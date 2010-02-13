@@ -188,7 +188,7 @@ lex::outdent_token: (move_out) ->
     last_indent: @indents.pop()
     @token 'OUTDENT', last_indent
     move_out -= last_indent
-  @token 'TERMINATOR', "\n"
+  @token 'TERMINATOR', "\n" unless @tag() is 'TERMINATOR'
   true
 
 # Matches and consumes non-meaningful whitespace.
@@ -201,7 +201,7 @@ lex::whitespace_token: ->
 # Multiple newlines get merged together.
 # Use a trailing \ to escape newlines.
 lex::newline_token: (newlines) ->
-  @token 'TERMINATOR', "\n" unless @value() is "\n"
+  @token 'TERMINATOR', "\n" unless @tag() is 'TERMINATOR'
   true
 
 # Tokens to explicitly escape newlines are removed once their job is done.
