@@ -20,8 +20,8 @@ parser.lexer: {
 exports.VERSION: '0.5.0'
 
 # Compile CoffeeScript to JavaScript, using the Coffee/Jison compiler.
-exports.compile: (code) ->
-  (parser.parse lexer.tokenize code).compile()
+exports.compile: (code, options) ->
+  (parser.parse lexer.tokenize code).compile(options)
 
 # Just the tokens.
 exports.tokenize: (code) ->

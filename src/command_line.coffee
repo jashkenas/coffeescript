@@ -35,7 +35,7 @@ option_parser: null
 # The CommandLine handles all of the functionality of the `coffee` utility.
 exports.run: ->
   parse_options()
-  launch_repl() if options.interactive
+  return require './repl' if options.interactive
   usage() unless sources.length
   compile_scripts()
   this
