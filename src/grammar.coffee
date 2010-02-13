@@ -34,7 +34,7 @@ operators: [
   ["right",     'THROW', 'FOR', 'NEW', 'SUPER']
   ["left",      'EXTENDS']
   ["right",     'ASSIGN', 'RETURN']
-  ["right",     '->', '=>', 'UNLESS', 'IF', 'ELSE', 'ELSIF', 'WHILE']
+  ["right",     '->', '=>', 'UNLESS', 'IF', 'ELSE', 'WHILE']
 ]
 
 # Grammar ==============================================================
@@ -410,25 +410,25 @@ grammar: {
   ]
 
   # The most basic form of "if".
-  IfBlock: [
+  IfStart: [
     o "IF Expression Block",                    -> new IfNode($2, $3)
-    o "IF Expression Block ElsIfs",             -> (new IfNode($2, $3)).add_else($4)
+    o "IfStart ElsIfs",                         -> $1.add_else($2)
   ]
 
-  ElsIf: [
-    o "ELSEIF Expression Block",                -> new IfNode($2, $3)
+  IfBlock: [
+    o "IfStart",                                -> $1
+    o "IfStart ELSE Block",                     -> $1.add_else($3)
   ]
 
   # Multiple elsifs can be chained together.
   ElsIfs: [
-    o "ElsIf",                                  -> $1.force_statement()
+    o "ELSE IF Expression Block",               -> (new IfNode($3, $4)).force_statement()
     o "ElsIfs ElsIf",                           -> $1.add_else($2)
   ]
 
   # The full complement of if blocks, including postfix one-liner ifs and unlesses.
   If: [
     o "IfBlock",                                -> $1
-    o "IfBlock ELSE Block",                     -> $1.add_else($3)
     o "Expression IF Expression",               -> new IfNode($3, Expressions.wrap([$1]), null, {statement: true})
     o "Expression UNLESS Expression",           -> new IfNode($3, Expressions.wrap([$1]), null, {statement: true, invert: true})
   ]
