@@ -28,68 +28,73 @@ SWITCHES: [
 
 WATCH_INTERVAL: 0.5
 
+options: {}
+sources: []
+option_parser: null
+
 # The CommandLine handles all of the functionality of the `coffee` utility.
 exports.run: ->
-  @parse_options()
-  @usage() unless @sources.length
-  @compile_scripts()
+  parse_options()
+  launch_repl() if options.interactive
+  usage() unless sources.length
+  compile_scripts()
   this
 
 # The "--help" usage message.
-exports.usage: ->
-  puts '\n' + @option_parser.toString() + '\n'
+usage: ->
+  puts '\n' + option_parser.toString() + '\n'
   process.exit 0
 
 # The "--version" message.
-exports.version: ->
+version: ->
   puts "CoffeeScript version " + coffee.VERSION
   process.exit 0
 
 # Compile a single source file to JavaScript.
-exports.compile: (script, source) ->
+compile: (script, source) ->
   source ||= 'error'
   options: {}
-  options.no_wrap: true if @options.no_wrap
-  options.globals: true if @options.globals
+  options.no_wrap: true if options.no_wrap
+  options.globals: true if options.globals
   try
     CoffeeScript.compile(script, options)
   catch error
     process.stdio.writeError(source + ': ' + error.toString())
-    process.exit 1 unless @options.watch
+    process.exit 1 unless options.watch
     null
 
 # Compiles the source CoffeeScript, returning the desired JavaScript, tokens,
 # or JSLint results.
-exports.compile_scripts: ->
-  return unless source: @sources.shift()
-  opts: @options
+compile_scripts: ->
+  return unless source: sources.shift()
+  opts: options
   posix.cat(source).addCallback (code) ->
-    if      opts.tokens   then puts exports.tokenize(code)
+    if      opts.tokens   then puts tokenize(code)
     else if opts.tree     then puts coffee.tree(code).toString()
     else
       js: coffee.compile code
       if      opts.run    then eval js
       else if opts.print  then puts js
-      else if opts.lint   then exports.lint js
-      else                     exports.write_js source, coffee.compile code
-    exports.compile_scripts()
+      else if opts.lint   then lint js
+      else                     write_js source, coffee.compile code
+    compile_scripts()
 
 # Write out a JavaScript source file with the compiled code.
-exports.write_js: (source, js) ->
+write_js: (source, js) ->
   filename: path.basename(source, path.extname(source)) + '.js'
-  dir:      @options.output or path.dirname(source)
+  dir:      options.output or path.dirname(source)
   js_path:  path.join dir, filename
   posix.open(js_path, process.O_CREAT | process.O_WRONLY | process.O_TRUNC, parseInt('0755', 8)).addCallback (fd) ->
     posix.write(fd, js)
 
 # Pretty-print the token stream.
-exports.tokenize: (code) ->
+tokenize: (code) ->
   strings: coffee.tokenize(code).map (token) ->
     '[' + token[0] + ' ' + token[1].toString().replace(/\n/, '\\n') + ']'
   strings.join(' ')
 
 # Pipe compiled JS through JSLint (requires a working 'jsl' command).
-exports.lint: (js) ->
+lint: (js) ->
   jsl: process.createChildProcess('jsl', ['-nologo', '-stdin'])
   jsl.addListener 'output', (result) ->
     puts result.replace(/\n/g, '') if result
@@ -99,9 +104,9 @@ exports.lint: (js) ->
   jsl.close()
 
 # Use OptionParser for all the options.
-exports.parse_options: ->
-  opts:           @options: {}
-  oparser:        @option_parser: new optparse.OptionParser SWITCHES
+parse_options: ->
+  opts:           options: {}
+  oparser:        option_parser: new optparse.OptionParser SWITCHES
   oparser.banner: BANNER
   oparser.add:    oparser['on']
 
@@ -114,8 +119,8 @@ exports.parse_options: ->
   oparser.add 'eval',             -> opts.eval:        true
   oparser.add 'tokens',           -> opts.tokens:      true
   oparser.add 'tree',             -> opts.tree:        true
-  oparser.add 'help',             => @usage()
-  oparser.add 'version',          => @version()
+  oparser.add 'help',             => usage()
+  oparser.add 'version',          => version()
 
   paths: oparser.parse(process.ARGV)
-  @sources: paths[2...paths.length]
+  sources: paths[2...paths.length]
