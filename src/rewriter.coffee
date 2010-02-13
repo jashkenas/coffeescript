@@ -45,8 +45,8 @@ re::rewrite: (tokens) ->
   this.remove_mid_expression_newlines()
   this.move_commas_outside_outdents()
   this.close_open_calls_and_indexes()
-  this.add_implicit_parentheses()
   this.add_implicit_indentation()
+  this.add_implicit_parentheses()
   this.ensure_balance(BALANCED_PAIRS)
   this.rewrite_closing_parens()
   this.tokens
