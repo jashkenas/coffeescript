@@ -168,7 +168,8 @@ lex::indent_token: ->
   @line += indent.match(MULTILINER).length
   @i    += indent.length
   next_character: @chunk.match(MULTI_DENT)[4]
-  no_newlines: next_character is '.' or (@value().match(NO_NEWLINE) and @tokens[@tokens.length - 2][0] isnt '.' and not @value().match(CODE))
+  prev: @tokens[@tokens.length - 2]
+  no_newlines: next_character is '.' or (@value().match(NO_NEWLINE) and prev and (prev[0] isnt '.') and not @value().match(CODE))
   return @suppress_newlines(indent) if no_newlines
   size: indent.match(LAST_DENTS).reverse()[0].match(LAST_DENT)[1].length
   return @newline_token(indent) if size is @indent
@@ -188,7 +189,7 @@ lex::outdent_token: (move_out) ->
     last_indent: @indents.pop()
     @token 'OUTDENT', last_indent
     move_out -= last_indent
-  @token 'TERMINATOR', "\n" unless @tag() is 'TERMINATOR'
+  @token 'TERMINATOR', "\n"
   true
 
 # Matches and consumes non-meaningful whitespace.
