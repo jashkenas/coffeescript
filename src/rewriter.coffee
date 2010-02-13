@@ -14,7 +14,7 @@ EXPRESSION_START: pair[0] for pair in BALANCED_PAIRS
 EXPRESSION_TAIL: pair[1] for pair in BALANCED_PAIRS
 
 # Tokens that indicate the close of a clause of an expression.
-EXPRESSION_CLOSE: ['CATCH', 'WHEN', 'ELSE', 'FINALLY'].concat(EXPRESSION_TAIL)
+EXPRESSION_CLOSE: ['CATCH', 'WHEN', 'ELSE', 'ELSIF', 'FINALLY'].concat(EXPRESSION_TAIL)
 
 # Tokens pairs that, in immediate succession, indicate an implicit call.
 IMPLICIT_FUNC: ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END']
@@ -33,7 +33,7 @@ for pair in BALANCED_PAIRS
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.
 SINGLE_LINERS: ['ELSE', "->", "=>", 'TRY', 'FINALLY', 'THEN']
-SINGLE_CLOSERS: ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN', 'PARAM_START']
+SINGLE_CLOSERS: ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'ELSIF', 'OUTDENT', 'LEADING_WHEN', 'PARAM_START']
 
 # Rewrite the token stream in multiple passes, one logical filter at
 # a time. This could certainly be changed into a single pass through the
@@ -160,8 +160,7 @@ re::add_implicit_parentheses: ->
 # ')' can close a single-line block, but we need to make sure it's balanced.
 re::add_implicit_indentation: ->
   this.scan_tokens (prev, token, post, i) =>
-    return 1 unless SINGLE_LINERS.indexOf(token[0]) >= 0 and post[0] isnt 'INDENT' and
-      not (token[0] is 'ELSE' and post[0] is 'IF')
+    return 1 unless SINGLE_LINERS.indexOf(token[0]) >= 0 and post[0] isnt 'INDENT'
     starter: token[0]
     this.tokens.splice(i + 1, 0, ['INDENT', 2, token[2]])
     idx: i + 1
