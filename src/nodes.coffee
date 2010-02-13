@@ -19,10 +19,6 @@ flatten: (list) ->
     memo
   memo
 
-# Remove all null values from an array.
-compact: (input) ->
-  item for item in input when item?
-
 # Dup an array or object.
 dup: (input) ->
   if input instanceof Array
@@ -116,7 +112,7 @@ Expressions: exports.Expressions: inherit Node, {
   type: 'Expressions'
 
   constructor: (nodes) ->
-    @children: @expressions: compact flatten nodes or []
+    @children: @expressions: _.compact flatten nodes or []
     this
 
   # Tack an expression on to the end of this expression list.
@@ -749,7 +745,7 @@ OpNode: exports.OpNode: inherit Node, {
   PREFIX_OPERATORS: ['typeof', 'delete']
 
   constructor: (operator, first, second, flip) ->
-    @children: compact [@first: first, @second: second]
+    @children: _.compact [@first: first, @second: second]
     @operator: @CONVERSIONS[operator] or operator
     @flip: !!flip
     this
@@ -797,7 +793,7 @@ TryNode: exports.TryNode: inherit Node, {
   type: 'Try'
 
   constructor: (attempt, error, recovery, ensure) ->
-    @children: compact [@attempt: attempt, @recovery: recovery, @ensure: ensure]
+    @children: _.compact [@attempt: attempt, @recovery: recovery, @ensure: ensure]
     @error: error
     this
 
@@ -878,7 +874,7 @@ ForNode: exports.ForNode: inherit Node, {
     @step:    source.step
     @object:  !!source.object
     [@name, @index]: [@index, @name] if @object
-    @children: compact [@body, @source, @filter]
+    @children: _.compact [@body, @source, @filter]
     this
 
   top_sensitive: ->
@@ -948,7 +944,7 @@ IfNode: exports.IfNode: inherit Node, {
     @condition: condition
     @body:      body and body.unwrap()
     @else_body: else_body and else_body.unwrap()
-    @children:  compact [@condition, @body, @else_body]
+    @children:  _.compact [@condition, @body, @else_body]
     @tags:      tags or {}
     @multiple:  true if @condition instanceof Array
     @condition: new OpNode('!', new ParentheticalNode(@condition)) if @tags.invert
