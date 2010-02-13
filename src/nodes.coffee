@@ -19,15 +19,6 @@ flatten: (list) ->
     memo
   memo
 
-# Dup an array or object.
-dup: (input) ->
-  if input instanceof Array
-    val for val in input
-  else
-    output: {}
-    (output[key]: val) for key, val of input
-    output
-
 # Merge objects.
 merge: (src, dest) ->
   fresh: {}
@@ -67,7 +58,7 @@ Node: exports.Node: ->
 # the top level of a block (which would be unnecessary), and we haven't
 # already been asked to return the result.
 Node::compile: (o) ->
-  @options: dup(o or {})
+  @options: _.clone o or {}
   @indent:  o.indent
   top:      if @top_sensitive() then @options.top else del @options, 'top'
   closure:  @is_statement() and not @is_statement_only() and not top and
@@ -145,7 +136,7 @@ Expressions: exports.Expressions: inherit Node, {
 
   # Compile each expression in the Expressions body.
   compile_node: (o) ->
-    (@compile_expression(node, dup(o)) for node in @expressions).join("\n")
+    (@compile_expression(node, _.clone(o)) for node in @expressions).join("\n")
 
   # If this is the top-level Expressions, wrap everything in a safety closure.
   compile_root: (o) ->
@@ -992,7 +983,7 @@ IfNode: exports.IfNode: inherit Node, {
   # force sub-else bodies into statement form.
   compile_statement: (o) ->
     child:        del o, 'chain_child'
-    cond_o:       dup o
+    cond_o:       _.clone o
     del cond_o, 'returns'
     o.indent:     @idt(1)
     o.top:        true
