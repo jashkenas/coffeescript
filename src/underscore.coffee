@@ -563,7 +563,7 @@
   _.methods: _.functions
 
 
-  #   /*------------------------ Setup the OOP Wrapper: --------------------------*/
+  # ------------------------ Setup the OOP Wrapper: --------------------------
 
   # Helper function to continue chaining intermediate results.
   result: (obj, chain) ->

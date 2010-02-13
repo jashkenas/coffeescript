@@ -189,7 +189,7 @@ lex::outdent_token: (move_out) ->
     last_indent: @indents.pop()
     @token 'OUTDENT', last_indent
     move_out -= last_indent
-  @token 'TERMINATOR', "\n"
+  @token 'TERMINATOR', "\n" unless @tag() is 'TERMINATOR'
   true
 
 # Matches and consumes non-meaningful whitespace.
