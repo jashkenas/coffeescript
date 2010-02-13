@@ -105,7 +105,10 @@ lex::identifier_token: ->
       @tokens.splice(-2, 1)
     else
       @tag(1, 'PROPERTY_ACCESS')
-  @token(tag, id)
+  if tag is 'ELSE' and @tag() is 'IF'
+    @tag(1, 'ELSIF')
+  else
+    @token(tag, id)
   @i += id.length
   true
 

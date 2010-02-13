@@ -34,7 +34,7 @@ operators: [
   ["right",     'THROW', 'FOR', 'NEW', 'SUPER']
   ["left",      'EXTENDS']
   ["right",     'ASSIGN', 'RETURN']
-  ["right",     '->', '=>', 'UNLESS', 'IF', 'ELSE', 'WHILE']
+  ["right",     '->', '=>', 'UNLESS', 'IF', 'ELSE', 'ELSIF', 'WHILE']
 ]
 
 # Grammar ==============================================================
@@ -412,34 +412,23 @@ grammar: {
   # The most basic form of "if".
   IfBlock: [
     o "IF Expression Block",                    -> new IfNode($2, $3)
+    o "IF Expression Block ElsIfs",             -> (new IfNode($2, $3)).add_else($4)
   ]
 
-  # An elsif portion of an if-else block.
   ElsIf: [
-    o "ELSE IfBlock",                           -> $2.force_statement()
+    o "ELSEIF Expression Block",                -> new IfNode($2, $3)
   ]
 
   # Multiple elsifs can be chained together.
   ElsIfs: [
-    o "ElsIf",                                  -> $1
+    o "ElsIf",                                  -> $1.force_statement()
     o "ElsIfs ElsIf",                           -> $1.add_else($2)
-  ]
-
-  # Terminating else bodies are strictly optional.
-  ElseBody: [
-    o "",                                       -> null
-    o "ELSE Block",                             -> $2
-  ]
-
-  # All the alternatives for ending an if-else block.
-  IfEnd: [
-    o "ElseBody",                               -> $1
-    o "ElsIfs ElseBody",                        -> $1.add_else($2)
   ]
 
   # The full complement of if blocks, including postfix one-liner ifs and unlesses.
   If: [
-    o "IfBlock IfEnd",                          -> $1.add_else($2)
+    o "IfBlock",                                -> $1
+    o "IfBlock ELSE Block",                     -> $1.add_else($3)
     o "Expression IF Expression",               -> new IfNode($3, Expressions.wrap([$1]), null, {statement: true})
     o "Expression UNLESS Expression",           -> new IfNode($3, Expressions.wrap([$1]), null, {statement: true, invert: true})
   ]
@@ -466,5 +455,7 @@ js: parser.generate()
 # Save the parser to a file.
 # puts parser.generate()
 posix: require 'posix'
-posix.open('lib/coffee_script/parser.js', process.O_CREAT | process.O_WRONLY, 0755).addCallback (fd) ->
+parser_path: 'lib/coffee_script/parser.js'
+posix.unlink parser_path
+posix.open(parser_path, process.O_CREAT | process.O_WRONLY, 0755).addCallback (fd) ->
   posix.write(fd, js)
