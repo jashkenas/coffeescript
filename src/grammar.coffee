@@ -412,11 +412,7 @@ grammar: {
   # The most basic form of "if".
   IfBlock: [
     o "IF Expression Block",                    -> new IfNode($2, $3)
-  ]
-
-  IfChain: [
-    o "IfBlock",                                -> $1
-    o "IfBlock ElsIfs",                         -> $1.add_else($2)
+    o "IF Expression Block ElsIfs",             -> (new IfNode($2, $3)).add_else($4)
   ]
 
   ElsIf: [
@@ -431,8 +427,8 @@ grammar: {
 
   # The full complement of if blocks, including postfix one-liner ifs and unlesses.
   If: [
-    o "IfChain",                                -> $1
-    o "IfChain ELSE Block",                     -> $1.add_else($3)
+    o "IfBlock",                                -> $1
+    o "IfBlock ELSE Block",                     -> $1.add_else($3)
     o "Expression IF Expression",               -> new IfNode($3, Expressions.wrap([$1]), null, {statement: true})
     o "Expression UNLESS Expression",           -> new IfNode($3, Expressions.wrap([$1]), null, {statement: true, invert: true})
   ]
