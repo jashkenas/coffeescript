@@ -511,8 +511,8 @@ ObjectNode: exports.ObjectNode: inherit Node, {
     last_noncom:  non_comments[non_comments.length - 1]
     props: for prop, i in @properties
       join:   ",\n"
-      join:   "\n" if prop is last_noncom or prop instanceof CommentNode
-      join:   '' if i is non_comments.length - 1
+      join:   "\n" if (prop is last_noncom) or (prop instanceof CommentNode)
+      join:   '' if i is @properties.length - 1
       indent: if prop instanceof CommentNode then '' else @idt(1)
       indent + prop.compile(o) + join
     props: props.join('')
