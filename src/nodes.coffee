@@ -20,11 +20,10 @@ flatten: (list) ->
   memo
 
 # Merge objects.
-merge: (src, dest) ->
-  fresh: {}
-  (fresh[key]: val) for key, val of src
-  (fresh[key]: val) for key, val of dest
-  fresh
+merge: (options, overrides) ->
+  _.tap {}, (fresh) ->
+    _.extend fresh, options
+    _.extend fresh, overrides
 
 # Delete a key from an object, returning the value.
 del: (obj, key) ->
