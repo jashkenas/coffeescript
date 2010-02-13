@@ -78,7 +78,7 @@ exports.write_js: (source, js) ->
   filename: path.basename(source, path.extname(source)) + '.js'
   dir:      @options.output or path.dirname(source)
   js_path:  path.join dir, filename
-  posix.open(js_path, process.O_CREAT | process.O_WRONLY | process.O_TRUNC, 0755).addCallback (fd) ->
+  posix.open(js_path, process.O_CREAT | process.O_WRONLY | process.O_TRUNC, parseInt('0755', 8)).addCallback (fd) ->
     posix.write(fd, js)
 
 # Pipe compiled JS through JSLint (requires a working 'jsl' command).
