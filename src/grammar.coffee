@@ -456,6 +456,5 @@ js: parser.generate()
 # puts parser.generate()
 posix: require 'posix'
 parser_path: 'lib/coffee_script/parser.js'
-posix.unlink parser_path
-posix.open(parser_path, process.O_CREAT | process.O_WRONLY, 0755).addCallback (fd) ->
+posix.open(parser_path, process.O_CREAT | process.O_WRONLY | process.O_TRUNC, 0755).addCallback (fd) ->
   posix.write(fd, js)

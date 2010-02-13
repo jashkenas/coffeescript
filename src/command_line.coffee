@@ -1,6 +1,7 @@
-optparse: require('./../../vendor/optparse-js/src/optparse')
 posix:    require 'posix'
+path:     require 'path'
 coffee:   require 'coffee-script'
+optparse: require('./../../vendor/optparse-js/src/optparse')
 
 BANNER: '''
   coffee compiles CoffeeScript source files into JavaScript.
@@ -66,8 +67,16 @@ exports.compile_scripts: ->
     else if opts.tree   then puts coffee.tree(code).toString()
     else if opts.run    then eval coffee.compile code
     else if opts.print  then puts coffee.compile code
+    else                     exports.write_js source, coffee.compile code
     exports.compile_scripts()
 
+# Write out a JavaScript source file with the compiled code.
+exports.write_js: (source, js) ->
+  filename: path.basename(source, path.extname(source)) + '.js'
+  dir:      @options.output or path.dirname(source)
+  js_path:  path.join dir, filename
+  posix.open(js_path, process.O_CREAT | process.O_WRONLY | process.O_TRUNC, 0755).addCallback (fd) ->
+    posix.write(fd, js)
 
 # Use OptionParser for all the options.
 exports.parse_options: ->
@@ -75,18 +84,17 @@ exports.parse_options: ->
   oparser:      @option_parser: new optparse.OptionParser SWITCHES
   oparser.add:  oparser['on']
 
-  oparser.add 'interactive',  -> opts.interactive: true
-  oparser.add 'run',          -> opts.run:         true
-  oparser.add 'output', (dir) -> opts.output:      dir
-  oparser.add 'watch',        -> opts.watch:       true
-  oparser.add 'print',        -> opts.print:       true
-  oparser.add 'lint',         -> opts.lint:        true
-  oparser.add 'eval',         -> opts.eval:        true
-  oparser.add 'tokens',       -> opts.tokens:      true
-  oparser.add 'tree',         -> opts.tree:        true
-  oparser.add 'help',         => @usage()
-  oparser.add 'version',      => @version()
+  oparser.add 'interactive',      -> opts.interactive: true
+  oparser.add 'run',              -> opts.run:         true
+  oparser.add 'output', (n, dir)  -> opts.output:      dir
+  oparser.add 'watch',            -> opts.watch:       true
+  oparser.add 'print',            -> opts.print:       true
+  oparser.add 'lint',             -> opts.lint:        true
+  oparser.add 'eval',             -> opts.eval:        true
+  oparser.add 'tokens',           -> opts.tokens:      true
+  oparser.add 'tree',             -> opts.tree:        true
+  oparser.add 'help',             => @usage()
+  oparser.add 'version',          => @version()
 
   paths: oparser.parse(process.ARGV)
   @sources: paths[2...paths.length]
-
