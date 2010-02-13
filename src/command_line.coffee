@@ -31,6 +31,7 @@ WATCH_INTERVAL: 0.5
 # The CommandLine handles all of the functionality of the `coffee` utility.
 exports.run: ->
   @parse_options()
+  @usage() unless @sources.length
   @compile_scripts()
   this
 
@@ -99,9 +100,10 @@ exports.lint: (js) ->
 
 # Use OptionParser for all the options.
 exports.parse_options: ->
-  opts:         @options: {}
-  oparser:      @option_parser: new optparse.OptionParser SWITCHES
-  oparser.add:  oparser['on']
+  opts:           @options: {}
+  oparser:        @option_parser: new optparse.OptionParser SWITCHES
+  oparser.banner: BANNER
+  oparser.add:    oparser['on']
 
   oparser.add 'interactive',      -> opts.interactive: true
   oparser.add 'run',              -> opts.run:         true
