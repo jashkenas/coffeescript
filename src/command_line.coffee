@@ -62,10 +62,10 @@ exports.compile_scripts: ->
   return unless source: @sources.shift()
   opts: @options
   posix.cat(source).addCallback (code) ->
-    return puts coffee.tokenize(code).join(' ') if opts.tokens
-    return puts coffee.tree(code).toString()    if opts.tree
-    return eval coffee.compile code             if opts.run
-    return puts coffee.compile code             if opts.print
+    if      opts.tokens then puts coffee.tokenize(code).join(' ')
+    else if opts.tree   then puts coffee.tree(code).toString()
+    else if opts.run    then eval coffee.compile code
+    else if opts.print  then puts coffee.compile code
     exports.compile_scripts()
 
 
