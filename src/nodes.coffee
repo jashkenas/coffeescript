@@ -474,7 +474,7 @@ ObjectNode: exports.ObjectNode: inherit Node, {
   type: 'Object'
 
   constructor: (props) ->
-    @objects: @properties: props or []
+    @children: @objects: @properties: props or []
     this
 
   # All the mucking about with commas is to make sure that CommentNodes and
