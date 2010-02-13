@@ -1,4 +1,5 @@
 process.mixin require './scope'
+_: require('./underscore')._
 
 # Some helper functions
 
@@ -37,11 +38,6 @@ merge: (src, dest) ->
   (fresh[key]: val) for key, val of src
   (fresh[key]: val) for key, val of dest
   fresh
-
-# Do any of the elements in the list pass a truth test?
-any: (list, test) ->
-  result: true for item in list when test(item)
-  !!result.length
 
 # Delete a key from an object, returning the value.
 del: (obj, key) ->
@@ -337,7 +333,7 @@ CallNode: exports.CallNode: inherit Node, {
 
   # Compile a vanilla function call.
   compile_node: (o) ->
-    return @compile_splat(o) if any @args, (a) -> a instanceof SplatNode
+    return @compile_splat(o) if _.any @args, (a) -> a instanceof SplatNode
     args: (arg.compile(o) for arg in @args).join(', ')
     return @compile_super(args, o) if @variable is 'super'
     @prefix + @variable.compile(o) + '(' + args + ')'
