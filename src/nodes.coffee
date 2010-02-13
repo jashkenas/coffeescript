@@ -4,7 +4,7 @@ process.mixin require './scope'
 
 # Tabs are two spaces for pretty printing.
 TAB: '  '
-TRAILING_WHITESPACE: /\s+$/g
+TRAILING_WHITESPACE: /\s+$/gm
 
 # Keep the identifier regex in sync with the Lexer.
 IDENTIFIER:   /^[a-zA-Z$_](\w|\$)*$/
@@ -382,13 +382,13 @@ ExtendsNode: exports.ExtendsNode: inherit Node, {
 
   # Hooking one constructor into another's prototype chain.
   compile_node: (o) ->
-    constructor:  o.scope.free_variable()
-    child:        @child.compile(o)
-    parent:       @parent.compile(o)
-    @idt() + constructor + ' = function(){};\n' + @idt() +
-      constructor + '.prototype = ' + parent + ".prototype;\n" + @idt() +
+    construct:  o.scope.free_variable()
+    child:      @child.compile(o)
+    parent:     @parent.compile(o)
+    @idt() + construct + ' = function(){};\n' + @idt() +
+      construct + '.prototype = ' + parent + ".prototype;\n" + @idt() +
       child + '.__superClass__ = ' + parent + ".prototype;\n" + @idt() +
-      child + '.prototype = new ' + constructor + "();\n" + @idt() +
+      child + '.prototype = new ' + construct + "();\n" + @idt() +
       child + '.prototype.constructor = ' + child + ';'
 
 }
