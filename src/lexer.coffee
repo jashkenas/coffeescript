@@ -169,7 +169,7 @@ lex::indent_token: ->
   @i    += indent.length
   next_character: @chunk.match(MULTI_DENT)[4]
   prev: @tokens[@tokens.length - 2]
-  no_newlines: next_character is '.' or (@value().match(NO_NEWLINE) and prev and (prev[0] isnt '.') and not @value().match(CODE))
+  no_newlines: next_character is '.' or (@value() and @value().match(NO_NEWLINE) and prev and (prev[0] isnt '.') and not @value().match(CODE))
   return @suppress_newlines(indent) if no_newlines
   size: indent.match(LAST_DENTS).reverse()[0].match(LAST_DENT)[1].length
   return @newline_token(indent) if size is @indent
