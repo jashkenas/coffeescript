@@ -86,7 +86,7 @@ exports.lint: (js) ->
   jsl: process.createChildProcess('jsl', ['-nologo', '-stdin'])
   jsl.addListener 'output', (result) ->
     puts result.replace(/\n/g, '') if result
-  jsl.addListener 'errror', (result) ->
+  jsl.addListener 'error', (result) ->
     puts result if result
   jsl.write js
   jsl.close()
