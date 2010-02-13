@@ -78,8 +78,8 @@ Node::contains: (block) ->
 
 # toString representation of the node, for inspecting the parse tree.
 Node::toString: (idt) ->
-  idt: (idt || '') + TAB
-  @type + '\n' + _.map(@children, (child) -> idt + child.toString(idt)).join('')
+  idt ||= ''
+  '\n' + idt + @type + _.map(@children, (child) -> child.toString(idt + TAB)).join('')
 
 # Default implementations of the common node methods.
 Node::unwrap:             -> this
@@ -189,7 +189,7 @@ LiteralNode: exports.LiteralNode: inherit Node, {
     idt + @value + end
 
   toString: (idt) ->
-    '"' + @value + '"' + '\n'
+    ' "' + @value + '"'
 
 }
 
@@ -653,9 +653,9 @@ CodeNode: exports.CodeNode: inherit Node, {
     true
 
   toString: (idt) ->
-    idt: (idt || '') + TAB
+    idt ||= ''
     children: _.flatten [@params, @body.expressions]
-    @type + '\n' + _.map(children, (child) -> idt + child.toString(idt)).join('')
+    '\n' + idt + @type + _.map(children, (child) -> child.toString(idt + TAB)).join('')
 
 }
 
