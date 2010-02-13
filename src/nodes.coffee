@@ -10,15 +10,6 @@ TRAILING_WHITESPACE: /\s+$/gm
 # Keep the identifier regex in sync with the Lexer.
 IDENTIFIER:   /^[a-zA-Z$_](\w|\$)*$/
 
-# Flatten nested arrays recursively.
-flatten: (list) ->
-  memo: []
-  for item in list
-    return memo.concat(flatten(item)) if item instanceof Array
-    memo.push(item)
-    memo
-  memo
-
 # Merge objects.
 merge: (options, overrides) ->
   _.tap {}, (fresh) ->
@@ -88,7 +79,7 @@ Node::contains: (block) ->
 # toString representation of the node, for inspecting the parse tree.
 Node::toString: (idt) ->
   idt: (idt || '') + TAB
-  @type + "\n" + (idt + child.toString(idt) for child in @children).join('')
+  @type + '\n' + _.map(@children, (child) -> idt + child.toString(idt)).join('')
 
 # Default implementations of the common node methods.
 Node::unwrap:             -> this
@@ -102,7 +93,7 @@ Expressions: exports.Expressions: inherit Node, {
   type: 'Expressions'
 
   constructor: (nodes) ->
-    @children: @expressions: _.compact flatten nodes or []
+    @children: @expressions: _.compact _.flatten nodes or []
     this
 
   # Tack an expression on to the end of this expression list.
@@ -197,6 +188,9 @@ LiteralNode: exports.LiteralNode: inherit Node, {
     end: if @is_statement() then ';' else ''
     idt + @value + end
 
+  toString: (idt) ->
+    '"' + @value + '"' + '\n'
+
 }
 
 LiteralNode::is_statement_only: LiteralNode::is_statement
@@ -224,7 +218,7 @@ ValueNode: exports.ValueNode: inherit Node, {
   SOAK: " == undefined ? undefined : "
 
   constructor: (base, properties) ->
-    @children:   flatten(@base: base, @properties: (properties or []))
+    @children:   _.flatten [@base: base, @properties: (properties or [])]
     this
 
   push: (prop) ->
@@ -304,7 +298,7 @@ CallNode: exports.CallNode: inherit Node, {
   type: 'Call'
 
   constructor: (variable, args) ->
-    @children:  flatten [@variable: variable, @args: (args or [])]
+    @children:  _.flatten [@variable: variable, @args: (args or [])]
     @prefix:    ''
     this
 
@@ -658,6 +652,11 @@ CodeNode: exports.CodeNode: inherit Node, {
   top_sensitive: ->
     true
 
+  toString: (idt) ->
+    idt: (idt || '') + TAB
+    children: _.flatten [@params, @body.expressions]
+    @type + '\n' + _.map(children, (child) -> idt + child.toString(idt)).join('')
+
 }
 
 # A splat, either as a parameter to a function, an argument to a call,
@@ -973,7 +972,7 @@ IfNode: exports.IfNode: inherit Node, {
     @statement ||= !!(@comment or @tags.statement or @body.is_statement() or (@else_body and @else_body.is_statement()))
 
   compile_condition: (o) ->
-    (cond.compile(o) for cond in flatten([@condition])).join(' || ')
+    (cond.compile(o) for cond in _.flatten([@condition])).join(' || ')
 
   compile_node: (o) ->
     if @is_statement() then @compile_statement(o) else @compile_ternary(o)
