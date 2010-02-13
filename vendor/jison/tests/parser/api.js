@@ -219,10 +219,11 @@ exports["test custom parse error method"] = function () {
         result = hash;
         throw str;
     };
-    assert["throws"](function () {parser.parse("agb")});
-    assert.equal(result.text, "b", "parse error text should equal b");
-    assert["throws"](function () {parser.parse("agz")});
-    assert.equal(result.line, 0, "lexical error should have correct line");
+
+    assert["throws"](function () {parser.parse("aga")});
+    assert.strictEqual(result.text, "a", "parse error text should equal b");
+    assert.strictEqual(typeof result.token, 'string', "parse error token should be a string");
+    assert.strictEqual(result.line, 0, "hash should include line number");
 };
 
 exports["test jison grammar as string"] = function () {

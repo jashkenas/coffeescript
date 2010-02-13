@@ -919,7 +919,7 @@ lrGeneratorMixin.createParser = function createParser () {
         table: this.table, 
         productions_: this.productions_,
         symbols_: this.symbols_,
-        terminals_: this.terminals,
+        terminals_: this.terminals_,
         performAction: this.performAction
     });
 
@@ -984,8 +984,13 @@ parser.parse = function parse (input) {
             for (p in table[state]) if (this.terminals_[p] && p != 1) {
                 expected.push("'"+this.terminals_[p]+"'");
             }
-            parseError('Parse error on line '+(yylineno+1)+'. Expecting: '+expected.join(', ')+"\n"+(this.lexer.showPosition && this.lexer.showPosition()),
-                    {text: this.lexer.match, token: symbol, line: this.lexer.yylineno});
+            if (this.lexer.showPosition) {
+                parseError('Parse error on line '+(yylineno+1)+":\n"+this.lexer.showPosition()+'\nExpecting '+expected.join(', '),
+                    {text: this.lexer.match, token: this.terminals_[symbol], line: this.lexer.yylineno, expected: expected});
+            } else {
+                parseError('Parse error on line '+(yylineno+1)+": Unexpected '"+this.terminals_[symbol]+"'",
+                    {text: this.lexer.match, token: this.terminals_[symbol], line: this.lexer.yylineno, expected: expected});
+            }
         }
 
         this.trace('action:',action);
