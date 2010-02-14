@@ -896,7 +896,7 @@ ForNode: exports.ForNode: inherit Node, {
       index_var:    null
       source_part:  svar + ' = ' + @source.compile(o) + ';\n' + @idt()
       step_part:    if @step then ivar + ' += ' + @step.compile(o) else ivar + '++'
-      for_part:     if @object then ivar + ' in ' + svar else ivar + ' = 0; ' + ivar + ' < ' + svar + '.length; ' + step_part
+      for_part:     ivar + ' = 0; ' + ivar + ' < ' + svar + '.length; ' + step_part
       var_part:     body_dent + name + ' = ' + svar + '[' + ivar + '];\n' if name
     set_result:     if rvar then @idt() + rvar + ' = []; ' else @idt()
     return_result:  rvar or ''
@@ -910,13 +910,7 @@ ForNode: exports.ForNode: inherit Node, {
       body:         Expressions.wrap([new IfNode(@filter, body)])
     if @object
       o.scope.assign('__hasProp', 'Object.prototype.hasOwnProperty', true)
-      call: new CallNode(
-        new ValueNode(new LiteralNode('__hasProp'), [new AccessorNode(new LiteralNode('call'))])
-        [new LiteralNode(svar), new LiteralNode(ivar)]
-      )
-      body: Expressions.wrap([new IfNode(
-        call, Expressions.wrap([body]), null, {statement: true}
-      )])
+      for_part: ivar + ' in ' + svar + ') if (__hasProp.call(' + svar + ', ' + ivar + ')'
     return_result:  '\n' + @idt() + return_result + ';' unless top_level
     body:           body.compile(merge(o, {indent: body_dent, top: true}))
     vars:           if range then name else name + ', ' + ivar
