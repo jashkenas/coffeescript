@@ -533,7 +533,7 @@
 
   # JavaScript templating a-la ERB, pilfered from John Resig's
   # "Secrets of the JavaScript Ninja", page 83.
-  # Single-quotea fix from Rick Strahl's version.
+  # Single-quote fix from Rick Strahl's version.
   _.template: (str, data) ->
     c: _.templateSettings
     fn: new Function 'obj',

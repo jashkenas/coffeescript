@@ -1,7 +1,7 @@
 posix:    require 'posix'
 path:     require 'path'
 coffee:   require 'coffee-script'
-optparse: require('./../../vendor/optparse-js/src/optparse')
+optparse: require('optparse')
 
 BANNER: '''
   coffee compiles CoffeeScript source files into JavaScript.
@@ -41,7 +41,7 @@ exports.run: ->
 
 # The "--help" usage message.
 usage: ->
-  puts '\n' + option_parser.toString() + '\n'
+  puts '\n' + option_parser.help() + '\n'
   process.exit 0
 
 # The "--version" message.
@@ -107,11 +107,10 @@ parse_options: ->
   opts:           options: {}
   oparser:        option_parser: new optparse.OptionParser SWITCHES
   oparser.banner: BANNER
-  oparser.add:    oparser['on']
 
   oparser.add 'interactive',      -> opts.interactive: true
   oparser.add 'run',              -> opts.run:         true
-  oparser.add 'output', (n, dir)  -> opts.output:      dir
+  oparser.add 'output',     (dir) -> opts.output:      dir
   oparser.add 'watch',            -> opts.watch:       true
   oparser.add 'print',            -> opts.print:       true
   oparser.add 'lint',             -> opts.lint:        true
