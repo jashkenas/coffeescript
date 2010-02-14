@@ -41,17 +41,17 @@ SINGLE_CLOSERS: ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_W
 # a time. This could certainly be changed into a single pass through the
 # stream, with a big ol' efficient switch, but it's much nicer like this.
 re::rewrite: (tokens) ->
-  this.tokens: tokens
-  this.adjust_comments()
-  this.remove_leading_newlines()
-  this.remove_mid_expression_newlines()
-  this.move_commas_outside_outdents()
-  this.close_open_calls_and_indexes()
-  this.add_implicit_indentation()
-  this.add_implicit_parentheses()
-  this.ensure_balance(BALANCED_PAIRS)
-  this.rewrite_closing_parens()
-  this.tokens
+  @tokens: tokens
+  @adjust_comments()
+  @remove_leading_newlines()
+  @remove_mid_expression_newlines()
+  @move_commas_outside_outdents()
+  @close_open_calls_and_indexes()
+  @add_implicit_indentation()
+  @add_implicit_parentheses()
+  @ensure_balance(BALANCED_PAIRS)
+  @rewrite_closing_parens()
+  @tokens
 
 # Rewrite the token stream, looking one token ahead and behind.
 # Allow the return value of the block to tell us how many tokens to move
@@ -60,31 +60,31 @@ re::rewrite: (tokens) ->
 re::scan_tokens: (block) ->
   i: 0
   while true
-    break unless this.tokens[i]
-    move: block(this.tokens[i - 1], this.tokens[i], this.tokens[i + 1], i)
+    break unless @tokens[i]
+    move: block(@tokens[i - 1], @tokens[i], @tokens[i + 1], i)
     i += move
   true
 
 # Massage newlines and indentations so that comments don't have to be
 # correctly indented, or appear on their own line.
 re::adjust_comments: ->
-  this.scan_tokens (prev, token, post, i) =>
+  @scan_tokens (prev, token, post, i) =>
     return 1 unless token[0] is 'COMMENT'
-    before: this.tokens[i - 2]
-    after:  this.tokens[i + 2]
+    before: @tokens[i - 2]
+    after:  @tokens[i + 2]
     if before and after and
         ((before[0] is 'INDENT' and after[0] is 'OUTDENT') or
         (before[0] is 'OUTDENT' and after[0] is 'INDENT')) and
         before[1] is after[1]
-      this.tokens.splice(i + 2, 1)
-      this.tokens.splice(i - 2, 1)
+      @tokens.splice(i + 2, 1)
+      @tokens.splice(i - 2, 1)
       return 0
     else if prev and prev[0] is 'TERMINATOR' and after[0] is 'INDENT'
-      this.tokens.splice(i + 2, 1)
-      this.tokens[i - 1]: after
+      @tokens.splice(i + 2, 1)
+      @tokens[i - 1]: after
       return 1
     else if prev and prev[0] isnt 'TERMINATOR' and prev[0] isnt 'INDENT' and prev[0] isnt 'OUTDENT'
-      this.tokens.splice(i, 0, ['TERMINATOR', "\n", prev[2]])
+      @tokens.splice(i, 0, ['TERMINATOR', "\n", prev[2]])
       return 2
     else
       return 1
@@ -92,21 +92,21 @@ re::adjust_comments: ->
 # Leading newlines would introduce an ambiguity in the grammar, so we
 # dispatch them here.
 re::remove_leading_newlines: ->
-  this.tokens.shift() if this.tokens[0][0] is 'TERMINATOR'
+  @tokens.shift() if @tokens[0][0] is 'TERMINATOR'
 
 # Some blocks occur in the middle of expressions -- when we're expecting
 # this, remove their trailing newlines.
 re::remove_mid_expression_newlines: ->
-  this.scan_tokens (prev, token, post, i) =>
+  @scan_tokens (prev, token, post, i) =>
     return 1 unless post and EXPRESSION_CLOSE.indexOf(post[0]) >= 0 and token[0] is 'TERMINATOR'
-    this.tokens.splice(i, 1)
+    @tokens.splice(i, 1)
     return 0
 
 # Make sure that we don't accidentally break trailing commas, which need
 # to go on the outside of expression closers.
 re::move_commas_outside_outdents: ->
-  this.scan_tokens (prev, token, post, i) =>
-    this.tokens.splice(i, 1, token) if token[0] is 'OUTDENT' and prev[0] is ','
+  @scan_tokens (prev, token, post, i) =>
+    @tokens.splice(i, 1, token) if token[0] is 'OUTDENT' and prev[0] is ','
     return 1
 
 # We've tagged the opening parenthesis of a method call, and the opening
@@ -114,7 +114,7 @@ re::move_commas_outside_outdents: ->
 re::close_open_calls_and_indexes: ->
   parens:   [0]
   brackets: [0]
-  this.scan_tokens (prev, token, post, i) =>
+  @scan_tokens (prev, token, post, i) =>
     switch token[0]
       when 'CALL_START'  then parens.push(0)
       when 'INDEX_START' then brackets.push(0)
@@ -139,7 +139,7 @@ re::close_open_calls_and_indexes: ->
 # deal with them.
 re::add_implicit_parentheses: ->
   stack: [0]
-  this.scan_tokens (prev, token, post, i) =>
+  @scan_tokens (prev, token, post, i) =>
     stack.push(0) if token[0] is 'INDENT'
     if token[0] is 'OUTDENT'
       last: stack.pop()
@@ -147,12 +147,12 @@ re::add_implicit_parentheses: ->
     if stack[stack.length - 1] > 0 and (IMPLICIT_END.indexOf(token[0]) >= 0 or !post?)
       idx: if token[0] is 'OUTDENT' then i + 1 else i
       for tmp in [0...stack[stack.length - 1]]
-        this.tokens.splice(idx, 0, ['CALL_END', ')', token[2]])
+        @tokens.splice(idx, 0, ['CALL_END', ')', token[2]])
       size: stack[stack.length - 1] + 1
       stack[stack.length - 1]: 0
       return size
     return 1 unless prev and IMPLICIT_FUNC.indexOf(prev[0]) >= 0 and IMPLICIT_CALL.indexOf(token[0]) >= 0
-    this.tokens.splice(i, 0, ['CALL_START', '(', token[2]])
+    @tokens.splice(i, 0, ['CALL_START', '(', token[2]])
     stack[stack.length - 1] += 1
     return 2
 
@@ -161,33 +161,33 @@ re::add_implicit_parentheses: ->
 # blocks, so it doesn't need to.
 # ')' can close a single-line block, but we need to make sure it's balanced.
 re::add_implicit_indentation: ->
-  this.scan_tokens (prev, token, post, i) =>
+  @scan_tokens (prev, token, post, i) =>
     return 1 unless SINGLE_LINERS.indexOf(token[0]) >= 0 and post[0] isnt 'INDENT' and
       not (token[0] is 'ELSE' and post[0] is 'IF')
     starter: token[0]
-    this.tokens.splice(i + 1, 0, ['INDENT', 2, token[2]])
+    @tokens.splice(i + 1, 0, ['INDENT', 2, token[2]])
     idx: i + 1
     parens: 0
     while true
       idx += 1
-      tok: this.tokens[idx]
+      tok: @tokens[idx]
       if (not tok or SINGLE_CLOSERS.indexOf(tok[0]) >= 0 or
           (tok[0] is ')' && parens is 0)) and
           not (starter is 'ELSE' and tok[0] is 'ELSE')
-        insertion: if this.tokens[idx - 1][0] is "," then idx - 1 else idx
-        this.tokens.splice(insertion, 0, ['OUTDENT', 2, token[2]])
+        insertion: if @tokens[idx - 1][0] is "," then idx - 1 else idx
+        @tokens.splice(insertion, 0, ['OUTDENT', 2, token[2]])
         break
       parens += 1 if tok[0] is '('
       parens -= 1 if tok[0] is ')'
     return 1 unless token[0] is 'THEN'
-    this.tokens.splice(i, 1)
+    @tokens.splice(i, 1)
     return 0
 
 # Ensure that all listed pairs of tokens are correctly balanced throughout
 # the course of the token stream.
 re::ensure_balance: (pairs) ->
   levels: {}
-  this.scan_tokens (prev, token, post, i) =>
+  @scan_tokens (prev, token, post, i) =>
     for pair in pairs
       [open, close]: pair
       levels[open] ||= 0
@@ -215,7 +215,7 @@ re::rewrite_closing_parens: ->
   stack: []
   debt:  {}
   (debt[key]: 0) for key, val of INVERSES
-  this.scan_tokens (prev, token, post, i) =>
+  @scan_tokens (prev, token, post, i) =>
     tag: token[0]
     inv: INVERSES[token[0]]
     # Push openers onto the stack.
@@ -227,7 +227,7 @@ re::rewrite_closing_parens: ->
       # If the tag is already in our debt, swallow it.
       if debt[inv] > 0
         debt[inv] -= 1
-        this.tokens.splice(i, 1)
+        @tokens.splice(i, 1)
         return 0
       else
         # Pop the stack of open delimiters.
@@ -240,7 +240,7 @@ re::rewrite_closing_parens: ->
           # Unexpected close, insert correct close, adding to the debt.
           debt[mtag] += 1
           val: if mtag is 'INDENT' then match[1] else INVERSES[mtag]
-          this.tokens.splice(i, 0, [INVERSES[mtag], val])
+          @tokens.splice(i, 0, [INVERSES[mtag], val])
           return 1
     else
       return 1
