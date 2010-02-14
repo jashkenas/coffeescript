@@ -17,11 +17,9 @@ SWITCHES: [
   ['-w', '--watch',         'watch scripts for changes, and recompile']
   ['-p', '--print',         'print the compiled JavaScript to stdout']
   ['-l', '--lint',          'pipe the compiled JavaScript through JSLint']
-  ['-e', '--eval',          'compile a cli scriptlet or read from stdin']
+  ['-e', '--eval',          'compile a string from the command line']
   ['-t', '--tokens',        'print the tokens that the lexer produces']
-  [      '--tree',          'print the parse tree that Jison produces']
-  ['-n', '--no-wrap',       'raw output, no function safety wrapper']
-  ['-g', '--globals',       'attach all top-level variables as globals']
+  ['-tr','--tree',          'print the parse tree that Jison produces']
   ['-v', '--version',       'display CoffeeScript version']
   ['-h', '--help',          'display this help message']
 ]
@@ -36,6 +34,7 @@ option_parser: null
 exports.run: ->
   parse_options()
   return require './repl' if options.interactive
+  return puts coffee.compile sources[0] if options.eval
   usage() unless sources.length
   compile_scripts()
   this
