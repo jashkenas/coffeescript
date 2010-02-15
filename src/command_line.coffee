@@ -68,7 +68,7 @@ compile_scripts: ->
   return unless source: sources.shift()
   opts: options
   posix.cat(source).addCallback (code) ->
-    if      opts.tokens   then puts tokenize(code)
+    if      opts.tokens   then puts coffee.print_tokens coffee.tokenize code
     else if opts.tree     then puts coffee.tree(code).toString()
     else
       js: coffee.compile code
@@ -85,12 +85,6 @@ write_js: (source, js) ->
   js_path:  path.join dir, filename
   posix.open(js_path, process.O_CREAT | process.O_WRONLY | process.O_TRUNC, parseInt('0755', 8)).addCallback (fd) ->
     posix.write(fd, js)
-
-# Pretty-print the token stream.
-tokenize: (code) ->
-  strings: coffee.tokenize(code).map (token) ->
-    '[' + token[0] + ' ' + token[1].toString().replace(/\n/, '\\n') + ']'
-  strings.join(' ')
 
 # Pipe compiled JS through JSLint (requires a working 'jsl' command).
 lint: (js) ->

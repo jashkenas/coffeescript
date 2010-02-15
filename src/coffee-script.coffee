@@ -1,7 +1,7 @@
 # Set up for both the browser and the server.
 if process?
   process.mixin require './nodes'
-  path:         require('path')
+  path:         require 'path'
   lexer:   new (require('./lexer').Lexer)()
   parser:       require('./parser').parser
 else
@@ -41,6 +41,12 @@ exports.tokenize: (code) ->
 # Just the nodes.
 exports.tree: (code) ->
   parser.parse lexer.tokenize code
+
+# Pretty-print a token stream.
+exports.print_tokens: (tokens) ->
+  strings: for token in tokens
+    '[' + token[0] + ' ' + token[1].toString().replace(/\n/, '\\n') + ']'
+  strings.join(' ')
 
 
 #---------- Below this line is obsolete, for the Ruby compiler. ----------------
