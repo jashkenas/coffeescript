@@ -59,8 +59,9 @@ build_rules: (rules) ->
 # Build a rule from a short-letter-flag, long-form-flag, and help text.
 build_rule: (letter, flag, description) ->
   match: flag.match(OPTIONAL)
+  flag:  flag.match(LONG_FLAG)[1]
   {
-    name:         flag.match(LONG_FLAG)[1].substr(2)
+    name:         flag.substr(2)
     letter:       letter
     flag:         flag
     description:  description

@@ -14,7 +14,7 @@ SWITCHES: [
   ['-i', '--interactive',   'run an interactive CoffeeScript REPL']
   ['-r', '--run',           'compile and run a CoffeeScript']
   ['-o', '--output [DIR]',  'set the directory for compiled JavaScript']
-  ['-w', '--watch',         'watch scripts for changes, and recompile']
+  # ['-w', '--watch',         'watch scripts for changes, and recompile']
   ['-p', '--print',         'print the compiled JavaScript to stdout']
   ['-l', '--lint',          'pipe the compiled JavaScript through JSLint']
   ['-e', '--eval',          'compile a string from the command line']
