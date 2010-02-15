@@ -137,8 +137,8 @@ grammar: {
   Operation: [
     o "! Expression",                           -> new OpNode('!', $2)
     o "!! Expression",                          -> new OpNode('!!', $2)
-    o "- Expression",                           (-> new OpNode('-', $2)), {prec: 'UMINUS'}
-    o "+ Expression",                           (-> new OpNode('+', $2)), {prec: 'UPLUS'}
+    o("- Expression",                           (-> new OpNode('-', $2)), {prec: 'UMINUS'})
+    o("+ Expression",                           (-> new OpNode('+', $2)), {prec: 'UPLUS'})
     o "NOT Expression",                         -> new OpNode('not', $2)
     o "~ Expression",                           -> new OpNode('~', $2)
     o "-- Expression",                          -> new OpNode('--', $2)
@@ -210,6 +210,7 @@ grammar: {
 
   # The parameters to a function definition.
   ParamList: [
+    o "",                                       -> []
     o "Param",                                  -> [$1]
     o "ParamList , Param",                      -> $1.concat [$3]
   ]

@@ -11,6 +11,7 @@ puts y.x.name is 'x'
 
 # The empty function should not cause a syntax error.
 ->
+() ->
 
 
 obj: {
