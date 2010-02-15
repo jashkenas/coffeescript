@@ -7,21 +7,21 @@ Snake: (name) ->
   @name: name
   this
 
+Snake extends Animal
+
 Snake::move: ->
   alert "Slithering..."
   super 5
-
-Snake extends Animal
 
 Horse: (name) ->
   @name: name
   this
 
+Horse extends Animal
+
 Horse::move: ->
   alert "Galloping..."
   super 45
-
-Horse extends Animal
 
 sam: new Snake "Sammy the Python"
 tom: new Horse "Tommy the Palomino"

@@ -1137,21 +1137,21 @@ speed = (typeof speed !== "undefined" && speed !== null) ? speed : 140;
   <span class="Variable">@name</span><span class="Keyword">:</span> name
   <span class="Variable">this</span>
 
+Snake <span class="Variable">extends</span> Animal
+
 <span class="FunctionName">Snake::move</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
   alert <span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>
   <span class="Variable">super</span> <span class="Number">5</span>
-
-Snake <span class="Variable">extends</span> Animal
 
 <span class="FunctionName">Horse</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">name</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
   <span class="Variable">@name</span><span class="Keyword">:</span> name
   <span class="Variable">this</span>
 
+Horse <span class="Variable">extends</span> Animal
+
 <span class="FunctionName">Horse::move</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
   alert <span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>
   <span class="Variable">super</span> <span class="Number">45</span>
-
-Horse <span class="Variable">extends</span> Animal
 
 <span class="FunctionName">sam</span><span class="Keyword">:</span> <span class="Keyword">new</span> <span class="TypeName">Snake</span> <span class="String"><span class="String">&quot;</span>Sammy the Python<span class="String">&quot;</span></span>
 <span class="FunctionName">tom</span><span class="Keyword">:</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span> <span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>
@@ -1171,28 +1171,28 @@ Snake <span class="Keyword">=</span> <span class="Storage">function</span> <span
   <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
   <span class="Keyword">return</span> <span class="Variable">this</span>;
 };
-<span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span> <span class="FunctionName">move</span>() {
-  <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>);
-  <span class="Keyword">return</span> Snake.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">5</span>);
-};
 <span class="FunctionName">__a</span> = <span class="Storage">function</span>(){};
 <span class="LibraryClassType">__a</span>.<span class="LibraryConstant">prototype</span> = Animal.<span class="LibraryConstant">prototype</span>;
 Snake.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryConstant">prototype</span>;
 <span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">__a</span>();
 <span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">constructor</span> = Snake;
+<span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span> <span class="FunctionName">move</span>() {
+  <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>);
+  <span class="Keyword">return</span> Snake.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">5</span>);
+};
 Horse <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Horse</span>(<span class="FunctionArgument">name</span>) {
   <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
   <span class="Keyword">return</span> <span class="Variable">this</span>;
-};
-<span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span> <span class="FunctionName">move</span>() {
-  <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>);
-  <span class="Keyword">return</span> Horse.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">45</span>);
 };
 <span class="FunctionName">__b</span> = <span class="Storage">function</span>(){};
 <span class="LibraryClassType">__b</span>.<span class="LibraryConstant">prototype</span> = Animal.<span class="LibraryConstant">prototype</span>;
 Horse.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryConstant">prototype</span>;
 <span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">__b</span>();
 <span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">constructor</span> = Horse;
+<span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span> <span class="FunctionName">move</span>() {
+  <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>);
+  <span class="Keyword">return</span> Horse.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">45</span>);
+};
 sam <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Snake</span>(<span class="String"><span class="String">&quot;</span>Sammy the Python<span class="String">&quot;</span></span>);
 tom <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span>(<span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>);
 sam.move();
@@ -1206,28 +1206,28 @@ Snake = function Snake(name) {
   this.name = name;
   return this;
 };
-Snake.prototype.move = function move() {
-  alert("Slithering...");
-  return Snake.__superClass__.move.call(this, 5);
-};
 __a = function(){};
 __a.prototype = Animal.prototype;
 Snake.__superClass__ = Animal.prototype;
 Snake.prototype = new __a();
 Snake.prototype.constructor = Snake;
+Snake.prototype.move = function move() {
+  alert("Slithering...");
+  return Snake.__superClass__.move.call(this, 5);
+};
 Horse = function Horse(name) {
   this.name = name;
   return this;
-};
-Horse.prototype.move = function move() {
-  alert("Galloping...");
-  return Horse.__superClass__.move.call(this, 45);
 };
 __b = function(){};
 __b.prototype = Animal.prototype;
 Horse.__superClass__ = Animal.prototype;
 Horse.prototype = new __b();
 Horse.prototype.constructor = Horse;
+Horse.prototype.move = function move() {
+  alert("Galloping...");
+  return Horse.__superClass__.move.call(this, 45);
+};
 sam = new Snake("Sammy the Python");
 tom = new Horse("Tommy the Palomino");
 sam.move();
@@ -1550,12 +1550,6 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">&q
         A custom <a href="http://haml-lang.com/">HAML</a> filter, by
         <a href="http://github.com/inem">Ivan Nemytchenko</a>, that embeds
         snippets of CoffeeScript within your HAML templates.
-      </li>
-      <li>
-        <a href="http://github.com/creationix/coffeepot">CoffeePot</a><br />
-        An implementation of CoffeeScript, written in CoffeeScript, by
-        <a href="http://github.com/creationix">Tim Caswell</a>. Compiles just
-        a limited subset at this point.
       </li>
     </ul>
 
