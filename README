@@ -37,5 +37,8 @@
   The source repository:
   git://github.com/jashkenas/coffee-script.git
   
-  To build CoffeeScript from source, install the "racc" gem and
-  run "rake build:parser". Then bin/coffee will work.
+  Warning: A new version of the compiler, written entirely in CoffeeScript,
+  is in the works. Check out /src for the details. To try it out, use
+  bin/node_coffee. To have CoffeeScript recompile itself, run:
+  
+  bin/node_coffee -o lib/coffee_script src/*.coffee
