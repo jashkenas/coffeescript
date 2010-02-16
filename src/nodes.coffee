@@ -450,8 +450,9 @@ RangeNode: exports.RangeNode: inherit Node, {
   # part of a comprehension, slice, or splice.
   # TODO: This generates pretty ugly code ... shrink it.
   compile_array: (o) ->
-    body: Expressions.wrap([new LiteralNode('i')])
-    arr:  Expressions.wrap([new ForNode(body, {source: (new ValueNode(this))}, new LiteralNode('i'))])
+    name: o.scope.free_variable()
+    body: Expressions.wrap([new LiteralNode(name)])
+    arr:  Expressions.wrap([new ForNode(body, {source: (new ValueNode(this))}, new LiteralNode(name))])
     (new ParentheticalNode(new CallNode(new CodeNode([], arr)))).compile(o)
 
 }
