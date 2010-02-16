@@ -80,7 +80,7 @@ re::adjust_comments: ->
       @tokens.splice(i + 2, 1)
       @tokens.splice(i - 2, 1)
       return 0
-    else if prev and prev[0] is 'TERMINATOR' and after[0] is 'INDENT'
+    else if prev and prev[0] is 'TERMINATOR' and after and after[0] is 'INDENT'
       @tokens.splice(i + 2, 1)
       @tokens[i - 1]: after
       return 1

@@ -19,3 +19,7 @@ switch 'string'
   # comment
 
 puts func()
+
+func
+func
+# Line3
