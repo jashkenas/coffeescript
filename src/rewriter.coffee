@@ -20,7 +20,8 @@ EXPRESSION_CLOSE: ['CATCH', 'WHEN', 'ELSE', 'FINALLY'].concat(EXPRESSION_TAIL)
 
 # Tokens pairs that, in immediate succession, indicate an implicit call.
 IMPLICIT_FUNC: ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END']
-IMPLICIT_END:  ['IF', 'UNLESS', 'FOR', 'WHILE', 'TERMINATOR', 'OUTDENT']
+IMPLICIT_BLOCK:['->', '=>', '{', '[', ',']
+IMPLICIT_END:  ['IF', 'UNLESS', 'FOR', 'WHILE', 'TERMINATOR', 'INDENT', 'OUTDENT']
 IMPLICIT_CALL: ['IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START',
                  'TRY', 'DELETE', 'TYPEOF', 'SWITCH',
                  'TRUE', 'FALSE', 'YES', 'NO', 'ON', 'OFF', '!', '!!', 'NOT',
@@ -140,18 +141,22 @@ re::close_open_calls_and_indexes: ->
 re::add_implicit_parentheses: ->
   stack: [0]
   @scan_tokens (prev, token, post, i) =>
-    stack.push(0) if token[0] is 'INDENT'
-    if token[0] is 'OUTDENT'
+    tag: token[0]
+    stack.push(0) if tag is 'INDENT'
+    if tag is 'OUTDENT'
       last: stack.pop()
       stack[stack.length - 1] += last
-    if stack[stack.length - 1] > 0 and (IMPLICIT_END.indexOf(token[0]) >= 0 or !post?)
-      idx: if token[0] is 'OUTDENT' then i + 1 else i
-      for tmp in [0...stack[stack.length - 1]]
-        @tokens.splice(idx, 0, ['CALL_END', ')', token[2]])
-      size: stack[stack.length - 1] + 1
-      stack[stack.length - 1]: 0
-      return size
-    return 1 unless prev and IMPLICIT_FUNC.indexOf(prev[0]) >= 0 and IMPLICIT_CALL.indexOf(token[0]) >= 0
+    if IMPLICIT_END.indexOf(tag) >= 0 or !post?
+      return 1 if tag is 'INDENT' and prev and IMPLICIT_BLOCK.indexOf(prev[0]) >= 0
+      if stack[stack.length - 1] > 0 or tag is 'INDENT'
+        idx: if tag is 'OUTDENT' then i + 1 else i
+        stack_pointer: if tag is 'INDENT' then 2 else 1
+        for tmp in [0...stack[stack.length - stack_pointer]]
+          @tokens.splice(idx, 0, ['CALL_END', ')', token[2]])
+        size: stack[stack.length - stack_pointer] + 1
+        stack[stack.length - stack_pointer]: 0
+        return size
+    return 1 unless prev and IMPLICIT_FUNC.indexOf(prev[0]) >= 0 and IMPLICIT_CALL.indexOf(tag) >= 0
     @tokens.splice(i, 0, ['CALL_START', '(', token[2]])
     stack[stack.length - 1] += 1
     return 2
@@ -196,7 +201,7 @@ re::ensure_balance: (pairs) ->
       throw "too many " + token[1] if levels[open] < 0
     return 1
   unclosed: key for key, value of levels when value > 0
-  throw "unclosed " + unclosed[0] if unclosed.length
+  throw new Error("unclosed " + unclosed[0]) if unclosed.length
 
 # We'd like to support syntax like this:
 #    el.click((event) ->
