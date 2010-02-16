@@ -12,7 +12,7 @@ Scope: exports.Scope: (parent, expressions, method) ->
   @expressions: expressions
   @method: method
   @variables: {}
-  @temp_variable: if @parent then @parent.temp_variable else '__a'
+  @temp_variable: if @parent then @parent.temp_variable else 1
   this
 
 # Look up a variable in lexical scope, or declare it if not found.
@@ -38,9 +38,11 @@ Scope::reset: (name) ->
 
 # Find an available, short, name for a compiler-generated variable.
 Scope::free_variable: ->
-  (@temp_variable: succ(@temp_variable)) while @check @temp_variable
-  @variables[@temp_variable]: 'var'
-  @temp_variable
+  id: '_' + @temp_variable
+  while @check(id)
+    id: '_' + (@temp_variable += 1)
+  @variables[id]: 'var'
+  id
 
 # Ensure that an assignment is made at the top of scope (or top-level
 # scope, if requested).
@@ -72,11 +74,3 @@ Scope::compiled_declarations: ->
 
 Scope::compiled_assignments: ->
   (t[0] + ' = ' + t[1] for t in @assigned_variables()).join(', ')
-
-
-# Helper functions:
-
-# The next character alphabetically, to produce the following string.
-succ: (str) ->
-  str.slice(0, str.length - 1) +
-    String.fromCharCode(str.charCodeAt(str.length - 1) + 1)
