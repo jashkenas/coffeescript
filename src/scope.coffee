@@ -12,7 +12,7 @@ Scope: exports.Scope: (parent, expressions, method) ->
   @expressions: expressions
   @method: method
   @variables: {}
-  @temp_variable: if @parent then @parent.temp_variable else 1
+  @temp_var: if @parent then @parent.temp_var else '_a'
   this
 
 # Look up a variable in lexical scope, or declare it if not found.
@@ -38,11 +38,11 @@ Scope::reset: (name) ->
 
 # Find an available, short, name for a compiler-generated variable.
 Scope::free_variable: ->
-  id: '_' + @temp_variable
-  while @check(id)
-    id: '_' + (@temp_variable += 1)
-  @variables[id]: 'var'
-  id
+  while @check @temp_var
+    ordinal: 1 + parseInt @temp_var.substr(1), 36
+    @temp_var: '_' + ordinal.toString(36).replace(/\d/g, 'a')
+  @variables[@temp_var]: 'var'
+  @temp_var
 
 # Ensure that an assignment is made at the top of scope (or top-level
 # scope, if requested).
