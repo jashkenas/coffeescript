@@ -68,7 +68,7 @@ compile_scripts: ->
   return unless source: sources.shift()
   opts: options
   fs.cat(source).addCallback (code) ->
-    if      opts.tokens   then puts coffee.print_tokens coffee.tokenize code
+    if      opts.tokens   then coffee.print_tokens coffee.tokenize code
     else if opts.tree     then puts coffee.tree(code).toString()
     else
       js: coffee.compile code

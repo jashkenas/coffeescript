@@ -46,7 +46,7 @@ exports.tree: (code) ->
 exports.print_tokens: (tokens) ->
   strings: for token in tokens
     '[' + token[0] + ' ' + token[1].toString().replace(/\n/, '\\n') + ']'
-  strings.join(' ')
+  puts strings.join(' ')
 
 
 #---------- Below this line is obsolete, for the Ruby compiler. ----------------
