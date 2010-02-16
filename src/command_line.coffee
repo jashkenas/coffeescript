@@ -36,6 +36,12 @@ exports.run: ->
   return require './repl' if options.interactive
   return puts coffee.compile sources[0] if options.eval
   usage() unless sources.length
+  separator: sources.indexOf '--'
+  flags: []
+  if separator >= 0
+    flags: sources[(separator + 1)...sources.length]
+    sources: sources[0...separator]
+  process.ARGV = flags
   compile_scripts()
   this
 

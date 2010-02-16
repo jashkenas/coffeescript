@@ -450,12 +450,4 @@ for name, non_terminal of grammar
       option[1] = "return " + option[1]
     option
 tokens: tokens.join(" ")
-parser: new Parser({tokens: tokens, bnf: bnf, operators: operators.reverse(), startSymbol: 'Root'}, {debug: false})
-js: parser.generate()
-
-# Save the parser to a file.
-# puts parser.generate()
-fs: require 'fs'
-parser_path: 'lib/coffee_script/parser.js'
-fs.open(parser_path, process.O_CREAT | process.O_WRONLY | process.O_TRUNC, parseInt('0755', 8)).addCallback (fd) ->
-  fs.write(fd, js)
+exports.parser: new Parser({tokens: tokens, bnf: bnf, operators: operators.reverse(), startSymbol: 'Root'}, {debug: false})

@@ -43,4 +43,9 @@
   is in the works. Check out /src for the details. To try it out, use
   bin/node_coffee. To have CoffeeScript recompile itself, run:
   
-  bin/node_coffee -o lib/coffee_script src/*.coffee
+  build compiler
+  
+  To rebuild the Jison parser (takes about 30 seconds), run:
+  
+  build grammar
+  
