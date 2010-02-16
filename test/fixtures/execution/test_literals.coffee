@@ -51,3 +51,12 @@ bob: {
 
 puts bob.hello() is "Hello Bob"
 puts bob[10] is 'number'
+
+
+obj: {
+  'is':  -> yes
+  'not': -> no
+}
+
+puts obj.is()
+puts not obj.not()

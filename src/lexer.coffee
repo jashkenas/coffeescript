@@ -61,6 +61,10 @@ NOT_REGEX: [
 # Tokens which could legitimately be invoked or indexed.
 CALLABLE: ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING']
 
+# Tokens that indicate an access -- keywords immediately following will be
+# treated as identifiers.
+ACCESSORS: ['PROPERTY_ACCESS', 'PROTOTYPE_ACCESS', 'SOAK_ACCESS', '@']
+
 # Tokens that, when immediately preceding a 'WHEN', indicate that its leading.
 BEFORE_WHEN: ['INDENT', 'OUTDENT', 'TERMINATOR']
 
@@ -72,7 +76,6 @@ lex::tokenize: (code) ->
   @indent  : 0          # The current indent level.
   @indents : []         # The stack of all indent levels we are currently within.
   @tokens  : []         # Collection of all parsed tokens in the form [:TOKEN_TYPE, value]
-  @spaced  : null       # The last token that has a space following it.
   while @i < @code.length
     @chunk: @code.slice(@i)
     @extract_next_token()
@@ -98,17 +101,16 @@ lex::extract_next_token: ->
 # Matches identifying literals: variables, keywords, method names, etc.
 lex::identifier_token: ->
   return false unless id: @match IDENTIFIER, 1
-  # Keywords are special identifiers tagged with their own name,
-  # 'if' will result in an ['IF', "if"] token.
-  tag: if KEYWORDS.indexOf(id) >= 0 then id.toUpperCase() else 'IDENTIFIER'
-  tag: 'LEADING_WHEN' if tag is 'WHEN' and BEFORE_WHEN.indexOf(@tag()) >= 0
-  @tag(1, 'PROTOTYPE_ACCESS') if tag is 'IDENTIFIER' and @value() is '::'
-  if tag is 'IDENTIFIER' and @value() is '.' and !(@value(2) is '.')
+  @tag(1, 'PROTOTYPE_ACCESS') if @value() is '::'
+  if @value() is '.' and not (@value(2) is '.')
     if @tag(2) is '?'
       @tag(1, 'SOAK_ACCESS')
       @tokens.splice(-2, 1)
     else
       @tag(1, 'PROPERTY_ACCESS')
+  tag: 'IDENTIFIER'
+  tag:  id.toUpperCase() if KEYWORDS.indexOf(id) >= 0 and not (ACCESSORS.indexOf(@tag()) >= 0)
+  tag: 'LEADING_WHEN' if tag is 'WHEN' and BEFORE_WHEN.indexOf(@tag()) >= 0
   @token(tag, id)
   @i += id.length
   true
@@ -199,7 +201,7 @@ lex::outdent_token: (move_out) ->
 # Matches and consumes non-meaningful whitespace.
 lex::whitespace_token: ->
   return false unless space: @match WHITESPACE, 1
-  @spaced: @value()
+  @tokens[@tokens.length - 1].spaced: true
   @i += space.length
   true
 
@@ -224,7 +226,8 @@ lex::literal_token: ->
   value ||= @chunk.substr(0, 1)
   tag: if value.match(ASSIGNMENT) then 'ASSIGN' else value
   tag: 'TERMINATOR' if value == ';'
-  if @value() isnt @spaced and CALLABLE.indexOf(@tag()) >= 0
+
+  if not @tokens[@tokens.length - 1].spaced and CALLABLE.indexOf(@tag()) >= 0
     tag: 'CALL_START'  if value is '('
     tag: 'INDEX_START' if value is '['
   @token tag, value
