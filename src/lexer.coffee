@@ -25,6 +25,13 @@ KEYWORDS: [
   "super", "extends"
 ]
 
+# The list of keywords that are reserved by JavaScript, but not used, and aren't
+# used by CoffeeScript. Using these will throw an error at compile time.
+RESERVED: [
+  "case", "default", "do", "function", "var", "void", "with", "class"
+  "const", "let", "debugger", "enum", "export", "import", "native"
+]
+
 # Token matching regexes. (keep the IDENTIFIER regex in sync with AssignNode.)
 IDENTIFIER : /^([a-zA-Z$_](\w|\$)*)/
 NUMBER     : /^(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
@@ -110,6 +117,7 @@ lex::identifier_token: ->
       @tag(1, 'PROPERTY_ACCESS')
   tag: 'IDENTIFIER'
   tag:  id.toUpperCase() if KEYWORDS.indexOf(id) >= 0 and not (ACCESSORS.indexOf(@tag()) >= 0)
+  throw new Error('SyntaxError: Reserved word "' + id + '" on line ' + @line) if RESERVED.indexOf(id) >= 0
   tag: 'LEADING_WHEN' if tag is 'WHEN' and BEFORE_WHEN.indexOf(@tag()) >= 0
   @token(tag, id)
   @i += id.length
