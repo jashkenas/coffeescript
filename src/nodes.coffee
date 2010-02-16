@@ -257,6 +257,7 @@ ValueNode: exports.ValueNode: inherit Node, {
     only:     del(o, 'only_first')
     props:    if only then @properties[0...@properties.length - 1] else @properties
     baseline: @base.compile o
+    baseline: '(' + baseline + ')' if @base instanceof ObjectNode and @has_properties()
     parts:    [baseline]
 
     for prop in props

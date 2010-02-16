@@ -37,6 +37,9 @@ money$: 'dollars'
 puts money$ is 'dollars'
 
 
+puts {a: (num) -> num is 10 }.a 10
+
+
 bob: {
   name:  'Bob'
   greet: (salutation) ->
