@@ -312,8 +312,8 @@
   _.range: (start, stop, step) ->
     a:        arguments
     solo:     a.length <= 1
-    i: start: if solo then 0 else a[0];
-    stop:     if solo then a[0] else a[1];
+    i: start: if solo then 0 else a[0]
+    stop:     if solo then a[0] else a[1]
     step:     a[2] or 1
     len:      Math.ceil((stop - start) / step)
     return [] if len <= 0

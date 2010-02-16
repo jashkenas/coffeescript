@@ -176,7 +176,8 @@ re::add_implicit_indentation: ->
     while true
       idx += 1
       tok: @tokens[idx]
-      if (not tok or SINGLE_CLOSERS.indexOf(tok[0]) >= 0 or
+      if (not tok or
+          (SINGLE_CLOSERS.indexOf(tok[0]) >= 0 and tok[1] isnt ';') or
           (tok[0] is ')' && parens is 0)) and
           not (starter is 'ELSE' and tok[0] is 'ELSE')
         insertion: if @tokens[idx - 1][0] is "," then idx - 1 else idx
