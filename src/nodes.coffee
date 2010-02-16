@@ -1,9 +1,7 @@
 if process?
   process.mixin require './scope'
-  _: require('./underscore')._
 else
   this.exports: this
-  _: this._
 
 # Some helper functions
 
@@ -16,9 +14,20 @@ IDENTIFIER:   /^[a-zA-Z$_](\w|\$)*$/
 
 # Merge objects.
 merge: (options, overrides) ->
-  _.tap {}, (fresh) ->
-    _.extend fresh, options
-    _.extend fresh, overrides
+  fresh: {}
+  (fresh[key]: val) for key, val of options
+  (fresh[key]: val) for key, val of overrides if overrides
+  fresh
+
+# Trim out all falsy values from an array.
+compact: (array) -> item for item in array when item
+
+# Return a completely flattened version of an array.
+flatten: (array) ->
+  memo: []
+  for item in array
+    if item instanceof Array then memo: memo.concat(item) else memo.push(item)
+  memo
 
 # Delete a key from an object, returning the value.
 del: (obj, key) ->
@@ -52,7 +61,7 @@ Node: exports.Node: ->
 # the top level of a block (which would be unnecessary), and we haven't
 # already been asked to return the result.
 Node::compile: (o) ->
-  @options: _.clone o or {}
+  @options: merge o or {}
   @indent:  o.indent
   top:      if @top_sensitive() then @options.top else del @options, 'top'
   closure:  @is_statement() and not @is_statement_only() and not top and
@@ -83,7 +92,7 @@ Node::contains: (block) ->
 # toString representation of the node, for inspecting the parse tree.
 Node::toString: (idt) ->
   idt ||= ''
-  '\n' + idt + @type + _.map(@children, (child) -> child.toString(idt + TAB)).join('')
+  '\n' + idt + @type + (child.toString(idt + TAB) for child in @children).join('')
 
 # Default implementations of the common node methods.
 Node::unwrap:             -> this
@@ -97,7 +106,7 @@ Expressions: exports.Expressions: inherit Node, {
   type: 'Expressions'
 
   constructor: (nodes) ->
-    @children: @expressions: _.compact _.flatten nodes or []
+    @children: @expressions: compact flatten nodes or []
     this
 
   # Tack an expression on to the end of this expression list.
@@ -130,7 +139,7 @@ Expressions: exports.Expressions: inherit Node, {
 
   # Compile each expression in the Expressions body.
   compile_node: (o) ->
-    (@compile_expression(node, _.clone(o)) for node in @expressions).join("\n")
+    (@compile_expression(node, merge(o)) for node in @expressions).join("\n")
 
   # If this is the top-level Expressions, wrap everything in a safety closure.
   compile_root: (o) ->
@@ -222,7 +231,7 @@ ValueNode: exports.ValueNode: inherit Node, {
   SOAK: " == undefined ? undefined : "
 
   constructor: (base, properties) ->
-    @children:   _.flatten [@base: base, @properties: (properties or [])]
+    @children:   flatten [@base: base, @properties: (properties or [])]
     this
 
   push: (prop) ->
@@ -303,7 +312,7 @@ CallNode: exports.CallNode: inherit Node, {
   type: 'Call'
 
   constructor: (variable, args) ->
-    @children:  _.flatten [@variable: variable, @args: (args or [])]
+    @children:  flatten [@variable: variable, @args: (args or [])]
     @prefix:    ''
     this
 
@@ -318,7 +327,7 @@ CallNode: exports.CallNode: inherit Node, {
 
   # Compile a vanilla function call.
   compile_node: (o) ->
-    return @compile_splat(o) if _.any @args, (a) -> a instanceof SplatNode
+    return @compile_splat(o) if @args[@args.length - 1] instanceof SplatNode
     args: (arg.compile(o) for arg in @args).join(', ')
     return @compile_super(args, o) if @variable is 'super'
     @prefix + @variable.compile(o) + '(' + args + ')'
@@ -660,8 +669,8 @@ CodeNode: exports.CodeNode: inherit Node, {
 
   toString: (idt) ->
     idt ||= ''
-    children: _.flatten [@params, @body.expressions]
-    '\n' + idt + @type + _.map(children, (child) -> child.toString(idt + TAB)).join('')
+    children: flatten [@params, @body.expressions]
+    '\n' + idt + @type + (child.toString(idt + TAB) for child in children).join('')
 
 }
 
@@ -740,7 +749,7 @@ OpNode: exports.OpNode: inherit Node, {
   PREFIX_OPERATORS: ['typeof', 'delete']
 
   constructor: (operator, first, second, flip) ->
-    @children: _.compact [@first: first, @second: second]
+    @children: compact [@first: first, @second: second]
     @operator: @CONVERSIONS[operator] or operator
     @flip: !!flip
     this
@@ -788,7 +797,7 @@ TryNode: exports.TryNode: inherit Node, {
   type: 'Try'
 
   constructor: (attempt, error, recovery, ensure) ->
-    @children: _.compact [@attempt: attempt, @recovery: recovery, @ensure: ensure]
+    @children: compact [@attempt: attempt, @recovery: recovery, @ensure: ensure]
     @error: error
     this
 
@@ -869,7 +878,7 @@ ForNode: exports.ForNode: inherit Node, {
     @step:    source.step
     @object:  !!source.object
     [@name, @index]: [@index, @name] if @object
-    @children: _.compact [@body, @source, @filter]
+    @children: compact [@body, @source, @filter]
     this
 
   top_sensitive: ->
@@ -933,7 +942,7 @@ IfNode: exports.IfNode: inherit Node, {
     @condition: condition
     @body:      body and body.unwrap()
     @else_body: else_body and else_body.unwrap()
-    @children:  _.compact [@condition, @body, @else_body]
+    @children:  compact [@condition, @body, @else_body]
     @tags:      tags or {}
     @multiple:  true if @condition instanceof Array
     @condition: new OpNode('!', new ParentheticalNode(@condition)) if @tags.invert
@@ -973,7 +982,7 @@ IfNode: exports.IfNode: inherit Node, {
     @statement ||= !!(@comment or @tags.statement or @body.is_statement() or (@else_body and @else_body.is_statement()))
 
   compile_condition: (o) ->
-    (cond.compile(o) for cond in _.flatten([@condition])).join(' || ')
+    (cond.compile(o) for cond in flatten([@condition])).join(' || ')
 
   compile_node: (o) ->
     if @is_statement() then @compile_statement(o) else @compile_ternary(o)
@@ -982,7 +991,7 @@ IfNode: exports.IfNode: inherit Node, {
   # force sub-else bodies into statement form.
   compile_statement: (o) ->
     child:        del o, 'chain_child'
-    cond_o:       _.clone o
+    cond_o:       merge o
     del cond_o, 'returns'
     o.indent:     @idt(1)
     o.top:        true

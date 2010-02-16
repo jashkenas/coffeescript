@@ -35,7 +35,7 @@ namespace :build do
 
   desc "Rebuild the Underscore.coffee documentation page"
   task :underscore do
-    sh "uv -s coffeescript -t idle -h src/underscore.coffee > documentation/underscore.html"
+    sh "uv -s coffeescript -t idle -h examples/underscore.coffee > documentation/underscore.html"
   end
 
 end

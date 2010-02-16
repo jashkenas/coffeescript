@@ -240,7 +240,7 @@
 
 
   # Trim out all falsy values from an array.
-  _.compact: (array) -> array[i] for i in [0...array.length] when array[i]
+  _.compact: (array) -> item for item in array when item
 
 
   # Return a completely flattened version of an array.
