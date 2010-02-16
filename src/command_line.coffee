@@ -1,4 +1,4 @@
-posix:    require 'posix'
+fs:       require 'fs'
 path:     require 'path'
 coffee:   require 'coffee-script'
 optparse: require('optparse')
@@ -67,7 +67,7 @@ compile: (script, source) ->
 compile_scripts: ->
   return unless source: sources.shift()
   opts: options
-  posix.cat(source).addCallback (code) ->
+  fs.cat(source).addCallback (code) ->
     if      opts.tokens   then puts coffee.print_tokens coffee.tokenize code
     else if opts.tree     then puts coffee.tree(code).toString()
     else
@@ -83,8 +83,8 @@ write_js: (source, js) ->
   filename: path.basename(source, path.extname(source)) + '.js'
   dir:      options.output or path.dirname(source)
   js_path:  path.join dir, filename
-  posix.open(js_path, process.O_CREAT | process.O_WRONLY | process.O_TRUNC, parseInt('0755', 8)).addCallback (fd) ->
-    posix.write(fd, js)
+  fs.open(js_path, process.O_CREAT | process.O_WRONLY | process.O_TRUNC, parseInt('0755', 8)).addCallback (fd) ->
+    fs.write(fd, js)
 
 # Pipe compiled JS through JSLint (requires a working 'jsl' command).
 lint: (js) ->
