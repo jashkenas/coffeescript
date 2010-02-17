@@ -22,7 +22,7 @@
                                                         
   CoffeeScript is a little language that compiles into JavaScript.
   
-  Install the compiler:
+  Install Node.js, and then install the CoffeeScript compiler:
   sudo bin/cake install
   
   Compile a script:
