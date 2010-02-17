@@ -27,7 +27,7 @@ task 'build:parser', 'rebuild the Jison parser', ->
   parser: require('grammar').parser
   js: parser.generate()
   parser_path: 'lib/parser.js'
-  fs.open(parser_path, process.O_CREAT | process.O_WRONLY | process.O_TRUNC, parseInt('0755', 8)).addCallback (fd) ->
+  fs.open(parser_path, 'w+', 0755).addCallback (fd) ->
     fs.write(fd, js)
 
 
@@ -54,6 +54,6 @@ task 'test', 'run the CoffeeScript language test suite', ->
     puts '\033[0;32mpassed ' + test_count + ' tests in ' + time + ' seconds\033[0m'
   fs.readdir('test').addCallback (files) ->
     for file in files
-      fs.cat('test/' + file).addCallback (source) ->
+      fs.readFile('test/' + file).addCallback (source) ->
         js: coffee.compile source
         process.compile js, file

@@ -31,7 +31,7 @@ exports.run: ->
   path.exists 'Cakefile', (exists) ->
     throw new Error('Cakefile not found in ' + process.cwd()) unless exists
     args: process.ARGV[2...process.ARGV.length]
-    fs.cat('Cakefile').addCallback (source) ->
+    fs.readFile('Cakefile').addCallback (source) ->
       eval coffee.compile source
       return print_tasks() unless args.length
       for arg in args

@@ -71,7 +71,7 @@ compile: (script, source) ->
 # or JSLint results.
 compile_scripts: ->
   return unless source: sources.shift()
-  fs.cat(source).addCallback (code) ->
+  fs.readFile(source).addCallback (code) ->
     compile_script(source, code)
     compile_scripts()
 
@@ -97,7 +97,7 @@ watch_scripts: ->
   for source in sources
     process.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
       return if curr.mtime.getTime() is prev.mtime.getTime()
-      fs.cat(source).addCallback (code) -> compile_script(source, code)
+      fs.readFile(source).addCallback (code) -> compile_script(source, code)
 
 
 # Write out a JavaScript source file with the compiled code.
@@ -105,7 +105,7 @@ write_js: (source, js) ->
   filename: path.basename(source, path.extname(source)) + '.js'
   dir:      options.output or path.dirname(source)
   js_path:  path.join dir, filename
-  fs.open(js_path, process.O_CREAT | process.O_WRONLY | process.O_TRUNC, parseInt('0755', 8)).addCallback (fd) ->
+  fs.open(js_path, 'w+', 0755).addCallback (fd) ->
     fs.write(fd, js)
 
 # Pipe compiled JS through JSLint (requires a working 'jsl' command).
