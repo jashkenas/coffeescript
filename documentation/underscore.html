@@ -262,7 +262,7 @@
 <span class="line-numbers"> 240 </span> 
 <span class="line-numbers"> 241 </span> 
 <span class="line-numbers"> 242 </span>   <span class="Comment"><span class="Comment">#</span> Trim out all falsy values from an array.</span>
-<span class="line-numbers"> 243 </span>   <span class="FunctionName">_.compact</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">array</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> array[i] <span class="Keyword">for</span> i <span class="Keyword">in</span> [<span class="Number">0</span>...array.length] <span class="Keyword">when</span> array[i]
+<span class="line-numbers"> 243 </span>   <span class="FunctionName">_.compact</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">array</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> item <span class="Keyword">for</span> item <span class="Keyword">in</span> array <span class="Keyword">when</span> item
 <span class="line-numbers"> 244 </span> 
 <span class="line-numbers"> 245 </span> 
 <span class="line-numbers"> 246 </span>   <span class="Comment"><span class="Comment">#</span> Return a completely flattened version of an array.</span>
@@ -334,8 +334,8 @@
 <span class="line-numbers"> 312 </span>   <span class="FunctionName">_.range</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">start, stop, step</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
 <span class="line-numbers"> 313 </span>     <span class="FunctionName">a</span><span class="Keyword">:</span>        arguments
 <span class="line-numbers"> 314 </span>     <span class="FunctionName">solo</span><span class="Keyword">:</span>     a.length <span class="Keyword">&lt;=</span> <span class="Number">1</span>
-<span class="line-numbers"> 315 </span>     <span class="FunctionName">i</span><span class="Keyword">:</span> <span class="FunctionName">start</span><span class="Keyword">:</span> <span class="Keyword">if</span> solo <span class="Keyword">then</span> <span class="Number">0</span> <span class="Keyword">else</span> a[<span class="Number">0</span>];
-<span class="line-numbers"> 316 </span>     <span class="FunctionName">stop</span><span class="Keyword">:</span>     <span class="Keyword">if</span> solo <span class="Keyword">then</span> a[<span class="Number">0</span>] <span class="Keyword">else</span> a[<span class="Number">1</span>];
+<span class="line-numbers"> 315 </span>     <span class="FunctionName">i</span><span class="Keyword">:</span> <span class="FunctionName">start</span><span class="Keyword">:</span> <span class="Keyword">if</span> solo <span class="Keyword">then</span> <span class="Number">0</span> <span class="Keyword">else</span> a[<span class="Number">0</span>]
+<span class="line-numbers"> 316 </span>     <span class="FunctionName">stop</span><span class="Keyword">:</span>     <span class="Keyword">if</span> solo <span class="Keyword">then</span> a[<span class="Number">0</span>] <span class="Keyword">else</span> a[<span class="Number">1</span>]
 <span class="line-numbers"> 317 </span>     <span class="FunctionName">step</span><span class="Keyword">:</span>     a[<span class="Number">2</span>] <span class="Keyword">or</span> <span class="Number">1</span>
 <span class="line-numbers"> 318 </span>     <span class="FunctionName">len</span><span class="Keyword">:</span>      Math.ceil((stop <span class="Keyword">-</span> start) <span class="Keyword">/</span> step)
 <span class="line-numbers"> 319 </span>     <span class="Keyword">return</span> [] <span class="Keyword">if</span> len <span class="Keyword">&lt;=</span> <span class="Number">0</span>
