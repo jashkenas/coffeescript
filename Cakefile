@@ -7,6 +7,15 @@ run: (args) ->
   proc.addListener 'error', (err) -> if err then puts err
 
 
+task 'install', 'install CoffeeScript into /usr/local', ->
+  exec([
+    'mkdir -p /usr/local/lib/coffee-script'
+    'cp -rf bin lib LICENSE README package.json src vendor /usr/local/lib/coffee-script'
+    'ln -sf /usr/local/lib/coffee-script/bin/coffee /usr/local/bin/coffee'
+    'ln -sf /usr/local/lib/coffee-script/bin/cake /usr/local/bin/cake'
+  ].join(' && '))
+
+
 task 'build', 'build the CoffeeScript language from source', ->
   fs.readdir('src').addCallback (files) ->
     files: 'src/' + file for file in files when file.match(/\.coffee$/)

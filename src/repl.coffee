@@ -6,14 +6,13 @@ process.mixin require 'sys'
 
 # Shortcut variables.
 prompt: 'coffee> '
-quit:   -> process.stdio.close()
+quit:   -> process.exit(0)
 
 # The main REPL function. Called everytime a line of code is entered.
-readline: (code) -> run coffee.compile code, {no_wrap: true, globals: true}
-
 # Attempt to evaluate the command. If there's an exception, print it.
-run: (js) ->
+readline: (code) ->
   try
+    js:  coffee.compile code, {no_wrap: true, globals: true}
     val: eval(js)
     p val if val isnt undefined
   catch err
