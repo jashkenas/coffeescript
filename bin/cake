@@ -1,0 +1,7 @@
+#!/usr/bin/env node --
+
+process.mixin(require('sys'));
+
+require.paths.unshift('./lib/coffee_script');
+
+require('cake').run();
