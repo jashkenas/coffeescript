@@ -1,7 +1,7 @@
 # A CoffeeScript port/version of the Node.js REPL.
 
 # Required modules.
-coffee: require './coffee-script'
+coffee: require 'coffee-script'
 process.mixin require 'sys'
 
 # Shortcut variables.

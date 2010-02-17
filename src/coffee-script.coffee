@@ -1,9 +1,9 @@
 # Set up for both the browser and the server.
 if process?
-  process.mixin require './nodes'
+  process.mixin require 'nodes'
   path:         require 'path'
-  lexer:   new (require('./lexer').Lexer)()
-  parser:       require('./parser').parser
+  lexer:   new (require('lexer').Lexer)()
+  parser:       require('parser').parser
 else
   this.exports: this
   lexer: new Lexer()

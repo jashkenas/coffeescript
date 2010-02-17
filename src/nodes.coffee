@@ -1,5 +1,5 @@
 if process?
-  process.mixin require './scope'
+  process.mixin require 'scope'
 else
   this.exports: this
 

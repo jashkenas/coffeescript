@@ -7,7 +7,7 @@ run: (args) ->
   proc.addListener 'error', (err) -> if err then puts err
 
 
-task 'build:compiler', 'build the CoffeeScript Compiler source code', ->
+task 'build', 'build the CoffeeScript language from source', ->
   fs.readdir('src').addCallback (files) ->
     files: 'src/' + file for file in files when file.match(/\.coffee$/)
     run ['-o', 'lib/coffee_script'].concat(files)
