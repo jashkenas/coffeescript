@@ -14,7 +14,7 @@ SWITCHES: [
   ['-i', '--interactive',   'run an interactive CoffeeScript REPL']
   ['-r', '--run',           'compile and run a CoffeeScript']
   ['-o', '--output [DIR]',  'set the directory for compiled JavaScript']
-  # ['-w', '--watch',         'watch scripts for changes, and recompile']
+  ['-w', '--watch',         'watch scripts for changes, and recompile']
   ['-p', '--print',         'print the compiled JavaScript to stdout']
   ['-l', '--lint',          'pipe the compiled JavaScript through JSLint']
   ['-e', '--eval',          'compile a string from the command line']
@@ -23,8 +23,6 @@ SWITCHES: [
   ['-v', '--version',       'display CoffeeScript version']
   ['-h', '--help',          'display this help message']
 ]
-
-WATCH_INTERVAL: 0.5
 
 options: {}
 sources: []
@@ -42,6 +40,7 @@ exports.run: ->
     flags: sources[(separator + 1)...sources.length]
     sources: sources[0...separator]
   process.ARGV = flags
+  watch_scripts() if options.watch
   compile_scripts()
   this
 
@@ -72,8 +71,15 @@ compile: (script, source) ->
 # or JSLint results.
 compile_scripts: ->
   return unless source: sources.shift()
-  opts: options
   fs.cat(source).addCallback (code) ->
+    compile_script(source, code)
+    compile_scripts()
+
+# Compile a single source script, containing the given code, according to the
+# requested options. Both compile_scripts and watch_scripts share this method.
+compile_script: (source, code) ->
+  opts: options
+  try
     if      opts.tokens   then coffee.print_tokens coffee.tokenize code
     else if opts.tree     then puts coffee.tree(code).toString()
     else
@@ -82,7 +88,17 @@ compile_scripts: ->
       else if opts.print  then puts js
       else if opts.lint   then lint js
       else                     write_js source, coffee.compile code
-    compile_scripts()
+  catch err
+    if opts.watch then puts err.message else throw err
+
+# Watch a list of source CoffeeScript files, recompiling them every time the
+# files are updated.
+watch_scripts: ->
+  for source in sources
+    process.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
+      return if curr.mtime.getTime() is prev.mtime.getTime()
+      fs.cat(source).addCallback (code) -> compile_script(source, code)
+
 
 # Write out a JavaScript source file with the compiled code.
 write_js: (source, js) ->
@@ -122,3 +138,4 @@ parse_options: ->
 
   paths: oparser.parse(process.ARGV)
   sources: paths[2...paths.length]
+
