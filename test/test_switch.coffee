@@ -14,7 +14,7 @@ result: switch num
   when 11 then false
   else false
 
-puts result
+ok result
 
 
 func: (num) ->
@@ -25,7 +25,7 @@ func: (num) ->
       false
     else false
 
-puts func(2)
-puts func(6)
-puts !func(3)
-puts !func(8)
+ok func(2)
+ok func(6)
+ok !func(3)
+ok !func(8)

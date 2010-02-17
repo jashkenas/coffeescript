@@ -9,7 +9,7 @@ findit: (items) ->
   for item in items
     return item if item is "bacon"
 
-puts findit(items) is "bacon"
+ok findit(items) is "bacon"
 
 
 # When when a closure wrapper is generated for expression conversion, make sure
@@ -26,5 +26,5 @@ obj: {
       this.num
 }
 
-puts obj.num is obj.func()
-puts obj.num is obj.result
+ok obj.num is obj.func()
+ok obj.num is obj.result

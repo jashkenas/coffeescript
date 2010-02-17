@@ -5,12 +5,12 @@ b: array[2...4]
 
 result: a.concat(b).join(' ')
 
-puts result is "7 8 9 2 3"
+ok result is "7 8 9 2 3"
 
 
 countdown: [10..1].join(' ')
-puts countdown is "10 9 8 7 6 5 4 3 2 1"
+ok countdown is "10 9 8 7 6 5 4 3 2 1"
 
 
 array: [(1+5)..1+9]
-puts array.join(' ') is "6 7 8 9 10"
+ok array.join(' ') is "6 7 8 9 10"

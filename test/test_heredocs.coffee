@@ -3,7 +3,7 @@ a: """
    on two lines
    """
 
-puts a is "basic heredoc\non two lines"
+ok a is "basic heredoc\non two lines"
 
 
 a: '''
@@ -12,12 +12,12 @@ a: '''
    c
    '''
 
-puts a is "a\n  \"b\nc"
+ok a is "a\n  \"b\nc"
 
 
 a: '''one-liner'''
 
-puts a is 'one-liner'
+ok a is 'one-liner'
 
 
 a: """
@@ -25,7 +25,7 @@ a: """
       here
 """
 
-puts a is "out\nhere"
+ok a is "out\nhere"
 
 
 a: '''
@@ -34,7 +34,7 @@ a: '''
   c
    '''
 
-puts a is "    a\n  b\nc"
+ok a is "    a\n  b\nc"
 
 a: '''
 a
@@ -43,4 +43,4 @@ a
 b c
 '''
 
-puts a is "a\n\n\nb c"
+ok a is "a\n\n\nb c"

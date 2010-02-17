@@ -18,7 +18,7 @@ switch 'string'
   code()
   # comment
 
-puts func()
+ok func()
 
 func
 func

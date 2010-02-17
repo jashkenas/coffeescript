@@ -3,4 +3,4 @@ six:
   2 +
   3
 
-puts six is 6
+ok six is 6

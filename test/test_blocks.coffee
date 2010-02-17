@@ -1,4 +1,4 @@
 results: [1, 2, 3].map (x) ->
   x * x
 
-puts results.join(' ') is '1 4 9'
+ok results.join(' ') is '1 4 9', 'basic block syntax'

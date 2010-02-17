@@ -3,7 +3,7 @@ identity_wrap: (x) ->
 
 result: identity_wrap(identity_wrap(true))()()
 
-puts result
+ok result, 'basic chained function calls'
 
 
 str: 'god'
@@ -14,7 +14,7 @@ result: str.
   reverse().
   reverse()
 
-puts result.join('') is 'dog'
+ok result.join('') is 'dog', 'chained accesses split on period/newline'
 
 result: str
   .split('')
@@ -22,4 +22,4 @@ result: str
   .reverse()
   .reverse()
 
-puts result.join('') is 'dog'
+ok result.join('') is 'dog', 'chained accesses split on newline/period'

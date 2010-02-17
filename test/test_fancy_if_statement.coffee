@@ -7,13 +7,13 @@ result: if a
       if d
         true
 
-puts result
+ok result
 
 
 first: if false then false else second: if false then false else true
 
-puts first
-puts second
+ok first
+ok second
 
 
 result: if false
@@ -23,4 +23,4 @@ else if NaN
 else
   true
 
-puts result
+ok result

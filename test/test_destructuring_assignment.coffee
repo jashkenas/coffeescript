@@ -3,26 +3,26 @@ b: -2
 
 [a, b]: [b, a]
 
-puts a is -2
-puts b is -1
+ok a is -2
+ok b is -1
 
 
 arr: [1, 2, 3]
 
 [a, b, c]: arr
 
-puts a is 1
-puts b is 2
-puts c is 3
+ok a is 1
+ok b is 2
+ok c is 3
 
 
 obj: {x: 10, y: 20, z: 30}
 
 {x: a, y: b, z: c}: obj
 
-puts a is 10
-puts b is 20
-puts c is 30
+ok a is 10
+ok b is 20
+ok c is 30
 
 
 person: {
@@ -42,8 +42,8 @@ person: {
 
 {name: a, family: {brother: {addresses: [one, {city: b}]}}}: person
 
-puts a is "Bob"
-puts b is "Moquasset NY, 10021"
+ok a is "Bob"
+ok b is "Moquasset NY, 10021"
 
 
 test: {
@@ -59,4 +59,4 @@ test: {
 
 {person: {address: [ignore, addr...]}}: test
 
-puts addr.join(', ') is "Street 101, Apt 101, City 101"
+ok addr.join(', ') is "Street 101, Apt 101, City 101"

@@ -1,43 +1,43 @@
 a: [(x) -> x, (x) -> x * x]
 
-puts a.length is 2
+ok a.length is 2
 
 
 regex: /match/i
 words: "I think there is a match in here."
 
-puts !!words.match(regex)
+ok !!words.match(regex)
 
 
 neg: (3 -4)
 
-puts neg is -1
+ok neg is -1
 
 
 func: ->
   return if true
 
-puts func() is null
+ok func() is null
 
 
 str: "\\"
 reg: /\\/
 
-puts reg(str) and str is '\\'
+ok reg(str) and str is '\\'
 
 
 i: 10
 while i -= 1
 
-puts i is 0
+ok i is 0
 
 
 money$: 'dollars'
 
-puts money$ is 'dollars'
+ok money$ is 'dollars'
 
 
-puts {a: (num) -> num is 10 }.a 10
+ok {a: (num) -> num is 10 }.a 10
 
 
 bob: {
@@ -49,8 +49,8 @@ bob: {
   10: 'number'
 }
 
-puts bob.hello() is "Hello Bob"
-puts bob[10] is 'number'
+ok bob.hello() is "Hello Bob"
+ok bob[10] is 'number'
 
 
 obj: {
@@ -58,5 +58,5 @@ obj: {
   'not': -> no
 }
 
-puts obj.is()
-puts not obj.not()
+ok obj.is()
+ok not obj.not()

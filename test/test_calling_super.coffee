@@ -21,7 +21,7 @@ ThirdChild::func: (string) ->
 
 result: (new ThirdChild()).func 'four'
 
-puts result is 'zero/one/two/three/four'
+ok result is 'zero/one/two/three/four', 'successfully set up and called a four-level inheritance chain'
 
 
 TopClass: (arg) ->
@@ -39,4 +39,4 @@ SubClass: ->
 SuperClass extends TopClass
 SubClass extends SuperClass
 
-puts((new SubClass()).prop is 'top-super-sub')
+ok (new SubClass()).prop is 'top-super-sub', 'inheritance'
