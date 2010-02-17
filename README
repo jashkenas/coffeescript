@@ -23,7 +23,7 @@
   CoffeeScript is a little language that compiles into JavaScript.
   
   Install the compiler:
-  gem install coffee-script
+  ... to be determined ...
   
   Compile a script:
   coffee /path/to/script.coffee
@@ -38,14 +38,4 @@
 
   The source repository:
   git://github.com/jashkenas/coffee-script.git
-  
-  Warning: A new version of the compiler, written entirely in CoffeeScript,
-  is in the works. Check out /src for the details. To try it out, use
-  bin/node_coffee. To have CoffeeScript recompile itself, run:
-  
-  build compiler
-  
-  To rebuild the Jison parser (takes about 30 seconds), run:
-  
-  build grammar
-  
+

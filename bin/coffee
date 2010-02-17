@@ -1,5 +1,7 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env node --
 
-require "#{File.dirname(__FILE__)}/../lib/coffee_script/command_line.rb"
+process.mixin(require('sys'));
 
-CoffeeScript::CommandLine.new
+require.paths.unshift('./lib/coffee_script');
+
+require('command_line').run();

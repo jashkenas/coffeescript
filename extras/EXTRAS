@@ -1,8 +1,8 @@
 This folder includes rough cuts of CoffeeScript syntax highlighters for 
 TextMate and Vim. Improvements to their lexing ability are always welcome.
 
-To install the TextMate bundle, run `bin/coffee --install-bundle`, or drop it
-into "~/Library/Application Support/TextMate/Bundles".
+To install the TextMate bundle, drop it into:
+  ~/Library/Application Support/TextMate/Bundles
 
 To install the Vim highlighter, copy "coffee.vim" into the "syntax" directory of
 your vim72, and enable it in either of the following two ways:

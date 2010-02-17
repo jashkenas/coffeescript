@@ -3,7 +3,7 @@ coffee: require 'coffee-script'
 
 # Run a CoffeeScript through our node/coffee interpreter.
 run: (args) ->
-  proc: process.createChildProcess 'bin/node_coffee', args
+  proc: process.createChildProcess 'bin/coffee', args
   proc.addListener 'error', (err) -> if err then puts err
 
 
