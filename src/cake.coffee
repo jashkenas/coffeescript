@@ -25,7 +25,8 @@ print_tasks: ->
     spaces: if spaces > 0 then (' ' for i in [0..spaces]).join('') else ''
     puts "cake " + name + spaces + ' # ' + task.description
 
-# The CommandLine handles all of the functionality of the `coffee` utility.
+# Running `cake` runs the tasks you pass asynchronously (node-style), or
+# prints them out, with no arguments.
 exports.run: ->
   path.exists 'Cakefile', (exists) ->
     throw new Error('Cakefile not found in ' + process.cwd()) unless exists

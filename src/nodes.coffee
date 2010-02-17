@@ -375,7 +375,16 @@ ExtendsNode: exports.ExtendsNode: inherit Node, {
     construct:  o.scope.free_variable()
     child:      @child.compile(o)
     parent:     @parent.compile(o)
-    @idt() + construct + ' = function(){};\n' + @idt() +
+    prefix:     ''
+    if not (@child instanceof ValueNode) or @child.has_properties() or not (@child.unwrap() instanceof LiteralNode)
+      child_var: o.scope.free_variable()
+      prefix += @idt() + child_var + ' = ' + child + ';\n'
+      child: child_var
+    if not (@parent instanceof ValueNode) or @parent.has_properties() or not (@parent.unwrap() instanceof LiteralNode)
+      parent_var: o.scope.free_variable()
+      prefix += @idt() + parent_var + ' = ' + parent + ';\n'
+      parent: parent_var
+    prefix + @idt() + construct + ' = function(){};\n' + @idt() +
       construct + '.prototype = ' + parent + ".prototype;\n" + @idt() +
       child + '.__superClass__ = ' + parent + ".prototype;\n" + @idt() +
       child + '.prototype = new ' + construct + "();\n" + @idt() +

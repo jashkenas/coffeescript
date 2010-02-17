@@ -209,7 +209,8 @@ lex::outdent_token: (move_out) ->
 # Matches and consumes non-meaningful whitespace.
 lex::whitespace_token: ->
   return false unless space: @match WHITESPACE, 1
-  @tokens[@tokens.length - 1].spaced: true
+  prev: @tokens[@tokens.length - 1]
+  prev.spaced: true if prev
   @i += space.length
   true
 
@@ -235,7 +236,8 @@ lex::literal_token: ->
   tag: if value.match(ASSIGNMENT) then 'ASSIGN' else value
   tag: 'TERMINATOR' if value == ';'
 
-  if not @tokens[@tokens.length - 1].spaced and CALLABLE.indexOf(@tag()) >= 0
+  prev: @tokens[@tokens.length - 1]
+  if CALLABLE.indexOf(@tag()) >= 0 and (not prev or not prev.spaced)
     tag: 'CALL_START'  if value is '('
     tag: 'INDEX_START' if value is '['
   @token tag, value
