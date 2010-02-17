@@ -10,14 +10,14 @@ run: (args) ->
 task 'build', 'build the CoffeeScript language from source', ->
   fs.readdir('src').addCallback (files) ->
     files: 'src/' + file for file in files when file.match(/\.coffee$/)
-    run ['-o', 'lib/coffee_script'].concat(files)
+    run ['-o', 'lib'].concat(files)
 
 
 task 'build:parser', 'rebuild the Jison parser', ->
   invoke 'build:compiler'
   parser: require('grammar').parser
   js: parser.generate()
-  parser_path: 'lib/coffee_script/parser.js'
+  parser_path: 'lib/parser.js'
   fs.open(parser_path, process.O_CREAT | process.O_WRONLY | process.O_TRUNC, parseInt('0755', 8)).addCallback (fd) ->
     fs.write(fd, js)
 

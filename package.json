@@ -1,6 +1,6 @@
 {
     "name":         "coffee-script",
-    "lib":          "lib/coffee_script/narwhal",
+    "lib":          "lib/narwhal",
     "description":  "Unfancy JavaScript",
     "keywords":     ["javascript", "language"],
     "author":       "Jeremy Ashkenas",

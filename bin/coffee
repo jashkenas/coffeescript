@@ -2,6 +2,6 @@
 
 process.mixin(require('sys'));
 
-require.paths.unshift('./lib/coffee_script');
+require.paths.unshift('./lib');
 
 require('command_line').run();
