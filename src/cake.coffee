@@ -6,6 +6,10 @@ coffee:   require 'coffee-script'
 
 tasks: {}
 
+no_such_task: (task) ->
+  process.stdio.writeError('No such task: "' + task + '"\n')
+  process.exit(1)
+
 # Mixin the Cake functionality.
 process.mixin {
 
@@ -15,6 +19,7 @@ process.mixin {
 
   # Invoke another task in the Cakefile.
   invoke: (name) ->
+    no_such_task name unless tasks[name]
     tasks[name].action()
 }
 
@@ -35,6 +40,6 @@ exports.run: ->
       eval coffee.compile source
       return print_tasks() unless args.length
       for arg in args
-        throw new Error('No such task: "' + arg + '"') unless tasks[arg]
+        no_such_task arg unless tasks[arg]
         tasks[arg].action()
 
