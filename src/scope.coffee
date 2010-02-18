@@ -8,19 +8,16 @@ this.exports: this unless process?
 # as well as the Expressions body where it should declare its variables,
 # and the function that it wraps.
 Scope: exports.Scope: (parent, expressions, method) ->
-  @parent: parent
-  @expressions: expressions
-  @method: method
+  [@parent, @expressions, @method]: [parent, expressions, method]
   @variables: {}
   @temp_var: if @parent then @parent.temp_var else '_a'
   this
 
 # Look up a variable in lexical scope, or declare it if not found.
 Scope::find: (name) ->
-  found: @check name
-  return found if found
+  return true if @check name
   @variables[name]: 'var'
-  found
+  false
 
 # Define a local variable as originating from a parameter in current scope
 # -- no var required.
@@ -67,10 +64,12 @@ Scope::declared_variables: ->
 # Return the list of variables that are supposed to be assigned at the top
 # of scope.
 Scope::assigned_variables: ->
-  ([key, val.value] for key, val of @variables when val.assigned).sort()
+  key + ' = ' + val.value for key, val of @variables when val.assigned
 
+# Compile the string representing all of the declared variables for this scope.
 Scope::compiled_declarations: ->
-  @declared_variables().join(', ')
+  @declared_variables().join ', '
 
+# Compile the string performing all of the variable assignments for this scope.
 Scope::compiled_assignments: ->
-  (t[0] + ' = ' + t[1] for t in @assigned_variables()).join(', ')
+  @assigned_variables().join ', '
