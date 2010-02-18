@@ -1,8 +1,7 @@
 {
     "name":         "coffee-script",
-    "lib":          "lib/narwhal",
     "description":  "Unfancy JavaScript",
     "keywords":     ["javascript", "language"],
     "author":       "Jeremy Ashkenas",
-    "version":      "0.3.2"
+    "version":      "0.5.0"
 }
