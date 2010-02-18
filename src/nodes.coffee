@@ -1,7 +1,7 @@
-if process?
+if require?
   process.mixin require 'scope'
 else
-  this.exports: this
+  exports: this
 
 # Some helper functions
 

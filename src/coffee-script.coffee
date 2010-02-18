@@ -1,13 +1,13 @@
 # Set up for both the browser and the server.
-if process?
+if require?
   process.mixin require 'nodes'
   path:         require 'path'
   lexer:   new (require('lexer').Lexer)()
   parser:       require('parser').parser
 else
-  this.exports: this
+  exports: this.CoffeeScript: {}
   lexer: new Lexer()
-  parser: exports.parser
+  parser: this.parser
 
 # Thin wrapper for Jison compatibility around the real lexer.
 parser.lexer: {

@@ -1,4 +1,4 @@
-this.exports: this unless process?
+exports: this unless require?
 
 # In order to keep the grammar simple, the stream of tokens that the Lexer
 # emits is rewritten by the Rewriter, smoothing out ambiguities, mis-nested
