@@ -2,7 +2,6 @@
 
 # Required modules.
 coffee: require 'coffee-script'
-process.mixin require 'sys'
 
 # Shortcut variables.
 prompt: 'coffee> '
@@ -12,8 +11,7 @@ quit:   -> process.exit(0)
 # Attempt to evaluate the command. If there's an exception, print it.
 readline: (code) ->
   try
-    js:  coffee.compile code, {no_wrap: true, globals: true}
-    val: eval(js)
+    val: eval coffee.compile code, {no_wrap: true, globals: true}
     p val if val isnt undefined
   catch err
     puts err.stack or err.toString()
