@@ -43,11 +43,10 @@ task 'test', 'run the CoffeeScript language test suite', ->
   process.mixin require 'assert'
   test_count: 0
   start_time: new Date()
-  original_ok: ok
+  [original_ok, original_throws]: [ok, throws]
   process.mixin {
-    ok: (args...) ->
-      test_count += 1
-      original_ok(args...)
+    ok:     (args...) -> test_count += 1; original_ok(args...)
+    throws: (args...) -> test_count += 1; original_throws(args...)
   }
   process.addListener 'exit', ->
     time: ((new Date() - start_time) / 1000).toFixed(2)
