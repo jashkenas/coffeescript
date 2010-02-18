@@ -1725,7 +1725,7 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">&q
       var source = document.getElementById('repl_source').value;
       var js = '';
       try {
-        js = CoffeeScript.compile(source, {no_wrap: true});
+        js = compile(source, {no_wrap: true});
       } catch(error) {
         alert(error);
       }

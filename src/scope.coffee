@@ -1,4 +1,4 @@
-exports: this unless require?
+this.exports: this unless process?
 
 # Scope objects form a tree corresponding to the shape of the function
 # definitions present in the script. They provide lexical scope, to determine

@@ -1,7 +1,7 @@
-if require?
+if process?
   Rewriter: require('./rewriter').Rewriter
 else
-  exports: this
+  this.exports: this
   Rewriter: this.Rewriter
 
 # The lexer reads a stream of CoffeeScript and divvys it up into tagged

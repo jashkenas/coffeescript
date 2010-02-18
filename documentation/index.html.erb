@@ -854,7 +854,7 @@ print reverse 'tpircseeffoc'</textarea>
       var source = document.getElementById('repl_source').value;
       var js = '';
       try {
-        js = CoffeeScript.compile(source, {no_wrap: true});
+        js = compile(source, {no_wrap: true});
       } catch(error) {
         alert(error);
       }
