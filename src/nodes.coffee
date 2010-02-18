@@ -970,13 +970,24 @@ IfNode: exports.IfNode: inherit Node, {
     @tags.statement: true
     this
 
-  # Rewrite a chain of IfNodes with their switch condition for equality.
+  # Tag a chain of IfNodes with their switch condition for equality.
   rewrite_condition: (expression) ->
+    @switcher: expression
+    this
+
+  # Rewrite a chain of IfNodes with their switch condition for equality.
+  rewrite_switch: (o) ->
+    assigner: @switcher
+    if not (@switcher.unwrap() instanceof LiteralNode)
+      variable: new LiteralNode(o.scope.free_variable())
+      assigner: new AssignNode(variable, @switcher)
+      @switcher: variable
     @condition: if @multiple
-      new OpNode('is', expression, cond) for cond in @condition
+      for cond, i in @condition
+        new OpNode('is', (if i is 0 then assigner else @switcher), cond)
     else
-      new OpNode('is', expression, @condition)
-    @else_body.rewrite_condition(expression) if @is_chain()
+      new OpNode('is', assigner, @condition)
+    @else_body.rewrite_condition(@switcher) if @is_chain()
     this
 
   # Rewrite a chain of IfNodes to add a default case as the final else.
@@ -1003,6 +1014,7 @@ IfNode: exports.IfNode: inherit Node, {
   # Compile the IfNode as a regular if-else statement. Flattened chains
   # force sub-else bodies into statement form.
   compile_statement: (o) ->
+    @rewrite_switch(o) if @switcher
     child:        del o, 'chain_child'
     cond_o:       merge o
     del cond_o, 'returns'
