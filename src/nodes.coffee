@@ -859,12 +859,16 @@ ExistenceNode.compile_test: (o, variable) ->
 ParentheticalNode: exports.ParentheticalNode: inherit Node, {
   type: 'Paren'
 
-  constructor: (expressions) ->
-    @children: [@expressions: expressions]
+  constructor: (expression) ->
+    @children: [@expression: expression]
     this
 
+  is_statement: ->
+    @expression.is_statement()
+
   compile_node: (o) ->
-    code: @expressions.compile(o)
+    code: @expression.compile(o)
+    return code if @is_statement()
     l:    code.length
     code: code.substr(o, l-1) if code.substr(l-1, 1) is ';'
     '(' + code + ')'
