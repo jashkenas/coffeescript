@@ -16,9 +16,9 @@ Scope: exports.Scope: (parent, expressions, method) ->
   this
 
 # Look up a variable in lexical scope, or declare it if not found.
-Scope::find: (name, remote) ->
+Scope::find: (name) ->
   found: @check name
-  return found if found or remote
+  return found if found
   @variables[name]: 'var'
   found
 
