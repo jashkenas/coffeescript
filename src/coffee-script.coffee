@@ -5,9 +5,9 @@ if process?
   lexer:   new (require('lexer').Lexer)()
   parser:       require('parser').parser
 else
-  this.exports: this
   lexer: new Lexer()
   parser: exports.parser
+  this.exports: this.CoffeeScript: {}
 
 # Thin wrapper for Jison compatibility around the real lexer.
 parser.lexer: {
