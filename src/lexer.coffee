@@ -128,7 +128,8 @@ lex::identifier_token: ->
     else
       @tag(1, 'PROPERTY_ACCESS')
   tag: 'IDENTIFIER'
-  tag:  id.toUpperCase() if KEYWORDS.indexOf(id) >= 0 and not (ACCESSORS.indexOf(@tag()) >= 0)
+  tag:  id.toUpperCase() if KEYWORDS.indexOf(id) >= 0 and
+    not ((ACCESSORS.indexOf(@tag()) >= 0) and not @prev().spaced)
   throw new Error('SyntaxError: Reserved word "' + id + '" on line ' + @line) if RESERVED.indexOf(id) >= 0
   tag: 'LEADING_WHEN' if tag is 'WHEN' and BEFORE_WHEN.indexOf(@tag()) >= 0
   @token(tag, id)
@@ -194,7 +195,7 @@ lex::indent_token: ->
   @line += indent.match(MULTILINER).length
   @i    += indent.length
   next_character: @chunk.match(MULTI_DENT)[4]
-  prev: @tokens[@tokens.length - 2]
+  prev: @prev(2)
   no_newlines: next_character is '.' or (@value() and @value().match(NO_NEWLINE) and prev and (prev[0] isnt '.') and not @value().match(CODE))
   return @suppress_newlines(indent) if no_newlines
   size: indent.match(LAST_DENTS).reverse()[0].match(LAST_DENT)[1].length
@@ -221,7 +222,7 @@ lex::outdent_token: (move_out) ->
 # Matches and consumes non-meaningful whitespace.
 lex::whitespace_token: ->
   return false unless space: @match WHITESPACE, 1
-  prev: @tokens[@tokens.length - 1]
+  prev: @prev()
   prev.spaced: true if prev
   @i += space.length
   true
@@ -251,8 +252,7 @@ lex::literal_token: ->
     throw new Error('SyntaxError: Reserved word "' + @value() + '" on line ' + @line + ' can\'t be assigned') if JS_FORBIDDEN.indexOf(@value()) >= 0
   tag: 'TERMINATOR' if value == ';'
 
-  prev: @tokens[@tokens.length - 1]
-  if CALLABLE.indexOf(@tag()) >= 0 and (not prev or not prev.spaced)
+  if CALLABLE.indexOf(@tag()) >= 0 and (not @prev() or not @prev().spaced)
     tag: 'CALL_START'  if value is '('
     tag: 'INDEX_START' if value is '['
   @token tag, value
@@ -267,15 +267,19 @@ lex::token: (tag, value) ->
 
 # Look at a tag in the current token stream.
 lex::tag: (index, tag) ->
-  return unless tok: @tokens[@tokens.length - (index or 1)]
+  return unless tok: @prev(index)
   return tok[0]: tag if tag?
   tok[0]
 
 # Look at a value in the current token stream.
 lex::value: (index, val) ->
-  return unless tok: @tokens[@tokens.length - (index or 1)]
+  return unless tok: @prev(index)
   return tok[1]: val if val?
   tok[1]
+
+# Look at a previous token.
+lex::prev: (index) ->
+  @tokens[@tokens.length - (index or 1)]
 
 # Count the occurences of a character in a string.
 lex::count: (string, letter) ->
@@ -301,7 +305,7 @@ lex::tag_parameters: ->
   i: 0
   while true
     i += 1
-    tok: @tokens[@tokens.length - i]
+    tok: @prev(i)
     return if not tok
     switch tok[0]
       when 'IDENTIFIER' then tok[0]: 'PARAM'
