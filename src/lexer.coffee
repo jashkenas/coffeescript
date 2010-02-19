@@ -11,19 +11,28 @@ exports.Lexer: lex: ->
 
 # Constants ============================================================
 
-# The list of keywords passed verbatim to the parser.
-KEYWORDS: [
-  "if", "else", "then", "unless",
-  "true", "false", "yes", "no", "on", "off",
-  "and", "or", "is", "isnt", "not",
+# Keywords that CoffeScript shares in common with JS.
+JS_KEYWORDS: [
+  "if", "else",
+  "true", "false",
   "new", "return",
   "try", "catch", "finally", "throw",
   "break", "continue",
-  "for", "in", "of", "by", "where", "while",
+  "for", "in", "while",
   "delete", "instanceof", "typeof",
-  "switch", "when",
-  "super", "extends"
+  "switch", "super", "extends"
 ]
+
+# CoffeeScript-only keywords -- which we're more relaxed about allowing.
+COFFEE_KEYWORDS: [
+  "then", "unless",
+  "yes", "no", "on", "off",
+  "and", "or", "is", "isnt", "not",
+  "of", "by", "where", "when"
+]
+
+# The list of keywords passed verbatim to the parser.
+KEYWORDS: JS_KEYWORDS.concat COFFEE_KEYWORDS
 
 # The list of keywords that are reserved by JavaScript, but not used, and aren't
 # used by CoffeeScript. Using these will throw an error at compile time.
@@ -31,6 +40,9 @@ RESERVED: [
   "case", "default", "do", "function", "var", "void", "with", "class"
   "const", "let", "debugger", "enum", "export", "import", "native"
 ]
+
+# JavaScript keywords and reserved words together, excluding CoffeeScript ones.
+JS_FORBIDDEN: JS_KEYWORDS.concat RESERVED
 
 # Token matching regexes. (keep the IDENTIFIER regex in sync with AssignNode.)
 IDENTIFIER : /^([a-zA-Z$_](\w|\$)*)/
@@ -233,7 +245,10 @@ lex::literal_token: ->
   value: match and match[1]
   @tag_parameters() if value and value.match(CODE)
   value ||= @chunk.substr(0, 1)
-  tag: if value.match(ASSIGNMENT) then 'ASSIGN' else value
+  tag: value
+  if value.match(ASSIGNMENT)
+    tag: 'ASSIGN'
+    throw new Error('SyntaxError: Reserved word "' + @value() + '" on line ' + @line + ' can\'t be assigned') if JS_FORBIDDEN.indexOf(@value()) >= 0
   tag: 'TERMINATOR' if value == ';'
 
   prev: @tokens[@tokens.length - 1]
