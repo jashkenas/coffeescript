@@ -240,7 +240,7 @@ ValueNode: exports.ValueNode: inherit Node, {
     this
 
   has_properties: ->
-    @properties.length or @base instanceof ThisNode
+    !!@properties.length
 
   is_array: ->
     @base instanceof ArrayNode and not @has_properties()
@@ -420,19 +420,6 @@ IndexNode: exports.IndexNode: inherit Node, {
 
   compile_node: (o) ->
     '[' + @index.compile(o) + ']'
-
-}
-
-# A this-reference, using '@'.
-ThisNode: exports.ThisNode: inherit Node, {
-  type: 'This'
-
-  constructor: (property) ->
-    @property: property or null
-    this
-
-  compile_node: (o) ->
-    'this' + (if @property then '.' + @property.compile(o) else '')
 
 }
 

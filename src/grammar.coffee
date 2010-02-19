@@ -234,7 +234,7 @@ grammar: {
     o "Object",                                 -> new ValueNode($1)
     o "Parenthetical",                          -> new ValueNode($1)
     o "Range",                                  -> new ValueNode($1)
-    o "This",                                   -> new ValueNode($1)
+    o "This",                                   -> $1
     o "Value Accessor",                         -> $1.push($2)
     o "Invocation Accessor",                    -> new ValueNode($1, [$2])
   ]
@@ -298,8 +298,8 @@ grammar: {
 
   # This references, either naked or to a property.
   This: [
-    o "@",                                      -> new ThisNode()
-    o "@ Identifier",                           -> new ThisNode($2)
+    o "@",                                      -> new ValueNode(new LiteralNode('this'))
+    o "@ Identifier",                           -> new ValueNode(new LiteralNode('this'), [new AccessorNode($2)])
   ]
 
   # The range literal.
