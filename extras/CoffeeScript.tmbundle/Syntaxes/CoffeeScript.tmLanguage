@@ -74,7 +74,7 @@
 		</dict>
 		<dict>
 		  <key>match</key>
-		  <string>(@)[a-zA-Z_$]\w*</string>
+		  <string>(@)([a-zA-Z_$]\w*)?</string>
 		  <key>name</key>
 		  <string>variable.other.readwrite.instance.coffee</string>
 		</dict>
