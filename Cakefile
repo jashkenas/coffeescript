@@ -27,8 +27,7 @@ task 'build:parser', 'rebuild the Jison parser', ->
   parser: require('grammar').parser
   js: parser.generate()
   parser_path: 'lib/parser.js'
-  fs.open(parser_path, 'w+', 0755).addCallback (fd) ->
-    fs.write(fd, js)
+  fs.writeFile parser_path, js
 
 
 task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter', ->
@@ -38,6 +37,7 @@ task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter'
 
 task 'build:underscore', 'rebuild the Underscore.coffee documentation page', ->
   exec 'uv -s coffeescript -t idle -h examples/underscore.coffee > documentation/underscore.html'
+
 
 task 'test', 'run the CoffeeScript language test suite', ->
   process.mixin require 'assert'

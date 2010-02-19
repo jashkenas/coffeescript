@@ -18,6 +18,7 @@ x: if get_x() then 100
 
 ok x is 100, 'can assign a conditional statement'
 
+
 tester: ->
   @example: -> puts 'example function'
   this
