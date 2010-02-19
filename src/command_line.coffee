@@ -105,8 +105,7 @@ write_js: (source, js) ->
   filename: path.basename(source, path.extname(source)) + '.js'
   dir:      options.output or path.dirname(source)
   js_path:  path.join dir, filename
-  fs.open(js_path, 'w+', 0755).addCallback (fd) ->
-    fs.write(fd, js)
+  fs.writeFile(js_path, js)
 
 # Pipe compiled JS through JSLint (requires a working 'jsl' command).
 lint: (js) ->
