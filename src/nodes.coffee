@@ -934,11 +934,12 @@ ForNode: exports.ForNode: inherit Node, {
       body:         Expressions.wrap([new IfNode(@filter, body)])
     if @object
       o.scope.assign('__hasProp', 'Object.prototype.hasOwnProperty', true)
-      for_part: ivar + ' in ' + svar + ') if (__hasProp.call(' + svar + ', ' + ivar + ')'
+      for_part: ivar + ' in ' + svar + ') { if (__hasProp.call(' + svar + ', ' + ivar + ')'
     return_result:  '\n' + @idt() + return_result + ';' unless top_level
     body:           body.compile(merge(o, {indent: body_dent, top: true}))
     vars:           if range then name else name + ', ' + ivar
-    set_result + source_part + 'for (' + for_part + ') {\n' + var_part + body + '\n' + @idt() + '}\n' + @idt() + return_result
+    close:          if @object then '}}\n' else '}\n'
+    set_result + source_part + 'for (' + for_part + ') {\n' + var_part + body + '\n' + @idt() + close + @idt() + return_result
 
 }
 
