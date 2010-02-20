@@ -33,3 +33,15 @@ ok gold is "Mighty Mouse"
 ok silver is "Michael Phelps"
 ok bronze is "Liu Xiang"
 ok the_field.length is 8
+
+
+obj: {
+  name: 'bob'
+  accessor: (args...) ->
+    [@name].concat(args).join(' ')
+  getNames: ->
+    args: ['jane', 'ted']
+    @accessor(args...)
+}
+
+ok obj.getNames() is 'bob jane ted'

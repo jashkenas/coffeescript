@@ -283,7 +283,7 @@ ValueNode: exports.ValueNode: inherit Node, {
         parts.push(part)
 
     @last: parts[parts.length - 1]
-    @source: if parts.length > 1 then parts[0...parts.length].join('') else null
+    @source: if parts.length > 1 then parts[0...(parts.length - 1)].join('') else null
     code: parts.join('').replace(/\)\(\)\)/, '()))')
     return code unless soaked
     '(' + code + ')'
