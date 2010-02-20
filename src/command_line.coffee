@@ -71,7 +71,7 @@ compile: (script, source) ->
 # or JSLint results.
 compile_scripts: ->
   return unless source: sources.shift()
-  fs.readFile source, 'raw', (err, code) ->
+  fs.readFile(source).addCallback (code) ->
     compile_script(source, code)
     compile_scripts()
 
@@ -97,7 +97,7 @@ watch_scripts: ->
   for source in sources
     process.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
       return if curr.mtime.getTime() is prev.mtime.getTime()
-      fs.readFile source, (err, code) -> compile_script(source, code)
+      fs.readFile(source).addCallback (code) -> compile_script(source, code)
 
 # Write out a JavaScript source file with the compiled code.
 write_js: (source, js) ->

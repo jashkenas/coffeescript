@@ -17,7 +17,7 @@ task 'install', 'install CoffeeScript into /usr/local', ->
 
 
 task 'build', 'build the CoffeeScript language from source', ->
-  fs.readdir 'src', (err, files) ->
+  fs.readdir('src').addCallback (files) ->
     files: 'src/' + file for file in files when file.match(/\.coffee$/)
     run ['-o', 'lib'].concat(files)
 
@@ -51,8 +51,8 @@ task 'test', 'run the CoffeeScript language test suite', ->
   process.addListener 'exit', ->
     time: ((new Date() - start_time) / 1000).toFixed(2)
     puts '\033[0;32mpassed ' + test_count + ' tests in ' + time + ' seconds\033[0m'
-  fs.readdir 'test', (err, files) ->
+  fs.readdir('test').addCallback (files) ->
     for file in files
-      fs.readFile 'test/' + file, (err, source) ->
+      fs.readFile('test/' + file).addCallback (source) ->
         js: coffee.compile source
         process.compile js, file
