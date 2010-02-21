@@ -24,10 +24,6 @@ parser.lexer: {
   showPosition: -> @pos
 }
 
-# Improved error messages.
-# parser.parseError: (message, hash) ->
-#   throw new Error 'Unexpected ' + parser.terminals_[hash.token] + ' on line ' + hash.line
-
 exports.VERSION: '0.5.0'
 
 # Compile CoffeeScript to JavaScript, using the Coffee/Jison compiler.
