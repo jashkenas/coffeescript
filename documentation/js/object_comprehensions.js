@@ -1,5 +1,5 @@
 (function(){
-  var __a, __b, age, ages, child, years_old;
+  var _a, _b, age, ages, child, years_old;
   var __hasProp = Object.prototype.hasOwnProperty;
   years_old = {
     max: 10,
@@ -7,13 +7,11 @@
     tim: 11
   };
   ages = (function() {
-    __a = []; __b = years_old;
-    for (child in __b) {
-      age = __b[child];
-      if (__hasProp.call(__b, child)) {
-        __a.push(child + " is " + age);
-      }
-    }
-    return __a;
+    _a = []; _b = years_old;
+    for (child in _b) { if (__hasProp.call(_b, child)) {
+      age = _b[child];
+      _a.push(child + " is " + age);
+    }}
+    return _a;
   }).call(this);
 })();

@@ -1,21 +1,21 @@
 (function(){
-  var __a, __b, __c, __d, __e, __f, __g, food, lunch, roid, roid2;
+  var _a, _b, _c, _d, _e, _f, _g, food, lunch, roid, roid2;
   // Eat lunch.
   lunch = (function() {
-    __a = []; __b = ['toast', 'cheese', 'wine'];
-    for (__c = 0; __c < __b.length; __c++) {
-      food = __b[__c];
-      __a.push(eat(food));
+    _a = []; _b = ['toast', 'cheese', 'wine'];
+    for (_c = 0; _c < _b.length; _c++) {
+      food = _b[_c];
+      _a.push(eat(food));
     }
-    return __a;
+    return _a;
   }).call(this);
   // Naive collision detection.
-  __d = asteroids;
-  for (__e = 0; __e < __d.length; __e++) {
-    roid = __d[__e];
-    __f = asteroids;
-    for (__g = 0; __g < __f.length; __g++) {
-      roid2 = __f[__g];
+  _d = asteroids;
+  for (_e = 0; _e < _d.length; _e++) {
+    roid = _d[_e];
+    _f = asteroids;
+    for (_g = 0; _g < _f.length; _g++) {
+      roid2 = _f[_g];
       if (roid !== roid2) {
         if (roid.overlaps(roid2)) {
           roid.explode();

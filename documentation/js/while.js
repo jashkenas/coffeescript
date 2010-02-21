@@ -1,5 +1,5 @@
 (function(){
-  var __a, lyrics, num;
+  var _a, lyrics, num;
   // Econ 101
   if (this.studying_economics) {
     while (supply > demand) {
@@ -12,11 +12,11 @@
   // Nursery Rhyme
   num = 6;
   lyrics = (function() {
-    __a = [];
+    _a = [];
     while (num -= 1) {
-      __a.push(num + " little monkeys, jumping on the bed. \
+      _a.push(num + " little monkeys, jumping on the bed. \
 One fell out and bumped his head.");
     }
-    return __a;
+    return _a;
   }).call(this);
 })();

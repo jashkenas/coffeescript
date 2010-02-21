@@ -1,5 +1,5 @@
 (function(){
-  var __a, __b, __c, city, futurists, poet, street;
+  var _a, _b, _c, city, futurists, poet, street;
   futurists = {
     sculptor: "Umberto Boccioni",
     painter: "Vladimir Burliuk",
@@ -8,10 +8,10 @@
       address: ["Via Roma 42R", "Bellagio, Italy 22021"]
     }
   };
-  __a = futurists;
-  __b = __a.poet;
-  poet = __b.name;
-  __c = __b.address;
-  street = __c[0];
-  city = __c[1];
+  _a = futurists;
+  _b = _a.poet;
+  poet = _b.name;
+  _c = _b.address;
+  street = _c[0];
+  city = _c[1];
 })();

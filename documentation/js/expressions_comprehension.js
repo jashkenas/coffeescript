@@ -1,14 +1,12 @@
 (function(){
-  var __a, __b, globals, name;
+  var _a, _b, globals, name;
   var __hasProp = Object.prototype.hasOwnProperty;
   // The first ten global properties.
-  globals = ((function() {
-    __a = []; __b = window;
-    for (name in __b) {
-      if (__hasProp.call(__b, name)) {
-        __a.push(name);
-      }
-    }
-    return __a;
-  }).call(this)).slice(0, 10);
+  globals = (function() {
+    _a = []; _b = window;
+    for (name in _b) { if (__hasProp.call(_b, name)) {
+      _a.push(name);
+    }}
+    return _a;
+  }).call(this).slice(0, 10);
 })();

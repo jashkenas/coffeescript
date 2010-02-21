@@ -1,4 +1,4 @@
 (function(){
-  var __a;
-  ((__a = lottery.draw_winner()) == undefined ? undefined : __a.address == undefined ? undefined : __a.address.zipcode);
+  var _a;
+  (_a = lottery.draw_winner()) == null ? undefined : _a.address == null ? undefined : _a.address.zipcode;
 })();
