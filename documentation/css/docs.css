@@ -1,23 +1,20 @@
 body {
   font-size: 14px;
   line-height: 20px;
-  background: #f3f3f9;
   color: #191933;
   font-family: Arial, Helvetica, sans-serif;
 }
 div.container {
   width: 950px;
-  margin: 50px 0 50px 50px;
+  margin: 100px 0 50px 50px;
 }
 p {
-  padding-left: 13px;
   width: 625px;
 }
 a {
   color: #000055;
 }
 h1, h2, h3, h4, h5, h6 {
-  padding-left: 13px;
   margin-top: 40px;
 }
 br.clear {
@@ -85,6 +82,86 @@ div.code {
     div.code pre:first-child {
       border-left: 0;
     }
+
+#fadeout {
+  z-index: 50;
+  position: fixed;
+  left: 0; top: 0; right: 0;
+  height: 50px;
+  background: -webkit-gradient(linear, left top, left bottom, from(rgba(255, 255, 255, 255)), to(rgba(255, 255, 255, 0)));
+  background: -moz-linear-gradient(top, rgba(255, 255, 255, 255), rgba(255, 255, 255, 0));
+}
+
+#flybar {
+  position: fixed;
+  z-index: 100;
+  height: 50px;
+  left: 25px; right: 25px; top: 25px;
+  background: #ddd;
+  background: -webkit-gradient(linear, left top, left bottom, from(#f5f5f5), to(#d0d0d0));
+  background: -moz-linear-gradient(top, #f5f5f5, #d0d0d0);
+  filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#F5F5F5', EndColorStr='#D0D0D0');
+  -webkit-border-radius: 20px; -moz-border-radius: 20px; border-radius: 20px;
+  -webkit-box-shadow: 0 0 25px #777; -moz-box-shadow: 0 0 25px #777;
+}
+  #logo {
+    width: 215px; height: 50px;
+    background: url('logo.png');
+    position: absolute;
+    top: 0px; left: 5px;
+  }
+  .navigation {
+    height: 50px;
+    font: bold 11px/50px Arial;
+    text-transform: uppercase;
+    position: absolute;
+    left: 250px;
+    padding: 0 10px;
+    border: 1px solid #bbb;
+    border-top: 0; border-bottom: 0;
+    cursor: pointer;
+    color: #595977;
+  }
+    .navigation:hover {
+      background: #d0d0d0;
+      background: -webkit-gradient(linear, left top, left bottom, from(#f0f0f0), to(#c0c0c0));
+      background: -moz-linear-gradient(top, #f0f0f0, #c0c0c0);
+      filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#F0F0F0', EndColorStr='#C0C0C0');
+    }
+    .navigation .contents {
+      display: none;
+      position: absolute;
+      background: #fff;
+      top: 50px; left: 0;
+      padding: 5px 0;
+      -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px;
+      -webkit-border-top-left-radius: 0; -moz-border-radius-topleft: 0;
+      -webkit-border-top-right-radius: 0; -moz-border-radius-topright: 0;
+      -webkit-box-shadow: 0 0 25px #777; -moz-box-shadow: 0 0 25px #777;
+    }
+      .navigation:hover .contents {
+        display: block;
+      }
+      .navigation .contents a {
+        display: block;
+        width: 300px;
+        text-transform: none;
+        text-decoration: none;
+        font-weight: normal;
+        height: 12px;
+        line-height: 12px;
+        padding: 4px 10px;
+      }
+        .navigation .contents a:hover {
+          background: #f0f0f0;
+        }
+
+.bookmark {
+  display: block;
+  width: 0; height: 0;
+  position: relative;
+  top: -90px;
+}
 
 #repl_source {
   border: 0;

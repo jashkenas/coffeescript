@@ -24,48 +24,10 @@
   <link rel="stylesheet" type="text/css" href="documentation/css/idle.css" />
 </head>
 <body>
-  
-  <div id="fadeout"></div>
-
-  <div id="flybar">
-    <div id="logo"></div>
-    <div class="navigation">
-      <div class="button">
-        Table of Contents
-      </div>
-      <div class="contents">
-        <a href="#overview">Mini Overview</a>
-        <a href="#installation">Installation and Usage</a>
-        <a href="#try_coffee">Try CoffeeScript</a>
-        <a href="#whitespace">Significant Whitespace</a>
-        <a href="#functions">Functions and Invocation</a>
-        <a href="#assignment">Assignment</a>
-        <a href="#objects_and_arrays">Objects and Arrays</a>
-        <a href="#lexical_scope">Lexical Scoping and Variable Safety</a>
-        <a href="#conditionals">Conditionals, Ternaries, and Conditional Assignment</a>
-        <a href="#aliases">Aliases</a>
-        <a href="#splats">Splats...</a>
-        <a href="#arguments">Arguments are Arrays</a>
-        <a href="#while">While Loops</a>
-        <a href="#comprehensions">Comprehensions (Arrays, Objects, and Ranges)</a>
-        <a href="#slice_splice">Array Slicing and Splicing with Ranges</a>
-        <a href="#expressions">Everything is an Expression</a>
-        <a href="#existence">The Existential Operator</a>
-        <a href="#inheritance">Inheritance, and Calling Super from a Subclass</a>
-        <a href="#pattern_matching">Pattern Matching</a>
-        <a href="#fat_arrow">Function Binding</a>
-        <a href="#embedded">Embedded JavaScript</a>
-        <a href="#switch">Switch/When/Else</a>
-        <a href="#try">Try/Catch/Finally</a>
-        <a href="#comparisons">Chained Comparisons</a>
-        <a href="#strings">Multiline Strings and Heredocs</a>
-        <a href="#resources">Resources</a>
-        <a href="#change_log">Change Log</a>
-      </div>
-    </div>
-  </div>
 
   <div class="container">
+
+    <h1><sub style="font-size: 100px;">&#9749;</sub> CoffeeScript</h1>
 
     <p>
       CoffeeScript is a little language that compiles into JavaScript. Think
@@ -92,10 +54,39 @@
       <a href="http://gemcutter.org/gems/coffee-script">0.3.2</a>
     </p>
 
-    <h2>
-      <span id="overview" class="bookmark"></span>
-      Mini Overview
-    </h2>
+    <h2>Table of Contents</h2>
+
+    <p>
+      <a href="#overview">Mini Overview</a><br />
+      <a href="#installation">Installation and Usage</a><br />
+      <a href="#try_coffee">Try CoffeeScript</a><br />
+      <a href="#whitespace">Significant Whitespace</a><br />
+      <a href="#functions">Functions and Invocation</a><br />
+      <a href="#assignment">Assignment</a><br />
+      <a href="#objects_and_arrays">Objects and Arrays</a><br />
+      <a href="#lexical_scope">Lexical Scoping and Variable Safety</a><br />
+      <a href="#conditionals">Conditionals, Ternaries, and Conditional Assignment</a><br />
+      <a href="#aliases">Aliases</a><br />
+      <a href="#splats">Splats...</a><br />
+      <a href="#arguments">Arguments are Arrays</a><br />
+      <a href="#while">While Loops</a><br />
+      <a href="#comprehensions">Comprehensions (Arrays, Objects, and Ranges)</a><br />
+      <a href="#slice_splice">Array Slicing and Splicing with Ranges</a><br />
+      <a href="#expressions">Everything is an Expression</a><br />
+      <a href="#existence">The Existential Operator</a><br />
+      <a href="#inheritance">Inheritance, and Calling Super from a Subclass</a><br />
+      <a href="#pattern_matching">Pattern Matching</a><br />
+      <a href="#fat_arrow">Function Binding</a><br />
+      <a href="#embedded">Embedded JavaScript</a><br />
+      <a href="#switch">Switch/When/Else</a><br />
+      <a href="#try">Try/Catch/Finally</a><br />
+      <a href="#comparisons">Chained Comparisons</a><br />
+      <a href="#strings">Multiline Strings and Heredocs</a><br />
+      <a href="#resources">Resources</a><br />
+      <a href="#change_log">Change Log</a><br />
+    </p>
+
+    <h2 id="overview">Mini Overview</h2>
 
     <p><i>CoffeeScript on the left, compiled JavaScript output on the right.</i></p>
 
@@ -114,10 +105,7 @@
       <a href="http://github.com/jashkenas/coffee-script/tree/master/examples/">examples</a> folder.
     </p>
 
-    <h2>
-      <span id="installation" class="bookmark"></span>
-      Installation and Usage
-    </h2>
+    <h2 id="installation">Installation and Usage</h2>
 
     <p>
       The CoffeeScript compiler is written in pure Ruby, and is available
@@ -237,10 +225,7 @@ coffee --interactive
 coffee --watch --lint experimental.coffee
 coffee --print app/scripts/*.coffee > concatenation.js</pre>
 
-    <h2>
-      <span id="try_coffee" class="bookmark"></span>
-      Try CoffeeScript
-    </h2>
+    <h2 id="try_coffee">Try CoffeeScript</h2>
 
     <p>
       Here's a live version of the CoffeeScript compiler, running within
@@ -271,8 +256,7 @@ print reverse 'tpircseeffoc'</textarea>
       </i>
     </p>
 
-    <p>
-      <span id="whitespace" class="bookmark"></span>
+    <p id="whitespace">
       <b class="header">Significant Whitespace</b>
       CoffeeScript uses Python-style significant whitespace: You don't need to
       use semicolons <tt>;</tt> to terminate expressions, ending
@@ -294,8 +278,7 @@ print reverse 'tpircseeffoc'</textarea>
       as long as CoffeeScript can determine that the line hasn't finished yet.
     </p>
 
-    <p>
-      <span id="functions" class="bookmark"></span>
+    <p id="functions">
       <b class="header">Functions and Invocation</b>
       Functions are defined by a list of parameters, an arrow, and the
       function body. The empty function looks like this: <tt>-></tt>. All
@@ -307,8 +290,7 @@ print reverse 'tpircseeffoc'</textarea>
       <tt>((x) -> x * x)</tt>
     </p>
 
-    <p>
-      <span id="assignment" class="bookmark"></span>
+    <p id="assignment">
       <b class="header">Assignment</b>
       Use a colon <tt>:</tt> to assign, as in
       <a href="http://json.org">JSON</a>. Equal signs are only needed for
@@ -321,8 +303,7 @@ print reverse 'tpircseeffoc'</textarea>
       lexical scope, so that assignment may always be performed within expressions.
     </p>
 
-    <p>
-      <span id="objects_and_arrays" class="bookmark"></span>
+    <p id="objects_and_arrays">
       <b class="header">Objects and Arrays</b>
       Object and Array literals look very similar to their JavaScript cousins.
       When you spread out each assignment on a separate line, the commas are
@@ -332,8 +313,7 @@ print reverse 'tpircseeffoc'</textarea>
     </p>
     <%= code_for('objects_and_arrays', 'song.join(",")') %>
 
-    <p>
-      <span id="lexical_scope" class="bookmark"></span>
+    <p id="lexical_scope">
       <b class="header">Lexical Scoping and Variable Safety</b>
       The CoffeeScript compiler takes care to make sure that all of your variables
       are properly declared within lexical scope &mdash; you never need to write
@@ -363,8 +343,7 @@ print reverse 'tpircseeffoc'</textarea>
       CommonJS and the browser: <tt>root: exports ? this</tt>
     </p>
 
-    <p>
-      <span id="conditionals" class="bookmark"></span>
+    <p id="conditionals">
       <b class="header">Conditionals, Ternaries, and Conditional Assignment</b>
       <b>If/else</b> statements can be written without the use of parentheses and
       curly brackets. As with functions and other block expressions,
@@ -383,8 +362,7 @@ print reverse 'tpircseeffoc'</textarea>
       truthy variables.
     </p>
 
-    <p>
-      <span id="aliases" class="bookmark"></span>
+    <p id="aliases">
       <b class="header">Aliases</b>
       Because the <tt>==</tt> operator frequently causes undesirable coercion,
       is intransitive, and has a different meaning than in other languages,
@@ -417,8 +395,7 @@ print reverse 'tpircseeffoc'</textarea>
     </p>
     <%= code_for('aliases') %>
 
-    <p>
-      <span id="splats" class="bookmark"></span>
+    <p id="splats">
       <b class="header">Splats...</b>
       The JavaScript <b>arguments object</b> is a useful way to work with
       functions that accept variable numbers of arguments. CoffeeScript provides
@@ -427,8 +404,7 @@ print reverse 'tpircseeffoc'</textarea>
     </p>
     <%= code_for('splats', true) %>
 
-    <p>
-      <span id="arguments" class="bookmark"></span>
+    <p id="arguments">
       <b class="header">Arguments are Arrays</b>
       If you reference the <b>arguments object</b> directly, it will be converted
       into a real Array, making all of the
@@ -437,8 +413,7 @@ print reverse 'tpircseeffoc'</textarea>
     </p>
     <%= code_for('arguments', true) %>
 
-    <p>
-      <span id="while" class="bookmark"></span>
+    <p id="while">
       <b class="header">While Loops</b>
       The only low-level loop that CoffeeScript provides is the <b>while</b> loop. The
       main difference from JavaScript is that the <b>while</b> loop can be used
@@ -453,8 +428,7 @@ print reverse 'tpircseeffoc'</textarea>
       <b>each</b> (<b>forEach</b>) style iterators, or...
     </p>
 
-    <p>
-      <span id="comprehensions" class="bookmark"></span>
+    <p id="comprehensions">
       <b class="header">Comprehensions (Arrays, Objects, and Ranges)</b>
       For your looping needs, CoffeeScript provides array comprehensions
       similar to Python's. They replace (and compile into) <b>for</b> loops, with
@@ -478,8 +452,7 @@ print reverse 'tpircseeffoc'</textarea>
     </p>
     <%= code_for('object_comprehensions', 'ages.join(", ")') %>
 
-    <p>
-      <span id="slice_splice" class="bookmark"></span>
+    <p id="slice_splice">
       <b class="header">Array Slicing and Splicing with Ranges</b>
       CoffeeScript borrows Ruby's
       <a href="http://ruby-doc.org/core/classes/Range.html">range syntax</a>
@@ -495,8 +468,7 @@ print reverse 'tpircseeffoc'</textarea>
     </p>
     <%= code_for('splices', 'numbers') %>
 
-    <p>
-      <span id="expressions" class="bookmark"></span>
+    <p id="expressions">
       <b class="header">Everything is an Expression (at least, as much as possible)</b>
       You might have noticed how even though we don't add return statements
       to CoffeeScript functions, they nonetheless return their final value.
@@ -535,8 +507,7 @@ print reverse 'tpircseeffoc'</textarea>
       CoffeeScript won't try to perform the conversion.
     </p>
 
-    <p>
-      <span id="existence" class="bookmark"></span>
+    <p id="existence">
       <b class="header">The Existential Operator</b>
       It's a little difficult to check for the existence of a variable in
       JavaScript. <tt>if (variable) ...</tt> comes close, but fails for zero,
@@ -565,8 +536,7 @@ print reverse 'tpircseeffoc'</textarea>
       in Groovy.
     </p>
 
-    <p>
-      <span id="inheritance" class="bookmark"></span>
+    <p id="inheritance">
       <b class="header">Inheritance, and Calling Super from a Subclass</b>
       JavaScript's prototypal inheritance has always been a bit of a
       brain-bender, with a whole family tree of libraries that provide a cleaner
@@ -588,8 +558,7 @@ print reverse 'tpircseeffoc'</textarea>
     </p>
     <%= code_for('super', true) %>
 
-    <p>
-      <span id="pattern_matching" class="bookmark"></span>
+    <p id="pattern_matching">
       <b class="header">Pattern Matching (Destructuring Assignment)</b>
       To make extracting values from complex arrays and objects more convenient,
       CoffeeScript implements ECMAScript Harmony's proposed
@@ -611,8 +580,7 @@ print reverse 'tpircseeffoc'</textarea>
     </p>
     <%= code_for('object_extraction', 'poet + " — " + street') %>
 
-    <p>
-      <span id="fat_arrow" class="bookmark"></span>
+    <p id="fat_arrow">
       <b class="header">Function binding</b>
       The fat arrow <tt>=></tt> can be used to both define a function, and to bind
       it to the current value of <tt>this</tt>, right on the spot. This is helpful
@@ -623,8 +591,7 @@ print reverse 'tpircseeffoc'</textarea>
     </p>
     <%= code_for('fat_arrow') %>
 
-    <p>
-      <span id="embedded" class="bookmark"></span>
+    <p id="embedded">
       <b class="header">Embedded JavaScript</b>
       Hopefully, you'll never need to use it, but if you ever need to intersperse
       snippets of JavaScript within your CoffeeScript, you can
@@ -632,8 +599,7 @@ print reverse 'tpircseeffoc'</textarea>
     </p>
     <%= code_for('embedded', 'hi()') %>
 
-    <p>
-      <span id="switch" class="bookmark"></span>
+    <p id="switch">
       <b class="header">Switch/When/Else</b>
       <b>Switch</b> statements in JavaScript are rather broken. You can only
       do comparisons based on string equality, and need to remember to <b>break</b> at the end of
@@ -650,16 +616,14 @@ print reverse 'tpircseeffoc'</textarea>
     </p>
     <%= code_for('switch') %>
 
-    <p>
-      <span id="try" class="bookmark"></span>
+    <p id="try">
       <b class="header">Try/Catch/Finally</b>
       Try/catch statements are just about the same as JavaScript (although
       they work as expressions).
     </p>
     <%= code_for('try') %>
 
-    <p>
-      <span id="comparisons" class="bookmark"></span>
+    <p id="comparisons">
       <b class="header">Chained Comparisons</b>
       CoffeeScript borrows
       <a href="http://docs.python.org/reference/expressions.html#notin">chained comparisons</a>
@@ -668,8 +632,7 @@ print reverse 'tpircseeffoc'</textarea>
     </p>
     <%= code_for('comparisons', 'healthy') %>
 
-    <p>
-      <span id="strings" class="bookmark"></span>
+    <p id="strings">
       <b class="header">Multiline Strings and Heredocs</b>
       Multiline strings are allowed in CoffeeScript.
     </p>
@@ -682,10 +645,7 @@ print reverse 'tpircseeffoc'</textarea>
     </p>
     <%= code_for('heredocs') %>
 
-    <h2>
-      <span id="resources" class="bookmark"></span>
-      Resources
-    </h2>
+    <h2 id="resources">Resources</h2>
 
     <ul>
       <li>
@@ -725,10 +685,7 @@ print reverse 'tpircseeffoc'</textarea>
       </li>
     </ul>
 
-    <h2>
-      <span id="change_log" class="bookmark"></span>
-      Change Log
-    </h2>
+    <h2 id="change_log">Change Log</h2>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.3.2</b>
