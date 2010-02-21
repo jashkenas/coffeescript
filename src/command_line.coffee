@@ -33,7 +33,7 @@ option_parser: null
 exports.run: ->
   parse_options()
   return require 'repl' if options.interactive
-  return puts coffee.compile sources[0] if options.eval
+  return compile_script 'terminal', sources[0] if options.eval
   usage() unless sources.length
   separator: sources.indexOf '--'
   flags: []

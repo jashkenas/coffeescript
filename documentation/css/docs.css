@@ -63,7 +63,7 @@ code, pre, tt, textarea {
 div.code {
   position: relative;
   border: 1px solid #cacaca;
-  background: #fff;
+  background: #fafaff;
   padding: 7px 0 10px 0;
   -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px;
   -webkit-box-shadow: 0px 0px 7px #cacaca;
@@ -75,6 +75,7 @@ div.code {
   div.code pre, div.code textarea {
     float: left;
     width: 450px;
+    background: #fafaff;
     border-left: 1px dotted #559;
     padding: 0 0 0 12px;
     margin: 0;
@@ -98,7 +99,7 @@ div.code {
   height: 50px;
   left: 40px; right: 40px; top: 25px;
   background: #ddd;
-  padding-left: 250px;
+  padding-left: 235px;
   background: -webkit-gradient(linear, left top, left bottom, from(#f5f5f5), to(#d0d0d0));
   background: -moz-linear-gradient(top, #f5f5f5, #d0d0d0);
   filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#F5F5F5', EndColorStr='#D0D0D0');

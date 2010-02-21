@@ -234,18 +234,27 @@ cubed_list = (function() {
     </h2>
 
     <p>
-      The CoffeeScript compiler is written in pure Ruby, and is available
-      as a Ruby Gem.
+      The CoffeeScript compiler is written in pure CoffeeScript, and is available
+      as a <a href="http://nodejs.org/">Node.js</a> utility. The core compiler however,
+      does not depend on Node, and can be run in other server-side-JavaScript environments,
+      or in the browser (see "Try CoffeeScript", above).  
+    </p>
+    
+    <p>
+      To install, either clone the 
+      <a href="http://github.com/jashkenas/coffee-script">source repository</a>, 
+      or download the latest
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.0">0.5.0</a>. 
+      Then, from within the <tt>coffee-script</tt> directory, run:
     </p>
 
     <pre>
-gem install coffee-script</pre>
+bin/cake install</pre>
 
     <p>
       Installing the gem provides the <tt>coffee</tt> command, which can
       be used to compile CoffeeScript <tt>.coffee</tt> files into JavaScript, as
-      well as debug them. In conjunction with
-      <a href="http://nodejs.org/">Node.js</a> (or <a href="http://narwhaljs.org/">Narwhal</a>), the <tt>coffee</tt>
+      well as debug them. The <tt>coffee</tt>
       command also provides direct evaluation and an interactive REPL.
       When compiling to JavaScript, <tt>coffee</tt> writes the output
       as <tt>.js</tt> files in the same directory by default, but output
@@ -256,17 +265,14 @@ gem install coffee-script</pre>
       <tr>
         <td width="25%"><code>-i, --interactive</code></td>
         <td>
-          Launch an interactive CoffeeScript session.
-          Requires <a href="http://nodejs.org/">Node.js</a>,
-          or <a href="http://narwhaljs.org/">Narwhal</a>, with <tt>--narwhal</tt>.
+          Launch an interactive CoffeeScript session to try short snippets.
         </td>
       </tr>
       <tr>
         <td><code>-r, --run</code></td>
         <td>
-          Compile and execute scripts without saving the intermediate
-          JavaScript. Requires <a href="http://nodejs.org/">Node.js</a>,
-          or <a href="http://narwhaljs.org/">Narwhal</a>, with <tt>--narwhal</tt>.
+          Compile and execute a given CoffeeScript without saving the intermediate
+          JavaScript.
         </td>
       </tr>
       <tr>
@@ -292,7 +298,9 @@ gem install coffee-script</pre>
       <tr>
         <td><code>-l, --lint</code></td>
         <td>
-          If the <tt>jsl</tt> (JavaScript Lint) command is installed, use it
+          If the <tt>jsl</tt> 
+          (<a href="http://www.javascriptlint.com/">JavaScript Lint</a>) 
+          command is installed, use it
           to check the compilation of a CoffeeScript file. (Handy in
           conjunction with <tt>--watch</tt>)
         </td>
@@ -301,22 +309,7 @@ gem install coffee-script</pre>
         <td><code>-e, --eval</code></td>
         <td>
           Compile and print a little snippet of CoffeeScript directly from the
-          command line (or from <b>stdin</b>). For example:<br /><tt>coffee -e "square: (x) -> x * x"</tt>
-        </td>
-      </tr>
-      <tr>
-        <td><code>-t, --tokens</code></td>
-        <td>
-          Instead of parsing the CoffeeScript, just lex it, and print out the
-          token stream: <tt>[:IDENTIFIER, "square"], [":", ":"], [:PARAM, "x"]</tt> ...
-        </td>
-      </tr>
-      <tr>
-        <td><code>-v, --verbose</code></td>
-        <td>
-          As the JavaScript is being generated, print out every step of code
-          generation, including lexical scope and the nodes in the
-          AST.
+          command line. For example:<br /><tt>coffee -e "square: (x) -> x * x"</tt>
         </td>
       </tr>
       <tr>
@@ -327,16 +320,25 @@ gem install coffee-script</pre>
         </td>
       </tr>
       <tr>
-        <td><code>-g, --globals</code></td>
+        <td><code>-t, --tokens</code></td>
         <td>
-          Suppress all variable declarations at the top-level, effectively adding
-          those variables to the global scope. (Used by the REPL.)
+          Instead of parsing the CoffeeScript, just lex it, and print out the
+          token stream: <tt>[IDENTIFIER square] [ASSIGN :] [PARAM_START (]</tt> ...
         </td>
       </tr>
       <tr>
-        <td><code>--install-bundle</code></td>
+        <td><code>-tr, --tree</code></td>
         <td>
-          Install the TextMate bundle for CoffeeScript syntax highlighting.
+          Instead of compiling the CoffeeScript, just lex and parse it, and print
+          out the parse tree:
+<pre>
+  Expressions
+    Assign
+      Value "square"
+      Code "x"
+        Op *
+          Value "x"
+          Value "x"</pre>
         </td>
       </tr>
     </table>
@@ -365,7 +367,13 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
         the left, and the direct compilation into JavaScript is on the right.
       </i>
     </p>
-
+    
+    <p>
+      <i>
+        Many of the examples can be run (where it makes sense) by pressing the "run"
+        button towards the bottom right. You can also paste examples into 
+        "Try CoffeeScript" in the toolbar, and play with them from there.
+      </i>
     <p>
       <span id="whitespace" class="bookmark"></span>
       <b class="header">Significant Whitespace</b>
@@ -380,20 +388,21 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
 
     <p>
-      You don't need to use parentheses to invoke a function, if you're passing
+      You don't need to use parentheses to invoke a function if you're passing
       arguments:<br /><tt>print "coffee"</tt>
     </p>
 
     <p>
       You can use newlines to break up your expression into smaller pieces,
-      as long as CoffeeScript can determine that the line hasn't finished yet.
+      as long as CoffeeScript can determine that the line hasn't finished yet,
+      because it ends with an operator or a dot.
     </p>
 
     <p>
       <span id="functions" class="bookmark"></span>
       <b class="header">Functions and Invocation</b>
       Functions are defined by a list of parameters, an arrow, and the
-      function body. The empty function looks like this: <tt>-></tt>. All
+      function body. The empty function looks like this: <tt>-></tt> All
       functions in CoffeeScript are named by default, for easier debugging.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">square</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">x</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> x <span class="Keyword">*</span> x
@@ -414,7 +423,8 @@ cube = function cube(x) {
 };
 ;alert(cube(5));'>run: cube(5)</button><br class='clear' /></div>
     <p>
-      If you'd like to create an anonymous function, just wrap it in parentheses:
+      If you'd like to assign a function literal to a variable, but not have 
+      it be named, just wrap the function definition in parentheses:
       <tt>((x) -> x * x)</tt>
     </p>
 
@@ -436,7 +446,7 @@ greeting = "Hello CoffeeScript";
 difficulty = 0.5;
 ;alert(greeting);'>run: greeting</button><br class='clear' /></div>
     <p>
-      Declaration of new variables are pushed up to the top of the nearest
+      All declaration of new variables is pushed up to the top of the nearest
       lexical scope, so that assignment may always be performed within expressions.
     </p>
 
@@ -703,13 +713,13 @@ alert("The Field: " + the_field);
 backwards <span class="String"><span class="String">&quot;</span>stairway<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>to<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>heaven<span class="String">&quot;</span></span>
 </pre><pre class="idle"><span class="Storage">var</span> backwards;
 backwards <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">backwards</span>() {
-  <span class="Storage">var</span> arguments <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">0</span>);
+  arguments <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">0</span>);
   <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(arguments.<span class="LibraryFunction">reverse</span>());
 };
 backwards(<span class="String"><span class="String">&quot;</span>stairway<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>to<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>heaven<span class="String">&quot;</span></span>);
 </pre><button onclick='javascript: var backwards;
 backwards = function backwards() {
-  var arguments = Array.prototype.slice.call(arguments, 0);
+  arguments = Array.prototype.slice.call(arguments, 0);
   return alert(arguments.reverse());
 };
 backwards("stairway", "to", "heaven");
@@ -1565,6 +1575,7 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">&q
       <li>
         If you'd like to chat, stop by <tt>#coffeescript</tt> on Freenode.
       </li>
+      <!--
       <li>
         <a href="http://github.com/mattly/rack-coffee">rack-coffee</a><br />
         Rack middleware for serving CoffeeScripts as JavaScript directly to
@@ -1584,6 +1595,7 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">&q
         <a href="http://github.com/inem">Ivan Nemytchenko</a>, that embeds
         snippets of CoffeeScript within your HAML templates.
       </li>
+      -->
     </ul>
 
     <h2>
