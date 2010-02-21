@@ -105,7 +105,7 @@ alert <span class="String"><span class="String">&quot;</span>I knew it!<span cla
 
 <span class="Comment"><span class="Comment">#</span> Array comprehensions:</span>
 <span class="FunctionName">cubed_list</span><span class="Keyword">:</span> math.cube num <span class="Keyword">for</span> num <span class="Keyword">in</span> list
-</pre><pre class="idle"><span class="Storage">var</span> __a, __b, __c, cubed_list, list, math, num, number, opposite_day, race, square;
+</pre><pre class="idle"><span class="Storage">var</span> _a, _b, _c, cubed_list, list, math, num, number, opposite_day, race, square;
 <span class="Comment"><span class="Comment">//</span> Assignment:</span>
 number <span class="Keyword">=</span> <span class="Number">42</span>;
 opposite_day <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
@@ -139,14 +139,14 @@ race <span class="Keyword">=</span> <span class="Storage">function</span> <span 
 }
 <span class="Comment"><span class="Comment">//</span> Array comprehensions:</span>
 cubed_list <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  __a <span class="Keyword">=</span> []; __b <span class="Keyword">=</span> list;
-  <span class="Keyword">for</span> (__c <span class="Keyword">=</span> <span class="Number">0</span>; __c <span class="Keyword">&lt;</span> __b.<span class="LibraryConstant">length</span>; __c<span class="Keyword">++</span>) {
-    num <span class="Keyword">=</span> __b[__c];
-    __a.<span class="LibraryFunction">push</span>(math.cube(num));
+  _a <span class="Keyword">=</span> []; _b <span class="Keyword">=</span> list;
+  <span class="Keyword">for</span> (_c <span class="Keyword">=</span> <span class="Number">0</span>; _c <span class="Keyword">&lt;</span> _b.<span class="LibraryConstant">length</span>; _c<span class="Keyword">++</span>) {
+    num <span class="Keyword">=</span> _b[_c];
+    _a.<span class="LibraryFunction">push</span>(math.cube(num));
   }
-  <span class="Keyword">return</span> __a;
+  <span class="Keyword">return</span> _a;
 }).<span class="LibraryFunction">call</span>(<span class="Variable">this</span>);
-</pre><button onclick='javascript: var __a, __b, __c, cubed_list, list, math, num, number, opposite_day, race, square;
+</pre><button onclick='javascript: var _a, _b, _c, cubed_list, list, math, num, number, opposite_day, race, square;
 // Assignment:
 number = 42;
 opposite_day = true;
@@ -180,12 +180,12 @@ if ((typeof elvis !== "undefined" && elvis !== null)) {
 }
 // Array comprehensions:
 cubed_list = (function() {
-  __a = []; __b = list;
-  for (__c = 0; __c < __b.length; __c++) {
-    num = __b[__c];
-    __a.push(math.cube(num));
+  _a = []; _b = list;
+  for (_c = 0; _c < _b.length; _c++) {
+    num = _b[_c];
+    _a.push(math.cube(num));
   }
-  return __a;
+  return _a;
 }).call(this);
 ;alert(cubed_list);'>run: cubed_list</button><br class='clear' /></div>
 
