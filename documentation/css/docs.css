@@ -21,6 +21,9 @@ br.clear {
   height: 0;
   clear: both;
 }
+ul {
+  padding-left: 20px;
+}
 b.header {
   color: #000055;
   display: block;
