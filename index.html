@@ -10,7 +10,7 @@
   <link rel="stylesheet" type="text/css" href="documentation/css/idle.css" />
 </head>
 <body>
-  
+
   <div id="fadeout"></div>
 
   <div id="flybar">
@@ -56,11 +56,12 @@
       <div class="contents repl_wrapper">
         <div class="code">
           <textarea id="repl_source">reverse: (string) ->
-  string.split('').reverse()
+  string.split('').reverse().join ''
 
-print reverse 'tpircseeffoc'</textarea>
+alert reverse '!tpircseeffoC'</textarea>
           <pre id="repl_results"></pre>
-          <button onclick="javascript: repl_compile();">compile</button>
+          <button class="compile" onclick="javascript: repl_compile();">compile</button>
+          <button class="run" onclick="javascript: repl_run();">run</button>
           <br class="clear" />
         </div>
       </div>
@@ -1755,13 +1756,20 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">&q
   <script type="text/javascript">
     window.repl_compile = function() {
       var source = document.getElementById('repl_source').value;
-      var js = '';
+      window.compiled_js = '';
       try {
-        js = CoffeeScript.compile(source, {no_wrap: true});
+        window.compiled_js = CoffeeScript.compile(source, {no_wrap: true});
       } catch(error) {
         alert(error);
       }
-      document.getElementById('repl_results').innerHTML = js;
+      document.getElementById('repl_results').innerHTML = window.compiled_js;
+    }
+    window.repl_run = function() {
+      try {
+        eval(window.compiled_js);
+      } catch(error) {
+        alert(error);
+      }
     }
   </script>
 

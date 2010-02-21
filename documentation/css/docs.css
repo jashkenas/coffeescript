@@ -148,13 +148,19 @@ div.code {
       }
         .navigation .contents.repl_wrapper {
           left: -162px;
-          width: 640px;
+          width: 700px;
           padding: 0;
         }
           .navigation .contents.repl_wrapper .code {
             -webkit-box-shadow: none; -moz-box-shadow: none;
             background: transparent;
             border: 0;
+          }
+          .navigation .code button {
+            bottom: 10px;
+          }
+          .navigation .compile {
+            left: 240px; right: auto;
           }
       .navigation .contents a {
         display: block;
@@ -193,5 +199,5 @@ div.code {
     text-transform: none;
     font-weight: normal;
     min-height: 260px;
-    width: 295px;
+    width: 355px;
   }
