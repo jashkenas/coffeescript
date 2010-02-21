@@ -78,7 +78,7 @@ NOT_REGEX: [
 ]
 
 # Tokens which could legitimately be invoked or indexed.
-CALLABLE: ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING']
+CALLABLE: ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING', '@']
 
 # Tokens that indicate an access -- keywords immediately following will be
 # treated as identifiers.

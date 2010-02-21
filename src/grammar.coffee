@@ -300,6 +300,7 @@ grammar: {
   This: [
     o "@",                                      -> new ValueNode(new LiteralNode('this'))
     o "@ Identifier",                           -> new ValueNode(new LiteralNode('this'), [new AccessorNode($2)])
+    o "@ Index",                                -> new ValueNode(new LiteralNode('this'), [$2])
   ]
 
   # The range literal.

@@ -45,7 +45,7 @@ bob: {
   greet: (salutation) ->
     salutation + " " + @name
   hello: ->
-    @greet "Hello"
+    @['greet'] "Hello"
   10: 'number'
 }
 
