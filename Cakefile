@@ -22,8 +22,7 @@ task 'build', 'build the CoffeeScript language from source', ->
     run ['-o', 'lib'].concat(files)
 
 
-task 'build:parser', 'rebuild the Jison parser', ->
-  invoke 'build'
+task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   parser: require('grammar').parser
   js: parser.generate()
   parser_path: 'lib/parser.js'
