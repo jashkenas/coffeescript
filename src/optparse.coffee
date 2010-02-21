@@ -45,7 +45,7 @@ op::help: ->
 # Private:
 
 # Regex matchers for option flags.
-LONG_FLAG:  /^(--\w+)/
+LONG_FLAG:  /^(--[\w\-]+)/
 SHORT_FLAG: /^(-\w+)/
 OPTIONAL:   /\[(.+)\]/
 

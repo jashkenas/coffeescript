@@ -20,6 +20,7 @@ SWITCHES: [
   ['-e', '--eval',          'compile a string from the command line']
   ['-t', '--tokens',        'print the tokens that the lexer produces']
   ['-tr','--tree',          'print the parse tree that Jison produces']
+  ['-n', '--no-wrap',       'compile without the top-level function wrapper']
   ['-v', '--version',       'display CoffeeScript version']
   ['-h', '--help',          'display this help message']
 ]
@@ -54,19 +55,6 @@ version: ->
   puts "CoffeeScript version " + coffee.VERSION
   process.exit 0
 
-# Compile a single source file to JavaScript.
-compile: (script, source) ->
-  source ||= 'error'
-  options: {}
-  options.no_wrap: true if options.no_wrap
-  options.globals: true if options.globals
-  try
-    CoffeeScript.compile(script, options)
-  catch error
-    process.stdio.writeError(source + ': ' + error.toString())
-    process.exit 1 unless options.watch
-    null
-
 # Compiles the source CoffeeScript, returning the desired JavaScript, tokens,
 # or JSLint results.
 compile_scripts: ->
@@ -79,11 +67,12 @@ compile_scripts: ->
 # requested options. Both compile_scripts and watch_scripts share this method.
 compile_script: (source, code) ->
   opts: options
+  o: if opts.no_wrap then {no_wrap: true} else {}
   try
     if      opts.tokens   then coffee.print_tokens coffee.tokenize code
     else if opts.tree     then puts coffee.tree(code).toString()
     else
-      js: coffee.compile code
+      js: coffee.compile code, o
       if      opts.run    then eval js
       else if opts.print  then puts js
       else if opts.lint   then lint js
@@ -131,6 +120,7 @@ parse_options: ->
   oparser.add 'eval',             -> opts.eval:        true
   oparser.add 'tokens',           -> opts.tokens:      true
   oparser.add 'tree',             -> opts.tree:        true
+  oparser.add 'no-wrap',          -> opts.no_wrap:     true
   oparser.add 'help',             => usage()
   oparser.add 'version',          => version()
 
