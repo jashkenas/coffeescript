@@ -63,6 +63,7 @@ Node: exports.Node: ->
 Node::compile: (o) ->
   @options: merge o or {}
   @indent:  o.indent
+  del @options, 'operation' unless @operation_sensitive()
   top:      if @top_sensitive() then @options.top else del @options, 'top'
   closure:  @is_statement() and not @is_statement_only() and not top and
             not @options.returns and not (this instanceof CommentNode) and
@@ -95,11 +96,12 @@ Node::toString: (idt) ->
   '\n' + idt + @type + (child.toString(idt + TAB) for child in @children).join('')
 
 # Default implementations of the common node methods.
-Node::unwrap:             -> this
-Node::children:           []
-Node::is_statement:       -> false
-Node::is_statement_only:  -> false
-Node::top_sensitive:      -> false
+Node::unwrap:               -> this
+Node::children:             []
+Node::is_statement:         -> false
+Node::is_statement_only:    -> false
+Node::top_sensitive:        -> false
+Node::operation_sensitive:  -> false
 
 # A collection of nodes, each one representing an expression.
 Expressions: exports.Expressions: inherit Node, {
@@ -239,6 +241,9 @@ ValueNode: exports.ValueNode: inherit Node, {
     @children.push(prop)
     this
 
+  operation_sensitive: ->
+    true
+
   has_properties: ->
     !!@properties.length
 
@@ -264,6 +269,7 @@ ValueNode: exports.ValueNode: inherit Node, {
   compile_node: (o) ->
     soaked:   false
     only:     del(o, 'only_first')
+    op:       del(o, 'operation')
     props:    if only then @properties[0...@properties.length - 1] else @properties
     baseline: @base.compile o
     baseline: '(' + baseline + ')' if @base instanceof ObjectNode and @has_properties()
@@ -285,8 +291,7 @@ ValueNode: exports.ValueNode: inherit Node, {
     @last: parts[parts.length - 1]
     @source: if parts.length > 1 then parts[0...(parts.length - 1)].join('') else null
     code: parts.join('').replace(/\)\(\)\)/, '()))')
-    return code unless soaked
-    '(' + code + ')'
+    if op and soaked then '(' + code + ')' else code
 
 }
 
@@ -757,6 +762,7 @@ OpNode: exports.OpNode: inherit Node, {
     @CHAINABLE.indexOf(@operator) >= 0
 
   compile_node: (o) ->
+    o.operation: true
     return @compile_chain(o)      if @is_chainable() and @first.unwrap() instanceof OpNode and @first.unwrap().is_chainable()
     return @compile_assignment(o) if @ASSIGNMENT.indexOf(@operator) >= 0
     return @compile_unary(o)      if @is_unary()

@@ -55,3 +55,16 @@ ok arr.pop()?.length is 2
 ok arr.pop()?.length is undefined
 ok arr[0]?.length is undefined
 ok arr.pop()?.length?.non?.existent()?.property is undefined
+
+
+# Soaks method calls safely.
+value: undefined
+result: value?.toString().toLowerCase()
+
+ok result is undefined
+
+value: 10
+result: value?.toString().toLowerCase()
+
+ok result is '10'
+
