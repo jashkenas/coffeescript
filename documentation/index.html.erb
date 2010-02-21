@@ -59,6 +59,7 @@
         <a href="#try">Try/Catch/Finally</a>
         <a href="#comparisons">Chained Comparisons</a>
         <a href="#strings">Multiline Strings and Heredocs</a>
+        <a href="#cake">Cake, and Cakefiles</a>
         <a href="#resources">Resources</a>
         <a href="#change_log">Change Log</a>
       </div>
@@ -140,19 +141,19 @@ alert reverse '!tpircseeffoC'</textarea>
       The CoffeeScript compiler is written in pure CoffeeScript, and is available
       as a <a href="http://nodejs.org/">Node.js</a> utility. The core compiler however,
       does not depend on Node, and can be run in other server-side-JavaScript environments,
-      or in the browser (see "Try CoffeeScript", above).  
+      or in the browser (see "Try CoffeeScript", above).
     </p>
-    
+
     <p>
-      To install, either clone the 
-      <a href="http://github.com/jashkenas/coffee-script">source repository</a>, 
+      To install, either clone the
+      <a href="http://github.com/jashkenas/coffee-script">source repository</a>,
       or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.0">0.5.0</a>. 
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.0">0.5.0</a>.
       Then, from within the <tt>coffee-script</tt> directory, run:
     </p>
 
     <pre>
-bin/cake install</pre>
+sudo bin/cake install</pre>
 
     <p>
       Installing the gem provides the <tt>coffee</tt> command, which can
@@ -201,8 +202,8 @@ bin/cake install</pre>
       <tr>
         <td><code>-l, --lint</code></td>
         <td>
-          If the <tt>jsl</tt> 
-          (<a href="http://www.javascriptlint.com/">JavaScript Lint</a>) 
+          If the <tt>jsl</tt>
+          (<a href="http://www.javascriptlint.com/">JavaScript Lint</a>)
           command is installed, use it
           to check the compilation of a CoffeeScript file. (Handy in
           conjunction with <tt>--watch</tt>)
@@ -270,11 +271,11 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
         the left, and the direct compilation into JavaScript is on the right.
       </i>
     </p>
-    
+
     <p>
       <i>
         Many of the examples can be run (where it makes sense) by pressing the "run"
-        button towards the bottom right. You can also paste examples into 
+        button towards the bottom right. You can also paste examples into
         "Try CoffeeScript" in the toolbar, and play with them from there.
       </i>
     <p>
@@ -310,7 +311,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('functions', 'cube(5)') %>
     <p>
-      If you'd like to assign a function literal to a variable, but not have 
+      If you'd like to assign a function literal to a variable, but not have
       it be named, just wrap the function definition in parentheses:
       <tt>((x) -> x * x)</tt>
     </p>
@@ -691,6 +692,27 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <%= code_for('heredocs') %>
 
     <h2>
+      <span id="cake" class="bookmark"></span>
+      Cake, and Cakefiles
+    </h2>
+
+    <p>
+      CoffeeScript includes a simple build system similar to Make and Rake. Naturally,
+      it's called Cake, and is used for the build and test tasks for the CoffeeScript
+      language itself. Tasks are defined in a file named <tt>Cakefile</tt>, and
+      can be invoked by running <tt>cake taskname</tt> from within the directory.
+      To print a list of all the tasks, just run <tt>cake</tt>.
+    </p>
+
+    <p>
+      Task definitions are written in CoffeeScript, so you can put arbitrary code
+      in your Cakefile. Define a task with a name, a long description, and the
+      function to invoke when the task is run. Here's a hypothetical task
+      that uses the Node.js API.
+    </p>
+    <%= code_for('cake_tasks') %>
+
+    <h2>
       <span id="resources" class="bookmark"></span>
       Resources
     </h2>
@@ -698,12 +720,11 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <ul>
       <li>
         <a href="http://github.com/jashkenas/coffee-script/">Source Code</a><br />
-        Use <tt>bin/coffee</tt> to test your changes,
-        <tt>rake test</tt> to run the test suite,
-        <tt>rake build:parser</tt> to regenerate the Racc parser if you're
-        working on the grammar,
-        and <tt>rake gem:install</tt> to
-        create and install a custom version of the gem.
+        Use <tt>bin/coffee</tt> to test your changes,<br />
+        <tt>bin/cake test</tt> to run the test suite,<br />
+        <tt>bin/cake build</tt> to rebuild the CoffeeScript compiler, and <br />
+        <tt>bin/cake build:parser</tt> to regenerate the Jison parser if you're
+        working on the grammar.
       </li>
       <li>
         <a href="http://github.com/jashkenas/coffee-script/issues">CoffeeScript Issues</a><br />
@@ -712,33 +733,19 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <li>
         If you'd like to chat, stop by <tt>#coffeescript</tt> on Freenode.
       </li>
-      <!--
-      <li>
-        <a href="http://github.com/mattly/rack-coffee">rack-coffee</a><br />
-        Rack middleware for serving CoffeeScripts as JavaScript directly to
-        the browser, without having to compile them first. From
-        <a href="http://github.com/mattly">Matt Lyon</a>.
-      </li>
-      <li>
-        <a href="http://github.com/jnicklas/bistro_car">BistroCar</a><br />
-        A Rails plugin by
-        <a href="http://github.com/jnicklas">Jonas Nicklas</a>
-        that includes CoffeeScript helpers,
-        bundling and minification.
-      </li>
-      <li>
-        <a href="http://github.com/inem/coffee-haml-filter">coffee-haml-filter</a><br />
-        A custom <a href="http://haml-lang.com/">HAML</a> filter, by
-        <a href="http://github.com/inem">Ivan Nemytchenko</a>, that embeds
-        snippets of CoffeeScript within your HAML templates.
-      </li>
-      -->
     </ul>
 
     <h2>
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.5.0</b>
+      CoffeeScript 0.5.0 is a major update, and the first release that removes
+      the Ruby compiler entirely, in favor of a compiler written entirely in
+      CoffeeScript, and self-hosting.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.3.2</b>
