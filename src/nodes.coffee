@@ -156,8 +156,7 @@ Expressions: exports.Expressions: inherit Node, {
   compile_with_declarations: (o) ->
     code: @compile_node(o)
     args: @contains (node) -> node instanceof ValueNode and node.is_arguments()
-    argv: if args and o.scope.check('arguments') then '' else 'var '
-    code: @idt() + argv + "arguments = Array.prototype.slice.call(arguments, 0);\n" + code if args
+    code: @idt() + "arguments = Array.prototype.slice.call(arguments, 0);\n" + code if args
     code: @idt() + 'var ' + o.scope.compiled_assignments() + ";\n" + code  if o.scope.has_assignments(this)
     code: @idt() + 'var ' + o.scope.compiled_declarations() + ";\n" + code if o.scope.has_declarations(this)
     code
