@@ -14,7 +14,7 @@
   <div id="fadeout"></div>
 
   <div id="flybar">
-    <div id="logo"></div>
+    <a id="logo" href="#top"> </a>
     <div class="navigation">
       <div class="button">
         Table of Contents
@@ -22,7 +22,7 @@
       <div class="contents">
         <a href="#overview">Mini Overview</a>
         <a href="#installation">Installation and Usage</a>
-        <a href="#try_coffee">Try CoffeeScript</a>
+        <a href="#language">Language Reference</a>
         <a href="#whitespace">Significant Whitespace</a>
         <a href="#functions">Functions and Invocation</a>
         <a href="#assignment">Assignment</a>
@@ -49,9 +49,26 @@
         <a href="#change_log">Change Log</a>
       </div>
     </div>
+    <div class="navigation try">
+      <div class="button">
+        Try CoffeeScript
+      </div>
+      <div class="contents repl_wrapper">
+        <div class="code">
+          <textarea id="repl_source">reverse: (string) ->
+  string.split('').reverse()
+
+print reverse 'tpircseeffoc'</textarea>
+          <pre id="repl_results"></pre>
+          <button onclick="javascript: repl_compile();">compile</button>
+          <br class="clear" />
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="container">
+    <span class="bookmark" id="top"></span>
 
     <p>
       CoffeeScript is a little language that compiles into JavaScript. Think
@@ -63,8 +80,7 @@
 
     <p>
       <b>Disclaimer:</b>
-      CoffeeScript is just for fun and seriously alpha. I'm sure that there are still
-      plenty of holes in the walls and leaks in the roof. <i>There are no guarantees
+      CoffeeScript is just for fun. Until it reaches 1.0, <i>there are no guarantees
       that the syntax won't change between versions.</i> That said,
       it compiles into clean JavaScript (the good parts) that can use existing
       JavaScript libraries seamlessly, and passes through
@@ -75,7 +91,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://gemcutter.org/gems/coffee-script">0.3.2</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.0">0.5.0</a>
     </p>
 
     <h2>
@@ -335,28 +351,9 @@ coffee --watch --lint experimental.coffee
 coffee --print app/scripts/*.coffee > concatenation.js</pre>
 
     <h2>
-      <span id="try_coffee" class="bookmark"></span>
-      Try CoffeeScript
+      <span id="language" class="bookmark"></span>
+      Language Reference
     </h2>
-
-    <p>
-      Here's a live version of the CoffeeScript compiler, running within
-      your browser.<br /> Hit the <b>compile</b> button to generate JavaScript
-      on the right-hand side.
-      You can also paste in any of the examples from below.
-    </p>
-
-    <div class="code repl_wrapper">
-      <textarea id="repl_source">reverse: (string) ->
-  string.split('').reverse()
-
-print reverse 'tpircseeffoc'</textarea>
-      <pre id="repl_results"></pre>
-      <button onclick="javascript: repl_compile();">compile</button>
-      <br class="clear" />
-    </div>
-
-    <h2>Language Reference</h2>
 
     <p>
       <i>
