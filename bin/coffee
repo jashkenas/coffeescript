@@ -2,6 +2,6 @@
 
 process.mixin(require('sys'));
 
-require.paths.unshift('./lib');
+require.paths.unshift(__dirname + '/../lib');
 
 require('command_line').run();
