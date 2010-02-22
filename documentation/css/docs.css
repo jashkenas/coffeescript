@@ -130,7 +130,8 @@ div.code {
     .navigation.try {
       border-left: 0;
     }
-    .navigation:hover {
+    .navigation:hover,
+    .navigation.active {
       background: #d0d0d0;
       background: -webkit-gradient(linear, left top, left bottom, from(#f0f0f0), to(#c0c0c0));
       background: -moz-linear-gradient(top, #f0f0f0, #c0c0c0);
@@ -147,7 +148,7 @@ div.code {
       -webkit-border-top-right-radius: 0; -moz-border-radius-topright: 0;
       -webkit-box-shadow: 0 0 25px #777; -moz-box-shadow: 0 0 25px #777;
     }
-      .navigation:hover .contents {
+      .navigation.active .contents {
         display: block;
       }
         .navigation .contents.repl_wrapper {

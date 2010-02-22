@@ -242,7 +242,7 @@ cubed_list = (function() {
     </p>
 
     <p>
-      To install, first make sure you have a working version of 
+      To install, first make sure you have a working version of
       <a href="http://nodejs.org/">Node.js</a>, 0.1.30 or higher. Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
@@ -1621,7 +1621,7 @@ task(<span class="String"><span class="String">'</span>test<span class="String">
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.5.0</b>
       CoffeeScript 0.5.0 is a major release, While there are no language changes,
@@ -1791,24 +1791,45 @@ task(<span class="String"><span class="String">'</span>test<span class="String">
   <script type="text/javascript" src="lib/nodes.js"></script>
   <script type="text/javascript" src="lib/coffee-script.js"></script>
 
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+
   <script type="text/javascript">
     window.repl_compile = function() {
-      var source = document.getElementById('repl_source').value;
+      var source = $('#repl_source').val();
       window.compiled_js = '';
       try {
         window.compiled_js = CoffeeScript.compile(source, {no_wrap: true});
       } catch(error) {
         alert(error);
       }
-      document.getElementById('repl_results').innerHTML = window.compiled_js;
-    }
+      $('#repl_results').html(window.compiled_js);
+    };
     window.repl_run = function() {
       try {
         eval(window.compiled_js);
       } catch(error) {
         alert(error);
       }
-    }
+    };
+
+    var nav = $('.navigation');
+    var currentNav = null;
+    var closeMenus = function() {
+      if (currentNav) currentNav.removeClass('active');
+      currentNav = null;
+    };
+    nav.click(function(e) {
+      if (e.target.tagName.toLowerCase() == 'a') return;
+      if (this !== (currentNav && currentNav[0])) {
+        closeMenus();
+        currentNav = $(this);
+        currentNav.addClass('active');
+      }
+      return false;
+    });
+    $(document.body).click(function() {
+      closeMenus();
+    });
   </script>
 
 </body>
