@@ -58,10 +58,10 @@ version: ->
 # Compiles the source CoffeeScript, returning the desired JavaScript, tokens,
 # or JSLint results.
 compile_scripts: ->
-  return unless source: sources.shift()
-  fs.readFile source, (err, code) ->
-    compile_script(source, code)
-    compile_scripts()
+  compile: (source) ->
+    fs.readFile source, (err, code) -> compile_script(source, code)
+  compile(source) for source in sources
+
 
 # Compile a single source script, containing the given code, according to the
 # requested options. Both compile_scripts and watch_scripts share this method.
@@ -83,10 +83,11 @@ compile_script: (source, code) ->
 # Watch a list of source CoffeeScript files, recompiling them every time the
 # files are updated.
 watch_scripts: ->
-  for source in sources
+  watch: (source) ->
     process.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
       return if curr.mtime.getTime() is prev.mtime.getTime()
       fs.readFile source, (err, code) -> compile_script(source, code)
+  watch(source) for source in sources
 
 # Write out a JavaScript source file with the compiled code.
 write_js: (source, js) ->
