@@ -246,14 +246,15 @@ cubed_list = (function() {
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>,
       or download the latest
       release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.0">0.5.0</a>.
-      Then, from within the <tt>coffee-script</tt> directory, run:
+      Then, in order to install the CoffeeScript compiler system-wide
+      under <tt>/usr/local</tt>, run:
     </p>
 
     <pre>
 sudo bin/cake install</pre>
 
     <p>
-      Installing the gem provides the <tt>coffee</tt> command, which can
+      This provides the <tt>coffee</tt> command, which can
       be used to compile CoffeeScript <tt>.coffee</tt> files into JavaScript, as
       well as debug them. The <tt>coffee</tt>
       command also provides direct evaluation and an interactive REPL.
@@ -1622,9 +1623,9 @@ task(<span class="String"><span class="String">'</span>test<span class="String">
     
     <p>
       <b class="header" style="margin-top: 20px;">0.5.0</b>
-      CoffeeScript 0.5.0 is a major update, and the first release that removes
-      the Ruby compiler entirely, in favor of a compiler written entirely in
-      CoffeeScript, and self-hosting.
+      CoffeeScript 0.5.0 is a major release, While there are no language changes,
+      the Ruby compiler has been removed in favor of a self-hosting
+      compiler written in pure CoffeeScript.
     </p>
 
     <p>

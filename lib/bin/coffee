@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+
+process.mixin(require('sys'));
+
+require.paths.unshift('/usr/local/lib/coffee-script/lib');
+
+require('command_line').run();
