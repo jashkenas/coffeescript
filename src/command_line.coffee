@@ -73,9 +73,9 @@ compile_script: (source, code) ->
     else if opts.tree     then puts coffee.tree(code).toString()
     else
       js: coffee.compile code, o
-      if      opts.run    then eval js
-      else if opts.print  then puts js
-      else if opts.lint   then lint js
+      if      opts.run                then eval js
+      else if opts.lint               then lint js
+      else if opts.print or opts.eval then puts js
       else                     write_js source, js
   catch err
     if opts.watch then puts err.message else throw err
