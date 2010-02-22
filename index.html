@@ -235,7 +235,9 @@ cubed_list = (function() {
     </h2>
 
     <p>
-      The CoffeeScript compiler is written in pure CoffeeScript, and is available
+      The CoffeeScript compiler is written in pure CoffeeScript, using a 
+      <a href="http://github.com/jashkenas/coffee-script/blob/master/src/grammar.coffee">small DSL</a>
+      on top of the <a href="http://github.com/zaach/jison">Jison parser generator</a>, and is available
       as a <a href="http://nodejs.org/">Node.js</a> utility. The core compiler however,
       does not depend on Node, and can be run in other server-side-JavaScript environments,
       or in the browser (see "Try CoffeeScript", above).
@@ -334,14 +336,14 @@ sudo bin/cake install</pre>
         <td>
           Instead of compiling the CoffeeScript, just lex and parse it, and print
           out the parse tree:
-<pre>
-  Expressions
-    Assign
-      Value "square"
-      Code "x"
-        Op *
-          Value "x"
-          Value "x"</pre>
+<pre class="no_bar">
+Expressions
+  Assign
+    Value "square"
+    Code "x"
+      Op *
+        Value "x"
+        Value "x"</pre>
         </td>
       </tr>
     </table>

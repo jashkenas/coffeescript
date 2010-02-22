@@ -63,6 +63,11 @@ code, pre, tt, textarea {
     padding: 3px 0 3px 12px;
     font-size: 12px;
   }
+    pre.no_bar {
+      border-left: 0;
+      margin-left: 0;
+      padding-left: 0;
+    }
 div.code {
   position: relative;
   border: 1px solid #cacaca;
