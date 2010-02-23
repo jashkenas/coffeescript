@@ -236,7 +236,7 @@ statement ReturnNode, true
 ValueNode: exports.ValueNode: inherit Node, {
   type: 'Value'
 
-  SOAK: " == null ? undefined : "
+  SOAK: " == undefined ? undefined : "
 
   constructor: (base, properties) ->
     @children:   flatten [@base: base, @properties: (properties or [])]
