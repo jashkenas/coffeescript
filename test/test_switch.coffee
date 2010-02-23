@@ -51,3 +51,14 @@ switch "word"
     result: true unless false
 
 ok result
+
+result: false
+switch "word"
+  when "one thing"
+    do_something()
+  when "other thing"
+    do_something()
+  else
+    result: true unless false
+
+ok result

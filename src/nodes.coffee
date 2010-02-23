@@ -987,7 +987,7 @@ IfNode: exports.IfNode: inherit Node, {
   # Rewrite a chain of IfNodes to add a default case as the final else.
   add_else: (exprs, statement) ->
     if @is_chain()
-      @else_body.add_else exprs
+      @else_body.add_else exprs, statement
     else
       exprs: exprs.unwrap() unless statement
       @children.push @else_body: exprs
