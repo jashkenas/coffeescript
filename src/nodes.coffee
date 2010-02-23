@@ -908,7 +908,7 @@ ForNode: exports.ForNode: inherit Node, {
     if range
       index_var:    scope.free_variable()
       source_part:  source.compile_variables(o)
-      for_part:     index_var + '=0, ' + source.compile(merge(o, {index: ivar, step: @step})) + ', ' + index_var + '++'
+      for_part:     index_var + ' = 0, ' + source.compile(merge(o, {index: ivar, step: @step})) + ', ' + index_var + '++'
     else
       index_var:    null
       source_part:  svar + ' = ' + @source.compile(o) + ';\n' + @idt()
