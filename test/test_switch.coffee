@@ -41,3 +41,13 @@ result: switch num += 5
 
 ok result
 
+
+# Ensure that trailing switch elses don't get rewritten.
+result: false
+switch "word"
+  when "one thing"
+    do_something()
+  else
+    result: true unless false
+
+ok result

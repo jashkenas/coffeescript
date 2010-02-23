@@ -394,7 +394,7 @@ grammar: {
   # Switch/When blocks.
   Switch: [
     o "SWITCH Expression INDENT Whens OUTDENT", -> $4.rewrite_condition($2)
-    o "SWITCH Expression INDENT Whens ELSE Block OUTDENT", -> $4.rewrite_condition($2).add_else($6)
+    o "SWITCH Expression INDENT Whens ELSE Block OUTDENT", -> $4.rewrite_condition($2).add_else($6, true)
   ]
 
   # The inner list of whens.
