@@ -68,3 +68,8 @@ result: value?.toString().toLowerCase()
 
 ok result is '10'
 
+
+# Safely existence test on soaks.
+result: not value?.property?
+ok result
+

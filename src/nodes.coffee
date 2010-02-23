@@ -77,6 +77,13 @@ Node::compile_closure: (o) ->
   o.shared_scope: o.scope
   ClosureNode.wrap(this).compile(o)
 
+# If the code generation wishes to use the result of a complex expression
+# in multiple places, ensure that the expression is only ever evaluated once.
+Node::compile_reference: (o) ->
+  reference: new LiteralNode(o.scope.free_variable())
+  compiled:  new AssignNode(reference, this)
+  [compiled, reference]
+
 # Quick short method for the current indentation level, plus tabbing in.
 Node::idt: (tabs) ->
   idt: (@indent || '')
@@ -272,25 +279,24 @@ ValueNode: exports.ValueNode: inherit Node, {
     props:    if only then @properties[0...@properties.length - 1] else @properties
     baseline: @base.compile o
     baseline: '(' + baseline + ')' if @base instanceof ObjectNode and @has_properties()
-    parts:    [baseline]
+    complete: @last: baseline
 
     for prop in props
+      @source: baseline
       if prop instanceof AccessorNode and prop.soak
         soaked: true
         if @base instanceof CallNode and prop is props[0]
           temp: o.scope.free_variable()
-          parts[parts.length - 1]: '(' + temp + ' = ' + baseline + ')' + @SOAK + (baseline: temp + prop.compile(o))
+          complete: '(' + temp + ' = ' + complete + ')' + @SOAK + (baseline: temp + prop.compile(o))
         else
-          parts[parts.length - 1] += (@SOAK + (baseline += prop.compile(o)))
+          complete: complete + @SOAK + (baseline += prop.compile(o))
       else
         part: prop.compile(o)
         baseline += part
-        parts.push(part)
+        complete += part
+        @last: part
 
-    @last: parts[parts.length - 1]
-    @source: if parts.length > 1 then parts[0...(parts.length - 1)].join('') else null
-    code: parts.join('').replace(/\)\(\)\)/, '()))')
-    if op and soaked then '(' + code + ')' else code
+    if op and soaked then '(' + complete + ')' else complete
 
 }
 
@@ -355,13 +361,6 @@ CallNode: exports.CallNode: inherit Node, {
       code: if arg instanceof SplatNode then code else '[' + code + ']'
       if i is 0 then code else '.concat(' + code + ')'
     @prefix + meth + '.apply(' + obj + ', ' + args.join('') + ')'
-
-  # If the code generation wished to use the result of a function call
-  # in multiple places, ensure that the function is only ever called once.
-  compile_reference: (o) ->
-    reference: new LiteralNode(o.scope.free_variable())
-    call: new ParentheticalNode(new AssignNode(reference, this))
-    [call, reference]
 
 }
 
@@ -845,7 +844,8 @@ ExistenceNode: exports.ExistenceNode: inherit Node, {
 
 ExistenceNode.compile_test: (o, variable) ->
   [first, second]: [variable, variable]
-  [first, second]: variable.compile_reference(o) if variable instanceof CallNode
+  if variable instanceof CallNode or (variable instanceof ValueNode and variable.has_properties())
+    [first, second]: variable.compile_reference(o)
   '(typeof ' + first.compile(o) + ' !== "undefined" && ' + second.compile(o) + ' !== null)'
 
 # An extra set of parentheses, specified explicitly in the source.
