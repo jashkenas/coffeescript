@@ -69,17 +69,18 @@ compile_scripts: ->
 # Compile a single source script, containing the given code, according to the
 # requested options. Both compile_scripts and watch_scripts share this method.
 compile_script: (source, code) ->
+  o: options
   try
-    if      options.tokens   then coffee.print_tokens coffee.tokenize code
-    else if options.tree     then puts coffee.tree(code).toString()
+    if      o.tokens            then print_tokens coffee.tokenize code
+    else if o.tree              then puts coffee.tree(code).toString()
     else
       js: coffee.compile code, compile_options()
-      if      options.run                   then eval js
-      else if options.lint                  then lint js
-      else if options.print or options.eval then puts js
-      else                                       write_js source, js
+      if      o.run             then eval js
+      else if o.lint            then lint js
+      else if o.print or o.eval then puts js
+      else                           write_js source, js
   catch err
-    if options.watch then puts err.message else throw err
+    if o.watch                  then puts err.message else throw err
 
 # Listen for and compile scripts over stdio.
 compile_stdio: ->
@@ -115,6 +116,12 @@ lint: (js) ->
     puts result if result
   jsl.write js
   jsl.close()
+
+# Pretty-print a token stream.
+print_tokens: (tokens) ->
+  strings: for token in tokens
+    '[' + token[0] + ' ' + token[1].toString().replace(/\n/, '\\n') + ']'
+  puts strings.join(' ')
 
 # Use OptionParser for all the options.
 parse_options: ->
