@@ -199,7 +199,7 @@ re::ensure_balance: (pairs) ->
       levels[open] ||= 0
       levels[open] += 1 if token[0] is open
       levels[open] -= 1 if token[0] is close
-      throw "too many " + token[1] if levels[open] < 0
+      throw new Error("too many " + token[1]) if levels[open] < 0
     return 1
   unclosed: key for key, value of levels when value > 0
   throw new Error("unclosed " + unclosed[0]) if unclosed.length

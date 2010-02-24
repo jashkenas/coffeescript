@@ -8,7 +8,7 @@ get '/hello', ->
 # Append.
 append: (location, data) ->
   path: new Pathname location
-  throw "Location does not exist" unless path.exists()
+  throw new Error("Location does not exist") unless path.exists()
 
   File.open path, 'a', (file) ->
     file.puts YAML.dump data
