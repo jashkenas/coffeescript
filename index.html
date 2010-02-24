@@ -93,7 +93,7 @@ alert reverse '!tpircseeffoC'</textarea>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.0">0.5.0</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.1">0.5.1</a>
     </p>
 
     <h2>
@@ -249,7 +249,7 @@ cubed_list = (function() {
       <a href="http://nodejs.org/">Node.js</a>, 0.1.30 or higher. Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.0">0.5.0</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.1">0.5.1</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -854,7 +854,7 @@ _d <span class="Keyword">=</span> asteroids;
 </pre><pre class="idle"><span class="Storage">var</span> _a, _b, _c, _d, _e, countdown, egg_delivery, num;
 countdown <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   _a <span class="Keyword">=</span> []; _d <span class="Keyword">=</span> <span class="Number">10</span>; _e <span class="Keyword">=</span> <span class="Number">1</span>;
-  <span class="Keyword">for</span> (_c<span class="Keyword">=</span><span class="Number">0</span>, num<span class="Keyword">=</span>_d; (_d <span class="Keyword">&lt;=</span> _e ? num <span class="Keyword">&lt;=</span> _e : num <span class="Keyword">&gt;=</span> _e); (_d <span class="Keyword">&lt;=</span> _e ? num <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">1</span> : num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>), _c<span class="Keyword">++</span>) {
+  <span class="Keyword">for</span> (_c <span class="Keyword">=</span> <span class="Number">0</span>, num<span class="Keyword">=</span>_d; (_d <span class="Keyword">&lt;=</span> _e ? num <span class="Keyword">&lt;=</span> _e : num <span class="Keyword">&gt;=</span> _e); (_d <span class="Keyword">&lt;=</span> _e ? num <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">1</span> : num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>), _c<span class="Keyword">++</span>) {
     _a.<span class="LibraryFunction">push</span>(num);
   }
   <span class="Keyword">return</span> _a;
@@ -862,7 +862,7 @@ countdown <span class="Keyword">=</span> (<span class="Storage">function</span>(
 egg_delivery <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">egg_delivery</span>() {
   <span class="Storage">var</span> _f, _g, _h, _i, _j, dozen_eggs, i;
   _f <span class="Keyword">=</span> []; _i <span class="Keyword">=</span> <span class="Number">0</span>; _j <span class="Keyword">=</span> eggs.<span class="LibraryConstant">length</span>;
-  <span class="Keyword">for</span> (_h<span class="Keyword">=</span><span class="Number">0</span>, i<span class="Keyword">=</span>_i; (_i <span class="Keyword">&lt;=</span> _j ? i <span class="Keyword">&lt;</span> _j : i <span class="Keyword">&gt;</span> _j); (_i <span class="Keyword">&lt;=</span> _j ? i <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">12</span> : i <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">12</span>), _h<span class="Keyword">++</span>) {
+  <span class="Keyword">for</span> (_h <span class="Keyword">=</span> <span class="Number">0</span>, i<span class="Keyword">=</span>_i; (_i <span class="Keyword">&lt;=</span> _j ? i <span class="Keyword">&lt;</span> _j : i <span class="Keyword">&gt;</span> _j); (_i <span class="Keyword">&lt;=</span> _j ? i <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">12</span> : i <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">12</span>), _h<span class="Keyword">++</span>) {
     _f.<span class="LibraryFunction">push</span>((<span class="Storage">function</span>() {
       dozen_eggs <span class="Keyword">=</span> eggs.<span class="LibraryFunction">slice</span>(i, i <span class="Keyword">+</span> <span class="Number">12</span>);
       <span class="Keyword">return</span> deliver(<span class="Keyword">new</span> <span class="TypeName">egg_carton</span>(dozen));
@@ -873,7 +873,7 @@ egg_delivery <span class="Keyword">=</span> <span class="Storage">function</span
 </pre><button onclick='javascript: var _a, _b, _c, _d, _e, countdown, egg_delivery, num;
 countdown = (function() {
   _a = []; _d = 10; _e = 1;
-  for (_c=0, num=_d; (_d <= _e ? num <= _e : num >= _e); (_d <= _e ? num += 1 : num -= 1), _c++) {
+  for (_c = 0, num=_d; (_d <= _e ? num <= _e : num >= _e); (_d <= _e ? num += 1 : num -= 1), _c++) {
     _a.push(num);
   }
   return _a;
@@ -881,7 +881,7 @@ countdown = (function() {
 egg_delivery = function egg_delivery() {
   var _f, _g, _h, _i, _j, dozen_eggs, i;
   _f = []; _i = 0; _j = eggs.length;
-  for (_h=0, i=_i; (_i <= _j ? i < _j : i > _j); (_i <= _j ? i += 12 : i -= 12), _h++) {
+  for (_h = 0, i=_i; (_i <= _j ? i < _j : i > _j); (_i <= _j ? i += 12 : i -= 12), _h++) {
     _f.push((function() {
       dozen_eggs = eggs.slice(i, i + 12);
       return deliver(new egg_carton(dozen));
@@ -1134,7 +1134,7 @@ speed = (typeof speed !== "undefined" && speed !== null) ? speed : 140;
     </p>
     <div class='code'><pre class="idle">lottery.draw_winner()<span class="Keyword">?</span>.address<span class="Keyword">?</span>.zipcode
 </pre><pre class="idle"><span class="Storage">var</span> _a;
-(_a <span class="Keyword">=</span> lottery.draw_winner()) <span class="Keyword">==</span> <span class="BuiltInConstant">null</span> ? undefined : _a.address <span class="Keyword">==</span> <span class="BuiltInConstant">null</span> ? undefined : _a.address.zipcode;
+(_a <span class="Keyword">=</span> lottery.draw_winner()) <span class="Keyword">==</span> undefined ? undefined : _a.address <span class="Keyword">==</span> undefined ? undefined : _a.address.zipcode;
 </pre><br class='clear' /></div>
     <p>
       Soaking up nulls is similar to Ruby's
@@ -1624,6 +1624,14 @@ task(<span class="String"><span class="String">'</span>test<span class="String">
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.5.1</b>
+      Improvements to null soaking with the existential operator, including
+      soaks on indexed properties. Added conditions to <tt>while</tt> loops,
+      so you can use them as filters with <tt>when</tt>, in the same manner as
+      comprehensions.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.5.0</b>

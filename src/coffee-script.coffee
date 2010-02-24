@@ -24,7 +24,7 @@ parser.lexer: {
   showPosition: -> @pos
 }
 
-exports.VERSION: '0.5.0'
+exports.VERSION: '0.5.1'
 
 # Compile CoffeeScript to JavaScript, using the Coffee/Jison compiler.
 exports.compile: (code, options) ->
