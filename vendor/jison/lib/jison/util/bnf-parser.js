@@ -138,8 +138,6 @@ parse: function parse(input) {
     var symbol, state, action, a, r, yyval = {}, p, len, ip = 0, newState, expected;
     symbol = lex();
     while (true) {
-        this.trace("stack:", JSON.stringify(stack), "\n\t\t\tinput:", this.lexer._input);
-        this.trace("vstack:", JSON.stringify(vstack));
         state = stack[stack.length - 1];
         action = table[state] && table[state][symbol];
         if (typeof action == "undefined" || !action.length || !action[0]) {
@@ -149,11 +147,11 @@ parse: function parse(input) {
                     expected.push("'" + this.terminals_[p] + "'");
                 }
             }
-            self.trace("stack:", JSON.stringify(stack), "symbol:", symbol, "input", this.lexer.upcomingInput());
-            if (this.lexer.upcomingInput) {
-                self.trace("input", this.lexer.upcomingInput());
+            if (this.lexer.showPosition) {
+                parseError("Parse error on line " + (yylineno + 1) + ":\n" + this.lexer.showPosition() + "\nExpecting " + expected.join(", "), {text: this.lexer.match, token: this.terminals_[symbol], line: this.lexer.yylineno, expected: expected});
+            } else {
+                parseError("Parse error on line " + (yylineno + 1) + ": Unexpected '" + this.terminals_[symbol] + "'", {text: this.lexer.match, token: this.terminals_[symbol], line: this.lexer.yylineno, expected: expected});
             }
-            parseError("Parse error on line " + (yylineno + 1) + ". Expecting: " + expected.join(", ") + "\n" + (this.lexer.showPosition && this.lexer.showPosition()), {text: this.lexer.match, token: symbol, line: this.lexer.yylineno});
         }
         this.trace("action:", action);
         if (action.length > 1) {
@@ -175,15 +173,12 @@ parse: function parse(input) {
           case 2:
             reductions++;
             len = this.productions_[a[1]][1];
-            this.trace("reduce by: ", this.productions ? this.productions[a[1]] : a[1]);
             yyval.$ = vstack[vstack.length - len];
             r = this.performAction.call(yyval, yytext, yyleng, yylineno, this.yy, a[1], vstack);
             if (typeof r !== "undefined") {
                 return r;
             }
-            this.trace("yyval=", JSON.stringify(yyval.$));
             if (len) {
-                this.trace("production length:", len);
                 stack = stack.slice(0, -1 * len * 2);
                 vstack = vstack.slice(0, -1 * len);
             }
@@ -193,10 +188,8 @@ parse: function parse(input) {
             stack.push(newState);
             break;
           case 3:
-            this.trace("stack:", stack, "\n\tinput:", this.lexer._input);
-            this.trace("vstack:", JSON.stringify(vstack));
-            this.trace("Total reductions:", reductions);
-            this.trace("Total shifts:", shifts);
+            this.reductionCount = reductions;
+            this.shiftCount = shifts;
             return true;
           default:;
         }

@@ -403,3 +403,15 @@ exports["test DJ lexer"] = function() {
         assert.equal(typeof tok, "string");
     }
 };
+
+exports["test instantiation from string"] = function() {
+    var dict = "%%\n'x' {return 'X';}\n'y' {return 'Y';}\n<<EOF>> {return 'EOF';}";
+        
+    var input = "x";
+
+    var lexer = new RegExpLexer(dict);
+    lexer.setInput(input);
+    
+    assert.equal(lexer.lex(), "X");
+    assert.equal(lexer.lex(), "EOF");
+};

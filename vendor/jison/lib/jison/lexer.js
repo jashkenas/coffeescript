@@ -57,6 +57,9 @@ function buildActions (dict, tokens) {
 }
 
 function RegExpLexer (dict, input, tokens) {
+    if (typeof dict === 'string') {
+        dict = require("./jisonlex").parse(dict);
+    }
     dict = dict || {};
 
     this.performAction = buildActions.call(this, dict, tokens);

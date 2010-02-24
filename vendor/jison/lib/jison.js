@@ -369,8 +369,8 @@ lookaheadMixin.followSets = function followSets () {
                     var part = production.handle.slice(i+1);
 
                     set = self.first(part);
-                    if (set.length === 0 && bool) { // set was nullable
-                        set = nonterminals[production.symbol].follows;
+                    if (self.nullable(part) && bool) {
+                        set.push.apply(set, nonterminals[production.symbol].follows);
                     }
                 }
                 oldcount = nonterminals[t].follows.length;
@@ -838,7 +838,7 @@ lrGeneratorMixin.generateModule = function generateModule (opt) {
     var out = "/* Jison generated parser */\n";
     out += (moduleName.match(/\./) ? moduleName : "var "+moduleName)+" = (function(){";
     out += "\nvar parser = "+this.generateModule_();
-    if (this.lexer) {
+    if (this.lexer && this.lexer.generateModule) {
         out += this.lexer.generateModule();
         out += "\nparser.lexer = lexer;";
     }
