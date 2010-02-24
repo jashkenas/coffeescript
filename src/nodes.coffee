@@ -156,7 +156,7 @@ Expressions: exports.Expressions: inherit Node, {
     o.scope: new Scope(null, this, null)
     code: if o.globals then @compile_node(o) else @compile_with_declarations(o)
     code: code.replace(TRAILING_WHITESPACE, '')
-    if o.no_wrap then code else "(function(){\n"+code+"\n})();"
+    if o.no_wrap then code else "(function(){\n"+code+"\n})();\n"
 
   # Compile the expressions body, with declarations of all inner variables
   # pushed up to the top.

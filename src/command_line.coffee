@@ -17,6 +17,7 @@ SWITCHES: [
   ['-w', '--watch',         'watch scripts for changes, and recompile']
   ['-p', '--print',         'print the compiled JavaScript to stdout']
   ['-l', '--lint',          'pipe the compiled JavaScript through JSLint']
+  ['-s', '--stdio',         'listen for and compile scripts over stdio']
   ['-e', '--eval',          'compile a string from the command line']
   ['-t', '--tokens',        'print the tokens that the lexer produces']
   ['-tr','--tree',          'print the parse tree that Jison produces']
@@ -35,6 +36,7 @@ exports.run: ->
   return usage()                              if options.help
   return version()                            if options.version
   return require 'repl'                       if options.interactive
+  return compile_stdio()                      if options.stdio
   return compile_script 'unknown', sources[0] if options.eval
   return usage()                              unless sources.length
   separator: sources.indexOf '--'
@@ -64,23 +66,29 @@ compile_scripts: ->
     fs.readFile source, (err, code) -> compile_script(source, code)
   compile(source) for source in sources
 
-
 # Compile a single source script, containing the given code, according to the
 # requested options. Both compile_scripts and watch_scripts share this method.
 compile_script: (source, code) ->
-  opts: options
-  o: if opts['no-wrap'] then {no_wrap: true} else {}
   try
-    if      opts.tokens   then coffee.print_tokens coffee.tokenize code
-    else if opts.tree     then puts coffee.tree(code).toString()
+    if      options.tokens   then coffee.print_tokens coffee.tokenize code
+    else if options.tree     then puts coffee.tree(code).toString()
     else
-      js: coffee.compile code, o
-      if      opts.run                then eval js
-      else if opts.lint               then lint js
-      else if opts.print or opts.eval then puts js
-      else                     write_js source, js
+      js: coffee.compile code, compile_options()
+      if      options.run                   then eval js
+      else if options.lint                  then lint js
+      else if options.print or options.eval then puts js
+      else                                       write_js source, js
   catch err
-    if opts.watch then puts err.message else throw err
+    if options.watch then puts err.message else throw err
+
+# Listen for and compile scripts over stdio.
+compile_stdio: ->
+  code: ''
+  process.stdio.open()
+  process.stdio.addListener 'data', (string) ->
+    code += string if string
+  process.stdio.addListener 'close', ->
+    process.stdio.write coffee.compile code, compile_options()
 
 # Watch a list of source CoffeeScript files, recompiling them every time the
 # files are updated.
@@ -114,3 +122,6 @@ parse_options: ->
   options: option_parser.parse(process.ARGV)
   sources: options.arguments[2...options.arguments.length]
 
+# The options to pass to the CoffeeScript compiler.
+compile_options: ->
+  if options['no-wrap'] then {no_wrap: true} else {}
