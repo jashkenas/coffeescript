@@ -1,9 +1,3 @@
-i: 100
-while i -= 1
-
-ok i is 0
-
-
 i: 5
 list: while i -= 1
   i * 2
@@ -26,3 +20,11 @@ results: while func 1
   i
 
 ok results.join(' ') is '4 3 2 1'
+
+
+i: 10
+results: while i -= 1 when i % 2 is 0
+  i * 2
+
+ok results.join(' ') is '16 12 8 4'
+

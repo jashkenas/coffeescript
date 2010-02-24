@@ -360,11 +360,16 @@ grammar: {
     o "( Expression )",                         -> new ParentheticalNode($2)
   ]
 
+  # The condition for a while loop.
+  WhileSource: [
+    o "WHILE Expression",                       -> new WhileNode($2)
+    o "WHILE Expression WHEN Expression",       -> new WhileNode($2, {filter : $4})
+  ]
+
   # The while loop. (there is no do..while).
   While: [
-    o "WHILE Expression Block",                 -> new WhileNode($2, $3)
-    o "WHILE Expression",                       -> new WhileNode($2, null)
-    o "Expression WHILE Expression",            -> new WhileNode($3, Expressions.wrap([$1]))
+    o "WhileSource Block",                      -> $1.add_body $2
+    o "Expression WhileSource",                 -> $2.add_body $1
   ]
 
   # Array comprehensions, including guard and current index.
@@ -384,10 +389,8 @@ grammar: {
   ForSource: [
     o "IN Expression",                          -> {source:   $2}
     o "OF Expression",                          -> {source:   $2, object: true}
-    o "ForSource WHEN Expression",              ->
-      $1.filter: $3; $1
-    o "ForSource BY Expression",                ->
-      $1.step:   $3; $1
+    o "ForSource WHEN Expression",              -> $1.filter: $3; $1
+    o "ForSource BY Expression",                -> $1.step:   $3; $1
   ]
 
   # Switch/When blocks.
@@ -406,8 +409,7 @@ grammar: {
   When: [
     o "LEADING_WHEN SimpleArgs Block",          -> new IfNode($2, $3, null, {statement: true})
     o "LEADING_WHEN SimpleArgs Block TERMINATOR", -> new IfNode($2, $3, null, {statement: true})
-    o "Comment TERMINATOR When",                ->
-      $3.comment: $1; $3
+    o "Comment TERMINATOR When",                -> $3.comment: $1; $3
   ]
 
   # The most basic form of "if".

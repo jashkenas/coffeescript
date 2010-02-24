@@ -701,8 +701,13 @@ SplatNode: exports.SplatNode: inherit Node, {
 WhileNode: exports.WhileNode: inherit Node, {
   type: 'While'
 
-  constructor: (condition, body) ->
-    @children:[@condition: condition, @body: body]
+  constructor: (condition, opts) ->
+    @children:[@condition: condition]
+    @filter: opts and opts.filter
+    this
+
+  add_body: (body) ->
+    @children.push @body: body
     this
 
   top_sensitive: ->
@@ -718,10 +723,11 @@ WhileNode: exports.WhileNode: inherit Node, {
     if not top
       rvar:     o.scope.free_variable()
       set:      @idt() + rvar + ' = [];\n'
-      @body:    PushNode.wrap(rvar, @body)
+      @body:    PushNode.wrap(rvar, @body) if @body
     post:       if returns then '\n' + @idt() + 'return ' + rvar + ';' else ''
     pre:        set + @idt() + 'while (' + cond + ')'
     return pre + ' null;' + post if not @body
+    @body:      Expressions.wrap([new IfNode(@filter, @body)]) if @filter
     pre + ' {\n' + @body.compile(o) + '\n' + @idt() + '}' + post
 
 }

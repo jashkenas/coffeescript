@@ -26,12 +26,6 @@ reg: /\\/
 ok reg(str) and str is '\\'
 
 
-i: 10
-while i -= 1
-
-ok i is 0
-
-
 money$: 'dollars'
 
 ok money$ is 'dollars'
