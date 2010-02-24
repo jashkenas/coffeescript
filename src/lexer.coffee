@@ -246,13 +246,21 @@ lex::literal_token: ->
   value: match and match[1]
   @tag_parameters() if value and value.match(CODE)
   value ||= @chunk.substr(0, 1)
+  not_spaced: not @prev() or not @prev().spaced
   tag: value
   if value.match(ASSIGNMENT)
     tag: 'ASSIGN'
     throw new Error('SyntaxError: Reserved word "' + @value() + '" on line ' + @line + ' can\'t be assigned') if JS_FORBIDDEN.indexOf(@value()) >= 0
-  tag: 'TERMINATOR' if value == ';'
-
-  if CALLABLE.indexOf(@tag()) >= 0 and (not @prev() or not @prev().spaced)
+  else if value is ';'
+    tag: 'TERMINATOR'
+  else if value is '[' and @tag() is '?' and not_spaced
+    tag: 'SOAKED_INDEX_START'
+    @soaked_index: true
+    @tokens.pop()
+  else if value is ']' and @soaked_index
+    tag: 'SOAKED_INDEX_END'
+    @soaked_index: false
+  else if CALLABLE.indexOf(@tag()) >= 0 and not_spaced
     tag: 'CALL_START'  if value is '('
     tag: 'INDEX_START' if value is '['
   @token tag, value

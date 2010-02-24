@@ -7,7 +7,8 @@ exports.Rewriter: re: ->
 
 # Tokens that must be balanced.
 BALANCED_PAIRS: [['(', ')'], ['[', ']'], ['{', '}'], ['INDENT', 'OUTDENT'],
-  ['PARAM_START', 'PARAM_END'], ['CALL_START', 'CALL_END'], ['INDEX_START', 'INDEX_END']]
+  ['PARAM_START', 'PARAM_END'], ['CALL_START', 'CALL_END'],
+  ['INDEX_START', 'INDEX_END'], ['SOAKED_INDEX_START', 'SOAKED_INDEX_END']]
 
 # Tokens that signal the start of a balanced pair.
 EXPRESSION_START: pair[0] for pair in BALANCED_PAIRS

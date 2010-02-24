@@ -251,6 +251,7 @@ grammar: {
   # Indexing into an object or array.
   Index: [
     o "INDEX_START Expression INDEX_END",       -> new IndexNode($2)
+    o "SOAKED_INDEX_START Expression SOAKED_INDEX_END", -> new IndexNode($2, 'soak')
   ]
 
   # An object literal.

@@ -41,9 +41,15 @@ obj: {
 
 ok obj?.prop is "hello"
 
+ok obj?['prop'] is "hello"
+
 ok obj.prop?.length is 5
 
+ok obj?['prop']?['length'] is 5
+
 ok obj?.prop?.non?.existent?.property is undefined
+
+ok obj?['non']?['existent'].property is undefined
 
 
 # Soaks and caches method calls as well.

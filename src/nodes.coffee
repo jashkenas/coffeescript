@@ -283,7 +283,7 @@ ValueNode: exports.ValueNode: inherit Node, {
 
     for prop in props
       @source: baseline
-      if prop instanceof AccessorNode and prop.soak
+      if prop.soak_node
         soaked: true
         if @base instanceof CallNode and prop is props[0]
           temp: o.scope.free_variable()
@@ -405,7 +405,7 @@ AccessorNode: exports.AccessorNode: inherit Node, {
   constructor: (name, tag) ->
     @children:  [@name: name]
     @prototype: tag is 'prototype'
-    @soak:      tag is 'soak'
+    @soak_node: tag is 'soak'
     this
 
   compile_node: (o) ->
@@ -417,8 +417,9 @@ AccessorNode: exports.AccessorNode: inherit Node, {
 IndexNode: exports.IndexNode: inherit Node, {
   type: 'Index'
 
-  constructor: (index) ->
-    @children: [@index: index]
+  constructor: (index, tag) ->
+    @children:  [@index: index]
+    @soak_node: tag is 'soak'
     this
 
   compile_node: (o) ->
