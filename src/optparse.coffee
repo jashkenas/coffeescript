@@ -1,30 +1,23 @@
 # Create an OptionParser with a list of valid options.
-op: exports.OptionParser: (rules) ->
-  @banner:        'Usage: [Options]'
+op: exports.OptionParser: (rules, banner) ->
+  @banner:        banner or 'Usage: [Options]'
   @options_title: 'Available options:'
   @rules:         build_rules(rules)
-  @actions:       {}
   this
-
-# Add a callback to fire when a particular option is encountered.
-op::add: (value, callback) ->
-  @actions[value]: callback
 
 # Parse the argument array, calling defined callbacks, returning the remaining non-option arguments.
 op::parse: (args) ->
-  results: []
+  options: {arguments: []}
   args:   args.concat []
   while (arg: args.shift())
     is_option: false
     for rule in @rules
       if rule.letter is arg or rule.flag is arg
-        callback: @actions[rule.name]
-        value: rule.argument and args.shift()
-        callback(value) if callback
+        options[rule.name]: if rule.argument then args.shift() else true
         is_option: true
         break
-    results.push arg unless is_option
-  results
+    options.arguments.push arg unless is_option
+  options
 
 # Return the help text for this OptionParser, for --help and such.
 op::help: ->

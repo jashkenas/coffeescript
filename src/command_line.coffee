@@ -32,9 +32,11 @@ option_parser: null
 # The CommandLine handles all of the functionality of the `coffee` utility.
 exports.run: ->
   parse_options()
-  return require 'repl' if options.interactive
-  return compile_script 'terminal', sources[0] if options.eval
-  usage() unless sources.length
+  return usage()                              if options.help
+  return version()                            if options.version
+  return require 'repl'                       if options.interactive
+  return compile_script 'unknown', sources[0] if options.eval
+  return usage()                              unless sources.length
   separator: sources.indexOf '--'
   flags: []
   if separator >= 0
@@ -67,7 +69,7 @@ compile_scripts: ->
 # requested options. Both compile_scripts and watch_scripts share this method.
 compile_script: (source, code) ->
   opts: options
-  o: if opts.no_wrap then {no_wrap: true} else {}
+  o: if opts['no-wrap'] then {no_wrap: true} else {}
   try
     if      opts.tokens   then coffee.print_tokens coffee.tokenize code
     else if opts.tree     then puts coffee.tree(code).toString()
@@ -108,23 +110,7 @@ lint: (js) ->
 
 # Use OptionParser for all the options.
 parse_options: ->
-  opts:           options: {}
-  oparser:        option_parser: new optparse.OptionParser SWITCHES
-  oparser.banner: BANNER
-
-  oparser.add 'interactive',      -> opts.interactive: true
-  oparser.add 'run',              -> opts.run:         true
-  oparser.add 'output',     (dir) -> opts.output:      dir
-  oparser.add 'watch',            -> opts.watch:       true
-  oparser.add 'print',            -> opts.print:       true
-  oparser.add 'lint',             -> opts.lint:        true
-  oparser.add 'eval',             -> opts.eval:        true
-  oparser.add 'tokens',           -> opts.tokens:      true
-  oparser.add 'tree',             -> opts.tree:        true
-  oparser.add 'no-wrap',          -> opts.no_wrap:     true
-  oparser.add 'help',             => usage()
-  oparser.add 'version',          => version()
-
-  paths: oparser.parse(process.ARGV)
-  sources: paths[2...paths.length]
+  option_parser: new optparse.OptionParser SWITCHES, BANNER
+  options: option_parser.parse(process.ARGV)
+  sources: options.arguments[2...options.arguments.length]
 
