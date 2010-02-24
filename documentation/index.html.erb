@@ -1,7 +1,7 @@
 <%
   require 'uv'
   def code_for(file, executable=false)
-    @stripper ||= /(\A\(function\(\)\{\n|\}\)\(\);\Z|^  )/
+    @stripper ||= /(\A\(function\(\)\{\n|\}\)\(\);\n*\Z|^  )/
     return '' unless File.exists?("documentation/js/#{file}.js")
     cs = File.read("documentation/coffee/#{file}.coffee")
     js = File.read("documentation/js/#{file}.js").gsub(@stripper, '')
@@ -138,7 +138,7 @@ alert reverse '!tpircseeffoC'</textarea>
     </h2>
 
     <p>
-      The CoffeeScript compiler is written in pure CoffeeScript, using a 
+      The CoffeeScript compiler is written in pure CoffeeScript, using a
       <a href="http://github.com/jashkenas/coffee-script/blob/master/src/grammar.coffee">small DSL</a>
       on top of the <a href="http://github.com/zaach/jison">Jison parser generator</a>, and is available
       as a <a href="http://nodejs.org/">Node.js</a> utility. The core compiler however,
@@ -212,6 +212,14 @@ sudo bin/cake install</pre>
           command is installed, use it
           to check the compilation of a CoffeeScript file. (Handy in
           conjunction with <tt>--watch</tt>)
+        </td>
+      </tr>
+      <tr>
+        <td><code>-s, --stdio</code></td>
+        <td>
+          Pipe in CoffeeScript to STDIN and get back JavaScript over STDOUT.
+          Good for use with processes written in other languages. An example:<br />
+          <tt>cat src/cake.coffee | coffee -s</tt>
         </td>
       </tr>
       <tr>
@@ -744,7 +752,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.5.1</b>
       Improvements to null soaking with the existential operator, including
