@@ -604,7 +604,8 @@ AssignNode: exports.AssignNode: inherit BaseNode, {
   # See: http://wiki.ecmascript.org/doku.php?id=harmony:destructuring
   compile_pattern_match: (o) ->
     val_var: o.scope.free_variable()
-    assigns: [@idt() + val_var + ' = ' + @value.compile(o) + ';']
+    value: if @value.is_statement() then ClosureNode.wrap(@value) else @value
+    assigns: [@idt() + val_var + ' = ' + value.compile(o) + ';']
     o.top: true
     o.as_statement: true
     for obj, i in @variable.base.objects
