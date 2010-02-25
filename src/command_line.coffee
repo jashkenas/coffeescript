@@ -1,7 +1,7 @@
-fs:       require 'fs'
-path:     require 'path'
-coffee:   require 'coffee-script'
-optparse: require('optparse')
+fs:           require 'fs'
+path:         require 'path'
+optparse:     require 'optparse'
+CoffeeScript: require 'coffee-script'
 
 BANNER: '''
   coffee compiles CoffeeScript source files into JavaScript.
@@ -56,7 +56,7 @@ usage: ->
 
 # The "--version" message.
 version: ->
-  puts "CoffeeScript version " + coffee.VERSION
+  puts "CoffeeScript version " + CoffeeScript.VERSION
   process.exit 0
 
 # Compiles the source CoffeeScript, returning the desired JavaScript, tokens,
@@ -71,10 +71,10 @@ compile_scripts: ->
 compile_script: (source, code) ->
   o: options
   try
-    if      o.tokens            then print_tokens coffee.tokenize code
-    else if o.tree              then puts coffee.tree(code).toString()
+    if      o.tokens            then print_tokens CoffeeScript.tokenize code
+    else if o.tree              then puts CoffeeScript.tree(code).toString()
     else
-      js: coffee.compile code, compile_options()
+      js: CoffeeScript.compile code, compile_options()
       if      o.run             then eval js
       else if o.lint            then lint js
       else if o.print or o.eval then print js
@@ -89,7 +89,7 @@ compile_stdio: ->
   process.stdio.addListener 'data', (string) ->
     code += string if string
   process.stdio.addListener 'close', ->
-    process.stdio.write coffee.compile code, compile_options()
+    process.stdio.write CoffeeScript.compile code, compile_options()
 
 # Watch a list of source CoffeeScript files, recompiling them every time the
 # files are updated.
