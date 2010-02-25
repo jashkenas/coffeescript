@@ -1,4 +1,6 @@
 # `cake` is a simplified version of Make (Rake, Jake) for CoffeeScript.
+# You define tasks with names and descriptions in a Cakefile, and can call them
+# from the command line, or invoke them from other tasks.
 
 fs:       require 'fs'
 path:     require 'path'
@@ -6,11 +8,7 @@ coffee:   require 'coffee-script'
 
 tasks: {}
 
-no_such_task: (task) ->
-  process.stdio.writeError('No such task: "' + task + '"\n')
-  process.exit(1)
-
-# Mixin the Cake functionality.
+# Mixin the top-level Cake functions for Cakefiles to use.
 process.mixin {
 
   # Define a task with a name, a description, and the action itself.
@@ -23,13 +21,6 @@ process.mixin {
     tasks[name].action()
 }
 
-# Display the list of Cake tasks.
-print_tasks: ->
-  for name, task of tasks
-    spaces: 20 - name.length
-    spaces: if spaces > 0 then (' ' for i in [0..spaces]).join('') else ''
-    puts "cake " + name + spaces + ' # ' + task.description
-
 # Running `cake` runs the tasks you pass asynchronously (node-style), or
 # prints them out, with no arguments.
 exports.run: ->
@@ -39,7 +30,16 @@ exports.run: ->
     fs.readFile 'Cakefile', (err, source) ->
       eval coffee.compile source
       return print_tasks() unless args.length
-      for arg in args
-        no_such_task arg unless tasks[arg]
-        tasks[arg].action()
+      invoke arg for arg in args
 
+# Display the list of Cake tasks.
+print_tasks: ->
+  for name, task of tasks
+    spaces: 20 - name.length
+    spaces: if spaces > 0 then (' ' for i in [0..spaces]).join('') else ''
+    puts "cake " + name + spaces + ' # ' + task.description
+
+# Print an error and exit when attempting to all an undefined task.
+no_such_task: (task) ->
+  process.stdio.writeError('No such task: "' + task + '"\n')
+  process.exit(1)
