@@ -60,6 +60,7 @@
         <a href="#comparisons">Chained Comparisons</a>
         <a href="#strings">Multiline Strings and Heredocs</a>
         <a href="#cake">Cake, and Cakefiles</a>
+        <a href="#scripts">"text/coffeescript" Script Tags</a>
         <a href="#resources">Resources</a>
         <a href="#change_log">Change Log</a>
       </div>
@@ -107,7 +108,7 @@ alert reverse '!tpircseeffoC'</textarea>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.1">0.5.1</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.2">0.5.2</a>
     </p>
 
     <h2>
@@ -152,7 +153,7 @@ alert reverse '!tpircseeffoC'</textarea>
       <a href="http://nodejs.org/">Node.js</a>, 0.1.30 or higher. Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.1">0.5.1</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.2">0.5.2</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -726,6 +727,34 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <%= code_for('cake_tasks') %>
 
     <h2>
+      <span id="scripts" class="bookmark"></span>
+      "text/coffeescript" Script Tags
+    </h2>
+
+    <p>
+      While it's not recommended for serious use, CoffeeScripts may be included
+      directly within the browser using <tt>&lt;script type="text/coffeescript"&gt;</tt>
+      tags. The codebase includes a compressed and minified version of the compiler
+      (<a href="extras/coffee-script.js">Download current version here, 43k when gzipped</a>).
+      Include <tt>coffee-script.js</tt> on the page <b>after</b> any <tt>text/coffeescript</tt> tags
+      with inline CoffeeScript, and it will compile and evaluate them in order.
+    </p>
+
+    <p>
+      In fact, the little bit of glue script that runs "Try CoffeeScript" above,
+      as well as jQuery for the menu, is implemented in just this way. 
+      View source and look at the bottom of the page to see the example.
+      Including the script also gives you access to <tt>CoffeeScript.compile()</tt>
+      so you can pop open Firebug and try compiling some strings.
+    </p>
+    
+    <p>
+      The usual caveats about CoffeeScript apply &mdash; your inline scripts will
+      run within a closure wrapper, so if you want to expose global variables or
+      functions, attach them to the <tt>window</tt> object.
+    </p>
+
+    <h2>
       <span id="resources" class="bookmark"></span>
       Resources
     </h2>
@@ -752,6 +781,15 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.5.2</b>
+      Added a compressed version of the compiler for inclusion in web pages as
+      <br  /><tt>extras/coffee-script.js</tt>. It'll automatically run any script tags
+      with type <tt>text/coffeescript</tt> for you. Added a <tt>--stdio</tt> option
+      to the <tt>coffee</tt> command, for piped-in compiles.
+    </p>
+    
 
     <p>
       <b class="header" style="margin-top: 20px;">0.5.1</b>
@@ -954,6 +992,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       false
 
     $(document.body).click -> close_menus()
+
   </script>
 
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
