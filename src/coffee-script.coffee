@@ -40,7 +40,6 @@ exports.tree: (code) ->
 
 # Activate CoffeeScript in the browser by having it compile and eval
 # all script tags with a content-type of text/coffeescript.
-exports.activate: ->
-  scripts: document.getElementsByTagName 'script'
-  for script in scripts when script.type is 'text/coffeescript'
-    eval exports.compile script.innerHTML
+if document? and document.getElementsByTagName
+  for tag in document.getElementsByTagName('script') when tag.type is 'text/coffeescript'
+    eval exports.compile tag.innerHTML
