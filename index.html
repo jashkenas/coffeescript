@@ -133,7 +133,89 @@ alert <span class="String"><span class="String">&quot;</span>I knew it!<span cla
 
 <span class="Comment"><span class="Comment">#</span> Array comprehensions:</span>
 <span class="FunctionName">cubed_list</span><span class="Keyword">:</span> math.cube num <span class="Keyword">for</span> num <span class="Keyword">in</span> list
-</pre><pre class="idle"></pre><button onclick='javascript: ;alert(cubed_list);'>run: cubed_list</button><br class='clear' /></div>
+</pre><pre class="idle"><span class="Storage">var</span> _a, _b, _c, cubed_list, list, math, num, number, opposite_day, race, square;
+<span class="Comment"><span class="Comment">//</span> Assignment:</span>
+number <span class="Keyword">=</span> <span class="Number">42</span>;
+opposite_day <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
+<span class="Comment"><span class="Comment">//</span> Conditions:</span>
+<span class="Keyword">if</span> (opposite_day) {
+  number <span class="Keyword">=</span> <span class="Keyword">-</span><span class="Number">42</span>;
+}
+<span class="Comment"><span class="Comment">//</span> Functions:</span>
+square <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">square</span>(<span class="FunctionArgument">x</span>) {
+  <span class="Keyword">return</span> x <span class="Keyword">*</span> x;
+};
+<span class="Comment"><span class="Comment">//</span> Arrays:</span>
+list <span class="Keyword">=</span> [<span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>];
+<span class="Comment"><span class="Comment">//</span> Objects:</span>
+math <span class="Keyword">=</span> {
+  root: <span class="LibraryClassType">Math</span>.sqrt,
+  square: square,
+  cube: <span class="Storage">function</span> <span class="FunctionName">cube</span>(<span class="FunctionArgument">x</span>) {
+    <span class="Keyword">return</span> x <span class="Keyword">*</span> square(x);
+  }
+};
+<span class="Comment"><span class="Comment">//</span> Splats:</span>
+race <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">race</span>(<span class="FunctionArgument">winner</span>) {
+  <span class="Storage">var</span> runners;
+  runners <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">1</span>);
+  <span class="Keyword">return</span> <span class="LibraryFunction">print</span>(winner, runners);
+};
+<span class="Comment"><span class="Comment">//</span> Existence:</span>
+<span class="Keyword">if</span> ((<span class="Keyword">typeof</span> elvis <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> elvis <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>)) {
+  <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>I knew it!<span class="String">&quot;</span></span>);
+}
+<span class="Comment"><span class="Comment">//</span> Array comprehensions:</span>
+cubed_list <span class="Keyword">=</span> (<span class="Storage">function</span>() {
+  _a <span class="Keyword">=</span> []; _b <span class="Keyword">=</span> list;
+  <span class="Keyword">for</span> (_c <span class="Keyword">=</span> <span class="Number">0</span>; _c <span class="Keyword">&lt;</span> _b.<span class="LibraryConstant">length</span>; _c<span class="Keyword">++</span>) {
+    num <span class="Keyword">=</span> _b[_c];
+    _a.<span class="LibraryFunction">push</span>(math.cube(num));
+  }
+  <span class="Keyword">return</span> _a;
+}).<span class="LibraryFunction">call</span>(<span class="Variable">this</span>);
+</pre><button onclick='javascript: var _a, _b, _c, cubed_list, list, math, num, number, opposite_day, race, square;
+// Assignment:
+number = 42;
+opposite_day = true;
+// Conditions:
+if (opposite_day) {
+  number = -42;
+}
+// Functions:
+square = function square(x) {
+  return x * x;
+};
+// Arrays:
+list = [1, 2, 3, 4, 5];
+// Objects:
+math = {
+  root: Math.sqrt,
+  square: square,
+  cube: function cube(x) {
+    return x * square(x);
+  }
+};
+// Splats:
+race = function race(winner) {
+  var runners;
+  runners = Array.prototype.slice.call(arguments, 1);
+  return print(winner, runners);
+};
+// Existence:
+if ((typeof elvis !== "undefined" && elvis !== null)) {
+  alert("I knew it!");
+}
+// Array comprehensions:
+cubed_list = (function() {
+  _a = []; _b = list;
+  for (_c = 0; _c < _b.length; _c++) {
+    num = _b[_c];
+    _a.push(math.cube(num));
+  }
+  return _a;
+}).call(this);
+;alert(cubed_list);'>run: cubed_list</button><br class='clear' /></div>
 
     <p>
       For a longer CoffeeScript example, check out
@@ -1571,7 +1653,9 @@ task(<span class="String"><span class="String">'</span>test<span class="String">
         Bugs reports, feature requests, and general discussion all belong here.
       </li>
       <li>
-        If you'd like to chat, stop by <tt>#coffeescript</tt> on Freenode.
+        If you'd like to chat, stop by <tt>#coffeescript</tt> on Freenode in the
+        IRC client of your choice, or on 
+        <a href="http://webchat.freenode.net/">webchat.freenode.net</a>.
       </li>
     </ul>
 
