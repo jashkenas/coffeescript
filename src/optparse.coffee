@@ -14,10 +14,13 @@ op::parse: (args) ->
   args: args.slice 0
   while arg: args.shift()
     is_option: !!(arg.match(LONG_FLAG) or arg.match(SHORT_FLAG))
+    matched_rule: no
     for rule in @rules
       if rule.letter is arg or rule.flag is arg
         options[rule.name]: if rule.has_argument then args.shift() else true
+        matched_rule: yes
         break
+    throw new Error "unrecognized option: " + arg if is_option and not matched_rule
     options.arguments.push arg unless is_option
   options
 
