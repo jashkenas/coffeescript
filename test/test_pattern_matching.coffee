@@ -13,6 +13,13 @@ func: ->
 ok func().join(' ') is '-1 -2'
 
 
+noop: ->
+
+noop [a,b]: [c,d]: [1,2]
+
+ok a is 1 and b is 2
+
+
 arr: [1, 2, 3]
 
 [a, b, c]: arr
