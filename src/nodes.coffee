@@ -617,7 +617,9 @@ AssignNode: exports.AssignNode: inherit BaseNode, {
         idx: new LiteralNode(idx) unless typeof idx is 'object'
         val: new ValueNode(new LiteralNode(val_var), [new access_class(idx)])
       assigns.push(new AssignNode(obj, val).compile(o))
-    assigns.join("\n")
+    code: assigns.join("\n")
+    code += '\n' + @idt() + 'return ' + @variable.compile(o) + ';' if o.returns
+    code
 
   compile_splice: (o) ->
     name:   @variable.compile(merge(o, {only_first: true}))

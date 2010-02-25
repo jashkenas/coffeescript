@@ -7,6 +7,12 @@ ok a is -2
 ok b is -1
 
 
+func: ->
+  [a, b]: [b, a]
+
+ok func().join(' ') is '-1 -2'
+
+
 arr: [1, 2, 3]
 
 [a, b, c]: arr
