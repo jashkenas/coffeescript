@@ -1,19 +1,22 @@
-# Create an OptionParser with a list of valid options.
+# Create an OptionParser with a list of valid options, in the form:
+#   [short-flag (optional), long-flag, description]
+# And an optional banner for the usage help.
 op: exports.OptionParser: (rules, banner) ->
-  @banner:        banner or 'Usage: [Options]'
-  @options_title: 'Available options:'
-  @rules:         build_rules(rules)
+  @banner:  banner or 'Usage: [Options]'
+  @rules:   build_rules(rules)
   this
 
-# Parse the argument array, calling defined callbacks, returning the remaining non-option arguments.
+# Parse the argument array, populating an options object with all of the
+# specified options, and returning it. options.arguments will be an array
+# containing the remaning non-option arguments.
 op::parse: (args) ->
   options: {arguments: []}
-  args:   args.concat []
-  while (arg: args.shift())
+  args: args.slice 0
+  while arg: args.shift()
     is_option: false
     for rule in @rules
       if rule.letter is arg or rule.flag is arg
-        options[rule.name]: if rule.argument then args.shift() else true
+        options[rule.name]: if rule.has_argument then args.shift() else true
         is_option: true
         break
     options.arguments.push arg unless is_option
@@ -21,21 +24,13 @@ op::parse: (args) ->
 
 # Return the help text for this OptionParser, for --help and such.
 op::help: ->
-  longest: 0
-  has_shorts: false
-  lines: [@banner, '', @options_title]
+  lines: [@banner, '', 'Available options:']
   for rule in @rules
-    has_shorts: true if rule.letter
-    longest: rule.flag.length if rule.flag.length > longest
-  for rule in @rules
-    if has_shorts
-      text: if rule.letter then spaces(2) + rule.letter + ', ' else spaces(6)
-    text += spaces(longest, rule.flag) + spaces(3)
-    text += rule.description
-    lines.push text
+    spaces:   15 - rule.flag.length
+    spaces:   if spaces > 0 then (' ' for i in [0..spaces]).join('') else ''
+    let_part: if rule.letter then rule.letter + ', ' else '    '
+    lines.push '  ' + let_part + rule.flag + spaces + rule.description
   lines.join('\n')
-
-# Private:
 
 # Regex matchers for option flags.
 LONG_FLAG:  /^(--[\w\-]+)/
@@ -46,27 +41,17 @@ OPTIONAL:   /\[(.+)\]/
 # [letter-flag, long-flag, help], or [long-flag, help].
 build_rules: (rules) ->
   for tuple in rules
-    tuple.unshift(null) if tuple.length < 3
-    build_rule(tuple...)
+    tuple.unshift null if tuple.length < 3
+    build_rule tuple...
 
 # Build a rule from a short-letter-flag, long-form-flag, and help text.
 build_rule: (letter, flag, description) ->
   match: flag.match(OPTIONAL)
   flag:  flag.match(LONG_FLAG)[1]
   {
-    name:         flag.substr(2)
+    name:         flag.substr 2
     letter:       letter
     flag:         flag
     description:  description
-    argument:     !!(match and match[1])
+    has_argument: !!(match and match[1])
   }
-
-# Space-pad a string with the specified number of characters.
-spaces: (num, text) ->
-  builder: []
-  if text
-    return text if text.length >= num
-    num -= text.length
-    builder.push text
-  while num -= 1 then builder.push ' '
-  builder.join ''
