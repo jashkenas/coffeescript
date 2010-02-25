@@ -63,7 +63,9 @@ version: ->
 # or JSLint results.
 compile_scripts: ->
   compile: (source) ->
-    fs.readFile source, (err, code) -> compile_script(source, code)
+    path.exists source, (exists) ->
+      throw new Error 'File not found: ' + source unless exists
+      fs.readFile source, (err, code) -> compile_script(source, code)
   compile(source) for source in sources
 
 # Compile a single source script, containing the given code, according to the

@@ -13,11 +13,10 @@ op::parse: (args) ->
   options: {arguments: []}
   args: args.slice 0
   while arg: args.shift()
-    is_option: false
+    is_option: !!(arg.match(LONG_FLAG) or arg.match(SHORT_FLAG))
     for rule in @rules
       if rule.letter is arg or rule.flag is arg
         options[rule.name]: if rule.has_argument then args.shift() else true
-        is_option: true
         break
     options.arguments.push arg unless is_option
   options
@@ -33,7 +32,7 @@ op::help: ->
   lines.join('\n')
 
 # Regex matchers for option flags.
-LONG_FLAG:  /^(--[\w\-]+)/
+LONG_FLAG:  /^(--\w[\w\-]+)/
 SHORT_FLAG: /^(-\w+)/
 OPTIONAL:   /\[(.+)\]/
 
