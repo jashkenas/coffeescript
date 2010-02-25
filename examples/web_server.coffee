@@ -4,8 +4,8 @@ http: require 'http'
 
 server: http.createServer (req, res) ->
   res.sendHeader 200, {'Content-Type': 'text/plain'}
-  res.sendBody 'Hello, World!'
-  res.finish()
+  res.write 'Hello, World!'
+  res.close()
 
 server.listen 3000
 
