@@ -77,7 +77,7 @@ compile_script: (source, code) ->
       js: coffee.compile code, compile_options()
       if      o.run             then eval js
       else if o.lint            then lint js
-      else if o.print or o.eval then puts js
+      else if o.print or o.eval then print js
       else                           write_js source, js
   catch err
     if o.watch                  then puts err.message else throw err

@@ -923,52 +923,44 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
 
   </div>
 
-  <script type="text/javascript" src="lib/rewriter.js"></script>
-  <script type="text/javascript" src="lib/lexer.js"></script>
-  <script type="text/javascript" src="lib/parser.js"></script>
-  <script type="text/javascript" src="lib/scope.js"></script>
-  <script type="text/javascript" src="lib/nodes.js"></script>
-  <script type="text/javascript" src="lib/coffee-script.js"></script>
+  <script src="extras/coffee-script.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
 
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+  <script type="text/coffeescript">
 
-  <script type="text/javascript">
-    window.repl_compile = function() {
-      var source = $('#repl_source').val();
-      window.compiled_js = '';
-      try {
-        window.compiled_js = CoffeeScript.compile(source, {no_wrap: true});
-      } catch(error) {
-        alert(error);
-      }
-      $('#repl_results').html(window.compiled_js);
-    };
-    window.repl_run = function() {
-      try {
-        eval(window.compiled_js);
-      } catch(error) {
-        alert(error);
-      }
-    };
+    window.repl_compile: ->
+      source: $('#repl_source').val()
+      window.compiled_js: ''
+      try
+        window.compiled_js: CoffeeScript.compile source, {no_wrap: true}
+      catch error then alert error
+      $('#repl_results').html window.compiled_js
 
-    var nav = $('.navigation');
-    var currentNav = null;
-    var closeMenus = function() {
-      if (currentNav) currentNav.removeClass('active');
-      currentNav = null;
-    };
-    nav.click(function(e) {
-      if (e.target.tagName.toLowerCase() == 'a') return;
-      if (this !== (currentNav && currentNav[0])) {
-        closeMenus();
-        currentNav = $(this);
-        currentNav.addClass('active');
-      }
-      return false;
-    });
-    $(document.body).click(function() {
-      closeMenus();
-    });
+    window.repl_run: ->
+      try
+        eval window.compiled_js
+      catch error then alert error
+
+    nav: $('.navigation')
+    current_nav: null
+
+    close_menus: ->
+      current_nav.removeClass 'active' if current_nav
+      current_nav: null
+
+    nav.click (e) ->
+      return if e.target.tagName.toLowerCase() is 'a'
+      if this isnt (current_nav and current_nav[0])
+        close_menus();
+        current_nav: $(this)
+        current_nav.addClass 'active'
+      false
+
+    $(document.body).click -> close_menus()
+  </script>
+
+  <script>
+    CoffeeScript.activate();
   </script>
 
 </body>
