@@ -31,11 +31,11 @@ exports.compile: (code, options) ->
   (parser.parse lexer.tokenize code).compile(options)
 
 # Just the tokens.
-exports.tokenize: (code) ->
+exports.tokens: (code) ->
   lexer.tokenize code
 
 # Just the nodes.
-exports.tree: (code) ->
+exports.nodes: (code) ->
   parser.parse lexer.tokenize code
 
 # Activate CoffeeScript in the browser by having it compile and eval

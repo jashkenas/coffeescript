@@ -19,9 +19,9 @@ SWITCHES: [
   ['-l', '--lint',          'pipe the compiled JavaScript through JSLint']
   ['-s', '--stdio',         'listen for and compile scripts over stdio']
   ['-e', '--eval',          'compile a string from the command line']
-  ['-n', '--no-wrap',       'compile without the top-level function wrapper']
+  [      '--no-wrap',       'compile without the top-level function wrapper']
   ['-t', '--tokens',        'print the tokens that the lexer produces']
-  ['-tr','--tree',          'print the parse tree that Jison produces']
+  ['-n', '--nodes',         'print the parse tree that Jison produces']
   ['-v', '--version',       'display CoffeeScript version']
   ['-h', '--help',          'display this help message']
 ]
@@ -73,8 +73,8 @@ compile_scripts: ->
 compile_script: (source, code) ->
   o: options
   try
-    if      o.tokens            then print_tokens CoffeeScript.tokenize code
-    else if o.tree              then puts CoffeeScript.tree(code).toString()
+    if      o.tokens            then print_tokens CoffeeScript.tokens code
+    else if o.nodes             then puts CoffeeScript.nodes(code).toString()
     else
       js: CoffeeScript.compile code, compile_options()
       if      o.run             then eval js
