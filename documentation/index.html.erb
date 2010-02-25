@@ -736,18 +736,18 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       directly within the browser using <tt>&lt;script type="text/coffeescript"&gt;</tt>
       tags. The source includes a compressed and minified version of the compiler
       (<a href="extras/coffee-script.js">Download current version here, 43k when gzipped</a>)
-      as <tt>extras/coffee-script.js</tt>. Include this file on a page with 
+      as <tt>extras/coffee-script.js</tt>. Include this file on a page with
       inline CoffeeScript tags, and it will compile and evaluate them in order.
     </p>
 
     <p>
       In fact, the little bit of glue script that runs "Try CoffeeScript" above,
-      as well as jQuery for the menu, is implemented in just this way. 
+      as well as jQuery for the menu, is implemented in just this way.
       View source and look at the bottom of the page to see the example.
       Including the script also gives you access to <tt>CoffeeScript.compile()</tt>
       so you can pop open Firebug and try compiling some strings.
     </p>
-    
+
     <p>
       The usual caveats about CoffeeScript apply &mdash; your inline scripts will
       run within a closure wrapper, so if you want to expose global variables or
@@ -774,7 +774,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       </li>
       <li>
         If you'd like to chat, stop by <tt>#coffeescript</tt> on Freenode in the
-        IRC client of your choice, or on 
+        IRC client of your choice, or on
         <a href="http://webchat.freenode.net/">webchat.freenode.net</a>.
       </li>
     </ul>
@@ -783,7 +783,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.5.2</b>
       Added a compressed version of the compiler for inclusion in web pages as
@@ -791,7 +791,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       with type <tt>text/coffeescript</tt> for you. Added a <tt>--stdio</tt> option
       to the <tt>coffee</tt> command, for piped-in compiles.
     </p>
-    
+
 
     <p>
       <b class="header" style="margin-top: 20px;">0.5.1</b>
@@ -971,7 +971,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       try
         window.compiled_js: CoffeeScript.compile source, {no_wrap: true}
       catch error then alert error
-      $('#repl_results').html window.compiled_js
+      $('#repl_results').text window.compiled_js
 
     window.repl_run: ->
       try
