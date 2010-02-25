@@ -1,4 +1,13 @@
-This folder includes rough cuts of CoffeeScript syntax highlighters for 
+"extras/coffee-script.js" is a concatenated and compressed version of the 
+CoffeeScript compiler. To use it in the browser, include the script, and call:
+
+  CoffeeScript.activate();
+  
+After any inline script tags of type "text/coffeescript" on the page.
+
+
+
+This folder also includes rough cuts of CoffeeScript syntax highlighters for 
 TextMate and Vim. Improvements to their lexing ability are always welcome.
 
 To install the TextMate bundle, drop it into:

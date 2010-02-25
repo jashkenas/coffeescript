@@ -38,6 +38,14 @@ task 'build:underscore', 'rebuild the Underscore.coffee documentation page', ->
   exec 'uv -s coffeescript -t idle -h examples/underscore.coffee > documentation/underscore.html'
 
 
+task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
+  exec 'rake browser'
+
+
+task 'doc', 'watch and continually rebuild the documentation', ->
+  exec 'rake doc'
+
+
 task 'test', 'run the CoffeeScript language test suite', ->
   process.mixin require 'assert'
   test_count: 0

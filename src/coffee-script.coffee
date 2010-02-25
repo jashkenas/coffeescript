@@ -38,3 +38,9 @@ exports.tokenize: (code) ->
 exports.tree: (code) ->
   parser.parse lexer.tokenize code
 
+# Activate CoffeeScript in the browser by having it compile and eval
+# all script tags with a content-type of text/coffeescript.
+exports.activate: ->
+  scripts: document.getElementsByTagName 'script'
+  for script in scripts when script.type is 'text/coffeescript'
+    eval exports.compile script.innerHTML
