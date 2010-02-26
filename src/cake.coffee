@@ -36,12 +36,11 @@ exports.run: ->
   path.exists 'Cakefile', (exists) ->
     throw new Error('Cakefile not found in ' + process.cwd()) unless exists
     args: process.ARGV[2...process.ARGV.length]
-    fs.readFile 'Cakefile', (err, source) ->
-      eval coffee.compile source
-      oparse: new optparse.OptionParser switches
-      return print_tasks() unless args.length
-      options: oparse.parse(args)
-      invoke arg for arg in options.arguments
+    eval coffee.compile fs.readFileSync 'Cakefile'
+    oparse: new optparse.OptionParser switches
+    return print_tasks() unless args.length
+    options: oparse.parse(args)
+    invoke arg for arg in options.arguments
 
 # Display the list of Cake tasks.
 print_tasks: ->

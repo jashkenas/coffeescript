@@ -7,7 +7,7 @@ run: (args) ->
   proc.addListener 'error', (err) -> if err then puts err
 
 
-option '-p', '--prefix', 'set the installation prefix for `cake install`'
+option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
 
 task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) ->
   base: options.prefix or '/usr/local'
@@ -21,9 +21,9 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
 
 
 task 'build', 'build the CoffeeScript language from source', ->
-  fs.readdir 'src', (err, files) ->
-    files: 'src/' + file for file in files when file.match(/\.coffee$/)
-    run ['-o', 'lib'].concat(files)
+  files: fs.readdirSync 'src'
+  files: 'src/' + file for file in files when file.match(/\.coffee$/)
+  run ['-o', 'lib'].concat(files)
 
 
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
