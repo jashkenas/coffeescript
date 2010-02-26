@@ -121,6 +121,19 @@ div.code {
     position: absolute;
     top: 0px; left: 10px;
   }
+  #error {
+    position: absolute;
+    -webkit-border-radius: 6px; -moz-border-radius: 6px; border-radius: 6px;
+    right: 15px; top: 15px; left: 565px;
+    height: 15px;
+    padding: 2px 5px;
+    background: #fdcdcc;
+    color: #864544;
+    border: 1px solid #864544;
+    font: 10px/15px Arial;
+    overflow: hidden;
+    text-transform: uppercase;
+  }
   .navigation {
     height: 50px;
     font: bold 11px/50px Arial;
@@ -168,9 +181,6 @@ div.code {
           }
           .navigation .code button {
             bottom: 10px;
-          }
-          .navigation .compile {
-            left: 240px; right: auto;
           }
       .navigation .contents a {
         display: block;

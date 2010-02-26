@@ -76,12 +76,12 @@
 
 alert reverse '!tpircseeffoC'</textarea>
           <pre id="repl_results"></pre>
-          <button class="compile" onclick="javascript: repl_compile();">compile</button>
-          <button class="run" onclick="javascript: repl_run();">run</button>
+          <button class="run">run</button>
           <br class="clear" />
         </div>
       </div>
     </div>
+    <div id="error"></div>
   </div>
 
   <div class="container">
@@ -965,27 +965,35 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
 
   <script type="text/coffeescript">
 
-    window.repl_compile: ->
+    # Set up the compilation function, to run when you stop typing.
+    compile_source: ->
       source: $('#repl_source').val()
       window.compiled_js: ''
       try
         window.compiled_js: CoffeeScript.compile source, {no_wrap: true}
-      catch error then alert error
-      $('#repl_results').text window.compiled_js
+        $('#repl_results').text window.compiled_js
+        $('#error').hide();
+      catch error
+        $('#error').text(error.message).show();
 
-    window.repl_run: ->
+    # Listen for keypresses and recompile.
+    $('#repl_source').keyup -> compile_source()
+
+    # Eval the compiled js.
+    $('button.run').click ->
       try
         eval window.compiled_js
       catch error then alert error
 
-    nav: $('.navigation')
     current_nav: null
 
+    # Helper to hide the menus.
     close_menus: ->
       current_nav.removeClass 'active' if current_nav
       current_nav: null
 
-    nav.click (e) ->
+    # Bind navigation buttons to open the menus.
+    $('.navigation').click (e) ->
       return if e.target.tagName.toLowerCase() is 'a'
       if this isnt (current_nav and current_nav[0])
         close_menus();
@@ -994,6 +1002,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       false
 
     $(document.body).click -> close_menus()
+
+    compile_source()
 
   </script>
 

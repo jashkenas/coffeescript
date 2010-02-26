@@ -62,12 +62,12 @@
 
 alert reverse '!tpircseeffoC'</textarea>
           <pre id="repl_results"></pre>
-          <button class="compile" onclick="javascript: repl_compile();">compile</button>
-          <button class="run" onclick="javascript: repl_run();">run</button>
+          <button class="run">run</button>
           <br class="clear" />
         </div>
       </div>
     </div>
+    <div id="error"></div>
   </div>
 
   <div class="container">
@@ -817,7 +817,7 @@ One fell out and bumped his head.");
       would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>.
     </p>
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> Eat lunch.</span>
-<span class="FunctionName">lunch</span><span class="Keyword">:</span> eat(food) <span class="Keyword">for</span> food <span class="Keyword">in</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>]
+<span class="FunctionName">lunch</span><span class="Keyword">:</span> eat food <span class="Keyword">for</span> food <span class="Keyword">in</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>]
 
 <span class="Comment"><span class="Comment">#</span> Naive collision detection.</span>
 <span class="Keyword">for</span> roid <span class="Keyword">in</span> asteroids
@@ -1845,27 +1845,35 @@ task(<span class="String"><span class="String">'</span>test<span class="String">
 
   <script type="text/coffeescript">
 
-    window.repl_compile: ->
+    # Set up the compilation function, to run when you stop typing.
+    compile_source: ->
       source: $('#repl_source').val()
       window.compiled_js: ''
       try
         window.compiled_js: CoffeeScript.compile source, {no_wrap: true}
-      catch error then alert error
-      $('#repl_results').text window.compiled_js
+        $('#repl_results').text window.compiled_js
+        $('#error').hide();
+      catch error
+        $('#error').text(error.message).show();
 
-    window.repl_run: ->
+    # Listen for keypresses and recompile.
+    $('#repl_source').keyup -> compile_source()
+
+    # Eval the compiled js.
+    $('button.run').click ->
       try
         eval window.compiled_js
       catch error then alert error
 
-    nav: $('.navigation')
     current_nav: null
 
+    # Helper to hide the menus.
     close_menus: ->
       current_nav.removeClass 'active' if current_nav
       current_nav: null
 
-    nav.click (e) ->
+    # Bind navigation buttons to open the menus.
+    $('.navigation').click (e) ->
       return if e.target.tagName.toLowerCase() is 'a'
       if this isnt (current_nav and current_nav[0])
         close_menus();
@@ -1874,6 +1882,8 @@ task(<span class="String"><span class="String">'</span>test<span class="String">
       false
 
     $(document.body).click -> close_menus()
+
+    compile_source()
 
   </script>
 
