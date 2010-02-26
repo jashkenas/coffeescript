@@ -11,7 +11,7 @@ op: exports.OptionParser: (rules, banner) ->
 # containing the remaning non-option arguments.
 op::parse: (args) ->
   options: {arguments: []}
-  args: args.slice 0
+  args: normalize_arguments args
   while arg: args.shift()
     is_option: !!(arg.match(LONG_FLAG) or arg.match(SHORT_FLAG))
     matched_rule: no
@@ -36,7 +36,8 @@ op::help: ->
 
 # Regex matchers for option flags.
 LONG_FLAG:  /^(--\w[\w\-]+)/
-SHORT_FLAG: /^(-\w+)/
+SHORT_FLAG: /^(-\w)/
+MULTI_FLAG: /^-(\w{2,})/
 OPTIONAL:   /\[(.+)\]/
 
 # Build rules from a list of valid switch tuples in the form:
@@ -57,3 +58,14 @@ build_rule: (letter, flag, description) ->
     description:  description
     has_argument: !!(match and match[1])
   }
+
+# Normalize arguments by expanding merged flags into multiple flags.
+normalize_arguments: (args) ->
+  args: args.slice 0
+  result: []
+  for arg in args
+    if match: arg.match MULTI_FLAG
+      result.push '-' + l for l in match[1].split ''
+    else
+      result.push arg
+  result
