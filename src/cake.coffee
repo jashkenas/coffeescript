@@ -5,8 +5,12 @@
 fs:       require 'fs'
 path:     require 'path'
 coffee:   require 'coffee-script'
+optparse: require 'optparse'
 
 tasks: {}
+options: {}
+switches: []
+oparse: null
 
 # Mixin the top-level Cake functions for Cakefiles to use.
 process.mixin {
@@ -15,10 +19,15 @@ process.mixin {
   task: (name, description, action) ->
     tasks[name]: {name: name, description: description, action: action}
 
+  # Define an option that the Cakefile accepts.
+  option: (letter, flag, description) ->
+    switches.push [letter, flag, description]
+
   # Invoke another task in the Cakefile.
   invoke: (name) ->
     no_such_task name unless tasks[name]
-    tasks[name].action()
+    tasks[name].action(options)
+
 }
 
 # Running `cake` runs the tasks you pass asynchronously (node-style), or
@@ -29,15 +38,19 @@ exports.run: ->
     args: process.ARGV[2...process.ARGV.length]
     fs.readFile 'Cakefile', (err, source) ->
       eval coffee.compile source
+      oparse: new optparse.OptionParser switches
       return print_tasks() unless args.length
-      invoke arg for arg in args
+      options: oparse.parse(args)
+      invoke arg for arg in options.arguments
 
 # Display the list of Cake tasks.
 print_tasks: ->
+  puts ''
   for name, task of tasks
     spaces: 20 - name.length
     spaces: if spaces > 0 then (' ' for i in [0..spaces]).join('') else ''
     puts "cake " + name + spaces + ' # ' + task.description
+  puts '\n' + oparse.help() + '\n' if switches.length
 
 # Print an error and exit when attempting to all an undefined task.
 no_such_task: (task) ->

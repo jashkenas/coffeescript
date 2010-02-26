@@ -7,12 +7,16 @@ run: (args) ->
   proc.addListener 'error', (err) -> if err then puts err
 
 
-task 'install', 'install CoffeeScript into /usr/local', ->
+option '-p', '--prefix', 'set the installation prefix for `cake install`'
+
+task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) ->
+  base: options.prefix or '/usr/local'
+  lib:  base + '/lib/coffee-script'
   exec([
-    'mkdir -p /usr/local/lib/coffee-script'
-    'cp -rf bin lib LICENSE README package.json src vendor /usr/local/lib/coffee-script'
-    'ln -sf /usr/local/lib/coffee-script/lib/bin/coffee /usr/local/bin/coffee'
-    'ln -sf /usr/local/lib/coffee-script/lib/bin/cake /usr/local/bin/cake'
+    'mkdir -p ' + lib
+    'cp -rf bin lib LICENSE README package.json src vendor ' + lib
+    'ln -sf ' + lib + '/lib/bin/coffee ' + base + '/bin/coffee'
+    'ln -sf ' + lib + '/lib/bin/cake ' + base + '/bin/cake'
   ].join(' && '))
 
 

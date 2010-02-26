@@ -2,7 +2,7 @@
 #   [short-flag (optional), long-flag, description]
 # And an optional banner for the usage help.
 op: exports.OptionParser: (rules, banner) ->
-  @banner:  banner or 'Usage: [Options]'
+  @banner:  banner
   @rules:   build_rules(rules)
   this
 
@@ -26,7 +26,8 @@ op::parse: (args) ->
 
 # Return the help text for this OptionParser, for --help and such.
 op::help: ->
-  lines: [@banner, '', 'Available options:']
+  lines: ['Available options:']
+  lines.unshift @banner + '\n' if @banner
   for rule in @rules
     spaces:   15 - rule.flag.length
     spaces:   if spaces > 0 then (' ' for i in [0..spaces]).join('') else ''
