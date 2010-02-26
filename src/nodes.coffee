@@ -447,7 +447,7 @@ RangeNode: exports.RangeNode: inherit BaseNode, {
     return    @compile_array(o) unless o.index
     idx:      del o, 'index'
     step:     del o, 'step'
-    vars:     idx + '=' + @from_var
+    vars:     idx + ' = ' + @from_var
     step:     if step then step.compile(o) else '1'
     equals:   if @exclusive then '' else '='
     intro:    '(' + @from_var + ' <= ' + @to_var + ' ? ' + idx
@@ -922,9 +922,11 @@ ForNode: exports.ForNode: inherit BaseNode, {
     else
       index_var:    null
       source_part:  svar + ' = ' + @source.compile(o) + ';\n' + @idt()
-      step_part:    if @step then ivar + ' += ' + @step.compile(o) else ivar + '++'
-      for_part:     ivar + ' = 0; ' + ivar + ' < ' + svar + '.length; ' + step_part
       var_part:     body_dent + name + ' = ' + svar + '[' + ivar + '];\n' if name
+      if not @object
+        lvar:       scope.free_variable()
+        step_part:  if @step then ivar + ' += ' + @step.compile(o) else ivar + '++'
+        for_part:   ivar + ' = 0, ' + lvar + ' = ' + svar + '.length; ' + ivar + ' < ' + lvar + '; ' + step_part
     set_result:     if rvar then @idt() + rvar + ' = []; ' else @idt()
     return_result:  rvar or ''
     body:           ClosureNode.wrap(body, true) if top_level and @contains (n) -> n instanceof CodeNode

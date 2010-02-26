@@ -133,7 +133,7 @@ alert <span class="String"><span class="String">&quot;</span>I knew it!<span cla
 
 <span class="Comment"><span class="Comment">#</span> Array comprehensions:</span>
 <span class="FunctionName">cubed_list</span><span class="Keyword">:</span> math.cube num <span class="Keyword">for</span> num <span class="Keyword">in</span> list
-</pre><pre class="idle"><span class="Storage">var</span> _a, _b, _c, cubed_list, list, math, num, number, opposite_day, race, square;
+</pre><pre class="idle"><span class="Storage">var</span> _a, _b, _c, _d, cubed_list, list, math, num, number, opposite_day, race, square;
 <span class="Comment"><span class="Comment">//</span> Assignment:</span>
 number <span class="Keyword">=</span> <span class="Number">42</span>;
 opposite_day <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
@@ -168,13 +168,13 @@ race <span class="Keyword">=</span> <span class="Storage">function</span> <span 
 <span class="Comment"><span class="Comment">//</span> Array comprehensions:</span>
 cubed_list <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   _a <span class="Keyword">=</span> []; _b <span class="Keyword">=</span> list;
-  <span class="Keyword">for</span> (_c <span class="Keyword">=</span> <span class="Number">0</span>; _c <span class="Keyword">&lt;</span> _b.<span class="LibraryConstant">length</span>; _c<span class="Keyword">++</span>) {
+  <span class="Keyword">for</span> (_c <span class="Keyword">=</span> <span class="Number">0</span>, _d <span class="Keyword">=</span> _b.<span class="LibraryConstant">length</span>; _c <span class="Keyword">&lt;</span> _d; _c<span class="Keyword">++</span>) {
     num <span class="Keyword">=</span> _b[_c];
     _a.<span class="LibraryFunction">push</span>(math.cube(num));
   }
   <span class="Keyword">return</span> _a;
 }).<span class="LibraryFunction">call</span>(<span class="Variable">this</span>);
-</pre><button onclick='javascript: var _a, _b, _c, cubed_list, list, math, num, number, opposite_day, race, square;
+</pre><button onclick='javascript: var _a, _b, _c, _d, cubed_list, list, math, num, number, opposite_day, race, square;
 // Assignment:
 number = 42;
 opposite_day = true;
@@ -209,7 +209,7 @@ if ((typeof elvis !== "undefined" && elvis !== null)) {
 // Array comprehensions:
 cubed_list = (function() {
   _a = []; _b = list;
-  for (_c = 0; _c < _b.length; _c++) {
+  for (_c = 0, _d = _b.length; _c < _d; _c++) {
     num = _b[_c];
     _a.push(math.cube(num));
   }
@@ -823,23 +823,23 @@ One fell out and bumped his head.");
 <span class="Keyword">for</span> roid <span class="Keyword">in</span> asteroids
   <span class="Keyword">for</span> roid2 <span class="Keyword">in</span> asteroids <span class="Keyword">when</span> roid <span class="Keyword">isnt</span> roid2
     roid.explode() <span class="Keyword">if</span> roid.overlaps roid2
-</pre><pre class="idle"><span class="Storage">var</span> _a, _b, _c, _d, _e, _f, _g, food, lunch, roid, roid2;
+</pre><pre class="idle"><span class="Storage">var</span> _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, food, lunch, roid, roid2;
 <span class="Comment"><span class="Comment">//</span> Eat lunch.</span>
 lunch <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   _a <span class="Keyword">=</span> []; _b <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
-  <span class="Keyword">for</span> (_c <span class="Keyword">=</span> <span class="Number">0</span>; _c <span class="Keyword">&lt;</span> _b.<span class="LibraryConstant">length</span>; _c<span class="Keyword">++</span>) {
+  <span class="Keyword">for</span> (_c <span class="Keyword">=</span> <span class="Number">0</span>, _d <span class="Keyword">=</span> _b.<span class="LibraryConstant">length</span>; _c <span class="Keyword">&lt;</span> _d; _c<span class="Keyword">++</span>) {
     food <span class="Keyword">=</span> _b[_c];
     _a.<span class="LibraryFunction">push</span>(eat(food));
   }
   <span class="Keyword">return</span> _a;
 }).<span class="LibraryFunction">call</span>(<span class="Variable">this</span>);
 <span class="Comment"><span class="Comment">//</span> Naive collision detection.</span>
-_d <span class="Keyword">=</span> asteroids;
-<span class="Keyword">for</span> (_e <span class="Keyword">=</span> <span class="Number">0</span>; _e <span class="Keyword">&lt;</span> _d.<span class="LibraryConstant">length</span>; _e<span class="Keyword">++</span>) {
-  roid <span class="Keyword">=</span> _d[_e];
-  _f <span class="Keyword">=</span> asteroids;
-  <span class="Keyword">for</span> (_g <span class="Keyword">=</span> <span class="Number">0</span>; _g <span class="Keyword">&lt;</span> _f.<span class="LibraryConstant">length</span>; _g<span class="Keyword">++</span>) {
-    roid2 <span class="Keyword">=</span> _f[_g];
+_e <span class="Keyword">=</span> asteroids;
+<span class="Keyword">for</span> (_f <span class="Keyword">=</span> <span class="Number">0</span>, _g <span class="Keyword">=</span> _e.<span class="LibraryConstant">length</span>; _f <span class="Keyword">&lt;</span> _g; _f<span class="Keyword">++</span>) {
+  roid <span class="Keyword">=</span> _e[_f];
+  _h <span class="Keyword">=</span> asteroids;
+  <span class="Keyword">for</span> (_i <span class="Keyword">=</span> <span class="Number">0</span>, _j <span class="Keyword">=</span> _h.<span class="LibraryConstant">length</span>; _i <span class="Keyword">&lt;</span> _j; _i<span class="Keyword">++</span>) {
+    roid2 <span class="Keyword">=</span> _h[_i];
     <span class="Keyword">if</span> (roid <span class="Keyword">!</span><span class="Keyword">==</span> roid2) {
       <span class="Keyword">if</span> (roid.overlaps(roid2)) {
         roid.explode();
@@ -863,7 +863,7 @@ _d <span class="Keyword">=</span> asteroids;
 </pre><pre class="idle"><span class="Storage">var</span> _a, _b, _c, _d, _e, countdown, egg_delivery, num;
 countdown <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   _a <span class="Keyword">=</span> []; _d <span class="Keyword">=</span> <span class="Number">10</span>; _e <span class="Keyword">=</span> <span class="Number">1</span>;
-  <span class="Keyword">for</span> (_c <span class="Keyword">=</span> <span class="Number">0</span>, num<span class="Keyword">=</span>_d; (_d <span class="Keyword">&lt;=</span> _e ? num <span class="Keyword">&lt;=</span> _e : num <span class="Keyword">&gt;=</span> _e); (_d <span class="Keyword">&lt;=</span> _e ? num <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">1</span> : num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>), _c<span class="Keyword">++</span>) {
+  <span class="Keyword">for</span> (_c <span class="Keyword">=</span> <span class="Number">0</span>, num <span class="Keyword">=</span> _d; (_d <span class="Keyword">&lt;=</span> _e ? num <span class="Keyword">&lt;=</span> _e : num <span class="Keyword">&gt;=</span> _e); (_d <span class="Keyword">&lt;=</span> _e ? num <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">1</span> : num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>), _c<span class="Keyword">++</span>) {
     _a.<span class="LibraryFunction">push</span>(num);
   }
   <span class="Keyword">return</span> _a;
@@ -871,7 +871,7 @@ countdown <span class="Keyword">=</span> (<span class="Storage">function</span>(
 egg_delivery <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">egg_delivery</span>() {
   <span class="Storage">var</span> _f, _g, _h, _i, _j, dozen_eggs, i;
   _f <span class="Keyword">=</span> []; _i <span class="Keyword">=</span> <span class="Number">0</span>; _j <span class="Keyword">=</span> eggs.<span class="LibraryConstant">length</span>;
-  <span class="Keyword">for</span> (_h <span class="Keyword">=</span> <span class="Number">0</span>, i<span class="Keyword">=</span>_i; (_i <span class="Keyword">&lt;=</span> _j ? i <span class="Keyword">&lt;</span> _j : i <span class="Keyword">&gt;</span> _j); (_i <span class="Keyword">&lt;=</span> _j ? i <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">12</span> : i <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">12</span>), _h<span class="Keyword">++</span>) {
+  <span class="Keyword">for</span> (_h <span class="Keyword">=</span> <span class="Number">0</span>, i <span class="Keyword">=</span> _i; (_i <span class="Keyword">&lt;=</span> _j ? i <span class="Keyword">&lt;</span> _j : i <span class="Keyword">&gt;</span> _j); (_i <span class="Keyword">&lt;=</span> _j ? i <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">12</span> : i <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">12</span>), _h<span class="Keyword">++</span>) {
     _f.<span class="LibraryFunction">push</span>((<span class="Storage">function</span>() {
       dozen_eggs <span class="Keyword">=</span> eggs.<span class="LibraryFunction">slice</span>(i, i <span class="Keyword">+</span> <span class="Number">12</span>);
       <span class="Keyword">return</span> deliver(<span class="Keyword">new</span> <span class="TypeName">egg_carton</span>(dozen));
@@ -882,7 +882,7 @@ egg_delivery <span class="Keyword">=</span> <span class="Storage">function</span
 </pre><button onclick='javascript: var _a, _b, _c, _d, _e, countdown, egg_delivery, num;
 countdown = (function() {
   _a = []; _d = 10; _e = 1;
-  for (_c = 0, num=_d; (_d <= _e ? num <= _e : num >= _e); (_d <= _e ? num += 1 : num -= 1), _c++) {
+  for (_c = 0, num = _d; (_d <= _e ? num <= _e : num >= _e); (_d <= _e ? num += 1 : num -= 1), _c++) {
     _a.push(num);
   }
   return _a;
@@ -890,7 +890,7 @@ countdown = (function() {
 egg_delivery = function egg_delivery() {
   var _f, _g, _h, _i, _j, dozen_eggs, i;
   _f = []; _i = 0; _j = eggs.length;
-  for (_h = 0, i=_i; (_i <= _j ? i < _j : i > _j); (_i <= _j ? i += 12 : i -= 12), _h++) {
+  for (_h = 0, i = _i; (_i <= _j ? i < _j : i > _j); (_i <= _j ? i += 12 : i -= 12), _h++) {
     _f.push((function() {
       dozen_eggs = eggs.slice(i, i + 12);
       return deliver(new egg_carton(dozen));
@@ -1594,9 +1594,9 @@ task <span class="String"><span class="String">'</span>test<span class="String">
     fs.readFile test, <span class="FunctionArgument">(</span><span class="FunctionArgument">err, code</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> eval coffee.compile code
 </pre><pre class="idle">process.mixin(require(<span class="String"><span class="String">'</span>assert<span class="String">'</span></span>));
 task(<span class="String"><span class="String">'</span>test<span class="String">'</span></span>, <span class="String"><span class="String">'</span>run each of the unit tests<span class="String">'</span></span>, <span class="Storage">function</span>() {
-  <span class="Storage">var</span> _a, _b, _c, test;
+  <span class="Storage">var</span> _a, _b, _c, _d, test;
   _a <span class="Keyword">=</span> []; _b <span class="Keyword">=</span> test_files;
-  <span class="Keyword">for</span> (_c <span class="Keyword">=</span> <span class="Number">0</span>; _c <span class="Keyword">&lt;</span> _b.<span class="LibraryConstant">length</span>; _c<span class="Keyword">++</span>) {
+  <span class="Keyword">for</span> (_c <span class="Keyword">=</span> <span class="Number">0</span>, _d <span class="Keyword">=</span> _b.<span class="LibraryConstant">length</span>; _c <span class="Keyword">&lt;</span> _d; _c<span class="Keyword">++</span>) {
     test <span class="Keyword">=</span> _b[_c];
     _a.<span class="LibraryFunction">push</span>(fs.readFile(test, <span class="Storage">function</span>(err, code) {
       <span class="Keyword">return</span> <span class="LibraryFunction">eval</span>(coffee.<span class="LibraryFunction">compile</span>(code));
