@@ -205,6 +205,7 @@ div.code {
 
 #repl_source, #repl_results {
   background: transparent;
+  outline: none;
 }
   #repl_source {
     border: 0;
