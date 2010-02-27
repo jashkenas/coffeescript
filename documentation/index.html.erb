@@ -22,9 +22,9 @@
   <title>CoffeeScript</title>
   <link rel="stylesheet" type="text/css" href="documentation/css/docs.css" />
   <link rel="stylesheet" type="text/css" href="documentation/css/idle.css" />
-  <link rel="shortcut icon" href="documentation/images/favicon.ico" /> 
+  <link rel="shortcut icon" href="documentation/images/favicon.ico" />
 </head>
-<body>
+<body class="minimized">
 
   <div id="fadeout"></div>
 
@@ -72,11 +72,13 @@
       </div>
       <div class="contents repl_wrapper">
         <div class="code">
-          <textarea id="repl_source">reverse: (string) ->
+          <div id="repl_source_wrap"><textarea id="repl_source">reverse: (string) ->
   string.split('').reverse().join ''
 
-alert reverse '!tpircseeffoC'</textarea>
+alert reverse '!tpircseeffoC'</textarea></div>
           <pre id="repl_results"></pre>
+          <button class="full_screen">go full screen</button>
+          <button class="minimize">minimize</button>
           <button class="run">run</button>
           <br class="clear" />
         </div>
@@ -164,7 +166,7 @@ sudo bin/cake install</pre>
 
     <p>
       This provides the <tt>coffee</tt> command, which will execute CoffeeScripts
-      under Node.js by default, but is also used to compile CoffeeScript 
+      under Node.js by default, but is also used to compile CoffeeScript
       <tt>.coffee</tt> files into JavaScript, or to run an an interactive REPL.
       When compiling to JavaScript, <tt>coffee</tt> writes the output
       as <tt>.js</tt> files in the same directory by default, but output
@@ -996,7 +998,9 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
 
     # Helper to hide the menus.
     close_menus: ->
-      current_nav.removeClass 'active' if current_nav
+      if current_nav
+        current_nav.removeClass 'active'
+        document.body.className: 'minimized'
       current_nav: null
 
     # Bind navigation buttons to open the menus.
@@ -1009,6 +1013,12 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       false
 
     $(document.body).click -> close_menus()
+
+    $('.navigation .full_screen').click ->
+      document.body.className: 'full_screen'
+
+    $('.navigation .minimize').click ->
+      document.body.className: 'minimized'
 
     compile_source()
 

@@ -7,7 +7,7 @@ require 'yui/compressor'
 desc "Build the documentation page"
 task :doc do
   source = 'documentation/index.html.erb'
-  child = fork { exec "bin/coffee documentation/coffee/*.coffee -o documentation/js -w" }
+  child = fork { exec "bin/coffee -c documentation/coffee/*.coffee -o documentation/js -w" }
   at_exit { Process.kill("INT", child) }
   Signal.trap("INT") { exit }
   loop do

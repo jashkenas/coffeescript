@@ -145,6 +145,9 @@ div.code {
     border-top: 0; border-bottom: 0;
     cursor: pointer;
   }
+    body.full_screen .navigation {
+      position: static;
+    }
     .navigation.try {
       border-left: 0;
     }
@@ -174,14 +177,33 @@ div.code {
           width: 700px;
           padding: 0;
         }
+          body.full_screen .navigation .contents.repl_wrapper {
+            position: fixed;
+            width: auto; height: auto;
+            left: 60px; top: 75px; right: 60px; bottom: 30px;
+          }
           .navigation .contents.repl_wrapper .code {
             -webkit-box-shadow: none; -moz-box-shadow: none;
             background: transparent;
             border: 0;
+            position: static;
           }
+            body.full_screen .navigation .contents.repl_wrapper .code {
+              height: 100%;
+              padding: 0; margin: 0;
+            }
           .navigation .code button {
             bottom: 10px;
+            text-transform: none;
           }
+          .navigation .full_screen, .navigation .minimize {
+            right: auto;
+            left: 10px;
+            display: none;
+          }
+            body.minimized .full_screen, body.full_screen .minimize {
+              display: inline;
+            }
       .navigation .contents a {
         display: block;
         width: 300px;
@@ -206,19 +228,39 @@ div.code {
 #repl_source, #repl_results {
   background: transparent;
   outline: none;
+  margin: 5px 0 20px;
 }
-  #repl_source {
-    border: 0;
-    padding: 5px 7px;
+  #repl_source_wrap {
     margin-left: 5px;
-    min-height: 250px;
-    resize: none;
-    width: 295px;
+    height: 250px;
+    width: 307px;
+    position: relative;
+    float: left;
   }
+    #repl_source {
+      width: 96%;
+      height: 100%;
+      border: 0;
+      resize: none;
+    }
   #repl_results {
     font-family: Monaco, Consolas, "Lucida Console", monospace;
     text-transform: none;
     font-weight: normal;
-    min-height: 260px;
-    width: 355px;
+    height: 260px;
+    margin-bottom: 25px;
+    overflow-y: auto;
+    width: 370px;
   }
+    body.full_screen #repl_results, body.full_screen #repl_source_wrap {
+      width: auto; height: auto;
+      position: absolute;
+      margin-bottom: 0;
+      top: 10px; left: 10px; right: 10px; bottom: 40px;
+    }
+      body.full_screen #repl_source_wrap {
+        right: 50%;
+      }
+      body.full_screen #repl_results {
+        left: 50%;
+      }
