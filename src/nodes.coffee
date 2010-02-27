@@ -94,8 +94,15 @@ BaseNode::idt: (tabs) ->
 BaseNode::contains: (block) ->
   for node in @children
     return true if block(node)
-    return true if node instanceof BaseNode and node.contains block
+    return true if node.contains and node.contains block
   false
+
+# Perform an in-order traversal of the AST.
+BaseNode::traverse: (block) ->
+  for node in @children
+    block node
+    node.traverse block if node.traverse
+
 
 # toString representation of the node, for inspecting the parse tree.
 BaseNode::toString: (idt) ->
@@ -670,10 +677,16 @@ CodeNode: exports.CodeNode: inherit BaseNode, {
   top_sensitive: ->
     true
 
+  real_children: ->
+    flatten [@params, @body.expressions]
+
+  traverse: (block) ->
+    block this
+    block(child) for child in @real_children()
+
   toString: (idt) ->
     idt ||= ''
-    children: flatten [@params, @body.expressions]
-    '\n' + idt + @type + (child.toString(idt + TAB) for child in children).join('')
+    '\n' + idt + @type + (child.toString(idt + TAB) for child in @real_children()).join('')
 
 }
 
