@@ -11,8 +11,8 @@ BANNER: '''
         '''
 
 SWITCHES: [
+  ['-c', '--compile',       'compile to JavaScript and save as .js files']
   ['-i', '--interactive',   'run an interactive CoffeeScript REPL']
-  ['-r', '--run',           'compile and run a CoffeeScript']
   ['-o', '--output [DIR]',  'set the directory for compiled JavaScript']
   ['-w', '--watch',         'watch scripts for changes, and recompile']
   ['-p', '--print',         'print the compiled JavaScript to stdout']
@@ -77,10 +77,10 @@ compile_script: (source, code) ->
     else if o.nodes             then puts CoffeeScript.nodes(code).toString()
     else
       js: CoffeeScript.compile code, compile_options()
-      if      o.run             then eval js
+      if      o.compile         then write_js source, js
       else if o.lint            then lint js
       else if o.print or o.eval then print js
-      else                           write_js source, js
+      else                           eval js
   catch err
     if o.watch                  then puts err.message else throw err
 

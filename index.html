@@ -260,10 +260,9 @@ cubed_list = (function() {
 sudo bin/cake install</pre>
 
     <p>
-      This provides the <tt>coffee</tt> command, which can
-      be used to compile CoffeeScript <tt>.coffee</tt> files into JavaScript, as
-      well as debug them. The <tt>coffee</tt>
-      command also provides direct evaluation and an interactive REPL.
+      This provides the <tt>coffee</tt> command, which will execute CoffeeScripts
+      under Node.js by default, but is also used to compile CoffeeScript 
+      <tt>.coffee</tt> files into JavaScript, or to run an an interactive REPL.
       When compiling to JavaScript, <tt>coffee</tt> writes the output
       as <tt>.js</tt> files in the same directory by default, but output
       can be customized with the following options:
@@ -271,22 +270,23 @@ sudo bin/cake install</pre>
 
     <table>
       <tr>
+        <td><code>-c, --compile</code></td>
+        <td>
+          Compile a <tt>.coffee</tt> script into a <tt>.js</tt> JavaScript file
+          of the same name.
+        </td>
+      </tr>
+      <tr>
         <td width="25%"><code>-i, --interactive</code></td>
         <td>
           Launch an interactive CoffeeScript session to try short snippets.
         </td>
       </tr>
       <tr>
-        <td><code>-r, --run</code></td>
-        <td>
-          Compile and execute a given CoffeeScript without saving the intermediate
-          JavaScript.
-        </td>
-      </tr>
-      <tr>
         <td><code>-o, --output [DIR]</code></td>
         <td>
           Write out all compiled JavaScript files into the specified directory.
+          Use in conjunction with <tt>--compile</tt> or <tt>--watch</tt>.
         </td>
       </tr>
       <tr>
@@ -364,7 +364,7 @@ Expressions
     </p>
 
     <pre>
-coffee path/to/script.coffee
+coffee -c path/to/script.coffee
 coffee --interactive
 coffee --watch --lint experimental.coffee
 coffee --print app/scripts/*.coffee > concatenation.js</pre>
