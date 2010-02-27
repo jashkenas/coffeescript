@@ -363,6 +363,10 @@ CallNode: exports.CallNode: inherit BaseNode, {
   compile_splat: (o) ->
     meth: @variable.compile o
     obj:  @variable.source or 'this'
+    if obj.match(/\(/)
+      temp: o.scope.free_variable()
+      obj:  temp
+      meth: '(' + temp + ' = ' + @variable.source + ')' + @variable.last
     args: for arg, i in @args
       code: arg.compile o
       code: if arg instanceof SplatNode then code else '[' + code + ']'
