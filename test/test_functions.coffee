@@ -78,3 +78,9 @@ ok result is 25
 result: ("hello".slice) 3
 
 ok result is 'lo'
+
+
+# And with multiple single-line functions on the same line.
+
+func: (x) -> (x) -> (x) -> x
+ok func(1)(2)(3) is 3

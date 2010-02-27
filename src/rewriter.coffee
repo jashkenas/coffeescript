@@ -37,7 +37,7 @@ for pair in BALANCED_PAIRS
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.
 SINGLE_LINERS: ['ELSE', "->", "=>", 'TRY', 'FINALLY', 'THEN']
-SINGLE_CLOSERS: ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN', 'PARAM_START']
+SINGLE_CLOSERS: ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN']
 
 # Rewrite the token stream in multiple passes, one logical filter at
 # a time. This could certainly be changed into a single pass through the
@@ -177,11 +177,13 @@ re::add_implicit_indentation: ->
     while true
       idx += 1
       tok: @tokens[idx]
+      pre: @tokens[idx - 1]
       if (not tok or
           (SINGLE_CLOSERS.indexOf(tok[0]) >= 0 and tok[1] isnt ';') or
+          (pre[0] is ',' and tok[0] is 'PARAM_START') or
           (tok[0] is ')' && parens is 0)) and
           not (starter is 'ELSE' and tok[0] is 'ELSE')
-        insertion: if @tokens[idx - 1][0] is "," then idx - 1 else idx
+        insertion: if pre[0] is "," then idx - 1 else idx
         @tokens.splice(insertion, 0, ['OUTDENT', 2, token[2]])
         break
       parens += 1 if tok[0] is '('
