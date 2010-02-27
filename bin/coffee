@@ -1,7 +1,15 @@
 #!/usr/bin/env node
 
 process.mixin(require('sys'));
+var path = require('path');
+var fs = require('fs');
+var lib = null;
 
-require.paths.unshift(__dirname + '/../lib');
+if (fs.lstatSync(__filename).isSymbolicLink()) {
+  lib = path.join(path.dirname(fs.readlinkSync(__filename)), '../lib');
+} else {
+  lib = path.join(__dirname, '../lib');
+}
 
+require.paths.unshift(lib);
 require('command_line').run();

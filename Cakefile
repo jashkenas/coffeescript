@@ -15,9 +15,11 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
   exec([
     'mkdir -p ' + lib
     'cp -rf bin lib LICENSE README package.json src vendor ' + lib
-    'ln -sf ' + lib + '/lib/bin/coffee ' + base + '/bin/coffee'
-    'ln -sf ' + lib + '/lib/bin/cake ' + base + '/bin/cake'
-  ].join(' && '))
+    'ln -sf ' + lib + '/bin/coffee ' + base + '/bin/coffee'
+    'ln -sf ' + lib + '/bin/cake ' + base + '/bin/cake'
+  ].join(' && '), (err, stdout, stderr) ->
+   if err then print stderr
+  )
 
 
 task 'build', 'build the CoffeeScript language from source', ->
