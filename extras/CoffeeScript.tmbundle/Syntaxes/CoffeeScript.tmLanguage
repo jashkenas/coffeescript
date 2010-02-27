@@ -288,7 +288,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(super|this|extends)\b</string>
+			<string>\b(super|this|extends|class)\b</string>
 			<key>name</key>
 			<string>variable.language.coffee</string>
 		</dict>

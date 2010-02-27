@@ -20,7 +20,7 @@ JS_KEYWORDS: [
   "break", "continue",
   "for", "in", "while",
   "delete", "instanceof", "typeof",
-  "switch", "super", "extends"
+  "switch", "super", "extends", "class"
 ]
 
 # CoffeeScript-only keywords -- which we're more relaxed about allowing.
@@ -37,7 +37,7 @@ KEYWORDS: JS_KEYWORDS.concat COFFEE_KEYWORDS
 # The list of keywords that are reserved by JavaScript, but not used, and aren't
 # used by CoffeeScript. Using these will throw an error at compile time.
 RESERVED: [
-  "case", "default", "do", "function", "var", "void", "with", "class"
+  "case", "default", "do", "function", "var", "void", "with"
   "const", "let", "debugger", "enum", "export", "import", "native"
 ]
 

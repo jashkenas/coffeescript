@@ -522,6 +522,43 @@ ObjectNode: exports.ObjectNode: inherit BaseNode, {
 
 }
 
+# A class literal, including optional superclass and constructor.
+ClassNode: exports.ClassNode: inherit BaseNode, {
+  type: 'Class'
+
+  constructor: (variable, parent, props) ->
+    @children: compact flatten [@variable: variable, @parent: parent, @properties: props or []]
+    this
+
+  compile_node: (o) ->
+    extension:   @parent and new ExtendsNode(@variable, @parent)
+    constructor: null
+    props:       new Expressions()
+    o.top:       true
+    ret:         del o, 'returns'
+
+    for prop in @properties
+      if prop.variable.base.value is 'constructor'
+        func: prop.value
+        func.body.push(new ReturnNode(new LiteralNode('this')))
+        constructor: new AssignNode(@variable, func)
+      else
+        val: new ValueNode(@variable, [new AccessorNode(prop.variable, 'prototype')])
+        prop: new AssignNode(val, prop.value)
+        props.push prop
+
+    constructor: new AssignNode(@variable, new CodeNode()) unless constructor
+
+    construct:                       @idt() + constructor.compile(o) + ';\n'
+    props:     if props.empty() then '' else props.compile(o) + '\n'
+    extension: if extension     then extension.compile(o) + '\n' else ''
+    returns:   if ret           then '\n' + @idt() + 'return ' + @variable.compile(o) + ';' else ''
+    construct + extension + props + returns
+
+}
+
+statement ClassNode
+
 # An array literal.
 ArrayNode: exports.ArrayNode: inherit BaseNode, {
   type: 'Array'
@@ -650,8 +687,8 @@ CodeNode: exports.CodeNode: inherit BaseNode, {
   type: 'Code'
 
   constructor: (params, body, tag) ->
-    @params:  params
-    @body:    body
+    @params:  params or []
+    @body:    body or new Expressions()
     @bound:   tag is 'boundfunc'
     this
 

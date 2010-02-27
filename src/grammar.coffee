@@ -31,7 +31,7 @@ operators: [
   ["right",     'INDENT']
   ["left",      'OUTDENT']
   ["right",     'WHEN', 'LEADING_WHEN', 'IN', 'OF', 'BY', 'THROW']
-  ["right",     'FOR', 'NEW', 'SUPER']
+  ["right",     'FOR', 'NEW', 'SUPER', 'CLASS']
   ["left",      'EXTENDS']
   ["right",     'ASSIGN', 'RETURN']
   ["right",     '->', '=>', 'UNLESS', 'IF', 'ELSE', 'WHILE']
@@ -72,6 +72,7 @@ grammar: {
     o "For"
     o "Switch"
     o "Extends"
+    o "Class"
     o "Splat"
     o "Existence"
     o "Comment"
@@ -257,6 +258,15 @@ grammar: {
   # An object literal.
   Object: [
     o "{ AssignList }",                         -> new ObjectNode($2)
+    o "{ IndentedAssignList }",                 -> new ObjectNode($2)
+  ]
+
+  # A class literal.
+  Class: [
+    o "CLASS Value",                            -> new ClassNode($2)
+    o "CLASS Value EXTENDS Value",              -> new ClassNode($2, $4)
+    o "CLASS Value IndentedAssignList",         -> new ClassNode($2, null, $3)
+    o "CLASS Value EXTENDS Value IndentedAssignList", -> new ClassNode($2, $4, $5)
   ]
 
   # Assignment within an object literal (comma or newline separated).
@@ -266,6 +276,10 @@ grammar: {
     o "AssignList , AssignObj",                 -> $1.concat [$3]
     o "AssignList TERMINATOR AssignObj",        -> $1.concat [$3]
     o "AssignList , TERMINATOR AssignObj",      -> $1.concat [$4]
+  ]
+
+  # A list of assignments in a block indentation.
+  IndentedAssignList: [
     o "INDENT AssignList OUTDENT",              -> $2
   ]
 
