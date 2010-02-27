@@ -1279,6 +1279,12 @@ tom = new Horse("Tommy the Palomino");
 sam.move();
 tom.move();
 ;'>run</button><br class='clear' /></div>
+    <p>
+      <b>A cautionary note:</b> JavaScript allows you to return a different value from
+      a constructor function, ignoring the newly-created object. In CoffeeScript,
+      it's best practice to always return <tt>this</tt> as the last line of a
+      constructor, as seen above.
+    </p>
 
     <p>
       <span id="pattern_matching" class="bookmark"></span>
