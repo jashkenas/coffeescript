@@ -54,7 +54,7 @@ OPERATOR   : /^([+\*&|\/\-%=<>:!?]+)/
 WHITESPACE : /^([ \t]+)/
 COMMENT    : /^(((\n?[ \t]*)?#[^\n]*)+)/
 CODE       : /^((-|=)>)/
-REGEX      : /^(\/(.*?)([^\\]|\\\\)\/[imgy]{0,4})/
+REGEX      : /^(\/(\S.*?)?([^\\]|\\\\)\/[imgy]{0,4})/
 MULTI_DENT : /^((\n([ \t]*))+)(\.)?/
 LAST_DENTS : /\n([ \t]*)/g
 LAST_DENT  : /\n([ \t]*)/
@@ -71,10 +71,9 @@ HEREDOC_INDENT  : /^[ \t]+/mg
 # Tokens which a regular expression will never immediately follow, but which
 # a division operator might.
 # See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
+# Our list is shorter, due to sans-parentheses method calls.
 NOT_REGEX: [
-  'IDENTIFIER', 'NUMBER', 'REGEX', 'STRING',
-  ')', '++', '--', ']', '}',
-  'FALSE', 'NULL', 'TRUE'
+  'NUMBER', 'REGEX', '++', '--', 'FALSE', 'NULL', 'TRUE'
 ]
 
 # Tokens which could legitimately be invoked or indexed.
