@@ -117,7 +117,7 @@ div.code {
   #logo {
     display: block;
     width: 215px; height: 50px;
-    background: url('logo.png');
+    background: url('../images/logo.png');
     position: absolute;
     top: 0px; left: 10px;
   }
