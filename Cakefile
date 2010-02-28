@@ -29,6 +29,7 @@ task 'build', 'build the CoffeeScript language from source', ->
 
 
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
+  require.paths.unshift 'vendor/jison/lib'
   parser: require('grammar').parser
   js: parser.generate()
   parser_path: 'lib/parser.js'
