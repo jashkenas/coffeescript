@@ -89,12 +89,12 @@ exports.Lexer: class Lexer
 
   # Scan by attempting to match tokens one character at a time. Slow and steady.
   tokenize: (code) ->
-    @code    : code       # Cleanup code by remove extra line breaks, TODO: chomp
-    @i       : 0          # Current character position we're parsing
-    @line    : 1          # The current line.
-    @indent  : 0          # The current indent level.
-    @indents : []         # The stack of all indent levels we are currently within.
-    @tokens  : []         # Collection of all parsed tokens in the form [:TOKEN_TYPE, value]
+    @code    : code  # The remainder of the source code.
+    @i       : 0     # Current character position we're parsing.
+    @line    : 1     # The current line.
+    @indent  : 0     # The current indent level.
+    @indents : []    # The stack of all indent levels we are currently within.
+    @tokens  : []    # Collection of all parsed tokens in the form ['TOKEN_TYPE', value]
     while @i < @code.length
       @chunk: @code.slice(@i)
       @extract_next_token()
@@ -120,18 +120,12 @@ exports.Lexer: class Lexer
   # Matches identifying literals: variables, keywords, method names, etc.
   identifier_token: ->
     return false unless id: @match IDENTIFIER, 1
-    @tag(1, 'PROTOTYPE_ACCESS') if @value() is '::'
-    if @value() is '.' and not (@value(2) is '.')
-      if @tag(2) is '?'
-        @tag(1, 'SOAK_ACCESS')
-        @tokens.splice(-2, 1)
-      else
-        @tag(1, 'PROPERTY_ACCESS')
+    @name_access_type()
     tag: 'IDENTIFIER'
-    tag:  id.toUpperCase() if KEYWORDS.indexOf(id) >= 0 and
-      not ((ACCESSORS.indexOf(@tag()) >= 0) and not @prev().spaced)
-    throw new Error('SyntaxError: Reserved word "' + id + '" on line ' + @line) if RESERVED.indexOf(id) >= 0
-    tag: 'LEADING_WHEN' if tag is 'WHEN' and BEFORE_WHEN.indexOf(@tag()) >= 0
+    tag: id.toUpperCase() if include(KEYWORDS, id) and
+      not (include(ACCESSORS, @tag(0)) and not @prev().spaced)
+    @identifier_error id  if include RESERVED, id
+    tag: 'LEADING_WHEN'   if tag is 'WHEN' and include BEFORE_WHEN, @tag()
     @token(tag, id)
     @i += id.length
     true
@@ -155,11 +149,7 @@ exports.Lexer: class Lexer
   # Matches heredocs, adjusting indentation to the correct level.
   heredoc_token: ->
     return false unless match = @chunk.match(HEREDOC)
-    doc: match[2] or match[4]
-    indent: (doc.match(HEREDOC_INDENT) or ['']).sort()[0]
-    doc: doc.replace(new RegExp("^" + indent, 'gm'), '')
-            .replace(MULTILINER, "\\n")
-            .replace(/"/g, '\\"')
+    doc: @sanitize_heredoc match[2] or match[4]
     @token 'STRING', '"' + doc + '"'
     @line += @count match[1], "\n"
     @i += match[1].length
@@ -175,7 +165,7 @@ exports.Lexer: class Lexer
   # Matches regular expression literals.
   regex_token: ->
     return false unless regex: @match REGEX, 1
-    return false if NOT_REGEX.indexOf(@tag()) >= 0
+    return false if include NOT_REGEX, @tag()
     @token 'REGEX', regex
     @i += regex.length
     true
@@ -194,10 +184,11 @@ exports.Lexer: class Lexer
     return false unless indent: @match MULTI_DENT, 1
     @line += indent.match(MULTILINER).length
     @i    += indent.length
-    next_character: @chunk.match(MULTI_DENT)[4]
     prev: @prev(2)
     size: indent.match(LAST_DENTS).reverse()[0].match(LAST_DENT)[1].length
-    no_newlines: next_character is '.' or (@value() and @value().match(NO_NEWLINE) and prev and (prev[0] isnt '.') and not @value().match(CODE))
+    next_character: @chunk.match(MULTI_DENT)[4]
+    no_newlines: next_character is '.' or (@value() and @value().match(NO_NEWLINE) and
+      prev and (prev[0] isnt '.') and not @value().match(CODE))
     if size is @indent
       return @suppress_newlines(indent) if no_newlines
       return @newline_token(indent)
@@ -211,7 +202,7 @@ exports.Lexer: class Lexer
     @indent: size
     true
 
-  # Record an oudent token or tokens, if we're moving back inwards past
+  # Record an outdent token or tokens, if we're moving back inwards past
   # multiple recorded indents.
   outdent_token: (move_out, no_newlines) ->
     while move_out > 0 and @indents.length
@@ -221,7 +212,8 @@ exports.Lexer: class Lexer
     @token 'TERMINATOR', "\n" unless @tag() is 'TERMINATOR' or no_newlines
     true
 
-  # Matches and consumes non-meaningful whitespace.
+  # Matches and consumes non-meaningful whitespace. Tag the previous token
+  # as being "spaced", because there are some cases where it matters.
   whitespace_token: ->
     return false unless space: @match WHITESPACE, 1
     prev: @prev()
@@ -252,7 +244,7 @@ exports.Lexer: class Lexer
     tag: value
     if value.match(ASSIGNMENT)
       tag: 'ASSIGN'
-      throw new Error('SyntaxError: Reserved word "' + @value() + '" on line ' + @line + ' can\'t be assigned') if JS_FORBIDDEN.indexOf(@value()) >= 0
+      @assignment_error() if include JS_FORBIDDEN, @value
     else if value is ';'
       tag: 'TERMINATOR'
     else if value is '[' and @tag() is '?' and not_spaced
@@ -262,12 +254,41 @@ exports.Lexer: class Lexer
     else if value is ']' and @soaked_index
       tag: 'SOAKED_INDEX_END'
       @soaked_index: false
-    else if CALLABLE.indexOf(@tag()) >= 0 and not_spaced
+    else if include(CALLABLE, @tag()) and not_spaced
       tag: 'CALL_START'  if value is '('
       tag: 'INDEX_START' if value is '['
     @token tag, value
     @i += value.length
     true
+
+  # Token Manipulators ==================================================
+
+  # As we consume a new IDENTIFIER, look at the previous token to determine
+  # if it's a special kind of access.
+  name_access_type: ->
+    @tag(1, 'PROTOTYPE_ACCESS') if @value() is '::'
+    if @value() is '.' and not (@value(2) is '.')
+      if @tag(2) is '?'
+        @tag(1, 'SOAK_ACCESS')
+        @tokens.splice(-2, 1)
+      else
+        @tag 1, 'PROPERTY_ACCESS'
+
+  # Sanitize a heredoc by escaping double quotes and erasing all external
+  # indentation on the left-hand side.
+  sanitize_heredoc: (doc) ->
+    indent: (doc.match(HEREDOC_INDENT) or ['']).sort()[0]
+    doc.replace(new RegExp("^" + indent, 'gm'), '')
+       .replace(MULTILINER, "\\n")
+       .replace(/"/g, '\\"')
+
+  # When you try to use a forbidden word in JavaScript as an identifier.
+  identifier_error: (word) ->
+    throw new Error 'SyntaxError: Reserved word "' + word + '" on line ' + @line
+
+  # When you try to assign to a reserved word in JavaScript, like "function".
+  assignment_error: ->
+    throw new Error 'SyntaxError: Reserved word "' + @value() + '" on line ' + @line + ' can\'t be assigned'
 
   # Helpers =============================================================
 
@@ -327,3 +348,8 @@ exports.Lexer: class Lexer
   # axe it.
   close_indentation: ->
     @outdent_token(@indent)
+
+# Helper functions:
+
+# Does a list include a value?
+include: (list, value) -> list.indexOf(value) >= 0
