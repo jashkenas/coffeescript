@@ -18,36 +18,55 @@
   previousUnderscore: root._
 
 
-  # If Underscore is called as a function, it returns a wrapped object that
-  # can be used OO-style. This wrapper holds altered versions of all the
-  # underscore functions. Wrapped objects may be chained.
-  wrapper: (obj) ->
-    this._wrapped: obj
-    this
-
-
   # Establish the object that gets thrown to break out of a loop iteration.
   breaker: if typeof(StopIteration) is 'undefined' then '__break__' else StopIteration
 
 
-  # Create a safe reference to the Underscore object forreference below.
-  _: root._: (obj) -> new wrapper(obj)
+  # Quick regexp-escaping function, because JS doesn't have RegExp.escape().
+  escapeRegExp: (string) -> string.replace(/([.*+?^${}()|[\]\/\\])/g, '\\$1')
+
+
+  # Save bytes in the minified (but not gzipped) version:
+  ArrayProto:           Array.prototype
+  ObjProto:             Object.prototype
+
+
+  #Create quick reference variables for speed access to core prototypes.
+  slice:                ArrayProto.slice
+  unshift:              ArrayProto.unshift
+  toString:             ObjProto.toString
+  hasOwnProperty:       ObjProto.hasOwnProperty
+  propertyIsEnumerable: ObjProto.propertyIsEnumerable
+
+
+  # All ECMA5 native implementations we hope to use are declared here.
+  nativeForEach:        ArrayProto.forEach
+  nativeMap:            ArrayProto.map
+  nativeReduce:         ArrayProto.reduce
+  nativeReduceRight:    ArrayProto.reduceRight
+  nativeFilter:         ArrayProto.filter
+  nativeEvery:          ArrayProto.every
+  nativeSome:           ArrayProto.some
+  nativeIndexOf:        ArrayProto.indexOf
+  nativeLastIndexOf:    ArrayProto.lastIndexOf
+  nativeIsArray:        Array.isArray
+  nativeKeys:           Object.keys
+
+
+  # Create a safe reference to the Underscore object for use below.
+  _: (obj) -> new wrapper(obj)
 
 
   # Export the Underscore object for CommonJS.
   if typeof(exports) != 'undefined' then exports._: _
 
 
-  # Create quick reference variables for speed access to core prototypes.
-  slice:                Array::slice
-  unshift:              Array::unshift
-  toString:             Object::toString
-  hasOwnProperty:       Object::hasOwnProperty
-  propertyIsEnumerable: Object::propertyIsEnumerable
+  # Export Underscore to global scope.
+  root._: _
 
 
   # Current version.
-  _.VERSION: '0.5.8'
+  _.VERSION: '0.6.0'
 
 
   # ------------------------ Collection Functions: ---------------------------
@@ -55,12 +74,13 @@
   # The cornerstone, an each implementation.
   # Handles objects implementing forEach, arrays, and raw objects.
   _.each: (obj, iterator, context) ->
-    index: 0
     try
-      return obj.forEach(iterator, context) if obj.forEach
-      if _.isNumber(obj.length)
-        return iterator.call(context, obj[i], i, obj) for i in [0...obj.length]
-      iterator.call(context, val, key, obj) for key, val of obj
+      if nativeForEach and obj.forEach is nativeForEach
+        obj.forEach iterator, context
+      else if _.isNumber obj.length
+        iterator.call(context, obj[i], i, obj) for i in [0...obj.length]
+      else
+        iterator.call(context, val, key, obj) for key, val of obj
     catch e
       throw e if e isnt breaker
     obj
@@ -69,28 +89,28 @@
   # Return the results of applying the iterator to each element. Use JavaScript
   # 1.6's version of map, if possible.
   _.map: (obj, iterator, context) ->
-    return obj.map(iterator, context) if (obj and _.isFunction(obj.map))
+    return obj.map(iterator, context) if nativeMap and obj.map is nativeMap
     results: []
     _.each obj, (value, index, list) ->
-      results.push(iterator.call(context, value, index, list))
+      results.push iterator.call context, value, index, list
     results
 
 
   # Reduce builds up a single result from a list of values. Also known as
   # inject, or foldl. Uses JavaScript 1.8's version of reduce, if possible.
   _.reduce: (obj, memo, iterator, context) ->
-    return obj.reduce(_.bind(iterator, context), memo) if (obj and _.isFunction(obj.reduce))
+    return obj.reduce(_.bind(iterator, context), memo) if nativeReduce and obj.reduce is nativeReduce
     _.each obj, (value, index, list) ->
-      memo: iterator.call(context, memo, value, index, list)
+      memo: iterator.call context, memo, value, index, list
     memo
 
 
   # The right-associative version of reduce, also known as foldr. Uses
   # JavaScript 1.8's version of reduceRight, if available.
   _.reduceRight: (obj, memo, iterator, context) ->
-    return obj.reduceRight(_.bind(iterator, context), memo) if (obj and _.isFunction(obj.reduceRight))
+    return obj.reduceRight(_.bind(iterator, context), memo) if nativeReduceRight and obj.reduceRight is nativeReduceRight
     _.each _.clone(_.toArray(obj)).reverse(), (value, index) ->
-      memo: iterator.call(context, memo, value, index, obj)
+      memo: iterator.call context, memo, value, index, obj
     memo
 
 
@@ -98,7 +118,7 @@
   _.detect: (obj, iterator, context) ->
     result: null
     _.each obj, (value, index, list) ->
-      if iterator.call(context, value, index, list)
+      if iterator.call context, value, index, list
         result: value
         _.breakLoop()
     result
@@ -106,11 +126,11 @@
 
   # Return all the elements that pass a truth test. Use JavaScript 1.6's
   # filter(), if it exists.
-  _.select: (obj, iterator, context) ->
-    if obj and _.isFunction(obj.filter) then return obj.filter(iterator, context)
+  _.filter: (obj, iterator, context) ->
+    return obj.filter iterator, context if nativeFilter and obj.filter is nativeFilter
     results: []
     _.each obj, (value, index, list) ->
-      results.push(value) if iterator.call(context, value, index, list)
+      results.push value if iterator.call context, value, index, list
     results
 
 
@@ -118,15 +138,15 @@
   _.reject: (obj, iterator, context) ->
     results: []
     _.each obj, (value, index, list) ->
-      results.push(value) if not iterator.call(context, value, index, list)
+      results.push value if not iterator.call context, value, index, list
     results
 
 
   # Determine whether all of the elements match a truth test. Delegate to
   # JavaScript 1.6's every(), if it is present.
-  _.all: (obj, iterator, context) ->
+  _.every: (obj, iterator, context) ->
     iterator ||= _.identity
-    return obj.every(iterator, context) if obj and _.isFunction(obj.every)
+    return obj.every iterator, context if nativeEvery and obj.every is nativeEvery
     result: true
     _.each obj, (value, index, list) ->
       _.breakLoop() unless (result: result and iterator.call(context, value, index, list))
@@ -135,9 +155,9 @@
 
   # Determine if at least one element in the object matches a truth test. Use
   # JavaScript 1.6's some(), if it exists.
-  _.any: (obj, iterator, context) ->
+  _.some: (obj, iterator, context) ->
     iterator ||= _.identity
-    return obj.some(iterator, context) if obj and _.isFunction(obj.some)
+    return obj.some iterator, context if nativeSome and obj.some is nativeSome
     result: false
     _.each obj, (value, index, list) ->
       _.breakLoop() if (result: iterator.call(context, value, index, list))
@@ -147,7 +167,7 @@
   # Determine if a given value is included in the array or object,
   # based on '==='.
   _.include: (obj, target) ->
-    return _.indexOf(obj, target) isnt -1 if obj and _.isFunction(obj.indexOf)
+    return _.indexOf(obj, target) isnt -1 if nativeIndexOf and obj.indexOf is nativeIndexOf
     for key, val of obj
       return true if val is target
     false
@@ -155,13 +175,13 @@
 
   # Invoke a method with arguments on every item in a collection.
   _.invoke: (obj, method) ->
-    args: _.rest(arguments, 2)
+    args: _.rest arguments, 2
     (if method then val[method] else val).apply(val, args) for val in obj
 
 
   # Convenience version of a common use case of map: fetching a property.
   _.pluck: (obj, key) ->
-    _.map(obj, ((val) -> val[key]))
+    _.map(obj, (val) -> val[key])
 
 
   # Return the maximum item or (item-based computation).
@@ -184,7 +204,7 @@
     result.value
 
 
-  # Sort the object's values by a criteria produced by an iterator.
+  # Sort the object's values by a criterion produced by an iterator.
   _.sortBy: (obj, iterator, context) ->
     _.pluck(((_.map obj, (value, index, list) ->
       {value: value, criteria: iterator.call(context, value, index, list)}
@@ -198,7 +218,8 @@
   # be inserted so as to maintain order. Uses binary search.
   _.sortedIndex: (array, obj, iterator) ->
     iterator ||= _.identity
-    low: 0; high: array.length
+    low:  0
+    high: array.length
     while low < high
       mid: (low + high) >> 1
       if iterator(array[mid]) < iterator(obj) then low: mid + 1 else high: mid
@@ -246,30 +267,30 @@
   # Return a completely flattened version of an array.
   _.flatten: (array) ->
     _.reduce array, [], (memo, value) ->
-      return memo.concat(_.flatten(value)) if _.isArray(value)
-      memo.push(value)
+      return memo.concat(_.flatten(value)) if _.isArray value
+      memo.push value
       memo
 
 
   # Return a version of the array that does not contain the specified value(s).
   _.without: (array) ->
-    values: _.rest(arguments)
-    val for val in _.toArray(array) when not _.include(values, val)
+    values: _.rest arguments
+    val for val in _.toArray(array) when not _.include values, val
 
 
   # Produce a duplicate-free version of the array. If the array has already
   # been sorted, you have the option of using a faster algorithm.
   _.uniq: (array, isSorted) ->
     memo: []
-    for el, i in _.toArray(array)
-      memo.push(el) if i is 0 || (if isSorted is true then _.last(memo) isnt el else not _.include(memo, el))
+    for el, i in _.toArray array
+      memo.push el if i is 0 || (if isSorted is true then _.last(memo) isnt el else not _.include(memo, el))
     memo
 
 
   # Produce an array that contains every item shared between all the
   # passed-in arrays.
   _.intersect: (array) ->
-    rest: _.rest(arguments)
+    rest: _.rest arguments
     _.select _.uniq(array), (item) ->
       _.all rest, (other) ->
         _.indexOf(other, item) >= 0
@@ -278,10 +299,10 @@
   # Zip together multiple lists into a single array -- elements that share
   # an index go together.
   _.zip: ->
-    length:     _.max(_.pluck(arguments, 'length'))
-    results:    new Array(length)
+    length:  _.max _.pluck arguments, 'length'
+    results: new Array length
     for i in [0...length]
-      results[i]: _.pluck(arguments, String(i))
+      results[i]: _.pluck arguments, String i
     results
 
 
@@ -289,7 +310,7 @@
   # we need this function. Return the position of the first occurence of an
   # item in an array, or -1 if the item is not included in the array.
   _.indexOf: (array, item) ->
-    return array.indexOf(item) if array.indexOf
+    return array.indexOf item if nativeIndexOf and array.indexOf is nativeIndexOf
     i: 0; l: array.length
     while l - i
       if array[i] is item then return i else i++
@@ -299,7 +320,7 @@
   # Provide JavaScript 1.6's lastIndexOf, delegating to the native function,
   # if possible.
   _.lastIndexOf: (array, item) ->
-    return array.lastIndexOf(item) if array.lastIndexOf
+    return array.lastIndexOf(item) if nativeLastIndexOf and array.lastIndexOf is nativeLastIndexOf
     i: array.length
     while i
       if array[i] is item then return i else i--
@@ -317,7 +338,7 @@
     step:     a[2] or 1
     len:      Math.ceil((stop - start) / step)
     return [] if len <= 0
-    range:    new Array(len)
+    range:    new Array len
     idx:      0
     while true
       return range if (if step > 0 then i - stop else stop - i) >= 0
@@ -331,36 +352,36 @@
   # Create a function bound to a given object (assigning 'this', and arguments,
   # optionally). Binding with arguments is also known as 'curry'.
   _.bind: (func, obj) ->
-    args: _.rest(arguments, 2)
-    -> func.apply(obj or root, args.concat(arguments))
+    args: _.rest arguments, 2
+    -> func.apply obj or root, args.concat arguments
 
 
   # Bind all of an object's methods to that object. Useful for ensuring that
   # all callbacks defined on an object belong to it.
   _.bindAll: (obj) ->
     funcs: if arguments.length > 1 then _.rest(arguments) else _.functions(obj)
-    _.each(funcs, (f) -> obj[f]: _.bind(obj[f], obj))
+    _.each funcs, (f) -> obj[f]: _.bind obj[f], obj
     obj
 
 
   # Delays a function for the given number of milliseconds, and then calls
   # it with the arguments supplied.
   _.delay: (func, wait) ->
-    args: _.rest(arguments, 2)
+    args: _.rest arguments, 2
     setTimeout((-> func.apply(func, args)), wait)
 
 
   # Defers a function, scheduling it to run after the current call stack has
   # cleared.
   _.defer: (func) ->
-    _.delay.apply(_, [func, 1].concat(_.rest(arguments)))
+    _.delay.apply _, [func, 1].concat _.rest arguments
 
 
   # Returns the first function passed as an argument to the second,
   # allowing you to adjust arguments, run code before and after, and
   # conditionally execute the original function.
   _.wrap: (func, wrapper) ->
-    -> wrapper.apply(wrapper, [func].concat(arguments))
+    -> wrapper.apply wrapper, [func].concat arguments
 
 
   # Returns a function that is the composition of a list of functions, each
@@ -377,38 +398,37 @@
   # ------------------------- Object Functions: ----------------------------
 
   # Retrieve the names of an object's properties.
-  _.keys: (obj) ->
-    return _.range(0, obj.length) if _.isArray(obj)
+  _.keys: nativeKeys or (obj) ->
+    return _.range 0, obj.length if _.isArray(obj)
     key for key, val of obj
 
 
   # Retrieve the values of an object's properties.
   _.values: (obj) ->
-    _.map(obj, _.identity)
+    _.map obj, _.identity
 
 
   # Return a sorted list of the function names available in Underscore.
   _.functions: (obj) ->
-    _.select(_.keys(obj), (key) -> _.isFunction(obj[key])).sort()
+    _.filter(_.keys(obj), (key) -> _.isFunction(obj[key])).sort()
 
 
   # Extend a given object with all of the properties in a source object.
   _.extend: (destination, source) ->
-    for key, val of source
-      destination[key]: val
+    (destination[key]: val) for key, val of source
     destination
 
 
   # Create a (shallow-cloned) duplicate of an object.
   _.clone: (obj) ->
-    return obj.slice(0) if _.isArray(obj)
-    _.extend({}, obj)
+    return obj.slice 0 if _.isArray obj
+    _.extend {}, obj
 
 
   # Invokes interceptor with the obj, and then returns obj.
   # The primary purpose of this method is to "tap into" a method chain, in order to perform operations on intermediate results within the chain.
   _.tap: (obj, interceptor) ->
-    interceptor(obj)
+    interceptor obj
     obj
 
 
@@ -444,12 +464,15 @@
     # Different object sizes?
     return false if aKeys.length isnt bKeys.length
     # Recursive comparison of contents.
-    # for (var key in a) if (!_.isEqual(a[key], b[key])) return false;
-    return true
+    (return false) for key, val of a when !_.isEqual(val, b[key])
+    true
 
 
   # Is a given array or object empty?
-  _.isEmpty:      (obj) -> _.keys(obj).length is 0
+  _.isEmpty: (obj) ->
+    return obj.length is 0 if _.isArray obj
+    (return false) for key of obj when hasOwnProperty.call(obj, key)
+    true
 
 
   # Is a given value a DOM element?
@@ -457,7 +480,7 @@
 
 
   # Is a given value an array?
-  _.isArray:      (obj) -> !!(obj and obj.concat and obj.unshift)
+  _.isArray:      nativeIsArray or (obj) -> !!(obj and obj.concat and obj.unshift)
 
 
   # Is a given variable an arguments object?
@@ -475,6 +498,10 @@
 
   # Is a given value a number?
   _.isNumber:     (obj) -> (obj is +obj) or toString.call(obj) is '[object Number]'
+
+
+  # Is a given value a boolean?
+  _.isBoolean:    (obj) -> obj is true or obj is false
 
 
   # Is a given value a Date?
@@ -511,8 +538,20 @@
   _.identity: (value) -> value
 
 
+  # Run a function n times.
+  _.times: (n, iterator, context) ->
+    iterator.call(context, i) for i in [0...n]
+
+
   # Break out of the middle of an iteration.
   _.breakLoop: -> throw breaker
+
+
+  # Add your own custom functions to the Underscore object, ensuring that
+  # they're correctly added to the OOP wrapper as well.
+  _.mixin: (obj) ->
+    for name in _.functions(obj)
+      addToWrapper name, _[name]: obj[name]
 
 
   # Generate a unique integer id (unique within the entire client session).
@@ -536,11 +575,12 @@
   # Single-quote fix from Rick Strahl's version.
   _.template: (str, data) ->
     c: _.templateSettings
+    endMatch: new RegExp("'(?=[^"+c.end.substr(0, 1)+"]*"+escapeRegExp(c.end)+")","g")
     fn: new Function 'obj',
       'var p=[],print=function(){p.push.apply(p,arguments);};' +
       'with(obj){p.push(\'' +
       str.replace(/[\r\t\n]/g, " ")
-         .replace(new RegExp("'(?=[^"+c.end[0]+"]*"+c.end+")","g"),"\t")
+         .replace(endMatch,"\t")
          .split("'").join("\\'")
          .split("\t").join("'")
          .replace(c.interpolate, "',$1,'")
@@ -555,9 +595,9 @@
   _.forEach: _.each
   _.foldl:   _.inject:      _.reduce
   _.foldr:   _.reduceRight
-  _.filter:  _.select
-  _.every:   _.all
-  _.some:    _.any
+  _.select:  _.filter
+  _.all:     _.every
+  _.any:     _.some
   _.head:    _.first
   _.tail:    _.rest
   _.methods: _.functions
@@ -565,17 +605,29 @@
 
   # ------------------------ Setup the OOP Wrapper: --------------------------
 
+  # If Underscore is called as a function, it returns a wrapped object that
+  # can be used OO-style. This wrapper holds altered versions of all the
+  # underscore functions. Wrapped objects may be chained.
+  wrapper: (obj) ->
+    this._wrapped: obj
+    this
+
+
   # Helper function to continue chaining intermediate results.
   result: (obj, chain) ->
     if chain then _(obj).chain() else obj
 
 
-  # Add all of the Underscore functions to the wrapper object.
-  _.each _.functions(_), (name) ->
-    method: _[name]
+  # A method to easily add functions to the OOP wrapper.
+  addToWrapper: (name, func) ->
     wrapper.prototype[name]: ->
-      unshift.call(arguments, this._wrapped)
-      result(method.apply(_, arguments), this._chain)
+      args: _.toArray arguments
+      unshift.call args, this._wrapped
+      result func.apply(_, args), this._chain
+
+
+  # Add all of the Underscore functions to the wrapper object.
+  _.mixin _
 
 
   # Add all mutator Array functions to the wrapper.
