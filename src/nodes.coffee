@@ -36,12 +36,9 @@ del: (obj, key) ->
   delete obj[key]
   val
 
-# Quickie inheritance convenience wrapper to reduce typing.
-inherit: (parent, props) ->
-  klass: del(props, 'constructor')
-  klass extends parent
-  (klass.prototype[name]: prop) for name, prop of props
-  klass
+# Quickie helper for a generated LiteralNode.
+literal: (name) ->
+  new LiteralNode(name)
 
 # Mark a node as a statement, or a statement only.
 statement: (klass, only) ->
@@ -82,7 +79,7 @@ exports.BaseNode: class BaseNode
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once.
   compile_reference: (o) ->
-    reference: new LiteralNode(o.scope.free_variable())
+    reference: literal(o.scope.free_variable())
     compiled:  new AssignNode(reference, this)
     [compiled, reference]
 
@@ -387,7 +384,7 @@ exports.ExtendsNode: class ExtendsNode extends BaseNode
   # Hooking one constructor into another's prototype chain.
   compile_node: (o) ->
     o.scope.assign('__extends', @code, true)
-    ref:  new ValueNode new LiteralNode '__extends'
+    ref:  new ValueNode literal('__extends')
     call: new CallNode ref, [@child, @parent]
     call.compile(o)
 
@@ -451,8 +448,8 @@ exports.RangeNode: class RangeNode extends BaseNode
   # TODO: This generates pretty ugly code ... shrink it.
   compile_array: (o) ->
     name: o.scope.free_variable()
-    body: Expressions.wrap([new LiteralNode(name)])
-    arr:  Expressions.wrap([new ForNode(body, {source: (new ValueNode(this))}, new LiteralNode(name))])
+    body: Expressions.wrap([literal(name)])
+    arr:  Expressions.wrap([new ForNode(body, {source: (new ValueNode(this))}, literal(name))])
     (new ParentheticalNode(new CallNode(new CodeNode([], arr)))).compile(o)
 
 
@@ -515,7 +512,7 @@ exports.ClassNode: class ClassNode extends BaseNode
     for prop in @properties
       if prop.variable and prop.variable.base.value is 'constructor'
         func: prop.value
-        func.body.push(new ReturnNode(new LiteralNode('this')))
+        func.body.push(new ReturnNode(literal('this')))
         constructor: new AssignNode(@variable, func)
       else
         if prop.variable
@@ -525,9 +522,9 @@ exports.ClassNode: class ClassNode extends BaseNode
 
     if not constructor
       if @parent
-        applied: new ValueNode(@parent, [new AccessorNode(new LiteralNode('apply'))])
+        applied: new ValueNode(@parent, [new AccessorNode(literal('apply'))])
         constructor: new AssignNode(@variable, new CodeNode([], new Expressions([
-          new CallNode(applied, [new LiteralNode('this'), new LiteralNode('arguments')])
+          new CallNode(applied, [literal('this'), literal('arguments')])
         ])))
       else
         constructor: new AssignNode(@variable, new CodeNode())
@@ -571,7 +568,7 @@ PushNode: exports.PushNode: {
     expr: expressions.unwrap()
     return expressions if expr.is_statement_only() or expr.contains (n) -> n.is_statement_only()
     Expressions.wrap([new CallNode(
-      new ValueNode(new LiteralNode(array), [new AccessorNode(new LiteralNode('push'))]), [expr]
+      new ValueNode(literal(array), [new AccessorNode(literal('push'))]), [expr]
     )])
 
 }
@@ -582,7 +579,7 @@ ClosureNode: exports.ClosureNode: {
 
   wrap: (expressions, statement) ->
     func: new ParentheticalNode(new CodeNode([], Expressions.wrap([expressions])))
-    call: new CallNode(new ValueNode(func, [new AccessorNode(new LiteralNode('call'))]), [new LiteralNode('this')])
+    call: new CallNode(new ValueNode(func, [new AccessorNode(literal('call'))]), [literal('this')])
     if statement then Expressions.wrap([call]) else call
 
 }
@@ -642,10 +639,10 @@ exports.AssignNode: class AssignNode extends BaseNode
       [obj, idx]: [obj.value, obj.variable.base] if @variable.is_object()
       access_class: if @variable.is_array() then IndexNode else AccessorNode
       if obj instanceof SplatNode
-        val: new LiteralNode(obj.compile_value(o, val_var, @variable.base.objects.indexOf(obj)))
+        val: literal(obj.compile_value(o, val_var, @variable.base.objects.indexOf(obj)))
       else
-        idx: new LiteralNode(idx) unless typeof idx is 'object'
-        val: new ValueNode(new LiteralNode(val_var), [new access_class(idx)])
+        idx: literal(idx) unless typeof idx is 'object'
+        val: new ValueNode(literal(val_var), [new access_class(idx)])
       assigns.push(new AssignNode(obj, val).compile(o))
     code: assigns.join("\n")
     code += '\n' + @idt() + 'return ' + @variable.compile(o) + ';' if o.returns
@@ -715,7 +712,7 @@ exports.SplatNode: class SplatNode extends BaseNode
   type: 'Splat'
 
   constructor: (name) ->
-    name: new LiteralNode(name) unless name.compile
+    name: literal(name) unless name.compile
     @children: [@name: name]
 
   compile_node: (o) ->
@@ -1001,7 +998,7 @@ exports.IfNode: class IfNode extends BaseNode
   rewrite_switch: (o) ->
     assigner: @switcher
     if not (@switcher.unwrap() instanceof LiteralNode)
-      variable: new LiteralNode(o.scope.free_variable())
+      variable: literal(o.scope.free_variable())
       assigner: new AssignNode(variable, @switcher)
       @switcher: variable
     @condition: if @multiple
