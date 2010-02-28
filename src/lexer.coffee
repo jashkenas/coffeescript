@@ -159,7 +159,7 @@ exports.Lexer: class Lexer
     indent: (doc.match(HEREDOC_INDENT) or ['']).sort()[0]
     doc: doc.replace(new RegExp("^" + indent, 'gm'), '')
             .replace(MULTILINER, "\\n")
-            .replace('"', '\\"')
+            .replace(/"/g, '\\"')
     @token 'STRING', '"' + doc + '"'
     @line += @count match[1], "\n"
     @i += match[1].length
