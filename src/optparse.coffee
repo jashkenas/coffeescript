@@ -1,39 +1,40 @@
 # Create an OptionParser with a list of valid options, in the form:
 #   [short-flag (optional), long-flag, description]
 # And an optional banner for the usage help.
-op: exports.OptionParser: (rules, banner) ->
-  @banner:  banner
-  @rules:   build_rules(rules)
-  this
+exports.OptionParser: class OptionParser
 
-# Parse the argument array, populating an options object with all of the
-# specified options, and returning it. options.arguments will be an array
-# containing the remaning non-option arguments.
-op::parse: (args) ->
-  options: {arguments: []}
-  args: normalize_arguments args
-  while arg: args.shift()
-    is_option: !!(arg.match(LONG_FLAG) or arg.match(SHORT_FLAG))
-    matched_rule: no
+  constructor: (rules, banner) ->
+    @banner:  banner
+    @rules:   build_rules(rules)
+
+  # Parse the argument array, populating an options object with all of the
+  # specified options, and returning it. options.arguments will be an array
+  # containing the remaning non-option arguments.
+  parse: (args) ->
+    options: {arguments: []}
+    args: normalize_arguments args
+    while arg: args.shift()
+      is_option: !!(arg.match(LONG_FLAG) or arg.match(SHORT_FLAG))
+      matched_rule: no
+      for rule in @rules
+        if rule.letter is arg or rule.flag is arg
+          options[rule.name]: if rule.has_argument then args.shift() else true
+          matched_rule: yes
+          break
+      throw new Error "unrecognized option: " + arg if is_option and not matched_rule
+      options.arguments.push arg unless is_option
+    options
+
+  # Return the help text for this OptionParser, for --help and such.
+  help: ->
+    lines: ['Available options:']
+    lines.unshift @banner + '\n' if @banner
     for rule in @rules
-      if rule.letter is arg or rule.flag is arg
-        options[rule.name]: if rule.has_argument then args.shift() else true
-        matched_rule: yes
-        break
-    throw new Error "unrecognized option: " + arg if is_option and not matched_rule
-    options.arguments.push arg unless is_option
-  options
-
-# Return the help text for this OptionParser, for --help and such.
-op::help: ->
-  lines: ['Available options:']
-  lines.unshift @banner + '\n' if @banner
-  for rule in @rules
-    spaces:   15 - rule.flag.length
-    spaces:   if spaces > 0 then (' ' for i in [0..spaces]).join('') else ''
-    let_part: if rule.letter then rule.letter + ', ' else '    '
-    lines.push '  ' + let_part + rule.flag + spaces + rule.description
-  lines.join('\n')
+      spaces:   15 - rule.flag.length
+      spaces:   if spaces > 0 then (' ' for i in [0..spaces]).join('') else ''
+      let_part: if rule.letter then rule.letter + ', ' else '    '
+      lines.push '  ' + let_part + rule.flag + spaces + rule.description
+    lines.join('\n')
 
 # Regex matchers for option flags.
 LONG_FLAG:  /^(--\w[\w\-]+)/
