@@ -371,30 +371,25 @@ exports.CallNode: class CallNode extends BaseNode
 exports.ExtendsNode: class ExtendsNode extends BaseNode
   type: 'Extends'
 
+  code: '''
+        function(child, parent) {
+            var ctor = function(){ };
+            ctor.prototype = parent.prototype;
+            child.__superClass__ = parent.prototype;
+            child.prototype = new ctor();
+            child.prototype.constructor = child;
+          }
+        '''
+
   constructor: (child, parent) ->
     @children:  [@child: child, @parent: parent]
 
   # Hooking one constructor into another's prototype chain.
   compile_node: (o) ->
-    construct:  o.scope.free_variable()
-    child:      @child.compile(o)
-    parent:     @parent.compile(o)
-    prefix:     ''
-    if not (@child instanceof ValueNode) or @child.has_properties() or not (@child.unwrap() instanceof LiteralNode)
-      child_var: o.scope.free_variable()
-      prefix += @idt() + child_var + ' = ' + child + ';\n'
-      child: child_var
-    if not (@parent instanceof ValueNode) or @parent.has_properties() or not (@parent.unwrap() instanceof LiteralNode)
-      parent_var: o.scope.free_variable()
-      prefix += @idt() + parent_var + ' = ' + parent + ';\n'
-      parent: parent_var
-    prefix + @idt() + construct + ' = function(){};\n' + @idt() +
-      construct + '.prototype = ' + parent + ".prototype;\n" + @idt() +
-      child + '.__superClass__ = ' + parent + ".prototype;\n" + @idt() +
-      child + '.prototype = new ' + construct + "();\n" + @idt() +
-      child + '.prototype.constructor = ' + child + ';'
-
-statement ExtendsNode
+    o.scope.assign('__extends', @code, true)
+    ref:  new ValueNode new LiteralNode '__extends'
+    call: new CallNode ref, [@child, @parent]
+    call.compile(o)
 
 
 # A dotted accessor into a part of a value, or the :: shorthand for
@@ -532,7 +527,7 @@ exports.ClassNode: class ClassNode extends BaseNode
 
     construct:                       @idt() + constructor.compile(o) + ';\n'
     props:     if props.empty() then '' else props.compile(o) + '\n'
-    extension: if extension     then extension.compile(o) + '\n' else ''
+    extension: if extension     then @idt() + extension.compile(o) + ';\n' else ''
     returns:   if ret           then '\n' + @idt() + 'return ' + @variable.compile(o) + ';' else ''
     construct + extension + props + returns
 
