@@ -13,6 +13,8 @@ class SecondChild extends FirstChild
 class ThirdChild extends SecondChild
   constructor: ->
     @array: [1, 2, 3]
+
+  # Gratuitous comment for testing.
   func: (string) ->
     super('three/') + string
 

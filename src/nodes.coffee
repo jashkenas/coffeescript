@@ -538,13 +538,14 @@ ClassNode: exports.ClassNode: inherit BaseNode, {
     ret:         del o, 'returns'
 
     for prop in @properties
-      if prop.variable.base.value is 'constructor'
+      if prop.variable and prop.variable.base.value is 'constructor'
         func: prop.value
         func.body.push(new ReturnNode(new LiteralNode('this')))
         constructor: new AssignNode(@variable, func)
       else
-        val: new ValueNode(@variable, [new AccessorNode(prop.variable, 'prototype')])
-        prop: new AssignNode(val, prop.value)
+        if prop.variable
+          val: new ValueNode(@variable, [new AccessorNode(prop.variable, 'prototype')])
+          prop: new AssignNode(val, prop.value)
         props.push prop
 
     constructor: new AssignNode(@variable, new CodeNode()) unless constructor
