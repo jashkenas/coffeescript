@@ -152,7 +152,7 @@ exports.Expressions: class Expressions extends BaseNode
 
   compile: (o) ->
     o ||= {}
-    if o.scope then BaseNode::compile.call(this, o) else @compile_root(o)
+    if o.scope then super(o) else @compile_root(o)
 
   # Compile each expression in the Expressions body.
   compile_node: (o) ->
