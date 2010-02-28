@@ -12,6 +12,7 @@ TRAILING_WHITESPACE: /\s+$/gm
 # Keep the identifier regex in sync with the Lexer.
 IDENTIFIER:   /^[a-zA-Z$_](\w|\$)*$/
 
+
 # Merge objects.
 merge: (options, overrides) ->
   fresh: {}
@@ -47,6 +48,7 @@ statement: (klass, only) ->
   klass::is_statement: -> true
   (klass::is_statement_only: -> true) if only
 
+
 # The abstract base class for all CoffeeScript nodes.
 # All nodes are implement a "compile_node" method, which performs the
 # code generation for that node. To compile a node, call the "compile"
@@ -54,76 +56,75 @@ statement: (klass, only) ->
 # generated code should be wrapped up in a closure. An options hash is passed
 # and cloned throughout, containing messages from higher in the AST,
 # information about the current scope, and indentation level.
-BaseNode: exports.BaseNode: ->
+exports.BaseNode: class BaseNode
 
-# This is extremely important -- we convert JS statements into expressions
-# by wrapping them in a closure, only if it's possible, and we're not at
-# the top level of a block (which would be unnecessary), and we haven't
-# already been asked to return the result.
-BaseNode::compile: (o) ->
-  @options: merge o or {}
-  @indent:  o.indent
-  del @options, 'operation' unless @operation_sensitive()
-  top:      if @top_sensitive() then @options.top else del @options, 'top'
-  closure:  @is_statement() and not @is_statement_only() and not top and
-            not @options.returns and not (this instanceof CommentNode) and
-            not @contains (node) -> node.is_statement_only()
-  if closure then @compile_closure(@options) else @compile_node(@options)
+  # This is extremely important -- we convert JS statements into expressions
+  # by wrapping them in a closure, only if it's possible, and we're not at
+  # the top level of a block (which would be unnecessary), and we haven't
+  # already been asked to return the result.
+  compile: (o) ->
+    @options: merge o or {}
+    @indent:  o.indent
+    del @options, 'operation' unless @operation_sensitive()
+    top:      if @top_sensitive() then @options.top else del @options, 'top'
+    closure:  @is_statement() and not @is_statement_only() and not top and
+              not @options.returns and not (this instanceof CommentNode) and
+              not @contains (node) -> node.is_statement_only()
+    if closure then @compile_closure(@options) else @compile_node(@options)
 
-# Statements converted into expressions share scope with their parent
-# closure, to preserve JavaScript-style lexical scope.
-BaseNode::compile_closure: (o) ->
-  @indent: o.indent
-  o.shared_scope: o.scope
-  ClosureNode.wrap(this).compile(o)
+  # Statements converted into expressions share scope with their parent
+  # closure, to preserve JavaScript-style lexical scope.
+  compile_closure: (o) ->
+    @indent: o.indent
+    o.shared_scope: o.scope
+    ClosureNode.wrap(this).compile(o)
 
-# If the code generation wishes to use the result of a complex expression
-# in multiple places, ensure that the expression is only ever evaluated once.
-BaseNode::compile_reference: (o) ->
-  reference: new LiteralNode(o.scope.free_variable())
-  compiled:  new AssignNode(reference, this)
-  [compiled, reference]
+  # If the code generation wishes to use the result of a complex expression
+  # in multiple places, ensure that the expression is only ever evaluated once.
+  compile_reference: (o) ->
+    reference: new LiteralNode(o.scope.free_variable())
+    compiled:  new AssignNode(reference, this)
+    [compiled, reference]
 
-# Quick short method for the current indentation level, plus tabbing in.
-BaseNode::idt: (tabs) ->
-  idt: (@indent || '')
-  idt += TAB for i in [0...(tabs or 0)]
-  idt
+  # Quick short method for the current indentation level, plus tabbing in.
+  idt: (tabs) ->
+    idt: (@indent || '')
+    idt += TAB for i in [0...(tabs or 0)]
+    idt
 
-# Does this node, or any of its children, contain a node of a certain kind?
-BaseNode::contains: (block) ->
-  for node in @children
-    return true if block(node)
-    return true if node.contains and node.contains block
-  false
+  # Does this node, or any of its children, contain a node of a certain kind?
+  contains: (block) ->
+    for node in @children
+      return true if block(node)
+      return true if node.contains and node.contains block
+    false
 
-# Perform an in-order traversal of the AST.
-BaseNode::traverse: (block) ->
-  for node in @children
-    block node
-    node.traverse block if node.traverse
+  # Perform an in-order traversal of the AST.
+  traverse: (block) ->
+    for node in @children
+      block node
+      node.traverse block if node.traverse
 
+  # toString representation of the node, for inspecting the parse tree.
+  toString: (idt) ->
+    idt ||= ''
+    '\n' + idt + @type + (child.toString(idt + TAB) for child in @children).join('')
 
-# toString representation of the node, for inspecting the parse tree.
-BaseNode::toString: (idt) ->
-  idt ||= ''
-  '\n' + idt + @type + (child.toString(idt + TAB) for child in @children).join('')
+  # Default implementations of the common node methods.
+  unwrap:               -> this
+  children:             []
+  is_statement:         -> false
+  is_statement_only:    -> false
+  top_sensitive:        -> false
+  operation_sensitive:  -> false
 
-# Default implementations of the common node methods.
-BaseNode::unwrap:               -> this
-BaseNode::children:             []
-BaseNode::is_statement:         -> false
-BaseNode::is_statement_only:    -> false
-BaseNode::top_sensitive:        -> false
-BaseNode::operation_sensitive:  -> false
 
 # A collection of nodes, each one representing an expression.
-Expressions: exports.Expressions: inherit BaseNode, {
+exports.Expressions: class Expressions extends BaseNode
   type: 'Expressions'
 
   constructor: (nodes) ->
     @children: @expressions: compact flatten nodes or []
-    this
 
   # Tack an expression on to the end of this expression list.
   push: (node) ->
@@ -188,8 +189,6 @@ Expressions: exports.Expressions: inherit BaseNode, {
     # Otherwise, we can just return the value of the expression.
     return @idt() + 'return ' + node.compile(o) + ';'
 
-}
-
 # Wrap up a node as an Expressions, unless it already is one.
 Expressions.wrap: (nodes) ->
   return nodes[0] if nodes.length is 1 and nodes[0] instanceof Expressions
@@ -197,19 +196,21 @@ Expressions.wrap: (nodes) ->
 
 statement Expressions
 
+
 # Literals are static values that can be passed through directly into
 # JavaScript without translation, eg.: strings, numbers, true, false, null...
-LiteralNode: exports.LiteralNode: inherit BaseNode, {
+exports.LiteralNode: class LiteralNode extends BaseNode
   type: 'Literal'
 
   constructor: (value) ->
     @value: value
-    this
 
   # Break and continue must be treated as statements -- they lose their meaning
   # when wrapped in a closure.
   is_statement: ->
     @value is 'break' or @value is 'continue'
+
+  is_statement_only: LiteralNode::is_statement
 
   compile_node: (o) ->
     idt: if @is_statement() then @idt() else ''
@@ -219,35 +220,29 @@ LiteralNode: exports.LiteralNode: inherit BaseNode, {
   toString: (idt) ->
     ' "' + @value + '"'
 
-}
-
-LiteralNode::is_statement_only: LiteralNode::is_statement
 
 # Return an expression, or wrap it in a closure and return it.
-ReturnNode: exports.ReturnNode: inherit BaseNode, {
+exports.ReturnNode: class ReturnNode extends BaseNode
   type: 'Return'
 
   constructor: (expression) ->
     @children: [@expression: expression]
-    this
 
   compile_node: (o) ->
     return @expression.compile(merge(o, {returns: true})) if @expression.is_statement()
     @idt() + 'return ' + @expression.compile(o) + ';'
 
-}
-
 statement ReturnNode, true
 
+
 # A value, indexed or dotted into, or vanilla.
-ValueNode: exports.ValueNode: inherit BaseNode, {
+exports.ValueNode: class ValueNode extends BaseNode
   type: 'Value'
 
   SOAK: " == undefined ? undefined : "
 
   constructor: (base, properties) ->
     @children:   flatten [@base: base, @properties: (properties or [])]
-    this
 
   push: (prop) ->
     @properties.push(prop)
@@ -305,11 +300,10 @@ ValueNode: exports.ValueNode: inherit BaseNode, {
 
     if op and soaked then '(' + complete + ')' else complete
 
-}
 
 # Pass through CoffeeScript comments into JavaScript comments at the
 # same position.
-CommentNode: exports.CommentNode: inherit BaseNode, {
+exports.CommentNode: class CommentNode extends BaseNode
   type: 'Comment'
 
   constructor: (lines) ->
@@ -319,19 +313,17 @@ CommentNode: exports.CommentNode: inherit BaseNode, {
   compile_node: (o) ->
     @idt() + '//' + @lines.join('\n' + @idt() + '//')
 
-}
-
 statement CommentNode
+
 
 # Node for a function invocation. Takes care of converting super() calls into
 # calls against the prototype's function of the same name.
-CallNode: exports.CallNode: inherit BaseNode, {
+exports.CallNode: class CallNode extends BaseNode
   type: 'Call'
 
   constructor: (variable, args) ->
     @children:  flatten [@variable: variable, @args: (args or [])]
     @prefix:    ''
-    this
 
   new_instance: ->
     @prefix: 'new '
@@ -373,16 +365,14 @@ CallNode: exports.CallNode: inherit BaseNode, {
       if i is 0 then code else '.concat(' + code + ')'
     @prefix + meth + '.apply(' + obj + ', ' + args.join('') + ')'
 
-}
 
 # Node to extend an object's prototype with an ancestor object.
 # After goog.inherits from the Closure Library.
-ExtendsNode: exports.ExtendsNode: inherit BaseNode, {
+exports.ExtendsNode: class ExtendsNode extends BaseNode
   type: 'Extends'
 
   constructor: (child, parent) ->
     @children:  [@child: child, @parent: parent]
-    this
 
   # Hooking one constructor into another's prototype chain.
   compile_node: (o) ->
@@ -404,13 +394,12 @@ ExtendsNode: exports.ExtendsNode: inherit BaseNode, {
       child + '.prototype = new ' + construct + "();\n" + @idt() +
       child + '.prototype.constructor = ' + child + ';'
 
-}
-
 statement ExtendsNode
+
 
 # A dotted accessor into a part of a value, or the :: shorthand for
 # an accessor into the object's prototype.
-AccessorNode: exports.AccessorNode: inherit BaseNode, {
+exports.AccessorNode: class AccessorNode extends BaseNode
   type: 'Accessor'
 
   constructor: (name, tag) ->
@@ -422,31 +411,27 @@ AccessorNode: exports.AccessorNode: inherit BaseNode, {
   compile_node: (o) ->
     '.' + (if @prototype then 'prototype.' else '') + @name.compile(o)
 
-}
 
 # An indexed accessor into a part of an array or object.
-IndexNode: exports.IndexNode: inherit BaseNode, {
+exports.IndexNode: class IndexNode extends BaseNode
   type: 'Index'
 
   constructor: (index, tag) ->
     @children:  [@index: index]
     @soak_node: tag is 'soak'
-    this
 
   compile_node: (o) ->
     '[' + @index.compile(o) + ']'
 
-}
 
 # A range literal. Ranges can be used to extract portions (slices) of arrays,
 # or to specify a range for list comprehensions.
-RangeNode: exports.RangeNode: inherit BaseNode, {
+exports.RangeNode: class RangeNode extends BaseNode
   type: 'Range'
 
   constructor: (from, to, exclusive) ->
     @children:  [@from: from, @to: to]
     @exclusive: !!exclusive
-    this
 
   compile_variables: (o) ->
     @indent:   o.indent
@@ -475,12 +460,11 @@ RangeNode: exports.RangeNode: inherit BaseNode, {
     arr:  Expressions.wrap([new ForNode(body, {source: (new ValueNode(this))}, new LiteralNode(name))])
     (new ParentheticalNode(new CallNode(new CodeNode([], arr)))).compile(o)
 
-}
 
 # An array slice literal. Unlike JavaScript's Array#slice, the second parameter
 # specifies the index of the end of the slice (just like the first parameter)
 # is the index of the beginning.
-SliceNode: exports.SliceNode: inherit BaseNode, {
+exports.SliceNode: class SliceNode extends BaseNode
   type: 'Slice'
 
   constructor: (range) ->
@@ -493,15 +477,13 @@ SliceNode: exports.SliceNode: inherit BaseNode, {
     plus_part:  if @range.exclusive then '' else ' + 1'
     ".slice(" + from + ', ' + to + plus_part + ')'
 
-}
 
 # An object literal.
-ObjectNode: exports.ObjectNode: inherit BaseNode, {
+exports.ObjectNode: class ObjectNode extends BaseNode
   type: 'Object'
 
   constructor: (props) ->
     @children: @objects: @properties: props or []
-    this
 
   # All the mucking about with commas is to make sure that CommentNodes and
   # AssignNodes get interleaved correctly, with no trailing commas or
@@ -520,15 +502,13 @@ ObjectNode: exports.ObjectNode: inherit BaseNode, {
     inner: if props then '\n' + props + '\n' + @idt() else ''
     '{' + inner + '}'
 
-}
 
 # A class literal, including optional superclass and constructor.
-ClassNode: exports.ClassNode: inherit BaseNode, {
+exports.ClassNode: class ClassNode extends BaseNode
   type: 'Class'
 
   constructor: (variable, parent, props) ->
     @children: compact flatten [@variable: variable, @parent: parent, @properties: props or []]
-    this
 
   compile_node: (o) ->
     extension:   @parent and new ExtendsNode(@variable, @parent)
@@ -556,17 +536,15 @@ ClassNode: exports.ClassNode: inherit BaseNode, {
     returns:   if ret           then '\n' + @idt() + 'return ' + @variable.compile(o) + ';' else ''
     construct + extension + props + returns
 
-}
-
 statement ClassNode
 
+
 # An array literal.
-ArrayNode: exports.ArrayNode: inherit BaseNode, {
+exports.ArrayNode: class ArrayNode extends BaseNode
   type: 'Array'
 
   constructor: (objects) ->
     @children: @objects: objects or []
-    this
 
   compile_node: (o) ->
     o.indent: @idt(1)
@@ -582,7 +560,6 @@ ArrayNode: exports.ArrayNode: inherit BaseNode, {
     ending: if objects.indexOf('\n') >= 0 then "\n" + @idt() + ']' else ']'
     '[' + objects + ending
 
-}
 
 # A faux-node that is never created by the grammar, but is used during
 # code generation to generate a quick "array.push(value)" tree of nodes.
@@ -597,6 +574,7 @@ PushNode: exports.PushNode: {
 
 }
 
+
 # A faux-node used to wrap an expressions body in a closure.
 ClosureNode: exports.ClosureNode: {
 
@@ -607,8 +585,9 @@ ClosureNode: exports.ClosureNode: {
 
 }
 
+
 # Setting the value of a local variable, or the value of an object property.
-AssignNode: exports.AssignNode: inherit BaseNode, {
+exports.AssignNode: class AssignNode extends BaseNode
   type: 'Assign'
 
   PROTO_ASSIGN: /^(\S+)\.prototype/
@@ -617,7 +596,6 @@ AssignNode: exports.AssignNode: inherit BaseNode, {
   constructor: (variable, value, context) ->
     @children: [@variable: variable, @value: value]
     @context: context
-    this
 
   top_sensitive: ->
     true
@@ -680,18 +658,16 @@ AssignNode: exports.AssignNode: inherit BaseNode, {
     to:     range.to.compile(o) + ' - ' + from + plus
     name + '.splice.apply(' + name + ', [' + from + ', ' + to + '].concat(' + @value.compile(o) + '))'
 
-}
 
 # A function definition. The only node that creates a new Scope.
 # A CodeNode does not have any children -- they're within the new scope.
-CodeNode: exports.CodeNode: inherit BaseNode, {
+exports.CodeNode: class CodeNode extends BaseNode
   type: 'Code'
 
   constructor: (params, body, tag) ->
     @params:  params or []
     @body:    body or new Expressions()
     @bound:   tag is 'boundfunc'
-    this
 
   compile_node: (o) ->
     shared_scope: del o, 'shared_scope'
@@ -730,17 +706,15 @@ CodeNode: exports.CodeNode: inherit BaseNode, {
     idt ||= ''
     '\n' + idt + @type + (child.toString(idt + TAB) for child in @real_children()).join('')
 
-}
 
 # A splat, either as a parameter to a function, an argument to a call,
 # or in a destructuring assignment.
-SplatNode: exports.SplatNode: inherit BaseNode, {
+exports.SplatNode: class SplatNode extends BaseNode
   type: 'Splat'
 
   constructor: (name) ->
     name: new LiteralNode(name) unless name.compile
     @children: [@name: name]
-    this
 
   compile_node: (o) ->
     if @index? then @compile_param(o) else @name.compile(o)
@@ -753,17 +727,15 @@ SplatNode: exports.SplatNode: inherit BaseNode, {
   compile_value: (o, name, index) ->
     "Array.prototype.slice.call(" + name + ', ' + index + ')'
 
-}
 
 # A while loop, the only sort of low-level loop exposed by CoffeeScript. From
 # it, all other loops can be manufactured.
-WhileNode: exports.WhileNode: inherit BaseNode, {
+exports.WhileNode: class WhileNode extends BaseNode
   type: 'While'
 
   constructor: (condition, opts) ->
     @children:[@condition: condition]
     @filter: opts and opts.filter
-    this
 
   add_body: (body) ->
     @children.push @body: body
@@ -789,13 +761,12 @@ WhileNode: exports.WhileNode: inherit BaseNode, {
     @body:      Expressions.wrap([new IfNode(@filter, @body)]) if @filter
     pre + ' {\n' + @body.compile(o) + '\n' + @idt() + '}' + post
 
-}
-
 statement WhileNode
+
 
 # Simple Arithmetic and logical operations. Performs some conversion from
 # CoffeeScript operations into their JavaScript equivalents.
-OpNode: exports.OpNode: inherit BaseNode, {
+exports.OpNode: class OpNode extends BaseNode
   type: 'Op'
 
   CONVERSIONS: {
@@ -817,7 +788,6 @@ OpNode: exports.OpNode: inherit BaseNode, {
     @children: compact [@first: first, @second: second]
     @operator: @CONVERSIONS[operator] or operator
     @flip: !!flip
-    this
 
   is_unary: ->
     not @second
@@ -856,10 +826,9 @@ OpNode: exports.OpNode: inherit BaseNode, {
     parts: parts.reverse() if @flip
     parts.join('')
 
-}
 
 # A try/catch/finally block.
-TryNode: exports.TryNode: inherit BaseNode, {
+exports.TryNode: class TryNode extends BaseNode
   type: 'Try'
 
   constructor: (attempt, error, recovery, ensure) ->
@@ -875,37 +844,31 @@ TryNode: exports.TryNode: inherit BaseNode, {
     finally_part: (@ensure or '') and ' finally {\n' + @ensure.compile(merge(o, {returns: null})) + '\n' + @idt() + '}'
     @idt() + 'try {\n' + @attempt.compile(o) + '\n' + @idt() + '}' + catch_part + finally_part
 
-}
-
 statement TryNode
 
+
 # Throw an exception.
-ThrowNode: exports.ThrowNode: inherit BaseNode, {
+exports.ThrowNode: class ThrowNode extends BaseNode
   type: 'Throw'
 
   constructor: (expression) ->
     @children: [@expression: expression]
-    this
 
   compile_node: (o) ->
     @idt() + 'throw ' + @expression.compile(o) + ';'
 
-}
-
 statement ThrowNode, true
 
+
 # Check an expression for existence (meaning not null or undefined).
-ExistenceNode: exports.ExistenceNode: inherit BaseNode, {
+exports.ExistenceNode: class ExistenceNode extends BaseNode
   type: 'Existence'
 
   constructor: (expression) ->
     @children: [@expression: expression]
-    this
 
   compile_node: (o) ->
     ExistenceNode.compile_test(o, @expression)
-
-}
 
 ExistenceNode.compile_test: (o, variable) ->
   [first, second]: [variable, variable]
@@ -913,13 +876,13 @@ ExistenceNode.compile_test: (o, variable) ->
     [first, second]: variable.compile_reference(o)
   '(typeof ' + first.compile(o) + ' !== "undefined" && ' + second.compile(o) + ' !== null)'
 
+
 # An extra set of parentheses, specified explicitly in the source.
-ParentheticalNode: exports.ParentheticalNode: inherit BaseNode, {
+exports.ParentheticalNode: class ParentheticalNode extends BaseNode
   type: 'Paren'
 
   constructor: (expression) ->
     @children: [@expression: expression]
-    this
 
   is_statement: ->
     @expression.is_statement()
@@ -931,13 +894,12 @@ ParentheticalNode: exports.ParentheticalNode: inherit BaseNode, {
     code: code.substr(o, l-1) if code.substr(l-1, 1) is ';'
     '(' + code + ')'
 
-}
 
 # The replacement for the for loop is an array comprehension (that compiles)
 # into a for loop. Also acts as an expression, able to return the result
 # of the comprehenion. Unlike Python array comprehensions, it's able to pass
 # the current index of the loop as a second parameter.
-ForNode: exports.ForNode: inherit BaseNode, {
+exports.ForNode: class ForNode extends BaseNode
   type: 'For'
 
   constructor: (body, source, name, index) ->
@@ -950,7 +912,6 @@ ForNode: exports.ForNode: inherit BaseNode, {
     @object:  !!source.object
     [@name, @index]: [@index, @name] if @object
     @children: compact [@body, @source, @filter]
-    this
 
   top_sensitive: ->
     true
@@ -1001,15 +962,14 @@ ForNode: exports.ForNode: inherit BaseNode, {
     close:          if @object then '}}\n' else '}\n'
     set_result + source_part + 'for (' + for_part + ') {\n' + var_part + body + '\n' + @idt() + close + @idt() + return_result
 
-}
-
 statement ForNode
+
 
 # If/else statements. Switch/whens get compiled into these. Acts as an
 # expression by pushing down requested returns to the expression bodies.
 # Single-expression IfNodes are compiled into ternary operators if possible,
 # because ternaries are first-class returnable assignable expressions.
-IfNode: exports.IfNode: inherit BaseNode, {
+exports.IfNode: class IfNode extends BaseNode
   type: 'If'
 
   constructor: (condition, body, else_body, tags) ->
@@ -1020,7 +980,6 @@ IfNode: exports.IfNode: inherit BaseNode, {
     @tags:      tags or {}
     @multiple:  true if @condition instanceof Array
     @condition: new OpNode('!', new ParentheticalNode(@condition)) if @tags.invert
-    this
 
   push: (else_body) ->
     eb: else_body.unwrap()
@@ -1101,5 +1060,3 @@ IfNode: exports.IfNode: inherit BaseNode, {
     if_part:    @condition.compile(o) + ' ? ' + @body.compile(o)
     else_part:  if @else_body then @else_body.compile(o) else 'null'
     if_part + ' : ' + else_part
-
-}
