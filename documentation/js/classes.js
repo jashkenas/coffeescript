@@ -1,5 +1,12 @@
 (function(){
-  var Animal, Horse, Snake, _a, _b, sam, tom;
+  var Animal, Horse, Snake, sam, tom;
+  var __extends = function(child, parent) {
+    var ctor = function(){ };
+    ctor.prototype = parent.prototype;
+    child.__superClass__ = parent.prototype;
+    child.prototype = new ctor();
+    child.prototype.constructor = child;
+  };
   Animal = function Animal() {  };
   Animal.prototype.move = function move(meters) {
     return alert(this.name + " moved " + meters + "m.");
@@ -8,11 +15,7 @@
     this.name = name;
     return this;
   };
-  _a = function(){};
-  _a.prototype = Animal.prototype;
-  Snake.__superClass__ = Animal.prototype;
-  Snake.prototype = new _a();
-  Snake.prototype.constructor = Snake;
+  __extends(Snake, Animal);
   Snake.prototype.move = function move() {
     alert("Slithering...");
     return Snake.__superClass__.move.call(this, 5);
@@ -21,11 +24,7 @@
     this.name = name;
     return this;
   };
-  _b = function(){};
-  _b.prototype = Animal.prototype;
-  Horse.__superClass__ = Animal.prototype;
-  Horse.prototype = new _b();
-  Horse.prototype.constructor = Horse;
+  __extends(Horse, Animal);
   Horse.prototype.move = function move() {
     alert("Galloping...");
     return Horse.__superClass__.move.call(this, 45);

@@ -38,7 +38,7 @@
         <a href="#slice_splice">Array Slicing and Splicing with Ranges</a>
         <a href="#expressions">Everything is an Expression</a>
         <a href="#existence">The Existential Operator</a>
-        <a href="#inheritance">Inheritance, and Calling Super from a Subclass</a>
+        <a href="#classes">Classes, Inheritance, and Super</a>
         <a href="#pattern_matching">Pattern Matching</a>
         <a href="#fat_arrow">Function Binding</a>
         <a href="#embedded">Embedded JavaScript</a>
@@ -1156,8 +1156,8 @@ speed = (typeof speed !== "undefined" && speed !== null) ? speed : 140;
     </p>
 
     <p>
-      <span id="inheritance" class="bookmark"></span>
-      <b class="header">Inheritance, and Calling Super from a Subclass</b>
+      <span id="classes" class="bookmark"></span>
+      <b class="header">Classes, Inheritance, and Super</b>
       JavaScript's prototypal inheritance has always been a bit of a
       brain-bender, with a whole family tree of libraries that provide a cleaner
       syntax for classical inheritance on top of JavaScript's prototypes:
@@ -1171,35 +1171,30 @@ speed = (typeof speed !== "undefined" && speed !== null) ? speed : 140;
       set the prototype chain.
     </p>
     <p>
-      CoffeeScript provides <tt>extends</tt>
-      to help with prototype setup, <tt>::</tt> for quick access to an
-      object's prototype, and converts <tt>super()</tt> into a call against
-      the immediate ancestor's method of the same name.
+      Instead of repetitively attaching functions to a prototype, CoffeeScript
+      provides a basic <tt>class</tt> structure that allows you to name your class,
+      set the superclass, assign prototypal properties, and define the constructor,
+      in a single assignable expression.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">Animal</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
+    <div class='code'><pre class="idle"><span class="Variable">class</span> Animal
+  <span class="FunctionName">move</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">meters</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+    alert <span class="Variable">@name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>
 
-<span class="FunctionName">Animal::move</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">meters</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
-  alert <span class="Variable">@name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>
+<span class="Variable">class</span> Snake <span class="Variable">extends</span> Animal
+  <span class="FunctionName">constructor</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">name</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+    <span class="Variable">@name</span><span class="Keyword">:</span> name
 
-<span class="FunctionName">Snake</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">name</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
-  <span class="Variable">@name</span><span class="Keyword">:</span> name
-  <span class="Variable">this</span>
+  <span class="FunctionName">move</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
+    alert <span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>
+    <span class="Variable">super</span> <span class="Number">5</span>
 
-Snake <span class="Variable">extends</span> Animal
+<span class="Variable">class</span> Horse <span class="Variable">extends</span> Animal
+  <span class="FunctionName">constructor</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">name</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
+    <span class="Variable">@name</span><span class="Keyword">:</span> name
 
-<span class="FunctionName">Snake::move</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
-  alert <span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>
-  <span class="Variable">super</span> <span class="Number">5</span>
-
-<span class="FunctionName">Horse</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">name</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
-  <span class="Variable">@name</span><span class="Keyword">:</span> name
-  <span class="Variable">this</span>
-
-Horse <span class="Variable">extends</span> Animal
-
-<span class="FunctionName">Horse::move</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
-  alert <span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>
-  <span class="Variable">super</span> <span class="Number">45</span>
+  <span class="FunctionName">move</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
+    alert <span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>
+    <span class="Variable">super</span> <span class="Number">45</span>
 
 <span class="FunctionName">sam</span><span class="Keyword">:</span> <span class="Keyword">new</span> <span class="TypeName">Snake</span> <span class="String"><span class="String">&quot;</span>Sammy the Python<span class="String">&quot;</span></span>
 <span class="FunctionName">tom</span><span class="Keyword">:</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span> <span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>
@@ -1210,7 +1205,14 @@ tom.move()
 
 
 
-</pre><pre class="idle"><span class="Storage">var</span> Animal, Horse, Snake, _a, _b, sam, tom;
+</pre><pre class="idle"><span class="Storage">var</span> Animal, Horse, Snake, sam, tom;
+<span class="Storage">var</span> <span class="FunctionName">__extends</span> = <span class="Storage">function</span>(<span class="FunctionArgument">child, parent</span>) {
+  <span class="Storage">var</span> <span class="FunctionName">ctor</span> = <span class="Storage">function</span>(){ };
+  <span class="LibraryClassType">ctor</span>.<span class="LibraryConstant">prototype</span> = parent.<span class="LibraryConstant">prototype</span>;
+  child.__superClass__ <span class="Keyword">=</span> parent.<span class="LibraryConstant">prototype</span>;
+  <span class="LibraryClassType">child</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">ctor</span>();
+  <span class="LibraryClassType">child</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">constructor</span> = child;
+};
 Animal <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">Animal</span>() {  };
 <span class="LibraryClassType">Animal</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span> <span class="FunctionName">move</span>(<span class="FunctionArgument">meters</span>) {
   <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>);
@@ -1219,11 +1221,7 @@ Snake <span class="Keyword">=</span> <span class="Storage">function</span> <span
   <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
   <span class="Keyword">return</span> <span class="Variable">this</span>;
 };
-<span class="FunctionName">_a</span> = <span class="Storage">function</span>(){};
-<span class="LibraryClassType">_a</span>.<span class="LibraryConstant">prototype</span> = Animal.<span class="LibraryConstant">prototype</span>;
-Snake.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryConstant">prototype</span>;
-<span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">_a</span>();
-<span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">constructor</span> = Snake;
+__extends(Snake, Animal);
 <span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span> <span class="FunctionName">move</span>() {
   <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>);
   <span class="Keyword">return</span> Snake.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">5</span>);
@@ -1232,11 +1230,7 @@ Horse <span class="Keyword">=</span> <span class="Storage">function</span> <span
   <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
   <span class="Keyword">return</span> <span class="Variable">this</span>;
 };
-<span class="FunctionName">_b</span> = <span class="Storage">function</span>(){};
-<span class="LibraryClassType">_b</span>.<span class="LibraryConstant">prototype</span> = Animal.<span class="LibraryConstant">prototype</span>;
-Horse.__superClass__ <span class="Keyword">=</span> Animal.<span class="LibraryConstant">prototype</span>;
-<span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">_b</span>();
-<span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">constructor</span> = Horse;
+__extends(Horse, Animal);
 <span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span> <span class="FunctionName">move</span>() {
   <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>);
   <span class="Keyword">return</span> Horse.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">45</span>);
@@ -1245,7 +1239,14 @@ sam <span class="Keyword">=</span> <span class="Keyword">new</span> <span class=
 tom <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span>(<span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>);
 sam.move();
 tom.move();
-</pre><button onclick='javascript: var Animal, Horse, Snake, _a, _b, sam, tom;
+</pre><button onclick='javascript: var Animal, Horse, Snake, sam, tom;
+var __extends = function(child, parent) {
+  var ctor = function(){ };
+  ctor.prototype = parent.prototype;
+  child.__superClass__ = parent.prototype;
+  child.prototype = new ctor();
+  child.prototype.constructor = child;
+};
 Animal = function Animal() {  };
 Animal.prototype.move = function move(meters) {
   return alert(this.name + " moved " + meters + "m.");
@@ -1254,11 +1255,7 @@ Snake = function Snake(name) {
   this.name = name;
   return this;
 };
-_a = function(){};
-_a.prototype = Animal.prototype;
-Snake.__superClass__ = Animal.prototype;
-Snake.prototype = new _a();
-Snake.prototype.constructor = Snake;
+__extends(Snake, Animal);
 Snake.prototype.move = function move() {
   alert("Slithering...");
   return Snake.__superClass__.move.call(this, 5);
@@ -1267,11 +1264,7 @@ Horse = function Horse(name) {
   this.name = name;
   return this;
 };
-_b = function(){};
-_b.prototype = Animal.prototype;
-Horse.__superClass__ = Animal.prototype;
-Horse.prototype = new _b();
-Horse.prototype.constructor = Horse;
+__extends(Horse, Animal);
 Horse.prototype.move = function move() {
   alert("Galloping...");
   return Horse.__superClass__.move.call(this, 45);
@@ -1282,11 +1275,21 @@ sam.move();
 tom.move();
 ;'>run</button><br class='clear' /></div>
     <p>
-      <b>A cautionary note:</b> JavaScript allows you to return a different value from
-      a constructor function, ignoring the newly-created object. In CoffeeScript,
-      it's best practice to always return <tt>this</tt> as the last line of a
-      constructor, as seen above.
+      If structuring your prototypes classically isn't your cup of tea, CoffeeScript
+      provides a couple of lower-level conveniences. The <tt>extends</tt> operator
+      helps with proper prototype setup, as seen above, <tt>::</tt> gives you
+      quick access to an object's prototype, and <tt>super()</tt>
+      is converted into a call against the immediate ancestor's method of the same name.
     </p>
+    <div class='code'><pre class="idle"><span class="FunctionName">String::dasherize</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
+  <span class="Variable">this</span>.replace(<span class="String"><span class="String">/</span>_<span class="String">/</span>g</span>, <span class="String"><span class="String">&quot;</span>-<span class="String">&quot;</span></span>)
+</pre><pre class="idle"><span class="LibraryClassType">String</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">dasherize</span> = <span class="Storage">function</span> <span class="FunctionName">dasherize</span>() {
+  <span class="Keyword">return</span> <span class="Variable">this</span>.<span class="LibraryFunction">replace</span>(<span class="String"><span class="String">/</span>_<span class="String">/</span>g</span>, <span class="String"><span class="String">&quot;</span>-<span class="String">&quot;</span></span>);
+};
+</pre><button onclick='javascript: String.prototype.dasherize = function dasherize() {
+  return this.replace(/_/g, "-");
+};
+;alert("one_two".dasherize());'>run: "one_two".dasherize()</button><br class='clear' /></div>
 
     <p>
       <span id="pattern_matching" class="bookmark"></span>

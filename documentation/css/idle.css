@@ -57,6 +57,7 @@ pre.idle .FunctionName {
    color: #21439C;
 }
 pre.idle .Variable {
+  color: #A535AE;
 }
 pre.idle .Comment {
    color: #919191;

@@ -52,7 +52,7 @@
         <a href="#slice_splice">Array Slicing and Splicing with Ranges</a>
         <a href="#expressions">Everything is an Expression</a>
         <a href="#existence">The Existential Operator</a>
-        <a href="#inheritance">Inheritance, and Calling Super from a Subclass</a>
+        <a href="#classes">Classes, Inheritance, and Super</a>
         <a href="#pattern_matching">Pattern Matching</a>
         <a href="#fat_arrow">Function Binding</a>
         <a href="#embedded">Embedded JavaScript</a>
@@ -592,8 +592,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
 
     <p>
-      <span id="inheritance" class="bookmark"></span>
-      <b class="header">Inheritance, and Calling Super from a Subclass</b>
+      <span id="classes" class="bookmark"></span>
+      <b class="header">Classes, Inheritance, and Super</b>
       JavaScript's prototypal inheritance has always been a bit of a
       brain-bender, with a whole family tree of libraries that provide a cleaner
       syntax for classical inheritance on top of JavaScript's prototypes:
@@ -607,18 +607,20 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       set the prototype chain.
     </p>
     <p>
-      CoffeeScript provides <tt>extends</tt>
-      to help with prototype setup, <tt>::</tt> for quick access to an
-      object's prototype, and converts <tt>super()</tt> into a call against
-      the immediate ancestor's method of the same name.
+      Instead of repetitively attaching functions to a prototype, CoffeeScript
+      provides a basic <tt>class</tt> structure that allows you to name your class,
+      set the superclass, assign prototypal properties, and define the constructor,
+      in a single assignable expression.
     </p>
-    <%= code_for('super', true) %>
+    <%= code_for('classes', true) %>
     <p>
-      <b>A cautionary note:</b> JavaScript allows you to return a different value from
-      a constructor function, ignoring the newly-created object. In CoffeeScript,
-      it's best practice to always return <tt>this</tt> as the last line of a
-      constructor, as seen above.
+      If structuring your prototypes classically isn't your cup of tea, CoffeeScript
+      provides a couple of lower-level conveniences. The <tt>extends</tt> operator
+      helps with proper prototype setup, as seen above, <tt>::</tt> gives you
+      quick access to an object's prototype, and <tt>super()</tt>
+      is converted into a call against the immediate ancestor's method of the same name.
     </p>
+    <%= code_for('prototypes', '"one_two".dasherize()') %>
 
     <p>
       <span id="pattern_matching" class="bookmark"></span>
