@@ -196,27 +196,29 @@ exports.Lexer: class Lexer
     @i    += indent.length
     next_character: @chunk.match(MULTI_DENT)[4]
     prev: @prev(2)
-    no_newlines: next_character is '.' or (@value() and @value().match(NO_NEWLINE) and prev and (prev[0] isnt '.') and not @value().match(CODE))
-    return @suppress_newlines(indent) if no_newlines
     size: indent.match(LAST_DENTS).reverse()[0].match(LAST_DENT)[1].length
-    return @newline_token(indent) if size is @indent
-    if size > @indent
+    no_newlines: next_character is '.' or (@value() and @value().match(NO_NEWLINE) and prev and (prev[0] isnt '.') and not @value().match(CODE))
+    if size is @indent
+      return @suppress_newlines(indent) if no_newlines
+      return @newline_token(indent)
+    else if size > @indent
+      return @suppress_newlines(indent) if no_newlines
       diff: size - @indent
       @token 'INDENT', diff
       @indents.push diff
     else
-      @outdent_token @indent - size
+      @outdent_token @indent - size, no_newlines
     @indent: size
     true
 
   # Record an oudent token or tokens, if we're moving back inwards past
   # multiple recorded indents.
-  outdent_token: (move_out) ->
+  outdent_token: (move_out, no_newlines) ->
     while move_out > 0 and @indents.length
       last_indent: @indents.pop()
       @token 'OUTDENT', last_indent
       move_out -= last_indent
-    @token 'TERMINATOR', "\n" unless @tag() is 'TERMINATOR'
+    @token 'TERMINATOR', "\n" unless @tag() is 'TERMINATOR' or no_newlines
     true
 
   # Matches and consumes non-meaningful whitespace.
