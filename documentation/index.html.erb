@@ -111,7 +111,7 @@ alert reverse '!tpircseeffoC'</textarea></div>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.2">0.5.2</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.3">0.5.3</a>
     </p>
 
     <h2>
@@ -156,7 +156,7 @@ alert reverse '!tpircseeffoC'</textarea></div>
       <a href="http://nodejs.org/">Node.js</a>, 0.1.30 or higher. Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.2">0.5.2</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.3">0.5.3</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -794,6 +794,16 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.5.3</b>
+      CoffeeScript now has a syntax for defining classes. Many of the core 
+      components (Nodes, Lexer, Rewriter, Scope, Optparse) are using them.
+      Cakefiles can use <tt>optparse.coffee</tt> to define options for tasks.
+      <tt>--run</tt> is now the default flag for the <tt>coffee</tt> command,
+      use <tt>--compile</tt> to save JavaScripts. Bugfix for an ambiguity between
+      RegExp literals and chained divisions.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.5.2</b>
