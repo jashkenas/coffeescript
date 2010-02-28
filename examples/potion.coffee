@@ -53,16 +53,16 @@ for key, val of {dog: 'canine', cat: 'feline', fox: 'vulpine'}
 # Person print = ():
 #   ('My name is ', /name, '.') join print.
 
-Person: ->
-Person::print: ->
-  print('My name is ' + this.name + '.')
+class Person
+  print: ->
+    print 'My name is ' + this.name + '.'
 
 
 # p = Person ()
 # p /name string print
 
 p: new Person()
-print(p.name)
+print p.name
 
 
 # Policeman = Person class (rank): /rank = rank.
@@ -71,12 +71,13 @@ print(p.name)
 #
 # Policeman ('Constable') print
 
-Policeman: (rank) -> this.rank: rank
-Policeman extends Person
-Policeman::print: ->
-  print('My name is ' + this.name + " and I'm a " + this.rank + '.')
+class Policeman extends Person
+  constructor: (rank) ->
+    @rank: rank
+  print: ->
+    print 'My name is ' + this.name + " and I'm a " + this.rank + '.'
 
-print(new Policeman('Constable'))
+print new Policeman 'Constable'
 
 
 # app = [window (width=200, height=400)

@@ -1,27 +1,22 @@
-Animal: ->
+class Animal
+  move: (meters) ->
+    alert @name + " moved " + meters + "m."
 
-Animal::move: (meters) ->
-  alert @name + " moved " + meters + "m."
+class Snake extends Animal
+  constructor: (name) ->
+    @name: name
 
-Snake: (name) ->
-  @name: name
-  this
+  move: ->
+    alert "Slithering..."
+    super 5
 
-Snake extends Animal
+class Horse extends Animal
+  constructor: (name) ->
+    @name: name
 
-Snake::move: ->
-  alert "Slithering..."
-  super 5
-
-Horse: (name) ->
-  @name: name
-  this
-
-Horse extends Animal
-
-Horse::move: ->
-  alert "Galloping..."
-  super 45
+  move: ->
+    alert "Galloping..."
+    super 45
 
 sam: new Snake "Sammy the Python"
 tom: new Horse "Tommy the Palomino"

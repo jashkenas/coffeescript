@@ -1,90 +1,92 @@
 # "Classic" linked list implementation that doesn't keep track of its size.
-LinkedList: ->
-  this._head: null # Pointer to the first item in the list.
+class LinkedList
+
+  constructor: ->
+    this._head: null # Pointer to the first item in the list.
 
 
-# Appends some data to the end of the list. This method traverses the existing
-# list and places the value at the end in a new node.
-LinkedList::add: (data) ->
+  # Appends some data to the end of the list. This method traverses the existing
+  # list and places the value at the end in a new node.
+  add: (data) ->
 
-  # Create a new node object to wrap the data.
-  node: {data: data, next: null}
+    # Create a new node object to wrap the data.
+    node: {data: data, next: null}
 
-  current: this._head ||= node
+    current: this._head ||= node
 
-  if this._head isnt node
-    current: current.next while current.next
-    current.next: node
+    if this._head isnt node
+      current: current.next while current.next
+      current.next: node
 
-  this
-
-
-# Retrieves the data at the given position in the list.
-LinkedList::item: (index) ->
-
-  # Check for out-of-bounds values.
-  return null if index < 0
-
-  current: this._head or null
-  i: -1
-
-  # Advance through the list.
-  current: current.next while current and index > (i += 1)
-
-  # Return null if we've reached the end.
-  current and current.data
+    this
 
 
-# Remove the item from the given location in the list.
-LinkedList::remove: (index) ->
+  # Retrieves the data at the given position in the list.
+  item: (index) ->
 
-  # Check for out-of-bounds values.
-  return null if index < 0
+    # Check for out-of-bounds values.
+    return null if index < 0
 
-  current: this._head or null
-  i: -1
+    current: this._head or null
+    i: -1
 
-  # Special case: removing the first item.
-  if index is 0
-    this._head: current.next
-  else
+    # Advance through the list.
+    current: current.next while current and index > (i += 1)
 
-    # Find the right location.
-    [previous, current]: [current, current.next] while index > (i += 1)
-
-    # Skip over the item to remove.
-    previous.next: current.next
-
-  # Return the value.
-  current and current.data
+    # Return null if we've reached the end.
+    current and current.data
 
 
-# Calculate the number of items in the list.
-LinkedList::size: ->
-  current: this._head
-  count:   0
+  # Remove the item from the given location in the list.
+  remove: (index) ->
 
-  while current
-    count += 1
-    current: current.next
+    # Check for out-of-bounds values.
+    return null if index < 0
 
-  count
+    current: this._head or null
+    i: -1
+
+    # Special case: removing the first item.
+    if index is 0
+      this._head: current.next
+    else
+
+      # Find the right location.
+      [previous, current]: [current, current.next] while index > (i += 1)
+
+      # Skip over the item to remove.
+      previous.next: current.next
+
+    # Return the value.
+    current and current.data
 
 
-# Convert the list into an array.
-LinkedList::toArray: ->
-  result:   []
-  current:  this._head
+  # Calculate the number of items in the list.
+  size: ->
+    current: this._head
+    count:   0
 
-  while current
-    result.push(current.data)
-    current: current.next
+    while current
+      count += 1
+      current: current.next
 
-  result
+    count
 
 
-# The string representation of the linked list.
-LinkedList::toString: -> this.toArray().toString()
+  # Convert the list into an array.
+  toArray: ->
+    result:   []
+    current:  this._head
+
+    while current
+      result.push(current.data)
+      current: current.next
+
+    result
+
+
+  # The string representation of the linked list.
+  toString: -> this.toArray().toString()
 
 
 # Tests.

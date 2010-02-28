@@ -140,24 +140,28 @@ sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna
 aliquam erat volutpat. Ut wisi enim ad."
 
 # Inheritance and calling super.
-Animal: ->
-Animal::move: (meters) ->
-  alert(this.name + " moved " + meters + "m.")
+class Animal
+  move: (meters) ->
+    alert this.name + " moved " + meters + "m."
 
-Snake: (name) -> this.name: name
-Snake extends Animal
-Snake::move: ->
-  alert('Slithering...')
-  super(5)
+class Snake extends Animal
+  constructor: (name) ->
+    @name: name
 
-Horse: (name) -> this.name: name
-Horse extends Animal
-Horse::move: ->
-  alert('Galloping...')
-  super(45)
+  move: ->
+    alert 'Slithering...'
+    super 5
 
-sam: new Snake("Sammy the Snake")
-tom: new Horse("Tommy the Horse")
+class Horse extends Animal
+  constructor: (name) ->
+    @name: name
+
+  move: ->
+    alert 'Galloping...'
+    super 45
+
+sam: new Snake "Sammy the Snake"
+tom: new Horse "Tommy the Horse"
 
 sam.move()
 tom.move()
