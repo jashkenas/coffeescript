@@ -523,7 +523,14 @@ exports.ClassNode: class ClassNode extends BaseNode
           prop: new AssignNode(val, prop.value)
         props.push prop
 
-    constructor: new AssignNode(@variable, new CodeNode()) unless constructor
+    if not constructor
+      if @parent
+        applied: new ValueNode(@parent, [new AccessorNode(new LiteralNode('apply'))])
+        constructor: new AssignNode(@variable, new CodeNode([], new Expressions([
+          new CallNode(applied, [new LiteralNode('this'), new LiteralNode('arguments')])
+        ])))
+      else
+        constructor: new AssignNode(@variable, new CodeNode())
 
     construct:                       @idt() + constructor.compile(o) + ';\n'
     props:     if props.empty() then '' else props.compile(o) + '\n'

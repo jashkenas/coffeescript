@@ -36,3 +36,11 @@ class SubClass extends SuperClass
     super 'sub'
 
 ok (new SubClass()).prop is 'top-super-sub'
+
+
+class OneClass
+  constructor: (name) -> @name: name
+
+class TwoClass extends OneClass
+
+ok (new TwoClass('three')).name is 'three'
