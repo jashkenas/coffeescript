@@ -29,11 +29,12 @@ COFFEE_KEYWORDS: [
 # The list of keywords passed verbatim to the parser.
 KEYWORDS: JS_KEYWORDS.concat COFFEE_KEYWORDS
 
-# The list of keywords that are reserved by JavaScript, but not used, and aren't
-# used by CoffeeScript. Using these will throw an error at compile time.
+# The list of keywords that are reserved by JavaScript, but not used, or are
+# used by CoffeeScript internally. Using these will throw an error.
 RESERVED: [
   "case", "default", "do", "function", "var", "void", "with"
-  "const", "let", "debugger", "enum", "export", "import", "native"
+  "const", "let", "debugger", "enum", "export", "import", "native",
+  "__extends", "__hasProp"
 ]
 
 # JavaScript keywords and reserved words together, excluding CoffeeScript ones.
@@ -99,7 +100,7 @@ exports.Lexer: class Lexer
       @extract_next_token()
     @close_indentation()
     (new Rewriter()).rewrite @tokens
-  
+
   # At every position, run through this list of attempted matches,
   # short-circuiting if any of them succeed.
   extract_next_token: ->
@@ -113,9 +114,9 @@ exports.Lexer: class Lexer
     return if @comment_token()
     return if @whitespace_token()
     return    @literal_token()
-  
+
   # Tokenizers ==========================================================
-  
+
   # Matches identifying literals: variables, keywords, method names, etc.
   identifier_token: ->
     return false unless id: @match IDENTIFIER, 1
@@ -134,14 +135,14 @@ exports.Lexer: class Lexer
     @token(tag, id)
     @i += id.length
     true
-  
+
   # Matches numbers, including decimals, hex, and exponential notation.
   number_token: ->
     return false unless number: @match NUMBER, 1
     @token 'NUMBER', number
     @i += number.length
     true
-  
+
   # Matches strings, including multi-line strings.
   string_token: ->
     return false unless string: @match STRING, 1
@@ -150,7 +151,7 @@ exports.Lexer: class Lexer
     @line += @count string, "\n"
     @i += string.length
     true
-  
+
   # Matches heredocs, adjusting indentation to the correct level.
   heredoc_token: ->
     return false unless match = @chunk.match(HEREDOC)
@@ -163,14 +164,14 @@ exports.Lexer: class Lexer
     @line += @count match[1], "\n"
     @i += match[1].length
     true
-  
+
   # Matches interpolated JavaScript.
   js_token: ->
     return false unless script: @match JS, 1
     @token 'JS', script.replace(JS_CLEANER, '')
     @i += script.length
     true
-  
+
   # Matches regular expression literals.
   regex_token: ->
     return false unless regex: @match REGEX, 1
@@ -178,7 +179,7 @@ exports.Lexer: class Lexer
     @token 'REGEX', regex
     @i += regex.length
     true
-  
+
   # Matches and conumes comments.
   comment_token: ->
     return false unless comment: @match COMMENT, 1
@@ -187,7 +188,7 @@ exports.Lexer: class Lexer
     @token 'TERMINATOR', "\n"
     @i += comment.length
     true
-  
+
   # Record tokens for indentation differing from the previous line.
   indent_token: ->
     return false unless indent: @match MULTI_DENT, 1
@@ -207,7 +208,7 @@ exports.Lexer: class Lexer
       @outdent_token @indent - size
     @indent: size
     true
-  
+
   # Record an oudent token or tokens, if we're moving back inwards past
   # multiple recorded indents.
   outdent_token: (move_out) ->
@@ -217,7 +218,7 @@ exports.Lexer: class Lexer
       move_out -= last_indent
     @token 'TERMINATOR', "\n" unless @tag() is 'TERMINATOR'
     true
-  
+
   # Matches and consumes non-meaningful whitespace.
   whitespace_token: ->
     return false unless space: @match WHITESPACE, 1
@@ -225,18 +226,18 @@ exports.Lexer: class Lexer
     prev.spaced: true if prev
     @i += space.length
     true
-  
+
   # Multiple newlines get merged together.
   # Use a trailing \ to escape newlines.
   newline_token: (newlines) ->
     @token 'TERMINATOR', "\n" unless @tag() is 'TERMINATOR'
     true
-  
+
   # Tokens to explicitly escape newlines are removed once their job is done.
   suppress_newlines: (newlines) ->
     @tokens.pop() if @value() is "\\"
     true
-  
+
   # We treat all other single characters as a token. Eg.: ( ) , . !
   # Multi-character operators are also literal tokens, so that Racc can assign
   # the proper order of operations.
@@ -265,29 +266,29 @@ exports.Lexer: class Lexer
     @token tag, value
     @i += value.length
     true
-  
+
   # Helpers =============================================================
-  
+
   # Add a token to the results, taking note of the line number.
   token: (tag, value) ->
     @tokens.push([tag, value, @line])
-  
+
   # Look at a tag in the current token stream.
   tag: (index, tag) ->
     return unless tok: @prev(index)
     return tok[0]: tag if tag?
     tok[0]
-  
+
   # Look at a value in the current token stream.
   value: (index, val) ->
     return unless tok: @prev(index)
     return tok[1]: val if val?
     tok[1]
-  
+
   # Look at a previous token.
   prev: (index) ->
     @tokens[@tokens.length - (index or 1)]
-  
+
   # Count the occurences of a character in a string.
   count: (string, letter) ->
     num: 0
@@ -296,13 +297,13 @@ exports.Lexer: class Lexer
       num += 1
       pos: string.indexOf(letter, pos + 1)
     num
-  
+
   # Attempt to match a string against the current chunk, returning the indexed
   # match.
   match: (regex, index) ->
     return false unless m: @chunk.match(regex)
     if m then m[index] else false
-  
+
   # A source of ambiguity in our grammar was parameter lists in function
   # definitions (as opposed to argument lists in function calls). Tag
   # parameter identifiers in order to avoid this. Also, parameter lists can
@@ -319,7 +320,7 @@ exports.Lexer: class Lexer
         when ')'          then tok[0]: 'PARAM_END'
         when '('          then return tok[0]: 'PARAM_START'
     true
-  
+
   # Close up all remaining open blocks. IF the first token is an indent,
   # axe it.
   close_indentation: ->
