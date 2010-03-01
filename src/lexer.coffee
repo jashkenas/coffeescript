@@ -4,7 +4,8 @@ else
   this.exports: this
   Rewriter: this.Rewriter
 
-# Constants ============================================================
+# Constants
+# ---------
 
 # Keywords that CoffeScript shares in common with JS.
 JS_KEYWORDS: [
@@ -115,7 +116,8 @@ exports.Lexer: class Lexer
     return if @whitespace_token()
     return    @literal_token()
 
-  # Tokenizers ==========================================================
+  # Tokenizers
+  # ----------
 
   # Matches identifying literals: variables, keywords, method names, etc.
   identifier_token: ->
@@ -261,7 +263,8 @@ exports.Lexer: class Lexer
     @i += value.length
     true
 
-  # Token Manipulators ==================================================
+  # Token Manipulators
+  # ------------------
 
   # As we consume a new IDENTIFIER, look at the previous token to determine
   # if it's a special kind of access.
@@ -290,7 +293,8 @@ exports.Lexer: class Lexer
   assignment_error: ->
     throw new Error 'SyntaxError: Reserved word "' + @value() + '" on line ' + @line + ' can\'t be assigned'
 
-  # Helpers =============================================================
+  # Helpers
+  # -------
 
   # Add a token to the results, taking note of the line number.
   token: (tag, value) ->

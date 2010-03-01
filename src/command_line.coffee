@@ -80,7 +80,10 @@ compile_script: (source, code) ->
       if      o.compile         then write_js source, js
       else if o.lint            then lint js
       else if o.print or o.eval then print js
-      else                           eval js
+      else
+        __filename: source
+        __dirname:  path.dirname source
+        eval js
   catch err
     if o.watch                  then puts err.message else throw err
 
