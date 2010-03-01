@@ -5,7 +5,7 @@
 #
 #     [tag, value, line_number]
 #
-# Which is a format that can be fed directly into Jison.
+# Which is a format that can be fed directly into [Jison](http://github.com/zaach/jison).
 
 # Set up the Lexer for both Node.js and the browser, depending on where we are.
 if process?
@@ -17,7 +17,7 @@ else
 # Constants
 # ---------
 
-# Keywords that CoffeScript shares in common with JS.
+# Keywords that CoffeeScript shares in common with JavaScript.
 JS_KEYWORDS: [
   "if", "else",
   "true", "false",
@@ -98,7 +98,7 @@ CALLABLE: ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING', '@']
 # treated as identifiers.
 ACCESSORS: ['PROPERTY_ACCESS', 'PROTOTYPE_ACCESS', 'SOAK_ACCESS', '@']
 
-# Tokens that, when immediately preceding a 'WHEN', indicate that the 'WHEN'
+# Tokens that, when immediately preceding a `WHEN`, indicate that the `WHEN`
 # occurs at the start of a line. We disambiguate these from trailing whens to
 # avoid an ambiguity in the grammar.
 BEFORE_WHEN: ['INDENT', 'OUTDENT', 'TERMINATOR']
@@ -258,7 +258,7 @@ exports.Lexer: class Lexer
     true
 
   # We treat all other single characters as a token. Eg.: `( ) , . !`
-  # Multi-character operators are also literal tokens, so that Racc can assign
+  # Multi-character operators are also literal tokens, so that Jison can assign
   # the proper order of operations.
   literal_token: ->
     match: @chunk.match(OPERATOR)
@@ -289,7 +289,7 @@ exports.Lexer: class Lexer
   # Token Manipulators
   # ------------------
 
-  # As we consume a new IDENTIFIER, look at the previous token to determine
+  # As we consume a new `IDENTIFIER`, look at the previous token to determine
   # if it's a special kind of accessor.
   name_access_type: ->
     @tag(1, 'PROTOTYPE_ACCESS') if @value() is '::'
@@ -372,7 +372,8 @@ exports.Lexer: class Lexer
 # -----------------
 
 # Does a list include a value?
-include: (list, value) -> list.indexOf(value) >= 0
+include: (list, value) ->
+  list.indexOf(value) >= 0
 
 # Count the number of occurences of a character in a string.
 count: (string, letter) ->
