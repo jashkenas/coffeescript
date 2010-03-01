@@ -1,3 +1,13 @@
+# The CoffeeScript Lexer. Uses a series of token-matching regexes to attempt
+# matches against the beginning of the source code. When a match is found,
+# a token is produced, we consume the match, and start again. Tokens are in the
+# form:
+#
+#     [tag, value, line_number]
+#
+# Which is a format that can be fed directly into Jison.
+
+# Set up the Lexer for both Node.js and the browser, depending on where we are.
 if process?
   Rewriter: require('./rewriter').Rewriter
 else
@@ -19,7 +29,8 @@ JS_KEYWORDS: [
   "switch", "super", "extends", "class"
 ]
 
-# CoffeeScript-only keywords -- which we're more relaxed about allowing.
+# CoffeeScript-only keywords, which we're more relaxed about allowing. They can't
+# be used standalone, but you can reference them as an attached property.
 COFFEE_KEYWORDS: [
   "then", "unless",
   "yes", "no", "on", "off",
@@ -27,21 +38,24 @@ COFFEE_KEYWORDS: [
   "of", "by", "where", "when"
 ]
 
-# The list of keywords passed verbatim to the parser.
+# The combined list of keywords is the superset that gets passed verbatim to
+# the parser.
 KEYWORDS: JS_KEYWORDS.concat COFFEE_KEYWORDS
 
 # The list of keywords that are reserved by JavaScript, but not used, or are
-# used by CoffeeScript internally. Using these will throw an error.
+# used by CoffeeScript internally. We throw an error when these are encountered,
+# to avoid having a JavaScript error at runtime.
 RESERVED: [
   "case", "default", "do", "function", "var", "void", "with"
   "const", "let", "debugger", "enum", "export", "import", "native",
   "__extends", "__hasProp"
 ]
 
-# JavaScript keywords and reserved words together, excluding CoffeeScript ones.
+# The superset of both JavaScript keywords and reserved words, none of which may
+# be used as identifiers or properties.
 JS_FORBIDDEN: JS_KEYWORDS.concat RESERVED
 
-# Token matching regexes. (keep the IDENTIFIER regex in sync with AssignNode.)
+# Token matching regexes.
 IDENTIFIER : /^([a-zA-Z$_](\w|\$)*)/
 NUMBER     : /^(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
 STRING     : /^(""|''|"([\s\S]*?)([^\\]|\\\\)"|'([\s\S]*?)([^\\]|\\\\)')/
@@ -67,35 +81,44 @@ HEREDOC_INDENT  : /^[ \t]+/mg
 
 # Tokens which a regular expression will never immediately follow, but which
 # a division operator might.
+#
 # See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
+#
 # Our list is shorter, due to sans-parentheses method calls.
 NOT_REGEX: [
   'NUMBER', 'REGEX', '++', '--', 'FALSE', 'NULL', 'TRUE'
 ]
 
-# Tokens which could legitimately be invoked or indexed.
+# Tokens which could legitimately be invoked or indexed. A opening
+# parentheses or bracket following these tokens will be recorded as the start
+# of a function invocation or indexing operation.
 CALLABLE: ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING', '@']
 
 # Tokens that indicate an access -- keywords immediately following will be
 # treated as identifiers.
 ACCESSORS: ['PROPERTY_ACCESS', 'PROTOTYPE_ACCESS', 'SOAK_ACCESS', '@']
 
-# Tokens that, when immediately preceding a 'WHEN', indicate that its leading.
+# Tokens that, when immediately preceding a 'WHEN', indicate that the 'WHEN'
+# occurs at the start of a line. We disambiguate these from trailing whens to
+# avoid an ambiguity in the grammar.
 BEFORE_WHEN: ['INDENT', 'OUTDENT', 'TERMINATOR']
 
-# The lexer reads a stream of CoffeeScript and divvys it up into tagged
+# The Lexer Class
+# ---------------
+
+# The Lexer class reads a stream of CoffeeScript and divvys it up into tagged
 # tokens. A minor bit of the ambiguity in the grammar has been avoided by
 # pushing some extra smarts into the Lexer.
 exports.Lexer: class Lexer
 
-  # Scan by attempting to match tokens one character at a time. Slow and steady.
+  # Scan by attempting to match tokens one at a time. Slow and steady.
   tokenize: (code) ->
     @code    : code  # The remainder of the source code.
     @i       : 0     # Current character position we're parsing.
     @line    : 1     # The current line.
     @indent  : 0     # The current indent level.
     @indents : []    # The stack of all indent levels we are currently within.
-    @tokens  : []    # Collection of all parsed tokens in the form ['TOKEN_TYPE', value]
+    @tokens  : []    # Collection of all parsed tokens in the form ['TOKEN_TYPE', value, line]
     while @i < @code.length
       @chunk: @code.slice(@i)
       @extract_next_token()
@@ -111,7 +134,7 @@ exports.Lexer: class Lexer
     return if @string_token()
     return if @js_token()
     return if @regex_token()
-    return if @indent_token()
+    return if @line_token()
     return if @comment_token()
     return if @whitespace_token()
     return    @literal_token()
@@ -144,7 +167,7 @@ exports.Lexer: class Lexer
     return false unless string: @match STRING, 1
     escaped: string.replace STRING_NEWLINES, " \\\n"
     @token 'STRING', escaped
-    @line += @count string, "\n"
+    @line += count string, "\n"
     @i += string.length
     true
 
@@ -153,7 +176,7 @@ exports.Lexer: class Lexer
     return false unless match = @chunk.match(HEREDOC)
     doc: @sanitize_heredoc match[2] or match[4]
     @token 'STRING', '"' + doc + '"'
-    @line += @count match[1], "\n"
+    @line += count match[1], "\n"
     @i += match[1].length
     true
 
@@ -181,8 +204,8 @@ exports.Lexer: class Lexer
     @i += comment.length
     true
 
-  # Record tokens for indentation differing from the previous line.
-  indent_token: ->
+  # Matches newlines, indents, and outdents, and determines which is which.
+  line_token: ->
     return false unless indent: @match MULTI_DENT, 1
     @line += indent.match(MULTILINER).length
     @i    += indent.length
@@ -204,8 +227,8 @@ exports.Lexer: class Lexer
     @indent: size
     true
 
-  # Record an outdent token or tokens, if we're moving back inwards past
-  # multiple recorded indents.
+  # Record an outdent token or tokens, if we happen to be moving back inwards
+  # past multiple recorded indents.
   outdent_token: (move_out, no_newlines) ->
     while move_out > 0 and @indents.length
       last_indent: @indents.pop()
@@ -215,7 +238,7 @@ exports.Lexer: class Lexer
     true
 
   # Matches and consumes non-meaningful whitespace. Tag the previous token
-  # as being "spaced", because there are some cases where it matters.
+  # as being "spaced", because there are some cases where it makes a difference.
   whitespace_token: ->
     return false unless space: @match WHITESPACE, 1
     prev: @prev()
@@ -223,18 +246,18 @@ exports.Lexer: class Lexer
     @i += space.length
     true
 
-  # Multiple newlines get merged together.
-  # Use a trailing \ to escape newlines.
+  # Generate a newline token. Multiple newlines get merged together.
   newline_token: (newlines) ->
     @token 'TERMINATOR', "\n" unless @tag() is 'TERMINATOR'
     true
 
-  # Tokens to explicitly escape newlines are removed once their job is done.
+  # Use a `\` at a line-ending to suppress the newline.
+  # The slash is removed here once its job is done.
   suppress_newlines: (newlines) ->
     @tokens.pop() if @value() is "\\"
     true
 
-  # We treat all other single characters as a token. Eg.: ( ) , . !
+  # We treat all other single characters as a token. Eg.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Racc can assign
   # the proper order of operations.
   literal_token: ->
@@ -267,7 +290,7 @@ exports.Lexer: class Lexer
   # ------------------
 
   # As we consume a new IDENTIFIER, look at the previous token to determine
-  # if it's a special kind of access.
+  # if it's a special kind of accessor.
   name_access_type: ->
     @tag(1, 'PROTOTYPE_ACCESS') if @value() is '::'
     if @value() is '.' and not (@value(2) is '.')
@@ -284,52 +307,6 @@ exports.Lexer: class Lexer
     doc.replace(new RegExp("^" + indent, 'gm'), '')
        .replace(MULTILINER, "\\n")
        .replace(/"/g, '\\"')
-
-  # When you try to use a forbidden word in JavaScript as an identifier.
-  identifier_error: (word) ->
-    throw new Error 'SyntaxError: Reserved word "' + word + '" on line ' + @line
-
-  # When you try to assign to a reserved word in JavaScript, like "function".
-  assignment_error: ->
-    throw new Error 'SyntaxError: Reserved word "' + @value() + '" on line ' + @line + ' can\'t be assigned'
-
-  # Helpers
-  # -------
-
-  # Add a token to the results, taking note of the line number.
-  token: (tag, value) ->
-    @tokens.push([tag, value, @line])
-
-  # Look at a tag in the current token stream.
-  tag: (index, tag) ->
-    return unless tok: @prev(index)
-    return tok[0]: tag if tag?
-    tok[0]
-
-  # Look at a value in the current token stream.
-  value: (index, val) ->
-    return unless tok: @prev(index)
-    return tok[1]: val if val?
-    tok[1]
-
-  # Look at a previous token.
-  prev: (index) ->
-    @tokens[@tokens.length - (index or 1)]
-
-  # Count the occurences of a character in a string.
-  count: (string, letter) ->
-    num: 0
-    pos: string.indexOf(letter)
-    while pos isnt -1
-      num += 1
-      pos: string.indexOf(letter, pos + 1)
-    num
-
-  # Attempt to match a string against the current chunk, returning the indexed
-  # match.
-  match: (regex, index) ->
-    return false unless m: @chunk.match(regex)
-    if m then m[index] else false
 
   # A source of ambiguity in our grammar was parameter lists in function
   # definitions (as opposed to argument lists in function calls). Tag
@@ -348,12 +325,60 @@ exports.Lexer: class Lexer
         when '('          then return tok[0]: 'PARAM_START'
     true
 
-  # Close up all remaining open blocks. IF the first token is an indent,
-  # axe it.
+  # Close up all remaining open blocks at the end of the file.
   close_indentation: ->
     @outdent_token(@indent)
 
-# Helper functions:
+  # Error for when you try to use a forbidden word in JavaScript as
+  # an identifier.
+  identifier_error: (word) ->
+    throw new Error 'SyntaxError: Reserved word "' + word + '" on line ' + @line
+
+  # Error for when you try to assign to a reserved word in JavaScript,
+  # like "function" or "default".
+  assignment_error: ->
+    throw new Error 'SyntaxError: Reserved word "' + @value() + '" on line ' + @line + ' can\'t be assigned'
+
+  # Helpers
+  # -------
+
+  # Add a token to the results, taking note of the line number.
+  token: (tag, value) ->
+    @tokens.push([tag, value, @line])
+
+  # Peek at a tag in the current token stream.
+  tag: (index, tag) ->
+    return unless tok: @prev(index)
+    return tok[0]: tag if tag?
+    tok[0]
+
+  # Peek at a value in the current token stream.
+  value: (index, val) ->
+    return unless tok: @prev(index)
+    return tok[1]: val if val?
+    tok[1]
+
+  # Peek at a previous token, entire.
+  prev: (index) ->
+    @tokens[@tokens.length - (index or 1)]
+
+  # Attempt to match a string against the current chunk, returning the indexed
+  # match if successful, and `false` otherwise.
+  match: (regex, index) ->
+    return false unless m: @chunk.match(regex)
+    if m then m[index] else false
+
+# Utility Functions
+# -----------------
 
 # Does a list include a value?
 include: (list, value) -> list.indexOf(value) >= 0
+
+# Count the number of occurences of a character in a string.
+count: (string, letter) ->
+  num: 0
+  pos: string.indexOf(letter)
+  while pos isnt -1
+    num += 1
+    pos: string.indexOf(letter, pos + 1)
+  num
