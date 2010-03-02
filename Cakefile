@@ -46,7 +46,8 @@ task 'build:underscore', 'rebuild the Underscore.coffee documentation page', ->
 
 
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
-  exec 'rake browser'
+  exec 'rake browser', (err) ->
+    throw err if err
 
 
 task 'doc', 'watch and continually rebuild the documentation', ->
