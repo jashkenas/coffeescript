@@ -115,7 +115,7 @@ exports.Lexer: class Lexer
   tokenize: (code) ->
     @code    : code  # The remainder of the source code.
     @i       : 0     # Current character position we're parsing.
-    @line    : 1     # The current line.
+    @line    : 0     # The current line.
     @indent  : 0     # The current indent level.
     @indents : []    # The stack of all indent levels we are currently within.
     @tokens  : []    # Collection of all parsed tokens in the form ['TOKEN_TYPE', value, line]

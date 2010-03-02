@@ -180,7 +180,6 @@ exports.Rewriter: class Rewriter
         pre: @tokens[idx - 1]
         if (not tok or
             (SINGLE_CLOSERS.indexOf(tok[0]) >= 0 and tok[1] isnt ';') or
-            (pre[0] is ',' and tok[0] is 'PARAM_START') or
             (tok[0] is ')' && parens is 0)) and
             not (starter is 'ELSE' and tok[0] is 'ELSE')
           insertion: if pre[0] is "," then idx - 1 else idx

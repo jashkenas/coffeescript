@@ -1,4 +1,4 @@
-a: [(x) -> x, (x) -> x * x]
+a: [((x) -> x), ((x) -> x * x)]
 
 ok a.length is 2
 

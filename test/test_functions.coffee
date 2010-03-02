@@ -14,6 +14,11 @@ ok y.x.name is 'x'
 () ->
 
 
+# Multiple nested function declarations mixed with implicit calls should not
+# cause a syntax error.
+(one) -> (two) -> three four, (five) -> six seven, eight, (nine) ->
+
+
 obj: {
   name: "Fred"
 
@@ -70,7 +75,7 @@ ok result is 10
 
 # And even with strange things like this:
 
-funcs:  [(x) -> x, (x) -> x * x]
+funcs:  [((x) -> x), ((x) -> x * x)]
 result: funcs[1] 5
 
 ok result is 25
