@@ -134,8 +134,8 @@ exports.Lexer: class Lexer
     return if @string_token()
     return if @js_token()
     return if @regex_token()
-    return if @line_token()
     return if @comment_token()
+    return if @line_token()
     return if @whitespace_token()
     return    @literal_token()
 
@@ -199,7 +199,8 @@ exports.Lexer: class Lexer
   comment_token: ->
     return false unless comment: @match COMMENT, 1
     @line += (comment.match(MULTILINER) or []).length
-    @token 'COMMENT', comment.replace(COMMENT_CLEANER, '').split(MULTILINER)
+    lines: comment.replace(COMMENT_CLEANER, '').split(MULTILINER)
+    @token 'COMMENT', compact lines
     @token 'TERMINATOR', "\n"
     @i += comment.length
     true
@@ -374,6 +375,9 @@ exports.Lexer: class Lexer
 # Does a list include a value?
 include: (list, value) ->
   list.indexOf(value) >= 0
+
+# Trim out all falsy values from an array.
+compact: (array) -> item for item in array when item
 
 # Count the number of occurences of a character in a string.
 count: (string, letter) ->

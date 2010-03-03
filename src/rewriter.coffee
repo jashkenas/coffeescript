@@ -72,18 +72,10 @@ exports.Rewriter: class Rewriter
   adjust_comments: ->
     @scan_tokens (prev, token, post, i) =>
       return 1 unless token[0] is 'COMMENT'
-      before: @tokens[i - 2]
       after:  @tokens[i + 2]
-      if before and after and
-          ((before[0] is 'INDENT' and after[0] is 'OUTDENT') or
-          (before[0] is 'OUTDENT' and after[0] is 'INDENT')) and
-          before[1] is after[1]
+      if after and after[0] is 'INDENT'
         @tokens.splice(i + 2, 1)
-        @tokens.splice(i - 2, 1)
-        return 0
-      else if prev and prev[0] is 'TERMINATOR' and after and after[0] is 'INDENT'
-        @tokens.splice(i + 2, 1)
-        @tokens[i - 1]: after
+        @tokens.splice(i, 0, after)
         return 1
       else if prev and prev[0] isnt 'TERMINATOR' and prev[0] isnt 'INDENT' and prev[0] isnt 'OUTDENT'
         @tokens.splice(i, 0, ['TERMINATOR', "\n", prev[2]])

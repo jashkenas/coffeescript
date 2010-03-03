@@ -23,3 +23,13 @@ ok func()
 func
 func
 # Line3
+
+obj: {
+# comment
+  # comment
+    # comment
+  one: 1
+# comment
+  two: 2
+    # comment
+}
