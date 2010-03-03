@@ -100,7 +100,7 @@ compile_stdio: ->
 # files are updated.
 watch_scripts: ->
   watch: (source) ->
-    process.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
+    fs.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
       return if curr.mtime.getTime() is prev.mtime.getTime()
       fs.readFile source, (err, code) -> compile_script(source, code)
   watch(source) for source in sources
