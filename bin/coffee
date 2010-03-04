@@ -3,13 +3,7 @@
 process.mixin(require('sys'));
 var path = require('path');
 var fs = require('fs');
-var lib = null;
-
-if (fs.lstatSync(__filename).isSymbolicLink()) {
-  lib = path.join(path.dirname(fs.readlinkSync(__filename)), '../lib');
-} else {
-  lib = path.join(__dirname, '../lib');
-}
+var lib = path.join(path.dirname(fs.realpathSync(__filename)), '../lib');
 
 require.paths.unshift(lib);
 require('command_line').run();
