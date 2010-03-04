@@ -97,7 +97,7 @@ alert reverse '!tpircseeffoC'</textarea></div>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.3">0.5.3</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.4">0.5.4</a>
     </p>
 
     <h2>
@@ -250,10 +250,12 @@ cubed_list = (function() {
 
     <p>
       To install, first make sure you have a working version of
-      <a href="http://nodejs.org/">Node.js</a> greater than version 0.1.30. Then clone the CoffeeScript
+      <a href="http://nodejs.org/">Node.js</a> greater than version 0.1.30 (Node
+      moves quickly, using the latest master is your best bet). 
+      Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.3">0.5.3</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.4">0.5.4</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -1675,6 +1677,13 @@ task(<span class="String"><span class="String">'</span>test<span class="String">
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.5.4</b>
+      Bugfix that corrects the Node.js global constants <tt>__filename</tt> and
+      <tt>__dirname</tt>. Tweaks for more flexible parsing of nested function
+      literals and improperly-indented comments. Updates for the latest Node.js API.
+    </p>
     
     <p>
       <b class="header" style="margin-top: 20px;">0.5.3</b>
