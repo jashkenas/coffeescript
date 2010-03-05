@@ -166,7 +166,7 @@ exports.Lexer: class Lexer
   string_token: ->
     return false unless string: @match STRING, 1
     escaped: string.replace STRING_NEWLINES, " \\\n"
-    @token 'STRING', escaped
+    @interpolate_string escaped
     @line += count string, "\n"
     @i += string.length
     true
@@ -339,6 +339,36 @@ exports.Lexer: class Lexer
   # like "function" or "default".
   assignment_error: ->
     throw new Error 'SyntaxError: Reserved word "' + @value() + '" on line ' + @line + ' can\'t be assigned'
+
+  # Replace variables and block calls inside double-quoted strings.
+  interpolate_string: (escaped) ->
+    if escaped.length < 3 or escaped.indexOf('"') isnt 0
+      @token 'STRING', escaped
+    else
+      tokens: []
+      quote: escaped.substring(0, 1)
+      escaped: escaped.substring(1, escaped.length - 1)
+      while escaped.length
+        identifier_match: escaped.match /(^|[\s\S]*?(?:[\\]|\\\\)?)(\$([a-zA-Z_]\w*))/
+        if identifier_match
+          [group, before, identifier]: identifier_match
+          if before.substring(before.length - 1) is '\\'
+            tokens.push ['STRING', quote + before.substring(0, before.length - 1) + identifier + quote] if before.length
+          else
+            tokens.push ['STRING', quote + before + quote] if before.length
+            tokens.push ['IDENTIFIER', identifier.substring(1)]
+          escaped: escaped.substring(group.length)
+        else
+          tokens.push ['STRING', quote + escaped + quote]
+          escaped: ''
+      if tokens.length > 1
+        for i in [tokens.length - 1..1]
+          if tokens[i][0] is 'STRING' and tokens[i - 1][0] is 'STRING'
+            tokens.splice i - 1, 2, ['STRING', quote + tokens[i - 1][1].substring(1, tokens[i - 1][1].length - 1) +
+                                                       tokens[i][1].substring(1, tokens[i][1].length - 1) + quote]
+      for each, i in tokens
+        @token each[0], each[1]
+        @token '+', '+' if i < tokens.length - 1
 
   # Helpers
   # -------
