@@ -51,7 +51,7 @@ exports.run: ->
 
 # The "--help" usage message.
 usage: ->
-  puts '\n' + option_parser.help() + '\n'
+  puts option_parser.help()
   process.exit 0
 
 # The "--version" message.

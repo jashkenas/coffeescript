@@ -34,7 +34,7 @@ exports.OptionParser: class OptionParser
       spaces:   if spaces > 0 then (' ' for i in [0..spaces]).join('') else ''
       let_part: if rule.letter then rule.letter + ', ' else '    '
       lines.push '  ' + let_part + rule.flag + spaces + rule.description
-    lines.join('\n')
+    '\n' + lines.join('\n') + '\n'
 
 # Regex matchers for option flags.
 LONG_FLAG:  /^(--\w[\w\-]+)/
