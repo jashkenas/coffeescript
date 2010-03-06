@@ -9,6 +9,7 @@ ok "[${hello}${world}]" is '[HelloWorld]'
 ok "$hello$$world" is 'Hello$World'
 ok "${hello}$${world}" is 'Hello$World'
 ok "Hello ${ 1 + 2 } World" is 'Hello 3 World'
+ok "$hello ${ 1 + 2 } $world" is "Hello 3 World"
 
 [s, t, r, i, n, g]: ['s', 't', 'r', 'i', 'n', 'g']
 ok "$s$t$r$i$n$g" is 'string'
