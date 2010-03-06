@@ -112,7 +112,7 @@ BEFORE_WHEN: ['INDENT', 'OUTDENT', 'TERMINATOR']
 exports.Lexer: class Lexer
 
   # Scan by attempting to match tokens one at a time. Slow and steady.
-  tokenize: (code) ->
+  tokenize: (code, rewrite) ->
     @code    : code  # The remainder of the source code.
     @i       : 0     # Current character position we're parsing.
     @line    : 0     # The current line.
@@ -123,7 +123,8 @@ exports.Lexer: class Lexer
       @chunk: @code.slice(@i)
       @extract_next_token()
     @close_indentation()
-    (new Rewriter()).rewrite @tokens
+    return (new Rewriter()).rewrite @tokens if (rewrite ? true)
+    return @tokens
 
   # At every position, run through this list of attempted matches,
   # short-circuiting if any of them succeed.
@@ -340,34 +341,51 @@ exports.Lexer: class Lexer
   assignment_error: ->
     throw new Error 'SyntaxError: Reserved word "' + @value() + '" on line ' + @line + ' can\'t be assigned'
 
-  # Replace variables and block calls inside double-quoted strings.
+  # Replace variables and expressions inside double-quoted strings.
   interpolate_string: (escaped) ->
     if escaped.length < 3 or escaped.indexOf('"') isnt 0
       @token 'STRING', escaped
     else
+      lexer: null
       tokens: []
       quote: escaped.substring(0, 1)
       escaped: escaped.substring(1, escaped.length - 1)
       while escaped.length
-        identifier_match: escaped.match /(^|[\s\S]*?(?:[\\]|\\\\)?)(\$([a-zA-Z_]\w*))/
-        if identifier_match
-          [group, before, identifier]: identifier_match
+        expression_match: escaped.match /(^|[\s\S]*?(?:[\\]|\\\\)?)(\${[\s\S]*?(?:[^\\]|\\\\)})/
+        if expression_match
+          [group, before, expression]: expression_match
           if before.substring(before.length - 1) is '\\'
-            tokens.push ['STRING', quote + before.substring(0, before.length - 1) + identifier + quote] if before.length
+            tokens.push ['STRING', quote + before.substring(0, before.length - 1) + expression + quote] if before.length
           else
             tokens.push ['STRING', quote + before + quote] if before.length
-            tokens.push ['IDENTIFIER', identifier.substring(1)]
+            lexer: new Lexer() if not lexer?
+            nested: lexer.tokenize '(' + expression.substring(2, expression.length - 1) + ')', rewrite: no
+            nested.pop()
+            tokens.push ['TOKENS', nested]
           escaped: escaped.substring(group.length)
         else
-          tokens.push ['STRING', quote + escaped + quote]
-          escaped: ''
+          identifier_match: escaped.match /(^|[\s\S]*?(?:[\\]|\\\\)?)(\$([a-zA-Z_]\w*))/
+          if identifier_match
+            [group, before, identifier]: identifier_match
+            if before.substring(before.length - 1) is '\\'
+              tokens.push ['STRING', quote + before.substring(0, before.length - 1) + identifier + quote] if before.length
+            else
+              tokens.push ['STRING', quote + before + quote] if before.length
+              tokens.push ['IDENTIFIER', identifier.substring(1)]
+            escaped: escaped.substring(group.length)
+          else
+            tokens.push ['STRING', quote + escaped + quote]
+            escaped: ''
       if tokens.length > 1
         for i in [tokens.length - 1..1]
           if tokens[i][0] is 'STRING' and tokens[i - 1][0] is 'STRING'
             tokens.splice i - 1, 2, ['STRING', quote + tokens[i - 1][1].substring(1, tokens[i - 1][1].length - 1) +
                                                        tokens[i][1].substring(1, tokens[i][1].length - 1) + quote]
       for each, i in tokens
-        @token each[0], each[1]
+        if each[0] is 'TOKENS'
+          @token nested[0], nested[1] for nested in each[1]
+        else
+          @token each[0], each[1]
         @token '+', '+' if i < tokens.length - 1
 
   # Helpers
