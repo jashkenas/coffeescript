@@ -177,7 +177,7 @@ exports.Lexer: class Lexer
   heredoc_token: ->
     return false unless match = @chunk.match(HEREDOC)
     doc: @sanitize_heredoc match[2] or match[4]
-    @token 'STRING', '"' + doc + '"'
+    @token 'STRING', "\"$doc\""
     @line += count match[1], "\n"
     @i += match[1].length
     true
@@ -307,7 +307,7 @@ exports.Lexer: class Lexer
   # indentation on the left-hand side.
   sanitize_heredoc: (doc) ->
     indent: (doc.match(HEREDOC_INDENT) or ['']).sort()[0]
-    doc.replace(new RegExp("^" + indent, 'gm'), '')
+    doc.replace(new RegExp("^" +indent, 'gm'), '')
        .replace(MULTILINER, "\\n")
        .replace(/"/g, '\\"')
 
@@ -335,12 +335,12 @@ exports.Lexer: class Lexer
   # Error for when you try to use a forbidden word in JavaScript as
   # an identifier.
   identifier_error: (word) ->
-    throw new Error 'SyntaxError: Reserved word "' + word + '" on line ' + @line
+    throw new Error "SyntaxError: Reserved word \"$word\" on line $@line"
 
   # Error for when you try to assign to a reserved word in JavaScript,
   # like "function" or "default".
   assignment_error: ->
-    throw new Error 'SyntaxError: Reserved word "' + @value() + '" on line ' + @line + ' can\'t be assigned'
+    throw new Error "SyntaxError: Reserved word \"${@value()}\" on line $@line can't be assigned"
 
   # Expand variables and expressions inside double-quoted strings using
   # [ECMA Harmony's interpolation syntax](http://wiki.ecmascript.org/doku.php?id=strawman:string_interpolation).
@@ -361,26 +361,28 @@ exports.Lexer: class Lexer
         if match
           [group, before, interp]: match
           if before.substring(before.length - 1) is '\\'
-            tokens.push ['STRING', quote + before.substring(0, before.length - 1) + '$' + interp + quote] if before.length
+            prev: before.substring(0, before.length - 1)
+            tokens.push ['STRING', "$quote$prev$$interp$quote"] if before.length
           else
-            tokens.push ['STRING', quote + before + quote] if before.length
+            tokens.push ['STRING', "$quote$before$quote"] if before.length
             if interp.substring(0, 1) is '{'
-              nested: lexer.tokenize '(' + interp.substring(1, interp.length - 1) + ')', {rewrite: no}
+              inner: interp.substring(1, interp.length - 1)
+              nested: lexer.tokenize "($inner)", {rewrite: no}
               nested.pop()
               tokens.push ['TOKENS', nested]
             else
-              interp: 'this.' + interp.substring(1) if interp.substring(0, 1) is '@'
+              interp: "this.${ interp.substring(1) }" if interp.substring(0, 1) is '@'
               tokens.push ['IDENTIFIER', interp]
           str: str.substring(group.length)
         else
-          tokens.push ['STRING', quote + str + quote]
+          tokens.push ['STRING', "$quote$str$quote"]
           str: ''
       if tokens.length > 1
         for i in [tokens.length - 1..1]
           [prev, tok]: [tokens[i - 1], tokens[i]]
           if tok[0] is 'STRING' and prev[0] is 'STRING'
-            contents: quote + prev[1].substring(1, prev[1].length - 1) + tok[1].substring(1, tok[1].length - 1) + quote
-            tokens.splice i - 1, 2, ['STRING', contents]
+            [prev, tok]: [prev[1].substring(1, prev[1].length - 1), tok[1].substring(1, tok[1].length - 1)]
+            tokens.splice i - 1, 2, ['STRING', "$quote$prev$tok$quote"]
       for each, i in tokens
         if each[0] is 'TOKENS'
           @token nested[0], nested[1] for nested in each[1]
