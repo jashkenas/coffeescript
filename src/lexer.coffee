@@ -60,7 +60,6 @@ IDENTIFIER    : /^([a-zA-Z$_](\w|\$)*)/
 NUMBER        : /^(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
 HEREDOC       : /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
 INTERPOLATION : /(^|[\s\S]*?(?:[\\]|\\\\)?)\$([a-zA-Z_@]\w*|{[\s\S]*?(?:[^\\]|\\\\)})/
-JS            : /^(``|`([\s\S]*?)([^\\]|\\\\)`)/
 OPERATOR      : /^([+\*&|\/\-%=<>:!?]+)/
 WHITESPACE    : /^([ \t]+)/
 COMMENT       : /^(((\n?[ \t]*)?#[^\n]*)+)/
@@ -113,18 +112,18 @@ exports.Lexer: class Lexer
 
   # Scan by attempting to match tokens one at a time. Slow and steady.
   tokenize: (code, options) ->
-    options  ||= {}
-    @code    : code  # The remainder of the source code.
-    @i       : 0     # Current character position we're parsing.
-    @line    : 0     # The current line.
-    @indent  : 0     # The current indent level.
-    @indents : []    # The stack of all indent levels we are currently within.
-    @tokens  : []    # Collection of all parsed tokens in the form ['TOKEN_TYPE', value, line]
+    o        : options or {}
+    @code    : code         # The remainder of the source code.
+    @i       : 0            # Current character position we're parsing.
+    @line    : o.line or 0  # The current line.
+    @indent  : 0            # The current indent level.
+    @indents : []           # The stack of all indent levels we are currently within.
+    @tokens  : []           # Collection of all parsed tokens in the form ['TOKEN_TYPE', value, line]
     while @i < @code.length
       @chunk: @code.slice(@i)
       @extract_next_token()
     @close_indentation()
-    return @tokens if options.rewrite is no
+    return @tokens if o.rewrite is no
     (new Rewriter()).rewrite @tokens
 
   # At every position, run through this list of attempted matches,
@@ -166,8 +165,8 @@ exports.Lexer: class Lexer
 
   # Matches strings, including multi-line strings.
   string_token: ->
-    string: @balanced_group ['"'], ['${', '}']
-    string: @balanced_group ["'"] if string is false
+    string: @balanced_token ['"', '"'], ['${', '}']
+    string: @balanced_token ["'", "'"] if string is false
     return false unless string
     @interpolate_string string.replace STRING_NEWLINES, " \\\n"
     @line += count string, "\n"
@@ -185,7 +184,7 @@ exports.Lexer: class Lexer
 
   # Matches interpolated JavaScript.
   js_token: ->
-    return false unless script: @match JS, 1
+    return false unless script: @balanced_token ['`', '`']
     @token 'JS', script.replace(JS_CLEANER, '')
     @i += script.length
     true
@@ -198,16 +197,16 @@ exports.Lexer: class Lexer
     @i += regex.length
     true
 
-  # Matches a balanced group such as a single or double-quoted string.
-  balanced_group: (delimited...) ->
-    (each[1]: each[0]) for each in delimited when not each[1]?
-    (each[2]: '\\') for each in delimited when not each[2]?
+  # Matches a balanced group such as a single or double-quoted string. Pass in
+  # a series of delimiters, all of which must be balanced correctly within the
+  # token's contents.
+  balanced_token: (delimited...) ->
     levels: []
     i: 0
     while i < @chunk.length
       for each, type in delimited
-        if each[2] isnt false and @chunk.substring(i, i + each[2].length) is each[2]
-          i += each[2].length
+        if levels.length and @chunk.substring(i, i + 1) is '\\'
+          i += 1
           break
         else if levels.length and @chunk.substring(i, i + each[1].length) is each[1] and levels[levels.length - 1] is type
           levels.pop()
@@ -394,7 +393,7 @@ exports.Lexer: class Lexer
             tokens.push ['STRING', "$quote$before$quote"] if before.length
             if interp.substring(0, 1) is '{'
               inner: interp.substring(1, interp.length - 1)
-              nested: lexer.tokenize "($inner)", {rewrite: no}
+              nested: lexer.tokenize "($inner)", {rewrite: no, line: @line}
               nested.pop()
               tokens.push ['TOKENS', nested]
             else
