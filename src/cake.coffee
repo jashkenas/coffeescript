@@ -34,7 +34,7 @@ process.mixin {
 # prints them out, with no arguments.
 exports.run: ->
   path.exists 'Cakefile', (exists) ->
-    throw new Error('Cakefile not found in ' + process.cwd()) unless exists
+    throw new Error("Cakefile not found in ${process.cwd()}") unless exists
     args: process.ARGV[2...process.ARGV.length]
     eval coffee.compile fs.readFileSync 'Cakefile'
     oparse: new optparse.OptionParser switches
@@ -48,10 +48,10 @@ print_tasks: ->
   for name, task of tasks
     spaces: 20 - name.length
     spaces: if spaces > 0 then (' ' for i in [0..spaces]).join('') else ''
-    puts "cake " + name + spaces + ' # ' + task.description
-  puts '\n' + oparse.help() + '\n' if switches.length
+    puts "cake $name$spaces # ${task.description}"
+  puts oparse.help() if switches.length
 
 # Print an error and exit when attempting to all an undefined task.
 no_such_task: (task) ->
-  process.stdio.writeError('No such task: "' + task + '"\n')
-  process.exit(1)
+  process.stdio.writeError "No such task: \"$task\"\n"
+  process.exit 1

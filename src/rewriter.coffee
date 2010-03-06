@@ -142,7 +142,7 @@ exports.Rewriter: class Rewriter
       if IMPLICIT_END.indexOf(tag) >= 0 or !post?
         return 1 if tag is 'INDENT' and prev and IMPLICIT_BLOCK.indexOf(prev[0]) >= 0
         if stack[stack.length - 1] > 0 or tag is 'INDENT'
-          idx: if tag is 'OUTDENT' then i + 1 else i
+          idx: if tag is 'OUTDENT' then i +1 else i
           stack_pointer: if tag is 'INDENT' then 2 else 1
           for tmp in [0...stack[stack.length - stack_pointer]]
             @tokens.splice(idx, 0, ['CALL_END', ')', token[2]])
@@ -193,10 +193,10 @@ exports.Rewriter: class Rewriter
         levels[open] ||= 0
         levels[open] += 1 if token[0] is open
         levels[open] -= 1 if token[0] is close
-        throw new Error("too many " + token[1]) if levels[open] < 0
+        throw new Error("too many ${token[1]}") if levels[open] < 0
       return 1
     unclosed: key for key, value of levels when value > 0
-    throw new Error("unclosed " + unclosed[0]) if unclosed.length
+    throw new Error("unclosed ${unclosed[0]}") if unclosed.length
 
   # We'd like to support syntax like this:
   #    el.click((event) ->

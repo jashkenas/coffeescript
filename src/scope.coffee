@@ -65,7 +65,7 @@ exports.Scope: class Scope
   # Return the list of variables that are supposed to be assigned at the top
   # of scope.
   assigned_variables: ->
-    key + ' = ' + val.value for key, val of @variables when val.assigned
+    "$key = ${val.value}" for key, val of @variables when val.assigned
 
   # Compile the string representing all of the declared variables for this scope.
   compiled_declarations: ->

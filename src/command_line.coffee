@@ -56,7 +56,7 @@ usage: ->
 
 # The "--version" message.
 version: ->
-  puts "CoffeeScript version " + CoffeeScript.VERSION
+  puts "CoffeeScript version ${CoffeeScript.VERSION}"
   process.exit 0
 
 # Compiles the source CoffeeScript, returning the desired JavaScript, tokens,
@@ -64,7 +64,7 @@ version: ->
 compile_scripts: ->
   compile: (source) ->
     path.exists source, (exists) ->
-      throw new Error 'File not found: ' + source unless exists
+      throw new Error "File not found: $source" unless exists
       fs.readFile source, (err, code) -> compile_script(source, code)
   compile(source) for source in sources
 
@@ -125,7 +125,8 @@ lint: (js) ->
 # Pretty-print a token stream.
 print_tokens: (tokens) ->
   strings: for token in tokens
-    '[' + token[0] + ' ' + token[1].toString().replace(/\n/, '\\n') + ']'
+    [tag, value]: [token[0], token[1].toString().replace(/\n/, '\\n')]
+    "[$tag $value]"
   puts strings.join(' ')
 
 # Use OptionParser for all the options.

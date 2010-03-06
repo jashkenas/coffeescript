@@ -8,8 +8,8 @@ unwrap: /function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 # Quickie DSL for Jison access.
 o: (pattern_string, func, options) ->
   if func
-    func: if match: (func + "").match(unwrap) then match[1] else '(' + func + '())'
-    [pattern_string, '$$ = ' + func + ';', options]
+    func: if match: (func + '').match(unwrap) then match[1] else "($func())"
+    [pattern_string, "$$ = $func;", options]
   else
     [pattern_string, '$$ = $1;', options]
 
@@ -464,7 +464,7 @@ for name, non_terminal of grammar
       if !grammar[part]
         tokens.push(part)
     if name == "Root"
-      option[1] = "return " + option[1]
+      option[1] = "return ${option[1]}"
     option
 tokens: tokens.join(" ")
 exports.parser: new Parser({tokens: tokens, bnf: bnf, operators: operators.reverse(), startSymbol: 'Root'}, {debug: false})

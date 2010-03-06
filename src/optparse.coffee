@@ -21,20 +21,20 @@ exports.OptionParser: class OptionParser
           options[rule.name]: if rule.has_argument then args.shift() else true
           matched_rule: yes
           break
-      throw new Error "unrecognized option: " + arg if is_option and not matched_rule
+      throw new Error "unrecognized option: $arg" if is_option and not matched_rule
       options.arguments.push arg unless is_option
     options
 
   # Return the help text for this OptionParser, for --help and such.
   help: ->
     lines: ['Available options:']
-    lines.unshift @banner + '\n' if @banner
+    lines.unshift "$@banner\n" if @banner
     for rule in @rules
       spaces:   15 - rule.flag.length
       spaces:   if spaces > 0 then (' ' for i in [0..spaces]).join('') else ''
       let_part: if rule.letter then rule.letter + ', ' else '    '
-      lines.push '  ' + let_part + rule.flag + spaces + rule.description
-    '\n' + lines.join('\n') + '\n'
+      lines.push "  $let_part${rule.flag}$spaces${rule.description}"
+    "\n${ lines.join('\n') }\n"
 
 # Regex matchers for option flags.
 LONG_FLAG:  /^(--\w[\w\-]+)/
