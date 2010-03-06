@@ -7,7 +7,7 @@ ok "${hello} ${world}!" is 'Hello World!'
 ok "[$hello$world]" is '[HelloWorld]'
 ok "[${hello}${world}]" is '[HelloWorld]'
 ok "$hello$$world" is 'Hello$World'
-# ok "${hello}$${world}" is 'Hello$World'
+ok "${hello}$${world}" is 'Hello$World'
 
 [s, t, r, i, n, g]: ['s', 't', 'r', 'i', 'n', 'g']
 ok "$s$t$r$i$n$g" is 'string'
