@@ -48,3 +48,8 @@ obj: {
   hi: -> "Hello $@name."
 }
 ok obj.hi() is "Hello Joe."
+
+ok "I can has ${"cheeze"}" is 'I can has cheeze'
+ok 'I can has ${"cheeze"}' is 'I can has ${"cheeze"}'
+
+ok "Where is ${obj["name"] + '?'}" is 'Where is Joe?'

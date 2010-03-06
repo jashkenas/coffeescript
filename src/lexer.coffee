@@ -58,7 +58,6 @@ JS_FORBIDDEN: JS_KEYWORDS.concat RESERVED
 # Token matching regexes.
 IDENTIFIER    : /^([a-zA-Z$_](\w|\$)*)/
 NUMBER        : /^(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
-STRING        : /^(""|''|"([\s\S]*?)([^\\]|\\\\)"|'([\s\S]*?)([^\\]|\\\\)')/
 HEREDOC       : /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
 INTERPOLATION : /(^|[\s\S]*?(?:[\\]|\\\\)?)\$([a-zA-Z_@]\w*|{[\s\S]*?(?:[^\\]|\\\\)})/
 JS            : /^(``|`([\s\S]*?)([^\\]|\\\\)`)/
@@ -167,7 +166,9 @@ exports.Lexer: class Lexer
 
   # Matches strings, including multi-line strings.
   string_token: ->
-    return false unless string: @match STRING, 1
+    string: @balanced_group ['"'], ['${', '}']
+    string: @balanced_group ["'"] if string is false
+    return false unless string
     @interpolate_string string.replace STRING_NEWLINES, " \\\n"
     @line += count string, "\n"
     @i += string.length
@@ -196,6 +197,33 @@ exports.Lexer: class Lexer
     @token 'REGEX', regex
     @i += regex.length
     true
+
+  # Matches a balanced group such as a single or double-quoted string.
+  balanced_group: (delimited...) ->
+    (each[1]: each[0]) for each in delimited when not each[1]?
+    escaped: '\\'
+    next: (length) => @chunk.substring i, i + length
+    levels: []
+    i: 0
+    while i < @chunk.length
+      if next(1) is escaped
+        i += 1
+      else
+        for each, type in delimited
+          if levels.length and next(each[1].length) is each[1] and levels[levels.length - 1] is type
+            levels.pop()
+            i += each[1].length - 1
+            i += 1 unless levels.length
+            break
+          else if next(each[0].length) is each[0]
+            levels.push(type)
+            i += each[0].length - 1
+            break
+      break unless levels.length
+      i += 1
+    throw new Error "SyntaxError: Unterminated ${delimited[levels.pop()][0]} starting on line $@line" if levels.length
+    return false if i is 0
+    return @chunk.substring(0, i)
 
   # Matches and conumes comments.
   comment_token: ->
