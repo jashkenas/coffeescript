@@ -367,7 +367,7 @@ exports.Lexer: class Lexer
             tokens.push ['STRING', quote + before.substring(0, before.length - 1) + expression + quote] if before.length
           else
             tokens.push ['STRING', quote + before + quote] if before.length
-            nested: lexer.tokenize expression.substring(2, expression.length - 1), {rewrite: no}
+            nested: lexer.tokenize '(' + expression.substring(2, expression.length - 1) + ')', {rewrite: no}
             nested.pop()
             tokens.push ['TOKENS', nested]
           str: str.substring(group.length)
