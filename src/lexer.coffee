@@ -220,7 +220,7 @@ exports.Lexer: class Lexer
           break
       break unless levels.length
       i += 1
-    throw new Error "SyntaxError: Unterminated ${delimited[levels.pop()][0]} starting on line $@line" if levels.length
+    throw new Error "SyntaxError: Unterminated ${levels.pop()[0]} starting on line ${@line + 1}" if levels.length
     return false if i is 0
     return @chunk.substring(0, i)
 
@@ -362,12 +362,12 @@ exports.Lexer: class Lexer
   # Error for when you try to use a forbidden word in JavaScript as
   # an identifier.
   identifier_error: (word) ->
-    throw new Error "SyntaxError: Reserved word \"$word\" on line $@line"
+    throw new Error "SyntaxError: Reserved word \"$word\" on line ${@line + 1}"
 
   # Error for when you try to assign to a reserved word in JavaScript,
   # like "function" or "default".
   assignment_error: ->
-    throw new Error "SyntaxError: Reserved word \"${@value()}\" on line $@line can't be assigned"
+    throw new Error "SyntaxError: Reserved word \"${@value()}\" on line ${@line + 1} can't be assigned"
 
   # Expand variables and expressions inside double-quoted strings using
   # [ECMA Harmony's interpolation syntax](http://wiki.ecmascript.org/doku.php?id=strawman:string_interpolation).
