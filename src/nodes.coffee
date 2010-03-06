@@ -336,18 +336,16 @@ exports.CallNode: class CallNode extends BaseNode
     return @compile_splat(o) if @args[@args.length - 1] instanceof SplatNode
     args: (arg.compile(o) for arg in @args).join(', ')
     return @compile_super(args, o) if @variable is 'super'
-    # "$@prefix${@variable.compile(o)}($args)"
-    @prefix + @variable.compile(o) + '(' + args + ')'
+    "$@prefix${@variable.compile(o)}($args)"
 
   # Compile a call against the superclass's implementation of the current function.
   compile_super: (args, o) ->
     methname: o.scope.method.name
-    arg_part: if args.length then ', ' + args else ''
     meth: if o.scope.method.proto
-      o.scope.method.proto + '.__superClass__.' + methname
+      "${o.scope.method.proto}.__superClass__.$methname"
     else
-      methname + '.__superClass__.constructor'
-    meth + '.call(this' + arg_part + ')'
+      "$methname.__superClass__.constructor"
+    "$meth.call(this${ if args.length then ', ' else '' }$args)"
 
   # Compile a function call being passed variable arguments.
   compile_splat: (o) ->
@@ -356,12 +354,12 @@ exports.CallNode: class CallNode extends BaseNode
     if obj.match(/\(/)
       temp: o.scope.free_variable()
       obj:  temp
-      meth: '(' + temp + ' = ' + @variable.source + ')' + @variable.last
+      meth: "($temp = ${ @variable.source })${ @variable.last }"
     args: for arg, i in @args
       code: arg.compile o
-      code: if arg instanceof SplatNode then code else '[' + code + ']'
-      if i is 0 then code else '.concat(' + code + ')'
-    @prefix + meth + '.apply(' + obj + ', ' + args.join('') + ')'
+      code: if arg instanceof SplatNode then code else "[$code]"
+      if i is 0 then code else ".concat($code)"
+    "$@prefix$meth.apply($obj, ${ args.join('') })"
 
 
 # Node to extend an object's prototype with an ancestor object.
@@ -414,7 +412,8 @@ exports.IndexNode: class IndexNode extends BaseNode
     @soak_node: tag is 'soak'
 
   compile_node: (o) ->
-    '[' + @index.compile(o) + ']'
+    idx: @index.compile o
+    "[$idx]"
 
 
 # A range literal. Ranges can be used to extract portions (slices) of arrays,
@@ -427,22 +426,22 @@ exports.RangeNode: class RangeNode extends BaseNode
     @exclusive: !!exclusive
 
   compile_variables: (o) ->
-    @indent:   o.indent
-    @from_var: o.scope.free_variable()
-    @to_var:   o.scope.free_variable()
-    @from_var + ' = ' + @from.compile(o) + '; ' + @to_var + ' = ' + @to.compile(o) + ";\n" + @idt()
+    @indent: o.indent
+    [@from_var, @to_var]: [o.scope.free_variable(), o.scope.free_variable()]
+    [from, to]:           [@from.compile(o), @to.compile(o)]
+    "$@from_var = $from; $@to_var = $to;\n${@idt()}"
 
   compile_node: (o) ->
     return    @compile_array(o) unless o.index
     idx:      del o, 'index'
     step:     del o, 'step'
-    vars:     idx + ' = ' + @from_var
+    vars:     "$idx = $@from_var"
     step:     if step then step.compile(o) else '1'
     equals:   if @exclusive then '' else '='
-    intro:    '(' + @from_var + ' <= ' + @to_var + ' ? ' + idx
-    compare:  intro + ' <' + equals + ' ' + @to_var + ' : ' + idx + ' >' + equals + ' ' + @to_var + ')'
-    incr:     intro + ' += ' + step + ' : ' + idx + ' -= ' + step + ')'
-    vars + '; ' + compare + '; ' + incr
+    intro:    "($@from_var <= $@to_var ? $idx"
+    compare:  "$intro <$equals $@to_var : $idx >$equals $@to_var)"
+    incr:     "$intro += $step : $idx -= $step)"
+    "$vars; $compare; $incr"
 
   # Expand the range into the equivalent array, if it's not being used as
   # part of a comprehension, slice, or splice.
@@ -468,7 +467,7 @@ exports.SliceNode: class SliceNode extends BaseNode
     from:       @range.from.compile(o)
     to:         @range.to.compile(o)
     plus_part:  if @range.exclusive then '' else ' + 1'
-    ".slice(" + from + ', ' + to + plus_part + ')'
+    ".slice($from, $to$plus_part)"
 
 
 # An object literal.
@@ -493,7 +492,7 @@ exports.ObjectNode: class ObjectNode extends BaseNode
       indent + prop.compile(o) + join
     props: props.join('')
     inner: if props then '\n' + props + '\n' + @idt() else ''
-    '{' + inner + '}'
+    "{$inner}"
 
 
 # A class literal, including optional superclass and constructor.
@@ -534,7 +533,7 @@ exports.ClassNode: class ClassNode extends BaseNode
     props:     if props.empty() then '' else props.compile(o) + '\n'
     extension: if extension     then @idt() + extension.compile(o) + ';\n' else ''
     returns:   if ret           then '\n' + @idt() + 'return ' + @variable.compile(o) + ';' else ''
-    construct + extension + props + returns
+    "$construct$extension$props$returns"
 
 statement ClassNode
 
@@ -551,14 +550,14 @@ exports.ArrayNode: class ArrayNode extends BaseNode
     objects: for obj, i in @objects
       code: obj.compile(o)
       if obj instanceof CommentNode
-        '\n' + code + '\n' + o.indent
+        "\n$code\n${o.indent}"
       else if i is @objects.length - 1
         code
       else
-        code + ', '
+        "$code, "
     objects: objects.join('')
-    ending: if objects.indexOf('\n') >= 0 then "\n" + @idt() + ']' else ']'
-    '[' + objects + ending
+    ending: if objects.indexOf('\n') >= 0 then "\n${@idt()}]" else ']'
+    "[$objects$ending"
 
 
 # A faux-node that is never created by the grammar, but is used during
@@ -618,12 +617,13 @@ exports.AssignNode: class AssignNode extends BaseNode
     if @value instanceof CodeNode
       @value.name:  last  if last.match(IDENTIFIER)
       @value.proto: proto if proto
-    return name + ': ' + @value.compile(o) if @context is 'object'
-    o.scope.find(name) unless @is_value() and @variable.has_properties()
-    val: name + ' = ' + @value.compile(o)
-    return @idt() + val + ';' if stmt
-    val: '(' + val + ')' if not top or o.returns
-    val: @idt() + 'return ' + val if o.returns
+    val: @value.compile o
+    return "$name: $val" if @context is 'object'
+    o.scope.find name unless @is_value() and @variable.has_properties()
+    val: "$name = $val"
+    return "${@idt()}$val;" if stmt
+    val: "($val)" if not top or o.returns
+    val: "${@idt()}return $val" if o.returns
     val
 
   # Implementation of recursive pattern matching, when assigning array or
@@ -632,7 +632,7 @@ exports.AssignNode: class AssignNode extends BaseNode
   compile_pattern_match: (o) ->
     val_var: o.scope.free_variable()
     value: if @value.is_statement() then ClosureNode.wrap(@value) else @value
-    assigns: [@idt() + val_var + ' = ' + value.compile(o) + ';']
+    assigns: ["${@idt()}$val_var = ${ value.compile(o) };"]
     o.top: true
     o.as_statement: true
     for obj, i in @variable.base.objects
@@ -646,7 +646,7 @@ exports.AssignNode: class AssignNode extends BaseNode
         val: new ValueNode(literal(val_var), [new access_class(idx)])
       assigns.push(new AssignNode(obj, val).compile(o))
     code: assigns.join("\n")
-    code += '\n' + @idt() + 'return ' + @variable.compile(o) + ';' if o.returns
+    code += "\n${@idt()}return ${ @variable.compile(o) };" if o.returns
     code
 
   compile_splice: (o) ->
@@ -656,7 +656,8 @@ exports.AssignNode: class AssignNode extends BaseNode
     plus:   if range.exclusive then '' else ' + 1'
     from:   range.from.compile(o)
     to:     range.to.compile(o) + ' - ' + from + plus
-    name + '.splice.apply(' + name + ', [' + from + ', ' + to + '].concat(' + @value.compile(o) + '))'
+    val:    @value.compile(o)
+    "$name.splice.apply($name, [$from, $to].concat($val))"
 
 
 # A function definition. The only node that creates a new Scope.
@@ -684,13 +685,13 @@ exports.CodeNode: class CodeNode extends BaseNode
       @body.unshift(splat)
     params: (param.compile(o) for param in @params)
     (o.scope.parameter(param)) for param in params
-    code: if @body.expressions.length then '\n' + @body.compile_with_declarations(o) + '\n' else ''
+    code: if @body.expressions.length then "\n${ @body.compile_with_declarations(o) }\n" else ''
     name_part: if @name then ' ' + @name else ''
-    func: 'function' + (if @bound then '' else name_part) + '(' + params.join(', ') + ') {' + code + @idt(if @bound then 1 else 0) + '}'
-    func: '(' + func + ')' if top and not @bound
+    func: "function${ if @bound then '' else name_part }(${ params.join(', ') }) {$code${@idt(if @bound then 1 else 0)}}"
+    func: "($func)" if top and not @bound
     return func unless @bound
-    inner: '(function' + name_part + '() {\n' + @idt(2) + 'return __func.apply(__this, arguments);\n' + @idt(1) + '});'
-    '(function(__this) {\n' + @idt(1) + 'var __func = ' + func + ';\n' + @idt(1) + 'return ' + inner + '\n' + @idt() + '})(this)'
+    inner: "(function$name_part() {\n${@idt(2)}return __func.apply(__this, arguments);\n${@idt(1)}});"
+    "(function(__this) {\n${@idt(1)}var __func = $func;\n${@idt(1)}return $inner\n${@idt()}})(this)"
 
   top_sensitive: ->
     true
@@ -704,7 +705,8 @@ exports.CodeNode: class CodeNode extends BaseNode
 
   toString: (idt) ->
     idt ||= ''
-    '\n' + idt + @type + (child.toString(idt + TAB) for child in @real_children()).join('')
+    children: (child.toString(idt + TAB) for child in @real_children()).join('')
+    "\n$idt$children"
 
 
 # A splat, either as a parameter to a function, an argument to a call,
@@ -722,10 +724,10 @@ exports.SplatNode: class SplatNode extends BaseNode
   compile_param: (o) ->
     name: @name.compile(o)
     o.scope.find name
-    name + ' = Array.prototype.slice.call(arguments, ' + @index + ')'
+    "$name = Array.prototype.slice.call(arguments, $@index)"
 
   compile_value: (o, name, index) ->
-    "Array.prototype.slice.call(" + name + ', ' + index + ')'
+    "Array.prototype.slice.call($name, $index)"
 
 
 # A while loop, the only sort of low-level loop exposed by CoffeeScript. From
@@ -753,13 +755,13 @@ exports.WhileNode: class WhileNode extends BaseNode
     set:        ''
     if not top
       rvar:     o.scope.free_variable()
-      set:      @idt() + rvar + ' = [];\n'
+      set:      "${@idt()}$rvar = [];\n"
       @body:    PushNode.wrap(rvar, @body) if @body
-    post:       if returns then '\n' + @idt() + 'return ' + rvar + ';' else ''
-    pre:        set + @idt() + 'while (' + cond + ')'
-    return pre + ' null;' + post if not @body
+    post:       if returns then "\n${@idt()}return $rvar;" else ''
+    pre:        "$set${@idt()}while ($cond)"
+    return      "$pre null;$post" if not @body
     @body:      Expressions.wrap([new IfNode(@filter, @body)]) if @filter
-    pre + ' {\n' + @body.compile(o) + '\n' + @idt() + '}' + post
+    "$pre {\n${ @body.compile(o) }\n${@idt()}}$post"
 
 statement WhileNode
 
@@ -801,24 +803,26 @@ exports.OpNode: class OpNode extends BaseNode
     return @compile_assignment(o) if @ASSIGNMENT.indexOf(@operator) >= 0
     return @compile_unary(o)      if @is_unary()
     return @compile_existence(o)  if @operator is '?'
-    @first.compile(o) + ' ' + @operator + ' ' + @second.compile(o)
+    [@first.compile(o), @operator, @second.compile(o)].join ' '
 
   # Mimic Python's chained comparisons. See:
   # http://docs.python.org/reference/expressions.html#notin
   compile_chain: (o) ->
     shared: @first.unwrap().second
     [@first.second, shared]: shared.compile_reference(o) if shared instanceof CallNode
-    '(' + @first.compile(o) + ') && (' + shared.compile(o) + ' ' + @operator + ' ' + @second.compile(o) + ')'
+    [first, second, shared]: [@first.compile(o), @second.compile(o), shared.compile(o)]
+    "($first) && ($shared $@operator $second)"
 
   compile_assignment: (o) ->
     [first, second]: [@first.compile(o), @second.compile(o)]
     o.scope.find(first) if first.match(IDENTIFIER)
-    return first + ' = ' + ExistenceNode.compile_test(o, @first) + ' ? ' + first + ' : ' + second if @operator is '?='
-    first + ' = ' + first + ' ' + @operator.substr(0, 2) + ' ' + second
+    return "$first = ${ ExistenceNode.compile_test(o, @first) } ? $first : $second" if @operator is '?='
+    "$first = $first ${ @operator.substr(0, 2) } $second"
 
   compile_existence: (o) ->
     [first, second]: [@first.compile(o), @second.compile(o)]
-    ExistenceNode.compile_test(o, @first) + ' ? ' + first + ' : ' + second
+    test: ExistenceNode.compile_test(o, @first)
+    "$test ? $first : $second"
 
   compile_unary: (o) ->
     space: if @PREFIX_OPERATORS.indexOf(@operator) >= 0 then ' ' else ''
@@ -839,10 +843,11 @@ exports.TryNode: class TryNode extends BaseNode
   compile_node: (o) ->
     o.indent:     @idt(1)
     o.top:        true
-    error_part:   if @error then ' (' + @error.compile(o) + ') ' else ' '
-    catch_part:   (@recovery or '') and ' catch' + error_part + '{\n' + @recovery.compile(o) + '\n' + @idt() + '}'
-    finally_part: (@ensure or '') and ' finally {\n' + @ensure.compile(merge(o, {returns: null})) + '\n' + @idt() + '}'
-    @idt() + 'try {\n' + @attempt.compile(o) + '\n' + @idt() + '}' + catch_part + finally_part
+    attempt_part: @attempt.compile(o)
+    error_part:   if @error then " (${ @error.compile(o) }) " else ' '
+    catch_part:   "${ (@recovery or '') and ' catch' }$error_part{\n${ @recovery.compile(o) }\n${@idt()}}"
+    finally_part: (@ensure or '') and ' finally {\n' + @ensure.compile(merge(o, {returns: null})) + "\n${@idt()}}"
+    "${@idt()}try {\n$attempt_part\n${@idt()}}$catch_part$finally_part"
 
 statement TryNode
 
@@ -855,7 +860,7 @@ exports.ThrowNode: class ThrowNode extends BaseNode
     @children: [@expression: expression]
 
   compile_node: (o) ->
-    @idt() + 'throw ' + @expression.compile(o) + ';'
+    "${@idt()}throw ${@expression.compile(o)};"
 
 statement ThrowNode, true
 
@@ -874,7 +879,8 @@ ExistenceNode.compile_test: (o, variable) ->
   [first, second]: [variable, variable]
   if variable instanceof CallNode or (variable instanceof ValueNode and variable.has_properties())
     [first, second]: variable.compile_reference(o)
-  '(typeof ' + first.compile(o) + ' !== "undefined" && ' + second.compile(o) + ' !== null)'
+  [first, second]: [first.compile(o), second.compile(o)]
+  "(typeof $first !== \"undefined\" && $second !== null)"
 
 
 # An extra set of parentheses, specified explicitly in the source.
@@ -892,7 +898,7 @@ exports.ParentheticalNode: class ParentheticalNode extends BaseNode
     return code if @is_statement()
     l:    code.length
     code: code.substr(o, l-1) if code.substr(l-1, 1) is ';'
-    '(' + code + ')'
+    "($code)"
 
 
 # The replacement for the for loop is an array comprehension (that compiles)
@@ -921,10 +927,10 @@ exports.ForNode: class ForNode extends BaseNode
     range:          @source instanceof ValueNode and @source.base instanceof RangeNode and not @source.properties.length
     source:         if range then @source.base else @source
     scope:          o.scope
-    name:           @name and @name.compile(o)
-    index:          @index and @index.compile(o)
-    name_found:     name and scope.find(name)
-    index_found:    index and scope.find(index)
+    name:           @name and @name.compile o
+    index:          @index and @index.compile o
+    name_found:     name and scope.find name
+    index_found:    index and scope.find index
     body_dent:      @idt(1)
     rvar:           scope.free_variable() unless top_level
     svar:           scope.free_variable()
@@ -933,16 +939,17 @@ exports.ForNode: class ForNode extends BaseNode
     body:           Expressions.wrap([@body])
     if range
       index_var:    scope.free_variable()
-      source_part:  source.compile_variables(o)
-      for_part:     index_var + ' = 0, ' + source.compile(merge(o, {index: ivar, step: @step})) + ', ' + index_var + '++'
+      source_part:  source.compile_variables o
+      for_part:     source.compile merge o, {index: ivar, step: @step}
+      for_part:     "$index_var = 0, $for_part, $index_var++"
     else
       index_var:    null
-      source_part:  svar + ' = ' + @source.compile(o) + ';\n' + @idt()
-      var_part:     body_dent + name + ' = ' + svar + '[' + ivar + '];\n' if name
+      source_part:  "$svar = ${ @source.compile(o) };\n${@idt()}"
+      var_part:     "$body_dent$name = $svar[$ivar];\n" if name
       if not @object
         lvar:       scope.free_variable()
-        step_part:  if @step then ivar + ' += ' + @step.compile(o) else ivar + '++'
-        for_part:   ivar + ' = 0, ' + lvar + ' = ' + svar + '.length; ' + ivar + ' < ' + lvar + '; ' + step_part
+        step_part:  if @step then "$ivar += ${ @step.compile(o) }" else "$ivar++"
+        for_part:   "$ivar = 0, $lvar = $svar.length; $ivar < $lvar; $step_part"
     set_result:     if rvar then @idt() + rvar + ' = []; ' else @idt()
     return_result:  rvar or ''
     body:           ClosureNode.wrap(body, true) if top_level and @contains (n) -> n instanceof CodeNode
@@ -955,12 +962,12 @@ exports.ForNode: class ForNode extends BaseNode
       body:         Expressions.wrap([new IfNode(@filter, body)])
     if @object
       o.scope.assign('__hasProp', 'Object.prototype.hasOwnProperty', true)
-      for_part: ivar + ' in ' + svar + ') { if (__hasProp.call(' + svar + ', ' + ivar + ')'
-    return_result:  '\n' + @idt() + return_result + ';' unless top_level
+      for_part: "$ivar in $svar) { if (__hasProp.call($svar, $ivar)"
+    return_result:  "\n${@idt()}$return_result;" unless top_level
     body:           body.compile(merge(o, {indent: body_dent, top: true}))
-    vars:           if range then name else name + ', ' + ivar
+    vars:           if range then name else "$name, $ivar"
     close:          if @object then '}}\n' else '}\n'
-    set_result + source_part + 'for (' + for_part + ') {\n' + var_part + body + '\n' + @idt() + close + @idt() + return_result
+    "$set_result${source_part}for ($for_part) {\n$var_part$body\n${@idt()}$close${@idt()}$return_result"
 
 statement ForNode
 
@@ -1045,18 +1052,18 @@ exports.IfNode: class IfNode extends BaseNode
     o.top:        true
     if_dent:      if child then '' else @idt()
     com_dent:     if child then @idt() else ''
-    prefix:       if @comment then @comment.compile(cond_o) + '\n' + com_dent else ''
+    prefix:       if @comment then "${ @comment.compile(cond_o) }\n$com_dent" else ''
     body:         Expressions.wrap([@body]).compile(o)
-    if_part:      prefix + if_dent + 'if (' + @compile_condition(cond_o) + ') {\n' + body + '\n' + @idt() + '}'
+    if_part:      "$prefix${if_dent}if (${ @compile_condition(cond_o) }) {\n$body\n${@idt()}}"
     return if_part unless @else_body
     else_part: if @is_chain()
       ' else ' + @else_body.compile(merge(o, {indent: @idt(), chain_child: true}))
     else
-      ' else {\n' + Expressions.wrap([@else_body]).compile(o) + '\n' + @idt() + '}'
-    if_part + else_part
+      " else {\n${ Expressions.wrap([@else_body]).compile(o) }\n${@idt()}}"
+    "$if_part$else_part"
 
   # Compile the IfNode into a ternary operator.
   compile_ternary: (o) ->
     if_part:    @condition.compile(o) + ' ? ' + @body.compile(o)
     else_part:  if @else_body then @else_body.compile(o) else 'null'
-    if_part + ' : ' + else_part
+    "$if_part : $else_part"
