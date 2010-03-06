@@ -161,16 +161,16 @@ exports.Expressions: class Expressions extends BaseNode
     o.scope: new Scope(null, this, null)
     code: if o.globals then @compile_node(o) else @compile_with_declarations(o)
     code: code.replace(TRAILING_WHITESPACE, '')
-    if o.no_wrap then code else "(function(){\n"+code+"\n})();\n"
+    if o.no_wrap then code else "(function(){\n$code\n})();\n"
 
   # Compile the expressions body, with declarations of all inner variables
   # pushed up to the top.
   compile_with_declarations: (o) ->
     code: @compile_node(o)
     args: @contains (node) -> node instanceof ValueNode and node.is_arguments()
-    code: @idt() + "arguments = Array.prototype.slice.call(arguments, 0);\n" + code if args
-    code: @idt() + 'var ' + o.scope.compiled_assignments() + ";\n" + code  if o.scope.has_assignments(this)
-    code: @idt() + 'var ' + o.scope.compiled_declarations() + ";\n" + code if o.scope.has_declarations(this)
+    code: "${@idt()}arguments = Array.prototype.slice.call(arguments, 0);\n$code" if args
+    code: "${@idt()}var ${o.scope.compiled_assignments()};\n$code"  if o.scope.has_assignments(this)
+    code: "${@idt()}var ${o.scope.compiled_declarations()};\n$code" if o.scope.has_declarations(this)
     code
 
   # Compiles a single expression within the expressions body.
@@ -184,7 +184,7 @@ exports.Expressions: class Expressions extends BaseNode
     # If it's a statement, the node knows how to return itself.
     return node.compile(merge(o, {returns: true})) if node.is_statement()
     # Otherwise, we can just return the value of the expression.
-    return @idt() + 'return ' + node.compile(o) + ';'
+    return "${@idt()}return ${node.compile(o)};"
 
 # Wrap up a node as an Expressions, unless it already is one.
 Expressions.wrap: (nodes) ->
@@ -212,10 +212,10 @@ exports.LiteralNode: class LiteralNode extends BaseNode
   compile_node: (o) ->
     idt: if @is_statement() then @idt() else ''
     end: if @is_statement() then ';' else ''
-    idt + @value + end
+    "$idt$@value$end"
 
   toString: (idt) ->
-    ' "' + @value + '"'
+    " \"$@value\""
 
 
 # Return an expression, or wrap it in a closure and return it.
@@ -227,7 +227,7 @@ exports.ReturnNode: class ReturnNode extends BaseNode
 
   compile_node: (o) ->
     return @expression.compile(merge(o, {returns: true})) if @expression.is_statement()
-    @idt() + 'return ' + @expression.compile(o) + ';'
+    "${@idt()}return ${@expression.compile(o)};"
 
 statement ReturnNode, true
 
@@ -277,7 +277,7 @@ exports.ValueNode: class ValueNode extends BaseNode
     op:       del(o, 'operation')
     props:    if only then @properties[0...@properties.length - 1] else @properties
     baseline: @base.compile o
-    baseline: '(' + baseline + ')' if @base instanceof ObjectNode and @has_properties()
+    baseline: "($baseline)" if @base instanceof ObjectNode and @has_properties()
     complete: @last: baseline
 
     for prop in props
@@ -286,7 +286,7 @@ exports.ValueNode: class ValueNode extends BaseNode
         soaked: true
         if @base instanceof CallNode and prop is props[0]
           temp: o.scope.free_variable()
-          complete: '(' + temp + ' = ' + complete + ')' + @SOAK + (baseline: temp + prop.compile(o))
+          complete: "($temp = $complete)$@SOAK" + (baseline: temp + prop.compile(o))
         else
           complete: complete + @SOAK + (baseline += prop.compile(o))
       else
@@ -295,7 +295,7 @@ exports.ValueNode: class ValueNode extends BaseNode
         complete += part
         @last: part
 
-    if op and soaked then '(' + complete + ')' else complete
+    if op and soaked then "($complete)" else complete
 
 
 # Pass through CoffeeScript comments into JavaScript comments at the
@@ -308,7 +308,7 @@ exports.CommentNode: class CommentNode extends BaseNode
     this
 
   compile_node: (o) ->
-    @idt() + '//' + @lines.join('\n' + @idt() + '//')
+    "${@idt()}//" + @lines.join("\n${@idt()}//")
 
 statement CommentNode
 
@@ -336,6 +336,7 @@ exports.CallNode: class CallNode extends BaseNode
     return @compile_splat(o) if @args[@args.length - 1] instanceof SplatNode
     args: (arg.compile(o) for arg in @args).join(', ')
     return @compile_super(args, o) if @variable is 'super'
+    # "$@prefix${@variable.compile(o)}($args)"
     @prefix + @variable.compile(o) + '(' + args + ')'
 
   # Compile a call against the superclass's implementation of the current function.

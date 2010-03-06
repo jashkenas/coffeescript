@@ -56,24 +56,21 @@ RESERVED: [
 JS_FORBIDDEN: JS_KEYWORDS.concat RESERVED
 
 # Token matching regexes.
-IDENTIFIER : /^([a-zA-Z$_](\w|\$)*)/
-NUMBER     : /^(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
-STRING     : /^(""|''|"([\s\S]*?)([^\\]|\\\\)"|'([\s\S]*?)([^\\]|\\\\)')/
-HEREDOC    : /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
-JS         : /^(``|`([\s\S]*?)([^\\]|\\\\)`)/
-OPERATOR   : /^([+\*&|\/\-%=<>:!?]+)/
-WHITESPACE : /^([ \t]+)/
-COMMENT    : /^(((\n?[ \t]*)?#[^\n]*)+)/
-CODE       : /^((-|=)>)/
-REGEX      : /^(\/(\S.*?)?([^\\]|\\\\)\/[imgy]{0,4})/
-MULTI_DENT : /^((\n([ \t]*))+)(\.)?/
-LAST_DENTS : /\n([ \t]*)/g
-LAST_DENT  : /\n([ \t]*)/
-ASSIGNMENT : /^(:|=)$/
-
-# Interpolation matching regexes.
-INTERPOLATED_EXPRESSION: /(^|[\s\S]*?(?:[\\]|\\\\)?)(\${[\s\S]*?(?:[^\\]|\\\\)})/
-INTERPOLATED_IDENTIFIER: /(^|[\s\S]*?(?:[\\]|\\\\)?)(\$([a-zA-Z_@]\w*))/
+IDENTIFIER    : /^([a-zA-Z$_](\w|\$)*)/
+NUMBER        : /^(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
+STRING        : /^(""|''|"([\s\S]*?)([^\\]|\\\\)"|'([\s\S]*?)([^\\]|\\\\)')/
+HEREDOC       : /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
+INTERPOLATION : /(^|[\s\S]*?(?:[\\]|\\\\)?)\$([a-zA-Z_@]\w*|{[\s\S]*?(?:[^\\]|\\\\)})/
+JS            : /^(``|`([\s\S]*?)([^\\]|\\\\)`)/
+OPERATOR      : /^([+\*&|\/\-%=<>:!?]+)/
+WHITESPACE    : /^([ \t]+)/
+COMMENT       : /^(((\n?[ \t]*)?#[^\n]*)+)/
+CODE          : /^((-|=)>)/
+REGEX         : /^(\/(\S.*?)?([^\\]|\\\\)\/[imgy]{0,4})/
+MULTI_DENT    : /^((\n([ \t]*))+)(\.)?/
+LAST_DENTS    : /\n([ \t]*)/g
+LAST_DENT     : /\n([ \t]*)/
+ASSIGNMENT    : /^(:|=)$/
 
 # Token cleaning regexes.
 JS_CLEANER      : /(^`|`$)/g
@@ -360,32 +357,24 @@ exports.Lexer: class Lexer
       quote:  str.substring(0, 1)
       str:    str.substring(1, str.length - 1)
       while str.length
-        expression_match: str.match INTERPOLATED_EXPRESSION
-        if expression_match
-          [group, before, expression]: expression_match
+        match: str.match INTERPOLATION
+        if match
+          [group, before, interp]: match
           if before.substring(before.length - 1) is '\\'
-            tokens.push ['STRING', quote + before.substring(0, before.length - 1) + expression + quote] if before.length
+            tokens.push ['STRING', quote + before.substring(0, before.length - 1) + '$' + interp + quote] if before.length
           else
             tokens.push ['STRING', quote + before + quote] if before.length
-            nested: lexer.tokenize '(' + expression.substring(2, expression.length - 1) + ')', {rewrite: no}
-            nested.pop()
-            tokens.push ['TOKENS', nested]
+            if interp.substring(0, 1) is '{'
+              nested: lexer.tokenize '(' + interp.substring(1, interp.length - 1) + ')', {rewrite: no}
+              nested.pop()
+              tokens.push ['TOKENS', nested]
+            else
+              interp: 'this.' + interp.substring(1) if interp.substring(0, 1) is '@'
+              tokens.push ['IDENTIFIER', interp]
           str: str.substring(group.length)
         else
-          identifier_match: str.match INTERPOLATED_IDENTIFIER
-          if identifier_match
-            [group, before, identifier]: identifier_match
-            if before.substring(before.length - 1) is '\\'
-              tokens.push ['STRING', quote + before.substring(0, before.length - 1) + identifier + quote] if before.length
-            else
-              tokens.push ['STRING', quote + before + quote] if before.length
-              id: identifier.substring(1)
-              id: 'this.' + id.substring(1) if id.substring(0, 1) is '@'
-              tokens.push ['IDENTIFIER', id]
-            str: str.substring(group.length)
-          else
-            tokens.push ['STRING', quote + str + quote]
-            str: ''
+          tokens.push ['STRING', quote + str + quote]
+          str: ''
       if tokens.length > 1
         for i in [tokens.length - 1..1]
           [prev, tok]: [tokens[i - 1], tokens[i]]
