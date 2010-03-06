@@ -201,24 +201,23 @@ exports.Lexer: class Lexer
   # Matches a balanced group such as a single or double-quoted string.
   balanced_group: (delimited...) ->
     (each[1]: each[0]) for each in delimited when not each[1]?
-    escaped: '\\'
-    next: (length) => @chunk.substring i, i + length
+    (each[2]: '\\') for each in delimited when not each[2]?
     levels: []
     i: 0
     while i < @chunk.length
-      if next(1) is escaped
-        i += 1
-      else
-        for each, type in delimited
-          if levels.length and next(each[1].length) is each[1] and levels[levels.length - 1] is type
-            levels.pop()
-            i += each[1].length - 1
-            i += 1 unless levels.length
-            break
-          else if next(each[0].length) is each[0]
-            levels.push(type)
-            i += each[0].length - 1
-            break
+      for each, type in delimited
+        if each[2] isnt false and @chunk.substring(i, i + each[2].length) is each[2]
+          i += each[2].length
+          break
+        else if levels.length and @chunk.substring(i, i + each[1].length) is each[1] and levels[levels.length - 1] is type
+          levels.pop()
+          i += each[1].length - 1
+          i += 1 unless levels.length
+          break
+        else if @chunk.substring(i, i + each[0].length) is each[0]
+          levels.push(type)
+          i += each[0].length - 1
+          break
       break unless levels.length
       i += 1
     throw new Error "SyntaxError: Unterminated ${delimited[levels.pop()][0]} starting on line $@line" if levels.length
