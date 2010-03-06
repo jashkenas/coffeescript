@@ -81,8 +81,9 @@ compile_script: (source, code) ->
       else if o.lint            then lint js
       else if o.print or o.eval then print js
       else
-        __filename: source
-        __dirname:  path.dirname source
+        __filename:       source
+        __dirname:        path.dirname source
+        module.filename:  source
         eval js
   catch err
     if o.watch                  then puts err.message else throw err
