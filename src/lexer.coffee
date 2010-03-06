@@ -204,18 +204,19 @@ exports.Lexer: class Lexer
     levels: []
     i: 0
     while i < @chunk.length
-      for each, type in delimited
-        if levels.length and @chunk.substring(i, i + 1) is '\\'
+      for pair in delimited
+        [open, close]: pair
+        if levels.length and starts @chunk, '\\', i
           i += 1
           break
-        else if levels.length and @chunk.substring(i, i + each[1].length) is each[1] and levels[levels.length - 1] is type
+        else if levels.length and starts(@chunk, close, i) and levels[levels.length - 1] is pair
           levels.pop()
-          i += each[1].length - 1
+          i += close.length - 1
           i += 1 unless levels.length
           break
-        else if @chunk.substring(i, i + each[0].length) is each[0]
-          levels.push(type)
-          i += each[0].length - 1
+        else if starts @chunk, open, i
+          levels.push(pair)
+          i += open.length - 1
           break
       break unless levels.length
       i += 1
@@ -375,7 +376,7 @@ exports.Lexer: class Lexer
   #     "Hello ${name.capitalize()}."
   #
   interpolate_string: (str) ->
-    if str.length < 3 or str.substring(0, 1) isnt '"'
+    if str.length < 3 or not starts str, '"'
       @token 'STRING', str
     else
       lexer:  new Lexer()
@@ -386,18 +387,18 @@ exports.Lexer: class Lexer
         match: str.match INTERPOLATION
         if match
           [group, before, interp]: match
-          if before.substring(before.length - 1) is '\\'
+          if starts before, '\\', before.length - 1
             prev: before.substring(0, before.length - 1)
             tokens.push ['STRING', "$quote$prev$$interp$quote"] if before.length
           else
             tokens.push ['STRING', "$quote$before$quote"] if before.length
-            if interp.substring(0, 1) is '{'
+            if starts interp, '{'
               inner: interp.substring(1, interp.length - 1)
               nested: lexer.tokenize "($inner)", {rewrite: no, line: @line}
               nested.pop()
               tokens.push ['TOKENS', nested]
             else
-              interp: "this.${ interp.substring(1) }" if interp.substring(0, 1) is '@'
+              interp: "this.${ interp.substring(1) }" if starts interp, '@'
               tokens.push ['IDENTIFIER', interp]
           str: str.substring(group.length)
         else
@@ -451,6 +452,10 @@ exports.Lexer: class Lexer
 # Does a list include a value?
 include: (list, value) ->
   list.indexOf(value) >= 0
+
+# Peek at the beginning of a given string to see if it matches a sequence.
+starts: (string, literal, start) ->
+  string.substring(start, (start or 0) + literal.length) is literal
 
 # Trim out all falsy values from an array.
 compact: (array) -> item for item in array when item
