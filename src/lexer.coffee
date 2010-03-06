@@ -73,7 +73,7 @@ ASSIGNMENT : /^(:|=)$/
 
 # Interpolation matching regexes.
 INTERPOLATED_EXPRESSION: /(^|[\s\S]*?(?:[\\]|\\\\)?)(\${[\s\S]*?(?:[^\\]|\\\\)})/
-INTERPOLATED_IDENTIFIER: /(^|[\s\S]*?(?:[\\]|\\\\)?)(\$([a-zA-Z_]\w*))/
+INTERPOLATED_IDENTIFIER: /(^|[\s\S]*?(?:[\\]|\\\\)?)(\$([a-zA-Z_@]\w*))/
 
 # Token cleaning regexes.
 JS_CLEANER      : /(^`|`$)/g
@@ -367,7 +367,7 @@ exports.Lexer: class Lexer
             tokens.push ['STRING', quote + before.substring(0, before.length - 1) + expression + quote] if before.length
           else
             tokens.push ['STRING', quote + before + quote] if before.length
-            nested: lexer.tokenize '(' + expression.substring(2, expression.length - 1) + ')', {rewrite: no}
+            nested: lexer.tokenize expression.substring(2, expression.length - 1), {rewrite: no}
             nested.pop()
             tokens.push ['TOKENS', nested]
           str: str.substring(group.length)
@@ -379,7 +379,9 @@ exports.Lexer: class Lexer
               tokens.push ['STRING', quote + before.substring(0, before.length - 1) + identifier + quote] if before.length
             else
               tokens.push ['STRING', quote + before + quote] if before.length
-              tokens.push ['IDENTIFIER', identifier.substring(1)]
+              id: identifier.substring(1)
+              id: 'this.' + id.substring(1) if id.substring(0, 1) is '@'
+              tokens.push ['IDENTIFIER', id]
             str: str.substring(group.length)
           else
             tokens.push ['STRING', quote + str + quote]
