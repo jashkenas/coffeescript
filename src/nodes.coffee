@@ -1,91 +1,68 @@
+# `nodes.coffee` contains all of the node classes for the syntax tree. Most
+# nodes are created as the result of actions in the [grammar](grammar.html),
+# but some are created by other nodes as a method of code generation. To convert
+# the syntax tree into a string of JavaScript code, call `compile()` on the root.
+
+# Set up for both **Node.js** and the browser, by
+# including the [Scope](scope.html) class.
 if process?
   process.mixin require 'scope'
 else
   this.exports: this
 
-# Some helper functions
-
-# Tabs are two spaces for pretty printing.
-TAB: '  '
-TRAILING_WHITESPACE: /\s+$/gm
-
-# Keep the identifier regex in sync with the Lexer.
-IDENTIFIER:   /^[a-zA-Z$_](\w|\$)*$/
-
-
-# Merge objects.
-merge: (options, overrides) ->
-  fresh: {}
-  (fresh[key]: val) for key, val of options
-  (fresh[key]: val) for key, val of overrides if overrides
-  fresh
-
-# Trim out all falsy values from an array.
-compact: (array) -> item for item in array when item
-
-# Return a completely flattened version of an array.
-flatten: (array) ->
-  memo: []
-  for item in array
-    if item instanceof Array then memo: memo.concat(item) else memo.push(item)
-  memo
-
-# Delete a key from an object, returning the value.
-del: (obj, key) ->
-  val: obj[key]
-  delete obj[key]
-  val
-
-# Quickie helper for a generated LiteralNode.
-literal: (name) ->
-  new LiteralNode(name)
-
-# Mark a node as a statement, or a statement only.
+# Helper function that marks a node as a JavaScript *statement*, or as a
+# *pure_statement*. Statements must be wrapped in a closure when used as an
+# expression, and nodes tagged as *pure_statement* cannot be closure-wrapped
+# without losing their meaning.
 statement: (klass, only) ->
   klass::is_statement: -> true
-  (klass::is_statement_only: -> true) if only
+  (klass::is_pure_statement: -> true) if only
 
-
-# The abstract base class for all CoffeeScript nodes.
-# All nodes are implement a "compile_node" method, which performs the
-# code generation for that node. To compile a node, call the "compile"
-# method, which wraps "compile_node" in some extra smarts, to know when the
-# generated code should be wrapped up in a closure. An options hash is passed
-# and cloned throughout, containing messages from higher in the AST,
-# information about the current scope, and indentation level.
+# The **BaseNode** is the abstract base class for all nodes in the syntax tree.
+# Each subclass implements the `compile_node` method, which performs the
+# code generation for that node. To compile a node to JavaScript,
+# call `compile` on it, which wraps `compile_node` in some generic extra smarts,
+# to know when the generated code needs to be wrapped up in a closure.
+# An options hash is passed and cloned throughout, containing information about
+# the environment from higher in the tree (such as if a returned value is
+# being requested by the surrounding function), information about the current
+# scope, and indentation level.
 exports.BaseNode: class BaseNode
 
-  # This is extremely important -- we convert JS statements into expressions
-  # by wrapping them in a closure, only if it's possible, and we're not at
+  # Common logic for determining whether to wrap this node in a closure before
+  # compiling it, or to compile directly. We need to wrap if this node is a
+  # *statement*, and it's not a *pure_statement*, and we're not at
   # the top level of a block (which would be unnecessary), and we haven't
-  # already been asked to return the result.
+  # already been asked to return the result (because statements know how to
+  # return results).
   compile: (o) ->
     @options: merge o or {}
-    @indent:  o.indent
+    @tab:     o.indent
     del @options, 'operation' unless @operation_sensitive()
     top:      if @top_sensitive() then @options.top else del @options, 'top'
-    closure:  @is_statement() and not @is_statement_only() and not top and
+    closure:  @is_statement() and not @is_pure_statement() and not top and
               not @options.returns and not (this instanceof CommentNode) and
-              not @contains (node) -> node.is_statement_only()
+              not @contains (node) -> node.is_pure_statement()
     if closure then @compile_closure(@options) else @compile_node(@options)
 
-  # Statements converted into expressions share scope with their parent
-  # closure, to preserve JavaScript-style lexical scope.
+  # Statements converted into expressions via closure-wrapping share a scope
+  # object with their parent closure, to preserve the expected lexical scope.
   compile_closure: (o) ->
-    @indent: o.indent
+    @tab: o.indent
     o.shared_scope: o.scope
-    ClosureNode.wrap(this).compile(o)
+    ClosureNode.wrap(this).compile o
 
   # If the code generation wishes to use the result of a complex expression
-  # in multiple places, ensure that the expression is only ever evaluated once.
+  # in multiple places, ensure that the expression is only ever evaluated once,
+  # by assigning it to a temporary variable.
   compile_reference: (o) ->
-    reference: literal(o.scope.free_variable())
-    compiled:  new AssignNode(reference, this)
+    reference: literal o.scope.free_variable()
+    compiled:  new AssignNode reference, this
     [compiled, reference]
 
-  # Quick short method for the current indentation level, plus tabbing in.
+  # Convenience method to grab the current indentation level, plus tabbing in.
   idt: (tabs) ->
-    idt: (@indent || '')
+    idt: @tab or ''
     idt += TAB for i in [0...(tabs or 0)]
     idt
 
@@ -111,7 +88,7 @@ exports.BaseNode: class BaseNode
   unwrap:               -> this
   children:             []
   is_statement:         -> false
-  is_statement_only:    -> false
+  is_pure_statement:    -> false
   top_sensitive:        -> false
   operation_sensitive:  -> false
 
@@ -157,7 +134,7 @@ exports.Expressions: class Expressions extends BaseNode
 
   # If this is the top-level Expressions, wrap everything in a safety closure.
   compile_root: (o) ->
-    o.indent: @indent: indent: if o.no_wrap then '' else TAB
+    o.indent: @tab: if o.no_wrap then '' else TAB
     o.scope: new Scope(null, this, null)
     code: if o.globals then @compile_node(o) else @compile_with_declarations(o)
     code: code.replace(TRAILING_WHITESPACE, '')
@@ -168,23 +145,23 @@ exports.Expressions: class Expressions extends BaseNode
   compile_with_declarations: (o) ->
     code: @compile_node(o)
     args: @contains (node) -> node instanceof ValueNode and node.is_arguments()
-    code: "${@idt()}arguments = Array.prototype.slice.call(arguments, 0);\n$code" if args
-    code: "${@idt()}var ${o.scope.compiled_assignments()};\n$code"  if o.scope.has_assignments(this)
-    code: "${@idt()}var ${o.scope.compiled_declarations()};\n$code" if o.scope.has_declarations(this)
+    code: "${@tab}arguments = Array.prototype.slice.call(arguments, 0);\n$code" if args
+    code: "${@tab}var ${o.scope.compiled_assignments()};\n$code"  if o.scope.has_assignments(this)
+    code: "${@tab}var ${o.scope.compiled_declarations()};\n$code" if o.scope.has_declarations(this)
     code
 
   # Compiles a single expression within the expressions body.
   compile_expression: (node, o) ->
-    @indent: o.indent
+    @tab: o.indent
     stmt:    node.is_statement()
     # We need to return the result if this is the last node in the expressions body.
-    returns: del(o, 'returns') and @is_last(node) and not node.is_statement_only()
+    returns: del(o, 'returns') and @is_last(node) and not node.is_pure_statement()
     # Return the regular compile of the node, unless we need to return the result.
     return (if stmt then '' else @idt()) + node.compile(merge(o, {top: true})) + (if stmt then '' else ';') unless returns
     # If it's a statement, the node knows how to return itself.
     return node.compile(merge(o, {returns: true})) if node.is_statement()
     # Otherwise, we can just return the value of the expression.
-    return "${@idt()}return ${node.compile(o)};"
+    return "${@tab}return ${node.compile(o)};"
 
 # Wrap up a node as an Expressions, unless it already is one.
 Expressions.wrap: (nodes) ->
@@ -207,7 +184,7 @@ exports.LiteralNode: class LiteralNode extends BaseNode
   is_statement: ->
     @value is 'break' or @value is 'continue'
 
-  is_statement_only: LiteralNode::is_statement
+  is_pure_statement: LiteralNode::is_statement
 
   compile_node: (o) ->
     idt: if @is_statement() then @idt() else ''
@@ -227,7 +204,7 @@ exports.ReturnNode: class ReturnNode extends BaseNode
 
   compile_node: (o) ->
     return @expression.compile(merge(o, {returns: true})) if @expression.is_statement()
-    "${@idt()}return ${@expression.compile(o)};"
+    "${@tab}return ${@expression.compile(o)};"
 
 statement ReturnNode, true
 
@@ -308,7 +285,7 @@ exports.CommentNode: class CommentNode extends BaseNode
     this
 
   compile_node: (o) ->
-    "${@idt()}//" + @lines.join("\n${@idt()}//")
+    "$@tab//" + @lines.join("\n$@tab//")
 
 statement CommentNode
 
@@ -426,10 +403,10 @@ exports.RangeNode: class RangeNode extends BaseNode
     @exclusive: !!exclusive
 
   compile_variables: (o) ->
-    @indent: o.indent
+    @tab: o.indent
     [@from_var, @to_var]: [o.scope.free_variable(), o.scope.free_variable()]
     [from, to]:           [@from.compile(o), @to.compile(o)]
-    "$@from_var = $from; $@to_var = $to;\n${@idt()}"
+    "$@from_var = $from; $@to_var = $to;\n$@tab"
 
   compile_node: (o) ->
     return    @compile_array(o) unless o.index
@@ -556,7 +533,7 @@ exports.ArrayNode: class ArrayNode extends BaseNode
       else
         "$code, "
     objects: objects.join('')
-    ending: if objects.indexOf('\n') >= 0 then "\n${@idt()}]" else ']'
+    ending: if objects.indexOf('\n') >= 0 then "\n$@tab]" else ']'
     "[$objects$ending"
 
 
@@ -566,7 +543,7 @@ PushNode: exports.PushNode: {
 
   wrap: (array, expressions) ->
     expr: expressions.unwrap()
-    return expressions if expr.is_statement_only() or expr.contains (n) -> n.is_statement_only()
+    return expressions if expr.is_pure_statement() or expr.contains (n) -> n.is_pure_statement()
     Expressions.wrap([new CallNode(
       new ValueNode(literal(array), [new AccessorNode(literal('push'))]), [expr]
     )])
@@ -621,9 +598,9 @@ exports.AssignNode: class AssignNode extends BaseNode
     return "$name: $val" if @context is 'object'
     o.scope.find name unless @is_value() and @variable.has_properties()
     val: "$name = $val"
-    return "${@idt()}$val;" if stmt
+    return "$@tab$val;" if stmt
     val: "($val)" if not top or o.returns
-    val: "${@idt()}return $val" if o.returns
+    val: "${@tab}return $val" if o.returns
     val
 
   # Implementation of recursive pattern matching, when assigning array or
@@ -632,7 +609,7 @@ exports.AssignNode: class AssignNode extends BaseNode
   compile_pattern_match: (o) ->
     val_var: o.scope.free_variable()
     value: if @value.is_statement() then ClosureNode.wrap(@value) else @value
-    assigns: ["${@idt()}$val_var = ${ value.compile(o) };"]
+    assigns: ["$@tab$val_var = ${ value.compile(o) };"]
     o.top: true
     o.as_statement: true
     for obj, i in @variable.base.objects
@@ -646,7 +623,7 @@ exports.AssignNode: class AssignNode extends BaseNode
         val: new ValueNode(literal(val_var), [new access_class(idx)])
       assigns.push(new AssignNode(obj, val).compile(o))
     code: assigns.join("\n")
-    code += "\n${@idt()}return ${ @variable.compile(o) };" if o.returns
+    code += "\n${@tab}return ${ @variable.compile(o) };" if o.returns
     code
 
   compile_splice: (o) ->
@@ -691,7 +668,7 @@ exports.CodeNode: class CodeNode extends BaseNode
     func: "($func)" if top and not @bound
     return func unless @bound
     inner: "(function$name_part() {\n${@idt(2)}return __func.apply(__this, arguments);\n${@idt(1)}});"
-    "(function(__this) {\n${@idt(1)}var __func = $func;\n${@idt(1)}return $inner\n${@idt()}})(this)"
+    "(function(__this) {\n${@idt(1)}var __func = $func;\n${@idt(1)}return $inner\n$@tab})(this)"
 
   top_sensitive: ->
     true
@@ -755,13 +732,13 @@ exports.WhileNode: class WhileNode extends BaseNode
     set:        ''
     if not top
       rvar:     o.scope.free_variable()
-      set:      "${@idt()}$rvar = [];\n"
+      set:      "$@tab$rvar = [];\n"
       @body:    PushNode.wrap(rvar, @body) if @body
-    post:       if returns then "\n${@idt()}return $rvar;" else ''
-    pre:        "$set${@idt()}while ($cond)"
+    post:       if returns then "\n${@tab}return $rvar;" else ''
+    pre:        "$set${@tab}while ($cond)"
     return      "$pre null;$post" if not @body
     @body:      Expressions.wrap([new IfNode(@filter, @body)]) if @filter
-    "$pre {\n${ @body.compile(o) }\n${@idt()}}$post"
+    "$pre {\n${ @body.compile(o) }\n$@tab}$post"
 
 statement WhileNode
 
@@ -845,9 +822,9 @@ exports.TryNode: class TryNode extends BaseNode
     o.top:        true
     attempt_part: @attempt.compile(o)
     error_part:   if @error then " (${ @error.compile(o) }) " else ' '
-    catch_part:   "${ (@recovery or '') and ' catch' }$error_part{\n${ @recovery.compile(o) }\n${@idt()}}"
-    finally_part: (@ensure or '') and ' finally {\n' + @ensure.compile(merge(o, {returns: null})) + "\n${@idt()}}"
-    "${@idt()}try {\n$attempt_part\n${@idt()}}$catch_part$finally_part"
+    catch_part:   "${ (@recovery or '') and ' catch' }$error_part{\n${ @recovery.compile(o) }\n$@tab}"
+    finally_part: (@ensure or '') and ' finally {\n' + @ensure.compile(merge(o, {returns: null})) + "\n$@tab}"
+    "${@tab}try {\n$attempt_part\n$@tab}$catch_part$finally_part"
 
 statement TryNode
 
@@ -860,7 +837,7 @@ exports.ThrowNode: class ThrowNode extends BaseNode
     @children: [@expression: expression]
 
   compile_node: (o) ->
-    "${@idt()}throw ${@expression.compile(o)};"
+    "${@tab}throw ${@expression.compile(o)};"
 
 statement ThrowNode, true
 
@@ -944,7 +921,7 @@ exports.ForNode: class ForNode extends BaseNode
       for_part:     "$index_var = 0, $for_part, $index_var++"
     else
       index_var:    null
-      source_part:  "$svar = ${ @source.compile(o) };\n${@idt()}"
+      source_part:  "$svar = ${ @source.compile(o) };\n$@tab"
       var_part:     "$body_dent$name = $svar[$ivar];\n" if name
       if not @object
         lvar:       scope.free_variable()
@@ -963,11 +940,11 @@ exports.ForNode: class ForNode extends BaseNode
     if @object
       o.scope.assign('__hasProp', 'Object.prototype.hasOwnProperty', true)
       for_part: "$ivar in $svar) { if (__hasProp.call($svar, $ivar)"
-    return_result:  "\n${@idt()}$return_result;" unless top_level
+    return_result:  "\n$@tab$return_result;" unless top_level
     body:           body.compile(merge(o, {indent: body_dent, top: true}))
     vars:           if range then name else "$name, $ivar"
     close:          if @object then '}}\n' else '}\n'
-    "$set_result${source_part}for ($for_part) {\n$var_part$body\n${@idt()}$close${@idt()}$return_result"
+    "$set_result${source_part}for ($for_part) {\n$var_part$body\n$@tab$close$@tab$return_result"
 
 statement ForNode
 
@@ -1054,12 +1031,12 @@ exports.IfNode: class IfNode extends BaseNode
     com_dent:     if child then @idt() else ''
     prefix:       if @comment then "${ @comment.compile(cond_o) }\n$com_dent" else ''
     body:         Expressions.wrap([@body]).compile(o)
-    if_part:      "$prefix${if_dent}if (${ @compile_condition(cond_o) }) {\n$body\n${@idt()}}"
+    if_part:      "$prefix${if_dent}if (${ @compile_condition(cond_o) }) {\n$body\n$@tab}"
     return if_part unless @else_body
     else_part: if @is_chain()
       ' else ' + @else_body.compile(merge(o, {indent: @idt(), chain_child: true}))
     else
-      " else {\n${ Expressions.wrap([@else_body]).compile(o) }\n${@idt()}}"
+      " else {\n${ Expressions.wrap([@else_body]).compile(o) }\n$@tab}"
     "$if_part$else_part"
 
   # Compile the IfNode into a ternary operator.
@@ -1067,3 +1044,43 @@ exports.IfNode: class IfNode extends BaseNode
     if_part:    @condition.compile(o) + ' ? ' + @body.compile(o)
     else_part:  if @else_body then @else_body.compile(o) else 'null'
     "$if_part : $else_part"
+
+# Constants
+# ---------
+
+# Tabs are two spaces for pretty printing.
+TAB: '  '
+TRAILING_WHITESPACE: /\s+$/gm
+
+# Keep the identifier regex in sync with the Lexer.
+IDENTIFIER:   /^[a-zA-Z$_](\w|\$)*$/
+
+# Utility Functions
+# -----------------
+
+# Merge objects.
+merge: (options, overrides) ->
+  fresh: {}
+  (fresh[key]: val) for key, val of options
+  (fresh[key]: val) for key, val of overrides if overrides
+  fresh
+
+# Trim out all falsy values from an array.
+compact: (array) -> item for item in array when item
+
+# Return a completely flattened version of an array.
+flatten: (array) ->
+  memo: []
+  for item in array
+    if item instanceof Array then memo: memo.concat(item) else memo.push(item)
+  memo
+
+# Delete a key from an object, returning the value.
+del: (obj, key) ->
+  val: obj[key]
+  delete obj[key]
+  val
+
+# Quickie helper for a generated LiteralNode.
+literal: (name) ->
+  new LiteralNode(name)
