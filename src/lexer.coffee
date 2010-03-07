@@ -110,40 +110,54 @@ BEFORE_WHEN: ['INDENT', 'OUTDENT', 'TERMINATOR']
 # pushing some extra smarts into the Lexer.
 exports.Lexer: class Lexer
 
-  # Scan by attempting to match tokens one at a time. Slow and steady.
+  # **tokenize** is the Lexer's main method. Scan by attempting to match tokens
+  # one at a time, using a regular expression anchored at the start of the
+  # remaining code, or a custom recursive token-matching method
+  # (for interpolations). When the next token has been recorded, we move forward
+  # within the code past the token, and begin again.
+  #
+  # Each tokenizing method is responsible for incrementing `@i` by the number of
+  # characters it has consumed. `@i` can be thought of as our finger on the page
+  # of source.
   tokenize: (code, options) ->
     o        : options or {}
     @code    : code         # The remainder of the source code.
     @i       : 0            # Current character position we're parsing.
     @line    : o.line or 0  # The current line.
-    @indent  : 0            # The current indent level.
-    @indents : []           # The stack of all indent levels we are currently within.
-    @tokens  : []           # Collection of all parsed tokens in the form ['TOKEN_TYPE', value, line]
+    @indent  : 0            # The current indentation level.
+    @indents : []           # The stack of all current indentation levels.
+    @tokens  : []           # Stream of parsed tokens in the form ['TYPE', value, line]
     while @i < @code.length
       @chunk: @code.slice(@i)
       @extract_next_token()
     @close_indentation()
-    return @tokens if o.rewrite is no
+    return @tokens if o.rewrite is off
     (new Rewriter()).rewrite @tokens
 
   # At every position, run through this list of attempted matches,
-  # short-circuiting if any of them succeed.
+  # short-circuiting if any of them succeed. Their order determines precedence:
+  # `@literal_token` is the fallback catch-all.
   extract_next_token: ->
     return if @identifier_token()
     return if @number_token()
     return if @heredoc_token()
-    return if @string_token()
-    return if @js_token()
     return if @regex_token()
     return if @comment_token()
     return if @line_token()
     return if @whitespace_token()
+    return if @js_token()
+    return if @string_token()
     return    @literal_token()
 
   # Tokenizers
   # ----------
 
   # Matches identifying literals: variables, keywords, method names, etc.
+  # Check to ensure that JavaScript reserved words aren't being used as
+  # identifiers. Because CoffeeScript reserves a handful of keywords that are
+  # allowed in JavaScript, we're careful not to tag them as keywords when
+  # referenced as property names here, so you can still do `jQuery.is()` even
+  # though `is` means `===` otherwise.
   identifier_token: ->
     return false unless id: @match IDENTIFIER, 1
     @name_access_type()
@@ -163,17 +177,20 @@ exports.Lexer: class Lexer
     @i += number.length
     true
 
-  # Matches strings, including multi-line strings.
+  # Matches strings, including multi-line strings. Ensures that quotation marks
+  # are balanced within the string's contents, and within nested interpolations.
   string_token: ->
+    return false unless starts(@chunk, '"') or starts(@chunk, "'")
     string: @balanced_token ['"', '"'], ['${', '}']
-    string: @balanced_token ["'", "'"] if string is false
+    string: @balanced_token ["'", "'"] unless string
     return false unless string
     @interpolate_string string.replace STRING_NEWLINES, " \\\n"
     @line += count string, "\n"
     @i += string.length
     true
 
-  # Matches heredocs, adjusting indentation to the correct level.
+  # Matches heredocs, adjusting indentation to the correct level, as heredocs
+  # preserve whitespace, but ignore indentation to the left.
   heredoc_token: ->
     return false unless match = @chunk.match(HEREDOC)
     doc: @sanitize_heredoc match[2] or match[4]
@@ -182,14 +199,17 @@ exports.Lexer: class Lexer
     @i += match[1].length
     true
 
-  # Matches interpolated JavaScript.
+  # Matches JavaScript interpolated directly into the source via backticks.
   js_token: ->
+    return false unless starts @chunk, '`'
     return false unless script: @balanced_token ['`', '`']
     @token 'JS', script.replace(JS_CLEANER, '')
     @i += script.length
     true
 
-  # Matches regular expression literals.
+  # Matches regular expression literals. Lexing regular expressions is difficult
+  # to distinguish from division, so we borrow some basic heuristics from
+  # JavaScript and Ruby.
   regex_token: ->
     return false unless regex: @match REGEX, 1
     return false if include NOT_REGEX, @tag()
@@ -197,38 +217,13 @@ exports.Lexer: class Lexer
     @i += regex.length
     true
 
-  # Matches a balanced group such as a single or double-quoted string. Pass in
-  # a series of delimiters, all of which must be balanced correctly within the
-  # string.
-  balanced_string: (str, delimited...) ->
-    levels: []
-    i: 0
-    while i < str.length
-      for pair in delimited
-        [open, close]: pair
-        if levels.length and starts str, '\\', i
-          i += 1
-          break
-        else if levels.length and starts(str, close, i) and levels[levels.length - 1] is pair
-          levels.pop()
-          i += close.length - 1
-          i += 1 unless levels.length
-          break
-        else if starts str, open, i
-          levels.push(pair)
-          i += open.length - 1
-          break
-      break unless levels.length
-      i += 1
-    throw new Error "SyntaxError: Unterminated ${levels.pop()[0]} starting on line ${@line + 1}" if levels.length
-    return false if i is 0
-    return str.substring(0, i)
-
-  # Matches a balanced string within the token's contents.
+  # Matches a token in which which the passed delimiter pairs must be correctly
+  # balanced (ie. strings, JS literals).
   balanced_token: (delimited...) ->
     @balanced_string @chunk, delimited...
 
-  # Matches and conumes comments.
+  # Matches and conumes comments. We pass through comments into JavaScript,
+  # so they're treated as real tokens, like any other part of the language.
   comment_token: ->
     return false unless comment: @match COMMENT, 1
     @line += (comment.match(MULTILINER) or []).length
@@ -239,6 +234,15 @@ exports.Lexer: class Lexer
     true
 
   # Matches newlines, indents, and outdents, and determines which is which.
+  # If we can detect that the current line is continued onto the the next line,
+  # then the newline is suppressed:
+  #
+  #     elements
+  #       .each( ... )
+  #       .map( ... )
+  #
+  # Keeps track of the level of indentation, because a single outdent token
+  # can close multiple indents, so we need to know how far in we happen to be.
   line_token: ->
     return false unless indent: @match MULTI_DENT, 1
     @line += indent.match(MULTILINER).length
@@ -249,10 +253,10 @@ exports.Lexer: class Lexer
     no_newlines: next_character is '.' or (@value() and @value().match(NO_NEWLINE) and
       prev and (prev[0] isnt '.') and not @value().match(CODE))
     if size is @indent
-      return @suppress_newlines(indent) if no_newlines
+      return @suppress_newlines() if no_newlines
       return @newline_token(indent)
     else if size > @indent
-      return @suppress_newlines(indent) if no_newlines
+      return @suppress_newlines() if no_newlines
       diff: size - @indent
       @token 'INDENT', diff
       @indents.push diff
@@ -261,8 +265,8 @@ exports.Lexer: class Lexer
     @indent: size
     true
 
-  # Record an outdent token or tokens, if we happen to be moving back inwards
-  # past multiple recorded indents.
+  # Record an outdent token or multiple tokens, if we happen to be moving back
+  # inwards past several recorded indents.
   outdent_token: (move_out, no_newlines) ->
     while move_out > 0 and @indents.length
       last_indent: @indents.pop()
@@ -280,20 +284,22 @@ exports.Lexer: class Lexer
     @i += space.length
     true
 
-  # Generate a newline token. Multiple newlines get merged together.
+  # Generate a newline token. Consecutive newlines get merged together.
   newline_token: (newlines) ->
     @token 'TERMINATOR', "\n" unless @tag() is 'TERMINATOR'
     true
 
   # Use a `\` at a line-ending to suppress the newline.
   # The slash is removed here once its job is done.
-  suppress_newlines: (newlines) ->
+  suppress_newlines: ->
     @tokens.pop() if @value() is "\\"
     true
 
   # We treat all other single characters as a token. Eg.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
-  # the proper order of operations.
+  # the proper order of operations. There are some symbols that we tag specially
+  # here. `;` and newlines are both treated as a `TERMINATOR`, we distinguish
+  # parentheses that indicate a method call from regular parentheses, and so on.
   literal_token: ->
     match: @chunk.match(OPERATOR)
     value: match and match[1]
@@ -334,18 +340,17 @@ exports.Lexer: class Lexer
       else
         @tag 1, 'PROPERTY_ACCESS'
 
-  # Sanitize a heredoc by escaping double quotes and erasing all external
-  # indentation on the left-hand side.
+  # Sanitize a heredoc by escaping internal double quotes and erasing all
+  # external indentation on the left-hand side.
   sanitize_heredoc: (doc) ->
     indent: (doc.match(HEREDOC_INDENT) or ['']).sort()[0]
     doc.replace(new RegExp("^" +indent, 'gm'), '')
        .replace(MULTILINER, "\\n")
        .replace(/"/g, '\\"')
 
-  # A source of ambiguity in our grammar was parameter lists in function
-  # definitions (as opposed to argument lists in function calls). Tag
-  # parameter identifiers in order to avoid this. Also, parameter lists can
-  # make use of splats.
+  # A source of ambiguity in our grammar used to be parameter lists in function
+  # definitions versus argument lists in function calls. Walk backwards, tagging
+  # parameters specially in order to make things easier for the parser.
   tag_parameters: ->
     return if @tag() isnt ')'
     i: 0
@@ -363,64 +368,85 @@ exports.Lexer: class Lexer
   close_indentation: ->
     @outdent_token(@indent)
 
-  # Error for when you try to use a forbidden word in JavaScript as
+  # The error for when you try to use a forbidden word in JavaScript as
   # an identifier.
   identifier_error: (word) ->
     throw new Error "SyntaxError: Reserved word \"$word\" on line ${@line + 1}"
 
-  # Error for when you try to assign to a reserved word in JavaScript,
+  # The error for when you try to assign to a reserved word in JavaScript,
   # like "function" or "default".
   assignment_error: ->
     throw new Error "SyntaxError: Reserved word \"${@value()}\" on line ${@line + 1} can't be assigned"
 
+  # Matches a balanced group such as a single or double-quoted string. Pass in
+  # a series of delimiters, all of which must be nested correctly within the
+  # contents of the string. This method allows us to have strings within
+  # interpolations within strings etc...
+  balanced_string: (str, delimited...) ->
+    levels: []
+    i: 0
+    while i < str.length
+      for pair in delimited
+        [open, close]: pair
+        if levels.length and starts str, '\\', i
+          i += 1
+          break
+        else if levels.length and starts(str, close, i) and levels[levels.length - 1] is pair
+          levels.pop()
+          i += close.length - 1
+          i += 1 unless levels.length
+          break
+        else if starts str, open, i
+          levels.push(pair)
+          i += open.length - 1
+          break
+      break unless levels.length
+      i += 1
+    throw new Error "SyntaxError: Unterminated ${levels.pop()[0]} starting on line ${@line + 1}" if levels.length
+    return false if i is 0
+    return str.substring(0, i)
+
   # Expand variables and expressions inside double-quoted strings using
-  # [ECMA Harmony's interpolation syntax](http://wiki.ecmascript.org/doku.php?id=strawman:string_interpolation).
+  # [ECMA Harmony's interpolation syntax](http://wiki.ecmascript.org/doku.php?id=strawman:string_interpolation)
+  # for substitution of bare variables as well as arbitrary expressions.
   #
   #     "Hello $name."
   #     "Hello ${name.capitalize()}."
   #
+  # If it encounters an interpolation, this method will recursively create a
+  # new Lexer, tokenize the interpolated contents, and merge them into the
+  # token stream.
   interpolate_string: (str) ->
     if str.length < 3 or not starts str, '"'
       @token 'STRING', str
     else
-      lexer:  new Lexer()
-      tokens: []
-      quote:  str.substring(0, 1)
-      i:      1
-      last_i: i
+      lexer:    new Lexer()
+      tokens:   []
+      quote:    str.substring(0, 1)
+      [i, pi]:  [1, 1]
       while i < str.length - 1
         if starts str, '\\', i
           i += 1
-        else
-          match: str.substring(i).match INTERPOLATION
-          if match
-            [group, interp]: match
-            interp: "this.${ interp.substring(1) }" if starts interp, '@'
-            tokens.push ['STRING', "$quote${ str.substring(last_i, i) }$quote"] if last_i < i
-            tokens.push ['IDENTIFIER', interp]
-            i += group.length - 1
-            last_i: i + 1
-          else
-            expression: @balanced_string str.substring(i), ['${', '}']
-            if expression and expression.length > 3
-              inner: expression.substring(2, expression.length - 1)
-              nested: lexer.tokenize "($inner)", {rewrite: no, line: @line}
-              nested.pop()
-              tokens.push ['STRING', "$quote${ str.substring(last_i, i) }$quote"] if last_i < i
-              tokens.push ['TOKENS', nested]
-              i += expression.length - 1
-              last_i: i + 1
+        else if match: str.substring(i).match INTERPOLATION
+          [group, interp]: match
+          interp: "this.${ interp.substring(1) }" if starts interp, '@'
+          tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i
+          tokens.push ['IDENTIFIER', interp]
+          i += group.length - 1
+          pi: i + 1
+        else if (expr: @balanced_string str.substring(i), ['${', '}']) and expr.length > 3
+          inner: expr.substring(2, expr.length - 1)
+          nested: lexer.tokenize "($inner)", {rewrite: no, line: @line}
+          nested.pop()
+          tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i
+          tokens.push ['TOKENS', nested]
+          i += expr.length - 1
+          pi: i + 1
         i += 1
-      tokens.push ['STRING', "$quote${ str.substring(last_i, i) }$quote"] if last_i < i and last_i < str.length - 1
-      if tokens.length > 1
-        for i in [tokens.length - 1..1]
-          [prev, tok]: [tokens[i - 1], tokens[i]]
-          if tok[0] is 'STRING' and prev[0] is 'STRING'
-            [prev, tok]: [prev[1].substring(1, prev[1].length - 1), tok[1].substring(1, tok[1].length - 1)]
-            tokens.splice i - 1, 2, ['STRING', "$quote$prev$tok$quote"]
+      tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i and pi < str.length - 1
       for each, i in tokens
         if each[0] is 'TOKENS'
-          @token nested[0], nested[1] for nested in each[1]
+          @tokens: @tokens.concat each[1]
         else
           @token each[0], each[1]
         @token '+', '+' if i < tokens.length - 1
