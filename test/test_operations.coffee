@@ -4,6 +4,8 @@ ok 500 > 50 > 5 > -5
 
 ok true is not false is true is not false
 
+ok 0 is 0 isnt 50 is 50
+
 ok 10 < 20 > 10
 
 ok 50 > 10 > 5 is parseInt('5', 10)

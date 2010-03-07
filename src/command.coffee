@@ -1,3 +1,9 @@
+# The `coffee` utility. Handles command-line compilation of CoffeeScript
+# into various forms: saved into `.js` files or printed to stdout, piped to
+# JSLint or recompiled every time the source is saved, printed as a token
+# stream or as the syntax tree.
+
+# External dependencies.
 fs:           require 'fs'
 path:         require 'path'
 optparse:     require 'optparse'

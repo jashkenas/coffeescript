@@ -24,7 +24,7 @@ operators: [
   ["left",      '&', '|', '^']
   ["left",      '<=', '<', '>', '>=']
   ["right",     'DELETE', 'INSTANCEOF', 'TYPEOF']
-  ["right",     '==', '!=', 'IS', 'ISNT']
+  ["left",      '==', '!=', 'IS', 'ISNT']
   ["left",      '&&', '||', 'AND', 'OR']
   ["right",     '-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=']
   ["left",      '.']
