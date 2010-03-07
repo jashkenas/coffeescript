@@ -44,7 +44,7 @@ exports.run: ->
   if separator >= 0
     flags: sources[(separator + 1)...sources.length]
     sources: sources[0...separator]
-  process.ARGV = flags
+  process.ARGV: process.argv: flags
   watch_scripts() if options.watch
   compile_scripts()
   this
