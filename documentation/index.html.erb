@@ -649,6 +649,14 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <p>
       <span id="fat_arrow" class="bookmark"></span>
       <b class="header">Function binding</b>
+      In JavaScript, the <tt>this</tt> keyword is dynamically scoped to mean the
+      object that the current function is attached to. If you pass a function as
+      as callback, or attach it to a different object, the original value of <tt>this</tt>
+      will be lost. If you're not familiar with this behavior, 
+      <a href="http://www.digital-web.com/articles/scope_in_javascript/">this Digital Web article</a>
+      gives a good overview of the quirks.
+    </p>
+    <p>
       The fat arrow <tt>=></tt> can be used to both define a function, and to bind
       it to the current value of <tt>this</tt>, right on the spot. This is helpful
       when using callback-based libraries like Prototype or jQuery, for creating
@@ -657,6 +665,11 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       properties of the <tt>this</tt> where they're defined.
     </p>
     <%= code_for('fat_arrow') %>
+    <p>
+      If we had used <tt>-></tt> in the callback above, <tt>@customer</tt> would
+      have referred to the undefined "customer" property of the DOM element, 
+      and trying to call <tt>purchase()</tt> on it would have raised an exception. 
+    </p>
 
     <p>
       <span id="embedded" class="bookmark"></span>
