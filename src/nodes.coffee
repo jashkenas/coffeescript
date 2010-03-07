@@ -18,6 +18,8 @@ statement: (klass, only) ->
   klass::is_statement: -> true
   (klass::is_pure_statement: -> true) if only
 
+#### BaseNode
+
 # The **BaseNode** is the abstract base class for all nodes in the syntax tree.
 # Each subclass implements the `compile_node` method, which performs the
 # code generation for that node. To compile a node to JavaScript,
@@ -63,28 +65,34 @@ exports.BaseNode: class BaseNode
   # Convenience method to grab the current indentation level, plus tabbing in.
   idt: (tabs) ->
     idt: @tab or ''
-    idt += TAB for i in [0...(tabs or 0)]
+    num: (tabs or 0) + 1
+    idt += TAB while num -= 1
     idt
 
   # Does this node, or any of its children, contain a node of a certain kind?
+  # Recursively traverses down the *children* of the nodes, yielding to a block
+  # and returning true when the block finds a match. `contains` does not cross
+  # scope boundaries.
   contains: (block) ->
     for node in @children
       return true if block(node)
       return true if node.contains and node.contains block
     false
 
-  # Perform an in-order traversal of the AST.
+  # Perform an in-order traversal of the AST. Crosses scope boundaries.
   traverse: (block) ->
     for node in @children
       block node
       node.traverse block if node.traverse
 
-  # toString representation of the node, for inspecting the parse tree.
+  # `toString` representation of the node, for inspecting the parse tree.
+  # This is what `coffee --nodes` prints out.
   toString: (idt) ->
     idt ||= ''
     '\n' + idt + @type + (child.toString(idt + TAB) for child in @children).join('')
 
-  # Default implementations of the common node methods.
+  # Default implementations of the common node identification methods. Nodes
+  # will override these with custom logic, if needed.
   unwrap:               -> this
   children:             []
   is_statement:         -> false
@@ -92,8 +100,11 @@ exports.BaseNode: class BaseNode
   top_sensitive:        -> false
   operation_sensitive:  -> false
 
+#### Expressions
 
-# A collection of nodes, each one representing an expression.
+# The expressions body is the list of expressions that forms the body of an
+# indented block of code -- the implementation of a function, a clause in an
+# `if`, `switch`, or `try`, and so on...
 exports.Expressions: class Expressions extends BaseNode
   type: 'Expressions'
 
@@ -105,12 +116,13 @@ exports.Expressions: class Expressions extends BaseNode
     @expressions.push(node)
     this
 
-  # Tack an expression on to the beginning of this expression list.
+  # Add an expression at the beginning of this expression list.
   unshift: (node) ->
     @expressions.unshift(node)
     this
 
-  # If this Expressions consists of a single node, pull it back out.
+  # If this Expressions consists of just a single node, unwrap it by pulling
+  # it back out.
   unwrap: ->
     if @expressions.length is 1 then @expressions[0] else this
 
@@ -118,21 +130,22 @@ exports.Expressions: class Expressions extends BaseNode
   empty: ->
     @expressions.length is 0
 
-  # Is the node last in this block of expressions?
+  # Is the given node the last one in this block of expressions?
   is_last: (node) ->
     l: @expressions.length
     last_index: if @expressions[l - 1] instanceof CommentNode then 2 else 1
     node is @expressions[l - last_index]
 
+  # An **Expressions** is the only node that can serve as the root.
   compile: (o) ->
     o ||= {}
     if o.scope then super(o) else @compile_root(o)
 
-  # Compile each expression in the Expressions body.
   compile_node: (o) ->
     (@compile_expression(node, merge(o)) for node in @expressions).join("\n")
 
-  # If this is the top-level Expressions, wrap everything in a safety closure.
+  # If we happen to be the top-level **Expressions**, wrap everything in
+  # a safety closure, unless requested not to.
   compile_root: (o) ->
     o.indent: @tab: if o.no_wrap then '' else TAB
     o.scope: new Scope(null, this, null)
@@ -140,8 +153,8 @@ exports.Expressions: class Expressions extends BaseNode
     code: code.replace(TRAILING_WHITESPACE, '')
     if o.no_wrap then code else "(function(){\n$code\n})();\n"
 
-  # Compile the expressions body, with declarations of all inner variables
-  # pushed up to the top.
+  # Compile the expressions body for the contents of a function, with
+  # declarations of all inner variables pushed up to the top.
   compile_with_declarations: (o) ->
     code: @compile_node(o)
     args: @contains (node) -> node instanceof ValueNode and node.is_arguments()
@@ -150,40 +163,40 @@ exports.Expressions: class Expressions extends BaseNode
     code: "${@tab}var ${o.scope.compiled_declarations()};\n$code" if o.scope.has_declarations(this)
     code
 
-  # Compiles a single expression within the expressions body.
+  # Compiles a single expression within the expressions body. If we need to
+  # return the result, and it's an expression, simply return it. If it's a
+  # statement, ask the statement to do so.
   compile_expression: (node, o) ->
     @tab: o.indent
     stmt:    node.is_statement()
-    # We need to return the result if this is the last node in the expressions body.
     returns: del(o, 'returns') and @is_last(node) and not node.is_pure_statement()
-    # Return the regular compile of the node, unless we need to return the result.
     return (if stmt then '' else @idt()) + node.compile(merge(o, {top: true})) + (if stmt then '' else ';') unless returns
-    # If it's a statement, the node knows how to return itself.
     return node.compile(merge(o, {returns: true})) if node.is_statement()
-    # Otherwise, we can just return the value of the expression.
-    return "${@tab}return ${node.compile(o)};"
+    "${@tab}return ${node.compile(o)};"
 
-# Wrap up a node as an Expressions, unless it already is one.
+# Wrap up the given nodes as an **Expressions**, unless it already happens
+# to be one.
 Expressions.wrap: (nodes) ->
   return nodes[0] if nodes.length is 1 and nodes[0] instanceof Expressions
   new Expressions(nodes)
 
 statement Expressions
 
+#### LiteralNode
 
 # Literals are static values that can be passed through directly into
-# JavaScript without translation, eg.: strings, numbers, true, false, null...
+# JavaScript without translation, such as: strings, numbers,
+# `true`, `false`, `null`...
 exports.LiteralNode: class LiteralNode extends BaseNode
   type: 'Literal'
 
   constructor: (value) ->
     @value: value
 
-  # Break and continue must be treated as statements -- they lose their meaning
-  # when wrapped in a closure.
+  # Break and continue must be treated as pure statements -- they lose their
+  # meaning when wrapped in a closure.
   is_statement: ->
     @value is 'break' or @value is 'continue'
-
   is_pure_statement: LiteralNode::is_statement
 
   compile_node: (o) ->
@@ -194,8 +207,10 @@ exports.LiteralNode: class LiteralNode extends BaseNode
   toString: (idt) ->
     " \"$@value\""
 
+#### ReturnNode
 
-# Return an expression, or wrap it in a closure and return it.
+# A `return` is a *pure_statement* -- wrapping it in a closure wouldn't
+# make sense.
 exports.ReturnNode: class ReturnNode extends BaseNode
   type: 'Return'
 
@@ -208,16 +223,20 @@ exports.ReturnNode: class ReturnNode extends BaseNode
 
 statement ReturnNode, true
 
+#### ValueNode
 
-# A value, indexed or dotted into, or vanilla.
+# A value, variable or literal or parenthesized, indexed or dotted into,
+# or vanilla.
 exports.ValueNode: class ValueNode extends BaseNode
   type: 'Value'
 
   SOAK: " == undefined ? undefined : "
 
+  # A **ValueNode** has a base and a list of property accesses.
   constructor: (base, properties) ->
     @children:   flatten [@base: base, @properties: (properties or [])]
 
+  # Add a property access to the list.
   push: (prop) ->
     @properties.push(prop)
     @children.push(prop)
@@ -228,6 +247,8 @@ exports.ValueNode: class ValueNode extends BaseNode
 
   has_properties: ->
     !!@properties.length
+
+  # Some boolean checks for the benefit of other nodes.
 
   is_array: ->
     @base instanceof ArrayNode and not @has_properties()
@@ -241,13 +262,19 @@ exports.ValueNode: class ValueNode extends BaseNode
   is_arguments: ->
     @base.value is 'arguments'
 
+  # The value can be unwrapped as its inner node, if there are no attached
+  # properties.
   unwrap: ->
     if @properties.length then this else @base
 
-  # Values are statements if their base is a statement.
+  # Values are considered to be statements if their base is a statement.
   is_statement: ->
     @base.is_statement and @base.is_statement() and not @has_properties()
 
+  # We compile a value to JavaScript by compiling and joining each property.
+  # Things get much more insteresting if the chain of properties has *soak*
+  # operators `?.` interspersed. Then we have to take care not to accidentally
+  # evaluate a anything twice when building the soak chain.
   compile_node: (o) ->
     soaked:   false
     only:     del(o, 'only_first')
@@ -274,8 +301,9 @@ exports.ValueNode: class ValueNode extends BaseNode
 
     if op and soaked then "($complete)" else complete
 
+#### CommentNode
 
-# Pass through CoffeeScript comments into JavaScript comments at the
+# CoffeeScript passes through comments as JavaScript comments at the
 # same position.
 exports.CommentNode: class CommentNode extends BaseNode
   type: 'Comment'
@@ -289,8 +317,9 @@ exports.CommentNode: class CommentNode extends BaseNode
 
 statement CommentNode
 
+#### CallNode
 
-# Node for a function invocation. Takes care of converting super() calls into
+# Node for a function invocation. Takes care of converting `super()` calls into
 # calls against the prototype's function of the same name.
 exports.CallNode: class CallNode extends BaseNode
   type: 'Call'
@@ -299,10 +328,12 @@ exports.CallNode: class CallNode extends BaseNode
     @children:  flatten [@variable: variable, @args: (args or [])]
     @prefix:    ''
 
+  # Tag this invocation as creating a new instance.
   new_instance: ->
     @prefix: 'new '
     this
 
+  # Add an argument to the call's arugment list.
   push: (arg) ->
     @args.push(arg)
     @children.push(arg)
@@ -315,7 +346,8 @@ exports.CallNode: class CallNode extends BaseNode
     return @compile_super(args, o) if @variable is 'super'
     "$@prefix${@variable.compile(o)}($args)"
 
-  # Compile a call against the superclass's implementation of the current function.
+  # `super()` is converted into a call against the superclass's implementation
+  # of the current function.
   compile_super: (args, o) ->
     methname: o.scope.method.name
     meth: if o.scope.method.proto
@@ -324,7 +356,8 @@ exports.CallNode: class CallNode extends BaseNode
       "$methname.__superClass__.constructor"
     "$meth.call(this${ if args.length then ', ' else '' }$args)"
 
-  # Compile a function call being passed variable arguments.
+  # If you call a function with a splat, it's converted into a JavaScript
+  # `.apply()` call to allow the variable-length arguments.
   compile_splat: (o) ->
     meth: @variable.compile o
     obj:  @variable.source or 'this'
@@ -338,9 +371,11 @@ exports.CallNode: class CallNode extends BaseNode
       if i is 0 then code else ".concat($code)"
     "$@prefix$meth.apply($obj, ${ args.join('') })"
 
+#### ExtendsNode
 
 # Node to extend an object's prototype with an ancestor object.
-# After goog.inherits from the Closure Library.
+# After `goog.inherits` from the
+# [Closure Library](http://closure-library.googlecode.com/svn/docs/closure_goog_base.js.html).
 exports.ExtendsNode: class ExtendsNode extends BaseNode
   type: 'Extends'
 
@@ -357,15 +392,16 @@ exports.ExtendsNode: class ExtendsNode extends BaseNode
   constructor: (child, parent) ->
     @children:  [@child: child, @parent: parent]
 
-  # Hooking one constructor into another's prototype chain.
+  # Hooks one constructor into another's prototype chain.
   compile_node: (o) ->
     o.scope.assign('__extends', @code, true)
     ref:  new ValueNode literal('__extends')
     call: new CallNode ref, [@child, @parent]
     call.compile(o)
 
+#### AccessorNode
 
-# A dotted accessor into a part of a value, or the :: shorthand for
+# A `.` accessor into a property of a value, or the `::` shorthand for
 # an accessor into the object's prototype.
 exports.AccessorNode: class AccessorNode extends BaseNode
   type: 'Accessor'
@@ -379,8 +415,9 @@ exports.AccessorNode: class AccessorNode extends BaseNode
   compile_node: (o) ->
     '.' + (if @prototype then 'prototype.' else '') + @name.compile(o)
 
+#### IndexNode
 
-# An indexed accessor into a part of an array or object.
+# An indexed accessor into an array or object.
 exports.IndexNode: class IndexNode extends BaseNode
   type: 'Index'
 
@@ -392,9 +429,11 @@ exports.IndexNode: class IndexNode extends BaseNode
     idx: @index.compile o
     "[$idx]"
 
+#### RangeNode
 
 # A range literal. Ranges can be used to extract portions (slices) of arrays,
-# or to specify a range for list comprehensions.
+# to specify a range for comprehensions, or as a value, to be expanded into the
+# corresponding array of integers at runtime.
 exports.RangeNode: class RangeNode extends BaseNode
   type: 'Range'
 
@@ -402,12 +441,15 @@ exports.RangeNode: class RangeNode extends BaseNode
     @children:  [@from: from, @to: to]
     @exclusive: !!exclusive
 
+  # Compiles the range's source variables -- where it starts and where it ends.
   compile_variables: (o) ->
     @tab: o.indent
     [@from_var, @to_var]: [o.scope.free_variable(), o.scope.free_variable()]
     [from, to]:           [@from.compile(o), @to.compile(o)]
     "$@from_var = $from; $@to_var = $to;\n$@tab"
 
+  # When compiled normally, the range returns the contents of the *for loop*
+  # needed to iterate over the values in the range. Used by comprehensions.
   compile_node: (o) ->
     return    @compile_array(o) unless o.index
     idx:      del o, 'index'
@@ -420,9 +462,9 @@ exports.RangeNode: class RangeNode extends BaseNode
     incr:     "$intro += $step : $idx -= $step)"
     "$vars; $compare; $incr"
 
-  # Expand the range into the equivalent array, if it's not being used as
-  # part of a comprehension, slice, or splice.
-  # TODO: This generates pretty ugly code ... shrink it.
+  # When used as a value, expand the range into the equivalent array. In the
+  # future, the code this generates should probably be cleaned up by handwriting
+  # it instead of wrapping nodes.
   compile_array: (o) ->
     name: o.scope.free_variable()
     body: Expressions.wrap([literal(name)])
