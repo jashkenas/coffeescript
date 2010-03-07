@@ -59,7 +59,7 @@ JS_FORBIDDEN: JS_KEYWORDS.concat RESERVED
 IDENTIFIER    : /^([a-zA-Z$_](\w|\$)*)/
 NUMBER        : /^(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
 HEREDOC       : /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
-INTERPOLATION : /(^|[\s\S]*?(?:[\\]|\\\\)?)\$([a-zA-Z_@]\w*|{[\s\S]*?(?:[^\\]|\\\\)})/
+INTERPOLATION : /^\$([a-zA-Z_@]\w*)/
 OPERATOR      : /^([+\*&|\/\-%=<>:!?]+)/
 WHITESPACE    : /^([ \t]+)/
 COMMENT       : /^(((\n?[ \t]*)?#[^\n]*)+)/
@@ -199,22 +199,22 @@ exports.Lexer: class Lexer
 
   # Matches a balanced group such as a single or double-quoted string. Pass in
   # a series of delimiters, all of which must be balanced correctly within the
-  # token's contents.
-  balanced_token: (delimited...) ->
+  # string.
+  balanced_string: (str, delimited...) ->
     levels: []
     i: 0
-    while i < @chunk.length
+    while i < str.length
       for pair in delimited
         [open, close]: pair
-        if levels.length and starts @chunk, '\\', i
+        if levels.length and starts str, '\\', i
           i += 1
           break
-        else if levels.length and starts(@chunk, close, i) and levels[levels.length - 1] is pair
+        else if levels.length and starts(str, close, i) and levels[levels.length - 1] is pair
           levels.pop()
           i += close.length - 1
           i += 1 unless levels.length
           break
-        else if starts @chunk, open, i
+        else if starts str, open, i
           levels.push(pair)
           i += open.length - 1
           break
@@ -222,7 +222,11 @@ exports.Lexer: class Lexer
       i += 1
     throw new Error "SyntaxError: Unterminated ${levels.pop()[0]} starting on line ${@line + 1}" if levels.length
     return false if i is 0
-    return @chunk.substring(0, i)
+    return str.substring(0, i)
+
+  # Matches a balanced string within the token's contents.
+  balanced_token: (delimited...) ->
+    @balanced_string @chunk, delimited...
 
   # Matches and conumes comments.
   comment_token: ->
@@ -382,28 +386,32 @@ exports.Lexer: class Lexer
       lexer:  new Lexer()
       tokens: []
       quote:  str.substring(0, 1)
-      str:    str.substring(1, str.length - 1)
-      while str.length
-        match: str.match INTERPOLATION
-        if match
-          [group, before, interp]: match
-          if starts before, '\\', before.length - 1
-            prev: before.substring(0, before.length - 1)
-            tokens.push ['STRING', "$quote$prev$$interp$quote"] if before.length
+      i:      1
+      last_i: i
+      while i < str.length - 1
+        if starts str, '\\', i
+          i += 1
+        else
+          match: str.substring(i).match INTERPOLATION
+          if match
+            [group, interp]: match
+            interp: "this.${ interp.substring(1) }" if starts interp, '@'
+            tokens.push ['STRING', "$quote${ str.substring(last_i, i) }$quote"] if last_i < i
+            tokens.push ['IDENTIFIER', interp]
+            i += group.length - 1
+            last_i: i + 1
           else
-            tokens.push ['STRING', "$quote$before$quote"] if before.length
-            if starts interp, '{'
-              inner: interp.substring(1, interp.length - 1)
+            expression: @balanced_string str.substring(i), ['${', '}']
+            if expression and expression.length > 3
+              inner: expression.substring(2, expression.length - 1)
               nested: lexer.tokenize "($inner)", {rewrite: no, line: @line}
               nested.pop()
+              tokens.push ['STRING', "$quote${ str.substring(last_i, i) }$quote"] if last_i < i
               tokens.push ['TOKENS', nested]
-            else
-              interp: "this.${ interp.substring(1) }" if starts interp, '@'
-              tokens.push ['IDENTIFIER', interp]
-          str: str.substring(group.length)
-        else
-          tokens.push ['STRING', "$quote$str$quote"]
-          str: ''
+              i += expression.length - 1
+              last_i: i + 1
+        i += 1
+      tokens.push ['STRING', "$quote${ str.substring(last_i, i) }$quote"] if last_i < i and last_i < str.length - 1
       if tokens.length > 1
         for i in [tokens.length - 1..1]
           [prev, tok]: [tokens[i - 1], tokens[i]]
