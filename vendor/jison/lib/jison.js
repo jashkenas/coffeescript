@@ -392,10 +392,12 @@ lookaheadMixin.first = function first (symbol) {
     } else if (symbol instanceof Array) {
         var firsts = [];
         for (var i=0,t;t=symbol[i];++i) {
-            this.first(t).forEach(function first_forEach (e) {
-                if (firsts.indexOf(e)===-1)
-                    firsts.push(e);
-            });
+            if (!this.nonterminals[t]) {
+                if (firsts.indexOf(t) === -1)
+                    firsts.push(t);
+            } else {
+                Set.union(firsts, this.nonterminals[t].first);
+            }
             if (!this.nullable(t))
                 break;
         }
@@ -581,9 +583,9 @@ lrGeneratorMixin.ItemSet = Set.prototype.construct({
     contains: function (item) {
         return this.hash_[item.id];
     },
-    toValue: function toValue () {
-        var v = this.items_.sort().join('|');
-        return (this.toValue = function toValue_inner() {return v;})();
+    valueOf: function toValue () {
+        var v = this._items.map(function (a) {return a.id}).sort().join('|');
+        return (this.valueOf = function toValue_inner() {return v;})();
     }
 });
 
@@ -630,11 +632,10 @@ lrGeneratorMixin.closureOperation = function closureOperation (itemSet /*, closu
 
 lrGeneratorMixin.gotoOperation = function gotoOperation (itemSet, symbol) {
     var gotoSet = new this.ItemSet(),
-        EOF = this.EOF,
         self = this;
 
     itemSet.forEach(function goto_forEach(item, n) {
-        if (item.markedSymbol === symbol && symbol !== EOF) {
+        if (item.markedSymbol === symbol) {
             gotoSet.push(new self.Item(item.production, item.dotPosition+1, item.follows, n));
         }
     });
@@ -652,10 +653,13 @@ lrGeneratorMixin.canonicalCollection = function canonicalCollection () {
         self = this,
         itemSet;
 
+    states.has = {};
+    states.has[firstState] = 0;
+
     while (marked !== states.size()) {
         itemSet = states.item(marked); marked++;
-        itemSet.forEach(function CC_itemSet_forEach(item) {
-            if(item.markedSymbol)
+        itemSet.forEach(function CC_itemSet_forEach (item) {
+            if (item.markedSymbol && item.markedSymbol !== self.EOF)
                 self.canonicalCollectionInsert(item.markedSymbol, itemSet, states, marked-1);
         });
     }
@@ -670,8 +674,10 @@ lrGeneratorMixin.canonicalCollectionInsert = function canonicalCollectionInsert 
         g.predecessors = {};
     // add g to que if not empty or duplicate
     if (!g.isEmpty()) {
-        var i = states.indexOf(g);
-        if (i === -1) {
+        var gv = g.valueOf(),
+            i = states.has[gv];
+        if (i === -1 || typeof i === 'undefined') {
+            states.has[gv] = states.size();
             itemSet.edges[symbol] = states.size(); // store goto transition for table
             states.push(g); 
             g.predecessors[symbol] = [stateNum];
@@ -682,6 +688,7 @@ lrGeneratorMixin.canonicalCollectionInsert = function canonicalCollectionInsert 
     }
 };
 
+var NONASSOC = 0;
 lrGeneratorMixin.parseTable = function parseTable (itemSets) {
     var states = [],
         nonterminals = this.nonterminals,
@@ -708,7 +715,7 @@ lrGeneratorMixin.parseTable = function parseTable (itemSets) {
                         state[self.symbols_[stackSymbol]] = gotoState; 
                     } else {
                         //self.trace(k, stackSymbol, 's'+gotoState);
-                        state[self.symbols_[stackSymbol]] = [[s,gotoState]];
+                        state[self.symbols_[stackSymbol]] = [s,gotoState];
                     }
                 }
             });
@@ -718,7 +725,7 @@ lrGeneratorMixin.parseTable = function parseTable (itemSets) {
         itemSet.forEach(function (item, j) {
             if (item.markedSymbol == self.EOF) {
                 // accept
-                state[self.symbols_[self.EOF]] = [[a]]; 
+                state[self.symbols_[self.EOF]] = [a]; 
                 //self.trace(k, self.EOF, state[self.EOF]);
             }
         });
@@ -731,11 +738,12 @@ lrGeneratorMixin.parseTable = function parseTable (itemSets) {
             var terminals = allterms || self.lookAheads(itemSet, item);
 
             terminals.forEach(function (stackSymbol) {
-                action = state[self.symbols_[stackSymbol]] || [];
+                action = state[self.symbols_[stackSymbol]];
                 var op = operators[stackSymbol];
+
                 // Reading a terminal and current position is at the end of a production, try to reduce
-                if (action.length) {
-                    var sol = resolveConflict(item.production, op, [r,item.production.id], action[0]);
+                if (action || action && action.length) {
+                    var sol = resolveConflict(item.production, op, [r,item.production.id], action[0] instanceof Array ? action[0] : action);
                     self.resolutions.push([k,stackSymbol,sol]);
                     if (sol.bydefault) {
                         self.conflicts++;
@@ -743,16 +751,20 @@ lrGeneratorMixin.parseTable = function parseTable (itemSets) {
                             self.warn('Conflict in grammar (state:',k, ', token:',stackSymbol, ")\n  ", printAction(sol.r, self), "\n  ", printAction(sol.s, self));
                         }
                         if (self.options.noDefaultResolve) {
+                            if (!(action[0] instanceof Array))
+                                action = [action];
                             action.push(sol.r);
                         }
                     } else {
-                        action = [sol.action];
+                        action = sol.action;
                     }
                 } else {
-                    action.push([r,item.production.id]);
+                    action = [r,item.production.id];
                 }
                 if (action && action.length) {
                     state[self.symbols_[stackSymbol]] = action;
+                } else if (action === NONASSOC) {
+                    state[self.symbols_[stackSymbol]] = undefined;
                 }
             });
         });
@@ -773,7 +785,6 @@ function resolveConflict (production, op, reduce, shift) {
         sln.msg = "Resolve R/R conflict (use first production declared in grammar.)";
         sln.action = shift[1] < reduce[1] ? shift : reduce;
         sln.bydefault = true;
-        //print(production, reduce[0]);
         return sln;
     }
 
@@ -793,7 +804,7 @@ function resolveConflict (production, op, reduce, shift) {
             sln.action = reduce;
         } else if (op.assoc === "nonassoc" ) {
             sln.msg = "Resolve S/R conflict (no action for non-associative operator.)";
-            sln.action = undefined;
+            sln.action = NONASSOC;
         }
     } else {
         sln.msg = "Resolve conflict (reduce for higher precedent production.)";
@@ -979,7 +990,7 @@ parser.parse = function parse (input) {
         // read action for current state and first input
         action = table[state] && table[state][symbol];
 
-        if (typeof action == 'undefined' || !action.length || !action[0]) {
+        if (typeof action === 'undefined' || !action.length || !action[0]) {
             expected = [];
             for (p in table[state]) if (this.terminals_[p] && p != 1) {
                 expected.push("'"+this.terminals_[p]+"'");
@@ -993,14 +1004,12 @@ parser.parse = function parse (input) {
             }
         }
 
-        this.trace('action:',action);
-
         // this shouldn't happen, unless resolve defaults are off
-        if (action.length > 1) {
+        if (action[0] instanceof Array && action.length > 1) {
             throw new Error('Parse Error: multiple actions possible at state: '+state+', token: '+symbol);
         }
 
-        a = action[0]; 
+        a = action;
 
         switch (a[0]) {
 

@@ -234,3 +234,23 @@ exports["test jison grammar as string"] = function () {
     parser.lexer = new Lexer(lexData);
     assert.ok(parser.parse('xyx'), "parse xyx");
 };
+
+exports["test no default resolve"] = function () {
+    var grammar = {
+        tokens: [ 'x' ],
+        startSymbol: "A",
+        bnf: {
+            "A" :[ 'x A',
+            ''      ]
+        }
+    };
+
+    var gen = new Jison.Generator(grammar, {type: "lr0", noDefaultResolve: true});
+    var parser = gen.createParser();
+    parser.lexer = new Lexer(lexData);
+
+    assert.ok(gen.table.length == 4, "table has 4 states");
+    assert.ok(gen.conflicts == 2, "encountered 2 conflicts");
+    assert["throws"](function () {parser.parse("xx")}, "throws parse error for multiple actions");
+};
+

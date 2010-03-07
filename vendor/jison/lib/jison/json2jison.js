@@ -1,15 +1,16 @@
 // converts json grammar format to Jison grammar format
 
-function json2jison (grammar) {
+function json2jison (grammar, options) {
+    options = options || {};
     var s = "";
 
-    s += genDecls(grammar);
-    s += genBNF(grammar.bnf);
+    s += genDecls(grammar, options);
+    s += genBNF(grammar.bnf, options);
 
     return s;
 }
 
-function genDecls (grammar) {
+function genDecls (grammar, options) {
     var s = "",
         key;
 
@@ -34,18 +35,18 @@ function genDecls (grammar) {
     return s;
 }
 
-function genBNF (bnf) {
+function genBNF (bnf, options) {
     var s = "%%\n",
         sym;
 
     for (sym in bnf) if (bnf.hasOwnProperty(sym)) {
-        s += ["\n",sym,'\n    : ', genHandles(bnf[sym]),"\n    ;\n"].join("");
+        s += ["\n",sym,'\n    : ', genHandles(bnf[sym], options),"\n    ;\n"].join("");
     }
 
     return s;
 }
 
-function genHandles (handle) {
+function genHandles (handle, options) {
     if (typeof handle === 'string') {
         return handle;
     } else { //array
@@ -56,9 +57,11 @@ function genHandles (handle) {
             } else if (handle[i] instanceof Array) {
                 s += (handle[i][0] && quoteSymbols(handle[i][0]));
                 if (typeof handle[i][1] === 'string') {
-                    s += handle[i][1].match(/\}/) ? 
-                        "\n        {{"+handle[i][1]+(handle[i][1].match(/\}$/) ? ' ' : '')+"}}" :
-                        "\n        {"+handle[i][1]+"}";
+                    if (!options.stripActions) {
+                        s += handle[i][1].match(/\}/) ? 
+                            "\n        {{"+handle[i][1]+(handle[i][1].match(/\}$/) ? ' ' : '')+"}}" :
+                            "\n        {"+handle[i][1]+"}";
+                    }
                     if (handle[i][2] && handle[i][2].prec) {
                         s += " %prec "+handle[i][2].prec;
                     }
