@@ -45,7 +45,7 @@ process.mixin {
 exports.run: ->
   path.exists 'Cakefile', (exists) ->
     throw new Error("Cakefile not found in ${process.cwd()}") unless exists
-    args: process.ARGV[2...process.ARGV.length]
+    args: process.argv[2...process.argv.length]
     eval coffee.compile fs.readFileSync 'Cakefile'
     oparse: new optparse.OptionParser switches
     return print_tasks() unless args.length

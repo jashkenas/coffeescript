@@ -42,7 +42,7 @@ option_parser: null
 
 # Run `coffee` by parsing passed options and determining what action to take.
 # Many flags cause us to divert before compiling anything. Flags passed after
-# `--` will be passed verbatim to your script as arguments in `process.ARGV`
+# `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run: ->
   parse_options()
   return usage()                              if options.help
@@ -139,10 +139,10 @@ print_tokens: (tokens) ->
   puts strings.join(' ')
 
 # Use the [OptionParser module](optparse.html) to extract all options from
-# `process.ARGV` that are specified in `SWITCHES`.
+# `process.argv` that are specified in `SWITCHES`.
 parse_options: ->
   option_parser: new optparse.OptionParser SWITCHES, BANNER
-  options: option_parser.parse(process.ARGV)
+  options: option_parser.parse(process.argv)
   sources: options.arguments[2...options.arguments.length]
 
 # The compile-time options to pass to the CoffeeScript compiler.
