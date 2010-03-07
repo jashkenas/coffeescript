@@ -50,8 +50,12 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
     throw err if err
 
 
-task 'doc', 'watch and continually rebuild the documentation', ->
+task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
   exec 'rake doc'
+
+
+task 'doc:source', 'rebuild the internal documentation', ->
+  exec 'docco src/*.coffee && mv docs documentation/docs'
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
