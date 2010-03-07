@@ -18,6 +18,16 @@ p {
 h1, h2, h3, h4, h5, h6 {
   margin: 40px 0 15px 0;
 }
+#container {
+  position: relative;
+}
+#background {
+  position: fixed;
+  top: 0; left: 580px; right: 0; bottom: 0;
+  background: #f5f5ff;
+  border-left: 1px solid #e5e5ee;
+  z-index: -1;
+}
 #jump_to, #jump_page {
   background: white;
   -webkit-box-shadow: 0 0 25px #777; -moz-box-shadow: 0 0 25px #777;
@@ -58,58 +68,52 @@ table td {
   border: 0;
   outline: 0;
 }
-  #container {
-    overflow: visible;
+  td.docs, th.docs {
+    max-width: 500px;
+    min-width: 500px;
+    min-height: 5px;
+    padding: 10px 30px 1px 50px;
+    vertical-align: top;
+    text-align: left;
   }
-    .divider {
-      clear: both;
+    .docs pre {
+      margin: 15px 0 15px;
+      padding-left: 15px;
     }
-    td.docs, th.docs {
-      max-width: 500px;
-      min-width: 500px;
-      min-height: 5px;
-      padding: 10px 30px 1px 50px;
-      vertical-align: top;
-      text-align: left;
+    .docs p tt, .docs p code {
+      background: #f8f8ff;
+      border: 1px solid #dedede;
+      font-size: 12px;
+      padding: 0 0.2em;
     }
-      .docs pre {
-        margin: 15px 0 15px;
-        padding-left: 15px;
+    .octowrap {
+      position: relative;
+    }
+      .octothorpe {
+        font: 12px Arial;
+        text-decoration: none;
+        color: #454545;
+        position: absolute;
+        top: 3px; left: -20px;
+        padding: 1px 2px;
+        opacity: 0;
+        -webkit-transition: opacity 0.2s linear;
       }
-      .docs p tt, .docs p code {
-        background: #f8f8ff;
-        border: 1px solid #dedede;
-        font-size: 12px;
-        padding: 0 0.2em;
-      }
-      .octowrap {
-        position: relative;
-      }
-        .octothorpe {
-          font: 12px Arial;
-          text-decoration: none;
-          color: #454545;
-          position: absolute;
-          top: 3px; left: -20px;
-          padding: 1px 2px;
-          opacity: 0;
-          -webkit-transition: opacity 0.2s linear;
+        td.docs:hover .octothorpe {
+          opacity: 1;
         }
-          td.docs:hover .octothorpe {
-            opacity: 1;
-          }
-    td.code, th.code {
-      padding: 14px 15px 16px 35px;
-      width: 100%;
-      vertical-align: top;
-      background: #f5f5ff;
-      border-left: 1px solid #e5e5ee;
+  td.code, th.code {
+    padding: 14px 15px 16px 35px;
+    width: 100%;
+    vertical-align: top;
+    background: #f5f5ff;
+    border-left: 1px solid #e5e5ee;
+  }
+    pre, tt, code {
+      font-size: 12px; line-height: 18px;
+      font-family: Monaco, Consolas, "Lucida Console", monospace;
+      margin: 0; padding: 0;
     }
-      pre, tt, code {
-        font-size: 12px; line-height: 18px;
-        font-family: Monaco, Consolas, "Lucida Console", monospace;
-        margin: 0; padding: 0;
-      }
 
 
 /*---------------------- Syntax Highlighting -----------------------------*/
