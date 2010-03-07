@@ -1,53 +1,28 @@
+# The CoffeeScript language has a decent amount of optional syntax,
+# implicit syntax, and shorthand syntax. These things can greatly complicate a
+# grammar and bloat the resulting parse table. Instead of making the parser
+# handle it all, we take a series of passes over the token stream,
+# using this **Rewriter** to convert shorthand into the unambiguous long form,
+# add implicit indentation and parentheses, balance incorrect nestings, and
+# generally clean things up.
+
+# Set up exported variables for both Node.js and the browser.
 this.exports: this unless process?
 
-# Tokens that must be balanced.
-BALANCED_PAIRS: [['(', ')'], ['[', ']'], ['{', '}'], ['INDENT', 'OUTDENT'],
-  ['PARAM_START', 'PARAM_END'], ['CALL_START', 'CALL_END'],
-  ['INDEX_START', 'INDEX_END'], ['SOAKED_INDEX_START', 'SOAKED_INDEX_END']]
-
-# Tokens that signal the start of a balanced pair.
-EXPRESSION_START: pair[0] for pair in BALANCED_PAIRS
-
-# Tokens that signal the end of a balanced pair.
-EXPRESSION_TAIL: pair[1] for pair in BALANCED_PAIRS
-
-# Tokens that indicate the close of a clause of an expression.
-EXPRESSION_CLOSE: ['CATCH', 'WHEN', 'ELSE', 'FINALLY'].concat(EXPRESSION_TAIL)
-
-# Tokens pairs that, in immediate succession, indicate an implicit call.
-IMPLICIT_FUNC: ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END']
-IMPLICIT_BLOCK:['->', '=>', '{', '[', ',']
-IMPLICIT_END:  ['IF', 'UNLESS', 'FOR', 'WHILE', 'TERMINATOR', 'INDENT', 'OUTDENT']
-IMPLICIT_CALL: ['IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START',
-                 'TRY', 'DELETE', 'TYPEOF', 'SWITCH',
-                 'TRUE', 'FALSE', 'YES', 'NO', 'ON', 'OFF', '!', '!!', 'NOT',
-                 '@', '->', '=>', '[', '(', '{']
-
-# The inverse mappings of token pairs we're trying to fix up.
-INVERSES: {}
-for pair in BALANCED_PAIRS
-  INVERSES[pair[0]]: pair[1]
-  INVERSES[pair[1]]: pair[0]
-
-# Single-line flavors of block expressions that have unclosed endings.
-# The grammar can't disambiguate them, so we insert the implicit indentation.
-SINGLE_LINERS: ['ELSE', "->", "=>", 'TRY', 'FINALLY', 'THEN']
-SINGLE_CLOSERS: ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN']
-
-# In order to keep the grammar simple, the stream of tokens that the Lexer
-# emits is rewritten by the Rewriter, smoothing out ambiguities, mis-nested
-# indentation, and single-line flavors of expressions.
+# The **Rewriter** class is used by the [Lexer](lexer.html), directly against
+# its internal array of tokens.
 exports.Rewriter: class Rewriter
 
   # Rewrite the token stream in multiple passes, one logical filter at
   # a time. This could certainly be changed into a single pass through the
-  # stream, with a big ol' efficient switch, but it's much nicer like this.
+  # stream, with a big ol' efficient switch, but it's much nicer to work with
+  # like this. The order of these passes matters -- indentation must be
+  # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (tokens) ->
     @tokens: tokens
     @adjust_comments()
     @remove_leading_newlines()
     @remove_mid_expression_newlines()
-    @move_commas_outside_outdents()
     @close_open_calls_and_indexes()
     @add_implicit_indentation()
     @add_implicit_parentheses()
@@ -58,7 +33,8 @@ exports.Rewriter: class Rewriter
   # Rewrite the token stream, looking one token ahead and behind.
   # Allow the return value of the block to tell us how many tokens to move
   # forwards (or backwards) in the stream, to make sure we don't miss anything
-  # as the stream changes length under our feet.
+  # as tokens are inserted and removed, and the stream changes length under
+  # our feet.
   scan_tokens: (block) ->
     i: 0
     while true
@@ -68,7 +44,7 @@ exports.Rewriter: class Rewriter
     true
 
   # Massage newlines and indentations so that comments don't have to be
-  # correctly indented, or appear on their own line.
+  # correctly indented, or appear on a line of their own.
   adjust_comments: ->
     @scan_tokens (prev, token, post, i) =>
       return 1 unless token[0] is 'COMMENT'
@@ -86,25 +62,19 @@ exports.Rewriter: class Rewriter
   # Leading newlines would introduce an ambiguity in the grammar, so we
   # dispatch them here.
   remove_leading_newlines: ->
-    @tokens.shift() if @tokens[0][0] is 'TERMINATOR'
+    @tokens.shift() while @tokens[0][0] is 'TERMINATOR'
 
   # Some blocks occur in the middle of expressions -- when we're expecting
   # this, remove their trailing newlines.
   remove_mid_expression_newlines: ->
     @scan_tokens (prev, token, post, i) =>
-      return 1 unless post and EXPRESSION_CLOSE.indexOf(post[0]) >= 0 and token[0] is 'TERMINATOR'
+      return 1 unless post and include(EXPRESSION_CLOSE, post[0]) and token[0] is 'TERMINATOR'
       @tokens.splice(i, 1)
       return 0
 
-  # Make sure that we don't accidentally break trailing commas, which need
-  # to go on the outside of expression closers.
-  move_commas_outside_outdents: ->
-    @scan_tokens (prev, token, post, i) =>
-      @tokens.splice(i, 1, token) if token[0] is 'OUTDENT' and prev[0] is ','
-      return 1
-
-  # We've tagged the opening parenthesis of a method call, and the opening
-  # bracket of an indexing operation. Match them with their close.
+  # The lexer has tagged the opening parenthesis of a method call, and the
+  # opening bracket of an indexing operation. Match them with their paired
+  # close.
   close_open_calls_and_indexes: ->
     parens:   [0]
     brackets: [0]
@@ -139,28 +109,29 @@ exports.Rewriter: class Rewriter
       if tag is 'OUTDENT'
         last: stack.pop()
         stack[stack.length - 1] += last
-      if IMPLICIT_END.indexOf(tag) >= 0 or !post?
-        return 1 if tag is 'INDENT' and prev and IMPLICIT_BLOCK.indexOf(prev[0]) >= 0
+      if !post? or include IMPLICIT_END, tag
+        return 1 if tag is 'INDENT' and prev and include IMPLICIT_BLOCK, prev[0]
         if stack[stack.length - 1] > 0 or tag is 'INDENT'
-          idx: if tag is 'OUTDENT' then i +1 else i
+          idx: if tag is 'OUTDENT' then i + 1 else i
           stack_pointer: if tag is 'INDENT' then 2 else 1
           for tmp in [0...stack[stack.length - stack_pointer]]
             @tokens.splice(idx, 0, ['CALL_END', ')', token[2]])
           size: stack[stack.length - stack_pointer] + 1
           stack[stack.length - stack_pointer]: 0
           return size
-      return 1 unless prev and IMPLICIT_FUNC.indexOf(prev[0]) >= 0 and IMPLICIT_CALL.indexOf(tag) >= 0
+      return 1 unless prev and include(IMPLICIT_FUNC, prev[0]) and include IMPLICIT_CALL, tag
       @tokens.splice(i, 0, ['CALL_START', '(', token[2]])
       stack[stack.length - 1] += 1
       return 2
 
   # Because our grammar is LALR(1), it can't handle some single-line
-  # expressions that lack ending delimiters. Use the lexer to add the implicit
-  # blocks, so it doesn't need to.
-  # ')' can close a single-line block, but we need to make sure it's balanced.
+  # expressions that lack ending delimiters. The **Rewriter** adds the implicit
+  # blocks, so it doesn't need to. ')' can close a single-line block,
+  # but we need to make sure it's balanced.
   add_implicit_indentation: ->
     @scan_tokens (prev, token, post, i) =>
-      return 1 unless SINGLE_LINERS.indexOf(token[0]) >= 0 and post[0] isnt 'INDENT' and
+      return 1 unless include(SINGLE_LINERS, token[0]) and
+        post[0] isnt 'INDENT' and
         not (token[0] is 'ELSE' and post[0] is 'IF')
       starter: token[0]
       @tokens.splice(i + 1, 0, ['INDENT', 2, token[2]])
@@ -171,7 +142,7 @@ exports.Rewriter: class Rewriter
         tok: @tokens[idx]
         pre: @tokens[idx - 1]
         if (not tok or
-            (SINGLE_CLOSERS.indexOf(tok[0]) >= 0 and tok[1] isnt ';') or
+            (include(SINGLE_CLOSERS, tok[0]) and tok[1] isnt ';') or
             (tok[0] is ')' && parens is 0)) and
             not (starter is 'ELSE' and tok[0] is 'ELSE')
           insertion: if pre[0] is "," then idx - 1 else idx
@@ -199,8 +170,10 @@ exports.Rewriter: class Rewriter
     throw new Error("unclosed ${unclosed[0]}") if unclosed.length
 
   # We'd like to support syntax like this:
-  #    el.click((event) ->
-  #      el.hide())
+  #
+  #     el.click((event) ->
+  #       el.hide())
+  #
   # In order to accomplish this, move outdents that follow closing parens
   # inwards, safely. The steps to accomplish this are:
   #
@@ -218,29 +191,72 @@ exports.Rewriter: class Rewriter
     @scan_tokens (prev, token, post, i) =>
       tag: token[0]
       inv: INVERSES[token[0]]
-      # Push openers onto the stack.
-      if EXPRESSION_START.indexOf(tag) >= 0
-        stack.push(token)
+      if include EXPRESSION_START, tag
+        stack.push token
         return 1
-        # The end of an expression, check stack and debt for a pair.
-      else if EXPRESSION_TAIL.indexOf(tag) >= 0
-        # If the tag is already in our debt, swallow it.
+      else if include EXPRESSION_END, tag
         if debt[inv] > 0
           debt[inv] -= 1
-          @tokens.splice(i, 1)
+          @tokens.splice i, 1
           return 0
         else
-          # Pop the stack of open delimiters.
           match: stack.pop()
           mtag:  match[0]
-          # Continue onwards if it's the expected tag.
-          if tag is INVERSES[mtag]
-            return 1
-          else
-            # Unexpected close, insert correct close, adding to the debt.
-            debt[mtag] += 1
-            val: if mtag is 'INDENT' then match[1] else INVERSES[mtag]
-            @tokens.splice(i, 0, [INVERSES[mtag], val])
-            return 1
+          return 1 if tag is INVERSES[mtag]
+          debt[mtag] += 1
+          val: if mtag is 'INDENT' then match[1] else INVERSES[mtag]
+          @tokens.splice i, 0, [INVERSES[mtag], val]
+          return 1
       else
         return 1
+
+# Constants
+# ---------
+
+# List of the token pairs that must be balanced.
+BALANCED_PAIRS: [['(', ')'], ['[', ']'], ['{', '}'], ['INDENT', 'OUTDENT'],
+  ['PARAM_START', 'PARAM_END'], ['CALL_START', 'CALL_END'],
+  ['INDEX_START', 'INDEX_END'], ['SOAKED_INDEX_START', 'SOAKED_INDEX_END']]
+
+# The inverse mappings of `BALANCED_PAIRS` we're trying to fix up, so we can
+# look things up from either end.
+INVERSES: {}
+for pair in BALANCED_PAIRS
+  INVERSES[pair[0]]: pair[1]
+  INVERSES[pair[1]]: pair[0]
+
+# The tokens that signal the start of a balanced pair.
+EXPRESSION_START: pair[0] for pair in BALANCED_PAIRS
+
+# The tokens that signal the end of a balanced pair.
+EXPRESSION_END:   pair[1] for pair in BALANCED_PAIRS
+
+# Tokens that indicate the close of a clause of an expression.
+EXPRESSION_CLOSE: ['CATCH', 'WHEN', 'ELSE', 'FINALLY'].concat EXPRESSION_END
+
+# Tokens that, if followed by an `IMPLICIT_CALL`, indicate a function invocation.
+IMPLICIT_FUNC:  ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END']
+
+# If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
+IMPLICIT_CALL:  ['IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START',
+                 'TRY', 'DELETE', 'TYPEOF', 'SWITCH',
+                 'TRUE', 'FALSE', 'YES', 'NO', 'ON', 'OFF', '!', '!!', 'NOT',
+                 '@', '->', '=>', '[', '(', '{']
+
+# Tokens indicating that the implicit call must enclose a block of expressions.
+IMPLICIT_BLOCK: ['->', '=>', '{', '[', ',']
+
+# Tokens that always mark the end of an implicit call for single-liners.
+IMPLICIT_END:   ['IF', 'UNLESS', 'FOR', 'WHILE', 'TERMINATOR', 'INDENT', 'OUTDENT']
+
+# Single-line flavors of block expressions that have unclosed endings.
+# The grammar can't disambiguate them, so we insert the implicit indentation.
+SINGLE_LINERS: ['ELSE', "->", "=>", 'TRY', 'FINALLY', 'THEN']
+SINGLE_CLOSERS: ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN']
+
+# Utility Functions
+# -----------------
+
+# Does a list include a value?
+include: (list, value) ->
+  list.indexOf(value) >= 0

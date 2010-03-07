@@ -72,7 +72,7 @@ table td {
     max-width: 500px;
     min-width: 500px;
     min-height: 5px;
-    padding: 10px 30px 1px 50px;
+    padding: 10px 25px 1px 50px;
     vertical-align: top;
     text-align: left;
   }
@@ -103,7 +103,7 @@ table td {
           opacity: 1;
         }
   td.code, th.code {
-    padding: 14px 15px 16px 35px;
+    padding: 14px 15px 16px 50px;
     width: 100%;
     vertical-align: top;
     background: #f5f5ff;

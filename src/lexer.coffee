@@ -14,99 +14,11 @@ else
   this.exports: this
   Rewriter: this.Rewriter
 
-# Constants
-# ---------
-
-# Keywords that CoffeeScript shares in common with JavaScript.
-JS_KEYWORDS: [
-  "if", "else",
-  "true", "false",
-  "new", "return",
-  "try", "catch", "finally", "throw",
-  "break", "continue",
-  "for", "in", "while",
-  "delete", "instanceof", "typeof",
-  "switch", "super", "extends", "class"
-]
-
-# CoffeeScript-only keywords, which we're more relaxed about allowing. They can't
-# be used standalone, but you can reference them as an attached property.
-COFFEE_KEYWORDS: [
-  "then", "unless",
-  "yes", "no", "on", "off",
-  "and", "or", "is", "isnt", "not",
-  "of", "by", "where", "when"
-]
-
-# The combined list of keywords is the superset that gets passed verbatim to
-# the parser.
-KEYWORDS: JS_KEYWORDS.concat COFFEE_KEYWORDS
-
-# The list of keywords that are reserved by JavaScript, but not used, or are
-# used by CoffeeScript internally. We throw an error when these are encountered,
-# to avoid having a JavaScript error at runtime.
-RESERVED: [
-  "case", "default", "do", "function", "var", "void", "with"
-  "const", "let", "debugger", "enum", "export", "import", "native",
-  "__extends", "__hasProp"
-]
-
-# The superset of both JavaScript keywords and reserved words, none of which may
-# be used as identifiers or properties.
-JS_FORBIDDEN: JS_KEYWORDS.concat RESERVED
-
-# Token matching regexes.
-IDENTIFIER    : /^([a-zA-Z$_](\w|\$)*)/
-NUMBER        : /^(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
-HEREDOC       : /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
-INTERPOLATION : /^\$([a-zA-Z_@]\w*)/
-OPERATOR      : /^([+\*&|\/\-%=<>:!?]+)/
-WHITESPACE    : /^([ \t]+)/
-COMMENT       : /^(((\n?[ \t]*)?#[^\n]*)+)/
-CODE          : /^((-|=)>)/
-REGEX         : /^(\/(\S.*?)?([^\\]|\\\\)\/[imgy]{0,4})/
-MULTI_DENT    : /^((\n([ \t]*))+)(\.)?/
-LAST_DENTS    : /\n([ \t]*)/g
-LAST_DENT     : /\n([ \t]*)/
-ASSIGNMENT    : /^(:|=)$/
-
-# Token cleaning regexes.
-JS_CLEANER      : /(^`|`$)/g
-MULTILINER      : /\n/g
-STRING_NEWLINES : /\n[ \t]*/g
-COMMENT_CLEANER : /(^[ \t]*#|\n[ \t]*$)/mg
-NO_NEWLINE      : /^([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)$/
-HEREDOC_INDENT  : /^[ \t]+/mg
-
-# Tokens which a regular expression will never immediately follow, but which
-# a division operator might.
-#
-# See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
-#
-# Our list is shorter, due to sans-parentheses method calls.
-NOT_REGEX: [
-  'NUMBER', 'REGEX', '++', '--', 'FALSE', 'NULL', 'TRUE'
-]
-
-# Tokens which could legitimately be invoked or indexed. A opening
-# parentheses or bracket following these tokens will be recorded as the start
-# of a function invocation or indexing operation.
-CALLABLE: ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING', '@']
-
-# Tokens that indicate an access -- keywords immediately following will be
-# treated as identifiers.
-ACCESSORS: ['PROPERTY_ACCESS', 'PROTOTYPE_ACCESS', 'SOAK_ACCESS', '@']
-
-# Tokens that, when immediately preceding a `WHEN`, indicate that the `WHEN`
-# occurs at the start of a line. We disambiguate these from trailing whens to
-# avoid an ambiguity in the grammar.
-BEFORE_WHEN: ['INDENT', 'OUTDENT', 'TERMINATOR']
-
 # The Lexer Class
 # ---------------
 
 # The Lexer class reads a stream of CoffeeScript and divvys it up into tagged
-# tokens. A minor bit of the ambiguity in the grammar has been avoided by
+# tokens. Some potential ambiguity in the grammar has been avoided by
 # pushing some extra smarts into the Lexer.
 exports.Lexer: class Lexer
 
@@ -119,6 +31,9 @@ exports.Lexer: class Lexer
   # Each tokenizing method is responsible for incrementing `@i` by the number of
   # characters it has consumed. `@i` can be thought of as our finger on the page
   # of source.
+  #
+  # Before returning the token stream, run it through the [Rewriter](rewriter.html)
+  # unless explicitly asked not to.
   tokenize: (code, options) ->
     o        : options or {}
     @code    : code         # The remainder of the source code.
@@ -479,6 +394,94 @@ exports.Lexer: class Lexer
   match: (regex, index) ->
     return false unless m: @chunk.match(regex)
     if m then m[index] else false
+
+# Constants
+# ---------
+
+# Keywords that CoffeeScript shares in common with JavaScript.
+JS_KEYWORDS: [
+  "if", "else",
+  "true", "false",
+  "new", "return",
+  "try", "catch", "finally", "throw",
+  "break", "continue",
+  "for", "in", "while",
+  "delete", "instanceof", "typeof",
+  "switch", "super", "extends", "class"
+]
+
+# CoffeeScript-only keywords, which we're more relaxed about allowing. They can't
+# be used standalone, but you can reference them as an attached property.
+COFFEE_KEYWORDS: [
+  "then", "unless",
+  "yes", "no", "on", "off",
+  "and", "or", "is", "isnt", "not",
+  "of", "by", "where", "when"
+]
+
+# The combined list of keywords is the superset that gets passed verbatim to
+# the parser.
+KEYWORDS: JS_KEYWORDS.concat COFFEE_KEYWORDS
+
+# The list of keywords that are reserved by JavaScript, but not used, or are
+# used by CoffeeScript internally. We throw an error when these are encountered,
+# to avoid having a JavaScript error at runtime.
+RESERVED: [
+  "case", "default", "do", "function", "var", "void", "with"
+  "const", "let", "debugger", "enum", "export", "import", "native",
+  "__extends", "__hasProp"
+]
+
+# The superset of both JavaScript keywords and reserved words, none of which may
+# be used as identifiers or properties.
+JS_FORBIDDEN: JS_KEYWORDS.concat RESERVED
+
+# Token matching regexes.
+IDENTIFIER    : /^([a-zA-Z$_](\w|\$)*)/
+NUMBER        : /^(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
+HEREDOC       : /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
+INTERPOLATION : /^\$([a-zA-Z_@]\w*)/
+OPERATOR      : /^([+\*&|\/\-%=<>:!?]+)/
+WHITESPACE    : /^([ \t]+)/
+COMMENT       : /^(((\n?[ \t]*)?#[^\n]*)+)/
+CODE          : /^((-|=)>)/
+REGEX         : /^(\/(\S.*?)?([^\\]|\\\\)\/[imgy]{0,4})/
+MULTI_DENT    : /^((\n([ \t]*))+)(\.)?/
+LAST_DENTS    : /\n([ \t]*)/g
+LAST_DENT     : /\n([ \t]*)/
+ASSIGNMENT    : /^(:|=)$/
+
+# Token cleaning regexes.
+JS_CLEANER      : /(^`|`$)/g
+MULTILINER      : /\n/g
+STRING_NEWLINES : /\n[ \t]*/g
+COMMENT_CLEANER : /(^[ \t]*#|\n[ \t]*$)/mg
+NO_NEWLINE      : /^([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)$/
+HEREDOC_INDENT  : /^[ \t]+/mg
+
+# Tokens which a regular expression will never immediately follow, but which
+# a division operator might.
+#
+# See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
+#
+# Our list is shorter, due to sans-parentheses method calls.
+NOT_REGEX: [
+  'NUMBER', 'REGEX', '++', '--', 'FALSE', 'NULL', 'TRUE'
+]
+
+# Tokens which could legitimately be invoked or indexed. A opening
+# parentheses or bracket following these tokens will be recorded as the start
+# of a function invocation or indexing operation.
+CALLABLE: ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING', '@']
+
+# Tokens that indicate an access -- keywords immediately following will be
+# treated as identifiers.
+ACCESSORS: ['PROPERTY_ACCESS', 'PROTOTYPE_ACCESS', 'SOAK_ACCESS', '@']
+
+# Tokens that, when immediately preceding a `WHEN`, indicate that the `WHEN`
+# occurs at the start of a line. We disambiguate these from trailing whens to
+# avoid an ambiguity in the grammar.
+BEFORE_WHEN: ['INDENT', 'OUTDENT', 'TERMINATOR']
 
 # Utility Functions
 # -----------------
