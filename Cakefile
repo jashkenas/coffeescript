@@ -55,7 +55,8 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
 
 
 task 'doc:source', 'rebuild the internal documentation', ->
-  exec 'docco src/*.coffee && mv docs documentation/docs'
+  exec 'docco src/*.coffee && rm -r documentation/docs && mv docs documentation/docs', (err) ->
+    throw err if err
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
