@@ -3,7 +3,7 @@
 http: require 'http'
 
 server: http.createServer (req, res) ->
-  res.sendHeader 200, {'Content-Type': 'text/plain'}
+  res.writeHeader 200, {'Content-Type': 'text/plain'}
   res.write 'Hello, World!'
   res.close()
 
