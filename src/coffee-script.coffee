@@ -18,7 +18,7 @@ else
   this.exports: this.CoffeeScript: {}
 
 # The current CoffeeScript version number.
-exports.VERSION: '0.5.4'
+exports.VERSION: '0.5.5'
 
 # Compile a string of CoffeeScript code to JavaScript, using the Coffee/Jison
 # compiler.

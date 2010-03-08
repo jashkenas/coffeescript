@@ -881,7 +881,10 @@ exports.OpNode: class OpNode extends BaseNode
     [@first.compile(o), @operator, @second.compile(o)].join ' '
 
   # Mimic Python's chained comparisons when multiple comparison operators are
-  # used sequentially. For example: `50 < 65 > 10`
+  # used sequentially. For example:
+  #
+  #     bin/coffee -e "puts 50 < 65 > 10"
+  #     true
   compile_chain: (o) ->
     shared: @first.unwrap().second
     [@first.second, shared]: shared.compile_reference(o) if shared instanceof CallNode
@@ -897,19 +900,23 @@ exports.OpNode: class OpNode extends BaseNode
     return "$first = ${ ExistenceNode.compile_test(o, @first) } ? $first : $second" if @operator is '?='
     "$first = $first ${ @operator.substr(0, 2) } $second"
 
+  # If this is an existence operator, we delegate to `ExistenceNode.compile_test`
+  # to give us the safe references for the variables.
   compile_existence: (o) ->
     [first, second]: [@first.compile(o), @second.compile(o)]
     test: ExistenceNode.compile_test(o, @first)
     "$test ? $first : $second"
 
+  # Compile a unary **OpNode**.
   compile_unary: (o) ->
     space: if @PREFIX_OPERATORS.indexOf(@operator) >= 0 then ' ' else ''
     parts: [@operator, space, @first.compile(o)]
     parts: parts.reverse() if @flip
     parts.join('')
 
+#### TryNode
 
-# A try/catch/finally block.
+# A classic *try/catch/finally* block.
 exports.TryNode: class TryNode extends BaseNode
   type: 'Try'
 
@@ -918,6 +925,8 @@ exports.TryNode: class TryNode extends BaseNode
     @error: error
     this
 
+  # Compilation is more or less as you would expect -- the *finally* clause
+  # is optional, the *catch* is not.
   compile_node: (o) ->
     o.indent:     @idt(1)
     o.top:        true
@@ -929,8 +938,9 @@ exports.TryNode: class TryNode extends BaseNode
 
 statement TryNode
 
+#### ThrowNode
 
-# Throw an exception.
+# Simple node to throw an exception.
 exports.ThrowNode: class ThrowNode extends BaseNode
   type: 'Throw'
 
@@ -940,10 +950,13 @@ exports.ThrowNode: class ThrowNode extends BaseNode
   compile_node: (o) ->
     "${@tab}throw ${@expression.compile(o)};"
 
-statement ThrowNode, true
+statement ThrowNode
 
+#### ExistenceNode
 
-# Check an expression for existence (meaning not null or undefined).
+# Checks a variable for existence -- not *null* and not *undefined*. This is
+# similar to `.nil?` in Ruby, and avoids having to consult a JavaScript truth
+# table.
 exports.ExistenceNode: class ExistenceNode extends BaseNode
   type: 'Existence'
 
@@ -953,6 +966,9 @@ exports.ExistenceNode: class ExistenceNode extends BaseNode
   compile_node: (o) ->
     ExistenceNode.compile_test(o, @expression)
 
+# The meat of the **ExistenceNode** is in this static `compile_test` method
+# because other nodes like to check the existence of their variables as well.
+# Be careful not to double-evaluate anything.
 ExistenceNode.compile_test: (o, variable) ->
   [first, second]: [variable, variable]
   if variable instanceof CallNode or (variable instanceof ValueNode and variable.has_properties())
@@ -960,8 +976,13 @@ ExistenceNode.compile_test: (o, variable) ->
   [first, second]: [first.compile(o), second.compile(o)]
   "(typeof $first !== \"undefined\" && $second !== null)"
 
+#### ParentheticalNode
 
-# An extra set of parentheses, specified explicitly in the source.
+# An extra set of parentheses, specified explicitly in the source. At one time
+# we tried to clean up the results by detecting and removing redundant
+# parentheses, but no longer -- you can put in as many as you please.
+#
+# Parentheses are a good way to force any statement to become an expression.
 exports.ParentheticalNode: class ParentheticalNode extends BaseNode
   type: 'Paren'
 
@@ -978,11 +999,15 @@ exports.ParentheticalNode: class ParentheticalNode extends BaseNode
     code: code.substr(o, l-1) if code.substr(l-1, 1) is ';'
     "($code)"
 
+#### ForNode
 
-# The replacement for the for loop is an array comprehension (that compiles)
-# into a for loop. Also acts as an expression, able to return the result
-# of the comprehenion. Unlike Python array comprehensions, it's able to pass
-# the current index of the loop as a second parameter.
+# CoffeeScript's replacement for the *for* loop is our array and object
+# comprehensions, that compile into *for* loops here. They also act as an
+# expression, able to return the result of each filtered iteration.
+#
+# Unlike Python array comprehensions, they can be multi-line, and you can pass
+# the current index of the loop as a second parameter. Unlike Ruby blocks,
+# you can map and filter in a single pass.
 exports.ForNode: class ForNode extends BaseNode
   type: 'For'
 
@@ -1000,6 +1025,10 @@ exports.ForNode: class ForNode extends BaseNode
   top_sensitive: ->
     true
 
+  # Welcome to the hairiest method in all of CoffeeScript. Handles the inner
+  # loop, filtering, stepping, and result saving for array, object, and range
+  # comprehensions. Some of the generated code can be shared in common, and
+  # some cannot.
   compile_node: (o) ->
     top_level:      del(o, 'top') and not o.returns
     range:          @source instanceof ValueNode and @source.base instanceof RangeNode and not @source.properties.length
@@ -1049,11 +1078,13 @@ exports.ForNode: class ForNode extends BaseNode
 
 statement ForNode
 
+#### IfNode
 
-# If/else statements. Switch/whens get compiled into these. Acts as an
-# expression by pushing down requested returns to the expression bodies.
-# Single-expression IfNodes are compiled into ternary operators if possible,
-# because ternaries are first-class returnable assignable expressions.
+# *If/else* statements. Our *switch/when* will be compiled into this. Acts as an
+# expression by pushing down requested returns to the last line of each clause.
+#
+# Single-expression **IfNodes** are compiled into ternary operators if possible,
+# because ternaries are already proper expressions, and don't need conversion.
 exports.IfNode: class IfNode extends BaseNode
   type: 'If'
 
@@ -1066,6 +1097,8 @@ exports.IfNode: class IfNode extends BaseNode
     @multiple:  true if @condition instanceof Array
     @condition: new OpNode('!', new ParentheticalNode(@condition)) if @tags.invert
 
+  # Add a new *else* clause to this **IfNode**, or push it down to the bottom
+  # of the chain recursively.
   push: (else_body) ->
     eb: else_body.unwrap()
     if @else_body then @else_body.push(eb) else @else_body: eb
@@ -1075,12 +1108,14 @@ exports.IfNode: class IfNode extends BaseNode
     @tags.statement: true
     this
 
-  # Tag a chain of IfNodes with their switch condition for equality.
+  # Tag a chain of **IfNodes** with their object(s) to switch on for equality
+  # tests. `rewrite_switch` will perform the actual change at compile time.
   rewrite_condition: (expression) ->
     @switcher: expression
     this
 
-  # Rewrite a chain of IfNodes with their switch condition for equality.
+  # Rewrite a chain of **IfNodes** with their switch condition for equality.
+  # Ensure that the switch expression isn't evaluated more than once.
   rewrite_switch: (o) ->
     assigner: @switcher
     if not (@switcher.unwrap() instanceof LiteralNode)
@@ -1095,7 +1130,7 @@ exports.IfNode: class IfNode extends BaseNode
     @else_body.rewrite_condition(@switcher) if @is_chain()
     this
 
-  # Rewrite a chain of IfNodes to add a default case as the final else.
+  # Rewrite a chain of **IfNodes** to add a default case as the final *else*.
   add_else: (exprs, statement) ->
     if @is_chain()
       @else_body.add_else exprs, statement
@@ -1104,12 +1139,12 @@ exports.IfNode: class IfNode extends BaseNode
       @children.push @else_body: exprs
     this
 
-  # If the else_body is an IfNode itself, then we've got an if-else chain.
+  # If the `else_body` is an **IfNode** itself, then we've got an *if-else* chain.
   is_chain: ->
     @chain ||= @else_body and @else_body instanceof IfNode
 
-  # The IfNode only compiles into a statement if either of the bodies needs
-  # to be a statement.
+  # The **IfNode** only compiles into a statement if either of its bodies needs
+  # to be a statement. Otherwise a ternary is safe.
   is_statement: ->
     @statement ||= !!(@comment or @tags.statement or @body.is_statement() or (@else_body and @else_body.is_statement()))
 
@@ -1119,8 +1154,8 @@ exports.IfNode: class IfNode extends BaseNode
   compile_node: (o) ->
     if @is_statement() then @compile_statement(o) else @compile_ternary(o)
 
-  # Compile the IfNode as a regular if-else statement. Flattened chains
-  # force sub-else bodies into statement form.
+  # Compile the **IfNode** as a regular *if-else* statement. Flattened chains
+  # force inner *else* bodies into statement form.
   compile_statement: (o) ->
     @rewrite_switch(o) if @switcher
     child:        del o, 'chain_child'
@@ -1140,7 +1175,7 @@ exports.IfNode: class IfNode extends BaseNode
       " else {\n${ Expressions.wrap([@else_body]).compile(o) }\n$@tab}"
     "$if_part$else_part"
 
-  # Compile the IfNode into a ternary operator.
+  # Compile the IfNode as a ternary operator.
   compile_ternary: (o) ->
     if_part:    @condition.compile(o) + ' ? ' + @body.compile(o)
     else_part:  if @else_body then @else_body.compile(o) else 'null'
@@ -1151,15 +1186,20 @@ exports.IfNode: class IfNode extends BaseNode
 
 # Tabs are two spaces for pretty printing.
 TAB: '  '
+
+# Trim out all trailing whitespace, so that the generated code plays nice
+# with Git.
 TRAILING_WHITESPACE: /\s+$/gm
 
-# Keep the identifier regex in sync with the Lexer.
-IDENTIFIER:   /^[a-zA-Z$_](\w|\$)*$/
+# Keep this identifier regex in sync with the Lexer.
+IDENTIFIER: /^[a-zA-Z$_](\w|\$)*$/
 
 # Utility Functions
 # -----------------
 
-# Merge objects.
+# Merge objects, returning a fresh copy with attributes from both sides.
+# Used every time `compile` is called, to allow properties in the options hash
+# to propagate down the tree without polluting other branches.
 merge: (options, overrides) ->
   fresh: {}
   (fresh[key]: val) for key, val of options
@@ -1169,19 +1209,21 @@ merge: (options, overrides) ->
 # Trim out all falsy values from an array.
 compact: (array) -> item for item in array when item
 
-# Return a completely flattened version of an array.
+# Return a completely flattened version of an array. Handy for getting a
+# list of `children`.
 flatten: (array) ->
   memo: []
   for item in array
     if item instanceof Array then memo: memo.concat(item) else memo.push(item)
   memo
 
-# Delete a key from an object, returning the value.
+# Delete a key from an object, returning the value. Useful when a node is
+# looking for a particular method in an options hash.
 del: (obj, key) ->
   val: obj[key]
   delete obj[key]
   val
 
-# Quickie helper for a generated LiteralNode.
+# Handy helper for a generating LiteralNode.
 literal: (name) ->
   new LiteralNode(name)
