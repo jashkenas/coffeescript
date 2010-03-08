@@ -1,5 +1,6 @@
 # Contributed by Jason Huggins
 
+process.mixin require 'sys'
 http: require 'http'
 
 server: http.createServer (req, res) ->
