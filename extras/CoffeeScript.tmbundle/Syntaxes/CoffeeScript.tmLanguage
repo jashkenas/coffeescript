@@ -265,13 +265,33 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
+					<string>storage.type.variable.coffee</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>(?&lt;=\s|^)([a-zA-Z\$_](\w|\$|:|\.)*\s*(?=\:(?!(\s*\(.*\))?\s*((=|-)&gt;))))</string>
+			<key>name</key>
+			<string>variable.assignment.coffee</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
 					<string>entity.name.function.coffee</string>
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>(?&lt;!=\s)([a-zA-Z\$_](\w|\$|:|\.)*\s*(?=\:))</string>
+			<string>(?&lt;=\s|^)([a-zA-Z\$_](\w|\$|:|\.)*\s*(?=\:(\s*\(.*\))?\s*((=|-)&gt;)))</string>
 			<key>name</key>
-			<string>variable.assignment.coffee</string>
+			<string>meta.function.coffee</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>(=|-)&gt;</string>
+			<key>name</key>
+			<string>storage.type.function.coffee</string>
 		</dict>
 		<dict>
 			<key>match</key>
@@ -322,21 +342,15 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>(class)\s+([a-zA-Z\$_]\w+)(\s+(extends)\s+[a-zA-Z\$_]\w*)?</string>
+			<string>^\s*(class)\s+([a-zA-Z\$_]\w+)(\s+(extends)\s+[a-zA-Z\$_]\w*)?</string>
 			<key>name</key>
-			<string>meta.class.ruby</string>
+			<string>meta.class.coffee</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\b(debugger|\\)\b</string>
 			<key>name</key>
 			<string>keyword.other.coffee</string>
-		</dict>
-		<dict>
-			<key>match</key>
-			<string>(=|-)&gt;</string>
-			<key>name</key>
-			<string>storage.type.function.coffee</string>
 		</dict>
 		<dict>
 			<key>match</key>
