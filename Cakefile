@@ -41,10 +41,6 @@ task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter'
     exec 'sudo mv coffeescript.yaml /usr/local/lib/ruby/gems/1.8/gems/ultraviolet-0.10.2/syntax/coffeescript.syntax'
 
 
-task 'build:underscore', 'rebuild the Underscore.coffee documentation page', ->
-  exec 'uv -s coffeescript -t idle -h examples/underscore.coffee > documentation/underscore.html'
-
-
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
   exec 'rake browser', (err) ->
     throw err if err
@@ -57,6 +53,10 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
 task 'doc:source', 'rebuild the internal documentation', ->
   exec 'docco src/*.coffee && cp -rf docs documentation && rm -r docs', (err) ->
     throw err if err
+
+
+task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
+  exec 'uv -s coffeescript -t idle -h examples/underscore.coffee > documentation/underscore.html'
 
 
 task 'test', 'run the CoffeeScript language test suite', ->

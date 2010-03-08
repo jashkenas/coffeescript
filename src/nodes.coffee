@@ -37,6 +37,10 @@ exports.BaseNode: class BaseNode
   # the top level of a block (which would be unnecessary), and we haven't
   # already been asked to return the result (because statements know how to
   # return results).
+  #
+  # If a Node is *top_sensitive*, that means that it needs to compile differently
+  # depending on whether it's being used as part of a larger expression, or is a
+  # top-level statement within the function body.
   compile: (o) ->
     @options: merge o or {}
     @tab:     o.indent
@@ -471,9 +475,10 @@ exports.RangeNode: class RangeNode extends BaseNode
     arr:  Expressions.wrap([new ForNode(body, {source: (new ValueNode(this))}, literal(name))])
     (new ParentheticalNode(new CallNode(new CodeNode([], arr)))).compile(o)
 
+#### SliceNode
 
-# An array slice literal. Unlike JavaScript's Array#slice, the second parameter
-# specifies the index of the end of the slice (just like the first parameter)
+# An array slice literal. Unlike JavaScript's `Array#slice`, the second parameter
+# specifies the index of the end of the slice, just as the first parameter
 # is the index of the beginning.
 exports.SliceNode: class SliceNode extends BaseNode
   type: 'Slice'
@@ -488,8 +493,9 @@ exports.SliceNode: class SliceNode extends BaseNode
     plus_part:  if @range.exclusive then '' else ' + 1'
     ".slice($from, $to$plus_part)"
 
+#### ObjectNode
 
-# An object literal.
+# An object literal, nothing fancy.
 exports.ObjectNode: class ObjectNode extends BaseNode
   type: 'Object'
 
@@ -498,7 +504,9 @@ exports.ObjectNode: class ObjectNode extends BaseNode
 
   # All the mucking about with commas is to make sure that CommentNodes and
   # AssignNodes get interleaved correctly, with no trailing commas or
-  # commas affixed to comments. TODO: Extract this and add it to ArrayNode.
+  # commas affixed to comments.
+  #
+  # *TODO: Extract this and add it to ArrayNode*.
   compile_node: (o) ->
     o.indent: @idt(1)
     non_comments: prop for prop in @properties when not (prop instanceof CommentNode)
@@ -513,14 +521,43 @@ exports.ObjectNode: class ObjectNode extends BaseNode
     inner: if props then '\n' + props + '\n' + @idt() else ''
     "{$inner}"
 
+#### ArrayNode
 
-# A class literal, including optional superclass and constructor.
+# An array literal.
+exports.ArrayNode: class ArrayNode extends BaseNode
+  type: 'Array'
+
+  constructor: (objects) ->
+    @children: @objects: objects or []
+
+  compile_node: (o) ->
+    o.indent: @idt(1)
+    objects: for obj, i in @objects
+      code: obj.compile(o)
+      if obj instanceof CommentNode
+        "\n$code\n${o.indent}"
+      else if i is @objects.length - 1
+        code
+      else
+        "$code, "
+    objects: objects.join('')
+    ending: if objects.indexOf('\n') >= 0 then "\n$@tab]" else ']'
+    "[$objects$ending"
+
+#### ClassNode
+
+# The CoffeeScript class definition.
 exports.ClassNode: class ClassNode extends BaseNode
   type: 'Class'
 
+  # Initialize a **ClassNode** with its name, an optional superclass, and a
+  # list of prototype property assignments.
   constructor: (variable, parent, props) ->
     @children: compact flatten [@variable: variable, @parent: parent, @properties: props or []]
 
+  # Instead of generating the JavaScript string directly, we build up the
+  # equivalent syntax tree and compile that, in pieces. You can see the
+  # constructor, property assignments, and inheritance getting built out below.
   compile_node: (o) ->
     extension:   @parent and new ExtendsNode(@variable, @parent)
     constructor: null
@@ -556,31 +593,11 @@ exports.ClassNode: class ClassNode extends BaseNode
 
 statement ClassNode
 
-
-# An array literal.
-exports.ArrayNode: class ArrayNode extends BaseNode
-  type: 'Array'
-
-  constructor: (objects) ->
-    @children: @objects: objects or []
-
-  compile_node: (o) ->
-    o.indent: @idt(1)
-    objects: for obj, i in @objects
-      code: obj.compile(o)
-      if obj instanceof CommentNode
-        "\n$code\n${o.indent}"
-      else if i is @objects.length - 1
-        code
-      else
-        "$code, "
-    objects: objects.join('')
-    ending: if objects.indexOf('\n') >= 0 then "\n$@tab]" else ']'
-    "[$objects$ending"
-
+#### PushNode
 
 # A faux-node that is never created by the grammar, but is used during
-# code generation to generate a quick "array.push(value)" tree of nodes.
+# code generation to generate a quick `array.push(value)` tree of nodes.
+# Helpful for recording the result arrays from comprehensions.
 PushNode: exports.PushNode: {
 
   wrap: (array, expressions) ->
@@ -592,6 +609,7 @@ PushNode: exports.PushNode: {
 
 }
 
+#### ClosureNode
 
 # A faux-node used to wrap an expressions body in a closure.
 ClosureNode: exports.ClosureNode: {
@@ -603,11 +621,14 @@ ClosureNode: exports.ClosureNode: {
 
 }
 
+#### AssignNode
 
-# Setting the value of a local variable, or the value of an object property.
+# The **AssignNode** is used to assign a local variable to value, or to set the
+# property of an object -- including within object literals.
 exports.AssignNode: class AssignNode extends BaseNode
   type: 'Assign'
 
+  # Matchers for detecting prototype assignments.
   PROTO_ASSIGN: /^(\S+)\.prototype/
   LEADING_DOT:  /^\.(prototype\.)?/
 
@@ -624,6 +645,10 @@ exports.AssignNode: class AssignNode extends BaseNode
   is_statement: ->
     @is_value() and (@variable.is_array() or @variable.is_object())
 
+  # Compile an assignment, delegating to `compile_pattern_match` or
+  # `compile_splice` if appropriate. Keep track of the name of the base object
+  # we've been assigned to, for correct internal references. If the variable
+  # has not been seen yet within the current scope, declare it.
   compile_node: (o) ->
     top:    del o, 'top'
     return  @compile_pattern_match(o) if @is_statement()
@@ -645,9 +670,10 @@ exports.AssignNode: class AssignNode extends BaseNode
     val: "${@tab}return $val" if o.returns
     val
 
-  # Implementation of recursive pattern matching, when assigning array or
+  # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
-  # See: http://wiki.ecmascript.org/doku.php?id=harmony:destructuring
+  # See the [ECMAScript Harmony Wiki](http://wiki.ecmascript.org/doku.php?id=harmony:destructuring)
+  # for details.
   compile_pattern_match: (o) ->
     val_var: o.scope.free_variable()
     value: if @value.is_statement() then ClosureNode.wrap(@value) else @value
@@ -668,6 +694,8 @@ exports.AssignNode: class AssignNode extends BaseNode
     code += "\n${@tab}return ${ @variable.compile(o) };" if o.returns
     code
 
+  # Compile the assignment from an array splice literal, using JavaScript's
+  # `Array#splice` method.
   compile_splice: (o) ->
     name:   @variable.compile(merge(o, {only_first: true}))
     l:      @variable.properties.length
@@ -678,9 +706,11 @@ exports.AssignNode: class AssignNode extends BaseNode
     val:    @value.compile(o)
     "$name.splice.apply($name, [$from, $to].concat($val))"
 
+#### CodeNode
 
-# A function definition. The only node that creates a new Scope.
-# A CodeNode does not have any children -- they're within the new scope.
+# A function definition. This is the only node that creates a new Scope.
+# When for the purposes of walking the contents of a function body, the CodeNode
+# has no *children* -- they're within the inner scope.
 exports.CodeNode: class CodeNode extends BaseNode
   type: 'Code'
 
@@ -689,6 +719,11 @@ exports.CodeNode: class CodeNode extends BaseNode
     @body:    body or new Expressions()
     @bound:   tag is 'boundfunc'
 
+  # Compilation creates a new scope unless explicitly asked to share with the
+  # outer scope. Handles splat parameters in the parameter list by peeking at
+  # the JavaScript `arguments` objects. If the function is bound with the `=>`
+  # arrow, generates a wrapper that saves the current value of `this` through
+  # a closure.
   compile_node: (o) ->
     shared_scope: del o, 'shared_scope'
     top:          del o, 'top'
@@ -715,9 +750,12 @@ exports.CodeNode: class CodeNode extends BaseNode
   top_sensitive: ->
     true
 
+  # When traversing (for printing or inspecting), return the real children of
+  # the function -- the parameters and body of expressions.
   real_children: ->
     flatten [@params, @body.expressions]
 
+  # Custom `traverse` implementation that uses the `real_children`.
   traverse: (block) ->
     block this
     block(child) for child in @real_children()
@@ -727,6 +765,7 @@ exports.CodeNode: class CodeNode extends BaseNode
     children: (child.toString(idt + TAB) for child in @real_children()).join('')
     "\n$idt$children"
 
+#### SplatNode
 
 # A splat, either as a parameter to a function, an argument to a call,
 # or in a destructuring assignment.
