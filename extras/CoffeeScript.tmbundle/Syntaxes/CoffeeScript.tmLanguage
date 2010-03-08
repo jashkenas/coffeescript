@@ -426,7 +426,7 @@
 						</dict>
 					</dict>
 					<key>match</key>
-					<string>(\$)@[a-zA-Z_][\w\.]*</string>
+					<string>(\$)@[a-zA-Z_]\w*(\.\w+)*</string>
 					<key>name</key>
 					<string>variable.other.readwrite.coffee</string>
 				</dict>
@@ -440,7 +440,7 @@
 						</dict>
 					</dict>
 					<key>match</key>
-					<string>(\$)(?!@)[a-zA-Z_][\w\.]*</string>
+					<string>(\$)(?!@)[a-zA-Z_]\w*(\.\w+)*</string>
 					<key>name</key>
 					<string>source.coffee.embedded.source</string>
 				</dict>
