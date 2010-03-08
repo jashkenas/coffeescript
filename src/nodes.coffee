@@ -357,8 +357,8 @@ exports.CallNode: class CallNode extends BaseNode
     meth: if o.scope.method.proto
       "${o.scope.method.proto}.__superClass__.$methname"
     else
-      "$methname.__superClass__.constructor"
-    "$meth.call(this${ if args.length then ', ' else '' }$args)"
+      "${methname}.__superClass__.constructor"
+    "${meth}.call(this${ if args.length then ', ' else '' }$args)"
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow the variable-length arguments.
@@ -373,7 +373,7 @@ exports.CallNode: class CallNode extends BaseNode
       code: arg.compile o
       code: if arg instanceof SplatNode then code else "[$code]"
       if i is 0 then code else ".concat($code)"
-    "$@prefix$meth.apply($obj, ${ args.join('') })"
+    "$@prefix${meth}.apply($obj, ${ args.join('') })"
 
 #### ExtendsNode
 
@@ -535,7 +535,7 @@ exports.ArrayNode: class ArrayNode extends BaseNode
     objects: for obj, i in @objects
       code: obj.compile(o)
       if obj instanceof CommentNode
-        "\n$code\n${o.indent}"
+        "\n$code\n$o.indent"
       else if i is @objects.length - 1
         code
       else
@@ -704,7 +704,7 @@ exports.AssignNode: class AssignNode extends BaseNode
     from:   range.from.compile(o)
     to:     range.to.compile(o) + ' - ' + from + plus
     val:    @value.compile(o)
-    "$name.splice.apply($name, [$from, $to].concat($val))"
+    "${name}.splice.apply($name, [$from, $to].concat($val))"
 
 #### CodeNode
 
@@ -1007,7 +1007,7 @@ exports.ForNode: class ForNode extends BaseNode
       if not @object
         lvar:       scope.free_variable()
         step_part:  if @step then "$ivar += ${ @step.compile(o) }" else "$ivar++"
-        for_part:   "$ivar = 0, $lvar = $svar.length; $ivar < $lvar; $step_part"
+        for_part:   "$ivar = 0, $lvar = ${svar}.length; $ivar < $lvar; $step_part"
     set_result:     if rvar then @idt() + rvar + ' = []; ' else @idt()
     return_result:  rvar or ''
     body:           ClosureNode.wrap(body, true) if top_level and @contains (n) -> n instanceof CodeNode

@@ -54,6 +54,7 @@ ok "I can has ${"cheeze"}" is 'I can has cheeze'
 ok 'I can has ${"cheeze"}' is 'I can has ${"cheeze"}'
 
 ok "Where is ${obj["name"] + '?'}" is 'Where is Joe?'
+ok "Where is $obj.name?" is 'Where is Joe?'
 
 ok "Where is ${"the new ${obj["name"]}"}?" is 'Where is the new Joe?'
 ok "Hello ${world ? "$hello"}" is 'Hello World'

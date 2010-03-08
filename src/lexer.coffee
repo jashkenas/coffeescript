@@ -440,7 +440,7 @@ JS_FORBIDDEN: JS_KEYWORDS.concat RESERVED
 IDENTIFIER    : /^([a-zA-Z$_](\w|\$)*)/
 NUMBER        : /^(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
 HEREDOC       : /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
-INTERPOLATION : /^\$([a-zA-Z_@]\w*)/
+INTERPOLATION : /^\$([a-zA-Z_@]\w*(\.\w+)*)/
 OPERATOR      : /^([+\*&|\/\-%=<>:!?]+)/
 WHITESPACE    : /^([ \t]+)/
 COMMENT       : /^(((\n?[ \t]*)?#[^\n]*)+)/
