@@ -768,7 +768,7 @@ exports.CodeNode: class CodeNode extends BaseNode
 #### SplatNode
 
 # A splat, either as a parameter to a function, an argument to a call,
-# or in a destructuring assignment.
+# or as part of a destructuring assignment.
 exports.SplatNode: class SplatNode extends BaseNode
   type: 'Splat'
 
@@ -779,17 +779,23 @@ exports.SplatNode: class SplatNode extends BaseNode
   compile_node: (o) ->
     if @index? then @compile_param(o) else @name.compile(o)
 
+  # Compiling a parameter splat means recovering the parameters that succeed
+  # the splat in the parameter list, by slicing the arguments object.
   compile_param: (o) ->
     name: @name.compile(o)
     o.scope.find name
     "$name = Array.prototype.slice.call(arguments, $@index)"
 
+  # A compiling a splat as a destructuring assignment means slicing arguments
+  # from the right-hand-side's corresponding array.
   compile_value: (o, name, index) ->
     "Array.prototype.slice.call($name, $index)"
 
+#### WhileNode
 
 # A while loop, the only sort of low-level loop exposed by CoffeeScript. From
-# it, all other loops can be manufactured.
+# it, all other loops can be manufactured. Useful in cases where you need more
+# flexibility or more speed than a comprehension can provide.
 exports.WhileNode: class WhileNode extends BaseNode
   type: 'While'
 
@@ -804,6 +810,9 @@ exports.WhileNode: class WhileNode extends BaseNode
   top_sensitive: ->
     true
 
+  # The main difference from a JavaScript *while* is that the CoffeeScript
+  # *while* can be used as a part of a larger expression -- while loops may
+  # return an array containing the computed result of each iteration.
   compile_node: (o) ->
     returns:    del(o, 'returns')
     top:        del(o, 'top') and not returns
@@ -823,12 +832,14 @@ exports.WhileNode: class WhileNode extends BaseNode
 
 statement WhileNode
 
+#### OpNode
 
 # Simple Arithmetic and logical operations. Performs some conversion from
 # CoffeeScript operations into their JavaScript equivalents.
 exports.OpNode: class OpNode extends BaseNode
   type: 'Op'
 
+  # The map of conversions from CoffeeScript to JavaScript symbols.
   CONVERSIONS: {
     '==':   '==='
     '!=':   '!=='
@@ -839,8 +850,14 @@ exports.OpNode: class OpNode extends BaseNode
     'not':  '!'
   }
 
+  # The list of operators for which we perform
+  # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin).
   CHAINABLE:        ['<', '>', '>=', '<=', '===', '!==']
+
+  # Our assignment operators that have no JavaScript equivalent.
   ASSIGNMENT:       ['||=', '&&=', '?=']
+
+  # Operators must come before their operands with a space.
   PREFIX_OPERATORS: ['typeof', 'delete']
 
   constructor: (operator, first, second, flip) ->
@@ -863,14 +880,17 @@ exports.OpNode: class OpNode extends BaseNode
     return @compile_existence(o)  if @operator is '?'
     [@first.compile(o), @operator, @second.compile(o)].join ' '
 
-  # Mimic Python's chained comparisons. See:
-  # http://docs.python.org/reference/expressions.html#notin
+  # Mimic Python's chained comparisons when multiple comparison operators are
+  # used sequentially. For example: `50 < 65 > 10`
   compile_chain: (o) ->
     shared: @first.unwrap().second
     [@first.second, shared]: shared.compile_reference(o) if shared instanceof CallNode
     [first, second, shared]: [@first.compile(o), @second.compile(o), shared.compile(o)]
     "($first) && ($shared $@operator $second)"
 
+  # When compiling a conditional assignment, take care to ensure that the
+  # operands are only evaluated once, even though we have to reference them
+  # more than once.
   compile_assignment: (o) ->
     [first, second]: [@first.compile(o), @second.compile(o)]
     o.scope.find(first) if first.match(IDENTIFIER)
