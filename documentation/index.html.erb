@@ -30,7 +30,7 @@
 
   <div id="flybar">
     <a id="logo" href="#top"> </a>
-    <div class="navigation">
+    <div class="navigation toc">
       <div class="button">
         Table of Contents
       </div>
@@ -60,6 +60,7 @@
         <a href="#try">Try/Catch/Finally</a>
         <a href="#comparisons">Chained Comparisons</a>
         <a href="#strings">Multiline Strings and Heredocs</a>
+        <a href="#interpolation">String Interpolation</a>
         <a href="#cake">Cake, and Cakefiles</a>
         <a href="#scripts">"text/coffeescript" Script Tags</a>
         <a href="#resources">Resources</a>
@@ -82,6 +83,23 @@ alert reverse '!tpircseeffoC'</textarea></div>
           <button class="run">run</button>
           <br class="clear" />
         </div>
+      </div>
+    </div>
+    <div class="navigation annotated">
+      <div class="button">
+        Annotated Source
+      </div>
+      <div class="contents">
+        <a href="documentation/docs/grammar.html">The Grammar &mdash; src/grammar</a>
+        <a href="documentation/docs/lexer.html">The Lexer &mdash; src/lexer</a>
+        <a href="documentation/docs/rewriter.html">The Rewriter &mdash; src/rewriter</a>
+        <a href="documentation/docs/nodes.html">The Syntax Tree &mdash; src/nodes</a>
+        <a href="documentation/docs/scope.html">Lexical Scope &mdash; src/scope</a>
+        <a href="documentation/docs/coffee-script.html">The CoffeeScript Module &mdash; src/coffee-script</a>
+        <a href="documentation/docs/cake.html">Cake &amp; Cakefiles &mdash; src/cake</a>
+        <a href="documentation/docs/command.html">"coffee" Command-Line Utility &mdash; src/command</a>
+        <a href="documentation/docs/optparse.html">Option Parsing &mdash; src/optparse</a>
+        <a href="documentation/docs/repl.html">Interactive REPL &mdash; src/repl</a>
       </div>
     </div>
     <div id="error" style="display:none;"></div>
@@ -111,7 +129,7 @@ alert reverse '!tpircseeffoC'</textarea></div>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.4">0.5.4</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.5">0.5.5</a>
     </p>
 
     <h2>
@@ -153,11 +171,11 @@ alert reverse '!tpircseeffoC'</textarea></div>
 
     <p>
       To install, first make sure you have a working version of
-      <a href="http://nodejs.org/">Node.js</a> version 0.1.31 or higher. 
+      <a href="http://nodejs.org/">Node.js</a> version 0.1.31 or higher.
       Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.4">0.5.4</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.5">0.5.5</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -185,8 +203,8 @@ sudo bin/cake install</pre>
       <tr>
         <td width="25%"><code>-i, --interactive</code></td>
         <td>
-          Launch an interactive CoffeeScript session to try short snippets. 
-          More pleasant if wrapped with 
+          Launch an interactive CoffeeScript session to try short snippets.
+          More pleasant if wrapped with
           <a href="http://utopia.knoware.nl/~hlub/uck/rlwrap/rlwrap.html">rlwrap</a>.
         </td>
       </tr>
@@ -654,7 +672,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       In JavaScript, the <tt>this</tt> keyword is dynamically scoped to mean the
       object that the current function is attached to. If you pass a function as
       as callback, or attach it to a different object, the original value of <tt>this</tt>
-      will be lost. If you're not familiar with this behavior, 
+      will be lost. If you're not familiar with this behavior,
       <a href="http://www.digital-web.com/articles/scope_in_javascript/">this Digital Web article</a>
       gives a good overview of the quirks.
     </p>
@@ -669,8 +687,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <%= code_for('fat_arrow') %>
     <p>
       If we had used <tt>-></tt> in the callback above, <tt>@customer</tt> would
-      have referred to the undefined "customer" property of the DOM element, 
-      and trying to call <tt>purchase()</tt> on it would have raised an exception. 
+      have referred to the undefined "customer" property of the DOM element,
+      and trying to call <tt>purchase()</tt> on it would have raised an exception.
     </p>
 
     <p>
@@ -731,6 +749,19 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       you can keep it all aligned with the body of your code.
     </p>
     <%= code_for('heredocs') %>
+
+    <p>
+      <span id="interpolation" class="bookmark"></span>
+      <b class="header">String Interpolation</b>
+      A version of <a href="http://wiki.ecmascript.org/doku.php?id=strawman:string_interpolation">ECMAScript Harmony's proposed string interpolation</a>
+      is included in CoffeeScript. Simple variables can be included by marking
+      them with a dollar sign.
+    </p>
+    <%= code_for('interpolation', 'quote') %>
+    <p>
+      And arbitrary expressions can be interpolated by using brackets <tt>${ ... }</tt>
+    </p>
+    <%= code_for('interpolation_expression', 'sentence') %>
 
     <h2>
       <span id="cake" class="bookmark"></span>
@@ -794,9 +825,9 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
         <tt>bin/cake build</tt> to rebuild the CoffeeScript compiler, and <br />
         <tt>bin/cake build:parser</tt> to regenerate the Jison parser if you're
         working on the grammar. <br /><br />
-        <tt>git checkout lib &amp;&amp; bin/cake build &amp;&amp; bin/cake build &amp;&amp; bin/cake test</tt> 
-        is a good command to run when you're working on the core language. It'll refresh the lib directory
-        (in case you broke something), build your altered compiler, use that to 
+        <tt>bin/cake build:full</tt> is a good command to run when you're working
+        on the core language. It'll refresh the lib directory
+        (in case you broke something), build your altered compiler, use that to
         rebuild itself (a good sanity test) and then run all of the tests. If
         they pass, there's a good chance you've made a successful change.
       </li>
@@ -812,12 +843,12 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <li>
         <b>defunkt</b>'s <a href="http://github.com/defunkt/coffee-mode">CoffeeScript Major Mode</a>
         &mdash; a Emacs major mode that provides syntax highlighting, indentation
-        support, and some bonus commands. (For Vim and TextMate highlighters, 
+        support, and some bonus commands. (For Vim and TextMate highlighters,
         see the <tt>extras</tt> directory of the main repository.)
       </li>
       <li>
         <b>mattly</b>'s <a href="http://github.com/mattly/rack-coffee">rack-coffee</a>
-        &mdash; a small Rack middleware for serving CoffeeScript files as 
+        &mdash; a small Rack middleware for serving CoffeeScript files as
         compiled JavaScript on the fly.
       </li>
     </ul>
@@ -826,17 +857,26 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
-    
+
+    <p>
+      <b class="header" style="margin-top: 20px;">0.5.5</b>
+      String interpolation, contributed by
+      <a href="http://github.com/StanAngeloff">Stan Angeloff</a>.
+      Since <tt>--run</tt> has been the default since <b>0.5.3</b>, updating
+      <tt>--stdio</tt> and <tt>--eval</tt> to run by default, pass <tt>--compile</tt>
+      as well if you'd like to print the result.
+    </p>
+
     <p>
       <b class="header" style="margin-top: 20px;">0.5.4</b>
       Bugfix that corrects the Node.js global constants <tt>__filename</tt> and
       <tt>__dirname</tt>. Tweaks for more flexible parsing of nested function
       literals and improperly-indented comments. Updates for the latest Node.js API.
     </p>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.5.3</b>
-      CoffeeScript now has a syntax for defining classes. Many of the core 
+      CoffeeScript now has a syntax for defining classes. Many of the core
       components (Nodes, Lexer, Rewriter, Scope, Optparse) are using them.
       Cakefiles can use <tt>optparse.coffee</tt> to define options for tasks.
       <tt>--run</tt> is now the default flag for the <tt>coffee</tt> command,
