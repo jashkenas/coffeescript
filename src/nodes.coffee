@@ -881,7 +881,10 @@ exports.OpNode: class OpNode extends BaseNode
     [@first.compile(o), @operator, @second.compile(o)].join ' '
 
   # Mimic Python's chained comparisons when multiple comparison operators are
-  # used sequentially. For example: `50 < 65 > 10`
+  # used sequentially. For example:
+  #
+  #     bin/coffee -e "puts 50 < 65 > 10"
+  #     true
   compile_chain: (o) ->
     shared: @first.unwrap().second
     [@first.second, shared]: shared.compile_reference(o) if shared instanceof CallNode
@@ -897,19 +900,23 @@ exports.OpNode: class OpNode extends BaseNode
     return "$first = ${ ExistenceNode.compile_test(o, @first) } ? $first : $second" if @operator is '?='
     "$first = $first ${ @operator.substr(0, 2) } $second"
 
+  # If this is an existence operator, we delegate to `ExistenceNode.compile_test`
+  # to give us the safe references for the variables.
   compile_existence: (o) ->
     [first, second]: [@first.compile(o), @second.compile(o)]
     test: ExistenceNode.compile_test(o, @first)
     "$test ? $first : $second"
 
+  # Compile a unary **OpNode**.
   compile_unary: (o) ->
     space: if @PREFIX_OPERATORS.indexOf(@operator) >= 0 then ' ' else ''
     parts: [@operator, space, @first.compile(o)]
     parts: parts.reverse() if @flip
     parts.join('')
 
+#### TryNode
 
-# A try/catch/finally block.
+# A classic *try/catch/finally* block.
 exports.TryNode: class TryNode extends BaseNode
   type: 'Try'
 
@@ -918,6 +925,8 @@ exports.TryNode: class TryNode extends BaseNode
     @error: error
     this
 
+  # Compilation is more or less as you would expect -- the *finally* clause
+  # is optional, the *catch* is not.
   compile_node: (o) ->
     o.indent:     @idt(1)
     o.top:        true
