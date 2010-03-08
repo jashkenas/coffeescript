@@ -20,7 +20,7 @@ process.mixin {
 # of exiting.
 run: (code) ->
   try
-    val: CoffeeScript.run code, 'repl', {no_wrap: true, globals: true}
+    val: CoffeeScript.run code, {no_wrap: true, globals: true, source: 'repl'}
     p val if val isnt undefined
   catch err
     puts err.stack or err.toString()

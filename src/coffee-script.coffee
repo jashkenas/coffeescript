@@ -41,10 +41,9 @@ exports.nodes: (code) ->
 
 # Compile and execute a string of CoffeeScript (on the server), correctly
 # setting `__filename`, `__dirname`, and relative `require()`.
-exports.run: (code, source, options) ->
-  options ||= {}
-  module.filename: __filename: options.source: source
-  __dirname: path.dirname source
+exports.run: (code, options) ->
+  module.filename: __filename: options.source
+  __dirname: path.dirname __filename
   eval exports.compile code, options
 
 # The real Lexer produces a generic stream of tokens. This object provides a

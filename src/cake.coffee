@@ -7,10 +7,10 @@
 # current directory's Cakefile.
 
 # External dependencies.
-fs:       require 'fs'
-path:     require 'path'
-coffee:   require 'coffee-script'
-optparse: require 'optparse'
+fs:           require 'fs'
+path:         require 'path'
+optparse:     require 'optparse'
+CoffeeScript: require 'coffee-script'
 
 # Keep track of the list of defined tasks, the accepted options, and so on.
 tasks: {}
@@ -46,7 +46,7 @@ exports.run: ->
   path.exists 'Cakefile', (exists) ->
     throw new Error("Cakefile not found in ${process.cwd()}") unless exists
     args: process.argv[2...process.argv.length]
-    coffee.run fs.readFileSync('Cakefile'), 'Cakefile'
+    CoffeeScript.run fs.readFileSync('Cakefile'), {source: 'Cakefile'}
     oparse: new optparse.OptionParser switches
     return print_tasks() unless args.length
     options: oparse.parse(args)

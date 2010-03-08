@@ -49,7 +49,7 @@ exports.run: ->
   return version()                            if options.version
   return require 'repl'                       if options.interactive
   return compile_stdio()                      if options.stdio
-  return compile_script 'unknown', sources[0] if options.eval
+  return compile_script 'console', sources[0] if options.eval
   return usage()                              unless sources.length
   separator: sources.indexOf '--'
   flags: []
@@ -75,12 +75,13 @@ compile_scripts: ->
 # and `module.filename` to be correct relative to the script's path.
 compile_script: (source, code) ->
   o: options
+  code_opts: compile_options source
   try
     if      o.tokens            then print_tokens CoffeeScript.tokens code
     else if o.nodes             then puts CoffeeScript.nodes(code).toString()
-    else if o.run               then CoffeeScript.run code, source, compile_options()
+    else if o.run               then CoffeeScript.run code, code_opts
     else
-      js: CoffeeScript.compile code, compile_options(source)
+      js: CoffeeScript.compile code, code_opts
       if      o.compile         then write_js source, js
       else if o.lint            then lint js
       else if o.print or o.eval then print js

@@ -1,5 +1,5 @@
 fs: require 'fs'
-coffee: require 'coffee-script'
+CoffeeScript: require 'coffee-script'
 
 # Run a CoffeeScript through our node/coffee interpreter.
 run: (args) ->
@@ -74,4 +74,4 @@ task 'test', 'run the CoffeeScript language test suite', ->
   fs.readdir 'test', (err, files) ->
     for file in files
       fs.readFile 'test/' + file, (err, code) ->
-        coffee.run code, file
+        CoffeeScript.run code, {source: file}
