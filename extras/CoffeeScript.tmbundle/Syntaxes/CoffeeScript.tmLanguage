@@ -44,7 +44,7 @@
 			<key>comment</key>
 			<string>match stuff like: a -&gt; … </string>
 			<key>match</key>
-			<string>(\()([a-zA-Z0-9_?.$]*(,\s*[a-zA-Z0-9_?.$]+)*)(\))\s*((=|-)&gt;)</string>
+			<string>(\()([a-zA-Z0-9_?.\$]*(,\s*[a-zA-Z0-9_?.\$]+)*)(\))\s*((=|-)&gt;)</string>
 			<key>name</key>
 			<string>meta.inline.function.coffee</string>
 		</dict>
@@ -75,7 +75,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(@)([a-zA-Z_$]\w*)?</string>
+			<string>(@)([a-zA-Z_\$]\w*)?</string>
 			<key>name</key>
 			<string>variable.other.readwrite.instance.coffee</string>
 		</dict>
@@ -269,7 +269,7 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>\b([a-zA-Z$_](\w|\$|:|\.)*\s*(?=\:))</string>
+			<string>\b([a-zA-Z\$_](\w|\$|:|\.)*\s*(?=\:))</string>
 			<key>name</key>
 			<string>variable.assignment.coffee</string>
 		</dict>
