@@ -28,6 +28,13 @@ task 'build', 'build the CoffeeScript language from source', ->
   run ['-c', '-o', 'lib'].concat(files)
 
 
+task 'build:full', 'checkout /lib, rebuild the source twice, and run the tests', ->
+  exec 'git co lib && bin/cake build && bin/cake build && bin/cake test', (err, stdout, stderr) ->
+    print stdout if stdout
+    print stderr if stderr
+    throw err    if err
+
+
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   require.paths.unshift 'vendor/jison/lib'
   parser: require('grammar').parser

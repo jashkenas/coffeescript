@@ -124,7 +124,7 @@ div.code {
   #error {
     position: absolute;
     -webkit-border-radius: 6px; -moz-border-radius: 6px; border-radius: 6px;
-    right: 15px; top: 15px; left: 565px;
+    right: 15px; top: 15px; left: 722px;
     height: 15px;
     padding: 2px 5px;
     background: #fdcdcc;
@@ -142,14 +142,14 @@ div.code {
     float: left;
     padding: 0 20px;
     border: 1px solid #bbb;
-    border-top: 0; border-bottom: 0;
+    border-top: 0; border-bottom: 0; border-left-width: 0;
     cursor: pointer;
   }
     body.full_screen .navigation {
       position: static;
     }
-    .navigation.try {
-      border-left: 0;
+    .navigation.toc {
+      border-left-width: 1px;
     }
     .navigation:hover,
     .navigation.active {
@@ -206,7 +206,7 @@ div.code {
             }
       .navigation .contents a {
         display: block;
-        width: 300px;
+        width: 290px;
         text-transform: none;
         text-decoration: none;
         font-weight: normal;
