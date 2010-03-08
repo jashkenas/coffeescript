@@ -23,7 +23,11 @@ exports.VERSION: '0.5.4'
 # Compile a string of CoffeeScript code to JavaScript, using the Coffee/Jison
 # compiler.
 exports.compile: (code, options) ->
-  (parser.parse lexer.tokenize code).compile options
+  try
+    (parser.parse lexer.tokenize code).compile options
+  catch err
+    err.message: "In ${options.source}, ${err.message}" if options.source
+    throw err
 
 # Tokenize a string of CoffeeScript code, and return the array of tokens.
 exports.tokens: (code) ->
@@ -38,9 +42,9 @@ exports.nodes: (code) ->
 # Compile and execute a string of CoffeeScript (on the server), correctly
 # setting `__filename`, `__dirname`, and relative `require()`.
 exports.run: (code, source, options) ->
-  __filename:       source
-  __dirname:        path.dirname source
-  module.filename:  source
+  options ||= {}
+  module.filename: __filename: options.source: source
+  __dirname: path.dirname source
   eval exports.compile code, options
 
 # The real Lexer produces a generic stream of tokens. This object provides a

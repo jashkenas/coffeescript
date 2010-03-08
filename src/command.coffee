@@ -80,7 +80,7 @@ compile_script: (source, code) ->
     else if o.nodes             then puts CoffeeScript.nodes(code).toString()
     else if o.run               then CoffeeScript.run code, source, compile_options()
     else
-      js: CoffeeScript.compile code, compile_options()
+      js: CoffeeScript.compile code, compile_options(source)
       if      o.compile         then write_js source, js
       else if o.lint            then lint js
       else if o.print or o.eval then print js
@@ -95,7 +95,7 @@ compile_stdio: ->
   process.stdio.addListener 'data', (string) ->
     code += string if string
   process.stdio.addListener 'close', ->
-    process.stdio.write CoffeeScript.compile code, compile_options()
+    process.stdio.write CoffeeScript.compile code, compile_options('stdio')
 
 # Watch a list of source CoffeeScript files using `fs.watchFile`, recompiling
 # them every time the files are updated. May be used in combination with other
@@ -143,8 +143,10 @@ parse_options: ->
   sources:       options.arguments[2...options.arguments.length]
 
 # The compile-time options to pass to the CoffeeScript compiler.
-compile_options: ->
-  if options['no-wrap'] then {no_wrap: true} else {}
+compile_options: (source) ->
+  o: {source: source}
+  o['no-wrap']: options['no-wrap']
+  o
 
 # Print the `--help` usage message and exit.
 usage: ->
