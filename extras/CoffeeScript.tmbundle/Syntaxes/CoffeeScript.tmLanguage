@@ -269,7 +269,7 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>(?&lt;=\s|^)([a-zA-Z\$_](\w|\$|\.)*\s*(?=(?!\::)\:(?!(\s*\(.*\))?\s*((=|-)&gt;))))</string>
+			<string>(?=[a-zA-Z\$_])([a-zA-Z\$_](\w|\$|\.)*\s*(?=(?!\::)\:(?!(\s*\(.*\))?\s*((=|-)&gt;))))</string>
 			<key>name</key>
 			<string>variable.assignment.coffee</string>
 		</dict>
@@ -283,7 +283,7 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>(?&lt;=\s|^)([a-zA-Z\$_](\w|\$|:|\.)*\s*(?=\:(\s*\(.*\))?\s*((=|-)&gt;)))</string>
+			<string>(?=[a-zA-Z\$_])([a-zA-Z\$_](\w|\$|:|\.)*\s*(?=\:(\s*\(.*\))?\s*((=|-)&gt;)))</string>
 			<key>name</key>
 			<string>meta.function.coffee</string>
 		</dict>
