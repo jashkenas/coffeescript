@@ -61,3 +61,8 @@ ok "Where is ${"the nested ${obj["name"]}"}?" is 'Where is the nested Joe?'
 ok "Hello ${world ? "$hello"}" is 'Hello World'
 
 ok "Hello ${"${"${obj["name"]}" + '!'}"}" is 'Hello Joe!'
+
+a: 1
+b: 2
+c: 3
+ok "$a$b$c" is '123'

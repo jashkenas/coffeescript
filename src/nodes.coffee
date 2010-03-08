@@ -1192,7 +1192,7 @@ TAB: '  '
 TRAILING_WHITESPACE: /\s+$/gm
 
 # Keep this identifier regex in sync with the Lexer.
-IDENTIFIER: /^[a-zA-Z$_](\w|\$)*$/
+IDENTIFIER: /^[a-zA-Z\$_](\w|\$)*$/
 
 # Utility Functions
 # -----------------
