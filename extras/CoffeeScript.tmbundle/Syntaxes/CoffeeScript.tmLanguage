@@ -193,50 +193,7 @@
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>(?=[a-zA-Z\$_])([a-zA-Z\$_](\w|\$|\.)*)(?=\[.*?\])</string>
-			<key>beginCaptures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>variable.assignment.coffee</string>
-				</dict>
-			</dict>
-			<key>end</key>
-			<string>\](:)</string>
-			<key>endCaptures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>variable.assignment.coffee</string>
-				</dict>
-			</dict>
-			<key>name</key>
-			<string>meta.variable.property.assignment</string>
-			<key>patterns</key>
-			<array>
-				<dict>
-					<key>include</key>
-					<string>#instance_variable</string>
-				</dict>
-				<dict>
-					<key>include</key>
-					<string>#single_quoted_string</string>
-				</dict>
-				<dict>
-					<key>include</key>
-					<string>#double_quoted_string</string>
-				</dict>
-				<dict>
-					<key>include</key>
-					<string>#numeric</string>
-				</dict>
-			</array>
-		</dict>
-		<dict>
-			<key>begin</key>
-			<string>(?&lt;=\s|^)(\[)(?=.*?\]\s*:)</string>
+			<string>(\[)(?=.*?\]\s*:)</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>0</key>
