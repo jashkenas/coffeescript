@@ -78,16 +78,12 @@ compile_script: (source, code) ->
   try
     if      o.tokens            then print_tokens CoffeeScript.tokens code
     else if o.nodes             then puts CoffeeScript.nodes(code).toString()
+    else if o.run               then CoffeeScript.run code, source, compile_options()
     else
       js: CoffeeScript.compile code, compile_options()
       if      o.compile         then write_js source, js
       else if o.lint            then lint js
       else if o.print or o.eval then print js
-      else
-        __filename:       source
-        __dirname:        path.dirname source
-        module.filename:  source
-        eval js
   catch err
     if o.watch                  then puts err.message else throw err
 
@@ -142,8 +138,9 @@ print_tokens: (tokens) ->
 # `process.argv` that are specified in `SWITCHES`.
 parse_options: ->
   option_parser: new optparse.OptionParser SWITCHES, BANNER
-  options: option_parser.parse(process.argv)
-  sources: options.arguments[2...options.arguments.length]
+  o: options:    option_parser.parse(process.argv)
+  options.run:   not (o.compile or o.print or o.lint or o.eval)
+  sources:       options.arguments[2...options.arguments.length]
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compile_options: ->

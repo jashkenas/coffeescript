@@ -35,6 +35,14 @@ exports.tokens: (code) ->
 exports.nodes: (code) ->
   parser.parse lexer.tokenize code
 
+# Compile and execute a string of CoffeeScript (on the server), correctly
+# setting `__filename`, `__dirname`, and relative `require()`.
+exports.run: (code, source, options) ->
+  __filename:       source
+  __dirname:        path.dirname source
+  module.filename:  source
+  eval exports.compile code, options
+
 # The real Lexer produces a generic stream of tokens. This object provides a
 # thin wrapper around it, compatible with the Jison API. We can then pass it
 # directly as a "Jison lexer".

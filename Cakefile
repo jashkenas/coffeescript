@@ -73,6 +73,5 @@ task 'test', 'run the CoffeeScript language test suite', ->
     puts '\033[0;32mpassed ' + test_count + ' tests in ' + time + ' seconds\033[0m'
   fs.readdir 'test', (err, files) ->
     for file in files
-      fs.readFile 'test/' + file, (err, source) ->
-        js: coffee.compile source
-        process.compile js, file
+      fs.readFile 'test/' + file, (err, code) ->
+        coffee.run code, file

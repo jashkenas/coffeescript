@@ -11,14 +11,16 @@ CoffeeScript: require 'coffee-script'
 prompt: 'coffee> '
 
 # Quick alias for quitting the REPL.
-quit: -> process.exit(0)
+process.mixin {
+  quit: -> process.exit(0)
+}
 
 # The main REPL function. **run** is called every time a line of code is entered.
 # Attempt to evaluate the command. If there's an exception, print it out instead
 # of exiting.
 run: (code) ->
   try
-    val: eval CoffeeScript.compile code, {no_wrap: true, globals: true}
+    val: CoffeeScript.run code, 'repl', {no_wrap: true, globals: true}
     p val if val isnt undefined
   catch err
     puts err.stack or err.toString()
