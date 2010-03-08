@@ -5,13 +5,15 @@
 	<key>name</key>
 	<string>Symbol List: Method</string>
 	<key>scope</key>
-	<string>source.coffee entity.name.type.instance</string>
+	<string>source.coffee meta.function</string>
 	<key>settings</key>
 	<dict>
 		<key>showInSymbolList</key>
-		<integer>0</integer>
+		<integer>1</integer>
+		<key>symbolTransformation</key>
+		<string>s/^(\s*)([a-zA-Z\$_](\w|\$|:|\.))*\s*:/$1$2/</string>
 	</dict>
 	<key>uuid</key>
-	<string>B087AF2F-8946-4EA9-8409-49E7C4A2EEF0</string>
+	<string>419D24D8-0DD6-4D9A-8CA0-6D9CD740BEEC</string>
 </dict>
 </plist>
