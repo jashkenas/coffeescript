@@ -193,7 +193,7 @@
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>(\[)(?=.*?\]\s*:)</string>
+			<string>(?&lt;=\s|^)(\[)(?=.*?\]\s*:)</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>0</key>
