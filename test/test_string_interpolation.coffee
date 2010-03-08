@@ -50,13 +50,13 @@ obj: {
 }
 ok obj.hi() is "Hello Joe."
 
-ok "I can has ${"cheeze"}" is 'I can has cheeze'
-ok 'I can has ${"cheeze"}' is 'I can has ${"cheeze"}'
+ok "With ${"quotes"}" is 'With quotes'
+ok 'With ${"quotes"}' is 'With ${"quotes"}'
 
 ok "Where is ${obj["name"] + '?'}" is 'Where is Joe?'
 ok "Where is $obj.name?" is 'Where is Joe?'
 
-ok "Where is ${"the new ${obj["name"]}"}?" is 'Where is the new Joe?'
+ok "Where is ${"the nested ${obj["name"]}"}?" is 'Where is the nested Joe?'
 ok "Hello ${world ? "$hello"}" is 'Hello World'
 
 ok "Hello ${"${"${obj["name"]}" + '!'}"}" is 'Hello Joe!'
