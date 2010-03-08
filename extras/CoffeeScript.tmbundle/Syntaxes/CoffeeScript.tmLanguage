@@ -140,7 +140,7 @@
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>(?&lt;=[=(:]|^|return)\s*(/)(?![/*+{}?])</string>
+			<string>(?&lt;=[=(:\s]|^|return)\s*(/)(?![\s/*+{}?])</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
