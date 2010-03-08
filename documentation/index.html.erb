@@ -161,7 +161,7 @@ alert reverse '!tpircseeffoC'</textarea></div>
 
     <p>
       The CoffeeScript compiler is written in pure CoffeeScript, using a
-      <a href="http://github.com/jashkenas/coffee-script/blob/master/src/grammar.coffee">small DSL</a>
+      <a href="documentation/docs/grammar.html">small DSL</a>
       on top of the <a href="http://github.com/zaach/jison">Jison parser generator</a>, and is available
       as a <a href="http://nodejs.org/">Node.js</a> utility. The core compiler however,
       does not depend on Node, and can be run in other server-side-JavaScript environments,
@@ -244,14 +244,14 @@ sudo bin/cake install</pre>
         <td>
           Pipe in CoffeeScript to STDIN and get back JavaScript over STDOUT.
           Good for use with processes written in other languages. An example:<br />
-          <tt>cat src/cake.coffee | coffee -s</tt>
+          <tt>cat src/cake.coffee | coffee -sc</tt>
         </td>
       </tr>
       <tr>
         <td><code>-e, --eval</code></td>
         <td>
           Compile and print a little snippet of CoffeeScript directly from the
-          command line. For example:<br /><tt>coffee -e "square: (x) -> x * x"</tt>
+          command line. For example:<br /><tt>coffee -e "puts num for num in [10..1]"</tt>
         </td>
       </tr>
       <tr>
