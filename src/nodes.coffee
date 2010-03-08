@@ -938,6 +938,7 @@ exports.TryNode: class TryNode extends BaseNode
 
 statement TryNode
 
+#### ThrowNode
 
 # Throw an exception.
 exports.ThrowNode: class ThrowNode extends BaseNode
@@ -949,7 +950,7 @@ exports.ThrowNode: class ThrowNode extends BaseNode
   compile_node: (o) ->
     "${@tab}throw ${@expression.compile(o)};"
 
-statement ThrowNode, true
+statement ThrowNode
 
 
 # Check an expression for existence (meaning not null or undefined).
