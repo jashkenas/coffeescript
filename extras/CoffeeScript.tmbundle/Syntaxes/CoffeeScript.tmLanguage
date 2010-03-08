@@ -69,7 +69,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?))\b</string>
+			<string>(?&lt;!\$)\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?))\b</string>
 			<key>name</key>
 			<string>constant.numeric.coffee</string>
 		</dict>
@@ -269,7 +269,7 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>(?&lt;=\s|^)([a-zA-Z\$_](\w|\$|:|\.)*\s*(?=\:(?!(\s*\(.*\))?\s*((=|-)&gt;))))</string>
+			<string>(?&lt;=\s|^)([a-zA-Z\$_](\w|\$|\.)*\s*(?=(?!\::)\:(?!(\s*\(.*\))?\s*((=|-)&gt;))))</string>
 			<key>name</key>
 			<string>variable.assignment.coffee</string>
 		</dict>
@@ -342,7 +342,7 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>^\s*(class)\s+([a-zA-Z\$_]\w+)(\s+(extends)\s+[a-zA-Z\$_]\w*)?</string>
+			<string>(class)\s+([a-zA-Z\$_]\w+)(\s+(extends)\s+[a-zA-Z\$_]\w*)?</string>
 			<key>name</key>
 			<string>meta.class.coffee</string>
 		</dict>
