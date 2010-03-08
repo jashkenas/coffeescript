@@ -77,16 +77,16 @@ compile_script: (source, code) ->
   o: options
   code_opts: compile_options source
   try
-    if      o.tokens            then print_tokens CoffeeScript.tokens code
-    else if o.nodes             then puts CoffeeScript.nodes(code).toString()
-    else if o.run               then CoffeeScript.run code, code_opts
+    if      o.tokens      then print_tokens CoffeeScript.tokens code
+    else if o.nodes       then puts CoffeeScript.nodes(code).toString()
+    else if o.run         then CoffeeScript.run code, code_opts
     else
       js: CoffeeScript.compile code, code_opts
-      if      o.compile         then write_js source, js
-      else if o.lint            then lint js
-      else if o.print or o.eval then print js
+      if o.print          then process.stdio.write js
+      else if o.compile   then write_js source, js
+      else if o.lint      then lint js
   catch err
-    if o.watch                  then puts err.message else throw err
+    if o.watch            then puts err.message else throw err
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
 # and write them back to **stdout**.
@@ -96,7 +96,7 @@ compile_stdio: ->
   process.stdio.addListener 'data', (string) ->
     code += string if string
   process.stdio.addListener 'close', ->
-    process.stdio.write CoffeeScript.compile code, compile_options('stdio')
+    compile_script 'stdio', code
 
 # Watch a list of source CoffeeScript files using `fs.watchFile`, recompiling
 # them every time the files are updated. May be used in combination with other
@@ -140,7 +140,8 @@ print_tokens: (tokens) ->
 parse_options: ->
   option_parser: new optparse.OptionParser SWITCHES, BANNER
   o: options:    option_parser.parse(process.argv)
-  options.run:   not (o.compile or o.print or o.lint or o.eval)
+  options.run:   not (o.compile or o.print or o.lint)
+  options.print: !!  (o.print or (o.eval or o.stdio and o.compile))
   sources:       options.arguments[2...options.arguments.length]
 
 # The compile-time options to pass to the CoffeeScript compiler.
