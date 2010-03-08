@@ -793,7 +793,12 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
         <tt>bin/cake test</tt> to run the test suite,<br />
         <tt>bin/cake build</tt> to rebuild the CoffeeScript compiler, and <br />
         <tt>bin/cake build:parser</tt> to regenerate the Jison parser if you're
-        working on the grammar.
+        working on the grammar. <br /><br />
+        <tt>git checkout lib &amp;&amp; bin/cake build &amp;&amp; bin/cake build &amp;&amp; bin/cake test</tt> 
+        is a good command to run when you're working on the core language. It'll refresh the lib directory
+        (in case you broke something), build your altered compiler, use that to 
+        rebuild itself (a good sanity test) and then run all of the tests. If
+        they pass, there's a good chance you've made a successful change.
       </li>
       <li>
         <a href="http://github.com/jashkenas/coffee-script/issues">CoffeeScript Issues</a><br />
