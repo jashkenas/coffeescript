@@ -293,9 +293,38 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(super|this|extends|class)\b</string>
+			<string>\b(super|this|extends)\b</string>
 			<key>name</key>
 			<string>variable.language.coffee</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>storage.type.class.coffee</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>entity.name.type.class.coffee</string>
+				</dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>entity.other.inherited-class.coffee</string>
+				</dict>
+				<key>4</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.control.inheritance.coffee</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>(class)\s+([a-zA-Z\$_]\w+)(\s+(extends)\s+[a-zA-Z\$_]\w*)?</string>
+			<key>name</key>
+			<string>meta.class.ruby</string>
 		</dict>
 		<dict>
 			<key>match</key>
