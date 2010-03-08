@@ -146,7 +146,7 @@ parse_options: ->
 # The compile-time options to pass to the CoffeeScript compiler.
 compile_options: (source) ->
   o: {source: source}
-  o['no-wrap']: options['no-wrap']
+  o['no_wrap']: options['no-wrap']
   o
 
 # Print the `--help` usage message and exit.
