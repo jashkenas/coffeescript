@@ -265,7 +265,7 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>storage.type.variable.coffee</string>
+					<string>variable.assignment.coffee</string>
 				</dict>
 			</dict>
 			<key>match</key>
