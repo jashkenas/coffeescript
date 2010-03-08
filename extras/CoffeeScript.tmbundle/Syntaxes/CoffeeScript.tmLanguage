@@ -269,7 +269,7 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>\b([a-zA-Z\$_](\w|\$|:|\.)*\s*(?=\:))</string>
+			<string>(?&lt;!=\s)([a-zA-Z\$_](\w|\$|:|\.)*\s*(?=\:))</string>
 			<key>name</key>
 			<string>variable.assignment.coffee</string>
 		</dict>
