@@ -349,12 +349,15 @@ exports.Lexer: class Lexer
           tokens.push ['IDENTIFIER', interp]
           i += group.length - 1
           pi: i + 1
-        else if (expr: @balanced_string str.substring(i), ['${', '}']) and expr.length > 3
-          inner: expr.substring(2, expr.length - 1)
-          nested: lexer.tokenize "($inner)", {rewrite: no, line: @line}
-          nested.pop()
+        else if (expr: @balanced_string str.substring(i), ['${', '}'])
           tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i
-          tokens.push ['TOKENS', nested]
+          inner: expr.substring(2, expr.length - 1)
+          if inner.length
+            nested: lexer.tokenize "($inner)", {rewrite: no, line: @line}
+            nested.pop()
+            tokens.push ['TOKENS', nested]
+          else
+            tokens.push ['STRING', "$quote$quote"]
           i += expr.length - 1
           pi: i + 1
         i += 1
