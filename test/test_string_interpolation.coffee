@@ -28,7 +28,8 @@ ok "Escaping \$last" is 'Escaping $last'
 ok "Escaping \${last}" is 'Escaping ${last}'
 
 ok "$$" is '$$'
-ok "${}" is '${}'
+ok "${}" is ''
+ok "${}A${} ${} ${}B${}" is 'A  B'
 ok "\\\\\$$" is '\\\\\$$'
 ok "\\\${}" is '\\${}'
 
