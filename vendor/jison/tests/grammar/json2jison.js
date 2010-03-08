@@ -10,14 +10,14 @@ exports["test basic grammar"] = function () {
 };
 
 exports["test advanced grammar"] = function () {
-    var grammar = "%start foo %% test: foo bar | baz ; hello: world {action} %prec UM;";
+    var grammar = "%start foo %% test: foo bar | baz ; hello: world %prec UM {action};";
     var expected = {start: "foo", bnf: {test: ["foo bar", "baz"], hello: [[ "world", "action", {prec: "UM"} ]]}};
 
     assert.deepEqual(json2jison.convert(bnf.parse(grammar)), json2jison.convert(expected), "grammar should be parsed correctly");
 };
 
 exports["test actions"] = function () {
-    var grammar = "%start foo %% test: foo bar | baz ; hello: world {{action{} }} %prec UM;";
+    var grammar = "%start foo %% test: foo bar | baz ; hello: world %prec UM {{action{} }} ;";
     var expected = {start: "foo", bnf: {test: ["foo bar", "baz"], hello: [[ "world", "action{}", {prec: "UM"} ]]}};
 
     assert.deepEqual(json2jison.convert(bnf.parse(grammar)), json2jison.convert(expected), "grammar should be parsed correctly");

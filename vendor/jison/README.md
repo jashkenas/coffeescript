@@ -1,5 +1,7 @@
 Jison
 =====
+* [issues](http://github.com/zaach/jison/issues)
+* [discuss](mailto:jison@librelist.com)
 
 An API for creating parsers in JavaScript
 -----------------------------------------
@@ -189,8 +191,8 @@ and calc.jison, language grammar
             {$$ = $1/$3;}
         | e '^' e
             {$$ = Math.pow($1, $3);}
-        | '-' e
-            {$$ = -$2;} %prec UMINUS
+        | '-' e %prec UMINUS
+            {$$ = -$2;}
         | '(' e ')'
             {$$ = $2;}
         | NUMBER
@@ -288,14 +290,12 @@ Like Bison, Jison can recognize languages described by LALR(1) grammars, though 
 
 **LR(1) mode is currently not practical for use with anything other than toy grammars, but that is entirely a consequence of the algorithm used, and may change in the future.*
 
-Real world example
+Real world examples
 ------------------
 
-I wrote a parser for [Orderly][3] using Jison. Some benefits I found were:
+* [CoffeeScript](http://github.com/jashkenas/coffee-script) uses Jison in its self-compiler.
+* [Orderly.js][3] uses Jison for compilation.
 
-  - If modeled after the normative language grammar, it is guaranteed to recognize the correct language.
-  - Adding new syntax is straight forward.
-  - It was much faster to develop than if I were to attempt implementing a (top-down) parser from scratch. But for others not used to grammar specifications, this might not be the case.
 
 Contributors
 ------------

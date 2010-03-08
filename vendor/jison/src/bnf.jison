@@ -11,14 +11,14 @@ declaration_list
     : declaration_list declaration
         {$$ = $1; yy.addDeclaration($$, $2);}
     | 
-        <$$ = {};>
+        {{$$ = {};}}
     ;
 
 declaration
     : START id
-        <$$ = {start: $2};>
+        {{$$ = {start: $2};}}
     | operator
-        <$$ = {operator: $1};>
+        {{$$ = {operator: $1};}}
     ;
 
 operator
@@ -51,7 +51,7 @@ production_list
     : production_list production
         {$$ = $1; $$[$2[0]] = $2[1];}
     | production
-        <$$ = {}; $$[$1[0]] = $1[1];>
+        {{$$ = {}; $$[$1[0]] = $1[1];}}
     ;
 
 production
@@ -67,10 +67,10 @@ handle_list
     ;
 
 handle_action
-    : handle action prec
+    : handle prec action 
         {$$ = [($1.length ? $1.join(' ') : '')];
-            if($2) $$.push($2);
             if($3) $$.push($3);
+            if($2) $$.push($2);
             if ($$.length === 1) $$ = $$[0];
         }
     ;
@@ -84,7 +84,7 @@ handle
 
 prec
     : PREC symbol
-        <$$ = {prec: $2};>
+        {{$$ = {prec: $2};}}
     | 
         {$$ = null;}
     ;

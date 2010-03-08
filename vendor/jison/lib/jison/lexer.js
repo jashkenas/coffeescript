@@ -200,7 +200,7 @@ RegExpLexer.prototype = {
         out += p.join(",\n");
         out += "})";
         out += ";\nlexer.performAction = "+String(this.performAction);
-        out += ";\nlexer.rules = "+uneval(this.rules);
+        out += ";\nlexer.rules = [" + this.rules + "]";
         out += ";return lexer;})()";
         return out;
     },
