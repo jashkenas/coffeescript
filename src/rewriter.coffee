@@ -62,7 +62,7 @@ exports.Rewriter: class Rewriter
   # Leading newlines would introduce an ambiguity in the grammar, so we
   # dispatch them here.
   remove_leading_newlines: ->
-    @tokens.shift() while @tokens[0][0] is 'TERMINATOR'
+    @tokens.shift() while @tokens[0] and @tokens[0][0] is 'TERMINATOR'
 
   # Some blocks occur in the middle of expressions -- when we're expecting
   # this, remove their trailing newlines.

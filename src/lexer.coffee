@@ -36,7 +36,7 @@ exports.Lexer: class Lexer
   # unless explicitly asked not to.
   tokenize: (code, options) ->
     o        : options or {}
-    @code    : code         # The remainder of the source code.
+    @code    : code or ''   # The remainder of the source code.
     @i       : 0            # Current character position we're parsing.
     @line    : o.line or 0  # The current line.
     @indent  : 0            # The current indentation level.
@@ -96,10 +96,10 @@ exports.Lexer: class Lexer
   # are balanced within the string's contents, and within nested interpolations.
   string_token: ->
     return false unless starts(@chunk, '"') or starts(@chunk, "'")
-    string: @balanced_token ['"', '"'], ['${', '}']
-    string: @balanced_token ["'", "'"] unless string
-    return false unless string
-    @interpolate_string string.replace STRING_NEWLINES, " \\\n"
+    return false unless string:
+      @balanced_token(['"', '"'], ['${', '}']) or
+      @balanced_token ["'", "'"]
+    @interpolate_string string.replace(STRING_NEWLINES, " \\\n"), merge: true
     @line += count string, "\n"
     @i += string.length
     true
@@ -126,9 +126,28 @@ exports.Lexer: class Lexer
   # to distinguish from division, so we borrow some basic heuristics from
   # JavaScript and Ruby.
   regex_token: ->
-    return false unless regex: @match REGEX, 1
+    return false unless starts @chunk, '/'
     return false if include NOT_REGEX, @tag()
-    @token 'REGEX', regex
+    return false unless regex: @balanced_token ['/', '/']
+    return false if regex.length < 3 or regex.match /^\/\s+/m
+    flags: ['i', 'm', 'g', 'y']
+    while (index: flags.indexOf @chunk.substr regex.length, 1) >= 0
+      regex += flags[index]
+      flags.splice index, 1
+    if (0 < regex.indexOf('${') < regex.indexOf('}')) or regex.match /[^\\]\$[a-zA-Z_@]/
+      [str, flags]: regex.substring(1).split('/')
+      str: str.replace /\\[^\$]/g, (escaped) -> '\\' + escaped
+      @tokens: @tokens.concat [['(', '('], ['NEW', 'new'], ['IDENTIFIER', 'RegExp'], ['CALL_START', '(']]
+      interp_tokens: @interpolate_string "\"$str\"", merge: false
+      for each, i in interp_tokens
+        switch each[0]
+          when 'TOKENS' then @tokens: @tokens.concat each[1]
+          when 'STRING' then @token each[0], each[1].substring(0, 1) + each[1].substring(1, each[1].length - 1).replace(/"/g, '\\"') + each[1].substring(0, 1)
+          else @token each[0], each[1]
+        @token '+', '+' if i < interp_tokens.length - 1
+      @tokens: @tokens.concat [[',', ','], ['STRING', "'$flags'"], [')', ')'], [')', ')']]
+    else
+      @token 'REGEX', regex
     @i += regex.length
     true
 
@@ -317,7 +336,9 @@ exports.Lexer: class Lexer
           break
       break unless levels.length
       i += 1
-    throw new Error "SyntaxError: Unterminated ${levels.pop()[0]} starting on line ${@line + 1}" if levels.length
+    if levels.length
+      return false if delimited[0][0] is '/'
+      throw new Error "SyntaxError: Unterminated ${levels.pop()[0]} starting on line ${@line + 1}"
     return false if i is 0
     return str.substring(0, i)
 
@@ -331,7 +352,7 @@ exports.Lexer: class Lexer
   # If it encounters an interpolation, this method will recursively create a
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
-  interpolate_string: (str) ->
+  interpolate_string: (str, merge) ->
     if str.length < 3 or not starts str, '"'
       @token 'STRING', str
     else
@@ -362,12 +383,16 @@ exports.Lexer: class Lexer
           pi: i + 1
         i += 1
       tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i and pi < str.length - 1
-      for each, i in tokens
-        if each[0] is 'TOKENS'
-          @tokens: @tokens.concat each[1]
-        else
-          @token each[0], each[1]
-        @token '+', '+' if i < tokens.length - 1
+      (has_string: yes) for each in tokens when each[0] is 'STRING'
+      tokens.unshift ['STRING', "''"] if not has_string
+      if (merge ? true)
+        for each, i in tokens
+          if each[0] is 'TOKENS'
+            @tokens: @tokens.concat each[1]
+          else
+            @token each[0], each[1]
+          @token '+', '+' if i < tokens.length - 1
+      tokens
 
   # Helpers
   # -------
@@ -440,7 +465,7 @@ RESERVED: [
 JS_FORBIDDEN: JS_KEYWORDS.concat RESERVED
 
 # Token matching regexes.
-IDENTIFIER    : /^([a-zA-Z$_](\w|\$)*)/
+IDENTIFIER    : /^([a-zA-Z\$_](\w|\$)*)/
 NUMBER        : /^(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
 HEREDOC       : /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
 INTERPOLATION : /^\$([a-zA-Z_@]\w*(\.\w+)*)/
@@ -448,7 +473,6 @@ OPERATOR      : /^([+\*&|\/\-%=<>:!?]+)/
 WHITESPACE    : /^([ \t]+)/
 COMMENT       : /^(((\n?[ \t]*)?#[^\n]*)+)/
 CODE          : /^((-|=)>)/
-REGEX         : /^(\/(\S.*?)?([^\\]|\\\\)\/[imgy]{0,4})/
 MULTI_DENT    : /^((\n([ \t]*))+)(\.)?/
 LAST_DENTS    : /\n([ \t]*)/g
 LAST_DENT     : /\n([ \t]*)/

@@ -140,7 +140,7 @@
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>(?&lt;=[=(:]|^|return)\s*(/)(?![/*+{}?])</string>
+			<string>(?&lt;=[=(:\s]|^|return)\s*(/)(?![\s/*+{}?])</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
@@ -150,7 +150,7 @@
 				</dict>
 			</dict>
 			<key>end</key>
-			<string>(/)[igm]*</string>
+			<string>(/)[igmy]*</string>
 			<key>endCaptures</key>
 			<dict>
 				<key>1</key>

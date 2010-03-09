@@ -62,7 +62,7 @@
           <div id="repl_source_wrap"><textarea id="repl_source">reverse: (string) ->
   string.split('').reverse().join ''
 
-alert reverse '!tpircseeffoC'</textarea></div>
+alert reverse '.eeffoC yrT'</textarea></div>
           <pre id="repl_results"></pre>
           <button class="full_screen">go full screen</button>
           <button class="minimize">minimize</button>
@@ -76,8 +76,8 @@ alert reverse '!tpircseeffoC'</textarea></div>
         Annotated Source
       </div>
       <div class="contents">
-        <a href="documentation/docs/grammar.html">The Grammar &mdash; src/grammar</a>
-        <a href="documentation/docs/lexer.html">The Lexer &mdash; src/lexer</a>
+        <a href="documentation/docs/grammar.html">Grammar Rules &mdash; src/grammar</a>
+        <a href="documentation/docs/lexer.html">Lexing Tokens &mdash; src/lexer</a>
         <a href="documentation/docs/rewriter.html">The Rewriter &mdash; src/rewriter</a>
         <a href="documentation/docs/nodes.html">The Syntax Tree &mdash; src/nodes</a>
         <a href="documentation/docs/scope.html">Lexical Scope &mdash; src/scope</a>
@@ -567,6 +567,13 @@ new_num = change_numbers();
       therefore has a declaration of its own.
     </p>
     <p>
+      This behavior is effectively identical to Ruby's scope for local variables.
+      Because you don't have direct access to the <tt>var</tt> keyword, 
+      it's impossible to shadow an outer variable on purpose, you may only refer 
+      to it. So be careful that you're not reusing the name of an external 
+      variable accidentally, if you're writing a deeply nested function.
+    </p>
+    <p>
       Although suppressed within this documentation for clarity, all
       CoffeeScript output is wrapped in an anonymous function:
       <tt>(function(){ ... })();</tt> This safety wrapper, combined with the
@@ -995,7 +1002,7 @@ numbers_copy = numbers.slice(0, numbers.length);
     </p>
     <div class='code'><pre class="idle">numbers<span class="Keyword">:</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>]
 
-numbers<span class="Keyword">[</span><span class="Number">3</span>..<span class="Number">6</span><span class="Keyword">]:</span> [<span class="Keyword">-</span><span class="Number">3</span>, <span class="Keyword">-</span><span class="Number">4</span>, <span class="Keyword">-</span><span class="Number">5</span>, <span class="Keyword">-</span><span class="Number">6</span>]
+numbers[<span class="Number">3</span>..<span class="Number">6</span>]<span class="Keyword">:</span> [<span class="Keyword">-</span><span class="Number">3</span>, <span class="Keyword">-</span><span class="Number">4</span>, <span class="Keyword">-</span><span class="Number">5</span>, <span class="Keyword">-</span><span class="Number">6</span>]
 
 
 </pre><pre class="idle"><span class="Storage">var</span> numbers;

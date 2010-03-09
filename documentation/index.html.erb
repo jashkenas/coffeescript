@@ -76,7 +76,7 @@
           <div id="repl_source_wrap"><textarea id="repl_source">reverse: (string) ->
   string.split('').reverse().join ''
 
-alert reverse '!tpircseeffoC'</textarea></div>
+alert reverse '.eeffoC yrT'</textarea></div>
           <pre id="repl_results"></pre>
           <button class="full_screen">go full screen</button>
           <button class="minimize">minimize</button>
@@ -90,8 +90,8 @@ alert reverse '!tpircseeffoC'</textarea></div>
         Annotated Source
       </div>
       <div class="contents">
-        <a href="documentation/docs/grammar.html">The Grammar &mdash; src/grammar</a>
-        <a href="documentation/docs/lexer.html">The Lexer &mdash; src/lexer</a>
+        <a href="documentation/docs/grammar.html">Grammar Rules &mdash; src/grammar</a>
+        <a href="documentation/docs/lexer.html">Lexing Tokens &mdash; src/lexer</a>
         <a href="documentation/docs/rewriter.html">The Rewriter &mdash; src/rewriter</a>
         <a href="documentation/docs/nodes.html">The Syntax Tree &mdash; src/nodes</a>
         <a href="documentation/docs/scope.html">Lexical Scope &mdash; src/scope</a>
@@ -394,6 +394,13 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       already in scope; the <b>new_num</b> within the function, on the other hand,
       should not be able to change the value of the external variable of the same name, and
       therefore has a declaration of its own.
+    </p>
+    <p>
+      This behavior is effectively identical to Ruby's scope for local variables.
+      Because you don't have direct access to the <tt>var</tt> keyword, 
+      it's impossible to shadow an outer variable on purpose, you may only refer 
+      to it. So be careful that you're not reusing the name of an external 
+      variable accidentally, if you're writing a deeply nested function.
     </p>
     <p>
       Although suppressed within this documentation for clarity, all
