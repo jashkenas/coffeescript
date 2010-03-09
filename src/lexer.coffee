@@ -96,9 +96,9 @@ exports.Lexer: class Lexer
   # are balanced within the string's contents, and within nested interpolations.
   string_token: ->
     return false unless starts(@chunk, '"') or starts(@chunk, "'")
-    string: @balanced_token supress: false, ['"', '"'], ['${', '}']
-    string: @balanced_token supress: false, ["'", "'"] unless string
-    return false unless string
+    return false unless string:
+      @balanced_token(['"', '"'], ['${', '}']) or
+      @balanced_token ["'", "'"]
     @interpolate_string string.replace(STRING_NEWLINES, " \\\n"), merge: true
     @line += count string, "\n"
     @i += string.length
@@ -117,7 +117,7 @@ exports.Lexer: class Lexer
   # Matches JavaScript interpolated directly into the source via backticks.
   js_token: ->
     return false unless starts @chunk, '`'
-    return false unless script: @balanced_token supress: false, ['`', '`']
+    return false unless script: @balanced_token ['`', '`']
     @token 'JS', script.replace(JS_CLEANER, '')
     @i += script.length
     true
@@ -127,7 +127,7 @@ exports.Lexer: class Lexer
   # JavaScript and Ruby.
   regex_token: ->
     return false unless starts @chunk, '/'
-    return false unless regex: @balanced_token supress: true, ['/', '/']
+    return false unless regex: @balanced_token ['/', '/']
     return false if regex.length < 3 or regex.match /^\/\s+|\n/
     return false if include NOT_REGEX, @tag()
     flags: ['i', 'm', 'g', 'y']
@@ -153,8 +153,8 @@ exports.Lexer: class Lexer
 
   # Matches a token in which which the passed delimiter pairs must be correctly
   # balanced (ie. strings, JS literals).
-  balanced_token: (supress, delimited...) ->
-    @balanced_string @chunk, supress, delimited...
+  balanced_token: (delimited...) ->
+    @balanced_string @chunk, delimited...
 
   # Matches and conumes comments. We pass through comments into JavaScript,
   # so they're treated as real tokens, like any other part of the language.
@@ -316,7 +316,7 @@ exports.Lexer: class Lexer
   # a series of delimiters, all of which must be nested correctly within the
   # contents of the string. This method allows us to have strings within
   # interpolations within strings etc...
-  balanced_string: (str, supress, delimited...) ->
+  balanced_string: (str, delimited...) ->
     levels: []
     i: 0
     while i < str.length
@@ -337,7 +337,7 @@ exports.Lexer: class Lexer
       break unless levels.length
       i += 1
     if levels.length
-      throw new Error "SyntaxError: Unterminated ${levels.pop()[0]} starting on line ${@line + 1}" unless supress
+      throw new Error "SyntaxError: Unterminated ${levels.pop()[0]} starting on line ${@line + 1}" unless delimited[0][0] is '/'
       return false
     return false if i is 0
     return str.substring(0, i)
@@ -370,7 +370,7 @@ exports.Lexer: class Lexer
           tokens.push ['IDENTIFIER', interp]
           i += group.length - 1
           pi: i + 1
-        else if (expr: @balanced_string str.substring(i), supress: false, ['${', '}'])
+        else if (expr: @balanced_string str.substring(i), ['${', '}'])
           tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i
           inner: expr.substring(2, expr.length - 1)
           if inner.length

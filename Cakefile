@@ -29,7 +29,7 @@ task 'build', 'build the CoffeeScript language from source', ->
 
 
 task 'build:full', 'checkout /lib, rebuild the source twice, and run the tests', ->
-  exec 'git co lib && bin/cake build && bin/cake build && bin/cake test', (err, stdout, stderr) ->
+  exec 'git checkout lib && bin/cake build && bin/cake build && bin/cake test', (err, stdout, stderr) ->
     print stdout if stdout
     print stderr if stderr
     throw err    if err

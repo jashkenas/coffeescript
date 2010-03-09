@@ -150,7 +150,7 @@
 				</dict>
 			</dict>
 			<key>end</key>
-			<string>(/)[igm]*</string>
+			<string>(/)[igmy]*</string>
 			<key>endCaptures</key>
 			<dict>
 				<key>1</key>
