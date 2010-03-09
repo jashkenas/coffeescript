@@ -124,7 +124,8 @@ exports.Lexer: class Lexer
 
   # Matches regular expression literals. Lexing regular expressions is difficult
   # to distinguish from division, so we borrow some basic heuristics from
-  # JavaScript and Ruby.
+  # JavaScript and Ruby, borrow slash balancing from `@balanced_token`, and
+  # borrow interpolation from `@interpolate_string`.
   regex_token: ->
     return false unless @chunk.match REGEX_START
     return false if     include NOT_REGEX, @tag()
@@ -311,27 +312,26 @@ exports.Lexer: class Lexer
     levels: []
     i: 0
     while i < str.length
-      for pair in delimited
-        [open, close]: pair
-        if levels.length and starts str, '\\', i
-          i += 1
-          break
-        else if levels.length and starts(str, close, i) and levels[levels.length - 1] is pair
-          levels.pop()
-          i += close.length - 1
-          i += 1 unless levels.length
-          break
-        else if starts str, open, i
-          levels.push(pair)
-          i += open.length - 1
-          break
+      if levels.length and starts str, '\\', i
+        i += 1
+      else
+        for pair in delimited
+          [open, close]: pair
+          if levels.length and starts(str, close, i) and levels[levels.length - 1] is pair
+            levels.pop()
+            i += close.length - 1
+            i += 1 unless levels.length
+            break
+          else if starts str, open, i
+            levels.push(pair)
+            i += open.length - 1
+            break
       break if not levels.length or slash and starts str, '\n', i
       i += 1
     if levels.length
       return false if slash
       throw new Error "SyntaxError: Unterminated ${levels.pop()[0]} starting on line ${@line + 1}"
-    return false if i is 0
-    return str.substring(0, i)
+    if not i then false else str.substring(0, i)
 
   # Expand variables and expressions inside double-quoted strings using
   # [ECMA Harmony's interpolation syntax](http://wiki.ecmascript.org/doku.php?id=strawman:string_interpolation)
