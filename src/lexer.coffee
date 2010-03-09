@@ -127,9 +127,9 @@ exports.Lexer: class Lexer
   # JavaScript and Ruby.
   regex_token: ->
     return false unless starts @chunk, '/'
-    return false unless regex: @balanced_token ['/', '/']
-    return false if regex.length < 3 or regex.match /^\/\s+|\n/
     return false if include NOT_REGEX, @tag()
+    return false unless regex: @balanced_token ['/', '/']
+    return false if regex.length < 3 or regex.match /^\/\s+/m
     flags: ['i', 'm', 'g', 'y']
     while (index: flags.indexOf @chunk.substr regex.length, 1) >= 0
       regex += flags[index]
@@ -337,8 +337,8 @@ exports.Lexer: class Lexer
       break unless levels.length
       i += 1
     if levels.length
-      throw new Error "SyntaxError: Unterminated ${levels.pop()[0]} starting on line ${@line + 1}" unless delimited[0][0] is '/'
-      return false
+      return false if delimited[0][0] is '/'
+      throw new Error "SyntaxError: Unterminated ${levels.pop()[0]} starting on line ${@line + 1}"
     return false if i is 0
     return str.substring(0, i)
 

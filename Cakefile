@@ -28,8 +28,8 @@ task 'build', 'build the CoffeeScript language from source', ->
   run ['-c', '-o', 'lib'].concat(files)
 
 
-task 'build:full', 'checkout /lib, rebuild the source twice, and run the tests', ->
-  exec 'git checkout lib && bin/cake build && bin/cake build && bin/cake test', (err, stdout, stderr) ->
+task 'build:full', 'rebuild the source twice, and run the tests', ->
+  exec 'bin/cake build && bin/cake build && bin/cake test', (err, stdout, stderr) ->
     print stdout if stdout
     print stderr if stderr
     throw err    if err
