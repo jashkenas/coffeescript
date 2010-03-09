@@ -99,7 +99,7 @@ exports.Lexer: class Lexer
     return false unless string:
       @balanced_token(['"', '"'], ['${', '}']) or
       @balanced_token ["'", "'"]
-    @interpolate_string string.replace(STRING_NEWLINES, " \\\n"), merge: true
+    @interpolate_string string.replace(STRING_NEWLINES, " \\\n")
     @line += count string, "\n"
     @i += string.length
     true
@@ -134,13 +134,7 @@ exports.Lexer: class Lexer
       str: regex.substring(1).split('/')[0]
       str: str.replace REGEX_ESCAPE, (escaped) -> '\\' + escaped
       @tokens: @tokens.concat [['(', '('], ['NEW', 'new'], ['IDENTIFIER', 'RegExp'], ['CALL_START', '(']]
-      interp_tokens: @interpolate_string "\"$str\"", merge: false
-      for each, i in interp_tokens
-        switch each[0]
-          when 'TOKENS' then @tokens: @tokens.concat each[1]
-          when 'STRING' then @token each[0], each[1].substring(0, 1) + each[1].substring(1, each[1].length - 1).replace(/"/g, '\\"') + each[1].substring(0, 1)
-          else @token each[0], each[1]
-        @token '+', '+' if i < interp_tokens.length - 1
+      @interpolate_string "\"$str\"", yes
       @tokens: @tokens.concat [[',', ','], ['STRING', "'$flags'"], [')', ')'], [')', ')']]
     else
       @token 'REGEX', regex
@@ -348,7 +342,7 @@ exports.Lexer: class Lexer
   # If it encounters an interpolation, this method will recursively create a
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
-  interpolate_string: (str, merge) ->
+  interpolate_string: (str, escape_quotes) ->
     if str.length < 3 or not starts str, '"'
       @token 'STRING', str
     else
@@ -380,13 +374,16 @@ exports.Lexer: class Lexer
         i += 1
       tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i and pi < str.length - 1
       tokens.unshift ['STRING', "''"] unless tokens[0][0] is 'STRING'
-      if (merge ? true)
-        for each, i in tokens
-          if each[0] is 'TOKENS'
-            @tokens: @tokens.concat each[1]
-          else
-            @token each[0], each[1]
-          @token '+', '+' if i < tokens.length - 1
+      for token, i in tokens
+        [tag, value]: token
+        if tag is 'TOKENS'
+          @tokens: @tokens.concat value
+        else if tag is 'STRING' and escape_quotes
+          escaped: value.substring(1, value.length - 1).replace(/"/g, '\\"')
+          @token tag, "\"$escaped\""
+        else
+          @token tag, value
+        @token '+', '+' if i < tokens.length - 1
       tokens
 
   # Helpers
