@@ -74,6 +74,7 @@ task 'test', 'run the CoffeeScript language test suite', ->
   process.mixin {
     ok:     (args...) -> test_count += 1; original_ok(args...)
     throws: (args...) -> test_count += 1; original_throws(args...)
+    CoffeeScript: CoffeeScript
   }
   process.addListener 'exit', ->
     time: ((new Date() - start_time) / 1000).toFixed(2)
