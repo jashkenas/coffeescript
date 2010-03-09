@@ -31,6 +31,13 @@ money$: 'dollars'
 ok money$ is 'dollars'
 
 
+multiline: "one
+            two
+            three"
+
+ok multiline is 'one two three'
+
+
 ok {a: (num) -> num is 10 }.a 10
 
 

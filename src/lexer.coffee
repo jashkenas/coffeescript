@@ -130,7 +130,7 @@ exports.Lexer: class Lexer
     return false if     include NOT_REGEX, @tag()
     return false unless regex: @balanced_token ['/', '/']
     regex += (flags: @chunk.substr(regex.length).match(REGEX_FLAGS))
-    if (0 < regex.indexOf('${') < regex.indexOf('}')) or regex.match REGEX_INTERPOLATION
+    if regex.match REGEX_INTERPOLATION
       str: regex.substring(1).split('/')[0]
       str: str.replace REGEX_ESCAPE, (escaped) -> '\\' + escaped
       @tokens: @tokens.concat [['(', '('], ['NEW', 'new'], ['IDENTIFIER', 'RegExp'], ['CALL_START', '(']]
@@ -307,6 +307,7 @@ exports.Lexer: class Lexer
   # contents of the string. This method allows us to have strings within
   # interpolations within strings etc...
   balanced_string: (str, delimited...) ->
+    slash: delimited[0][0] is '/'
     levels: []
     i: 0
     while i < str.length
@@ -324,10 +325,10 @@ exports.Lexer: class Lexer
           levels.push(pair)
           i += open.length - 1
           break
-      break unless levels.length
+      break if not levels.length or slash and starts str, '\n', i
       i += 1
     if levels.length
-      return false if delimited[0][0] is '/'
+      return false if slash
       throw new Error "SyntaxError: Unterminated ${levels.pop()[0]} starting on line ${@line + 1}"
     return false if i is 0
     return str.substring(0, i)
@@ -472,7 +473,7 @@ ASSIGNMENT    : /^(:|=)$/
 
 # Regex-matching-regexes.
 REGEX_START        : /^\/[^\/ ]/
-REGEX_INTERPOLATION: /[^\\]\$[a-zA-Z_@]/
+REGEX_INTERPOLATION: /([^\\]\$[a-zA-Z_@]|[^\\]\$\{.*[^\\]\})/
 REGEX_FLAGS        : /^[imgy]{0,4}/
 REGEX_ESCAPE       : /\\[^\$]/g
 

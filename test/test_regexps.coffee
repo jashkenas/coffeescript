@@ -10,3 +10,5 @@ x: 2
 g: 1
 
 ok y / x/g is 2
+
+ok 'http://google.com'.match(/:\/\/goog/)
