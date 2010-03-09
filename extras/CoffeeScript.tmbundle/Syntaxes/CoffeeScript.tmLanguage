@@ -140,7 +140,7 @@
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>(?&lt;=[=(:]|^|return)\s*(/)(?![/*+{}?])</string>
+			<string>(?&lt;=[=(:\s]|^|return)\s*(/)(?![\s/*+{}?])</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
@@ -193,7 +193,7 @@
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>(\[)(?=.*?\]\s*:)</string>
+			<string>(?&lt;=\s|^)(\[)(?=.*?\]\s*:)</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>0</key>
@@ -241,14 +241,14 @@
 		<dict>
 			<key>captures</key>
 			<dict>
-				<key>1</key>
+				<key>2</key>
 				<dict>
 					<key>name</key>
 					<string>entity.name.function.coffee</string>
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>(?=[a-zA-Z\$_])([a-zA-Z\$_](\w|\$|:|\.)*\s*(?=\:(\s*\(.*\))?\s*((=|-)&gt;)))</string>
+			<string>(\s*)(?=[a-zA-Z\$_])([a-zA-Z\$_](\w|\$|:|\.)*\s*(?=\:(\s*\(.*\))?\s*((=|-)&gt;)))</string>
 			<key>name</key>
 			<string>meta.function.coffee</string>
 		</dict>
