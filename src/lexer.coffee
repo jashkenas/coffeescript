@@ -126,17 +126,13 @@ exports.Lexer: class Lexer
   # to distinguish from division, so we borrow some basic heuristics from
   # JavaScript and Ruby.
   regex_token: ->
-    return false unless starts @chunk, '/'
-    return false if include NOT_REGEX, @tag()
+    return false unless @chunk.match REGEX_START
+    return false if     include NOT_REGEX, @tag()
     return false unless regex: @balanced_token ['/', '/']
-    return false if regex.length < 3 or regex.match /^\/\s+/m
-    flags: ['i', 'm', 'g', 'y']
-    while (index: flags.indexOf @chunk.substr regex.length, 1) >= 0
-      regex += flags[index]
-      flags.splice index, 1
-    if (0 < regex.indexOf('${') < regex.indexOf('}')) or regex.match /[^\\]\$[a-zA-Z_@]/
-      [str, flags]: regex.substring(1).split('/')
-      str: str.replace /\\[^\$]/g, (escaped) -> '\\' + escaped
+    regex += (flags: @chunk.substr(regex.length).match(REGEX_FLAGS))
+    if (0 < regex.indexOf('${') < regex.indexOf('}')) or regex.match REGEX_INTERPOLATION
+      str: regex.substring(1).split('/')[0]
+      str: str.replace REGEX_ESCAPE, (escaped) -> '\\' + escaped
       @tokens: @tokens.concat [['(', '('], ['NEW', 'new'], ['IDENTIFIER', 'RegExp'], ['CALL_START', '(']]
       interp_tokens: @interpolate_string "\"$str\"", merge: false
       for each, i in interp_tokens
@@ -383,8 +379,7 @@ exports.Lexer: class Lexer
           pi: i + 1
         i += 1
       tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i and pi < str.length - 1
-      (has_string: yes) for each in tokens when each[0] is 'STRING'
-      tokens.unshift ['STRING', "''"] if not has_string
+      tokens.unshift ['STRING', "''"] unless tokens[0][0] is 'STRING'
       if (merge ? true)
         for each, i in tokens
           if each[0] is 'TOKENS'
@@ -477,6 +472,12 @@ MULTI_DENT    : /^((\n([ \t]*))+)(\.)?/
 LAST_DENTS    : /\n([ \t]*)/g
 LAST_DENT     : /\n([ \t]*)/
 ASSIGNMENT    : /^(:|=)$/
+
+# Regex-matching-regexes.
+REGEX_START        : /^\/[^\/ ]/
+REGEX_INTERPOLATION: /[^\\]\$[a-zA-Z_@]/
+REGEX_FLAGS        : /^[imgy]{0,4}/
+REGEX_ESCAPE       : /\\[^\$]/g
 
 # Token cleaning regexes.
 JS_CLEANER      : /(^`|`$)/g
