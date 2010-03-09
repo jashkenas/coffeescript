@@ -36,7 +36,7 @@ exports.Lexer: class Lexer
   # unless explicitly asked not to.
   tokenize: (code, options) ->
     o        : options or {}
-    @code    : code         # The remainder of the source code.
+    @code    : code or ''   # The remainder of the source code.
     @i       : 0            # Current character position we're parsing.
     @line    : o.line or 0  # The current line.
     @indent  : 0            # The current indentation level.
@@ -126,6 +126,7 @@ exports.Lexer: class Lexer
   # to distinguish from division, so we borrow some basic heuristics from
   # JavaScript and Ruby.
   regex_token: ->
+    return false unless starts @chunk, '/'
     return false unless regex: @balanced_token supress: true, ['/', '/']
     return false if regex.length < 3 or regex.match /^\/\s+|\n/
     return false if include NOT_REGEX, @tag()
