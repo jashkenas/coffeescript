@@ -396,6 +396,13 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       therefore has a declaration of its own.
     </p>
     <p>
+      This behavior is effectively identical to Ruby's scope for local variables.
+      Because you don't have direct access to the <tt>var</tt> keyword, 
+      it's impossible to shadow an outer variable on purpose, you may only refer 
+      to it. So be careful that you're not reusing the name of an external 
+      variable accidentally, if you're writing a deeply nested function.
+    </p>
+    <p>
       Although suppressed within this documentation for clarity, all
       CoffeeScript output is wrapped in an anonymous function:
       <tt>(function(){ ... })();</tt> This safety wrapper, combined with the
