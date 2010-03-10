@@ -905,7 +905,7 @@ exports.TryNode: class TryNode extends BaseNode
     o.top:        true
     attempt_part: @attempt.compile(o)
     error_part:   if @error then " (${ @error.compile(o) }) " else ' '
-    catch_part:   "${ (@recovery or '') and ' catch' }$error_part{\n${ @recovery.compile(o) }\n$@tab}"
+    catch_part:   if @recovery then " catch$error_part{\n${ @recovery.compile(o) }\n$@tab}" else ''
     finally_part: (@ensure or '') and ' finally {\n' + @ensure.compile(merge(o, {returns: null})) + "\n$@tab}"
     "${@tab}try {\n$attempt_part\n$@tab}$catch_part$finally_part"
 
