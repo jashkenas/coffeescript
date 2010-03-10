@@ -73,6 +73,13 @@ result: call ->
 ok result is 10
 
 
+# More fun with optional parens.
+
+fn: (arg) -> arg
+
+ok fn(fn {prop: 101}).prop is 101
+
+
 # And even with strange things like this:
 
 funcs:  [((x) -> x), ((x) -> x * x)]
