@@ -98,6 +98,7 @@ grammar: {
   Block: [
     o "INDENT Expressions OUTDENT",             -> $2
     o "INDENT OUTDENT",                         -> new Expressions()
+    o "TERMINATOR Comment",                     -> Expressions.wrap [$2]
   ]
 
   # A literal identifier, a variable name or property.

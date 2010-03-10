@@ -24,3 +24,14 @@ else
   true
 
 ok result
+
+
+# If statement with a comment-only clause.
+
+
+result: if false
+  # comment
+else
+  27
+
+ok result is 27
