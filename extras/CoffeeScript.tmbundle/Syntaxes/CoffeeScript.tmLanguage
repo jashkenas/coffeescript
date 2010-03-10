@@ -169,6 +169,10 @@
 					<key>name</key>
 					<string>constant.character.escape.coffee</string>
 				</dict>
+				<dict>
+					<key>include</key>
+					<string>#interpolated_coffee</string>
+				</dict>
 			</array>
 		</dict>
 		<dict>
