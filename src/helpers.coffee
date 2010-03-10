@@ -1,4 +1,8 @@
-# Set up exported variables for both Node.js and the browser.
+# This file contains the common helper functions that we'd like to share among
+# the **Lexer**, **Rewriter**, and the **Nodes**. Merge objects, flatten
+# arrays, count characters, that sort of thing.
+
+# Set up exported variables for both **Node.js** and the browser.
 this.exports: this unless process?
 
 # Does a list include a value?
@@ -22,8 +26,8 @@ exports.count: (string, letter) ->
   num
 
 # Merge objects, returning a fresh copy with attributes from both sides.
-# Used every time `compile` is called, to allow properties in the options hash
-# to propagate down the tree without polluting other branches.
+# Used every time `BaseNode#compile` is called, to allow properties in the
+# options hash to propagate down the tree without polluting other branches.
 exports.merge: (options, overrides) ->
   fresh: {}
   (fresh[key]: val) for key, val of options
@@ -31,7 +35,7 @@ exports.merge: (options, overrides) ->
   fresh
 
 # Return a completely flattened version of an array. Handy for getting a
-# list of `children`.
+# list of `children` from the nodes.
 exports.flatten: (array) ->
   memo: []
   for item in array
@@ -48,7 +52,7 @@ exports.del: (obj, key) ->
 # Matches a balanced group such as a single or double-quoted string. Pass in
 # a series of delimiters, all of which must be nested correctly within the
 # contents of the string. This method allows us to have strings within
-# interpolations within strings etc...
+# interpolations within strings, ad infinitum.
 exports.balanced_string: (str, delimited, options) ->
   options ||= {}
   slash: delimited[0][0] is '/'
