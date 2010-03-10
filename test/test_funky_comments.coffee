@@ -33,3 +33,15 @@ obj: {
   two: 2
     # comment
 }
+
+result: if true # comment
+  false
+
+ok not result
+
+result: if false
+  false
+else # comment
+  45
+
+ok result is 45
