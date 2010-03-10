@@ -7,7 +7,10 @@
 # generally clean things up.
 
 # Set up exported variables for both Node.js and the browser.
-this.exports: this unless process?
+if process?
+  process.mixin require './helpers'
+else
+  this.exports: this
 
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
 # its internal array of tokens.
@@ -253,10 +256,3 @@ IMPLICIT_END:   ['IF', 'UNLESS', 'FOR', 'WHILE', 'TERMINATOR', 'INDENT', 'OUTDEN
 # The grammar can't disambiguate them, so we insert the implicit indentation.
 SINGLE_LINERS: ['ELSE', "->", "=>", 'TRY', 'FINALLY', 'THEN']
 SINGLE_CLOSERS: ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN']
-
-# Utility Functions
-# -----------------
-
-# Does a list include a value?
-include: (list, value) ->
-  list.indexOf(value) >= 0

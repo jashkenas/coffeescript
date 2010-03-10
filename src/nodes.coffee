@@ -7,6 +7,7 @@
 # including the [Scope](scope.html) class.
 if process?
   process.mixin require 'scope'
+  process.mixin require 'helpers'
 else
   this.exports: this
 
@@ -1196,33 +1197,6 @@ IDENTIFIER: /^[a-zA-Z\$_](\w|\$)*$/
 
 # Utility Functions
 # -----------------
-
-# Merge objects, returning a fresh copy with attributes from both sides.
-# Used every time `compile` is called, to allow properties in the options hash
-# to propagate down the tree without polluting other branches.
-merge: (options, overrides) ->
-  fresh: {}
-  (fresh[key]: val) for key, val of options
-  (fresh[key]: val) for key, val of overrides if overrides
-  fresh
-
-# Trim out all falsy values from an array.
-compact: (array) -> item for item in array when item
-
-# Return a completely flattened version of an array. Handy for getting a
-# list of `children`.
-flatten: (array) ->
-  memo: []
-  for item in array
-    if item instanceof Array then memo: memo.concat(item) else memo.push(item)
-  memo
-
-# Delete a key from an object, returning the value. Useful when a node is
-# looking for a particular method in an options hash.
-del: (obj, key) ->
-  val: obj[key]
-  delete obj[key]
-  val
 
 # Handy helper for a generating LiteralNode.
 literal: (name) ->
