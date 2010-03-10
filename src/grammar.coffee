@@ -89,6 +89,7 @@ grammar: {
     o "Splat"
     o "Existence"
     o "Comment"
+    o "Extension"
   ]
 
   # A an indented block of expressions. Note that the [Rewriter](rewriter.html)
@@ -351,6 +352,12 @@ grammar: {
   # the trick.
   Parenthetical: [
     o "( Expression )",                         -> new ParentheticalNode $2
+  ]
+
+  # A language extension to CoffeeScript from the outside. We simply pass
+  # it through unaltered.
+  Extension: [
+    o "EXTENSION",                              -> $1
   ]
 
   # The condition portion of a while loop.

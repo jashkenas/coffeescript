@@ -10,19 +10,22 @@
 if process?
   process.mixin require 'nodes'
   path:         require 'path'
-  lexer:   new (require('lexer').Lexer)()
+  Lexer:        require('lexer').Lexer
   parser:       require('parser').parser
 else
-  lexer: new Lexer()
   parser: exports.parser
   this.exports: this.CoffeeScript: {}
 
 # The current CoffeeScript version number.
 exports.VERSION: '0.5.5'
 
+# Instantiate a Lexer for our use here.
+lexer: new Lexer()
+
 # Compile a string of CoffeeScript code to JavaScript, using the Coffee/Jison
 # compiler.
 exports.compile: (code, options) ->
+  options ||= {}
   try
     (parser.parse lexer.tokenize code).compile options
   catch err
@@ -45,6 +48,13 @@ exports.run: (code, options) ->
   module.filename: __filename: options.source
   __dirname: path.dirname __filename
   eval exports.compile code, options
+
+# Extend CoffeeScript with a custom language extension. It should hook in to
+# the **Lexer** (as a peer of any of the lexer's tokenizing methods), and
+# push a token on to the stack that contains a **Node** as the value (as a
+# peer of the nodes in [nodes.coffee](nodes.html)).
+exports.extend: (func) ->
+  Lexer.extensions.push func
 
 # The real Lexer produces a generic stream of tokens. This object provides a
 # thin wrapper around it, compatible with the Jison API. We can then pass it

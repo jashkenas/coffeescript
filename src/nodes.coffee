@@ -594,34 +594,6 @@ exports.ClassNode: class ClassNode extends BaseNode
 
 statement ClassNode
 
-#### PushNode
-
-# A faux-node that is never created by the grammar, but is used during
-# code generation to generate a quick `array.push(value)` tree of nodes.
-# Helpful for recording the result arrays from comprehensions.
-PushNode: exports.PushNode: {
-
-  wrap: (array, expressions) ->
-    expr: expressions.unwrap()
-    return expressions if expr.is_pure_statement() or expr.contains (n) -> n.is_pure_statement()
-    Expressions.wrap([new CallNode(
-      new ValueNode(literal(array), [new AccessorNode(literal('push'))]), [expr]
-    )])
-
-}
-
-#### ClosureNode
-
-# A faux-node used to wrap an expressions body in a closure.
-ClosureNode: exports.ClosureNode: {
-
-  wrap: (expressions, statement) ->
-    func: new ParentheticalNode(new CodeNode([], Expressions.wrap([expressions])))
-    call: new CallNode(new ValueNode(func, [new AccessorNode(literal('call'))]), [literal('this')])
-    if statement then Expressions.wrap([call]) else call
-
-}
-
 #### AssignNode
 
 # The **AssignNode** is used to assign a local variable to value, or to set the
@@ -1181,6 +1153,38 @@ exports.IfNode: class IfNode extends BaseNode
     if_part:    @condition.compile(o) + ' ? ' + @body.compile(o)
     else_part:  if @else_body then @else_body.compile(o) else 'null'
     "$if_part : $else_part"
+
+# Faux-Nodes
+# ----------
+
+#### PushNode
+
+# Faux-nodes are never created by the grammar, but are used during code
+# generation to generate other combinations of nodes. The **PushNode** creates
+# the tree for `array.push(value)`, which is helpful for recording the result
+# arrays from comprehensions.
+PushNode: exports.PushNode: {
+
+  wrap: (array, expressions) ->
+    expr: expressions.unwrap()
+    return expressions if expr.is_pure_statement() or expr.contains (n) -> n.is_pure_statement()
+    Expressions.wrap([new CallNode(
+      new ValueNode(literal(array), [new AccessorNode(literal('push'))]), [expr]
+    )])
+
+}
+
+#### ClosureNode
+
+# A faux-node used to wrap an expressions body in a closure.
+ClosureNode: exports.ClosureNode: {
+
+  wrap: (expressions, statement) ->
+    func: new ParentheticalNode(new CodeNode([], Expressions.wrap([expressions])))
+    call: new CallNode(new ValueNode(func, [new AccessorNode(literal('call'))]), [literal('this')])
+    if statement then Expressions.wrap([call]) else call
+
+}
 
 # Constants
 # ---------
