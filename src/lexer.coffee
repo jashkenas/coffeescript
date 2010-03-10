@@ -13,6 +13,7 @@ if process?
   process.mixin require './helpers'
 else
   this.exports: this
+  Rewriter:     this.Rewriter
 
 # The Lexer Class
 # ---------------
