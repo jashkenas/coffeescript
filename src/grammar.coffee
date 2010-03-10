@@ -357,7 +357,7 @@ grammar: {
   # A language extension to CoffeeScript from the outside. We simply pass
   # it through unaltered.
   Extension: [
-    o "EXTENSION",                              -> $1
+    o "EXTENSION",                              -> yytext
   ]
 
   # The condition portion of a while loop.
