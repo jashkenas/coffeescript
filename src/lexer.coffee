@@ -146,7 +146,7 @@ exports.Lexer: class Lexer
   # Matches a token in which which the passed delimiter pairs must be correctly
   # balanced (ie. strings, JS literals).
   balanced_token: (delimited...) ->
-    @balanced_string @chunk, delimited...
+    @balanced_string @chunk, delimited
 
   # Matches and conumes comments. We pass through comments into JavaScript,
   # so they're treated as real tokens, like any other part of the language.
@@ -308,7 +308,7 @@ exports.Lexer: class Lexer
   # a series of delimiters, all of which must be nested correctly within the
   # contents of the string. This method allows us to have strings within
   # interpolations within strings etc...
-  balanced_string: (str, delimited...) ->
+  balanced_string: (str, delimited) ->
     slash: delimited[0][0] is '/'
     levels: []
     i: 0
@@ -362,7 +362,7 @@ exports.Lexer: class Lexer
           tokens.push ['IDENTIFIER', interp]
           i += group.length - 1
           pi: i + 1
-        else if (expr: @balanced_string str.substring(i), ['${', '}'])
+        else if (expr: @balanced_string str.substring(i), [['${', '}']])
           tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i
           inner: expr.substring(2, expr.length - 1)
           if inner.length
