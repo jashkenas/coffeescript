@@ -80,6 +80,16 @@ fn: (arg) -> arg
 ok fn(fn {prop: 101}).prop is 101
 
 
+# Multi-blocks with optional parens.
+
+result: fn( ->
+  fn ->
+    "Wrapped"
+)
+
+ok result()() is 'Wrapped'
+
+
 # And even with strange things like this:
 
 funcs:  [((x) -> x), ((x) -> x * x)]

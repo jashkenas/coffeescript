@@ -116,13 +116,14 @@ exports.Rewriter: class Rewriter
         when 'OUTDENT'
           last: stack.pop()
           stack[stack.length - 1] += last
-      if tag is 'CALL_END' and calls < 0
+      open: stack[stack.length - 1] > 0
+      if tag is 'CALL_END' and calls < 0 and open
         stack[stack.length - 1] -= 1
         @tokens.splice(i, 0, ['CALL_END', ')', token[2]])
         return 2
       if !post? or include IMPLICIT_END, tag
         return 1 if tag is 'INDENT' and prev and include IMPLICIT_BLOCK, prev[0]
-        if stack[stack.length - 1] > 0 or tag is 'INDENT'
+        if open or tag is 'INDENT'
           idx: if tag is 'OUTDENT' then i + 1 else i
           stack_pointer: if tag is 'INDENT' then 2 else 1
           for tmp in [0...stack[stack.length - stack_pointer]]

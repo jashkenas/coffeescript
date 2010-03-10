@@ -21,7 +21,7 @@ class SplitNode extends BaseNode
 # Extend CoffeeScript with our lexing function that matches --wordgoeshere--
 # and creates a SplitNode.
 CoffeeScript.extend ->
-  return false unless variable: @match /^--(\w+)--/, 1
+  return false unless variable: @match(/^--(\w+)--/, 1)
   @i += variable.length + 4
   @token 'EXTENSION', new SplitNode(variable)
   true
