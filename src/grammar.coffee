@@ -371,7 +371,7 @@ grammar: {
   # or postfix, with a single expression. There is no do..while.
   While: [
     o "WhileSource Block",                      -> $1.add_body $2
-    o "Expression WhileSource",                 -> $2.add_body $1
+    o "Expression WhileSource",                 -> $2.add_body Expressions.wrap [$1]
   ]
 
   # Array, object, and range comprehensions, at the most generic level.
