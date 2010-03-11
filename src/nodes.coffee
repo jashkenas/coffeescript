@@ -45,7 +45,7 @@ exports.BaseNode: class BaseNode
   compile: (o) ->
     @options: merge o or {}
     @tab:     o.indent
-    del @options, 'operation' unless @operation_sensitive()
+    del @options, 'operation' unless this instanceof ValueNode
     top:      if @top_sensitive() then @options.top else del @options, 'top'
     closure:  @is_statement() and not @is_pure_statement() and not top and
               not @options.returns and not (this instanceof CommentNode) and
@@ -103,7 +103,6 @@ exports.BaseNode: class BaseNode
   is_statement:         -> false
   is_pure_statement:    -> false
   top_sensitive:        -> false
-  operation_sensitive:  -> false
 
 #### Expressions
 
@@ -246,9 +245,6 @@ exports.ValueNode: class ValueNode extends BaseNode
     @properties.push(prop)
     @children.push(prop)
     this
-
-  operation_sensitive: ->
-    true
 
   has_properties: ->
     !!@properties.length
