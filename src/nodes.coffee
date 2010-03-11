@@ -1000,8 +1000,8 @@ exports.ForNode: class ForNode extends BaseNode
     scope:          o.scope
     name:           @name and @name.compile o
     index:          @index and @index.compile o
-    name_found:     name and scope.find name
-    index_found:    index and scope.find index
+    scope.find name  if name
+    scope.find index if index
     body_dent:      @idt(1)
     rvar:           scope.free_variable() unless top_level
     svar:           scope.free_variable()
