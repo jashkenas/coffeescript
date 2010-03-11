@@ -352,7 +352,7 @@ exports.CallNode: class CallNode extends BaseNode
     "${meth}.call(this${ if args.length then ', ' else '' }$args)"
 
   # If you call a function with a splat, it's converted into a JavaScript
-  # `.apply()` call to allow the variable-length arguments.
+  # `.apply()` call to allow an array of arguments to be passed.
   compile_splat: (o) ->
     meth: @variable.compile o
     obj:  @variable.source or 'this'
@@ -408,11 +408,12 @@ exports.AccessorNode: class AccessorNode extends BaseNode
     this
 
   compile_node: (o) ->
-    '.' + (if @prototype then 'prototype.' else '') + @name.compile(o)
+    proto_part: if @prototype then 'prototype.' else ''
+    ".$proto_part${@name.compile(o)}"
 
 #### IndexNode
 
-# An indexed accessor into an array or object.
+# A `[ ... ]` indexed accessor into an array or object.
 exports.IndexNode: class IndexNode extends BaseNode
   type: 'Index'
 
