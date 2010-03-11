@@ -334,12 +334,6 @@ exports.CallNode: class CallNode extends BaseNode
     @prefix: 'new '
     this
 
-  # Add an argument to the call's arugment list.
-  push: (arg) ->
-    @args.push(arg)
-    @children.push(arg)
-    this
-
   # Compile a vanilla function call.
   compile_node: (o) ->
     return @compile_splat(o) if @args[@args.length - 1] instanceof SplatNode
