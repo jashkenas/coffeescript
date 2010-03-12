@@ -174,16 +174,22 @@ exports.Rewriter: class Rewriter
   # the course of the token stream.
   ensure_balance: (pairs) ->
     levels: {}
+    open_line: {}
     @scan_tokens (prev, token, post, i) =>
       for pair in pairs
         [open, close]: pair
         levels[open] ||= 0
-        levels[open] += 1 if token[0] is open
+        if token[0] is open
+          open_line[open]: token[2] if levels[open] == 0
+          levels[open] += 1
         levels[open] -= 1 if token[0] is close
         throw new Error("too many ${token[1]} on line ${token[2] + 1}") if levels[open] < 0
       return 1
     unclosed: key for key, value of levels when value > 0
-    throw new Error("unclosed ${unclosed[0]}") if unclosed.length
+    if unclosed.length
+      open: unclosed[0]
+      line: open_line[open] + 1
+      throw new Error("unclosed ${open} on line ${line}")
 
   # We'd like to support syntax like this:
   #
