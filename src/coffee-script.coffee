@@ -17,6 +17,9 @@ else
   Lexer:        this.Lexer
   parser:       this.parser
 
+require.registerExtension '.coffee', (content) ->
+  require('coffee-script').compile content
+
 # The current CoffeeScript version number.
 exports.VERSION: '0.5.5'
 

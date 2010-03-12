@@ -68,6 +68,8 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
 
 task 'test', 'run the CoffeeScript language test suite', ->
   process.mixin require 'assert'
+  require.paths.unshift './test'
+  
   test_count: 0
   start_time: new Date()
   [original_ok, original_throws]: [ok, throws]
