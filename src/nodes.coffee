@@ -723,7 +723,7 @@ exports.CodeNode: class CodeNode extends BaseNode
   # Custom `traverse` implementation that uses the `real_children`.
   traverse: (block) ->
     block this
-    block(child) for child in @real_children()
+    child.traverse block for child in @real_children()
 
   toString: (idt) ->
     idt ||= ''
