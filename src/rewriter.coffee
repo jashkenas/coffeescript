@@ -8,7 +8,7 @@
 
 # Set up exported variables for both Node.js and the browser.
 if process?
-  process.mixin require './helpers'
+  process.mixin require 'helpers'
 else
   this.exports: this
 

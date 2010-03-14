@@ -9,8 +9,8 @@
 
 # Set up the Lexer for both Node.js and the browser, depending on where we are.
 if process?
-  Rewriter: require('./rewriter').Rewriter
-  process.mixin require './helpers'
+  Rewriter: require('rewriter').Rewriter
+  process.mixin require 'helpers'
 else
   this.exports: this
   Rewriter:     this.Rewriter
