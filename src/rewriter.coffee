@@ -12,7 +12,8 @@ if process?
 else
   this.exports: this
 
-h: helpers
+# Import the helpers we need.
+include: helpers.include
 
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
 # its internal array of tokens.
@@ -73,7 +74,7 @@ exports.Rewriter: class Rewriter
   # this, remove their trailing newlines.
   remove_mid_expression_newlines: ->
     @scan_tokens (prev, token, post, i) =>
-      return 1 unless post and h.include(EXPRESSION_CLOSE, post[0]) and token[0] is 'TERMINATOR'
+      return 1 unless post and include(EXPRESSION_CLOSE, post[0]) and token[0] is 'TERMINATOR'
       @tokens.splice(i, 1)
       return 0
 
@@ -123,8 +124,8 @@ exports.Rewriter: class Rewriter
         stack[stack.length - 1] -= 1
         @tokens.splice(i, 0, ['CALL_END', ')', token[2]])
         return 2
-      if !post? or h.include IMPLICIT_END, tag
-        return 1 if tag is 'INDENT' and prev and h.include IMPLICIT_BLOCK, prev[0]
+      if !post? or include IMPLICIT_END, tag
+        return 1 if tag is 'INDENT' and prev and include IMPLICIT_BLOCK, prev[0]
         if open or tag is 'INDENT'
           idx: if tag is 'OUTDENT' then i + 1 else i
           stack_pointer: if tag is 'INDENT' then 2 else 1
@@ -133,7 +134,7 @@ exports.Rewriter: class Rewriter
           size: stack[stack.length - stack_pointer] + 1
           stack[stack.length - stack_pointer]: 0
           return size
-      return 1 unless prev and h.include(IMPLICIT_FUNC, prev[0]) and h.include IMPLICIT_CALL, tag
+      return 1 unless prev and include(IMPLICIT_FUNC, prev[0]) and include IMPLICIT_CALL, tag
       calls: 0
       @tokens.splice(i, 0, ['CALL_START', '(', token[2]])
       stack[stack.length - 1] += 1
@@ -145,7 +146,7 @@ exports.Rewriter: class Rewriter
   # but we need to make sure it's balanced.
   add_implicit_indentation: ->
     @scan_tokens (prev, token, post, i) =>
-      return 1 unless h.include(SINGLE_LINERS, token[0]) and
+      return 1 unless include(SINGLE_LINERS, token[0]) and
         post[0] isnt 'INDENT' and
         not (token[0] is 'ELSE' and post[0] is 'IF')
       starter: token[0]
@@ -157,7 +158,7 @@ exports.Rewriter: class Rewriter
         tok: @tokens[idx]
         pre: @tokens[idx - 1]
         if (not tok or
-            (h.include(SINGLE_CLOSERS, tok[0]) and tok[1] isnt ';') or
+            (include(SINGLE_CLOSERS, tok[0]) and tok[1] isnt ';') or
             (tok[0] is ')' && parens is 0)) and
             not (starter is 'ELSE' and tok[0] is 'ELSE')
           insertion: if pre[0] is "," then idx - 1 else idx
@@ -206,10 +207,10 @@ exports.Rewriter: class Rewriter
     @scan_tokens (prev, token, post, i) =>
       tag: token[0]
       inv: INVERSES[token[0]]
-      if h.include EXPRESSION_START, tag
+      if include EXPRESSION_START, tag
         stack.push token
         return 1
-      else if h.include EXPRESSION_END, tag
+      else if include EXPRESSION_END, tag
         if debt[inv] > 0
           debt[inv] -= 1
           @tokens.splice i, 1
