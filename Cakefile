@@ -81,6 +81,10 @@ task 'test', 'run the CoffeeScript language test suite', ->
     time: ((new Date() - start_time) / 1000).toFixed(2)
     puts '\033[0;32mpassed ' + test_count + ' tests in ' + time + ' seconds\033[0m'
   fs.readdir 'test', (err, files) ->
-    for file in files
+    files.forEach (file) ->
       fs.readFile 'test/' + file, (err, code) ->
-        CoffeeScript.run code, {source: file}
+        try
+          CoffeeScript.run code, {source: file}
+        catch err
+          puts "Failed test: $file"
+          throw err
