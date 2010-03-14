@@ -13,6 +13,8 @@
 	<string>^.*[:=] \{[^\}]*$</string>
 	<key>foldingStopMarker</key>
 	<string>\s*\}</string>
+	<key>keyEquivalent</key>
+	<string>^~C</string>
 	<key>name</key>
 	<string>CoffeeScript</string>
 	<key>patterns</key>
