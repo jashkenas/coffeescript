@@ -4,20 +4,21 @@
 
 # Set up exported variables for both **Node.js** and the browser.
 this.exports: this unless process?
+helpers: exports.helpers: {}
 
 # Does a list include a value?
-exports.include: include: (list, value) ->
+helpers.include: include: (list, value) ->
   list.indexOf(value) >= 0
 
 # Peek at the beginning of a given string to see if it matches a sequence.
-exports.starts: starts: (string, literal, start) ->
+helpers.starts: starts: (string, literal, start) ->
   string.substring(start, (start or 0) + literal.length) is literal
 
 # Trim out all falsy values from an array.
-exports.compact: compact: (array) -> item for item in array when item
+helpers.compact: compact: (array) -> item for item in array when item
 
 # Count the number of occurences of a character in a string.
-exports.count: count: (string, letter) ->
+helpers.count: count: (string, letter) ->
   num: 0
   pos: string.indexOf(letter)
   while pos isnt -1
@@ -28,7 +29,7 @@ exports.count: count: (string, letter) ->
 # Merge objects, returning a fresh copy with attributes from both sides.
 # Used every time `BaseNode#compile` is called, to allow properties in the
 # options hash to propagate down the tree without polluting other branches.
-exports.merge: merge: (options, overrides) ->
+helpers.merge: merge: (options, overrides) ->
   fresh: {}
   (fresh[key]: val) for key, val of options
   (fresh[key]: val) for key, val of overrides if overrides
@@ -36,7 +37,7 @@ exports.merge: merge: (options, overrides) ->
 
 # Return a completely flattened version of an array. Handy for getting a
 # list of `children` from the nodes.
-exports.flatten: flatten: (array) ->
+helpers.flatten: flatten: (array) ->
   memo: []
   for item in array
     if item instanceof Array then memo: memo.concat(item) else memo.push(item)
@@ -44,7 +45,7 @@ exports.flatten: flatten: (array) ->
 
 # Delete a key from an object, returning the value. Useful when a node is
 # looking for a particular method in an options hash.
-exports.del: del: (obj, key) ->
+helpers.del: del: (obj, key) ->
   val: obj[key]
   delete obj[key]
   val
@@ -53,7 +54,7 @@ exports.del: del: (obj, key) ->
 # a series of delimiters, all of which must be nested correctly within the
 # contents of the string. This method allows us to have strings within
 # interpolations within strings, ad infinitum.
-exports.balanced_string: balanced_string: (str, delimited, options) ->
+helpers.balanced_string: balanced_string: (str, delimited, options) ->
   options ||= {}
   slash: delimited[0][0] is '/'
   levels: []

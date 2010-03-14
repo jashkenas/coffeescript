@@ -10,10 +10,12 @@
 # Set up the Lexer for both Node.js and the browser, depending on where we are.
 if process?
   Rewriter: require('rewriter').Rewriter
-  process.mixin require 'helpers'
+  helpers:  require('helpers').helpers
 else
   this.exports: this
   Rewriter:     this.Rewriter
+
+h: helpers
 
 # The Lexer Class
 # ---------------
@@ -87,10 +89,10 @@ exports.Lexer: class Lexer
     return false unless id: @match IDENTIFIER, 1
     @name_access_type()
     tag: 'IDENTIFIER'
-    tag: id.toUpperCase() if include(KEYWORDS, id) and
-      not (include(ACCESSORS, @tag(0)) and not @prev().spaced)
-    @identifier_error id  if include RESERVED, id
-    tag: 'LEADING_WHEN'   if tag is 'WHEN' and include BEFORE_WHEN, @tag()
+    tag: id.toUpperCase() if h.include(KEYWORDS, id) and
+      not (h.include(ACCESSORS, @tag(0)) and not @prev().spaced)
+    @identifier_error id  if h.include RESERVED, id
+    tag: 'LEADING_WHEN'   if tag is 'WHEN' and h.include BEFORE_WHEN, @tag()
     @token(tag, id)
     @i += id.length
     true
@@ -105,12 +107,12 @@ exports.Lexer: class Lexer
   # Matches strings, including multi-line strings. Ensures that quotation marks
   # are balanced within the string's contents, and within nested interpolations.
   string_token: ->
-    return false unless starts(@chunk, '"') or starts(@chunk, "'")
+    return false unless h.starts(@chunk, '"') or h.starts(@chunk, "'")
     return false unless string:
       @balanced_token(['"', '"'], ['${', '}']) or
       @balanced_token ["'", "'"]
     @interpolate_string string.replace(STRING_NEWLINES, " \\\n")
-    @line += count string, "\n"
+    @line += h.count string, "\n"
     @i += string.length
     true
 
@@ -120,13 +122,13 @@ exports.Lexer: class Lexer
     return false unless match = @chunk.match(HEREDOC)
     doc: @sanitize_heredoc match[2] or match[4]
     @token 'STRING', "\"$doc\""
-    @line += count match[1], "\n"
+    @line += h.count match[1], "\n"
     @i += match[1].length
     true
 
   # Matches JavaScript interpolated directly into the source via backticks.
   js_token: ->
-    return false unless starts @chunk, '`'
+    return false unless h.starts @chunk, '`'
     return false unless script: @balanced_token ['`', '`']
     @token 'JS', script.replace(JS_CLEANER, '')
     @i += script.length
@@ -138,7 +140,7 @@ exports.Lexer: class Lexer
   # borrow interpolation from `@interpolate_string`.
   regex_token: ->
     return false unless @chunk.match REGEX_START
-    return false if     include NOT_REGEX, @tag()
+    return false if     h.include NOT_REGEX, @tag()
     return false unless regex: @balanced_token ['/', '/']
     regex += (flags: @chunk.substr(regex.length).match(REGEX_FLAGS))
     if regex.match REGEX_INTERPOLATION
@@ -155,7 +157,7 @@ exports.Lexer: class Lexer
   # Matches a token in which which the passed delimiter pairs must be correctly
   # balanced (ie. strings, JS literals).
   balanced_token: (delimited...) ->
-    balanced_string @chunk, delimited
+    h.balanced_string @chunk, delimited
 
   # Matches and conumes comments. We pass through comments into JavaScript,
   # so they're treated as real tokens, like any other part of the language.
@@ -163,7 +165,7 @@ exports.Lexer: class Lexer
     return false unless comment: @match COMMENT, 1
     @line += (comment.match(MULTILINER) or []).length
     lines: comment.replace(COMMENT_CLEANER, '').split(MULTILINER)
-    @token 'COMMENT', compact lines
+    @token 'COMMENT', h.compact lines
     @token 'TERMINATOR', "\n"
     @i += comment.length
     true
@@ -244,7 +246,7 @@ exports.Lexer: class Lexer
     tag: value
     if value.match(ASSIGNMENT)
       tag: 'ASSIGN'
-      @assignment_error() if include JS_FORBIDDEN, @value
+      @assignment_error() if h.include JS_FORBIDDEN, @value
     else if value is ';'
       tag: 'TERMINATOR'
     else if value is '[' and @tag() is '?' and not_spaced
@@ -254,7 +256,7 @@ exports.Lexer: class Lexer
     else if value is ']' and @soaked_index
       tag: 'SOAKED_INDEX_END'
       @soaked_index: false
-    else if include(CALLABLE, @tag()) and not_spaced
+    else if h.include(CALLABLE, @tag()) and not_spaced
       tag: 'CALL_START'  if value is '('
       tag: 'INDEX_START' if value is '['
     @token tag, value
@@ -324,7 +326,7 @@ exports.Lexer: class Lexer
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
   interpolate_string: (str, escape_quotes) ->
-    if str.length < 3 or not starts str, '"'
+    if str.length < 3 or not h.starts str, '"'
       @token 'STRING', str
     else
       lexer:    new Lexer()
@@ -332,16 +334,16 @@ exports.Lexer: class Lexer
       quote:    str.substring(0, 1)
       [i, pi]:  [1, 1]
       while i < str.length - 1
-        if starts str, '\\', i
+        if h.starts str, '\\', i
           i += 1
         else if match: str.substring(i).match INTERPOLATION
           [group, interp]: match
-          interp: "this.${ interp.substring(1) }" if starts interp, '@'
+          interp: "this.${ interp.substring(1) }" if h.starts interp, '@'
           tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i
           tokens.push ['IDENTIFIER', interp]
           i += group.length - 1
           pi: i + 1
-        else if (expr: balanced_string str.substring(i), [['${', '}']])
+        else if (expr: h.balanced_string str.substring(i), [['${', '}']])
           tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i
           inner: expr.substring(2, expr.length - 1)
           if inner.length

@@ -6,10 +6,12 @@
 # Set up for both **Node.js** and the browser, by
 # including the [Scope](scope.html) class.
 if process?
-  process.mixin require 'scope'
-  process.mixin require 'helpers'
+  Scope:   require('scope').Scope
+  helpers: require('helpers').helpers
 else
   this.exports: this
+
+h: helpers
 
 # Helper function that marks a node as a JavaScript *statement*, or as a
 # *pure_statement*. Statements must be wrapped in a closure when used as an
@@ -43,10 +45,10 @@ exports.BaseNode: class BaseNode
   # depending on whether it's being used as part of a larger expression, or is a
   # top-level statement within the function body.
   compile: (o) ->
-    @options: merge o or {}
+    @options: h.merge o or {}
     @tab:     o.indent
-    del @options, 'operation' unless this instanceof ValueNode
-    top:      if @top_sensitive() then @options.top else del @options, 'top'
+    h.del @options, 'operation' unless this instanceof ValueNode
+    top:      if @top_sensitive() then @options.top else h.del @options, 'top'
     closure:  @is_statement() and not @is_pure_statement() and not top and
               not @options.returns and not (this instanceof CommentNode) and
               not @contains (node) -> node.is_pure_statement()
@@ -113,7 +115,7 @@ exports.Expressions: class Expressions extends BaseNode
   type: 'Expressions'
 
   constructor: (nodes) ->
-    @children: @expressions: compact flatten nodes or []
+    @children: @expressions: h.compact h.flatten nodes or []
 
   # Tack an expression on to the end of this expression list.
   push: (node) ->
@@ -146,7 +148,7 @@ exports.Expressions: class Expressions extends BaseNode
     if o.scope then super(o) else @compile_root(o)
 
   compile_node: (o) ->
-    (@compile_expression(node, merge(o)) for node in @expressions).join("\n")
+    (@compile_expression(node, h.merge(o)) for node in @expressions).join("\n")
 
   # If we happen to be the top-level **Expressions**, wrap everything in
   # a safety closure, unless requested not to.
@@ -173,9 +175,9 @@ exports.Expressions: class Expressions extends BaseNode
   compile_expression: (node, o) ->
     @tab: o.indent
     stmt:    node.is_statement()
-    returns: del(o, 'returns') and @is_last(node) and not node.is_pure_statement()
-    return (if stmt then '' else @idt()) + node.compile(merge(o, {top: true})) + (if stmt then '' else ';') unless returns
-    return node.compile(merge(o, {returns: true})) if node.is_statement()
+    returns: h.del(o, 'returns') and @is_last(node) and not node.is_pure_statement()
+    return (if stmt then '' else @idt()) + node.compile(h.merge(o, {top: true})) + (if stmt then '' else ';') unless returns
+    return node.compile(h.merge(o, {returns: true})) if node.is_statement()
     "${@tab}return ${node.compile(o)};"
 
 # Wrap up the given nodes as an **Expressions**, unless it already happens
@@ -222,7 +224,7 @@ exports.ReturnNode: class ReturnNode extends BaseNode
     @children: [@expression: expression]
 
   compile_node: (o) ->
-    return @expression.compile(merge(o, {returns: true})) if @expression.is_statement()
+    return @expression.compile(h.merge(o, {returns: true})) if @expression.is_statement()
     "${@tab}return ${@expression.compile(o)};"
 
 statement ReturnNode, true
@@ -238,7 +240,7 @@ exports.ValueNode: class ValueNode extends BaseNode
 
   # A **ValueNode** has a base and a list of property accesses.
   constructor: (base, properties) ->
-    @children:   flatten [@base: base, @properties: (properties or [])]
+    @children:   h.flatten [@base: base, @properties: (properties or [])]
 
   # Add a property access to the list.
   push: (prop) ->
@@ -278,8 +280,8 @@ exports.ValueNode: class ValueNode extends BaseNode
   # evaluate a anything twice when building the soak chain.
   compile_node: (o) ->
     soaked:   false
-    only:     del(o, 'only_first')
-    op:       del(o, 'operation')
+    only:     h.del(o, 'only_first')
+    op:       h.del(o, 'operation')
     props:    if only then @properties[0...@properties.length - 1] else @properties
     baseline: @base.compile o
     baseline: "($baseline)" if @base instanceof ObjectNode and @has_properties()
@@ -326,7 +328,7 @@ exports.CallNode: class CallNode extends BaseNode
   type: 'Call'
 
   constructor: (variable, args) ->
-    @children:  flatten [@variable: variable, @args: (args or [])]
+    @children:  h.flatten [@variable: variable, @args: (args or [])]
     @prefix:    ''
 
   # Tag this invocation as creating a new instance.
@@ -448,8 +450,8 @@ exports.RangeNode: class RangeNode extends BaseNode
   # needed to iterate over the values in the range. Used by comprehensions.
   compile_node: (o) ->
     return    @compile_array(o) unless o.index
-    idx:      del o, 'index'
-    step:     del o, 'step'
+    idx:      h.del o, 'index'
+    step:     h.del o, 'step'
     vars:     "$idx = $@from_var"
     step:     if step then step.compile(o) else '1'
     equals:   if @exclusive then '' else '='
@@ -545,7 +547,7 @@ exports.ClassNode: class ClassNode extends BaseNode
   # Initialize a **ClassNode** with its name, an optional superclass, and a
   # list of prototype property assignments.
   constructor: (variable, parent, props) ->
-    @children: compact flatten [@variable: variable, @parent: parent, @properties: props or []]
+    @children: h.compact h.flatten [@variable: variable, @parent: parent, @properties: props or []]
 
   # Instead of generating the JavaScript string directly, we build up the
   # equivalent syntax tree and compile that, in pieces. You can see the
@@ -555,7 +557,7 @@ exports.ClassNode: class ClassNode extends BaseNode
     constructor: null
     props:       new Expressions()
     o.top:       true
-    ret:         del o, 'returns'
+    ret:         h.del o, 'returns'
 
     for prop in @properties
       if prop.variable and prop.variable.base.value is 'constructor'
@@ -614,10 +616,10 @@ exports.AssignNode: class AssignNode extends BaseNode
   # we've been assigned to, for correct internal references. If the variable
   # has not been seen yet within the current scope, declare it.
   compile_node: (o) ->
-    top:    del o, 'top'
+    top:    h.del o, 'top'
     return  @compile_pattern_match(o) if @is_statement()
     return  @compile_splice(o) if @is_value() and @variable.is_splice()
-    stmt:   del o, 'as_statement'
+    stmt:   h.del o, 'as_statement'
     name:   @variable.compile(o)
     last:   if @is_value() then @variable.last.replace(@LEADING_DOT, '') else name
     match:  name.match(@PROTO_ASSIGN)
@@ -661,7 +663,7 @@ exports.AssignNode: class AssignNode extends BaseNode
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
   compile_splice: (o) ->
-    name:   @variable.compile(merge(o, {only_first: true}))
+    name:   @variable.compile(h.merge(o, {only_first: true}))
     l:      @variable.properties.length
     range:  @variable.properties[l - 1].range
     plus:   if range.exclusive then '' else ' + 1'
@@ -689,14 +691,14 @@ exports.CodeNode: class CodeNode extends BaseNode
   # arrow, generates a wrapper that saves the current value of `this` through
   # a closure.
   compile_node: (o) ->
-    shared_scope: del o, 'shared_scope'
-    top:          del o, 'top'
+    shared_scope: h.del o, 'shared_scope'
+    top:          h.del o, 'top'
     o.scope:      shared_scope or new Scope(o.scope, @body, this)
     o.returns:    true
     o.top:        true
     o.indent:     @idt(if @bound then 2 else 1)
-    del o, 'no_wrap'
-    del o, 'globals'
+    h.del o, 'no_wrap'
+    h.del o, 'globals'
     if @params[@params.length - 1] instanceof SplatNode
       splat: @params.pop()
       splat.index: @params.length
@@ -717,7 +719,7 @@ exports.CodeNode: class CodeNode extends BaseNode
   # When traversing (for printing or inspecting), return the real children of
   # the function -- the parameters and body of expressions.
   real_children: ->
-    flatten [@params, @body.expressions]
+    h.flatten [@params, @body.expressions]
 
   # Custom `traverse` implementation that uses the `real_children`.
   traverse: (block) ->
@@ -778,8 +780,8 @@ exports.WhileNode: class WhileNode extends BaseNode
   # *while* can be used as a part of a larger expression -- while loops may
   # return an array containing the computed result of each iteration.
   compile_node: (o) ->
-    returns:    del(o, 'returns')
-    top:        del(o, 'top') and not returns
+    returns:    h.del(o, 'returns')
+    top:        h.del(o, 'top') and not returns
     o.indent:   @idt(1)
     o.top:      true
     cond:       @condition.compile(o)
@@ -826,7 +828,7 @@ exports.OpNode: class OpNode extends BaseNode
 
   constructor: (operator, first, second, flip) ->
     @type += ' ' + operator
-    @children: compact [@first: first, @second: second]
+    @children: h.compact [@first: first, @second: second]
     @operator: @CONVERSIONS[operator] or operator
     @flip: !!flip
 
@@ -885,7 +887,7 @@ exports.TryNode: class TryNode extends BaseNode
   type: 'Try'
 
   constructor: (attempt, error, recovery, ensure) ->
-    @children: compact [@attempt: attempt, @recovery: recovery, @ensure: ensure]
+    @children: h.compact [@attempt: attempt, @recovery: recovery, @ensure: ensure]
     @error: error
     this
 
@@ -897,7 +899,7 @@ exports.TryNode: class TryNode extends BaseNode
     attempt_part: @attempt.compile(o)
     error_part:   if @error then " (${ @error.compile(o) }) " else ' '
     catch_part:   if @recovery then " catch$error_part{\n${ @recovery.compile(o) }\n$@tab}" else ''
-    finally_part: (@ensure or '') and ' finally {\n' + @ensure.compile(merge(o, {returns: null})) + "\n$@tab}"
+    finally_part: (@ensure or '') and ' finally {\n' + @ensure.compile(h.merge(o, {returns: null})) + "\n$@tab}"
     "${@tab}try {\n$attempt_part\n$@tab}$catch_part$finally_part"
 
 statement TryNode
@@ -984,7 +986,7 @@ exports.ForNode: class ForNode extends BaseNode
     @step:    source.step
     @object:  !!source.object
     [@name, @index]: [@index, @name] if @object
-    @children: compact [@body, @source, @filter]
+    @children: h.compact [@body, @source, @filter]
 
   top_sensitive: ->
     true
@@ -994,7 +996,7 @@ exports.ForNode: class ForNode extends BaseNode
   # comprehensions. Some of the generated code can be shared in common, and
   # some cannot.
   compile_node: (o) ->
-    top_level:      del(o, 'top') and not o.returns
+    top_level:      h.del(o, 'top') and not o.returns
     range:          @source instanceof ValueNode and @source.base instanceof RangeNode and not @source.properties.length
     source:         if range then @source.base else @source
     scope:          o.scope
@@ -1011,7 +1013,7 @@ exports.ForNode: class ForNode extends BaseNode
     if range
       index_var:    scope.free_variable()
       source_part:  source.compile_variables o
-      for_part:     source.compile merge o, {index: ivar, step: @step}
+      for_part:     source.compile h.merge o, {index: ivar, step: @step}
       for_part:     "$index_var = 0, $for_part, $index_var++"
     else
       index_var:    null
@@ -1027,7 +1029,7 @@ exports.ForNode: class ForNode extends BaseNode
     body:           PushNode.wrap(rvar, body) unless top_level
     if o.returns
       return_result: 'return ' + return_result
-      del o, 'returns'
+      h.del o, 'returns'
       body:         new IfNode(@filter, body, null, {statement: true}) if @filter
     else if @filter
       body:         Expressions.wrap([new IfNode(@filter, body)])
@@ -1035,7 +1037,7 @@ exports.ForNode: class ForNode extends BaseNode
       o.scope.assign('__hasProp', 'Object.prototype.hasOwnProperty', true)
       for_part: "$ivar in $svar) { if (__hasProp.call($svar, $ivar)"
     return_result:  "\n$@tab$return_result;" unless top_level
-    body:           body.compile(merge(o, {indent: body_dent, top: true}))
+    body:           body.compile(h.merge(o, {indent: body_dent, top: true}))
     vars:           if range then name else "$name, $ivar"
     close:          if @object then '}}\n' else '}\n'
     "$set_result${source_part}for ($for_part) {\n$var_part$body\n$@tab$close$@tab$return_result"
@@ -1056,7 +1058,7 @@ exports.IfNode: class IfNode extends BaseNode
     @condition: condition
     @body:      body and body.unwrap()
     @else_body: else_body and else_body.unwrap()
-    @children:  compact [@condition, @body, @else_body]
+    @children:  h.compact [@condition, @body, @else_body]
     @tags:      tags or {}
     @multiple:  true if @condition instanceof Array
     @condition: new OpNode('!', new ParentheticalNode(@condition)) if @tags.invert
@@ -1113,7 +1115,7 @@ exports.IfNode: class IfNode extends BaseNode
     @statement ||= !!(@comment or @tags.statement or @body.is_statement() or (@else_body and @else_body.is_statement()))
 
   compile_condition: (o) ->
-    (cond.compile(o) for cond in flatten([@condition])).join(' || ')
+    (cond.compile(o) for cond in h.flatten([@condition])).join(' || ')
 
   compile_node: (o) ->
     if @is_statement() then @compile_statement(o) else @compile_ternary(o)
@@ -1122,9 +1124,9 @@ exports.IfNode: class IfNode extends BaseNode
   # force inner *else* bodies into statement form.
   compile_statement: (o) ->
     @rewrite_switch(o) if @switcher
-    child:        del o, 'chain_child'
-    cond_o:       merge o
-    del cond_o, 'returns'
+    child:        h.del o, 'chain_child'
+    cond_o:       h.merge o
+    h.del cond_o, 'returns'
     o.indent:     @idt(1)
     o.top:        true
     if_dent:      if child then '' else @idt()
@@ -1134,7 +1136,7 @@ exports.IfNode: class IfNode extends BaseNode
     if_part:      "$prefix${if_dent}if (${ @compile_condition(cond_o) }) {\n$body\n$@tab}"
     return if_part unless @else_body
     else_part: if @is_chain()
-      ' else ' + @else_body.compile(merge(o, {indent: @idt(), chain_child: true}))
+      ' else ' + @else_body.compile(h.merge(o, {indent: @idt(), chain_child: true}))
     else
       " else {\n${ Expressions.wrap([@else_body]).compile(o) }\n$@tab}"
     "$if_part$else_part"

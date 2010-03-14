@@ -106,3 +106,8 @@ ok result is 'lo'
 
 func: (x) -> (x) -> (x) -> x
 ok func(1)(2)(3) is 3
+
+
+# Ensure that functions with the same name don't clash with helper functions.
+del: -> 5
+ok del() is 5
