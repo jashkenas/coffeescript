@@ -45,7 +45,7 @@ class WordArrayNode extends BaseNode
     "[$strings]"
 
 CoffeeScript.extend ->
-  return false unless words: @chunk.match(/^%w\{(.*)\}/)
+  return false unless words: @chunk.match(/^%w\{(.*?)\}/)
   @i += words[0].length
   @token 'EXTENSION', new WordArrayNode(words[1].split(/\s+/))
   true
