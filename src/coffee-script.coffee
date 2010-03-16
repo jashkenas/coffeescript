@@ -13,7 +13,8 @@ if process?
   parser:       require('./parser').parser
   helpers:      require('./helpers').helpers
   helpers.extend global, require './nodes'
-  require.registerExtension '.coffee', (content) -> compile content if require.registerExtension
+  if require.registerExtension
+    require.registerExtension '.coffee', (content) -> compile content
 else
   this.exports: this.CoffeeScript: {}
   Lexer:        this.Lexer
