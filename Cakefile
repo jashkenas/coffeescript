@@ -1,5 +1,5 @@
 fs: require 'fs'
-helpers: require('./helpers').helpers
+helpers: require('./lib/helpers').helpers
 CoffeeScript: require './lib/coffee-script'
 
 # Run a CoffeeScript through our node/coffee interpreter.
@@ -38,7 +38,7 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
 
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   require.paths.unshift 'vendor/jison/lib'
-  parser: require('grammar').parser
+  parser: require('./lib/grammar').parser
   js: parser.generate()
   parser_path: 'lib/parser.js'
   fs.writeFile parser_path, js
