@@ -213,6 +213,7 @@ grammar: {
   Accessor: [
     o "PROPERTY_ACCESS Identifier",             -> new AccessorNode $2
     o "PROTOTYPE_ACCESS Identifier",            -> new AccessorNode $2, 'prototype'
+    o "::",                                     -> new AccessorNode(new LiteralNode('prototype'))
     o "SOAK_ACCESS Identifier",                 -> new AccessorNode $2, 'soak'
     o "Index"
     o "Slice",                                  -> new SliceNode $1
