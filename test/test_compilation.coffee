@@ -27,8 +27,32 @@ CoffeeScript.extend ->
   true
 
 # Compile with the extension.
-js: CoffeeScript.compile('return --tobesplit--', {no_wrap: on})
+js: CoffeeScript.compile 'return --tobesplit--', {no_wrap: on}
 
 ok js is "return 'tobesplit'.split('');"
 
+
+# Let's try a different extension, for Ruby-style array literals.
+
+class WordArrayNode extends BaseNode
+  type: 'WordArray'
+
+  constructor: (words) ->
+    @words: words
+
+  compile_node: (o) ->
+    strings = ("\"$word\"" for word in @words).join ', '
+    "[$strings]"
+
+CoffeeScript.extend ->
+  return false unless words: @chunk.match(/^%w\{(.*)\}/)
+  @i += words[0].length
+  @token 'EXTENSION', new WordArrayNode(words[1].split(/\s+/))
+  true
+
+js: CoffeeScript.compile 'puts %w{one two three}', {no_wrap: on}
+
+ok js is 'puts(["one", "two", "three"]);'
+
 Lexer.extensions: []
+
