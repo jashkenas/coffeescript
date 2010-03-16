@@ -9,6 +9,7 @@
 # External dependencies.
 fs:           require 'fs'
 path:         require 'path'
+helpers:      require('./helpers').helpers
 optparse:     require './optparse'
 CoffeeScript: require './coffee-script'
 
@@ -19,7 +20,7 @@ switches: []
 oparse: null
 
 # Mixin the top-level Cake functions for Cakefiles to use directly.
-process.mixin {
+helpers.extend global, {
 
   # Define a Cake task with a short name, a sentence description,
   # and the function to run as the action itself.

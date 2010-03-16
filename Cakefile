@@ -1,4 +1,5 @@
 fs: require 'fs'
+helpers: require('./helpers').helpers
 CoffeeScript: require './lib/coffee-script'
 
 # Run a CoffeeScript through our node/coffee interpreter.
@@ -68,11 +69,11 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
-  process.mixin require 'assert'
+  helpers.extend global, require 'assert'
   test_count: 0
   start_time: new Date()
   [original_ok, original_throws]: [ok, throws]
-  process.mixin {
+  helpers.extend global, {
     ok:     (args...) -> test_count += 1; original_ok(args...)
     throws: (args...) -> test_count += 1; original_throws(args...)
     CoffeeScript: CoffeeScript

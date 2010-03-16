@@ -1,6 +1,6 @@
 # Contributed by Jason Huggins
 
-process.mixin require 'sys'
+sys:  require 'sys'
 http: require 'http'
 
 server: http.createServer (req, res) ->
@@ -10,4 +10,4 @@ server: http.createServer (req, res) ->
 
 server.listen 3000
 
-puts "Server running at http://localhost:3000/"
+sys.puts "Server running at http://localhost:3000/"

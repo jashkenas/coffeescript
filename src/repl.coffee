@@ -6,12 +6,13 @@
 
 # Require the **coffee-script** module to get access to the compiler.
 CoffeeScript: require './coffee-script'
+helpers:      require('./helpers').helpers
 
 # Our prompt.
 prompt: 'coffee> '
 
 # Quick alias for quitting the REPL.
-process.mixin {
+helpers.extend global, {
   quit: -> process.exit(0)
 }
 

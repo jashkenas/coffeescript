@@ -8,10 +8,11 @@
 
 # Set up dependencies correctly for both the server and the browser.
 if process?
-  process.mixin require './nodes'
   path:         require 'path'
   Lexer:        require('./lexer').Lexer
   parser:       require('./parser').parser
+  helpers:      require('./helpers').helpers
+  helpers.extend global, require './nodes'
 else
   this.exports: this.CoffeeScript: {}
   Lexer:        this.Lexer

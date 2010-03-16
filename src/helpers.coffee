@@ -35,6 +35,10 @@ helpers.merge: merge: (options, overrides) ->
   (fresh[key]: val) for key, val of overrides if overrides
   fresh
 
+# Extend a source object with the properties of another object (shallow copy).
+helpers.extend: extend: (object, properties) ->
+  (object[key]: val) for key, val of properties
+
 # Return a completely flattened version of an array. Handy for getting a
 # list of `children` from the nodes.
 helpers.flatten: flatten: (array) ->
