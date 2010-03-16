@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 
-require('./../lib/helpers').helpers.extend(global, require('sys'));
-
 var path = require('path');
 var fs = require('fs');
 var lib = path.join(path.dirname(fs.realpathSync(__filename)), '../lib');
 
-require('./../lib/command').run();
+require(lib + '/helpers').helpers.extend(global, require('sys'));
+require(lib + '/command').run();
