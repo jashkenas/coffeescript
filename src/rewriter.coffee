@@ -189,7 +189,7 @@ exports.Rewriter: class Rewriter
     if unclosed.length
       open: unclosed[0]
       line: open_line[open] + 1
-      throw new Error("unclosed ${open} on line ${line}")
+      throw new Error "unclosed $open on line $line"
 
   # We'd like to support syntax like this:
   #
