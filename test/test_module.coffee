@@ -1,1 +1,3 @@
-exports.foo: "bar"
+local: "from over there"
+
+exports.func: -> local
