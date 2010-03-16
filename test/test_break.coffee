@@ -1,21 +1,21 @@
 # Test with break at the top level.
-a: [1,2,3]
+array: [1,2,3]
 call_with_lambda: (l) -> null
-for i in a
-  a: call_with_lambda(->)
+for i in array
+  result: call_with_lambda(->)
   if i == 2
     puts "i = 2"
   else
     break
 
-ok a is null
+ok result is null
 
 
 # Test with break *not* at the top level.
 some_func: (input) ->
   takes_lambda: (l) -> null
   for i in [1,2]
-    arbitraty_var: takes_lambda(->)
+    result: takes_lambda(->)
     if input == 1
       return 1
     else

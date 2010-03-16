@@ -54,8 +54,7 @@ exports.BaseNode: class BaseNode
     del @options, 'operation' unless this instanceof ValueNode
     top:      if @top_sensitive() then @options.top else del @options, 'top'
     closure:  @is_statement() and not @is_pure_statement() and not top and
-              not @options.returns and not (this instanceof CommentNode) and
-              not @contains (node) -> node.is_pure_statement()
+              not @options.returns and not (this instanceof CommentNode)
     if closure then @compile_closure(@options) else @compile_node(@options)
 
   # Statements converted into expressions via closure-wrapping share a scope
@@ -1024,8 +1023,7 @@ exports.ForNode: class ForNode extends BaseNode
         for_part:   "$ivar = 0, $lvar = ${svar}.length; $ivar < $lvar; $step_part"
     set_result:     if rvar then @idt() + rvar + ' = []; ' else @idt()
     return_result:  rvar or ''
-    if top_level and not @contains((n) -> n.is_pure_statement()) and @contains((n) -> n instanceof CodeNode)
-      body:         ClosureNode.wrap(body, true)
+    body:           ClosureNode.wrap(body, true) if top_level and body.contains (n) -> n instanceof CodeNode
     body:           PushNode.wrap(rvar, body) unless top_level
     if o.returns
       return_result: 'return ' + return_result
@@ -1172,7 +1170,10 @@ PushNode: exports.PushNode: {
 # A faux-node used to wrap an expressions body in a closure.
 ClosureNode: exports.ClosureNode: {
 
+  # Wrap the expressions body, unless it contains a pure statement,
+  # in which case, no dice.
   wrap: (expressions, statement) ->
+    return expressions if expressions.contains (n) -> n.is_pure_statement()
     func: new ParentheticalNode(new CodeNode([], Expressions.wrap([expressions])))
     call: new CallNode(new ValueNode(func, [new AccessorNode(literal('call'))]), [literal('this')])
     if statement then Expressions.wrap([call]) else call
