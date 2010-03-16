@@ -43,7 +43,7 @@ exports.Lexer: class Lexer
   # Before returning the token stream, run it through the [Rewriter](rewriter.html)
   # unless explicitly asked not to.
   tokenize: (code, options) ->
-    code     : code.replace(/\r/g, '')
+    code     : code.replace(/(\r|\s+$)/g, '')
     o        : options or {}
     @code    : code         # The remainder of the source code.
     @i       : 0            # Current character position we're parsing.
