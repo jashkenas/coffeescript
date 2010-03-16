@@ -17,17 +17,6 @@ ok(area(
 ) is 100, 'newline delimited arguments')
 
 
-func: ->
-  arguments: 25
-  arguments
-
-ok func(100) is 25, 'arguments as a regular identifier'
-
-
-this.arguments: 10
-ok @arguments is 10, 'arguments accessed as a property'
-
-
 sum_of_args: ->
   sum: 0
   sum += val for val in arguments
