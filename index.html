@@ -240,7 +240,7 @@ cubed_list = (function() {
 
     <p>
       For a longer CoffeeScript example, check out
-      <a href="documentation/underscore.html">Underscore.coffee</a>, a port
+      <a href="documentation/docs/underscore.html">Underscore.coffee</a>, a port
       of the <a href="http://documentcloud.github.com/underscore/">Underscore.js</a>
       library of helper functions. Underscore.coffee can pass the entire Underscore.js
       test suite. The CoffeeScript version is faster than the original for a number
@@ -1643,13 +1643,10 @@ sentence = '' + (22 / 7) + " is a decent approximation of π";
       function to invoke when the task is run. Here's a hypothetical task
       that uses the Node.js API.
     </p>
-    <div class='code'><pre class="idle">process.mixin require <span class="String"><span class="String">'</span>assert<span class="String">'</span></span>
-
-task <span class="String"><span class="String">'</span>test<span class="String">'</span></span>, <span class="String"><span class="String">'</span>run each of the unit tests<span class="String">'</span></span>, <span class="Storage">-&gt;</span>
+    <div class='code'><pre class="idle">task <span class="String"><span class="String">'</span>test<span class="String">'</span></span>, <span class="String"><span class="String">'</span>run each of the unit tests<span class="String">'</span></span>, <span class="Storage">-&gt;</span>
   <span class="Keyword">for</span> test <span class="Keyword">in</span> test_files
     fs.readFile test, <span class="FunctionArgument">(</span><span class="FunctionArgument">err, code</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> eval coffee.compile code
-</pre><pre class="idle">process.mixin(require(<span class="String"><span class="String">'</span>assert<span class="String">'</span></span>));
-task(<span class="String"><span class="String">'</span>test<span class="String">'</span></span>, <span class="String"><span class="String">'</span>run each of the unit tests<span class="String">'</span></span>, <span class="Storage">function</span>() {
+</pre><pre class="idle">task(<span class="String"><span class="String">'</span>test<span class="String">'</span></span>, <span class="String"><span class="String">'</span>run each of the unit tests<span class="String">'</span></span>, <span class="Storage">function</span>() {
   <span class="Storage">var</span> _a, _b, _c, _d, test;
   _a <span class="Keyword">=</span> []; _b <span class="Keyword">=</span> test_files;
   <span class="Keyword">for</span> (_c <span class="Keyword">=</span> <span class="Number">0</span>, _d <span class="Keyword">=</span> _b.<span class="LibraryConstant">length</span>; _c <span class="Keyword">&lt;</span> _d; _c<span class="Keyword">++</span>) {

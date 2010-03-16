@@ -65,7 +65,8 @@ task 'doc:source', 'rebuild the internal documentation', ->
 
 
 task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
-  exec 'uv -s coffeescript -t idle -h examples/underscore.coffee > documentation/underscore.html'
+  exec 'docco examples/underscore.coffee && cp -rf docs documentation && rm -r docs', (err) ->
+    throw err if err
 
 
 task 'test', 'run the CoffeeScript language test suite', ->

@@ -1,28 +1,32 @@
 
-  # Underscore.coffee
-  # (c) 2010 Jeremy Ashkenas, DocumentCloud Inc.
-  # Underscore is freely distributable under the terms of the MIT license.
-  # Portions of Underscore are inspired by or borrowed from Prototype.js,
-  # Oliver Steele's Functional, and John Resig's Micro-Templating.
+  # *Underscore.coffee
+  # (c) 2010 Jeremy Ashkenas, DocumentCloud Inc.*
+  # Underscore is freely distributable under the terms of the **MIT license**.
+  # Portions of Underscore are inspired by or borrowed from
+  # [Prototype.js](http://prototypejs.org/api), Oliver Steele's
+  # [Functional](http://osteele.com), and John Resig's
+  # [Micro-Templating](http://ejohn.com).
   # For all details and documentation:
   # http://documentcloud.github.com/underscore/
 
 
-  # ------------------------- Baseline setup ---------------------------------
+  # Baseline setup
+  # --------------
 
-  # Establish the root object, "window" in the browser, or "global" on the server.
+  # Establish the root object, `window` in the browser, or `global` on the server.
   root: this
 
 
-  # Save the previous value of the "_" variable.
+  # Save the previous value of the `_` variable.
   previousUnderscore: root._
 
 
   # Establish the object that gets thrown to break out of a loop iteration.
+  # `StopIteration` is SOP on Mozilla.
   breaker: if typeof(StopIteration) is 'undefined' then '__break__' else StopIteration
 
 
-  # Quick regexp-escaping function, because JS doesn't have RegExp.escape().
+  # Helper function to escape **RegExp** contents, because JS doesn't have one.
   escapeRegExp: (string) -> string.replace(/([.*+?^${}()|[\]\/\\])/g, '\\$1')
 
 
@@ -31,7 +35,7 @@
   ObjProto:             Object.prototype
 
 
-  #Create quick reference variables for speed access to core prototypes.
+  # Create quick reference variables for speed access to core prototypes.
   slice:                ArrayProto.slice
   unshift:              ArrayProto.unshift
   toString:             ObjProto.toString
@@ -69,10 +73,11 @@
   _.VERSION: '0.6.0'
 
 
-  # ------------------------ Collection Functions: ---------------------------
+  # Collection Functions
+  # --------------------
 
-  # The cornerstone, an each implementation.
-  # Handles objects implementing forEach, arrays, and raw objects.
+  # The cornerstone, an **each** implementation.
+  # Handles objects implementing **forEach**, arrays, and raw objects.
   _.each: (obj, iterator, context) ->
     try
       if nativeForEach and obj.forEach is nativeForEach
@@ -87,7 +92,7 @@
 
 
   # Return the results of applying the iterator to each element. Use JavaScript
-  # 1.6's version of map, if possible.
+  # 1.6's version of **map**, if possible.
   _.map: (obj, iterator, context) ->
     return obj.map(iterator, context) if nativeMap and obj.map is nativeMap
     results: []
@@ -96,8 +101,8 @@
     results
 
 
-  # Reduce builds up a single result from a list of values. Also known as
-  # inject, or foldl. Uses JavaScript 1.8's version of reduce, if possible.
+  # **Reduce** builds up a single result from a list of values. Also known as
+  # **inject**, or **foldl**. Uses JavaScript 1.8's version of **reduce**, if possible.
   _.reduce: (obj, memo, iterator, context) ->
     return obj.reduce(_.bind(iterator, context), memo) if nativeReduce and obj.reduce is nativeReduce
     _.each obj, (value, index, list) ->
@@ -105,8 +110,8 @@
     memo
 
 
-  # The right-associative version of reduce, also known as foldr. Uses
-  # JavaScript 1.8's version of reduceRight, if available.
+  # The right-associative version of **reduce**, also known as **foldr**. Uses
+  # JavaScript 1.8's version of **reduceRight**, if available.
   _.reduceRight: (obj, memo, iterator, context) ->
     return obj.reduceRight(_.bind(iterator, context), memo) if nativeReduceRight and obj.reduceRight is nativeReduceRight
     _.each _.clone(_.toArray(obj)).reverse(), (value, index) ->
@@ -125,7 +130,7 @@
 
 
   # Return all the elements that pass a truth test. Use JavaScript 1.6's
-  # filter(), if it exists.
+  # **filter**, if it exists.
   _.filter: (obj, iterator, context) ->
     return obj.filter iterator, context if nativeFilter and obj.filter is nativeFilter
     results: []
@@ -143,7 +148,7 @@
 
 
   # Determine whether all of the elements match a truth test. Delegate to
-  # JavaScript 1.6's every(), if it is present.
+  # JavaScript 1.6's **every**, if it is present.
   _.every: (obj, iterator, context) ->
     iterator ||= _.identity
     return obj.every iterator, context if nativeEvery and obj.every is nativeEvery
@@ -154,7 +159,7 @@
 
 
   # Determine if at least one element in the object matches a truth test. Use
-  # JavaScript 1.6's some(), if it exists.
+  # JavaScript 1.6's **some**, if it exists.
   _.some: (obj, iterator, context) ->
     iterator ||= _.identity
     return obj.some iterator, context if nativeSome and obj.some is nativeSome
@@ -165,7 +170,7 @@
 
 
   # Determine if a given value is included in the array or object,
-  # based on '==='.
+  # based on `===`.
   _.include: (obj, target) ->
     return _.indexOf(obj, target) isnt -1 if nativeIndexOf and obj.indexOf is nativeIndexOf
     for key, val of obj
@@ -179,7 +184,7 @@
     (if method then val[method] else val).apply(val, args) for val in obj
 
 
-  # Convenience version of a common use case of map: fetching a property.
+  # Convenience version of a common use case of **map**: fetching a property.
   _.pluck: (obj, key) ->
     _.map(obj, (val) -> val[key])
 
@@ -239,19 +244,20 @@
   _.size: (obj) -> _.toArray(obj).length
 
 
-  # -------------------------- Array Functions: ------------------------------
+  # Array Functions
+  # ---------------
 
-  # Get the first element of an array. Passing "n" will return the first N
-  # values in the array. Aliased as "head". The "guard" check allows it to work
-  # with _.map.
+  # Get the first element of an array. Passing `n` will return the first N
+  # values in the array. Aliased as **head**. The `guard` check allows it to work
+  # with **map**.
   _.first: (array, n, guard) ->
     if n and not guard then slice.call(array, 0, n) else array[0]
 
 
-  # Returns everything but the first entry of the array. Aliased as "tail".
-  # Especially useful on the arguments object. Passing an "index" will return
-  # the rest of the values in the array from that index onward. The "guard"
-  # check allows it to work with _.map.
+  # Returns everything but the first entry of the array. Aliased as **tail**.
+  # Especially useful on the arguments object. Passing an `index` will return
+  # the rest of the values in the array from that index onward. The `guard`
+  # check allows it to work with **map**.
   _.rest: (array, index, guard) ->
     slice.call(array, if _.isUndefined(index) or guard then 1 else index)
 
@@ -306,7 +312,7 @@
     results
 
 
-  # If the browser doesn't supply us with indexOf (I'm looking at you, MSIE),
+  # If the browser doesn't supply us with **indexOf** (I'm looking at you, MSIE),
   # we need this function. Return the position of the first occurence of an
   # item in an array, or -1 if the item is not included in the array.
   _.indexOf: (array, item) ->
@@ -317,7 +323,7 @@
     -1
 
 
-  # Provide JavaScript 1.6's lastIndexOf, delegating to the native function,
+  # Provide JavaScript 1.6's **lastIndexOf**, delegating to the native function,
   # if possible.
   _.lastIndexOf: (array, item) ->
     return array.lastIndexOf(item) if nativeLastIndexOf and array.lastIndexOf is nativeLastIndexOf
@@ -328,8 +334,7 @@
 
 
   # Generate an integer Array containing an arithmetic progression. A port of
-  # the native Python range() function. See:
-  # http://docs.python.org/library/functions.html#range
+  # [the native Python **range** function](http://docs.python.org/library/functions.html#range).
   _.range: (start, stop, step) ->
     a:        arguments
     solo:     a.length <= 1
@@ -347,10 +352,11 @@
       i+= step
 
 
-  # ----------------------- Function Functions: -----------------------------
+  # Function Functions
+  # ------------------
 
-  # Create a function bound to a given object (assigning 'this', and arguments,
-  # optionally). Binding with arguments is also known as 'curry'.
+  # Create a function bound to a given object (assigning `this`, and arguments,
+  # optionally). Binding with arguments is also known as **curry**.
   _.bind: (func, obj) ->
     args: _.rest arguments, 2
     -> func.apply obj or root, args.concat arguments
@@ -395,7 +401,8 @@
       args[0]
 
 
-  # ------------------------- Object Functions: ----------------------------
+  # Object Functions
+  # ----------------
 
   # Retrieve the names of an object's properties.
   _.keys: nativeKeys or (obj) ->
@@ -443,7 +450,7 @@
     return true if `a == b`
     # One is falsy and the other truthy.
     return false if (!a and b) or (a and !b)
-    # One of them implements an isEqual()?
+    # One of them implements an `isEqual()`?
     return a.isEqual(b) if a.isEqual
     # Check dates' integer values.
     return a.getTime() is b.getTime() if _.isDate(a) and _.isDate(b)
@@ -512,8 +519,8 @@
   _.isRegExp:     (obj) -> !!(obj and obj.exec and (obj.ignoreCase or obj.ignoreCase is false))
 
 
-  # Is the given value NaN -- this one is interesting. NaN != NaN, and
-  # isNaN(undefined) == true, so we make sure it's a number first.
+  # Is the given value NaN -- this one is interesting. `NaN != NaN`, and
+  # `isNaN(undefined) == true`, so we make sure it's a number first.
   _.isNaN:        (obj) -> _.isNumber(obj) and window.isNaN(obj)
 
 
@@ -525,9 +532,10 @@
   _.isUndefined:  (obj) -> typeof obj is 'undefined'
 
 
-  # -------------------------- Utility Functions: --------------------------
+  # Utility Functions
+  # -----------------
 
-  # Run Underscore.js in noConflict mode, returning the '_' variable to its
+  # Run Underscore.js in noConflict mode, returning the `_` variable to its
   # previous owner. Returns a reference to the Underscore object.
   _.noConflict: ->
     root._: previousUnderscore
@@ -538,7 +546,7 @@
   _.identity: (value) -> value
 
 
-  # Run a function n times.
+  # Run a function `n` times.
   _.times: (n, iterator, context) ->
     iterator.call(context, i) for i in [0...n]
 
@@ -561,7 +569,7 @@
     (prefix or '') + idCounter++
 
 
-  # By default, Underscore uses ERB-style template delimiters, change the
+  # By default, Underscore uses **ERB**-style template delimiters, change the
   # following template settings to use alternative delimiters.
   _.templateSettings: {
     start:        '<%'
@@ -570,9 +578,9 @@
   }
 
 
-  # JavaScript templating a-la ERB, pilfered from John Resig's
-  # "Secrets of the JavaScript Ninja", page 83.
-  # Single-quote fix from Rick Strahl's version.
+  # JavaScript templating a-la **ERB**, pilfered from John Resig's
+  # *Secrets of the JavaScript Ninja*, page 83.
+  # Single-quote fix from Rick Strahl.
   _.template: (str, data) ->
     c: _.templateSettings
     endMatch: new RegExp("'(?=[^"+c.end.substr(0, 1)+"]*"+escapeRegExp(c.end)+")","g")
@@ -590,7 +598,8 @@
     if data then fn(data) else fn
 
 
-  # ------------------------------- Aliases ----------------------------------
+  # Aliases
+  # -------
 
   _.forEach: _.each
   _.foldl:   _.inject:      _.reduce
@@ -603,7 +612,8 @@
   _.methods: _.functions
 
 
-  # ------------------------ Setup the OOP Wrapper: --------------------------
+  # Setup the OOP Wrapper
+  # ---------------------
 
   # If Underscore is called as a function, it returns a wrapped object that
   # can be used OO-style. This wrapper holds altered versions of all the
