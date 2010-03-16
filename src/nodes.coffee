@@ -1024,7 +1024,8 @@ exports.ForNode: class ForNode extends BaseNode
         for_part:   "$ivar = 0, $lvar = ${svar}.length; $ivar < $lvar; $step_part"
     set_result:     if rvar then @idt() + rvar + ' = []; ' else @idt()
     return_result:  rvar or ''
-    body:           ClosureNode.wrap(body, true) if top_level and @contains (n) -> n instanceof CodeNode
+    if top_level and not @contains((n) -> n.is_pure_statement()) and @contains((n) -> n instanceof CodeNode)
+      body:         ClosureNode.wrap(body, true)
     body:           PushNode.wrap(rvar, body) unless top_level
     if o.returns
       return_result: 'return ' + return_result
