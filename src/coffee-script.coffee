@@ -13,6 +13,7 @@ if process?
   parser:       require('./parser').parser
   helpers:      require('./helpers').helpers
   helpers.extend global, require './nodes'
+  require.registerExtension '.coffee', (content) -> compile content if require.registerExtension
 else
   this.exports: this.CoffeeScript: {}
   Lexer:        this.Lexer
@@ -26,7 +27,7 @@ lexer: new Lexer()
 
 # Compile a string of CoffeeScript code to JavaScript, using the Coffee/Jison
 # compiler.
-exports.compile: (code, options) ->
+exports.compile: compile: (code, options) ->
   options ||= {}
   try
     (parser.parse lexer.tokenize code).compile options

@@ -70,6 +70,8 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
 
 task 'test', 'run the CoffeeScript language test suite', ->
   helpers.extend global, require 'assert'
+  require.paths.unshift './test'
+  
   test_count: 0
   start_time: new Date()
   [original_ok, original_throws]: [ok, throws]
