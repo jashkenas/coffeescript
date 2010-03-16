@@ -7,8 +7,8 @@
 # External dependencies.
 fs:           require 'fs'
 path:         require 'path'
-optparse:     require 'optparse'
-CoffeeScript: require 'coffee-script'
+optparse:     require './optparse'
+CoffeeScript: require './coffee-script'
 
 # The help banner that is printed when `coffee` is called without arguments.
 BANNER: '''
@@ -47,7 +47,7 @@ exports.run: ->
   parse_options()
   return usage()                              if options.help
   return version()                            if options.version
-  return require 'repl'                       if options.interactive
+  return require './repl'                     if options.interactive
   return compile_stdio()                      if options.stdio
   return compile_script 'console', sources[0] if options.eval
   return usage()                              unless sources.length

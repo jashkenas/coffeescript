@@ -5,7 +5,7 @@
 #     coffee> puts "$num bottles of beer" for num in [99..1]
 
 # Require the **coffee-script** module to get access to the compiler.
-CoffeeScript: require 'coffee-script'
+CoffeeScript: require './coffee-script'
 
 # Our prompt.
 prompt: 'coffee> '

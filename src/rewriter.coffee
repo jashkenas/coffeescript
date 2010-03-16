@@ -8,7 +8,7 @@
 
 # Set up exported variables for both Node.js and the browser.
 if process?
-  helpers: require('helpers').helpers
+  helpers: require('./helpers').helpers
 else
   this.exports: this
 

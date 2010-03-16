@@ -1,5 +1,5 @@
 fs: require 'fs'
-CoffeeScript: require 'coffee-script'
+CoffeeScript: require './lib/coffee-script'
 
 # Run a CoffeeScript through our node/coffee interpreter.
 run: (args) ->
