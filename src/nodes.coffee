@@ -167,8 +167,6 @@ exports.Expressions: class Expressions extends BaseNode
   # declarations of all inner variables pushed up to the top.
   compile_with_declarations: (o) ->
     code: @compile_node(o)
-    args: @contains (node) -> node instanceof ValueNode and node.is_arguments()
-    code: "${@tab}arguments = Array.prototype.slice.call(arguments, 0);\n$code" if args
     code: "${@tab}var ${o.scope.compiled_assignments()};\n$code"  if o.scope.has_assignments(this)
     code: "${@tab}var ${o.scope.compiled_declarations()};\n$code" if o.scope.has_declarations(this)
     code
@@ -265,9 +263,6 @@ exports.ValueNode: class ValueNode extends BaseNode
 
   is_splice: ->
     @has_properties() and @properties[@properties.length - 1] instanceof SliceNode
-
-  is_arguments: ->
-    @base.value is 'arguments'
 
   # The value can be unwrapped as its inner node, if there are no attached
   # properties.
