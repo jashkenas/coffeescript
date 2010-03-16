@@ -32,7 +32,6 @@
         <a href="#conditionals">Conditionals, Ternaries, and Conditional Assignment</a>
         <a href="#aliases">Aliases</a>
         <a href="#splats">Splats...</a>
-        <a href="#arguments">Arguments are Arrays</a>
         <a href="#while">While Loops</a>
         <a href="#comprehensions">Comprehensions (Arrays, Objects, and Ranges)</a>
         <a href="#slice_splice">Array Slicing and Splicing with Ranges</a>
@@ -81,6 +80,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
         <a href="documentation/docs/rewriter.html">The Rewriter &mdash; src/rewriter</a>
         <a href="documentation/docs/nodes.html">The Syntax Tree &mdash; src/nodes</a>
         <a href="documentation/docs/scope.html">Lexical Scope &mdash; src/scope</a>
+        <a href="documentation/docs/helpers.html">Helpers &amp; Utility Functions &mdash; src/helpers</a>
         <a href="documentation/docs/coffee-script.html">The CoffeeScript Module &mdash; src/coffee-script</a>
         <a href="documentation/docs/cake.html">Cake &amp; Cakefiles &mdash; src/cake</a>
         <a href="documentation/docs/command.html">"coffee" Command-Line Utility &mdash; src/command</a>
@@ -743,32 +743,6 @@ award_medals.apply(this, contenders);
 alert("Gold: " + gold);
 alert("Silver: " + silver);
 alert("The Field: " + the_field);
-;'>run</button><br class='clear' /></div>
-
-    <p>
-      <span id="arguments" class="bookmark"></span>
-      <b class="header">Arguments are Arrays</b>
-      If you reference the <b>arguments object</b> directly, it will be converted
-      into a real Array, making all of the
-      <a href="https://developer.mozilla.org/En/Core_JavaScript_1.5_Reference/Objects/Array">Array methods</a>
-      available.
-    </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">backwards</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
-  alert arguments.reverse()
-
-backwards <span class="String"><span class="String">&quot;</span>stairway<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>to<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>heaven<span class="String">&quot;</span></span>
-</pre><pre class="idle"><span class="Storage">var</span> backwards;
-backwards <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">backwards</span>() {
-  arguments <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">0</span>);
-  <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(arguments.<span class="LibraryFunction">reverse</span>());
-};
-backwards(<span class="String"><span class="String">&quot;</span>stairway<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>to<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>heaven<span class="String">&quot;</span></span>);
-</pre><button onclick='javascript: var backwards;
-backwards = function backwards() {
-  arguments = Array.prototype.slice.call(arguments, 0);
-  return alert(arguments.reverse());
-};
-backwards("stairway", "to", "heaven");
 ;'>run</button><br class='clear' /></div>
 
     <p>
@@ -1645,9 +1619,9 @@ quote = "A picture is a fact. -- " + author;
 
 
 </pre><pre class="idle"><span class="Storage">var</span> sentence;
-sentence <span class="Keyword">=</span> (<span class="Number">22</span> / <span class="Number">7</span>) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is a decent approximation of π<span class="String">&quot;</span></span>;
+sentence <span class="Keyword">=</span> <span class="String"><span class="String">'</span><span class="String">'</span></span> <span class="Keyword">+</span> (<span class="Number">22</span> / <span class="Number">7</span>) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is a decent approximation of π<span class="String">&quot;</span></span>;
 </pre><button onclick='javascript: var sentence;
-sentence = (22 / 7) + " is a decent approximation of π";
+sentence = '' + (22 / 7) + " is a decent approximation of π";
 ;alert(sentence);'>run: sentence</button><br class='clear' /></div>
 
     <h2>
