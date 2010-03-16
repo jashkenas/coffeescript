@@ -36,6 +36,7 @@ helpers.merge: merge: (options, overrides) ->
   fresh
 
 # Extend a source object with the properties of another object (shallow copy).
+# We use this to simulate Node's deprecated `process.mixin`
 helpers.extend: extend: (object, properties) ->
   (object[key]: val) for key, val of properties
 

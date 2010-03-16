@@ -70,8 +70,6 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
 
 task 'test', 'run the CoffeeScript language test suite', ->
   helpers.extend global, require 'assert'
-  require.paths.unshift './test'
-  
   test_count: 0
   start_time: new Date()
   [original_ok, original_throws]: [ok, throws]
@@ -85,9 +83,10 @@ task 'test', 'run the CoffeeScript language test suite', ->
     puts '\033[0;32mpassed ' + test_count + ' tests in ' + time + ' seconds\033[0m'
   fs.readdir 'test', (err, files) ->
     files.forEach (file) ->
-      fs.readFile 'test/' + file, (err, code) ->
+      source: path.join 'test', file
+      fs.readFile source, (err, code) ->
         try
-          CoffeeScript.run code, {source: file}
+          CoffeeScript.run code, {source: source}
         catch err
-          puts "Failed test: $file"
+          puts "Failed test: $source"
           throw err

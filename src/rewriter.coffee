@@ -1,10 +1,9 @@
-# The CoffeeScript language has a decent amount of optional syntax,
-# implicit syntax, and shorthand syntax. These things can greatly complicate a
-# grammar and bloat the resulting parse table. Instead of making the parser
-# handle it all, we take a series of passes over the token stream,
-# using this **Rewriter** to convert shorthand into the unambiguous long form,
-# add implicit indentation and parentheses, balance incorrect nestings, and
-# generally clean things up.
+# The CoffeeScript language has a good deal of optional syntax, implicit syntax,
+# and shorthand syntax. This can greatly complicate a grammar and bloat
+# the resulting parse table. Instead of making the parser handle it all, we take
+# a series of passes over the token stream, using this **Rewriter** to convert
+# shorthand into the unambiguous long form, add implicit indentation and
+# parentheses, balance incorrect nestings, and generally clean things up.
 
 # Set up exported variables for both Node.js and the browser.
 if process?
@@ -56,11 +55,11 @@ exports.Rewriter: class Rewriter
       return 1 unless token[0] is 'COMMENT'
       after:  @tokens[i + 2]
       if after and after[0] is 'INDENT'
-        @tokens.splice(i + 2, 1)
-        @tokens.splice(i, 0, after)
+        @tokens.splice i + 2, 1
+        @tokens.splice i, 0, after
         return 1
       else if prev and prev[0] isnt 'TERMINATOR' and prev[0] isnt 'INDENT' and prev[0] isnt 'OUTDENT'
-        @tokens.splice(i, 0, ['TERMINATOR', "\n", prev[2]])
+        @tokens.splice i, 0, ['TERMINATOR', "\n", prev[2]]
         return 2
       else
         return 1
