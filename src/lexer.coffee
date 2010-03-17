@@ -14,6 +14,7 @@ if process?
 else
   this.exports: this
   Rewriter:     this.Rewriter
+  helpers:      this.helpers
 
 # Import the helpers we need.
 include:          helpers.include

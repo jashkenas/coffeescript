@@ -19,6 +19,7 @@ else
   this.exports: this.CoffeeScript: {}
   Lexer:        this.Lexer
   parser:       this.parser
+  helpers:      this.helpers
 
 # The current CoffeeScript version number.
 exports.VERSION: '0.5.5'

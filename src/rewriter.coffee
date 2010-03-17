@@ -10,6 +10,7 @@ if process?
   helpers: require('./helpers').helpers
 else
   this.exports: this
+  helpers:      this.helpers
 
 # Import the helpers we need.
 include: helpers.include

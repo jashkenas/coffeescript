@@ -10,6 +10,8 @@ if process?
   helpers: require('./helpers').helpers
 else
   this.exports: this
+  helpers:      this.helpers
+  Scope:        this.Scope
 
 # Import the helpers we need.
 compact: helpers.compact
