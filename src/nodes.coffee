@@ -386,6 +386,31 @@ exports.CallNode: class CallNode extends BaseNode
       i += 1
     args.join('')
 
+#### CurryNode
+
+exports.CurryNode: class CurryNode extends CallNode
+  type: 'Curry'
+  code: '''
+        function(func, obj, args) {
+          return function() {
+            return func.apply(obj || {}, args.concat(__slice.call(arguments, 0)));
+          };
+        }
+        '''
+  slice: "Array.prototype.slice"
+  
+  constructor: (meth, bind, args) ->
+    @children:  flatten [@meth: meth, @bind: bind or literal('this'), @args: (args or [])]
+  
+  compile_node: (o) ->
+    o.scope.assign('__curry', @code, true)
+    o.scope.assign('__slice', @slice, true)
+    ref:  new ValueNode literal('__curry')
+    call: new CallNode ref, [@meth, @bind, new ArrayNode(@args)]
+    call.compile(o)
+  
+  
+
 #### ExtendsNode
 
 # Node to extend an object's prototype with an ancestor object.

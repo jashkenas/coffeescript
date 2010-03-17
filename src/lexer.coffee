@@ -72,6 +72,7 @@ exports.Lexer: class Lexer
     return if @line_token()
     return if @whitespace_token()
     return if @js_token()
+    return if @curry_token()
     return if @string_token()
     return    @literal_token()
 
@@ -240,6 +241,28 @@ exports.Lexer: class Lexer
     @tokens.pop() if @value() is "\\"
     true
 
+  # Some docs
+  curry_token: ->
+    if @currying?
+      if @match(/^\(/, 0) and [',', '<-'].indexOf(@value()) isnt -1
+        @token 'CALL_START', '('
+        @i += 1
+        @currying: undefined
+        true
+      else if @match(CURRY_SEPARATOR, 0)
+        @token 'CURRY_SEPARATOR', ','
+        @i += 1
+        true
+      else if not @match(/^\s*[\w@\$_\(]/, 0)
+        @currying: undefined
+        false
+    else if @match(CURRY, 1)
+      @i += 2
+      @chunk = @code.slice(@i)
+      @token 'CURRY', '<-'
+      @currying: true if @match(/^(\s*[\w@\$_\(])/, 1)
+      true
+  
   # We treat all other single characters as a token. Eg.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
   # the proper order of operations. There are some symbols that we tag specially
@@ -463,6 +486,8 @@ MULTI_DENT    : /^((\n([ \t]*))+)(\.)?/
 LAST_DENTS    : /\n([ \t]*)/g
 LAST_DENT     : /\n([ \t]*)/
 ASSIGNMENT    : /^(:|=)$/
+CURRY         : /^(<-)/
+CURRY_SEPARATOR: /^\,/
 
 # Regex-matching-regexes.
 REGEX_START        : /^\/[^\/ ]/

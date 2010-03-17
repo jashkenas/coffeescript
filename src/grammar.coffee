@@ -74,6 +74,7 @@ grammar: {
   Expression: [
     o "Value"
     o "Call"
+    o "Curry"
     o "Code"
     o "Operation"
     o "Assign"
@@ -261,6 +262,13 @@ grammar: {
     o "Invocation"
     o "NEW Invocation",                         -> $2.new_instance()
     o "Super"
+  ]
+  
+  Curry: [
+    o "Value CURRY Value CURRY_SEPARATOR Arguments",  -> new CurryNode $1, $3, $5
+    o "Value CURRY Arguments",                        -> new CurryNode $1, undefined, $3
+    o "Value CURRY Value",                            -> new CurryNode $1, $3
+    o "Value CURRY",                                  -> new CurryNode $1
   ]
 
   # Extending an object by setting its prototype chain to reference a parent
