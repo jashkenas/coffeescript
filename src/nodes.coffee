@@ -717,11 +717,21 @@ exports.CodeNode: class CodeNode extends BaseNode
     o.indent:     @idt(if @bound then 2 else 1)
     del o, 'no_wrap'
     del o, 'globals'
-    if @params[@params.length - 1] instanceof SplatNode
-      splat: @params.pop()
-      splat.index: @params.length
-      @body.unshift(splat)
-    params: (param.compile(o) for param in @params)
+    i: 0
+    splat: undefined
+    params: []
+    for param in @params
+      if param instanceof SplatNode and not splat?
+        splat: param
+        splat.index: i
+        @body.unshift(splat)
+        splat.trailings: []
+      else if splat?
+        splat.trailings.push(param)
+      else
+        params.push(param)
+      i += 1
+    params: (param.compile(o) for param in params)
     (o.scope.parameter(param)) for param in params
     code: if @body.expressions.length then "\n${ @body.compile_with_declarations(o) }\n" else ''
     name_part: if @name then ' ' + @name else ''
@@ -768,8 +778,12 @@ exports.SplatNode: class SplatNode extends BaseNode
   compile_param: (o) ->
     name: @name.compile(o)
     o.scope.find name
-    "$name = Array.prototype.slice.call(arguments, $@index)"
-
+    i: 0
+    for trailing in @trailings
+      o.scope.assign(trailing.compile(o), "arguments[arguments.length - $@trailings.length + $i]")
+      i += 1
+    "$name = Array.prototype.slice.call(arguments, $@index, arguments.length - ${@trailings.length})"
+  
   # A compiling a splat as a destructuring assignment means slicing arguments
   # from the right-hand-side's corresponding array.
   compile_value: (o, name, index) ->
