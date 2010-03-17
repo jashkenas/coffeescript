@@ -338,7 +338,8 @@ exports.CallNode: class CallNode extends BaseNode
 
   # Compile a vanilla function call.
   compile_node: (o) ->
-    return @compile_splat(o) if @args[@args.length - 1] instanceof SplatNode
+    for arg in @args
+      return @compile_splat(o) if arg instanceof SplatNode
     args: (arg.compile(o) for arg in @args).join(', ')
     return @compile_super(args, o) if @variable is 'super'
     "$@prefix${@variable.compile(o)}($args)"
@@ -362,11 +363,28 @@ exports.CallNode: class CallNode extends BaseNode
       temp: o.scope.free_variable()
       obj:  temp
       meth: "($temp = ${ @variable.source })${ @variable.last }"
-    args: for arg, i in @args
+    "$@prefix${meth}.apply($obj, ${ @compile_splat_arguments(o) })"
+  
+  # Converts arbitrary number of arguments, mixed with splats, to 
+  # a proper array to pass to an `.apply()` call
+  compile_splat_arguments: (o) ->
+    args: []
+    i: 0
+    for arg in @args
       code: arg.compile o
-      code: if arg instanceof SplatNode then code else "[$code]"
-      if i is 0 then code else ".concat($code)"
-    "$@prefix${meth}.apply($obj, ${ args.join('') })"
+      if not (arg instanceof SplatNode)
+        prev: args[i - 1]
+        if i is 1 and prev[0] is '[' and prev[prev.length - 1] is ']'
+          args[i - 1] = "${prev[0...prev.length - 2]}, $code]"
+          continue
+        else if i > 1 and prev[8] is '[' and prev[prev.length - 2] is ']'
+          args[i - 1] = "${prev[0...prev.length - 2]}, $code])"
+          continue
+        else
+          code: "[$code]"
+      args.push(if i is 0 then code else ".concat($code)")    
+      i += 1
+    args.join('')
 
 #### ExtendsNode
 

@@ -34,6 +34,13 @@ ok silver is "Michael Phelps"
 ok bronze is "Liu Xiang"
 ok the_field.length is 8
 
+contenders.reverse()
+medalists contenders[0...2]..., "Mighty Mouse", contenders[2...contenders.length]...
+
+ok gold is "Usain Bolt"
+ok silver is "Asafa Powell"
+ok bronze is "Mighty Mouse"
+ok the_field.length is 8
 
 obj: {
   name: 'bob'
