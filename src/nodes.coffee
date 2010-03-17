@@ -386,8 +386,11 @@ exports.CallNode: class CallNode extends BaseNode
       i += 1
     args.join('')
 
+
 #### CurryNode
 
+# Node to bind an context and/or some arguments to a function, returning a new function
+# After `Underscore.bind` from [Underscore](http://documentcloud.github.com/underscore/).
 exports.CurryNode: class CurryNode extends CallNode
   type: 'Curry'
   code: '''

@@ -241,7 +241,8 @@ exports.Lexer: class Lexer
     @tokens.pop() if @value() is "\\"
     true
 
-  # Some docs
+  # Here we detect the currying operator and change local state in order to 
+  # parse subsequent tokens accordingly. 
   curry_token: ->
     if @currying?
       if @match(/^\(/, 0) and [',', '<-'].indexOf(@value()) isnt -1
