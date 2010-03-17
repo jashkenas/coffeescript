@@ -405,11 +405,16 @@ exports.CurryNode: class CurryNode extends CallNode
   constructor: (meth, bind, args) ->
     @children:  flatten [@meth: meth, @bind: bind or literal('this'), @args: (args or [])]
   
+  arguments: (o) ->
+    for arg in @args
+      return literal(@compile_splat_arguments(o)) if arg instanceof SplatNode
+    new ArrayNode(@args)
+  
   compile_node: (o) ->
     o.scope.assign('__curry', @code, true)
     o.scope.assign('__slice', @slice, true)
     ref:  new ValueNode literal('__curry')
-    call: new CallNode ref, [@meth, @bind, new ArrayNode(@args)]
+    call: new CallNode ref, [@meth, @bind, @arguments(o)]
     call.compile(o)
   
   
