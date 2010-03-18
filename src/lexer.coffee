@@ -126,8 +126,9 @@ exports.Lexer: class Lexer
   # preserve whitespace, but ignore indentation to the left.
   heredoc_token: ->
     return false unless match = @chunk.match(HEREDOC)
-    doc: @sanitize_heredoc match[2] or match[4]
-    @token 'STRING', "\"$doc\""
+    quote: match[1].substr(0, 1)
+    doc: @sanitize_heredoc match[2] or match[4], quote
+    @interpolate_string "$quote$doc$quote"
     @line += count match[1], "\n"
     @i += match[1].length
     true
@@ -285,11 +286,11 @@ exports.Lexer: class Lexer
 
   # Sanitize a heredoc by escaping internal double quotes and erasing all
   # external indentation on the left-hand side.
-  sanitize_heredoc: (doc) ->
+  sanitize_heredoc: (doc, quote) ->
     indent: (doc.match(HEREDOC_INDENT) or ['']).sort()[0]
     doc.replace(new RegExp("^" +indent, 'gm'), '')
        .replace(MULTILINER, "\\n")
-       .replace(/"/g, '\\"')
+       .replace(new RegExp(quote, 'g'), '\\"')
 
   # A source of ambiguity in our grammar used to be parameter lists in function
   # definitions versus argument lists in function calls. Walk backwards, tagging

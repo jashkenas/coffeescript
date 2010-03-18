@@ -50,3 +50,19 @@ ok a is "a\n\n\nb c"
 a: '''more"than"one"quote'''
 
 ok a is 'more"than"one"quote'
+
+
+val: 10
+
+a: """
+   basic heredoc $val
+   on two lines
+   """
+
+b: '''
+   basic heredoc $val
+   on two lines
+   '''
+
+ok a is "basic heredoc 10\non two lines"
+ok b is "basic heredoc \$val\non two lines"
