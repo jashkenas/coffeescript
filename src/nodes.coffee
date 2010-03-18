@@ -378,7 +378,7 @@ exports.CallNode: class CallNode extends BaseNode
           args[i - 1]: "${prev.substr(0, prev.length - 2)}, $code]"
           continue
         else if i > 1 and prev.substr(8, 1) is '[' and prev.substr(prev.length - 2, 1) is ']'
-          args[i - 1]: "${prev.substr(0, prev.length - 3)}, $code])"
+          args[i - 1]: "${prev.substr(0, prev.length - 2)}, $code])"
           continue
         else
           code: "[$code]"

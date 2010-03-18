@@ -45,6 +45,10 @@ ok bronze is "Mighty Mouse"
 ok last is "Michael Phelps"
 ok the_field.length is 8
 
+medalists contenders..., 'Tim', 'Bob', 'Jim'
+ok last is 'Jim'
+
+
 obj: {
   name: 'bob'
   accessor: (args...) ->
