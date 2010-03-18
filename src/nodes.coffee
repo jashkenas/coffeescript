@@ -364,8 +364,8 @@ exports.CallNode: class CallNode extends BaseNode
       obj:  temp
       meth: "($temp = ${ @variable.source })${ @variable.last }"
     "$@prefix${meth}.apply($obj, ${ @compile_splat_arguments(o) })"
-  
-  # Converts arbitrary number of arguments, mixed with splats, to 
+
+  # Converts arbitrary number of arguments, mixed with splats, to
   # a proper array to pass to an `.apply()` call
   compile_splat_arguments: (o) ->
     args: []
@@ -374,15 +374,15 @@ exports.CallNode: class CallNode extends BaseNode
       code: arg.compile o
       if not (arg instanceof SplatNode)
         prev: args[i - 1]
-        if i is 1 and prev[0] is '[' and prev[prev.length - 1] is ']'
-          args[i - 1] = "${prev[0...prev.length - 1]}, $code]"
+        if i is 1 and prev.substr(0, 1) is '[' and prev.substr(prev.length - 1, 1) is ']'
+          args[i - 1]: "${prev.substr(0, prev.length - 2)}, $code]"
           continue
-        else if i > 1 and prev[8] is '[' and prev[prev.length - 2] is ']'
-          args[i - 1] = "${prev[0...prev.length - 2]}, $code])"
+        else if i > 1 and prev.substr(8, 1) is '[' and prev.substr(prev.length - 2, 1) is ']'
+          args[i - 1]: "${prev.substr(0, prev.length - 3)}, $code])"
           continue
         else
           code: "[$code]"
-      args.push(if i is 0 then code else ".concat($code)")    
+      args.push(if i is 0 then code else ".concat($code)")
       i += 1
     args.join('')
 
@@ -783,7 +783,7 @@ exports.SplatNode: class SplatNode extends BaseNode
       o.scope.assign(trailing.compile(o), "arguments[arguments.length - $@trailings.length + $i]")
       i += 1
     "$name = Array.prototype.slice.call(arguments, $@index, arguments.length - ${@trailings.length})"
-  
+
   # A compiling a splat as a destructuring assignment means slicing arguments
   # from the right-hand-side's corresponding array.
   compile_value: (o, name, index) ->
