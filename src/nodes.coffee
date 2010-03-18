@@ -394,6 +394,8 @@ exports.CallNode: class CallNode extends BaseNode
 exports.CurryNode: class CurryNode extends CallNode
   type: 'Curry'
 
+  body: 'func.apply(obj, args.concat(Array.prototype.slice.call(arguments, 0)))'
+
   constructor: (meth, args) ->
     @children:  flatten [@meth: meth, @context: args[0], @args: (args.slice(1) or [])]
 
@@ -403,7 +405,7 @@ exports.CurryNode: class CurryNode extends CallNode
     (new ArrayNode(@args)).compile o
 
   compile_node: (o) ->
-    body: Expressions.wrap([literal('func.apply(obj, args.concat(Array.prototype.slice.call(arguments, 0)));')])
+    body: Expressions.wrap([literal @body])
     curried: new CodeNode([], body)
     curry: new CodeNode([literal('func'), literal('obj'), literal('args')], Expressions.wrap([curried]))
     (new ParentheticalNode(new CallNode(curry, [@meth, @context, literal(@arguments(o))]))).compile o
