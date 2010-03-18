@@ -244,24 +244,9 @@ exports.Lexer: class Lexer
   # Here we detect the currying operator and change local state in order to 
   # parse subsequent tokens accordingly. 
   curry_token: ->
-    if @currying?
-      if @match(/^\(/, 0) and [',', '<-'].indexOf(@value()) isnt -1
-        @token 'CALL_START', '('
-        @i += 1
-        @currying: undefined
-        true
-      else if @match(CURRY_SEPARATOR, 0)
-        @token 'CURRY_SEPARATOR', ','
-        @i += 1
-        true
-      else if not @match(/^\s*[\w@\$_\(]/, 0)
-        @currying: undefined
-        false
-    else if @match(CURRY, 1)
+    if @match(CURRY, 1)
       @i += 2
-      @chunk = @code.slice(@i)
       @token 'CURRY', '<-'
-      @currying: true if @match(/^(\s*[\w@\$_\(])/, 1)
       true
   
   # We treat all other single characters as a token. Eg.: `( ) , . !`

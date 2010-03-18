@@ -393,29 +393,20 @@ exports.CallNode: class CallNode extends BaseNode
 # After `Underscore.bind` from [Underscore](http://documentcloud.github.com/underscore/).
 exports.CurryNode: class CurryNode extends CallNode
   type: 'Curry'
-  code: '''
-        function(func, obj, args) {
-          return function() {
-            return func.apply(obj || {}, args.concat(__slice.call(arguments, 0)));
-          };
-        }
-        '''
-  slice: "Array.prototype.slice"
   
-  constructor: (meth, bind, args) ->
-    @children:  flatten [@meth: meth, @bind: bind or literal('this'), @args: (args or [])]
+  constructor: (meth, args) ->
+    @children:  flatten [@meth: meth, @context: args[0], @args: (args.slice(1) or [])]
   
   arguments: (o) ->
     for arg in @args
-      return literal(@compile_splat_arguments(o)) if arg instanceof SplatNode
-    new ArrayNode(@args)
+      return @compile_splat_arguments(o) if arg instanceof SplatNode
+    (new ArrayNode(@args)).compile o
   
   compile_node: (o) ->
-    o.scope.assign('__curry', @code, true)
-    o.scope.assign('__slice', @slice, true)
-    ref:  new ValueNode literal('__curry')
-    call: new CallNode ref, [@meth, @bind, @arguments(o)]
-    call.compile(o)
+    body: Expressions.wrap([literal('func.apply(obj || {}, args.concat(Array.prototype.slice.call(arguments, 0)));')])
+    curried: new CodeNode([], body)
+    curry: new CodeNode([literal('func'), literal('obj'), literal('args')], Expressions.wrap([curried]))
+    (new ParentheticalNode(new CallNode(curry, [@meth, @context, literal(@arguments(o))]))).compile o
   
   
 

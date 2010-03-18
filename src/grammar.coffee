@@ -265,10 +265,7 @@ grammar: {
   ]
   
   Curry: [
-    o "Value CURRY Value CURRY_SEPARATOR Arguments",  -> new CurryNode $1, $3, $5
-    o "Value CURRY Arguments",                        -> new CurryNode $1, undefined, $3
-    o "Value CURRY Value",                            -> new CurryNode $1, $3
-    o "Value CURRY",                                  -> new CurryNode $1
+    o "Value CURRY Arguments",                  -> new CurryNode $1, $3
   ]
 
   # Extending an object by setting its prototype chain to reference a parent
