@@ -329,6 +329,7 @@ exports.CallNode: class CallNode extends BaseNode
 
   constructor: (variable, args) ->
     @children:  flatten [@variable: variable, @args: (args or [])]
+    @compile_splat_arguments: SplatNode.compile_mixed_array <- @, @args
     @prefix:    ''
 
   # Tag this invocation as creating a new instance.
@@ -365,27 +366,6 @@ exports.CallNode: class CallNode extends BaseNode
       meth: "($temp = ${ @variable.source })${ @variable.last }"
     "$@prefix${meth}.apply($obj, ${ @compile_splat_arguments(o) })"
 
-  # Converts arbitrary number of arguments, mixed with splats, to
-  # a proper array to pass to an `.apply()` call
-  compile_splat_arguments: (o) ->
-    args: []
-    i: 0
-    for arg in @args
-      code: arg.compile o
-      if not (arg instanceof SplatNode)
-        prev: args[i - 1]
-        if i is 1 and prev.substr(0, 1) is '[' and prev.substr(prev.length - 1, 1) is ']'
-          args[i - 1]: "${prev.substr(0, prev.length - 1)}, $code]"
-          continue
-        else if i > 1 and prev.substr(0, 9) is '.concat([' and prev.substr(prev.length - 2, 2) is '])'
-          args[i - 1]: "${prev.substr(0, prev.length - 2)}, $code])"
-          continue
-        else
-          code: "[$code]"
-      args.push(if i is 0 then code else ".concat($code)")
-      i += 1
-    args.join('')
-
 
 #### CurryNode
 
@@ -398,6 +378,7 @@ exports.CurryNode: class CurryNode extends CallNode
 
   constructor: (meth, args) ->
     @children:  flatten [@meth: meth, @context: args[0], @args: (args.slice(1) or [])]
+    @compile_splat_arguments: SplatNode.compile_mixed_array <- @, @args
 
   arguments: (o) ->
     for arg in @args
@@ -567,17 +548,21 @@ exports.ArrayNode: class ArrayNode extends BaseNode
 
   constructor: (objects) ->
     @children: @objects: objects or []
-
+    @compile_splat_literal: SplatNode.compile_mixed_array <- @, @objects
+  
   compile_node: (o) ->
     o.indent: @idt(1)
-    objects: for obj, i in @objects
+    objects: []
+    for obj, i in @objects
       code: obj.compile(o)
-      if obj instanceof CommentNode
-        "\n$code\n$o.indent"
+      if obj instanceof SplatNode
+        return @compile_splat_literal(@objects, o)
+      else if obj instanceof CommentNode
+        objects.push "\n$code\n$o.indent"
       else if i is @objects.length - 1
-        code
+        objects.push code
       else
-        "$code, "
+        objects.push "$code, "
     objects: objects.join('')
     ending: if objects.indexOf('\n') >= 0 then "\n$@tab]" else ']'
     "[$objects$ending"
@@ -814,6 +799,27 @@ exports.SplatNode: class SplatNode extends BaseNode
   # from the right-hand-side's corresponding array.
   compile_value: (o, name, index) ->
     "Array.prototype.slice.call($name, $index)"
+
+# Utility function that converts arbitrary number of elements, mixed with 
+# splats, to a proper array
+SplatNode.compile_mixed_array: (list, o) ->
+  args: []
+  i: 0
+  for arg in list
+    code: arg.compile o
+    if not (arg instanceof SplatNode)
+      prev: args[i - 1]
+      if i is 1 and prev.substr(0, 1) is '[' and prev.substr(prev.length - 1, 1) is ']'
+        args[i - 1]: "${prev.substr(0, prev.length - 1)}, $code]"
+        continue
+      else if i > 1 and prev.substr(0, 9) is '.concat([' and prev.substr(prev.length - 2, 2) is '])'
+        args[i - 1]: "${prev.substr(0, prev.length - 2)}, $code])"
+        continue
+      else
+        code: "[$code]"
+    args.push(if i is 0 then code else ".concat($code)")
+    i += 1
+  args.join('')
 
 #### WhileNode
 

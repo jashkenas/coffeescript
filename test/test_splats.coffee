@@ -59,3 +59,20 @@ obj: {
 }
 
 ok obj.getNames() is 'bob jane ted'
+
+
+crowd: [
+  contenders...
+  "Mighty Mouse"
+]
+
+bests: [
+  "Mighty Mouse"
+  contenders[0..3]...
+]
+
+ok crowd[0] is contenders[0]
+ok crowd[10] is "Mighty Mouse"
+
+ok bests[1] is contenders[0]
+ok bests[4] is contenders[3]
