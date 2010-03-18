@@ -393,22 +393,22 @@ exports.CallNode: class CallNode extends BaseNode
 # After `Underscore.bind` from [Underscore](http://documentcloud.github.com/underscore/).
 exports.CurryNode: class CurryNode extends CallNode
   type: 'Curry'
-  
+
   constructor: (meth, args) ->
     @children:  flatten [@meth: meth, @context: args[0], @args: (args.slice(1) or [])]
-  
+
   arguments: (o) ->
     for arg in @args
       return @compile_splat_arguments(o) if arg instanceof SplatNode
     (new ArrayNode(@args)).compile o
-  
+
   compile_node: (o) ->
-    body: Expressions.wrap([literal('func.apply(obj || {}, args.concat(Array.prototype.slice.call(arguments, 0)));')])
+    body: Expressions.wrap([literal('func.apply(obj, args.concat(Array.prototype.slice.call(arguments, 0)));')])
     curried: new CodeNode([], body)
     curry: new CodeNode([literal('func'), literal('obj'), literal('args')], Expressions.wrap([curried]))
     (new ParentheticalNode(new CallNode(curry, [@meth, @context, literal(@arguments(o))]))).compile o
-  
-  
+
+
 
 #### ExtendsNode
 

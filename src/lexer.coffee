@@ -72,7 +72,6 @@ exports.Lexer: class Lexer
     return if @line_token()
     return if @whitespace_token()
     return if @js_token()
-    return if @curry_token()
     return if @string_token()
     return    @literal_token()
 
@@ -241,14 +240,6 @@ exports.Lexer: class Lexer
     @tokens.pop() if @value() is "\\"
     true
 
-  # Here we detect the currying operator and change local state in order to 
-  # parse subsequent tokens accordingly. 
-  curry_token: ->
-    if @match(CURRY, 1)
-      @i += 2
-      @token 'CURRY', '<-'
-      true
-  
   # We treat all other single characters as a token. Eg.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
   # the proper order of operations. There are some symbols that we tag specially
@@ -472,8 +463,6 @@ MULTI_DENT    : /^((\n([ \t]*))+)(\.)?/
 LAST_DENTS    : /\n([ \t]*)/g
 LAST_DENT     : /\n([ \t]*)/
 ASSIGNMENT    : /^(:|=)$/
-CURRY         : /^(<-)/
-CURRY_SEPARATOR: /^\,/
 
 # Regex-matching-regexes.
 REGEX_START        : /^\/[^\/ ]/

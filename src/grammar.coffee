@@ -263,9 +263,9 @@ grammar: {
     o "NEW Invocation",                         -> $2.new_instance()
     o "Super"
   ]
-  
+
   Curry: [
-    o "Value CURRY Arguments",                  -> new CurryNode $1, $3
+    o "Value <- Arguments",                     -> new CurryNode $1, $3
   ]
 
   # Extending an object by setting its prototype chain to reference a parent
@@ -549,7 +549,7 @@ operators: [
   ["right",     'FOR', 'NEW', 'SUPER', 'CLASS']
   ["left",      'EXTENDS']
   ["right",     'ASSIGN', 'RETURN']
-  ["right",     '->', '=>', 'UNLESS', 'IF', 'ELSE', 'WHILE']
+  ["right",     '->', '=>', '<-', 'UNLESS', 'IF', 'ELSE', 'WHILE']
 ]
 
 # Wrapping Up

@@ -257,7 +257,7 @@ EXPRESSION_END:   pair[1] for pair in BALANCED_PAIRS
 EXPRESSION_CLOSE: ['CATCH', 'WHEN', 'ELSE', 'FINALLY'].concat EXPRESSION_END
 
 # Tokens that, if followed by an `IMPLICIT_CALL`, indicate a function invocation.
-IMPLICIT_FUNC:  ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', 'CURRY']
+IMPLICIT_FUNC:  ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '<-']
 
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL:  ['IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START',
