@@ -194,7 +194,8 @@ exports.Lexer: class Lexer
     prev: @prev(2)
     size: indent.match(LAST_DENTS).reverse()[0].match(LAST_DENT)[1].length
     next_character: @chunk.match(MULTI_DENT)[4]
-    no_newlines: next_character is '.' or (@value() and @value().match(NO_NEWLINE) and
+    no_newlines: next_character is '.' or
+      (@value() and @value().match and @value().match(NO_NEWLINE) and
       prev and (prev[0] isnt '.') and not @value().match(CODE))
     if size is @indent
       return @suppress_newlines() if no_newlines
