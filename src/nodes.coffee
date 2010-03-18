@@ -375,9 +375,9 @@ exports.CallNode: class CallNode extends BaseNode
       if not (arg instanceof SplatNode)
         prev: args[i - 1]
         if i is 1 and prev.substr(0, 1) is '[' and prev.substr(prev.length - 1, 1) is ']'
-          args[i - 1]: "${prev.substr(0, prev.length - 2)}, $code]"
+          args[i - 1]: "${prev.substr(0, prev.length - 1)}, $code]"
           continue
-        else if i > 1 and prev.substr(8, 1) is '[' and prev.substr(prev.length - 2, 1) is ']'
+        else if i > 1 and prev.substr(0, 9) is '.concat([' and prev.substr(prev.length - 2, 2) is '])'
           args[i - 1]: "${prev.substr(0, prev.length - 2)}, $code])"
           continue
         else
