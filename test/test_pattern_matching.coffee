@@ -73,3 +73,9 @@ test: {
 {person: {address: [ignore, addr...]}}: test
 
 ok addr.join(', ') is "Street 101, Apt 101, City 101"
+
+
+[a, b]: if true then [2, 1] else [1, 2]
+
+ok a is 2
+ok b is 1
