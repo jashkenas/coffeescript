@@ -98,7 +98,7 @@ exports.Lexer: class Lexer
     tag: id.toUpperCase() if include(KEYWORDS, id) and
       not (include(ACCESSORS, @tag(0)) and not @prev().spaced)
     @identifier_error id  if include RESERVED, id
-    tag: 'LEADING_WHEN'   if tag is 'WHEN' and include BEFORE_WHEN, @tag()
+    tag: 'LEADING_WHEN'   if tag is 'WHEN' and include LINE_BREAK, @tag()
     @token(tag, id)
     @i += id.length
     true
@@ -171,9 +171,11 @@ exports.Lexer: class Lexer
   comment_token: ->
     return false unless comment: @match COMMENT, 1
     @line += (comment.match(MULTILINER) or []).length
-    lines: comment.replace(COMMENT_CLEANER, '').split(MULTILINER)
-    @token 'COMMENT', compact lines
-    @token 'TERMINATOR', "\n"
+    lines: compact comment.replace(COMMENT_CLEANER, '').split(MULTILINER)
+    i: @tokens.length - 1
+    if @unfinished()
+      i -= 1 while @tokens[i] and not include LINE_BREAK, @tokens[i][0]
+    @tokens.splice(i + 1, 0, ['COMMENT', lines, @line], ['TERMINATOR', '\n', @line])
     @i += comment.length
     true
 
@@ -194,9 +196,7 @@ exports.Lexer: class Lexer
     prev: @prev(2)
     size: indent.match(LAST_DENTS).reverse()[0].match(LAST_DENT)[1].length
     next_character: @chunk.match(MULTI_DENT)[4]
-    no_newlines: next_character is '.' or
-      (@value() and @value().match and @value().match(NO_NEWLINE) and
-      prev and (prev[0] isnt '.') and not @value().match(CODE))
+    no_newlines: next_character is '.' or @unfinished()
     if size is @indent
       return @suppress_newlines() if no_newlines
       return @newline_token(indent)
@@ -406,6 +406,12 @@ exports.Lexer: class Lexer
     return false unless m: @chunk.match(regex)
     if m then m[index] else false
 
+  # Are we in the midst of an unfinished expression?
+  unfinished: ->
+    prev: @prev(2)
+    @value() and @value().match and @value().match(NO_NEWLINE) and
+      prev and (prev[0] isnt '.') and not @value().match(CODE)
+
 # There are no exensions to the core lexer by default.
 Lexer.extensions: []
 
@@ -500,4 +506,4 @@ ACCESSORS: ['PROPERTY_ACCESS', 'PROTOTYPE_ACCESS', 'SOAK_ACCESS', '@']
 # Tokens that, when immediately preceding a `WHEN`, indicate that the `WHEN`
 # occurs at the start of a line. We disambiguate these from trailing whens to
 # avoid an ambiguity in the grammar.
-BEFORE_WHEN: ['INDENT', 'OUTDENT', 'TERMINATOR']
+LINE_BREAK: ['INDENT', 'OUTDENT', 'TERMINATOR']

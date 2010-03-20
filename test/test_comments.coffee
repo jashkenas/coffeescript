@@ -45,3 +45,11 @@ else # comment
   45
 
 ok result is 45
+
+
+test:
+  'test ' +
+  'test ' + # comment
+  'test'
+
+ok test is 'test test test'
