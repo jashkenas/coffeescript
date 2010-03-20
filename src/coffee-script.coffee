@@ -49,10 +49,11 @@ exports.nodes: (code) ->
 
 # Compile and execute a string of CoffeeScript (on the server), correctly
 # setting `__filename`, `__dirname`, and relative `require()`.
-exports.run: (code, options) ->
+exports.run: ((code, options) ->
   module.filename: __filename: options.source
   __dirname: path.dirname __filename
   eval exports.compile code, options
+)
 
 # Extend CoffeeScript with a custom language extension. It should hook in to
 # the **Lexer** (as a peer of any of the lexer's tokenizing methods), and
