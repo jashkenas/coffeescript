@@ -56,7 +56,8 @@ exports.BaseNode: class BaseNode
     del @options, 'operation' unless this instanceof ValueNode
     top:      if @top_sensitive() then @options.top else del @options, 'top'
     closure:  @is_statement() and not @is_pure_statement() and not top and
-              not @options.returns and not (this instanceof CommentNode)
+              not @options.returns and not (this instanceof CommentNode) and
+              not (@contains (n) -> n.is_pure_statement())
     if closure then @compile_closure(@options) else @compile_node(@options)
 
   # Statements converted into expressions via closure-wrapping share a scope
@@ -549,7 +550,7 @@ exports.ArrayNode: class ArrayNode extends BaseNode
   constructor: (objects) ->
     @children: @objects: objects or []
     @compile_splat_literal: SplatNode.compile_mixed_array <- @, @objects
-  
+
   compile_node: (o) ->
     o.indent: @idt(1)
     objects: []
@@ -800,7 +801,7 @@ exports.SplatNode: class SplatNode extends BaseNode
   compile_value: (o, name, index) ->
     "Array.prototype.slice.call($name, $index)"
 
-# Utility function that converts arbitrary number of elements, mixed with 
+# Utility function that converts arbitrary number of elements, mixed with
 # splats, to a proper array
 SplatNode.compile_mixed_array: (list, o) ->
   args: []
