@@ -93,7 +93,7 @@ task 'test', 'run the CoffeeScript language test suite', ->
     files.forEach (file) ->
       return unless file.match(/\.coffee$/i)
       source: path.join 'test', file
-      print "    " + source + " ... "
+      print "  $file "
       code = fs.readFileSync source
       try
         CoffeeScript.run code, {source: source}
