@@ -71,23 +71,37 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
 
 task 'test', 'run the CoffeeScript language test suite', ->
   helpers.extend global, require 'assert'
-  test_count: 0
+  passed_test_count: 0
+  failed_test_count: 0
   start_time: new Date()
   [original_ok, original_throws]: [ok, throws]
   helpers.extend global, {
-    ok:     (args...) -> test_count += 1; original_ok(args...)
-    throws: (args...) -> test_count += 1; original_throws(args...)
+    ok:     (args...) -> passed_test_count += 1; original_ok(args...)
     CoffeeScript: CoffeeScript
   }
-  process.addListener 'exit', ->
+  red: '\033[0;31m'
+  green: '\033[0;32m'
+  reset: '\033[0m'
+  on_exit:  ->
     time: ((new Date() - start_time) / 1000).toFixed(2)
-    puts '\033[0;32mpassed ' + test_count + ' tests in ' + time + ' seconds\033[0m'
+    if failed_test_count > 0
+      puts "${red}FAILED " + failed_test_count + " and passed " + passed_test_count + " tests in " + time + " seconds${reset}"
+    else
+      puts "${green}passed " + passed_test_count + " tests in " + time + " seconds${reset}"
+  process.addListener 'exit', on_exit
   fs.readdir 'test', (err, files) ->
     files.forEach (file) ->
+      return unless file.match(/\.coffee$/i)
       source: path.join 'test', file
-      fs.readFile source, (err, code) ->
-        try
-          CoffeeScript.run code, {source: source}
-        catch err
-          puts "Failed test: $source"
-          throw err
+      print "    " + source + " ... "
+      code = fs.readFileSync source
+      try
+        CoffeeScript.run code, {source: source}
+        puts "${green}ok${reset}"
+      catch err
+        failed_test_count += 1
+        puts "${red}FAILED!${reset}\n"
+        puts "Failed test: $source"
+        puts err
+        puts ''
+    process.exit(if failed_test_count == 0 then 0 else 1)
