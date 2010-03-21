@@ -772,13 +772,6 @@ exports.AssignNode: class AssignNode extends BaseNode
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
   compile_splice: (o) ->
-    # l:      @variable.properties.length
-    # range:  @variable.properties[l - 1].range
-    # plus:   if range.exclusive then '' else ' + 1'
-    # from:   range.from.compile(o)
-    # to:     range.to.compile(o) + ' - ' + from + plus
-    # val:    @value.compile(o)
-    # "${name}.splice.apply($name, [$from, $to].concat($val))"
     @variable.compile(merge(o, {only_first: true, splice: true, replace: @value}))
 
 #### CodeNode
