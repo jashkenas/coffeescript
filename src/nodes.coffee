@@ -308,6 +308,8 @@ exports.ValueNode: class ValueNode extends BaseNode
     soaked:   false
     only:     del(o, 'only_first')
     op:       del(o, 'operation')
+    splice:   del(o, 'splice')
+    replace:  del(o, 'replace')
     props:    if only then @properties[0...@properties.length - 1] else @properties
     baseline: @base.compile o
     baseline: "($baseline)" if @base instanceof ObjectNode and @has_properties()
@@ -324,7 +326,11 @@ exports.ValueNode: class ValueNode extends BaseNode
           complete: complete + @SOAK + (baseline: + prop.compile(o))
       else if prop instanceof SliceNode
         o.array: complete
-        part: prop.compile_slice(o)
+        if splice
+          o.replace: replace
+          part: prop.compile_splice(o)
+        else
+          part: prop.compile_slice(o)
         baseline = part
         complete = part
         @last: part
@@ -526,11 +532,21 @@ exports.RangeNode: class RangeNode extends BaseNode
 exports.SliceNode: class SliceNode extends BaseNode
   type: 'Slice'
 
-  code: '''
+  slice_code: '''
         function __slice(array, from, to, exclusive) {
             return array.slice(
               (from < 0 ? from + array.length : from || 0),
               (to < 0 ? to + array.length : to || array.length) + (exclusive ? 0 : 1)
+            );
+          }
+        '''
+
+  splice_code: '''
+        function __splice(array, from, to, exclusive, replace) {
+            var _a;
+            return array.splice.apply(
+              array,
+              [_a = (from < 0 ? from + array.length : from || 0), (to < 0 ? to + array.length : to || array.length) + (exclusive ? 0 : 1) - _a].concat(replace)
             );
           }
         '''
@@ -540,10 +556,24 @@ exports.SliceNode: class SliceNode extends BaseNode
     this
 
   compile_node: (o) ->
-    throw "'$@type' cannot compile outside of 'ValueNode'"
+    from:       @range.from.compile(o)
+    to:         @range.to.compile(o)
+    plus_part:  if @range.exclusive then '' else ' + 1'
+    ".slice($from, $to$plus_part)"
+
+  compile_splice: (o) ->
+    o.scope.assign('__splice', @splice_code, true) if o.scope?
+    array:      del o, 'array'
+    replace:    del o, 'replace'
+    from:       if @range.from? then @range.from else literal('null')
+    to:         if @range.to? then @range.to else literal('null')
+    exclusive:  if @range.exclusive then 'true' else 'false'
+    ref:        new ValueNode literal('__splice')
+    call:       new CallNode ref, [literal(array), from, to, literal(exclusive), replace]
+    call.compile(o)
 
   compile_slice: (o) ->
-    o.scope.assign('__slice', @code, true) if o.scope?
+    o.scope.assign('__slice', @slice_code, true) if o.scope?
     array:      del o, 'array'
     from:       if @range.from? then @range.from else literal('null')
     to:         if @range.to? then @range.to else literal('null')
@@ -742,14 +772,14 @@ exports.AssignNode: class AssignNode extends BaseNode
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
   compile_splice: (o) ->
-    name:   @variable.compile(merge(o, {only_first: true}))
-    l:      @variable.properties.length
-    range:  @variable.properties[l - 1].range
-    plus:   if range.exclusive then '' else ' + 1'
-    from:   range.from.compile(o)
-    to:     range.to.compile(o) + ' - ' + from + plus
-    val:    @value.compile(o)
-    "${name}.splice.apply($name, [$from, $to].concat($val))"
+    # l:      @variable.properties.length
+    # range:  @variable.properties[l - 1].range
+    # plus:   if range.exclusive then '' else ' + 1'
+    # from:   range.from.compile(o)
+    # to:     range.to.compile(o) + ' - ' + from + plus
+    # val:    @value.compile(o)
+    # "${name}.splice.apply($name, [$from, $to].concat($val))"
+    @variable.compile(merge(o, {only_first: true, splice: true, replace: @value}))
 
 #### CodeNode
 
