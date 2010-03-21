@@ -57,7 +57,7 @@ exports.BaseNode: class BaseNode
     top:      if @top_sensitive() then @options.top else del @options, 'top'
     closure:  @is_statement() and not @is_pure_statement() and not top and
               not @options.as_statement and not (this instanceof CommentNode) and
-              not (@contains (n) -> n.is_pure_statement())
+              not @contains_pure_statement()
     if closure then @compile_closure(@options) else @compile_node(@options)
 
   # Statements converted into expressions via closure-wrapping share a scope
@@ -82,13 +82,11 @@ exports.BaseNode: class BaseNode
     idt += TAB while num -= 1
     idt
 
-  # construct a node that returns the current node's result
-  # note that this is overridden for smarter behaviour for
-  # many statement nodes (eg IfNode, ForNode)
+  # Construct a node that returns the current node's result.
+  # Note that this is overridden for smarter behavior for
+  # many statement nodes (eg IfNode, ForNode)...
   make_return: ->
-    if @is_statement()
-      throw new Error("Can't convert statement ${this} into a return value!")
-    return new ReturnNode(this)
+    new ReturnNode this
 
   # Does this node, or any of its children, contain a node of a certain kind?
   # Recursively traverses down the *children* of the nodes, yielding to a block
@@ -99,6 +97,11 @@ exports.BaseNode: class BaseNode
       return true if block(node)
       return true if node.contains and node.contains block
     false
+
+  # Convenience for the most common use of contains. Does the node contain
+  # a pure statement?
+  contains_pure_statement: ->
+    @is_pure_statement() or @contains (n) -> n.is_pure_statement()
 
   # Perform an in-order traversal of the AST. Crosses scope boundaries.
   traverse: (block) ->
@@ -150,36 +153,19 @@ exports.Expressions: class Expressions extends BaseNode
   empty: ->
     @expressions.length is 0
 
-  # make a copy of this node
+  # Make a copy of this node.
   copy: ->
-    new Expressions(@children.slice())
+    new Expressions @children.slice()
 
-  # an Expressions node does not return its entire body, rather it
-  # ensures that the final expression is returned
+  # An Expressions node does not return its entire body, rather it
+  # ensures that the final expression is returned.
   make_return: ->
-    last_expr_idx: -1
-    for i in [@expressions.length-1 .. 0]
-      if not (@expressions[i] instanceof CommentNode)
-        last_expr_idx: i
-        last_expr: @expressions[i]
-        break
-
-    if last_expr_idx < 0
-      # just add a return null to ensure return is always called
-      @push(new ReturnNode(literal(null)))
-    else
-      return this if (last_expr instanceof ReturnNode)
-      @push(new ReturnNode(literal(null))) if last_expr.is_statement()
-
-      # we still make an attempt at converting statements,
-      # since many are able to be returned in some fashion
-      try
-        converted = last_expr.make_return()
-        @expressions[last_expr_idx] = converted
-      catch e
-        # ignore
-    return this
-
+    idx:  @expressions.length - 1
+    last: @expressions[idx]
+    last: @expressions[idx -= 1] if last instanceof CommentNode
+    return this if not last or last instanceof ReturnNode
+    @expressions[idx]: last.make_return() unless last.contains_pure_statement()
+    this
 
   # An **Expressions** is the only node that can serve as the root.
   compile: (o) ->
@@ -211,10 +197,8 @@ exports.Expressions: class Expressions extends BaseNode
   # statement, ask the statement to do so.
   compile_expression: (node, o) ->
     @tab: o.indent
-    stmt:    node.is_statement()
-    compiled_node = node.compile(merge(o, {top:true}))
-    return compiled_node if stmt
-    return "${@idt()}${compiled_node};"
+    compiled_node: node.compile merge o, {top: true}
+    if node.is_statement() then compiled_node else "${@idt()}$compiled_node;"
 
 # Wrap up the given nodes as an **Expressions**, unless it already happens
 # to be one.
@@ -260,18 +244,8 @@ exports.ReturnNode: class ReturnNode extends BaseNode
     @children: [@expression: expression]
 
   compile_node: (o) ->
-    if @expression.is_statement()
-      return @compile_statement(o)
-    else
-      compiled_expr: @expression.compile(o)
-      return "${@tab}return ${compiled_expr};"
-
-  compile_statement: (o) ->
-    # split statement into computation and return, via a temporary variable
-    temp_var: literal(o.scope.free_variable())
-    assign: new AssignNode(temp_var, @expression)
-    ret: new ReturnNode(temp_var)
-    [assign.compile(merge(o, {as_statement:true})), ret.compile(o)].join("\n")
+    o.as_statement: true if @expression.is_statement()
+    "${@tab}return ${@expression.compile(o)};"
 
 statement ReturnNode, true
 
@@ -309,10 +283,7 @@ exports.ValueNode: class ValueNode extends BaseNode
     @has_properties() and @properties[@properties.length - 1] instanceof SliceNode
 
   make_return: ->
-    if not @has_properties()
-      return @base.make_return()
-    else
-      return super()
+    if @has_properties() then super() else @base.make_return()
 
   # The value can be unwrapped as its inner node, if there are no attached
   # properties.
@@ -364,6 +335,9 @@ exports.CommentNode: class CommentNode extends BaseNode
     @lines: lines
     this
 
+  make_return: ->
+    this
+
   compile_node: (o) ->
     "$@tab//" + @lines.join("\n$@tab//")
 
@@ -377,9 +351,11 @@ exports.CallNode: class CallNode extends BaseNode
   type: 'Call'
 
   constructor: (variable, args) ->
-    @children: flatten [@variable: variable, @args: (args or [])]
+    @is_new:   false
+    @is_super: variable is 'super'
+    @variable: if @is_super then null else variable
+    @children: compact flatten [@variable, @args: (args or [])]
     @compile_splat_arguments: SplatNode.compile_mixed_array <- @, @args
-    @is_new: false
 
   # Tag this invocation as creating a new instance.
   new_instance: ->
@@ -394,7 +370,7 @@ exports.CallNode: class CallNode extends BaseNode
     for arg in @args
       return @compile_splat(o) if arg instanceof SplatNode
     args: (arg.compile(o) for arg in @args).join(', ')
-    return @compile_super(args, o) if @variable is 'super'
+    return @compile_super(args, o) if @is_super
     "${@prefix()}${@variable.compile(o)}($args)"
 
   # `super()` is converted into a call against the superclass's implementation
@@ -629,10 +605,10 @@ exports.ClassNode: class ClassNode extends BaseNode
   # list of prototype property assignments.
   constructor: (variable, parent, props) ->
     @children: compact flatten [@variable: variable, @parent: parent, @properties: props or []]
-    @do_return: false
+    @returns:  false
 
   make_return: ->
-    @do_return: true
+    @returns: true
     this
 
   # Instead of generating the JavaScript string directly, we build up the
@@ -664,14 +640,10 @@ exports.ClassNode: class ClassNode extends BaseNode
       else
         constructor: new AssignNode(@variable, new CodeNode())
 
-    if @do_return
-      returns: new ReturnNode(@variable).compile(o)
-    else
-      returns: ''
-
     construct:                       @idt() + constructor.compile(o) + ';\n'
     props:     if props.empty() then '' else props.compile(o) + '\n'
     extension: if extension     then @idt() + extension.compile(o) + ';\n' else ''
+    returns:   if @returns      then new ReturnNode(@variable).compile(o)  else ''
     "$construct$extension$props$returns"
 
 statement ClassNode
@@ -698,7 +670,7 @@ exports.AssignNode: class AssignNode extends BaseNode
     @variable instanceof ValueNode
 
   make_return: ->
-    return new Expressions([this, new ReturnNode(@variable)])
+    return new Expressions [this, new ReturnNode(@variable)]
 
   is_statement: ->
     @is_value() and (@variable.is_array() or @variable.is_object())
@@ -724,8 +696,7 @@ exports.AssignNode: class AssignNode extends BaseNode
     o.scope.find name unless @is_value() and @variable.has_properties()
     val: "$name = $val"
     return "$@tab$val;" if stmt
-    val: "($val)" if not top
-    return val
+    if top then val else "($val)"
 
   # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
@@ -899,7 +870,7 @@ exports.WhileNode: class WhileNode extends BaseNode
     this
 
   make_return: ->
-    @do_return: true
+    @returns: true
     this
 
   top_sensitive: ->
@@ -909,7 +880,7 @@ exports.WhileNode: class WhileNode extends BaseNode
   # *while* can be used as a part of a larger expression -- while loops may
   # return an array containing the computed result of each iteration.
   compile_node: (o) ->
-    top:        del(o, 'top') and not @do_return
+    top:        del(o, 'top') and not @returns
     o.indent:   @idt(1)
     o.top:      true
     cond:       @condition.compile(o)
@@ -921,7 +892,7 @@ exports.WhileNode: class WhileNode extends BaseNode
     pre:        "$set${@tab}while ($cond)"
     return "$pre null;$post" if not @body
     @body:      Expressions.wrap([new IfNode(@filter, @body)]) if @filter
-    if @do_return
+    if @returns
       post: new ReturnNode(literal(rvar)).compile(merge(o, {indent: @idt()}))
     else
       post: ''
@@ -1049,8 +1020,8 @@ exports.ThrowNode: class ThrowNode extends BaseNode
   constructor: (expression) ->
     @children: [@expression: expression]
 
+  # A **ThrowNode** is already a return, of sorts...
   make_return: ->
-    # a throw is already a return...
     return this
 
   compile_node: (o) ->
@@ -1098,7 +1069,8 @@ exports.ParentheticalNode: class ParentheticalNode extends BaseNode
   is_statement: ->
     @expression.is_statement()
 
-  make_return: -> @expression.make_return()
+  make_return: ->
+    @expression.make_return()
 
   compile_node: (o) ->
     code: @expression.compile(o)
@@ -1129,27 +1101,25 @@ exports.ForNode: class ForNode extends BaseNode
     @object:  !!source.object
     [@name, @index]: [@index, @name] if @object
     @children: compact [@body, @source, @filter]
-    @do_return: false
+    @returns: false
 
   top_sensitive: ->
     true
 
   make_return: ->
-    @do_return: true
+    @returns: true
     this
 
-  compile_return_value: (retvar, o) ->
-    if @do_return
-      return new ReturnNode(literal(retvar)).compile(o)
-    else
-      return retvar or ''
+  compile_return_value: (val, o) ->
+    return new ReturnNode(literal(val)).compile(o) if @returns
+    val or ''
 
   # Welcome to the hairiest method in all of CoffeeScript. Handles the inner
   # loop, filtering, stepping, and result saving for array, object, and range
   # comprehensions. Some of the generated code can be shared in common, and
   # some cannot.
   compile_node: (o) ->
-    top_level:      del(o, 'top') and not @do_return
+    top_level:      del(o, 'top') and not @returns
     range:          @source instanceof ValueNode and @source.base instanceof RangeNode and not @source.properties.length
     source:         if range then @source.base else @source
     scope:          o.scope
@@ -1207,7 +1177,7 @@ exports.IfNode: class IfNode extends BaseNode
     @condition: condition
     @body:      body and body.unwrap()
     @else_body: else_body and else_body.unwrap()
-    @children:  compact [@condition, @body, @else_body]
+    @children:  compact flatten [@condition, @body, @else_body]
     @tags:      tags or {}
     @multiple:  true if @condition instanceof Array
     @condition: new OpNode('!', new ParentheticalNode(@condition)) if @tags.invert
@@ -1270,11 +1240,9 @@ exports.IfNode: class IfNode extends BaseNode
     if @is_statement() then @compile_statement(o) else @compile_ternary(o)
 
   make_return: ->
-    try
-      @body: @body.make_return() if @body
-    finally
-      @else_body: @else_body.make_return() if @else_body
-    return this
+    @body      &&= @body.make_return()
+    @else_body &&= @else_body.make_return()
+    this
 
   # Compile the **IfNode** as a regular *if-else* statement. Flattened chains
   # force inner *else* bodies into statement form.
@@ -1315,7 +1283,7 @@ PushNode: exports.PushNode: {
 
   wrap: (array, expressions) ->
     expr: expressions.unwrap()
-    return expressions if expr.is_pure_statement() or expr.contains (n) -> n.is_pure_statement()
+    return expressions if expr.is_pure_statement() or expr.contains_pure_statement()
     Expressions.wrap([new CallNode(
       new ValueNode(literal(array), [new AccessorNode(literal('push'))]), [expr]
     )])
@@ -1330,7 +1298,7 @@ ClosureNode: exports.ClosureNode: {
   # Wrap the expressions body, unless it contains a pure statement,
   # in which case, no dice.
   wrap: (expressions, statement) ->
-    return expressions if expressions.contains (n) -> n.is_pure_statement()
+    return expressions if expressions.contains_pure_statement()
     func: new ParentheticalNode(new CodeNode([], Expressions.wrap([expressions])))
     call: new CallNode(new ValueNode(func, [new AccessorNode(literal('call'))]), [literal('this')])
     if statement then Expressions.wrap([call]) else call
