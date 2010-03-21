@@ -322,6 +322,12 @@ exports.ValueNode: class ValueNode extends BaseNode
           complete: "($temp = $complete)$@SOAK" + (baseline: temp + prop.compile(o))
         else
           complete: complete + @SOAK + (baseline: + prop.compile(o))
+      else if prop instanceof SliceNode
+        o.array: complete
+        part: prop.compile_slice(o)
+        baseline = part
+        complete = part
+        @last: part
       else
         part: prop.compile(o)
         baseline: + part
@@ -520,15 +526,31 @@ exports.RangeNode: class RangeNode extends BaseNode
 exports.SliceNode: class SliceNode extends BaseNode
   type: 'Slice'
 
+  code: '''
+        function __slice(array, from, to, exclusive) {
+            return array.slice(
+              (from < 0 ? from + array.length : from || 0),
+              (to < 0 ? to + array.length : to || array.length) + (exclusive ? 0 : 1)
+            );
+          }
+        '''
+
   constructor: (range) ->
     @children: [@range: range]
     this
 
   compile_node: (o) ->
-    from:       @range.from.compile(o)
-    to:         @range.to.compile(o)
-    plus_part:  if @range.exclusive then '' else ' + 1'
-    ".slice($from, $to$plus_part)"
+    throw "'$@type' cannot compile outside of 'ValueNode'"
+
+  compile_slice: (o) ->
+    o.scope.assign('__slice', @code, true) if o.scope?
+    array:      del o, 'array'
+    from:       if @range.from? then @range.from else literal('null')
+    to:         if @range.to? then @range.to else literal('null')
+    exclusive:  if @range.exclusive then 'true' else 'false'
+    ref:        new ValueNode literal('__slice')
+    call:       new CallNode ref, [literal(array), from, to, literal(exclusive)]
+    call.compile(o)
 
 #### ObjectNode
 
