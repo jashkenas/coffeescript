@@ -465,7 +465,6 @@ grammar: {
     o "!! Expression",                          -> new OpNode '!!', $2
     o("- Expression",                           (-> new OpNode('-', $2)), {prec: 'UMINUS'})
     o("+ Expression",                           (-> new OpNode('+', $2)), {prec: 'UPLUS'})
-    o "NOT Expression",                         -> new OpNode 'not', $2
     o "~ Expression",                           -> new OpNode '~', $2
     o "-- Expression",                          -> new OpNode '--', $2
     o "++ Expression",                          -> new OpNode '++', $2
@@ -495,13 +494,9 @@ grammar: {
 
     o "Expression == Expression",               -> new OpNode '==', $1, $3
     o "Expression != Expression",               -> new OpNode '!=', $1, $3
-    o "Expression IS Expression",               -> new OpNode 'is', $1, $3
-    o "Expression ISNT Expression",             -> new OpNode 'isnt', $1, $3
 
     o "Expression && Expression",               -> new OpNode '&&', $1, $3
     o "Expression || Expression",               -> new OpNode '||', $1, $3
-    o "Expression AND Expression",              -> new OpNode 'and', $1, $3
-    o "Expression OR Expression",               -> new OpNode 'or', $1, $3
     o "Expression ? Expression",                -> new OpNode '?', $1, $3
 
     o "Expression -= Expression",               -> new OpNode '-=', $1, $3
@@ -532,15 +527,15 @@ grammar: {
 #     (2 + 3) * 4
 operators: [
   ["left",      '?']
-  ["nonassoc",  'UMINUS', 'UPLUS', 'NOT', '!', '!!', '~', '++', '--']
+  ["nonassoc",  'UMINUS', 'UPLUS', '!', '!!', '~', '++', '--']
   ["left",      '*', '/', '%']
   ["left",      '+', '-']
   ["left",      '<<', '>>', '>>>']
   ["left",      '&', '|', '^']
   ["left",      '<=', '<', '>', '>=']
   ["right",     'DELETE', 'INSTANCEOF', 'TYPEOF']
-  ["left",      '==', '!=', 'IS', 'ISNT']
-  ["left",      '&&', '||', 'AND', 'OR']
+  ["left",      '==', '!=']
+  ["left",      '&&', '||']
   ["right",     '-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=']
   ["left",      '.']
   ["right",     'INDENT']
