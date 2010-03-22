@@ -128,7 +128,7 @@ exports.Lexer: class Lexer
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
   # preserve whitespace, but ignore indentation to the left.
   heredoc_token: ->
-    return false unless match = @chunk.match(HEREDOC)
+    return false unless match: @chunk.match(HEREDOC)
     quote: match[1].substr(0, 1)
     doc: @sanitize_heredoc match[2] or match[4], quote
     @interpolate_string "$quote$doc$quote"
