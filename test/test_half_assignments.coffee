@@ -34,3 +34,12 @@ val: null
 val: ? 'value'
 
 ok val is 'value'
+
+
+val: 6
+val: -(10)
+
+ok val is -10
+
+val: - (10)
+ok val is -20
