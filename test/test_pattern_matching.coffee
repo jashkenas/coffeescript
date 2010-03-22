@@ -28,6 +28,20 @@ ok a is 1
 ok b is 2
 ok c is 3
 
+[x,y...,z]: [1,2,3,4,5]
+
+ok x is 1
+ok y.length is 3
+ok z is 5
+
+[x, [y, mids..., last], z..., end]: [1, [10, 20, 30, 40], 2,3,4, 5]
+
+ok x is 1
+ok y is 10
+ok mids.length is 2 and mids[1] is 30
+ok last is 40
+ok z.length is 3 and z[2] is 4
+ok end is 5
 
 obj: {x: 10, y: 20, z: 30}
 

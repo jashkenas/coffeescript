@@ -708,14 +708,21 @@ exports.AssignNode: class AssignNode extends BaseNode
     assigns: ["$@tab$val_var = ${ value.compile(o) };"]
     o.top: true
     o.as_statement: true
+    splatted: false
     for obj, i in @variable.base.objects
       idx: i
       [obj, idx]: [obj.value, obj.variable.base] if @variable.is_object()
       access_class: if @variable.is_array() then IndexNode else AccessorNode
-      if obj instanceof SplatNode
-        val: literal(obj.compile_value(o, val_var, @variable.base.objects.indexOf(obj)))
+      if obj instanceof SplatNode and not splatted
+        val: literal(obj.compile_value(o, val_var, (oindex: @variable.base.objects.indexOf(obj)), 
+          (olength: @variable.base.objects.length) - oindex - 1))
+        splatted: true
       else
-        idx: literal(idx) unless typeof idx is 'object'
+        if typeof idx isnt 'object'
+          if splatted
+            idx: literal("${val_var}.length - ${olength - idx}")
+          else
+            idx: literal(idx)
         val: new ValueNode(literal(val_var), [new access_class(idx)])
       assigns.push(new AssignNode(obj, val).compile(o))
     code: assigns.join("\n")
@@ -829,8 +836,9 @@ exports.SplatNode: class SplatNode extends BaseNode
 
   # A compiling a splat as a destructuring assignment means slicing arguments
   # from the right-hand-side's corresponding array.
-  compile_value: (o, name, index) ->
-    "Array.prototype.slice.call($name, $index)"
+  compile_value: (o, name, index, trailings) ->
+    if trailings? then "Array.prototype.slice.call($name, $index, ${name}.length - $trailings)" \
+    else "Array.prototype.slice.call($name, $index)"
 
 # Utility function that converts arbitrary number of elements, mixed with
 # splats, to a proper array
