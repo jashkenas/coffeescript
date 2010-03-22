@@ -1209,9 +1209,9 @@ exports.IfNode: class IfNode extends BaseNode
       @switcher: variable
     @condition: if @multiple
       for cond, i in @condition
-        new OpNode('is', (if i is 0 then assigner else @switcher), cond)
+        new OpNode('==', (if i is 0 then assigner else @switcher), cond)
     else
-      new OpNode('is', assigner, @condition)
+      new OpNode('==', assigner, @condition)
     @else_body.rewrite_condition(@switcher) if @is_chain()
     this
 
