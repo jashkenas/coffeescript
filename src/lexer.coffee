@@ -100,7 +100,9 @@ exports.Lexer: class Lexer
     @identifier_error id      if include RESERVED, id
     tag: 'LEADING_WHEN'       if tag is 'WHEN' and include LINE_BREAK, @tag()
     @i += id.length
-    tag: id: CONVERSIONS[id]  if not accessed and include(COFFEE_ALIASES, id)
+    if not accessed
+      tag: id: CONVERSIONS[id]         if include COFFEE_ALIASES, id
+      return @tag_half_assignment(tag) if @prev() and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
     @token(tag, id)
     true
 
@@ -270,11 +272,8 @@ exports.Lexer: class Lexer
       tag: 'CALL_START'  if value is '('
       tag: 'INDEX_START' if value is '['
     @i += value.length
-    if space and prev_spaced and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
-      last: @tokens.pop()
-      @tokens.push ["$tag=", "$tag=", last[2]]
-    else
-      @token tag, value
+    return @tag_half_assignment(tag) if space and prev_spaced and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
+    @token tag, value
     true
 
   # Token Manipulators
@@ -298,6 +297,12 @@ exports.Lexer: class Lexer
     doc.replace(new RegExp("^" +indent, 'gm'), '')
        .replace(MULTILINER, "\\n")
        .replace(new RegExp(quote, 'g'), '\\"')
+
+  # Tag a half assignment.
+  tag_half_assignment: (tag) ->
+    last: @tokens.pop()
+    @tokens.push ["$tag=", "$tag=", last[2]]
+    true
 
   # A source of ambiguity in our grammar used to be parameter lists in function
   # definitions versus argument lists in function calls. Walk backwards, tagging
