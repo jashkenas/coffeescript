@@ -94,13 +94,13 @@ exports.Lexer: class Lexer
   identifier_token: ->
     return false unless id: @match IDENTIFIER, 1
     @name_access_type()
-    space: @prev() and @prev().spaced
+    accessed: include ACCESSORS, @tag(0)
     tag: 'IDENTIFIER'
-    tag: id.toUpperCase()     if include(KEYWORDS, id) and not (include(ACCESSORS, @tag(0)) and not space)
+    tag: id.toUpperCase()     if not accessed and include(KEYWORDS, id)
     @identifier_error id      if include RESERVED, id
     tag: 'LEADING_WHEN'       if tag is 'WHEN' and include LINE_BREAK, @tag()
     @i += id.length
-    tag: id: CONVERSIONS[id]  if space and include(COFFEE_ALIASES, id)
+    tag: id: CONVERSIONS[id]  if not accessed and include(COFFEE_ALIASES, id)
     @token(tag, id)
     true
 
