@@ -94,13 +94,14 @@ exports.Lexer: class Lexer
   identifier_token: ->
     return false unless id: @match IDENTIFIER, 1
     @name_access_type()
+    space: @prev() and @prev().spaced
     tag: 'IDENTIFIER'
-    tag: id.toUpperCase() if include(KEYWORDS, id) and
-      not (include(ACCESSORS, @tag(0)) and not @prev().spaced)
-    @identifier_error id  if include RESERVED, id
-    tag: 'LEADING_WHEN'   if tag is 'WHEN' and include LINE_BREAK, @tag()
-    @token(tag, id)
+    tag: id.toUpperCase()     if include(KEYWORDS, id) and not (include(ACCESSORS, @tag(0)) and not space)
+    @identifier_error id      if include RESERVED, id
+    tag: 'LEADING_WHEN'       if tag is 'WHEN' and include LINE_BREAK, @tag()
     @i += id.length
+    tag: id: CONVERSIONS[id]  if space and include(COFFEE_ALIASES, id)
+    @token(tag, id)
     true
 
   # Matches numbers, including decimals, hex, and exponential notation.
@@ -432,10 +433,10 @@ JS_KEYWORDS: [
 
 # CoffeeScript-only keywords, which we're more relaxed about allowing. They can't
 # be used standalone, but you can reference them as an attached property.
-COFFEE_KEYWORDS: [
+COFFEE_ALIASES:  ["and", "or", "is", "isnt", "not"]
+COFFEE_KEYWORDS: COFFEE_ALIASES.concat [
   "then", "unless",
   "yes", "no", "on", "off",
-  "and", "or", "is", "isnt", "not",
   "of", "by", "where", "when"
 ]
 
@@ -507,3 +508,12 @@ ACCESSORS: ['PROPERTY_ACCESS', 'PROTOTYPE_ACCESS', 'SOAK_ACCESS', '@']
 # occurs at the start of a line. We disambiguate these from trailing whens to
 # avoid an ambiguity in the grammar.
 LINE_BREAK: ['INDENT', 'OUTDENT', 'TERMINATOR']
+
+# Conversions from CoffeeScript operators into JavaScript ones.
+CONVERSIONS: {
+  'and':  '&&'
+  'or':   '||'
+  'is':   '=='
+  'isnt': '!='
+  'not':  '!'
+}
