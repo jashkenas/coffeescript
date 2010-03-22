@@ -46,7 +46,7 @@ exports.Rewriter: class Rewriter
     while true
       break unless @tokens[i]
       move: block(@tokens[i - 1], @tokens[i], @tokens[i + 1], i)
-      i += move
+      i: + move
     true
 
   # Massage newlines and indentations so that comments don't have to be
@@ -88,20 +88,20 @@ exports.Rewriter: class Rewriter
       switch token[0]
         when 'CALL_START'  then parens.push(0)
         when 'INDEX_START' then brackets.push(0)
-        when '('           then parens[parens.length - 1] += 1
-        when '['           then brackets[brackets.length - 1] += 1
+        when '('           then parens[parens.length - 1]: + 1
+        when '['           then brackets[brackets.length - 1]: + 1
         when ')'
           if parens[parens.length - 1] is 0
             parens.pop()
             token[0]: 'CALL_END'
           else
-            parens[parens.length - 1] -= 1
+            parens[parens.length - 1]: - 1
         when ']'
           if brackets[brackets.length - 1] == 0
             brackets.pop()
             token[0]: 'INDEX_END'
           else
-            brackets[brackets.length - 1] -= 1
+            brackets[brackets.length - 1]: - 1
       return 1
 
   # Methods may be optionally called without parentheses, for simple cases.
@@ -113,15 +113,15 @@ exports.Rewriter: class Rewriter
     @scan_tokens (prev, token, post, i) =>
       tag: token[0]
       switch tag
-        when 'CALL_START' then calls += 1
-        when 'CALL_END'   then calls -= 1
+        when 'CALL_START' then calls: + 1
+        when 'CALL_END'   then calls: - 1
         when 'INDENT'     then stack.push(0)
         when 'OUTDENT'
           last: stack.pop()
-          stack[stack.length - 1] += last
+          stack[stack.length - 1]: + last
       open: stack[stack.length - 1] > 0
       if tag is 'CALL_END' and calls < 0 and open
-        stack[stack.length - 1] -= 1
+        stack[stack.length - 1]: - 1
         @tokens.splice(i, 0, ['CALL_END', ')', token[2]])
         return 2
       if !post? or include IMPLICIT_END, tag
@@ -137,7 +137,7 @@ exports.Rewriter: class Rewriter
       return 1 unless prev and include(IMPLICIT_FUNC, prev[0]) and include IMPLICIT_CALL, tag
       calls: 0
       @tokens.splice(i, 0, ['CALL_START', '(', token[2]])
-      stack[stack.length - 1] += 1
+      stack[stack.length - 1]: + 1
       return 2
 
   # Because our grammar is LALR(1), it can't handle some single-line
@@ -154,7 +154,7 @@ exports.Rewriter: class Rewriter
       idx: i + 1
       parens: 0
       while true
-        idx += 1
+        idx: + 1
         tok: @tokens[idx]
         pre: @tokens[idx - 1]
         if (not tok or
@@ -164,8 +164,8 @@ exports.Rewriter: class Rewriter
           insertion: if pre[0] is "," then idx - 1 else idx
           @tokens.splice(insertion, 0, ['OUTDENT', 2, token[2]])
           break
-        parens += 1 if tok[0] is '('
-        parens -= 1 if tok[0] is ')'
+        parens: + 1 if tok[0] is '('
+        parens: - 1 if tok[0] is ')'
       return 1 unless token[0] is 'THEN'
       @tokens.splice(i, 1)
       return 0
@@ -178,11 +178,11 @@ exports.Rewriter: class Rewriter
     @scan_tokens (prev, token, post, i) =>
       for pair in pairs
         [open, close]: pair
-        levels[open] ||= 0
+        levels[open]: or 0
         if token[0] is open
           open_line[open]: token[2] if levels[open] == 0
-          levels[open] += 1
-        levels[open] -= 1 if token[0] is close
+          levels[open]: + 1
+        levels[open]: - 1 if token[0] is close
         throw new Error("too many ${token[1]} on line ${token[2] + 1}") if levels[open] < 0
       return 1
     unclosed: key for key, value of levels when value > 0
@@ -218,14 +218,14 @@ exports.Rewriter: class Rewriter
         return 1
       else if include EXPRESSION_END, tag
         if debt[inv] > 0
-          debt[inv] -= 1
+          debt[inv]: - 1
           @tokens.splice i, 1
           return 0
         else
           match: stack.pop()
           mtag:  match[0]
           return 1 if tag is INVERSES[mtag]
-          debt[mtag] += 1
+          debt[mtag]: + 1
           val: if mtag is 'INDENT' then match[1] else INVERSES[mtag]
           @tokens.splice i, 0, [INVERSES[mtag], val]
           return 1

@@ -22,7 +22,7 @@ class SplitNode extends BaseNode
 # and creates a SplitNode.
 CoffeeScript.extend ->
   return false unless variable: @match(/^--(\w+)--/, 1)
-  @i += variable.length + 4
+  @i: + variable.length + 4
   @token 'EXTENSION', new SplitNode(variable)
   true
 
@@ -46,7 +46,7 @@ class WordArrayNode extends BaseNode
 
 CoffeeScript.extend ->
   return false unless words: @chunk.match(/^%w\{(.*?)\}/)
-  @i += words[0].length
+  @i: + words[0].length
   @token 'EXTENSION', new WordArrayNode(words[1].split(/\s+/))
   true
 

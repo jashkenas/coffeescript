@@ -79,7 +79,7 @@ exports.BaseNode: class BaseNode
   idt: (tabs) ->
     idt: @tab or ''
     num: (tabs or 0) + 1
-    idt += TAB while num -= 1
+    idt: + TAB while num: - 1
     idt
 
   # Construct a node that returns the current node's result.
@@ -112,7 +112,7 @@ exports.BaseNode: class BaseNode
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   toString: (idt) ->
-    idt ||= ''
+    idt: or ''
     '\n' + idt + @type + (child.toString(idt + TAB) for child in @children).join('')
 
   # Default implementations of the common node identification methods. Nodes
@@ -162,14 +162,14 @@ exports.Expressions: class Expressions extends BaseNode
   make_return: ->
     idx:  @expressions.length - 1
     last: @expressions[idx]
-    last: @expressions[idx -= 1] if last instanceof CommentNode
+    last: @expressions[idx: - 1] if last instanceof CommentNode
     return this if not last or last instanceof ReturnNode
     @expressions[idx]: last.make_return() unless last.contains_pure_statement()
     this
 
   # An **Expressions** is the only node that can serve as the root.
   compile: (o) ->
-    o ||= {}
+    o: or {}
     if o.scope then super(o) else @compile_root(o)
 
   compile_node: (o) ->
@@ -315,11 +315,11 @@ exports.ValueNode: class ValueNode extends BaseNode
           temp: o.scope.free_variable()
           complete: "($temp = $complete)$@SOAK" + (baseline: temp + prop.compile(o))
         else
-          complete: complete + @SOAK + (baseline += prop.compile(o))
+          complete: complete + @SOAK + (baseline: + prop.compile(o))
       else
         part: prop.compile(o)
-        baseline += part
-        complete += part
+        baseline: + part
+        complete: + part
         @last: part
 
     if op and soaked then "($complete)" else complete
@@ -772,7 +772,7 @@ exports.CodeNode: class CodeNode extends BaseNode
         splat.trailings.push(param)
       else
         params.push(param)
-      i += 1
+      i: + 1
     params: (param.compile(o) for param in params)
     @body.make_return()
     (o.scope.parameter(param)) for param in params
@@ -798,7 +798,7 @@ exports.CodeNode: class CodeNode extends BaseNode
     child.traverse block for child in @real_children()
 
   toString: (idt) ->
-    idt ||= ''
+    idt: or ''
     children: (child.toString(idt + TAB) for child in @real_children()).join('')
     "\n$idt$children"
 
@@ -824,7 +824,7 @@ exports.SplatNode: class SplatNode extends BaseNode
     i: 0
     for trailing in @trailings
       o.scope.assign(trailing.compile(o), "arguments[arguments.length - $@trailings.length + $i]")
-      i += 1
+      i: + 1
     "$name = Array.prototype.slice.call(arguments, $@index, arguments.length - ${@trailings.length})"
 
   # A compiling a splat as a destructuring assignment means slicing arguments
@@ -850,7 +850,7 @@ SplatNode.compile_mixed_array: (list, o) ->
       else
         code: "[$code]"
     args.push(if i is 0 then code else ".concat($code)")
-    i += 1
+    i: + 1
   args.join('')
 
 #### WhileNode
@@ -924,7 +924,7 @@ exports.OpNode: class OpNode extends BaseNode
   PREFIX_OPERATORS: ['typeof', 'delete']
 
   constructor: (operator, first, second, flip) ->
-    @type += ' ' + operator
+    @type: + ' ' + operator
     @children: compact [@first: first, @second: second]
     @operator: @CONVERSIONS[operator] or operator
     @flip: !!flip
@@ -1221,12 +1221,12 @@ exports.IfNode: class IfNode extends BaseNode
 
   # If the `else_body` is an **IfNode** itself, then we've got an *if-else* chain.
   is_chain: ->
-    @chain ||= @else_body and @else_body instanceof IfNode
+    @chain: or @else_body and @else_body instanceof IfNode
 
   # The **IfNode** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a ternary is safe.
   is_statement: ->
-    @statement ||= !!(@comment or @tags.statement or @body.is_statement() or (@else_body and @else_body.is_statement()))
+    @statement: or !!(@comment or @tags.statement or @body.is_statement() or (@else_body and @else_body.is_statement()))
 
   compile_condition: (o) ->
     (cond.compile(o) for cond in flatten([@condition])).join(' || ')
@@ -1235,8 +1235,8 @@ exports.IfNode: class IfNode extends BaseNode
     if @is_statement() then @compile_statement(o) else @compile_ternary(o)
 
   make_return: ->
-    @body      &&= @body.make_return()
-    @else_body &&= @else_body.make_return()
+    @body:      and @body.make_return()
+    @else_body: and @else_body.make_return()
     this
 
   # Compile the **IfNode** as a regular *if-else* statement. Flattened chains

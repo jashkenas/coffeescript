@@ -99,7 +99,7 @@ exports.Lexer: class Lexer
     tag: id.toUpperCase()     if not accessed and include(KEYWORDS, id)
     @identifier_error id      if include RESERVED, id
     tag: 'LEADING_WHEN'       if tag is 'WHEN' and include LINE_BREAK, @tag()
-    @i += id.length
+    @i: + id.length
     if not accessed
       tag: id: CONVERSIONS[id]         if include COFFEE_ALIASES, id
       return @tag_half_assignment(tag) if @prev() and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
@@ -110,7 +110,7 @@ exports.Lexer: class Lexer
   number_token: ->
     return false unless number: @match NUMBER, 1
     @token 'NUMBER', number
-    @i += number.length
+    @i: + number.length
     true
 
   # Matches strings, including multi-line strings. Ensures that quotation marks
@@ -121,8 +121,8 @@ exports.Lexer: class Lexer
       @balanced_token(['"', '"'], ['${', '}']) or
       @balanced_token ["'", "'"]
     @interpolate_string string.replace(STRING_NEWLINES, " \\\n")
-    @line += count string, "\n"
-    @i += string.length
+    @line: + count string, "\n"
+    @i: + string.length
     true
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
@@ -132,8 +132,8 @@ exports.Lexer: class Lexer
     quote: match[1].substr(0, 1)
     doc: @sanitize_heredoc match[2] or match[4], quote
     @interpolate_string "$quote$doc$quote"
-    @line += count match[1], "\n"
-    @i += match[1].length
+    @line: + count match[1], "\n"
+    @i: + match[1].length
     true
 
   # Matches JavaScript interpolated directly into the source via backticks.
@@ -141,7 +141,7 @@ exports.Lexer: class Lexer
     return false unless starts @chunk, '`'
     return false unless script: @balanced_token ['`', '`']
     @token 'JS', script.replace(JS_CLEANER, '')
-    @i += script.length
+    @i: + script.length
     true
 
   # Matches regular expression literals. Lexing regular expressions is difficult
@@ -152,7 +152,7 @@ exports.Lexer: class Lexer
     return false unless @chunk.match REGEX_START
     return false if     include NOT_REGEX, @tag()
     return false unless regex: @balanced_token ['/', '/']
-    regex += (flags: @chunk.substr(regex.length).match(REGEX_FLAGS))
+    regex: + (flags: @chunk.substr(regex.length).match(REGEX_FLAGS))
     if regex.match REGEX_INTERPOLATION
       str: regex.substring(1).split('/')[0]
       str: str.replace REGEX_ESCAPE, (escaped) -> '\\' + escaped
@@ -161,7 +161,7 @@ exports.Lexer: class Lexer
       @tokens: @tokens.concat [[',', ','], ['STRING', "'$flags'"], [')', ')'], [')', ')']]
     else
       @token 'REGEX', regex
-    @i += regex.length
+    @i: + regex.length
     true
 
   # Matches a token in which which the passed delimiter pairs must be correctly
@@ -173,13 +173,13 @@ exports.Lexer: class Lexer
   # so they're treated as real tokens, like any other part of the language.
   comment_token: ->
     return false unless comment: @match COMMENT, 1
-    @line += (comment.match(MULTILINER) or []).length
+    @line: + (comment.match(MULTILINER) or []).length
     lines: compact comment.replace(COMMENT_CLEANER, '').split(MULTILINER)
     i: @tokens.length - 1
     if @unfinished()
-      i -= 1 while @tokens[i] and not include LINE_BREAK, @tokens[i][0]
+      i: - 1 while @tokens[i] and not include LINE_BREAK, @tokens[i][0]
     @tokens.splice(i + 1, 0, ['COMMENT', lines, @line], ['TERMINATOR', '\n', @line])
-    @i += comment.length
+    @i: + comment.length
     true
 
   # Matches newlines, indents, and outdents, and determines which is which.
@@ -194,8 +194,8 @@ exports.Lexer: class Lexer
   # can close multiple indents, so we need to know how far in we happen to be.
   line_token: ->
     return false unless indent: @match MULTI_DENT, 1
-    @line += indent.match(MULTILINER).length
-    @i    += indent.length
+    @line: + indent.match(MULTILINER).length
+    @i   : + indent.length
     prev: @prev(2)
     size: indent.match(LAST_DENTS).reverse()[0].match(LAST_DENT)[1].length
     next_character: @chunk.match(MULTI_DENT)[4]
@@ -219,7 +219,7 @@ exports.Lexer: class Lexer
     while move_out > 0 and @indents.length
       last_indent: @indents.pop()
       @token 'OUTDENT', last_indent
-      move_out -= last_indent
+      move_out: - last_indent
     @token 'TERMINATOR', "\n" unless @tag() is 'TERMINATOR' or no_newlines
     true
 
@@ -229,7 +229,7 @@ exports.Lexer: class Lexer
     return false unless space: @match WHITESPACE, 1
     prev: @prev()
     prev.spaced: true if prev
-    @i += space.length
+    @i: + space.length
     true
 
   # Generate a newline token. Consecutive newlines get merged together.
@@ -253,7 +253,7 @@ exports.Lexer: class Lexer
     value: match and match[1]
     space: match and match[2]
     @tag_parameters() if value and value.match(CODE)
-    value ||= @chunk.substr(0, 1)
+    value: or @chunk.substr(0, 1)
     prev_spaced: @prev() and @prev().spaced
     tag: value
     if value.match(ASSIGNMENT)
@@ -271,7 +271,7 @@ exports.Lexer: class Lexer
     else if include(CALLABLE, @tag()) and not prev_spaced
       tag: 'CALL_START'  if value is '('
       tag: 'INDEX_START' if value is '['
-    @i += value.length
+    @i: + value.length
     return @tag_half_assignment(tag) if space and prev_spaced and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
     @token tag, value
     true
@@ -311,7 +311,7 @@ exports.Lexer: class Lexer
     return if @tag() isnt ')'
     i: 0
     while true
-      i += 1
+      i: + 1
       tok: @prev(i)
       return if not tok
       switch tok[0]
@@ -354,13 +354,13 @@ exports.Lexer: class Lexer
       [i, pi]:  [1, 1]
       while i < str.length - 1
         if starts str, '\\', i
-          i += 1
+          i: + 1
         else if match: str.substring(i).match INTERPOLATION
           [group, interp]: match
           interp: "this.${ interp.substring(1) }" if starts interp, '@'
           tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i
           tokens.push ['IDENTIFIER', interp]
-          i += group.length - 1
+          i: + group.length - 1
           pi: i + 1
         else if (expr: balanced_string str.substring(i), [['${', '}']])
           tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i
@@ -371,9 +371,9 @@ exports.Lexer: class Lexer
             tokens.push ['TOKENS', nested]
           else
             tokens.push ['STRING', "$quote$quote"]
-          i += expr.length - 1
+          i: + expr.length - 1
           pi: i + 1
-        i += 1
+        i: + 1
       tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i and pi < str.length - 1
       tokens.unshift ['STRING', "''"] unless tokens[0][0] is 'STRING'
       for token, i in tokens

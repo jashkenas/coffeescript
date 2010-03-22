@@ -94,7 +94,7 @@ compile_stdio: ->
   code: ''
   process.stdio.open()
   process.stdio.addListener 'data', (string) ->
-    code += string if string
+    code: + string if string
   process.stdio.addListener 'close', ->
     compile_script 'stdio', code
 

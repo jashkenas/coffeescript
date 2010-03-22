@@ -33,7 +33,7 @@ ok !func(8)
 
 # Should cache the switch value, if anything fancier than a literal.
 num: 5
-result: switch num += 5
+result: switch num: + 5
   when 5 then false
   when 15 then false
   when 10 then true
