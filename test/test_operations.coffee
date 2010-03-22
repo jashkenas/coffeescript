@@ -18,3 +18,13 @@ i: 0
 func: -> i++
 
 ok 1 > func() < 1
+
+
+# `:` and `=` should be interchangeable, as should be `==` and `is`.
+
+a: 1
+b: 1
+
+ok a is 1 and b is 1
+ok a == b
+ok a is b
