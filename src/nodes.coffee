@@ -708,21 +708,18 @@ exports.AssignNode: class AssignNode extends BaseNode
     assigns: ["$@tab$val_var = ${ value.compile(o) };"]
     o.top: true
     o.as_statement: true
-    splatted: false
+    splat: false
     for obj, i in @variable.base.objects
       idx: i
       [obj, idx]: [obj.value, obj.variable.base] if @variable.is_object()
       access_class: if @variable.is_array() then IndexNode else AccessorNode
-      if obj instanceof SplatNode and not splatted
-        val: literal(obj.compile_value(o, val_var, (oindex: @variable.base.objects.indexOf(obj)), 
+      if obj instanceof SplatNode and not splat
+        val: literal(obj.compile_value(o, val_var, 
+          (oindex: @variable.base.objects.indexOf(obj)), 
           (olength: @variable.base.objects.length) - oindex - 1))
-        splatted: true
+        splat: true
       else
-        if typeof idx isnt 'object'
-          if splatted
-            idx: literal("${val_var}.length - ${olength - idx}")
-          else
-            idx: literal(idx)
+        idx: literal(if splat then "${val_var}.length - ${olength - idx}" else idx) if typeof idx isnt 'object'
         val: new ValueNode(literal(val_var), [new access_class(idx)])
       assigns.push(new AssignNode(obj, val).compile(o))
     code: assigns.join("\n")
