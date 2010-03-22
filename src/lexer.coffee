@@ -249,27 +249,32 @@ exports.Lexer: class Lexer
   literal_token: ->
     match: @chunk.match(OPERATOR)
     value: match and match[1]
+    space: match and match[2]
     @tag_parameters() if value and value.match(CODE)
     value ||= @chunk.substr(0, 1)
-    not_spaced: not @prev() or not @prev().spaced
+    prev_spaced: @prev() and @prev().spaced
     tag: value
     if value.match(ASSIGNMENT)
       tag: 'ASSIGN'
       @assignment_error() if include JS_FORBIDDEN, @value
     else if value is ';'
       tag: 'TERMINATOR'
-    else if value is '[' and @tag() is '?' and not_spaced
+    else if value is '[' and @tag() is '?' and not prev_spaced
       tag: 'SOAKED_INDEX_START'
       @soaked_index: true
       @tokens.pop()
     else if value is ']' and @soaked_index
       tag: 'SOAKED_INDEX_END'
       @soaked_index: false
-    else if include(CALLABLE, @tag()) and not_spaced
+    else if include(CALLABLE, @tag()) and not prev_spaced
       tag: 'CALL_START'  if value is '('
       tag: 'INDEX_START' if value is '['
-    @token tag, value
     @i += value.length
+    if space and prev_spaced and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
+      last: @tokens.pop()
+      @tokens.push ["$tag=", "$tag=", last[2]]
+    else
+      @token tag, value
     true
 
   # Token Manipulators
@@ -462,7 +467,7 @@ IDENTIFIER    : /^([a-zA-Z\$_](\w|\$)*)/
 NUMBER        : /^(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
 HEREDOC       : /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
 INTERPOLATION : /^\$([a-zA-Z_@]\w*(\.\w+)*)/
-OPERATOR      : /^([+\*&|\/\-%=<>:!?]+)/
+OPERATOR      : /^([+\*&|\/\-%=<>:!?]+)([ \t]*)/
 WHITESPACE    : /^([ \t]+)/
 COMMENT       : /^(((\n?[ \t]*)?#[^\n]*)+)/
 CODE          : /^((-|=)>)/
@@ -508,6 +513,9 @@ ACCESSORS: ['PROPERTY_ACCESS', 'PROTOTYPE_ACCESS', 'SOAK_ACCESS', '@']
 # occurs at the start of a line. We disambiguate these from trailing whens to
 # avoid an ambiguity in the grammar.
 LINE_BREAK: ['INDENT', 'OUTDENT', 'TERMINATOR']
+
+# Half-assignments...
+HALF_ASSIGNMENTS: ['-', '+', '/', '*', '%', '||', '&&', '?']
 
 # Conversions from CoffeeScript operators into JavaScript ones.
 CONVERSIONS: {
