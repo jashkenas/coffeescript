@@ -70,7 +70,7 @@ and write them back to <strong>stdout</strong>.</p>             </td>           
   <span class="nv">code: </span><span class="s1">&#39;&#39;</span>
   <span class="nx">process</span><span class="p">.</span><span class="nx">stdio</span><span class="p">.</span><span class="nx">open</span><span class="p">()</span>
   <span class="nx">process</span><span class="p">.</span><span class="nx">stdio</span><span class="p">.</span><span class="nx">addListener</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">string</span><span class="p">)</span> <span class="o">-&gt;</span>
-    <span class="nx">code</span> <span class="o">+=</span> <span class="nx">string</span> <span class="k">if</span> <span class="nx">string</span>
+    <span class="nv">code: </span><span class="o">+</span> <span class="nx">string</span> <span class="k">if</span> <span class="nx">string</span>
   <span class="nx">process</span><span class="p">.</span><span class="nx">stdio</span><span class="p">.</span><span class="nx">addListener</span> <span class="s1">&#39;close&#39;</span><span class="p">,</span> <span class="o">-&gt;</span>
     <span class="nx">compile_script</span> <span class="s1">&#39;stdio&#39;</span><span class="p">,</span> <span class="nx">code</span></pre></div>             </td>           </tr>                               <tr id="section-10">             <td class="docs">               <div class="octowrap">                 <a class="octothorpe" href="#section-10">#</a>               </div>               <p>Watch a list of source CoffeeScript files using <code>fs.watchFile</code>, recompiling
 them every time the files are updated. May be used in combination with other

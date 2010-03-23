@@ -24,7 +24,7 @@
   // Splats:
   race = function race(winner) {
     var runners;
-    runners = Array.prototype.slice.call(arguments, 1);
+    runners = Array.prototype.slice.call(arguments, 1, arguments.length - 0);
     return print(winner, runners);
   };
   // Existence:

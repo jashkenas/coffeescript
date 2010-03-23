@@ -1,7 +1,8 @@
 
-  # *Underscore.coffee
-  # (c) 2010 Jeremy Ashkenas, DocumentCloud Inc.*
-  # Underscore is freely distributable under the terms of the **MIT license**.
+  # **Underscore.coffee
+  # (c) 2010 Jeremy Ashkenas, DocumentCloud Inc.**
+  # Underscore is freely distributable under the terms of the
+  # [MIT license](http://en.wikipedia.org/wiki/MIT_License).
   # Portions of Underscore are inspired by or borrowed from
   # [Prototype.js](http://prototypejs.org/api), Oliver Steele's
   # [Functional](http://osteele.com), and John Resig's
@@ -43,7 +44,7 @@
   propertyIsEnumerable: ObjProto.propertyIsEnumerable
 
 
-  # All ECMA5 native implementations we hope to use are declared here.
+  # All **ECMA5** native implementations we hope to use are declared here.
   nativeForEach:        ArrayProto.forEach
   nativeMap:            ArrayProto.map
   nativeReduce:         ArrayProto.reduce
@@ -61,7 +62,7 @@
   _: (obj) -> new wrapper(obj)
 
 
-  # Export the Underscore object for CommonJS.
+  # Export the Underscore object for **CommonJS**.
   if typeof(exports) != 'undefined' then exports._: _
 
 

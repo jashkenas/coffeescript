@@ -397,8 +397,9 @@ exports.CallNode: class CallNode extends BaseNode
 
 #### CurryNode
 
-# Node to bind an context and/or some arguments to a function, returning a new function
-# After `Underscore.bind` from [Underscore](http://documentcloud.github.com/underscore/).
+# Binds a context object and a list of arguments to a function,
+# returning the bound function. After ECMAScript 5, Prototype.js, and
+# Underscore's `bind` functions.
 exports.CurryNode: class CurryNode extends CallNode
   type: 'Curry'
 
@@ -714,8 +715,8 @@ exports.AssignNode: class AssignNode extends BaseNode
       [obj, idx]: [obj.value, obj.variable.base] if @variable.is_object()
       access_class: if @variable.is_array() then IndexNode else AccessorNode
       if obj instanceof SplatNode and not splat
-        val: literal(obj.compile_value(o, val_var, 
-          (oindex: @variable.base.objects.indexOf(obj)), 
+        val: literal(obj.compile_value(o, val_var,
+          (oindex: @variable.base.objects.indexOf(obj)),
           (olength: @variable.base.objects.length) - oindex - 1))
         splat: true
       else
@@ -1077,7 +1078,7 @@ exports.ParentheticalNode: class ParentheticalNode extends BaseNode
     return code if @is_statement()
     l:    code.length
     code: code.substr(o, l-1) if code.substr(l-1, 1) is ';'
-    "($code)"
+    if @expression instanceof AssignNode then code else "($code)"
 
 #### ForNode
 

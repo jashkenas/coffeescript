@@ -58,8 +58,8 @@
         <a href="#switch">Switch/When/Else</a>
         <a href="#try">Try/Catch/Finally</a>
         <a href="#comparisons">Chained Comparisons</a>
+        <a href="#interpolation">String and RegExp Interpolation</a>
         <a href="#strings">Multiline Strings and Heredocs</a>
-        <a href="#interpolation">String Interpolation</a>
         <a href="#cake">Cake, and Cakefiles</a>
         <a href="#scripts">"text/coffeescript" Script Tags</a>
         <a href="#resources">Resources</a>
@@ -129,7 +129,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.5">0.5.5</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.6">0.5.6</a>
     </p>
 
     <h2>
@@ -171,11 +171,11 @@ alert reverse '.eeffoC yrT'</textarea></div>
 
     <p>
       To install, first make sure you have a working version of
-      <a href="http://nodejs.org/">Node.js</a> version 0.1.31 or higher.
+      <a href="http://nodejs.org/">Node.js</a> version 0.1.33 or higher.
       Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.5">0.5.5</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.6">0.5.6</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -397,9 +397,9 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <p>
       This behavior is effectively identical to Ruby's scope for local variables.
-      Because you don't have direct access to the <tt>var</tt> keyword, 
-      it's impossible to shadow an outer variable on purpose, you may only refer 
-      to it. So be careful that you're not reusing the name of an external 
+      Because you don't have direct access to the <tt>var</tt> keyword,
+      it's impossible to shadow an outer variable on purpose, you may only refer
+      to it. So be careful that you're not reusing the name of an external
       variable accidentally, if you're writing a deeply nested function.
     </p>
     <p>
@@ -431,10 +431,9 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('conditionals') %>
     <p>
-      The conditional assignment operators are included: <tt>||=</tt>,
-      which only assigns a value to a variable if the variable's current value
-      is falsy, and <tt>&amp;&amp;=</tt>, which only replaces the value of
-      truthy variables.
+      You can assign a variable to a half-expression to perform an operation
+      like Ruby's <tt>||=</tt>, which only assigns a value to a variable 
+      if the variable's current value is falsy.
     </p>
 
     <p>
@@ -662,6 +661,10 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       to help pull out deeply nested properties.
     </p>
     <%= code_for('object_extraction', 'poet + " — " + street') %>
+    <p>
+      Pattern matching can even be combined with splats.
+    </p>
+    <%= code_for('patterns_and_splats', 'contents.join("")') %>
 
     <p>
       <span id="fat_arrow" class="bookmark"></span>
@@ -674,7 +677,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       gives a good overview of the quirks.
     </p>
     <p>
-      The fat arrow <tt>=></tt> can be used to both define a function, and to bind
+      The fat arrow <tt>=&gt;</tt> can be used to both define a function, and to bind
       it to the current value of <tt>this</tt>, right on the spot. This is helpful
       when using callback-based libraries like Prototype or jQuery, for creating
       iterator functions to pass to <tt>each</tt>, or event-handler functions
@@ -687,6 +690,15 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       have referred to the undefined "customer" property of the DOM element,
       and trying to call <tt>purchase()</tt> on it would have raised an exception.
     </p>
+    <p>
+      If you have more custom needs for function binding, CoffeeScript includes
+      the <tt>&lt;-</tt> bind operator, which works the same as ECMAScript 5
+      and Prototype.js's <tt>Function#bind</tt>. The first argument is the <tt>this</tt>
+      value, and the remainder are curried arguments. In the example below,
+      we curry a jQuery request for a URL, and then execute the bound function
+      with the missing callback argument.
+    </p>
+    <%= code_for('binding', true) %>
 
     <p>
       <span id="embedded" class="bookmark"></span>
@@ -734,6 +746,20 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <%= code_for('comparisons', 'healthy') %>
 
     <p>
+      <span id="interpolation" class="bookmark"></span>
+      <b class="header">String and RegExp Interpolation</b>
+      A version of <a href="http://wiki.ecmascript.org/doku.php?id=strawman:string_interpolation">ECMAScript Harmony's proposed string interpolation</a>
+      is included in CoffeeScript. Simple variables can be included by marking
+      them with a dollar sign.
+    </p>
+    <%= code_for('interpolation', 'quote') %>
+    <p>
+      And arbitrary expressions can be interpolated by using brackets <tt>${ ... }</tt><br />
+      Interpolation works the same way within regular expressions.
+    </p>
+    <%= code_for('interpolation_expression', 'sentence') %>
+
+    <p>
       <span id="strings" class="bookmark"></span>
       <b class="header">Multiline Strings and Heredocs</b>
       Multiline strings are allowed in CoffeeScript.
@@ -746,19 +772,9 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       you can keep it all aligned with the body of your code.
     </p>
     <%= code_for('heredocs') %>
-
     <p>
-      <span id="interpolation" class="bookmark"></span>
-      <b class="header">String Interpolation</b>
-      A version of <a href="http://wiki.ecmascript.org/doku.php?id=strawman:string_interpolation">ECMAScript Harmony's proposed string interpolation</a>
-      is included in CoffeeScript. Simple variables can be included by marking
-      them with a dollar sign.
+      Double-quoted heredocs, like double-quoted strings, allow interpolation.
     </p>
-    <%= code_for('interpolation', 'quote') %>
-    <p>
-      And arbitrary expressions can be interpolated by using brackets <tt>${ ... }</tt>
-    </p>
-    <%= code_for('interpolation_expression', 'sentence') %>
 
     <h2>
       <span id="cake" class="bookmark"></span>
@@ -854,6 +870,17 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <b class="header" style="margin-top: 20px;">0.5.6</b>
+      Interpolation can now be used within regular expressions and heredocs, as well as
+      strings. Added the <tt>&lt;-</tt> bind operator.
+      Allowing assignment to half-expressions instead of special <tt>||=</tt>-style
+      operators. The arguments object is no longer automatically converted into
+      an array. After requiring <tt>coffee-script</tt>, Node.js can now directly
+      load <tt>.coffee</tt> files, thanks to <b>registerExtension</b>. Multiple
+      splats can now be used in function calls, arrays, and pattern matching.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.5.5</b>

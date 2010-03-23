@@ -22,7 +22,7 @@ else
   helpers:      this.helpers
 
 # The current CoffeeScript version number.
-exports.VERSION: '0.5.5'
+exports.VERSION: '0.5.6'
 
 # Instantiate a Lexer for our use here.
 lexer: new Lexer()

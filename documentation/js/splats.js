@@ -3,10 +3,11 @@
   gold = (silver = (the_field = "unknown"));
   award_medals = function award_medals(first, second) {
     var rest;
-    rest = Array.prototype.slice.call(arguments, 2);
+    rest = Array.prototype.slice.call(arguments, 2, arguments.length - 0);
     gold = first;
     silver = second;
-    return the_field = rest;
+    the_field = rest;
+    return the_field;
   };
   contenders = ["Michael Phelps", "Liu Xiang", "Yao Ming", "Allyson Felix", "Shawn Johnson", "Roman Sebrle", "Guo Jingjing", "Tyson Gay", "Asafa Powell", "Usain Bolt"];
   award_medals.apply(this, contenders);

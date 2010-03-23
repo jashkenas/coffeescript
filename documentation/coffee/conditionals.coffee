@@ -6,4 +6,4 @@ if happy and knows_it
 
 date: if friday then sue else jill
 
-expensive ||= do_the_math()
+expensive: or do_the_math()

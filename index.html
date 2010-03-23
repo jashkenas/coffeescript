@@ -44,8 +44,8 @@
         <a href="#switch">Switch/When/Else</a>
         <a href="#try">Try/Catch/Finally</a>
         <a href="#comparisons">Chained Comparisons</a>
+        <a href="#interpolation">String and RegExp Interpolation</a>
         <a href="#strings">Multiline Strings and Heredocs</a>
-        <a href="#interpolation">String Interpolation</a>
         <a href="#cake">Cake, and Cakefiles</a>
         <a href="#scripts">"text/coffeescript" Script Tags</a>
         <a href="#resources">Resources</a>
@@ -115,7 +115,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.5">0.5.5</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.6">0.5.6</a>
     </p>
 
     <h2>
@@ -179,7 +179,7 @@ math <span class="Keyword">=</span> {
 <span class="Comment"><span class="Comment">//</span> Splats:</span>
 race <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">race</span>(<span class="FunctionArgument">winner</span>) {
   <span class="Storage">var</span> runners;
-  runners <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">1</span>);
+  runners <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">1</span>, arguments.<span class="LibraryConstant">length</span> <span class="Keyword">-</span> <span class="Number">0</span>);
   <span class="Keyword">return</span> <span class="LibraryFunction">print</span>(winner, runners);
 };
 <span class="Comment"><span class="Comment">//</span> Existence:</span>
@@ -220,7 +220,7 @@ math = {
 // Splats:
 race = function race(winner) {
   var runners;
-  runners = Array.prototype.slice.call(arguments, 1);
+  runners = Array.prototype.slice.call(arguments, 1, arguments.length - 0);
   return print(winner, runners);
 };
 // Existence:
@@ -268,11 +268,11 @@ cubed_list = (function() {
 
     <p>
       To install, first make sure you have a working version of
-      <a href="http://nodejs.org/">Node.js</a> version 0.1.31 or higher.
+      <a href="http://nodejs.org/">Node.js</a> version 0.1.33 or higher.
       Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.5">0.5.5</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.6">0.5.6</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -546,7 +546,8 @@ num <span class="Keyword">=</span> <span class="Number">1</span>;
 change_numbers <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">change_numbers</span>() {
   <span class="Storage">var</span> new_num;
   new_num <span class="Keyword">=</span> <span class="Keyword">-</span><span class="Number">1</span>;
-  <span class="Keyword">return</span> num <span class="Keyword">=</span> <span class="Number">10</span>;
+  num <span class="Keyword">=</span> <span class="Number">10</span>;
+  <span class="Keyword">return</span> num;
 };
 new_num <span class="Keyword">=</span> change_numbers();
 </pre><button onclick='javascript: var change_numbers, new_num, num;
@@ -554,7 +555,8 @@ num = 1;
 change_numbers = function change_numbers() {
   var new_num;
   new_num = -1;
-  return num = 10;
+  num = 10;
+  return num;
 };
 new_num = change_numbers();
 ;alert(new_num);'>run: new_num</button><br class='clear' /></div>
@@ -568,9 +570,9 @@ new_num = change_numbers();
     </p>
     <p>
       This behavior is effectively identical to Ruby's scope for local variables.
-      Because you don't have direct access to the <tt>var</tt> keyword, 
-      it's impossible to shadow an outer variable on purpose, you may only refer 
-      to it. So be careful that you're not reusing the name of an external 
+      Because you don't have direct access to the <tt>var</tt> keyword,
+      it's impossible to shadow an outer variable on purpose, you may only refer
+      to it. So be careful that you're not reusing the name of an external
       variable accidentally, if you're writing a deeply nested function.
     </p>
     <p>
@@ -608,7 +610,7 @@ new_num = change_numbers();
 
 date<span class="Keyword">:</span> <span class="Keyword">if</span> friday <span class="Keyword">then</span> sue <span class="Keyword">else</span> jill
 
-expensive <span class="Keyword">||</span><span class="Keyword">=</span> do_the_math()
+expensive<span class="Keyword">:</span> <span class="Keyword">or</span> do_the_math()
 </pre><pre class="idle"><span class="Storage">var</span> date, expensive, mood;
 <span class="Keyword">if</span> (singing) {
   mood <span class="Keyword">=</span> greatly_improved;
@@ -621,10 +623,9 @@ date <span class="Keyword">=</span> friday ? sue : jill;
 expensive <span class="Keyword">=</span> expensive <span class="Keyword">||</span> do_the_math();
 </pre><br class='clear' /></div>
     <p>
-      The conditional assignment operators are included: <tt>||=</tt>,
-      which only assigns a value to a variable if the variable's current value
-      is falsy, and <tt>&amp;&amp;=</tt>, which only replaces the value of
-      truthy variables.
+      You can assign a variable to a half-expression to perform an operation
+      like Ruby's <tt>||=</tt>, which only assigns a value to a variable 
+      if the variable's current value is falsy.
     </p>
 
     <p>
@@ -719,10 +720,11 @@ alert <span class="String"><span class="String">&quot;</span>The Field: <span cl
 gold <span class="Keyword">=</span> (silver <span class="Keyword">=</span> (the_field <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>unknown<span class="String">&quot;</span></span>));
 award_medals <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">award_medals</span>(<span class="FunctionArgument">first, second</span>) {
   <span class="Storage">var</span> rest;
-  rest <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">2</span>);
+  rest <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">2</span>, arguments.<span class="LibraryConstant">length</span> <span class="Keyword">-</span> <span class="Number">0</span>);
   gold <span class="Keyword">=</span> first;
   silver <span class="Keyword">=</span> second;
-  <span class="Keyword">return</span> the_field <span class="Keyword">=</span> rest;
+  the_field <span class="Keyword">=</span> rest;
+  <span class="Keyword">return</span> the_field;
 };
 contenders <span class="Keyword">=</span> [<span class="String"><span class="String">&quot;</span>Michael Phelps<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Liu Xiang<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Yao Ming<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Allyson Felix<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Shawn Johnson<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Roman Sebrle<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Guo Jingjing<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Tyson Gay<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Asafa Powell<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Usain Bolt<span class="String">&quot;</span></span>];
 award_medals.<span class="LibraryFunction">apply</span>(<span class="Variable">this</span>, contenders);
@@ -733,10 +735,11 @@ award_medals.<span class="LibraryFunction">apply</span>(<span class="Variable">t
 gold = (silver = (the_field = "unknown"));
 award_medals = function award_medals(first, second) {
   var rest;
-  rest = Array.prototype.slice.call(arguments, 2);
+  rest = Array.prototype.slice.call(arguments, 2, arguments.length - 0);
   gold = first;
   silver = second;
-  return the_field = rest;
+  the_field = rest;
+  return the_field;
 };
 contenders = ["Michael Phelps", "Liu Xiang", "Yao Ming", "Allyson Felix", "Shawn Johnson", "Roman Sebrle", "Guo Jingjing", "Tyson Gay", "Asafa Powell", "Usain Bolt"];
 award_medals.apply(this, contenders);
@@ -1011,7 +1014,11 @@ grade <span class="Keyword">=</span> <span class="Storage">function</span> <span
   <span class="Keyword">if</span> (student.excellent_work) {
     <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>A+<span class="String">&quot;</span></span>;
   } <span class="Keyword">else</span> <span class="Keyword">if</span> (student.okay_stuff) {
-    <span class="Keyword">return</span> student.tried_hard ? <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span> : <span class="String"><span class="String">&quot;</span>B-<span class="String">&quot;</span></span>;
+    <span class="Keyword">if</span> (student.tried_hard) {
+      <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span>;
+    } <span class="Keyword">else</span> {
+      <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>B-<span class="String">&quot;</span></span>;
+    }
   } <span class="Keyword">else</span> {
     <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>C<span class="String">&quot;</span></span>;
   }
@@ -1022,7 +1029,11 @@ grade = function grade(student) {
   if (student.excellent_work) {
     return "A+";
   } else if (student.okay_stuff) {
-    return student.tried_hard ? "B" : "B-";
+    if (student.tried_hard) {
+      return "B";
+    } else {
+      return "B-";
+    }
   } else {
     return "C";
   }
@@ -1040,9 +1051,9 @@ eldest = 24 > 21 ? "Liz" : "Ike";
     </p>
     <div class='code'><pre class="idle">six<span class="Keyword">:</span> (one<span class="Keyword">:</span> <span class="Number">1</span>) <span class="Keyword">+</span> (two<span class="Keyword">:</span> <span class="Number">2</span>) <span class="Keyword">+</span> (three<span class="Keyword">:</span> <span class="Number">3</span>)
 </pre><pre class="idle"><span class="Storage">var</span> one, six, three, two;
-six <span class="Keyword">=</span> ((one <span class="Keyword">=</span> <span class="Number">1</span>)) <span class="Keyword">+</span> ((two <span class="Keyword">=</span> <span class="Number">2</span>)) <span class="Keyword">+</span> ((three <span class="Keyword">=</span> <span class="Number">3</span>));
+six <span class="Keyword">=</span> (one <span class="Keyword">=</span> <span class="Number">1</span>) <span class="Keyword">+</span> (two <span class="Keyword">=</span> <span class="Number">2</span>) <span class="Keyword">+</span> (three <span class="Keyword">=</span> <span class="Number">3</span>);
 </pre><button onclick='javascript: var one, six, three, two;
-six = ((one = 1)) + ((two = 2)) + ((three = 3));
+six = (one = 1) + (two = 2) + (three = 3);
 ;alert(six);'>run: six</button><br class='clear' /></div>
     <p>
       Things that would otherwise be statements in JavaScript, when used
@@ -1397,6 +1408,29 @@ _c = _b.address;
 street = _c[0];
 city = _c[1];
 ;alert(poet + " — " + street);'>run: poet + " — " + street</button><br class='clear' /></div>
+    <p>
+      Pattern matching can even be combined with splats.
+    </p>
+    <div class='code'><pre class="idle">tag<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>&lt;impossible&gt;<span class="String">&quot;</span></span>
+
+<span class="Keyword">[</span>open, contents..., close<span class="Keyword">]:</span> tag.split(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span>)
+
+
+
+
+</pre><pre class="idle"><span class="Storage">var</span> _a, close, contents, open, tag;
+tag <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>&lt;impossible&gt;<span class="String">&quot;</span></span>;
+_a <span class="Keyword">=</span> tag.<span class="LibraryFunction">split</span>(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span>);
+open <span class="Keyword">=</span> _a[<span class="Number">0</span>];
+contents <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice.<span class="LibraryFunction">call</span>(_a, <span class="Number">1</span>, _a.<span class="LibraryConstant">length</span> <span class="Keyword">-</span> <span class="Number">1</span>);
+close <span class="Keyword">=</span> _a[_a.<span class="LibraryConstant">length</span> <span class="Keyword">-</span> <span class="Number">1</span>];
+</pre><button onclick='javascript: var _a, close, contents, open, tag;
+tag = "<impossible>";
+_a = tag.split("");
+open = _a[0];
+contents = Array.prototype.slice.call(_a, 1, _a.length - 1);
+close = _a[_a.length - 1];
+;alert(contents.join(""));'>run: contents.join("")</button><br class='clear' /></div>
 
     <p>
       <span id="fat_arrow" class="bookmark"></span>
@@ -1409,7 +1443,7 @@ city = _c[1];
       gives a good overview of the quirks.
     </p>
     <p>
-      The fat arrow <tt>=></tt> can be used to both define a function, and to bind
+      The fat arrow <tt>=&gt;</tt> can be used to both define a function, and to bind
       it to the current value of <tt>this</tt>, right on the spot. This is helpful
       when using callback-based libraries like Prototype or jQuery, for creating
       iterator functions to pass to <tt>each</tt>, or event-handler functions
@@ -1441,6 +1475,40 @@ Account <span class="Keyword">=</span> <span class="Storage">function</span> <sp
       have referred to the undefined "customer" property of the DOM element,
       and trying to call <tt>purchase()</tt> on it would have raised an exception.
     </p>
+    <p>
+      If you have more custom needs for function binding, CoffeeScript includes
+      the <tt>&lt;-</tt> bind operator, which works the same as ECMAScript 5
+      and Prototype.js's <tt>Function#bind</tt>. The first argument is the <tt>this</tt>
+      value, and the remainder are curried arguments. In the example below,
+      we curry a jQuery request for a URL, and then execute the bound function
+      with the missing callback argument.
+    </p>
+    <div class='code'><pre class="idle">url<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>documentation/coffee/binding.coffee<span class="String">&quot;</span></span>
+
+get_source<span class="Keyword">:</span> jQuery.get <span class="Keyword">&lt;</span><span class="Keyword">-</span> jQuery, url
+
+get_source <span class="FunctionArgument">(</span><span class="FunctionArgument">response</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> alert response
+</pre><pre class="idle"><span class="Storage">var</span> get_source, url;
+url <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>documentation/coffee/binding.coffee<span class="String">&quot;</span></span>;
+get_source <span class="Keyword">=</span> (<span class="Storage">function</span>(func, obj, args) {
+  <span class="Keyword">return</span> <span class="Storage">function</span>() {
+    <span class="Keyword">return</span> func.<span class="LibraryFunction">apply</span>(obj, args.<span class="LibraryFunction">concat</span>(<span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">0</span>)));
+  };
+}(jQuery.get, jQuery, [url]));
+get_source(<span class="Storage">function</span>(response) {
+  <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(response);
+});
+</pre><button onclick='javascript: var get_source, url;
+url = "documentation/coffee/binding.coffee";
+get_source = (function(func, obj, args) {
+  return function() {
+    return func.apply(obj, args.concat(Array.prototype.slice.call(arguments, 0)));
+  };
+}(jQuery.get, jQuery, [url]));
+get_source(function(response) {
+  return alert(response);
+});
+;'>run</button><br class='clear' /></div>
 
     <p>
       <span id="embedded" class="bookmark"></span>
@@ -1553,6 +1621,42 @@ healthy = (200 > cholesterol) && (cholesterol > 60);
 ;alert(healthy);'>run: healthy</button><br class='clear' /></div>
 
     <p>
+      <span id="interpolation" class="bookmark"></span>
+      <b class="header">String and RegExp Interpolation</b>
+      A version of <a href="http://wiki.ecmascript.org/doku.php?id=strawman:string_interpolation">ECMAScript Harmony's proposed string interpolation</a>
+      is included in CoffeeScript. Simple variables can be included by marking
+      them with a dollar sign.
+    </p>
+    <div class='code'><pre class="idle">author<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Wittgenstein<span class="String">&quot;</span></span>
+quote<span class="Keyword">:</span>  <span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String"><span class="String">$</span>author</span><span class="String">&quot;</span></span>
+</pre><pre class="idle"><span class="Storage">var</span> author, quote;
+author <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Wittgenstein<span class="String">&quot;</span></span>;
+quote <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String">&quot;</span></span> <span class="Keyword">+</span> author;
+</pre><button onclick='javascript: var author, quote;
+author = "Wittgenstein";
+quote = "A picture is a fact. -- " + author;
+;alert(quote);'>run: quote</button><br class='clear' /></div>
+    <p>
+      And arbitrary expressions can be interpolated by using brackets <tt>${ ... }</tt><br />
+      Interpolation works the same way within regular expressions.
+    </p>
+    <div class='code'><pre class="idle">sentence<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span><span class="String"><span class="String">${</span> <span class="Number">22</span> <span class="Keyword">/</span> <span class="Number">7</span> <span class="String">}</span></span> is a decent approximation of π<span class="String">&quot;</span></span>
+
+sep<span class="Keyword">:</span>   <span class="String"><span class="String">&quot;</span>[.<span class="UserDefinedConstant">\\</span>/<span class="UserDefinedConstant">\\</span>- ]<span class="String">&quot;</span></span>
+dates<span class="Keyword">:</span><span class="String"> <span class="String">/</span><span class="UserDefinedConstant">\d</span>+<span class="String"><span class="String">$</span>sep</span><span class="UserDefinedConstant">\d</span>+<span class="String"><span class="String">$</span>sep</span><span class="UserDefinedConstant">\d</span>+<span class="String">/</span>g</span>
+
+
+</pre><pre class="idle"><span class="Storage">var</span> dates, sentence, sep;
+sentence <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> (<span class="Number">22</span> / <span class="Number">7</span>) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is a decent approximation of π<span class="String">&quot;</span></span>;
+sep <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>[.<span class="UserDefinedConstant">\\</span>/<span class="UserDefinedConstant">\\</span>- ]<span class="String">&quot;</span></span>;
+dates <span class="Keyword">=</span> (<span class="Keyword">new</span> <span class="TypeName">RegExp</span>(<span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>d+<span class="String">&quot;</span></span> <span class="Keyword">+</span> sep <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>d+<span class="String">&quot;</span></span> <span class="Keyword">+</span> sep <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>d+<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>g<span class="String">&quot;</span></span>));
+</pre><button onclick='javascript: var dates, sentence, sep;
+sentence = "" + (22 / 7) + " is a decent approximation of π";
+sep = "[.\\/\\- ]";
+dates = (new RegExp("\\d+" + sep + "\\d+" + sep + "\\d+", "g"));
+;alert(sentence);'>run: sentence</button><br class='clear' /></div>
+
+    <p>
       <span id="strings" class="bookmark"></span>
       <b class="header">Multiline Strings and Heredocs</b>
       Multiline strings are allowed in CoffeeScript.
@@ -1592,37 +1696,11 @@ world...";
 <span class="String">      &lt;/strong&gt;</span>
 <span class="String">      <span class="String">'''</span></span>
 </pre><pre class="idle"><span class="Storage">var</span> html;
-html <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>&lt;strong&gt;<span class="UserDefinedConstant">\n</span>  cup of coffeescript<span class="UserDefinedConstant">\n</span>&lt;/strong&gt;<span class="String">&quot;</span></span>;
+html <span class="Keyword">=</span> <span class="String"><span class="String">'</span>&lt;strong&gt;<span class="UserDefinedConstant">\n</span>  cup of coffeescript<span class="UserDefinedConstant">\n</span>&lt;/strong&gt;<span class="String">'</span></span>;
 </pre><br class='clear' /></div>
-
     <p>
-      <span id="interpolation" class="bookmark"></span>
-      <b class="header">String Interpolation</b>
-      A version of <a href="http://wiki.ecmascript.org/doku.php?id=strawman:string_interpolation">ECMAScript Harmony's proposed string interpolation</a>
-      is included in CoffeeScript. Simple variables can be included by marking
-      them with a dollar sign.
+      Double-quoted heredocs, like double-quoted strings, allow interpolation.
     </p>
-    <div class='code'><pre class="idle">author<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Wittgenstein<span class="String">&quot;</span></span>
-quote<span class="Keyword">:</span>  <span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String"><span class="String">$</span>author</span><span class="String">&quot;</span></span>
-</pre><pre class="idle"><span class="Storage">var</span> author, quote;
-author <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Wittgenstein<span class="String">&quot;</span></span>;
-quote <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String">&quot;</span></span> <span class="Keyword">+</span> author;
-</pre><button onclick='javascript: var author, quote;
-author = "Wittgenstein";
-quote = "A picture is a fact. -- " + author;
-;alert(quote);'>run: quote</button><br class='clear' /></div>
-    <p>
-      And arbitrary expressions can be interpolated by using brackets <tt>${ ... }</tt>
-    </p>
-    <div class='code'><pre class="idle">sentence<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span><span class="String"><span class="String">${</span> <span class="Number">22</span> <span class="Keyword">/</span> <span class="Number">7</span> <span class="String">}</span></span> is a decent approximation of π<span class="String">&quot;</span></span>
-
-
-
-</pre><pre class="idle"><span class="Storage">var</span> sentence;
-sentence <span class="Keyword">=</span> <span class="String"><span class="String">'</span><span class="String">'</span></span> <span class="Keyword">+</span> (<span class="Number">22</span> / <span class="Number">7</span>) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is a decent approximation of π<span class="String">&quot;</span></span>;
-</pre><button onclick='javascript: var sentence;
-sentence = '' + (22 / 7) + " is a decent approximation of π";
-;alert(sentence);'>run: sentence</button><br class='clear' /></div>
 
     <h2>
       <span id="cake" class="bookmark"></span>
@@ -1732,6 +1810,17 @@ sentence = '' + (22 / 7) + " is a decent approximation of π";
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <b class="header" style="margin-top: 20px;">0.5.6</b>
+      Interpolation can now be used within regular expressions and heredocs, as well as
+      strings. Added the <tt>&lt;-</tt> bind operator.
+      Allowing assignment to half-expressions instead of special <tt>||=</tt>-style
+      operators. The arguments object is no longer automatically converted into
+      an array. After requiring <tt>coffee-script</tt>, Node.js can now directly
+      load <tt>.coffee</tt> files, thanks to <b>registerExtension</b>. Multiple
+      splats can now be used in function calls, arrays, and pattern matching.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.5.5</b>

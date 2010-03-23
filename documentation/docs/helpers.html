@@ -7,7 +7,7 @@ arrays, count characters, that sort of thing.</p>             </td>             
   <span class="nv">num: </span><span class="mi">0</span>
   <span class="nv">pos: </span><span class="nx">string</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">letter</span><span class="p">)</span>
   <span class="k">while</span> <span class="nx">pos</span> <span class="o">isnt</span> <span class="o">-</span><span class="mi">1</span>
-    <span class="nx">num</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="nv">num: </span><span class="o">+</span> <span class="mi">1</span>
     <span class="nv">pos: </span><span class="nx">string</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">letter</span><span class="p">,</span> <span class="nx">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
   <span class="nx">num</span></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="octowrap">                 <a class="octothorpe" href="#section-7">#</a>               </div>               <p>Merge objects, returning a fresh copy with attributes from both sides.
 Used every time <code>BaseNode#compile</code> is called, to allow properties in the
@@ -30,27 +30,27 @@ looking for a particular method in an options hash.</p>             </td>       
 a series of delimiters, all of which must be nested correctly within the
 contents of the string. This method allows us to have strings within
 interpolations within strings, ad infinitum.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">helpers.balanced_string: balanced_string: </span><span class="p">(</span><span class="nx">str</span><span class="p">,</span> <span class="nx">delimited</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nx">options</span> <span class="o">||=</span> <span class="p">{}</span>
+  <span class="nv">options: </span><span class="o">or</span> <span class="p">{}</span>
   <span class="nv">slash: </span><span class="nx">delimited</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="s1">&#39;/&#39;</span>
   <span class="nv">levels: </span><span class="p">[]</span>
   <span class="nv">i: </span><span class="mi">0</span>
   <span class="k">while</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">str</span><span class="p">.</span><span class="nx">length</span>
     <span class="k">if</span> <span class="nx">levels</span><span class="p">.</span><span class="nx">length</span> <span class="o">and</span> <span class="nx">starts</span> <span class="nx">str</span><span class="p">,</span> <span class="s1">&#39;\\&#39;</span><span class="p">,</span> <span class="nx">i</span>
-      <span class="nx">i</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="nv">i: </span><span class="o">+</span> <span class="mi">1</span>
     <span class="k">else</span>
       <span class="k">for</span> <span class="nx">pair</span> <span class="k">in</span> <span class="nx">delimited</span>
         <span class="p">[</span><span class="nx">open</span><span class="p">,</span> <span class="nx">close</span><span class="p">]</span><span class="o">:</span> <span class="nx">pair</span>
         <span class="k">if</span> <span class="nx">levels</span><span class="p">.</span><span class="nx">length</span> <span class="o">and</span> <span class="nx">starts</span><span class="p">(</span><span class="nx">str</span><span class="p">,</span> <span class="nx">close</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span> <span class="o">and</span> <span class="nx">levels</span><span class="p">[</span><span class="nx">levels</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">is</span> <span class="nx">pair</span>
           <span class="nx">levels</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span>
-          <span class="nx">i</span> <span class="o">+=</span> <span class="nx">close</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span>
-          <span class="nx">i</span> <span class="o">+=</span> <span class="mi">1</span> <span class="nx">unless</span> <span class="nx">levels</span><span class="p">.</span><span class="nx">length</span>
+          <span class="nv">i: </span><span class="o">+</span> <span class="nx">close</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span>
+          <span class="nv">i: </span><span class="o">+</span> <span class="mi">1</span> <span class="nx">unless</span> <span class="nx">levels</span><span class="p">.</span><span class="nx">length</span>
           <span class="k">break</span>
         <span class="k">else</span> <span class="k">if</span> <span class="nx">starts</span> <span class="nx">str</span><span class="p">,</span> <span class="nx">open</span><span class="p">,</span> <span class="nx">i</span>
           <span class="nx">levels</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">pair</span><span class="p">)</span>
-          <span class="nx">i</span> <span class="o">+=</span> <span class="nx">open</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span>
+          <span class="nv">i: </span><span class="o">+</span> <span class="nx">open</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span>
           <span class="k">break</span>
     <span class="k">break</span> <span class="k">if</span> <span class="o">not</span> <span class="nx">levels</span><span class="p">.</span><span class="nx">length</span> <span class="o">or</span> <span class="nx">slash</span> <span class="o">and</span> <span class="nx">starts</span> <span class="nx">str</span><span class="p">,</span> <span class="s1">&#39;\n&#39;</span><span class="p">,</span> <span class="nx">i</span>
-    <span class="nx">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="nv">i: </span><span class="o">+</span> <span class="mi">1</span>
   <span class="k">if</span> <span class="nx">levels</span><span class="p">.</span><span class="nx">length</span>
     <span class="k">return</span> <span class="kc">false</span> <span class="k">if</span> <span class="nx">slash</span>
     <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span> <span class="s2">&quot;SyntaxError: Unterminated ${levels.pop()[0]} starting on line ${@line + 1}&quot;</span>

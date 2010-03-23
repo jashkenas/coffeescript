@@ -158,7 +158,7 @@ exports.Lexer: class Lexer
       str: str.replace REGEX_ESCAPE, (escaped) -> '\\' + escaped
       @tokens: @tokens.concat [['(', '('], ['NEW', 'new'], ['IDENTIFIER', 'RegExp'], ['CALL_START', '(']]
       @interpolate_string "\"$str\"", yes
-      @tokens: @tokens.concat [[',', ','], ['STRING', "'$flags'"], [')', ')'], [')', ')']]
+      @tokens: @tokens.concat [[',', ','], ['STRING', "\"$flags\""], [')', ')'], [')', ')']]
     else
       @token 'REGEX', regex
     @i: + regex.length
@@ -375,7 +375,7 @@ exports.Lexer: class Lexer
           pi: i + 1
         i: + 1
       tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i and pi < str.length - 1
-      tokens.unshift ['STRING', "''"] unless tokens[0][0] is 'STRING'
+      tokens.unshift ['STRING', '""'] unless tokens[0][0] is 'STRING'
       for token, i in tokens
         [tag, value]: token
         if tag is 'TOKENS'
