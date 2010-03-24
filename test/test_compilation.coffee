@@ -54,5 +54,18 @@ js: CoffeeScript.compile 'puts %w{one two three}', {no_wrap: on}
 
 ok js is 'puts(["one", "two", "three"]);'
 
+
+# Finally, let's try an extension that converts `a << b` into `a.push(b)`.
+
+CoffeeScript.extend ->
+  return false unless @chunk.match(/^<</)
+  @i: + 2
+  @token 'PROPERTY_ACCESS', '.'
+  @token 'IDENTIFIER', 'push'
+
+js: CoffeeScript.compile 'a << b', {no_wrap: on}
+
+ok js is 'a.push(b);'
+
 Lexer.extensions: []
 
