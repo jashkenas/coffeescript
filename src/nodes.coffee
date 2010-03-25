@@ -243,7 +243,13 @@ exports.ReturnNode: class ReturnNode extends BaseNode
   constructor: (expression) ->
     @children: [@expression: expression]
 
+  top_sensitive: ->
+    true
+
   compile_node: (o) ->
+    expr: @expression.make_return()
+    return expr.compile(o) unless expr instanceof ReturnNode
+    del o, 'top'
     o.as_statement: true if @expression.is_statement()
     "${@tab}return ${@expression.compile(o)};"
 
