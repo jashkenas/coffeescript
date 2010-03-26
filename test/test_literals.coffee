@@ -25,6 +25,11 @@ reg: /\\/
 
 ok reg(str) and str is '\\'
 
+trailing_comma: [1, 2, 3,]
+ok (trailing_comma[0] is 1) and (trailing_comma[2] is 3) and (trailing_comma.length is 3)
+
+trailing_comma: {k1: "v1", k2: 4, k3: (-> true),}
+ok trailing_comma.k3() and (trailing_comma.k2 is 4) and (trailing_comma.k1 is "v1")
 
 money$: 'dollars'
 

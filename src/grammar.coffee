@@ -230,6 +230,8 @@ grammar: {
   Object: [
     o "{ AssignList }",                         -> new ObjectNode $2
     o "{ IndentedAssignList }",                 -> new ObjectNode $2
+    o "{ AssignList , }",                       -> new ObjectNode $2
+    o "{ IndentedAssignList , }",               -> new ObjectNode $2
   ]
 
   # Class definitions have optional bodies of prototype property assignments,
@@ -283,11 +285,13 @@ grammar: {
   # The list of arguments to a function call.
   Arguments: [
     o "CALL_START ArgList CALL_END",            -> $2
+    o "CALL_START ArgList , CALL_END",          -> $2
   ]
 
   # Calling super.
   Super: [
     o "SUPER CALL_START ArgList CALL_END",      -> new CallNode 'super', $3
+    o "SUPER CALL_START ArgList , CALL_END",    -> new CallNode 'super', $3
   ]
 
   # A reference to the *this* current object, either naked or to a property.
@@ -311,6 +315,7 @@ grammar: {
   # The array literal.
   Array: [
     o "[ ArgList ]",                            -> new ArrayNode $2
+    o "[ ArgList , ]",                          -> new ArrayNode $2
   ]
 
   # The **ArgList** is both the list of objects passed into a function call,
