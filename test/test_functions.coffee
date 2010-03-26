@@ -113,10 +113,10 @@ del: -> 5
 ok del() is 5
 
 # Ensure that functions can have a trailing comma in their argument list
+
 mult: (x, mids..., y) ->
   x: * n for n in mids
   x: * y
-  x
 
 ok mult(1, 2,) is 2
 ok mult(1, 2, 3,) is 6

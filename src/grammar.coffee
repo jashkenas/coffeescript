@@ -256,6 +256,7 @@ grammar: {
   # An **AssignList** within a block indentation.
   IndentedAssignList: [
     o "INDENT AssignList OUTDENT",              -> $2
+    o "INDENT AssignList , OUTDENT",            -> $2
   ]
 
   # The three flavors of function call: normal, object instantiation with `new`,
@@ -330,6 +331,7 @@ grammar: {
     o "ArgList , TERMINATOR Expression",        -> $1.concat [$4]
     o "ArgList , INDENT Expression",            -> $1.concat [$4]
     o "ArgList OUTDENT"
+    o "ArgList , OUTDENT"
   ]
 
   # Just simple, comma-separated, required arguments (no fancy syntax). We need
