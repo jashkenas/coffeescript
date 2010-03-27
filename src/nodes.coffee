@@ -1277,23 +1277,6 @@ exports.IfNode: class IfNode extends BaseNode
     else_part:  if @else_body then @else_body.compile(o) else 'null'
     "$if_part : $else_part"
 
-#### PipeNode
-
-# Unix-like piping. Allows chaining of function calls where every succeeding
-# call receives as first argument the result of all preceding expressions.
-exports.PipeNode: class PipeNode extends BaseNode
-  type: 'Pipe'
-
-  constructor: (left, right, fallback) ->
-    @children: [@left: left, @right: right]
-    @fallback: fallback
-
-  compile_node: (o) ->
-    if @right instanceof CallNode and not (@right.is_new or @right.is_super)
-      @right.args.unshift @left
-      return @right.compile o
-    new OpNode((if @fallback and @left instanceof PipeNode then '||' else '|'), @left, @right).compile o
-
 # Faux-Nodes
 # ----------
 
