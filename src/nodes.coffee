@@ -1291,7 +1291,7 @@ exports.PipeNode: class PipeNode extends BaseNode
     new OpNode('|', @left, @right).compile o
 
   compile_node: (o) ->
-    return compile_bitwise_or o unless @right instanceof CallNode and not (@right.is_new or @right.is_super)
+    return @compile_bitwise_or o unless @right instanceof CallNode and not (@right.is_new or @right.is_super)
     @right.args.unshift @left
     @right.compile o
 
