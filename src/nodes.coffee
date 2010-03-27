@@ -1136,7 +1136,6 @@ exports.ForNode: class ForNode extends BaseNode
     scope.find index if index
     body_dent:      @idt(1)
     rvar:           scope.free_variable() unless top_level
-    svar:           scope.free_variable()
     ivar:           if range then name else index or scope.free_variable()
     var_part:       ''
     body:           Expressions.wrap([@body])
@@ -1146,6 +1145,7 @@ exports.ForNode: class ForNode extends BaseNode
       for_part:     source.compile merge o, {index: ivar, step: @step}
       for_part:     "$index_var = 0, $for_part, $index_var++"
     else
+      svar:         scope.free_variable()
       index_var:    null
       source_part:  "$svar = ${ @source.compile(o) };\n$@tab"
       var_part:     "$body_dent$name = $svar[$ivar];\n" if name
