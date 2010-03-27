@@ -264,6 +264,7 @@ grammar: {
   # operations.
   Pipe: [
     o "Expression | Expression",                -> new PipeNode $1, $3
+    o "Expression | || Expression",             -> new PipeNode $1, $4, true
   ]
 
   # The three flavors of function call: normal, object instantiation with `new`,
