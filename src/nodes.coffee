@@ -1284,15 +1284,16 @@ exports.IfNode: class IfNode extends BaseNode
 exports.PipeNode: class PipeNode extends BaseNode
   type: 'Pipe'
 
-  constructor: (left, right, fallback) ->
+  constructor: (left, right) ->
     @children: [@left: left, @right: right]
-    @fallback: fallback
+
+  compile_bitwise_or: (o) ->
+    new OpNode('|', @left, @right).compile o
 
   compile_node: (o) ->
-    if @right instanceof CallNode and not (@right.is_new or @right.is_super)
-      @right.args.unshift @left
-      return @right.compile o
-    new OpNode((if @fallback and @left instanceof PipeNode then '||' else '|'), @left, @right).compile o
+    return compile_bitwise_or o unless @right instanceof CallNode and not (@right.is_new or @right.is_super)
+    @right.args.unshift @left
+    @right.compile o
 
 # Faux-Nodes
 # ----------
