@@ -126,6 +126,7 @@ exports.Rewriter: class Rewriter
         return 2
       if !post? or include IMPLICIT_END, tag
         return 1 if tag is 'INDENT' and prev and include IMPLICIT_BLOCK, prev[0]
+        return 1 if tag is 'OUTDENT' and token.generated
         if open or tag is 'INDENT'
           idx: if tag is 'OUTDENT' then i + 1 else i
           stack_pointer: if tag is 'INDENT' then 2 else 1
@@ -162,7 +163,9 @@ exports.Rewriter: class Rewriter
             (tok[0] is ')' && parens is 0)) and
             not (starter is 'ELSE' and tok[0] is 'ELSE')
           insertion: if pre[0] is "," then idx - 1 else idx
-          @tokens.splice(insertion, 0, ['OUTDENT', 2, token[2]])
+          outdent: ['OUTDENT', 2, token[2]]
+          outdent.generated: true
+          @tokens.splice(insertion, 0, outdent)
           break
         parens: + 1 if tok[0] is '('
         parens: - 1 if tok[0] is ')'
