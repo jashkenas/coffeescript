@@ -109,12 +109,15 @@ exports.Rewriter: class Rewriter
   # deal with them.
   add_implicit_parentheses: ->
     stack: [0]
-    calls: 0
+    calls:  0
+    parens: 0
     @scan_tokens (prev, token, post, i) =>
       tag: token[0]
       switch tag
         when 'CALL_START' then calls: + 1
         when 'CALL_END'   then calls: - 1
+        when '('          then parens: + 1
+        when ')'          then parens: - 1
         when 'INDENT'     then stack.push(0)
         when 'OUTDENT'
           last: stack.pop()
@@ -124,7 +127,7 @@ exports.Rewriter: class Rewriter
         stack[stack.length - 1]: - 1
         @tokens.splice(i, 0, ['CALL_END', ')', token[2]])
         return 2
-      if !post? or include IMPLICIT_END, tag
+      if !post? or (parens is 0 and include IMPLICIT_END, tag)
         return 1 if tag is 'INDENT' and prev and include IMPLICIT_BLOCK, prev[0]
         return 1 if tag is 'OUTDENT' and token.generated
         if open or tag is 'INDENT'
@@ -160,7 +163,7 @@ exports.Rewriter: class Rewriter
         pre: @tokens[idx - 1]
         if (not tok or
             (include(SINGLE_CLOSERS, tok[0]) and tok[1] isnt ';') or
-            (tok[0] is ')' && parens is 0)) and
+            (tok[0] is ')' and parens is 0)) and
             not (starter is 'ELSE' and tok[0] is 'ELSE')
           insertion: if pre[0] is "," then idx - 1 else idx
           outdent: ['OUTDENT', 2, token[2]]
