@@ -195,6 +195,7 @@ grammar: {
     o "Expression . . .",                       -> new SplatNode $1
   ]
   
+  # Variables and properties that can be assigned to.
   SimpleAssignable: [
     o "Identifier",                             -> new ValueNode $1
     o "Value Accessor",                         -> $1.push $2
@@ -278,6 +279,7 @@ grammar: {
     o "Super"
   ]
 
+  # Binds a function call to a context and/or arguments.
   Curry: [
     o "Value <- Arguments",                     -> new CurryNode $1, $3
   ]
@@ -420,13 +422,16 @@ grammar: {
   ]
 
   # The source of a comprehension is an array or object with an optional filter
-  # clause. If it's an array comprehension, you can also choose to step throug
+  # clause. If it's an array comprehension, you can also choose to step through
   # in fixed-size increments.
   ForSource: [
-    o "IN Expression",                          -> {source:   $2}
-    o "OF Expression",                          -> {source:   $2, object: true}
-    o "ForSource WHEN Expression",              -> $1.filter: $3; $1
-    o "ForSource BY Expression",                -> $1.step:   $3; $1
+    o "IN Expression",                               -> {source: $2}
+    o "OF Expression",                               -> {source: $2, object: true}
+    o "IN Expression WHEN Expression",               -> {source: $2, filter: $4}
+    o "OF Expression WHEN Expression",               -> {source: $2, filter: $4, object: true}
+    o "IN Expression BY Expression",                 -> {source: $2, step:   $4}
+    o "IN Expression WHEN Expression BY Expression", -> {source: $2, filter: $4; step:   $6}
+    o "IN Expression BY Expression WHEN Expression", -> {source: $2, step:   $4, filter: $6}
   ]
 
   # The CoffeeScript switch/when/else block replaces the JavaScript
