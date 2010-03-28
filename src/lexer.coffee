@@ -438,7 +438,8 @@ JS_KEYWORDS: [
   "break", "continue",
   "for", "in", "while",
   "delete", "instanceof", "typeof",
-  "switch", "super", "extends", "class"
+  "switch", "super", "extends", "class",
+  "this", "null"
 ]
 
 # CoffeeScript-only keywords, which we're more relaxed about allowing. They can't

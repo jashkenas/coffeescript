@@ -263,6 +263,7 @@ IMPLICIT_FUNC:  ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '<-']
 IMPLICIT_CALL:  ['IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START',
                  'TRY', 'DELETE', 'TYPEOF', 'SWITCH', 'EXTENSION',
                  'TRUE', 'FALSE', 'YES', 'NO', 'ON', 'OFF', '!', '!!', 'NOT',
+                 'THIS', 'NULL',
                  '@', '->', '=>', '[', '(', '{']
 
 # Tokens indicating that the implicit call must enclose a block of expressions.

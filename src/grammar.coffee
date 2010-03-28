@@ -132,7 +132,7 @@ grammar: {
 
   # Assignment of a variable, property, or index to a value.
   Assign: [
-    o "Value ASSIGN Expression",                -> new AssignNode $1, $3
+    o "Assignable ASSIGN Expression",                -> new AssignNode $1, $3
   ]
 
   # Assignment when it happens within an object literal. The difference from
@@ -194,19 +194,26 @@ grammar: {
   Splat: [
     o "Expression . . .",                       -> new SplatNode $1
   ]
+  
+  # Everything that can be assigned to.
+  Assignable: [
+    o "Identifier",                             -> new ValueNode $1
+    o "Array",                                  -> new ValueNode $1
+    o "Object",                                 -> new ValueNode $1
+    o "Value Accessor",                         -> $1.push $2
+    o "Invocation Accessor",                    -> new ValueNode $1, [$2]
+    o "ThisProperty"
+  ]
 
   # The types of things that can be treated as values -- assigned to, invoked
   # as functions, indexed into, named as a class, etc.
   Value: [
-    o "Identifier",                             -> new ValueNode $1
+    o "Assignable"
     o "Literal",                                -> new ValueNode $1
-    o "Array",                                  -> new ValueNode $1
-    o "Object",                                 -> new ValueNode $1
     o "Parenthetical",                          -> new ValueNode $1
     o "Range",                                  -> new ValueNode $1
     o "This"
-    o "Value Accessor",                         -> $1.push $2
-    o "Invocation Accessor",                    -> new ValueNode $1, [$2]
+    o "NULL",                                   -> new ValueNode new LiteralNode 'null'
   ]
 
   # The general group of accessors into an object, by property, by prototype
@@ -237,10 +244,10 @@ grammar: {
   # Class definitions have optional bodies of prototype property assignments,
   # and optional references to the superclass.
   Class: [
-    o "CLASS Value",                            -> new ClassNode $2
-    o "CLASS Value EXTENDS Value",              -> new ClassNode $2, $4
-    o "CLASS Value IndentedAssignList",         -> new ClassNode $2, null, $3
-    o "CLASS Value EXTENDS Value IndentedAssignList", -> new ClassNode $2, $4, $5
+    o "CLASS Identifier",                            -> new ClassNode $2
+    o "CLASS Identifier EXTENDS Value",              -> new ClassNode $2, $4
+    o "CLASS Identifier IndentedAssignList",         -> new ClassNode $2, null, $3
+    o "CLASS Identifier EXTENDS Value IndentedAssignList", -> new ClassNode $2, $4, $5
   ]
 
   # Assignment of properties within an object literal can be separated by
@@ -295,9 +302,14 @@ grammar: {
     o "SUPER CALL_START ArgList , CALL_END",    -> new CallNode 'super', $3
   ]
 
-  # A reference to the *this* current object, either naked or to a property.
+  # A reference to the *this* current object.
   This: [
+    o "THIS",                                   -> new ValueNode new LiteralNode 'this'
     o "@",                                      -> new ValueNode new LiteralNode 'this'
+  ]
+  
+  # A reference to a property on *this*.
+  ThisProperty: [
     o "@ Identifier",                           -> new ValueNode new LiteralNode('this'), [new AccessorNode($2)]
   ]
 
