@@ -195,14 +195,18 @@ grammar: {
     o "Expression . . .",                       -> new SplatNode $1
   ]
   
-  # Everything that can be assigned to.
-  Assignable: [
+  SimpleAssignable: [
     o "Identifier",                             -> new ValueNode $1
-    o "Array",                                  -> new ValueNode $1
-    o "Object",                                 -> new ValueNode $1
     o "Value Accessor",                         -> $1.push $2
     o "Invocation Accessor",                    -> new ValueNode $1, [$2]
     o "ThisProperty"
+  ]
+  
+  # Everything that can be assigned to.
+  Assignable: [
+    o "SimpleAssignable"
+    o "Array",                                  -> new ValueNode $1
+    o "Object",                                 -> new ValueNode $1
   ]
 
   # The types of things that can be treated as values -- assigned to, invoked
@@ -244,10 +248,10 @@ grammar: {
   # Class definitions have optional bodies of prototype property assignments,
   # and optional references to the superclass.
   Class: [
-    o "CLASS Identifier",                            -> new ClassNode $2
-    o "CLASS Identifier EXTENDS Value",              -> new ClassNode $2, $4
-    o "CLASS Identifier IndentedAssignList",         -> new ClassNode $2, null, $3
-    o "CLASS Identifier EXTENDS Value IndentedAssignList", -> new ClassNode $2, $4, $5
+    o "CLASS SimpleAssignable",                            -> new ClassNode $2
+    o "CLASS SimpleAssignable EXTENDS Value",              -> new ClassNode $2, $4
+    o "CLASS SimpleAssignable IndentedAssignList",         -> new ClassNode $2, null, $3
+    o "CLASS SimpleAssignable EXTENDS Value IndentedAssignList", -> new ClassNode $2, $4, $5
   ]
 
   # Assignment of properties within an object literal can be separated by
@@ -281,7 +285,7 @@ grammar: {
   # Extending an object by setting its prototype chain to reference a parent
   # object.
   Extends: [
-    o "Value EXTENDS Value",                    -> new ExtendsNode $1, $3
+    o "SimpleAssignable EXTENDS Value",                    -> new ExtendsNode $1, $3
   ]
 
   # Ordinary function invocation, or a chained series of calls.
