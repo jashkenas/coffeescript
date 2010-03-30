@@ -148,7 +148,13 @@ make sense.</p>             </td>             <td class="code">               <d
   <span class="nv">constructor: </span><span class="p">(</span><span class="nx">expression</span><span class="p">)</span> <span class="o">-&gt;</span>
     <span class="err">@</span><span class="nv">children: </span><span class="p">[</span><span class="err">@</span><span class="nv">expression: </span><span class="nx">expression</span><span class="p">]</span>
 
+  <span class="nv">top_sensitive: </span><span class="o">-&gt;</span>
+    <span class="kc">true</span>
+
   <span class="nv">compile_node: </span><span class="p">(</span><span class="nx">o</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="nv">expr: </span><span class="err">@</span><span class="nx">expression</span><span class="p">.</span><span class="nx">make_return</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nx">expr</span><span class="p">.</span><span class="nx">compile</span><span class="p">(</span><span class="nx">o</span><span class="p">)</span> <span class="nx">unless</span> <span class="nx">expr</span> <span class="k">instanceof</span> <span class="nx">ReturnNode</span>
+    <span class="nx">del</span> <span class="nx">o</span><span class="p">,</span> <span class="s1">&#39;top&#39;</span>
     <span class="nv">o.as_statement: </span><span class="kc">true</span> <span class="k">if</span> <span class="err">@</span><span class="nx">expression</span><span class="p">.</span><span class="nx">is_statement</span><span class="p">()</span>
     <span class="s2">&quot;${@tab}return ${@expression.compile(o)};&quot;</span>
 
@@ -802,7 +808,6 @@ some cannot.</p>             </td>             <td class="code">               <
     <span class="nx">scope</span><span class="p">.</span><span class="nx">find</span> <span class="nx">index</span> <span class="k">if</span> <span class="nx">index</span>
     <span class="nv">body_dent: </span>     <span class="err">@</span><span class="nx">idt</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="nv">rvar: </span>          <span class="nx">scope</span><span class="p">.</span><span class="nx">free_variable</span><span class="p">()</span> <span class="nx">unless</span> <span class="nx">top_level</span>
-    <span class="nv">svar: </span>          <span class="nx">scope</span><span class="p">.</span><span class="nx">free_variable</span><span class="p">()</span>
     <span class="nv">ivar: </span>          <span class="k">if</span> <span class="nx">range</span> <span class="k">then</span> <span class="nx">name</span> <span class="k">else</span> <span class="nx">index</span> <span class="o">or</span> <span class="nx">scope</span><span class="p">.</span><span class="nx">free_variable</span><span class="p">()</span>
     <span class="nv">var_part: </span>      <span class="s1">&#39;&#39;</span>
     <span class="nv">body: </span>          <span class="nx">Expressions</span><span class="p">.</span><span class="nx">wrap</span><span class="p">([</span><span class="err">@</span><span class="nx">body</span><span class="p">])</span>
@@ -812,6 +817,7 @@ some cannot.</p>             </td>             <td class="code">               <
       <span class="nv">for_part: </span>    <span class="nx">source</span><span class="p">.</span><span class="nx">compile</span> <span class="nx">merge</span> <span class="nx">o</span><span class="p">,</span> <span class="p">{</span><span class="nv">index: </span><span class="nx">ivar</span><span class="p">,</span> <span class="nv">step: </span><span class="err">@</span><span class="nx">step</span><span class="p">}</span>
       <span class="nv">for_part: </span>    <span class="s2">&quot;$index_var = 0, $for_part, $index_var++&quot;</span>
     <span class="k">else</span>
+      <span class="nv">svar: </span>        <span class="nx">scope</span><span class="p">.</span><span class="nx">free_variable</span><span class="p">()</span>
       <span class="nv">index_var: </span>   <span class="kc">null</span>
       <span class="nv">source_part: </span> <span class="s2">&quot;$svar = ${ @source.compile(o) };\n$@tab&quot;</span>
       <span class="nv">var_part: </span>    <span class="s2">&quot;$body_dent$name = $svar[$ivar];\n&quot;</span> <span class="k">if</span> <span class="nx">name</span>
