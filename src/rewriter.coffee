@@ -123,10 +123,6 @@ exports.Rewriter: class Rewriter
           last: stack.pop()
           stack[stack.length - 1]: + last
       open: stack[stack.length - 1] > 0
-      if tag is 'CALL_END' and calls < 0 and open
-        stack[stack.length - 1]: - 1
-        @tokens.splice(i, 0, ['CALL_END', ')', token[2]])
-        return 2
       if !post? or (parens is 0 and include IMPLICIT_END, tag)
         return 1 if tag is 'INDENT' and prev and include IMPLICIT_BLOCK, prev[0]
         return 1 if tag is 'OUTDENT' and token.generated
