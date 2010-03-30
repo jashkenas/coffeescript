@@ -7,6 +7,7 @@
 
 # Set up exported variables for both **Node.js** and the browser.
 this.exports: this unless process?
+utilities: if process? then require('./utilities').utilities else this.utilities
 
 exports.Scope: class Scope
 
@@ -19,12 +20,22 @@ exports.Scope: class Scope
     @variables: {}
     @temp_var: if @parent then @parent.temp_var else '_a'
 
+  # Find the top-most scope object, used for defined global variables
+  topmost: ->
+    if @parent then @parent.topmost() else @
+  
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
   find: (name) ->
     return true if @check name
     @variables[name]: 'var'
     false
+  
+  # Test variables and return true the first time fn(v, k) returns true
+  any: (fn) ->
+    for v, k of @variables when fn(v, k)
+      return true
+    return false
 
   # Reserve a variable name as originating from a function parameter for this
   # scope. No `var` required for internal references.
@@ -48,18 +59,35 @@ exports.Scope: class Scope
   # Ensure that an assignment is made at the top of this scope
   # (or at the top-level scope, if requested).
   assign: (name, value, top_level) ->
-    return @parent.assign(name, value, top_level) if top_level and @parent
+    return @topmost().assign(name, value) if top_level
     @variables[name]: {value: value, assigned: true}
 
+  # Ensure the CoffeeScript utility object is included in the top level
+  # then return a CallNode curried constructor bound to the utility function
+  utility: (name) ->
+    return @topmost().utility(name) if @parent
+    if utilities.functions[name]?
+      @utilities: or {}
+      @utilities[name]: utilities.functions[name]
+      @utility(dep) for dep in (utilities.dependencies[name] or []) when not @utilities[dep]
+    "${utilities.key(name)}"
+  
+  # Formats an javascript object containing the utility methods required
+  # in the scope
+  included_utilities: (tab) ->
+    if @utilities?
+      utilities.format(key, tab) for key of @utilities
+    else []
+  
   # Does this scope reference any variables that need to be declared in the
   # given function body?
   has_declarations: (body) ->
-    body is @expressions and @declared_variables().length
+    body is @expressions and @any (k, val) -> val is 'var'
 
   # Does this scope reference any assignments that need to be declared at the
   # top of the given function body?
   has_assignments: (body) ->
-    body is @expressions and @assigned_variables().length
+    body is @expressions and (@utilities? or @any (k, val) -> val.assigned)
 
   # Return the list of variables first declared in this scope.
   declared_variables: ->
@@ -75,5 +103,5 @@ exports.Scope: class Scope
     @declared_variables().join ', '
 
   # Compile the JavaScript for all of the variable assignments in this scope.
-  compiled_assignments: ->
-    @assigned_variables().join ', '
+  compiled_assignments: (tab) ->
+    [@assigned_variables()..., @included_utilities(tab)...].join ', '

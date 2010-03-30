@@ -188,7 +188,7 @@ exports.Expressions: class Expressions extends BaseNode
   # declarations of all inner variables pushed up to the top.
   compile_with_declarations: (o) ->
     code: @compile_node(o)
-    code: "${@tab}var ${o.scope.compiled_assignments()};\n$code"  if o.scope.has_assignments(this)
+    code: "${@tab}var ${o.scope.compiled_assignments(@tab)};\n$code"  if o.scope.has_assignments(this)
     code: "${@tab}var ${o.scope.compiled_declarations()};\n$code" if o.scope.has_declarations(this)
     code
 
@@ -308,6 +308,8 @@ exports.ValueNode: class ValueNode extends BaseNode
     soaked:   false
     only:     del(o, 'only_first')
     op:       del(o, 'operation')
+    splice:   del(o, 'splice')
+    replace:  del(o, 'replace')
     props:    if only then @properties[0...@properties.length - 1] else @properties
     baseline: @base.compile o
     baseline: "($baseline)" if @base instanceof ObjectNode and @has_properties()
@@ -322,6 +324,16 @@ exports.ValueNode: class ValueNode extends BaseNode
           complete: "($temp = $complete)$@SOAK" + (baseline: temp + prop.compile(o))
         else
           complete: complete + @SOAK + (baseline: + prop.compile(o))
+      else if prop instanceof SliceNode
+        o.array: complete
+        if splice
+          o.replace: replace
+          part: prop.compile_splice(o)
+        else
+          part: prop.compile_slice(o)
+        baseline = part
+        complete = part
+        @last: part
       else
         part: prop.compile(o)
         baseline: + part
@@ -408,8 +420,6 @@ exports.CallNode: class CallNode extends BaseNode
 exports.CurryNode: class CurryNode extends CallNode
   type: 'Curry'
 
-  body: 'func.apply(obj, args.concat(Array.prototype.slice.call(arguments, 0)))'
-
   constructor: (meth, args) ->
     @children:  flatten [@meth: meth, @context: args[0], @args: (args.slice(1) or [])]
     @compile_splat_arguments: SplatNode.compile_mixed_array <- @, @args
@@ -420,10 +430,8 @@ exports.CurryNode: class CurryNode extends CallNode
     (new ArrayNode(@args)).compile o
 
   compile_node: (o) ->
-    body: Expressions.wrap([literal @body])
-    curried: new CodeNode([], body)
-    curry: new CodeNode([literal('func'), literal('obj'), literal('args')], Expressions.wrap([curried]))
-    (new ParentheticalNode(new CallNode(curry, [@meth, @context, literal(@arguments(o))]))).compile o
+    ref: new ValueNode literal(o.scope.utility('bind'))
+    (new CallNode(ref, [@meth, @context, literal(@arguments(o))])).compile o
 
 #### ExtendsNode
 
@@ -433,25 +441,13 @@ exports.CurryNode: class CurryNode extends CallNode
 exports.ExtendsNode: class ExtendsNode extends BaseNode
   type: 'Extends'
 
-  code: '''
-        function(child, parent) {
-            var ctor = function(){ };
-            ctor.prototype = parent.prototype;
-            child.__superClass__ = parent.prototype;
-            child.prototype = new ctor();
-            child.prototype.constructor = child;
-          }
-        '''
-
   constructor: (child, parent) ->
     @children:  [@child: child, @parent: parent]
 
   # Hooks one constructor into another's prototype chain.
   compile_node: (o) ->
-    o.scope.assign('__extends', @code, true)
-    ref:  new ValueNode literal('__extends')
-    call: new CallNode ref, [@child, @parent]
-    call.compile(o)
+    ref:  new ValueNode literal(o.scope.utility('extend'))
+    (new CallNode ref, [@child, @parent]).compile o
 
 #### AccessorNode
 
@@ -544,6 +540,27 @@ exports.SliceNode: class SliceNode extends BaseNode
     plus_part:  if @range.exclusive then '' else ' + 1'
     ".slice($from, $to$plus_part)"
 
+  compile_splice: (o) ->
+    array:      del o, 'array'
+    replace:    del o, 'replace'
+    from:       if @range.from? then @range.from else literal('null')
+    to:         if @range.to? then @range.to else literal('null')
+    exclusive:  if @range.exclusive then 'true' else 'false'
+    v:          o.scope.free_variable()
+    rng: new CallNode new ValueNode(literal(o.scope.utility('range'))), [literal(array), from, to, literal(exclusive)]
+    args: literal "[($v = ${rng.compile(o)})[0], $v[1] - $v[0]].concat(${replace.compile(o)})"
+    call: new CallNode new ValueNode(literal(array), [literal('.splice.apply')]), [literal(array), args]
+    call.compile(o)
+
+  compile_slice: (o) ->
+    array:      del o, 'array'
+    from:       if @range.from? then @range.from else literal('null')
+    to:         if @range.to? then @range.to else literal('null')
+    exclusive:  if @range.exclusive then 'true' else 'false'
+    rng: new CallNode new ValueNode(literal(o.scope.utility('range'))), [literal(array), from, to, literal(exclusive)]
+    call: new CallNode new ValueNode(literal(array), [literal('.slice.apply')]), [literal(array), rng]
+    call.compile(o)
+
 #### ObjectNode
 
 # An object literal, nothing fancy.
@@ -588,7 +605,7 @@ exports.ArrayNode: class ArrayNode extends BaseNode
     for obj, i in @objects
       code: obj.compile(o)
       if obj instanceof SplatNode
-        return @compile_splat_literal(@objects, o)
+        return @compile_splat_literal o
       else if obj instanceof CommentNode
         objects.push "\n$code\n$o.indent"
       else if i is @objects.length - 1
@@ -734,14 +751,7 @@ exports.AssignNode: class AssignNode extends BaseNode
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
   compile_splice: (o) ->
-    name:   @variable.compile(merge(o, {only_first: true}))
-    l:      @variable.properties.length
-    range:  @variable.properties[l - 1].range
-    plus:   if range.exclusive then '' else ' + 1'
-    from:   range.from.compile(o)
-    to:     range.to.compile(o) + ' - ' + from + plus
-    val:    @value.compile(o)
-    "${name}.splice.apply($name, [$from, $to].concat($val))"
+    @variable.compile(merge(o, {only_first: true, splice: true, replace: @value}))
 
 #### CodeNode
 
@@ -791,8 +801,8 @@ exports.CodeNode: class CodeNode extends BaseNode
     func: "function${ if @bound then '' else name_part }(${ params.join(', ') }) {$code${@idt(if @bound then 1 else 0)}}"
     func: "($func)" if top and not @bound
     return func unless @bound
-    inner: "(function$name_part() {\n${@idt(2)}return __func.apply(__this, arguments);\n${@idt(1)}});"
-    "(function(__this) {\n${@idt(1)}var __func = $func;\n${@idt(1)}return $inner\n$@tab})(this)"
+    ref: new ValueNode literal(o.scope.utility('bind'))
+    (new CallNode ref, [literal(func), literal('this')]).compile o
 
   top_sensitive: ->
     true
@@ -835,13 +845,13 @@ exports.SplatNode: class SplatNode extends BaseNode
     for trailing in @trailings
       o.scope.assign(trailing.compile(o), "arguments[arguments.length - $@trailings.length + $i]")
       i: + 1
-    "$name = Array.prototype.slice.call(arguments, $@index, arguments.length - ${@trailings.length})"
+    "$name = ${o.scope.utility('arraySlice')}.call(arguments, $@index, arguments.length - ${@trailings.length})"
 
   # A compiling a splat as a destructuring assignment means slicing arguments
   # from the right-hand-side's corresponding array.
   compile_value: (o, name, index, trailings) ->
-    if trailings? then "Array.prototype.slice.call($name, $index, ${name}.length - $trailings)" \
-    else "Array.prototype.slice.call($name, $index)"
+    if trailings? then "${o.scope.utility('arraySlice')}.call($name, $index, ${name}.length - $trailings)" \
+    else "${o.scope.utility('arraySlice')}.call($name, $index)"
 
   # Utility function that converts arbitrary number of elements, mixed with
   # splats, to a proper array
@@ -1160,8 +1170,7 @@ exports.ForNode: class ForNode extends BaseNode
     if @filter
       body:         Expressions.wrap([new IfNode(@filter, body)])
     if @object
-      o.scope.assign('__hasProp', 'Object.prototype.hasOwnProperty', true)
-      for_part: "$ivar in $svar) { if (__hasProp.call($svar, $ivar)"
+      for_part: "$ivar in $svar) { if (${o.scope.utility('hasProp')}.call($svar, $ivar)"
     body:           body.compile(merge(o, {indent: body_dent, top: true}))
     vars:           if range then name else "$name, $ivar"
     close:          if @object then '}}\n' else '}\n'
