@@ -7,7 +7,6 @@
 
 # Set up exported variables for both **Node.js** and the browser.
 this.exports: this unless process?
-utilities: if process? then require('./utilities').utilities else this.utilities
 
 exports.Scope: class Scope
 
@@ -61,23 +60,9 @@ exports.Scope: class Scope
 
   # Ensure that an assignment is made at the top of this scope
   # (or at the top-level scope, if requested).
-  assign: (name, value, top_level) ->
-    return Scope.root.assign(name, value) if top_level
+  assign: (name, value) ->
     @variables[name]: {value: value, assigned: true}
-
-  # Ensure the CoffeeScript utility object is included in the top level
-  # then return a CallNode curried constructor bound to the utility function
-  utility: (name) ->
-    return Scope.root.utility(name) if @parent
-    if utilities[name]?
-      @utilities: or {}
-      @utilities[name]: utilities[name]
-    "__$name"
-
-  # Formats an javascript object containing the utility methods required
-  # in the scope
-  included_utilities: ->
-    "__$key = ${utilities[key]}" for key of @utilities
+    name
 
   # Does this scope reference any variables that need to be declared in the
   # given function body?
@@ -87,7 +72,7 @@ exports.Scope: class Scope
   # Does this scope reference any assignments that need to be declared at the
   # top of the given function body?
   has_assignments: (body) ->
-    body is @expressions and (@utilities or @any (k, val) -> val.assigned)
+    body is @expressions and @any (k, val) -> val.assigned
 
   # Return the list of variables first declared in this scope.
   declared_variables: ->
@@ -104,4 +89,4 @@ exports.Scope: class Scope
 
   # Compile the JavaScript for all of the variable assignments in this scope.
   compiled_assignments: (tab) ->
-    [@assigned_variables()..., @included_utilities()...].join ', '
+    @assigned_variables().join ', '
