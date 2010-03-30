@@ -463,8 +463,7 @@ KEYWORDS: JS_KEYWORDS.concat COFFEE_KEYWORDS
 # to avoid having a JavaScript error at runtime.
 RESERVED: [
   "case", "default", "do", "function", "var", "void", "with"
-  "const", "let", "debugger", "enum", "export", "import", "native",
-  ("__$k" for k of (u: require './utilities').utilities.functions)...
+  "const", "let", "debugger", "enum", "export", "import", "native"
 ]
 
 # The superset of both JavaScript keywords and reserved words, none of which may

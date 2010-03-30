@@ -74,10 +74,8 @@ exports.Scope: class Scope
 
   # Formats an javascript object containing the utility methods required
   # in the scope
-  included_utilities: (tab) ->
-    if @utilities?
-      utilities.format(key, tab) for key of @utilities
-    else []
+  included_utilities: ->
+    "__$key = ${utilities.functions[key]}" for key of @utilities
 
   # Does this scope reference any variables that need to be declared in the
   # given function body?
@@ -87,7 +85,7 @@ exports.Scope: class Scope
   # Does this scope reference any assignments that need to be declared at the
   # top of the given function body?
   has_assignments: (body) ->
-    body is @expressions and (@utilities? or @any (k, val) -> val.assigned)
+    body is @expressions and (@utilities or @any (k, val) -> val.assigned)
 
   # Return the list of variables first declared in this scope.
   declared_variables: ->
@@ -104,4 +102,4 @@ exports.Scope: class Scope
 
   # Compile the JavaScript for all of the variable assignments in this scope.
   compiled_assignments: (tab) ->
-    [@assigned_variables()..., @included_utilities(tab)...].join ', '
+    [@assigned_variables()..., @included_utilities()...].join ', '

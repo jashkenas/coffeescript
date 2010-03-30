@@ -1,9 +1,6 @@
 this.exports: this unless process?
 
-exports.utilities: utils: {
-
-  format: (key, tab) ->
-    "__$key = ${utils.functions[key].replace(/\n/g, "\n$tab") or 'undefined'}"
+exports.utilities: {
 
   dependencies: {
     bind:   ['slice']
@@ -11,32 +8,32 @@ exports.utilities: utils: {
 
   functions: {
 
-    extend:   """
+    extend: """
               function(child, parent) {
-                var ctor = function(){ };
-                ctor.prototype = parent.prototype;
-                child.__superClass__ = parent.prototype;
-                child.prototype = new ctor();
-                child.prototype.constructor = child;
-              }
-              """
+                  var ctor = function(){ };
+                  ctor.prototype = parent.prototype;
+                  child.__superClass__ = parent.prototype;
+                  child.prototype = new ctor();
+                  child.prototype.constructor = child;
+                }
+            """
 
-    bind:     """
+    bind:   """
               function(func, obj, args) {
-                return function() {
-                  return func.apply(obj || {}, args ? args.concat(__slice.call(arguments, 0)) : arguments);
-                };
-              }
-              """
+                  return function() {
+                    return func.apply(obj || {}, args ? args.concat(__slice.call(arguments, 0)) : arguments);
+                  };
+                }
+            """
 
-    range:    """
+    range:  """
               function(array, from, to, exclusive) {
-                return [
-                  (from < 0 ? from + array.length : from || 0),
-                  (to < 0 ? to + array.length : to || array.length) + (exclusive ? 0 : 1)
-                ];
-              }
-              """
+                  return [
+                    (from < 0 ? from + array.length : from || 0),
+                    (to < 0 ? to + array.length : to || array.length) + (exclusive ? 0 : 1)
+                  ];
+                }
+            """
 
     hasProp:  'Object.prototype.hasOwnProperty'
 
