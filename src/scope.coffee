@@ -23,14 +23,14 @@ exports.Scope: class Scope
   # Find the top-most scope object, used for defined global variables
   topmost: ->
     if @parent then @parent.topmost() else @
-  
+
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
   find: (name) ->
     return true if @check name
     @variables[name]: 'var'
     false
-  
+
   # Test variables and return true the first time fn(v, k) returns true
   any: (fn) ->
     for v, k of @variables when fn(v, k)
@@ -70,15 +70,15 @@ exports.Scope: class Scope
       @utilities: or {}
       @utilities[name]: utilities.functions[name]
       @utility(dep) for dep in (utilities.dependencies[name] or []) when not @utilities[dep]
-    "${utilities.key(name)}"
-  
+    "__$name"
+
   # Formats an javascript object containing the utility methods required
   # in the scope
   included_utilities: (tab) ->
     if @utilities?
       utilities.format(key, tab) for key of @utilities
     else []
-  
+
   # Does this scope reference any variables that need to be declared in the
   # given function body?
   has_declarations: (body) ->

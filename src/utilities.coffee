@@ -1,17 +1,15 @@
 this.exports: this unless process?
 
-exports.utilities: class utilities
-  @key: (name) ->
-    "__$name"
+exports.utilities: utils: {
 
-  @format: (key, tab) ->
-    "${utilities.key(key)} = ${utilities.functions[key].replace(/\n/g, "\n$tab") or 'undefined'}"
+  format: (key, tab) ->
+    "__$key = ${utils.functions[key].replace(/\n/g, "\n$tab") or 'undefined'}"
 
-  @dependencies: {
+  dependencies: {
     bind:   ['slice']
   }
 
-  @functions: {
+  functions: {
 
     extend:   """
               function(child, parent) {
@@ -26,7 +24,7 @@ exports.utilities: class utilities
     bind:     """
               function(func, obj, args) {
                 return function() {
-                  return func.apply(obj || {}, args ? args.concat(${utilities.key('slice')}.call(arguments, 0)) : arguments);
+                  return func.apply(obj || {}, args ? args.concat(__slice.call(arguments, 0)) : arguments);
                 };
               }
               """
@@ -44,3 +42,5 @@ exports.utilities: class utilities
 
     slice:    'Array.prototype.slice'
   }
+
+}
