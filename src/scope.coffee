@@ -69,15 +69,15 @@ exports.Scope: class Scope
     if utilities.functions[name]?
       @utilities: or {}
       @utilities[name]: utilities.functions[name]
-      @utility(dep) for dep in (utilities.dependencies[name] or [])
-    "${utilities.KEY}.$name"
+      @utility(dep) for dep in (utilities.dependencies[name] or []) when not @utilities[dep]
+    "${utilities.key}.$name"
   
   # Formats an javascript object containing the utility methods required
   # in the scope
   included_utilities: (tab) ->
     if @utilities?
-      props: (utilities.format(key, tab) for key of @utilities when @utilities[key]?)
-      ["${utilities.KEY} = {${props.join(', ')}\n$tab}"]
+      props: (utilities.format(key, tab) for key of @utilities)
+      ["${utilities.key} = {${props.join(', ')}\n$tab}"]
     else []
   
   # Does this scope reference any variables that need to be declared in the

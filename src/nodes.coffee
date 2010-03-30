@@ -843,13 +843,13 @@ exports.SplatNode: class SplatNode extends BaseNode
     for trailing in @trailings
       o.scope.assign(trailing.compile(o), "arguments[arguments.length - $@trailings.length + $i]")
       i: + 1
-    "$name = ${o.scope.utility('aslice')}.call(arguments, $@index, arguments.length - ${@trailings.length})"
+    "$name = Array.prototype.slice.call(arguments, $@index, arguments.length - ${@trailings.length})"
 
   # A compiling a splat as a destructuring assignment means slicing arguments
   # from the right-hand-side's corresponding array.
   compile_value: (o, name, index, trailings) ->
-    if trailings? then "${o.scope.utility('aslice')}.call($name, $index, ${name}.length - $trailings)" \
-    else "${o.scope.utility('aslice')}.call($name, $index)"
+    if trailings? then "Array.prototype.slice.call($name, $index, ${name}.length - $trailings)" \
+    else "Array.prototype.slice.call($name, $index)"
 
   # Utility function that converts arbitrary number of elements, mixed with
   # splats, to a proper array
