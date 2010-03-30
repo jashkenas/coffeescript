@@ -400,7 +400,6 @@ exports.CallNode: class CallNode extends BaseNode
       meth: "($temp = ${ @variable.source })${ @variable.last }"
     "${@prefix()}${meth}.apply($obj, ${ @compile_splat_arguments(o) })"
 
-
 #### CurryNode
 
 # Binds a context object and a list of arguments to a function,
@@ -425,8 +424,6 @@ exports.CurryNode: class CurryNode extends CallNode
     curried: new CodeNode([], body)
     curry: new CodeNode([literal('func'), literal('obj'), literal('args')], Expressions.wrap([curried]))
     (new ParentheticalNode(new CallNode(curry, [@meth, @context, literal(@arguments(o))]))).compile o
-
-
 
 #### ExtendsNode
 
@@ -846,26 +843,26 @@ exports.SplatNode: class SplatNode extends BaseNode
     if trailings? then "Array.prototype.slice.call($name, $index, ${name}.length - $trailings)" \
     else "Array.prototype.slice.call($name, $index)"
 
-# Utility function that converts arbitrary number of elements, mixed with
-# splats, to a proper array
-SplatNode.compile_mixed_array: (list, o) ->
-  args: []
-  i: 0
-  for arg in list
-    code: arg.compile o
-    if not (arg instanceof SplatNode)
-      prev: args[i - 1]
-      if i is 1 and prev.substr(0, 1) is '[' and prev.substr(prev.length - 1, 1) is ']'
-        args[i - 1]: "${prev.substr(0, prev.length - 1)}, $code]"
-        continue
-      else if i > 1 and prev.substr(0, 9) is '.concat([' and prev.substr(prev.length - 2, 2) is '])'
-        args[i - 1]: "${prev.substr(0, prev.length - 2)}, $code])"
-        continue
-      else
-        code: "[$code]"
-    args.push(if i is 0 then code else ".concat($code)")
-    i: + 1
-  args.join('')
+  # Utility function that converts arbitrary number of elements, mixed with
+  # splats, to a proper array
+  @compile_mixed_array: (list, o) ->
+    args: []
+    i: 0
+    for arg in list
+      code: arg.compile o
+      if not (arg instanceof SplatNode)
+        prev: args[i - 1]
+        if i is 1 and prev.substr(0, 1) is '[' and prev.substr(prev.length - 1, 1) is ']'
+          args[i - 1]: "${prev.substr(0, prev.length - 1)}, $code]"
+          continue
+        else if i > 1 and prev.substr(0, 9) is '.concat([' and prev.substr(prev.length - 2, 2) is '])'
+          args[i - 1]: "${prev.substr(0, prev.length - 2)}, $code])"
+          continue
+        else
+          code: "[$code]"
+      args.push(if i is 0 then code else ".concat($code)")
+      i: + 1
+    args.join('')
 
 #### WhileNode
 
@@ -1052,15 +1049,15 @@ exports.ExistenceNode: class ExistenceNode extends BaseNode
   compile_node: (o) ->
     ExistenceNode.compile_test(o, @expression)
 
-# The meat of the **ExistenceNode** is in this static `compile_test` method
-# because other nodes like to check the existence of their variables as well.
-# Be careful not to double-evaluate anything.
-ExistenceNode.compile_test: (o, variable) ->
-  [first, second]: [variable, variable]
-  if variable instanceof CallNode or (variable instanceof ValueNode and variable.has_properties())
-    [first, second]: variable.compile_reference(o)
-  [first, second]: [first.compile(o), second.compile(o)]
-  "(typeof $first !== \"undefined\" && $second !== null)"
+  # The meat of the **ExistenceNode** is in this static `compile_test` method
+  # because other nodes like to check the existence of their variables as well.
+  # Be careful not to double-evaluate anything.
+  @compile_test: (o, variable) ->
+    [first, second]: [variable, variable]
+    if variable instanceof CallNode or (variable instanceof ValueNode and variable.has_properties())
+      [first, second]: variable.compile_reference(o)
+    [first, second]: [first.compile(o), second.compile(o)]
+    "(typeof $first !== \"undefined\" && $second !== null)"
 
 #### ParentheticalNode
 

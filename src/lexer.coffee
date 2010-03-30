@@ -423,8 +423,11 @@ exports.Lexer: class Lexer
     @value() and @value().match and @value().match(NO_NEWLINE) and
       prev and (prev[0] isnt '.') and not @value().match(CODE)
 
-# There are no exensions to the core lexer by default.
-Lexer.extensions: []
+  # Lexer Properties
+  # ----------------
+
+  # There are no exensions to the core lexer by default.
+  @extensions: []
 
 # Constants
 # ---------
