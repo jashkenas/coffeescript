@@ -22,7 +22,7 @@ exports.OptionParser: class OptionParser
   parse: (args) ->
     options: {arguments: []}
     args: normalize_arguments args
-    while arg: args.shift()
+    while (arg: args.shift())
       is_option: !!(arg.match(LONG_FLAG) or arg.match(SHORT_FLAG))
       matched_rule: no
       for rule in @rules
