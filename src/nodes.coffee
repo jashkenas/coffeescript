@@ -420,8 +420,6 @@ exports.CallNode: class CallNode extends BaseNode
 exports.CurryNode: class CurryNode extends CallNode
   type: 'Curry'
 
-  body: 'func.apply(obj, args.concat(Array.prototype.slice.call(arguments, 0)))'
-
   constructor: (meth, args) ->
     @children:  flatten [@meth: meth, @context: args[0], @args: (args.slice(1) or [])]
     @compile_splat_arguments: SplatNode.compile_mixed_array <- @, @args
@@ -532,25 +530,6 @@ exports.RangeNode: class RangeNode extends BaseNode
 exports.SliceNode: class SliceNode extends BaseNode
   type: 'Slice'
 
-  slice_code: '''
-        function __slice(array, from, to, exclusive) {
-            return array.slice(
-              (from < 0 ? from + array.length : from || 0),
-              (to < 0 ? to + array.length : to || array.length) + (exclusive ? 0 : 1)
-            );
-          }
-        '''
-
-  splice_code: '''
-        function __splice(array, from, to, exclusive, replace) {
-            var _a;
-            return array.splice.apply(
-              array,
-              [_a = (from < 0 ? from + array.length : from || 0), (to < 0 ? to + array.length : to || array.length) + (exclusive ? 0 : 1) - _a].concat(replace)
-            );
-          }
-        '''
-
   constructor: (range) ->
     @children: [@range: range]
     this
@@ -562,23 +541,21 @@ exports.SliceNode: class SliceNode extends BaseNode
     ".slice($from, $to$plus_part)"
 
   compile_splice: (o) ->
-    o.scope.assign('__splice', @splice_code, true) if o.scope?
     array:      del o, 'array'
     replace:    del o, 'replace'
     from:       if @range.from? then @range.from else literal('null')
     to:         if @range.to? then @range.to else literal('null')
     exclusive:  if @range.exclusive then 'true' else 'false'
-    ref:        new ValueNode literal('__splice')
+    ref:        new ValueNode literal(o.scope.utility('splice'))
     call:       new CallNode ref, [literal(array), from, to, literal(exclusive), replace]
     call.compile(o)
 
   compile_slice: (o) ->
-    o.scope.assign('__slice', @slice_code, true) if o.scope?
     array:      del o, 'array'
     from:       if @range.from? then @range.from else literal('null')
     to:         if @range.to? then @range.to else literal('null')
     exclusive:  if @range.exclusive then 'true' else 'false'
-    ref:        new ValueNode literal('__slice')
+    ref:        new ValueNode literal(o.scope.utility('slice'))
     call:       new CallNode ref, [literal(array), from, to, literal(exclusive)]
     call.compile(o)
 
@@ -626,7 +603,7 @@ exports.ArrayNode: class ArrayNode extends BaseNode
     for obj, i in @objects
       code: obj.compile(o)
       if obj instanceof SplatNode
-        return @compile_splat_literal(@objects, o)
+        return @compile_splat_literal o
       else if obj instanceof CommentNode
         objects.push "\n$code\n$o.indent"
       else if i is @objects.length - 1
@@ -866,13 +843,13 @@ exports.SplatNode: class SplatNode extends BaseNode
     for trailing in @trailings
       o.scope.assign(trailing.compile(o), "arguments[arguments.length - $@trailings.length + $i]")
       i: + 1
-    "$name = Array.prototype.slice.call(arguments, $@index, arguments.length - ${@trailings.length})"
+    "$name = ${o.scope.utility('aslice')}.call(arguments, $@index, arguments.length - ${@trailings.length})"
 
   # A compiling a splat as a destructuring assignment means slicing arguments
   # from the right-hand-side's corresponding array.
   compile_value: (o, name, index, trailings) ->
-    if trailings? then "Array.prototype.slice.call($name, $index, ${name}.length - $trailings)" \
-    else "Array.prototype.slice.call($name, $index)"
+    if trailings? then "${o.scope.utility('aslice')}.call($name, $index, ${name}.length - $trailings)" \
+    else "${o.scope.utility('aslice')}.call($name, $index)"
 
   # Utility function that converts arbitrary number of elements, mixed with
   # splats, to a proper array

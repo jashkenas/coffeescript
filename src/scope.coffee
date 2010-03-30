@@ -66,17 +66,20 @@ exports.Scope: class Scope
   # then return a CallNode curried constructor bound to the utility function
   utility: (name) ->
     return @topmost().utility(name) if @parent
-    @utilities: or {}
-    @utilities[name]: true
+    if utilities.functions[name]?
+      @utilities: or {}
+      @utilities[name]: utilities.functions[name]
+      @utility(dep) for dep in (utilities.dependencies[name] or [])
     "${utilities.KEY}.$name"
   
+  # Formats an javascript object containing the utility methods required
+  # in the scope
   included_utilities: (tab) ->
     if @utilities?
-      props: (utilities.FORMAT(key, tab) for key of @utilities when @utilities[key]?)
+      props: (utilities.format(key, tab) for key of @utilities when @utilities[key]?)
       ["${utilities.KEY} = {${props.join(', ')}\n$tab}"]
     else []
   
-
   # Does this scope reference any variables that need to be declared in the
   # given function body?
   has_declarations: (body) ->
