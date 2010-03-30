@@ -202,10 +202,10 @@ exports.Rewriter: class Rewriter
   # inwards, safely. The steps to accomplish this are:
   #
   # 1. Check that all paired tokens are balanced and in order.
-  # 2. Rewrite the stream with a stack: if you see an '(' or INDENT, add it
-  #    to the stack. If you see an ')' or OUTDENT, pop the stack and replace
+  # 2. Rewrite the stream with a stack: if you see an `EXPRESSION_START`, add it
+  #    to the stack. If you see an `EXPRESSION_END`, pop the stack and replace
   #    it with the inverse of what we've just popped.
-  # 3. Keep track of "debt" for tokens that we fake, to make sure we end
+  # 3. Keep track of "debt" for tokens that we manufacture, to make sure we end
   #    up balanced in the end.
   #
   rewrite_closing_parens: ->
