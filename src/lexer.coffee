@@ -464,7 +464,7 @@ KEYWORDS: JS_KEYWORDS.concat COFFEE_KEYWORDS
 RESERVED: [
   "case", "default", "do", "function", "var", "void", "with"
   "const", "let", "debugger", "enum", "export", "import", "native",
-  "Coffeescript"
+  (u.utilities.key(k) for k of (u: require './utilities').utilities.functions)...
 ]
 
 # The superset of both JavaScript keywords and reserved words, none of which may

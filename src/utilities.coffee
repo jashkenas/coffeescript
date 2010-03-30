@@ -1,14 +1,16 @@
 this.exports: this unless process?
-KEY: "Coffeescript"
 
 exports.utilities: class utilities
-  @key: KEY
+  @key: (name) ->
+    "__$name"
+  
   @format: (key, tab) ->
-    "\n  $tab$key: ${utilities.functions[key].replace(/\n/g, "\n$tab  ") or 'undefined'}"
+    "${utilities.key(key)} = ${utilities.functions[key].replace(/\n/g, "\n$tab") or 'undefined'}"
   
   @dependencies: {
     slice:  ['range']
     splice: ['range']
+    bind:   ['arraySlice']
   }
   
   @functions: {
@@ -25,7 +27,7 @@ exports.utilities: class utilities
               function(func, obj, args) {
                 obj = obj || {};
                 return (typeof args !== 'undefined' && args !== null) ? function() {
-                  return func.apply(obj, args.concat(Array.prototype.slice.call(arguments, 0)));
+                  return func.apply(obj, args.concat(${utilities.key('arraySlice')}.call(arguments, 0)));
                 } : function() {
                   return func.apply(obj, arguments);
                 };
@@ -41,14 +43,15 @@ exports.utilities: class utilities
               """
     slice:    """
               function(array, from, to, exclusive) {
-                return array.slice.apply(array, ${KEY}.range(array, from, to, exclusive));
+                return array.slice.apply(array, ${utilities.key('range')}(array, from, to, exclusive));
               }
               """
     splice:   """
               function(array, from, to, exclusive, replace) {
-                return array.splice.apply(array, [(_a = ${KEY}.range(array, from, to, exclusive))[0], 
+                return array.splice.apply(array, [(_a = ${utilities.key('range')}(array, from, to, exclusive))[0], 
                   _a[1] - _a[0]].concat(replace));
               }
               """
-    hasProp:  "Object.prototype.hasOwnProperty"
+    hasProp:  'Object.prototype.hasOwnProperty'
+    arraySlice: 'Array.prototype.slice'
   }
