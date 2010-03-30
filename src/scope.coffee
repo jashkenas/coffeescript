@@ -69,16 +69,15 @@ exports.Scope: class Scope
   # then return a CallNode curried constructor bound to the utility function
   utility: (name) ->
     return Scope.root.utility(name) if @parent
-    if utilities.functions[name]?
+    if utilities[name]?
       @utilities: or {}
-      @utilities[name]: utilities.functions[name]
-      @utility(dep) for dep in (utilities.dependencies[name] or []) when not @utilities[dep]
+      @utilities[name]: utilities[name]
     "__$name"
 
   # Formats an javascript object containing the utility methods required
   # in the scope
   included_utilities: ->
-    "__$key = ${utilities.functions[key]}" for key of @utilities
+    "__$key = ${utilities[key]}" for key of @utilities
 
   # Does this scope reference any variables that need to be declared in the
   # given function body?

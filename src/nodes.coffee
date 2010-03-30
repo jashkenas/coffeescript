@@ -430,6 +430,7 @@ exports.CurryNode: class CurryNode extends CallNode
     (new ArrayNode(@args)).compile o
 
   compile_node: (o) ->
+    o.scope.utility('slice')
     ref: new ValueNode literal(o.scope.utility('bind'))
     (new CallNode(ref, [@meth, @context, literal(@arguments(o))])).compile o
 
@@ -801,6 +802,7 @@ exports.CodeNode: class CodeNode extends BaseNode
     func: "function${ if @bound then '' else name_part }(${ params.join(', ') }) {$code${@idt(if @bound then 1 else 0)}}"
     func: "($func)" if top and not @bound
     return func unless @bound
+    o.scope.utility('slice')
     ref: new ValueNode literal(o.scope.utility('bind'))
     (new CallNode ref, [literal(func), literal('this')]).compile o
 
