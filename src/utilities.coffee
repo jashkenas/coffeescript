@@ -3,16 +3,16 @@ this.exports: this unless process?
 exports.utilities: class utilities
   @key: (name) ->
     "__$name"
-  
+
   @format: (key, tab) ->
     "${utilities.key(key)} = ${utilities.functions[key].replace(/\n/g, "\n$tab") or 'undefined'}"
-  
+
   @dependencies: {
-    bind:   ['arraySlice']
-    splice: ['range']
+    bind:   ['slice']
   }
-  
+
   @functions: {
+
     extend:   """
               function(child, parent) {
                 var ctor = function(){ };
@@ -22,16 +22,18 @@ exports.utilities: class utilities
                 child.prototype.constructor = child;
               }
               """
+
     bind:     """
               function(func, obj, args) {
                 obj = obj || {};
                 return (typeof args !== 'undefined' && args !== null) ? function() {
-                  return func.apply(obj, args.concat(${utilities.key('arraySlice')}.call(arguments, 0)));
+                  return func.apply(obj, args.concat(${utilities.key('slice')}.call(arguments, 0)));
                 } : function() {
                   return func.apply(obj, arguments);
                 };
               }
               """
+
     range:    """
               function(array, from, to, exclusive) {
                 return [
@@ -40,6 +42,8 @@ exports.utilities: class utilities
                 ];
               }
               """
+
     hasProp:  'Object.prototype.hasOwnProperty'
-    arraySlice: 'Array.prototype.slice'
+
+    slice:    'Array.prototype.slice'
   }
