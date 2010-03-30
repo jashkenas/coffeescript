@@ -11,6 +11,9 @@ utilities: if process? then require('./utilities').utilities else this.utilities
 
 exports.Scope: class Scope
 
+  # The top-level **Scope** object.
+  @root: null
+
   # Initialize a scope with its parent, for lookups up the chain,
   # as well as a reference to the **Expressions** node is belongs to, which is
   # where it should declare its variables, and a reference to the function that
@@ -18,11 +21,11 @@ exports.Scope: class Scope
   constructor: (parent, expressions, method) ->
     [@parent, @expressions, @method]: [parent, expressions, method]
     @variables: {}
-    @temp_var: if @parent then @parent.temp_var else '_a'
-
-  # Find the top-most scope object, used for defined global variables
-  topmost: ->
-    if @parent then @parent.topmost() else @
+    if @parent
+      @temp_var: @parent.temp_var
+    else
+      Scope.root: this
+      @temp_var: '_a'
 
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
@@ -59,13 +62,13 @@ exports.Scope: class Scope
   # Ensure that an assignment is made at the top of this scope
   # (or at the top-level scope, if requested).
   assign: (name, value, top_level) ->
-    return @topmost().assign(name, value) if top_level
+    return Scope.root.assign(name, value) if top_level
     @variables[name]: {value: value, assigned: true}
 
   # Ensure the CoffeeScript utility object is included in the top level
   # then return a CallNode curried constructor bound to the utility function
   utility: (name) ->
-    return @topmost().utility(name) if @parent
+    return Scope.root.utility(name) if @parent
     if utilities.functions[name]?
       @utilities: or {}
       @utilities[name]: utilities.functions[name]
