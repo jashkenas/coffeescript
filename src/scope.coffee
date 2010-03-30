@@ -59,7 +59,7 @@ exports.Scope: class Scope
   # Ensure that an assignment is made at the top of this scope
   # (or at the top-level scope, if requested).
   assign: (name, value, top_level) ->
-    return @topmost().assign(name, value) if top_level and @parent
+    return @topmost().assign(name, value) if top_level
     @variables[name]: {value: value, assigned: true}
 
   # Ensure the CoffeeScript utility object is included in the top level
