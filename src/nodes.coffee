@@ -430,13 +430,9 @@ exports.CurryNode: class CurryNode extends CallNode
     (new ArrayNode(@args)).compile o
 
   compile_node: (o) ->
-    CurryNode.assign_bind()
-    ref: new ValueNode literal '__bind'
+    utility 'slice'
+    ref: new ValueNode literal utility 'bind'
     (new CallNode(ref, [@meth, @context, literal(@arguments(o))])).compile o
-
-  @assign_bind: ->
-    Scope.root.assign '__slice', UTILITIES['slice']
-    Scope.root.assign '__bind',  UTILITIES['bind']
 
 
 #### ExtendsNode
@@ -452,7 +448,7 @@ exports.ExtendsNode: class ExtendsNode extends BaseNode
 
   # Hooks one constructor into another's prototype chain.
   compile_node: (o) ->
-    ref:  new ValueNode literal(Scope.root.assign('__extend', UTILITIES['extend']))
+    ref:  new ValueNode literal utility 'extend'
     (new CallNode ref, [@child, @parent]).compile o
 
 #### AccessorNode
@@ -553,7 +549,7 @@ exports.SliceNode: class SliceNode extends BaseNode
     to:         if @range.to? then @range.to else literal('null')
     exclusive:  if @range.exclusive then 'true' else 'false'
     v:          o.scope.free_variable()
-    rng: new CallNode new ValueNode(literal(Scope.root.assign('__range', UTILITIES['range']))), [literal(array), from, to, literal(exclusive)]
+    rng: new CallNode new ValueNode(literal(utility('range'))), [literal(array), from, to, literal(exclusive)]
     args: literal "[($v = ${rng.compile(o)})[0], $v[1] - $v[0]].concat(${replace.compile(o)})"
     call: new CallNode new ValueNode(literal(array), [literal('.splice.apply')]), [literal(array), args]
     call.compile(o)
@@ -563,7 +559,7 @@ exports.SliceNode: class SliceNode extends BaseNode
     from:       if @range.from? then @range.from else literal('null')
     to:         if @range.to? then @range.to else literal('null')
     exclusive:  if @range.exclusive then 'true' else 'false'
-    rng: new CallNode new ValueNode(literal(Scope.root.assign('__range', UTILITIES['range']))), [literal(array), from, to, literal(exclusive)]
+    rng: new CallNode new ValueNode(literal(utility('range'))), [literal(array), from, to, literal(exclusive)]
     call: new CallNode new ValueNode(literal(array), [literal('.slice.apply')]), [literal(array), rng]
     call.compile(o)
 
@@ -807,8 +803,8 @@ exports.CodeNode: class CodeNode extends BaseNode
     func: "function${ if @bound then '' else name_part }(${ params.join(', ') }) {$code${@idt(if @bound then 1 else 0)}}"
     func: "($func)" if top and not @bound
     return func unless @bound
-    CurryNode.assign_bind()
-    ref: new ValueNode literal('__bind')
+    utility 'slice'
+    ref: new ValueNode literal utility 'bind'
     (new CallNode ref, [literal(func), literal('this')]).compile o
 
   top_sensitive: ->
@@ -852,14 +848,13 @@ exports.SplatNode: class SplatNode extends BaseNode
     for trailing in @trailings
       o.scope.assign(trailing.compile(o), "arguments[arguments.length - $@trailings.length + $i]")
       i: + 1
-    "$name = ${Scope.root.assign('__slice', UTILITIES['slice'])}.call(arguments, $@index, arguments.length - ${@trailings.length})"
+    "$name = ${utility('slice')}.call(arguments, $@index, arguments.length - ${@trailings.length})"
 
   # A compiling a splat as a destructuring assignment means slicing arguments
   # from the right-hand-side's corresponding array.
   compile_value: (o, name, index, trailings) ->
-    Scope.root.assign '__slice', UTILITIES['slice']
     trail: if trailings then ", ${name}.length - $trailings" else ''
-    "__slice.call($name, $index$trail)"
+    "${utility 'slice'}.call($name, $index$trail)"
 
   # Utility function that converts arbitrary number of elements, mixed with
   # splats, to a proper array
@@ -1178,7 +1173,7 @@ exports.ForNode: class ForNode extends BaseNode
     if @filter
       body:         Expressions.wrap([new IfNode(@filter, body)])
     if @object
-      for_part: "$ivar in $svar) { if (${Scope.root.assign('__hasProp', UTILITIES['hasProp'])}.call($svar, $ivar)"
+      for_part: "$ivar in $svar) { if (${utility('hasProp')}.call($svar, $ivar)"
     body:           body.compile(merge(o, {indent: body_dent, top: true}))
     vars:           if range then name else "$name, $ivar"
     close:          if @object then '}}\n' else '}\n'
@@ -1385,3 +1380,9 @@ IDENTIFIER: /^[a-zA-Z\$_](\w|\$)*$/
 # Handy helper for a generating LiteralNode.
 literal: (name) ->
   new LiteralNode(name)
+
+# Helper for ensuring that utility functions are assigned at the top level.
+utility: (name) ->
+  ref: "__$name"
+  Scope.root.assign ref, UTILITIES[name]
+  ref

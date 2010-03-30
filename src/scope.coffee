@@ -62,7 +62,6 @@ exports.Scope: class Scope
   # (or at the top-level scope, if requested).
   assign: (name, value) ->
     @variables[name]: {value: value, assigned: true}
-    name
 
   # Does this scope reference any variables that need to be declared in the
   # given function body?
