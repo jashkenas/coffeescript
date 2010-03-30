@@ -40,12 +40,6 @@ exports.utilities: class utilities
                 ];
               }
               """
-    splice:   """
-              function(array, from, to, exclusive, replace) {
-                return array.splice.apply(array, [(_a = ${utilities.key('range')}(array, from, to, exclusive))[0], 
-                  _a[1] - _a[0]].concat(replace));
-              }
-              """
     hasProp:  'Object.prototype.hasOwnProperty'
     arraySlice: 'Array.prototype.slice'
   }

@@ -546,8 +546,10 @@ exports.SliceNode: class SliceNode extends BaseNode
     from:       if @range.from? then @range.from else literal('null')
     to:         if @range.to? then @range.to else literal('null')
     exclusive:  if @range.exclusive then 'true' else 'false'
-    ref:        new ValueNode literal(o.scope.utility('splice'))
-    call:       new CallNode ref, [literal(array), from, to, literal(exclusive), replace]
+    v:          o.scope.free_variable()
+    rng: new CallNode new ValueNode(literal(o.scope.utility('range'))), [literal(array), from, to, literal(exclusive)]
+    args: literal "[($v = ${rng.compile(o)})[0], $v[1] - $v[0]].concat(${replace.compile(o)})"
+    call: new CallNode new ValueNode(literal(array), [literal('.splice.apply')]), [literal(array), args]
     call.compile(o)
 
   compile_slice: (o) ->
