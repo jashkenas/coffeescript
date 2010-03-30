@@ -68,7 +68,7 @@ exports.Scope: class Scope
     return @topmost().utility(name) if @parent
     @utilities: or {}
     @utilities[name]: true
-    "Coffeescript.$name"
+    "${utilities.KEY}.$name"
   
   included_utilities: (tab) ->
     if @utilities?
