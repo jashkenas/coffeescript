@@ -25,11 +25,8 @@ exports.utilities: class utilities
 
     bind:     """
               function(func, obj, args) {
-                obj = obj || {};
-                return (typeof args !== 'undefined' && args !== null) ? function() {
-                  return func.apply(obj, args.concat(${utilities.key('slice')}.call(arguments, 0)));
-                } : function() {
-                  return func.apply(obj, arguments);
+                return function() {
+                  return func.apply(obj || {}, args ? args.concat(${utilities.key('slice')}.call(arguments, 0)) : arguments);
                 };
               }
               """
