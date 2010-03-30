@@ -188,7 +188,7 @@ exports.Expressions: class Expressions extends BaseNode
   # declarations of all inner variables pushed up to the top.
   compile_with_declarations: (o) ->
     code: @compile_node(o)
-    code: "${@tab}var ${o.scope.compiled_assignments()};\n$code"  if o.scope.has_assignments(this)
+    code: "${@tab}var ${o.scope.compiled_assignments(@tab)};\n$code"  if o.scope.has_assignments(this)
     code: "${@tab}var ${o.scope.compiled_declarations()};\n$code" if o.scope.has_declarations(this)
     code
 
@@ -420,10 +420,8 @@ exports.CurryNode: class CurryNode extends CallNode
     (new ArrayNode(@args)).compile o
 
   compile_node: (o) ->
-    body: Expressions.wrap([literal @body])
-    curried: new CodeNode([], body)
-    curry: new CodeNode([literal('func'), literal('obj'), literal('args')], Expressions.wrap([curried]))
-    (new ParentheticalNode(new CallNode(curry, [@meth, @context, literal(@arguments(o))]))).compile o
+    ref: new ValueNode literal(o.scope.utility('bind'))
+    (new CallNode(ref, [@meth, @context, literal(@arguments(o))])).compile o
 
 #### ExtendsNode
 
@@ -433,25 +431,13 @@ exports.CurryNode: class CurryNode extends CallNode
 exports.ExtendsNode: class ExtendsNode extends BaseNode
   type: 'Extends'
 
-  code: '''
-        function(child, parent) {
-            var ctor = function(){ };
-            ctor.prototype = parent.prototype;
-            child.__superClass__ = parent.prototype;
-            child.prototype = new ctor();
-            child.prototype.constructor = child;
-          }
-        '''
-
   constructor: (child, parent) ->
     @children:  [@child: child, @parent: parent]
 
   # Hooks one constructor into another's prototype chain.
   compile_node: (o) ->
-    o.scope.assign('__extends', @code, true)
-    ref:  new ValueNode literal('__extends')
-    call: new CallNode ref, [@child, @parent]
-    call.compile(o)
+    ref:  new ValueNode literal(o.scope.utility('extend'))
+    (new CallNode ref, [@child, @parent]).compile o
 
 #### AccessorNode
 
@@ -791,8 +777,8 @@ exports.CodeNode: class CodeNode extends BaseNode
     func: "function${ if @bound then '' else name_part }(${ params.join(', ') }) {$code${@idt(if @bound then 1 else 0)}}"
     func: "($func)" if top and not @bound
     return func unless @bound
-    inner: "(function$name_part() {\n${@idt(2)}return __func.apply(__this, arguments);\n${@idt(1)}});"
-    "(function(__this) {\n${@idt(1)}var __func = $func;\n${@idt(1)}return $inner\n$@tab})(this)"
+    ref: new ValueNode literal(o.scope.utility('bind'))
+    (new CallNode ref, [literal(func), literal('this')]).compile o
 
   top_sensitive: ->
     true
@@ -1161,7 +1147,7 @@ exports.ForNode: class ForNode extends BaseNode
       body:         Expressions.wrap([new IfNode(@filter, body)])
     if @object
       o.scope.assign('__hasProp', 'Object.prototype.hasOwnProperty', true)
-      for_part: "$ivar in $svar) { if (__hasProp.call($svar, $ivar)"
+      for_part: "$ivar in $svar) { if (${o.scope.utility('hasProp')}.call($svar, $ivar)"
     body:           body.compile(merge(o, {indent: body_dent, top: true}))
     vars:           if range then name else "$name, $ivar"
     close:          if @object then '}}\n' else '}\n'
