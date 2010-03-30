@@ -140,6 +140,7 @@ grammar: {
   AssignObj: [
     o "Identifier ASSIGN Expression",           -> new AssignNode new ValueNode($1), $3, 'object'
     o "AlphaNumeric ASSIGN Expression",         -> new AssignNode new ValueNode($1), $3, 'object'
+    o "ThisProperty ASSIGN Expression",         -> new AssignNode new ValueNode($1), $3, 'this'
     o "Comment"
   ]
 
@@ -194,7 +195,7 @@ grammar: {
   Splat: [
     o "Expression . . .",                       -> new SplatNode $1
   ]
-  
+
   # Variables and properties that can be assigned to.
   SimpleAssignable: [
     o "Identifier",                             -> new ValueNode $1
@@ -202,7 +203,7 @@ grammar: {
     o "Invocation Accessor",                    -> new ValueNode $1, [$2]
     o "ThisProperty"
   ]
-  
+
   # Everything that can be assigned to.
   Assignable: [
     o "SimpleAssignable"
@@ -313,7 +314,7 @@ grammar: {
     o "THIS",                                   -> new ValueNode new LiteralNode 'this'
     o "@",                                      -> new ValueNode new LiteralNode 'this'
   ]
-  
+
   # A reference to a property on *this*.
   ThisProperty: [
     o "@ Identifier",                           -> new ValueNode new LiteralNode('this'), [new AccessorNode($2)]

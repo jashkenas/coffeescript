@@ -1,6 +1,9 @@
 class Base
   func: (string) ->
-    'zero/' + string
+    "zero/$string"
+
+  @static: (string) ->
+    "static/$string"
 
 class FirstChild extends Base
   func: (string) ->
@@ -21,6 +24,7 @@ class ThirdChild extends SecondChild
 result: (new ThirdChild()).func 'four'
 
 ok result is 'zero/one/two/three/four'
+ok Base.static('word') is 'static/word'
 
 
 class TopClass

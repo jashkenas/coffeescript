@@ -628,14 +628,16 @@ exports.ClassNode: class ClassNode extends BaseNode
     o.top:       true
 
     for prop in @properties
-      if prop.variable and prop.variable.base.value is 'constructor'
+      pvar: prop.variable
+      if pvar and pvar.base.value is 'constructor'
         func: prop.value
         func.body.push(new ReturnNode(literal('this')))
         constructor: new AssignNode(@variable, func)
       else
-        if prop.variable
-          val: new ValueNode(@variable, [new AccessorNode(prop.variable, 'prototype')])
-          prop: new AssignNode(val, prop.value)
+        if pvar
+          access: if prop.context is 'this' then pvar.base.properties[0] else new AccessorNode(pvar, 'prototype')
+          val:    new ValueNode(@variable, [access])
+          prop:   new AssignNode(val, prop.value)
         props.push prop
 
     if not constructor
