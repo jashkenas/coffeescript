@@ -8,9 +8,8 @@ exports.utilities: class utilities
     "${utilities.key(key)} = ${utilities.functions[key].replace(/\n/g, "\n$tab") or 'undefined'}"
   
   @dependencies: {
-    slice:  ['range']
-    splice: ['range']
     bind:   ['arraySlice']
+    splice: ['range']
   }
   
   @functions: {
@@ -39,11 +38,6 @@ exports.utilities: class utilities
                   (from < 0 ? from + array.length : from || 0),
                   (to < 0 ? to + array.length : to || array.length) + (exclusive ? 0 : 1)
                 ];
-              }
-              """
-    slice:    """
-              function(array, from, to, exclusive) {
-                return array.slice.apply(array, ${utilities.key('range')}(array, from, to, exclusive));
               }
               """
     splice:   """

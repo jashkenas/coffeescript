@@ -555,8 +555,8 @@ exports.SliceNode: class SliceNode extends BaseNode
     from:       if @range.from? then @range.from else literal('null')
     to:         if @range.to? then @range.to else literal('null')
     exclusive:  if @range.exclusive then 'true' else 'false'
-    ref:        new ValueNode literal(o.scope.utility('slice'))
-    call:       new CallNode ref, [literal(array), from, to, literal(exclusive)]
+    rng: new CallNode new ValueNode(literal(o.scope.utility('range'))), [literal(array), from, to, literal(exclusive)]
+    call: new CallNode new ValueNode(literal(array), [literal('.slice.apply')]), [literal(array), rng]
     call.compile(o)
 
 #### ObjectNode
