@@ -1146,7 +1146,6 @@ exports.ForNode: class ForNode extends BaseNode
     if @filter
       body:         Expressions.wrap([new IfNode(@filter, body)])
     if @object
-      o.scope.assign('__hasProp', 'Object.prototype.hasOwnProperty', true)
       for_part: "$ivar in $svar) { if (${o.scope.utility('hasProp')}.call($svar, $ivar)"
     body:           body.compile(merge(o, {indent: body_dent, top: true}))
     vars:           if range then name else "$name, $ivar"
