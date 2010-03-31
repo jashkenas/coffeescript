@@ -188,7 +188,7 @@ exports.Expressions: class Expressions extends BaseNode
   # declarations of all inner variables pushed up to the top.
   compile_with_declarations: (o) ->
     code: @compile_node(o)
-    code: "${@tab}var ${o.scope.compiled_assignments(@tab)};\n$code"  if o.scope.has_assignments(this)
+    code: "${@tab}var ${o.scope.compiled_assignments()};\n$code"  if o.scope.has_assignments(this)
     code: "${@tab}var ${o.scope.compiled_declarations()};\n$code" if o.scope.has_declarations(this)
     code
 
@@ -308,8 +308,6 @@ exports.ValueNode: class ValueNode extends BaseNode
     soaked:   false
     only:     del(o, 'only_first')
     op:       del(o, 'operation')
-    splice:   del(o, 'splice')
-    replace:  del(o, 'replace')
     props:    if only then @properties[0...@properties.length - 1] else @properties
     baseline: @base.compile o
     baseline: "($baseline)" if @base instanceof ObjectNode and @has_properties()
@@ -324,16 +322,6 @@ exports.ValueNode: class ValueNode extends BaseNode
           complete: "($temp = $complete)$@SOAK" + (baseline: temp + prop.compile(o))
         else
           complete: complete + @SOAK + (baseline: + prop.compile(o))
-      else if prop instanceof SliceNode
-        o.array: complete
-        if splice
-          o.replace: replace
-          part: prop.compile_splice(o)
-        else
-          part: prop.compile_slice(o)
-        baseline = part
-        complete = part
-        @last: part
       else
         part: prop.compile(o)
         baseline: + part
@@ -542,27 +530,6 @@ exports.SliceNode: class SliceNode extends BaseNode
     plus_part:  if @range.exclusive then '' else ' + 1'
     ".slice($from, $to$plus_part)"
 
-  compile_splice: (o) ->
-    array:      del o, 'array'
-    replace:    del o, 'replace'
-    from:       if @range.from? then @range.from else literal('null')
-    to:         if @range.to? then @range.to else literal('null')
-    exclusive:  if @range.exclusive then 'true' else 'false'
-    v:          o.scope.free_variable()
-    rng: new CallNode new ValueNode(literal(utility('range'))), [literal(array), from, to, literal(exclusive)]
-    args: literal "[($v = ${rng.compile(o)})[0], $v[1] - $v[0]].concat(${replace.compile(o)})"
-    call: new CallNode new ValueNode(literal(array), [literal('.splice.apply')]), [literal(array), args]
-    call.compile(o)
-
-  compile_slice: (o) ->
-    array:      del o, 'array'
-    from:       if @range.from? then @range.from else literal('null')
-    to:         if @range.to? then @range.to else literal('null')
-    exclusive:  if @range.exclusive then 'true' else 'false'
-    rng: new CallNode new ValueNode(literal(utility('range'))), [literal(array), from, to, literal(exclusive)]
-    call: new CallNode new ValueNode(literal(array), [literal('.slice.apply')]), [literal(array), rng]
-    call.compile(o)
-
 #### ObjectNode
 
 # An object literal, nothing fancy.
@@ -607,7 +574,7 @@ exports.ArrayNode: class ArrayNode extends BaseNode
     for obj, i in @objects
       code: obj.compile(o)
       if obj instanceof SplatNode
-        return @compile_splat_literal o
+        return @compile_splat_literal @objects, o
       else if obj instanceof CommentNode
         objects.push "\n$code\n$o.indent"
       else if i is @objects.length - 1
@@ -753,7 +720,14 @@ exports.AssignNode: class AssignNode extends BaseNode
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
   compile_splice: (o) ->
-    @variable.compile(merge(o, {only_first: true, splice: true, replace: @value}))
+    name:   @variable.compile merge o, {only_first: true}
+    l:      @variable.properties.length
+    range:  @variable.properties[l - 1].range
+    plus:   if range.exclusive then '' else ' + 1'
+    from:   range.from.compile(o)
+    to:     range.to.compile(o) + ' - ' + from + plus
+    val:    @value.compile(o)
+    "${name}.splice.apply($name, [$from, $to].concat($val))"
 
 #### CodeNode
 
@@ -1328,6 +1302,9 @@ ClosureNode: exports.ClosureNode: {
 
 UTILITIES: {
 
+  # Correctly set up a prototype chain for inheritance, including a reference
+  # to the superclass for `super()` calls. See:
+  # [goog.inherits](http://closure-library.googlecode.com/svn/docs/closure_goog_base.js.source.html#line1206)
   extend: """
           function(child, parent) {
               var ctor = function(){ };
@@ -1338,22 +1315,15 @@ UTILITIES: {
             }
           """
 
-  bind:   """
-          function(func, obj, args) {
-              return function() {
-                return func.apply(obj || {}, args ? args.concat(__slice.call(arguments, 0)) : arguments);
-              };
-            }
-          """
-
-  range:  """
-          function(array, from, to, exclusive) {
-              return [
-                (from < 0 ? from + array.length : from || 0),
-                (to < 0 ? to + array.length : to || array.length) + (exclusive ? 0 : 1)
-              ];
-            }
-          """
+  # Bind a function to a calling context, optionally including curried arguments.
+  # See [Underscore's implementation](http://jashkenas.github.com/coffee-script/documentation/docs/underscore.html#section-47)
+  bind: """
+        function(func, obj, args) {
+            return function() {
+              return func.apply(obj || {}, args ? args.concat(__slice.call(arguments, 0)) : arguments);
+            };
+          }
+        """
 
   hasProp: 'Object.prototype.hasOwnProperty'
 

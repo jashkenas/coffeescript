@@ -87,5 +87,5 @@ exports.Scope: class Scope
     @declared_variables().join ', '
 
   # Compile the JavaScript for all of the variable assignments in this scope.
-  compiled_assignments: (tab) ->
+  compiled_assignments: ->
     @assigned_variables().join ', '
