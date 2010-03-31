@@ -436,7 +436,7 @@ exports.ExtendsNode: class ExtendsNode extends BaseNode
 
   # Hooks one constructor into another's prototype chain.
   compile_node: (o) ->
-    ref:  new ValueNode literal utility 'extend'
+    ref:  new ValueNode literal utility 'extends'
     (new CallNode ref, [@child, @parent]).compile o
 
 #### AccessorNode
@@ -1305,29 +1305,29 @@ UTILITIES: {
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls. See:
   # [goog.inherits](http://closure-library.googlecode.com/svn/docs/closure_goog_base.js.source.html#line1206)
-  extend: """
-          function(child, parent) {
-              var ctor = function(){ };
-              ctor.prototype = parent.prototype;
-              child.__superClass__ = parent.prototype;
-              child.prototype = new ctor();
-              child.prototype.constructor = child;
-            }
-          """
+  __extends:  """
+              function(child, parent) {
+                  var ctor = function(){ };
+                  ctor.prototype = parent.prototype;
+                  child.__superClass__ = parent.prototype;
+                  child.prototype = new ctor();
+                  child.prototype.constructor = child;
+                }
+              """
 
   # Bind a function to a calling context, optionally including curried arguments.
   # See [Underscore's implementation](http://jashkenas.github.com/coffee-script/documentation/docs/underscore.html#section-47)
-  bind: """
-        function(func, obj, args) {
-            return function() {
-              return func.apply(obj || {}, args ? args.concat(__slice.call(arguments, 0)) : arguments);
-            };
-          }
-        """
+  __bind:   """
+            function(func, obj, args) {
+                return function() {
+                  return func.apply(obj || {}, args ? args.concat(__slice.call(arguments, 0)) : arguments);
+                };
+              }
+            """
 
-  hasProp: 'Object.prototype.hasOwnProperty'
+  __hasProp:'Object.prototype.hasOwnProperty'
 
-  slice: 'Array.prototype.slice'
+  __slice:  'Array.prototype.slice'
 
 }
 
@@ -1354,5 +1354,5 @@ literal: (name) ->
 # Helper for ensuring that utility functions are assigned at the top level.
 utility: (name) ->
   ref: "__$name"
-  Scope.root.assign ref, UTILITIES[name]
+  Scope.root.assign ref, UTILITIES[ref]
   ref
