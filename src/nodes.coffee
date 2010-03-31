@@ -4,7 +4,7 @@
 # the syntax tree into a string of JavaScript code, call `compile()` on the root.
 
 # Set up for both **Node.js** and the browser, by
-# including the [Scope](scope.html) class.
+# including the [Scope](scope.html) class and the [helper](helpers.html) functions.
 if process?
   Scope:   require('./scope').Scope
   helpers: require('./helpers').helpers
@@ -13,7 +13,7 @@ else
   helpers:      this.helpers
   Scope:        this.Scope
 
-# Import the helpers we need.
+# Import the helpers we plan to use.
 compact: helpers.compact
 flatten: helpers.flatten
 merge:   helpers.merge
@@ -113,7 +113,7 @@ exports.BaseNode: class BaseNode
   # This is what `coffee --nodes` prints out.
   toString: (idt) ->
     idt: or ''
-    '\n' + idt + @type + (child.toString(idt + TAB) for child in @children).join('')
+    '\n' + idt + @constructor.name + (child.toString(idt + TAB) for child in @children).join('')
 
   # Default implementations of the common node identification methods. Nodes
   # will override these with custom logic, if needed.
@@ -129,7 +129,6 @@ exports.BaseNode: class BaseNode
 # indented block of code -- the implementation of a function, a clause in an
 # `if`, `switch`, or `try`, and so on...
 exports.Expressions: class Expressions extends BaseNode
-  type: 'Expressions'
 
   constructor: (nodes) ->
     @children: @expressions: compact flatten nodes or []
@@ -214,7 +213,6 @@ statement Expressions
 # JavaScript without translation, such as: strings, numbers,
 # `true`, `false`, `null`...
 exports.LiteralNode: class LiteralNode extends BaseNode
-  type: 'Literal'
 
   constructor: (value) ->
     @value: value
@@ -238,7 +236,6 @@ exports.LiteralNode: class LiteralNode extends BaseNode
 # A `return` is a *pure_statement* -- wrapping it in a closure wouldn't
 # make sense.
 exports.ReturnNode: class ReturnNode extends BaseNode
-  type: 'Return'
 
   constructor: (expression) ->
     @children: [@expression: expression]
@@ -260,7 +257,6 @@ statement ReturnNode, true
 # A value, variable or literal or parenthesized, indexed or dotted into,
 # or vanilla.
 exports.ValueNode: class ValueNode extends BaseNode
-  type: 'Value'
 
   SOAK: " == undefined ? undefined : "
 
@@ -335,7 +331,6 @@ exports.ValueNode: class ValueNode extends BaseNode
 # CoffeeScript passes through comments as JavaScript comments at the
 # same position.
 exports.CommentNode: class CommentNode extends BaseNode
-  type: 'Comment'
 
   constructor: (lines) ->
     @lines: lines
@@ -354,7 +349,6 @@ statement CommentNode
 # Node for a function invocation. Takes care of converting `super()` calls into
 # calls against the prototype's function of the same name.
 exports.CallNode: class CallNode extends BaseNode
-  type: 'Call'
 
   constructor: (variable, args) ->
     @is_new:   false
@@ -406,7 +400,6 @@ exports.CallNode: class CallNode extends BaseNode
 # returning the bound function. After ECMAScript 5, Prototype.js, and
 # Underscore's `bind` functions.
 exports.CurryNode: class CurryNode extends CallNode
-  type: 'Curry'
 
   constructor: (meth, args) ->
     @children:  flatten [@meth: meth, @context: args[0], @args: (args.slice(1) or [])]
@@ -429,7 +422,6 @@ exports.CurryNode: class CurryNode extends CallNode
 # After `goog.inherits` from the
 # [Closure Library](http://closure-library.googlecode.com/svn/docs/closure_goog_base.js.html).
 exports.ExtendsNode: class ExtendsNode extends BaseNode
-  type: 'Extends'
 
   constructor: (child, parent) ->
     @children:  [@child: child, @parent: parent]
@@ -444,11 +436,10 @@ exports.ExtendsNode: class ExtendsNode extends BaseNode
 # A `.` accessor into a property of a value, or the `::` shorthand for
 # an accessor into the object's prototype.
 exports.AccessorNode: class AccessorNode extends BaseNode
-  type: 'Accessor'
 
   constructor: (name, tag) ->
     @children:  [@name: name]
-    @prototype: tag is 'prototype'
+    @prototype:tag is 'prototype'
     @soak_node: tag is 'soak'
     this
 
@@ -460,7 +451,6 @@ exports.AccessorNode: class AccessorNode extends BaseNode
 
 # A `[ ... ]` indexed accessor into an array or object.
 exports.IndexNode: class IndexNode extends BaseNode
-  type: 'Index'
 
   constructor: (index, tag) ->
     @children:  [@index: index]
@@ -476,7 +466,6 @@ exports.IndexNode: class IndexNode extends BaseNode
 # to specify a range for comprehensions, or as a value, to be expanded into the
 # corresponding array of integers at runtime.
 exports.RangeNode: class RangeNode extends BaseNode
-  type: 'Range'
 
   constructor: (from, to, exclusive) ->
     @children:  [@from: from, @to: to]
@@ -518,7 +507,6 @@ exports.RangeNode: class RangeNode extends BaseNode
 # specifies the index of the end of the slice, just as the first parameter
 # is the index of the beginning.
 exports.SliceNode: class SliceNode extends BaseNode
-  type: 'Slice'
 
   constructor: (range) ->
     @children: [@range: range]
@@ -534,7 +522,6 @@ exports.SliceNode: class SliceNode extends BaseNode
 
 # An object literal, nothing fancy.
 exports.ObjectNode: class ObjectNode extends BaseNode
-  type: 'Object'
 
   constructor: (props) ->
     @children: @objects: @properties: props or []
@@ -562,7 +549,6 @@ exports.ObjectNode: class ObjectNode extends BaseNode
 
 # An array literal.
 exports.ArrayNode: class ArrayNode extends BaseNode
-  type: 'Array'
 
   constructor: (objects) ->
     @children: @objects: objects or []
@@ -589,7 +575,6 @@ exports.ArrayNode: class ArrayNode extends BaseNode
 
 # The CoffeeScript class definition.
 exports.ClassNode: class ClassNode extends BaseNode
-  type: 'Class'
 
   # Initialize a **ClassNode** with its name, an optional superclass, and a
   # list of prototype property assignments.
@@ -645,7 +630,6 @@ statement ClassNode
 # The **AssignNode** is used to assign a local variable to value, or to set the
 # property of an object -- including within object literals.
 exports.AssignNode: class AssignNode extends BaseNode
-  type: 'Assign'
 
   # Matchers for detecting prototype assignments.
   PROTO_ASSIGN: /^(\S+)\.prototype/
@@ -735,7 +719,6 @@ exports.AssignNode: class AssignNode extends BaseNode
 # When for the purposes of walking the contents of a function body, the CodeNode
 # has no *children* -- they're within the inner scope.
 exports.CodeNode: class CodeNode extends BaseNode
-  type: 'Code'
 
   constructor: (params, body, tag) ->
     @params:  params or []
@@ -804,7 +787,6 @@ exports.CodeNode: class CodeNode extends BaseNode
 # A splat, either as a parameter to a function, an argument to a call,
 # or as part of a destructuring assignment.
 exports.SplatNode: class SplatNode extends BaseNode
-  type: 'Splat'
 
   constructor: (name) ->
     name: literal(name) unless name.compile
@@ -857,7 +839,6 @@ exports.SplatNode: class SplatNode extends BaseNode
 # it, all other loops can be manufactured. Useful in cases where you need more
 # flexibility or more speed than a comprehension can provide.
 exports.WhileNode: class WhileNode extends BaseNode
-  type: 'While'
 
   constructor: (condition, opts) ->
     @children:[@condition: condition]
@@ -903,7 +884,6 @@ statement WhileNode
 # Simple Arithmetic and logical operations. Performs some conversion from
 # CoffeeScript operations into their JavaScript equivalents.
 exports.OpNode: class OpNode extends BaseNode
-  type: 'Op'
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
   CONVERSIONS: {
@@ -922,7 +902,7 @@ exports.OpNode: class OpNode extends BaseNode
   PREFIX_OPERATORS: ['typeof', 'delete']
 
   constructor: (operator, first, second, flip) ->
-    @type: + ' ' + operator
+    @constructor.name: + ' ' + operator
     @children: compact [@first: first, @second: second]
     @operator: @CONVERSIONS[operator] or operator
     @flip: !!flip
@@ -979,7 +959,6 @@ exports.OpNode: class OpNode extends BaseNode
 
 # A classic *try/catch/finally* block.
 exports.TryNode: class TryNode extends BaseNode
-  type: 'Try'
 
   constructor: (attempt, error, recovery, ensure) ->
     @children: compact [@attempt: attempt, @recovery: recovery, @ensure: ensure]
@@ -1008,7 +987,6 @@ statement TryNode
 
 # Simple node to throw an exception.
 exports.ThrowNode: class ThrowNode extends BaseNode
-  type: 'Throw'
 
   constructor: (expression) ->
     @children: [@expression: expression]
@@ -1028,7 +1006,6 @@ statement ThrowNode
 # similar to `.nil?` in Ruby, and avoids having to consult a JavaScript truth
 # table.
 exports.ExistenceNode: class ExistenceNode extends BaseNode
-  type: 'Existence'
 
   constructor: (expression) ->
     @children: [@expression: expression]
@@ -1054,7 +1031,6 @@ exports.ExistenceNode: class ExistenceNode extends BaseNode
 #
 # Parentheses are a good way to force any statement to become an expression.
 exports.ParentheticalNode: class ParentheticalNode extends BaseNode
-  type: 'Paren'
 
   constructor: (expression) ->
     @children: [@expression: expression]
@@ -1082,7 +1058,6 @@ exports.ParentheticalNode: class ParentheticalNode extends BaseNode
 # the current index of the loop as a second parameter. Unlike Ruby blocks,
 # you can map and filter in a single pass.
 exports.ForNode: class ForNode extends BaseNode
-  type: 'For'
 
   constructor: (body, source, name, index) ->
     @body:    body
@@ -1163,7 +1138,6 @@ statement ForNode
 # Single-expression **IfNodes** are compiled into ternary operators if possible,
 # because ternaries are already proper expressions, and don't need conversion.
 exports.IfNode: class IfNode extends BaseNode
-  type: 'If'
 
   constructor: (condition, body, else_body, tags) ->
     @condition: condition
@@ -1304,7 +1278,7 @@ UTILITIES: {
 
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls. See:
-  # [goog.inherits](http://closure-library.googlecode.com/svn/docs/closure_goog_base.js.source.html#line1206)
+  # [goog.inherits](http://closure-library.googlecode.com/svn/docs/closure_goog_base.js.source.html#line1206).
   __extends:  """
               function(child, parent) {
                   var ctor = function(){ };
@@ -1316,7 +1290,7 @@ UTILITIES: {
               """
 
   # Bind a function to a calling context, optionally including curried arguments.
-  # See [Underscore's implementation](http://jashkenas.github.com/coffee-script/documentation/docs/underscore.html#section-47)
+  # See [Underscore's implementation](http://jashkenas.github.com/coffee-script/documentation/docs/underscore.html#section-47).
   __bind:   """
             function(func, obj, args) {
                 return function() {
@@ -1325,9 +1299,9 @@ UTILITIES: {
               }
             """
 
-  __hasProp:'Object.prototype.hasOwnProperty'
-
-  __slice:  'Array.prototype.slice'
+  # Shortcuts to speed up the lookup time for native functions.
+  __hasProp: 'Object.prototype.hasOwnProperty'
+  __slice: 'Array.prototype.slice'
 
 }
 
