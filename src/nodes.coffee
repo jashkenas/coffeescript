@@ -532,14 +532,14 @@ exports.ObjectNode: class ObjectNode extends BaseNode
   #
   # *TODO: Extract this and add it to ArrayNode*.
   compile_node: (o) ->
-    o.indent: @idt(1)
+    o.indent: @idt 1
     non_comments: prop for prop in @properties when not (prop instanceof CommentNode)
     last_noncom:  non_comments[non_comments.length - 1]
     props: for prop, i in @properties
       join:   ",\n"
       join:   "\n" if (prop is last_noncom) or (prop instanceof CommentNode)
       join:   '' if i is @properties.length - 1
-      indent: if prop instanceof CommentNode then '' else @idt(1)
+      indent: if prop instanceof CommentNode then '' else @idt 1
       indent + prop.compile(o) + join
     props: props.join('')
     inner: if props then '\n' + props + '\n' + @idt() else ''
@@ -555,7 +555,7 @@ exports.ArrayNode: class ArrayNode extends BaseNode
     @compile_splat_literal: SplatNode.compile_mixed_array <- @, @objects
 
   compile_node: (o) ->
-    o.indent: @idt(1)
+    o.indent: @idt 1
     objects: []
     for obj, i in @objects
       code: obj.compile(o)
@@ -860,7 +860,7 @@ exports.WhileNode: class WhileNode extends BaseNode
   # return an array containing the computed result of each iteration.
   compile_node: (o) ->
     top:        del(o, 'top') and not @returns
-    o.indent:   @idt(1)
+    o.indent:   @idt 1
     o.top:      true
     cond:       @condition.compile(o)
     set:        ''
@@ -973,7 +973,7 @@ exports.TryNode: class TryNode extends BaseNode
   # Compilation is more or less as you would expect -- the *finally* clause
   # is optional, the *catch* is not.
   compile_node: (o) ->
-    o.indent:     @idt(1)
+    o.indent:     @idt 1
     o.top:        true
     attempt_part: @attempt.compile(o)
     error_part:   if @error then " (${ @error.compile(o) }) " else ' '
@@ -1095,7 +1095,7 @@ exports.ForNode: class ForNode extends BaseNode
     index:          @index and @index.compile o
     scope.find name  if name
     scope.find index if index
-    body_dent:      @idt(1)
+    body_dent:      @idt 1
     rvar:           scope.free_variable() unless top_level
     ivar:           if range then name else index or scope.free_variable()
     var_part:       ''
@@ -1216,7 +1216,7 @@ exports.IfNode: class IfNode extends BaseNode
     @rewrite_switch(o) if @switcher
     child:        del o, 'chain_child'
     cond_o:       merge o
-    o.indent:     @idt(1)
+    o.indent:     @idt 1
     o.top:        true
     if_dent:      if child then '' else @idt()
     com_dent:     if child then @idt() else ''
