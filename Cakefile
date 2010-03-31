@@ -13,8 +13,9 @@ option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
 task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) ->
   base: options.prefix or '/usr/local'
   lib:  base + '/lib/coffee-script'
+  bin: base + '/bin'
   exec([
-    'mkdir -p ' + lib
+    'mkdir -p ' + lib + ' ' + bin
     'cp -rf bin lib LICENSE README package.json src vendor ' + lib
     'ln -sf ' + lib + '/bin/coffee ' + base + '/bin/coffee'
     'ln -sf ' + lib + '/bin/cake ' + base + '/bin/cake'
