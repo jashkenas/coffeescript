@@ -17,7 +17,7 @@ many option parsers that allow you to attach callback actions for every
 flag. Instead, you're responsible for interpreting the options object.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">parse: </span><span class="p">(</span><span class="nx">args</span><span class="p">)</span> <span class="o">-&gt;</span>
     <span class="nv">options: </span><span class="p">{</span><span class="nv">arguments: </span><span class="p">[]}</span>
     <span class="nv">args: </span><span class="nx">normalize_arguments</span> <span class="nx">args</span>
-    <span class="k">while</span> <span class="nv">arg: </span><span class="nx">args</span><span class="p">.</span><span class="nx">shift</span><span class="p">()</span>
+    <span class="k">while</span> <span class="p">(</span><span class="nv">arg: </span><span class="nx">args</span><span class="p">.</span><span class="nx">shift</span><span class="p">())</span>
       <span class="nv">is_option: </span><span class="o">!!</span><span class="p">(</span><span class="nx">arg</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">LONG_FLAG</span><span class="p">)</span> <span class="o">or</span> <span class="nx">arg</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">SHORT_FLAG</span><span class="p">))</span>
       <span class="nv">matched_rule: </span><span class="kc">no</span>
       <span class="k">for</span> <span class="nx">rule</span> <span class="k">in</span> <span class="err">@</span><span class="nx">rules</span>

@@ -32,7 +32,7 @@ exports.Rewriter: class Rewriter
     @close_open_calls_and_indexes()
     @add_implicit_indentation()
     @add_implicit_parentheses()
-    @ensure_balance(BALANCED_PAIRS)
+    @ensure_balance BALANCED_PAIRS
     @rewrite_closing_parens()
     @tokens
 
@@ -45,7 +45,7 @@ exports.Rewriter: class Rewriter
     i: 0
     while true
       break unless @tokens[i]
-      move: block(@tokens[i - 1], @tokens[i], @tokens[i + 1], i)
+      move: block @tokens[i - 1], @tokens[i], @tokens[i + 1], i
       i: + move
     true
 
@@ -75,7 +75,7 @@ exports.Rewriter: class Rewriter
   remove_mid_expression_newlines: ->
     @scan_tokens (prev, token, post, i) =>
       return 1 unless post and include(EXPRESSION_CLOSE, post[0]) and token[0] is 'TERMINATOR'
-      @tokens.splice(i, 1)
+      @tokens.splice i, 1
       return 0
 
   # The lexer has tagged the opening parenthesis of a method call, and the
@@ -86,8 +86,8 @@ exports.Rewriter: class Rewriter
     brackets: [0]
     @scan_tokens (prev, token, post, i) =>
       switch token[0]
-        when 'CALL_START'  then parens.push(0)
-        when 'INDEX_START' then brackets.push(0)
+        when 'CALL_START'  then parens.push 0
+        when 'INDEX_START' then brackets.push 0
         when '('           then parens[parens.length - 1]: + 1
         when '['           then brackets[brackets.length - 1]: + 1
         when ')'
@@ -118,7 +118,7 @@ exports.Rewriter: class Rewriter
         when 'CALL_END'   then calls: - 1
         when '('          then parens: + 1
         when ')'          then parens: - 1
-        when 'INDENT'     then stack.push(0)
+        when 'INDENT'     then stack.push 0
         when 'OUTDENT'
           last: stack.pop()
           stack[stack.length - 1]: + last
@@ -134,9 +134,9 @@ exports.Rewriter: class Rewriter
           size: stack[stack.length - stack_pointer] + 1
           stack[stack.length - stack_pointer]: 0
           return size
-      return 1 unless prev and include(IMPLICIT_FUNC, prev[0]) and include IMPLICIT_CALL, tag
+      return 1 unless prev and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, tag)
       calls: 0
-      @tokens.splice(i, 0, ['CALL_START', '(', token[2]])
+      @tokens.splice i, 0, ['CALL_START', '(', token[2]]
       stack[stack.length - 1]: + 1
       return 2
 
@@ -150,7 +150,7 @@ exports.Rewriter: class Rewriter
         post[0] isnt 'INDENT' and
         not (token[0] is 'ELSE' and post[0] is 'IF')
       starter: token[0]
-      @tokens.splice(i + 1, 0, ['INDENT', 2, token[2]])
+      @tokens.splice i + 1, 0, ['INDENT', 2, token[2]]
       idx: i + 1
       parens: 0
       while true
@@ -164,12 +164,12 @@ exports.Rewriter: class Rewriter
           insertion: if pre[0] is "," then idx - 1 else idx
           outdent: ['OUTDENT', 2, token[2]]
           outdent.generated: true
-          @tokens.splice(insertion, 0, outdent)
+          @tokens.splice insertion, 0, outdent
           break
         parens: + 1 if tok[0] is '('
         parens: - 1 if tok[0] is ')'
       return 1 unless token[0] is 'THEN'
-      @tokens.splice(i, 1)
+      @tokens.splice i, 1
       return 0
 
   # Ensure that all listed pairs of tokens are correctly balanced throughout

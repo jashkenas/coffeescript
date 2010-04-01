@@ -44,7 +44,7 @@ exports.Lexer: class Lexer
   # Before returning the token stream, run it through the [Rewriter](rewriter.html)
   # unless explicitly asked not to.
   tokenize: (code, options) ->
-    code     : code.replace(/(\r|\s+$)/g, '')
+    code     : code.replace /(\r|\s+$)/g, ''
     o        : options or {}
     @code    : code         # The remainder of the source code.
     @i       : 0            # Current character position we're parsing.
@@ -53,7 +53,7 @@ exports.Lexer: class Lexer
     @indents : []           # The stack of all current indentation levels.
     @tokens  : []           # Stream of parsed tokens in the form ['TYPE', value, line]
     while @i < @code.length
-      @chunk: @code.slice(@i)
+      @chunk: @code.slice @i
       @extract_next_token()
     @close_indentation()
     return @tokens if o.rewrite is off
@@ -94,7 +94,7 @@ exports.Lexer: class Lexer
   identifier_token: ->
     return false unless id: @match IDENTIFIER, 1
     @name_access_type()
-    accessed: include ACCESSORS, @tag(0)
+    accessed: include ACCESSORS, @tag 0
     tag: 'IDENTIFIER'
     tag: id.toUpperCase()     if not accessed and include(KEYWORDS, id)
     @identifier_error id      if include RESERVED, id
@@ -102,8 +102,8 @@ exports.Lexer: class Lexer
     @i: + id.length
     if not accessed
       tag: id: CONVERSIONS[id]         if include COFFEE_ALIASES, id
-      return @tag_half_assignment(tag) if @prev() and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
-    @token(tag, id)
+      return @tag_half_assignment tag  if @prev() and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
+    @token tag, id
     true
 
   # Matches numbers, including decimals, hex, and exponential notation.
@@ -120,7 +120,7 @@ exports.Lexer: class Lexer
     return false unless string:
       @balanced_token(['"', '"'], ['${', '}']) or
       @balanced_token ["'", "'"]
-    @interpolate_string string.replace(STRING_NEWLINES, " \\\n")
+    @interpolate_string string.replace STRING_NEWLINES, " \\\n"
     @line: + count string, "\n"
     @i: + string.length
     true
@@ -129,7 +129,7 @@ exports.Lexer: class Lexer
   # preserve whitespace, but ignore indentation to the left.
   heredoc_token: ->
     return false unless match: @chunk.match(HEREDOC)
-    quote: match[1].substr(0, 1)
+    quote: match[1].substr 0, 1
     doc: @sanitize_heredoc match[2] or match[4], quote
     @interpolate_string "$quote$doc$quote"
     @line: + count match[1], "\n"
@@ -140,7 +140,7 @@ exports.Lexer: class Lexer
   js_token: ->
     return false unless starts @chunk, '`'
     return false unless script: @balanced_token ['`', '`']
-    @token 'JS', script.replace(JS_CLEANER, '')
+    @token 'JS', script.replace JS_CLEANER, ''
     @i: + script.length
     true
 
@@ -152,7 +152,7 @@ exports.Lexer: class Lexer
     return false unless @chunk.match REGEX_START
     return false if     include NOT_REGEX, @tag()
     return false unless regex: @balanced_token ['/', '/']
-    regex: + (flags: @chunk.substr(regex.length).match(REGEX_FLAGS))
+    regex: + (flags: @chunk.substr(regex.length).match REGEX_FLAGS)
     if regex.match REGEX_INTERPOLATION
       str: regex.substring(1).split('/')[0]
       str: str.replace REGEX_ESCAPE, (escaped) -> '\\' + escaped
@@ -174,7 +174,7 @@ exports.Lexer: class Lexer
   comment_token: ->
     return false unless comment: @match COMMENT, 1
     @line: + (comment.match(MULTILINER) or []).length
-    lines: compact comment.replace(COMMENT_CLEANER, '').split(MULTILINER)
+    lines: compact comment.replace(COMMENT_CLEANER, '').split MULTILINER
     i: @tokens.length - 1
     if @unfinished()
       i: - 1 while @tokens[i] and not include LINE_BREAK, @tokens[i][0]
@@ -202,7 +202,7 @@ exports.Lexer: class Lexer
     no_newlines: next_character is '.' or @unfinished()
     if size is @indent
       return @suppress_newlines() if no_newlines
-      return @newline_token(indent)
+      return @newline_token indent
     else if size > @indent
       return @suppress_newlines() if no_newlines
       diff: size - @indent
@@ -249,14 +249,14 @@ exports.Lexer: class Lexer
   # here. `;` and newlines are both treated as a `TERMINATOR`, we distinguish
   # parentheses that indicate a method call from regular parentheses, and so on.
   literal_token: ->
-    match: @chunk.match(OPERATOR)
+    match: @chunk.match OPERATOR
     value: match and match[1]
     space: match and match[2]
-    @tag_parameters() if value and value.match(CODE)
-    value: or @chunk.substr(0, 1)
+    @tag_parameters() if value and value.match CODE
+    value: or @chunk.substr 0, 1
     prev_spaced: @prev() and @prev().spaced
     tag: value
-    if value.match(ASSIGNMENT)
+    if value.match ASSIGNMENT
       tag: 'ASSIGN'
       @assignment_error() if include JS_FORBIDDEN, @value
     else if value is ';'
@@ -272,7 +272,7 @@ exports.Lexer: class Lexer
       tag: 'CALL_START'  if value is '('
       tag: 'INDEX_START' if value is '['
     @i: + value.length
-    return @tag_half_assignment(tag) if space and prev_spaced and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
+    return @tag_half_assignment tag if space and prev_spaced and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
     @token tag, value
     true
 
@@ -312,7 +312,7 @@ exports.Lexer: class Lexer
     i: 0
     while true
       i: + 1
-      tok: @prev(i)
+      tok: @prev i
       return if not tok
       switch tok[0]
         when 'IDENTIFIER' then tok[0]: 'PARAM'
@@ -322,7 +322,7 @@ exports.Lexer: class Lexer
 
   # Close up all remaining open blocks at the end of the file.
   close_indentation: ->
-    @outdent_token(@indent)
+    @outdent_token @indent
 
   # The error for when you try to use a forbidden word in JavaScript as
   # an identifier.
@@ -350,7 +350,7 @@ exports.Lexer: class Lexer
     else
       lexer:    new Lexer()
       tokens:   []
-      quote:    str.substring(0, 1)
+      quote:    str.substring 0, 1
       [i, pi]:  [1, 1]
       while i < str.length - 1
         if starts str, '\\', i
@@ -393,17 +393,17 @@ exports.Lexer: class Lexer
 
   # Add a token to the results, taking note of the line number.
   token: (tag, value) ->
-    @tokens.push([tag, value, @line])
+    @tokens.push [tag, value, @line]
 
   # Peek at a tag in the current token stream.
   tag: (index, tag) ->
-    return unless tok: @prev(index)
+    return unless tok: @prev index
     return tok[0]: tag if tag?
     tok[0]
 
   # Peek at a value in the current token stream.
   value: (index, val) ->
-    return unless tok: @prev(index)
+    return unless tok: @prev index
     return tok[1]: val if val?
     tok[1]
 
@@ -414,7 +414,7 @@ exports.Lexer: class Lexer
   # Attempt to match a string against the current chunk, returning the indexed
   # match if successful, and `false` otherwise.
   match: (regex, index) ->
-    return false unless m: @chunk.match(regex)
+    return false unless m: @chunk.match regex
     if m then m[index] else false
 
   # Are we in the midst of an unfinished expression?
