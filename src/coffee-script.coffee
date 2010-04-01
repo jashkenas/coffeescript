@@ -51,7 +51,7 @@ exports.nodes: (code) ->
 # setting `__filename`, `__dirname`, and relative `require()`.
 exports.run: ((code, options) ->
   module.filename: __filename: options.source
-  __dirname: path.dirname __filename
+  __dirname: path.dirname(__filename)
   eval exports.compile code, options
 )
 
