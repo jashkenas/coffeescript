@@ -98,6 +98,10 @@ exports.BaseNode: class BaseNode
       return true if node.contains and node.contains block
     false
 
+  # Is this node of a certain type, or does it contain the type?
+  contains_type: (type) ->
+    this instanceof type or @contains (n) -> n instanceof type
+
   # Convenience for the most common use of contains. Does the node contain
   # a pure statement?
   contains_pure_statement: ->
@@ -928,7 +932,7 @@ exports.OpNode: class OpNode extends BaseNode
   #     true
   compile_chain: (o) ->
     shared: @first.unwrap().second
-    [@first.second, shared]: shared.compile_reference(o) if shared instanceof CallNode
+    [@first.second, shared]: shared.compile_reference(o) if shared.contains_type CallNode
     [first, second, shared]: [@first.compile(o), @second.compile(o), shared.compile(o)]
     "($first) && ($shared $@operator $second)"
 

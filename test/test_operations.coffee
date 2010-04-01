@@ -28,3 +28,13 @@ b: 1
 ok a is 1 and b is 1
 ok a == b
 ok a is b
+
+
+# Ensure that chained operations don't cause functions to be evaluated more
+# than once.
+
+val: 0
+func: -> val: + 1
+
+ok 2 > (func null) < 2
+ok val is 1
