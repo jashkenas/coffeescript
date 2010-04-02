@@ -128,3 +128,12 @@ combine: (func, num) -> func() * num
 result:  combine (-> 1 + 2), 3
 
 ok result is 9
+
+# Test for calls/parens/multiline-chains.
+f: (x) -> x
+result: (f 1).toString()
+  .length
+
+ok result is 1
+
+
