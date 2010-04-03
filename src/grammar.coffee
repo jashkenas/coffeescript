@@ -140,7 +140,6 @@ grammar: {
   AssignObj: [
     o "Identifier ASSIGN Expression",           -> new AssignNode new ValueNode($1), $3, 'object'
     o "AlphaNumeric ASSIGN Expression",         -> new AssignNode new ValueNode($1), $3, 'object'
-    o "ThisProperty ASSIGN Expression",         -> new AssignNode new ValueNode($1), $3, 'this'
     o "Comment"
   ]
 
@@ -246,16 +245,7 @@ grammar: {
     o "{ AssignList , }",                       -> new ObjectNode $2
     o "{ IndentedAssignList , }",               -> new ObjectNode $2
   ]
-
-  # Class definitions have optional bodies of prototype property assignments,
-  # and optional references to the superclass.
-  Class: [
-    o "CLASS SimpleAssignable",                            -> new ClassNode $2
-    o "CLASS SimpleAssignable EXTENDS Value",              -> new ClassNode $2, $4
-    o "CLASS SimpleAssignable IndentedAssignList",         -> new ClassNode $2, null, $3
-    o "CLASS SimpleAssignable EXTENDS Value IndentedAssignList", -> new ClassNode $2, $4, $5
-  ]
-
+  
   # Assignment of properties within an object literal can be separated by
   # comma, as in JavaScript, or simply by newline.
   AssignList: [
@@ -270,6 +260,28 @@ grammar: {
   IndentedAssignList: [
     o "INDENT AssignList OUTDENT",              -> $2
     o "INDENT AssignList , OUTDENT",            -> $2
+  ]
+
+  # Class definitions have optional bodies of prototype property assignments,
+  # and optional references to the superclass.
+  Class: [
+    o "CLASS SimpleAssignable",                            -> new ClassNode $2
+    o "CLASS SimpleAssignable EXTENDS Value",              -> new ClassNode $2, $4
+    o "CLASS SimpleAssignable INDENT ClassBody OUTDENT",   -> new ClassNode $2, null, $4
+    o "CLASS SimpleAssignable EXTENDS Value INDENT ClassBody OUTDENT", -> new ClassNode $2, $4, $6
+  ]
+  
+  # Assignments that can happen directly inside a class declaration.
+  ClassAssign: [
+    o "AssignObj",                              -> $1
+    o "ThisProperty ASSIGN Expression",         -> new AssignNode new ValueNode($1), $3, 'this'
+  ]
+  
+  # A list of assignments to a class.
+  ClassBody: [
+    o "",                                       -> []
+    o "ClassAssign",                            -> [$1]
+    o "ClassBody TERMINATOR ClassAssign", -> $1.concat $3
   ]
 
   # The three flavors of function call: normal, object instantiation with `new`,
