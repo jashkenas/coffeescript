@@ -601,6 +601,7 @@ exports.ClassNode: class ClassNode extends BaseNode
       pvar: prop.variable
       if pvar and pvar.base.value is 'constructor'
         func: prop.value
+        throw new Error("'${ pvar.base.value }' must be a function in 'class ${ @variable.base.value }'.") if not (func instanceof CodeNode)
         func.body.push(new ReturnNode(literal('this')))
         constructor: new AssignNode(@variable, func)
       else
