@@ -598,17 +598,15 @@ exports.ClassNode: class ClassNode extends BaseNode
     o.top:       true
 
     for prop in @properties
-      pvar: prop.variable
-      if pvar and pvar.base.value is 'constructor'
-        func: prop.value
-        throw new Error("'${ pvar.base.value }' must be a function in 'class ${ @variable.base.value }'.") if not (func instanceof CodeNode)
+      [pvar, func]: [prop.variable, prop.value]
+      if pvar and pvar.base.value is 'constructor' and func instanceof CodeNode
         func.body.push(new ReturnNode(literal('this')))
         constructor: new AssignNode(@variable, func)
       else
         if pvar
           access: if prop.context is 'this' then pvar.base.properties[0] else new AccessorNode(pvar, 'prototype')
           val:    new ValueNode(@variable, [access])
-          prop:   new AssignNode(val, prop.value)
+          prop:   new AssignNode(val, func)
         props.push prop
 
     if not constructor
