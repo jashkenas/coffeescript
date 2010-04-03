@@ -30,7 +30,7 @@ then compile it by calling <code>.compile()</code> on the root, or traverse it b
   <span class="nx">parser</span><span class="p">.</span><span class="nx">parse</span> <span class="nx">lexer</span><span class="p">.</span><span class="nx">tokenize</span> <span class="nx">code</span></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="octowrap">                 <a class="octothorpe" href="#section-8">#</a>               </div>               <p>Compile and execute a string of CoffeeScript (on the server), correctly
 setting <code>__filename</code>, <code>__dirname</code>, and relative <code>require()</code>.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">exports.run: </span><span class="p">((</span><span class="nx">code</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="o">-&gt;</span>
   <span class="nv">module.filename: __filename: </span><span class="nx">options</span><span class="p">.</span><span class="nx">source</span>
-  <span class="nv">__dirname: </span><span class="nx">path</span><span class="p">.</span><span class="nx">dirname</span> <span class="nx">__filename</span>
+  <span class="nv">__dirname: </span><span class="nx">path</span><span class="p">.</span><span class="nx">dirname</span><span class="p">(</span><span class="nx">__filename</span><span class="p">)</span>
   <span class="nb">eval</span> <span class="nx">exports</span><span class="p">.</span><span class="nx">compile</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">options</span>
 <span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-9">             <td class="docs">               <div class="octowrap">                 <a class="octothorpe" href="#section-9">#</a>               </div>               <p>Extend CoffeeScript with a custom language extension. It should hook in to
 the <strong>Lexer</strong> (as a peer of any of the lexer's tokenizing methods), and
@@ -40,16 +40,16 @@ peer of the nodes in <a href="nodes.html">nodes.coffee</a>).</p>             </t
 thin wrapper around it, compatible with the Jison API. We can then pass it
 directly as a "Jison lexer".</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">parser.lexer: </span><span class="p">{</span>
   <span class="nv">lex: </span><span class="o">-&gt;</span>
-    <span class="nv">token: </span><span class="err">@</span><span class="nx">tokens</span><span class="p">[</span><span class="err">@</span><span class="nx">pos</span><span class="p">]</span> <span class="o">or</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span>
-    <span class="err">@</span><span class="nv">pos: </span><span class="o">+</span> <span class="mi">1</span>
+    <span class="nv">token: </span><span class="nx">@tokens</span><span class="p">[</span><span class="nx">@pos</span><span class="p">]</span> <span class="o">or</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span>
+    <span class="vi">@pos: </span><span class="o">+</span> <span class="mi">1</span>
     <span class="k">this</span><span class="p">.</span><span class="nv">yylineno: </span><span class="nx">token</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
     <span class="k">this</span><span class="p">.</span><span class="nv">yytext: </span>  <span class="nx">token</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="nx">token</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
   <span class="nv">setInput: </span><span class="p">(</span><span class="nx">tokens</span><span class="p">)</span> <span class="o">-&gt;</span>
-    <span class="err">@</span><span class="nv">tokens: </span><span class="nx">tokens</span>
-    <span class="err">@</span><span class="nv">pos: </span><span class="mi">0</span>
+    <span class="vi">@tokens: </span><span class="nx">tokens</span>
+    <span class="vi">@pos: </span><span class="mi">0</span>
   <span class="nv">upcomingInput: </span><span class="o">-&gt;</span> <span class="s2">&quot;&quot;</span>
-  <span class="nv">showPosition: </span><span class="o">-&gt;</span> <span class="err">@</span><span class="nx">pos</span>
+  <span class="nv">showPosition: </span><span class="o">-&gt;</span> <span class="nx">@pos</span>
 <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-11">             <td class="docs">               <div class="octowrap">                 <a class="octothorpe" href="#section-11">#</a>               </div>               <p>Activate CoffeeScript in the browser by having it compile and evaluate
 all script tags with a content-type of <code>text/coffeescript</code>. This happens
 on page load. Unfortunately, the text contents of remote scripts cannot be
