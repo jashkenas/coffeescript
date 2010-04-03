@@ -53,8 +53,8 @@ ok multiline is 'one two three'
 ok {a: (num) -> num is 10 }.a 10
 
 
-bob: {
-  name:  'Bob'
+moe: {
+  name:  'Moe'
   greet: (salutation) ->
     salutation + " " + @name
   hello: ->
@@ -62,8 +62,13 @@ bob: {
   10: 'number'
 }
 
-ok bob.hello() is "Hello Bob"
-ok bob[10] is 'number'
+ok moe.hello() is "Hello Moe"
+ok moe[10] is 'number'
+
+moe.hello: ->
+  this['greet'] "Hello"
+
+ok moe.hello() is 'Hello Moe'
 
 
 obj: {

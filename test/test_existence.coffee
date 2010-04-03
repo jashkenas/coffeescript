@@ -6,7 +6,6 @@ ok(if my_special_variable? then true else false)
 
 
 # Existential assignment.
-
 a: 5
 a: null
 a ?= 10
@@ -16,7 +15,6 @@ ok a is 10 and b is 10
 
 
 # The existential operator.
-
 z: null
 x: z ? "EX"
 
@@ -24,7 +22,6 @@ ok z is null and x is "EX"
 
 
 # Only evaluate once.
-
 counter: 0
 get_next_node: ->
   throw "up" if counter
@@ -34,7 +31,6 @@ ok(if get_next_node()? then true else false)
 
 
 # Existence chains, soaking up undefined properties:
-
 obj: {
   prop: "hello"
 }
@@ -53,7 +49,6 @@ ok obj?['non']?['existent'].property is undefined
 
 
 # Soaks and caches method calls as well.
-
 arr: ["--", "----"]
 
 ok arr.pop()?.length is 4

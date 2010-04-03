@@ -45,12 +45,12 @@ ok bronze is "Mighty Mouse"
 ok last is "Michael Phelps"
 ok the_field.length is 8
 
-medalists contenders..., 'Tim', 'Bob', 'Jim'
+medalists contenders..., 'Tim', 'Moe', 'Jim'
 ok last is 'Jim'
 
 
 obj: {
-  name: 'bob'
+  name: 'moe'
   accessor: (args...) ->
     [@name].concat(args).join(' ')
   getNames: ->
@@ -58,7 +58,7 @@ obj: {
     @accessor(args...)
 }
 
-ok obj.getNames() is 'bob jane ted'
+ok obj.getNames() is 'moe jane ted'
 
 
 crowd: [

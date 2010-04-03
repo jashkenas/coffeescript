@@ -4,17 +4,17 @@ area: (x, y, x1, y1) ->
 x:  y:  10
 x1: y1: 20
 
-ok area(x, y, x1, y1) is 100, 'basic arguments'
+ok area(x, y, x1, y1) is 100
 
 ok(area(x, y,
-           x1, y1) is 100, 'arguments on split lines')
+           x1, y1) is 100)
 
 ok(area(
   x
   y
   x1
   y1
-) is 100, 'newline delimited arguments')
+) is 100)
 
 
 sum_of_args: ->

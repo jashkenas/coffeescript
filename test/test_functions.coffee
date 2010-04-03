@@ -129,16 +129,3 @@ result: (f 1).toString()
   .length
 
 ok result is 1
-
-
-# Test that `this` is "callable".
-obj: {
-  greet: (salutation) ->
-    "Hello $salutation"
-
-  hello: ->
-    this['greet'] "You"
-}
-
-ok obj.hello() is 'Hello You'
-

@@ -1,3 +1,4 @@
+# Regular expression literals.
 ok 'x'.match(/x/g)
 ok 'x'.match /x/g
 ok 'x'.match(/x/)

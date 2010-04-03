@@ -27,8 +27,6 @@ ok result
 
 
 # If statement with a comment-only clause.
-
-
 result: if false
   # comment
 else

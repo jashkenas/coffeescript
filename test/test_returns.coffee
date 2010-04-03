@@ -1,3 +1,4 @@
+# Expression conversion under explicit returns.
 first: ->
   return 'do' for x in [1,2,3]
 

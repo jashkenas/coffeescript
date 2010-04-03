@@ -1,12 +1,13 @@
-name: 'Bob'
+# Interpolate regular expressions.
+name: 'Moe'
 
-ok not not '"Bob"'.match(/^"${name}"$/i)
-ok '"Bobby"'.match(/^"${name}"$/i) is null
+ok not not '"Moe"'.match(/^"${name}"$/i)
+ok '"Moe!"'.match(/^"${name}"$/i) is null
 
-ok not not 'Bob'.match(/^$name$/)
-ok 'Bobby'.match(/^$name/)
+ok not not 'Moe'.match(/^$name$/)
+ok 'Moe!'.match(/^$name/)
 
-ok 'Bobby'.match(/${"${"${"$name"}"}"}/imgy)
+ok 'Moe!'.match(/${"${"${"$name"}"}"}/imgy)
 
 ok '$a$b$c'.match(/\$A\$B\$C/i)
 

@@ -1,3 +1,4 @@
+# Simple variable swapping.
 a: -1
 b: -2
 
@@ -6,12 +7,10 @@ b: -2
 ok a is -2
 ok b is -1
 
-
 func: ->
   [a, b]: [b, a]
 
 ok func().join(' ') is '-1 -2'
-
 
 noop: ->
 
@@ -20,6 +19,7 @@ noop [a,b]: [c,d]: [1,2]
 ok a is 1 and b is 2
 
 
+# Array destructuring, including splats.
 arr: [1, 2, 3]
 
 [a, b, c]: arr
@@ -43,6 +43,8 @@ ok last is 40
 ok z.length is 3 and z[2] is 4
 ok end is 5
 
+
+# Object destructuring.
 obj: {x: 10, y: 20, z: 30}
 
 {x: a, y: b, z: c}: obj
@@ -51,9 +53,8 @@ ok a is 10
 ok b is 20
 ok c is 30
 
-
 person: {
-  name: "Bob"
+  name: "Moe"
   family: {
     brother: {
       addresses: [
@@ -69,9 +70,8 @@ person: {
 
 {name: a, family: {brother: {addresses: [one, {city: b}]}}}: person
 
-ok a is "Bob"
+ok a is "Moe"
 ok b is "Moquasset NY, 10021"
-
 
 test: {
   person: {
@@ -89,6 +89,7 @@ test: {
 ok addr.join(', ') is "Street 101, Apt 101, City 101"
 
 
+# Destructuring against an expression.
 [a, b]: if true then [2, 1] else [1, 2]
 
 ok a is 2
