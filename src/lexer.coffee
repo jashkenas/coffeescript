@@ -511,7 +511,7 @@ NOT_REGEX: [
 # Tokens which could legitimately be invoked or indexed. A opening
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
-CALLABLE: ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING', '@']
+CALLABLE: ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING', '@', 'THIS']
 
 # Tokens that indicate an access -- keywords immediately following will be
 # treated as identifiers.
