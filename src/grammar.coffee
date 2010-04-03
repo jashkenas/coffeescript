@@ -53,8 +53,8 @@ grammar: {
   # The **Root** is the top-level node in the syntax tree. Since we parse bottom-up,
   # all parsing must end here.
   Root: [
-    o "",                                  -> new Expressions()
-    o "TERMINATOR",                        -> new Expressions()
+    o "",                                       -> new Expressions()
+    o "TERMINATOR",                             -> new Expressions()
     o "Expressions"
     o "Block TERMINATOR"
   ]
@@ -62,8 +62,8 @@ grammar: {
   # Any list of expressions or method body, seperated by line breaks or
   # semicolons.
   Expressions: [
-    o "Expression",                        -> Expressions.wrap [$1]
-    o "Expressions TERMINATOR Expression", -> $1.push $3
+    o "Expression",                             -> Expressions.wrap [$1]
+    o "Expressions TERMINATOR Expression",      -> $1.push $3
     o "Expressions TERMINATOR"
   ]
 
@@ -132,7 +132,7 @@ grammar: {
 
   # Assignment of a variable, property, or index to a value.
   Assign: [
-    o "Assignable ASSIGN Expression",                -> new AssignNode $1, $3
+    o "Assignable ASSIGN Expression",           -> new AssignNode $1, $3
   ]
 
   # Assignment when it happens within an object literal. The difference from
@@ -245,7 +245,7 @@ grammar: {
     o "{ AssignList , }",                       -> new ObjectNode $2
     o "{ IndentedAssignList , }",               -> new ObjectNode $2
   ]
-  
+
   # Assignment of properties within an object literal can be separated by
   # comma, as in JavaScript, or simply by newline.
   AssignList: [
@@ -265,18 +265,18 @@ grammar: {
   # Class definitions have optional bodies of prototype property assignments,
   # and optional references to the superclass.
   Class: [
-    o "CLASS SimpleAssignable",                            -> new ClassNode $2
-    o "CLASS SimpleAssignable EXTENDS Value",              -> new ClassNode $2, $4
-    o "CLASS SimpleAssignable INDENT ClassBody OUTDENT",   -> new ClassNode $2, null, $4
+    o "CLASS SimpleAssignable",                 -> new ClassNode $2
+    o "CLASS SimpleAssignable EXTENDS Value",   -> new ClassNode $2, $4
+    o "CLASS SimpleAssignable INDENT ClassBody OUTDENT", -> new ClassNode $2, null, $4
     o "CLASS SimpleAssignable EXTENDS Value INDENT ClassBody OUTDENT", -> new ClassNode $2, $4, $6
   ]
-  
+
   # Assignments that can happen directly inside a class declaration.
   ClassAssign: [
     o "AssignObj",                              -> $1
     o "ThisProperty ASSIGN Expression",         -> new AssignNode new ValueNode($1), $3, 'this'
   ]
-  
+
   # A list of assignments to a class.
   ClassBody: [
     o "",                                       -> []
@@ -300,7 +300,7 @@ grammar: {
   # Extending an object by setting its prototype chain to reference a parent
   # object.
   Extends: [
-    o "SimpleAssignable EXTENDS Value",                    -> new ExtendsNode $1, $3
+    o "SimpleAssignable EXTENDS Value",         -> new ExtendsNode $1, $3
   ]
 
   # Ordinary function invocation, or a chained series of calls.
@@ -463,9 +463,9 @@ grammar: {
 
   # An individual **When** clause, with action.
   When: [
-    o "LEADING_WHEN SimpleArgs Block",          -> new IfNode $2, $3, null, {statement: true}
+    o "LEADING_WHEN SimpleArgs Block",            -> new IfNode $2, $3, null, {statement: true}
     o "LEADING_WHEN SimpleArgs Block TERMINATOR", -> new IfNode $2, $3, null, {statement: true}
-    o "Comment TERMINATOR When",                -> $3.comment: $1; $3
+    o "Comment TERMINATOR When",                  -> $3.comment: $1; $3
   ]
 
   # The most basic form of *if* is a condition and an action. The following
