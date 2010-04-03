@@ -33,8 +33,6 @@ obj.unbound()
 obj.bound()
 
 
-# The named function should be cleared out before a call occurs:
-
 # Python decorator style wrapper that memoizes any function
 memoize: (fn) ->
   cache: {}
@@ -74,14 +72,12 @@ ok result is 10
 
 
 # More fun with optional parens.
-
 fn: (arg) -> arg
 
 ok fn(fn {prop: 101}).prop is 101
 
 
 # Multi-blocks with optional parens.
-
 result: fn( ->
   fn ->
     "Wrapped"
@@ -91,7 +87,6 @@ ok result()() is 'Wrapped'
 
 
 # And even with strange things like this:
-
 funcs:  [((x) -> x), ((x) -> x * x)]
 result: funcs[1] 5
 
@@ -103,7 +98,6 @@ ok result is 'lo'
 
 
 # And with multiple single-line functions on the same line.
-
 func: (x) -> (x) -> (x) -> x
 ok func(1)(2)(3) is 3
 
@@ -113,7 +107,6 @@ del: -> 5
 ok del() is 5
 
 # Ensure that functions can have a trailing comma in their argument list
-
 mult: (x, mids..., y) ->
   x: * n for n in mids
   x: * y
@@ -129,6 +122,7 @@ result:  combine (-> 1 + 2), 3
 
 ok result is 9
 
+
 # Test for calls/parens/multiline-chains.
 f: (x) -> x
 result: (f 1).toString()
@@ -136,4 +130,15 @@ result: (f 1).toString()
 
 ok result is 1
 
+
+# Test that `this` is "callable".
+obj: {
+  greet: (salutation) ->
+    "Hello $salutation"
+
+  hello: ->
+    this['greet'] "You"
+}
+
+ok obj.hello() is 'Hello You'
 
