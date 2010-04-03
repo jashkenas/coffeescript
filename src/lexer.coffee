@@ -269,7 +269,7 @@ exports.Lexer: class Lexer
       tag: 'SOAKED_INDEX_END'
       @soaked_index: false
     else if include(CALLABLE, @tag()) and not prev_spaced
-      tag: 'CALL_START'  if value is '('
+      tag: 'CALL_START'  if value is '(' and @tag() isnt 'THIS'
       tag: 'INDEX_START' if value is '['
     @i: + value.length
     return @tag_half_assignment tag if space and prev_spaced and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
