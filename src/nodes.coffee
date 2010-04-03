@@ -533,8 +533,6 @@ exports.ObjectNode: class ObjectNode extends BaseNode
   # All the mucking about with commas is to make sure that CommentNodes and
   # AssignNodes get interleaved correctly, with no trailing commas or
   # commas affixed to comments.
-  #
-  # *TODO: Extract this and add it to ArrayNode*.
   compile_node: (o) ->
     o.indent: @idt 1
     non_comments: prop for prop in @properties when not (prop instanceof CommentNode)
