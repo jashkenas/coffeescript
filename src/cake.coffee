@@ -22,9 +22,10 @@ oparse: null
 # Mixin the top-level Cake functions for Cakefiles to use directly.
 helpers.extend global, {
 
-  # Define a Cake task with a short name, a sentence description,
+  # Define a Cake task with a short name, an optional sentence description,
   # and the function to run as the action itself.
   task: (name, description, action) ->
+    [action, description]: [description, action] unless action
     tasks[name]: {name: name, description: description, action: action}
 
   # Define an option that the Cakefile accepts. The parsed options hash,
@@ -59,7 +60,8 @@ print_tasks: ->
   for name, task of tasks
     spaces: 20 - name.length
     spaces: if spaces > 0 then (' ' for i in [0..spaces]).join('') else ''
-    puts "cake $name$spaces # ${task.description}"
+    desc:   if task.description then "# ${task.description}" else ''
+    puts "cake $name$spaces $desc"
   puts oparse.help() if switches.length
 
 # Print an error and exit when attempting to all an undefined task.
