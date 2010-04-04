@@ -71,7 +71,7 @@
 
 
   # Current version.
-  _.VERSION: '0.6.0'
+  _.VERSION: '1.0.2'
 
 
   # Collection Functions
@@ -422,9 +422,10 @@
 
 
   # Extend a given object with all of the properties in a source object.
-  _.extend: (destination, source) ->
-    (destination[key]: val) for key, val of source
-    destination
+  _.extend: (obj) ->
+    for source in _.rest(arguments)
+      (obj[key]: val) for key, val of source
+    obj
 
 
   # Create a (shallow-cloned) duplicate of an object.
@@ -472,7 +473,7 @@
     # Different object sizes?
     return false if aKeys.length isnt bKeys.length
     # Recursive comparison of contents.
-    (return false) for key, val of a when !_.isEqual(val, b[key])
+    (return false) for key, val of a when !(key in b) or !_.isEqual(val, b[key])
     true
 
 
@@ -488,12 +489,11 @@
 
 
   # Is a given value an array?
-  _.isArray:      nativeIsArray or (obj) -> !!(obj and obj.concat and obj.unshift)
+  _.isArray:      nativeIsArray or (obj) -> !!(obj and obj.concat and obj.unshift and not obj.callee)
 
 
   # Is a given variable an arguments object?
-  _.isArguments:  (obj) -> obj and _.isNumber(obj.length) and not obj.concat and
-                           not obj.substr and not obj.apply and not propertyIsEnumerable.call(obj, 'length')
+  _.isArguments:  (obj) -> obj and obj.callee
 
 
   # Is the given value a function?

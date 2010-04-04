@@ -1,5 +1,6 @@
 (function(){
   var _a, _b, _c, _d, cubed_list, list, math, num, number, opposite_day, race, square;
+  var __slice = Array.prototype.slice;
   // Assignment:
   number = 42;
   opposite_day = true;
@@ -24,7 +25,7 @@
   // Splats:
   race = function race(winner) {
     var runners;
-    runners = Array.prototype.slice.call(arguments, 1, arguments.length - 0);
+    runners = __slice.call(arguments, 1, arguments.length - 0);
     return print(winner, runners);
   };
   // Existence:
@@ -33,9 +34,9 @@
   }
   // Array comprehensions:
   cubed_list = (function() {
-    _a = []; _b = list;
-    for (_c = 0, _d = _b.length; _c < _d; _c++) {
-      num = _b[_c];
+    _a = []; _c = list;
+    for (_b = 0, _d = _c.length; _b < _d; _b++) {
+      num = _c[_b];
       _a.push(math.cube(num));
     }
     return _a;

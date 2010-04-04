@@ -2,20 +2,20 @@
   var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, food, lunch, roid, roid2;
   // Eat lunch.
   lunch = (function() {
-    _a = []; _b = ['toast', 'cheese', 'wine'];
-    for (_c = 0, _d = _b.length; _c < _d; _c++) {
-      food = _b[_c];
+    _a = []; _c = ['toast', 'cheese', 'wine'];
+    for (_b = 0, _d = _c.length; _b < _d; _b++) {
+      food = _c[_b];
       _a.push(eat(food));
     }
     return _a;
   }).call(this);
   // Naive collision detection.
-  _e = asteroids;
-  for (_f = 0, _g = _e.length; _f < _g; _f++) {
-    roid = _e[_f];
-    _h = asteroids;
-    for (_i = 0, _j = _h.length; _i < _j; _i++) {
-      roid2 = _h[_i];
+  _f = asteroids;
+  for (_e = 0, _g = _f.length; _e < _g; _e++) {
+    roid = _f[_e];
+    _i = asteroids;
+    for (_h = 0, _j = _i.length; _h < _j; _h++) {
+      roid2 = _i[_h];
       if (roid !== roid2) {
         if (roid.overlaps(roid2)) {
           roid.explode();

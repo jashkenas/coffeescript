@@ -129,7 +129,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.6">0.5.6</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.6.0">0.6.0</a>
     </p>
 
     <h2>
@@ -170,12 +170,12 @@ alert reverse '.eeffoC yrT'</textarea></div>
     </p>
 
     <p>
-      To install, first make sure you have a working version of
-      <a href="http://nodejs.org/">Node.js</a> version 0.1.33 or higher.
+      To install, first make sure you have a working copy of the latest tagged version of
+      <a href="http://nodejs.org/">Node.js</a>, currently <b>0.1.33</b> or higher.
       Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.5.6">0.5.6</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.6.0">0.6.0</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -638,6 +638,10 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       is converted into a call against the immediate ancestor's method of the same name.
     </p>
     <%= code_for('prototypes', '"one_two".dasherize()') %>
+    <p>
+      Finally, you may assign Class-level (static) properties within a class
+      definition by using<br /><tt>@property: value</tt>
+    </p>
 
     <p>
       <span id="pattern_matching" class="bookmark"></span>
@@ -856,13 +860,26 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <li>
         <b>defunkt</b>'s <a href="http://github.com/defunkt/coffee-mode">CoffeeScript Major Mode</a>
         &mdash; a Emacs major mode that provides syntax highlighting, indentation
-        support, and some bonus commands. (For Vim and TextMate highlighters,
-        see the <tt>extras</tt> directory of the main repository.)
+        support, and some bonus commands.
+      </li>
+      <li>
+        <b>jashkenas</b>'s <a href="http://github.com/jashkenas/coffee-script-tmbundle">CoffeeScript TextMate Bundle</a>
+        &mdash; which provides syntax highlighting, snippet expansion, and the
+        ability to run bits of CoffeeScript from within TextMate itself.
+      </li>
+      <li>
+        <b>kchmck</b>'s <a href="http://github.com/kchmck/vim-coffee-script">Vim CoffeeScript</a>
+        &mdash; which adds Vim syntax highlighting and indentation support.
       </li>
       <li>
         <b>mattly</b>'s <a href="http://github.com/mattly/rack-coffee">rack-coffee</a>
         &mdash; a small Rack middleware for serving CoffeeScript files as
         compiled JavaScript on the fly.
+      </li>
+      <li>
+        <b>jnicklas</b>'s <a href="http://github.com/jnicklas/bistro_car">BistroCar</a>
+        &mdash; a plugin that serves and bundles CoffeeScript from within your
+        Rails application.
       </li>
     </ul>
 
@@ -870,6 +887,13 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.6.0</b>
+      Trailing commas are now allowed, a-la Python. Static 
+      properties may be assigned directly within class definitions, 
+      using <tt>@property</tt> notation.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.5.6</b>

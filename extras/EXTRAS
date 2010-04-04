@@ -5,19 +5,3 @@ CoffeeScript compiler. To use it in the browser, include the script after any
 inline script tags of type "text/coffeescript" on the page. It will compile
 and evaluate all of the scripts in order.
 
-
-This folder also includes a CoffeeScript syntax highlighter for Vim.
-To install, copy "coffee.vim" into the "syntax" directory of
-your vim72, and enable it in either of the following two ways:
-
-  * Manually, by running `:set syntax=coffee`
-  
-  * Or automatically, by creating a "filetype.vim" file within "~/.vim", which
-    contains something along these lines:
-    
-    if exists("did_load_filetypes")
-      finish
-    end
-    augroup filetypedetect
-      au! BufRead,BufNewFile *.coffee setfiletype coffee
-    augroup END

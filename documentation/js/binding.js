@@ -1,11 +1,12 @@
 (function(){
   var get_source, url;
-  url = "documentation/coffee/binding.coffee";
-  get_source = (function(func, obj, args) {
+  var __slice = Array.prototype.slice, __bind = function(func, obj, args) {
     return function() {
-      return func.apply(obj, args.concat(Array.prototype.slice.call(arguments, 0)));
+      return func.apply(obj || {}, args ? args.concat(__slice.call(arguments, 0)) : arguments);
     };
-  }(jQuery.get, jQuery, [url]));
+  };
+  url = "documentation/coffee/binding.coffee";
+  get_source = __bind(jQuery.get, jQuery, [url]);
   get_source(function(response) {
     return alert(response);
   });
