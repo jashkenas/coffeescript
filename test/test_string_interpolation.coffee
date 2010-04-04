@@ -48,8 +48,10 @@ ok "values: ${list.join ' '}" is 'values: 0 1 2 3 4 5 6 7 8 9'
 obj: {
   name: 'Joe'
   hi: -> "Hello $@name."
+  cya: -> "Hello $@name.".replace('Hello','Goodbye')
 }
 ok obj.hi() is "Hello Joe."
+ok obj.cya() is "Goodbye Joe."
 
 ok "With ${"quotes"}" is 'With quotes'
 ok 'With ${"quotes"}' is 'With ${"quotes"}'
