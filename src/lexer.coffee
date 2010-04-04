@@ -376,6 +376,8 @@ exports.Lexer: class Lexer
         i: + 1
       tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i and pi < str.length - 1
       tokens.unshift ['STRING', '""'] unless tokens[0][0] is 'STRING'
+      interpolated: tokens.length > 1
+      @token '(', '(' if interpolated
       for token, i in tokens
         [tag, value]: token
         if tag is 'TOKENS'
@@ -386,6 +388,7 @@ exports.Lexer: class Lexer
         else
           @token tag, value
         @token '+', '+' if i < tokens.length - 1
+      @token ')', ')' if interpolated
       tokens
 
   # Helpers
