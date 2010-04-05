@@ -108,7 +108,7 @@ grammar: {
   # will convert some postfix forms into blocks for us, by adjusting the
   # token stream.
   Block: [
-    o "INDENT Body OUTDENT",             -> $2
+    o "INDENT Body OUTDENT",                    -> $2
     o "INDENT OUTDENT",                         -> new Expressions()
     o "TERMINATOR Comment",                     -> Expressions.wrap [$2]
   ]
@@ -290,7 +290,7 @@ grammar: {
   ClassBody: [
     o "",                                       -> []
     o "ClassAssign",                            -> [$1]
-    o "ClassBody TERMINATOR ClassAssign", -> $1.concat $3
+    o "ClassBody TERMINATOR ClassAssign",       -> $1.concat $3
   ]
 
   # The three flavors of function call: normal, object instantiation with `new`,
@@ -405,7 +405,7 @@ grammar: {
   # where only values are accepted, wrapping it in parentheses will always do
   # the trick.
   Parenthetical: [
-    o "( Line )",                         -> new ParentheticalNode $2
+    o "( Line )",                               -> new ParentheticalNode $2
   ]
 
   # A language extension to CoffeeScript from the outside. We simply pass
@@ -424,7 +424,7 @@ grammar: {
   # or postfix, with a single expression. There is no do..while.
   While: [
     o "WhileSource Block",                      -> $1.add_body $2
-    o "Statement WhileSource",                 -> $2.add_body Expressions.wrap [$1]
+    o "Statement WhileSource",                  -> $2.add_body Expressions.wrap [$1]
     o "Expression WhileSource",                 -> $2.add_body Expressions.wrap [$1]
   ]
 
@@ -432,7 +432,7 @@ grammar: {
   # Comprehensions can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression.
   For: [
-    o "Statement FOR ForVariables ForSource",  -> new ForNode $1, $4, $3[0], $3[1]
+    o "Statement FOR ForVariables ForSource",   -> new ForNode $1, $4, $3[0], $3[1]
     o "Expression FOR ForVariables ForSource",  -> new ForNode $1, $4, $3[0], $3[1]
     o "FOR ForVariables ForSource Block",       -> new ForNode $4, $3, $2[0], $2[1]
   ]
