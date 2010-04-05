@@ -55,22 +55,35 @@ grammar: {
   Root: [
     o "",                                       -> new Expressions()
     o "TERMINATOR",                             -> new Expressions()
-    o "Expressions"
+    o "Body"
     o "Block TERMINATOR"
   ]
 
-  # Any list of expressions or method body, seperated by line breaks or
-  # semicolons.
-  Expressions: [
-    o "Expression",                             -> Expressions.wrap [$1]
-    o "Expressions TERMINATOR Expression",      -> $1.push $3
-    o "Expressions TERMINATOR"
+  # Any list of statements and expressions, seperated by line breaks or semicolons.
+  Body: [
+    o "Line",                                   -> Expressions.wrap [$1]
+    o "Body TERMINATOR Line",                   -> $1.push $3
+    o "Body TERMINATOR"
+  ]
+  
+  # Expressions and statements, which make up a line in a body.
+  Line: [
+    o "Expression"
+    o "Statement"
+  ]
+  
+  # Pure statements which cannot be expressions.
+  Statement: [
+    o "Return"
+    o "Throw"
+    o "BREAK",                                  -> new LiteralNode yytext
+    o "CONTINUE",                               -> new LiteralNode yytext
   ]
 
   # All the different types of expressions in our language. The basic unit of
-  # CoffeeScript is the **Expression** -- you'll notice that there is no
-  # "statement" nonterminal. Expressions serve as the building blocks
-  # of many other rules, making them somewhat circular.
+  # CoffeeScript is the **Expression** -- everything that can be an expression
+  # is one. Expressions serve as the building blocks of many other rules, making
+  # them somewhat circular.
   Expression: [
     o "Value"
     o "Call"
@@ -80,8 +93,6 @@ grammar: {
     o "Assign"
     o "If"
     o "Try"
-    o "Throw"
-    o "Return"
     o "While"
     o "For"
     o "Switch"
@@ -97,7 +108,7 @@ grammar: {
   # will convert some postfix forms into blocks for us, by adjusting the
   # token stream.
   Block: [
-    o "INDENT Expressions OUTDENT",             -> $2
+    o "INDENT Body OUTDENT",             -> $2
     o "INDENT OUTDENT",                         -> new Expressions()
     o "TERMINATOR Comment",                     -> Expressions.wrap [$2]
   ]
@@ -120,8 +131,6 @@ grammar: {
     o "AlphaNumeric"
     o "JS",                                     -> new LiteralNode yytext
     o "REGEX",                                  -> new LiteralNode yytext
-    o "BREAK",                                  -> new LiteralNode yytext
-    o "CONTINUE",                               -> new LiteralNode yytext
     o "TRUE",                                   -> new LiteralNode true
     o "FALSE",                                  -> new LiteralNode false
     o "YES",                                    -> new LiteralNode true
@@ -396,7 +405,7 @@ grammar: {
   # where only values are accepted, wrapping it in parentheses will always do
   # the trick.
   Parenthetical: [
-    o "( Expression )",                         -> new ParentheticalNode $2
+    o "( Line )",                         -> new ParentheticalNode $2
   ]
 
   # A language extension to CoffeeScript from the outside. We simply pass
@@ -415,6 +424,7 @@ grammar: {
   # or postfix, with a single expression. There is no do..while.
   While: [
     o "WhileSource Block",                      -> $1.add_body $2
+    o "Statement WhileSource",                 -> $2.add_body Expressions.wrap [$1]
     o "Expression WhileSource",                 -> $2.add_body Expressions.wrap [$1]
   ]
 
@@ -422,6 +432,7 @@ grammar: {
   # Comprehensions can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression.
   For: [
+    o "Statement FOR ForVariables ForSource",  -> new ForNode $1, $4, $3[0], $3[1]
     o "Expression FOR ForVariables ForSource",  -> new ForNode $1, $4, $3[0], $3[1]
     o "FOR ForVariables ForSource Block",       -> new ForNode $4, $3, $2[0], $2[1]
   ]
@@ -491,7 +502,9 @@ grammar: {
   # *if* and *unless*.
   If: [
     o "IfBlock"
+    o "Statement IF Expression",                -> new IfNode $3, Expressions.wrap([$1]), null, {statement: true}
     o "Expression IF Expression",               -> new IfNode $3, Expressions.wrap([$1]), null, {statement: true}
+    o "Statement UNLESS Expression",            -> new IfNode $3, Expressions.wrap([$1]), null, {statement: true, invert: true}
     o "Expression UNLESS Expression",           -> new IfNode $3, Expressions.wrap([$1]), null, {statement: true, invert: true}
   ]
 
