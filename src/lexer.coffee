@@ -399,9 +399,9 @@ exports.Lexer: class Lexer
     @tokens.push [tag, value, @line]
 
   # Peek at a tag in the current token stream.
-  tag: (index, tag) ->
+  tag: (index, new_tag) ->
     return unless tok: @prev index
-    return tok[0]: tag if tag?
+    return tok[0]: new_tag if new_tag?
     tok[0]
 
   # Peek at a value in the current token stream.
