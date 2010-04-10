@@ -66,5 +66,5 @@ print_tasks: ->
 
 # Print an error and exit when attempting to all an undefined task.
 no_such_task: (task) ->
-  process.stdio.writeError "No such task: \"$task\"\n"
+  puts "No such task: \"$task\"\n"
   process.exit 1

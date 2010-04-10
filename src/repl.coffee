@@ -19,15 +19,15 @@ helpers.extend global, {
 # The main REPL function. **run** is called every time a line of code is entered.
 # Attempt to evaluate the command. If there's an exception, print it out instead
 # of exiting.
-run: (code) ->
+run: (buffer) ->
   try
-    val: CoffeeScript.run code, {no_wrap: true, globals: true, source: 'repl'}
+    val: CoffeeScript.run buffer.toString(), {no_wrap: true, globals: true, source: 'repl'}
     p val if val isnt undefined
   catch err
     puts err.stack or err.toString()
   print prompt
 
-# Start up the REPL by opening **stdio** and listening for input.
-process.stdio.addListener 'data', run
-process.stdio.open()
+# Start up the REPL by opening **stdin** and listening for input.
+stdin: process.openStdin()
+stdin.addListener 'data', run
 print prompt

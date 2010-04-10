@@ -9,6 +9,7 @@ fs:           require 'fs'
 path:         require 'path'
 optparse:     require './optparse'
 CoffeeScript: require './coffee-script'
+{spawn: spawn, exec: exec}: require('child_process')
 
 # The help banner that is printed when `coffee` is called without arguments.
 BANNER: '''
@@ -67,7 +68,9 @@ compile_scripts: ->
     path.exists source, (exists) ->
       throw new Error "File not found: $source" unless exists
       fs.readFile source, (err, code) -> compile_script(source, code)
-  compile(source) for source in sources
+  run: -> compile(source) for source in sources
+  return run() unless options.output and options.compile
+  exec "mkdir -p $options.output", run
 
 # Compile a single source script, containing the given code, according to the
 # requested options. Both compile_scripts and watch_scripts share this method
@@ -82,7 +85,7 @@ compile_script: (source, code) ->
     else if o.run         then CoffeeScript.run code, code_opts
     else
       js: CoffeeScript.compile code, code_opts
-      if o.print          then process.stdio.write js
+      if o.print          then print js
       else if o.compile   then write_js source, js
       else if o.lint      then lint js
   catch err
@@ -92,10 +95,10 @@ compile_script: (source, code) ->
 # and write them back to **stdout**.
 compile_stdio: ->
   code: ''
-  process.stdio.open()
-  process.stdio.addListener 'data', (string) ->
-    code: + string if string
-  process.stdio.addListener 'close', ->
+  stdin: process.openStdin()
+  stdin.addListener 'data', (buffer) ->
+    code: + buffer.toString() if buffer
+  stdin.addListener 'end', ->
     compile_script 'stdio', code
 
 # Watch a list of source CoffeeScript files using `fs.watchFile`, recompiling
@@ -120,13 +123,12 @@ write_js: (source, js) ->
 # Pipe compiled JS through JSLint (requires a working `jsl` command), printing
 # any errors or warnings that arise.
 lint: (js) ->
-  jsl: process.createChildProcess('jsl', ['-nologo', '-stdin'])
-  jsl.addListener 'output', (result) ->
-    puts result.replace(/\n/g, '') if result
-  jsl.addListener 'error', (result) ->
-    puts result if result
-  jsl.write js
-  jsl.close()
+  print_it: (buffer) -> puts buffer.toString()
+  jsl: spawn 'jsl', ['-nologo', '-stdin']
+  jsl.stdout.addListener 'data', print_it
+  jsl.stderr.addListener 'data', print_it
+  jsl.stdin.write js
+  jsl.stdin.end()
 
 # Pretty-print a stream of tokens.
 print_tokens: (tokens) ->
