@@ -1263,16 +1263,20 @@ PushNode: exports.PushNode: {
 ClosureNode: exports.ClosureNode: {
 
   # Wrap the expressions body, unless it contains a pure statement,
-  # in which case, no dice. If the body mentions `arguments`, then make sure
-  # that the closure wrapper preserves the original arguments.
+  # in which case, no dice. If the body mentions `this` or `arguments`,
+  # then make sure that the closure wrapper preserves the original values.
   wrap: (expressions, statement) ->
     return expressions if expressions.contains_pure_statement()
-    mentions_args: expressions.contains (n) -> (n instanceof LiteralNode) and (n.value is 'arguments')
-    meth: literal(if mentions_args then 'apply' else 'call')
-    args: [literal('this')]
-    args.push literal 'arguments' if mentions_args
     func: new ParentheticalNode(new CodeNode([], Expressions.wrap([expressions])))
-    call: new CallNode(new ValueNode(func, [new AccessorNode(meth)]), args)
+    args: []
+    mentions_args: expressions.contains (n) -> (n instanceof LiteralNode) and (n.value is 'arguments')
+    mentions_this: expressions.contains (n) -> (n instanceof LiteralNode) and (n.value is 'this')
+    if mentions_args or mentions_this
+      meth: literal(if mentions_args then 'apply' else 'call')
+      args: [literal('this')]
+      args.push literal 'arguments' if mentions_args
+      func: new ValueNode func, [new AccessorNode(meth)]
+    call: new CallNode(func, args)
     if statement then Expressions.wrap([call]) else call
 
 }
