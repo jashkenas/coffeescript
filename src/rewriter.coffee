@@ -124,7 +124,7 @@ exports.Rewriter: class Rewriter
           last: stack.pop()
           stack[stack.length - 1]: + last
       open: stack[stack.length - 1] > 0
-      if !post? or (start_parens > parens) or (parens is 0 and include IMPLICIT_END, tag)
+      if !post? or (start_parens > parens) or (start_parens is parens and include IMPLICIT_END, tag)
         return 1 if tag is 'INDENT' and prev and include IMPLICIT_BLOCK, prev[0]
         return 1 if tag is 'OUTDENT' and token.generated
         if open or tag is 'INDENT'

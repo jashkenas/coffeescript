@@ -129,3 +129,12 @@ result: (f 1).toString()
   .length
 
 ok result is 1
+
+
+# Test implicit calls in functions in parens:
+result: ((val) ->
+  [].push val
+  val
+)(10)
+
+ok result is 10
