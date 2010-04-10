@@ -49,6 +49,7 @@
         <a href="#cake">Cake, and Cakefiles</a>
         <a href="#scripts">"text/coffeescript" Script Tags</a>
         <a href="#resources">Resources</a>
+        <a href="#webchat">Web Chat (IRC)</a>
         <a href="#change_log">Change Log</a>
       </div>
     </div>
@@ -626,7 +627,7 @@ expensive <span class="Keyword">=</span> expensive <span class="Keyword">||</spa
 </pre><br class='clear' /></div>
     <p>
       You can assign a variable to a half-expression to perform an operation
-      like Ruby's <tt>||=</tt>, which only assigns a value to a variable 
+      like Ruby's <tt>||=</tt>, which only assigns a value to a variable
       if the variable's current value is falsy.
     </p>
 
@@ -1643,10 +1644,10 @@ healthy = (200 > cholesterol) && (cholesterol > 60);
 quote<span class="Keyword">:</span>  <span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String"><span class="String">$</span>author</span><span class="String">&quot;</span></span>
 </pre><pre class="idle"><span class="Storage">var</span> author, quote;
 author <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Wittgenstein<span class="String">&quot;</span></span>;
-quote <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String">&quot;</span></span> <span class="Keyword">+</span> author;
+quote <span class="Keyword">=</span> (<span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String">&quot;</span></span> <span class="Keyword">+</span> author);
 </pre><button onclick='javascript: var author, quote;
 author = "Wittgenstein";
-quote = "A picture is a fact. -- " + author;
+quote = ("A picture is a fact. -- " + author);
 ;alert(quote);'>run: quote</button><br class='clear' /></div>
     <p>
       And arbitrary expressions can be interpolated by using brackets <tt>${ ... }</tt><br />
@@ -1659,13 +1660,13 @@ dates<span class="Keyword">:</span><span class="String"> <span class="String">/<
 
 
 </pre><pre class="idle"><span class="Storage">var</span> dates, sentence, sep;
-sentence <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> (<span class="Number">22</span> / <span class="Number">7</span>) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is a decent approximation of π<span class="String">&quot;</span></span>;
+sentence <span class="Keyword">=</span> (<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> (<span class="Number">22</span> / <span class="Number">7</span>) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is a decent approximation of π<span class="String">&quot;</span></span>);
 sep <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>[.<span class="UserDefinedConstant">\\</span>/<span class="UserDefinedConstant">\\</span>- ]<span class="String">&quot;</span></span>;
-dates <span class="Keyword">=</span> (<span class="Keyword">new</span> <span class="TypeName">RegExp</span>(<span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>d+<span class="String">&quot;</span></span> <span class="Keyword">+</span> sep <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>d+<span class="String">&quot;</span></span> <span class="Keyword">+</span> sep <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>d+<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>g<span class="String">&quot;</span></span>));
+dates <span class="Keyword">=</span> (<span class="Keyword">new</span> <span class="TypeName">RegExp</span>((<span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>d+<span class="String">&quot;</span></span> <span class="Keyword">+</span> sep <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>d+<span class="String">&quot;</span></span> <span class="Keyword">+</span> sep <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>d+<span class="String">&quot;</span></span>), <span class="String"><span class="String">&quot;</span>g<span class="String">&quot;</span></span>));
 </pre><button onclick='javascript: var dates, sentence, sep;
-sentence = "" + (22 / 7) + " is a decent approximation of π";
+sentence = ("" + (22 / 7) + " is a decent approximation of π");
 sep = "[.\\/\\- ]";
-dates = (new RegExp("\\d+" + sep + "\\d+" + sep + "\\d+", "g"));
+dates = (new RegExp(("\\d+" + sep + "\\d+" + sep + "\\d+"), "g"));
 ;alert(sentence);'>run: sentence</button><br class='clear' /></div>
 
     <p>
@@ -1832,14 +1833,29 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">'<
     </ul>
 
     <h2>
+      <span id="webchat" class="bookmark"></span>
+      Web Chat (IRC)
+    </h2>
+
+    <p>
+      Quick help and advice can usually be found in the CoffeeScript IRC room.
+      Join <tt>#coffeescript</tt> on <tt>irc.freenode.net</tt>, or click the
+      button below to open a webchat session on this page.
+    </p>
+
+    <p>
+      <button id="open_webchat">click to open #coffeescript</button>
+    </p>
+
+    <h2>
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.6.0</b>
-      Trailing commas are now allowed, a-la Python. Static 
-      properties may be assigned directly within class definitions, 
+      Trailing commas are now allowed, a-la Python. Static
+      properties may be assigned directly within class definitions,
       using <tt>@property</tt> notation.
     </p>
 
@@ -2106,6 +2122,9 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">'<
 
     $('.navigation .minimize').click ->
       document.body.className: 'minimized'
+
+    $('#open_webchat').click ->
+      $(this).replaceWith $('<iframe src="http://webchat.freenode.net/?channels=coffeescript" width="625" height="400"></iframe>')
 
     compile_source()
 

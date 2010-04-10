@@ -63,6 +63,7 @@
         <a href="#cake">Cake, and Cakefiles</a>
         <a href="#scripts">"text/coffeescript" Script Tags</a>
         <a href="#resources">Resources</a>
+        <a href="#webchat">Web Chat (IRC)</a>
         <a href="#change_log">Change Log</a>
       </div>
     </div>
@@ -432,7 +433,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <%= code_for('conditionals') %>
     <p>
       You can assign a variable to a half-expression to perform an operation
-      like Ruby's <tt>||=</tt>, which only assigns a value to a variable 
+      like Ruby's <tt>||=</tt>, which only assigns a value to a variable
       if the variable's current value is falsy.
     </p>
 
@@ -884,14 +885,29 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </ul>
 
     <h2>
+      <span id="webchat" class="bookmark"></span>
+      Web Chat (IRC)
+    </h2>
+
+    <p>
+      Quick help and advice can usually be found in the CoffeeScript IRC room.
+      Join <tt>#coffeescript</tt> on <tt>irc.freenode.net</tt>, or click the
+      button below to open a webchat session on this page.
+    </p>
+
+    <p>
+      <button id="open_webchat">click to open #coffeescript</button>
+    </p>
+
+    <h2>
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.6.0</b>
-      Trailing commas are now allowed, a-la Python. Static 
-      properties may be assigned directly within class definitions, 
+      Trailing commas are now allowed, a-la Python. Static
+      properties may be assigned directly within class definitions,
       using <tt>@property</tt> notation.
     </p>
 
@@ -1158,6 +1174,9 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
 
     $('.navigation .minimize').click ->
       document.body.className: 'minimized'
+
+    $('#open_webchat').click ->
+      $(this).replaceWith $('<iframe src="http://webchat.freenode.net/?channels=coffeescript" width="625" height="400"></iframe>')
 
     compile_source()
 
