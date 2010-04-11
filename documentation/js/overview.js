@@ -40,5 +40,5 @@
       _a.push(math.cube(num));
     }
     return _a;
-  }).call(this);
+  })();
 })();

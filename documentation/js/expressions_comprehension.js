@@ -8,5 +8,5 @@
       _a.push(name);
     }}
     return _a;
-  }).call(this).slice(0, 10);
+  })().slice(0, 10);
 })();

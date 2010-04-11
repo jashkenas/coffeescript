@@ -196,7 +196,7 @@ cubed_list <span class="Keyword">=</span> (<span class="Storage">function</span>
     _a.<span class="LibraryFunction">push</span>(math.cube(num));
   }
   <span class="Keyword">return</span> _a;
-}).<span class="LibraryFunction">call</span>(<span class="Variable">this</span>);
+})();
 </pre><button onclick='javascript: var _a, _b, _c, _d, cubed_list, list, math, num, number, opposite_day, race, square;
 var __slice = Array.prototype.slice;
 // Assignment:
@@ -238,7 +238,7 @@ cubed_list = (function() {
     _a.push(math.cube(num));
   }
   return _a;
-}).call(this);
+})();
 ;alert(cubed_list);'>run: cubed_list</button><br class='clear' /></div>
 
     <p>
@@ -790,7 +790,7 @@ lyrics <span class="Keyword">=</span> (<span class="Storage">function</span>() {
 <span class="String">One fell out and bumped his head.<span class="String">&quot;</span></span>);
   }
   <span class="Keyword">return</span> _a;
-}).<span class="LibraryFunction">call</span>(<span class="Variable">this</span>);
+})();
 </pre><button onclick='javascript: var _a, lyrics, num;
 // Econ 101
 if (this.studying_economics) {
@@ -810,7 +810,7 @@ lyrics = (function() {
 One fell out and bumped his head.");
   }
   return _a;
-}).call(this);
+})();
 ;alert(lyrics.join("\n"));'>run: lyrics.join("\n")</button><br class='clear' /></div>
     <p>
       Other JavaScript loops, such as <b>for</b> loops and <b>do-while</b> loops
@@ -845,7 +845,7 @@ lunch <span class="Keyword">=</span> (<span class="Storage">function</span>() {
     _a.<span class="LibraryFunction">push</span>(eat(food));
   }
   <span class="Keyword">return</span> _a;
-}).<span class="LibraryFunction">call</span>(<span class="Variable">this</span>);
+})();
 <span class="Comment"><span class="Comment">//</span> Naive collision detection.</span>
 _f <span class="Keyword">=</span> asteroids;
 <span class="Keyword">for</span> (_e <span class="Keyword">=</span> <span class="Number">0</span>, _g <span class="Keyword">=</span> _f.<span class="LibraryConstant">length</span>; _e <span class="Keyword">&lt;</span> _g; _e<span class="Keyword">++</span>) {
@@ -880,7 +880,7 @@ countdown <span class="Keyword">=</span> (<span class="Storage">function</span>(
     _a.<span class="LibraryFunction">push</span>(num);
   }
   <span class="Keyword">return</span> _a;
-}).<span class="LibraryFunction">call</span>(<span class="Variable">this</span>);
+})();
 egg_delivery <span class="Keyword">=</span> <span class="Storage">function</span> <span class="FunctionName">egg_delivery</span>() {
   <span class="Storage">var</span> _e, _f, _g, _h, dozen_eggs, i;
   _e <span class="Keyword">=</span> []; _g <span class="Keyword">=</span> <span class="Number">0</span>; _h <span class="Keyword">=</span> eggs.<span class="LibraryConstant">length</span>;
@@ -888,7 +888,7 @@ egg_delivery <span class="Keyword">=</span> <span class="Storage">function</span
     _e.<span class="LibraryFunction">push</span>((<span class="Storage">function</span>() {
       dozen_eggs <span class="Keyword">=</span> eggs.<span class="LibraryFunction">slice</span>(i, i <span class="Keyword">+</span> <span class="Number">12</span>);
       <span class="Keyword">return</span> deliver(<span class="Keyword">new</span> <span class="TypeName">egg_carton</span>(dozen));
-    }).<span class="LibraryFunction">call</span>(<span class="Variable">this</span>));
+    })());
   }
   <span class="Keyword">return</span> _e;
 };
@@ -899,7 +899,7 @@ countdown = (function() {
     _a.push(num);
   }
   return _a;
-}).call(this);
+})();
 egg_delivery = function egg_delivery() {
   var _e, _f, _g, _h, dozen_eggs, i;
   _e = []; _g = 0; _h = eggs.length;
@@ -907,7 +907,7 @@ egg_delivery = function egg_delivery() {
     _e.push((function() {
       dozen_eggs = eggs.slice(i, i + 12);
       return deliver(new egg_carton(dozen));
-    }).call(this));
+    })());
   }
   return _e;
 };
@@ -935,7 +935,7 @@ ages <span class="Keyword">=</span> (<span class="Storage">function</span>() {
     _a.<span class="LibraryFunction">push</span>(child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age);
   }}
   <span class="Keyword">return</span> _a;
-}).<span class="LibraryFunction">call</span>(<span class="Variable">this</span>);
+})();
 </pre><button onclick='javascript: var _a, _b, age, ages, child, years_old;
 var __hasProp = Object.prototype.hasOwnProperty;
 years_old = {
@@ -950,7 +950,7 @@ ages = (function() {
     _a.push(child + " is " + age);
   }}
   return _a;
-}).call(this);
+})();
 ;alert(ages.join(", "));'>run: ages.join(", ")</button><br class='clear' /></div>
 
     <p>
@@ -1078,7 +1078,7 @@ globals <span class="Keyword">=</span> (<span class="Storage">function</span>() 
     _a.<span class="LibraryFunction">push</span>(name);
   }}
   <span class="Keyword">return</span> _a;
-}).<span class="LibraryFunction">call</span>(<span class="Variable">this</span>).<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
+})().<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
 </pre><button onclick='javascript: var _a, _b, globals, name;
 var __hasProp = Object.prototype.hasOwnProperty;
 // The first ten global properties.
@@ -1088,7 +1088,7 @@ globals = (function() {
     _a.push(name);
   }}
   return _a;
-}).call(this).slice(0, 10);
+})().slice(0, 10);
 ;alert(globals);'>run: globals</button><br class='clear' /></div>
     <p>
       As well as silly things, like passing a <b>try/catch</b> statement directly
@@ -1106,14 +1106,14 @@ globals = (function() {
   } <span class="Keyword">catch</span> (error) {
     <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>And the error is ... <span class="String">&quot;</span></span> <span class="Keyword">+</span> error;
   }
-}).<span class="LibraryFunction">call</span>(<span class="Variable">this</span>));
+})());
 </pre><button onclick='javascript: alert((function() {
   try {
     return nonexistent / undefined;
   } catch (error) {
     return "And the error is ... " + error;
   }
-}).call(this));
+})());
 ;'>run</button><br class='clear' /></div>
     <p>
       There are a handful of statements in JavaScript that can't be meaningfully
@@ -1829,6 +1829,11 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">'<
         <b>jnicklas</b>'s <a href="http://github.com/jnicklas/bistro_car">BistroCar</a>
         &mdash; a plugin that serves and bundles CoffeeScript from within your
         Rails application.
+      </li>
+      <li>
+        <b>inem</b> and <b>gerad</b>'s <a href="http://github.com/gerad/coffee-haml-filter">coffee-haml-filter</a>
+        &mdash; a custom filter for rendering CoffeeScript inline within
+        <a href="http://haml-lang.com/">HAML</a> templates.
       </li>
     </ul>
 

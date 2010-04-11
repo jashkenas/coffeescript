@@ -13,5 +13,5 @@
       _a.push(child + " is " + age);
     }}
     return _a;
-  }).call(this);
+  })();
 })();

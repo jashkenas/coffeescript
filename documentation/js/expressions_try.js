@@ -5,5 +5,5 @@
     } catch (error) {
       return "And the error is ... " + error;
     }
-  }).call(this));
+  })());
 })();
