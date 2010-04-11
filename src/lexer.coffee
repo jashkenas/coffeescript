@@ -56,6 +56,7 @@ exports.Lexer: class Lexer
       @chunk: @code.slice @i
       @extract_next_token()
     @close_indentation()
+    return @tokens if o.rewrite is off
     (new Rewriter()).rewrite @tokens
 
   # At every position, run through this list of attempted matches,
@@ -366,7 +367,7 @@ exports.Lexer: class Lexer
           inner: expr.substring(2, expr.length - 1)
           if inner.length
             nested: lexer.tokenize "($inner)", {line: @line}
-            (nested[index][0]: ')') for value, index in nested when value[0] is 'CALL_END'
+            (tok[0]: ')') for tok, idx in nested when tok[0] is 'CALL_END'
             nested.pop()
             tokens.push ['TOKENS', nested]
           else
