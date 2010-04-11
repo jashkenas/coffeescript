@@ -43,7 +43,7 @@ exports.OptionParser: class OptionParser
       spaces:   15 - rule.long_flag.length
       spaces:   if spaces > 0 then (' ' for i in [0..spaces]).join('') else ''
       let_part: if rule.short_flag then rule.short_flag + ', ' else '    '
-      lines.push "  $let_part${rule.long_flag}$spaces${rule.description}"
+      lines.push "  $let_part$rule.long_flag$spaces$rule.description"
     "\n${ lines.join('\n') }\n"
 
 # Helpers

@@ -159,5 +159,5 @@ usage: ->
 
 # Print the `--version` message and exit.
 version: ->
-  puts "CoffeeScript version ${CoffeeScript.VERSION}"
+  puts "CoffeeScript version $CoffeeScript.VERSION"
   process.exit 0
