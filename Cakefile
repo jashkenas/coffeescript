@@ -74,8 +74,8 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
 task 'test', 'run the CoffeeScript language test suite', ->
   helpers.extend global, require 'assert'
   passed_tests: failed_tests: 0
-  start_time: new Date()
-  original_ok: ok
+  start_time:   new Date()
+  original_ok:  ok
   helpers.extend global, {
     ok: (args...) -> passed_tests += 1; original_ok(args...)
     CoffeeScript: CoffeeScript
@@ -83,11 +83,10 @@ task 'test', 'run the CoffeeScript language test suite', ->
   red: '\033[0;31m'
   green: '\033[0;32m'
   reset: '\033[0m'
-  on_exit:  ->
+  process.addListener 'exit', ->
     time: ((new Date() - start_time) / 1000).toFixed(2)
     message: "passed $passed_tests tests in $time seconds$reset"
     puts(if failed_tests then "${red}failed $failed_tests and $message" else "$green$message")
-  process.addListener 'exit', on_exit
   fs.readdir 'test', (err, files) ->
     files.forEach (file) ->
       return unless file.match(/\.coffee$/i)
