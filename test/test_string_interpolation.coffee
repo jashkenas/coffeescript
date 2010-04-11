@@ -68,3 +68,8 @@ a: 1
 b: 2
 c: 3
 ok "$a$b$c" is '123'
+
+result: null
+stash: (str) -> result: str
+stash "a ${ ('aa').replace /a/g, 'b' } c"
+ok result is 'a bb c'
