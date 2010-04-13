@@ -315,9 +315,9 @@ exports.Lexer: class Lexer
       tok: @prev i
       return if not tok
       switch tok[0]
-        when 'IDENTIFIER' then tok[0]: 'PARAM'
-        when ')'          then tok[0]: 'PARAM_END'
-        when '('          then return tok[0]: 'PARAM_START'
+        when 'IDENTIFIER'       then tok[0]: 'PARAM'
+        when ')'                then tok[0]: 'PARAM_END'
+        when '(', 'CALL_START'  then return tok[0]: 'PARAM_START'
     true
 
   # Close up all remaining open blocks at the end of the file.
