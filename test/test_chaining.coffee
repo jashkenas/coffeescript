@@ -34,3 +34,13 @@ six:
   3
 
 ok six is 6
+
+# Bug due to rewriting issue with indented array literals
+func: () ->
+  ok arguments.length is 1
+
+func(
+  [[[[[], 
+                []],
+              [[]]]],
+    []])

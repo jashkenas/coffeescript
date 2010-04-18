@@ -231,7 +231,16 @@ exports.Rewriter: class Rewriter
           return 1 if tag is INVERSES[mtag]
           debt[mtag]: + 1
           val: if mtag is 'INDENT' then match[1] else INVERSES[mtag]
-          @tokens.splice i, 0, [INVERSES[mtag], val]
+
+          # Edge case, lookahead and if we are inserting in front of a
+          # subsequent opening token, insert ahead of it and re-queue onto
+          # stack.
+          if @tokens[i + 2]?[0] == mtag
+            @tokens.splice i + 3, 0, [INVERSES[mtag], val]
+            stack.push(match)
+          else
+            @tokens.splice i, 0, [INVERSES[mtag], val]
+
           return 1
       else
         return 1
