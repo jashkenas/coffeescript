@@ -143,3 +143,8 @@ result: ((val) ->
 )(10)
 
 ok result is 10
+
+
+# More paren compilation tests:
+reverse: (obj) -> obj.reverse()
+ok reverse([1, 2].concat 3).join(' ') is '3 2 1'

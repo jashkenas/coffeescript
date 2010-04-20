@@ -109,38 +109,36 @@ exports.Rewriter: class Rewriter
   # deal with them.
   add_implicit_parentheses: ->
     stack: [0]
-    calls:  0
-    parens: 0
-    start_parens: 0
+    close_calls: (i) =>
+      for tmp in [0...stack[stack.length - 1]]
+        @tokens.splice(i, 0, ['CALL_END', ')', @tokens[i][2]])
+      size: stack[stack.length - 1] + 1
+      stack[stack.length - 1]: 0
+      size
     @scan_tokens (prev, token, post, i) =>
       tag: token[0]
-      switch tag
-        when 'CALL_START' then calls: + 1
-        when 'CALL_END'   then calls: - 1
-        when '('          then parens: + 1
-        when ')'          then parens: - 1
-        when 'INDENT'     then stack.push 0
-        when 'OUTDENT'
-          last: stack.pop()
-          stack[stack.length - 1]: + last
+      stack[stack.length - 2]: + stack.pop() if tag is 'OUTDENT'
       open: stack[stack.length - 1] > 0
-      if !post? or (start_parens > parens) or (start_parens is parens and include IMPLICIT_END, tag)
-        return 1 if tag is 'INDENT' and prev and include IMPLICIT_BLOCK, prev[0]
-        return 1 if tag is 'OUTDENT' and token.generated
-        if open or tag is 'INDENT'
-          idx: if tag is 'OUTDENT' then i + 1 else i
-          stack_pointer: if tag is 'INDENT' then 2 else 1
-          for tmp in [0...stack[stack.length - stack_pointer]]
-            @tokens.splice(idx, 0, ['CALL_END', ')', token[2]])
-          size: stack[stack.length - stack_pointer] + 1
-          stack[stack.length - stack_pointer]: 0
+      if prev and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, tag)
+        @tokens.splice i, 0, ['CALL_START', '(', token[2]]
+        stack[stack.length - 1]: + 1
+        stack.push 0 if include(EXPRESSION_START, tag)
+        return 2
+      if include(EXPRESSION_START, tag)
+        if tag is 'INDENT' and !token.generated and open and not (prev and include(IMPLICIT_BLOCK, prev[0]))
+          size: close_calls(i)
+          stack.push 0
           return size
-      return 1 unless prev and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, tag)
-      calls: 0
-      start_parens: if tag is '(' then parens - 1 else parens
-      @tokens.splice i, 0, ['CALL_START', '(', token[2]]
-      stack[stack.length - 1]: + 1
-      return 2
+        stack.push 0
+        return 1
+      if open and !token.generated and (!post or include(IMPLICIT_END, tag))
+        size: close_calls(i)
+        stack.pop() if tag isnt 'OUTDENT' and include EXPRESSION_END, tag
+        return size
+      if tag isnt 'OUTDENT' and include EXPRESSION_END, tag
+        stack[stack.length - 2]: + stack.pop()
+        return 1
+      return 1
 
   # Because our grammar is LALR(1), it can't handle some single-line
   # expressions that lack ending delimiters. The **Rewriter** adds the implicit
@@ -152,7 +150,9 @@ exports.Rewriter: class Rewriter
         post[0] isnt 'INDENT' and
         not (token[0] is 'ELSE' and post[0] is 'IF')
       starter: token[0]
-      @tokens.splice i + 1, 0, ['INDENT', 2, token[2]]
+      indent: ['INDENT', 2, token[2]]
+      indent.generated: true
+      @tokens.splice i + 1, 0, indent
       idx: i + 1
       parens: 0
       while true
@@ -280,7 +280,7 @@ IMPLICIT_CALL:  ['IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_
 IMPLICIT_BLOCK: ['->', '=>', '{', '[', ',']
 
 # Tokens that always mark the end of an implicit call for single-liners.
-IMPLICIT_END:   ['IF', 'UNLESS', 'FOR', 'WHILE', 'TERMINATOR', 'INDENT', 'OUTDENT']
+IMPLICIT_END:   ['IF', 'UNLESS', 'FOR', 'WHILE', 'TERMINATOR', 'INDENT'].concat EXPRESSION_END
 
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.
