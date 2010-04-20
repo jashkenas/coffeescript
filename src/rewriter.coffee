@@ -209,7 +209,8 @@ exports.Rewriter: class Rewriter
   #    it with the inverse of what we've just popped.
   # 3. Keep track of "debt" for tokens that we manufacture, to make sure we end
   #    up balanced in the end.
-  #
+  # 4. Be careful not to alter array or parentheses delimiters with overzealous
+  #    rewriting.
   rewrite_closing_parens: ->
     stack: []
     debt:  {}
@@ -228,19 +229,15 @@ exports.Rewriter: class Rewriter
         else
           match: stack.pop()
           mtag:  match[0]
-          return 1 if tag is INVERSES[mtag]
+          oppos: INVERSES[mtag]
+          return 1 if tag is oppos
           debt[mtag]: + 1
-          val: if mtag is 'INDENT' then match[1] else INVERSES[mtag]
-
-          # Edge case, lookahead and if we are inserting in front of a
-          # subsequent opening token, insert ahead of it and re-queue onto
-          # stack.
-          if @tokens[i + 2]?[0] == mtag
-            @tokens.splice i + 3, 0, [INVERSES[mtag], val]
+          val: [oppos, if mtag is 'INDENT' then match[1] else oppos]
+          if @tokens[i + 2]?[0] is mtag
+            @tokens.splice i + 3, 0, val
             stack.push(match)
           else
-            @tokens.splice i, 0, [INVERSES[mtag], val]
-
+            @tokens.splice i, 0, val
           return 1
       else
         return 1

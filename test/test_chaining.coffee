@@ -35,12 +35,13 @@ six:
 
 ok six is 6
 
-# Bug due to rewriting issue with indented array literals
+
+# Ensure that indented array literals don't trigger whitespace rewriting.
 func: () ->
   ok arguments.length is 1
 
 func(
-  [[[[[], 
+  [[[[[],
                 []],
               [[]]]],
     []])
