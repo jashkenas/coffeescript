@@ -20,6 +20,8 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
     "cp -rf bin lib LICENSE README package.json src vendor $lib"
     "ln -sf $lib/bin/coffee $base/bin/coffee"
     "ln -sf $lib/bin/cake $base/bin/cake"
+    "mkdir -p ~/.node_libraries"
+    "ln -sf $lib/lib ~/.node_libraries/coffee-script"
   ].join(' && '), (err, stdout, stderr) ->
    if err then print stderr
   )
