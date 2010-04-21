@@ -1,3 +1,5 @@
+helpers: require('../lib/helpers').helpers
+
 f: (x,y,z) ->
   x * y * z * ((@num or 4) + 5)
 
