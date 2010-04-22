@@ -65,19 +65,19 @@ grammar: {
     o "Body TERMINATOR Line",                   -> $1.push $3
     o "Body TERMINATOR"
   ]
-  
+
   # Expressions and statements, which make up a line in a body.
   Line: [
     o "Expression"
     o "Statement"
   ]
-  
+
   # Pure statements which cannot be expressions.
   Statement: [
     o "Return"
     o "Throw"
-    o "BREAK",                                  -> new LiteralNode yytext
-    o "CONTINUE",                               -> new LiteralNode yytext
+    o "BREAK",                                  -> new LiteralNode $1
+    o "CONTINUE",                               -> new LiteralNode $1
   ]
 
   # All the different types of expressions in our language. The basic unit of
@@ -100,8 +100,8 @@ grammar: {
     o "Class"
     o "Splat"
     o "Existence"
-    o "Comment"
-    o "Extension"
+    o "COMMENT"
+    o "EXTENSION"
   ]
 
   # A an indented block of expressions. Note that the [Rewriter](rewriter.html)
@@ -110,27 +110,22 @@ grammar: {
   Block: [
     o "INDENT Body OUTDENT",                    -> $2
     o "INDENT OUTDENT",                         -> new Expressions()
-    o "TERMINATOR Comment",                     -> Expressions.wrap [$2]
-  ]
-
-  # A literal identifier, a variable name or property.
-  Identifier: [
-    o "IDENTIFIER",                             -> new LiteralNode yytext
+    o "TERMINATOR COMMENT",                     -> Expressions.wrap [$2]
   ]
 
   # Alphanumerics are separated from the other **Literal** matchers because
   # they can also serve as keys in object literals.
   AlphaNumeric: [
-    o "NUMBER",                                 -> new LiteralNode yytext
-    o "STRING",                                 -> new LiteralNode yytext
+    o "NUMBER",                                 -> new LiteralNode $1
+    o "STRING",                                 -> new LiteralNode $1
   ]
 
   # All of our immediate values. These can (in general), be passed straight
   # through and printed to JavaScript.
   Literal: [
     o "AlphaNumeric"
-    o "JS",                                     -> new LiteralNode yytext
-    o "REGEX",                                  -> new LiteralNode yytext
+    o "JS",                                     -> new LiteralNode $1
+    o "REGEX",                                  -> new LiteralNode $1
     o "TRUE",                                   -> new LiteralNode true
     o "FALSE",                                  -> new LiteralNode false
     o "YES",                                    -> new LiteralNode true
@@ -147,22 +142,15 @@ grammar: {
   # Assignment when it happens within an object literal. The difference from
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
-    o "Identifier ASSIGN Expression",           -> new AssignNode new ValueNode($1), $3, 'object'
+    o "IDENTIFIER ASSIGN Expression",           -> new AssignNode new ValueNode($1), $3, 'object'
     o "AlphaNumeric ASSIGN Expression",         -> new AssignNode new ValueNode($1), $3, 'object'
-    o "Comment"
+    o "COMMENT"
   ]
 
   # A return statement from a function body.
   Return: [
     o "RETURN Expression",                      -> new ReturnNode $2
     o "RETURN",                                 -> new ReturnNode new ValueNode new LiteralNode 'null'
-  ]
-
-  # A comment. Because CoffeeScript passes comments through to JavaScript, we
-  # have to parse comments like any other construct, and identify all of the
-  # positions in which they can occur in the grammar.
-  Comment: [
-    o "COMMENT",                                -> new CommentNode yytext
   ]
 
   # [The existential operator](http://jashkenas.github.com/coffee-script/#existence).
@@ -195,8 +183,8 @@ grammar: {
   # A single parameter in a function definition can be ordinary, or a splat
   # that hoovers up the remaining arguments.
   Param: [
-    o "PARAM",                                  -> new LiteralNode yytext
-    o "Param . . .",                            -> new SplatNode $1
+    o "PARAM",                                  -> new LiteralNode $1
+    o "PARAM . . .",                            -> new SplatNode $1
   ]
 
   # A splat that occurs outside of a parameter list.
@@ -206,7 +194,7 @@ grammar: {
 
   # Variables and properties that can be assigned to.
   SimpleAssignable: [
-    o "Identifier",                             -> new ValueNode $1
+    o "IDENTIFIER",                             -> new ValueNode $1
     o "Value Accessor",                         -> $1.push $2
     o "Invocation Accessor",                    -> new ValueNode $1, [$2]
     o "ThisProperty"
@@ -233,10 +221,10 @@ grammar: {
   # The general group of accessors into an object, by property, by prototype
   # or by array index or slice.
   Accessor: [
-    o "PROPERTY_ACCESS Identifier",             -> new AccessorNode $2
-    o "PROTOTYPE_ACCESS Identifier",            -> new AccessorNode $2, 'prototype'
+    o "PROPERTY_ACCESS IDENTIFIER",             -> new AccessorNode $2
+    o "PROTOTYPE_ACCESS IDENTIFIER",            -> new AccessorNode $2, 'prototype'
     o "::",                                     -> new AccessorNode(new LiteralNode('prototype'))
-    o "SOAK_ACCESS Identifier",                 -> new AccessorNode $2, 'soak'
+    o "SOAK_ACCESS IDENTIFIER",                 -> new AccessorNode $2, 'soak'
     o "Index"
     o "Slice",                                  -> new SliceNode $1
   ]
@@ -338,7 +326,7 @@ grammar: {
 
   # A reference to a property on *this*.
   ThisProperty: [
-    o "@ Identifier",                           -> new ValueNode new LiteralNode('this'), [new AccessorNode($2)]
+    o "@ IDENTIFIER",                           -> new ValueNode new LiteralNode('this'), [new AccessorNode($2)]
   ]
 
   # The CoffeeScript range literal.
@@ -392,7 +380,7 @@ grammar: {
 
   # A catch clause names its error and runs a block of code.
   Catch: [
-    o "CATCH Identifier Block",                 -> [$2, $3]
+    o "CATCH IDENTIFIER Block",                 -> [$2, $3]
   ]
 
   # Throw an exception object.
@@ -406,12 +394,6 @@ grammar: {
   # the trick.
   Parenthetical: [
     o "( Line )",                               -> new ParentheticalNode $2
-  ]
-
-  # A language extension to CoffeeScript from the outside. We simply pass
-  # it through unaltered.
-  Extension: [
-    o "EXTENSION",                              -> yytext
   ]
 
   # The condition portion of a while loop.
@@ -441,8 +423,8 @@ grammar: {
   # (optional) reference to the current index. Or, *key, value*, in the case
   # of object comprehensions.
   ForVariables: [
-    o "Identifier",                             -> [$1]
-    o "Identifier , Identifier",                -> [$1, $3]
+    o "IDENTIFIER",                             -> [$1]
+    o "IDENTIFIER , IDENTIFIER",                -> [$1, $3]
   ]
 
   # The source of a comprehension is an array or object with an optional filter
@@ -476,7 +458,7 @@ grammar: {
   When: [
     o "LEADING_WHEN SimpleArgs Block",            -> new IfNode $2, $3, null, {statement: true}
     o "LEADING_WHEN SimpleArgs Block TERMINATOR", -> new IfNode $2, $3, null, {statement: true}
-    o "Comment TERMINATOR When",                  -> $3.comment: $1; $3
+    o "COMMENT TERMINATOR When",                  -> $3.comment: $1; $3
   ]
 
   # The most basic form of *if* is a condition and an action. The following
