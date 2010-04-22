@@ -65,19 +65,19 @@ grammar: {
     o "Body TERMINATOR Line",                   -> $1.push $3
     o "Body TERMINATOR"
   ]
-  
+
   # Expressions and statements, which make up a line in a body.
   Line: [
     o "Expression"
     o "Statement"
   ]
-  
+
   # Pure statements which cannot be expressions.
   Statement: [
     o "Return"
     o "Throw"
-    o "BREAK",                                  -> new LiteralNode yytext
-    o "CONTINUE",                               -> new LiteralNode yytext
+    o "BREAK",                                  -> new LiteralNode $1
+    o "CONTINUE",                               -> new LiteralNode $1
   ]
 
   # All the different types of expressions in our language. The basic unit of
@@ -115,22 +115,22 @@ grammar: {
 
   # A literal identifier, a variable name or property.
   Identifier: [
-    o "IDENTIFIER",                             -> new LiteralNode yytext
+    o "IDENTIFIER",                             -> new LiteralNode $1
   ]
 
   # Alphanumerics are separated from the other **Literal** matchers because
   # they can also serve as keys in object literals.
   AlphaNumeric: [
-    o "NUMBER",                                 -> new LiteralNode yytext
-    o "STRING",                                 -> new LiteralNode yytext
+    o "NUMBER",                                 -> new LiteralNode $1
+    o "STRING",                                 -> new LiteralNode $1
   ]
 
   # All of our immediate values. These can (in general), be passed straight
   # through and printed to JavaScript.
   Literal: [
     o "AlphaNumeric"
-    o "JS",                                     -> new LiteralNode yytext
-    o "REGEX",                                  -> new LiteralNode yytext
+    o "JS",                                     -> new LiteralNode $1
+    o "REGEX",                                  -> new LiteralNode $1
     o "TRUE",                                   -> new LiteralNode true
     o "FALSE",                                  -> new LiteralNode false
     o "YES",                                    -> new LiteralNode true
@@ -162,7 +162,7 @@ grammar: {
   # have to parse comments like any other construct, and identify all of the
   # positions in which they can occur in the grammar.
   Comment: [
-    o "COMMENT",                                -> new CommentNode yytext
+    o "COMMENT",                                -> new CommentNode $1
   ]
 
   # [The existential operator](http://jashkenas.github.com/coffee-script/#existence).
@@ -195,7 +195,7 @@ grammar: {
   # A single parameter in a function definition can be ordinary, or a splat
   # that hoovers up the remaining arguments.
   Param: [
-    o "PARAM",                                  -> new LiteralNode yytext
+    o "PARAM",                                  -> new LiteralNode $1
     o "Param . . .",                            -> new SplatNode $1
   ]
 
@@ -411,7 +411,7 @@ grammar: {
   # A language extension to CoffeeScript from the outside. We simply pass
   # it through unaltered.
   Extension: [
-    o "EXTENSION",                              -> yytext
+    o "EXTENSION"
   ]
 
   # The condition portion of a while loop.
