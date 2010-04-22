@@ -4,6 +4,7 @@ func: ->
   false
   false   # comment
   false
+
 # comment
   true
 
