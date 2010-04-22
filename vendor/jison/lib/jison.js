@@ -152,10 +152,10 @@ generator.augmentGrammar = function augmentGrammar (grammar) {
     this.productions.unshift(acceptProduction);
 
     // prepend parser tokens
-    this.symbols.unshift("$accept","$end");
+    this.symbols.unshift("$accept",this.EOF);
     this.symbols_["$accept"] = 0;
-    this.symbols_["$end"] = 1;
-    this.terminals.unshift("$end");
+    this.symbols_[this.EOF] = 1;
+    this.terminals.unshift(this.EOF);
 
     this.nonterminals["$accept"] = new Nonterminal("$accept");
     this.nonterminals["$accept"].productions.push(acceptProduction);
@@ -184,12 +184,17 @@ generator.buildProductions = function buildProductions(bnf, productions, nonterm
     var symbolId = 1;
     var symbols_ = {};
 
+    var her = false; // has error recovery
+
     function addSymbol (s) {
         if (s && !symbols_[s]) {
             symbols_[s] = ++symbolId;
             symbols.push(s);
         }
     }
+
+    // add error symbol; will be third symbol, or "2" ($accept, $end, error)
+    addSymbol("error");
 
     for (symbol in bnf) {
         if (!bnf.hasOwnProperty(symbol)) continue;
@@ -211,7 +216,7 @@ generator.buildProductions = function buildProductions(bnf, productions, nonterm
                 else 
                     rhs = handle[0].slice(0);
 
-                for (i=0; i<rhs.length; i++) if (!symbols_[rhs[i]]) {
+                for (i=0; her = her || rhs[i] === 'error',i<rhs.length; i++) if (!symbols_[rhs[i]]) {
                     addSymbol(rhs[i]);
                 }
 
@@ -252,7 +257,7 @@ generator.buildProductions = function buildProductions(bnf, productions, nonterm
                 }
             } else {
                 rhs = handle.trim().split(' ');
-                for (i=0; i<rhs.length; i++) if (!symbols_[rhs[i]]) {
+                for (i=0; her = her || rhs[i] === 'error',i<rhs.length; i++) if (!symbols_[rhs[i]]) {
                     addSymbol(rhs[i]);
                 }
                 r = new Production(symbol, rhs, productions.length+1);
@@ -279,6 +284,8 @@ generator.buildProductions = function buildProductions(bnf, productions, nonterm
             terms_[id] = sym;
         }
     });
+
+    this.hasErrorRecovery = her;
 
     this.terminals = terms;
     this.terminals_ = terms_;
@@ -861,14 +868,14 @@ lrGeneratorMixin.generateModule = function generateModule (opt) {
 lrGeneratorMixin.generateModule_ = function generateModule_ () {
     var out = "{";
     out += [
-        "trace: " + String(this.trace),
+        "trace: " + String(this.trace || parser.trace),
         "yy: {}",
         "symbols_: " + JSON.stringify(this.symbols_),
         "terminals_: " + JSON.stringify(this.terminals_),
         "productions_: " + JSON.stringify(this.productions_),
         "performAction: " + String(this.performAction),
         "table: " + JSON.stringify(this.table),
-        "parseError: " + String(this.parseError || parser.parseError),
+        "parseError: " + String(this.parseError || (this.hasErrorRecovery ? traceParseError : parser.parseError)),
         "parse: " + String(parser.parse)
         ].join(",\n");
     out += "};";
@@ -882,7 +889,7 @@ function commonjsMain (args) {
     if (!args[1])
         throw new Error('Usage: '+args[0]+' FILE');
     var source = cwd.join(args[1]).read({charset: "utf-8"});
-    this.parse(source);
+    exports.parser.parse(source);
 }
 
 // debug mixin for LR parser generators
@@ -925,6 +932,7 @@ var parser = typal.beget();
 
 lrGeneratorMixin.createParser = function createParser () {
     var p = parser.beget();
+    p.yy = {};
 
     p.init({
         table: this.table, 
@@ -933,6 +941,11 @@ lrGeneratorMixin.createParser = function createParser () {
         terminals_: this.terminals_,
         performAction: this.performAction
     });
+
+    // don't throw if grammar recovers from errors
+    if (this.hasErrorRecovery) {
+        p.parseError = traceParseError;
+    }
 
     // for debugging
     p.productions = this.productions;
@@ -947,10 +960,13 @@ lrGeneratorMixin.createParser = function createParser () {
     return p;
 };
 
-parser.yy = {};
 parser.trace = generator.trace;
 parser.warn = generator.warn;
 parser.error = generator.error;
+
+function traceParseError (err, hash) {
+    this.trace(err);
+}
 
 parser.parseError = lrGeneratorMixin.parseError = function parseError (str, hash) {
     throw new Error(str);
@@ -965,12 +981,29 @@ parser.parse = function parse (input) {
         yylineno = 0,
         yyleng = 0,
         shifts = 0,
-        reductions = 0;
+        reductions = 0,
+        recovering = 0,
+        TERROR = 2,
+        EOF = 1;
 
     this.lexer.setInput(input);
     this.lexer.yy = this.yy;
+    this.yy.lexer = this.lexer;
 
-    var parseError = this.yy.parseError = this.yy.parseError || this.parseError;
+    var parseError = this.yy.parseError = typeof this.yy.parseError == 'function' ? this.yy.parseError : this.parseError;
+
+    function popStack (n) {
+        stack.length = stack.length - 2*n;
+        vstack.length = vstack.length - n;
+    }
+
+    function checkRecover (st) {
+        for (var p in table[st]) if (p == TERROR) {
+            //print('RECOVER!!');
+            return true;
+        }
+        return false;
+    }
 
     function lex() {
         var token;
@@ -982,7 +1015,7 @@ parser.parse = function parse (input) {
         return token;
     };
 
-    var symbol, state, action, a, r, yyval={},p,len,ip=0,newState, expected;
+    var symbol, preErrorSymbol, state, action, a, r, yyval={},p,len,newState, expected, recovered = false;
     symbol = lex(); 
     while (true) {
         // set first input
@@ -990,18 +1023,55 @@ parser.parse = function parse (input) {
         // read action for current state and first input
         action = table[state] && table[state][symbol];
 
+        // handle parse error
         if (typeof action === 'undefined' || !action.length || !action[0]) {
-            expected = [];
-            for (p in table[state]) if (this.terminals_[p] && p != 1) {
-                expected.push("'"+this.terminals_[p]+"'");
+
+            if (!recovering) {
+                // Report error
+                expected = [];
+                for (p in table[state]) if (this.terminals_[p] && p > 2) {
+                    expected.push("'"+this.terminals_[p]+"'");
+                }
+                if (this.lexer.showPosition) {
+                    parseError.call(this, 'Parse error on line '+(yylineno+1)+":\n"+this.lexer.showPosition()+'\nExpecting '+expected.join(', '),
+                        {text: this.lexer.match, token: this.terminals_[symbol] || symbol, line: this.lexer.yylineno, expected: expected});
+                } else {
+                    parseError.call(this, 'Parse error on line '+(yylineno+1)+": Unexpected '"+this.terminals_[symbol]+"'",
+                        {text: this.lexer.match, token: this.terminals_[symbol] || symbol, line: this.lexer.yylineno, expected: expected});
+                }
             }
-            if (this.lexer.showPosition) {
-                parseError('Parse error on line '+(yylineno+1)+":\n"+this.lexer.showPosition()+'\nExpecting '+expected.join(', '),
-                    {text: this.lexer.match, token: this.terminals_[symbol], line: this.lexer.yylineno, expected: expected});
-            } else {
-                parseError('Parse error on line '+(yylineno+1)+": Unexpected '"+this.terminals_[symbol]+"'",
-                    {text: this.lexer.match, token: this.terminals_[symbol], line: this.lexer.yylineno, expected: expected});
+
+            // just recovered from another error
+            if (recovering == 3) {
+                if (symbol == EOF) {
+                    throw 'Parsing halted.'
+                }
+
+                // discard current lookahead and grab another
+                yyleng = this.lexer.yyleng;
+                yytext = this.lexer.yytext;
+                yylineno = this.lexer.yylineno;
+                symbol = lex(); 
             }
+
+            // try to recover from error
+            while (1) {
+                // check for error recovery rule in this state
+                if (checkRecover(state)) {
+                    break;
+                }
+                if (state == 0) {
+                    throw 'Parsing halted.'
+                }
+                popStack(1);
+                state = stack[stack.length-1];
+            }
+            
+            preErrorSymbol = symbol; // save the lookahead token
+            symbol = TERROR;         // insert generic error symbol as new lookahead
+            state = stack[stack.length-1];
+            action = table[state] && table[state][TERROR];
+            recovering = 3; // allow 3 real symbols to be shifted before reporting a new error
         }
 
         // this shouldn't happen, unless resolve defaults are off
@@ -1009,20 +1079,27 @@ parser.parse = function parse (input) {
             throw new Error('Parse Error: multiple actions possible at state: '+state+', token: '+symbol);
         }
 
-        a = action;
+        a = action; 
 
         switch (a[0]) {
 
             case 1: // shift
                 shifts++;
 
-                stack.push(symbol);++ip;
-                yyleng = this.lexer.yyleng;
-                yytext = this.lexer.yytext;
-                yylineno = this.lexer.yylineno;
-                symbol = lex(); 
-                vstack.push(null); // semantic values or junk only, no terminals
+                stack.push(symbol);
+                vstack.push(this.lexer.yytext); // semantic values or junk only, no terminals
                 stack.push(a[1]); // push state
+                if (!preErrorSymbol) { // normal execution/no error
+                    yyleng = this.lexer.yyleng;
+                    yytext = this.lexer.yytext;
+                    yylineno = this.lexer.yylineno;
+                    symbol = lex(); 
+                    if (recovering > 0)
+                        recovering--;
+                } else { // error just occurred, resume old lookahead f/ before error
+                    symbol = preErrorSymbol;
+                    preErrorSymbol = null;
+                }
                 break;
 
             case 2: // reduce

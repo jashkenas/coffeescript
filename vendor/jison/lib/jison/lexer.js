@@ -9,6 +9,10 @@ function prepareRules(rules, macros, actions, tokens) {
     var m,i,k,action,
         newRules = [];
 
+    if (macros) {
+        macros = prepareMacros(macros);
+    }
+
     actions.push('switch(arguments[2]) {');
 
     for (i=0;i < rules.length; i++) {
@@ -36,6 +40,26 @@ function prepareRules(rules, macros, actions, tokens) {
     actions.push("}");
 
     return newRules;
+}
+
+// expand macros within macros
+function prepareMacros (macros) {
+    var cont = true,
+        m,i,k,mnew;
+    while (cont) {
+        cont = false;
+        for (i in macros) if (macros.hasOwnProperty(i)) {
+            m = macros[i];
+            for (k in macros) if (macros.hasOwnProperty(k) && i !== k) {
+                mnew = m.split("{"+k+"}").join(macros[k]);
+                if (mnew !== m) {
+                    cont = true;
+                    macros[i] = mnew;
+                }
+            }
+        }
+    }
+    return macros;
 }
 
 function buildActions (dict, tokens) {

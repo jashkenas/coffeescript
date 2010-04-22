@@ -1,14 +1,18 @@
 if (typeof require !== 'undefined') {
     var bnf = require("./util/bnf-parser").parser;
+    var jisonlex = require("./jisonlex");
     exports.parse = function parse () { return bnf.parse.apply(bnf, arguments) };
 }
 
 // adds a declaration to the grammar
 bnf.yy.addDeclaration = function (grammar, decl) {
     if (decl.start) {
-        grammar.start = decl.start
+        grammar.start = decl.start;
     }
-    if (decl.operator) {
+    else if (decl.lex) {
+        grammar.lex = parseLex(decl.lex);
+    }
+    else if (decl.operator) {
         if (!grammar.operators) {
             grammar.operators = [];
         }
@@ -39,5 +43,10 @@ bnf.yy.lexAction = function (lexer) {
         lexer.unput('{{');
         lexer.more();
     }
+}
+
+// parse an embedded lex section
+var parseLex = function (text) {
+    return jisonlex.parse(text.replace(/(?:^%lex)|(?:\/lex$)/g, ''));
 }
 

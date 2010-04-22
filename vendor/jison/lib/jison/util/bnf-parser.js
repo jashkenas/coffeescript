@@ -3,9 +3,9 @@ var bnf = (function(){
 var parser = {trace: function trace() {
 },
 yy: {},
-symbols_: {"spec":2,"declaration_list":3,"%%":4,"grammar":5,"EOF":6,"declaration":7,"START":8,"id":9,"operator":10,"associativity":11,"token_list":12,"LEFT":13,"RIGHT":14,"NONASSOC":15,"symbol":16,"production_list":17,"production":18,":":19,"handle_list":20,";":21,"|":22,"handle_action":23,"handle":24,"prec":25,"action":26,"PREC":27,"STRING":28,"ID":29,"ACTION":30,"$accept":0,"$end":1},
-terminals_: {"4":"%%","6":"EOF","8":"START","13":"LEFT","14":"RIGHT","15":"NONASSOC","19":":","21":";","22":"|","27":"PREC","28":"STRING","29":"ID","30":"ACTION"},
-productions_: [0,[2,4],[2,5],[3,2],[3,0],[7,2],[7,1],[10,2],[11,1],[11,1],[11,1],[12,2],[12,1],[5,1],[17,2],[17,1],[18,4],[20,3],[20,1],[23,3],[24,2],[24,0],[25,2],[25,0],[16,1],[16,1],[9,1],[26,1],[26,0]],
+symbols_: {"error":2,"spec":3,"declaration_list":4,"%%":5,"grammar":6,"EOF":7,"declaration":8,"START":9,"id":10,"LEX_BLOCK":11,"operator":12,"associativity":13,"token_list":14,"LEFT":15,"RIGHT":16,"NONASSOC":17,"symbol":18,"production_list":19,"production":20,":":21,"handle_list":22,";":23,"|":24,"handle_action":25,"handle":26,"prec":27,"action":28,"PREC":29,"STRING":30,"ID":31,"ACTION":32,"$accept":0,"$end":1},
+terminals_: {"2":"error","5":"%%","7":"EOF","9":"START","11":"LEX_BLOCK","15":"LEFT","16":"RIGHT","17":"NONASSOC","21":":","23":";","24":"|","29":"PREC","30":"STRING","31":"ID","32":"ACTION"},
+productions_: [0,[3,4],[3,5],[4,2],[4,0],[8,2],[8,1],[8,1],[12,2],[13,1],[13,1],[13,1],[14,2],[14,1],[6,1],[19,2],[19,1],[20,4],[22,3],[22,1],[25,3],[26,2],[26,0],[27,2],[27,0],[18,1],[18,1],[10,1],[28,1],[28,0]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy) {
     var $$ = arguments[5], $0 = arguments[5].length;
     switch (arguments[4]) {
@@ -30,50 +30,53 @@ performAction: function anonymous(yytext, yyleng, yylineno, yy) {
         this.$ = {start: $$[$0 - 2 + 2 - 1]};
         break;
       case 6:
-        this.$ = {operator: $$[$0 - 1 + 1 - 1]};
+        this.$ = {lex: $$[$0 - 1 + 1 - 1]};
         break;
       case 7:
+        this.$ = {operator: $$[$0 - 1 + 1 - 1]};
+        break;
+      case 8:
         this.$ = [$$[$0 - 2 + 1 - 1]];
         this.$.push.apply(this.$, $$[$0 - 2 + 2 - 1]);
         break;
-      case 8:
+      case 9:
         this.$ = "left";
         break;
-      case 9:
+      case 10:
         this.$ = "right";
         break;
-      case 10:
+      case 11:
         this.$ = "nonassoc";
         break;
-      case 11:
+      case 12:
         this.$ = $$[$0 - 2 + 1 - 1];
         this.$.push($$[$0 - 2 + 2 - 1]);
         break;
-      case 12:
+      case 13:
         this.$ = [$$[$0 - 1 + 1 - 1]];
         break;
-      case 13:
+      case 14:
         this.$ = $$[$0 - 1 + 1 - 1];
         break;
-      case 14:
+      case 15:
         this.$ = $$[$0 - 2 + 1 - 1];
         this.$[$$[$0 - 2 + 2 - 1][0]] = $$[$0 - 2 + 2 - 1][1];
         break;
-      case 15:
+      case 16:
         this.$ = {};
         this.$[$$[$0 - 1 + 1 - 1][0]] = $$[$0 - 1 + 1 - 1][1];
         break;
-      case 16:
+      case 17:
         this.$ = [$$[$0 - 4 + 1 - 1], $$[$0 - 4 + 3 - 1]];
         break;
-      case 17:
+      case 18:
         this.$ = $$[$0 - 3 + 1 - 1];
         this.$.push($$[$0 - 3 + 3 - 1]);
         break;
-      case 18:
+      case 19:
         this.$ = [$$[$0 - 1 + 1 - 1]];
         break;
-      case 19:
+      case 20:
         this.$ = [$$[$0 - 3 + 1 - 1].length ? $$[$0 - 3 + 1 - 1].join(" ") : ""];
         if ($$[$0 - 3 + 3 - 1]) {
             this.$.push($$[$0 - 3 + 3 - 1]);
@@ -85,24 +88,21 @@ performAction: function anonymous(yytext, yyleng, yylineno, yy) {
             this.$ = this.$[0];
         }
         break;
-      case 20:
+      case 21:
         this.$ = $$[$0 - 2 + 1 - 1];
         this.$.push($$[$0 - 2 + 2 - 1]);
         break;
-      case 21:
+      case 22:
         this.$ = [];
         break;
-      case 22:
+      case 23:
         this.$ = {prec: $$[$0 - 2 + 2 - 1]};
         break;
-      case 23:
+      case 24:
         this.$ = null;
         break;
-      case 24:
-        this.$ = $$[$0 - 1 + 1 - 1];
-        break;
       case 25:
-        this.$ = yytext;
+        this.$ = $$[$0 - 1 + 1 - 1];
         break;
       case 26:
         this.$ = yytext;
@@ -111,20 +111,40 @@ performAction: function anonymous(yytext, yyleng, yylineno, yy) {
         this.$ = yytext;
         break;
       case 28:
+        this.$ = yytext;
+        break;
+      case 29:
         this.$ = "";
         break;
       default:;
     }
 },
-table: [{"2":1,"3":2,"4":[2,4],"8":[2,4],"13":[2,4],"14":[2,4],"15":[2,4]},{"1":[3]},{"4":[1,3],"7":4,"8":[1,5],"10":6,"11":7,"13":[1,8],"14":[1,9],"15":[1,10]},{"5":11,"17":12,"18":13,"9":14,"29":[1,15]},{"4":[2,3],"8":[2,3],"13":[2,3],"14":[2,3],"15":[2,3]},{"9":16,"29":[1,15]},{"15":[2,6],"14":[2,6],"13":[2,6],"8":[2,6],"4":[2,6]},{"12":17,"16":18,"9":19,"28":[1,20],"29":[1,15]},{"28":[2,8],"29":[2,8]},{"28":[2,9],"29":[2,9]},{"28":[2,10],"29":[2,10]},{"6":[1,21],"4":[1,22]},{"18":23,"9":14,"29":[1,15],"6":[2,13],"4":[2,13]},{"4":[2,15],"6":[2,15],"29":[2,15]},{"19":[1,24]},{"19":[2,26],"4":[2,26],"8":[2,26],"13":[2,26],"14":[2,26],"15":[2,26],"29":[2,26],"28":[2,26],"21":[2,26],"22":[2,26],"30":[2,26],"27":[2,26]},{"15":[2,5],"14":[2,5],"13":[2,5],"8":[2,5],"4":[2,5]},{"16":25,"9":19,"28":[1,20],"29":[1,15],"4":[2,7],"8":[2,7],"13":[2,7],"14":[2,7],"15":[2,7]},{"15":[2,12],"14":[2,12],"13":[2,12],"8":[2,12],"4":[2,12],"29":[2,12],"28":[2,12]},{"28":[2,24],"29":[2,24],"4":[2,24],"8":[2,24],"13":[2,24],"14":[2,24],"15":[2,24],"27":[2,24],"30":[2,24],"22":[2,24],"21":[2,24]},{"28":[2,25],"29":[2,25],"4":[2,25],"8":[2,25],"13":[2,25],"14":[2,25],"15":[2,25],"27":[2,25],"30":[2,25],"22":[2,25],"21":[2,25]},{"1":[2,1]},{"6":[1,26]},{"4":[2,14],"6":[2,14],"29":[2,14]},{"20":27,"23":28,"24":29,"21":[2,21],"22":[2,21],"30":[2,21],"27":[2,21],"29":[2,21],"28":[2,21]},{"15":[2,11],"14":[2,11],"13":[2,11],"8":[2,11],"4":[2,11],"29":[2,11],"28":[2,11]},{"1":[2,2]},{"21":[1,30],"22":[1,31]},{"21":[2,18],"22":[2,18]},{"25":32,"16":33,"27":[1,34],"9":19,"28":[1,20],"29":[1,15],"21":[2,23],"22":[2,23],"30":[2,23]},{"29":[2,16],"6":[2,16],"4":[2,16]},{"23":35,"24":29,"21":[2,21],"22":[2,21],"30":[2,21],"27":[2,21],"29":[2,21],"28":[2,21]},{"26":36,"30":[1,37],"21":[2,28],"22":[2,28]},{"21":[2,20],"22":[2,20],"30":[2,20],"27":[2,20],"29":[2,20],"28":[2,20]},{"16":38,"9":19,"28":[1,20],"29":[1,15]},{"21":[2,17],"22":[2,17]},{"22":[2,19],"21":[2,19]},{"21":[2,27],"22":[2,27]},{"21":[2,22],"22":[2,22],"30":[2,22]}],
+table: [{"3":1,"4":2,"5":[2,4],"9":[2,4],"11":[2,4],"15":[2,4],"16":[2,4],"17":[2,4]},{"1":[3]},{"5":[1,3],"8":4,"9":[1,5],"11":[1,6],"12":7,"13":8,"15":[1,9],"16":[1,10],"17":[1,11]},{"6":12,"19":13,"20":14,"10":15,"31":[1,16]},{"5":[2,3],"9":[2,3],"11":[2,3],"15":[2,3],"16":[2,3],"17":[2,3]},{"10":17,"31":[1,16]},{"17":[2,6],"16":[2,6],"15":[2,6],"11":[2,6],"9":[2,6],"5":[2,6]},{"17":[2,7],"16":[2,7],"15":[2,7],"11":[2,7],"9":[2,7],"5":[2,7]},{"14":18,"18":19,"10":20,"30":[1,21],"31":[1,16]},{"30":[2,9],"31":[2,9]},{"30":[2,10],"31":[2,10]},{"30":[2,11],"31":[2,11]},{"7":[1,22],"5":[1,23]},{"20":24,"10":15,"31":[1,16],"7":[2,14],"5":[2,14]},{"5":[2,16],"7":[2,16],"31":[2,16]},{"21":[1,25]},{"21":[2,27],"5":[2,27],"9":[2,27],"11":[2,27],"15":[2,27],"16":[2,27],"17":[2,27],"31":[2,27],"30":[2,27],"23":[2,27],"24":[2,27],"32":[2,27],"29":[2,27]},{"17":[2,5],"16":[2,5],"15":[2,5],"11":[2,5],"9":[2,5],"5":[2,5]},{"18":26,"10":20,"30":[1,21],"31":[1,16],"5":[2,8],"9":[2,8],"11":[2,8],"15":[2,8],"16":[2,8],"17":[2,8]},{"17":[2,13],"16":[2,13],"15":[2,13],"11":[2,13],"9":[2,13],"5":[2,13],"31":[2,13],"30":[2,13]},{"30":[2,25],"31":[2,25],"5":[2,25],"9":[2,25],"11":[2,25],"15":[2,25],"16":[2,25],"17":[2,25],"29":[2,25],"32":[2,25],"24":[2,25],"23":[2,25]},{"30":[2,26],"31":[2,26],"5":[2,26],"9":[2,26],"11":[2,26],"15":[2,26],"16":[2,26],"17":[2,26],"29":[2,26],"32":[2,26],"24":[2,26],"23":[2,26]},{"1":[2,1]},{"7":[1,27]},{"5":[2,15],"7":[2,15],"31":[2,15]},{"22":28,"25":29,"26":30,"23":[2,22],"24":[2,22],"32":[2,22],"29":[2,22],"31":[2,22],"30":[2,22]},{"17":[2,12],"16":[2,12],"15":[2,12],"11":[2,12],"9":[2,12],"5":[2,12],"31":[2,12],"30":[2,12]},{"1":[2,2]},{"23":[1,31],"24":[1,32]},{"23":[2,19],"24":[2,19]},{"27":33,"18":34,"29":[1,35],"10":20,"30":[1,21],"31":[1,16],"23":[2,24],"24":[2,24],"32":[2,24]},{"31":[2,17],"7":[2,17],"5":[2,17]},{"25":36,"26":30,"23":[2,22],"24":[2,22],"32":[2,22],"29":[2,22],"31":[2,22],"30":[2,22]},{"28":37,"32":[1,38],"23":[2,29],"24":[2,29]},{"23":[2,21],"24":[2,21],"32":[2,21],"29":[2,21],"31":[2,21],"30":[2,21]},{"18":39,"10":20,"30":[1,21],"31":[1,16]},{"23":[2,18],"24":[2,18]},{"24":[2,20],"23":[2,20]},{"23":[2,28],"24":[2,28]},{"23":[2,23],"24":[2,23],"32":[2,23]}],
 parseError: function parseError(str, hash) {
     throw new Error(str);
 },
 parse: function parse(input) {
-    var self = this, stack = [0], vstack = [null], table = this.table, yytext = "", yylineno = 0, yyleng = 0, shifts = 0, reductions = 0;
+    var self = this, stack = [0], vstack = [null], table = this.table, yytext = "", yylineno = 0, yyleng = 0, shifts = 0, reductions = 0, recovering = 0, TERROR = 2, EOF = 1;
     this.lexer.setInput(input);
     this.lexer.yy = this.yy;
-    var parseError = this.yy.parseError = this.yy.parseError || this.parseError;
+    this.yy.lexer = this.lexer;
+    var parseError = this.yy.parseError = typeof this.yy.parseError == "function" ? this.yy.parseError : this.parseError;
+
+    function popStack(n) {
+        stack.length = stack.length - 2 * n;
+        vstack.length = vstack.length - n;
+    }
+
+
+    function checkRecover(st) {
+        for (var p in table[st]) {
+            if (p == TERROR) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     function lex() {
         var token;
@@ -135,23 +155,49 @@ parse: function parse(input) {
         return token;
     }
 
-    var symbol, state, action, a, r, yyval = {}, p, len, ip = 0, newState, expected;
+    var symbol, preErrorSymbol, state, action, a, r, yyval = {}, p, len, newState, expected, recovered = false;
     symbol = lex();
     while (true) {
         state = stack[stack.length - 1];
         action = table[state] && table[state][symbol];
         if (typeof action === "undefined" || !action.length || !action[0]) {
-            expected = [];
-            for (p in table[state]) {
-                if (this.terminals_[p] && p != 1) {
-                    expected.push("'" + this.terminals_[p] + "'");
+            if (!recovering) {
+                expected = [];
+                for (p in table[state]) {
+                    if (this.terminals_[p] && p > 2) {
+                        expected.push("'" + this.terminals_[p] + "'");
+                    }
+                }
+                if (this.lexer.showPosition) {
+                    parseError.call(this, "Parse error on line " + (yylineno + 1) + ":\n" + this.lexer.showPosition() + "\nExpecting " + expected.join(", "), {text: this.lexer.match, token: this.terminals_[symbol] || symbol, line: this.lexer.yylineno, expected: expected});
+                } else {
+                    parseError.call(this, "Parse error on line " + (yylineno + 1) + ": Unexpected '" + this.terminals_[symbol] + "'", {text: this.lexer.match, token: this.terminals_[symbol] || symbol, line: this.lexer.yylineno, expected: expected});
                 }
             }
-            if (this.lexer.showPosition) {
-                parseError("Parse error on line " + (yylineno + 1) + ":\n" + this.lexer.showPosition() + "\nExpecting " + expected.join(", "), {text: this.lexer.match, token: this.terminals_[symbol], line: this.lexer.yylineno, expected: expected});
-            } else {
-                parseError("Parse error on line " + (yylineno + 1) + ": Unexpected '" + this.terminals_[symbol] + "'", {text: this.lexer.match, token: this.terminals_[symbol], line: this.lexer.yylineno, expected: expected});
+            if (recovering == 3) {
+                if (symbol == EOF) {
+                    throw "Parsing halted.";
+                }
+                yyleng = this.lexer.yyleng;
+                yytext = this.lexer.yytext;
+                yylineno = this.lexer.yylineno;
+                symbol = lex();
             }
+            while (true) {
+                if (checkRecover(state)) {
+                    break;
+                }
+                if (state == 0) {
+                    throw "Parsing halted.";
+                }
+                popStack(1);
+                state = stack[stack.length - 1];
+            }
+            preErrorSymbol = symbol;
+            symbol = TERROR;
+            state = stack[stack.length - 1];
+            action = table[state] && table[state][TERROR];
+            recovering = 3;
         }
         if (action[0] instanceof Array && action.length > 1) {
             throw new Error("Parse Error: multiple actions possible at state: " + state + ", token: " + symbol);
@@ -161,13 +207,20 @@ parse: function parse(input) {
           case 1:
             shifts++;
             stack.push(symbol);
-            ++ip;
-            yyleng = this.lexer.yyleng;
-            yytext = this.lexer.yytext;
-            yylineno = this.lexer.yylineno;
-            symbol = lex();
-            vstack.push(null);
+            vstack.push(this.lexer.yytext);
             stack.push(a[1]);
+            if (!preErrorSymbol) {
+                yyleng = this.lexer.yyleng;
+                yytext = this.lexer.yytext;
+                yylineno = this.lexer.yylineno;
+                symbol = lex();
+                if (recovering > 0) {
+                    recovering--;
+                }
+            } else {
+                symbol = preErrorSymbol;
+                preErrorSymbol = null;
+            }
             break;
           case 2:
             reductions++;
@@ -305,67 +358,70 @@ lexer.performAction = function anonymous(yy, yy_) {
         return yy.lexComment(this);
         break;
       case 3:
-        return 29;
+        return 31;
         break;
       case 4:
         yy_.yytext = yy_.yytext.substr(1, yy_.yyleng - 2);
-        return 28;
+        return 30;
         break;
       case 5:
         yy_.yytext = yy_.yytext.substr(1, yy_.yyleng - 2);
-        return 28;
+        return 30;
         break;
       case 6:
-        return 19;
-        break;
-      case 7:
         return 21;
         break;
+      case 7:
+        return 23;
+        break;
       case 8:
-        return 22;
+        return 24;
         break;
       case 9:
-        return 4;
+        return 5;
         break;
       case 10:
-        return 27;
+        return 29;
         break;
       case 11:
-        return 8;
+        return 9;
         break;
       case 12:
-        return 13;
-        break;
-      case 13:
-        return 14;
-        break;
-      case 14:
         return 15;
         break;
+      case 13:
+        return 16;
+        break;
+      case 14:
+        return 17;
+        break;
       case 15:
+        return 11;
         break;
       case 16:
         break;
       case 17:
-        return yy.lexAction(this);
         break;
       case 18:
-        yy_.yytext = yy_.yytext.substr(1, yy_.yyleng - 2);
-        return 30;
+        return yy.lexAction(this);
         break;
       case 19:
-        yy_.yytext = yy_.yytext.substr(2, yy_.yytext.length - 4);
-        return 30;
+        yy_.yytext = yy_.yytext.substr(1, yy_.yyleng - 2);
+        return 32;
         break;
       case 20:
+        yy_.yytext = yy_.yytext.substr(2, yy_.yytext.length - 4);
+        return 32;
         break;
       case 21:
-        return 6;
+        break;
+      case 22:
+        return 7;
         break;
       default:;
     }
 };
-lexer.rules = [/^\s+/, /^\/\/.*/, /^\/\*[^*]*\*/, /^[a-zA-Z][a-zA-Z0-9_-]*/, /^"[^"]+"/, /^'[^']+'/, /^:/, /^;/, /^\|/, /^%%/, /^%prec\b/, /^%start\b/, /^%left\b/, /^%right\b/, /^%nonassoc\b/, /^%[a-zA-Z]+[^\n]*/, /^<[a-zA-Z]*>/, /^\{\{[^}]*\}/, /^\{[^}]*\}/, /^%\{(.|\n)*?%\}/, /^./, /^$/];return lexer;})()
+lexer.rules = [/^\s+/,/^\/\/.*/,/^\/\*[^*]*\*/,/^[a-zA-Z][a-zA-Z0-9_-]*/,/^"[^"]+"/,/^'[^']+'/,/^:/,/^;/,/^\|/,/^%%/,/^%prec\b/,/^%start\b/,/^%left\b/,/^%right\b/,/^%nonassoc\b/,/^%lex[\w\W]*?\/lex\b/,/^%[a-zA-Z]+[^\n]*/,/^<[a-zA-Z]*>/,/^\{\{[^}]*\}/,/^\{[^}]*\}/,/^%\{(.|\n)*?%\}/,/^./,/^$/];return lexer;})()
 parser.lexer = lexer;
 return parser;
 })();
@@ -378,7 +434,7 @@ exports.main = function commonjsMain(args) {
         throw new Error("Usage: " + args[0] + " FILE");
     }
     var source = cwd.join(args[1]).read({charset: "utf-8"});
-    this.parse(source);
+    exports.parser.parse(source);
 }
 if (require.main === module) {
 	exports.main(require("system").args);

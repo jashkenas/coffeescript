@@ -18,13 +18,16 @@ function genDecls (grammar, options) {
         if (key === 'start') {
             s += "\n%start "+grammar.start+"\n\n";
         }
-        if (key === 'author') {
+        else if (key === 'author') {
             s += "\n/* author: "+grammar.author+" */\n\n";
         }
-        if (key === 'comment') {
+        else if (key === 'comment') {
             s += "\n/* description: "+grammar.comment+" */\n\n";
         }
-        if (key === 'operators') {
+        else if (key === 'lex') {
+            s += "%lex\n"+genLex(grammar.lex)+"/lex\n\n";
+        }
+        else if (key === 'operators') {
             for (var i=0; i<grammar.operators.length; i++) {
                 s += "%"+grammar.operators[i][0]+' '+quoteSymbols(grammar.operators[i].slice(1).join(' '))+"\n";
             }
@@ -100,8 +103,8 @@ function genLex (lex) {
     var s = [];
 
     if (lex.macros) {
-        for (var macro;macro=lex.macros.shift();) {
-            s.push(macro[0], '\t\t', macros[1], '\n');
+        for (var macro in lex.macros) if (lex.macros.hasOwnProperty(macro)) {
+            s.push(macro, '         ', lex.macros[macro], '\n');
         }
     }
     if (lex.actionInclude) {
@@ -110,14 +113,16 @@ function genLex (lex) {
     s.push('\n%%\n');
     if (lex.rules) {
         for (var rule;rule=lex.rules.shift();) {
-            s.push(rule[0], '    ', genLexRule(rule[1]), '\n');
+            s.push(genLexRegex(rule[0]), '         ', genLexRule(rule[1]), '\n');
         }
     }
-    s.push('\n%%\n');
+    s.push('\n');
 
     return s.join('');
 }
-
+function genLexRegex (regex) {
+    return regex.match(/\\b$/) ? '"'+regex.replace(/\\b$/, '')+'"' : regex;
+}
 function genLexRule (rule) {
     return rule.match(/\\}/) ? '%{'+rule+'}%' : '{'+rule+'}';
 }
@@ -134,15 +139,6 @@ exports.main = function main (args) {
         var fname = fs.path(fs.cwd()).join(gfile.basename(".json") + ".jison"),
             stream = fname.open("w");
         stream.print(json2jison(grammar));
-        stream.close();
-    }
-
-    var lex = grammar.lex || grammar.rules && grammar;
-
-    if (lex) {
-        var fname = fs.path(fs.cwd()).join(gfile.basename(".json").replace(/[._]?lex$/,'') + ".jisonlex"),
-            stream = fname.open("w");
-        stream.print(genLex(lex));
         stream.close();
     }
 };

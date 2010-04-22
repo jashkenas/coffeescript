@@ -1,10 +1,14 @@
 if (typeof require !== 'undefined') {
     var jisonlex = require("./util/lex-parser").parser;
-    exports.parse = function parse () {
-        jisonlex.yy.ruleSection = false;
-        return jisonlex.parse.apply(jisonlex, arguments);
-    };
+} else {
+    var exports = jisonlex;
 }
+
+var parse_ = jisonlex.parse;
+jisonlex.parse = exports.parse = function parse () {
+    jisonlex.yy.ruleSection = false;
+    return parse_.apply(jisonlex, arguments);
+};
 
 function encodeRE (s) { return s.replace(/([.*+?^${}()|[\]\/\\])/g, '\\$1'); }
 

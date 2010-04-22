@@ -1,3 +1,0 @@
-#!/usr/bin/env narwhal
-
-require('jison').main(system.args);
