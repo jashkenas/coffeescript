@@ -76,3 +76,17 @@ ok crowd[10] is "Mighty Mouse"
 
 ok bests[1] is contenders[0]
 ok bests[4] is contenders[3]
+
+
+# Finally, splats with super() within classes.
+
+class Parent
+  meth: (args...) ->
+    args
+
+class Child extends Parent
+  meth: ->
+    nums: [3, 2, 1]
+    super nums...
+
+ok (new Child()).meth().join(' ') is '3 2 1'

@@ -369,6 +369,14 @@ exports.CallNode: class CallNode extends BaseNode
   prefix: ->
     if @is_new then 'new ' else ''
 
+  # Grab the reference to the superclass' implementation of the current method.
+  super_reference: (o) ->
+    methname: o.scope.method.name
+    meth: if o.scope.method.proto
+      "${o.scope.method.proto}.__superClass__.$methname"
+    else
+      "${methname}.__superClass__.constructor"
+
   # Compile a vanilla function call.
   compile_node: (o) ->
     for arg in @args
@@ -380,18 +388,13 @@ exports.CallNode: class CallNode extends BaseNode
   # `super()` is converted into a call against the superclass's implementation
   # of the current function.
   compile_super: (args, o) ->
-    methname: o.scope.method.name
-    meth: if o.scope.method.proto
-      "${o.scope.method.proto}.__superClass__.$methname"
-    else
-      "${methname}.__superClass__.constructor"
-    "${meth}.call(this${ if args.length then ', ' else '' }$args)"
+    "${@super_reference(o)}.call(this${ if args.length then ', ' else '' }$args)"
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
   compile_splat: (o) ->
-    meth: @variable.compile o
-    obj:  @variable.source or 'this'
+    meth: if @variable then @variable.compile(o) else @super_reference(o)
+    obj:  @variable and @variable.source or 'this'
     if obj.match(/\(/)
       temp: o.scope.free_variable()
       obj:  temp
