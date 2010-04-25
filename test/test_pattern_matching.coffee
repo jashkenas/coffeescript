@@ -56,7 +56,7 @@ ok c is 30
 person: {
   name: "Moe"
   family: {
-    brother: {
+    'elder-brother': {
       addresses: [
         "first"
         {
@@ -68,7 +68,7 @@ person: {
   }
 }
 
-{name: a, family: {brother: {addresses: [one, {city: b}]}}}: person
+{name: a, family: {'elder-brother': {addresses: [one, {city: b}]}}}: person
 
 ok a is "Moe"
 ok b is "Moquasset NY, 10021"

@@ -692,7 +692,8 @@ exports.AssignNode: class AssignNode extends BaseNode
     for obj, i in @variable.base.objects
       idx: i
       [obj, idx]: [obj.value, obj.variable.base] if @variable.is_object()
-      access_class: if @variable.is_array() then IndexNode else AccessorNode
+      is_string: idx.value and idx.value.match IS_STRING
+      access_class: if is_string or @variable.is_array() then IndexNode else AccessorNode
       if obj instanceof SplatNode and not splat
         val: literal(obj.compile_value(o, val_var,
           (oindex: @variable.base.objects.indexOf(obj)),
@@ -1330,6 +1331,9 @@ TRAILING_WHITESPACE: /\s+$/gm
 
 # Keep this identifier regex in sync with the Lexer.
 IDENTIFIER: /^[a-zA-Z\$_](\w|\$)*$/
+
+# Is a literal value a string?
+IS_STRING: /^['"]/
 
 # Utility Functions
 # -----------------
