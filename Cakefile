@@ -6,8 +6,9 @@ CoffeeScript: require './lib/coffee-script'
 # Run a CoffeeScript through our node/coffee interpreter.
 run: (args) ->
   proc: spawn 'bin/coffee', args
-  proc.addListener 'error', (err) -> if err then puts err
-
+  err: ""
+  proc.stderr.addListener 'data', (data) -> err += data
+  proc.addListener 'exit', (ex) -> puts err if ex != 0
 
 option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
 
