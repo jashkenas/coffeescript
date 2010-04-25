@@ -692,6 +692,8 @@ exports.AssignNode: class AssignNode extends BaseNode
     for obj, i in @variable.base.objects
       idx: i
       [obj, idx]: [obj.value, obj.variable.base] if @variable.is_object()
+      if not (obj instanceof ValueNode or obj instanceof SplatNode)
+        throw new Error 'pattern matching must use only identifiers on the left-hand side.'
       is_string: idx.value and idx.value.match IS_STRING
       access_class: if is_string or @variable.is_array() then IndexNode else AccessorNode
       if obj instanceof SplatNode and not splat
