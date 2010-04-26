@@ -433,12 +433,20 @@ grammar: {
     o "FOR ForVariables ForSource Block",       -> new ForNode $4, $3, $2[0], $2[1]
   ]
 
+  # An array of all accepted values for a variable inside the loop. This
+  # enables support for pattern matching.
+  ForValue: [
+    o "Identifier"
+    o "Array",                                  -> new ValueNode $1
+    o "Object",                                 -> new ValueNode $1
+  ]
+
   # An array or range comprehension has variables for the current element and
   # (optional) reference to the current index. Or, *key, value*, in the case
   # of object comprehensions.
   ForVariables: [
-    o "Identifier",                             -> [$1]
-    o "Identifier , Identifier",                -> [$1, $3]
+    o "ForValue",                               -> [$1]
+    o "ForValue , ForValue",                    -> [$1, $3]
   ]
 
   # The source of a comprehension is an array or object with an optional filter
