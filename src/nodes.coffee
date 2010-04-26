@@ -542,6 +542,7 @@ exports.ObjectNode: class ObjectNode extends BaseNode
       join:   "\n" if (prop is last_noncom) or (prop instanceof CommentNode)
       join:   '' if i is @properties.length - 1
       indent: if prop instanceof CommentNode then '' else @idt 1
+      prop:   new AssignNode prop, prop, 'object' unless prop instanceof AssignNode
       indent + prop.compile(o) + join
     props: props.join('')
     inner: if props then '\n' + props + '\n' + @idt() else ''

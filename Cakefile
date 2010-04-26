@@ -1,5 +1,5 @@
 fs:            require 'fs'
-helpers:       require('./lib/helpers').helpers
+{helpers}:     require('./lib/helpers')
 CoffeeScript:  require './lib/coffee-script'
 {spawn, exec}: require('child_process')
 
