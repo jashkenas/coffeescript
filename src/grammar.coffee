@@ -147,6 +147,8 @@ grammar: {
   # Assignment when it happens within an object literal. The difference from
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
+    o "Identifier",                             -> new ValueNode $1
+    o "AlphaNumeric",                           -> new ValueNode $1
     o "Identifier ASSIGN Expression",           -> new AssignNode new ValueNode($1), $3, 'object'
     o "AlphaNumeric ASSIGN Expression",         -> new AssignNode new ValueNode($1), $3, 'object'
     o "Comment"
@@ -448,7 +450,7 @@ grammar: {
     o "IN Expression WHEN Expression",               -> {source: $2, filter: $4}
     o "OF Expression WHEN Expression",               -> {source: $2, filter: $4, object: true}
     o "IN Expression BY Expression",                 -> {source: $2, step:   $4}
-    o "IN Expression WHEN Expression BY Expression", -> {source: $2, filter: $4; step:   $6}
+    o "IN Expression WHEN Expression BY Expression", -> {source: $2, filter: $4, step:   $6}
     o "IN Expression BY Expression WHEN Expression", -> {source: $2, step:   $4, filter: $6}
   ]
 

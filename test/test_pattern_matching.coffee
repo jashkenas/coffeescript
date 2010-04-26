@@ -89,8 +89,24 @@ test: {
 ok addr.join(', ') is "Street 101, Apt 101, City 101"
 
 
-# Destructuring against an expression.
+# Pattern matching against an expression.
 [a, b]: if true then [2, 1] else [1, 2]
 
 ok a is 2
 ok b is 1
+
+
+# Pattern matching with object shorthand.
+
+person: {
+  name: "Bob"
+  age:  26
+  dogs: ["Prince", "Bowie"]
+}
+
+{name, age, dogs: [first, second]}: person
+
+ok name   is "Bob"
+ok age    is 26
+ok first  is "Prince"
+ok second is "Bowie"

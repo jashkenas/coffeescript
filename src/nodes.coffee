@@ -690,8 +690,15 @@ exports.AssignNode: class AssignNode extends BaseNode
     o.as_statement: true
     splat: false
     for obj, i in @variable.base.objects
+      # A regular array pattern-match.
       idx: i
-      [obj, idx]: [obj.value, obj.variable.base] if @variable.is_object()
+      if @variable.is_object()
+        if obj instanceof AssignNode
+          # A regular object pattern-match.
+          [obj, idx]: [obj.value, obj.variable.base]
+        else
+          # A shorthand `{a, b, c}: val` pattern-match.
+          idx: obj
       if not (obj instanceof ValueNode or obj instanceof SplatNode)
         throw new Error 'pattern matching must use only identifiers on the left-hand side.'
       is_string: idx.value and idx.value.match IS_STRING
