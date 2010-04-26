@@ -7,6 +7,7 @@ CoffeeScript:  require './lib/coffee-script'
 run: (args) ->
   proc: spawn 'bin/coffee', args
   proc.stderr.addListener 'data', (buffer) -> puts buffer.toString()
+  proc.addListener 'exit', (status) -> process.exit(1) if status != 0
 
 option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
 
