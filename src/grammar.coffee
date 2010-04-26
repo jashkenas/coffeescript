@@ -185,6 +185,12 @@ grammar: {
     o "=>",                                     -> 'boundfunc'
   ]
 
+  # An optional, trailing comma.
+  OptComma: [
+    o ''
+    o ','
+  ]
+
   # The list of parameters that a function accepts can be of any length.
   ParamList: [
     o "",                                       -> []
@@ -249,10 +255,8 @@ grammar: {
 
   # In CoffeeScript, an object literal is simply a list of assignments.
   Object: [
-    o "{ AssignList }",                         -> new ObjectNode $2
-    o "{ IndentedAssignList }",                 -> new ObjectNode $2
-    o "{ AssignList , }",                       -> new ObjectNode $2
-    o "{ IndentedAssignList , }",               -> new ObjectNode $2
+    o "{ AssignList OptComma }",                -> new ObjectNode $2
+    o "{ IndentedAssignList OptComma }",        -> new ObjectNode $2
   ]
 
   # Assignment of properties within an object literal can be separated by
@@ -267,8 +271,7 @@ grammar: {
 
   # An **AssignList** within a block indentation.
   IndentedAssignList: [
-    o "INDENT AssignList OUTDENT",              -> $2
-    o "INDENT AssignList , OUTDENT",            -> $2
+    o "INDENT AssignList OptComma OUTDENT",     -> $2
   ]
 
   # Class definitions have optional bodies of prototype property assignments,
@@ -320,14 +323,12 @@ grammar: {
 
   # The list of arguments to a function call.
   Arguments: [
-    o "CALL_START ArgList CALL_END",            -> $2
-    o "CALL_START ArgList , CALL_END",          -> $2
+    o "CALL_START ArgList OptComma CALL_END",   -> $2
   ]
 
   # Calling super.
   Super: [
-    o "SUPER CALL_START ArgList CALL_END",      -> new CallNode 'super', $3
-    o "SUPER CALL_START ArgList , CALL_END",    -> new CallNode 'super', $3
+    o "SUPER CALL_START ArgList OptComma CALL_END", -> new CallNode 'super', $3
   ]
 
   # A reference to the *this* current object.
@@ -355,8 +356,7 @@ grammar: {
 
   # The array literal.
   Array: [
-    o "[ ArgList ]",                            -> new ArrayNode $2
-    o "[ ArgList , ]",                          -> new ArrayNode $2
+    o "[ ArgList OptComma ]",                   -> new ArrayNode $2
   ]
 
   # The **ArgList** is both the list of objects passed into a function call,
@@ -370,8 +370,7 @@ grammar: {
     o "ArgList TERMINATOR Expression",          -> $1.concat [$3]
     o "ArgList , TERMINATOR Expression",        -> $1.concat [$4]
     o "ArgList , INDENT Expression",            -> $1.concat [$4]
-    o "ArgList OUTDENT"
-    o "ArgList , OUTDENT"
+    o "ArgList OptComma OUTDENT"
   ]
 
   # Just simple, comma-separated, required arguments (no fancy syntax). We need
