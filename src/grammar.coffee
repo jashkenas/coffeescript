@@ -256,7 +256,6 @@ grammar: {
   # In CoffeeScript, an object literal is simply a list of assignments.
   Object: [
     o "{ AssignList OptComma }",                -> new ObjectNode $2
-    o "{ IndentedAssignList OptComma }",        -> new ObjectNode $2
   ]
 
   # Assignment of properties within an object literal can be separated by
@@ -267,10 +266,6 @@ grammar: {
     o "AssignList , AssignObj",                 -> $1.concat [$3]
     o "AssignList TERMINATOR AssignObj",        -> $1.concat [$3]
     o "AssignList , TERMINATOR AssignObj",      -> $1.concat [$4]
-  ]
-
-  # An **AssignList** within a block indentation.
-  IndentedAssignList: [
     o "INDENT AssignList OptComma OUTDENT",     -> $2
   ]
 
