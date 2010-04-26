@@ -5,11 +5,11 @@
 # interactive REPL.
 
 # External dependencies.
-fs:           require 'fs'
-path:         require 'path'
-optparse:     require './optparse'
-CoffeeScript: require './coffee-script'
-{spawn: spawn, exec: exec}: require('child_process')
+fs:            require 'fs'
+path:          require 'path'
+optparse:      require './optparse'
+CoffeeScript:  require './coffee-script'
+{spawn, exec}: require('child_process')
 
 # The help banner that is printed when `coffee` is called without arguments.
 BANNER: '''
@@ -123,7 +123,7 @@ write_js: (source, js) ->
 # Pipe compiled JS through JSLint (requires a working `jsl` command), printing
 # any errors or warnings that arise.
 lint: (js) ->
-  print_it: (buffer) -> puts buffer.toString()
+  print_it: (buffer) -> print buffer.toString()
   jsl: spawn 'jsl', ['-nologo', '-stdin']
   jsl.stdout.addListener 'data', print_it
   jsl.stderr.addListener 'data', print_it

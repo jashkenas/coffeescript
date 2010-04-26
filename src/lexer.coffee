@@ -17,11 +17,7 @@ else
   helpers:      this.helpers
 
 # Import the helpers we need.
-include:          helpers.include
-count:            helpers.count
-starts:           helpers.starts
-compact:          helpers.compact
-balanced_string:  helpers.balanced_string
+{include, count, starts, compact, balanced_string}: helpers
 
 # The Lexer Class
 # ---------------

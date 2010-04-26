@@ -14,10 +14,7 @@ else
   Scope:        this.Scope
 
 # Import the helpers we plan to use.
-compact: helpers.compact
-flatten: helpers.flatten
-merge:   helpers.merge
-del:     helpers.del
+{compact, flatten, merge, del}: helpers
 
 # Helper function that marks a node as a JavaScript *statement*, or as a
 # *pure_statement*. Statements must be wrapped in a closure when used as an

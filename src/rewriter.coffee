@@ -13,7 +13,7 @@ else
   helpers:      this.helpers
 
 # Import the helpers we need.
-include: helpers.include
+{include}: helpers
 
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
 # its internal array of tokens.

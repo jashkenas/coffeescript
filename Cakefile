@@ -1,7 +1,7 @@
-fs:           require 'fs'
-helpers:      require('./lib/helpers').helpers
-CoffeeScript: require './lib/coffee-script'
-{spawn: spawn, exec: exec}: require('child_process')
+fs:            require 'fs'
+helpers:       require('./lib/helpers').helpers
+CoffeeScript:  require './lib/coffee-script'
+{spawn, exec}: require('child_process')
 
 # Run a CoffeeScript through our node/coffee interpreter.
 run: (args) ->
