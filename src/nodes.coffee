@@ -571,8 +571,10 @@ exports.ArrayNode: class ArrayNode extends BaseNode
       else
         objects.push "$code, "
     objects: objects.join('')
-    ending: if objects.indexOf('\n') >= 0 then "\n$@tab]" else ']'
-    "[$objects$ending"
+    if objects.indexOf('\n') >= 0
+      "[\n${@idt(1)}$objects\n$@tab]"
+    else
+      "[$objects]"
 
 #### ClassNode
 
@@ -1124,9 +1126,7 @@ exports.ForNode: class ForNode extends BaseNode
       index_var:    null
       source_part:  "$svar = ${ @source.compile(o) };\n$@tab"
       if @pattern
-        o.indent:   @idt 1
-        o.top:      true
-        var_part:   new AssignNode(@name, literal("$svar[$ivar]")).compile(o) + "\n"
+        var_part:   new AssignNode(@name, literal("$svar[$ivar]")).compile(merge o, {indent: @idt(1), top: true}) + "\n"
       else
         var_part:   "$body_dent$name = $svar[$ivar];\n" if name
       if not @object
