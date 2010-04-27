@@ -612,7 +612,7 @@ exports.ClassNode: class ClassNode extends BaseNode
           prop:   new AssignNode(val, func)
         props.push prop
 
-    if not constructor
+    unless constructor
       if @parent
         applied: new ValueNode(@parent, [new AccessorNode(literal('apply'))])
         constructor: new AssignNode(@variable, new CodeNode([], new Expressions([
@@ -878,7 +878,7 @@ exports.WhileNode: class WhileNode extends BaseNode
     o.top:      true
     cond:       @condition.compile(o)
     set:        ''
-    if not top
+    unless top
       rvar:     o.scope.free_variable()
       set:      "$@tab$rvar = [];\n"
       @body:    PushNode.wrap(rvar, @body) if @body
@@ -1129,7 +1129,7 @@ exports.ForNode: class ForNode extends BaseNode
         var_part:   new AssignNode(@name, literal("$svar[$ivar]")).compile(merge o, {indent: @idt(1), top: true}) + "\n"
       else
         var_part:   "$body_dent$name = $svar[$ivar];\n" if name
-      if not @object
+      unless @object
         lvar:       scope.free_variable()
         step_part:  if @step then "$ivar += ${ @step.compile(o) }" else "$ivar++"
         for_part:   "$ivar = 0, $lvar = ${svar}.length; $ivar < $lvar; $step_part"
@@ -1188,7 +1188,7 @@ exports.IfNode: class IfNode extends BaseNode
   # Ensure that the switch expression isn't evaluated more than once.
   rewrite_switch: (o) ->
     assigner: @switcher
-    if not (@switcher.unwrap() instanceof LiteralNode)
+    unless @switcher.unwrap() instanceof LiteralNode
       variable: literal(o.scope.free_variable())
       assigner: new AssignNode(variable, @switcher)
       @switcher: variable

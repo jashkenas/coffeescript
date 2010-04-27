@@ -96,7 +96,7 @@ exports.Lexer: class Lexer
     @identifier_error id      if include RESERVED, id
     tag: 'LEADING_WHEN'       if tag is 'WHEN' and include LINE_BREAK, @tag()
     @i: + id.length
-    if not accessed
+    unless accessed
       tag: id: CONVERSIONS[id]         if include COFFEE_ALIASES, id
       return @tag_half_assignment tag  if @prev() and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
     @token tag, id
