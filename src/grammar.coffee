@@ -148,7 +148,7 @@ grammar: {
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
     o "Identifier",                             -> new ValueNode $1
-    o "AlphaNumeric",                           -> new ValueNode $1
+    o "AlphaNumeric"
     o "Identifier ASSIGN Expression",           -> new AssignNode new ValueNode($1), $3, 'object'
     o "AlphaNumeric ASSIGN Expression",         -> new AssignNode new ValueNode($1), $3, 'object'
     o "Comment"
