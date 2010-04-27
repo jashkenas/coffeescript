@@ -1156,21 +1156,21 @@ statement ForNode
 # because ternaries are already proper expressions, and don't need conversion.
 exports.IfNode: class IfNode extends BaseNode
 
-  constructor: (condition, body, else_body, tags) ->
+  constructor: (condition, body, tags) ->
     @condition: condition
-    @body:      body and body.unwrap()
-    @else_body: else_body and else_body.unwrap()
-    @children:  compact flatten [@condition, @body, @else_body]
+    @body:      body
+    @else_body: null
+    @populate_children()
     @tags:      tags or {}
     @multiple:  true if @condition instanceof Array
     @condition: new OpNode('!', new ParentheticalNode(@condition)) if @tags.invert
+    @is_chain:  false
 
-  # Add a new *else* clause to this **IfNode**, or push it down to the bottom
-  # of the chain recursively.
-  push: (else_body) ->
-    eb: else_body.unwrap()
-    if @else_body then @else_body.push(eb) else @else_body: eb
-    this
+  populate_children: ->
+    @children:  compact flatten [@condition, @body, @else_body]
+
+  body_node: -> @body?.unwrap()
+  else_body_node: -> @else_body?.unwrap()
 
   force_statement: ->
     @tags.statement: true
@@ -1178,43 +1178,43 @@ exports.IfNode: class IfNode extends BaseNode
 
   # Tag a chain of **IfNodes** with their object(s) to switch on for equality
   # tests. `rewrite_switch` will perform the actual change at compile time.
-  rewrite_condition: (expression) ->
-    @switcher: expression
+  switches_over: (expression) ->
+    @switch_subject: expression
     this
 
   # Rewrite a chain of **IfNodes** with their switch condition for equality.
   # Ensure that the switch expression isn't evaluated more than once.
   rewrite_switch: (o) ->
-    assigner: @switcher
-    unless @switcher.unwrap() instanceof LiteralNode
+    assigner: @switch_subject
+    unless (@switch_subject.unwrap() instanceof LiteralNode)
       variable: literal(o.scope.free_variable())
-      assigner: new AssignNode(variable, @switcher)
-      @switcher: variable
+      assigner: new AssignNode(variable, @switch_subject)
+      @children.push(assigner)
+      @switch_subject: variable
     @condition: if @multiple
       for cond, i in @condition
-        new OpNode('==', (if i is 0 then assigner else @switcher), cond)
+        new OpNode('==', (if i is 0 then assigner else @switch_subject), cond)
     else
       new OpNode('==', assigner, @condition)
-    @else_body.rewrite_condition(@switcher) if @is_chain()
+    @else_body_node().switches_over(@switch_subject) if @is_chain
+    # prevent this rewrite from happening again
+    @switch_subject: undefined
     this
 
   # Rewrite a chain of **IfNodes** to add a default case as the final *else*.
-  add_else: (exprs, statement) ->
-    if @is_chain()
-      @else_body.add_else exprs, statement
+  add_else: (else_body, statement) ->
+    if @is_chain
+      @else_body_node().add_else else_body, statement
     else
-      exprs: exprs.unwrap() unless statement
-      @children.push @else_body: exprs
+      @is_chain: else_body instanceof IfNode
+      @else_body: @ensure_expressions else_body
+      @populate_children()
     this
-
-  # If the `else_body` is an **IfNode** itself, then we've got an *if-else* chain.
-  is_chain: ->
-    @chain: or @else_body and @else_body instanceof IfNode
 
   # The **IfNode** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a ternary is safe.
   is_statement: ->
-    @statement: or !!(@comment or @tags.statement or @body.is_statement() or (@else_body and @else_body.is_statement()))
+    @statement: or !!(@comment or @tags.statement or @body_node().is_statement() or (@else_body and @else_body_node().is_statement()))
 
   compile_condition: (o) ->
     (cond.compile(o) for cond in flatten([@condition])).join(' || ')
@@ -1223,14 +1223,18 @@ exports.IfNode: class IfNode extends BaseNode
     if @is_statement() then @compile_statement(o) else @compile_ternary(o)
 
   make_return: ->
-    @body:      and @body.make_return()
-    @else_body: and @else_body.make_return()
+    @body:      and @ensure_expressions(@body.make_return())
+    @else_body: and @ensure_expressions(@else_body.make_return())
     this
+
+  ensure_expressions: (node) ->
+    node: new Expressions([node]) unless node instanceof Expressions
+    node
 
   # Compile the **IfNode** as a regular *if-else* statement. Flattened chains
   # force inner *else* bodies into statement form.
   compile_statement: (o) ->
-    @rewrite_switch(o) if @switcher
+    @rewrite_switch(o) if @switch_subject
     child:        del o, 'chain_child'
     cond_o:       merge o
     o.indent:     @idt 1
@@ -1238,19 +1242,19 @@ exports.IfNode: class IfNode extends BaseNode
     if_dent:      if child then '' else @idt()
     com_dent:     if child then @idt() else ''
     prefix:       if @comment then "${ @comment.compile(cond_o) }\n$com_dent" else ''
-    body:         Expressions.wrap([@body]).compile(o)
+    body:         @body.compile(o)
     if_part:      "$prefix${if_dent}if (${ @compile_condition(cond_o) }) {\n$body\n$@tab}"
     return if_part unless @else_body
-    else_part: if @is_chain()
-      ' else ' + @else_body.compile(merge(o, {indent: @idt(), chain_child: true}))
+    else_part: if @is_chain
+      ' else ' + @else_body_node().compile(merge(o, {indent: @idt(), chain_child: true}))
     else
-      " else {\n${ Expressions.wrap([@else_body]).compile(o) }\n$@tab}"
+      " else {\n${ @else_body.compile(o) }\n$@tab}"
     "$if_part$else_part"
 
   # Compile the IfNode as a ternary operator.
   compile_ternary: (o) ->
-    if_part:    @condition.compile(o) + ' ? ' + @body.compile(o)
-    else_part:  if @else_body then @else_body.compile(o) else 'null'
+    if_part:    @condition.compile(o) + ' ? ' + @body_node().compile(o)
+    else_part:  if @else_body then @else_body_node().compile(o) else 'null'
     "$if_part : $else_part"
 
 # Faux-Nodes

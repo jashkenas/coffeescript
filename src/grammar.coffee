@@ -467,21 +467,21 @@ grammar: {
   # The CoffeeScript switch/when/else block replaces the JavaScript
   # switch/case/default by compiling into an if-else chain.
   Switch: [
-    o "SWITCH Expression INDENT Whens OUTDENT", -> $4.rewrite_condition $2
-    o "SWITCH Expression INDENT Whens ELSE Block OUTDENT", -> $4.rewrite_condition($2).add_else $6, true
+    o "SWITCH Expression INDENT Whens OUTDENT", -> $4.switches_over $2
+    o "SWITCH Expression INDENT Whens ELSE Block OUTDENT", -> $4.switches_over($2).add_else $6, true
   ]
 
   # The inner list of whens is left recursive. At code-generation time, the
   # IfNode will rewrite them into a proper chain.
   Whens: [
     o "When"
-    o "Whens When",                             -> $1.push $2
+    o "Whens When",                             -> $1.add_else $2
   ]
 
   # An individual **When** clause, with action.
   When: [
-    o "LEADING_WHEN SimpleArgs Block",            -> new IfNode $2, $3, null, {statement: true}
-    o "LEADING_WHEN SimpleArgs Block TERMINATOR", -> new IfNode $2, $3, null, {statement: true}
+    o "LEADING_WHEN SimpleArgs Block",            -> new IfNode $2, $3, {statement: true}
+    o "LEADING_WHEN SimpleArgs Block TERMINATOR", -> new IfNode $2, $3, {statement: true}
     o "Comment TERMINATOR When",                  -> $3.comment: $1; $3
   ]
 
@@ -490,7 +490,7 @@ grammar: {
   # ambiguity.
   IfStart: [
     o "IF Expression Block",                    -> new IfNode $2, $3
-    o "UNLESS Expression Block",                -> new IfNode $2, $3, null, {invert: true}
+    o "UNLESS Expression Block",                -> new IfNode $2, $3, {invert: true}
     o "IfStart ElsIf",                          -> $1.add_else $2
   ]
 
@@ -509,10 +509,10 @@ grammar: {
   # *if* and *unless*.
   If: [
     o "IfBlock"
-    o "Statement IF Expression",                -> new IfNode $3, Expressions.wrap([$1]), null, {statement: true}
-    o "Expression IF Expression",               -> new IfNode $3, Expressions.wrap([$1]), null, {statement: true}
-    o "Statement UNLESS Expression",            -> new IfNode $3, Expressions.wrap([$1]), null, {statement: true, invert: true}
-    o "Expression UNLESS Expression",           -> new IfNode $3, Expressions.wrap([$1]), null, {statement: true, invert: true}
+    o "Statement IF Expression",                -> new IfNode $3, Expressions.wrap([$1]), {statement: true}
+    o "Expression IF Expression",               -> new IfNode $3, Expressions.wrap([$1]), {statement: true}
+    o "Statement UNLESS Expression",            -> new IfNode $3, Expressions.wrap([$1]), {statement: true, invert: true}
+    o "Expression UNLESS Expression",           -> new IfNode $3, Expressions.wrap([$1]), {statement: true, invert: true}
   ]
 
   # Arithmetic and logical operators, working on one or more operands.
