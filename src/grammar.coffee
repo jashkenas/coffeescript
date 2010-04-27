@@ -488,6 +488,7 @@ grammar: {
   # ambiguity.
   IfStart: [
     o "IF Expression Block",                    -> new IfNode $2, $3
+    o "UNLESS Expression Block",                -> new IfNode $2, $3, null, {invert: true}
     o "IfStart ElsIf",                          -> $1.add_else $2
   ]
 

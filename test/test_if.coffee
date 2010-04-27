@@ -33,3 +33,12 @@ else
   27
 
 ok result is 27
+
+
+# Testing unless.
+result: unless true
+  10
+else
+  11
+
+ok result is 11
