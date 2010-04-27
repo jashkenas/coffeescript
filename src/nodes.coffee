@@ -1080,6 +1080,8 @@ exports.ForNode: class ForNode extends BaseNode
     @step:    source.step
     @object:  !!source.object
     [@name, @index]: [@index, @name] if @object
+    @pattern: @name instanceof ValueNode
+    throw new Error('index cannot be a pattern matching expression') if @index instanceof ValueNode
     @children: compact [@body, @source, @filter]
     @returns: false
 
@@ -1105,7 +1107,7 @@ exports.ForNode: class ForNode extends BaseNode
     scope:          o.scope
     name:           @name and @name.compile o
     index:          @index and @index.compile o
-    scope.find name  if name
+    scope.find name  if name and not @pattern
     scope.find index if index
     body_dent:      @idt 1
     rvar:           scope.free_variable() unless top_level
@@ -1121,7 +1123,12 @@ exports.ForNode: class ForNode extends BaseNode
       svar:         scope.free_variable()
       index_var:    null
       source_part:  "$svar = ${ @source.compile(o) };\n$@tab"
-      var_part:     "$body_dent$name = $svar[$ivar];\n" if name
+      if @pattern
+        o.indent:   @idt 1
+        o.top:      true
+        var_part:   new AssignNode(@name, literal("$svar[$ivar]")).compile(o) + "\n"
+      else
+        var_part:   "$body_dent$name = $svar[$ivar];\n" if name
       if not @object
         lvar:       scope.free_variable()
         step_part:  if @step then "$ivar += ${ @step.compile(o) }" else "$ivar++"
