@@ -449,7 +449,7 @@ JS_KEYWORDS: [
 # be used standalone, but you can reference them as an attached property.
 COFFEE_ALIASES:  ["and", "or", "is", "isnt", "not"]
 COFFEE_KEYWORDS: COFFEE_ALIASES.concat [
-  "then", "unless",
+  "then", "unless", "until",
   "yes", "no", "on", "off",
   "of", "by", "where", "when"
 ]

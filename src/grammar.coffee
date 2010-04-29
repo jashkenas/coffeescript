@@ -414,6 +414,8 @@ grammar: {
   WhileSource: [
     o "WHILE Expression",                       -> new WhileNode $2
     o "WHILE Expression WHEN Expression",       -> new WhileNode $2, {guard : $4}
+    o "UNTIL Expression",                       -> new WhileNode $2, {invert: true}
+    o "UNTIL Expression WHEN Expression",       -> new WhileNode $2, {invert: true, guard: $4}
   ]
 
   # The while loop can either be normal, with a block of expressions to execute,
@@ -603,7 +605,7 @@ operators: [
   ["right",     'FOR', 'NEW', 'SUPER', 'CLASS']
   ["left",      'EXTENDS']
   ["right",     'ASSIGN', 'RETURN']
-  ["right",     '->', '=>', '<-', 'UNLESS', 'IF', 'ELSE', 'WHILE']
+  ["right",     '->', '=>', '<-', 'UNLESS', 'IF', 'ELSE', 'WHILE', 'UNTIL']
 ]
 
 # Wrapping Up

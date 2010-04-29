@@ -28,3 +28,11 @@ results: while i -= 1 when i % 2 is 0
 
 ok results.join(' ') is '16 12 8 4'
 
+
+value: false
+i: 0
+results: until value
+  value: true if i is 5
+  i += 1
+
+ok i is 6

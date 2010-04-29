@@ -855,6 +855,7 @@ exports.SplatNode: class SplatNode extends BaseNode
 exports.WhileNode: class WhileNode extends BaseNode
 
   constructor: (condition, opts) ->
+    condition: new OpNode('!', condition) if opts and opts.invert
     @children:[@condition: condition]
     @guard: opts and opts.guard
 
