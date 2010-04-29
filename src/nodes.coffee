@@ -856,7 +856,7 @@ exports.WhileNode: class WhileNode extends BaseNode
 
   constructor: (condition, opts) ->
     @children:[@condition: condition]
-    @filter: opts and opts.filter
+    @guard: opts and opts.guard
 
   add_body: (body) ->
     @children.push @body: body
@@ -884,7 +884,7 @@ exports.WhileNode: class WhileNode extends BaseNode
       @body:    PushNode.wrap(rvar, @body) if @body
     pre:        "$set${@tab}while ($cond)"
     return "$pre null;$post" if not @body
-    @body:      Expressions.wrap([new IfNode(@filter, @body)]) if @filter
+    @body:      Expressions.wrap([new IfNode(@guard, @body)]) if @guard
     if @returns
       post: new ReturnNode(literal(rvar)).compile(merge(o, {indent: @idt()}))
     else
@@ -1078,13 +1078,13 @@ exports.ForNode: class ForNode extends BaseNode
     @name:    name
     @index:   index or null
     @source:  source.source
-    @filter:  source.filter
+    @guard:   source.guard
     @step:    source.step
     @object:  !!source.object
     [@name, @index]: [@index, @name] if @object
     @pattern: @name instanceof ValueNode
     throw new Error('index cannot be a pattern matching expression') if @index instanceof ValueNode
-    @children: compact [@body, @source, @filter]
+    @children: compact [@body, @source, @guard]
     @returns: false
 
   top_sensitive: ->
@@ -1138,8 +1138,8 @@ exports.ForNode: class ForNode extends BaseNode
 
     body:           ClosureNode.wrap(body, true) if top_level and body.contains (n) -> n instanceof CodeNode
     body:           PushNode.wrap(rvar, body) unless top_level
-    if @filter
-      body:         Expressions.wrap([new IfNode(@filter, body)])
+    if @guard
+      body:         Expressions.wrap([new IfNode(@guard, body)])
     if @object
       for_part: "$ivar in $svar) { if (${utility('hasProp')}.call($svar, $ivar)"
     body:           body.compile(merge(o, {indent: body_dent, top: true}))

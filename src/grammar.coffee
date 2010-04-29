@@ -413,7 +413,7 @@ grammar: {
   # The condition portion of a while loop.
   WhileSource: [
     o "WHILE Expression",                       -> new WhileNode $2
-    o "WHILE Expression WHEN Expression",       -> new WhileNode $2, {filter : $4}
+    o "WHILE Expression WHEN Expression",       -> new WhileNode $2, {guard : $4}
   ]
 
   # The while loop can either be normal, with a block of expressions to execute,
@@ -449,17 +449,17 @@ grammar: {
     o "ForValue , ForValue",                    -> [$1, $3]
   ]
 
-  # The source of a comprehension is an array or object with an optional filter
+  # The source of a comprehension is an array or object with an optional guard
   # clause. If it's an array comprehension, you can also choose to step through
   # in fixed-size increments.
   ForSource: [
     o "IN Expression",                               -> {source: $2}
     o "OF Expression",                               -> {source: $2, object: true}
-    o "IN Expression WHEN Expression",               -> {source: $2, filter: $4}
-    o "OF Expression WHEN Expression",               -> {source: $2, filter: $4, object: true}
+    o "IN Expression WHEN Expression",               -> {source: $2, guard: $4}
+    o "OF Expression WHEN Expression",               -> {source: $2, guard: $4, object: true}
     o "IN Expression BY Expression",                 -> {source: $2, step:   $4}
-    o "IN Expression WHEN Expression BY Expression", -> {source: $2, filter: $4, step:   $6}
-    o "IN Expression BY Expression WHEN Expression", -> {source: $2, step:   $4, filter: $6}
+    o "IN Expression WHEN Expression BY Expression", -> {source: $2, guard: $4, step:   $6}
+    o "IN Expression BY Expression WHEN Expression", -> {source: $2, step:   $4, guard: $6}
   ]
 
   # The CoffeeScript switch/when/else block replaces the JavaScript
