@@ -1118,13 +1118,10 @@ exports.ForNode: class ForNode extends BaseNode
     var_part:       ''
     body:           Expressions.wrap([@body])
     if range
-      index_var:    scope.free_variable()
       source_part:  source.compile_variables o
       for_part:     source.compile merge o, {index: ivar, step: @step}
-      for_part:     "$index_var = 0, $for_part, $index_var++"
     else
       svar:         scope.free_variable()
-      index_var:    null
       source_part:  "$svar = ${ @source.compile(o) };\n$@tab"
       if @pattern
         var_part:   new AssignNode(@name, literal("$svar[$ivar]")).compile(merge o, {indent: @idt(1), top: true}) + "\n"
