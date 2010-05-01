@@ -7,7 +7,7 @@
 
 # Set up exported variables for both Node.js and the browser.
 if process?
-  helpers: require('./helpers').helpers
+  {helpers}: require('./helpers')
 else
   this.exports: this
   helpers:      this.helpers
@@ -135,9 +135,13 @@ exports.Rewriter: class Rewriter
         stack.push 0
         return 1
       if open and !token.generated and (!post or include(IMPLICIT_END, tag))
-        size: close_calls(i)
-        stack.pop() if tag isnt 'OUTDENT' and include EXPRESSION_END, tag
-        return size
+        j: 1; j++ while (nx: @tokens[i + j])? and include(IMPLICIT_END, nx[0])
+        if nx? and nx[0] is ','
+          @tokens.splice(i, 1) if tag is 'TERMINATOR'
+        else
+          size: close_calls(i)
+          stack.pop() if tag isnt 'OUTDENT' and include EXPRESSION_END, tag
+          return size
       if tag isnt 'OUTDENT' and include EXPRESSION_END, tag
         stack[stack.length - 2]: + stack.pop()
         return 1
