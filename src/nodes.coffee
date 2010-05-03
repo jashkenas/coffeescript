@@ -451,7 +451,7 @@ exports.AccessorNode: class AccessorNode extends BaseNode
 
   constructor: (name, tag) ->
     @children:  [@name: name]
-    @prototype:tag is 'prototype'
+    @prototype: tag is 'prototype'
     @soak_node: tag is 'soak'
     this
 
@@ -470,7 +470,7 @@ exports.IndexNode: class IndexNode extends BaseNode
     @soak_node: tag is 'soak'
 
   compile_node: (o) ->
-    o.chain_root.wrapped: @soak_node
+    o.chain_root.wrapped: or @soak_node
     idx: @index.compile o
     "[$idx]"
 
