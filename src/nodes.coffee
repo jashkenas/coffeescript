@@ -371,8 +371,9 @@ exports.CallNode: class CallNode extends BaseNode
     methname: o.scope.method.name
     meth: if o.scope.method.proto
       "${o.scope.method.proto}.__superClass__.$methname"
-    else
+    else if methname
       "${methname}.__superClass__.constructor"
+    else throw new Error "cannot call super on an anonymous function."
 
   # Compile a vanilla function call.
   compile_node: (o) ->
