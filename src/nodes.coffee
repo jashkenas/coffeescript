@@ -325,8 +325,6 @@ exports.ValueNode: class ValueNode extends BaseNode
         baseline: + part
         complete: + part
         @last: part
-    
-    del o, 'chain_root'
 
     if op and @wrapped then "($complete)" else complete
 
@@ -387,7 +385,6 @@ exports.CallNode: class CallNode extends BaseNode
       args: (arg.compile(o) for arg in @args).join(', ')
       compilation: if @is_super then @compile_super(args, o)
       else "${@prefix()}${@variable.compile(o)}($args)"
-    del o, 'chain_root'
     if o.operation and @wrapped then "($compilation)" else compilation
 
   # `super()` is converted into a call against the superclass's implementation
