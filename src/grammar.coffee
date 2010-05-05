@@ -602,10 +602,10 @@ operators: [
   ["right",     'INDENT']
   ["left",      'OUTDENT']
   ["right",     'WHEN', 'LEADING_WHEN', 'IN', 'OF', 'BY', 'THROW']
-  ["right",     'FOR', 'NEW', 'SUPER', 'CLASS']
+  ["right",     'FOR', 'WHILE', 'UNTIL', 'NEW', 'SUPER', 'CLASS']
   ["left",      'EXTENDS']
   ["right",     'ASSIGN', 'RETURN']
-  ["right",     '->', '=>', '<-', 'UNLESS', 'IF', 'ELSE', 'WHILE', 'UNTIL']
+  ["right",     '->', '=>', '<-', 'UNLESS', 'IF', 'ELSE']
 ]
 
 # Wrapping Up
