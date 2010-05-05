@@ -74,3 +74,7 @@ ok result is '10'
 result: not value?.property?
 ok result
 
+
+# Safely calls values off of non-existent variables.
+result: nothing?.value
+ok result is undefined

@@ -298,6 +298,13 @@ exports.ValueNode: class ValueNode extends BaseNode
   # Values are considered to be statements if their base is a statement.
   is_statement: ->
     @base.is_statement and @base.is_statement() and not @has_properties()
+  
+  # Works out if the value is the start of a chain.
+  is_start: (o) ->
+    return true if this is o.chain_root and @properties[0] instanceof AccessorNode
+    node: o.chain_root.base or o.chain_root.variable
+    while node instanceof CallNode then node: node.variable
+    node is this
 
   # We compile a value to JavaScript by compiling and joining each property.
   # Things get much more insteresting if the chain of properties has *soak*
@@ -307,19 +314,19 @@ exports.ValueNode: class ValueNode extends BaseNode
     only:         del(o, 'only_first')
     op:           del(o, 'operation')
     props:        if only then @properties[0...@properties.length - 1] else @properties
-    o.chain_root: this unless o.chain_root
+    o.chain_root: or this
     baseline:     @base.compile o
     baseline:     "($baseline)" if @base instanceof ObjectNode and @has_properties()
     complete:     @last: baseline
 
-    for prop in props
+    for prop, i in props
       @source: baseline
       if prop.soak_node
-        if @base instanceof CallNode and prop is props[0]
+        if @base instanceof CallNode and i is 0
           temp: o.scope.free_variable()
-          complete: "($temp = $complete)$@SOAK" + (baseline: temp + prop.compile(o))
-        else
-          complete: complete + @SOAK + (baseline: + prop.compile(o))
+          complete: "(${ baseline: temp } = ($complete))"
+        complete: "typeof $complete === \"undefined\" || $baseline" if i is 0 and @is_start(o)
+        complete: + @SOAK + (baseline: + prop.compile(o))
       else
         part: prop.compile(o)
         baseline: + part
