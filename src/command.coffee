@@ -26,7 +26,6 @@ SWITCHES: [
   ['-o', '--output [DIR]',  'set the directory for compiled JavaScript']
   ['-w', '--watch',         'watch scripts for changes, and recompile']
   ['-p', '--print',         'print the compiled JavaScript to stdout']
-  ['-m', '--monitor',       'show a message every time a script is compiled']
   ['-l', '--lint',          'pipe the compiled JavaScript through JSLint']
   ['-s', '--stdio',         'listen for and compile scripts over stdio']
   ['-e', '--eval',          'compile a string from the command line']
@@ -40,8 +39,6 @@ SWITCHES: [
 # Top-level objects shared by all the functions.
 options: {}
 sources: []
-base: ''
-is_watched: {}
 option_parser: null
 
 # Run `coffee` by parsing passed options and determining what action to take.
@@ -67,34 +64,25 @@ exports.run: ->
 # compile them. If a directory is passed, recursively compile all source
 # files in it and all subdirectories.
 compile_scripts: ->
-  compile: (source) ->
-    return                                    if is_watched[source]
-    path.exists source, (exists) ->
-      throw new Error "File not found: $source" unless exists
-      fs.stat source, (err, stats) ->
-        if stats.isDirectory()
-          fs.readdir source, (err, files) ->
-            for file in files
-              compile path.join(source, file)
-        else if source == base or path.extname(source) == '.coffee'
-          puts 'Compiling ' + source                    if options.monitor
-          fs.readFile source, (err, code) -> compile_script(source, code)
-          watch(source) if options.watch
-
-  run: ->
-    for source in sources
-      base = source
-      compile(source)
-
-  run()
-  if options.watch
-    setInterval run, 500
+  for source in sources
+    base: source
+    compile: (source) ->
+      path.exists source, (exists) ->
+        throw new Error "File not found: $source" unless exists
+        fs.stat source, (err, stats) ->
+          if stats.isDirectory()
+            fs.readdir source, (err, files) ->
+              for file in files
+                compile path.join(source, file)
+          else if path.extname(source) is '.coffee'
+            fs.readFile source, (err, code) -> compile_script(source, code, base)
+            watch source, base if options.watch
+    compile source
 
 # Compile a single source script, containing the given code, according to the
-# requested options. Both compile_scripts and watch_scripts share this method
-# in common. If evaluating the script directly sets `__filename`, `__dirname`
-# and `module.filename` to be correct relative to the script's path.
-compile_script: (source, code) ->
+# requested options. If evaluating the script directly sets `__filename`,
+# `__dirname` and `module.filename` to be correct relative to the script's path.
+compile_script: (source, code, base) ->
   o: options
   code_opts: compile_options source
   try
@@ -104,7 +92,7 @@ compile_script: (source, code) ->
     else
       js: CoffeeScript.compile code, code_opts
       if o.print          then print js
-      else if o.compile   then write_js source, js
+      else if o.compile   then write_js source, js, base
       else if o.lint      then lint js
   catch err
     if o.watch            then puts err.message else throw err
@@ -122,23 +110,24 @@ compile_stdio: ->
 # Watch a source CoffeeScript file using `fs.watchFile`, recompiling it every
 # time the file is updated. May be used in combination with other options,
 # such as `--lint` or `--print`.
-watch: (source) ->
-  is_watched[source] = true
+watch: (source, base) ->
   fs.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
     return if curr.mtime.getTime() is prev.mtime.getTime()
-    puts 'Recompiling ' + source              if options.monitor
-    fs.readFile source, (err, code) -> compile_script(source, code)
+    puts "Compiled $source" if options.compile
+    fs.readFile source, (err, code) -> compile_script(source, code, base)
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
 # directory can be customized with `--output`.
-write_js: (source, js) ->
+write_js: (source, js, base) ->
   filename: path.basename(source, path.extname(source)) + '.js'
-  src_dir:  path.dirname(source)
-  dir: if options.output then \
-    path.join options.output, src_dir.substring(base.length) else src_dir
+  src_dir:  path.dirname source
+  base_dir: src_dir.substring base.length
+  dir:      if options.output then path.join options.output, base_dir else src_dir
   js_path:  path.join dir, filename
-  exec "mkdir -p $dir", (error, stdout, stderr) -> fs.writeFile js_path, js
+  compile:  -> fs.writeFile js_path, js
+  path.exists dir, (exists) ->
+    if exists then compile() else exec "mkdir -p $dir", compile
 
 # Pipe compiled JS through JSLint (requires a working `jsl` command), printing
 # any errors or warnings that arise.
