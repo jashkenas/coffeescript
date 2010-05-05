@@ -26,6 +26,7 @@ SWITCHES: [
   ['-o', '--output [DIR]',  'set the directory for compiled JavaScript']
   ['-w', '--watch',         'watch scripts for changes, and recompile']
   ['-p', '--print',         'print the compiled JavaScript to stdout']
+  ['-m', '--monitor',       'show a message every time a script is compiled']
   ['-l', '--lint',          'pipe the compiled JavaScript through JSLint']
   ['-s', '--stdio',         'listen for and compile scripts over stdio']
   ['-e', '--eval',          'compile a string from the command line']
@@ -39,6 +40,8 @@ SWITCHES: [
 # Top-level objects shared by all the functions.
 options: {}
 sources: []
+base: ''
+is_watched: {}
 option_parser: null
 
 # Run `coffee` by parsing passed options and determining what action to take.
@@ -58,19 +61,34 @@ exports.run: ->
     flags: sources[(separator + 1)...sources.length]
     sources: sources[0...separator]
   process.ARGV: process.argv: flags
-  watch_scripts() if options.watch
   compile_scripts()
 
 # Asynchronously read in each CoffeeScript in a list of source files and
-# compile them.
+# compile them. If a directory is passed, recursively compile all source
+# files in it and all subdirectories.
 compile_scripts: ->
   compile: (source) ->
+    return                                    if is_watched[source]
     path.exists source, (exists) ->
       throw new Error "File not found: $source" unless exists
-      fs.readFile source, (err, code) -> compile_script(source, code)
-  run: -> compile(source) for source in sources
-  return run() unless options.output and options.compile
-  exec "mkdir -p $options.output", run
+      fs.stat source, (err, stats) ->
+        if stats.isDirectory()
+          fs.readdir source, (err, files) ->
+            for file in files
+              compile path.join(source, file)
+        else if source == base or path.extname(source) == '.coffee'
+          puts 'Compiling ' + source                    if options.monitor
+          fs.readFile source, (err, code) -> compile_script(source, code)
+          watch(source) if options.watch
+
+  run: ->
+    for source in sources
+      base = source
+      compile(source)
+
+  run()
+  if options.watch
+    setInterval run, 500
 
 # Compile a single source script, containing the given code, according to the
 # requested options. Both compile_scripts and watch_scripts share this method
@@ -101,24 +119,26 @@ compile_stdio: ->
   stdin.addListener 'end', ->
     compile_script 'stdio', code
 
-# Watch a list of source CoffeeScript files using `fs.watchFile`, recompiling
-# them every time the files are updated. May be used in combination with other
-# options, such as `--lint` or `--print`.
-watch_scripts: ->
-  watch: (source) ->
-    fs.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
-      return if curr.mtime.getTime() is prev.mtime.getTime()
-      fs.readFile source, (err, code) -> compile_script(source, code)
-  watch(source) for source in sources
+# Watch a source CoffeeScript file using `fs.watchFile`, recompiling it every
+# time the file is updated. May be used in combination with other options,
+# such as `--lint` or `--print`.
+watch: (source) ->
+  is_watched[source] = true
+  fs.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
+    return if curr.mtime.getTime() is prev.mtime.getTime()
+    puts 'Recompiling ' + source              if options.monitor
+    fs.readFile source, (err, code) -> compile_script(source, code)
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
 # directory can be customized with `--output`.
 write_js: (source, js) ->
   filename: path.basename(source, path.extname(source)) + '.js'
-  dir:      options.output or path.dirname(source)
+  src_dir:  path.dirname(source)
+  dir: if options.output then \
+    path.join options.output, src_dir.substring(base.length) else src_dir
   js_path:  path.join dir, filename
-  fs.writeFile js_path, js
+  exec "mkdir -p $dir", (error, stdout, stderr) -> fs.writeFile js_path, js
 
 # Pipe compiled JS through JSLint (requires a working `jsl` command), printing
 # any errors or warnings that arise.
