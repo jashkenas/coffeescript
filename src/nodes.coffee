@@ -298,7 +298,7 @@ exports.ValueNode: class ValueNode extends BaseNode
   # Values are considered to be statements if their base is a statement.
   is_statement: ->
     @base.is_statement and @base.is_statement() and not @has_properties()
-  
+
   # Works out if the value is the start of a chain.
   is_start: (o) ->
     return true if this is o.chain_root and @properties[0] instanceof AccessorNode
@@ -828,10 +828,8 @@ exports.SplatNode: class SplatNode extends BaseNode
   compile_param: (o) ->
     name: @name.compile(o)
     o.scope.find name
-    i: 0
-    for trailing in @trailings
-      o.scope.assign(trailing.compile(o), "arguments[arguments.length - $@trailings.length + $i]")
-      i: + 1
+    for trailing, pos in @trailings
+      o.scope.assign(trailing.compile(o), "arguments[arguments.length - ${@trailings.length + pos}]")
     "$name = ${utility('slice')}.call(arguments, $@index, arguments.length - ${@trailings.length})"
 
   # A compiling a splat as a destructuring assignment means slicing arguments
