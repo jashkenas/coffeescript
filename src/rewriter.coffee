@@ -122,7 +122,7 @@ exports.Rewriter: class Rewriter
       tag: token[0]
       stack[stack.length - 2]: + stack.pop() if tag is 'OUTDENT'
       open: stack[stack.length - 1] > 0
-      if prev and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, tag)
+      if prev and prev.spaced and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, tag)
         @tokens.splice i, 0, ['CALL_START', '(', token[2]]
         stack[stack.length - 1]: + 1
         stack.push 0 if include(EXPRESSION_START, tag)
@@ -274,7 +274,7 @@ EXPRESSION_END:   pair[1] for pair in BALANCED_PAIRS
 EXPRESSION_CLOSE: ['CATCH', 'WHEN', 'ELSE', 'FINALLY'].concat EXPRESSION_END
 
 # Tokens that, if followed by an `IMPLICIT_CALL`, indicate a function invocation.
-IMPLICIT_FUNC:  ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '<-']
+IMPLICIT_FUNC:  ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '<-', '@']
 
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL:  ['IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START',

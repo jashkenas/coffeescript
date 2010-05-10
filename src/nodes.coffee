@@ -53,7 +53,9 @@ exports.BaseNode: class BaseNode
   compile: (o) ->
     @options: merge o or {}
     @tab:     o.indent
-    del @options, 'operation' unless this instanceof ValueNode
+    unless this instanceof ValueNode or this instanceof CallNode
+      del @options, 'operation'
+      del @options, 'chain_root' unless this instanceof AccessorNode or this instanceof IndexNode
     top:      if @top_sensitive() then @options.top else del @options, 'top'
     closure:  @is_statement() and not @is_pure_statement() and not top and
               not @options.as_statement and not (this instanceof CommentNode) and
@@ -324,35 +326,41 @@ exports.ValueNode: class ValueNode extends BaseNode
   is_statement: ->
     @base.is_statement and @base.is_statement() and not @has_properties()
 
+  # Works out if the value is the start of a chain.
+  is_start: (o) ->
+    return true if this is o.chain_root and @properties[0] instanceof AccessorNode
+    node: o.chain_root.base or o.chain_root.variable
+    while node instanceof CallNode then node: node.variable
+    node is this
+
   # We compile a value to JavaScript by compiling and joining each property.
   # Things get much more insteresting if the chain of properties has *soak*
   # operators `?.` interspersed. Then we have to take care not to accidentally
   # evaluate a anything twice when building the soak chain.
   compile_node: (o) ->
-    soaked:   false
-    only:     del(o, 'only_first')
-    op:       del(o, 'operation')
-    props:    if only then @properties[0...@properties.length - 1] else @properties
-    baseline: @base.compile o
-    baseline: "($baseline)" if @base instanceof ObjectNode and @has_properties()
-    complete: @last: baseline
+    only:         del(o, 'only_first')
+    op:           del(o, 'operation')
+    props:        if only then @properties[0...@properties.length - 1] else @properties
+    o.chain_root: or this
+    baseline:     @base.compile o
+    baseline:     "($baseline)" if @base instanceof ObjectNode and @has_properties()
+    complete:     @last: baseline
 
-    for prop in props
+    for prop, i in props
       @source: baseline
       if prop.soak_node
-        soaked: true
-        if @base instanceof CallNode and prop is props[0]
+        if @base instanceof CallNode and i is 0
           temp: o.scope.free_variable()
-          complete: "($temp = $complete)$@SOAK" + (baseline: temp + prop.compile(o))
-        else
-          complete: complete + @SOAK + (baseline: + prop.compile(o))
+          complete: "(${ baseline: temp } = ($complete))"
+        complete: "typeof $complete === \"undefined\" || $baseline" if i is 0 and @is_start(o)
+        complete: + @SOAK + (baseline: + prop.compile(o))
       else
         part: prop.compile(o)
         baseline: + part
         complete: + part
         @last: part
 
-    if op and soaked then "($complete)" else complete
+    if op and @wrapped then "($complete)" else complete
 
 children ValueNode, 'base', 'properties'
 
@@ -400,16 +408,20 @@ exports.CallNode: class CallNode extends BaseNode
     methname: o.scope.method.name
     meth: if o.scope.method.proto
       "${o.scope.method.proto}.__superClass__.$methname"
-    else
+    else if methname
       "${methname}.__superClass__.constructor"
+    else throw new Error "cannot call super on an anonymous function."
 
   # Compile a vanilla function call.
   compile_node: (o) ->
-    for arg in @args
-      return @compile_splat(o) if arg instanceof SplatNode
-    args: (arg.compile(o) for arg in @args).join(', ')
-    return @compile_super(args, o) if @is_super
-    "${@prefix()}${@variable.compile(o)}($args)"
+    o.chain_root: this unless o.chain_root
+    for arg in @args when arg instanceof SplatNode
+      compilation: @compile_splat(o)
+    unless compilation
+      args: (arg.compile(o) for arg in @args).join(', ')
+      compilation: if @is_super then @compile_super(args, o)
+      else "${@prefix()}${@variable.compile(o)}($args)"
+    if o.operation and @wrapped then "($compilation)" else compilation
 
   # `super()` is converted into a call against the superclass's implementation
   # of the current function.
@@ -480,11 +492,12 @@ exports.AccessorNode: class AccessorNode extends BaseNode
 
   constructor: (name, tag) ->
     @name: name
-    @prototype:tag is 'prototype'
+    @prototype: tag is 'prototype'
     @soak_node: tag is 'soak'
     this
 
   compile_node: (o) ->
+    o.chain_root.wrapped: or @soak_node
     proto_part: if @prototype then 'prototype.' else ''
     ".$proto_part${@name.compile(o)}"
 
@@ -500,6 +513,7 @@ exports.IndexNode: class IndexNode extends BaseNode
     @soak_node: tag is 'soak'
 
   compile_node: (o) ->
+    o.chain_root.wrapped: or @soak_node
     idx: @index.compile o
     "[$idx]"
 
@@ -816,8 +830,9 @@ exports.CodeNode: class CodeNode extends BaseNode
       if param instanceof SplatNode and not splat?
         splat: param
         splat.index: i
-        @body.unshift(splat)
         splat.trailings: []
+        splat.arglength: @params.length
+        @body.unshift(splat)
       else if splat?
         splat.trailings.push(param)
       else
@@ -867,11 +882,14 @@ exports.SplatNode: class SplatNode extends BaseNode
   compile_param: (o) ->
     name: @name.compile(o)
     o.scope.find name
-    i: 0
-    for trailing in @trailings
-      o.scope.assign(trailing.compile(o), "arguments[arguments.length - $@trailings.length + $i]")
-      i: + 1
-    "$name = ${utility('slice')}.call(arguments, $@index, arguments.length - ${@trailings.length})"
+    len: o.scope.free_variable()
+    o.scope.assign len, "arguments.length"
+    variadic: o.scope.free_variable()
+    o.scope.assign variadic, "$len >= $@arglength"
+    for trailing, idx in @trailings
+      pos: @trailings.length - idx
+      o.scope.assign(trailing.compile(o), "arguments[$variadic ? $len - $pos : ${@index + idx}]")
+    "$name = ${utility('slice')}.call(arguments, $@index, $len - ${@trailings.length})"
 
   # A compiling a splat as a destructuring assignment means slicing arguments
   # from the right-hand-side's corresponding array.

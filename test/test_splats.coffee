@@ -90,3 +90,18 @@ class Child extends Parent
     super nums...
 
 ok (new Child()).meth().join(' ') is '3 2 1'
+
+
+# Functions with splats being called with too few arguments.
+pen: null
+method: (first, variable..., penultimate, ultimate) ->
+  pen: penultimate
+
+method 1, 2, 3, 4, 5, 6, 7, 8, 9
+ok pen is 8
+
+method 1, 2, 3
+ok pen is 2
+
+method 1, 2
+ok pen is 2

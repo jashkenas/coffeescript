@@ -505,7 +505,7 @@ HEREDOC_INDENT  : /^[ \t]+/mg
 #
 # Our list is shorter, due to sans-parentheses method calls.
 NOT_REGEX: [
-  'NUMBER', 'REGEX', '++', '--', 'FALSE', 'NULL', 'TRUE'
+  'NUMBER', 'REGEX', '++', '--', 'FALSE', 'NULL', 'TRUE', ']'
 ]
 
 # Tokens which could legitimately be invoked or indexed. A opening
