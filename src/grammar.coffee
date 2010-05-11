@@ -469,6 +469,8 @@ grammar: {
   Switch: [
     o "SWITCH Expression INDENT Whens OUTDENT", -> $4.switches_over $2
     o "SWITCH Expression INDENT Whens ELSE Block OUTDENT", -> $4.switches_over($2).add_else $6, true
+    o "SWITCH INDENT Whens OUTDENT",            -> $3
+    o "SWITCH INDENT Whens ELSE Block OUTDENT", -> $3.add_else $5, true
   ]
 
   # The inner list of whens is left recursive. At code-generation time, the

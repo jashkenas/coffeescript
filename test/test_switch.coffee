@@ -62,3 +62,12 @@ switch "word"
     result: true unless false
 
 ok result
+
+
+# Should be able to handle switches sans-condition.
+result: switch
+  when yes and no then 1
+  when yes or no then 2
+  else 3
+
+ok result is 2
