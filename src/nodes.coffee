@@ -25,7 +25,7 @@ statement: (klass, only) ->
   (klass::is_pure_statement: -> true) if only
 
 children: (klass, child_attrs...) ->
-  klass::_children_attributes: child_attrs
+  klass::children_attributes: child_attrs
 
 #### BaseNode
 
@@ -96,11 +96,11 @@ exports.BaseNode: class BaseNode
   # scope boundaries.
   contains: (block) ->
     contains: false
-    @_traverse_children false, (node, attr, index) =>
+    @traverse_children false, (node) ->
       if block(node)
         contains: true
         return false
-    return contains
+    contains
 
   # Is this node of a certain type, or does it contain the type?
   contains_type: (type) ->
@@ -112,7 +112,7 @@ exports.BaseNode: class BaseNode
     @is_pure_statement() or @contains (n) -> n.is_pure_statement()
 
   # Perform an in-order traversal of the AST. Crosses scope boundaries.
-  traverse: (block) -> @_traverse_children true, block
+  traverse: (block) -> @traverse_children true, block
 
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
@@ -121,28 +121,20 @@ exports.BaseNode: class BaseNode
     '\n' + idt + @constructor.name + (child.toString(idt + TAB) for child in @children()).join('')
 
   children: ->
-    _children: []
-    @_each_child (child) -> _children.push(child)
-    _children
+    nodes: []
+    @each_child (node) -> nodes.push node
+    nodes
 
-  _each_child: (func) ->
-    for attr in @_children_attributes
-      child_collection: this[attr]
-      continue unless child_collection?
-      if child_collection instanceof Array
-        i: 0
-        for child in child_collection
-          result: func(child, attr, i)
-          return if result is false
-          i += 1
-      else
-        func(child_collection, attr)
+  each_child: (func) ->
+    for attr in @children_attributes when this[attr]
+      for child in flatten [this[attr]]
+        return if func(child) is false
 
-  _traverse_children: (cross_scope, func) ->
-    return unless @_children_attributes
-    @_each_child (child, attr, i) ->
+  traverse_children: (cross_scope, func) ->
+    return unless @children_attributes
+    @each_child (child) ->
       func.apply(this, arguments)
-      child._traverse_children(cross_scope, func) if child instanceof BaseNode
+      child.traverse_children(cross_scope, func) if child instanceof BaseNode
 
   # Default implementations of the common node identification methods. Nodes
   # will override these with custom logic, if needed.
@@ -179,10 +171,6 @@ exports.Expressions: class Expressions extends BaseNode
   # Is this an empty block of code?
   empty: ->
     @expressions.length is 0
-
-  # Make a copy of this node.
-  copy: ->
-    new Expressions @Expressions.slice()
 
   # An Expressions node does not return its entire body, rather it
   # ensures that the final expression is returned.
@@ -853,9 +841,9 @@ exports.CodeNode: class CodeNode extends BaseNode
   top_sensitive: ->
     true
 
-  # Short-circuit _traverse_children method to prevent it from crossing scope boundaries
+  # Short-circuit traverse_children method to prevent it from crossing scope boundaries
   # unless cross_scope is true
-  _traverse_children: (cross_scope, func) -> super(cross_scope, func) if cross_scope
+  traverse_children: (cross_scope, func) -> super(cross_scope, func) if cross_scope
 
   toString: (idt) ->
     idt: or ''
