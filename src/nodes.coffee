@@ -1234,7 +1234,6 @@ exports.IfNode: class IfNode extends BaseNode
     @body:      body
     @else_body: null
     @tags:      tags or {}
-    @multiple:  true if @condition instanceof Array
     @condition: new OpNode('!', new ParentheticalNode(@condition)) if @tags.invert
     @is_chain:  false
 
@@ -1259,11 +1258,9 @@ exports.IfNode: class IfNode extends BaseNode
       variable: literal(o.scope.free_variable())
       @assigner: new AssignNode(variable, @switch_subject)
       @switch_subject: variable
-    @condition: if @multiple
-      for cond, i in @condition
-        new OpNode('==', (if i is 0 then @assigner else @switch_subject), cond)
-    else
-      new OpNode('==', @assigner, @condition)
+    @condition: for cond, i in flatten [@condition]
+      cond: new ParentheticalNode(cond) if cond instanceof OpNode
+      new OpNode('==', (if i is 0 then @assigner else @switch_subject), cond)
     @else_body_node().switches_over(@switch_subject) if @is_chain
     # prevent this rewrite from happening again
     @switch_subject: undefined
