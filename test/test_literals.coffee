@@ -38,6 +38,12 @@ trailing_comma: [
 trailing_comma: {k1: "v1", k2: 4, k3: (-> true),}
 ok trailing_comma.k3() and (trailing_comma.k2 is 4) and (trailing_comma.k1 is "v1")
 
+multiline: {a: 15,
+  b: 26}
+
+ok multiline.b is 26
+
+
 money$: 'dollars'
 
 ok money$ is 'dollars'

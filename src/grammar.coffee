@@ -266,9 +266,8 @@ grammar: {
     o "",                                       -> []
     o "AssignObj",                              -> [$1]
     o "AssignList , AssignObj",                 -> $1.concat [$3]
-    o "AssignList TERMINATOR AssignObj",        -> $1.concat [$3]
-    o "AssignList , TERMINATOR AssignObj",      -> $1.concat [$4]
-    o "INDENT AssignList OptComma OUTDENT",     -> $2
+    o "AssignList OptComma TERMINATOR AssignObj", -> $1.concat [$4]
+    o "AssignList OptComma INDENT AssignList OptComma OUTDENT", -> $1.concat $4
   ]
 
   # Class definitions have optional bodies of prototype property assignments,
