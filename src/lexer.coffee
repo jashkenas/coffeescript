@@ -138,7 +138,7 @@ exports.Lexer: class Lexer
     return false unless match: @chunk.match(COMMENT)
     if match[3]
       comment: @sanitize_heredoc match[3], {herecomment: true}
-      @token 'HERECOMMENT', compact comment.split MULTILINER
+      @token 'HERECOMMENT', comment.split MULTILINER
     else
       lines: compact match[1].replace(COMMENT_CLEANER, '').split MULTILINER
       i: @tokens.length - 1
@@ -293,7 +293,8 @@ exports.Lexer: class Lexer
   # Sanitize a heredoc or herecomment by escaping internal double quotes and
   # erasing all external indentation on the left-hand side.
   sanitize_heredoc: (doc, options) ->
-    indent: (doc.match(HEREDOC_INDENT) or ['']).sort()[0]
+    while match: HEREDOC_INDENT.exec doc
+      indent: match[1] if not indent or match[1].length < indent.length
     doc: doc.replace(new RegExp("^" +indent, 'gm'), '')
     return doc if options.herecomment
     doc.replace(MULTILINER, "\\n")
@@ -501,7 +502,7 @@ MULTILINER      : /\n/g
 STRING_NEWLINES : /\n[ \t]*/g
 COMMENT_CLEANER : /(^[ \t]*#|\n[ \t]*$)/mg
 NO_NEWLINE      : /^([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)$/
-HEREDOC_INDENT  : /^[ \t]+/mg
+HEREDOC_INDENT  : /\n+([ \t]*)/g
 
 # Tokens which a regular expression will never immediately follow, but which
 # a division operator might.

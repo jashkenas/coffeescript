@@ -950,13 +950,12 @@ exports.WhileNode: class WhileNode extends BaseNode
       set:      "$@tab$rvar = [];\n"
       @body:    PushNode.wrap(rvar, @body) if @body
     pre:        "$set${@tab}while ($cond)"
-    return "$pre null;$post" if not @body
     @body:      Expressions.wrap([new IfNode(@guard, @body)]) if @guard
     if @returns
-      post: new ReturnNode(literal(rvar)).compile(merge(o, {indent: @idt()}))
+      post: '\n' + new ReturnNode(literal(rvar)).compile(merge(o, {indent: @idt()}))
     else
       post: ''
-    "$pre {\n${ @body.compile(o) }\n$@tab}\n$post"
+    "$pre {\n${ @body.compile(o) }\n$@tab}$post"
 
 statement WhileNode
 children WhileNode, 'condition', 'guard', 'body'
@@ -1173,8 +1172,9 @@ exports.ForNode: class ForNode extends BaseNode
     this
 
   compile_return_value: (val, o) ->
-    return new ReturnNode(literal(val)).compile(o) if @returns
-    val or ''
+    return '\n' + new ReturnNode(literal(val)).compile(o) if @returns
+    return '\n' + val if val
+    ''
 
   # Welcome to the hairiest method in all of CoffeeScript. Handles the inner
   # loop, filtering, stepping, and result saving for array, object, and range
@@ -1219,7 +1219,7 @@ exports.ForNode: class ForNode extends BaseNode
       for_part: "$ivar in $svar) { if (${utility('hasProp')}.call($svar, $ivar)"
     body:           body.compile(merge(o, {indent: body_dent, top: true}))
     vars:           if range then name else "$name, $ivar"
-    close:          if @object then '}}\n' else '}\n'
+    close:          if @object then '}}' else '}'
     "$set_result${source_part}for ($for_part) {\n$var_part$body\n$@tab$close$return_result"
 
 statement ForNode
@@ -1416,7 +1416,7 @@ TAB: '  '
 
 # Trim out all trailing whitespace, so that the generated code plays nice
 # with Git.
-TRAILING_WHITESPACE: /\s+$/gm
+TRAILING_WHITESPACE: /[ \t]+$/gm
 
 # Keep this identifier regex in sync with the Lexer.
 IDENTIFIER: /^[a-zA-Z\$_](\w|\$)*$/
