@@ -358,15 +358,20 @@ children ValueNode, 'base', 'properties'
 # same position.
 exports.CommentNode: class CommentNode extends BaseNode
 
-  constructor: (lines) ->
+  constructor: (lines, type) ->
     @lines: lines
+    @type: type
     this
 
   make_return: ->
     this
 
   compile_node: (o) ->
-    "$@tab//" + @lines.join("\n$@tab//")
+    if @type is 'herecomment'
+      sep: '\n' + @idt(1)
+      "$@tab/*$sep${ @lines.join(sep) }\n$@tab*/"
+    else
+      "$@tab//" + @lines.join("\n$@tab//")
 
 statement CommentNode
 

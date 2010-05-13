@@ -165,6 +165,7 @@ grammar: {
   # positions in which they can occur in the grammar.
   Comment: [
     o "COMMENT",                                -> new CommentNode $1
+    o "HERECOMMENT",                            -> new CommentNode $1, 'herecomment'
   ]
 
   # [The existential operator](http://jashkenas.github.com/coffee-script/#existence).

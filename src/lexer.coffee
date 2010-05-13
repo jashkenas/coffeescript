@@ -126,8 +126,25 @@ exports.Lexer: class Lexer
   heredoc_token: ->
     return false unless match: @chunk.match(HEREDOC)
     quote: match[1].substr 0, 1
-    doc: @sanitize_heredoc match[2] or match[4], quote
+    doc: @sanitize_heredoc match[2] or match[4], {quote}
     @interpolate_string "$quote$doc$quote"
+    @line: + count match[1], "\n"
+    @i: + match[1].length
+    true
+
+  # Matches and conumes comments. We pass through comments into JavaScript,
+  # so they're treated as real tokens, like any other part of the language.
+  comment_token: ->
+    return false unless match: @chunk.match(COMMENT)
+    if match[3]
+      comment: @sanitize_heredoc match[3], {herecomment: true}
+      @token 'HERECOMMENT', compact comment.split MULTILINER
+    else
+      lines: compact match[1].replace(COMMENT_CLEANER, '').split MULTILINER
+      i: @tokens.length - 1
+      if @unfinished()
+        i: - 1 while @tokens[i] and not include LINE_BREAK, @tokens[i][0]
+      @tokens.splice(i + 1, 0, ['COMMENT', lines, @line], ['TERMINATOR', '\n', @line])
     @line: + count match[1], "\n"
     @i: + match[1].length
     true
@@ -165,19 +182,6 @@ exports.Lexer: class Lexer
   balanced_token: (delimited...) ->
     balanced_string @chunk, delimited
 
-  # Matches and conumes comments. We pass through comments into JavaScript,
-  # so they're treated as real tokens, like any other part of the language.
-  comment_token: ->
-    return false unless comment: @match COMMENT, 1
-    @line: + (comment.match(MULTILINER) or []).length
-    lines: compact comment.replace(COMMENT_CLEANER, '').split MULTILINER
-    i: @tokens.length - 1
-    if @unfinished()
-      i: - 1 while @tokens[i] and not include LINE_BREAK, @tokens[i][0]
-    @tokens.splice(i + 1, 0, ['COMMENT', lines, @line], ['TERMINATOR', '\n', @line])
-    @i: + comment.length
-    true
-
   # Matches newlines, indents, and outdents, and determines which is which.
   # If we can detect that the current line is continued onto the the next line,
   # then the newline is suppressed:
@@ -190,7 +194,7 @@ exports.Lexer: class Lexer
   # can close multiple indents, so we need to know how far in we happen to be.
   line_token: ->
     return false unless indent: @match MULTI_DENT, 1
-    @line: + indent.match(MULTILINER).length
+    @line: + count indent, "\n"
     @i   : + indent.length
     prev: @prev(2)
     size: indent.match(LAST_DENTS).reverse()[0].match(LAST_DENT)[1].length
@@ -286,13 +290,14 @@ exports.Lexer: class Lexer
       else
         @tag 1, 'PROPERTY_ACCESS'
 
-  # Sanitize a heredoc by escaping internal double quotes and erasing all
-  # external indentation on the left-hand side.
-  sanitize_heredoc: (doc, quote) ->
+  # Sanitize a heredoc or herecomment by escaping internal double quotes and
+  # erasing all external indentation on the left-hand side.
+  sanitize_heredoc: (doc, options) ->
     indent: (doc.match(HEREDOC_INDENT) or ['']).sort()[0]
-    doc.replace(new RegExp("^" +indent, 'gm'), '')
-       .replace(MULTILINER, "\\n")
-       .replace(new RegExp(quote, 'g'), '\\"')
+    doc: doc.replace(new RegExp("^" +indent, 'gm'), '')
+    return doc if options.herecomment
+    doc.replace(MULTILINER, "\\n")
+       .replace(new RegExp(options.quote, 'g'), '\\"')
 
   # Tag a half assignment.
   tag_half_assignment: (tag) ->
@@ -477,7 +482,7 @@ HEREDOC       : /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\
 INTERPOLATION : /^\$([a-zA-Z_@]\w*(\.\w+)*)/
 OPERATOR      : /^([+\*&|\/\-%=<>:!?]+)([ \t]*)/
 WHITESPACE    : /^([ \t]+)/
-COMMENT       : /^(((\n?[ \t]*)?#[^\n]*)+)/
+COMMENT       : /^((\n?[ \t]*)?#{3}(?!#)\n*([\s\S]*?)\n*([ \t]*)#{3}|((\n?[ \t]*)?#[^\n]*)+)/
 CODE          : /^((-|=)>)/
 MULTI_DENT    : /^((\n([ \t]*))+)(\.)?/
 LAST_DENTS    : /\n([ \t]*)/g
