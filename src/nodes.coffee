@@ -368,7 +368,7 @@ exports.CommentNode: class CommentNode extends BaseNode
 
   compile_node: (o) ->
     if @type is 'herecomment'
-      sep: '\n' + @idt(1)
+      sep: '\n' + @tab
       "$@tab/*$sep${ @lines.join(sep) }\n$@tab*/"
     else
       "$@tab//" + @lines.join("\n$@tab//")
