@@ -165,7 +165,8 @@ exports.Lexer: class Lexer
     return false unless @chunk.match REGEX_START
     return false if     include NOT_REGEX, @tag()
     return false unless regex: @balanced_token ['/', '/']
-    regex: + (flags: @chunk.substr(regex.length).match REGEX_FLAGS)
+    return false unless end: @chunk.substr(regex.length).match REGEX_END
+    regex: + flags: end[2] if end[2]
     if regex.match REGEX_INTERPOLATION
       str: regex.substring(1).split('/')[0]
       str: str.replace REGEX_ESCAPE, (escaped) -> '\\' + escaped
@@ -493,7 +494,7 @@ ASSIGNMENT    : /^(:|=)$/
 # Regex-matching-regexes.
 REGEX_START        : /^\/[^\/ ]/
 REGEX_INTERPOLATION: /([^\\]\$[a-zA-Z_@]|[^\\]\$\{.*[^\\]\})/
-REGEX_FLAGS        : /^[imgy]{0,4}/
+REGEX_END          : /^(([imgy]{1,4})\b|\W)/
 REGEX_ESCAPE       : /\\[^\$]/g
 
 # Token cleaning regexes.

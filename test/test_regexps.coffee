@@ -13,3 +13,11 @@ g: 1
 ok y / x/g is 2
 
 ok 'http://google.com'.match(/:\/\/goog/)
+
+obj: {
+  width:  -> 10
+  height: -> 20
+}
+id: 2
+
+ok (obj.width()/id - obj.height()/id) is -5
