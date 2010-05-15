@@ -75,7 +75,7 @@ compile_scripts: ->
               for file in files
                 compile path.join(source, file)
           else if path.extname(source) is '.coffee'
-            fs.readFile source, (err, code) -> compile_script(source, code, base)
+            fs.readFile source, (err, code) -> compile_script(source, code.toString(), base)
             watch source, base if options.watch
     compile source
 
@@ -114,7 +114,7 @@ watch: (source, base) ->
   fs.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
     return if curr.mtime.getTime() is prev.mtime.getTime()
     puts "Compiled $source" if options.compile
-    fs.readFile source, (err, code) -> compile_script(source, code, base)
+    fs.readFile source, (err, code) -> compile_script(source, code.toString(), base)
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output

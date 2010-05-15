@@ -95,7 +95,7 @@ task 'test', 'run the CoffeeScript language test suite', ->
       source: path.join 'test', file
       fs.readFile source, (err, code) ->
         try
-          CoffeeScript.run code, {source: source}
+          CoffeeScript.run code.toString(), {source: source}
         catch err
           failed_tests += 1
           puts "${red}failed:${reset} $source"
