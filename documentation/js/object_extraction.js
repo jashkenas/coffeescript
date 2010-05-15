@@ -1,5 +1,5 @@
 (function(){
-  var _a, _b, _c, city, futurists, poet, street;
+  var _a, _b, _c, city, futurists, name, street;
   futurists = {
     sculptor: "Umberto Boccioni",
     painter: "Vladimir Burliuk",
@@ -10,7 +10,7 @@
   };
   _a = futurists;
   _b = _a.poet;
-  poet = _b.name;
+  name = _b.name;
   _c = _b.address;
   street = _c[0];
   city = _c[1];

@@ -5,7 +5,7 @@
     while (supply > demand) {
       buy();
     }
-    while (supply < demand) {
+    while (!(supply > demand)) {
       sell();
     }
   }

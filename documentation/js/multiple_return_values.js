@@ -1,6 +1,6 @@
 (function(){
   var _a, city, forecast, temp, weather_report;
-  weather_report = function weather_report(location) {
+  weather_report = function(location) {
     // Make an Ajax request to fetch the weather...
     return [location, 72, "Mostly Sunny"];
   };

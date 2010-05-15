@@ -2,9 +2,10 @@
   var award_medals, contenders, gold, silver, the_field;
   var __slice = Array.prototype.slice;
   gold = (silver = (the_field = "unknown"));
-  award_medals = function award_medals(first, second) {
+  award_medals = function(first, second) {
     var rest;
-    rest = __slice.call(arguments, 2, arguments.length - 0);
+    var _a = arguments.length, _b = _a >= 3;
+    rest = __slice.call(arguments, 2, _a - 0);
     gold = first;
     silver = second;
     the_field = rest;

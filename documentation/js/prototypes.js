@@ -1,5 +1,5 @@
 (function(){
-  String.prototype.dasherize = function dasherize() {
+  String.prototype.dasherize = function() {
     return this.replace(/_/g, "-");
   };
 })();

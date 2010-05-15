@@ -5,7 +5,7 @@
       return func.apply(obj || {}, args ? args.concat(__slice.call(arguments, 0)) : arguments);
     };
   };
-  Account = function Account(customer, cart) {
+  Account = function(customer, cart) {
     this.customer = customer;
     this.cart = cart;
     return $('.shopping_cart').bind('click', __bind(function(event) {

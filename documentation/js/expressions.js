@@ -1,6 +1,6 @@
 (function(){
   var eldest, grade;
-  grade = function grade(student) {
+  grade = function(student) {
     if (student.excellent_work) {
       return "A+";
     } else if (student.okay_stuff) {

@@ -10,4 +10,4 @@ futurists: {
   }
 }
 
-{poet: {name: poet, address: [street, city]}}: futurists
+{poet: {name, address: [street, city]}}: futurists

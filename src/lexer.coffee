@@ -295,7 +295,7 @@ exports.Lexer: class Lexer
   # erasing all external indentation on the left-hand side.
   sanitize_heredoc: (doc, options) ->
     while match: HEREDOC_INDENT.exec doc
-      attempt: match[2] or match[3]
+      attempt: if match[2]? then match[2] else match[3]
       indent: attempt if not indent or attempt.length < indent.length
     doc: doc.replace(new RegExp("^" +indent, 'gm'), '')
     return doc if options.herecomment

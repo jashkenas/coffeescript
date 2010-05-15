@@ -9,7 +9,7 @@
     number = -42;
   }
   // Functions:
-  square = function square(x) {
+  square = function(x) {
     return x * x;
   };
   // Arrays:
@@ -18,14 +18,15 @@
   math = {
     root: Math.sqrt,
     square: square,
-    cube: function cube(x) {
+    cube: function(x) {
       return x * square(x);
     }
   };
   // Splats:
-  race = function race(winner) {
+  race = function(winner) {
     var runners;
-    runners = __slice.call(arguments, 1, arguments.length - 0);
+    var _a = arguments.length, _b = _a >= 2;
+    runners = __slice.call(arguments, 1, _a - 0);
     return print(winner, runners);
   };
   // Existence:

@@ -920,7 +920,9 @@ children SplatNode, 'name'
 exports.WhileNode: class WhileNode extends BaseNode
 
   constructor: (condition, opts) ->
-    condition: new OpNode('!', condition) if opts and opts.invert
+    if opts and opts.invert
+      condition: new ParentheticalNode condition if condition instanceof OpNode
+      condition: new OpNode('!', condition)
     @condition: condition
     @guard: opts and opts.guard
 

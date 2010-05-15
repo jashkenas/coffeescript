@@ -1,7 +1,7 @@
 # Econ 101
 if this.studying_economics
-  while supply > demand then buy()
-  while supply < demand then sell()
+  buy()  while supply > demand
+  sell() until supply > demand
 
 # Nursery Rhyme
 num: 6

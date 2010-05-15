@@ -46,7 +46,7 @@
         <a href="#conditionals">Conditionals, Ternaries, and Conditional Assignment</a>
         <a href="#aliases">Aliases</a>
         <a href="#splats">Splats...</a>
-        <a href="#while">While Loops</a>
+        <a href="#while">While &amp; Until Loops</a>
         <a href="#comprehensions">Comprehensions (Arrays, Objects, and Ranges)</a>
         <a href="#slice_splice">Array Slicing and Splicing with Ranges</a>
         <a href="#expressions">Everything is an Expression</a>
@@ -130,7 +130,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.6.1">0.6.1</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.6.2">0.6.2</a>
     </p>
 
     <h2>
@@ -176,7 +176,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
       Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.6.1">0.6.1</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.6.2">0.6.2</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -483,7 +483,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
 
     <p>
       <span id="while" class="bookmark"></span>
-      <b class="header">While Loops</b>
+      <b class="header">While &amp; Until Loops</b>
       The only low-level loop that CoffeeScript provides is the <b>while</b> loop. The
       main difference from JavaScript is that the <b>while</b> loop can be used
       as an expression, returning an array containing the result of each iteration
@@ -491,6 +491,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </p>
     <%= code_for('while', 'lyrics.join("\n")') %>
     <p>
+      For readability, the <b>until</b> loop serves as an inverted <b>while</b> loop.
       Other JavaScript loops, such as <b>for</b> loops and <b>do-while</b> loops
       can be mimicked by variations on <b>while</b>, but the hope is that you
       won't need to do that with CoffeeScript, either because you're using
@@ -665,7 +666,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       Pattern matching can be used with any depth of array and object nesting,
       to help pull out deeply nested properties.
     </p>
-    <%= code_for('object_extraction', 'poet + " — " + street') %>
+    <%= code_for('object_extraction', 'name + " — " + street') %>
     <p>
       Pattern matching can even be combined with splats.
     </p>
@@ -859,6 +860,11 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
         <a href="http://webchat.freenode.net/">webchat.freenode.net</a>.
       </li>
       <li>
+        <b>yeungda</b>'s <a href="http://github.com/yeungda/jcoffeescript">JCoffeeScript</a>
+        &mdash; A Java Library that uses Rhino to compile CoffeeScript, allowing
+        compilation within Java projects or on systems that Node.js doesn't support.
+      </li>
+      <li>
         <b>defunkt</b>'s <a href="http://github.com/defunkt/coffee-mode">CoffeeScript Major Mode</a>
         &mdash; a Emacs major mode that provides syntax highlighting, indentation
         support, and some bonus commands.
@@ -887,6 +893,11 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
         Rails application.
       </li>
       <li>
+        <b>sutto</b>'s <a href="http://github.com/Sutto/barista">Barista</a>
+        &mdash; a BistroCar alternative that integrates well with
+        <a href="http://documentcloud.github.com/jammit">Jammit</a> and Rails 3.
+      </li>
+      <li>
         <b>inem</b> and <b>gerad</b>'s <a href="http://github.com/gerad/coffee-haml-filter">coffee-haml-filter</a>
         &mdash; a custom filter for rendering CoffeeScript inline within
         <a href="http://haml-lang.com/">HAML</a> templates.
@@ -912,7 +923,22 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
-    
+
+    <p>
+      <b class="header" style="margin-top: 20px;">0.6.2</b>
+      The <tt>coffee</tt> command will now preserve directory structure when
+      compiling a directory full of scripts. Fixed two omissions that were preventing
+      the CoffeeScript compiler from running live within Internet Explorer.
+      There's now a syntax for block comments, similar in spirit to CoffeeScript's heredocs.
+      ECMA Harmony DRY-style pattern matching is now supported, where the name
+      of the property is the same as the name of the value: <tt>{name, length}: func</tt>.
+      Pattern matching is now allowed within comprehension variables. <tt>unless</tt>
+      is now allowed in block form. <tt>until</tt> loops were added, as the inverse
+      of <tt>while</tt> loops. <tt>switch</tt> statements are now allowed without
+      switch object clauses. Compatible
+      with Node.js <b>v0.1.95</b>.
+    </p>
+
     <p>
       <b class="header" style="margin-top: 20px;">0.6.1</b>
       Upgraded CoffeeScript for compatibility with the new Node.js <b>v0.1.90</b>
