@@ -14,7 +14,7 @@ else
   Scope:        this.Scope
 
 # Import the helpers we plan to use.
-{compact, flatten, merge, del}: helpers
+{compact, flatten, merge, del, index_of}: helpers
 
 # Helper function that marks a node as a JavaScript *statement*, or as a
 # *pure_statement*. Statements must be wrapped in a closure when used as an
@@ -627,7 +627,7 @@ exports.ArrayNode: class ArrayNode extends BaseNode
       else
         objects.push "$code, "
     objects: objects.join('')
-    if objects.indexOf('\n') >= 0
+    if index_of(objects, '\n') >= 0
       "[\n${@idt(1)}$objects\n$@tab]"
     else
       "[$objects]"
@@ -767,7 +767,7 @@ exports.AssignNode: class AssignNode extends BaseNode
       access_class: if is_string or @variable.is_array() then IndexNode else AccessorNode
       if obj instanceof SplatNode and not splat
         val: literal(obj.compile_value(o, val_var,
-          (oindex: @variable.base.objects.indexOf(obj)),
+          (oindex: index_of(@variable.base.objects, obj)),
           (olength: @variable.base.objects.length) - oindex - 1))
         splat: true
       else
@@ -835,8 +835,7 @@ exports.CodeNode: class CodeNode extends BaseNode
     @body.make_return()
     (o.scope.parameter(param)) for param in params
     code: if @body.expressions.length then "\n${ @body.compile_with_declarations(o) }\n" else ''
-    name_part: if @name then ' ' + @name else ''
-    func: "function${ if @bound then '' else name_part }(${ params.join(', ') }) {$code${@idt(if @bound then 1 else 0)}}"
+    func: "function(${ params.join(', ') }) {$code${@idt(if @bound then 1 else 0)}}"
     func: "($func)" if top and not @bound
     return func unless @bound
     utility 'slice'
@@ -993,12 +992,12 @@ exports.OpNode: class OpNode extends BaseNode
     not @second
 
   is_chainable: ->
-    @CHAINABLE.indexOf(@operator) >= 0
+    index_of(@CHAINABLE, @operator) >= 0
 
   compile_node: (o) ->
     o.operation: true
     return @compile_chain(o)      if @is_chainable() and @first.unwrap() instanceof OpNode and @first.unwrap().is_chainable()
-    return @compile_assignment(o) if @ASSIGNMENT.indexOf(@operator) >= 0
+    return @compile_assignment(o) if index_of(@ASSIGNMENT, @operator) >= 0
     return @compile_unary(o)      if @is_unary()
     return @compile_existence(o)  if @operator is '?'
     [@first.compile(o), @operator, @second.compile(o)].join ' '
@@ -1032,7 +1031,7 @@ exports.OpNode: class OpNode extends BaseNode
 
   # Compile a unary **OpNode**.
   compile_unary: (o) ->
-    space: if @PREFIX_OPERATORS.indexOf(@operator) >= 0 then ' ' else ''
+    space: if index_of(@PREFIX_OPERATORS, @operator) >= 0 then ' ' else ''
     parts: [@operator, space, @first.compile(o)]
     parts: parts.reverse() if @flip
     parts.join('')

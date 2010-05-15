@@ -6,9 +6,17 @@
 this.exports: this unless process?
 helpers: exports.helpers: {}
 
+# Cross-browser indexOf, so that IE can join the party.
+helpers.index_of: index_of: (array, item, from) ->
+  return array.indexOf item, from if array.indexOf
+  for other, index in array
+    if other is item and (not from or (from <= index))
+      return index
+  -1
+
 # Does a list include a value?
 helpers.include: include: (list, value) ->
-  list.indexOf(value) >= 0
+  index_of(list, value) >= 0
 
 # Peek at the beginning of a given string to see if it matches a sequence.
 helpers.starts: starts: (string, literal, start) ->
@@ -20,10 +28,10 @@ helpers.compact: compact: (array) -> item for item in array when item
 # Count the number of occurences of a character in a string.
 helpers.count: count: (string, letter) ->
   num: 0
-  pos: string.indexOf(letter)
+  pos: index_of string, letter
   while pos isnt -1
     num: + 1
-    pos: string.indexOf(letter, pos + 1)
+    pos: index_of string, letter, pos + 1
   num
 
 # Merge objects, returning a fresh copy with attributes from both sides.

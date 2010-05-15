@@ -23,7 +23,7 @@ ok x is 100
 
 # This-assignment.
 tester: ->
-  @example: -> puts 'example function'
+  @example: -> 'example function'
   this
 
-ok tester().example.name is 'example'
+ok tester().example() is 'example function'

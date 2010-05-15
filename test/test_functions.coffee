@@ -6,7 +6,6 @@ ok x is 1
 ok typeof(y.x) is 'function'
 ok y.x instanceof Function
 ok y.x() is 3
-ok y.x.name is 'x'
 
 
 # The empty function should not cause a syntax error.
