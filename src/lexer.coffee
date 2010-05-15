@@ -295,7 +295,8 @@ exports.Lexer: class Lexer
   # erasing all external indentation on the left-hand side.
   sanitize_heredoc: (doc, options) ->
     while match: HEREDOC_INDENT.exec doc
-      indent: match[1] if not indent or match[1].length < indent.length
+      attempt: match[2] or match[3]
+      indent: attempt if not indent or attempt.length < indent.length
     doc: doc.replace(new RegExp("^" +indent, 'gm'), '')
     return doc if options.herecomment
     doc.replace(MULTILINER, "\\n")
@@ -503,7 +504,7 @@ MULTILINER      : /\n/g
 STRING_NEWLINES : /\n[ \t]*/g
 COMMENT_CLEANER : /(^[ \t]*#|\n[ \t]*$)/mg
 NO_NEWLINE      : /^([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)$/
-HEREDOC_INDENT  : /\n+([ \t]*)/g
+HEREDOC_INDENT  : /(\n+([ \t]*)|^([ \t]+))/g
 
 # Tokens which a regular expression will never immediately follow, but which
 # a division operator might.
