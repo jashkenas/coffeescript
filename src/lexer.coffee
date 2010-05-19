@@ -106,8 +106,12 @@ exports.Lexer: class Lexer
   # Matches numbers, including decimals, hex, and exponential notation.
   number_token: ->
     return false unless number: @match NUMBER, 1
-    @token 'NUMBER', number
     @i: + number.length
+    if starts number, (leading: '.') + leading
+      while starts number, leading
+        @token leading, leading
+        number: number.substring leading.length
+    @token 'NUMBER', number
     true
 
   # Matches strings, including multi-line strings. Ensures that quotation marks
@@ -481,7 +485,7 @@ JS_FORBIDDEN: JS_KEYWORDS.concat RESERVED
 
 # Token matching regexes.
 IDENTIFIER    : /^([a-zA-Z\$_](\w|\$)*)/
-NUMBER        : /^(\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?(e[+\-]?[0-9]+)?)))\b/i
+NUMBER        : /^(((\b0(x|X)[0-9a-fA-F]+)|(((\b[0-9]+(\.[0-9]+)?)|([\.]+[0-9]+))(e[+\-]?[0-9]+)?)))\b/i
 HEREDOC       : /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
 INTERPOLATION : /^\$([a-zA-Z_@]\w*(\.\w+)*)/
 OPERATOR      : /^([+\*&|\/\-%=<>:!?]+)([ \t]*)/
