@@ -16,6 +16,9 @@ else
 # Import the helpers we plan to use.
 {compact, flatten, merge, del, index_of}: helpers
 
+type: (klass, name) ->
+  klass::constructor_name: name
+
 # Helper function that marks a node as a JavaScript *statement*, or as a
 # *pure_statement*. Statements must be wrapped in a closure when used as an
 # expression, and nodes tagged as *pure_statement* cannot be closure-wrapped
@@ -118,7 +121,7 @@ exports.BaseNode: class BaseNode
   # This is what `coffee --nodes` prints out.
   toString: (idt) ->
     idt: or ''
-    '\n' + idt + @constructor.name + (child.toString(idt + TAB) for child in @children()).join('')
+    '\n' + idt + @constructor_name + (child.toString(idt + TAB) for child in @children()).join('')
 
   children: ->
     nodes: []
@@ -126,12 +129,12 @@ exports.BaseNode: class BaseNode
     nodes
 
   each_child: (func) ->
+    return unless @children_attributes
     for attr in @children_attributes when this[attr]
       for child in flatten [this[attr]]
         return if func(child) is false
 
   traverse_children: (cross_scope, func) ->
-    return unless @children_attributes
     @each_child (child) ->
       func.apply(this, arguments)
       child.traverse_children(cross_scope, func) if child instanceof BaseNode
@@ -142,6 +145,8 @@ exports.BaseNode: class BaseNode
   is_statement:         -> false
   is_pure_statement:    -> false
   top_sensitive:        -> false
+
+type BaseNode, 'BaseNode'
 
 #### Expressions
 
@@ -221,6 +226,7 @@ Expressions.wrap: (nodes) ->
   return nodes[0] if nodes.length is 1 and nodes[0] instanceof Expressions
   new Expressions(nodes)
 
+type Expressions, 'Expressions'
 children Expressions, 'expressions'
 statement Expressions
 
@@ -248,6 +254,8 @@ exports.LiteralNode: class LiteralNode extends BaseNode
   toString: (idt) ->
     " \"$@value\""
 
+type LiteralNode, 'LiteralNode'
+
 #### ReturnNode
 
 # A `return` is a *pure_statement* -- wrapping it in a closure wouldn't
@@ -267,6 +275,7 @@ exports.ReturnNode: class ReturnNode extends BaseNode
     o.as_statement: true if @expression.is_statement()
     "${@tab}return ${@expression.compile(o)};"
 
+type ReturnNode, 'ReturnNode'
 statement ReturnNode, true
 children ReturnNode, 'expression'
 
@@ -350,6 +359,7 @@ exports.ValueNode: class ValueNode extends BaseNode
 
     if op and @wrapped then "($complete)" else complete
 
+type ValueNode, 'ValueNode'
 children ValueNode, 'base', 'properties'
 
 #### CommentNode
@@ -373,6 +383,7 @@ exports.CommentNode: class CommentNode extends BaseNode
     else
       "$@tab//" + @lines.join("\n$@tab//")
 
+type CommentNode, 'CommentNode'
 statement CommentNode
 
 #### CallNode
@@ -432,6 +443,7 @@ exports.CallNode: class CallNode extends BaseNode
       meth: "($temp = ${ @variable.source })${ @variable.last }"
     "${@prefix()}${meth}.apply($obj, ${ @compile_splat_arguments(o) })"
 
+type CallNode, 'CallNode'
 children CallNode, 'variable', 'args'
 
 #### CurryNode
@@ -457,6 +469,7 @@ exports.CurryNode: class CurryNode extends CallNode
     ref: new ValueNode literal utility 'bind'
     (new CallNode(ref, [@meth, @context, literal(@arguments(o))])).compile o
 
+type CurryNode, 'CurryNode'
 children CurryNode, 'meth', 'context', 'args'
 
 #### ExtendsNode
@@ -475,6 +488,7 @@ exports.ExtendsNode: class ExtendsNode extends BaseNode
     ref:  new ValueNode literal utility 'extends'
     (new CallNode ref, [@child, @parent]).compile o
 
+type ExtendsNode, 'ExtendsNode'
 children ExtendsNode, 'child', 'parent'
 
 #### AccessorNode
@@ -494,6 +508,7 @@ exports.AccessorNode: class AccessorNode extends BaseNode
     proto_part: if @prototype then 'prototype.' else ''
     ".$proto_part${@name.compile(o)}"
 
+type AccessorNode, 'AccessorNode'
 children AccessorNode, 'name'
 
 #### IndexNode
@@ -510,6 +525,7 @@ exports.IndexNode: class IndexNode extends BaseNode
     idx: @index.compile o
     "[$idx]"
 
+type IndexNode, 'IndexNode'
 children IndexNode, 'index'
 
 #### RangeNode
@@ -554,6 +570,7 @@ exports.RangeNode: class RangeNode extends BaseNode
     arr:  Expressions.wrap([new ForNode(body, {source: (new ValueNode(this))}, literal(name))])
     (new ParentheticalNode(new CallNode(new CodeNode([], arr.make_return())))).compile(o)
 
+type RangeNode, 'RangeNode'
 children RangeNode, 'from', 'to'
 
 
@@ -574,6 +591,7 @@ exports.SliceNode: class SliceNode extends BaseNode
     plus_part:  if @range.exclusive then '' else ' + 1'
     ".slice($from, $to$plus_part)"
 
+type SliceNode, 'SliceNode'
 children SliceNode, 'range'
 
 #### ObjectNode
@@ -602,6 +620,7 @@ exports.ObjectNode: class ObjectNode extends BaseNode
     inner: if props then '\n' + props + '\n' + @idt() else ''
     "{$inner}"
 
+type ObjectNode, 'ObjectNode'
 children ObjectNode, 'properties'
 
 #### ArrayNode
@@ -632,6 +651,7 @@ exports.ArrayNode: class ArrayNode extends BaseNode
     else
       "[$objects]"
 
+type ArrayNode, 'ArrayNode'
 children ArrayNode, 'objects'
 
 #### ClassNode
@@ -687,6 +707,7 @@ exports.ClassNode: class ClassNode extends BaseNode
     returns:   if @returns      then new ReturnNode(@variable).compile(o)  else ''
     "$construct$extension$props$returns"
 
+type ClassNode, 'ClassNode'
 statement ClassNode
 children ClassNode, 'variable', 'parent', 'properties'
 
@@ -789,6 +810,7 @@ exports.AssignNode: class AssignNode extends BaseNode
     val:    @value.compile(o)
     "${name}.splice.apply($name, [$from, $to].concat($val))"
 
+type AssignNode, 'AssignNode'
 children AssignNode, 'variable', 'value'
 
 #### CodeNode
@@ -854,6 +876,7 @@ exports.CodeNode: class CodeNode extends BaseNode
     children: (child.toString(idt + TAB) for child in @children()).join('')
     "\n$idt$children"
 
+type CodeNode, 'CodeNode'
 children CodeNode, 'params', 'body'
 
 #### SplatNode
@@ -910,6 +933,7 @@ exports.SplatNode: class SplatNode extends BaseNode
       i: + 1
     args.join('')
 
+type SplatNode, 'SplatNode'
 children SplatNode, 'name'
 
 #### WhileNode
@@ -958,6 +982,7 @@ exports.WhileNode: class WhileNode extends BaseNode
       post: ''
     "$pre {\n${ @body.compile(o) }\n$@tab}$post"
 
+type WhileNode, 'WhileNode'
 statement WhileNode
 children WhileNode, 'condition', 'guard', 'body'
 
@@ -984,7 +1009,7 @@ exports.OpNode: class OpNode extends BaseNode
   PREFIX_OPERATORS: ['typeof', 'delete']
 
   constructor: (operator, first, second, flip) ->
-    @constructor.name: + ' ' + operator
+    @constructor_name: + ' ' + operator
     @first: first
     @second: second
     @operator: @CONVERSIONS[operator] or operator
@@ -1038,6 +1063,7 @@ exports.OpNode: class OpNode extends BaseNode
     parts: parts.reverse() if @flip
     parts.join('')
 
+type OpNode, 'OpNode'
 children OpNode, 'first', 'second'
 
 #### TryNode
@@ -1068,6 +1094,7 @@ exports.TryNode: class TryNode extends BaseNode
     finally_part: (@ensure or '') and ' finally {\n' + @ensure.compile(merge(o)) + "\n$@tab}"
     "${@tab}try {\n$attempt_part\n$@tab}$catch_part$finally_part"
 
+type TryNode, 'TryNode'
 statement TryNode
 children TryNode, 'attempt', 'recovery', 'ensure'
 
@@ -1086,6 +1113,7 @@ exports.ThrowNode: class ThrowNode extends BaseNode
   compile_node: (o) ->
     "${@tab}throw ${@expression.compile(o)};"
 
+type ThrowNode, 'ThrowNode'
 statement ThrowNode
 children ThrowNode, 'expression'
 
@@ -1112,6 +1140,7 @@ exports.ExistenceNode: class ExistenceNode extends BaseNode
     [first, second]: [first.compile(o), second.compile(o)]
     "(typeof $first !== \"undefined\" && $second !== null)"
 
+type ExistenceNode, 'ExistenceNode'
 children ExistenceNode, 'expression'
 
 #### ParentheticalNode
@@ -1139,6 +1168,7 @@ exports.ParentheticalNode: class ParentheticalNode extends BaseNode
     code: code.substr(o, l-1) if code.substr(l-1, 1) is ';'
     if @expression instanceof AssignNode then code else "($code)"
 
+type ParentheticalNode, 'ParentheticalNode'
 children ParentheticalNode, 'expression'
 
 #### ForNode
@@ -1223,6 +1253,7 @@ exports.ForNode: class ForNode extends BaseNode
     close:          if @object then '}}' else '}'
     "$set_result${source_part}for ($for_part) {\n$var_part$body\n$@tab$close$return_result"
 
+type ForNode, 'ForNode'
 statement ForNode
 children ForNode, 'body', 'source', 'guard'
 
@@ -1328,6 +1359,7 @@ exports.IfNode: class IfNode extends BaseNode
     "$if_part : $else_part"
 
 
+type IfNode, 'IfNode'
 children IfNode, 'condition', 'body', 'else_body', 'assigner'
 
 
