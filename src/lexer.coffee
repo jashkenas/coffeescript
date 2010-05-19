@@ -90,7 +90,8 @@ exports.Lexer: class Lexer
   identifier_token: ->
     return false unless id: @match IDENTIFIER, 1
     @name_access_type()
-    accessed: include ACCESSORS, @tag 0
+    spaced:   @prev() and @prev().spaced
+    accessed: include(ACCESSORS, @tag(0)) and not spaced
     tag: 'IDENTIFIER'
     tag: id.toUpperCase()     if not accessed and include(KEYWORDS, id)
     @identifier_error id      if include RESERVED, id
