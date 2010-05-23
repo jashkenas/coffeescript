@@ -15,6 +15,17 @@ else
 # Import the helpers we need.
 {include}: helpers
 
+# Helper method to check if the given stream of tokens matches the exit conditions
+exits: (prev, token, post, cond) ->
+  length: 0
+  match:  0
+  args:   {prev, token, post}
+  for k, v of args when k in cond
+    length: + 1
+    for pair in cond[k]
+      match: + 1 if v[0] is pair[0] and v[1] is pair[1]
+  return match is length
+
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
 # its internal array of tokens.
 exports.Rewriter: class Rewriter
@@ -32,6 +43,7 @@ exports.Rewriter: class Rewriter
     @close_open_calls_and_indexes()
     @add_implicit_indentation()
     @add_implicit_parentheses()
+    @rewrite_object_keys()
     @ensure_balance BALANCED_PAIRS
     @rewrite_closing_parens()
     @tokens
@@ -181,6 +193,34 @@ exports.Rewriter: class Rewriter
       @tokens.splice i, 1
       return 0
 
+  # Allow reserved words to be used as object keys. We scan the token stream
+  # until we enter an object. Any token before an assignment is considered the
+  # key which we rewrite back to an `IDENTIFIER`.
+  rewrite_object_keys: ->
+    levels: []
+    @scan_tokens (prev, token, post, i) =>
+      if token[0] is '{'
+        levels.push {rewrite: yes, cond: {token: [['}','}']]}}
+      else if levels.length
+        popped: no
+        while (last: levels[levels.length - 1]) and exits prev, token, post, last.cond
+          levels.pop()
+          popped: yes
+        if not popped
+          balanced: no
+          for pair in BALANCED_PAIRS when post and post[0] is pair[0]
+            levels.push {rewrite: no, cond: {token: [[pair[1], pair[2] or post[1]]]}}
+            balanced: yes
+          if token[0] is 'ASSIGN'
+            prev[0]: 'IDENTIFIER' if last.rewrite
+            if not balanced
+              after: @tokens[i + 2]
+              if post and post[0] is '->' and after and after[0] is 'INDENT'
+                levels.push {rewrite: no, cond: {prev: [['OUTDENT', after[1]]], token: [['TERMINATOR', '\n']]}}
+              else if last.rewrite
+                levels.push {rewrite: no, cond: {token: [[',', ','], ['TERMINATOR', '\n'], ['}', '}']]}}
+      return 1
+
   # Ensure that all listed pairs of tokens are correctly balanced throughout
   # the course of the token stream.
   ensure_balance: (pairs) ->
@@ -253,9 +293,9 @@ exports.Rewriter: class Rewriter
 # ---------
 
 # List of the token pairs that must be balanced.
-BALANCED_PAIRS: [['(', ')'], ['[', ']'], ['{', '}'], ['INDENT', 'OUTDENT'],
-  ['PARAM_START', 'PARAM_END'], ['CALL_START', 'CALL_END'],
-  ['INDEX_START', 'INDEX_END'], ['SOAKED_INDEX_START', 'SOAKED_INDEX_END']]
+BALANCED_PAIRS: [['(', ')', ')'], ['[', ']', ']'], ['{', '}', '}'], ['INDENT', 'OUTDENT'],
+  ['PARAM_START', 'PARAM_END', ')'], ['CALL_START', 'CALL_END', ')'],
+  ['INDEX_START', 'INDEX_END', ']'], ['SOAKED_INDEX_START', 'SOAKED_INDEX_END', ']']]
 
 # The inverse mappings of `BALANCED_PAIRS` we're trying to fix up, so we can
 # look things up from either end.
