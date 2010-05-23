@@ -213,7 +213,7 @@ exports.Rewriter: class Rewriter
             balanced: yes
           if token[0] is 'ASSIGN'
             prev[0]: 'IDENTIFIER' if last.rewrite
-            prev[1]: alias        if (alias: Rewriter.alias_operator prev[1], yes)
+            prev[1]: alias        if last.rewrite and (alias: Rewriter.alias_operator prev[1], yes)
             if not balanced
               after: @tokens[i + 2]
               if post and post[0] is '->' and after and after[0] is 'INDENT'
