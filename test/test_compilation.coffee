@@ -7,6 +7,16 @@ js: CoffeeScript.compile("one\r\ntwo", {no_wrap: on})
 ok js is "one;\ntwo;"
 
 
+# Reserved words can be used as object properties
+
+obj: { 
+  is: -> 1 
+  of: 'many'
+}
+
+ok obj.is() is 1
+ok obj.of is 'many'
+
 # Try out language extensions to CoffeeScript.
 
 # Create the Node were going to add -- a literal syntax for splitting
