@@ -213,6 +213,7 @@ exports.Rewriter: class Rewriter
             balanced: yes
           if token[0] is 'ASSIGN'
             prev[0]: 'IDENTIFIER' if last.rewrite
+            prev[1]: alias        if (alias: Rewriter.alias_operator prev[1], yes)
             if not balanced
               after: @tokens[i + 2]
               if post and post[0] is '->' and after and after[0] is 'INDENT'
@@ -289,6 +290,15 @@ exports.Rewriter: class Rewriter
       else
         return 1
 
+  # Rewriter Properties
+  # ----------------
+
+  # Alias an identifier to a Coffee operator or vice versa.
+  @alias_operator: (id, reverse) ->
+    (return CONVERSIONS[k]) for k    of CONVERSIONS when id is k if not reverse
+    (return k)              for k, v of CONVERSIONS when id is v if reverse
+    false
+
 # Constants
 # ---------
 
@@ -333,3 +343,12 @@ IMPLICIT_END:   ['IF', 'UNLESS', 'FOR', 'WHILE', 'UNTIL', 'TERMINATOR', 'INDENT'
 # The grammar can't disambiguate them, so we insert the implicit indentation.
 SINGLE_LINERS: ['ELSE', "->", "=>", 'TRY', 'FINALLY', 'THEN']
 SINGLE_CLOSERS: ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN']
+
+# Conversions from CoffeeScript operators into JavaScript ones.
+CONVERSIONS: {
+  'and':  '&&'
+  'or':   '||'
+  'is':   '=='
+  'isnt': '!='
+  'not':  '!'
+}

@@ -98,7 +98,7 @@ exports.Lexer: class Lexer
     tag: 'LEADING_WHEN'       if tag is 'WHEN' and include LINE_BREAK, @tag()
     @i: + id.length
     unless accessed
-      tag: id: CONVERSIONS[id]         if include COFFEE_ALIASES, id
+      tag: id: operator                if (operator: Rewriter.alias_operator id)
       return @tag_half_assignment tag  if @prev() and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
     @token tag, id
     true
@@ -537,12 +537,3 @@ LINE_BREAK: ['INDENT', 'OUTDENT', 'TERMINATOR']
 
 # Half-assignments...
 HALF_ASSIGNMENTS: ['-', '+', '/', '*', '%', '||', '&&', '?']
-
-# Conversions from CoffeeScript operators into JavaScript ones.
-CONVERSIONS: {
-  'and':  '&&'
-  'or':   '||'
-  'is':   '=='
-  'isnt': '!='
-  'not':  '!'
-}
