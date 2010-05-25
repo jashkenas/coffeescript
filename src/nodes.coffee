@@ -14,7 +14,7 @@ else
   Scope:        this.Scope
 
 # Import the helpers we plan to use.
-{compact, flatten, merge, del, index_of}: helpers
+{compact, flatten, merge, del, include, index_of}: helpers
 
 #### BaseNode
 
@@ -649,7 +649,10 @@ exports.ClassNode: class ClassNode extends BaseNode
     for prop in @properties
       [pvar, func]: [prop.variable, prop.value]
       if pvar and pvar.base.value is 'constructor' and func instanceof CodeNode
+        func.name: @variable.compile(o)
         func.body.push(new ReturnNode(literal('this')))
+        @variable: new ValueNode @variable
+        @variable.namespaced: include func.name, '.'
         constructor: new AssignNode(@variable, func)
       else
         if pvar
@@ -719,7 +722,7 @@ exports.AssignNode: class AssignNode extends BaseNode
       @value.proto: proto if proto
     val: @value.compile o
     return "$name: $val" if @context is 'object'
-    o.scope.find name unless @is_value() and @variable.has_properties()
+    o.scope.find name unless @is_value() and (@variable.has_properties() or @variable.namespaced)
     val: "$name = $val"
     return "$@tab$val;" if stmt
     if top then val else "($val)"

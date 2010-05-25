@@ -15,3 +15,14 @@ ok value is 0.5
 
 deepEqual [0..10],  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 deepEqual [0...10], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+
+# Issue #390: super() calls in constructor of classes that are defined as object properties
+class Hive
+  constructor: (name) -> @name: name
+
+class Hive.Bee extends Hive
+  constructor: (name) -> super name
+
+maya: new Hive.Bee('Maya')
+ok maya.name is 'Maya'
