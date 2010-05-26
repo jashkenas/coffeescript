@@ -1206,7 +1206,7 @@ exports.ForNode: class ForNode extends BaseNode
 exports.IfNode: class IfNode extends BaseNode
 
   constructor: (condition, body, tags) ->
-    super {name: 'IfNode', children: ['condition', 'body', 'else_body', 'assigner']}
+    super {name: 'IfNode', children: ['condition', 'switch_subject', 'body', 'else_body', 'assigner']}
     @condition: condition
     @body:      body
     @else_body: null

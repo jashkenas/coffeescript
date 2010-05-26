@@ -26,3 +26,15 @@ class Hive.Bee extends Hive
 
 maya: new Hive.Bee('Maya')
 ok maya.name is 'Maya'
+
+
+# Issue #397: Can't use @variable in switch in instance method
+obj: {
+  value: true
+  fn: ->
+    result: switch @value
+      when true then 'Hello!'
+      else 'Bye!'
+}
+
+ok obj.fn() is 'Hello!'
