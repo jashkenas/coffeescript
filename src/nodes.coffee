@@ -541,8 +541,7 @@ exports.RangeNode: class RangeNode extends BaseNode
     parts: []
     parts.push @from.compile o if @from isnt @from_var
     parts.push @to.compile o if @to isnt @to_var
-    tail: "\n$o.indent"
-    if parts.length then "${parts.join('; ')};$tail" else tail
+    if parts.length then "${parts.join('; ')};\n$o.indent" else ''
 
   # When compiled normally, the range returns the contents of the *for loop*
   # needed to iterate over the values in the range. Used by comprehensions.
@@ -1226,7 +1225,7 @@ exports.ForNode: class ForNode extends BaseNode
       for_part:     source.compile merge o, {index: ivar, step: @step}
     else
       svar:         scope.free_variable()
-      source_part:  "$svar = ${ @source.compile(o) };\n$@tab"
+      source_part:  "$svar = ${ @source.compile(o) };"
       if @pattern
         var_part:   new AssignNode(@name, literal("$svar[$ivar]")).compile(merge o, {indent: @idt(1), top: true}) + "\n"
       else
@@ -1235,7 +1234,8 @@ exports.ForNode: class ForNode extends BaseNode
         lvar:       scope.free_variable()
         step_part:  if @step then "$ivar += ${ @step.compile(o) }" else "$ivar++"
         for_part:   "$ivar = 0, $lvar = ${svar}.length; $ivar < $lvar; $step_part"
-    set_result:     if rvar then @idt() + rvar + ' = []; ' else @idt()
+    source_part:    (if rvar then "$rvar = []; " else '') + source_part
+    source_part:    if source_part then "$@tab$source_part\n$@tab" else @tab
     return_result:  @compile_return_value(rvar, o)
 
     body:           ClosureNode.wrap(body, true) if top_level and body.contains (n) -> n instanceof CodeNode
@@ -1247,7 +1247,7 @@ exports.ForNode: class ForNode extends BaseNode
     body:           body.compile(merge(o, {indent: body_dent, top: true}))
     vars:           if range then name else "$name, $ivar"
     close:          if @object then '}}' else '}'
-    "$set_result${source_part}for ($for_part) {\n$var_part$body\n$@tab$close$return_result"
+    "${source_part}for ($for_part) {\n$var_part$body\n$@tab$close$return_result"
 
 #### IfNode
 
