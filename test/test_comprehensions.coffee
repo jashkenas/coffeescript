@@ -39,6 +39,12 @@ results: x for x in [0..25] by 5
 ok results.join(' ') is '0 5 10 15 20 25'
 
 
+# And can loop downwards, with a negative step.
+results: x for x in [5..1] by -1
+
+ok results.join(' ') is '5 4 3 2 1'
+
+
 # Multiline array comprehension with filter.
 evens: for num in [1, 2, 3, 4, 5, 6] when num % 2 is 0
            num *= -1
