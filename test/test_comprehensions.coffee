@@ -43,6 +43,7 @@ ok results.join(' ') is '0 5 10 15 20 25'
 results: x for x in [5..1] by -1
 
 ok results.join(' ') is '5 4 3 2 1'
+ok results.join(' ') is [(10-5)..(-2+3)].join(' ')
 
 
 # Multiline array comprehension with filter.
