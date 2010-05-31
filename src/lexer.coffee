@@ -89,14 +89,14 @@ exports.Lexer: class Lexer
   # though `is` means `===` otherwise.
   identifier_token: ->
     return false unless id: @match IDENTIFIER, 1
-    accessed: @tag_accessor()
+    forced_identifier: @tag_accessor() or @match ASSIGNED, 1
     tag: 'IDENTIFIER'
-    tag: id.toUpperCase()     if not accessed and include(KEYWORDS, id)
-    @identifier_error id      if include RESERVED, id
-    tag: 'LEADING_WHEN'       if tag is 'WHEN' and include LINE_BREAK, @tag()
+    tag: id.toUpperCase() if include(JS_KEYWORDS, id) or (not forced_identifier and include(COFFEE_KEYWORDS, id))
+    @identifier_error id  if include RESERVED, id
+    tag: 'LEADING_WHEN'   if tag is 'WHEN' and include LINE_BREAK, @tag()
     @i: + id.length
-    unless accessed
-      tag: id: operator                if (operator: Rewriter.alias_operator id)
+    unless forced_identifier
+      tag: id: CONVERSIONS[id]         if include COFFEE_ALIASES, id
       return @tag_half_assignment tag  if @prev() and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
     @token tag, id
     true
@@ -468,10 +468,6 @@ COFFEE_KEYWORDS: COFFEE_ALIASES.concat [
   "of", "by", "where", "when"
 ]
 
-# The combined list of keywords is the superset that gets passed verbatim to
-# the parser.
-KEYWORDS: JS_KEYWORDS.concat COFFEE_KEYWORDS
-
 # The list of keywords that are reserved by JavaScript, but not used, or are
 # used by CoffeeScript internally. We throw an error when these are encountered,
 # to avoid having a JavaScript error at runtime.
@@ -496,7 +492,7 @@ CODE          : /^((-|=)>)/
 MULTI_DENT    : /^((\n([ \t]*))+)(\.)?/
 LAST_DENTS    : /\n([ \t]*)/g
 LAST_DENT     : /\n([ \t]*)/
-ASSIGNMENT    : /^(:|=)$/
+ASSIGNMENT    : /^[:=]$/
 
 # Regex-matching-regexes.
 REGEX_START        : /^\/[^\/ ]/
@@ -511,6 +507,7 @@ STRING_NEWLINES : /\n[ \t]*/g
 COMMENT_CLEANER : /(^[ \t]*#|\n[ \t]*$)/mg
 NO_NEWLINE      : /^([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)$/
 HEREDOC_INDENT  : /(\n+([ \t]*)|^([ \t]+))/g
+ASSIGNED        : /^([a-zA-Z\$_]\w*[ \t]*?[:=])/
 
 # Tokens which a regular expression will never immediately follow, but which
 # a division operator might.
@@ -534,3 +531,12 @@ LINE_BREAK: ['INDENT', 'OUTDENT', 'TERMINATOR']
 
 # Half-assignments...
 HALF_ASSIGNMENTS: ['-', '+', '/', '*', '%', '||', '&&', '?']
+
+# Conversions from CoffeeScript operators into JavaScript ones.
+CONVERSIONS: {
+  'and':  '&&'
+  'or':   '||'
+  'is':   '=='
+  'isnt': '!='
+  'not':  '!'
+}
