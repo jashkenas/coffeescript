@@ -14,7 +14,7 @@ else
   Scope:        this.Scope
 
 # Import the helpers we plan to use.
-{compact, flatten, merge, del, include, index_of}: helpers
+{compact, flatten, merge, del, include, index_of, starts}: helpers
 
 #### BaseNode
 
@@ -61,7 +61,11 @@ exports.BaseNode: class BaseNode
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
   # by assigning it to a temporary variable.
-  compile_reference: (o) ->
+  compile_reference: (o, only_if_necessary) ->
+    if only_if_necessary and not
+        (this instanceof CallNode or
+        this instanceof ValueNode and (not (@base instanceof LiteralNode) or @has_properties()))
+      return [this, this]
     reference: literal o.scope.free_variable()
     compiled:  new AssignNode reference, this
     [compiled, reference]
@@ -530,11 +534,15 @@ exports.RangeNode: class RangeNode extends BaseNode
     @exclusive: !!exclusive
 
   # Compiles the range's source variables -- where it starts and where it ends.
+  # But only if they need to be cached to avoid double evaluation.
   compile_variables: (o) ->
-    @tab: o.indent
-    [@from_var, @to_var]: [o.scope.free_variable(), o.scope.free_variable()]
-    [from, to]:           [@from.compile(o), @to.compile(o)]
-    "$@from_var = $from; $@to_var = $to;\n$@tab"
+    [@from, @from_var]: @from.compile_reference o, true
+    [@to, @to_var]:     @to.compile_reference o, true
+    parts: []
+    parts.push @from.compile o if @from isnt @from_var
+    parts.push @to.compile o if @to isnt @to_var
+    tail: "\n$o.indent"
+    if parts.length then "${parts.join('; ')};$tail" else tail
 
   # When compiled normally, the range returns the contents of the *for loop*
   # needed to iterate over the values in the range. Used by comprehensions.
@@ -542,22 +550,24 @@ exports.RangeNode: class RangeNode extends BaseNode
     return    @compile_array(o) unless o.index
     idx:      del o, 'index'
     step:     del o, 'step'
-    vars:     "$idx = $@from_var"
+    vars:     "$idx = ${@from_var.compile(o)}"
     step:     if step then step.compile(o) else '1'
     equals:   if @exclusive then '' else '='
-    intro:    "($@from_var <= $@to_var ? $idx"
-    compare:  "$intro <$equals $@to_var : $idx >$equals $@to_var)"
-    incr:     "$intro += $step : $idx -= $step)"
-    "$vars; $compare; $incr"
+    op:       if starts(step, '-') then ">$equals" else "<$equals"
+    "$vars; ${idx} $op ${@to_var.compile(o)}; $idx += $step"
 
-  # When used as a value, expand the range into the equivalent array. In the
-  # future, the code this generates should probably be cleaned up by handwriting
-  # it instead of wrapping nodes.
+  # When used as a value, expand the range into the equivalent array.
   compile_array: (o) ->
-    name: o.scope.free_variable()
-    body: Expressions.wrap([literal(name)])
-    arr:  Expressions.wrap([new ForNode(body, {source: (new ValueNode(this))}, literal(name))])
-    (new ParentheticalNode(new CallNode(new CodeNode([], arr.make_return())))).compile(o)
+    idt:    @idt 1
+    vars:   @compile_variables(merge(o, {indent: idt}))
+    equals: if @exclusive then '' else '='
+    from:   @from_var.compile o
+    to:     @to_var.compile o
+    clause: "$from <= $to ?"
+    pre:    "\n${idt}a = [];${vars}"
+    body:   "var i = $from; ($clause i <$equals $to : i >$equals $to); ($clause i += 1 : i -= 1)"
+    post:   "a.push(i);\n${idt}return a;\n$o.indent"
+    "(function(){${pre}for ($body) $post}).call(this)"
 
 #### SliceNode
 
@@ -1122,11 +1132,8 @@ exports.ExistenceNode: class ExistenceNode extends BaseNode
   # because other nodes like to check the existence of their variables as well.
   # Be careful not to double-evaluate anything.
   @compile_test: (o, variable) ->
-    [first, second]: [variable, variable]
-    if variable instanceof CallNode or (variable instanceof ValueNode and variable.has_properties())
-      [first, second]: variable.compile_reference(o)
-    [first, second]: [first.compile(o), second.compile(o)]
-    "(typeof $first !== \"undefined\" && $second !== null)"
+    [first, second]: variable.compile_reference o, true
+    "(typeof ${first.compile(o)} !== \"undefined\" && ${second.compile(o)} !== null)"
 
 #### ParentheticalNode
 
