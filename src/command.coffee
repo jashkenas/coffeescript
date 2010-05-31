@@ -61,12 +61,12 @@ exports.run: ->
   compile_scripts()
 
 # Asynchronously read in each CoffeeScript in a list of source files and
-# compile them. If a directory is passed, recursively compile all source
-# files in it and all subdirectories.
+# compile them. If a directory is passed, recursively compile all
+# '.coffee' extension source files in it and all subdirectories.
 compile_scripts: ->
   for source in sources
     base: source
-    compile: (source) ->
+    compile: (source, top_level) ->
       path.exists source, (exists) ->
         throw new Error "File not found: $source" unless exists
         fs.stat source, (err, stats) ->
@@ -74,10 +74,10 @@ compile_scripts: ->
             fs.readdir source, (err, files) ->
               for file in files
                 compile path.join(source, file)
-          else if path.extname(source) is '.coffee'
+          else if top_level or path.extname(source) is '.coffee'
             fs.readFile source, (err, code) -> compile_script(source, code.toString(), base)
             watch source, base if options.watch
-    compile source
+    compile source, true
 
 # Compile a single source script, containing the given code, according to the
 # requested options. If evaluating the script directly sets `__filename`,
