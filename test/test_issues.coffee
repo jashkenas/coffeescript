@@ -1,3 +1,14 @@
+# Issue #381: Reserved words can be used as object properties.
+
+obj: {
+  is: -> 1
+  of: 'many'
+}
+
+ok obj.is() is 1
+ok obj.of is 'many'
+
+
 # Issue #380: problem with @ and instanceof
 class ClassName
   am_i: ->
