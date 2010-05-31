@@ -89,9 +89,7 @@ exports.Lexer: class Lexer
   # though `is` means `===` otherwise.
   identifier_token: ->
     return false unless id: @match IDENTIFIER, 1
-    @name_access_type()
-    spaced:   @prev() and @prev().spaced
-    accessed: include(ACCESSORS, @tag(0)) and not spaced
+    accessed: @tag_accessor()
     tag: 'IDENTIFIER'
     tag: id.toUpperCase()     if not accessed and include(KEYWORDS, id)
     @identifier_error id      if include RESERVED, id
@@ -286,15 +284,20 @@ exports.Lexer: class Lexer
   # ------------------
 
   # As we consume a new `IDENTIFIER`, look at the previous token to determine
-  # if it's a special kind of accessor.
-  name_access_type: ->
-    @tag(1, 'PROTOTYPE_ACCESS') if @value() is '::'
-    if @value() is '.' and not (@value(2) is '.')
+  # if it's a special kind of accessor. Return `true` if any type of accessor
+  # is the previous token.
+  tag_accessor: ->
+    return false if (not prev: @prev()) or (prev and prev.spaced)
+    if prev[1] is '::'
+      @tag 1, 'PROTOTYPE_ACCESS'
+    else if prev[1] is '.' and not (@value(2) is '.')
       if @tag(2) is '?'
         @tag(1, 'SOAK_ACCESS')
         @tokens.splice(-2, 1)
       else
         @tag 1, 'PROPERTY_ACCESS'
+    else
+      prev[0] is '@'
 
   # Sanitize a heredoc or herecomment by escaping internal double quotes and
   # erasing all external indentation on the left-hand side.
@@ -525,10 +528,6 @@ NOT_REGEX: [
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
 CALLABLE: ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING', '@', 'THIS']
-
-# Tokens that indicate an access -- keywords immediately following will be
-# treated as identifiers.
-ACCESSORS: ['PROPERTY_ACCESS', 'PROTOTYPE_ACCESS', 'SOAK_ACCESS', '@']
 
 # Tokens that, when immediately preceding a `WHEN`, indicate that the `WHEN`
 # occurs at the start of a line. We disambiguate these from trailing whens to
