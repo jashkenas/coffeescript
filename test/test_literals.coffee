@@ -14,6 +14,17 @@ neg: (3 -4)
 ok neg is -1
 
 
+# Decimal number literals.
+value: .25 + .75
+ok value is 1
+value: 0.0 + -.25 - -.75 + 0.0
+ok value is 0.5
+
+# Decimals don't interfere with ranges.
+ok [0..10].join(' ') is  '0 1 2 3 4 5 6 7 8 9 10'
+ok [0...10].join(' ') is '0 1 2 3 4 5 6 7 8 9'
+
+
 func: ->
   return if true
 
@@ -78,8 +89,8 @@ ok moe.hello() is 'Hello Moe'
 
 
 obj: {
-  'is':  -> yes,
-  'not': -> no,
+  is:     -> yes,
+  'not':  -> no,
 }
 
 ok obj.is()

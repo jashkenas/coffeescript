@@ -71,3 +71,15 @@ result: switch
   else 3
 
 ok result is 2
+
+
+# Should be able to use "@properties" within the switch clause.
+obj: {
+  num: 101
+  func: ->
+    switch @num
+      when 101 then '101!'
+      else 'other'
+}
+
+ok obj.func() is '101!'

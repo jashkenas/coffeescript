@@ -94,3 +94,23 @@ SuperClass extends TopClass
 SubClass extends SuperClass
 
 ok (new SubClass()).prop is 'top-super-sub'
+
+
+# '@' referring to the current instance, and not being coerced into a call.
+class ClassName
+  am_i: ->
+    @ instanceof ClassName
+
+obj: new ClassName()
+ok obj.am_i()
+
+
+# super() calls in constructors of classes that are defined as object properties.
+class Hive
+  constructor: (name) -> @name: name
+
+class Hive.Bee extends Hive
+  constructor: (name) -> super name
+
+maya: new Hive.Bee 'Maya'
+ok maya.name is 'Maya'
