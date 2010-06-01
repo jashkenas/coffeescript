@@ -318,6 +318,9 @@ exports.ValueNode: class ValueNode extends BaseNode
   is_statement: ->
     @base.is_statement and @base.is_statement() and not @has_properties()
 
+  is_number: ->
+    @base instanceof LiteralNode and @base.value.match NUMBER
+
   # Works out if the value is the start of a chain.
   is_start: (o) ->
     return true if this is o.chain_root and @properties[0] instanceof AccessorNode
@@ -335,7 +338,7 @@ exports.ValueNode: class ValueNode extends BaseNode
     props:        if only then @properties[0...@properties.length - 1] else @properties
     o.chain_root: or this
     baseline:     @base.compile o
-    baseline:     "($baseline)" if @base instanceof ObjectNode and @has_properties()
+    baseline:     "($baseline)" if @has_properties() and (@base instanceof ObjectNode or @is_number())
     complete:     @last: baseline
 
     for prop, i in props
@@ -1441,8 +1444,9 @@ TAB: '  '
 # with Git.
 TRAILING_WHITESPACE: /[ \t]+$/gm
 
-# Keep this identifier regex in sync with the Lexer.
+# Keep these identifier regexes in sync with the Lexer.
 IDENTIFIER: /^[a-zA-Z\$_](\w|\$)*$/
+NUMBER    : /^(((\b0(x|X)[0-9a-fA-F]+)|((\b[0-9]+(\.[0-9]+)?|\.[0-9]+)(e[+\-]?[0-9]+)?)))\b$/i
 
 # Is a literal value a string?
 IS_STRING: /^['"]/
