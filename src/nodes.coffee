@@ -509,14 +509,14 @@ exports.IndexNode: class IndexNode extends BaseNode
   type:     'IndexNode'
   children: ['index']
 
-  constructor: (index, tag) ->
-    @index: index
-    @soak_node: tag is 'soak'
+  constructor: (index) ->
+    @index:     index
 
   compile_node: (o) ->
     o.chain_root.wrapped: or @soak_node
     idx: @index.compile o
-    "[$idx]"
+    prefix: if @proto then '.prototype' else ''
+    "$prefix[$idx]"
 
 #### RangeNode
 

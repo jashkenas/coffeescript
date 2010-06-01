@@ -55,6 +55,8 @@ ok (new TwoClass('three')).name is 'three'
 Base: ->
 Base::func: (string) ->
   'zero/' + string
+Base::['func-func']: (string) ->
+  "dynamic-$string"
 
 FirstChild: ->
 FirstChild extends Base
@@ -76,6 +78,8 @@ ThirdChild::func: (string) ->
 result: (new ThirdChild()).func 'four'
 
 ok result is 'zero/one/two/three/four'
+
+ok (new ThirdChild())['func-func']('thing') is 'dynamic-thing'
 
 
 TopClass: (arg) ->

@@ -263,16 +263,13 @@ exports.Lexer: class Lexer
       @assignment_error() if include JS_FORBIDDEN, @value
     else if value is ';'
       tag: 'TERMINATOR'
-    else if value is '[' and @tag() is '?' and not prev_spaced
-      tag: 'SOAKED_INDEX_START'
-      @soaked_index: true
-      @tokens.pop()
-    else if value is ']' and @soaked_index
-      tag: 'SOAKED_INDEX_END'
-      @soaked_index: false
     else if include(CALLABLE, @tag()) and not prev_spaced
-      tag: 'CALL_START'  if value is '('
-      tag: 'INDEX_START' if value is '['
+      if value is '('
+        tag: 'CALL_START'
+      else if value is '['
+        tag: 'INDEX_START'
+        @tag 1, 'INDEX_SOAK'  if @tag() is '?'
+        @tag 1, 'INDEX_PROTO' if @tag() is '::'
     @i: + value.length
     return @tag_half_assignment tag if space and prev_spaced and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
     @token tag, value
@@ -522,7 +519,7 @@ NOT_REGEX: [
 # Tokens which could legitimately be invoked or indexed. A opening
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
-CALLABLE: ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING', '@', 'THIS']
+CALLABLE: ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING', '@', 'THIS', '?', '::']
 
 # Tokens that, when immediately preceding a `WHEN`, indicate that the `WHEN`
 # occurs at the start of a line. We disambiguate these from trailing whens to

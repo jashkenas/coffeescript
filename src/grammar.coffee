@@ -253,7 +253,8 @@ grammar: {
   # Indexing into an object or array using bracket notation.
   Index: [
     o "INDEX_START Expression INDEX_END",       -> new IndexNode $2
-    o "SOAKED_INDEX_START Expression SOAKED_INDEX_END", -> new IndexNode $2, 'soak'
+    o "INDEX_SOAK Index",                       -> $2.soak_node: yes; $2
+    o "INDEX_PROTO Index",                      -> $2.proto: yes; $2
   ]
 
   # In CoffeeScript, an object literal is simply a list of assignments.
