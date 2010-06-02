@@ -4,6 +4,16 @@ require 'rake/testtask'
 require 'rubygems'
 require 'yui/compressor'
 
+HEADER = <<-EOS
+/**
+ * CoffeeScript Compiler v0.6.2
+ * http://coffeescript.org
+ *
+ * Copyright 2010, Jeremy Ashkenas
+ * Released under the MIT License
+ */
+EOS
+
 desc "Build the documentation page"
 task :doc do
   source = 'documentation/index.html.erb'
@@ -26,6 +36,6 @@ task :browser do
   sources = %w(helpers.js rewriter.js lexer.js parser.js scope.js nodes.js coffee-script.js)
   code    = sources.map {|s| File.read('lib/' + s) }.join('')
   code    = YUI::JavaScriptCompressor.new.compress(code)
-  File.open('extras/coffee-script.js', 'w+') {|f| f.write(code) }
+  File.open('extras/coffee-script.js', 'w+') {|f| f.write(HEADER + code) }
 end
 
