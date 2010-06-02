@@ -95,7 +95,8 @@ compile_script: (source, code, base) ->
       else if o.compile   then write_js source, js, base
       else if o.lint      then lint js
   catch err
-    if o.watch            then puts err.message else throw err
+    error(err.stack) and process.exit 1 unless o.watch
+    puts err.message
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
 # and write them back to **stdout**.

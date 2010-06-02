@@ -76,7 +76,6 @@ parser.lexer: {
     @tokens: tokens
     @pos: 0
   upcomingInput: -> ""
-  showPosition: -> @pos
 }
 
 # Activate CoffeeScript in the browser by having it compile and evaluate
