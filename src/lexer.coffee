@@ -141,6 +141,7 @@ exports.Lexer: class Lexer
     if match[3]
       comment: @sanitize_heredoc match[3], {herecomment: true}
       @token 'HERECOMMENT', comment.split MULTILINER
+      @token 'TERMINATOR', '\n'
     else
       lines: compact match[1].replace(COMMENT_CLEANER, '').split MULTILINER
       i: @tokens.length - 1

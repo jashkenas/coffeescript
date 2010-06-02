@@ -53,7 +53,7 @@ exports.Rewriter: class Rewriter
   # correctly indented, or appear on a line of their own.
   adjust_comments: ->
     @scan_tokens (prev, token, post, i) =>
-      return 1 unless token[0] is 'COMMENT'
+      return 1 unless include COMMENTS, token[0]
       [before, after]: [@tokens[i - 2], @tokens[i + 2]]
       if after and after[0] is 'INDENT'
         @tokens.splice i + 2, 1
@@ -292,3 +292,6 @@ IMPLICIT_END:   ['IF', 'UNLESS', 'FOR', 'WHILE', 'UNTIL', 'TERMINATOR', 'INDENT'
 # The grammar can't disambiguate them, so we insert the implicit indentation.
 SINGLE_LINERS: ['ELSE', "->", "=>", 'TRY', 'FINALLY', 'THEN']
 SINGLE_CLOSERS: ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN']
+
+# Comment flavors.
+COMMENTS: ['COMMENT', 'HERECOMMENT']
