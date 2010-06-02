@@ -46,6 +46,7 @@ exports.Lexer: class Lexer
     @i       : 0            # Current character position we're parsing.
     @line    : o.line or 0  # The current line.
     @indent  : 0            # The current indentation level.
+    @outdebt : 0            # The under-outdentation of the last outdent.
     @indents : []           # The stack of all current indentation levels.
     @tokens  : []           # Stream of parsed tokens in the form ['TYPE', value, line]
     while @i < @code.length
@@ -218,10 +219,14 @@ exports.Lexer: class Lexer
   # Record an outdent token or multiple tokens, if we happen to be moving back
   # inwards past several recorded indents.
   outdent_token: (move_out, no_newlines) ->
-    while move_out > 0 and @indents.length
-      last_indent: @indents.pop()
-      @token 'OUTDENT', last_indent
-      move_out: - last_indent
+    if move_out > -@outdebt
+      while move_out > 0 and @indents.length
+        last_indent: @indents.pop()
+        @token 'OUTDENT', last_indent
+        move_out: - last_indent
+    else
+      @outdebt: + move_out
+    @outdebt: move_out unless no_newlines
     @token 'TERMINATOR', "\n" unless @tag() is 'TERMINATOR' or no_newlines
     true
 
