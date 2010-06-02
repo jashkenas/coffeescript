@@ -66,3 +66,7 @@ b: '''
 
 ok a is "basic heredoc 10\non two lines"
 ok b is "basic heredoc \$val\non two lines"
+
+
+a: '''here's an apostrophe'''
+ok a is "here's an apostrophe"

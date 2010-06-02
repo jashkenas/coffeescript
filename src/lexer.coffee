@@ -309,7 +309,7 @@ exports.Lexer: class Lexer
     doc: doc.replace(new RegExp("^" +indent, 'gm'), '')
     return doc if options.herecomment
     doc.replace(MULTILINER, "\\n")
-       .replace(new RegExp(options.quote, 'g'), '\\"')
+       .replace(new RegExp(options.quote, 'g'), "\\$options.quote")
 
   # Tag a half assignment.
   tag_half_assignment: (tag) ->
