@@ -59,3 +59,9 @@ ok test is 'test test test'
   This is a here-comment.
   Kind of like a heredoc.
 ###
+
+func: ->
+  ###
+  Another block comment.
+  ###
+  code
