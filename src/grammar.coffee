@@ -363,12 +363,9 @@ grammar: {
   ArgList: [
     o "",                                       -> []
     o "Expression",                             -> [$1]
-    o "INDENT Expression",                      -> [$2]
     o "ArgList , Expression",                   -> $1.concat [$3]
-    o "ArgList TERMINATOR Expression",          -> $1.concat [$3]
-    o "ArgList , TERMINATOR Expression",        -> $1.concat [$4]
-    o "ArgList , INDENT Expression",            -> $1.concat [$4]
-    o "ArgList OptComma OUTDENT"
+    o "ArgList OptComma TERMINATOR Expression", -> $1.concat [$4]
+    o "ArgList OptComma INDENT ArgList OptComma OUTDENT", -> $1.concat $4
   ]
 
   # Just simple, comma-separated, required arguments (no fancy syntax). We need

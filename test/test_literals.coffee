@@ -99,3 +99,11 @@ obj: {
 
 ok obj.is()
 ok not obj.not()
+
+
+# Funky indentation within non-comma-seperated arrays.
+result: [['a']
+ {b: 'c'}]
+
+ok result[0][0] is 'a'
+ok result[1]['b'] is 'c'
