@@ -155,3 +155,16 @@ result: sum ->
 , ->
   1 + 3
 ok result is 20
+
+# Test more function passing:
+result: sum( ->
+  1 + 2
+, ->
+  2 + 1
+)
+ok result is 6
+
+sum: (a, b) -> a + b
+result: sum(1
+, 2)
+ok result is 3

@@ -202,8 +202,8 @@ exports.Lexer: class Lexer
     @i   : + indent.length
     prev: @prev(2)
     size: indent.match(LAST_DENTS).reverse()[0].match(LAST_DENT)[1].length
-    next_character: @chunk.match(MULTI_DENT)[4]
-    no_newlines: next_character is '.' or @unfinished()
+    next_character: @chunk.match(NEXT_CHARACTER)[1]
+    no_newlines: next_character is '.' or next_character is ',' or @unfinished()
     if size is @indent
       return @suppress_newlines() if no_newlines
       return @newline_token indent
@@ -511,6 +511,7 @@ COMMENT_CLEANER : /(^[ \t]*#|\n[ \t]*$)/mg
 NO_NEWLINE      : /^([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)$/
 HEREDOC_INDENT  : /(\n+([ \t]*)|^([ \t]+))/g
 ASSIGNED        : /^([a-zA-Z\$_]\w*[ \t]*?[:=])/
+NEXT_CHARACTER  : /^\s*(\S)/
 
 # Tokens which a regular expression will never immediately follow, but which
 # a division operator might.
