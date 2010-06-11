@@ -75,7 +75,7 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
 
 task 'loc', 'count the lines of source code in CoffeeScript', ->
   exec "cat src/*.coffee | grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '", (err, stdout) ->
-    print "lines of code in src/*.coffee:$stdout"
+    print stdout
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
