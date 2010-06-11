@@ -7,9 +7,10 @@
 # Require the **coffee-script** module to get access to the compiler.
 CoffeeScript: require './coffee-script'
 helpers:      require('./helpers').helpers
+readline:     require 'readline'
 
-# Our prompt.
-prompt: 'coffee> '
+# Start by opening up **stdio**.
+stdio: process.openStdin()
 
 # Quick alias for quitting the REPL.
 helpers.extend global, {
@@ -25,9 +26,12 @@ run: (buffer) ->
     puts inspect val if val isnt undefined
   catch err
     puts err.stack or err.toString()
-  print prompt
+  repl.prompt()
 
-# Start up the REPL by opening **stdin** and listening for input.
-stdin: process.openStdin()
-stdin.addListener 'data', run
-print prompt
+# Create the REPL by listening to **stdin**.
+repl: readline.createInterface stdio
+repl.setPrompt 'coffee> '
+stdio.addListener 'data',   (buffer) -> repl.write buffer
+repl.addListener  'close',  -> stdio.destroy()
+repl.addListener  'line',   run
+repl.prompt()
