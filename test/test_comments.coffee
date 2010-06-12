@@ -65,3 +65,18 @@ func: ->
   Another block comment.
   ###
   code
+
+
+# Spaced comments in if / elses.
+result: if false
+  1
+
+# comment
+else if false
+  2
+
+# comment
+else
+  3
+
+ok result is 3
