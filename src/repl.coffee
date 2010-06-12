@@ -22,7 +22,7 @@ helpers.extend global, {
 # of exiting.
 run: (buffer) ->
   try
-    val: CoffeeScript.run buffer.toString(), {no_wrap: true, globals: true, source: 'repl'}
+    val: CoffeeScript.run buffer.toString(), {noWrap: true, globals: true, source: 'repl'}
     puts inspect val if val isnt undefined
   catch err
     puts err.stack or err.toString()

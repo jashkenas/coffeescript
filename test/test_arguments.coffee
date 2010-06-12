@@ -17,9 +17,9 @@ ok(area(
 ) is 100)
 
 
-sum_of_args: ->
+sumOfArgs: ->
   sum: 0
   sum: + val for val in arguments
   sum
 
-ok sum_of_args(1, 2, 3, 4, 5) is 15
+ok sumOfArgs(1, 2, 3, 4, 5) is 15

@@ -20,8 +20,8 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
     "cp -rf bin lib LICENSE README package.json src vendor $lib"
     "ln -sf $lib/bin/coffee $base/bin/coffee"
     "ln -sf $lib/bin/cake $base/bin/cake"
-    "mkdir -p ~/.node_libraries"
-    "ln -sf $lib/lib ~/.node_libraries/coffee-script"
+    "mkdir -p ~/.nodeLibraries"
+    "ln -sf $lib/lib ~/.nodeLibraries/coffee-script"
   ].join(' && '), (err, stdout, stderr) ->
    if err then print stderr
   )
@@ -44,8 +44,8 @@ task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   require.paths.unshift 'vendor/jison/lib'
   parser: require('./lib/grammar').parser
   js: parser.generate()
-  parser_path: 'lib/parser.js'
-  fs.writeFile parser_path, js
+  parserPath: 'lib/parser.js'
+  fs.writeFile parserPath, js
 
 
 task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter', ->
@@ -80,20 +80,20 @@ task 'loc', 'count the lines of source code in CoffeeScript', ->
 
 task 'test', 'run the CoffeeScript language test suite', ->
   helpers.extend global, require 'assert'
-  passed_tests: failed_tests: 0
-  start_time:   new Date()
-  original_ok:  ok
+  passedTests: failedTests: 0
+  startTime:   new Date()
+  originalOk:  ok
   helpers.extend global, {
-    ok: (args...) -> passed_tests += 1; original_ok(args...)
+    ok: (args...) -> passedTests += 1; originalOk(args...)
     CoffeeScript: CoffeeScript
   }
   red: '\033[0;31m'
   green: '\033[0;32m'
   reset: '\033[0m'
   process.addListener 'exit', ->
-    time: ((new Date() - start_time) / 1000).toFixed(2)
-    message: "passed $passed_tests tests in $time seconds$reset"
-    puts(if failed_tests then "${red}failed $failed_tests and $message" else "$green$message")
+    time: ((new Date() - startTime) / 1000).toFixed(2)
+    message: "passed $passedTests tests in $time seconds$reset"
+    puts(if failedTests then "${red}failed $failedTests and $message" else "$green$message")
   fs.readdir 'test', (err, files) ->
     files.forEach (file) ->
       return unless file.match(/\.coffee$/i)
@@ -102,6 +102,6 @@ task 'test', 'run the CoffeeScript language test suite', ->
         try
           CoffeeScript.run code.toString(), {source: source}
         catch err
-          failed_tests += 1
+          failedTests += 1
           puts "${red}failed:${reset} $source"
           puts err.stack

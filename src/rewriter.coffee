@@ -26,14 +26,14 @@ exports.Rewriter: class Rewriter
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (tokens) ->
     @tokens: tokens
-    @adjust_comments()
-    @remove_leading_newlines()
-    @remove_mid_expression_newlines()
-    @close_open_calls_and_indexes()
-    @add_implicit_indentation()
-    @add_implicit_parentheses()
-    @ensure_balance BALANCED_PAIRS
-    @rewrite_closing_parens()
+    @adjustComments()
+    @removeLeadingNewlines()
+    @removeMidExpressionNewlines()
+    @closeOpenCallsAndIndexes()
+    @addImplicitIndentation()
+    @addImplicitParentheses()
+    @ensureBalance BALANCED_PAIRS
+    @rewriteClosingParens()
     @tokens
 
   # Rewrite the token stream, looking one token ahead and behind.
@@ -41,7 +41,7 @@ exports.Rewriter: class Rewriter
   # forwards (or backwards) in the stream, to make sure we don't miss anything
   # as tokens are inserted and removed, and the stream changes length under
   # our feet.
-  scan_tokens: (block) ->
+  scanTokens: (block) ->
     i: 0
     loop
       break unless @tokens[i]
@@ -51,8 +51,8 @@ exports.Rewriter: class Rewriter
 
   # Massage newlines and indentations so that comments don't have to be
   # correctly indented, or appear on a line of their own.
-  adjust_comments: ->
-    @scan_tokens (prev, token, post, i) =>
+  adjustComments: ->
+    @scanTokens (prev, token, post, i) =>
       return 1 unless include COMMENTS, token[0]
       [before, after]: [@tokens[i - 2], @tokens[i + 2]]
       if after and after[0] is 'INDENT'
@@ -74,13 +74,13 @@ exports.Rewriter: class Rewriter
 
   # Leading newlines would introduce an ambiguity in the grammar, so we
   # dispatch them here.
-  remove_leading_newlines: ->
+  removeLeadingNewlines: ->
     @tokens.shift() while @tokens[0] and @tokens[0][0] is 'TERMINATOR'
 
   # Some blocks occur in the middle of expressions -- when we're expecting
   # this, remove their trailing newlines.
-  remove_mid_expression_newlines: ->
-    @scan_tokens (prev, token, post, i) =>
+  removeMidExpressionNewlines: ->
+    @scanTokens (prev, token, post, i) =>
       return 1 unless post and include(EXPRESSION_CLOSE, post[0]) and token[0] is 'TERMINATOR'
       @tokens.splice i, 1
       return 0
@@ -88,10 +88,10 @@ exports.Rewriter: class Rewriter
   # The lexer has tagged the opening parenthesis of a method call, and the
   # opening bracket of an indexing operation. Match them with their paired
   # close.
-  close_open_calls_and_indexes: ->
+  closeOpenCallsAndIndexes: ->
     parens:   [0]
     brackets: [0]
-    @scan_tokens (prev, token, post, i) =>
+    @scanTokens (prev, token, post, i) =>
       switch token[0]
         when 'CALL_START'  then parens.push 0
         when 'INDEX_START' then brackets.push 0
@@ -114,15 +114,15 @@ exports.Rewriter: class Rewriter
   # Methods may be optionally called without parentheses, for simple cases.
   # Insert the implicit parentheses here, so that the parser doesn't have to
   # deal with them.
-  add_implicit_parentheses: ->
+  addImplicitParentheses: ->
     stack: [0]
-    close_calls: (i) =>
+    closeCalls: (i) =>
       for tmp in [0...stack[stack.length - 1]]
         @tokens.splice(i, 0, ['CALL_END', ')', @tokens[i][2]])
       size: stack[stack.length - 1] + 1
       stack[stack.length - 1]: 0
       size
-    @scan_tokens (prev, token, post, i) =>
+    @scanTokens (prev, token, post, i) =>
       tag: token[0]
       stack[stack.length - 2]: + stack.pop() if tag is 'OUTDENT'
       open: stack[stack.length - 1] > 0
@@ -133,7 +133,7 @@ exports.Rewriter: class Rewriter
         return 2
       if include(EXPRESSION_START, tag)
         if tag is 'INDENT' and !token.generated and open and not (prev and include(IMPLICIT_BLOCK, prev[0]))
-          size: close_calls(i)
+          size: closeCalls(i)
           stack.push 0
           return size
         stack.push 0
@@ -143,7 +143,7 @@ exports.Rewriter: class Rewriter
         if nx? and nx[0] is ','
           @tokens.splice(i, 1) if tag is 'TERMINATOR'
         else
-          size: close_calls(i)
+          size: closeCalls(i)
           stack.pop() if tag isnt 'OUTDENT' and include EXPRESSION_END, tag
           return size
       if tag isnt 'OUTDENT' and include EXPRESSION_END, tag
@@ -155,8 +155,8 @@ exports.Rewriter: class Rewriter
   # expressions that lack ending delimiters. The **Rewriter** adds the implicit
   # blocks, so it doesn't need to. ')' can close a single-line block,
   # but we need to make sure it's balanced.
-  add_implicit_indentation: ->
-    @scan_tokens (prev, token, post, i) =>
+  addImplicitIndentation: ->
+    @scanTokens (prev, token, post, i) =>
       return 1 unless include(SINGLE_LINERS, token[0]) and
         post[0] isnt 'INDENT' and
         not (token[0] is 'ELSE' and post[0] is 'IF')
@@ -187,15 +187,15 @@ exports.Rewriter: class Rewriter
 
   # Ensure that all listed pairs of tokens are correctly balanced throughout
   # the course of the token stream.
-  ensure_balance: (pairs) ->
+  ensureBalance: (pairs) ->
     levels: {}
-    open_line: {}
-    @scan_tokens (prev, token, post, i) =>
+    openLine: {}
+    @scanTokens (prev, token, post, i) =>
       for pair in pairs
         [open, close]: pair
         levels[open]: or 0
         if token[0] is open
-          open_line[open]: token[2] if levels[open] == 0
+          openLine[open]: token[2] if levels[open] == 0
           levels[open]: + 1
         levels[open]: - 1 if token[0] is close
         throw new Error("too many ${token[1]} on line ${token[2] + 1}") if levels[open] < 0
@@ -203,7 +203,7 @@ exports.Rewriter: class Rewriter
     unclosed: key for key, value of levels when value > 0
     if unclosed.length
       open: unclosed[0]
-      line: open_line[open] + 1
+      line: openLine[open] + 1
       throw new Error "unclosed $open on line $line"
 
   # We'd like to support syntax like this:
@@ -222,11 +222,11 @@ exports.Rewriter: class Rewriter
   #    up balanced in the end.
   # 4. Be careful not to alter array or parentheses delimiters with overzealous
   #    rewriting.
-  rewrite_closing_parens: ->
+  rewriteClosingParens: ->
     stack: []
     debt:  {}
     (debt[key]: 0) for key, val of INVERSES
-    @scan_tokens (prev, token, post, i) =>
+    @scanTokens (prev, token, post, i) =>
       tag: token[0]
       inv: INVERSES[token[0]]
       if include EXPRESSION_START, tag

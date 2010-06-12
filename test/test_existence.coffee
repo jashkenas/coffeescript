@@ -1,8 +1,8 @@
-ok(if my_special_variable? then false else true)
+ok(if mySpecialVariable? then false else true)
 
-my_special_variable: false
+mySpecialVariable: false
 
-ok(if my_special_variable? then true else false)
+ok(if mySpecialVariable? then true else false)
 
 
 # Existential assignment.
@@ -23,11 +23,11 @@ ok z is null and x is "EX"
 
 # Only evaluate once.
 counter: 0
-get_next_node: ->
+getNextNode: ->
   throw "up" if counter
   counter++
 
-ok(if get_next_node()? then true else false)
+ok(if getNextNode()? then true else false)
 
 
 # Existence chains, soaking up undefined properties:

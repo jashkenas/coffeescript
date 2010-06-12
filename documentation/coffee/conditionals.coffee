@@ -1,9 +1,9 @@
-mood: greatly_improved if singing
+mood: greatlyImproved if singing
 
-if happy and knows_it
-  claps_hands()
-  cha_cha_cha()
+if happy and knowsIt
+  clapsHands()
+  chaChaCha()
 
 date: if friday then sue else jill
 
-expensive: or do_the_math()
+expensive: or doTheMath()

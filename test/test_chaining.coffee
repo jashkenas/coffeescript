@@ -1,8 +1,8 @@
 # Basic chained function calls.
-identity_wrap: (x) ->
+identityWrap: (x) ->
   -> x
 
-result: identity_wrap(identity_wrap(true))()()
+result: identityWrap(identityWrap(true))()()
 
 ok result
 

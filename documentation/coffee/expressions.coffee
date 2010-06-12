@@ -1,8 +1,8 @@
 grade: (student) ->
-  if student.excellent_work
+  if student.excellentWork
     "A+"
-  else if student.okay_stuff
-    if student.tried_hard then "B" else "B-"
+  else if student.okayStuff
+    if student.triedHard then "B" else "B-"
   else
     "C"
 

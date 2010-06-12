@@ -80,17 +80,17 @@ ok(num % 2 is 0 for num in array by 2)
 
 
 # Nested comprehensions.
-multi_liner:
+multiLiner:
   for x in [3..5]
     for y in [3..5]
       [x, y]
 
-single_liner:
+singleLiner:
   [x, y] for y in [3..5] for x in [3..5]
 
-ok multi_liner.length is single_liner.length
-ok 5 is multi_liner[2][2][1]
-ok 5 is single_liner[2][2][1]
+ok multiLiner.length is singleLiner.length
+ok 5 is multiLiner[2][2][1]
+ok 5 is singleLiner[2][2][1]
 
 
 # Comprehensions within parentheses.

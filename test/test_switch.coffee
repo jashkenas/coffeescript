@@ -46,7 +46,7 @@ ok result
 result: false
 switch "word"
   when "one thing"
-    do_something()
+    doSomething()
   else
     result: true unless false
 
@@ -55,9 +55,9 @@ ok result
 result: false
 switch "word"
   when "one thing"
-    do_something()
+    doSomething()
   when "other thing"
-    do_something()
+    doSomething()
   else
     result: true unless false
 

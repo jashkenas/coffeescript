@@ -13,7 +13,7 @@ switch 'string'
   when false then something()
   # comment
   when null
-    something_else()
+    somethingElse()
 
 ->
   code()

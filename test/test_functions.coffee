@@ -57,8 +57,8 @@ ok 100 > 1 if 1 > 0
 ok true unless false
 ok true for i in [1..3]
 
-ok_func: (f) -> ok(f())
-ok_func -> true
+okFunc: (f) -> ok(f())
+okFunc -> true
 
 # Optional parens can be used in a nested fashion.
 call: (func) -> func()

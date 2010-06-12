@@ -1,5 +1,5 @@
 # Econ 101
-if this.studying_economics
+if this.studyingEconomics
   buy()  while supply > demand
   sell() until supply > demand
 

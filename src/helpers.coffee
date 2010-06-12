@@ -7,7 +7,7 @@ this.exports: this unless process?
 helpers: exports.helpers: {}
 
 # Cross-browser indexOf, so that IE can join the party.
-helpers.index_of: index_of: (array, item, from) ->
+helpers.indexOf: indexOf: (array, item, from) ->
   return array.indexOf item, from if array.indexOf
   for other, index in array
     if other is item and (not from or (from <= index))
@@ -16,7 +16,7 @@ helpers.index_of: index_of: (array, item, from) ->
 
 # Does a list include a value?
 helpers.include: include: (list, value) ->
-  index_of(list, value) >= 0
+  indexOf(list, value) >= 0
 
 # Peek at the beginning of a given string to see if it matches a sequence.
 helpers.starts: starts: (string, literal, start) ->
@@ -28,10 +28,10 @@ helpers.compact: compact: (array) -> item for item in array when item
 # Count the number of occurences of a character in a string.
 helpers.count: count: (string, letter) ->
   num: 0
-  pos: index_of string, letter
+  pos: indexOf string, letter
   while pos isnt -1
     num: + 1
-    pos: index_of string, letter, pos + 1
+    pos: indexOf string, letter, pos + 1
   num
 
 # Merge objects, returning a fresh copy with attributes from both sides.
@@ -67,7 +67,7 @@ helpers.del: del: (obj, key) ->
 # a series of delimiters, all of which must be nested correctly within the
 # contents of the string. This method allows us to have strings within
 # interpolations within strings, ad infinitum.
-helpers.balanced_string: balanced_string: (str, delimited, options) ->
+helpers.balancedString: balancedString: (str, delimited, options) ->
   options: or {}
   slash: delimited[0][0] is '/'
   levels: []

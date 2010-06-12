@@ -1,4 +1,4 @@
-# This file is imported by `test_importing.coffee`
+# This file is imported by `testImporting.coffee`
 
 local: "from over there"
 

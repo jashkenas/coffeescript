@@ -1,4 +1,4 @@
-# Ensure that we don't wrap Nodes that are "pure_statement" in a closure.
+# Ensure that we don't wrap Nodes that are "pureStatement" in a closure.
 items: [1, 2, 3, "bacon", 4, 5]
 
 for item in items

@@ -30,10 +30,10 @@ unwrap: /function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 # we pass the pattern-defining string, the action to run, and extra options,
 # optionally. If no action is specified, we simply pass the value of the
 # previous nonterminal.
-o: (pattern_string, action, options) ->
-  return [pattern_string, '$$ = $1;', options] unless action
+o: (patternString, action, options) ->
+  return [patternString, '$$ = $1;', options] unless action
   action: if match: (action + '').match(unwrap) then match[1] else "($action())"
-  [pattern_string, "$$ = $action;", options]
+  [patternString, "$$ = $action;", options]
 
 # Grammatical Rules
 # -----------------
@@ -252,7 +252,7 @@ grammar: {
   # Indexing into an object or array using bracket notation.
   Index: [
     o "INDEX_START Expression INDEX_END",       -> new IndexNode $2
-    o "INDEX_SOAK Index",                       -> $2.soak_node: yes; $2
+    o "INDEX_SOAK Index",                       -> $2.soakNode: yes; $2
     o "INDEX_PROTO Index",                      -> $2.proto: yes; $2
   ]
 
@@ -297,7 +297,7 @@ grammar: {
   # and calling `super()`
   Call: [
     o "Invocation"
-    o "NEW Invocation",                         -> $2.new_instance()
+    o "NEW Invocation",                         -> $2.newInstance()
     o "Super"
   ]
 
@@ -413,15 +413,15 @@ grammar: {
   # The while loop can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression. There is no do..while.
   While: [
-    o "WhileSource Block",                      -> $1.add_body $2
-    o "Statement WhileSource",                  -> $2.add_body Expressions.wrap [$1]
-    o "Expression WhileSource",                 -> $2.add_body Expressions.wrap [$1]
+    o "WhileSource Block",                      -> $1.addBody $2
+    o "Statement WhileSource",                  -> $2.addBody Expressions.wrap [$1]
+    o "Expression WhileSource",                 -> $2.addBody Expressions.wrap [$1]
     o "Loop",                                   -> $1
   ]
 
   Loop: [
-    o "LOOP Block",                             -> new WhileNode(new LiteralNode 'true').add_body $2
-    o "LOOP Expression",                        -> new WhileNode(new LiteralNode 'true').add_body Expressions.wrap [$2]
+    o "LOOP Block",                             -> new WhileNode(new LiteralNode 'true').addBody $2
+    o "LOOP Expression",                        -> new WhileNode(new LiteralNode 'true').addBody Expressions.wrap [$2]
   ]
 
   # Array, object, and range comprehensions, at the most generic level.
@@ -465,17 +465,17 @@ grammar: {
   # The CoffeeScript switch/when/else block replaces the JavaScript
   # switch/case/default by compiling into an if-else chain.
   Switch: [
-    o "SWITCH Expression INDENT Whens OUTDENT", -> $4.switches_over $2
-    o "SWITCH Expression INDENT Whens ELSE Block OUTDENT", -> $4.switches_over($2).add_else $6, true
+    o "SWITCH Expression INDENT Whens OUTDENT", -> $4.switchesOver $2
+    o "SWITCH Expression INDENT Whens ELSE Block OUTDENT", -> $4.switchesOver($2).addElse $6, true
     o "SWITCH INDENT Whens OUTDENT",            -> $3
-    o "SWITCH INDENT Whens ELSE Block OUTDENT", -> $3.add_else $5, true
+    o "SWITCH INDENT Whens ELSE Block OUTDENT", -> $3.addElse $5, true
   ]
 
   # The inner list of whens is left recursive. At code-generation time, the
   # IfNode will rewrite them into a proper chain.
   Whens: [
     o "When"
-    o "Whens When",                             -> $1.add_else $2
+    o "Whens When",                             -> $1.addElse $2
   ]
 
   # An individual **When** clause, with action.
@@ -491,13 +491,13 @@ grammar: {
   IfStart: [
     o "IF Expression Block",                    -> new IfNode $2, $3
     o "UNLESS Expression Block",                -> new IfNode $2, $3, {invert: true}
-    o "IfStart ELSE IF Expression Block",       -> $1.add_else (new IfNode($4, $5)).force_statement()
+    o "IfStart ELSE IF Expression Block",       -> $1.addElse (new IfNode($4, $5)).forceStatement()
   ]
 
   # An **IfStart** can optionally be followed by an else block.
   IfBlock: [
     o "IfStart"
-    o "IfStart ELSE Block",                     -> $1.add_else $3
+    o "IfStart ELSE Block",                     -> $1.addElse $3
   ]
 
   # The full complement of *if* expressions, including postfix one-liner

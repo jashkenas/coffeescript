@@ -83,10 +83,10 @@ parser.lexer: {
 # on page load. Unfortunately, the text contents of remote scripts cannot be
 # accessed from the browser, so only inline script tags will work.
 if document? and document.getElementsByTagName
-  process_scripts: ->
+  processScripts: ->
     for tag in document.getElementsByTagName('script') when tag.type is 'text/coffeescript'
       eval exports.compile tag.innerHTML
   if window.addEventListener
-    window.addEventListener 'load', process_scripts, false
+    window.addEventListener 'load', processScripts, false
   else if window.attachEvent
-    window.attachEvent 'onload', process_scripts
+    window.attachEvent 'onload', processScripts

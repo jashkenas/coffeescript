@@ -1,3 +1,3 @@
 task 'test', 'run each of the unit tests', ->
-  for test in test_files
+  for test in testFiles
     fs.readFile test, (err, code) -> eval coffee.compile code

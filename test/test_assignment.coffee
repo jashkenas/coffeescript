@@ -10,13 +10,13 @@ ok result is true and result2 is true
 
 
 # Can assign a conditional statement.
-get_x: -> 10
+getX: -> 10
 
-if x: get_x() then 100
+if x: getX() then 100
 
 ok x is 10
 
-x: if get_x() then 100
+x: if getX() then 100
 
 ok x is 100
 

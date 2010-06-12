@@ -102,11 +102,11 @@ ok (new SubClass()).prop is 'top-super-sub'
 
 # '@' referring to the current instance, and not being coerced into a call.
 class ClassName
-  am_i: ->
+  amI: ->
     @ instanceof ClassName
 
 obj: new ClassName()
-ok obj.am_i()
+ok obj.amI()
 
 
 # super() calls in constructors of classes that are defined as object properties.

@@ -40,18 +40,18 @@ reg: /\\/
 
 ok reg(str) and str is '\\'
 
-trailing_comma: [1, 2, 3,]
-ok (trailing_comma[0] is 1) and (trailing_comma[2] is 3) and (trailing_comma.length is 3)
+trailingComma: [1, 2, 3,]
+ok (trailingComma[0] is 1) and (trailingComma[2] is 3) and (trailingComma.length is 3)
 
-trailing_comma: [
+trailingComma: [
   1, 2, 3,
   4, 5, 6
   7, 8, 9,
 ]
-(sum: (sum or 0) + n) for n in trailing_comma
+(sum: (sum or 0) + n) for n in trailingComma
 
-trailing_comma: {k1: "v1", k2: 4, k3: (-> true),}
-ok trailing_comma.k3() and (trailing_comma.k2 is 4) and (trailing_comma.k1 is "v1")
+trailingComma: {k1: "v1", k2: 4, k3: (-> true),}
+ok trailingComma.k3() and (trailingComma.k2 is 4) and (trailingComma.k1 is "v1")
 
 multiline: {a: 15,
   b: 26}

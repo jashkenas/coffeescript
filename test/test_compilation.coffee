@@ -2,7 +2,7 @@
 CoffeeScript: require('./../lib/coffee-script')
 Lexer: require('./../lib/lexer')
 
-js: CoffeeScript.compile("one\r\ntwo", {no_wrap: on})
+js: CoffeeScript.compile("one\r\ntwo", {noWrap: on})
 
 ok js is "one;\ntwo;"
 
@@ -17,7 +17,7 @@ class SplitNode extends BaseNode
   constructor: (variable) ->
     @variable: variable
 
-  compile_node: (o) ->
+  compileNode: (o) ->
     "'${@variable}'.split('')"
 
 # Extend CoffeeScript with our lexing function that matches --wordgoeshere--
@@ -29,7 +29,7 @@ CoffeeScript.extend ->
   true
 
 # Compile with the extension.
-js: CoffeeScript.compile 'return --tobesplit--', {no_wrap: on}
+js: CoffeeScript.compile 'return --tobesplit--', {noWrap: on}
 
 ok js is "return 'tobesplit'.split('');"
 
@@ -42,7 +42,7 @@ class WordArrayNode extends BaseNode
   constructor: (words) ->
     @words: words
 
-  compile_node: (o) ->
+  compileNode: (o) ->
     strings = ("\"$word\"" for word in @words).join ', '
     "[$strings]"
 
@@ -52,7 +52,7 @@ CoffeeScript.extend ->
   @token 'EXTENSION', new WordArrayNode(words[1].split(/\s+/))
   true
 
-js: CoffeeScript.compile 'puts %w{one two three}', {no_wrap: on}
+js: CoffeeScript.compile 'puts %w{one two three}', {noWrap: on}
 
 ok js is 'puts(["one", "two", "three"]);'
 
@@ -65,7 +65,7 @@ CoffeeScript.extend ->
   @token 'PROPERTY_ACCESS', '.'
   @token 'IDENTIFIER', 'push'
 
-js: CoffeeScript.compile 'a << b', {no_wrap: on}
+js: CoffeeScript.compile 'a << b', {noWrap: on}
 
 ok js is 'a.push(b);'
 
