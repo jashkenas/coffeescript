@@ -171,7 +171,7 @@ exports.Rewriter: class Rewriter
         tok: @tokens[idx]
         pre: @tokens[idx - 1]
         if (not tok or
-            (include(SINGLE_CLOSERS, tok[0]) and tok[1] isnt ';') or
+            (include(SINGLE_CLOSERS, tok[0]) and tok[1] isnt ';' and parens is 0) or
             (tok[0] is ')' and parens is 0)) and
             not (starter is 'ELSE' and tok[0] is 'ELSE')
           insertion: if pre[0] is "," then idx - 1 else idx

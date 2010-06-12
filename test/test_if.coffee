@@ -42,3 +42,9 @@ else
   11
 
 ok result is 11
+
+
+# Nested inline if statements.
+echo: (x) -> x
+result: if true then echo((if false then 'xxx' else 'y') + 'a')
+ok result is 'ya'
