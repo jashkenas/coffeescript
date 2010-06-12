@@ -80,3 +80,9 @@ else
   3
 
 ok result is 3
+
+
+result: switch 'z'
+  when 'z' then 7
+# comment
+ok result is 7

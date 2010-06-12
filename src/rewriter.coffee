@@ -62,13 +62,13 @@ exports.Rewriter: class Rewriter
         else
           @tokens.splice i, 0, after
       else if prev and prev[0] isnt 'TERMINATOR' and prev[0] isnt 'INDENT' and prev[0] isnt 'OUTDENT'
-        @tokens.splice i, 0, ['TERMINATOR', "\n", prev[2]]
+        if post and post[0] is 'TERMINATOR' and after and after[0] is 'OUTDENT'
+          @tokens.splice(i, 0, @tokens.splice(i + 2, 2)...)
+        else
+          @tokens.splice i, 0, ['TERMINATOR', "\n", prev[2]]
         return 2
-      else if before and before[0] is 'OUTDENT'    and
-              prev   and prev[0]   is 'TERMINATOR' and
-              post   and post[0]   is 'TERMINATOR' and
-              after  and after[0]  is 'ELSE'
-        @tokens.splice i + 1, 0, @tokens.splice(i - 2, 1)[0]
+      else if before and before[0] is 'OUTDENT' and prev and prev[0] is 'TERMINATOR' and post and post[0] is 'TERMINATOR' and after and after[0] is 'ELSE'
+          @tokens.splice i + 1, 0, @tokens.splice(i - 2, 1)[0]
       return 1
 
   # Leading newlines would introduce an ambiguity in the grammar, so we
