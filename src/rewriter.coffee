@@ -67,7 +67,8 @@ exports.Rewriter: class Rewriter
         else
           @tokens.splice i, 0, ['TERMINATOR', "\n", prev[2]]
         return 2
-      else if before and before[0] is 'OUTDENT' and prev and prev[0] is 'TERMINATOR' and post and post[0] is 'TERMINATOR' and after and after[0] is 'ELSE'
+      else if before and before[0] is 'OUTDENT' and prev and prev[0] is 'TERMINATOR' and
+              post and post[0] is 'TERMINATOR' and after and after[0] is 'ELSE'
           @tokens.splice i + 1, 0, @tokens.splice(i - 2, 1)[0]
       return 1
 
