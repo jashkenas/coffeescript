@@ -21,7 +21,7 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
     "ln -sf $lib/bin/coffee $base/bin/coffee"
     "ln -sf $lib/bin/cake $base/bin/cake"
     "mkdir -p ~/.nodeLibraries"
-    "ln -sf $lib/lib ~/.nodeLibraries/coffee-script"
+    "ln -sf $lib/lib ~/.node_libraries/coffee-script"
   ].join(' && '), (err, stdout, stderr) ->
    if err then print stderr
   )
