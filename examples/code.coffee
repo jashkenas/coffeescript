@@ -94,7 +94,7 @@ while demand > supply
 
 while supply > demand then buy()
 
-while true
+loop
   break if broken
   continue if continuing
 

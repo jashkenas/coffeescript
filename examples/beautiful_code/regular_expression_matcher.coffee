@@ -21,7 +21,7 @@ match_here: (regexp, text) ->
 
 # Search for a kleene star match at the beginning of the text.
 match_star: (c, regexp, text) ->
-  while true
+  loop
     return true if match_here(regexp, text)
     return false unless text and (text[0] is c or c is '.')
     text: text.slice(1)

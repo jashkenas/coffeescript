@@ -346,7 +346,7 @@
     return [] if len <= 0
     range:    new Array len
     idx:      0
-    while true
+    loop
       return range if (if step > 0 then i - stop else stop - i) >= 0
       range[idx]: i
       idx++

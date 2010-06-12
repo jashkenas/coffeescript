@@ -14,8 +14,7 @@ print(add(2, 4))
 
 # loop: 'quaff' print.
 
-while true
-  print('quaff')
+loop print 'quaff'
 
 
 # ('cheese', 'bread', 'mayo') at (1) print

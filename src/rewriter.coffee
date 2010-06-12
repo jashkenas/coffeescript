@@ -43,7 +43,7 @@ exports.Rewriter: class Rewriter
   # our feet.
   scan_tokens: (block) ->
     i: 0
-    while true
+    loop
       break unless @tokens[i]
       move: block @tokens[i - 1], @tokens[i], @tokens[i + 1], i
       i: + move
@@ -162,7 +162,7 @@ exports.Rewriter: class Rewriter
       @tokens.splice i + 1, 0, indent
       idx: i + 1
       parens: 0
-      while true
+      loop
         idx: + 1
         tok: @tokens[idx]
         pre: @tokens[idx - 1]
@@ -286,7 +286,7 @@ IMPLICIT_CALL:  ['IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_
 IMPLICIT_BLOCK: ['->', '=>', '{', '[', ',']
 
 # Tokens that always mark the end of an implicit call for single-liners.
-IMPLICIT_END:   ['IF', 'UNLESS', 'FOR', 'WHILE', 'UNTIL', 'TERMINATOR', 'INDENT'].concat EXPRESSION_END
+IMPLICIT_END:   ['IF', 'UNLESS', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'TERMINATOR', 'INDENT'].concat EXPRESSION_END
 
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.

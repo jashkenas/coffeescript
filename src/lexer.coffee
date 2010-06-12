@@ -323,7 +323,7 @@ exports.Lexer: class Lexer
   tag_parameters: ->
     return if @tag() isnt ')'
     i: 0
-    while true
+    loop
       i: + 1
       tok: @prev i
       return if not tok
@@ -466,7 +466,7 @@ JS_KEYWORDS: [
 # be used standalone, but you can reference them as an attached property.
 COFFEE_ALIASES:  ["and", "or", "is", "isnt", "not"]
 COFFEE_KEYWORDS: COFFEE_ALIASES.concat [
-  "then", "unless", "until",
+  "then", "unless", "until", "loop",
   "yes", "no", "on", "off",
   "of", "by", "where", "when"
 ]

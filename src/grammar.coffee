@@ -416,6 +416,12 @@ grammar: {
     o "WhileSource Block",                      -> $1.add_body $2
     o "Statement WhileSource",                  -> $2.add_body Expressions.wrap [$1]
     o "Expression WhileSource",                 -> $2.add_body Expressions.wrap [$1]
+    o "Loop",                                   -> $1
+  ]
+
+  Loop: [
+    o "LOOP Block",                             -> new WhileNode(new LiteralNode 'true').add_body $2
+    o "LOOP Expression",                        -> new WhileNode(new LiteralNode 'true').add_body Expressions.wrap [$2]
   ]
 
   # Array, object, and range comprehensions, at the most generic level.
@@ -596,7 +602,7 @@ operators: [
   ["right",     'INDENT']
   ["left",      'OUTDENT']
   ["right",     'WHEN', 'LEADING_WHEN', 'IN', 'OF', 'BY', 'THROW']
-  ["right",     'FOR', 'WHILE', 'UNTIL', 'NEW', 'SUPER', 'CLASS']
+  ["right",     'FOR', 'WHILE', 'UNTIL', 'LOOP', 'NEW', 'SUPER', 'CLASS']
   ["left",      'EXTENDS']
   ["right",     'ASSIGN', 'RETURN']
   ["right",     '->', '=>', 'UNLESS', 'IF', 'ELSE']

@@ -36,3 +36,14 @@ results: until value
   i += 1
 
 ok i is 6
+
+
+# And, the loop form of while.
+i: 5
+list: []
+loop
+  i: - 1
+  break if i is 0
+  list.push i * 2
+
+ok list.join(' ') is '8 6 4 2'
