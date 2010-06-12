@@ -1395,7 +1395,7 @@ UTILITIES: {
 
   # Shortcuts to speed up the lookup time for native functions.
   __hasProp: 'Object.prototype.hasOwnProperty'
-  __slice: 'Array.prototype.slice'
+  __slice:   'Array.prototype.slice'
 
 }
 
