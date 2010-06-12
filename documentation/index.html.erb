@@ -697,15 +697,6 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       have referred to the undefined "customer" property of the DOM element,
       and trying to call <tt>purchase()</tt> on it would have raised an exception.
     </p>
-    <p>
-      If you have more custom needs for function binding, CoffeeScript includes
-      the <tt>&lt;-</tt> bind operator, which works the same as ECMAScript 5
-      and Prototype.js's <tt>Function#bind</tt>. The first argument is the <tt>this</tt>
-      value, and the remainder are curried arguments. In the example below,
-      we curry a jQuery request for a URL, and then execute the bound function
-      with the missing callback argument.
-    </p>
-    <%= code_for('binding', true) %>
 
     <p>
       <span id="embedded" class="bookmark"></span>

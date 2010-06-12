@@ -394,7 +394,8 @@ exports.CallNode: class CallNode extends BaseNode
     @is_super: variable is 'super'
     @variable: if @is_super then null else variable
     @args: (args or [])
-    @compile_splat_arguments: SplatNode.compile_mixed_array <- @, @args
+    @compile_splat_arguments: (o) ->
+      SplatNode.compile_mixed_array.call(this, @args, o)
 
   # Tag this invocation as creating a new instance.
   new_instance: ->
@@ -439,32 +440,6 @@ exports.CallNode: class CallNode extends BaseNode
       obj:  temp
       meth: "($temp = ${ @variable.source })${ @variable.last }"
     "${@prefix()}${meth}.apply($obj, ${ @compile_splat_arguments(o) })"
-
-#### CurryNode
-
-# Binds a context object and a list of arguments to a function,
-# returning the bound function. After ECMAScript 5, Prototype.js, and
-# Underscore's `bind` functions.
-exports.CurryNode: class CurryNode extends CallNode
-
-  type:     'CurryNode'
-  children: ['meth', 'context', 'args']
-
-  constructor: (meth, args) ->
-    @meth: meth
-    @context: args[0]
-    @args: (args.slice(1) or [])
-    @compile_splat_arguments: SplatNode.compile_mixed_array <- @, @args
-
-  arguments: (o) ->
-    for arg in @args
-      return @compile_splat_arguments(o) if arg instanceof SplatNode
-    (new ArrayNode(@args)).compile o
-
-  compile_node: (o) ->
-    utility 'slice'
-    ref: new ValueNode literal utility 'bind'
-    (new CallNode(ref, [@meth, @context, literal(@arguments(o))])).compile o
 
 #### ExtendsNode
 
@@ -629,7 +604,8 @@ exports.ArrayNode: class ArrayNode extends BaseNode
 
   constructor: (objects) ->
     @objects: objects or []
-    @compile_splat_literal: SplatNode.compile_mixed_array <- @, @objects
+    @compile_splat_literal: (o) ->
+      SplatNode.compile_mixed_array.call(this, @objects, o)
 
   compile_node: (o) ->
     o.indent: @idt 1
@@ -862,9 +838,8 @@ exports.CodeNode: class CodeNode extends BaseNode
     func: "function(${ params.join(', ') }) {$code${@idt(if @bound then 1 else 0)}}"
     func: "($func)" if top and not @bound
     return func unless @bound
-    utility 'slice'
-    ref: new ValueNode literal utility 'bind'
-    (new CallNode ref, [literal(func), literal('this')]).compile o
+    inner: "(function() {\n${@idt(2)}return __func.apply(__this, arguments);\n${@idt(1)}});"
+    "(function(__this) {\n${@idt(1)}var __func = $func;\n${@idt(1)}return $inner\n$@tab})(this)"
 
   top_sensitive: ->
     true
@@ -1417,16 +1392,6 @@ UTILITIES: {
                   child.prototype.constructor = child;
                 }
               """
-
-  # Bind a function to a calling context, optionally including curried arguments.
-  # See [Underscore's implementation](http://jashkenas.github.com/coffee-script/documentation/docs/underscore.html#section-47).
-  __bind:   """
-            function(func, obj, args) {
-                return function() {
-                  return func.apply(obj || {}, args ? args.concat(__slice.call(arguments, 0)) : arguments);
-                };
-              }
-            """
 
   # Shortcuts to speed up the lookup time for native functions.
   __hasProp: 'Object.prototype.hasOwnProperty'

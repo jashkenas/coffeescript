@@ -87,7 +87,6 @@ grammar: {
   Expression: [
     o "Value"
     o "Call"
-    o "Curry"
     o "Code"
     o "Operation"
     o "Assign"
@@ -300,11 +299,6 @@ grammar: {
     o "Invocation"
     o "NEW Invocation",                         -> $2.new_instance()
     o "Super"
-  ]
-
-  # Binds a function call to a context and/or arguments.
-  Curry: [
-    o "Value <- Arguments",                     -> new CurryNode $1, $3
   ]
 
   # Extending an object by setting its prototype chain to reference a parent
@@ -605,7 +599,7 @@ operators: [
   ["right",     'FOR', 'WHILE', 'UNTIL', 'NEW', 'SUPER', 'CLASS']
   ["left",      'EXTENDS']
   ["right",     'ASSIGN', 'RETURN']
-  ["right",     '->', '=>', '<-', 'UNLESS', 'IF', 'ELSE']
+  ["right",     '->', '=>', 'UNLESS', 'IF', 'ELSE']
 ]
 
 # Wrapping Up
