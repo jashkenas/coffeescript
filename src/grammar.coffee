@@ -491,18 +491,13 @@ grammar: {
   IfStart: [
     o "IF Expression Block",                    -> new IfNode $2, $3
     o "UNLESS Expression Block",                -> new IfNode $2, $3, {invert: true}
-    o "IfStart ElsIf",                          -> $1.add_else $2
+    o "IfStart ELSE IF Expression Block",       -> $1.add_else (new IfNode($4, $5)).force_statement()
   ]
 
   # An **IfStart** can optionally be followed by an else block.
   IfBlock: [
     o "IfStart"
     o "IfStart ELSE Block",                     -> $1.add_else $3
-  ]
-
-  # An *else if* continuation of the *if* expression.
-  ElsIf: [
-    o "ELSE IF Expression Block",               -> (new IfNode($3, $4)).force_statement()
   ]
 
   # The full complement of *if* expressions, including postfix one-liner
