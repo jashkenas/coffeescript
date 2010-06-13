@@ -1301,12 +1301,11 @@ exports.IfNode: class IfNode extends BaseNode
 
   makeReturn: ->
     @body:      and @ensureExpressions(@body.makeReturn())
-    @elseBody: and @ensureExpressions(@elseBody.makeReturn())
+    @elseBody:  and @ensureExpressions(@elseBody.makeReturn())
     this
 
   ensureExpressions: (node) ->
-    node: new Expressions([node]) unless node instanceof Expressions
-    node
+    if node instanceof Expressions then node else new Expressions [node]
 
   # Compile the **IfNode** as a regular *if-else* statement. Flattened chains
   # force inner *else* bodies into statement form.
