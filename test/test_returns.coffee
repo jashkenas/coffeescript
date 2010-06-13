@@ -11,3 +11,14 @@ third: ->
 ok first().join(' ')     is 'do do do'
 ok second()[0].join(' ') is 're re re'
 ok third().join(' ')     is 'mi mi mi'
+
+
+# Testing returns with multiple branches.
+func: ->
+  if false
+    for a in b
+      return c if d
+  else
+    "word"
+
+ok func() is 'word'

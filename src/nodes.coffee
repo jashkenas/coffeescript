@@ -179,7 +179,7 @@ exports.Expressions: class Expressions extends BaseNode
     last: @expressions[idx]
     last: @expressions[idx: - 1] if last instanceof CommentNode
     return this if not last or last instanceof ReturnNode
-    @expressions[idx]: last.makeReturn() unless last.containsPureStatement()
+    @expressions[idx]: last.makeReturn()
     this
 
   # An **Expressions** is the only node that can serve as the root.
@@ -263,6 +263,9 @@ exports.ReturnNode: class ReturnNode extends BaseNode
 
   topSensitive: ->
     true
+
+  makeReturn: ->
+    this
 
   compileNode: (o) ->
     expr: @expression.makeReturn()
