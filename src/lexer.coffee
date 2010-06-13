@@ -500,7 +500,7 @@ ASSIGNMENT    : /^[:=]$/
 # Regex-matching-regexes.
 REGEX_START        : /^\/[^\/ ]/
 REGEX_INTERPOLATION: /([^\\]\$[a-zA-Z_@]|[^\\]\$\{.*[^\\]\})/
-REGEX_END          : /^(([imgy]{1,4})\b|\W)/
+REGEX_END          : /^(([imgy]{1,4})\b|\W|$)/
 REGEX_ESCAPE       : /\\[^\$]/g
 
 # Token cleaning regexes.
