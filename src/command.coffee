@@ -114,7 +114,6 @@ compileStdio: ->
 watch: (source, base) ->
   fs.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
     return if curr.mtime.getTime() is prev.mtime.getTime()
-    puts "Compiled $source" if options.compile
     fs.readFile source, (err, code) -> compileScript(source, code.toString(), base)
 
 # Write out a JavaScript source file with the compiled code. By default, files
@@ -122,11 +121,13 @@ watch: (source, base) ->
 # directory can be customized with `--output`.
 writeJs: (source, js, base) ->
   filename: path.basename(source, path.extname(source)) + '.js'
-  srcDir:  path.dirname source
-  baseDir: srcDir.substring base.length
+  srcDir:   path.dirname source
+  baseDir:  srcDir.substring base.length
   dir:      if options.output then path.join options.output, baseDir else srcDir
-  jsPath:  path.join dir, filename
-  compile:  -> fs.writeFile jsPath, js
+  jsPath:   path.join dir, filename
+  compile:  ->
+    fs.writeFile jsPath, js, (err) ->
+      puts "Compiled $source" if options.compile and options.watch
   path.exists dir, (exists) ->
     if exists then compile() else exec "mkdir -p $dir", compile
 
