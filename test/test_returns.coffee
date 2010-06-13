@@ -22,3 +22,12 @@ func: ->
     "word"
 
 ok func() is 'word'
+
+
+# And with switches.
+func: ->
+  switch 'a'
+    when 'a' then 42
+    else return 23
+
+ok func() is 42
