@@ -1188,44 +1188,48 @@ exports.ForNode: class ForNode extends BaseNode
   # comprehensions. Some of the generated code can be shared in common, and
   # some cannot.
   compileNode: (o) ->
-    topLevel:      del(o, 'top') and not @returns
+    topLevel:       del(o, 'top') and not @returns
     range:          @source instanceof ValueNode and @source.base instanceof RangeNode and not @source.properties.length
     source:         if range then @source.base else @source
+    codeInBody:     @body.contains (n) -> n instanceof CodeNode
     scope:          o.scope
     name:           @name and @name.compile o
     index:          @index and @index.compile o
-    scope.find name  if name and not @pattern
-    scope.find index if index
-    bodyDent:      @idt 1
+    scope.find name  if name and not @pattern and not codeInBody
+    scope.find index if index and not codeInBody
     rvar:           scope.freeVariable() unless topLevel
     ivar:           if range then name else index or scope.freeVariable()
-    varPart:       ''
+    varPart:        ''
     body:           Expressions.wrap([@body])
     if range
-      sourcePart:  source.compileVariables o
-      forPart:     source.compile merge o, {index: ivar, step: @step}
+      sourcePart:   source.compileVariables o
+      forPart:      source.compile merge o, {index: ivar, step: @step}
     else
       svar:         scope.freeVariable()
-      sourcePart:  "$svar = ${ @source.compile(o) };"
+      sourcePart:   "$svar = ${ @source.compile(o) };"
       if @pattern
-        varPart:   new AssignNode(@name, literal("$svar[$ivar]")).compile(merge o, {indent: @idt(1), top: true}) + "\n"
+        namePart:   new AssignNode(@name, literal("$svar[$ivar]")).compile(merge o, {indent: @idt(1), top: true}) + "\n"
       else
-        varPart:   "$bodyDent$name = $svar[$ivar];\n" if name
+        namePart:   "$name = $svar[$ivar]" if name
       unless @object
         lvar:       scope.freeVariable()
-        stepPart:  if @step then "$ivar += ${ @step.compile(o) }" else "$ivar++"
-        forPart:   "$ivar = 0, $lvar = ${svar}.length; $ivar < $lvar; $stepPart"
-    sourcePart:    (if rvar then "$rvar = []; " else '') + sourcePart
-    sourcePart:    if sourcePart then "$@tab$sourcePart\n$@tab" else @tab
-    returnResult:  @compileReturnValue(rvar, o)
+        stepPart:   if @step then "$ivar += ${ @step.compile(o) }" else "$ivar++"
+        forPart:    "$ivar = 0, $lvar = ${svar}.length; $ivar < $lvar; $stepPart"
+    sourcePart:     (if rvar then "$rvar = []; " else '') + sourcePart
+    sourcePart:     if sourcePart then "$@tab$sourcePart\n$@tab" else @tab
+    returnResult:   @compileReturnValue(rvar, o)
 
-    body:           ClosureNode.wrap(body, true) if topLevel and body.contains (n) -> n instanceof CodeNode
     body:           PushNode.wrap(rvar, body) unless topLevel
     if @guard
       body:         Expressions.wrap([new IfNode(@guard, body)])
+    if codeInBody
+      body.unshift  literal "var $namePart" if namePart
+      body:         ClosureNode.wrap(body, true)
+    else
+      varPart:      "${@idt(1)}$namePart;\n" if namePart
     if @object
-      forPart: "$ivar in $svar) { if (${utility('hasProp')}.call($svar, $ivar)"
-    body:           body.compile(merge(o, {indent: bodyDent, top: true}))
+      forPart:      "$ivar in $svar) { if (${utility('hasProp')}.call($svar, $ivar)"
+    body:           body.compile(merge(o, {indent: @idt(1), top: true}))
     vars:           if range then name else "$name, $ivar"
     close:          if @object then '}}' else '}'
     "${sourcePart}for ($forPart) {\n$varPart$body\n$@tab$close$returnResult"

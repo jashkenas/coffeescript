@@ -62,16 +62,24 @@ ok 2 in evens
 # Ensure that the closure wrapper preserves local variables.
 obj: {}
 
-methods: ['one', 'two', 'three']
-
-for method in methods
-  name: method
-  obj[name]: ->
-    "I'm " + name
+for method in ['one', 'two', 'three']
+  obj[method]: ->
+    "I'm " + method
 
 ok obj.one()   is "I'm one"
 ok obj.two()   is "I'm two"
 ok obj.three() is "I'm three"
+
+
+# Even when referenced in the filter.
+list: ['one', 'two', 'three']
+
+methods: for num in list when num isnt 'two'
+  -> num
+
+ok methods.length is 2
+ok methods[0]() is 'one'
+ok methods[1]() is 'three'
 
 
 # Naked ranges are expanded into arrays.
