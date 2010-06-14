@@ -1196,9 +1196,9 @@ exports.ForNode: class ForNode extends BaseNode
     name:           @name and @name.compile o
     index:          @index and @index.compile o
     scope.find name  if name and not @pattern and not codeInBody
-    scope.find index if index and not codeInBody
+    scope.find index if index
     rvar:           scope.freeVariable() unless topLevel
-    ivar:           if range then name else index or scope.freeVariable()
+    ivar:           if range then name else if codeInBody then scope.freeVariable() else index or scope.freeVariable()
     varPart:        ''
     body:           Expressions.wrap([@body])
     if range
@@ -1224,6 +1224,7 @@ exports.ForNode: class ForNode extends BaseNode
       body:         Expressions.wrap([new IfNode(@guard, body)])
     if codeInBody
       body.unshift  literal "var $namePart" if namePart
+      body.unshift  literal "var $index = $ivar" if index
       body:         ClosureNode.wrap(body, true)
     else
       varPart:      "${@idt(1)}$namePart;\n" if namePart

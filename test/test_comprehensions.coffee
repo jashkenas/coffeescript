@@ -74,12 +74,12 @@ ok obj.three() is "I'm three"
 # Even when referenced in the filter.
 list: ['one', 'two', 'three']
 
-methods: for num in list when num isnt 'two'
-  -> num
+methods: for num, i in list when num isnt 'two' and i isnt 1
+  -> num + ' ' + i
 
 ok methods.length is 2
-ok methods[0]() is 'one'
-ok methods[1]() is 'three'
+ok methods[0]() is 'one 0'
+ok methods[1]() is 'three 2'
 
 
 # Naked ranges are expanded into arrays.
