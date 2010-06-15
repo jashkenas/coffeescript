@@ -101,7 +101,7 @@ exports.Lexer: class Lexer
         id:  "'$id'"
         if forcedIdentifier is 'accessor'
           close_index: true
-          @tokens.pop()
+          @tokens.pop() if @tag() isnt '@'
           @token 'INDEX_START', '['
       else if include(RESERVED, id)
         @identifierError id

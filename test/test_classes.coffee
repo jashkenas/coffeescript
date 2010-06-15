@@ -123,5 +123,8 @@ ok maya.name is 'Maya'
 # Class with JS-keyword properties.
 class Class
   class: 'class'
+  name: -> @class
 
-ok (new Class()).class is 'class'
+instance: new Class()
+ok instance.class is 'class'
+ok instance.name() is 'class'

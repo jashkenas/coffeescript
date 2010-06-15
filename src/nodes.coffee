@@ -111,7 +111,7 @@ exports.BaseNode: class BaseNode
   # This is what `coffee --nodes` prints out.
   toString: (idt) ->
     idt: or ''
-    '\n' + idt + @type + (child.toString(idt + TAB) for child in @collectChildren()).join('')
+    '\n' + idt + @class + (child.toString(idt + TAB) for child in @collectChildren()).join('')
 
   eachChild: (func) ->
     return unless @children
@@ -131,7 +131,7 @@ exports.BaseNode: class BaseNode
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
-  type:     'BaseNode'
+  class:     'BaseNode'
   children: []
 
   unwrap:            -> this
@@ -146,7 +146,7 @@ exports.BaseNode: class BaseNode
 # `if`, `switch`, or `try`, and so on...
 exports.Expressions: class Expressions extends BaseNode
 
-  type:         'Expressions'
+  class:         'Expressions'
   children:     ['expressions']
   isStatement: -> yes
 
@@ -228,7 +228,7 @@ Expressions.wrap: (nodes) ->
 # `true`, `false`, `null`...
 exports.LiteralNode: class LiteralNode extends BaseNode
 
-  type: 'LiteralNode'
+  class: 'LiteralNode'
 
   constructor: (value) ->
     @value: value
@@ -253,7 +253,7 @@ exports.LiteralNode: class LiteralNode extends BaseNode
 # make sense.
 exports.ReturnNode: class ReturnNode extends BaseNode
 
-  type:               'ReturnNode'
+  class:               'ReturnNode'
   isStatement:       -> yes
   isPureStatement:  -> yes
   children:           ['expression']
@@ -282,7 +282,7 @@ exports.ValueNode: class ValueNode extends BaseNode
 
   SOAK:     " == undefined ? undefined : "
 
-  type:     'ValueNode'
+  class:     'ValueNode'
   children: ['base', 'properties']
 
   # A **ValueNode** has a base and a list of property accesses.
@@ -366,7 +366,7 @@ exports.ValueNode: class ValueNode extends BaseNode
 # same position.
 exports.CommentNode: class CommentNode extends BaseNode
 
-  type: 'CommentNode'
+  class: 'CommentNode'
   isStatement: -> yes
 
   constructor: (lines, kind) ->
@@ -389,7 +389,7 @@ exports.CommentNode: class CommentNode extends BaseNode
 # calls against the prototype's function of the same name.
 exports.CallNode: class CallNode extends BaseNode
 
-  type:     'CallNode'
+  class:     'CallNode'
   children: ['variable', 'args']
 
   constructor: (variable, args) ->
@@ -451,7 +451,7 @@ exports.CallNode: class CallNode extends BaseNode
 # [Closure Library](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.html).
 exports.ExtendsNode: class ExtendsNode extends BaseNode
 
-  type:     'ExtendsNode'
+  class:     'ExtendsNode'
   children: ['child', 'parent']
 
   constructor: (child, parent) ->
@@ -469,7 +469,7 @@ exports.ExtendsNode: class ExtendsNode extends BaseNode
 # an accessor into the object's prototype.
 exports.AccessorNode: class AccessorNode extends BaseNode
 
-  type:     'AccessorNode'
+  class:     'AccessorNode'
   children: ['name']
 
   constructor: (name, tag) ->
@@ -488,7 +488,7 @@ exports.AccessorNode: class AccessorNode extends BaseNode
 # A `[ ... ]` indexed accessor into an array or object.
 exports.IndexNode: class IndexNode extends BaseNode
 
-  type:     'IndexNode'
+  class:     'IndexNode'
   children: ['index']
 
   constructor: (index) ->
@@ -507,7 +507,7 @@ exports.IndexNode: class IndexNode extends BaseNode
 # corresponding array of integers at runtime.
 exports.RangeNode: class RangeNode extends BaseNode
 
-  type:     'RangeNode'
+  class:     'RangeNode'
   children: ['from', 'to']
 
   constructor: (from, to, exclusive) ->
@@ -557,7 +557,7 @@ exports.RangeNode: class RangeNode extends BaseNode
 # is the index of the beginning.
 exports.SliceNode: class SliceNode extends BaseNode
 
-  type:     'SliceNode'
+  class:     'SliceNode'
   children: ['range']
 
   constructor: (range) ->
@@ -574,7 +574,7 @@ exports.SliceNode: class SliceNode extends BaseNode
 # An object literal, nothing fancy.
 exports.ObjectNode: class ObjectNode extends BaseNode
 
-  type:     'ObjectNode'
+  class:     'ObjectNode'
   children: ['properties']
 
   constructor: (props) ->
@@ -603,7 +603,7 @@ exports.ObjectNode: class ObjectNode extends BaseNode
 # An array literal.
 exports.ArrayNode: class ArrayNode extends BaseNode
 
-  type:     'ArrayNode'
+  class:     'ArrayNode'
   children: ['objects']
 
   constructor: (objects) ->
@@ -635,7 +635,7 @@ exports.ArrayNode: class ArrayNode extends BaseNode
 # The CoffeeScript class definition.
 exports.ClassNode: class ClassNode extends BaseNode
 
-  type:         'ClassNode'
+  class:         'ClassNode'
   children:     ['variable', 'parent', 'properties']
   isStatement: -> yes
 
@@ -700,7 +700,7 @@ exports.AssignNode: class AssignNode extends BaseNode
   PROTO_ASSIGN: /^(\S+)\.prototype/
   LEADING_DOT:  /^\.(prototype\.)?/
 
-  type:     'AssignNode'
+  class:     'AssignNode'
   children: ['variable', 'value']
 
   constructor: (variable, value, context) ->
@@ -799,7 +799,7 @@ exports.AssignNode: class AssignNode extends BaseNode
 # has no *children* -- they're within the inner scope.
 exports.CodeNode: class CodeNode extends BaseNode
 
-  type:     'CodeNode'
+  class:     'CodeNode'
   children: ['params', 'body']
 
   constructor: (params, body, tag) ->
@@ -863,7 +863,7 @@ exports.CodeNode: class CodeNode extends BaseNode
 # or as part of a destructuring assignment.
 exports.SplatNode: class SplatNode extends BaseNode
 
-  type:     'SplatNode'
+  class:     'SplatNode'
   children: ['name']
 
   constructor: (name) ->
@@ -921,7 +921,7 @@ exports.SplatNode: class SplatNode extends BaseNode
 # flexibility or more speed than a comprehension can provide.
 exports.WhileNode: class WhileNode extends BaseNode
 
-  type:         'WhileNode'
+  class:         'WhileNode'
   children:     ['condition', 'guard', 'body']
   isStatement: -> yes
 
@@ -986,7 +986,7 @@ exports.OpNode: class OpNode extends BaseNode
   # Operators must come before their operands with a space.
   PREFIX_OPERATORS: ['typeof', 'delete']
 
-  type:     'OpNode'
+  class:     'OpNode'
   children: ['first', 'second']
 
   constructor: (operator, first, second, flip) ->
@@ -1048,7 +1048,7 @@ exports.OpNode: class OpNode extends BaseNode
 # A classic *try/catch/finally* block.
 exports.TryNode: class TryNode extends BaseNode
 
-  type:         'TryNode'
+  class:         'TryNode'
   children:     ['attempt', 'recovery', 'ensure']
   isStatement: -> yes
 
@@ -1079,7 +1079,7 @@ exports.TryNode: class TryNode extends BaseNode
 # Simple node to throw an exception.
 exports.ThrowNode: class ThrowNode extends BaseNode
 
-  type:         'ThrowNode'
+  class:         'ThrowNode'
   children:     ['expression']
   isStatement: -> yes
 
@@ -1100,7 +1100,7 @@ exports.ThrowNode: class ThrowNode extends BaseNode
 # table.
 exports.ExistenceNode: class ExistenceNode extends BaseNode
 
-  type:     'ExistenceNode'
+  class:     'ExistenceNode'
   children: ['expression']
 
   constructor: (expression) ->
@@ -1125,7 +1125,7 @@ exports.ExistenceNode: class ExistenceNode extends BaseNode
 # Parentheses are a good way to force any statement to become an expression.
 exports.ParentheticalNode: class ParentheticalNode extends BaseNode
 
-  type:     'ParentheticalNode'
+  class:     'ParentheticalNode'
   children: ['expression']
 
   constructor: (expression) ->
@@ -1155,7 +1155,7 @@ exports.ParentheticalNode: class ParentheticalNode extends BaseNode
 # you can map and filter in a single pass.
 exports.ForNode: class ForNode extends BaseNode
 
-  type:         'ForNode'
+  class:         'ForNode'
   children:     ['body', 'source', 'guard']
   isStatement: -> yes
 
@@ -1245,7 +1245,7 @@ exports.ForNode: class ForNode extends BaseNode
 # because ternaries are already proper expressions, and don't need conversion.
 exports.IfNode: class IfNode extends BaseNode
 
-  type:     'IfNode'
+  class:     'IfNode'
   children: ['condition', 'switchSubject', 'body', 'elseBody', 'assigner']
 
   constructor: (condition, body, tags) ->
