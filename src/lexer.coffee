@@ -90,16 +90,26 @@ exports.Lexer: class Lexer
   # though `is` means `===` otherwise.
   identifierToken: ->
     return false unless id: @match IDENTIFIER, 1
+    @i: + id.length
     forcedIdentifier: @tagAccessor() or @match ASSIGNED, 1
     tag: 'IDENTIFIER'
     tag: id.toUpperCase() if include(JS_KEYWORDS, id) or (not forcedIdentifier and include(COFFEE_KEYWORDS, id))
-    @identifierError id  if include RESERVED, id
     tag: 'LEADING_WHEN'   if tag is 'WHEN' and include LINE_BREAK, @tag()
-    @i: + id.length
+    if include(JS_FORBIDDEN, id)
+      if forcedIdentifier
+        tag: 'STRING'
+        id:  "'$id'"
+        if forcedIdentifier is 'accessor'
+          close_index: true
+          @tokens.pop()
+          @token 'INDEX_START', '['
+      else if include(RESERVED, id)
+        @identifierError id
     unless forcedIdentifier
       tag: id: CONVERSIONS[id]         if include COFFEE_ALIASES, id
       return @tagHalfAssignment tag  if @prev() and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
     @token tag, id
+    @token ']', ']' if close_index
     true
 
   # Matches numbers, including decimals, hex, and exponential notation.
@@ -289,7 +299,7 @@ exports.Lexer: class Lexer
   # is the previous token.
   tagAccessor: ->
     return false if (not prev: @prev()) or (prev and prev.spaced)
-    if prev[1] is '::'
+    accessor: if prev[1] is '::'
       @tag 1, 'PROTOTYPE_ACCESS'
     else if prev[1] is '.' and not (@value(2) is '.')
       if @tag(2) is '?'
@@ -299,6 +309,7 @@ exports.Lexer: class Lexer
         @tag 1, 'PROPERTY_ACCESS'
     else
       prev[0] is '@'
+    if accessor then 'accessor' else false
 
   # Sanitize a heredoc or herecomment by escaping internal double quotes and
   # erasing all external indentation on the left-hand side.

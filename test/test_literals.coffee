@@ -107,3 +107,10 @@ result: [['a']
 
 ok result[0][0] is 'a'
 ok result[1]['b'] is 'c'
+
+
+# Object literals should be able to include keywords.
+obj: {class: 'hot'}
+obj.function: 'dog'
+
+ok obj.class + obj.function is 'hotdog'

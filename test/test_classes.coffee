@@ -118,3 +118,10 @@ class Hive.Bee extends Hive
 
 maya: new Hive.Bee 'Maya'
 ok maya.name is 'Maya'
+
+
+# Class with JS-keyword properties.
+class Class
+  class: 'class'
+
+ok (new Class()).class is 'class'

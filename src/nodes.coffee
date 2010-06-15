@@ -474,13 +474,14 @@ exports.AccessorNode: class AccessorNode extends BaseNode
 
   constructor: (name, tag) ->
     @name: name
-    @prototype: tag is 'prototype'
+    @prototype: if tag is 'prototype' then '.prototype' else ''
     @soakNode: tag is 'soak'
 
   compileNode: (o) ->
+    name: @name.compile o
     o.chainRoot.wrapped: or @soakNode
-    protoPart: if @prototype then 'prototype.' else ''
-    ".$protoPart${@name.compile(o)}"
+    namePart: if name.match(IS_STRING) then "[$name]" else ".$name"
+    @prototype + namePart
 
 #### IndexNode
 
