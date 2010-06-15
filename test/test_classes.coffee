@@ -128,3 +128,19 @@ class Class
 instance: new Class()
 ok instance.class is 'class'
 ok instance.name() is 'class'
+
+
+# Classes with methods that are pre-bound to the instance.
+class Dog
+
+  constructor: (name) ->
+    @name: name
+
+  bark: =>
+    "$@name woofs!"
+
+spark: new Dog('Spark')
+fido:  new Dog('Fido')
+fido.bark: spark.bark
+
+ok fido.bark() is 'Spark woofs!'

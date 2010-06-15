@@ -635,9 +635,9 @@ exports.ArrayNode: class ArrayNode extends BaseNode
 # The CoffeeScript class definition.
 exports.ClassNode: class ClassNode extends BaseNode
 
-  class:         'ClassNode'
+  class:        'ClassNode'
   children:     ['variable', 'parent', 'properties']
-  isStatement: -> yes
+  isStatement:  -> yes
 
   # Initialize a **ClassNode** with its name, an optional superclass, and a
   # list of prototype property assignments.
@@ -656,18 +656,29 @@ exports.ClassNode: class ClassNode extends BaseNode
   # constructor, property assignments, and inheritance getting built out below.
   compileNode: (o) ->
     extension:   @parent and new ExtendsNode(@variable, @parent)
-    constructor: null
     props:       new Expressions()
     o.top:       true
+
+    if @parent
+      applied: new ValueNode(@parent, [new AccessorNode(literal('apply'))])
+      constructor: new CodeNode([], new Expressions([
+        new CallNode(applied, [literal('this'), literal('arguments')])
+      ]))
+    else
+      constructor: new CodeNode()
 
     for prop in @properties
       [pvar, func]: [prop.variable, prop.value]
       if pvar and pvar.base.value is 'constructor' and func instanceof CodeNode
         func.name: @variable.compile(o)
-        func.body.push(new ReturnNode(literal('this')))
+        func.body.push new ReturnNode literal 'this'
         @variable: new ValueNode @variable
         @variable.namespaced: include func.name, '.'
-        constructor: new AssignNode(@variable, func)
+        constructor: func
+        continue
+      if func instanceof CodeNode and func.bound
+        constructor.body.push    new ReturnNode literal 'this' if constructor.body.empty()
+        constructor.body.unshift new AssignNode(new ValueNode(literal('this'), [new AccessorNode(pvar)]), func)
       else
         if pvar
           access: if prop.context is 'this' then pvar.base.properties[0] else new AccessorNode(pvar, 'prototype')
@@ -675,16 +686,7 @@ exports.ClassNode: class ClassNode extends BaseNode
           prop:   new AssignNode(val, func)
         props.push prop
 
-    unless constructor
-      if @parent
-        applied: new ValueNode(@parent, [new AccessorNode(literal('apply'))])
-        constructor: new AssignNode(@variable, new CodeNode([], new Expressions([
-          new CallNode(applied, [literal('this'), literal('arguments')])
-        ])))
-      else
-        constructor: new AssignNode(@variable, new CodeNode())
-
-    construct:                       @idt() + constructor.compile(o) + ';\n'
+    construct: @idt() + (new AssignNode(@variable, constructor)).compile(o) + ';\n'
     props:     if props.empty() then '' else props.compile(o) + '\n'
     extension: if extension     then @idt() + extension.compile(o) + ';\n' else ''
     returns:   if @returns      then new ReturnNode(@variable).compile(o)  else ''
