@@ -655,9 +655,12 @@ exports.ClassNode: class ClassNode extends BaseNode
   # equivalent syntax tree and compile that, in pieces. You can see the
   # constructor, property assignments, and inheritance getting built out below.
   compileNode: (o) ->
-    extension:   @parent and new ExtendsNode(@variable, @parent)
-    props:       new Expressions()
-    o.top:       true
+    extension:  @parent and new ExtendsNode(@variable, @parent)
+    props:      new Expressions()
+    o.top:      true
+    me:         null
+    className:  @variable.compile o
+    constScope: null
 
     if @parent
       applied: new ValueNode(@parent, [new AccessorNode(literal('apply'))])
@@ -670,23 +673,27 @@ exports.ClassNode: class ClassNode extends BaseNode
     for prop in @properties
       [pvar, func]: [prop.variable, prop.value]
       if pvar and pvar.base.value is 'constructor' and func instanceof CodeNode
-        func.name: @variable.compile(o)
+        func.name: className
         func.body.push new ReturnNode literal 'this'
         @variable: new ValueNode @variable
         @variable.namespaced: include func.name, '.'
         constructor: func
         continue
       if func instanceof CodeNode and func.bound
+        func.bound: false
+        constScope: or new Scope(o.scope, constructor.body, constructor)
+        me: or constScope.freeVariable()
+        pname: pvar.compile(o)
         constructor.body.push    new ReturnNode literal 'this' if constructor.body.empty()
-        constructor.body.unshift new AssignNode(new ValueNode(literal('this'), [new AccessorNode(pvar)]), func)
-      else
-        if pvar
-          access: if prop.context is 'this' then pvar.base.properties[0] else new AccessorNode(pvar, 'prototype')
-          val:    new ValueNode(@variable, [access])
-          prop:   new AssignNode(val, func)
-        props.push prop
+        constructor.body.unshift literal "this.${pname} = function(){ return ${className}.prototype.${pname}.apply($me, arguments); }"
+      if pvar
+        access: if prop.context is 'this' then pvar.base.properties[0] else new AccessorNode(pvar, 'prototype')
+        val:    new ValueNode(@variable, [access])
+        prop:   new AssignNode(val, func)
+      props.push prop
 
-    construct: @idt() + (new AssignNode(@variable, constructor)).compile(o) + ';\n'
+    constructor.body.unshift literal "$me = this" if me
+    construct: @idt() + (new AssignNode(@variable, constructor)).compile(merge o, {sharedScope: constScope}) + ';\n'
     props:     if props.empty() then '' else props.compile(o) + '\n'
     extension: if extension     then @idt() + extension.compile(o) + ';\n' else ''
     returns:   if @returns      then new ReturnNode(@variable).compile(o)  else ''
@@ -815,7 +822,7 @@ exports.CodeNode: class CodeNode extends BaseNode
   # arrow, generates a wrapper that saves the current value of `this` through
   # a closure.
   compileNode: (o) ->
-    sharedScope: del o, 'sharedScope'
+    sharedScope:  del o, 'sharedScope'
     top:          del o, 'top'
     o.scope:      sharedScope or new Scope(o.scope, @body, this)
     o.top:        true
