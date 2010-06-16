@@ -154,6 +154,7 @@ result: sum ->
   7 + 9
 , ->
   1 + 3
+
 ok result is 20
 
 # Test more function passing:
@@ -167,4 +168,13 @@ ok result is 6
 sum: (a, b) -> a + b
 result: sum(1
 , 2)
+
 ok result is 3
+
+
+# Assignment to a Object.prototype-named variable should not leak to outer scope.
+(->
+  constructor: 'word'
+)()
+
+ok constructor isnt 'word'
