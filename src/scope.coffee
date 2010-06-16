@@ -46,7 +46,7 @@ exports.Scope: class Scope
 
   # Just check to see if a variable has already been declared, without reserving.
   check: (name) ->
-    return true if @variables[name]
+    return true if @variables.hasOwnProperty name
     !!(@parent and @parent.check(name))
 
   # If we need to store an intermediate result, find an available name for a
