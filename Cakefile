@@ -3,11 +3,20 @@ fs:            require 'fs'
 CoffeeScript:  require './lib/coffee-script'
 {spawn, exec}: require('child_process')
 
+# ANSI Terminal Colors.
+red:   '\033[0;31m'
+green: '\033[0;32m'
+reset: '\033[0m'
+
 # Run a CoffeeScript through our node/coffee interpreter.
 run: (args) ->
   proc: spawn 'bin/coffee', args
   proc.stderr.addListener 'data', (buffer) -> puts buffer.toString()
   proc.addListener 'exit', (status) -> process.exit(1) if status != 0
+
+# Log a message with a color.
+log: (message, color, explanation) ->
+  puts "$color$message$reset ${explanation or ''}"
 
 option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
 
@@ -15,15 +24,19 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
   base: options.prefix or '/usr/local'
   lib:  "$base/lib/coffee-script"
   bin:  "$base/bin"
+  node: "~/.node_libraries/coffee-script"
+  puts  "Installing CoffeeScript to $lib"
+  puts  "Linking to $node"
+  puts  "Linking 'coffee' to $bin/coffee"
   exec([
     "mkdir -p $lib $bin"
     "cp -rf bin lib LICENSE README package.json src vendor $lib"
-    "ln -sf $lib/bin/coffee $base/bin/coffee"
-    "ln -sf $lib/bin/cake $base/bin/cake"
+    "ln -sf $lib/bin/coffee $bin/coffee"
+    "ln -sf $lib/bin/cake $bin/cake"
     "mkdir -p ~/.node_libraries"
-    "ln -sf $lib/lib ~/.node_libraries/coffee-script"
+    "ln -sf $lib/lib $node"
   ].join(' && '), (err, stdout, stderr) ->
-   if err then print stderr
+    if err then print stderr else log 'done', green
   )
 
 
@@ -87,13 +100,13 @@ task 'test', 'run the CoffeeScript language test suite', ->
     ok: (args...) -> passedTests += 1; originalOk(args...)
     CoffeeScript: CoffeeScript
   }
-  red: '\033[0;31m'
-  green: '\033[0;32m'
-  reset: '\033[0m'
   process.addListener 'exit', ->
     time: ((new Date() - startTime) / 1000).toFixed(2)
     message: "passed $passedTests tests in $time seconds$reset"
-    puts(if failedTests then "${red}failed $failedTests and $message" else "$green$message")
+    if failedTests
+      log "failed $failedTests and $message", red
+    else
+      log message, green
   fs.readdir 'test', (err, files) ->
     files.forEach (file) ->
       return unless file.match(/\.coffee$/i)
@@ -103,5 +116,4 @@ task 'test', 'run the CoffeeScript language test suite', ->
           CoffeeScript.run code.toString(), {source: source}
         catch err
           failedTests += 1
-          puts "${red}failed:${reset} $source"
-          puts err.stack
+          log "failed $source", red, '\n' + err.stack.toString()
