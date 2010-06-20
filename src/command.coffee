@@ -159,7 +159,7 @@ parseOptions: ->
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions: (source) ->
-  o: {source: source}
+  o: {source}
   o['no_wrap']: options['no-wrap']
   o
 

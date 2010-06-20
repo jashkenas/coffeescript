@@ -26,7 +26,7 @@ helpers.extend global, {
   # and the function to run as the action itself.
   task: (name, description, action) ->
     [action, description]: [description, action] unless action
-    tasks[name]: {name: name, description: description, action: action}
+    tasks[name]: {name, description, action}
 
   # Define an option that the Cakefile accepts. The parsed options hash,
   # containing all of the command-line options passed, will be made available
