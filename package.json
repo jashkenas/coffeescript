@@ -3,5 +3,15 @@
     "description":  "Unfancy JavaScript",
     "keywords":     ["javascript", "language"],
     "author":       "Jeremy Ashkenas",
-    "version":      "0.6.2"
+    "version":      "0.6.2",
+    "licenses":     [{
+      "type":       "MIT",
+      "url":        "http://github.com/jashkenas/coffee-script/raw/master/LICENSE"
+    }],
+    "engines":      {
+      "node":       ">=0.1.99"
+    },
+    "scripts":      {
+      "install":    "sudo bin/cake install"
+    }
 }
