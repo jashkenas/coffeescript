@@ -110,7 +110,7 @@ ok result[1]['b'] is 'c'
 
 
 # Object literals should be able to include keywords.
-obj: {class: 'hot'}
+obj: {class: 'höt'}
 obj.function: 'dog'
 
-ok obj.class + obj.function is 'hotdog'
+ok obj.class + obj.function is 'hötdog'
