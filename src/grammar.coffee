@@ -566,6 +566,7 @@ grammar: {
 
     o "Expression INSTANCEOF Expression",       -> new OpNode 'instanceof', $1, $3
     o "Expression IN Expression",               -> new OpNode 'in', $1, $3
+    o "Expression ! IN Expression",             -> new OpNode '!', new ParentheticalNode new OpNode 'in', $1, $4
   ]
 
 }

@@ -34,3 +34,9 @@ func: -> val: + 1
 
 ok 2 > (func null) < 2
 ok val is 1
+
+
+# Allow "if x not in y"
+obj: {a: true}
+ok 'b' not in obj
+ok not ('a' not in obj)

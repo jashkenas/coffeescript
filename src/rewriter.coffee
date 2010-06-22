@@ -126,7 +126,8 @@ exports.Rewriter: class Rewriter
       tag: token[0]
       stack[stack.length - 2]: + stack.pop() if tag is 'OUTDENT'
       open: stack[stack.length - 1] > 0
-      if prev and prev.spaced and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, tag)
+      if prev and prev.spaced and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, tag) and
+          not (tag is '!' and post[0] is 'IN')
         @tokens.splice i, 0, ['CALL_START', '(', token[2]]
         stack[stack.length - 1]: + 1
         stack.push 0 if include(EXPRESSION_START, tag)
@@ -282,7 +283,7 @@ IMPLICIT_FUNC:  ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@']
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL:  ['IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START',
                  'TRY', 'DELETE', 'TYPEOF', 'SWITCH', 'EXTENSION',
-                 'TRUE', 'FALSE', 'YES', 'NO', 'ON', 'OFF', '!', '!!', 'NOT',
+                 'TRUE', 'FALSE', 'YES', 'NO', 'ON', 'OFF', '!', '!!',
                  'THIS', 'NULL',
                  '@', '->', '=>', '[', '(', '{']
 
