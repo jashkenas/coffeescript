@@ -38,5 +38,11 @@ ok val is 1
 
 # Allow "if x not in y"
 obj: {a: true}
-ok 'b' not in obj
-ok not ('a' not in obj)
+ok 'a' of obj
+ok 'b' not of obj
+
+# And for "a in b" with array presence.
+ok 100 in [100, 200, 300]
+array: [100, 200, 300]
+ok 100 in array
+ok 1 not in array

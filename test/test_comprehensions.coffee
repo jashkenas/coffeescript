@@ -56,7 +56,7 @@ ok evens.join(', ') is '4, 6, 8'
 
 
 # The in operator still works, standalone.
-ok 2 in evens
+ok 2 of evens
 
 
 # Ensure that the closure wrapper preserves local variables.

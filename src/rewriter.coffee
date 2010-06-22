@@ -127,7 +127,7 @@ exports.Rewriter: class Rewriter
       stack[stack.length - 2]: + stack.pop() if tag is 'OUTDENT'
       open: stack[stack.length - 1] > 0
       if prev and prev.spaced and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, tag) and
-          not (tag is '!' and post[0] is 'IN')
+          not (tag is '!' and (post[0] is 'IN' or post[0] is 'OF'))
         @tokens.splice i, 0, ['CALL_START', '(', token[2]]
         stack[stack.length - 1]: + 1
         stack.push 0 if include(EXPRESSION_START, tag)

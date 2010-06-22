@@ -61,14 +61,16 @@ exports.BaseNode: class BaseNode
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
   # by assigning it to a temporary variable.
-  compileReference: (o, onlyIfNecessary) ->
-    if onlyIfNecessary and not
-        (this instanceof CallNode or
-        this instanceof ValueNode and (not (@base instanceof LiteralNode) or @hasProperties()))
-      return [this, this]
-    reference: literal o.scope.freeVariable()
-    compiled:  new AssignNode reference, this
-    [compiled, reference]
+  compileReference: (o, options) ->
+    pair: if not (this instanceof CallNode or this instanceof ValueNode and
+        (not (@base instanceof LiteralNode) or @hasProperties()))
+      [this, this]
+    else
+      reference: literal o.scope.freeVariable()
+      compiled:  new AssignNode reference, this
+      [compiled, reference]
+    return pair unless options and options.precompile
+    [pair[0].compile(o), pair[1].compile(o)]
 
   # Convenience method to grab the current indentation level, plus tabbing in.
   idt: (tabs) ->
@@ -518,8 +520,8 @@ exports.RangeNode: class RangeNode extends BaseNode
   # Compiles the range's source variables -- where it starts and where it ends.
   # But only if they need to be cached to avoid double evaluation.
   compileVariables: (o) ->
-    [@from, @fromVar]: @from.compileReference o, true
-    [@to, @toVar]:     @to.compileReference o, true
+    [@from, @fromVar]: @from.compileReference o
+    [@to, @toVar]:     @to.compileReference o
     parts: []
     parts.push @from.compile o if @from isnt @fromVar
     parts.push @to.compile o if @to isnt @toVar
@@ -1052,14 +1054,42 @@ exports.OpNode: class OpNode extends BaseNode
     parts: parts.reverse() if @flip
     parts.join('')
 
+#### InNode
+exports.InNode: class InNode extends BaseNode
+
+  class:    'InNode'
+  children: ['object', 'array']
+
+  constructor: (object, array) ->
+    @object: object
+    @array: array
+
+  isArray: ->
+    @array instanceof ValueNode and @array.isArray()
+
+  compileNode: (o) ->
+    [@obj1, @obj2]: @object.compileReference o, {precompile: yes}
+    if @isArray() then @compileOrTest(o) else @compileLoopTest(o)
+
+  compileOrTest: (o) ->
+    tests: for item, i in @array.base.objects
+      "${item.compile(o)} === ${if i then @obj2 else @obj1}"
+    "(${tests.join(' || ')})"
+
+  compileLoopTest: (o) ->
+    [@arr1, @arr2]: @array.compileReference o, {precompile: yes}
+    [i, l]: [o.scope.freeVariable(), o.scope.freeVariable()]
+    body: "!!(function(){ for (var $i=0, $l=${@arr1}.length; $i<$l; $i++) if (${@arr2}[$i] === $@obj2) return true; })()"
+    if @obj1 isnt @obj2 then "$@obj1;\n$@tab$body" else body
+
 #### TryNode
 
 # A classic *try/catch/finally* block.
 exports.TryNode: class TryNode extends BaseNode
 
-  class:         'TryNode'
+  class:        'TryNode'
   children:     ['attempt', 'recovery', 'ensure']
-  isStatement: -> yes
+  isStatement:  -> yes
 
   constructor: (attempt, error, recovery, ensure) ->
     @attempt: attempt
@@ -1122,7 +1152,7 @@ exports.ExistenceNode: class ExistenceNode extends BaseNode
   # because other nodes like to check the existence of their variables as well.
   # Be careful not to double-evaluate anything.
   @compileTest: (o, variable) ->
-    [first, second]: variable.compileReference o, true
+    [first, second]: variable.compileReference o
     "(typeof ${first.compile(o)} !== \"undefined\" && ${second.compile(o)} !== null)"
 
 #### ParentheticalNode
