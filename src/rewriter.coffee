@@ -174,7 +174,7 @@ exports.Rewriter: class Rewriter
         if (not tok or
             (include(SINGLE_CLOSERS, tok[0]) and tok[1] isnt ';' and parens is 0) or
             (tok[0] is ')' and parens is 0)) and
-            not (starter is 'ELSE' and tok[0] is 'ELSE')
+            not (tok[0] is 'ELSE' and starter not in ['IF', 'THEN'])
           insertion: if pre[0] is "," then idx - 1 else idx
           outdent: ['OUTDENT', 2, token[2]]
           outdent.generated: true
