@@ -55,13 +55,6 @@ exports.run: ((code, options) ->
   eval exports.compile code, options
 )
 
-# Extend CoffeeScript with a custom language extension. It should hook in to
-# the **Lexer** (as a peer of any of the lexer's tokenizing methods), and
-# push a token on to the stack that contains a **Node** as the value (as a
-# peer of the nodes in [nodes.coffee](nodes.html)).
-exports.extend: (func) ->
-  Lexer.extensions.push func
-
 # The real Lexer produces a generic stream of tokens. This object provides a
 # thin wrapper around it, compatible with the Jison API. We can then pass it
 # directly as a "Jison lexer".

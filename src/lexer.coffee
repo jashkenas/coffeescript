@@ -60,7 +60,6 @@ exports.Lexer: class Lexer
   # short-circuiting if any of them succeed. Their order determines precedence:
   # `@literalToken` is the fallback catch-all.
   extractNextToken: ->
-    return if @extensionToken()
     return if @identifierToken()
     return if @numberToken()
     return if @heredocToken()
@@ -74,13 +73,6 @@ exports.Lexer: class Lexer
 
   # Tokenizers
   # ----------
-
-  # Language extensions get the highest priority, first chance to tag tokens
-  # as something else.
-  extensionToken: ->
-    for extension in Lexer.extensions
-      return true if extension.call this
-    false
 
   # Matches identifying literals: variables, keywords, method names, etc.
   # Check to ensure that JavaScript reserved words aren't being used as
@@ -450,12 +442,6 @@ exports.Lexer: class Lexer
     prev: @prev(2)
     @value() and @value().match and @value().match(NO_NEWLINE) and
       prev and (prev[0] isnt '.') and not @value().match(CODE)
-
-  # Lexer Properties
-  # ----------------
-
-  # There are no exensions to the core lexer by default.
-  @extensions: []
 
 # Constants
 # ---------
