@@ -48,3 +48,8 @@ ok result is 11
 echo: (x) -> x
 result: if true then echo((if false then 'xxx' else 'y') + 'a')
 ok result is 'ya'
+
+
+# Testing inline funcs with inline if-elses.
+func: -> if 1 < 0.5 then 1 else -1
+ok func() is -1
