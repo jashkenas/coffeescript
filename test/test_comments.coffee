@@ -86,3 +86,12 @@ result: switch 'z'
   when 'z' then 7
 # comment
 ok result is 7
+
+
+# Trailing-line comment before an outdent.
+func: ->
+  if true
+    true # comment
+  7
+
+ok func() is 7
