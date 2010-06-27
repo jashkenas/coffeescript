@@ -481,16 +481,11 @@ grammar: {
   # The most basic form of *if* is a condition and an action. The following
   # if-related rules are broken up along these lines in order to avoid
   # ambiguity.
-  IfStart: [
+  IfBlock: [
     o "IF Expression Block",                    -> new IfNode $2, $3
     o "UNLESS Expression Block",                -> new IfNode $2, $3, {invert: true}
-    o "IfStart ELSE IF Expression Block",       -> $1.addElse (new IfNode($4, $5)).forceStatement()
-  ]
-
-  # An **IfStart** can optionally be followed by an else block.
-  IfBlock: [
-    o "IfStart"
-    o "IfStart ELSE Block",                     -> $1.addElse $3
+    o "IfBlock ELSE IF Expression Block",       -> $1.addElse (new IfNode($4, $5)).forceStatement()
+    o "IfBlock ELSE Block",                     -> $1.addElse $3
   ]
 
   # The full complement of *if* expressions, including postfix one-liner
