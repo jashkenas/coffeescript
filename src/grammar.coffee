@@ -308,7 +308,7 @@ grammar: {
 
   # Calling super.
   Super: [
-    o "SUPER CALL_START ArgList OptComma CALL_END", -> new CallNode 'super', $3
+    o "SUPER Arguments",                        -> new CallNode 'super', $2
   ]
 
   # A reference to the *this* current object.

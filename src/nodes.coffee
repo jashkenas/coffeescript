@@ -371,10 +371,10 @@ exports.CallNode: class CallNode extends BaseNode
   children: ['variable', 'args']
 
   constructor: (variable, args) ->
-    @isNew:   false
-    @isSuper: variable is 'super'
-    @variable: if @isSuper then null else variable
-    @args: (args or [])
+    @isNew:     false
+    @isSuper:   variable is 'super'
+    @variable:  if @isSuper then null else variable
+    @args:      (args or [])
     @compileSplatArguments: (o) ->
       SplatNode.compileMixedArray.call(this, @args, o)
 
