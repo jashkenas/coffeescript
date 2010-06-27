@@ -61,14 +61,14 @@ exports.Lexer: class Lexer
   # `@literalToken` is the fallback catch-all.
   extractNextToken: ->
     return if @identifierToken()
-    return if @numberToken()
-    return if @heredocToken()
-    return if @regexToken()
     return if @commentToken()
-    return if @lineToken()
     return if @whitespaceToken()
-    return if @jsToken()
+    return if @lineToken()
+    return if @heredocToken()
     return if @stringToken()
+    return if @numberToken()
+    return if @regexToken()
+    return if @jsToken()
     return    @literalToken()
 
   # Tokenizers
