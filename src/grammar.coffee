@@ -99,7 +99,6 @@ grammar: {
     o "Class"
     o "Splat"
     o "Existence"
-    o "Comment"
   ]
 
   # A an indented block of expressions. Note that the [Rewriter](rewriter.html)
@@ -108,7 +107,6 @@ grammar: {
   Block: [
     o "INDENT Body OUTDENT",                    -> $2
     o "INDENT OUTDENT",                         -> new Expressions()
-    o "TERMINATOR Comment",                     -> Expressions.wrap [$2]
   ]
 
   # A literal identifier, a variable name or property.
@@ -149,21 +147,12 @@ grammar: {
     o "AlphaNumeric"
     o "Identifier ASSIGN Expression",           -> new AssignNode new ValueNode($1), $3, 'object'
     o "AlphaNumeric ASSIGN Expression",         -> new AssignNode new ValueNode($1), $3, 'object'
-    o "Comment"
   ]
 
   # A return statement from a function body.
   Return: [
     o "RETURN Expression",                      -> new ReturnNode $2
     o "RETURN",                                 -> new ReturnNode new ValueNode new LiteralNode 'null'
-  ]
-
-  # A comment. Because CoffeeScript passes comments through to JavaScript, we
-  # have to parse comments like any other construct, and identify all of the
-  # positions in which they can occur in the grammar.
-  Comment: [
-    o "COMMENT",                                -> new CommentNode $1
-    o "HERECOMMENT",                            -> new CommentNode $1, 'herecomment'
   ]
 
   # [The existential operator](http://jashkenas.github.com/coffee-script/#existence).
@@ -475,7 +464,6 @@ grammar: {
   When: [
     o "LEADING_WHEN SimpleArgs Block",            -> new IfNode $2, $3, {statement: true}
     o "LEADING_WHEN SimpleArgs Block TERMINATOR", -> new IfNode $2, $3, {statement: true}
-    o "Comment TERMINATOR When",                  -> $3.comment: $1; $3
   ]
 
   # The most basic form of *if* is a condition and an action. The following

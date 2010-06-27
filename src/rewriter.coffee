@@ -26,7 +26,6 @@ exports.Rewriter: class Rewriter
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (tokens) ->
     @tokens: tokens
-    @adjustComments()
     @removeLeadingNewlines()
     @removeMidExpressionNewlines()
     @closeOpenCallsAndIndexes()
@@ -48,29 +47,6 @@ exports.Rewriter: class Rewriter
       move: block @tokens[i - 1], @tokens[i], @tokens[i + 1], i
       i: + move
     true
-
-  # Massage newlines and indentations so that comments don't have to be
-  # correctly indented, or appear on a line of their own.
-  adjustComments: ->
-    @scanTokens (prev, token, post, i) =>
-      return 1 unless include COMMENTS, token[0]
-      [before, after]: [@tokens[i - 2], @tokens[i + 2]]
-      if after and after[0] is 'INDENT'
-        @tokens.splice i + 2, 1
-        if before and before[0] is 'OUTDENT' and post and prev[0] is post[0] is 'TERMINATOR'
-          @tokens.splice i - 2, 1
-        else
-          @tokens.splice i, 0, after
-      else if prev and prev[0] not in ['TERMINATOR', 'INDENT', 'OUTDENT']
-        if post and post[0] is 'TERMINATOR' and after and after[0] is 'OUTDENT'
-          @tokens.splice(i, 0, @tokens.splice(i + 2, 2)...)
-        else
-          @tokens.splice i, 0, ['TERMINATOR', "\n", prev[2]]
-        return 2
-      else if before and before[0] is 'OUTDENT' and prev and prev[0] is 'TERMINATOR' and
-              post and post[0] is 'TERMINATOR' and after and after[0] is 'ELSE'
-          @tokens.splice i + 1, 0, @tokens.splice(i - 2, 1)[0]
-      return 1
 
   # Leading newlines would introduce an ambiguity in the grammar, so we
   # dispatch them here.
@@ -297,6 +273,3 @@ IMPLICIT_END:   ['IF', 'UNLESS', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'TERMINATOR', 
 # The grammar can't disambiguate them, so we insert the implicit indentation.
 SINGLE_LINERS: ['ELSE', "->", "=>", 'TRY', 'FINALLY', 'THEN']
 SINGLE_CLOSERS: ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN']
-
-# Comment flavors.
-COMMENTS: ['COMMENT', 'HERECOMMENT']

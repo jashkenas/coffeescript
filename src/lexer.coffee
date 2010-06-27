@@ -136,20 +136,9 @@ exports.Lexer: class Lexer
     @i: + match[1].length
     true
 
-  # Matches and conumes comments. We pass through comments into JavaScript,
-  # so they're treated as real tokens, like any other part of the language.
+  # Matches and conumes comments.
   commentToken: ->
     return false unless match: @chunk.match(COMMENT)
-    if match[3]
-      comment: @sanitizeHeredoc match[3], {herecomment: true}
-      @token 'HERECOMMENT', comment.split MULTILINER
-      @token 'TERMINATOR', '\n'
-    else
-      lines: compact match[1].replace(COMMENT_CLEANER, '').split MULTILINER
-      i: @tokens.length - 1
-      if @unfinished()
-        i: - 1 while @tokens[i] and not include LINE_BREAK, @tokens[i][0]
-      @tokens.splice(i + 1, 0, ['COMMENT', lines, @line], ['TERMINATOR', '\n', @line])
     @line: + count match[1], "\n"
     @i: + match[1].length
     true
@@ -204,7 +193,7 @@ exports.Lexer: class Lexer
     @i   : + indent.length
     prev: @prev(2)
     size: indent.match(LAST_DENTS).reverse()[0].match(LAST_DENT)[1].length
-    nextCharacter: @chunk.match(NEXT_CHARACTER)[1]
+    nextCharacter: @match NEXT_CHARACTER, 1
     noNewlines: nextCharacter is '.' or nextCharacter is ',' or @unfinished()
     if size is @indent
       return @suppressNewlines() if noNewlines
@@ -303,15 +292,14 @@ exports.Lexer: class Lexer
       prev[0] is '@'
     if accessor then 'accessor' else false
 
-  # Sanitize a heredoc or herecomment by escaping internal double quotes and
+  # Sanitize a heredoc by escaping internal double quotes and
   # erasing all external indentation on the left-hand side.
   sanitizeHeredoc: (doc, options) ->
     while match: HEREDOC_INDENT.exec doc
       attempt: if match[2]? then match[2] else match[3]
       indent: attempt if not indent or attempt.length < indent.length
-    doc: doc.replace(new RegExp("^" +indent, 'gm'), '')
-    return doc if options.herecomment
-    doc.replace(MULTILINER, "\\n")
+    doc.replace(new RegExp("^" +indent, 'gm'), '')
+       .replace(MULTILINER, "\\n")
        .replace(new RegExp(options.quote, 'g'), "\\$options.quote")
 
   # Tag a half assignment.
@@ -487,7 +475,7 @@ HEREDOC       : /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\
 INTERPOLATION : /^\$([a-zA-Z_@]\w*(\.\w+)*)/
 OPERATOR      : /^([+\*&|\/\-%=<>:!?]+)([ \t]*)/
 WHITESPACE    : /^([ \t]+)/
-COMMENT       : /^((\n?[ \t]*)?#{3}(?!#)[ \t]*\n+([\s\S]*?)[ \t]*\n+[ \t]*#{3}|((\n?[ \t]*)?#[^\n]*)+)/
+COMMENT       : /^([\n \t]*#{3}(?!#)[ \t]*\n+([\s\S]*?)[ \t]*\n+[ \t]*#{3}|([\n \t]*#[^\n]*)+)/
 CODE          : /^((-|=)>)/
 MULTI_DENT    : /^((\n([ \t]*))+)(\.)?/
 LAST_DENTS    : /\n([ \t]*)/g
@@ -504,7 +492,6 @@ REGEX_ESCAPE       : /\\[^\$]/g
 JS_CLEANER      : /(^`|`$)/g
 MULTILINER      : /\n/g
 STRING_NEWLINES : /\n[ \t]*/g
-COMMENT_CLEANER : /(^[ \t]*#|\n[ \t]*$)/mg
 NO_NEWLINE      : /^([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)$/
 HEREDOC_INDENT  : /(\n+([ \t]*)|^([ \t]+))/g
 ASSIGNED        : /^([a-zA-Z\$_]\w*[ \t]*?[:=])/

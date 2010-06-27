@@ -26,15 +26,6 @@ else
 ok result
 
 
-# If statement with a comment-only clause.
-result: if false
-  # comment
-else
-  27
-
-ok result is 27
-
-
 # Testing unless.
 result: unless true
   10

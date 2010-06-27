@@ -47,7 +47,7 @@ exports.BaseNode: class BaseNode
       del @options, 'chainRoot' unless this instanceof AccessorNode or this instanceof IndexNode
     top:      if @topSensitive() then @options.top else del @options, 'top'
     closure:  @isStatement() and not @isPureStatement() and not top and
-              not @options.asStatement and not (this instanceof CommentNode) and
+              not @options.asStatement and
               not @containsPureStatement()
     if closure then @compileClosure(@options) else @compileNode(@options)
 
@@ -179,7 +179,6 @@ exports.Expressions: class Expressions extends BaseNode
   makeReturn: ->
     idx:  @expressions.length - 1
     last: @expressions[idx]
-    last: @expressions[idx: - 1] if last instanceof CommentNode
     return this if not last or last instanceof ReturnNode
     @expressions[idx]: last.makeReturn()
     this
@@ -361,29 +360,6 @@ exports.ValueNode: class ValueNode extends BaseNode
         @last: part
 
     if op and @wrapped then "($complete)" else complete
-
-#### CommentNode
-
-# CoffeeScript passes through comments as JavaScript comments at the
-# same position.
-exports.CommentNode: class CommentNode extends BaseNode
-
-  class: 'CommentNode'
-  isStatement: -> yes
-
-  constructor: (lines, kind) ->
-    @lines: lines
-    @kind: kind
-
-  makeReturn: ->
-    this
-
-  compileNode: (o) ->
-    if @kind is 'herecomment'
-      sep: '\n' + @tab
-      "$@tab/*$sep${ @lines.join(sep) }\n$@tab*/"
-    else
-      "$@tab//" + @lines.join("\n$@tab//")
 
 #### CallNode
 
@@ -582,20 +558,13 @@ exports.ObjectNode: class ObjectNode extends BaseNode
   constructor: (props) ->
     @objects: @properties: props or []
 
-  # All the mucking about with commas is to make sure that CommentNodes and
-  # AssignNodes get interleaved correctly, with no trailing commas or
-  # commas affixed to comments.
   compileNode: (o) ->
     o.indent: @idt 1
-    nonComments: prop for prop in @properties when not (prop instanceof CommentNode)
-    lastNoncom:  nonComments[nonComments.length - 1]
+    last: @properties.length - 1
     props: for prop, i in @properties
-      join:   ",\n"
-      join:   "\n" if (prop is lastNoncom) or (prop instanceof CommentNode)
-      join:   '' if i is @properties.length - 1
-      indent: if prop instanceof CommentNode then '' else @idt 1
-      prop:   new AssignNode prop, prop, 'object' unless prop instanceof AssignNode or prop instanceof CommentNode
-      indent + prop.compile(o) + join
+      join:   if i is last then '' else ',\n'
+      prop:   new AssignNode prop, prop, 'object' unless prop instanceof AssignNode
+      @idt(1) + prop.compile(o) + join
     props: props.join('')
     inner: if props then '\n' + props + '\n' + @idt() else ''
     "{$inner}"
@@ -620,8 +589,6 @@ exports.ArrayNode: class ArrayNode extends BaseNode
       code: obj.compile(o)
       if obj instanceof SplatNode
         return @compileSplatLiteral @objects, o
-      else if obj instanceof CommentNode
-        objects.push "\n$code\n$o.indent"
       else if i is @objects.length - 1
         objects.push code
       else
@@ -1336,7 +1303,7 @@ exports.IfNode: class IfNode extends BaseNode
   # The **IfNode** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a ternary is safe.
   isStatement: ->
-    @statement: or !!(@comment or @tags.statement or @bodyNode().isStatement() or (@elseBody and @elseBodyNode().isStatement()))
+    @statement: or !!(@tags.statement or @bodyNode().isStatement() or (@elseBody and @elseBodyNode().isStatement()))
 
   compileCondition: (o) ->
     (cond.compile(o) for cond in flatten([@condition])).join(' || ')
@@ -1362,9 +1329,8 @@ exports.IfNode: class IfNode extends BaseNode
     o.top:        true
     ifDent:      if child then '' else @idt()
     comDent:     if child then @idt() else ''
-    prefix:       if @comment then "${ @comment.compile(condO) }\n$comDent" else ''
     body:         @body.compile(o)
-    ifPart:      "$prefix${ifDent}if (${ @compileCondition(condO) }) {\n$body\n$@tab}"
+    ifPart:      "${ifDent}if (${ @compileCondition(condO) }) {\n$body\n$@tab}"
     return ifPart unless @elseBody
     elsePart: if @isChain
       ' else ' + @elseBodyNode().compile(merge(o, {indent: @idt(), chainChild: true}))
