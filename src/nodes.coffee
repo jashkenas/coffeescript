@@ -1046,8 +1046,8 @@ exports.InNode: class InNode extends BaseNode
   compileLoopTest: (o) ->
     [@arr1, @arr2]: @array.compileReference o, {precompile: yes}
     [i, l]: [o.scope.freeVariable(), o.scope.freeVariable()]
-    body: "!!(function(){ for (var $i=0, $l=${@arr1}.length; $i<$l; $i++) if (${@arr2}[$i] === $@obj2) return true; })()"
-    if @obj1 isnt @obj2 then "$@obj1;\n$@tab$body" else body
+    prefix: if @obj1 isnt @obj2 then @obj1 + '; ' else ''
+    "!!(function(){ ${prefix}for (var $i=0, $l=${@arr1}.length; $i<$l; $i++) if (${@arr2}[$i] === $@obj2) return true; })()"
 
 #### TryNode
 

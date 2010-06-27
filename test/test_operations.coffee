@@ -46,3 +46,7 @@ ok 100 in [100, 200, 300]
 array: [100, 200, 300]
 ok 100 in array
 ok 1 not in array
+
+list: [1, 2, 7]
+result: if list[2] in [7, 10] then 100 else -1
+ok result is 100
