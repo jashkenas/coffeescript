@@ -44,3 +44,19 @@ ok result is 'ya'
 # Testing inline funcs with inline if-elses.
 func: -> if 1 < 0.5 then 1 else -1
 ok func() is -1
+
+
+# Testing empty or commented if statements ... should compile:
+result: if false
+else if false
+else
+
+ok result is undefined
+
+result: if false
+  # comment
+else if true
+  # comment
+else
+
+ok result is undefined

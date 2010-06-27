@@ -134,6 +134,9 @@ exports.Rewriter: class Rewriter
   # but we need to make sure it's balanced.
   addImplicitIndentation: ->
     @scanTokens (prev, token, post, i) =>
+      if token[0] is 'ELSE' and prev[0] isnt 'OUTDENT'
+        @tokens.splice i, 0, ['INDENT', 2, token[2]], ['OUTDENT', 2, token[2]]
+        return 2
       return 1 unless include(SINGLE_LINERS, token[0]) and
         post[0] isnt 'INDENT' and
         not (token[0] is 'ELSE' and post[0] is 'IF')
