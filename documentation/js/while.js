@@ -1,7 +1,6 @@
 (function(){
   var _a, lyrics, num;
-  // Econ 101
-  if (this.studying_economics) {
+  if (this.studyingEconomics) {
     while (supply > demand) {
       buy();
     }
@@ -9,7 +8,6 @@
       sell();
     }
   }
-  // Nursery Rhyme
   num = 6;
   lyrics = (function() {
     _a = [];

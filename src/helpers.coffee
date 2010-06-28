@@ -62,34 +62,3 @@ helpers.del: del: (obj, key) ->
   val: obj[key]
   delete obj[key]
   val
-
-# Matches a balanced group such as a single or double-quoted string. Pass in
-# a series of delimiters, all of which must be nested correctly within the
-# contents of the string. This method allows us to have strings within
-# interpolations within strings, ad infinitum.
-helpers.balancedString: balancedString: (str, delimited, options) ->
-  options: or {}
-  slash: delimited[0][0] is '/'
-  levels: []
-  i: 0
-  while i < str.length
-    if levels.length and starts str, '\\', i
-      i: + 1
-    else
-      for pair in delimited
-        [open, close]: pair
-        if levels.length and starts(str, close, i) and levels[levels.length - 1] is pair
-          levels.pop()
-          i: + close.length - 1
-          i: + 1 unless levels.length
-          break
-        else if starts str, open, i
-          levels.push(pair)
-          i: + open.length - 1
-          break
-    break if not levels.length or slash and starts str, '\n', i
-    i: + 1
-  if levels.length
-    return false if slash
-    throw new Error "SyntaxError: Unterminated ${levels.pop()[0]} starting on line ${@line + 1}"
-  if not i then false else str.substring(0, i)

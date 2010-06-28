@@ -1,4 +1,4 @@
-bait: 1000
-andSwitch: 0
+theBait: 1000
+theSwitch: 0
 
-[bait, andSwitch]: [andSwitch, bait]
+[theBait, theSwitch]: [theSwitch, theBait]

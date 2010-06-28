@@ -1,8 +1,8 @@
 (function(){
-  var _a, and_switch, bait;
-  bait = 1000;
-  and_switch = 0;
-  _a = [and_switch, bait];
-  bait = _a[0];
-  and_switch = _a[1];
+  var _a, theBait, theSwitch;
+  theBait = 1000;
+  theSwitch = 0;
+  _a = [theSwitch, theBait];
+  theBait = _a[0];
+  theSwitch = _a[1];
 })();

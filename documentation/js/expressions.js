@@ -1,10 +1,10 @@
 (function(){
   var eldest, grade;
   grade = function(student) {
-    if (student.excellent_work) {
+    if (student.excellentWork) {
       return "A+";
-    } else if (student.okay_stuff) {
-      if (student.tried_hard) {
+    } else if (student.okayStuff) {
+      if (student.triedHard) {
         return "B";
       } else {
         return "B-";

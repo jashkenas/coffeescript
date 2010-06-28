@@ -6,4 +6,4 @@ if happy and knowsIt
 
 date: if friday then sue else jill
 
-expensive: or doTheMath()
+options: or defaultOptions

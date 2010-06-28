@@ -1,11 +1,11 @@
 (function(){
-  var change_numbers, new_num, num;
-  num = 1;
-  change_numbers = function() {
-    var new_num;
-    new_num = -1;
-    num = 10;
-    return num;
+  var changeNumbers, inner, outer;
+  outer = 1;
+  changeNumbers = function() {
+    var inner;
+    inner = -1;
+    outer = 10;
+    return outer;
   };
-  new_num = change_numbers();
+  inner = changeNumbers();
 })();

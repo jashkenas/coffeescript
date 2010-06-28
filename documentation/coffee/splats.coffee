@@ -1,9 +1,9 @@
-gold: silver: theField: "unknown"
+gold: silver: rest: "unknown"
 
 awardMedals: (first, second, rest...) ->
-  gold:       first
-  silver:     second
-  theField:  rest
+  gold:   first
+  silver: second
+  rest:   rest
 
 contenders: [
   "Michael Phelps"
@@ -22,4 +22,4 @@ awardMedals contenders...
 
 alert "Gold: " + gold
 alert "Silver: " + silver
-alert "The Field: " + theField
+alert "The Field: " + rest

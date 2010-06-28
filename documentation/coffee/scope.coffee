@@ -1,5 +1,5 @@
-num: 1
+outer: 1
 changeNumbers: ->
-  newNum: -1
-  num: 10
-newNum: changeNumbers()
+  inner: -1
+  outer: 10
+inner: changeNumbers()

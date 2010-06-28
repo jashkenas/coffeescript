@@ -130,7 +130,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.6.2">0.6.2</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.7.0">0.7.0</a>
     </p>
 
     <h2>
@@ -140,7 +140,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
 
     <p><i>CoffeeScript on the left, compiled JavaScript output on the right.</i></p>
 
-    <%= code_for('overview', 'cubed_list') %>
+    <%= code_for('overview', 'cubes') %>
 
     <p>
       For a longer CoffeeScript example, check out
@@ -176,7 +176,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
       Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.6.2">0.6.2</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.7.0">0.7.0</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -388,7 +388,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       are properly declared within lexical scope &mdash; you never need to write
       <tt>var</tt> yourself.
     </p>
-    <%= code_for('scope', 'new_num') %>
+    <%= code_for('scope', 'inner') %>
     <p>
       Notice how the all of the variable declarations have been pushed up to
       the top of the closest scope, the first time they appear.
@@ -513,8 +513,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <p>
       If you know the start and end of your loop, or would like to step through
       in fixed-size increments, you can use a range to specify the start and
-      end of your comprehension. (The long line-breaking "for" definitions in
-      the compiled JS below allow ranges to count downwards, as well as upwards).
+      end of your comprehension.
     </p>
     <%= code_for('range_comprehensions', 'countdown') %>
     <p>
@@ -534,7 +533,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       the slice, and the second is the index of the last one. Three dots signify
       a range that excludes the end.
     </p>
-    <%= code_for('slices', 'numbers_copy') %>
+    <%= code_for('slices', 'copy') %>
     <p>
       The same syntax can be used with assignment to replace a segment of an
       array with new values (to splice it).
@@ -657,7 +656,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       on the right to the variables on the left. In the simplest case, it can be
       used for parallel assignment:
     </p>
-    <%= code_for('parallel_assignment', 'bait') %>
+    <%= code_for('parallel_assignment', 'theBait') %>
     <p>
       But it's also helpful for dealing with functions that return multiple
       values.
@@ -762,7 +761,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <b class="header">Multiline Strings and Heredocs</b>
       Multiline strings are allowed in CoffeeScript.
     </p>
-    <%= code_for('strings', 'moby_dick') %>
+    <%= code_for('strings', 'mobyDick') %>
     <p>
       Heredocs can be used to hold formatted or indentation-sensitive text
       (or, if you just don't feel like escaping quotes and apostrophes). The
@@ -1167,7 +1166,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       source: $('#repl_source').val()
       window.compiled_js: ''
       try
-        window.compiled_js: CoffeeScript.compile source, {no_wrap: true}
+        window.compiled_js: CoffeeScript.compile source, {noWrap: true}
         $('#repl_results').text window.compiled_js
         $('#error').hide();
       catch error

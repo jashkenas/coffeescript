@@ -1,12 +1,12 @@
 (function(){
-  var date, expensive, mood;
+  var date, mood, options;
   if (singing) {
-    mood = greatly_improved;
+    mood = greatlyImproved;
   }
-  if (happy && knows_it) {
-    claps_hands();
-    cha_cha_cha();
+  if (happy && knowsIt) {
+    clapsHands();
+    chaChaCha();
   }
   date = friday ? sue : jill;
-  expensive = expensive || do_the_math();
+  options = options || defaultOptions;
 })();

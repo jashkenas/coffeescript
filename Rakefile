@@ -6,7 +6,7 @@ require 'yui/compressor'
 
 HEADER = <<-EOS
 /**
- * CoffeeScript Compiler v0.6.2
+ * CoffeeScript Compiler v0.7.0
  * http://coffeescript.org
  *
  * Copyright 2010, Jeremy Ashkenas
@@ -35,7 +35,7 @@ desc "Build the single concatenated and minified script for the browser"
 task :browser do
   sources = %w(helpers.js rewriter.js lexer.js parser.js scope.js nodes.js coffee-script.js)
   code    = sources.map {|s| File.read('lib/' + s) }.join('')
-  # code    = YUI::JavaScriptCompressor.new.compress(code)
+  code    = YUI::JavaScriptCompressor.new.compress(code)
   File.open('extras/coffee-script.js', 'w+') {|f| f.write(HEADER + code) }
 end
 

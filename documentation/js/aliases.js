@@ -3,12 +3,12 @@
   if (ignition === true) {
     launch();
   }
-  if (band !== spinal_tap) {
+  if (band !== SpinalTap) {
     volume = 10;
   }
   if (!(answer === false)) {
-    let_the_wild_rumpus_begin();
+    letTheWildRumpusBegin();
   }
-  car.speed < speed_limit ? accelerate() : null;
+  car.speed < limit ? accelerate() : null;
   print("My name is " + this.name);
 })();

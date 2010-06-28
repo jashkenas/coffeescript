@@ -17,7 +17,7 @@ else
   helpers:      this.helpers
 
 # Import the helpers we need.
-{include, count, starts, compact, balancedString}: helpers
+{include, count, starts, compact}: helpers
 
 # The Lexer Class
 # ---------------
@@ -175,7 +175,7 @@ exports.Lexer: class Lexer
   # Matches a token in which which the passed delimiter pairs must be correctly
   # balanced (ie. strings, JS literals).
   balancedToken: (delimited...) ->
-    balancedString @chunk, delimited
+    @balancedString @chunk, delimited
 
   # Matches newlines, indents, and outdents, and determines which is which.
   # If we can detect that the current line is continued onto the the next line,
@@ -338,6 +338,37 @@ exports.Lexer: class Lexer
   assignmentError: ->
     throw new Error "SyntaxError: Reserved word \"${@value()}\" on line ${@line + 1} can't be assigned"
 
+  # Matches a balanced group such as a single or double-quoted string. Pass in
+  # a series of delimiters, all of which must be nested correctly within the
+  # contents of the string. This method allows us to have strings within
+  # interpolations within strings, ad infinitum.
+  balancedString: (str, delimited, options) ->
+    options: or {}
+    slash: delimited[0][0] is '/'
+    levels: []
+    i: 0
+    while i < str.length
+      if levels.length and starts str, '\\', i
+        i: + 1
+      else
+        for pair in delimited
+          [open, close]: pair
+          if levels.length and starts(str, close, i) and levels[levels.length - 1] is pair
+            levels.pop()
+            i: + close.length - 1
+            i: + 1 unless levels.length
+            break
+          else if starts str, open, i
+            levels.push(pair)
+            i: + open.length - 1
+            break
+      break if not levels.length or slash and starts str, '\n', i
+      i: + 1
+    if levels.length
+      return false if slash
+      throw new Error "SyntaxError: Unterminated ${levels.pop()[0]} starting on line ${@line + 1}"
+    if not i then false else str.substring(0, i)
+
   # Expand variables and expressions inside double-quoted strings using
   # [ECMA Harmony's interpolation syntax](http://wiki.ecmascript.org/doku.php?id=strawman:string_interpolation)
   # for substitution of bare variables as well as arbitrary expressions.
@@ -366,7 +397,7 @@ exports.Lexer: class Lexer
           tokens.push ['IDENTIFIER', interp]
           i: + group.length - 1
           pi: i + 1
-        else if (expr: balancedString str.substring(i), [['${', '}']])
+        else if (expr: @balancedString str.substring(i), [['${', '}']])
           tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i
           inner: expr.substring(2, expr.length - 1)
           if inner.length

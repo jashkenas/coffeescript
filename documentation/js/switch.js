@@ -1,18 +1,18 @@
 (function(){
   if (day === "Mon") {
-    go_to_work();
+    goToWork();
   } else if (day === "Tue") {
-    go_to_the_park();
+    goToThePark();
   } else if (day === "Thu") {
-    go_ice_fishing();
+    goIceFishing();
   } else if (day === "Fri" || day === "Sat") {
-    if (day === bingo_day) {
-      go_to_bingo();
-      go_dancing();
+    if (day === bingoDay) {
+      goToBingo();
+      goDancing();
     }
   } else if (day === "Sun") {
-    go_to_church();
+    goToChurch();
   } else {
-    go_to_work();
+    goToWork();
   }
 })();

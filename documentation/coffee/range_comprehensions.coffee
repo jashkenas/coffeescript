@@ -1,6 +1,6 @@
-countdown: num for num in [10..1]
+countdown: num for num in [10..1] by -1
 
-eggDelivery: ->
+deliverEggs: ->
   for i in [0...eggs.length] by 12
-    dozenEggs: eggs[i...i+12]
+    dozen: eggs[i...i+12]
     deliver new eggCarton(dozen)
