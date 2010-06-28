@@ -19,6 +19,6 @@ catch err
 ok result is 2
 
 
-result: try throw 'longer' catch err then err.length
+result: try throw 'error' catch err then err.length
 
-ok result is 6
+ok result is 5
