@@ -17,3 +17,8 @@ catch err
   err.length
 
 ok result is 2
+
+
+result: try throw 'longer' catch err then err.length
+
+ok result is 6
