@@ -1,0 +1,1 @@
+$('.account').css {class: 'active'}
