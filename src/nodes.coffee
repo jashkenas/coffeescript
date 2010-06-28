@@ -193,11 +193,14 @@ exports.Expressions: class Expressions extends BaseNode
 
   # If we happen to be the top-level **Expressions**, wrap everything in
   # a safety closure, unless requested not to.
+  # It would be better not to generate them in the first place, but for now,
+  # clean up obvious double-parentheses.
   compileRoot: (o) ->
     o.indent: @tab: if o.noWrap then '' else TAB
     o.scope: new Scope(null, this, null)
     code: if o.globals then @compileNode(o) else @compileWithDeclarations(o)
     code: code.replace(TRAILING_WHITESPACE, '')
+    code: code.replace(DOUBLE_PARENS, '($1)')
     if o.noWrap then code else "(function(){\n$code\n})();\n"
 
   # Compile the expressions body for the contents of a function, with
@@ -1421,6 +1424,9 @@ TAB: '  '
 # Trim out all trailing whitespace, so that the generated code plays nice
 # with Git.
 TRAILING_WHITESPACE: /[ \t]+$/gm
+
+# Obvious redundant parentheses should be removed.
+DOUBLE_PARENS: /\(\(([^\(\)\n]*)\)\)/g
 
 # Keep these identifier regexes in sync with the Lexer.
 IDENTIFIER: /^[a-zA-Z\$_](\w|\$)*$/
