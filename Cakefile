@@ -30,7 +30,7 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
   puts  "Linking 'coffee' to $bin/coffee"
   exec([
     "mkdir -p $lib $bin"
-    "cp -rf bin lib LICENSE README package.json src vendor $lib"
+    "cp -rf bin lib LICENSE README package.json src $lib"
     "ln -sf $lib/bin/coffee $bin/coffee"
     "ln -sf $lib/bin/cake $bin/cake"
     "mkdir -p ~/.node_libraries"
@@ -54,7 +54,7 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
 
 
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
-  require.paths.unshift 'vendor/jison/lib'
+  require 'jison'
   parser: require('./lib/grammar').parser
   js: parser.generate()
   parserPath: 'lib/parser.js'
