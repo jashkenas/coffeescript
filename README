@@ -25,6 +25,9 @@
   Install Node.js, and then the CoffeeScript compiler:
   sudo bin/cake install
   
+  Or, if you have the Node Package Manager installed:
+  sudo npm install coffee-script
+  
   Compile a script:
   coffee /path/to/script.coffee
   
