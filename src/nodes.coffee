@@ -525,11 +525,13 @@ exports.RangeNode: class RangeNode extends BaseNode
     equals: if @exclusive then '' else '='
     from:   @fromVar.compile o
     to:     @toVar.compile o
+    result: o.scope.freeVariable()
+    i:      o.scope.freeVariable()
     clause: "$from <= $to ?"
-    pre:    "\n${idt}a = [];${vars}"
-    body:   "var i = $from; ($clause i <$equals $to : i >$equals $to); ($clause i += 1 : i -= 1)"
-    post:   "a.push(i);\n${idt}return a;\n$o.indent"
-    "(function(){${pre}for ($body) $post}).call(this)"
+    pre:    "\n${idt}${result} = [];${vars}"
+    body:   "var $i = $from; $clause $i <$equals $to : $i >$equals $to; $clause $i += 1 : $i -= 1"
+    post:   "{ ${result}.push($i) };\n${idt}return $result;\n$o.indent"
+    "(function(){${pre};\n${idt}for ($body)$post}).call(this)"
 
 #### SliceNode
 

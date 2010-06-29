@@ -12,9 +12,18 @@ a: [0, 1, 2, 3, 4, 5, 6, 7]
 deepEqual a[2...6], [2, 3, 4, 5]
 
 
-# Range.
+# Ranges.
 countdown: [10..1].join(' ')
 ok countdown is "10 9 8 7 6 5 4 3 2 1"
+
+a: 1
+b: 5
+nums: [a...b]
+ok nums.join(' ') is '1 2 3 4'
+
+b: -5
+nums: [a..b]
+ok nums.join(' ') is '1 0 -1 -2 -3 -4 -5'
 
 
 # Expression-based range.
