@@ -90,14 +90,14 @@ class LinkedList
 
 
 # Tests.
-list: new LinkedList()
+list: new LinkedList
 
 list.add("Hi")
 puts(list.size()  is 1)
 puts(list.item(0) is "Hi")
 puts(list.item(1) is null)
 
-list: new LinkedList()
+list: new LinkedList
 list.add("zero").add("one").add("two")
 puts(list.size()     is 3)
 puts(list.item(2)    is "two")

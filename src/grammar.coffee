@@ -53,8 +53,8 @@ grammar: {
   # The **Root** is the top-level node in the syntax tree. Since we parse bottom-up,
   # all parsing must end here.
   Root: [
-    o "",                                       -> new Expressions()
-    o "TERMINATOR",                             -> new Expressions()
+    o "",                                       -> new Expressions
+    o "TERMINATOR",                             -> new Expressions
     o "Body"
     o "Block TERMINATOR"
   ]
@@ -106,7 +106,7 @@ grammar: {
   # token stream.
   Block: [
     o "INDENT Body OUTDENT",                    -> $2
-    o "INDENT OUTDENT",                         -> new Expressions()
+    o "INDENT OUTDENT",                         -> new Expressions
   ]
 
   # A literal identifier, a variable name or property.
@@ -285,8 +285,9 @@ grammar: {
   # and calling `super()`
   Call: [
     o "Invocation"
-    o "NEW Invocation",                         -> $2.newInstance()
     o "Super"
+    o "NEW Invocation",                         -> $2.newInstance()
+    o "NEW Value",                              -> (new CallNode($2, [])).newInstance()
   ]
 
   # Extending an object by setting its prototype chain to reference a parent

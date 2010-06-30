@@ -630,7 +630,7 @@ exports.ClassNode: class ClassNode extends BaseNode
   # constructor, property assignments, and inheritance getting built out below.
   compileNode: (o) ->
     extension:  @parent and new ExtendsNode(@variable, @parent)
-    props:      new Expressions()
+    props:      new Expressions
     o.top:      true
     me:         null
     className:  @variable.compile o
@@ -642,7 +642,7 @@ exports.ClassNode: class ClassNode extends BaseNode
         new CallNode(applied, [literal('this'), literal('arguments')])
       ]))
     else
-      constructor: new CodeNode()
+      constructor: new CodeNode
 
     for prop in @properties
       [pvar, func]: [prop.variable, prop.value]
@@ -787,7 +787,7 @@ exports.CodeNode: class CodeNode extends BaseNode
 
   constructor: (params, body, tag) ->
     @params:  params or []
-    @body:    body or new Expressions()
+    @body:    body or new Expressions
     @bound:   tag is 'boundfunc'
 
   # Compilation creates a new scope unless explicitly asked to share with the

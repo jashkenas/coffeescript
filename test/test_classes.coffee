@@ -22,7 +22,7 @@ class ThirdChild extends SecondChild
   func: (string) ->
     super('three/') + string
 
-result: (new ThirdChild()).func 'four'
+result: (new ThirdChild).func 'four'
 
 ok result is 'zero/one/two/three/four'
 ok Base.static('word') is 'static/word'
@@ -40,7 +40,7 @@ class SubClass extends SuperClass
   constructor: ->
     super 'sub'
 
-ok (new SubClass()).prop is 'top-super-sub'
+ok (new SubClass).prop is 'top-super-sub'
 
 
 class OneClass
@@ -75,11 +75,11 @@ ThirdChild extends SecondChild
 ThirdChild::func: (string) ->
   super('three/') + string
 
-result: (new ThirdChild()).func 'four'
+result: (new ThirdChild).func 'four'
 
 ok result is 'zero/one/two/three/four'
 
-ok (new ThirdChild())['func-func']('thing') is 'dynamic-thing'
+ok (new ThirdChild)['func-func']('thing') is 'dynamic-thing'
 
 
 TopClass: (arg) ->
@@ -97,7 +97,7 @@ SubClass: ->
 SuperClass extends TopClass
 SubClass extends SuperClass
 
-ok (new SubClass()).prop is 'top-super-sub'
+ok (new SubClass).prop is 'top-super-sub'
 
 
 # '@' referring to the current instance, and not being coerced into a call.
@@ -105,7 +105,7 @@ class ClassName
   amI: ->
     @ instanceof ClassName
 
-obj: new ClassName()
+obj: new ClassName
 ok obj.amI()
 
 
@@ -125,7 +125,7 @@ class Class
   class: 'class'
   name: -> @class
 
-instance: new Class()
+instance: new Class
 ok instance.class is 'class'
 ok instance.name() is 'class'
 

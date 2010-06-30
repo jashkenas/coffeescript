@@ -54,7 +54,7 @@ exports.Lexer: class Lexer
       @extractNextToken()
     @closeIndentation()
     return @tokens if o.rewrite is off
-    (new Rewriter()).rewrite @tokens
+    (new Rewriter).rewrite @tokens
 
   # At every position, run through this list of attempted matches,
   # short-circuiting if any of them succeed. Their order determines precedence:
@@ -383,7 +383,7 @@ exports.Lexer: class Lexer
     if str.length < 3 or not starts str, '"'
       @token 'STRING', str
     else
-      lexer:    new Lexer()
+      lexer:    new Lexer
       tokens:   []
       quote:    str.substring 0, 1
       [i, pi]:  [1, 1]

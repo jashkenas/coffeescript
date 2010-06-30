@@ -60,7 +60,7 @@ class Person
 # p = Person ()
 # p /name string print
 
-p: new Person()
+p: new Person
 print p.name
 
 
@@ -188,9 +188,9 @@ HomePage::get: (url) ->
 # b /right = BTree ()
 
 BTree:    ->
-b:        new BTree()
-b.left:   new BTree()
-b.right:  new BTree()
+b:        new BTree
+b.left:   new BTree
+b.right:  new BTree
 
 
 # BTree = class: /left, /right.
@@ -200,6 +200,6 @@ b.right:  new BTree()
 #   'left path found!' print.
 
 BTree: ->
-b: new BTree()
+b: new BTree
 
 print('left path found!') if b.left?

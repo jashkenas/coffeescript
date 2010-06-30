@@ -89,7 +89,7 @@ class Child extends Parent
     nums: [3, 2, 1]
     super nums...
 
-ok (new Child()).meth().join(' ') is '3 2 1'
+ok (new Child).meth().join(' ') is '3 2 1'
 
 
 # Functions with splats being called with too few arguments.

@@ -19,7 +19,7 @@ spaced_out_multiline_object: {
   pi: 3.14159
   list: [1, 2, 3, 4]
   regex: /match[ing](every|thing|\/)/gi
-  three: new Idea()
+  three: new Idea
 
   inner_obj: {
     freedom: -> _.freedom()

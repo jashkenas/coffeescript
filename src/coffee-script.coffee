@@ -25,7 +25,7 @@ else
 exports.VERSION: '0.7.0'
 
 # Instantiate a Lexer for our use here.
-lexer: new Lexer()
+lexer: new Lexer
 
 # Compile a string of CoffeeScript code to JavaScript, using the Coffee/Jison
 # compiler.
