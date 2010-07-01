@@ -370,6 +370,7 @@ grammar: {
   # A catch clause names its error and runs a block of code.
   Catch: [
     o "CATCH Identifier Block",                 -> [$2, $3]
+    o "CATCH Identifier TERMINATOR",            -> [$2, new Expressions]
   ]
 
   # Throw an exception object.
