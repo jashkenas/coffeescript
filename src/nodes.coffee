@@ -647,6 +647,7 @@ exports.ClassNode: class ClassNode extends BaseNode
     for prop in @properties
       [pvar, func]: [prop.variable, prop.value]
       if pvar and pvar.base.value is 'constructor' and func instanceof CodeNode
+        throw new Error "cannot define a constructor as a bound function." if func.bound
         func.name: className
         func.body.push new ReturnNode literal 'this'
         @variable: new ValueNode @variable
