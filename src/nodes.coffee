@@ -1381,8 +1381,11 @@ ClosureNode: exports.ClosureNode: {
     return expressions if expressions.containsPureStatement()
     func: new ParentheticalNode(new CodeNode([], Expressions.wrap([expressions])))
     args: []
-    mentionsArgs: expressions.contains (n) -> (n instanceof LiteralNode) and (n.value is 'arguments')
-    mentionsThis: expressions.contains (n) -> (n instanceof LiteralNode) and (n.value is 'this')
+    mentionsArgs: expressions.contains (n) ->
+      n instanceof LiteralNode and (n.value is 'arguments')
+    mentionsThis: expressions.contains (n) ->
+      (n instanceof LiteralNode and (n.value is 'this')) or
+      (n instanceof CodeNode and n.bound)
     if mentionsArgs or mentionsThis
       meth: literal(if mentionsArgs then 'apply' else 'call')
       args: [literal('this')]

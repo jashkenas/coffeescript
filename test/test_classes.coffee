@@ -144,3 +144,15 @@ fido:  new Dog('Fido')
 fido.bark: spark.bark
 
 ok fido.bark() is 'Spark woofs!'
+
+
+# Testing a bound function in a bound function.
+class Mini
+  num: 10
+  generate: =>
+    for i in [1..3]
+      =>
+        @num
+
+m: new Mini
+ok (func() for func in m.generate()).join(' ') is '10 10 10'
