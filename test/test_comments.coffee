@@ -67,11 +67,11 @@ func: ->
   code
 
 obj: {
-  a: b
+  a: 'b'
   ###
   comment
   ###
-  c: d
+  c: 'd'
 }
 
 arr: [
