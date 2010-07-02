@@ -47,7 +47,7 @@ exports.BaseNode: class BaseNode
       del @options, 'chainRoot' unless this instanceof AccessorNode or this instanceof IndexNode
     top:      if @topSensitive() then @options.top else del @options, 'top'
     closure:  @isStatement() and not @isPureStatement() and not top and
-              not @options.asStatement and
+              not @options.asStatement and not (this instanceof CommentNode) and
               not @containsPureStatement()
     if closure then @compileClosure(@options) else @compileNode(@options)
 
@@ -179,6 +179,7 @@ exports.Expressions: class Expressions extends BaseNode
   makeReturn: ->
     idx:  @expressions.length - 1
     last: @expressions[idx]
+    last: @expressions[idx: - 1] if last instanceof CommentNode
     return this if not last or last instanceof ReturnNode
     @expressions[idx]: last.makeReturn()
     this
@@ -363,6 +364,25 @@ exports.ValueNode: class ValueNode extends BaseNode
         @last: part
 
     if op and @wrapped then "($complete)" else complete
+
+#### CommentNode
+
+# CoffeeScript passes through block comments as JavaScript block comments
+# at the same position.
+exports.CommentNode: class CommentNode extends BaseNode
+
+  class: 'CommentNode'
+  isStatement: -> yes
+
+  constructor: (lines) ->
+    @lines: lines
+
+  makeReturn: ->
+    this
+
+  compileNode: (o) ->
+    sep: "\n$@tab"
+    "$@tab/*$sep${ @lines.join(sep) }\n$@tab*/"
 
 #### CallNode
 
@@ -565,11 +585,15 @@ exports.ObjectNode: class ObjectNode extends BaseNode
 
   compileNode: (o) ->
     o.indent: @idt 1
-    last: @properties.length - 1
+    nonComments: prop for prop in @properties when not (prop instanceof CommentNode)
+    lastNoncom:  nonComments[nonComments.length - 1]
     props: for prop, i in @properties
-      join:   if i is last then '' else ',\n'
-      prop:   new AssignNode prop, prop, 'object' unless prop instanceof AssignNode
-      @idt(1) + prop.compile(o) + join
+      join:   ",\n"
+      join:   "\n" if (prop is lastNoncom) or (prop instanceof CommentNode)
+      join:   '' if i is @properties.length - 1
+      indent: if prop instanceof CommentNode then '' else @idt 1
+      prop:   new AssignNode prop, prop, 'object' unless prop instanceof AssignNode or prop instanceof CommentNode
+      indent + prop.compile(o) + join
     props: props.join('')
     inner: if props then '\n' + props + '\n' + @idt() else ''
     "{$inner}"
@@ -594,6 +618,8 @@ exports.ArrayNode: class ArrayNode extends BaseNode
       code: obj.compile(o)
       if obj instanceof SplatNode
         return @compileSplatLiteral @objects, o
+      else if obj instanceof CommentNode
+        objects.push "\n$code\n$o.indent"
       else if i is @objects.length - 1
         objects.push code
       else

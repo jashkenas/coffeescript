@@ -99,6 +99,7 @@ grammar: {
     o "Class"
     o "Splat"
     o "Existence"
+    o "Comment"
   ]
 
   # A an indented block of expressions. Note that the [Rewriter](rewriter.html)
@@ -107,6 +108,7 @@ grammar: {
   Block: [
     o "INDENT Body OUTDENT",                    -> $2
     o "INDENT OUTDENT",                         -> new Expressions
+    o "TERMINATOR Comment",                     -> Expressions.wrap [$2]
   ]
 
   # A literal identifier, a variable name or property.
@@ -147,12 +149,18 @@ grammar: {
     o "AlphaNumeric"
     o "Identifier ASSIGN Expression",           -> new AssignNode new ValueNode($1), $3, 'object'
     o "AlphaNumeric ASSIGN Expression",         -> new AssignNode new ValueNode($1), $3, 'object'
+    o "Comment"
   ]
 
   # A return statement from a function body.
   Return: [
     o "RETURN Expression",                      -> new ReturnNode $2
     o "RETURN",                                 -> new ReturnNode new ValueNode new LiteralNode 'null'
+  ]
+
+  # A block comment.
+  Comment: [
+    o "HERECOMMENT",                            -> new CommentNode $1
   ]
 
   # [The existential operator](http://jashkenas.github.com/coffee-script/#existence).

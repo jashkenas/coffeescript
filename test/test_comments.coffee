@@ -66,6 +66,21 @@ func: ->
   ###
   code
 
+obj: {
+  a: b
+  ###
+  comment
+  ###
+  c: d
+}
+
+arr: [
+  1, 2, 3,
+  ###
+  four
+  ###
+  5, 6, 7
+]
 
 # Spaced comments in if / elses.
 result: if false
