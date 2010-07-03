@@ -1247,7 +1247,7 @@ exports.ForNode: class ForNode extends BaseNode
       svar:         scope.freeVariable()
       sourcePart:   "$svar = ${ @source.compile(o) };"
       if @pattern
-        namePart:   new AssignNode(@name, literal("$svar[$ivar]")).compile(merge o, {indent: @idt(1), top: true}) + "\n"
+        namePart:   new AssignNode(@name, literal("$svar[$ivar]")).compile(merge o, {indent: @idt(1), top: true}) + '\n'
       else
         namePart:   "$name = $svar[$ivar]" if name
       unless @object
@@ -1266,7 +1266,7 @@ exports.ForNode: class ForNode extends BaseNode
       body.unshift  literal "var $index = $ivar" if index
       body:         ClosureNode.wrap(body, true)
     else
-      varPart:      "${@idt(1)}$namePart;\n" if namePart
+      varPart:      if @pattern then namePart else "${@idt(1)}$namePart;\n"
     if @object
       forPart:      "$ivar in $svar) { if (${utility('hasProp')}.call($svar, $ivar)"
     body:           body.compile(merge(o, {indent: @idt(1), top: true}))
