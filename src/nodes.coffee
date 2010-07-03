@@ -524,7 +524,7 @@ exports.RangeNode: class RangeNode extends BaseNode
     parts: []
     parts.push @from.compile o if @from isnt @fromVar
     parts.push @to.compile o if @to isnt @toVar
-    if parts.length then "${parts.join('; ')};\n$o.indent" else ''
+    if parts.length then "${parts.join('; ')};" else ''
 
   # When compiled normally, the range returns the contents of the *for loop*
   # needed to iterate over the values in the range. Used by comprehensions.
@@ -548,10 +548,10 @@ exports.RangeNode: class RangeNode extends BaseNode
     result: o.scope.freeVariable()
     i:      o.scope.freeVariable()
     clause: "$from <= $to ?"
-    pre:    "\n${idt}${result} = [];${vars}"
+    pre:    "\n${idt}${result} = []; ${vars}"
     body:   "var $i = $from; $clause $i <$equals $to : $i >$equals $to; $clause $i += 1 : $i -= 1"
     post:   "{ ${result}.push($i) };\n${idt}return $result;\n$o.indent"
-    "(function(){${pre};\n${idt}for ($body)$post}).call(this)"
+    "(function(){${pre}\n${idt}for ($body)$post}).call(this)"
 
 #### SliceNode
 
@@ -1241,7 +1241,8 @@ exports.ForNode: class ForNode extends BaseNode
     varPart:        ''
     body:           Expressions.wrap([@body])
     if range
-      sourcePart:   source.compileVariables o
+      sourcePart:   source.compileVariables(o)
+      sourcePart:   + "\n$o.indent" if sourcePart
       forPart:      source.compile merge o, {index: ivar, step: @step}
     else
       svar:         scope.freeVariable()
@@ -1266,7 +1267,7 @@ exports.ForNode: class ForNode extends BaseNode
       body.unshift  literal "var $index = $ivar" if index
       body:         ClosureNode.wrap(body, true)
     else
-      varPart:      if @pattern then namePart else "${@idt(1)}$namePart;\n"
+      varPart:      (namePart or '') and (if @pattern then namePart else "${@idt(1)}$namePart;\n")
     if @object
       forPart:      "$ivar in $svar) { if (${utility('hasProp')}.call($svar, $ivar)"
     body:           body.compile(merge(o, {indent: @idt(1), top: true}))
