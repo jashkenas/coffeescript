@@ -48,7 +48,7 @@ exports.Rewriter: class Rewriter
       move: block @tokens[i - 1], @tokens[i], @tokens[i + 1], i
       i: + move
     true
-    
+
   # Massage newlines and indentations so that comments don't have to be
   # correctly indented, or appear on a line of their own.
   adjustComments: ->
@@ -159,14 +159,17 @@ exports.Rewriter: class Rewriter
   addImplicitIndentation: ->
     @scanTokens (prev, token, post, i) =>
       if token[0] is 'ELSE' and prev[0] isnt 'OUTDENT'
-        @tokens.splice i, 0, ['INDENT', 2, token[2]], ['OUTDENT', 2, token[2]]
+        @tokens.splice i, 0, @indentation(token)...
         return 2
+      if token[0] is 'CATCH' and @tokens[i + 2][0] is 'TERMINATOR'
+        @tokens.splice i + 2, 0, @indentation(token)...
+        return 4
       return 1 unless include(SINGLE_LINERS, token[0]) and
         post[0] isnt 'INDENT' and
         not (token[0] is 'ELSE' and post[0] is 'IF')
       starter: token[0]
-      indent: ['INDENT', 2, token[2]]
-      indent.generated: true
+      [indent, outdent]: @indentation token
+      indent.generated: outdent.generated: true
       @tokens.splice i + 1, 0, indent
       idx: i + 1
       parens: 0
@@ -179,8 +182,6 @@ exports.Rewriter: class Rewriter
             (tok[0] is ')' and parens is 0)) and
             not (tok[0] is 'ELSE' and starter not in ['IF', 'THEN'])
           insertion: if pre[0] is "," then idx - 1 else idx
-          outdent: ['OUTDENT', 2, token[2]]
-          outdent.generated: true
           @tokens.splice insertion, 0, outdent
           break
         parens: + 1 if tok[0] is '('
@@ -256,6 +257,10 @@ exports.Rewriter: class Rewriter
           return 1
       else
         return 1
+
+  # Generate the indentation tokens, based on another token on the same line.
+  indentation: (token) ->
+    [['INDENT', 2, token[2]], ['OUTDENT', 2, token[2]]]
 
 # Constants
 # ---------

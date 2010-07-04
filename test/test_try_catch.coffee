@@ -28,4 +28,11 @@ ok result is 5
 try
   # nothing
 catch err
-  #nothing
+  # nothing
+
+try
+  # nothing
+finally
+  # nothing
+
+ok yes
