@@ -50,3 +50,10 @@ ok 1 not in array
 list: [1, 2, 7]
 result: if list[2] in [7, 10] then 100 else -1
 ok result is 100
+
+# Non-spaced values still work.
+x: 10
+y: -5
+
+ok x*-y is 50
+ok x*+y is -50
