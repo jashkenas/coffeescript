@@ -114,3 +114,10 @@ obj: {class: 'höt'}
 obj.function: 'dog'
 
 ok obj.class + obj.function is 'hötdog'
+
+
+# But keyword assignment should be smart enough not to stringify variables.
+func: ->
+  this == 'this'
+
+ok func() is false

@@ -530,7 +530,7 @@ MULTILINER      : /\n/g
 STRING_NEWLINES : /\n[ \t]*/g
 NO_NEWLINE      : /^([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)$/
 HEREDOC_INDENT  : /(\n+([ \t]*)|^([ \t]+))/g
-ASSIGNED        : /^([a-zA-Z\$_]\w*[ \t]*?[:=])/
+ASSIGNED        : /^([a-zA-Z\$_]\w*[ \t]*?[:=][^=])/
 NEXT_CHARACTER  : /^\s*(\S)/
 
 # Tokens which a regular expression will never immediately follow, but which
