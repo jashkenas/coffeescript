@@ -66,6 +66,23 @@ func: ->
   ###
   code
 
+func: ->
+  one: ->
+    two: ->
+      three: ->
+  ###
+  block.
+  ###
+  four: ->
+
+fn1: ->
+  oneLevel: null
+###
+This isn't fine.
+###
+
+ok ok
+
 obj: {
   a: 'b'
   ###
