@@ -1290,10 +1290,10 @@ exports.IfNode: class IfNode extends BaseNode
   constructor: (condition, body, tags) ->
     @condition: condition
     @body:      body
-    @elseBody: null
+    @elseBody:  null
     @tags:      tags or {}
     @condition: new OpNode('!', new ParentheticalNode(@condition)) if @tags.invert
-    @isChain:  false
+    @isChain:   false
 
   bodyNode: -> @body?.unwrap()
   elseBodyNode: -> @elseBody?.unwrap()
@@ -1345,9 +1345,12 @@ exports.IfNode: class IfNode extends BaseNode
     if @isStatement() then @compileStatement(o) else @compileTernary(o)
 
   makeReturn: ->
-    @body:      and @ensureExpressions(@body.makeReturn())
-    @elseBody:  and @ensureExpressions(@elseBody.makeReturn())
-    this
+    if @isStatement()
+      @body:      and @ensureExpressions(@body.makeReturn())
+      @elseBody:  and @ensureExpressions(@elseBody.makeReturn())
+      this
+    else
+      new ReturnNode this
 
   ensureExpressions: (node) ->
     if node instanceof Expressions then node else new Expressions [node]

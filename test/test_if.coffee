@@ -60,3 +60,10 @@ else if true
 else
 
 ok result is undefined
+
+
+# Return an if with no else.
+func: ->
+  return (if false then callback())
+
+ok func() is null
