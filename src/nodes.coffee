@@ -199,7 +199,7 @@ exports.Expressions: class Expressions extends BaseNode
   compileRoot: (o) ->
     o.indent: @tab: if o.noWrap then '' else TAB
     o.scope: new Scope(null, this, null)
-    code: if o.globals then @compileNode(o) else @compileWithDeclarations(o)
+    code: @compileWithDeclarations(o)
     code: code.replace(TRAILING_WHITESPACE, '')
     code: code.replace(DOUBLE_PARENS, '($1)')
     if o.noWrap then code else "(function(){\n$code\n})();\n"
@@ -209,7 +209,7 @@ exports.Expressions: class Expressions extends BaseNode
   compileWithDeclarations: (o) ->
     code: @compileNode(o)
     code: "${@tab}var ${o.scope.compiledAssignments()};\n$code"  if o.scope.hasAssignments(this)
-    code: "${@tab}var ${o.scope.compiledDeclarations()};\n$code" if o.scope.hasDeclarations(this)
+    code: "${@tab}var ${o.scope.compiledDeclarations()};\n$code" if not o.globals and o.scope.hasDeclarations(this)
     code
 
   # Compiles a single expression within the expressions body. If we need to

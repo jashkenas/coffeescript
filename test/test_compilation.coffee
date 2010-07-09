@@ -6,3 +6,9 @@ js: CoffeeScript.compile("one\r\ntwo", {noWrap: on})
 
 ok js is "one;\ntwo;"
 
+
+global.resultArray: []
+CoffeeScript.run("resultArray.push i for i of global", {noWrap: on, globals: on, source: 'tests'})
+
+ok 'setInterval' in global.resultArray
+
