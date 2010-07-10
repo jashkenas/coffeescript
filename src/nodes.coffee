@@ -266,16 +266,15 @@ exports.ReturnNode: class ReturnNode extends BaseNode
   constructor: (expression) ->
     @expression: expression
 
-  topSensitive: ->
-    true
-
   makeReturn: ->
     this
 
-  compileNode: (o) ->
+  compile: (o) ->
     expr: @expression.makeReturn()
-    return expr.compile(o) unless expr instanceof ReturnNode
-    del o, 'top'
+    return expr.compile o unless expr instanceof ReturnNode
+    super o
+
+  compileNode: (o) ->
     o.asStatement: true if @expression.isStatement()
     "${@tab}return ${@expression.compile(o)};"
 
@@ -336,15 +335,19 @@ exports.ValueNode: class ValueNode extends BaseNode
     while node instanceof CallNode then node: node.variable
     node is this
 
+  # Override compile to unwrap the value when possible.
+  compile: (o) ->
+    if not o.top or @properties.length then super(o) else @base.compile(o)
+
   # We compile a value to JavaScript by compiling and joining each property.
   # Things get much more insteresting if the chain of properties has *soak*
   # operators `?.` interspersed. Then we have to take care not to accidentally
   # evaluate a anything twice when building the soak chain.
   compileNode: (o) ->
-    only:         del(o, 'onlyFirst')
-    op:           del(o, 'operation')
+    only:         del o, 'onlyFirst'
+    op:           del o, 'operation'
     props:        if only then @properties[0...@properties.length - 1] else @properties
-    o.chainRoot: or this
+    o.chainRoot:  or this
     baseline:     @base.compile o
     baseline:     "($baseline)" if @hasProperties() and (@base instanceof ObjectNode or @isNumber())
     complete:     @last: baseline
@@ -1175,9 +1178,14 @@ exports.ParentheticalNode: class ParentheticalNode extends BaseNode
   makeReturn: ->
     @expression.makeReturn()
 
+  topSensitive: ->
+    yes
+
   compileNode: (o) ->
+    top:  del o, 'top'
     code: @expression.compile(o)
-    return code if @isStatement()
+    if @isStatement()
+      return (if top then "$@tab$code;" else code)
     l:    code.length
     code: code.substr(o, l-1) if code.substr(l-1, 1) is ';'
     if @expression instanceof AssignNode then code else "($code)"
