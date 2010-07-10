@@ -157,6 +157,13 @@ result: sum ->
 
 ok result is 20
 
+
+# Implicit call with a trailing if statement as a param.
+func: -> arguments[1]
+result: func 'one', if false then 100 else 13
+ok result is 13
+
+
 # Test more function passing:
 result: sum( ->
   1 + 2
