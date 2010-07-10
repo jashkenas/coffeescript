@@ -136,9 +136,9 @@ exports.BaseNode: class BaseNode
   class:     'BaseNode'
   children: []
 
-  unwrap:            -> this
+  unwrap:           -> this
   isStatement:      -> no
-  isPureStatement: -> no
+  isPureStatement:  -> no
   topSensitive:     -> no
 
 #### Expressions
@@ -1079,7 +1079,7 @@ exports.InNode: class InNode extends BaseNode
     [@arr1, @arr2]: @array.compileReference o, {precompile: yes}
     [i, l]: [o.scope.freeVariable(), o.scope.freeVariable()]
     prefix: if @obj1 isnt @obj2 then @obj1 + '; ' else ''
-    "!!(function(){ ${prefix}for (var $i=0, $l=${@arr1}.length; $i<$l; $i++) if (${@arr2}[$i] === $@obj2) return true; })()"
+    "!!(function(){ ${prefix}for (var $i=0, $l=${@arr1}.length; $i<$l; $i++) if (${@arr2}[$i] === $@obj2) return true; }).call(this)"
 
 #### TryNode
 
