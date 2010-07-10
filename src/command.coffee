@@ -49,14 +49,17 @@ exports.run: ->
   return usage()                              if options.help
   return version()                            if options.version
   return require './repl'                     if options.interactive
-  return compileStdio()                      if options.stdio
-  return compileScript 'console', sources[0] if options.eval
+  return compileStdio()                       if options.stdio
+  return compileScript 'console', sources[0]  if options.eval
   return require './repl'                     unless sources.length
   separator: sources.indexOf '--'
   flags: []
   if separator >= 0
-    flags: sources[(separator + 1)...sources.length]
+    flags:   sources[(separator + 1)...sources.length]
     sources: sources[0...separator]
+  if options.run
+    flags:   sources[1..sources.length].concat flags
+    sources: [sources[0]]
   process.ARGV: process.argv: flags
   compileScripts()
 
