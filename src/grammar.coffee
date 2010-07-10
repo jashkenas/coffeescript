@@ -538,7 +538,7 @@ grammar: {
 
     o "Expression && Expression",               -> new OpNode '&&', $1, $3
     o "Expression || Expression",               -> new OpNode '||', $1, $3
-    o "Expression ? Expression",                -> new OpNode '?', $1, $3
+    o "Expression OP? Expression",              -> new OpNode '?', $1, $3
 
     o "Expression -= Expression",               -> new OpNode '-=', $1, $3
     o "Expression += Expression",               -> new OpNode '+=', $1, $3
@@ -579,7 +579,7 @@ operators: [
   ["left",      '<=', '<', '>', '>=']
   ["right",     'DELETE', 'INSTANCEOF', 'TYPEOF']
   ["left",      '==', '!=']
-  ["left",      '&&', '||']
+  ["left",      '&&', '||', 'OP?']
   ["right",     '-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=']
   ["left",      '.']
   ["right",     'INDENT']

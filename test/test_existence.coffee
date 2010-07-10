@@ -78,3 +78,8 @@ ok result
 # Safely calls values off of non-existent variables.
 result: nothing?.value
 ok result is undefined
+
+
+# Assign to the result of an exsitential operation with a minus.
+x: null ? - 1
+ok x is - 1

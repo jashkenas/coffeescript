@@ -98,8 +98,8 @@ exports.Lexer: class Lexer
       else if include(RESERVED, id)
         @identifierError id
     unless forcedIdentifier
-      tag: id: CONVERSIONS[id]         if include COFFEE_ALIASES, id
-      return @tagHalfAssignment tag  if @prev() and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
+      tag: id: CONVERSIONS[id]      if include COFFEE_ALIASES, id
+      return @tagHalfAssignment tag if @prev() and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
     @token tag, id
     @token ']', ']' if close_index
     true
@@ -264,6 +264,8 @@ exports.Lexer: class Lexer
       @assignmentError() if include JS_FORBIDDEN, @value
     else if value is ';'
       tag: 'TERMINATOR'
+    else if value is '?' and prevSpaced
+      tag: 'OP?'
     else if include(CALLABLE, @tag()) and not prevSpaced
       if value is '('
         tag: 'CALL_START'
@@ -309,6 +311,7 @@ exports.Lexer: class Lexer
 
   # Tag a half assignment.
   tagHalfAssignment: (tag) ->
+    tag:  '?' if tag is 'OP?'
     last: @tokens.pop()
     @tokens.push ["$tag=", "$tag=", last[2]]
     true
@@ -554,7 +557,7 @@ CALLABLE: ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING', '@', 'THIS', '?', '::
 LINE_BREAK: ['INDENT', 'OUTDENT', 'TERMINATOR']
 
 # Half-assignments...
-HALF_ASSIGNMENTS: ['-', '+', '/', '*', '%', '||', '&&', '?']
+HALF_ASSIGNMENTS: ['-', '+', '/', '*', '%', '||', '&&', '?', 'OP?']
 
 # Conversions from CoffeeScript operators into JavaScript ones.
 CONVERSIONS: {
