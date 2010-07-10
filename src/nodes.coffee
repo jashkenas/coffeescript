@@ -111,9 +111,10 @@ exports.BaseNode: class BaseNode
 
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
-  toString: (idt) ->
+  toString: (idt, override) ->
     idt: or ''
-    '\n' + idt + @class + (child.toString(idt + TAB) for child in @collectChildren()).join('')
+    children: (child.toString idt + TAB for child in @collectChildren()).join('')
+    '\n' + idt + (override or @class) + children
 
   eachChild: (func) ->
     return unless @children
@@ -1013,6 +1014,9 @@ exports.OpNode: class OpNode extends BaseNode
 
   isChainable: ->
     indexOf(@CHAINABLE, @operator) >= 0
+
+  toString: (idt) ->
+    super(idt, @class + ' ' + @operator)
 
   compileNode: (o) ->
     o.operation: true
