@@ -1,3 +1,10 @@
+# comment before a ...
+
+###
+... block comment.
+###
+
+
   # comment
 func: ->
 # comment
