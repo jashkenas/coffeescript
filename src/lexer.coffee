@@ -409,6 +409,7 @@ exports.Lexer: class Lexer
           tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i
           inner: expr.substring(2, expr.length - 1)
           if inner.length
+            inner: inner.replace new RegExp('\\\\' + quote, 'g'), quote
             nested: lexer.tokenize "($inner)", {line: @line}
             (tok[0]: ')') for tok, idx in nested when tok[0] is 'CALL_END'
             nested.pop()

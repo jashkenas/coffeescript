@@ -64,6 +64,11 @@ ok "Hello ${world ? "$hello"}" is 'Hello World'
 
 ok "Hello ${"${"${obj["name"]}" + '!'}"}" is 'Hello Joe!'
 
+a: """
+   Hello ${ "Joe" }
+   """
+ok a is "Hello Joe"
+
 a: 1
 b: 2
 c: 3
