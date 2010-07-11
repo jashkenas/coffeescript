@@ -16,5 +16,5 @@ result: opt.parse ['--optional', '-r', 'folder', 'one', 'two']
 
 ok result.optional is true
 ok result.required is 'folder'
-ok result.arguments.join(' ') is 'folder one two'
+ok result.arguments.join(' ') is 'one two'
 

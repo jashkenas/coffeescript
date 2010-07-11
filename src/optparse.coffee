@@ -30,7 +30,7 @@ exports.OptionParser: class OptionParser
       matchedRule: no
       for rule in @rules
         if rule.shortFlag is arg or rule.longFlag is arg
-          options[rule.name]: if rule.hasArgument then args[i + 1] else true
+          options[rule.name]: if rule.hasArgument then args[i: + 1] else true
           matchedRule: yes
           break
       throw new Error "unrecognized option: $arg" if isOption and not matchedRule
