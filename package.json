@@ -3,7 +3,7 @@
     "description":  "Unfancy JavaScript",
     "keywords":     ["javascript", "language"],
     "author":       "Jeremy Ashkenas",
-    "version":      "0.7.0",
+    "version":      "0.7.1",
     "licenses":     [{
       "type":       "MIT",
       "url":        "http://github.com/jashkenas/coffee-script/raw/master/LICENSE"

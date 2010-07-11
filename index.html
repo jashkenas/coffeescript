@@ -115,7 +115,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.7.0">0.7.0</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.7.1">0.7.1</a>
     </p>
 
     <h2>
@@ -260,7 +260,7 @@ cubes = (function() {
       Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.7.0">0.7.0</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.7.1">0.7.1</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -1805,6 +1805,10 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">'<
         &mdash; which adds Vim syntax highlighting and indentation support.
       </li>
       <li>
+        <b>wavded</b>'s <a href="http://github.com/wavded/gedit-coffeescript">gedit-coffeescript</a>
+        &mdash; a CoffeeScript syntax highlighter for the gedit text editor.
+      </li>
+      <li>
         <b>yeungda</b>'s <a href="http://yeungda.github.com/coffeescript-idea/">coffeescript-idea</a>
         &mdash; a plugin for IntelliJ IDEA and RubyMine providing syntax highlighting.
       </li>
@@ -1859,6 +1863,14 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">'<
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.7.1</b>
+      Block-style comments are now passed through and printed as JavaScript block
+      comments -- making them useful for licenses and copyright headers. Better
+      support for running coffee scripts standalone via hashbangs.
+      Improved syntax errors for tokens that are not in the grammar.
+    </p>
     
     <p>
       <b class="header" style="margin-top: 20px;">0.7.0</b>

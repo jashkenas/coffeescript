@@ -33,7 +33,7 @@ File.open: (path, mode, block) ->
 
 # Write.
 write: (location, data) ->
-  path = new Pathname location
+  path: new Pathname location
   raise "Location does not exist" unless path.exists()
 
   File.open path, 'w', (file) ->

@@ -3,7 +3,10 @@ Use it like so:</p>
 
 <pre><code>parser:  new OptionParser switches, helpBanner
 options: parser.parse process.argv
-</code></pre>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">exports.OptionParser: </span><span class="nx">class</span> <span class="nx">OptionParser</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="octowrap">                 <a class="octothorpe" href="#section-2">#</a>               </div>               <p>Initialize with a list of valid options, in the form:</p>
+</code></pre>
+
+<p>The first non-option is considered to be the start of the file (and file
+option) list, and all subsequent arguments are left unparsed.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">exports.OptionParser: </span><span class="nx">class</span> <span class="nx">OptionParser</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="octowrap">                 <a class="octothorpe" href="#section-2">#</a>               </div>               <p>Initialize with a list of valid options, in the form:</p>
 
 <pre><code>[short-flag, long-flag, description]
 </code></pre>
@@ -17,16 +20,18 @@ many option parsers that allow you to attach callback actions for every
 flag. Instead, you're responsible for interpreting the options object.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">parse: </span><span class="p">(</span><span class="nx">args</span><span class="p">)</span> <span class="o">-&gt;</span>
     <span class="nv">options: </span><span class="p">{</span><span class="nv">arguments: </span><span class="p">[]}</span>
     <span class="nv">args: </span><span class="nx">normalizeArguments</span> <span class="nx">args</span>
-    <span class="k">while</span> <span class="p">(</span><span class="nv">arg: </span><span class="nx">args</span><span class="p">.</span><span class="nx">shift</span><span class="p">())</span>
+    <span class="k">for</span> <span class="nx">arg</span><span class="p">,</span> <span class="nx">i</span> <span class="k">in</span> <span class="nx">args</span>
       <span class="nv">isOption: </span><span class="o">!!</span><span class="p">(</span><span class="nx">arg</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">LONG_FLAG</span><span class="p">)</span> <span class="o">or</span> <span class="nx">arg</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">SHORT_FLAG</span><span class="p">))</span>
       <span class="nv">matchedRule: </span><span class="kc">no</span>
       <span class="k">for</span> <span class="nx">rule</span> <span class="k">in</span> <span class="nx">@rules</span>
         <span class="k">if</span> <span class="nx">rule</span><span class="p">.</span><span class="nx">shortFlag</span> <span class="o">is</span> <span class="nx">arg</span> <span class="o">or</span> <span class="nx">rule</span><span class="p">.</span><span class="nx">longFlag</span> <span class="o">is</span> <span class="nx">arg</span>
-          <span class="nx">options</span><span class="p">[</span><span class="nx">rule</span><span class="p">.</span><span class="nx">name</span><span class="p">]</span><span class="o">:</span> <span class="k">if</span> <span class="nx">rule</span><span class="p">.</span><span class="nx">hasArgument</span> <span class="k">then</span> <span class="nx">args</span><span class="p">.</span><span class="nx">shift</span><span class="p">()</span> <span class="k">else</span> <span class="kc">true</span>
+          <span class="nx">options</span><span class="p">[</span><span class="nx">rule</span><span class="p">.</span><span class="nx">name</span><span class="p">]</span><span class="o">:</span> <span class="k">if</span> <span class="nx">rule</span><span class="p">.</span><span class="nx">hasArgument</span> <span class="k">then</span> <span class="nx">args</span><span class="p">[</span><span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="kc">true</span>
           <span class="nv">matchedRule: </span><span class="kc">yes</span>
           <span class="k">break</span>
       <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span> <span class="s2">&quot;unrecognized option: $arg&quot;</span> <span class="k">if</span> <span class="nx">isOption</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">matchedRule</span>
-      <span class="nx">options</span><span class="p">.</span><span class="nx">arguments</span><span class="p">.</span><span class="nx">push</span> <span class="nx">arg</span> <span class="nx">unless</span> <span class="nx">isOption</span>
+      <span class="k">if</span> <span class="o">not</span> <span class="nx">isOption</span>
+        <span class="nv">options.arguments: </span><span class="nx">args</span><span class="p">[</span><span class="nx">i</span><span class="p">...</span><span class="nx">args</span><span class="p">.</span><span class="nx">length</span><span class="p">]</span>
+        <span class="k">break</span>
     <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="octowrap">                 <a class="octothorpe" href="#section-4">#</a>               </div>               <p>Return the help text for this <strong>OptionParser</strong>, listing and describing all
 of the valid options, for <code>--help</code> and such.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">help: </span><span class="o">-&gt;</span>
     <span class="nv">lines: </span><span class="p">[</span><span class="s1">&#39;Available options:&#39;</span><span class="p">]</span>

@@ -94,14 +94,14 @@ task 'loc', 'count the lines of source code in CoffeeScript', ->
 task 'test', 'run the CoffeeScript language test suite', ->
   helpers.extend global, require 'assert'
   passedTests: failedTests: 0
-  startTime:   new Date()
+  startTime:   new Date
   originalOk:  ok
   helpers.extend global, {
     ok: (args...) -> passedTests += 1; originalOk(args...)
     CoffeeScript: CoffeeScript
   }
   process.addListener 'exit', ->
-    time: ((new Date() - startTime) / 1000).toFixed(2)
+    time: ((new Date - startTime) / 1000).toFixed(2)
     message: "passed $passedTests tests in $time seconds$reset"
     if failedTests
       log "failed $failedTests and $message", red
