@@ -3,6 +3,9 @@
 #
 #     parser:  new OptionParser switches, helpBanner
 #     options: parser.parse process.argv
+#
+# The first non-option is considered to be the start of the file (and file
+# option) list, and all subsequent arguments are left unparsed.
 exports.OptionParser: class OptionParser
 
   # Initialize with a list of valid options, in the form:
@@ -22,16 +25,18 @@ exports.OptionParser: class OptionParser
   parse: (args) ->
     options: {arguments: []}
     args: normalizeArguments args
-    while (arg: args.shift())
+    for arg, i in args
       isOption: !!(arg.match(LONG_FLAG) or arg.match(SHORT_FLAG))
       matchedRule: no
       for rule in @rules
         if rule.shortFlag is arg or rule.longFlag is arg
-          options[rule.name]: if rule.hasArgument then args.shift() else true
+          options[rule.name]: if rule.hasArgument then args[i + 1] else true
           matchedRule: yes
           break
       throw new Error "unrecognized option: $arg" if isOption and not matchedRule
-      options.arguments.push arg unless isOption
+      if not isOption
+        options.arguments: args[i...args.length]
+        break
     options
 
   # Return the help text for this **OptionParser**, listing and describing all
