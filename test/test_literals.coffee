@@ -26,7 +26,7 @@ ok [0...10].join(' ') is '0 1 2 3 4 5 6 7 8 9'
 
 
 # Can call methods directly on numbers.
-4.toFixed(10) is '4.0000000000'
+4.valueOf() is 4
 
 
 func: ->
