@@ -440,6 +440,8 @@ exports.CallNode: class CallNode extends BaseNode
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
+  # If it's a constructor, then things get real tricky. We have to inject an
+  # inner constructor in order to be able to pass the varargs.
   compileSplat: (o) ->
     meth: if @variable then @variable.compile(o) else @superReference(o)
     obj:  @variable and @variable.source or 'this'
@@ -447,7 +449,17 @@ exports.CallNode: class CallNode extends BaseNode
       temp: o.scope.freeVariable()
       obj:  temp
       meth: "($temp = ${ @variable.source })${ @variable.last }"
-    "${@prefix()}${meth}.apply($obj, ${ @compileSplatArguments(o) })"
+    if @isNew
+      utility 'extends'
+      """
+      (function() {
+      ${@idt(1)}var ctor = function(){ };
+      ${@idt(1)}__extends(ctor, $meth);
+      ${@idt(1)}return ${meth}.apply(new ctor, ${ @compileSplatArguments(o) });
+      $@tab}).call(this)
+      """
+    else
+      "${@prefix()}${meth}.apply($obj, ${ @compileSplatArguments(o) })"
 
 #### ExtendsNode
 

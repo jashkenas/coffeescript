@@ -156,3 +156,16 @@ class Mini
 
 m: new Mini
 ok (func() for func in m.generate()).join(' ') is '10 10 10'
+
+
+# Testing a contructor called with varargs.
+class Connection
+  constructor: (one, two, three) ->
+    [@one, @two, @three]: [one, two, three]
+
+  out: ->
+    "$@one-$@two-$@three"
+
+list: [3, 2, 1]
+conn: new Connection list...
+ok conn.out() is '3-2-1'
