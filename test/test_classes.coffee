@@ -168,4 +168,5 @@ class Connection
 
 list: [3, 2, 1]
 conn: new Connection list...
+ok conn instanceof Connection
 ok conn.out() is '3-2-1'
