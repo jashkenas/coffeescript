@@ -710,10 +710,10 @@ exports.ClassNode: class ClassNode extends BaseNode
       props.push prop
 
     constructor.body.unshift literal "$me = this" if me
-    construct: @idt() + (new AssignNode(@variable, constructor)).compile(merge o, {sharedScope: constScope}) + ';\n'
-    props:     if props.empty() then '' else props.compile(o) + '\n'
-    extension: if extension     then @idt() + extension.compile(o) + ';\n' else ''
-    returns:   if @returns      then new ReturnNode(@variable).compile(o)  else ''
+    construct: @idt() + (new AssignNode(@variable, constructor)).compile(merge o, {sharedScope: constScope}) + ';'
+    props:     if !props.empty() then '\n' + props.compile(o)                     else ''
+    extension: if extension      then '\n' + @idt() + extension.compile(o) + ';'  else ''
+    returns:   if @returns       then '\n' + new ReturnNode(@variable).compile(o) else ''
     "$construct$extension$props$returns"
 
 #### AssignNode
