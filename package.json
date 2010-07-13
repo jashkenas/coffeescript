@@ -12,6 +12,6 @@
       "node":       ">=0.1.99"
     },
     "scripts":      {
-      "install":    "sudo bin/cake install"
+      "install":    "bin/cake install"
     }
 }
