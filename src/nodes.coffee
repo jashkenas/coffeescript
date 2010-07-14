@@ -633,7 +633,7 @@ exports.ArrayNode: class ArrayNode extends BaseNode
     for obj, i in @objects
       code: obj.compile(o)
       if obj instanceof SplatNode
-        return @compileSplatLiteral @objects, o
+        return @compileSplatLiteral o
       else if obj instanceof CommentNode
         objects.push "\n$code\n$o.indent"
       else if i is @objects.length - 1
