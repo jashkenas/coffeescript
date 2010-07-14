@@ -154,11 +154,12 @@ printTokens: (tokens) ->
 # Use the [OptionParser module](optparse.html) to extract all options from
 # `process.argv` that are specified in `SWITCHES`.
 parseOptions: ->
-  optionParser:  new optparse.OptionParser SWITCHES, BANNER
-  o: options:    optionParser.parse(process.argv[2...process.argv.length])
-  options.run:   not (o.compile or o.print or o.lint)
-  options.print: !!  (o.print or (o.eval or o.stdio and o.compile))
-  sources:       options.arguments
+  optionParser:     new optparse.OptionParser SWITCHES, BANNER
+  o: options:       optionParser.parse(process.argv[2...process.argv.length])
+  options.compile:  or  !!o.output
+  options.run:      not (o.compile or o.print or o.lint)
+  options.print:    !!  (o.print or (o.eval or o.stdio and o.compile))
+  sources:          options.arguments
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions: (source) ->
