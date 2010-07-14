@@ -35,4 +35,8 @@ try
 finally
   # nothing
 
+try
+catch err
+finally
+
 ok yes

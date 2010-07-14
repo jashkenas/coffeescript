@@ -159,7 +159,8 @@ exports.Rewriter: class Rewriter
       if token[0] is 'ELSE' and prev[0] isnt 'OUTDENT'
         @tokens.splice i, 0, @indentation(token)...
         return 2
-      if token[0] is 'CATCH' and @tokens[i + 2][0] is 'TERMINATOR'
+      if token[0] is 'CATCH' and
+          (@tokens[i + 2][0] is 'TERMINATOR' or @tokens[i + 2][0] is 'FINALLY')
         @tokens.splice i + 2, 0, @indentation(token)...
         return 4
       return 1 unless include(SINGLE_LINERS, token[0]) and
