@@ -22,6 +22,11 @@ helpers.include: include: (list, value) ->
 helpers.starts: starts: (string, literal, start) ->
   string.substring(start, (start or 0) + literal.length) is literal
 
+# Peek at the end of a given string to see if it matches a sequence.
+helpers.ends: ends: (string, literal, back) ->
+  start: string.length - literal.length - (back ? 0)
+  string.substring(start, start + literal.length) is literal
+
 # Trim out all falsy values from an array.
 helpers.compact: compact: (array) -> item for item in array when item
 

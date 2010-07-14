@@ -105,3 +105,11 @@ ok pen is 2
 
 method 1, 2
 ok pen is 2
+
+
+# Array splat expansions with assigns.
+nums: [1, 2, 3]
+list: [a: 0, nums..., b: 4]
+ok a is 0
+ok b is 4
+ok list.join(' ') is '0 1 2 3 4'

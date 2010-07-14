@@ -14,7 +14,7 @@ else
   Scope:        this.Scope
 
 # Import the helpers we plan to use.
-{compact, flatten, merge, del, include, indexOf, starts}: helpers
+{compact, flatten, merge, del, include, indexOf, starts, ends}: helpers
 
 #### BaseNode
 
@@ -403,7 +403,7 @@ exports.CallNode: class CallNode extends BaseNode
     @variable:  if @isSuper then null else variable
     @args:      (args or [])
     @compileSplatArguments: (o) ->
-      SplatNode.compileMixedArray.call(this, @args, o)
+      SplatNode.compileSplattedArray.call(this, @args, o)
 
   # Tag this invocation as creating a new instance.
   newInstance: ->
@@ -625,7 +625,7 @@ exports.ArrayNode: class ArrayNode extends BaseNode
   constructor: (objects) ->
     @objects: objects or []
     @compileSplatLiteral: (o) ->
-      SplatNode.compileMixedArray.call(this, @objects, o)
+      SplatNode.compileSplattedArray.call(this, @objects, o)
 
   compileNode: (o) ->
     o.indent: @idt 1
@@ -921,23 +921,21 @@ exports.SplatNode: class SplatNode extends BaseNode
 
   # Utility function that converts arbitrary number of elements, mixed with
   # splats, to a proper array
-  @compileMixedArray: (list, o) ->
+  @compileSplattedArray: (list, o) ->
     args: []
-    i: 0
-    for arg in list
+    for arg, i in list
       code: arg.compile o
+      prev: args[last: args.length - 1]
       if not (arg instanceof SplatNode)
-        prev: args[i - 1]
-        if i is 1 and prev.substr(0, 1) is '[' and prev.substr(prev.length - 1, 1) is ']'
-          args[i - 1]: "${prev.substr(0, prev.length - 1)}, $code]"
+        if prev and starts(prev, '[') and ends(prev, ']')
+          args[last]: "${prev.substr(0, prev.length - 1)}, $code]"
           continue
-        else if i > 1 and prev.substr(0, 9) is '.concat([' and prev.substr(prev.length - 2, 2) is '])'
-          args[i - 1]: "${prev.substr(0, prev.length - 2)}, $code])"
+        else if prev and starts(prev, '.concat([') and ends(prev, '])')
+          args[last]: "${prev.substr(0, prev.length - 2)}, $code])"
           continue
         else
           code: "[$code]"
       args.push(if i is 0 then code else ".concat($code)")
-      i: + 1
     args.join('')
 
 #### WhileNode
