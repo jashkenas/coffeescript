@@ -139,7 +139,7 @@ exports.Rewriter: class Rewriter
         return 1
       if open and !token.generated and prev[0] isnt ',' and (!post or include(IMPLICIT_END, tag))
         j: 1; j++ while (nx: @tokens[i + j])? and include(IMPLICIT_END, nx[0])
-        if nx? and nx[0] is ','
+        if nx? and nx[0] is ',' and @tokens[i + j - 1][0] is 'OUTDENT'
           @tokens.splice(i, 1) if tag is 'TERMINATOR'
         else
           size: closeCalls(i)

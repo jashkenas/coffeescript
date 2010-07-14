@@ -179,6 +179,17 @@ result: sum(1
 ok result is 3
 
 
+# This is a crazy one.
+x: (obj, func) -> func obj
+ident: (x) -> x
+
+result: x {one: ident 1}, (obj) ->
+  inner: ident(obj)
+  ident inner
+
+ok result.one is 1
+
+
 # Assignment to a Object.prototype-named variable should not leak to outer scope.
 (->
   constructor: 'word'
