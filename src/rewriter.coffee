@@ -63,8 +63,9 @@ exports.Rewriter: class Rewriter
           @tokens.splice i, 0, after
       else if prev and prev[0] not in ['TERMINATOR', 'INDENT', 'OUTDENT']
         if post and post[0] is 'TERMINATOR' and after and after[0] is 'OUTDENT'
-          @tokens.splice(i + 3, 0, @tokens.splice(i, 2)...)
-          @tokens.splice(i + 3, 0, ['TERMINATOR', "\n", prev[2]])
+          @tokens.splice(i + 2, 0, @tokens.splice(i, 2)...)
+          if @tokens[i + 2][0] isnt 'TERMINATOR'
+            @tokens.splice i + 2, 0, ['TERMINATOR', "\n", prev[2]]
         else
           @tokens.splice i, 0, ['TERMINATOR', "\n", prev[2]]
         return 2

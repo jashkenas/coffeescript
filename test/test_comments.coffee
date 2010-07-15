@@ -134,3 +134,13 @@ func: ->
   7
 
 ok func() is 7
+
+
+# Trailing herecomment in a function.
+fn: ->
+  code
+  ###
+  debug code commented
+  ###
+
+fn2: ->
