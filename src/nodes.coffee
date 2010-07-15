@@ -62,8 +62,8 @@ exports.BaseNode: class BaseNode
   # in multiple places, ensure that the expression is only ever evaluated once,
   # by assigning it to a temporary variable.
   compileReference: (o, options) ->
-    pair: if not (this instanceof CallNode or this instanceof ValueNode and
-        (not (@base instanceof LiteralNode) or @hasProperties()))
+    pair: if not ((this instanceof CallNode or @contains((n) -> n instanceof CallNode)) or
+                  (this instanceof ValueNode and (not (@base instanceof LiteralNode) or @hasProperties())))
       [this, this]
     else
       reference: literal o.scope.freeVariable()
@@ -356,7 +356,7 @@ exports.ValueNode: class ValueNode extends BaseNode
     for prop, i in props
       @source: baseline
       if prop.soakNode
-        if @base instanceof CallNode and i is 0
+        if @base instanceof CallNode or @base.contains((n) -> n instanceof CallNode) and i is 0
           temp: o.scope.freeVariable()
           complete: "(${ baseline: temp } = ($complete))"
         complete: "typeof $complete === \"undefined\" || $baseline" if i is 0 and @isStart(o)

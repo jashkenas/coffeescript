@@ -70,6 +70,16 @@ result: value?.toString().toLowerCase()
 ok result is '10'
 
 
+# Soaks constructor invocations.
+a: 0
+class Foo
+  constructor: -> a += 1
+  bar: "bat"
+
+ok (new Foo())?.bar is 'bat'
+ok a is 1
+
+
 # Safely existence test on soaks.
 result: not value?.property?
 ok result
