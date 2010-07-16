@@ -419,9 +419,14 @@ grammar: {
   # Comprehensions can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression.
   For: [
-    o "Statement FOR ForVariables ForSource",   -> new ForNode $1, $4, $3[0], $3[1]
-    o "Expression FOR ForVariables ForSource",  -> new ForNode $1, $4, $3[0], $3[1]
-    o "FOR ForVariables ForSource Block",       -> new ForNode $4, $3, $2[0], $2[1]
+    o "Statement ForStart ForSource",           -> $3.raw: $2.raw; new ForNode $1, $3, $2[0], $2[1]
+    o "Expression ForStart ForSource",          -> $3.raw: $2.raw; new ForNode $1, $3, $2[0], $2[1]
+    o "ForStart ForSource Block",               -> $2.raw: $1.raw; new ForNode $3, $2, $1[0], $1[1]
+  ]
+
+  ForStart: [
+    o "FOR ForVariables",                       -> $2
+    o "FOR ALL ForVariables",                   -> $3.raw: true; $3
   ]
 
   # An array of all accepted values for a variable inside the loop. This
@@ -448,9 +453,9 @@ grammar: {
     o "OF Expression",                               -> {source: $2, object: true}
     o "IN Expression WHEN Expression",               -> {source: $2, guard: $4}
     o "OF Expression WHEN Expression",               -> {source: $2, guard: $4, object: true}
-    o "IN Expression BY Expression",                 -> {source: $2, step:   $4}
+    o "IN Expression BY Expression",                 -> {source: $2, step:  $4}
     o "IN Expression WHEN Expression BY Expression", -> {source: $2, guard: $4, step:   $6}
-    o "IN Expression BY Expression WHEN Expression", -> {source: $2, step:   $4, guard: $6}
+    o "IN Expression BY Expression WHEN Expression", -> {source: $2, step:  $4, guard: $6}
   ]
 
   # The CoffeeScript switch/when/else block replaces the JavaScript

@@ -57,7 +57,7 @@ exports.run: ->
 # Display the list of Cake tasks in a format similar to `rake -T`
 printTasks: ->
   puts ''
-  for name, task of tasks
+  for all name, task of tasks
     spaces: 20 - name.length
     spaces: if spaces > 0 then (' ' for i in [0..spaces]).join('') else ''
     desc:   if task.description then "# $task.description" else ''

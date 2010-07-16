@@ -114,3 +114,17 @@ expr: ->
   result: item * item for item in arguments
 
 ok expr(2, 4, 8).join(' ') is '4 16 64'
+
+
+# Fast object comprehensions over all properties, including prototypal ones.
+class Cat
+  constructor: -> @name: 'Whiskers'
+  breed: 'tabby'
+  hair:  'cream'
+
+whiskers: new Cat
+own: value for key, value of whiskers
+all: value for all key, value of whiskers
+
+ok own.join(' ') is 'Whiskers'
+ok all.sort().join(' ') is 'Whiskers cream tabby'

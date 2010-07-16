@@ -1226,6 +1226,7 @@ exports.ForNode: class ForNode extends BaseNode
     @source:  source.source
     @guard:   source.guard
     @step:    source.step
+    @raw:     !!source.raw
     @object:  !!source.object
     [@name, @index]: [@index, @name] if @object
     @pattern: @name instanceof ValueNode
@@ -1291,10 +1292,13 @@ exports.ForNode: class ForNode extends BaseNode
     else
       varPart:      (namePart or '') and (if @pattern then namePart else "${@idt(1)}$namePart;\n")
     if @object
-      forPart:      "$ivar in $svar) { if (${utility('hasProp')}.call($svar, $ivar)"
+      if @raw
+        forPart:    "$ivar in $svar"
+      else
+        forPart:    "$ivar in $svar) { if (${utility('hasProp')}.call($svar, $ivar)"
     body:           body.compile(merge(o, {indent: @idt(1), top: true}))
     vars:           if range then name else "$name, $ivar"
-    close:          if @object then '}}' else '}'
+    close:          if @object and not @raw then '}}' else '}'
     "${sourcePart}for ($forPart) {\n$varPart$body\n$@tab$close$returnResult"
 
 #### IfNode

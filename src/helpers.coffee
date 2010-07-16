@@ -44,14 +44,14 @@ helpers.count: count: (string, letter) ->
 # options hash to propagate down the tree without polluting other branches.
 helpers.merge: merge: (options, overrides) ->
   fresh: {}
-  (fresh[key]: val) for key, val of options
-  (fresh[key]: val) for key, val of overrides if overrides
+  (fresh[key]: val) for all key, val of options
+  (fresh[key]: val) for all key, val of overrides if overrides
   fresh
 
 # Extend a source object with the properties of another object (shallow copy).
 # We use this to simulate Node's deprecated `process.mixin`
 helpers.extend: extend: (object, properties) ->
-  (object[key]: val) for key, val of properties
+  (object[key]: val) for all key, val of properties
 
 # Return a completely flattened version of an array. Handy for getting a
 # list of `children` from the nodes.
