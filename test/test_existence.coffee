@@ -93,3 +93,8 @@ ok result is undefined
 # Assign to the result of an exsitential operation with a minus.
 x: null ? - 1
 ok x is - 1
+
+
+# Things that compile to ternaries should force parentheses, like operators do.
+duration: if options?.animated then 150 else 0
+ok duration is 0

@@ -1402,8 +1402,9 @@ exports.IfNode: class IfNode extends BaseNode
 
   # Compile the IfNode as a ternary operator.
   compileTernary: (o) ->
-    ifPart:    @condition.compile(o) + ' ? ' + @bodyNode().compile(o)
-    elsePart:  if @elseBody then @elseBodyNode().compile(o) else 'null'
+    o.operation: true
+    ifPart:      @condition.compile(o) + ' ? ' + @bodyNode().compile(o)
+    elsePart:    if @elseBody then @elseBodyNode().compile(o) else 'null'
     "$ifPart : $elsePart"
 
 # Faux-Nodes
