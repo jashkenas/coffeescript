@@ -1,4 +1,4 @@
-countdown: num for num in [10..1] by -1
+countdown: num for num in [10..1]
 
 deliverEggs: ->
   for i in [0...eggs.length] by 12

@@ -25,14 +25,6 @@ result: nums.concat(negs).join(', ')
 ok result is '3, 6, 9, -20, -19, -18'
 
 
-# Ensure that ranges are safe. This used to infinite loop:
-j = 5
-result: for j in [j..(j+3)]
-  j
-
-ok result.join(' ') is '5 6 7 8'
-
-
 # With range comprehensions, you can loop in steps.
 results: x for x in [0..25] by 5
 
@@ -40,10 +32,16 @@ ok results.join(' ') is '0 5 10 15 20 25'
 
 
 # And can loop downwards, with a negative step.
-results: x for x in [5..1] by -1
+results: x for x in [5..1]
 
 ok results.join(' ') is '5 4 3 2 1'
 ok results.join(' ') is [(10-5)..(-2+3)].join(' ')
+
+results: x for x in [10..1]
+ok results.join(' ') is [10..1].join(' ')
+
+results: x for x in [10...0] by -2
+ok results.join(' ') is [10, 8, 6, 4, 2].join(' ')
 
 
 # Multiline array comprehension with filter.

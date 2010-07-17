@@ -531,41 +531,57 @@ exports.RangeNode: class RangeNode extends BaseNode
     @from: from
     @to: to
     @exclusive: !!exclusive
+    @equals: if @exclusive then '' else '='
 
   # Compiles the range's source variables -- where it starts and where it ends.
   # But only if they need to be cached to avoid double evaluation.
   compileVariables: (o) ->
-    [@from, @fromVar]: @from.compileReference o
-    [@to, @toVar]:     @to.compileReference o
+    [@from, @fromVar]:  @from.compileReference o, {precompile: yes}
+    [@to, @toVar]:      @to.compileReference o, {precompile: yes}
+    [@fromNum, @toNum]: [@fromVar.match(SIMPLENUM), @toVar.match(SIMPLENUM)]
     parts: []
-    parts.push @from.compile o if @from isnt @fromVar
-    parts.push @to.compile o if @to isnt @toVar
-    if parts.length then "${parts.join('; ')};" else ''
+    parts.push @from if @from isnt @fromVar
+    parts.push @to if @to isnt @toVar
+    if parts.length then "${parts.join('; ')}; " else ''
 
   # When compiled normally, the range returns the contents of the *for loop*
   # needed to iterate over the values in the range. Used by comprehensions.
   compileNode: (o) ->
-    return    @compileArray(o) unless o.index
+    return    @compileArray(o)  unless o.index
+    return    @compileSimple(o) if @fromNum and @toNum
     idx:      del o, 'index'
     step:     del o, 'step'
-    vars:     "$idx = ${@fromVar.compile(o)}"
-    step:     if step then step.compile(o) else '1'
-    equals:   if @exclusive then '' else '='
-    op:       if starts(step, '-') then ">$equals" else "<$equals"
-    "$vars; ${idx} $op ${@toVar.compile(o)}; $idx += $step"
+    vars:     "$idx = $@fromVar"
+    intro:    "($@fromVar <= $@toVar ? $idx"
+    compare:  "$intro <$@equals $@toVar : $idx >$@equals $@toVar)"
+    stepPart: if step then step.compile(o) else '1'
+    incr:     if step then "$idx += $stepPart" else "$intro += $stepPart : $idx -= $stepPart)"
+    "$vars; $compare; $incr"
+
+  # Compile a simple range comprehension, with integers.
+  compileSimple: (o) ->
+    [from, to]: [parseInt(@fromNum, 10), parseInt(@toNum, 10)]
+    idx:        del o, 'index'
+    step:       del o, 'step'
+    step:       and "$idx += ${step.compile(o)}"
+    if from <= to
+      "$idx = $from; $idx <$@equals $to; ${step or "$idx++"}"
+    else
+      "$idx = $from; $idx >$@equals $to; ${step or "$idx--"}"
 
   # When used as a value, expand the range into the equivalent array.
   compileArray: (o) ->
     idt:    @idt 1
     vars:   @compileVariables(merge(o, {indent: idt}))
-    equals: if @exclusive then '' else '='
-    from:   @fromVar.compile o
-    to:     @toVar.compile o
     result: o.scope.freeVariable()
     i:      o.scope.freeVariable()
-    clause: "$from <= $to ?"
     pre:    "\n${idt}${result} = []; ${vars}"
-    body:   "var $i = $from; $clause $i <$equals $to : $i >$equals $to; $clause $i += 1 : $i -= 1"
+    if @fromNum and @toNum
+      o.index: i
+      body: @compileSimple o
+    else
+      clause: "$@fromVar <= $@toVar ?"
+      body:   "var $i = $@fromVar; $clause $i <$@equals $@toVar : $i >$@equals $@toVar; $clause $i += 1 : $i -= 1"
     post:   "{ ${result}.push($i) };\n${idt}return $result;\n$o.indent"
     "(function(){${pre}\n${idt}for ($body)$post}).call(this)"
 
@@ -1266,7 +1282,6 @@ exports.ForNode: class ForNode extends BaseNode
     body:           Expressions.wrap([@body])
     if range
       sourcePart:   source.compileVariables(o)
-      sourcePart:   + "\n$o.indent" if sourcePart
       forPart:      source.compile merge o, {index: ivar, step: @step}
     else
       svar:         scope.freeVariable()
@@ -1492,6 +1507,7 @@ DOUBLE_PARENS: /\(\(([^\(\)\n]*)\)\)/g
 # Keep these identifier regexes in sync with the Lexer.
 IDENTIFIER: /^[a-zA-Z\$_](\w|\$)*$/
 NUMBER    : /^(((\b0(x|X)[0-9a-fA-F]+)|((\b[0-9]+(\.[0-9]+)?|\.[0-9]+)(e[+\-]?[0-9]+)?)))\b$/i
+SIMPLENUM : /^-?\d+/
 
 # Is a literal value a string?
 IS_STRING: /^['"]/
