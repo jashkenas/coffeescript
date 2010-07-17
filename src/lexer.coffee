@@ -501,8 +501,9 @@ COFFEE_KEYWORDS: COFFEE_ALIASES.concat [
 # used by CoffeeScript internally. We throw an error when these are encountered,
 # to avoid having a JavaScript error at runtime.
 RESERVED: [
-  "case", "default", "do", "function", "var", "void", "with"
-  "const", "let", "enum", "export", "import", "native"
+  "case", "default", "do", "function", "var", "void", "with",
+  "const", "let", "enum", "export", "import", "native",
+  "__hasProp", "__extends", "__slice"
 ]
 
 # The superset of both JavaScript keywords and reserved words, none of which may

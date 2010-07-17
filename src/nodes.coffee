@@ -1460,19 +1460,19 @@ UTILITIES: {
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls. See:
   # [goog.inherits](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.source.html#line1206).
-  __extends:  """
-              function(child, parent) {
-                  var ctor = function(){ };
-                  ctor.prototype = parent.prototype;
-                  child.__superClass__ = parent.prototype;
-                  child.prototype = new ctor();
-                  child.prototype.constructor = child;
-                }
-              """
+  extends:  """
+            function(child, parent) {
+                var ctor = function(){ };
+                ctor.prototype = parent.prototype;
+                child.__superClass__ = parent.prototype;
+                child.prototype = new ctor();
+                child.prototype.constructor = child;
+              }
+            """
 
   # Shortcuts to speed up the lookup time for native functions.
-  __hasProp: 'Object.prototype.hasOwnProperty'
-  __slice:   'Array.prototype.slice'
+  hasProp: 'Object.prototype.hasOwnProperty'
+  slice:   'Array.prototype.slice'
 
 }
 
@@ -1506,5 +1506,5 @@ literal: (name) ->
 # Helper for ensuring that utility functions are assigned at the top level.
 utility: (name) ->
   ref: "__$name"
-  Scope.root.assign ref, UTILITIES[ref]
+  Scope.root.assign ref, UTILITIES[name]
   ref
