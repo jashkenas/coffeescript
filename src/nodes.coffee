@@ -1262,6 +1262,7 @@ exports.ForNode: class ForNode extends BaseNode
     rvar:           scope.freeVariable() unless topLevel
     ivar:           if range then name else if codeInBody then scope.freeVariable() else index or scope.freeVariable()
     varPart:        ''
+    guardPart:      ''
     body:           Expressions.wrap([@body])
     if range
       sourcePart:   source.compileVariables(o)
@@ -1292,14 +1293,11 @@ exports.ForNode: class ForNode extends BaseNode
     else
       varPart:      (namePart or '') and (if @pattern then namePart else "${@idt(1)}$namePart;\n")
     if @object
-      if @raw
-        forPart:    "$ivar in $svar"
-      else
-        forPart:    "$ivar in $svar) { if (${utility('hasProp')}.call($svar, $ivar)"
+      forPart:      "$ivar in $svar"
+      guardPart:    "\n${@idt(1)}if (!${utility('hasProp')}.call($svar, $ivar)) continue;" unless @raw
     body:           body.compile(merge(o, {indent: @idt(1), top: true}))
     vars:           if range then name else "$name, $ivar"
-    close:          if @object and not @raw then '}}' else '}'
-    "${sourcePart}for ($forPart) {\n$varPart$body\n$@tab$close$returnResult"
+    "${sourcePart}for ($forPart) {$guardPart\n$varPart$body\n$@tab}$returnResult"
 
 #### IfNode
 
