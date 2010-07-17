@@ -11,7 +11,6 @@
   Animal.prototype.move = function(meters) {
     return alert(this.name + " moved " + meters + "m.");
   };
-
   Snake = function(name) {
     this.name = name;
     return this;
@@ -21,7 +20,6 @@
     alert("Slithering...");
     return Snake.__superClass__.move.call(this, 5);
   };
-
   Horse = function(name) {
     this.name = name;
     return this;
@@ -31,7 +29,6 @@
     alert("Galloping...");
     return Horse.__superClass__.move.call(this, 45);
   };
-
   sam = new Snake("Sammy the Python");
   tom = new Horse("Tommy the Palomino");
   sam.move();

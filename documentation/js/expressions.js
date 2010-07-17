@@ -4,11 +4,7 @@
     if (student.excellentWork) {
       return "A+";
     } else if (student.okayStuff) {
-      if (student.triedHard) {
-        return "B";
-      } else {
-        return "B-";
-      }
+      return student.triedHard ? "B" : "B-";
     } else {
       return "C";
     }

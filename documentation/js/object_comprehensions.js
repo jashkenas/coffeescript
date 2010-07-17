@@ -8,10 +8,11 @@
   };
   ages = (function() {
     _a = []; _b = yearsOld;
-    for (child in _b) { if (__hasProp.call(_b, child)) {
+    for (child in _b) {
+      if (!__hasProp.call(_b, child)) continue;
       age = _b[child];
       _a.push(child + " is " + age);
-    }}
+    }
     return _a;
   })();
 })();

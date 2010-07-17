@@ -1,15 +1,12 @@
 (function(){
-  task('test', 'run each of the unit tests', function() {
-    var _a, _b, _c, _d;
-    _a = []; _c = files;
-    for (_b = 0, _d = _c.length; _b < _d; _b++) {
-      (function() {
-        var test = _c[_b];
-        return _a.push(fs.readFile(test, function(err, code) {
-          return eval(coffee.compile(code));
-        }));
-      })();
-    }
-    return _a;
+  var fs;
+  fs = require('fs');
+  option('-o', '--output [DIR]', 'directory for compiled code');
+  task('build:parser', 'rebuild the Jison parser', function() {
+    var code, dir;
+    require('jison');
+    code = require('./lib/grammar').parser.generate();
+    dir = options.output || 'lib';
+    return fs.writeFile(("" + dir + "/parser.js"), code);
   });
 })();

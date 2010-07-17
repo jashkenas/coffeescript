@@ -1,3 +1,9 @@
-task 'test', 'run each of the unit tests', ->
-  for test in files
-    fs.readFile test, (err, code) -> eval coffee.compile code
+fs: require 'fs'
+
+option '-o', '--output [DIR]', 'directory for compiled code'
+
+task 'build:parser', 'rebuild the Jison parser', ->
+  require 'jison'
+  code:   require('./lib/grammar').parser.generate()
+  dir:    options.output or 'lib'
+  fs.writeFile "$dir/parser.js", code

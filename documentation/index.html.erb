@@ -59,7 +59,7 @@
         <a href="#try">Try/Catch/Finally</a>
         <a href="#comparisons">Chained Comparisons</a>
         <a href="#interpolation">String and RegExp Interpolation</a>
-        <a href="#strings">Multiline Strings and Heredocs</a>
+        <a href="#strings">Multiline Strings, Heredocs, and Block Comments</a>
         <a href="#cake">Cake, and Cakefiles</a>
         <a href="#scripts">"text/coffeescript" Script Tags</a>
         <a href="#resources">Resources</a>
@@ -184,11 +184,11 @@ alert reverse '.eeffoC yrT'</textarea></div>
 sudo bin/cake install</pre>
 
     <p>
-      Alternatively, if you already have the 
+      Alternatively, if you already have the
       <a href="http://npmjs.org/">Node Package Manager</a> installed,
       you can use that to grab the latest CoffeeScript:
     </p>
-    
+
     <pre>
 sudo npm install coffee-script</pre>
 
@@ -389,7 +389,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <%= code_for('objects_and_arrays', 'song.join(",")') %>
     <p>
       In JavaScript, you can't use reserved words, like <tt>class</tt>, as properties
-      of an object, without quoting them as strings. CoffeeScript notices and quotes 
+      of an object, without quoting them as strings. CoffeeScript notices and quotes
       them for you, so you don't have to worry about it (say, when using jQuery).
     </p>
     <%= code_for('objects_reserved') %>
@@ -486,7 +486,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       As a shortcut for <tt>this.property</tt>, you can use <tt>@property</tt>.
     </p>
     <p>
-      You can use <tt>in</tt> to test for array presence, and <tt>of</tt> to 
+      You can use <tt>in</tt> to test for array presence, and <tt>of</tt> to
       test for JavaScript object-key presence.
     </p>
     <%= code_for('aliases') %>
@@ -778,7 +778,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
 
     <p>
       <span id="strings" class="bookmark"></span>
-      <b class="header">Multiline Strings and Heredocs</b>
+      <b class="header">Multiline Strings, Heredocs, and Block Comments</b>
       Multiline strings are allowed in CoffeeScript.
     </p>
     <%= code_for('strings', 'mobyDick') %>
@@ -792,6 +792,13 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <p>
       Double-quoted heredocs, like double-quoted strings, allow interpolation.
     </p>
+    <p>
+      Sometimes you'd like to pass a block comment through to the generated 
+      JavaScript. For example, when you need to embed a licensing header at 
+      the top of a file. Block comments, which mirror the synax for heredocs, 
+      are preserved in the generated code.
+    </p>
+    <%= code_for('block_comment') %>
 
     <h2>
       <span id="cake" class="bookmark"></span>
@@ -799,18 +806,22 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </h2>
 
     <p>
-      CoffeeScript includes a simple build system similar to Make and Rake. Naturally,
+      CoffeeScript includes a simple build system similar to 
+      <a href="http://www.gnu.org/software/make/">Make</a> and 
+      <a href="http://rake.rubyforge.org/">Rake</a>. Naturally,
       it's called Cake, and is used for the build and test tasks for the CoffeeScript
       language itself. Tasks are defined in a file named <tt>Cakefile</tt>, and
       can be invoked by running <tt>cake taskname</tt> from within the directory.
-      To print a list of all the tasks, just run <tt>cake</tt>.
+      To print a list of all the tasks and options, just run <tt>cake</tt>.
     </p>
 
     <p>
       Task definitions are written in CoffeeScript, so you can put arbitrary code
       in your Cakefile. Define a task with a name, a long description, and the
-      function to invoke when the task is run. Here's a hypothetical task
-      that uses the Node.js API.
+      function to invoke when the task is run. If your task takes a command-line
+      option, you can define the option with short and long flags, and it will
+      be made available in the <tt>options</tt> object. Here's a task that uses
+      the Node.js API to rebuild CoffeeScript's parser:
     </p>
     <%= code_for('cake_tasks') %>
 
@@ -924,7 +935,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       </li>
       <li>
         <b>jashkenas</b>'s <a href="http://jashkenas.github.com/docco/">Docco</a>
-        &mdash; A quick-and-dirty literate-programming-style documentation generator 
+        &mdash; A quick-and-dirty literate-programming-style documentation generator
         for CoffeeScript. Used to produce the annotated source.
       </li>
     </ul>
@@ -948,13 +959,13 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.7.2</b>
       Quick bugfix (right after 0.7.1) for a problem that prevented <tt>coffee</tt>
       command-line options from being parsed in some circumstances.
     </p>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.7.1</b>
       Block-style comments are now passed through and printed as JavaScript block
@@ -962,13 +973,13 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       support for running coffee scripts standalone via hashbangs.
       Improved syntax errors for tokens that are not in the grammar.
     </p>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.7.0</b>
       Official CoffeeScript variable style is now camelCase, as in JavaScript.
       Reserved words are now allowed as object keys, and will be quoted for you.
       Range comprehensions now generate cleaner code, but you have to specify <tt>by -1</tt>
-      if you'd like to iterate downward. Reporting of syntax errors is greatly 
+      if you'd like to iterate downward. Reporting of syntax errors is greatly
       improved from the previous release. Running <tt>coffee</tt> with no arguments
       now launches the REPL, with Readline support. The <tt>&lt;-</tt> bind operator
       has been removed from CoffeeScript. The <tt>loop</tt> keyword was added,

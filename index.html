@@ -45,7 +45,7 @@
         <a href="#try">Try/Catch/Finally</a>
         <a href="#comparisons">Chained Comparisons</a>
         <a href="#interpolation">String and RegExp Interpolation</a>
-        <a href="#strings">Multiline Strings and Heredocs</a>
+        <a href="#strings">Multiline Strings, Heredocs, and Block Comments</a>
         <a href="#cake">Cake, and Cakefiles</a>
         <a href="#scripts">"text/coffeescript" Script Tags</a>
         <a href="#resources">Resources</a>
@@ -269,11 +269,11 @@ cubes = (function() {
 sudo bin/cake install</pre>
 
     <p>
-      Alternatively, if you already have the 
+      Alternatively, if you already have the
       <a href="http://npmjs.org/">Node Package Manager</a> installed,
       you can use that to grab the latest CoffeeScript:
     </p>
-    
+
     <pre>
 sudo npm install coffee-script</pre>
 
@@ -527,7 +527,7 @@ matrix = [1, 0, 1, 0, 0, 1, 1, 1, 0];
 ;alert(song.join(","));'>run: song.join(",")</button><br class='clear' /></div>
     <p>
       In JavaScript, you can't use reserved words, like <tt>class</tt>, as properties
-      of an object, without quoting them as strings. CoffeeScript notices and quotes 
+      of an object, without quoting them as strings. CoffeeScript notices and quotes
       them for you, so you don't have to worry about it (say, when using jQuery).
     </p>
     <div class='code'><pre class="idle">$(<span class="String"><span class="String">'</span>.account<span class="String">'</span></span>).css {class<span class="Keyword">:</span> <span class="String"><span class="String">'</span>active<span class="String">'</span></span>}
@@ -670,7 +670,7 @@ options <span class="Keyword">=</span> options <span class="Keyword">||</span> d
       As a shortcut for <tt>this.property</tt>, you can use <tt>@property</tt>.
     </p>
     <p>
-      You can use <tt>in</tt> to test for array presence, and <tt>of</tt> to 
+      You can use <tt>in</tt> to test for array presence, and <tt>of</tt> to
       test for JavaScript object-key presence.
     </p>
     <div class='code'><pre class="idle">launch() <span class="Keyword">if</span> ignition <span class="Keyword">is</span> <span class="BuiltInConstant">on</span>
@@ -942,10 +942,11 @@ yearsOld <span class="Keyword">=</span> {
 };
 ages <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   _a <span class="Keyword">=</span> []; _b <span class="Keyword">=</span> yearsOld;
-  <span class="Keyword">for</span> (child <span class="Keyword">in</span> _b) { <span class="Keyword">if</span> (__hasProp.<span class="LibraryFunction">call</span>(_b, child)) {
+  <span class="Keyword">for</span> (child <span class="Keyword">in</span> _b) {
+    <span class="Keyword">if</span> (<span class="Keyword">!</span>__hasProp.<span class="LibraryFunction">call</span>(_b, child)) <span class="Keyword">continue</span>;
     age <span class="Keyword">=</span> _b[child];
     _a.<span class="LibraryFunction">push</span>(child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age);
-  }}
+  }
   <span class="Keyword">return</span> _a;
 })();
 </pre><button onclick='javascript: var _a, _b, age, ages, child, yearsOld;
@@ -957,10 +958,11 @@ yearsOld = {
 };
 ages = (function() {
   _a = []; _b = yearsOld;
-  for (child in _b) { if (__hasProp.call(_b, child)) {
+  for (child in _b) {
+    if (!__hasProp.call(_b, child)) continue;
     age = _b[child];
     _a.push(child + " is " + age);
-  }}
+  }
   return _a;
 })();
 ;alert(ages.join(", "));'>run: ages.join(", ")</button><br class='clear' /></div>
@@ -1031,11 +1033,7 @@ eldest<span class="Keyword">:</span> <span class="Keyword">if</span> <span class
   <span class="Keyword">if</span> (student.excellentWork) {
     <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>A+<span class="String">&quot;</span></span>;
   } <span class="Keyword">else</span> <span class="Keyword">if</span> (student.okayStuff) {
-    <span class="Keyword">if</span> (student.triedHard) {
-      <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span>;
-    } <span class="Keyword">else</span> {
-      <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>B-<span class="String">&quot;</span></span>;
-    }
+    <span class="Keyword">return</span> student.triedHard ? <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span> : <span class="String"><span class="String">&quot;</span>B-<span class="String">&quot;</span></span>;
   } <span class="Keyword">else</span> {
     <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>C<span class="String">&quot;</span></span>;
   }
@@ -1046,11 +1044,7 @@ grade = function(student) {
   if (student.excellentWork) {
     return "A+";
   } else if (student.okayStuff) {
-    if (student.triedHard) {
-      return "B";
-    } else {
-      return "B-";
-    }
+    return student.triedHard ? "B" : "B-";
   } else {
     return "C";
   }
@@ -1085,18 +1079,20 @@ globals<span class="Keyword">:</span> (name <span class="Keyword">for</span> nam
 <span class="Storage">var</span> __hasProp <span class="Keyword">=</span> <span class="LibraryClassType">Object</span>.<span class="LibraryConstant">prototype</span>.hasOwnProperty;
 globals <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   _a <span class="Keyword">=</span> []; _b <span class="Keyword">=</span> <span class="LibraryClassType">window</span>;
-  <span class="Keyword">for</span> (name <span class="Keyword">in</span> _b) { <span class="Keyword">if</span> (__hasProp.<span class="LibraryFunction">call</span>(_b, name)) {
+  <span class="Keyword">for</span> (name <span class="Keyword">in</span> _b) {
+    <span class="Keyword">if</span> (<span class="Keyword">!</span>__hasProp.<span class="LibraryFunction">call</span>(_b, name)) <span class="Keyword">continue</span>;
     _a.<span class="LibraryFunction">push</span>(name);
-  }}
+  }
   <span class="Keyword">return</span> _a;
 })().<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
 </pre><button onclick='javascript: var _a, _b, globals, name;
 var __hasProp = Object.prototype.hasOwnProperty;
 globals = (function() {
   _a = []; _b = window;
-  for (name in _b) { if (__hasProp.call(_b, name)) {
+  for (name in _b) {
+    if (!__hasProp.call(_b, name)) continue;
     _a.push(name);
-  }}
+  }
   return _a;
 })().slice(0, 10);
 ;alert(globals);'>run: globals</button><br class='clear' /></div>
@@ -1173,8 +1169,8 @@ speed = (typeof speed !== "undefined" && speed !== null) ? speed : 140;
       the <b>TypeError</b> that would be raised otherwise.
     </p>
     <div class='code'><pre class="idle">lottery.drawWinner()<span class="Keyword">?</span>.address<span class="Keyword">?</span>.zipcode
-</pre><pre class="idle"><span class="Storage">var</span> _a;
-<span class="Keyword">typeof</span> (_a <span class="Keyword">=</span> (lottery.drawWinner())) <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">||</span> _a <span class="Keyword">==</span> undefined ? undefined : _a.address <span class="Keyword">==</span> undefined ? undefined : _a.address.zipcode;
+</pre><pre class="idle"><span class="Storage">var</span> _a, _b;
+(_b <span class="Keyword">=</span> (<span class="Keyword">typeof</span> (_a <span class="Keyword">=</span> (lottery.drawWinner())) <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">||</span> _a <span class="Keyword">==</span> undefined ? undefined : _a.address)) <span class="Keyword">==</span> undefined ? undefined : _b.zipcode;
 </pre><br class='clear' /></div>
     <p>
       Soaking up nulls is similar to Ruby's
@@ -1245,7 +1241,6 @@ tom.move()
 <span class="LibraryClassType">Animal</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>(<span class="FunctionArgument">meters</span>) {
   <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>);
 };
-
 <span class="FunctionName">Snake</span> = <span class="Storage">function</span>(<span class="FunctionArgument">name</span>) {
   <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
   <span class="Keyword">return</span> <span class="Variable">this</span>;
@@ -1255,7 +1250,6 @@ __extends(Snake, Animal);
   <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>);
   <span class="Keyword">return</span> Snake.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">5</span>);
 };
-
 <span class="FunctionName">Horse</span> = <span class="Storage">function</span>(<span class="FunctionArgument">name</span>) {
   <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
   <span class="Keyword">return</span> <span class="Variable">this</span>;
@@ -1265,7 +1259,6 @@ __extends(Horse, Animal);
   <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>);
   <span class="Keyword">return</span> Horse.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">45</span>);
 };
-
 sam <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Snake</span>(<span class="String"><span class="String">&quot;</span>Sammy the Python<span class="String">&quot;</span></span>);
 tom <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span>(<span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>);
 sam.move();
@@ -1282,7 +1275,6 @@ Animal = function() {  };
 Animal.prototype.move = function(meters) {
   return alert(this.name + " moved " + meters + "m.");
 };
-
 Snake = function(name) {
   this.name = name;
   return this;
@@ -1292,7 +1284,6 @@ Snake.prototype.move = function() {
   alert("Slithering...");
   return Snake.__superClass__.move.call(this, 5);
 };
-
 Horse = function(name) {
   this.name = name;
   return this;
@@ -1302,7 +1293,6 @@ Horse.prototype.move = function() {
   alert("Galloping...");
   return Horse.__superClass__.move.call(this, 45);
 };
-
 sam = new Snake("Sammy the Python");
 tom = new Horse("Tommy the Palomino");
 sam.move();
@@ -1649,7 +1639,7 @@ dates = (new RegExp(("\\d+" + sep + "\\d+" + sep + "\\d+"), "g"));
 
     <p>
       <span id="strings" class="bookmark"></span>
-      <b class="header">Multiline Strings and Heredocs</b>
+      <b class="header">Multiline Strings, Heredocs, and Block Comments</b>
       Multiline strings are allowed in CoffeeScript.
     </p>
     <div class='code'><pre class="idle">mobyDick<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago --</span>
@@ -1692,6 +1682,21 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">'<
     <p>
       Double-quoted heredocs, like double-quoted strings, allow interpolation.
     </p>
+    <p>
+      Sometimes you'd like to pass a block comment through to the generated 
+      JavaScript. For example, when you need to embed a licensing header at 
+      the top of a file. Block comments, which mirror the synax for heredocs, 
+      are preserved in the generated code.
+    </p>
+    <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">###</span></span>
+<span class="Comment">CoffeeScript Compiler v0.7.2</span>
+<span class="Comment">Released under the MIT License</span>
+<span class="Comment"><span class="Comment">###</span></span>
+</pre><pre class="idle"><span class="Comment"><span class="Comment">/*</span></span>
+<span class="Comment">CoffeeScript Compiler v0.7.2</span>
+<span class="Comment">Released under the MIT License</span>
+<span class="Comment"><span class="Comment">*/</span></span>
+</pre><br class='clear' /></div>
 
     <h2>
       <span id="cake" class="bookmark"></span>
@@ -1699,34 +1704,41 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">'<
     </h2>
 
     <p>
-      CoffeeScript includes a simple build system similar to Make and Rake. Naturally,
+      CoffeeScript includes a simple build system similar to 
+      <a href="http://www.gnu.org/software/make/">Make</a> and 
+      <a href="http://rake.rubyforge.org/">Rake</a>. Naturally,
       it's called Cake, and is used for the build and test tasks for the CoffeeScript
       language itself. Tasks are defined in a file named <tt>Cakefile</tt>, and
       can be invoked by running <tt>cake taskname</tt> from within the directory.
-      To print a list of all the tasks, just run <tt>cake</tt>.
+      To print a list of all the tasks and options, just run <tt>cake</tt>.
     </p>
 
     <p>
       Task definitions are written in CoffeeScript, so you can put arbitrary code
       in your Cakefile. Define a task with a name, a long description, and the
-      function to invoke when the task is run. Here's a hypothetical task
-      that uses the Node.js API.
+      function to invoke when the task is run. If your task takes a command-line
+      option, you can define the option with short and long flags, and it will
+      be made available in the <tt>options</tt> object. Here's a task that uses
+      the Node.js API to rebuild CoffeeScript's parser:
     </p>
-    <div class='code'><pre class="idle">task <span class="String"><span class="String">'</span>test<span class="String">'</span></span>, <span class="String"><span class="String">'</span>run each of the unit tests<span class="String">'</span></span>, <span class="Storage">-&gt;</span>
-  <span class="Keyword">for</span> test <span class="Keyword">in</span> files
-    fs.readFile test, <span class="FunctionArgument">(</span><span class="FunctionArgument">err, code</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> eval coffee.compile code
-</pre><pre class="idle">task(<span class="String"><span class="String">'</span>test<span class="String">'</span></span>, <span class="String"><span class="String">'</span>run each of the unit tests<span class="String">'</span></span>, <span class="Storage">function</span>() {
-  <span class="Storage">var</span> _a, _b, _c, _d;
-  _a <span class="Keyword">=</span> []; _c <span class="Keyword">=</span> files;
-  <span class="Keyword">for</span> (_b <span class="Keyword">=</span> <span class="Number">0</span>, _d <span class="Keyword">=</span> _c.<span class="LibraryConstant">length</span>; _b <span class="Keyword">&lt;</span> _d; _b<span class="Keyword">++</span>) {
-    (<span class="Storage">function</span>() {
-      <span class="Storage">var</span> test <span class="Keyword">=</span> _c[_b];
-      <span class="Keyword">return</span> _a.<span class="LibraryFunction">push</span>(fs.readFile(test, <span class="Storage">function</span>(err, code) {
-        <span class="Keyword">return</span> <span class="LibraryFunction">eval</span>(coffee.<span class="LibraryFunction">compile</span>(code));
-      }));
-    })();
-  }
-  <span class="Keyword">return</span> _a;
+    <div class='code'><pre class="idle">fs<span class="Keyword">:</span> require <span class="String"><span class="String">'</span>fs<span class="String">'</span></span>
+
+option <span class="String"><span class="String">'</span>-o<span class="String">'</span></span>, <span class="String"><span class="String">'</span>--output [DIR]<span class="String">'</span></span>, <span class="String"><span class="String">'</span>directory for compiled code<span class="String">'</span></span>
+
+task <span class="String"><span class="String">'</span>build:parser<span class="String">'</span></span>, <span class="String"><span class="String">'</span>rebuild the Jison parser<span class="String">'</span></span>, <span class="Storage">-&gt;</span>
+  require <span class="String"><span class="String">'</span>jison<span class="String">'</span></span>
+  code<span class="Keyword">:</span>   require(<span class="String"><span class="String">'</span>./lib/grammar<span class="String">'</span></span>).parser.generate()
+  dir<span class="Keyword">:</span>    options.output <span class="Keyword">or</span> <span class="String"><span class="String">'</span>lib<span class="String">'</span></span>
+  fs.writeFile <span class="String"><span class="String">&quot;</span><span class="String"><span class="String">$</span>dir</span>/parser.js<span class="String">&quot;</span></span>, code
+</pre><pre class="idle"><span class="Storage">var</span> fs;
+fs <span class="Keyword">=</span> require(<span class="String"><span class="String">'</span>fs<span class="String">'</span></span>);
+option(<span class="String"><span class="String">'</span>-o<span class="String">'</span></span>, <span class="String"><span class="String">'</span>--output [DIR]<span class="String">'</span></span>, <span class="String"><span class="String">'</span>directory for compiled code<span class="String">'</span></span>);
+task(<span class="String"><span class="String">'</span>build:parser<span class="String">'</span></span>, <span class="String"><span class="String">'</span>rebuild the Jison parser<span class="String">'</span></span>, <span class="Storage">function</span>() {
+  <span class="Storage">var</span> code, dir;
+  require(<span class="String"><span class="String">'</span>jison<span class="String">'</span></span>);
+  code <span class="Keyword">=</span> require(<span class="String"><span class="String">'</span>./lib/grammar<span class="String">'</span></span>).parser.generate();
+  dir <span class="Keyword">=</span> options.output <span class="Keyword">||</span> <span class="String"><span class="String">'</span>lib<span class="String">'</span></span>;
+  <span class="Keyword">return</span> fs.writeFile((<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> dir <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>/parser.js<span class="String">&quot;</span></span>), code);
 });
 </pre><br class='clear' /></div>
 
@@ -1840,7 +1852,7 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">'<
       </li>
       <li>
         <b>jashkenas</b>'s <a href="http://jashkenas.github.com/docco/">Docco</a>
-        &mdash; A quick-and-dirty literate-programming-style documentation generator 
+        &mdash; A quick-and-dirty literate-programming-style documentation generator
         for CoffeeScript. Used to produce the annotated source.
       </li>
     </ul>
@@ -1864,13 +1876,13 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">'<
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.7.2</b>
       Quick bugfix (right after 0.7.1) for a problem that prevented <tt>coffee</tt>
       command-line options from being parsed in some circumstances.
     </p>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.7.1</b>
       Block-style comments are now passed through and printed as JavaScript block
@@ -1878,13 +1890,13 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">'<
       support for running coffee scripts standalone via hashbangs.
       Improved syntax errors for tokens that are not in the grammar.
     </p>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.7.0</b>
       Official CoffeeScript variable style is now camelCase, as in JavaScript.
       Reserved words are now allowed as object keys, and will be quoted for you.
       Range comprehensions now generate cleaner code, but you have to specify <tt>by -1</tt>
-      if you'd like to iterate downward. Reporting of syntax errors is greatly 
+      if you'd like to iterate downward. Reporting of syntax errors is greatly
       improved from the previous release. Running <tt>coffee</tt> with no arguments
       now launches the REPL, with Readline support. The <tt>&lt;-</tt> bind operator
       has been removed from CoffeeScript. The <tt>loop</tt> keyword was added,
