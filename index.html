@@ -29,7 +29,7 @@
         <a href="#assignment">Assignment</a>
         <a href="#objects_and_arrays">Objects and Arrays</a>
         <a href="#lexical_scope">Lexical Scoping and Variable Safety</a>
-        <a href="#conditionals">Conditionals, Ternaries, and Conditional Assignment</a>
+        <a href="#conditionals">If, Else, Unless, and Conditional Assignment</a>
         <a href="#aliases">Aliases</a>
         <a href="#splats">Splats...</a>
         <a href="#while">While, Until, and Loop</a>
@@ -599,15 +599,17 @@ inner = changeNumbers();
 
     <p>
       <span id="conditionals" class="bookmark"></span>
-      <b class="header">Conditionals, Ternaries, and Conditional Assignment</b>
+      <b class="header">If, Else, Unless, and Conditional Assignment</b>
       <b>If/else</b> statements can be written without the use of parentheses and
       curly brackets. As with functions and other block expressions,
       multi-line conditionals are delimited by indentation. There's also a handy
       postfix form, with the <tt>if</tt> or <tt>unless</tt> at the end.
     </p>
     <p>
-      CoffeeScript will compile <b>if</b> statements using the ternary operator
-      when possible, to make it easier to use the result as an expression.
+      CoffeeScript can compile <b>if</b> statements into JavaScript expressions,
+      using the ternary operator when possible, and closure wrapping otherwise. There
+      is no explicit ternary statement in CoffeeScript &mdash; you simply use
+      a regular <b>if</b> statement inline.
     </p>
     <div class='code'><pre class="idle">mood<span class="Keyword">:</span> greatlyImproved <span class="Keyword">if</span> singing
 
