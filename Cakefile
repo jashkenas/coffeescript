@@ -10,9 +10,9 @@ reset: '\033[0m'
 
 # Run a CoffeeScript through our node/coffee interpreter.
 run: (args) ->
-  proc: spawn 'bin/coffee', args
-  proc.stderr.addListener 'data', (buffer) -> puts buffer.toString()
-  proc.addListener 'exit', (status) -> process.exit(1) if status != 0
+  proc:          spawn 'bin/coffee', args
+  proc.stderr.on 'data', (buffer) -> puts buffer.toString()
+  proc.on        'exit', (status) -> process.exit(1) if status != 0
 
 # Log a message with a color.
 log: (message, color, explanation) ->
@@ -100,7 +100,7 @@ task 'test', 'run the CoffeeScript language test suite', ->
     ok: (args...) -> passedTests += 1; originalOk(args...)
     CoffeeScript: CoffeeScript
   }
-  process.addListener 'exit', ->
+  process.on 'exit', ->
     time: ((new Date - startTime) / 1000).toFixed(2)
     message: "passed $passedTests tests in $time seconds$reset"
     if failedTests

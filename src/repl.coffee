@@ -31,7 +31,7 @@ run: (buffer) ->
 # Create the REPL by listening to **stdin**.
 repl: readline.createInterface stdio
 repl.setPrompt 'coffee> '
-stdio.addListener 'data',   (buffer) -> repl.write buffer
-repl.addListener  'close',  -> stdio.destroy()
-repl.addListener  'line',   run
+stdio.on 'data',   (buffer) -> repl.write buffer
+repl.on  'close',  -> stdio.destroy()
+repl.on  'line',   run
 repl.prompt()

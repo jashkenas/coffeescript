@@ -106,9 +106,9 @@ compileScript: (source, code, base) ->
 compileStdio: ->
   code: ''
   stdin: process.openStdin()
-  stdin.addListener 'data', (buffer) ->
+  stdin.on 'data', (buffer) ->
     code: + buffer.toString() if buffer
-  stdin.addListener 'end', ->
+  stdin.on 'end', ->
     compileScript 'stdio', code
 
 # Watch a source CoffeeScript file using `fs.watchFile`, recompiling it every
@@ -139,8 +139,8 @@ writeJs: (source, js, base) ->
 lint: (js) ->
   printIt: (buffer) -> print buffer.toString()
   jsl: spawn 'jsl', ['-nologo', '-stdin']
-  jsl.stdout.addListener 'data', printIt
-  jsl.stderr.addListener 'data', printIt
+  jsl.stdout.on 'data', printIt
+  jsl.stderr.on 'data', printIt
   jsl.stdin.write js
   jsl.stdin.end()
 
