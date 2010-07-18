@@ -1479,9 +1479,10 @@ UTILITIES: {
             function(child, parent) {
                 var ctor = function(){ };
                 ctor.prototype = parent.prototype;
-                child.__superClass__ = parent.prototype;
                 child.prototype = new ctor();
                 child.prototype.constructor = child;
+                if (typeof parent.extended === "function") parent.extended(child);
+                child.__superClass__ = parent.prototype;
               }
             """
 

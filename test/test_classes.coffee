@@ -183,3 +183,26 @@ c: new Child
 c.method 1, 2, 3, 4
 ok c.args.join(' ') is '1 2 3 4'
 
+
+# Test `extended` callback.
+class Base
+  @extended: (subclass) ->
+    for key, value of @
+      subclass[key]: value
+
+class Element extends Base
+  @fromHTML: (html) ->
+    node: "..."
+    new @(node)
+
+  constructor: (node) ->
+    @node: node
+
+ok Element.extended is Base.extended
+ok Element.__superClass__ is Base.prototype
+
+class MyElement extends Element
+
+ok MyElement.extended is Base.extended
+ok MyElement.fromHTML is Element.fromHTML
+ok MyElement.__superClass__ is Element.prototype
