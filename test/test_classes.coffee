@@ -114,7 +114,7 @@ class Hive
   constructor: (name) -> @name: name
 
 class Hive.Bee extends Hive
-  constructor: (name) -> super name
+  constructor: (name) -> super
 
 maya: new Hive.Bee 'Maya'
 ok maya.name is 'Maya'
@@ -170,3 +170,16 @@ list: [3, 2, 1]
 conn: new Connection list...
 ok conn instanceof Connection
 ok conn.out() is '3-2-1'
+
+
+# Test calling super and passing along all arguments.
+class Parent
+  method: (args...) -> @args: args
+
+class Child extends Parent
+  method: -> super
+
+c: new Child
+c.method 1, 2, 3, 4
+ok c.args.join(' ') is '1 2 3 4'
+

@@ -317,6 +317,7 @@ grammar: {
 
   # Calling super.
   Super: [
+    o "SUPER",                                  -> new CallNode 'super', [new SplatNode(new LiteralNode('arguments'))]
     o "SUPER Arguments",                        -> new CallNode 'super', $2
   ]
 
