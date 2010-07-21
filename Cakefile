@@ -86,8 +86,9 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
     throw err if err
 
 
-task 'loc', 'count the lines of source code in CoffeeScript', ->
-  exec "cat src/*.coffee | grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '", (err, stdout) ->
+task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
+  sources: ['src/coffee-script.coffee', 'src/grammar.coffee', 'src/helpers.coffee', 'src/lexer.coffee', 'src/nodes.coffee', 'src/rewriter.coffee', 'src/scope.coffee']
+  exec "cat ${ sources.join(' ') } | grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '", (err, stdout) ->
     print stdout
 
 
