@@ -171,7 +171,8 @@ exports.Lexer: class Lexer
       str: str.replace REGEX_ESCAPE, (escaped) -> '\\' + escaped
       @tokens: @tokens.concat [['(', '('], ['NEW', 'new'], ['IDENTIFIER', 'RegExp'], ['CALL_START', '(']]
       @interpolateString "\"$str\"", yes
-      @tokens: @tokens.concat [[',', ','], ['STRING', "\"$flags\""], [')', ')'], [')', ')']]
+      @tokens.splice @tokens.length, 0, [',', ','], ['STRING', "\"$flags\""] if flags
+      @tokens.splice @tokens.length, 0, [')', ')'], [')', ')']
     else
       @token 'REGEX', regex
     @i: + regex.length
