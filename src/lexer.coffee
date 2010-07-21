@@ -132,7 +132,7 @@ exports.Lexer: class Lexer
     return false unless match: @chunk.match(HEREDOC)
     quote: match[1].substr 0, 1
     doc: @sanitizeHeredoc match[2] or match[4], {quote}
-    @interpolateString "$quote$doc$quote"
+    @interpolateString "$quote$doc$quote", no, yes
     @line: + count match[1], "\n"
     @i: + match[1].length
     true
@@ -389,7 +389,7 @@ exports.Lexer: class Lexer
   # If it encounters an interpolation, this method will recursively create a
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
-  interpolateString: (str, escapeQuotes) ->
+  interpolateString: (str, escapeQuotes, heredoc) ->
     if str.length < 3 or not starts str, '"'
       @token 'STRING', str
     else
@@ -411,7 +411,7 @@ exports.Lexer: class Lexer
           tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i
           inner: expr.substring(2, expr.length - 1)
           if inner.length
-            inner: inner.replace new RegExp('\\\\' + quote, 'g'), quote
+            inner: inner.replace new RegExp('\\\\' + quote, 'g'), quote if heredoc
             nested: lexer.tokenize "($inner)", {line: @line}
             (tok[0]: ')') for tok, idx in nested when tok[0] is 'CALL_END'
             nested.pop()
