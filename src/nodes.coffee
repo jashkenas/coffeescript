@@ -882,7 +882,7 @@ exports.CodeNode: class CodeNode extends BaseNode
     @body.makeReturn()
     (o.scope.parameter(param)) for param in params
     code: if @body.expressions.length then "\n${ @body.compileWithDeclarations(o) }\n" else ''
-    func: "function(${ params.join(', ') }) {$code${@idt(if @bound then 1 else 0)}}"
+    func: "function(${ params.join(', ') }) {$code${ code and @idt(if @bound then 1 else 0) }}"
     func: "($func)" if top and not @bound
     return func unless @bound
     inner: "(function() {\n${@idt(2)}return __func.apply(__this, arguments);\n${@idt(1)}});"
