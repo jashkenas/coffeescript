@@ -536,6 +536,7 @@ exports.RangeNode: class RangeNode extends BaseNode
   # Compiles the range's source variables -- where it starts and where it ends.
   # But only if they need to be cached to avoid double evaluation.
   compileVariables: (o) ->
+    o: merge(o, {top: true})
     [@from, @fromVar]:  @from.compileReference o, {precompile: yes}
     [@to, @toVar]:      @to.compileReference o, {precompile: yes}
     [@fromNum, @toNum]: [@fromVar.match(SIMPLENUM), @toVar.match(SIMPLENUM)]
