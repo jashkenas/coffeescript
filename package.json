@@ -1,7 +1,7 @@
 {
     "name":         "coffee-script",
     "description":  "Unfancy JavaScript",
-    "keywords":     ["javascript", "language"],
+    "keywords":     ["javascript", "language", "coffeescript", "compiler"],
     "author":       "Jeremy Ashkenas",
     "version":      "0.7.2",
     "licenses":     [{
@@ -11,7 +11,8 @@
     "engines":      {
       "node":       ">=0.1.99"
     },
-    "scripts":      {
-      "install":    "bin/cake install"
+    "bin":          {
+      "coffee":     "./bin/coffee",
+      "cake":       "./bin/cake"
     }
 }
