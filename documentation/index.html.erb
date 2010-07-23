@@ -405,8 +405,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <p>
       Notice how the all of the variable declarations have been pushed up to
       the top of the closest scope, the first time they appear.
-      <b>num</b> is not redeclared within the inner function, because it's
-      already in scope; the <b>new_num</b> within the function, on the other hand,
+      <b>outer</b> is not redeclared within the inner function, because it's
+      already in scope; <b>inner</b> within the function, on the other hand,
       should not be able to change the value of the external variable of the same name, and
       therefore has a declaration of its own.
     </p>

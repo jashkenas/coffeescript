@@ -570,8 +570,8 @@ inner = changeNumbers();
     <p>
       Notice how the all of the variable declarations have been pushed up to
       the top of the closest scope, the first time they appear.
-      <b>num</b> is not redeclared within the inner function, because it's
-      already in scope; the <b>new_num</b> within the function, on the other hand,
+      <b>outer</b> is not redeclared within the inner function, because it's
+      already in scope; <b>inner</b> within the function, on the other hand,
       should not be able to change the value of the external variable of the same name, and
       therefore has a declaration of its own.
     </p>
@@ -877,7 +877,7 @@ _f <span class="Keyword">=</span> asteroids;
       in fixed-size increments, you can use a range to specify the start and
       end of your comprehension.
     </p>
-    <div class='code'><pre class="idle">countdown<span class="Keyword">:</span> num <span class="Keyword">for</span> num <span class="Keyword">in</span> [<span class="Number">10</span>..<span class="Number">1</span>] <span class="Keyword">by</span> <span class="Keyword">-</span><span class="Number">1</span>
+    <div class='code'><pre class="idle">countdown<span class="Keyword">:</span> num <span class="Keyword">for</span> num <span class="Keyword">in</span> [<span class="Number">10</span>..<span class="Number">1</span>]
 
 <span class="FunctionName">deliverEggs</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
   <span class="Keyword">for</span> i <span class="Keyword">in</span> [<span class="Number">0</span>...eggs.length] <span class="Keyword">by</span> <span class="Number">12</span>
@@ -886,16 +886,15 @@ _f <span class="Keyword">=</span> asteroids;
 </pre><pre class="idle"><span class="Storage">var</span> _a, countdown, deliverEggs, num;
 countdown <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   _a <span class="Keyword">=</span> [];
-  <span class="Keyword">for</span> (num <span class="Keyword">=</span> <span class="Number">10</span>; num <span class="Keyword">&gt;=</span> <span class="Number">1</span>; num <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Keyword">-</span><span class="Number">1</span>) {
+  <span class="Keyword">for</span> (num <span class="Keyword">=</span> <span class="Number">10</span>; num <span class="Keyword">&gt;=</span> <span class="Number">1</span>; num<span class="Keyword">--</span>) {
     _a.<span class="LibraryFunction">push</span>(num);
   }
   <span class="Keyword">return</span> _a;
 })();
 <span class="FunctionName">deliverEggs</span> = <span class="Storage">function</span>() {
   <span class="Storage">var</span> _b, _c, dozen, i;
-  _b <span class="Keyword">=</span> []; (_c <span class="Keyword">=</span> eggs.<span class="LibraryConstant">length</span>);
-
-  <span class="Keyword">for</span> (i <span class="Keyword">=</span> <span class="Number">0</span>; i <span class="Keyword">&lt;</span> _c; i <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">12</span>) {
+  _b <span class="Keyword">=</span> []; _c <span class="Keyword">=</span> eggs.<span class="LibraryConstant">length</span>;
+  <span class="Keyword">for</span> (i <span class="Keyword">=</span> <span class="Number">0</span>; (<span class="Number">0</span> <span class="Keyword">&lt;=</span> _c ? i <span class="Keyword">&lt;</span> _c : i <span class="Keyword">&gt;</span> _c); i <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">12</span>) {
     _b.<span class="LibraryFunction">push</span>((<span class="Storage">function</span>() {
       dozen <span class="Keyword">=</span> eggs.<span class="LibraryFunction">slice</span>(i, i <span class="Keyword">+</span> <span class="Number">12</span>);
       <span class="Keyword">return</span> deliver(<span class="Keyword">new</span> <span class="TypeName">eggCarton</span>(dozen));
@@ -906,16 +905,15 @@ countdown <span class="Keyword">=</span> (<span class="Storage">function</span>(
 </pre><button onclick='javascript: var _a, countdown, deliverEggs, num;
 countdown = (function() {
   _a = [];
-  for (num = 10; num >= 1; num += -1) {
+  for (num = 10; num >= 1; num--) {
     _a.push(num);
   }
   return _a;
 })();
 deliverEggs = function() {
   var _b, _c, dozen, i;
-  _b = []; (_c = eggs.length);
-
-  for (i = 0; i < _c; i += 12) {
+  _b = []; _c = eggs.length;
+  for (i = 0; (0 <= _c ? i < _c : i > _c); i += 12) {
     _b.push((function() {
       dozen = eggs.slice(i, i + 12);
       return deliver(new eggCarton(dozen));
@@ -1233,11 +1231,12 @@ tom.move()
 <span class="Storage">var</span> <span class="FunctionName">__extends</span> = <span class="Storage">function</span>(<span class="FunctionArgument">child, parent</span>) {
   <span class="Storage">var</span> <span class="FunctionName">ctor</span> = <span class="Storage">function</span>(){ };
   <span class="LibraryClassType">ctor</span>.<span class="LibraryConstant">prototype</span> = parent.<span class="LibraryConstant">prototype</span>;
-  child.__superClass__ <span class="Keyword">=</span> parent.<span class="LibraryConstant">prototype</span>;
   <span class="LibraryClassType">child</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">ctor</span>();
   <span class="LibraryClassType">child</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">constructor</span> = child;
+  <span class="Keyword">if</span> (<span class="Keyword">typeof</span> parent.extended <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>function<span class="String">&quot;</span></span>) parent.extended(child);
+  child.__superClass__ <span class="Keyword">=</span> parent.<span class="LibraryConstant">prototype</span>;
 };
-<span class="FunctionName">Animal</span> = <span class="Storage">function</span>() {  };
+<span class="FunctionName">Animal</span> = <span class="Storage">function</span>() {};
 <span class="LibraryClassType">Animal</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>(<span class="FunctionArgument">meters</span>) {
   <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>);
 };
@@ -1267,11 +1266,12 @@ tom.move();
 var __extends = function(child, parent) {
   var ctor = function(){ };
   ctor.prototype = parent.prototype;
-  child.__superClass__ = parent.prototype;
   child.prototype = new ctor();
   child.prototype.constructor = child;
+  if (typeof parent.extended === "function") parent.extended(child);
+  child.__superClass__ = parent.prototype;
 };
-Animal = function() {  };
+Animal = function() {};
 Animal.prototype.move = function(meters) {
   return alert(this.name + " moved " + meters + "m.");
 };
