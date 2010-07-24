@@ -19,17 +19,27 @@ ok y.x() is 3
 
 
 obj: {
-  name: "Fred"
+  name: 'Fred'
 
   bound: ->
-    (=> ok(this.name is "Fred"))()
+    (=> ok(this.name is 'Fred'))()
 
   unbound: ->
     (-> ok(!this.name?))()
+
+  nested: ->
+    (=>
+      (=>
+        (=>
+          ok this.name is 'Fred'
+        )()
+      )()
+    )()
 }
 
 obj.unbound()
 obj.bound()
+obj.nested()
 
 
 # Python decorator style wrapper that memoizes any function

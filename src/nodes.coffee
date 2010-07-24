@@ -185,12 +185,6 @@ exports.Expressions: class Expressions extends BaseNode
     @expressions[idx]: last.makeReturn()
     this
 
-  # A bound function uses a local `__this` variable instead of the real `this`.
-  rewriteThis: ->
-    @traverseChildren false, (child) ->
-      if child instanceof ValueNode and child.base.value is 'this'
-        child.base: literal '__this'
-
   # An **Expressions** is the only node that can serve as the root.
   compile: (o) ->
     o: or {}
@@ -866,7 +860,7 @@ exports.CodeNode: class CodeNode extends BaseNode
     top:          del o, 'top'
     o.scope:      sharedScope or new Scope(o.scope, @body, this)
     o.top:        true
-    o.indent:     @idt(if @bound then 2 else 1)
+    o.indent:     @idt(1)
     del o, 'noWrap'
     del o, 'globals'
     i: 0
@@ -886,13 +880,11 @@ exports.CodeNode: class CodeNode extends BaseNode
       i: + 1
     params: (param.compile(o) for param in params)
     @body.makeReturn()
-    @body.rewriteThis() if @bound
     (o.scope.parameter(param)) for param in params
     code: if @body.expressions.length then "\n${ @body.compileWithDeclarations(o) }\n" else ''
-    func: "function(${ params.join(', ') }) {$code${ code and @idt(if @bound then 1 else 0) }}"
-    func: "($func)" if top and not @bound
-    return func unless @bound
-    "(function(__this) {\n${@idt(1)}return $func;\n$@tab})(this)"
+    func: "function(${ params.join(', ') }) {$code${ code and @tab }}"
+    return "${utility('bind')}($func, this)" if @bound
+    if top then "($func)" else func
 
   topSensitive: ->
     true
@@ -1495,6 +1487,13 @@ UTILITIES: {
                 child.__superClass__ = parent.prototype;
               }
             """
+
+  # Create a function bound to the current value of "this".
+  bind: """
+        function(func, context) {
+            return function(){ return func.apply(context, arguments); };
+          }
+        """
 
   # Shortcuts to speed up the lookup time for native functions.
   hasProp: 'Object.prototype.hasOwnProperty'
