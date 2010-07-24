@@ -185,11 +185,11 @@ exports.Expressions: class Expressions extends BaseNode
     @expressions[idx]: last.makeReturn()
     this
 
-  # A bound function uses a local `_this` variable instead of the real `this`.
+  # A bound function uses a local `__this` variable instead of the real `this`.
   rewriteThis: ->
     @traverseChildren false, (child) ->
       if child instanceof ValueNode and child.base.value is 'this'
-        child.base: literal '_this'
+        child.base: literal '__this'
 
   # An **Expressions** is the only node that can serve as the root.
   compile: (o) ->
@@ -892,7 +892,7 @@ exports.CodeNode: class CodeNode extends BaseNode
     func: "function(${ params.join(', ') }) {$code${ code and @idt(if @bound then 1 else 0) }}"
     func: "($func)" if top and not @bound
     return func unless @bound
-    "(function(_this) {\n${@idt(1)}return $func;\n$@tab})(this)"
+    "(function(__this) {\n${@idt(1)}return $func;\n$@tab})(this)"
 
   topSensitive: ->
     true
