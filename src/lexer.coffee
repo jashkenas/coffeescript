@@ -9,15 +9,15 @@
 
 # Set up the Lexer for both Node.js and the browser, depending on where we are.
 if process?
-  {Rewriter}: require('./rewriter')
-  {helpers}:  require('./helpers')
+  {Rewriter} = require('./rewriter')
+  {helpers}  = require('./helpers')
 else
-  this.exports: this
-  Rewriter:     this.Rewriter
-  helpers:      this.helpers
+  this.exports = this
+  Rewriter     = this.Rewriter
+  helpers      = this.helpers
 
 # Import the helpers we need.
-{include, count, starts, compact}: helpers
+{include, count, starts, compact} = helpers
 
 # The Lexer Class
 # ---------------
@@ -25,7 +25,7 @@ else
 # The Lexer class reads a stream of CoffeeScript and divvys it up into tagged
 # tokens. Some potential ambiguity in the grammar has been avoided by
 # pushing some extra smarts into the Lexer.
-exports.Lexer: class Lexer
+exports.Lexer = class Lexer
 
   # **tokenize** is the Lexer's main method. Scan by attempting to match tokens
   # one at a time, using a regular expression anchored at the start of the
@@ -40,17 +40,17 @@ exports.Lexer: class Lexer
   # Before returning the token stream, run it through the [Rewriter](rewriter.html)
   # unless explicitly asked not to.
   tokenize: (code, options) ->
-    code     : code.replace /(\r|\s+$)/g, ''
-    o        : options or {}
-    @code    : code         # The remainder of the source code.
-    @i       : 0            # Current character position we're parsing.
-    @line    : o.line or 0  # The current line.
-    @indent  : 0            # The current indentation level.
-    @outdebt : 0            # The under-outdentation of the last outdent.
-    @indents : []           # The stack of all current indentation levels.
-    @tokens  : []           # Stream of parsed tokens in the form ['TYPE', value, line]
+    code     = code.replace /(\r|\s+$)/g, ''
+    o        = options or {}
+    @code    = code         # The remainder of the source code.
+    @i       = 0            # Current character position we're parsing.
+    @line    = o.line or 0  # The current line.
+    @indent  = 0            # The current indentation level.
+    @outdebt = 0            # The under-outdentation of the last outdent.
+    @indents = []           # The stack of all current indentation levels.
+    @tokens  = []           # Stream of parsed tokens in the form ['TYPE', value, line]
     while @i < @code.length
-      @chunk: @code.slice @i
+      @chunk = @code.slice @i
       @extractNextToken()
     @closeIndentation()
     return @tokens if o.rewrite is off
@@ -81,17 +81,17 @@ exports.Lexer: class Lexer
   # referenced as property names here, so you can still do `jQuery.is()` even
   # though `is` means `===` otherwise.
   identifierToken: ->
-    return false unless id: @match IDENTIFIER, 1
-    @i: + id.length
-    forcedIdentifier: @tagAccessor() or @match ASSIGNED, 1
-    tag: 'IDENTIFIER'
-    tag: id.toUpperCase() if include(JS_KEYWORDS, id) or (not forcedIdentifier and include(COFFEE_KEYWORDS, id))
-    tag: 'LEADING_WHEN'   if tag is 'WHEN' and include LINE_BREAK, @tag()
-    tag: 'ALL'            if id is 'all' and @tag() is 'FOR'
+    return false unless id = @match IDENTIFIER, 1
+    @i = + id.length
+    forcedIdentifier = @tagAccessor() or @match ASSIGNED, 1
+    tag = 'IDENTIFIER'
+    tag = id.toUpperCase() if include(JS_KEYWORDS, id) or (not forcedIdentifier and include(COFFEE_KEYWORDS, id))
+    tag = 'LEADING_WHEN'   if tag is 'WHEN' and include LINE_BREAK, @tag()
+    tag = 'ALL'            if id is 'all' and @tag() is 'FOR'
     if include(JS_FORBIDDEN, id)
       if forcedIdentifier
-        tag: 'STRING'
-        id:  "'$id'"
+        tag = 'STRING'
+        id  = "'$id'"
         if forcedIdentifier is 'accessor'
           close_index: true
           @tokens.pop() if @tag() isnt '@'

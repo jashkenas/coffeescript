@@ -15,7 +15,7 @@
 # from our rules and saves it into `lib/parser.js`.
 
 # The only dependency is on the **Jison.Parser**.
-Parser: require('jison').Parser
+Parser = require('jison').Parser
 
 # Jison DSL
 # ---------
@@ -23,16 +23,16 @@ Parser: require('jison').Parser
 # Since we're going to be wrapped in a function by Jison in any case, if our
 # action immediately returns a value, we can optimize by removing the function
 # wrapper and just returning the value directly.
-unwrap: /function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
+unwrap = /function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 
 # Our handy DSL for Jison grammar generation, thanks to
 # [Tim Caswell](http://github.com/creationix). For every rule in the grammar,
 # we pass the pattern-defining string, the action to run, and extra options,
 # optionally. If no action is specified, we simply pass the value of the
 # previous nonterminal.
-o: (patternString, action, options) ->
+o = (patternString, action, options) ->
   return [patternString, '$$ = $1;', options] unless action
-  action: if match: (action + '').match(unwrap) then match[1] else "($action())"
+  action = if match = (action + '').match(unwrap) then match[1] else "($action())"
   [patternString, "$$ = $action;", options]
 
 # Grammatical Rules
@@ -48,7 +48,7 @@ o: (patternString, action, options) ->
 # `$1` would be the value of the first `Expression`, `$2` would be the token
 # for the `UNLESS` terminal, and `$3` would be the value of the second
 # `Expression`.
-grammar: {
+grammar = {
 
   # The **Root** is the top-level node in the syntax tree. Since we parse bottom-up,
   # all parsing must end here.
@@ -248,8 +248,8 @@ grammar: {
   # Indexing into an object or array using bracket notation.
   Index: [
     o "INDEX_START Expression INDEX_END",       -> new IndexNode $2
-    o "INDEX_SOAK Index",                       -> $2.soakNode: yes; $2
-    o "INDEX_PROTO Index",                      -> $2.proto: yes; $2
+    o "INDEX_SOAK Index",                       -> $2.soakNode = yes; $2
+    o "INDEX_PROTO Index",                      -> $2.proto = yes; $2
   ]
 
   # In CoffeeScript, an object literal is simply a list of assignments.
@@ -420,14 +420,14 @@ grammar: {
   # Comprehensions can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression.
   For: [
-    o "Statement ForStart ForSource",           -> $3.raw: $2.raw; new ForNode $1, $3, $2[0], $2[1]
-    o "Expression ForStart ForSource",          -> $3.raw: $2.raw; new ForNode $1, $3, $2[0], $2[1]
-    o "ForStart ForSource Block",               -> $2.raw: $1.raw; new ForNode $3, $2, $1[0], $1[1]
+    o "Statement ForStart ForSource",           -> $3.raw = $2.raw; new ForNode $1, $3, $2[0], $2[1]
+    o "Expression ForStart ForSource",          -> $3.raw = $2.raw; new ForNode $1, $3, $2[0], $2[1]
+    o "ForStart ForSource Block",               -> $2.raw = $1.raw; new ForNode $3, $2, $1[0], $1[1]
   ]
 
   ForStart: [
     o "FOR ForVariables",                       -> $2
-    o "FOR ALL ForVariables",                   -> $3.raw: true; $3
+    o "FOR ALL ForVariables",                   -> $3.raw = true; $3
   ]
 
   # An array of all accepted values for a variable inside the loop. This
@@ -604,9 +604,9 @@ operators: [
 # our **Jison.Parser**. We do this by processing all of our rules, recording all
 # terminals (every symbol which does not appear as the name of a rule above)
 # as "tokens".
-tokens: []
+tokens = []
 for name, alternatives of grammar
-  grammar[name]: for alt in alternatives
+  grammar[name] = for alt in alternatives
     for token in alt[0].split ' '
       tokens.push token unless grammar[token]
     alt[1] = "return ${alt[1]}" if name is 'Root'
@@ -616,7 +616,7 @@ for name, alternatives of grammar
 # rules, and the name of the root. Reverse the operators because Jison orders
 # precedence from low to high, and we have it high to low
 # (as in [Yacc](http://dinosaur.compilertools.net/yacc/index.html)).
-exports.parser: new Parser {
+exports.parser = new Parser {
   tokens:       tokens.join ' '
   bnf:          grammar
   operators:    operators.reverse()
