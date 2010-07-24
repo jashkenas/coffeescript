@@ -892,7 +892,7 @@ exports.CodeNode: class CodeNode extends BaseNode
     func: "function(${ params.join(', ') }) {$code${ code and @idt(if @bound then 1 else 0) }}"
     func: "($func)" if top and not @bound
     return func unless @bound
-    "(function(_this) {\n${@idt(1)}return $func\n$@tab})(this)"
+    "(function(_this) {\n${@idt(1)}return $func;\n$@tab})(this)"
 
   topSensitive: ->
     true
