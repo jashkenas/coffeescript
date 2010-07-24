@@ -67,3 +67,10 @@ func: ->
   return (if false then callback())
 
 ok func() is null
+
+
+# If-to-ternary with instanceof requires parentheses (no comment).
+if {} instanceof Object
+  ok yes
+else
+  ok no

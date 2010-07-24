@@ -1330,9 +1330,12 @@ exports.IfNode: class IfNode extends BaseNode
   constructor: (condition, body, tags) ->
     @condition: condition
     @body:      body
-    @elseBody:  null
     @tags:      tags or {}
-    @condition: new OpNode('!', new ParentheticalNode(@condition)) if @tags.invert
+    if @tags.invert
+      @condition: new OpNode('!', new ParentheticalNode(@condition))
+    else if @condition instanceof OpNode and @condition.operator is 'instanceof'
+      @condition: new ParentheticalNode(@condition)
+    @elseBody:  null
     @isChain:   false
 
   bodyNode: -> @body?.unwrap()
