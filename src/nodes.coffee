@@ -209,7 +209,7 @@ exports.Expressions: class Expressions extends BaseNode
     code: @compileWithDeclarations(o)
     code: code.replace(TRAILING_WHITESPACE, '')
     code: code.replace(DOUBLE_PARENS, '($1)')
-    if o.noWrap then code else "(function(){\n$code\n})();\n"
+    if o.noWrap then code else "(function() {\n$code\n})();\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
@@ -459,7 +459,7 @@ exports.CallNode: class CallNode extends BaseNode
       utility 'extends'
       """
       (function() {
-      ${@idt(1)}var ctor = function(){ };
+      ${@idt(1)}var ctor = function(){};
       ${@idt(1)}__extends(ctor, $meth);
       ${@idt(1)}return ${meth}.apply(new ctor, ${ @compileSplatArguments(o) });
       $@tab}).call(this)
@@ -590,7 +590,7 @@ exports.RangeNode: class RangeNode extends BaseNode
       clause: "$@fromVar <= $@toVar ?"
       body:   "var $i = $@fromVar; $clause $i <$@equals $@toVar : $i >$@equals $@toVar; $clause $i += 1 : $i -= 1"
     post:   "{ ${result}.push($i) };\n${idt}return $result;\n$o.indent"
-    "(function(){${pre}\n${idt}for ($body)$post}).call(this)"
+    "(function() {${pre}\n${idt}for ($body)$post}).call(this)"
 
 #### SliceNode
 
@@ -1487,7 +1487,7 @@ UTILITIES: {
   # [goog.inherits](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.source.html#line1206).
   extends:  """
             function(child, parent) {
-                var ctor = function(){ };
+                var ctor = function(){};
                 ctor.prototype = parent.prototype;
                 child.prototype = new ctor();
                 child.prototype.constructor = child;
