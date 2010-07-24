@@ -185,6 +185,12 @@ exports.Expressions: class Expressions extends BaseNode
     @expressions[idx]: last.makeReturn()
     this
 
+  # A bound function uses a local `_this` variable instead of the real `this`.
+  rewriteThis: ->
+    @traverseChildren false, (child) ->
+      if child instanceof ValueNode and child.base.value is 'this'
+        child.base: literal '_this'
+
   # An **Expressions** is the only node that can serve as the root.
   compile: (o) ->
     o: or {}
@@ -880,13 +886,13 @@ exports.CodeNode: class CodeNode extends BaseNode
       i: + 1
     params: (param.compile(o) for param in params)
     @body.makeReturn()
+    @body.rewriteThis() if @bound
     (o.scope.parameter(param)) for param in params
     code: if @body.expressions.length then "\n${ @body.compileWithDeclarations(o) }\n" else ''
     func: "function(${ params.join(', ') }) {$code${ code and @idt(if @bound then 1 else 0) }}"
     func: "($func)" if top and not @bound
     return func unless @bound
-    inner: "(function() {\n${@idt(2)}return __func.apply(__this, arguments);\n${@idt(1)}});"
-    "(function(__this) {\n${@idt(1)}var __func = $func;\n${@idt(1)}return $inner\n$@tab})(this)"
+    "(function(_this) {\n${@idt(1)}return $func\n$@tab})(this)"
 
   topSensitive: ->
     true
