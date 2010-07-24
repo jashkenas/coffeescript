@@ -922,14 +922,17 @@ exports.SplatNode: class SplatNode extends BaseNode
   compileParam: (o) ->
     name: @name.compile(o)
     o.scope.find name
-    len: o.scope.freeVariable()
-    o.scope.assign len, "arguments.length"
-    variadic: o.scope.freeVariable()
-    o.scope.assign variadic, "$len >= $@arglength"
-    for trailing, idx in @trailings
-      pos: @trailings.length - idx
-      o.scope.assign(trailing.compile(o), "arguments[$variadic ? $len - $pos : ${@index + idx}]")
-    "$name = ${utility('slice')}.call(arguments, $@index, $len - ${@trailings.length})"
+    end: ''
+    if @trailings.length
+      len: o.scope.freeVariable()
+      o.scope.assign len, "arguments.length"
+      variadic: o.scope.freeVariable()
+      o.scope.assign variadic, "$len >= $@arglength"
+      end: if @trailings.length then ", $len - ${@trailings.length}"
+      for trailing, idx in @trailings
+        pos: @trailings.length - idx
+        o.scope.assign(trailing.compile(o), "arguments[$variadic ? $len - $pos : ${@index + idx}]")
+    "$name = ${utility('slice')}.call(arguments, $@index$end)"
 
   # A compiling a splat as a destructuring assignment means slicing arguments
   # from the right-hand-side's corresponding array.
