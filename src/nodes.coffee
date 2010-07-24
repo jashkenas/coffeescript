@@ -758,7 +758,10 @@ exports.AssignNode: class AssignNode extends BaseNode
     @variable instanceof ValueNode
 
   makeReturn: ->
-    return new Expressions [this, new ReturnNode(@variable)]
+    if @isStatement()
+      return new Expressions [this, new ReturnNode(@variable)]
+    else
+      super()
 
   isStatement: ->
     @isValue() and (@variable.isArray() or @variable.isObject())
