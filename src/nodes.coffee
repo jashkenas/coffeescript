@@ -578,8 +578,12 @@ exports.RangeNode: class RangeNode extends BaseNode
     i:      o.scope.freeVariable()
     pre:    "\n${idt}${result} = []; ${vars}"
     if @fromNum and @toNum
-      o.index: i
-      body: @compileSimple o
+      if Math.abs(+@fromNum - +@toNum) >= 20
+        o.index: i
+        body: @compileSimple o
+      else
+        range: if @exclusive then [+@fromNum...+@toNum] else [+@fromNum..+@toNum]
+        return "[${range.join(', ')}]"
     else
       clause: "$@fromVar <= $@toVar ?"
       body:   "var $i = $@fromVar; $clause $i <$@equals $@toVar : $i >$@equals $@toVar; $clause $i += 1 : $i -= 1"
