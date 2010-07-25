@@ -100,7 +100,6 @@ exports.Lexer = class Lexer
         @identifierError id
     unless forcedIdentifier
       tag = id = CONVERSIONS[id] if include COFFEE_ALIASES, id
-      return @tagHalfAssignment tag if @prev() and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
     @token tag, id
     @token ']', ']' if close_index
     true
@@ -258,10 +257,14 @@ exports.Lexer = class Lexer
     value = match and match[1]
     space = match and match[2]
     @tagParameters() if value and value.match CODE
-    value ||= @chunk.substr 0, 1
+    value or= @chunk.substr 0, 1
+    @i += value.length
     prevSpaced = @prev() and @prev().spaced
     tag = value
-    @assignmentError() if value is '=' and include JS_FORBIDDEN, @value
+    if value is '='
+      @assignmentError() if include JS_FORBIDDEN, @value()
+      if @value() in ['or', 'and']
+        return @tag 1, CONVERSIONS[@value()] + '='
     if value is ';'
       tag = 'TERMINATOR'
     else if value is '?' and prevSpaced
@@ -273,8 +276,6 @@ exports.Lexer = class Lexer
         tag = 'INDEX_START'
         @tag 1, 'INDEX_SOAK'  if @tag() is '?'
         @tag 1, 'INDEX_PROTO' if @tag() is '::'
-    @i += value.length
-    return @tagHalfAssignment tag if space and prevSpaced and @prev()[0] is 'ASSIGN' and include HALF_ASSIGNMENTS, tag
     @token tag, value
     true
 
@@ -308,13 +309,6 @@ exports.Lexer = class Lexer
     return doc if options.herecomment
     doc.replace(MULTILINER, "\\n")
        .replace(new RegExp(options.quote, 'g'), "\\$options.quote")
-
-  # Tag a half assignment.
-  tagHalfAssignment: (tag) ->
-    tag =  '?' if tag is 'OP?'
-    last = @tokens.pop()
-    @tokens.push ["$tag=", "$tag=", last[2]]
-    true
 
   # A source of ambiguity in our grammar used to be parameter lists in function
   # definitions versus argument lists in function calls. Walk backwards, tagging
@@ -351,7 +345,7 @@ exports.Lexer = class Lexer
   # contents of the string. This method allows us to have strings within
   # interpolations within strings, ad infinitum.
   balancedString: (str, delimited, options) ->
-    options ||= {}
+    options or= {}
     slash = delimited[0][0] is '/'
     levels = []
     i = 0
@@ -388,7 +382,7 @@ exports.Lexer = class Lexer
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
   interpolateString: (str, options) ->
-    options ||= {}
+    options or= {}
     if str.length < 3 or not starts str, '"'
       @token 'STRING', str
     else
@@ -556,9 +550,6 @@ CALLABLE = ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING', '@', 'THIS', '?', ':
 # avoid an ambiguity in the grammar.
 LINE_BREAK = ['INDENT', 'OUTDENT', 'TERMINATOR']
 
-# Half-assignments...
-HALF_ASSIGNMENTS = ['-', '+', '/', '*', '%', '||', '&&', '?', 'OP?']
-
 # Conversions from CoffeeScript operators into JavaScript ones.
 CONVERSIONS = {
   'and':  '&&'
@@ -566,4 +557,5 @@ CONVERSIONS = {
   'is':   '=='
   'isnt': '!='
   'not':  '!'
+  '===':  '=='
 }

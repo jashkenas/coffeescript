@@ -198,7 +198,7 @@ exports.Rewriter = class Rewriter
     @scanTokens (prev, token, post, i) =>
       for pair in pairs
         [open, close] = pair
-        levels[open] ||= 0
+        levels[open] or= 0
         if token[0] is open
           openLine[open] = token[2] if levels[open] == 0
           levels[open] += 1
