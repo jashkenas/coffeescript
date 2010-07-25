@@ -287,6 +287,7 @@ grammar = {
     o "",                                       -> []
     o "ClassAssign",                            -> [$1]
     o "ClassBody TERMINATOR ClassAssign",       -> $1.concat $3
+    o "{ ClassBody }",                          -> $2
   ]
 
   # The three flavors of function call: normal, object instantiation with `new`,

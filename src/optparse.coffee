@@ -23,7 +23,7 @@ exports.OptionParser = class OptionParser
   # many option parsers that allow you to attach callback actions for every
   # flag. Instead, you're responsible for interpreting the options object.
   parse: (args) ->
-    options = {arguments: []}
+    options = arguments: []
     args    = normalizeArguments args
     for arg, i in args
       isOption = !!(arg.match(LONG_FLAG) or arg.match(SHORT_FLAG))

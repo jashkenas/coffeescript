@@ -224,7 +224,7 @@ exports.Expressions = class Expressions extends BaseNode
   # statement, ask the statement to do so.
   compileExpression: (node, o) ->
     @tab = o.indent
-    compiledNode = node.compile merge o, {top: true}
+    compiledNode = node.compile merge o, top: true
     if node.isStatement() then compiledNode else "${@idt()}$compiledNode;"
 
 # Wrap up the given nodes as an **Expressions**, unless it already happens
@@ -542,9 +542,9 @@ exports.RangeNode = class RangeNode extends BaseNode
   # Compiles the range's source variables -- where it starts and where it ends.
   # But only if they need to be cached to avoid double evaluation.
   compileVariables: (o) ->
-    o = merge(o, {top: true})
-    [@from, @fromVar] =  @from.compileReference o, {precompile: yes}
-    [@to, @toVar] =      @to.compileReference o, {precompile: yes}
+    o = merge(o, top: true)
+    [@from, @fromVar] =  @from.compileReference o, precompile: yes
+    [@to, @toVar] =      @to.compileReference o, precompile: yes
     [@fromNum, @toNum] = [@fromVar.match(SIMPLENUM), @toVar.match(SIMPLENUM)]
     parts = []
     parts.push @from if @from isnt @fromVar
@@ -579,7 +579,7 @@ exports.RangeNode = class RangeNode extends BaseNode
   # When used as a value, expand the range into the equivalent array.
   compileArray: (o) ->
     idt    = @idt 1
-    vars   = @compileVariables(merge(o, {indent: idt}))
+    vars   = @compileVariables merge o, indent: idt
     result = o.scope.freeVariable()
     i      = o.scope.freeVariable()
     pre    = "\n${idt}${result} = []; ${vars}"
@@ -832,7 +832,7 @@ exports.AssignNode = class AssignNode extends BaseNode
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
   compileSplice: (o) ->
-    name  = @variable.compile merge o, {onlyFirst: true}
+    name  = @variable.compile merge o, onlyFirst: true
     l     = @variable.properties.length
     range = @variable.properties[l - 1].range
     plus  = if range.exclusive then '' else ' + 1'
@@ -1006,7 +1006,7 @@ exports.WhileNode = class WhileNode extends BaseNode
     pre     = "$set${@tab}while ($cond)"
     @body   = Expressions.wrap([new IfNode(@guard, @body)]) if @guard
     if @returns
-      post = '\n' + new ReturnNode(literal(rvar)).compile(merge(o, {indent: @idt()}))
+      post = '\n' + new ReturnNode(literal(rvar)).compile(merge(o, indent: @idt()))
     else
       post = ''
     "$pre {\n${ @body.compile(o) }\n$@tab}$post"
@@ -1107,7 +1107,7 @@ exports.InNode = class InNode extends BaseNode
     @array instanceof ValueNode and @array.isArray()
 
   compileNode: (o) ->
-    [@obj1, @obj2] = @object.compileReference o, {precompile: yes}
+    [@obj1, @obj2] = @object.compileReference o, precompile: yes
     if @isArray() then @compileOrTest(o) else @compileLoopTest(o)
 
   compileOrTest: (o) ->
@@ -1116,7 +1116,7 @@ exports.InNode = class InNode extends BaseNode
     "(${tests.join(' || ')})"
 
   compileLoopTest: (o) ->
-    [@arr1, @arr2] = @array.compileReference o, {precompile: yes}
+    [@arr1, @arr2] = @array.compileReference o, precompile: yes
     [i, l] = [o.scope.freeVariable(), o.scope.freeVariable()]
     prefix = if @obj1 isnt @obj2 then @obj1 + '; ' else ''
     "!!(function(){ ${prefix}for (var $i=0, $l=${@arr1}.length; $i<$l; $i++) if (${@arr2}[$i] === $@obj2) return true; }).call(this)"
@@ -1289,7 +1289,7 @@ exports.ForNode = class ForNode extends BaseNode
     body          = Expressions.wrap([@body])
     if range
       sourcePart  = source.compileVariables(o)
-      forPart     = source.compile merge o, {index: ivar, step: @step}
+      forPart     = source.compile merge o, index: ivar, step: @step
     else
       svar        = scope.freeVariable()
       sourcePart  = "$svar = ${ @source.compile(o) };"

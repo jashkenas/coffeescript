@@ -131,7 +131,7 @@ exports.Lexer = class Lexer
     return false unless match = @chunk.match(HEREDOC)
     quote = match[1].substr 0, 1
     doc = @sanitizeHeredoc match[2] or match[4], {quote}
-    @interpolateString "$quote$doc$quote", {heredoc: yes}
+    @interpolateString "$quote$doc$quote", heredoc: yes
     @line += count match[1], "\n"
     @i += match[1].length
     true
@@ -142,7 +142,7 @@ exports.Lexer = class Lexer
     @line += count match[1], "\n"
     @i += match[1].length
     if match[2]
-      comment = @sanitizeHeredoc match[2], {herecomment: true}
+      comment = @sanitizeHeredoc match[2], herecomment: true
       @token 'HERECOMMENT', comment.split MULTILINER
       @token 'TERMINATOR', '\n'
     true
@@ -169,7 +169,7 @@ exports.Lexer = class Lexer
       str = regex.substring(1).split('/')[0]
       str = str.replace REGEX_ESCAPE, (escaped) -> '\\' + escaped
       @tokens = @tokens.concat [['(', '('], ['NEW', 'new'], ['IDENTIFIER', 'RegExp'], ['CALL_START', '(']]
-      @interpolateString "\"$str\"", {escapeQuotes: yes}
+      @interpolateString "\"$str\"", escapeQuotes: yes
       @tokens.splice @tokens.length, 0, [',', ','], ['STRING', "\"$flags\""] if flags
       @tokens.splice @tokens.length, 0, [')', ')'], [')', ')']
     else
@@ -405,7 +405,7 @@ exports.Lexer = class Lexer
           inner = expr.substring(2, expr.length - 1)
           if inner.length
             inner = inner.replace new RegExp('\\\\' + quote, 'g'), quote if options.heredoc
-            nested = lexer.tokenize "($inner)", {line: @line}
+            nested = lexer.tokenize "($inner)", line: @line
             (tok[0] = ')') for tok, idx in nested when tok[0] is 'CALL_END'
             nested.pop()
             tokens.push ['TOKENS', nested]

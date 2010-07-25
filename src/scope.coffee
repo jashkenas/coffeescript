@@ -61,7 +61,7 @@ exports.Scope = class Scope
   # Ensure that an assignment is made at the top of this scope
   # (or at the top-level scope, if requested).
   assign: (name, value) ->
-    @variables[name] = {value: value, assigned: true}
+    @variables[name] = value: value, assigned: true
 
   # Does this scope reference any variables that need to be declared in the
   # given function body?

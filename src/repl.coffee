@@ -13,16 +13,14 @@ readline     = require 'readline'
 stdio = process.openStdin()
 
 # Quick alias for quitting the REPL.
-helpers.extend global, {
-  quit: -> process.exit(0)
-}
+helpers.extend global, quit: -> process.exit(0)
 
 # The main REPL function. **run** is called every time a line of code is entered.
 # Attempt to evaluate the command. If there's an exception, print it out instead
 # of exiting.
 run = (buffer) ->
   try
-    val = CoffeeScript.run buffer.toString(), {noWrap: true, globals: true, source: 'repl'}
+    val = CoffeeScript.run buffer.toString(), noWrap: true, globals: true, source: 'repl'
     puts inspect val if val isnt undefined
   catch err
     puts err.stack or err.toString()

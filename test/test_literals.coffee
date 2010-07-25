@@ -53,11 +53,6 @@ trailingComma = [
 trailingComma = {k1: "v1", k2: 4, k3: (-> true),}
 ok trailingComma.k3() and (trailingComma.k2 is 4) and (trailingComma.k1 is "v1")
 
-multiline = {a: 15,
-  b: 26}
-
-ok multiline.b is 26
-
 
 money$ = 'dollars'
 
