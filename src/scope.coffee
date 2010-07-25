@@ -6,9 +6,9 @@
 # with the outside.
 
 # Set up exported variables for both **Node.js** and the browser.
-this.exports: this unless process?
+this.exports = this unless process?
 
-exports.Scope: class Scope
+exports.Scope = class Scope
 
   # The top-level **Scope** object.
   @root: null
@@ -18,19 +18,19 @@ exports.Scope: class Scope
   # where it should declare its variables, and a reference to the function that
   # it wraps.
   constructor: (parent, expressions, method) ->
-    [@parent, @expressions, @method]: [parent, expressions, method]
-    @variables: {}
+    [@parent, @expressions, @method] = [parent, expressions, method]
+    @variables = {}
     if @parent
-      @tempVar: @parent.tempVar
+      @tempVar = @parent.tempVar
     else
-      Scope.root: this
-      @tempVar: '_a'
+      Scope.root = this
+      @tempVar = '_a'
 
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
   find: (name) ->
     return true if @check name
-    @variables[name]: 'var'
+    @variables[name] = 'var'
     false
 
   # Test variables and return true the first time fn(v, k) returns true
@@ -42,7 +42,7 @@ exports.Scope: class Scope
   # Reserve a variable name as originating from a function parameter for this
   # scope. No `var` required for internal references.
   parameter: (name) ->
-    @variables[name]: 'param'
+    @variables[name] = 'param'
 
   # Just check to see if a variable has already been declared, without reserving.
   check: (name) ->
@@ -53,15 +53,15 @@ exports.Scope: class Scope
   # compiler-generated variable. `_a`, `_b`, and so on...
   freeVariable: ->
     while @check @tempVar
-      ordinal: 1 + parseInt @tempVar.substr(1), 36
-      @tempVar: '_' + ordinal.toString(36).replace(/\d/g, 'a')
-    @variables[@tempVar]: 'var'
+      ordinal = 1 + parseInt @tempVar.substr(1), 36
+      @tempVar = '_' + ordinal.toString(36).replace(/\d/g, 'a')
+    @variables[@tempVar] = 'var'
     @tempVar
 
   # Ensure that an assignment is made at the top of this scope
   # (or at the top-level scope, if requested).
   assign: (name, value) ->
-    @variables[name]: {value: value, assigned: true}
+    @variables[name] = {value: value, assigned: true}
 
   # Does this scope reference any variables that need to be declared in the
   # given function body?
