@@ -527,7 +527,7 @@ REGEX_ESCAPE       = /\\[^\$]/g
 JS_CLEANER      = /(^`|`$)/g
 MULTILINER      = /\n/g
 STRING_NEWLINES = /\n[ \t]*/g
-NO_NEWLINE      = /^([+\*&|\/\-%=<>:!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)$/
+NO_NEWLINE      = /^([+\*&|\/\-%=<>!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)$/
 HEREDOC_INDENT  = /(\n+([ \t]*)|^([ \t]+))/g
 ASSIGNED        = /^([a-zA-Z\$_]\w*[ \t]*?[:=][^=])/
 NEXT_CHARACTER  = /^\s*(\S)/

@@ -116,3 +116,19 @@ func = ->
   this == 'this'
 
 ok func() is false
+
+
+# New fancy implicit objects:
+config =
+  development:
+    server: 'localhost'
+    timeout: 10
+
+  production:
+    server: 'dreamboat'
+    timeout: 1000
+
+ok config.development.server  is 'localhost'
+ok config.production.server   is 'dreamboat'
+ok config.development.timeout is 10
+ok config.production.timeout  is 1000

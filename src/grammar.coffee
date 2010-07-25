@@ -149,6 +149,8 @@ grammar = {
     o "AlphaNumeric"
     o "Identifier : Expression",                -> new AssignNode new ValueNode($1), $3, 'object'
     o "AlphaNumeric : Expression",              -> new AssignNode new ValueNode($1), $3, 'object'
+    o "Identifier : INDENT Expression OUTDENT", -> new AssignNode new ValueNode($1), $4, 'object'
+    o "AlphaNumeric : INDENT Expression OUTDENT", -> new AssignNode new ValueNode($1), $4, 'object'
     o "Comment"
   ]
 
