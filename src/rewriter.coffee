@@ -46,7 +46,7 @@ exports.Rewriter = class Rewriter
     loop
       break unless @tokens[i]
       move = block @tokens[i - 1], @tokens[i], @tokens[i + 1], i
-      i = + move
+      i += move
     true
 
   # Massage newlines and indentations so that comments don't have to be
@@ -94,20 +94,20 @@ exports.Rewriter = class Rewriter
       switch token[0]
         when 'CALL_START'  then parens.push 0
         when 'INDEX_START' then brackets.push 0
-        when '('           then parens[parens.length - 1] = + 1
-        when '['           then brackets[brackets.length - 1] = + 1
+        when '('           then parens[parens.length - 1] += 1
+        when '['           then brackets[brackets.length - 1] += 1
         when ')'
           if parens[parens.length - 1] is 0
             parens.pop()
             token[0] = 'CALL_END'
           else
-            parens[parens.length - 1] = - 1
+            parens[parens.length - 1] -= 1
         when ']'
           if brackets[brackets.length - 1] == 0
             brackets.pop()
             token[0] = 'INDEX_END'
           else
-            brackets[brackets.length - 1] = - 1
+            brackets[brackets.length - 1] -= 1
       return 1
 
   # Methods may be optionally called without parentheses, for simple cases.
@@ -123,12 +123,12 @@ exports.Rewriter = class Rewriter
       size
     @scanTokens (prev, token, post, i) =>
       tag = token[0]
-      stack[stack.length - 2] = + stack.pop() if tag is 'OUTDENT'
+      stack[stack.length - 2] += stack.pop() if tag is 'OUTDENT'
       open = stack[stack.length - 1] > 0
       if prev and prev.spaced and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, tag) and
           not (tag is '!' and (post[0] in ['IN', 'OF']))
         @tokens.splice i, 0, ['CALL_START', '(', token[2]]
-        stack[stack.length - 1] = + 1
+        stack[stack.length - 1] += 1
         stack.push 0 if include(EXPRESSION_START, tag)
         return 2
       if include(EXPRESSION_START, tag)
@@ -147,7 +147,7 @@ exports.Rewriter = class Rewriter
           stack.pop() if tag isnt 'OUTDENT' and include EXPRESSION_END, tag
           return size
       if tag isnt 'OUTDENT' and include EXPRESSION_END, tag
-        stack[stack.length - 2] = + stack.pop()
+        stack[stack.length - 2] += stack.pop()
         return 1
       return 1
 
@@ -174,7 +174,7 @@ exports.Rewriter = class Rewriter
       idx = i + 1
       parens = 0
       loop
-        idx = + 1
+        idx += 1
         tok = @tokens[idx]
         pre = @tokens[idx - 1]
         if (not tok or
@@ -184,8 +184,8 @@ exports.Rewriter = class Rewriter
           insertion = if pre[0] is "," then idx - 1 else idx
           @tokens.splice insertion, 0, outdent
           break
-        parens = + 1 if tok[0] is '('
-        parens = - 1 if tok[0] is ')'
+        parens += 1 if tok[0] is '('
+        parens -= 1 if tok[0] is ')'
       return 1 unless token[0] is 'THEN'
       @tokens.splice i, 1
       return 0
@@ -198,11 +198,11 @@ exports.Rewriter = class Rewriter
     @scanTokens (prev, token, post, i) =>
       for pair in pairs
         [open, close] = pair
-        levels[open] = or 0
+        levels[open] ||= 0
         if token[0] is open
           openLine[open] = token[2] if levels[open] == 0
-          levels[open] = + 1
-        levels[open] = - 1 if token[0] is close
+          levels[open] += 1
+        levels[open] -= 1 if token[0] is close
         throw new Error("too many ${token[1]} on line ${token[2] + 1}") if levels[open] < 0
       return 1
     unclosed = key for key, value of levels when value > 0
@@ -239,7 +239,7 @@ exports.Rewriter = class Rewriter
         return 1
       else if include EXPRESSION_END, tag
         if debt[inv] > 0
-          debt[inv] = - 1
+          debt[inv] -= 1
           @tokens.splice i, 1
           return 0
         else
@@ -247,7 +247,7 @@ exports.Rewriter = class Rewriter
           mtag  = match[0]
           oppos = INVERSES[mtag]
           return 1 if tag is oppos
-          debt[mtag] = + 1
+          debt[mtag] += 1
           val = [oppos, if mtag is 'INDENT' then match[1] else oppos]
           if @tokens[i + 2]?[0] is mtag
             @tokens.splice i + 3, 0, val

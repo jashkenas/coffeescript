@@ -1,17 +1,17 @@
 # Basic exception throwing.
-block: -> (throw 'up')
+block = -> (throw 'up')
 throws block, 'up'
 
 
 # Basic try/catch.
-result: try
+result = try
   10
 finally
   15
 
 ok result is 10
 
-result: try
+result = try
   throw 'up'
 catch err
   err.length
@@ -19,7 +19,7 @@ catch err
 ok result is 2
 
 
-result: try throw 'error' catch err then err.length
+result = try throw 'error' catch err then err.length
 
 ok result is 5
 

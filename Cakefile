@@ -1,33 +1,33 @@
-fs:            require 'fs'
-{helpers}:     require('./lib/helpers')
-CoffeeScript:  require './lib/coffee-script'
-{spawn, exec}: require('child_process')
+fs            = require 'fs'
+{helpers}     = require './lib/helpers'
+CoffeeScript  = require './lib/coffee-script'
+{spawn, exec} = require 'child_process'
 
 # ANSI Terminal Colors.
-red:   '\033[0;31m'
-green: '\033[0;32m'
-reset: '\033[0m'
+red   = '\033[0;31m'
+green = '\033[0;32m'
+reset = '\033[0m'
 
 # Run a CoffeeScript through our node/coffee interpreter.
-run: (args) ->
-  proc:          spawn 'bin/coffee', args
+run = (args) ->
+  proc =         spawn 'bin/coffee', args
   proc.stderr.on 'data', (buffer) -> puts buffer.toString()
   proc.on        'exit', (status) -> process.exit(1) if status != 0
 
 # Log a message with a color.
-log: (message, color, explanation) ->
+log = (message, color, explanation) ->
   puts "$color$message$reset ${explanation or ''}"
 
 option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
 
 task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) ->
-  base: options.prefix or '/usr/local'
-  lib:  "$base/lib/coffee-script"
-  bin:  "$base/bin"
-  node: "~/.node_libraries/coffee-script"
-  puts  "Installing CoffeeScript to $lib"
-  puts  "Linking to $node"
-  puts  "Linking 'coffee' to $bin/coffee"
+  base = options.prefix or '/usr/local'
+  lib  = "$base/lib/coffee-script"
+  bin  = "$base/bin"
+  node = "~/.node_libraries/coffee-script"
+  puts   "Installing CoffeeScript to $lib"
+  puts   "Linking to $node"
+  puts   "Linking 'coffee' to $bin/coffee"
   exec([
     "mkdir -p $lib $bin"
     "cp -rf bin lib LICENSE README package.json src $lib"
@@ -41,8 +41,8 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
 
 
 task 'build', 'build the CoffeeScript language from source', ->
-  files: fs.readdirSync 'src'
-  files: 'src/' + file for file in files when file.match(/\.coffee$/)
+  files = fs.readdirSync 'src'
+  files = 'src/' + file for file in files when file.match(/\.coffee$/)
   run ['-c', '-o', 'lib'].concat(files)
 
 
@@ -55,9 +55,9 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
 
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   require 'jison'
-  parser: require('./lib/grammar').parser
-  js: parser.generate()
-  parserPath: 'lib/parser.js'
+  parser = require('./lib/grammar').parser
+  js = parser.generate()
+  parserPath = 'lib/parser.js'
   fs.writeFile parserPath, js
 
 
@@ -87,23 +87,23 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
 
 
 task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
-  sources: ['src/coffee-script.coffee', 'src/grammar.coffee', 'src/helpers.coffee', 'src/lexer.coffee', 'src/nodes.coffee', 'src/rewriter.coffee', 'src/scope.coffee']
+  sources = ['src/coffee-script.coffee', 'src/grammar.coffee', 'src/helpers.coffee', 'src/lexer.coffee', 'src/nodes.coffee', 'src/rewriter.coffee', 'src/scope.coffee']
   exec "cat ${ sources.join(' ') } | grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '", (err, stdout) ->
     print stdout
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
   helpers.extend global, require 'assert'
-  passedTests: failedTests: 0
-  startTime:   new Date
-  originalOk:  ok
+  passedTests = failedTests = 0
+  startTime   = new Date
+  originalOk  = ok
   helpers.extend global, {
     ok: (args...) -> passedTests += 1; originalOk(args...)
     CoffeeScript: CoffeeScript
   }
   process.on 'exit', ->
-    time: ((new Date - startTime) / 1000).toFixed(2)
-    message: "passed $passedTests tests in $time seconds$reset"
+    time = ((new Date - startTime) / 1000).toFixed(2)
+    message = "passed $passedTests tests in $time seconds$reset"
     if failedTests
       log "failed $failedTests and $message", red
     else
@@ -111,7 +111,7 @@ task 'test', 'run the CoffeeScript language test suite', ->
   fs.readdir 'test', (err, files) ->
     files.forEach (file) ->
       return unless file.match(/\.coffee$/i)
-      source: path.join 'test', file
+      source = path.join 'test', file
       fs.readFile source, (err, code) ->
         try
           CoffeeScript.run code.toString(), {source: source}

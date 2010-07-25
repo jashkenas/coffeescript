@@ -82,7 +82,7 @@ exports.Lexer = class Lexer
   # though `is` means `===` otherwise.
   identifierToken: ->
     return false unless id = @match IDENTIFIER, 1
-    @i = + id.length
+    @i += id.length
     forcedIdentifier = @tagAccessor() or @match ASSIGNED, 1
     tag = 'IDENTIFIER'
     tag = id.toUpperCase() if include(JS_KEYWORDS, id) or (not forcedIdentifier and include(COFFEE_KEYWORDS, id))
@@ -258,13 +258,11 @@ exports.Lexer = class Lexer
     value = match and match[1]
     space = match and match[2]
     @tagParameters() if value and value.match CODE
-    value = or @chunk.substr 0, 1
+    value ||= @chunk.substr 0, 1
     prevSpaced = @prev() and @prev().spaced
     tag = value
-    if value.match ASSIGNMENT
-      tag = 'ASSIGN'
-      @assignmentError() if include JS_FORBIDDEN, @value
-    else if value is ';'
+    @assignmentError() if value is '=' and include JS_FORBIDDEN, @value
+    if value is ';'
       tag = 'TERMINATOR'
     else if value is '?' and prevSpaced
       tag = 'OP?'
@@ -325,7 +323,7 @@ exports.Lexer = class Lexer
     return if @tag() isnt ')'
     i = 0
     loop
-      i = + 1
+      i += 1
       tok = @prev i
       return if not tok
       switch tok[0]
@@ -353,27 +351,27 @@ exports.Lexer = class Lexer
   # contents of the string. This method allows us to have strings within
   # interpolations within strings, ad infinitum.
   balancedString: (str, delimited, options) ->
-    options = or {}
+    options ||= {}
     slash = delimited[0][0] is '/'
     levels = []
     i = 0
     while i < str.length
       if levels.length and starts str, '\\', i
-        i = + 1
+        i += 1
       else
         for pair in delimited
           [open, close] = pair
           if levels.length and starts(str, close, i) and levels[levels.length - 1] is pair
             levels.pop()
-            i = + close.length - 1
-            i = + 1 unless levels.length
+            i += close.length - 1
+            i += 1 unless levels.length
             break
           else if starts str, open, i
             levels.push(pair)
-            i = + open.length - 1
+            i += open.length - 1
             break
       break if not levels.length or slash and starts str, '\n', i
-      i = + 1
+      i += 1
     if levels.length
       return false if slash
       throw new Error "SyntaxError: Unterminated ${levels.pop()[0]} starting on line ${@line + 1}"
@@ -390,7 +388,7 @@ exports.Lexer = class Lexer
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
   interpolateString: (str, options) ->
-    options = or {}
+    options ||= {}
     if str.length < 3 or not starts str, '"'
       @token 'STRING', str
     else
@@ -400,13 +398,13 @@ exports.Lexer = class Lexer
       [i, pi] =  [1, 1]
       while i < str.length - 1
         if starts str, '\\', i
-          i = + 1
+          i += 1
         else if match = str.substring(i).match INTERPOLATION
           [group, interp] = match
           interp = "this.${ interp.substring(1) }" if starts interp, '@'
           tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i
           tokens.push ['IDENTIFIER', interp]
-          i = + group.length - 1
+          i += group.length - 1
           pi = i + 1
         else if (expr = @balancedString str.substring(i), [['${', '}']])
           tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i
@@ -419,9 +417,9 @@ exports.Lexer = class Lexer
             tokens.push ['TOKENS', nested]
           else
             tokens.push ['STRING', "$quote$quote"]
-          i = + expr.length - 1
+          i += expr.length - 1
           pi = i + 1
-        i = + 1
+        i += 1
       tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i and pi < str.length - 1
       tokens.unshift ['STRING', '""'] unless tokens[0][0] is 'STRING'
       interpolated = tokens.length > 1
@@ -524,7 +522,6 @@ CODE          = /^((-|=)>)/
 MULTI_DENT    = /^((\n([ \t]*))+)(\.)?/
 LAST_DENTS    = /\n([ \t]*)/g
 LAST_DENT     = /\n([ \t]*)/
-ASSIGNMENT    = /^[:=]$/
 
 # Regex-matching-regexes.
 REGEX_START        = /^\/[^\/ ]/
@@ -547,9 +544,7 @@ NEXT_CHARACTER  = /^\s*(\S)/
 # See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
 #
 # Our list is shorter, due to sans-parentheses method calls.
-NOT_REGEX = [
-  'NUMBER', 'REGEX', '++', '--', 'FALSE', 'NULL', 'TRUE', ']'
-]
+NOT_REGEX = ['NUMBER', 'REGEX', '++', '--', 'FALSE', 'NULL', 'TRUE', ']']
 
 # Tokens which could legitimately be invoked or indexed. A opening
 # parentheses or bracket following these tokens will be recorded as the start

@@ -107,7 +107,7 @@ compileStdio = ->
   code = ''
   stdin = process.openStdin()
   stdin.on 'data', (buffer) ->
-    code = + buffer.toString() if buffer
+    code += buffer.toString() if buffer
   stdin.on 'end', ->
     compileScript 'stdio', code
 
@@ -156,7 +156,7 @@ printTokens = (tokens) ->
 parseOptions = ->
   optionParser    = new optparse.OptionParser SWITCHES, BANNER
   o = options     = optionParser.parse(process.argv[2...process.argv.length])
-  options.compile = or  !!o.output
+  options.compile ||=  !!o.output
   options.run     = not (o.compile or o.print or o.lint)
   options.print   = !!  (o.print or (o.eval or o.stdio and o.compile))
   sources         = options.arguments

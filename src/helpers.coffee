@@ -35,7 +35,7 @@ helpers.count = count = (string, letter) ->
   num = 0
   pos = indexOf string, letter
   while pos isnt -1
-    num = + 1
+    num += 1
     pos = indexOf string, letter, pos + 1
   num
 

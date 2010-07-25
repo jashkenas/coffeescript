@@ -44,7 +44,7 @@ helpers.extend global, {
 # Run `cake`. Executes all of the tasks you pass, in order. Note that Node's
 # asynchrony may cause tasks to execute in a different order than you'd expect.
 # If no tasks are passed, print the help screen.
-exports.run: ->
+exports.run = ->
   path.exists 'Cakefile', (exists) ->
     throw new Error("Cakefile not found in ${process.cwd()}") unless exists
     args = process.argv[2...process.argv.length]
@@ -55,7 +55,7 @@ exports.run: ->
     invoke arg for arg in options.arguments
 
 # Display the list of Cake tasks in a format similar to `rake -T`
-printTasks: ->
+printTasks = ->
   puts ''
   for all name, task of tasks
     spaces = 20 - name.length
@@ -65,6 +65,6 @@ printTasks: ->
   puts oparse.help() if switches.length
 
 # Print an error and exit when attempting to all an undefined task.
-missingTask: (task) ->
+missingTask = (task) ->
   puts "No such task: \"$task\""
   process.exit 1

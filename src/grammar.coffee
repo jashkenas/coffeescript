@@ -139,7 +139,7 @@ grammar = {
 
   # Assignment of a variable, property, or index to a value.
   Assign: [
-    o "Assignable ASSIGN Expression",           -> new AssignNode $1, $3
+    o "Assignable = Expression",                -> new AssignNode $1, $3
   ]
 
   # Assignment when it happens within an object literal. The difference from
@@ -147,8 +147,8 @@ grammar = {
   AssignObj: [
     o "Identifier",                             -> new ValueNode $1
     o "AlphaNumeric"
-    o "Identifier ASSIGN Expression",           -> new AssignNode new ValueNode($1), $3, 'object'
-    o "AlphaNumeric ASSIGN Expression",         -> new AssignNode new ValueNode($1), $3, 'object'
+    o "Identifier : Expression",                -> new AssignNode new ValueNode($1), $3, 'object'
+    o "AlphaNumeric : Expression",              -> new AssignNode new ValueNode($1), $3, 'object'
     o "Comment"
   ]
 
@@ -279,7 +279,7 @@ grammar = {
   # Assignments that can happen directly inside a class declaration.
   ClassAssign: [
     o "AssignObj",                              -> $1
-    o "ThisProperty ASSIGN Expression",         -> new AssignNode new ValueNode($1), $3, 'this'
+    o "ThisProperty : Expression",              -> new AssignNode new ValueNode($1), $3, 'this'
   ]
 
   # A list of assignments to a class.
@@ -575,7 +575,7 @@ grammar = {
 # And not:
 #
 #     (2 + 3) * 4
-operators: [
+operators = [
   ["left",      '?']
   ["nonassoc",  'UMINUS', 'UPLUS', '!', '!!', '~', '++', '--']
   ["left",      '*', '/', '%']
@@ -593,7 +593,7 @@ operators: [
   ["right",     'WHEN', 'LEADING_WHEN', 'IN', 'OF', 'BY', 'THROW']
   ["right",     'FOR', 'WHILE', 'UNTIL', 'LOOP', 'NEW', 'SUPER', 'CLASS']
   ["left",      'EXTENDS']
-  ["right",     'ASSIGN', 'RETURN']
+  ["right",     '=', ':', 'RETURN']
   ["right",     '->', '=>', 'UNLESS', 'IF', 'ELSE']
 ]
 

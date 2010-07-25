@@ -76,7 +76,7 @@ exports.BaseNode = class BaseNode
   idt: (tabs) ->
     idt = @tab or ''
     num = (tabs or 0) + 1
-    idt = + TAB while num = - 1
+    idt += TAB while num -= 1
     idt
 
   # Construct a node that returns the current node's result.
@@ -112,7 +112,7 @@ exports.BaseNode = class BaseNode
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   toString: (idt, override) ->
-    idt = or ''
+    idt ||= ''
     children = (child.toString idt + TAB for child in @collectChildren()).join('')
     '\n' + idt + (override or @class) + children
 
@@ -180,7 +180,7 @@ exports.Expressions = class Expressions extends BaseNode
   makeReturn: ->
     idx  = @expressions.length - 1
     last = @expressions[idx]
-    last = @expressions[idx = - 1] if last instanceof CommentNode
+    last = @expressions[idx -= 1] if last instanceof CommentNode
     return this if not last or last instanceof ReturnNode
     @expressions[idx] = last.makeReturn()
     this
@@ -193,7 +193,7 @@ exports.Expressions = class Expressions extends BaseNode
 
   # An **Expressions** is the only node that can serve as the root.
   compile: (o) ->
-    o = or {}
+    o ||= {}
     if o.scope then super(o) else @compileRoot(o)
 
   compileNode: (o) ->
@@ -229,7 +229,7 @@ exports.Expressions = class Expressions extends BaseNode
 
 # Wrap up the given nodes as an **Expressions**, unless it already happens
 # to be one.
-Expressions.wrap: (nodes) ->
+Expressions.wrap = (nodes) ->
   return nodes[0] if nodes.length is 1 and nodes[0] instanceof Expressions
   new Expressions(nodes)
 
@@ -354,7 +354,7 @@ exports.ValueNode = class ValueNode extends BaseNode
     only        = del o, 'onlyFirst'
     op          = del o, 'operation'
     props       = if only then @properties[0...@properties.length - 1] else @properties
-    o.chainRoot = or this
+    o.chainRoot ||= this
     baseline    = @base.compile o
     baseline    = "($baseline)" if @hasProperties() and (@base instanceof ObjectNode or @isNumber())
     complete    = @last = baseline
@@ -366,11 +366,11 @@ exports.ValueNode = class ValueNode extends BaseNode
           temp = o.scope.freeVariable()
           complete = "(${ baseline = temp } = ($complete))"
         complete = "typeof $complete === \"undefined\" || $baseline" if i is 0 and @isStart(o)
-        complete = + @SOAK + (baseline = + prop.compile(o))
+        complete += @SOAK + (baseline += prop.compile(o))
       else
         part = prop.compile(o)
-        baseline = + part
-        complete = + part
+        baseline += part
+        complete += part
         @last = part
 
     if op and @wrapped then "($complete)" else complete
@@ -502,7 +502,7 @@ exports.AccessorNode = class AccessorNode extends BaseNode
 
   compileNode: (o) ->
     name = @name.compile o
-    o.chainRoot.wrapped = or @soakNode
+    o.chainRoot.wrapped ||= @soakNode
     namePart = if name.match(IS_STRING) then "[$name]" else ".$name"
     @prototype + namePart
 
@@ -518,7 +518,7 @@ exports.IndexNode = class IndexNode extends BaseNode
     @index = index
 
   compileNode: (o) ->
-    o.chainRoot.wrapped = or @soakNode
+    o.chainRoot.wrapped ||= @soakNode
     idx = @index.compile o
     prefix = if @proto then '.prototype' else ''
     "$prefix[$idx]"
@@ -570,7 +570,7 @@ exports.RangeNode = class RangeNode extends BaseNode
     [from, to] = [parseInt(@fromNum, 10), parseInt(@toNum, 10)]
     idx        = del o, 'index'
     step       = del o, 'step'
-    step       = and "$idx += ${step.compile(o)}"
+    step       &&= "$idx += ${step.compile(o)}"
     if from <= to
       "$idx = $from; $idx <$@equals $to; ${step or "$idx++"}"
     else
@@ -721,8 +721,8 @@ exports.ClassNode = class ClassNode extends BaseNode
         continue
       if func instanceof CodeNode and func.bound
         func.bound = false
-        constScope = or new Scope(o.scope, constructor.body, constructor)
-        me = or constScope.freeVariable()
+        constScope ||= new Scope(o.scope, constructor.body, constructor)
+        me ||= constScope.freeVariable()
         pname = pvar.compile(o)
         constructor.body.push    new ReturnNode literal 'this' if constructor.body.empty()
         constructor.body.unshift literal "this.${pname} = function(){ return ${className}.prototype.${pname}.apply($me, arguments); }"
@@ -883,7 +883,7 @@ exports.CodeNode = class CodeNode extends BaseNode
         splat.trailings.push(param)
       else
         params.push(param)
-      i = + 1
+      i += 1
     params = (param.compile(o) for param in params)
     @body.makeReturn()
     @body.rewriteThis() if @bound
@@ -902,7 +902,7 @@ exports.CodeNode = class CodeNode extends BaseNode
   traverseChildren: (crossScope, func) -> super(crossScope, func) if crossScope
 
   toString: (idt) ->
-    idt = or ''
+    idt ||= ''
     children = (child.toString(idt + TAB) for child in @collectChildren()).join('')
     "\n$idt$children"
 
@@ -1385,7 +1385,7 @@ exports.IfNode = class IfNode extends BaseNode
   # The **IfNode** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a ternary is safe.
   isStatement: ->
-    @statement = or !!(@tags.statement or @bodyNode().isStatement() or (@elseBody and @elseBodyNode().isStatement()))
+    @statement ||= !!(@tags.statement or @bodyNode().isStatement() or (@elseBody and @elseBodyNode().isStatement()))
 
   compileCondition: (o) ->
     (cond.compile(o) for cond in flatten([@condition])).join(' || ')
@@ -1395,8 +1395,8 @@ exports.IfNode = class IfNode extends BaseNode
 
   makeReturn: ->
     if @isStatement()
-      @body     = and @ensureExpressions(@body.makeReturn())
-      @elseBody = and @ensureExpressions(@elseBody.makeReturn())
+      @body     &&= @ensureExpressions(@body.makeReturn())
+      @elseBody &&= @ensureExpressions(@elseBody.makeReturn())
       this
     else
       new ReturnNode this

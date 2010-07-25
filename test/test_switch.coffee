@@ -1,6 +1,6 @@
-num: 10
+num = 10
 
-result: switch num
+result = switch num
   when 5 then false
   when 'a'
     true
@@ -17,7 +17,7 @@ result: switch num
 ok result
 
 
-func: (num) ->
+func = (num) ->
   switch num
     when 2, 4, 6
       true
@@ -32,8 +32,8 @@ ok !func(8)
 
 
 # Should cache the switch value, if anything fancier than a literal.
-num: 5
-result: switch num: + 5
+num = 5
+result = switch num += 5
   when 5 then false
   when 15 then false
   when 10 then true
@@ -43,29 +43,29 @@ ok result
 
 
 # Ensure that trailing switch elses don't get rewritten.
-result: false
+result = false
 switch "word"
   when "one thing"
     doSomething()
   else
-    result: true unless false
+    result = true unless false
 
 ok result
 
-result: false
+result = false
 switch "word"
   when "one thing"
     doSomething()
   when "other thing"
     doSomething()
   else
-    result: true unless false
+    result = true unless false
 
 ok result
 
 
 # Should be able to handle switches sans-condition.
-result: switch
+result = switch
   when null then 1
   when 'truthful string' then 2
   else 3
@@ -74,7 +74,7 @@ ok result is 2
 
 
 # Should be able to use "@properties" within the switch clause.
-obj: {
+obj = {
   num: 101
   func: ->
     switch @num
