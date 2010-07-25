@@ -185,12 +185,6 @@ exports.Expressions = class Expressions extends BaseNode
     @expressions[idx] = last.makeReturn()
     this
 
-  # A bound function uses a local `_this` variable instead of the real `this`.
-  rewriteThis: ->
-    @traverseChildren false, (child) ->
-      if child instanceof ValueNode and child.base.value is 'this'
-        child.base = literal '_this'
-
   # An **Expressions** is the only node that can serve as the root.
   compile: (o) ->
     o or= {}
@@ -204,12 +198,12 @@ exports.Expressions = class Expressions extends BaseNode
   # It would be better not to generate them in the first place, but for now,
   # clean up obvious double-parentheses.
   compileRoot: (o) ->
-    o.indent = @tab = if o.noWrap then '' else TAB
-    o.scope = new Scope(null, this, null)
-    code = @compileWithDeclarations(o)
-    code = code.replace(TRAILING_WHITESPACE, '')
-    code = code.replace(DOUBLE_PARENS, '($1)')
-    if o.noWrap then code else "(function(){\n$code\n})();\n"
+    o.indent  = @tab = if o.noWrap then '' else TAB
+    o.scope   = new Scope(null, this, null)
+    code      = @compileWithDeclarations(o)
+    code      = code.replace(TRAILING_WHITESPACE, '')
+    code      = code.replace(DOUBLE_PARENS, '($1)')
+    if o.noWrap then code else "(function() {\n$code\n})();\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
@@ -459,7 +453,7 @@ exports.CallNode = class CallNode extends BaseNode
       utility 'extends'
       """
       (function() {
-      ${@idt(1)}var ctor = function(){ };
+      ${@idt(1)}var ctor = function(){};
       ${@idt(1)}__extends(ctor, $meth);
       ${@idt(1)}return ${meth}.apply(new ctor, ${ @compileSplatArguments(o) });
       $@tab}).call(this)
@@ -589,8 +583,8 @@ exports.RangeNode = class RangeNode extends BaseNode
     else
       clause = "$@fromVar <= $@toVar ?"
       body   = "var $i = $@fromVar; $clause $i <$@equals $@toVar : $i >$@equals $@toVar; $clause $i += 1 : $i -= 1"
-    post =  "{ ${result}.push($i) };\n${idt}return $result;\n$o.indent"
-    "(function(){${pre}\n${idt}for ($body)$post}).call(this)"
+    post     = "{ ${result}.push($i) };\n${idt}return $result;\n$o.indent"
+    "(function() {${pre}\n${idt}for ($body)$post}).call(this)"
 
 #### SliceNode
 
@@ -764,7 +758,10 @@ exports.AssignNode = class AssignNode extends BaseNode
     @variable instanceof ValueNode
 
   makeReturn: ->
-    return new Expressions [this, new ReturnNode(@variable)]
+    if @isStatement()
+      return new Expressions [this, new ReturnNode(@variable)]
+    else
+      super()
 
   isStatement: ->
     @isValue() and (@variable.isArray() or @variable.isObject())
@@ -866,7 +863,7 @@ exports.CodeNode = class CodeNode extends BaseNode
     top         = del o, 'top'
     o.scope     = sharedScope or new Scope(o.scope, @body, this)
     o.top       = true
-    o.indent    = @idt(if @bound then 2 else 1)
+    o.indent    = @idt(1)
     del o, 'noWrap'
     del o, 'globals'
     i = 0
@@ -886,13 +883,11 @@ exports.CodeNode = class CodeNode extends BaseNode
       i += 1
     params = (param.compile(o) for param in params)
     @body.makeReturn()
-    @body.rewriteThis() if @bound
     (o.scope.parameter(param)) for param in params
     code = if @body.expressions.length then "\n${ @body.compileWithDeclarations(o) }\n" else ''
-    func = "function(${ params.join(', ') }) {$code${ code and @idt(if @bound then 1 else 0) }}"
-    func = "($func)" if top and not @bound
-    return func unless @bound
-    "(function(_this) {\n${@idt(1)}return $func\n$@tab})(this)"
+    func = "function(${ params.join(', ') }) {$code${ code and @tab }}"
+    return "${utility('bind')}($func, this)" if @bound
+    if top then "($func)" else func
 
   topSensitive: ->
     true
@@ -927,14 +922,17 @@ exports.SplatNode = class SplatNode extends BaseNode
   compileParam: (o) ->
     name = @name.compile(o)
     o.scope.find name
-    len = o.scope.freeVariable()
-    o.scope.assign len, "arguments.length"
-    variadic = o.scope.freeVariable()
-    o.scope.assign variadic, "$len >= $@arglength"
-    for trailing, idx in @trailings
-      pos = @trailings.length - idx
-      o.scope.assign(trailing.compile(o), "arguments[$variadic ? $len - $pos : ${@index + idx}]")
-    "$name = ${utility('slice')}.call(arguments, $@index, $len - ${@trailings.length})"
+    end = ''
+    if @trailings.length
+      len = o.scope.freeVariable()
+      o.scope.assign len, "arguments.length"
+      variadic = o.scope.freeVariable()
+      o.scope.assign variadic, "$len >= $@arglength"
+      end = if @trailings.length then ", $len - ${@trailings.length}"
+      for trailing, idx in @trailings
+        pos = @trailings.length - idx
+        o.scope.assign(trailing.compile(o), "arguments[$variadic ? $len - $pos : ${@index + idx}]")
+    "$name = ${utility('slice')}.call(arguments, $@index$end)"
 
   # A compiling a splat as a destructuring assignment means slicing arguments
   # from the right-hand-side's corresponding array.
@@ -1487,7 +1485,7 @@ UTILITIES = {
   # [goog.inherits](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.source.html#line1206).
   extends:  """
             function(child, parent) {
-                var ctor = function(){ };
+                var ctor = function(){};
                 ctor.prototype = parent.prototype;
                 child.prototype = new ctor();
                 child.prototype.constructor = child;
@@ -1495,6 +1493,13 @@ UTILITIES = {
                 child.__superClass__ = parent.prototype;
               }
             """
+
+  # Create a function bound to the current value of "this".
+  bind: """
+        function(func, context) {
+            return function(){ return func.apply(context, arguments); };
+          }
+        """
 
   # Shortcuts to speed up the lookup time for native functions.
   hasProp: 'Object.prototype.hasOwnProperty'
