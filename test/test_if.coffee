@@ -74,3 +74,6 @@ if {} instanceof Object
   ok yes
 else
   ok no
+
+result = {} + {}
+ok result is '[object Object][object Object]'

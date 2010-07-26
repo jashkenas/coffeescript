@@ -1039,6 +1039,8 @@ exports.OpNode = class OpNode extends BaseNode
     @second   = second
     @operator = @CONVERSIONS[operator] or operator
     @flip     = !!flip
+    if @first instanceof ValueNode and @first.base instanceof ObjectNode
+      @first = new ParentheticalNode @first
 
   isUnary: ->
     not @second
@@ -1335,10 +1337,7 @@ exports.IfNode = class IfNode extends BaseNode
     @condition = condition
     @body      = body
     @tags      = tags or {}
-    if @tags.invert
-      @condition = new OpNode('!', new ParentheticalNode(@condition))
-    else if @condition instanceof OpNode and @condition.operator is 'instanceof'
-      @condition = new ParentheticalNode(@condition)
+    @condition = new OpNode('!', new ParentheticalNode(@condition)) if @tags.invert
     @elseBody = null
     @isChain  = false
 
