@@ -464,7 +464,8 @@ exports.Lexer = class Lexer
   unfinished: ->
     prev = @prev(2)
     @value() and @value().match and @value().match(NO_NEWLINE) and
-      prev and (prev[0] isnt '.') and not @value().match(CODE)
+      prev and (prev[0] isnt '.') and not @value().match(CODE) and
+      not @chunk.match ASSIGNED
 
 # Constants
 # ---------
@@ -529,7 +530,7 @@ MULTILINER      = /\n/g
 STRING_NEWLINES = /\n[ \t]*/g
 NO_NEWLINE      = /^([+\*&|\/\-%=<>!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)$/
 HEREDOC_INDENT  = /(\n+([ \t]*)|^([ \t]+))/g
-ASSIGNED        = /^([a-zA-Z\$_]\w*[ \t]*?[:=][^=])/
+ASSIGNED        = /^\s*([a-zA-Z\$_@]\w*[ \t]*?[:=][^=])/
 NEXT_CHARACTER  = /^\s*(\S)/
 
 # Tokens which a regular expression will never immediately follow, but which

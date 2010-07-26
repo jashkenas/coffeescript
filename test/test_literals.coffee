@@ -132,3 +132,10 @@ ok config.development.server  is 'localhost'
 ok config.production.server   is 'dreamboat'
 ok config.development.timeout is 10
 ok config.production.timeout  is 1000
+
+obj =
+  a: 1
+  b: 2
+
+ok obj.a is 1
+ok obj.b is 2

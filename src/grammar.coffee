@@ -140,6 +140,7 @@ grammar = {
   # Assignment of a variable, property, or index to a value.
   Assign: [
     o "Assignable = Expression",                -> new AssignNode $1, $3
+    o "Assignable = INDENT Expression OUTDENT", -> new AssignNode $1, $4
   ]
 
   # Assignment when it happens within an object literal. The difference from
