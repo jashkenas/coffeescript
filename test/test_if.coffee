@@ -75,5 +75,8 @@ if {} instanceof Object
 else
   ok no
 
-result = {} + {}
-ok result is '[object Object][object Object]'
+try
+  {} + {}
+  ok yes
+catch e
+  ok no
