@@ -6,7 +6,7 @@
 
 
   # comment
-func: ->
+func = ->
 # comment
   false
   false   # comment
@@ -32,7 +32,7 @@ func
 func
 # Line3
 
-obj: {
+obj = {
 # comment
   # comment
     # comment
@@ -42,12 +42,12 @@ obj: {
     # comment
 }
 
-result: if true # comment
+result = if true # comment
   false
 
 ok not result
 
-result: if false
+result = if false
   false
 else # comment
   45
@@ -55,7 +55,7 @@ else # comment
 ok result is 45
 
 
-test:
+test =
   'test ' +
   'test ' + # comment
   'test'
@@ -67,30 +67,30 @@ ok test is 'test test test'
   Kind of like a heredoc.
 ###
 
-func: ->
+func = ->
   ###
   Another block comment.
   ###
   code
 
-func: ->
-  one: ->
-    two: ->
-      three: ->
+func = ->
+  one = ->
+    two = ->
+      three = ->
   ###
   block.
   ###
-  four: ->
+  four = ->
 
-fn1: ->
-  oneLevel: null
+fn1 = ->
+  oneLevel = null
 ###
 This isn't fine.
 ###
 
 ok ok
 
-obj: {
+obj = {
   a: 'b'
   ###
   comment
@@ -98,7 +98,7 @@ obj: {
   c: 'd'
 }
 
-arr: [
+arr = [
   1, 2, 3,
   ###
   four
@@ -107,7 +107,7 @@ arr: [
 ]
 
 # Spaced comments in if / elses.
-result: if false
+result = if false
   1
 
 # comment
@@ -121,14 +121,14 @@ else
 ok result is 3
 
 
-result: switch 'z'
+result = switch 'z'
   when 'z' then 7
 # comment
 ok result is 7
 
 
 # Trailing-line comment before an outdent.
-func: ->
+func = ->
   if true
     true # comment
   7
@@ -137,10 +137,10 @@ ok func() is 7
 
 
 # Trailing herecomment in a function.
-fn: ->
+fn = ->
   code
   ###
   debug code commented
   ###
 
-fn2: ->
+fn2 = ->

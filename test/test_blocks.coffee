@@ -1,14 +1,14 @@
 # Basic blocks.
-results: [1, 2, 3].map (x) ->
+results = [1, 2, 3].map (x) ->
   x * x
 
 ok results.join(' ') is '1 4 9'
 
 
 # Chained blocks, with proper indentation levels:
-results: []
+results = []
 
-counter: {
+counter = {
   tick: (func) ->
     results.push func()
     this
@@ -26,8 +26,8 @@ ok results.join(' ') is '3 2 1'
 
 
 # Make incorrect indentation safe.
-func: ->
-  obj: {
+func = ->
+  obj = {
       key: 10
     }
   obj.key - 5

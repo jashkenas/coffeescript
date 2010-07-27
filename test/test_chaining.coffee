@@ -1,16 +1,16 @@
 # Basic chained function calls.
-identityWrap: (x) ->
+identityWrap = (x) ->
   -> x
 
-result: identityWrap(identityWrap(true))()()
+result = identityWrap(identityWrap(true))()()
 
 ok result
 
 
 # Chained accesses split on period/newline, backwards and forwards.
-str: 'god'
+str = 'god'
 
-result: str.
+result = str.
   split('').
   reverse().
   reverse().
@@ -18,7 +18,7 @@ result: str.
 
 ok result.join('') is 'dog'
 
-result: str
+result = str
   .split('')
   .reverse()
   .reverse()
@@ -28,7 +28,7 @@ ok result.join('') is 'dog'
 
 
 # Newline suppression for operators.
-six:
+six =
   1 +
   2 +
   3
@@ -37,7 +37,7 @@ ok six is 6
 
 
 # Ensure that indented array literals don't trigger whitespace rewriting.
-func: () ->
+func = () ->
   ok arguments.length is 1
 
 func(

@@ -1,5 +1,5 @@
 # This file is imported by `testImporting.coffee`
 
-local: "from over there"
+local = "from over there"
 
-exports.func: -> local
+exports.func = -> local

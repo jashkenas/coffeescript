@@ -1,21 +1,21 @@
-func: (first, second, rest...) ->
+func = (first, second, rest...) ->
   rest.join ' '
 
-result: func 1, 2, 3, 4, 5
+result = func 1, 2, 3, 4, 5
 
 ok result is "3 4 5"
 
 
-gold: silver: bronze: theField: last: null
+gold = silver = bronze = theField = last = null
 
-medalists: (first, second, third, rest..., unlucky) ->
-  gold:       first
-  silver:     second
-  bronze:     third
-  theField:  rest.concat([last])
-  last:       unlucky
+medalists = (first, second, third, rest..., unlucky) ->
+  gold     = first
+  silver   = second
+  bronze   = third
+  theField = rest.concat([last])
+  last     = unlucky
 
-contenders: [
+contenders = [
   "Michael Phelps"
   "Liu Xiang"
   "Yao Ming"
@@ -49,24 +49,24 @@ medalists contenders..., 'Tim', 'Moe', 'Jim'
 ok last is 'Jim'
 
 
-obj: {
+obj = {
   name: 'moe'
   accessor: (args...) ->
     [@name].concat(args).join(' ')
   getNames: ->
-    args: ['jane', 'ted']
+    args = ['jane', 'ted']
     @accessor(args...)
 }
 
 ok obj.getNames() is 'moe jane ted'
 
 
-crowd: [
+crowd = [
   contenders...
   "Mighty Mouse"
 ]
 
-bests: [
+bests = [
   "Mighty Mouse"
   contenders[0..3]...
 ]
@@ -86,16 +86,16 @@ class Parent
 
 class Child extends Parent
   meth: ->
-    nums: [3, 2, 1]
+    nums = [3, 2, 1]
     super nums...
 
 ok (new Child).meth().join(' ') is '3 2 1'
 
 
 # Functions with splats being called with too few arguments.
-pen: null
-method: (first, variable..., penultimate, ultimate) ->
-  pen: penultimate
+pen = null
+method = (first, variable..., penultimate, ultimate) ->
+  pen = penultimate
 
 method 1, 2, 3, 4, 5, 6, 7, 8, 9
 ok pen is 8
@@ -108,8 +108,8 @@ ok pen is 2
 
 
 # Array splat expansions with assigns.
-nums: [1, 2, 3]
-list: [a: 0, nums..., b: 4]
+nums = [1, 2, 3]
+list = [a = 0, nums..., b = 4]
 ok a is 0
 ok b is 4
 ok list.join(' ') is '0 1 2 3 4'

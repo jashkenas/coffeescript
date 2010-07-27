@@ -12,15 +12,15 @@ ok 50 > 10 > 5 is parseInt('5', 10)
 
 # Make sure that each argument is only evaluated once, even if used
 # more than once.
-i: 0
-func: -> i++
+i = 0
+func = -> i++
 
 ok 1 > func() < 1
 
 
 # `:` and `=` should be interchangeable, as should be `==` and `is`.
-a: 1
-b: 1
+a = 1
+b = 1
 
 ok a is 1 and b is 1
 ok a == b
@@ -29,30 +29,30 @@ ok a is b
 
 # Ensure that chained operations don't cause functions to be evaluated more
 # than once.
-val: 0
-func: -> val: + 1
+val = 0
+func = -> val = + 1
 
 ok 2 > (func null) < 2
 ok val is 1
 
 
 # Allow "if x not in y"
-obj: {a: true}
+obj = {a: true}
 ok 'a' of obj
 ok 'b' not of obj
 
 # And for "a in b" with array presence.
 ok 100 in [100, 200, 300]
-array: [100, 200, 300]
+array = [100, 200, 300]
 ok 100 in array
 ok 1 not in array
 
-list: [1, 2, 7]
-result: if list[2] in [7, 10] then 100 else -1
+list = [1, 2, 7]
+result = if list[2] in [7, 10] then 100 else -1
 ok result is 100
 
 # And with array presence on an instance variable.
-obj: {
+obj = {
   list: [1, 2, 3, 4, 5]
   in_list: (value) -> value in @list
 }
@@ -60,8 +60,8 @@ ok obj.in_list 4
 ok not obj.in_list 0
 
 # Non-spaced values still work.
-x: 10
-y: -5
+x = 10
+y = -5
 
 ok x*-y is 50
 ok x*+y is -50
