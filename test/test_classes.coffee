@@ -206,3 +206,15 @@ class MyElement extends Element
 ok MyElement.extended is Base.extended
 ok MyElement.fromHTML is Element.fromHTML
 ok MyElement.__superClass__ is Element.prototype
+
+
+# Test classes wrapped in decorators.
+func = (klass) ->
+  klass::prop = 'value'
+  klass
+
+func class Test
+  prop2: 'value2'
+
+ok (new Test).prop  is 'value'
+ok (new Test).prop2 is 'value2'
