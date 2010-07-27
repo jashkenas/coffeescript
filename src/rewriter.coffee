@@ -114,7 +114,8 @@ exports.Rewriter = class Rewriter
   # Object literals may be written with implicit braces, for simple cases.
   # Insert the missing braces here, so that the parser doesn't have to.
   addImplicitBraces: ->
-    stack = [0]
+    stack   = [0]
+    running = no
     closeBrackets = (i) =>
       len = stack.length - 1
       for tmp in [0...stack[len]]
@@ -128,7 +129,12 @@ exports.Rewriter = class Rewriter
       before = @tokens[i - 2]
       after  = @tokens[i + 2]
       open   = stack[len] > 0
-      if include EXPRESSION_START, tag
+      if (tag is 'TERMINATOR' and not ((after and after[0] is ':') or (post and post[0] is '@' and @tokens[i + 3] and @tokens[i + 3][0] is ':'))) or
+          (running and tag is ',' and post and (post[0] not in ['IDENTIFIER', 'STRING', '@']))
+        running = no
+        size = closeBrackets(i)
+        return size
+      else if include EXPRESSION_START, tag
         stack.push(if tag is '{' then 1 else 0)
         return 2 if tag is '{' and post and post[0] is 'INDENT'
       else if include EXPRESSION_END, tag
@@ -139,11 +145,8 @@ exports.Rewriter = class Rewriter
         idx = if before and before[0] is '@' then i - 2 else i - 1
         @tokens.splice idx, 0, ['{', '{', token[2]]
         stack[stack.length - 1] += 1
+        running = yes
         return 2
-      else if tag is 'TERMINATOR' and
-          not ((after and after[0] is ':') or (post and post[0] is '@' and @tokens[i + 3] and @tokens[i + 3][0] is ':'))
-        size = closeBrackets(i)
-        return size
       return 1
 
   # Methods may be optionally called without parentheses, for simple cases.

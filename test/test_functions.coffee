@@ -206,3 +206,13 @@ ok result.one is 1
 )()
 
 ok constructor isnt 'word'
+
+
+# Trying an implicit object call with a trailing function.
+a = null
+meth = (arg, obj, func) -> a = [obj.a, arg, func()].join ' '
+
+meth 'apple', b: 1, a: 13, ->
+  'orange'
+
+ok a is '13 apple orange'
