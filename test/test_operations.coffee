@@ -18,9 +18,8 @@ func = -> i++
 ok 1 > func() < 1
 
 
-# `:` and `=` should be interchangeable, as should be `==` and `is`.
-a = 1
-b = 1
+# `==` and `is` should be interchangeable.
+a = b = 1
 
 ok a is 1 and b is 1
 ok a == b
@@ -65,3 +64,18 @@ y = -5
 
 ok x*-y is 50
 ok x*+y is -50
+
+
+# Half-operators.
+one = two = null
+one = or 1
+two or=  2
+
+ok one is 1
+ok two is 2
+
+one = and 'one'
+two and=  'two'
+
+ok one is 'one'
+ok two is 'two'

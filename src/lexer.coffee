@@ -88,6 +88,8 @@ exports.Lexer = class Lexer
     tag = id.toUpperCase() if include(JS_KEYWORDS, id) or (not forcedIdentifier and include(COFFEE_KEYWORDS, id))
     tag = 'LEADING_WHEN'   if tag is 'WHEN' and include LINE_BREAK, @tag()
     tag = 'ALL'            if id is 'all' and @tag() is 'FOR'
+    if @tag() is '=' and tag in ['AND', 'OR']
+      return @tag 1, CONVERSIONS[id] + '='
     if include(JS_FORBIDDEN, id)
       if forcedIdentifier
         tag = 'STRING'
