@@ -2,7 +2,7 @@
 # and evaluates it. Good for simple tests, or poking around the **Node.js** API.
 # Using it looks like this:
 #
-#     coffee> puts "$num bottles of beer" for num in [99..1]
+#     coffee> puts "#num bottles of beer" for num in [99..1]
 
 # Require the **coffee-script** module to get access to the compiler.
 CoffeeScript = require './coffee-script'

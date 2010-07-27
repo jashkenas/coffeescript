@@ -91,7 +91,7 @@ exports.Lexer = class Lexer
     if include(JS_FORBIDDEN, id)
       if forcedIdentifier
         tag = 'STRING'
-        id  = "'$id'"
+        id  = "'#id'"
         if forcedIdentifier is 'accessor'
           close_index = true
           @tokens.pop() if @tag() isnt '@'
@@ -118,7 +118,7 @@ exports.Lexer = class Lexer
   stringToken: ->
     return false unless starts(@chunk, '"') or starts(@chunk, "'")
     return false unless string =
-      @balancedToken(['"', '"'], ['${', '}']) or
+      @balancedToken(['"', '"'], ['${', '}'], ['#{', '}']) or
       @balancedToken ["'", "'"]
     @interpolateString string.replace STRING_NEWLINES, " \\\n"
     @line += count string, "\n"
@@ -131,7 +131,7 @@ exports.Lexer = class Lexer
     return false unless match = @chunk.match(HEREDOC)
     quote = match[1].substr 0, 1
     doc = @sanitizeHeredoc match[2] or match[4], {quote}
-    @interpolateString "$quote$doc$quote", heredoc: yes
+    @interpolateString "#quote#doc#quote", heredoc: yes
     @line += count match[1], "\n"
     @i += match[1].length
     true
@@ -169,8 +169,8 @@ exports.Lexer = class Lexer
       str = regex.substring(1).split('/')[0]
       str = str.replace REGEX_ESCAPE, (escaped) -> '\\' + escaped
       @tokens = @tokens.concat [['(', '('], ['NEW', 'new'], ['IDENTIFIER', 'RegExp'], ['CALL_START', '(']]
-      @interpolateString "\"$str\"", escapeQuotes: yes
-      @tokens.splice @tokens.length, 0, [',', ','], ['STRING', "\"$flags\""] if flags
+      @interpolateString "\"#str\"", escapeQuotes: yes
+      @tokens.splice @tokens.length, 0, [',', ','], ['STRING', "\"#flags\""] if flags
       @tokens.splice @tokens.length, 0, [')', ')'], [')', ')']
     else
       @token 'REGEX', regex
@@ -308,7 +308,7 @@ exports.Lexer = class Lexer
     doc = doc.replace(new RegExp("^" +indent, 'gm'), '')
     return doc if options.herecomment
     doc.replace(MULTILINER, "\\n")
-       .replace(new RegExp(options.quote, 'g'), "\\$options.quote")
+       .replace(new RegExp(options.quote, 'g'), "\\#options.quote")
 
   # A source of ambiguity in our grammar used to be parameter lists in function
   # definitions versus argument lists in function calls. Walk backwards, tagging
@@ -333,12 +333,12 @@ exports.Lexer = class Lexer
   # The error for when you try to use a forbidden word in JavaScript as
   # an identifier.
   identifierError: (word) ->
-    throw new Error "SyntaxError: Reserved word \"$word\" on line ${@line + 1}"
+    throw new Error "SyntaxError: Reserved word \"#word\" on line #{@line + 1}"
 
   # The error for when you try to assign to a reserved word in JavaScript,
   # like "function" or "default".
   assignmentError: ->
-    throw new Error "SyntaxError: Reserved word \"${@value()}\" on line ${@line + 1} can't be assigned"
+    throw new Error "SyntaxError: Reserved word \"#{@value()}\" on line #{@line + 1} can't be assigned"
 
   # Matches a balanced group such as a single or double-quoted string. Pass in
   # a series of delimiters, all of which must be nested correctly within the
@@ -368,15 +368,15 @@ exports.Lexer = class Lexer
       i += 1
     if levels.length
       return false if slash
-      throw new Error "SyntaxError: Unterminated ${levels.pop()[0]} starting on line ${@line + 1}"
+      throw new Error "SyntaxError: Unterminated #{levels.pop()[0]} starting on line #{@line + 1}"
     if not i then false else str.substring(0, i)
 
   # Expand variables and expressions inside double-quoted strings using
   # [ECMA Harmony's interpolation syntax](http://wiki.ecmascript.org/doku.php?id=strawman:string_interpolation)
   # for substitution of bare variables as well as arbitrary expressions.
   #
-  #     "Hello $name."
-  #     "Hello ${name.capitalize()}."
+  #     "Hello #name."
+  #     "Hello #{name.capitalize()}."
   #
   # If it encounters an interpolation, this method will recursively create a
   # new Lexer, tokenize the interpolated contents, and merge them into the
@@ -395,26 +395,26 @@ exports.Lexer = class Lexer
           i += 1
         else if match = str.substring(i).match INTERPOLATION
           [group, interp] = match
-          interp = "this.${ interp.substring(1) }" if starts interp, '@'
-          tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i
+          interp = "this.#{ interp.substring(1) }" if starts interp, '@'
+          tokens.push ['STRING', "#quote#{ str.substring(pi, i) }#quote"] if pi < i
           tokens.push ['IDENTIFIER', interp]
           i += group.length - 1
           pi = i + 1
-        else if (expr = @balancedString str.substring(i), [['${', '}']])
-          tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i
+        else if (expr = @balancedString str.substring(i), [['${', '}'], ['#{', '}']])
+          tokens.push ['STRING', "#quote#{ str.substring(pi, i) }#quote"] if pi < i
           inner = expr.substring(2, expr.length - 1)
           if inner.length
             inner = inner.replace new RegExp('\\\\' + quote, 'g'), quote if options.heredoc
-            nested = lexer.tokenize "($inner)", line: @line
+            nested = lexer.tokenize "(#inner)", line: @line
             (tok[0] = ')') for tok, idx in nested when tok[0] is 'CALL_END'
             nested.pop()
             tokens.push ['TOKENS', nested]
           else
-            tokens.push ['STRING', "$quote$quote"]
+            tokens.push ['STRING', "#quote#quote"]
           i += expr.length - 1
           pi = i + 1
         i += 1
-      tokens.push ['STRING', "$quote${ str.substring(pi, i) }$quote"] if pi < i and pi < str.length - 1
+      tokens.push ['STRING', "#quote#{ str.substring(pi, i) }#quote"] if pi < i and pi < str.length - 1
       tokens.unshift ['STRING', '""'] unless tokens[0][0] is 'STRING'
       interpolated = tokens.length > 1
       @token '(', '(' if interpolated
@@ -424,7 +424,7 @@ exports.Lexer = class Lexer
           @tokens = @tokens.concat value
         else if tag is 'STRING' and options.escapeQuotes
           escaped = value.substring(1, value.length - 1).replace(/"/g, '\\"')
-          @token tag, "\"$escaped\""
+          @token tag, "\"#escaped\""
         else
           @token tag, value
         @token '+', '+' if i < tokens.length - 1
@@ -509,7 +509,7 @@ JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
 IDENTIFIER    = /^([a-zA-Z\$_](\w|\$)*)/
 NUMBER        = /^(((\b0(x|X)[0-9a-fA-F]+)|((\b[0-9]+(\.[0-9]+)?|\.[0-9]+)(e[+\-]?[0-9]+)?)))\b/i
 HEREDOC       = /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
-INTERPOLATION = /^\$([a-zA-Z_@]\w*(\.\w+)*)/
+INTERPOLATION = /^[$#]([a-zA-Z_@]\w*(\.\w+)*)/
 OPERATOR      = /^(-[\-=>]?|\+[+=]?|[*&|\/%=<>:!?]+)([ \t]*)/
 WHITESPACE    = /^([ \t]+)/
 COMMENT       = /^(\s*#{3}(?!#)[ \t]*\n+([\s\S]*?)[ \t]*\n+[ \t]*#{3}|(\s*#(?!##[^#])[^\n]*)+)/

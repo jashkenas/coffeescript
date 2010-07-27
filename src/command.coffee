@@ -71,7 +71,7 @@ compileScripts = ->
     base = source
     compile = (source, topLevel) ->
       path.exists source, (exists) ->
-        throw new Error "File not found: $source" unless exists
+        throw new Error "File not found: #source" unless exists
         fs.stat source, (err, stats) ->
           if stats.isDirectory()
             fs.readdir source, (err, files) ->
@@ -130,9 +130,9 @@ writeJs = (source, js, base) ->
   jsPath    = path.join dir, filename
   compile   = ->
     fs.writeFile jsPath, js, (err) ->
-      puts "Compiled $source" if options.compile and options.watch
+      puts "Compiled #source" if options.compile and options.watch
   path.exists dir, (exists) ->
-    if exists then compile() else exec "mkdir -p $dir", compile
+    if exists then compile() else exec "mkdir -p #dir", compile
 
 # Pipe compiled JS through JSLint (requires a working `jsl` command), printing
 # any errors or warnings that arise.
@@ -148,7 +148,7 @@ lint = (js) ->
 printTokens = (tokens) ->
   strings = for token in tokens
     [tag, value] = [token[0], token[1].toString().replace(/\n/, '\\n')]
-    "[$tag $value]"
+    "[#tag #value]"
   puts strings.join(' ')
 
 # Use the [OptionParser module](optparse.html) to extract all options from
@@ -174,5 +174,5 @@ usage = ->
 
 # Print the `--version` message and exit.
 version = ->
-  puts "CoffeeScript version $CoffeeScript.VERSION"
+  puts "CoffeeScript version #CoffeeScript.VERSION"
   process.exit 0

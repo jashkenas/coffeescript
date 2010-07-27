@@ -203,14 +203,14 @@ exports.Expressions = class Expressions extends BaseNode
     code      = @compileWithDeclarations(o)
     code      = code.replace(TRAILING_WHITESPACE, '')
     code      = code.replace(DOUBLE_PARENS, '($1)')
-    if o.noWrap then code else "(function() {\n$code\n})();\n"
+    if o.noWrap then code else "(function() {\n#code\n})();\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
   compileWithDeclarations: (o) ->
     code = @compileNode(o)
-    code = "${@tab}var ${o.scope.compiledAssignments()};\n$code"  if o.scope.hasAssignments(this)
-    code = "${@tab}var ${o.scope.compiledDeclarations()};\n$code" if not o.globals and o.scope.hasDeclarations(this)
+    code = "#{@tab}var #{o.scope.compiledAssignments()};\n#code"  if o.scope.hasAssignments(this)
+    code = "#{@tab}var #{o.scope.compiledDeclarations()};\n#code" if not o.globals and o.scope.hasDeclarations(this)
     code
 
   # Compiles a single expression within the expressions body. If we need to
@@ -219,7 +219,7 @@ exports.Expressions = class Expressions extends BaseNode
   compileExpression: (node, o) ->
     @tab = o.indent
     compiledNode = node.compile merge o, top: true
-    if node.isStatement() then compiledNode else "${@idt()}$compiledNode;"
+    if node.isStatement() then compiledNode else "#{@idt()}#compiledNode;"
 
 # Wrap up the given nodes as an **Expressions**, unless it already happens
 # to be one.
@@ -248,10 +248,10 @@ exports.LiteralNode = class LiteralNode extends BaseNode
   compileNode: (o) ->
     idt = if @isStatement() then @idt() else ''
     end = if @isStatement() then ';' else ''
-    "$idt$@value$end"
+    "#idt#@value#end"
 
   toString: (idt) ->
-    " \"$@value\""
+    " \"#@value\""
 
 #### ReturnNode
 
@@ -277,7 +277,7 @@ exports.ReturnNode = class ReturnNode extends BaseNode
 
   compileNode: (o) ->
     o.asStatement = true if @expression.isStatement()
-    "${@tab}return ${@expression.compile(o)};"
+    "#{@tab}return #{@expression.compile(o)};"
 
 #### ValueNode
 
@@ -350,7 +350,7 @@ exports.ValueNode = class ValueNode extends BaseNode
     props       = if only then @properties[0...@properties.length - 1] else @properties
     o.chainRoot or= this
     baseline    = @base.compile o
-    baseline    = "($baseline)" if @hasProperties() and (@base instanceof ObjectNode or @isNumber())
+    baseline    = "(#baseline)" if @hasProperties() and (@base instanceof ObjectNode or @isNumber())
     complete    = @last = baseline
 
     for prop, i in props
@@ -358,8 +358,8 @@ exports.ValueNode = class ValueNode extends BaseNode
       if prop.soakNode
         if @base instanceof CallNode or @base.contains((n) -> n instanceof CallNode) and i is 0
           temp = o.scope.freeVariable()
-          complete = "(${ baseline = temp } = ($complete))"
-        complete = "typeof $complete === \"undefined\" || $baseline" if i is 0 and @isStart(o)
+          complete = "(#{ baseline = temp } = (#complete))"
+        complete = "typeof #complete === \"undefined\" || #baseline" if i is 0 and @isStart(o)
         complete += @SOAK + (baseline += prop.compile(o))
       else
         part = prop.compile(o)
@@ -367,7 +367,7 @@ exports.ValueNode = class ValueNode extends BaseNode
         complete += part
         @last = part
 
-    if op and @wrapped then "($complete)" else complete
+    if op and @wrapped then "(#complete)" else complete
 
 #### CommentNode
 
@@ -385,8 +385,8 @@ exports.CommentNode = class CommentNode extends BaseNode
     this
 
   compileNode: (o) ->
-    sep = "\n$@tab"
-    "$@tab/*$sep${ @lines.join(sep) }\n$@tab*/"
+    sep = "\n#@tab"
+    "#@tab/*#sep#{ @lines.join(sep) }\n#@tab*/"
 
 #### CallNode
 
@@ -417,9 +417,9 @@ exports.CallNode = class CallNode extends BaseNode
   superReference: (o) ->
     methname = o.scope.method.name
     meth = if o.scope.method.proto
-      "${o.scope.method.proto}.__superClass__.$methname"
+      "#{o.scope.method.proto}.__superClass__.#methname"
     else if methname
-      "${methname}.__superClass__.constructor"
+      "#{methname}.__superClass__.constructor"
     else throw new Error "cannot call super on an anonymous function."
 
   # Compile a vanilla function call.
@@ -430,13 +430,13 @@ exports.CallNode = class CallNode extends BaseNode
     unless compilation
       args = (arg.compile(o) for arg in @args).join(', ')
       compilation = if @isSuper then @compileSuper(args, o)
-      else "${@prefix()}${@variable.compile(o)}($args)"
-    if o.operation and @wrapped then "($compilation)" else compilation
+      else "#{@prefix()}#{@variable.compile(o)}(#args)"
+    if o.operation and @wrapped then "(#compilation)" else compilation
 
   # `super()` is converted into a call against the superclass's implementation
   # of the current function.
   compileSuper: (args, o) ->
-    "${@superReference(o)}.call(this${ if args.length then ', ' else '' }$args)"
+    "#{@superReference(o)}.call(this#{ if args.length then ', ' else '' }#args)"
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
@@ -448,18 +448,18 @@ exports.CallNode = class CallNode extends BaseNode
     if obj.match(/\(/)
       temp = o.scope.freeVariable()
       obj =  temp
-      meth = "($temp = ${ @variable.source })${ @variable.last }"
+      meth = "(#temp = #{ @variable.source })#{ @variable.last }"
     if @isNew
       utility 'extends'
       """
       (function() {
-      ${@idt(1)}var ctor = function(){};
-      ${@idt(1)}__extends(ctor, $meth);
-      ${@idt(1)}return ${meth}.apply(new ctor, ${ @compileSplatArguments(o) });
-      $@tab}).call(this)
+      #{@idt(1)}var ctor = function(){};
+      #{@idt(1)}__extends(ctor, #meth);
+      #{@idt(1)}return #{meth}.apply(new ctor, #{ @compileSplatArguments(o) });
+      #@tab}).call(this)
       """
     else
-      "${@prefix()}${meth}.apply($obj, ${ @compileSplatArguments(o) })"
+      "#{@prefix()}#{meth}.apply(#obj, #{ @compileSplatArguments(o) })"
 
 #### ExtendsNode
 
@@ -497,7 +497,7 @@ exports.AccessorNode = class AccessorNode extends BaseNode
   compileNode: (o) ->
     name = @name.compile o
     o.chainRoot.wrapped or= @soakNode
-    namePart = if name.match(IS_STRING) then "[$name]" else ".$name"
+    namePart = if name.match(IS_STRING) then "[#name]" else ".#name"
     @prototype + namePart
 
 #### IndexNode
@@ -515,7 +515,7 @@ exports.IndexNode = class IndexNode extends BaseNode
     o.chainRoot.wrapped or= @soakNode
     idx = @index.compile o
     prefix = if @proto then '.prototype' else ''
-    "$prefix[$idx]"
+    "#prefix[#idx]"
 
 #### RangeNode
 
@@ -543,7 +543,7 @@ exports.RangeNode = class RangeNode extends BaseNode
     parts = []
     parts.push @from if @from isnt @fromVar
     parts.push @to if @to isnt @toVar
-    if parts.length then "${parts.join('; ')}; " else ''
+    if parts.length then "#{parts.join('; ')}; " else ''
 
   # When compiled normally, the range returns the contents of the *for loop*
   # needed to iterate over the values in the range. Used by comprehensions.
@@ -552,23 +552,23 @@ exports.RangeNode = class RangeNode extends BaseNode
     return    @compileSimple(o) if @fromNum and @toNum
     idx      = del o, 'index'
     step     = del o, 'step'
-    vars     = "$idx = $@fromVar"
-    intro    = "($@fromVar <= $@toVar ? $idx"
-    compare  = "$intro <$@equals $@toVar : $idx >$@equals $@toVar)"
+    vars     = "#idx = #@fromVar"
+    intro    = "(#@fromVar <= #@toVar ? #idx"
+    compare  = "#intro <#@equals #@toVar : #idx >#@equals #@toVar)"
     stepPart = if step then step.compile(o) else '1'
-    incr     = if step then "$idx += $stepPart" else "$intro += $stepPart : $idx -= $stepPart)"
-    "$vars; $compare; $incr"
+    incr     = if step then "#idx += #stepPart" else "#intro += #stepPart : #idx -= #stepPart)"
+    "#vars; #compare; #incr"
 
   # Compile a simple range comprehension, with integers.
   compileSimple: (o) ->
     [from, to] = [parseInt(@fromNum, 10), parseInt(@toNum, 10)]
     idx        = del o, 'index'
     step       = del o, 'step'
-    step       and= "$idx += ${step.compile(o)}"
+    step       and= "#idx += #{step.compile(o)}"
     if from <= to
-      "$idx = $from; $idx <$@equals $to; ${step or "$idx++"}"
+      "#idx = #from; #idx <#@equals #to; #{step or "$idx++"}"
     else
-      "$idx = $from; $idx >$@equals $to; ${step or "$idx--"}"
+      "#idx = #from; #idx >#@equals #to; #{step or "#idx--"}"
 
   # When used as a value, expand the range into the equivalent array.
   compileArray: (o) ->
@@ -576,15 +576,15 @@ exports.RangeNode = class RangeNode extends BaseNode
     vars   = @compileVariables merge o, indent: idt
     result = o.scope.freeVariable()
     i      = o.scope.freeVariable()
-    pre    = "\n${idt}${result} = []; ${vars}"
+    pre    = "\n#{idt}#{result} = []; #{vars}"
     if @fromNum and @toNum
       o.index = i
       body = @compileSimple o
     else
-      clause = "$@fromVar <= $@toVar ?"
-      body   = "var $i = $@fromVar; $clause $i <$@equals $@toVar : $i >$@equals $@toVar; $clause $i += 1 : $i -= 1"
-    post     = "{ ${result}.push($i) };\n${idt}return $result;\n$o.indent"
-    "(function() {${pre}\n${idt}for ($body)$post}).call(this)"
+      clause = "#@fromVar <= #@toVar ?"
+      body   = "var #i = #@fromVar; #clause #i <#@equals #@toVar : #i >#@equals #@toVar; #clause #i += 1 : #i -= 1"
+    post     = "{ #{result}.push(#i) };\n#{idt}return #result;\n#o.indent"
+    "(function() {#{pre}\n#{idt}for (#body)#post}).call(this)"
 
 #### SliceNode
 
@@ -603,7 +603,7 @@ exports.SliceNode = class SliceNode extends BaseNode
     from     = @range.from.compile(o)
     to       = @range.to.compile(o)
     plusPart = if @range.exclusive then '' else ' + 1'
-    ".slice($from, $to$plusPart)"
+    ".slice(#from, #to#plusPart)"
 
 #### ObjectNode
 
@@ -629,7 +629,7 @@ exports.ObjectNode = class ObjectNode extends BaseNode
       indent + prop.compile(o) + join
     props = props.join('')
     inner = if props then '\n' + props + '\n' + @idt() else ''
-    "{$inner}"
+    "{#inner}"
 
 #### ArrayNode
 
@@ -652,16 +652,16 @@ exports.ArrayNode = class ArrayNode extends BaseNode
       if obj instanceof SplatNode
         return @compileSplatLiteral o
       else if obj instanceof CommentNode
-        objects.push "\n$code\n$o.indent"
+        objects.push "\n#code\n#o.indent"
       else if i is @objects.length - 1
         objects.push code
       else
-        objects.push "$code, "
+        objects.push "#code, "
     objects = objects.join('')
     if indexOf(objects, '\n') >= 0
-      "[\n${@idt(1)}$objects\n$@tab]"
+      "[\n#{@idt(1)}#objects\n#@tab]"
     else
-      "[$objects]"
+      "[#objects]"
 
 #### ClassNode
 
@@ -719,19 +719,19 @@ exports.ClassNode = class ClassNode extends BaseNode
         me or= constScope.freeVariable()
         pname = pvar.compile(o)
         constructor.body.push    new ReturnNode literal 'this' if constructor.body.empty()
-        constructor.body.unshift literal "this.${pname} = function(){ return ${className}.prototype.${pname}.apply($me, arguments); }"
+        constructor.body.unshift literal "this.#{pname} = function(){ return #{className}.prototype.#{pname}.apply(#me, arguments); }"
       if pvar
         access = if prop.context is 'this' then pvar.base.properties[0] else new AccessorNode(pvar, 'prototype')
         val    = new ValueNode(@variable, [access])
         prop   = new AssignNode(val, func)
       props.push prop
 
-    constructor.body.unshift literal "$me = this" if me
+    constructor.body.unshift literal "#me = this" if me
     construct = @idt() + (new AssignNode(@variable, constructor)).compile(merge o, {sharedScope: constScope}) + ';'
     props     = if !props.empty() then '\n' + props.compile(o)                     else ''
     extension = if extension      then '\n' + @idt() + extension.compile(o) + ';'  else ''
     returns   = if @returns       then '\n' + new ReturnNode(@variable).compile(o) else ''
-    "$construct$extension$props$returns"
+    "#construct#extension#props#returns"
 
 #### AssignNode
 
@@ -783,11 +783,11 @@ exports.AssignNode = class AssignNode extends BaseNode
       @value.name =  last  if last.match(IDENTIFIER)
       @value.proto = proto if proto
     val = @value.compile o
-    return "$name: $val" if @context is 'object'
+    return "#name: #val" if @context is 'object'
     o.scope.find name unless @isValue() and (@variable.hasProperties() or @variable.namespaced)
-    val = "$name = $val"
-    return "$@tab$val;" if stmt
-    if top then val else "($val)"
+    val = "#name = #val"
+    return "#@tab#val;" if stmt
+    if top then val else "(#val)"
 
   # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
@@ -796,7 +796,7 @@ exports.AssignNode = class AssignNode extends BaseNode
   compilePatternMatch: (o) ->
     valVar        = o.scope.freeVariable()
     value         = if @value.isStatement() then ClosureNode.wrap(@value) else @value
-    assigns       = ["$@tab$valVar = ${ value.compile(o) };"]
+    assigns       = ["#@tab#valVar = #{ value.compile(o) };"]
     o.top         = true
     o.asStatement = true
     splat         = false
@@ -820,7 +820,7 @@ exports.AssignNode = class AssignNode extends BaseNode
           (olength = @variable.base.objects.length) - oindex - 1))
         splat = true
       else
-        idx = literal(if splat then "${valVar}.length - ${olength - idx}" else idx) if typeof idx isnt 'object'
+        idx = literal(if splat then "#{valVar}.length - #{olength - idx}" else idx) if typeof idx isnt 'object'
         val = new ValueNode(literal(valVar), [new accessClass(idx)])
       assigns.push(new AssignNode(obj, val).compile(o))
     code = assigns.join("\n")
@@ -836,7 +836,7 @@ exports.AssignNode = class AssignNode extends BaseNode
     from  = range.from.compile(o)
     to    = range.to.compile(o) + ' - ' + from + plus
     val   = @value.compile(o)
-    "${name}.splice.apply($name, [$from, $to].concat($val))"
+    "#{name}.splice.apply(#name, [#from, #to].concat(#val))"
 
 #### CodeNode
 
@@ -884,10 +884,10 @@ exports.CodeNode = class CodeNode extends BaseNode
     params = (param.compile(o) for param in params)
     @body.makeReturn()
     (o.scope.parameter(param)) for param in params
-    code = if @body.expressions.length then "\n${ @body.compileWithDeclarations(o) }\n" else ''
-    func = "function(${ params.join(', ') }) {$code${ code and @tab }}"
-    return "${utility('bind')}($func, this)" if @bound
-    if top then "($func)" else func
+    code = if @body.expressions.length then "\n#{ @body.compileWithDeclarations(o) }\n" else ''
+    func = "function(#{ params.join(', ') }) {#code#{ code and @tab }}"
+    return "#{utility('bind')}(#func, this)" if @bound
+    if top then "(#func)" else func
 
   topSensitive: ->
     true
@@ -899,7 +899,7 @@ exports.CodeNode = class CodeNode extends BaseNode
   toString: (idt) ->
     idt or= ''
     children = (child.toString(idt + TAB) for child in @collectChildren()).join('')
-    "\n$idt$children"
+    "\n#idt#children"
 
 #### SplatNode
 
@@ -927,18 +927,18 @@ exports.SplatNode = class SplatNode extends BaseNode
       len = o.scope.freeVariable()
       o.scope.assign len, "arguments.length"
       variadic = o.scope.freeVariable()
-      o.scope.assign variadic, "$len >= $@arglength"
-      end = if @trailings.length then ", $len - ${@trailings.length}"
+      o.scope.assign variadic, "#len >= #@arglength"
+      end = if @trailings.length then ", #len - #{@trailings.length}"
       for trailing, idx in @trailings
         pos = @trailings.length - idx
-        o.scope.assign(trailing.compile(o), "arguments[$variadic ? $len - $pos : ${@index + idx}]")
-    "$name = ${utility('slice')}.call(arguments, $@index$end)"
+        o.scope.assign(trailing.compile(o), "arguments[#variadic ? #len - #pos : #{@index + idx}]")
+    "#name = #{utility('slice')}.call(arguments, #@index#end)"
 
   # A compiling a splat as a destructuring assignment means slicing arguments
   # from the right-hand-side's corresponding array.
   compileValue: (o, name, index, trailings) ->
-    trail = if trailings then ", ${name}.length - $trailings" else ''
-    "${utility 'slice'}.call($name, $index$trail)"
+    trail = if trailings then ", #{name}.length - #trailings" else ''
+    "#{utility 'slice'}.call(#name, #index#trail)"
 
   # Utility function that converts arbitrary number of elements, mixed with
   # splats, to a proper array
@@ -949,14 +949,14 @@ exports.SplatNode = class SplatNode extends BaseNode
       prev = args[last = args.length - 1]
       if not (arg instanceof SplatNode)
         if prev and starts(prev, '[') and ends(prev, ']')
-          args[last] = "${prev.substr(0, prev.length - 1)}, $code]"
+          args[last] = "#{prev.substr(0, prev.length - 1)}, #code]"
           continue
         else if prev and starts(prev, '.concat([') and ends(prev, '])')
-          args[last] = "${prev.substr(0, prev.length - 2)}, $code])"
+          args[last] = "#{prev.substr(0, prev.length - 2)}, #code])"
           continue
         else
-          code = "[$code]"
-      args.push(if i is 0 then code else ".concat($code)")
+          code = "[#code]"
+      args.push(if i is 0 then code else ".concat(#code)")
     args.join('')
 
 #### WhileNode
@@ -999,15 +999,15 @@ exports.WhileNode = class WhileNode extends BaseNode
     set      =  ''
     unless top
       rvar  = o.scope.freeVariable()
-      set   = "$@tab$rvar = [];\n"
+      set   = "#@tab#rvar = [];\n"
       @body = PushNode.wrap(rvar, @body) if @body
-    pre     = "$set${@tab}while ($cond)"
+    pre     = "#set#{@tab}while (#cond)"
     @body   = Expressions.wrap([new IfNode(@guard, @body)]) if @guard
     if @returns
       post = '\n' + new ReturnNode(literal(rvar)).compile(merge(o, indent: @idt()))
     else
       post = ''
-    "$pre {\n${ @body.compile(o) }\n$@tab}$post"
+    "#pre {\n#{ @body.compile(o) }\n#@tab}#post"
 
 #### OpNode
 
@@ -1068,7 +1068,7 @@ exports.OpNode = class OpNode extends BaseNode
     shared = @first.unwrap().second
     [@first.second, shared] = shared.compileReference(o) if shared.containsType CallNode
     [first, second, shared] = [@first.compile(o), @second.compile(o), shared.compile(o)]
-    "($first) && ($shared $@operator $second)"
+    "(#first) && (#shared #@operator #second)"
 
   # When compiling a conditional assignment, take care to ensure that the
   # operands are only evaluated once, even though we have to reference them
@@ -1076,15 +1076,15 @@ exports.OpNode = class OpNode extends BaseNode
   compileAssignment: (o) ->
     [first, second] = [@first.compile(o), @second.compile(o)]
     o.scope.find(first) if first.match(IDENTIFIER)
-    return "$first = ${ ExistenceNode.compileTest(o, @first) } ? $first : $second" if @operator is '?='
-    "$first = $first ${ @operator.substr(0, 2) } $second"
+    return "#first = #{ ExistenceNode.compileTest(o, @first) } ? #first : #second" if @operator is '?='
+    "#first = #first #{ @operator.substr(0, 2) } #second"
 
   # If this is an existence operator, we delegate to `ExistenceNode.compileTest`
   # to give us the safe references for the variables.
   compileExistence: (o) ->
     [first, second] = [@first.compile(o), @second.compile(o)]
     test = ExistenceNode.compileTest(o, @first)
-    "$test ? $first : $second"
+    "#test ? #first : #second"
 
   # Compile a unary **OpNode**.
   compileUnary: (o) ->
@@ -1112,14 +1112,14 @@ exports.InNode = class InNode extends BaseNode
 
   compileOrTest: (o) ->
     tests = for item, i in @array.base.objects
-      "${item.compile(o)} === ${if i then @obj2 else @obj1}"
-    "(${tests.join(' || ')})"
+      "#{item.compile(o)} === #{if i then @obj2 else @obj1}"
+    "(#{tests.join(' || ')})"
 
   compileLoopTest: (o) ->
     [@arr1, @arr2] = @array.compileReference o, precompile: yes
     [i, l] = [o.scope.freeVariable(), o.scope.freeVariable()]
     prefix = if @obj1 isnt @obj2 then @obj1 + '; ' else ''
-    "!!(function(){ ${prefix}for (var $i=0, $l=${@arr1}.length; $i<$l; $i++) if (${@arr2}[$i] === $@obj2) return true; }).call(this)"
+    "!!(function(){ #{prefix}for (var #i=0, #l=#{@arr1}.length; #i<#l; #i++) if (#{@arr2}[#i] === #@obj2) return true; }).call(this)"
 
 #### TryNode
 
@@ -1147,10 +1147,10 @@ exports.TryNode = class TryNode extends BaseNode
     o.indent    = @idt 1
     o.top       = true
     attemptPart = @attempt.compile(o)
-    errorPart   = if @error then " (${ @error.compile(o) }) " else ' '
-    catchPart   = if @recovery then " catch$errorPart{\n${ @recovery.compile(o) }\n$@tab}" else ''
-    finallyPart = (@ensure or '') and ' finally {\n' + @ensure.compile(merge(o)) + "\n$@tab}"
-    "${@tab}try {\n$attemptPart\n$@tab}$catchPart$finallyPart"
+    errorPart   = if @error then " (#{ @error.compile(o) }) " else ' '
+    catchPart   = if @recovery then " catch#errorPart{\n#{ @recovery.compile(o) }\n#@tab}" else ''
+    finallyPart = (@ensure or '') and ' finally {\n' + @ensure.compile(merge(o)) + "\n#@tab}"
+    "#{@tab}try {\n#attemptPart\n#@tab}#catchPart#finallyPart"
 
 #### ThrowNode
 
@@ -1169,7 +1169,7 @@ exports.ThrowNode = class ThrowNode extends BaseNode
     return this
 
   compileNode: (o) ->
-    "${@tab}throw ${@expression.compile(o)};"
+    "#{@tab}throw #{@expression.compile(o)};"
 
 #### ExistenceNode
 
@@ -1192,7 +1192,7 @@ exports.ExistenceNode = class ExistenceNode extends BaseNode
   # Be careful not to double-evaluate anything.
   @compileTest: (o, variable) ->
     [first, second] = variable.compileReference o
-    "(typeof ${first.compile(o)} !== \"undefined\" && ${second.compile(o)} !== null)"
+    "(typeof #{first.compile(o)} !== \"undefined\" && #{second.compile(o)} !== null)"
 
 #### ParentheticalNode
 
@@ -1222,10 +1222,10 @@ exports.ParentheticalNode = class ParentheticalNode extends BaseNode
     top  = del o, 'top'
     code = @expression.compile(o)
     if @isStatement()
-      return (if top then "$@tab$code;" else code)
+      return (if top then "#@tab#code;" else code)
     l    = code.length
     code = code.substr(o, l-1) if code.substr(l-1, 1) is ';'
-    if @expression instanceof AssignNode then code else "($code)"
+    if @expression instanceof AssignNode then code else "(#code)"
 
 #### ForNode
 
@@ -1292,34 +1292,34 @@ exports.ForNode = class ForNode extends BaseNode
       forPart     = source.compile merge o, index: ivar, step: @step
     else
       svar        = scope.freeVariable()
-      sourcePart  = "$svar = ${ @source.compile(o) };"
+      sourcePart  = "#svar = #{ @source.compile(o) };"
       if @pattern
-        namePart  = new AssignNode(@name, literal("$svar[$ivar]")).compile(merge o, {indent: @idt(1), top: true}) + '\n'
+        namePart  = new AssignNode(@name, literal("#svar[#ivar]")).compile(merge o, {indent: @idt(1), top: true}) + '\n'
       else
-        namePart  = "$name = $svar[$ivar]" if name
+        namePart  = "#name = #svar[#ivar]" if name
       unless @object
         lvar      = scope.freeVariable()
-        stepPart  = if @step then "$ivar += ${ @step.compile(o) }" else "$ivar++"
-        forPart   = "$ivar = 0, $lvar = ${svar}.length; $ivar < $lvar; $stepPart"
-    sourcePart    = (if rvar then "$rvar = []; " else '') + sourcePart
-    sourcePart    = if sourcePart then "$@tab$sourcePart\n$@tab" else @tab
+        stepPart  = if @step then "#ivar += #{ @step.compile(o) }" else "#ivar++"
+        forPart   = "#ivar = 0, #lvar = #{svar}.length; #ivar < #lvar; #stepPart"
+    sourcePart    = (if rvar then "#rvar = []; " else '') + sourcePart
+    sourcePart    = if sourcePart then "#@tab#sourcePart\n#@tab" else @tab
     returnResult  = @compileReturnValue(rvar, o)
 
     body          = PushNode.wrap(rvar, body) unless topLevel
     if @guard
       body        = Expressions.wrap([new IfNode(@guard, body)])
     if codeInBody
-      body.unshift  literal "var $namePart" if namePart
-      body.unshift  literal "var $index = $ivar" if index
+      body.unshift  literal "var #namePart" if namePart
+      body.unshift  literal "var #index = #ivar" if index
       body        = ClosureNode.wrap(body, true)
     else
-      varPart     = (namePart or '') and (if @pattern then namePart else "${@idt(1)}$namePart;\n")
+      varPart     = (namePart or '') and (if @pattern then namePart else "#{@idt(1)}#namePart;\n")
     if @object
-      forPart     = "$ivar in $svar"
-      guardPart   = "\n${@idt(1)}if (!${utility('hasProp')}.call($svar, $ivar)) continue;" unless @raw
+      forPart     = "#ivar in #svar"
+      guardPart   = "\n#{@idt(1)}if (!#{utility('hasProp')}.call(#svar, #ivar)) continue;" unless @raw
     body          = body.compile(merge(o, {indent: @idt(1), top: true}))
-    vars          = if range then name else "$name, $ivar"
-    "${sourcePart}for ($forPart) {$guardPart\n$varPart$body\n$@tab}$returnResult"
+    vars          = if range then name else "#name, #ivar"
+    "#{sourcePart}for (#forPart) {#guardPart\n#varPart#body\n#@tab}#returnResult"
 
 #### IfNode
 
@@ -1412,20 +1412,20 @@ exports.IfNode = class IfNode extends BaseNode
     ifDent   = if child then '' else @idt()
     comDent  = if child then @idt() else ''
     body     = @body.compile(o)
-    ifPart   = "${ifDent}if (${ @compileCondition(condO) }) {\n$body\n$@tab}"
+    ifPart   = "#{ifDent}if (#{ @compileCondition(condO) }) {\n#body\n#@tab}"
     return ifPart unless @elseBody
     elsePart = if @isChain
       ' else ' + @elseBodyNode().compile(merge(o, {indent: @idt(), chainChild: true}))
     else
-      " else {\n${ @elseBody.compile(o) }\n$@tab}"
-    "$ifPart$elsePart"
+      " else {\n#{ @elseBody.compile(o) }\n#@tab}"
+    "#ifPart#elsePart"
 
   # Compile the IfNode as a ternary operator.
   compileTernary: (o) ->
     o.operation = true
     ifPart      = @condition.compile(o) + ' ? ' + @bodyNode().compile(o)
     elsePart    = if @elseBody then @elseBodyNode().compile(o) else 'null'
-    "$ifPart : $elsePart"
+    "#ifPart : #elsePart"
 
 # Faux-Nodes
 # ----------

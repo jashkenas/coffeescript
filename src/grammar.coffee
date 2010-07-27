@@ -32,8 +32,8 @@ unwrap = /function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 # previous nonterminal.
 o = (patternString, action, options) ->
   return [patternString, '$$ = $1;', options] unless action
-  action = if match = (action + '').match(unwrap) then match[1] else "($action())"
-  [patternString, "$$ = $action;", options]
+  action = if match = (action + '').match(unwrap) then match[1] else "(#action())"
+  [patternString, "$$ = #action;", options]
 
 # Grammatical Rules
 # -----------------
@@ -613,7 +613,7 @@ for name, alternatives of grammar
   grammar[name] = for alt in alternatives
     for token in alt[0].split ' '
       tokens.push token unless grammar[token]
-    alt[1] = "return ${alt[1]}" if name is 'Root'
+    alt[1] = "return #{alt[1]}" if name is 'Root'
     alt
 
 # Initialize the **Parser** with our list of terminal **tokens**, our **grammar**

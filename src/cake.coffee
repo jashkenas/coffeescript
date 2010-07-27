@@ -45,7 +45,7 @@ helpers.extend global,
 # If no tasks are passed, print the help screen.
 exports.run = ->
   path.exists 'Cakefile', (exists) ->
-    throw new Error("Cakefile not found in ${process.cwd()}") unless exists
+    throw new Error("Cakefile not found in #{process.cwd()}") unless exists
     args = process.argv[2...process.argv.length]
     CoffeeScript.run fs.readFileSync('Cakefile').toString(), source: 'Cakefile'
     oparse = new optparse.OptionParser switches
@@ -59,11 +59,11 @@ printTasks = ->
   for all name, task of tasks
     spaces = 20 - name.length
     spaces = if spaces > 0 then (' ' for i in [0..spaces]).join('') else ''
-    desc   = if task.description then "# $task.description" else ''
-    puts "cake $name$spaces $desc"
+    desc   = if task.description then "# #task.description" else ''
+    puts "cake #name#spaces #desc"
   puts oparse.help() if switches.length
 
 # Print an error and exit when attempting to all an undefined task.
 missingTask = (task) ->
-  puts "No such task: \"$task\""
+  puts "No such task: \"#task\""
   process.exit 1

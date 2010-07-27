@@ -242,13 +242,13 @@ exports.Rewriter = class Rewriter
           openLine[open] = token[2] if levels[open] == 0
           levels[open] += 1
         levels[open] -= 1 if token[0] is close
-        throw new Error("too many ${token[1]} on line ${token[2] + 1}") if levels[open] < 0
+        throw new Error("too many #{token[1]} on line #{token[2] + 1}") if levels[open] < 0
       return 1
     unclosed = key for key, value of levels when value > 0
     if unclosed.length
       open = unclosed[0]
       line = openLine[open] + 1
-      throw new Error "unclosed $open on line $line"
+      throw new Error "unclosed #open on line #line"
 
   # We'd like to support syntax like this:
   #

@@ -34,7 +34,7 @@ exports.compile = compile = (code, options) ->
   try
     (parser.parse lexer.tokenize code).compile options
   catch err
-    err.message = "In $options.source, $err.message" if options.source
+    err.message = "In #options.source, #err.message" if options.source
     throw err
 
 # Tokenize a string of CoffeeScript code, and return the array of tokens.
