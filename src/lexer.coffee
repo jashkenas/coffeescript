@@ -259,7 +259,7 @@ exports.Lexer = class Lexer
     value = match and match[1]
     space = match and match[2]
     @tagParameters() if value and value.match CODE
-    value or= @chunk.substr 0, 1
+    value = or @chunk.substr 0, 1
     @i += value.length
     prevSpaced = @prev() and @prev().spaced
     tag = value
@@ -347,7 +347,7 @@ exports.Lexer = class Lexer
   # contents of the string. This method allows us to have strings within
   # interpolations within strings, ad infinitum.
   balancedString: (str, delimited, options) ->
-    options or= {}
+    options = or {}
     slash = delimited[0][0] is '/'
     levels = []
     i = 0
@@ -384,7 +384,7 @@ exports.Lexer = class Lexer
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
   interpolateString: (str, options) ->
-    options or= {}
+    options = or {}
     if str.length < 3 or not starts str, '"'
       @token 'STRING', str
     else
