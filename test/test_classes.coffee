@@ -1,10 +1,10 @@
 # Test classes with a four-level inheritance chain.
 class Base
   func: (string) ->
-    "zero/$string"
+    "zero/#string"
 
   @static: (string) ->
-    "static/$string"
+    "static/#string"
 
 class FirstChild extends Base
   func: (string) ->
@@ -56,7 +56,7 @@ Base = ->
 Base::func = (string) ->
   'zero/' + string
 Base::['func-func'] = (string) ->
-  "dynamic-$string"
+  "dynamic-#string"
 
 FirstChild = ->
 FirstChild extends Base
@@ -137,7 +137,7 @@ class Dog
     @name = name
 
   bark: =>
-    "$@name woofs!"
+    "#@name woofs!"
 
 spark = new Dog('Spark')
 fido  = new Dog('Fido')
@@ -164,7 +164,7 @@ class Connection
     [@one, @two, @three] = [one, two, three]
 
   out: ->
-    "$@one-$@two-$@three"
+    "#@one-#@two-#@three"
 
 list = [3, 2, 1]
 conn = new Connection list...

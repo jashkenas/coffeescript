@@ -566,7 +566,7 @@ exports.RangeNode = class RangeNode extends BaseNode
     step       = del o, 'step'
     step       and= "#idx += #{step.compile(o)}"
     if from <= to
-      "#idx = #from; #idx <#@equals #to; #{step or "$idx++"}"
+      "#idx = #from; #idx <#@equals #to; #{step or "#idx++"}"
     else
       "#idx = #from; #idx >#@equals #to; #{step or "#idx--"}"
 
@@ -1536,6 +1536,6 @@ literal = (name) ->
 
 # Helper for ensuring that utility functions are assigned at the top level.
 utility = (name) ->
-  ref = "__$name"
+  ref = "__#name"
   Scope.root.assign ref, UTILITIES[name]
   ref

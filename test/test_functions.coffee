@@ -85,11 +85,6 @@ fn = (arg) -> arg
 
 ok fn(fn {prop: 101}).prop is 101
 
-# Function calls sans-spacing.
-ok((fn (x) ->
-  3
-)() is 3)
-
 
 # Multi-blocks with optional parens.
 result = fn( ->

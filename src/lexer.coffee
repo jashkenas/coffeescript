@@ -118,7 +118,7 @@ exports.Lexer = class Lexer
   stringToken: ->
     return false unless starts(@chunk, '"') or starts(@chunk, "'")
     return false unless string =
-      @balancedToken(['"', '"'], ['${', '}'], ['#{', '}']) or
+      @balancedToken(['"', '"'], ['#{', '}']) or
       @balancedToken ["'", "'"]
     @interpolateString string.replace STRING_NEWLINES, " \\\n"
     @line += count string, "\n"
@@ -400,7 +400,7 @@ exports.Lexer = class Lexer
           tokens.push ['IDENTIFIER', interp]
           i += group.length - 1
           pi = i + 1
-        else if (expr = @balancedString str.substring(i), [['${', '}'], ['#{', '}']])
+        else if (expr = @balancedString str.substring(i), [['#{', '}']])
           tokens.push ['STRING', "#quote#{ str.substring(pi, i) }#quote"] if pi < i
           inner = expr.substring(2, expr.length - 1)
           if inner.length
@@ -509,10 +509,10 @@ JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
 IDENTIFIER    = /^([a-zA-Z\$_](\w|\$)*)/
 NUMBER        = /^(((\b0(x|X)[0-9a-fA-F]+)|((\b[0-9]+(\.[0-9]+)?|\.[0-9]+)(e[+\-]?[0-9]+)?)))\b/i
 HEREDOC       = /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
-INTERPOLATION = /^[$#]([a-zA-Z_@]\w*(\.\w+)*)/
+INTERPOLATION = /^#([a-zA-Z_@]\w*(\.\w+)*)/
 OPERATOR      = /^(-[\-=>]?|\+[+=]?|[*&|\/%=<>:!?]+)([ \t]*)/
 WHITESPACE    = /^([ \t]+)/
-COMMENT       = /^(\s*#{3}(?!#)[ \t]*\n+([\s\S]*?)[ \t]*\n+[ \t]*#{3}|(\s*#(?!##[^#])[^\n]*)+)/
+COMMENT       = /^(\s*\#{3}(?!#)[ \t]*\n+([\s\S]*?)[ \t]*\n+[ \t]*\#{3}|(\s*#(?!##[^#])[^\n]*)+)/
 CODE          = /^((-|=)>)/
 MULTI_DENT    = /^((\n([ \t]*))+)(\.)?/
 LAST_DENTS    = /\n([ \t]*)/g
@@ -520,7 +520,7 @@ LAST_DENT     = /\n([ \t]*)/
 
 # Regex-matching-regexes.
 REGEX_START        = /^\/[^\/ ]/
-REGEX_INTERPOLATION= /([^\\]\$[a-zA-Z_@]|[^\\]\$\{.*[^\\]\})/
+REGEX_INTERPOLATION= /([^\\]#[a-zA-Z_@]|[^\\]#\{.*[^\\]\})/
 REGEX_END          = /^(([imgy]{1,4})\b|\W|$)/
 REGEX_ESCAPE       = /\\[^\$]/g
 
