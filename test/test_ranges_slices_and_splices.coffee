@@ -30,6 +30,9 @@ ok nums.join(' ') is '1 0 -1 -2 -3 -4 -5'
 array = [(1+5)..1+9]
 ok array.join(' ') is "6 7 8 9 10"
 
+array = [5..1]
+ok array.join(' ') is '5 4 3 2 1'
+
 
 # String slicing (at least on Node).
 hello = "Hello World"
