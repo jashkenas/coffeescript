@@ -26,9 +26,11 @@ ok result is '3, 6, 9, -20, -19, -18'
 
 
 # With range comprehensions, you can loop in steps.
-results = x for x in [0..25] by 5
+results = x for x in [0...15] by 5
+ok results.join(' ') is '0 5 10'
 
-ok results.join(' ') is '0 5 10 15 20 25'
+results = x for x in [0..100] by 10
+ok results.join(' ') is '0 10 20 30 40 50 60 70 80 90 100'
 
 
 # And can loop downwards, with a negative step.
