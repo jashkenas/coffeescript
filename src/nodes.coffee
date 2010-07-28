@@ -584,7 +584,7 @@ exports.RangeNode = class RangeNode extends BaseNode
         return "[#{ range.join(', ') }]"
       else
         o.index = i
-        body.compileSimple o
+        body = @compileSimple o
     else
       clause = "#@fromVar <= #@toVar ?"
       body   = "var #i = #@fromVar; #clause #i <#@equals #@toVar : #i >#@equals #@toVar; #clause #i += 1 : #i -= 1"

@@ -33,6 +33,11 @@ ok array.join(' ') is "6 7 8 9 10"
 array = [5..1]
 ok array.join(' ') is '5 4 3 2 1'
 
+array = [30...0]
+ok (len = array.length) is 30
+ok array[len - 1] is 1
+
+
 
 # String slicing (at least on Node).
 hello = "Hello World"
