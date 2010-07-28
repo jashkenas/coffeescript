@@ -236,8 +236,7 @@ exports.LiteralNode = class LiteralNode extends BaseNode
 
   class: 'LiteralNode'
 
-  constructor: (value) ->
-    @value = value
+  constructor: (@value) ->
 
   # Break and continue must be treated as pure statements -- they lose their
   # meaning when wrapped in a closure.
@@ -264,8 +263,7 @@ exports.ReturnNode = class ReturnNode extends BaseNode
   isPureStatement:  -> yes
   children:           ['expression']
 
-  constructor: (expression) ->
-    @expression = expression
+  constructor: (@expression) ->
 
   makeReturn: ->
     this
@@ -291,9 +289,8 @@ exports.ValueNode = class ValueNode extends BaseNode
   children: ['base', 'properties']
 
   # A **ValueNode** has a base and a list of property accesses.
-  constructor: (base, properties) ->
-    @base = base
-    @properties = properties or []
+  constructor: (@base, @properties) ->
+    @properties = or []
 
   # Add a property access to the list.
   push: (prop) ->
@@ -378,8 +375,7 @@ exports.CommentNode = class CommentNode extends BaseNode
   class: 'CommentNode'
   isStatement: -> yes
 
-  constructor: (lines) ->
-    @lines = lines
+  constructor: (@lines) ->
 
   makeReturn: ->
     this
@@ -397,11 +393,11 @@ exports.CallNode = class CallNode extends BaseNode
   class:     'CallNode'
   children: ['variable', 'args']
 
-  constructor: (variable, args) ->
+  constructor: (variable, @args) ->
     @isNew    = false
     @isSuper  = variable is 'super'
     @variable = if @isSuper then null else variable
-    @args     = (args or [])
+    @args     = or []
     @compileSplatArguments = (o) ->
       SplatNode.compileSplattedArray.call(this, @args, o)
 
@@ -471,9 +467,7 @@ exports.ExtendsNode = class ExtendsNode extends BaseNode
   class:     'ExtendsNode'
   children: ['child', 'parent']
 
-  constructor: (child, parent) ->
-    @child = child
-    @parent = parent
+  constructor: (@child, @parent) ->
 
   # Hooks one constructor into another's prototype chain.
   compileNode: (o) ->
@@ -489,8 +483,7 @@ exports.AccessorNode = class AccessorNode extends BaseNode
   class:     'AccessorNode'
   children: ['name']
 
-  constructor: (name, tag) ->
-    @name = name
+  constructor: (@name, tag) ->
     @prototype = if tag is 'prototype' then '.prototype' else ''
     @soakNode = tag is 'soak'
 
@@ -508,8 +501,7 @@ exports.IndexNode = class IndexNode extends BaseNode
   class:     'IndexNode'
   children: ['index']
 
-  constructor: (index) ->
-    @index = index
+  constructor: (@index) ->
 
   compileNode: (o) ->
     o.chainRoot.wrapped = or @soakNode
@@ -527,9 +519,7 @@ exports.RangeNode = class RangeNode extends BaseNode
   class:     'RangeNode'
   children: ['from', 'to']
 
-  constructor: (from, to, exclusive) ->
-    @from = from
-    @to = to
+  constructor: (@from, @to, exclusive) ->
     @exclusive = !!exclusive
     @equals = if @exclusive then '' else '='
 
@@ -600,8 +590,7 @@ exports.SliceNode = class SliceNode extends BaseNode
   class:     'SliceNode'
   children: ['range']
 
-  constructor: (range) ->
-    @range = range
+  constructor: (@range) ->
 
   compileNode: (o) ->
     from     = @range.from.compile(o)
@@ -643,8 +632,8 @@ exports.ArrayNode = class ArrayNode extends BaseNode
   class:     'ArrayNode'
   children: ['objects']
 
-  constructor: (objects) ->
-    @objects = objects or []
+  constructor: (@objects) ->
+    @objects = or []
     @compileSplatLiteral = (o) ->
       SplatNode.compileSplattedArray.call(this, @objects, o)
 
@@ -678,10 +667,8 @@ exports.ClassNode = class ClassNode extends BaseNode
 
   # Initialize a **ClassNode** with its name, an optional superclass, and a
   # list of prototype property assignments.
-  constructor: (variable, parent, props) ->
-    @variable   = variable
-    @parent     = parent
-    @properties = props or []
+  constructor: (@variable, @parent, @properties) ->
+    @properties = or []
     @returns    = false
 
   makeReturn: ->
@@ -751,10 +738,7 @@ exports.AssignNode = class AssignNode extends BaseNode
   class:     'AssignNode'
   children: ['variable', 'value']
 
-  constructor: (variable, value, context) ->
-    @variable = variable
-    @value    = value
-    @context  = context
+  constructor: (@variable, @value, @context) ->
 
   topSensitive: ->
     true
@@ -853,9 +837,9 @@ exports.CodeNode = class CodeNode extends BaseNode
   class:     'CodeNode'
   children: ['params', 'body']
 
-  constructor: (params, body, tag) ->
-    @params = params or []
-    @body   = body or new Expressions
+  constructor: (@params, @body, tag) ->
+    @params = or []
+    @body   = or new Expressions
     @bound  = tag is 'boundfunc'
 
   # Compilation creates a new scope unless explicitly asked to share with the
@@ -1068,10 +1052,8 @@ exports.OpNode = class OpNode extends BaseNode
   class:     'OpNode'
   children: ['first', 'second']
 
-  constructor: (operator, first, second, flip) ->
-    @first    = first
-    @second   = second
-    @operator = @CONVERSIONS[operator] or operator
+  constructor: (@operator, @first, @second, flip) ->
+    @operator = @CONVERSIONS[@operator] or @operator
     @flip     = !!flip
     if @first instanceof ValueNode and @first.base instanceof ObjectNode
       @first = new ParentheticalNode @first
@@ -1133,9 +1115,7 @@ exports.InNode = class InNode extends BaseNode
   class:    'InNode'
   children: ['object', 'array']
 
-  constructor: (object, array) ->
-    @object = object
-    @array  = array
+  constructor: (@object, @array) ->
 
   isArray: ->
     @array instanceof ValueNode and @array.isArray()
@@ -1164,11 +1144,7 @@ exports.TryNode = class TryNode extends BaseNode
   children:     ['attempt', 'recovery', 'ensure']
   isStatement:  -> yes
 
-  constructor: (attempt, error, recovery, ensure) ->
-    @attempt  = attempt
-    @recovery = recovery
-    @ensure   = ensure
-    @error    = error
+  constructor: (@attempt, @error, @recovery, @ensure) ->
 
   makeReturn: ->
     @attempt  = @attempt.makeReturn() if @attempt
@@ -1195,8 +1171,7 @@ exports.ThrowNode = class ThrowNode extends BaseNode
   children:     ['expression']
   isStatement: -> yes
 
-  constructor: (expression) ->
-    @expression = expression
+  constructor: (@expression) ->
 
   # A **ThrowNode** is already a return, of sorts...
   makeReturn: ->
@@ -1215,8 +1190,7 @@ exports.ExistenceNode = class ExistenceNode extends BaseNode
   class:     'ExistenceNode'
   children: ['expression']
 
-  constructor: (expression) ->
-    @expression = expression
+  constructor: (@expression) ->
 
   compileNode: (o) ->
     ExistenceNode.compileTest(o, @expression)
@@ -1240,8 +1214,7 @@ exports.ParentheticalNode = class ParentheticalNode extends BaseNode
   class:     'ParentheticalNode'
   children: ['expression']
 
-  constructor: (expression) ->
-    @expression = expression
+  constructor: (@expression) ->
 
   isStatement: ->
     @expression.isStatement()
@@ -1276,10 +1249,8 @@ exports.ForNode = class ForNode extends BaseNode
   children:     ['body', 'source', 'guard']
   isStatement: -> yes
 
-  constructor: (body, source, name, index) ->
-    @body   = body
-    @name   = name
-    @index  = index or null
+  constructor: (@body, source, @name, @index) ->
+    @index  = or null
     @source = source.source
     @guard  = source.guard
     @step   = source.step
@@ -1367,10 +1338,8 @@ exports.IfNode = class IfNode extends BaseNode
   class:     'IfNode'
   children: ['condition', 'switchSubject', 'body', 'elseBody', 'assigner']
 
-  constructor: (condition, body, tags) ->
-    @condition = condition
-    @body      = body
-    @tags      = tags or {}
+  constructor: (@condition, @body, @tags) ->
+    @tags      = or {}
     @condition = new OpNode('!', new ParentheticalNode(@condition)) if @tags.invert
     @elseBody = null
     @isChain  = false
