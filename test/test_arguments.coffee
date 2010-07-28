@@ -33,3 +33,11 @@ ok context.arg is 3
 
 ((@arg...) ->).call context, 1, 2, 3
 ok context.arg.join ' ' is '1 2 3'
+
+class Klass
+  constructor: (@one, @two) ->
+
+obj = new Klass 1, 2
+
+ok obj.one is 1
+ok obj.two is 2

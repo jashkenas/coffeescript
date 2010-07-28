@@ -874,7 +874,7 @@ exports.CodeNode = class CodeNode extends BaseNode
     splat = undefined
     params = []
     for param, i in @params
-      if splat?
+      if splat
         if param.attach
           param.assign = new AssignNode new ValueNode literal('this'), [new AccessorNode param.value]
           @body.expressions.splice splat.index + 1, 0, param.assign
@@ -919,12 +919,14 @@ exports.CodeNode = class CodeNode extends BaseNode
 # 'splat', where it gathers up a block of the parameters into an array.
 exports.ParamNode = class ParamNode extends BaseNode
 
-  class:     'ParamNode'
+  class:    'ParamNode'
   children: ['name']
 
-  constructor: (@name, @attach, @splat) -> @value = literal @name
+  constructor: (@name, @attach, @splat) ->
+    @value = literal @name
 
-  compileNode: (o) -> @value.compile o
+  compileNode: (o) ->
+    @value.compile o
 
   toString: (idt) ->
     if @attach then (literal "@#@name").toString idt else @value.toString idt
@@ -959,9 +961,9 @@ exports.SplatNode = class SplatNode extends BaseNode
       end = if @trailings.length then ", #len - #{@trailings.length}"
       for trailing, idx in @trailings
         if trailing.attach
-          assign   = trailing.assign
-          trailing = literal o.scope.freeVariable()
-          assign.value = trailing
+          assign        = trailing.assign
+          trailing      = literal o.scope.freeVariable()
+          assign.value  = trailing
         pos = @trailings.length - idx
         o.scope.assign(trailing.compile(o), "arguments[#variadic ? #len - #pos : #{@index + idx}]")
     "#name = #{utility('slice')}.call(arguments, #@index#end)"
