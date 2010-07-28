@@ -574,21 +574,20 @@ exports.RangeNode = class RangeNode extends BaseNode
   compileArray: (o) ->
     idt    = @idt 1
     vars   = @compileVariables merge o, indent: idt
+    if @fromNum and @toNum and Math.abs(+@fromNum - +@toNum) <= 20
+      range = [+@fromNum..+@toNum]
+      range.pop() if @exclusive
+      return "[#{ range.join(', ') }]"
+    i = o.scope.freeVariable()
     result = o.scope.freeVariable()
-    i      = o.scope.freeVariable()
     pre    = "\n#{idt}#{result} = []; #{vars}"
     if @fromNum and @toNum
-      if Math.abs(+@fromNum - +@toNum) <= 20
-        range = [+@fromNum..+@toNum]
-        range.pop() if @exclusive
-        return "[#{ range.join(', ') }]"
-      else
-        o.index = i
-        body = @compileSimple o
+      o.index = i
+      body = @compileSimple o
     else
       clause = "#@fromVar <= #@toVar ?"
       body   = "var #i = #@fromVar; #clause #i <#@equals #@toVar : #i >#@equals #@toVar; #clause #i += 1 : #i -= 1"
-    post     = "{ #{result}.push(#i) };\n#{idt}return #result;\n#o.indent"
+    post   = "{ #{result}.push(#i) };\n#{idt}return #result;\n#o.indent"
     "(function() {#{pre}\n#{idt}for (#body)#post}).call(this)"
 
 #### SliceNode
