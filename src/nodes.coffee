@@ -871,21 +871,27 @@ exports.CodeNode = class CodeNode extends BaseNode
     o.indent    = @idt(1)
     del o, 'noWrap'
     del o, 'globals'
-    i = 0
     splat = undefined
     params = []
-    for param in @params
-      if param instanceof SplatNode and not splat?
-        splat           = param
-        splat.index     = i
-        splat.trailings = []
-        splat.arglength = @params.length
-        @body.unshift(splat)
-      else if splat?
-        splat.trailings.push(param)
+    for param, i in @params
+      if splat?
+        if param.attach
+          param.assign = new AssignNode new ValueNode literal('this'), [new AccessorNode param.name]
+          @body.expressions.splice splat.index + 1, 0, param.assign
+        splat.trailings.push param
       else
-        params.push(param)
-      i += 1
+        if param.attach
+          name  = param.name
+          param = literal o.scope.freeVariable()
+          @body.unshift new AssignNode new ValueNode(literal('this'), [new AccessorNode name]), param
+        if param.splat
+          splat           = new SplatNode param.name
+          splat.index     = i
+          splat.trailings = []
+          splat.arglength = @params.length
+          @body.unshift(splat)
+        else
+          params.push(param)
     params = (param.compile(o) for param in params)
     @body.makeReturn()
     (o.scope.parameter(param)) for param in params
@@ -905,6 +911,26 @@ exports.CodeNode = class CodeNode extends BaseNode
     idt = or ''
     children = (child.toString(idt + TAB) for child in @collectChildren()).join('')
     "\n#idt#children"
+
+#### ParamNode
+
+# A parameter in a function definition. Special parameters have a particular
+# type - either 'this', meaning it assigns straight to the current context, or
+# 'splat', where it gathers up a block of the parameters into an array.
+exports.ParamNode = class ParamNode extends BaseNode
+
+  class:     'ParamNode'
+  children: ['name']
+
+  constructor: (name, attach, splat) ->
+    @name = literal name
+    @attach = attach
+    @splat = splat
+
+  compileNode: (o) -> @name.compile o
+
+  toString: (idt) ->
+    if @type is 'this' then (literal "@#name").toString idt else @name.toString idt
 
 #### SplatNode
 
@@ -935,6 +961,10 @@ exports.SplatNode = class SplatNode extends BaseNode
       o.scope.assign variadic, "#len >= #@arglength"
       end = if @trailings.length then ", #len - #{@trailings.length}"
       for trailing, idx in @trailings
+        if trailing.attach
+          assign   = trailing.assign
+          trailing = literal o.scope.freeVariable()
+          assign.value = trailing
         pos = @trailings.length - idx
         o.scope.assign(trailing.compile(o), "arguments[#variadic ? #len - #pos : #{@index + idx}]")
     "#name = #{utility('slice')}.call(arguments, #@index#end)"

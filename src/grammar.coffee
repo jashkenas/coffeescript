@@ -203,7 +203,9 @@ grammar =
   # that hoovers up the remaining arguments.
   Param: [
     o "PARAM",                                  -> new LiteralNode $1
-    o "Param . . .",                            -> new SplatNode $1
+    o "@ PARAM",                                -> new ParamNode $2, true
+    o "PARAM . . .",                            -> new ParamNode $1, false, true
+    o "@ PARAM . . .",                          -> new ParamNode $2, true, true
   ]
 
   # A splat that occurs outside of a parameter list.

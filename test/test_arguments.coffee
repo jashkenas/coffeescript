@@ -23,3 +23,10 @@ sumOfArgs = ->
   sum
 
 ok sumOfArgs(1, 2, 3, 4, 5) is 15
+
+
+((@arg) ->).call context = {}, 1
+ok context.arg is 1
+
+((splat..., @arg) ->).call context, 1, 2, 3
+ok context.arg is 3
