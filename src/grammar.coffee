@@ -425,9 +425,14 @@ grammar = {
   # Comprehensions can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression.
   For: [
-    o "Statement ForStart ForSource",           -> $3.raw = $2.raw; new ForNode $1, $3, $2[0], $2[1]
-    o "Expression ForStart ForSource",          -> $3.raw = $2.raw; new ForNode $1, $3, $2[0], $2[1]
-    o "ForStart ForSource Block",               -> $2.raw = $1.raw; new ForNode $3, $2, $1[0], $1[1]
+    o "Statement ForBody",                      -> new ForNode $1, $2, $2.vars[0], $2.vars[1]
+    o "Expression ForBody",                     -> new ForNode $1, $2, $2.vars[0], $2.vars[1]
+    o "ForBody Block",                          -> new ForNode $2, $1, $1.vars[0], $1.vars[1]
+  ]
+
+  ForBody: [
+    o "FOR Range",                              -> {source: new ValueNode($2), vars: []}
+    o "ForStart ForSource",                     -> $2.raw = $1.raw; $2.vars = $1; $2
   ]
 
   ForStart: [

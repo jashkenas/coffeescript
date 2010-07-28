@@ -1279,7 +1279,7 @@ exports.ForNode = class ForNode extends BaseNode
     source        = if range then @source.base else @source
     codeInBody    = @body.contains (n) -> n instanceof CodeNode
     scope         = o.scope
-    name          = @name and @name.compile o
+    name          = (@name and @name.compile(o)) or scope.freeVariable()
     index         = @index and @index.compile o
     scope.find name  if name and not @pattern and not codeInBody
     scope.find index if index

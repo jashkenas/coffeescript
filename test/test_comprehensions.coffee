@@ -126,3 +126,9 @@ all = value for all key, value of whiskers
 
 ok own.join(' ') is 'Whiskers'
 ok all.sort().join(' ') is 'Whiskers cream tabby'
+
+
+# Optimized range comprehensions.
+exxes = 'x' for [0...10]
+ok exxes.join(' ') is 'x x x x x x x x x x'
+
