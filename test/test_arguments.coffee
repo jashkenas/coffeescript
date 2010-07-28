@@ -30,3 +30,6 @@ ok context.arg is 1
 
 ((splat..., @arg) ->).call context, 1, 2, 3
 ok context.arg is 3
+
+((@arg...) ->).call context, 1, 2, 3
+ok context.arg.join ' ' is '1 2 3'

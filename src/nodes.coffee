@@ -876,22 +876,22 @@ exports.CodeNode = class CodeNode extends BaseNode
     for param, i in @params
       if splat?
         if param.attach
-          param.assign = new AssignNode new ValueNode literal('this'), [new AccessorNode param.name]
+          param.assign = new AssignNode new ValueNode literal('this'), [new AccessorNode param.value]
           @body.expressions.splice splat.index + 1, 0, param.assign
         splat.trailings.push param
       else
         if param.attach
-          name  = param.name
-          param = literal o.scope.freeVariable()
-          @body.unshift new AssignNode new ValueNode(literal('this'), [new AccessorNode name]), param
+          {value} = param
+          [param, param.splat] = [literal(o.scope.freeVariable()), param.splat]
+          @body.unshift new AssignNode new ValueNode(literal('this'), [new AccessorNode value]), param
         if param.splat
-          splat           = new SplatNode param.name
+          splat           = new SplatNode param.value
           splat.index     = i
           splat.trailings = []
           splat.arglength = @params.length
           @body.unshift(splat)
         else
-          params.push(param)
+          params.push param
     params = (param.compile(o) for param in params)
     @body.makeReturn()
     (o.scope.parameter(param)) for param in params
@@ -922,15 +922,12 @@ exports.ParamNode = class ParamNode extends BaseNode
   class:     'ParamNode'
   children: ['name']
 
-  constructor: (name, attach, splat) ->
-    @name = literal name
-    @attach = attach
-    @splat = splat
+  constructor: (@name, @attach, @splat) -> @value = literal @name
 
-  compileNode: (o) -> @name.compile o
+  compileNode: (o) -> @value.compile o
 
   toString: (idt) ->
-    if @type is 'this' then (literal "@#name").toString idt else @name.toString idt
+    if @attach then (literal "@#@name").toString idt else @value.toString idt
 
 #### SplatNode
 
