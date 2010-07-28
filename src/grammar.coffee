@@ -48,7 +48,7 @@ o = (patternString, action, options) ->
 # `$1` would be the value of the first `Expression`, `$2` would be the token
 # for the `UNLESS` terminal, and `$3` would be the value of the second
 # `Expression`.
-grammar = {
+grammar =
 
   # The **Root** is the top-level node in the syntax tree. Since we parse bottom-up,
   # all parsing must end here.
@@ -402,9 +402,9 @@ grammar = {
   # The condition portion of a while loop.
   WhileSource: [
     o "WHILE Expression",                       -> new WhileNode $2
-    o "WHILE Expression WHEN Expression",       -> new WhileNode $2, {guard : $4}
-    o "UNTIL Expression",                       -> new WhileNode $2, {invert: true}
-    o "UNTIL Expression WHEN Expression",       -> new WhileNode $2, {invert: true, guard: $4}
+    o "WHILE Expression WHEN Expression",       -> new WhileNode $2, guard: $4
+    o "UNTIL Expression",                       -> new WhileNode $2, invert: true
+    o "UNTIL Expression WHEN Expression",       -> new WhileNode $2, invert: true, guard: $4
   ]
 
   # The while loop can either be normal, with a block of expressions to execute,
@@ -431,7 +431,7 @@ grammar = {
   ]
 
   ForBody: [
-    o "FOR Range",                              -> {source: new ValueNode($2), vars: []}
+    o "FOR Range",                              -> source: new ValueNode($2), vars: []
     o "ForStart ForSource",                     -> $2.raw = $1.raw; $2.vars = $1; $2
   ]
 
@@ -460,13 +460,13 @@ grammar = {
   # clause. If it's an array comprehension, you can also choose to step through
   # in fixed-size increments.
   ForSource: [
-    o "IN Expression",                               -> {source: $2}
-    o "OF Expression",                               -> {source: $2, object: true}
-    o "IN Expression WHEN Expression",               -> {source: $2, guard: $4}
-    o "OF Expression WHEN Expression",               -> {source: $2, guard: $4, object: true}
-    o "IN Expression BY Expression",                 -> {source: $2, step:  $4}
-    o "IN Expression WHEN Expression BY Expression", -> {source: $2, guard: $4, step:   $6}
-    o "IN Expression BY Expression WHEN Expression", -> {source: $2, step:  $4, guard: $6}
+    o "IN Expression",                               -> source: $2
+    o "OF Expression",                               -> source: $2, object: true
+    o "IN Expression WHEN Expression",               -> source: $2, guard: $4
+    o "OF Expression WHEN Expression",               -> source: $2, guard: $4, object: true
+    o "IN Expression BY Expression",                 -> source: $2, step:  $4
+    o "IN Expression WHEN Expression BY Expression", -> source: $2, guard: $4, step:   $6
+    o "IN Expression BY Expression WHEN Expression", -> source: $2, step:  $4, guard: $6
   ]
 
   # The CoffeeScript switch/when/else block replaces the JavaScript
@@ -487,8 +487,8 @@ grammar = {
 
   # An individual **When** clause, with action.
   When: [
-    o "LEADING_WHEN SimpleArgs Block",            -> new IfNode $2, $3, {statement: true}
-    o "LEADING_WHEN SimpleArgs Block TERMINATOR", -> new IfNode $2, $3, {statement: true}
+    o "LEADING_WHEN SimpleArgs Block",            -> new IfNode $2, $3, statement: true
+    o "LEADING_WHEN SimpleArgs Block TERMINATOR", -> new IfNode $2, $3, statement: true
   ]
 
   # The most basic form of *if* is a condition and an action. The following
@@ -496,7 +496,7 @@ grammar = {
   # ambiguity.
   IfBlock: [
     o "IF Expression Block",                    -> new IfNode $2, $3
-    o "UNLESS Expression Block",                -> new IfNode $2, $3, {invert: true}
+    o "UNLESS Expression Block",                -> new IfNode $2, $3, invert: true
     o "IfBlock ELSE IF Expression Block",       -> $1.addElse (new IfNode($4, $5)).forceStatement()
     o "IfBlock ELSE Block",                     -> $1.addElse $3
   ]
@@ -505,10 +505,10 @@ grammar = {
   # *if* and *unless*.
   If: [
     o "IfBlock"
-    o "Statement IF Expression",                -> new IfNode $3, Expressions.wrap([$1]), {statement: true}
-    o "Expression IF Expression",               -> new IfNode $3, Expressions.wrap([$1]), {statement: true}
-    o "Statement UNLESS Expression",            -> new IfNode $3, Expressions.wrap([$1]), {statement: true, invert: true}
-    o "Expression UNLESS Expression",           -> new IfNode $3, Expressions.wrap([$1]), {statement: true, invert: true}
+    o "Statement IF Expression",                -> new IfNode $3, Expressions.wrap([$1]), statement: true
+    o "Expression IF Expression",               -> new IfNode $3, Expressions.wrap([$1]), statement: true
+    o "Statement UNLESS Expression",            -> new IfNode $3, Expressions.wrap([$1]), statement: true, invert: true
+    o "Expression UNLESS Expression",           -> new IfNode $3, Expressions.wrap([$1]), statement: true, invert: true
   ]
 
   # Arithmetic and logical operators, working on one or more operands.
@@ -572,7 +572,6 @@ grammar = {
     o "Expression ! OF Expression",             -> new OpNode '!', new ParentheticalNode new OpNode 'in', $1, $4
   ]
 
-}
 
 # Precedence
 # ----------
