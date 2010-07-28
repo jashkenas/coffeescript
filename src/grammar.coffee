@@ -277,6 +277,7 @@ grammar = {
     o "CLASS SimpleAssignable EXTENDS Value",   -> new ClassNode $2, $4
     o "CLASS SimpleAssignable INDENT ClassBody OUTDENT", -> new ClassNode $2, null, $4
     o "CLASS SimpleAssignable EXTENDS Value INDENT ClassBody OUTDENT", -> new ClassNode $2, $4, $6
+    o "CLASS INDENT ClassBody OUTDENT",         -> new ClassNode '__temp__', null, $3
   ]
 
   # Assignments that can happen directly inside a class declaration.

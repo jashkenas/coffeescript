@@ -104,7 +104,7 @@ exports.BaseNode = class BaseNode
   # Convenience for the most common use of contains. Does the node contain
   # a pure statement?
   containsPureStatement: ->
-    @isPureStatement() or @contains (n) -> n.isPureStatement()
+    @isPureStatement() or @contains (n) -> n.isPureStatement and n.isPureStatement()
 
   # Perform an in-order traversal of the AST. Crosses scope boundaries.
   traverse: (block) -> @traverseChildren true, block
@@ -688,6 +688,7 @@ exports.ClassNode = class ClassNode extends BaseNode
   # equivalent syntax tree and compile that, in pieces. You can see the
   # constructor, property assignments, and inheritance getting built out below.
   compileNode: (o) ->
+    @variable  = literal o.scope.freeVariable() if @variable is '__temp__'
     extension  = @parent and new ExtendsNode(@variable, @parent)
     props      = new Expressions
     o.top      = true

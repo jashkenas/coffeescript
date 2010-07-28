@@ -218,3 +218,12 @@ func class Test
 
 ok (new Test).prop  is 'value'
 ok (new Test).prop2 is 'value2'
+
+
+# Test anonymous classes.
+obj =
+  klass: class
+    method: -> 'value'
+
+instance = new obj.klass
+ok instance.method() is 'value'
