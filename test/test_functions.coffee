@@ -211,3 +211,12 @@ meth 'apple', b: 1, a: 13, ->
   'orange'
 
 ok a is '13 apple orange'
+
+
+# Ensure that empty functions don't return mistaken values.
+obj =
+  func: (@param, @rest...) ->
+
+ok obj.func(101, 102, 103, 104) is undefined
+ok obj.param is 101
+ok obj.rest.join(' ') is '102 103 104'
