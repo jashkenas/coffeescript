@@ -1,4 +1,4 @@
-yearsOld: {max: 10, ida: 9, tim: 11}
+yearsOld = max: 10, ida: 9, tim: 11
 
-ages: for child, age of yearsOld
+ages = for child, age of yearsOld
   child + " is " + age

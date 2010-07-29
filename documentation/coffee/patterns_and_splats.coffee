@@ -1,6 +1,6 @@
-tag: "<impossible>"
+tag = "<impossible>"
 
-[open, contents..., close]: tag.split("")
+[open, contents..., close] = tag.split("")
 
 
 

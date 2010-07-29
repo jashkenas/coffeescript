@@ -1,2 +1,2 @@
-author: "Wittgenstein"
-quote:  "A picture is a fact. -- $author"
+author = "Wittgenstein"
+quote  = "A picture is a fact. -- #author"

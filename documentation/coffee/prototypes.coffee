@@ -1,2 +1,2 @@
-String::dasherize: ->
-  this.replace(/_/g, "-")
+String::dasherize = ->
+  this.replace /_/g, "-"

@@ -1,5 +1,5 @@
 # Eat lunch.
-lunch: eat food for food in ['toast', 'cheese', 'wine']
+lunch = eat food for food in ['toast', 'cheese', 'wine']
 
 # Naive collision detection.
 for roid in asteroids

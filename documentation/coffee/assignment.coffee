@@ -1,2 +1,2 @@
-greeting: "Hello CoffeeScript"
-difficulty: 0.5
+greeting   = "Hello CoffeeScript"
+difficulty = 0.5

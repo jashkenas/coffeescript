@@ -1,10 +1,8 @@
-(function(){
-  try {
-    allHellBreaksLoose();
-    catsAndDogsLivingTogether();
-  } catch (error) {
-    print(error);
-  } finally {
-    cleanUp();
-  }
-})();
+try {
+  allHellBreaksLoose();
+  catsAndDogsLivingTogether();
+} catch (error) {
+  print(error);
+} finally {
+  cleanUp();
+}

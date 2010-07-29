@@ -1,5 +1,3 @@
-(function(){
-  $('.account').css({
-    'class': 'active'
-  });
-})();
+$('.account').css({
+  'class': 'active'
+});

@@ -1,9 +1,11 @@
-mood: greatlyImproved if singing
+mood = greatlyImproved if singing
 
 if happy and knowsIt
   clapsHands()
   chaChaCha()
+else
+  showIt()
 
-date: if friday then sue else jill
+date = if friday then sue else jill
 
-options: or defaultOptions
+options = or defaults

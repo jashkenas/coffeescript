@@ -1,10 +1,9 @@
 <%
   require 'uv'
   def code_for(file, executable=false)
-    @stripper ||= /(\A\(function\(\)\{\n|\}\)\(\);\n*\Z|^  )/
     return '' unless File.exists?("documentation/js/#{file}.js")
     cs = File.read("documentation/coffee/#{file}.coffee")
-    js = File.read("documentation/js/#{file}.js").gsub(@stripper, '')
+    js = File.read("documentation/js/#{file}.js")
     cshtml = Uv.parse(cs, 'xhtml', 'coffeescript', false, 'idle', false)
     jshtml = Uv.parse(js, 'xhtml', 'javascript', false, 'idle', false)
     append = executable == true ? '' : "alert(#{executable});"
@@ -793,9 +792,9 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       Double-quoted heredocs, like double-quoted strings, allow interpolation.
     </p>
     <p>
-      Sometimes you'd like to pass a block comment through to the generated 
-      JavaScript. For example, when you need to embed a licensing header at 
-      the top of a file. Block comments, which mirror the synax for heredocs, 
+      Sometimes you'd like to pass a block comment through to the generated
+      JavaScript. For example, when you need to embed a licensing header at
+      the top of a file. Block comments, which mirror the synax for heredocs,
       are preserved in the generated code.
     </p>
     <%= code_for('block_comment') %>
@@ -806,8 +805,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     </h2>
 
     <p>
-      CoffeeScript includes a simple build system similar to 
-      <a href="http://www.gnu.org/software/make/">Make</a> and 
+      CoffeeScript includes a simple build system similar to
+      <a href="http://www.gnu.org/software/make/">Make</a> and
       <a href="http://rake.rubyforge.org/">Rake</a>. Naturally,
       it's called Cake, and is used for the build and test tasks for the CoffeeScript
       language itself. Tasks are defined in a file named <tt>Cakefile</tt>, and

@@ -1,4 +1,4 @@
-grade: (student) ->
+grade = (student) ->
   if student.excellentWork
     "A+"
   else if student.okayStuff
@@ -6,4 +6,4 @@ grade: (student) ->
   else
     "C"
 
-eldest: if 24 > 21 then "Liz" else "Ike"
+eldest = if 24 > 21 then "Liz" else "Ike"

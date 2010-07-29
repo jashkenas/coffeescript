@@ -4,7 +4,7 @@ if this.studyingEconomics
   sell() until supply > demand
 
 # Nursery Rhyme
-num: 6
-lyrics: while num: - 1
+num = 6
+lyrics = while num -= 1
   num + " little monkeys, jumping on the bed.
     One fell out and bumped his head."

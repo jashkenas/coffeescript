@@ -1,11 +1,11 @@
-gold: silver: rest: "unknown"
+gold = silver = rest = "unknown"
 
-awardMedals: (first, second, rest...) ->
-  gold:   first
-  silver: second
-  rest:   rest
+awardMedals = (first, second, others...) ->
+  gold   = first
+  silver = second
+  rest   = others
 
-contenders: [
+contenders = [
   "Michael Phelps"
   "Liu Xiang"
   "Yao Ming"

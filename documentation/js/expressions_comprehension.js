@@ -1,12 +1,11 @@
-(function(){
-  var _a, _b, globals, name;
-  var __hasProp = Object.prototype.hasOwnProperty;
-  globals = (function() {
-    _a = []; _b = window;
-    for (name in _b) {
-      if (!__hasProp.call(_b, name)) continue;
-      _a.push(name);
-    }
-    return _a;
-  })().slice(0, 10);
-})();
+var _a, _b, _c, globals, name;
+var __hasProp = Object.prototype.hasOwnProperty;
+globals = (function() {
+  _b = []; _c = window;
+  for (name in _c) {
+    if (!__hasProp.call(_c, name)) continue;
+    _a = _c[name];
+    _b.push(name);
+  }
+  return _b;
+})().slice(0, 10);
