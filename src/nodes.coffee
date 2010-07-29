@@ -853,6 +853,7 @@ exports.CodeNode = class CodeNode extends BaseNode
     o.scope     = sharedScope or new Scope(o.scope, @body, this)
     o.top       = true
     o.indent    = @idt(1)
+    empty       = @body.expressions.length is 0
     del o, 'noWrap'
     del o, 'globals'
     splat = undefined
@@ -877,7 +878,7 @@ exports.CodeNode = class CodeNode extends BaseNode
         else
           params.push param
     params = (param.compile(o) for param in params)
-    @body.makeReturn()
+    @body.makeReturn() unless empty
     (o.scope.parameter(param)) for param in params
     code = if @body.expressions.length then "\n#{ @body.compileWithDeclarations(o) }\n" else ''
     func = "function(#{ params.join(', ') }) {#code#{ code and @tab }}"
@@ -898,9 +899,9 @@ exports.CodeNode = class CodeNode extends BaseNode
 
 #### ParamNode
 
-# A parameter in a function definition. Special parameters have a particular
-# type - either 'this', meaning it assigns straight to the current context, or
-# 'splat', where it gathers up a block of the parameters into an array.
+# A parameter in a function definition. Beyond a typical Javascript parameter,
+# these parameters can also attach themselves to the context of the function,
+# as well as be a splat, gathering up a group of parameters into an array.
 exports.ParamNode = class ParamNode extends BaseNode
 
   class:    'ParamNode'
