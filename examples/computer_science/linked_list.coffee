@@ -2,7 +2,7 @@
 class LinkedList
 
   constructor: ->
-    this._head: null # Pointer to the first item in the list.
+    this._head = null # Pointer to the first item in the list.
 
 
   # Appends some data to the end of the list. This method traverses the existing
@@ -10,13 +10,13 @@ class LinkedList
   add: (data) ->
 
     # Create a new node object to wrap the data.
-    node: {data: data, next: null}
+    node = data: data, next: null
 
-    current: this._head ||= node
+    current = this._head = or node
 
     if this._head isnt node
-      current: current.next while current.next
-      current.next: node
+      (current = current.next) while current.next
+      current.next = node
 
     this
 
@@ -27,11 +27,11 @@ class LinkedList
     # Check for out-of-bounds values.
     return null if index < 0
 
-    current: this._head or null
-    i: -1
+    current = this._head or null
+    i = -1
 
     # Advance through the list.
-    current: current.next while current and index > (i += 1)
+    (current = current.next) while current and index > (i += 1)
 
     # Return null if we've reached the end.
     current and current.data
@@ -43,19 +43,19 @@ class LinkedList
     # Check for out-of-bounds values.
     return null if index < 0
 
-    current: this._head or null
-    i: -1
+    current = this._head or null
+    i = -1
 
     # Special case: removing the first item.
     if index is 0
-      this._head: current.next
+      this._head = current.next
     else
 
       # Find the right location.
-      [previous, current]: [current, current.next] while index > (i += 1)
+      ([previous, current] = [current, current.next]) while index > (i += 1)
 
       # Skip over the item to remove.
-      previous.next: current.next
+      previous.next = current.next
 
     # Return the value.
     current and current.data
@@ -63,24 +63,24 @@ class LinkedList
 
   # Calculate the number of items in the list.
   size: ->
-    current: this._head
-    count:   0
+    current = this._head
+    count = 0
 
     while current
       count += 1
-      current: current.next
+      current = current.next
 
     count
 
 
   # Convert the list into an array.
   toArray: ->
-    result:   []
-    current:  this._head
+    result  = []
+    current = this._head
 
     while current
-      result.push(current.data)
-      current: current.next
+      result.push current.data
+      current = current.next
 
     result
 
@@ -90,19 +90,19 @@ class LinkedList
 
 
 # Tests.
-list: new LinkedList
+list = new LinkedList
 
 list.add("Hi")
-puts(list.size()  is 1)
-puts(list.item(0) is "Hi")
-puts(list.item(1) is null)
+puts list.size()  is 1
+puts list.item(0) is "Hi"
+puts list.item(1) is null
 
-list: new LinkedList
+list = new LinkedList
 list.add("zero").add("one").add("two")
-puts(list.size()     is 3)
-puts(list.item(2)    is "two")
-puts(list.remove(1)  is "one")
-puts(list.item(0)    is "zero")
-puts(list.item(1)    is "two")
-puts(list.size()     is 2)
-puts(list.item(-10)  is null)
+puts list.size()     is 3
+puts list.item(2)    is "two"
+puts list.remove(1)  is "one"
+puts list.item(0)    is "zero"
+puts list.item(1)    is "two"
+puts list.size()     is 2
+puts list.item(-10)  is null

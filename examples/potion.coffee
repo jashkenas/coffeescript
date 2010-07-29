@@ -2,14 +2,14 @@
 
 # 5 times: "Odelay!" print.
 
-print("Odelay!") for i in [1..5]
+print "Odelay!" for [1..5]
 
 
 # add = (x, y): x + y.
 # add(2, 4) string print
 
-add: (x, y) -> x + y
-print(add(2, 4))
+add = (x, y) -> x + y
+print add 2, 4
 
 
 # loop: 'quaff' print.
@@ -19,25 +19,25 @@ loop print 'quaff'
 
 # ('cheese', 'bread', 'mayo') at (1) print
 
-print(['cheese', 'bread', 'mayo'][1])
+print ['cheese', 'bread', 'mayo'][1]
 
 
 # (language='Potion', pointless=true) at (key='language') print
 
-print({language: 'Potion', pointless: true}['language'])
+print {language: 'Potion', pointless: true}['language']
 
 
 # minus = (x, y): x - y.
 # minus (y=10, x=6)
 
-minus: (x, y) -> x - y
-minus(6, 10)
+minus = (x, y) -> x - y
+minus 6, 10
 
 
 # foods = ('cheese', 'bread', 'mayo')
 # foods (2)
 
-foods: ['cheese', 'bread', 'mayo']
+foods = ['cheese', 'bread', 'mayo']
 foods[2]
 
 
@@ -45,7 +45,7 @@ foods[2]
 #   (key, ' is a ', val) join print.
 
 for key, val of {dog: 'canine', cat: 'feline', fox: 'vulpine'}
-  print(key + ' is a ' + val)
+  print key + ' is a ' + val
 
 
 # Person = class: /name, /age, /sex.
@@ -54,13 +54,13 @@ for key, val of {dog: 'canine', cat: 'feline', fox: 'vulpine'}
 
 class Person
   print: ->
-    print 'My name is ' + this.name + '.'
+    print 'My name is ' + @name + '.'
 
 
 # p = Person ()
 # p /name string print
 
-p: new Person
+p = new Person
 print p.name
 
 
@@ -71,10 +71,10 @@ print p.name
 # Policeman ('Constable') print
 
 class Policeman extends Person
-  constructor: (rank) ->
-    @rank: rank
+  constructor: (@rank) ->
+
   print: ->
-    print 'My name is ' + this.name + " and I'm a " + this.rank + '.'
+    print 'My name is ' + @name + " and I'm a " + @rank + '.'
 
 print new Policeman 'Constable'
 
@@ -83,11 +83,13 @@ print new Policeman 'Constable'
 #         [para 'Welcome.', button 'OK']]
 # app first name
 
-app = {
-  window:  {width: 200, height: 200}
+app =
+  window:
+    width: 200
+    height: 200
   para:    'Welcome.'
   button:  'OK'
-}
+
 app.window
 
 
@@ -96,33 +98,32 @@ app.window
 #
 # x = 1, y = 2
 
-x: 1
-y: 2
+x = 1
+y = 2
 
-x: 1; y: 2
+x = 1; y = 2
 
 
 # table = (language='Potion'
 #           pointless=true)
 
-table: {
+table =
   language: 'Potion'
   pointless: yes
-}
 
 
 # # this foul business...
 # String length = (): 10.
 
 # this foul business...
-String::length: -> 10
+String::length = -> 10
 
 
 # block = :
 #   'potion' print.
 
-block: ->
-  print('potion')
+block = ->
+  print 'potion'
 
 
 # if (age > 100): 'ancient'.
@@ -156,30 +157,30 @@ switch author
 #   'quaff' print
 #   count--.
 
-count: 8
+count = 8
 while count > 0
-  print('quaff')
+  print 'quaff'
   count--
 
 
 # 1 to 5 (a):
 #   a string print.
 
-print(a) for a in [1..5]
+print a for a in [1..5]
 
 
 # if (3 ?gender):
 #   "Huh? Numbers are sexed? That's amazing." print.
 
 if (3).gender?
-  print("Huh? Numbers are sexed? That's amazing.")
+  print "Huh? Numbers are sexed? That's amazing."
 
 
 # HomePage get = (url):
 #   session = url query ? at ('session').
 
-HomePage::get: (url) ->
-  session: url.query.session if url.query?
+HomePage::get = (url) ->
+  session = url.query.session if url.query?
 
 
 # BTree = class: /left, /right.
@@ -187,10 +188,10 @@ HomePage::get: (url) ->
 # b /left = BTree ()
 # b /right = BTree ()
 
-BTree:    ->
-b:        new BTree
-b.left:   new BTree
-b.right:  new BTree
+BTree   = ->
+b       = new BTree
+b.left  = new BTree
+b.right = new BTree
 
 
 # BTree = class: /left, /right.
@@ -199,7 +200,7 @@ b.right:  new BTree
 # if (b ? /left):
 #   'left path found!' print.
 
-BTree: ->
-b: new BTree
+BTree = ->
+b = new BTree
 
-print('left path found!') if b.left?
+print 'left path found!' if b.left?

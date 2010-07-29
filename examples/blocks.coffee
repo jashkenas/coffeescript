@@ -6,8 +6,8 @@ get '/hello', ->
 
 
 # Append.
-append: (location, data) ->
-  path: new Pathname location
+append = (location, data) ->
+  path = new Pathname location
   throw new Error("Location does not exist") unless path.exists()
 
   File.open path, 'a', (file) ->
@@ -17,23 +17,20 @@ append: (location, data) ->
 
 
 # Rubinius' File.open implementation.
-File.open: (path, mode, block) ->
-  io: new File path, mode
+File.open = (path, mode, block) ->
+  io = new File path, mode
 
   return io unless block
 
   try
     block io
   finally
-    try
-      io.close() unless io.closed()
-    catch error
-      # nothing, just swallow them.
+    io.close() unless io.closed()
 
 
 # Write.
-write: (location, data) ->
-  path: new Pathname location
+write = (location, data) ->
+  path = new Pathname location
   raise "Location does not exist" unless path.exists()
 
   File.open path, 'w', (file) ->
@@ -43,15 +40,15 @@ write: (location, data) ->
 
 
 # Rails' respond_to.
-index: ->
-  people: Person.find 'all'
+index = ->
+  people = Person.find 'all'
 
   respond_to (format) ->
     format.html()
-    format.xml -> render { xml: people.xml() }
+    format.xml -> render xml: people.xml()
 
 
 # Synchronization.
-synchronize: (block) ->
+synchronize = (block) ->
   lock()
   try block() finally unlock()

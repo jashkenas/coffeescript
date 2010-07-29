@@ -1,11 +1,11 @@
 # Beautiful Code, Chapter 3.
 # Produces the expected runtime of Quicksort, for every integer from 1 to N.
 
-runtime: (N) ->
-  [sum, t]: [0, 0]
+runtime = (N) ->
+  [sum, t] = [0, 0]
   for n in [1..N]
     sum += 2 * t
-    t: n - 1 + sum / n
+    t = n - 1 + sum / n
   t
 
 puts runtime(3) is 2.6666666666666665
