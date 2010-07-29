@@ -577,7 +577,7 @@ exports.RangeNode = class RangeNode extends BaseNode
     else
       clause = "#@fromVar <= #@toVar ?"
       body   = "var #i = #@fromVar; #clause #i <#@equals #@toVar : #i >#@equals #@toVar; #clause #i += 1 : #i -= 1"
-    post   = "{ #{result}.push(#i) };\n#{idt}return #result;\n#o.indent"
+    post   = "{ #{result}.push(#i); }\n#{idt}return #result;\n#o.indent"
     "(function() {#{pre}\n#{idt}for (#body)#post}).call(this)"
 
 #### SliceNode
