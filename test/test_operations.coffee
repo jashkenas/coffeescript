@@ -68,14 +68,14 @@ ok x*+y is -50
 
 # Half-operators.
 one = two = null
-one = or 1
-two = or  2
+one or= 1
+two or=  2
 
 ok one is 1
 ok two is 2
 
-one = and 'one'
-two = and  'two'
+one and= 'one'
+two and=  'two'
 
 ok one is 'one'
 ok two is 'two'

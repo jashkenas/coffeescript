@@ -12,7 +12,7 @@ class LinkedList
     # Create a new node object to wrap the data.
     node = data: data, next: null
 
-    current = this._head = or node
+    current = this._head or= node
 
     if this._head isnt node
       (current = current.next) while current.next

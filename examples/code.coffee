@@ -60,8 +60,8 @@ race = ->
   race()
 
 # Conditional assignment:
-good = or evil
-wine = and cheese
+good or= evil
+wine and= cheese
 
 # Nested property access and calls.
 ((moon.turn(360))).shapes[3].move({x: 45, y: 30}).position['top'].offset('x')

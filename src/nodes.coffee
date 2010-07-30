@@ -112,7 +112,7 @@ exports.BaseNode = class BaseNode
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   toString: (idt, override) ->
-    idt = or ''
+    idt or= ''
     children = (child.toString idt + TAB for child in @collectChildren()).join('')
     '\n' + idt + (override or @class) + children
 
@@ -187,7 +187,7 @@ exports.Expressions = class Expressions extends BaseNode
 
   # An **Expressions** is the only node that can serve as the root.
   compile: (o) ->
-    o = or {}
+    o or= {}
     if o.scope then super(o) else @compileRoot(o)
 
   compileNode: (o) ->
@@ -290,7 +290,7 @@ exports.ValueNode = class ValueNode extends BaseNode
 
   # A **ValueNode** has a base and a list of property accesses.
   constructor: (@base, @properties) ->
-    @properties = or []
+    @properties or= []
 
   # Add a property access to the list.
   push: (prop) ->
@@ -345,7 +345,7 @@ exports.ValueNode = class ValueNode extends BaseNode
     only        = del o, 'onlyFirst'
     op          = del o, 'operation'
     props       = if only then @properties[0...@properties.length - 1] else @properties
-    o.chainRoot = or this
+    o.chainRoot or= this
     baseline    = @base.compile o
     baseline    = "(#baseline)" if @hasProperties() and (@base instanceof ObjectNode or @isNumber())
     complete    = @last = baseline
@@ -397,7 +397,7 @@ exports.CallNode = class CallNode extends BaseNode
     @isNew    = false
     @isSuper  = variable is 'super'
     @variable = if @isSuper then null else variable
-    @args     = or []
+    @args     or= []
     @compileSplatArguments = (o) ->
       SplatNode.compileSplattedArray.call(this, @args, o)
 
@@ -489,7 +489,7 @@ exports.AccessorNode = class AccessorNode extends BaseNode
 
   compileNode: (o) ->
     name = @name.compile o
-    o.chainRoot.wrapped = or @soakNode
+    o.chainRoot.wrapped or= @soakNode
     namePart = if name.match(IS_STRING) then "[#name]" else ".#name"
     @prototype + namePart
 
@@ -504,7 +504,7 @@ exports.IndexNode = class IndexNode extends BaseNode
   constructor: (@index) ->
 
   compileNode: (o) ->
-    o.chainRoot.wrapped = or @soakNode
+    o.chainRoot.wrapped or= @soakNode
     idx = @index.compile o
     prefix = if @proto then '.prototype' else ''
     "#prefix[#idx]"
@@ -554,7 +554,7 @@ exports.RangeNode = class RangeNode extends BaseNode
     [from, to] = [parseInt(@fromNum, 10), parseInt(@toNum, 10)]
     idx        = del o, 'index'
     step       = del o, 'step'
-    step       = and "#idx += #{step.compile(o)}"
+    step       and= "#idx += #{step.compile(o)}"
     if from <= to
       "#idx = #from; #idx <#@equals #to; #{step or "#idx++"}"
     else
@@ -633,7 +633,7 @@ exports.ArrayNode = class ArrayNode extends BaseNode
   children: ['objects']
 
   constructor: (@objects) ->
-    @objects = or []
+    @objects or= []
     @compileSplatLiteral = (o) ->
       SplatNode.compileSplattedArray.call(this, @objects, o)
 
@@ -668,7 +668,7 @@ exports.ClassNode = class ClassNode extends BaseNode
   # Initialize a **ClassNode** with its name, an optional superclass, and a
   # list of prototype property assignments.
   constructor: (@variable, @parent, @properties) ->
-    @properties = or []
+    @properties or= []
     @returns    = false
 
   makeReturn: ->
@@ -707,8 +707,8 @@ exports.ClassNode = class ClassNode extends BaseNode
         continue
       if func instanceof CodeNode and func.bound
         func.bound = false
-        constScope = or new Scope(o.scope, constructor.body, constructor)
-        me = or constScope.freeVariable()
+        constScope or= new Scope(o.scope, constructor.body, constructor)
+        me or= constScope.freeVariable()
         pname = pvar.compile(o)
         constructor.body.push    new ReturnNode literal 'this' if constructor.body.empty()
         constructor.body.unshift literal "this.#{pname} = function(){ return #{className}.prototype.#{pname}.apply(#me, arguments); }"
@@ -838,8 +838,8 @@ exports.CodeNode = class CodeNode extends BaseNode
   children: ['params', 'body']
 
   constructor: (@params, @body, tag) ->
-    @params = or []
-    @body   = or new Expressions
+    @params or= []
+    @body   or= new Expressions
     @bound  = tag is 'boundfunc'
 
   # Compilation creates a new scope unless explicitly asked to share with the
@@ -893,7 +893,7 @@ exports.CodeNode = class CodeNode extends BaseNode
   traverseChildren: (crossScope, func) -> super(crossScope, func) if crossScope
 
   toString: (idt) ->
-    idt = or ''
+    idt or= ''
     children = (child.toString(idt + TAB) for child in @collectChildren()).join('')
     "\n#idt#children"
 
@@ -1251,7 +1251,7 @@ exports.ForNode = class ForNode extends BaseNode
   isStatement: -> yes
 
   constructor: (@body, source, @name, @index) ->
-    @index  = or null
+    @index  or= null
     @source = source.source
     @guard  = source.guard
     @step   = source.step
@@ -1340,7 +1340,7 @@ exports.IfNode = class IfNode extends BaseNode
   children: ['condition', 'switchSubject', 'body', 'elseBody', 'assigner']
 
   constructor: (@condition, @body, @tags) ->
-    @tags      = or {}
+    @tags      or= {}
     @condition = new OpNode('!', new ParentheticalNode(@condition)) if @tags.invert
     @elseBody = null
     @isChain  = false
@@ -1386,7 +1386,7 @@ exports.IfNode = class IfNode extends BaseNode
   # The **IfNode** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a ternary is safe.
   isStatement: ->
-    @statement = or !!(@tags.statement or @bodyNode().isStatement() or (@elseBody and @elseBodyNode().isStatement()))
+    @statement or= !!(@tags.statement or @bodyNode().isStatement() or (@elseBody and @elseBodyNode().isStatement()))
 
   compileCondition: (o) ->
     (cond.compile(o) for cond in flatten([@condition])).join(' || ')
@@ -1396,8 +1396,8 @@ exports.IfNode = class IfNode extends BaseNode
 
   makeReturn: ->
     if @isStatement()
-      @body     = and @ensureExpressions(@body.makeReturn())
-      @elseBody = and @ensureExpressions(@elseBody.makeReturn())
+      @body     and= @ensureExpressions(@body.makeReturn())
+      @elseBody and= @ensureExpressions(@elseBody.makeReturn())
       this
     else
       new ReturnNode this

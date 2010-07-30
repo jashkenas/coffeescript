@@ -46,7 +46,7 @@ LotteryDraw =
       ticket_list.each (ticket) ->
         score = ticket.score result
         return if score is 0
-        winners[buyer] = or []
+        winners[buyer] or= []
         winners[buyer].push [ticket, score]
     this.tickets = {}
     winners
