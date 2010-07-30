@@ -238,6 +238,9 @@ exports.LiteralNode = class LiteralNode extends BaseNode
 
   constructor: (@value) ->
 
+  makeReturn: ->
+    if @isStatement() then this else super()
+
   # Break and continue must be treated as pure statements -- they lose their
   # meaning when wrapped in a closure.
   isStatement: ->
@@ -258,10 +261,10 @@ exports.LiteralNode = class LiteralNode extends BaseNode
 # make sense.
 exports.ReturnNode = class ReturnNode extends BaseNode
 
-  class:               'ReturnNode'
-  isStatement:       -> yes
+  class:            'ReturnNode'
+  isStatement:      -> yes
   isPureStatement:  -> yes
-  children:           ['expression']
+  children:         ['expression']
 
   constructor: (@expression) ->
 
