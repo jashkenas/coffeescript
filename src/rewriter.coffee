@@ -19,6 +19,9 @@ else
 # its internal array of tokens.
 exports.Rewriter = class Rewriter
 
+  # Helpful snippet for debugging:
+  #     puts (t[0] + '/' + t[1] for t in @tokens).join ' '
+
   # Rewrite the token stream in multiple passes, one logical filter at
   # a time. This could certainly be changed into a single pass through the
   # stream, with a big ol' efficient switch, but it's much nicer to work with
@@ -138,8 +141,10 @@ exports.Rewriter = class Rewriter
         return 2 if tag is '{' and post and post[0] is 'INDENT'
       else if include EXPRESSION_END, tag
         return 1 if tag is 'OUTDENT' and post and post[0] is '}'
+        size = closeBrackets(i) if tag is 'OUTDENT'
         stack[len - 1] += stack.pop()
         stack[len - 1] -= 1 if tag is '}'
+        return size if tag is 'OUTDENT'
       else if tag is ':' and not open
         idx = if before and before[0] is '@' then i - 2 else i - 1
         @tokens.splice idx, 0, ['{', '{', token[2]]

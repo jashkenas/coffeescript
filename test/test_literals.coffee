@@ -139,3 +139,16 @@ obj =
 
 ok obj.a is 1
 ok obj.b is 2
+
+
+# Implicit objects nesting.
+obj =
+  options:
+    value: yes
+
+  fn: ->
+    {}
+    null
+
+ok obj.options.value is yes
+ok obj.fn() is null
