@@ -66,7 +66,7 @@ ok x*-y is 50
 ok x*+y is -50
 
 
-# Half-operators.
+# Compound operators.
 one = two = null
 one or= 1
 two or=  2
@@ -79,3 +79,18 @@ two and=  'two'
 
 ok one is 'one'
 ok two is 'two'
+
+
+# Compound assignment should be careful about caching variables.
+list = [0, 0, 5, 10]
+count = 1
+key = ->
+  count += 1
+
+list[key()] or= 100
+ok list.join(' ') is '0 0 5 10'
+
+count = 0
+
+list[key()] or= 100
+ok list.join(' ') is '0 100 5 10'

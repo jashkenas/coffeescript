@@ -62,15 +62,18 @@ exports.BaseNode = class BaseNode
   # in multiple places, ensure that the expression is only ever evaluated once,
   # by assigning it to a temporary variable.
   compileReference: (o, options) ->
+    options or= {}
     pair = if not ((this instanceof CallNode or @contains((n) -> n instanceof CallNode)) or
                   (this instanceof ValueNode and (not (@base instanceof LiteralNode) or @hasProperties())))
       [this, this]
+    else if this instanceof ValueNode and options.assignment
+      this.cacheIndexes(o)
     else
       reference = literal o.scope.freeVariable()
       compiled  = new AssignNode reference, this
       [compiled, reference]
-    return pair unless options and options.precompile
-    [pair[0].compile(o), pair[1].compile(o)]
+    return [pair[0].compile(o), pair[1].compile(o)] if options.precompile
+    pair
 
   # Convenience method to grab the current indentation level, plus tabbing in.
   idt: (tabs) ->
@@ -335,6 +338,18 @@ exports.ValueNode = class ValueNode extends BaseNode
     node = o.chainRoot.base or o.chainRoot.variable
     while node instanceof CallNode then node = node.variable
     node is this
+
+  # If the value node has indexes containing function calls, and the value node
+  # needs to be used twice, in compound assignment ... then we need to cache
+  # the value of the indexes.
+  cacheIndexes: (o) ->
+    copy = new ValueNode @base, @properties.slice 0
+    for prop, i in copy.properties
+      if prop instanceof IndexNode and prop.contains((n) -> n instanceof CallNode)
+        [index, indexVar] = prop.index.compileReference o
+        this.properties[i] = new IndexNode index
+        copy.properties[i] = new IndexNode indexVar
+    [this, copy]
 
   # Override compile to unwrap the value when possible.
   compile: (o) ->
@@ -1094,10 +1109,11 @@ exports.OpNode = class OpNode extends BaseNode
   # operands are only evaluated once, even though we have to reference them
   # more than once.
   compileAssignment: (o) ->
-    [first, second] = [@first.compile(o), @second.compile(o)]
+    [first, firstVar] = @first.compileReference o, precompile: yes, assignment: yes
+    second = @second.compile o
     o.scope.find(first) if first.match(IDENTIFIER)
-    return "#first = #{ ExistenceNode.compileTest(o, @first) } ? #first : #second" if @operator is '?='
-    "#first = #first #{ @operator.substr(0, 2) } #second"
+    return "#first = #{ ExistenceNode.compileTest(o, @first) } ? #firstVar : #second" if @operator is '?='
+    "#first = #firstVar #{ @operator.substr(0, 2) } #second"
 
   # If this is an existence operator, we delegate to `ExistenceNode.compileTest`
   # to give us the safe references for the variables.
