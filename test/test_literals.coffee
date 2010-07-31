@@ -152,3 +152,34 @@ obj =
 
 ok obj.options.value is yes
 ok obj.fn() is null
+
+
+# Implicit objects with wacky indentation:
+obj =
+  reverse: (obj) ->
+    Array.prototype.reverse.call obj
+  abc: ->
+    @reverse(
+      @reverse @reverse ['a', 'b', 'c'].reverse()
+    )
+  one: [1, 2,
+    a: 'b'
+  3, 4]
+  red:
+    orange:
+          yellow:
+                  green: 'blue'
+    indigo: 'violet'
+  misdent: [[],
+  [],
+                  [],
+      []]
+
+ok obj.abc().join(' ') is 'a b c'
+ok obj.one.length is 5
+ok obj.one[4] is 4
+ok obj.one[2].a is 'b'
+ok (key for key of obj.red).length is 2
+ok obj.red.orange.yellow.green is 'blue'
+ok obj.red.indigo is 'violet'
+ok obj.misdent.toString() is ',,,'
