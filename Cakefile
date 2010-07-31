@@ -111,10 +111,10 @@ task 'test', 'run the CoffeeScript language test suite', ->
   fs.readdir 'test', (err, files) ->
     files.forEach (file) ->
       return unless file.match(/\.coffee$/i)
-      source = path.join 'test', file
-      fs.readFile source, (err, code) ->
+      fileName = path.join 'test', file
+      fs.readFile fileName, (err, code) ->
         try
-          CoffeeScript.run code.toString(), {source: source}
+          CoffeeScript.run code.toString(), {fileName}
         catch err
           failedTests += 1
-          log "failed #source", red, '\n' + err.stack.toString()
+          log "failed #fileName", red, '\n' + err.stack.toString()

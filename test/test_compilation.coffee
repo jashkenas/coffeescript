@@ -8,7 +8,7 @@ ok js is "one;\ntwo;"
 
 
 global.resultArray = []
-CoffeeScript.run("resultArray.push i for i of global", {noWrap: on, globals: on, source: 'tests'})
+CoffeeScript.run("resultArray.push i for i of global", {noWrap: on, globals: on, fileName: 'tests'})
 
 ok 'setInterval' in global.resultArray
 

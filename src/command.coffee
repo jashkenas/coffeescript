@@ -162,8 +162,8 @@ parseOptions = ->
   sources         = options.arguments
 
 # The compile-time options to pass to the CoffeeScript compiler.
-compileOptions = (source) ->
-  o = {source}
+compileOptions = (fileName) ->
+  o = {fileName}
   o.noWrap = options['no-wrap']
   o
 

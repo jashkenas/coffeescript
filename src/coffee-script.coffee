@@ -34,7 +34,7 @@ exports.compile = compile = (code, options) ->
   try
     (parser.parse lexer.tokenize code).compile options
   catch err
-    err.message = "In #options.source, #err.message" if options.source
+    err.message = "In #options.fileName, #err.message" if options.fileName
     throw err
 
 # Tokenize a string of CoffeeScript code, and return the array of tokens.
@@ -50,7 +50,7 @@ exports.nodes = (code) ->
 # Compile and execute a string of CoffeeScript (on the server), correctly
 # setting `__filename`, `__dirname`, and relative `require()`.
 exports.run = ((code, options) ->
-  module.filename = __filename = options.source
+  module.filename = __filename = options.fileName
   __dirname = path.dirname __filename
   eval exports.compile code, options
 )
