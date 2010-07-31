@@ -82,15 +82,15 @@ ok two is 'two'
 
 
 # Compound assignment should be careful about caching variables.
-list = [0, 0, 5, 10]
+list = [0, null, 5, 10]
 count = 1
 key = ->
   count += 1
 
 list[key()] or= 100
-ok list.join(' ') is '0 0 5 10'
+ok list.join(' ') is '0  5 10'
 
 count = 0
 
-list[key()] or= 100
+list[key()] ?= 100
 ok list.join(' ') is '0 100 5 10'
