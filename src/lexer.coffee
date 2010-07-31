@@ -91,7 +91,7 @@ exports.Lexer = class Lexer
     if include(JS_FORBIDDEN, id)
       if forcedIdentifier
         tag = 'STRING'
-        id  = "'#id'"
+        id  = "\"#id\""
         if forcedIdentifier is 'accessor'
           close_index = true
           @tokens.pop() if @tag() isnt '@'
