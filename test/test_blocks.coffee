@@ -33,3 +33,23 @@ func = ->
   obj.key - 5
 
 ok func() is 5
+
+
+# Ensure that chained calls with indented implicit object literals below are
+# alright.
+result = null
+obj =
+  method: (val)  -> this
+  second: (hash) -> result = hash.three
+
+
+obj
+  .method(
+    101
+  ).second(
+    one:
+      two: 2
+    three: 3
+  )
+
+ok result is 3

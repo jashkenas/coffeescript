@@ -205,6 +205,7 @@ exports.Lexer = class Lexer
       return @newlineToken indent
     else if size > @indent
       return @suppressNewlines() if noNewlines
+      @outdebt = 0
       diff = size - @indent
       @token 'INDENT', diff
       @indents.push diff
@@ -215,15 +216,24 @@ exports.Lexer = class Lexer
 
   # Record an outdent token or multiple tokens, if we happen to be moving back
   # inwards past several recorded indents.
-  outdentToken: (moveOut, noNewlines) ->
-    if moveOut > -@outdebt
-      while moveOut > 0 and @indents.length
-        lastIndent = @indents.pop()
-        @token 'OUTDENT', lastIndent
-        moveOut -= lastIndent
-    else
-      @outdebt += moveOut
-    @outdebt = moveOut unless noNewlines
+  outdentToken: (moveOut, noNewlines, close) ->
+    while moveOut > 0
+      len = @indents.length - 1
+      if @indents[len] is undefined
+        moveOut = 0
+      else if @indents[len] is @outdebt
+        moveOut -= @outdebt
+        @outdebt = 0
+      else if @indents[len] < @outdebt
+        @outdebt -= @indents[len]
+        moveOut -= @indents[len]
+      else
+        dent = @indents.pop()
+        dent -= @outdebt
+        moveOut -= dent
+        @outdebt = 0
+        @token 'OUTDENT', dent
+    @outdebt -= moveOut if dent
     @token 'TERMINATOR', "\n" unless @tag() is 'TERMINATOR' or noNewlines
     true
 
