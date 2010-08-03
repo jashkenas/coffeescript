@@ -72,7 +72,7 @@
       </div>
       <div class="contents repl_wrapper">
         <div class="code">
-          <div id="repl_source_wrap"><textarea id="repl_source">reverse: (string) ->
+          <div id="repl_source_wrap"><textarea id="repl_source">reverse = (string) ->
   string.split('').reverse().join ''
 
 alert reverse '.eeffoC yrT'</textarea></div>
@@ -128,7 +128,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.7.2">0.7.2</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.0">0.9.0</a>
     </p>
 
     <h2>
@@ -174,7 +174,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
       Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.7.2">0.7.2</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.0">0.9.0</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -1237,15 +1237,15 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
   <script type="text/coffeescript">
 
     # Set up the compilation function, to run when you stop typing.
-    compile_source: ->
-      source: $('#repl_source').val()
-      window.compiled_js: ''
+    compile_source = ->
+      source = $('#repl_source').val()
+      window.compiled_js = ''
       try
-        window.compiled_js: CoffeeScript.compile source, {noWrap: true}
+        window.compiled_js = CoffeeScript.compile source, noWrap: true
         $('#repl_results').text window.compiled_js
-        $('#error').hide();
+        $('#error').hide()
       catch error
-        $('#error').text(error.message).show();
+        $('#error').text(error.message).show()
 
     # Listen for keypresses and recompile.
     $('#repl_source').keyup -> compile_source()
@@ -1256,31 +1256,31 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
         eval window.compiled_js
       catch error then alert error
 
-    current_nav: null
+    current_nav = null
 
     # Helper to hide the menus.
-    close_menus: ->
+    close_menus = ->
       if current_nav
         current_nav.removeClass 'active'
-        document.body.className: 'minimized'
-      current_nav: null
+        document.body.className = 'minimized'
+      current_nav = null
 
     # Bind navigation buttons to open the menus.
     $('.navigation').click (e) ->
       return if e.target.tagName.toLowerCase() is 'a'
       if this isnt (current_nav and current_nav[0])
-        close_menus();
-        current_nav: $(this)
+        close_menus()
+        current_nav = $(this)
         current_nav.addClass 'active'
       false
 
     $(document.body).click -> close_menus()
 
     $('.navigation .full_screen').click ->
-      document.body.className: 'full_screen'
+      document.body.className = 'full_screen'
 
     $('.navigation .minimize').click ->
-      document.body.className: 'minimized'
+      document.body.className = 'minimized'
 
     $('#open_webchat').click ->
       $(this).replaceWith $('<iframe src="http://webchat.freenode.net/?channels=coffeescript" width="625" height="400"></iframe>')

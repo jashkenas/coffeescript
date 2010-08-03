@@ -59,7 +59,7 @@
       </div>
       <div class="contents repl_wrapper">
         <div class="code">
-          <div id="repl_source_wrap"><textarea id="repl_source">reverse: (string) ->
+          <div id="repl_source_wrap"><textarea id="repl_source">reverse = (string) ->
   string.split('').reverse().join ''
 
 alert reverse '.eeffoC yrT'</textarea></div>
@@ -115,7 +115,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.7.2">0.7.2</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.0">0.9.0</a>
     </p>
 
     <h2>
@@ -256,7 +256,7 @@ cubes = (function() {
       Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.7.2">0.7.2</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.0">0.9.0</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -534,7 +534,7 @@ matrix = [1, 0, 1, 0, 0, 1, 1, 1, 0];;alert(song.join(","));'>run: song.join(","
     </p>
     <div class='code'><pre class="idle">$(<span class="String"><span class="String">'</span>.account<span class="String">'</span></span>).css class<span class="Keyword">:</span> <span class="String"><span class="String">'</span>active<span class="String">'</span></span>
 </pre><pre class="idle"><span class="Keyword">$</span>(<span class="String"><span class="String">'</span>.account<span class="String">'</span></span>).css({
-  <span class="String"><span class="String">'</span>class<span class="String">'</span></span>: <span class="String"><span class="String">'</span>active<span class="String">'</span></span>
+  <span class="String"><span class="String">&quot;</span>class<span class="String">&quot;</span></span>: <span class="String"><span class="String">'</span>active<span class="String">'</span></span>
 });
 </pre><br class='clear' /></div>
 
@@ -620,7 +620,7 @@ inner = changeNumbers();;alert(inner);'>run: inner</button><br class='clear' /><
 
 date <span class="Keyword">=</span> <span class="Keyword">if</span> friday <span class="Keyword">then</span> sue <span class="Keyword">else</span> jill
 
-options <span class="Keyword">=</span> <span class="Keyword">or</span> defaults
+options <span class="Keyword">or</span><span class="Keyword">=</span> defaults
 </pre><pre class="idle"><span class="Storage">var</span> date, mood, options;
 <span class="Keyword">if</span> (singing) {
   mood <span class="Keyword">=</span> greatlyImproved;
@@ -1664,11 +1664,11 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">'<
       are preserved in the generated code.
     </p>
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">###</span></span>
-<span class="Comment">CoffeeScript Compiler v0.7.2</span>
+<span class="Comment">CoffeeScript Compiler v0.9.0</span>
 <span class="Comment">Released under the MIT License</span>
 <span class="Comment"><span class="Comment">###</span></span>
 </pre><pre class="idle"><span class="Comment"><span class="Comment">/*</span></span>
-<span class="Comment">CoffeeScript Compiler v0.7.2</span>
+<span class="Comment">CoffeeScript Compiler v0.9.0</span>
 <span class="Comment">Released under the MIT License</span>
 <span class="Comment"><span class="Comment">*/</span></span>
 </pre><br class='clear' /></div>
@@ -2130,15 +2130,15 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
   <script type="text/coffeescript">
 
     # Set up the compilation function, to run when you stop typing.
-    compile_source: ->
-      source: $('#repl_source').val()
-      window.compiled_js: ''
+    compile_source = ->
+      source = $('#repl_source').val()
+      window.compiled_js = ''
       try
-        window.compiled_js: CoffeeScript.compile source, {noWrap: true}
+        window.compiled_js = CoffeeScript.compile source, noWrap: true
         $('#repl_results').text window.compiled_js
-        $('#error').hide();
+        $('#error').hide()
       catch error
-        $('#error').text(error.message).show();
+        $('#error').text(error.message).show()
 
     # Listen for keypresses and recompile.
     $('#repl_source').keyup -> compile_source()
@@ -2149,31 +2149,31 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
         eval window.compiled_js
       catch error then alert error
 
-    current_nav: null
+    current_nav = null
 
     # Helper to hide the menus.
-    close_menus: ->
+    close_menus = ->
       if current_nav
         current_nav.removeClass 'active'
-        document.body.className: 'minimized'
-      current_nav: null
+        document.body.className = 'minimized'
+      current_nav = null
 
     # Bind navigation buttons to open the menus.
     $('.navigation').click (e) ->
       return if e.target.tagName.toLowerCase() is 'a'
       if this isnt (current_nav and current_nav[0])
-        close_menus();
-        current_nav: $(this)
+        close_menus()
+        current_nav = $(this)
         current_nav.addClass 'active'
       false
 
     $(document.body).click -> close_menus()
 
     $('.navigation .full_screen').click ->
-      document.body.className: 'full_screen'
+      document.body.className = 'full_screen'
 
     $('.navigation .minimize').click ->
-      document.body.className: 'minimized'
+      document.body.className = 'minimized'
 
     $('#open_webchat').click ->
       $(this).replaceWith $('<iframe src="http://webchat.freenode.net/?channels=coffeescript" width="625" height="400"></iframe>')

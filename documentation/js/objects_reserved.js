@@ -1,3 +1,3 @@
 $('.account').css({
-  'class': 'active'
+  "class": 'active'
 });
