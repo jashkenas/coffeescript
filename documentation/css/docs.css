@@ -1,8 +1,8 @@
 body {
-  font-size: 14px;
+  font-size: 13px;
   line-height: 20px;
   color: #191933;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, sans-serif !important;
 }
 div.container {
   width: 950px;
@@ -131,13 +131,15 @@ div.code {
     background: #fdcdcc;
     color: #864544;
     border: 1px solid #864544;
-    font: 10px/15px Arial;
+    font-size: 10px;
+    line-height: 15px;
     overflow: hidden;
     text-transform: uppercase;
   }
   .navigation {
     height: 50px;
-    font: bold 11px/50px Arial;
+    font-size: 11px;
+    line-height: 50px;
     text-transform: uppercase;
     position: relative;
     float: left;

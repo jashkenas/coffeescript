@@ -1,12 +1,17 @@
-var ages, matrix, singers, song;
+var kids, matrix, singers, song;
 song = ["do", "re", "mi", "fa", "so"];
 singers = {
   Jagger: 'Rock',
   Elvis: 'Roll'
 };
-ages = {
-  max: 10,
-  ida: 9,
-  tim: 11
-};
 matrix = [1, 0, 1, 0, 0, 1, 1, 1, 0];
+kids = {
+  brother: {
+    name: 'Max',
+    age: 11
+  },
+  sister: {
+    name: 'Ida',
+    age: 9
+  }
+};

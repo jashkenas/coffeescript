@@ -26,7 +26,6 @@
         <a href="#language">Language Reference</a>
         <a href="#whitespace">Significant Whitespace</a>
         <a href="#functions">Functions and Invocation</a>
-        <a href="#assignment">Assignment</a>
         <a href="#objects_and_arrays">Objects and Arrays</a>
         <a href="#lexical_scope">Lexical Scoping and Variable Safety</a>
         <a href="#conditionals">If, Else, Unless, and Conditional Assignment</a>
@@ -246,13 +245,12 @@ cubes = (function() {
       on top of the <a href="http://github.com/zaach/jison">Jison parser generator</a>, and is available
       as a <a href="http://nodejs.org/">Node.js</a> utility. The core compiler however,
       does not depend on Node, and can be run in other server-side-JavaScript environments,
-      or in the browser (see "Try CoffeeScript", above). This may be helpful,
-      as Node only run on flavors of nix, and not Windows, for the time being.
+      or in the browser (see "Try CoffeeScript", above).
     </p>
 
     <p>
       To install, first make sure you have a working copy of the latest tagged version of
-      <a href="http://nodejs.org/">Node.js</a>, currently <b>0.1.90</b> or higher.
+      <a href="http://nodejs.org/">Node.js</a>, currently <b>0.1.102</b> or higher.
       Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
@@ -326,7 +324,7 @@ sudo npm install coffee-script</pre>
           (<a href="http://www.javascriptlint.com/">JavaScript Lint</a>)
           command is installed, use it
           to check the compilation of a CoffeeScript file. (Handy in
-          conjunction with <tt>--watch</tt>)
+          conjunction with <br /> <tt>--watch</tt>)
         </td>
       </tr>
       <tr>
@@ -453,80 +451,66 @@ square = function(x) {
 cube = function(x) {
   return square(x) * x;
 };;alert(cube(5));'>run: cube(5)</button><br class='clear' /></div>
-    <p>
-      If you'd like to assign a function literal to a variable, but not have
-      it be named, just wrap the function definition in parentheses:
-      <tt>((x) -> x * x)</tt>
-    </p>
-
-    <p>
-      <span id="assignment" class="bookmark"></span>
-      <b class="header">Assignment</b>
-      Use a colon <tt>:</tt> to assign, as in
-      <a href="http://json.org">JSON</a>. Equal signs are only needed for
-      mathy things. While colons are preferred, the two may be used interchangeably,
-      even within object literals.
-    </p>
-    <div class='code'><pre class="idle">greeting   <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Hello CoffeeScript<span class="String">&quot;</span></span>
-difficulty <span class="Keyword">=</span> <span class="Number">0.5</span>
-</pre><pre class="idle"><span class="Storage">var</span> difficulty, greeting;
-greeting <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Hello CoffeeScript<span class="String">&quot;</span></span>;
-difficulty <span class="Keyword">=</span> <span class="Number">0.5</span>;
-</pre><button onclick='javascript: var difficulty, greeting;
-greeting = "Hello CoffeeScript";
-difficulty = 0.5;;alert(greeting);'>run: greeting</button><br class='clear' /></div>
-    <p>
-      All declaration of new variables is pushed up to the top of the nearest
-      lexical scope, so that assignment may always be performed within expressions.
-    </p>
 
     <p>
       <span id="objects_and_arrays" class="bookmark"></span>
       <b class="header">Objects and Arrays</b>
       Object and Array literals look very similar to their JavaScript cousins.
-      When you spread out each assignment on a separate line, the commas are
-      optional. In this way, assigning object properties looks the same as
-      assigning local variables, and can be moved around freely. Feel free to mix
-      and match the two styles.
+      When you spread out each property on a separate line, the commas are
+      optional. Implicit objects may be created with indentation instead of 
+      brackets, winding up looking quite similar to YAML.
     </p>
     <div class='code'><pre class="idle">song <span class="Keyword">=</span> [<span class="String"><span class="String">&quot;</span>do<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>re<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>mi<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>fa<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>so<span class="String">&quot;</span></span>]
 
 singers <span class="Keyword">=</span> {Jagger<span class="Keyword">:</span> <span class="String"><span class="String">'</span>Rock<span class="String">'</span></span>, Elvis<span class="Keyword">:</span> <span class="String"><span class="String">'</span>Roll<span class="String">'</span></span>}
-
-ages <span class="Keyword">=</span>
-  max<span class="Keyword">:</span> <span class="Number">10</span>
-  ida<span class="Keyword">:</span> <span class="Number">9</span>
-  tim<span class="Keyword">:</span> <span class="Number">11</span>
 
 matrix <span class="Keyword">=</span> [
   <span class="Number">1</span>, <span class="Number">0</span>, <span class="Number">1</span>
   <span class="Number">0</span>, <span class="Number">0</span>, <span class="Number">1</span>
   <span class="Number">1</span>, <span class="Number">1</span>, <span class="Number">0</span>
 ]
-</pre><pre class="idle"><span class="Storage">var</span> ages, matrix, singers, song;
+
+kids <span class="Keyword">=</span>
+  brother<span class="Keyword">:</span>
+    name<span class="Keyword">:</span> <span class="String"><span class="String">'</span>Max<span class="String">'</span></span>
+    age<span class="Keyword">:</span>  <span class="Number">11</span>
+  sister<span class="Keyword">:</span>
+    name<span class="Keyword">:</span> <span class="String"><span class="String">'</span>Ida<span class="String">'</span></span>
+    age<span class="Keyword">:</span>  <span class="Number">9</span>
+</pre><pre class="idle"><span class="Storage">var</span> kids, matrix, singers, song;
 song <span class="Keyword">=</span> [<span class="String"><span class="String">&quot;</span>do<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>re<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>mi<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>fa<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>so<span class="String">&quot;</span></span>];
 singers <span class="Keyword">=</span> {
   Jagger: <span class="String"><span class="String">'</span>Rock<span class="String">'</span></span>,
   Elvis: <span class="String"><span class="String">'</span>Roll<span class="String">'</span></span>
 };
-ages <span class="Keyword">=</span> {
-  max: <span class="Number">10</span>,
-  ida: <span class="Number">9</span>,
-  tim: <span class="Number">11</span>
-};
 matrix <span class="Keyword">=</span> [<span class="Number">1</span>, <span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">0</span>, <span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">1</span>, <span class="Number">1</span>, <span class="Number">0</span>];
-</pre><button onclick='javascript: var ages, matrix, singers, song;
+kids <span class="Keyword">=</span> {
+  brother: {
+    name: <span class="String"><span class="String">'</span>Max<span class="String">'</span></span>,
+    age: <span class="Number">11</span>
+  },
+  sister: {
+    name: <span class="String"><span class="String">'</span>Ida<span class="String">'</span></span>,
+    age: <span class="Number">9</span>
+  }
+};
+</pre><button onclick='javascript: var kids, matrix, singers, song;
 song = ["do", "re", "mi", "fa", "so"];
 singers = {
   Jagger: 'Rock',
   Elvis: 'Roll'
 };
-ages = {
-  max: 10,
-  ida: 9,
-  tim: 11
-};
-matrix = [1, 0, 1, 0, 0, 1, 1, 1, 0];;alert(song.join(","));'>run: song.join(",")</button><br class='clear' /></div>
+matrix = [1, 0, 1, 0, 0, 1, 1, 1, 0];
+kids = {
+  brother: {
+    name: 'Max',
+    age: 11
+  },
+  sister: {
+    name: 'Ida',
+    age: 9
+  }
+};;alert(song.join(","));'>run: song.join(",")</button><br class='clear' /></div>
     <p>
       In JavaScript, you can't use reserved words, like <tt>class</tt>, as properties
       of an object, without quoting them as strings. CoffeeScript notices and quotes
@@ -591,7 +575,7 @@ inner = changeNumbers();;alert(inner);'>run: inner</button><br class='clear' /><
     <p>
       If you'd like to create top-level variables for other scripts to use,
       attach them as properties on <b>window</b>, or on the <b>exports</b>
-      object in CommonJS. The <b>existential operator</b> (below), gives you a
+      object in CommonJS. The <b>existential operator</b> (covered below), gives you a
       reliable way to figure out where to add them, if you're targeting both
       CommonJS and the browser: <tt>root: exports ? this</tt>
     </p>
@@ -634,11 +618,6 @@ options <span class="Keyword">or</span><span class="Keyword">=</span> defaults
 date <span class="Keyword">=</span> friday ? sue : jill;
 options <span class="Keyword">=</span> options <span class="Keyword">||</span> defaults;
 </pre><br class='clear' /></div>
-    <p>
-      You can assign a variable to a half-expression to perform an operation
-      like Ruby's <tt>||=</tt>, which only assigns a value to a variable
-      if the variable's current value is falsy.
-    </p>
 
     <p>
       <span id="aliases" class="bookmark"></span>
@@ -1852,6 +1831,27 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       Change Log
     </h2>
 
+    <p>
+      <b class="header" style="margin-top: 20px;">0.9.0</b>
+      The CoffeeScript <b>0.9</b> series is considered to be a release candidate
+      for <b>1.0</b>; let's give her a shakedown cruise. <b>0.9.0</b> introduces a massive
+      backwards-incompatible change: Assignment now uses <tt>=</tt>, and object
+      literals use <tt>:</tt>, as in JavaScript. This allows us to have implicit
+      object literals, and YAML-style object definitions. Half assignments are
+      removed, in favor of <tt>+=</tt>, <tt>or=</tt>, and friends.
+      Downwards range comprehensions are now safe again, and are optimized to
+      straight for loops when created with integer endpoints.
+      A fast, unguarded form of object comprehension was added:
+      <tt>for all key, value of object</tt>. Mentioning the <tt>super</tt> keyword
+      with no arguments now forwards all arguments passed to the function,
+      as in Ruby. If you extend class <tt>B</tt> from parent class <tt>A</tt>, if
+      <tt>A</tt> has an <tt>extended</tt> method defined, it will be called, passing in <tt>B</tt> &mdash;
+      this enables static inheritance, among other things. Cleaner output for
+      functions bound with the fat arrow. <tt>@variables</tt> can now be used
+      in parameter lists, with the parameter being automatically set as a property
+      on the object &mdash; useful in constructors and setter functions.
+      Constructor functions can now take splats.
+    </p>
     <p>
       <b class="header" style="margin-top: 20px;">0.7.2</b>
       Quick bugfix (right after 0.7.1) for a problem that prevented <tt>coffee</tt>
