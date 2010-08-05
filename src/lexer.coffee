@@ -136,7 +136,7 @@ exports.Lexer = class Lexer
     @i += match[1].length
     true
 
-  # Matches and conumes comments.
+  # Matches and consumes comments.
   commentToken: ->
     return false unless match = @chunk.match(COMMENT)
     @line += count match[1], "\n"
