@@ -271,7 +271,7 @@ sudo npm install coffee-script</pre>
         <td><code>-t, --tokens</code></td>
         <td>
           Instead of parsing the CoffeeScript, just lex it, and print out the
-          token stream: <tt>[IDENTIFIER square] [ASSIGN :] [PARAM_START (]</tt> ...
+          token stream: <tt>[IDENTIFIER square] [ASSIGN =] [PARAM_START (]</tt> ...
         </td>
       </tr>
       <tr>
@@ -344,7 +344,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <p>
       You can use newlines to break up your expression into smaller pieces,
       as long as CoffeeScript can determine that the line hasn't finished yet,
-      because it ends with an operator or a dot.
+      because it ends with an operator or a dot ... seen most commonly
+      in jQuery-chaining style JavaScript.
     </p>
 
     <p>
@@ -360,7 +361,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <b class="header">Objects and Arrays</b>
       Object and Array literals look very similar to their JavaScript cousins.
       When you spread out each property on a separate line, the commas are
-      optional. Implicit objects may be created with indentation instead of 
+      optional. Implicit objects may be created with indentation instead of
       brackets, winding up looking quite similar to YAML.
     </p>
     <%= code_for('objects_and_arrays', 'song.join(",")') %>
@@ -406,7 +407,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       attach them as properties on <b>window</b>, or on the <b>exports</b>
       object in CommonJS. The <b>existential operator</b> (covered below), gives you a
       reliable way to figure out where to add them, if you're targeting both
-      CommonJS and the browser: <tt>root: exports ? this</tt>
+      CommonJS and the browser: <tt>root = exports ? this</tt>
     </p>
 
     <p>
@@ -514,6 +515,13 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       an object instead of the values in an array.
     </p>
     <%= code_for('object_comprehensions', 'ages.join(", ")') %>
+    <p>
+      By default, object comprehensions are safe, and use a <tt>hasOwnProperty</tt>
+      check to make sure that you're dealing with properties on the current
+      object. If you'd like the regular JavaScript <br /><tt>for (key in obj) ...</tt>
+      loop, for speed or for another reason, you can use <br />
+      <tt>for all key, value of object</tt> in CoffeeScript.
+    </p>
 
     <p>
       <span id="slice_splice" class="bookmark"></span>
@@ -634,7 +642,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <%= code_for('prototypes', '"one_two".dasherize()') %>
     <p>
       Finally, you may assign Class-level (static) properties within a class
-      definition by using<br /><tt>@property: value</tt>
+      definition by using<br /><tt>@property = value</tt>
     </p>
 
     <p>
@@ -738,12 +746,12 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <span id="interpolation" class="bookmark"></span>
       <b class="header">String and RegExp Interpolation</b>
       A version of <a href="http://wiki.ecmascript.org/doku.php?id=strawman:string_interpolation">ECMAScript Harmony's proposed string interpolation</a>
-      is included in CoffeeScript. Simple variables can be included by marking
-      them with a dollar sign.
+      is included in CoffeeScript. Simple variables can be included by prefixing
+      them with a hash mark.
     </p>
     <%= code_for('interpolation', 'quote') %>
     <p>
-      And arbitrary expressions can be interpolated by using brackets <tt>${ ... }</tt><br />
+      And arbitrary expressions can be interpolated by using brackets <tt>#{ ... }</tt><br />
       Interpolation works the same way within regular expressions.
     </p>
     <%= code_for('interpolation_expression', 'sentence') %>
@@ -940,6 +948,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       literals use <tt>:</tt>, as in JavaScript. This allows us to have implicit
       object literals, and YAML-style object definitions. Half assignments are
       removed, in favor of <tt>+=</tt>, <tt>or=</tt>, and friends.
+      Interpolation now uses a hash mark <tt>#</tt> instead of the dollar sign 
+      <tt>$</tt> &mdash; because dollar signs may be part of a valid JS identifier.
       Downwards range comprehensions are now safe again, and are optimized to
       straight for loops when created with integer endpoints.
       A fast, unguarded form of object comprehension was added:
