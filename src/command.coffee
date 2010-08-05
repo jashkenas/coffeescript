@@ -129,7 +129,7 @@ writeJs = (source, js, base) ->
   dir       = if options.output then path.join options.output, baseDir else srcDir
   jsPath    = path.join dir, filename
   compile   = ->
-    return unless js.length
+    js = ' ' if js.length <= 0
     fs.writeFile jsPath, js, (err) ->
       puts "Compiled #source" if options.compile and options.watch
   path.exists dir, (exists) ->
