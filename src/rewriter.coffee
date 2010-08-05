@@ -133,9 +133,9 @@ exports.Rewriter = class Rewriter
       after  = @tokens[i + 2]
       open   = stack[len] > 0
       if (tag is 'TERMINATOR' and not ((after and after[0] is ':') or (post and post[0] is '@' and @tokens[i + 3] and @tokens[i + 3][0] is ':'))) or
-          (running and tag is ',' and post and (post[0] not in ['IDENTIFIER', 'STRING', '@']))
+          (running and tag is ',' and post and (post[0] not in ['IDENTIFIER', 'STRING', '@', 'TERMINATOR']))
         running = no
-        return closeBrackets(i)
+        return closeBrackets(if post and post[0] is 'OUTDENT' then i + 1 else i)
       else if include EXPRESSION_START, tag
         stack.push(if tag is '{' then 1 else 0)
         return 2 if tag is '{' and post and post[0] is 'INDENT'

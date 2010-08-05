@@ -140,6 +140,13 @@ obj =
 ok obj.a is 1
 ok obj.b is 2
 
+obj =
+  a: 1,
+  b: 2,
+
+ok obj.a is 1
+ok obj.b is 2
+
 
 # Implicit objects nesting.
 obj =
