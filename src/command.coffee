@@ -5,11 +5,15 @@
 # interactive REPL.
 
 # External dependencies.
-fs            = require 'fs'
-path          = require 'path'
-optparse      = require './optparse'
-CoffeeScript  = require './coffee-script'
-{spawn, exec} = require 'child_process'
+fs             = require 'fs'
+path           = require 'path'
+optparse       = require './optparse'
+CoffeeScript   = require './coffee-script'
+{helpers}      = require './helpers'
+{spawn, exec}  = require 'child_process'
+{EventEmitter} = require 'events'
+
+helpers.extend CoffeeScript, new EventEmitter
 
 # The help banner that is printed when `coffee` is called without arguments.
 BANNER = '''
@@ -21,19 +25,20 @@ BANNER = '''
 
 # The list of all the valid option flags that `coffee` knows how to handle.
 SWITCHES = [
-  ['-c', '--compile',       'compile to JavaScript and save as .js files']
-  ['-i', '--interactive',   'run an interactive CoffeeScript REPL']
-  ['-o', '--output [DIR]',  'set the directory for compiled JavaScript']
-  ['-w', '--watch',         'watch scripts for changes, and recompile']
-  ['-p', '--print',         'print the compiled JavaScript to stdout']
-  ['-l', '--lint',          'pipe the compiled JavaScript through JSLint']
-  ['-s', '--stdio',         'listen for and compile scripts over stdio']
-  ['-e', '--eval',          'compile a string from the command line']
-  [      '--no-wrap',       'compile without the top-level function wrapper']
-  ['-t', '--tokens',        'print the tokens that the lexer produces']
-  ['-n', '--nodes',         'print the parse tree that Jison produces']
-  ['-v', '--version',       'display CoffeeScript version']
-  ['-h', '--help',          'display this help message']
+  ['-c', '--compile',        'compile to JavaScript and save as .js files']
+  ['-i', '--interactive',    'run an interactive CoffeeScript REPL']
+  ['-o', '--output [DIR]',   'set the directory for compiled JavaScript']
+  ['-w', '--watch',          'watch scripts for changes, and recompile']
+  ['-p', '--print',          'print the compiled JavaScript to stdout']
+  ['-l', '--lint',           'pipe the compiled JavaScript through JSLint']
+  ['-s', '--stdio',          'listen for and compile scripts over stdio']
+  ['-e', '--eval',           'compile a string from the command line']
+  ['-r', '--require [FILE]', 'require the library, before executing your script', isList: yes]
+  [      '--no-wrap',        'compile without the top-level function wrapper']
+  ['-t', '--tokens',         'print the tokens that the lexer produces']
+  ['-n', '--nodes',          'print the parse tree that Jison produces']
+  ['-v', '--version',        'display CoffeeScript version']
+  ['-h', '--help',           'display this help message']
 ]
 
 # Top-level objects shared by all the functions.
@@ -88,18 +93,28 @@ compileScripts = ->
 compileScript = (source, code, base) ->
   o = options
   codeOpts = compileOptions source
+  if o.require
+    globalize = {CoffeeScript}
+    (global[name] = ref) for name, ref of globalize
+    require file.replace /^(\.+\/)/, "#{ process.cwd() }/$1" for file in o.require
+    delete global[name] for name of globalize
   try
+    CoffeeScript.emit 'compile', {source, code, base, options}
     if      o.tokens      then printTokens CoffeeScript.tokens code
     else if o.nodes       then puts CoffeeScript.nodes(code).toString()
     else if o.run         then CoffeeScript.run code, codeOpts
     else
       js = CoffeeScript.compile code, codeOpts
+      CoffeeScript.emit 'success', js
       if o.print          then print js
       else if o.compile   then writeJs source, js, base
       else if o.lint      then lint js
   catch err
-    error(err.stack) and process.exit 1 unless o.watch
-    puts err.message
+    # Avoid using 'error' as it is a special event -- if there is no handler,
+    # node will print a stack trace and exit the program.
+    CoffeeScript.emit 'exception', err
+    error(err.stack) and process.exit 1 unless o.watch or err.handled
+    puts err.message unless err.handled
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
 # and write them back to **stdout**.
