@@ -33,7 +33,7 @@ exports.OptionParser = class OptionParser
           options[rule.name] = if rule.hasArgument then args[i += 1] else true
           matchedRule = yes
           break
-      throw new Error "unrecognized option: #arg" if isOption and not matchedRule
+      throw new Error "unrecognized option: #{arg}" if isOption and not matchedRule
       if not isOption
         options.arguments = args[i...args.length]
         break
@@ -43,12 +43,12 @@ exports.OptionParser = class OptionParser
   # of the valid options, for `--help` and such.
   help: ->
     lines = ['Available options:']
-    lines.unshift "#@banner\n" if @banner
+    lines.unshift "#{@banner}\n" if @banner
     for rule in @rules
       spaces  = 15 - rule.longFlag.length
       spaces  = if spaces > 0 then (' ' for i in [0..spaces]).join('') else ''
       letPart = if rule.shortFlag then rule.shortFlag + ', ' else '    '
-      lines.push "  #letPart#rule.longFlag#spaces#rule.description"
+      lines.push '  ' + letPart + rule.longFlag + spaces + rule.description
     "\n#{ lines.join('\n') }\n"
 
 # Helpers

@@ -80,7 +80,7 @@ exports.Scope = class Scope
   # Return the list of assignments that are supposed to be made at the top
   # of this scope.
   assignedVariables: ->
-    "#key = #val.value" for key, val of @variables when val.assigned
+    "#{key} = #{val.value}" for key, val of @variables when val.assigned
 
   # Compile the JavaScript for all of the variable declarations in this scope.
   compiledDeclarations: ->

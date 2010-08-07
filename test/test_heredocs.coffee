@@ -55,17 +55,17 @@ ok a is 'more"than"one"quote'
 val = 10
 
 a = """
-    basic heredoc #val
+    basic heredoc #{val}
     on two lines
     """
 
 b = '''
-    basic heredoc #val
+    basic heredoc #{val}
     on two lines
     '''
 
 ok a is "basic heredoc 10\non two lines"
-ok b is "basic heredoc \#val\non two lines"
+ok b is "basic heredoc \#{val}\non two lines"
 
 
 a = '''here's an apostrophe'''

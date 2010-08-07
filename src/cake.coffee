@@ -59,11 +59,11 @@ printTasks = ->
   for all name, task of tasks
     spaces = 20 - name.length
     spaces = if spaces > 0 then (' ' for i in [0..spaces]).join('') else ''
-    desc   = if task.description then "# #task.description" else ''
-    puts "cake #name#spaces #desc"
+    desc   = if task.description then "# #{task.description}" else ''
+    puts "cake #{name}#{spaces} #{desc}"
   puts oparse.help() if switches.length
 
 # Print an error and exit when attempting to all an undefined task.
 missingTask = (task) ->
-  puts "No such task: \"#task\""
+  puts "No such task: \"#{task}\""
   process.exit 1

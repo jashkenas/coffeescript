@@ -32,8 +32,8 @@ unwrap = /function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 # previous nonterminal.
 o = (patternString, action, options) ->
   return [patternString, '$$ = $1;', options] unless action
-  action = if match = (action + '').match(unwrap) then match[1] else "(#action())"
-  [patternString, "$$ = #action;", options]
+  action = if match = (action + '').match(unwrap) then match[1] else "(#{action}())"
+  [patternString, "$$ = #{action};", options]
 
 # Grammatical Rules
 # -----------------

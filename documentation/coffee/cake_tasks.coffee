@@ -6,4 +6,4 @@ task 'build:parser', 'rebuild the Jison parser', ->
   require 'jison'
   code = require('./lib/grammar').parser.generate()
   dir  = options.output or 'lib'
-  fs.writeFile "#dir/parser.js", code
+  fs.writeFile "#{dir}/parser.js", code

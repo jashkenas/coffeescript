@@ -16,25 +16,25 @@ run = (args) ->
 
 # Log a message with a color.
 log = (message, color, explanation) ->
-  puts "#color#message#reset #{explanation or ''}"
+  puts color + message + reset + ' ' + (explanation or '')
 
 option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
 
 task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) ->
   base = options.prefix or '/usr/local'
-  lib  = "#base/lib/coffee-script"
-  bin  = "#base/bin"
+  lib  = "#{base}/lib/coffee-script"
+  bin  = "#{base}/bin"
   node = "~/.node_libraries/coffee-script"
-  puts   "Installing CoffeeScript to #lib"
-  puts   "Linking to #node"
-  puts   "Linking 'coffee' to #bin/coffee"
+  puts   "Installing CoffeeScript to #{lib}"
+  puts   "Linking to #{node}"
+  puts   "Linking 'coffee' to #{bin}/coffee"
   exec([
-    "mkdir -p #lib #bin"
-    "cp -rf bin lib LICENSE README package.json src #lib"
-    "ln -sf #lib/bin/coffee #bin/coffee"
-    "ln -sf #lib/bin/cake #bin/cake"
+    "mkdir -p #{lib} #{bin}"
+    "cp -rf bin lib LICENSE README package.json src #{lib}"
+    "ln -sf #{lib}/bin/coffee #{bin}/coffee"
+    "ln -sf #{lib}/bin/cake #{bin}/cake"
     "mkdir -p ~/.node_libraries"
-    "ln -sf #lib/lib #node"
+    "ln -sf #{lib}/lib #{node}"
   ].join(' && '), (err, stdout, stderr) ->
     if err then print stderr else log 'done', green
   )
@@ -103,9 +103,9 @@ task 'test', 'run the CoffeeScript language test suite', ->
   }
   process.on 'exit', ->
     time = ((new Date - startTime) / 1000).toFixed(2)
-    message = "passed #passedTests tests in #time seconds#reset"
+    message = "passed #{passedTests} tests in #{time} seconds#{reset}"
     if failedTests
-      log "failed #failedTests and #message", red
+      log "failed #{failedTests} and #{message}", red
     else
       log message, green
   fs.readdir 'test', (err, files) ->
@@ -117,4 +117,4 @@ task 'test', 'run the CoffeeScript language test suite', ->
           CoffeeScript.run code.toString(), {fileName}
         catch err
           failedTests += 1
-          log "failed #fileName", red, '\n' + err.stack.toString()
+          log "failed #{fileName}", red, '\n' + err.stack.toString()

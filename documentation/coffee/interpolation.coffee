@@ -1,2 +1,2 @@
 author = "Wittgenstein"
-quote  = "A picture is a fact. -- #author"
+quote  = "A picture is a fact. -- #{author}"
