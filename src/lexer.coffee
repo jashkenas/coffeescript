@@ -395,20 +395,13 @@ exports.Lexer = class Lexer
     if str.length < 3 or not starts str, '"'
       @token 'STRING', str
     else
-      lexer =    new Lexer
-      tokens =   []
-      quote =    str.substring 0, 1
-      [i, pi] =  [1, 1]
+      lexer   = new Lexer
+      tokens  = []
+      quote   = str.substring 0, 1
+      [i, pi] = [1, 1]
       while i < str.length - 1
         if starts str, '\\', i
           i += 1
-        else if match = str.substring(i).match INTERPOLATION
-          [group, interp] = match
-          interp = "this.#{ interp.substring(1) }" if starts interp, '@'
-          tokens.push ['STRING', quote + str.substring(pi, i) + quote] if pi < i
-          tokens.push ['IDENTIFIER', interp]
-          i += group.length - 1
-          pi = i + 1
         else if (expr = @balancedString str.substring(i), [['#{', '}']])
           tokens.push ['STRING', quote + str.substring(pi, i) + quote] if pi < i
           inner = expr.substring(2, expr.length - 1)
@@ -518,7 +511,6 @@ JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
 IDENTIFIER    = /^([a-zA-Z\$_](\w|\$)*)/
 NUMBER        = /^(((\b0(x|X)[0-9a-fA-F]+)|((\b[0-9]+(\.[0-9]+)?|\.[0-9]+)(e[+\-]?[0-9]+)?)))\b/i
 HEREDOC       = /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
-INTERPOLATION = /^#([a-zA-Z_@]\w*(\.\w+)*)/
 OPERATOR      = /^(-[\-=>]?|\+[+=]?|[*&|\/%=<>:!?]+)([ \t]*)/
 WHITESPACE    = /^([ \t]+)/
 COMMENT       = /^(\s*\#{3}(?!#)[ \t]*\n+([\s\S]*?)[ \t]*\n+[ \t]*\#{3}|(\s*#(?!##[^#])[^\n]*)+)/
@@ -528,10 +520,10 @@ LAST_DENTS    = /\n([ \t]*)/g
 LAST_DENT     = /\n([ \t]*)/
 
 # Regex-matching-regexes.
-REGEX_START        = /^\/[^\/ ]/
-REGEX_INTERPOLATION= /([^\\]#[a-zA-Z_@]|[^\\]#\{.*[^\\]\})/
-REGEX_END          = /^(([imgy]{1,4})\b|\W|$)/
-REGEX_ESCAPE       = /\\[^\$]/g
+REGEX_START         = /^\/[^\/ ]/
+REGEX_INTERPOLATION = /([^\\]#\{.*[^\\]\})/
+REGEX_END           = /^(([imgy]{1,4})\b|\W|$)/
+REGEX_ESCAPE        = /\\[^\$]/g
 
 # Token cleaning regexes.
 JS_CLEANER      = /(^`|`$)/g
