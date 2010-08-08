@@ -47,7 +47,6 @@ SWITCHES = [
 options      = {}
 sources      = []
 optionParser = null
-localPath    = /^.\//
 
 # Run `coffee` by parsing passed options and determining what action to take.
 # Many flags cause us to divert before compiling anything. Flags passed after
@@ -97,7 +96,7 @@ compileScript = (source, code, base) ->
   o = options
   codeOpts = compileOptions source
   if o.require
-    require file.replace(localPath, process.cwd() + '/') for file in o.require
+    require fs.realpathSync file for file in o.require
   try
     CoffeeScript.emit 'compile', {source, code, base, options}
     if      o.tokens      then printTokens CoffeeScript.tokens code
