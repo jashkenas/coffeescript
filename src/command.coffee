@@ -13,7 +13,9 @@ CoffeeScript   = require './coffee-script'
 {spawn, exec}  = require 'child_process'
 {EventEmitter} = require 'events'
 
+# Allow CoffeeScript to emit Node.js events, and add it to global scope.
 helpers.extend CoffeeScript, new EventEmitter
+global.CoffeeScript = CoffeeScript
 
 # The help banner that is printed when `coffee` is called without arguments.
 BANNER = '''
@@ -45,6 +47,7 @@ SWITCHES = [
 options      = {}
 sources      = []
 optionParser = null
+localPath    = /^.\//
 
 # Run `coffee` by parsing passed options and determining what action to take.
 # Many flags cause us to divert before compiling anything. Flags passed after
@@ -94,7 +97,7 @@ compileScript = (source, code, base) ->
   o = options
   codeOpts = compileOptions source
   if o.require
-    require file for file in o.require
+    require file.replace(localPath, process.cwd() + '/') for file in o.require
   try
     CoffeeScript.emit 'compile', {source, code, base, options}
     if      o.tokens      then printTokens CoffeeScript.tokens code
