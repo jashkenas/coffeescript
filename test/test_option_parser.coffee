@@ -5,6 +5,7 @@
 opt = new OptionParser [
   ['-r', '--required [DIR]',  'desc required']
   ['-o', '--optional',        'desc optional']
+  ['-l', '--list [FILES*]',   'desc list']
 ]
 
 result = opt.parse ['one', 'two', 'three', '-r', 'dir']
@@ -17,4 +18,10 @@ result = opt.parse ['--optional', '-r', 'folder', 'one', 'two']
 ok result.optional is true
 ok result.required is 'folder'
 ok result.arguments.join(' ') is 'one two'
+
+result = opt.parse ['-l', 'one.txt', '-l', 'two.txt', 'three']
+
+ok result.list instanceof Array
+ok result.list.join(' ') is 'one.txt two.txt'
+ok result.arguments.join(' ') is 'three'
 

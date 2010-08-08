@@ -59,7 +59,7 @@ exports.OptionParser = class OptionParser
 LONG_FLAG  = /^(--\w[\w\-]+)/
 SHORT_FLAG = /^(-\w)/
 MULTI_FLAG = /^-(\w{2,})/
-OPTIONAL   = /\[(.+)\]/
+OPTIONAL   = /\[(\w+(\*?))\]/
 
 # Build and return the list of option rules. If the optional *short-flag* is
 # unspecified, leave it out by padding with `null`.
@@ -80,7 +80,7 @@ buildRule = (shortFlag, longFlag, description, options) ->
     longFlag:     longFlag
     description:  description
     hasArgument:  !!(match and match[1])
-    isList:       !!options.isList
+    isList:       !!(match and match[2])
   }
 
 # Normalize arguments by expanding merged flags into multiple flags. This allows

@@ -25,20 +25,20 @@ BANNER = '''
 
 # The list of all the valid option flags that `coffee` knows how to handle.
 SWITCHES = [
-  ['-c', '--compile',        'compile to JavaScript and save as .js files']
-  ['-i', '--interactive',    'run an interactive CoffeeScript REPL']
-  ['-o', '--output [DIR]',   'set the directory for compiled JavaScript']
-  ['-w', '--watch',          'watch scripts for changes, and recompile']
-  ['-p', '--print',          'print the compiled JavaScript to stdout']
-  ['-l', '--lint',           'pipe the compiled JavaScript through JSLint']
-  ['-s', '--stdio',          'listen for and compile scripts over stdio']
-  ['-e', '--eval',           'compile a string from the command line']
-  ['-r', '--require [FILE]', 'require the library, before executing your script', isList: yes]
-  [      '--no-wrap',        'compile without the top-level function wrapper']
-  ['-t', '--tokens',         'print the tokens that the lexer produces']
-  ['-n', '--nodes',          'print the parse tree that Jison produces']
-  ['-v', '--version',        'display CoffeeScript version']
-  ['-h', '--help',           'display this help message']
+  ['-c', '--compile',         'compile to JavaScript and save as .js files']
+  ['-i', '--interactive',     'run an interactive CoffeeScript REPL']
+  ['-o', '--output [DIR]',    'set the directory for compiled JavaScript']
+  ['-w', '--watch',           'watch scripts for changes, and recompile']
+  ['-p', '--print',           'print the compiled JavaScript to stdout']
+  ['-l', '--lint',            'pipe the compiled JavaScript through JSLint']
+  ['-s', '--stdio',           'listen for and compile scripts over stdio']
+  ['-e', '--eval',            'compile a string from the command line']
+  ['-r', '--require [FILE*]', 'require a library before executing your script']
+  [      '--no-wrap',         'compile without the top-level function wrapper']
+  ['-t', '--tokens',          'print the tokens that the lexer produces']
+  ['-n', '--nodes',           'print the parse tree that Jison produces']
+  ['-v', '--version',         'display CoffeeScript version']
+  ['-h', '--help',            'display this help message']
 ]
 
 # Top-level objects shared by all the functions.
@@ -94,10 +94,7 @@ compileScript = (source, code, base) ->
   o = options
   codeOpts = compileOptions source
   if o.require
-    globalize = {CoffeeScript}
-    (global[name] = ref) for name, ref of globalize
-    require file.replace /^(\.+\/)/, "#{ process.cwd() }/$1" for file in o.require
-    delete global[name] for name of globalize
+    require file for file in o.require
   try
     CoffeeScript.emit 'compile', {source, code, base, options}
     if      o.tokens      then printTokens CoffeeScript.tokens code
@@ -112,9 +109,10 @@ compileScript = (source, code, base) ->
   catch err
     # Avoid using 'error' as it is a special event -- if there is no handler,
     # node will print a stack trace and exit the program.
-    CoffeeScript.emit 'exception', err
-    error(err.stack) and process.exit 1 unless o.watch or err.handled
-    puts err.message unless err.handled
+    CoffeeScript.emit 'failure', err
+    return if CoffeeScript.listeners('failure').length
+    error(err.stack) and process.exit 1 unless o.watch
+    puts err.message
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
 # and write them back to **stdout**.
