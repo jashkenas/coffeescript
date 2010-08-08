@@ -71,6 +71,13 @@ ok obj.two()   is "I'm two"
 ok obj.three() is "I'm three"
 
 
+# Ensure that local variables are closed over for range comprehensions.
+funcs = for i in [1..3]
+  -> -i
+
+ok (func() for func in funcs).join(' ') is '-1 -2 -3'
+
+
 # Even when referenced in the filter.
 list = ['one', 'two', 'three']
 
