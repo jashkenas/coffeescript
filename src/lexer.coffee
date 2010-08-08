@@ -402,7 +402,7 @@ exports.Lexer = class Lexer
       while i < str.length - 1
         if starts str, '\\', i
           i += 1
-        else if (expr = @balancedString str.substring(i), [['#{', '}']])
+        else if expr = @balancedString(str.substring(i), [['#{', '}']])
           tokens.push ['STRING', quote + str.substring(pi, i) + quote] if pi < i
           inner = expr.substring(2, expr.length - 1)
           if inner.length

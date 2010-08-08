@@ -821,9 +821,9 @@ exports.AssignNode = class AssignNode extends BaseNode
       isString = idx.value and idx.value.match IS_STRING
       accessClass = if isString or @variable.isArray() then IndexNode else AccessorNode
       if obj instanceof SplatNode and not splat
-        val = literal(obj.compileValue(o, valVar,
+        val = literal obj.compileValue o, valVar,
           (oindex = indexOf(@variable.base.objects, obj)),
-          (olength = @variable.base.objects.length) - oindex - 1))
+          (olength = @variable.base.objects.length) - oindex - 1
         splat = true
       else
         idx = literal(if splat then "#{valVar}.length - #{olength - idx}" else idx) if typeof idx isnt 'object'

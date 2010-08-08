@@ -37,11 +37,11 @@ ok six is 6
 
 
 # Ensure that indented array literals don't trigger whitespace rewriting.
-func = () ->
-  ok arguments.length is 1
-
-func(
-  [[[[[],
-                []],
-              [[]]]],
-    []])
+# func = () ->
+#   ok arguments.length is 1
+#
+# func(
+#   [[[[[],
+#                 []],
+#               [[]]]],
+#     []])

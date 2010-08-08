@@ -32,7 +32,8 @@ exports.Rewriter = class Rewriter
     @adjustComments()
     @removeLeadingNewlines()
     @removeMidExpressionNewlines()
-    @closeOpenCallsAndIndexes()
+    @closeOpenCalls()
+    @closeOpenIndexes()
     @addImplicitIndentation()
     @addImplicitBraces()
     @addImplicitParentheses()
@@ -52,6 +53,16 @@ exports.Rewriter = class Rewriter
       move = block @tokens[i - 1], @tokens[i], @tokens[i + 1], i
       i += move
     true
+
+  detectEnd: (i, condition, action) ->
+    levels = 0
+    loop
+      break unless token = @tokens[i]
+      return action token, i if !levels and condition token, i
+      levels += 1 if token[0] in EXPRESSION_START
+      levels -= 1 if token[0] in EXPRESSION_END
+      i += 1
+    i - 1
 
   # Massage newlines and indentations so that comments don't have to be
   # correctly indented, or appear on a line of their own.
@@ -88,30 +99,22 @@ exports.Rewriter = class Rewriter
       @tokens.splice i, 1
       return 0
 
-  # The lexer has tagged the opening parenthesis of a method call, and the
-  # opening bracket of an indexing operation. Match them with their paired
-  # close.
-  closeOpenCallsAndIndexes: ->
-    parens   = [0]
-    brackets = [0]
+  # The lexer has tagged the opening parenthesis of a method call. Match it with
+  # its paired close.
+  closeOpenCalls: ->
     @scanTokens (prev, token, post, i) =>
-      switch token[0]
-        when 'CALL_START'  then parens.push 0
-        when 'INDEX_START' then brackets.push 0
-        when '('           then parens[parens.length - 1] += 1
-        when '['           then brackets[brackets.length - 1] += 1
-        when ')'
-          if parens[parens.length - 1] is 0
-            parens.pop()
-            token[0] = 'CALL_END'
-          else
-            parens[parens.length - 1] -= 1
-        when ']'
-          if brackets[brackets.length - 1] == 0
-            brackets.pop()
-            token[0] = 'INDEX_END'
-          else
-            brackets[brackets.length - 1] -= 1
+      condition = (token, i) -> token[0] in [')', 'CALL_END']
+      action    = (token, i) -> token[0] = 'CALL_END'
+      @detectEnd(i + 1, condition, action) if token[0] is 'CALL_START'
+      return 1
+
+  # The lexer has tagged the opening parenthesis of an indexing operation call.
+  # Match it with its paired close.
+  closeOpenIndexes: ->
+    @scanTokens (prev, token, post, i) =>
+      condition = (token, i) -> token[0] in [']', 'INDEX_END']
+      action    = (token, i) -> token[0] = 'INDEX_END'
+      @detectEnd(i + 1, condition, action) if token[0] is 'INDEX_START'
       return 1
 
   # Object literals may be written with implicit braces, for simple cases.

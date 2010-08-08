@@ -6,8 +6,8 @@ x1 = y1 = 20
 
 ok area(x, y, x1, y1) is 100
 
-ok(area(x, y,
-           x1, y1) is 100)
+# ok(area(x, y,
+#            x1, y1) is 100)
 
 ok(area(
   x
