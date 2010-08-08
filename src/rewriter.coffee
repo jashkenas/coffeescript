@@ -59,8 +59,8 @@ exports.Rewriter = class Rewriter
     loop
       break unless token = @tokens[i]
       return action token, i if !levels and condition token, i
-      levels += 1 if token[0] in EXPRESSION_START
-      levels -= 1 if token[0] in EXPRESSION_END
+      levels += 1 if include EXPRESSION_START, token[0]
+      levels -= 1 if include EXPRESSION_END, token[0]
       i += 1
     i - 1
 
