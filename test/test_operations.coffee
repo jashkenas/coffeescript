@@ -94,3 +94,9 @@ count = 0
 
 list[key()] ?= 100
 ok list.join(' ') is '0 100 5 10'
+
+
+# Ensure that RHS is treated as a group.
+a = b = false
+a and= b or true
+ok a is false

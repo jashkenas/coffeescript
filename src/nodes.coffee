@@ -1110,6 +1110,7 @@ exports.OpNode = class OpNode extends BaseNode
   compileAssignment: (o) ->
     [first, firstVar] = @first.compileReference o, precompile: yes, assignment: yes
     second = @second.compile o
+    second = "(#{second})" if @second instanceof OpNode
     o.scope.find(first) if first.match(IDENTIFIER)
     return "#{first} = #{ ExistenceNode.compileTest(o, literal(firstVar)) } ? #{firstVar} : #{second}" if @operator is '?='
     "#{first} = #{firstVar} #{ @operator.substr(0, 2) } #{second}"
