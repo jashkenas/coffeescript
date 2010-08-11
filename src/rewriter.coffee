@@ -58,7 +58,8 @@ exports.Rewriter = class Rewriter
     levels = 0
     loop
       break unless token = @tokens[i]
-      return action token, i if !levels and condition token, i
+      return action token, i if levels is 0 and condition token, i
+      return action token, i - 1 if levels < 0
       levels += 1 if include EXPRESSION_START, token[0]
       levels -= 1 if include EXPRESSION_END, token[0]
       i += 1
@@ -103,56 +104,44 @@ exports.Rewriter = class Rewriter
   # its paired close.
   closeOpenCalls: ->
     @scanTokens (prev, token, post, i) =>
-      condition = (token, i) -> token[0] in [')', 'CALL_END']
-      action    = (token, i) -> token[0] = 'CALL_END'
-      @detectEnd(i + 1, condition, action) if token[0] is 'CALL_START'
+      if token[0] is 'CALL_START'
+        condition = (token, i) -> token[0] in [')', 'CALL_END']
+        action    = (token, i) -> token[0] = 'CALL_END'
+        @detectEnd i + 1, condition, action
       return 1
 
   # The lexer has tagged the opening parenthesis of an indexing operation call.
   # Match it with its paired close.
   closeOpenIndexes: ->
     @scanTokens (prev, token, post, i) =>
-      condition = (token, i) -> token[0] in [']', 'INDEX_END']
-      action    = (token, i) -> token[0] = 'INDEX_END'
-      @detectEnd(i + 1, condition, action) if token[0] is 'INDEX_START'
+      if token[0] is 'INDEX_START'
+        condition = (token, i) -> token[0] in [']', 'INDEX_END']
+        action    = (token, i) -> token[0] = 'INDEX_END'
+        @detectEnd i + 1, condition, action
       return 1
 
   # Object literals may be written with implicit braces, for simple cases.
   # Insert the missing braces here, so that the parser doesn't have to.
   addImplicitBraces: ->
-    stack   = [0]
-    running = no
-    closeBrackets = (i) =>
-      len = stack.length - 1
-      for tmp in [0...stack[len]]
-        @tokens.splice(i, 0, ['}', '}', @tokens[i][2]])
-      size = stack[len] + 1
-      stack[len] = 0
-      size
+    stack = []
     @scanTokens (prev, token, post, i) =>
-      tag    = token[0]
-      len    = stack.length - 1
+      if include EXPRESSION_START, token[0]
+        stack.push(if (token[0] is 'INDENT' and (prev and prev[0] is '{')) then '{' else token[0])
+      if include EXPRESSION_END, token[0]
+        stack.pop()
+      last = stack[stack.length - 1]
       before = @tokens[i - 2]
-      after  = @tokens[i + 2]
-      open   = stack[len] > 0
-      if (tag is 'TERMINATOR' and not ((after and after[0] is ':') or (post and post[0] is '@' and @tokens[i + 3] and @tokens[i + 3][0] is ':'))) or
-          (running and tag is ',' and post and (post[0] not in ['IDENTIFIER', 'STRING', '@', 'TERMINATOR']))
-        running = no
-        return closeBrackets(if post and post[0] is 'OUTDENT' then i + 1 else i)
-      else if include EXPRESSION_START, tag
-        stack.push(if tag is '{' then 1 else 0)
-        return 2 if tag is '{' and post and post[0] is 'INDENT'
-      else if include EXPRESSION_END, tag
-        return 1 if tag is 'OUTDENT' and post and post[0] is '}'
-        size = closeBrackets(i) if tag is 'OUTDENT'
-        stack[len - 1] += stack.pop()
-        stack[len - 1] -= 1 if tag is '}'
-        return size if tag is 'OUTDENT'
-      else if tag is ':' and not open
-        idx = if before and before[0] is '@' then i - 2 else i - 1
+      if token[0] is ':' and (not last or last[0] isnt '{')
+        stack.push '{'
+        idx = if before[0] is '@' then i - 2 else i - 1
         @tokens.splice idx, 0, ['{', '{', token[2]]
-        stack[stack.length - 1] += 1
-        running = yes
+        condition = (token, i) =>
+          [one, two, three] = @tokens.slice(i + 1, i + 4)
+          ((token[0] in ['TERMINATOR', 'OUTDENT']) and not ((two and two[0] is ':') or (one and one[0] is '@' and three and three[0] is ':'))) or
+            (token[0] is ',' and one and (one[0] not in ['IDENTIFIER', 'STRING', '@', 'TERMINATOR', 'OUTDENT']))
+        action = (token, i) =>
+          @tokens.splice i, 0, ['}', '}', token[2]]
+        @detectEnd i + 2, condition, action
         return 2
       return 1
 
