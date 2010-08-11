@@ -58,8 +58,8 @@ exports.Rewriter = class Rewriter
     levels = 0
     loop
       token = @tokens[i]
-      return action token, i if levels is 0 and condition token, i
-      return action token, i - 1 if not token or levels < 0
+      return action.call this, token, i     if levels is 0 and condition.call this, token, i
+      return action.call this, token, i - 1 if not token or levels < 0
       levels += 1 if include EXPRESSION_START, token[0]
       levels -= 1 if include EXPRESSION_END, token[0]
       i += 1
@@ -135,11 +135,11 @@ exports.Rewriter = class Rewriter
         stack.push '{'
         idx = if before[0] is '@' then i - 2 else i - 1
         @tokens.splice idx, 0, ['{', '{', token[2]]
-        condition = (token, i) =>
+        condition = (token, i) ->
           [one, two, three] = @tokens.slice(i + 1, i + 4)
           ((token[0] in ['TERMINATOR', 'OUTDENT']) and not ((two and two[0] is ':') or (one and one[0] is '@' and three and three[0] is ':'))) or
             (token[0] is ',' and one and (one[0] not in ['IDENTIFIER', 'STRING', '@', 'TERMINATOR', 'OUTDENT']))
-        action = (token, i) =>
+        action = (token, i) ->
           @tokens.splice i, 0, ['}', '}', token[2]]
         @detectEnd i + 2, condition, action
         return 2
@@ -154,12 +154,12 @@ exports.Rewriter = class Rewriter
       if prev and prev.spaced and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, token[0]) and
           not (token[0] is '!' and (post[0] in ['IN', 'OF']))
         @tokens.splice i, 0, ['CALL_START', '(', token[2]]
-        condition = (token, i) =>
+        condition = (token, i) ->
           [before, prev] = @tokens.slice(i - 2, i + 1)
           (not token.generated and @tokens[i - 1][0] isnt ',' and include(IMPLICIT_END, token[0]) and
             not (token[0] is 'INDENT' and (include(IMPLICIT_BLOCK, prev[0]) or before[0] is 'CLASS'))) or
             token[0] is 'PROPERTY_ACCESS' and prev[0] is 'OUTDENT'
-        action = (token, i) =>
+        action = (token, i) ->
           idx = if token[0] is 'OUTDENT' then i + 1 else i
           @tokens.splice idx, 0, ['CALL_END', ')', token[2]]
         @detectEnd i + 1, condition, action
@@ -179,31 +179,22 @@ exports.Rewriter = class Rewriter
           (@tokens[i + 2][0] is 'TERMINATOR' or @tokens[i + 2][0] is 'FINALLY')
         @tokens.splice i + 2, 0, @indentation(token)...
         return 4
-      return 1 unless include(SINGLE_LINERS, token[0]) and
-        post[0] isnt 'INDENT' and
-        not (token[0] is 'ELSE' and post[0] is 'IF')
-      starter = token[0]
-      [indent, outdent] = @indentation token
-      indent.generated = outdent.generated = true
-      @tokens.splice i + 1, 0, indent
-      idx = i + 1
-      parens = 0
-      loop
-        idx += 1
-        tok = @tokens[idx]
-        pre = @tokens[idx - 1]
-        if (not tok or
-            (include(SINGLE_CLOSERS, tok[0]) and tok[1] isnt ';' and parens is 0) or
-            (tok[0] is ')' and parens is 0)) and
-            not (tok[0] is 'ELSE' and starter not in ['IF', 'THEN'])
-          insertion = if pre[0] is "," then idx - 1 else idx
-          @tokens.splice insertion, 0, outdent
-          break
-        parens += 1 if tok[0] is '('
-        parens -= 1 if tok[0] is ')'
-      return 1 unless token[0] is 'THEN'
-      @tokens.splice i, 1
-      return 0
+      if include(SINGLE_LINERS, token[0]) and post[0] isnt 'INDENT' and
+          not (token[0] is 'ELSE' and post[0] is 'IF')
+        starter = token[0]
+        [indent, outdent] = @indentation token
+        indent.generated = outdent.generated = true
+        @tokens.splice i + 1, 0, indent
+        condition = (token, i) ->
+          (include(SINGLE_CLOSERS, token[0]) and token[1] isnt ';') and
+            not (token[0] is 'ELSE' and starter not in ['IF', 'THEN'])
+        action = (token, i) ->
+          idx = if @tokens[i - 1][0] is ',' then i - 1 else i
+          @tokens.splice idx, 0, outdent
+        @detectEnd i + 2, condition, action
+        @tokens.splice i, 1 if token[0] is 'THEN'
+        return 2
+      return 1
 
   # Ensure that all listed pairs of tokens are correctly balanced throughout
   # the course of the token stream.
