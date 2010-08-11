@@ -8,8 +8,10 @@ if (band !== SpinalTap) {
 if (!(answer === false)) {
   letTheWildRumpusBegin();
 }
-car.speed < limit ? accelerate() : null;
-if (47 === pick || 92 === pick || 13 === pick) {
+if (car.speed < limit) {
+  accelerate();
+};
+if ((47 === pick || 92 === pick || 13 === pick)) {
   winner = true;
 }
 print(inspect("My name is " + this.name));

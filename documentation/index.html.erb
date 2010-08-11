@@ -127,7 +127,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.0">0.9.0</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.1">0.9.1</a>
     </p>
 
     <h2>
@@ -172,7 +172,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
       Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.0">0.9.0</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.1">0.9.1</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -258,6 +258,13 @@ sudo npm install coffee-script</pre>
         <td>
           Compile and print a little snippet of CoffeeScript directly from the
           command line. For example:<br /><tt>coffee -e "puts num for num in [10..1]"</tt>
+        </td>
+      </tr>
+      <tr>
+        <td><code>-r, --require</code></td>
+        <td>
+          Load a library before compiling or executing your script. Can be used
+          to hook in to the compiler (to add Growl notifications, for example).
         </td>
       </tr>
       <tr>
@@ -939,6 +946,15 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.9.1</b>
+      Bugfix release for <b>0.9.1</b>. Greatly improves the handling of mixed
+      implicit objects, implicit function calls, and implicit indentation. 
+      String and regex interpolation is now strictly <tt>#{ ... }</tt> (Ruby style).
+      The compiler now takes a <tt>--require</tt> flag, which specifies scripts
+      to run before compilation.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.9.0</b>
@@ -963,6 +979,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       on the object &mdash; useful in constructors and setter functions.
       Constructor functions can now take splats.
     </p>
+    
     <p>
       <b class="header" style="margin-top: 20px;">0.7.2</b>
       Quick bugfix (right after 0.7.1) for a problem that prevented <tt>coffee</tt>

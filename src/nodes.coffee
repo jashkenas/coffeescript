@@ -1362,6 +1362,8 @@ exports.IfNode = class IfNode extends BaseNode
   class:     'IfNode'
   children: ['condition', 'switchSubject', 'body', 'elseBody', 'assigner']
 
+  topSensitive: -> true
+
   constructor: (@condition, @body, @tags) ->
     @tags      or= {}
     @condition = new OpNode('!', new ParentheticalNode(@condition)) if @tags.invert
@@ -1415,7 +1417,7 @@ exports.IfNode = class IfNode extends BaseNode
     (cond.compile(o) for cond in flatten([@condition])).join(' || ')
 
   compileNode: (o) ->
-    if @isStatement() then @compileStatement(o) else @compileTernary(o)
+    if o.top or @isStatement() then @compileStatement(o) else @compileTernary(o)
 
   makeReturn: ->
     if @isStatement()
@@ -1432,11 +1434,12 @@ exports.IfNode = class IfNode extends BaseNode
   # force inner *else* bodies into statement form.
   compileStatement: (o) ->
     @rewriteSwitch(o) if @switchSubject
+    top      = del o, 'top'
     child    = del o, 'chainChild'
     condO    = merge o
     o.indent = @idt 1
     o.top    = true
-    ifDent   = if child then '' else @idt()
+    ifDent   = if child or (top and not @isStatement()) then '' else @idt()
     comDent  = if child then @idt() else ''
     body     = @body.compile(o)
     ifPart   = "#{ifDent}if (#{ @compileCondition(condO) }) {\n#{body}\n#{@tab}}"
