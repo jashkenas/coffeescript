@@ -96,6 +96,10 @@ ok obj.is()
 ok not obj.not()
 
 
+# Top-level object literal doesn't break things.
+obj: 1
+
+
 # Funky indentation within non-comma-seperated arrays.
 result = [['a']
  {b: 'c'}]
