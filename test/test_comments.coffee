@@ -144,3 +144,14 @@ fn = ->
   ###
 
 fn2 = ->
+
+
+class A
+  b: ->
+
+  ###
+  Comment
+  ###
+  c: ->
+
+ok A.prototype.c instanceof Function
