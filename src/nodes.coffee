@@ -399,7 +399,7 @@ exports.CommentNode = class CommentNode extends BaseNode
 
   compileNode: (o) ->
     sep = '\n' + @tab
-    "#{@tab}/*##{sep + @lines.join(sep) }\n#{@tab}*/"
+    "#{@tab}/*#{sep + @lines.join(sep) }\n#{@tab}*/"
 
 #### CallNode
 
