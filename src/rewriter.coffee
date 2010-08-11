@@ -50,7 +50,7 @@ exports.Rewriter = class Rewriter
     i = 0
     loop
       break unless @tokens[i]
-      move = block @tokens[i - 1], @tokens[i], @tokens[i + 1], i
+      move = block @tokens[i], i
       i += move
     true
 
@@ -68,9 +68,9 @@ exports.Rewriter = class Rewriter
   # Massage newlines and indentations so that comments don't have to be
   # correctly indented, or appear on a line of their own.
   adjustComments: ->
-    @scanTokens (prev, token, post, i) =>
+    @scanTokens (token, i) =>
       return 1 unless token[0] is 'HERECOMMENT'
-      [before, after] = [@tokens[i - 2], @tokens[i + 2]]
+      [before, prev, post, after] = [@tokens[i - 2], @tokens[i - 1], @tokens[i + 1], @tokens[i + 2]]
       if after and after[0] is 'INDENT'
         @tokens.splice i + 2, 1
         if before and before[0] is 'OUTDENT' and post and prev[0] is post[0] is 'TERMINATOR'
@@ -95,15 +95,15 @@ exports.Rewriter = class Rewriter
   # Some blocks occur in the middle of expressions -- when we're expecting
   # this, remove their trailing newlines.
   removeMidExpressionNewlines: ->
-    @scanTokens (prev, token, post, i) =>
-      return 1 unless post and include(EXPRESSION_CLOSE, post[0]) and token[0] is 'TERMINATOR'
+    @scanTokens (token, i) =>
+      return 1 unless include(EXPRESSION_CLOSE, @tag(i + 1)) and token[0] is 'TERMINATOR'
       @tokens.splice i, 1
       return 0
 
   # The lexer has tagged the opening parenthesis of a method call. Match it with
   # its paired close.
   closeOpenCalls: ->
-    @scanTokens (prev, token, post, i) =>
+    @scanTokens (token, i) =>
       if token[0] is 'CALL_START'
         condition = (token, i) -> token[0] in [')', 'CALL_END']
         action    = (token, i) -> token[0] = 'CALL_END'
@@ -113,7 +113,7 @@ exports.Rewriter = class Rewriter
   # The lexer has tagged the opening parenthesis of an indexing operation call.
   # Match it with its paired close.
   closeOpenIndexes: ->
-    @scanTokens (prev, token, post, i) =>
+    @scanTokens (token, i) =>
       if token[0] is 'INDEX_START'
         condition = (token, i) -> token[0] in [']', 'INDEX_END']
         action    = (token, i) -> token[0] = 'INDEX_END'
@@ -124,16 +124,15 @@ exports.Rewriter = class Rewriter
   # Insert the missing braces here, so that the parser doesn't have to.
   addImplicitBraces: ->
     stack = []
-    @scanTokens (prev, token, post, i) =>
+    @scanTokens (token, i) =>
       if include EXPRESSION_START, token[0]
-        stack.push(if (token[0] is 'INDENT' and (prev and prev[0] is '{')) then '{' else token[0])
+        stack.push(if (token[0] is 'INDENT' and (@tag(i - 1) is '{')) then '{' else token[0])
       if include EXPRESSION_END, token[0]
         stack.pop()
       last = stack[stack.length - 1]
-      before = @tokens[i - 2]
       if token[0] is ':' and (not last or last[0] isnt '{')
         stack.push '{'
-        idx = if before and before[0] is '@' then i - 2 else i - 1
+        idx = if @tag(i - 2) is '@' then i - 2 else i - 1
         @tokens.splice idx, 0, ['{', '{', token[2]]
         condition = (token, i) ->
           [one, two, three] = @tokens.slice(i + 1, i + 4)
@@ -150,15 +149,15 @@ exports.Rewriter = class Rewriter
   # Insert the implicit parentheses here, so that the parser doesn't have to
   # deal with them.
   addImplicitParentheses: ->
-    @scanTokens (prev, token, post, i) =>
+    @scanTokens (token, i) =>
+      prev = @tokens[i - 1]
       if prev and prev.spaced and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, token[0]) and
-          not (token[0] is '!' and (post[0] in ['IN', 'OF']))
+          not (token[0] is '!' and (@tag(i + 1) in ['IN', 'OF']))
         @tokens.splice i, 0, ['CALL_START', '(', token[2]]
         condition = (token, i) ->
-          [before, prev] = @tokens.slice(i - 2, i + 1)
           (not token.generated and @tokens[i - 1][0] isnt ',' and include(IMPLICIT_END, token[0]) and
-            not (token[0] is 'INDENT' and (include(IMPLICIT_BLOCK, prev[0]) or before[0] is 'CLASS'))) or
-            token[0] is 'PROPERTY_ACCESS' and prev[0] is 'OUTDENT'
+            not (token[0] is 'INDENT' and (include(IMPLICIT_BLOCK, @tag(i - 1)) or @tag(i - 2) is 'CLASS'))) or
+            token[0] is 'PROPERTY_ACCESS' and @tag(i - 1) is 'OUTDENT'
         action = (token, i) ->
           idx = if token[0] is 'OUTDENT' then i + 1 else i
           @tokens.splice idx, 0, ['CALL_END', ')', token[2]]
@@ -171,16 +170,16 @@ exports.Rewriter = class Rewriter
   # blocks, so it doesn't need to. ')' can close a single-line block,
   # but we need to make sure it's balanced.
   addImplicitIndentation: ->
-    @scanTokens (prev, token, post, i) =>
-      if token[0] is 'ELSE' and prev[0] isnt 'OUTDENT'
+    @scanTokens (token, i) =>
+      if token[0] is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
         @tokens.splice i, 0, @indentation(token)...
         return 2
       if token[0] is 'CATCH' and
           (@tokens[i + 2][0] is 'TERMINATOR' or @tokens[i + 2][0] is 'FINALLY')
         @tokens.splice i + 2, 0, @indentation(token)...
         return 4
-      if include(SINGLE_LINERS, token[0]) and post[0] isnt 'INDENT' and
-          not (token[0] is 'ELSE' and post[0] is 'IF')
+      if include(SINGLE_LINERS, token[0]) and @tag(i + 1) isnt 'INDENT' and
+          not (token[0] is 'ELSE' and @tag(i + 1) is 'IF')
         starter = token[0]
         [indent, outdent] = @indentation token
         indent.generated = outdent.generated = true
@@ -201,7 +200,7 @@ exports.Rewriter = class Rewriter
   ensureBalance: (pairs) ->
     levels   = {}
     openLine = {}
-    @scanTokens (prev, token, post, i) =>
+    @scanTokens (token, i) =>
       for pair in pairs
         [open, close] = pair
         levels[open] or= 0
@@ -237,7 +236,7 @@ exports.Rewriter = class Rewriter
     stack = []
     debt  = {}
     (debt[key] = 0) for key, val of INVERSES
-    @scanTokens (prev, token, post, i) =>
+    @scanTokens (token, i) =>
       tag = token[0]
       inv = INVERSES[token[0]]
       if include EXPRESSION_START, tag
@@ -267,6 +266,10 @@ exports.Rewriter = class Rewriter
   # Generate the indentation tokens, based on another token on the same line.
   indentation: (token) ->
     [['INDENT', 2, token[2]], ['OUTDENT', 2, token[2]]]
+
+  # Look up a tag by token index.
+  tag: (i) ->
+    @tokens[i] and @tokens[i][0]
 
 # Constants
 # ---------
