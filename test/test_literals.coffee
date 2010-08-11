@@ -194,3 +194,14 @@ ok (key for key of obj.red).length is 2
 ok obj.red.orange.yellow.green is 'blue'
 ok obj.red.indigo is 'violet'
 ok obj.misdent.toString() is ',,,'
+
+second = (x, y) -> y
+obj = then second 'the',
+  one: 1
+  two:
+    three: ->
+      four five,
+        six: seven
+  three: 3
+
+ok obj.three is 3
