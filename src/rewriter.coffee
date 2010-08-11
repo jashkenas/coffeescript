@@ -57,9 +57,9 @@ exports.Rewriter = class Rewriter
   detectEnd: (i, condition, action) ->
     levels = 0
     loop
-      break unless token = @tokens[i]
+      token = @tokens[i]
       return action token, i if levels is 0 and condition token, i
-      return action token, i - 1 if levels < 0
+      return action token, i - 1 if not token or levels < 0
       levels += 1 if include EXPRESSION_START, token[0]
       levels -= 1 if include EXPRESSION_END, token[0]
       i += 1
@@ -145,47 +145,25 @@ exports.Rewriter = class Rewriter
         return 2
       return 1
 
+
   # Methods may be optionally called without parentheses, for simple cases.
   # Insert the implicit parentheses here, so that the parser doesn't have to
   # deal with them.
   addImplicitParentheses: ->
-    stack = [0]
-    closeCalls = (i) =>
-      for tmp in [0...stack[stack.length - 1]]
-        @tokens.splice(i, 0, ['CALL_END', ')', @tokens[i][2]])
-      size = stack[stack.length - 1] + 1
-      stack[stack.length - 1] = 0
-      size
     @scanTokens (prev, token, post, i) =>
-      tag = token[0]
-      before = @tokens[i - 2] and @tokens[i - 2][0]
-      stack[stack.length - 2] += stack.pop() if tag is 'OUTDENT'
-      open = stack[stack.length - 1] > 0
-      if prev and prev.spaced and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, tag) and
-          not (tag is '!' and (post[0] in ['IN', 'OF']))
+      if prev and prev.spaced and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, token[0]) and
+          not (token[0] is '!' and (post[0] in ['IN', 'OF']))
         @tokens.splice i, 0, ['CALL_START', '(', token[2]]
-        stack[stack.length - 1] += 1
-        stack.push 0 if include(EXPRESSION_START, tag)
+        condition = (token, i) =>
+          [before, prev] = @tokens.slice(i - 2, i + 1)
+          (not token.generated and @tokens[i - 1][0] isnt ',' and include(IMPLICIT_END, token[0]) and
+            not (token[0] is 'INDENT' and (include(IMPLICIT_BLOCK, prev[0]) or before[0] is 'CLASS'))) or
+            token[0] is 'PROPERTY_ACCESS' and prev[0] is 'OUTDENT'
+        action = (token, i) =>
+          idx = if token[0] is 'OUTDENT' then i + 1 else i
+          @tokens.splice idx, 0, ['CALL_END', ')', token[2]]
+        @detectEnd i + 1, condition, action
         return 2
-      if include(EXPRESSION_START, tag)
-        if tag is 'INDENT' and !token.generated and open and not
-            ((prev and include(IMPLICIT_BLOCK, prev[0])) or before and before is 'CLASS')
-          size = closeCalls(i)
-          stack.push 0
-          return size
-        stack.push 0
-        return 1
-      if open and !token.generated and prev[0] isnt ',' and (!post or include(IMPLICIT_END, tag))
-        j = 1; j++ while (nx = @tokens[i + j])? and include(IMPLICIT_END, nx[0])
-        if nx? and nx[0] is ',' and @tokens[i + j - 1][0] is 'OUTDENT'
-          @tokens.splice(i, 1) if tag is 'TERMINATOR'
-        else
-          size = closeCalls(i)
-          stack.pop() if tag isnt 'OUTDENT' and include EXPRESSION_END, tag
-          return size
-      if tag isnt 'OUTDENT' and include EXPRESSION_END, tag
-        stack[stack.length - 2] += stack.pop()
-        return 1
       return 1
 
   # Because our grammar is LALR(1), it can't handle some single-line
@@ -337,7 +315,7 @@ IMPLICIT_CALL    = [
 IMPLICIT_BLOCK   = ['->', '=>', '{', '[', ',']
 
 # Tokens that always mark the end of an implicit call for single-liners.
-IMPLICIT_END     = ['IF', 'UNLESS', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'TERMINATOR', 'INDENT'].concat EXPRESSION_END
+IMPLICIT_END     = ['IF', 'UNLESS', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'TERMINATOR', 'INDENT']
 
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.
