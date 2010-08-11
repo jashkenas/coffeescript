@@ -100,3 +100,21 @@ ok list.join(' ') is '0 100 5 10'
 a = b = false
 a and= b or true
 ok a is false
+
+
+# Bitwise operators:
+ok (10 &   3) is 2
+ok (10 |   3) is 11
+ok (10 ^   3) is 9
+ok (10 <<  3) is 80
+ok (10 >>  3) is 1
+ok (10 >>> 3) is 1
+
+num = 10; ok (num <<=  3) is 80
+num = 10; ok (num >>=  3) is 1
+num = 10; ok (num >>>= 3) is 1
+num = 10; ok (num &=   3) is 2
+num = 10; ok (num ^=   3) is 9
+num = 10; ok (num |=   3) is 11
+
+

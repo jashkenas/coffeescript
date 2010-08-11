@@ -546,6 +546,13 @@ grammar =
     o "Expression | Expression",                -> new OpNode '|', $1, $3
     o "Expression ^ Expression",                -> new OpNode '^', $1, $3
 
+    o "Expression <<= Expression",              -> new OpNode '<<=', $1, $3
+    o "Expression >>= Expression",              -> new OpNode '>>=', $1, $3
+    o "Expression >>>= Expression",             -> new OpNode '>>>=', $1, $3
+    o "Expression &= Expression",               -> new OpNode '&=', $1, $3
+    o "Expression |= Expression",               -> new OpNode '|=', $1, $3
+    o "Expression ^= Expression",               -> new OpNode '^=', $1, $3
+
     o "Expression <= Expression",               -> new OpNode '<=', $1, $3
     o "Expression < Expression",                -> new OpNode '<', $1, $3
     o "Expression > Expression",                -> new OpNode '>', $1, $3
@@ -592,12 +599,12 @@ operators = [
   ["left",      '*', '/', '%']
   ["left",      '+', '-']
   ["left",      '<<', '>>', '>>>']
-  ["left",      '&', '|', '^']
   ["left",      '<=', '<', '>', '>=']
   ["right",     'DELETE', 'INSTANCEOF', 'TYPEOF']
   ["left",      '==', '!=']
+  ["left",      '&', '|', '^']
   ["left",      '&&', '||', 'OP?']
-  ["right",     '-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=']
+  ["right",     '-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=', '<<=', '>>=', '>>>=', '&=', '^=', '|=']
   ["left",      '.']
   ["right",     'INDENT']
   ["left",      'OUTDENT']
