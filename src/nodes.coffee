@@ -623,10 +623,13 @@ exports.ObjectNode = class ObjectNode extends BaseNode
   class:     'ObjectNode'
   children: ['properties']
 
+  topSensitive: -> true
+
   constructor: (props) ->
     @objects = @properties = props or []
 
   compileNode: (o) ->
+    top = del o, 'top'
     o.indent = @idt 1
     nonComments = prop for prop in @properties when not (prop instanceof CommentNode)
     lastNoncom =  nonComments[nonComments.length - 1]
@@ -638,8 +641,8 @@ exports.ObjectNode = class ObjectNode extends BaseNode
       prop   = new AssignNode prop, prop, 'object' unless prop instanceof AssignNode or prop instanceof CommentNode
       indent + prop.compile(o) + join
     props = props.join('')
-    inner = if props then '\n' + props + '\n' + @idt() else ''
-    '{' + inner + '}'
+    obj   = '{' + (if props then '\n' + props + '\n' + @idt() else '') + '}'
+    if top then "(#{obj})" else obj
 
 #### ArrayNode
 

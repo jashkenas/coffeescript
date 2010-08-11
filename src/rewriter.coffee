@@ -133,7 +133,7 @@ exports.Rewriter = class Rewriter
       before = @tokens[i - 2]
       if token[0] is ':' and (not last or last[0] isnt '{')
         stack.push '{'
-        idx = if before[0] is '@' then i - 2 else i - 1
+        idx = if before and before[0] is '@' then i - 2 else i - 1
         @tokens.splice idx, 0, ['{', '{', token[2]]
         condition = (token, i) ->
           [one, two, three] = @tokens.slice(i + 1, i + 4)
