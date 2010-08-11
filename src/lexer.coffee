@@ -130,7 +130,7 @@ exports.Lexer = class Lexer
   heredocToken: ->
     return false unless match = @chunk.match(HEREDOC)
     quote = match[1].substr 0, 1
-    doc = @sanitizeHeredoc match[2] or match[4], {quote}
+    doc = @sanitizeHeredoc match[2] or match[4] or '', {quote}
     @interpolateString quote + doc + quote, heredoc: yes
     @line += count match[1], "\n"
     @i += match[1].length
