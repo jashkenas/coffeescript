@@ -154,7 +154,7 @@ exports.Rewriter = class Rewriter
     @scanTokens (token, i) ->
       prev = @tokens[i - 1]
       if prev and prev.spaced and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, token[0]) and
-          not (token[0] is '!' and (@tag(i + 1) in ['IN', 'OF']))
+          not (token[0] is 'UNARY' and (@tag(i + 1) in ['IN', 'OF']))
         @tokens.splice i, 0, ['CALL_START', '(', token[2]]
         condition = (token, i) ->
           (not token.generated and @tokens[i - 1][0] isnt ',' and include(IMPLICIT_END, token[0]) and
@@ -316,9 +316,9 @@ IMPLICIT_FUNC    = ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL    = [
   'IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START', 'CLASS',
-  'IF', 'UNLESS', 'TRY', 'DELETE', 'TYPEOF', 'SWITCH', 'THIS', 'NULL',
+  'IF', 'UNLESS', 'TRY', 'SWITCH', 'THIS', 'NULL', 'UNARY'
   'TRUE', 'FALSE', 'YES', 'NO', 'ON', 'OFF',
-  '!', '!!', '@', '->', '=>', '[', '(', '{'
+  '@', '->', '=>', '[', '(', '{'
 ]
 
 # Tokens indicating that the implicit call must enclose a block of expressions.

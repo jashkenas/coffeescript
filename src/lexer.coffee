@@ -88,6 +88,7 @@ exports.Lexer = class Lexer
     tag = id.toUpperCase() if include(JS_KEYWORDS, id) or (not forcedIdentifier and include(COFFEE_KEYWORDS, id))
     tag = 'LEADING_WHEN'   if tag is 'WHEN' and include LINE_BREAK, @tag()
     tag = 'ALL'            if id is 'all' and @tag() is 'FOR'
+    tag = 'UNARY'          if include UNARY, tag
     if include(JS_FORBIDDEN, id)
       if forcedIdentifier
         tag = 'STRING'
@@ -100,6 +101,8 @@ exports.Lexer = class Lexer
         @identifierError id
     unless forcedIdentifier
       tag = id = CONVERSIONS[id] if include COFFEE_ALIASES, id
+      tag = 'LOGIC' if include LOGIC, id
+      tag = 'UNARY' if id is '!'
     @token tag, id
     @token ']', ']' if close_index
     true
@@ -269,17 +272,21 @@ exports.Lexer = class Lexer
     @tagParameters() if value and value.match CODE
     value or= @chunk.substr 0, 1
     @i += value.length
-    prevSpaced = @prev() and @prev().spaced
+    spaced = @prev() and @prev().spaced
     tag = value
     if value is '='
       @assignmentError() if include JS_FORBIDDEN, @value()
       if @value() in ['or', 'and']
-        return @tag 1, CONVERSIONS[@value()] + '='
-    if value is ';'
-      tag = 'TERMINATOR'
-    else if value is '?' and prevSpaced
-      tag = 'OP?'
-    else if include(CALLABLE, @tag()) and not prevSpaced
+        @tokens.splice(@tokens.length - 1, 1, ['COMPOUND_ASSIGN', CONVERSIONS[@value()] + '=', @prev()[2]])
+        return true
+    if value is ';'                                            then tag = 'TERMINATOR'
+    else if (value is '?' and spaced) or include(LOGIC, value) then tag = 'LOGIC'
+    else if include(MATH, value)                               then tag = 'MATH'
+    else if include(COMPARE, value)                            then tag = 'COMPARE'
+    else if include(COMPOUND_ASSIGN, value)                    then tag = 'COMPOUND_ASSIGN'
+    else if include(UNARY, value)                              then tag = 'UNARY'
+    else if include(SHIFT, value)                              then tag = 'SHIFT'
+    else if include(CALLABLE, @tag()) and not spaced
       if value is '('
         tag = 'CALL_START'
       else if value is '['
@@ -533,6 +540,24 @@ NO_NEWLINE      = /^([+\*&|\/\-%=<>!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeo
 HEREDOC_INDENT  = /(\n+([ \t]*)|^([ \t]+))/g
 ASSIGNED        = /^\s*(([a-zA-Z\$_@]\w*|["'][^\r\n]+?["']|\d+)[ \t]*?[:=][^=])/
 NEXT_CHARACTER  = /^\s*(\S)/
+
+# Compound assignment tokens.
+COMPOUND_ASSIGN = ['-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=', '<<=', '>>=', '>>>=', '&=', '^=', '|=']
+
+# Unary tokens.
+UNARY   = ['UMINUS', 'UPLUS', '!', '!!', '~', 'TYPEOF', 'DELETE']
+
+# Logical tokens.
+LOGIC   = ['&', '|', '^', '&&', '||']
+
+# Bit-shifting tokens.
+SHIFT   = ['<<', '>>', '>>>']
+
+# Comparison tokens.
+COMPARE = ['<=', '<', '>', '>=']
+
+# Mathmatical tokens.
+MATH    = ['*', '/', '%']
 
 # Tokens which a regular expression will never immediately follow, but which
 # a division operator might.

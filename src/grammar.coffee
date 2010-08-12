@@ -520,65 +520,31 @@ grammar =
   # -type rule, but in order to make the precedence binding possible, separate
   # rules are necessary.
   Operation: [
-    o "! Expression",                           -> new OpNode '!', $2
-    o "!! Expression",                          -> new OpNode '!!', $2
-    o("- Expression",                           (-> new OpNode('-', $2)), {prec: 'UMINUS'})
-    o("+ Expression",                           (-> new OpNode('+', $2)), {prec: 'UPLUS'})
-    o "~ Expression",                           -> new OpNode '~', $2
+    o "UNARY Expression",                       -> new OpNode $1, $2
+    o("- Expression",                           (-> new OpNode('-', $2)), {prec: 'UNARY'})
+    o("+ Expression",                           (-> new OpNode('+', $2)), {prec: 'UNARY'})
+
     o "-- Expression",                          -> new OpNode '--', $2
     o "++ Expression",                          -> new OpNode '++', $2
-    o "DELETE Expression",                      -> new OpNode 'delete', $2
-    o "TYPEOF Expression",                      -> new OpNode 'typeof', $2
     o "Expression --",                          -> new OpNode '--', $1, null, true
     o "Expression ++",                          -> new OpNode '++', $1, null, true
 
-    o "Expression * Expression",                -> new OpNode '*', $1, $3
-    o "Expression / Expression",                -> new OpNode '/', $1, $3
-    o "Expression % Expression",                -> new OpNode '%', $1, $3
-
     o "Expression + Expression",                -> new OpNode '+', $1, $3
     o "Expression - Expression",                -> new OpNode '-', $1, $3
-
-    o "Expression << Expression",               -> new OpNode '<<', $1, $3
-    o "Expression >> Expression",               -> new OpNode '>>', $1, $3
-    o "Expression >>> Expression",              -> new OpNode '>>>', $1, $3
-    o "Expression & Expression",                -> new OpNode '&', $1, $3
-    o "Expression | Expression",                -> new OpNode '|', $1, $3
-    o "Expression ^ Expression",                -> new OpNode '^', $1, $3
-
-    o "Expression <<= Expression",              -> new OpNode '<<=', $1, $3
-    o "Expression >>= Expression",              -> new OpNode '>>=', $1, $3
-    o "Expression >>>= Expression",             -> new OpNode '>>>=', $1, $3
-    o "Expression &= Expression",               -> new OpNode '&=', $1, $3
-    o "Expression |= Expression",               -> new OpNode '|=', $1, $3
-    o "Expression ^= Expression",               -> new OpNode '^=', $1, $3
-
-    o "Expression <= Expression",               -> new OpNode '<=', $1, $3
-    o "Expression < Expression",                -> new OpNode '<', $1, $3
-    o "Expression > Expression",                -> new OpNode '>', $1, $3
-    o "Expression >= Expression",               -> new OpNode '>=', $1, $3
-
     o "Expression == Expression",               -> new OpNode '==', $1, $3
     o "Expression != Expression",               -> new OpNode '!=', $1, $3
 
-    o "Expression && Expression",               -> new OpNode '&&', $1, $3
-    o "Expression || Expression",               -> new OpNode '||', $1, $3
-    o "Expression OP? Expression",              -> new OpNode '?', $1, $3
-
-    o "Expression -= Expression",               -> new OpNode '-=', $1, $3
-    o "Expression += Expression",               -> new OpNode '+=', $1, $3
-    o "Expression /= Expression",               -> new OpNode '/=', $1, $3
-    o "Expression *= Expression",               -> new OpNode '*=', $1, $3
-    o "Expression %= Expression",               -> new OpNode '%=', $1, $3
-    o "Expression ||= Expression",              -> new OpNode '||=', $1, $3
-    o "Expression &&= Expression",              -> new OpNode '&&=', $1, $3
-    o "Expression ?= Expression",               -> new OpNode '?=', $1, $3
+    o "Expression MATH Expression",             -> new OpNode $2, $1, $3
+    o "Expression SHIFT Expression",            -> new OpNode $2, $1, $3
+    o "Expression COMPARE Expression",          -> new OpNode $2, $1, $3
+    o "Expression LOGIC Expression",            -> new OpNode $2, $1, $3
+    o "Expression COMPOUND_ASSIGN Expression",  -> new OpNode $2, $1, $3
 
     o "Expression INSTANCEOF Expression",       -> new OpNode 'instanceof', $1, $3
     o "Expression IN Expression",               -> new InNode $1, $3
     o "Expression OF Expression",               -> new OpNode 'in', $1, $3
-    o "Expression ! IN Expression",             -> new OpNode '!', new InNode $1, $4
-    o "Expression ! OF Expression",             -> new OpNode '!', new ParentheticalNode new OpNode 'in', $1, $4
+    o "Expression UNARY IN Expression",         -> new OpNode $2, new InNode $1, $4
+    o "Expression UNARY OF Expression",         -> new OpNode $2, new ParentheticalNode new OpNode 'in', $1, $4
   ]
 
 
@@ -595,22 +561,20 @@ grammar =
 #     (2 + 3) * 4
 operators = [
   ["left",      '?']
-  ["nonassoc",  'UMINUS', 'UPLUS', '!', '!!', '~', '++', '--']
-  ["left",      '*', '/', '%']
+  ["nonassoc",  '++', '--']
+  ["right",     'UNARY']
+  ["left",      'MATH']
   ["left",      '+', '-']
-  ["left",      '<<', '>>', '>>>']
-  ["left",      '<=', '<', '>', '>=']
-  ["right",     'DELETE', 'INSTANCEOF', 'TYPEOF']
+  ["left",      'SHIFT']
+  ["left",      'COMPARE']
+  ["left",      'INSTANCEOF']
   ["left",      '==', '!=']
-  ["left",      '&', '|', '^']
-  ["left",      '&&', '||', 'OP?']
-  ["right",     '-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=', '<<=', '>>=', '>>>=', '&=', '^=', '|=']
+  ["left",      'LOGIC']
+  ["right",     'COMPOUND_ASSIGN']
   ["left",      '.']
-  ["right",     'INDENT']
-  ["left",      'OUTDENT']
+  ["nonassoc",  'INDENT', 'OUTDENT']
   ["right",     'WHEN', 'LEADING_WHEN', 'IN', 'OF', 'BY', 'THROW']
-  ["right",     'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'NEW', 'SUPER', 'CLASS']
-  ["left",      'EXTENDS']
+  ["right",     'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'NEW', 'SUPER', 'CLASS', 'EXTENDS']
   ["right",     '=', ':', 'RETURN']
   ["right",     '->', '=>', 'UNLESS', 'POST_IF', 'POST_UNLESS']
 ]
