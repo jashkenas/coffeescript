@@ -752,9 +752,8 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <p>
       <span id="interpolation" class="bookmark"></span>
       <b class="header">String and RegExp Interpolation</b>
-      A version of <a href="http://wiki.ecmascript.org/doku.php?id=strawman:string_interpolation">ECMAScript Harmony's proposed string interpolation</a>
-      is included in CoffeeScript. Simple variables can be included by prefixing
-      them with a hash mark.
+      Ruby-style string interpolation is included in CoffeeScript. Double-quoted
+      strings allow for interpolated values, while single-quoted strings are literal.
     </p>
     <%= code_for('interpolation', 'quote') %>
     <p>
