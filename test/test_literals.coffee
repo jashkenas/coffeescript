@@ -197,11 +197,12 @@ ok obj.misdent.toString() is ',,,'
 
 second = (x, y) -> y
 obj = then second 'the',
-  one: 1
+  1: 1
   two:
     three: ->
       four five,
         six: seven
   three: 3
 
+ok obj[1] is 1
 ok obj.three is 3
