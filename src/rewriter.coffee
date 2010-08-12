@@ -50,7 +50,7 @@ exports.Rewriter = class Rewriter
     i = 0
     loop
       break unless @tokens[i]
-      move = block @tokens[i], i
+      move = block.call this, @tokens[i], i
       i += move
     true
 
@@ -68,7 +68,7 @@ exports.Rewriter = class Rewriter
   # Massage newlines and indentations so that comments don't have to be
   # correctly indented, or appear on a line of their own.
   adjustComments: ->
-    @scanTokens (token, i) =>
+    @scanTokens (token, i) ->
       return 1 unless token[0] is 'HERECOMMENT'
       [before, prev, post, after] = [@tokens[i - 2], @tokens[i - 1], @tokens[i + 1], @tokens[i + 2]]
       if after and after[0] is 'INDENT'
@@ -95,7 +95,7 @@ exports.Rewriter = class Rewriter
   # Some blocks occur in the middle of expressions -- when we're expecting
   # this, remove their trailing newlines.
   removeMidExpressionNewlines: ->
-    @scanTokens (token, i) =>
+    @scanTokens (token, i) ->
       return 1 unless include(EXPRESSION_CLOSE, @tag(i + 1)) and token[0] is 'TERMINATOR'
       @tokens.splice i, 1
       return 0
@@ -103,7 +103,7 @@ exports.Rewriter = class Rewriter
   # The lexer has tagged the opening parenthesis of a method call. Match it with
   # its paired close.
   closeOpenCalls: ->
-    @scanTokens (token, i) =>
+    @scanTokens (token, i) ->
       if token[0] is 'CALL_START'
         condition = (token, i) -> token[0] in [')', 'CALL_END']
         action    = (token, i) -> token[0] = 'CALL_END'
@@ -113,7 +113,7 @@ exports.Rewriter = class Rewriter
   # The lexer has tagged the opening parenthesis of an indexing operation call.
   # Match it with its paired close.
   closeOpenIndexes: ->
-    @scanTokens (token, i) =>
+    @scanTokens (token, i) ->
       if token[0] is 'INDEX_START'
         condition = (token, i) -> token[0] in [']', 'INDEX_END']
         action    = (token, i) -> token[0] = 'INDEX_END'
@@ -124,7 +124,7 @@ exports.Rewriter = class Rewriter
   # Insert the missing braces here, so that the parser doesn't have to.
   addImplicitBraces: ->
     stack = []
-    @scanTokens (token, i) =>
+    @scanTokens (token, i) ->
       if include EXPRESSION_START, token[0]
         stack.push(if (token[0] is 'INDENT' and (@tag(i - 1) is '{')) then '{' else token[0])
       if include EXPRESSION_END, token[0]
@@ -150,7 +150,7 @@ exports.Rewriter = class Rewriter
   # Insert the implicit parentheses here, so that the parser doesn't have to
   # deal with them.
   addImplicitParentheses: ->
-    @scanTokens (token, i) =>
+    @scanTokens (token, i) ->
       prev = @tokens[i - 1]
       if prev and prev.spaced and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, token[0]) and
           not (token[0] is '!' and (@tag(i + 1) in ['IN', 'OF']))
@@ -171,7 +171,7 @@ exports.Rewriter = class Rewriter
   # blocks, so it doesn't need to. ')' can close a single-line block,
   # but we need to make sure it's balanced.
   addImplicitIndentation: ->
-    @scanTokens (token, i) =>
+    @scanTokens (token, i) ->
       if token[0] is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
         @tokens.splice i, 0, @indentation(token)...
         return 2
@@ -201,7 +201,7 @@ exports.Rewriter = class Rewriter
   ensureBalance: (pairs) ->
     levels   = {}
     openLine = {}
-    @scanTokens (token, i) =>
+    @scanTokens (token, i) ->
       for pair in pairs
         [open, close] = pair
         levels[open] or= 0
@@ -237,7 +237,7 @@ exports.Rewriter = class Rewriter
     stack = []
     debt  = {}
     (debt[key] = 0) for key, val of INVERSES
-    @scanTokens (token, i) =>
+    @scanTokens (token, i) ->
       tag = token[0]
       inv = INVERSES[token[0]]
       if include EXPRESSION_START, tag
