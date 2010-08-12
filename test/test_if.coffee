@@ -64,9 +64,19 @@ ok result is undefined
 
 # Return an if with no else.
 func = ->
-  return (if false then callback())
+  return if false then callback()
 
 ok func() is null
+
+func = ->
+  return unless false then 100 else -100
+
+ok func() is 100
+
+ident = (x) -> x
+result = ident if false then 300 else 100
+
+ok result is 100
 
 
 # If-to-ternary with instanceof requires parentheses (no comment).

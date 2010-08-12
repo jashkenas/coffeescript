@@ -36,6 +36,7 @@ exports.Rewriter = class Rewriter
     @closeOpenIndexes()
     @addImplicitIndentation()
     @addImplicitBraces()
+    @tagPostfixConditionals()
     @addImplicitParentheses()
     @ensureBalance BALANCED_PAIRS
     @rewriteClosingParens()
@@ -196,6 +197,20 @@ exports.Rewriter = class Rewriter
         return 2
       return 1
 
+  # Tag postfix conditionals as such, so that we can parse them with a
+  # different precedence.
+  tagPostfixConditionals: ->
+    @scanTokens (token, i) ->
+      if token[0] in ['IF', 'UNLESS']
+        original  = token
+        condition = (token, i) ->
+          token[0] in ['TERMINATOR', 'INDENT']
+        action    = (token, i) ->
+          original[0] = 'POST_' + original[0] if token[0] isnt 'INDENT'
+        @detectEnd i + 1, condition, action
+        return 1
+      return 1
+
   # Ensure that all listed pairs of tokens are correctly balanced throughout
   # the course of the token stream.
   ensureBalance: (pairs) ->
@@ -301,7 +316,7 @@ IMPLICIT_FUNC    = ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL    = [
   'IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START', 'CLASS',
-  'TRY', 'DELETE', 'TYPEOF', 'SWITCH', 'THIS', 'NULL',
+  'IF', 'UNLESS', 'TRY', 'DELETE', 'TYPEOF', 'SWITCH', 'THIS', 'NULL',
   'TRUE', 'FALSE', 'YES', 'NO', 'ON', 'OFF',
   '!', '!!', '@', '->', '=>', '[', '(', '{'
 ]
@@ -310,7 +325,7 @@ IMPLICIT_CALL    = [
 IMPLICIT_BLOCK   = ['->', '=>', '{', '[', ',']
 
 # Tokens that always mark the end of an implicit call for single-liners.
-IMPLICIT_END     = ['IF', 'UNLESS', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'TERMINATOR', 'INDENT']
+IMPLICIT_END     = ['POST_IF', 'POST_UNLESS', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'TERMINATOR', 'INDENT']
 
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.

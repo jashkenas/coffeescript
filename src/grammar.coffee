@@ -507,10 +507,10 @@ grammar =
   # *if* and *unless*.
   If: [
     o "IfBlock"
-    o "Statement IF Expression",                -> new IfNode $3, Expressions.wrap([$1]), statement: true
-    o "Expression IF Expression",               -> new IfNode $3, Expressions.wrap([$1]), statement: true
-    o "Statement UNLESS Expression",            -> new IfNode $3, Expressions.wrap([$1]), statement: true, invert: true
-    o "Expression UNLESS Expression",           -> new IfNode $3, Expressions.wrap([$1]), statement: true, invert: true
+    o "Statement POST_IF Expression",           -> new IfNode $3, Expressions.wrap([$1]), statement: true
+    o "Expression POST_IF Expression",          -> new IfNode $3, Expressions.wrap([$1]), statement: true
+    o "Statement POST_UNLESS Expression",       -> new IfNode $3, Expressions.wrap([$1]), statement: true, invert: true
+    o "Expression POST_UNLESS Expression",      -> new IfNode $3, Expressions.wrap([$1]), statement: true, invert: true
   ]
 
   # Arithmetic and logical operators, working on one or more operands.
@@ -609,10 +609,10 @@ operators = [
   ["right",     'INDENT']
   ["left",      'OUTDENT']
   ["right",     'WHEN', 'LEADING_WHEN', 'IN', 'OF', 'BY', 'THROW']
-  ["right",     'FOR', 'WHILE', 'UNTIL', 'LOOP', 'NEW', 'SUPER', 'CLASS']
+  ["right",     'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'NEW', 'SUPER', 'CLASS']
   ["left",      'EXTENDS']
   ["right",     '=', ':', 'RETURN']
-  ["right",     '->', '=>', 'UNLESS', 'IF', 'ELSE']
+  ["right",     '->', '=>', 'UNLESS', 'POST_IF', 'POST_UNLESS']
 ]
 
 # Wrapping Up
