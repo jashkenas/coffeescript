@@ -539,6 +539,7 @@ grammar =
     o "Expression COMPARE Expression",          -> new OpNode $2, $1, $3
     o "Expression LOGIC Expression",            -> new OpNode $2, $1, $3
     o "Expression COMPOUND_ASSIGN Expression",  -> new OpNode $2, $1, $3
+    o "Expression COMPOUND_ASSIGN INDENT Expression OUTDENT", -> new OpNode $2, $1, $4
 
     o "Expression INSTANCEOF Expression",       -> new OpNode 'instanceof', $1, $3
     o "Expression IN Expression",               -> new InNode $1, $3

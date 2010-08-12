@@ -118,3 +118,15 @@ num = 10; ok (num ^=   3) is 9
 num = 10; ok (num |=   3) is 11
 
 
+# Compound assignment with implicit objects.
+obj = undefined
+obj ?=
+  one: 1
+
+ok obj.one is 1
+
+obj and=
+  two: 2
+
+ok not obj.one
+ok obj.two is 2
