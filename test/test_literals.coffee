@@ -167,7 +167,7 @@ ok obj.fn() is null
 
 # Implicit objects with wacky indentation:
 obj =
-  reverse: (obj) ->
+  'reverse': (obj) ->
     Array.prototype.reverse.call obj
   abc: ->
     @reverse(
