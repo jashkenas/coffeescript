@@ -98,20 +98,22 @@ compileScript = (source, code, base) ->
   if o.require
     require fs.realpathSync file for file in o.require
   try
-    CoffeeScript.emit 'compile', {source, code, base, options}
+    CoffeeScript.emit 'compile', task = {source, code, base, options, codeOpts}
+    {source, code, base, options, codeOpts} = task if CoffeeScript.listeners 'compile'
     if      o.tokens      then printTokens CoffeeScript.tokens code
     else if o.nodes       then puts CoffeeScript.nodes(code).toString()
     else if o.run         then CoffeeScript.run code, codeOpts
     else
-      js = CoffeeScript.compile code, codeOpts
-      CoffeeScript.emit 'success', js
+      js = task.js = CoffeeScript.compile code, codeOpts
+      CoffeeScript.emit 'success', task
+      {js} = task if CoffeeScript.listeners 'success'
       if o.print          then print js
       else if o.compile   then writeJs source, js, base
       else if o.lint      then lint js
   catch err
     # Avoid using 'error' as it is a special event -- if there is no handler,
     # node will print a stack trace and exit the program.
-    CoffeeScript.emit 'failure', err
+    CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
     error(err.stack) and process.exit 1 unless o.watch
     puts err.message
