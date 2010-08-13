@@ -163,7 +163,8 @@ exports.Lexer = class Lexer
   # JavaScript and Ruby, borrow slash balancing from `@balancedToken`, and
   # borrow interpolation from `@interpolateString`.
   regexToken: ->
-    return false unless @chunk.match REGEX_START
+    return false unless first = @chunk.match REGEX_START
+    return false if first[1] is ' ' and @tag() not in ['CALL_START', '=']
     return false if     include NOT_REGEX, @tag()
     return false unless regex = @balancedToken ['/', '/']
     return false unless end = @chunk.substr(regex.length).match REGEX_END
@@ -527,7 +528,7 @@ LAST_DENTS    = /\n([ \t]*)/g
 LAST_DENT     = /\n([ \t]*)/
 
 # Regex-matching-regexes.
-REGEX_START         = /^\/[^\/ ]/
+REGEX_START         = /^\/([^\/])/
 REGEX_INTERPOLATION = /([^\\]#\{.*[^\\]\})/
 REGEX_END           = /^(([imgy]{1,4})\b|\W|$)/
 REGEX_ESCAPE        = /\\[^\$]/g

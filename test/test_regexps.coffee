@@ -20,4 +20,9 @@ obj = {
 }
 id = 2
 
+ok ' '.match(/ /)[0] is ' '
+
+regexp = / /
+ok ' '.match regexp
+
 ok (obj.width()/id - obj.height()/id) is -5
