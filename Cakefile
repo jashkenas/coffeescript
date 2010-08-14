@@ -97,10 +97,9 @@ task 'test', 'run the CoffeeScript language test suite', ->
   passedTests = failedTests = 0
   startTime   = new Date
   originalOk  = ok
-  helpers.extend global, {
+  helpers.extend global,
     ok: (args...) -> passedTests += 1; originalOk(args...)
     CoffeeScript: CoffeeScript
-  }
   process.on 'exit', ->
     time = ((new Date - startTime) / 1000).toFixed(2)
     message = "passed #{passedTests} tests in #{time} seconds#{reset}"

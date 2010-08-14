@@ -579,11 +579,10 @@ CALLABLE = ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING', '@', 'THIS', '?', ':
 LINE_BREAK = ['INDENT', 'OUTDENT', 'TERMINATOR']
 
 # Conversions from CoffeeScript operators into JavaScript ones.
-CONVERSIONS = {
+CONVERSIONS =
   'and':  '&&'
   'or':   '||'
   'is':   '=='
   'isnt': '!='
   'not':  '!'
   '===':  '=='
-}

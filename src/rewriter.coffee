@@ -134,7 +134,9 @@ exports.Rewriter = class Rewriter
       if token[0] is ':' and (not last or last[0] isnt '{')
         stack.push '{'
         idx = if @tag(i - 2) is '@' then i - 2 else i - 1
-        @tokens.splice idx, 0, ['{', '{', token[2]]
+        tok = ['{', '{', token[2]]
+        tok.generated = yes
+        @tokens.splice idx, 0, tok
         condition = (token, i) ->
           [one, two, three] = @tokens.slice(i + 1, i + 4)
           return false if 'HERECOMMENT' in [@tag(i + 1), @tag(i - 1)]
@@ -151,10 +153,17 @@ exports.Rewriter = class Rewriter
   # Insert the implicit parentheses here, so that the parser doesn't have to
   # deal with them.
   addImplicitParentheses: ->
+    classLine    = no
     @scanTokens (token, i) ->
-      prev = @tokens[i - 1]
-      if prev and prev.spaced and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, token[0]) and
-          not (token[0] is 'UNARY' and (@tag(i + 1) in ['IN', 'OF']))
+      classLine  = yes if token[0] is 'CLASS'
+      prev       = @tokens[i - 1]
+      next       = @tokens[i + 1]
+      idx        = 1
+      callObject = not classLine and token[0] is 'INDENT' and next and next.generated and next[0] is '{' and prev and include(IMPLICIT_FUNC, prev[0])
+      idx        = 2 if callObject
+      classLine  = no  if include(LINEBREAKS, token[0])
+      if prev and (prev.spaced and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, token[0]) and
+          not (token[0] is 'UNARY' and (@tag(i + 1) in ['IN', 'OF']))) or callObject
         @tokens.splice i, 0, ['CALL_START', '(', token[2]]
         condition = (token, i) ->
           (not token.generated and @tokens[i - 1][0] isnt ',' and include(IMPLICIT_END, token[0]) and
@@ -163,7 +172,7 @@ exports.Rewriter = class Rewriter
         action = (token, i) ->
           idx = if token[0] is 'OUTDENT' then i + 1 else i
           @tokens.splice idx, 0, ['CALL_END', ')', token[2]]
-        @detectEnd i + 1, condition, action
+        @detectEnd i + idx, condition, action
         return 2
       return 1
 
@@ -331,3 +340,6 @@ IMPLICIT_END     = ['POST_IF', 'POST_UNLESS', 'FOR', 'WHILE', 'UNTIL', 'LOOP', '
 # The grammar can't disambiguate them, so we insert the implicit indentation.
 SINGLE_LINERS    = ['ELSE', "->", "=>", 'TRY', 'FINALLY', 'THEN']
 SINGLE_CLOSERS   = ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN']
+
+# Tokens that end a line.
+LINEBREAKS       = ['TERMINATOR', 'INDENT', 'OUTDENT']

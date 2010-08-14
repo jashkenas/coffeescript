@@ -1055,10 +1055,9 @@ exports.WhileNode = class WhileNode extends BaseNode
 exports.OpNode = class OpNode extends BaseNode
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
-  CONVERSIONS: {
+  CONVERSIONS:
     '==': '==='
     '!=': '!=='
-  }
 
   # The list of operators for which we perform
   # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin).
@@ -1472,8 +1471,7 @@ exports.IfNode = class IfNode extends BaseNode
 # generation to generate other combinations of nodes. The **PushNode** creates
 # the tree for `array.push(value)`, which is helpful for recording the result
 # arrays from comprehensions.
-PushNode = exports.PushNode = {
-
+PushNode = exports.PushNode =
   wrap: (array, expressions) ->
     expr = expressions.unwrap()
     return expressions if expr.isPureStatement() or expr.containsPureStatement()
@@ -1481,12 +1479,10 @@ PushNode = exports.PushNode = {
       new ValueNode(literal(array), [new AccessorNode(literal('push'))]), [expr]
     )])
 
-}
-
 #### ClosureNode
 
 # A faux-node used to wrap an expressions body in a closure.
-ClosureNode = exports.ClosureNode = {
+ClosureNode = exports.ClosureNode =
 
   # Wrap the expressions body, unless it contains a pure statement,
   # in which case, no dice. If the body mentions `this` or `arguments`,
@@ -1508,12 +1504,10 @@ ClosureNode = exports.ClosureNode = {
     call = new CallNode(func, args)
     if statement then Expressions.wrap([call]) else call
 
-}
-
 # Utility Functions
 # -----------------
 
-UTILITIES = {
+UTILITIES =
 
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls. See:
@@ -1539,8 +1533,6 @@ UTILITIES = {
   # Shortcuts to speed up the lookup time for native functions.
   hasProp: 'Object.prototype.hasOwnProperty'
   slice:   'Array.prototype.slice'
-
-}
 
 # Constants
 # ---------

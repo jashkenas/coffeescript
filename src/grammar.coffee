@@ -600,9 +600,8 @@ for name, alternatives of grammar
 # rules, and the name of the root. Reverse the operators because Jison orders
 # precedence from low to high, and we have it high to low
 # (as in [Yacc](http://dinosaur.compilertools.net/yacc/index.html)).
-exports.parser = new Parser {
+exports.parser = new Parser
   tokens:       tokens.join ' '
   bnf:          grammar
   operators:    operators.reverse()
   startSymbol:  'Root'
-}
