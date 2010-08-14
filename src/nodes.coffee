@@ -1033,6 +1033,7 @@ exports.WhileNode = class WhileNode extends BaseNode
     top      =  del(o, 'top') and not @returns
     o.indent =  @idt 1
     o.top    =  true
+    @condition.parenthetical = yes
     cond     =  @condition.compile(o)
     set      =  ''
     unless top
@@ -1417,7 +1418,9 @@ exports.IfNode = class IfNode extends BaseNode
     @statement or= !!((o and o.top) or @tags.statement or @bodyNode().isStatement(o) or (@elseBody and @elseBodyNode().isStatement(o)))
 
   compileCondition: (o) ->
-    (cond.compile(o) for cond in flatten([@condition])).join(' || ')
+    conditions = flatten [@condition]
+    conditions[0].parenthetical = yes if conditions.length is 1
+    (cond.compile(o) for cond in conditions).join(' || ')
 
   compileNode: (o) ->
     if @isStatement(o) then @compileStatement(o) else @compileTernary(o)
