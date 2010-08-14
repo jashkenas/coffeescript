@@ -130,3 +130,11 @@ obj and=
 
 ok not obj.one
 ok obj.two is 2
+
+
+# Compound assignment as a sub expression.
+[a, b, c] = [1, 2, 3]
+ok (a + b += c) is 6
+ok a is 1
+ok b is 5
+ok c is 3

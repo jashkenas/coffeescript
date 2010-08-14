@@ -1076,8 +1076,11 @@ exports.OpNode = class OpNode extends BaseNode
   isUnary: ->
     not @second
 
+  isMutator: ->
+    ends(@operator, '=') and @operator not in ['===', '!==']
+
   isChainable: ->
-    indexOf(@CHAINABLE, @operator) >= 0
+    include(@CHAINABLE, @operator)
 
   toString: (idt) ->
     super(idt, @class + ' ' + @operator)
@@ -1088,6 +1091,8 @@ exports.OpNode = class OpNode extends BaseNode
     return @compileAssignment(o) if indexOf(@ASSIGNMENT, @operator) >= 0
     return @compileUnary(o)      if @isUnary()
     return @compileExistence(o)  if @operator is '?'
+    @first  = new ParentheticalNode(@first)  if @first instanceof OpNode and @first.isMutator()
+    @second = new ParentheticalNode(@second) if @second instanceof OpNode and @second.isMutator()
     [@first.compile(o), @operator, @second.compile(o)].join ' '
 
   # Mimic Python's chained comparisons when multiple comparison operators are
