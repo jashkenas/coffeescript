@@ -24,6 +24,8 @@ func = -> i += 1
 result = func() ? 101
 ok result is 10
 
+ok (non ? existent ? variables ? 1) is 1
+
 
 # Only evaluate once.
 counter = 0

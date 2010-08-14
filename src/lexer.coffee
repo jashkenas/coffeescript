@@ -280,13 +280,13 @@ exports.Lexer = class Lexer
       if @value() in ['or', 'and']
         @tokens.splice(@tokens.length - 1, 1, ['COMPOUND_ASSIGN', CONVERSIONS[@value()] + '=', @prev()[2]])
         return true
-    if value is ';'                                            then tag = 'TERMINATOR'
-    else if (value is '?' and spaced) or include(LOGIC, value) then tag = 'LOGIC'
-    else if include(MATH, value)                               then tag = 'MATH'
-    else if include(COMPARE, value)                            then tag = 'COMPARE'
-    else if include(COMPOUND_ASSIGN, value)                    then tag = 'COMPOUND_ASSIGN'
-    else if include(UNARY, value)                              then tag = 'UNARY'
-    else if include(SHIFT, value)                              then tag = 'SHIFT'
+    if value is ';'                         then tag = 'TERMINATOR'
+    else if include(LOGIC, value)           then tag = 'LOGIC'
+    else if include(MATH, value)            then tag = 'MATH'
+    else if include(COMPARE, value)         then tag = 'COMPARE'
+    else if include(COMPOUND_ASSIGN, value) then tag = 'COMPOUND_ASSIGN'
+    else if include(UNARY, value)           then tag = 'UNARY'
+    else if include(SHIFT, value)           then tag = 'SHIFT'
     else if include(CALLABLE, @tag()) and not spaced
       if value is '('
         tag = 'CALL_START'

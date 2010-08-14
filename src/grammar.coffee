@@ -529,6 +529,7 @@ grammar =
     o "Expression --",                          -> new OpNode '--', $1, null, true
     o "Expression ++",                          -> new OpNode '++', $1, null, true
 
+    o "Expression ? Expression",                -> new OpNode '?', $1, $3
     o "Expression + Expression",                -> new OpNode '+', $1, $3
     o "Expression - Expression",                -> new OpNode '-', $1, $3
     o "Expression == Expression",               -> new OpNode '==', $1, $3
@@ -561,7 +562,7 @@ grammar =
 #
 #     (2 + 3) * 4
 operators = [
-  ["left",      '?']
+  ["right",     '?']
   ["nonassoc",  '++', '--']
   ["right",     'UNARY']
   ["left",      'MATH']
