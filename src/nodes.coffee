@@ -1121,7 +1121,7 @@ exports.OpNode = class OpNode extends BaseNode
     second = "(#{second})" if @second instanceof OpNode
     o.scope.find(first) if first.match(IDENTIFIER)
     return "#{first} = #{ ExistenceNode.compileTest(o, literal(firstVar))[0] } ? #{firstVar} : #{second}" if @operator is '?='
-    "#{first} = #{firstVar} #{ @operator.substr(0, 2) } #{second}"
+    "#{first} #{ @operator.substr(0, 2) } (#{firstVar} = #{second})"
 
   # If this is an existence operator, we delegate to `ExistenceNode.compileTest`
   # to give us the safe references for the variables.
