@@ -46,7 +46,7 @@ exports.BaseNode = class BaseNode
       del @options, 'operation'
       del @options, 'chainRoot' unless this instanceof AccessorNode or this instanceof IndexNode
     top     = if @topSensitive() then @options.top else del @options, 'top'
-    closure = @isStatement() and not @isPureStatement() and not top and
+    closure = @isStatement(o) and not @isPureStatement() and not top and
               not @options.asStatement and not (this instanceof CommentNode) and
               not @containsPureStatement()
     if closure then @compileClosure(@options) else @compileNode(@options)
@@ -221,7 +221,7 @@ exports.Expressions = class Expressions extends BaseNode
   compileExpression: (node, o) ->
     @tab = o.indent
     compiledNode = node.compile merge o, top: true
-    if node.isStatement() then compiledNode else "#{@idt()}#{compiledNode};"
+    if node.isStatement(o) then compiledNode else "#{@idt()}#{compiledNode};"
 
 # Wrap up the given nodes as an **Expressions**, unless it already happens
 # to be one.
@@ -250,8 +250,8 @@ exports.LiteralNode = class LiteralNode extends BaseNode
   isPureStatement: LiteralNode::isStatement
 
   compileNode: (o) ->
-    idt = if @isStatement() then @idt() else ''
-    end = if @isStatement() then ';' else ''
+    idt = if @isStatement(o) then @idt() else ''
+    end = if @isStatement(o) then ';' else ''
     idt + @value + end
 
   toString: (idt) ->
@@ -279,7 +279,7 @@ exports.ReturnNode = class ReturnNode extends BaseNode
     super o
 
   compileNode: (o) ->
-    o.asStatement = true if @expression.isStatement()
+    o.asStatement = true if @expression.isStatement(o)
     "#{@tab}return #{@expression.compile(o)};"
 
 #### ValueNode
@@ -323,8 +323,8 @@ exports.ValueNode = class ValueNode extends BaseNode
     if @properties.length then this else @base
 
   # Values are considered to be statements if their base is a statement.
-  isStatement: ->
-    @base.isStatement and @base.isStatement() and not @hasProperties()
+  isStatement: (o) ->
+    @base.isStatement and @base.isStatement(o) and not @hasProperties()
 
   isNumber: ->
     @base instanceof LiteralNode and @base.value.match NUMBER
@@ -775,7 +775,7 @@ exports.AssignNode = class AssignNode extends BaseNode
   # has not been seen yet within the current scope, declare it.
   compileNode: (o) ->
     top    = del o, 'top'
-    return   @compilePatternMatch(o) if @isStatement()
+    return   @compilePatternMatch(o) if @isStatement(o)
     return   @compileSplice(o) if @isValue() and @variable.isSplice()
     stmt   = del o, 'asStatement'
     name   = @variable.compile(o)
@@ -798,7 +798,7 @@ exports.AssignNode = class AssignNode extends BaseNode
   # for details.
   compilePatternMatch: (o) ->
     valVar        = o.scope.freeVariable()
-    value         = if @value.isStatement() then ClosureNode.wrap(@value) else @value
+    value         = if @value.isStatement(o) then ClosureNode.wrap(@value) else @value
     assigns       = ["#{@tab}#{valVar} = #{ value.compile(o) };"]
     o.top         = true
     o.asStatement = true
@@ -1233,8 +1233,8 @@ exports.ParentheticalNode = class ParentheticalNode extends BaseNode
 
   constructor: (@expression) ->
 
-  isStatement: ->
-    @expression.isStatement()
+  isStatement: (o) ->
+    @expression.isStatement(o)
 
   makeReturn: ->
     @expression.makeReturn()
@@ -1245,7 +1245,7 @@ exports.ParentheticalNode = class ParentheticalNode extends BaseNode
   compileNode: (o) ->
     top  = del o, 'top'
     code = @expression.compile(o)
-    if @isStatement()
+    if @isStatement(o)
       return (if top then @tab + code + ';' else code)
     l    = code.length
     code = code.substr(o, l-1) if code.substr(l-1, 1) is ';'
@@ -1404,14 +1404,14 @@ exports.IfNode = class IfNode extends BaseNode
 
   # The **IfNode** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a ternary is safe.
-  isStatement: ->
-    @statement or= !!(@tags.statement or @bodyNode().isStatement() or (@elseBody and @elseBodyNode().isStatement()))
+  isStatement: (o) ->
+    @statement or= !!((o and o.top) or @tags.statement or @bodyNode().isStatement(o) or (@elseBody and @elseBodyNode().isStatement(o)))
 
   compileCondition: (o) ->
     (cond.compile(o) for cond in flatten([@condition])).join(' || ')
 
   compileNode: (o) ->
-    if o.top or @isStatement() then @compileStatement(o) else @compileTernary(o)
+    if @isStatement(o) then @compileStatement(o) else @compileTernary(o)
 
   makeReturn: ->
     if @isStatement()
@@ -1433,7 +1433,7 @@ exports.IfNode = class IfNode extends BaseNode
     condO    = merge o
     o.indent = @idt 1
     o.top    = true
-    ifDent   = if child or (top and not @isStatement()) then '' else @idt()
+    ifDent   = if child or (top and not @isStatement(o)) then '' else @idt()
     comDent  = if child then @idt() else ''
     body     = @body.compile(o)
     ifPart   = "#{ifDent}if (#{ @compileCondition(condO) }) {\n#{body}\n#{@tab}}"
