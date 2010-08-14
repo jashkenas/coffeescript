@@ -320,7 +320,7 @@ exports.Lexer = class Lexer
   # Sanitize a heredoc or herecomment by escaping internal double quotes and
   # erasing all external indentation on the left-hand side.
   sanitizeHeredoc: (doc, options) ->
-    while (match = HEREDOC_INDENT.exec(doc))
+    while match = HEREDOC_INDENT.exec(doc)
       attempt = if match[2]? then match[2] else match[3]
       indent = attempt if not indent or attempt.length < indent.length
     doc = doc.replace(new RegExp("^" +indent, 'gm'), '')
