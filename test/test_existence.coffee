@@ -70,6 +70,11 @@ result = value?.toString().toLowerCase()
 ok result is '10'
 
 
+# Soaks inner values.
+ident = (obj) -> obj
+ok ident(non?.existent().method()) is undefined
+
+
 # Soaks constructor invocations.
 a = 0
 class Foo
