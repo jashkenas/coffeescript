@@ -354,6 +354,7 @@ exports.ValueNode = class ValueNode extends BaseNode
     op          = del o, 'operation'
     props       = if only then @properties[0...@properties.length - 1] else @properties
     o.chainRoot or= this
+    @base.parenthetical = yes if @parenthetical and not props.length
     baseline    = @base.compile o
     baseline    = "(#{baseline})" if @hasProperties() and (@base instanceof ObjectNode or @isNumber())
     complete    = @last = baseline
@@ -434,11 +435,15 @@ exports.CallNode = class CallNode extends BaseNode
     o.chainRoot = this unless o.chainRoot
     for arg in @args when arg instanceof SplatNode
       compilation = @compileSplat(o)
-    unless compilation
-      args = (arg.compile(o) for arg in @args).join(', ')
-      compilation = if @isSuper then @compileSuper(args, o)
-      else "#{@prefix()}#{@variable.compile(o)}(#{args})"
-    if o.operation and @wrapped then "(#{compilation})" else compilation
+    if not compilation
+      args = for arg in @args
+        arg.parenthetical = true
+        arg.compile o
+      compilation = if @isSuper
+        @compileSuper(args.join(', '), o)
+      else
+        "#{@prefix()}#{@variable.compile(o)}(#{ args.join(', ') })"
+    compilation
 
   # `super()` is converted into a call against the superclass's implementation
   # of the current function.
@@ -790,7 +795,7 @@ exports.AssignNode = class AssignNode extends BaseNode
     o.scope.find name unless @isValue() and (@variable.hasProperties() or @variable.namespaced)
     val = "#{name} = #{val}"
     return "#{@tab}#{val};" if stmt
-    if top then val else "(#{val})"
+    if top or @parenthetical then val else "(#{val})"
 
   # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
@@ -1214,7 +1219,8 @@ exports.ExistenceNode = class ExistenceNode extends BaseNode
   constructor: (@expression) ->
 
   compileNode: (o) ->
-    ExistenceNode.compileTest(o, @expression)[0]
+    test = ExistenceNode.compileTest(o, @expression)[0]
+    if @parenthetical then test.substring(1, test.length - 1) else test
 
   # The meat of the **ExistenceNode** is in this static `compileTest` method
   # because other nodes like to check the existence of their variables as well.
@@ -1248,12 +1254,11 @@ exports.ParentheticalNode = class ParentheticalNode extends BaseNode
 
   compileNode: (o) ->
     top  = del o, 'top'
+    @expression.parenthetical = true
     code = @expression.compile(o)
-    if @isStatement(o)
-      return (if top then @tab + code + ';' else code)
-    l    = code.length
-    code = code.substr(o, l-1) if code.substr(l-1, 1) is ';'
-    if @expression instanceof AssignNode then code else "(#{code})"
+    if @parenthetical or @isStatement o
+      return if top then @tab + code + ';' else code
+    "(#{code})"
 
 #### ForNode
 
