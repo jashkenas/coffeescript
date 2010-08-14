@@ -17,8 +17,12 @@ ok a is 10 and b is 10
 # The existential operator.
 z = null
 x = z ? "EX"
-
 ok z is null and x is "EX"
+
+i = 9
+func = -> i += 1
+result = func() ? 101
+ok result is 10
 
 
 # Only evaluate once.

@@ -1114,15 +1114,14 @@ exports.OpNode = class OpNode extends BaseNode
     second = @second.compile o
     second = "(#{second})" if @second instanceof OpNode
     o.scope.find(first) if first.match(IDENTIFIER)
-    return "#{first} = #{ ExistenceNode.compileTest(o, literal(firstVar)) } ? #{firstVar} : #{second}" if @operator is '?='
+    return "#{first} = #{ ExistenceNode.compileTest(o, literal(firstVar))[0] } ? #{firstVar} : #{second}" if @operator is '?='
     "#{first} = #{firstVar} #{ @operator.substr(0, 2) } #{second}"
 
   # If this is an existence operator, we delegate to `ExistenceNode.compileTest`
   # to give us the safe references for the variables.
   compileExistence: (o) ->
-    [first, second] = [@first.compile(o), @second.compile(o)]
-    test = ExistenceNode.compileTest(o, @first)
-    "#{test} ? #{first} : #{second}"
+    [test, ref] = ExistenceNode.compileTest(o, @first)
+    "#{test} ? #{ref} : #{ @second.compile(o) }"
 
   # Compile a unary **OpNode**.
   compileUnary: (o) ->
@@ -1215,14 +1214,14 @@ exports.ExistenceNode = class ExistenceNode extends BaseNode
   constructor: (@expression) ->
 
   compileNode: (o) ->
-    ExistenceNode.compileTest(o, @expression)
+    ExistenceNode.compileTest(o, @expression)[0]
 
   # The meat of the **ExistenceNode** is in this static `compileTest` method
   # because other nodes like to check the existence of their variables as well.
   # Be careful not to double-evaluate anything.
   @compileTest: (o, variable) ->
-    [first, second] = variable.compileReference o
-    "(typeof #{first.compile(o)} !== \"undefined\" && #{second.compile(o)} !== null)"
+    [first, second] = variable.compileReference o, precompile: yes
+    ["(typeof #{first} !== \"undefined\" && #{second} !== null)", second]
 
 #### ParentheticalNode
 
