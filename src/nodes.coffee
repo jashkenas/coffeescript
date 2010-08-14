@@ -367,7 +367,7 @@ exports.ValueNode = class ValueNode extends BaseNode
         complete = if i is 0
           "(typeof #{complete} === \"undefined\" || #{baseline} === null) ? undefined : "
         else
-          "#{complete} == undefined ? undefined : "
+          "#{complete} == null ? undefined : "
         complete += (baseline += prop.compile(o))
       else
         part = prop.compile(o)

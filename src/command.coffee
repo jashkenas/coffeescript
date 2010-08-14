@@ -153,8 +153,9 @@ writeJs = (source, js, base) ->
 # Pipe compiled JS through JSLint (requires a working `jsl` command), printing
 # any errors or warnings that arise.
 lint = (js) ->
-  printIt = (buffer) -> print buffer.toString()
-  jsl = spawn 'jsl', ['-nologo', '-stdin']
+  printIt = (buffer) -> puts buffer.toString().trim()
+  conf = __dirname + '/../extras/jsl.conf'
+  jsl = spawn 'jsl', ['-nologo', '-stdin', '-conf', conf]
   jsl.stdout.on 'data', printIt
   jsl.stderr.on 'data', printIt
   jsl.stdin.write js
