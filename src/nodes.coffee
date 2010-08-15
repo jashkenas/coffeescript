@@ -1059,6 +1059,11 @@ exports.OpNode = class OpNode extends BaseNode
     '==': '==='
     '!=': '!=='
 
+  # The map of invertable operators.
+  INVERSIONS:
+    '!==': '==='
+    '===': '!=='
+
   # The list of operators for which we perform
   # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin).
   CHAINABLE:        ['<', '>', '>=', '<=', '===', '!==']
@@ -1081,11 +1086,17 @@ exports.OpNode = class OpNode extends BaseNode
   isUnary: ->
     not @second
 
+  isInvertable: ->
+    @operator in ['===', '!==']
+
   isMutator: ->
-    ends(@operator, '=') and @operator not in ['===', '!==']
+    ends(@operator, '=') and not @isInvertable()
 
   isChainable: ->
     include(@CHAINABLE, @operator)
+
+  invert: ->
+    @operator = @INVERSIONS[@operator]
 
   toString: (idt) ->
     super(idt, @class + ' ' + @operator)
@@ -1369,7 +1380,11 @@ exports.IfNode = class IfNode extends BaseNode
 
   constructor: (@condition, @body, @tags) ->
     @tags      or= {}
-    @condition = new OpNode('!', new ParentheticalNode(@condition)) if @tags.invert
+    if @tags.invert
+      if @condition instanceof OpNode and @condition.isInvertable()
+        @condition.invert()
+      else
+        @condition = new OpNode '!', new ParentheticalNode @condition
     @elseBody = null
     @isChain  = false
 
