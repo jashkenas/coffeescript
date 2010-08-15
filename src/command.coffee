@@ -44,7 +44,7 @@ SWITCHES = [
 ]
 
 # Top-level objects shared by all the functions.
-options      = {}
+opts         = {}
 sources      = []
 optionParser = null
 
@@ -53,18 +53,18 @@ optionParser = null
 # `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run = ->
   parseOptions()
-  return usage()                              if options.help
-  return version()                            if options.version
-  return require './repl'                     if options.interactive
-  return compileStdio()                       if options.stdio
-  return compileScript 'console', sources[0]  if options.eval
+  return usage()                              if opts.help
+  return version()                            if opts.version
+  return require './repl'                     if opts.interactive
+  return compileStdio()                       if opts.stdio
+  return compileScript 'console', sources[0]  if opts.eval
   return require './repl'                     unless sources.length
   separator = sources.indexOf '--'
   flags = []
   if separator >= 0
     flags   = sources[(separator + 1)...sources.length]
     sources = sources[0...separator]
-  if options.run
+  if opts.run
     flags   = sources[1..sources.length].concat flags
     sources = [sources[0]]
   process.ARGV = process.argv = flags
@@ -86,37 +86,37 @@ compileScripts = ->
                 compile path.join(source, file)
           else if topLevel or path.extname(source) is '.coffee'
             fs.readFile source, (err, code) -> compileScript(source, code.toString(), base)
-            watch source, base if options.watch
+            watch source, base if opts.watch
     compile source, true
 
 # Compile a single source script, containing the given code, according to the
 # requested options. If evaluating the script directly sets `__filename`,
 # `__dirname` and `module.filename` to be correct relative to the script's path.
-compileScript = (source, code, base) ->
-  o = options
-  codeOpts = compileOptions source
+compileScript = (file, input, base) ->
+  o = opts
+  options = compileOptions file
   if o.require
     require fs.realpathSync file for file in o.require
   try
-    CoffeeScript.emit 'compile', task = {source, code, base, options, codeOpts}
-    {source, code, base, options, codeOpts} = task if CoffeeScript.listeners 'compile'
-    if      o.tokens      then printTokens CoffeeScript.tokens code
-    else if o.nodes       then puts CoffeeScript.nodes(code).toString()
-    else if o.run         then CoffeeScript.run code, codeOpts
+    t = task = {file, input, options}
+    CoffeeScript.emit 'compile', task
+    if      o.tokens      then printTokens CoffeeScript.tokens t.input
+    else if o.nodes       then puts CoffeeScript.nodes(t.input).toString()
+    else if o.run         then CoffeeScript.run t.input, t.options
     else
-      js = task.js = CoffeeScript.compile code, codeOpts
+      t.output = CoffeeScript.compile t.input, t.options
       CoffeeScript.emit 'success', task
-      {js} = task if CoffeeScript.listeners 'success'
-      if o.print          then print js
-      else if o.compile   then writeJs source, js, base
-      else if o.lint      then lint js
+      if o.print          then print t.output
+      else if o.compile   then writeJs t.file, t.output, base
+      else if o.lint      then lint t.output
   catch err
     # Avoid using 'error' as it is a special event -- if there is no handler,
     # node will print a stack trace and exit the program.
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
-    error(err.stack) and process.exit 1 unless o.watch
-    puts err.message
+    return puts err.message if o.watch
+    error err.stack
+    process.exit 1
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
 # and write them back to **stdout**.
@@ -143,12 +143,12 @@ writeJs = (source, js, base) ->
   filename  = path.basename(source, path.extname(source)) + '.js'
   srcDir    = path.dirname source
   baseDir   = srcDir.substring base.length
-  dir       = if options.output then path.join options.output, baseDir else srcDir
+  dir       = if opts.output then path.join opts.output, baseDir else srcDir
   jsPath    = path.join dir, filename
   compile   = ->
     js = ' ' if js.length <= 0
     fs.writeFile jsPath, js, (err) ->
-      puts "Compiled #{source}" if options.compile and options.watch
+      puts "Compiled #{source}" if opts.compile and opts.watch
   path.exists dir, (exists) ->
     if exists then compile() else exec "mkdir -p #{dir}", compile
 
@@ -173,17 +173,17 @@ printTokens = (tokens) ->
 # Use the [OptionParser module](optparse.html) to extract all options from
 # `process.argv` that are specified in `SWITCHES`.
 parseOptions = ->
-  optionParser    = new optparse.OptionParser SWITCHES, BANNER
-  o = options     = optionParser.parse(process.argv[2...process.argv.length])
-  options.compile or=  !!o.output
-  options.run     = not (o.compile or o.print or o.lint)
-  options.print   = !!  (o.print or (o.eval or o.stdio and o.compile))
-  sources         = options.arguments
+  optionParser  = new optparse.OptionParser SWITCHES, BANNER
+  o = opts      = optionParser.parse(process.argv[2...process.argv.length])
+  o.compile     or=  !!o.output
+  o.run         = not (o.compile or o.print or o.lint)
+  o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
+  sources       = o.arguments
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (fileName) ->
   o = {fileName}
-  o.noWrap = options['no-wrap']
+  o.noWrap = opts['no-wrap']
   o
 
 # Print the `--help` usage message and exit.
