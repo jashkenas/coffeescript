@@ -90,3 +90,9 @@ try
   ok yes
 catch e
   ok no
+
+
+# If-to-ternary as part of a larger operation requires parens.
+x = 1
+result = x + if false then 10 else 1
+ok result is 2

@@ -29,6 +29,9 @@ else
 # scope, and indentation level.
 exports.BaseNode = class BaseNode
 
+  constructor: ->
+    @tags = {}
+
   # Common logic for determining whether to wrap this node in a closure before
   # compiling it, or to compile directly. We need to wrap if this node is a
   # *statement*, and it's not a *pureStatement*, and we're not at
@@ -42,9 +45,7 @@ exports.BaseNode = class BaseNode
   compile: (o) ->
     @options = merge o or {}
     @tab     = o.indent
-    unless this instanceof ValueNode or this instanceof CallNode
-      del @options, 'operation'
-      del @options, 'chainRoot' unless this instanceof AccessorNode or this instanceof IndexNode
+    del @options, 'chainRoot' unless this instanceof AccessorNode or this instanceof IndexNode
     top     = if @topSensitive() then @options.top else del @options, 'top'
     closure = @isStatement(o) and not @isPureStatement() and not top and
               not @options.asStatement and not (this instanceof CommentNode) and
@@ -157,6 +158,7 @@ exports.Expressions = class Expressions extends BaseNode
   isStatement:  -> yes
 
   constructor: (nodes) ->
+    super()
     @expressions = compact flatten nodes or []
 
   # Tack an expression on to the end of this expression list.
@@ -239,6 +241,7 @@ exports.LiteralNode = class LiteralNode extends BaseNode
   class: 'LiteralNode'
 
   constructor: (@value) ->
+    super()
 
   makeReturn: ->
     if @isStatement() then this else super()
@@ -269,6 +272,7 @@ exports.ReturnNode = class ReturnNode extends BaseNode
   children:         ['expression']
 
   constructor: (@expression) ->
+    super()
 
   makeReturn: ->
     this
@@ -293,6 +297,7 @@ exports.ValueNode = class ValueNode extends BaseNode
 
   # A **ValueNode** has a base and a list of property accesses.
   constructor: (@base, @properties) ->
+    super()
     @properties or= []
 
   # Add a property access to the list.
@@ -351,7 +356,7 @@ exports.ValueNode = class ValueNode extends BaseNode
   # evaluate a anything twice when building the soak chain.
   compileNode: (o) ->
     only        = del o, 'onlyFirst'
-    op          = del o, 'operation'
+    op          = @tags.operation
     props       = if only then @properties[0...@properties.length - 1] else @properties
     o.chainRoot or= this
     @base.parenthetical = yes if @parenthetical and not props.length
@@ -388,6 +393,7 @@ exports.CommentNode = class CommentNode extends BaseNode
   isStatement: -> yes
 
   constructor: (@lines) ->
+    super()
 
   makeReturn: ->
     this
@@ -406,6 +412,7 @@ exports.CallNode = class CallNode extends BaseNode
   children: ['variable', 'args']
 
   constructor: (variable, @args) ->
+    super()
     @isNew    = false
     @isSuper  = variable is 'super'
     @variable = if @isSuper then null else variable
@@ -484,6 +491,7 @@ exports.ExtendsNode = class ExtendsNode extends BaseNode
   children: ['child', 'parent']
 
   constructor: (@child, @parent) ->
+    super()
 
   # Hooks one constructor into another's prototype chain.
   compileNode: (o) ->
@@ -500,6 +508,7 @@ exports.AccessorNode = class AccessorNode extends BaseNode
   children: ['name']
 
   constructor: (@name, tag) ->
+    super()
     @prototype = if tag is 'prototype' then '.prototype' else ''
     @soakNode = tag is 'soak'
 
@@ -518,6 +527,7 @@ exports.IndexNode = class IndexNode extends BaseNode
   children: ['index']
 
   constructor: (@index) ->
+    super()
 
   compileNode: (o) ->
     o.chainRoot.wrapped or= @soakNode
@@ -536,6 +546,7 @@ exports.RangeNode = class RangeNode extends BaseNode
   children: ['from', 'to']
 
   constructor: (@from, @to, exclusive) ->
+    super()
     @exclusive = !!exclusive
     @equals = if @exclusive then '' else '='
 
@@ -607,6 +618,7 @@ exports.SliceNode = class SliceNode extends BaseNode
   children: ['range']
 
   constructor: (@range) ->
+    super()
 
   compileNode: (o) ->
     from     = @range.from.compile(o)
@@ -625,6 +637,7 @@ exports.ObjectNode = class ObjectNode extends BaseNode
   topSensitive: -> true
 
   constructor: (props) ->
+    super()
     @objects = @properties = props or []
 
   compileNode: (o) ->
@@ -652,6 +665,7 @@ exports.ArrayNode = class ArrayNode extends BaseNode
   children: ['objects']
 
   constructor: (@objects) ->
+    super()
     @objects or= []
     @compileSplatLiteral = (o) ->
       SplatNode.compileSplattedArray.call(this, @objects, o)
@@ -687,6 +701,7 @@ exports.ClassNode = class ClassNode extends BaseNode
   # Initialize a **ClassNode** with its name, an optional superclass, and a
   # list of prototype property assignments.
   constructor: (@variable, @parent, @properties) ->
+    super()
     @properties or= []
     @returns    = false
 
@@ -758,6 +773,7 @@ exports.AssignNode = class AssignNode extends BaseNode
   children: ['variable', 'value']
 
   constructor: (@variable, @value, @context) ->
+    super()
 
   topSensitive: ->
     true
@@ -857,6 +873,7 @@ exports.CodeNode = class CodeNode extends BaseNode
   children: ['params', 'body']
 
   constructor: (@params, @body, tag) ->
+    super()
     @params or= []
     @body   or= new Expressions
     @bound  = tag is 'boundfunc'
@@ -927,6 +944,7 @@ exports.ParamNode = class ParamNode extends BaseNode
   children: ['name']
 
   constructor: (@name, @attach, @splat) ->
+    super()
     @value = literal @name
 
   compileNode: (o) ->
@@ -945,6 +963,7 @@ exports.SplatNode = class SplatNode extends BaseNode
   children: ['name']
 
   constructor: (name) ->
+    super()
     name = literal(name) unless name.compile
     @name = name
 
@@ -1009,6 +1028,7 @@ exports.WhileNode = class WhileNode extends BaseNode
   isStatement: -> yes
 
   constructor: (condition, opts) ->
+    super()
     if opts and opts.invert
       condition = new ParentheticalNode condition if condition instanceof OpNode
       condition = new OpNode('!', condition)
@@ -1078,10 +1098,13 @@ exports.OpNode = class OpNode extends BaseNode
   children: ['first', 'second']
 
   constructor: (@operator, @first, @second, flip) ->
+    super()
     @operator = @CONVERSIONS[@operator] or @operator
     @flip     = !!flip
     if @first instanceof ValueNode and @first.base instanceof ObjectNode
       @first = new ParentheticalNode @first
+    @first.tags.operation = yes
+    @second.tags.operation = yes if @second
 
   isUnary: ->
     not @second
@@ -1102,7 +1125,6 @@ exports.OpNode = class OpNode extends BaseNode
     super(idt, @class + ' ' + @operator)
 
   compileNode: (o) ->
-    o.operation = true
     return @compileChain(o)      if @isChainable() and @first.unwrap() instanceof OpNode and @first.unwrap().isChainable()
     return @compileAssignment(o) if indexOf(@ASSIGNMENT, @operator) >= 0
     return @compileUnary(o)      if @isUnary()
@@ -1153,6 +1175,7 @@ exports.InNode = class InNode extends BaseNode
   children: ['object', 'array']
 
   constructor: (@object, @array) ->
+    super()
 
   isArray: ->
     @array instanceof ValueNode and @array.isArray()
@@ -1182,6 +1205,7 @@ exports.TryNode = class TryNode extends BaseNode
   isStatement:  -> yes
 
   constructor: (@attempt, @error, @recovery, @ensure) ->
+    super()
 
   makeReturn: ->
     @attempt  = @attempt.makeReturn() if @attempt
@@ -1209,6 +1233,7 @@ exports.ThrowNode = class ThrowNode extends BaseNode
   isStatement: -> yes
 
   constructor: (@expression) ->
+    super()
 
   # A **ThrowNode** is already a return, of sorts...
   makeReturn: ->
@@ -1228,6 +1253,7 @@ exports.ExistenceNode = class ExistenceNode extends BaseNode
   children: ['expression']
 
   constructor: (@expression) ->
+    super()
 
   compileNode: (o) ->
     test = ExistenceNode.compileTest(o, @expression)[0]
@@ -1253,6 +1279,7 @@ exports.ParentheticalNode = class ParentheticalNode extends BaseNode
   children: ['expression']
 
   constructor: (@expression) ->
+    super()
 
   isStatement: (o) ->
     @expression.isStatement(o)
@@ -1287,6 +1314,7 @@ exports.ForNode = class ForNode extends BaseNode
   isStatement: -> yes
 
   constructor: (@body, source, @name, @index) ->
+    super()
     @index  or= null
     @source = source.source
     @guard  = source.guard
@@ -1379,7 +1407,7 @@ exports.IfNode = class IfNode extends BaseNode
   topSensitive: -> true
 
   constructor: (@condition, @body, @tags) ->
-    @tags      or= {}
+    @tags or= {}
     if @tags.invert
       if @condition instanceof OpNode and @condition.isInvertable()
         @condition.invert()
@@ -1472,10 +1500,12 @@ exports.IfNode = class IfNode extends BaseNode
 
   # Compile the IfNode as a ternary operator.
   compileTernary: (o) ->
-    o.operation = true
+    @bodyNode().tags.operation = @condition.tags.operation = yes
+    @elseBodyNode().tags.operation = yes if @elseBody
     ifPart      = @condition.compile(o) + ' ? ' + @bodyNode().compile(o)
     elsePart    = if @elseBody then @elseBodyNode().compile(o) else 'null'
-    "#{ifPart} : #{elsePart}"
+    code        = "#{ifPart} : #{elsePart}"
+    if @tags.operation then "(#{code})" else code
 
 # Faux-Nodes
 # ----------
