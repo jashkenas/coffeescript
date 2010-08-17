@@ -123,7 +123,7 @@ exports.Lexer = class Lexer
     return false unless string =
       @balancedToken(['"', '"'], ['#{', '}']) or
       @balancedToken ["'", "'"]
-    @interpolateString string.replace STRING_NEWLINES, " \\\n"
+    @interpolateString string.replace /\n/g, '\\\n'
     @line += count string, "\n"
     @i += string.length
     true
@@ -536,7 +536,6 @@ REGEX_ESCAPE        = /\\[^\$]/g
 # Token cleaning regexes.
 JS_CLEANER      = /(^`|`$)/g
 MULTILINER      = /\n/g
-STRING_NEWLINES = /\n[ \t]*/g
 NO_NEWLINE      = /^([+\*&|\/\-%=<>!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)$/
 HEREDOC_INDENT  = /(\n+([ \t]*)|^([ \t]+))/g
 ASSIGNED        = /^\s*(([a-zA-Z\$_@]\w*|["'][^\r\n]+?["']|\d+)[ \t]*?[:=][^=])/

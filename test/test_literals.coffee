@@ -60,8 +60,8 @@ ok money$ is '\(\(\(dollars\)\)\)'
 
 
 multiline = "one
-             two
-             three"
+ two
+ three"
 
 ok multiline is 'one two three'
 
