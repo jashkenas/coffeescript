@@ -140,7 +140,8 @@ exports.Rewriter = class Rewriter
         condition = (token, i) ->
           [one, two, three] = @tokens.slice(i + 1, i + 4)
           return false if 'HERECOMMENT' in [@tag(i + 1), @tag(i - 1)]
-          ((token[0] in ['TERMINATOR', 'OUTDENT']) and not ((two and two[0] is ':') or (one and one[0] is '@' and three and three[0] is ':'))) or
+          return false if token[0] is ',' and one and (one[0] in ['TERMINATOR', 'OUTDENT'])
+          ((token[0] in ['TERMINATOR', 'OUTDENT', ',']) and not ((two and two[0] is ':') or (one and one[0] is '@' and three and three[0] is ':'))) or
             (token[0] is ',' and one and (one[0] not in ['IDENTIFIER', 'STRING', '@', 'TERMINATOR', 'OUTDENT']))
         action = (token, i) ->
           @tokens.splice i, 0, ['}', '}', token[2]]
