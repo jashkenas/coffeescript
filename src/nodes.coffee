@@ -740,12 +740,15 @@ exports.ClassNode = class ClassNode extends BaseNode
         constructor = func
         continue
       if func instanceof CodeNode and func.bound
-        func.bound = false
-        constScope or= new Scope(o.scope, constructor.body, constructor)
-        me or= constScope.freeVariable()
-        pname = pvar.compile(o)
-        constructor.body.push    new ReturnNode literal 'this' if constructor.body.empty()
-        constructor.body.unshift literal "this.#{pname} = function(){ return #{className}.prototype.#{pname}.apply(#{me}, arguments); }"
+        if prop.context is 'this'
+          func.context = className
+        else
+          func.bound = false
+          constScope or= new Scope(o.scope, constructor.body, constructor)
+          me or= constScope.freeVariable()
+          pname = pvar.compile(o)
+          constructor.body.push    new ReturnNode literal 'this' if constructor.body.empty()
+          constructor.body.unshift literal "this.#{pname} = function(){ return #{className}.prototype.#{pname}.apply(#{me}, arguments); }"
       if pvar
         access = if prop.context is 'this' then pvar.base.properties[0] else new AccessorNode(pvar, 'prototype')
         val    = new ValueNode(@variable, [access])
@@ -874,9 +877,10 @@ exports.CodeNode = class CodeNode extends BaseNode
 
   constructor: (@params, @body, tag) ->
     super()
-    @params or= []
-    @body   or= new Expressions
-    @bound  = tag is 'boundfunc'
+    @params   or= []
+    @body     or= new Expressions
+    @bound    = tag is 'boundfunc'
+    @context  = 'this' if @bound
 
   # Compilation creates a new scope unless explicitly asked to share with the
   # outer scope. Handles splat parameters in the parameter list by peeking at
@@ -918,7 +922,7 @@ exports.CodeNode = class CodeNode extends BaseNode
     (o.scope.parameter(param)) for param in params
     code = if @body.expressions.length then "\n#{ @body.compileWithDeclarations(o) }\n" else ''
     func = "function(#{ params.join(', ') }) {#{code}#{ code and @tab }}"
-    return "#{utility('bind')}(#{func}, this)" if @bound
+    return "#{utility('bind')}(#{func}, #{@context})" if @bound
     if top then "(#{func})" else func
 
   topSensitive: ->

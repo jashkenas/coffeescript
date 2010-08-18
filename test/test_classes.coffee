@@ -131,6 +131,7 @@ ok instance.name() is 'class'
 
 
 # Classes with methods that are pre-bound to the instance.
+# ... or statically, to the class.
 class Dog
 
   constructor: (name) ->
@@ -139,11 +140,18 @@ class Dog
   bark: =>
     "#{@name} woofs!"
 
+  @static: =>
+    new this('Dog')
+
 spark = new Dog('Spark')
 fido  = new Dog('Fido')
 fido.bark = spark.bark
 
 ok fido.bark() is 'Spark woofs!'
+
+obj = func: Dog.static
+
+ok obj.func().name is 'Dog'
 
 
 # Testing a bound function in a bound function.
