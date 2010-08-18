@@ -71,14 +71,27 @@ parser.lexer =
   upcomingInput: -> ""
 
 # Activate CoffeeScript in the browser by having it compile and evaluate
-# all script tags with a content-type of `text/coffeescript`. This happens
-# on page load. Unfortunately, the text contents of remote scripts cannot be
-# accessed from the browser, so only inline script tags will work.
-if document? and document.getElementsByTagName
+# all script tags with a content-type of `text/coffeescript`.
+# This happens on page load.
+if document?.getElementsByTagName
+  grind = (coffee) ->
+    setTimeout exports.compile coffee, noWrap: true
+  grindRemote = (url) ->
+    xhr = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
+    xhr.open 'GET', url, true
+    xhr.overrideMimeType 'text/plain' if 'overrideMimeType' of xhr
+    xhr.onreadystatechange = ->
+      grind xhr.responseText if xhr.readyState is 4
+    xhr.send null
   processScripts = ->
-    for tag in document.getElementsByTagName('script') when tag.type is 'text/coffeescript'
-      eval exports.compile tag.innerHTML
+    for script in document.getElementsByTagName 'script'
+      if script.type is 'text/coffeescript'
+        if script.src
+          grindRemote script.src
+        else
+          grind script.innerHTML
+    null
   if window.addEventListener
-    window.addEventListener 'load', processScripts, false
-  else if window.attachEvent
-    window.attachEvent 'onload', processScripts
+    addEventListener 'DOMContentLoaded', processScripts, false
+  else
+    attachEvent 'onload', processScripts
