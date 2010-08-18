@@ -187,7 +187,7 @@ exports.Rewriter = class Rewriter
         @tokens.splice i, 0, @indentation(token)...
         return 2
       if token[0] is 'CATCH' and
-          (@tokens[i + 2][0] is 'TERMINATOR' or @tokens[i + 2][0] is 'FINALLY')
+          (@tag(i + 2) is 'TERMINATOR' or @tag(i + 2) is 'FINALLY')
         @tokens.splice i + 2, 0, @indentation(token)...
         return 4
       if include(SINGLE_LINERS, token[0]) and @tag(i + 1) isnt 'INDENT' and
