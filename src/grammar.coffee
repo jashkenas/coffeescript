@@ -399,6 +399,7 @@ grammar =
   # the trick.
   Parenthetical: [
     o "( Line )",                               -> new ParentheticalNode $2
+    o "( )",                                    -> new ParentheticalNode new LiteralNode ''
   ]
 
   # The condition portion of a while loop.
