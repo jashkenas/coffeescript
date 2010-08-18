@@ -1083,7 +1083,7 @@ exports.OpNode = class OpNode extends BaseNode
     '==': '==='
     '!=': '!=='
 
-  # The map of invertable operators.
+  # The map of invertible operators.
   INVERSIONS:
     '!==': '==='
     '===': '!=='
@@ -1113,11 +1113,13 @@ exports.OpNode = class OpNode extends BaseNode
   isUnary: ->
     not @second
 
-  isInvertable: ->
-    @operator in ['===', '!==']
+  isInvertible: ->
+    (@operator in ['===', '!==']) and
+      not (@first instanceof OpNode) and not (@second instanceof OpNode)
+
 
   isMutator: ->
-    ends(@operator, '=') and not @isInvertable()
+    ends(@operator, '=') and not (@operator in ['===', '!=='])
 
   isChainable: ->
     include(@CHAINABLE, @operator)
@@ -1413,7 +1415,7 @@ exports.IfNode = class IfNode extends BaseNode
   constructor: (@condition, @body, @tags) ->
     @tags or= {}
     if @tags.invert
-      if @condition instanceof OpNode and @condition.isInvertable()
+      if @condition instanceof OpNode and @condition.isInvertible()
         @condition.invert()
       else
         @condition = new OpNode '!', new ParentheticalNode @condition
