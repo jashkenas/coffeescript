@@ -75,7 +75,7 @@ parser.lexer =
 # This happens on page load.
 if document?.getElementsByTagName
   grind = (coffee) ->
-    setTimeout exports.compile coffee, noWrap: true
+    setTimeout exports.compile coffee
   grindRemote = (url) ->
     xhr = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
     xhr.open 'GET', url, true
