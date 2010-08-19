@@ -152,13 +152,6 @@ ok obj.a is 1
 ok obj.b is 2
 
 
-# Implicit objects may close in the middle of argument lists.
-result = null
-func = (one, two) -> result = two
-func a: 1, b: 2, 3, 4
-ok result is 3
-
-
 # Implicit objects nesting.
 obj =
   options:
