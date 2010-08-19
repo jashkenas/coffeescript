@@ -50,7 +50,7 @@ exports.Lexer = class Lexer
     @indents = []           # The stack of all current indentation levels.
     @tokens  = []           # Stream of parsed tokens in the form ['TYPE', value, line]
     while @i < @code.length
-      @chunk = @code.slice @i
+      @chunk = @code[@i..]
       @extractNextToken()
     @closeIndentation()
     return @tokens if o.rewrite is off

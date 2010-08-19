@@ -338,7 +338,7 @@ exports.ValueNode = class ValueNode extends BaseNode
   # needs to be used twice, in compound assignment ... then we need to cache
   # the value of the indexes.
   cacheIndexes: (o) ->
-    copy = new ValueNode @base, @properties.slice 0
+    copy = new ValueNode @base, @properties[0..]
     for prop, i in copy.properties
       if prop instanceof IndexNode and prop.contains((n) -> n instanceof CallNode)
         [index, indexVar] = prop.index.compileReference o
