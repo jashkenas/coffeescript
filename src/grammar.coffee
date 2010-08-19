@@ -348,6 +348,10 @@ grammar =
   Slice: [
     o "INDEX_START Expression . . Expression INDEX_END", -> new RangeNode $2, $5
     o "INDEX_START Expression . . . Expression INDEX_END", -> new RangeNode $2, $6, true
+    o "INDEX_START Expression . . INDEX_END",   -> new RangeNode $2, null
+    o "INDEX_START Expression . . . INDEX_END", -> new RangeNode $2, null, true
+    o "INDEX_START . . Expression INDEX_END",   -> new RangeNode null, $4
+    o "INDEX_START . . . Expression INDEX_END", -> new RangeNode null, $5, true
   ]
 
   # The array literal.

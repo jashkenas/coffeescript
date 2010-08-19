@@ -56,3 +56,20 @@ array[5..10] = [0, 0, 0]
 ok array.join(' ') is '0 1 2 3 4 0 0 0'
 
 
+# Slices and splices that omit their beginning or end.
+array = [0..10]
+
+ok array[7..].join(' ')  is '7 8 9 10'
+ok array[-2..].join(' ') is '9 10'
+
+ok array[...3].join(' ') is '0 1 2'
+ok array[..-5].join(' ') is '0 1 2 3 4 5 6'
+
+array[3..] = [9, 8, 7]
+
+ok array.join(' ') is '0 1 2 9 8 7'
+
+array[...3] = [7, 8, 9]
+
+ok array.join(' ') is '7 8 9 9 8 7'
+

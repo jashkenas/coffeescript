@@ -621,10 +621,11 @@ exports.SliceNode = class SliceNode extends BaseNode
     super()
 
   compileNode: (o) ->
-    from     = @range.from.compile(o)
-    to       = @range.to.compile(o)
-    plusPart = if @range.exclusive then '' else ' + 1'
-    ".slice(#{from}, #{to}#{plusPart})"
+    from  =  if @range.from then @range.from.compile(o) else '0'
+    to    =  if @range.to then @range.to.compile(o) else ''
+    to    += if not to or @range.exclusive then '' else ' + 1'
+    to    =  ', ' + to if to
+    ".slice(#{from}#{to})"
 
 #### ObjectNode
 
@@ -860,8 +861,8 @@ exports.AssignNode = class AssignNode extends BaseNode
     l     = @variable.properties.length
     range = @variable.properties[l - 1].range
     plus  = if range.exclusive then '' else ' + 1'
-    from  = range.from.compile(o)
-    to    = range.to.compile(o) + ' - ' + from + plus
+    from  = if range.from then range.from.compile(o) else '0'
+    to    = if range.to then range.to.compile(o) + ' - ' + from + plus else "#{name}.length"
     val   = @value.compile(o)
     "#{name}.splice.apply(#{name}, [#{from}, #{to}].concat(#{val}))"
 
