@@ -178,6 +178,14 @@ result = func
 
 ok result is 20
 
+third = (a, b, c) -> c
+obj =
+  one: 'one'
+  two: third 'one', 'two', 'three'
+
+ok obj.one is 'one'
+ok obj.two is 'three'
+
 
 # Implicit objects with wacky indentation:
 obj =
