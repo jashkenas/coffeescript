@@ -97,7 +97,6 @@ grammar =
     o "Switch"
     o "Extends"
     o "Class"
-    o "Splat"
     o "Existence"
     o "Comment"
   ]
@@ -361,10 +360,16 @@ grammar =
   # (i.e. comma-separated expressions). Newlines work as well.
   ArgList: [
     o "",                                       -> []
-    o "Expression",                             -> [$1]
-    o "ArgList , Expression",                   -> $1.concat [$3]
-    o "ArgList OptComma TERMINATOR Expression", -> $1.concat [$4]
+    o "Arg",                                    -> [$1]
+    o "ArgList , Arg",                          -> $1.concat [$3]
+    o "ArgList OptComma TERMINATOR Arg",        -> $1.concat [$4]
     o "ArgList OptComma INDENT ArgList OptComma OUTDENT", -> $1.concat $4
+  ]
+
+  # Valid arguments are Expressions or Splats.
+  Arg: [
+    o "Expression"
+    o "Splat"
   ]
 
   # Just simple, comma-separated, required arguments (no fancy syntax). We need
