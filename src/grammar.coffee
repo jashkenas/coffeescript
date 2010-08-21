@@ -429,8 +429,8 @@ grammar =
   ]
 
   Loop: [
-    o "LOOP Block",                             -> (new WhileNode(new LiteralNode 'true')).addBody $2
-    o "LOOP Expression",                        -> (new WhileNode(new LiteralNode 'true')).addBody Expressions.wrap [$2]
+    o "LOOP Block",                             -> new WhileNode(new LiteralNode 'true').addBody $2
+    o "LOOP Expression",                        -> new WhileNode(new LiteralNode 'true').addBody Expressions.wrap [$2]
   ]
 
   # Array, object, and range comprehensions, at the most generic level.

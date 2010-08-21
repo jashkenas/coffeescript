@@ -449,9 +449,7 @@ exports.CallNode = class CallNode extends BaseNode
       compilation = if @isSuper
         @compileSuper(args.join(', '), o)
       else
-        value = @variable.compile o
-        value = "(#{value})" if @isNew and @variable instanceof ValueNode and @variable.hasProperties()
-        "#{@prefix()}#{value}(#{ args.join(', ') })"
+        "#{@prefix()}#{@variable.compile(o)}(#{ args.join(', ') })"
     compilation
 
   # `super()` is converted into a call against the superclass's implementation
@@ -762,7 +760,7 @@ exports.ClassNode = class ClassNode extends BaseNode
     construct = @idt() + (new AssignNode(@variable, constructor)).compile(merge o, {sharedScope: constScope}) + ';'
     props     = if !props.empty() then '\n' + props.compile(o)                     else ''
     extension = if extension      then '\n' + @idt() + extension.compile(o) + ';'  else ''
-    returns   = if @returns       then '\n' + (new ReturnNode(@variable)).compile(o) else ''
+    returns   = if @returns       then '\n' + new ReturnNode(@variable).compile(o) else ''
     construct + extension + props + returns
 
 #### AssignNode
@@ -852,7 +850,7 @@ exports.AssignNode = class AssignNode extends BaseNode
       else
         idx = literal(if splat then "#{valVar}.length - #{olength - idx}" else idx) if typeof idx isnt 'object'
         val = new ValueNode(literal(valVar), [new accessClass(idx)])
-      assigns.push((new AssignNode(obj, val)).compile(o))
+      assigns.push(new AssignNode(obj, val).compile(o))
     code = assigns.join("\n")
     code
 
@@ -1070,7 +1068,7 @@ exports.WhileNode = class WhileNode extends BaseNode
     pre     = "#{set}#{@tab}while (#{cond})"
     @body   = Expressions.wrap([new IfNode(@guard, @body)]) if @guard
     if @returns
-      post = '\n' + (new ReturnNode(literal(rvar))).compile merge o, indent: @idt()
+      post = '\n' + new ReturnNode(literal(rvar)).compile(merge(o, indent: @idt()))
     else
       post = ''
     "#{pre} {\n#{ @body.compile(o) }\n#{@tab}}#{post}"
@@ -1344,7 +1342,7 @@ exports.ForNode = class ForNode extends BaseNode
     this
 
   compileReturnValue: (val, o) ->
-    return '\n' + (new ReturnNode(literal(val))).compile(o) if @returns
+    return '\n' + new ReturnNode(literal(val)).compile(o) if @returns
     return '\n' + val if val
     ''
 
@@ -1374,7 +1372,7 @@ exports.ForNode = class ForNode extends BaseNode
       svar        = scope.freeVariable()
       sourcePart  = "#{svar} = #{ @source.compile(o) };"
       if @pattern
-        namePart  = (new AssignNode(@name, literal("#{svar}[#{ivar}]"))).compile(merge o, {indent: @idt(1), top: true}) + '\n'
+        namePart  = new AssignNode(@name, literal("#{svar}[#{ivar}]")).compile(merge o, {indent: @idt(1), top: true}) + '\n'
       else
         namePart  = "#{name} = #{svar}[#{ivar}]" if name
       unless @object
