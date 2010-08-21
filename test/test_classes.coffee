@@ -235,3 +235,30 @@ obj =
 
 instance = new obj.klass
 ok instance.method() is 'value'
+
+
+# Ensure that nested classes are safely wrapped in parentheses when instantiated
+# to avoid JS problems with operator precedence:
+class1 = ->
+  @name = 'class1'
+  this
+
+class1.class2 = ->
+  @name = 'class2'
+  this
+
+factory = (arg) ->
+  return { class2: class1.class2 }
+
+obj1   = new class1
+obj2_1 = new class1.class2
+obj2_2 = new factory('dummy').class2
+obj2_3 = new (factory('dummy')).class2
+obj2_4 = new (factory('dummy').class2)
+
+ok obj1.name      is 'class1'
+ok obj2_1.name    is 'class2'
+ok obj2_2.name    is 'class2'
+ok obj2_3.name    is 'class2'
+ok obj2_4.name    is 'class2'
+ok obj2_2.class2  is undefined
