@@ -209,10 +209,10 @@ exports.Lexer = class Lexer
       return @newlineToken indent
     else if size > @indent
       return @suppressNewlines() if noNewlines
-      @outdebt = 0
-      diff = size - @indent
+      diff = size - @indent + @outdebt
       @token 'INDENT', diff
       @indents.push diff
+      @outdebt = 0
     else
       @outdentToken @indent - size, noNewlines
     @indent = size

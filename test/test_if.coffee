@@ -96,3 +96,16 @@ catch e
 x = 1
 result = x + if false then 10 else 1
 ok result is 2
+
+
+# If/else indented within an assignment.
+func = ->
+  a =
+    if false
+      3
+    else
+      5
+  101
+  a
+
+ok func() is 5

@@ -8,11 +8,10 @@ ok results.join(' ') is '1 4 9'
 # Chained blocks, with proper indentation levels:
 results = []
 
-counter = {
+counter =
   tick: (func) ->
     results.push func()
     this
-}
 
 counter
   .tick ->
@@ -53,3 +52,17 @@ obj
   )
 
 ok result is 3
+
+
+# Test newline-supressed call chains with nested functions.
+obj  =
+  call: -> this
+func = ->
+  obj
+    .call ->
+      one two
+    .call ->
+      three four
+  101
+
+ok func() is 101
