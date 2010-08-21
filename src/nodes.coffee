@@ -1301,6 +1301,7 @@ exports.ParentheticalNode = class ParentheticalNode extends BaseNode
     top  = del o, 'top'
     @expression.parenthetical = true
     code = @expression.compile(o)
+    return code if top and @expression.isPureStatement o
     if @parenthetical or @isStatement o
       return if top then @tab + code + ';' else code
     "(#{code})"

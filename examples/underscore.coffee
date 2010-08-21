@@ -71,7 +71,7 @@
 
 
   # Current version.
-  _.VERSION = '1.0.2'
+  _.VERSION = '1.1.0'
 
 
   # Collection Functions
@@ -104,8 +104,10 @@
 
   # **Reduce** builds up a single result from a list of values. Also known as
   # **inject**, or **foldl**. Uses JavaScript 1.8's version of **reduce**, if possible.
-  _.reduce = (obj, memo, iterator, context) ->
-    return obj.reduce(_.bind(iterator, context), memo) if nativeReduce and obj.reduce is nativeReduce
+  _.reduce = (obj, iterator, memo, context) ->
+    if nativeReduce and obj.reduce is nativeReduce
+      iterator = _.bind iterator, context if context
+      return obj.reduce iterator, memo
     _.each obj, (value, index, list) ->
       memo = iterator.call context, memo, value, index, list
     memo
@@ -113,11 +115,12 @@
 
   # The right-associative version of **reduce**, also known as **foldr**. Uses
   # JavaScript 1.8's version of **reduceRight**, if available.
-  _.reduceRight = (obj, memo, iterator, context) ->
-    return obj.reduceRight(_.bind(iterator, context), memo) if nativeReduceRight and obj.reduceRight is nativeReduceRight
-    _.each _.clone(_.toArray(obj)).reverse(), (value, index) ->
-      memo = iterator.call context, memo, value, index, obj
-    memo
+  _.reduceRight = (obj, iterator, memo, context) ->
+    if nativeReduceRight and obj.reduceRight is nativeReduceRight
+      iterator = _.bind iterator, context if context
+      return obj.reduceRight iterator, memo
+    reversed = _.clone(_.toArray(obj)).reverse()
+    _.reduce reversed, iterator, memo, context
 
 
   # Return the first value which passes a truth test.
@@ -273,10 +276,11 @@
 
   # Return a completely flattened version of an array.
   _.flatten = (array) ->
-    _.reduce array, [], (memo, value) ->
+    _.reduce array, (memo, value) ->
       return memo.concat(_.flatten(value)) if _.isArray value
       memo.push value
       memo
+    , []
 
 
   # Return a version of the array that does not contain the specified value(s).
@@ -378,6 +382,16 @@
     setTimeout((-> func.apply(func, args)), wait)
 
 
+  # Memoize an expensive function by storing its results.
+  _.memoize = (func, hasher) ->
+    memo = {}
+    hasher or= _.identity
+    ->
+      key = hasher.apply this, arguments
+      return memo[key] if key of memo
+      memo[key] = func.apply this, arguments
+
+
   # Defers a function, scheduling it to run after the current call stack has
   # cleared.
   _.defer = (func) ->
@@ -457,7 +471,7 @@
     # Check dates' integer values.
     return a.getTime() is b.getTime() if _.isDate(a) and _.isDate(b)
     # Both are NaN?
-    return true if _.isNaN(a) and _.isNaN(b)
+    return false if _.isNaN(a) and _.isNaN(b)
     # Compare regular expressions.
     if _.isRegExp(a) and _.isRegExp(b)
       return a.source     is b.source and
@@ -473,13 +487,13 @@
     # Different object sizes?
     return false if aKeys.length isnt bKeys.length
     # Recursive comparison of contents.
-    (return false) for key, val of a when !(key in b) or !_.isEqual(val, b[key])
+    (return false) for all key, val of a when !(key of b) or !_.isEqual(val, b[key])
     true
 
 
   # Is a given array or object empty?
   _.isEmpty = (obj) ->
-    return obj.length is 0 if _.isArray obj
+    return obj.length is 0 if _.isArray(obj) or _.isString(obj)
     (return false) for key of obj when hasOwnProperty.call(obj, key)
     true
 
@@ -582,16 +596,19 @@
   # JavaScript templating a-la **ERB**, pilfered from John Resig's
   # *Secrets of the JavaScript Ninja*, page 83.
   # Single-quote fix from Rick Strahl.
+  # With alterations for arbitrary delimiters, and to preserve whitespace.
   _.template = (str, data) ->
     c = _.templateSettings
     endMatch = new RegExp("'(?=[^"+c.end.substr(0, 1)+"]*"+escapeRegExp(c.end)+")","g")
     fn = new Function 'obj',
       'var p=[],print=function(){p.push.apply(p,arguments);};' +
-      'with(obj){p.push(\'' +
-      str.replace(/[\r\t\n]/g, " ")
-         .replace(endMatch,"\t")
+      'with(obj||{}){p.push(\'' +
+      str.replace(/\r/g, '\\r')
+         .replace(/\n/g, '\\n')
+         .replace(/\t/g, '\\t')
+         .replace(endMatch,"✄")
          .split("'").join("\\'")
-         .split("\t").join("'")
+         .split("✄").join("'")
          .replace(c.interpolate, "',$1,'")
          .split(c.start).join("');")
          .split(c.end).join("p.push('") +
@@ -602,15 +619,16 @@
   # Aliases
   # -------
 
-  _.forEach = _.each
-  _.foldl   = _.inject = _.reduce
-  _.foldr   = _.reduceRight
-  _.select  = _.filter
-  _.all     = _.every
-  _.any     = _.some
-  _.head    = _.first
-  _.tail    = _.rest
-  _.methods = _.functions
+  _.forEach  = _.each
+  _.foldl    = _.inject = _.reduce
+  _.foldr    = _.reduceRight
+  _.select   = _.filter
+  _.all      = _.every
+  _.any      = _.some
+  _.contains = _.include
+  _.head     = _.first
+  _.tail     = _.rest
+  _.methods  = _.functions
 
 
   # Setup the OOP Wrapper
