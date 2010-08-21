@@ -163,7 +163,7 @@ exports.Rewriter = class Rewriter
       idx        = 2 if callObject
       classLine  = no  if include(LINEBREAKS, token[0])
       if prev and (prev.spaced and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, token[0]) and
-          not (token[0] is 'UNARY' and (@tag(i + 1) in ['IN', 'OF']))) or callObject
+          not (token[0] is 'UNARY' and (@tag(i + 1) in ['IN', 'OF', 'INSTANCEOF']))) or callObject
         @tokens.splice i, 0, ['CALL_START', '(', token[2]]
         condition = (token, i) ->
           (not token.generated and @tokens[i - 1][0] isnt ',' and include(IMPLICIT_END, token[0]) and

@@ -552,11 +552,12 @@ grammar =
     o "Value COMPOUND_ASSIGN Expression",       -> new OpNode $2, $1, $3
     o "Value COMPOUND_ASSIGN INDENT Expression OUTDENT", -> new OpNode $2, $1, $4
 
-    o "Expression INSTANCEOF Expression",       -> new OpNode 'instanceof', $1, $3
     o "Expression IN Expression",               -> new InNode $1, $3
     o "Expression OF Expression",               -> new OpNode 'in', $1, $3
+    o "Expression INSTANCEOF Expression",       -> new OpNode 'instanceof', $1, $3
     o "Expression UNARY IN Expression",         -> new OpNode $2, new InNode $1, $4
     o "Expression UNARY OF Expression",         -> new OpNode $2, new ParentheticalNode new OpNode 'in', $1, $4
+    o "Expression UNARY INSTANCEOF Expression", -> new OpNode $2, new ParentheticalNode new OpNode 'instanceof', $1, $4
   ]
 
 
@@ -572,7 +573,7 @@ grammar =
 #
 #     (2 + 3) * 4
 operators = [
-  ["right",     '?']
+  ["right",     '?', 'NEW']
   ["nonassoc",  '++', '--']
   ["right",     'UNARY']
   ["left",      'MATH']
@@ -586,7 +587,7 @@ operators = [
   ["left",      '.']
   ["nonassoc",  'INDENT', 'OUTDENT']
   ["right",     'WHEN', 'LEADING_WHEN', 'IN', 'OF', 'BY', 'THROW']
-  ["right",     'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'NEW', 'SUPER', 'CLASS', 'EXTENDS']
+  ["right",     'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS', 'EXTENDS']
   ["right",     '=', ':', 'RETURN']
   ["right",     '->', '=>', 'UNLESS', 'POST_IF', 'POST_UNLESS']
 ]

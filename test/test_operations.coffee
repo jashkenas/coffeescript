@@ -138,3 +138,8 @@ ok (a + b += c) is 6
 ok a is 1
 ok b is 5
 ok c is 3
+
+
+# Instanceof.
+ok new String instanceof String
+ok new Number not instanceof String

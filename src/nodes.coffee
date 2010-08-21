@@ -48,7 +48,7 @@ exports.BaseNode = class BaseNode
     del @options, 'chainRoot' unless this instanceof AccessorNode or this instanceof IndexNode
     top     = if @topSensitive() then @options.top else del @options, 'top'
     closure = @isStatement(o) and not @isPureStatement() and not top and
-              not @options.asStatement and not (this instanceof CommentNode) and
+              not @options.asStatement and this not instanceof CommentNode and
               not @containsPureStatement()
     if closure then @compileClosure(@options) else @compileNode(@options)
 
@@ -644,7 +644,7 @@ exports.ObjectNode = class ObjectNode extends BaseNode
   compileNode: (o) ->
     top = del o, 'top'
     o.indent = @idt 1
-    nonComments = prop for prop in @properties when not (prop instanceof CommentNode)
+    nonComments = prop for prop in @properties when (prop not instanceof CommentNode)
     lastNoncom =  nonComments[nonComments.length - 1]
     props = for prop, i in @properties
       join   = ",\n"
@@ -1009,7 +1009,7 @@ exports.SplatNode = class SplatNode extends BaseNode
     for arg, i in list
       code = arg.compile o
       prev = args[last = args.length - 1]
-      if not (arg instanceof SplatNode)
+      if arg not instanceof SplatNode
         if prev and starts(prev, '[') and ends(prev, ']')
           args[last] = "#{prev.substr(0, prev.length - 1)}, #{code}]"
           continue
