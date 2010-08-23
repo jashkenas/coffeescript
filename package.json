@@ -11,6 +11,10 @@
     "engines":      {
       "node":       ">=0.1.99"
     },
+    "directories" : {
+      "lib" : "./lib"
+    },
+    "main" : "./lib/coffee-script",
     "bin":          {
       "coffee":     "./bin/coffee",
       "cake":       "./bin/cake"
