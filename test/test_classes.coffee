@@ -207,13 +207,13 @@ class Element extends Base
     @node = node
 
 ok Element.extended is Base.extended
-ok Element.__superClass__ is Base.prototype
+ok Element.__super__ is Base.prototype
 
 class MyElement extends Element
 
 ok MyElement.extended is Base.extended
 ok MyElement.fromHTML is Element.fromHTML
-ok MyElement.__superClass__ is Element.prototype
+ok MyElement.__super__ is Element.prototype
 
 
 # Test classes wrapped in decorators.

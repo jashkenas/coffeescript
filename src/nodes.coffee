@@ -431,9 +431,9 @@ exports.CallNode = class CallNode extends BaseNode
   superReference: (o) ->
     methname = o.scope.method.name
     meth = if o.scope.method.proto
-      "#{o.scope.method.proto}.__superClass__.#{methname}"
+      "#{o.scope.method.proto}.__super__.#{methname}"
     else if methname
-      "#{methname}.__superClass__.constructor"
+      "#{methname}.__super__.constructor"
     else throw new Error "cannot call super on an anonymous function."
 
   # Compile a vanilla function call.
@@ -1571,7 +1571,7 @@ UTILITIES =
                 child.prototype = new ctor();
                 child.prototype.constructor = child;
                 if (typeof parent.extended === "function") parent.extended(child);
-                child.__superClass__ = parent.prototype;
+                child.__super__ = parent.prototype;
               }
             """
 
