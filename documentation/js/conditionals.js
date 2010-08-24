@@ -9,4 +9,4 @@ if (happy && knowsIt) {
   showIt();
 }
 date = friday ? sue : jill;
-options = options || defaults;
+options || (options = defaults);

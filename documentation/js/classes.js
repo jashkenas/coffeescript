@@ -5,7 +5,7 @@ var __extends = function(child, parent) {
     child.prototype = new ctor();
     child.prototype.constructor = child;
     if (typeof parent.extended === "function") parent.extended(child);
-    child.__superClass__ = parent.prototype;
+    child.__super__ = parent.prototype;
   };
 Animal = function(_a) {
   this.name = _a;
@@ -20,7 +20,7 @@ Snake = function() {
 __extends(Snake, Animal);
 Snake.prototype.move = function() {
   alert("Slithering...");
-  return Snake.__superClass__.move.call(this, 5);
+  return Snake.__super__.move.call(this, 5);
 };
 Horse = function() {
   return Animal.apply(this, arguments);
@@ -28,7 +28,7 @@ Horse = function() {
 __extends(Horse, Animal);
 Horse.prototype.move = function() {
   alert("Galloping...");
-  return Horse.__superClass__.move.call(this, 45);
+  return Horse.__super__.move.call(this, 45);
 };
 sam = new Snake("Sammy the Python");
 tom = new Horse("Tommy the Palomino");

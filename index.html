@@ -114,7 +114,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.1">0.9.1</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.2">0.9.2</a>
     </p>
 
     <h2>
@@ -175,7 +175,7 @@ math <span class="Keyword">=</span> {
   runners <span class="Keyword">=</span> __slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">1</span>);
   <span class="Keyword">return</span> <span class="LibraryFunction">print</span>(winner, runners);
 };
-<span class="Keyword">if</span> ((<span class="Keyword">typeof</span> elvis <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> elvis <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>)) {
+<span class="Keyword">if</span> (<span class="Keyword">typeof</span> elvis <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> elvis <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) {
   <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>I knew it!<span class="String">&quot;</span></span>);
 }
 cubes <span class="Keyword">=</span> (<span class="Storage">function</span>() {
@@ -209,7 +209,7 @@ race = function(winner) {
   runners = __slice.call(arguments, 1);
   return print(winner, runners);
 };
-if ((typeof elvis !== "undefined" && elvis !== null)) {
+if (typeof elvis !== "undefined" && elvis !== null) {
   alert("I knew it!");
 }
 cubes = (function() {
@@ -254,7 +254,7 @@ cubes = (function() {
       Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.1">0.9.1</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.2">0.9.2</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -612,7 +612,7 @@ inner = changeNumbers();;alert(inner);'>run: inner</button><br class='clear' /><
 
 date <span class="Keyword">=</span> <span class="Keyword">if</span> friday <span class="Keyword">then</span> sue <span class="Keyword">else</span> jill
 
-options or<span class="Keyword">=</span> defaults
+options <span class="Keyword">or=</span> defaults
 </pre><pre class="idle"><span class="Storage">var</span> date, mood, options;
 <span class="Keyword">if</span> (singing) {
   mood <span class="Keyword">=</span> greatlyImproved;
@@ -624,7 +624,7 @@ options or<span class="Keyword">=</span> defaults
   showIt();
 }
 date <span class="Keyword">=</span> friday ? sue : jill;
-options <span class="Keyword">=</span> options <span class="Keyword">||</span> defaults;
+options <span class="Keyword">||</span> (options <span class="Keyword">=</span> defaults);
 </pre><br class='clear' /></div>
 
     <p>
@@ -681,12 +681,12 @@ print inspect <span class="String"><span class="String">&quot;</span>My name is 
 <span class="Keyword">if</span> (band <span class="Keyword">!</span><span class="Keyword">==</span> SpinalTap) {
   volume <span class="Keyword">=</span> <span class="Number">10</span>;
 }
-<span class="Keyword">if</span> (<span class="Keyword">!</span>(answer <span class="Keyword">===</span> <span class="BuiltInConstant">false</span>)) {
+<span class="Keyword">if</span> (answer <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">false</span>) {
   letTheWildRumpusBegin();
 }
 <span class="Keyword">if</span> (car.speed <span class="Keyword">&lt;</span> limit) {
   accelerate();
-};
+}
 <span class="Keyword">if</span> ((<span class="Number">47</span> <span class="Keyword">===</span> pick <span class="Keyword">||</span> <span class="Number">92</span> <span class="Keyword">===</span> pick <span class="Keyword">||</span> <span class="Number">13</span> <span class="Keyword">===</span> pick)) {
   winner <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
 }
@@ -788,8 +788,8 @@ num <span class="Keyword">=</span> <span class="Number">6</span>;
 lyrics <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   _a <span class="Keyword">=</span> [];
   <span class="Keyword">while</span> (num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>) {
-    _a.<span class="LibraryFunction">push</span>(num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed. \</span>
-<span class="String">One fell out and bumped his head.<span class="String">&quot;</span></span>);
+    _a.<span class="LibraryFunction">push</span>(num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed.\</span>
+<span class="String">    One fell out and bumped his head.<span class="String">&quot;</span></span>);
   }
   <span class="Keyword">return</span> _a;
 })();
@@ -806,8 +806,8 @@ num = 6;
 lyrics = (function() {
   _a = [];
   while (num -= 1) {
-    _a.push(num + " little monkeys, jumping on the bed. \
-One fell out and bumped his head.");
+    _a.push(num + " little monkeys, jumping on the bed.\
+    One fell out and bumped his head.");
   }
   return _a;
 })();;alert(lyrics.join("\n"));'>run: lyrics.join("\n")</button><br class='clear' /></div>
@@ -1156,7 +1156,7 @@ speed = (typeof speed !== "undefined" && speed !== null) ? speed : 140;;alert(sp
     </p>
     <div class='code'><pre class="idle">lottery.drawWinner()<span class="Keyword">?</span>.address<span class="Keyword">?</span>.zipcode
 </pre><pre class="idle"><span class="Storage">var</span> _a, _b;
-(_b <span class="Keyword">=</span> (<span class="Keyword">typeof</span> (_a <span class="Keyword">=</span> (lottery.drawWinner())) <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">||</span> _a <span class="Keyword">==</span> undefined ? undefined : _a.address)) <span class="Keyword">==</span> undefined ? undefined : _b.zipcode;
+(_b <span class="Keyword">=</span> ((<span class="Keyword">typeof</span> (_a <span class="Keyword">=</span> (lottery.drawWinner())) <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">||</span> _a <span class="Keyword">===</span> <span class="BuiltInConstant">null</span>) ? undefined : _a.address)) <span class="Keyword">==</span> <span class="BuiltInConstant">null</span> ? undefined : _b.zipcode;
 </pre><br class='clear' /></div>
     <p>
       Soaking up nulls is similar to Ruby's
@@ -1186,18 +1186,18 @@ speed = (typeof speed !== "undefined" && speed !== null) ? speed : 140;;alert(sp
       set the superclass, assign prototypal properties, and define the constructor,
       in a single assignable expression.
     </p>
-    <div class='code'><pre class="idle"><span class="Storage">class</span><span class="TypeName"> Animal</span>
+    <div class='code'><pre class="idle"><span class="Storage">class</span> <span class="TypeName">Animal</span>
   <span class="FunctionName">constructor</span><span class="Keyword">:</span> (<span class="Variable">@name</span>) <span class="Storage">-&gt;</span>
 
   <span class="FunctionName">move</span><span class="Keyword">:</span> <span class="FunctionArgument">(</span><span class="FunctionArgument">meters</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span>
     alert <span class="Variable">@name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>
 
-<span class="Storage">class</span><span class="TypeName"> Snake</span><span class="InheritedClass"> <span class="Keyword">extends</span> Animal</span>
+<span class="Storage">class</span> <span class="TypeName">Snake</span><span class="InheritedClass"> <span class="Keyword">extends</span> Animal</span>
   <span class="FunctionName">move</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
     alert <span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>
     <span class="Variable">super</span> <span class="Number">5</span>
 
-<span class="Storage">class</span><span class="TypeName"> Horse</span><span class="InheritedClass"> <span class="Keyword">extends</span> Animal</span>
+<span class="Storage">class</span> <span class="TypeName">Horse</span><span class="InheritedClass"> <span class="Keyword">extends</span> Animal</span>
   <span class="FunctionName">move</span><span class="Keyword">:</span> <span class="Storage">-&gt;</span>
     alert <span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>
     <span class="Variable">super</span> <span class="Number">45</span>
@@ -1218,7 +1218,7 @@ tom.move()
     <span class="LibraryClassType">child</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">ctor</span>();
     <span class="LibraryClassType">child</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">constructor</span> = child;
     <span class="Keyword">if</span> (<span class="Keyword">typeof</span> parent.extended <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>function<span class="String">&quot;</span></span>) parent.extended(child);
-    child.__superClass__ <span class="Keyword">=</span> parent.<span class="LibraryConstant">prototype</span>;
+    child.__super__ <span class="Keyword">=</span> parent.<span class="LibraryConstant">prototype</span>;
   };
 <span class="FunctionName">Animal</span> = <span class="Storage">function</span>(<span class="FunctionArgument">_a</span>) {
   <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> _a;
@@ -1233,7 +1233,7 @@ tom.move()
 __extends(Snake, Animal);
 <span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>() {
   <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>);
-  <span class="Keyword">return</span> Snake.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">5</span>);
+  <span class="Keyword">return</span> Snake.__super__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">5</span>);
 };
 <span class="FunctionName">Horse</span> = <span class="Storage">function</span>() {
   <span class="Keyword">return</span> Animal.<span class="LibraryFunction">apply</span>(<span class="Variable">this</span>, arguments);
@@ -1241,7 +1241,7 @@ __extends(Snake, Animal);
 __extends(Horse, Animal);
 <span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>() {
   <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>);
-  <span class="Keyword">return</span> Horse.__superClass__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">45</span>);
+  <span class="Keyword">return</span> Horse.__super__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">45</span>);
 };
 sam <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Snake</span>(<span class="String"><span class="String">&quot;</span>Sammy the Python<span class="String">&quot;</span></span>);
 tom <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span>(<span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>);
@@ -1254,7 +1254,7 @@ var __extends = function(child, parent) {
     child.prototype = new ctor();
     child.prototype.constructor = child;
     if (typeof parent.extended === "function") parent.extended(child);
-    child.__superClass__ = parent.prototype;
+    child.__super__ = parent.prototype;
   };
 Animal = function(_a) {
   this.name = _a;
@@ -1269,7 +1269,7 @@ Snake = function() {
 __extends(Snake, Animal);
 Snake.prototype.move = function() {
   alert("Slithering...");
-  return Snake.__superClass__.move.call(this, 5);
+  return Snake.__super__.move.call(this, 5);
 };
 Horse = function() {
   return Animal.apply(this, arguments);
@@ -1277,7 +1277,7 @@ Horse = function() {
 __extends(Horse, Animal);
 Horse.prototype.move = function() {
   alert("Galloping...");
-  return Horse.__superClass__.move.call(this, 45);
+  return Horse.__super__.move.call(this, 45);
 };
 sam = new Snake("Sammy the Python");
 tom = new Horse("Tommy the Palomino");
@@ -1578,9 +1578,8 @@ healthy = (200 > cholesterol) && (cholesterol > 60);;alert(healthy);'>run: healt
     <p>
       <span id="interpolation" class="bookmark"></span>
       <b class="header">String and RegExp Interpolation</b>
-      A version of <a href="http://wiki.ecmascript.org/doku.php?id=strawman:string_interpolation">ECMAScript Harmony's proposed string interpolation</a>
-      is included in CoffeeScript. Simple variables can be included by prefixing
-      them with a hash mark.
+      Ruby-style string interpolation is included in CoffeeScript. Double-quoted
+      strings allow for interpolated values, while single-quoted strings are literal.
     </p>
     <div class='code'><pre class="idle">author <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Wittgenstein<span class="String">&quot;</span></span>
 quote  <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String"><span class="String">#{</span>author<span class="String">}</span></span><span class="String">&quot;</span></span>
@@ -1603,11 +1602,11 @@ dates <span class="Keyword">=</span><span class="String"> /\d+#{sep}\d+#{sep}\d+
 </pre><pre class="idle"><span class="Storage">var</span> dates, sentence, sep;
 sentence <span class="Keyword">=</span> (<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> (<span class="Number">22</span> / <span class="Number">7</span>) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is a decent approximation of π<span class="String">&quot;</span></span>);
 sep <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>[.<span class="UserDefinedConstant">\\</span>/<span class="UserDefinedConstant">\\</span>- ]<span class="String">&quot;</span></span>;
-dates <span class="Keyword">=</span> (<span class="Keyword">new</span> <span class="TypeName">RegExp</span>((<span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>d+<span class="String">&quot;</span></span> <span class="Keyword">+</span> (sep) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>d+<span class="String">&quot;</span></span> <span class="Keyword">+</span> (sep) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>d+<span class="String">&quot;</span></span>), <span class="String"><span class="String">&quot;</span>g<span class="String">&quot;</span></span>));
+dates <span class="Keyword">=</span> (<span class="Keyword">new</span> <span class="TypeName">RegExp</span>(<span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>d+<span class="String">&quot;</span></span> <span class="Keyword">+</span> (sep) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>d+<span class="String">&quot;</span></span> <span class="Keyword">+</span> (sep) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>d+<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>g<span class="String">&quot;</span></span>));
 </pre><button onclick='javascript: var dates, sentence, sep;
 sentence = ("" + (22 / 7) + " is a decent approximation of π");
 sep = "[.\\/\\- ]";
-dates = (new RegExp(("\\d+" + (sep) + "\\d+" + (sep) + "\\d+"), "g"));;alert(sentence);'>run: sentence</button><br class='clear' /></div>
+dates = (new RegExp("\\d+" + (sep) + "\\d+" + (sep) + "\\d+", "g"));;alert(sentence);'>run: sentence</button><br class='clear' /></div>
 
     <p>
       <span id="heredocs" class="bookmark"></span>
@@ -1615,27 +1614,27 @@ dates = (new RegExp(("\\d+" + (sep) + "\\d+" + (sep) + "\\d+"), "g"));;alert(sen
       Multiline strings are allowed in CoffeeScript.
     </p>
     <div class='code'><pre class="idle">mobyDick <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago --</span>
-<span class="String">never mind how long precisely -- having little</span>
-<span class="String">or no money in my purse, and nothing particular</span>
-<span class="String">to interest me on shore, I thought I would sail</span>
-<span class="String">about a little and see the watery part of the</span>
-<span class="String">world...<span class="String">&quot;</span></span>
+<span class="String"> never mind how long precisely -- having little</span>
+<span class="String"> or no money in my purse, and nothing particular</span>
+<span class="String"> to interest me on shore, I thought I would sail</span>
+<span class="String"> about a little and see the watery part of the</span>
+<span class="String"> world...<span class="String">&quot;</span></span>
 
 
 </pre><pre class="idle"><span class="Storage">var</span> mobyDick;
-mobyDick <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago -- \</span>
-<span class="String">never mind how long precisely -- having little \</span>
-<span class="String">or no money in my purse, and nothing particular \</span>
-<span class="String">to interest me on shore, I thought I would sail \</span>
-<span class="String">about a little and see the watery part of the \</span>
-<span class="String">world...<span class="String">&quot;</span></span>;
+mobyDick <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago --\</span>
+<span class="String"> never mind how long precisely -- having little\</span>
+<span class="String"> or no money in my purse, and nothing particular\</span>
+<span class="String"> to interest me on shore, I thought I would sail\</span>
+<span class="String"> about a little and see the watery part of the\</span>
+<span class="String"> world...<span class="String">&quot;</span></span>;
 </pre><button onclick='javascript: var mobyDick;
-mobyDick = "Call me Ishmael. Some years ago -- \
-never mind how long precisely -- having little \
-or no money in my purse, and nothing particular \
-to interest me on shore, I thought I would sail \
-about a little and see the watery part of the \
-world...";;alert(mobyDick);'>run: mobyDick</button><br class='clear' /></div>
+mobyDick = "Call me Ishmael. Some years ago --\
+ never mind how long precisely -- having little\
+ or no money in my purse, and nothing particular\
+ to interest me on shore, I thought I would sail\
+ about a little and see the watery part of the\
+ world...";;alert(mobyDick);'>run: mobyDick</button><br class='clear' /></div>
     <p>
       Heredocs can be used to hold formatted or indentation-sensitive text
       (or, if you just don't feel like escaping quotes and apostrophes). The
@@ -1660,11 +1659,11 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">'<
       are preserved in the generated code.
     </p>
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">###</span></span>
-<span class="Comment">CoffeeScript Compiler v0.9.1</span>
+<span class="Comment">CoffeeScript Compiler v0.9.2</span>
 <span class="Comment">Released under the MIT License</span>
-<span class="Comment"><span class="Comment">###</span></span>
+<span class="Comment">###</span>
 </pre><pre class="idle"><span class="Comment"><span class="Comment">/*</span></span>
-<span class="Comment">CoffeeScript Compiler v0.9.1</span>
+<span class="Comment">CoffeeScript Compiler v0.9.2</span>
 <span class="Comment">Released under the MIT License</span>
 <span class="Comment"><span class="Comment">*/</span></span>
 </pre><br class='clear' /></div>
@@ -1709,7 +1708,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
   require(<span class="String"><span class="String">'</span>jison<span class="String">'</span></span>);
   code <span class="Keyword">=</span> require(<span class="String"><span class="String">'</span>./lib/grammar<span class="String">'</span></span>).parser.generate();
   dir <span class="Keyword">=</span> options.output <span class="Keyword">||</span> <span class="String"><span class="String">'</span>lib<span class="String">'</span></span>;
-  <span class="Keyword">return</span> fs.writeFile((<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> (dir) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>/parser.js<span class="String">&quot;</span></span>), code);
+  <span class="Keyword">return</span> fs.writeFile(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> (dir) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>/parser.js<span class="String">&quot;</span></span>, code);
 });
 </pre><br class='clear' /></div>
 
@@ -1847,11 +1846,25 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
-    
+
+    <p>
+      <b class="header" style="margin-top: 20px;">0.9.2</b>
+      Specifying the start and end of a range literal is now optional, eg. <tt>array[3..]</tt>.
+      You can now say <tt>a not instanceof b</tt>.
+      Fixed important bugs with nested significant and non-significant indentation (Issue #637).
+      Added a <tt>--require</tt> flag that allows you to hook into the <tt>coffee</tt> command.
+      Added a custom <tt>jsl.conf</tt> file for our preferred JavaScriptLint setup.
+      Sped up Jison grammar compilation time by flattening rules for operations.
+      Block comments can now be used with JavaScript-minifier-friendly syntax.
+      Added JavaScript's compound assignment bitwise operators. Bugfixes to
+      implicit object literals with leading number and string keys, as the subject
+      of implicit calls, and as part of compound assignment.
+    </p>
+
     <p>
       <b class="header" style="margin-top: 20px;">0.9.1</b>
       Bugfix release for <b>0.9.1</b>. Greatly improves the handling of mixed
-      implicit objects, implicit function calls, and implicit indentation. 
+      implicit objects, implicit function calls, and implicit indentation.
       String and regex interpolation is now strictly <tt>#{ ... }</tt> (Ruby style).
       The compiler now takes a <tt>--require</tt> flag, which specifies scripts
       to run before compilation.
@@ -1865,7 +1878,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       literals use <tt>:</tt>, as in JavaScript. This allows us to have implicit
       object literals, and YAML-style object definitions. Half assignments are
       removed, in favor of <tt>+=</tt>, <tt>or=</tt>, and friends.
-      Interpolation now uses a hash mark <tt>#</tt> instead of the dollar sign 
+      Interpolation now uses a hash mark <tt>#</tt> instead of the dollar sign
       <tt>$</tt> &mdash; because dollar signs may be part of a valid JS identifier.
       Downwards range comprehensions are now safe again, and are optimized to
       straight for loops when created with integer endpoints.
@@ -1880,7 +1893,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       on the object &mdash; useful in constructors and setter functions.
       Constructor functions can now take splats.
     </p>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.7.2</b>
       Quick bugfix (right after 0.7.1) for a problem that prevented <tt>coffee</tt>

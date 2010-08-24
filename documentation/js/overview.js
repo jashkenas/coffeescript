@@ -21,7 +21,7 @@ race = function(winner) {
   runners = __slice.call(arguments, 1);
   return print(winner, runners);
 };
-if ((typeof elvis !== "undefined" && elvis !== null)) {
+if (typeof elvis !== "undefined" && elvis !== null) {
   alert("I knew it!");
 }
 cubes = (function() {

@@ -6,7 +6,7 @@ require 'yui/compressor'
 
 HEADER = <<-EOS
 /**
- * CoffeeScript Compiler v0.9.1
+ * CoffeeScript Compiler v0.9.2
  * http://coffeescript.org
  *
  * Copyright 2010, Jeremy Ashkenas

@@ -127,7 +127,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.1">0.9.1</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.2">0.9.2</a>
     </p>
 
     <h2>
@@ -172,7 +172,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
       Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.1">0.9.1</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.2">0.9.2</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -945,11 +945,25 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
-    
+
+    <p>
+      <b class="header" style="margin-top: 20px;">0.9.2</b>
+      Specifying the start and end of a range literal is now optional, eg. <tt>array[3..]</tt>.
+      You can now say <tt>a not instanceof b</tt>.
+      Fixed important bugs with nested significant and non-significant indentation (Issue #637).
+      Added a <tt>--require</tt> flag that allows you to hook into the <tt>coffee</tt> command.
+      Added a custom <tt>jsl.conf</tt> file for our preferred JavaScriptLint setup.
+      Sped up Jison grammar compilation time by flattening rules for operations.
+      Block comments can now be used with JavaScript-minifier-friendly syntax.
+      Added JavaScript's compound assignment bitwise operators. Bugfixes to
+      implicit object literals with leading number and string keys, as the subject
+      of implicit calls, and as part of compound assignment.
+    </p>
+
     <p>
       <b class="header" style="margin-top: 20px;">0.9.1</b>
       Bugfix release for <b>0.9.1</b>. Greatly improves the handling of mixed
-      implicit objects, implicit function calls, and implicit indentation. 
+      implicit objects, implicit function calls, and implicit indentation.
       String and regex interpolation is now strictly <tt>#{ ... }</tt> (Ruby style).
       The compiler now takes a <tt>--require</tt> flag, which specifies scripts
       to run before compilation.
@@ -963,7 +977,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       literals use <tt>:</tt>, as in JavaScript. This allows us to have implicit
       object literals, and YAML-style object definitions. Half assignments are
       removed, in favor of <tt>+=</tt>, <tt>or=</tt>, and friends.
-      Interpolation now uses a hash mark <tt>#</tt> instead of the dollar sign 
+      Interpolation now uses a hash mark <tt>#</tt> instead of the dollar sign
       <tt>$</tt> &mdash; because dollar signs may be part of a valid JS identifier.
       Downwards range comprehensions are now safe again, and are optimized to
       straight for loops when created with integer endpoints.
@@ -978,7 +992,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       on the object &mdash; useful in constructors and setter functions.
       Constructor functions can now take splats.
     </p>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.7.2</b>
       Quick bugfix (right after 0.7.1) for a problem that prevented <tt>coffee</tt>
