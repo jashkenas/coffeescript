@@ -144,8 +144,8 @@ exports.Lexer = class Lexer
     return false unless match = @chunk.match(COMMENT)
     @line += count match[1], "\n"
     @i += match[1].length
-    if match[2]
-      @token 'HERECOMMENT', @sanitizeHeredoc match[2], herecomment: true
+    if match[4]
+      @token 'HERECOMMENT', @sanitizeHeredoc match[4], herecomment: true, indent: match[3]
       @token 'TERMINATOR', '\n'
     true
 
@@ -319,10 +319,13 @@ exports.Lexer = class Lexer
   # Sanitize a heredoc or herecomment by escaping internal double quotes and
   # erasing all external indentation on the left-hand side.
   sanitizeHeredoc: (doc, options) ->
-    while match = HEREDOC_INDENT.exec(doc)
-      attempt = if match[2]? then match[2] else match[3]
-      indent = attempt if not indent or attempt.length < indent.length
-    doc = doc.replace(new RegExp("^" +indent, 'gm'), '')
+    indent = options.indent or ''
+    return doc if options.herecomment and not include doc, '\n'
+    unless options.herecomment
+      while match = HEREDOC_INDENT.exec(doc)
+        attempt = if match[2]? then match[2] else match[3]
+        indent = attempt if not indent or attempt.length < indent.length
+    doc = doc.replace(new RegExp("^" + indent, 'gm'), '')
     return doc if options.herecomment
     doc.replace(MULTILINER, "\\n")
        .replace(new RegExp(options.quote, 'g'), "\\#{options.quote}")
@@ -520,7 +523,7 @@ NUMBER        = /^(((\b0(x|X)[0-9a-fA-F]+)|((\b[0-9]+(\.[0-9]+)?|\.[0-9]+)(e[+\-
 HEREDOC       = /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
 OPERATOR      = /^(-[\-=>]?|\+[+=]?|[*&|\/%=<>^:!?]+)([ \t]*)/
 WHITESPACE    = /^([ \t]+)/
-COMMENT       = /^(\s*###(?!#)([\s\S]*?)(###[ \t]*\n|(###)?$)|(\s*#(?!##[^#])[^\n]*)+)/
+COMMENT       = /^(([ \t]*\n)*([ \t]*)###([^#][\s\S]*?)(###[ \t]*\n|(###)?$)|(\s*#(?!##[^#])[^\n]*)+)/
 CODE          = /^((-|=)>)/
 MULTI_DENT    = /^((\n([ \t]*))+)(\.)?/
 LAST_DENTS    = /\n([ \t]*)/g
