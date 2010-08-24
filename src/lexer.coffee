@@ -145,8 +145,7 @@ exports.Lexer = class Lexer
     @line += count match[1], "\n"
     @i += match[1].length
     if match[2]
-      comment = @sanitizeHeredoc match[2], herecomment: true
-      @token 'HERECOMMENT', comment.split MULTILINER
+      @token 'HERECOMMENT', @sanitizeHeredoc match[2], herecomment: true
       @token 'TERMINATOR', '\n'
     true
 
@@ -521,7 +520,7 @@ NUMBER        = /^(((\b0(x|X)[0-9a-fA-F]+)|((\b[0-9]+(\.[0-9]+)?|\.[0-9]+)(e[+\-
 HEREDOC       = /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
 OPERATOR      = /^(-[\-=>]?|\+[+=]?|[*&|\/%=<>^:!?]+)([ \t]*)/
 WHITESPACE    = /^([ \t]+)/
-COMMENT       = /^(\s*\#{3}(?!#)[ \t]*\n+([\s\S]*?)[ \t]*\n+[ \t]*\#{3}|(\s*#(?!##[^#])[^\n]*)+)/
+COMMENT       = /^(\s*\#{3}(?!#)([\s\S]*?)\#{3}[ \t]*\n|(\s*#(?!##[^#])[^\n]*)+)/
 CODE          = /^((-|=)>)/
 MULTI_DENT    = /^((\n([ \t]*))+)(\.)?/
 LAST_DENTS    = /\n([ \t]*)/g

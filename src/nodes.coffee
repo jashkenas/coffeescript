@@ -392,15 +392,14 @@ exports.CommentNode = class CommentNode extends BaseNode
   class: 'CommentNode'
   isStatement: -> yes
 
-  constructor: (@lines) ->
+  constructor: (@comment) ->
     super()
 
   makeReturn: ->
     this
 
   compileNode: (o) ->
-    sep = @tab + '// '
-    sep + @lines.join '\n' + sep
+    @tab + '/*' + @comment.replace(/\r?\n/g, '\n' + @tab) + '*/'
 
 #### CallNode
 
