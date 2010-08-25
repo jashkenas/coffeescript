@@ -442,8 +442,8 @@ exports.CallNode = class CallNode extends BaseNode
     o.chainRoot = this unless o.chainRoot
     if @exist
       [@first, @meth] = @variable.compileReference o, precompile: yes
-      @first = "typeof #{@first} === \"function\" ? "
-      @last  = " : null"
+      @first = "(typeof #{@first} === \"function\" ? "
+      @last  = " : null)"
     else if @variable then @meth = @variable.compile o
     for arg in @args when arg instanceof SplatNode
       compilation = @compileSplat(o)
