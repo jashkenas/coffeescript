@@ -141,3 +141,14 @@ ok all.sort().join(' ') is 'Whiskers cream tabby'
 exxes = 'x' for [0...10]
 ok exxes.join(' ') is 'x x x x x x x x x x'
 
+
+# Comprehensions safely redeclare parameters if they're not present in closest
+# scope.
+rule = (x) -> x
+
+learn = ->
+  rule for rule in [1, 2, 3]
+
+ok learn().join(' ') is '1 2 3'
+
+ok rule(101) is 101

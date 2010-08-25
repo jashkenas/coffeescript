@@ -1357,8 +1357,8 @@ exports.ForNode = class ForNode extends BaseNode
     scope         = o.scope
     name          = (@name and @name.compile(o)) or scope.freeVariable()
     index         = @index and @index.compile o
-    scope.find name  if name and not @pattern and (range or not codeInBody)
-    scope.find index if index
+    scope.find(name,  immediate: yes) if name and not @pattern and (range or not codeInBody)
+    scope.find(index, immediate: yes) if index
     rvar          = scope.freeVariable() unless topLevel
     ivar          = if codeInBody then scope.freeVariable() else if range then name else index or scope.freeVariable()
     varPart       = ''

@@ -28,8 +28,8 @@ exports.Scope = class Scope
 
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
-  find: (name) ->
-    return true if @check name
+  find: (name, options) ->
+    return true if @check name, options
     @variables[name] = 'var'
     false
 
@@ -44,9 +44,11 @@ exports.Scope = class Scope
   parameter: (name) ->
     @variables[name] = 'param'
 
-  # Just check to see if a variable has already been declared, without reserving.
-  check: (name) ->
-    return true if Object::hasOwnProperty.call @variables, name
+  # Just check to see if a variable has already been declared, without reserving,
+  # walks up to the root scope.
+  check: (name, options) ->
+    immediate = Object::hasOwnProperty.call @variables, name
+    return immediate if immediate or (options and options.immediate)
     !!(@parent and @parent.check(name))
 
   # If we need to store an intermediate result, find an available name for a
