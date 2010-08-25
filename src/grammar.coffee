@@ -319,6 +319,7 @@ grammar =
   # The list of arguments to a function call.
   Arguments: [
     o "CALL_START ArgList OptComma CALL_END",   -> $2
+    o "FUNC_EXIST CALL_START ArgList OptComma CALL_END", -> $3
   ]
 
   # Calling super.
