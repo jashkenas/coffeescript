@@ -109,3 +109,29 @@ ok x is - 1
 # Things that compile to ternaries should force parentheses, like operators do.
 duration = if options?.animated then 150 else 0
 ok duration is 0
+
+
+# function soak
+plus1 = (x) -> x + 1
+maybe_close = (f, arg) -> if typeof f is 'function' then () -> f(arg) else -1
+funcs = ->
+  [
+    (-> 37)
+    'six times nine'
+    (-> (-> plus1 4)?())
+  ]
+
+ok plus1?(41) is 42
+ok (plus1? 41) is 42
+ok plus2?(41) is null
+ok (plus2? 41) is null
+
+ok maybe_close(plus1, 41)?() is 42
+ok (maybe_close plus1, 41)?() is 42
+ok (maybe_close 'daddy would you like some sausage', 41)?() is null
+
+ok 2?(3) is null
+
+sum = 0
+(sum += (f? null ? 0)) for f in funcs?()
+ok sum is 42
