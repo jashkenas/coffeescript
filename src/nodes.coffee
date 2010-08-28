@@ -410,12 +410,13 @@ exports.CallNode = class CallNode extends BaseNode
   class:     'CallNode'
   children: ['variable', 'args']
 
-  constructor: (variable, @args) ->
+  constructor: (variable, @args, @exist) ->
     super()
     @isNew    = false
     @isSuper  = variable is 'super'
     @variable = if @isSuper then null else variable
     @args     or= []
+    @first = @last = ''
     @compileSplatArguments = (o) ->
       SplatNode.compileSplattedArray.call(this, @args, o)
 
@@ -439,6 +440,11 @@ exports.CallNode = class CallNode extends BaseNode
   # Compile a vanilla function call.
   compileNode: (o) ->
     o.chainRoot = this unless o.chainRoot
+    if @exist
+      [@first, @meth] = @variable.compileReference o, precompile: yes
+      @first = "(typeof #{@first} === \"function\" ? "
+      @last  = " : undefined)"
+    else if @variable then @meth = @variable.compile o
     for arg in @args when arg instanceof SplatNode
       compilation = @compileSplat(o)
     if not compilation
@@ -448,7 +454,7 @@ exports.CallNode = class CallNode extends BaseNode
       compilation = if @isSuper
         @compileSuper(args.join(', '), o)
       else
-        "#{@prefix()}#{@variable.compile(o)}(#{ args.join(', ') })"
+        "#{@first}#{@prefix()}#{@meth}(#{ args.join(', ') })#{@last}"
     compilation
 
   # `super()` is converted into a call against the superclass's implementation
@@ -461,23 +467,23 @@ exports.CallNode = class CallNode extends BaseNode
   # If it's a constructor, then things get real tricky. We have to inject an
   # inner constructor in order to be able to pass the varargs.
   compileSplat: (o) ->
-    meth = if @variable then @variable.compile(o) else @superReference(o)
-    obj =  @variable and @variable.source or 'this'
+    meth = @meth or @superReference(o)
+    obj  = @variable and @variable.source or 'this'
     if obj.match(/\(/)
       temp = o.scope.freeVariable()
-      obj =  temp
+      obj  = temp
       meth = "(#{temp} = #{ @variable.source })#{ @variable.last }"
     if @isNew
       utility 'extends'
       """
-      (function() {
+      #{@first}(function() {
       #{@idt(1)}var ctor = function(){};
       #{@idt(1)}__extends(ctor, #{meth});
       #{@idt(1)}return #{meth}.apply(new ctor, #{ @compileSplatArguments(o) });
-      #{@tab}}).call(this)
+      #{@tab}}).call(this)#{@last}
       """
     else
-      "#{@prefix()}#{meth}.apply(#{obj}, #{ @compileSplatArguments(o) })"
+      "#{@first}#{@prefix()}#{meth}.apply(#{obj}, #{ @compileSplatArguments(o) })#{@last}"
 
 #### ExtendsNode
 

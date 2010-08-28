@@ -109,3 +109,20 @@ ok x is - 1
 # Things that compile to ternaries should force parentheses, like operators do.
 duration = if options?.animated then 150 else 0
 ok duration is 0
+
+
+# function soak
+plus1 = (x) -> x + 1
+
+ok plus1?(41) is 42
+ok (plus1? 41) is 42
+ok plus2?(41) is undefined
+ok (plus2? 41) is undefined
+
+maybe_close = (f, arg) -> if typeof f is 'function' then () -> f(arg) else -1
+
+ok maybe_close(plus1, 41)?() is 42
+ok (maybe_close plus1, 41)?() is 42
+ok (maybe_close 'string', 41)?() is undefined
+
+ok 2?(3) is undefined

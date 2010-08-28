@@ -272,12 +272,12 @@ exports.Lexer = class Lexer
     @tagParameters() if value and value.match CODE
     value or= @chunk.substr 0, 1
     @i += value.length
-    spaced = @prev() and @prev().spaced
+    spaced = (prev = @prev()) and prev.spaced
     tag = value
     if value is '='
       @assignmentError() if include JS_FORBIDDEN, @value()
       if @value() in ['or', 'and']
-        @tokens.splice(@tokens.length - 1, 1, ['COMPOUND_ASSIGN', CONVERSIONS[@value()] + '=', @prev()[2]])
+        @tokens.splice(@tokens.length - 1, 1, ['COMPOUND_ASSIGN', CONVERSIONS[@value()] + '=', prev[2]])
         return true
     if value is ';'                         then tag = 'TERMINATOR'
     else if include(LOGIC, value)           then tag = 'LOGIC'
@@ -288,6 +288,7 @@ exports.Lexer = class Lexer
     else if include(SHIFT, value)           then tag = 'SHIFT'
     else if include(CALLABLE, @tag()) and not spaced
       if value is '('
+        prev[0] = 'FUNC_EXIST' if prev[0] is '?'
         tag = 'CALL_START'
       else if value is '['
         tag = 'INDEX_START'

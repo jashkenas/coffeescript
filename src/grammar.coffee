@@ -313,8 +313,14 @@ grammar =
 
   # Ordinary function invocation, or a chained series of calls.
   Invocation: [
-    o "Value Arguments",                        -> new CallNode $1, $2
-    o "Invocation Arguments",                   -> new CallNode $1, $2
+    o "Value OptFuncExist Arguments",           -> new CallNode $1, $3, $2
+    o "Invocation OptFuncExist Arguments",      -> new CallNode $1, $3, $2
+  ]
+
+  # An optional existence check on a function.
+  OptFuncExist: [
+    o "",                                       -> no
+    o "FUNC_EXIST",                             -> yes
   ]
 
   # The list of arguments to a function call.

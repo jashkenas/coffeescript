@@ -148,7 +148,6 @@ exports.Rewriter = class Rewriter
         return 2
       return 1
 
-
   # Methods may be optionally called without parentheses, for simple cases.
   # Insert the implicit parentheses here, so that the parser doesn't have to
   # deal with them.
@@ -162,7 +161,8 @@ exports.Rewriter = class Rewriter
       callObject = not classLine and token[0] is 'INDENT' and next and next.generated and next[0] is '{' and prev and include(IMPLICIT_FUNC, prev[0])
       idx        = 2 if callObject
       classLine  = no  if include(LINEBREAKS, token[0])
-      if prev and (prev.spaced and include(IMPLICIT_FUNC, prev[0]) and include(IMPLICIT_CALL, token[0]) and
+      token.call = yes if prev and not prev.spaced and token[0] is '?'
+      if prev and (prev.spaced and (include(IMPLICIT_FUNC, prev[0]) or prev.call) and include(IMPLICIT_CALL, token[0]) and
           not (token[0] is 'UNARY' and (@tag(i + 1) in ['IN', 'OF', 'INSTANCEOF']))) or callObject
         @tokens.splice i, 0, ['CALL_START', '(', token[2]]
         condition = (token, i) ->
@@ -173,6 +173,7 @@ exports.Rewriter = class Rewriter
           idx = if token[0] is 'OUTDENT' then i + 1 else i
           @tokens.splice idx, 0, ['CALL_END', ')', token[2]]
         @detectEnd i + idx, condition, action
+        prev[0] = 'FUNC_EXIST' if prev[0] is '?'
         return 2
       return 1
 
