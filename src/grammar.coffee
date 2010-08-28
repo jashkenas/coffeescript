@@ -78,6 +78,7 @@ grammar =
     o "Throw"
     o "BREAK",                                  -> new LiteralNode $1
     o "CONTINUE",                               -> new LiteralNode $1
+    o "DEBUGGER",                               -> new LiteralNode $1
   ]
 
   # All the different types of expressions in our language. The basic unit of

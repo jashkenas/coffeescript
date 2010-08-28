@@ -249,7 +249,7 @@ exports.LiteralNode = class LiteralNode extends BaseNode
   # Break and continue must be treated as pure statements -- they lose their
   # meaning when wrapped in a closure.
   isStatement: ->
-    @value is 'break' or @value is 'continue'
+    @value is 'break' or @value is 'continue' or @value is 'debugger'
   isPureStatement: LiteralNode::isStatement
 
   compileNode: (o) ->
