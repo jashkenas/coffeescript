@@ -102,12 +102,16 @@ exports.Rewriter = class Rewriter
       return 0
 
   # The lexer has tagged the opening parenthesis of a method call. Match it with
-  # its paired close.
+  # its paired close. We have the mis-nested outdent case included here for
+  # calls that close on the same line, just before their outdent.
   closeOpenCalls: ->
     @scanTokens (token, i) ->
       if token[0] is 'CALL_START'
-        condition = (token, i) -> token[0] in [')', 'CALL_END']
-        action    = (token, i) -> token[0] = 'CALL_END'
+        condition = (token, i) ->
+          (token[0] in [')', 'CALL_END']) or (token[0] is 'OUTDENT' and @tokens[i - 1][0] is ')')
+        action = (token, i) ->
+          idx = if token[0] is 'OUTDENT' then i - 1 else i
+          @tokens[idx][0] = 'CALL_END'
         @detectEnd i + 1, condition, action
       return 1
 
