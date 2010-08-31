@@ -109,3 +109,12 @@ func = ->
   a
 
 ok func() is 5
+
+
+# Unmatched 'then' should catch implicit calls.
+i = 1
+isTrue = (x) -> x is true
+
+if isTrue yes then i += 1
+
+ok i is 2

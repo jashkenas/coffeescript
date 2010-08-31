@@ -164,12 +164,15 @@ exports.Rewriter = class Rewriter
       idx        = 1
       callObject = not classLine and token[0] is 'INDENT' and next and next.generated and next[0] is '{' and prev and include(IMPLICIT_FUNC, prev[0])
       idx        = 2 if callObject
+      seenSingle = no
       classLine  = no  if include(LINEBREAKS, token[0])
       token.call = yes if prev and not prev.spaced and token[0] is '?'
       if prev and (prev.spaced and (include(IMPLICIT_FUNC, prev[0]) or prev.call) and include(IMPLICIT_CALL, token[0]) and
           not (token[0] is 'UNARY' and (@tag(i + 1) in ['IN', 'OF', 'INSTANCEOF']))) or callObject
         @tokens.splice i, 0, ['CALL_START', '(', token[2]]
         condition = (token, i) ->
+          return yes if not seenSingle and token.fromThen
+          seenSingle = yes if token[0] in ['IF', 'ELSE', 'UNLESS', '->', '=>']
           (not token.generated and @tokens[i - 1][0] isnt ',' and include(IMPLICIT_END, token[0]) and
             not (token[0] is 'INDENT' and (include(IMPLICIT_BLOCK, @tag(i - 1)) or @tag(i - 2) is 'CLASS'))) or
             token[0] is 'PROPERTY_ACCESS' and @tag(i - 1) is 'OUTDENT'
@@ -198,7 +201,8 @@ exports.Rewriter = class Rewriter
           not (token[0] is 'ELSE' and @tag(i + 1) is 'IF')
         starter = token[0]
         [indent, outdent] = @indentation token
-        indent.generated = outdent.generated = true
+        indent.fromThen   = true if starter is 'THEN'
+        indent.generated  = outdent.generated = true
         @tokens.splice i + 1, 0, indent
         condition = (token, i) ->
           (include(SINGLE_CLOSERS, token[0]) and token[1] isnt ';') and
