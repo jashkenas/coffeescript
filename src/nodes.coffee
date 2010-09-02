@@ -1605,7 +1605,7 @@ TRAILING_WHITESPACE = /[ \t]+$/gm
 # Keep these identifier regexes in sync with the Lexer.
 IDENTIFIER = /^[a-zA-Z\$_](\w|\$)*$/
 NUMBER     = /^(((\b0(x|X)[0-9a-fA-F]+)|((\b[0-9]+(\.[0-9]+)?|\.[0-9]+)(e[+\-]?[0-9]+)?)))\b$/i
-SIMPLENUM  = /^-?\d+/
+SIMPLENUM  = /^-?\d+$/
 
 # Is a literal value a string?
 IS_STRING = /^['"]/
