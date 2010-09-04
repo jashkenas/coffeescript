@@ -340,6 +340,11 @@ grammar =
     o "@",                                      -> new ValueNode new LiteralNode 'this'
   ]
 
+  RangeDots: [
+    o ". .",                                    -> 'inclusive'
+    o ". . .",                                  -> 'exclusive'
+  ]
+
   # A reference to a property on *this*.
   ThisProperty: [
     o "@ Identifier",                           -> new ValueNode new LiteralNode('this'), [new AccessorNode($2)]
@@ -347,18 +352,14 @@ grammar =
 
   # The CoffeeScript range literal.
   Range: [
-    o "[ Expression . . Expression ]",          -> new RangeNode $2, $5
-    o "[ Expression . . . Expression ]",        -> new RangeNode $2, $6, true
+    o "[ Expression RangeDots Expression ]",    -> new RangeNode $2, $4, $3
   ]
 
   # The slice literal.
   Slice: [
-    o "INDEX_START Expression . . Expression INDEX_END", -> new RangeNode $2, $5
-    o "INDEX_START Expression . . . Expression INDEX_END", -> new RangeNode $2, $6, true
-    o "INDEX_START Expression . . INDEX_END",   -> new RangeNode $2, null
-    o "INDEX_START Expression . . . INDEX_END", -> new RangeNode $2, null, true
-    o "INDEX_START . . Expression INDEX_END",   -> new RangeNode null, $4
-    o "INDEX_START . . . Expression INDEX_END", -> new RangeNode null, $5, true
+    o "INDEX_START Expression RangeDots Expression INDEX_END", -> new RangeNode $2, $4, $3
+    o "INDEX_START Expression RangeDots INDEX_END", -> new RangeNode $2, null, $3
+    o "INDEX_START RangeDots Expression INDEX_END", -> new RangeNode null, $3, $2
   ]
 
   # The array literal.

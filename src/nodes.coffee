@@ -550,9 +550,9 @@ exports.RangeNode = class RangeNode extends BaseNode
   class:     'RangeNode'
   children: ['from', 'to']
 
-  constructor: (@from, @to, exclusive) ->
+  constructor: (@from, @to, tag) ->
     super()
-    @exclusive = !!exclusive
+    @exclusive = tag is 'exclusive'
     @equals = if @exclusive then '' else '='
 
   # Compiles the range's source variables -- where it starts and where it ends.
