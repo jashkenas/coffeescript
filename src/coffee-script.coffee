@@ -24,9 +24,6 @@ else
 # The current CoffeeScript version number.
 exports.VERSION = '0.9.2'
 
-# Instantiate a Lexer for our use here.
-lexer = new Lexer
-
 # Compile a string of CoffeeScript code to JavaScript, using the Coffee/Jison
 # compiler.
 exports.compile = compile = (code, options) ->
@@ -49,11 +46,13 @@ exports.nodes = (code) ->
 
 # Compile and execute a string of CoffeeScript (on the server), correctly
 # setting `__filename`, `__dirname`, and relative `require()`.
-exports.run = ((code, options) ->
+exports.run = (code, options) ->
   module.filename = __filename = options.fileName
   __dirname = path.dirname __filename
   eval exports.compile code, options
-)
+
+# Instantiate a Lexer for our use here.
+lexer = new Lexer
 
 # The real Lexer produces a generic stream of tokens. This object provides a
 # thin wrapper around it, compatible with the Jison API. We can then pass it
@@ -69,29 +68,3 @@ parser.lexer =
     @tokens = tokens
     @pos    = 0
   upcomingInput: -> ""
-
-# Activate CoffeeScript in the browser by having it compile and evaluate
-# all script tags with a content-type of `text/coffeescript`.
-# This happens on page load.
-if document?.getElementsByTagName
-  grind = (coffee) ->
-    setTimeout exports.compile coffee
-  grindRemote = (url) ->
-    xhr = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
-    xhr.open 'GET', url, true
-    xhr.overrideMimeType 'text/plain' if 'overrideMimeType' of xhr
-    xhr.onreadystatechange = ->
-      grind xhr.responseText if xhr.readyState is 4
-    xhr.send null
-  processScripts = ->
-    for script in document.getElementsByTagName 'script'
-      if script.type is 'text/coffeescript'
-        if script.src
-          grindRemote script.src
-        else
-          grind script.innerHTML
-    null
-  if window.addEventListener
-    addEventListener 'DOMContentLoaded', processScripts, false
-  else
-    attachEvent 'onload', processScripts

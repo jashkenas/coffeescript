@@ -33,7 +33,7 @@ end
 
 desc "Build the single concatenated and minified script for the browser"
 task :browser do
-  sources = %w(helpers.js rewriter.js lexer.js parser.js scope.js nodes.js coffee-script.js)
+  sources = %w(helpers.js rewriter.js lexer.js parser.js scope.js nodes.js coffee-script.js browser.js)
   code    = sources.map {|s| File.read('lib/' + s) }.join('')
   code    = YUI::JavaScriptCompressor.new.compress(code)
   File.open('extras/coffee-script.js', 'w+') {|f| f.write(HEADER + code) }
