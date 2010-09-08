@@ -474,13 +474,16 @@ exports.CallNode = class CallNode extends BaseNode
       obj  = temp
       meth = "(#{temp} = #{ @variable.source })#{ @variable.last }"
     if @isNew
+      mentionsArgs = no
+      for arg in @args
+        arg.contains (n) -> mentionsArgs or= n instanceof LiteralNode and (n.value is 'arguments')
       utility 'extends'
       """
       #{@first}(function() {
       #{@idt(1)}var ctor = function(){};
       #{@idt(1)}__extends(ctor, #{meth});
       #{@idt(1)}return #{meth}.apply(new ctor, #{ @compileSplatArguments(o) });
-      #{@tab}}).call(this)#{@last}
+      #{@tab}}).#{ if mentionsArgs then 'apply(this, arguments)' else 'call(this)'}#{@last}
       """
     else
       "#{@first}#{@prefix()}#{meth}.apply(#{obj}, #{ @compileSplatArguments(o) })#{@last}"
