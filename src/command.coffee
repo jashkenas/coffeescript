@@ -96,7 +96,7 @@ compileScript = (file, input, base) ->
   o = opts
   options = compileOptions file
   if o.require
-    require(if helpers.starts(file, '.') then fs.realpathSync(file) else file) for file in o.require
+    require(if helpers.starts(req, '.') then fs.realpathSync(req) else req) for req in o.require
   try
     t = task = {file, input, options}
     CoffeeScript.emit 'compile', task
