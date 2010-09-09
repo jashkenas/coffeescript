@@ -125,6 +125,8 @@ result =
   else if no    then 20
   else if 0     then 30
   else if NaN   then 40
-  else               50
+  else               50 +
+       if false then 10
+       else          20
 
-ok result is 50
+ok result is 70
