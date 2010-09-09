@@ -133,7 +133,7 @@ compileStdio = ->
 # such as `--lint` or `--print`.
 watch = (source, base) ->
   fs.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
-    return if curr.mtime.getTime() is prev.mtime.getTime()
+    return if curr.size is prev.size and curr.mtime.getTime() is prev.mtime.getTime()
     fs.readFile source, (err, code) ->
       throw err if err
       compileScript(source, code.toString(), base)
