@@ -46,7 +46,8 @@ exports.Lexer = class Lexer
     @i       = 0            # Current character position we're parsing.
     @line    = o.line or 0  # The current line.
     @indent  = 0            # The current indentation level.
-    @outdebt = 0            # The under-outdentation of the last outdent.
+    @indebt  = 0            # The over-indentation at the current level.
+    @outdebt = 0            # The under-outdentation at the current level.
     @indents = []           # The stack of all current indentation levels.
     @tokens  = []           # Stream of parsed tokens in the form ['TYPE', value, line]
     while @i < @code.length
@@ -203,16 +204,19 @@ exports.Lexer = class Lexer
     size = indent.match(LAST_DENTS).reverse()[0].match(LAST_DENT)[1].length
     nextCharacter = @match NEXT_CHARACTER, 1
     noNewlines = nextCharacter is '.' or nextCharacter is ',' or @unfinished()
-    if size is @indent
+    if size - @indebt is @indent
       return @suppressNewlines() if noNewlines
       return @newlineToken indent
     else if size > @indent
-      return @suppressNewlines() if noNewlines
+      if noNewlines
+        @indebt = size - @indent
+        return @suppressNewlines()
       diff = size - @indent + @outdebt
       @token 'INDENT', diff
       @indents.push diff
-      @outdebt = 0
+      @outdebt = @indebt = 0
     else
+      @indebt = 0
       @outdentToken @indent - size, noNewlines
     @indent = size
     true

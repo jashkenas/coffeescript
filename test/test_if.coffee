@@ -118,3 +118,13 @@ isTrue = (x) -> x is true
 if isTrue yes then i += 1
 
 ok i is 2
+
+# If/else with a suppressed indentation via assignment.
+result =
+  if      false then 10
+  else if no    then 20
+  else if 0     then 30
+  else if NaN   then 40
+  else               50
+
+ok result is 50
