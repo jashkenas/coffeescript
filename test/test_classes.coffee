@@ -48,7 +48,11 @@ class OneClass
 
 class TwoClass extends OneClass
 
-ok (new TwoClass('three')).name is 'three'
+Function.prototype.new = -> new this arguments...
+
+ok (TwoClass.new('three')).name is 'three'
+
+delete Function.prototype.new
 
 
 # And now the same tests, but written in the manual style:
