@@ -134,7 +134,9 @@ compileStdio = ->
 watch = (source, base) ->
   fs.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
     return if curr.mtime.getTime() is prev.mtime.getTime()
-    fs.readFile source, (err, code) -> compileScript(source, code.toString(), base)
+    fs.readFile source, (err, code) ->
+      throw err if err
+      compileScript(source, code.toString(), base)
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
