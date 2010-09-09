@@ -220,3 +220,12 @@ obj =
 ok obj.func(101, 102, 103, 104) is undefined
 ok obj.param is 101
 ok obj.rest.join(' ') is '102 103 104'
+
+
+# `@` and `this` should both be able to invoke a method.
+func          = (arg) -> ok arg is true
+func.withAt   = -> @ true
+func.withThis = -> this true
+
+func.withAt()
+func.withThis()
