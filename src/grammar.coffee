@@ -325,6 +325,7 @@ grammar =
 
   # The list of arguments to a function call.
   Arguments: [
+    o "CALL_START CALL_END",                    -> []
     o "CALL_START ArgList OptComma CALL_END",   -> $2
   ]
 
@@ -364,6 +365,7 @@ grammar =
 
   # The array literal.
   Array: [
+    o "[ ]",                                    -> new ArrayNode []
     o "[ ArgList OptComma ]",                   -> new ArrayNode $2
   ]
 
@@ -371,10 +373,10 @@ grammar =
   # as well as the contents of an array literal
   # (i.e. comma-separated expressions). Newlines work as well.
   ArgList: [
-    o "",                                       -> []
     o "Arg",                                    -> [$1]
     o "ArgList , Arg",                          -> $1.concat [$3]
     o "ArgList OptComma TERMINATOR Arg",        -> $1.concat [$4]
+    o "INDENT ArgList OptComma OUTDENT",        -> $2
     o "ArgList OptComma INDENT ArgList OptComma OUTDENT", -> $1.concat $4
   ]
 
