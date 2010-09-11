@@ -479,11 +479,14 @@ exports.CallNode = class CallNode extends BaseNode
       for arg in @args
         arg.contains (n) -> mentionsArgs or= n instanceof LiteralNode and (n.value is 'arguments')
       utility 'extends'
+      a = o.scope.freeVariable()
+      b = o.scope.freeVariable()
+      c = o.scope.freeVariable()
       """
       #{@first}(function() {
       #{@idt(1)}var ctor = function(){};
-      #{@idt(1)}__extends(ctor, #{meth});
-      #{@idt(1)}return #{meth}.apply(new ctor, #{ @compileSplatArguments(o) });
+      #{@idt(1)}__extends(ctor, #{a} = #{meth});
+      #{@idt(1)}return typeof (#{b} = #{meth}.apply(#{c} = new ctor, #{ @compileSplatArguments(o) })) === "object" ? #{b} : #{c};
       #{@tab}}).#{ if mentionsArgs then 'apply(this, arguments)' else 'call(this)'}#{@last}
       """
     else

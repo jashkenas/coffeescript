@@ -229,3 +229,12 @@ func.withThis = -> this true
 
 func.withAt()
 func.withThis()
+
+
+# Ensure that constructors invoked with splats return a new object.
+args = [1, 2, 3]
+Type = (@args) ->
+type = new Type args...
+
+ok type and type instanceof Type
+ok v is args[i] for v, i in type.args
