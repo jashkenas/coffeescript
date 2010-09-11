@@ -75,6 +75,8 @@ result = value?.toString().toLowerCase()
 
 ok result is '10'
 
+ok(process.exit.nothing?.property() or 101)
+
 
 # Soaks inner values.
 ident = (obj) -> obj

@@ -440,22 +440,23 @@ exports.CallNode = class CallNode extends BaseNode
   # Compile a vanilla function call.
   compileNode: (o) ->
     o.chainRoot = this unless o.chainRoot
+    op = @tags.operation
     if @exist
       [@first, @meth] = @variable.compileReference o, precompile: yes
       @first = "(typeof #{@first} === \"function\" ? "
       @last  = " : undefined)"
     else if @variable then @meth = @variable.compile o
     for arg in @args when arg instanceof SplatNode
-      compilation = @compileSplat(o)
-    if not compilation
+      code = @compileSplat(o)
+    if not code
       args = for arg in @args
         arg.parenthetical = true
         arg.compile o
-      compilation = if @isSuper
+      code = if @isSuper
         @compileSuper(args.join(', '), o)
       else
         "#{@first}#{@prefix()}#{@meth}(#{ args.join(', ') })#{@last}"
-    compilation
+    if op and @variable and @variable.wrapped then "(#{code})" else code
 
   # `super()` is converted into a call against the superclass's implementation
   # of the current function.
