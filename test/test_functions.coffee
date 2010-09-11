@@ -238,3 +238,9 @@ type = new Type args...
 
 ok type and type instanceof Type
 ok v is args[i] for v, i in type.args
+
+
+# Ensure that constructors invoked with splats cache the function.
+called = 0
+get = -> if called++ then false else class Type
+new get() args...

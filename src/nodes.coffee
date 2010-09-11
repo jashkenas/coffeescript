@@ -486,7 +486,7 @@ exports.CallNode = class CallNode extends BaseNode
       #{@first}(function() {
       #{@idt(1)}var ctor = function(){};
       #{@idt(1)}__extends(ctor, #{a} = #{meth});
-      #{@idt(1)}return typeof (#{b} = #{meth}.apply(#{c} = new ctor, #{ @compileSplatArguments(o) })) === "object" ? #{b} : #{c};
+      #{@idt(1)}return typeof (#{b} = #{a}.apply(#{c} = new ctor, #{ @compileSplatArguments(o) })) === "object" ? #{b} : #{c};
       #{@tab}}).#{ if mentionsArgs then 'apply(this, arguments)' else 'call(this)'}#{@last}
       """
     else
