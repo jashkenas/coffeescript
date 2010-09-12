@@ -64,7 +64,7 @@ exports.BaseNode = class BaseNode
   # by assigning it to a temporary variable.
   compileReference: (o, options) ->
     options or= {}
-    pair = if not ((this instanceof CallNode or @contains((n) -> n instanceof CallNode)) or
+    pair = if not (@containsType(CallNode) or
                   (this instanceof ValueNode and (not (@base instanceof LiteralNode) or @hasProperties())))
       [this, this]
     else if this instanceof ValueNode and options.assignment
@@ -369,7 +369,7 @@ exports.ValueNode = class ValueNode extends BaseNode
     for prop, i in props
       @source = baseline
       if prop.soakNode
-        if @base instanceof CallNode or @base.contains((n) -> n instanceof CallNode) and i is 0
+        if @base.containsType(CallNode) and i is 0
           temp = o.scope.freeVariable()
           complete = "(#{ baseline = temp } = (#{complete}))"
         complete = if i is 0
