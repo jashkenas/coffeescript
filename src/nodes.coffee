@@ -339,6 +339,8 @@ exports.ValueNode = class ValueNode extends BaseNode
   # the value of the indexes.
   cacheIndexes: (o) ->
     copy = new ValueNode @base, @properties[0..]
+    if @base instanceof CallNode
+      [@base, copy.base] = @base.compileReference o
     for prop, i in copy.properties
       if prop instanceof IndexNode and prop.contains((n) -> n instanceof CallNode)
         [index, indexVar] = prop.index.compileReference o

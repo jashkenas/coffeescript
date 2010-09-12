@@ -95,6 +95,21 @@ count = 0
 list[key()] ?= 100
 ok list.join(' ') is '0 100 5 10'
 
+count = 0
+key = ->
+  count += 1
+  key
+
+key().val or= 100
+
+ok key.val is 100
+ok count is 1
+
+key().val ?= 200
+
+ok key.val is 100
+ok count is 2
+
 
 # Ensure that RHS is treated as a group.
 a = b = false
