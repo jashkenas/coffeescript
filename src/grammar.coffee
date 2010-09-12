@@ -296,11 +296,9 @@ grammar =
     o "{ ClassBody }",                          -> $2
   ]
 
-  # The three flavors of function call: normal, object instantiation with `new`,
-  # and calling `super()`
+  # The two flavors of function call: normal, and object instantiation with `new`.
   Call: [
     o "Invocation"
-    o "Super"
     o "NEW Invocation",                         -> $2.newInstance()
     o "NEW Value",                              -> (new CallNode($2, [])).newInstance()
   ]
@@ -315,6 +313,8 @@ grammar =
   Invocation: [
     o "Value OptFuncExist Arguments",           -> new CallNode $1, $3, $2
     o "Invocation OptFuncExist Arguments",      -> new CallNode $1, $3, $2
+    o "SUPER",                                  -> new CallNode 'super', [new SplatNode(new LiteralNode('arguments'))]
+    o "SUPER Arguments",                        -> new CallNode 'super', $2
   ]
 
   # An optional existence check on a function.
@@ -327,12 +327,6 @@ grammar =
   Arguments: [
     o "CALL_START CALL_END",                    -> []
     o "CALL_START ArgList OptComma CALL_END",   -> $2
-  ]
-
-  # Calling super.
-  Super: [
-    o "SUPER",                                  -> new CallNode 'super', [new SplatNode(new LiteralNode('arguments'))]
-    o "SUPER Arguments",                        -> new CallNode 'super', $2
   ]
 
   # A reference to the *this* current object.
@@ -584,6 +578,7 @@ grammar =
 #     (2 + 3) * 4
 operators = [
   ["right",     '?', 'NEW']
+  ["left",      'CALL_START', 'CALL_END']
   ["nonassoc",  '++', '--']
   ["right",     'UNARY']
   ["left",      'MATH']

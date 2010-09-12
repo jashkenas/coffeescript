@@ -27,6 +27,13 @@ result = (new ThirdChild).func 'four'
 ok result is 'zero/one/two/three/four'
 ok Base.static('word') is 'static/word'
 
+FirstChild::func = (string) ->
+  super('one/').length + string
+
+result = (new ThirdChild).func 'four'
+
+ok result is '9two/three/four'
+
 
 class TopClass
   constructor: (arg) ->
