@@ -545,7 +545,7 @@ JS_CLEANER      = /(^`|`$)/g
 MULTILINER      = /\n/g
 NO_NEWLINE      = /^([+\*&|\/\-%=<>!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)$/
 HEREDOC_INDENT  = /(\n+([ \t]*)|^([ \t]+))/g
-ASSIGNED        = /^\s*(([a-zA-Z\$_@]\w*|["'][^\r\n]+?["']|\d+)[ \t]*?[:=][^=])/
+ASSIGNED        = /^\s*(([a-zA-Z\$_@]\w*|["'][^\r\n]+?["']|\d+)[ \t]*?[:=][^:=])/
 NEXT_CHARACTER  = /^\s*(\S)/
 
 # Compound assignment tokens.

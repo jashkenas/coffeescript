@@ -26,3 +26,15 @@ obj = {
 
 ok obj.num is obj.func()
 ok obj.num is obj.result
+
+
+# Should be able to look at prototypes on keywords.
+obj =
+  withAt:   -> @::prop
+  withThis: -> this::prop
+  proto:
+    prop: 100
+
+obj.prototype = obj.proto
+ok obj.withAt() is 100
+ok obj.withThis() is 100
