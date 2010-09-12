@@ -361,7 +361,8 @@ exports.ValueNode = class ValueNode extends BaseNode
     op          = @tags.operation
     props       = if only then @properties[0...@properties.length - 1] else @properties
     o.chainRoot or= this
-    hasSoak     = !!(p for p in props when p.soakNode).length
+    for prop in props
+      hasSoak = yes if prop.soakNode
     if hasSoak and @containsType CallNode
       [me, copy] = @cacheIndexes o
     @base.parenthetical = yes if @parenthetical and not props.length
