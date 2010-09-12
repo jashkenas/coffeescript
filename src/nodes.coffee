@@ -439,6 +439,7 @@ exports.CallNode = class CallNode extends BaseNode
 
   # Grab the reference to the superclass' implementation of the current method.
   superReference: (o) ->
+    throw new Error "cannot call super outside of a function" unless o.scope.method
     methname = o.scope.method.name
     meth = if o.scope.method.proto
       "#{o.scope.method.proto}.__super__.#{methname}"
