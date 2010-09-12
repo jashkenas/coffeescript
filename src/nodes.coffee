@@ -361,6 +361,9 @@ exports.ValueNode = class ValueNode extends BaseNode
     op          = @tags.operation
     props       = if only then @properties[0...@properties.length - 1] else @properties
     o.chainRoot or= this
+    hasSoak     = !!(p for p in props when p.soakNode).length
+    if hasSoak and @containsType CallNode
+      [me, copy] = @cacheIndexes o
     @base.parenthetical = yes if @parenthetical and not props.length
     baseline    = @base.compile o
     baseline    = "(#{baseline})" if @hasProperties() and (@base instanceof ObjectNode or @isNumber())
@@ -379,7 +382,10 @@ exports.ValueNode = class ValueNode extends BaseNode
         complete += (baseline += prop.compile(o))
       else
         part = prop.compile(o)
-        baseline += part
+        if hasSoak and prop.containsType CallNode
+          baseline += copy.properties[i].compile o
+        else
+          baseline += part
         complete += part
         @last = part
 

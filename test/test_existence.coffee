@@ -77,6 +77,17 @@ ok result is '10'
 
 ok(process.exit.nothing?.property() or 101)
 
+counter = 0
+func = ->
+  counter += 1
+  'prop'
+obj =
+  prop: -> this
+  value: 25
+
+ok obj[func()]()[func()]()[func()]()?.value is 25
+ok counter is 3
+
 
 # Soaks inner values.
 ident = (obj) -> obj
