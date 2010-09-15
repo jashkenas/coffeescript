@@ -35,8 +35,8 @@ exports.Rewriter = class Rewriter
     @closeOpenCalls()
     @closeOpenIndexes()
     @addImplicitIndentation()
-    @addImplicitBraces()
     @tagPostfixConditionals()
+    @addImplicitBraces()
     @addImplicitParentheses()
     @ensureBalance BALANCED_PAIRS
     @rewriteClosingParens()
