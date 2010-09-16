@@ -1,16 +1,23 @@
-if (day === "Mon") {
-  goToWork();
-} else if (day === "Tue") {
-  goToThePark();
-} else if (day === "Thu") {
-  goIceFishing();
-} else if (day === "Fri" || day === "Sat") {
+switch (day) {
+case "Mon":
+  go(work);
+  break;
+case "Tue":
+  go(relax);
+  break;
+case "Thu":
+  go(iceFishing);
+  break;
+case "Fri":
+case "Sat":
   if (day === bingoDay) {
-    goToBingo();
-    goDancing();
+    go(bingo);
+    go(dancing);
   }
-} else if (day === "Sun") {
-  goToChurch();
-} else {
-  goToWork();
+  break;
+case "Sun":
+  go(church);
+  break;
+default:
+  go(work);
 }

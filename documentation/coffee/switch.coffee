@@ -1,10 +1,10 @@
 switch day
-  when "Mon" then goToWork()
-  when "Tue" then goToThePark()
-  when "Thu" then goIceFishing()
+  when "Mon" then go work
+  when "Tue" then go relax
+  when "Thu" then go iceFishing
   when "Fri", "Sat"
     if day is bingoDay
-      goToBingo()
-      goDancing()
-  when "Sun" then goToChurch()
-  else goToWork()
+      go bingo
+      go dancing
+  when "Sun" then go church
+  else go work

@@ -22,7 +22,7 @@ else
   helpers      = this.helpers
 
 # The current CoffeeScript version number.
-exports.VERSION = '0.9.2'
+exports.VERSION = '0.9.3'
 
 # Compile a string of CoffeeScript code to JavaScript, using the Coffee/Jison
 # compiler.

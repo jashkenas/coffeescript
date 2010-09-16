@@ -1,4 +1,3 @@
-/*
-CoffeeScript Compiler v0.9.2
+/*CoffeeScript Compiler v0.9.3
 Released under the MIT License
 */

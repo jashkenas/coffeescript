@@ -40,7 +40,7 @@
         <a href="#pattern_matching">Pattern Matching</a>
         <a href="#fat_arrow">Function Binding</a>
         <a href="#embedded">Embedded JavaScript</a>
-        <a href="#switch">Switch/When/Else</a>
+        <a href="#switch">The Switch Statement</a>
         <a href="#try">Try/Catch/Finally</a>
         <a href="#comparisons">Chained Comparisons</a>
         <a href="#interpolation">String and RegExp Interpolation</a>
@@ -114,7 +114,7 @@ alert reverse '.eeffoC yrT'</textarea></div>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.2">0.9.2</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.3">0.9.3</a>
     </p>
 
     <h2>
@@ -254,7 +254,7 @@ cubes = (function() {
       Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.2">0.9.2</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.3">0.9.3</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -1156,7 +1156,7 @@ speed = (typeof speed !== "undefined" && speed !== null) ? speed : 140;;alert(sp
     </p>
     <div class='code'><pre class="idle">lottery.drawWinner()<span class="Keyword">?</span>.address<span class="Keyword">?</span>.zipcode
 </pre><pre class="idle"><span class="Storage">var</span> _a, _b;
-(_b <span class="Keyword">=</span> ((<span class="Keyword">typeof</span> (_a <span class="Keyword">=</span> (lottery.drawWinner())) <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">||</span> _a <span class="Keyword">===</span> <span class="BuiltInConstant">null</span>) ? undefined : _a.address)) <span class="Keyword">==</span> <span class="BuiltInConstant">null</span> ? undefined : _b.zipcode;
+(<span class="Keyword">typeof</span> (_b <span class="Keyword">=</span> ((_a <span class="Keyword">=</span> lottery.drawWinner()))) <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">||</span> _b <span class="Keyword">===</span> <span class="BuiltInConstant">null</span>) ? undefined : _b.address <span class="Keyword">==</span> <span class="BuiltInConstant">null</span> ? undefined : _b.address.zipcode;
 </pre><br class='clear' /></div>
     <p>
       Soaking up nulls is similar to Ruby's
@@ -1491,12 +1491,11 @@ hi = function() {
     <p>
       <span id="switch" class="bookmark"></span>
       <b class="header">Switch/When/Else</b>
-      <b>Switch</b> statements in JavaScript are rather broken. You can only
-      do comparisons based on string equality, and need to remember to <b>break</b> at the end of
-      every <b>case</b> statement to avoid accidentally falling through to
-      the default case. CoffeeScript compiles <b>switch</b> statements into JavaScript if-else chains, allowing you to
-      compare any object (via <b>===</b>), preventing fall-through, and resulting
-      in a returnable, assignable expression. The format is: <tt>switch</tt> condition,
+      <b>Switch</b> statements in JavaScript are a bit awkward. You need to 
+      remember to <b>break</b> at the end of every <b>case</b> statement to 
+      avoid accidentally falling through to the default case. 
+      CoffeeScript prevents accidental fall-through, and can convert the <tt>switch</tt>
+      into a returnable, assignable expression. The format is: <tt>switch</tt> condition,
       <tt>when</tt> clauses, <tt>else</tt> the default case.
     </p>
     <p>
@@ -1505,30 +1504,37 @@ hi = function() {
       runs.
     </p>
     <div class='code'><pre class="idle"><span class="Keyword">switch</span> day
-  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Mon<span class="String">&quot;</span></span> <span class="Keyword">then</span> goToWork()
-  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Tue<span class="String">&quot;</span></span> <span class="Keyword">then</span> goToThePark()
-  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Thu<span class="String">&quot;</span></span> <span class="Keyword">then</span> goIceFishing()
+  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Mon<span class="String">&quot;</span></span> <span class="Keyword">then</span> go work
+  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Tue<span class="String">&quot;</span></span> <span class="Keyword">then</span> go relax
+  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Thu<span class="String">&quot;</span></span> <span class="Keyword">then</span> go iceFishing
   <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Fri<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Sat<span class="String">&quot;</span></span>
     <span class="Keyword">if</span> day <span class="Keyword">is</span> bingoDay
-      goToBingo()
-      goDancing()
-  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Sun<span class="String">&quot;</span></span> <span class="Keyword">then</span> goToChurch()
-  <span class="Keyword">else</span> goToWork()
-</pre><pre class="idle"><span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Mon<span class="String">&quot;</span></span>) {
-  goToWork();
-} <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Tue<span class="String">&quot;</span></span>) {
-  goToThePark();
-} <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Thu<span class="String">&quot;</span></span>) {
-  goIceFishing();
-} <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Fri<span class="String">&quot;</span></span> <span class="Keyword">||</span> day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Sat<span class="String">&quot;</span></span>) {
+      go bingo
+      go dancing
+  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Sun<span class="String">&quot;</span></span> <span class="Keyword">then</span> go church
+  <span class="Keyword">else</span> go work
+</pre><pre class="idle"><span class="Keyword">switch</span> (day) {
+<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Mon<span class="String">&quot;</span></span>:
+  <span class="LibraryFunction">go</span>(work);
+  <span class="Keyword">break</span>;
+<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Tue<span class="String">&quot;</span></span>:
+  <span class="LibraryFunction">go</span>(relax);
+  <span class="Keyword">break</span>;
+<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Thu<span class="String">&quot;</span></span>:
+  <span class="LibraryFunction">go</span>(iceFishing);
+  <span class="Keyword">break</span>;
+<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Fri<span class="String">&quot;</span></span>:
+<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Sat<span class="String">&quot;</span></span>:
   <span class="Keyword">if</span> (day <span class="Keyword">===</span> bingoDay) {
-    goToBingo();
-    goDancing();
+    <span class="LibraryFunction">go</span>(bingo);
+    <span class="LibraryFunction">go</span>(dancing);
   }
-} <span class="Keyword">else</span> <span class="Keyword">if</span> (day <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>Sun<span class="String">&quot;</span></span>) {
-  goToChurch();
-} <span class="Keyword">else</span> {
-  goToWork();
+  <span class="Keyword">break</span>;
+<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Sun<span class="String">&quot;</span></span>:
+  <span class="LibraryFunction">go</span>(church);
+  <span class="Keyword">break</span>;
+<span class="Keyword">default</span>:
+  <span class="LibraryFunction">go</span>(work);
 }
 </pre><br class='clear' /></div>
 
@@ -1659,11 +1665,10 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">'<
       are preserved in the generated code.
     </p>
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">###</span></span>
-<span class="Comment">CoffeeScript Compiler v0.9.2</span>
+<span class="Comment">CoffeeScript Compiler v0.9.3</span>
 <span class="Comment">Released under the MIT License</span>
 <span class="Comment">###</span>
-</pre><pre class="idle"><span class="Comment"><span class="Comment">/*</span></span>
-<span class="Comment">CoffeeScript Compiler v0.9.2</span>
+</pre><pre class="idle"><span class="Comment"><span class="Comment">/*</span>CoffeeScript Compiler v0.9.3</span>
 <span class="Comment">Released under the MIT License</span>
 <span class="Comment"><span class="Comment">*/</span></span>
 </pre><br class='clear' /></div>
@@ -1807,7 +1812,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       </li>
       <li>
         <b>dsc</b>'s <a href="http://github.com/dsc/coffeecup">CoffeeCup</a>
-        &mdash; A Python WSGI middleware that compiles CoffeeScript to JavaScript
+        &mdash; a Python WSGI middleware that compiles CoffeeScript to JavaScript
         on-demand during development.
       </li>
       <li>
@@ -1821,8 +1826,13 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
         <a href="http://haml-lang.com/">HAML</a> templates.
       </li>
       <li>
+        <b>chrislloyd</b>'s <a href="http://github.com/chrislloyd/roast">Roast</a>
+        &mdash; a CoffeeScript compiler plug-in that allows you to include external 
+        source files.
+      </li>
+      <li>
         <b>jashkenas</b>'s <a href="http://jashkenas.github.com/docco/">Docco</a>
-        &mdash; A quick-and-dirty literate-programming-style documentation generator
+        &mdash; a quick-and-dirty literate-programming-style documentation generator
         for CoffeeScript. Used to produce the annotated source.
       </li>
     </ul>
@@ -1846,6 +1856,15 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.9.3</b>
+      CoffeeScript <tt>switch</tt> statements now compile into JS <tt>switch</tt>
+      statements &mdash; they previously compiled into <tt>if/else</tt> chains 
+      for JavaScript 1.3 compatibility.
+      Soaking a function invocation is now supported. Users of the RubyMine
+      editor should now be able to use <tt>--watch</tt> mode.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.9.2</b>
@@ -2099,7 +2118,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       conversion. Splats. Splice literals. Object comprehensions. Blocks.
       The existential operator. Many thanks to all the folks who posted issues,
       with special thanks to
-      <a href="http://github.com/kamatsu">Liam O'Connor-Davis</a> for whitespace
+      <a href="http://github.com/liamoc">Liam O'Connor-Davis</a> for whitespace
       and expression help.
     </p>
 
