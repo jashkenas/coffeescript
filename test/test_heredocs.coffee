@@ -15,6 +15,15 @@ a = '''
 ok a is "a\n  \"b\nc"
 
 
+a = """
+a
+ b
+  c
+"""
+
+ok a is "a\n b\n  c"
+
+
 a = '''one-liner'''
 
 ok a is 'one-liner'

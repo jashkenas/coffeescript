@@ -132,7 +132,7 @@ exports.Lexer = class Lexer
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
   # preserve whitespace, but ignore indentation to the left.
   heredocToken: ->
-    return false unless match = @chunk.match(HEREDOC)
+    return false unless match = @chunk.match HEREDOC
     quote = match[1].substr 0, 1
     doc = @sanitizeHeredoc match[2] or match[4] or '', {quote}
     @interpolateString quote + doc + quote, heredoc: yes
@@ -324,13 +324,14 @@ exports.Lexer = class Lexer
   # Sanitize a heredoc or herecomment by escaping internal double quotes and
   # erasing all external indentation on the left-hand side.
   sanitizeHeredoc: (doc, options) ->
-    indent = options.indent or ''
+    indent = options.indent
     return doc if options.herecomment and not include doc, '\n'
     unless options.herecomment
-      while match = HEREDOC_INDENT.exec(doc)
+      while (match = HEREDOC_INDENT.exec(doc)) isnt null
         attempt = if match[2]? then match[2] else match[3]
-        indent = attempt if not indent or attempt.length < indent.length
-    doc = doc.replace(new RegExp("^" + indent, 'gm'), '')
+        indent = attempt if not indent? or attempt.length < indent.length
+    indent or= ''
+    doc = doc.replace(new RegExp("^" + indent, 'gm'), '').replace(/^\n/, '')
     return doc if options.herecomment
     doc.replace(MULTILINER, "\\n")
        .replace(new RegExp(options.quote, 'g'), "\\#{options.quote}")
@@ -525,7 +526,7 @@ JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
 # Token matching regexes.
 IDENTIFIER    = /^([a-zA-Z\$_](\w|\$)*)/
 NUMBER        = /^(((\b0(x|X)[0-9a-fA-F]+)|((\b[0-9]+(\.[0-9]+)?|\.[0-9]+)(e[+\-]?[0-9]+)?)))\b/i
-HEREDOC       = /^("{6}|'{6}|"{3}\n?([\s\S]*?)\n?([ \t]*)"{3}|'{3}\n?([\s\S]*?)\n?([ \t]*)'{3})/
+HEREDOC       = /^("{6}|'{6}|"{3}([\s\S]*?)\n?([ \t]*)"{3}|'{3}([\s\S]*?)\n?([ \t]*)'{3})/
 OPERATOR      = /^(-[\-=>]?|\+[+=]?|[*&|\/%=<>^:!?]+)([ \t]*)/
 WHITESPACE    = /^([ \t]+)/
 COMMENT       = /^(([ \t]*\n)*([ \t]*)###([^#][\s\S]*?)(###[ \t]*\n|(###)?$)|(\s*#(?!##[^#])[^\n]*)+)/
