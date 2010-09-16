@@ -228,3 +228,14 @@ obj = then second 'the',
 
 ok obj[1] is 1
 ok obj.three is 3
+
+
+# Implicit objects as part of chained calls.
+identity = (x) -> x.a
+
+b = identity identity identity
+  a:
+    a:
+      a: 100
+
+ok b is 100
