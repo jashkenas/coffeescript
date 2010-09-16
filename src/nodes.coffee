@@ -1461,15 +1461,15 @@ exports.SwitchNode = class SwitchNode extends BaseNode
 
 #### IfNode
 
-# *If/else* statements. Our *switch/when* will be compiled into this. Acts as an
-# expression by pushing down requested returns to the last line of each clause.
+# *If/else* statements. Acts as an expression by pushing down requested returns
+# to the last line of each clause.
 #
 # Single-expression **IfNodes** are compiled into ternary operators if possible,
 # because ternaries are already proper expressions, and don't need conversion.
 exports.IfNode = class IfNode extends BaseNode
 
   class:     'IfNode'
-  children: ['condition', 'switchSubject', 'body', 'elseBody', 'assigner']
+  children: ['condition', 'body', 'elseBody', 'assigner']
 
   topSensitive: -> true
 
@@ -1488,28 +1488,6 @@ exports.IfNode = class IfNode extends BaseNode
 
   forceStatement: ->
     @tags.statement = true
-    this
-
-  # Tag a chain of **IfNodes** with their object(s) to switch on for equality
-  # tests. `rewriteSwitch` will perform the actual change at compile time.
-  switchesOver: (expression) ->
-    @switchSubject = expression
-    this
-
-  # Rewrite a chain of **IfNodes** with their switch condition for equality.
-  # Ensure that the switch expression isn't evaluated more than once.
-  rewriteSwitch: (o) ->
-    @assigner = @switchSubject
-    unless (@switchSubject.unwrap() instanceof LiteralNode)
-      variable = literal(o.scope.freeVariable())
-      @assigner = new AssignNode(variable, @switchSubject)
-      @switchSubject = variable
-    @condition = for cond, i in flatten [@condition]
-      cond = new ParentheticalNode(cond) if cond instanceof OpNode
-      new OpNode('==', (if i is 0 then @assigner else @switchSubject), cond)
-    @elseBodyNode().switchesOver(@switchSubject) if @isChain
-    # prevent this rewrite from happening again
-    @switchSubject = undefined
     this
 
   # Rewrite a chain of **IfNodes** to add a default case as the final *else*.
@@ -1548,7 +1526,6 @@ exports.IfNode = class IfNode extends BaseNode
   # Compile the **IfNode** as a regular *if-else* statement. Flattened chains
   # force inner *else* bodies into statement form.
   compileStatement: (o) ->
-    @rewriteSwitch(o) if @switchSubject
     top      = del o, 'top'
     child    = del o, 'chainChild'
     condO    = merge o
