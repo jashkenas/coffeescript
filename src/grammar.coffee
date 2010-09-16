@@ -485,26 +485,22 @@ grammar =
     o "IN Expression BY Expression WHEN Expression", -> source: $2, step:  $4, guard: $6
   ]
 
-  # The CoffeeScript switch/when/else block replaces the JavaScript
-  # switch/case/default by compiling into an if-else chain.
   Switch: [
-    o "SWITCH Expression INDENT Whens OUTDENT", -> $4.switchesOver $2
-    o "SWITCH Expression INDENT Whens ELSE Block OUTDENT", -> $4.switchesOver($2).addElse $6, true
-    o "SWITCH INDENT Whens OUTDENT",            -> $3
-    o "SWITCH INDENT Whens ELSE Block OUTDENT", -> $3.addElse $5, true
+    o "SWITCH Expression INDENT Whens OUTDENT", -> new SwitchNode $2, $4
+    o "SWITCH Expression INDENT Whens ELSE Block OUTDENT", -> new SwitchNode $2, $4, $6
+    o "SWITCH INDENT Whens OUTDENT",            -> new SwitchNode null, $3
+    o "SWITCH INDENT Whens ELSE Block OUTDENT", -> new SwitchNode null, $3, $5
   ]
 
-  # The inner list of whens is left recursive. At code-generation time, the
-  # IfNode will rewrite them into a proper chain.
   Whens: [
     o "When"
-    o "Whens When",                             -> $1.addElse $2
+    o "Whens When",                             -> $1.concat $2
   ]
 
   # An individual **When** clause, with action.
   When: [
-    o "LEADING_WHEN SimpleArgs Block",            -> new IfNode $2, $3, statement: true
-    o "LEADING_WHEN SimpleArgs Block TERMINATOR", -> new IfNode $2, $3, statement: true
+    o "LEADING_WHEN SimpleArgs Block",            -> [[$2, $3]]
+    o "LEADING_WHEN SimpleArgs Block TERMINATOR", -> [[$2, $3]]
   ]
 
   # The most basic form of *if* is a condition and an action. The following

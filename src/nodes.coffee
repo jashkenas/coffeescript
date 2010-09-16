@@ -1422,6 +1422,43 @@ exports.ForNode = class ForNode extends BaseNode
     vars          = if range then name else "#{name}, #{ivar}"
     "#{sourcePart}for (#{forPart}) {#{guardPart}\n#{varPart}#{body}\n#{@tab}}#{returnResult}"
 
+#### SwitchNode
+
+# A JavaScript *switch* statement. Converts into a returnable expression on-demand.
+exports.SwitchNode = class SwitchNode extends BaseNode
+
+  class:     'SwitchNode'
+  children: ['subject', 'cases', 'otherwise']
+
+  isStatement: -> yes
+
+  constructor: (@subject, @cases, @otherwise) ->
+    super()
+    @tags.subjectless = !@subject
+    @subject or= literal 'true'
+
+  makeReturn: ->
+    pair[1].makeReturn() for pair in @cases
+    @otherwise.makeReturn() if @otherwise
+    this
+
+  compileNode: (o) ->
+    idt = o.indent = @idt 1
+    o.top = yes
+    code = "#{ @tab }switch (#{ @subject.compile o }) {"
+    for pair in @cases
+      [conditions, block] = pair
+      exprs = block.expressions
+      for condition in flatten [conditions]
+        condition = new OpNode '!!', new ParentheticalNode condition if @tags.subjectless
+        code += "\n#{ @tab }case #{ condition.compile o }:"
+      code += "\n#{ block.compile o }"
+      code += "\n#{ idt }break;" unless exprs[exprs.length - 1] instanceof ReturnNode
+    if @otherwise
+      code += "\n#{ @tab }default:\n#{ @otherwise.compile o }"
+    code += "\n#{ @tab }}"
+    code
+
 #### IfNode
 
 # *If/else* statements. Our *switch/when* will be compiled into this. Acts as an
