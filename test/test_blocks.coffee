@@ -27,8 +27,8 @@ ok results.join(' ') is '3 2 1'
 # Make incorrect indentation safe.
 func = ->
   obj = {
-      key: 10
-    }
+          key: 10
+        }
   obj.key - 5
 
 ok func() is 5
