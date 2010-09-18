@@ -126,7 +126,9 @@ ok duration is 0
 
 # Function soaks.
 plus1 = (x) -> x + 1
+count = 0
 obj = {
+  counter: -> count += 1; this
   returnThis: -> this
 }
 
@@ -135,6 +137,8 @@ ok (plus1? 41) is 42
 ok plus2?(41) is undefined
 ok (plus2? 41) is undefined
 ok obj.returnThis?() is obj
+ok obj.counter().counter().returnThis?() is obj
+ok count is 2
 
 maybe_close = (f, arg) -> if typeof f is 'function' then () -> f(arg) else -1
 

@@ -454,14 +454,15 @@ exports.CallNode = class CallNode extends BaseNode
     if @exist
       if @variable instanceof ValueNode and @variable.properties[@variable.properties.length - 1] instanceof AccessorNode
         methodAccessor = @variable.properties.pop()
-        [@first, @meth] = @variable.compileReference o
-        @first = new ValueNode(@first, [methodAccessor]).compile o
-        @meth = new ValueNode(@meth, [methodAccessor]).compile o
+        [first, meth] = @variable.compileReference o
+        @first = new ValueNode(first, [methodAccessor]).compile o
+        @meth = new ValueNode(meth, [methodAccessor]).compile o
       else
         [@first, @meth] = @variable.compileReference o, precompile: yes
       @first = "(typeof #{@first} === \"function\" ? "
       @last  = " : undefined)"
-    else if @variable then @meth = @variable.compile o
+    else if @variable
+      @meth = @variable.compile o
     for arg in @args when arg instanceof SplatNode
       code = @compileSplat(o)
     if not code
