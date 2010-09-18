@@ -1713,6 +1713,11 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
   <span class="Keyword">return</span> fs.writeFile(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> (dir) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>/parser.js<span class="String">&quot;</span></span>, code);
 });
 </pre><br class='clear' /></div>
+    <p>
+      If you need to invoke one task before another &mdash; for example, running
+      <tt>build</tt> before <tt>test</tt>, you can use the <tt>invoke</tt> function: 
+      <tt>invoke 'build'</tt>
+    </p>
 
     <h2>
       <span id="scripts" class="bookmark"></span>

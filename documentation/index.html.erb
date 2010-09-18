@@ -806,6 +806,11 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       the Node.js API to rebuild CoffeeScript's parser:
     </p>
     <%= code_for('cake_tasks') %>
+    <p>
+      If you need to invoke one task before another &mdash; for example, running
+      <tt>build</tt> before <tt>test</tt>, you can use the <tt>invoke</tt> function: 
+      <tt>invoke 'build'</tt>
+    </p>
 
     <h2>
       <span id="scripts" class="bookmark"></span>
