@@ -124,13 +124,17 @@ duration = if options?.animated then 150 else 0
 ok duration is 0
 
 
-# function soak
+# Function soaks.
 plus1 = (x) -> x + 1
+obj = {
+  returnThis: -> this
+}
 
 ok plus1?(41) is 42
 ok (plus1? 41) is 42
 ok plus2?(41) is undefined
 ok (plus2? 41) is undefined
+ok obj.returnThis?() is obj
 
 maybe_close = (f, arg) -> if typeof f is 'function' then () -> f(arg) else -1
 
