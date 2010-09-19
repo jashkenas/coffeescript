@@ -70,10 +70,10 @@ exports.BaseNode = class BaseNode
     else if this instanceof ValueNode and options.assignment
       this.cacheIndexes(o)
     else
-      reference = literal o.scope.freeVariable 'cache'
+      reference = literal temp = o.scope.freeVariable 'cache'
       compiled  = new AssignNode reference, this
-      [compiled, reference]
-    return [pair[0].compile(o), pair[1].compile(o)] if options.precompile
+      [compiled, reference, temp]
+    return [pair[0].compile(o), pair[1].compile(o), pair[2]] if options.precompile
     pair
 
   # Convenience method to grab the current indentation level, plus tabbing in.
@@ -1176,9 +1176,11 @@ exports.OpNode = class OpNode extends BaseNode
   #     true
   compileChain: (o) ->
     shared = @first.unwrap().second
-    [@first.second, shared] = shared.compileReference(o) if shared.containsType CallNode
+    [@first.second, shared, temp] = shared.compileReference(o) if shared.containsType CallNode
     [first, second, shared] = [@first.compile(o), @second.compile(o), shared.compile(o)]
-    "(#{first}) && (#{shared} #{@operator} #{second})"
+    js = "(#{first}) && (#{shared} #{@operator} #{second})"
+    o.scope.reuse temp if temp
+    js
 
   # When compiling a conditional assignment, take care to ensure that the
   # operands are only evaluated once, even though we have to reference them

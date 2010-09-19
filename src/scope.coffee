@@ -29,6 +29,11 @@ exports.Scope = class Scope
     @variables[name] = 'var'
     false
 
+  # Erase a variable from scope. This is usually carried when we are done
+  # working with a list of temporary variables and we want to flag them for reuse.
+  reuse: (names...) ->
+    (@variables[val] = 'reuse') for val in names
+
   # Test variables and return true the first time fn(v, k) returns true
   any: (fn) ->
     for v, k of @variables when fn(v, k)
@@ -55,7 +60,7 @@ exports.Scope = class Scope
   # compiler-generated variable. `_var`, `_var2`, and so on...
   freeVariable: (type) ->
     index = 0
-    index++ while @check temp = @temporary type, index
+    index++ while (@check temp = @temporary type, index) and @variables[temp] isnt 'reuse'
     @variables[temp] = 'var'
     temp
 
@@ -67,7 +72,7 @@ exports.Scope = class Scope
   # Does this scope reference any variables that need to be declared in the
   # given function body?
   hasDeclarations: (body) ->
-    body is @expressions and @any (k, val) -> val is 'var'
+    body is @expressions and @any (k, val) -> val is 'var' or val is 'reuse'
 
   # Does this scope reference any assignments that need to be declared at the
   # top of the given function body?
@@ -76,7 +81,7 @@ exports.Scope = class Scope
 
   # Return the list of variables first declared in this scope.
   declaredVariables: ->
-    (key for key, val of @variables when val is 'var').sort()
+    (key for key, val of @variables when val is 'var' or val is 'reuse').sort()
 
   # Return the list of assignments that are supposed to be made at the top
   # of this scope.
