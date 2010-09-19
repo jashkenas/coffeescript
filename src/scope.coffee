@@ -20,11 +20,7 @@ exports.Scope = class Scope
   constructor: (parent, expressions, method) ->
     [@parent, @expressions, @method] = [parent, expressions, method]
     @variables = {}
-    @tempVars  = {}
-    if @parent
-      (@tempVars[k] = val) for k, val of @parent.tempVars
-    else
-      Scope.root = this
+    Scope.root = this if not @parent
 
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
@@ -53,12 +49,13 @@ exports.Scope = class Scope
 
   # Generate a temporary variable name at the given index.
   temporary: (type, index) ->
-    '_' + type + (if (index) > 1 then index else '')
+    '_' + type + (if index then (index + 1) else '')
 
   # If we need to store an intermediate result, find an available name for a
   # compiler-generated variable. `_var`, `_var2`, and so on...
   freeVariable: (type) ->
-    @tempVars[type]++ while @check temp = @temporary type, @tempVars[type] or= 1
+    index = 0
+    index++ while @check temp = @temporary type, index
     @variables[temp] = 'var'
     temp
 
