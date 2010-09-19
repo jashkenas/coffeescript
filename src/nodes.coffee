@@ -50,7 +50,10 @@ exports.BaseNode = class BaseNode
     closure = @isStatement(o) and not @isPureStatement() and not top and
               not @options.asStatement and this not instanceof CommentNode and
               not @containsPureStatement()
-    if closure then @compileClosure(@options) else @compileNode(@options)
+    o.scope.startLevel() if not o.keepLevel
+    code = if closure then @compileClosure(@options) else @compileNode(@options)
+    o.scope.endLevel() if not o.keepLevel
+    code
 
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
@@ -70,10 +73,10 @@ exports.BaseNode = class BaseNode
     else if this instanceof ValueNode and options.assignment
       this.cacheIndexes(o)
     else
-      reference = literal temp = o.scope.freeVariable 'cache'
+      reference = literal o.scope.freeVariable 'cache'
       compiled  = new AssignNode reference, this
-      [compiled, reference, temp]
-    return [pair[0].compile(o), pair[1].compile(o), pair[2]] if options.precompile
+      [compiled, reference]
+    return [pair[0].compile(o), pair[1].compile(o)] if options.precompile
     pair
 
   # Convenience method to grab the current indentation level, plus tabbing in.
@@ -1176,11 +1179,9 @@ exports.OpNode = class OpNode extends BaseNode
   #     true
   compileChain: (o) ->
     shared = @first.unwrap().second
-    [@first.second, shared, temp] = shared.compileReference(o) if shared.containsType CallNode
+    [@first.second, shared] = shared.compileReference(o) if shared.containsType CallNode
     [first, second, shared] = [@first.compile(o), @second.compile(o), shared.compile(o)]
-    js = "(#{first}) && (#{shared} #{@operator} #{second})"
-    o.scope.reuse temp if temp
-    js
+    "(#{first}) && (#{shared} #{@operator} #{second})"
 
   # When compiling a conditional assignment, take care to ensure that the
   # operands are only evaluated once, even though we have to reference them
@@ -1403,7 +1404,7 @@ exports.ForNode = class ForNode extends BaseNode
       svar        = scope.freeVariable 'cache'
       sourcePart  = "#{svar} = #{ @source.compile(o) };"
       if @pattern
-        namePart  = new AssignNode(@name, literal("#{svar}[#{ivar}]")).compile(merge o, {indent: @idt(1), top: true}) + '\n'
+        namePart  = new AssignNode(@name, literal("#{svar}[#{ivar}]")).compile(merge o, {indent: @idt(1), top: true, keepLevel: yes}) + '\n'
       else
         namePart  = "#{name} = #{svar}[#{ivar}]" if name
       unless @object

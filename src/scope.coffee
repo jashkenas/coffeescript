@@ -20,7 +20,20 @@ exports.Scope = class Scope
   constructor: (parent, expressions, method) ->
     [@parent, @expressions, @method] = [parent, expressions, method]
     @variables = {}
-    Scope.root = this if not @parent
+    if @parent
+      @garbage = @parent.garbage
+    else
+      @garbage   = []
+      Scope.root = this
+
+  # Create a new garbage level
+  startLevel: ->
+    @garbage.push []
+
+  # Return to the previous garbage level and erase referenced temporary
+  # variables in current level from scope.
+  endLevel: ->
+    (@variables[name] = 'reuse') for name in @garbage.pop() when @variables[name] is 'var'
 
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
@@ -28,11 +41,6 @@ exports.Scope = class Scope
     return true if @check name, options
     @variables[name] = 'var'
     false
-
-  # Erase a variable from scope. This is usually carried when we are done
-  # working with a list of temporary variables and we want to flag them for reuse.
-  reuse: (names...) ->
-    (@variables[val] = 'reuse') for val in names
 
   # Test variables and return true the first time fn(v, k) returns true
   any: (fn) ->
@@ -62,6 +70,7 @@ exports.Scope = class Scope
     index = 0
     index++ while (@check temp = @temporary type, index) and @variables[temp] isnt 'reuse'
     @variables[temp] = 'var'
+    @garbage[@garbage.length - 1].push temp if @garbage.length
     temp
 
   # Ensure that an assignment is made at the top of this scope
