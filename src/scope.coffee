@@ -51,10 +51,14 @@ exports.Scope = class Scope
     return immediate if immediate or (options and options.immediate)
     !!(@parent and @parent.check(name))
 
+  # Generate a temporary variable name at the given index.
+  temporary: (type, index) ->
+    '_' + type + (if (index) > 1 then index else '')
+
   # If we need to store an intermediate result, find an available name for a
   # compiler-generated variable. `_var`, `_var2`, and so on...
   freeVariable: (type) ->
-    @tempVars[type]++ while @check temp = '_' + type + (if (@tempVars[type] or= 1) > 1 then @tempVars[type] else '')
+    @tempVars[type]++ while @check temp = @temporary type, @tempVars[type] or= 1
     @variables[temp] = 'var'
     temp
 
