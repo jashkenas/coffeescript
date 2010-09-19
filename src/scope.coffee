@@ -20,8 +20,7 @@ exports.Scope = class Scope
   constructor: (parent, expressions, method) ->
     [@parent, @expressions, @method] = [parent, expressions, method]
     @variables = {}
-    @tempVars  =
-      general: '_a'
+    @tempVars  = {}
     if @parent
       (@tempVars[k] = val) for k, val of @parent.tempVars
     else
@@ -53,16 +52,10 @@ exports.Scope = class Scope
     !!(@parent and @parent.check(name))
 
   # If we need to store an intermediate result, find an available name for a
-  # compiler-generated variable. `_a`, `_b`, and so on...
+  # compiler-generated variable. `_var`, `_var2`, and so on...
   freeVariable: (type) ->
-    if type
-      next = (prev) ->
-        '_' + type + ((prev and Number(prev.match(/\d+$/) or 1) + 1) or '')
-    else
-      type = 'general'
-      next = (prev) ->
-        ordinal = 1 + parseInt prev.substr(1), 36
-        '_' + ordinal.toString(36).replace /\d/g, 'a'
+    next = (prev) ->
+      '_' + type + ((prev and Number(prev.match(/\d+$/) or 1) + 1) or '')
     while @check @tempVars[type] or= next()
       @tempVars[type] = next @tempVars[type]
     @variables[@tempVars[type]] = 'var'
