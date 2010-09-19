@@ -286,6 +286,7 @@ grammar =
   ClassAssign: [
     o "AssignObj",                              -> $1
     o "ThisProperty : Expression",              -> new AssignNode new ValueNode($1), $3, 'this'
+    o "ThisProperty : INDENT Expression OUTDENT", -> new AssignNode new ValueNode($1), $4, 'this'
   ]
 
   # A list of assignments to a class.

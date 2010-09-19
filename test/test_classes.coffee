@@ -246,3 +246,13 @@ obj =
 
 instance = new obj.klass
 ok instance.method() is 'value'
+
+
+# Implicit objects as static properties.
+class Static
+  @static:
+    one: 1
+    two: 2
+
+ok Static.static.one is 1
+ok Static.static.two is 2
