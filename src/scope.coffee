@@ -54,12 +54,9 @@ exports.Scope = class Scope
   # If we need to store an intermediate result, find an available name for a
   # compiler-generated variable. `_var`, `_var2`, and so on...
   freeVariable: (type) ->
-    next = (prev) ->
-      '_' + type + ((prev and Number(prev.match(/\d+$/) or 1) + 1) or '')
-    while @check @tempVars[type] or= next()
-      @tempVars[type] = next @tempVars[type]
-    @variables[@tempVars[type]] = 'var'
-    @tempVars[type]
+    @tempVars[type]++ while @check temp = '_' + type + (if (@tempVars[type] or= 1) > 1 then @tempVars[type] else '')
+    @variables[temp] = 'var'
+    temp
 
   # Ensure that an assignment is made at the top of this scope
   # (or at the top-level scope, if requested).
