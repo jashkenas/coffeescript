@@ -137,3 +137,13 @@ persons = [['Bob', ['George']], ['Alice', ['Bob']], ['Stan', ['Christopher']]]
 join3 = "#{parent}: #{name}" for [name, [parent]] in persons
 
 deepEqual join2, join3
+
+
+# Pattern matching doesn't clash with implicit block objects.
+obj = a: 101
+func -> true
+
+if func func
+  {a} = obj
+
+ok a is 101

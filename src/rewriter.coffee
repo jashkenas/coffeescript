@@ -173,8 +173,9 @@ exports.Rewriter = class Rewriter
         condition = (token, i) ->
           return yes if not seenSingle and token.fromThen
           seenSingle = yes if token[0] in ['IF', 'ELSE', 'UNLESS', '->', '=>']
+          post = @tokens[i + 1]
           (not token.generated and @tokens[i - 1][0] isnt ',' and include(IMPLICIT_END, token[0]) and
-            not (token[0] is 'INDENT' and (include(IMPLICIT_BLOCK, @tag(i - 1)) or @tag(i - 2) is 'CLASS' or @tag(i + 1) is '{'))) or
+            not (token[0] is 'INDENT' and (include(IMPLICIT_BLOCK, @tag(i - 1)) or @tag(i - 2) is 'CLASS' or (post and post.generated and post[0] is '{')))) or
             token[0] is 'PROPERTY_ACCESS' and @tag(i - 1) is 'OUTDENT'
         action = (token, i) ->
           idx = if token[0] is 'OUTDENT' then i + 1 else i
