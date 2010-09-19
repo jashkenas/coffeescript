@@ -70,7 +70,7 @@ exports.BaseNode = class BaseNode
     else if this instanceof ValueNode and options.assignment
       this.cacheIndexes(o)
     else
-      reference = literal o.scope.freeVariable()
+      reference = literal o.scope.freeVariable 'cache'
       compiled  = new AssignNode reference, this
       [compiled, reference]
     return [pair[0].compile(o), pair[1].compile(o)] if options.precompile
@@ -374,7 +374,7 @@ exports.ValueNode = class ValueNode extends BaseNode
       @source = baseline
       if prop.soakNode
         if @base.containsType(CallNode) and i is 0
-          temp = o.scope.freeVariable()
+          temp = o.scope.freeVariable 'cache'
           complete = "(#{ baseline = temp } = (#{complete}))"
         complete = if i is 0
           "(typeof #{complete} === \"undefined\" || #{baseline} === null) ? undefined : "
@@ -488,7 +488,7 @@ exports.CallNode = class CallNode extends BaseNode
     meth = @meth or @superReference(o)
     obj  = @variable and @variable.source or 'this'
     if obj.match(/\(/)
-      temp = o.scope.freeVariable()
+      temp = o.scope.freeVariable 'cache'
       obj  = temp
       meth = "(#{temp} = #{ @variable.source })#{ @variable.last }"
     if @isNew
@@ -496,14 +496,14 @@ exports.CallNode = class CallNode extends BaseNode
       for arg in @args
         arg.contains (n) -> mentionsArgs or= n instanceof LiteralNode and (n.value is 'arguments')
       utility 'extends'
-      a = o.scope.freeVariable()
-      b = o.scope.freeVariable()
-      c = o.scope.freeVariable()
+      a = o.scope.freeVariable 'klass'
+      b = o.scope.freeVariable 'cache'
+      c = o.scope.freeVariable 'cache'
       """
       #{@first}(function() {
       #{@idt(1)}var ctor = function(){};
       #{@idt(1)}__extends(ctor, #{a} = #{meth});
-      #{@idt(1)}return typeof (#{b} = #{a}.apply(#{c} = new ctor, #{ @compileSplatArguments(o) })) === "object" ? #{b} : #{c};
+      #{@idt(1)}return typeof (#{c} = #{a}.apply(#{b} = new ctor, #{ @compileSplatArguments(o) })) === "object" ? #{c} : #{b};
       #{@tab}}).#{ if mentionsArgs then 'apply(this, arguments)' else 'call(this)'}#{@last}
       """
     else
@@ -624,8 +624,8 @@ exports.RangeNode = class RangeNode extends BaseNode
       range = [+@fromNum..+@toNum]
       range.pop() if @exclusive
       return "[#{ range.join(', ') }]"
-    i = o.scope.freeVariable()
-    result = o.scope.freeVariable()
+    i = o.scope.freeVariable 'index'
+    result = o.scope.freeVariable 'result'
     pre    = "\n#{idt}#{result} = []; #{vars}"
     if @fromNum and @toNum
       o.index = i
@@ -743,7 +743,7 @@ exports.ClassNode = class ClassNode extends BaseNode
   # equivalent syntax tree and compile that, in pieces. You can see the
   # constructor, property assignments, and inheritance getting built out below.
   compileNode: (o) ->
-    @variable  = literal o.scope.freeVariable() if @variable is '__temp__'
+    @variable  = literal o.scope.freeVariable 'klass' if @variable is '__temp__'
     extension  = @parent and new ExtendsNode(@variable, @parent)
     props      = new Expressions
     o.top      = true
@@ -775,7 +775,7 @@ exports.ClassNode = class ClassNode extends BaseNode
         else
           func.bound = false
           constScope or= new Scope(o.scope, constructor.body, constructor)
-          me or= constScope.freeVariable()
+          me or= constScope.freeVariable 'self'
           pname = pvar.compile(o)
           constructor.body.push    new ReturnNode literal 'this' if constructor.body.empty()
           constructor.body.unshift literal "this.#{pname} = function(){ return #{className}.prototype.#{pname}.apply(#{me}, arguments); }"
@@ -851,7 +851,7 @@ exports.AssignNode = class AssignNode extends BaseNode
   # See the [ECMAScript Harmony Wiki](http://wiki.ecmascript.org/doku.php?id=harmony:destructuring)
   # for details.
   compilePatternMatch: (o) ->
-    valVar        = o.scope.freeVariable()
+    valVar        = o.scope.freeVariable 'cache'
     value         = if @value.isStatement(o) then ClosureNode.wrap(@value) else @value
     assigns       = ["#{@tab}#{valVar} = #{ value.compile(o) };"]
     o.top         = true
@@ -937,7 +937,7 @@ exports.CodeNode = class CodeNode extends BaseNode
       else
         if param.attach
           {value} = param
-          [param, param.splat] = [literal(o.scope.freeVariable()), param.splat]
+          [param, param.splat] = [literal(o.scope.freeVariable 'arg'), param.splat]
           @body.unshift new AssignNode new ValueNode(literal('this'), [new AccessorNode value]), param
         if param.splat
           splat           = new SplatNode param.value
@@ -1011,15 +1011,15 @@ exports.SplatNode = class SplatNode extends BaseNode
     o.scope.find name
     end = ''
     if @trailings.length
-      len = o.scope.freeVariable()
+      len = o.scope.freeVariable 'cache'
       o.scope.assign len, "arguments.length"
-      variadic = o.scope.freeVariable()
+      variadic = o.scope.freeVariable 'result'
       o.scope.assign variadic, len + ' >= ' + @arglength
       end = if @trailings.length then ", #{len} - #{@trailings.length}"
       for trailing, idx in @trailings
         if trailing.attach
           assign        = trailing.assign
-          trailing      = literal o.scope.freeVariable()
+          trailing      = literal o.scope.freeVariable 'arg'
           assign.value  = trailing
         pos = @trailings.length - idx
         o.scope.assign(trailing.compile(o), "arguments[#{variadic} ? #{len} - #{pos} : #{@index + idx}]")
@@ -1091,7 +1091,7 @@ exports.WhileNode = class WhileNode extends BaseNode
     cond     =  @condition.compile(o)
     set      =  ''
     unless top
-      rvar  = o.scope.freeVariable()
+      rvar  = o.scope.freeVariable 'result'
       set   = "#{@tab}#{rvar} = [];\n"
       @body = PushNode.wrap(rvar, @body) if @body
     pre     = "#{set}#{@tab}while (#{cond})"
@@ -1227,7 +1227,7 @@ exports.InNode = class InNode extends BaseNode
 
   compileLoopTest: (o) ->
     [@arr1, @arr2] = @array.compileReference o, precompile: yes
-    [i, l] = [o.scope.freeVariable(), o.scope.freeVariable()]
+    [i, l] = [o.scope.freeVariable('index'), o.scope.freeVariable('cache')]
     prefix = if @obj1 isnt @obj2 then @obj1 + '; ' else ''
     "(function(){ #{prefix}for (var #{i}=0, #{l}=#{@arr1}.length; #{i}<#{l}; #{i}++) { if (#{@arr2}[#{i}] === #{@obj2}) return true; } return false; }).call(this)"
 
@@ -1385,12 +1385,12 @@ exports.ForNode = class ForNode extends BaseNode
     source        = if range then @source.base else @source
     codeInBody    = @body.contains (n) -> n instanceof CodeNode
     scope         = o.scope
-    name          = (@name and @name.compile(o)) or scope.freeVariable()
+    name          = (@name and @name.compile(o)) or scope.freeVariable 'index'
     index         = @index and @index.compile o
     scope.find(name,  immediate: yes) if name and not @pattern and (range or not codeInBody)
     scope.find(index, immediate: yes) if index
-    rvar          = scope.freeVariable() unless topLevel
-    ivar          = if codeInBody then scope.freeVariable() else if range then name else index or scope.freeVariable()
+    rvar          = scope.freeVariable 'result' unless topLevel
+    ivar          = if codeInBody then scope.freeVariable 'index' else if range then name else index or scope.freeVariable 'index'
     varPart       = ''
     guardPart     = ''
     body          = Expressions.wrap([@body])
@@ -1398,14 +1398,14 @@ exports.ForNode = class ForNode extends BaseNode
       sourcePart  = source.compileVariables(o)
       forPart     = source.compile merge o, index: ivar, step: @step
     else
-      svar        = scope.freeVariable()
+      svar        = scope.freeVariable 'cache'
       sourcePart  = "#{svar} = #{ @source.compile(o) };"
       if @pattern
         namePart  = new AssignNode(@name, literal("#{svar}[#{ivar}]")).compile(merge o, {indent: @idt(1), top: true}) + '\n'
       else
         namePart  = "#{name} = #{svar}[#{ivar}]" if name
       unless @object
-        lvar      = scope.freeVariable()
+        lvar      = scope.freeVariable 'cache'
         stepPart  = if @step then "#{ivar} += #{ @step.compile(o) }" else "#{ivar}++"
         forPart   = "#{ivar} = 0, #{lvar} = #{svar}.length; #{ivar} < #{lvar}; #{stepPart}"
     sourcePart    = (if rvar then "#{rvar} = []; " else '') + sourcePart
