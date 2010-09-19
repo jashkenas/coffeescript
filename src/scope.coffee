@@ -20,11 +20,11 @@ exports.Scope = class Scope
   constructor: (parent, expressions, method) ->
     [@parent, @expressions, @method] = [parent, expressions, method]
     @variables = {}
+    @tempVars  = {}
     if @parent
-      @tempVar = @parent.tempVar
+      (@tempVars[k] = val) for k, val of @parent.tempVars
     else
       Scope.root = this
-      @tempVar = '_a'
 
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
@@ -51,14 +51,16 @@ exports.Scope = class Scope
     return immediate if immediate or (options and options.immediate)
     !!(@parent and @parent.check(name))
 
+  # Generate a temporary variable name at the given index.
+  temporary: (type, index) ->
+    '_' + type + (if (index) > 1 then index else '')
+
   # If we need to store an intermediate result, find an available name for a
-  # compiler-generated variable. `_a`, `_b`, and so on...
-  freeVariable: ->
-    while @check @tempVar
-      ordinal = 1 + parseInt @tempVar.substr(1), 36
-      @tempVar = '_' + ordinal.toString(36).replace(/\d/g, 'a')
-    @variables[@tempVar] = 'var'
-    @tempVar
+  # compiler-generated variable. `_var`, `_var2`, and so on...
+  freeVariable: (type) ->
+    @tempVars[type]++ while @check temp = @temporary type, @tempVars[type] or= 1
+    @variables[temp] = 'var'
+    temp
 
   # Ensure that an assignment is made at the top of this scope
   # (or at the top-level scope, if requested).
