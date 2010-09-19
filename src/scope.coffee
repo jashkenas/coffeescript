@@ -54,12 +54,19 @@ exports.Scope = class Scope
 
   # If we need to store an intermediate result, find an available name for a
   # compiler-generated variable. `_a`, `_b`, and so on...
-  freeVariable: ->
-    while @check @tempVars.general
-      ordinal = 1 + parseInt @tempVars.general.substr(1), 36
-      @tempVars.general = '_' + ordinal.toString(36).replace(/\d/g, 'a')
-    @variables[@tempVars.general] = 'var'
-    @tempVars.general
+  freeVariable: (type) ->
+    if type
+      next = (prev) ->
+        '_' + type + ((prev and Number(prev.match(/\d+$/) or 1) + 1) or '')
+    else
+      type = 'general'
+      next = (prev) ->
+        ordinal = 1 + parseInt prev.substr(1), 36
+        '_' + ordinal.toString(36).replace /\d/g, 'a'
+    while @check @tempVars[type] or= next()
+      @tempVars[type] = next @tempVars[type]
+    @variables[@tempVars[type]] = 'var'
+    @tempVars[type]
 
   # Ensure that an assignment is made at the top of this scope
   # (or at the top-level scope, if requested).
