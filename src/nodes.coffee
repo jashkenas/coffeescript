@@ -1014,7 +1014,7 @@ exports.SplatNode = class SplatNode extends BaseNode
     o.scope.find name
     end = ''
     if @trailings.length
-      len = o.scope.freeVariable 'cache'
+      len = o.scope.freeVariable 'length'
       o.scope.assign len, "arguments.length"
       variadic = o.scope.freeVariable 'result'
       o.scope.assign variadic, len + ' >= ' + @arglength
@@ -1230,7 +1230,7 @@ exports.InNode = class InNode extends BaseNode
 
   compileLoopTest: (o) ->
     [@arr1, @arr2] = @array.compileReference o, precompile: yes
-    [i, l] = [o.scope.freeVariable('index'), o.scope.freeVariable('cache')]
+    [i, l] = [o.scope.freeVariable('index'), o.scope.freeVariable('length')]
     prefix = if @obj1 isnt @obj2 then @obj1 + '; ' else ''
     "(function(){ #{prefix}for (var #{i}=0, #{l}=#{@arr1}.length; #{i}<#{l}; #{i}++) { if (#{@arr2}[#{i}] === #{@obj2}) return true; } return false; }).call(this)"
 
@@ -1408,7 +1408,7 @@ exports.ForNode = class ForNode extends BaseNode
       else
         namePart  = "#{name} = #{svar}[#{ivar}]" if name
       unless @object
-        lvar      = scope.freeVariable 'cache'
+        lvar      = scope.freeVariable 'length'
         stepPart  = if @step then "#{ivar} += #{ @step.compile(o) }" else "#{ivar}++"
         forPart   = "#{ivar} = 0, #{lvar} = #{svar}.length; #{ivar} < #{lvar}; #{stepPart}"
     sourcePart    = (if rvar then "#{rvar} = []; " else '') + sourcePart
