@@ -65,6 +65,13 @@ exports.run = (code, options) ->
   # Compile
   root._compile exports.compile(code, options), root.filename
 
+# Compile and evaluate a string of CoffeeScript (in a Node.js-like environment).
+# The CoffeeScript REPL uses this to run the input.
+exports.eval = (code, options) ->
+  __filename = options.fileName
+  __dirname  = path.dirname __filename
+  eval exports.compile(code, options)
+
 # Instantiate a Lexer for our use here.
 lexer = new Lexer
 
