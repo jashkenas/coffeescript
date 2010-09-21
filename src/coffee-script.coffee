@@ -12,7 +12,6 @@ if process?
   Lexer   = require('./lexer').Lexer
   parser  = require('./parser').parser
   helpers = require('./helpers').helpers
-  helpers.extend global, require './nodes'
   # TODO: Remove registerExtension when fully deprecated
   if require.extensions
     fs = require 'fs'
@@ -82,3 +81,5 @@ parser.lexer =
     @tokens = tokens
     @pos    = 0
   upcomingInput: -> ""
+
+parser.yy = require './nodes'

@@ -33,6 +33,7 @@ unwrap = /function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 o = (patternString, action, options) ->
   return [patternString, '$$ = $1;', options] unless action
   action = if match = (action + '').match(unwrap) then match[1] else "(#{action}())"
+  action = action.replace /\b(?:[A-Z][a-z]+Node|Expressions)\b/g, 'yy.$&'
   [patternString, "$$ = #{action};", options]
 
 # Grammatical Rules
