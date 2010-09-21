@@ -57,8 +57,9 @@ task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   require 'jison'
   parser = require('./lib/grammar').parser
   js = parser.generate()
-  parserPath = 'lib/parser.js'
-  fs.writeFile parserPath, js
+  # TODO: Remove this when the Jison patch is released.
+  js = js.replace 'if (require.main === module)', 'if (typeof module !== "undefined" && require.main === module)'
+  fs.writeFile 'lib/parser.js', js
 
 
 task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter', ->
