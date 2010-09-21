@@ -210,7 +210,7 @@ exports.Expressions = class Expressions extends BaseNode
     o.scope   = new Scope(null, this, null)
     code      = @compileWithDeclarations(o)
     code      = code.replace(TRAILING_WHITESPACE, '')
-    if o.noWrap then code else "(function() {\n#{code}\n})();\n"
+    if o.noWrap then code else "(function() {\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
