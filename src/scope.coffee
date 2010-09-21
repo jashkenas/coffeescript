@@ -5,14 +5,8 @@
 # variables are new and need to be declared with `var`, and which are shared
 # with the outside.
 
-# Set up exported variables for both **Node.js** and the browser.
-if process?
-  helpers = require('./helpers').helpers
-else
-  this.exports = this
-
 # Import the helpers we plan to use.
-{extend} = helpers
+{extend} = require('./helpers').helpers
 
 exports.Scope = class Scope
 

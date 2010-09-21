@@ -5,15 +5,8 @@
 # shorthand into the unambiguous long form, add implicit indentation and
 # parentheses, balance incorrect nestings, and generally clean things up.
 
-# Set up exported variables for both Node.js and the browser.
-if process?
-  {helpers} = require('./helpers')
-else
-  this.exports = this
-  helpers      = this.helpers
-
 # Import the helpers we need.
-{include} = helpers
+{include} = require('./helpers').helpers
 
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
 # its internal array of tokens.

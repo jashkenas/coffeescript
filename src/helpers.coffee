@@ -2,8 +2,6 @@
 # the **Lexer**, **Rewriter**, and the **Nodes**. Merge objects, flatten
 # arrays, count characters, that sort of thing.
 
-# Set up exported variables for both **Node.js** and the browser.
-this.exports = this unless process?
 helpers = exports.helpers = {}
 
 # Cross-browser indexOf, so that IE can join the party.

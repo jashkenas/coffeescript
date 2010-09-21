@@ -1,9 +1,10 @@
 # Activate CoffeeScript in the browser by having it compile and evaluate
 # all script tags with a content-type of `text/coffeescript`.
 # This happens on page load.
-if document?.getElementsByTagName
+if window?
+  CoffeeScript = require './coffee-script'
   grind = (coffee) ->
-    setTimeout exports.compile coffee
+    setTimeout CoffeeScript.compile coffee
   grindRemote = (url) ->
     xhr = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
     xhr.open 'GET', url, true

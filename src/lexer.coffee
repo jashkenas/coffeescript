@@ -7,17 +7,10 @@
 #
 # Which is a format that can be fed directly into [Jison](http://github.com/zaach/jison).
 
-# Set up the Lexer for both Node.js and the browser, depending on where we are.
-if process?
-  {Rewriter} = require './rewriter'
-  {helpers}  = require './helpers'
-else
-  this.exports = this
-  Rewriter     = this.Rewriter
-  helpers      = this.helpers
+{Rewriter} = require './rewriter'
 
 # Import the helpers we need.
-{include, count, starts, compact} = helpers
+{include, count, starts, compact} = require('./helpers').helpers
 
 # The Lexer Class
 # ---------------

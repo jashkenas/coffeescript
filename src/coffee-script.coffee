@@ -6,26 +6,19 @@
 # If included on a webpage, it will automatically sniff out, compile, and
 # execute all scripts present in `text/coffeescript` tags.
 
-# Set up dependencies correctly for both the server and the browser.
-if process?
-  path    = require 'path'
-  Lexer   = require('./lexer').Lexer
-  parser  = require('./parser').parser
-  helpers = require('./helpers').helpers
-  # TODO: Remove registerExtension when fully deprecated
-  if require.extensions
-    fs = require 'fs'
-    require.extensions['.coffee'] = (module, filename) ->
-      content = compile fs.readFileSync filename, 'utf8'
-      module.filename = "#{filename} (compiled)"
-      module._compile content, module.filename
-  else if require.registerExtension
-    require.registerExtension '.coffee', (content) -> compile content
-else
-  this.exports = this.CoffeeScript = {}
-  Lexer        = this.Lexer
-  parser       = this.parser
-  helpers      = this.helpers
+path      = require 'path'
+{Lexer}   = require './lexer'
+{parser}  = require './parser'
+
+# TODO: Remove registerExtension when fully deprecated
+if require.extensions
+  fs = require 'fs'
+  require.extensions['.coffee'] = (module, filename) ->
+    content = compile fs.readFileSync filename, 'utf8'
+    module.filename = "#{filename} (compiled)"
+    module._compile content, module.filename
+else if require.registerExtension
+  require.registerExtension '.coffee', (content) -> compile content
 
 # The current CoffeeScript version number.
 exports.VERSION = '0.9.3'
