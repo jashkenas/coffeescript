@@ -14,11 +14,11 @@ if process?
   parser  = require('./parser').parser
   helpers = require('./helpers').helpers
   helpers.extend global, require './nodes'
-  # TODO: Remove registerExtension when fully depreciated
+  # TODO: Remove registerExtension when fully deprecated.
   if require.extensions
     require.extensions['.coffee'] = (module, filename) ->
       content = compile fs.readFileSync filename, 'utf8'
-      module._compile content, filename + '.js'
+      module._compile content, filename + ' (compiled)'
   else if require.registerExtension
     require.registerExtension '.coffee', (content) -> compile content
 else
