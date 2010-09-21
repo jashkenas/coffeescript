@@ -9,11 +9,17 @@
 # Set up dependencies correctly for both the server and the browser.
 if process?
   path    = require 'path'
+  fs      = require 'fs'
   Lexer   = require('./lexer').Lexer
   parser  = require('./parser').parser
   helpers = require('./helpers').helpers
   helpers.extend global, require './nodes'
-  if require.registerExtension
+  # TODO: Remove registerExtension when fully depreciated
+  if require.extensions
+    require.extensions['.coffee'] = (module, filename) ->
+      content = compile fs.readFileSync filename, 'utf8'
+      module._compile content, filename + '.js'
+  else if require.registerExtension
     require.registerExtension '.coffee', (content) -> compile content
 else
   this.exports = this.CoffeeScript = {}
