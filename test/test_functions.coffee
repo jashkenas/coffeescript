@@ -234,10 +234,17 @@ func.withThis()
 # Ensure that constructors invoked with splats return a new object.
 args = [1, 2, 3]
 Type = (@args) ->
-type = new Type args...
+type = new Type args
 
 ok type and type instanceof Type
+ok type.args and type.args instanceof Array
 ok v is args[i] for v, i in type.args
+
+Type1 = (@a, @b, @c) ->
+type1 = new Type1 args...
+
+ok type1 and type1 instanceof Type1
+ok type1.a is args[0] and type1.b is args[1] and type1.c is args[2] 
 
 
 # Ensure that constructors invoked with splats cache the function.
