@@ -50,7 +50,10 @@ exports.BaseNode = class BaseNode
     closure = @isStatement(o) and not @isPureStatement() and not top and
               not @options.asStatement and this not instanceof CommentNode and
               not @containsPureStatement()
-    if closure then @compileClosure(@options) else @compileNode(@options)
+    o.scope.startLevel() if not o.keepLevel
+    code = if closure then @compileClosure(@options) else @compileNode(@options)
+    o.scope.endLevel() if not o.keepLevel
+    code
 
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
@@ -497,7 +500,7 @@ exports.CallNode = class CallNode extends BaseNode
         arg.contains (n) -> mentionsArgs or= n instanceof LiteralNode and (n.value is 'arguments')
       utility 'extends'
       a = o.scope.freeVariable 'ctor'
-      b = o.scope.freeVariable 'instance'
+      b = o.scope.freeVariable 'ref'
       c = o.scope.freeVariable 'result'
       """
       #{@first}(function() {
@@ -1011,7 +1014,7 @@ exports.SplatNode = class SplatNode extends BaseNode
     o.scope.find name
     end = ''
     if @trailings.length
-      len = o.scope.freeVariable 'ref'
+      len = o.scope.freeVariable 'len'
       o.scope.assign len, "arguments.length"
       variadic = o.scope.freeVariable 'result'
       o.scope.assign variadic, len + ' >= ' + @arglength
@@ -1227,7 +1230,7 @@ exports.InNode = class InNode extends BaseNode
 
   compileLoopTest: (o) ->
     [@arr1, @arr2] = @array.compileReference o, precompile: yes
-    [i, l] = [o.scope.freeVariable('i'), o.scope.freeVariable('l')]
+    [i, l] = [o.scope.freeVariable('i'), o.scope.freeVariable('len')]
     prefix = if @obj1 isnt @obj2 then @obj1 + '; ' else ''
     "(function(){ #{prefix}for (var #{i}=0, #{l}=#{@arr1}.length; #{i}<#{l}; #{i}++) { if (#{@arr2}[#{i}] === #{@obj2}) return true; } return false; }).call(this)"
 
@@ -1401,11 +1404,11 @@ exports.ForNode = class ForNode extends BaseNode
       svar        = scope.freeVariable 'ref'
       sourcePart  = "#{svar} = #{ @source.compile(o) };"
       if @pattern
-        namePart  = new AssignNode(@name, literal("#{svar}[#{ivar}]")).compile(merge o, {indent: @idt(1), top: true}) + '\n'
+        namePart  = new AssignNode(@name, literal("#{svar}[#{ivar}]")).compile(merge o, {indent: @idt(1), top: true, keepLevel: yes}) + '\n'
       else
         namePart  = "#{name} = #{svar}[#{ivar}]" if name
       unless @object
-        lvar      = scope.freeVariable 'l'
+        lvar      = scope.freeVariable 'len'
         stepPart  = if @step then "#{ivar} += #{ @step.compile(o) }" else "#{ivar}++"
         forPart   = "#{ivar} = 0, #{lvar} = #{svar}.length; #{ivar} < #{lvar}; #{stepPart}"
     sourcePart    = (if rvar then "#{rvar} = []; " else '') + sourcePart
