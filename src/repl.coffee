@@ -20,7 +20,7 @@ helpers.extend global, quit: -> process.exit(0)
 # of exiting.
 run = (buffer) ->
   try
-    val = CoffeeScript.run buffer.toString(), noWrap: true, globals: true, fileName: 'repl'
+    val = CoffeeScript.eval buffer.toString(), noWrap: true, globals: true, fileName: 'repl'
     puts inspect val if val isnt undefined
   catch err
     puts err.stack or err.toString()
