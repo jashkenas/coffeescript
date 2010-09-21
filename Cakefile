@@ -2,6 +2,7 @@ fs            = require 'fs'
 {helpers}     = require './lib/helpers'
 CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
+path          = require 'path'
 
 # ANSI Terminal Colors.
 red   = '\033[0;31m'

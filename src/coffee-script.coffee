@@ -9,16 +9,17 @@
 # Set up dependencies correctly for both the server and the browser.
 if process?
   path    = require 'path'
-  fs      = require 'fs'
   Lexer   = require('./lexer').Lexer
   parser  = require('./parser').parser
   helpers = require('./helpers').helpers
   helpers.extend global, require './nodes'
-  # TODO: Remove registerExtension when fully deprecated.
+  # TODO: Remove registerExtension when fully deprecated
   if require.extensions
+    fs = require 'fs'
     require.extensions['.coffee'] = (module, filename) ->
       content = compile fs.readFileSync filename, 'utf8'
-      module._compile content, filename + ' (compiled)'
+      module.filename = "#{filename} (compiled)"
+      module._compile content, module.filename
   else if require.registerExtension
     require.registerExtension '.coffee', (content) -> compile content
 else
@@ -53,9 +54,16 @@ exports.nodes = (code) ->
 # Compile and execute a string of CoffeeScript (on the server), correctly
 # setting `__filename`, `__dirname`, and relative `require()`.
 exports.run = (code, options) ->
-  module.filename = __filename = options.fileName
-  __dirname = path.dirname __filename
-  eval exports.compile code, options
+  # We want the root module.
+  root = module
+  while root.parent
+    root = root.parent
+  # Set the filename
+  root.filename = __filename = "#{options.fileName} (compiled)"
+  # Clear the module cache
+  root.moduleCache = {} if root.moduleCache
+  # Compile
+  root._compile exports.compile(code, options), root.filename
 
 # Instantiate a Lexer for our use here.
 lexer = new Lexer
