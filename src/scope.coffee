@@ -6,7 +6,13 @@
 # with the outside.
 
 # Set up exported variables for both **Node.js** and the browser.
-this.exports = this unless process?
+if process?
+  helpers = require('./helpers').helpers
+else
+  this.exports = this
+
+# Import the helpers we plan to use.
+{extend} = helpers
 
 exports.Scope = class Scope
 
@@ -20,9 +26,9 @@ exports.Scope = class Scope
   constructor: (parent, expressions, method) ->
     [@parent, @expressions, @method] = [parent, expressions, method]
     @variables = {}
-    @tempVars  = {}
+    @generated = {}
     if @parent
-      (@tempVars[k] = val) for k, val of @parent.tempVars
+      extend @generated, @parent.generated
     else
       Scope.root = this
 
@@ -53,12 +59,13 @@ exports.Scope = class Scope
 
   # Generate a temporary variable name at the given index.
   temporary: (type, index) ->
-    '_' + type + (if (index) > 1 then index else '')
+    '_' + type + if index > 1 then index else ''
 
   # If we need to store an intermediate result, find an available name for a
   # compiler-generated variable. `_var`, `_var2`, and so on...
   freeVariable: (type) ->
-    @tempVars[type]++ while @check temp = @temporary type, @tempVars[type] or= 1
+    @generated[type] or= 1
+    @generated[type]++ while @check temp = @temporary type, @generated[type]
     @variables[temp] = 'var'
     temp
 
@@ -90,6 +97,6 @@ exports.Scope = class Scope
   compiledDeclarations: ->
     @declaredVariables().join ', '
 
-  # Compile the JavaScript for all of the variable assignments in this scope.
+  # Compile the JavaScript forall of the variable assignments in this scope.
   compiledAssignments: ->
     @assignedVariables().join ', '
