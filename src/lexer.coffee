@@ -331,8 +331,9 @@ exports.Lexer = class Lexer
         attempt = if match[2]? then match[2] else match[3]
         indent = attempt if not indent? or attempt.length < indent.length
     indent or= ''
-    doc = doc.replace(new RegExp("^" + indent, 'gm'), '').replace(/^\n/, '')
+    doc = doc.replace(new RegExp("^" + indent, 'gm'), '')
     return doc if options.herecomment
+    doc = doc.replace(/^\n/, '')
     doc.replace(MULTILINER, "\\n")
        .replace(new RegExp(options.quote, 'g'), "\\#{options.quote}")
 
