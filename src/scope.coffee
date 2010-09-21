@@ -62,7 +62,10 @@ exports.Scope = class Scope
 
   # Generate a temporary variable name at the given index.
   temporary: (type, index) ->
-    '_' + type + if index > 1 then index else ''
+    if type.length > 1
+      '_' + type + if index > 1 then index else ''
+    else
+      '_' + (index + parseInt type, 36).toString(36).replace /\d/g, 'a'
 
   # If we need to store an intermediate result, find an available name for a
   # compiler-generated variable. `_var`, `_var2`, and so on...
