@@ -79,3 +79,12 @@ ok b is "basic heredoc \#{val}\non two lines"
 
 a = '''here's an apostrophe'''
 ok a is "here's an apostrophe"
+
+
+# The indentation detector ignores blank lines without trailing whitespace
+a = """
+    one
+    two
+
+    """
+ok a is "one\ntwo\n"

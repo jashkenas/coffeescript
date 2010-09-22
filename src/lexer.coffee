@@ -323,7 +323,7 @@ exports.Lexer = class Lexer
     unless options.herecomment
       while (match = HEREDOC_INDENT.exec(doc)) isnt null
         attempt = if match[2]? then match[2] else match[3]
-        indent = attempt if not indent? or attempt.length < indent.length
+        indent = attempt if not indent? or 0 < attempt.length < indent.length
     indent or= ''
     doc = doc.replace(new RegExp("^" + indent, 'gm'), '')
     return doc if options.herecomment
