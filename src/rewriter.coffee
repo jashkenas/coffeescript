@@ -131,6 +131,7 @@ exports.Rewriter = class Rewriter
       if token[0] is ':' and (not last or last[0] isnt '{')
         stack.push '{'
         idx = if @tag(i - 2) is '@' then i - 2 else i - 1
+        idx -= 2 if @tag(idx - 2) is 'HERECOMMENT'
         tok = ['{', '{', token[2]]
         tok.generated = yes
         @tokens.splice idx, 0, tok

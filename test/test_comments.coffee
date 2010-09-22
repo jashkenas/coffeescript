@@ -155,3 +155,12 @@ class A
   c: ->
 
 ok A.prototype.c instanceof Function
+
+class A
+  ###
+  Comment
+  ###
+  b: ->
+  c: ->
+
+ok A.prototype.b instanceof Function
