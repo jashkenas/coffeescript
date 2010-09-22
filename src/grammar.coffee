@@ -511,7 +511,7 @@ grammar =
   IfBlock: [
     o "IF Expression Block",                    -> new IfNode $2, $3
     o "UNLESS Expression Block",                -> new IfNode $2, $3, invert: true
-    o "IfBlock ELSE IF Expression Block",       -> $1.addElse (new IfNode($4, $5)).forceStatement()
+    o "IfBlock ELSE IF Expression Block",       -> $1.addElse new IfNode $4, $5
     o "IfBlock ELSE Block",                     -> $1.addElse $3
   ]
 

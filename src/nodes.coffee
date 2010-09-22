@@ -1488,10 +1488,6 @@ exports.IfNode = class IfNode extends BaseNode
   bodyNode: -> @body?.unwrap()
   elseBodyNode: -> @elseBody?.unwrap()
 
-  forceStatement: ->
-    @tags.statement = true
-    this
-
   # Rewrite a chain of **IfNodes** to add a default case as the final *else*.
   addElse: (elseBody, statement) ->
     if @isChain
@@ -1504,7 +1500,7 @@ exports.IfNode = class IfNode extends BaseNode
   # The **IfNode** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a ternary is safe.
   isStatement: (o) ->
-    @statement or= !!((o and o.top) or @tags.statement or @bodyNode().isStatement(o) or (@elseBody and @elseBodyNode().isStatement(o)))
+    @statement or= !!((o and o.top) or @bodyNode().isStatement(o) or (@elseBody and @elseBodyNode().isStatement(o)))
 
   compileCondition: (o) ->
     conditions = flatten [@condition]
