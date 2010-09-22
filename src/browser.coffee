@@ -2,17 +2,18 @@
 
 CoffeeScript = require './coffee-script'
 
+# Use standard JavaScript `eval` to eval code.
 CoffeeScript.eval = (code, options) ->
   eval CoffeeScript.compile code, options
 
-unless window?
-  CoffeeScript.run = (code, options) ->
-    (Function CoffeeScript.compile code, options)()
-  return
+# Running code does not provide access to this scope.
+CoffeeScript.run = (code, options) ->
+  (Function CoffeeScript.compile code, options)()
 
-CoffeeScript.run  = (code, options) ->
-  setTimeout CoffeeScript.compile code, options
+# If we're not in a browser environment, we're finished with the public API.
+return unless window?
 
+# Load a remote script from the current domain via XHR.
 CoffeeScript.load = (url, options) ->
   xhr = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
   xhr.open 'GET', url, true
@@ -30,7 +31,7 @@ processScripts = ->
       if script.src
         CoffeeScript.load script.src
       else
-        CoffeeScript.run script.innerHTML
+        setTimeout -> CoffeeScript.run script.innerHTML
   null
 if window.addEventListener
   addEventListener 'DOMContentLoaded', processScripts, false
