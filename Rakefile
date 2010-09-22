@@ -6,7 +6,7 @@ require 'closure-compiler'
 
 HEADER = <<-EOS
 /**
- * CoffeeScript Compiler v0.9.3
+ * CoffeeScript Compiler v0.9.4
  * http://coffeescript.org
  *
  * Copyright 2010, Jeremy Ashkenas

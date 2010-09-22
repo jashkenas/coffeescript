@@ -1445,7 +1445,7 @@ exports.SwitchNode = class SwitchNode extends BaseNode
     this
 
   compileNode: (o) ->
-    idt = o.indent = @idt 1
+    idt = o.indent = @idt 2
     o.top = yes
     code = "#{ @tab }switch (#{ @subject.compile o }) {"
     for pair in @cases
@@ -1453,11 +1453,11 @@ exports.SwitchNode = class SwitchNode extends BaseNode
       exprs = block.expressions
       for condition in flatten [conditions]
         condition = new OpNode '!!', new ParentheticalNode condition if @tags.subjectless
-        code += "\n#{ @tab }case #{ condition.compile o }:"
+        code += "\n#{ @idt(1) }case #{ condition.compile o }:"
       code += "\n#{ block.compile o }"
       code += "\n#{ idt }break;" unless exprs[exprs.length - 1] instanceof ReturnNode
     if @otherwise
-      code += "\n#{ @tab }default:\n#{ @otherwise.compile o }"
+      code += "\n#{ @idt(1) }default:\n#{ @otherwise.compile o }"
     code += "\n#{ @tab }}"
     code
 

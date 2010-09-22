@@ -124,7 +124,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.3">0.9.3</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.4">0.9.4</a>
     </p>
 
     <h2>
@@ -169,7 +169,7 @@
       Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.3">0.9.3</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.4">0.9.4</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -926,6 +926,11 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
         source files.
       </li>
       <li>
+        <b>mauricemach</b>'s <a href="http://github.com/mauricemach/coffeekup">CoffeeKup</a>
+        &mdash; Markup as CoffeeScript. After _why's 
+        <a href="http://markaby.github.com/">Markaby</a>.
+      </li>
+      <li>
         <b>jashkenas</b>'s <a href="http://jashkenas.github.com/docco/">Docco</a>
         &mdash; a quick-and-dirty literate-programming-style documentation generator
         for CoffeeScript. Used to produce the annotated source.
@@ -951,6 +956,15 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.9.4</b>
+      CoffeeScript now uses appropriately-named temporary variables, and recycles
+      their references after use. Added <tt>require.extensions</tt> support for
+      <b>Node.js 0.3</b>. Loading CoffeeScript in the browser now adds just a
+      single <tt>CoffeeScript</tt> object to global scope.
+      Fixes for implicit object and block comment edge cases.
+    </p>
     
     <p>
       <b class="header" style="margin-top: 20px;">0.9.3</b>

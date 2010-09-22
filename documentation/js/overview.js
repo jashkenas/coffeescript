@@ -1,4 +1,4 @@
-var _a, _b, _c, _d, cubes, list, math, num, number, opposite, race, square;
+var _i, _len, _ref, _result, cubes, list, math, num, number, opposite, race, square;
 var __slice = Array.prototype.slice;
 number = 42;
 opposite = true;
@@ -25,10 +25,10 @@ if (typeof elvis !== "undefined" && elvis !== null) {
   alert("I knew it!");
 }
 cubes = (function() {
-  _a = []; _c = list;
-  for (_b = 0, _d = _c.length; _b < _d; _b++) {
-    num = _c[_b];
-    _a.push(math.cube(num));
+  _result = []; _ref = list;
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    num = _ref[_i];
+    _result.push(math.cube(num));
   }
-  return _a;
+  return _result;
 })();

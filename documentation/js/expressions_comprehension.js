@@ -1,11 +1,11 @@
-var _a, _b, _c, globals, name;
+var _i, _ref, _result, globals, name;
 var __hasProp = Object.prototype.hasOwnProperty;
 globals = (function() {
-  _b = []; _c = window;
-  for (name in _c) {
-    if (!__hasProp.call(_c, name)) continue;
-    _a = _c[name];
-    _b.push(name);
+  _result = []; _ref = window;
+  for (name in _ref) {
+    if (!__hasProp.call(_ref, name)) continue;
+    _i = _ref[name];
+    _result.push(name);
   }
-  return _b;
+  return _result;
 })().slice(0, 10);

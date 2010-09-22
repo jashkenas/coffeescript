@@ -7,8 +7,8 @@ var __extends = function(child, parent) {
     if (typeof parent.extended === "function") parent.extended(child);
     child.__super__ = parent.prototype;
   };
-Animal = function(_a) {
-  this.name = _a;
+Animal = function(_arg) {
+  this.name = _arg;
   return this;
 };
 Animal.prototype.move = function(meters) {

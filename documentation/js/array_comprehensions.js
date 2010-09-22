@@ -1,18 +1,18 @@
-var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, food, lunch, roid, roid2;
+var _i, _j, _len, _len2, _ref, _ref2, _result, food, lunch, roid, roid2;
 lunch = (function() {
-  _a = []; _c = ['toast', 'cheese', 'wine'];
-  for (_b = 0, _d = _c.length; _b < _d; _b++) {
-    food = _c[_b];
-    _a.push(eat(food));
+  _result = []; _ref = ['toast', 'cheese', 'wine'];
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    food = _ref[_i];
+    _result.push(eat(food));
   }
-  return _a;
+  return _result;
 })();
-_f = asteroids;
-for (_e = 0, _g = _f.length; _e < _g; _e++) {
-  roid = _f[_e];
-  _i = asteroids;
-  for (_h = 0, _j = _i.length; _h < _j; _h++) {
-    roid2 = _i[_h];
+_ref = asteroids;
+for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+  roid = _ref[_i];
+  _ref2 = asteroids;
+  for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+    roid2 = _ref2[_j];
     if (roid !== roid2) {
       if (roid.overlaps(roid2)) {
         roid.explode();

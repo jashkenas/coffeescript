@@ -1,7 +1,7 @@
-var _a, close, contents, open, tag;
+var _ref, close, contents, open, tag;
 var __slice = Array.prototype.slice;
 tag = "<impossible>";
-_a = tag.split("");
-open = _a[0];
-contents = __slice.call(_a, 1, _a.length - 1);
-close = _a[_a.length - 1];
+_ref = tag.split("");
+open = _ref[0];
+contents = __slice.call(_ref, 1, _ref.length - 1);
+close = _ref[_ref.length - 1];

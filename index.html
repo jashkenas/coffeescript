@@ -111,7 +111,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.3">0.9.3</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.4">0.9.4</a>
     </p>
 
     <h2>
@@ -136,8 +136,8 @@ list <span class="Keyword">=</span> [<span class="Number">1</span>, <span class=
 
 <span class="Comment"><span class="Comment">#</span> Objects:</span>
 math <span class="Keyword">=</span>
-  root<span class="Keyword">:</span>   Math.sqrt
-  square<span class="Keyword">:</span> square
+  root:   Math.sqrt
+  square: square
   <span class="FunctionName">cube</span><span class="Keyword">:</span>   <span class="FunctionArgument">(</span><span class="FunctionArgument">x</span><span class="FunctionArgument">)</span> <span class="Storage">-&gt;</span> x <span class="Keyword">*</span> square x
 
 <span class="Comment"><span class="Comment">#</span> Splats:</span>
@@ -149,7 +149,7 @@ alert <span class="String"><span class="String">&quot;</span>I knew it!<span cla
 
 <span class="Comment"><span class="Comment">#</span> Array comprehensions:</span>
 cubes <span class="Keyword">=</span> math.cube num <span class="Keyword">for</span> num <span class="Keyword">in</span> list
-</pre><pre class="idle"><span class="Storage">var</span> _a, _b, _c, _d, cubes, list, math, num, number, opposite, race, square;
+</pre><pre class="idle"><span class="Storage">var</span> _i, _len, _ref, _result, cubes, list, math, num, number, opposite, race, square;
 <span class="Storage">var</span> __slice <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice;
 number <span class="Keyword">=</span> <span class="Number">42</span>;
 opposite <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
@@ -176,14 +176,14 @@ math <span class="Keyword">=</span> {
   <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>I knew it!<span class="String">&quot;</span></span>);
 }
 cubes <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  _a <span class="Keyword">=</span> []; _c <span class="Keyword">=</span> list;
-  <span class="Keyword">for</span> (_b <span class="Keyword">=</span> <span class="Number">0</span>, _d <span class="Keyword">=</span> _c.<span class="LibraryConstant">length</span>; _b <span class="Keyword">&lt;</span> _d; _b<span class="Keyword">++</span>) {
-    num <span class="Keyword">=</span> _c[_b];
-    _a.<span class="LibraryFunction">push</span>(math.cube(num));
+  _result <span class="Keyword">=</span> []; _ref <span class="Keyword">=</span> list;
+  <span class="Keyword">for</span> (_i <span class="Keyword">=</span> <span class="Number">0</span>, _len <span class="Keyword">=</span> _ref.<span class="LibraryConstant">length</span>; _i <span class="Keyword">&lt;</span> _len; _i<span class="Keyword">++</span>) {
+    num <span class="Keyword">=</span> _ref[_i];
+    _result.<span class="LibraryFunction">push</span>(math.cube(num));
   }
-  <span class="Keyword">return</span> _a;
+  <span class="Keyword">return</span> _result;
 })();
-</pre><button onclick='javascript: var _a, _b, _c, _d, cubes, list, math, num, number, opposite, race, square;
+</pre><button onclick='javascript: var _i, _len, _ref, _result, cubes, list, math, num, number, opposite, race, square;
 var __slice = Array.prototype.slice;
 number = 42;
 opposite = true;
@@ -210,12 +210,12 @@ if (typeof elvis !== "undefined" && elvis !== null) {
   alert("I knew it!");
 }
 cubes = (function() {
-  _a = []; _c = list;
-  for (_b = 0, _d = _c.length; _b < _d; _b++) {
-    num = _c[_b];
-    _a.push(math.cube(num));
+  _result = []; _ref = list;
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    num = _ref[_i];
+    _result.push(math.cube(num));
   }
-  return _a;
+  return _result;
 })();;alert(cubes);'>run: cubes</button><br class='clear' /></div>
 
     <p>
@@ -251,7 +251,7 @@ cubes = (function() {
       Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.3">0.9.3</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.4">0.9.4</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -467,7 +467,7 @@ cube = function(x) {
     </p>
     <div class='code'><pre class="idle">song <span class="Keyword">=</span> [<span class="String"><span class="String">&quot;</span>do<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>re<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>mi<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>fa<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>so<span class="String">&quot;</span></span>]
 
-singers <span class="Keyword">=</span> {Jagger<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Rock<span class="String">&quot;</span></span>, Elvis<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Roll<span class="String">&quot;</span></span>}
+singers <span class="Keyword">=</span> {Jagger: <span class="String"><span class="String">&quot;</span>Rock<span class="String">&quot;</span></span>, Elvis: <span class="String"><span class="String">&quot;</span>Roll<span class="String">&quot;</span></span>}
 
 matrix <span class="Keyword">=</span> [
   <span class="Number">1</span>, <span class="Number">0</span>, <span class="Number">1</span>
@@ -476,12 +476,12 @@ matrix <span class="Keyword">=</span> [
 ]
 
 kids <span class="Keyword">=</span>
-  brother<span class="Keyword">:</span>
-    name<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Max<span class="String">&quot;</span></span>
-    age<span class="Keyword">:</span>  <span class="Number">11</span>
-  sister<span class="Keyword">:</span>
-    name<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Ida<span class="String">&quot;</span></span>
-    age<span class="Keyword">:</span>  <span class="Number">9</span>
+  brother:
+    name: <span class="String"><span class="String">&quot;</span>Max<span class="String">&quot;</span></span>
+    age:  <span class="Number">11</span>
+  sister:
+    name: <span class="String"><span class="String">&quot;</span>Ida<span class="String">&quot;</span></span>
+    age:  <span class="Number">9</span>
 </pre><pre class="idle"><span class="Storage">var</span> kids, matrix, singers, song;
 song <span class="Keyword">=</span> [<span class="String"><span class="String">&quot;</span>do<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>re<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>mi<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>fa<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>so<span class="String">&quot;</span></span>];
 singers <span class="Keyword">=</span> {
@@ -521,7 +521,7 @@ kids = {
       of an object, without quoting them as strings. CoffeeScript notices and quotes
       them for you, so you don't have to worry about it (say, when using jQuery).
     </p>
-    <div class='code'><pre class="idle">$(<span class="String"><span class="String">'</span>.account<span class="String">'</span></span>).css class<span class="Keyword">:</span> <span class="String"><span class="String">'</span>active<span class="String">'</span></span>
+    <div class='code'><pre class="idle">$(<span class="String"><span class="String">'</span>.account<span class="String">'</span></span>).css class: <span class="String"><span class="String">'</span>active<span class="String">'</span></span>
 </pre><pre class="idle"><span class="Keyword">$</span>(<span class="String"><span class="String">'</span>.account<span class="String">'</span></span>).css({
   <span class="String"><span class="String">&quot;</span>class<span class="String">&quot;</span></span>: <span class="String"><span class="String">'</span>active<span class="String">'</span></span>
 });
@@ -609,7 +609,7 @@ inner = changeNumbers();;alert(inner);'>run: inner</button><br class='clear' /><
 
 date <span class="Keyword">=</span> <span class="Keyword">if</span> friday <span class="Keyword">then</span> sue <span class="Keyword">else</span> jill
 
-options <span class="Keyword">or=</span> defaults
+options or<span class="Keyword">=</span> defaults
 </pre><pre class="idle"><span class="Storage">var</span> date, mood, options;
 <span class="Keyword">if</span> (singing) {
   mood <span class="Keyword">=</span> greatlyImproved;
@@ -772,7 +772,7 @@ num <span class="Keyword">=</span> <span class="Number">6</span>
 lyrics <span class="Keyword">=</span> <span class="Keyword">while</span> num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>
   num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed.</span>
 <span class="String">    One fell out and bumped his head.<span class="String">&quot;</span></span>
-</pre><pre class="idle"><span class="Storage">var</span> _a, lyrics, num;
+</pre><pre class="idle"><span class="Storage">var</span> _result, lyrics, num;
 <span class="Keyword">if</span> (<span class="Variable">this</span>.studyingEconomics) {
   <span class="Keyword">while</span> (supply <span class="Keyword">&gt;</span> demand) {
     buy();
@@ -783,14 +783,14 @@ lyrics <span class="Keyword">=</span> <span class="Keyword">while</span> num <sp
 }
 num <span class="Keyword">=</span> <span class="Number">6</span>;
 lyrics <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  _a <span class="Keyword">=</span> [];
+  _result <span class="Keyword">=</span> [];
   <span class="Keyword">while</span> (num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>) {
-    _a.<span class="LibraryFunction">push</span>(num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed.\</span>
+    _result.<span class="LibraryFunction">push</span>(num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed.\</span>
 <span class="String">    One fell out and bumped his head.<span class="String">&quot;</span></span>);
   }
-  <span class="Keyword">return</span> _a;
+  <span class="Keyword">return</span> _result;
 })();
-</pre><button onclick='javascript: var _a, lyrics, num;
+</pre><button onclick='javascript: var _result, lyrics, num;
 if (this.studyingEconomics) {
   while (supply > demand) {
     buy();
@@ -801,12 +801,12 @@ if (this.studyingEconomics) {
 }
 num = 6;
 lyrics = (function() {
-  _a = [];
+  _result = [];
   while (num -= 1) {
-    _a.push(num + " little monkeys, jumping on the bed.\
+    _result.push(num + " little monkeys, jumping on the bed.\
     One fell out and bumped his head.");
   }
-  return _a;
+  return _result;
 })();;alert(lyrics.join("\n"));'>run: lyrics.join("\n")</button><br class='clear' /></div>
     <p>
       For readability, the <b>until</b> keyword is equivalent to <tt>while not</tt>,
@@ -834,21 +834,21 @@ lunch <span class="Keyword">=</span> eat food <span class="Keyword">for</span> f
 <span class="Keyword">for</span> roid <span class="Keyword">in</span> asteroids
   <span class="Keyword">for</span> roid2 <span class="Keyword">in</span> asteroids <span class="Keyword">when</span> roid <span class="Keyword">isnt</span> roid2
     roid.explode() <span class="Keyword">if</span> roid.overlaps roid2
-</pre><pre class="idle"><span class="Storage">var</span> _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, food, lunch, roid, roid2;
+</pre><pre class="idle"><span class="Storage">var</span> _i, _j, _len, _len2, _ref, _ref2, _result, food, lunch, roid, roid2;
 lunch <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  _a <span class="Keyword">=</span> []; _c <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
-  <span class="Keyword">for</span> (_b <span class="Keyword">=</span> <span class="Number">0</span>, _d <span class="Keyword">=</span> _c.<span class="LibraryConstant">length</span>; _b <span class="Keyword">&lt;</span> _d; _b<span class="Keyword">++</span>) {
-    food <span class="Keyword">=</span> _c[_b];
-    _a.<span class="LibraryFunction">push</span>(eat(food));
+  _result <span class="Keyword">=</span> []; _ref <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
+  <span class="Keyword">for</span> (_i <span class="Keyword">=</span> <span class="Number">0</span>, _len <span class="Keyword">=</span> _ref.<span class="LibraryConstant">length</span>; _i <span class="Keyword">&lt;</span> _len; _i<span class="Keyword">++</span>) {
+    food <span class="Keyword">=</span> _ref[_i];
+    _result.<span class="LibraryFunction">push</span>(eat(food));
   }
-  <span class="Keyword">return</span> _a;
+  <span class="Keyword">return</span> _result;
 })();
-_f <span class="Keyword">=</span> asteroids;
-<span class="Keyword">for</span> (_e <span class="Keyword">=</span> <span class="Number">0</span>, _g <span class="Keyword">=</span> _f.<span class="LibraryConstant">length</span>; _e <span class="Keyword">&lt;</span> _g; _e<span class="Keyword">++</span>) {
-  roid <span class="Keyword">=</span> _f[_e];
-  _i <span class="Keyword">=</span> asteroids;
-  <span class="Keyword">for</span> (_h <span class="Keyword">=</span> <span class="Number">0</span>, _j <span class="Keyword">=</span> _i.<span class="LibraryConstant">length</span>; _h <span class="Keyword">&lt;</span> _j; _h<span class="Keyword">++</span>) {
-    roid2 <span class="Keyword">=</span> _i[_h];
+_ref <span class="Keyword">=</span> asteroids;
+<span class="Keyword">for</span> (_i <span class="Keyword">=</span> <span class="Number">0</span>, _len <span class="Keyword">=</span> _ref.<span class="LibraryConstant">length</span>; _i <span class="Keyword">&lt;</span> _len; _i<span class="Keyword">++</span>) {
+  roid <span class="Keyword">=</span> _ref[_i];
+  _ref2 <span class="Keyword">=</span> asteroids;
+  <span class="Keyword">for</span> (_j <span class="Keyword">=</span> <span class="Number">0</span>, _len2 <span class="Keyword">=</span> _ref2.<span class="LibraryConstant">length</span>; _j <span class="Keyword">&lt;</span> _len2; _j<span class="Keyword">++</span>) {
+    roid2 <span class="Keyword">=</span> _ref2[_j];
     <span class="Keyword">if</span> (roid <span class="Keyword">!</span><span class="Keyword">==</span> roid2) {
       <span class="Keyword">if</span> (roid.overlaps(roid2)) {
         roid.explode();
@@ -868,54 +868,54 @@ _f <span class="Keyword">=</span> asteroids;
   <span class="Keyword">for</span> i <span class="Keyword">in</span> [<span class="Number">0</span>...eggs.length] <span class="Keyword">by</span> <span class="Number">12</span>
     dozen <span class="Keyword">=</span> eggs[i...i<span class="Keyword">+</span><span class="Number">12</span>]
     deliver <span class="Keyword">new</span> <span class="TypeName">eggCarton</span> dozen
-</pre><pre class="idle"><span class="Storage">var</span> _a, countdown, deliverEggs, num;
+</pre><pre class="idle"><span class="Storage">var</span> _result, countdown, deliverEggs, num;
 countdown <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  _a <span class="Keyword">=</span> [];
+  _result <span class="Keyword">=</span> [];
   <span class="Keyword">for</span> (num <span class="Keyword">=</span> <span class="Number">10</span>; num <span class="Keyword">&gt;=</span> <span class="Number">1</span>; num<span class="Keyword">--</span>) {
-    _a.<span class="LibraryFunction">push</span>(num);
+    _result.<span class="LibraryFunction">push</span>(num);
   }
-  <span class="Keyword">return</span> _a;
+  <span class="Keyword">return</span> _result;
 })();
 <span class="FunctionName">deliverEggs</span> = <span class="Storage">function</span>() {
-  <span class="Storage">var</span> _b, _c, dozen, i;
-  _b <span class="Keyword">=</span> []; _c <span class="Keyword">=</span> eggs.<span class="LibraryConstant">length</span>;
-  <span class="Keyword">for</span> (i <span class="Keyword">=</span> <span class="Number">0</span>; (<span class="Number">0</span> <span class="Keyword">&lt;=</span> _c ? i <span class="Keyword">&lt;</span> _c : i <span class="Keyword">&gt;</span> _c); i <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">12</span>) {
-    _b.<span class="LibraryFunction">push</span>((<span class="Storage">function</span>() {
+  <span class="Storage">var</span> _ref, _result2, dozen, i;
+  _result2 <span class="Keyword">=</span> []; _ref <span class="Keyword">=</span> eggs.<span class="LibraryConstant">length</span>;
+  <span class="Keyword">for</span> (i <span class="Keyword">=</span> <span class="Number">0</span>; (<span class="Number">0</span> <span class="Keyword">&lt;=</span> _ref ? i <span class="Keyword">&lt;</span> _ref : i <span class="Keyword">&gt;</span> _ref); i <span class="Keyword">+</span><span class="Keyword">=</span> <span class="Number">12</span>) {
+    _result2.<span class="LibraryFunction">push</span>((<span class="Storage">function</span>() {
       dozen <span class="Keyword">=</span> eggs.<span class="LibraryFunction">slice</span>(i, i <span class="Keyword">+</span> <span class="Number">12</span>);
       <span class="Keyword">return</span> deliver(<span class="Keyword">new</span> <span class="TypeName">eggCarton</span>(dozen));
     })());
   }
-  <span class="Keyword">return</span> _b;
+  <span class="Keyword">return</span> _result2;
 };
-</pre><button onclick='javascript: var _a, countdown, deliverEggs, num;
+</pre><button onclick='javascript: var _result, countdown, deliverEggs, num;
 countdown = (function() {
-  _a = [];
+  _result = [];
   for (num = 10; num >= 1; num--) {
-    _a.push(num);
+    _result.push(num);
   }
-  return _a;
+  return _result;
 })();
 deliverEggs = function() {
-  var _b, _c, dozen, i;
-  _b = []; _c = eggs.length;
-  for (i = 0; (0 <= _c ? i < _c : i > _c); i += 12) {
-    _b.push((function() {
+  var _ref, _result2, dozen, i;
+  _result2 = []; _ref = eggs.length;
+  for (i = 0; (0 <= _ref ? i < _ref : i > _ref); i += 12) {
+    _result2.push((function() {
       dozen = eggs.slice(i, i + 12);
       return deliver(new eggCarton(dozen));
     })());
   }
-  return _b;
+  return _result2;
 };;alert(countdown);'>run: countdown</button><br class='clear' /></div>
     <p>
       Comprehensions can also be used to iterate over the keys and values in
       an object. Use <tt>of</tt> to signal comprehension over the properties of
       an object instead of the values in an array.
     </p>
-    <div class='code'><pre class="idle">yearsOld <span class="Keyword">=</span> max<span class="Keyword">:</span> <span class="Number">10</span>, ida<span class="Keyword">:</span> <span class="Number">9</span>, tim<span class="Keyword">:</span> <span class="Number">11</span>
+    <div class='code'><pre class="idle">yearsOld <span class="Keyword">=</span> max: <span class="Number">10</span>, ida: <span class="Number">9</span>, tim: <span class="Number">11</span>
 
 ages <span class="Keyword">=</span> <span class="Keyword">for</span> child, age <span class="Keyword">of</span> yearsOld
   child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age
-</pre><pre class="idle"><span class="Storage">var</span> _a, _b, age, ages, child, yearsOld;
+</pre><pre class="idle"><span class="Storage">var</span> _ref, _result, age, ages, child, yearsOld;
 <span class="Storage">var</span> __hasProp <span class="Keyword">=</span> <span class="LibraryClassType">Object</span>.<span class="LibraryConstant">prototype</span>.hasOwnProperty;
 yearsOld <span class="Keyword">=</span> {
   max: <span class="Number">10</span>,
@@ -923,15 +923,15 @@ yearsOld <span class="Keyword">=</span> {
   tim: <span class="Number">11</span>
 };
 ages <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  _a <span class="Keyword">=</span> []; _b <span class="Keyword">=</span> yearsOld;
-  <span class="Keyword">for</span> (child <span class="Keyword">in</span> _b) {
-    <span class="Keyword">if</span> (<span class="Keyword">!</span>__hasProp.<span class="LibraryFunction">call</span>(_b, child)) <span class="Keyword">continue</span>;
-    age <span class="Keyword">=</span> _b[child];
-    _a.<span class="LibraryFunction">push</span>(child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age);
+  _result <span class="Keyword">=</span> []; _ref <span class="Keyword">=</span> yearsOld;
+  <span class="Keyword">for</span> (child <span class="Keyword">in</span> _ref) {
+    <span class="Keyword">if</span> (<span class="Keyword">!</span>__hasProp.<span class="LibraryFunction">call</span>(_ref, child)) <span class="Keyword">continue</span>;
+    age <span class="Keyword">=</span> _ref[child];
+    _result.<span class="LibraryFunction">push</span>(child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age);
   }
-  <span class="Keyword">return</span> _a;
+  <span class="Keyword">return</span> _result;
 })();
-</pre><button onclick='javascript: var _a, _b, age, ages, child, yearsOld;
+</pre><button onclick='javascript: var _ref, _result, age, ages, child, yearsOld;
 var __hasProp = Object.prototype.hasOwnProperty;
 yearsOld = {
   max: 10,
@@ -939,13 +939,13 @@ yearsOld = {
   tim: 11
 };
 ages = (function() {
-  _a = []; _b = yearsOld;
-  for (child in _b) {
-    if (!__hasProp.call(_b, child)) continue;
-    age = _b[child];
-    _a.push(child + " is " + age);
+  _result = []; _ref = yearsOld;
+  for (child in _ref) {
+    if (!__hasProp.call(_ref, child)) continue;
+    age = _ref[child];
+    _result.push(child + " is " + age);
   }
-  return _a;
+  return _result;
 })();;alert(ages.join(", "));'>run: ages.join(", ")</button><br class='clear' /></div>
     <p>
       By default, object comprehensions are safe, and use a <tt>hasOwnProperty</tt>
@@ -1059,27 +1059,27 @@ six = (one = 1) + (two = 2) + (three = 3);;alert(six);'>run: six</button><br cla
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> The first ten global properties.</span>
 
 globals <span class="Keyword">=</span> (name <span class="Keyword">for</span> name <span class="Keyword">of</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
-</pre><pre class="idle"><span class="Storage">var</span> _a, _b, _c, globals, name;
+</pre><pre class="idle"><span class="Storage">var</span> _i, _ref, _result, globals, name;
 <span class="Storage">var</span> __hasProp <span class="Keyword">=</span> <span class="LibraryClassType">Object</span>.<span class="LibraryConstant">prototype</span>.hasOwnProperty;
 globals <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  _b <span class="Keyword">=</span> []; _c <span class="Keyword">=</span> <span class="LibraryClassType">window</span>;
-  <span class="Keyword">for</span> (name <span class="Keyword">in</span> _c) {
-    <span class="Keyword">if</span> (<span class="Keyword">!</span>__hasProp.<span class="LibraryFunction">call</span>(_c, name)) <span class="Keyword">continue</span>;
-    _a <span class="Keyword">=</span> _c[name];
-    _b.<span class="LibraryFunction">push</span>(name);
+  _result <span class="Keyword">=</span> []; _ref <span class="Keyword">=</span> <span class="LibraryClassType">window</span>;
+  <span class="Keyword">for</span> (name <span class="Keyword">in</span> _ref) {
+    <span class="Keyword">if</span> (<span class="Keyword">!</span>__hasProp.<span class="LibraryFunction">call</span>(_ref, name)) <span class="Keyword">continue</span>;
+    _i <span class="Keyword">=</span> _ref[name];
+    _result.<span class="LibraryFunction">push</span>(name);
   }
-  <span class="Keyword">return</span> _b;
+  <span class="Keyword">return</span> _result;
 })().<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
-</pre><button onclick='javascript: var _a, _b, _c, globals, name;
+</pre><button onclick='javascript: var _i, _ref, _result, globals, name;
 var __hasProp = Object.prototype.hasOwnProperty;
 globals = (function() {
-  _b = []; _c = window;
-  for (name in _c) {
-    if (!__hasProp.call(_c, name)) continue;
-    _a = _c[name];
-    _b.push(name);
+  _result = []; _ref = window;
+  for (name in _ref) {
+    if (!__hasProp.call(_ref, name)) continue;
+    _i = _ref[name];
+    _result.push(name);
   }
-  return _b;
+  return _result;
 })().slice(0, 10);;alert(globals);'>run: globals</button><br class='clear' /></div>
     <p>
       As well as silly things, like passing a <b>try/catch</b> statement directly
@@ -1152,8 +1152,8 @@ speed = (typeof speed !== "undefined" && speed !== null) ? speed : 140;;alert(sp
       the <b>TypeError</b> that would be raised otherwise.
     </p>
     <div class='code'><pre class="idle">lottery.drawWinner()<span class="Keyword">?</span>.address<span class="Keyword">?</span>.zipcode
-</pre><pre class="idle"><span class="Storage">var</span> _a, _b;
-(<span class="Keyword">typeof</span> (_b <span class="Keyword">=</span> ((_a <span class="Keyword">=</span> lottery.drawWinner()))) <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">||</span> _b <span class="Keyword">===</span> <span class="BuiltInConstant">null</span>) ? undefined : _b.address <span class="Keyword">==</span> <span class="BuiltInConstant">null</span> ? undefined : _b.address.zipcode;
+</pre><pre class="idle"><span class="Storage">var</span> _ref, _ref2;
+(<span class="Keyword">typeof</span> (_ref2 <span class="Keyword">=</span> ((_ref <span class="Keyword">=</span> lottery.drawWinner()))) <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">||</span> _ref2 <span class="Keyword">===</span> <span class="BuiltInConstant">null</span>) ? undefined : _ref2.address <span class="Keyword">==</span> <span class="BuiltInConstant">null</span> ? undefined : _ref2.address.zipcode;
 </pre><br class='clear' /></div>
     <p>
       Soaking up nulls is similar to Ruby's
@@ -1217,8 +1217,8 @@ tom.move()
     <span class="Keyword">if</span> (<span class="Keyword">typeof</span> parent.extended <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>function<span class="String">&quot;</span></span>) parent.extended(child);
     child.__super__ <span class="Keyword">=</span> parent.<span class="LibraryConstant">prototype</span>;
   };
-<span class="FunctionName">Animal</span> = <span class="Storage">function</span>(<span class="FunctionArgument">_a</span>) {
-  <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> _a;
+<span class="FunctionName">Animal</span> = <span class="Storage">function</span>(<span class="FunctionArgument">_arg</span>) {
+  <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> _arg;
   <span class="Keyword">return</span> <span class="Variable">this</span>;
 };
 <span class="LibraryClassType">Animal</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>(<span class="FunctionArgument">meters</span>) {
@@ -1253,8 +1253,8 @@ var __extends = function(child, parent) {
     if (typeof parent.extended === "function") parent.extended(child);
     child.__super__ = parent.prototype;
   };
-Animal = function(_a) {
-  this.name = _a;
+Animal = function(_arg) {
+  this.name = _arg;
   return this;
 };
 Animal.prototype.move = function(meters) {
@@ -1315,18 +1315,18 @@ tom.move();;'>run</button><br class='clear' /></div>
 theSwitch <span class="Keyword">=</span> <span class="Number">0</span>
 
 <span class="Keyword">[</span>theBait, theSwitch<span class="Keyword">] =</span> [theSwitch, theBait]
-</pre><pre class="idle"><span class="Storage">var</span> _a, theBait, theSwitch;
+</pre><pre class="idle"><span class="Storage">var</span> _ref, theBait, theSwitch;
 theBait <span class="Keyword">=</span> <span class="Number">1000</span>;
 theSwitch <span class="Keyword">=</span> <span class="Number">0</span>;
-_a <span class="Keyword">=</span> [theSwitch, theBait];
-theBait <span class="Keyword">=</span> _a[<span class="Number">0</span>];
-theSwitch <span class="Keyword">=</span> _a[<span class="Number">1</span>];
-</pre><button onclick='javascript: var _a, theBait, theSwitch;
+_ref <span class="Keyword">=</span> [theSwitch, theBait];
+theBait <span class="Keyword">=</span> _ref[<span class="Number">0</span>];
+theSwitch <span class="Keyword">=</span> _ref[<span class="Number">1</span>];
+</pre><button onclick='javascript: var _ref, theBait, theSwitch;
 theBait = 1000;
 theSwitch = 0;
-_a = [theSwitch, theBait];
-theBait = _a[0];
-theSwitch = _a[1];;alert(theBait);'>run: theBait</button><br class='clear' /></div>
+_ref = [theSwitch, theBait];
+theBait = _ref[0];
+theSwitch = _ref[1];;alert(theBait);'>run: theBait</button><br class='clear' /></div>
     <p>
       But it's also helpful for dealing with functions that return multiple
       values.
@@ -1336,38 +1336,38 @@ theSwitch = _a[1];;alert(theBait);'>run: theBait</button><br class='clear' /></d
   [location, <span class="Number">72</span>, <span class="String"><span class="String">&quot;</span>Mostly Sunny<span class="String">&quot;</span></span>]
 
 <span class="Keyword">[</span>city, temp, forecast<span class="Keyword">] =</span> weatherReport <span class="String"><span class="String">&quot;</span>Berkeley, CA<span class="String">&quot;</span></span>
-</pre><pre class="idle"><span class="Storage">var</span> _a, city, forecast, temp, weatherReport;
+</pre><pre class="idle"><span class="Storage">var</span> _ref, city, forecast, temp, weatherReport;
 <span class="FunctionName">weatherReport</span> = <span class="Storage">function</span>(<span class="FunctionArgument">location</span>) {
   <span class="Keyword">return</span> [location, <span class="Number">72</span>, <span class="String"><span class="String">&quot;</span>Mostly Sunny<span class="String">&quot;</span></span>];
 };
-_a <span class="Keyword">=</span> weatherReport(<span class="String"><span class="String">&quot;</span>Berkeley, CA<span class="String">&quot;</span></span>);
-city <span class="Keyword">=</span> _a[<span class="Number">0</span>];
-temp <span class="Keyword">=</span> _a[<span class="Number">1</span>];
-forecast <span class="Keyword">=</span> _a[<span class="Number">2</span>];
-</pre><button onclick='javascript: var _a, city, forecast, temp, weatherReport;
+_ref <span class="Keyword">=</span> weatherReport(<span class="String"><span class="String">&quot;</span>Berkeley, CA<span class="String">&quot;</span></span>);
+city <span class="Keyword">=</span> _ref[<span class="Number">0</span>];
+temp <span class="Keyword">=</span> _ref[<span class="Number">1</span>];
+forecast <span class="Keyword">=</span> _ref[<span class="Number">2</span>];
+</pre><button onclick='javascript: var _ref, city, forecast, temp, weatherReport;
 weatherReport = function(location) {
   return [location, 72, "Mostly Sunny"];
 };
-_a = weatherReport("Berkeley, CA");
-city = _a[0];
-temp = _a[1];
-forecast = _a[2];;alert(forecast);'>run: forecast</button><br class='clear' /></div>
+_ref = weatherReport("Berkeley, CA");
+city = _ref[0];
+temp = _ref[1];
+forecast = _ref[2];;alert(forecast);'>run: forecast</button><br class='clear' /></div>
     <p>
       Pattern matching can be used with any depth of array and object nesting,
       to help pull out deeply nested properties.
     </p>
     <div class='code'><pre class="idle">futurists <span class="Keyword">=</span>
-  sculptor<span class="Keyword">:</span> <span class="String"><span class="String">&quot;</span>Umberto Boccioni<span class="String">&quot;</span></span>
-  painter<span class="Keyword">:</span>  <span class="String"><span class="String">&quot;</span>Vladimir Burliuk<span class="String">&quot;</span></span>
-  poet<span class="Keyword">:</span>
-    name<span class="Keyword">:</span>   <span class="String"><span class="String">&quot;</span>F.T. Marinetti<span class="String">&quot;</span></span>
-    address<span class="Keyword">:</span> [
+  sculptor: <span class="String"><span class="String">&quot;</span>Umberto Boccioni<span class="String">&quot;</span></span>
+  painter:  <span class="String"><span class="String">&quot;</span>Vladimir Burliuk<span class="String">&quot;</span></span>
+  poet:
+    name:   <span class="String"><span class="String">&quot;</span>F.T. Marinetti<span class="String">&quot;</span></span>
+    address: [
       <span class="String"><span class="String">&quot;</span>Via Roma 42R<span class="String">&quot;</span></span>
       <span class="String"><span class="String">&quot;</span>Bellagio, Italy 22021<span class="String">&quot;</span></span>
     ]
 
-{poet<span class="Keyword">:</span> {name, address<span class="Keyword">:</span> [street, city]}} <span class="Keyword">=</span> futurists
-</pre><pre class="idle"><span class="Storage">var</span> _a, _b, _c, city, futurists, name, street;
+{poet: {name, address: [street, city]}} <span class="Keyword">=</span> futurists
+</pre><pre class="idle"><span class="Storage">var</span> _ref, _ref2, _ref3, city, futurists, name, street;
 futurists <span class="Keyword">=</span> {
   sculptor: <span class="String"><span class="String">&quot;</span>Umberto Boccioni<span class="String">&quot;</span></span>,
   painter: <span class="String"><span class="String">&quot;</span>Vladimir Burliuk<span class="String">&quot;</span></span>,
@@ -1376,13 +1376,13 @@ futurists <span class="Keyword">=</span> {
     address: [<span class="String"><span class="String">&quot;</span>Via Roma 42R<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Bellagio, Italy 22021<span class="String">&quot;</span></span>]
   }
 };
-_a <span class="Keyword">=</span> futurists;
-_b <span class="Keyword">=</span> _a.poet;
-name <span class="Keyword">=</span> _b.<span class="LibraryConstant">name</span>;
-_c <span class="Keyword">=</span> _b.address;
-street <span class="Keyword">=</span> _c[<span class="Number">0</span>];
-city <span class="Keyword">=</span> _c[<span class="Number">1</span>];
-</pre><button onclick='javascript: var _a, _b, _c, city, futurists, name, street;
+_ref <span class="Keyword">=</span> futurists;
+_ref2 <span class="Keyword">=</span> _ref.poet;
+name <span class="Keyword">=</span> _ref2.<span class="LibraryConstant">name</span>;
+_ref3 <span class="Keyword">=</span> _ref2.address;
+street <span class="Keyword">=</span> _ref3[<span class="Number">0</span>];
+city <span class="Keyword">=</span> _ref3[<span class="Number">1</span>];
+</pre><button onclick='javascript: var _ref, _ref2, _ref3, city, futurists, name, street;
 futurists = {
   sculptor: "Umberto Boccioni",
   painter: "Vladimir Burliuk",
@@ -1391,12 +1391,12 @@ futurists = {
     address: ["Via Roma 42R", "Bellagio, Italy 22021"]
   }
 };
-_a = futurists;
-_b = _a.poet;
-name = _b.name;
-_c = _b.address;
-street = _c[0];
-city = _c[1];;alert(name + " — " + street);'>run: name + " — " + street</button><br class='clear' /></div>
+_ref = futurists;
+_ref2 = _ref.poet;
+name = _ref2.name;
+_ref3 = _ref2.address;
+street = _ref3[0];
+city = _ref3[1];;alert(name + " — " + street);'>run: name + " — " + street</button><br class='clear' /></div>
     <p>
       Pattern matching can even be combined with splats.
     </p>
@@ -1407,20 +1407,20 @@ city = _c[1];;alert(name + " — " + street);'>run: name + " — " + street</but
 
 
 
-</pre><pre class="idle"><span class="Storage">var</span> _a, close, contents, open, tag;
+</pre><pre class="idle"><span class="Storage">var</span> _ref, close, contents, open, tag;
 <span class="Storage">var</span> __slice <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice;
 tag <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>&lt;impossible&gt;<span class="String">&quot;</span></span>;
-_a <span class="Keyword">=</span> tag.<span class="LibraryFunction">split</span>(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span>);
-open <span class="Keyword">=</span> _a[<span class="Number">0</span>];
-contents <span class="Keyword">=</span> __slice.<span class="LibraryFunction">call</span>(_a, <span class="Number">1</span>, _a.<span class="LibraryConstant">length</span> <span class="Keyword">-</span> <span class="Number">1</span>);
-close <span class="Keyword">=</span> _a[_a.<span class="LibraryConstant">length</span> <span class="Keyword">-</span> <span class="Number">1</span>];
-</pre><button onclick='javascript: var _a, close, contents, open, tag;
+_ref <span class="Keyword">=</span> tag.<span class="LibraryFunction">split</span>(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span>);
+open <span class="Keyword">=</span> _ref[<span class="Number">0</span>];
+contents <span class="Keyword">=</span> __slice.<span class="LibraryFunction">call</span>(_ref, <span class="Number">1</span>, _ref.<span class="LibraryConstant">length</span> <span class="Keyword">-</span> <span class="Number">1</span>);
+close <span class="Keyword">=</span> _ref[_ref.<span class="LibraryConstant">length</span> <span class="Keyword">-</span> <span class="Number">1</span>];
+</pre><button onclick='javascript: var _ref, close, contents, open, tag;
 var __slice = Array.prototype.slice;
 tag = "<impossible>";
-_a = tag.split("");
-open = _a[0];
-contents = __slice.call(_a, 1, _a.length - 1);
-close = _a[_a.length - 1];;alert(contents.join(""));'>run: contents.join("")</button><br class='clear' /></div>
+_ref = tag.split("");
+open = _ref[0];
+contents = __slice.call(_ref, 1, _ref.length - 1);
+close = _ref[_ref.length - 1];;alert(contents.join(""));'>run: contents.join("")</button><br class='clear' /></div>
 
     <p>
       <span id="fat_arrow" class="bookmark"></span>
@@ -1511,27 +1511,27 @@ hi = function() {
   <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Sun<span class="String">&quot;</span></span> <span class="Keyword">then</span> go church
   <span class="Keyword">else</span> go work
 </pre><pre class="idle"><span class="Keyword">switch</span> (day) {
-<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Mon<span class="String">&quot;</span></span>:
-  <span class="LibraryFunction">go</span>(work);
-  <span class="Keyword">break</span>;
-<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Tue<span class="String">&quot;</span></span>:
-  <span class="LibraryFunction">go</span>(relax);
-  <span class="Keyword">break</span>;
-<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Thu<span class="String">&quot;</span></span>:
-  <span class="LibraryFunction">go</span>(iceFishing);
-  <span class="Keyword">break</span>;
-<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Fri<span class="String">&quot;</span></span>:
-<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Sat<span class="String">&quot;</span></span>:
-  <span class="Keyword">if</span> (day <span class="Keyword">===</span> bingoDay) {
-    <span class="LibraryFunction">go</span>(bingo);
-    <span class="LibraryFunction">go</span>(dancing);
-  }
-  <span class="Keyword">break</span>;
-<span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Sun<span class="String">&quot;</span></span>:
-  <span class="LibraryFunction">go</span>(church);
-  <span class="Keyword">break</span>;
-<span class="Keyword">default</span>:
-  <span class="LibraryFunction">go</span>(work);
+  <span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Mon<span class="String">&quot;</span></span>:
+    <span class="LibraryFunction">go</span>(work);
+    <span class="Keyword">break</span>;
+  <span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Tue<span class="String">&quot;</span></span>:
+    <span class="LibraryFunction">go</span>(relax);
+    <span class="Keyword">break</span>;
+  <span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Thu<span class="String">&quot;</span></span>:
+    <span class="LibraryFunction">go</span>(iceFishing);
+    <span class="Keyword">break</span>;
+  <span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Fri<span class="String">&quot;</span></span>:
+  <span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Sat<span class="String">&quot;</span></span>:
+    <span class="Keyword">if</span> (day <span class="Keyword">===</span> bingoDay) {
+      <span class="LibraryFunction">go</span>(bingo);
+      <span class="LibraryFunction">go</span>(dancing);
+    }
+    <span class="Keyword">break</span>;
+  <span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Sun<span class="String">&quot;</span></span>:
+    <span class="LibraryFunction">go</span>(church);
+    <span class="Keyword">break</span>;
+  <span class="Keyword">default</span>:
+    <span class="LibraryFunction">go</span>(work);
 }
 </pre><br class='clear' /></div>
 
@@ -1662,10 +1662,11 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">'<
       are preserved in the generated code.
     </p>
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">###</span></span>
-<span class="Comment">CoffeeScript Compiler v0.9.3</span>
+<span class="Comment">CoffeeScript Compiler v0.9.4</span>
 <span class="Comment">Released under the MIT License</span>
 <span class="Comment">###</span>
-</pre><pre class="idle"><span class="Comment"><span class="Comment">/*</span>CoffeeScript Compiler v0.9.3</span>
+</pre><pre class="idle"><span class="Comment"><span class="Comment">/*</span></span>
+<span class="Comment">CoffeeScript Compiler v0.9.4</span>
 <span class="Comment">Released under the MIT License</span>
 <span class="Comment"><span class="Comment">*/</span></span>
 </pre><br class='clear' /></div>
@@ -1833,6 +1834,11 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
         source files.
       </li>
       <li>
+        <b>mauricemach</b>'s <a href="http://github.com/mauricemach/coffeekup">CoffeeKup</a>
+        &mdash; Markup as CoffeeScript. After _why's 
+        <a href="http://markaby.github.com/">Markaby</a>.
+      </li>
+      <li>
         <b>jashkenas</b>'s <a href="http://jashkenas.github.com/docco/">Docco</a>
         &mdash; a quick-and-dirty literate-programming-style documentation generator
         for CoffeeScript. Used to produce the annotated source.
@@ -1858,6 +1864,15 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">0.9.4</b>
+      CoffeeScript now uses appropriately-named temporary variables, and recycles
+      their references after use. Added <tt>require.extensions</tt> support for
+      <b>Node.js 0.3</b>. Loading CoffeeScript in the browser now adds just a
+      single <tt>CoffeeScript</tt> object to global scope.
+      Fixes for implicit object and block comment edge cases.
+    </p>
     
     <p>
       <b class="header" style="margin-top: 20px;">0.9.3</b>

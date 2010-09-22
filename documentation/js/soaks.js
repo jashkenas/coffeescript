@@ -1,2 +1,2 @@
-var _a, _b;
-(typeof (_b = ((_a = lottery.drawWinner()))) === "undefined" || _b === null) ? undefined : _b.address == null ? undefined : _b.address.zipcode;
+var _ref, _ref2;
+(typeof (_ref2 = ((_ref = lottery.drawWinner()))) === "undefined" || _ref2 === null) ? undefined : _ref2.address == null ? undefined : _ref2.address.zipcode;

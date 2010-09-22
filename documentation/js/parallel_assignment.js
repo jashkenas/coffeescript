@@ -1,6 +1,6 @@
-var _a, theBait, theSwitch;
+var _ref, theBait, theSwitch;
 theBait = 1000;
 theSwitch = 0;
-_a = [theSwitch, theBait];
-theBait = _a[0];
-theSwitch = _a[1];
+_ref = [theSwitch, theBait];
+theBait = _ref[0];
+theSwitch = _ref[1];
