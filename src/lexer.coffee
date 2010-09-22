@@ -140,7 +140,7 @@ exports.Lexer = class Lexer
     @i += match[1].length
     if match[2]
       @token 'HERECOMMENT', @sanitizeHeredoc match[2],
-        herecomment: true, indent: new Array(@indent + 1).join(' ')
+        herecomment: true, indent: Array(@indent + 1).join(' ')
       @token 'TERMINATOR', '\n'
     true
 

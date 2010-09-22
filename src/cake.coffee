@@ -58,7 +58,7 @@ printTasks = ->
   puts ''
   for all name, task of tasks
     spaces = 20 - name.length
-    spaces = if spaces > 0 then (' ' for i in [0..spaces]).join('') else ''
+    spaces = if spaces > 0 then Array(spaces + 1).join(' ') else ''
     desc   = if task.description then "# #{task.description}" else ''
     puts "cake #{name}#{spaces} #{desc}"
   puts oparse.help() if switches.length
