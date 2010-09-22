@@ -67,12 +67,11 @@ ok test is 'test test test'
   Kind of like a heredoc.
 ###
 
-# FIXME:
-# func = ->
-#   ###
-#   Another block comment.
-#   ###
-#   code
+func = ->
+  ###
+  Another block comment.
+  ###
+  code
 
 func = ->
   one = ->

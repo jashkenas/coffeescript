@@ -138,8 +138,9 @@ exports.Lexer = class Lexer
     return false unless match = @chunk.match(COMMENT)
     @line += count match[1], "\n"
     @i += match[1].length
-    if match[4]
-      @token 'HERECOMMENT', @sanitizeHeredoc match[4], herecomment: true, indent: match[3]
+    if match[2]
+      @token 'HERECOMMENT', @sanitizeHeredoc match[2],
+        herecomment: true, indent: new Array(@indent + 1).join(' ')
       @token 'TERMINATOR', '\n'
     true
 
@@ -523,7 +524,7 @@ NUMBER        = /^(((\b0(x|X)[0-9a-fA-F]+)|((\b[0-9]+(\.[0-9]+)?|\.[0-9]+)(e[+\-
 HEREDOC       = /^("{6}|'{6}|"{3}([\s\S]*?)\n?([ \t]*)"{3}|'{3}([\s\S]*?)\n?([ \t]*)'{3})/
 OPERATOR      = /^(-[\-=>]?|\+[+=]?|[*&|\/%=<>^:!?]+)([ \t]*)/
 WHITESPACE    = /^([ \t]+)/
-COMMENT       = /^(([ \t]*\n)*([ \t]*)###([^#][\s\S]*?)(###[ \t]*\n|(###)?$)|(\s*#(?!##[^#])[^\n]*)+)/
+COMMENT       = /^(###([^#][\s\S]*?)(###[ \t]*\n|(###)?$)|(\s*#(?!##[^#])[^\n]*)+)/
 CODE          = /^((-|=)>)/
 MULTI_DENT    = /^((\n([ \t]*))+)(\.)?/
 LAST_DENTS    = /\n([ \t]*)/g
