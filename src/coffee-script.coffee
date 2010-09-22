@@ -15,8 +15,7 @@ if require.extensions
   fs = require 'fs'
   require.extensions['.coffee'] = (module, filename) ->
     content = compile fs.readFileSync filename, 'utf8'
-    module.filename = "#{filename} (compiled)"
-    module._compile content, module.filename
+    module._compile content, filename
 else if require.registerExtension
   require.registerExtension '.coffee', (content) -> compile content
 
@@ -51,7 +50,7 @@ exports.run = (code, options) ->
   while root.parent
     root = root.parent
   # Set the filename
-  root.filename = __filename = "#{options.fileName} (compiled)"
+  root.filename = options.fileName
   # Clear the module cache
   root.moduleCache = {} if root.moduleCache
   # Compile
