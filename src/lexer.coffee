@@ -43,8 +43,7 @@ exports.Lexer = class Lexer
     @outdebt = 0            # The under-outdentation at the current level.
     @indents = []           # The stack of all current indentation levels.
     @tokens  = []           # Stream of parsed tokens in the form ['TYPE', value, line]
-    while @i < @code.length
-      @chunk = @code[@i..]
+    while (@chunk = code[@i..])
       @extractNextToken()
     @closeIndentation()
     return @tokens if o.rewrite is off
@@ -54,16 +53,16 @@ exports.Lexer = class Lexer
   # short-circuiting if any of them succeed. Their order determines precedence:
   # `@literalToken` is the fallback catch-all.
   extractNextToken: ->
-    return if @identifierToken()
-    return if @commentToken()
-    return if @whitespaceToken()
-    return if @lineToken()
-    return if @heredocToken()
-    return if @stringToken()
-    return if @numberToken()
-    return if @regexToken()
-    return if @jsToken()
-    return    @literalToken()
+    @identifierToken() or
+    @commentToken()    or
+    @whitespaceToken() or
+    @lineToken()       or
+    @heredocToken()    or
+    @stringToken()     or
+    @numberToken()     or
+    @regexToken()      or
+    @jsToken()         or
+    @literalToken()
 
   # Tokenizers
   # ----------
@@ -79,11 +78,15 @@ exports.Lexer = class Lexer
     @i += id.length
     forcedIdentifier = @tagAccessor() or @match ASSIGNED, 1
     tag = 'IDENTIFIER'
-    tag = id.toUpperCase() if include(JS_KEYWORDS, id) or (not forcedIdentifier and include(COFFEE_KEYWORDS, id))
-    tag = 'LEADING_WHEN'   if tag is 'WHEN' and include LINE_BREAK, @tag()
-    tag = 'ALL'            if id is 'all' and @tag() is 'FOR'
-    tag = 'UNARY'          if include UNARY, tag
-    if include(JS_FORBIDDEN, id)
+    if include(JS_KEYWORDS, id) or
+       not forcedIdentifier and include(COFFEE_KEYWORDS, id)
+      tag = id.toUpperCase()
+      tag = 'LEADING_WHEN' if tag is 'WHEN' and include LINE_BREAK, @tag()
+    else if id is 'all' and @tag() is 'FOR'
+      tag = 'ALL'
+    if include UNARY, tag
+      tag = 'UNARY'
+    else if include JS_FORBIDDEN, id
       if forcedIdentifier
         tag = 'STRING'
         id  = "\"#{id}\""
@@ -95,8 +98,10 @@ exports.Lexer = class Lexer
         @identifierError id
     unless forcedIdentifier
       tag = id = CONVERSIONS[id] if include COFFEE_ALIASES, id
-      tag = 'LOGIC' if include LOGIC, id
-      tag = 'UNARY' if id is '!'
+      if id is '!'
+        tag = 'UNARY'
+      else if include LOGIC, id
+        tag = 'LOGIC'
     @token tag, id
     @token ']', ']' if close_index
     true
@@ -177,7 +182,7 @@ exports.Lexer = class Lexer
     @i += regex.length + flags.length
     true
 
-  # Matches a token in which which the passed delimiter pairs must be correctly
+  # Matches a token in which the passed delimiter pairs must be correctly
   # balanced (ie. strings, JS literals).
   balancedToken: (delimited...) ->
     @balancedString @chunk, delimited
@@ -292,8 +297,9 @@ exports.Lexer = class Lexer
         tag = 'CALL_START'
       else if value is '['
         tag = 'INDEX_START'
-        @tag 1, 'INDEX_SOAK'  if @tag() is '?'
-        @tag 1, 'INDEX_PROTO' if @tag() is '::'
+        switch @tag()
+          when '?'  then @tag 1, 'INDEX_SOAK'
+          when '::' then @tag 1, 'INDEX_PROTO'
     @token tag, value
     true
 
@@ -307,7 +313,7 @@ exports.Lexer = class Lexer
     return false if (not prev = @prev()) or (prev and prev.spaced)
     accessor = if prev[1] is '::'
       @tag 1, 'PROTOTYPE_ACCESS'
-    else if prev[1] is '.' and not (@value(2) is '.')
+    else if prev[1] is '.' and @value(2) isnt '.'
       if @tag(2) is '?'
         @tag(1, 'SOAK_ACCESS')
         @tokens.splice(-2, 1)
