@@ -54,7 +54,10 @@ exports.run = (code, options) ->
   # Clear the module cache
   root.moduleCache = {} if root.moduleCache
   # Compile
-  root._compile exports.compile(code, options), root.filename
+  if path.extname(root.filename) isnt '.coffee' or require.extensions
+    root._compile exports.compile(code, options), root.filename
+  else
+    root._compile code, root.filename
 
 # Compile and evaluate a string of CoffeeScript (in a Node.js-like environment).
 # The CoffeeScript REPL uses this to run the input.
