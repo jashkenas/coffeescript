@@ -105,7 +105,7 @@ exports.Lexer = class Lexer
   # Be careful not to interfere with ranges-in-progress.
   numberToken: ->
     return false unless number = @match NUMBER
-    return false if @tag() is '.' and starts number, '.'
+    return false if @tag() is '.' and number.charAt(0) is '.'
     @i += number.length
     @token 'NUMBER', number
     true
@@ -113,12 +113,12 @@ exports.Lexer = class Lexer
   # Matches strings, including multi-line strings. Ensures that quotation marks
   # are balanced within the string's contents, and within nested interpolations.
   stringToken: ->
-    return false unless starts(@chunk, '"') or starts(@chunk, "'")
+    return false unless @chunk.charAt(0) in ["'", '"']
     return false unless string =
       @balancedToken(['"', '"'], ['#{', '}']) or
       @balancedToken ["'", "'"]
     @interpolateString string.replace MULTILINER, '\\\n'
-    @line += count string, "\n"
+    @line += count string, '\n'
     @i += string.length
     true
 
@@ -148,7 +148,7 @@ exports.Lexer = class Lexer
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
-    return false unless starts @chunk, '`'
+    return false unless @chunk.charAt(0) is '`'
     return false unless script = @balancedToken ['`', '`']
     @token 'JS', script.slice 1, -1
     @i += script.length
@@ -251,13 +251,13 @@ exports.Lexer = class Lexer
 
   # Generate a newline token. Consecutive newlines get merged together.
   newlineToken: (newlines) ->
-    @token 'TERMINATOR', "\n" unless @tag() is 'TERMINATOR'
+    @token 'TERMINATOR', '\n' unless @tag() is 'TERMINATOR'
     true
 
   # Use a `\` at a line-ending to suppress the newline.
   # The slash is removed here once its job is done.
   suppressNewlines: ->
-    @tokens.pop() if @value() is "\\"
+    @tokens.pop() if @value() is '\\'
     true
 
   # We treat all other single characters as a token. Eg.: `( ) , . !`
@@ -327,10 +327,10 @@ exports.Lexer = class Lexer
         attempt = if match[1]? then match[1] else match[2]
         indent = attempt if not indent? or 0 < attempt.length < indent.length
     indent or= ''
-    doc = doc.replace(new RegExp("^" + indent, 'gm'), '')
+    doc = doc.replace(new RegExp('^' + indent, 'gm'), '')
     return doc if options.herecomment
-    doc = doc.replace(/^\n/, '')
-    doc.replace(MULTILINER, "\\n")
+    doc.replace(/^\n/, '')
+       .replace(MULTILINER, '\\n')
        .replace(new RegExp(options.quote, 'g'), "\\#{options.quote}")
 
   # A source of ambiguity in our grammar used to be parameter lists in function
@@ -372,8 +372,9 @@ exports.Lexer = class Lexer
     slash = delimited[0][0] is '/'
     levels = []
     i = 0
-    while i < str.length
-      if levels.length and starts str, '\\', i
+    slen = str.length
+    while i < slen
+      if levels.length and str.charAt(i) is '\\'
         i += 1
       else
         for pair in delimited
@@ -387,12 +388,12 @@ exports.Lexer = class Lexer
             levels.push(pair)
             i += open.length - 1
             break
-      break if not levels.length or slash and starts str, '\n', i
+      break if not levels.length or slash and str.charAt(i) is '\n'
       i += 1
     if levels.length
       return false if slash
       throw new Error "SyntaxError: Unterminated #{levels.pop()[0]} starting on line #{@line + 1}"
-    if not i then false else str.substring(0, i)
+    if not i then false else str[0...i]
 
   # Expand variables and expressions inside double-quoted strings using
   # [ECMA Harmony's interpolation syntax](http://wiki.ecmascript.org/doku.php?id=strawman:string_interpolation)
@@ -405,19 +406,20 @@ exports.Lexer = class Lexer
   # token stream.
   interpolateString: (str, options) ->
     options or= {}
-    if str.length < 3 or not starts str, '"'
+    if str.length < 3 or str.charAt(0) isnt '"'
       @token 'STRING', str
     else
       lexer   = new Lexer
       tokens  = []
-      quote   = str.substring 0, 1
+      quote   = str.charAt 0
       [i, pi] = [1, 1]
-      while i < str.length - 1
-        if starts str, '\\', i
+      end = str.length - 1
+      while i < end
+        if str.charAt(i) is '\\'
           i += 1
-        else if expr = @balancedString(str.substring(i), [['#{', '}']])
-          tokens.push ['STRING', quote + str.substring(pi, i) + quote] if pi < i
-          inner = expr.substring(2, expr.length - 1)
+        else if expr = @balancedString str[i..], [['#{', '}']]
+          tokens.push ['STRING', quote + str[pi...i] + quote] if pi < i
+          inner = expr.slice 2, -1
           if inner.length
             inner = inner.replace new RegExp('\\\\' + quote, 'g'), quote if options.heredoc
             nested = lexer.tokenize "(#{inner})", line: @line
@@ -429,7 +431,7 @@ exports.Lexer = class Lexer
           i += expr.length - 1
           pi = i + 1
         i += 1
-      tokens.push ['STRING', quote + str.substring(pi, i) + quote] if pi < i and pi < str.length - 1
+      tokens.push ['STRING', quote + str[pi...i] + quote] if i > pi < str.length - 1
       tokens.unshift ['STRING', '""'] unless tokens[0][0] is 'STRING'
       interpolated = tokens.length > 1
       @token '(', '(' if interpolated
@@ -438,7 +440,7 @@ exports.Lexer = class Lexer
         if tag is 'TOKENS'
           @tokens = @tokens.concat value
         else if tag is 'STRING' and options.escapeQuotes
-          escaped = value.substring(1, value.length - 1).replace(/"/g, '\\"')
+          escaped = value.slice(1, -1).replace(/"/g, '\\"')
           @token tag, "\"#{escaped}\""
         else
           @token tag, value
@@ -472,48 +474,48 @@ exports.Lexer = class Lexer
   # Attempt to match a string against the current chunk, returning the indexed
   # match if successful, and `false` otherwise.
   match: (regex, index) ->
-    return false unless m = @chunk.match regex
-    if m then m[index] else false
+    if m = @chunk.match regex then m[index or 0] else false
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->
-    prev = @prev(2)
-    @value() and @value().match and @value().match(NO_NEWLINE) and
-      prev and (prev[0] isnt '.') and not @value().match(CODE) and
-      not @chunk.match ASSIGNED
+    prev  = @prev 2
+    value = @value()
+    value and NO_NEWLINE.test(value) and
+      prev and prev[0] isnt '.' and not CODE.test(value) and
+      not ASSIGNED.test(@chunk)
 
 # Constants
 # ---------
 
 # Keywords that CoffeeScript shares in common with JavaScript.
 JS_KEYWORDS = [
-  "if", "else",
-  "true", "false",
-  "new", "return",
-  "try", "catch", "finally", "throw",
-  "break", "continue",
-  "for", "in", "while",
-  "delete", "instanceof", "typeof",
-  "switch", "super", "extends", "class",
-  "this", "null", "debugger"
+  'if', 'else'
+  'true', 'false'
+  'new', 'return'
+  'try', 'catch', 'finally', 'throw'
+  'break', 'continue'
+  'for', 'in', 'while'
+  'delete', 'instanceof', 'typeof'
+  'switch', 'super', 'extends', 'class'
+  'this', 'null', 'debugger'
 ]
 
 # CoffeeScript-only keywords, which we're more relaxed about allowing. They can't
 # be used standalone, but you can reference them as an attached property.
-COFFEE_ALIASES =  ["and", "or", "is", "isnt", "not"]
+COFFEE_ALIASES =  ['and', 'or', 'is', 'isnt', 'not']
 COFFEE_KEYWORDS = COFFEE_ALIASES.concat [
-  "then", "unless", "until", "loop",
-  "yes", "no", "on", "off",
-  "of", "by", "where", "when"
+  'then', 'unless', 'until', 'loop'
+  'yes', 'no', 'on', 'off'
+  'of', 'by', 'where', 'when'
 ]
 
 # The list of keywords that are reserved by JavaScript, but not used, or are
 # used by CoffeeScript internally. We throw an error when these are encountered,
 # to avoid having a JavaScript error at runtime.
 RESERVED = [
-  "case", "default", "do", "function", "var", "void", "with",
-  "const", "let", "enum", "export", "import", "native",
-  "__hasProp", "__extends", "__slice"
+  'case', 'default', 'do', 'function', 'var', 'void', 'with'
+  'const', 'let', 'enum', 'export', 'import', 'native'
+  '__hasProp', '__extends', '__slice'
 ]
 
 # The superset of both JavaScript keywords and reserved words, none of which may
