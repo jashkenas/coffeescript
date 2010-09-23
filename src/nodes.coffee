@@ -1380,12 +1380,13 @@ exports.ForNode = class ForNode extends BaseNode
     source        = if range then @source.base else @source
     codeInBody    = @body.contains (n) -> n instanceof CodeNode
     scope         = o.scope
-    name          = (@name and @name.compile(o)) or scope.freeVariable 'i'
+    name          = @name  and @name.compile o
     index         = @index and @index.compile o
     scope.find(name,  immediate: yes) if name and not @pattern and (range or not codeInBody)
     scope.find(index, immediate: yes) if index
     rvar          = scope.freeVariable 'result' unless topLevel
-    ivar          = if codeInBody then scope.freeVariable 'i' else if range then name else index or scope.freeVariable 'i'
+    ivar          = if range then name else index
+    ivar          = scope.freeVariable 'i' if not ivar or codeInBody
     varPart       = ''
     guardPart     = ''
     body          = Expressions.wrap([@body])
