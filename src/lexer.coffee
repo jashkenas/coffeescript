@@ -33,7 +33,7 @@ exports.Lexer = class Lexer
   # Before returning the token stream, run it through the [Rewriter](rewriter.html)
   # unless explicitly asked not to.
   tokenize: (code, options) ->
-    code     = code.replace /(\r|\s+$)/g, ''
+    code     = code.replace(/\r/g, '').replace /\s+$/, ''
     o        = options or {}
     @code    = code         # The remainder of the source code.
     @i       = 0            # Current character position we're parsing.
@@ -75,7 +75,7 @@ exports.Lexer = class Lexer
   # referenced as property names here, so you can still do `jQuery.is()` even
   # though `is` means `===` otherwise.
   identifierToken: ->
-    return false unless id = @match IDENTIFIER, 1
+    return false unless id = @match IDENTIFIER
     @i += id.length
     forcedIdentifier = @tagAccessor() or @match ASSIGNED, 1
     tag = 'IDENTIFIER'
@@ -104,7 +104,7 @@ exports.Lexer = class Lexer
   # Matches numbers, including decimals, hex, and exponential notation.
   # Be careful not to interfere with ranges-in-progress.
   numberToken: ->
-    return false unless number = @match NUMBER, 1
+    return false unless number = @match NUMBER
     return false if @tag() is '.' and starts number, '.'
     @i += number.length
     @token 'NUMBER', number
@@ -117,7 +117,7 @@ exports.Lexer = class Lexer
     return false unless string =
       @balancedToken(['"', '"'], ['#{', '}']) or
       @balancedToken ["'", "'"]
-    @interpolateString string.replace /\n/g, '\\\n'
+    @interpolateString string.replace MULTILINER, '\\\n'
     @line += count string, "\n"
     @i += string.length
     true
@@ -126,20 +126,22 @@ exports.Lexer = class Lexer
   # preserve whitespace, but ignore indentation to the left.
   heredocToken: ->
     return false unless match = @chunk.match HEREDOC
-    quote = match[1].substr 0, 1
-    doc = @sanitizeHeredoc match[2] or match[4] or '', {quote}
+    heredoc = match[0]
+    quote = heredoc.charAt 0
+    doc = @sanitizeHeredoc match[2], {quote}
     @interpolateString quote + doc + quote, heredoc: yes
-    @line += count match[1], "\n"
-    @i += match[1].length
+    @line += count heredoc, '\n'
+    @i += heredoc.length
     true
 
   # Matches and consumes comments.
   commentToken: ->
-    return false unless match = @chunk.match(COMMENT)
-    @line += count match[1], "\n"
-    @i += match[1].length
-    if match[2]
-      @token 'HERECOMMENT', @sanitizeHeredoc match[2],
+    return false unless match = @chunk.match COMMENT
+    [comment, here] = match
+    @line += count comment, '\n'
+    @i += comment.length
+    if here
+      @token 'HERECOMMENT', @sanitizeHeredoc here,
         herecomment: true, indent: Array(@indent + 1).join(' ')
       @token 'TERMINATOR', '\n'
     true
@@ -148,7 +150,7 @@ exports.Lexer = class Lexer
   jsToken: ->
     return false unless starts @chunk, '`'
     return false unless script = @balancedToken ['`', '`']
-    @token 'JS', script.replace JS_CLEANER, ''
+    @token 'JS', script.slice 1, -1
     @i += script.length
     true
 
@@ -161,18 +163,18 @@ exports.Lexer = class Lexer
     return false if first[1] is ' ' and @tag() not in ['CALL_START', '=']
     return false if     include NOT_REGEX, @tag()
     return false unless regex = @balancedToken ['/', '/']
-    return false unless end = @chunk.substr(regex.length).match REGEX_END
-    regex += flags = end[2] if end[2]
-    if regex.match REGEX_INTERPOLATION
-      str = regex.substring(1).split('/')[0]
-      str = str.replace REGEX_ESCAPE, (escaped) -> '\\' + escaped
-      @tokens = @tokens.concat [['(', '('], ['NEW', 'new'], ['IDENTIFIER', 'RegExp'], ['CALL_START', '(']]
+    return false unless end = @chunk[regex.length..].match REGEX_END
+    flags = end[0]
+    if REGEX_INTERPOLATION.test regex
+      str = regex.slice 1, -1
+      str = str.replace REGEX_ESCAPE, '\\$&'
+      @tokens.push ['(', '('], ['NEW', 'new'], ['IDENTIFIER', 'RegExp'], ['CALL_START', '(']
       @interpolateString "\"#{str}\"", escapeQuotes: yes
-      @tokens.splice @tokens.length, 0, [',', ','], ['STRING', "\"#{flags}\""] if flags
-      @tokens.splice @tokens.length, 0, [')', ')'], [')', ')']
+      @tokens.push [',', ','], ['STRING', "\"#{flags}\""] if flags
+      @tokens.push [')', ')'], [')', ')']
     else
-      @token 'REGEX', regex
-    @i += regex.length
+      @token 'REGEX', regex + flags
+    @i += regex.length + flags.length
     true
 
   # Matches a token in which which the passed delimiter pairs must be correctly
@@ -191,11 +193,11 @@ exports.Lexer = class Lexer
   # Keeps track of the level of indentation, because a single outdent token
   # can close multiple indents, so we need to know how far in we happen to be.
   lineToken: ->
-    return false unless indent = @match MULTI_DENT, 1
-    @line += count indent, "\n"
+    return false unless indent = @match MULTI_DENT
+    @line += count indent, '\n'
     @i    += indent.length
-    prev = @prev(2)
-    size = indent.match(LAST_DENTS).reverse()[0].match(LAST_DENT)[1].length
+    prev = @prev 2
+    size = indent.length - 1 - indent.lastIndexOf '\n'
     nextCharacter = @match NEXT_CHARACTER, 1
     noNewlines = nextCharacter is '.' or nextCharacter is ',' or @unfinished()
     if size - @indebt is @indent
@@ -235,13 +237,13 @@ exports.Lexer = class Lexer
         @outdebt = 0
         @token 'OUTDENT', dent
     @outdebt -= moveOut if dent
-    @token 'TERMINATOR', "\n" unless @tag() is 'TERMINATOR' or noNewlines
+    @token 'TERMINATOR', '\n' unless @tag() is 'TERMINATOR' or noNewlines
     true
 
   # Matches and consumes non-meaningful whitespace. Tag the previous token
   # as being "spaced", because there are some cases where it makes a difference.
   whitespaceToken: ->
-    return false unless space = @match WHITESPACE, 1
+    return false unless space = @match WHITESPACE
     prev = @prev()
     prev.spaced = true if prev
     @i += space.length
@@ -264,11 +266,11 @@ exports.Lexer = class Lexer
   # here. `;` and newlines are both treated as a `TERMINATOR`, we distinguish
   # parentheses that indicate a method call from regular parentheses, and so on.
   literalToken: ->
-    match = @chunk.match OPERATOR
-    value = match and match[1]
-    space = match and match[2]
-    @tagParameters() if value and value.match CODE
-    value or= @chunk.substr 0, 1
+    if match = @chunk.match OPERATOR
+      [value, space] = match
+      @tagParameters() if CODE.test value
+    else
+      value = @chunk.charAt 0
     @i += value.length
     spaced = (prev = @prev()) and prev.spaced
     tag = value
@@ -321,8 +323,8 @@ exports.Lexer = class Lexer
     indent = options.indent
     return doc if options.herecomment and not include doc, '\n'
     unless options.herecomment
-      while (match = HEREDOC_INDENT.exec(doc)) isnt null
-        attempt = if match[2]? then match[2] else match[3]
+      while (match = HEREDOC_INDENT.exec doc)
+        attempt = if match[1]? then match[1] else match[2]
         indent = attempt if not indent? or 0 < attempt.length < indent.length
     indent or= ''
     doc = doc.replace(new RegExp("^" + indent, 'gm'), '')
@@ -519,29 +521,26 @@ RESERVED = [
 JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
 
 # Token matching regexes.
-IDENTIFIER    = /^([a-zA-Z\$_](\w|\$)*)/
-NUMBER        = /^(((\b0(x|X)[0-9a-fA-F]+)|((\b[0-9]+(\.[0-9]+)?|\.[0-9]+)(e[+\-]?[0-9]+)?)))\b/i
-HEREDOC       = /^("{6}|'{6}|"{3}([\s\S]*?)\n?([ \t]*)"{3}|'{3}([\s\S]*?)\n?([ \t]*)'{3})/
-OPERATOR      = /^(-[\-=>]?|\+[+=]?|[*&|\/%=<>^:!?]+)([ \t]*)/
-WHITESPACE    = /^([ \t]+)/
-COMMENT       = /^(###([^#][\s\S]*?)(###[ \t]*\n|(###)?$)|(\s*#(?!##[^#])[^\n]*)+)/
-CODE          = /^((-|=)>)/
-MULTI_DENT    = /^((\n([ \t]*))+)(\.)?/
-LAST_DENTS    = /\n([ \t]*)/g
-LAST_DENT     = /\n([ \t]*)/
+IDENTIFIER = /^[a-zA-Z_$][\w$]*/
+NUMBER     = /^(?:0x[\da-f]+)|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
+HEREDOC    = /^("""|''')([\s\S]*?)\n?[ \t]*\1/
+OPERATOR   = /^(?:-[-=>]?|\+[+=]?|[*&|\/%=<>^:!?]+)(?=([ \t]*))/
+WHITESPACE = /^[ \t]+/
+COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#])[^\n]*)+/
+CODE       = /^[-=]>/
+MULTI_DENT = /^(?:\n[ \t]*)+/
 
 # Regex-matching-regexes.
 REGEX_START         = /^\/([^\/])/
-REGEX_INTERPOLATION = /([^\\]#\{.*[^\\]\})/
-REGEX_END           = /^(([imgy]{1,4})\b|\W|$)/
-REGEX_ESCAPE        = /\\[^\$]/g
+REGEX_INTERPOLATION = /[^\\]#\{.*[^\\]\}/
+REGEX_END           = /^[imgy]{0,4}(?![a-zA-Z])/
+REGEX_ESCAPE        = /\\[^#]/g
 
 # Token cleaning regexes.
-JS_CLEANER      = /(^`|`$)/g
 MULTILINER      = /\n/g
-NO_NEWLINE      = /^([+\*&|\/\-%=<>!.\\][<>=&|]*|and|or|is|isnt|not|delete|typeof|instanceof)$/
-HEREDOC_INDENT  = /(\n+([ \t]*)|^([ \t]+))/g
-ASSIGNED        = /^\s*(([a-zA-Z\$_@]\w*|["'][^\r\n]+?["']|\d+)[ \t]*?[:=][^:=])/
+NO_NEWLINE      = /^(?:[-+*&|\/%=<>!.\\][<>=&|]*|and|or|is(?:nt)?|not|delete|typeof|instanceof)$/
+HEREDOC_INDENT  = /\n+([ \t]*)|^([ \t]+)/g
+ASSIGNED        = /^\s*((?:[a-zA-Z$_@]\w*|["'][^\n]+?["']|\d+)[ \t]*?[:=][^:=])/
 NEXT_CHARACTER  = /^\s*(\S)/
 
 # Compound assignment tokens.
