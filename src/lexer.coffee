@@ -118,11 +118,15 @@ exports.Lexer = class Lexer
   # Matches strings, including multi-line strings. Ensures that quotation marks
   # are balanced within the string's contents, and within nested interpolations.
   stringToken: ->
-    return false unless @chunk.charAt(0) in ["'", '"']
-    return false unless string =
-      @balancedToken(['"', '"'], ['#{', '}']) or
-      @balancedToken ["'", "'"]
-    @interpolateString string.replace MULTILINER, '\\\n'
+    switch @chunk.charAt 0
+      when "'"
+        return false unless string = @match SIMPLESTR
+        @token 'STRING', string.replace MULTILINER, '\\\n'
+      when '"'
+        return false unless string = @balancedToken ['"', '"'], ['#{', '}']
+        @interpolateString string.replace MULTILINER, '\\\n'
+      else
+        return false
     @line += count string, '\n'
     @i += string.length
     true
@@ -153,8 +157,7 @@ exports.Lexer = class Lexer
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
-    return false unless @chunk.charAt(0) is '`'
-    return false unless script = @balancedToken ['`', '`']
+    return false unless @chunk.charAt(0) is '`' and script = @match JSTOKEN
     @token 'JS', script.slice 1, -1
     @i += script.length
     true
@@ -537,6 +540,8 @@ WHITESPACE = /^[ \t]+/
 COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#])[^\n]*)+/
 CODE       = /^[-=]>/
 MULTI_DENT = /^(?:\n[ \t]*)+/
+SIMPLESTR  = /^'[^\\']*(?:\\.[^\\']*)*'/
+JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
 # Regex-matching-regexes.
 REGEX_START         = /^\/([^\/])/
