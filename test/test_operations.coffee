@@ -156,5 +156,6 @@ ok c is 3
 
 
 # Instanceof.
-ok new String instanceof String
-ok new Number not instanceof String
+# FIXME: These parentheses are workaround of #
+ok (new String) instanceof String
+ok (new Number) not instanceof String

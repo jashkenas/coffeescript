@@ -178,7 +178,7 @@ exports.Lexer = class Lexer
     if REGEX_INTERPOLATION.test regex
       str = regex.slice 1, -1
       str = str.replace REGEX_ESCAPE, '\\$&'
-      @tokens.push ['(', '('], ['NEW', 'new'], ['IDENTIFIER', 'RegExp'], ['CALL_START', '(']
+      @tokens.push ['(', '('], ['IDENTIFIER', 'RegExp'], ['CALL_START', '(']
       @interpolateString "\"#{str}\"", escapeQuotes: yes
       @tokens.push [',', ','], ['STRING', "\"#{flags}\""] if flags
       @tokens.push [')', ')'], [')', ')']
@@ -553,7 +553,7 @@ REGEX_ESCAPE        = /\\[^#]/g
 
 # Token cleaning regexes.
 MULTILINER      = /\n/g
-NO_NEWLINE      = /^(?:[-+*&|\/%=<>!.\\][<>=&|]*|and|or|is(?:nt)?|not|delete|typeof|instanceof)$/
+NO_NEWLINE      = /^(?:[-+*&|\/%=<>!.\\][<>=&|]*|and|or|is(?:nt)?|n(?:ot|ew)|delete|typeof|instanceof)$/
 HEREDOC_INDENT  = /\n+([ \t]*)|^([ \t]+)/g
 ASSIGNED        = /^\s*((?:[a-zA-Z$_@]\w*|["'][^\n]+?["']|\d+)[ \t]*?[:=][^:=])/
 NEXT_CHARACTER  = /^\s*(\S)/
@@ -562,7 +562,7 @@ NEXT_CHARACTER  = /^\s*(\S)/
 COMPOUND_ASSIGN = ['-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=', '<<=', '>>=', '>>>=', '&=', '^=', '|=']
 
 # Unary tokens.
-UNARY   = ['UMINUS', 'UPLUS', '!', '!!', '~', 'TYPEOF', 'DELETE']
+UNARY   = ['UMINUS', 'UPLUS', '!', '!!', '~', 'NEW', 'TYPEOF', 'DELETE']
 
 # Logical tokens.
 LOGIC   = ['&', '|', '^', '&&', '||']

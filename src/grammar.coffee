@@ -88,7 +88,6 @@ grammar =
   # them somewhat circular.
   Expression: [
     o "Value"
-    o "Call"
     o "Code"
     o "Operation"
     o "Assign"
@@ -296,13 +295,6 @@ grammar =
     o "ClassAssign",                            -> [$1]
     o "ClassBody TERMINATOR ClassAssign",       -> $1.concat $3
     o "{ ClassBody }",                          -> $2
-  ]
-
-  # The two flavors of function call: normal, and object instantiation with `new`.
-  Call: [
-    o "Invocation"
-    o "NEW Invocation",                         -> $2.newInstance()
-    o "NEW Value",                              -> (new CallNode($2, [])).newInstance()
   ]
 
   # Extending an object by setting its prototype chain to reference a parent
@@ -575,7 +567,7 @@ grammar =
 #
 #     (2 + 3) * 4
 operators = [
-  ["right",     '?', 'NEW']
+  ["right",     '?']
   ["left",      'CALL_START', 'CALL_END']
   ["nonassoc",  '++', '--']
   ["right",     'UNARY']
