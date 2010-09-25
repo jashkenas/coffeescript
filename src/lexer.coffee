@@ -76,22 +76,24 @@ exports.Lexer = class Lexer
   identifierToken: ->
     return false unless id = @match IDENTIFIER
     @i += id.length
+    if id is 'all' and @tag() is 'FOR'
+      @token 'ALL', id
+      return true
     forcedIdentifier = @tagAccessor() or @match ASSIGNED, 1
     tag = 'IDENTIFIER'
     if include(JS_KEYWORDS, id) or
        not forcedIdentifier and include(COFFEE_KEYWORDS, id)
       tag = id.toUpperCase()
-      tag = 'LEADING_WHEN' if tag is 'WHEN' and include LINE_BREAK, @tag()
-    else if id is 'all' and @tag() is 'FOR'
-      tag = 'ALL'
-    if include UNARY, tag
-      tag = 'UNARY'
-    else if include JS_FORBIDDEN, id
+      if tag is 'WHEN' and include LINE_BREAK, @tag()
+        tag = 'LEADING_WHEN'
+      else if include UNARY, tag
+        tag = 'UNARY'
+    if include JS_FORBIDDEN, id
       if forcedIdentifier
         tag = 'STRING'
         id  = "\"#{id}\""
         if forcedIdentifier is 'accessor'
-          close_index = true
+          closeIndex = on
           @tokens.pop() if @tag() isnt '@'
           @token 'INDEX_START', '['
       else if include(RESERVED, id)
@@ -103,7 +105,7 @@ exports.Lexer = class Lexer
       else if include LOGIC, id
         tag = 'LOGIC'
     @token tag, id
-    @token ']', ']' if close_index
+    @token ']', ']' if closeIndex
     true
 
   # Matches numbers, including decimals, hex, and exponential notation.
