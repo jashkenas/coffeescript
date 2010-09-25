@@ -139,7 +139,7 @@ exports.Lexer = class Lexer
     return false unless match = @chunk.match HEREDOC
     heredoc = match[0]
     quote = heredoc.charAt 0
-    doc = @sanitizeHeredoc match[2], {quote}
+    doc = @sanitizeHeredoc match[2], {quote, indent: null}
     @interpolateString quote + doc + quote, heredoc: yes
     @line += count heredoc, '\n'
     @i += heredoc.length
@@ -208,8 +208,8 @@ exports.Lexer = class Lexer
     @i    += indent.length
     prev = @prev 2
     size = indent.length - 1 - indent.lastIndexOf '\n'
-    nextCharacter = @match NEXT_CHARACTER, 1
-    noNewlines = nextCharacter is '.' or nextCharacter is ',' or @unfinished()
+    nextCharacter = NEXT_CHARACTER.exec(@chunk)[1]
+    noNewlines = (nextCharacter in ['.', ',']) or @unfinished()
     if size - @indebt is @indent
       return @suppressNewlines() if noNewlines
       return @newlineToken indent
@@ -331,18 +331,17 @@ exports.Lexer = class Lexer
   # Sanitize a heredoc or herecomment by escaping internal double quotes and
   # erasing all external indentation on the left-hand side.
   sanitizeHeredoc: (doc, options) ->
-    indent = options.indent
-    return doc if options.herecomment and not include doc, '\n'
-    unless options.herecomment
+    {indent, herecomment} = options
+    return doc if herecomment and not include doc, '\n'
+    unless herecomment
       while (match = HEREDOC_INDENT.exec doc)
-        attempt = if match[1]? then match[1] else match[2]
-        indent = attempt if not indent? or 0 < attempt.length < indent.length
-    indent or= ''
-    doc = doc.replace(new RegExp('^' + indent, 'gm'), '')
-    return doc if options.herecomment
+        attempt = match[1]
+        indent = attempt if indent is null or 0 < attempt.length < indent.length
+    doc = doc.replace /\n#{ indent }/g, '\n' if indent
+    return doc if herecomment
     doc.replace(/^\n/, '')
        .replace(MULTILINER, '\\n')
-       .replace(new RegExp(options.quote, 'g'), "\\#{options.quote}")
+       .replace(/#{ options.quote }/g, '\\$&')
 
   # A source of ambiguity in our grammar used to be parameter lists in function
   # definitions versus argument lists in function calls. Walk backwards, tagging
@@ -489,11 +488,9 @@ exports.Lexer = class Lexer
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->
-    prev  = @prev 2
-    value = @value()
-    value and NO_NEWLINE.test(value) and
-      prev and prev[0] isnt '.' and not CODE.test(value) and
-      not ASSIGNED.test(@chunk)
+    (prev  = @prev 2 ) and prev[0] isnt '.' and
+    (value = @value()) and NO_NEWLINE.test(value) and not CODE.test(value) and
+    not ASSIGNED.test(@chunk)
 
 # Constants
 # ---------
@@ -535,11 +532,11 @@ JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
 
 # Token matching regexes.
 IDENTIFIER = /^[a-zA-Z_$][\w$]*/
-NUMBER     = /^(?:0x[\da-f]+)|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
+NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
 HEREDOC    = /^("""|''')([\s\S]*?)\n?[ \t]*\1/
 OPERATOR   = /^(?:-[-=>]?|\+[+=]?|[*&|\/%=<>^:!?]+)(?=([ \t]*))/
 WHITESPACE = /^[ \t]+/
-COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#])[^\n]*)+/
+COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
 CODE       = /^[-=]>/
 MULTI_DENT = /^(?:\n[ \t]*)+/
 SIMPLESTR  = /^'[^\\']*(?:\\.[^\\']*)*'/
@@ -554,9 +551,9 @@ REGEX_ESCAPE        = /\\[^#]/g
 # Token cleaning regexes.
 MULTILINER      = /\n/g
 NO_NEWLINE      = /^(?:[-+*&|\/%=<>!.\\][<>=&|]*|and|or|is(?:nt)?|not|delete|typeof|instanceof)$/
-HEREDOC_INDENT  = /\n+([ \t]*)|^([ \t]+)/g
+HEREDOC_INDENT  = /\n+([ \t]*)/g
 ASSIGNED        = /^\s*@?[$A-Za-z_][$\w]*[ \t]*?[:=][^:=>]/
-NEXT_CHARACTER  = /^\s*(\S)/
+NEXT_CHARACTER  = /^\s*(\S?)/
 
 # Compound assignment tokens.
 COMPOUND_ASSIGN = ['-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=', '<<=', '>>=', '>>>=', '&=', '^=', '|=']
