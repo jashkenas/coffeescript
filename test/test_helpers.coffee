@@ -1,5 +1,5 @@
 { indexOf, include, starts, ends, compact, count, merge, extend, flatten, del
-} = require('../lib/helpers').helpers
+} = require '../lib/helpers'
 
 array = [0..4]
 

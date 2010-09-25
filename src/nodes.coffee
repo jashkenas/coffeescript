@@ -6,7 +6,7 @@
 {Scope} = require './scope'
 
 # Import the helpers we plan to use.
-{compact, flatten, merge, del, include, indexOf, starts, ends} = require('./helpers').helpers
+{compact, flatten, merge, del, include, indexOf, starts, ends} = require './helpers'
 
 #### BaseNode
 

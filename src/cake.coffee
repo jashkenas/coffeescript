@@ -9,7 +9,7 @@
 # External dependencies.
 fs           = require 'fs'
 path         = require 'path'
-helpers      = require('./helpers').helpers
+helpers      = require './helpers'
 optparse     = require './optparse'
 CoffeeScript = require './coffee-script'
 

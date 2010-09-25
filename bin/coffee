@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 var path = require('path');
-var fs = require('fs');
-var lib = path.join(path.dirname(fs.realpathSync(__filename)), '../lib');
+var fs   = require('fs');
+var lib  = path.join(path.dirname(fs.realpathSync(__filename)), '../lib');
 
-require(lib + '/helpers').helpers.extend(global, require('sys'));
+require(lib + '/helpers').extend(global, require('sys'));
 require(lib + '/command').run();

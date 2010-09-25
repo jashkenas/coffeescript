@@ -10,7 +10,7 @@
 {Rewriter} = require './rewriter'
 
 # Import the helpers we need.
-{include, count, starts, compact} = require('./helpers').helpers
+{include, count, starts, compact} = require './helpers'
 
 # The Lexer Class
 # ---------------

@@ -6,7 +6,7 @@
 # with the outside.
 
 # Import the helpers we plan to use.
-{extend} = require('./helpers').helpers
+{extend} = require './helpers'
 
 exports.Scope = class Scope
 
