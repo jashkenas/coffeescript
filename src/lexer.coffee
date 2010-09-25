@@ -43,26 +43,23 @@ exports.Lexer = class Lexer
     @outdebt = 0            # The under-outdentation at the current level.
     @indents = []           # The stack of all current indentation levels.
     @tokens  = []           # Stream of parsed tokens in the form ['TYPE', value, line]
+    # At every position, run through this list of attempted matches,
+    # short-circuiting if any of them succeed. Their order determines precedence:
+    # `@literalToken` is the fallback catch-all.
     while (@chunk = code[@i..])
-      @extractNextToken()
+      @identifierToken() or
+      @commentToken()    or
+      @whitespaceToken() or
+      @lineToken()       or
+      @heredocToken()    or
+      @stringToken()     or
+      @numberToken()     or
+      @regexToken()      or
+      @jsToken()         or
+      @literalToken()
     @closeIndentation()
     return @tokens if o.rewrite is off
     (new Rewriter).rewrite @tokens
-
-  # At every position, run through this list of attempted matches,
-  # short-circuiting if any of them succeed. Their order determines precedence:
-  # `@literalToken` is the fallback catch-all.
-  extractNextToken: ->
-    @identifierToken() or
-    @commentToken()    or
-    @whitespaceToken() or
-    @lineToken()       or
-    @heredocToken()    or
-    @stringToken()     or
-    @numberToken()     or
-    @regexToken()      or
-    @jsToken()         or
-    @literalToken()
 
   # Tokenizers
   # ----------
@@ -74,7 +71,8 @@ exports.Lexer = class Lexer
   # referenced as property names here, so you can still do `jQuery.is()` even
   # though `is` means `===` otherwise.
   identifierToken: ->
-    return false unless id = @match IDENTIFIER
+    return false unless match = IDENTIFIER.exec @chunk
+    id = match[0]
     @i += id.length
     if id is 'all' and @tag() is 'FOR'
       @token 'ALL', id
@@ -111,7 +109,8 @@ exports.Lexer = class Lexer
   # Matches numbers, including decimals, hex, and exponential notation.
   # Be careful not to interfere with ranges-in-progress.
   numberToken: ->
-    return false unless number = @match NUMBER
+    return false unless match = NUMBER.exec @chunk
+    number = match[0]
     return false if @tag() is '.' and number.charAt(0) is '.'
     @i += number.length
     @token 'NUMBER', number
@@ -122,8 +121,8 @@ exports.Lexer = class Lexer
   stringToken: ->
     switch @chunk.charAt 0
       when "'"
-        return false unless string = @match SIMPLESTR
-        @token 'STRING', string.replace MULTILINER, '\\\n'
+        return false unless match = SIMPLESTR.exec @chunk
+        @token 'STRING', (string = match[0]).replace MULTILINER, '\\\n'
       when '"'
         return false unless string = @balancedToken ['"', '"'], ['#{', '}']
         @interpolateString string.replace MULTILINER, '\\\n'
@@ -159,8 +158,8 @@ exports.Lexer = class Lexer
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
-    return false unless @chunk.charAt(0) is '`' and script = @match JSTOKEN
-    @token 'JS', script.slice 1, -1
+    return false unless @chunk.charAt(0) is '`' and match = JSTOKEN.exec @chunk
+    @token 'JS', (script = match[0]).slice 1, -1
     @i += script.length
     true
 
@@ -203,7 +202,8 @@ exports.Lexer = class Lexer
   # Keeps track of the level of indentation, because a single outdent token
   # can close multiple indents, so we need to know how far in we happen to be.
   lineToken: ->
-    return false unless indent = @match MULTI_DENT
+    return false unless match = MULTI_DENT.exec @chunk
+    indent = match[0]
     @line += count indent, '\n'
     @i    += indent.length
     prev = @prev 2
@@ -253,10 +253,10 @@ exports.Lexer = class Lexer
   # Matches and consumes non-meaningful whitespace. Tag the previous token
   # as being "spaced", because there are some cases where it makes a difference.
   whitespaceToken: ->
-    return false unless space = @match WHITESPACE
+    return false unless match = WHITESPACE.exec @chunk
     prev = @prev()
     prev.spaced = true if prev
-    @i += space.length
+    @i += match[0].length
     true
 
   # Generate a newline token. Consecutive newlines get merged together.
@@ -480,11 +480,6 @@ exports.Lexer = class Lexer
   # Peek at a previous token, entire.
   prev: (index) ->
     @tokens[@tokens.length - (index or 1)]
-
-  # Attempt to match a string against the current chunk, returning the indexed
-  # match if successful, and `false` otherwise.
-  match: (regex, index) ->
-    if m = @chunk.match regex then m[index or 0] else false
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->
