@@ -79,7 +79,7 @@ exports.Lexer = class Lexer
     if id is 'all' and @tag() is 'FOR'
       @token 'ALL', id
       return true
-    forcedIdentifier = @tagAccessor() or @match ASSIGNED, 1
+    forcedIdentifier = @tagAccessor() or ASSIGNED.test @chunk
     tag = 'IDENTIFIER'
     if include(JS_KEYWORDS, id) or
        not forcedIdentifier and include(COFFEE_KEYWORDS, id)
@@ -555,7 +555,7 @@ REGEX_ESCAPE        = /\\[^#]/g
 MULTILINER      = /\n/g
 NO_NEWLINE      = /^(?:[-+*&|\/%=<>!.\\][<>=&|]*|and|or|is(?:nt)?|not|delete|typeof|instanceof)$/
 HEREDOC_INDENT  = /\n+([ \t]*)|^([ \t]+)/g
-ASSIGNED        = /^\s*((?:[a-zA-Z$_@]\w*|["'][^\n]+?["']|\d+)[ \t]*?[:=][^:=])/
+ASSIGNED        = /^\s*@?[$A-Za-z_][$\w]*[ \t]*?[:=][^:=>]/
 NEXT_CHARACTER  = /^\s*(\S)/
 
 # Compound assignment tokens.
