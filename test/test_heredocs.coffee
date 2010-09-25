@@ -98,3 +98,11 @@ equal ''' line 0
 should not be relevant\n
   to the indent level
 '
+
+
+equal 'multiline nested interpolations work', """multiline #{
+  "nested #{(->
+    ok yes
+    "interpolations"
+  )()}"
+} work"""

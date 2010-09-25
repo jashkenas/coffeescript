@@ -125,7 +125,7 @@ exports.Lexer = class Lexer
         @token 'STRING', (string = match[0]).replace MULTILINER, '\\\n'
       when '"'
         return false unless string = @balancedToken ['"', '"'], ['#{', '}']
-        @interpolateString string.replace MULTILINER, '\\\n'
+        @interpolateString string
       else
         return false
     @line += count string, '\n'
@@ -339,9 +339,9 @@ exports.Lexer = class Lexer
         indent = attempt if indent is null or 0 < attempt.length < indent.length
     doc = doc.replace /\n#{ indent }/g, '\n' if indent
     return doc if herecomment
-    doc.replace(/^\n/, '')
-       .replace(MULTILINER, '\\n')
-       .replace(/#{ options.quote }/g, '\\$&')
+    doc = doc.replace(/^\n/, '').replace(/#{ options.quote }/g, '\\$&')
+    doc = @oldline doc, on if options.quote is "'"
+    doc
 
   # A source of ambiguity in our grammar used to be parameter lists in function
   # definitions versus argument lists in function calls. Walk backwards, tagging
@@ -406,7 +406,7 @@ exports.Lexer = class Lexer
     if not i then false else str[0...i]
 
   # Expand variables and expressions inside double-quoted strings using
-  # [ECMA Harmony's interpolation syntax](http://wiki.ecmascript.org/doku.php?id=strawman:string_interpolation)
+  # Ruby-like notation
   # for substitution of bare variables as well as arbitrary expressions.
   #
   #     "Hello #{name.capitalize()}."
@@ -415,48 +415,51 @@ exports.Lexer = class Lexer
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
   interpolateString: (str, options) ->
-    options or= {}
-    if str.length < 3 or str.charAt(0) isnt '"'
-      @token 'STRING', str
-    else
-      lexer   = new Lexer
-      tokens  = []
-      quote   = str.charAt 0
-      [i, pi] = [1, 1]
-      end = str.length - 1
-      while i < end
-        if str.charAt(i) is '\\'
-          i += 1
-        else if expr = @balancedString str[i..], [['#{', '}']]
-          tokens.push ['STRING', quote + str[pi...i] + quote] if pi < i
-          inner = expr.slice 2, -1
-          if inner.length
-            inner = inner.replace new RegExp('\\\\' + quote, 'g'), quote if options.heredoc
-            nested = lexer.tokenize "(#{inner})", line: @line
-            (tok[0] = ')') for tok, idx in nested when tok[0] is 'CALL_END'
-            nested.pop()
-            tokens.push ['TOKENS', nested]
-          else
-            tokens.push ['STRING', quote + quote]
-          i += expr.length - 1
-          pi = i + 1
+    {heredoc, escapeQuotes} = options or {}
+    quote = str.charAt 0
+    return @token 'STRING', str if quote isnt '"' or str.length < 3
+    lexer  = new Lexer
+    tokens = []
+    i = pi = 1
+    end = str.length - 1
+    while i < end
+      if str.charAt(i) is '\\'
         i += 1
-      tokens.push ['STRING', quote + str[pi...i] + quote] if i > pi < str.length - 1
-      tokens.unshift ['STRING', '""'] unless tokens[0][0] is 'STRING'
-      interpolated = tokens.length > 1
-      @token '(', '(' if interpolated
-      for token, i in tokens
-        [tag, value] = token
-        if tag is 'TOKENS'
-          @tokens = @tokens.concat value
-        else if tag is 'STRING' and options.escapeQuotes
-          escaped = value.slice(1, -1).replace(/"/g, '\\"')
-          @token tag, "\"#{escaped}\""
+      else if expr = @balancedString str[i..], [['#{', '}']]
+        if pi < i
+          s = quote + @oldline(str[pi...i], heredoc) + quote
+          tokens.push ['STRING', s]
+        inner = expr.slice(2, -1).replace /^[ \t]*\n/, ''
+        if inner.length
+          inner = inner.replace RegExp('\\\\' + quote, 'g'), quote if heredoc
+          nested = lexer.tokenize "(#{inner})", line: @line
+          (tok[0] = ')') for tok, idx in nested when tok[0] is 'CALL_END'
+          nested.pop()
+          tokens.push ['TOKENS', nested]
         else
-          @token tag, value
-        @token '+', '+' if i < tokens.length - 1
-      @token ')', ')' if interpolated
-      tokens
+          tokens.push ['STRING', quote + quote]
+        i += expr.length - 1
+        pi = i + 1
+      i += 1
+    if i > pi < str.length - 1
+      s = str[pi...i].replace MULTILINER, if heredoc then '\\n' else ''
+      tokens.push ['STRING', quote + s + quote]
+    tokens.unshift ['STRING', '""'] unless tokens[0][0] is 'STRING'
+    interpolated = tokens.length > 1
+    @token '(', '(' if interpolated
+    {push} = tokens
+    for token, i in tokens
+      [tag, value] = token
+      if tag is 'TOKENS'
+        push.apply @tokens, value
+      else if tag is 'STRING' and escapeQuotes
+        escaped = value.slice(1, -1).replace(/"/g, '\\"')
+        @token tag, "\"#{escaped}\""
+      else
+        @token tag, value
+      @token '+', '+' if i < tokens.length - 1
+    @token ')', ')' if interpolated
+    tokens
 
   # Helpers
   # -------
@@ -486,6 +489,10 @@ exports.Lexer = class Lexer
     (prev  = @prev 2 ) and prev[0] isnt '.' and
     (value = @value()) and NO_NEWLINE.test(value) and not CODE.test(value) and
     not ASSIGNED.test(@chunk)
+
+  # Converts newlines for string literals
+  oldline: (str, heredoc) ->
+    str.replace MULTILINER, if heredoc then '\\n' else ''
 
 # Constants
 # ---------
