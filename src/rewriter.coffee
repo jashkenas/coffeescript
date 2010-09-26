@@ -6,7 +6,7 @@
 # parentheses, balance incorrect nestings, and generally clean things up.
 
 # Import the helpers we need.
-{include} = require('./helpers').helpers
+{include} = require './helpers'
 
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
 # its internal array of tokens.

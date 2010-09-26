@@ -6,7 +6,7 @@
 
 # Require the **coffee-script** module to get access to the compiler.
 CoffeeScript = require './coffee-script'
-helpers      = require('./helpers').helpers
+helpers      = require './helpers'
 readline     = require 'readline'
 
 # Start by opening up **stdio**.

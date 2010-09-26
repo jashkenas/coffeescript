@@ -9,7 +9,7 @@ fs             = require 'fs'
 path           = require 'path'
 optparse       = require './optparse'
 CoffeeScript   = require './coffee-script'
-{helpers}      = require './helpers'
+helpers        = require './helpers'
 {spawn, exec}  = require 'child_process'
 {EventEmitter} = require 'events'
 

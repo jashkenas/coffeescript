@@ -1,5 +1,5 @@
 fs            = require 'fs'
-{helpers}     = require './lib/helpers'
+helpers       = require './lib/helpers'
 CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 path          = require 'path'
@@ -87,6 +87,9 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
   exec 'docco examples/underscore.coffee && cp -rf docs documentation && rm -r docs', (err) ->
     throw err if err
 
+task 'bench', 'quick benchmark of compilation time (of everything in src)', ->
+  exec 'time bin/coffee -p src/ > /dev/null', (err, stdout, stderr) ->
+    print stderr
 
 task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
   sources = ['src/coffee-script.coffee', 'src/grammar.coffee', 'src/helpers.coffee', 'src/lexer.coffee', 'src/nodes.coffee', 'src/rewriter.coffee', 'src/scope.coffee']

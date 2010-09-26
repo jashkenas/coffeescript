@@ -10,7 +10,7 @@
 {Rewriter} = require './rewriter'
 
 # Import the helpers we need.
-{include, count, starts, compact} = require('./helpers').helpers
+{include, count, starts, compact} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -43,26 +43,23 @@ exports.Lexer = class Lexer
     @outdebt = 0            # The under-outdentation at the current level.
     @indents = []           # The stack of all current indentation levels.
     @tokens  = []           # Stream of parsed tokens in the form ['TYPE', value, line]
+    # At every position, run through this list of attempted matches,
+    # short-circuiting if any of them succeed. Their order determines precedence:
+    # `@literalToken` is the fallback catch-all.
     while (@chunk = code[@i..])
-      @extractNextToken()
+      @identifierToken() or
+      @commentToken()    or
+      @whitespaceToken() or
+      @lineToken()       or
+      @heredocToken()    or
+      @stringToken()     or
+      @numberToken()     or
+      @regexToken()      or
+      @jsToken()         or
+      @literalToken()
     @closeIndentation()
     return @tokens if o.rewrite is off
     (new Rewriter).rewrite @tokens
-
-  # At every position, run through this list of attempted matches,
-  # short-circuiting if any of them succeed. Their order determines precedence:
-  # `@literalToken` is the fallback catch-all.
-  extractNextToken: ->
-    @identifierToken() or
-    @commentToken()    or
-    @whitespaceToken() or
-    @lineToken()       or
-    @heredocToken()    or
-    @stringToken()     or
-    @numberToken()     or
-    @regexToken()      or
-    @jsToken()         or
-    @literalToken()
 
   # Tokenizers
   # ----------
@@ -74,12 +71,13 @@ exports.Lexer = class Lexer
   # referenced as property names here, so you can still do `jQuery.is()` even
   # though `is` means `===` otherwise.
   identifierToken: ->
-    return false unless id = @match IDENTIFIER
+    return false unless match = IDENTIFIER.exec @chunk
+    id = match[0]
     @i += id.length
     if id is 'all' and @tag() is 'FOR'
       @token 'ALL', id
       return true
-    forcedIdentifier = @tagAccessor() or @match ASSIGNED, 1
+    forcedIdentifier = @tagAccessor() or ASSIGNED.test @chunk
     tag = 'IDENTIFIER'
     if include(JS_KEYWORDS, id) or
        not forcedIdentifier and include(COFFEE_KEYWORDS, id)
@@ -111,7 +109,8 @@ exports.Lexer = class Lexer
   # Matches numbers, including decimals, hex, and exponential notation.
   # Be careful not to interfere with ranges-in-progress.
   numberToken: ->
-    return false unless number = @match NUMBER
+    return false unless match = NUMBER.exec @chunk
+    number = match[0]
     return false if @tag() is '.' and number.charAt(0) is '.'
     @i += number.length
     @token 'NUMBER', number
@@ -122,11 +121,11 @@ exports.Lexer = class Lexer
   stringToken: ->
     switch @chunk.charAt 0
       when "'"
-        return false unless string = @match SIMPLESTR
-        @token 'STRING', string.replace MULTILINER, '\\\n'
+        return false unless match = SIMPLESTR.exec @chunk
+        @token 'STRING', (string = match[0]).replace MULTILINER, '\\\n'
       when '"'
         return false unless string = @balancedToken ['"', '"'], ['#{', '}']
-        @interpolateString string.replace MULTILINER, '\\\n'
+        @interpolateString string
       else
         return false
     @line += count string, '\n'
@@ -139,7 +138,7 @@ exports.Lexer = class Lexer
     return false unless match = @chunk.match HEREDOC
     heredoc = match[0]
     quote = heredoc.charAt 0
-    doc = @sanitizeHeredoc match[2], {quote}
+    doc = @sanitizeHeredoc match[2], {quote, indent: null}
     @interpolateString quote + doc + quote, heredoc: yes
     @line += count heredoc, '\n'
     @i += heredoc.length
@@ -159,8 +158,8 @@ exports.Lexer = class Lexer
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
-    return false unless @chunk.charAt(0) is '`' and script = @match JSTOKEN
-    @token 'JS', script.slice 1, -1
+    return false unless @chunk.charAt(0) is '`' and match = JSTOKEN.exec @chunk
+    @token 'JS', (script = match[0]).slice 1, -1
     @i += script.length
     true
 
@@ -203,13 +202,14 @@ exports.Lexer = class Lexer
   # Keeps track of the level of indentation, because a single outdent token
   # can close multiple indents, so we need to know how far in we happen to be.
   lineToken: ->
-    return false unless indent = @match MULTI_DENT
+    return false unless match = MULTI_DENT.exec @chunk
+    indent = match[0]
     @line += count indent, '\n'
     @i    += indent.length
     prev = @prev 2
     size = indent.length - 1 - indent.lastIndexOf '\n'
-    nextCharacter = @match NEXT_CHARACTER, 1
-    noNewlines = nextCharacter is '.' or nextCharacter is ',' or @unfinished()
+    nextCharacter = NEXT_CHARACTER.exec(@chunk)[1]
+    noNewlines = (nextCharacter in ['.', ',']) or @unfinished()
     if size - @indebt is @indent
       return @suppressNewlines() if noNewlines
       return @newlineToken indent
@@ -253,10 +253,10 @@ exports.Lexer = class Lexer
   # Matches and consumes non-meaningful whitespace. Tag the previous token
   # as being "spaced", because there are some cases where it makes a difference.
   whitespaceToken: ->
-    return false unless space = @match WHITESPACE
+    return false unless match = WHITESPACE.exec @chunk
     prev = @prev()
     prev.spaced = true if prev
-    @i += space.length
+    @i += match[0].length
     true
 
   # Generate a newline token. Consecutive newlines get merged together.
@@ -331,18 +331,17 @@ exports.Lexer = class Lexer
   # Sanitize a heredoc or herecomment by escaping internal double quotes and
   # erasing all external indentation on the left-hand side.
   sanitizeHeredoc: (doc, options) ->
-    indent = options.indent
-    return doc if options.herecomment and not include doc, '\n'
-    unless options.herecomment
+    {indent, herecomment} = options
+    return doc if herecomment and not include doc, '\n'
+    unless herecomment
       while (match = HEREDOC_INDENT.exec doc)
-        attempt = if match[1]? then match[1] else match[2]
-        indent = attempt if not indent? or 0 < attempt.length < indent.length
-    indent or= ''
-    doc = doc.replace(new RegExp('^' + indent, 'gm'), '')
-    return doc if options.herecomment
-    doc.replace(/^\n/, '')
-       .replace(MULTILINER, '\\n')
-       .replace(new RegExp(options.quote, 'g'), "\\#{options.quote}")
+        attempt = match[1]
+        indent = attempt if indent is null or 0 < attempt.length < indent.length
+    doc = doc.replace /\n#{ indent }/g, '\n' if indent
+    return doc if herecomment
+    doc = doc.replace(/^\n/, '').replace(/#{ options.quote }/g, '\\$&')
+    doc = @escapeLines doc, yes if options.quote is "'"
+    doc
 
   # A source of ambiguity in our grammar used to be parameter lists in function
   # definitions versus argument lists in function calls. Walk backwards, tagging
@@ -407,8 +406,7 @@ exports.Lexer = class Lexer
     if not i then false else str[0...i]
 
   # Expand variables and expressions inside double-quoted strings using
-  # [ECMA Harmony's interpolation syntax](http://wiki.ecmascript.org/doku.php?id=strawman:string_interpolation)
-  # for substitution of bare variables as well as arbitrary expressions.
+  # Ruby-like notation for substitution of arbitrary expressions.
   #
   #     "Hello #{name.capitalize()}."
   #
@@ -416,48 +414,51 @@ exports.Lexer = class Lexer
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
   interpolateString: (str, options) ->
-    options or= {}
-    if str.length < 3 or str.charAt(0) isnt '"'
-      @token 'STRING', str
-    else
-      lexer   = new Lexer
-      tokens  = []
-      quote   = str.charAt 0
-      [i, pi] = [1, 1]
-      end = str.length - 1
-      while i < end
-        if str.charAt(i) is '\\'
-          i += 1
-        else if expr = @balancedString str[i..], [['#{', '}']]
-          tokens.push ['STRING', quote + str[pi...i] + quote] if pi < i
-          inner = expr.slice 2, -1
-          if inner.length
-            inner = inner.replace new RegExp('\\\\' + quote, 'g'), quote if options.heredoc
-            nested = lexer.tokenize "(#{inner})", line: @line
-            (tok[0] = ')') for tok, idx in nested when tok[0] is 'CALL_END'
-            nested.pop()
-            tokens.push ['TOKENS', nested]
-          else
-            tokens.push ['STRING', quote + quote]
-          i += expr.length - 1
-          pi = i + 1
+    {heredoc, escapeQuotes} = options or {}
+    quote = str.charAt 0
+    return @token 'STRING', str if quote isnt '"' or str.length < 3
+    lexer  = new Lexer
+    tokens = []
+    i = pi = 1
+    end = str.length - 1
+    while i < end
+      if str.charAt(i) is '\\'
         i += 1
-      tokens.push ['STRING', quote + str[pi...i] + quote] if i > pi < str.length - 1
-      tokens.unshift ['STRING', '""'] unless tokens[0][0] is 'STRING'
-      interpolated = tokens.length > 1
-      @token '(', '(' if interpolated
-      for token, i in tokens
-        [tag, value] = token
-        if tag is 'TOKENS'
-          @tokens = @tokens.concat value
-        else if tag is 'STRING' and options.escapeQuotes
-          escaped = value.slice(1, -1).replace(/"/g, '\\"')
-          @token tag, "\"#{escaped}\""
+      else if expr = @balancedString str[i..], [['#{', '}']]
+        if pi < i
+          s = quote + @escapeLines(str[pi...i], heredoc) + quote
+          tokens.push ['STRING', s]
+        inner = expr.slice(2, -1).replace /^[ \t]*\n/, ''
+        if inner.length
+          inner = inner.replace RegExp('\\\\' + quote, 'g'), quote if heredoc
+          nested = lexer.tokenize "(#{inner})", line: @line
+          (tok[0] = ')') for tok, idx in nested when tok[0] is 'CALL_END'
+          nested.pop()
+          tokens.push ['TOKENS', nested]
         else
-          @token tag, value
-        @token '+', '+' if i < tokens.length - 1
-      @token ')', ')' if interpolated
-      tokens
+          tokens.push ['STRING', quote + quote]
+        i += expr.length - 1
+        pi = i + 1
+      i += 1
+    if i > pi < str.length - 1
+      s = str[pi...i].replace MULTILINER, if heredoc then '\\n' else ''
+      tokens.push ['STRING', quote + s + quote]
+    tokens.unshift ['STRING', '""'] unless tokens[0][0] is 'STRING'
+    interpolated = tokens.length > 1
+    @token '(', '(' if interpolated
+    {push} = tokens
+    for token, i in tokens
+      [tag, value] = token
+      if tag is 'TOKENS'
+        push.apply @tokens, value
+      else if tag is 'STRING' and escapeQuotes
+        escaped = value.slice(1, -1).replace(/"/g, '\\"')
+        @token tag, "\"#{escaped}\""
+      else
+        @token tag, value
+      @token '+', '+' if i < tokens.length - 1
+    @token ')', ')' if interpolated
+    tokens
 
   # Helpers
   # -------
@@ -482,18 +483,15 @@ exports.Lexer = class Lexer
   prev: (index) ->
     @tokens[@tokens.length - (index or 1)]
 
-  # Attempt to match a string against the current chunk, returning the indexed
-  # match if successful, and `false` otherwise.
-  match: (regex, index) ->
-    if m = @chunk.match regex then m[index or 0] else false
-
   # Are we in the midst of an unfinished expression?
   unfinished: ->
-    prev  = @prev 2
-    value = @value()
-    value and NO_NEWLINE.test(value) and
-      prev and prev[0] isnt '.' and not CODE.test(value) and
-      not ASSIGNED.test(@chunk)
+    (prev  = @prev 2 ) and prev[0] isnt '.' and
+    (value = @value()) and NO_NEWLINE.test(value) and not CODE.test(value) and
+    not ASSIGNED.test(@chunk)
+
+  # Converts newlines for string literals.
+  escapeLines: (str, heredoc) ->
+    str.replace MULTILINER, if heredoc then '\\n' else ''
 
 # Constants
 # ---------
@@ -535,11 +533,11 @@ JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
 
 # Token matching regexes.
 IDENTIFIER = /^[a-zA-Z_$][\w$]*/
-NUMBER     = /^(?:0x[\da-f]+)|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
+NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
 HEREDOC    = /^("""|''')([\s\S]*?)\n?[ \t]*\1/
 OPERATOR   = /^(?:-[-=>]?|\+[+=]?|[*&|\/%=<>^:!?]+)(?=([ \t]*))/
 WHITESPACE = /^[ \t]+/
-COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#])[^\n]*)+/
+COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
 CODE       = /^[-=]>/
 MULTI_DENT = /^(?:\n[ \t]*)+/
 SIMPLESTR  = /^'[^\\']*(?:\\.[^\\']*)*'/
@@ -554,9 +552,9 @@ REGEX_ESCAPE        = /\\[^#]/g
 # Token cleaning regexes.
 MULTILINER      = /\n/g
 NO_NEWLINE      = /^(?:[-+*&|\/%=<>!.\\][<>=&|]*|and|or|is(?:nt)?|n(?:ot|ew)|delete|typeof|instanceof)$/
-HEREDOC_INDENT  = /\n+([ \t]*)|^([ \t]+)/g
-ASSIGNED        = /^\s*((?:[a-zA-Z$_@]\w*|["'][^\n]+?["']|\d+)[ \t]*?[:=][^:=])/
-NEXT_CHARACTER  = /^\s*(\S)/
+HEREDOC_INDENT  = /\n+([ \t]*)/g
+ASSIGNED        = /^\s*@?[$A-Za-z_][$\w]*[ \t]*?[:=][^:=>]/
+NEXT_CHARACTER  = /^\s*(\S?)/
 
 # Compound assignment tokens.
 COMPOUND_ASSIGN = ['-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=', '<<=', '>>=', '>>>=', '&=', '^=', '|=']

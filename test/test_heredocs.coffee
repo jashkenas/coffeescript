@@ -88,3 +88,21 @@ a = """
 
     """
 ok a is "one\ntwo\n"
+
+
+equal ''' line 0
+  should not be relevant
+    to the indent level
+''', '
+ line 0\n
+should not be relevant\n
+  to the indent level
+'
+
+
+equal 'multiline nested interpolations work', """multiline #{
+  "nested #{(->
+    ok yes
+    "interpolations"
+  )()}"
+} work"""
