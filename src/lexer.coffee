@@ -340,7 +340,7 @@ exports.Lexer = class Lexer
     doc = doc.replace /\n#{ indent }/g, '\n' if indent
     return doc if herecomment
     doc = doc.replace(/^\n/, '').replace(/#{ options.quote }/g, '\\$&')
-    doc = @oldline doc, on if options.quote is "'"
+    doc = @escapeLines doc, yes if options.quote is "'"
     doc
 
   # A source of ambiguity in our grammar used to be parameter lists in function
@@ -406,8 +406,7 @@ exports.Lexer = class Lexer
     if not i then false else str[0...i]
 
   # Expand variables and expressions inside double-quoted strings using
-  # Ruby-like notation
-  # for substitution of bare variables as well as arbitrary expressions.
+  # Ruby-like notation for substitution of arbitrary expressions.
   #
   #     "Hello #{name.capitalize()}."
   #
@@ -427,7 +426,7 @@ exports.Lexer = class Lexer
         i += 1
       else if expr = @balancedString str[i..], [['#{', '}']]
         if pi < i
-          s = quote + @oldline(str[pi...i], heredoc) + quote
+          s = quote + @escapeLines(str[pi...i], heredoc) + quote
           tokens.push ['STRING', s]
         inner = expr.slice(2, -1).replace /^[ \t]*\n/, ''
         if inner.length
@@ -490,8 +489,8 @@ exports.Lexer = class Lexer
     (value = @value()) and NO_NEWLINE.test(value) and not CODE.test(value) and
     not ASSIGNED.test(@chunk)
 
-  # Converts newlines for string literals
-  oldline: (str, heredoc) ->
+  # Converts newlines for string literals.
+  escapeLines: (str, heredoc) ->
     str.replace MULTILINER, if heredoc then '\\n' else ''
 
 # Constants
