@@ -2,7 +2,8 @@
 # the **Lexer**, **Rewriter**, and the **Nodes**. Merge objects, flatten
 # arrays, count characters, that sort of thing.
 
-# Cross-engine indexOf, so that JScript can join the party.
+# Cross-engine `indexOf`, so that JScript can join the party. Use SpiderMonkey's
+# functional-style `indexOf`, if it's available.
 indexOf = exports.indexOf = Array.indexOf or
   if Array::indexOf
     (array, item, from) -> array.indexOf item, from
@@ -14,7 +15,8 @@ indexOf = exports.indexOf = Array.indexOf or
       -1
 
 # Does a list include a value?
-exports.include = (list, value) -> 0 <= indexOf list, value
+exports.include = (list, value) ->
+  indexOf(list, value) >= 0
 
 # Peek at the beginning of a given string to see if it matches a sequence.
 exports.starts = (string, literal, start) ->
@@ -22,11 +24,12 @@ exports.starts = (string, literal, start) ->
 
 # Peek at the end of a given string to see if it matches a sequence.
 exports.ends = (string, literal, back) ->
-  ll = literal.length
-  literal is string.substr string.length - ll - (back or 0), ll
+  len = literal.length
+  literal is string.substr string.length - len - (back or 0), len
 
 # Trim out all falsy values from an array.
-exports.compact = (array) -> item for item in array when item
+exports.compact = (array) ->
+  item for item in array when item
 
 # Count the number of occurences of a character in a string.
 exports.count = (string, letter) ->
@@ -41,14 +44,16 @@ exports.merge = (options, overrides) ->
   extend (extend {}, options), overrides
 
 # Extend a source object with the properties of another object (shallow copy).
-# We use this to simulate Node's deprecated `process.mixin`
+# We use this to simulate Node's deprecated `process.mixin`.
 extend = exports.extend = (object, properties) ->
-  (object[key] = val) for all key, val of properties
+  for all key, val of properties
+    object[key] = val
   object
 
-# Return a flattened version of an array (nonrecursive).
+# Return a flattened version of an array (shallow and nonrecursive).
 # Handy for getting a list of `children` from the nodes.
-exports.flatten = (array) -> array.concat.apply [], array
+exports.flatten = (array) ->
+  array.concat.apply [], array
 
 # Delete a key from an object, returning the value. Useful when a node is
 # looking for a particular method in an options hash.
