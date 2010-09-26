@@ -101,7 +101,7 @@ compileScript = (file, input, base) ->
     t = task = {file, input, options}
     CoffeeScript.emit 'compile', task
     if      o.tokens      then printTokens CoffeeScript.tokens t.input
-    else if o.nodes       then puts CoffeeScript.nodes(t.input).toString()
+    else if o.nodes       then puts CoffeeScript.nodes(t.input).toString().trim()
     else if o.run         then CoffeeScript.run t.input, t.options
     else
       t.output = CoffeeScript.compile t.input, t.options

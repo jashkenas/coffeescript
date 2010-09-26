@@ -252,8 +252,7 @@ exports.LiteralNode = class LiteralNode extends BaseNode
     end = if @isStatement(o) then ';' else ''
     idt + @value + end
 
-  toString: (idt) ->
-    '"' + @value + '"'
+  toString: -> ' "' + @value + '"'
 
 #### ReturnNode
 
@@ -957,11 +956,6 @@ exports.CodeNode = class CodeNode extends BaseNode
   # unless crossScope is true
   traverseChildren: (crossScope, func) -> super(crossScope, func) if crossScope
 
-  toString: (idt) ->
-    idt or= ''
-    children = (child.toString(idt + TAB) for child in @collectChildren()).join('')
-    '\n' + idt + children
-
 #### ParamNode
 
 # A parameter in a function definition. Beyond a typical Javascript parameter,
@@ -979,8 +973,11 @@ exports.ParamNode = class ParamNode extends BaseNode
   compileNode: (o) ->
     @value.compile o
 
-  toString: (idt) ->
-    if @attach then (literal '@' + @name).toString idt else @value.toString idt
+  toString: ->
+    {name} = @
+    name = '@' + name if @attach
+    name += '...'     if @splat
+    literal(name).toString()
 
 #### SplatNode
 
