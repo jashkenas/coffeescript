@@ -239,3 +239,9 @@ b = identity identity identity
       a: 100
 
 ok b is 100
+
+
+# Inline JS
+ok '\\`' is `
+  "\\\`"
+`
