@@ -257,4 +257,6 @@ new get() args...
 ok new Date().constructor is Date
 
 #717: `new` works against bare function
-new -> ok @
+me = this
+new -> ok this isnt me
+new => ok this is   me

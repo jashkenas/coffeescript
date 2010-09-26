@@ -947,7 +947,7 @@ exports.CodeNode = class CodeNode extends BaseNode
     (o.scope.parameter(param)) for param in params
     code = if @body.expressions.length then "\n#{ @body.compileWithDeclarations(o) }\n" else ''
     func = "function(#{ params.join(', ') }) {#{code}#{ code and @tab }}"
-    return "#{utility('bind')}(#{func}, #{@context})" if @bound
+    return "(#{utility 'bind'}(#{func}, #{@context}))" if @bound
     if top then "(#{func})" else func
 
   topSensitive: ->

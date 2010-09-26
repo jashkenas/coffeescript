@@ -88,6 +88,7 @@ grammar =
   # them somewhat circular.
   Expression: [
     o "Value"
+    o "Invocation"
     o "Code"
     o "Operation"
     o "Assign"
