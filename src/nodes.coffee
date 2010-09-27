@@ -8,6 +8,9 @@
 # Import the helpers we plan to use.
 {compact, flatten, merge, del, include, indexOf, starts, ends} = require './helpers'
 
+YES = -> yes
+NO  = -> no
+
 #### BaseNode
 
 # The **BaseNode** is the abstract base class for all nodes in the syntax tree.
@@ -59,8 +62,7 @@ exports.BaseNode = class BaseNode
   # by assigning it to a temporary variable.
   compileReference: (o, options) ->
     options or= {}
-    pair = if not (@containsType(CallNode) or
-                  (this instanceof ValueNode and (not (@base instanceof LiteralNode) or @hasProperties())))
+    pair = unless @isComplex()
       [this, this]
     else if this instanceof ValueNode and options.assignment
       this.cacheIndexes(o)
@@ -137,9 +139,10 @@ exports.BaseNode = class BaseNode
   children: []
 
   unwrap          : -> this
-  isStatement     : -> no
-  isPureStatement : -> no
-  topSensitive    : -> no
+  isStatement     : NO
+  isPureStatement : NO
+  isComplex       : YES
+  topSensitive    : NO
 
 #### Expressions
 
@@ -150,7 +153,7 @@ exports.Expressions = class Expressions extends BaseNode
 
   class:        'Expressions'
   children:     ['expressions']
-  isStatement:  -> yes
+  isStatement:  YES
 
   constructor: (nodes) ->
     super()
@@ -247,6 +250,8 @@ exports.LiteralNode = class LiteralNode extends BaseNode
     @value is 'break' or @value is 'continue' or @value is 'debugger'
   isPureStatement: LiteralNode::isStatement
 
+  isComplex: NO
+
   compileNode: (o) ->
     idt = if @isStatement(o) then @idt() else ''
     end = if @isStatement(o) then ';' else ''
@@ -261,8 +266,8 @@ exports.LiteralNode = class LiteralNode extends BaseNode
 exports.ReturnNode = class ReturnNode extends BaseNode
 
   class:            'ReturnNode'
-  isStatement:      -> yes
-  isPureStatement:  -> yes
+  isStatement:      YES
+  isPureStatement:  YES
   children:         ['expression']
 
   constructor: (@expression) ->
@@ -313,6 +318,9 @@ exports.ValueNode = class ValueNode extends BaseNode
   isSplice: ->
     @hasProperties() and @properties[@properties.length - 1] instanceof SliceNode
 
+  isComplex: ->
+    @base.isComplex() or @properties.length
+
   makeReturn: ->
     if @hasProperties() then super() else @base.makeReturn()
 
@@ -333,10 +341,10 @@ exports.ValueNode = class ValueNode extends BaseNode
   # the value of the indexes.
   cacheIndexes: (o) ->
     copy = new ValueNode @base, @properties[0..]
-    if @base instanceof CallNode
+    if @base.isComplex()
       [@base, copy.base] = @base.compileReference o
     for prop, i in copy.properties
-      if prop instanceof IndexNode and prop.contains((n) -> n instanceof CallNode)
+      if prop instanceof IndexNode and prop.index.isComplex()
         [index, indexVar] = prop.index.compileReference o
         this.properties[i] = new IndexNode index
         copy.properties[i] = new IndexNode indexVar
@@ -353,11 +361,12 @@ exports.ValueNode = class ValueNode extends BaseNode
   compileNode: (o) ->
     only        = del o, 'onlyFirst'
     op          = @tags.operation
-    props       = if only then @properties[0...@properties.length - 1] else @properties
+    props       = if only then @properties[0...-1] else @properties
     o.chainRoot or= this
-    for prop in props
-      hasSoak = yes if prop.soakNode
-    if hasSoak and @containsType CallNode
+    for prop in props when prop.soakNode
+      hasSoak = yes
+      break
+    if hasSoak and @isComplex()
       [me, copy] = @cacheIndexes o
     @base.parenthetical = yes if @parenthetical and not props.length
     baseline    = @base.compile o
@@ -367,20 +376,20 @@ exports.ValueNode = class ValueNode extends BaseNode
     for prop, i in props
       @source = baseline
       if prop.soakNode
-        if @base.containsType(CallNode) and i is 0
+        if i is 0 and @base.isComplex()
           temp = o.scope.freeVariable 'ref'
-          complete = "(#{ baseline = temp } = (#{complete}))"
-        complete = if i is 0
-          "(typeof #{complete} === \"undefined\" || #{baseline} === null) ? undefined : "
+          complete = "(#{ baseline = temp } = (#{prevcomp = complete}))"
+        complete = if i is 0 and not o.scope.check complete
+          "(typeof #{complete} === \"undefined\" || #{baseline} === null)"
         else
-          "#{complete} == null ? undefined : "
-        complete += (baseline += prop.compile(o))
+          "#{complete} == null"
+        complete += ' ? undefined : ' + baseline += prop.compile o
       else
         part = prop.compile(o)
-        if hasSoak and prop.containsType CallNode
-          baseline += copy.properties[i].compile o
+        baseline += if hasSoak and prop.isComplex()
+          copy.properties[i].compile o
         else
-          baseline += part
+          part
         complete += part
         @last = part
 
@@ -393,7 +402,7 @@ exports.ValueNode = class ValueNode extends BaseNode
 exports.CommentNode = class CommentNode extends BaseNode
 
   class: 'CommentNode'
-  isStatement: -> yes
+  isStatement: YES
 
   constructor: (@comment) ->
     super()
@@ -402,7 +411,7 @@ exports.CommentNode = class CommentNode extends BaseNode
     this
 
   compileNode: (o) ->
-    @tab + '/*' + @comment.replace(/\r?\n/g, '\n' + @tab) + '*/'
+    @tab + '/*' + @comment.replace(/\n/g, '\n' + @tab) + '*/'
 
 #### CallNode
 
@@ -481,7 +490,7 @@ exports.CallNode = class CallNode extends BaseNode
   compileSplat: (o) ->
     meth = @meth or @superReference(o)
     obj  = @variable and @variable.source or 'this'
-    if obj.match(/\(/)
+    unless IDENTIFIER.test(obj) or NUMBER.test(obj)
       temp = o.scope.freeVariable 'ref'
       obj  = temp
       meth = "(#{temp} = #{ @variable.source })#{ @variable.last }"
@@ -501,7 +510,7 @@ exports.CallNode = class CallNode extends BaseNode
       #{@tab}}).#{ if mentionsArgs then 'apply(this, arguments)' else 'call(this)'}#{@last}
       """
     else
-      "#{@first}#{@prefix()}#{meth}.apply(#{obj}, #{ @compileSplatArguments(o) })#{@last}"
+      "#{@first}#{meth}.apply(#{obj}, #{ @compileSplatArguments(o) })#{@last}"
 
 #### ExtendsNode
 
@@ -541,6 +550,8 @@ exports.AccessorNode = class AccessorNode extends BaseNode
     namePart = if name.match(IS_STRING) then "[#{name}]" else ".#{name}"
     @prototype + namePart
 
+  isComplex: NO
+
 #### IndexNode
 
 # A `[ ... ]` indexed accessor into an array or object.
@@ -557,6 +568,8 @@ exports.IndexNode = class IndexNode extends BaseNode
     idx = @index.compile o
     prefix = if @proto then '.prototype' else ''
     "#{prefix}[#{idx}]"
+
+  isComplex: -> @index.isComplex()
 
 #### RangeNode
 
@@ -601,7 +614,7 @@ exports.RangeNode = class RangeNode extends BaseNode
 
   # Compile a simple range comprehension, with integers.
   compileSimple: (o) ->
-    [from, to] = [parseInt(@fromNum, 10), parseInt(@toNum, 10)]
+    [from, to] = [+@fromNum, +@toNum]
     idx        = del o, 'index'
     step       = del o, 'step'
     step       and= "#{idx} += #{step.compile(o)}"
@@ -614,7 +627,7 @@ exports.RangeNode = class RangeNode extends BaseNode
   compileArray: (o) ->
     idt    = @idt 1
     vars   = @compileVariables merge o, indent: idt
-    if @fromNum and @toNum and Math.abs(+@fromNum - +@toNum) <= 20
+    if @fromNum and @toNum and Math.abs(@fromNum - @toNum) <= 20
       range = [+@fromNum..+@toNum]
       range.pop() if @exclusive
       return "[#{ range.join(', ') }]"
@@ -658,7 +671,7 @@ exports.ObjectNode = class ObjectNode extends BaseNode
   class:     'ObjectNode'
   children: ['properties']
 
-  topSensitive: -> true
+  topSensitive: YES
 
   constructor: (props) ->
     super()
@@ -720,7 +733,7 @@ exports.ClassNode = class ClassNode extends BaseNode
 
   class:        'ClassNode'
   children:     ['variable', 'parent', 'properties']
-  isStatement:  -> yes
+  isStatement:  YES
 
   # Initialize a **ClassNode** with its name, an optional superclass, and a
   # list of prototype property assignments.
@@ -794,7 +807,7 @@ exports.AssignNode = class AssignNode extends BaseNode
 
   # Matchers for detecting prototype assignments.
   PROTO_ASSIGN: /^(\S+)\.prototype/
-  LEADING_DOT:  /^\.(prototype\.)?/
+  LEADING_DOT:  /^\.(?:prototype\.)?/
 
   class:     'AssignNode'
   children: ['variable', 'value']
@@ -802,8 +815,7 @@ exports.AssignNode = class AssignNode extends BaseNode
   constructor: (@variable, @value, @context) ->
     super()
 
-  topSensitive: ->
-    true
+  topSensitive: YES
 
   isValue: ->
     @variable instanceof ValueNode
@@ -887,7 +899,7 @@ exports.AssignNode = class AssignNode extends BaseNode
     from  = if range.from then range.from.compile(o) else '0'
     to    = if range.to then range.to.compile(o) + ' - ' + from + plus else "#{name}.length"
     val   = @value.compile(o)
-    "#{name}.splice.apply(#{name}, [#{from}, #{to}].concat(#{val}))"
+    "[].splice.apply(#{name}, [#{from}, #{to}].concat(#{val}))"
 
 #### CodeNode
 
@@ -1032,10 +1044,10 @@ exports.SplatNode = class SplatNode extends BaseNode
       prev = args[last = args.length - 1]
       if arg not instanceof SplatNode
         if prev and starts(prev, '[') and ends(prev, ']')
-          args[last] = "#{prev.substr(0, prev.length - 1)}, #{code}]"
+          args[last] = "#{prev.slice 0, -1}, #{code}]"
           continue
         else if prev and starts(prev, '.concat([') and ends(prev, '])')
-          args[last] = "#{prev.substr(0, prev.length - 2)}, #{code}])"
+          args[last] = "#{prev.slice 0, -2}, #{code}])"
           continue
         else
           code = "[#{code}]"
@@ -1051,7 +1063,7 @@ exports.WhileNode = class WhileNode extends BaseNode
 
   class:         'WhileNode'
   children:     ['condition', 'guard', 'body']
-  isStatement: -> yes
+  isStatement: YES
 
   constructor: (condition, opts) ->
     super()
@@ -1139,6 +1151,7 @@ exports.OpNode = class OpNode extends BaseNode
     (@operator in ['===', '!==']) and
       not (@first instanceof OpNode) and not (@second instanceof OpNode)
 
+  isComplex: -> @operator isnt '!' or @first.isComplex()
 
   isMutator: ->
     ends(@operator, '=') and not (@operator in ['===', '!=='])
@@ -1168,7 +1181,7 @@ exports.OpNode = class OpNode extends BaseNode
   #     true
   compileChain: (o) ->
     shared = @first.unwrap().second
-    [@first.second, shared] = shared.compileReference(o) if shared.containsType CallNode
+    [@first.second, shared] = shared.compileReference o
     [first, second, shared] = [@first.compile(o), @second.compile(o), shared.compile(o)]
     "(#{first}) && (#{shared} #{@operator} #{second})"
 
@@ -1230,7 +1243,7 @@ exports.TryNode = class TryNode extends BaseNode
 
   class:        'TryNode'
   children:     ['attempt', 'recovery', 'ensure']
-  isStatement:  -> yes
+  isStatement: YES
 
   constructor: (@attempt, @error, @recovery, @ensure) ->
     super()
@@ -1258,7 +1271,7 @@ exports.ThrowNode = class ThrowNode extends BaseNode
 
   class:         'ThrowNode'
   children:     ['expression']
-  isStatement: -> yes
+  isStatement: YES
 
   constructor: (@expression) ->
     super()
@@ -1311,12 +1324,13 @@ exports.ParentheticalNode = class ParentheticalNode extends BaseNode
 
   isStatement: (o) ->
     @expression.isStatement(o)
+  isComplex: ->
+    @expression.isComplex()
+
+  topSensitive: YES
 
   makeReturn: ->
     @expression.makeReturn()
-
-  topSensitive: ->
-    yes
 
   compileNode: (o) ->
     top  = del o, 'top'
@@ -1340,7 +1354,7 @@ exports.ForNode = class ForNode extends BaseNode
 
   class:         'ForNode'
   children:     ['body', 'source', 'guard']
-  isStatement: -> yes
+  isStatement: YES
 
   constructor: (@body, source, @name, @index) ->
     super()
@@ -1355,8 +1369,7 @@ exports.ForNode = class ForNode extends BaseNode
     throw new Error('index cannot be a pattern matching expression') if @index instanceof ValueNode
     @returns = false
 
-  topSensitive: ->
-    true
+  topSensitive: YES
 
   makeReturn: ->
     @returns = true
@@ -1430,7 +1443,7 @@ exports.SwitchNode = class SwitchNode extends BaseNode
   class:     'SwitchNode'
   children: ['subject', 'cases', 'otherwise']
 
-  isStatement: -> yes
+  isStatement: YES
 
   constructor: (@subject, @cases, @otherwise) ->
     super()
@@ -1471,7 +1484,7 @@ exports.IfNode = class IfNode extends BaseNode
   class:     'IfNode'
   children: ['condition', 'body', 'elseBody', 'assigner']
 
-  topSensitive: -> true
+  topSensitive: YES
 
   constructor: (@condition, @body, @tags) ->
     @tags or= {}
@@ -1629,10 +1642,9 @@ TAB = '  '
 # with Git.
 TRAILING_WHITESPACE = /[ \t]+$/gm
 
-# Keep these identifier regexes in sync with the Lexer.
-IDENTIFIER = /^[a-zA-Z\$_](\w|\$)*$/
-NUMBER     = /^(((\b0(x|X)[0-9a-fA-F]+)|((\b[0-9]+(\.[0-9]+)?|\.[0-9]+)(e[+\-]?[0-9]+)?)))\b$/i
-SIMPLENUM  = /^-?\d+$/
+IDENTIFIER = /^[$A-Za-zA-Z_][$\w]*$/
+NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?$/i
+SIMPLENUM = /^-?\d+$/
 
 # Is a literal value a string?
 IS_STRING = /^['"]/
