@@ -71,7 +71,7 @@
       </div>
       <div class="contents repl_wrapper">
         <div class="code">
-          <div id="repl_source_wrap"><textarea id="repl_source">alert "Hello CoffeeScript!"</textarea></div>
+          <div id="repl_source_wrap"><textarea id="repl_source" rows="100">alert "Hello CoffeeScript!"</textarea></div>
           <pre id="repl_results"></pre>
           <button class="full_screen">go full screen</button>
           <button class="minimize">minimize</button>
@@ -713,9 +713,9 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <p>
       <span id="switch" class="bookmark"></span>
       <b class="header">Switch/When/Else</b>
-      <b>Switch</b> statements in JavaScript are a bit awkward. You need to 
-      remember to <b>break</b> at the end of every <b>case</b> statement to 
-      avoid accidentally falling through to the default case. 
+      <b>Switch</b> statements in JavaScript are a bit awkward. You need to
+      remember to <b>break</b> at the end of every <b>case</b> statement to
+      avoid accidentally falling through to the default case.
       CoffeeScript prevents accidental fall-through, and can convert the <tt>switch</tt>
       into a returnable, assignable expression. The format is: <tt>switch</tt> condition,
       <tt>when</tt> clauses, <tt>else</tt> the default case.
@@ -808,7 +808,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
     <%= code_for('cake_tasks') %>
     <p>
       If you need to invoke one task before another &mdash; for example, running
-      <tt>build</tt> before <tt>test</tt>, you can use the <tt>invoke</tt> function: 
+      <tt>build</tt> before <tt>test</tt>, you can use the <tt>invoke</tt> function:
       <tt>invoke 'build'</tt>
     </p>
 
@@ -922,12 +922,12 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       </li>
       <li>
         <b>chrislloyd</b>'s <a href="http://github.com/chrislloyd/roast">Roast</a>
-        &mdash; a CoffeeScript compiler plug-in that allows you to include external 
+        &mdash; a CoffeeScript compiler plug-in that allows you to include external
         source files.
       </li>
       <li>
         <b>mauricemach</b>'s <a href="http://github.com/mauricemach/coffeekup">CoffeeKup</a>
-        &mdash; Markup as CoffeeScript. After _why's 
+        &mdash; Markup as CoffeeScript. After _why's
         <a href="http://markaby.github.com/">Markaby</a>.
       </li>
       <li>
@@ -956,7 +956,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.9.4</b>
       CoffeeScript now uses appropriately-named temporary variables, and recycles
@@ -965,11 +965,11 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       single <tt>CoffeeScript</tt> object to global scope.
       Fixes for implicit object and block comment edge cases.
     </p>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.9.3</b>
       CoffeeScript <tt>switch</tt> statements now compile into JS <tt>switch</tt>
-      statements &mdash; they previously compiled into <tt>if/else</tt> chains 
+      statements &mdash; they previously compiled into <tt>if/else</tt> chains
       for JavaScript 1.3 compatibility.
       Soaking a function invocation is now supported. Users of the RubyMine
       editor should now be able to use <tt>--watch</tt> mode.

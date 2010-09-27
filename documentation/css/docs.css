@@ -4,9 +4,10 @@ body {
   color: #191933;
   font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, sans-serif !important;
 }
-div.container {
+.container {
   width: 950px;
-  margin: 100px 0 50px 50px;
+  margin: 0;
+  padding: 80px 0px 50px 50px;
 }
 p, li {
   width: 625px;
@@ -75,6 +76,7 @@ div.code {
   padding: 7px 0 10px 0;
   -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px;
   -webkit-box-shadow: 0px 0px 7px #cacaca;
+  zoom: 1;
 }
   div.code button {
     position: absolute;
@@ -107,11 +109,10 @@ div.code {
   height: 50px;
   min-width: 490px;
   left: 40px; right: 40px; top: 25px;
-  background: #ddd;
   padding-left: 235px;
+  background: #eee;
   background: -webkit-gradient(linear, left top, left bottom, from(#f5f5f5), to(#d0d0d0));
   background: -moz-linear-gradient(top, #f5f5f5, #d0d0d0);
-  filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#F5F5F5', EndColorStr='#D0D0D0');
   border: 1px solid #aaa;
   -webkit-border-radius: 20px; -moz-border-radius: 20px; border-radius: 20px;
   -webkit-box-shadow: 0 0 7px #aaa; -moz-box-shadow: 0 0 7px #aaa;
@@ -126,7 +127,7 @@ div.code {
   #error {
     position: absolute;
     -webkit-border-radius: 6px; -moz-border-radius: 6px; border-radius: 6px;
-    right: 15px; top: 15px; left: 722px;
+    right: 15px; top: 15px; left: 730px;
     height: 15px;
     padding: 2px 5px;
     background: #fdcdcc;
@@ -157,10 +158,9 @@ div.code {
     }
     .navigation:hover,
     .navigation.active {
-      background: #d0d0d0;
+      background: #eee;
       background: -webkit-gradient(linear, left top, left bottom, from(#f0f0f0), to(#c0c0c0));
       background: -moz-linear-gradient(top, #f0f0f0, #c0c0c0);
-      filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#F0F0F0', EndColorStr='#C0C0C0');
     }
     .navigation .button {
       font-weight: bold;
@@ -171,6 +171,8 @@ div.code {
       background: #fff;
       top: 51px; left: 0;
       padding: 5px 0;
+      margin-left: -1px;
+      border: 1px solid #aaa; border-top: 0;
       -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px;
       -webkit-border-top-left-radius: 0; -moz-border-radius-topleft: 0;
       -webkit-border-top-right-radius: 0; -moz-border-radius-topright: 0;
@@ -187,7 +189,7 @@ div.code {
           body.full_screen .navigation .contents.repl_wrapper {
             position: fixed;
             width: auto; height: auto;
-            left: 60px; top: 75px; right: 60px; bottom: 30px;
+            left: 60px; top: 77px; right: 60px; bottom: 30px;
           }
           .navigation .contents.repl_wrapper .code {
             -webkit-box-shadow: none; -moz-box-shadow: none;
@@ -202,13 +204,19 @@ div.code {
           .navigation .code button {
             bottom: 10px;
             text-transform: none;
+            line-height: 14px;
+            left: auto; right: auto;
           }
-          .navigation .full_screen, .navigation .minimize {
-            right: auto;
+          .navigation .code .run {
+            width: 40px;
+            right: 10px;
+          }
+          .navigation .code .full_screen, .navigation .code .minimize {
             left: 10px;
             display: none;
+            width: 90px;
           }
-            body.minimized .full_screen, body.full_screen .minimize {
+            body.minimized .code .full_screen, body.full_screen .code .minimize {
               display: inline;
             }
       .navigation .contents a {
@@ -246,7 +254,7 @@ div.code {
   }
     #repl_source {
       width: 96%;
-      height: 100%;
+      height: 250px;
       border: 0;
       resize: none;
     }
@@ -265,6 +273,9 @@ div.code {
       margin-bottom: 0;
       top: 10px; left: 10px; right: 10px; bottom: 40px;
     }
+      body.full_screen #repl_source {
+        height: 100%;
+      }
       body.full_screen #repl_source_wrap {
         right: 50%;
       }

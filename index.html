@@ -58,7 +58,7 @@
       </div>
       <div class="contents repl_wrapper">
         <div class="code">
-          <div id="repl_source_wrap"><textarea id="repl_source">alert "Hello CoffeeScript!"</textarea></div>
+          <div id="repl_source_wrap"><textarea id="repl_source" rows="100">alert "Hello CoffeeScript!"</textarea></div>
           <pre id="repl_results"></pre>
           <button class="full_screen">go full screen</button>
           <button class="minimize">minimize</button>
@@ -785,8 +785,7 @@ num <span class="Keyword">=</span> <span class="Number">6</span>;
 lyrics <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   _result <span class="Keyword">=</span> [];
   <span class="Keyword">while</span> (num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>) {
-    _result.<span class="LibraryFunction">push</span>(num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed.\</span>
-<span class="String">    One fell out and bumped his head.<span class="String">&quot;</span></span>);
+    _result.<span class="LibraryFunction">push</span>(num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed.    One fell out and bumped his head.<span class="String">&quot;</span></span>);
   }
   <span class="Keyword">return</span> _result;
 })();
@@ -803,8 +802,7 @@ num = 6;
 lyrics = (function() {
   _result = [];
   while (num -= 1) {
-    _result.push(num + " little monkeys, jumping on the bed.\
-    One fell out and bumped his head.");
+    _result.push(num + " little monkeys, jumping on the bed.    One fell out and bumped his head.");
   }
   return _result;
 })();;alert(lyrics.join("\n"));'>run: lyrics.join("\n")</button><br class='clear' /></div>
@@ -1016,24 +1014,12 @@ numbers.splice.apply(numbers, [3, 6 - 3 + 1].concat([-3, -4, -5, -6]));;alert(nu
 eldest <span class="Keyword">=</span> <span class="Keyword">if</span> <span class="Number">24</span> <span class="Keyword">&gt;</span> <span class="Number">21</span> <span class="Keyword">then</span> <span class="String"><span class="String">&quot;</span>Liz<span class="String">&quot;</span></span> <span class="Keyword">else</span> <span class="String"><span class="String">&quot;</span>Ike<span class="String">&quot;</span></span>
 </pre><pre class="idle"><span class="Storage">var</span> eldest, grade;
 <span class="FunctionName">grade</span> = <span class="Storage">function</span>(<span class="FunctionArgument">student</span>) {
-  <span class="Keyword">if</span> (student.excellentWork) {
-    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>A+<span class="String">&quot;</span></span>;
-  } <span class="Keyword">else</span> <span class="Keyword">if</span> (student.okayStuff) {
-    <span class="Keyword">return</span> student.triedHard ? <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span> : <span class="String"><span class="String">&quot;</span>B-<span class="String">&quot;</span></span>;
-  } <span class="Keyword">else</span> {
-    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>C<span class="String">&quot;</span></span>;
-  }
+  <span class="Keyword">return</span> student.excellentWork ? <span class="String"><span class="String">&quot;</span>A+<span class="String">&quot;</span></span> : (student.okayStuff ? (student.triedHard ? <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span> : <span class="String"><span class="String">&quot;</span>B-<span class="String">&quot;</span></span>) : <span class="String"><span class="String">&quot;</span>C<span class="String">&quot;</span></span>);
 };
 eldest <span class="Keyword">=</span> <span class="Number">24</span> <span class="Keyword">&gt;</span> <span class="Number">21</span> ? <span class="String"><span class="String">&quot;</span>Liz<span class="String">&quot;</span></span> : <span class="String"><span class="String">&quot;</span>Ike<span class="String">&quot;</span></span>;
 </pre><button onclick='javascript: var eldest, grade;
 grade = function(student) {
-  if (student.excellentWork) {
-    return "A+";
-  } else if (student.okayStuff) {
-    return student.triedHard ? "B" : "B-";
-  } else {
-    return "C";
-  }
+  return student.excellentWork ? "A+" : (student.okayStuff ? (student.triedHard ? "B" : "B-") : "C");
 };
 eldest = 24 > 21 ? "Liz" : "Ike";;alert(eldest);'>run: eldest</button><br class='clear' /></div>
     <p>
@@ -1059,24 +1045,22 @@ six = (one = 1) + (two = 2) + (three = 3);;alert(six);'>run: six</button><br cla
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> The first ten global properties.</span>
 
 globals <span class="Keyword">=</span> (name <span class="Keyword">for</span> name <span class="Keyword">of</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
-</pre><pre class="idle"><span class="Storage">var</span> _i, _ref, _result, globals, name;
+</pre><pre class="idle"><span class="Storage">var</span> _ref, _result, globals, name;
 <span class="Storage">var</span> __hasProp <span class="Keyword">=</span> <span class="LibraryClassType">Object</span>.<span class="LibraryConstant">prototype</span>.hasOwnProperty;
 globals <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   _result <span class="Keyword">=</span> []; _ref <span class="Keyword">=</span> <span class="LibraryClassType">window</span>;
   <span class="Keyword">for</span> (name <span class="Keyword">in</span> _ref) {
     <span class="Keyword">if</span> (<span class="Keyword">!</span>__hasProp.<span class="LibraryFunction">call</span>(_ref, name)) <span class="Keyword">continue</span>;
-    _i <span class="Keyword">=</span> _ref[name];
     _result.<span class="LibraryFunction">push</span>(name);
   }
   <span class="Keyword">return</span> _result;
 })().<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
-</pre><button onclick='javascript: var _i, _ref, _result, globals, name;
+</pre><button onclick='javascript: var _ref, _result, globals, name;
 var __hasProp = Object.prototype.hasOwnProperty;
 globals = (function() {
   _result = []; _ref = window;
   for (name in _ref) {
     if (!__hasProp.call(_ref, name)) continue;
-    _i = _ref[name];
     _result.push(name);
   }
   return _result;
@@ -1488,9 +1472,9 @@ hi = function() {
     <p>
       <span id="switch" class="bookmark"></span>
       <b class="header">Switch/When/Else</b>
-      <b>Switch</b> statements in JavaScript are a bit awkward. You need to 
-      remember to <b>break</b> at the end of every <b>case</b> statement to 
-      avoid accidentally falling through to the default case. 
+      <b>Switch</b> statements in JavaScript are a bit awkward. You need to
+      remember to <b>break</b> at the end of every <b>case</b> statement to
+      avoid accidentally falling through to the default case.
       CoffeeScript prevents accidental fall-through, and can convert the <tt>switch</tt>
       into a returnable, assignable expression. The format is: <tt>switch</tt> condition,
       <tt>when</tt> clauses, <tt>else</tt> the default case.
@@ -1625,19 +1609,9 @@ dates = (new RegExp("\\d+" + (sep) + "\\d+" + (sep) + "\\d+", "g"));;alert(sente
 
 
 </pre><pre class="idle"><span class="Storage">var</span> mobyDick;
-mobyDick <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago --\</span>
-<span class="String"> never mind how long precisely -- having little\</span>
-<span class="String"> or no money in my purse, and nothing particular\</span>
-<span class="String"> to interest me on shore, I thought I would sail\</span>
-<span class="String"> about a little and see the watery part of the\</span>
-<span class="String"> world...<span class="String">&quot;</span></span>;
+mobyDick <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...<span class="String">&quot;</span></span>;
 </pre><button onclick='javascript: var mobyDick;
-mobyDick = "Call me Ishmael. Some years ago --\
- never mind how long precisely -- having little\
- or no money in my purse, and nothing particular\
- to interest me on shore, I thought I would sail\
- about a little and see the watery part of the\
- world...";;alert(mobyDick);'>run: mobyDick</button><br class='clear' /></div>
+mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...";;alert(mobyDick);'>run: mobyDick</button><br class='clear' /></div>
     <p>
       Heredocs can be used to hold formatted or indentation-sensitive text
       (or, if you just don't feel like escaping quotes and apostrophes). The
@@ -1716,7 +1690,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
 </pre><br class='clear' /></div>
     <p>
       If you need to invoke one task before another &mdash; for example, running
-      <tt>build</tt> before <tt>test</tt>, you can use the <tt>invoke</tt> function: 
+      <tt>build</tt> before <tt>test</tt>, you can use the <tt>invoke</tt> function:
       <tt>invoke 'build'</tt>
     </p>
 
@@ -1830,12 +1804,12 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       </li>
       <li>
         <b>chrislloyd</b>'s <a href="http://github.com/chrislloyd/roast">Roast</a>
-        &mdash; a CoffeeScript compiler plug-in that allows you to include external 
+        &mdash; a CoffeeScript compiler plug-in that allows you to include external
         source files.
       </li>
       <li>
         <b>mauricemach</b>'s <a href="http://github.com/mauricemach/coffeekup">CoffeeKup</a>
-        &mdash; Markup as CoffeeScript. After _why's 
+        &mdash; Markup as CoffeeScript. After _why's
         <a href="http://markaby.github.com/">Markaby</a>.
       </li>
       <li>
@@ -1864,7 +1838,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.9.4</b>
       CoffeeScript now uses appropriately-named temporary variables, and recycles
@@ -1873,11 +1847,11 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       single <tt>CoffeeScript</tt> object to global scope.
       Fixes for implicit object and block comment edge cases.
     </p>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">0.9.3</b>
       CoffeeScript <tt>switch</tt> statements now compile into JS <tt>switch</tt>
-      statements &mdash; they previously compiled into <tt>if/else</tt> chains 
+      statements &mdash; they previously compiled into <tt>if/else</tt> chains
       for JavaScript 1.3 compatibility.
       Soaking a function invocation is now supported. Users of the RubyMine
       editor should now be able to use <tt>--watch</tt> mode.

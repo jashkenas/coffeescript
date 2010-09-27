@@ -1,11 +1,5 @@
 var eldest, grade;
 grade = function(student) {
-  if (student.excellentWork) {
-    return "A+";
-  } else if (student.okayStuff) {
-    return student.triedHard ? "B" : "B-";
-  } else {
-    return "C";
-  }
+  return student.excellentWork ? "A+" : (student.okayStuff ? (student.triedHard ? "B" : "B-") : "C");
 };
 eldest = 24 > 21 ? "Liz" : "Ike";
