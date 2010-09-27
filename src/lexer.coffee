@@ -515,7 +515,7 @@ COFFEE_ALIASES =  ['and', 'or', 'is', 'isnt', 'not']
 COFFEE_KEYWORDS = COFFEE_ALIASES.concat [
   'then', 'unless', 'until', 'loop'
   'yes', 'no', 'on', 'off'
-  'of', 'by', 'where', 'when'
+  'of', 'by', 'when'
 ]
 
 # The list of keywords that are reserved by JavaScript, but not used, or are
