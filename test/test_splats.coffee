@@ -56,10 +56,12 @@ obj = {
   getNames: ->
     args = ['jane', 'ted']
     @accessor(args...)
+  index: 0
+  0: {method: -> this is obj[0]}
 }
 
 ok obj.getNames() is 'moe jane ted'
-
+ok obj[obj.index++].method([]...), 'should cache base value'
 
 crowd = [
   contenders...

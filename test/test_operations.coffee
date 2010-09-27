@@ -9,13 +9,8 @@ ok 10 < 20 > 10
 
 ok 50 > 10 > 5 is parseInt('5', 10)
 
-
-# Make sure that each argument is only evaluated once, even if used
-# more than once.
 i = 0
-func = -> i++
-
-ok 1 > func() < 1
+ok 1 > i++ < 1, 'chained operations should evaluate each value only once'
 
 
 # `==` and `is` should be interchangeable.
@@ -26,29 +21,17 @@ ok a == b
 ok a is b
 
 
-# Ensure that chained operations don't cause functions to be evaluated more
-# than once.
-val = 0
-func = -> val = + 1
-
-ok 2 > (func null) < 2
-ok val is 1
-
-
 # Allow "if x not in y"
 obj = {a: true}
 ok 'a' of obj
 ok 'b' not of obj
 
 # And for "a in b" with array presence.
-ok 100 in [100, 200, 300]
+ok 200 in [100, 200, 300]
 array = [100, 200, 300]
-ok 100 in array
+ok 200 in array
 ok 1 not in array
-
-list = [1, 2, 7]
-result = if list[2] in [7, 10] then 100 else -1
-ok result is 100
+ok array[0]++ in [99, 100], 'should cache testee'
 
 # And with array presence on an instance variable.
 obj = {
@@ -67,48 +50,48 @@ ok x*+y is -50
 
 
 # Compound operators.
-one = two = null
-one or= 1
-two or=  2
+one  = 1
+two  = 0
+one or= 2
+two or= 2
 
-ok one is 1
-ok two is 2
+eq one, 1
+eq two, 2
 
-one and= 'one'
-two and=  'two'
+zero = 0
 
-ok one is 'one'
-ok two is 'two'
+zero and= 'one'
+one  and= 'one'
+
+eq zero, 0
+eq one , 'one'
 
 
 # Compound assignment should be careful about caching variables.
-list = [0, null, 5, 10]
-count = 1
-key = ->
-  count += 1
-
-list[key()] or= 100
-ok list.join(' ') is '0  5 10'
-
 count = 0
+list = []
 
-list[key()] ?= 100
-ok list.join(' ') is '0 100 5 10'
+list[++count] or= 1
+eq list[1], 1
+eq count, 1
 
-count = 0
-key = ->
-  count += 1
-  key
+list[++count] ?= 2
+eq list[2], 2
+eq count, 2
 
-key().val or= 100
+list[count++] and= 'two'
+eq list[2], 'two'
+eq count, 3
 
-ok key.val is 100
-ok count is 1
+base = -> ++count; base
 
-key().val ?= 200
+base().four or= 4
+eq base.four, 4
+eq count, 4
 
-ok key.val is 100
-ok count is 2
+base().five ?= 5
+eq base.five, 5
+eq count, 5
 
 
 # Ensure that RHS is treated as a group.
