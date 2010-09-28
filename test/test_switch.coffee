@@ -83,3 +83,16 @@ obj = {
 }
 
 ok obj.func() is '101!'
+
+
+# Should be able to use "@properties" within the switch cases.
+obj = {
+  num: 101
+  func: (yesOrNo) ->
+    result = switch yesOrNo
+      when yes then @num
+      else 'other'
+    result
+}
+
+ok obj.func(yes) is 101
