@@ -346,9 +346,10 @@ exports.ValueNode = class ValueNode extends BaseNode
       [@base, copy.base] = @base.compileReference o
     for prop, i in copy.properties
       if prop instanceof IndexNode and prop.index.isComplex()
-        [index, indexVar] = prop.index.compileReference o
-        this.properties[i] = new IndexNode index
+        [index, indexVar]  = prop.index.compileReference o
+        this.properties[i] = first = new IndexNode index
         copy.properties[i] = new IndexNode indexVar
+        first.soakNode     = yes if prop.soakNode
     [this, copy]
 
   # Override compile to unwrap the value when possible.

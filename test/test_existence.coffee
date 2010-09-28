@@ -147,3 +147,5 @@ ok (maybe_close plus1, 41)?() is 42
 ok (maybe_close 'string', 41)?() is undefined
 
 ok 2?(3) is undefined
+
+ok calendar?[Date()] is undefined
