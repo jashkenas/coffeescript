@@ -10,7 +10,7 @@ class FirstChild extends Base
   func: (string) ->
     super('one/') + string
 
-class SecondChild extends FirstChild
+SecondChild = class extends FirstChild
   func: (string) ->
     super('two/') + string
 
@@ -256,3 +256,8 @@ class Static
 
 ok Static.static.one is 1
 ok Static.static.two is 2
+
+
+# Nothing classes.
+c = class
+ok c instanceof Function
