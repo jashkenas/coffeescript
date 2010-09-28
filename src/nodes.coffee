@@ -8,6 +8,7 @@
 # Import the helpers we plan to use.
 {compact, flatten, merge, del, include, indexOf, starts, ends} = require './helpers'
 
+# Constant functions for nodes that don't need customization.
 YES = -> yes
 NO  = -> no
 
@@ -62,7 +63,7 @@ exports.BaseNode = class BaseNode
   # by assigning it to a temporary variable.
   compileReference: (o, options) ->
     options or= {}
-    pair = unless @isComplex()
+    pair = if not @isComplex()
       [this, this]
     else if this instanceof ValueNode and options.assignment
       this.cacheIndexes(o)
