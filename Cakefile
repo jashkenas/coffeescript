@@ -98,15 +98,14 @@ task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
-  helpers.extend global, require 'assert'
+  startTime = Date.now()
   passedTests = failedTests = 0
-  startTime   = new Date
-  originalOk  = ok
-  helpers.extend global,
-    ok: (args...) -> passedTests += 1; originalOk(args...)
-    CoffeeScript: CoffeeScript
+  for all name, func of require 'assert'
+    global[name] = -> ++passedTests; func arguments...
+  global.eq = global.strictEqual
+  global.CoffeeScript = CoffeeScript
   process.on 'exit', ->
-    time = ((new Date - startTime) / 1000).toFixed(2)
+    time = ((Date.now() - startTime) / 1000).toFixed(2)
     message = "passed #{passedTests} tests in #{time} seconds#{reset}"
     if failedTests
       log "failed #{failedTests} and #{message}", red
