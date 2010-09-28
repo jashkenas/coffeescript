@@ -251,3 +251,12 @@ ok type1.a is args[0] and type1.b is args[1] and type1.c is args[2]
 called = 0
 get = -> if called++ then false else class Type
 new get() args...
+
+
+#619: `new` shouldn't add extra parens
+ok new Date().constructor is Date
+
+#717: `new` works against bare function
+me = this
+new -> ok this isnt me
+new => ok this is   me

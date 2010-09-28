@@ -959,7 +959,7 @@ exports.CodeNode = class CodeNode extends BaseNode
     (o.scope.parameter(param)) for param in params
     code = if @body.expressions.length then "\n#{ @body.compileWithDeclarations(o) }\n" else ''
     func = "function(#{ params.join(', ') }) {#{code}#{ code and @tab }}"
-    return "#{utility('bind')}(#{func}, #{@context})" if @bound
+    return "(#{utility 'bind'}(#{func}, #{@context}))" if @bound
     if top then "(#{func})" else func
 
   topSensitive: ->
@@ -1131,7 +1131,7 @@ exports.OpNode = class OpNode extends BaseNode
   ASSIGNMENT:       ['||=', '&&=', '?=']
 
   # Operators must come before their operands with a space.
-  PREFIX_OPERATORS: ['typeof', 'delete']
+  PREFIX_OPERATORS: ['new', 'typeof', 'delete']
 
   class:     'OpNode'
   children: ['first', 'second']
@@ -1142,6 +1142,8 @@ exports.OpNode = class OpNode extends BaseNode
     @flip     = !!flip
     if @first instanceof ValueNode and @first.base instanceof ObjectNode
       @first = new ParentheticalNode @first
+    else if @operator is 'new' and @first instanceof CallNode
+      return @first.newInstance()
     @first.tags.operation = yes
     @second.tags.operation = yes if @second
 
