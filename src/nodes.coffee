@@ -247,7 +247,7 @@ exports.LiteralNode = class LiteralNode extends BaseNode
   # Break and continue must be treated as pure statements -- they lose their
   # meaning when wrapped in a closure.
   isStatement: ->
-    @value is 'break' or @value is 'continue' or @value is 'debugger'
+    @value in ['break', 'continue', 'debugger']
   isPureStatement: LiteralNode::isStatement
 
   isComplex: NO
@@ -822,26 +822,18 @@ exports.AssignNode = class AssignNode extends BaseNode
   isValue: ->
     @variable instanceof ValueNode
 
-  makeReturn: ->
-    if @isStatement()
-      return new Expressions [this, new ReturnNode(@variable)]
-    else
-      super()
-
-  isStatement: ->
-    @isValue() and (@variable.isArray() or @variable.isObject())
-
   # Compile an assignment, delegating to `compilePatternMatch` or
   # `compileSplice` if appropriate. Keep track of the name of the base object
   # we've been assigned to, for correct internal references. If the variable
   # has not been seen yet within the current scope, declare it.
   compileNode: (o) ->
+    if isValue = @isValue()
+      return @compilePatternMatch(o) if @variable.isArray() or @variable.isObject()
+      return @compileSplice(o) if @variable.isSplice()
     top    = del o, 'top'
-    return   @compilePatternMatch(o) if @isStatement(o)
-    return   @compileSplice(o) if @isValue() and @variable.isSplice()
     stmt   = del o, 'asStatement'
     name   = @variable.compile(o)
-    end    = if @isValue() then @variable.last.replace(@LEADING_DOT, '') else name
+    end    = if isValue then @variable.last.replace(@LEADING_DOT, '') else name
     match  = name.match(@PROTO_ASSIGN)
     proto  = match and match[1]
     if @value instanceof CodeNode
@@ -849,7 +841,7 @@ exports.AssignNode = class AssignNode extends BaseNode
       @value.proto = proto if proto
     val = @value.compile o
     return "#{name}: #{val}" if @context is 'object'
-    o.scope.find name unless @isValue() and (@variable.hasProperties() or @variable.namespaced)
+    o.scope.find name unless isValue and (@variable.hasProperties() or @variable.namespaced)
     val = "#{name} = #{val}"
     return "#{@tab}#{val};" if stmt
     if top or @parenthetical then val else "(#{val})"
@@ -859,37 +851,49 @@ exports.AssignNode = class AssignNode extends BaseNode
   # See the [ECMAScript Harmony Wiki](http://wiki.ecmascript.org/doku.php?id=harmony:destructuring)
   # for details.
   compilePatternMatch: (o) ->
-    valVar        = o.scope.freeVariable 'ref'
-    value         = if @value.isStatement(o) then ClosureNode.wrap(@value) else @value
-    assigns       = ["#{@tab}#{valVar} = #{ value.compile(o) };"]
-    o.top         = true
-    o.asStatement = true
-    splat         = false
-    for obj, i in @variable.base.objects
+    if (value = @value).isStatement o then value = ClosureNode.wrap value
+    {objects} = @variable.base
+    return value.compile o unless objects.length
+    if (isObject = @variable.isObject()) and objects.length is 1
+      # Unroll simplest cases: `{v} = x` -> `v = x.v`
+      if (obj = objects[0]) instanceof AssignNode
+        {variable: {base: idx}, value: obj} = obj
+      else
+        idx = obj
+      value = new ValueNode value unless value instanceof ValueNode
+      accessClass = if IDENTIFIER.test idx.value then AccessorNode else IndexNode
+      value.properties.push new accessClass idx
+      return new AssignNode(obj, value).compile o
+    top     = del o, 'top'
+    otop    = merge o, top: yes
+    valVar  = o.scope.freeVariable 'ref'
+    assigns = ["#{valVar} = #{ value.compile o }"]
+    splat   = false
+    for obj, i in objects
       # A regular array pattern-match.
       idx = i
-      if @variable.isObject()
+      if isObject
         if obj instanceof AssignNode
           # A regular object pattern-match.
           [obj, idx] = [obj.value, obj.variable.base]
         else
           # A shorthand `{a, b, c} = val` pattern-match.
           idx = obj
-      if not (obj instanceof ValueNode or obj instanceof SplatNode)
+      unless obj instanceof ValueNode or obj instanceof SplatNode
         throw new Error 'pattern matching must use only identifiers on the left-hand side.'
-      isString = idx.value and idx.value.match IS_STRING
-      accessClass = if isString or @variable.isArray() then IndexNode else AccessorNode
-      if obj instanceof SplatNode and not splat
+      accessClass = if isObject and IDENTIFIER.test(idx.value) then AccessorNode else IndexNode
+      if not splat and obj instanceof SplatNode
         val = literal obj.compileValue o, valVar,
-          (oindex = indexOf(@variable.base.objects, obj)),
-          (olength = @variable.base.objects.length) - oindex - 1
+          (oindex  = indexOf objects, obj),
+          (olength = objects.length) - oindex - 1
         splat = true
       else
         idx = literal(if splat then "#{valVar}.length - #{olength - idx}" else idx) if typeof idx isnt 'object'
-        val = new ValueNode(literal(valVar), [new accessClass(idx)])
-      assigns.push(new AssignNode(obj, val).compile(o))
-    code = assigns.join("\n")
-    code
+        val = new ValueNode literal(valVar), [new accessClass idx]
+      assigns.push new AssignNode(obj, val).compile otop
+    assigns.push valVar unless top
+    code = assigns.join ', '
+    if top or @parenthetical then code else "(#{code})"
 
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
@@ -963,8 +967,7 @@ exports.CodeNode = class CodeNode extends BaseNode
     return "(#{utility 'bind'}(#{func}, #{@context}))" if @bound
     if top then "(#{func})" else func
 
-  topSensitive: ->
-    true
+  topSensitive: YES
 
   # Short-circuit traverseChildren method to prevent it from crossing scope boundaries
   # unless crossScope is true
@@ -1083,8 +1086,7 @@ exports.WhileNode = class WhileNode extends BaseNode
     @returns = true
     this
 
-  topSensitive: ->
-    true
+  topSensitive: YES
 
   # The main difference from a JavaScript *while* is that the CoffeeScript
   # *while* can be used as a part of a larger expression -- while loops may

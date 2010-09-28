@@ -4,30 +4,22 @@ b = -2
 
 [a, b] = [b, a]
 
-ok a is -2
-ok b is -1
+eq a, -2
+eq b, -1
 
 func = ->
   [a, b] = [b, a]
 
-ok func().join(' ') is '-1 -2'
+eq func().join(' '), '-1 -2'
+eq a, -1
+eq b, -2
 
-noop = ->
-
-noop [a,b] = [c,d] = [1,2]
-
-ok a is 1 and b is 2
+#713
+eq (onetwo = [1, 2]), [a, b] = [c, d] = onetwo
+ok a is c is 1 and b is d is 2
 
 
 # Array destructuring, including splats.
-arr = [1, 2, 3]
-
-[a, b, c] = arr
-
-ok a is 1
-ok b is 2
-ok c is 3
-
 [x,y...,z] = [1,2,3,4,5]
 
 ok x is 1
