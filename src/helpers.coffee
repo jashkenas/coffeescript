@@ -34,7 +34,7 @@ exports.compact = (array) ->
 # Count the number of occurences of a character in a string.
 exports.count = (string, letter) ->
   num = pos = 0
-  num++ while 0 < pos = 1 + string.indexOf letter, pos
+  num++ while pos = 1 + string.indexOf letter, pos
   num
 
 # Merge objects, returning a fresh copy with attributes from both sides.
@@ -61,3 +61,6 @@ exports.del = (obj, key) ->
   val =  obj[key]
   delete obj[key]
   val
+
+# Gets the last item of an array(-like) object.
+exports.last = (array, back) -> array[array.length - (back or 0) - 1]

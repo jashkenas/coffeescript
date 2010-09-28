@@ -10,7 +10,7 @@
 {Rewriter} = require './rewriter'
 
 # Import the helpers we need.
-{include, count, starts, compact} = require './helpers'
+{include, count, starts, compact, last} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -170,7 +170,7 @@ exports.Lexer = class Lexer
   regexToken: ->
     return false unless first = @chunk.match REGEX_START
     return false if first[1] is ' ' and @tag() not in ['CALL_START', '=']
-    return false if     include NOT_REGEX, @tag()
+    return false if include NOT_REGEX, @tag()
     return false unless regex = @balancedToken ['/', '/']
     return false unless end = @chunk[regex.length..].match REGEX_END
     flags = end[0]
@@ -206,7 +206,7 @@ exports.Lexer = class Lexer
     indent = match[0]
     @line += count indent, '\n'
     @i    += indent.length
-    prev = @prev 2
+    prev = last @tokens, 1
     size = indent.length - 1 - indent.lastIndexOf '\n'
     nextCharacter = NEXT_CHARACTER.exec(@chunk)[1]
     noNewlines = (nextCharacter in ['.', ',']) or @unfinished()
@@ -254,7 +254,7 @@ exports.Lexer = class Lexer
   # as being "spaced", because there are some cases where it makes a difference.
   whitespaceToken: ->
     return false unless match = WHITESPACE.exec @chunk
-    prev = @prev()
+    prev = last @tokens
     prev.spaced = true if prev
     @i += match[0].length
     true
@@ -282,12 +282,13 @@ exports.Lexer = class Lexer
     else
       value = @chunk.charAt 0
     @i += value.length
-    spaced = (prev = @prev()) and prev.spaced
+    prev = last @tokens
+    spaced = prev?.spaced
     tag = value
     if value is '='
-      @assignmentError() if include JS_FORBIDDEN, @value()
-      if @value() in ['or', 'and']
-        @tokens.splice(@tokens.length - 1, 1, ['COMPOUND_ASSIGN', CONVERSIONS[@value()] + '=', prev[2]])
+      @assignmentError() if include JS_FORBIDDEN, val = @value()
+      if val in ['or', 'and']
+        @tokens.splice(-1, 1, ['COMPOUND_ASSIGN', CONVERSIONS[val] + '=', prev[2]])
         return true
     if value is ';'                         then tag = 'TERMINATOR'
     else if include(LOGIC, value)           then tag = 'LOGIC'
@@ -303,8 +304,8 @@ exports.Lexer = class Lexer
       else if value is '['
         tag = 'INDEX_START'
         switch @tag()
-          when '?'  then @tag 1, 'INDEX_SOAK'
-          when '::' then @tag 1, 'INDEX_PROTO'
+          when '?'  then @tag 0, 'INDEX_SOAK'
+          when '::' then @tag 0, 'INDEX_PROTO'
     @token tag, value
     true
 
@@ -315,15 +316,15 @@ exports.Lexer = class Lexer
   # if it's a special kind of accessor. Return `true` if any type of accessor
   # is the previous token.
   tagAccessor: ->
-    return false if (not prev = @prev()) or (prev and prev.spaced)
+    return false if not (prev = last @tokens) or prev.spaced
     accessor = if prev[1] is '::'
-      @tag 1, 'PROTOTYPE_ACCESS'
-    else if prev[1] is '.' and @value(2) isnt '.'
-      if @tag(2) is '?'
-        @tag(1, 'SOAK_ACCESS')
+      @tag 0, 'PROTOTYPE_ACCESS'
+    else if prev[1] is '.' and @value(1) isnt '.'
+      if @tag(1) is '?'
+        @tag(0, 'SOAK_ACCESS')
         @tokens.splice(-2, 1)
       else
-        @tag 1, 'PROPERTY_ACCESS'
+        @tag 0, 'PROPERTY_ACCESS'
     else
       prev[0] is '@'
     if accessor then 'accessor' else false
@@ -348,11 +349,9 @@ exports.Lexer = class Lexer
   # parameters specially in order to make things easier for the parser.
   tagParameters: ->
     return if @tag() isnt ')'
-    i = 0
+    i = @tokens.length
     loop
-      i += 1
-      tok = @prev i
-      return if not tok
+      return unless tok = @tokens[--i]
       switch tok[0]
         when 'IDENTIFIER'       then tok[0] = 'PARAM'
         when ')'                then tok[0] = 'PARAM_END'
@@ -389,7 +388,7 @@ exports.Lexer = class Lexer
       else
         for pair in delimited
           [open, close] = pair
-          if levels.length and starts(str, close, i) and levels[levels.length - 1] is pair
+          if levels.length and starts(str, close, i) and last(levels) is pair
             levels.pop()
             i += close.length - 1
             i += 1 unless levels.length
@@ -469,23 +468,17 @@ exports.Lexer = class Lexer
 
   # Peek at a tag in the current token stream.
   tag: (index, newTag) ->
-    return unless tok = @prev index
-    return tok[0] = newTag if newTag?
-    tok[0]
+    return unless tok = last @tokens, index
+    tok[0] = newTag ? tok[0]
 
   # Peek at a value in the current token stream.
   value: (index, val) ->
-    return unless tok = @prev index
-    return tok[1] = val if val?
-    tok[1]
-
-  # Peek at a previous token, entire.
-  prev: (index) ->
-    @tokens[@tokens.length - (index or 1)]
+    return unless tok = last @tokens, index
+    tok[1] = val ? tok[1]
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->
-    (prev  = @prev 2 ) and prev[0] isnt '.' and
+    (prev  = last @tokens, 1) and prev[0] isnt '.' and
     (value = @value()) and NO_NEWLINE.test(value) and not CODE.test(value) and
     not ASSIGNED.test(@chunk)
 

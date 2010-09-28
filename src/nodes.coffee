@@ -6,7 +6,7 @@
 {Scope} = require './scope'
 
 # Import the helpers we plan to use.
-{compact, flatten, merge, del, include, indexOf, starts, ends} = require './helpers'
+{compact, flatten, merge, del, include, indexOf, starts, ends, last} = require './helpers'
 
 # Constant functions for nodes that don't need customization.
 YES = -> yes
@@ -182,11 +182,10 @@ exports.Expressions = class Expressions extends BaseNode
   # An Expressions node does not return its entire body, rather it
   # ensures that the final expression is returned.
   makeReturn: ->
-    idx  = @expressions.length - 1
-    last = @expressions[idx]
-    last = @expressions[idx -= 1] if last instanceof CommentNode
-    return this if not last or last instanceof ReturnNode
-    @expressions[idx] = last.makeReturn()
+    end = @expressions[idx = @expressions.length - 1]
+    end = @expressions[idx -= 1] if end instanceof CommentNode
+    if end and end not instanceof ReturnNode
+      @expressions[idx] = end.makeReturn()
     this
 
   # An **Expressions** is the only node that can serve as the root.
@@ -317,10 +316,10 @@ exports.ValueNode = class ValueNode extends BaseNode
     @base instanceof ObjectNode and not @hasProperties()
 
   isSplice: ->
-    @hasProperties() and @properties[@properties.length - 1] instanceof SliceNode
+    last(@properties) instanceof SliceNode
 
   isComplex: ->
-    @base.isComplex() or @properties.length
+    @base.isComplex() or @hasProperties()
 
   makeReturn: ->
     if @hasProperties() then super() else @base.makeReturn()
@@ -380,7 +379,7 @@ exports.ValueNode = class ValueNode extends BaseNode
       if prop.soakNode
         if i is 0 and @base.isComplex()
           temp = o.scope.freeVariable 'ref'
-          complete = "(#{ baseline = temp } = (#{prevcomp = complete}))"
+          complete = "(#{ baseline = temp } = (#{complete}))"
         complete = if i is 0 and not o.scope.check complete
           "(typeof #{complete} === \"undefined\" || #{baseline} === null)"
         else
@@ -457,7 +456,8 @@ exports.CallNode = class CallNode extends BaseNode
     o.chainRoot = this unless o.chainRoot
     op = @tags.operation
     if @exist
-      if @variable instanceof ValueNode and @variable.properties[@variable.properties.length - 1] instanceof AccessorNode
+      if @variable instanceof ValueNode and
+         last(@variable.properties) instanceof AccessorNode
         methodAccessor = @variable.properties.pop()
         [first, meth] = @variable.compileReference o
         @first = new ValueNode(first, [methodAccessor]).compile o
@@ -683,7 +683,7 @@ exports.ObjectNode = class ObjectNode extends BaseNode
     top = del o, 'top'
     o.indent = @idt 1
     nonComments = prop for prop in @properties when (prop not instanceof CommentNode)
-    lastNoncom =  nonComments[nonComments.length - 1]
+    lastNoncom  =  last nonComments
     props = for prop, i in @properties
       join   = ",\n"
       join   = "\n" if (prop is lastNoncom) or (prop instanceof CommentNode)
@@ -841,11 +841,11 @@ exports.AssignNode = class AssignNode extends BaseNode
     return   @compileSplice(o) if @isValue() and @variable.isSplice()
     stmt   = del o, 'asStatement'
     name   = @variable.compile(o)
-    last   = if @isValue() then @variable.last.replace(@LEADING_DOT, '') else name
+    end    = if @isValue() then @variable.last.replace(@LEADING_DOT, '') else name
     match  = name.match(@PROTO_ASSIGN)
     proto  = match and match[1]
     if @value instanceof CodeNode
-      @value.name =  last  if last.match(IDENTIFIER)
+      @value.name  = end   if IDENTIFIER.test end
       @value.proto = proto if proto
     val = @value.compile o
     return "#{name}: #{val}" if @context is 'object'
@@ -1041,20 +1041,20 @@ exports.SplatNode = class SplatNode extends BaseNode
   # splats, to a proper array
   @compileSplattedArray: (list, o) ->
     args = []
+    end = -1
     for arg, i in list
       code = arg.compile o
-      prev = args[last = args.length - 1]
+      prev = args[end]
       if arg not instanceof SplatNode
         if prev and starts(prev, '[') and ends(prev, ']')
-          args[last] = "#{prev.slice 0, -1}, #{code}]"
+          args[end] = "#{prev.slice 0, -1}, #{code}]"
           continue
-        else if prev and starts(prev, '.concat([') and ends(prev, '])')
-          args[last] = "#{prev.slice 0, -2}, #{code}])"
+        if prev and starts(prev, '.concat([') and ends(prev, '])')
+          args[end] = "#{prev.slice 0, -2}, #{code}])"
           continue
-        else
-          code = "[#{code}]"
-      args.push(if i is 0 then code else ".concat(#{code})")
-    args.join('')
+        code = "[#{code}]"
+      args[++end] = if i is 0 then code else ".concat(#{code})"
+    args.join ''
 
 #### WhileNode
 
@@ -1470,7 +1470,7 @@ exports.SwitchNode = class SwitchNode extends BaseNode
         condition = new OpNode '!!', new ParentheticalNode condition if @tags.subjectless
         code += "\n#{ @idt(1) }case #{ condition.compile o }:"
       code += "\n#{ block.compile o }"
-      code += "\n#{ idt }break;" unless exprs[exprs.length - 1] instanceof ReturnNode
+      code += "\n#{ idt }break;" unless last(exprs) instanceof ReturnNode
     if @otherwise
       code += "\n#{ @idt(1) }default:\n#{ @otherwise.compile o }"
     code += "\n#{ @tab }}"
