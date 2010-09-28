@@ -50,10 +50,16 @@ extend = exports.extend = (object, properties) ->
     object[key] = val
   object
 
-# Return a flattened version of an array (shallow and nonrecursive).
+# Return a flattened version of an array.
 # Handy for getting a list of `children` from the nodes.
-exports.flatten = (array) ->
-  array.concat.apply [], array
+exports.flatten = flatten = (array) ->
+  flattened = []
+  for element in array
+    if Array.isArray(element)
+      flattened = flattened.concat flatten(element)
+    else
+      flattened.push element
+  flattened
 
 # Delete a key from an object, returning the value. Useful when a node is
 # looking for a particular method in an options hash.
