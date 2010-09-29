@@ -117,7 +117,8 @@ exports.BaseNode = class BaseNode
   toString: (idt, override) ->
     idt or= ''
     children = (child.toString idt + TAB for child in @collectChildren()).join('')
-    '\n' + idt + (override or @class) + children
+    klass = override or @class + if @soakNode or @exist then '?' else ''
+    '\n' + idt + klass + children
 
   eachChild: (func) ->
     return unless @children
@@ -1159,7 +1160,7 @@ exports.OpNode = class OpNode extends BaseNode
   isComplex: -> @operator isnt '!' or @first.isComplex()
 
   isMutator: ->
-    ends(@operator, '=') and not (@operator in ['===', '!=='])
+    ends(@operator, '=') and @operator not in ['===', '!==']
 
   isChainable: ->
     include(@CHAINABLE, @operator)
