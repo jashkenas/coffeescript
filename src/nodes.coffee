@@ -331,10 +331,10 @@ exports.ValueNode = class ValueNode extends BaseNode
 
   # Values are considered to be statements if their base is a statement.
   isStatement: (o) ->
-    @base.isStatement and @base.isStatement(o) and not @hasProperties()
+    @base.isStatement(o) and not @properties.length
 
   isNumber: ->
-    @base instanceof LiteralNode and @base.value.match NUMBER
+    @base instanceof LiteralNode and NUMBER.test @base.value
 
   # If the value node has indexes containing function calls, and the value node
   # needs to be used twice, in compound assignment ... then we need to cache
@@ -1071,11 +1071,11 @@ exports.WhileNode = class WhileNode extends BaseNode
 
   constructor: (condition, opts) ->
     super()
-    if opts and opts.invert
+    if opts?.invert
       condition = new ParentheticalNode condition if condition instanceof OpNode
       condition = new OpNode('!', condition)
     @condition  = condition
-    @guard = opts and opts.guard
+    @guard = opts?.guard
 
   addBody: (body) ->
     @body = body
@@ -1302,14 +1302,18 @@ exports.ExistenceNode = class ExistenceNode extends BaseNode
 
   compileNode: (o) ->
     test = ExistenceNode.compileTest(o, @expression)[0]
-    if @parenthetical then test.substring(1, test.length - 1) else test
+    if @parenthetical then test.slice 1, -1 else test
 
   # The meat of the **ExistenceNode** is in this static `compileTest` method
   # because other nodes like to check the existence of their variables as well.
   # Be careful not to double-evaluate anything.
   @compileTest: (o, variable) ->
     [first, second] = variable.compileReference o, precompile: yes
-    ["(typeof #{first} !== \"undefined\" && #{second} !== null)", second]
+    first = if first is second and o.scope.check first
+      "(#{first} != null)"
+    else
+      "(typeof #{first} !== \"undefined\" && #{second} !== null)"
+    [first, second]
 
 #### ParentheticalNode
 
