@@ -9,8 +9,9 @@
 {compact, flatten, merge, del, include, indexOf, starts, ends, last} = require './helpers'
 
 # Constant functions for nodes that don't need customization.
-YES = -> yes
-NO  = -> no
+YES  = -> yes
+NO   = -> no
+THIS = -> this
 
 #### BaseNode
 
@@ -139,7 +140,7 @@ exports.BaseNode = class BaseNode
   class:    'BaseNode'
   children: []
 
-  unwrap          : -> this
+  unwrap          : THIS
   isStatement     : NO
   isPureStatement : NO
   isComplex       : YES
@@ -273,8 +274,7 @@ exports.ReturnNode = class ReturnNode extends BaseNode
   constructor: (@expression) ->
     super()
 
-  makeReturn: ->
-    this
+  makeReturn: THIS
 
   compile: (o) ->
     expr = @expression.makeReturn()
@@ -408,8 +408,7 @@ exports.CommentNode = class CommentNode extends BaseNode
   constructor: (@comment) ->
     super()
 
-  makeReturn: ->
-    this
+  makeReturn: THIS
 
   compileNode: (o) ->
     @tab + '/*' + @comment.replace(/\n/g, '\n' + @tab) + '*/'
@@ -1283,8 +1282,7 @@ exports.ThrowNode = class ThrowNode extends BaseNode
     super()
 
   # A **ThrowNode** is already a return, of sorts...
-  makeReturn: ->
-    return this
+  makeReturn: THIS
 
   compileNode: (o) ->
     "#{@tab}throw #{@expression.compile(o)};"
