@@ -55,8 +55,8 @@ extend = exports.extend = (object, properties) ->
 exports.flatten = flatten = (array) ->
   flattened = []
   for element in array
-    if Array.isArray(element)
-      flattened = flattened.concat flatten(element)
+    if element instanceof Array
+      flattened = flattened.concat flatten element
     else
       flattened.push element
   flattened
