@@ -42,7 +42,6 @@ exports.BaseNode = class BaseNode
   compile: (o) ->
     @options = if o then merge o else {}
     @tab     = o.indent
-    del @options, 'chainRoot' unless this instanceof AccessorNode or this instanceof IndexNode
     top     = if @topSensitive() then @options.top else del @options, 'top'
     closure = @isStatement(o) and not @isPureStatement() and not top and
               not @options.asStatement and this not instanceof CommentNode and
@@ -367,7 +366,6 @@ exports.ValueNode = class ValueNode extends BaseNode
   compileNode: (o) ->
     return ex.compile o if ex = @unfoldSoak o
     props = @properties
-    o.chainRoot or= this
     @base.parenthetical = yes if @parenthetical and not props.length
     code = @base.compile o
     if props[0] instanceof AccessorNode and @isNumber() or
@@ -484,7 +482,6 @@ exports.CallNode = class CallNode extends BaseNode
   # Compile a vanilla function call.
   compileNode: (o) ->
     return node.compile o if node = @unfoldSoak o
-    o.chainRoot or= this
     if @exist
       if val = @variable
         val = new ValueNode val unless val instanceof ValueNode
@@ -576,7 +573,6 @@ exports.AccessorNode = class AccessorNode extends BaseNode
 
   compileNode: (o) ->
     name = @name.compile o
-    o.chainRoot.wrapped or= @soakNode
     namePart = if name.match(IS_STRING) then "[#{name}]" else ".#{name}"
     @prototype + namePart
 
@@ -594,7 +590,6 @@ exports.IndexNode = class IndexNode extends BaseNode
     super()
 
   compileNode: (o) ->
-    o.chainRoot.wrapped or= @soakNode
     idx = @index.compile o
     prefix = if @proto then '.prototype' else ''
     "#{prefix}[#{idx}]"
@@ -1676,9 +1671,9 @@ TAB = '  '
 # with Git.
 TRAILING_WHITESPACE = /[ \t]+$/gm
 
-IDENTIFIER = /^[$A-Za-zA-Z_][$\w]*$/
+IDENTIFIER = /^[$A-Za-z_][$\w]*$/
 NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?$/i
-SIMPLENUM = /^-?\d+$/
+SIMPLENUM  = /^-?\d+$/
 
 # Is a literal value a string?
 IS_STRING = /^['"]/
