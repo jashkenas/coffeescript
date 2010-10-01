@@ -6,7 +6,7 @@
 # with the outside.
 
 # Import the helpers we plan to use.
-{extend} = require './helpers'
+{extend, last} = require './helpers'
 
 exports.Scope = class Scope
 
@@ -17,9 +17,8 @@ exports.Scope = class Scope
   # as well as a reference to the **Expressions** node is belongs to, which is
   # where it should declare its variables, and a reference to the function that
   # it wraps.
-  constructor: (parent, expressions, method) ->
-    [@parent, @expressions, @method] = [parent, expressions, method]
-    @variables = {}
+  constructor: (@parent, @expressions, @method) ->
+    @variables = {'arguments'}
     if @parent
       @garbage = @parent.garbage
     else
@@ -33,7 +32,8 @@ exports.Scope = class Scope
   # Return to the previous garbage level and erase referenced temporary
   # variables in current level from scope.
   endLevel: ->
-    (@variables[name] = 'reuse') for name in @garbage.pop() when @variables[name] is 'var'
+    vars = @variables
+    (vars[name] = 'reuse') for name in @garbage.pop() when vars[name] is 'var'
 
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
@@ -57,8 +57,8 @@ exports.Scope = class Scope
   # walks up to the root scope.
   check: (name, options) ->
     immediate = Object::hasOwnProperty.call @variables, name
-    return immediate if immediate or (options and options.immediate)
-    !!(@parent and @parent.check(name))
+    return immediate if immediate or options?.immediate
+    !!@parent?.check name
 
   # Generate a temporary variable name at the given index.
   temporary: (type, index) ->
@@ -73,7 +73,7 @@ exports.Scope = class Scope
     index = 0
     index++ while @check(temp = @temporary type, index) and @variables[temp] isnt 'reuse'
     @variables[temp] = 'var'
-    @garbage[@garbage.length - 1].push temp if @garbage.length
+    last(@garbage).push temp if @garbage.length
     temp
 
   # Ensure that an assignment is made at the top of this scope
@@ -84,7 +84,7 @@ exports.Scope = class Scope
   # Does this scope reference any variables that need to be declared in the
   # given function body?
   hasDeclarations: (body) ->
-    body is @expressions and @any (k, val) -> val is 'var' or val is 'reuse'
+    body is @expressions and @any (k, val) -> val in ['var', 'reuse']
 
   # Does this scope reference any assignments that need to be declared at the
   # top of the given function body?
@@ -93,7 +93,7 @@ exports.Scope = class Scope
 
   # Return the list of variables first declared in this scope.
   declaredVariables: ->
-    (key for key, val of @variables when val is 'var' or val is 'reuse').sort()
+    (key for key, val of @variables when val in ['var', 'reuse']).sort()
 
   # Return the list of assignments that are supposed to be made at the top
   # of this scope.
