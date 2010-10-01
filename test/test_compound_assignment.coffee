@@ -1,45 +1,26 @@
 num = 10
 num -= 5
-
-ok num is 5
-
-num = -3
-
-ok num is -3
-
-num = +3
-
-ok num is 3
+eq num, 5
 
 num *= 10
-
-ok num is 30
+eq num, 50
 
 num /= 10
+eq num, 5
 
-ok num is 3
-
+num %= 3
+eq num, 2
 
 val = false
 val ||= 'value'
+val ||= 'eulav'
+eq val, 'value'
 
-ok val is 'value'
-
+val &&= 'rehto'
 val &&= 'other'
-
-ok val is 'other'
-
+eq val, 'other'
 
 val = null
 val ?= 'value'
-
-ok val is 'value'
-
-
-val = 6
-val = -(10)
-
-ok val is -10
-
-val -= (10)
-ok val is -20
+val ?= 'eulav'
+eq val, 'value'

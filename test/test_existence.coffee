@@ -37,45 +37,33 @@ ok(if getNextNode()? then true else false)
 
 
 # Existence chains, soaking up undefined properties:
-obj = {
+obj =
   prop: "hello"
-}
 
-ok obj?.prop is "hello"
-
-ok obj?['prop'] is "hello"
-
-ok obj.prop?.length is 5
-
-ok obj?['prop']?['length'] is 5
-
-ok obj?.prop?.non?.existent?.property is undefined
-
-ok obj?['non']?['existent'].property is undefined
+eq obj?.prop, "hello"
+eq obj?['prop'], "hello"
+eq obj.prop?.length, 5
+eq obj?.prop?['length'], 5
+eq obj?.prop?.non?.existent?.property, null
 
 
 # Soaks and caches method calls as well.
 arr = ["--", "----"]
 
-ok arr.pop()?.length is 4
-ok arr.pop()?.length is 2
-ok arr.pop()?.length is undefined
-ok arr[0]?.length is undefined
-ok arr.pop()?.length?.non?.existent()?.property is undefined
+eq arr.pop()?.length, 4
+eq arr.pop()?.length, 2
+eq arr.pop()?.length, null
+eq arr.pop()?.length?.non?.existent()?.property, null
 
 
 # Soaks method calls safely.
-value = undefined
-result = value?.toString().toLowerCase()
-
-ok result is undefined
+value = null
+eq value?.toString().toLowerCase(), null
 
 value = 10
-result = value?.toString().toLowerCase()
+eq value?.toString().toLowerCase(), '10'
 
-ok result is '10'
-
-ok(process.exit.nothing?.property() or 101)
+eq process.exit.nothing?.property() or 101, 101
 
 counter = 0
 func = ->
@@ -89,9 +77,8 @@ ok obj[func()]()[func()]()[func()]()?.value is 25
 ok counter is 3
 
 
-# Soaks inner values.
 ident = (obj) -> obj
-ok ident(non?.existent().method()) is undefined
+eq ident(non?.existent().method()), null, 'soaks inner values'
 
 
 # Soaks constructor invocations.
@@ -104,14 +91,10 @@ ok (new Foo())?.bar is 'bat'
 ok a is 1
 
 
-# Safely existence test on soaks.
-result = not value?.property?
-ok result
+ok not value?.property?, 'safely checks existence on soaks'
 
 
-# Safely calls values off of non-existent variables.
-result = nothing?.value
-ok result is undefined
+eq nothing?.value, null, 'safely calls values off of non-existent variables'
 
 
 # Assign to the result of an exsitential operation with a minus.
@@ -146,6 +129,14 @@ ok maybe_close(plus1, 41)?() is 42
 ok (maybe_close plus1, 41)?() is 42
 ok (maybe_close 'string', 41)?() is undefined
 
-ok 2?(3) is undefined
+eq 2?(3), undefined
 
-ok calendar?[Date()] is undefined
+#726
+eq calendar?[Date()], null
+
+#733
+a = b: {c: null}
+eq a.b?.c?(), undefined
+a.b?.c or= (it) -> it
+eq a.b?.c?(1), 1
+eq a.b?.c?([2, 3]...), 2

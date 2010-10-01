@@ -40,7 +40,7 @@ exports.BaseNode = class BaseNode
   # depending on whether it's being used as part of a larger expression, or is a
   # top-level statement within the function body.
   compile: (o) ->
-    @options = merge o or {}
+    @options = if o then merge o else {}
     @tab     = o.indent
     del @options, 'chainRoot' unless this instanceof AccessorNode or this instanceof IndexNode
     top     = if @topSensitive() then @options.top else del @options, 'top'
@@ -63,16 +63,13 @@ exports.BaseNode = class BaseNode
   # in multiple places, ensure that the expression is only ever evaluated once,
   # by assigning it to a temporary variable.
   compileReference: (o, options) ->
-    options or= {}
-    pair = if not @isComplex()
+    pair = unless @isComplex()
       [this, this]
-    else if this instanceof ValueNode and options.assignment
-      this.cacheIndexes(o)
     else
       reference = literal o.scope.freeVariable 'ref'
       compiled  = new AssignNode reference, this
       [compiled, reference]
-    return [pair[0].compile(o), pair[1].compile(o)] if options.precompile
+    (pair[i] = node.compile o) for node, i in pair if options?.precompile
     pair
 
   # Convenience method to grab the current indentation level, plus tabbing in.
@@ -107,7 +104,7 @@ exports.BaseNode = class BaseNode
   # Convenience for the most common use of contains. Does the node contain
   # a pure statement?
   containsPureStatement: ->
-    @isPureStatement() or @contains (n) -> n.isPureStatement and n.isPureStatement()
+    @isPureStatement() or @contains (n) -> n.isPureStatement?()
 
   # Perform an in-order traversal of the AST. Crosses scope boundaries.
   traverse: (block) -> @traverseChildren true, block
@@ -133,8 +130,10 @@ exports.BaseNode = class BaseNode
 
   traverseChildren: (crossScope, func) ->
     @eachChild (child) ->
-      func.apply(this, arguments)
-      child.traverseChildren(crossScope, func) if child instanceof BaseNode
+      return false if func(child) is false
+      if child instanceof BaseNode and
+         (crossScope or child not instanceof CodeNode)
+        child.traverseChildren crossScope, func
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
@@ -311,10 +310,10 @@ exports.ValueNode = class ValueNode extends BaseNode
   # Some boolean checks for the benefit of other nodes.
 
   isArray: ->
-    @base instanceof ArrayNode and not @hasProperties()
+    @base instanceof ArrayNode and not @properties.length
 
   isObject: ->
-    @base instanceof ObjectNode and not @hasProperties()
+    @base instanceof ObjectNode and not @properties.length
 
   isSplice: ->
     last(@properties) instanceof SliceNode
@@ -323,7 +322,8 @@ exports.ValueNode = class ValueNode extends BaseNode
     @base.isComplex() or @hasProperties()
 
   makeReturn: ->
-    if @hasProperties() then super() else @base.makeReturn()
+    if @properties.length then super() else @base.makeReturn()
+
 
   # The value can be unwrapped as its inner node, if there are no attached
   # properties.
@@ -337,20 +337,24 @@ exports.ValueNode = class ValueNode extends BaseNode
   isNumber: ->
     @base instanceof LiteralNode and NUMBER.test @base.value
 
-  # If the value node has indexes containing function calls, and the value node
-  # needs to be used twice, in compound assignment ... then we need to cache
-  # the value of the indexes.
-  cacheIndexes: (o) ->
-    copy = new ValueNode @base, @properties[0..]
-    if @base.isComplex()
-      [@base, copy.base] = @base.compileReference o
-    for prop, i in copy.properties
-      if prop instanceof IndexNode and prop.index.isComplex()
-        [index, indexVar]  = prop.index.compileReference o
-        this.properties[i] = first = new IndexNode index
-        copy.properties[i] = new IndexNode indexVar
-        first.soakNode     = yes if prop.soakNode
-    [this, copy]
+  # A reference has base part (`this` value) and name part.
+  # We cache them separately for compiling complex expressions.
+  # `a()[b()] ?= c` -> `(_base = a())[_name = b()] ? _base[_name] = c`
+  cacheReference: (o) ->
+    name = last @properties
+    if not @base.isComplex() and @properties.length < 2 and
+       not name?.isComplex()
+      return [this, this]  # `a` `a.b`
+    base = new ValueNode @base, @properties.slice 0, -1
+    if base.isComplex()  # `a().b`
+      bref = literal o.scope.freeVariable 'base'
+      base = new ValueNode new ParentheticalNode new AssignNode bref, base
+    return [base, bref] unless name  # `a()`
+    if name.isComplex()  # `a[b()]`
+      nref = literal o.scope.freeVariable 'name'
+      name = new IndexNode new AssignNode nref, name.index
+      nref = new IndexNode nref
+    [base.push(name), new ValueNode(bref or base.base, [nref or name])]
 
   # Override compile to unwrap the value when possible.
   compile: (o) ->
@@ -361,41 +365,46 @@ exports.ValueNode = class ValueNode extends BaseNode
   # operators `?.` interspersed. Then we have to take care not to accidentally
   # evaluate a anything twice when building the soak chain.
   compileNode: (o) ->
-    only        = del o, 'onlyFirst'
-    op          = @tags.operation
-    props       = if only then @properties[0...-1] else @properties
+    return ex.compile o if ex = @unfoldSoak o
+    props = @properties
     o.chainRoot or= this
-    for prop in props when prop.soakNode
-      hasSoak = yes
-      break
-    if hasSoak and @isComplex()
-      [me, copy] = @cacheIndexes o
     @base.parenthetical = yes if @parenthetical and not props.length
-    baseline    = @base.compile o
-    baseline    = "(#{baseline})" if @hasProperties() and (@base instanceof ObjectNode or @isNumber())
-    complete    = @last = baseline
+    code = @base.compile o
+    if props[0] instanceof AccessorNode and @isNumber() or
+       o.top and @base instanceof ObjectNode
+      code = "(#{code})"
+    (code += prop.compile o) for prop in props
+    return code
 
-    for prop, i in props
-      @source = baseline
-      if prop.soakNode
-        if i is 0 and @base.isComplex()
-          temp = o.scope.freeVariable 'ref'
-          complete = "(#{ baseline = temp } = (#{complete}))"
-        complete = if i is 0 and not o.scope.check complete
-          "(typeof #{complete} === \"undefined\" || #{baseline} === null)"
-        else
-          "#{complete} == null"
-        complete += ' ? undefined : ' + baseline += prop.compile o
-      else
-        part = prop.compile(o)
-        baseline += if hasSoak and prop.isComplex()
-          copy.properties[i].compile o
-        else
-          part
-        complete += part
-        @last = part
+  # Unfold a soak into an `IfNode`: `a?.b` -> `a.b if a?`
+  unfoldSoak: (o) ->
+    if @base.soakNode
+      Array::push.apply @base.body.properties, @properties
+      return @base
+    for prop, i in @properties when prop.soakNode
+      prop.soakNode = off
+      fst = new ValueNode @base, @properties.slice 0, i
+      snd = new ValueNode @base, @properties.slice i
+      if fst.isComplex()
+        ref = literal o.scope.freeVariable 'ref'
+        fst = new ParentheticalNode new AssignNode ref, fst
+        snd.base = ref
+      ifn = new IfNode new ExistenceNode(fst), snd, operation: yes
+      ifn.soakNode = on
+      return ifn
+    null
 
-    if op and @wrapped then "(#{complete})" else complete
+  # Unfold a node's child if soak, then tuck the node under created `IfNode`
+  @unfoldSoak: (o, parent, name) ->
+    node = parent[name]
+    if node instanceof IfNode and node.soakNode
+      ifnode = node
+    else if node instanceof ValueNode
+      ifnode = node.unfoldSoak o
+    return unless ifnode
+    parent[name] = ifnode.body
+    ifnode.body = new ValueNode parent
+    ifnode
 
 #### CommentNode
 
@@ -429,9 +438,9 @@ exports.CallNode = class CallNode extends BaseNode
     @isSuper  = variable is 'super'
     @variable = if @isSuper then null else variable
     @args     or= []
-    @first = @last = ''
-    @compileSplatArguments = (o) ->
-      SplatNode.compileSplattedArray.call(this, @args, o)
+
+  compileSplatArguments: (o) ->
+    SplatNode.compileSplattedArray @args, o
 
   # Tag this invocation as creating a new instance.
   newInstance: ->
@@ -443,42 +452,58 @@ exports.CallNode = class CallNode extends BaseNode
 
   # Grab the reference to the superclass' implementation of the current method.
   superReference: (o) ->
-    throw new Error "cannot call super outside of a function" unless o.scope.method
-    methname = o.scope.method.name
-    meth = if o.scope.method.proto
-      "#{o.scope.method.proto}.__super__.#{methname}"
-    else if methname
-      "#{methname}.__super__.constructor"
-    else throw new Error "cannot call super on an anonymous function."
+    {method} = o.scope
+    throw Error "cannot call super outside of a function" unless method
+    {name} = method
+    throw Error "cannot call super on an anonymous function." unless name
+    if method.klass
+      "#{method.klass}.__super__.#{name}"
+    else
+      "#{name}.__super__.constructor"
+
+  unfoldSoak: (o) ->
+    call = this
+    list = []
+    loop
+      if call.variable instanceof CallNode
+        list.push call
+        call = call.variable
+        continue
+      break unless call.variable instanceof ValueNode
+      list.push call
+      break unless (call = call.variable.base) instanceof CallNode
+    for call in list.reverse()
+      if node
+        if call.variable instanceof CallNode
+          call.variable = node
+        else
+          call.variable.base = node
+      node = ValueNode.unfoldSoak o, call, 'variable'
+    node
 
   # Compile a vanilla function call.
   compileNode: (o) ->
-    o.chainRoot = this unless o.chainRoot
-    op = @tags.operation
+    return node.compile o if node = @unfoldSoak o
+    o.chainRoot or= this
     if @exist
-      if @variable instanceof ValueNode and
-         last(@variable.properties) instanceof AccessorNode
-        methodAccessor = @variable.properties.pop()
-        [first, meth] = @variable.compileReference o
-        @first = new ValueNode(first, [methodAccessor]).compile o
-        @meth = new ValueNode(meth, [methodAccessor]).compile o
+      if val = @variable
+        val = new ValueNode val unless val instanceof ValueNode
+        [left, rite] = val.cacheReference o
+        rite = new CallNode rite, @args
       else
-        [@first, @meth] = @variable.compileReference o, precompile: yes
-      @first = "(typeof #{@first} === \"function\" ? "
-      @last  = " : undefined)"
-    else if @variable
-      @meth = @variable.compile o
+        left = literal @superReference o
+        rite = new CallNode new ValueNode(left), @args
+        rite.isNew = @isNew
+      left = "typeof #{ left.compile o } !== \"function\""
+      rite = rite.compile o
+      return "(#{left} ? undefined : #{rite})"
     for arg in @args when arg instanceof SplatNode
-      code = @compileSplat(o)
-    if not code
-      args = for arg in @args
-        arg.parenthetical = true
-        arg.compile o
-      code = if @isSuper
-        @compileSuper(args.join(', '), o)
-      else
-        "#{@first}#{@prefix()}#{@meth}(#{ args.join(', ') })#{@last}"
-    if op and @variable and @variable.wrapped then "(#{code})" else code
+      return @compileSplat o
+    args = ((arg.parenthetical = on) and arg.compile o for arg in @args).join ', '
+    if @isSuper
+      @compileSuper args, o
+    else
+      "#{@prefix()}#{@variable.compile o}(#{args})"
 
   # `super()` is converted into a call against the superclass's implementation
   # of the current function.
@@ -490,29 +515,32 @@ exports.CallNode = class CallNode extends BaseNode
   # If it's a constructor, then things get real tricky. We have to inject an
   # inner constructor in order to be able to pass the varargs.
   compileSplat: (o) ->
-    meth = @meth or @superReference(o)
-    obj  = @variable and @variable.source or 'this'
-    unless IDENTIFIER.test(obj) or NUMBER.test(obj)
-      temp = o.scope.freeVariable 'ref'
-      obj  = temp
-      meth = "(#{temp} = #{ @variable.source })#{ @variable.last }"
-    if @isNew
-      mentionsArgs = no
-      for arg in @args
-        arg.contains (n) -> mentionsArgs or= n instanceof LiteralNode and (n.value is 'arguments')
-      utility 'extends'
-      a = o.scope.freeVariable 'ctor'
-      b = o.scope.freeVariable 'ref'
-      c = o.scope.freeVariable 'result'
-      """
-      #{@first}(function() {
-      #{@idt(1)}var ctor = function(){};
-      #{@idt(1)}__extends(ctor, #{a} = #{meth});
-      #{@idt(1)}return typeof (#{c} = #{a}.apply(#{b} = new ctor, #{ @compileSplatArguments(o) })) === "object" ? #{c} : #{b};
-      #{@tab}}).#{ if mentionsArgs then 'apply(this, arguments)' else 'call(this)'}#{@last}
-      """
-    else
-      "#{@first}#{meth}.apply(#{obj}, #{ @compileSplatArguments(o) })#{@last}"
+    splatargs = @compileSplatArguments o
+    return "#{ @superReference o }.apply(this, #{splatargs})" if @isSuper
+    unless @isNew
+      base = new ValueNode base unless (base = @variable) instanceof ValueNode
+      if (name = base.properties.pop()) and base.isComplex()
+        ref = o.scope.freeVariable 'this'
+        fun = "(#{ref} = #{ base.compile o })#{ name.compile o }"
+      else
+        fun = ref = base.compile o
+        fun += name.compile o if name
+      return "#{fun}.apply(#{ref}, #{splatargs})"
+    call = 'call(this)'
+    argvar = (n) -> n instanceof LiteralNode and n.value is 'arguments'
+    for arg in @args when arg.contains argvar
+      call = 'apply(this, arguments)'
+      break
+    a = o.scope.freeVariable 'ctor'
+    b = o.scope.freeVariable 'ref'
+    c = o.scope.freeVariable 'result'
+    """
+    (function() {
+    #{idt = @idt 1}var ctor = function() {};
+    #{idt}#{utility 'extends'}(ctor, #{a} = #{ @variable.compile o });
+    #{idt}return typeof (#{c} = #{a}.apply(#{b} = new ctor, #{splatargs})) === "object" ? #{c} : #{b};
+    #{@tab}}).#{call}
+    """
 
 #### ExtendsNode
 
@@ -706,8 +734,9 @@ exports.ArrayNode = class ArrayNode extends BaseNode
   constructor: (@objects) ->
     super()
     @objects or= []
-    @compileSplatLiteral = (o) ->
-      SplatNode.compileSplattedArray.call(this, @objects, o)
+
+  compileSplatLiteral: (o) ->
+    SplatNode.compileSplattedArray @objects, o
 
   compileNode: (o) ->
     o.indent = @idt 1
@@ -807,9 +836,8 @@ exports.ClassNode = class ClassNode extends BaseNode
 # property of an object -- including within object literals.
 exports.AssignNode = class AssignNode extends BaseNode
 
-  # Matchers for detecting prototype assignments.
-  PROTO_ASSIGN: /^(\S+)\.prototype/
-  LEADING_DOT:  /^\.(?:prototype\.)?/
+  # Matchers for detecting class/method names
+  METHOD_DEF: /^(?:(\S+)\.prototype\.)?([$A-Za-z_][$\w]*)$/
 
   class:     'AssignNode'
   children: ['variable', 'value']
@@ -830,15 +858,13 @@ exports.AssignNode = class AssignNode extends BaseNode
     if isValue = @isValue()
       return @compilePatternMatch(o) if @variable.isArray() or @variable.isObject()
       return @compileSplice(o) if @variable.isSplice()
+      return node.compile o if node = ValueNode.unfoldSoak o, this, 'variable'
     top    = del o, 'top'
     stmt   = del o, 'asStatement'
     name   = @variable.compile(o)
-    end    = if isValue then @variable.last.replace(@LEADING_DOT, '') else name
-    match  = name.match(@PROTO_ASSIGN)
-    proto  = match and match[1]
-    if @value instanceof CodeNode
-      @value.name  = end   if IDENTIFIER.test end
-      @value.proto = proto if proto
+    if @value instanceof CodeNode and match = @METHOD_DEF.exec name
+      @value.name  = match[2]
+      @value.klass = match[1]
     val = @value.compile o
     return "#{name}: #{val}" if @context is 'object'
     o.scope.find name unless isValue and (@variable.hasProperties() or @variable.namespaced)
@@ -898,14 +924,14 @@ exports.AssignNode = class AssignNode extends BaseNode
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
   compileSplice: (o) ->
-    name  = @variable.compile merge o, onlyFirst: true
-    l     = @variable.properties.length
-    range = @variable.properties[l - 1].range
+    {range} = @variable.properties.pop()
+    name  = @variable.compile o
     plus  = if range.exclusive then '' else ' + 1'
     from  = if range.from then range.from.compile(o) else '0'
     to    = if range.to then range.to.compile(o) + ' - ' + from + plus else "#{name}.length"
+    ref   = o.scope.freeVariable 'ref'
     val   = @value.compile(o)
-    "[].splice.apply(#{name}, [#{from}, #{to}].concat(#{val}))"
+    "([].splice.apply(#{name}, [#{from}, #{to}].concat(#{ref} = #{val})), #{ref})"
 
 #### CodeNode
 
@@ -1172,6 +1198,7 @@ exports.OpNode = class OpNode extends BaseNode
     super(idt, @class + ' ' + @operator)
 
   compileNode: (o) ->
+    return node.compile o if node = ValueNode.unfoldSoak o, this, 'first'
     return @compileChain(o)      if @isChainable() and @first.unwrap() instanceof OpNode and @first.unwrap().isChainable()
     return @compileAssignment(o) if indexOf(@ASSIGNMENT, @operator) >= 0
     return @compileUnary(o)      if @isUnary()
@@ -1195,6 +1222,10 @@ exports.OpNode = class OpNode extends BaseNode
   # operands are only evaluated once, even though we have to reference them
   # more than once.
   compileAssignment: (o) ->
+    [left, rite] = @first.cacheReference o
+    rite = new AssignNode rite, @second
+    return new OpNode(@operator.slice(0, -1), left, rite).compile o
+    
     [first, firstVar] = @first.compileReference o, precompile: yes, assignment: yes
     second = @second.compile o
     second = "(#{second})" if @second instanceof OpNode
@@ -1202,11 +1233,14 @@ exports.OpNode = class OpNode extends BaseNode
     return "#{first} = #{ ExistenceNode.compileTest(o, literal(firstVar))[0] } ? #{firstVar} : #{second}" if @operator is '?='
     "#{first} #{ @operator.substr(0, 2) } (#{firstVar} = #{second})"
 
-  # If this is an existence operator, we delegate to `ExistenceNode.compileTest`
-  # to give us the safe references for the variables.
   compileExistence: (o) ->
-    [test, ref] = ExistenceNode.compileTest(o, @first)
-    "#{test} ? #{ref} : #{ @second.compile(o) }"
+    if @first.isComplex()
+      ref = o.scope.freeVariable 'ref'
+      fst = new ParentheticalNode new AssignNode literal(ref), @first
+    else
+      fst = @first
+      ref = fst.compile o
+    new ExistenceNode(fst).compile(o) + " ? #{ref} : #{ @second.compile o }"
 
   # Compile a unary **OpNode**.
   compileUnary: (o) ->
@@ -1302,19 +1336,12 @@ exports.ExistenceNode = class ExistenceNode extends BaseNode
     super()
 
   compileNode: (o) ->
-    test = ExistenceNode.compileTest(o, @expression)[0]
-    if @parenthetical then test.slice 1, -1 else test
-
-  # The meat of the **ExistenceNode** is in this static `compileTest` method
-  # because other nodes like to check the existence of their variables as well.
-  # Be careful not to double-evaluate anything.
-  @compileTest: (o, variable) ->
-    [first, second] = variable.compileReference o, precompile: yes
-    first = if first is second and o.scope.check first
-      "(#{first} != null)"
+    code = @expression.compile o
+    code = if IDENTIFIER.test(code) and not o.scope.check code
+      "typeof #{code} !== \"undefined\" && #{code} !== null"
     else
-      "(typeof #{first} !== \"undefined\" && #{second} !== null)"
-    [first, second]
+      "#{code} != null"
+    if @parenthetical then code else "(#{code})"
 
 #### ParentheticalNode
 
@@ -1413,8 +1440,8 @@ exports.ForNode = class ForNode extends BaseNode
       sourcePart  = source.compileVariables(o)
       forPart     = source.compile merge o, index: ivar, step: @step
     else
-      svar        = scope.freeVariable 'ref'
-      sourcePart  = "#{svar} = #{ @source.compile(o) };"
+      svar = scope.freeVariable 'ref'
+      sourcePart = "#{svar} = #{ @source.compile(o) };"
       if @pattern
         namePart  = new AssignNode(@name, literal("#{svar}[#{ivar}]")).compile(merge o, {indent: @idt(1), top: true, keepLevel: yes}) + '\n'
       else

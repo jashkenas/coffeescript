@@ -49,7 +49,7 @@ medalists contenders..., 'Tim', 'Moe', 'Jim'
 ok last is 'Jim'
 
 
-obj = {
+obj =
   name: 'moe'
   accessor: (args...) ->
     [@name].concat(args).join(' ')
@@ -58,7 +58,6 @@ obj = {
     @accessor(args...)
   index: 0
   0: {method: -> this is obj[0]}
-}
 
 ok obj.getNames() is 'moe jane ted'
 ok obj[obj.index++].method([]...), 'should cache base value'
