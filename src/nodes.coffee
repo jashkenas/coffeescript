@@ -1225,13 +1225,6 @@ exports.OpNode = class OpNode extends BaseNode
     [left, rite] = @first.cacheReference o
     rite = new AssignNode rite, @second
     return new OpNode(@operator.slice(0, -1), left, rite).compile o
-    
-    [first, firstVar] = @first.compileReference o, precompile: yes, assignment: yes
-    second = @second.compile o
-    second = "(#{second})" if @second instanceof OpNode
-    o.scope.find(first) if first.match(IDENTIFIER)
-    return "#{first} = #{ ExistenceNode.compileTest(o, literal(firstVar))[0] } ? #{firstVar} : #{second}" if @operator is '?='
-    "#{first} #{ @operator.substr(0, 2) } (#{firstVar} = #{second})"
 
   compileExistence: (o) ->
     if @first.isComplex()
