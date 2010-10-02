@@ -139,3 +139,6 @@ if func func
   {a} = obj
 
 ok a is 101
+
+[x] = {0: y} = {'0': z} = [Math.random()]
+ok x is y is z, 'destructuring in multiple'

@@ -877,7 +877,7 @@ exports.AssignNode = class AssignNode extends BaseNode
     {objects} = @variable.base
     return value.compile o unless olength = objects.length
     isObject = @variable.isObject()
-    if olength is 1 and (obj = objects[0]) not instanceof SplatNode
+    if o.top and olength is 1 and (obj = objects[0]) not instanceof SplatNode
       # Unroll simplest cases: `{v} = x` -> `v = x.v`
       if obj instanceof AssignNode
         {variable: {base: idx}, value: obj} = obj
