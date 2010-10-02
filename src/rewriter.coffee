@@ -207,7 +207,7 @@ exports.Rewriter = class Rewriter
           @tokens.splice idx, 0, outdent
         @detectEnd i + 2, condition, action
         @tokens.splice i, 1 if token[0] is 'THEN'
-        return 2
+        return 1
       return 1
 
   # Tag postfix conditionals as such, so that we can parse them with a

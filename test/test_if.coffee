@@ -130,3 +130,8 @@ result =
        else          20
 
 ok result is 70
+
+
+# Issue #738
+func = if true then -> 1
+eq func(), 1
