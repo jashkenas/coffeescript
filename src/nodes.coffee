@@ -1425,6 +1425,7 @@ exports.ForNode = class ForNode extends BaseNode
     varPart       = ''
     guardPart     = ''
     body          = Expressions.wrap([@body])
+    idt1          = @idt 1
     if range
       sourcePart  = source.compileVariables(o)
       forPart     = source.compile merge o, index: ivar, step: @step
@@ -1436,10 +1437,10 @@ exports.ForNode = class ForNode extends BaseNode
         ref = scope.freeVariable 'ref'
         sourcePart = "#{ref} = #{svar};"
         svar = ref
-      if @pattern
-        namePart  = new AssignNode(@name, literal("#{svar}[#{ivar}]")).compile(merge o, {indent: @idt(1), top: true, keepLevel: yes}) + '\n'
-      else
-        namePart  = "#{name} = #{svar}[#{ivar}]" if name
+      namePart = if @pattern
+        new AssignNode(@name, literal "#{svar}[#{ivar}]").compile merge o, top: on
+      else if name
+        "#{name} = #{svar}[#{ivar}]"
       unless @object
         lvar      = scope.freeVariable 'len'
         stepPart  = if @step then "#{ivar} += #{ @step.compile(o) }" else "#{ivar}++"
@@ -1447,7 +1448,6 @@ exports.ForNode = class ForNode extends BaseNode
     sourcePart    = (if rvar then "#{rvar} = []; " else '') + sourcePart
     sourcePart    = if sourcePart then "#{@tab}#{sourcePart}\n#{@tab}" else @tab
     returnResult  = @compileReturnValue(rvar, o)
-
     body          = PushNode.wrap(rvar, body) unless topLevel
     if @guard
       body        = Expressions.wrap([new IfNode(@guard, body)])
@@ -1457,13 +1457,17 @@ exports.ForNode = class ForNode extends BaseNode
       body.unshift  literal "var #{index} = #{ivar}" if index
       body        = ClosureNode.wrap(body, true)
     else
-      varPart     = (namePart or '') and (if @pattern then namePart else "#{@idt(1)}#{namePart};\n")
+      varPart     = "#{idt1}#{namePart};\n" if namePart
     if @object
       forPart     = "#{ivar} in #{svar}"
-      guardPart   = "\n#{@idt(1)}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" unless @raw
-    body          = body.compile(merge(o, {indent: @idt(1), top: true}))
+      guardPart   = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" unless @raw
+    body          = body.compile merge o, indent: idt1, top: true
     vars          = if range then name else "#{name}, #{ivar}"
-    "#{sourcePart}for (#{forPart}) {#{guardPart}\n#{varPart}#{body}\n#{@tab}}#{returnResult}"
+    """
+    #{sourcePart}for (#{forPart}) {#{guardPart}
+    #{varPart}#{body}
+    #{@tab}}#{returnResult}
+    """
 
 #### SwitchNode
 
