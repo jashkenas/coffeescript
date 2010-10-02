@@ -459,6 +459,7 @@ exports.CallNode = class CallNode extends BaseNode
     else
       "#{name}.__super__.constructor"
 
+  # Soaked chained invocations unfold into if/else ternary structures.
   unfoldSoak: (o) ->
     call = this
     list = []
@@ -1585,7 +1586,7 @@ exports.IfNode = class IfNode extends BaseNode
     @bodyNode().tags.operation = @condition.tags.operation = yes
     @elseBodyNode().tags.operation = yes if @elseBody
     ifPart      = @condition.compile(o) + ' ? ' + @bodyNode().compile(o)
-    elsePart    = if @elseBody then @elseBodyNode().compile(o) else 'null'
+    elsePart    = if @elseBody then @elseBodyNode().compile(o) else 'undefined'
     code        = "#{ifPart} : #{elsePart}"
     if @tags.operation then "(#{code})" else code
 

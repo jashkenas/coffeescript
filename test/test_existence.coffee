@@ -44,7 +44,7 @@ eq obj?.prop, "hello"
 eq obj?['prop'], "hello"
 eq obj.prop?.length, 5
 eq obj?.prop?['length'], 5
-eq obj?.prop?.non?.existent?.property, null
+eq obj?.prop?.non?.existent?.property, undefined
 
 
 # Soaks and caches method calls as well.
@@ -52,13 +52,13 @@ arr = ["--", "----"]
 
 eq arr.pop()?.length, 4
 eq arr.pop()?.length, 2
-eq arr.pop()?.length, null
-eq arr.pop()?.length?.non?.existent()?.property, null
+eq arr.pop()?.length, undefined
+eq arr.pop()?.length?.non?.existent()?.property, undefined
 
 
 # Soaks method calls safely.
 value = null
-eq value?.toString().toLowerCase(), null
+eq value?.toString().toLowerCase(), undefined
 
 value = 10
 eq value?.toString().toLowerCase(), '10'
@@ -78,7 +78,7 @@ ok counter is 3
 
 
 ident = (obj) -> obj
-eq ident(non?.existent().method()), null, 'soaks inner values'
+eq ident(non?.existent().method()), undefined, 'soaks inner values'
 
 
 # Soaks constructor invocations.
@@ -94,7 +94,7 @@ ok a is 1
 ok not value?.property?, 'safely checks existence on soaks'
 
 
-eq nothing?.value, null, 'safely calls values off of non-existent variables'
+eq nothing?.value, undefined, 'safely calls values off of non-existent variables'
 
 
 # Assign to the result of an exsitential operation with a minus.
@@ -132,7 +132,7 @@ ok (maybe_close 'string', 41)?() is undefined
 eq 2?(3), undefined
 
 #726
-eq calendar?[Date()], null
+eq calendar?[Date()], undefined
 
 #733
 a = b: {c: null}

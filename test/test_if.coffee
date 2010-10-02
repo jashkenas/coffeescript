@@ -66,7 +66,7 @@ ok result is undefined
 func = ->
   return if false then callback()
 
-ok func() is null
+ok func() is undefined
 
 func = ->
   return unless false then 100 else -100
