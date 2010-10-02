@@ -875,13 +875,14 @@ exports.AssignNode = class AssignNode extends BaseNode
   compilePatternMatch: (o) ->
     if (value = @value).isStatement o then value = ClosureNode.wrap value
     {objects} = @variable.base
-    return value.compile o unless objects.length
-    if (isObject = @variable.isObject()) and objects.length is 1
+    return value.compile o unless olength = objects.length
+    isObject = @variable.isObject()
+    if olength is 1 and (obj = objects[0]) not instanceof SplatNode
       # Unroll simplest cases: `{v} = x` -> `v = x.v`
-      if (obj = objects[0]) instanceof AssignNode
+      if obj instanceof AssignNode
         {variable: {base: idx}, value: obj} = obj
       else
-        idx = obj
+        idx = if isObject then obj else literal 0
       value = new ValueNode value unless value instanceof ValueNode
       accessClass = if IDENTIFIER.test idx.value then AccessorNode else IndexNode
       value.properties.push new accessClass idx
@@ -905,9 +906,7 @@ exports.AssignNode = class AssignNode extends BaseNode
         throw new Error 'pattern matching must use only identifiers on the left-hand side.'
       accessClass = if isObject and IDENTIFIER.test(idx.value) then AccessorNode else IndexNode
       if not splat and obj instanceof SplatNode
-        val = literal obj.compileValue o, valVar,
-          (oindex  = indexOf objects, obj),
-          (olength = objects.length) - oindex - 1
+        val   = literal obj.compileValue o, valVar, i, olength - i - 1
         splat = true
       else
         idx = literal(if splat then "#{valVar}.length - #{olength - idx}" else idx) if typeof idx isnt 'object'
