@@ -33,7 +33,7 @@ exports.Lexer = class Lexer
   # Before returning the token stream, run it through the [Rewriter](rewriter.html)
   # unless explicitly asked not to.
   tokenize: (code, options) ->
-    code     = code.replace(/\r/g, '').replace /\s+$/, ''
+    code     = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
     o        = options or {}
     @code    = code         # The remainder of the source code.
     @i       = 0            # Current character position we're parsing.
@@ -124,8 +124,11 @@ exports.Lexer = class Lexer
         return false unless match = SIMPLESTR.exec @chunk
         @token 'STRING', (string = match[0]).replace MULTILINER, '\\\n'
       when '"'
-        return false unless string = @balancedToken ['"', '"'], ['#{', '}']
-        @interpolateString string
+        return false unless string = @balancedString @chunk, [['"', '"'], ['#{', '}']]
+        if ~string.indexOf '#{'
+          @interpolateString string
+        else
+          @token 'STRING', @escapeLines string
       else
         return false
     @line += count string, '\n'
@@ -135,14 +138,14 @@ exports.Lexer = class Lexer
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
   # preserve whitespace, but ignore indentation to the left.
   heredocToken: ->
-    return false unless match = @chunk.match HEREDOC
+    return false unless match = HEREDOC.exec @chunk
     heredoc = match[0]
     quote = heredoc.charAt 0
     doc = @sanitizeHeredoc match[2], {quote, indent: null}
-    if quote is '"'
+    if quote is '"' and ~doc.indexOf '#{'
       @interpolateString quote + doc + quote, heredoc: yes
     else
-      @token 'STRING', quote + doc + quote
+      @token 'STRING', quote + @escapeLines(doc, yes) + quote
     @line += count heredoc, '\n'
     @i += heredoc.length
     true
@@ -168,31 +171,41 @@ exports.Lexer = class Lexer
 
   # Matches regular expression literals. Lexing regular expressions is difficult
   # to distinguish from division, so we borrow some basic heuristics from
-  # JavaScript and Ruby, borrow slash balancing from `@balancedToken`, and
+  # JavaScript and Ruby, borrow slash balancing from `@balancedString`, and
   # borrow interpolation from `@interpolateString`.
   regexToken: ->
-    return false unless first = @chunk.match REGEX_START
+    return false if @chunk.charAt(0) isnt '/'
+    return @heregexToken match if match = HEREGEX.exec @chunk
+    return false unless first = REGEX_START.exec @chunk
     return false if first[1] is ' ' and @tag() not in ['CALL_START', '=']
     return false if include NOT_REGEX, @tag()
-    return false unless regex = @balancedToken ['/', '/']
+    return false unless regex = @balancedString @chunk, [['/', '/']]
     return false unless end = @chunk[regex.length..].match REGEX_END
     flags = end[0]
-    if REGEX_INTERPOLATION.test regex
+    if ~regex.indexOf '#{'
       str = regex.slice 1, -1
-      str = str.replace REGEX_ESCAPE, '\\$&'
-      @tokens.push ['(', '('], ['IDENTIFIER', 'RegExp'], ['CALL_START', '(']
-      @interpolateString "\"#{str}\"", escapeQuotes: yes
+      @tokens.push ['IDENTIFIER', 'RegExp'], ['CALL_START', '(']
+      @interpolateString "\"#{str}\"", regex: yes
       @tokens.push [',', ','], ['STRING', "\"#{flags}\""] if flags
-      @tokens.push [')', ')'], [')', ')']
+      @tokens.push ['CALL_END', ')']
     else
       @token 'REGEX', regex + flags
     @i += regex.length + flags.length
     true
 
-  # Matches a token in which the passed delimiter pairs must be correctly
-  # balanced (ie. strings, JS literals).
-  balancedToken: (delimited...) ->
-    @balancedString @chunk, delimited
+  # Matches experimental, multiline and extended regular expression literals.
+  heregexToken: (match) ->
+    [heregex, body, flags] = match
+    @i += heregex.length
+    unless ~body.indexOf '#{'
+      @token 'REGEX', '/' + body.replace(HEREGEX_OMIT, '') + '/' + flags
+      return true
+    @token 'IDENTIFIER', 'RegExp'
+    @tokens.push ['CALL_START', '(']
+    @interpolateString "\"#{body}\"", regex: yes, heregex: yes
+    @tokens.push [',', ','], ['STRING', '"' + flags + '"'] if flags
+    @tokens.push ['CALL_END', ')']
+    true
 
   # Matches newlines, indents, and outdents, and determines which is which.
   # If we can detect that the current line is continued onto the the next line,
@@ -399,7 +412,7 @@ exports.Lexer = class Lexer
             i += close.length - 1
             i += 1 unless levels.length
             break
-          else if starts str, open, i
+          if starts str, open, i
             levels.push(pair)
             i += open.length - 1
             break
@@ -419,49 +432,50 @@ exports.Lexer = class Lexer
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
   interpolateString: (str, options) ->
-    {heredoc, escapeQuotes} = options or {}
-    quote = str.charAt 0
-    return @token 'STRING', str if quote isnt '"' or str.length < 3
+    return @token 'STRING', @escapeLines(str, heredoc) if str.length < 5  # "#{}"
+    {heredoc, regex} = options or= {}
     lexer  = new Lexer
     tokens = []
-    i = pi = 1
-    end = str.length - 1
-    while i < end
-      if str.charAt(i) is '\\'
+    pi = 1
+    i  = 0
+    while char = str.charAt i += 1
+      if char is '\\'
         i += 1
-      else if expr = @balancedString str[i..], [['#{', '}']]
-        if pi < i
-          s = quote + @escapeLines(str[pi...i], heredoc) + quote
-          tokens.push ['STRING', s]
-        inner = expr.slice(2, -1).replace /^[ \t]*\n/, ''
-        if inner.length
-          inner = inner.replace RegExp('\\\\' + quote, 'g'), quote if heredoc
-          nested = lexer.tokenize "(#{inner})", line: @line
-          (tok[0] = ')') for tok, idx in nested when tok[0] is 'CALL_END'
-          nested.pop()
-          tokens.push ['TOKENS', nested]
-        else
-          tokens.push ['STRING', quote + quote]
-        i += expr.length - 1
-        pi = i + 1
-      i += 1
+        continue
+      unless char is '#' and str.charAt(i+1) is '{' and
+             (expr = @balancedString str[i+1..], [['{', '}']])
+        continue
+      if pi < i
+        tokens.push ['STRING', '"' + @escapeLines(str[pi...i], heredoc) + '"']
+      inner = expr.slice(1, -1).replace(LEADING_SPACES, '').replace(TRAILING_SPACES, '')
+      if inner.length
+        inner = inner.replace /\\\"/g, '"' if heredoc
+        nested = lexer.tokenize "(#{inner})", line: @line
+        (tok[0] = ')') for tok in nested when tok[0] is 'CALL_END'
+        nested.pop()
+        tokens.push ['TOKENS', nested]
+      else
+        tokens.push ['STRING', '""']
+      i += expr.length
+      pi = i + 1
     if i > pi < str.length - 1
-      s = str[pi...i].replace MULTILINER, if heredoc then '\\n' else ''
-      tokens.push ['STRING', quote + s + quote]
+      s = @escapeLines str.slice(pi, -1), heredoc
+      tokens.push ['STRING', '"' + s + '"']
     tokens.unshift ['STRING', '""'] unless tokens[0][0] is 'STRING'
-    interpolated = tokens.length > 1
+    interpolated = not regex and tokens.length > 1
     @token '(', '(' if interpolated
     {push} = tokens
-    for token, i in tokens
-      [tag, value] = token
+    for [tag, value], i in tokens
+      @token '+', '+' if i
       if tag is 'TOKENS'
         push.apply @tokens, value
-      else if tag is 'STRING' and escapeQuotes
-        escaped = value.slice(1, -1).replace(/"/g, '\\"')
-        @token tag, "\"#{escaped}\""
-      else
-        @token tag, value
-      @token '+', '+' if i < tokens.length - 1
+        continue
+      if regex
+        value = value.slice 1, -1
+        value = value.replace /[\\\"]/g, '\\$&'
+        value = value.replace HEREGEX_OMIT, '' if options.heregex
+        value = '"' + value + '"'
+      @token tag, value
     @token ')', ')' if interpolated
     tokens
 
@@ -544,9 +558,11 @@ JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
 # Regex-matching-regexes.
 REGEX_START         = /^\/([^\/])/
-REGEX_INTERPOLATION = /[^\\]#\{.*[^\\]\}/
 REGEX_END           = /^[imgy]{0,4}(?![a-zA-Z])/
 REGEX_ESCAPE        = /\\[^#]/g
+
+HEREGEX      = /^\/{3}([\s\S]+?)\/{3}([imgy]{0,4})(?![A-Za-z])/
+HEREGEX_OMIT = /\s+(?:#.*)?/g
 
 # Token cleaning regexes.
 MULTILINER      = /\n/g
@@ -554,6 +570,8 @@ NO_NEWLINE      = /^(?:[-+*&|\/%=<>!.\\][<>=&|]*|and|or|is(?:nt)?|n(?:ot|ew)|del
 HEREDOC_INDENT  = /\n+([ \t]*)/g
 ASSIGNED        = /^\s*@?[$A-Za-z_][$\w]*[ \t]*?[:=][^:=>]/
 NEXT_CHARACTER  = /^\s*(\S?)/
+LEADING_SPACES  = /^\s+/
+TRAILING_SPACES = /\s+$/
 
 # Compound assignment tokens.
 COMPOUND_ASSIGN = ['-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=', '<<=', '>>=', '>>>=', '&=', '^=', '|=']

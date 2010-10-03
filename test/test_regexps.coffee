@@ -26,3 +26,13 @@ regexp = / /
 ok ' '.match regexp
 
 ok (obj.width()/id - obj.height()/id) is -5
+
+eq /^I'm\s+Heregex?/gim + '', ///
+  ^ I'm \s+ Heregex? # or not
+///gim + ''
+eq '\\\\#{}', ///
+ #{
+   "#{ '\\' }"
+ }
+ \#{}
+///.source
