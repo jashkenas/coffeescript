@@ -171,26 +171,14 @@ exports.Lexer = class Lexer
 
   # Matches regular expression literals. Lexing regular expressions is difficult
   # to distinguish from division, so we borrow some basic heuristics from
-  # JavaScript and Ruby, borrow slash balancing from `@balancedString`, and
-  # borrow interpolation from `@interpolateString`.
+  # JavaScript and Ruby.
   regexToken: ->
     return false if @chunk.charAt(0) isnt '/'
     return @heregexToken match if match = HEREGEX.exec @chunk
-    return false unless first = REGEX_START.exec @chunk
-    return false if first[1] is ' ' and @tag() not in ['CALL_START', '=']
     return false if include NOT_REGEX, @tag()
-    return false unless regex = @balancedString @chunk, [['/', '/']]
-    return false unless end = @chunk[regex.length..].match REGEX_END
-    flags = end[0]
-    if ~regex.indexOf '#{'
-      str = regex.slice 1, -1
-      @tokens.push ['IDENTIFIER', 'RegExp'], ['CALL_START', '(']
-      @interpolateString "\"#{str}\"", regex: yes
-      @tokens.push [',', ','], ['STRING', "\"#{flags}\""] if flags
-      @tokens.push ['CALL_END', ')']
-    else
-      @token 'REGEX', regex + flags
-    @i += regex.length + flags.length
+    return false unless match = REGEX.exec @chunk
+    @token 'REGEX', match[0]
+    @i += match[0].length
     true
 
   # Matches experimental, multiline and extended regular expression literals.
@@ -199,11 +187,21 @@ exports.Lexer = class Lexer
     @i += heregex.length
     unless ~body.indexOf '#{'
       re = body.replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
-      @token 'REGEX', "/#{  re or '(?:)' }/#{flags}"
+      @token 'REGEX', "/#{ re or '(?:)' }/#{flags}"
       return true
     @token 'IDENTIFIER', 'RegExp'
     @tokens.push ['CALL_START', '(']
-    @interpolateString "\"#{body}\"", regex: yes, heregex: yes
+    tokens = []
+    for [tag, value] in @interpolateString('"' + body + '"', regex: yes)
+      if tag is 'TOKENS'
+        tokens.push value...
+      else
+        continue unless value = value.slice(1, -1).replace HEREGEX_OMIT, ''
+        tokens.push ['STRING', '"' + value.replace(/[\\\"]/g, '\\$&') + '"']
+      tokens.push ['+', '+']
+    tokens.pop()
+    @tokens.push ['STRING', '""'], ['+', '+'] unless tokens[0]?[0] is 'STRING'
+    @tokens.push tokens...
     @tokens.push [',', ','], ['STRING', '"' + flags + '"'] if flags
     @tokens.push ['CALL_END', ')']
     true
@@ -355,12 +353,12 @@ exports.Lexer = class Lexer
       while (match = HEREDOC_INDENT.exec doc)
         attempt = match[1]
         indent = attempt if indent is null or 0 < attempt.length < indent.length
-    doc = doc.replace /\n#{ indent }/g, '\n' if indent
+    doc = doc.replace /// \n #{indent} ///g, '\n' if indent
     return doc if herecomment
     {quote} = options
     doc = doc.replace /^\n/, ''
     doc = doc.replace /\\([\s\S])/g, (m, c) -> if c in ['\n', quote] then c else m
-    doc = doc.replace /#{quote}/g, '\\$&'
+    doc = doc.replace /// #{quote} ///g, '\\$&'
     doc = @escapeLines doc, yes if quote is "'"
     doc
 
@@ -398,7 +396,6 @@ exports.Lexer = class Lexer
   # interpolations within strings, ad infinitum.
   balancedString: (str, delimited, options) ->
     options or= {}
-    slash = delimited[0][0] is '/'
     levels = []
     i = 0
     slen = str.length
@@ -417,10 +414,9 @@ exports.Lexer = class Lexer
             levels.push(pair)
             i += open.length - 1
             break
-      break if not levels.length or slash and str.charAt(i) is '\n'
+      break if not levels.length
       i += 1
     if levels.length
-      return false if slash
       throw new Error "SyntaxError: Unterminated #{levels.pop()[0]} starting on line #{@line + 1}"
     if not i then false else str[0...i]
 
@@ -446,37 +442,28 @@ exports.Lexer = class Lexer
       unless char is '#' and str.charAt(i+1) is '{' and
              (expr = @balancedString str[i+1..], [['{', '}']])
         continue
-      if pi < i
-        tokens.push ['STRING', '"' + @escapeLines(str[pi...i], heredoc) + '"']
+      tokens.push ['STRING', '"' + str[pi...i] + '"'] if pi < i
       inner = expr.slice(1, -1).replace(LEADING_SPACES, '').replace(TRAILING_SPACES, '')
       if inner.length
         inner = inner.replace /\\\"/g, '"' if heredoc
-        nested = lexer.tokenize "(#{inner})", line: @line
+        nested = lexer.tokenize "(#{inner}\n)", line: @line
         (tok[0] = ')') for tok in nested when tok[0] is 'CALL_END'
         nested.pop()
+        if nested.length < 5 then nested.pop(); nested.shift()
         tokens.push ['TOKENS', nested]
-      else
-        tokens.push ['STRING', '""']
       i += expr.length
       pi = i + 1
-    if i > pi < str.length - 1
-      s = @escapeLines str.slice(pi, -1), heredoc
-      tokens.push ['STRING', '"' + s + '"']
-    tokens.unshift ['STRING', '""'] unless tokens[0][0] is 'STRING'
-    interpolated = not regex and tokens.length > 1
+    tokens.push ['STRING', '"' + str.slice pi] if i > pi < str.length - 1
+    return tokens if regex
+    interpolated = tokens.length > 1
+    tokens.unshift ['STRING', '""'] unless tokens[0]?[0] is 'STRING'
     @token '(', '(' if interpolated
-    {push} = tokens
     for [tag, value], i in tokens
       @token '+', '+' if i
       if tag is 'TOKENS'
-        push.apply @tokens, value
-        continue
-      if regex
-        value = value.slice 1, -1
-        value = value.replace /[\\\"]/g, '\\$&'
-        value = value.replace HEREGEX_OMIT, '' if options.heregex
-        value = '"' + value + '"'
-      @token tag, value
+        @tokens.push value...
+      else
+        @token tag, @escapeLines value, heredoc
     @token ')', ')' if interpolated
     tokens
 
@@ -558,10 +545,14 @@ SIMPLESTR  = /^'[^\\']*(?:\\.[^\\']*)*'/
 JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
 # Regex-matching-regexes.
-REGEX_START         = /^\/([^\/])/
-REGEX_END           = /^[imgy]{0,4}(?![a-zA-Z])/
-REGEX_ESCAPE        = /\\[^#]/g
-
+REGEX = /// ^
+  / (?!\s)  # disallow leading whitespace
+  (?: [^ [ / \n \\ ]+  # every other things
+    | \\.              # anything escaped
+    | \[ ( [^\\\]]+ | \\. )* ]  # character class
+  )+
+  / [imgy]{0,4} (?![A-Za-z])
+///
 HEREGEX      = /^\/{3}([\s\S]+?)\/{3}([imgy]{0,4})(?![A-Za-z])/
 HEREGEX_OMIT = /\s+(?:#.*)?/g
 
