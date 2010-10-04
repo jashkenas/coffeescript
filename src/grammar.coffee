@@ -389,6 +389,7 @@ grammar =
 
   # The variants of *try/catch/finally* exception handling blocks.
   Try: [
+    o "TRY Block",                              -> new TryNode $2
     o "TRY Block Catch",                        -> new TryNode $2, $3[0], $3[1]
     o "TRY Block FINALLY Block",                -> new TryNode $2, null, null, $4
     o "TRY Block Catch FINALLY Block",          -> new TryNode $2, $3[0], $3[1], $5

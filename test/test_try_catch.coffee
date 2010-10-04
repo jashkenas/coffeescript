@@ -23,8 +23,11 @@ result = try throw 'error' catch err then err.length
 
 ok result is 5
 
+try throw 'catch is optional'
 
 # try/catch with empty clauses still compiles.
+try
+
 try
   # nothing
 catch err
