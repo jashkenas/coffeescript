@@ -73,7 +73,7 @@ class exports.Rewriter
           tokens.splice i - 2, 1
         else
           tokens.splice i, 0, after
-      else if prev?[0] not in ['TERMINATOR', 'INDENT', 'OUTDENT']
+      else if prev and prev[0] not in ['TERMINATOR', 'INDENT', 'OUTDENT']
         if post?[0] is 'TERMINATOR' and after?[0] is 'OUTDENT'
           tokens.splice i + 2, 0, tokens.splice(i, 2)...
           if tokens[i + 2][0] isnt 'TERMINATOR'

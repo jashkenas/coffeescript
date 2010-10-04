@@ -125,8 +125,8 @@ exports.Lexer = class Lexer
         @token 'STRING', (string = match[0]).replace MULTILINER, '\\\n'
       when '"'
         return false unless string = @balancedString @chunk, [['"', '"'], ['#{', '}']]
-        if ~string.indexOf '#{'
-          @interpolateString string
+        if 0 < string.indexOf '#{', 1
+          @interpolateString string.slice 1, -1
         else
           @token 'STRING', @escapeLines string
       else
@@ -142,10 +142,10 @@ exports.Lexer = class Lexer
     heredoc = match[0]
     quote = heredoc.charAt 0
     doc = @sanitizeHeredoc match[2], {quote, indent: null}
-    if quote is '"' and ~doc.indexOf '#{'
-      @interpolateString quote + doc + quote, heredoc: yes
+    if quote is '"' and 0 <= doc.indexOf '#{'
+      @interpolateString doc, heredoc: yes
     else
-      @token 'STRING', quote + @escapeLines(doc, yes) + quote
+      @token 'STRING', @makeString doc, quote, yes
     @line += count heredoc, '\n'
     @i += heredoc.length
     true
@@ -185,19 +185,20 @@ exports.Lexer = class Lexer
   heregexToken: (match) ->
     [heregex, body, flags] = match
     @i += heregex.length
-    unless ~body.indexOf '#{'
+    if 0 > body.indexOf '#{'
       re = body.replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
       @token 'REGEX', "/#{ re or '(?:)' }/#{flags}"
       return true
     @token 'IDENTIFIER', 'RegExp'
     @tokens.push ['CALL_START', '(']
     tokens = []
-    for [tag, value] in @interpolateString('"' + body + '"', regex: yes)
+    for [tag, value] in @interpolateString(body, regex: yes)
       if tag is 'TOKENS'
         tokens.push value...
       else
-        continue unless value = value.slice(1, -1).replace HEREGEX_OMIT, ''
-        tokens.push ['STRING', '"' + value.replace(/[\\\"]/g, '\\$&') + '"']
+        continue unless value = value.replace HEREGEX_OMIT, ''
+        value = value.replace /\\/g, '\\\\'
+        tokens.push ['STRING', @makeString(value, '"', yes)]
       tokens.push ['+', '+']
     tokens.pop()
     @tokens.push ['STRING', '""'], ['+', '+'] unless tokens[0]?[0] is 'STRING'
@@ -344,22 +345,17 @@ exports.Lexer = class Lexer
       prev[0] is '@'
     if accessor then 'accessor' else false
 
-  # Sanitize a heredoc or herecomment by escaping internal double quotes and
+  # Sanitize a heredoc or herecomment by
   # erasing all external indentation on the left-hand side.
   sanitizeHeredoc: (doc, options) ->
     {indent, herecomment} = options
-    return doc if herecomment and not include doc, '\n'
+    return doc if herecomment and 0 > doc.indexOf '\n'
     unless herecomment
-      while (match = HEREDOC_INDENT.exec doc)
+      while match = HEREDOC_INDENT.exec doc
         attempt = match[1]
         indent = attempt if indent is null or 0 < attempt.length < indent.length
     doc = doc.replace /// \n #{indent} ///g, '\n' if indent
-    return doc if herecomment
-    {quote} = options
-    doc = doc.replace /^\n/, ''
-    doc = doc.replace /\\([\s\S])/g, (m, c) -> if c in ['\n', quote] then c else m
-    doc = doc.replace /// #{quote} ///g, '\\$&'
-    doc = @escapeLines doc, yes if quote is "'"
+    doc = doc.replace /^\n/, '' unless herecomment
     doc
 
   # A source of ambiguity in our grammar used to be parameter lists in function
@@ -429,12 +425,10 @@ exports.Lexer = class Lexer
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
   interpolateString: (str, options) ->
-    return @token 'STRING', @escapeLines(str, heredoc) if str.length < 5  # "#{}"
     {heredoc, regex} = options or= {}
-    lexer  = new Lexer
     tokens = []
-    pi = 1
-    i  = 0
+    pi = 0
+    i  = -1
     while char = str.charAt i += 1
       if char is '\\'
         i += 1
@@ -442,28 +436,28 @@ exports.Lexer = class Lexer
       unless char is '#' and str.charAt(i+1) is '{' and
              (expr = @balancedString str[i+1..], [['{', '}']])
         continue
-      tokens.push ['STRING', '"' + str[pi...i] + '"'] if pi < i
+      tokens.push ['TO_BE_STRING', str[pi...i]] if pi < i
       inner = expr.slice(1, -1).replace(LEADING_SPACES, '').replace(TRAILING_SPACES, '')
       if inner.length
-        inner = inner.replace /\\\"/g, '"' if heredoc
-        nested = lexer.tokenize "(#{inner}\n)", line: @line
-        (tok[0] = ')') for tok in nested when tok[0] is 'CALL_END'
+        nested = new Lexer().tokenize inner, line: @line, rewrite: off
         nested.pop()
-        if nested.length < 5 then nested.pop(); nested.shift()
+        if nested.length > 1
+          nested.unshift ['(', '(']
+          nested.push    [')', ')']
         tokens.push ['TOKENS', nested]
       i += expr.length
       pi = i + 1
-    tokens.push ['STRING', '"' + str.slice pi] if i > pi < str.length - 1
+    tokens.push ['TO_BE_STRING', str[pi..]] if i > pi < str.length
     return tokens if regex
-    interpolated = tokens.length > 1
-    tokens.unshift ['STRING', '""'] unless tokens[0]?[0] is 'STRING'
-    @token '(', '(' if interpolated
+    return @token 'STRING', '""' unless tokens.length
+    @token '(', '(' if interpolated = tokens.length > 1
+    @tokens.push ['STRING', '""'], ['+', '+'] unless tokens[0][0] is 'TO_BE_STRING'
     for [tag, value], i in tokens
       @token '+', '+' if i
       if tag is 'TOKENS'
         @tokens.push value...
       else
-        @token tag, @escapeLines value, heredoc
+        @token 'STRING', @makeString value, '"', heredoc
     @token ')', ')' if interpolated
     tokens
 
@@ -493,6 +487,13 @@ exports.Lexer = class Lexer
   # Converts newlines for string literals.
   escapeLines: (str, heredoc) ->
     str.replace MULTILINER, if heredoc then '\\n' else ''
+
+  # Constructs a string token by escaping quotes and newlines.
+  makeString: (body, quote, heredoc) ->
+    body = body.replace /\\([\s\S])/g, ($amp, $1) ->
+      if $1 in ['\n', quote] then $1 else $amp
+    body = body.replace /// #{quote} ///g, '\\$&'
+    quote + @escapeLines(body, heredoc) + quote
 
 # Constants
 # ---------
@@ -535,7 +536,7 @@ JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
 # Token matching regexes.
 IDENTIFIER = /^[a-zA-Z_$][\w$]*/
 NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
-HEREDOC    = /^("""|''')([\s\S]*?)\n?[ \t]*\1/
+HEREDOC    = /^("""|''')([\s\S]*?)(?:\n[ \t]*)?\1/
 OPERATOR   = /^(?:-[-=>]?|\+[+=]?|[*&|\/%=<>^:!?]+)(?=([ \t]*))/
 WHITESPACE = /^[ \t]+/
 COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
