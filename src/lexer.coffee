@@ -198,7 +198,8 @@ exports.Lexer = class Lexer
     [heregex, body, flags] = match
     @i += heregex.length
     unless ~body.indexOf '#{'
-      @token 'REGEX', '/' + body.replace(HEREGEX_OMIT, '') + '/' + flags
+      re = body.replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
+      @token 'REGEX', "/#{  re or '(?:)' }/#{flags}"
       return true
     @token 'IDENTIFIER', 'RegExp'
     @tokens.push ['CALL_START', '(']
