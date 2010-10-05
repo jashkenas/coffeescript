@@ -294,9 +294,10 @@ exports.ValueNode = class ValueNode extends BaseNode
   children: ['base', 'properties']
 
   # A **ValueNode** has a base and a list of property accesses.
-  constructor: (@base, @properties) ->
+  constructor: (@base, @properties, tag) ->
     super()
     @properties or= []
+    @tags[tag] = yes if tag
 
   # Add a property access to the list.
   push: (prop) ->
@@ -713,7 +714,10 @@ exports.ObjectNode = class ObjectNode extends BaseNode
       join   = "\n" if (prop is lastNoncom) or (prop instanceof CommentNode)
       join   = '' if i is @properties.length - 1
       indent = if prop instanceof CommentNode then '' else @idt 1
-      prop   = new AssignNode prop, prop, 'object' unless prop instanceof AssignNode or prop instanceof CommentNode
+      if prop instanceof ValueNode and prop.tags['this']
+        prop = new AssignNode prop.properties[0].name, prop, 'object'
+      else if prop not instanceof AssignNode and prop not instanceof CommentNode
+        prop = new AssignNode prop, prop, 'object'
       indent + prop.compile(o) + join
     props = props.join('')
     obj   = '{' + (if props then '\n' + props + '\n' + @idt() else '') + '}'
@@ -900,8 +904,12 @@ exports.AssignNode = class AssignNode extends BaseNode
           # A regular object pattern-match.
           [obj, idx] = [obj.value, obj.variable.base]
         else
-          # A shorthand `{a, b, c} = val` pattern-match.
-          idx = obj
+          if obj.tags['this']
+            # A shorthand `{@a, @b, @c} = val` pattern-match.
+            idx = obj.properties[0].name
+          else
+            # A shorthand `{a, b, c} = val` pattern-match.
+            idx = obj
       unless obj instanceof ValueNode or obj instanceof SplatNode
         throw new Error 'pattern matching must use only identifiers on the left-hand side.'
       accessClass = if isObject and IDENTIFIER.test(idx.value) then AccessorNode else IndexNode

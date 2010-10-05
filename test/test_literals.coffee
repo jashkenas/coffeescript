@@ -249,3 +249,14 @@ ok b is 100
 eq '\\`', `
   "\\\`"
 `
+
+
+# Shorthand objects with property references.
+obj =
+  one: 1
+  two: 2
+  func: -> {@one, @two}
+
+result = obj.func()
+ok result.one is 1
+ok result.two is 2

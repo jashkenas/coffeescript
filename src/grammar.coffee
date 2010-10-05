@@ -149,6 +149,7 @@ grammar =
   AssignObj: [
     o "Identifier",                             -> new ValueNode $1
     o "AlphaNumeric"
+    o "ThisProperty"
     o "Identifier : Expression",                -> new AssignNode new ValueNode($1), $3, 'object'
     o "AlphaNumeric : Expression",              -> new AssignNode new ValueNode($1), $3, 'object'
     o "Identifier : INDENT Expression OUTDENT", -> new AssignNode new ValueNode($1), $4, 'object'
@@ -340,7 +341,7 @@ grammar =
 
   # A reference to a property on *this*.
   ThisProperty: [
-    o "@ Identifier",                           -> new ValueNode new LiteralNode('this'), [new AccessorNode($2)]
+    o "@ Identifier",                           -> new ValueNode new LiteralNode('this'), [new AccessorNode($2)], 'this'
   ]
 
   # The CoffeeScript range literal.

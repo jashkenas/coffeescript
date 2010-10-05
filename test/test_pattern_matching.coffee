@@ -142,3 +142,17 @@ ok a is 101
 
 [x] = {0: y} = {'0': z} = [Math.random()]
 ok x is y is z, 'destructuring in multiple'
+
+
+# Destructuring into an object.
+obj =
+  func: (list, object) ->
+    [@one, @two] = list
+    {@a, @b} = object
+
+obj.func [1, 2], a: 'a', b: 'b'
+
+eq obj.one, 1
+eq obj.two, 2
+eq obj.a, 'a'
+eq obj.b, 'b'
