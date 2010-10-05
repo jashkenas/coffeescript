@@ -490,8 +490,8 @@ exports.Lexer = class Lexer
 
   # Constructs a string token by escaping quotes and newlines.
   makeString: (body, quote, heredoc) ->
-    body = body.replace /\\([\s\S])/g, ($amp, $1) ->
-      if $1 in ['\n', quote] then $1 else $amp
+    body = body.replace /\\([\s\S])/g, (match, contents) ->
+      if contents in ['\n', quote] then contents else match
     body = body.replace /// #{quote} ///g, '\\$&'
     quote + @escapeLines(body, heredoc) + quote
 
