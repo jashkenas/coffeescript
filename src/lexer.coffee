@@ -565,7 +565,7 @@ NEXT_CHARACTER  = /^\s*(\S?)/
 LEADING_SPACES  = /^\s+/
 TRAILING_SPACES = /\s+$/
 NO_NEWLINE      = /// ^
-  (?:                                   # lookahead
+  (?:                                   # non-capturing...
     [-+*&|/%=<>!.\\][<>=&|]* |          # symbol operators
     and | or | is(?:nt)? | n(?:ot|ew) | # word operators
     delete |typeof | instanceof
