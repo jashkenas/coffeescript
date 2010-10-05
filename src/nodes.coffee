@@ -1288,7 +1288,9 @@ exports.TryNode = class TryNode extends BaseNode
     o.top       = true
     attemptPart = @attempt.compile(o)
     errorPart   = if @error then " (#{ @error.compile(o) }) " else ' '
-    catchPart   = if @recovery then " catch#{errorPart}{\n#{ @recovery.compile(o) }\n#{@tab}}" else ''
+    catchPart   = if @recovery
+      " catch#{errorPart}{\n#{ @recovery.compile(o) }\n#{@tab}}"
+    else unless @ensure or @recovery then ' catch (_e) {}' else ''
     finallyPart = (@ensure or '') and ' finally {\n' + @ensure.compile(merge(o)) + "\n#{@tab}}"
     "#{@tab}try {\n#{attemptPart}\n#{@tab}}#{catchPart}#{finallyPart}"
 
