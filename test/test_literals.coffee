@@ -34,11 +34,27 @@ func = ->
 
 ok func() is null
 
+eq /\\/.source, "\\\\"
+eq '(((dollars)))', '\(\(\(dollars\)\)\)'
+eq 'one two three', "one
+ two
+ three"
+eq "four five", 'four
 
-str = "\\"
-reg = /\\/
+ five'
 
-ok reg(str) and str is '\\'
+#647
+eq "''Hello, World\\''", '''
+'\'Hello, World\\\''
+'''
+eq '""Hello, World\\""', """
+"\"Hello, World\\\""
+"""
+eq 'Hello, World\n', '''
+Hello, World\
+
+'''
+
 
 trailingComma = [1, 2, 3,]
 ok (trailingComma[0] is 1) and (trailingComma[2] is 3) and (trailingComma.length is 3)
@@ -52,18 +68,6 @@ trailingComma = [
 
 trailingComma = {k1: "v1", k2: 4, k3: (-> true),}
 ok trailingComma.k3() and (trailingComma.k2 is 4) and (trailingComma.k1 is "v1")
-
-
-money$ = '(((dollars)))'
-
-ok money$ is '\(\(\(dollars\)\)\)'
-
-
-multiline = "one
- two
- three"
-
-ok multiline is 'one two three'
 
 
 ok {a: (num) -> num is 10 }.a 10
@@ -242,6 +246,6 @@ ok b is 100
 
 
 # Inline JS
-ok '\\`' is `
+eq '\\`', `
   "\\\`"
 `

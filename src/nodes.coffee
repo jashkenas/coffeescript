@@ -875,13 +875,14 @@ exports.AssignNode = class AssignNode extends BaseNode
   compilePatternMatch: (o) ->
     if (value = @value).isStatement o then value = ClosureNode.wrap value
     {objects} = @variable.base
-    return value.compile o unless objects.length
-    if (isObject = @variable.isObject()) and objects.length is 1
+    return value.compile o unless olength = objects.length
+    isObject = @variable.isObject()
+    if o.top and olength is 1 and (obj = objects[0]) not instanceof SplatNode
       # Unroll simplest cases: `{v} = x` -> `v = x.v`
-      if (obj = objects[0]) instanceof AssignNode
+      if obj instanceof AssignNode
         {variable: {base: idx}, value: obj} = obj
       else
-        idx = obj
+        idx = if isObject then obj else literal 0
       value = new ValueNode value unless value instanceof ValueNode
       accessClass = if IDENTIFIER.test idx.value then AccessorNode else IndexNode
       value.properties.push new accessClass idx
@@ -905,9 +906,7 @@ exports.AssignNode = class AssignNode extends BaseNode
         throw new Error 'pattern matching must use only identifiers on the left-hand side.'
       accessClass = if isObject and IDENTIFIER.test(idx.value) then AccessorNode else IndexNode
       if not splat and obj instanceof SplatNode
-        val = literal obj.compileValue o, valVar,
-          (oindex  = indexOf objects, obj),
-          (olength = objects.length) - oindex - 1
+        val   = literal obj.compileValue o, valVar, i, olength - i - 1
         splat = true
       else
         idx = literal(if splat then "#{valVar}.length - #{olength - idx}" else idx) if typeof idx isnt 'object'
@@ -1425,6 +1424,7 @@ exports.ForNode = class ForNode extends BaseNode
     varPart       = ''
     guardPart     = ''
     body          = Expressions.wrap([@body])
+    idt1          = @idt 1
     if range
       sourcePart  = source.compileVariables(o)
       forPart     = source.compile merge o, index: ivar, step: @step
@@ -1436,10 +1436,10 @@ exports.ForNode = class ForNode extends BaseNode
         ref = scope.freeVariable 'ref'
         sourcePart = "#{ref} = #{svar};"
         svar = ref
-      if @pattern
-        namePart  = new AssignNode(@name, literal("#{svar}[#{ivar}]")).compile(merge o, {indent: @idt(1), top: true, keepLevel: yes}) + '\n'
-      else
-        namePart  = "#{name} = #{svar}[#{ivar}]" if name
+      namePart = if @pattern
+        new AssignNode(@name, literal "#{svar}[#{ivar}]").compile merge o, top: on
+      else if name
+        "#{name} = #{svar}[#{ivar}]"
       unless @object
         lvar      = scope.freeVariable 'len'
         stepPart  = if @step then "#{ivar} += #{ @step.compile(o) }" else "#{ivar}++"
@@ -1447,7 +1447,6 @@ exports.ForNode = class ForNode extends BaseNode
     sourcePart    = (if rvar then "#{rvar} = []; " else '') + sourcePart
     sourcePart    = if sourcePart then "#{@tab}#{sourcePart}\n#{@tab}" else @tab
     returnResult  = @compileReturnValue(rvar, o)
-
     body          = PushNode.wrap(rvar, body) unless topLevel
     if @guard
       body        = Expressions.wrap([new IfNode(@guard, body)])
@@ -1457,13 +1456,17 @@ exports.ForNode = class ForNode extends BaseNode
       body.unshift  literal "var #{index} = #{ivar}" if index
       body        = ClosureNode.wrap(body, true)
     else
-      varPart     = (namePart or '') and (if @pattern then namePart else "#{@idt(1)}#{namePart};\n")
+      varPart     = "#{idt1}#{namePart};\n" if namePart
     if @object
       forPart     = "#{ivar} in #{svar}"
-      guardPart   = "\n#{@idt(1)}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" unless @raw
-    body          = body.compile(merge(o, {indent: @idt(1), top: true}))
+      guardPart   = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" unless @raw
+    body          = body.compile merge o, indent: idt1, top: true
     vars          = if range then name else "#{name}, #{ivar}"
-    "#{sourcePart}for (#{forPart}) {#{guardPart}\n#{varPart}#{body}\n#{@tab}}#{returnResult}"
+    """
+    #{sourcePart}for (#{forPart}) {#{guardPart}
+    #{varPart}#{body}
+    #{@tab}}#{returnResult}
+    """
 
 #### SwitchNode
 

@@ -10,7 +10,7 @@
 
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
 # its internal array of tokens.
-exports.Rewriter = class Rewriter
+class exports.Rewriter
 
   # Helpful snippet for debugging:
   #     puts (t[0] + '/' + t[1] for t in @tokens).join ' '
@@ -20,8 +20,7 @@ exports.Rewriter = class Rewriter
   # stream, with a big ol' efficient switch, but it's much nicer to work with
   # like this. The order of these passes matters -- indentation must be
   # corrected before implicit parentheses can be wrapped around blocks of code.
-  rewrite: (tokens) ->
-    @tokens = tokens
+  rewrite: (@tokens) ->
     @adjustComments()
     @removeLeadingNewlines()
     @removeMidExpressionNewlines()
@@ -41,11 +40,9 @@ exports.Rewriter = class Rewriter
   # as tokens are inserted and removed, and the stream changes length under
   # our feet.
   scanTokens: (block) ->
+    {tokens} = this
     i = 0
-    loop
-      break unless @tokens[i]
-      move = block.call this, @tokens[i], i
-      i += move
+    i += block.call this, token, i, tokens while token = tokens[i]
     true
 
   detectEnd: (i, condition, action) ->
@@ -54,175 +51,181 @@ exports.Rewriter = class Rewriter
       token = @tokens[i]
       return action.call this, token, i     if levels is 0 and condition.call this, token, i
       return action.call this, token, i - 1 if not token or levels < 0
-      levels += 1 if include EXPRESSION_START, token[0]
-      levels -= 1 if include EXPRESSION_END, token[0]
+      if include EXPRESSION_START, token[0]
+        levels += 1
+      else if include EXPRESSION_END, token[0]
+        levels -= 1
       i += 1
     i - 1
 
   # Massage newlines and indentations so that comments don't have to be
   # correctly indented, or appear on a line of their own.
   adjustComments: ->
-    @scanTokens (token, i) ->
+    @scanTokens (token, i, tokens) ->
       return 1 unless token[0] is 'HERECOMMENT'
-      [before, prev, post, after] = [@tokens[i - 2], @tokens[i - 1], @tokens[i + 1], @tokens[i + 2]]
-      if after and after[0] is 'INDENT'
-        @tokens.splice i + 2, 1
-        if before and before[0] is 'OUTDENT' and post and prev[0] is post[0] is 'TERMINATOR'
-          @tokens.splice i - 2, 1
+      before = tokens[i - 2]
+      prev   = tokens[i - 1]
+      post   = tokens[i + 1]
+      after  = tokens[i + 2]
+      if after?[0] is 'INDENT'
+        tokens.splice i + 2, 1
+        if before?[0] is 'OUTDENT' and post?[0] is 'TERMINATOR'
+          tokens.splice i - 2, 1
         else
-          @tokens.splice i, 0, after
-      else if prev and prev[0] not in ['TERMINATOR', 'INDENT', 'OUTDENT']
-        if post and post[0] is 'TERMINATOR' and after and after[0] is 'OUTDENT'
-          @tokens.splice(i + 2, 0, @tokens.splice(i, 2)...)
-          if @tokens[i + 2][0] isnt 'TERMINATOR'
-            @tokens.splice i + 2, 0, ['TERMINATOR', "\n", prev[2]]
+          tokens.splice i, 0, after
+      else if prev?[0] not in ['TERMINATOR', 'INDENT', 'OUTDENT']
+        if post?[0] is 'TERMINATOR' and after?[0] is 'OUTDENT'
+          tokens.splice i + 2, 0, tokens.splice(i, 2)...
+          if tokens[i + 2][0] isnt 'TERMINATOR'
+            tokens.splice i + 2, 0, ['TERMINATOR', '\n', prev[2]]
         else
-          @tokens.splice i, 0, ['TERMINATOR', "\n", prev[2]]
+          tokens.splice i, 0, ['TERMINATOR', '\n', prev[2]]
         return 2
-      return 1
+      1
 
   # Leading newlines would introduce an ambiguity in the grammar, so we
   # dispatch them here.
   removeLeadingNewlines: ->
-    @tokens.shift() while @tokens[0] and @tokens[0][0] is 'TERMINATOR'
+    break for [tag], i in @tokens when tag isnt 'TERMINATOR'
+    @tokens.splice 0, i if i
 
   # Some blocks occur in the middle of expressions -- when we're expecting
   # this, remove their trailing newlines.
   removeMidExpressionNewlines: ->
-    @scanTokens (token, i) ->
-      return 1 unless include(EXPRESSION_CLOSE, @tag(i + 1)) and token[0] is 'TERMINATOR'
-      @tokens.splice i, 1
-      return 0
+    @scanTokens (token, i, tokens) ->
+      return 1 unless token[0] is 'TERMINATOR' and include EXPRESSION_CLOSE, @tag(i + 1)
+      tokens.splice i, 1
+      0
 
   # The lexer has tagged the opening parenthesis of a method call. Match it with
   # its paired close. We have the mis-nested outdent case included here for
   # calls that close on the same line, just before their outdent.
   closeOpenCalls: ->
+    condition = (token, i) ->
+      (token[0] in [')', 'CALL_END']) or
+       token[0] is 'OUTDENT' and @tag(i - 1) is ')'
+    action = (token, i) ->
+      @tokens[if token[0] is 'OUTDENT' then i - 1 else i][0] = 'CALL_END'
     @scanTokens (token, i) ->
-      if token[0] is 'CALL_START'
-        condition = (token, i) ->
-          (token[0] in [')', 'CALL_END']) or (token[0] is 'OUTDENT' and @tokens[i - 1][0] is ')')
-        action = (token, i) ->
-          idx = if token[0] is 'OUTDENT' then i - 1 else i
-          @tokens[idx][0] = 'CALL_END'
-        @detectEnd i + 1, condition, action
-      return 1
+      @detectEnd i + 1, condition, action if token[0] is 'CALL_START'
+      1
 
   # The lexer has tagged the opening parenthesis of an indexing operation call.
   # Match it with its paired close.
   closeOpenIndexes: ->
+    condition = (token, i) -> token[0] in [']', 'INDEX_END']
+    action    = (token, i) -> token[0] = 'INDEX_END'
     @scanTokens (token, i) ->
-      if token[0] is 'INDEX_START'
-        condition = (token, i) -> token[0] in [']', 'INDEX_END']
-        action    = (token, i) -> token[0] = 'INDEX_END'
-        @detectEnd i + 1, condition, action
-      return 1
+      @detectEnd i + 1, condition, action if token[0] is 'INDEX_START'
+      1
 
   # Object literals may be written with implicit braces, for simple cases.
   # Insert the missing braces here, so that the parser doesn't have to.
   addImplicitBraces: ->
     stack = []
-    @scanTokens (token, i) ->
-      if include EXPRESSION_START, token[0]
-        stack.push(if (token[0] is 'INDENT' and (@tag(i - 1) is '{')) then '{' else token[0])
-      if include EXPRESSION_END, token[0]
+    condition = (token, i) ->
+      return false if 'HERECOMMENT' in [@tag(i + 1), @tag(i - 1)]
+      [one, two, three] = @tokens.slice i + 1, i + 4
+      [tag] = token
+      (tag in ['TERMINATOR', 'OUTDENT']) and not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':') or
+      tag is ',' and (one?[0] not in ['IDENTIFIER', 'STRING', '@', 'TERMINATOR', 'OUTDENT'])
+    action = (token, i) -> @tokens.splice i, 0, ['}', '}', token[2]]
+    @scanTokens (token, i, tokens) ->
+      if include EXPRESSION_START, tag = token[0]
+        stack.push(if tag is 'INDENT' and @tag(i - 1) is '{' then '{' else tag)
+      if include EXPRESSION_END, tag
         stack.pop()
       last = stack[stack.length - 1]
-      if token[0] is ':' and (not last or last[0] isnt '{')
+      if tag is ':' and not (last and last[0] is '{')
         stack.push '{'
         idx = if @tag(i - 2) is '@' then i - 2 else i - 1
         idx -= 2 if @tag(idx - 2) is 'HERECOMMENT'
         tok = ['{', '{', token[2]]
         tok.generated = yes
-        @tokens.splice idx, 0, tok
-        condition = (token, i) ->
-          [one, two, three] = @tokens.slice(i + 1, i + 4)
-          return false if 'HERECOMMENT' in [@tag(i + 1), @tag(i - 1)]
-          ((token[0] in ['TERMINATOR', 'OUTDENT']) and not ((two and two[0] is ':') or (one and one[0] is '@' and three and three[0] is ':'))) or
-            (token[0] is ',' and one and (one[0] not in ['IDENTIFIER', 'STRING', '@', 'TERMINATOR', 'OUTDENT']))
-        action = (token, i) ->
-          @tokens.splice i, 0, ['}', '}', token[2]]
+        tokens.splice idx, 0, tok
         @detectEnd i + 2, condition, action
         return 2
-      return 1
+      1
 
   # Methods may be optionally called without parentheses, for simple cases.
   # Insert the implicit parentheses here, so that the parser doesn't have to
   # deal with them.
   addImplicitParentheses: ->
-    classLine    = no
-    @scanTokens (token, i) ->
-      classLine  = yes if token[0] is 'CLASS'
-      prev       = @tokens[i - 1]
-      next       = @tokens[i + 1]
+    classLine = no
+    action = (token, i) ->
+      idx = if token[0] is 'OUTDENT' then i + 1 else i
+      @tokens.splice idx, 0, ['CALL_END', ')', token[2]]
+    @scanTokens (token, i, tokens) ->
+      tag        = token[0]
+      classLine  = yes if tag is 'CLASS'
+      prev       = tokens[i - 1]
+      next       = tokens[i + 1]
       idx        = 1
-      callObject = not classLine and token[0] is 'INDENT' and next and next.generated and next[0] is '{' and prev and include(IMPLICIT_FUNC, prev[0])
+      callObject = not classLine and tag is 'INDENT' and
+                   next and next.generated and next[0] is '{' and
+                   prev and include(IMPLICIT_FUNC, prev[0])
       idx        = 2 if callObject
       seenSingle = no
-      classLine  = no  if include(LINEBREAKS, token[0])
-      token.call = yes if prev and not prev.spaced and token[0] is '?'
-      if prev and (prev.spaced and (include(IMPLICIT_FUNC, prev[0]) or prev.call) and include(IMPLICIT_CALL, token[0]) and
-          not (token[0] is 'UNARY' and (@tag(i + 1) in ['IN', 'OF', 'INSTANCEOF']))) or callObject
-        @tokens.splice i, 0, ['CALL_START', '(', token[2]]
+      classLine  = no  if include LINEBREAKS, tag
+      token.call = yes if prev and not prev.spaced and tag is '?'
+      if callObject or
+         prev and prev.spaced and (prev.call or include(IMPLICIT_FUNC, prev[0])) and include(IMPLICIT_CALL, tag) and
+         not (tag is 'UNARY' and (@tag(i + 1) in ['IN', 'OF', 'INSTANCEOF']))
+        tokens.splice i, 0, ['CALL_START', '(', token[2]]
         condition = (token, i) ->
           return yes if not seenSingle and token.fromThen
-          seenSingle = yes if token[0] in ['IF', 'ELSE', 'UNLESS', '->', '=>']
-          post = @tokens[i + 1]
-          (not token.generated and @tokens[i - 1][0] isnt ',' and include(IMPLICIT_END, token[0]) and
-            not (token[0] is 'INDENT' and (include(IMPLICIT_BLOCK, @tag(i - 1)) or @tag(i - 2) is 'CLASS' or (post and post.generated and post[0] is '{')))) or
-            token[0] is 'PROPERTY_ACCESS' and @tag(i - 1) is 'OUTDENT'
-        action = (token, i) ->
-          idx = if token[0] is 'OUTDENT' then i + 1 else i
-          @tokens.splice idx, 0, ['CALL_END', ')', token[2]]
+          [tag] = token
+          seenSingle = yes if tag in ['IF', 'ELSE', 'UNLESS', '->', '=>']
+          return yes if tag is 'PROPERTY_ACCESS' and @tag(i - 1) is 'OUTDENT'
+          not token.generated and @tag(i - 1) isnt ',' and include(IMPLICIT_END, tag) and
+          (tag isnt 'INDENT' or
+           (@tag(i - 2) isnt 'CLASS' and not include(IMPLICIT_BLOCK, @tag(i - 1)) and
+            not ((post = @tokens[i + 1]) and post.generated and post[0] is '{')))
         @detectEnd i + idx, condition, action
         prev[0] = 'FUNC_EXIST' if prev[0] is '?'
         return 2
-      return 1
+      1
 
   # Because our grammar is LALR(1), it can't handle some single-line
   # expressions that lack ending delimiters. The **Rewriter** adds the implicit
   # blocks, so it doesn't need to. ')' can close a single-line block,
   # but we need to make sure it's balanced.
   addImplicitIndentation: ->
-    @scanTokens (token, i) ->
-      if token[0] is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
-        @tokens.splice i, 0, @indentation(token)...
+    @scanTokens (token, i, tokens) ->
+      [tag] = token
+      if tag is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
+        tokens.splice i, 0, @indentation(token)...
         return 2
-      if token[0] is 'CATCH' and
-          (@tag(i + 2) is 'TERMINATOR' or @tag(i + 2) is 'FINALLY')
-        @tokens.splice i + 2, 0, @indentation(token)...
+      if tag is 'CATCH' and (@tag(i + 2) in ['TERMINATOR', 'FINALLY'])
+        tokens.splice i + 2, 0, @indentation(token)...
         return 4
-      if include(SINGLE_LINERS, token[0]) and @tag(i + 1) isnt 'INDENT' and
-          not (token[0] is 'ELSE' and @tag(i + 1) is 'IF')
-        starter = token[0]
+      if include(SINGLE_LINERS, tag) and @tag(i + 1) isnt 'INDENT' and
+         not (tag is 'ELSE' and @tag(i + 1) is 'IF')
+        starter = tag
         [indent, outdent] = @indentation token
         indent.fromThen   = true if starter is 'THEN'
         indent.generated  = outdent.generated = true
-        @tokens.splice i + 1, 0, indent
+        tokens.splice i + 1, 0, indent
         condition = (token, i) ->
-          (include(SINGLE_CLOSERS, token[0]) and token[1] isnt ';') and
-            not (token[0] is 'ELSE' and starter not in ['IF', 'THEN'])
+          token[1] isnt ';' and include(SINGLE_CLOSERS, token[0]) and
+          not (token[0] is 'ELSE' and starter not in ['IF', 'THEN'])
         action = (token, i) ->
-          idx = if @tokens[i - 1][0] is ',' then i - 1 else i
-          @tokens.splice idx, 0, outdent
+          @tokens.splice (if @tag(i - 1) is ',' then i - 1 else i), 0, outdent
         @detectEnd i + 2, condition, action
-        @tokens.splice i, 1 if token[0] is 'THEN'
+        tokens.splice i, 1 if tag is 'THEN'
         return 1
       return 1
 
   # Tag postfix conditionals as such, so that we can parse them with a
   # different precedence.
   tagPostfixConditionals: ->
+    condition = (token, i) -> token[0] in ['TERMINATOR', 'INDENT']
     @scanTokens (token, i) ->
-      if token[0] in ['IF', 'UNLESS']
-        original  = token
-        condition = (token, i) ->
-          token[0] in ['TERMINATOR', 'INDENT']
-        action    = (token, i) ->
-          original[0] = 'POST_' + original[0] if token[0] isnt 'INDENT'
-        @detectEnd i + 1, condition, action
-        return 1
-      return 1
+      return 1 unless token[0] in ['IF', 'UNLESS']
+      original = token
+      @detectEnd i + 1, condition, (token, i) ->
+        original[0] = 'POST_' + original[0] if token[0] isnt 'INDENT'
+      1
 
   # Ensure that all listed pairs of tokens are correctly balanced throughout
   # the course of the token stream.
@@ -230,20 +233,19 @@ exports.Rewriter = class Rewriter
     levels   = {}
     openLine = {}
     @scanTokens (token, i) ->
-      for pair in pairs
-        [open, close] = pair
-        levels[open] or= 0
-        if token[0] is open
-          openLine[open] = token[2] if levels[open] == 0
+      [tag] = token
+      for [open, close] in pairs
+        levels[open] |= 0
+        if tag is open
+          openLine[open] = token[2] if levels[open] is 0
           levels[open] += 1
-        levels[open] -= 1 if token[0] is close
-        throw new Error("too many #{token[1]} on line #{token[2] + 1}") if levels[open] < 0
-      return 1
-    unclosed = key for key, value of levels when value > 0
+        else if tag is close
+          levels[open] -= 1
+        throw Error "too many #{token[1]} on line #{token[2] + 1}" if levels[open] < 0
+      1
+    unclosed = key for all key, value of levels when value > 0
     if unclosed.length
-      open = unclosed[0]
-      line = openLine[open] + 1
-      throw new Error "unclosed #{open} on line #{line}"
+      throw Error "unclosed #{ open = unclosed[0] } on line #{openLine[open] + 1}"
 
   # We'd like to support syntax like this:
   #
@@ -264,61 +266,61 @@ exports.Rewriter = class Rewriter
   rewriteClosingParens: ->
     stack = []
     debt  = {}
-    (debt[key] = 0) for key, val of INVERSES
-    @scanTokens (token, i) ->
-      tag = token[0]
-      inv = INVERSES[token[0]]
-      if include EXPRESSION_START, tag
+    (debt[key] = 0) for all key of INVERSES
+    @scanTokens (token, i, tokens) ->
+      if include EXPRESSION_START, tag = token[0]
         stack.push token
         return 1
-      else if include EXPRESSION_END, tag
-        if debt[inv] > 0
-          debt[inv] -= 1
-          @tokens.splice i, 1
-          return 0
-        else
-          match = stack.pop()
-          mtag  = match[0]
-          oppos = INVERSES[mtag]
-          return 1 if tag is oppos
-          debt[mtag] += 1
-          val = [oppos, if mtag is 'INDENT' then match[1] else oppos]
-          if @tokens[i + 2]?[0] is mtag
-            @tokens.splice i + 3, 0, val
-            stack.push(match)
-          else
-            @tokens.splice i, 0, val
-          return 1
+      return 1 unless include EXPRESSION_END, tag
+      if debt[inv = INVERSES[tag]] > 0
+        debt[inv] -= 1
+        tokens.splice i, 1
+        return 0
+      match = stack.pop()
+      mtag  = match[0]
+      oppos = INVERSES[mtag]
+      return 1 if tag is oppos
+      debt[mtag] += 1
+      val = [oppos, if mtag is 'INDENT' then match[1] else oppos]
+      if @tag(i + 2) is mtag
+        tokens.splice i + 3, 0, val
+        stack.push match
       else
-        return 1
+        tokens.splice i, 0, val
+      1
 
   # Generate the indentation tokens, based on another token on the same line.
   indentation: (token) ->
     [['INDENT', 2, token[2]], ['OUTDENT', 2, token[2]]]
 
   # Look up a tag by token index.
-  tag: (i) ->
-    @tokens[i] and @tokens[i][0]
+  tag: (i) -> @tokens[i]?[0]
 
 # Constants
 # ---------
 
 # List of the token pairs that must be balanced.
-BALANCED_PAIRS = [['(', ')'], ['[', ']'], ['{', '}'], ['INDENT', 'OUTDENT'],
-  ['PARAM_START', 'PARAM_END'], ['CALL_START', 'CALL_END'], ['INDEX_START', 'INDEX_END']]
+BALANCED_PAIRS = [
+  ['(', ')']
+  ['[', ']']
+  ['{', '}']
+  ['INDENT', 'OUTDENT'],
+  ['CALL_START', 'CALL_END']
+  ['PARAM_START', 'PARAM_END']
+  ['INDEX_START', 'INDEX_END']
+]
 
 # The inverse mappings of `BALANCED_PAIRS` we're trying to fix up, so we can
 # look things up from either end.
 INVERSES = {}
-for pair in BALANCED_PAIRS
-  INVERSES[pair[0]] = pair[1]
-  INVERSES[pair[1]] = pair[0]
 
-# The tokens that signal the start of a balanced pair.
-EXPRESSION_START = pair[0] for pair in BALANCED_PAIRS
+# The tokens that signal the start/end of a balanced pair.
+EXPRESSION_START = []
+EXPRESSION_END   = []
 
-# The tokens that signal the end of a balanced pair.
-EXPRESSION_END   = pair[1] for pair in BALANCED_PAIRS
+for [left, rite] in BALANCED_PAIRS
+  EXPRESSION_START.push INVERSES[rite] = left
+  EXPRESSION_END  .push INVERSES[left] = rite
 
 # Tokens that indicate the close of a clause of an expression.
 EXPRESSION_CLOSE = ['CATCH', 'WHEN', 'ELSE', 'FINALLY'].concat EXPRESSION_END
@@ -328,9 +330,9 @@ IMPLICIT_FUNC    = ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@
 
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL    = [
-  'IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START', 'CLASS',
+  'IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START', 'CLASS'
   'IF', 'UNLESS', 'TRY', 'SWITCH', 'THIS', 'NULL', 'UNARY'
-  'TRUE', 'FALSE', 'YES', 'NO', 'ON', 'OFF',
+  'TRUE', 'FALSE', 'YES', 'NO', 'ON', 'OFF'
   '@', '->', '=>', '[', '(', '{'
 ]
 
@@ -342,7 +344,7 @@ IMPLICIT_END     = ['POST_IF', 'POST_UNLESS', 'FOR', 'WHILE', 'UNTIL', 'LOOP', '
 
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.
-SINGLE_LINERS    = ['ELSE', "->", "=>", 'TRY', 'FINALLY', 'THEN']
+SINGLE_LINERS    = ['ELSE', '->', '=>', 'TRY', 'FINALLY', 'THEN']
 SINGLE_CLOSERS   = ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN']
 
 # Tokens that end a line.

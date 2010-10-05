@@ -139,7 +139,10 @@ exports.Lexer = class Lexer
     heredoc = match[0]
     quote = heredoc.charAt 0
     doc = @sanitizeHeredoc match[2], {quote, indent: null}
-    @interpolateString quote + doc + quote, heredoc: yes
+    if quote is '"'
+      @interpolateString quote + doc + quote, heredoc: yes
+    else
+      @token 'STRING', quote + doc + quote
     @line += count heredoc, '\n'
     @i += heredoc.length
     true
@@ -340,8 +343,11 @@ exports.Lexer = class Lexer
         indent = attempt if indent is null or 0 < attempt.length < indent.length
     doc = doc.replace /\n#{ indent }/g, '\n' if indent
     return doc if herecomment
-    doc = doc.replace(/^\n/, '').replace(/#{ options.quote }/g, '\\$&')
-    doc = @escapeLines doc, yes if options.quote is "'"
+    {quote} = options
+    doc = doc.replace /^\n/, ''
+    doc = doc.replace /\\([\s\S])/g, (m, c) -> if c in ['\n', quote] then c else m
+    doc = doc.replace /#{quote}/g, '\\$&'
+    doc = @escapeLines doc, yes if quote is "'"
     doc
 
   # A source of ambiguity in our grammar used to be parameter lists in function
