@@ -89,8 +89,7 @@ a = """
     """
 ok a is "one\ntwo\n"
 
-
-equal ''' line 0
+eq ''' line 0
   should not be relevant
     to the indent level
 ''', '
@@ -99,10 +98,14 @@ should not be relevant\n
   to the indent level
 '
 
+eq ''' '\\\' ''', " '\\' "
+eq """ "\\\" """, ' "\\" '
 
-equal 'multiline nested interpolations work', """multiline #{
+eq '''  <- keep these spaces ->  ''', '  <- keep these spaces ->  '
+
+eq 'multiline nested "interpolations" work', """multiline #{
   "nested #{(->
     ok yes
-    "interpolations"
+    "\"interpolations\""
   )()}"
 } work"""
