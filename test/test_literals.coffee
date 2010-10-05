@@ -255,8 +255,11 @@ eq '\\`', `
 obj =
   one: 1
   two: 2
-  func: -> {@one, @two}
+  object: -> {@one, @two}
+  list:   -> [@one, @two]
 
-result = obj.func()
-ok result.one is 1
-ok result.two is 2
+
+result = obj.object()
+eq result.one, 1
+eq result.two, 2
+eq result.two, obj.list()[1]
