@@ -553,11 +553,13 @@ grammar =
     o "Value COMPOUND_ASSIGN INDENT Expression OUTDENT", -> new OpNode $2, $1, $4
 
     o "Expression IN Expression",               -> new InNode $1, $3
-    o "Expression OF Expression",               -> new OpNode 'in', $1, $3
-    o "Expression INSTANCEOF Expression",       -> new OpNode 'instanceof', $1, $3
-    o "Expression UNARY IN Expression",         -> new OpNode $2, new InNode $1, $4
-    o "Expression UNARY OF Expression",         -> new OpNode $2, new ParentheticalNode new OpNode 'in', $1, $4
-    o "Expression UNARY INSTANCEOF Expression", -> new OpNode $2, new ParentheticalNode new OpNode 'instanceof', $1, $4
+    o "Expression OF Expression",               -> new OpNode $2, $1, $3
+    o "Expression INSTANCEOF Expression",       -> new OpNode $2, $1, $3
+    o "Expression NOT_RELATED Expression",      ->
+      if $2 is 'in'
+        new OpNode '!', new InNode $1, $3
+      else
+        new OpNode '!', new ParentheticalNode new OpNode $2, $1, $3
   ]
 
 
@@ -581,7 +583,7 @@ operators = [
   ["left",      '+', '-']
   ["left",      'SHIFT']
   ["left",      'COMPARE']
-  ["left",      'INSTANCEOF']
+  ["left",      'INSTANCEOF', 'NOT_RELATED']
   ["left",      '==', '!=']
   ["left",      'LOGIC']
   ["right",     'COMPOUND_ASSIGN']

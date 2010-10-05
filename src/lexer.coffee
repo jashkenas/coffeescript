@@ -86,6 +86,9 @@ exports.Lexer = class Lexer
         tag = 'LEADING_WHEN'
       else if include UNARY, tag
         tag = 'UNARY'
+      else if include(RELATION, tag) and @value() in ['not', '!']
+        @tokens.pop()
+        tag = 'NOT_RELATED'
     if include JS_FORBIDDEN, id
       if forcedIdentifier
         tag = 'STRING'
@@ -587,6 +590,9 @@ COMPARE = ['<=', '<', '>', '>=']
 
 # Mathmatical tokens.
 MATH    = ['*', '/', '%']
+
+# Relational tokens that are negatable with `not` prefix.
+RELATION = ['IN', 'OF', 'INSTANCEOF']
 
 # Tokens which a regular expression will never immediately follow, but which
 # a division operator might.
