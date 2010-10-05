@@ -292,36 +292,37 @@ exports.Lexer = class Lexer
   # here. `;` and newlines are both treated as a `TERMINATOR`, we distinguish
   # parentheses that indicate a method call from regular parentheses, and so on.
   literalToken: ->
-    if match = @chunk.match OPERATOR
-      [value, space] = match
+    if match = OPERATOR.exec @chunk
+      [value] = match
       @tagParameters() if CODE.test value
     else
       value = @chunk.charAt 0
     @i += value.length
-    prev = last @tokens
-    spaced = prev?.spaced
     tag = value
     if value is '='
-      @assignmentError() if include JS_FORBIDDEN, val = @value()
-      if val in ['or', 'and']
-        @tokens.splice(-1, 1, ['COMPOUND_ASSIGN', CONVERSIONS[val] + '=', prev[2]])
+      @assignmentError() if include JS_FORBIDDEN, pval = @value()
+      if pval in ['or', 'and']
+        prev = last @tokens
+        prev[0] = 'COMPOUND_ASSIGN'
+        prev[1] = CONVERSIONS[pval] + '='
         return true
-    if value is ';'                         then tag = 'TERMINATOR'
-    else if include(LOGIC, value)           then tag = 'LOGIC'
-    else if include(MATH, value)            then tag = 'MATH'
-    else if include(COMPARE, value)         then tag = 'COMPARE'
-    else if include(COMPOUND_ASSIGN, value) then tag = 'COMPOUND_ASSIGN'
-    else if include(UNARY, value)           then tag = 'UNARY'
-    else if include(SHIFT, value)           then tag = 'SHIFT'
-    else if include(CALLABLE, @tag()) and not spaced
+    if ';' is                        value then tag = 'TERMINATOR'
+    else if include LOGIC          , value then tag = 'LOGIC'
+    else if include MATH           , value then tag = 'MATH'
+    else if include COMPARE        , value then tag = 'COMPARE'
+    else if include COMPOUND_ASSIGN, value then tag = 'COMPOUND_ASSIGN'
+    else if include UNARY          , value then tag = 'UNARY'
+    else if include SHIFT          , value then tag = 'SHIFT'
+    else if (prev = last @tokens) and not prev.spaced and
+         include(CALLABLE, ptag = prev[0])
       if value is '('
-        prev[0] = 'FUNC_EXIST' if prev[0] is '?'
+        prev[0] = 'FUNC_EXIST' if ptag is '?'
         tag = 'CALL_START'
       else if value is '['
         tag = 'INDEX_START'
-        switch @tag()
-          when '?'  then @tag 0, 'INDEX_SOAK'
-          when '::' then @tag 0, 'INDEX_PROTO'
+        switch ptag
+          when '?'  then prev[0] = 'INDEX_SOAK'
+          when '::' then prev[0] = 'INDEX_PROTO'
     @token tag, value
     true
 
@@ -468,15 +469,11 @@ exports.Lexer = class Lexer
   token: (tag, value) ->
     @tokens.push [tag, value, @line]
 
-  # Peek at a tag in the current token stream.
-  tag: (index, newTag) ->
-    return unless tok = last @tokens, index
-    tok[0] = newTag ? tok[0]
-
-  # Peek at a value in the current token stream.
+  # Peek at a tag/value in the current token stream.
+  tag  : (index, tag) ->
+    (tok = last @tokens, index) and if tag? then tok[0] = tag else tok[0]
   value: (index, val) ->
-    return unless tok = last @tokens, index
-    tok[1] = val ? tok[1]
+    (tok = last @tokens, index) and if val? then tok[1] = val else tok[1]
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->
@@ -537,7 +534,7 @@ JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
 IDENTIFIER = /^[a-zA-Z_$][\w$]*/
 NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
 HEREDOC    = /^("""|''')([\s\S]*?)(?:\n[ \t]*)?\1/
-OPERATOR   = /^(?:-[-=>]?|\+[+=]?|[*&|\/%=<>^:!?]+)(?=([ \t]*))/
+OPERATOR   = /// ^ (?: -[-=>]? | \+[+=]? | [*&|/%=<>^:!?]+ ) ///
 WHITESPACE = /^[ \t]+/
 COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
 CODE       = /^[-=]>/
