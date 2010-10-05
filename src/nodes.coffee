@@ -819,6 +819,7 @@ exports.ClassNode = class ClassNode extends BaseNode
         prop   = new AssignNode(val, func)
       props.push prop
 
+    constructor.className = className.match /[\w\d\$_]+$/
     constructor.body.unshift literal "#{me} = this" if me
     construct = @idt() + (new AssignNode(@variable, constructor)).compile(merge o, {sharedScope: constScope}) + ';'
     props     = if !props.empty() then '\n' + props.compile(o)                     else ''
@@ -983,8 +984,10 @@ exports.CodeNode = class CodeNode extends BaseNode
     params = (param.compile(o) for param in params)
     @body.makeReturn() unless empty
     (o.scope.parameter(param)) for param in params
+    open = if @className then "(function() { function #{@className}(" else "function("
+    close = if @className then "} return #{@className}; })()" else "}"
     code = if @body.expressions.length then "\n#{ @body.compileWithDeclarations(o) }\n" else ''
-    func = "function(#{ params.join(', ') }) {#{code}#{ code and @tab }}"
+    func = "#{open}#{ params.join(', ') }) {#{code}#{ code and @tab }#{close}"
     return "(#{utility 'bind'}(#{func}, #{@context}))" if @bound
     if top then "(#{func})" else func
 
