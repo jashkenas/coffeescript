@@ -141,3 +141,7 @@ ok c is 3
 # Instanceof.
 ok new String instanceof String
 ok new Number not instanceof String
+
+
+#737: `in` should have higher precedence than logical operators
+eq 1, 1 in [1] and 1

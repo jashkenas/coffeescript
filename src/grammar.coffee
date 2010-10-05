@@ -476,13 +476,13 @@ grammar =
   # clause. If it's an array comprehension, you can also choose to step through
   # in fixed-size increments.
   ForSource: [
-    o "IN Expression",                               -> source: $2
-    o "OF Expression",                               -> source: $2, object: true
-    o "IN Expression WHEN Expression",               -> source: $2, guard: $4
-    o "OF Expression WHEN Expression",               -> source: $2, guard: $4, object: true
-    o "IN Expression BY Expression",                 -> source: $2, step:  $4
-    o "IN Expression WHEN Expression BY Expression", -> source: $2, guard: $4, step:   $6
-    o "IN Expression BY Expression WHEN Expression", -> source: $2, step:  $4, guard: $6
+    o "FORIN Expression",                               -> source: $2
+    o "FOROF Expression",                               -> source: $2, object: true
+    o "FORIN Expression WHEN Expression",               -> source: $2, guard: $4
+    o "FOROF Expression WHEN Expression",               -> source: $2, guard: $4, object: true
+    o "FORIN Expression BY Expression",                 -> source: $2, step:  $4
+    o "FORIN Expression WHEN Expression BY Expression", -> source: $2, guard: $4, step:   $6
+    o "FORIN Expression BY Expression WHEN Expression", -> source: $2, step:  $4, guard: $6
   ]
 
   Switch: [
@@ -552,14 +552,14 @@ grammar =
     o "Value COMPOUND_ASSIGN Expression",       -> new OpNode $2, $1, $3
     o "Value COMPOUND_ASSIGN INDENT Expression OUTDENT", -> new OpNode $2, $1, $4
 
-    o "Expression IN Expression",               -> new InNode $1, $3
-    o "Expression OF Expression",               -> new OpNode $2, $1, $3
-    o "Expression INSTANCEOF Expression",       -> new OpNode $2, $1, $3
-    o "Expression NOT_RELATED Expression",      ->
-      if $2 is 'in'
-        new OpNode '!', new InNode $1, $3
+    o "Expression RELATION Expression",         ->
+      if $2.charAt(0) is '!'
+        if $2 is '!in'
+          new OpNode '!', new InNode $1, $3
+        else
+          new OpNode '!', new ParentheticalNode new OpNode $2[1..], $1, $3
       else
-        new OpNode '!', new ParentheticalNode new OpNode $2, $1, $3
+        if $2 is 'in' then new InNode $1, $3 else new OpNode $2, $1, $3
   ]
 
 
@@ -583,13 +583,13 @@ operators = [
   ["left",      '+', '-']
   ["left",      'SHIFT']
   ["left",      'COMPARE']
-  ["left",      'INSTANCEOF', 'NOT_RELATED']
+  ["left",      'RELATION']
   ["left",      '==', '!=']
   ["left",      'LOGIC']
   ["right",     'COMPOUND_ASSIGN']
   ["left",      '.']
   ["nonassoc",  'INDENT', 'OUTDENT']
-  ["right",     'WHEN', 'LEADING_WHEN', 'IN', 'OF', 'BY', 'THROW']
+  ["right",     'WHEN', 'LEADING_WHEN', 'FORIN', 'FOROF', 'BY', 'THROW']
   ["right",     'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS', 'EXTENDS']
   ["right",     '=', ':', 'RETURN']
   ["right",     '->', '=>', 'UNLESS', 'POST_IF', 'POST_UNLESS']

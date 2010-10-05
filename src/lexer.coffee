@@ -41,6 +41,7 @@ exports.Lexer = class Lexer
     @indent  = 0            # The current indentation level.
     @indebt  = 0            # The over-indentation at the current level.
     @outdebt = 0            # The under-outdentation at the current level.
+    @seenFor = no           # The flag for distinguishing FORIN/FOROF from IN/OF.
     @indents = []           # The stack of all current indentation levels.
     @tokens  = []           # Stream of parsed tokens in the form ['TYPE', value, line]
     # At every position, run through this list of attempted matches,
@@ -84,11 +85,19 @@ exports.Lexer = class Lexer
       tag = id.toUpperCase()
       if tag is 'WHEN' and include LINE_BREAK, @tag()
         tag = 'LEADING_WHEN'
+      else if tag is 'FOR'
+        @seenFor = yes
       else if include UNARY, tag
         tag = 'UNARY'
-      else if include(RELATION, tag) and @value() in ['not', '!']
-        @tokens.pop()
-        tag = 'NOT_RELATED'
+      else if include RELATION, tag
+        if tag isnt 'INSTANCEOF' and @seenFor
+          @seenFor = no
+          tag = 'FOR' + tag
+        else
+          tag = 'RELATION'
+          if @value() is '!'
+            @tokens.pop()
+            id = '!' + id
     if include JS_FORBIDDEN, id
       if forcedIdentifier
         tag = 'STRING'
@@ -100,7 +109,7 @@ exports.Lexer = class Lexer
       else if include(RESERVED, id)
         @identifierError id
     unless forcedIdentifier
-      tag = id = CONVERSIONS[id] if include COFFEE_ALIASES, id
+      tag = id = COFFEE_ALIASES[id] if COFFEE_ALIASES.hasOwnProperty id
       if id is '!'
         tag = 'UNARY'
       else if include LOGIC, id
@@ -307,7 +316,7 @@ exports.Lexer = class Lexer
       if pval in ['or', 'and']
         prev = last @tokens
         prev[0] = 'COMPOUND_ASSIGN'
-        prev[1] = CONVERSIONS[pval] + '='
+        prev[1] = COFFEE_ALIASES[pval] + '='
         return true
     if ';' is                        value then tag = 'TERMINATOR'
     else if include LOGIC          , value then tag = 'LOGIC'
@@ -511,14 +520,20 @@ JS_KEYWORDS = [
   'this', 'null', 'debugger'
 ]
 
-# CoffeeScript-only keywords, which we're more relaxed about allowing. They can't
-# be used standalone, but you can reference them as an attached property.
-COFFEE_ALIASES =  ['and', 'or', 'is', 'isnt', 'not']
-COFFEE_KEYWORDS = COFFEE_ALIASES.concat [
+# CoffeeScript-only keywords.
+COFFEE_KEYWORDS = [
   'then', 'unless', 'until', 'loop'
   'yes', 'no', 'on', 'off'
   'of', 'by', 'when'
 ]
+COFFEE_ALIASES =
+  and  : '&&'
+  or   : '||'
+  is   : '=='
+  isnt : '!='
+  not  : '!'
+COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES
+COFFEE_ALIASES['==='] = '=='
 
 # The list of keywords that are reserved by JavaScript, but not used, or are
 # used by CoffeeScript internally. We throw an error when these are encountered,
@@ -611,12 +626,3 @@ CALLABLE = ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING', '@', 'THIS', '?', ':
 # occurs at the start of a line. We disambiguate these from trailing whens to
 # avoid an ambiguity in the grammar.
 LINE_BREAK = ['INDENT', 'OUTDENT', 'TERMINATOR']
-
-# Conversions from CoffeeScript operators into JavaScript ones.
-CONVERSIONS =
-  'and':  '&&'
-  'or':   '||'
-  'is':   '=='
-  'isnt': '!='
-  'not':  '!'
-  '===':  '=='
