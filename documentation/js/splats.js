@@ -9,7 +9,7 @@ awardMedals = function(first, second) {
   return (rest = others);
 };
 contenders = ["Michael Phelps", "Liu Xiang", "Yao Ming", "Allyson Felix", "Shawn Johnson", "Roman Sebrle", "Guo Jingjing", "Tyson Gay", "Asafa Powell", "Usain Bolt"];
-awardMedals.apply(this, contenders);
+awardMedals.apply(awardMedals, contenders);
 alert("Gold: " + gold);
 alert("Silver: " + silver);
 alert("The Field: " + rest);

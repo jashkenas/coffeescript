@@ -1,4 +1,4 @@
-var _ref, _ref2, _ref3, city, futurists, name, street;
+var _ref, _ref2, city, futurists, name, street;
 futurists = {
   sculptor: "Umberto Boccioni",
   painter: "Vladimir Burliuk",
@@ -7,9 +7,4 @@ futurists = {
     address: ["Via Roma 42R", "Bellagio, Italy 22021"]
   }
 };
-_ref = futurists;
-_ref2 = _ref.poet;
-name = _ref2.name;
-_ref3 = _ref2.address;
-street = _ref3[0];
-city = _ref3[1];
+_ref = futurists.poet, name = _ref.name, _ref2 = _ref.address, street = _ref2[0], city = _ref2[1];

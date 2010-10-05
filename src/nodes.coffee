@@ -823,6 +823,7 @@ exports.ClassNode = class ClassNode extends BaseNode
         prop   = new AssignNode(val, func)
       props.push prop
 
+    constructor.className = className.match /[\w\d\$_]+$/
     constructor.body.unshift literal "#{me} = this" if me
     construct = @idt() + (new AssignNode(@variable, constructor)).compile(merge o, {sharedScope: constScope}) + ';'
     props     = if !props.empty() then '\n' + props.compile(o)                     else ''
@@ -991,9 +992,12 @@ exports.CodeNode = class CodeNode extends BaseNode
     params = (param.compile(o) for param in params)
     @body.makeReturn() unless empty
     (o.scope.parameter(param)) for param in params
-    code = if @body.expressions.length then "\n#{ @body.compileWithDeclarations(o) }\n" else ''
-    func = "function(#{ params.join(', ') }) {#{code}#{ code and @tab }}"
-    return "(#{utility 'bind'}(#{func}, #{@context}))" if @bound
+    o.indent = @idt 2 if @className
+    code  = if @body.expressions.length then "\n#{ @body.compileWithDeclarations(o) }\n" else ''
+    open  = if @className then "(function() {\n#{@idt(1)}return function #{@className}(" else "function("
+    close = if @className then "#{code and @idt(1)}};\n#{@tab}})()" else "#{code and @tab}}"
+    func  = "#{open}#{ params.join(', ') }) {#{code}#{close}"
+    return "#{utility 'bind'}(#{func}, #{@context})" if @bound
     if top then "(#{func})" else func
 
   topSensitive: YES

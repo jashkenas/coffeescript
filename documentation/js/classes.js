@@ -7,24 +7,30 @@ var __extends = function(child, parent) {
     if (typeof parent.extended === "function") parent.extended(child);
     child.__super__ = parent.prototype;
   };
-Animal = function(_arg) {
-  this.name = _arg;
-  return this;
-};
+Animal = (function() {
+  return function Animal(_arg) {
+    this.name = _arg;
+    return this;
+  };
+})();
 Animal.prototype.move = function(meters) {
   return alert(this.name + " moved " + meters + "m.");
 };
-Snake = function() {
-  return Animal.apply(this, arguments);
-};
+Snake = (function() {
+  return function Snake() {
+    return Animal.apply(this, arguments);
+  };
+})();
 __extends(Snake, Animal);
 Snake.prototype.move = function() {
   alert("Slithering...");
   return Snake.__super__.move.call(this, 5);
 };
-Horse = function() {
-  return Animal.apply(this, arguments);
-};
+Horse = (function() {
+  return function Horse() {
+    return Animal.apply(this, arguments);
+  };
+})();
 __extends(Horse, Animal);
 Horse.prototype.move = function() {
   alert("Galloping...");
