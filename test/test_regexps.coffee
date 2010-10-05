@@ -34,3 +34,11 @@ eq '\\\\#{}\\\\\\\"', ///
  \\ \"
 ///.source
 eq ///  /// + '', '/(?:)/'
+
+
+# Issue #584.
+regex = /[/]/
+s1    = "Hello there"
+s2    = "Hello / there"
+ok not regex.test(s1)
+ok regex.test(s2)
