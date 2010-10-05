@@ -714,7 +714,7 @@ exports.ObjectNode = class ObjectNode extends BaseNode
       join   = "\n" if (prop is lastNoncom) or (prop instanceof CommentNode)
       join   = '' if i is @properties.length - 1
       indent = if prop instanceof CommentNode then '' else @idt 1
-      if prop instanceof ValueNode and prop.tags['this']
+      if prop instanceof ValueNode and prop.tags.this
         prop = new AssignNode prop.properties[0].name, prop, 'object'
       else if prop not instanceof AssignNode and prop not instanceof CommentNode
         prop = new AssignNode prop, prop, 'object'
@@ -886,7 +886,9 @@ exports.AssignNode = class AssignNode extends BaseNode
       if obj instanceof AssignNode
         {variable: {base: idx}, value: obj} = obj
       else
-        idx = if isObject then obj else literal 0
+        idx = if isObject
+          if obj.tags.this then obj.properties[0].name else obj
+        else literal 0
       value = new ValueNode value unless value instanceof ValueNode
       accessClass = if IDENTIFIER.test idx.value then AccessorNode else IndexNode
       value.properties.push new accessClass idx
@@ -904,12 +906,8 @@ exports.AssignNode = class AssignNode extends BaseNode
           # A regular object pattern-match.
           [obj, idx] = [obj.value, obj.variable.base]
         else
-          if obj.tags['this']
-            # A shorthand `{@a, @b, @c} = val` pattern-match.
-            idx = obj.properties[0].name
-          else
-            # A shorthand `{a, b, c} = val` pattern-match.
-            idx = obj
+          # A shorthand `{a, b, @c} = val` pattern-match.
+          idx = if obj.tags.this then obj.properties[0].name else obj
       unless obj instanceof ValueNode or obj instanceof SplatNode
         throw new Error 'pattern matching must use only identifiers on the left-hand side.'
       accessClass = if isObject and IDENTIFIER.test(idx.value) then AccessorNode else IndexNode

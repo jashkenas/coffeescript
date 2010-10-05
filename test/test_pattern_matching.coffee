@@ -149,6 +149,8 @@ obj =
   func: (list, object) ->
     [@one, @two] = list
     {@a, @b} = object
+    {@a} = object  # must not unroll this
+    null
 
 obj.func [1, 2], a: 'a', b: 'b'
 
