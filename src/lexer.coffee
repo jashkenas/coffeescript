@@ -568,7 +568,7 @@ NO_NEWLINE      = /// ^
   (?:                                   # non-capturing...
     [-+*&|/%=<>!.\\][<>=&|]* |          # symbol operators
     and | or | is(?:nt)? | n(?:ot|ew) | # word operators
-    delete |typeof | instanceof
+    delete | typeof | instanceof
   )$
 ///
 
