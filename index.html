@@ -1284,7 +1284,7 @@ tom.move();;'>run</button><br class='clear' /></div>
       is converted into a call against the immediate ancestor's method of the same name.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">String::dasherize </span><span class="Keyword">=</span> <span class="Storage">-&gt;</span>
-  <span class="Variable">this</span>.replace<span class="String"> /_/g</span>, <span class="String"><span class="String">&quot;</span>-<span class="String">&quot;</span></span>
+  <span class="Variable">this</span>.replace <span class="String">/_/g</span>, <span class="String"><span class="String">&quot;</span>-<span class="String">&quot;</span></span>
 </pre><pre class="idle"><span class="LibraryClassType">String</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">dasherize</span> = <span class="Storage">function</span>() {
   <span class="Keyword">return</span> <span class="Variable">this</span>.<span class="LibraryFunction">replace</span>(<span class="String"><span class="String">/</span>_<span class="String">/</span>g</span>, <span class="String"><span class="String">&quot;</span>-<span class="String">&quot;</span></span>);
 };
@@ -1352,7 +1352,7 @@ _ref = weatherReport("Berkeley, CA"), city = _ref[0], temp = _ref[1], forecast =
       <span class="String"><span class="String">&quot;</span>Bellagio, Italy 22021<span class="String">&quot;</span></span>
     ]
 
-{poet: {name, address: [street, city]}} <span class="Keyword">=</span> futurists
+<span class="Keyword">{</span>poet: {name, address: [street, city]}<span class="Keyword">} =</span> futurists
 </pre><pre class="idle"><span class="Storage">var</span> _ref, _ref2, city, futurists, name, street;
 futurists <span class="Keyword">=</span> {
   sculptor: <span class="String"><span class="String">&quot;</span>Umberto Boccioni<span class="String">&quot;</span></span>,
@@ -1558,10 +1558,10 @@ healthy = (200 > cholesterol) && (cholesterol > 60);;alert(healthy);'>run: healt
 quote  <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String"><span class="String">#{</span>author<span class="String">}</span></span><span class="String">&quot;</span></span>
 </pre><pre class="idle"><span class="Storage">var</span> author, quote;
 author <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Wittgenstein<span class="String">&quot;</span></span>;
-quote <span class="Keyword">=</span> (<span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String">&quot;</span></span> <span class="Keyword">+</span> (author));
+quote <span class="Keyword">=</span> (<span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String">&quot;</span></span> <span class="Keyword">+</span> author);
 </pre><button onclick='javascript: var author, quote;
 author = "Wittgenstein";
-quote = ("A picture is a fact. -- " + (author));;alert(quote);'>run: quote</button><br class='clear' /></div>
+quote = ("A picture is a fact. -- " + author);;alert(quote);'>run: quote</button><br class='clear' /></div>
     <p>
       And arbitrary expressions can be interpolated by using brackets <tt>#{ ... }</tt><br />
       Interpolation works the same way within regular expressions.
@@ -1569,17 +1569,17 @@ quote = ("A picture is a fact. -- " + (author));;alert(quote);'>run: quote</butt
     <div class='code'><pre class="idle">sentence <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span><span class="String"><span class="String">#{</span> <span class="Number">22</span> <span class="Keyword">/</span> <span class="Number">7</span> <span class="String">}</span></span> is a decent approximation of π<span class="String">&quot;</span></span>
 
 sep   <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>[.<span class="UserDefinedConstant">\\</span>/<span class="UserDefinedConstant">\\</span>- ]<span class="String">&quot;</span></span>
-dates <span class="Keyword">=</span><span class="String"> /\d+#{sep}\d+#{sep}\d+/g</span>
+dates <span class="Keyword">=</span> <span class="String">/\d+#{sep}\d+#{sep}\d+/g</span>
 
 
 </pre><pre class="idle"><span class="Storage">var</span> dates, sentence, sep;
 sentence <span class="Keyword">=</span> (<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> (<span class="Number">22</span> / <span class="Number">7</span>) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is a decent approximation of π<span class="String">&quot;</span></span>);
 sep <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>[.<span class="UserDefinedConstant">\\</span>/<span class="UserDefinedConstant">\\</span>- ]<span class="String">&quot;</span></span>;
-dates <span class="Keyword">=</span> (<span class="LibraryClassType">RegExp</span>(<span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>d+<span class="String">&quot;</span></span> <span class="Keyword">+</span> (sep) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>d+<span class="String">&quot;</span></span> <span class="Keyword">+</span> (sep) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span><span class="UserDefinedConstant">\\</span>d+<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>g<span class="String">&quot;</span></span>));
+dates <span class="Keyword">=</span><span class="String"> <span class="String">/</span><span class="UserDefinedConstant">\d</span>+#{sep}<span class="UserDefinedConstant">\d</span>+#{sep}<span class="UserDefinedConstant">\d</span>+<span class="String">/</span>g</span>;
 </pre><button onclick='javascript: var dates, sentence, sep;
 sentence = ("" + (22 / 7) + " is a decent approximation of π");
 sep = "[.\\/\\- ]";
-dates = (RegExp("\\d+" + (sep) + "\\d+" + (sep) + "\\d+", "g"));;alert(sentence);'>run: sentence</button><br class='clear' /></div>
+dates = /\d+#{sep}\d+#{sep}\d+/g;;alert(sentence);'>run: sentence</button><br class='clear' /></div>
 
     <p>
       <span id="heredocs" class="bookmark"></span>
@@ -1671,7 +1671,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
   require(<span class="String"><span class="String">'</span>jison<span class="String">'</span></span>);
   code <span class="Keyword">=</span> require(<span class="String"><span class="String">'</span>./lib/grammar<span class="String">'</span></span>).parser.generate();
   dir <span class="Keyword">=</span> options.output <span class="Keyword">||</span> <span class="String"><span class="String">'</span>lib<span class="String">'</span></span>;
-  <span class="Keyword">return</span> fs.writeFile(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> (dir) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>/parser.js<span class="String">&quot;</span></span>, code);
+  <span class="Keyword">return</span> fs.writeFile(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> dir <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>/parser.js<span class="String">&quot;</span></span>, code);
 });
 </pre><br class='clear' /></div>
     <p>
