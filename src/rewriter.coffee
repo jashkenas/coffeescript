@@ -102,8 +102,8 @@ class exports.Rewriter
   # calls that close on the same line, just before their outdent.
   closeOpenCalls: ->
     condition = (token, i) ->
-      (token[0] in [')', 'CALL_END']) or
-       token[0] is 'OUTDENT' and @tag(i - 1) is ')'
+      token[0] in [')', 'CALL_END'] or
+      token[0] is 'OUTDENT' and @tag(i - 1) is ')'
     action = (token, i) ->
       @tokens[if token[0] is 'OUTDENT' then i - 1 else i][0] = 'CALL_END'
     @scanTokens (token, i) ->
@@ -127,8 +127,8 @@ class exports.Rewriter
       return false if 'HERECOMMENT' in [@tag(i + 1), @tag(i - 1)]
       [one, two, three] = @tokens.slice i + 1, i + 4
       [tag] = token
-      (tag in ['TERMINATOR', 'OUTDENT']) and not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':') or
-      tag is ',' and (one?[0] not in ['IDENTIFIER', 'STRING', '@', 'TERMINATOR', 'OUTDENT'])
+      tag in ['TERMINATOR', 'OUTDENT'] and not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':') or
+      tag is ',' and one?[0] not in ['IDENTIFIER', 'STRING', '@', 'TERMINATOR', 'OUTDENT']
     action = (token, i) -> @tokens.splice i, 0, ['}', '}', token[2]]
     @scanTokens (token, i, tokens) ->
       if include EXPRESSION_START, tag = token[0]
@@ -170,7 +170,7 @@ class exports.Rewriter
       token.call = yes if prev and not prev.spaced and tag is '?'
       if callObject or
          prev and prev.spaced and (prev.call or include(IMPLICIT_FUNC, prev[0])) and include(IMPLICIT_CALL, tag) and
-         not (tag is 'UNARY' and (@tag(i + 1) in ['IN', 'OF', 'INSTANCEOF']))
+         not (tag is 'UNARY' and @tag(i + 1) in ['IN', 'OF', 'INSTANCEOF'])
         tokens.splice i, 0, ['CALL_START', '(', token[2]]
         condition = (token, i) ->
           return yes if not seenSingle and token.fromThen
@@ -196,7 +196,7 @@ class exports.Rewriter
       if tag is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
         tokens.splice i, 0, @indentation(token)...
         return 2
-      if tag is 'CATCH' and (@tag(i + 2) in ['TERMINATOR', 'FINALLY'])
+      if tag is 'CATCH' and @tag(i + 2) in ['TERMINATOR', 'FINALLY']
         tokens.splice i + 2, 0, @indentation(token)...
         return 4
       if include(SINGLE_LINERS, tag) and @tag(i + 1) isnt 'INDENT' and

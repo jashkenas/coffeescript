@@ -41,6 +41,7 @@ exports.Lexer = class Lexer
     @indent  = 0            # The current indentation level.
     @indebt  = 0            # The over-indentation at the current level.
     @outdebt = 0            # The under-outdentation at the current level.
+    @seenFor = no           # The flag for distinguishing FORIN/FOROF from IN/OF.
     @indents = []           # The stack of all current indentation levels.
     @tokens  = []           # Stream of parsed tokens in the form ['TYPE', value, line]
     # At every position, run through this list of attempted matches,
@@ -84,8 +85,19 @@ exports.Lexer = class Lexer
       tag = id.toUpperCase()
       if tag is 'WHEN' and include LINE_BREAK, @tag()
         tag = 'LEADING_WHEN'
+      else if tag is 'FOR'
+        @seenFor = yes
       else if include UNARY, tag
         tag = 'UNARY'
+      else if include RELATION, tag
+        if tag isnt 'INSTANCEOF' and @seenFor
+          @seenFor = no
+          tag = 'FOR' + tag
+        else
+          tag = 'RELATION'
+          if @value() is '!'
+            @tokens.pop()
+            id = '!' + id
     if include JS_FORBIDDEN, id
       if forcedIdentifier
         tag = 'STRING'
@@ -97,7 +109,7 @@ exports.Lexer = class Lexer
       else if include(RESERVED, id)
         @identifierError id
     unless forcedIdentifier
-      tag = id = CONVERSIONS[id] if include COFFEE_ALIASES, id
+      tag = id = COFFEE_ALIASES[id] if COFFEE_ALIASES.hasOwnProperty id
       if id is '!'
         tag = 'UNARY'
       else if include LOGIC, id
@@ -292,36 +304,37 @@ exports.Lexer = class Lexer
   # here. `;` and newlines are both treated as a `TERMINATOR`, we distinguish
   # parentheses that indicate a method call from regular parentheses, and so on.
   literalToken: ->
-    if match = @chunk.match OPERATOR
-      [value, space] = match
+    if match = OPERATOR.exec @chunk
+      [value] = match
       @tagParameters() if CODE.test value
     else
       value = @chunk.charAt 0
     @i += value.length
-    prev = last @tokens
-    spaced = prev?.spaced
     tag = value
     if value is '='
-      @assignmentError() if include JS_FORBIDDEN, val = @value()
-      if val in ['or', 'and']
-        @tokens.splice(-1, 1, ['COMPOUND_ASSIGN', CONVERSIONS[val] + '=', prev[2]])
+      @assignmentError() if include JS_FORBIDDEN, pval = @value()
+      if pval in ['or', 'and']
+        prev = last @tokens
+        prev[0] = 'COMPOUND_ASSIGN'
+        prev[1] = COFFEE_ALIASES[pval] + '='
         return true
-    if value is ';'                         then tag = 'TERMINATOR'
-    else if include(LOGIC, value)           then tag = 'LOGIC'
-    else if include(MATH, value)            then tag = 'MATH'
-    else if include(COMPARE, value)         then tag = 'COMPARE'
-    else if include(COMPOUND_ASSIGN, value) then tag = 'COMPOUND_ASSIGN'
-    else if include(UNARY, value)           then tag = 'UNARY'
-    else if include(SHIFT, value)           then tag = 'SHIFT'
-    else if include(CALLABLE, @tag()) and not spaced
+    if ';' is                        value then tag = 'TERMINATOR'
+    else if include LOGIC          , value then tag = 'LOGIC'
+    else if include MATH           , value then tag = 'MATH'
+    else if include COMPARE        , value then tag = 'COMPARE'
+    else if include COMPOUND_ASSIGN, value then tag = 'COMPOUND_ASSIGN'
+    else if include UNARY          , value then tag = 'UNARY'
+    else if include SHIFT          , value then tag = 'SHIFT'
+    else if (prev = last @tokens) and not prev.spaced and
+         include(CALLABLE, ptag = prev[0])
       if value is '('
-        prev[0] = 'FUNC_EXIST' if prev[0] is '?'
+        prev[0] = 'FUNC_EXIST' if ptag is '?'
         tag = 'CALL_START'
       else if value is '['
         tag = 'INDEX_START'
-        switch @tag()
-          when '?'  then @tag 0, 'INDEX_SOAK'
-          when '::' then @tag 0, 'INDEX_PROTO'
+        switch ptag
+          when '?'  then prev[0] = 'INDEX_SOAK'
+          when '::' then prev[0] = 'INDEX_PROTO'
     @token tag, value
     true
 
@@ -468,15 +481,11 @@ exports.Lexer = class Lexer
   token: (tag, value) ->
     @tokens.push [tag, value, @line]
 
-  # Peek at a tag in the current token stream.
-  tag: (index, newTag) ->
-    return unless tok = last @tokens, index
-    tok[0] = newTag ? tok[0]
-
-  # Peek at a value in the current token stream.
+  # Peek at a tag/value in the current token stream.
+  tag  : (index, tag) ->
+    (tok = last @tokens, index) and if tag? then tok[0] = tag else tok[0]
   value: (index, val) ->
-    return unless tok = last @tokens, index
-    tok[1] = val ? tok[1]
+    (tok = last @tokens, index) and if val? then tok[1] = val else tok[1]
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->
@@ -511,14 +520,20 @@ JS_KEYWORDS = [
   'this', 'null', 'debugger'
 ]
 
-# CoffeeScript-only keywords, which we're more relaxed about allowing. They can't
-# be used standalone, but you can reference them as an attached property.
-COFFEE_ALIASES =  ['and', 'or', 'is', 'isnt', 'not']
-COFFEE_KEYWORDS = COFFEE_ALIASES.concat [
+# CoffeeScript-only keywords.
+COFFEE_KEYWORDS = [
   'then', 'unless', 'until', 'loop'
   'yes', 'no', 'on', 'off'
   'of', 'by', 'when'
 ]
+COFFEE_ALIASES =
+  and  : '&&'
+  or   : '||'
+  is   : '=='
+  isnt : '!='
+  not  : '!'
+COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES
+COFFEE_ALIASES['==='] = '=='
 
 # The list of keywords that are reserved by JavaScript, but not used, or are
 # used by CoffeeScript internally. We throw an error when these are encountered,
@@ -537,7 +552,7 @@ JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
 IDENTIFIER = /^[a-zA-Z_$][\w$]*/
 NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
 HEREDOC    = /^("""|''')([\s\S]*?)(?:\n[ \t]*)?\1/
-OPERATOR   = /^(?:-[-=>]?|\+[+=]?|[*&|\/%=<>^:!?]+)(?=([ \t]*))/
+OPERATOR   = /// ^ (?: -[-=>]? | \+[+=]? | [*&|/%=<>^:!?]+ ) ///
 WHITESPACE = /^[ \t]+/
 COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
 CODE       = /^[-=]>/
@@ -591,6 +606,9 @@ COMPARE = ['<=', '<', '>', '>=']
 # Mathmatical tokens.
 MATH    = ['*', '/', '%']
 
+# Relational tokens that are negatable with `not` prefix.
+RELATION = ['IN', 'OF', 'INSTANCEOF']
+
 # Tokens which a regular expression will never immediately follow, but which
 # a division operator might.
 #
@@ -608,12 +626,3 @@ CALLABLE = ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING', '@', 'THIS', '?', ':
 # occurs at the start of a line. We disambiguate these from trailing whens to
 # avoid an ambiguity in the grammar.
 LINE_BREAK = ['INDENT', 'OUTDENT', 'TERMINATOR']
-
-# Conversions from CoffeeScript operators into JavaScript ones.
-CONVERSIONS =
-  'and':  '&&'
-  'or':   '||'
-  'is':   '=='
-  'isnt': '!='
-  'not':  '!'
-  '===':  '=='

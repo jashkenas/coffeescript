@@ -1130,6 +1130,7 @@ exports.OpNode = class OpNode extends BaseNode
   CONVERSIONS:
     '==': '==='
     '!=': '!=='
+    of: 'in'
 
   # The map of invertible operators.
   INVERSIONS:
