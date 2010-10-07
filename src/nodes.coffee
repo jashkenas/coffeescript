@@ -63,7 +63,7 @@ exports.Base = class Base
     pair = unless @isComplex()
       [this, this]
     else
-      reference = literal o.scope.freeVariable 'ref'
+      reference = new Literal o.scope.freeVariable 'ref'
       compiled  = new Assign reference, this
       [compiled, reference]
     (pair[i] = node.compile o) for node, i in pair if options?.precompile
@@ -352,11 +352,11 @@ exports.Value = class Value extends Base
       return [this, this]  # `a` `a.b`
     base = new Value @base, @properties.slice 0, -1
     if base.isComplex()  # `a().b`
-      bref = literal o.scope.freeVariable 'base'
+      bref = new Literal o.scope.freeVariable 'base'
       base = new Value new Parenthetical new Assign bref, base
     return [base, bref] unless name  # `a()`
     if name.isComplex()  # `a[b()]`
-      nref = literal o.scope.freeVariable 'name'
+      nref = new Literal o.scope.freeVariable 'name'
       name = new Index new Assign nref, name.index
       nref = new Index nref
     [base.push(name), new Value(bref or base.base, [nref or name])]
@@ -390,7 +390,7 @@ exports.Value = class Value extends Base
       fst = new Value @base, @properties.slice 0, i
       snd = new Value @base, @properties.slice i
       if fst.isComplex()
-        ref = literal o.scope.freeVariable 'ref'
+        ref = new Literal o.scope.freeVariable 'ref'
         fst = new Parenthetical new Assign ref, fst
         snd.base = ref
       ifn = new If new Existence(fst), snd, operation: yes
@@ -493,7 +493,7 @@ exports.Call = class Call extends Base
         [left, rite] = val.cacheReference o
         rite = new Call rite, @args
       else
-        left = literal @superReference o
+        left = new Literal @superReference o
         rite = new Call new Value(left), @args
         rite.isNew = @isNew
       left = "typeof #{ left.compile o } !== \"function\""
@@ -558,7 +558,7 @@ exports.Extends = class Extends extends Base
 
   # Hooks one constructor into another's prototype chain.
   compileNode: (o) ->
-    ref =  new Value literal utility 'extends'
+    ref =  new Value new Literal utility 'extends'
     (new Call ref, [@child, @parent]).compile o
 
 #### Accessor
@@ -765,7 +765,7 @@ exports.Class = class Class extends Base
   # list of prototype property assignments.
   constructor: (variable, @parent, @properties) ->
     super()
-    @variable = if variable is '__temp__' then literal variable else variable
+    @variable = if variable is '__temp__' then new Literal variable else variable
     @properties or= []
     @returns    = false
 
@@ -778,7 +778,7 @@ exports.Class = class Class extends Base
   # constructor, property assignments, and inheritance getting built out below.
   compileNode: (o) ->
     {variable} = this
-    variable   = literal o.scope.freeVariable 'ctor' if variable.value is '__temp__'
+    variable   = new Literal o.scope.freeVariable 'ctor' if variable.value is '__temp__'
     extension  = @parent and new Extends variable, @parent
     props      = new Expressions
     o.top      = true
@@ -787,9 +787,9 @@ exports.Class = class Class extends Base
     constScope = null
 
     if @parent
-      applied = new Value(@parent, [new Accessor(literal('apply'))])
+      applied = new Value @parent, [new Accessor new Literal 'apply']
       constructor = new Code([], new Expressions([
-        new Call(applied, [literal('this'), literal('arguments')])
+        new Call applied, [new Literal('this'), new Literal('arguments')]
       ]))
     else
       constructor = new Code
@@ -800,11 +800,11 @@ exports.Class = class Class extends Base
         if func not instanceof Code
           [func, ref] = func.compileReference o
           props.push func if func isnt ref
-          apply = new Call(new Value(ref, [new Accessor literal 'apply']), [literal('this'), literal('arguments')])
+          apply = new Call(new Value(ref, [new Accessor new Literal 'apply']), [new Literal('this'), new Literal('arguments')])
           func  = new Code [], new Expressions([apply])
         throw new Error "cannot define a constructor as a bound function." if func.bound
         func.name = className
-        func.body.push new Return literal 'this'
+        func.body.push new Return new Literal 'this'
         variable = new Value variable
         variable.namespaced = include func.name, '.'
         constructor = func
@@ -817,8 +817,8 @@ exports.Class = class Class extends Base
           constScope or= new Scope(o.scope, constructor.body, constructor)
           me or= constScope.freeVariable 'this'
           pname = pvar.compile(o)
-          constructor.body.push    new Return literal 'this' if constructor.body.empty()
-          constructor.body.unshift literal "this.#{pname} = function(){ return #{className}.prototype.#{pname}.apply(#{me}, arguments); }"
+          constructor.body.push    new Return new Literal 'this' if constructor.body.empty()
+          constructor.body.unshift new Literal "this.#{pname} = function(){ return #{className}.prototype.#{pname}.apply(#{me}, arguments); }"
       if pvar
         access = if prop.context is 'this' then pvar.base.properties[0] else new Accessor(pvar, 'prototype')
         val    = new Value variable, [access]
@@ -826,7 +826,7 @@ exports.Class = class Class extends Base
       props.push prop
 
     constructor.className = className.match /[\w\d\$_]+$/
-    constructor.body.unshift literal "#{me} = this" if me
+    constructor.body.unshift new Literal "#{me} = this" if me
     construct = @idt() + new Assign(variable, constructor).compile(merge o, sharedScope: constScope) + ';'
     props     = if !props.empty() then '\n' + props.compile(o)                    else ''
     extension = if extension      then '\n' + @idt() + extension.compile(o) + ';' else ''
@@ -890,7 +890,7 @@ exports.Assign = class Assign extends Base
       else
         idx = if isObject
           if obj.tags.this then obj.properties[0].name else obj
-        else literal 0
+        else new Literal 0
       value = new Value value unless value instanceof Value
       accessClass = if IDENTIFIER.test idx.value then Accessor else Index
       value.properties.push new accessClass idx
@@ -914,11 +914,11 @@ exports.Assign = class Assign extends Base
         throw new Error 'pattern matching must use only identifiers on the left-hand side.'
       accessClass = if isObject and IDENTIFIER.test(idx.value) then Accessor else Index
       if not splat and obj instanceof Splat
-        val   = literal obj.compileValue o, valVar, i, olength - i - 1
+        val   = new Literal obj.compileValue o, valVar, i, olength - i - 1
         splat = true
       else
-        idx = literal(if splat then "#{valVar}.length - #{olength - idx}" else idx) if typeof idx isnt 'object'
-        val = new Value literal(valVar), [new accessClass idx]
+        idx = new Literal(if splat then "#{valVar}.length - #{olength - idx}" else idx) if typeof idx isnt 'object'
+        val = new Value new Literal(valVar), [new accessClass idx]
       assigns.push new Assign(obj, val).compile otop
     assigns.push valVar unless top
     code = assigns.join ', '
@@ -971,14 +971,14 @@ exports.Code = class Code extends Base
     for param, i in @params
       if splat
         if param.attach
-          param.assign = new Assign new Value literal('this'), [new Accessor param.value]
+          param.assign = new Assign new Value new Literal('this'), [new Accessor param.value]
           @body.expressions.splice splat.index + 1, 0, param.assign
         splat.trailings.push param
       else
         if param.attach
           {value} = param
-          [param, param.splat] = [literal(o.scope.freeVariable 'arg'), param.splat]
-          @body.unshift new Assign new Value(literal('this'), [new Accessor value]), param
+          [param, param.splat] = [new Literal(o.scope.freeVariable 'arg'), param.splat]
+          @body.unshift new Assign new Value(new Literal('this'), [new Accessor value]), param
         if param.splat
           splat           = new Splat param.value
           splat.index     = i
@@ -1017,7 +1017,7 @@ exports.Param = class Param extends Base
 
   constructor: (@name, @attach, @splat) ->
     super()
-    @value = literal @name
+    @value = new Literal @name
 
   compileNode: (o) ->
     @value.compile o
@@ -1026,7 +1026,7 @@ exports.Param = class Param extends Base
     {name} = @
     name = '@' + name if @attach
     name += '...'     if @splat
-    literal(name).toString()
+    new Literal(name).toString()
 
 #### Splat
 
@@ -1038,7 +1038,7 @@ exports.Splat = class Splat extends Base
 
   constructor: (name) ->
     super()
-    name = literal(name) unless name.compile
+    name = new Literal name unless name.compile
     @name = name
 
   compileNode: (o) ->
@@ -1059,7 +1059,7 @@ exports.Splat = class Splat extends Base
       for trailing, idx in @trailings
         if trailing.attach
           assign        = trailing.assign
-          trailing      = literal o.scope.freeVariable 'arg'
+          trailing      = new Literal o.scope.freeVariable 'arg'
           assign.value  = trailing
         pos = @trailings.length - idx
         o.scope.assign(trailing.compile(o), "arguments[#{variadic} ? #{len} - #{pos} : #{@index + idx}]")
@@ -1135,7 +1135,7 @@ exports.While = class While extends Base
     pre     = "#{set}#{@tab}while (#{cond})"
     @body   = Expressions.wrap([new If(@guard, @body)]) if @guard
     if @returns
-      post = '\n' + new Return(literal(rvar)).compile(merge(o, indent: @idt()))
+      post = '\n' + new Return(new Literal rvar).compile(merge(o, indent: @idt()))
     else
       post = ''
     "#{pre} {\n#{ @body.compile(o) }\n#{@tab}}#{post}"
@@ -1233,7 +1233,7 @@ exports.Op = class Op extends Base
   compileExistence: (o) ->
     if @first.isComplex()
       ref = o.scope.freeVariable 'ref'
-      fst = new Parenthetical new Assign literal(ref), @first
+      fst = new Parenthetical new Assign new Literal(ref), @first
     else
       fst = @first
       ref = fst.compile o
@@ -1405,7 +1405,7 @@ exports.For = class For extends Base
     this
 
   compileReturnValue: (val, o) ->
-    return '\n' + new Return(literal(val)).compile(o) if @returns
+    return '\n' + new Return(new Literal val).compile(o) if @returns
     return '\n' + val if val
     ''
 
@@ -1441,7 +1441,7 @@ exports.For = class For extends Base
         sourcePart = "(#{sourcePart})" unless @object
         svar = ref
       namePart = if @pattern
-        new Assign(@name, literal "#{svar}[#{ivar}]").compile merge o, top: on
+        new Assign(@name, new Literal "#{svar}[#{ivar}]").compile merge o, top: on
       else if name
         "#{name} = #{svar}[#{ivar}]"
       unless @object
@@ -1454,9 +1454,9 @@ exports.For = class For extends Base
     if @guard
       body        = Expressions.wrap([new If(@guard, body)])
     if codeInBody
-      body.unshift  literal "var #{name} = #{ivar}" if range
-      body.unshift  literal "var #{namePart}" if namePart
-      body.unshift  literal "var #{index} = #{ivar}" if index
+      body.unshift  new Literal "var #{name} = #{ivar}" if range
+      body.unshift  new Literal "var #{namePart}" if namePart
+      body.unshift  new Literal "var #{index} = #{ivar}" if index
       body        = Closure.wrap(body, true)
     else
       varPart     = "#{idt1}#{namePart};\n" if namePart
@@ -1483,7 +1483,7 @@ exports.Switch = class Switch extends Base
   constructor: (@subject, @cases, @otherwise) ->
     super()
     @tags.subjectless = !@subject
-    @subject or= literal 'true'
+    @subject or= new Literal 'true'
 
   makeReturn: ->
     pair[1].makeReturn() for pair in @cases
@@ -1607,7 +1607,7 @@ Push =
   wrap: (name, expressions) ->
     return expressions if expressions.empty() or expressions.containsPureStatement()
     Expressions.wrap [new Call(
-      new Value literal(name), [new Accessor literal 'push']
+      new Value new Literal(name), [new Accessor new Literal 'push']
       [expressions.unwrap()]
     )]
 
@@ -1625,9 +1625,9 @@ Closure =
     args = []
     if (mentionsArgs = expressions.contains @literalArgs) or
        (               expressions.contains @literalThis)
-      meth = literal if mentionsArgs then 'apply' else 'call'
-      args = [literal 'this']
-      args.push literal 'arguments' if mentionsArgs
+      meth = new Literal if mentionsArgs then 'apply' else 'call'
+      args = [new Literal 'this']
+      args.push new Literal 'arguments' if mentionsArgs
       func = new Value func, [new Accessor meth]
     call = new Call func, args
     if statement then Expressions.wrap [call] else call
@@ -1682,9 +1682,6 @@ IS_STRING = /^['"]/
 
 # Utility Functions
 # -----------------
-
-# Handy helper for generating a Literal.
-literal = (name) -> new Literal name
 
 # Helper for ensuring that utility functions are assigned at the top level.
 utility = (name) ->
