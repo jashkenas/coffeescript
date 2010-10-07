@@ -829,10 +829,10 @@ lyrics = (function() {
 lunch <span class="Keyword">=</span> eat food <span class="Keyword">for</span> food <span class="Keyword">in</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>]
 
 <span class="Comment"><span class="Comment">#</span> Naive collision detection.</span>
-<span class="Keyword">for</span> roid <span class="Keyword">in</span> asteroids
+<span class="Keyword">for</span> roid, index <span class="Keyword">in</span> asteroids
   <span class="Keyword">for</span> roid2 <span class="Keyword">in</span> asteroids <span class="Keyword">when</span> roid <span class="Keyword">isnt</span> roid2
     roid.explode() <span class="Keyword">if</span> roid.overlaps roid2
-</pre><pre class="idle"><span class="Storage">var</span> _i, _j, _len, _len2, _ref, _ref2, _result, food, lunch, roid, roid2;
+</pre><pre class="idle"><span class="Storage">var</span> _i, _j, _len, _len2, _len3, _ref, _result, food, index, lunch, roid, roid2;
 lunch <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   _result <span class="Keyword">=</span> []; _ref <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
   <span class="Keyword">for</span> (_i <span class="Keyword">=</span> <span class="Number">0</span>, _len <span class="Keyword">=</span> _ref.<span class="LibraryConstant">length</span>; _i <span class="Keyword">&lt;</span> _len; _i<span class="Keyword">++</span>) {
@@ -841,12 +841,10 @@ lunch <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   }
   <span class="Keyword">return</span> _result;
 })();
-_ref <span class="Keyword">=</span> asteroids;
-<span class="Keyword">for</span> (_i <span class="Keyword">=</span> <span class="Number">0</span>, _len <span class="Keyword">=</span> _ref.<span class="LibraryConstant">length</span>; _i <span class="Keyword">&lt;</span> _len; _i<span class="Keyword">++</span>) {
-  roid <span class="Keyword">=</span> _ref[_i];
-  _ref2 <span class="Keyword">=</span> asteroids;
-  <span class="Keyword">for</span> (_j <span class="Keyword">=</span> <span class="Number">0</span>, _len2 <span class="Keyword">=</span> _ref2.<span class="LibraryConstant">length</span>; _j <span class="Keyword">&lt;</span> _len2; _j<span class="Keyword">++</span>) {
-    roid2 <span class="Keyword">=</span> _ref2[_j];
+<span class="Keyword">for</span> (index <span class="Keyword">=</span> <span class="Number">0</span>, _len2 <span class="Keyword">=</span> asteroids.<span class="LibraryConstant">length</span>; index <span class="Keyword">&lt;</span> _len2; index<span class="Keyword">++</span>) {
+  roid <span class="Keyword">=</span> asteroids[index];
+  <span class="Keyword">for</span> (_j <span class="Keyword">=</span> <span class="Number">0</span>, _len3 <span class="Keyword">=</span> asteroids.<span class="LibraryConstant">length</span>; _j <span class="Keyword">&lt;</span> _len3; _j<span class="Keyword">++</span>) {
+    roid2 <span class="Keyword">=</span> asteroids[_j];
     <span class="Keyword">if</span> (roid <span class="Keyword">!</span><span class="Keyword">==</span> roid2) {
       <span class="Keyword">if</span> (roid.overlaps(roid2)) {
         roid.explode();
@@ -1045,22 +1043,22 @@ six = (one = 1) + (two = 2) + (three = 3);;alert(six);'>run: six</button><br cla
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> The first ten global properties.</span>
 
 globals <span class="Keyword">=</span> (name <span class="Keyword">for</span> name <span class="Keyword">of</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
-</pre><pre class="idle"><span class="Storage">var</span> _ref, _result, globals, name;
+</pre><pre class="idle"><span class="Storage">var</span> _result, globals, name;
 <span class="Storage">var</span> __hasProp <span class="Keyword">=</span> <span class="LibraryClassType">Object</span>.<span class="LibraryConstant">prototype</span>.hasOwnProperty;
 globals <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  _result <span class="Keyword">=</span> []; _ref <span class="Keyword">=</span> <span class="LibraryClassType">window</span>;
-  <span class="Keyword">for</span> (name <span class="Keyword">in</span> _ref) {
-    <span class="Keyword">if</span> (<span class="Keyword">!</span>__hasProp.<span class="LibraryFunction">call</span>(_ref, name)) <span class="Keyword">continue</span>;
+  _result <span class="Keyword">=</span> [];
+  <span class="Keyword">for</span> (name <span class="Keyword">in</span> <span class="LibraryClassType">window</span>) {
+    <span class="Keyword">if</span> (<span class="Keyword">!</span>__hasProp.<span class="LibraryFunction">call</span>(<span class="LibraryClassType">window</span>, name)) <span class="Keyword">continue</span>;
     _result.<span class="LibraryFunction">push</span>(name);
   }
   <span class="Keyword">return</span> _result;
 })().<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
-</pre><button onclick='javascript: var _ref, _result, globals, name;
+</pre><button onclick='javascript: var _result, globals, name;
 var __hasProp = Object.prototype.hasOwnProperty;
 globals = (function() {
-  _result = []; _ref = window;
-  for (name in _ref) {
-    if (!__hasProp.call(_ref, name)) continue;
+  _result = [];
+  for (name in window) {
+    if (!__hasProp.call(window, name)) continue;
     _result.push(name);
   }
   return _result;
@@ -1194,13 +1192,13 @@ tom.move()
 
 </pre><pre class="idle"><span class="Storage">var</span> Animal, Horse, Snake, sam, tom;
 <span class="Storage">var</span> <span class="FunctionName">__extends</span> = <span class="Storage">function</span>(<span class="FunctionArgument">child, parent</span>) {
-    <span class="Storage">var</span> <span class="FunctionName">ctor</span> = <span class="Storage">function</span>(){};
-    <span class="LibraryClassType">ctor</span>.<span class="LibraryConstant">prototype</span> = parent.<span class="LibraryConstant">prototype</span>;
-    <span class="LibraryClassType">child</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">ctor</span>();
-    <span class="LibraryClassType">child</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">constructor</span> = child;
-    <span class="Keyword">if</span> (<span class="Keyword">typeof</span> parent.extended <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>function<span class="String">&quot;</span></span>) parent.extended(child);
-    child.__super__ <span class="Keyword">=</span> parent.<span class="LibraryConstant">prototype</span>;
-  };
+  <span class="Storage">var</span> <span class="FunctionName">ctor</span> = <span class="Storage">function</span>() {};
+  <span class="LibraryClassType">ctor</span>.<span class="LibraryConstant">prototype</span> = parent.<span class="LibraryConstant">prototype</span>;
+  <span class="LibraryClassType">child</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">ctor</span>();
+  <span class="LibraryClassType">child</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">constructor</span> = child;
+  <span class="Keyword">if</span> (<span class="Keyword">typeof</span> parent.extended <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>function<span class="String">&quot;</span></span>) parent.extended(child);
+  child.__super__ <span class="Keyword">=</span> parent.<span class="LibraryConstant">prototype</span>;
+};
 Animal <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   <span class="Keyword">return</span> <span class="Storage">function</span> <span class="FunctionName">Animal</span>(<span class="FunctionArgument">_arg</span>) {
     <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> _arg;
@@ -1236,13 +1234,13 @@ sam.move();
 tom.move();
 </pre><button onclick='javascript: var Animal, Horse, Snake, sam, tom;
 var __extends = function(child, parent) {
-    var ctor = function(){};
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor();
-    child.prototype.constructor = child;
-    if (typeof parent.extended === "function") parent.extended(child);
-    child.__super__ = parent.prototype;
-  };
+  var ctor = function() {};
+  ctor.prototype = parent.prototype;
+  child.prototype = new ctor();
+  child.prototype.constructor = child;
+  if (typeof parent.extended === "function") parent.extended(child);
+  child.__super__ = parent.prototype;
+};
 Animal = (function() {
   return function Animal(_arg) {
     this.name = _arg;
@@ -1418,8 +1416,8 @@ _ref = tag.split(""), open = _ref[0], contents = __slice.call(_ref, 1, _ref.leng
     <span class="Variable">@customer</span>.purchase <span class="Variable">@cart</span>
 </pre><pre class="idle"><span class="Storage">var</span> Account;
 <span class="Storage">var</span> <span class="FunctionName">__bind</span> = <span class="Storage">function</span>(<span class="FunctionArgument">func, context</span>) {
-    <span class="Keyword">return</span> <span class="Storage">function</span>(){ <span class="Keyword">return</span> func.<span class="LibraryFunction">apply</span>(context, arguments); };
-  };
+  <span class="Keyword">return</span> <span class="Storage">function</span>() { <span class="Keyword">return</span> func.<span class="LibraryFunction">apply</span>(context, arguments); };
+};
 <span class="FunctionName">Account</span> = <span class="Storage">function</span>(<span class="FunctionArgument">customer, cart</span>) {
   <span class="Variable">this</span>.customer <span class="Keyword">=</span> customer;
   <span class="Variable">this</span>.cart <span class="Keyword">=</span> cart;

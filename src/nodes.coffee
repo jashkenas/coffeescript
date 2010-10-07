@@ -1429,13 +1429,8 @@ exports.ForNode = class ForNode extends BaseNode
       sourcePart  = source.compileVariables(o)
       forPart     = source.compile merge o, index: ivar, step: @step
     else
-      svar = @source.compile o
-      if IDENTIFIER.test(svar) and scope.check(svar, immediate: on)
-        sourcePart = ''
-      else
-        ref = scope.freeVariable 'ref'
-        sourcePart = "#{ref} = #{svar};"
-        svar = ref
+      [sourcePart, svar] = @source.compileReference merge(o, top: yes), precompile: yes
+      sourcePart = if sourcePart is svar then '' else "#{sourcePart};"
       namePart = if @pattern
         new AssignNode(@name, literal "#{svar}[#{ivar}]").compile merge o, top: on
       else if name

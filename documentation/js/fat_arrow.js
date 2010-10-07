@@ -1,7 +1,7 @@
 var Account;
 var __bind = function(func, context) {
-    return function(){ return func.apply(context, arguments); };
-  };
+  return function() { return func.apply(context, arguments); };
+};
 Account = function(customer, cart) {
   this.customer = customer;
   this.cart = cart;
