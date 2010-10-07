@@ -353,7 +353,7 @@ exports.Value = class Value extends Base
     base = new Value @base, @properties.slice 0, -1
     if base.isComplex()  # `a().b`
       bref = new Literal o.scope.freeVariable 'base'
-      base = new Value new Parenthetical new Assign bref, base
+      base = new Value new Parens new Assign bref, base
     return [base, bref] unless name  # `a()`
     if name.isComplex()  # `a[b()]`
       nref = new Literal o.scope.freeVariable 'name'
@@ -391,7 +391,7 @@ exports.Value = class Value extends Base
       snd = new Value @base, @properties.slice i
       if fst.isComplex()
         ref = new Literal o.scope.freeVariable 'ref'
-        fst = new Parenthetical new Assign ref, fst
+        fst = new Parens new Assign ref, fst
         snd.base = ref
       ifn = new If new Existence(fst), snd, operation: yes
       ifn.soakNode = on
@@ -1103,7 +1103,7 @@ exports.While = class While extends Base
   constructor: (condition, opts) ->
     super()
     if opts?.invert
-      condition = new Parenthetical condition if condition instanceof Op
+      condition = new Parens condition if condition instanceof Op
       condition = new Op('!', condition)
     @condition  = condition
     @guard = opts?.guard
@@ -1174,7 +1174,7 @@ exports.Op = class Op extends Base
     @operator = @CONVERSIONS[@operator] or @operator
     @flip     = !!flip
     if @first instanceof Value and @first.base instanceof ObjectLiteral
-      @first = new Parenthetical @first
+      @first = new Parens @first
     else if @operator is 'new' and @first instanceof Call
       return @first.newInstance()
     @first.tags.operation = yes
@@ -1207,8 +1207,8 @@ exports.Op = class Op extends Base
     return @compileAssignment(o) if indexOf(@ASSIGNMENT, @operator) >= 0
     return @compileUnary(o)      if @isUnary()
     return @compileExistence(o)  if @operator is '?'
-    @first  = new Parenthetical(@first)  if @first instanceof Op and @first.isMutator()
-    @second = new Parenthetical(@second) if @second instanceof Op and @second.isMutator()
+    @first  = new Parens @first  if @first  instanceof Op and @first.isMutator()
+    @second = new Parens @second if @second instanceof Op and @second.isMutator()
     [@first.compile(o), @operator, @second.compile(o)].join ' '
 
   # Mimic Python's chained comparisons when multiple comparison operators are
@@ -1233,7 +1233,7 @@ exports.Op = class Op extends Base
   compileExistence: (o) ->
     if @first.isComplex()
       ref = o.scope.freeVariable 'ref'
-      fst = new Parenthetical new Assign new Literal(ref), @first
+      fst = new Parens new Assign new Literal(ref), @first
     else
       fst = @first
       ref = fst.compile o
@@ -1338,14 +1338,14 @@ exports.Existence = class Existence extends Base
       "#{code} != null"
     if @parenthetical then code else "(#{code})"
 
-#### Parenthetical
+#### Parens
 
 # An extra set of parentheses, specified explicitly in the source. At one time
 # we tried to clean up the results by detecting and removing redundant
 # parentheses, but no longer -- you can put in as many as you please.
 #
 # Parentheses are a good way to force any statement to become an expression.
-exports.Parenthetical = class Parenthetical extends Base
+exports.Parens = class Parens extends Base
 
   children: ['expression']
 
@@ -1498,7 +1498,7 @@ exports.Switch = class Switch extends Base
       [conditions, block] = pair
       exprs = block.expressions
       for condition in flatten [conditions]
-        condition = new Op '!!', new Parenthetical condition if @tags.subjectless
+        condition = new Op '!!', new Parens condition if @tags.subjectless
         code += "\n#{ @idt(1) }case #{ condition.compile o }:"
       code += "\n#{ block.compile o }"
       code += "\n#{ idt }break;" unless last(exprs) instanceof Return
@@ -1526,7 +1526,7 @@ exports.If = class If extends Base
       if @condition instanceof Op and @condition.isInvertible()
         @condition.invert()
       else
-        @condition = new Op '!', new Parenthetical @condition
+        @condition = new Op '!', new Parens @condition
     @elseBody = null
     @isChain  = false
 
@@ -1621,7 +1621,7 @@ Closure =
   # then make sure that the closure wrapper preserves the original values.
   wrap: (expressions, statement) ->
     return expressions if expressions.containsPureStatement()
-    func = new Parenthetical new Code [], Expressions.wrap [expressions]
+    func = new Parens new Code [], Expressions.wrap [expressions]
     args = []
     if (mentionsArgs = expressions.contains @literalArgs) or
        (               expressions.contains @literalThis)
