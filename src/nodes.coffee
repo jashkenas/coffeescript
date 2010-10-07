@@ -622,16 +622,16 @@ exports.Range = class Range extends Base
     parts = []
     parts.push @from if @from isnt @fromVar
     parts.push @to if @to isnt @toVar
-    if parts.length then "#{parts.join('; ')}; " else ''
 
   # When compiled normally, the range returns the contents of the *for loop*
   # needed to iterate over the values in the range. Used by comprehensions.
   compileNode: (o) ->
+    @compileVariables o
     return    @compileArray(o)  unless o.index
     return    @compileSimple(o) if @fromNum and @toNum
     idx      = del o, 'index'
     step     = del o, 'step'
-    vars     = "#{idx} = #{@fromVar}"
+    vars     = "#{idx} = #{@from}" + if @to isnt @toVar then ", #{@to}" else ''
     intro    = "(#{@fromVar} <= #{@toVar} ? #{idx}"
     compare  = "#{intro} <#{@equals} #{@toVar} : #{idx} >#{@equals} #{@toVar})"
     stepPart = if step then step.compile(o) else '1'
@@ -651,21 +651,21 @@ exports.Range = class Range extends Base
 
   # When used as a value, expand the range into the equivalent array.
   compileArray: (o) ->
-    idt    = @idt 1
-    vars   = @compileVariables merge o, indent: idt
     if @fromNum and @toNum and Math.abs(@fromNum - @toNum) <= 20
       range = [+@fromNum..+@toNum]
       range.pop() if @exclusive
       return "[#{ range.join(', ') }]"
-    i = o.scope.freeVariable 'i'
+    idt    = @idt 1
+    i      = o.scope.freeVariable 'i'
     result = o.scope.freeVariable 'result'
-    pre    = "\n#{idt}#{result} = []; #{vars}"
+    pre    = "\n#{idt}#{result} = [];"
     if @fromNum and @toNum
       o.index = i
       body = @compileSimple o
     else
+      vars = "#{i} = #{@from}" + if @to isnt @toVar then ", #{@to}" else ''
       clause = "#{@fromVar} <= #{@toVar} ?"
-      body   = "var #{i} = #{@fromVar}; #{clause} #{i} <#{@equals} #{@toVar} : #{i} >#{@equals} #{@toVar}; #{clause} #{i} += 1 : #{i} -= 1"
+      body   = "var #{vars}; #{clause} #{i} <#{@equals} #{@toVar} : #{i} >#{@equals} #{@toVar}; #{clause} #{i} += 1 : #{i} -= 1"
     post   = "{ #{result}.push(#{i}); }\n#{idt}return #{result};\n#{o.indent}"
     "(function() {#{pre}\n#{idt}for (#{body})#{post}}).call(this)"
 
@@ -1431,11 +1431,15 @@ exports.For = class For extends Base
     body          = Expressions.wrap([@body])
     idt1          = @idt 1
     if range
-      sourcePart  = source.compileVariables(o)
       forPart     = source.compile merge o, index: ivar, step: @step
     else
-      [sourcePart, svar] = @source.compileReference merge(o, top: yes), precompile: yes
-      sourcePart = if sourcePart is svar then '' else "#{sourcePart};"
+      svar = @source.compile o
+      if IDENTIFIER.test(svar) and scope.check(svar, immediate: on)
+        sourcePart = svar
+      else
+        sourcePart = "#{ref = scope.freeVariable 'ref'} = #{svar}"
+        sourcePart = "(#{sourcePart})" unless @object
+        svar = ref
       namePart = if @pattern
         new Assign(@name, literal "#{svar}[#{ivar}]").compile merge o, top: on
       else if name
@@ -1443,9 +1447,8 @@ exports.For = class For extends Base
       unless @object
         lvar      = scope.freeVariable 'len'
         stepPart  = if @step then "#{ivar} += #{ @step.compile(o) }" else "#{ivar}++"
-        forPart   = "#{ivar} = 0, #{lvar} = #{svar}.length; #{ivar} < #{lvar}; #{stepPart}"
-    sourcePart    = (if rvar then "#{rvar} = []; " else '') + sourcePart
-    sourcePart    = if sourcePart then "#{@tab}#{sourcePart}\n#{@tab}" else @tab
+        forPart   = "#{ivar} = 0, #{lvar} = #{sourcePart}.length; #{ivar} < #{lvar}; #{stepPart}"
+    resultPart    = if rvar then "#{@tab}#{rvar} = [];\n" else ''
     returnResult  = @compileReturnValue(rvar, o)
     body          = Push.wrap(rvar, body) unless topLevel
     if @guard
@@ -1458,12 +1461,12 @@ exports.For = class For extends Base
     else
       varPart     = "#{idt1}#{namePart};\n" if namePart
     if @object
-      forPart     = "#{ivar} in #{svar}"
+      forPart     = "#{ivar} in #{sourcePart}"
       guardPart   = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" unless @raw
     body          = body.compile merge o, indent: idt1, top: true
     vars          = if range then name else "#{name}, #{ivar}"
     """
-    #{sourcePart}for (#{forPart}) {#{guardPart}
+    #{resultPart}#{@tab}for (#{forPart}) {#{guardPart}
     #{varPart}#{body}
     #{@tab}}#{returnResult}
     """
