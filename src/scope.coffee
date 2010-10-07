@@ -19,7 +19,21 @@ exports.Scope = class Scope
   # it wraps.
   constructor: (@parent, @expressions, @method) ->
     @variables = {'arguments'}
-    Scope.root = this unless @parent
+    if @parent
+      @garbage = @parent.garbage
+    else
+      @garbage   = []
+      Scope.root = this
+
+  # Create a new garbage level
+  startLevel: ->
+    @garbage.push []
+
+  # Return to the previous garbage level and erase referenced temporary
+  # variables in current level from scope.
+  endLevel: ->
+    vars = @variables
+    (vars[name] = 'reuse') for name in @garbage.pop() when vars[name] is 'var'
 
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
@@ -57,8 +71,9 @@ exports.Scope = class Scope
   # compiler-generated variable. `_var`, `_var2`, and so on...
   freeVariable: (type) ->
     index = 0
-    index++ while @check(temp = @temporary type, index)
+    index++ while @check(temp = @temporary type, index) and @variables[temp] isnt 'reuse'
     @variables[temp] = 'var'
+    last(@garbage).push temp if @garbage.length
     temp
 
   # Ensure that an assignment is made at the top of this scope
@@ -69,7 +84,7 @@ exports.Scope = class Scope
   # Does this scope reference any variables that need to be declared in the
   # given function body?
   hasDeclarations: (body) ->
-    body is @expressions and @any (k, val) -> val is 'var'
+    body is @expressions and @any (k, val) -> val in ['var', 'reuse']
 
   # Does this scope reference any assignments that need to be declared at the
   # top of the given function body?
@@ -78,7 +93,7 @@ exports.Scope = class Scope
 
   # Return the list of variables first declared in this scope.
   declaredVariables: ->
-    (key for key, val of @variables when val is 'var').sort()
+    (key for key, val of @variables when val in ['var', 'reuse']).sort()
 
   # Return the list of assignments that are supposed to be made at the top
   # of this scope.

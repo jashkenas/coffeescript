@@ -829,10 +829,10 @@ lyrics = (function() {
 lunch <span class="Keyword">=</span> eat food <span class="Keyword">for</span> food <span class="Keyword">in</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>]
 
 <span class="Comment"><span class="Comment">#</span> Naive collision detection.</span>
-<span class="Keyword">for</span> roid, index <span class="Keyword">in</span> asteroids
+<span class="Keyword">for</span> roid, pos <span class="Keyword">in</span> asteroids
   <span class="Keyword">for</span> roid2 <span class="Keyword">in</span> asteroids <span class="Keyword">when</span> roid <span class="Keyword">isnt</span> roid2
     roid.explode() <span class="Keyword">if</span> roid.overlaps roid2
-</pre><pre class="idle"><span class="Storage">var</span> _i, _j, _len, _len2, _len3, _ref, _result, food, index, lunch, roid, roid2;
+</pre><pre class="idle"><span class="Storage">var</span> _i, _len, _len2, _ref, _result, food, lunch, pos, roid, roid2;
 lunch <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   _result <span class="Keyword">=</span> []; _ref <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
   <span class="Keyword">for</span> (_i <span class="Keyword">=</span> <span class="Number">0</span>, _len <span class="Keyword">=</span> _ref.<span class="LibraryConstant">length</span>; _i <span class="Keyword">&lt;</span> _len; _i<span class="Keyword">++</span>) {
@@ -841,10 +841,10 @@ lunch <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   }
   <span class="Keyword">return</span> _result;
 })();
-<span class="Keyword">for</span> (index <span class="Keyword">=</span> <span class="Number">0</span>, _len2 <span class="Keyword">=</span> asteroids.<span class="LibraryConstant">length</span>; index <span class="Keyword">&lt;</span> _len2; index<span class="Keyword">++</span>) {
-  roid <span class="Keyword">=</span> asteroids[index];
-  <span class="Keyword">for</span> (_j <span class="Keyword">=</span> <span class="Number">0</span>, _len3 <span class="Keyword">=</span> asteroids.<span class="LibraryConstant">length</span>; _j <span class="Keyword">&lt;</span> _len3; _j<span class="Keyword">++</span>) {
-    roid2 <span class="Keyword">=</span> asteroids[_j];
+<span class="Keyword">for</span> (pos <span class="Keyword">=</span> <span class="Number">0</span>, _len <span class="Keyword">=</span> asteroids.<span class="LibraryConstant">length</span>; pos <span class="Keyword">&lt;</span> _len; pos<span class="Keyword">++</span>) {
+  roid <span class="Keyword">=</span> asteroids[pos];
+  <span class="Keyword">for</span> (_i <span class="Keyword">=</span> <span class="Number">0</span>, _len2 <span class="Keyword">=</span> asteroids.<span class="LibraryConstant">length</span>; _i <span class="Keyword">&lt;</span> _len2; _i<span class="Keyword">++</span>) {
+    roid2 <span class="Keyword">=</span> asteroids[_i];
     <span class="Keyword">if</span> (roid <span class="Keyword">!</span><span class="Keyword">==</span> roid2) {
       <span class="Keyword">if</span> (roid.overlaps(roid2)) {
         roid.explode();

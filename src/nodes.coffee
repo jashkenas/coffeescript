@@ -984,6 +984,7 @@ exports.CodeNode = class CodeNode extends BaseNode
           @body.unshift(splat)
         else
           params.push param
+    o.scope.startLevel()
     params = (param.compile(o) for param in params)
     @body.makeReturn() unless empty
     (o.scope.parameter(param)) for param in params
@@ -992,6 +993,7 @@ exports.CodeNode = class CodeNode extends BaseNode
     open  = if @className then "(function() {\n#{@idt(1)}return function #{@className}(" else "function("
     close = if @className then "#{code and @idt(1)}};\n#{@tab}})()" else "#{code and @tab}}"
     func  = "#{open}#{ params.join(', ') }) {#{code}#{close}"
+    o.scope.endLevel()
     return "#{utility 'bind'}(#{func}, #{@context})" if @bound
     if top then "(#{func})" else func
 
