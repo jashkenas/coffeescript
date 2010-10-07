@@ -132,20 +132,20 @@ class exports.Rewriter
     action = (token, i) -> @tokens.splice i, 0, ['}', '}', token[2]]
     @scanTokens (token, i, tokens) ->
       if include EXPRESSION_START, tag = token[0]
-        stack.push(if tag is 'INDENT' and @tag(i - 1) is '{' then '{' else tag)
+        stack.push if tag is 'INDENT' and @tag(i - 1) is '{' then '{' else tag
+        return 1
       if include EXPRESSION_END, tag
         stack.pop()
-      last = stack[stack.length - 1]
-      if tag is ':' and not (last and last[0] is '{')
-        stack.push '{'
-        idx = if @tag(i - 2) is '@' then i - 2 else i - 1
-        idx -= 2 if @tag(idx - 2) is 'HERECOMMENT'
-        tok = ['{', '{', token[2]]
-        tok.generated = yes
-        tokens.splice idx, 0, tok
-        @detectEnd i + 2, condition, action
-        return 2
-      1
+        return 1
+      return 1 unless tag is ':' and stack[stack.length - 1] isnt '{'
+      stack.push '{'
+      idx = if @tag(i - 2) is '@' then i - 2 else i - 1
+      idx -= 2 if @tag(idx - 2) is 'HERECOMMENT'
+      tok = ['{', '{', token[2]]
+      tok.generated = yes
+      tokens.splice idx, 0, tok
+      @detectEnd i + 2, condition, action
+      2
 
   # Methods may be optionally called without parentheses, for simple cases.
   # Insert the implicit parentheses here, so that the parser doesn't have to
@@ -160,31 +160,28 @@ class exports.Rewriter
       classLine  = yes if tag is 'CLASS'
       prev       = tokens[i - 1]
       next       = tokens[i + 1]
-      idx        = 1
       callObject = not classLine and tag is 'INDENT' and
                    next and next.generated and next[0] is '{' and
                    prev and include(IMPLICIT_FUNC, prev[0])
-      idx        = 2 if callObject
       seenSingle = no
       classLine  = no  if include LINEBREAKS, tag
       token.call = yes if prev and not prev.spaced and tag is '?'
-      if callObject or
-         prev and prev.spaced and (prev.call or include(IMPLICIT_FUNC, prev[0])) and include(IMPLICIT_CALL, tag) and
-         not (tag is 'UNARY' and @tag(i + 1) in ['IN', 'OF', 'INSTANCEOF'])
-        tokens.splice i, 0, ['CALL_START', '(', token[2]]
-        condition = (token, i) ->
-          return yes if not seenSingle and token.fromThen
-          [tag] = token
-          seenSingle = yes if tag in ['IF', 'ELSE', 'UNLESS', '->', '=>']
-          return yes if tag is 'PROPERTY_ACCESS' and @tag(i - 1) is 'OUTDENT'
-          not token.generated and @tag(i - 1) isnt ',' and include(IMPLICIT_END, tag) and
-          (tag isnt 'INDENT' or
-           (@tag(i - 2) isnt 'CLASS' and not include(IMPLICIT_BLOCK, @tag(i - 1)) and
-            not ((post = @tokens[i + 1]) and post.generated and post[0] is '{')))
-        @detectEnd i + idx, condition, action
-        prev[0] = 'FUNC_EXIST' if prev[0] is '?'
-        return 2
-      1
+      return 1 unless callObject or
+        prev?.spaced and (prev.call or include(IMPLICIT_FUNC, prev[0])) and
+        include(IMPLICIT_CALL, tag)
+      tokens.splice i, 0, ['CALL_START', '(', token[2]]
+      @detectEnd i + (if callObject then 2 else 1), (token, i) ->
+        return yes if not seenSingle and token.fromThen
+        [tag] = token
+        seenSingle = yes if tag in ['IF', 'ELSE', 'UNLESS', '->', '=>']
+        return yes if tag is 'PROPERTY_ACCESS' and @tag(i - 1) is 'OUTDENT'
+        not token.generated and @tag(i - 1) isnt ',' and include(IMPLICIT_END, tag) and
+        (tag isnt 'INDENT' or
+         (@tag(i - 2) isnt 'CLASS' and not include(IMPLICIT_BLOCK, @tag(i - 1)) and
+          not ((post = @tokens[i + 1]) and post.generated and post[0] is '{')))
+      , action
+      prev[0] = 'FUNC_EXIST' if prev[0] is '?'
+      2
 
   # Because our grammar is LALR(1), it can't handle some single-line
   # expressions that lack ending delimiters. The **Rewriter** adds the implicit
@@ -331,8 +328,7 @@ IMPLICIT_FUNC    = ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL    = [
   'IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START', 'CLASS'
-  'IF', 'UNLESS', 'TRY', 'SWITCH', 'THIS', 'NULL', 'UNARY'
-  'TRUE', 'FALSE', 'YES', 'NO', 'ON', 'OFF'
+  'IF', 'UNLESS', 'TRY', 'SWITCH', 'THIS', 'NULL', 'UNARY', 'TRUE', 'FALSE'
   '@', '->', '=>', '[', '(', '{'
 ]
 

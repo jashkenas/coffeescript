@@ -132,10 +132,7 @@ grammar =
     o "REGEX",                                  -> new Literal $1
     o "TRUE",                                   -> new Literal true
     o "FALSE",                                  -> new Literal false
-    o "YES",                                    -> new Literal true
-    o "NO",                                     -> new Literal false
-    o "ON",                                     -> new Literal true
-    o "OFF",                                    -> new Literal false
+    o "NULL",                                   -> new Literal 'null'
   ]
 
   # Assignment of a variable, property, or index to a value.
@@ -238,7 +235,6 @@ grammar =
     o "Parenthetical",                          -> new Value $1
     o "Range",                                  -> new Value $1
     o "This"
-    o "NULL",                                   -> new Value new Literal 'null'
   ]
 
   # The general group of accessors into an object, by property, by prototype

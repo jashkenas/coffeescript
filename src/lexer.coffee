@@ -518,17 +518,17 @@ JS_KEYWORDS = [
 ]
 
 # CoffeeScript-only keywords.
-COFFEE_KEYWORDS = [
-  'then', 'unless', 'until', 'loop'
-  'yes', 'no', 'on', 'off'
-  'of', 'by', 'when'
-]
+COFFEE_KEYWORDS = ['then', 'unless', 'until', 'loop', 'of', 'by', 'when']
 COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES =
   and  : '&&'
   or   : '||'
   is   : '=='
   isnt : '!='
   not  : '!'
+  yes  : 'TRUE'
+  no   : 'FALSE'
+  on   : 'TRUE'
+  off  : 'FALSE'
 COFFEE_ALIASES['==='] = '=='
 
 # The list of keywords that are reserved by JavaScript, but not used, or are
