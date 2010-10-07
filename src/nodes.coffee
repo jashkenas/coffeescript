@@ -248,10 +248,14 @@ exports.LiteralNode = class LiteralNode extends BaseNode
 
   isComplex: NO
 
+  isReserved: ->
+    !!@value.reserved
+
   compileNode: (o) ->
     idt = if @isStatement(o) then @idt() else ''
     end = if @isStatement(o) then ';' else ''
-    idt + @value + end
+    val = if @isReserved()   then "\"#{@value}\"" else @value
+    idt + val + end
 
   toString: -> ' "' + @value + '"'
 

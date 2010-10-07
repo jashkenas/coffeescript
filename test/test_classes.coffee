@@ -51,6 +51,8 @@ ok (new SubClass).prop is 'top-super-sub'
 
 
 class OneClass
+  @new: 'new'
+  function: 'function'
   constructor: (name) -> @name = name
 
 class TwoClass extends OneClass
@@ -58,6 +60,8 @@ class TwoClass extends OneClass
 Function.prototype.new = -> new this arguments...
 
 ok (TwoClass.new('three')).name is 'three'
+ok (new OneClass).function is 'function'
+ok OneClass.new is 'new'
 
 delete Function.prototype.new
 

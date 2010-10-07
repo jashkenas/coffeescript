@@ -100,12 +100,9 @@ exports.Lexer = class Lexer
             id = '!' + id
     if include JS_FORBIDDEN, id
       if forcedIdentifier
-        tag = 'STRING'
-        id  = "\"#{id}\""
-        if forcedIdentifier is 'accessor'
-          closeIndex = on
-          @tokens.pop() if @tag() isnt '@'
-          @token 'INDEX_START', '['
+        tag = 'IDENTIFIER'
+        id  = new String id
+        id.reserved = yes
       else if include(RESERVED, id)
         @identifierError id
     unless forcedIdentifier
@@ -115,7 +112,6 @@ exports.Lexer = class Lexer
       else if include LOGIC, id
         tag = 'LOGIC'
     @token tag, id
-    @token ']', ']' if closeIndex
     true
 
   # Matches numbers, including decimals, hex, and exponential notation.
@@ -312,7 +308,8 @@ exports.Lexer = class Lexer
     @i += value.length
     tag = value
     if value is '='
-      @assignmentError() if include JS_FORBIDDEN, pval = @value()
+      pval = @value()
+      @assignmentError() if not pval.reserved and include JS_FORBIDDEN, pval
       if pval in ['or', 'and']
         prev = last @tokens
         prev[0] = 'COMPOUND_ASSIGN'
