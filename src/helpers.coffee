@@ -38,7 +38,7 @@ exports.count = (string, letter) ->
   num
 
 # Merge objects, returning a fresh copy with attributes from both sides.
-# Used every time `BaseNode#compile` is called, to allow properties in the
+# Used every time `Base#compile` is called, to allow properties in the
 # options hash to propagate down the tree without polluting other branches.
 exports.merge = (options, overrides) ->
   extend (extend {}, options), overrides

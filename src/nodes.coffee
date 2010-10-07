@@ -13,9 +13,9 @@ YES  = -> yes
 NO   = -> no
 THIS = -> this
 
-#### BaseNode
+#### Base
 
-# The **BaseNode** is the abstract base class for all nodes in the syntax tree.
+# The **Base** is the abstract base class for all nodes in the syntax tree.
 # Each subclass implements the `compileNode` method, which performs the
 # code generation for that node. To compile a node to JavaScript,
 # call `compile` on it, which wraps `compileNode` in some generic extra smarts,
@@ -24,7 +24,7 @@ THIS = -> this
 # the environment from higher in the tree (such as if a returned value is
 # being requested by the surrounding function), information about the current
 # scope, and indentation level.
-exports.BaseNode = class BaseNode
+exports.Base = class Base
 
   constructor: ->
     @tags = {}
@@ -44,7 +44,7 @@ exports.BaseNode = class BaseNode
     @tab     = o.indent
     top     = if @topSensitive() then @options.top else del @options, 'top'
     closure = @isStatement(o) and not @isPureStatement() and not top and
-              not @options.asStatement and this not instanceof CommentNode and
+              not @options.asStatement and this not instanceof Comment and
               not @containsPureStatement()
     code = if closure then @compileClosure(@options) else @compileNode(@options)
     code
@@ -54,7 +54,7 @@ exports.BaseNode = class BaseNode
   compileClosure: (o) ->
     @tab = o.indent
     o.sharedScope = o.scope
-    ClosureNode.wrap(this).compile o
+    Closure.wrap(this).compile o
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -64,7 +64,7 @@ exports.BaseNode = class BaseNode
       [this, this]
     else
       reference = literal o.scope.freeVariable 'ref'
-      compiled  = new AssignNode reference, this
+      compiled  = new Assign reference, this
       [compiled, reference]
     (pair[i] = node.compile o) for node, i in pair if options?.precompile
     pair
@@ -78,9 +78,9 @@ exports.BaseNode = class BaseNode
 
   # Construct a node that returns the current node's result.
   # Note that this is overridden for smarter behavior for
-  # many statement nodes (eg IfNode, ForNode)...
+  # many statement nodes (eg If, For)...
   makeReturn: ->
-    new ReturnNode this
+    new Return this
 
   # Does this node, or any of its children, contain a node of a certain kind?
   # Recursively traverses down the *children* of the nodes, yielding to a block
@@ -128,8 +128,8 @@ exports.BaseNode = class BaseNode
   traverseChildren: (crossScope, func) ->
     @eachChild (child) ->
       return false if func(child) is false
-      if child instanceof BaseNode and
-         (crossScope or child not instanceof CodeNode)
+      if child instanceof Base and
+         (crossScope or child not instanceof Code)
         child.traverseChildren crossScope, func
 
   # Default implementations of the common node properties and methods. Nodes
@@ -147,7 +147,7 @@ exports.BaseNode = class BaseNode
 # The expressions body is the list of expressions that forms the body of an
 # indented block of code -- the implementation of a function, a clause in an
 # `if`, `switch`, or `try`, and so on...
-exports.Expressions = class Expressions extends BaseNode
+exports.Expressions = class Expressions extends Base
 
   children:     ['expressions']
   isStatement:  YES
@@ -179,8 +179,8 @@ exports.Expressions = class Expressions extends BaseNode
   # ensures that the final expression is returned.
   makeReturn: ->
     end = @expressions[idx = @expressions.length - 1]
-    end = @expressions[idx -= 1] if end instanceof CommentNode
-    if end and end not instanceof ReturnNode
+    end = @expressions[idx -= 1] if end instanceof Comment
+    if end and end not instanceof Return
       @expressions[idx] = end.makeReturn()
     this
 
@@ -231,12 +231,12 @@ Expressions.wrap = (nodes) ->
   return nodes[0] if nodes.length is 1 and nodes[0] instanceof Expressions
   new Expressions(nodes)
 
-#### LiteralNode
+#### Literal
 
 # Literals are static values that can be passed through directly into
 # JavaScript without translation, such as: strings, numbers,
 # `true`, `false`, `null`...
-exports.LiteralNode = class LiteralNode extends BaseNode
+exports.Literal = class Literal extends Base
 
   constructor: (@value) ->
     super()
@@ -248,7 +248,7 @@ exports.LiteralNode = class LiteralNode extends BaseNode
   # meaning when wrapped in a closure.
   isStatement: ->
     @value in ['break', 'continue', 'debugger']
-  isPureStatement: LiteralNode::isStatement
+  isPureStatement: Literal::isStatement
 
   isComplex: NO
 
@@ -263,11 +263,11 @@ exports.LiteralNode = class LiteralNode extends BaseNode
 
   toString: -> ' "' + @value + '"'
 
-#### ReturnNode
+#### Return
 
 # A `return` is a *pureStatement* -- wrapping it in a closure wouldn't
 # make sense.
-exports.ReturnNode = class ReturnNode extends BaseNode
+exports.Return = class Return extends Base
 
   isStatement:      YES
   isPureStatement:  YES
@@ -280,7 +280,7 @@ exports.ReturnNode = class ReturnNode extends BaseNode
 
   compile: (o) ->
     expr = @expression?.makeReturn()
-    return expr.compile o if expr and (expr not instanceof ReturnNode)
+    return expr.compile o if expr and (expr not instanceof Return)
     super o
 
   compileNode: (o) ->
@@ -290,15 +290,15 @@ exports.ReturnNode = class ReturnNode extends BaseNode
       expr = ' ' + @expression.compile(o)
     "#{@tab}return#{expr};"
 
-#### ValueNode
+#### Value
 
 # A value, variable or literal or parenthesized, indexed or dotted into,
 # or vanilla.
-exports.ValueNode = class ValueNode extends BaseNode
+exports.Value = class Value extends Base
 
   children: ['base', 'properties']
 
-  # A **ValueNode** has a base and a list of property accesses.
+  # A **Value** has a base and a list of property accesses.
   constructor: (@base, @properties, tag) ->
     super()
     @properties or= []
@@ -315,13 +315,13 @@ exports.ValueNode = class ValueNode extends BaseNode
   # Some boolean checks for the benefit of other nodes.
 
   isArray: ->
-    @base instanceof ArrayNode and not @properties.length
+    @base instanceof ArrayLiteral and not @properties.length
 
   isObject: ->
-    @base instanceof ObjectNode and not @properties.length
+    @base instanceof ObjectLiteral and not @properties.length
 
   isSplice: ->
-    last(@properties) instanceof SliceNode
+    last(@properties) instanceof Slice
 
   isComplex: ->
     @base.isComplex() or @hasProperties()
@@ -340,7 +340,7 @@ exports.ValueNode = class ValueNode extends BaseNode
     @base.isStatement(o) and not @properties.length
 
   isNumber: ->
-    @base instanceof LiteralNode and NUMBER.test @base.value
+    @base instanceof Literal and NUMBER.test @base.value
 
   # A reference has base part (`this` value) and name part.
   # We cache them separately for compiling complex expressions.
@@ -350,16 +350,16 @@ exports.ValueNode = class ValueNode extends BaseNode
     if not @base.isComplex() and @properties.length < 2 and
        not name?.isComplex()
       return [this, this]  # `a` `a.b`
-    base = new ValueNode @base, @properties.slice 0, -1
+    base = new Value @base, @properties.slice 0, -1
     if base.isComplex()  # `a().b`
       bref = literal o.scope.freeVariable 'base'
-      base = new ValueNode new ParentheticalNode new AssignNode bref, base
+      base = new Value new Parenthetical new Assign bref, base
     return [base, bref] unless name  # `a()`
     if name.isComplex()  # `a[b()]`
       nref = literal o.scope.freeVariable 'name'
-      name = new IndexNode new AssignNode nref, name.index
-      nref = new IndexNode nref
-    [base.push(name), new ValueNode(bref or base.base, [nref or name])]
+      name = new Index new Assign nref, name.index
+      nref = new Index nref
+    [base.push(name), new Value(bref or base.base, [nref or name])]
 
   # Override compile to unwrap the value when possible.
   compile: (o) ->
@@ -374,47 +374,47 @@ exports.ValueNode = class ValueNode extends BaseNode
     props = @properties
     @base.parenthetical = yes if @parenthetical and not props.length
     code = @base.compile o
-    if props[0] instanceof AccessorNode and @isNumber() or
-       o.top and @base instanceof ObjectNode
+    if props[0] instanceof Accessor and @isNumber() or
+       o.top and @base instanceof ObjectLiteral
       code = "(#{code})"
     (code += prop.compile o) for prop in props
     return code
 
-  # Unfold a soak into an `IfNode`: `a?.b` -> `a.b if a?`
+  # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
     if @base.soakNode
       Array::push.apply @base.body.properties, @properties
       return @base
     for prop, i in @properties when prop.soakNode
       prop.soakNode = off
-      fst = new ValueNode @base, @properties.slice 0, i
-      snd = new ValueNode @base, @properties.slice i
+      fst = new Value @base, @properties.slice 0, i
+      snd = new Value @base, @properties.slice i
       if fst.isComplex()
         ref = literal o.scope.freeVariable 'ref'
-        fst = new ParentheticalNode new AssignNode ref, fst
+        fst = new Parenthetical new Assign ref, fst
         snd.base = ref
-      ifn = new IfNode new ExistenceNode(fst), snd, operation: yes
+      ifn = new If new Existence(fst), snd, operation: yes
       ifn.soakNode = on
       return ifn
     null
 
-  # Unfold a node's child if soak, then tuck the node under created `IfNode`
+  # Unfold a node's child if soak, then tuck the node under created `If`
   @unfoldSoak: (o, parent, name) ->
     node = parent[name]
-    if node instanceof IfNode and node.soakNode
+    if node instanceof If and node.soakNode
       ifnode = node
-    else if node instanceof ValueNode
+    else if node instanceof Value
       ifnode = node.unfoldSoak o
     return unless ifnode
     parent[name] = ifnode.body
-    ifnode.body = new ValueNode parent
+    ifnode.body = new Value parent
     ifnode
 
-#### CommentNode
+#### Comment
 
 # CoffeeScript passes through block comments as JavaScript block comments
 # at the same position.
-exports.CommentNode = class CommentNode extends BaseNode
+exports.Comment = class Comment extends Base
 
   isStatement: YES
 
@@ -426,11 +426,11 @@ exports.CommentNode = class CommentNode extends BaseNode
   compileNode: (o) ->
     @tab + '/*' + @comment.replace(/\n/g, '\n' + @tab) + '*/'
 
-#### CallNode
+#### Call
 
 # Node for a function invocation. Takes care of converting `super()` calls into
 # calls against the prototype's function of the same name.
-exports.CallNode = class CallNode extends BaseNode
+exports.Call = class Call extends Base
 
   children: ['variable', 'args']
 
@@ -442,7 +442,7 @@ exports.CallNode = class CallNode extends BaseNode
     @args     or= []
 
   compileSplatArguments: (o) ->
-    SplatNode.compileSplattedArray @args, o
+    Splat.compileSplattedArray @args, o
 
   # Tag this invocation as creating a new instance.
   newInstance: ->
@@ -468,20 +468,20 @@ exports.CallNode = class CallNode extends BaseNode
     call = this
     list = []
     loop
-      if call.variable instanceof CallNode
+      if call.variable instanceof Call
         list.push call
         call = call.variable
         continue
-      break unless call.variable instanceof ValueNode
+      break unless call.variable instanceof Value
       list.push call
-      break unless (call = call.variable.base) instanceof CallNode
+      break unless (call = call.variable.base) instanceof Call
     for call in list.reverse()
       if node
-        if call.variable instanceof CallNode
+        if call.variable instanceof Call
           call.variable = node
         else
           call.variable.base = node
-      node = ValueNode.unfoldSoak o, call, 'variable'
+      node = Value.unfoldSoak o, call, 'variable'
     node
 
   # Compile a vanilla function call.
@@ -489,17 +489,17 @@ exports.CallNode = class CallNode extends BaseNode
     return node.compile o if node = @unfoldSoak o
     if @exist
       if val = @variable
-        val = new ValueNode val unless val instanceof ValueNode
+        val = new Value val unless val instanceof Value
         [left, rite] = val.cacheReference o
-        rite = new CallNode rite, @args
+        rite = new Call rite, @args
       else
         left = literal @superReference o
-        rite = new CallNode new ValueNode(left), @args
+        rite = new Call new Value(left), @args
         rite.isNew = @isNew
       left = "typeof #{ left.compile o } !== \"function\""
       rite = rite.compile o
       return "(#{left} ? undefined : #{rite})"
-    for arg in @args when arg instanceof SplatNode
+    for arg in @args when arg instanceof Splat
       return @compileSplat o
     args = ((arg.parenthetical = on) and arg.compile o for arg in @args).join ', '
     if @isSuper
@@ -520,7 +520,7 @@ exports.CallNode = class CallNode extends BaseNode
     splatargs = @compileSplatArguments o
     return "#{ @superReference o }.apply(this, #{splatargs})" if @isSuper
     unless @isNew
-      base = new ValueNode base unless (base = @variable) instanceof ValueNode
+      base = new Value base unless (base = @variable) instanceof Value
       if (name = base.properties.pop()) and base.isComplex()
         ref = o.scope.freeVariable 'this'
         fun = "(#{ref} = #{ base.compile o })#{ name.compile o }"
@@ -529,7 +529,7 @@ exports.CallNode = class CallNode extends BaseNode
         fun += name.compile o if name
       return "#{fun}.apply(#{ref}, #{splatargs})"
     call = 'call(this)'
-    argvar = (node) -> node instanceof LiteralNode and node.value is 'arguments'
+    argvar = (node) -> node instanceof Literal and node.value is 'arguments'
     for arg in @args when arg.contains argvar
       call = 'apply(this, arguments)'
       break
@@ -544,12 +544,12 @@ exports.CallNode = class CallNode extends BaseNode
     #{@tab}}).#{call}
     """
 
-#### ExtendsNode
+#### Extends
 
 # Node to extend an object's prototype with an ancestor object.
 # After `goog.inherits` from the
 # [Closure Library](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.html).
-exports.ExtendsNode = class ExtendsNode extends BaseNode
+exports.Extends = class Extends extends Base
 
   children: ['child', 'parent']
 
@@ -558,14 +558,14 @@ exports.ExtendsNode = class ExtendsNode extends BaseNode
 
   # Hooks one constructor into another's prototype chain.
   compileNode: (o) ->
-    ref =  new ValueNode literal utility 'extends'
-    (new CallNode ref, [@child, @parent]).compile o
+    ref =  new Value literal utility 'extends'
+    (new Call ref, [@child, @parent]).compile o
 
-#### AccessorNode
+#### Accessor
 
 # A `.` accessor into a property of a value, or the `::` shorthand for
 # an accessor into the object's prototype.
-exports.AccessorNode = class AccessorNode extends BaseNode
+exports.Accessor = class Accessor extends Base
 
   children: ['name']
 
@@ -581,10 +581,10 @@ exports.AccessorNode = class AccessorNode extends BaseNode
 
   isComplex: NO
 
-#### IndexNode
+#### Index
 
 # A `[ ... ]` indexed accessor into an array or object.
-exports.IndexNode = class IndexNode extends BaseNode
+exports.Index = class Index extends Base
 
   children: ['index']
 
@@ -598,12 +598,12 @@ exports.IndexNode = class IndexNode extends BaseNode
 
   isComplex: -> @index.isComplex()
 
-#### RangeNode
+#### Range
 
 # A range literal. Ranges can be used to extract portions (slices) of arrays,
 # to specify a range for comprehensions, or as a value, to be expanded into the
 # corresponding array of integers at runtime.
-exports.RangeNode = class RangeNode extends BaseNode
+exports.Range = class Range extends Base
 
   children: ['from', 'to']
 
@@ -669,12 +669,12 @@ exports.RangeNode = class RangeNode extends BaseNode
     post   = "{ #{result}.push(#{i}); }\n#{idt}return #{result};\n#{o.indent}"
     "(function() {#{pre}\n#{idt}for (#{body})#{post}}).call(this)"
 
-#### SliceNode
+#### Slice
 
 # An array slice literal. Unlike JavaScript's `Array#slice`, the second parameter
 # specifies the index of the end of the slice, just as the first parameter
 # is the index of the beginning.
-exports.SliceNode = class SliceNode extends BaseNode
+exports.Slice = class Slice extends Base
 
   children: ['range']
 
@@ -688,10 +688,10 @@ exports.SliceNode = class SliceNode extends BaseNode
     to    =  ', ' + to if to
     ".slice(#{from}#{to})"
 
-#### ObjectNode
+#### ObjectLiteral
 
 # An object literal, nothing fancy.
-exports.ObjectNode = class ObjectNode extends BaseNode
+exports.ObjectLiteral = class ObjectLiteral extends Base
 
   children: ['properties']
 
@@ -704,26 +704,26 @@ exports.ObjectNode = class ObjectNode extends BaseNode
   compileNode: (o) ->
     top = del o, 'top'
     o.indent = @idt 1
-    nonComments = prop for prop in @properties when (prop not instanceof CommentNode)
+    nonComments = prop for prop in @properties when (prop not instanceof Comment)
     lastNoncom  =  last nonComments
     props = for prop, i in @properties
       join   = ",\n"
-      join   = "\n" if (prop is lastNoncom) or (prop instanceof CommentNode)
+      join   = "\n" if (prop is lastNoncom) or (prop instanceof Comment)
       join   = '' if i is @properties.length - 1
-      indent = if prop instanceof CommentNode then '' else @idt 1
-      if prop instanceof ValueNode and prop.tags.this
-        prop = new AssignNode prop.properties[0].name, prop, 'object'
-      else if prop not instanceof AssignNode and prop not instanceof CommentNode
-        prop = new AssignNode prop, prop, 'object'
+      indent = if prop instanceof Comment then '' else @idt 1
+      if prop instanceof Value and prop.tags.this
+        prop = new Assign prop.properties[0].name, prop, 'object'
+      else if prop not instanceof Assign and prop not instanceof Comment
+        prop = new Assign prop, prop, 'object'
       indent + prop.compile(o) + join
     props = props.join('')
     obj   = '{' + (if props then '\n' + props + '\n' + @idt() else '') + '}'
     if top then "(#{obj})" else obj
 
-#### ArrayNode
+#### ArrayLiteral
 
 # An array literal.
-exports.ArrayNode = class ArrayNode extends BaseNode
+exports.ArrayLiteral = class ArrayLiteral extends Base
 
   children: ['objects']
 
@@ -732,16 +732,16 @@ exports.ArrayNode = class ArrayNode extends BaseNode
     @objects or= []
 
   compileSplatLiteral: (o) ->
-    SplatNode.compileSplattedArray @objects, o
+    Splat.compileSplattedArray @objects, o
 
   compileNode: (o) ->
     o.indent = @idt 1
     objects = []
     for obj, i in @objects
       code = obj.compile(o)
-      if obj instanceof SplatNode
+      if obj instanceof Splat
         return @compileSplatLiteral o
-      else if obj instanceof CommentNode
+      else if obj instanceof Comment
         objects.push "\n#{code}\n#{o.indent}"
       else if i is @objects.length - 1
         objects.push code
@@ -753,15 +753,15 @@ exports.ArrayNode = class ArrayNode extends BaseNode
     else
       "[#{objects}]"
 
-#### ClassNode
+#### Class
 
 # The CoffeeScript class definition.
-exports.ClassNode = class ClassNode extends BaseNode
+exports.Class = class Class extends Base
 
   children:     ['variable', 'parent', 'properties']
   isStatement:  YES
 
-  # Initialize a **ClassNode** with its name, an optional superclass, and a
+  # Initialize a **Class** with its name, an optional superclass, and a
   # list of prototype property assignments.
   constructor: (variable, @parent, @properties) ->
     super()
@@ -779,7 +779,7 @@ exports.ClassNode = class ClassNode extends BaseNode
   compileNode: (o) ->
     {variable} = this
     variable   = literal o.scope.freeVariable 'ctor' if variable.value is '__temp__'
-    extension  = @parent and new ExtendsNode variable, @parent
+    extension  = @parent and new Extends variable, @parent
     props      = new Expressions
     o.top      = true
     me         = null
@@ -787,29 +787,29 @@ exports.ClassNode = class ClassNode extends BaseNode
     constScope = null
 
     if @parent
-      applied = new ValueNode(@parent, [new AccessorNode(literal('apply'))])
-      constructor = new CodeNode([], new Expressions([
-        new CallNode(applied, [literal('this'), literal('arguments')])
+      applied = new Value(@parent, [new Accessor(literal('apply'))])
+      constructor = new Code([], new Expressions([
+        new Call(applied, [literal('this'), literal('arguments')])
       ]))
     else
-      constructor = new CodeNode
+      constructor = new Code
 
     for prop in @properties
       [pvar, func] = [prop.variable, prop.value]
       if pvar and pvar.base.value is 'constructor'
-        if func not instanceof CodeNode
+        if func not instanceof Code
           [func, ref] = func.compileReference o
           props.push func if func isnt ref
-          apply = new CallNode(new ValueNode(ref, [new AccessorNode literal 'apply']), [literal('this'), literal('arguments')])
-          func  = new CodeNode [], new Expressions([apply])
+          apply = new Call(new Value(ref, [new Accessor literal 'apply']), [literal('this'), literal('arguments')])
+          func  = new Code [], new Expressions([apply])
         throw new Error "cannot define a constructor as a bound function." if func.bound
         func.name = className
-        func.body.push new ReturnNode literal 'this'
-        variable = new ValueNode variable
+        func.body.push new Return literal 'this'
+        variable = new Value variable
         variable.namespaced = include func.name, '.'
         constructor = func
         continue
-      if func instanceof CodeNode and func.bound
+      if func instanceof Code and func.bound
         if prop.context is 'this'
           func.context = className
         else
@@ -817,27 +817,27 @@ exports.ClassNode = class ClassNode extends BaseNode
           constScope or= new Scope(o.scope, constructor.body, constructor)
           me or= constScope.freeVariable 'this'
           pname = pvar.compile(o)
-          constructor.body.push    new ReturnNode literal 'this' if constructor.body.empty()
+          constructor.body.push    new Return literal 'this' if constructor.body.empty()
           constructor.body.unshift literal "this.#{pname} = function(){ return #{className}.prototype.#{pname}.apply(#{me}, arguments); }"
       if pvar
-        access = if prop.context is 'this' then pvar.base.properties[0] else new AccessorNode(pvar, 'prototype')
-        val    = new ValueNode variable, [access]
-        prop   = new AssignNode(val, func)
+        access = if prop.context is 'this' then pvar.base.properties[0] else new Accessor(pvar, 'prototype')
+        val    = new Value variable, [access]
+        prop   = new Assign(val, func)
       props.push prop
 
     constructor.className = className.match /[\w\d\$_]+$/
     constructor.body.unshift literal "#{me} = this" if me
-    construct = @idt() + new AssignNode(variable, constructor).compile(merge o, sharedScope: constScope) + ';'
+    construct = @idt() + new Assign(variable, constructor).compile(merge o, sharedScope: constScope) + ';'
     props     = if !props.empty() then '\n' + props.compile(o)                    else ''
     extension = if extension      then '\n' + @idt() + extension.compile(o) + ';' else ''
-    returns   = if @returns       then '\n' + new ReturnNode(variable).compile(o) else ''
+    returns   = if @returns       then '\n' + new Return(variable).compile(o) else ''
     construct + extension + props + returns
 
-#### AssignNode
+#### Assign
 
-# The **AssignNode** is used to assign a local variable to value, or to set the
+# The **Assign** is used to assign a local variable to value, or to set the
 # property of an object -- including within object literals.
-exports.AssignNode = class AssignNode extends BaseNode
+exports.Assign = class Assign extends Base
 
   # Matchers for detecting class/method names
   METHOD_DEF: /^(?:(\S+)\.prototype\.)?([$A-Za-z_][$\w]*)$/
@@ -850,7 +850,7 @@ exports.AssignNode = class AssignNode extends BaseNode
   topSensitive: YES
 
   isValue: ->
-    @variable instanceof ValueNode
+    @variable instanceof Value
 
   # Compile an assignment, delegating to `compilePatternMatch` or
   # `compileSplice` if appropriate. Keep track of the name of the base object
@@ -860,11 +860,11 @@ exports.AssignNode = class AssignNode extends BaseNode
     if isValue = @isValue()
       return @compilePatternMatch(o) if @variable.isArray() or @variable.isObject()
       return @compileSplice(o) if @variable.isSplice()
-      return node.compile o if node = ValueNode.unfoldSoak o, this, 'variable'
+      return node.compile o if node = Value.unfoldSoak o, this, 'variable'
     top    = del o, 'top'
     stmt   = del o, 'asStatement'
     name   = @variable.compile(o)
-    if @value instanceof CodeNode and match = @METHOD_DEF.exec name
+    if @value instanceof Code and match = @METHOD_DEF.exec name
       @value.name  = match[2]
       @value.klass = match[1]
     val = @value.compile o
@@ -879,22 +879,22 @@ exports.AssignNode = class AssignNode extends BaseNode
   # See the [ECMAScript Harmony Wiki](http://wiki.ecmascript.org/doku.php?id=harmony:destructuring)
   # for details.
   compilePatternMatch: (o) ->
-    if (value = @value).isStatement o then value = ClosureNode.wrap value
+    if (value = @value).isStatement o then value = Closure.wrap value
     {objects} = @variable.base
     return value.compile o unless olength = objects.length
     isObject = @variable.isObject()
-    if o.top and olength is 1 and (obj = objects[0]) not instanceof SplatNode
+    if o.top and olength is 1 and (obj = objects[0]) not instanceof Splat
       # Unroll simplest cases: `{v} = x` -> `v = x.v`
-      if obj instanceof AssignNode
+      if obj instanceof Assign
         {variable: {base: idx}, value: obj} = obj
       else
         idx = if isObject
           if obj.tags.this then obj.properties[0].name else obj
         else literal 0
-      value = new ValueNode value unless value instanceof ValueNode
-      accessClass = if IDENTIFIER.test idx.value then AccessorNode else IndexNode
+      value = new Value value unless value instanceof Value
+      accessClass = if IDENTIFIER.test idx.value then Accessor else Index
       value.properties.push new accessClass idx
-      return new AssignNode(obj, value).compile o
+      return new Assign(obj, value).compile o
     top     = del o, 'top'
     otop    = merge o, top: yes
     valVar  = o.scope.freeVariable 'ref'
@@ -904,22 +904,22 @@ exports.AssignNode = class AssignNode extends BaseNode
       # A regular array pattern-match.
       idx = i
       if isObject
-        if obj instanceof AssignNode
+        if obj instanceof Assign
           # A regular object pattern-match.
           [obj, idx] = [obj.value, obj.variable.base]
         else
           # A shorthand `{a, b, @c} = val` pattern-match.
           idx = if obj.tags.this then obj.properties[0].name else obj
-      unless obj instanceof ValueNode or obj instanceof SplatNode
+      unless obj instanceof Value or obj instanceof Splat
         throw new Error 'pattern matching must use only identifiers on the left-hand side.'
-      accessClass = if isObject and IDENTIFIER.test(idx.value) then AccessorNode else IndexNode
-      if not splat and obj instanceof SplatNode
+      accessClass = if isObject and IDENTIFIER.test(idx.value) then Accessor else Index
+      if not splat and obj instanceof Splat
         val   = literal obj.compileValue o, valVar, i, olength - i - 1
         splat = true
       else
         idx = literal(if splat then "#{valVar}.length - #{olength - idx}" else idx) if typeof idx isnt 'object'
-        val = new ValueNode literal(valVar), [new accessClass idx]
-      assigns.push new AssignNode(obj, val).compile otop
+        val = new Value literal(valVar), [new accessClass idx]
+      assigns.push new Assign(obj, val).compile otop
     assigns.push valVar unless top
     code = assigns.join ', '
     if top or @parenthetical then code else "(#{code})"
@@ -936,12 +936,12 @@ exports.AssignNode = class AssignNode extends BaseNode
     val   = @value.compile(o)
     "([].splice.apply(#{name}, [#{from}, #{to}].concat(#{ref} = #{val})), #{ref})"
 
-#### CodeNode
+#### Code
 
 # A function definition. This is the only node that creates a new Scope.
-# When for the purposes of walking the contents of a function body, the CodeNode
+# When for the purposes of walking the contents of a function body, the Code
 # has no *children* -- they're within the inner scope.
-exports.CodeNode = class CodeNode extends BaseNode
+exports.Code = class Code extends Base
 
   children: ['params', 'body']
 
@@ -971,16 +971,16 @@ exports.CodeNode = class CodeNode extends BaseNode
     for param, i in @params
       if splat
         if param.attach
-          param.assign = new AssignNode new ValueNode literal('this'), [new AccessorNode param.value]
+          param.assign = new Assign new Value literal('this'), [new Accessor param.value]
           @body.expressions.splice splat.index + 1, 0, param.assign
         splat.trailings.push param
       else
         if param.attach
           {value} = param
           [param, param.splat] = [literal(o.scope.freeVariable 'arg'), param.splat]
-          @body.unshift new AssignNode new ValueNode(literal('this'), [new AccessorNode value]), param
+          @body.unshift new Assign new Value(literal('this'), [new Accessor value]), param
         if param.splat
-          splat           = new SplatNode param.value
+          splat           = new Splat param.value
           splat.index     = i
           splat.trailings = []
           splat.arglength = @params.length
@@ -1006,12 +1006,12 @@ exports.CodeNode = class CodeNode extends BaseNode
   # unless crossScope is true
   traverseChildren: (crossScope, func) -> super(crossScope, func) if crossScope
 
-#### ParamNode
+#### Param
 
 # A parameter in a function definition. Beyond a typical Javascript parameter,
 # these parameters can also attach themselves to the context of the function,
 # as well as be a splat, gathering up a group of parameters into an array.
-exports.ParamNode = class ParamNode extends BaseNode
+exports.Param = class Param extends Base
 
   children: ['name']
 
@@ -1028,11 +1028,11 @@ exports.ParamNode = class ParamNode extends BaseNode
     name += '...'     if @splat
     literal(name).toString()
 
-#### SplatNode
+#### Splat
 
 # A splat, either as a parameter to a function, an argument to a call,
 # or as part of a destructuring assignment.
-exports.SplatNode = class SplatNode extends BaseNode
+exports.Splat = class Splat extends Base
 
   children: ['name']
 
@@ -1079,7 +1079,7 @@ exports.SplatNode = class SplatNode extends BaseNode
     for arg, i in list
       code = arg.compile o
       prev = args[end]
-      if arg not instanceof SplatNode
+      if arg not instanceof Splat
         if prev and starts(prev, '[') and ends(prev, ']')
           args[end] = "#{prev.slice 0, -1}, #{code}]"
           continue
@@ -1090,12 +1090,12 @@ exports.SplatNode = class SplatNode extends BaseNode
       args[++end] = if i is 0 then code else ".concat(#{code})"
     args.join ''
 
-#### WhileNode
+#### While
 
 # A while loop, the only sort of low-level loop exposed by CoffeeScript. From
 # it, all other loops can be manufactured. Useful in cases where you need more
 # flexibility or more speed than a comprehension can provide.
-exports.WhileNode = class WhileNode extends BaseNode
+exports.While = class While extends Base
 
   children:     ['condition', 'guard', 'body']
   isStatement: YES
@@ -1103,8 +1103,8 @@ exports.WhileNode = class WhileNode extends BaseNode
   constructor: (condition, opts) ->
     super()
     if opts?.invert
-      condition = new ParentheticalNode condition if condition instanceof OpNode
-      condition = new OpNode('!', condition)
+      condition = new Parenthetical condition if condition instanceof Op
+      condition = new Op('!', condition)
     @condition  = condition
     @guard = opts?.guard
 
@@ -1131,20 +1131,20 @@ exports.WhileNode = class WhileNode extends BaseNode
     unless top
       rvar  = o.scope.freeVariable 'result'
       set   = "#{@tab}#{rvar} = [];\n"
-      @body = PushNode.wrap(rvar, @body) if @body
+      @body = Push.wrap(rvar, @body) if @body
     pre     = "#{set}#{@tab}while (#{cond})"
-    @body   = Expressions.wrap([new IfNode(@guard, @body)]) if @guard
+    @body   = Expressions.wrap([new If(@guard, @body)]) if @guard
     if @returns
-      post = '\n' + new ReturnNode(literal(rvar)).compile(merge(o, indent: @idt()))
+      post = '\n' + new Return(literal(rvar)).compile(merge(o, indent: @idt()))
     else
       post = ''
     "#{pre} {\n#{ @body.compile(o) }\n#{@tab}}#{post}"
 
-#### OpNode
+#### Op
 
 # Simple Arithmetic and logical operations. Performs some conversion from
 # CoffeeScript operations into their JavaScript equivalents.
-exports.OpNode = class OpNode extends BaseNode
+exports.Op = class Op extends Base
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
   CONVERSIONS:
@@ -1173,9 +1173,9 @@ exports.OpNode = class OpNode extends BaseNode
     super()
     @operator = @CONVERSIONS[@operator] or @operator
     @flip     = !!flip
-    if @first instanceof ValueNode and @first.base instanceof ObjectNode
-      @first = new ParentheticalNode @first
-    else if @operator is 'new' and @first instanceof CallNode
+    if @first instanceof Value and @first.base instanceof ObjectLiteral
+      @first = new Parenthetical @first
+    else if @operator is 'new' and @first instanceof Call
       return @first.newInstance()
     @first.tags.operation = yes
     @second.tags.operation = yes if @second
@@ -1185,7 +1185,7 @@ exports.OpNode = class OpNode extends BaseNode
 
   isInvertible: ->
     (@operator in ['===', '!==']) and
-      not (@first instanceof OpNode) and not (@second instanceof OpNode)
+      not (@first instanceof Op) and not (@second instanceof Op)
 
   isComplex: -> @operator isnt '!' or @first.isComplex()
 
@@ -1202,13 +1202,13 @@ exports.OpNode = class OpNode extends BaseNode
     super(idt, @constructor.name + ' ' + @operator)
 
   compileNode: (o) ->
-    return node.compile o if node = ValueNode.unfoldSoak o, this, 'first'
-    return @compileChain(o)      if @isChainable() and @first.unwrap() instanceof OpNode and @first.unwrap().isChainable()
+    return node.compile o if node = Value.unfoldSoak o, this, 'first'
+    return @compileChain(o)      if @isChainable() and @first.unwrap() instanceof Op and @first.unwrap().isChainable()
     return @compileAssignment(o) if indexOf(@ASSIGNMENT, @operator) >= 0
     return @compileUnary(o)      if @isUnary()
     return @compileExistence(o)  if @operator is '?'
-    @first  = new ParentheticalNode(@first)  if @first instanceof OpNode and @first.isMutator()
-    @second = new ParentheticalNode(@second) if @second instanceof OpNode and @second.isMutator()
+    @first  = new Parenthetical(@first)  if @first instanceof Op and @first.isMutator()
+    @second = new Parenthetical(@second) if @second instanceof Op and @second.isMutator()
     [@first.compile(o), @operator, @second.compile(o)].join ' '
 
   # Mimic Python's chained comparisons when multiple comparison operators are
@@ -1227,27 +1227,27 @@ exports.OpNode = class OpNode extends BaseNode
   # more than once.
   compileAssignment: (o) ->
     [left, rite] = @first.cacheReference o
-    rite = new AssignNode rite, @second
-    return new OpNode(@operator.slice(0, -1), left, rite).compile o
+    rite = new Assign rite, @second
+    return new Op(@operator.slice(0, -1), left, rite).compile o
 
   compileExistence: (o) ->
     if @first.isComplex()
       ref = o.scope.freeVariable 'ref'
-      fst = new ParentheticalNode new AssignNode literal(ref), @first
+      fst = new Parenthetical new Assign literal(ref), @first
     else
       fst = @first
       ref = fst.compile o
-    new ExistenceNode(fst).compile(o) + " ? #{ref} : #{ @second.compile o }"
+    new Existence(fst).compile(o) + " ? #{ref} : #{ @second.compile o }"
 
-  # Compile a unary **OpNode**.
+  # Compile a unary **Op**.
   compileUnary: (o) ->
     space = if indexOf(@PREFIX_OPERATORS, @operator) >= 0 then ' ' else ''
     parts = [@operator, space, @first.compile(o)]
     parts = parts.reverse() if @flip
     parts.join('')
 
-#### InNode
-exports.InNode = class InNode extends BaseNode
+#### In
+exports.In = class In extends Base
 
   children: ['object', 'array']
 
@@ -1255,7 +1255,7 @@ exports.InNode = class InNode extends BaseNode
     super()
 
   isArray: ->
-    @array instanceof ValueNode and @array.isArray()
+    @array instanceof Value and @array.isArray()
 
   compileNode: (o) ->
     [@obj1, @obj2] = @object.compileReference o, precompile: yes
@@ -1272,10 +1272,10 @@ exports.InNode = class InNode extends BaseNode
     prefix = if @obj1 isnt @obj2 then @obj1 + '; ' else ''
     "(function(){ #{prefix}for (var #{i}=0, #{l}=#{@arr1}.length; #{i}<#{l}; #{i}++) { if (#{@arr2}[#{i}] === #{@obj2}) return true; } return false; }).call(this)"
 
-#### TryNode
+#### Try
 
 # A classic *try/catch/finally* block.
-exports.TryNode = class TryNode extends BaseNode
+exports.Try = class Try extends Base
 
   children:     ['attempt', 'recovery', 'ensure']
   isStatement: YES
@@ -1301,10 +1301,10 @@ exports.TryNode = class TryNode extends BaseNode
     finallyPart = (@ensure or '') and ' finally {\n' + @ensure.compile(merge(o)) + "\n#{@tab}}"
     "#{@tab}try {\n#{attemptPart}\n#{@tab}}#{catchPart}#{finallyPart}"
 
-#### ThrowNode
+#### Throw
 
 # Simple node to throw an exception.
-exports.ThrowNode = class ThrowNode extends BaseNode
+exports.Throw = class Throw extends Base
 
   children:     ['expression']
   isStatement: YES
@@ -1312,18 +1312,18 @@ exports.ThrowNode = class ThrowNode extends BaseNode
   constructor: (@expression) ->
     super()
 
-  # A **ThrowNode** is already a return, of sorts...
+  # A **Throw** is already a return, of sorts...
   makeReturn: THIS
 
   compileNode: (o) ->
     "#{@tab}throw #{@expression.compile(o)};"
 
-#### ExistenceNode
+#### Existence
 
 # Checks a variable for existence -- not *null* and not *undefined*. This is
 # similar to `.nil?` in Ruby, and avoids having to consult a JavaScript truth
 # table.
-exports.ExistenceNode = class ExistenceNode extends BaseNode
+exports.Existence = class Existence extends Base
 
   children: ['expression']
 
@@ -1338,14 +1338,14 @@ exports.ExistenceNode = class ExistenceNode extends BaseNode
       "#{code} != null"
     if @parenthetical then code else "(#{code})"
 
-#### ParentheticalNode
+#### Parenthetical
 
 # An extra set of parentheses, specified explicitly in the source. At one time
 # we tried to clean up the results by detecting and removing redundant
 # parentheses, but no longer -- you can put in as many as you please.
 #
 # Parentheses are a good way to force any statement to become an expression.
-exports.ParentheticalNode = class ParentheticalNode extends BaseNode
+exports.Parenthetical = class Parenthetical extends Base
 
   children: ['expression']
 
@@ -1371,7 +1371,7 @@ exports.ParentheticalNode = class ParentheticalNode extends BaseNode
       return if top then @tab + code + ';' else code
     "(#{code})"
 
-#### ForNode
+#### For
 
 # CoffeeScript's replacement for the *for* loop is our array and object
 # comprehensions, that compile into *for* loops here. They also act as an
@@ -1380,7 +1380,7 @@ exports.ParentheticalNode = class ParentheticalNode extends BaseNode
 # Unlike Python array comprehensions, they can be multi-line, and you can pass
 # the current index of the loop as a second parameter. Unlike Ruby blocks,
 # you can map and filter in a single pass.
-exports.ForNode = class ForNode extends BaseNode
+exports.For = class For extends Base
 
   children:     ['body', 'source', 'guard']
   isStatement: YES
@@ -1394,8 +1394,8 @@ exports.ForNode = class ForNode extends BaseNode
     @raw    = !!source.raw
     @object = !!source.object
     [@name, @index] = [@index, @name] if @object
-    @pattern = @name instanceof ValueNode
-    throw new Error('index cannot be a pattern matching expression') if @index instanceof ValueNode
+    @pattern = @name instanceof Value
+    throw new Error('index cannot be a pattern matching expression') if @index instanceof Value
     @returns = false
 
   topSensitive: YES
@@ -1405,7 +1405,7 @@ exports.ForNode = class ForNode extends BaseNode
     this
 
   compileReturnValue: (val, o) ->
-    return '\n' + new ReturnNode(literal(val)).compile(o) if @returns
+    return '\n' + new Return(literal(val)).compile(o) if @returns
     return '\n' + val if val
     ''
 
@@ -1415,9 +1415,9 @@ exports.ForNode = class ForNode extends BaseNode
   # some cannot.
   compileNode: (o) ->
     topLevel      = del(o, 'top') and not @returns
-    range         = @source instanceof ValueNode and @source.base instanceof RangeNode and not @source.properties.length
+    range         = @source instanceof Value and @source.base instanceof Range and not @source.properties.length
     source        = if range then @source.base else @source
-    codeInBody    = @body.contains (node) -> node instanceof CodeNode
+    codeInBody    = @body.contains (node) -> node instanceof Code
     scope         = o.scope
     name          = @name  and @name.compile o
     index         = @index and @index.compile o
@@ -1437,7 +1437,7 @@ exports.ForNode = class ForNode extends BaseNode
       [sourcePart, svar] = @source.compileReference merge(o, top: yes), precompile: yes
       sourcePart = if sourcePart is svar then '' else "#{sourcePart};"
       namePart = if @pattern
-        new AssignNode(@name, literal "#{svar}[#{ivar}]").compile merge o, top: on
+        new Assign(@name, literal "#{svar}[#{ivar}]").compile merge o, top: on
       else if name
         "#{name} = #{svar}[#{ivar}]"
       unless @object
@@ -1447,14 +1447,14 @@ exports.ForNode = class ForNode extends BaseNode
     sourcePart    = (if rvar then "#{rvar} = []; " else '') + sourcePart
     sourcePart    = if sourcePart then "#{@tab}#{sourcePart}\n#{@tab}" else @tab
     returnResult  = @compileReturnValue(rvar, o)
-    body          = PushNode.wrap(rvar, body) unless topLevel
+    body          = Push.wrap(rvar, body) unless topLevel
     if @guard
-      body        = Expressions.wrap([new IfNode(@guard, body)])
+      body        = Expressions.wrap([new If(@guard, body)])
     if codeInBody
       body.unshift  literal "var #{name} = #{ivar}" if range
       body.unshift  literal "var #{namePart}" if namePart
       body.unshift  literal "var #{index} = #{ivar}" if index
-      body        = ClosureNode.wrap(body, true)
+      body        = Closure.wrap(body, true)
     else
       varPart     = "#{idt1}#{namePart};\n" if namePart
     if @object
@@ -1468,10 +1468,10 @@ exports.ForNode = class ForNode extends BaseNode
     #{@tab}}#{returnResult}
     """
 
-#### SwitchNode
+#### Switch
 
 # A JavaScript *switch* statement. Converts into a returnable expression on-demand.
-exports.SwitchNode = class SwitchNode extends BaseNode
+exports.Switch = class Switch extends Base
 
   children: ['subject', 'cases', 'otherwise']
 
@@ -1495,23 +1495,23 @@ exports.SwitchNode = class SwitchNode extends BaseNode
       [conditions, block] = pair
       exprs = block.expressions
       for condition in flatten [conditions]
-        condition = new OpNode '!!', new ParentheticalNode condition if @tags.subjectless
+        condition = new Op '!!', new Parenthetical condition if @tags.subjectless
         code += "\n#{ @idt(1) }case #{ condition.compile o }:"
       code += "\n#{ block.compile o }"
-      code += "\n#{ idt }break;" unless last(exprs) instanceof ReturnNode
+      code += "\n#{ idt }break;" unless last(exprs) instanceof Return
     if @otherwise
       code += "\n#{ @idt(1) }default:\n#{ @otherwise.compile o }"
     code += "\n#{ @tab }}"
     code
 
-#### IfNode
+#### If
 
 # *If/else* statements. Acts as an expression by pushing down requested returns
 # to the last line of each clause.
 #
-# Single-expression **IfNodes** are compiled into conditional operators if possible,
+# Single-expression **Ifs** are compiled into conditional operators if possible,
 # because ternaries are already proper expressions, and don't need conversion.
-exports.IfNode = class IfNode extends BaseNode
+exports.If = class If extends Base
 
   children: ['condition', 'body', 'elseBody', 'assigner']
 
@@ -1520,26 +1520,26 @@ exports.IfNode = class IfNode extends BaseNode
   constructor: (@condition, @body, @tags) ->
     @tags or= {}
     if @tags.invert
-      if @condition instanceof OpNode and @condition.isInvertible()
+      if @condition instanceof Op and @condition.isInvertible()
         @condition.invert()
       else
-        @condition = new OpNode '!', new ParentheticalNode @condition
+        @condition = new Op '!', new Parenthetical @condition
     @elseBody = null
     @isChain  = false
 
   bodyNode: -> @body?.unwrap()
   elseBodyNode: -> @elseBody?.unwrap()
 
-  # Rewrite a chain of **IfNodes** to add a default case as the final *else*.
+  # Rewrite a chain of **Ifs** to add a default case as the final *else*.
   addElse: (elseBody, statement) ->
     if @isChain
       @elseBodyNode().addElse elseBody, statement
     else
-      @isChain = elseBody instanceof IfNode
+      @isChain = elseBody instanceof If
       @elseBody = @ensureExpressions elseBody
     this
 
-  # The **IfNode** only compiles into a statement if either of its bodies needs
+  # The **If** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a conditional operator is safe.
   isStatement: (o) ->
     @statement or= !!((o and o.top) or @bodyNode().isStatement(o) or (@elseBody and @elseBodyNode().isStatement(o)))
@@ -1558,12 +1558,12 @@ exports.IfNode = class IfNode extends BaseNode
       @elseBody and= @ensureExpressions(@elseBody.makeReturn())
       this
     else
-      new ReturnNode this
+      new Return this
 
   ensureExpressions: (node) ->
     if node instanceof Expressions then node else new Expressions [node]
 
-  # Compile the **IfNode** as a regular *if-else* statement. Flattened chains
+  # Compile the **If** as a regular *if-else* statement. Flattened chains
   # force inner *else* bodies into statement form.
   compileStatement: (o) ->
     top      = del o, 'top'
@@ -1582,7 +1582,7 @@ exports.IfNode = class IfNode extends BaseNode
       " else {\n#{ @elseBody.compile(o) }\n#{@tab}}"
     "#{ifPart}#{elsePart}"
 
-  # Compile the IfNode as a conditional operator.
+  # Compile the If as a conditional operator.
   compileExpression: (o) ->
     @bodyNode().tags.operation = @condition.tags.operation = yes
     @elseBodyNode().tags.operation = yes if @elseBody
@@ -1596,42 +1596,42 @@ exports.IfNode = class IfNode extends BaseNode
 # Faux-nodes are never created by the grammar, but are used during code
 # generation to generate other combinations of nodes.
 
-#### PushNode
+#### Push
 
-# The **PushNode** creates the tree for `array.push(value)`,
+# The **Push** creates the tree for `array.push(value)`,
 # which is helpful for recording the result arrays from comprehensions.
-PushNode =
+Push =
   wrap: (name, expressions) ->
     return expressions if expressions.empty() or expressions.containsPureStatement()
-    Expressions.wrap [new CallNode(
-      new ValueNode literal(name), [new AccessorNode literal 'push']
+    Expressions.wrap [new Call(
+      new Value literal(name), [new Accessor literal 'push']
       [expressions.unwrap()]
     )]
 
-#### ClosureNode
+#### Closure
 
 # A faux-node used to wrap an expressions body in a closure.
-ClosureNode =
+Closure =
 
   # Wrap the expressions body, unless it contains a pure statement,
   # in which case, no dice. If the body mentions `this` or `arguments`,
   # then make sure that the closure wrapper preserves the original values.
   wrap: (expressions, statement) ->
     return expressions if expressions.containsPureStatement()
-    func = new ParentheticalNode new CodeNode [], Expressions.wrap [expressions]
+    func = new Parenthetical new Code [], Expressions.wrap [expressions]
     args = []
     if (mentionsArgs = expressions.contains @literalArgs) or
        (               expressions.contains @literalThis)
       meth = literal if mentionsArgs then 'apply' else 'call'
       args = [literal 'this']
       args.push literal 'arguments' if mentionsArgs
-      func = new ValueNode func, [new AccessorNode meth]
-    call = new CallNode func, args
+      func = new Value func, [new Accessor meth]
+    call = new Call func, args
     if statement then Expressions.wrap [call] else call
 
-  literalArgs: (node) -> node instanceof LiteralNode and node.value is 'arguments'
-  literalThis: (node) -> node instanceof LiteralNode and node.value is 'this' or
-                         node instanceof CodeNode    and node.bound
+  literalArgs: (node) -> node instanceof Literal and node.value is 'arguments'
+  literalThis: (node) -> node instanceof Literal and node.value is 'this' or
+                         node instanceof Code    and node.bound
 
 # Constants
 # ---------
@@ -1680,8 +1680,8 @@ IS_STRING = /^['"]/
 # Utility Functions
 # -----------------
 
-# Handy helper for generating a LiteralNode.
-literal = (name) -> new LiteralNode name
+# Handy helper for generating a Literal.
+literal = (name) -> new Literal name
 
 # Helper for ensuring that utility functions are assigned at the top level.
 utility = (name) ->
