@@ -1184,8 +1184,7 @@ exports.Op = class Op extends Base
     not @second
 
   isInvertible: ->
-    (@operator in ['===', '!==']) and
-      not (@first instanceof Op) and not (@second instanceof Op)
+    @operator in ['===', '!==']
 
   isComplex: -> @operator isnt '!' or @first.isComplex()
 
@@ -1516,15 +1515,18 @@ exports.If = class If extends Base
 
   topSensitive: YES
 
-  constructor: (@condition, @body, @tags) ->
+  constructor: (condition, @body, @tags) ->
     @tags or= {}
     if @tags.invert
-      if @condition instanceof Op and @condition.isInvertible()
-        @condition.invert()
+      op = condition instanceof Op
+      if op and condition.isInvertible()
+        condition.invert()
       else
-        @condition = new Op '!', new Parens @condition
-    @elseBody = null
-    @isChain  = false
+        condition = new Parens condition if op and not condition.isUnary()
+        condition = new Op '!', condition
+    @condition = condition
+    @elseBody  = null
+    @isChain   = false
 
   bodyNode: -> @body?.unwrap()
   elseBodyNode: -> @elseBody?.unwrap()
