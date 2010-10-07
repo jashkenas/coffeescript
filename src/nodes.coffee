@@ -279,13 +279,16 @@ exports.ReturnNode = class ReturnNode extends BaseNode
   makeReturn: THIS
 
   compile: (o) ->
-    expr = @expression.makeReturn()
-    return expr.compile o unless expr instanceof ReturnNode
+    expr = @expression?.makeReturn()
+    return expr.compile o if expr and (expr not instanceof ReturnNode)
     super o
 
   compileNode: (o) ->
-    o.asStatement = true if @expression.isStatement(o)
-    "#{@tab}return #{@expression.compile(o)};"
+    expr = ''
+    if @expression
+      o.asStatement = true if @expression.isStatement(o)
+      expr = ' ' + @expression.compile(o)
+    "#{@tab}return#{expr};"
 
 #### ValueNode
 

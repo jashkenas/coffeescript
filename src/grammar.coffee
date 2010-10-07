@@ -160,7 +160,7 @@ grammar =
   # A return statement from a function body.
   Return: [
     o "RETURN Expression",                      -> new ReturnNode $2
-    o "RETURN",                                 -> new ReturnNode new ValueNode new LiteralNode 'null'
+    o "RETURN",                                 -> new ReturnNode
   ]
 
   # A block comment.

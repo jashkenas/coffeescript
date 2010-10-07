@@ -32,7 +32,7 @@ ok [0...10].join(' ') is '0 1 2 3 4 5 6 7 8 9'
 func = ->
   return if true
 
-ok func() is null
+ok func() is undefined
 
 eq /\\/.source, "\\\\"
 eq '(((dollars)))', '\(\(\(dollars\)\)\)'
