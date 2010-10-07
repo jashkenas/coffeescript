@@ -46,9 +46,7 @@ exports.BaseNode = class BaseNode
     closure = @isStatement(o) and not @isPureStatement() and not top and
               not @options.asStatement and this not instanceof CommentNode and
               not @containsPureStatement()
-    o.scope.startLevel() if not o.keepLevel
     code = if closure then @compileClosure(@options) else @compileNode(@options)
-    o.scope.endLevel() if not o.keepLevel
     code
 
   # Statements converted into expressions via closure-wrapping share a scope
@@ -787,7 +785,12 @@ exports.ClassNode = class ClassNode extends BaseNode
 
     for prop in @properties
       [pvar, func] = [prop.variable, prop.value]
-      if pvar and pvar.base.value is 'constructor' and func instanceof CodeNode
+      if pvar and pvar.base.value is 'constructor'
+        if func not instanceof CodeNode
+          [func, ref] = func.compileReference o
+          props.push func if func isnt ref
+          apply = new CallNode(new ValueNode(ref, [new AccessorNode literal 'apply']), [literal('this'), literal('arguments')])
+          func  = new CodeNode [], new Expressions([apply])
         throw new Error "cannot define a constructor as a bound function." if func.bound
         func.name = className
         func.body.push new ReturnNode literal 'this'

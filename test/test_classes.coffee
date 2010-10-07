@@ -14,9 +14,11 @@ SecondChild = class extends FirstChild
   func: (string) ->
     super('two/') + string
 
+thirdCtor = ->
+  @array = [1, 2, 3]
+
 class ThirdChild extends SecondChild
-  constructor: ->
-    @array = [1, 2, 3]
+  constructor: thirdCtor
 
   # Gratuitous comment for testing.
   func: (string) ->
@@ -33,6 +35,8 @@ FirstChild::func = (string) ->
 result = (new ThirdChild).func 'four'
 
 ok result is '9two/three/four'
+
+ok (new ThirdChild).array.join(' ') is '1 2 3'
 
 
 class TopClass
@@ -265,3 +269,23 @@ ok Static.static.two is 2
 # Nothing classes.
 c = class
 ok c instanceof Function
+
+
+# Classes with value'd constructors.
+counter = 0
+classMaker = ->
+  counter += 1
+  inner = counter
+  ->
+    @value = inner
+
+class One
+  constructor: classMaker()
+
+class Two
+  constructor: classMaker()
+
+ok (new One).value is 1
+ok (new Two).value is 2
+ok (new One).value is 1
+ok (new Two).value is 2
