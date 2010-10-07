@@ -96,12 +96,12 @@ exports.BaseNode = class BaseNode
 
   # Is this node of a certain type, or does it contain the type?
   containsType: (type) ->
-    this instanceof type or @contains (n) -> n instanceof type
+    this instanceof type or @contains (node) -> node instanceof type
 
   # Convenience for the most common use of contains. Does the node contain
   # a pure statement?
   containsPureStatement: ->
-    @isPureStatement() or @contains (n) -> n.isPureStatement?()
+    @isPureStatement() or @contains (node) -> node.isPureStatement()
 
   # Perform an in-order traversal of the AST. Crosses scope boundaries.
   traverse: (block) -> @traverseChildren true, block
@@ -207,8 +207,14 @@ exports.Expressions = class Expressions extends BaseNode
   # declarations of all inner variables pushed up to the top.
   compileWithDeclarations: (o) ->
     code = @compileNode(o)
-    code = "#{@tab}var #{o.scope.compiledAssignments()};\n#{code}"  if o.scope.hasAssignments(this)
-    code = "#{@tab}var #{o.scope.compiledDeclarations()};\n#{code}" if not o.globals and o.scope.hasDeclarations(this)
+    code = """
+      #{@tab}var #{ o.scope.compiledAssignments().replace /\n/g, '$&' + @tab };
+      #{code}
+    """ if o.scope.hasAssignments this
+    code = """
+      #{@tab}var #{o.scope.compiledDeclarations()};
+      #{code}
+    """ if not o.globals and o.scope.hasDeclarations this
     code
 
   # Compiles a single expression within the expressions body. If we need to
@@ -520,18 +526,18 @@ exports.CallNode = class CallNode extends BaseNode
         fun += name.compile o if name
       return "#{fun}.apply(#{ref}, #{splatargs})"
     call = 'call(this)'
-    argvar = (n) -> n instanceof LiteralNode and n.value is 'arguments'
+    argvar = (node) -> node instanceof LiteralNode and node.value is 'arguments'
     for arg in @args when arg.contains argvar
       call = 'apply(this, arguments)'
       break
-    a = o.scope.freeVariable 'ctor'
-    b = o.scope.freeVariable 'ref'
-    c = o.scope.freeVariable 'result'
+    ctor   = o.scope.freeVariable 'ctor'
+    ref    = o.scope.freeVariable 'ref'
+    result = o.scope.freeVariable 'result'
     """
     (function() {
     #{idt = @idt 1}var ctor = function() {};
-    #{idt}#{utility 'extends'}(ctor, #{a} = #{ @variable.compile o });
-    #{idt}return typeof (#{c} = #{a}.apply(#{b} = new ctor, #{splatargs})) === "object" ? #{c} : #{b};
+    #{idt}#{utility 'extends'}(ctor, #{ctor} = #{ @variable.compile o });
+    #{idt}return typeof (#{result} = #{ctor}.apply(#{ref} = new ctor, #{splatargs})) === "object" ? #{result} : #{ref};
     #{@tab}}).#{call}
     """
 
@@ -754,8 +760,9 @@ exports.ClassNode = class ClassNode extends BaseNode
 
   # Initialize a **ClassNode** with its name, an optional superclass, and a
   # list of prototype property assignments.
-  constructor: (@variable, @parent, @properties) ->
+  constructor: (variable, @parent, @properties) ->
     super()
+    @variable = if variable is '__temp__' then literal variable else variable
     @properties or= []
     @returns    = false
 
@@ -767,12 +774,13 @@ exports.ClassNode = class ClassNode extends BaseNode
   # equivalent syntax tree and compile that, in pieces. You can see the
   # constructor, property assignments, and inheritance getting built out below.
   compileNode: (o) ->
-    @variable  = literal o.scope.freeVariable 'ctor' if @variable is '__temp__'
-    extension  = @parent and new ExtendsNode(@variable, @parent)
+    {variable} = this
+    variable   = literal o.scope.freeVariable 'ctor' if variable.value is '__temp__'
+    extension  = @parent and new ExtendsNode variable, @parent
     props      = new Expressions
     o.top      = true
     me         = null
-    className  = @variable.compile o
+    className  = variable.compile o
     constScope = null
 
     if @parent
@@ -794,8 +802,8 @@ exports.ClassNode = class ClassNode extends BaseNode
         throw new Error "cannot define a constructor as a bound function." if func.bound
         func.name = className
         func.body.push new ReturnNode literal 'this'
-        @variable = new ValueNode @variable
-        @variable.namespaced = include func.name, '.'
+        variable = new ValueNode variable
+        variable.namespaced = include func.name, '.'
         constructor = func
         continue
       if func instanceof CodeNode and func.bound
@@ -810,16 +818,16 @@ exports.ClassNode = class ClassNode extends BaseNode
           constructor.body.unshift literal "this.#{pname} = function(){ return #{className}.prototype.#{pname}.apply(#{me}, arguments); }"
       if pvar
         access = if prop.context is 'this' then pvar.base.properties[0] else new AccessorNode(pvar, 'prototype')
-        val    = new ValueNode(@variable, [access])
+        val    = new ValueNode variable, [access]
         prop   = new AssignNode(val, func)
       props.push prop
 
     constructor.className = className.match /[\w\d\$_]+$/
     constructor.body.unshift literal "#{me} = this" if me
-    construct = @idt() + (new AssignNode(@variable, constructor)).compile(merge o, {sharedScope: constScope}) + ';'
-    props     = if !props.empty() then '\n' + props.compile(o)                     else ''
-    extension = if extension      then '\n' + @idt() + extension.compile(o) + ';'  else ''
-    returns   = if @returns       then '\n' + new ReturnNode(@variable).compile(o) else ''
+    construct = @idt() + new AssignNode(variable, constructor).compile(merge o, sharedScope: constScope) + ';'
+    props     = if !props.empty() then '\n' + props.compile(o)                    else ''
+    extension = if extension      then '\n' + @idt() + extension.compile(o) + ';' else ''
+    returns   = if @returns       then '\n' + new ReturnNode(variable).compile(o) else ''
     construct + extension + props + returns
 
 #### AssignNode
@@ -1404,7 +1412,7 @@ exports.ForNode = class ForNode extends BaseNode
     topLevel      = del(o, 'top') and not @returns
     range         = @source instanceof ValueNode and @source.base instanceof RangeNode and not @source.properties.length
     source        = if range then @source.base else @source
-    codeInBody    = @body.contains (n) -> n instanceof CodeNode
+    codeInBody    = @body.contains (node) -> node instanceof CodeNode
     scope         = o.scope
     name          = @name  and @name.compile o
     index         = @index and @index.compile o
@@ -1501,7 +1509,7 @@ exports.SwitchNode = class SwitchNode extends BaseNode
 # *If/else* statements. Acts as an expression by pushing down requested returns
 # to the last line of each clause.
 #
-# Single-expression **IfNodes** are compiled into ternary operators if possible,
+# Single-expression **IfNodes** are compiled into conditional operators if possible,
 # because ternaries are already proper expressions, and don't need conversion.
 exports.IfNode = class IfNode extends BaseNode
 
@@ -1532,7 +1540,7 @@ exports.IfNode = class IfNode extends BaseNode
     this
 
   # The **IfNode** only compiles into a statement if either of its bodies needs
-  # to be a statement. Otherwise a ternary is safe.
+  # to be a statement. Otherwise a conditional operator is safe.
   isStatement: (o) ->
     @statement or= !!((o and o.top) or @bodyNode().isStatement(o) or (@elseBody and @elseBodyNode().isStatement(o)))
 
@@ -1542,7 +1550,7 @@ exports.IfNode = class IfNode extends BaseNode
     (cond.compile(o) for cond in conditions).join(' || ')
 
   compileNode: (o) ->
-    if @isStatement(o) then @compileStatement(o) else @compileTernary(o)
+    if @isStatement o then @compileStatement o else @compileExpression o
 
   makeReturn: ->
     if @isStatement()
@@ -1574,8 +1582,8 @@ exports.IfNode = class IfNode extends BaseNode
       " else {\n#{ @elseBody.compile(o) }\n#{@tab}}"
     "#{ifPart}#{elsePart}"
 
-  # Compile the IfNode as a ternary operator.
-  compileTernary: (o) ->
+  # Compile the IfNode as a conditional operator.
+  compileExpression: (o) ->
     @bodyNode().tags.operation = @condition.tags.operation = yes
     @elseBodyNode().tags.operation = yes if @elseBody
     ifPart      = @condition.compile(o) + ' ? ' + @bodyNode().compile(o)
@@ -1585,78 +1593,75 @@ exports.IfNode = class IfNode extends BaseNode
 
 # Faux-Nodes
 # ----------
+# Faux-nodes are never created by the grammar, but are used during code
+# generation to generate other combinations of nodes.
 
 #### PushNode
 
-# Faux-nodes are never created by the grammar, but are used during code
-# generation to generate other combinations of nodes. The **PushNode** creates
-# the tree for `array.push(value)`, which is helpful for recording the result
-# arrays from comprehensions.
-PushNode = exports.PushNode =
-  wrap: (array, expressions) ->
-    expr = expressions.unwrap()
-    return expressions if expr.isPureStatement() or expr.containsPureStatement()
-    Expressions.wrap([new CallNode(
-      new ValueNode(literal(array), [new AccessorNode(literal('push'))]), [expr]
-    )])
+# The **PushNode** creates the tree for `array.push(value)`,
+# which is helpful for recording the result arrays from comprehensions.
+PushNode =
+  wrap: (name, expressions) ->
+    return expressions if expressions.empty() or expressions.containsPureStatement()
+    Expressions.wrap [new CallNode(
+      new ValueNode literal(name), [new AccessorNode literal 'push']
+      [expressions.unwrap()]
+    )]
 
 #### ClosureNode
 
 # A faux-node used to wrap an expressions body in a closure.
-ClosureNode = exports.ClosureNode =
+ClosureNode =
 
   # Wrap the expressions body, unless it contains a pure statement,
   # in which case, no dice. If the body mentions `this` or `arguments`,
   # then make sure that the closure wrapper preserves the original values.
   wrap: (expressions, statement) ->
     return expressions if expressions.containsPureStatement()
-    func = new ParentheticalNode(new CodeNode([], Expressions.wrap([expressions])))
+    func = new ParentheticalNode new CodeNode [], Expressions.wrap [expressions]
     args = []
-    mentionsArgs = expressions.contains (n) ->
-      n instanceof LiteralNode and (n.value is 'arguments')
-    mentionsThis = expressions.contains (n) ->
-      (n instanceof LiteralNode and (n.value is 'this')) or
-      (n instanceof CodeNode and n.bound)
-    if mentionsArgs or mentionsThis
-      meth = literal(if mentionsArgs then 'apply' else 'call')
-      args = [literal('this')]
+    if (mentionsArgs = expressions.contains @literalArgs) or
+       (               expressions.contains @literalThis)
+      meth = literal if mentionsArgs then 'apply' else 'call'
+      args = [literal 'this']
       args.push literal 'arguments' if mentionsArgs
-      func = new ValueNode func, [new AccessorNode(meth)]
-    call = new CallNode(func, args)
-    if statement then Expressions.wrap([call]) else call
+      func = new ValueNode func, [new AccessorNode meth]
+    call = new CallNode func, args
+    if statement then Expressions.wrap [call] else call
 
-# Utility Functions
-# -----------------
+  literalArgs: (node) -> node instanceof LiteralNode and node.value is 'arguments'
+  literalThis: (node) -> node instanceof LiteralNode and node.value is 'this' or
+                         node instanceof CodeNode    and node.bound
+
+# Constants
+# ---------
 
 UTILITIES =
 
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls. See:
   # [goog.inherits](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.source.html#line1206).
-  extends:  """
-            function(child, parent) {
-                var ctor = function(){};
-                ctor.prototype = parent.prototype;
-                child.prototype = new ctor();
-                child.prototype.constructor = child;
-                if (typeof parent.extended === "function") parent.extended(child);
-                child.__super__ = parent.prototype;
-              }
-            """
+  extends:  '''
+    function(child, parent) {
+      var ctor = function() {};
+      ctor.prototype = parent.prototype;
+      child.prototype = new ctor();
+      child.prototype.constructor = child;
+      if (typeof parent.extended === "function") parent.extended(child);
+      child.__super__ = parent.prototype;
+    }
+  '''
 
   # Create a function bound to the current value of "this".
-  bind: """
-        function(func, context) {
-            return function(){ return func.apply(context, arguments); };
-          }
-        """
+  bind: '''
+    function(func, context) {
+      return function() { return func.apply(context, arguments); };
+    }
+  '''
 
   # Shortcuts to speed up the lookup time for native functions.
   hasProp: 'Object.prototype.hasOwnProperty'
   slice:   'Array.prototype.slice'
-
-# Constants
-# ---------
 
 # Tabs are two spaces for pretty printing.
 TAB = '  '
@@ -1675,9 +1680,8 @@ IS_STRING = /^['"]/
 # Utility Functions
 # -----------------
 
-# Handy helper for a generating LiteralNode.
-literal = (name) ->
-  new LiteralNode(name)
+# Handy helper for generating a LiteralNode.
+literal = (name) -> new LiteralNode name
 
 # Helper for ensuring that utility functions are assigned at the top level.
 utility = (name) ->
