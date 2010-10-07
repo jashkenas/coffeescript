@@ -523,13 +523,12 @@ COFFEE_KEYWORDS = [
   'yes', 'no', 'on', 'off'
   'of', 'by', 'when'
 ]
-COFFEE_ALIASES =
+COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES =
   and  : '&&'
   or   : '||'
   is   : '=='
   isnt : '!='
   not  : '!'
-COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES
 COFFEE_ALIASES['==='] = '=='
 
 # The list of keywords that are reserved by JavaScript, but not used, or are

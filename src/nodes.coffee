@@ -1387,10 +1387,7 @@ exports.For = class For extends Base
 
   constructor: (@body, source, @name, @index) ->
     super()
-    @index  or= null
-    @source = source.source
-    @guard  = source.guard
-    @step   = source.step
+    {@source, @guard, @step} = source
     @raw    = !!source.raw
     @object = !!source.object
     [@name, @index] = [@index, @name] if @object
@@ -1431,12 +1428,11 @@ exports.For = class For extends Base
     body          = Expressions.wrap([@body])
     idt1          = @idt 1
     if range
-      forPart     = source.compile merge o, index: ivar, step: @step
+      forPart = source.compile merge o, {index: ivar, @step}
     else
-      svar = @source.compile o
-      if IDENTIFIER.test(svar) and scope.check(svar, immediate: on)
-        sourcePart = svar
-      else
+      svar = sourcePart = @source.compile o
+      if (name or not @raw) and
+         not (IDENTIFIER.test(svar) and scope.check svar, immediate: on)
         sourcePart = "#{ref = scope.freeVariable 'ref'} = #{svar}"
         sourcePart = "(#{sourcePart})" unless @object
         svar = ref
