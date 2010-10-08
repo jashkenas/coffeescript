@@ -46,9 +46,9 @@ class exports.Rewriter
     true
 
   detectEnd: (i, condition, action) ->
+    {tokens} = this
     levels = 0
-    loop
-      token = @tokens[i]
+    while token = tokens[i]
       return action.call this, token, i     if levels is 0 and condition.call this, token, i
       return action.call this, token, i - 1 if not token or levels < 0
       if include EXPRESSION_START, token[0]
