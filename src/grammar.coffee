@@ -535,7 +535,6 @@ grammar =
     o "Expression --",                          -> new Op '--', $1, null, true
     o "Expression ++",                          -> new Op '++', $1, null, true
 
-    o "Expression ? Expression",                -> new Op '?', $1, $3
     o "Expression + Expression",                -> new Op '+', $1, $3
     o "Expression - Expression",                -> new Op '-', $1, $3
     o "Expression == Expression",               -> new Op '==', $1, $3
@@ -571,9 +570,9 @@ grammar =
 #
 #     (2 + 3) * 4
 operators = [
-  ["right",     '?']
   ["left",      'CALL_START', 'CALL_END']
   ["nonassoc",  '++', '--']
+  ["left",      '?']
   ["right",     'UNARY']
   ["left",      'MATH']
   ["left",      '+', '-']

@@ -307,13 +307,12 @@ exports.Lexer = class Lexer
       value = @chunk.charAt 0
     @i += value.length
     tag = value
+    prev = last @tokens
     if value is '='
-      pval = @value()
-      @assignmentError() if not pval.reserved and include JS_FORBIDDEN, pval
-      if pval in ['or', 'and']
-        prev = last @tokens
+      @assignmentError() if not prev[1].reserved and include JS_FORBIDDEN, prev[1]
+      if prev[1] in ['or', 'and']
         prev[0] = 'COMPOUND_ASSIGN'
-        prev[1] = COFFEE_ALIASES[pval] + '='
+        prev[1] = COFFEE_ALIASES[prev[1]] + '='
         return true
     if ';' is                        value then tag = 'TERMINATOR'
     else if include LOGIC          , value then tag = 'LOGIC'
@@ -322,14 +321,14 @@ exports.Lexer = class Lexer
     else if include COMPOUND_ASSIGN, value then tag = 'COMPOUND_ASSIGN'
     else if include UNARY          , value then tag = 'UNARY'
     else if include SHIFT          , value then tag = 'SHIFT'
-    else if (prev = last @tokens) and not prev.spaced and
-         include(CALLABLE, ptag = prev[0])
+    else if value is '?' and prev.spaced   then tag = 'LOGIC'
+    else if prev and not prev.spaced and include CALLABLE, prev[0]
       if value is '('
-        prev[0] = 'FUNC_EXIST' if ptag is '?'
+        prev[0] = 'FUNC_EXIST' if prev[0] is '?'
         tag = 'CALL_START'
       else if value is '['
         tag = 'INDEX_START'
-        switch ptag
+        switch prev[0]
           when '?'  then prev[0] = 'INDEX_SOAK'
           when '::' then prev[0] = 'INDEX_PROTO'
     @token tag, value
