@@ -197,7 +197,17 @@ exports.Expressions = class Expressions extends Base
   # It would be better not to generate them in the first place, but for now,
   # clean up obvious double-parentheses.
   compileRoot: (o) ->
-    wrap      = if o.wrap? then o.wrap else true
+    wrap = if o.noWrap?
+      console?.warn? """
+        Warning: The `noWrap` option to `CoffeeScript.compile` is deprecated and
+        will be removed in the future. Please use the `wrap` option instead.
+      """
+      !o.noWrap
+    else if o.wrap?
+      o.wrap
+    else
+      true
+
     o.indent  = @tab = if wrap then TAB else ''
     o.scope   = new Scope(null, this, null)
     code      = @compileWithDeclarations(o)
