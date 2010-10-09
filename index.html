@@ -2170,7 +2170,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       source = $('#repl_source').val()
       window.compiled_js = ''
       try
-        window.compiled_js = CoffeeScript.compile source, noWrap: true
+        window.compiled_js = CoffeeScript.compile source, wrap: false
         $('#repl_results').text window.compiled_js
         $('#error').hide()
       catch error
