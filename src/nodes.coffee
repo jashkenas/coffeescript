@@ -197,11 +197,12 @@ exports.Expressions = class Expressions extends Base
   # It would be better not to generate them in the first place, but for now,
   # clean up obvious double-parentheses.
   compileRoot: (o) ->
-    o.indent  = @tab = if o.noWrap then '' else TAB
+    wrap      = if o.wrap? then o.wrap else true
+    o.indent  = @tab = if wrap then TAB else ''
     o.scope   = new Scope(null, this, null)
     code      = @compileWithDeclarations(o)
     code      = code.replace(TRAILING_WHITESPACE, '')
-    if o.noWrap then code else "(function() {\n#{code}\n}).call(this);\n"
+    if wrap then "(function() {\n#{code}\n}).call(this);\n" else code
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
@@ -964,7 +965,7 @@ exports.Code = class Code extends Base
     o.top       = true
     o.indent    = @idt(1)
     empty       = @body.expressions.length is 0
-    del o, 'noWrap'
+    del o, 'wrap'
     del o, 'globals'
     splat = undefined
     params = []

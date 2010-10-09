@@ -2,17 +2,17 @@
 CoffeeScript = require('./../lib/coffee-script')
 Lexer = require('./../lib/lexer')
 
-js = CoffeeScript.compile("one\r\ntwo", {noWrap: on})
+js = CoffeeScript.compile("one\r\ntwo", {wrap: off})
 
 ok js is "one;\ntwo;"
 
 
 global.resultArray = []
-CoffeeScript.run("resultArray.push i for i of global", {noWrap: on, globals: on, fileName: 'tests'})
+CoffeeScript.run("resultArray.push i for i of global", {wrap: off, globals: on, fileName: 'tests'})
 
 ok 'setInterval' in global.resultArray
 
-ok 'passed' is CoffeeScript.eval '"passed"', noWrap: on, globals: on, fileName: 'tests'
+ok 'passed' is CoffeeScript.eval '"passed"', wrap: off, globals: on, fileName: 'tests'
 
 #750
 try

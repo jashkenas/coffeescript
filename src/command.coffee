@@ -185,7 +185,7 @@ parseOptions = ->
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (fileName) ->
   o = {fileName}
-  o.noWrap = opts['no-wrap']
+  o.wrap = !opts['no-wrap']
   o
 
 # Print the `--help` usage message and exit.
