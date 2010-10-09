@@ -557,10 +557,10 @@ JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
 # Regex-matching-regexes.
 REGEX = /// ^
-  / (?!\s)                      # disallow leading whitespace
-  (?: [^ [ / \n \\ ]+           # every other thing
-    | \\.                       # anything escaped
-    | \[ ( [^\\\]]+ | \\. )* ]  # character class
+  / (?!\s)                                 # disallow leading whitespace
+  (?: [^ [ / \n \\ ]+                      # every other thing
+    | \\[\s\S]                             # anything escaped
+    | \[ ( [^ \] \n \\ ]+ | \\[\s\S] )* ]  # character class
   )+
   / [imgy]{0,4} (?![A-Za-z])
 ///
