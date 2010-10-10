@@ -233,7 +233,8 @@ exports.Lexer = class Lexer
     prev = last @tokens, 1
     size = indent.length - 1 - indent.lastIndexOf '\n'
     nextCharacter = NEXT_CHARACTER.exec(@chunk)[1]
-    noNewlines = (nextCharacter in ['.', ',']) or @unfinished()
+    nextEllipsis  = NEXT_ELLIPSIS.exec(@chunk)?[1]
+    noNewlines    = (nextCharacter in ['.', ','] and not nextEllipsis) or @unfinished()
     if size - @indebt is @indent
       return @suppressNewlines() if noNewlines
       return @newlineToken indent
@@ -547,7 +548,7 @@ JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
 IDENTIFIER = /^[a-zA-Z_$][\w$]*/
 NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
 HEREDOC    = /^("""|''')([\s\S]*?)(?:\n[ \t]*)?\1/
-OPERATOR   = /// ^ (?: -[-=>]? | \+[+=]? | [*&|/%=<>^:!?]+ ) ///
+OPERATOR   = /// ^ (?: -[-=>]? | \+[+=]? | \.\.\.? | [*&|/%=<>^:!?]+ ) ///
 WHITESPACE = /^[ \t]+/
 COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
 CODE       = /^[-=]>/
@@ -572,6 +573,7 @@ MULTILINER      = /\n/g
 HEREDOC_INDENT  = /\n+([ \t]*)/g
 ASSIGNED        = /^\s*@?[$A-Za-z_][$\w]*[ \t]*?[:=][^:=>]/
 NEXT_CHARACTER  = /^\s*(\S?)/
+NEXT_ELLIPSIS   = /^\s*(\.\.\.?)/
 LEADING_SPACES  = /^\s+/
 TRAILING_SPACES = /\s+$/
 NO_NEWLINE      = /// ^

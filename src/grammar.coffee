@@ -203,13 +203,13 @@ grammar =
   Param: [
     o "PARAM",                                  -> new Literal $1
     o "@ PARAM",                                -> new Param $2, true
-    o "PARAM . . .",                            -> new Param $1, false, true
-    o "@ PARAM . . .",                          -> new Param $2, true, true
+    o "PARAM ...",                              -> new Param $1, false, true
+    o "@ PARAM ...",                            -> new Param $2, true, true
   ]
 
   # A splat that occurs outside of a parameter list.
   Splat: [
-    o "Expression . . .",                       -> new Splat $1
+    o "Expression ...",                         -> new Splat $1
   ]
 
   # Variables and properties that can be assigned to.
@@ -331,8 +331,8 @@ grammar =
   ]
 
   RangeDots: [
-    o ". .",                                    -> 'inclusive'
-    o ". . .",                                  -> 'exclusive'
+    o "..",                                     -> 'inclusive'
+    o "...",                                    -> 'exclusive'
   ]
 
   # A reference to a property on *this*.
