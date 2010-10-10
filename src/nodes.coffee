@@ -128,9 +128,10 @@ exports.Base = class Base
   traverseChildren: (crossScope, func) ->
     @eachChild (child) ->
       return false if func(child) is false
-      if child instanceof Base and
-         (crossScope or child not instanceof Code)
+      if crossScope or child not instanceof Code
         child.traverseChildren crossScope, func
+
+  invert: -> new Op '!', this
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
@@ -1103,10 +1104,7 @@ exports.While = class While extends Base
 
   constructor: (condition, opts) ->
     super()
-    if opts?.invert
-      condition = new Parens condition if condition instanceof Op
-      condition = new Op('!', condition)
-    @condition  = condition
+    @condition  = if opts?.invert then condition.invert() else condition
     @guard = opts?.guard
 
   addBody: (body) ->
@@ -1184,9 +1182,6 @@ exports.Op = class Op extends Base
   isUnary: ->
     not @second
 
-  isInvertible: ->
-    @operator in ['===', '!==']
-
   isComplex: -> @operator isnt '!' or @first.isComplex()
 
   isMutator: ->
@@ -1196,7 +1191,13 @@ exports.Op = class Op extends Base
     include(@CHAINABLE, @operator)
 
   invert: ->
-    @operator = @INVERSIONS[@operator]
+    if @operator in ['===', '!==']
+      @operator = @INVERSIONS[@operator]
+      this
+    else if @second
+      new Parens(this).invert()
+    else
+      super()
 
   toString: (idt) ->
     super(idt, @constructor.name + ' ' + @operator)
@@ -1517,14 +1518,7 @@ exports.If = class If extends Base
 
   constructor: (condition, @body, @tags) ->
     @tags or= {}
-    if @tags.invert
-      op = condition instanceof Op
-      if op and condition.isInvertible()
-        condition.invert()
-      else
-        condition = new Parens condition if op and not condition.isUnary()
-        condition = new Op '!', condition
-    @condition = condition
+    @condition = if @tags.invert then condition.invert() else condition
     @elseBody  = null
     @isChain   = false
 
