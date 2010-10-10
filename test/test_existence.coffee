@@ -92,6 +92,7 @@ ok not value?.property?, 'safely checks existence on soaks'
 
 
 eq nothing?.value, undefined, 'safely calls values off of non-existent variables'
+eq !nothing?.value and 1, 1,  'corresponding operators work as expected'
 
 
 # Assign to the result of an exsitential operation with a minus.

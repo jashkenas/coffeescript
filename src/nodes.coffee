@@ -1201,7 +1201,6 @@ exports.Op = class Op extends Base
     super(idt, @constructor.name + ' ' + @operator)
 
   compileNode: (o) ->
-    return node.compile o if node = Value.unfoldSoak o, this, 'first'
     return @compileChain(o)      if @isChainable() and @first.unwrap() instanceof Op and @first.unwrap().isChainable()
     return @compileAssignment(o) if indexOf(@ASSIGNMENT, @operator) >= 0
     return @compileUnary(o)      if @isUnary()
