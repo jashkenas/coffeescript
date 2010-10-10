@@ -486,8 +486,8 @@ exports.Lexer = class Lexer
   # Are we in the midst of an unfinished expression?
   unfinished: ->
     (prev  = last @tokens, 1) and prev[0] isnt '.' and
-    (value = @value()) and NO_NEWLINE.test(value) and not CODE.test(value) and
-    not ASSIGNED.test(@chunk)
+      (value = @value()) and not value.reserved and
+      NO_NEWLINE.test(value) and not CODE.test(value) and not ASSIGNED.test(@chunk)
 
   # Converts newlines for string literals.
   escapeLines: (str, heredoc) ->

@@ -135,3 +135,12 @@ ok result is 70
 # Issue #738
 func = if true then -> 1
 eq func(), 1
+
+
+# Issue #748. Trailing reserved identifiers.
+obj = delete: true
+
+result = if obj.delete
+  101
+
+ok result is 101
