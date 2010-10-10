@@ -244,7 +244,7 @@ Type1 = (@a, @b, @c) ->
 type1 = new Type1 args...
 
 ok type1 and type1 instanceof Type1
-ok type1.a is args[0] and type1.b is args[1] and type1.c is args[2] 
+ok type1.a is args[0] and type1.b is args[1] and type1.c is args[2]
 
 
 # Ensure that constructors invoked with splats cache the function.
@@ -256,7 +256,16 @@ new get() args...
 #619: `new` shouldn't add extra parens
 ok new Date().constructor is Date
 
+
 #717: `new` works against bare function
 me = this
 new -> ok this isnt me
 new => ok this is   me
+
+
+#751: Implicit objects with number arguments.
+func = (x, y) -> y
+obj =
+  prop: func "a", 1
+
+ok obj.prop is 1

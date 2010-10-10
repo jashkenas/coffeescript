@@ -128,7 +128,7 @@ class exports.Rewriter
       [one, two, three] = @tokens.slice i + 1, i + 4
       [tag] = token
       tag in ['TERMINATOR', 'OUTDENT'] and not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':') or
-      tag is ',' and one?[0] not in ['IDENTIFIER', 'STRING', '@', 'TERMINATOR', 'OUTDENT']
+      tag is ',' and one?[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT']
     action = (token, i) -> @tokens.splice i, 0, ['}', '}', token[2]]
     @scanTokens (token, i, tokens) ->
       if include EXPRESSION_START, tag = token[0]
