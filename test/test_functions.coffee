@@ -22,16 +22,16 @@ obj = {
   name: 'Fred'
 
   bound: ->
-    (=> ok(this.name is 'Fred'))()
+    (=> eq this, obj)()
 
   unbound: ->
-    (-> ok(!this.name?))()
+    (-> ok this isnt obj)()
 
   nested: ->
     (=>
       (=>
         (=>
-          ok this.name is 'Fred'
+          eq this, obj
         )()
       )()
     )()

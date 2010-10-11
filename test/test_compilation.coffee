@@ -1,19 +1,11 @@
 # Ensure that carriage returns don't break compilation on Windows.
-js = CoffeeScript.compile("one\r\ntwo", {wrap: off})
+eq CoffeeScript.compile('one\r\ntwo', wrap: off), 'one;\ntwo;'
 
-ok js is "one;\ntwo;"
+# `globals: on` removes `var`s
+eq CoffeeScript.compile('x = y', wrap: off, globals: on), 'x = y;'
 
-
-global.resultArray = []
-CoffeeScript.run("resultArray.push i for i of global", {wrap: off, globals: on, fileName: 'tests'})
-
-ok 'setInterval' in global.resultArray
-
-ok 'passed' is CoffeeScript.eval '"passed"', wrap: off, globals: on, fileName: 'tests'
+ok 'passed' is CoffeeScript.eval '"passed"', wrap: off, fileName: 'test'
 
 #750
-try
-  CoffeeScript.nodes 'f(->'
-  ok no
-catch e
-  eq e.message, 'unclosed CALL_START on line 1'
+try ok not CoffeeScript.nodes 'f(->'
+catch e then eq e.message, 'unclosed CALL_START on line 1'
