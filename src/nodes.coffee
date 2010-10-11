@@ -209,14 +209,10 @@ exports.Expressions = class Expressions extends Base
   # declarations of all inner variables pushed up to the top.
   compileWithDeclarations: (o) ->
     code = @compileNode(o)
-    code = """
-      #{@tab}var #{ o.scope.compiledAssignments().replace /\n/g, '$&' + @tab };
-      #{code}
-    """ if o.scope.hasAssignments this
-    code = """
-      #{@tab}var #{o.scope.compiledDeclarations()};
-      #{code}
-    """ if not o.globals and o.scope.hasDeclarations this
+    if o.scope.hasAssignments this
+      code = "#{@tab}var #{ o.scope.compiledAssignments().replace /\n/g, '$&' + @tab };\n#{code}"
+    if not o.globals and o.scope.hasDeclarations this
+      code = "#{@tab}var #{o.scope.compiledDeclarations()};\n#{code}"
     code
 
   # Compiles a single expression within the expressions body. If we need to
