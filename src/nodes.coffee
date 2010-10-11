@@ -143,6 +143,9 @@ exports.Base = class Base
   isComplex       : YES
   topSensitive    : NO
 
+  # Is this node used to assign a certain variable?
+  assigns: NO
+
 #### Expressions
 
 # The expressions body is the list of expressions that forms the body of an
@@ -253,6 +256,8 @@ exports.Literal = class Literal extends Base
   isReserved: ->
     !!@value.reserved
 
+  assigns: (name) -> name is @value
+
   compileNode: (o) ->
     idt = if @isStatement(o) then @idt() else ''
     end = if @isStatement(o) then ';' else ''
@@ -323,6 +328,9 @@ exports.Value = class Value extends Base
 
   isComplex: ->
     @base.isComplex() or @hasProperties()
+
+  assigns: (name) ->
+    not @properties.length and @base.assigns name
 
   makeReturn: ->
     if @properties.length then super() else @base.makeReturn()
@@ -702,12 +710,15 @@ exports.ObjectLiteral = class ObjectLiteral extends Base
   compileNode: (o) ->
     top = del o, 'top'
     o.indent = @idt 1
-    nonComments = prop for prop in @properties when (prop not instanceof Comment)
-    lastNoncom  =  last nonComments
+    nonComments = prop for prop in @properties when prop not instanceof Comment
+    lastNoncom  = last nonComments
     props = for prop, i in @properties
-      join   = ",\n"
-      join   = "\n" if (prop is lastNoncom) or (prop instanceof Comment)
-      join   = '' if i is @properties.length - 1
+      join = if i is @properties.length - 1
+        ''
+      else if prop is lastNoncom or prop instanceof Comment
+        '\n'
+      else
+        ',\n'
       indent = if prop instanceof Comment then '' else @idt 1
       if prop instanceof Value and prop.tags.this
         prop = new Assign prop.properties[0].name, prop, 'object'
@@ -715,8 +726,12 @@ exports.ObjectLiteral = class ObjectLiteral extends Base
         prop = new Assign prop, prop, 'object'
       indent + prop.compile(o) + join
     props = props.join('')
-    obj   = '{' + (if props then '\n' + props + '\n' + @idt() else '') + '}'
+    obj   = "{#{ if props then '\n' + props + '\n' + @idt() else '' }}"
     if top then "(#{obj})" else obj
+
+  assigns: (name) ->
+    for prop in @properties when prop.assigns name then return yes
+    no
 
 #### ArrayLiteral
 
@@ -751,6 +766,10 @@ exports.ArrayLiteral = class ArrayLiteral extends Base
       "[\n#{o.indent}#{objects}\n#{@tab}]"
     else
       "[#{objects}]"
+
+  assigns: (name) ->
+    for obj in @objects when obj.assigns name then return yes
+    no
 
 #### Class
 
@@ -898,16 +917,19 @@ exports.Assign = class Assign extends Base
       return new Assign(obj, value).compile o
     top     = del o, 'top'
     otop    = merge o, top: yes
-    valVar  = o.scope.freeVariable 'ref'
-    assigns = ["#{valVar} = #{ value.compile o }"]
+    valVar  = value.compile o
+    assigns = []
     splat   = false
+    if not IDENTIFIER.test(valVar) or @variable.assigns(valVar)
+      assigns.push "#{ ref = o.scope.freeVariable 'ref' } = #{valVar}"
+      valVar = ref
     for obj, i in objects
       # A regular array pattern-match.
       idx = i
       if isObject
         if obj instanceof Assign
           # A regular object pattern-match.
-          [obj, idx] = [obj.value, obj.variable.base]
+          {variable: {base: idx}, value: obj} = obj
         else
           # A shorthand `{a, b, @c} = val` pattern-match.
           idx = if obj.tags.this then obj.properties[0].name else obj
@@ -936,6 +958,9 @@ exports.Assign = class Assign extends Base
     ref   = o.scope.freeVariable 'ref'
     val   = @value.compile(o)
     "([].splice.apply(#{name}, [#{from}, #{to}].concat(#{ref} = #{val})), #{ref})"
+
+  assigns: (name) ->
+    @[if @context is 'object' then 'value' else 'variable'].assigns name
 
 #### Code
 
@@ -1039,8 +1064,9 @@ exports.Splat = class Splat extends Base
 
   constructor: (name) ->
     super()
-    name = new Literal name unless name.compile
-    @name = name
+    @name = if name.compile then name else new Literal name
+
+  assigns: (name) -> @name.assigns name
 
   compileNode: (o) ->
     if @index? then @compileParam(o) else @name.compile(o)
