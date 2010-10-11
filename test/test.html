@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+  <title>CoffeeScript Test Suite</title>
+  <script src="../extras/coffee-script.js"></script>
+  <style>
+    body {
+      margin: 30px;
+      font-family: Menlo, Monaco, monospace;
+    }
+    h1 {
+      font-size: 20px;
+    }
+    #stdout {
+    }
+  </style>
+</head>
+<body>
+
+  <h1>CoffeeScript Test Suite</h1>
+  <pre id="stdout"></pre>
+
+  <script type="text/coffeescript">
+
+  stdout  = document.getElementById 'stdout'
+  start   = new Date
+  success = total = done = failed = 0
+
+  say = (msg, yay) ->
+    div = document.createElement 'div'
+    div.appendChild document.createTextNode msg
+    div.style.color = if yay then 'green' else 'red'
+    stdout.appendChild div
+    msg
+
+  this.ok = (good, msg) ->
+    ++total
+    if good then ++success else throw Error say msg
+
+  this.eq = (x, y, msg) -> ok x is y, msg ? x + ' !== ' + y
+
+  this.throws = (fun, err, msg) ->
+    try fun(); throw new String 'No Error'
+    catch e then eq e, err
+
+  CoffeeScript.run = (code, cb) ->
+    try Function(CoffeeScript.compile code, wrap: no)()
+    catch e then cb(); throw e
+    cb yes
+
+  run = (name) ->
+    CoffeeScript.load "test_#{name}.coffee", (yay) ->
+      say "#{ if yay then '\u2714' else '\u3000' } #{name}", yay
+      ++failed unless yay
+      fin() if ++done is names.length
+
+  fin = ->
+    yay = success is total and not failed
+    sec = (new Date - start) / 1000
+    msg = "passed #{success} tests in #{ sec.toFixed 2 } seconds"
+    msg = "failed #{ total - success } tests and #{msg}" unless yay
+    say msg, yay
+
+  run name for name in names = [
+    'arguments'
+    'assignment'
+    'blocks'
+    'break'
+    'chaining'
+    'classes'
+    'comments'
+    'compilation'
+    'compound_assignment'
+    'comprehensions'
+    'existence'
+    'expressions'
+    'functions'
+    'helpers'
+    'heredocs'
+    'if'
+    'literals'
+    'operations'
+    'pattern_matching'
+    'regexps'
+    'returns'
+    'splats'
+    'string_interpolation'
+    'switch'
+    'try_catch'
+    'while'
+  ]
+  </script>
+
+</body>
+</html>

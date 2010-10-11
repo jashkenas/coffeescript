@@ -113,7 +113,7 @@ persons = {
 
 join1 = "#{key}: #{name}" for key, { name } of persons
 
-deepEqual join1, ["George: Bob", "Bob: Alice", "Christopher: Stan"]
+eq join1.join(' / '), "George: Bob / Bob: Alice / Christopher: Stan"
 
 persons = [
   { name: "Bob", parent: { name: "George" } },
@@ -123,12 +123,12 @@ persons = [
 
 join2 = "#{parent}: #{name}" for { name, parent: { name: parent } } in persons
 
-deepEqual join1, join2
+eq join1.join(' '), join2.join(' ')
 
 persons = [['Bob', ['George']], ['Alice', ['Bob']], ['Stan', ['Christopher']]]
 join3 = "#{parent}: #{name}" for [name, [parent]] in persons
 
-deepEqual join2, join3
+eq join2.join(' '), join3.join(' ')
 
 
 # Pattern matching doesn't clash with implicit block objects.
