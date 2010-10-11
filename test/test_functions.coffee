@@ -258,9 +258,9 @@ ok new Date().constructor is Date
 
 
 #717: `new` works against bare function
-me = this
-new -> ok this isnt me
-new => ok this is   me
+eq Date, new ->
+  eq this, new => this
+  Date
 
 
 #751: Implicit objects with number arguments.

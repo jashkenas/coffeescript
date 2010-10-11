@@ -1167,16 +1167,17 @@ exports.Op = class Op extends Base
 
   children: ['first', 'second']
 
-  constructor: (@operator, @first, @second, flip) ->
+  constructor: (op, first, second, flip) ->
+    if first instanceof Value and first.base instanceof ObjectLiteral
+      first = new Parens first
+    else if op is 'new'
+      return first.newInstance() if first instanceof Call
+      first = new Parens first   if first instanceof Code and first.bound
     super()
-    @operator = @CONVERSIONS[@operator] or @operator
+    @operator = @CONVERSIONS[op] or op
+    (@first  = first ).tags.operation = yes
+    (@second = second).tags.operation = yes if second
     @flip     = !!flip
-    if @first instanceof Value and @first.base instanceof ObjectLiteral
-      @first = new Parens @first
-    else if @operator is 'new' and @first instanceof Call
-      return @first.newInstance()
-    @first.tags.operation = yes
-    @second.tags.operation = yes if @second
 
   isUnary: ->
     not @second
