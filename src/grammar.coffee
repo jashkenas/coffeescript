@@ -195,7 +195,7 @@ grammar =
   ParamList: [
     o "",                                       -> []
     o "Param",                                  -> [$1]
-    o "ParamList , Param",                      -> $1.concat [$3]
+    o "ParamList , Param",                      -> $1.concat $3
   ]
 
   # A single parameter in a function definition can be ordinary, or a splat
@@ -265,8 +265,8 @@ grammar =
   AssignList: [
     o "",                                       -> []
     o "AssignObj",                              -> [$1]
-    o "AssignList , AssignObj",                 -> $1.concat [$3]
-    o "AssignList OptComma TERMINATOR AssignObj", -> $1.concat [$4]
+    o "AssignList , AssignObj",                 -> $1.concat $3
+    o "AssignList OptComma TERMINATOR AssignObj", -> $1.concat $4
     o "AssignList OptComma INDENT AssignList OptComma OUTDENT", -> $1.concat $4
   ]
 
@@ -363,8 +363,8 @@ grammar =
   # (i.e. comma-separated expressions). Newlines work as well.
   ArgList: [
     o "Arg",                                    -> [$1]
-    o "ArgList , Arg",                          -> $1.concat [$3]
-    o "ArgList OptComma TERMINATOR Arg",        -> $1.concat [$4]
+    o "ArgList , Arg",                          -> $1.concat $3
+    o "ArgList OptComma TERMINATOR Arg",        -> $1.concat $4
     o "INDENT ArgList OptComma OUTDENT",        -> $2
     o "ArgList OptComma INDENT ArgList OptComma OUTDENT", -> $1.concat $4
   ]
@@ -380,8 +380,7 @@ grammar =
   # having the newlines wouldn't make sense.
   SimpleArgs: [
     o "Expression"
-    o "SimpleArgs , Expression",                ->
-      if $1 instanceof Array then $1.concat([$3]) else [$1].concat([$3])
+    o "SimpleArgs , Expression",                -> [].concat $1, $3
   ]
 
   # The variants of *try/catch/finally* exception handling blocks.
@@ -527,8 +526,8 @@ grammar =
   # rules are necessary.
   Operation: [
     o "UNARY Expression",                       -> new Op $1, $2
-    o("- Expression",                           (-> new Op('-', $2)), {prec: 'UNARY'})
-    o("+ Expression",                           (-> new Op('+', $2)), {prec: 'UNARY'})
+    o "- Expression",                          (-> new Op '-', $2), prec: 'UNARY'
+    o "+ Expression",                          (-> new Op '+', $2), prec: 'UNARY'
 
     o "-- Expression",                          -> new Op '--', $2
     o "++ Expression",                          -> new Op '++', $2
