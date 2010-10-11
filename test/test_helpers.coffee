@@ -1,4 +1,4 @@
-{indexOf, include, starts, ends, compact, count, merge, extend, flatten, del, last} = require '../lib/helpers'
+{indexOf, include, starts, ends, compact, count, merge, extend, flatten, del, last} = CoffeeScript.helpers
 
 array  = [0..4]
 string = array.join ''

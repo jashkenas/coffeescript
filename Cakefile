@@ -97,7 +97,7 @@ task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
     print stdout
 
 
-task 'test', 'run the CoffeeScript language test suite', ->
+runTests = (CoffeeScript) ->
   startTime = Date.now()
   passedTests = failedTests = 0
   for all name, func of require 'assert'
@@ -121,3 +121,15 @@ task 'test', 'run the CoffeeScript language test suite', ->
         catch err
           failedTests += 1
           log "failed #{fileName}", red, '\n' + err.stack.toString()
+
+
+task 'test', 'run the CoffeeScript language test suite', ->
+  runTests CoffeeScript
+
+
+task 'test:browser', 'run the test suite against the merged browser script', ->
+  source = fs.readFileSync 'extras/coffee-script.js', 'utf-8'
+  window = addEventListener: ->
+  window.window = window
+  (-> eval source).call window
+  runTests window.CoffeeScript

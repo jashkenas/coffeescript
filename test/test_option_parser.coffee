@@ -1,5 +1,5 @@
 # Ensure that the OptionParser handles arguments correctly.
-
+return unless require?
 {OptionParser} = require './../lib/optparse'
 
 opt = new OptionParser [
