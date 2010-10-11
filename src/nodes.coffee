@@ -6,7 +6,7 @@
 {Scope} = require './scope'
 
 # Import the helpers we plan to use.
-{compact, flatten, merge, del, include, indexOf, starts, ends, last} = require './helpers'
+{compact, flatten, merge, del, include, starts, ends, last} = require './helpers'
 
 # Constant functions for nodes that don't need customization.
 YES  = -> yes
@@ -128,9 +128,10 @@ exports.Base = class Base
   traverseChildren: (crossScope, func) ->
     @eachChild (child) ->
       return false if func(child) is false
-      if child instanceof Base and
-         (crossScope or child not instanceof Code)
+      if crossScope or child not instanceof Code
         child.traverseChildren crossScope, func
+
+  invert: -> new Op '!', this
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
@@ -197,24 +198,21 @@ exports.Expressions = class Expressions extends Base
   # It would be better not to generate them in the first place, but for now,
   # clean up obvious double-parentheses.
   compileRoot: (o) ->
-    o.indent  = @tab = if o.noWrap then '' else TAB
+    wrap      = if o.wrap? then o.wrap else true
+    o.indent  = @tab = if wrap then TAB else ''
     o.scope   = new Scope(null, this, null)
     code      = @compileWithDeclarations(o)
     code      = code.replace(TRAILING_WHITESPACE, '')
-    if o.noWrap then code else "(function() {\n#{code}\n}).call(this);\n"
+    if wrap then "(function() {\n#{code}\n}).call(this);\n" else code
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
   compileWithDeclarations: (o) ->
     code = @compileNode(o)
-    code = """
-      #{@tab}var #{ o.scope.compiledAssignments().replace /\n/g, '$&' + @tab };
-      #{code}
-    """ if o.scope.hasAssignments this
-    code = """
-      #{@tab}var #{o.scope.compiledDeclarations()};
-      #{code}
-    """ if not o.globals and o.scope.hasDeclarations this
+    if o.scope.hasAssignments this
+      code = "#{@tab}var #{ o.scope.compiledAssignments().replace /\n/g, '$&' + @tab };\n#{code}"
+    if not o.globals and o.scope.hasDeclarations this
+      code = "#{@tab}var #{o.scope.compiledDeclarations()};\n#{code}"
     code
 
   # Compiles a single expression within the expressions body. If we need to
@@ -736,20 +734,21 @@ exports.ArrayLiteral = class ArrayLiteral extends Base
 
   compileNode: (o) ->
     o.indent = @idt 1
+    for obj in @objects when obj instanceof Splat
+      return @compileSplatLiteral o
     objects = []
     for obj, i in @objects
-      code = obj.compile(o)
-      if obj instanceof Splat
-        return @compileSplatLiteral o
-      else if obj instanceof Comment
-        objects.push "\n#{code}\n#{o.indent}"
+      code = obj.compile o
+      objects.push (if obj instanceof Comment
+        "\n#{code}\n#{o.indent}"
       else if i is @objects.length - 1
-        objects.push code
+        code
       else
-        objects.push "#{code}, "
-    objects = objects.join('')
-    if indexOf(objects, '\n') >= 0
-      "[\n#{@idt(1)}#{objects}\n#{@tab}]"
+        code + ', '
+      )
+    objects = objects.join ''
+    if 0 < objects.indexOf '\n'
+      "[\n#{o.indent}#{objects}\n#{@tab}]"
     else
       "[#{objects}]"
 
@@ -806,7 +805,7 @@ exports.Class = class Class extends Base
         func.name = className
         func.body.push new Return new Literal 'this'
         variable = new Value variable
-        variable.namespaced = include func.name, '.'
+        variable.namespaced = 0 < className.indexOf '.'
         constructor = func
         continue
       if func instanceof Code and func.bound
@@ -860,7 +859,9 @@ exports.Assign = class Assign extends Base
     if isValue = @isValue()
       return @compilePatternMatch(o) if @variable.isArray() or @variable.isObject()
       return @compileSplice(o) if @variable.isSplice()
-      return node.compile o if node = Value.unfoldSoak o, this, 'variable'
+      if ifn = Value.unfoldSoak o, this, 'variable'
+        delete o.top
+        return ifn.compile o
     top    = del o, 'top'
     stmt   = del o, 'asStatement'
     name   = @variable.compile(o)
@@ -964,7 +965,7 @@ exports.Code = class Code extends Base
     o.top       = true
     o.indent    = @idt(1)
     empty       = @body.expressions.length is 0
-    del o, 'noWrap'
+    del o, 'wrap'
     del o, 'globals'
     splat = undefined
     params = []
@@ -993,8 +994,8 @@ exports.Code = class Code extends Base
     (o.scope.parameter(param)) for param in params
     o.indent = @idt 2 if @className
     code  = if @body.expressions.length then "\n#{ @body.compileWithDeclarations(o) }\n" else ''
-    open  = if @className then "(function() {\n#{@idt(1)}return function #{@className}(" else "function("
-    close = if @className then "#{code and @idt(1)}};\n#{@tab}})()" else "#{code and @tab}}"
+    open  = if @className then "(function() {\n#{@idt(1)}function #{@className}(" else "function("
+    close = if @className then "#{code and @idt(1)}};\n#{@idt(1)}return #{@className};\n#{@tab}})()" else "#{code and @tab}}"
     func  = "#{open}#{ params.join(', ') }) {#{code}#{close}"
     o.scope.endLevel()
     return "#{utility 'bind'}(#{func}, #{@context})" if @bound
@@ -1102,10 +1103,7 @@ exports.While = class While extends Base
 
   constructor: (condition, opts) ->
     super()
-    if opts?.invert
-      condition = new Parens condition if condition instanceof Op
-      condition = new Op('!', condition)
-    @condition  = condition
+    @condition  = if opts?.invert then condition.invert() else condition
     @guard = opts?.guard
 
   addBody: (body) ->
@@ -1124,9 +1122,9 @@ exports.While = class While extends Base
   compileNode: (o) ->
     top      =  del(o, 'top') and not @returns
     o.indent =  @idt 1
-    o.top    =  true
     @condition.parenthetical = yes
     cond     =  @condition.compile(o)
+    o.top    =  true
     set      =  ''
     unless top
       rvar  = o.scope.freeVariable 'result'
@@ -1183,9 +1181,6 @@ exports.Op = class Op extends Base
   isUnary: ->
     not @second
 
-  isInvertible: ->
-    @operator in ['===', '!==']
-
   isComplex: -> @operator isnt '!' or @first.isComplex()
 
   isMutator: ->
@@ -1195,14 +1190,20 @@ exports.Op = class Op extends Base
     include(@CHAINABLE, @operator)
 
   invert: ->
-    @operator = @INVERSIONS[@operator]
+    if @operator in ['===', '!==']
+      @operator = @INVERSIONS[@operator]
+      this
+    else if @second
+      new Parens(this).invert()
+    else
+      super()
 
   toString: (idt) ->
     super(idt, @constructor.name + ' ' + @operator)
 
   compileNode: (o) ->
     return @compileChain(o)      if @isChainable() and @first.unwrap() instanceof Op and @first.unwrap().isChainable()
-    return @compileAssignment(o) if indexOf(@ASSIGNMENT, @operator) >= 0
+    return @compileAssignment(o) if include @ASSIGNMENT, @operator
     return @compileUnary(o)      if @isUnary()
     return @compileExistence(o)  if @operator is '?'
     @first  = new Parens @first  if @first  instanceof Op and @first.isMutator()
@@ -1239,10 +1240,9 @@ exports.Op = class Op extends Base
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
-    space = if indexOf(@PREFIX_OPERATORS, @operator) >= 0 then ' ' else ''
+    space = if include @PREFIX_OPERATORS, @operator then ' ' else ''
     parts = [@operator, space, @first.compile(o)]
-    parts = parts.reverse() if @flip
-    parts.join('')
+    (if @flip then parts.reverse() else parts).join ''
 
 #### In
 exports.In = class In extends Base
@@ -1516,14 +1516,7 @@ exports.If = class If extends Base
 
   constructor: (condition, @body, @tags) ->
     @tags or= {}
-    if @tags.invert
-      op = condition instanceof Op
-      if op and condition.isInvertible()
-        condition.invert()
-      else
-        condition = new Parens condition if op and not condition.isUnary()
-        condition = new Op '!', condition
-    @condition = condition
+    @condition = if @tags.invert then condition.invert() else condition
     @elseBody  = null
     @isChain   = false
 
@@ -1531,23 +1524,22 @@ exports.If = class If extends Base
   elseBodyNode: -> @elseBody?.unwrap()
 
   # Rewrite a chain of **Ifs** to add a default case as the final *else*.
-  addElse: (elseBody, statement) ->
+  addElse: (elseBody) ->
     if @isChain
-      @elseBodyNode().addElse elseBody, statement
+      @elseBodyNode().addElse elseBody
     else
-      @isChain = elseBody instanceof If
+      @isChain  = elseBody instanceof If
       @elseBody = @ensureExpressions elseBody
     this
 
   # The **If** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a conditional operator is safe.
   isStatement: (o) ->
-    @statement or= !!((o and o.top) or @bodyNode().isStatement(o) or (@elseBody and @elseBodyNode().isStatement(o)))
+    @statement or= o?.top or @bodyNode().isStatement(o) or @elseBodyNode()?.isStatement(o)
 
   compileCondition: (o) ->
-    conditions = flatten [@condition]
-    conditions[0].parenthetical = yes if conditions.length is 1
-    (cond.compile(o) for cond in conditions).join(' || ')
+    @condition.parenthetical = yes
+    @condition.compile o
 
   compileNode: (o) ->
     if @isStatement o then @compileStatement o else @compileExpression o
@@ -1571,16 +1563,13 @@ exports.If = class If extends Base
     condO    = merge o
     o.indent = @idt 1
     o.top    = true
-    ifDent   = if child or (top and not @isStatement(o)) then '' else @idt()
-    comDent  = if child then @idt() else ''
-    body     = @body.compile(o)
-    ifPart   = "#{ifDent}if (#{ @compileCondition(condO) }) {\n#{body}\n#{@tab}}"
+    ifPart   = "if (#{ @compileCondition condO }) {\n#{ @body.compile o }\n#{@tab}}"
+    ifPart   = @tab + ifPart unless child
     return ifPart unless @elseBody
-    elsePart = if @isChain
-      ' else ' + @elseBodyNode().compile(merge(o, {indent: @idt(), chainChild: true}))
+    ifPart + if @isChain
+      ' else ' + @elseBodyNode().compile merge o, indent: @tab, chainChild: true
     else
       " else {\n#{ @elseBody.compile(o) }\n#{@tab}}"
-    "#{ifPart}#{elsePart}"
 
   # Compile the If as a conditional operator.
   compileExpression: (o) ->

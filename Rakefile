@@ -2,7 +2,7 @@ require 'erb'
 require 'fileutils'
 require 'rake/testtask'
 require 'rubygems'
-require 'closure-compiler'
+require 'yui/compressor'
 
 HEADER = <<-EOS
 /**
@@ -42,7 +42,7 @@ task :browser do
       }
     JS
   end
-  code = Closure::Compiler.new.compress(<<-"JS")
+  code = YUI::JavaScriptCompressor.new.compress(<<-"JS")
     this.CoffeeScript = function(){
       function require(path){ return require[path] }
       #{ code }

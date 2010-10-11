@@ -27,3 +27,7 @@ tester = ->
   this
 
 ok tester().example() is 'example function'
+
+
+try throw CoffeeScript.tokens 'in = 1'
+catch e then eq e.message, 'Reserved word "in" on line 1 can\'t be assigned'
