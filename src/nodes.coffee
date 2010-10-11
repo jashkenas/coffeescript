@@ -998,8 +998,8 @@ exports.Code = class Code extends Base
     (o.scope.parameter(param)) for param in params
     o.indent = @idt 2 if @className
     code  = if @body.expressions.length then "\n#{ @body.compileWithDeclarations(o) }\n" else ''
-    open  = if @className then "(function() {\n#{@idt(1)}return function #{@className}(" else "function("
-    close = if @className then "#{code and @idt(1)}};\n#{@tab}})()" else "#{code and @tab}}"
+    open  = if @className then "(function() {\n#{@idt(1)}function #{@className}(" else "function("
+    close = if @className then "#{code and @idt(1)}};\n#{@idt(1)}return #{@className};\n#{@tab}})()" else "#{code and @tab}}"
     func  = "#{open}#{ params.join(', ') }) {#{code}#{close}"
     o.scope.endLevel()
     return "#{utility 'bind'}(#{func}, #{@context})" if @bound
