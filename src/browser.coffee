@@ -34,6 +34,6 @@ processScripts = ->
         setTimeout -> CoffeeScript.run script.innerHTML
   null
 if window.addEventListener
-  addEventListener 'DOMContentLoaded', processScripts, false
+  window.addEventListener 'DOMContentLoaded', processScripts, false
 else
-  attachEvent 'onload', processScripts
+  window.attachEvent 'onload', processScripts

@@ -22,6 +22,9 @@ else if require.registerExtension
 # The current CoffeeScript version number.
 exports.VERSION = '0.9.4'
 
+# Expose helpers for testing.
+exports.helpers = require './helpers'
+
 # Compile a string of CoffeeScript code to JavaScript, using the Coffee/Jison
 # compiler.
 exports.compile = compile = (code, options) ->
