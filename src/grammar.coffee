@@ -130,9 +130,7 @@ grammar =
     o "AlphaNumeric"
     o "JS",                                     -> new Literal $1
     o "REGEX",                                  -> new Literal $1
-    o "TRUE",                                   -> new Literal true
-    o "FALSE",                                  -> new Literal false
-    o "NULL",                                   -> new Literal 'null'
+    o "BOOL",                                   -> new Literal $1
   ]
 
   # Assignment of a variable, property, or index to a value.

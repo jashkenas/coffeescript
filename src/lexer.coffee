@@ -111,6 +111,9 @@ exports.Lexer = class Lexer
         tag = 'UNARY'
       else if include LOGIC, id
         tag = 'LOGIC'
+      else if include BOOL, tag
+        id  = tag.toLowerCase()
+        tag = 'BOOL'
     @token tag, id
     true
 
@@ -604,13 +607,16 @@ MATH    = ['*', '/', '%']
 # Relational tokens that are negatable with `not` prefix.
 RELATION = ['IN', 'OF', 'INSTANCEOF']
 
+# Boolean tokens.
+BOOL = ['TRUE', 'FALSE', 'NULL']
+
 # Tokens which a regular expression will never immediately follow, but which
 # a division operator might.
 #
 # See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
 #
 # Our list is shorter, due to sans-parentheses method calls.
-NOT_REGEX = ['NUMBER', 'REGEX', '++', '--', 'FALSE', 'NULL', 'TRUE', ']']
+NOT_REGEX = ['NUMBER', 'REGEX', 'BOOL', '++', '--', ']']
 
 # Tokens which could legitimately be invoked or indexed. A opening
 # parentheses or bracket following these tokens will be recorded as the start
