@@ -863,7 +863,9 @@ exports.Assign = class Assign extends Base
     if isValue = @isValue()
       return @compilePatternMatch(o) if @variable.isArray() or @variable.isObject()
       return @compileSplice(o) if @variable.isSplice()
-      return node.compile o if node = Value.unfoldSoak o, this, 'variable'
+      if ifn = Value.unfoldSoak o, this, 'variable'
+        delete o.top
+        return ifn.compile o
     top    = del o, 'top'
     stmt   = del o, 'asStatement'
     name   = @variable.compile(o)
@@ -1526,23 +1528,22 @@ exports.If = class If extends Base
   elseBodyNode: -> @elseBody?.unwrap()
 
   # Rewrite a chain of **Ifs** to add a default case as the final *else*.
-  addElse: (elseBody, statement) ->
+  addElse: (elseBody) ->
     if @isChain
-      @elseBodyNode().addElse elseBody, statement
+      @elseBodyNode().addElse elseBody
     else
-      @isChain = elseBody instanceof If
+      @isChain  = elseBody instanceof If
       @elseBody = @ensureExpressions elseBody
     this
 
   # The **If** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a conditional operator is safe.
   isStatement: (o) ->
-    @statement or= !!((o and o.top) or @bodyNode().isStatement(o) or (@elseBody and @elseBodyNode().isStatement(o)))
+    @statement or= o?.top or @bodyNode().isStatement(o) or @elseBodyNode()?.isStatement(o)
 
   compileCondition: (o) ->
-    conditions = flatten [@condition]
-    conditions[0].parenthetical = yes if conditions.length is 1
-    (cond.compile(o) for cond in conditions).join(' || ')
+    @condition.parenthetical = yes
+    @condition.compile o
 
   compileNode: (o) ->
     if @isStatement o then @compileStatement o else @compileExpression o
@@ -1566,16 +1567,13 @@ exports.If = class If extends Base
     condO    = merge o
     o.indent = @idt 1
     o.top    = true
-    ifDent   = if child or (top and not @isStatement(o)) then '' else @idt()
-    comDent  = if child then @idt() else ''
-    body     = @body.compile(o)
-    ifPart   = "#{ifDent}if (#{ @compileCondition(condO) }) {\n#{body}\n#{@tab}}"
+    ifPart   = "if (#{ @compileCondition condO }) {\n#{ @body.compile o }\n#{@tab}}"
+    ifPart   = @tab + ifPart unless child
     return ifPart unless @elseBody
-    elsePart = if @isChain
-      ' else ' + @elseBodyNode().compile(merge(o, {indent: @idt(), chainChild: true}))
+    ifPart + if @isChain
+      ' else ' + @elseBodyNode().compile merge o, indent: @tab, chainChild: true
     else
       " else {\n#{ @elseBody.compile(o) }\n#{@tab}}"
-    "#{ifPart}#{elsePart}"
 
   # Compile the If as a conditional operator.
   compileExpression: (o) ->
