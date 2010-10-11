@@ -6,7 +6,7 @@
 {Scope} = require './scope'
 
 # Import the helpers we plan to use.
-{compact, flatten, merge, del, include, indexOf, starts, ends, last} = require './helpers'
+{compact, flatten, merge, del, include, starts, ends, last} = require './helpers'
 
 # Constant functions for nodes that don't need customization.
 YES  = -> yes
@@ -738,20 +738,21 @@ exports.ArrayLiteral = class ArrayLiteral extends Base
 
   compileNode: (o) ->
     o.indent = @idt 1
+    for obj in @objects when obj instanceof Splat
+      return @compileSplatLiteral o
     objects = []
     for obj, i in @objects
-      code = obj.compile(o)
-      if obj instanceof Splat
-        return @compileSplatLiteral o
-      else if obj instanceof Comment
-        objects.push "\n#{code}\n#{o.indent}"
+      code = obj.compile o
+      objects.push (if obj instanceof Comment
+        "\n#{code}\n#{o.indent}"
       else if i is @objects.length - 1
-        objects.push code
+        code
       else
-        objects.push "#{code}, "
-    objects = objects.join('')
-    if indexOf(objects, '\n') >= 0
-      "[\n#{@idt(1)}#{objects}\n#{@tab}]"
+        code + ', '
+      )
+    objects = objects.join ''
+    if 0 < objects.indexOf '\n'
+      "[\n#{o.indent}#{objects}\n#{@tab}]"
     else
       "[#{objects}]"
 
@@ -808,7 +809,7 @@ exports.Class = class Class extends Base
         func.name = className
         func.body.push new Return new Literal 'this'
         variable = new Value variable
-        variable.namespaced = include func.name, '.'
+        variable.namespaced = 0 < className.indexOf '.'
         constructor = func
         continue
       if func instanceof Code and func.bound
@@ -1204,7 +1205,7 @@ exports.Op = class Op extends Base
 
   compileNode: (o) ->
     return @compileChain(o)      if @isChainable() and @first.unwrap() instanceof Op and @first.unwrap().isChainable()
-    return @compileAssignment(o) if indexOf(@ASSIGNMENT, @operator) >= 0
+    return @compileAssignment(o) if include @ASSIGNMENT, @operator
     return @compileUnary(o)      if @isUnary()
     return @compileExistence(o)  if @operator is '?'
     @first  = new Parens @first  if @first  instanceof Op and @first.isMutator()
@@ -1241,10 +1242,9 @@ exports.Op = class Op extends Base
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
-    space = if indexOf(@PREFIX_OPERATORS, @operator) >= 0 then ' ' else ''
+    space = if include @PREFIX_OPERATORS, @operator then ' ' else ''
     parts = [@operator, space, @first.compile(o)]
-    parts = parts.reverse() if @flip
-    parts.join('')
+    (if @flip then parts.reverse() else parts).join ''
 
 #### In
 exports.In = class In extends Base
