@@ -47,3 +47,7 @@ loop
   list.push i * 2
 
 ok list.join(' ') is '8 6 4 2'
+
+
+#759: `if` within `while` condition
+2 while if 1 then 0

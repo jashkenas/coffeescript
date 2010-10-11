@@ -1126,9 +1126,9 @@ exports.While = class While extends Base
   compileNode: (o) ->
     top      =  del(o, 'top') and not @returns
     o.indent =  @idt 1
-    o.top    =  true
     @condition.parenthetical = yes
     cond     =  @condition.compile(o)
+    o.top    =  true
     set      =  ''
     unless top
       rvar  = o.scope.freeVariable 'result'
