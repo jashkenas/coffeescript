@@ -196,6 +196,7 @@ ok result.one is 1
 
 
 # Assignment to a Object.prototype-named variable should not leak to outer scope.
+# FIXME: fails on IE
 (->
   constructor = 'word'
 )()
@@ -251,6 +252,68 @@ ok type1.a is args[0] and type1.b is args[1] and type1.c is args[2]
 called = 0
 get = -> if called++ then false else class Type
 new get() args...
+
+
+# Chained blocks, with proper indentation levels:
+counter =
+  results: []
+  tick: (func) ->
+    @results.push func()
+    this
+
+counter
+  .tick ->
+    3
+  .tick ->
+    2
+  .tick ->
+    1
+
+eq counter.results.join(' '), '3 2 1'
+
+
+# Make incorrect indentation safe.
+func = ->
+  obj = {
+          key: 10
+        }
+  obj.key - 5
+
+eq func(), 5
+
+
+# Ensure that chained calls with indented implicit object literals below are
+# alright.
+result = null
+obj =
+  method: (val)  -> this
+  second: (hash) -> result = hash.three
+
+
+obj
+  .method(
+    101
+  ).second(
+    one:
+      two: 2
+    three: 3
+  )
+
+eq result, 3
+
+
+# Test newline-supressed call chains with nested functions.
+obj  =
+  call: -> this
+func = ->
+  obj
+    .call ->
+      one two
+    .call ->
+      three four
+  101
+
+eq func(), 101
 
 
 #619: `new` shouldn't add extra parens
