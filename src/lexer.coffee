@@ -73,12 +73,12 @@ exports.Lexer = class Lexer
   # though `is` means `===` otherwise.
   identifierToken: ->
     return false unless match = IDENTIFIER.exec @chunk
-    id = match[0]
-    @i += id.length
+    [input, id, colon] = match
+    @i += input.length
     if id is 'all' and @tag() is 'FOR'
       @token 'ALL', id
       return true
-    forcedIdentifier = @tagAccessor() or ASSIGNED.test @chunk
+    forcedIdentifier = colon or @tagAccessor()
     tag = 'IDENTIFIER'
     if include(JS_KEYWORDS, id) or
        not forcedIdentifier and include(COFFEE_KEYWORDS, id)
@@ -103,7 +103,7 @@ exports.Lexer = class Lexer
         tag = 'IDENTIFIER'
         id  = new String id
         id.reserved = yes
-      else if include(RESERVED, id)
+      else if include RESERVED, id
         @identifierError id
     unless forcedIdentifier
       tag = id = COFFEE_ALIASES[id] if COFFEE_ALIASES.hasOwnProperty id
@@ -115,6 +115,7 @@ exports.Lexer = class Lexer
         id  = tag.toLowerCase()
         tag = 'BOOL'
     @token tag, id
+    @token ':', ':' if colon
     true
 
   # Matches numbers, including decimals, hex, and exponential notation.
@@ -236,7 +237,7 @@ exports.Lexer = class Lexer
     prev = last @tokens, 1
     size = indent.length - 1 - indent.lastIndexOf '\n'
     nextCharacter = NEXT_CHARACTER.exec(@chunk)[1]
-    noNewlines = (nextCharacter in ['.', ',']) or @unfinished()
+    noNewlines = nextCharacter in ['.', ','] or @unfinished()
     if size - @indebt is @indent
       return @suppressNewlines() if noNewlines
       return @newlineToken indent
@@ -313,9 +314,9 @@ exports.Lexer = class Lexer
     prev = last @tokens
     if value is '='
       @assignmentError() if not prev[1].reserved and include JS_FORBIDDEN, prev[1]
-      if prev[1] in ['or', 'and']
+      if prev[1] in ['||', '&&']
         prev[0] = 'COMPOUND_ASSIGN'
-        prev[1] = COFFEE_ALIASES[prev[1]] + '='
+        prev[1] += '='
         return true
     if ';' is                        value then tag = 'TERMINATOR'
     else if include LOGIC          , value then tag = 'LOGIC'
@@ -345,17 +346,17 @@ exports.Lexer = class Lexer
   # is the previous token.
   tagAccessor: ->
     return false if not (prev = last @tokens) or prev.spaced
-    accessor = if prev[1] is '::'
+    if prev[1] is '::'
       @tag 0, 'PROTOTYPE_ACCESS'
     else if prev[1] is '.' and @value(1) isnt '.'
       if @tag(1) is '?'
-        @tag(0, 'SOAK_ACCESS')
+        @tag 0, 'SOAK_ACCESS'
         @tokens.splice(-2, 1)
       else
         @tag 0, 'PROPERTY_ACCESS'
     else
-      prev[0] is '@'
-    if accessor then 'accessor' else false
+      return prev[0] is '@'
+    true
 
   # Sanitize a heredoc or herecomment by
   # erasing all external indentation on the left-hand side.
@@ -376,12 +377,11 @@ exports.Lexer = class Lexer
   tagParameters: ->
     return if @tag() isnt ')'
     i = @tokens.length
-    loop
-      return unless tok = @tokens[--i]
+    while tok = @tokens[--i]
       switch tok[0]
         when 'IDENTIFIER'       then tok[0] = 'PARAM'
         when ')'                then tok[0] = 'PARAM_END'
-        when '(', 'CALL_START'  then return tok[0] = 'PARAM_START'
+        when '(', 'CALL_START'  then tok[0] = 'PARAM_START'; return true
     true
 
   # Close up all remaining open blocks at the end of the file.
@@ -391,12 +391,12 @@ exports.Lexer = class Lexer
   # The error for when you try to use a forbidden word in JavaScript as
   # an identifier.
   identifierError: (word) ->
-    throw new Error "SyntaxError: Reserved word \"#{word}\" on line #{@line + 1}"
+    throw SyntaxError "Reserved word \"#{word}\" on line #{@line + 1}"
 
   # The error for when you try to assign to a reserved word in JavaScript,
   # like "function" or "default".
   assignmentError: ->
-    throw new Error "SyntaxError: Reserved word \"#{@value()}\" on line #{@line + 1} can't be assigned"
+    throw SyntaxError "Reserved word \"#{@value()}\" on line #{@line + 1} can't be assigned"
 
   # Matches a balanced group such as a single or double-quoted string. Pass in
   # a series of delimiters, all of which must be nested correctly within the
@@ -547,7 +547,10 @@ RESERVED = [
 JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
 
 # Token matching regexes.
-IDENTIFIER = /^[a-zA-Z_$][\w$]*/
+IDENTIFIER = /// ^
+  ( [$A-Za-z_][$\w]* )
+  ( [^\n\S]* : (?!:) )?  # Is this a property name?
+///
 NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
 HEREDOC    = /^("""|''')([\s\S]*?)(?:\n[ \t]*)?\1/
 OPERATOR   = /// ^ (?: -[-=>]? | \+[+=]? | [*&|/%=<>^:!?]+ ) ///
