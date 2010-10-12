@@ -216,7 +216,7 @@ exports.Lexer = class Lexer
     @tokens.push ['STRING', '""'], ['+', '+'] unless tokens[0]?[0] is 'STRING'
     @tokens.push tokens...
     @tokens.push [',', ','], ['STRING', '"' + flags + '"'] if flags
-    @tokens.push ['CALL_END', ')']
+    @token ')', ')'
     true
 
   # Matches newlines, indents, and outdents, and determines which is which.
@@ -267,10 +267,9 @@ exports.Lexer = class Lexer
         @outdebt = 0
       else if @indents[len] < @outdebt
         @outdebt -= @indents[len]
-        moveOut -= @indents[len]
+        moveOut  -= @indents[len]
       else
-        dent = @indents.pop()
-        dent -= @outdebt
+        dent = @indents.pop() - @outdebt
         moveOut -= dent
         @outdebt = 0
         @token 'OUTDENT', dent
@@ -312,7 +311,7 @@ exports.Lexer = class Lexer
     @i += value.length
     tag = value
     prev = last @tokens
-    if value is '='
+    if value is '=' and prev
       @assignmentError() if not prev[1].reserved and include JS_FORBIDDEN, prev[1]
       if prev[1] in ['||', '&&']
         prev[0] = 'COMPOUND_ASSIGN'
@@ -325,12 +324,12 @@ exports.Lexer = class Lexer
     else if include COMPOUND_ASSIGN, value then tag = 'COMPOUND_ASSIGN'
     else if include UNARY          , value then tag = 'UNARY'
     else if include SHIFT          , value then tag = 'SHIFT'
-    else if value is '?' and prev.spaced   then tag = 'LOGIC'
-    else if prev and not prev.spaced and include CALLABLE, prev[0]
-      if value is '('
+    else if value is '?' and prev?.spaced  then tag = 'LOGIC'
+    else if prev and not prev.spaced
+      if value is '(' and include CALLABLE, prev[0]
         prev[0] = 'FUNC_EXIST' if prev[0] is '?'
         tag = 'CALL_START'
-      else if value is '['
+      else if value is '[' and include INDEXABLE, prev[0]
         tag = 'INDEX_START'
         switch prev[0]
           when '?'  then prev[0] = 'INDEX_SOAK'
@@ -462,8 +461,8 @@ exports.Lexer = class Lexer
     tokens.push ['TO_BE_STRING', str[pi..]] if i > pi < str.length
     return tokens if regex
     return @token 'STRING', '""' unless tokens.length
+    tokens.unshift ['', ''] unless tokens[0][0] is 'TO_BE_STRING'
     @token '(', '(' if interpolated = tokens.length > 1
-    @tokens.push ['STRING', '""'], ['+', '+'] unless tokens[0][0] is 'TO_BE_STRING'
     for [tag, value], i in tokens
       @token '+', '+' if i
       if tag is 'TOKENS'
@@ -498,6 +497,7 @@ exports.Lexer = class Lexer
 
   # Constructs a string token by escaping quotes and newlines.
   makeString: (body, quote, heredoc) ->
+    return quote + quote unless body
     body = body.replace /\\([\s\S])/g, (match, contents) ->
       if contents in ['\n', quote] then contents else match
     body = body.replace /// #{quote} ///g, '\\$&'
@@ -621,7 +621,8 @@ NOT_REGEX = ['NUMBER', 'REGEX', 'BOOL', '++', '--', ']']
 # Tokens which could legitimately be invoked or indexed. A opening
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
-CALLABLE = ['IDENTIFIER', 'SUPER', ')', ']', '}', 'STRING', '@', 'THIS', '?', '::']
+CALLABLE  = ['IDENTIFIER', 'STRING', 'REGEX', ')', ']', '}', '?', '::', '@', 'THIS', 'SUPER']
+INDEXABLE = CALLABLE.concat 'NUMBER', 'BOOL'
 
 # Tokens that, when immediately preceding a `WHEN`, indicate that the `WHEN`
 # occurs at the start of a line. We disambiguate these from trailing whens to

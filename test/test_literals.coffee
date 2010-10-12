@@ -240,3 +240,8 @@ eq result.two, obj.list()[1]
 
 #542: Objects leading expression statement should be parenthesized.
 {f: -> ok yes }.f() + 1
+
+
+#764: Boolean/Number should be indexable.
+ok 42['toString']
+ok on['toString']

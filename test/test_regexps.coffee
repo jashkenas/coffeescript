@@ -12,8 +12,6 @@ g = 1
 
 ok y / x/g is 2
 
-ok /:\/[/]goog/.test 'http://google.com'
-
 obj = {
   width:  -> 10
   height: -> 20
@@ -39,9 +37,9 @@ eq '\\\\#{}\\\\\\\"', ///
 eq ///  /// + '', '/(?:)/'
 
 
-# Issue #584.
-regex = /[/]/
-s1    = "Hello there"
-s2    = "Hello / there"
-ok not regex.test(s1)
-ok regex.test(s2)
+#584: Unescaped slashes in character classes.
+ok /:\/[/]goog/.test 'http://google.com'
+
+
+#764: Should be indexable.
+eq /0/['source'], ///#{0}///['source']
