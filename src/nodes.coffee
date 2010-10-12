@@ -1647,10 +1647,9 @@ UTILITIES =
   # [goog.inherits](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.source.html#line1206).
   extends:  '''
     function(child, parent) {
-      var ctor = function() {};
+      function ctor() { this.constructor = child; }
       ctor.prototype = parent.prototype;
-      child.prototype = new ctor();
-      child.prototype.constructor = child;
+      child.prototype = new ctor;
       if (typeof parent.extended === "function") parent.extended(child);
       child.__super__ = parent.prototype;
     }
