@@ -244,7 +244,8 @@ ok v is args[i] for v, i in type.args
 Type1 = (@a, @b, @c) ->
 type1 = new Type1 args...
 
-ok type1 and type1 instanceof Type1
+ok type1 instanceof   Type1
+eq type1.constructor, Type1
 ok type1.a is args[0] and type1.b is args[1] and type1.c is args[2]
 
 

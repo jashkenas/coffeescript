@@ -534,20 +534,13 @@ exports.Call = class Call extends Base
         fun = ref = base.compile o
         fun += name.compile o if name
       return "#{fun}.apply(#{ref}, #{splatargs})"
-    call = 'call(this)'
-    argvar = (node) -> node instanceof Literal and node.value is 'arguments'
-    for arg in @args when arg.contains argvar
-      call = 'apply(this, arguments)'
-      break
-    ctor   = o.scope.freeVariable 'ctor'
-    ref    = o.scope.freeVariable 'ref'
-    result = o.scope.freeVariable 'result'
+    idt = @idt 1
     """
-    (function() {
-    #{idt = @idt 1}var ctor = function() {};
-    #{idt}#{utility 'extends'}(ctor, #{ctor} = #{ @variable.compile o });
-    #{idt}return typeof (#{result} = #{ctor}.apply(#{ref} = new ctor, #{splatargs})) === "object" ? #{result} : #{ref};
-    #{@tab}}).#{call}
+    (function(func, args, ctor) {
+    #{idt}ctor.prototype = func.prototype;
+    #{idt}var child = new ctor, result = func.apply(child, args);
+    #{idt}return typeof result === "object" ? result : child;
+    #{@tab}})(#{ @variable.compile o }, #{splatargs}, function() {})
     """
 
 #### Extends
