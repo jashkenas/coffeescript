@@ -549,7 +549,7 @@ grammar =
         if $2 is '!in'
           new Op '!', new In $1, $3
         else
-          new Op '!', new Parens new Op $2[1..], $1, $3
+          new Op '!', new Parens new Op $2.slice(1), $1, $3
       else
         if $2 is 'in' then new In $1, $3 else new Op $2, $1, $3
   ]

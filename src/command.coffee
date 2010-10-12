@@ -62,11 +62,10 @@ exports.run = ->
   separator = sources.indexOf '--'
   flags = []
   if separator >= 0
-    flags   = sources[(separator + 1)...sources.length]
-    sources = sources[0...separator]
+    flags = sources.splice separator + 1
+    sources.pop()
   if opts.run
-    flags   = sources[1..sources.length].concat flags
-    sources = [sources[0]]
+    flags = sources.splice(1).concat flags
   process.ARGV = process.argv = flags
   compileScripts()
 
@@ -176,7 +175,7 @@ printTokens = (tokens) ->
 # `process.argv` that are specified in `SWITCHES`.
 parseOptions = ->
   optionParser  = new optparse.OptionParser SWITCHES, BANNER
-  o = opts      = optionParser.parse(process.argv[2...process.argv.length])
+  o = opts      = optionParser.parse process.argv.slice 2
   o.compile     or=  !!o.output
   o.run         = not (o.compile or o.print or o.lint)
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
