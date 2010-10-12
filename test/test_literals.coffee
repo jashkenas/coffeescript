@@ -236,3 +236,7 @@ result = obj.object()
 eq result.one, 1
 eq result.two, 2
 eq result.two, obj.list()[1]
+
+
+#542: Objects leading expression statement should be parenthesized.
+{f: -> ok yes }.f() + 1

@@ -52,7 +52,6 @@ exports.Base = class Base
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
   compileClosure: (o) ->
-    @tab = o.indent
     o.sharedScope = o.scope
     Closure.wrap(this).compile o
 
@@ -223,6 +222,7 @@ exports.Expressions = class Expressions extends Base
   # statement, ask the statement to do so.
   compileExpression: (node, o) ->
     @tab = o.indent
+    node.tags.front = true
     compiledNode = node.compile merge o, top: true
     if node.isStatement(o) then compiledNode else "#{@idt()}#{compiledNode};"
 
@@ -345,8 +345,8 @@ exports.Value = class Value extends Base
   isStatement: (o) ->
     @base.isStatement(o) and not @properties.length
 
-  isNumber: ->
-    @base instanceof Literal and NUMBER.test @base.value
+  isSimpleNumber: ->
+    @base instanceof Literal and SIMPLENUM.test @base.value
 
   # A reference has base part (`this` value) and name part.
   # We cache them separately for compiling complex expressions.
@@ -369,6 +369,7 @@ exports.Value = class Value extends Base
 
   # Override compile to unwrap the value when possible.
   compile: (o) ->
+    @base.tags.front = @tags.front
     if not o.top or @properties.length then super(o) else @base.compile(o)
 
   # We compile a value to JavaScript by compiling and joining each property.
@@ -380,9 +381,7 @@ exports.Value = class Value extends Base
     props = @properties
     @base.parenthetical = yes if @parenthetical and not props.length
     code = @base.compile o
-    if props[0] instanceof Accessor and @isNumber() or
-       o.top and @base instanceof ObjectLiteral
-      code = "(#{code})"
+    code = "(#{code})" if props[0] instanceof Accessor and @isSimpleNumber()
     (code += prop.compile o) for prop in props
     return code
 
@@ -493,6 +492,7 @@ exports.Call = class Call extends Base
   # Compile a vanilla function call.
   compileNode: (o) ->
     return node.compile o if node = @unfoldSoak o
+    @variable?.tags.front = @tags.front
     if @exist
       if val = @variable
         val = new Value val unless val instanceof Value
@@ -701,8 +701,6 @@ exports.ObjectLiteral = class ObjectLiteral extends Base
 
   children: ['properties']
 
-  topSensitive: YES
-
   constructor: (props) ->
     super()
     @objects = @properties = props or []
@@ -727,7 +725,7 @@ exports.ObjectLiteral = class ObjectLiteral extends Base
       indent + prop.compile(o) + join
     props = props.join('')
     obj   = "{#{ if props then '\n' + props + '\n' + @idt() else '' }}"
-    if top then "(#{obj})" else obj
+    if @tags.front then "(#{obj})" else obj
 
   assigns: (name) ->
     for prop in @properties when prop.assigns name then return yes
@@ -1024,9 +1022,7 @@ exports.Code = class Code extends Base
     func  = "#{open}#{ params.join(', ') }) {#{code}#{close}"
     o.scope.endLevel()
     return "#{utility 'bind'}(#{func}, #{@context})" if @bound
-    if top then "(#{func})" else func
-
-  topSensitive: YES
+    if @tags.front then "(#{func})" else func
 
   # Short-circuit traverseChildren method to prevent it from crossing scope boundaries
   # unless crossScope is true
@@ -1194,9 +1190,7 @@ exports.Op = class Op extends Base
   children: ['first', 'second']
 
   constructor: (op, first, second, flip) ->
-    if first instanceof Value and first.base instanceof ObjectLiteral
-      first = new Parens first
-    else if op is 'new'
+    if op is 'new'
       return first.newInstance() if first instanceof Call
       first = new Parens first   if first instanceof Code and first.bound
     super()
@@ -1229,6 +1223,7 @@ exports.Op = class Op extends Base
     super(idt, @constructor.name + ' ' + @operator)
 
   compileNode: (o) ->
+    @first.tags.front = @tags.front if @second
     return @compileChain(o)      if @isChainable() and @first.unwrap() instanceof Op and @first.unwrap().isChainable()
     return @compileAssignment(o) if include @ASSIGNMENT, @operator
     return @compileUnary(o)      if @isUnary()
@@ -1688,7 +1683,7 @@ TRAILING_WHITESPACE = /[ \t]+$/gm
 
 IDENTIFIER = /^[$A-Za-z_][$\w]*$/
 NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?$/i
-SIMPLENUM  = /^-?\d+$/
+SIMPLENUM  = /^[+-]?\d+$/
 
 # Is a literal value a string?
 IS_STRING = /^['"]/
