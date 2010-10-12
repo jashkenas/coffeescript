@@ -1,6 +1,7 @@
 # Override exported methods for non-Node.js engines.
 
 CoffeeScript = require './coffee-script'
+CoffeeScript.require = require
 
 # Use standard JavaScript `eval` to eval code.
 CoffeeScript.eval = (code, options) ->
@@ -8,7 +9,8 @@ CoffeeScript.eval = (code, options) ->
 
 # Running code does not provide access to this scope.
 CoffeeScript.run = (code, options) ->
-  (Function CoffeeScript.compile code, options)()
+  options?.wrap = no
+  Function(CoffeeScript.compile code, options)()
 
 # If we're not in a browser environment, we're finished with the public API.
 return unless window?
@@ -25,7 +27,7 @@ CoffeeScript.load = (url, options) ->
 # Activate CoffeeScript in the browser by having it compile and evaluate
 # all script tags with a content-type of `text/coffeescript`.
 # This happens on page load.
-processScripts = ->
+runScripts = ->
   for script in document.getElementsByTagName 'script'
     if script.type is 'text/coffeescript'
       if script.src
@@ -34,6 +36,6 @@ processScripts = ->
         setTimeout -> CoffeeScript.run script.innerHTML
   null
 if window.addEventListener
-  window.addEventListener 'DOMContentLoaded', processScripts, false
+  addEventListener 'DOMContentLoaded', runScripts, no
 else
-  window.attachEvent 'onload', processScripts
+  attachEvent 'onload', runScripts
