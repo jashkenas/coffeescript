@@ -425,7 +425,7 @@ exports.Lexer = class Lexer
       break if not levels.length
       i += 1
     if levels.length
-      throw new Error "SyntaxError: Unterminated #{levels.pop()[0]} starting on line #{@line + 1}"
+      throw SyntaxError "Unterminated #{levels.pop()[0]} starting on line #{@line + 1}"
     if not i then false else str[0...i]
 
   # Expand variables and expressions inside double-quoted strings using
@@ -508,15 +508,11 @@ exports.Lexer = class Lexer
 
 # Keywords that CoffeeScript shares in common with JavaScript.
 JS_KEYWORDS = [
-  'if', 'else'
-  'true', 'false'
-  'new', 'return'
-  'try', 'catch', 'finally', 'throw'
-  'break', 'continue'
-  'for', 'in', 'while'
-  'delete', 'instanceof', 'typeof'
-  'switch', 'super', 'extends', 'class'
-  'this', 'null', 'debugger'
+  'true', 'false', 'null', 'this'
+  'new', 'delete', 'typeof', 'in', 'instanceof'
+  'return', 'throw', 'break', 'continue', 'debugger'
+  'if', 'else', 'switch', 'for', 'while', 'try', 'catch', 'finally'
+  'class', 'extends', 'super'
 ]
 
 # CoffeeScript-only keywords.
