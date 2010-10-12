@@ -22,6 +22,9 @@ id = 2
 
 ok (obj.width()/id - obj.height()/id) is -5
 
+eq /\\/.source, "\\\\"
+
+
 eq /^I'm\s+Heregex?\/\/\//gim + '', ///
   ^ I'm \s+ Heregex? / // # or not
 ///gim + ''

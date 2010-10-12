@@ -1,3 +1,24 @@
+eq '(((dollars)))', '\(\(\(dollars\)\)\)'
+eq 'one two three', "one
+ two
+ three"
+eq "four five", 'four
+
+ five'
+
+#647
+eq "''Hello, World\\''", '''
+'\'Hello, World\\\''
+'''
+eq '""Hello, World\\""', """
+"\"Hello, World\\\""
+"""
+eq 'Hello, World\n', '''
+Hello, World\
+
+'''
+
+
 hello = 'Hello'
 world = 'World'
 ok '#{hello} #{world}!' is '#{hello} #{world}!'

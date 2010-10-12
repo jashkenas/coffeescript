@@ -3,12 +3,6 @@ a = [((x) -> x), ((x) -> x * x)]
 ok a.length is 2
 
 
-regex = /match/i
-words = "I think there is a match in here."
-
-ok !!words.match(regex)
-
-
 neg = (3 -4)
 
 ok neg is -1
@@ -33,27 +27,6 @@ func = ->
   return if true
 
 ok func() is undefined
-
-eq /\\/.source, "\\\\"
-eq '(((dollars)))', '\(\(\(dollars\)\)\)'
-eq 'one two three', "one
- two
- three"
-eq "four five", 'four
-
- five'
-
-#647
-eq "''Hello, World\\''", '''
-'\'Hello, World\\\''
-'''
-eq '""Hello, World\\""', """
-"\"Hello, World\\\""
-"""
-eq 'Hello, World\n', '''
-Hello, World\
-
-'''
 
 
 trailingComma = [1, 2, 3,]
