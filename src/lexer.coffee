@@ -41,9 +41,10 @@ exports.Lexer = class Lexer
     @indent  = 0            # The current indentation level.
     @indebt  = 0            # The over-indentation at the current level.
     @outdebt = 0            # The under-outdentation at the current level.
-    @seenFor = no           # The flag for distinguishing FORIN/FOROF from IN/OF.
     @indents = []           # The stack of all current indentation levels.
     @tokens  = []           # Stream of parsed tokens in the form ['TYPE', value, line]
+    # Flags for distinguishing FORIN/FOROF/FROM/TO.
+    @seenFor = @seenFrom = no
     # At every position, run through this list of attempted matches,
     # short-circuiting if any of them succeed. Their order determines precedence:
     # `@literalToken` is the fallback catch-all.
@@ -77,6 +78,15 @@ exports.Lexer = class Lexer
     @i += input.length
     if id is 'all' and @tag() is 'FOR'
       @token 'ALL', id
+      return true
+    if id is 'from' and @tag(1) is 'FOR'
+      @seenFor  = no
+      @seenFrom = yes
+      @token 'FROM', id
+      return true
+    if id is 'to' and @seenFrom
+      @seenFrom = no
+      @token 'TO', id
       return true
     forcedIdentifier = colon or @tagAccessor()
     tag = 'IDENTIFIER'
@@ -426,7 +436,7 @@ exports.Lexer = class Lexer
       i += 1
     if levels.length
       throw SyntaxError "Unterminated #{levels.pop()[0]} starting on line #{@line + 1}"
-    if not i then false else str[0...i]
+    i and str.slice 0, i
 
   # Expand variables and expressions inside double-quoted strings using
   # Ruby-like notation for substitution of arbitrary expressions.
@@ -549,7 +559,7 @@ IDENTIFIER = /// ^
 ///
 NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
 HEREDOC    = /^("""|''')([\s\S]*?)(?:\n[ \t]*)?\1/
-OPERATOR   = /// ^ (?: -[-=>]? | \+[+=]? | \.\.\.? | [*&|/%=<>^:!?]+ ) ///
+OPERATOR   = /// ^ (?: -[-=>]? | \+[+=]? | \.{3} | [*&|/%=<>^:!?]+ ) ///
 WHITESPACE = /^[ \t]+/
 COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
 CODE       = /^[-=]>/
@@ -579,7 +589,7 @@ MULTILINER      = /\n/g
 HEREDOC_INDENT  = /\n+([ \t]*)/g
 ASSIGNED        = /^\s*@?[$A-Za-z_][$\w]*[ \t]*?[:=][^:=>]/
 NEXT_CHARACTER  = /^\s*(\S?)/
-NEXT_ELLIPSIS   = /^\s*\.\.\.?/
+NEXT_ELLIPSIS   = /^\s*\.{3}/
 LEADING_SPACES  = /^\s+/
 TRAILING_SPACES = /\s+$/
 NO_NEWLINE      = /// ^
