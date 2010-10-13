@@ -15,7 +15,7 @@
 # from our rules and saves it into `lib/parser.js`.
 
 # The only dependency is on the **Jison.Parser**.
-Parser = require('jison').Parser
+{Parser} = require 'jison'
 
 # Jison DSL
 # ---------
@@ -144,14 +144,14 @@ grammar =
   # Assignment when it happens within an object literal. The difference from
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
-    o "Identifier",                             -> new Value $1
-    o "AlphaNumeric"
-    o "ThisProperty"
-    o "Identifier   : Expression",                -> new Assign new Value($1), $3, 'object'
-    o "AlphaNumeric : Expression",                -> new Assign new Value($1), $3, 'object'
-    o "Identifier   : INDENT Expression OUTDENT", -> new Assign new Value($1), $4, 'object'
-    o "AlphaNumeric : INDENT Expression OUTDENT", -> new Assign new Value($1), $4, 'object'
-    o "Comment"
+    o 'Identifier',                               -> new Value $1
+    o 'AlphaNumeric'
+    o 'ThisProperty'
+    o 'Identifier   : Expression',                -> new Assign new Value($1), $3, 'object'
+    o 'AlphaNumeric : Expression',                -> new Assign new Value($1), $3, 'object'
+    o 'Identifier   : INDENT Expression OUTDENT', -> new Assign new Value($1), $4, 'object'
+    o 'AlphaNumeric : INDENT Expression OUTDENT', -> new Assign new Value($1), $4, 'object'
+    o 'Comment'
   ]
 
   # A return statement from a function body.

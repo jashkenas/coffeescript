@@ -33,7 +33,7 @@ runScripts = ->
       if script.src
         CoffeeScript.load script.src
       else
-        setTimeout -> CoffeeScript.run script.innerHTML
+        CoffeeScript.run script.innerHTML
   null
 if window.addEventListener
   addEventListener 'DOMContentLoaded', runScripts, no

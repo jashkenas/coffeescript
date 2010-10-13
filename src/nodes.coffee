@@ -64,7 +64,7 @@ exports.Base = class Base
     pair = unless @isComplex()
       [this, this]
     else
-      reference = new Literal o.scope.freeVariable options?.name or 'ref'
+      reference = new Literal o.scope.freeVariable 'ref'
       compiled  = new Assign reference, this
       [compiled, reference]
     (pair[i] = node.compile o) for node, i in pair if options?.precompile
@@ -74,6 +74,14 @@ exports.Base = class Base
   compileBare: (o) ->
     @parenthetical = on
     @compile o
+
+  # Compile to a source/variable pair suitable for looping.
+  compileLoopReference: (o, name) ->
+    src = tmp = @compile o
+    unless NUMBER.test(src) or
+           IDENTIFIER.test(src) and o.scope.check(src, immediate: on)
+      src = "#{ tmp = o.scope.freeVariable name } = #{src}"
+    [src, tmp]
 
   # Convenience method to grab the current indentation level, plus tabbing in.
   idt: (tabs) ->
@@ -767,7 +775,6 @@ exports.Assign = class Assign extends Base
   compileNode: (o) ->
     if isValue = @variable instanceof Value
       return @compilePatternMatch(o) if @variable.isArray() or @variable.isObject()
-      return @compileSplice(o) if @variable.isSplice()
       if ifn = If.unfoldSoak o, this, 'variable'
         delete o.top
         return ifn.compile o
@@ -836,6 +843,13 @@ exports.Assign = class Assign extends Base
     assigns.push valVar unless top
     code = assigns.join ', '
     if top or @parenthetical then code else "(#{code})"
+
+  # When compiling a conditional assignment, take care to ensure that the
+  # operands are only evaluated once, even though we have to reference them
+  # more than once.
+  compileConditional: (o) ->
+    [left, rite] = @variable.cacheReference o
+    return new Op(@context.slice(0, -1), left, new Assign(rite, @value)).compile o
 
   assigns: (name) ->
     @[if @context is 'object' then 'value' else 'variable'].assigns name
@@ -1291,7 +1305,7 @@ exports.For = class For extends Base
       throw SyntaxError 'index cannot be a pattern matching expression'
     super()
     extend this, head
-    @step or= new Literal 1 unless @object
+    @step  or= new Literal 1 unless @object
     @pattern = @name instanceof Value
     throw SyntaxError 'cannot pattern match a range loop' if @range and @pattern
     @returns = false
@@ -1310,42 +1324,31 @@ exports.For = class For extends Base
   # comprehensions. Some of the generated code can be shared in common, and
   # some cannot.
   compileNode: (o) ->
-    if @step
-      o.top = on
-      [step, pvar] = @step.compileReference o, precompile: on, name: 'step'
-    top        = del(o, 'top') and not @returns
-    codeInBody = @body.contains (node) -> node instanceof Code
-    scope      = o.scope
-    name       = not @pattern and @name?.compile o
-    index      = @index?.compile o
-    ivar       = if not index or codeInBody then scope.freeVariable 'i' else index
-    varPart    = ''
-    body       = Expressions.wrap [@body]
-    idt        = @idt 1
-    scope.find(name,  immediate: yes) if name and not codeInBody
+    {scope} = o
+    top     = del(o, 'top') and not @returns
+    name    = not @pattern and @name?.compile o
+    index   = @index?.compile o
+    ivar    = if not index then scope.freeVariable 'i' else index
+    varPart = ''
+    body    = Expressions.wrap [@body]
+    idt     = @idt 1
+    scope.find(name,  immediate: yes) if name
     scope.find(index, immediate: yes) if index
-    unless @object then switch +pvar
-      when  1 then incr = '++' + ivar
-      when -1 then incr = '--' + ivar
-      else incr = ivar + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
+    [step, pvar] = @step.compileLoopReference o, 'step' if @step
     if @from
-      [head, hvar] = @from.compileReference o, precompile: on, name: 'from'
-      [tail, tvar] = @to  .compileReference o, precompile: on, name: 'to'
-      vars  = "#{ivar} = #{head}"
+      [tail, tvar] = @to.compileLoopReference o, 'to'
+      vars  = "#{ivar} = #{ @from.compile o }"
       vars += ", #{tail}" if tail isnt tvar
-      vars += ", #{step}" if step isnt pvar
-      cond  = if isNaN step
-        "#{pvar} < 0 ? #{ivar} >= #{tvar} : #{ivar} <= #{tvar}"
+      cond = if +pvar
+        "#{ivar} #{ if pvar < 0 then '>' else '<' }= #{tvar}"
       else
-        "#{ivar} #{ if step < 0 then '>=' else '<=' } #{tvar}"
-      forPart = "#{vars}; #{cond}; #{incr}"
+        "#{pvar} < 0 ? #{ivar} >= #{tvar} : #{ivar} <= #{tvar}"
     else
-      svar = sourcePart = @source.compile o
-      if (name or not @raw) and
-         not (IDENTIFIER.test(svar) and scope.check svar, immediate: on)
-        sourcePart = "#{ ref = scope.freeVariable 'ref' } = #{svar}"
-        sourcePart = "(#{sourcePart})" unless @object
-        svar = ref
+      if name or not @raw
+        [sourcePart, svar] = @source.compileLoopReference o, 'ref'
+        sourcePart = "(#{sourcePart})" unless sourcePart is svar or @object
+      else
+        sourcePart = svar = @source.compile o
       namePart = if @pattern
         new Assign(@name, new Literal "#{svar}[#{ivar}]").compile merge o, top: on
       else if name
@@ -1358,35 +1361,26 @@ exports.For = class For extends Base
           lvar = scope.freeVariable 'len'
           vars = "#{ivar} = 0, #{lvar} = #{sourcePart}.length"
           cond = "#{ivar} < #{lvar}"
-        vars  += ", #{step}" if step isnt pvar
-        forPart = "#{vars}; #{cond}; #{incr}"
+    if @object
+      forPart   = "#{ivar} in #{sourcePart}"
+      guardPart = not @raw and
+        "#{idt}if (!#{ utility 'hasProp' }.call(#{svar}, #{ivar})) continue;\n"
+    else
+      vars += ", #{step}" if step isnt pvar
+      forPart = "#{vars}; #{cond}; " + switch +pvar
+        when  1 then '++' + ivar
+        when -1 then '--' + ivar
+        else ivar + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
     unless top
       rvar      = scope.freeVariable 'result'
       resultDef = "#{@tab}#{rvar} = [];\n"
       resultRet = @compileReturnValue rvar, o
       body      = Push.wrap rvar, body
     body = Expressions.wrap [new If @guard, body] if @guard
-    if codeInBody
-      body.unshift new Literal "var #{name} = #{ivar}"  if @from
-      body.unshift new Literal "var #{namePart}"        if namePart
-      body.unshift new Literal "var #{index} = #{ivar}" if index
-      lastLine    = body.expressions.pop()
-      body.push     new Assign new Literal(ivar), new Literal index if index
-      body.push     new Assign new Literal(nvar), new Literal name if nvar
-      body.push     lastLine
-      o.indent    = @idt 1
-      body        = Expressions.wrap [new Literal body.compile o]
-      body.push     new Assign new Literal(index), new Literal ivar if index
-      body.push     new Assign new Literal(name ), new Literal nvar or ivar if name
-    else
-      varPart = "#{idt}#{namePart};\n" if namePart
-    if @object
-      forPart   = "#{ivar} in #{sourcePart}"
-      guardPart = not @raw and
-        "#{idt}if (!#{ utility 'hasProp' }.call(#{svar}, #{ivar})) continue;\n" 
+    varPart = "#{idt}#{namePart};\n" if namePart
     """
     #{ resultDef or '' }#{@tab}for (#{forPart}) {
-    #{ guardPart or '' }#{varPart}#{ body.compile merge o, indent: idt, top: true }
+    #{ guardPart or '' }#{varPart}#{ body.compile merge o, indent: idt, top: on }
     #{@tab}}#{ resultRet or '' }
     """
 
@@ -1596,7 +1590,7 @@ TAB = '  '
 TRAILING_WHITESPACE = /[ \t]+$/gm
 
 IDENTIFIER = /^[$A-Za-z_][$\w]*$/
-NUMBER     = /^0x[\da-f]+$|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?$/i
+NUMBER     = /// ^ -? (?: 0x[\da-f]+ | (?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)? ) $ ///i
 SIMPLENUM  = /^[+-]?\d+$/
 
 # Is a literal value a string?
