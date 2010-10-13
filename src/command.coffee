@@ -36,7 +36,7 @@ SWITCHES = [
   ['-s', '--stdio',           'listen for and compile scripts over stdio']
   ['-e', '--eval',            'compile a string from the command line']
   ['-r', '--require [FILE*]', 'require a library before executing your script']
-  [      '--no-wrap',         'compile without the top-level function wrapper']
+  ['-b', '--bare',            'compile without the top-level function wrapper']
   ['-t', '--tokens',          'print the tokens that the lexer produces']
   ['-n', '--nodes',           'print the parse tree that Jison produces']
   ['-v', '--version',         'display CoffeeScript version']
@@ -182,10 +182,7 @@ parseOptions = ->
   sources       = o.arguments
 
 # The compile-time options to pass to the CoffeeScript compiler.
-compileOptions = (fileName) ->
-  o = {fileName}
-  o.wrap = !opts['no-wrap']
-  o
+compileOptions = (fileName) -> {fileName, bare: opts.bare}
 
 # Print the `--help` usage message and exit.
 usage = ->

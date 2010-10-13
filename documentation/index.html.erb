@@ -265,7 +265,7 @@ sudo npm install coffee-script</pre>
         </td>
       </tr>
       <tr>
-        <td><code>--no-wrap</code></td>
+        <td><code>-b, --bare</code></td>
         <td>
           Compile the JavaScript without the top-level function safety wrapper.
           (Used for CoffeeScript as a Node.js module.)
@@ -1309,7 +1309,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       source = $('#repl_source').val()
       window.compiled_js = ''
       try
-        window.compiled_js = CoffeeScript.compile source, wrap: false
+        window.compiled_js = CoffeeScript.compile source, bare: on
         $('#repl_results').text window.compiled_js
         $('#error').hide()
       catch error
