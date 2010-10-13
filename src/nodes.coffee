@@ -1276,7 +1276,7 @@ exports.In = class In extends Base
 
   compileOrTest: (o) ->
     tests = for item, i in @array.base.objects
-      "#{item.compile(o)} === #{if i then @obj2 else @obj1}"
+      "#{if i then @obj2 else @obj1} === #{item.compile(o)}"
     "(#{tests.join(' || ')})"
 
   compileLoopTest: (o) ->
