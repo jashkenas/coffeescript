@@ -145,3 +145,10 @@ ok new Number not instanceof String
 
 #737: `in` should have higher precedence than logical operators
 eq 1, 1 in [1] and 1
+
+#768: `in` should preserve evaluation order
+share = 0
+a = -> share++ if share is 0
+b = -> share++ if share is 1
+c = -> share++ if share is 2
+ok a() not in [b(),c()] and share is 3 
