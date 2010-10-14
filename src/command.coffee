@@ -36,7 +36,7 @@ SWITCHES = [
   ['-s', '--stdio',           'listen for and compile scripts over stdio']
   ['-e', '--eval',            'compile a string from the command line']
   ['-r', '--require [FILE*]', 'require a library before executing your script']
-  [      '--no-wrap',         'compile without the top-level function wrapper']
+  ['-b', '--bare',            'compile without the top-level function wrapper']
   ['-t', '--tokens',          'print the tokens that the lexer produces']
   ['-n', '--nodes',           'print the parse tree that Jison produces']
   ['-v', '--version',         'display CoffeeScript version']
@@ -62,11 +62,10 @@ exports.run = ->
   separator = sources.indexOf '--'
   flags = []
   if separator >= 0
-    flags   = sources[(separator + 1)...sources.length]
-    sources = sources[0...separator]
+    flags = sources.splice separator + 1
+    sources.pop()
   if opts.run
-    flags   = sources[1..sources.length].concat flags
-    sources = [sources[0]]
+    flags = sources.splice(1).concat flags
   process.ARGV = process.argv = flags
   compileScripts()
 
@@ -176,17 +175,14 @@ printTokens = (tokens) ->
 # `process.argv` that are specified in `SWITCHES`.
 parseOptions = ->
   optionParser  = new optparse.OptionParser SWITCHES, BANNER
-  o = opts      = optionParser.parse(process.argv[2...process.argv.length])
+  o = opts      = optionParser.parse process.argv.slice 2
   o.compile     or=  !!o.output
   o.run         = not (o.compile or o.print or o.lint)
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
   sources       = o.arguments
 
 # The compile-time options to pass to the CoffeeScript compiler.
-compileOptions = (fileName) ->
-  o = {fileName}
-  o.wrap = !opts['no-wrap']
-  o
+compileOptions = (fileName) -> {fileName, bare: opts.bare}
 
 # Print the `--help` usage message and exit.
 usage = ->

@@ -193,19 +193,18 @@ exports.Expressions = class Expressions extends Base
     if o.scope then super(o) else @compileRoot(o)
 
   compileNode: (o) ->
-    (@compileExpression(node, merge(o)) for node in @expressions).join("\n")
+    (@compileExpression node, merge o for node in @expressions).join '\n'
 
   # If we happen to be the top-level **Expressions**, wrap everything in
   # a safety closure, unless requested not to.
   # It would be better not to generate them in the first place, but for now,
   # clean up obvious double-parentheses.
   compileRoot: (o) ->
-    wrap      = if o.wrap? then o.wrap else true
-    o.indent  = @tab = if wrap then TAB else ''
-    o.scope   = new Scope(null, this, null)
-    code      = @compileWithDeclarations(o)
-    code      = code.replace(TRAILING_WHITESPACE, '')
-    if wrap then "(function() {\n#{code}\n}).call(this);\n" else code
+    o.indent = @tab = if o.bare then '' else TAB
+    o.scope  = new Scope null, this, null
+    code     = @compileWithDeclarations o
+    code     = code.replace TRAILING_WHITESPACE, ''
+    if o.bare then code else "(function() {\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
@@ -981,8 +980,8 @@ exports.Code = class Code extends Base
     o.top       = true
     o.indent    = @idt(1)
     empty       = @body.expressions.length is 0
-    del o, 'wrap'
-    del o, 'globals'
+    delete o.bare
+    delete o.globals
     splat = undefined
     params = []
     for param, i in @params
@@ -1276,7 +1275,7 @@ exports.In = class In extends Base
 
   compileOrTest: (o) ->
     tests = for item, i in @array.base.objects
-      "#{item.compile(o)} === #{if i then @obj2 else @obj1}"
+      "#{if i then @obj2 else @obj1} === #{item.compile(o)}"
     "(#{tests.join(' || ')})"
 
   compileLoopTest: (o) ->
@@ -1647,10 +1646,9 @@ UTILITIES =
   # [goog.inherits](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.source.html#line1206).
   extends:  '''
     function(child, parent) {
-      var ctor = function() {};
+      function ctor() { this.constructor = child; }
       ctor.prototype = parent.prototype;
-      child.prototype = new ctor();
-      child.prototype.constructor = child;
+      child.prototype = new ctor;
       if (typeof parent.extended === "function") parent.extended(child);
       child.__super__ = parent.prototype;
     }

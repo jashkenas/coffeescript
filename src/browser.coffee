@@ -9,7 +9,7 @@ CoffeeScript.eval = (code, options) ->
 
 # Running code does not provide access to this scope.
 CoffeeScript.run = (code, options) ->
-  options?.wrap = no
+  options?.bare = on
   Function(CoffeeScript.compile code, options)()
 
 # If we're not in a browser environment, we're finished with the public API.

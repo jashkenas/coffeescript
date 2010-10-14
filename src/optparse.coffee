@@ -36,7 +36,7 @@ exports.OptionParser = class OptionParser
           break
       throw new Error "unrecognized option: #{arg}" if isOption and not matchedRule
       if not isOption
-        options.arguments = args[i...args.length]
+        options.arguments = args.slice i
         break
     options
 

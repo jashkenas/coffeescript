@@ -17,7 +17,7 @@ EOS
 desc "Build the documentation page"
 task :doc do
   source = 'documentation/index.html.erb'
-  child = fork { exec "bin/coffee --no-wrap -cw -o documentation/js documentation/coffee/*.coffee" }
+  child = fork { exec "bin/coffee -bcw -o documentation/js documentation/coffee/*.coffee" }
   at_exit { Process.kill("INT", child) }
   Signal.trap("INT") { exit }
   loop do
