@@ -70,8 +70,34 @@ task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter'
 
 
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
-  exec 'rake browser', (err) ->
-    throw err if err
+  code = ''
+  code += """
+    require['./#{name}'] = new function(){
+      var exports = this;
+      #{ fs.readFileSync "lib/#{name}.js" }
+    };
+  """ for name in '''
+    helpers rewriter lexer parser scope nodes coffee-script browser
+  '''.split ' '
+  jsp = require 'uglifyjs/parse-js'
+  pro = require 'uglifyjs/process'
+  fs.writeFileSync 'extras/coffee-script.js', '''
+    /**
+     * CoffeeScript Compiler v0.9.4
+     * http://coffeescript.org
+     *
+     * Copyright 2010, Jeremy Ashkenas
+     * Released under the MIT License
+     */
+
+  ''' + pro.gen_code pro.ast_squeeze jsp.parse """
+    this.CoffeeScript = function(){
+      function require(path){ return require[path] }
+      #{code}
+      return require['./coffee-script']
+    }()
+  """
+  invoke 'test:browser'
 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
