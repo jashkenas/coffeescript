@@ -113,21 +113,26 @@ obj = {
   returnThis: -> this
 }
 
-ok plus1?(41) is 42
-ok (plus1? 41) is 42
-ok plus2?(41) is undefined
-ok (plus2? 41) is undefined
-ok obj.returnThis?() is obj
-ok obj.counter().counter().returnThis?() is obj
-ok count is 2
+eq plus1?(41), 42
+eq (plus1? 41), 42
+eq plus2?(41), undefined
+eq (plus2? 41), undefined
+eq obj.returnThis?(), obj
+eq obj.returnSelf?(), undefined
+eq obj.returnThis?().flag = on, on
+eq obj.returnSelf?().flag = on, undefined
+eq obj.counter().counter().returnThis?(), obj
+eq count, 2
 
 maybe_close = (f, arg) -> if typeof f is 'function' then () -> f(arg) else -1
 
-ok maybe_close(plus1, 41)?() is 42
-ok (maybe_close plus1, 41)?() is 42
-ok (maybe_close 'string', 41)?() is undefined
+eq maybe_close(plus1, 41)?(), 42
+eq (maybe_close plus1, 41)?(), 42
+eq (maybe_close 'string', 41)?(), undefined
 
 eq 2?(3), undefined
+eq new Number?(42) | 0, 42
+eq new Bumper?(42) | 0, 0
 
 #726
 eq calendar?[Date()], undefined

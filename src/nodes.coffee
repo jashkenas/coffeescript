@@ -110,7 +110,7 @@ exports.Base = class Base
   toString: (idt, override) ->
     idt or= ''
     children = (child.toString idt + TAB for child in @collectChildren()).join('')
-    klass = override or @constructor.name + if @soakNode or @exist then '?' else ''
+    klass = override or @constructor.name + if @soakNode then '?' else ''
     '\n' + idt + klass + children
 
   eachChild: (func) ->
@@ -141,6 +141,7 @@ exports.Base = class Base
   isPureStatement : NO
   isComplex       : YES
   topSensitive    : NO
+  unfoldSoak      : NO
 
   # Is this node used to assign a certain variable?
   assigns: NO
@@ -376,7 +377,7 @@ exports.Value = class Value extends Base
   # operators `?.` interspersed. Then we have to take care not to accidentally
   # evaluate a anything twice when building the soak chain.
   compileNode: (o) ->
-    return ex.compile o if ex = @unfoldSoak o
+    return ifn.compile o if ifn = @unfoldSoak o
     props = @properties
     @base.parenthetical = yes if @parenthetical and not props.length
     code = @base.compile o
@@ -386,9 +387,9 @@ exports.Value = class Value extends Base
 
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
-    if @base.soakNode
-      Array::push.apply @base.body.properties, @properties
-      return @base
+    if ifn = @base.unfoldSoak o
+      Array::push.apply ifn.body.properties, @properties
+      return ifn
     for prop, i in @properties when prop.soakNode
       prop.soakNode = off
       fst = new Value @base, @properties.slice 0, i
@@ -397,22 +398,16 @@ exports.Value = class Value extends Base
         ref = new Literal o.scope.freeVariable 'ref'
         fst = new Parens new Assign ref, fst
         snd.base = ref
-      ifn = new If new Existence(fst), snd, operation: yes
-      ifn.soakNode = on
+      ifn = new If new Existence(fst), snd, soak: yes
       return ifn
     null
 
   # Unfold a node's child if soak, then tuck the node under created `If`
   @unfoldSoak: (o, parent, name) ->
-    node = parent[name]
-    if node instanceof If and node.soakNode
-      ifnode = node
-    else if node instanceof Value
-      ifnode = node.unfoldSoak o
-    return unless ifnode
-    parent[name] = ifnode.body
-    ifnode.body = new Value parent
-    ifnode
+    return unless ifn = parent[name].unfoldSoak o
+    parent[name] = ifn.body
+    ifn.body     = new Value parent
+    ifn
 
 #### Comment
 
@@ -438,7 +433,7 @@ exports.Call = class Call extends Base
 
   children: ['variable', 'args']
 
-  constructor: (variable, @args, @exist) ->
+  constructor: (variable, @args, @soakNode) ->
     super()
     @isNew    = false
     @isSuper  = variable is 'super'
@@ -469,6 +464,18 @@ exports.Call = class Call extends Base
 
   # Soaked chained invocations unfold into if/else ternary structures.
   unfoldSoak: (o) ->
+    if @soakNode
+      if val = @variable
+        val = new Value val unless val instanceof Value
+        [left, rite] = val.cacheReference o
+      else
+        left = new Literal @superReference o
+        rite = new Value left
+      rite = new Call rite, @args
+      rite.isNew = @isNew
+      left = new Literal "typeof #{ left.compile o } === \"function\""
+      ifn  = new If left, new Value(rite), soak: yes
+      return ifn
     call = this
     list = []
     loop
@@ -480,30 +487,18 @@ exports.Call = class Call extends Base
       list.push call
       break unless (call = call.variable.base) instanceof Call
     for call in list.reverse()
-      if node
+      if ifn
         if call.variable instanceof Call
-          call.variable = node
+          call.variable = ifn
         else
-          call.variable.base = node
-      node = Value.unfoldSoak o, call, 'variable'
-    node
+          call.variable.base = ifn
+      ifn = Value.unfoldSoak o, call, 'variable'
+    ifn
 
   # Compile a vanilla function call.
   compileNode: (o) ->
-    return node.compile o if node = @unfoldSoak o
+    return ifn.compile o if ifn = @unfoldSoak o
     @variable?.tags.front = @tags.front
-    if @exist
-      if val = @variable
-        val = new Value val unless val instanceof Value
-        [left, rite] = val.cacheReference o
-        rite = new Call rite, @args
-      else
-        left = new Literal @superReference o
-        rite = new Call new Value(left), @args
-        rite.isNew = @isNew
-      left = "typeof #{ left.compile o } !== \"function\""
-      rite = rite.compile o
-      return "(#{left} ? undefined : #{rite})"
     for arg in @args when arg instanceof Splat
       return @compileSplat o
     args = ((arg.parenthetical = on) and arg.compile o for arg in @args).join ', '
@@ -1528,9 +1523,10 @@ exports.If = class If extends Base
 
   topSensitive: YES
 
-  constructor: (condition, @body, @tags) ->
-    @tags or= {}
-    @condition = if @tags.invert then condition.invert() else condition
+  constructor: (condition, @body, tags) ->
+    @tags      = tags or= {}
+    @condition = if tags.invert then condition.invert() else condition
+    @soakNode  = tags.soak
     @elseBody  = null
     @isChain   = false
 
@@ -1592,7 +1588,9 @@ exports.If = class If extends Base
     ifPart      = @condition.compile(o) + ' ? ' + @bodyNode().compile(o)
     elsePart    = if @elseBody then @elseBodyNode().compile(o) else 'undefined'
     code        = "#{ifPart} : #{elsePart}"
-    if @tags.operation then "(#{code})" else code
+    if @tags.operation or @soakNode then "(#{code})" else code
+
+  unfoldSoak: -> @soakNode and this
 
 # Faux-Nodes
 # ----------
