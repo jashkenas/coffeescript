@@ -189,8 +189,9 @@ exports.Lexer = class Lexer
     return @heregexToken match if match = HEREGEX.exec @chunk
     return false if include NOT_REGEX, @tag()
     return false unless match = REGEX.exec @chunk
-    @token 'REGEX', match[0]
-    @i += match[0].length
+    [regex] = match
+    @token 'REGEX', if regex is '//' then '/(?:)/' else regex
+    @i += regex.length
     true
 
   # Matches experimental, multiline and extended regular expression literals.
@@ -559,11 +560,16 @@ JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
 # Regex-matching-regexes.
 REGEX = /// ^
-  / (?!\s)                                 # disallow leading whitespace
-  (?: [^ [ / \n \\ ]+                      # every other thing
-    | \\[\s\S]                             # anything escaped
-    | \[ ( [^ \] \n \\ ]+ | \\[\s\S] )* ]  # character class
-  )+
+  / (?! \s )       # disallow leading whitespace
+  [^ [ / \n \\ ]*  # every other thing
+  (?:
+    (?: \\[\s\S]   # anything escaped
+      | \[         # character class
+           [^ \] \n \\ ]*
+           (?: \\[\s\S] [^ \] \n \\ ]* )*
+         ]
+    ) [^ [ / \n \\ ]*
+  )*
   / [imgy]{0,4} (?![A-Za-z])
 ///
 HEREGEX      = /^\/{3}([\s\S]+?)\/{3}([imgy]{0,4})(?![A-Za-z])/
