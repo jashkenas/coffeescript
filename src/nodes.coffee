@@ -402,13 +402,6 @@ exports.Value = class Value extends Base
       return ifn
     null
 
-  # Unfold a node's child if soak, then tuck the node under created `If`
-  @unfoldSoak: (o, parent, name) ->
-    return unless ifn = parent[name].unfoldSoak o
-    parent[name] = ifn.body
-    ifn.body     = new Value parent
-    ifn
-
 #### Comment
 
 # CoffeeScript passes through block comments as JavaScript block comments
@@ -492,7 +485,7 @@ exports.Call = class Call extends Base
           call.variable = ifn
         else
           call.variable.base = ifn
-      ifn = Value.unfoldSoak o, call, 'variable'
+      ifn = If.unfoldSoak o, call, 'variable'
     ifn
 
   # Compile a vanilla function call.
@@ -863,7 +856,7 @@ exports.Assign = class Assign extends Base
     if isValue = @isValue()
       return @compilePatternMatch(o) if @variable.isArray() or @variable.isObject()
       return @compileSplice(o) if @variable.isSplice()
-      if ifn = Value.unfoldSoak o, this, 'variable'
+      if ifn = If.unfoldSoak o, this, 'variable'
         delete o.top
         return ifn.compile o
     top    = del o, 'top'
@@ -1591,6 +1584,13 @@ exports.If = class If extends Base
     if @tags.operation or @soakNode then "(#{code})" else code
 
   unfoldSoak: -> @soakNode and this
+
+  # Unfold a node's child if soak, then tuck the node under created `If`
+  @unfoldSoak: (o, parent, name) ->
+    return unless ifn = parent[name].unfoldSoak o
+    parent[name] = ifn.body
+    ifn.body     = new Value parent
+    ifn
 
 # Faux-Nodes
 # ----------
