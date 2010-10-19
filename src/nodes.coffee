@@ -994,7 +994,7 @@ exports.Code = class Code extends Base
           params.push param
     o.scope.startLevel()
     params = (param.compile(o) for param in params)
-    @body.makeReturn() unless empty
+    @body.makeReturn() unless empty or @noReturn
     (o.scope.parameter(param)) for param in params
     comm  = if @comment then @comment.compile(o) + '\n' else ''
     o.indent = @idt 2 if @className
@@ -1456,16 +1456,20 @@ exports.For = class For extends Base
       body.unshift  new Literal "var #{name} = #{ivar}" if range
       body.unshift  new Literal "var #{namePart}" if namePart
       body.unshift  new Literal "var #{index} = #{ivar}" if index
+      lastLine    = body.expressions.pop()
       body.push     new Assign new Literal(ivar), new Literal index if index
       body.push     new Assign new Literal(nvar), new Literal name if nvar
-      body        = Closure.wrap(body, true)
+      body.push     lastLine
+      # o.indent    = @idt 1
+      # comp        = new Literal body.compile o
+      body        = Closure.wrap(body, yes, yes)
       body.push     new Assign new Literal(index), new Literal ivar if index
       body.push     new Assign new Literal(name), new Literal nvar or ivar if name
     else
       varPart     = "#{idt1}#{namePart};\n" if namePart
     if @object
       forPart     = "#{ivar} in #{sourcePart}"
-      guardPart   = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" unless @raw
+      guardPart   = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" unless @raw  
     body          = body.compile merge o, indent: idt1, top: true
     vars          = if range then name else "#{name}, #{ivar}"
     """
@@ -1624,7 +1628,7 @@ Closure =
   # Wrap the expressions body, unless it contains a pure statement,
   # in which case, no dice. If the body mentions `this` or `arguments`,
   # then make sure that the closure wrapper preserves the original values.
-  wrap: (expressions, statement) ->
+  wrap: (expressions, statement, noReturn) ->
     return expressions if expressions.containsPureStatement()
     func = new Parens new Code [], Expressions.wrap [expressions]
     args = []
@@ -1634,6 +1638,7 @@ Closure =
       args = [new Literal 'this']
       args.push new Literal 'arguments' if mentionsArgs
       func = new Value func, [new Accessor meth]
+      func.noReturn = noReturn
     call = new Call func, args
     if statement then Expressions.wrap [call] else call
 

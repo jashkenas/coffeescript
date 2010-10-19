@@ -78,6 +78,17 @@ funcs = for i in [1..3]
 ok (func() for func in funcs).join(' ') is '-1 -2 -3'
 
 
+# Ensure that closing over local variables doesn't break scoping laws.
+ok i is 3
+
+for i in [0]
+  count = 0
+  i = 50
+  ->
+ok count is 0
+ok i is 50
+
+
 # Even when referenced in the filter.
 list = ['one', 'two', 'three']
 
