@@ -23,6 +23,8 @@ negs = negs[0..2]
 result = nums.concat(negs).join(', ')
 
 ok result is '3, 6, 9, -20, -19, -18'
+ok i is 3
+ok x is -10
 
 
 # With range comprehensions, you can loop in steps.
@@ -70,17 +72,22 @@ ok obj.one()   is "I'm one"
 ok obj.two()   is "I'm two"
 ok obj.three() is "I'm three"
 
+i = 0
+for i in [1..3]
+  -> 'func'
+  break if false
+ok i is 3
+
 
 # Ensure that local variables are closed over for range comprehensions.
 funcs = for i in [1..3]
   -> -i
 
 ok (func() for func in funcs).join(' ') is '-1 -2 -3'
+ok i is 3
 
 
 # Ensure that closing over local variables doesn't break scoping laws.
-ok i is 3
-
 for i in [0]
   count = 0
   i = 50
