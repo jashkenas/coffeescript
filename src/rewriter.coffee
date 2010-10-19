@@ -168,7 +168,7 @@ class exports.Rewriter
       token.call = yes if prev and not prev.spaced and tag is '?'
       return 1 unless callObject or
         prev?.spaced and (prev.call or include(IMPLICIT_FUNC, prev[0])) and
-        include(IMPLICIT_CALL, tag)
+        (include(IMPLICIT_CALL, tag) or include(IMPLICIT_UNSPACED_CALL, tag) and not token.spaced)
       tokens.splice i, 0, ['CALL_START', '(', token[2]]
       @detectEnd i + (if callObject then 2 else 1), (token, i) ->
         return yes if not seenSingle and token.fromThen
@@ -329,8 +329,10 @@ IMPLICIT_FUNC    = ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@
 IMPLICIT_CALL    = [
   'IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START', 'CLASS'
   'IF', 'UNLESS', 'TRY', 'SWITCH', 'THIS', 'BOOL', 'UNARY',
-  '@', '->', '=>', '[', '(', '{'
+  '@', '->', '=>', '[', '(', '{', '--', '++'
 ]
+
+IMPLICIT_UNSPACED_CALL = ['+', '-']
 
 # Tokens indicating that the implicit call must enclose a block of expressions.
 IMPLICIT_BLOCK   = ['->', '=>', '{', '[', ',']

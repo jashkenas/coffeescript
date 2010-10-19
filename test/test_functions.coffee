@@ -317,19 +317,30 @@ func = ->
 eq func(), 101
 
 
-#619: `new` shouldn't add extra parens
+# `new` shouldn't add extra parens
 ok new Date().constructor is Date
 
 
-#717: `new` works against bare function
+# `new` works against bare function
 eq Date, new ->
   eq this, new => this
   Date
 
 
-#751: Implicit objects with number arguments.
+# Implicit objects with number arguments.
 func = (x, y) -> y
 obj =
   prop: func "a", 1
 
 ok obj.prop is 1
+
+
+# Non-spaced unary and binary operators should cause a function call.
+func = (val) -> val + 1
+ok (func +5) is 6
+ok (func -5) is -4
+
+
+# Prefix unary assignment operators are allowed in parenless calls.
+val = 5
+ok (func --val) is 5
