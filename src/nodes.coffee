@@ -787,7 +787,7 @@ exports.Class = class Class extends Base
         new Call applied, [new Literal('this'), new Literal('arguments')]
       ]))
     else
-      constructor = new Code
+      constructor = new Code [], new Expressions [new Return new Literal 'this']
 
     for prop in @properties
       [pvar, func] = [prop.variable, prop.value]
@@ -803,6 +803,7 @@ exports.Class = class Class extends Base
         variable = new Value variable
         variable.namespaced = 0 < className.indexOf '.'
         constructor = func
+        constructor.comment = props.expressions.pop() if props.expressions[props.expressions.length - 1] instanceof Comment
         continue
       if func instanceof Code and func.bound
         if prop.context is 'this'
@@ -994,9 +995,10 @@ exports.Code = class Code extends Base
     params = (param.compile(o) for param in params)
     @body.makeReturn() unless empty
     (o.scope.parameter(param)) for param in params
+    comm  = if @comment then @comment.compile(o) + '\n' else ''
     o.indent = @idt 2 if @className
     code  = if @body.expressions.length then "\n#{ @body.compileWithDeclarations(o) }\n" else ''
-    open  = if @className then "(function() {\n#{@idt(1)}function #{@className}(" else "function("
+    open  = if @className then "(function() {\n#{comm}#{@idt(1)}function #{@className}(" else "function("
     close = if @className then "#{code and @idt(1)}};\n#{@idt(1)}return #{@className};\n#{@tab}})()" else "#{code and @tab}}"
     func  = "#{open}#{ params.join(', ') }) {#{code}#{close}"
     o.scope.endLevel()
