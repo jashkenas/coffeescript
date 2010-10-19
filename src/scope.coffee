@@ -81,7 +81,7 @@ exports.Scope = class Scope
   assign: (name, value) ->
     @variables[name] = value: value, assigned: true
   
-  # Gets around a bug in IE where it won't enumerate of redefined prototype properties.
+  # Gets around a bug in IE where it won't enumerate over redefined prototype properties.
   allVariables: ->
     vars = [v, k] for v, k of @variables
     if v.__defineGetter__ then vars
