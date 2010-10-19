@@ -1269,7 +1269,7 @@ exports.In = class In extends Base
     "(#{tests.join(' || ')})"
 
   compileLoopTest: (o) ->
-    "#{utility 'inArray'}(#{@array.compile o}, #{@object.compile o})"
+    "#{utility 'inArray'}(#{@object.compile o}, #{@array.compile o})"
 
 #### Try
 
@@ -1678,7 +1678,7 @@ UTILITIES =
         var i = this.length; while (i--) if (this[i] === item) return i;
         return -1;
       };
-      return function(array, item) { return indexOf.call(array, item) > -1; };
+      return function(item, array) { return indexOf.call(array, item) > -1; };
     })();
   '''
 
