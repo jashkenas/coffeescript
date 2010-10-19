@@ -1452,7 +1452,7 @@ exports.For = class For extends Base
     body          = Push.wrap(rvar, body) unless topLevel
     if @guard
       body        = Expressions.wrap([new If(@guard, body)])
-    if codeInBody
+    if codeInBody and not body.containsPureStatement()
       body.unshift  new Literal "var #{name} = #{ivar}" if range
       body.unshift  new Literal "var #{namePart}" if namePart
       body.unshift  new Literal "var #{index} = #{ivar}" if index
@@ -1460,9 +1460,8 @@ exports.For = class For extends Base
       body.push     new Assign new Literal(ivar), new Literal index if index
       body.push     new Assign new Literal(nvar), new Literal name if nvar
       body.push     lastLine
-      # o.indent    = @idt 1
-      # comp        = new Literal body.compile o
-      body        = Closure.wrap(body, yes, yes)
+      o.indent    = @idt 1
+      body        = Expressions.wrap [new Literal body.compile o]
       body.push     new Assign new Literal(index), new Literal ivar if index
       body.push     new Assign new Literal(name), new Literal nvar or ivar if name
     else
