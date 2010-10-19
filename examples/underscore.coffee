@@ -6,7 +6,7 @@
   # Portions of Underscore are inspired by or borrowed from
   # [Prototype.js](http://prototypejs.org/api), Oliver Steele's
   # [Functional](http://osteele.com), and John Resig's
-  # [Micro-Templating](http://ejohn.com).
+  # [Micro-Templating](http://ejohn.org).
   # For all details and documentation:
   # http://documentcloud.github.com/underscore/
 
