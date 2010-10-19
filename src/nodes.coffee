@@ -44,8 +44,7 @@ exports.Base = class Base
     @tab     = o.indent
     top     = if @topSensitive() then @options.top else del @options, 'top'
     closure = @isStatement(o) and not @isPureStatement() and not top and
-              not @options.asStatement and this not instanceof Comment and
-              not @containsPureStatement()
+              not @options.asStatement and this not instanceof Comment
     code = if closure then @compileClosure(@options) else @compileNode(@options)
     code
 
@@ -53,7 +52,7 @@ exports.Base = class Base
   # object with their parent closure, to preserve the expected lexical scope.
   compileClosure: (o) ->
     o.sharedScope = o.scope
-    Closure.wrap(this).compile o
+    Closure.wrap(this, no, yes).compile o
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -447,7 +446,7 @@ exports.Call = class Call extends Base
   # Grab the reference to the superclass' implementation of the current method.
   superReference: (o) ->
     {method} = o.scope
-    throw Error "cannot call super outside of a function" unless method
+    throw Error "cannot call super outside of a function." unless method
     {name} = method
     throw Error "cannot call super on an anonymous function." unless name
     if method.klass
@@ -788,7 +787,7 @@ exports.Class = class Class extends Base
         new Call applied, [new Literal('this'), new Literal('arguments')]
       ]))
     else
-      constructor = new Code
+      constructor = new Code [], new Expressions [new Return new Literal 'this']
 
     for prop in @properties
       [pvar, func] = [prop.variable, prop.value]
@@ -804,6 +803,7 @@ exports.Class = class Class extends Base
         variable = new Value variable
         variable.namespaced = 0 < className.indexOf '.'
         constructor = func
+        constructor.comment = props.expressions.pop() if props.expressions[props.expressions.length - 1] instanceof Comment
         continue
       if func instanceof Code and func.bound
         if prop.context is 'this'
@@ -995,9 +995,10 @@ exports.Code = class Code extends Base
     params = (param.compile(o) for param in params)
     @body.makeReturn() unless empty
     (o.scope.parameter(param)) for param in params
+    comm  = if @comment then @comment.compile(o) + '\n' else ''
     o.indent = @idt 2 if @className
     code  = if @body.expressions.length then "\n#{ @body.compileWithDeclarations(o) }\n" else ''
-    open  = if @className then "(function() {\n#{@idt(1)}function #{@className}(" else "function("
+    open  = if @className then "(function() {\n#{comm}#{@idt(1)}function #{@className}(" else "function("
     close = if @className then "#{code and @idt(1)}};\n#{@idt(1)}return #{@className};\n#{@tab}})()" else "#{code and @tab}}"
     func  = "#{open}#{ params.join(', ') }) {#{code}#{close}"
     o.scope.endLevel()
@@ -1617,7 +1618,10 @@ Closure =
   # Wrap the expressions body, unless it contains a pure statement,
   # in which case, no dice. If the body mentions `this` or `arguments`,
   # then make sure that the closure wrapper preserves the original values.
-  wrap: (expressions, statement) ->
+  wrap: (expressions, statement, force) ->
+    if expressions.containsPureStatement()
+      return expressions unless force
+      throw new Error 'cannot include a pure statement in an expression.'
     return expressions if expressions.containsPureStatement()
     func = new Parens new Code [], Expressions.wrap [expressions]
     args = []

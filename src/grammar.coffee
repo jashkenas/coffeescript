@@ -404,7 +404,7 @@ grammar =
   # where only values are accepted, wrapping it in parentheses will always do
   # the trick.
   Parenthetical: [
-    o "( Line )",                               -> new Parens $2
+    o "( Expression )",                         -> new Parens $2
     o "( )",                                    -> new Parens new Literal ''
   ]
 
@@ -527,10 +527,10 @@ grammar =
     o "- Expression",                          (-> new Op '-', $2), prec: 'UNARY'
     o "+ Expression",                          (-> new Op '+', $2), prec: 'UNARY'
 
-    o "-- Expression",                          -> new Op '--', $2
-    o "++ Expression",                          -> new Op '++', $2
-    o "Expression --",                          -> new Op '--', $1, null, true
-    o "Expression ++",                          -> new Op '++', $1, null, true
+    o "-- SimpleAssignable",                    -> new Op '--', $2
+    o "++ SimpleAssignable",                    -> new Op '++', $2
+    o "SimpleAssignable --",                    -> new Op '--', $1, null, true
+    o "SimpleAssignable ++",                    -> new Op '++', $1, null, true
 
     o "Expression + Expression",                -> new Op '+', $1, $3
     o "Expression - Expression",                -> new Op '-', $1, $3
@@ -541,8 +541,8 @@ grammar =
     o "Expression SHIFT Expression",            -> new Op $2, $1, $3
     o "Expression COMPARE Expression",          -> new Op $2, $1, $3
     o "Expression LOGIC Expression",            -> new Op $2, $1, $3
-    o "Value COMPOUND_ASSIGN Expression",       -> new Op $2, $1, $3
-    o "Value COMPOUND_ASSIGN INDENT Expression OUTDENT", -> new Op $2, $1, $4
+    o "SimpleAssignable COMPOUND_ASSIGN Expression", -> new Op $2, $1, $3
+    o "SimpleAssignable COMPOUND_ASSIGN INDENT Expression OUTDENT", -> new Op $2, $1, $4
 
     o "Expression RELATION Expression",         ->
       if $2.charAt(0) is '!'

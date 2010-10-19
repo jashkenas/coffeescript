@@ -1,5 +1,5 @@
 # Basic exception throwing.
-block = -> (throw 'up')
+block = -> throw 'up'
 throws block, 'up'
 
 
