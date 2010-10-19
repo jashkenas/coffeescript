@@ -19,11 +19,20 @@ exports.Scope = class Scope
   # it wraps.
   constructor: (@parent, @expressions, @method) ->
     @variables = [{name: 'arguments', type: 'arguments'}]
+    @positions = {}
     if @parent
       @garbage = @parent.garbage
     else
       @garbage   = []
       Scope.root = this
+  
+  # Adds a new variable or overrides an existing one.
+  setVar: (name, type) ->
+    if @positions.hasOwnProperty name
+      @variables.splice @positions[name], 1, {name, type}
+    else
+      @positions[name] = @variables.length
+      @variables.push {name, type}
 
   # Create a new garbage level
   startLevel: ->
@@ -42,7 +51,7 @@ exports.Scope = class Scope
   # already exist.
   find: (name, options) ->
     return true if @check name, options
-    @variables.push {name, type: 'var'}
+    @setVar name, 'var'
     false
 
   # Test variables and return true the first time fn(v, k) returns true
@@ -54,7 +63,7 @@ exports.Scope = class Scope
   # Reserve a variable name as originating from a function parameter for this
   # scope. No `var` required for internal references.
   parameter: (name) ->
-    @variables.push {name, type: 'param'}
+    @setVar name, 'param'
 
   # Just check to see if a variable has already been declared, without reserving,
   # walks up to the root scope.
@@ -80,14 +89,14 @@ exports.Scope = class Scope
   freeVariable: (type) ->
     index = 0
     index++ while @check(temp = @temporary type, index) and @type(temp) isnt 'reuse'
-    @variables.push {name: temp, type: 'var'}
+    @setVar temp, 'var'
     last(@garbage).push temp if @garbage.length
     temp
 
   # Ensure that an assignment is made at the top of this scope
   # (or at the top-level scope, if requested).
   assign: (name, value) ->
-    @variables.push {name, type: { value: value, assigned: true }}
+    @setVar name, value: value, assigned: true
 
   # Does this scope reference any variables that need to be declared in the
   # given function body?
