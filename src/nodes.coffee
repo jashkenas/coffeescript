@@ -1413,7 +1413,7 @@ exports.For = class For extends Base
     topLevel      = del(o, 'top') and not @returns
     range         = @source instanceof Value and @source.base instanceof Range and not @source.properties.length
     source        = if range then @source.base else @source
-    codeInBody    = @body.contains (node) -> node instanceof Code
+    codeInBody    = not @body.containsPureStatement() and @body.contains (node) -> node instanceof Code
     scope         = o.scope
     name          = @name  and @name.compile o
     index         = @index and @index.compile o
@@ -1452,7 +1452,6 @@ exports.For = class For extends Base
       body        = Expressions.wrap([new If(@guard, body)])
     if codeInBody
       body.unshift  new Literal "var #{name} = #{ivar}" if range
-    if codeInBody and not body.containsPureStatement()
       body.unshift  new Literal "var #{namePart}" if namePart
       body.unshift  new Literal "var #{index} = #{ivar}" if index
       lastLine    = body.expressions.pop()
