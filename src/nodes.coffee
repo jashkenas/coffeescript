@@ -1469,7 +1469,8 @@ exports.For = class For extends Base
     else
       varPart     = "#{idt1}#{namePart};\n" if namePart
       if forPart and name is ivar
-        unstepPart = if @step then "\n#{name} -= #{ @step.compile(o) };" else "\n#{name}--;"
+        unstepPart = if @step then "#{name} -= #{ @step.compile(o) };" else "#{name}--;"
+        unstepPart = "\n#{@tab}" + unstepPart
     if @object
       forPart     = "#{ivar} in #{sourcePart}"
       guardPart   = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" unless @raw  
@@ -1478,9 +1479,7 @@ exports.For = class For extends Base
     """
     #{resultPart}#{@tab}for (#{forPart}) {#{guardPart}
     #{varPart}#{body}
-    #{@tab}}
-    #{unstepPart}
-    #{returnResult}
+    #{@tab}}#{unstepPart}#{returnResult}
     """
 
 #### Switch
