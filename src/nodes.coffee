@@ -1674,7 +1674,7 @@ UTILITIES =
   # Discover if an item is in an array.
   inArray: '''
     (function() {
-      var indexOf = Array.prototype.indexOf || function (item) {
+      var indexOf = Array.prototype.indexOf || function(item) {
         var i = this.length; while (i--) if (this[i] === item) return i;
         return -1;
       };
