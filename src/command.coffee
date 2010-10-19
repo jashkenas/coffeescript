@@ -74,7 +74,7 @@ exports.run = ->
 # '.coffee' extension source files in it and all subdirectories.
 compileScripts = ->
   for source in sources
-    base = source
+    base = path.join(source)
     compile = (source, topLevel) ->
       path.exists source, (exists) ->
         throw new Error "File not found: #{source}" unless exists
