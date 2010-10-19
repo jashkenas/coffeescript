@@ -1,1 +1,1 @@
-lottery.drawWinner()?.address?.zipcode
+lottery.drawWinner?().address?.zipcode
