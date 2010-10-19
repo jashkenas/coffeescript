@@ -404,7 +404,7 @@ grammar =
   # where only values are accepted, wrapping it in parentheses will always do
   # the trick.
   Parenthetical: [
-    o "( Line )",                               -> new Parens $2
+    o "( Expression )",                         -> new Parens $2
     o "( )",                                    -> new Parens new Literal ''
   ]
 
