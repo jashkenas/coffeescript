@@ -44,7 +44,7 @@ exports.Scope = class Scope
 
   # Test variables and return true the first time fn(v, k) returns true
   any: (fn) ->
-    for v, k of @variables when fn(v, k)
+    for v in @allVariables() when fn(v[0], v[1])
       return true
     return false
 
@@ -80,6 +80,15 @@ exports.Scope = class Scope
   # (or at the top-level scope, if requested).
   assign: (name, value) ->
     @variables[name] = value: value, assigned: true
+  
+  # Gets around a bug in IE where it won't enumerate of redefined prototype properties.
+  allVariables: ->
+    vars = [v, k] for v, k of @variables
+    if v.__defineGetter__ then vars
+    else vars.concat(for v in   '''toString toLocaleString
+        hasOwnProperty valueOf constructor propertyIsEnumerable
+        isPrototypeOf'''.split(' ') when @variables.hasOwnProperty v
+      [v, @variables[v]])
 
   # Does this scope reference any variables that need to be declared in the
   # given function body?
@@ -93,12 +102,12 @@ exports.Scope = class Scope
 
   # Return the list of variables first declared in this scope.
   declaredVariables: ->
-    (key for key, val of @variables when val in ['var', 'reuse']).sort()
+    (v[0] for v in @allVariables() when v[1] in ['var', 'reuse']).sort()
 
   # Return the list of assignments that are supposed to be made at the top
   # of this scope.
   assignedVariables: ->
-    "#{key} = #{val.value}" for key, val of @variables when val.assigned
+    "#{v[0]} = #{v[1].value}" for v in @allVariables() when v[1].assigned
 
   # Compile the JavaScript for all of the variable declarations in this scope.
   compiledDeclarations: ->
