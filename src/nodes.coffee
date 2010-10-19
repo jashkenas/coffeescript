@@ -1428,6 +1428,7 @@ exports.For = class For extends Base
     nvar          = scope.freeVariable 'i' if name and not range and codeInBody
     varPart       = ''
     guardPart     = ''
+    unstepPart    = ''
     body          = Expressions.wrap([@body])
     idt1          = @idt 1
     if range
@@ -1452,8 +1453,9 @@ exports.For = class For extends Base
     body          = Push.wrap(rvar, body) unless topLevel
     if @guard
       body        = Expressions.wrap([new If(@guard, body)])
-    if codeInBody and not body.containsPureStatement()
+    if codeInBody
       body.unshift  new Literal "var #{name} = #{ivar}" if range
+    if codeInBody and not body.containsPureStatement()
       body.unshift  new Literal "var #{namePart}" if namePart
       body.unshift  new Literal "var #{index} = #{ivar}" if index
       lastLine    = body.expressions.pop()
@@ -1466,6 +1468,8 @@ exports.For = class For extends Base
       body.push     new Assign new Literal(name), new Literal nvar or ivar if name
     else
       varPart     = "#{idt1}#{namePart};\n" if namePart
+      if forPart and name is ivar
+        unstepPart = if @step then "\n#{name} -= #{ @step.compile(o) };" else "\n#{name}--;"
     if @object
       forPart     = "#{ivar} in #{sourcePart}"
       guardPart   = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" unless @raw  
@@ -1474,7 +1478,9 @@ exports.For = class For extends Base
     """
     #{resultPart}#{@tab}for (#{forPart}) {#{guardPart}
     #{varPart}#{body}
-    #{@tab}}#{returnResult}
+    #{@tab}}
+    #{unstepPart}
+    #{returnResult}
     """
 
 #### Switch
