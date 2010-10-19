@@ -1679,7 +1679,7 @@ UTILITIES =
         return -1;
       };
       return function(item, array) { return indexOf.call(array, item) > -1; };
-    })();
+    })()
   '''
 
   # Shortcuts to speed up the lookup time for native functions.

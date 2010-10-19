@@ -18,7 +18,7 @@ exports.Scope = class Scope
   # where it should declare its variables, and a reference to the function that
   # it wraps.
   constructor: (@parent, @expressions, @method) ->
-    @variables = {'arguments'}
+    @variables = [{name: 'arguments', type: 'arguments'}]
     if @parent
       @garbage = @parent.garbage
     else
@@ -33,30 +33,33 @@ exports.Scope = class Scope
   # variables in current level from scope.
   endLevel: ->
     vars = @variables
-    (vars[name] = 'reuse') for name in @garbage.pop() when vars[name] is 'var'
+    for garbage in @garbage.pop() when @type(garbage) is 'var'
+      for v, i in vars when v.name is garbage.name
+        vars.splice(i, 1, {name: garbage.name, type: 'reuse'})
+        break
 
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
   find: (name, options) ->
     return true if @check name, options
-    @variables[name] = 'var'
+    @variables.push {name, type: 'var'}
     false
 
   # Test variables and return true the first time fn(v, k) returns true
   any: (fn) ->
-    for v in @allVariables() when fn(v[0], v[1])
+    for v in @variables when fn v.name, v.type
       return true
     return false
 
   # Reserve a variable name as originating from a function parameter for this
   # scope. No `var` required for internal references.
   parameter: (name) ->
-    @variables[name] = 'param'
+    @variables.push {name, type: 'param'}
 
   # Just check to see if a variable has already been declared, without reserving,
   # walks up to the root scope.
   check: (name, options) ->
-    immediate = Object::hasOwnProperty.call @variables, name
+    immediate = !!@type(name)
     return immediate if immediate or options?.immediate
     !!@parent?.check name
 
@@ -66,29 +69,25 @@ exports.Scope = class Scope
       '_' + type + if index > 1 then index else ''
     else
       '_' + (index + parseInt type, 36).toString(36).replace /\d/g, 'a'
-
+  
+  # Gets the type of a variable.
+  type: (name) ->
+    for v in @variables when v.name is name then return v.type
+    null
+  
   # If we need to store an intermediate result, find an available name for a
   # compiler-generated variable. `_var`, `_var2`, and so on...
   freeVariable: (type) ->
     index = 0
-    index++ while @check(temp = @temporary type, index) and @variables[temp] isnt 'reuse'
-    @variables[temp] = 'var'
+    index++ while @check(temp = @temporary type, index) and @type(temp) isnt 'reuse'
+    @variables.push {name: temp, type: 'var'}
     last(@garbage).push temp if @garbage.length
     temp
 
   # Ensure that an assignment is made at the top of this scope
   # (or at the top-level scope, if requested).
   assign: (name, value) ->
-    @variables[name] = value: value, assigned: true
-  
-  # Gets around a bug in IE where it won't enumerate over redefined prototype properties.
-  allVariables: ->
-    vars = [v, k] for v, k of @variables
-    if v.__defineGetter__ then vars
-    else vars.concat(for v in   '''toString toLocaleString
-        hasOwnProperty valueOf constructor propertyIsEnumerable
-        isPrototypeOf'''.split(' ') when @variables.hasOwnProperty v
-      [v, @variables[v]])
+    @variables.push {name, type: { value: value, assigned: true }}
 
   # Does this scope reference any variables that need to be declared in the
   # given function body?
@@ -102,12 +101,12 @@ exports.Scope = class Scope
 
   # Return the list of variables first declared in this scope.
   declaredVariables: ->
-    (v[0] for v in @allVariables() when v[1] in ['var', 'reuse']).sort()
+    (v.name for v in @variables when v.type in ['var', 'reuse']).sort()
 
   # Return the list of assignments that are supposed to be made at the top
   # of this scope.
   assignedVariables: ->
-    "#{v[0]} = #{v[1].value}" for v in @allVariables() when v[1].assigned
+    "#{v.name} = #{v.type.value}" for v in @variables when v.type.assigned
 
   # Compile the JavaScript for all of the variable declarations in this scope.
   compiledDeclarations: ->
