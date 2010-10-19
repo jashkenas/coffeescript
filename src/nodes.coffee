@@ -52,7 +52,8 @@ exports.Base = class Base
   # object with their parent closure, to preserve the expected lexical scope.
   compileClosure: (o) ->
     o.sharedScope = o.scope
-    Closure.wrap(this, no, yes).compile o
+    throw new Error 'cannot include a pure statement in an expression.' if @containsPureStatement()
+    Closure.wrap(this).compile o
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -1424,6 +1425,7 @@ exports.For = class For extends Base
     rvar          = scope.freeVariable 'result' unless topLevel
     ivar          = if range then name else index
     ivar          = scope.freeVariable 'i' if not ivar or codeInBody
+    nvar          = scope.freeVariable 'i' if name and not range
     varPart       = ''
     guardPart     = ''
     body          = Expressions.wrap([@body])
@@ -1454,7 +1456,11 @@ exports.For = class For extends Base
       body.unshift  new Literal "var #{name} = #{ivar}" if range
       body.unshift  new Literal "var #{namePart}" if namePart
       body.unshift  new Literal "var #{index} = #{ivar}" if index
+      body.push     new Assign new Literal(ivar), new Literal index if index
+      body.push     new Assign new Literal(nvar), new Literal name if nvar
       body        = Closure.wrap(body, true)
+      body.push     new Assign new Literal(index), new Literal ivar if index
+      body.push     new Assign new Literal(name), new Literal nvar or ivar if name
     else
       varPart     = "#{idt1}#{namePart};\n" if namePart
     if @object
@@ -1618,10 +1624,7 @@ Closure =
   # Wrap the expressions body, unless it contains a pure statement,
   # in which case, no dice. If the body mentions `this` or `arguments`,
   # then make sure that the closure wrapper preserves the original values.
-  wrap: (expressions, statement, force) ->
-    if expressions.containsPureStatement()
-      return expressions unless force
-      throw new Error 'cannot include a pure statement in an expression.'
+  wrap: (expressions, statement) ->
     return expressions if expressions.containsPureStatement()
     func = new Parens new Code [], Expressions.wrap [expressions]
     args = []
