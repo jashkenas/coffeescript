@@ -43,9 +43,7 @@ exports.Scope = class Scope
   endLevel: ->
     vars = @variables
     for garbage in @garbage.pop() when @type(garbage) is 'var'
-      for v, i in vars when v.name is garbage.name
-        vars.splice(i, 1, {name: garbage.name, type: 'reuse'})
-        break
+      @setVar garbage, 'reuse'
 
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
