@@ -528,7 +528,6 @@ COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES =
   no   : 'FALSE'
   on   : 'TRUE'
   off  : 'FALSE'
-COFFEE_ALIASES['==='] = '=='
 
 # The list of keywords that are reserved by JavaScript, but not used, or are
 # used by CoffeeScript internally. We throw an error when these are encountered,
