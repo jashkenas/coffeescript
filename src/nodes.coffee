@@ -1675,9 +1675,10 @@ UTILITIES =
   inArray: '''
     (function() {
       var indexOf = Array.prototype.indexOf || function (item) {
-        for (var i = this.length; i--;) if (this[i] === item) return i;
+        var i = this.length; while (i--) if (this[i] === item) return i;
         return -1;
-      }; return function(array, item) { return indexOf.call(array, item) > -1; };
+      };
+      return function(array, item) { return indexOf.call(array, item) > -1; };
     })();
   '''
 
