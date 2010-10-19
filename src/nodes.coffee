@@ -1260,19 +1260,16 @@ exports.In = class In extends Base
     @array instanceof Value and @array.isArray()
 
   compileNode: (o) ->
-    [@obj1, @obj2] = @object.compileReference o, precompile: yes
     if @isArray() then @compileOrTest(o) else @compileLoopTest(o)
 
   compileOrTest: (o) ->
+    [obj1, obj2] = @object.compileReference o, precompile: yes
     tests = for item, i in @array.base.objects
-      "#{if i then @obj2 else @obj1} === #{item.compile(o)}"
+      "#{if i then obj2 else obj1} === #{item.compile(o)}"
     "(#{tests.join(' || ')})"
 
   compileLoopTest: (o) ->
-    [@arr1, @arr2] = @array.compileReference o, precompile: yes
-    [i, l] = [o.scope.freeVariable('i'), o.scope.freeVariable('len')]
-    prefix = if @obj1 isnt @obj2 then @obj1 + '; ' else ''
-    "(function(){ #{prefix}for (var #{i}=0, #{l}=#{@arr1}.length; #{i}<#{l}; #{i}++) { if (#{@arr2}[#{i}] === #{@obj2}) return true; } return false; }).call(this)"
+    "#{utility 'inArray'}(#{@array.compile o}, #{@object.compile o})"
 
 #### Try
 
@@ -1668,6 +1665,16 @@ UTILITIES =
     function(func, context) {
       return function() { return func.apply(context, arguments); };
     }
+  '''
+  
+  # Discover if an item is in an array.
+  inArray: '''
+    (function() {
+      var indexOf = Array.prototype.indexOf || function (item) {
+        for (var i = this.length; i--;) if (this[i] === item) return i;
+        return -1;
+      }; return function(array, item) { return indexOf.call(array, item) > -1; };
+    })();
   '''
 
   # Shortcuts to speed up the lookup time for native functions.
