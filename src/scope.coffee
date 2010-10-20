@@ -21,7 +21,7 @@ exports.Scope = class Scope
     @variables = [{name: 'arguments', type: 'arguments'}]
     @positions = {}
     if @parent
-      @garbage = @parent.garbage
+      {@garbage} = @parent
     else
       @garbage   = []
       Scope.root = this
@@ -31,19 +31,19 @@ exports.Scope = class Scope
     if @positions.hasOwnProperty name
       @variables[@positions[name]].type = type
     else
-      @positions[name] = @variables.length
-      @variables.push {name, type}
+      @positions[name] = -1 + @variables.push {name, type}
+    this
 
   # Create a new garbage level
   startLevel: ->
     @garbage.push []
+    this
 
   # Return to the previous garbage level and erase referenced temporary
   # variables in current level from scope.
   endLevel: ->
-    vars = @variables
-    for garbage in @garbage.pop() when @type(garbage) is 'var'
-      @setVar garbage, 'reuse'
+    @setVar name, 'reuse' for name in @garbage.pop() when @type(name) is 'var'
+    this
 
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
@@ -52,10 +52,9 @@ exports.Scope = class Scope
     @setVar name, 'var'
     false
 
-  # Test variables and return true the first time fn(v, k) returns true
+  # Test variables and return `true` the first time `fn(v)` returns `true`
   any: (fn) ->
-    for v in @variables when fn v.name, v.type
-      return true
+    for v in @variables when fn v then return true
     return false
 
   # Reserve a variable name as originating from a function parameter for this
@@ -71,11 +70,11 @@ exports.Scope = class Scope
     !!@parent?.check name
 
   # Generate a temporary variable name at the given index.
-  temporary: (type, index) ->
-    if type.length > 1
-      '_' + type + if index > 1 then index else ''
+  temporary: (name, index) ->
+    if name.length > 1
+      '_' + name + if index > 1 then index else ''
     else
-      '_' + (index + parseInt type, 36).toString(36).replace /\d/g, 'a'
+      '_' + (index + parseInt name, 36).toString(36).replace /\d/g, 'a'
   
   # Gets the type of a variable.
   type: (name) ->
@@ -88,7 +87,7 @@ exports.Scope = class Scope
     index = 0
     index++ while @check(temp = @temporary type, index) and @type(temp) isnt 'reuse'
     @setVar temp, 'var'
-    last(@garbage).push temp if @garbage.length
+    last(@garbage)?.push temp
     temp
 
   # Ensure that an assignment is made at the top of this scope
@@ -99,12 +98,12 @@ exports.Scope = class Scope
   # Does this scope reference any variables that need to be declared in the
   # given function body?
   hasDeclarations: (body) ->
-    body is @expressions and @any (k, val) -> val in ['var', 'reuse']
+    body is @expressions and @any (v) -> v.type in ['var', 'reuse']
 
   # Does this scope reference any assignments that need to be declared at the
   # top of the given function body?
   hasAssignments: (body) ->
-    body is @expressions and @any (k, val) -> val.assigned
+    body is @expressions and @any (v) -> v.type.assigned
 
   # Return the list of variables first declared in this scope.
   declaredVariables: ->
