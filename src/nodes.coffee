@@ -1262,7 +1262,9 @@ exports.In = class In extends Base
     "(#{tests.join(' || ')})"
 
   compileLoopTest: (o) ->
-    "#{utility 'inArray'}(#{@object.compile o}, #{@array.compile o})"
+    [obj1, obj2] = @object.compileReference merge(o, top: yes), precompile: yes
+    prefix = if obj1 isnt obj2 then "#{obj1}, " else ''
+    "(#{prefix}#{utility 'indexOf'}.call(#{@array.compile o}, #{obj2}) >= 0)"
 
 #### Try
 
@@ -1462,7 +1464,7 @@ exports.For = class For extends Base
         unstepPart = "\n#{@tab}" + unstepPart
     if @object
       forPart     = "#{ivar} in #{sourcePart}"
-      guardPart   = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" unless @raw  
+      guardPart   = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" unless @raw
     body          = body.compile merge o, indent: idt1, top: true
     vars          = if range then name else "#{name}, #{ivar}"
     """
@@ -1663,16 +1665,13 @@ UTILITIES =
       return function() { return func.apply(context, arguments); };
     }
   '''
-  
+
   # Discover if an item is in an array.
-  inArray: '''
-    (function() {
-      var indexOf = Array.prototype.indexOf || function(item) {
-        var i = this.length; while (i--) if (this[i] === item) return i;
-        return -1;
-      };
-      return function(item, array) { return indexOf.call(array, item) > -1; };
-    })()
+  indexOf: '''
+    Array.prototype.indexOf || function(item) {
+      for (var i = 0, l = this.length; i < l; i++) if (this[i] === item) return i;
+      return -1;
+    }
   '''
 
   # Shortcuts to speed up the lookup time for native functions.
