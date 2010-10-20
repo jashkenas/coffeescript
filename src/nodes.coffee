@@ -6,7 +6,7 @@
 {Scope} = require './scope'
 
 # Import the helpers we plan to use.
-{compact, flatten, merge, del, include, starts, ends, last} = require './helpers'
+{compact, flatten, merge, del, starts, ends, last} = require './helpers'
 
 # Constant functions for nodes that don't need customization.
 YES  = -> yes
@@ -857,7 +857,7 @@ exports.Assign = class Assign extends Base
       if ifn = If.unfoldSoak o, this, 'variable'
         delete o.top
         return ifn.compile o
-      return @compileConditional o if include @CONDITIONAL, @context
+      return @compileConditional o if @context in @CONDITIONAL
     top  = del o, 'top'
     stmt = del o, 'asStatement'
     name = @variable.compile o
@@ -1192,7 +1192,7 @@ exports.Op = class Op extends Base
   isComplex: -> @operator isnt '!' or @first.isComplex()
 
   isChainable: ->
-    include(@CHAINABLE, @operator)
+    @operator in @CHAINABLE
 
   invert: ->
     if @operator in ['===', '!==']
@@ -1209,7 +1209,7 @@ exports.Op = class Op extends Base
   compileNode: (o) ->
     return @compileChain o if @isChainable() and @first.unwrap().isChainable()
     if @isUnary()
-      return ifn.compile o if include(@MUTATORS, @operator) and ifn = If.unfoldSoak o, this, 'first'
+      return ifn.compile o if @operator in @MUTATORS and ifn = If.unfoldSoak o, this, 'first'
       return @compileUnary o
     return @compileExistence o if @operator is '?'
     @first.tags.front = @tags.front
@@ -1237,7 +1237,7 @@ exports.Op = class Op extends Base
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
-    space = if include @PREFIX_OPERATORS, @operator then ' ' else ''
+    space = if @operator in @PREFIX_OPERATORS then ' ' else ''
     parts = [@operator, space, @first.compile(o)]
     (if @flip then parts.reverse() else parts).join ''
 
@@ -1264,7 +1264,8 @@ exports.In = class In extends Base
   compileLoopTest: (o) ->
     [obj1, obj2] = @object.compileReference merge(o, top: yes), precompile: yes
     prefix = if obj1 isnt obj2 then "#{obj1}, " else ''
-    "(#{prefix}#{utility 'indexOf'}.call(#{@array.compile o}, #{obj2}) >= 0)"
+    code = "#{prefix}#{utility 'indexOf'}.call(#{@array.compile o}, #{obj2}) >= 0"
+    if @parenthetical then code else "(#{code})"
 
 #### Try
 

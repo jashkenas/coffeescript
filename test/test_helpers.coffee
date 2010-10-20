@@ -1,4 +1,4 @@
-{indexOf, include, starts, ends, compact, count, merge, extend, flatten, del, last} = CoffeeScript.helpers
+{indexOf, starts, ends, compact, count, merge, extend, flatten, del, last} = CoffeeScript.helpers
 
 array  = [0..4]
 string = array.join ''
@@ -9,12 +9,6 @@ eq 0, indexOf array, 0
 eq 2, indexOf array, 2
 eq 4, indexOf array, 4
 eq(-1, indexOf array, 6)
-
-# Test `include`
-ok include array, 0
-ok include array, 2
-ok include array, 4
-ok not include array, 6
 
 # Test `starts`
 ok starts string, '012'

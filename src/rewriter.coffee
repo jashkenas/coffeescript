@@ -5,9 +5,6 @@
 # shorthand into the unambiguous long form, add implicit indentation and
 # parentheses, balance incorrect nestings, and generally clean things up.
 
-# Import the helpers we need.
-{include} = require './helpers'
-
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
 # its internal array of tokens.
 class exports.Rewriter
@@ -51,9 +48,9 @@ class exports.Rewriter
     while token = tokens[i]
       return action.call this, token, i     if levels is 0 and condition.call this, token, i
       return action.call this, token, i - 1 if not token or levels < 0
-      if include EXPRESSION_START, token[0]
+      if token[0] in EXPRESSION_START
         levels += 1
-      else if include EXPRESSION_END, token[0]
+      else if token[0] in EXPRESSION_END
         levels -= 1
       i += 1
     i - 1
@@ -93,7 +90,7 @@ class exports.Rewriter
   # this, remove their trailing newlines.
   removeMidExpressionNewlines: ->
     @scanTokens (token, i, tokens) ->
-      return 1 unless token[0] is 'TERMINATOR' and include EXPRESSION_CLOSE, @tag(i + 1)
+      return 1 unless token[0] is 'TERMINATOR' and @tag(i + 1) in EXPRESSION_CLOSE
       tokens.splice i, 1
       0
 
@@ -131,10 +128,10 @@ class exports.Rewriter
       tag is ',' and one?[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT']
     action = (token, i) -> @tokens.splice i, 0, ['}', '}', token[2]]
     @scanTokens (token, i, tokens) ->
-      if include EXPRESSION_START, tag = token[0]
+      if (tag = token[0]) in EXPRESSION_START
         stack.push if tag is 'INDENT' and @tag(i - 1) is '{' then '{' else tag
         return 1
-      if include EXPRESSION_END, tag
+      if tag in EXPRESSION_END
         stack.pop()
         return 1
       return 1 unless tag is ':' and stack[stack.length - 1] isnt '{'
@@ -162,22 +159,22 @@ class exports.Rewriter
       next       = tokens[i + 1]
       callObject = not classLine and tag is 'INDENT' and
                    next and next.generated and next[0] is '{' and
-                   prev and include(IMPLICIT_FUNC, prev[0])
+                   prev and prev[0] in IMPLICIT_FUNC
       seenSingle = no
-      classLine  = no  if include LINEBREAKS, tag
+      classLine  = no  if tag in LINEBREAKS
       token.call = yes if prev and not prev.spaced and tag is '?'
       return 1 unless callObject or
-        prev?.spaced and (prev.call or include(IMPLICIT_FUNC, prev[0])) and
-        (include(IMPLICIT_CALL, tag) or include(IMPLICIT_UNSPACED_CALL, tag) and not token.spaced)
+        prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
+        (tag in IMPLICIT_CALL or tag in IMPLICIT_UNSPACED_CALL and not token.spaced)
       tokens.splice i, 0, ['CALL_START', '(', token[2]]
       @detectEnd i + (if callObject then 2 else 1), (token, i) ->
         return yes if not seenSingle and token.fromThen
         [tag] = token
         seenSingle = yes if tag in ['IF', 'ELSE', 'UNLESS', '->', '=>']
         return yes if tag is 'PROPERTY_ACCESS' and @tag(i - 1) is 'OUTDENT'
-        not token.generated and @tag(i - 1) isnt ',' and include(IMPLICIT_END, tag) and
+        not token.generated and @tag(i - 1) isnt ',' and tag in IMPLICIT_END and
         (tag isnt 'INDENT' or
-         (@tag(i - 2) isnt 'CLASS' and not include(IMPLICIT_BLOCK, @tag(i - 1)) and
+         (@tag(i - 2) isnt 'CLASS' and not (@tag(i - 1) in IMPLICIT_BLOCK) and
           not ((post = @tokens[i + 1]) and post.generated and post[0] is '{')))
       , action
       prev[0] = 'FUNC_EXIST' if prev[0] is '?'
@@ -196,7 +193,7 @@ class exports.Rewriter
       if tag is 'CATCH' and @tag(i + 2) in ['TERMINATOR', 'FINALLY']
         tokens.splice i + 2, 0, @indentation(token)...
         return 4
-      if include(SINGLE_LINERS, tag) and @tag(i + 1) isnt 'INDENT' and
+      if tag in SINGLE_LINERS and @tag(i + 1) isnt 'INDENT' and
          not (tag is 'ELSE' and @tag(i + 1) is 'IF')
         starter = tag
         [indent, outdent] = @indentation token
@@ -204,7 +201,7 @@ class exports.Rewriter
         indent.generated  = outdent.generated = true
         tokens.splice i + 1, 0, indent
         condition = (token, i) ->
-          token[1] isnt ';' and include(SINGLE_CLOSERS, token[0]) and
+          token[1] isnt ';' and token[0] in SINGLE_CLOSERS and
           not (token[0] is 'ELSE' and starter not in ['IF', 'THEN'])
         action = (token, i) ->
           @tokens.splice (if @tag(i - 1) is ',' then i - 1 else i), 0, outdent
@@ -265,10 +262,10 @@ class exports.Rewriter
     debt  = {}
     (debt[key] = 0) for all key of INVERSES
     @scanTokens (token, i, tokens) ->
-      if include EXPRESSION_START, tag = token[0]
+      if (tag = token[0]) in EXPRESSION_START
         stack.push token
         return 1
-      return 1 unless include EXPRESSION_END, tag
+      return 1 unless tag in EXPRESSION_END
       if debt[inv = INVERSES[tag]] > 0
         debt[inv] -= 1
         tokens.splice i, 1

@@ -10,7 +10,7 @@
 {Rewriter} = require './rewriter'
 
 # Import the helpers we need.
-{include, count, starts, compact, last} = require './helpers'
+{count, starts, compact, last} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -80,16 +80,16 @@ exports.Lexer = class Lexer
       return true
     forcedIdentifier = colon or @tagAccessor()
     tag = 'IDENTIFIER'
-    if include(JS_KEYWORDS, id) or
-       not forcedIdentifier and include(COFFEE_KEYWORDS, id)
+    if id in JS_KEYWORDS or
+       not forcedIdentifier and id in COFFEE_KEYWORDS
       tag = id.toUpperCase()
-      if tag is 'WHEN' and include LINE_BREAK, @tag()
+      if tag is 'WHEN' and @tag() in LINE_BREAK
         tag = 'LEADING_WHEN'
       else if tag is 'FOR'
         @seenFor = yes
-      else if include UNARY, tag
+      else if tag in UNARY
         tag = 'UNARY'
-      else if include RELATION, tag
+      else if tag in RELATION
         if tag isnt 'INSTANCEOF' and @seenFor
           @seenFor = no
           tag = 'FOR' + tag
@@ -98,20 +98,20 @@ exports.Lexer = class Lexer
           if @value() is '!'
             @tokens.pop()
             id = '!' + id
-    if include JS_FORBIDDEN, id
+    if id in JS_FORBIDDEN
       if forcedIdentifier
         tag = 'IDENTIFIER'
         id  = new String id
         id.reserved = yes
-      else if include RESERVED, id
+      else if id in RESERVED
         @identifierError id
     unless forcedIdentifier
       tag = id = COFFEE_ALIASES[id] if COFFEE_ALIASES.hasOwnProperty id
       if id is '!'
         tag = 'UNARY'
-      else if include LOGIC, id
+      else if id in LOGIC
         tag = 'LOGIC'
-      else if include BOOL, tag
+      else if tag in BOOL
         id  = tag.toLowerCase()
         tag = 'BOOL'
     @token tag, id
@@ -187,7 +187,7 @@ exports.Lexer = class Lexer
   regexToken: ->
     return false if @chunk.charAt(0) isnt '/'
     return @heregexToken match if match = HEREGEX.exec @chunk
-    return false if include NOT_REGEX, @tag()
+    return false if @tag() in NOT_REGEX
     return false unless match = REGEX.exec @chunk
     [regex] = match
     @token 'REGEX', if regex is '//' then '/(?:)/' else regex
@@ -313,24 +313,24 @@ exports.Lexer = class Lexer
     tag = value
     prev = last @tokens
     if value is '=' and prev
-      @assignmentError() if not prev[1].reserved and include JS_FORBIDDEN, prev[1]
+      @assignmentError() if not prev[1].reserved and prev[1] in JS_FORBIDDEN
       if prev[1] in ['||', '&&']
         prev[0] = 'COMPOUND_ASSIGN'
         prev[1] += '='
         return true
-    if ';' is                        value then tag = 'TERMINATOR'
-    else if include LOGIC          , value then tag = 'LOGIC'
-    else if include MATH           , value then tag = 'MATH'
-    else if include COMPARE        , value then tag = 'COMPARE'
-    else if include COMPOUND_ASSIGN, value then tag = 'COMPOUND_ASSIGN'
-    else if include UNARY          , value then tag = 'UNARY'
-    else if include SHIFT          , value then tag = 'SHIFT'
+    if ';' is value                  then tag = 'TERMINATOR'
+    else if value in LOGIC           then tag = 'LOGIC'
+    else if value in MATH            then tag = 'MATH'
+    else if value in COMPARE         then tag = 'COMPARE'
+    else if value in COMPOUND_ASSIGN then tag = 'COMPOUND_ASSIGN'
+    else if value in UNARY           then tag = 'UNARY'
+    else if value in SHIFT           then tag = 'SHIFT'
     else if value is '?' and prev?.spaced  then tag = 'LOGIC'
     else if prev and not prev.spaced
-      if value is '(' and include CALLABLE, prev[0]
+      if value is '(' and prev[0] in CALLABLE
         prev[0] = 'FUNC_EXIST' if prev[0] is '?'
         tag = 'CALL_START'
-      else if value is '[' and include INDEXABLE, prev[0]
+      else if value is '[' and prev[0] in INDEXABLE
         tag = 'INDEX_START'
         switch prev[0]
           when '?'  then prev[0] = 'INDEX_SOAK'

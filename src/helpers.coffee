@@ -14,10 +14,6 @@ indexOf = exports.indexOf = Array.indexOf or
           return index
       -1
 
-# Does a list include a value?
-exports.include = (list, value) ->
-  indexOf(list, value) >= 0
-
 # Peek at the beginning of a given string to see if it matches a sequence.
 exports.starts = (string, literal, start) ->
   literal is string.substr start, literal.length
