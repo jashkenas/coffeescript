@@ -29,7 +29,7 @@ exports.Scope = class Scope
   # Adds a new variable or overrides an existing one.
   setVar: (name, type) ->
     if @positions.hasOwnProperty name
-      @variables.splice @positions[name], 1, {name, type}
+      @variables[@positions[name]].type = type
     else
       @positions[name] = @variables.length
       @variables.push {name, type}
