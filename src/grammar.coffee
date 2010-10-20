@@ -23,7 +23,7 @@ Parser = require('jison').Parser
 # Since we're going to be wrapped in a function by Jison in any case, if our
 # action immediately returns a value, we can optimize by removing the function
 # wrapper and just returning the value directly.
-unwrap = /function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
+unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 
 # Our handy DSL for Jison grammar generation, thanks to
 # [Tim Caswell](http://github.com/creationix). For every rule in the grammar,
@@ -31,9 +31,11 @@ unwrap = /function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 # optionally. If no action is specified, we simply pass the value of the
 # previous nonterminal.
 o = (patternString, action, options) ->
+  patternString = patternString.replace /\s{2,}/g, ' '
   return [patternString, '$$ = $1;', options] unless action
-  action = if match = (action + '').match(unwrap) then match[1] else "(#{action}())"
-  action = action.replace(/\bnew (\w+)\b/g, 'new yy.$1').replace(/Expressions\.wrap/g, 'yy.Expressions.wrap');
+  action = if match = unwrap.exec action then match[1] else "(#{action}())"
+  action = action.replace /\bnew /g, '$&yy.'
+  action = action.replace /\bExpressions\.wrap\b/g, 'yy.$&'
   [patternString, "$$ = #{action};", options]
 
 # Grammatical Rules
@@ -145,9 +147,9 @@ grammar =
     o "Identifier",                             -> new Value $1
     o "AlphaNumeric"
     o "ThisProperty"
-    o "Identifier : Expression",                -> new Assign new Value($1), $3, 'object'
-    o "AlphaNumeric : Expression",              -> new Assign new Value($1), $3, 'object'
-    o "Identifier : INDENT Expression OUTDENT", -> new Assign new Value($1), $4, 'object'
+    o "Identifier   : Expression",                -> new Assign new Value($1), $3, 'object'
+    o "AlphaNumeric : Expression",                -> new Assign new Value($1), $3, 'object'
+    o "Identifier   : INDENT Expression OUTDENT", -> new Assign new Value($1), $4, 'object'
     o "AlphaNumeric : INDENT Expression OUTDENT", -> new Assign new Value($1), $4, 'object'
     o "Comment"
   ]
@@ -283,8 +285,8 @@ grammar =
 
   # Assignments that can happen directly inside a class declaration.
   ClassAssign: [
-    o "AssignObj",                              -> $1
-    o "ThisProperty : Expression",              -> new Assign new Value($1), $3, 'this'
+    o "AssignObj",                                -> $1
+    o "ThisProperty : Expression",                -> new Assign new Value($1), $3, 'this'
     o "ThisProperty : INDENT Expression OUTDENT", -> new Assign new Value($1), $4, 'this'
   ]
 
@@ -541,8 +543,10 @@ grammar =
     o "Expression SHIFT Expression",            -> new Op $2, $1, $3
     o "Expression COMPARE Expression",          -> new Op $2, $1, $3
     o "Expression LOGIC Expression",            -> new Op $2, $1, $3
-    o "SimpleAssignable COMPOUND_ASSIGN Expression", -> new Op $2, $1, $3
-    o "SimpleAssignable COMPOUND_ASSIGN INDENT Expression OUTDENT", -> new Op $2, $1, $4
+    o "SimpleAssignable COMPOUND_ASSIGN Expression",
+      -> new Assign $1, $3, $2
+    o "SimpleAssignable COMPOUND_ASSIGN INDENT Expression OUTDENT",
+      -> new Assign $1, $4, $2
 
     o "Expression RELATION Expression",         ->
       if $2.charAt(0) is '!'
@@ -578,12 +582,11 @@ operators = [
   ["left",      'RELATION']
   ["left",      '==', '!=']
   ["left",      'LOGIC']
-  ["right",     'COMPOUND_ASSIGN']
   ["left",      '.']
   ["nonassoc",  'INDENT', 'OUTDENT']
   ["right",     'WHEN', 'LEADING_WHEN', 'FORIN', 'FOROF', 'BY', 'THROW']
   ["right",     'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS', 'EXTENDS']
-  ["right",     '=', ':', 'RETURN']
+  ["right",     '=', ':', 'COMPOUND_ASSIGN', 'RETURN']
   ["right",     '->', '=>', 'UNLESS', 'POST_IF', 'POST_UNLESS']
 ]
 

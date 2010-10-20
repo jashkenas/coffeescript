@@ -70,10 +70,7 @@ exports.Base = class Base
 
   # Convenience method to grab the current indentation level, plus tabbing in.
   idt: (tabs) ->
-    idt = @tab or ''
-    num = (tabs or 0) + 1
-    idt += TAB while num -= 1
-    idt
+    (@tab or '') + Array((tabs or 0) + 1).join TAB
 
   # Construct a node that returns the current node's result.
   # Note that this is overridden for smarter behavior for
@@ -140,6 +137,7 @@ exports.Base = class Base
   isStatement     : NO
   isPureStatement : NO
   isComplex       : YES
+  isChainable     : NO
   topSensitive    : NO
   unfoldSoak      : NO
 
@@ -791,7 +789,7 @@ exports.Class = class Class extends Base
       constructor = new Code [], new Expressions [new Return new Literal 'this']
 
     for prop in @properties
-      [pvar, func] = [prop.variable, prop.value]
+      {variable: pvar, value: func} = prop
       if pvar and pvar.base.value is 'constructor'
         if func not instanceof Code
           [func, ref] = func.compileReference o
@@ -804,7 +802,7 @@ exports.Class = class Class extends Base
         variable = new Value variable
         variable.namespaced = 0 < className.indexOf '.'
         constructor = func
-        constructor.comment = props.expressions.pop() if props.expressions[props.expressions.length - 1] instanceof Comment
+        constructor.comment = props.expressions.pop() if last(props.expressions) instanceof Comment
         continue
       if func instanceof Code and func.bound
         if prop.context is 'this'
@@ -839,6 +837,8 @@ exports.Assign = class Assign extends Base
   # Matchers for detecting class/method names
   METHOD_DEF: /^(?:(\S+)\.prototype\.)?([$A-Za-z_][$\w]*)$/
 
+  CONDITIONAL: ['||=', '&&=', '?=']
+
   children: ['variable', 'value']
 
   constructor: (@variable, @value, @context) ->
@@ -846,30 +846,28 @@ exports.Assign = class Assign extends Base
 
   topSensitive: YES
 
-  isValue: ->
-    @variable instanceof Value
-
   # Compile an assignment, delegating to `compilePatternMatch` or
   # `compileSplice` if appropriate. Keep track of the name of the base object
   # we've been assigned to, for correct internal references. If the variable
   # has not been seen yet within the current scope, declare it.
   compileNode: (o) ->
-    if isValue = @isValue()
+    if isValue = @variable instanceof Value
       return @compilePatternMatch(o) if @variable.isArray() or @variable.isObject()
       return @compileSplice(o) if @variable.isSplice()
       if ifn = If.unfoldSoak o, this, 'variable'
         delete o.top
         return ifn.compile o
-    top    = del o, 'top'
-    stmt   = del o, 'asStatement'
-    name   = @variable.compile(o)
+      return @compileConditional o if include @CONDITIONAL, @context
+    top  = del o, 'top'
+    stmt = del o, 'asStatement'
+    name = @variable.compile o
     if @value instanceof Code and match = @METHOD_DEF.exec name
       @value.name  = match[2]
       @value.klass = match[1]
     val = @value.compile o
     return "#{name}: #{val}" if @context is 'object'
     o.scope.find name unless isValue and (@variable.hasProperties() or @variable.namespaced)
-    val = "#{name} = #{val}"
+    val = name + " #{ @context or '=' } " + val
     return "#{@tab}#{val};" if stmt
     if top or @parenthetical then val else "(#{val})"
 
@@ -937,6 +935,13 @@ exports.Assign = class Assign extends Base
     ref   = o.scope.freeVariable 'ref'
     val   = @value.compile(o)
     "([].splice.apply(#{name}, [#{from}, #{to}].concat(#{ref} = #{val})), #{ref})"
+
+  # When compiling a conditional assignment, take care to ensure that the
+  # operands are only evaluated once, even though we have to reference them
+  # more than once.
+  compileConditional: (o) ->
+    [left, rite] = @variable.cacheReference o
+    return new Op(@context.slice(0, -1), left, new Assign(rite, @value)).compile o
 
   assigns: (name) ->
     @[if @context is 'object' then 'value' else 'variable'].assigns name
@@ -1152,7 +1157,7 @@ exports.Op = class Op extends Base
   CONVERSIONS:
     '==': '==='
     '!=': '!=='
-    of: 'in'
+    'of': 'in'
 
   # The map of invertible operators.
   INVERSIONS:
@@ -1163,11 +1168,11 @@ exports.Op = class Op extends Base
   # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin).
   CHAINABLE:        ['<', '>', '>=', '<=', '===', '!==']
 
-  # Our assignment operators that have no JavaScript equivalent.
-  ASSIGNMENT:       ['||=', '&&=', '?=']
-
   # Operators must come before their operands with a space.
   PREFIX_OPERATORS: ['new', 'typeof', 'delete']
+
+  # Operators that modify a reference.
+  MUTATORS: ['++', '--', 'delete']
 
   children: ['first', 'second']
 
@@ -1186,9 +1191,6 @@ exports.Op = class Op extends Base
 
   isComplex: -> @operator isnt '!' or @first.isComplex()
 
-  isMutator: ->
-    ends(@operator, '=') and @operator not in ['===', '!==']
-
   isChainable: ->
     include(@CHAINABLE, @operator)
 
@@ -1205,13 +1207,12 @@ exports.Op = class Op extends Base
     super(idt, @constructor.name + ' ' + @operator)
 
   compileNode: (o) ->
-    @first.tags.front = @tags.front if @second
-    return @compileChain(o)      if @isChainable() and @first.unwrap() instanceof Op and @first.unwrap().isChainable()
-    return @compileAssignment(o) if include @ASSIGNMENT, @operator
-    return @compileUnary(o)      if @isUnary()
-    return @compileExistence(o)  if @operator is '?'
-    @first  = new Parens @first  if @first  instanceof Op and @first.isMutator()
-    @second = new Parens @second if @second instanceof Op and @second.isMutator()
+    return @compileChain o if @isChainable() and @first.unwrap().isChainable()
+    if @isUnary()
+      return ifn.compile o if include(@MUTATORS, @operator) and ifn = If.unfoldSoak o, this, 'first'
+      return @compileUnary o
+    return @compileExistence o if @operator is '?'
+    @first.tags.front = @tags.front
     [@first.compile(o), @operator, @second.compile(o)].join ' '
 
   # Mimic Python's chained comparisons when multiple comparison operators are
@@ -1224,14 +1225,6 @@ exports.Op = class Op extends Base
     [@first.second, shared] = shared.compileReference o
     [first, second, shared] = [@first.compile(o), @second.compile(o), shared.compile(o)]
     "(#{first}) && (#{shared} #{@operator} #{second})"
-
-  # When compiling a conditional assignment, take care to ensure that the
-  # operands are only evaluated once, even though we have to reference them
-  # more than once.
-  compileAssignment: (o) ->
-    [left, rite] = @first.cacheReference o
-    rite = new Assign rite, @second
-    return new Op(@operator.slice(0, -1), left, rite).compile o
 
   compileExistence: (o) ->
     if @first.isComplex()

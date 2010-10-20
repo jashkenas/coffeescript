@@ -117,7 +117,7 @@ ok del() is 5
 
 # Ensure that functions can have a trailing comma in their argument list
 mult = (x, mids..., y) ->
-  x *= n for n in mids
+  (x *= n) for n in mids
   x *= y
 
 ok mult(1, 2,) is 2

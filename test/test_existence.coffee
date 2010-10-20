@@ -134,12 +134,29 @@ eq 2?(3), undefined
 eq new Number?(42) | 0, 42
 eq new Bumper?(42) | 0, 0
 
+
 #726
 eq calendar?[Date()], undefined
+
 
 #733
 a = b: {c: null}
 eq a.b?.c?(), undefined
+
 a.b?.c or= (it) -> it
 eq a.b?.c?(1), 1
 eq a.b?.c?([2, 3]...), 2
+
+
+#756
+a = null
+ok isNaN      a?.b.c +  1
+eq undefined, a?.b.c += 1
+eq undefined, ++a?.b.c
+eq undefined, delete a?.b.c
+
+a = b: {c: 0}
+eq 1,   a?.b.c +  1
+eq 1,   a?.b.c += 1
+eq 2,   ++a?.b.c
+eq yes, delete a?.b.c

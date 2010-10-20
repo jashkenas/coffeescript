@@ -42,7 +42,7 @@ class exports.Rewriter
   scanTokens: (block) ->
     {tokens} = this
     i = 0
-    i += block.call this, token, i, tokens while token = tokens[i]
+    (i += block.call this, token, i, tokens) while token = tokens[i]
     true
 
   detectEnd: (i, condition, action) ->
