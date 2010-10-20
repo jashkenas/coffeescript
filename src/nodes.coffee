@@ -581,7 +581,7 @@ exports.Index = class Index extends Base
     super()
 
   compileNode: (o) ->
-    "#{ if @proto then '.prototype' else '' }[#{ @index.compile o }]"
+    (if @proto then '.prototype' else '') + "[#{ @index.compileBare o }]"
 
   isComplex: -> @index.isComplex()
 
@@ -732,7 +732,7 @@ exports.ArrayLiteral = class ArrayLiteral extends Base
       return @compileSplatLiteral o
     objects = []
     for obj, i in @objects
-      code = obj.compile o
+      code = obj.compileBare o
       objects.push (if obj instanceof Comment
         "\n#{code}\n#{o.indent}"
       else if i is @objects.length - 1
