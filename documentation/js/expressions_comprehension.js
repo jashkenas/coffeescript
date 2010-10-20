@@ -1,9 +1,9 @@
-var _result, globals, name;
+var _ref, _result, globals, name;
 var __hasProp = Object.prototype.hasOwnProperty;
 globals = (function() {
   _result = [];
-  for (name in window) {
-    if (!__hasProp.call(window, name)) continue;
+  for (name in _ref = window) {
+    if (!__hasProp.call(_ref, name)) continue;
     _result.push(name);
   }
   return _result;

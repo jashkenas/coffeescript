@@ -1,25 +1,26 @@
 var Animal, Horse, Snake, sam, tom;
 var __extends = function(child, parent) {
-  var ctor = function() {};
+  function ctor() { this.constructor = child; }
   ctor.prototype = parent.prototype;
-  child.prototype = new ctor();
-  child.prototype.constructor = child;
+  child.prototype = new ctor;
   if (typeof parent.extended === "function") parent.extended(child);
   child.__super__ = parent.prototype;
 };
 Animal = (function() {
-  return function Animal(_arg) {
+  function Animal(_arg) {
     this.name = _arg;
     return this;
   };
+  return Animal;
 })();
 Animal.prototype.move = function(meters) {
   return alert(this.name + " moved " + meters + "m.");
 };
 Snake = (function() {
-  return function Snake() {
+  function Snake() {
     return Animal.apply(this, arguments);
   };
+  return Snake;
 })();
 __extends(Snake, Animal);
 Snake.prototype.move = function() {
@@ -27,9 +28,10 @@ Snake.prototype.move = function() {
   return Snake.__super__.move.call(this, 5);
 };
 Horse = (function() {
-  return function Horse() {
+  function Horse() {
     return Animal.apply(this, arguments);
   };
+  return Horse;
 })();
 __extends(Horse, Animal);
 Horse.prototype.move = function() {

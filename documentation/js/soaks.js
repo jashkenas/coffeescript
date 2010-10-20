@@ -1,2 +1,2 @@
-var _ref, _ref2;
-(((_ref = lottery.drawWinner()) != null) ? (((_ref2 = _ref.address) != null) ? _ref2.zipcode : undefined) : undefined);
+var _ref;
+(typeof lottery.drawWinner === "function" ? (((_ref = lottery.drawWinner().address) != null) ? _ref.zipcode : undefined) : undefined);
