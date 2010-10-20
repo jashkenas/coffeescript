@@ -52,7 +52,7 @@ exports.Base = class Base
   # object with their parent closure, to preserve the expected lexical scope.
   compileClosure: (o) ->
     o.sharedScope = o.scope
-    throw new Error 'cannot include a pure statement in an expression.' if @containsPureStatement()
+    throw SyntaxError 'cannot include a pure statement in an expression.' if @containsPureStatement()
     Closure.wrap(this).compile o
 
   # If the code generation wishes to use the result of a complex expression
@@ -115,6 +115,7 @@ exports.Base = class Base
     for attr in @children when this[attr]
       for child in flatten [this[attr]]
         return if func(child) is false
+    this
 
   collectChildren: ->
     nodes = []
@@ -151,7 +152,8 @@ exports.Base = class Base
 # `if`, `switch`, or `try`, and so on...
 exports.Expressions = class Expressions extends Base
 
-  children:     ['expressions']
+  children: ['expressions']
+
   isStatement:  YES
 
   constructor: (nodes) ->
@@ -212,7 +214,7 @@ exports.Expressions = class Expressions extends Base
     if o.scope.hasAssignments this
       code = "#{@tab}var #{ o.scope.compiledAssignments().replace /\n/g, '$&' + @tab };\n#{code}"
     if not o.globals and o.scope.hasDeclarations this
-      code = "#{@tab}var #{o.scope.compiledDeclarations()};\n#{code}"
+      code = "#{@tab}var #{ o.scope.compiledDeclarations() };\n#{code}"
     code
 
   # Compiles a single expression within the expressions body. If we need to
@@ -257,9 +259,9 @@ exports.Literal = class Literal extends Base
   assigns: (name) -> name is @value
 
   compileNode: (o) ->
-    idt = if @isStatement(o) then @idt() else ''
-    end = if @isStatement(o) then ';' else ''
-    val = if @isReserved()   then "\"#{@value}\"" else @value
+    idt = if @isStatement o then @idt()          else ''
+    end = if @isStatement o then ';'             else ''
+    val = if @isReserved()  then "\"#{@value}\"" else @value
     idt + val + end
 
   toString: -> ' "' + @value + '"'
@@ -270,9 +272,10 @@ exports.Literal = class Literal extends Base
 # make sense.
 exports.Return = class Return extends Base
 
-  isStatement:      YES
-  isPureStatement:  YES
-  children:         ['expression']
+  children: ['expression']
+
+  isStatement    : YES
+  isPureStatement: YES
 
   constructor: (@expression) ->
     super()
@@ -281,7 +284,7 @@ exports.Return = class Return extends Base
 
   compile: (o) ->
     expr = @expression?.makeReturn()
-    return expr.compile o if expr and (expr not instanceof Return)
+    return expr.compile o if expr and expr not instanceof Return
     super o
 
   compileNode: (o) ->
@@ -300,9 +303,9 @@ exports.Value = class Value extends Base
   children: ['base', 'properties']
 
   # A **Value** has a base and a list of property accesses.
-  constructor: (@base, @properties, tag) ->
+  constructor: (@base, props, tag) ->
     super()
-    @properties or= []
+    @properties = props or []
     @tags[tag] = yes if tag
 
   # Add a property access to the list.
@@ -332,7 +335,6 @@ exports.Value = class Value extends Base
 
   makeReturn: ->
     if @properties.length then super() else @base.makeReturn()
-
 
   # The value can be unwrapped as its inner node, if there are no attached
   # properties.
@@ -429,7 +431,7 @@ exports.Call = class Call extends Base
     @isNew    = false
     @isSuper  = variable is 'super'
     @variable = if @isSuper then null else variable
-    @args     or= []
+    @args   or= []
 
   compileSplatArguments: (o) ->
     Splat.compileSplattedArray @args, o
@@ -445,9 +447,9 @@ exports.Call = class Call extends Base
   # Grab the reference to the superclass' implementation of the current method.
   superReference: (o) ->
     {method} = o.scope
-    throw Error "cannot call super outside of a function." unless method
+    throw SyntaxError 'cannot call super outside of a function.' unless method
     {name} = method
-    throw Error "cannot call super on an anonymous function." unless name
+    throw SyntaxError 'cannot call super on an anonymous function.' unless name
     if method.klass
       "#{method.klass}.__super__.#{name}"
     else
@@ -542,8 +544,7 @@ exports.Extends = class Extends extends Base
 
   # Hooks one constructor into another's prototype chain.
   compileNode: (o) ->
-    ref =  new Value new Literal utility 'extends'
-    (new Call ref, [@child, @parent]).compile o
+    new Call(new Value(new Literal utility 'extends'), [@child, @parent]).compile o
 
 #### Accessor
 
@@ -556,12 +557,11 @@ exports.Accessor = class Accessor extends Base
   constructor: (@name, tag) ->
     super()
     @prototype = if tag is 'prototype' then '.prototype' else ''
-    @soakNode = tag is 'soak'
+    @soakNode  = tag is 'soak'
 
   compileNode: (o) ->
     name = @name.compile o
-    namePart = if name.match(IS_STRING) then "[#{name}]" else ".#{name}"
-    @prototype + namePart
+    @prototype + if IS_STRING.test(name) then "[#{name}]" else ".#{name}"
 
   isComplex: NO
 
@@ -576,9 +576,7 @@ exports.Index = class Index extends Base
     super()
 
   compileNode: (o) ->
-    idx = @index.compile o
-    prefix = if @proto then '.prototype' else ''
-    "#{prefix}[#{idx}]"
+    "#{ if @proto then '.prototype' else '' }[#{ @index.compile o }]"
 
   isComplex: -> @index.isComplex()
 
@@ -716,9 +714,9 @@ exports.ArrayLiteral = class ArrayLiteral extends Base
 
   children: ['objects']
 
-  constructor: (@objects) ->
+  constructor: (objs) ->
     super()
-    @objects or= []
+    @objects = objs or []
 
   compileSplatLiteral: (o) ->
     Splat.compileSplattedArray @objects, o
@@ -752,15 +750,16 @@ exports.ArrayLiteral = class ArrayLiteral extends Base
 # The CoffeeScript class definition.
 exports.Class = class Class extends Base
 
-  children:     ['variable', 'parent', 'properties']
+  children: ['variable', 'parent', 'properties']
+
   isStatement:  YES
 
   # Initialize a **Class** with its name, an optional superclass, and a
   # list of prototype property assignments.
-  constructor: (variable, @parent, @properties) ->
+  constructor: (variable, @parent, props) ->
     super()
-    @variable = if variable is '__temp__' then new Literal variable else variable
-    @properties or= []
+    @variable   = if variable is '__temp__' then new Literal variable else variable
+    @properties = props or []
     @returns    = false
 
   makeReturn: ->
@@ -782,9 +781,9 @@ exports.Class = class Class extends Base
 
     if @parent
       applied = new Value @parent, [new Accessor new Literal 'apply']
-      constructor = new Code([], new Expressions([
+      constructor = new Code [], new Expressions [
         new Call applied, [new Literal('this'), new Literal('arguments')]
-      ]))
+      ]
     else
       constructor = new Code [], new Expressions [new Return new Literal 'this']
 
@@ -794,9 +793,10 @@ exports.Class = class Class extends Base
         if func not instanceof Code
           [func, ref] = func.compileReference o
           props.push func if func isnt ref
-          apply = new Call(new Value(ref, [new Accessor new Literal 'apply']), [new Literal('this'), new Literal('arguments')])
+          apply = new Call new Value(ref, [new Accessor new Literal 'apply']),
+                           [new Literal('this'), new Literal('arguments')]
           func  = new Code [], new Expressions([apply])
-        throw new Error "cannot define a constructor as a bound function." if func.bound
+        throw SyntaxError 'cannot define a constructor as a bound function.' if func.bound
         func.name = className
         func.body.push new Return new Literal 'this'
         variable = new Value variable
@@ -809,18 +809,18 @@ exports.Class = class Class extends Base
           func.context = className
         else
           func.bound = false
-          constScope or= new Scope(o.scope, constructor.body, constructor)
+          constScope or= new Scope o.scope, constructor.body, constructor
           me or= constScope.freeVariable 'this'
-          pname = pvar.compile(o)
+          pname = pvar.compile o
           constructor.body.push    new Return new Literal 'this' if constructor.body.empty()
           constructor.body.unshift new Literal "this.#{pname} = function(){ return #{className}.prototype.#{pname}.apply(#{me}, arguments); }"
       if pvar
         access = if prop.context is 'this' then pvar.base.properties[0] else new Accessor(pvar, 'prototype')
         val    = new Value variable, [access]
-        prop   = new Assign(val, func)
+        prop   = new Assign val, func
       props.push prop
 
-    constructor.className = className.match /[\w\d\$_]+$/
+    constructor.className = className.match /[$\w]+$/
     constructor.body.unshift new Literal "#{me} = this" if me
     construct = @idt() + new Assign(variable, constructor).compile(merge o, sharedScope: constScope) + ';'
     props     = if !props.empty() then '\n' + props.compile(o)                    else ''
@@ -841,10 +841,10 @@ exports.Assign = class Assign extends Base
 
   children: ['variable', 'value']
 
+  topSensitive: YES
+
   constructor: (@variable, @value, @context) ->
     super()
-
-  topSensitive: YES
 
   # Compile an assignment, delegating to `compilePatternMatch` or
   # `compileSplice` if appropriate. Keep track of the name of the base object
@@ -911,7 +911,7 @@ exports.Assign = class Assign extends Base
           # A shorthand `{a, b, @c} = val` pattern-match.
           idx = if obj.tags.this then obj.properties[0].name else obj
       unless obj instanceof Value or obj instanceof Splat
-        throw new Error 'pattern matching must use only identifiers on the left-hand side.'
+        throw SyntaxError 'pattern matching must use only identifiers on the left-hand side.'
       accessClass = if isObject and IDENTIFIER.test(idx.value) then Accessor else Index
       if not splat and obj instanceof Splat
         val   = new Literal obj.compileValue o, valVar, i, olength - i - 1
@@ -972,7 +972,7 @@ exports.Code = class Code extends Base
     top         = del o, 'top'
     o.scope     = sharedScope or new Scope(o.scope, @body, this)
     o.top       = true
-    o.indent    = @idt(1)
+    o.indent    = @idt 1
     empty       = @body.expressions.length is 0
     delete o.bare
     delete o.globals
@@ -998,9 +998,9 @@ exports.Code = class Code extends Base
         else
           params.push param
     o.scope.startLevel()
-    params = (param.compile(o) for param in params)
+    params = param.compile(o) for param in params
     @body.makeReturn() unless empty or @noReturn
-    (o.scope.parameter(param)) for param in params
+    o.scope.parameter param for param in params
     comm  = if @comment then @comment.compile(o) + '\n' else ''
     o.indent = @idt 2 if @className
     code  = if @body.expressions.length then "\n#{ @body.compileWithDeclarations(o) }\n" else ''
@@ -1052,12 +1052,12 @@ exports.Splat = class Splat extends Base
   assigns: (name) -> @name.assigns name
 
   compileNode: (o) ->
-    if @index? then @compileParam(o) else @name.compile(o)
+    if @index? then @compileParam o else @name.compile o
 
   # Compiling a parameter splat means recovering the parameters that succeed
   # the splat in the parameter list, by slicing the arguments object.
   compileParam: (o) ->
-    name = @name.compile(o)
+    name = @name.compile o
     o.scope.find name
     end = ''
     if @trailings.length
@@ -1107,8 +1107,10 @@ exports.Splat = class Splat extends Base
 # flexibility or more speed than a comprehension can provide.
 exports.While = class While extends Base
 
-  children:     ['condition', 'guard', 'body']
-  isStatement: YES
+  children: ['condition', 'guard', 'body']
+
+  topSensitive: YES
+  isStatement : YES
 
   constructor: (condition, opts) ->
     super()
@@ -1122,8 +1124,6 @@ exports.While = class While extends Base
   makeReturn: ->
     @returns = true
     this
-
-  topSensitive: YES
 
   # The main difference from a JavaScript *while* is that the CoffeeScript
   # *while* can be used as a part of a larger expression -- while loops may
@@ -1140,9 +1140,9 @@ exports.While = class While extends Base
       set   = "#{@tab}#{rvar} = [];\n"
       @body = Push.wrap(rvar, @body) if @body
     pre     = "#{set}#{@tab}while (#{cond})"
-    @body   = Expressions.wrap([new If(@guard, @body)]) if @guard
+    @body   = Expressions.wrap [new If @guard, @body] if @guard
     if @returns
-      post = '\n' + new Return(new Literal rvar).compile(merge(o, indent: @idt()))
+      post = '\n' + new Return(new Literal rvar).compile merge o, indent: @idt()
     else
       post = ''
     "#{pre} {\n#{ @body.compile(o) }\n#{@tab}}#{post}"
@@ -1182,21 +1182,22 @@ exports.Op = class Op extends Base
       first = new Parens first   if first instanceof Code and first.bound
     super()
     @operator = @CONVERSIONS[op] or op
-    (@first  = first ).tags.operation = yes
-    (@second = second).tags.operation = yes if second
+    (@first   = first ).tags.operation = yes
+    (@second  = second).tags.operation = yes if second
     @flip     = !!flip
 
   isUnary: ->
     not @second
 
-  isComplex: -> @operator isnt '!' or @first.isComplex()
+  isComplex: ->
+    @operator isnt '!' or @first.isComplex()
 
   isChainable: ->
     @operator in @CHAINABLE
 
   invert: ->
-    if @operator in ['===', '!==']
-      @operator = @INVERSIONS[@operator]
+    if op = @INVERSIONS[@operator]
+      @operator = op
       this
     else if @second
       new Parens(this).invert()
@@ -1204,7 +1205,7 @@ exports.Op = class Op extends Base
       super()
 
   toString: (idt) ->
-    super(idt, @constructor.name + ' ' + @operator)
+    super idt, @constructor.name + ' ' + @operator
 
   compileNode: (o) ->
     if @isUnary()
@@ -1221,10 +1222,8 @@ exports.Op = class Op extends Base
   #     bin/coffee -e "puts 50 < 65 > 10"
   #     true
   compileChain: (o) ->
-    shared = @first.unwrap().second
-    [@first.second, shared] = shared.compileReference o
-    [first, second, shared] = [@first.compile(o), @second.compile(o), shared.compile(o)]
-    "(#{first}) && (#{shared} #{@operator} #{second})"
+    [@first.second, shared] = @first.unwrap().second.compileReference o
+    "#{ @first.compile o } && #{ shared.compile o } #{@operator} #{ @second.compile o }"
 
   compileExistence: (o) ->
     if @first.isComplex()
@@ -1253,13 +1252,13 @@ exports.In = class In extends Base
     @array instanceof Value and @array.isArray()
 
   compileNode: (o) ->
-    if @isArray() then @compileOrTest(o) else @compileLoopTest(o)
+    if @isArray() then @compileOrTest o else @compileLoopTest o
 
   compileOrTest: (o) ->
     [obj1, obj2] = @object.compileReference o, precompile: yes
     tests = for item, i in @array.base.objects
-      "#{if i then obj2 else obj1} === #{item.compile(o)}"
-    "(#{tests.join(' || ')})"
+      "#{ if i then obj2 else obj1 } === #{ item.compile o }"
+    "(#{ tests.join ' || ' })"
 
   compileLoopTest: (o) ->
     [obj1, obj2] = @object.compileReference merge(o, top: yes), precompile: yes
@@ -1272,14 +1271,15 @@ exports.In = class In extends Base
 # A classic *try/catch/finally* block.
 exports.Try = class Try extends Base
 
-  children:     ['attempt', 'recovery', 'ensure']
+  children: ['attempt', 'recovery', 'ensure']
+
   isStatement: YES
 
   constructor: (@attempt, @error, @recovery, @ensure) ->
     super()
 
   makeReturn: ->
-    @attempt  = @attempt.makeReturn() if @attempt
+    @attempt  = @attempt .makeReturn() if @attempt
     @recovery = @recovery.makeReturn() if @recovery
     this
 
@@ -1289,11 +1289,11 @@ exports.Try = class Try extends Base
     o.indent    = @idt 1
     o.top       = true
     attemptPart = @attempt.compile(o)
-    errorPart   = if @error then " (#{ @error.compile(o) }) " else ' '
+    errorPart   = if @error then " (#{ @error.compile o }) " else ' '
     catchPart   = if @recovery
-      " catch#{errorPart}{\n#{ @recovery.compile(o) }\n#{@tab}}"
+      " catch#{errorPart}{\n#{ @recovery.compile o }\n#{@tab}}"
     else unless @ensure or @recovery then ' catch (_e) {}' else ''
-    finallyPart = (@ensure or '') and ' finally {\n' + @ensure.compile(merge(o)) + "\n#{@tab}}"
+    finallyPart = (@ensure or '') and ' finally {\n' + @ensure.compile(merge o) + "\n#{@tab}}"
     "#{@tab}try {\n#{attemptPart}\n#{@tab}}#{catchPart}#{finallyPart}"
 
 #### Throw
@@ -1301,7 +1301,8 @@ exports.Try = class Try extends Base
 # Simple node to throw an exception.
 exports.Throw = class Throw extends Base
 
-  children:     ['expression']
+  children: ['expression']
+
   isStatement: YES
 
   constructor: (@expression) ->
@@ -1311,7 +1312,7 @@ exports.Throw = class Throw extends Base
   makeReturn: THIS
 
   compileNode: (o) ->
-    "#{@tab}throw #{@expression.compile(o)};"
+    "#{@tab}throw #{ @expression.compile o };"
 
 #### Existence
 
@@ -1344,15 +1345,15 @@ exports.Parens = class Parens extends Base
 
   children: ['expression']
 
+  topSensitive: YES
+
   constructor: (@expression) ->
     super()
 
   isStatement: (o) ->
-    @expression.isStatement(o)
+    @expression.isStatement o
   isComplex: ->
     @expression.isComplex()
-
-  topSensitive: YES
 
   makeReturn: ->
     @expression.makeReturn()
@@ -1360,7 +1361,7 @@ exports.Parens = class Parens extends Base
   compileNode: (o) ->
     top  = del o, 'top'
     @expression.parenthetical = true
-    code = @expression.compile(o)
+    code = @expression.compile o
     return code if top and @expression.isPureStatement o
     if @parenthetical or @isStatement o
       return if top then @tab + code + ';' else code
@@ -1377,8 +1378,10 @@ exports.Parens = class Parens extends Base
 # you can map and filter in a single pass.
 exports.For = class For extends Base
 
-  children:     ['body', 'source', 'guard']
-  isStatement: YES
+  children: ['body', 'source', 'guard']
+
+  topSensitive: YES
+  isStatement : YES
 
   constructor: (@body, source, @name, @index) ->
     super()
@@ -1386,18 +1389,16 @@ exports.For = class For extends Base
     @raw    = !!source.raw
     @object = !!source.object
     [@name, @index] = [@index, @name] if @object
+    throw SyntaxError 'index cannot be a pattern matching expression' if @index instanceof Value
     @pattern = @name instanceof Value
-    throw new Error('index cannot be a pattern matching expression') if @index instanceof Value
     @returns = false
-
-  topSensitive: YES
 
   makeReturn: ->
     @returns = true
     this
 
   compileReturnValue: (val, o) ->
-    return '\n' + new Return(new Literal val).compile(o) if @returns
+    return '\n' + new Return(new Literal val).compile o if @returns
     return '\n' + val if val
     ''
 
@@ -1422,7 +1423,7 @@ exports.For = class For extends Base
     varPart       = ''
     guardPart     = ''
     unstepPart    = ''
-    body          = Expressions.wrap([@body])
+    body          = Expressions.wrap [@body]
     idt1          = @idt 1
     if range
       forPart = source.compile merge o, {index: ivar, @step}
@@ -1442,10 +1443,10 @@ exports.For = class For extends Base
         stepPart  = if @step then "#{ivar} += #{ @step.compile(o) }" else "#{ivar}++"
         forPart   = "#{ivar} = 0, #{lvar} = #{sourcePart}.length; #{ivar} < #{lvar}; #{stepPart}"
     resultPart    = if rvar then "#{@tab}#{rvar} = [];\n" else ''
-    returnResult  = @compileReturnValue(rvar, o)
-    body          = Push.wrap(rvar, body) unless topLevel
+    returnResult  = @compileReturnValue rvar, o
+    body          = Push.wrap rvar, body unless topLevel
     if @guard
-      body        = Expressions.wrap([new If(@guard, body)])
+      body        = Expressions.wrap [new If @guard, body]
     if codeInBody
       body.unshift  new Literal "var #{name} = #{ivar}" if range
       body.unshift  new Literal "var #{namePart}" if namePart
@@ -1485,8 +1486,6 @@ exports.Switch = class Switch extends Base
 
   constructor: (@subject, @cases, @otherwise) ->
     super()
-    @tags.subjectless = !@subject
-    @subject or= new Literal 'true'
 
   makeReturn: ->
     pair[1].makeReturn() for pair in @cases
@@ -1494,19 +1493,18 @@ exports.Switch = class Switch extends Base
     this
 
   compileNode: (o) ->
-    idt = o.indent = @idt 2
+    idt1  = @idt 1
+    idt2  = o.indent = @idt 2
     o.top = yes
-    code = "#{ @tab }switch (#{ @subject.compile o }) {"
-    for pair in @cases
-      [conditions, block] = pair
-      exprs = block.expressions
+    code  = "#{ @tab }switch (#{ @subject?.compile(o) or true }) {"
+    for [conditions, block] in @cases
       for condition in flatten [conditions]
-        condition = new Op '!!', new Parens condition if @tags.subjectless
-        code += "\n#{ @idt(1) }case #{ condition.compile o }:"
+        condition = condition.invert().invert() unless @subject
+        code += "\n#{ idt1 }case #{ condition.compile o }:"
       code += "\n#{ block.compile o }"
-      code += "\n#{ idt }break;" unless last(exprs) instanceof Return
+      code += "\n#{ idt2 }break;" unless last(block.expressions) instanceof Return
     if @otherwise
-      code += "\n#{ @idt(1) }default:\n#{ @otherwise.compile o }"
+      code += "\n#{ idt1 }default:\n#{ @otherwise.compile o }"
     code += "\n#{ @tab }}"
     code
 
@@ -1556,8 +1554,8 @@ exports.If = class If extends Base
 
   makeReturn: ->
     if @isStatement()
-      @body     and= @ensureExpressions(@body.makeReturn())
-      @elseBody and= @ensureExpressions(@elseBody.makeReturn())
+      @body     and= @ensureExpressions @body.makeReturn()
+      @elseBody and= @ensureExpressions @elseBody.makeReturn()
       this
     else
       new Return this
@@ -1687,7 +1685,7 @@ TAB = '  '
 TRAILING_WHITESPACE = /[ \t]+$/gm
 
 IDENTIFIER = /^[$A-Za-z_][$\w]*$/
-NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?$/i
+NUMBER     = /^0x[\da-f]+$|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?$/i
 SIMPLENUM  = /^[+-]?\d+$/
 
 # Is a literal value a string?
