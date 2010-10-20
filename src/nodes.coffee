@@ -68,6 +68,11 @@ exports.Base = class Base
     (pair[i] = node.compile o) for node, i in pair if options?.precompile
     pair
 
+  # Compile unparenthesized.
+  compileBare: (o) ->
+    @parenthetical = on
+    @compile o
+
   # Convenience method to grab the current indentation level, plus tabbing in.
   idt: (tabs) ->
     (@tab or '') + Array((tabs or 0) + 1).join TAB
@@ -494,7 +499,7 @@ exports.Call = class Call extends Base
     @variable?.tags.front = @tags.front
     for arg in @args when arg instanceof Splat
       return @compileSplat o
-    args = ((arg.parenthetical = on) and arg.compile o for arg in @args).join ', '
+    args = (arg.compileBare o for arg in @args).join ', '
     if @isSuper
       @compileSuper args, o
     else
@@ -864,7 +869,7 @@ exports.Assign = class Assign extends Base
     if @value instanceof Code and match = @METHOD_DEF.exec name
       @value.name  = match[2]
       @value.klass = match[1]
-    val = @value.compile o
+    val = @value.compileBare o
     return "#{name}: #{val}" if @context is 'object'
     o.scope.find name unless isValue and (@variable.hasProperties() or @variable.namespaced)
     val = name + " #{ @context or '=' } " + val
@@ -1131,8 +1136,7 @@ exports.While = class While extends Base
   compileNode: (o) ->
     top      =  del(o, 'top') and not @returns
     o.indent =  @idt 1
-    @condition.parenthetical = yes
-    cond     =  @condition.compile(o)
+    cond     =  @condition.compileBare o
     o.top    =  true
     set      =  ''
     unless top
@@ -1232,7 +1236,8 @@ exports.Op = class Op extends Base
     else
       fst = @first
       ref = fst.compile o
-    new Existence(fst).compile(o) + " ? #{ref} : #{ @second.compile o }"
+    @second.tags.operation = no
+    new Existence(fst).compile(o) + " ? #{ref} : #{ @second.compileBare o }"
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
@@ -1360,8 +1365,7 @@ exports.Parens = class Parens extends Base
 
   compileNode: (o) ->
     top  = del o, 'top'
-    @expression.parenthetical = true
-    code = @expression.compile o
+    code = @expression.compileBare o
     return code if top and @expression.isPureStatement o
     if @parenthetical or @isStatement o
       return if top then @tab + code + ';' else code
@@ -1517,7 +1521,7 @@ exports.Switch = class Switch extends Base
 # because ternaries are already proper expressions, and don't need conversion.
 exports.If = class If extends Base
 
-  children: ['condition', 'body', 'elseBody', 'assigner']
+  children: ['condition', 'body', 'elseBody']
 
   topSensitive: YES
 
@@ -1545,10 +1549,6 @@ exports.If = class If extends Base
   isStatement: (o) ->
     @statement or= o?.top or @bodyNode().isStatement(o) or @elseBodyNode()?.isStatement(o)
 
-  compileCondition: (o) ->
-    @condition.parenthetical = yes
-    @condition.compile o
-
   compileNode: (o) ->
     if @isStatement o then @compileStatement o else @compileExpression o
 
@@ -1571,21 +1571,19 @@ exports.If = class If extends Base
     condO    = merge o
     o.indent = @idt 1
     o.top    = true
-    ifPart   = "if (#{ @compileCondition condO }) {\n#{ @body.compile o }\n#{@tab}}"
+    ifPart   = "if (#{ @condition.compileBare condO }) {\n#{ @body.compile o }\n#{@tab}}"
     ifPart   = @tab + ifPart unless child
     return ifPart unless @elseBody
-    ifPart + if @isChain
-      ' else ' + @elseBodyNode().compile merge o, indent: @tab, chainChild: true
+    ifPart + ' else ' + if @isChain
+       @elseBodyNode().compile merge o, indent: @tab, chainChild: true
     else
-      " else {\n#{ @elseBody.compile(o) }\n#{@tab}}"
+      "{\n#{ @elseBody.compile o }\n#{@tab}}"
 
   # Compile the If as a conditional operator.
   compileExpression: (o) ->
-    @bodyNode().tags.operation = @condition.tags.operation = yes
-    @elseBodyNode().tags.operation = yes if @elseBody
-    ifPart      = @condition.compile(o) + ' ? ' + @bodyNode().compile(o)
-    elsePart    = if @elseBody then @elseBodyNode().compile(o) else 'undefined'
-    code        = "#{ifPart} : #{elsePart}"
+    code = @condition.compile(o)      + ' ? ' +
+           @bodyNode().compileBare(o) + ' : ' +
+           @elseBodyNode()?.compileBare o
     if @tags.operation or @soakNode then "(#{code})" else code
 
   unfoldSoak: -> @soakNode and this
