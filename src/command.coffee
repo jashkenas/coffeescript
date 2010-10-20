@@ -74,7 +74,7 @@ exports.run = ->
 # '.coffee' extension source files in it and all subdirectories.
 compileScripts = ->
   for source in sources
-    base = source
+    base = path.join(source)
     compile = (source, topLevel) ->
       path.exists source, (exists) ->
         throw new Error "File not found: #{source}" unless exists
@@ -149,7 +149,8 @@ writeJs = (source, js, base) ->
   compile   = ->
     js = ' ' if js.length <= 0
     fs.writeFile jsPath, js, (err) ->
-      puts "Compiled #{source}" if opts.compile and opts.watch
+      if err then puts err.message
+      else if opts.compile and opts.watch then puts "Compiled #{source}"
   path.exists dir, (exists) ->
     if exists then compile() else exec "mkdir -p #{dir}", compile
 
