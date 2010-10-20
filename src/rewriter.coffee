@@ -165,7 +165,7 @@ class exports.Rewriter
       token.call = yes if prev and not prev.spaced and tag is '?'
       return 1 unless callObject or
         prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
-        (tag in IMPLICIT_CALL or tag in IMPLICIT_UNSPACED_CALL and not token.spaced)
+        (tag in IMPLICIT_CALL or not token.spaced and tag in IMPLICIT_UNSPACED_CALL)
       tokens.splice i, 0, ['CALL_START', '(', token[2]]
       @detectEnd i + (if callObject then 2 else 1), (token, i) ->
         return yes if not seenSingle and token.fromThen
@@ -174,7 +174,7 @@ class exports.Rewriter
         return yes if tag is 'PROPERTY_ACCESS' and @tag(i - 1) is 'OUTDENT'
         not token.generated and @tag(i - 1) isnt ',' and tag in IMPLICIT_END and
         (tag isnt 'INDENT' or
-         (@tag(i - 2) isnt 'CLASS' and not (@tag(i - 1) in IMPLICIT_BLOCK) and
+         (@tag(i - 2) isnt 'CLASS' and @tag(i - 1) not in IMPLICIT_BLOCK and
           not ((post = @tokens[i + 1]) and post.generated and post[0] is '{')))
       , action
       prev[0] = 'FUNC_EXIST' if prev[0] is '?'

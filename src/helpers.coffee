@@ -2,18 +2,6 @@
 # the **Lexer**, **Rewriter**, and the **Nodes**. Merge objects, flatten
 # arrays, count characters, that sort of thing.
 
-# Cross-engine `indexOf`, so that JScript can join the party. Use SpiderMonkey's
-# functional-style `indexOf`, if it's available.
-indexOf = exports.indexOf = Array.indexOf or
-  if Array::indexOf
-    (array, item, from) -> array.indexOf item, from
-  else
-    (array, item, from) ->
-      for other, index in array
-        if other is item and (not from or from <= index)
-          return index
-      -1
-
 # Peek at the beginning of a given string to see if it matches a sequence.
 exports.starts = (string, literal, start) ->
   literal is string.substr start, literal.length

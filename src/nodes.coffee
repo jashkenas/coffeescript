@@ -1207,13 +1207,13 @@ exports.Op = class Op extends Base
     super(idt, @constructor.name + ' ' + @operator)
 
   compileNode: (o) ->
-    return @compileChain o if @isChainable() and @first.unwrap().isChainable()
     if @isUnary()
       return ifn.compile o if @operator in @MUTATORS and ifn = If.unfoldSoak o, this, 'first'
       return @compileUnary o
+    return @compileChain o     if @isChainable() and @first.unwrap().isChainable()
     return @compileExistence o if @operator is '?'
     @first.tags.front = @tags.front
-    [@first.compile(o), @operator, @second.compile(o)].join ' '
+    "#{ @first.compile o } #{@operator} #{ @second.compile o }"
 
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. For example:

@@ -318,7 +318,7 @@ exports.Lexer = class Lexer
         prev[0] = 'COMPOUND_ASSIGN'
         prev[1] += '='
         return true
-    if ';' is value                  then tag = 'TERMINATOR'
+    if      value is ';'             then tag = 'TERMINATOR'
     else if value in LOGIC           then tag = 'LOGIC'
     else if value in MATH            then tag = 'MATH'
     else if value in COMPARE         then tag = 'COMPARE'

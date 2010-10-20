@@ -1,14 +1,8 @@
-{indexOf, starts, ends, compact, count, merge, extend, flatten, del, last} = CoffeeScript.helpers
+{starts, ends, compact, count, merge, extend, flatten, del, last} = CoffeeScript.helpers
 
 array  = [0..4]
 string = array.join ''
 object = {}
-
-# Test `indexOf`
-eq 0, indexOf array, 0
-eq 2, indexOf array, 2
-eq 4, indexOf array, 4
-eq(-1, indexOf array, 6)
 
 # Test `starts`
 ok starts string, '012'
