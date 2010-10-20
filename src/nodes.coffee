@@ -403,9 +403,10 @@ exports.Value = class Value extends Base
         ref = new Literal o.scope.freeVariable 'ref'
         fst = new Parens new Assign ref, fst
         snd.base = ref
-      ifn = new If new Existence(fst), snd, soak: yes
-      return ifn
+      return new If new Existence(fst), snd, soak: on, operation: @tags.operation
     null
+
+  @wrap: (node) -> if node instanceof Value then node else new Value node
 
 #### Comment
 
@@ -463,17 +464,16 @@ exports.Call = class Call extends Base
   # Soaked chained invocations unfold into if/else ternary structures.
   unfoldSoak: (o) ->
     if @soakNode
-      if val = @variable
-        val = new Value val unless val instanceof Value
-        [left, rite] = val.cacheReference o
+      if @variable
+        return ifn if ifn = If.unfoldSoak o, this, 'variable'
+        [left, rite] = Value.wrap(@variable).cacheReference o
       else
         left = new Literal @superReference o
         rite = new Value left
       rite = new Call rite, @args
       rite.isNew = @isNew
       left = new Literal "typeof #{ left.compile o } === \"function\""
-      ifn  = new If left, new Value(rite), soak: yes
-      return ifn
+      return new If left, new Value(rite), soak: yes, operation: @tags.operation
     call = this
     list = []
     loop
@@ -518,7 +518,7 @@ exports.Call = class Call extends Base
     splatargs = @compileSplatArguments o
     return "#{ @superReference o }.apply(this, #{splatargs})" if @isSuper
     unless @isNew
-      base = new Value base unless (base = @variable) instanceof Value
+      base = Value.wrap @variable
       if (name = base.properties.pop()) and base.isComplex()
         ref = o.scope.freeVariable 'this'
         fun = "(#{ref} = #{ base.compile o })#{ name.compile o }"
@@ -893,9 +893,8 @@ exports.Assign = class Assign extends Base
         idx = if isObject
           if obj.tags.this then obj.properties[0].name else obj
         else new Literal 0
-      value = new Value value unless value instanceof Value
       accessClass = if IDENTIFIER.test idx.value then Accessor else Index
-      value.properties.push new accessClass idx
+      (value = Value.wrap value).properties.push new accessClass idx
       return new Assign(obj, value).compile o
     top     = del o, 'top'
     otop    = merge o, top: yes
@@ -1581,10 +1580,11 @@ exports.If = class If extends Base
 
   # Compile the If as a conditional operator.
   compileExpression: (o) ->
+    @condition.tags.operation = on
     code = @condition.compile(o)      + ' ? ' +
            @bodyNode().compileBare(o) + ' : ' +
            @elseBodyNode()?.compileBare o
-    if @tags.operation or @soakNode then "(#{code})" else code
+    if @tags.operation then "(#{code})" else code
 
   unfoldSoak: -> @soakNode and this
 
@@ -1593,6 +1593,7 @@ exports.If = class If extends Base
     return unless ifn = parent[name].unfoldSoak o
     parent[name] = ifn.body
     ifn.body     = new Value parent
+    ifn.tags.operation = on if parent.tags.operation
     ifn
 
 # Faux-Nodes
