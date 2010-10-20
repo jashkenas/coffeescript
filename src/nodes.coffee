@@ -296,7 +296,7 @@ exports.Return = class Return extends Base
     expr = ''
     if @expression
       o.asStatement = true if @expression.isStatement(o)
-      expr = ' ' + @expression.compile(o)
+      expr = ' ' + @expression.compileBare o
     "#{@tab}return#{expr};"
 
 #### Value
@@ -1252,23 +1252,23 @@ exports.In = class In extends Base
   constructor: (@object, @array) ->
     super()
 
-  isArray: ->
-    @array instanceof Value and @array.isArray()
-
   compileNode: (o) ->
-    if @isArray() then @compileOrTest o else @compileLoopTest o
+    code = if @array instanceof Value and @array.isArray()
+      @compileOrTest o
+    else
+      @compileLoopTest o
+    if @parenthetical then code else "(#{code})"
 
   compileOrTest: (o) ->
-    [obj1, obj2] = @object.compileReference o, precompile: yes
+    [sub, ref] = @object.compileReference o, precompile: yes
     tests = for item, i in @array.base.objects
-      "#{ if i then obj2 else obj1 } === #{ item.compile o }"
-    "(#{ tests.join ' || ' })"
+      "#{ if i then ref else sub } === #{ item.compile o }"
+    tests.join ' || '
 
   compileLoopTest: (o) ->
-    [obj1, obj2] = @object.compileReference merge(o, top: yes), precompile: yes
-    prefix = if obj1 isnt obj2 then "#{obj1}, " else ''
-    code = "#{prefix}#{utility 'indexOf'}.call(#{@array.compile o}, #{obj2}) >= 0"
-    if @parenthetical then code else "(#{code})"
+    [sub, ref] = @object.compileReference merge(o, top: yes), precompile: yes
+    code = utility('indexOf') + ".call(#{ @array.compile o }, #{ref}) >= 0"
+    if sub is ref then code else sub + ', ' + code
 
 #### Try
 
