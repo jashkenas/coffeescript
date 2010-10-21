@@ -281,16 +281,14 @@ exports.Lexer = class Lexer
   # Matches and consumes non-meaningful whitespace. Tag the previous token
   # as being "spaced", because there are some cases where it makes a difference.
   whitespaceToken: ->
-    return false unless match = WHITESPACE.exec @chunk
+    return false unless (match = WHITESPACE.exec @chunk) or nline = @chunk.substring(0, 1) is '\n'
     prev = last @tokens
-    prev.spaced = true if prev
-    @i += match[0].length
-    true
+    prev[if match then 'spaced' else 'newLine'] = true if prev
+    @i += match[0].length if match
+    !!match
 
   # Generate a newline token. Consecutive newlines get merged together.
   newlineToken: (newlines) ->
-    prev = last @tokens
-    prev.newLine = true if prev
     @token 'TERMINATOR', '\n' unless @tag() is 'TERMINATOR'
     true
 

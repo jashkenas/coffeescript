@@ -155,6 +155,10 @@ ok a() not in [b(),c()] and share is 3
 
 
 # Operators should respect new lines as spaced.
-a = 123 +
+a = (123) +
 456
 ok a is 579
+
+a = "1#{2}3" +
+"456"
+ok a is '123456'
