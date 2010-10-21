@@ -18,7 +18,7 @@ exports.Scope = class Scope
   # where it should declare its variables, and a reference to the function that
   # it wraps.
   constructor: (@parent, @expressions, @method) ->
-    @variables = []
+    @variables = [{name: 'arguments', type: 'arguments'}]
     @positions = {}
     if @parent
       @garbage = @parent.garbage
