@@ -289,6 +289,8 @@ exports.Lexer = class Lexer
 
   # Generate a newline token. Consecutive newlines get merged together.
   newlineToken: (newlines) ->
+    prev = last @tokens
+    prev.newLine = true if prev
     @token 'TERMINATOR', '\n' unless @tag() is 'TERMINATOR'
     true
 
