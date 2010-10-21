@@ -1273,11 +1273,9 @@ exports.In = class In extends Base
 
   compileLoopTest: (o) ->
     [sub, ref] = @object.compileReference merge(o, top: yes), precompile: yes
-    code  = utility('indexOf') + ".call(#{ @array.compile o }, #{ref}) "
-    code += (if @negated then '< 0' else '>= 0')
-    return code if sub is ref
-    code = sub + ', ' + code
-    if @parenthetical then code else "(#{code})"
+    code = utility('indexOf') + ".call(#{ @array.compile o }, #{ref}) " +
+           if @negated then '< 0' else '>= 0'
+    if sub is ref then code else "(#{sub}, #{code})"
 
   toString: (idt) ->
     super idt, @constructor.name + if @negated then '!' else ''

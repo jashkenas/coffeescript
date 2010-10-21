@@ -151,7 +151,10 @@ share = 0
 a = -> share++ if share is 0
 b = -> share++ if share is 1
 c = -> share++ if share is 2
-ok a() not in [b(),c()] and share is 3 
+ok a() not in [b(),c()] and share is 3
+
+# `in` with cache and `__indexOf` should work in commaed lists
+eq [Object() in Array()].length, 1
 
 
 # Operators should respect new lines as spaced.
