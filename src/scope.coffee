@@ -18,20 +18,20 @@ exports.Scope = class Scope
   # where it should declare its variables, and a reference to the function that
   # it wraps.
   constructor: (@parent, @expressions, @method) ->
-    @variables = [{name: 'arguments', type: 'arguments'}]
+    @variables = []
     @positions = {}
     if @parent
-      {@garbage} = @parent
+      @garbage = @parent.garbage
     else
       @garbage   = []
       Scope.root = this
-  
+
   # Adds a new variable or overrides an existing one.
-  setVar: (name, type) ->
+  add: (name, type) ->
     if @positions.hasOwnProperty name
       @variables[@positions[name]].type = type
     else
-      @positions[name] = -1 + @variables.push {name, type}
+      @positions[name] = @variables.push({name, type}) - 1
     this
 
   # Create a new garbage level
@@ -42,14 +42,14 @@ exports.Scope = class Scope
   # Return to the previous garbage level and erase referenced temporary
   # variables in current level from scope.
   endLevel: ->
-    @setVar name, 'reuse' for name in @garbage.pop() when @type(name) is 'var'
+    @add name, 'reuse' for name in @garbage.pop() when @type(name) is 'var'
     this
 
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
   find: (name, options) ->
     return true if @check name, options
-    @setVar name, 'var'
+    @add name, 'var'
     false
 
   # Test variables and return `true` the first time `fn(v)` returns `true`
@@ -60,7 +60,7 @@ exports.Scope = class Scope
   # Reserve a variable name as originating from a function parameter for this
   # scope. No `var` required for internal references.
   parameter: (name) ->
-    @setVar name, 'param'
+    @add name, 'param'
 
   # Just check to see if a variable has already been declared, without reserving,
   # walks up to the root scope.
@@ -75,25 +75,25 @@ exports.Scope = class Scope
       '_' + name + if index > 1 then index else ''
     else
       '_' + (index + parseInt name, 36).toString(36).replace /\d/g, 'a'
-  
+
   # Gets the type of a variable.
   type: (name) ->
     for v in @variables when v.name is name then return v.type
     null
-  
+
   # If we need to store an intermediate result, find an available name for a
   # compiler-generated variable. `_var`, `_var2`, and so on...
   freeVariable: (type) ->
     index = 0
     index++ while @check(temp = @temporary type, index) and @type(temp) isnt 'reuse'
-    @setVar temp, 'var'
+    @add temp, 'var'
     last(@garbage)?.push temp
     temp
 
   # Ensure that an assignment is made at the top of this scope
   # (or at the top-level scope, if requested).
   assign: (name, value) ->
-    @setVar name, value: value, assigned: true
+    @add name, value: value, assigned: true
 
   # Does this scope reference any variables that need to be declared in the
   # given function body?
