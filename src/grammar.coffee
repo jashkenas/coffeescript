@@ -525,34 +525,32 @@ grammar =
   # -type rule, but in order to make the precedence binding possible, separate
   # rules are necessary.
   Operation: [
-    o 'UNARY Expression',                -> new Op $1 , $2
-    o '-     Expression',               (-> new Op '-', $2), prec: 'UNARY'
-    o '+     Expression',               (-> new Op '+', $2), prec: 'UNARY'
+    o 'UNARY Expression',                       -> new Op $1 , $2
+    o '-     Expression',                      (-> new Op '-', $2), prec: 'UNARY'
+    o '+     Expression',                      (-> new Op '+', $2), prec: 'UNARY'
 
-    o '-- SimpleAssignable',             -> new Op '--', $2
-    o '++ SimpleAssignable',             -> new Op '++', $2
-    o 'SimpleAssignable --',             -> new Op '--', $1, null, true
-    o 'SimpleAssignable ++',             -> new Op '++', $1, null, true
+    o '-- SimpleAssignable',                    -> new Op '--', $2
+    o '++ SimpleAssignable',                    -> new Op '++', $2
+    o 'SimpleAssignable --',                    -> new Op '--', $1, null, true
+    o 'SimpleAssignable ++',                    -> new Op '++', $1, null, true
 
-    o 'Expression +  Expression',        -> new Op '+' , $1, $3
-    o 'Expression -  Expression',        -> new Op '-' , $1, $3
-    o 'Expression == Expression',        -> new Op '==', $1, $3
-    o 'Expression != Expression',        -> new Op '!=', $1, $3
+    o 'Expression +  Expression',               -> new Op '+' , $1, $3
+    o 'Expression -  Expression',               -> new Op '-' , $1, $3
+    o 'Expression == Expression',               -> new Op '==', $1, $3
+    o 'Expression != Expression',               -> new Op '!=', $1, $3
 
-    o 'Expression MATH     Expression',  -> new Op $2, $1, $3
-    o 'Expression SHIFT    Expression',  -> new Op $2, $1, $3
-    o 'Expression COMPARE  Expression',  -> new Op $2, $1, $3
-    o 'Expression LOGIC    Expression',  -> new Op $2, $1, $3
-    o 'Expression RELATION Expression',  ->
+    o 'Expression MATH     Expression',         -> new Op $2, $1, $3
+    o 'Expression SHIFT    Expression',         -> new Op $2, $1, $3
+    o 'Expression COMPARE  Expression',         -> new Op $2, $1, $3
+    o 'Expression LOGIC    Expression',         -> new Op $2, $1, $3
+    o 'Expression RELATION Expression',         ->
       if $2.charAt(0) is '!'
         new Op($2.slice(1), $1, $3).invert()
       else
         new Op $2, $1, $3
 
-    o 'SimpleAssignable COMPOUND_ASSIGN Expression',
-      -> new Assign $1, $3, $2
-    o 'SimpleAssignable COMPOUND_ASSIGN INDENT Expression OUTDENT',
-      -> new Assign $1, $4, $2
+    o 'SimpleAssignable COMPOUND_ASSIGN Expression', -> new Assign $1, $3, $2
+    o 'SimpleAssignable COMPOUND_ASSIGN INDENT Expression OUTDENT', -> new Assign $1, $4, $2
   ]
 
 
