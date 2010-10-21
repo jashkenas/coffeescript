@@ -407,7 +407,6 @@ grammar =
   # the trick.
   Parenthetical: [
     o "( Expression )",                         -> new Parens $2
-    o "( )",                                    -> new Parens new Literal ''
   ]
 
   # The condition portion of a while loop.
