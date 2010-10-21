@@ -335,6 +335,11 @@ exports.Value = class Value extends Base
   isComplex: ->
     @base.isComplex() or @hasProperties()
 
+  isAtomic: ->
+    for node in @properties.concat @base
+      return no if node.soakNode or node instanceof Call
+    yes
+
   assigns: (name) ->
     not @properties.length and @base.assigns name
 
@@ -1374,9 +1379,12 @@ exports.Parens = class Parens extends Base
 
   compileNode: (o) ->
     top  = del o, 'top'
-    code = @expression.compileBare o
-    return code if top and @expression.isPureStatement o
-    if @parenthetical or @isStatement o
+    expr = @expression
+    if expr instanceof Value and expr.isAtomic()
+      expr.tags.front = @tags.front
+      return expr.compile o
+    code = expr.compileBare o
+    if @parenthetical or expr.isStatement o
       return if top then @tab + code + ';' else code
     "(#{code})"
 
