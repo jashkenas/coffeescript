@@ -1405,7 +1405,9 @@ exports.For = class For extends Base
     @object = !!source.object
     [@name, @index] = [@index, @name] if @object
     throw SyntaxError 'index cannot be a pattern matching expression' if @index instanceof Value
+    @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length
     @pattern = @name instanceof Value
+    throw SyntaxError 'cannot pattern match a range loop' if @range and @pattern
     @returns = false
 
   makeReturn: ->
@@ -1423,24 +1425,23 @@ exports.For = class For extends Base
   # some cannot.
   compileNode: (o) ->
     topLevel      = del(o, 'top') and not @returns
-    range         = @source instanceof Value and @source.base instanceof Range and not @source.properties.length
-    source        = if range then @source.base else @source
+    source        = if @range then @source.base else @source
     codeInBody    = not @body.containsPureStatement() and @body.contains (node) -> node instanceof Code
     scope         = o.scope
     name          = @name  and @name.compile o
     index         = @index and @index.compile o
-    scope.find(name,  immediate: yes) if name and not @pattern and (range or not codeInBody)
+    scope.find(name,  immediate: yes) if name and not @pattern and (@range or not codeInBody)
     scope.find(index, immediate: yes) if index
     rvar          = scope.freeVariable 'result' unless topLevel
-    ivar          = if range then name else index
+    ivar          = if @range then name else index
     ivar          = scope.freeVariable 'i' if not ivar or codeInBody
-    nvar          = scope.freeVariable 'i' if name and not range and codeInBody
+    nvar          = scope.freeVariable 'i' if name and not @range and codeInBody
     varPart       = ''
     guardPart     = ''
     unstepPart    = ''
     body          = Expressions.wrap [@body]
     idt1          = @idt 1
-    if range
+    if @range
       forPart = source.compile merge o, {index: ivar, @step}
     else
       svar = sourcePart = @source.compile o
@@ -1463,7 +1464,7 @@ exports.For = class For extends Base
     if @guard
       body        = Expressions.wrap [new If @guard, body]
     if codeInBody
-      body.unshift  new Literal "var #{name} = #{ivar}" if range
+      body.unshift  new Literal "var #{name} = #{ivar}" if @range
       body.unshift  new Literal "var #{namePart}" if namePart
       body.unshift  new Literal "var #{index} = #{ivar}" if index
       lastLine    = body.expressions.pop()
@@ -1472,8 +1473,8 @@ exports.For = class For extends Base
       body.push     lastLine
       o.indent    = @idt 1
       body        = Expressions.wrap [new Literal body.compile o]
-      body.push     new Assign new Literal(index), new Literal ivar if index
-      body.push     new Assign new Literal(name), new Literal nvar or ivar if name
+      body.push     new Assign @index, new Literal ivar if index
+      body.push     new Assign @name, new Literal nvar or ivar if name
     else
       varPart     = "#{idt1}#{namePart};\n" if namePart
       if forPart and name is ivar
@@ -1483,7 +1484,7 @@ exports.For = class For extends Base
       forPart     = "#{ivar} in #{sourcePart}"
       guardPart   = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" unless @raw
     body          = body.compile merge o, indent: idt1, top: true
-    vars          = if range then name else "#{name}, #{ivar}"
+    vars          = if @range then name else "#{name}, #{ivar}"
     """
     #{resultPart}#{@tab}for (#{forPart}) {#{guardPart}
     #{varPart}#{body}

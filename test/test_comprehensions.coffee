@@ -95,6 +95,10 @@ for i in [0]
 ok count is 0
 ok i is 50
 
+for [a, b] in [[0, 1]] then ->
+ok a is 0
+ok b is 1
+
 
 # Even when referenced in the filter.
 list = ['one', 'two', 'three']
