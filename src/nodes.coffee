@@ -881,11 +881,13 @@ exports.Assign = class Assign extends Base
   # See the [ECMAScript Harmony Wiki](http://wiki.ecmascript.org/doku.php?id=harmony:destructuring)
   # for details.
   compilePatternMatch: (o) ->
+    top  = del o, 'top'
+    otop = merge o, top: yes
     if (value = @value).isStatement o then value = Closure.wrap value
     {objects} = @variable.base
     return value.compile o unless olength = objects.length
     isObject = @variable.isObject()
-    if o.top and olength is 1 and (obj = objects[0]) not instanceof Splat
+    if top and olength is 1 and (obj = objects[0]) not instanceof Splat
       # Unroll simplest cases: `{v} = x` -> `v = x.v`
       if obj instanceof Assign
         {variable: {base: idx}, value: obj} = obj
@@ -895,9 +897,7 @@ exports.Assign = class Assign extends Base
         else new Literal 0
       accessClass = if IDENTIFIER.test idx.value then Accessor else Index
       (value = Value.wrap value).properties.push new accessClass idx
-      return new Assign(obj, value).compile o
-    top     = del o, 'top'
-    otop    = merge o, top: yes
+      return new Assign(obj, value).compile otop
     valVar  = value.compile o
     assigns = []
     splat   = false
@@ -1180,6 +1180,7 @@ exports.Op = class Op extends Base
   children: ['first', 'second']
 
   constructor: (op, first, second, flip) ->
+    return new In first, second if op is 'in'
     if op is 'new'
       return first.newInstance() if first instanceof Call
       first = new Parens first   if first instanceof Code and first.bound
@@ -1252,23 +1253,34 @@ exports.In = class In extends Base
   constructor: (@object, @array) ->
     super()
 
+  invert: ->
+    @negated = not @negated
+    this
+
   compileNode: (o) ->
-    code = if @array instanceof Value and @array.isArray()
+    if @array instanceof Value and @array.isArray()
       @compileOrTest o
     else
       @compileLoopTest o
-    if @parenthetical then code else "(#{code})"
 
   compileOrTest: (o) ->
     [sub, ref] = @object.compileReference o, precompile: yes
+    [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
     tests = for item, i in @array.base.objects
-      "#{ if i then ref else sub } === #{ item.compile o }"
-    tests.join ' || '
+      (if i then ref else sub) + cmp + item.compile o
+    tests = tests.join cnj
+    if @parenthetical then tests else "(#{tests})"
 
   compileLoopTest: (o) ->
     [sub, ref] = @object.compileReference merge(o, top: yes), precompile: yes
-    code = utility('indexOf') + ".call(#{ @array.compile o }, #{ref}) >= 0"
-    if sub is ref then code else sub + ', ' + code
+    code  = utility('indexOf') + ".call(#{ @array.compile o }, #{ref}) "
+    code += (if @negated then '< 0' else '>= 0')
+    return code if sub is ref
+    code = sub + ', ' + code
+    if @parenthetical then code else "(#{code})"
+
+  toString: (idt) ->
+    super idt, @constructor.name + if @negated then '!' else ''
 
 #### Try
 
