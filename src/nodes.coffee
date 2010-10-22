@@ -42,19 +42,21 @@ exports.Base = class Base
   # depending on whether it's being used as part of a larger expression, or is a
   # top-level statement within the function body.
   compile: (o) ->
-    @options = if o then merge o else {}
-    @tab     = o.indent
-    top     = if @topSensitive() then @options.top else del @options, 'top'
-    closure = @isStatement(o) and not @isPureStatement() and not top and
-              not @options.asStatement and this not instanceof Comment
-    code = if closure then @compileClosure(@options) else @compileNode(@options)
-    code
+    o    = if o then merge o else {}
+    top  = if @topSensitive() then o.top else del o, 'top'
+    @tab = o.indent
+    if top or o.asStatement or this instanceof Comment or
+       @isPureStatement() or not @isStatement(o)
+      @compileNode o
+    else
+      @compileClosure o
 
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
   compileClosure: (o) ->
+    if @containsPureStatement()
+      throw SyntaxError 'cannot include a pure statement in an expression.'
     o.sharedScope = o.scope
-    throw SyntaxError 'cannot include a pure statement in an expression.' if @containsPureStatement()
     Closure.wrap(this).compile o
 
   # If the code generation wishes to use the result of a complex expression
@@ -78,7 +80,7 @@ exports.Base = class Base
   # Compile to a source/variable pair suitable for looping.
   compileLoopReference: (o, name) ->
     src = tmp = @compile o
-    unless NUMBER.test(src) or (IDENTIFIER.test(src) and o.scope.check(src, immediate: on))
+    unless NUMBER.test(src) or IDENTIFIER.test(src) and o.scope.check(src, immediate: on)
       src = "#{ tmp = o.scope.freeVariable name } = #{src}"
     [src, tmp]
 
@@ -113,9 +115,6 @@ exports.Base = class Base
   containsPureStatement: ->
     @isPureStatement() or @contains (node) -> node.isPureStatement()
 
-  # Perform an in-order traversal of the AST. Crosses scope boundaries.
-  traverse: (block) -> @traverseChildren true, block
-
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   toString: (idt, override) ->
@@ -124,11 +123,12 @@ exports.Base = class Base
     klass = override or @constructor.name + if @soakNode then '?' else ''
     '\n' + idt + klass + children
 
+  # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
-    return unless @children
-    for attr in @children when this[attr]
-      for child in flatten [this[attr]]
-        return if func(child) is false
+    return this unless @children
+    for attr in @children when @[attr]
+      for child in flatten [@[attr]]
+        return this if func(child) is false
     this
 
   collectChildren: ->
@@ -139,8 +139,7 @@ exports.Base = class Base
   traverseChildren: (crossScope, func) ->
     @eachChild (child) ->
       return false if func(child) is false
-      if crossScope or child not instanceof Code
-        child.traverseChildren crossScope, func
+      child.traverseChildren crossScope, func
 
   invert: -> new Op '!', this
 
@@ -224,7 +223,7 @@ exports.Expressions = class Expressions extends Base
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
   compileWithDeclarations: (o) ->
-    code = @compileNode(o)
+    code = @compileNode o
     if o.scope.hasAssignments this
       code = "#{@tab}var #{ o.scope.compiledAssignments().replace /\n/g, '$&' + @tab };\n#{code}"
     if not o.globals and o.scope.hasDeclarations this
@@ -235,16 +234,16 @@ exports.Expressions = class Expressions extends Base
   # return the result, and it's an expression, simply return it. If it's a
   # statement, ask the statement to do so.
   compileExpression: (node, o) ->
-    @tab = o.indent
-    node.tags.front = true
-    compiledNode = node.compile merge o, top: true
-    if node.isStatement(o) then compiledNode else "#{@idt()}#{compiledNode};"
+    o.top = node.tags.front = on
+    @tab  = o.indent
+    code  = node.compile o
+    if node.isStatement o then code else @tab + code + ';'
 
-# Wrap up the given nodes as an **Expressions**, unless it already happens
-# to be one.
-Expressions.wrap = (nodes) ->
-  return nodes[0] if nodes.length is 1 and nodes[0] instanceof Expressions
-  new Expressions(nodes)
+  # Wrap up the given nodes as an **Expressions**, unless it already happens
+  # to be one.
+  @wrap: (nodes) ->
+    return nodes[0] if nodes.length is 1 and nodes[0] instanceof Expressions
+    new Expressions nodes
 
 #### Literal
 
@@ -261,22 +260,16 @@ exports.Literal = class Literal extends Base
 
   # Break and continue must be treated as pure statements -- they lose their
   # meaning when wrapped in a closure.
-  isStatement: ->
-    @value in ['break', 'continue', 'debugger']
+  isStatement    : -> @value in ['break', 'continue', 'debugger']
   isPureStatement: Literal::isStatement
 
   isComplex: NO
 
-  isReserved: ->
-    !!@value.reserved
-
   assigns: (name) -> name is @value
 
-  compileNode: (o) ->
-    idt = if @isStatement o then @idt()          else ''
-    end = if @isStatement o then ';'             else ''
-    val = if @isReserved()  then "\"#{@value}\"" else @value
-    idt + val + end
+  compileNode: ->
+    val = if @value.reserved then "\"#{@value}\"" else @value
+    if @isStatement() then @tab + val + ';' else val
 
   toString: -> ' "' + @value + '"'
 
@@ -298,15 +291,14 @@ exports.Return = class Return extends Base
 
   compile: (o) ->
     expr = @expression?.makeReturn()
-    return expr.compile o if expr and expr not instanceof Return
-    super o
+    if expr and expr not instanceof Return then expr.compile o else super o
 
   compileNode: (o) ->
     expr = ''
     if @expression
-      o.asStatement = true if @expression.isStatement(o)
+      o.asStatement = true if @expression.isStatement o
       expr = ' ' + @expression.compileBare o
-    "#{@tab}return#{expr};"
+    @tab + 'return' + expr + ';'
 
 #### Value
 
@@ -320,7 +312,7 @@ exports.Value = class Value extends Base
   constructor: (@base, props, tag) ->
     super()
     @properties = props or []
-    @tags[tag] = yes if tag
+    @tags[tag]  = yes if tag
 
   # Add a property access to the list.
   push: (prop) ->
@@ -369,8 +361,7 @@ exports.Value = class Value extends Base
   # `a()[b()] ?= c` -> `(_base = a())[_name = b()] ? _base[_name] = c`
   cacheReference: (o) ->
     name = last @properties
-    if not @base.isComplex() and @properties.length < 2 and
-       not name?.isComplex()
+    if @properties.length < 2 and not @base.isComplex() and not name?.isComplex()
       return [this, this]  # `a` `a.b`
     base = new Value @base, @properties.slice 0, -1
     if base.isComplex()  # `a().b`
@@ -386,7 +377,7 @@ exports.Value = class Value extends Base
   # Override compile to unwrap the value when possible.
   compile: (o) ->
     @base.tags.front = @tags.front
-    if not o.top or @properties.length then super(o) else @base.compile(o)
+    if not o.top or @properties.length then super o else @base.compile o
 
   # We compile a value to JavaScript by compiling and joining each property.
   # Things get much more insteresting if the chain of properties has *soak*
@@ -869,8 +860,8 @@ exports.Code = class Code extends Base
 
   constructor: (@params, @body, tag) ->
     super()
-    @params   or= []
-    @body     or= new Expressions
+    @params or= []
+    @body   or= new Expressions
     @bound    = tag is 'boundfunc'
     @context  = 'this' if @bound
 
@@ -923,8 +914,8 @@ exports.Code = class Code extends Base
     return "#{utility 'bind'}(#{func}, #{@context})" if @bound
     if @tags.front then "(#{func})" else func
 
-  # Short-circuit traverseChildren method to prevent it from crossing scope boundaries
-  # unless crossScope is true
+  # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
+  # unless `crossScope` is `true`.
   traverseChildren: (crossScope, func) -> super(crossScope, func) if crossScope
 
 #### Param
