@@ -53,7 +53,7 @@ memoize = (fn) ->
 
 Math = {
   Add: (a, b) -> a + b
-  AnonymousAdd: ((a, b) -> a + b)
+  AnonymousAdd: (a, b) -> a + b
   FastAdd: memoize (a, b) -> a + b
 }
 
@@ -339,3 +339,9 @@ ok (func -5) is -4
 # Prefix unary assignment operators are allowed in parenless calls.
 val = 5
 ok (func --val) is 5
+
+
+eq ok, new ->
+  ok
+  ### Should `return` implicitly   ###
+  ### even with trailing comments. ###
