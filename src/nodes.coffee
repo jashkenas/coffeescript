@@ -78,8 +78,7 @@ exports.Base = class Base
   # Compile to a source/variable pair suitable for looping.
   compileLoopReference: (o, name) ->
     src = tmp = @compile o
-    unless NUMBER.test(src) or
-           IDENTIFIER.test(src) and o.scope.check(src, immediate: on)
+    unless NUMBER.test(src) or (IDENTIFIER.test(src) and o.scope.check(src, immediate: on))
       src = "#{ tmp = o.scope.freeVariable name } = #{src}"
     [src, tmp]
 
@@ -1352,9 +1351,8 @@ exports.For = class For extends Base
       else
         "#{pvar} < 0 ? #{ivar} >= #{tvar} : #{ivar} <= #{tvar}"
     else
-      if name or not @raw
+      if name
         [sourcePart, svar] = @source.compileLoopReference o, 'ref'
-        sourcePart = "(#{sourcePart})" unless sourcePart is svar or @object
       else
         sourcePart = svar = @source.compile o
       namePart = if @pattern
@@ -1363,31 +1361,33 @@ exports.For = class For extends Base
         "#{name} = #{svar}[#{ivar}]"
       unless @object
         if 0 > pvar and (pvar | 0) is +pvar  # negative int
-          vars = "#{ivar} = #{sourcePart}.length - 1"
+          vars = "#{ivar} = #{svar}.length - 1"
           cond = "#{ivar} >= 0"
         else
           lvar = scope.freeVariable 'len'
-          vars = "#{ivar} = 0, #{lvar} = #{sourcePart}.length"
+          vars = "#{ivar} = 0, #{lvar} = #{svar}.length"
           cond = "#{ivar} < #{lvar}"
+    defPart   = ''
     if @object
       forPart   = "#{ivar} in #{sourcePart}"
       guardPart = not @raw and
         "#{idt}if (!#{ utility 'hasProp' }.call(#{svar}, #{ivar})) continue;\n"
     else
       vars += ", #{step}" if step isnt pvar
+      defPart = "#{@tab}#{sourcePart};\n" if svar isnt sourcePart
       forPart = "#{vars}; #{cond}; " + switch +pvar
-        when  1 then '++' + ivar
-        when -1 then '--' + ivar
+        when  1 then ivar + '++'
+        when -1 then ivar + '--'
         else ivar + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
     unless top
       rvar      = scope.freeVariable 'result'
-      resultDef = "#{@tab}#{rvar} = [];\n"
+      defPart  += "#{@tab}#{rvar} = [];\n"
       resultRet = @compileReturnValue rvar, o
       body      = Push.wrap rvar, body
     body = Expressions.wrap [new If @guard, body] if @guard
     varPart = "#{idt}#{namePart};\n" if namePart
     """
-    #{ resultDef or '' }#{@tab}for (#{forPart}) {
+    #{ defPart or '' }#{@tab}for (#{forPart}) {
     #{ guardPart or '' }#{varPart}#{ body.compile merge o, indent: idt, top: on }
     #{@tab}}#{ resultRet or '' }
     """
