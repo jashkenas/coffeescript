@@ -195,10 +195,9 @@ exports.Expressions = class Expressions extends Base
   # An Expressions node does not return its entire body, rather it
   # ensures that the final expression is returned.
   makeReturn: ->
-    end = @expressions[idx = @expressions.length - 1]
-    end = @expressions[idx -= 1] if end instanceof Comment
-    if end and end not instanceof Return
-      @expressions[idx] = end.makeReturn()
+    idx = @expressions.length
+    while (end = @expressions[--idx]) instanceof Comment then
+    @expressions[idx] = end.makeReturn() if end
     this
 
   # An **Expressions** is the only node that can serve as the root.
