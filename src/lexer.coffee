@@ -26,8 +26,9 @@ exports.Lexer = class Lexer
   # (for interpolations). When the next token has been recorded, we move forward
   # within the code past the token, and begin again.
   #
-  # Each tokenizing method is responsible for returning the number of characters
-  # it has consumed.
+  # Each tokenizing method is responsible for incrementing `@i` by the number of
+  # characters it has consumed. `@i` can be thought of as our finger on the page
+  # of source.
   #
   # Before returning the token stream, run it through the [Rewriter](rewriter.html)
   # unless explicitly asked not to.
@@ -35,6 +36,7 @@ exports.Lexer = class Lexer
     code     = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
     o        = options or {}
     @code    = code         # The remainder of the source code.
+    @i       = 0            # Current character position we're parsing.
     @line    = o.line or 0  # The current line.
     @indent  = 0            # The current indentation level.
     @indebt  = 0            # The over-indentation at the current level.
@@ -46,18 +48,17 @@ exports.Lexer = class Lexer
     # At every position, run through this list of attempted matches,
     # short-circuiting if any of them succeed. Their order determines precedence:
     # `@literalToken` is the fallback catch-all.
-    i = 0
-    while @chunk = code.slice i
-      i += @identifierToken() or
-           @commentToken()    or
-           @whitespaceToken() or
-           @lineToken()       or
-           @heredocToken()    or
-           @stringToken()     or
-           @numberToken()     or
-           @regexToken()      or
-           @jsToken()         or
-           @literalToken()
+    while @chunk = code.slice @i
+      @identifierToken() or
+      @commentToken()    or
+      @whitespaceToken() or
+      @lineToken()       or
+      @heredocToken()    or
+      @stringToken()     or
+      @numberToken()     or
+      @regexToken()      or
+      @jsToken()         or
+      @literalToken()
     @closeIndentation()
     return @tokens if o.rewrite is off
     (new Rewriter).rewrite @tokens
@@ -72,20 +73,21 @@ exports.Lexer = class Lexer
   # referenced as property names here, so you can still do `jQuery.is()` even
   # though `is` means `===` otherwise.
   identifierToken: ->
-    return 0 unless match = IDENTIFIER.exec @chunk
+    return false unless match = IDENTIFIER.exec @chunk
     [input, id, colon] = match
+    @i += input.length
     if id is 'all' and @tag() is 'FOR'
       @token 'ALL', id
-      return 3
+      return true
     if id is 'from' and @tag(1) is 'FOR'
       @seenFor  = no
       @seenFrom = yes
       @token 'FROM', id
-      return 4
+      return true
     if id is 'to' and @seenFrom
       @seenFrom = no
       @token 'TO', id
-      return 2
+      return true
     forcedIdentifier = colon or @tagAccessor()
     tag = 'IDENTIFIER'
     if id in JS_KEYWORDS or
@@ -124,39 +126,41 @@ exports.Lexer = class Lexer
         tag = 'BOOL'
     @token tag, id
     @token ':', ':' if colon
-    input.length
+    true
 
   # Matches numbers, including decimals, hex, and exponential notation.
   # Be careful not to interfere with ranges-in-progress.
   numberToken: ->
-    return 0 unless match = NUMBER.exec @chunk
+    return false unless match = NUMBER.exec @chunk
     number = match[0]
-    return 0 if @tag() is '.' and number.charAt(0) is '.'
+    return false if @tag() is '.' and number.charAt(0) is '.'
+    @i += number.length
     @token 'NUMBER', number
-    number.length
+    true
 
   # Matches strings, including multi-line strings. Ensures that quotation marks
   # are balanced within the string's contents, and within nested interpolations.
   stringToken: ->
     switch @chunk.charAt 0
       when "'"
-        return 0 unless match = SIMPLESTR.exec @chunk
+        return false unless match = SIMPLESTR.exec @chunk
         @token 'STRING', (string = match[0]).replace MULTILINER, '\\\n'
       when '"'
-        return 0 unless string = @balancedString @chunk, [['"', '"'], ['#{', '}']]
+        return false unless string = @balancedString @chunk, [['"', '"'], ['#{', '}']]
         if 0 < string.indexOf '#{', 1
           @interpolateString string.slice 1, -1
         else
           @token 'STRING', @escapeLines string
       else
-        return 0
+        return false
     @line += count string, '\n'
-    string.length
+    @i += string.length
+    true
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
   # preserve whitespace, but ignore indentation to the left.
   heredocToken: ->
-    return 0 unless match = HEREDOC.exec @chunk
+    return false unless match = HEREDOC.exec @chunk
     heredoc = match[0]
     quote = heredoc.charAt 0
     doc = @sanitizeHeredoc match[2], {quote, indent: null}
@@ -165,44 +169,49 @@ exports.Lexer = class Lexer
     else
       @token 'STRING', @makeString doc, quote, yes
     @line += count heredoc, '\n'
-    heredoc.length
+    @i += heredoc.length
+    true
 
   # Matches and consumes comments.
   commentToken: ->
-    return 0 unless match = @chunk.match COMMENT
+    return false unless match = @chunk.match COMMENT
     [comment, here] = match
     @line += count comment, '\n'
+    @i += comment.length
     if here
       @token 'HERECOMMENT', @sanitizeHeredoc here,
         herecomment: true, indent: Array(@indent + 1).join(' ')
       @token 'TERMINATOR', '\n'
-    comment.length
+    true
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
-    return 0 unless @chunk.charAt(0) is '`' and match = JSTOKEN.exec @chunk
+    return false unless @chunk.charAt(0) is '`' and match = JSTOKEN.exec @chunk
     @token 'JS', (script = match[0]).slice 1, -1
-    script.length
+    @i += script.length
+    true
 
   # Matches regular expression literals. Lexing regular expressions is difficult
   # to distinguish from division, so we borrow some basic heuristics from
   # JavaScript and Ruby.
   regexToken: ->
-    return 0 if @chunk.charAt(0) isnt '/'
+    return false if @chunk.charAt(0) isnt '/'
     return @heregexToken match if match = HEREGEX.exec @chunk
-    return 0 if @tag() in NOT_REGEX
-    return 0 unless match = REGEX.exec @chunk
+    return false if @tag() in NOT_REGEX
+    return false unless match = REGEX.exec @chunk
     [regex] = match
     @token 'REGEX', if regex is '//' then '/(?:)/' else regex
-    regex.length
+    @i += regex.length
+    true
 
   # Matches experimental, multiline and extended regular expression literals.
   heregexToken: (match) ->
     [heregex, body, flags] = match
+    @i += heregex.length
     if 0 > body.indexOf '#{'
       re = body.replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
       @token 'REGEX', "/#{ re or '(?:)' }/#{flags}"
-      return heregex.length
+      return true
     @token 'IDENTIFIER', 'RegExp'
     @tokens.push ['CALL_START', '(']
     tokens = []
@@ -219,7 +228,7 @@ exports.Lexer = class Lexer
     @tokens.push tokens...
     @tokens.push [',', ','], ['STRING', '"' + flags + '"'] if flags
     @token ')', ')'
-    heregex.length
+    true
 
   # Matches newlines, indents, and outdents, and determines which is which.
   # If we can detect that the current line is continued onto the the next line,
@@ -232,21 +241,21 @@ exports.Lexer = class Lexer
   # Keeps track of the level of indentation, because a single outdent token
   # can close multiple indents, so we need to know how far in we happen to be.
   lineToken: ->
-    return 0 unless match = MULTI_DENT.exec @chunk
+    return false unless match = MULTI_DENT.exec @chunk
     indent = match[0]
     @line += count indent, '\n'
+    @i    += indent.length
     prev = last @tokens, 1
     size = indent.length - 1 - indent.lastIndexOf '\n'
     nextCharacter = NEXT_CHARACTER.exec(@chunk)[1]
     noNewlines    = (nextCharacter in ['.', ','] and not NEXT_ELLIPSIS.test(@chunk)) or @unfinished()
     if size - @indebt is @indent
-      if noNewlines then @suppressNewlines() else @newlineToken()
-      return indent.length
-    if size > @indent
+      return @suppressNewlines() if noNewlines
+      return @newlineToken indent
+    else if size > @indent
       if noNewlines
         @indebt = size - @indent
-        @suppressNewlines()
-        return indent.length
+        return @suppressNewlines()
       diff = size - @indent + @outdebt
       @token 'INDENT', diff
       @indents.push diff
@@ -255,7 +264,7 @@ exports.Lexer = class Lexer
       @indebt = 0
       @outdentToken @indent - size, noNewlines
     @indent = size
-    indent.length
+    true
 
   # Record an outdent token or multiple tokens, if we happen to be moving back
   # inwards past several recorded indents.
@@ -277,27 +286,27 @@ exports.Lexer = class Lexer
         @token 'OUTDENT', dent
     @outdebt -= moveOut if dent
     @token 'TERMINATOR', '\n' unless @tag() is 'TERMINATOR' or noNewlines
-    this
+    true
 
   # Matches and consumes non-meaningful whitespace. Tag the previous token
   # as being "spaced", because there are some cases where it makes a difference.
   whitespaceToken: ->
-    return 0 unless (match = WHITESPACE.exec @chunk) or
-                    (nline = @chunk.charAt(0) is '\n')
+    return false unless (match = WHITESPACE.exec @chunk) or nline = @chunk.substring(0, 1) is '\n'
     prev = last @tokens
     prev[if match then 'spaced' else 'newLine'] = true if prev
-    if match then match[0].length else 0
+    @i += match[0].length if match
+    !!match
 
   # Generate a newline token. Consecutive newlines get merged together.
-  newlineToken: ->
+  newlineToken: (newlines) ->
     @token 'TERMINATOR', '\n' unless @tag() is 'TERMINATOR'
-    this
+    true
 
   # Use a `\` at a line-ending to suppress the newline.
   # The slash is removed here once its job is done.
   suppressNewlines: ->
     @tokens.pop() if @value() is '\\'
-    this
+    true
 
   # We treat all other single characters as a token. Eg.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
@@ -310,21 +319,23 @@ exports.Lexer = class Lexer
       @tagParameters() if CODE.test value
     else
       value = @chunk.charAt 0
-    tag  = value
+    @i += value.length
+    tag = value
     prev = last @tokens
     if value is '=' and prev
       @assignmentError() if not prev[1].reserved and prev[1] in JS_FORBIDDEN
       if prev[1] in ['||', '&&']
         prev[0] = 'COMPOUND_ASSIGN'
         prev[1] += '='
-        return 1
+        return true
     if      value is ';'             then tag = 'TERMINATOR'
+    else if value in LOGIC           then tag = 'LOGIC'
     else if value in MATH            then tag = 'MATH'
     else if value in COMPARE         then tag = 'COMPARE'
     else if value in COMPOUND_ASSIGN then tag = 'COMPOUND_ASSIGN'
     else if value in UNARY           then tag = 'UNARY'
     else if value in SHIFT           then tag = 'SHIFT'
-    else if value in LOGIC or value is '?' and prev?.spaced then tag = 'LOGIC'
+    else if value is '?' and prev?.spaced  then tag = 'LOGIC'
     else if prev and not prev.spaced
       if value is '(' and prev[0] in CALLABLE
         prev[0] = 'FUNC_EXIST' if prev[0] is '?'
@@ -335,7 +346,7 @@ exports.Lexer = class Lexer
           when '?'  then prev[0] = 'INDEX_SOAK'
           when '::' then prev[0] = 'INDEX_PROTO'
     @token tag, value
-    value.length
+    true
 
   # Token Manipulators
   # ------------------
@@ -350,7 +361,7 @@ exports.Lexer = class Lexer
     else if prev[1] is '.' and @value(1) isnt '.'
       if @tag(1) is '?'
         @tag 0, 'SOAK_ACCESS'
-        @tokens.splice -2, 1
+        @tokens.splice(-2, 1)
       else
         @tag 0, 'PROPERTY_ACCESS'
     else
@@ -374,14 +385,14 @@ exports.Lexer = class Lexer
   # definitions versus argument lists in function calls. Walk backwards, tagging
   # parameters specially in order to make things easier for the parser.
   tagParameters: ->
-    return this if @tag() isnt ')'
+    return if @tag() isnt ')'
     i = @tokens.length
     while tok = @tokens[--i]
       switch tok[0]
         when 'IDENTIFIER'       then tok[0] = 'PARAM'
         when ')'                then tok[0] = 'PARAM_END'
         when '(', 'CALL_START'  then tok[0] = 'PARAM_START'; return true
-    this
+    true
 
   # Close up all remaining open blocks at the end of the file.
   closeIndentation: ->
