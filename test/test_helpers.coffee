@@ -1,6 +1,6 @@
 {starts, ends, compact, count, merge, extend, flatten, del, last} = CoffeeScript.helpers
 
-array  = [0..4]
+array  = [0, 1, 2, 3, 4]
 string = array.join ''
 object = {}
 

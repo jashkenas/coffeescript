@@ -15,7 +15,7 @@
 # from our rules and saves it into `lib/parser.js`.
 
 # The only dependency is on the **Jison.Parser**.
-Parser = require('jison').Parser
+{Parser} = require 'jison'
 
 # Jison DSL
 # ---------
@@ -35,7 +35,7 @@ o = (patternString, action, options) ->
   return [patternString, '$$ = $1;', options] unless action
   action = if match = unwrap.exec action then match[1] else "(#{action}())"
   action = action.replace /\bnew /g, '$&yy.'
-  action = action.replace /\bExpressions\.wrap\b/g, 'yy.$&'
+  action = action.replace /\b(?:Expressions\.wrap|extend)\b/g, 'yy.$&'
   [patternString, "$$ = #{action};", options]
 
 # Grammatical Rules
@@ -144,14 +144,14 @@ grammar =
   # Assignment when it happens within an object literal. The difference from
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
-    o "Identifier",                             -> new Value $1
-    o "AlphaNumeric"
-    o "ThisProperty"
-    o "Identifier   : Expression",                -> new Assign new Value($1), $3, 'object'
-    o "AlphaNumeric : Expression",                -> new Assign new Value($1), $3, 'object'
-    o "Identifier   : INDENT Expression OUTDENT", -> new Assign new Value($1), $4, 'object'
-    o "AlphaNumeric : INDENT Expression OUTDENT", -> new Assign new Value($1), $4, 'object'
-    o "Comment"
+    o 'Identifier',                               -> new Value $1
+    o 'AlphaNumeric'
+    o 'ThisProperty'
+    o 'Identifier   : Expression',                -> new Assign new Value($1), $3, 'object'
+    o 'AlphaNumeric : Expression',                -> new Assign new Value($1), $3, 'object'
+    o 'Identifier   : INDENT Expression OUTDENT', -> new Assign new Value($1), $4, 'object'
+    o 'AlphaNumeric : INDENT Expression OUTDENT', -> new Assign new Value($1), $4, 'object'
+    o 'Comment'
   ]
 
   # A return statement from a function body.
@@ -233,7 +233,6 @@ grammar =
     o "Assignable"
     o "Literal",                                -> new Value $1
     o "Parenthetical",                          -> new Value $1
-    o "Range",                                  -> new Value $1
     o "This"
   ]
 
@@ -251,8 +250,8 @@ grammar =
   # Indexing into an object or array using bracket notation.
   Index: [
     o "INDEX_START Expression INDEX_END",       -> new Index $2
-    o "INDEX_SOAK Index",                       -> $2.soakNode = yes; $2
-    o "INDEX_PROTO Index",                      -> $2.proto = yes; $2
+    o "INDEX_SOAK  Index",                      -> extend $2, soakNode: yes
+    o "INDEX_PROTO Index",                      -> extend $2, proto: yes
   ]
 
   # In CoffeeScript, an object literal is simply a list of assignments.
@@ -330,26 +329,9 @@ grammar =
     o "@",                                      -> new Value new Literal 'this'
   ]
 
-  RangeDots: [
-    o "..",                                     -> 'inclusive'
-    o "...",                                    -> 'exclusive'
-  ]
-
   # A reference to a property on *this*.
   ThisProperty: [
     o "@ Identifier",                           -> new Value new Literal('this'), [new Accessor($2)], 'this'
-  ]
-
-  # The CoffeeScript range literal.
-  Range: [
-    o "[ Expression RangeDots Expression ]",    -> new Range $2, $4, $3
-  ]
-
-  # The slice literal.
-  Slice: [
-    o "INDEX_START Expression RangeDots Expression INDEX_END", -> new Range $2, $4, $3
-    o "INDEX_START Expression RangeDots INDEX_END", -> new Range $2, null, $3
-    o "INDEX_START RangeDots Expression INDEX_END", -> new Range null, $3, $2
   ]
 
   # The array literal.
@@ -435,48 +417,49 @@ grammar =
   # Comprehensions can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression.
   For: [
-    o "Statement ForBody",                      -> new For $1, $2, $2.vars[0], $2.vars[1]
-    o "Expression ForBody",                     -> new For $1, $2, $2.vars[0], $2.vars[1]
-    o "ForBody Block",                          -> new For $2, $1, $1.vars[0], $1.vars[1]
-  ]
-
-  ForBody: [
-    o "FOR Range",                              -> source: new Value($2), vars: []
-    o "ForStart ForSource",                     -> $2.raw = $1.raw; $2.vars = $1; $2
-  ]
-
-  ForStart: [
-    o "FOR ForVariables",                       -> $2
-    o "FOR ALL ForVariables",                   -> $3.raw = true; $3
+    o 'Statement  ForBody', -> new For $1, $2
+    o 'Expression ForBody', -> new For $1, $2
+    o 'ForBody    Block',   -> new For $2, $1
   ]
 
   # An array of all accepted values for a variable inside the loop. This
   # enables support for pattern matching.
   ForValue: [
-    o "Identifier"
-    o "Array",                                  -> new Value $1
-    o "Object",                                 -> new Value $1
+    o 'Identifier'
+    o 'Array',  -> new Value $1
+    o 'Object', -> new Value $1
   ]
 
-  # An array or range comprehension has variables for the current element and
-  # (optional) reference to the current index. Or, *key, value*, in the case
-  # of object comprehensions.
-  ForVariables: [
-    o "ForValue",                               -> [$1]
-    o "ForValue , ForValue",                    -> [$1, $3]
+  ForIn: [
+    o 'FORIN Expression',                               -> source: $2
+    o 'FORIN Expression WHEN Expression',               -> source: $2, guard: $4
+    o 'FORIN Expression BY Expression',                 -> source: $2, step: $4
+    o 'FORIN Expression BY Expression WHEN Expression', -> source: $2, step: $4, guard: $6
+  ]
+
+  ForOf: [
+    o 'FOROF Expression',                 -> object: on, source: $2
+    o 'FOROF Expression WHEN Expression', -> object: on, source: $2, guard: $4
+  ]
+
+  ForTo: [
+    o 'TO Expression',                               -> to: $2
+    o 'TO Expression WHEN Expression',               -> to: $2, guard: $4
+    o 'TO Expression BY Expression',                 -> to: $2, step: $4
+    o 'TO Expression BY Expression WHEN Expression', -> to: $2, step: $4, guard: $6
   ]
 
   # The source of a comprehension is an array or object with an optional guard
   # clause. If it's an array comprehension, you can also choose to step through
   # in fixed-size increments.
-  ForSource: [
-    o "FORIN Expression",                               -> source: $2
-    o "FOROF Expression",                               -> source: $2, object: true
-    o "FORIN Expression WHEN Expression",               -> source: $2, guard: $4
-    o "FOROF Expression WHEN Expression",               -> source: $2, guard: $4, object: true
-    o "FORIN Expression BY Expression",                 -> source: $2, step:  $4
-    o "FORIN Expression WHEN Expression BY Expression", -> source: $2, guard: $4, step:   $6
-    o "FORIN Expression BY Expression WHEN Expression", -> source: $2, step:  $4, guard: $6
+  ForBody: [
+    o 'FOR ForValue ForIn',                   -> extend $3, name: $2
+    o 'FOR ForValue , Identifier ForIn',      -> extend $5, name: $2, index: $4
+    o 'FOR Identifier ForOf',                 -> extend $3, index: $2
+    o 'FOR ForValue , ForValue ForOf',        -> extend $5, index: $2, name: $4
+    o 'FOR ALL Identifier ForOf',             -> extend $4, raw: on, index: $3
+    o 'FOR ALL Identifier , ForValue ForOf',  -> extend $6, raw: on, index: $3, name: $5
+    o 'FOR Identifier FROM Expression ForTo', -> extend $5, index: $2, from: $4
   ]
 
   Switch: [
@@ -578,7 +561,7 @@ operators = [
   ["left",      'LOGIC']
   ["left",      '.']
   ["nonassoc",  'INDENT', 'OUTDENT']
-  ["right",     'WHEN', 'LEADING_WHEN', 'FORIN', 'FOROF', 'BY', 'THROW']
+  ["right",     'WHEN', 'LEADING_WHEN', 'FORIN', 'FOROF', 'FROM', 'TO', 'BY', 'THROW']
   ["right",     'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS', 'EXTENDS']
   ["right",     '=', ':', 'COMPOUND_ASSIGN', 'RETURN']
   ["right",     '->', '=>', 'UNLESS', 'POST_IF', 'POST_UNLESS']
@@ -592,7 +575,7 @@ operators = [
 # terminals (every symbol which does not appear as the name of a rule above)
 # as "tokens".
 tokens = []
-for name, alternatives of grammar
+for all name, alternatives of grammar
   grammar[name] = for alt in alternatives
     for token in alt[0].split ' '
       tokens.push token unless grammar[token]

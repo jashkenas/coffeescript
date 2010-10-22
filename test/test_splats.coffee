@@ -37,7 +37,7 @@ ok last is "Usain Bolt"
 ok theField.length is 8
 
 contenders.reverse()
-medalists contenders[0...2]..., "Mighty Mouse", contenders[2...contenders.length]...
+medalists contenders.slice(0, 2)..., "Mighty Mouse", contenders.slice(2)...
 
 ok gold is "Usain Bolt"
 ok silver is "Asafa Powell"
@@ -69,7 +69,7 @@ crowd = [
 
 bests = [
   "Mighty Mouse"
-  contenders[0..3]...
+  contenders.slice(0, 4)...
 ]
 
 ok crowd[0] is contenders[0]

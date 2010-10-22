@@ -99,8 +99,8 @@ task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
 runTests = (CoffeeScript) ->
   startTime = Date.now()
   passedTests = failedTests = 0
-  for all name, func of require 'assert'
-    global[name] = -> ++passedTests; func arguments...
+  wrap = (name, func) -> global[name] = -> ++passedTests; func arguments...
+  wrap name, func for all name, func of require 'assert'
   global.eq = global.strictEqual
   global.CoffeeScript = CoffeeScript
   process.on 'exit', ->
