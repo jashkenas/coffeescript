@@ -272,14 +272,17 @@ grammar =
   # Class definitions have optional bodies of prototype property assignments,
   # and optional references to the superclass.
   Class: [
-    o "CLASS SimpleAssignable",                 -> new Class $2
-    o "CLASS SimpleAssignable EXTENDS Value",   -> new Class $2, $4
-    o "CLASS SimpleAssignable INDENT ClassBody OUTDENT", -> new Class $2, null, $4
-    o "CLASS SimpleAssignable EXTENDS Value INDENT ClassBody OUTDENT", -> new Class $2, $4, $6
-    o "CLASS INDENT ClassBody OUTDENT",         -> new Class '__temp__', null, $3
-    o "CLASS",                                  -> new Class '__temp__', null, new Expressions
-    o "CLASS EXTENDS Value",                    -> new Class '__temp__', $3, new Expressions
-    o "CLASS EXTENDS Value INDENT ClassBody OUTDENT", -> new Class '__temp__', $3, $5
+    o 'CLASS SimpleAssignable',                 -> new Class $2
+    o 'CLASS SimpleAssignable EXTENDS Value',   -> new Class $2, $4
+    o 'CLASS SimpleAssignable
+       INDENT ClassBody OUTDENT',               -> new Class $2, null, $4
+    o 'CLASS SimpleAssignable EXTENDS Value
+       INDENT ClassBody OUTDENT',               -> new Class $2, $4, $6
+    o 'CLASS INDENT ClassBody OUTDENT',         -> new Class null, null, $3
+    o 'CLASS',                                  -> new Class null, null, new Expressions
+    o 'CLASS EXTENDS Value',                    -> new Class null, $3  , new Expressions
+    o 'CLASS EXTENDS Value
+       INDENT ClassBody OUTDENT',               -> new Class null, $3, $5
   ]
 
   # Assignments that can happen directly inside a class declaration.

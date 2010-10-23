@@ -645,9 +645,8 @@ exports.Class = class Class extends Base
 
   # Initialize a **Class** with its name, an optional superclass, and a
   # list of prototype property assignments.
-  constructor: (variable, @parent, props) ->
+  constructor: (@variable, @parent, props) ->
     super()
-    @variable   = if variable is '__temp__' then new Literal variable else variable
     @properties = props or []
     @returns    = false
 
@@ -659,9 +658,8 @@ exports.Class = class Class extends Base
   # equivalent syntax tree and compile that, in pieces. You can see the
   # constructor, property assignments, and inheritance getting built out below.
   compileNode: (o) ->
-    {variable} = this
-    variable   = new Literal o.scope.freeVariable 'ctor' if variable.value is '__temp__'
-    extension  = @parent and new Extends variable, @parent
+    variable   = @variable or new Literal o.scope.freeVariable 'ctor'
+    extension  = @parent  and new Extends variable, @parent
     props      = new Expressions
     me         = null
     className  = variable.compile o
