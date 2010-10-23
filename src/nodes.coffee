@@ -1033,16 +1033,6 @@ exports.Op = class Op extends Base
     '!==': '==='
     '===': '!=='
 
-  # The list of operators for which we perform
-  # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin).
-  CHAINABLE:        ['<', '>', '>=', '<=', '===', '!==']
-
-  # Operators must come before their operands with a space.
-  PREFIX_OPERATORS: ['new', 'typeof', 'delete']
-
-  # Operators that modify a reference.
-  MUTATORS: ['++', '--', 'delete']
-
   children: ['first', 'second']
 
   constructor: (op, first, second, flip) ->
@@ -1056,14 +1046,13 @@ exports.Op = class Op extends Base
     @second = second
     @flip   = !!flip
 
-  isUnary: ->
-    not @second
+  isUnary: -> not @second
 
-  isComplex: ->
-    @operator isnt '!' or @first.isComplex()
+  isComplex: -> @operator isnt '!' or @first.isComplex()
 
-  isChainable: ->
-    @operator in @CHAINABLE
+  # Am I capable of
+  # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
+  isChainable: -> @operator in ['<', '>', '>=', '<=', '===', '!==']
 
   invert: ->
     if op = @INVERSIONS[@operator]
@@ -1074,16 +1063,12 @@ exports.Op = class Op extends Base
     else
       super()
 
-  toString: (idt) ->
-    super idt, @constructor.name + ' ' + @operator
-
   unfoldSoak: (o) ->
-    @operator in @MUTATORS and If.unfoldSoak o, this, 'first'
+    @operator in ['++', '--', 'delete'] and If.unfoldSoak o, this, 'first'
 
   compileNode: (o) ->
-    if @isUnary()
-      return @compileUnary o
-    return @compileChain o     if @isChainable() and @first.unwrap().isChainable()
+    return @compileUnary     o if @isUnary()
+    return @compileChain     o if @isChainable() and @first.isChainable()
     return @compileExistence o if @operator is '?'
     @first.tags.front = @tags.front
     "#{ @first.compile o, LEVEL.OP } #{@operator} #{ @second.compile o, LEVEL.OP }"
@@ -1094,8 +1079,11 @@ exports.Op = class Op extends Base
   #     bin/coffee -e 'console.log 50 < 65 > 10'
   #     true
   compileChain: (o) ->
-    [@first.second, shared] = @first.unwrap().second.cache o
-    "#{ @first.compile o, LEVEL.OP } && #{ shared.compile o } #{@operator} #{ @second.compile o, LEVEL.OP }"
+    [@first.second, shared] = @first.second.cache o
+    fst  = @first .compile o, LEVEL.OP
+    fst  = fst.slice 1, -1 if fst.charAt(0) is '('
+    code = "#{fst} && #{ shared.compile o } #{@operator} #{ @second.compile o, LEVEL.OP }"
+    if o.level < LEVEL.OP then code else "(#{code})"
 
   compileExistence: (o) ->
     if @first.isComplex()
@@ -1108,10 +1096,14 @@ exports.Op = class Op extends Base
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
-    space = if @operator in @PREFIX_OPERATORS or @first instanceof Op and
-        @first.operator is @operator and @operator in ['+', '-'] then ' ' else ''
-    parts = [@operator, space, @first.compile(o, LEVEL.OP)]
-    (if @flip then parts.reverse() else parts).join ''
+    parts = [op = @operator]
+    parts.push ' ' if op in ['new', 'typeof', 'delete'] or
+                      op in ['+', '-'] and @first instanceof Op and @first.operator is op
+    parts.push @first.compile o, LEVEL.OP
+    parts.reverse() if @flip
+    parts.join ''
+
+  toString: (idt) -> super idt, @constructor.name + ' ' + @operator
 
 #### In
 exports.In = class In extends Base
