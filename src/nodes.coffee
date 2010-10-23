@@ -1263,7 +1263,6 @@ exports.For = class For extends Base
     extend this, head
     @step  or= new Literal 1 unless @object
     @pattern = @name instanceof Value
-    throw SyntaxError 'cannot pattern match a range loop' if @range and @pattern
     @returns = false
 
   makeReturn: ->
@@ -1284,7 +1283,7 @@ exports.For = class For extends Base
     name    = not @pattern and @name?.compile o
     index   = @index?.compile o
     ivar    = if not index then scope.freeVariable 'i' else index
-    varPart = ''
+    varPart = guardPart = defPart = retPart = ''
     body    = Expressions.wrap [@body]
     idt     = @idt 1
     scope.find(name,  immediate: yes) if name
@@ -1292,14 +1291,14 @@ exports.For = class For extends Base
     [step, pvar] = @step.compileLoopReference o, 'step' if @step
     if @from
       [tail, tvar] = @to.compileLoopReference o, 'to'
-      vars  = "#{ivar} = #{ @from.compile o }"
-      vars += ", #{tail}" if tail isnt tvar
+      vars  = ivar + ' = ' + @from.compile o
+      vars += ', ' + tail if tail isnt tvar
       cond = if +pvar
         "#{ivar} #{ if pvar < 0 then '>' else '<' }= #{tvar}"
       else
         "#{pvar} < 0 ? #{ivar} >= #{tvar} : #{ivar} <= #{tvar}"
     else
-      if name
+      if name or @object and not @raw
         [sourcePart, svar] = @source.compileLoopReference o, 'ref'
       else
         sourcePart = svar = @source.compile o, LVL_PAREN
@@ -1315,31 +1314,30 @@ exports.For = class For extends Base
           lvar = scope.freeVariable 'len'
           vars = "#{ivar} = 0, #{lvar} = #{svar}.length"
           cond = "#{ivar} < #{lvar}"
-    defPart = ''
     if @object
-      forPart   = "#{ivar} in #{sourcePart}"
-      guardPart = not @raw and
-        "#{idt}if (!#{ utility 'hasProp' }.call(#{svar}, #{ivar})) continue;\n"
+      forPart   = ivar + ' in ' + sourcePart
+      guardPart = if @raw then '' else
+        idt + "if (!#{ utility 'hasProp' }.call(#{svar}, #{ivar})) continue;\n"
     else
-      vars   += ", #{step}" if step isnt pvar
-      defPart = "#{@tab}#{sourcePart};\n" if svar isnt sourcePart
-      forPart = "#{vars}; #{cond}; " + ivar + switch +pvar
+      vars   += ', ' + step if step isnt pvar
+      defPart = @tab + sourcePart + ';\n' if svar isnt sourcePart
+      forPart = vars + "; #{cond}; " + ivar + switch +pvar
         when  1 then '++'
         when -1 then '--'
         else (if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar)
     if o.level > LVL_TOP or @returns
-      rvar      = scope.freeVariable 'result'
-      defPart  += "#{@tab}#{rvar} = [];\n"
-      resultRet = @compileReturnValue rvar, o
-      body      = Push.wrap rvar, body
+      rvar     = scope.freeVariable 'result'
+      defPart += @tab + rvar + ' = [];\n'
+      retPart  = @compileReturnValue rvar, o
+      body     = Push.wrap rvar, body
     body     = Expressions.wrap [new If @guard, body] if @guard
-    varPart  = "#{idt}#{namePart};\n" if namePart
+    varPart  = idt + namePart + ';\n' if namePart
     o.indent = idt
-    """
-    #{ defPart   or '' }#{@tab}for (#{forPart}) {
+    defPart + """
+    #{@tab}for (#{forPart}) {
     #{ guardPart or '' }#{varPart}#{ body.compile o, LVL_TOP }
-    #{@tab}}#{ resultRet or '' }
-    """
+    #{@tab}}
+    """ + retPart
 
 #### Switch
 
