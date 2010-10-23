@@ -70,7 +70,9 @@ ok result.join(' ') is '6 4 2'
 
 # Closure-wrapped comprehensions that refer to the "arguments" object.
 expr = ->
-  result = item * item for item in arguments
+  result = for item in arguments
+    ok arguments.callee is expr
+    item * item
 
 ok expr(2, 4, 8).join(' ') is '4 16 64'
 
