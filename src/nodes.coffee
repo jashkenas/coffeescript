@@ -88,12 +88,11 @@ exports.Base = class Base
   # Recursively traverses down the *children* of the nodes, yielding to a block
   # and returning true when the block finds a match. `contains` does not cross
   # scope boundaries.
-  contains: (block) ->
+  contains: (block, arg) ->
     contains = no
-    @traverseChildren false, (node) ->
-      if block node
-        contains = true
-        return false
+    @traverseChildren false, (node, arg) ->
+      if (rearg = block node, arg) is true then not contains = true else if arg? then rearg
+    , arg
     contains
 
   # Is this node of a certain type, or does it contain the type?
@@ -103,7 +102,11 @@ exports.Base = class Base
   # Convenience for the most common use of contains. Does the node contain
   # a pure statement?
   containsPureStatement: ->
-    @isPureStatement() or @contains (node) -> node.isPureStatement()
+    @isPureStatement() or @contains (node, func) ->
+      func(node) or if node instanceof While or node instanceof For
+        (node) -> node instanceof Return
+      else func
+    , (node) -> node.isPureStatement()
 
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
@@ -126,10 +129,10 @@ exports.Base = class Base
     @eachChild (node) -> nodes.push node
     nodes
 
-  traverseChildren: (crossScope, func) ->
+  traverseChildren: (crossScope, func, arg) ->
     @eachChild (child) ->
-      return false if func(child) is false
-      child.traverseChildren crossScope, func
+      return false if (arg = func child, arg) is false
+      child.traverseChildren crossScope, func, arg
 
   invert: -> new Op '!', this
 

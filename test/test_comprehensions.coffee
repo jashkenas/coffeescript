@@ -102,3 +102,10 @@ ok rule(101) is 101
 
 f = -> [-> ok no, 'should cache source']
 ok yes for k of [f] = f()
+
+
+# Lenient on pure statements not trying to reach out of the closure
+val = for i in [1]
+  for j in [] then break
+  i
+ok val[0] is i
