@@ -244,7 +244,6 @@ grammar =
     o "::",                                     -> new Accessor(new Literal('prototype'))
     o "SOAK_ACCESS Identifier",                 -> new Accessor $2, 'soak'
     o "Index"
-    o "Slice",                                  -> new Slice $1
   ]
 
   # Indexing into an object or array using bracket notation.
