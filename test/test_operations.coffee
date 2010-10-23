@@ -9,6 +9,10 @@ ok 10 < 20 > 10
 
 ok 50 > 10 > 5 is parseInt('5', 10)
 
+eq 1, 1 | 2 < 3 < 4
+
+ok 1 == 1 <= 1, '`x == y <= z` should become `x === y && y <= z`'
+
 i = 0
 ok 1 > i++ < 1, 'chained operations should evaluate each value only once'
 
