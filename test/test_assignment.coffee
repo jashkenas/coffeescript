@@ -31,3 +31,31 @@ ok tester().example() is 'example function'
 
 try throw CoffeeScript.tokens 'in = 1'
 catch e then eq e.message, 'Reserved word "in" on line 1 can\'t be assigned'
+
+
+num = 10
+num -= 5
+eq num, 5
+
+num *= 10
+eq num, 50
+
+num /= 10
+eq num, 5
+
+num %= 3
+eq num, 2
+
+val = false
+val ||= 'value'
+val ||= 'eulav'
+eq val, 'value'
+
+val &&= 'rehto'
+val &&= 'other'
+eq val, 'other'
+
+val = null
+val ?= 'value'
+val ?= 'eulav'
+eq val, 'value'

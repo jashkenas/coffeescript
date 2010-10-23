@@ -103,7 +103,7 @@ ok age    is 26
 ok first  is "Prince"
 ok second is "Bowie"
 
-# Pattern matching within for..loops
+# Pattern matching within for..loops.
 
 persons = {
   George: { name: "Bob" },
@@ -149,8 +149,10 @@ obj =
   func: (list, object) ->
     [@one, @two] = list
     {@a, @b} = object
-    {@a} = object  # must not unroll this
+    {@a} = object
     null
+
+{} = [] = ok yes, 'empty assignment is allowed'
 
 obj.func [1, 2], a: 'a', b: 'b'
 

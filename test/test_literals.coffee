@@ -204,18 +204,15 @@ ok obj.three is 3
 
 
 # Implicit objects as part of chained calls.
-identity = (x) -> x.a
-
-b = identity identity identity
+pluck = (x) -> x.a
+eq 100, pluck pluck pluck
   a:
     a:
       a: 100
 
-ok b is 100
 
-
-# Inline JS
 eq '\\`', `
+  // Inline JS
   "\\\`"
 `
 
