@@ -182,7 +182,7 @@ class Mini
         @num
 
 m = new Mini
-ok (func() for func in m.generate()).join(' ') is '10 10 10'
+eq (func() for func in m.generate()).join(' '), '10 10 10'
 
 
 # Testing a contructor called with varargs.

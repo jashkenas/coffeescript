@@ -101,3 +101,6 @@ learn = ->
 ok learn().join(' ') is '1 2 3'
 
 ok rule(101) is 101
+
+f = -> [-> ok no, 'should cache source']
+ok yes for k of [f] = f()
