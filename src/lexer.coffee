@@ -114,14 +114,17 @@ exports.Lexer = class Lexer
       else if id in RESERVED
         @identifierError id
     unless forcedIdentifier
-      tag = id = COFFEE_ALIASES[id] if COFFEE_ALIASES.hasOwnProperty id
-      if id is '!'
-        tag = 'UNARY'
-      else if id in LOGIC
-        tag = 'LOGIC'
-      else if tag in BOOL
-        id  = tag.toLowerCase()
-        tag = 'BOOL'
+      id  = COFFEE_ALIASES[id] if COFFEE_ALIASES.hasOwnProperty id
+      tag = if id is '!'
+        'UNARY'
+      else if id in ['==', '!=']
+        'COMPARE'
+      else if id in ['&&', '||']
+        'LOGIC'
+      else if id in ['true', 'false', 'null']
+        'BOOL'
+      else
+        tag
     @token tag, id
     @token ':', ':' if colon
     input.length
@@ -523,10 +526,10 @@ COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES =
   is   : '=='
   isnt : '!='
   not  : '!'
-  yes  : 'TRUE'
-  no   : 'FALSE'
-  on   : 'TRUE'
-  off  : 'FALSE'
+  yes  : 'true'
+  no   : 'false'
+  on   : 'true'
+  off  : 'false'
 
 # The list of keywords that are reserved by JavaScript, but not used, or are
 # used by CoffeeScript internally. We throw an error when these are encountered,
@@ -597,13 +600,13 @@ COMPOUND_ASSIGN = ['-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=', '<<=', '>>=
 UNARY   = ['UMINUS', 'UPLUS', '!', '!!', '~', 'NEW', 'TYPEOF', 'DELETE']
 
 # Logical tokens.
-LOGIC   = ['&', '|', '^', '&&', '||']
+LOGIC   = ['&&', '||', '&', '|', '^']
 
 # Bit-shifting tokens.
 SHIFT   = ['<<', '>>', '>>>']
 
 # Comparison tokens.
-COMPARE = ['<=', '<', '>', '>=']
+COMPARE = ['==', '!=', '<', '>', '<=', '>=']
 
 # Mathmatical tokens.
 MATH    = ['*', '/', '%']

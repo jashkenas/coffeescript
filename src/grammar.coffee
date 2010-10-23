@@ -518,8 +518,6 @@ grammar =
 
     o 'Expression +  Expression',               -> new Op '+' , $1, $3
     o 'Expression -  Expression',               -> new Op '-' , $1, $3
-    o 'Expression == Expression',               -> new Op '==', $1, $3
-    o 'Expression != Expression',               -> new Op '!=', $1, $3
 
     o 'Expression MATH     Expression',         -> new Op $2, $1, $3
     o 'Expression SHIFT    Expression',         -> new Op $2, $1, $3
@@ -556,7 +554,7 @@ operators = [
   ["left",      '+', '-']
   ["left",      'SHIFT']
   ["left",      'RELATION']
-  ["left",      '==', '!=', 'COMPARE']
+  ["left",      'COMPARE']
   ["left",      'LOGIC']
   ["left",      '.']
   ["nonassoc",  'INDENT', 'OUTDENT']
@@ -586,7 +584,7 @@ for all name, alternatives of grammar
 # precedence from low to high, and we have it high to low
 # (as in [Yacc](http://dinosaur.compilertools.net/yacc/index.html)).
 exports.parser = new Parser
-  tokens:       tokens.join ' '
-  bnf:          grammar
-  operators:    operators.reverse()
-  startSymbol:  'Root'
+  tokens      : tokens.join ' '
+  bnf         : grammar
+  operators   : operators.reverse()
+  startSymbol : 'Root'
