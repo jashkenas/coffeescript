@@ -1480,13 +1480,14 @@ Closure =
   # then make sure that the closure wrapper preserves the original values.
   wrap: (expressions, statement, noReturn) ->
     return expressions if expressions.containsPureStatement()
-    mentionsArgs = expressions.contains @literalArgs
-    func = new Parens new Code (if mentionsArgs then [new Literal 'arguments'] else []), Expressions.wrap [expressions]
+    func = new Parens new Code [], Expressions.wrap [expressions]
     args = []
-    if mentionsArgs or expressions.contains @literalThis
+    if (mentionsArgs = expressions.contains @literalArgs) or
+       (               expressions.contains @literalThis)
+      meth = new Literal if mentionsArgs then 'apply' else 'call'
       args = [new Literal 'this']
       args.push new Literal 'arguments' if mentionsArgs
-      func = new Value func, [new Accessor new Literal 'call']
+      func = new Value func, [new Accessor meth]
       func.noReturn = noReturn
     call = new Call func, args
     if statement then Expressions.wrap [call] else call
