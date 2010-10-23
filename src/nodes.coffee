@@ -1108,7 +1108,7 @@ exports.Op = class Op extends Base
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
-    space = if @operator in @PREFIX_OPERATORS then ' ' else ''
+    space = if @operator in @PREFIX_OPERATORS or @first instanceof Op then ' ' else ''
     parts = [@operator, space, @first.compile(o, LVL_OP)]
     (if @flip then parts.reverse() else parts).join ''
 

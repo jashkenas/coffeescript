@@ -165,3 +165,7 @@ ok a is 579
 a = "1#{2}3" +
 "456"
 ok a is '123456'
+
+
+# Multiple operators should space themselves.
+ok + +1 is - -1
