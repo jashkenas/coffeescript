@@ -59,3 +59,8 @@ val = null
 val ?= 'value'
 val ?= 'eulav'
 eq val, 'value'
+
+
+for nonident in ['""', '0']
+  try ok not CoffeeScript.compile "{#{nonident}} = x"
+  catch e then eq e.message, nonident + ' cannot be assigned.'
