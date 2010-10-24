@@ -231,6 +231,21 @@ eq result.two, 2
 eq result.two, obj.list()[1]
 
 
+# Dynamic object keys.
+i = 0
+obj = {
+  ### leading comment  ###
+  "interpolated#{'key'}": 123
+  (4 * 2): 8
+  ### cached shorthand ###
+  (++i)
+  ### traling comment  ###
+}
+eq obj.interpolatedkey, 123
+eq obj[8], 8
+eq obj[1], 1
+
+
 #542: Objects leading expression statement should be parenthesized.
 {f: -> ok yes }.f() + 1
 

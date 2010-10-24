@@ -144,14 +144,18 @@ grammar =
   # Assignment when it happens within an object literal. The difference from
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
-    o 'Identifier',                               -> new Value $1
-    o 'AlphaNumeric'
+    o 'ObjAssignable',                -> new Value $1
+    o 'ObjAssignable : Expression',   -> new Assign new Value($1), $3, 'object'
+    o 'ObjAssignable :
+       INDENT Expression OUTDENT',    -> new Assign new Value($1), $4, 'object'
     o 'ThisProperty'
-    o 'Identifier   : Expression',                -> new Assign new Value($1), $3, 'object'
-    o 'AlphaNumeric : Expression',                -> new Assign new Value($1), $3, 'object'
-    o 'Identifier   : INDENT Expression OUTDENT', -> new Assign new Value($1), $4, 'object'
-    o 'AlphaNumeric : INDENT Expression OUTDENT', -> new Assign new Value($1), $4, 'object'
     o 'Comment'
+  ]
+
+  ObjAssignable: [
+    o 'Identifier'
+    o 'AlphaNumeric'
+    o 'Parenthetical'
   ]
 
   # A return statement from a function body.
@@ -222,9 +226,9 @@ grammar =
 
   # Everything that can be assigned to.
   Assignable: [
-    o "SimpleAssignable"
-    o "Array",                                  -> new Value $1
-    o "Object",                                 -> new Value $1
+    o 'SimpleAssignable'
+    o 'Array',           -> new Value $1
+    o 'Object',          -> new Value $1
   ]
 
   # The types of things that can be treated as values -- assigned to, invoked
