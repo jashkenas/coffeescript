@@ -308,10 +308,11 @@ exports.Value = class Value extends Base
   children: ['base', 'properties']
 
   # A **Value** has a base and a list of property accesses.
-  constructor: (@base, props, tag) ->
-    super()
+  constructor: (base, props, tag) ->
+    return base if not props and base instanceof Value
+    @base       = base
     @properties = props or []
-    @tags[tag]  = yes if tag
+    @tags       = if tag then {(tag): on} else {}
 
   # Add a property access to the list.
   push: (prop) ->
@@ -385,7 +386,7 @@ exports.Value = class Value extends Base
     props = @properties
     code  = @base.compile o, if props.length then LEVEL_ACCESS else null
     code  = "(#{code})" if props[0] instanceof Accessor and @isSimpleNumber()
-    (code += prop.compile o) for prop in props
+    code += prop.compile o for prop in props
     code
 
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
@@ -403,8 +404,6 @@ exports.Value = class Value extends Base
         snd.base = ref
       return new If new Existence(fst), snd, soak: on
     null
-
-  @wrap: (node) -> if node instanceof Value then node else new Value node
 
 #### Comment
 
@@ -459,7 +458,7 @@ exports.Call = class Call extends Base
     if @soakNode
       if @variable
         return ifn if ifn = If.unfoldSoak o, this, 'variable'
-        [left, rite] = Value.wrap(@variable).cacheReference o
+        [left, rite] = new Value(@variable).cacheReference o
       else
         left = new Literal @superReference o
         rite = new Value left
@@ -510,7 +509,7 @@ exports.Call = class Call extends Base
     splatargs = @compileSplatArguments o
     return "#{ @superReference o }.apply(this, #{splatargs})" if @isSuper
     unless @isNew
-      base = Value.wrap @variable
+      base = new Value @variable
       if (name = base.properties.pop()) and base.isComplex()
         ref = o.scope.freeVariable 'this'
         fun = "(#{ref} = #{ base.compile o, LEVEL_LIST })#{ name.compile o }"
@@ -734,7 +733,7 @@ exports.Class = class Class extends Base
           constructor.body.push    new Return new Literal 'this' if constructor.body.isEmpty()
           constructor.body.unshift new Literal "this.#{pname} = function(){ return #{className}.prototype.#{pname}.apply(#{me}, arguments); }"
       if pvar
-        access = if prop.context is 'this' then pvar.base.properties[0] else new Accessor(pvar, 'prototype')
+        access = if prop.context is 'this' then pvar.properties[0] else new Accessor(pvar, 'prototype')
         val    = new Value variable, [access]
         prop   = new Assign val, func
       props.push prop
@@ -804,14 +803,14 @@ exports.Assign = class Assign extends Base
         {variable: {base: idx}, value: obj} = obj
       else
         if obj.base instanceof Parens
-          [obj, idx] = Value.wrap(obj.unwrapAll()).cacheReference o
+          [obj, idx] = new Value(obj.unwrapAll()).cacheReference o
         else
           idx = if isObject
             if obj.tags.this then obj.properties[0].name else obj
           else
             new Literal 0
       acc   = IDENTIFIER.test idx.unwrap().value or 0
-      value = Value.wrap value
+      value = new Value value
       value.properties.push new (if acc then Accessor else Index) idx
       return new Assign(obj, value).compile o
     valVar  = value.compile o, LEVEL_LIST
@@ -830,7 +829,7 @@ exports.Assign = class Assign extends Base
         else
           # A shorthand `{a, b, @c} = val` pattern-match.
           if obj.base instanceof Parens
-            [obj, idx] = Value.wrap(obj.unwrapAll()).cacheReference o
+            [obj, idx] = new Value(obj.unwrapAll()).cacheReference o
           else
             idx = if obj.tags.this then obj.properties[0].name else obj
       if not splat and obj instanceof Splat
