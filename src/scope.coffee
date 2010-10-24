@@ -118,6 +118,6 @@ exports.Scope = class Scope
   compiledDeclarations: ->
     @declaredVariables().join ', '
 
-  # Compile the JavaScript forall of the variable assignments in this scope.
+  # Compile the JavaScript for all of the variable assignments in this scope.
   compiledAssignments: ->
     @assignedVariables().join ', '
