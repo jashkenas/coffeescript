@@ -185,8 +185,7 @@ exports.Expressions = class Expressions extends Base
     if @expressions.length is 1 then @expressions[0] else this
 
   # Is this an empty block of code?
-  empty: ->
-    @expressions.length is 0
+  isEmpty: -> not @expressions.length
 
   # An Expressions node does not return its entire body, rather it
   # ensures that the final expression is returned.
@@ -720,7 +719,7 @@ exports.Class = class Class extends Base
           constScope or= new Scope o.scope, constructor.body, constructor
           me or= constScope.freeVariable 'this'
           pname = pvar.compile o
-          constructor.body.push    new Return new Literal 'this' if constructor.body.empty()
+          constructor.body.push    new Return new Literal 'this' if constructor.body.isEmpty()
           constructor.body.unshift new Literal "this.#{pname} = function(){ return #{className}.prototype.#{pname}.apply(#{me}, arguments); }"
       if pvar
         access = if prop.context is 'this' then pvar.base.properties[0] else new Accessor(pvar, 'prototype')
@@ -733,7 +732,7 @@ exports.Class = class Class extends Base
     o.sharedScope = constScope
     construct  = @tab + new Assign(variable, constructor).compile(o) + ';'
     construct += '\n' + @tab + extension.compile(o) + ';' if extension
-    construct += '\n' + props.compile o                   if !props.empty()
+    construct += '\n' + props.compile o                   if !props.isEmpty()
     construct += '\n' + new Return(variable).compile o    if @returns
     construct
 
@@ -1049,16 +1048,16 @@ exports.While = class While extends Base
     o.indent = @idt 1
     set      = ''
     {body}   = this
-    if o.level > LEVEL_TOP or @returns
-      rvar = o.scope.freeVariable 'result'
-      set  = "#{@tab}#{rvar} = [];\n"
-      body = Push.wrap rvar, body if body
-    body = Expressions.wrap [new If @guard, body] if @guard
-    code = set + @tab + """
-      while (#{ @condition.compile o, LEVEL_PAREN }) {
-      #{ body.compile o, LEVEL_TOP }
-      #{@tab}}
-    """
+    if body.isEmpty()
+      body = ''
+    else
+      if o.level > LEVEL_TOP or @returns
+        rvar = o.scope.freeVariable 'result'
+        set  = "#{@tab}#{rvar} = [];\n"
+        body = Push.wrap rvar, body if body
+      body = Expressions.wrap [new If @guard, body] if @guard
+      body = "\n#{ body.compile o, LEVEL_TOP }\n#{@tab}"
+    code = set + @tab + "while (#{ @condition.compile o, LEVEL_PAREN }) {#{body}}"
     if @returns
       o.indent = @tab
       code += '\n' + new Return(new Literal rvar).compile o
@@ -1363,19 +1362,19 @@ exports.For = class For extends Base
         when  1 then '++'
         when -1 then '--'
         else (if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar)
-    if o.level > LEVEL_TOP or @returns
-      rvar     = scope.freeVariable 'result'
-      defPart += @tab + rvar + ' = [];\n'
-      retPart  = @compileReturnValue rvar, o
-      body     = Push.wrap rvar, body
-    body     = Expressions.wrap [new If @guard, body] if @guard
-    varPart  = idt + namePart + ';\n' if namePart
-    o.indent = idt
-    defPart + """
-    #{@tab}for (#{forPart}) {
-    #{ guardPart or '' }#{varPart}#{ body.compile o, LEVEL_TOP }
-    #{@tab}}
-    """ + retPart
+    varPart = idt + namePart + ';\n' if namePart
+    code = guardPart + varPart
+    unless body.isEmpty()
+      if o.level > LEVEL_TOP or @returns
+        rvar     = scope.freeVariable 'result'
+        defPart += @tab + rvar + ' = [];\n'
+        retPart  = @compileReturnValue rvar, o
+        body     = Push.wrap rvar, body
+      body     = Expressions.wrap [new If @guard, body] if @guard
+      o.indent = idt
+      code    += body.compile o, LEVEL_TOP
+    code = '\n' + code + '\n' + @tab if code
+    defPart + @tab + "for (#{forPart}) {#{code}}" + retPart
 
 #### Switch
 
@@ -1500,7 +1499,7 @@ exports.If = class If extends Base
 # which is helpful for recording the result arrays from comprehensions.
 Push =
   wrap: (name, expressions) ->
-    return expressions if expressions.empty() or
+    return expressions if expressions.isEmpty() or
         last(expressions.expressions).containsPureStatement()
     expressions.push new Call(new Value new Literal(name), [new Accessor new Literal 'push']
         [expressions.pop()])
