@@ -9,3 +9,6 @@ ok 'passed' is CoffeeScript.eval '"passed"', bare: on, fileName: 'test'
 #750
 try ok not CoffeeScript.nodes 'f(->'
 catch e then eq e.message, 'unclosed CALL_START on line 1'
+
+eq CoffeeScript.compile('for all k of o then', bare: on, globals: on),
+   'for (k in o) {}'
