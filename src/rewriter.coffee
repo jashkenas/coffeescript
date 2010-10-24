@@ -60,10 +60,7 @@ class exports.Rewriter
   adjustComments: ->
     @scanTokens (token, i, tokens) ->
       return 1 unless token[0] is 'HERECOMMENT'
-      before = tokens[i - 2]
-      prev   = tokens[i - 1]
-      post   = tokens[i + 1]
-      after  = tokens[i + 2]
+      {(i-2): before, (i-1): prev, (i+1): post, (i+2): after} = tokens
       if after?[0] is 'INDENT'
         tokens.splice i + 2, 1
         if before?[0] is 'OUTDENT' and post?[0] is 'TERMINATOR'
@@ -122,21 +119,29 @@ class exports.Rewriter
     stack = []
     condition = (token, i) ->
       return false if 'HERECOMMENT' in [@tag(i + 1), @tag(i - 1)]
-      [one, two, three] = @tokens.slice i + 1, i + 4
+      {(i+1): one, (i+2): two, (i+3): three} = @tokens
       [tag] = token
-      tag in ['TERMINATOR', 'OUTDENT'] and not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':') or
-      tag is ',' and one?[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT']
+      tag in ['TERMINATOR', 'OUTDENT'] and
+        not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':' or one?[0] is '(') or
+      tag is ',' and one and
+        one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT', '(']
     action = (token, i) -> @tokens.splice i, 0, ['}', '}', token[2]]
+    start = null
     @scanTokens (token, i, tokens) ->
       if (tag = token[0]) in EXPRESSION_START
-        stack.push if tag is 'INDENT' and @tag(i - 1) is '{' then '{' else tag
+        stack.push [(if tag is 'INDENT' and @tag(i - 1) is '{' then '{' else tag), i]
         return 1
       if tag in EXPRESSION_END
-        stack.pop()
+        start = stack.pop()
         return 1
-      return 1 unless tag is ':' and stack[stack.length - 1] isnt '{'
-      stack.push '{'
-      idx = if @tag(i - 2) is '@' then i - 2 else i - 1
+      return 1 unless tag is ':' and stack[stack.length - 1]?[0] isnt '{'
+      stack.push ['{']
+      idx = if @tag(i - 1) is ')'
+        start[1]
+      else  if @tag(i - 2) is '@'
+        i - 2
+      else
+        i - 1
       idx -= 2 if @tag(idx - 2) is 'HERECOMMENT'
       tok = ['{', '{', token[2]]
       tok.generated = yes
@@ -155,8 +160,7 @@ class exports.Rewriter
     @scanTokens (token, i, tokens) ->
       tag        = token[0]
       classLine  = yes if tag is 'CLASS'
-      prev       = tokens[i - 1]
-      next       = tokens[i + 1]
+      {(i-1): prev, (i+1): next} = tokens
       callObject = not classLine and tag is 'INDENT' and
                    next and next.generated and next[0] is '{' and
                    prev and prev[0] in IMPLICIT_FUNC

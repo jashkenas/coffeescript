@@ -58,14 +58,14 @@ exports.Base = class Base
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
   # by assigning it to a temporary variable. Pass a level to precompile.
-  cache: (o, lvl) ->
+  cache: (o, level, reused) ->
     unless @isComplex()
-      ref = if lvl then @compile o, lvl else this
+      ref = if level then @compile o, level else this
       [ref, ref]
     else
-      ref = new Literal o.scope.freeVariable 'ref'
+      ref = new Literal reused or o.scope.freeVariable 'ref'
       sub = new Assign ref, this
-      if lvl then [sub.compile(o, lvl), ref.value] else [sub, ref]
+      if level then [sub.compile(o, level), ref.value] else [sub, ref]
 
   # Compile to a source/variable pair suitable for looping.
   compileLoopReference: (o, name) ->
@@ -197,9 +197,9 @@ exports.Expressions = class Expressions extends Base
     this
 
   # An **Expressions** is the only node that can serve as the root.
-  compile: (o, lvl) ->
+  compile: (o, level) ->
     o or= {}
-    if o.scope then super o, lvl else @compileRoot o
+    if o.scope then super o, level else @compileRoot o
 
   compileNode: (o) ->
     @tab = o.indent
@@ -283,9 +283,9 @@ exports.Return = class Return extends Base
 
   makeReturn: THIS
 
-  compile: (o, lvl) ->
+  compile: (o, level) ->
     expr = @expression?.makeReturn()
-    if expr and expr not instanceof Return then expr.compile o, lvl else super o, lvl
+    if expr and expr not instanceof Return then expr.compile o, level else super o, level
 
   compileNode: (o) ->
     o.level = LEVEL_PAREN
@@ -576,6 +576,8 @@ exports.ObjectLiteral = class ObjectLiteral extends Base
     @objects = @properties = props or []
 
   compileNode: (o) ->
+    for prop, i in @properties when (prop.variable or prop).base instanceof Parens
+      return @compileDynamic o, i
     o.indent = @idt 1
     nonComments = prop for prop in @properties when prop not instanceof Comment
     lastNoncom  = last nonComments
@@ -595,6 +597,22 @@ exports.ObjectLiteral = class ObjectLiteral extends Base
     props = props.join ''
     obj   = "{#{ if props then '\n' + props + '\n' + @idt() else '' }}"
     if @tags.front then "(#{obj})" else obj
+
+  compileDynamic: (o, idx) ->
+    obj  = o.scope.freeVariable 'obj'
+    code = "#{obj} = #{ new ObjectLiteral(@properties.slice 0, idx).compile o }, "
+    for prop, i in @properties.slice idx
+      if prop instanceof Assign
+        key   = prop.variable.compile o, LEVEL_PAREN
+        code += "#{obj}[#{key}] = #{ prop.value.compile o, LEVEL_LIST }, "
+        continue
+      if prop instanceof Comment
+        code += prop.compile(o) + ' '
+        continue
+      [sub, ref] = prop.base.cache o, LEVEL_LIST, ref
+      code += "#{obj}[#{sub}] = #{ref}, "
+    code += obj
+    if o.level <= LEVEL_PAREN then code else "(#{code})"
 
   assigns: (name) ->
     for prop in @properties when prop.assigns name then return yes
@@ -772,12 +790,16 @@ exports.Assign = class Assign extends Base
       if obj instanceof Assign
         {variable: {base: idx}, value: obj} = obj
       else
-        idx = if isObject
-          if obj.tags.this then obj.properties[0].name else obj
+        if obj.base instanceof Parens
+          [obj, idx] = @matchParens o, obj
         else
-          new Literal 0
-      accessClass = if IDENTIFIER.test idx.value then Accessor else Index
-      (value = Value.wrap value).properties.push new accessClass idx
+          idx = if isObject
+            if obj.tags.this then obj.properties[0].name else obj
+          else
+            new Literal 0
+      acc   = IDENTIFIER.test idx.unwrap().value or 0
+      value = Value.wrap value
+      value.properties.push new (if acc then Accessor else Index) idx
       return new Assign(obj, value).compile o
     valVar  = value.compile o, LEVEL_LIST
     assigns = []
@@ -794,17 +816,23 @@ exports.Assign = class Assign extends Base
           {variable: {base: idx}, value: obj} = obj
         else
           # A shorthand `{a, b, @c} = val` pattern-match.
-          idx = if obj.tags.this then obj.properties[0].name else obj
+          if obj.base instanceof Parens
+            [obj, idx] = @matchParens o, obj
+          else
+            idx = if obj.tags.this then obj.properties[0].name else obj
       unless obj instanceof Value or obj instanceof Splat
-        throw SyntaxError 'pattern matching must use only identifiers on the left-hand side.'
-      accessClass = if isObject and IDENTIFIER.test(idx.value) then Accessor else Index
+        throw SyntaxError \
+          'destructuring assignment must use only identifiers on the left-hand side.'
       if not splat and obj instanceof Splat
         val   = new Literal obj.compileValue o, valVar, i, olength - i - 1
         splat = true
       else
         if typeof idx isnt 'object'
           idx = new Literal(if splat then "#{valVar}.length - #{ olength - idx }" else idx)
-        val = new Value new Literal(valVar), [new accessClass idx]
+          acc = no
+        else
+          acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
+        val = new Value new Literal(valVar), [new (if acc then Accessor else Index) idx]
       assigns.push new Assign(obj, val).compile o, LEVEL_LIST
     assigns.push valVar unless top
     code = assigns.join ', '
@@ -816,6 +844,13 @@ exports.Assign = class Assign extends Base
   compileConditional: (o) ->
     [left, rite] = @variable.cacheReference o
     return new Op(@context.slice(0, -1), left, new Assign(rite, @value)).compile o
+
+  matchParens: (o, obj) ->
+    until obj is obj = obj.unwrap() then
+    unless obj instanceof Literal or obj instanceof Value
+      throw SyntaxError 'nonreference in destructuring assignment shorthand.'
+    [obj, idx] = Value.wrap(obj).cacheReference o
+
 
 #### Code
 
@@ -1060,8 +1095,6 @@ exports.Op = class Op extends Base
     @flip   = !!flip
 
   isUnary: -> not @second
-
-  isComplex: -> @operator isnt '!' or @first.isComplex()
 
   # Am I capable of
   # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
