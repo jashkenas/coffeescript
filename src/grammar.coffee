@@ -172,7 +172,7 @@ grammar =
   ]
   
   Do: [
-    o "DO Code",                                  -> new Call $2, $2.params
+    o "DO Code",                                -> $2.do()
   ]
 
   # The **Code** node is the function literal. It's defined by an indented block

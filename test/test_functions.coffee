@@ -355,3 +355,8 @@ do (v1) ->
   v2 = 4
 ok v1 is 1
 ok v2 is 4
+
+cxt = {}
+val = null
+(-> do => val = this).call cxt
+ok val is cxt
