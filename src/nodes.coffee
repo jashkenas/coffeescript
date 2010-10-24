@@ -28,8 +28,7 @@ THIS = -> this
 # scope, and indentation level.
 exports.Base = class Base
 
-  constructor: ->
-    @tags = {}
+  constructor: -> @tags = {}
 
   # Common logic for determining whether to wrap this node in a closure before
   # compiling it, or to compile directly. We need to wrap if this node is a
@@ -81,8 +80,7 @@ exports.Base = class Base
   # Construct a node that returns the current node's result.
   # Note that this is overridden for smarter behavior for
   # many statement nodes (eg If, For)...
-  makeReturn: ->
-    new Return this
+  makeReturn: -> new Return this
 
   # Does this node, or any of its children, contain a node of a certain kind?
   # Recursively traverses down the *children* of the nodes, yielding to a block
@@ -178,8 +176,7 @@ exports.Expressions = class Expressions extends Base
     this
 
   # Remove and return the last expression of this expression list.
-  pop: ->
-    @expressions.pop()
+  pop: -> @expressions.pop()
 
   # Add an expression at the beginning of this expression list.
   unshift: (node) ->
@@ -188,8 +185,7 @@ exports.Expressions = class Expressions extends Base
 
   # If this Expressions consists of just a single node, unwrap it by pulling
   # it back out.
-  unwrap: ->
-    if @expressions.length is 1 then @expressions[0] else this
+  unwrap: -> if @expressions.length is 1 then @expressions[0] else this
 
   # Is this an empty block of code?
   isEmpty: -> not @expressions.length
@@ -319,45 +315,27 @@ exports.Value = class Value extends Base
     @properties.push prop
     this
 
-  hasProperties: ->
-    !!@properties.length
+  hasProperties: -> !!@properties.length
 
   # Some boolean checks for the benefit of other nodes.
-
-  isArray: ->
-    @base instanceof Arr and not @properties.length
-
-  isObject: ->
-    @base instanceof Obj and not @properties.length
-
-  isComplex: ->
-    @base.isComplex() or @hasProperties()
-
-  isAtomic: ->
+  isArray        : -> not @properties.length and @base instanceof Arr
+  isObject       : -> not @properties.length and @base instanceof Obj
+  isComplex      : -> @hasProperties() or @base.isComplex()
+  isAssignable   : -> @hasProperties() or @base.isAssignable()
+  isSimpleNumber : -> @base instanceof Literal and SIMPLENUM.test @base.value
+  isAtomic       : ->
     for node in @properties.concat @base
       return no if node.soakNode or node instanceof Call
     yes
 
-  isAssignable: ->
-    @hasProperties() or @base.isAssignable()
+  isStatement : (o)    -> not @properties.length and @base.isStatement o
+  assigns     : (name) -> not @properties.length and @base.assigns name
 
-  assigns: (name) ->
-    not @properties.length and @base.assigns name
-
-  makeReturn: ->
-    if @properties.length then super() else @base.makeReturn()
+  makeReturn: -> if @properties.length then super() else @base.makeReturn()
 
   # The value can be unwrapped as its inner node, if there are no attached
   # properties.
-  unwrap: ->
-    if @properties.length then this else @base
-
-  # Values are considered to be statements if their base is a statement.
-  isStatement: (o) ->
-    not @properties.length and @base.isStatement o
-
-  isSimpleNumber: ->
-    @base instanceof Literal and SIMPLENUM.test @base.value
+  unwrap: -> if @properties.length then this else @base
 
   # A reference has base part (`this` value) and name part.
   # We cache them separately for compiling complex expressions.
@@ -434,9 +412,6 @@ exports.Call = class Call extends Base
     @variable = if @isSuper then null else variable
     @args   or= []
 
-  compileSplatArguments: (o) ->
-    Splat.compileSplattedArray @args, o
-
   # Tag this invocation as creating a new instance.
   newInstance: ->
     @isNew = true
@@ -506,7 +481,7 @@ exports.Call = class Call extends Base
   # If it's a constructor, then things get real tricky. We have to inject an
   # inner constructor in order to be able to pass the varargs.
   compileSplat: (o) ->
-    splatargs = @compileSplatArguments o
+    splatargs = Splat.compileSplattedArray @args, o
     return "#{ @superReference o }.apply(this, #{splatargs})" if @isSuper
     unless @isNew
       base = new Value @variable
@@ -639,13 +614,10 @@ exports.Arr = class Arr extends Base
     super()
     @objects = objs or []
 
-  compileSplatLiteral: (o) ->
-    Splat.compileSplattedArray @objects, o
-
   compileNode: (o) ->
     o.indent = @idt 1
     for obj in @objects when obj instanceof Splat
-      return @compileSplatLiteral o
+      return Splat.compileSplattedArray @objects, o
     objects = []
     for obj, i in @objects
       code = obj.compile o, LEVEL_LIST
@@ -756,8 +728,6 @@ exports.Assign = class Assign extends Base
   # Matchers for detecting class/method names
   METHOD_DEF: /^(?:(\S+)\.prototype\.)?([$A-Za-z_][$\w]*)$/
 
-  CONDITIONAL: ['||=', '&&=', '?=']
-
   children: ['variable', 'value']
 
   constructor: (@variable, @value, @context) -> super()
@@ -774,7 +744,7 @@ exports.Assign = class Assign extends Base
   compileNode: (o) ->
     if isValue = @variable instanceof Value
       return @compilePatternMatch o if @variable.isArray() or @variable.isObject()
-      return @compileConditional  o if @context in @CONDITIONAL
+      return @compileConditional  o if @context in ['||=', '&&=', '?=']
     name = @variable.compile o, LEVEL_LIST
     if @value instanceof Code and match = @METHOD_DEF.exec name
       @value.name  = match[2]
@@ -863,12 +833,12 @@ exports.Code = class Code extends Base
 
   children: ['params', 'body']
 
-  constructor: (@params, @body, tag) ->
+  constructor: (params, body, tag) ->
     super()
-    @params or= []
-    @body   or= new Expressions
-    @bound    = tag is 'boundfunc'
-    @context  = 'this' if @bound
+    @params  = params or []
+    @body    = body   or new Expressions
+    @bound   = tag is 'boundfunc'
+    @context = 'this' if @bound
 
   # Compilation creates a new scope unless explicitly asked to share with the
   # outer scope. Handles splat parameters in the parameter list by peeking at
@@ -945,9 +915,9 @@ exports.Param = class Param extends Base
 
   children: ['name']
 
-  constructor: (@name, @attach, @splat) ->
+  constructor: (name, @attach, @splat) ->
     super()
-    @value = new Literal @name
+    @value = new Literal @name = name
 
   compile: (o) -> @value.compile o, LEVEL_LIST
 
@@ -973,8 +943,7 @@ exports.Splat = class Splat extends Base
 
   assigns: (name) -> @name.assigns name
 
-  compile: (o) ->
-    if @index? then @compileParam o else @name.compile o
+  compile: (o) -> if @index? then @compileParam o else @name.compile o
 
   # Compiling a parameter splat means recovering the parameters that succeed
   # the splat in the parameter list, by slicing the arguments object.
@@ -1036,8 +1005,8 @@ exports.While = class While extends Base
 
   constructor: (condition, opts) ->
     super()
-    @condition  = if opts?.invert then condition.invert() else condition
-    @guard = opts?.guard
+    @condition = if opts?.invert then condition.invert() else condition
+    @guard     = opts?.guard
 
   addBody: (body) ->
     @body = body
@@ -1095,9 +1064,9 @@ exports.Op = class Op extends Base
       first = new Parens first   if first instanceof Code and first.bound
     super()
     @operator = @CONVERSIONS[op] or op
-    @first  = first
-    @second = second
-    @flip   = !!flip
+    @first    = first
+    @second   = second
+    @flip     = !!flip
 
   isUnary: -> not @second
 
@@ -1447,7 +1416,8 @@ exports.If = class If extends Base
   # The **If** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a conditional operator is safe.
   isStatement: (o) ->
-    o?.level is LEVEL_TOP or @bodyNode().isStatement(o) or @elseBodyNode()?.isStatement(o)
+    o?.level is LEVEL_TOP or
+      @bodyNode().isStatement(o) or @elseBodyNode()?.isStatement(o)
 
   compileNode: (o) ->
     if @isStatement o then @compileStatement o else @compileExpression o
@@ -1504,11 +1474,10 @@ exports.If = class If extends Base
 # The **Push** creates the tree for `array.push(value)`,
 # which is helpful for recording the result arrays from comprehensions.
 Push =
-  wrap: (name, expressions) ->
-    return expressions if expressions.isEmpty() or
-        last(expressions.expressions).containsPureStatement()
-    expressions.push new Call(new Value new Literal(name), [new Accessor new Literal 'push']
-        [expressions.pop()])
+  wrap: (name, exps) ->
+    return exps if exps.isEmpty() or last(exps.expressions).containsPureStatement()
+    exps.push new Call \
+      new Value(new Literal(name), [new Accessor new Literal 'push']), [exps.pop()]
 
 #### Closure
 
