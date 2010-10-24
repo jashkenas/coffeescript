@@ -36,7 +36,7 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
     "mkdir -p ~/.node_libraries"
     "ln -sf #{lib}/lib #{node}"
   ].join(' && '), (err, stdout, stderr) ->
-    if err then print stderr else log 'done', green
+    if err then console.log stderr.trim() else log 'done', green
   )
 
 
@@ -48,8 +48,8 @@ task 'build', 'build the CoffeeScript language from source', ->
 
 task 'build:full', 'rebuild the source twice, and run the tests', ->
   exec 'bin/cake build && bin/cake build && bin/cake test', (err, stdout, stderr) ->
-    print stdout if stdout
-    print stderr if stderr
+    console.log stdout.trim() if stdout
+    console.log stderr.trim() if stderr
     throw err    if err
 
 
@@ -88,12 +88,12 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
 
 task 'bench', 'quick benchmark of compilation time (of everything in src)', ->
   exec 'time bin/coffee -p src/ > /dev/null', (err, stdout, stderr) ->
-    print stderr
+    console.log stderr.trim()
 
 task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
   sources = ['src/coffee-script.coffee', 'src/grammar.coffee', 'src/helpers.coffee', 'src/lexer.coffee', 'src/nodes.coffee', 'src/rewriter.coffee', 'src/scope.coffee']
   exec "cat #{ sources.join(' ') } | grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '", (err, stdout) ->
-    print stdout
+    console.log stdout.trim()
 
 
 runTests = (CoffeeScript) ->
