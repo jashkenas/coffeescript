@@ -264,7 +264,7 @@ grammar =
 
   # In CoffeeScript, an object literal is simply a list of assignments.
   Object: [
-    o "{ AssignList OptComma }",                -> new ObjectLiteral $2
+    o "{ AssignList OptComma }",                -> new Obj $2
   ]
 
   # Assignment of properties within an object literal can be separated by
@@ -347,8 +347,8 @@ grammar =
 
   # The array literal.
   Array: [
-    o "[ ]",                                    -> new ArrayLiteral []
-    o "[ ArgList OptComma ]",                   -> new ArrayLiteral $2
+    o "[ ]",                                    -> new Arr []
+    o "[ ArgList OptComma ]",                   -> new Arr $2
   ]
 
   # The **ArgList** is both the list of objects passed into a function call,

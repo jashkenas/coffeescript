@@ -316,10 +316,10 @@ exports.Value = class Value extends Base
   # Some boolean checks for the benefit of other nodes.
 
   isArray: ->
-    @base instanceof ArrayLiteral and not @properties.length
+    @base instanceof Arr and not @properties.length
 
   isObject: ->
-    @base instanceof ObjectLiteral and not @properties.length
+    @base instanceof Obj and not @properties.length
 
   isComplex: ->
     @base.isComplex() or @hasProperties()
@@ -564,10 +564,10 @@ exports.Index = class Index extends Base
 
   isComplex: -> @index.isComplex()
 
-#### ObjectLiteral
+#### Obj
 
 # An object literal, nothing fancy.
-exports.ObjectLiteral = class ObjectLiteral extends Base
+exports.Obj = class Obj extends Base
 
   children: ['properties']
 
@@ -600,7 +600,7 @@ exports.ObjectLiteral = class ObjectLiteral extends Base
 
   compileDynamic: (o, idx) ->
     obj  = o.scope.freeVariable 'obj'
-    code = "#{obj} = #{ new ObjectLiteral(@properties.slice 0, idx).compile o }, "
+    code = "#{obj} = #{ new Obj(@properties.slice 0, idx).compile o }, "
     for prop, i in @properties.slice idx
       if prop instanceof Assign
         key   = prop.variable.compile o, LEVEL_PAREN
@@ -618,10 +618,10 @@ exports.ObjectLiteral = class ObjectLiteral extends Base
     for prop in @properties when prop.assigns name then return yes
     no
 
-#### ArrayLiteral
+#### Arr
 
 # An array literal.
-exports.ArrayLiteral = class ArrayLiteral extends Base
+exports.Arr = class Arr extends Base
 
   children: ['objects']
 
