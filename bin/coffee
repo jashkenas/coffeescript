@@ -4,5 +4,5 @@ var path = require('path');
 var fs   = require('fs');
 var lib  = path.join(path.dirname(fs.realpathSync(__filename)), '../lib');
 
-require(lib + '/helpers').extend(global, require(/^0\.[012]/.test(process.version) ? 'sys' : 'util'));
+require(lib + '/helpers').extend(global, require(/^v0\.[012]/.test(process.version) ? 'sys' : 'util'));
 require(lib + '/command').run();
