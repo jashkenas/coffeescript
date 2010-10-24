@@ -232,7 +232,7 @@ exports.Expressions = class Expressions extends Base
   # return the result, and it's an expression, simply return it. If it's a
   # statement, ask the statement to do so.
   compileExpression: (node, o) ->
-    while node isnt node = node.unwrap() then
+    continue until node is node = node.unwrap()
     node = node.unfoldSoak(o) or node
     node.tags.front = on
     o.level = LEVEL_TOP
@@ -846,11 +846,10 @@ exports.Assign = class Assign extends Base
     return new Op(@context.slice(0, -1), left, new Assign(rite, @value)).compile o
 
   matchParens: (o, obj) ->
-    until obj is obj = obj.unwrap() then
+    continue until obj is obj = obj.unwrap()
     unless obj instanceof Literal or obj instanceof Value
       throw SyntaxError 'nonreference in destructuring assignment shorthand.'
-    [obj, idx] = Value.wrap(obj).cacheReference o
-
+    Value.wrap(obj).cacheReference o
 
 #### Code
 
