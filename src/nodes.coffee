@@ -924,14 +924,15 @@ exports.Code = class Code extends Base
   # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
   # unless `crossScope` is `true`.
   traverseChildren: (crossScope, func) -> super(crossScope, func) if crossScope
-  
+
   # Automatically calls the defined function.
   do: ->
     if @bound
       @bound = no
-      new Call(new Value this, [new Accessor new Literal 'call']
-               [new Literal 'this'].concat this.params)
-    else new Call this, this.params
+      new Call new Value(this, [new Accessor new Literal 'call']),
+               [new Literal 'this'].concat this.params
+    else
+      new Call this
 
 #### Param
 
