@@ -140,12 +140,14 @@ exports.Base = class Base
   # will override these with custom logic, if needed.
   children: []
 
-  unwrap          : THIS
   isStatement     : NO
   isPureStatement : NO
   isComplex       : YES
   isChainable     : NO
-  unfoldSoak      : NO
+  isAssignable    : NO
+
+  unwrap     : THIS
+  unfoldSoak : NO
 
   # Is this node used to assign a certain variable?
   assigns: NO
@@ -259,6 +261,8 @@ exports.Literal = class Literal extends Base
   # meaning when wrapped in a closure.
   isPureStatement: -> @value in ['break', 'continue', 'debugger']
 
+  isAssignable: -> IDENTIFIER.test @value
+
   isComplex: NO
 
   assigns: (name) -> name is @value
@@ -327,6 +331,9 @@ exports.Value = class Value extends Base
     for node in @properties.concat @base
       return no if node.soakNode or node instanceof Call
     yes
+
+  isAssignable: ->
+    @hasProperties() or @base.isAssignable()
 
   assigns: (name) ->
     not @properties.length and @base.assigns name
@@ -770,8 +777,8 @@ exports.Assign = class Assign extends Base
       @value.klass = match[1]
     val = @value.compile o, LEVEL_LIST
     return "#{name}: #{val}" if @context is 'object'
-    unless @variable.isComplex() or IDENTIFIER.test assignee = @variable.unwrap().value
-      throw SyntaxError "#{assignee} cannot be assigned."
+    unless @variable.isAssignable()
+      throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned."
     o.scope.find name unless isValue and (@variable.hasProperties() or @variable.namespaced)
     val = name + " #{ @context or '=' } " + val
     if o.level <= LEVEL_LIST then val else "(#{val})"
@@ -821,9 +828,6 @@ exports.Assign = class Assign extends Base
             [obj, idx] = @matchParens o, obj
           else
             idx = if obj.tags.this then obj.properties[0].name else obj
-      unless obj instanceof Value or obj instanceof Splat
-        throw SyntaxError \
-          'destructuring assignment must use only identifiers on the left-hand side.'
       if not splat and obj instanceof Splat
         val   = new Literal obj.compileValue o, valVar, i, olength - i - 1
         splat = true
@@ -848,8 +852,6 @@ exports.Assign = class Assign extends Base
 
   matchParens: (o, obj) ->
     continue until obj is obj = obj.unwrap()
-    unless obj instanceof Literal or obj instanceof Value
-      throw SyntaxError 'nonreference in destructuring assignment shorthand.'
     Value.wrap(obj).cacheReference o
 
 #### Code
@@ -962,6 +964,8 @@ exports.Param = class Param extends Base
 exports.Splat = class Splat extends Base
 
   children: ['name']
+
+  isAssignable: YES
 
   constructor: (name) ->
     super()

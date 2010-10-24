@@ -61,6 +61,6 @@ val ?= 'eulav'
 eq val, 'value'
 
 
-for nonident in ['""', '0']
-  try ok not CoffeeScript.compile "{#{nonident}} = x"
-  catch e then eq e.message, nonident + ' cannot be assigned.'
+for nonref in ['""', '0', 'f()']
+  try ok not CoffeeScript.compile "{k: #{nonref}} = v"
+  catch e then eq e.message, "\"#{nonref}\" cannot be assigned."
