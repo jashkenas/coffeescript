@@ -245,6 +245,9 @@ eq obj.interpolatedkey, 123
 eq obj[8], 8
 eq obj[1], 1
 
+eq 'braceless dynamic key',
+  (key for key of """braceless #{ 0 of ((0):(0)) and 'dynamic' } key""": 0)[0]
+
 
 #542: Objects leading expression statement should be parenthesized.
 {f: -> ok yes }.f() + 1
