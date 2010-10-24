@@ -6,13 +6,13 @@
 # If included on a webpage, it will automatically sniff out, compile, and
 # execute all scripts present in `text/coffeescript` tags.
 
+fs        = require 'fs'
 path      = require 'path'
 {Lexer}   = require './lexer'
 {parser}  = require './parser'
 
 # TODO: Remove registerExtension when fully deprecated
 if require.extensions
-  fs = require 'fs'
   require.extensions['.coffee'] = (module, filename) ->
     content = compile fs.readFileSync filename, 'utf8'
     module._compile content, filename
@@ -53,7 +53,7 @@ exports.run = (code, options) ->
   while root.parent
     root = root.parent
   # Set the filename
-  root.filename = options.fileName
+  root.filename = fs.realpathSync options.fileName
   # Clear the module cache
   root.moduleCache = {} if root.moduleCache
   # Compile
@@ -65,7 +65,7 @@ exports.run = (code, options) ->
 # Compile and evaluate a string of CoffeeScript (in a Node.js-like environment).
 # The CoffeeScript REPL uses this to run the input.
 exports.eval = (code, options) ->
-  __filename = options.fileName
+  __filename = fs.realpathSync options.fileName
   __dirname  = path.dirname __filename
   eval exports.compile(code, options)
 
