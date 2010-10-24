@@ -136,6 +136,11 @@ exports.Base = class Base
 
   invert: -> new Op '!', this
 
+  unwrapAll: ->
+    node = this
+    continue until node is node = node.unwrap()
+    node
+
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
   children: []
@@ -233,7 +238,7 @@ exports.Expressions = class Expressions extends Base
   # return the result, and it's an expression, simply return it. If it's a
   # statement, ask the statement to do so.
   compileExpression: (node, o) ->
-    continue until node is node = node.unwrap()
+    node = node.unwrapAll()
     node = node.unfoldSoak(o) or node
     node.tags.front = on
     o.level = LEVEL_TOP
@@ -799,7 +804,7 @@ exports.Assign = class Assign extends Base
         {variable: {base: idx}, value: obj} = obj
       else
         if obj.base instanceof Parens
-          [obj, idx] = @matchParens o, obj
+          [obj, idx] = Value.wrap(obj.unwrapAll()).cacheReference o
         else
           idx = if isObject
             if obj.tags.this then obj.properties[0].name else obj
@@ -825,7 +830,7 @@ exports.Assign = class Assign extends Base
         else
           # A shorthand `{a, b, @c} = val` pattern-match.
           if obj.base instanceof Parens
-            [obj, idx] = @matchParens o, obj
+            [obj, idx] = Value.wrap(obj.unwrapAll()).cacheReference o
           else
             idx = if obj.tags.this then obj.properties[0].name else obj
       if not splat and obj instanceof Splat
@@ -849,10 +854,6 @@ exports.Assign = class Assign extends Base
   compileConditional: (o) ->
     [left, rite] = @variable.cacheReference o
     return new Op(@context.slice(0, -1), left, new Assign(rite, @value)).compile o
-
-  matchParens: (o, obj) ->
-    continue until obj is obj = obj.unwrap()
-    Value.wrap(obj).cacheReference o
 
 #### Code
 
