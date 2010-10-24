@@ -1460,7 +1460,7 @@ exports.If = class If extends Base
 Push =
   wrap: (name, expressions) ->
     return expressions if expressions.empty() or
-        (last(expressions.expressions)).containsPureStatement()
+        last(expressions.expressions).containsPureStatement()
     expressions.push new Call(new Value new Literal(name), [new Accessor new Literal 'push']
         [expressions.pop()])
 
