@@ -770,6 +770,8 @@ exports.Assign = class Assign extends Base
       @value.klass = match[1]
     val = @value.compile o, LEVEL_LIST
     return "#{name}: #{val}" if @context is 'object'
+    unless @variable.isComplex() or IDENTIFIER.test assignee = @variable.unwrap().value
+      throw SyntaxError "#{assignee} cannot be assigned."
     o.scope.find name unless isValue and (@variable.hasProperties() or @variable.namespaced)
     val = name + " #{ @context or '=' } " + val
     if o.level <= LEVEL_LIST then val else "(#{val})"
