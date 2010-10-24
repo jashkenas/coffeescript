@@ -241,7 +241,7 @@ class exports.Rewriter
           levels[open] -= 1
         throw Error "too many #{token[1]} on line #{token[2] + 1}" if levels[open] < 0
       1
-    unclosed = key for all key, value of levels when value > 0
+    unclosed = (key for all key, value of levels when value > 0)
     if unclosed.length
       throw Error "unclosed #{ open = unclosed[0] } on line #{openLine[open] + 1}"
 
@@ -264,7 +264,7 @@ class exports.Rewriter
   rewriteClosingParens: ->
     stack = []
     debt  = {}
-    (debt[key] = 0) for all key of INVERSES
+    debt[key] = 0 for all key of INVERSES
     @scanTokens (token, i, tokens) ->
       if (tag = token[0]) in EXPRESSION_START
         stack.push token

@@ -438,7 +438,7 @@
   # Extend a given object with all of the properties in a source object.
   _.extend = (obj) ->
     for source in _.rest(arguments)
-      (obj[key] = val) for key, val of source
+      obj[key] = val for key, val of source
     obj
 
 

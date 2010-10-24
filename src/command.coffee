@@ -109,12 +109,10 @@ compileScript = (file, input, base) ->
       else if o.compile   then writeJs t.file, t.output, base
       else if o.lint      then lint t.output
   catch err
-    # Avoid using 'error' as it is a special event -- if there is no handler,
-    # node will print a stack trace and exit the program.
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
     return console.log err.message if o.watch
-    error err.stack
+    console.error err.stack
     process.exit 1
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,

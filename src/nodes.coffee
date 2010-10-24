@@ -169,7 +169,7 @@ exports.Expressions = class Expressions extends Base
   push: (node) ->
     @expressions.push node
     this
-  
+
   # Remove and return the last expression of this expression list.
   pop: ->
     @expressions.pop()
@@ -578,7 +578,7 @@ exports.Obj = class Obj extends Base
     for prop, i in @properties when (prop.variable or prop).base instanceof Parens
       return @compileDynamic o, i
     o.indent = @idt 1
-    nonComments = prop for prop in @properties when prop not instanceof Comment
+    nonComments = (prop for prop in @properties when prop not instanceof Comment)
     lastNoncom  = last nonComments
     props = for prop, i in @properties
       join = if i is @properties.length - 1

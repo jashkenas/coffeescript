@@ -19,7 +19,7 @@ ok(area(
 
 sumOfArgs = ->
   sum = 0
-  (sum += val) for val in arguments
+  sum += val for val in arguments
   sum
 
 ok sumOfArgs(1, 2, 3, 4, 5) is 15
