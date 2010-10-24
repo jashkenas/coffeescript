@@ -169,6 +169,10 @@ exports.Expressions = class Expressions extends Base
   push: (node) ->
     @expressions.push node
     this
+  
+  # Remove and return the last expression of this expression list.
+  pop: ->
+    @expressions.pop()
 
   # Add an expression at the beginning of this expression list.
   unshift: (node) ->
@@ -1455,11 +1459,10 @@ exports.If = class If extends Base
 # which is helpful for recording the result arrays from comprehensions.
 Push =
   wrap: (name, expressions) ->
-    return expressions if expressions.empty() or expressions.containsPureStatement()
-    Expressions.wrap [new Call(
-      new Value new Literal(name), [new Accessor new Literal 'push']
-      [expressions.unwrap()]
-    )]
+    return expressions if expressions.empty() or
+        (last(expressions.expressions)).containsPureStatement()
+    expressions.push new Call(new Value new Literal(name), [new Accessor new Literal 'push']
+        [expressions.pop()])
 
 #### Closure
 

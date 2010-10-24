@@ -109,3 +109,11 @@ val = for i in [1]
   for j in [] then break
   i
 ok val[0] is i
+
+
+# Comprehensions only wrap their last line in a closure, allowing other lines
+# to have pure expressions in them.
+func = -> for i in [1]
+  return if false
+  j for j in [1]
+ok func()[0][0] is 1
