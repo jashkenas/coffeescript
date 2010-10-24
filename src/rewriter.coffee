@@ -10,7 +10,7 @@
 class exports.Rewriter
 
   # Helpful snippet for debugging:
-  #     puts (t[0] + '/' + t[1] for t in @tokens).join ' '
+  #     console.log (t[0] + '/' + t[1] for t in @tokens).join ' '
 
   # Rewrite the token stream in multiple passes, one logical filter at
   # a time. This could certainly be changed into a single pass through the

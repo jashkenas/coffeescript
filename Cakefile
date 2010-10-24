@@ -11,12 +11,12 @@ reset = '\033[0m'
 # Run a CoffeeScript through our node/coffee interpreter.
 run = (args) ->
   proc =         spawn 'bin/coffee', args
-  proc.stderr.on 'data', (buffer) -> puts buffer.toString()
+  proc.stderr.on 'data', (buffer) -> console.log buffer.toString()
   proc.on        'exit', (status) -> process.exit(1) if status != 0
 
 # Log a message with a color.
 log = (message, color, explanation) ->
-  puts color + message + reset + ' ' + (explanation or '')
+  console.log color + message + reset + ' ' + (explanation or '')
 
 option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
 
@@ -25,9 +25,9 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
   lib  = "#{base}/lib/coffee-script"
   bin  = "#{base}/bin"
   node = "~/.node_libraries/coffee-script"
-  puts   "Installing CoffeeScript to #{lib}"
-  puts   "Linking to #{node}"
-  puts   "Linking 'coffee' to #{bin}/coffee"
+  console.log   "Installing CoffeeScript to #{lib}"
+  console.log   "Linking to #{node}"
+  console.log   "Linking 'coffee' to #{bin}/coffee"
   exec([
     "mkdir -p #{lib} #{bin}"
     "cp -rf bin lib LICENSE README package.json src #{lib}"

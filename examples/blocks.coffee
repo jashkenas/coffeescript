@@ -11,7 +11,7 @@ append = (location, data) ->
   throw new Error("Location does not exist") unless path.exists()
 
   File.open path, 'a', (file) ->
-    file.puts YAML.dump data
+    file.console.log YAML.dump data
 
   data
 
@@ -35,7 +35,7 @@ write = (location, data) ->
 
   File.open path, 'w', (file) ->
     return false if Digest.MD5.hexdigest(file.read()) is data.hash()
-    file.puts YAML.dump data
+    file.console.log YAML.dump data
     true
 
 

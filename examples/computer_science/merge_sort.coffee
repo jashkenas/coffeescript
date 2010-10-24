@@ -15,5 +15,5 @@ merge_sort = (list) ->
 
 
 # Test the function.
-puts merge_sort([3, 2, 1]).join(' ') is '1 2 3'
-puts merge_sort([9, 2, 7, 0, 1]).join(' ') is '0 1 2 7 9'
+console.log merge_sort([3, 2, 1]).join(' ') is '1 2 3'
+console.log merge_sort([9, 2, 7, 0, 1]).join(' ') is '0 1 2 7 9'

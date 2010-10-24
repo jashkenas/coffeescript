@@ -93,16 +93,16 @@ class LinkedList
 list = new LinkedList
 
 list.add("Hi")
-puts list.size()  is 1
-puts list.item(0) is "Hi"
-puts list.item(1) is null
+console.log list.size()  is 1
+console.log list.item(0) is "Hi"
+console.log list.item(1) is null
 
 list = new LinkedList
 list.add("zero").add("one").add("two")
-puts list.size()     is 3
-puts list.item(2)    is "two"
-puts list.remove(1)  is "one"
-puts list.item(0)    is "zero"
-puts list.item(1)    is "two"
-puts list.size()     is 2
-puts list.item(-10)  is null
+console.log list.size()     is 3
+console.log list.item(2)    is "two"
+console.log list.remove(1)  is "one"
+console.log list.item(0)    is "zero"
+console.log list.item(1)    is "two"
+console.log list.size()     is 2
+console.log list.item(-10)  is null

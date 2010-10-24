@@ -55,15 +55,15 @@ exports.run = ->
 
 # Display the list of Cake tasks in a format similar to `rake -T`
 printTasks = ->
-  puts ''
+  console.log ''
   for all name, task of tasks
     spaces = 20 - name.length
     spaces = if spaces > 0 then Array(spaces + 1).join(' ') else ''
     desc   = if task.description then "# #{task.description}" else ''
-    puts "cake #{name}#{spaces} #{desc}"
-  puts oparse.help() if switches.length
+    console.log "cake #{name}#{spaces} #{desc}"
+  console.log oparse.help() if switches.length
 
 # Print an error and exit when attempting to all an undefined task.
 missingTask = (task) ->
-  puts "No such task: \"#{task}\""
+  console.log "No such task: \"#{task}\""
   process.exit 1

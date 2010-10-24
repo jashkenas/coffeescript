@@ -4,7 +4,7 @@ callWithLambda = (l) -> null
 for i in array
   result = callWithLambda(->)
   if i == 2
-    puts "i = 2"
+    console.log "i = 2"
   else
     break
 

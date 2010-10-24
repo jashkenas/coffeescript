@@ -19,5 +19,5 @@ selection_sort = (list) ->
 
 
 # Test the function.
-puts selection_sort([3, 2, 1]).join(' ') is '1 2 3'
-puts selection_sort([9, 2, 7, 0, 1]).join(' ') is '0 1 2 7 9'
+console.log selection_sort([3, 2, 1]).join(' ') is '1 2 3'
+console.log selection_sort([9, 2, 7, 0, 1]).join(' ') is '0 1 2 7 9'

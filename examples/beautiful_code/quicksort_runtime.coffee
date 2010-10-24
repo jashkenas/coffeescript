@@ -8,6 +8,6 @@ runtime = (N) ->
     t = n - 1 + sum / n
   t
 
-puts runtime(3) is 2.6666666666666665
-puts runtime(5) is 7.4
-puts runtime(8) is 16.92142857142857
+console.log runtime(3) is 2.6666666666666665
+console.log runtime(5) is 7.4
+console.log runtime(8) is 16.92142857142857

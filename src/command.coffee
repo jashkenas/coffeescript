@@ -100,12 +100,12 @@ compileScript = (file, input, base) ->
     t = task = {file, input, options}
     CoffeeScript.emit 'compile', task
     if      o.tokens      then printTokens CoffeeScript.tokens t.input
-    else if o.nodes       then puts CoffeeScript.nodes(t.input).toString().trim()
+    else if o.nodes       then console.log CoffeeScript.nodes(t.input).toString().trim()
     else if o.run         then CoffeeScript.run t.input, t.options
     else
       t.output = CoffeeScript.compile t.input, t.options
       CoffeeScript.emit 'success', task
-      if o.print          then print t.output
+      if o.print          then console.log t.output.trim()
       else if o.compile   then writeJs t.file, t.output, base
       else if o.lint      then lint t.output
   catch err
@@ -113,7 +113,7 @@ compileScript = (file, input, base) ->
     # node will print a stack trace and exit the program.
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
-    return puts err.message if o.watch
+    return console.log err.message if o.watch
     error err.stack
     process.exit 1
 
@@ -149,15 +149,15 @@ writeJs = (source, js, base) ->
   compile   = ->
     js = ' ' if js.length <= 0
     fs.writeFile jsPath, js, (err) ->
-      if err then puts err.message
-      else if opts.compile and opts.watch then puts "Compiled #{source}"
+      if err then console.log err.message
+      else if opts.compile and opts.watch then console.log "Compiled #{source}"
   path.exists dir, (exists) ->
     if exists then compile() else exec "mkdir -p #{dir}", compile
 
 # Pipe compiled JS through JSLint (requires a working `jsl` command), printing
 # any errors or warnings that arise.
 lint = (js) ->
-  printIt = (buffer) -> puts buffer.toString().trim()
+  printIt = (buffer) -> console.log buffer.toString().trim()
   conf = __dirname + '/../extras/jsl.conf'
   jsl = spawn 'jsl', ['-nologo', '-stdin', '-conf', conf]
   jsl.stdout.on 'data', printIt
@@ -170,7 +170,7 @@ printTokens = (tokens) ->
   strings = for token in tokens
     [tag, value] = [token[0], token[1].toString().replace(/\n/, '\\n')]
     "[#{tag} #{value}]"
-  puts strings.join(' ')
+  console.log strings.join(' ')
 
 # Use the [OptionParser module](optparse.html) to extract all options from
 # `process.argv` that are specified in `SWITCHES`.
@@ -187,10 +187,10 @@ compileOptions = (fileName) -> {fileName, bare: opts.bare}
 
 # Print the `--help` usage message and exit.
 usage = ->
-  puts optionParser.help()
+  console.log optionParser.help()
   process.exit 0
 
 # Print the `--version` message and exit.
 version = ->
-  puts "CoffeeScript version #{CoffeeScript.VERSION}"
+  console.log "CoffeeScript version #{CoffeeScript.VERSION}"
   process.exit 0

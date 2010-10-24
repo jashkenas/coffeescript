@@ -11,6 +11,6 @@ index = (list, target) ->
     if val < target then low = mid + 1 else high = mid
   return -1
 
-puts 2 is index [10, 20, 30, 40, 50], 30
-puts 4 is index [-97, 35, 67, 88, 1200], 1200
-puts 0 is index [0, 45, 70], 0
+console.log 2 is index [10, 20, 30, 40, 50], 30
+console.log 4 is index [-97, 35, 67, 88, 1200], 1200
+console.log 0 is index [0, 45, 70], 0
