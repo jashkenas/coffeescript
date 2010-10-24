@@ -569,10 +569,10 @@ operators = [
   ["left",      'LOGIC']
   ["left",      '.']
   ["nonassoc",  'INDENT', 'OUTDENT']
-  ["right",     'WHEN', 'LEADING_WHEN', 'FORIN', 'FOROF', 'FROM', 'TO', 'BY', 'THROW']
-  ["right",     'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS', 'EXTENDS']
   ["right",     '=', ':', 'COMPOUND_ASSIGN', 'RETURN']
-  ["right",     'POST_IF', 'POST_UNLESS']
+  ["right",     'WHEN', 'LEADING_WHEN', 'FORIN', 'FOROF', 'FROM', 'TO', 'BY', 'THROW']
+  ["right",     'IF', 'UNLESS', 'POST_IF', 'POST_UNLESS', 'ELSE', 'FOR', 'WHILE',
+                'UNTIL', 'LOOP', 'SUPER', 'CLASS', 'EXTENDS']
 ]
 
 # Wrapping Up

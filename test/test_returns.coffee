@@ -1,6 +1,6 @@
 # Expression conversion under explicit returns.
 first = ->
-  return 'do' for x in [1,2,3]
+  return ('do' for x in [1,2,3])
 
 second = ->
   return ['re' for x in [1,2,3]]

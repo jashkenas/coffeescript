@@ -111,7 +111,7 @@ persons = {
   Christopher: { name: "Stan" }
 }
 
-join1 = "#{key}: #{name}" for key, { name } of persons
+join1 = ("#{key}: #{name}" for key, { name } of persons)
 
 eq join1.join(' / '), "George: Bob / Bob: Alice / Christopher: Stan"
 
@@ -121,12 +121,12 @@ persons = [
   { name: "Stan", parent: { name: "Christopher" } }
 ]
 
-join2 = "#{parent}: #{name}" for { name, parent: { name: parent } } in persons
+join2 = ("#{parent}: #{name}" for { name, parent: { name: parent } } in persons)
 
 eq join1.join(' '), join2.join(' ')
 
 persons = [['Bob', ['George']], ['Alice', ['Bob']], ['Stan', ['Christopher']]]
-join3 = "#{parent}: #{name}" for [name, [parent]] in persons
+join3 = ("#{parent}: #{name}" for [name, [parent]] in persons)
 
 eq join2.join(' '), join3.join(' ')
 

@@ -1,22 +1,22 @@
 # Basic array comprehensions.
-nums =    n * n for n in [1, 2, 3] when n % 2 isnt 0
-results = n * 2 for n in nums
+nums    = (n * n for n in [1, 2, 3] when n % 2 isnt 0)
+results = (n * 2 for n in nums)
 
 ok results.join(',') is '2,18'
 
 
 # Basic object comprehensions.
 obj   = {one: 1, two: 2, three: 3}
-names = prop + '!' for prop of obj
-odds  = prop + '!' for prop, value of obj when value % 2 isnt 0
+names = (prop + '!' for prop of obj)
+odds  = (prop + '!' for prop, value of obj when value % 2 isnt 0)
 
 ok names.join(' ') is "one! two! three!"
 ok odds.join(' ')  is "one! three!"
 
 
 # Basic range comprehensions.
-nums = i * 3 for i from 1 to 3
-negs = x for x from -20 to -5*2
+nums = (i * 3 for i from 1 to 3)
+negs = (x for x from -20 to -5*2)
 eq nums.concat(negs.slice 0, 3).join(' '), '3 6 9 -20 -19 -18'
 
 
@@ -35,7 +35,7 @@ eq evens + '', '4,6,8'
 
 
 # Backward traversing.
-odds = num for num in [0, 1, 2, 3, 4, 5] by -2
+odds = (num for num in [0, 1, 2, 3, 4, 5] by -2)
 eq odds + '', '5,3,1'
 
 
@@ -53,7 +53,7 @@ multiLiner =
       [x, y]
 
 singleLiner =
-  [x, y] for y from 3 to 5 for x from 3 to 5
+  (([x, y] for y from 3 to 5) for x from 3 to 5)
 
 ok multiLiner.length is singleLiner.length
 ok 5 is multiLiner[2][2][1]
@@ -70,7 +70,7 @@ ok result.join(' ') is '6 4 2'
 
 # Closure-wrapped comprehensions that refer to the "arguments" object.
 expr = ->
-  result = item * item for item in arguments
+  result = (item * item for item in arguments)
 
 ok expr(2, 4, 8).join(' ') is '4 16 64'
 
@@ -82,8 +82,8 @@ class Cat
   hair:  'cream'
 
 whiskers = new Cat
-own = value for key, value of whiskers
-all = value for all key, value of whiskers
+own = (value for key, value of whiskers)
+all = (value for all key, value of whiskers)
 
 ok own.join(' ') is 'Whiskers'
 ok all.sort().join(' ') is 'Whiskers cream tabby'
