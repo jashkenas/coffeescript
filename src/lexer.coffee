@@ -515,7 +515,7 @@ JS_KEYWORDS = [
   'new', 'delete', 'typeof', 'in', 'instanceof'
   'return', 'throw', 'break', 'continue', 'debugger'
   'if', 'else', 'switch', 'for', 'while', 'try', 'catch', 'finally'
-  'class', 'extends', 'super'
+  'class', 'extends', 'super', 'do'
 ]
 
 # CoffeeScript-only keywords.
@@ -535,7 +535,7 @@ COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES =
 # used by CoffeeScript internally. We throw an error when these are encountered,
 # to avoid having a JavaScript error at runtime.
 RESERVED = [
-  'case', 'default', 'do', 'function', 'var', 'void', 'with'
+  'case', 'default', 'function', 'var', 'void', 'with'
   'const', 'let', 'enum', 'export', 'import', 'native'
   '__hasProp', '__extends', '__slice'
 ]

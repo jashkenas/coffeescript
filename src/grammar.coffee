@@ -103,6 +103,7 @@ grammar =
     o "Class"
     o "Existence"
     o "Comment"
+    o "Do"
   ]
 
   # An indented block of expressions. Note that the [Rewriter](rewriter.html)
@@ -168,6 +169,10 @@ grammar =
   # [The existential operator](http://jashkenas.github.com/coffee-script/#existence).
   Existence: [
     o "Expression ?",                           -> new Existence $1
+  ]
+  
+  Do: [
+    o "DO Code",                                  -> new Call $2, $2.params
   ]
 
   # The **Code** node is the function literal. It's defined by an indented block
