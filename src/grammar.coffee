@@ -572,7 +572,7 @@ operators = [
   ["right",     'WHEN', 'LEADING_WHEN', 'FORIN', 'FOROF', 'FROM', 'TO', 'BY', 'THROW']
   ["right",     'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS', 'EXTENDS']
   ["right",     '=', ':', 'COMPOUND_ASSIGN', 'RETURN']
-  ["right",     '->', '=>', 'POST_IF', 'POST_UNLESS']
+  ["right",     'POST_IF', 'POST_UNLESS']
 ]
 
 # Wrapping Up
