@@ -248,6 +248,10 @@ eq obj[1], 1
 eq 'braceless dynamic key',
   (key for key of """braceless #{ 0 of ((0):(0)) and 'dynamic' } key""": 0)[0]
 
+obj.key = 'val'
+obj.val = ok
+{(obj.key)} = obj
+eq ok, obj.key
 
 #542: Objects leading expression statement should be parenthesized.
 {f: -> ok yes }.f() + 1

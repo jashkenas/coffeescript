@@ -786,12 +786,16 @@ exports.Assign = class Assign extends Base
       if obj instanceof Assign
         {variable: {base: idx}, value: obj} = obj
       else
-        idx = if isObject
-          if obj.tags.this then obj.properties[0].name else obj
+        if obj.base instanceof Parens
+          [obj, idx] = @matchParens o, obj
         else
-          new Literal 0
-      accessClass = if IDENTIFIER.test idx.value then Accessor else Index
-      (value = Value.wrap value).properties.push new accessClass idx
+          idx = if isObject
+            if obj.tags.this then obj.properties[0].name else obj
+          else
+            new Literal 0
+      acc   = IDENTIFIER.test idx.unwrap().value or 0
+      value = Value.wrap value
+      value.properties.push new (if acc then Accessor else Index) idx
       return new Assign(obj, value).compile o
     valVar  = value.compile o, LEVEL_LIST
     assigns = []
@@ -808,17 +812,23 @@ exports.Assign = class Assign extends Base
           {variable: {base: idx}, value: obj} = obj
         else
           # A shorthand `{a, b, @c} = val` pattern-match.
-          idx = if obj.tags.this then obj.properties[0].name else obj
+          if obj.base instanceof Parens
+            [obj, idx] = @matchParens o, obj
+          else
+            idx = if obj.tags.this then obj.properties[0].name else obj
       unless obj instanceof Value or obj instanceof Splat
-        throw SyntaxError 'pattern matching must use only identifiers on the left-hand side.'
-      accessClass = if isObject and IDENTIFIER.test(idx.value) then Accessor else Index
+        throw SyntaxError \
+          'destructuring assignment must use only identifiers on the left-hand side.'
       if not splat and obj instanceof Splat
         val   = new Literal obj.compileValue o, valVar, i, olength - i - 1
         splat = true
       else
         if typeof idx isnt 'object'
           idx = new Literal(if splat then "#{valVar}.length - #{ olength - idx }" else idx)
-        val = new Value new Literal(valVar), [new accessClass idx]
+          acc = no
+        else
+          acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
+        val = new Value new Literal(valVar), [new (if acc then Accessor else Index) idx]
       assigns.push new Assign(obj, val).compile o, LEVEL_LIST
     assigns.push valVar unless top
     code = assigns.join ', '
@@ -830,6 +840,13 @@ exports.Assign = class Assign extends Base
   compileConditional: (o) ->
     [left, rite] = @variable.cacheReference o
     return new Op(@context.slice(0, -1), left, new Assign(rite, @value)).compile o
+
+  matchParens: (o, obj) ->
+    until obj is obj = obj.unwrap() then
+    unless obj instanceof Literal or obj instanceof Value
+      throw SyntaxError 'nonreference in destructuring assignment shorthand.'
+    [obj, idx] = Value.wrap(obj).cacheReference o
+
 
 #### Code
 
@@ -1066,8 +1083,6 @@ exports.Op = class Op extends Base
     @flip   = !!flip
 
   isUnary: -> not @second
-
-  isComplex: -> @operator isnt '!' or @first.isComplex()
 
   # Am I capable of
   # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
