@@ -345,18 +345,3 @@ eq ok, new ->
   ok
   ### Should `return` implicitly   ###
   ### even with trailing comments. ###
-
-
-# Rescoping with the `do` keyword.
-v1 = 1
-v2 = 2
-do (v1) ->
-  v1 = 3
-  v2 = 4
-ok v1 is 1
-ok v2 is 4
-
-cxt = {}
-val = null
-(-> do => val = this).call cxt
-ok val is cxt

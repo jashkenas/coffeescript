@@ -103,7 +103,6 @@ grammar =
     o "Class"
     o "Existence"
     o "Comment"
-    o "Do"
   ]
 
   # An indented block of expressions. Note that the [Rewriter](rewriter.html)
@@ -173,10 +172,6 @@ grammar =
   # [The existential operator](http://jashkenas.github.com/coffee-script/#existence).
   Existence: [
     o "Expression ?",                           -> new Existence $1
-  ]
-
-  Do: [
-    o "DO Code",                                -> $2.do()
   ]
 
   # The **Code** node is the function literal. It's defined by an indented block
@@ -557,22 +552,23 @@ grammar =
 #
 #     (2 + 3) * 4
 operators = [
-  ["left",      'CALL_START', 'CALL_END']
-  ["nonassoc",  '++', '--']
-  ["left",      '?']
-  ["right",     'UNARY']
-  ["left",      'MATH']
-  ["left",      '+', '-']
-  ["left",      'SHIFT']
-  ["left",      'RELATION']
-  ["left",      'COMPARE']
-  ["left",      'LOGIC']
-  ["left",      '.']
-  ["nonassoc",  'INDENT', 'OUTDENT']
-  ["right",     '=', ':', 'COMPOUND_ASSIGN', 'RETURN']
-  ["right",     'WHEN', 'LEADING_WHEN', 'FORIN', 'FOROF', 'FROM', 'TO', 'BY',
-                'THROW', 'IF', 'UNLESS', 'POST_IF', 'POST_UNLESS', 'ELSE',
-                'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS', 'EXTENDS']
+  ['left',      'CALL_START', 'CALL_END']
+  ['nonassoc',  '++', '--']
+  ['left',      '?']
+  ['right',     'UNARY']
+  ['left',      'MATH']
+  ['left',      '+', '-']
+  ['left',      'SHIFT']
+  ['left',      'RELATION']
+  ['left',      'COMPARE']
+  ['left',      'LOGIC']
+  ['left',      '.']
+  ['nonassoc',  'INDENT', 'OUTDENT']
+  ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN']
+  ['right',     'WHEN', 'LEADING_WHEN', 'FORIN', 'FOROF', 'FROM', 'TO', 'BY',
+                'THROW', 'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP',
+                'SUPER', 'CLASS', 'EXTENDS']
+  ['right',     'POST_IF', 'POST_UNLESS']
 ]
 
 # Wrapping Up

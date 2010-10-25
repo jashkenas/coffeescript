@@ -57,7 +57,6 @@ task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   require 'jison'
   parser = require('./lib/grammar').parser
   js = parser.generate()
-  # TODO: Remove this when the Jison patch is released.
   js = js.replace 'if (require.main === module)', "if (typeof module !== 'undefined' && require.main === module)"
   fs.writeFile 'lib/parser.js', js
 
@@ -99,8 +98,12 @@ task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
 runTests = (CoffeeScript) ->
   startTime = Date.now()
   passedTests = failedTests = 0
-  for all name, func of require 'assert' then do (name, func) =>
-    global[name] = -> ++passedTests; func arguments...
+  wrap = (name, func) ->
+    global[name] = ->
+      passedTests += 1
+      func arguments...
+  for all name, func of require 'assert'
+    wrap name, func
   global.eq = global.strictEqual
   global.CoffeeScript = CoffeeScript
   process.on 'exit', ->
