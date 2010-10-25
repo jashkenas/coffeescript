@@ -131,6 +131,9 @@ result =
 
 ok result is 70
 
+if 'tight formatting with leading `then` is allowed'
+then ok    'yay'
+else throw 'boo'
 
 # Issue #738
 func = if true then -> 1

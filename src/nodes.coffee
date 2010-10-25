@@ -715,9 +715,8 @@ exports.Class = class Class extends Base
           ctor.body.unshift new Literal "this.#{pname} = function() { #{ret} }"
       if pvar
         access = if prop.context is 'this'
-          pvar.properties[0]
-        else
-          new Accessor pvar, 'proto'
+        then pvar.properties[0]
+        else new Accessor pvar, 'proto'
         val  = new Value variable, [access]
         prop = new Assign val, func
       props.push prop

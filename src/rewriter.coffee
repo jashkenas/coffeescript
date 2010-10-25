@@ -194,6 +194,9 @@ class exports.Rewriter
   addImplicitIndentation: ->
     @scanTokens (token, i, tokens) ->
       [tag] = token
+      if tag is 'TERMINATOR' and @tag(i + 1) is 'THEN'
+        tokens.splice i, 1
+        return 0
       if tag is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
         tokens.splice i, 0, @indentation(token)...
         return 2
