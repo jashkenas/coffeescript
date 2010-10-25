@@ -143,9 +143,8 @@ exports.Lexer = class Lexer
       when '"'
         return 0 unless string = @balancedString @chunk, [['"', '"'], ['#{', '}']]
         if 0 < string.indexOf '#{', 1
-          @interpolateString string.slice 1, -1
-        else
-          @token 'STRING', @escapeLines string
+        then @interpolateString string.slice 1, -1
+        else @token 'STRING', @escapeLines string
       else
         return 0
     @line += count string, '\n'
@@ -159,9 +158,8 @@ exports.Lexer = class Lexer
     quote = heredoc.charAt 0
     doc = @sanitizeHeredoc match[2], {quote, indent: null}
     if quote is '"' and 0 <= doc.indexOf '#{'
-      @interpolateString doc, heredoc: yes
-    else
-      @token 'STRING', @makeString doc, quote, yes
+    then @interpolateString doc, heredoc: yes
+    else @token 'STRING', @makeString doc, quote, yes
     @line += count heredoc, '\n'
     heredoc.length
 
@@ -446,9 +444,8 @@ exports.Lexer = class Lexer
     for [tag, value], i in tokens
       @token '+', '+' if i
       if tag is 'TOKENS'
-        @tokens.push value...
-      else
-        @token 'STRING', @makeString value, '"', heredoc
+      then @tokens.push value...
+      else @token 'STRING', @makeString value, '"', heredoc
     @token ')', ')' if interpolated
     tokens
 

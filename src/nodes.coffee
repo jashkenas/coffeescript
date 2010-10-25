@@ -42,9 +42,8 @@ exports.Base = class Base
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
     if o.level is LEVEL_TOP or node.isPureStatement() or not node.isStatement(o)
-      node.compileNode o
-    else
-      node.compileClosure o
+    then node.compileNode    o
+    else node.compileClosure o
 
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
@@ -102,7 +101,7 @@ exports.Base = class Base
   containsPureStatement: ->
     @isPureStatement() or @contains (node, func) ->
       func(node) or if node instanceof While or node instanceof For
-        (node) -> node instanceof Return
+      then (node) -> node instanceof Return
       else func
     , (node) -> node.isPureStatement()
 
@@ -408,14 +407,14 @@ exports.Call = class Call extends Base
 
   constructor: (variable, @args, @soak) ->
     super()
-    @isNew    = false
+    @new      = ''
     @isSuper  = variable is 'super'
     @variable = if @isSuper then null else variable
     @args   or= []
 
   # Tag this invocation as creating a new instance.
   newInstance: ->
-    @isNew = true
+    @new = 'new '
     this
 
   # Grab the reference to the superclass' implementation of the current method.
@@ -425,9 +424,8 @@ exports.Call = class Call extends Base
     {name} = method
     throw SyntaxError 'cannot call super on an anonymous function.' unless name
     if method.klass
-      "#{method.klass}.__super__.#{name}"
-    else
-      "#{name}.__super__.constructor"
+    then "#{method.klass}.__super__.#{name}"
+    else "#{name}.__super__.constructor"
 
   # Soaked chained invocations unfold into if/else ternary structures.
   unfoldSoak: (o) ->
@@ -439,7 +437,7 @@ exports.Call = class Call extends Base
         left = new Literal @superReference o
         rite = new Value left
       rite = new Call rite, @args
-      rite.isNew = @isNew
+      rite.new = @new
       left = new Literal "typeof #{ left.compile o } === \"function\""
       return new If left, new Value(rite), soak: yes
     call = this
@@ -455,22 +453,19 @@ exports.Call = class Call extends Base
     for call in list.reverse()
       if ifn
         if call.variable instanceof Call
-          call.variable = ifn
-        else
-          call.variable.base = ifn
+        then call.variable      = ifn
+        else call.variable.base = ifn
       ifn = If.unfoldSoak o, call, 'variable'
     ifn
 
   # Compile a vanilla function call.
   compileNode: (o) ->
     @variable?.tags.front = @tags.front
-    for arg in @args when arg instanceof Splat
-      return @compileSplat o
+    return @compileSplat o for arg in @args when arg instanceof Splat
     args = (arg.compile o, LEVEL_LIST for arg in @args).join ', '
     if @isSuper
-      @compileSuper args, o
-    else
-      (if @isNew then 'new ' else '') + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
+    then @compileSuper args, o
+    else @new + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
 
   # `super()` is converted into a call against the superclass's implementation
   # of the current function.
@@ -484,7 +479,7 @@ exports.Call = class Call extends Base
   compileSplat: (o) ->
     splatargs = Splat.compileSplattedArray @args, o
     return "#{ @superReference o }.apply(this, #{splatargs})" if @isSuper
-    unless @isNew
+    unless @new
       base = new Value @variable
       if (name = base.properties.pop()) and base.isComplex()
         ref = o.scope.freeVariable 'this'
@@ -569,11 +564,10 @@ exports.Obj = class Obj extends Base
     lastNoncom  = last nonComments
     props = for prop, i in @properties
       join = if i is @properties.length - 1
-        ''
+      then ''
       else if prop is lastNoncom or prop instanceof Comment
-        '\n'
-      else
-        ',\n'
+      then '\n'
+      else ',\n'
       indent = if prop instanceof Comment then '' else @idt 1
       if prop instanceof Value and prop.tags.this
         prop = new Assign prop.properties[0].name, prop, 'object'
@@ -600,9 +594,8 @@ exports.Obj = class Obj extends Base
         [key, val] = acc.cache o, LEVEL_LIST, ref
         ref = val
       key = if acc instanceof Literal and IDENTIFIER.test key
-        '.' + key
-      else
-        '[' + key + ']'
+      then '.' + key
+      else '[' + key + ']'
       code += "#{obj}#{key} = #{val}, "
     code += obj
     if o.level <= LEVEL_PAREN then code else "(#{code})"
@@ -630,12 +623,10 @@ exports.Arr = class Arr extends Base
     for obj, i in @objects
       code = obj.compile o, LEVEL_LIST
       objects.push (if obj instanceof Comment
-        "\n#{code}\n#{o.indent}"
+      then "\n#{code}\n#{o.indent}"
       else if i is @objects.length - 1
-        code
-      else
-        code + ', '
-      )
+      then code
+      else code + ', ')
     objects = objects.join ''
     if 0 < objects.indexOf '\n'
       "[\n#{o.indent}#{objects}\n#{@tab}]"
@@ -787,9 +778,8 @@ exports.Assign = class Assign extends Base
           [obj, idx] = new Value(obj.unwrapAll()).cacheReference o
         else
           idx = if isObject
-            if obj.tags.this then obj.properties[0].name else obj
-          else
-            new Literal 0
+          then (if obj.tags.this then obj.properties[0].name else obj)
+          else new Literal 0
       acc   = IDENTIFIER.test idx.unwrap().value or 0
       value = new Value value
       value.properties.push new (if acc then Accessor else Index) idx
@@ -810,9 +800,8 @@ exports.Assign = class Assign extends Base
         else
           # A shorthand `{a, b, @c} = val` pattern-match.
           if obj.base instanceof Parens
-            [obj, idx] = new Value(obj.unwrapAll()).cacheReference o
-          else
-            idx = if obj.tags.this then obj.properties[0].name else obj
+          then [obj, idx] = new Value(obj.unwrapAll()).cacheReference o
+          else idx = if obj.tags.this then obj.properties[0].name else obj
       if not splat and obj instanceof Splat
         val   = new Literal obj.compileValue o, valVar, i, olength - i - 1
         splat = true
@@ -1081,9 +1070,8 @@ exports.Op = class Op extends Base
       @operator = op
       this
     else if @second
-      new Parens(this).invert()
-    else
-      super()
+    then new Parens(this).invert()
+    else super()
 
   unfoldSoak: (o) ->
     @operator in ['++', '--', 'delete'] and If.unfoldSoak o, this, 'first'
@@ -1140,9 +1128,8 @@ exports.In = class In extends Base
 
   compileNode: (o) ->
     if @array instanceof Value and @array.isArray()
-      @compileOrTest o
-    else
-      @compileLoopTest o
+    then @compileOrTest   o
+    else @compileLoopTest o
 
   compileOrTest: (o) ->
     [sub, ref] = @object.cache o, LEVEL_OP
@@ -1224,9 +1211,8 @@ exports.Existence = class Existence extends Base
   compileNode: (o) ->
     code = @expression.compile o
     code = if IDENTIFIER.test(code) and not o.scope.check code
-      "typeof #{code} !== \"undefined\" && #{code} !== null"
-    else
-      "#{code} != null"
+    then "typeof #{code} !== \"undefined\" && #{code} !== null"
+    else "#{code} != null"
     if o.level <= LEVEL_COND then code else "(#{code})"
 
 #### Parens
@@ -1308,14 +1294,12 @@ exports.For = class For extends Base
       vars  = ivar + ' = ' + @from.compile o
       vars += ', ' + tail if tail isnt tvar
       cond = if +pvar
-        "#{ivar} #{ if pvar < 0 then '>' else '<' }= #{tvar}"
-      else
-        "#{pvar} < 0 ? #{ivar} >= #{tvar} : #{ivar} <= #{tvar}"
+      then "#{ivar} #{ if pvar < 0 then '>' else '<' }= #{tvar}"
+      else "#{pvar} < 0 ? #{ivar} >= #{tvar} : #{ivar} <= #{tvar}"
     else
       if name or @object and not @raw
-        [sourcePart, svar] = @source.compileLoopReference o, 'ref'
-      else
-        sourcePart = svar = @source.compile o, LEVEL_PAREN
+      then [sourcePart,  svar] = @source.compileLoopReference o, 'ref'
+      else  sourcePart = svar  = @source.compile o, LEVEL_PAREN
       namePart = if @pattern
         new Assign(@name, new Literal "#{svar}[#{ivar}]").compile o, LEVEL_TOP
       else if name
@@ -1447,9 +1431,8 @@ exports.If = class If extends Base
     ifPart   = @tab + ifPart unless child
     return ifPart unless @elseBody
     ifPart + ' else ' + if @isChain
-       @elseBodyNode().compile merge o, indent: @tab, chainChild: true
-    else
-      "{\n#{ @elseBody.compile o, LEVEL_TOP }\n#{@tab}}"
+    then @elseBodyNode().compile merge o, indent: @tab, chainChild: true
+    else "{\n#{ @elseBody.compile o, LEVEL_TOP }\n#{@tab}}"
 
   # Compile the If as a conditional operator.
   compileExpression: (o) ->
