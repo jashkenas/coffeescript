@@ -11,7 +11,7 @@ if (answer !== false) {
 if (car.speed < limit) {
   accelerate();
 }
-if ((pick === 47 || pick === 92 || pick === 13)) {
+if (pick === 47 || pick === 92 || pick === 13) {
   winner = true;
 }
 print(inspect("My name is " + this.name));

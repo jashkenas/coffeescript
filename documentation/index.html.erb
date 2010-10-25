@@ -46,7 +46,6 @@
         <a href="#splats">Splats...</a>
         <a href="#while">While, Until, and Loop</a>
         <a href="#comprehensions">Comprehensions (Arrays, Objects, and Ranges)</a>
-        <a href="#slice_splice">Array Slicing and Splicing with Ranges</a>
         <a href="#expressions">Everything is an Expression</a>
         <a href="#existence">The Existential Operator</a>
         <a href="#classes">Classes, Inheritance, and Super</a>
@@ -512,7 +511,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       in fixed-size increments, you can use a range to specify the start and
       end of your comprehension.
     </p>
-    <%= code_for('range_comprehensions', 'countdown') %>
+    <%= code_for('range_comprehensions', 'count') %>
     <p>
       Comprehensions can also be used to iterate over the keys and values in
       an object. Use <tt>of</tt> to signal comprehension over the properties of
@@ -526,24 +525,6 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       loop, for speed or for another reason, you can use <br />
       <tt>for all key, value of object</tt> in CoffeeScript.
     </p>
-
-    <p>
-      <span id="slice_splice" class="bookmark"></span>
-      <b class="header">Array Slicing and Splicing with Ranges</b>
-      CoffeeScript borrows Ruby's
-      <a href="http://ruby-doc.org/core/classes/Range.html">range syntax</a>
-      for extracting slices of arrays. With two dots (<tt>3..5</tt>), the range
-      is inclusive: the first argument is the index of the first element in
-      the slice, and the second is the index of the last one. Three dots signify
-      a range that excludes the end.
-    </p>
-    <%= code_for('slices', 'copy') %>
-    <p>
-      The same syntax can be used with assignment to replace a segment of an
-      array with new values (to splice it).
-    </p>
-    <%= code_for('splices', 'numbers') %>
-
     <p>
       <span id="expressions" class="bookmark"></span>
       <b class="header">Everything is an Expression (at least, as much as possible)</b>

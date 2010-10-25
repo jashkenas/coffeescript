@@ -73,7 +73,8 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
-  exec 'rake doc'
+  exec 'rake doc', (err) ->
+    throw err if err
 
 
 task 'doc:source', 'rebuild the internal documentation', ->

@@ -10,7 +10,7 @@ Animal = (function() {
   function Animal(_arg) {
     this.name = _arg;
     return this;
-  };
+  }
   return Animal;
 })();
 Animal.prototype.move = function(meters) {
@@ -19,7 +19,7 @@ Animal.prototype.move = function(meters) {
 Snake = (function() {
   function Snake() {
     return Animal.apply(this, arguments);
-  };
+  }
   return Snake;
 })();
 __extends(Snake, Animal);
@@ -30,7 +30,7 @@ Snake.prototype.move = function() {
 Horse = (function() {
   function Horse() {
     return Animal.apply(this, arguments);
-  };
+  }
   return Horse;
 })();
 __extends(Horse, Animal);
