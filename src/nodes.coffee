@@ -884,7 +884,7 @@ exports.Code = class Code extends Base
     code = if @body.expressions.length then "\n#{ @body.compileWithDeclarations o }\n" else ''
     if @className
       open  = "(function() {\n#{comm}#{idt}function #{@className}("
-      close = "#{ code and idt }};\n#{idt}return #{@className};\n#{@tab}})()"
+      close = "#{ code and idt }}\n#{idt}return #{@className};\n#{@tab}})()"
     else
       open  = "function("
       close = "#{ code and @tab }}"
@@ -1367,7 +1367,6 @@ exports.Switch = class Switch extends Base
         cond  = cond.invert() unless @subject
         code += idt1 + "case #{ cond.compile o, LEVEL_PAREN }:\n"
       code += block.compile(o, LEVEL_TOP) + '\n'
-      break if i is @cases.length - 1 and not @otherwise
       for expr in block.expressions by -1 when expr not instanceof Comment
         code += idt2 + 'break;\n' unless expr instanceof Return
         break
@@ -1524,7 +1523,9 @@ UTILITIES =
   # Discover if an item is in an array.
   indexOf: '''
     Array.prototype.indexOf || function(item) {
-      for (var i = 0, l = this.length; i < l; i++) if (this[i] === item) return i;
+      for (var i = 0, l = this.length; i < l; i++) {
+        if (this[i] === item) return i;
+      }
       return -1;
     }
   '''

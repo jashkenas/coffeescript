@@ -107,7 +107,7 @@ compileScript = (file, input, base) ->
       CoffeeScript.emit 'success', task
       if o.print          then console.log t.output.trim()
       else if o.compile   then writeJs t.file, t.output, base
-      else if o.lint      then lint t.output
+      else if o.lint      then lint t.file, t.output
   catch err
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
@@ -154,8 +154,8 @@ writeJs = (source, js, base) ->
 
 # Pipe compiled JS through JSLint (requires a working `jsl` command), printing
 # any errors or warnings that arise.
-lint = (js) ->
-  printIt = (buffer) -> console.log buffer.toString().trim()
+lint = (file, js) ->
+  printIt = (buffer) -> console.log file + ':\t' + buffer.toString().trim()
   conf = __dirname + '/../extras/jsl.conf'
   jsl = spawn 'jsl', ['-nologo', '-stdin', '-conf', conf]
   jsl.stdout.on 'data', printIt
