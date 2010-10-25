@@ -2,7 +2,7 @@
 
 # 5 times: "Odelay!" print.
 
-print "Odelay!" for [1..5]
+print "Odelay!" for i from 1 to 5
 
 
 # add = (x, y): x + y.
@@ -166,7 +166,7 @@ while count > 0
 # 1 to 5 (a):
 #   a string print.
 
-print a for a in [1..5]
+print a for a from 1 to 5
 
 
 # if (3 ?gender):

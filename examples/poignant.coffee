@@ -177,5 +177,5 @@ wipe_mutterings_from = (sentence) ->
   while sentence.indexOf('(') >= 0
     open     = sentence.indexOf('(') - 1
     close    = sentence.indexOf(')') + 1
-    sentence = sentence[0..open] + sentence[close..sentence.length]
+    sentence = sentence.slice(0, open) + sentence.slice(close, sentence.length)
     sentence
