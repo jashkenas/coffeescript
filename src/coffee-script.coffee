@@ -65,7 +65,7 @@ exports.run = (code, options) ->
 # Compile and evaluate a string of CoffeeScript (in a Node.js-like environment).
 # The CoffeeScript REPL uses this to run the input.
 exports.eval = (code, options) ->
-  __filename = fs.realpathSync options.fileName
+  __filename = options.fileName
   __dirname  = path.dirname __filename
   eval exports.compile(code, options)
 

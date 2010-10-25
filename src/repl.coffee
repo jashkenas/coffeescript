@@ -21,7 +21,7 @@ helpers.extend global, quit: -> process.exit(0)
 run = (buffer) ->
   try
     val = CoffeeScript.eval buffer.toString(), bare: on, globals: on, fileName: 'repl'
-    console.log inspect val if val isnt undefined
+    console.log val if val isnt undefined
   catch err
     console.error err.stack or err.toString()
   repl.prompt()
