@@ -56,32 +56,32 @@ grammar =
   # The **Root** is the top-level node in the syntax tree. Since we parse bottom-up,
   # all parsing must end here.
   Root: [
-    o "",                                       -> new Expressions
-    o "TERMINATOR",                             -> new Expressions
-    o "Body"
-    o "Block TERMINATOR"
+    o '',                                       -> new Expressions
+    o 'TERMINATOR',                             -> new Expressions
+    o 'Body'
+    o 'Block TERMINATOR'
   ]
 
   # Any list of statements and expressions, seperated by line breaks or semicolons.
   Body: [
-    o "Line",                                   -> Expressions.wrap [$1]
-    o "Body TERMINATOR Line",                   -> $1.push $3
-    o "Body TERMINATOR"
+    o 'Line',                                   -> Expressions.wrap [$1]
+    o 'Body TERMINATOR Line',                   -> $1.push $3
+    o 'Body TERMINATOR'
   ]
 
   # Expressions and statements, which make up a line in a body.
   Line: [
-    o "Expression"
-    o "Statement"
+    o 'Expression'
+    o 'Statement'
   ]
 
   # Pure statements which cannot be expressions.
   Statement: [
-    o "Return"
-    o "Throw"
-    o "BREAK",                                  -> new Literal $1
-    o "CONTINUE",                               -> new Literal $1
-    o "DEBUGGER",                               -> new Literal $1
+    o 'Return'
+    o 'Throw'
+    o 'BREAK',                                  -> new Literal $1
+    o 'CONTINUE',                               -> new Literal $1
+    o 'DEBUGGER',                               -> new Literal $1
   ]
 
   # All the different types of expressions in our language. The basic unit of
@@ -89,56 +89,55 @@ grammar =
   # is one. Expressions serve as the building blocks of many other rules, making
   # them somewhat circular.
   Expression: [
-    o "Value"
-    o "Invocation"
-    o "Code"
-    o "Operation"
-    o "Assign"
-    o "If"
-    o "Try"
-    o "While"
-    o "For"
-    o "Switch"
-    o "Extends"
-    o "Class"
-    o "Existence"
-    o "Comment"
+    o 'Value'
+    o 'Invocation'
+    o 'Code'
+    o 'Operation'
+    o 'Assign'
+    o 'If'
+    o 'Try'
+    o 'While'
+    o 'For'
+    o 'Switch'
+    o 'Extends'
+    o 'Class'
+    o 'Comment'
   ]
 
   # An indented block of expressions. Note that the [Rewriter](rewriter.html)
   # will convert some postfix forms into blocks for us, by adjusting the
   # token stream.
   Block: [
-    o "INDENT Body OUTDENT",                    -> $2
-    o "INDENT OUTDENT",                         -> new Expressions
-    o "TERMINATOR Comment",                     -> Expressions.wrap [$2]
+    o 'INDENT Body OUTDENT',                    -> $2
+    o 'INDENT OUTDENT',                         -> new Expressions
+    o 'TERMINATOR Comment',                     -> Expressions.wrap [$2]
   ]
 
   # A literal identifier, a variable name or property.
   Identifier: [
-    o "IDENTIFIER",                             -> new Literal $1
+    o 'IDENTIFIER',                             -> new Literal $1
   ]
 
   # Alphanumerics are separated from the other **Literal** matchers because
   # they can also serve as keys in object literals.
   AlphaNumeric: [
-    o "NUMBER",                                 -> new Literal $1
-    o "STRING",                                 -> new Literal $1
+    o 'NUMBER',                                 -> new Literal $1
+    o 'STRING',                                 -> new Literal $1
   ]
 
   # All of our immediate values. These can (in general), be passed straight
   # through and printed to JavaScript.
   Literal: [
-    o "AlphaNumeric"
-    o "JS",                                     -> new Literal $1
-    o "REGEX",                                  -> new Literal $1
-    o "BOOL",                                   -> new Literal $1
+    o 'AlphaNumeric'
+    o 'JS',                                     -> new Literal $1
+    o 'REGEX',                                  -> new Literal $1
+    o 'BOOL',                                   -> new Literal $1
   ]
 
   # Assignment of a variable, property, or index to a value.
   Assign: [
-    o "Assignable = Expression",                -> new Assign $1, $3
-    o "Assignable = INDENT Expression OUTDENT", -> new Assign $1, $4
+    o 'Assignable = Expression',                -> new Assign $1, $3
+    o 'Assignable = INDENT Expression OUTDENT', -> new Assign $1, $4
   ]
 
   # Assignment when it happens within an object literal. The difference from
@@ -160,33 +159,28 @@ grammar =
 
   # A return statement from a function body.
   Return: [
-    o "RETURN Expression",                      -> new Return $2
-    o "RETURN",                                 -> new Return
+    o 'RETURN Expression',                      -> new Return $2
+    o 'RETURN',                                 -> new Return
   ]
 
   # A block comment.
   Comment: [
-    o "HERECOMMENT",                            -> new Comment $1
-  ]
-
-  # [The existential operator](http://jashkenas.github.com/coffee-script/#existence).
-  Existence: [
-    o "Expression ?",                           -> new Existence $1
+    o 'HERECOMMENT',                            -> new Comment $1
   ]
 
   # The **Code** node is the function literal. It's defined by an indented block
   # of **Expressions** preceded by a function arrow, with an optional parameter
   # list.
   Code: [
-    o "PARAM_START ParamList PARAM_END FuncGlyph Block", -> new Code $2, $5, $4
-    o "FuncGlyph Block",                        -> new Code [], $2, $1
+    o 'PARAM_START ParamList PARAM_END FuncGlyph Block', -> new Code $2, $5, $4
+    o 'FuncGlyph Block',                        -> new Code [], $2, $1
   ]
 
   # CoffeeScript has two different symbols for functions. `->` is for ordinary
   # functions, and `=>` is for functions bound to the current value of *this*.
   FuncGlyph: [
-    o "->",                                     -> 'func'
-    o "=>",                                     -> 'boundfunc'
+    o '->',                                     -> 'func'
+    o '=>',                                     -> 'boundfunc'
   ]
 
   # An optional, trailing comma.
@@ -197,31 +191,31 @@ grammar =
 
   # The list of parameters that a function accepts can be of any length.
   ParamList: [
-    o "",                                       -> []
-    o "Param",                                  -> [$1]
-    o "ParamList , Param",                      -> $1.concat $3
+    o '',                                       -> []
+    o 'Param',                                  -> [$1]
+    o 'ParamList , Param',                      -> $1.concat $3
   ]
 
   # A single parameter in a function definition can be ordinary, or a splat
   # that hoovers up the remaining arguments.
   Param: [
-    o "PARAM",                                  -> new Literal $1
-    o "@ PARAM",                                -> new Param $2, true
-    o "PARAM ...",                              -> new Param $1, false, true
-    o "@ PARAM ...",                            -> new Param $2, true, true
+    o 'PARAM',                                  -> new Literal $1
+    o 'PARAM ...',                              -> new Param $1, false, true
+    o '@ PARAM',                                -> new Param $2, true
+    o '@ PARAM ...',                            -> new Param $2, true, true
   ]
 
   # A splat that occurs outside of a parameter list.
   Splat: [
-    o "Expression ...",                         -> new Splat $1
+    o 'Expression ...',                         -> new Splat $1
   ]
 
   # Variables and properties that can be assigned to.
   SimpleAssignable: [
-    o "Identifier",                             -> new Value $1
-    o "Value Accessor",                         -> $1.push $2
-    o "Invocation Accessor",                    -> new Value $1, [$2]
-    o "ThisProperty"
+    o 'Identifier',                             -> new Value $1
+    o 'Value Accessor',                         -> $1.push $2
+    o 'Invocation Accessor',                    -> new Value $1, [$2]
+    o 'ThisProperty'
   ]
 
   # Everything that can be assigned to.
@@ -234,159 +228,161 @@ grammar =
   # The types of things that can be treated as values -- assigned to, invoked
   # as functions, indexed into, named as a class, etc.
   Value: [
-    o "Assignable"
-    o "Literal",                                -> new Value $1
-    o "Parenthetical",                          -> new Value $1
-    o "This"
+    o 'Assignable'
+    o 'Literal',                                -> new Value $1
+    o 'Parenthetical',                          -> new Value $1
+    o 'This'
   ]
 
   # The general group of accessors into an object, by property, by prototype
   # or by array index or slice.
   Accessor: [
-    o "PROPERTY_ACCESS Identifier",             -> new Accessor $2
-    o "PROTOTYPE_ACCESS Identifier",            -> new Accessor $2, 'prototype'
-    o "::",                                     -> new Accessor(new Literal('prototype'))
-    o "SOAK_ACCESS Identifier",                 -> new Accessor $2, 'soak'
-    o "Index"
+    o 'PROPERTY_ACCESS Identifier',             -> new Accessor $2
+    o 'PROTOTYPE_ACCESS Identifier',            -> new Accessor $2, 'prototype'
+    o '::',                                     -> new Accessor new Literal 'prototype'
+    o 'SOAK_ACCESS Identifier',                 -> new Accessor $2, 'soak'
+    o 'Index'
   ]
 
   # Indexing into an object or array using bracket notation.
   Index: [
-    o "INDEX_START Expression INDEX_END",       -> new Index $2
-    o "INDEX_SOAK  Index",                      -> extend $2, soakNode: yes
-    o "INDEX_PROTO Index",                      -> extend $2, proto: yes
+    o 'INDEX_START Expression INDEX_END',       -> new Index $2
+    o 'INDEX_SOAK  Index',                      -> extend $2, soakNode: yes
+    o 'INDEX_PROTO Index',                      -> extend $2, proto: yes
   ]
 
   # In CoffeeScript, an object literal is simply a list of assignments.
   Object: [
-    o "{ AssignList OptComma }",                -> new Obj $2
+    o '{ AssignList OptComma }',                -> new Obj $2
   ]
 
   # Assignment of properties within an object literal can be separated by
   # comma, as in JavaScript, or simply by newline.
   AssignList: [
-    o "",                                       -> []
-    o "AssignObj",                              -> [$1]
-    o "AssignList , AssignObj",                 -> $1.concat $3
-    o "AssignList OptComma TERMINATOR AssignObj", -> $1.concat $4
-    o "AssignList OptComma INDENT AssignList OptComma OUTDENT", -> $1.concat $4
+    o '',                                                       -> []
+    o 'AssignObj',                                              -> [$1]
+    o 'AssignList , AssignObj',                                 -> $1.concat $3
+    o 'AssignList OptComma TERMINATOR AssignObj',               -> $1.concat $4
+    o 'AssignList OptComma INDENT AssignList OptComma OUTDENT', -> $1.concat $4
   ]
 
   # Class definitions have optional bodies of prototype property assignments,
   # and optional references to the superclass.
   Class: [
-    o 'CLASS SimpleAssignable',                 -> new Class $2
-    o 'CLASS SimpleAssignable EXTENDS Value',   -> new Class $2, $4
+    o 'CLASS SimpleAssignable',               -> new Class $2
+    o 'CLASS SimpleAssignable EXTENDS Value', -> new Class $2, $4
     o 'CLASS SimpleAssignable
-       INDENT ClassBody OUTDENT',               -> new Class $2, null, $4
+       INDENT ClassBody OUTDENT',             -> new Class $2, null, $4
     o 'CLASS SimpleAssignable EXTENDS Value
-       INDENT ClassBody OUTDENT',               -> new Class $2, $4, $6
-    o 'CLASS INDENT ClassBody OUTDENT',         -> new Class null, null, $3
-    o 'CLASS',                                  -> new Class null, null, new Expressions
-    o 'CLASS EXTENDS Value',                    -> new Class null, $3  , new Expressions
+       INDENT ClassBody OUTDENT',             -> new Class $2, $4, $6
+    o 'CLASS INDENT ClassBody OUTDENT',       -> new Class null, null, $3
+    o 'CLASS',                                -> new Class null, null, new Expressions
+    o 'CLASS EXTENDS Value',                  -> new Class null, $3  , new Expressions
     o 'CLASS EXTENDS Value
-       INDENT ClassBody OUTDENT',               -> new Class null, $3, $5
+       INDENT ClassBody OUTDENT',             -> new Class null, $3, $5
   ]
 
   # Assignments that can happen directly inside a class declaration.
   ClassAssign: [
-    o "AssignObj",                                -> $1
-    o "ThisProperty : Expression",                -> new Assign new Value($1), $3, 'this'
-    o "ThisProperty : INDENT Expression OUTDENT", -> new Assign new Value($1), $4, 'this'
+    o 'AssignObj',                                -> $1
+    o 'ThisProperty : Expression',                -> new Assign new Value($1), $3, 'this'
+    o 'ThisProperty : INDENT Expression OUTDENT', -> new Assign new Value($1), $4, 'this'
   ]
 
   # A list of assignments to a class.
   ClassBody: [
-    o "",                                       -> []
-    o "ClassAssign",                            -> [$1]
-    o "ClassBody TERMINATOR ClassAssign",       -> $1.concat $3
-    o "{ ClassBody }",                          -> $2
+    o '',                                       -> []
+    o 'ClassAssign',                            -> [$1]
+    o 'ClassBody TERMINATOR ClassAssign',       -> $1.concat $3
+    o '{ ClassBody }',                          -> $2
   ]
 
   # Extending an object by setting its prototype chain to reference a parent
   # object.
   Extends: [
-    o "SimpleAssignable EXTENDS Value",         -> new Extends $1, $3
+    o 'SimpleAssignable EXTENDS Value',         -> new Extends $1, $3
   ]
 
   # Ordinary function invocation, or a chained series of calls.
   Invocation: [
-    o "Value OptFuncExist Arguments",           -> new Call $1, $3, $2
-    o "Invocation OptFuncExist Arguments",      -> new Call $1, $3, $2
-    o "SUPER",                                  -> new Call 'super', [new Splat(new Literal('arguments'))]
-    o "SUPER Arguments",                        -> new Call 'super', $2
+    o 'Value OptFuncExist Arguments',           -> new Call $1, $3, $2
+    o 'Invocation OptFuncExist Arguments',      -> new Call $1, $3, $2
+    o 'SUPER',                                  ->
+      new Call 'super', [new Splat new Literal 'arguments']
+    o 'SUPER Arguments',                        ->
+      new Call 'super', $2
   ]
 
   # An optional existence check on a function.
   OptFuncExist: [
-    o "",                                       -> no
-    o "FUNC_EXIST",                             -> yes
+    o '',                                       -> no
+    o 'FUNC_EXIST',                             -> yes
   ]
 
   # The list of arguments to a function call.
   Arguments: [
-    o "CALL_START CALL_END",                    -> []
-    o "CALL_START ArgList OptComma CALL_END",   -> $2
+    o 'CALL_START CALL_END',                    -> []
+    o 'CALL_START ArgList OptComma CALL_END',   -> $2
   ]
 
   # A reference to the *this* current object.
   This: [
-    o "THIS",                                   -> new Value new Literal 'this'
-    o "@",                                      -> new Value new Literal 'this'
+    o 'THIS',                                   -> new Value new Literal 'this'
+    o '@',                                      -> new Value new Literal 'this'
   ]
 
   # A reference to a property on *this*.
   ThisProperty: [
-    o "@ Identifier",                           -> new Value new Literal('this'), [new Accessor($2)], 'this'
+    o '@ Identifier', -> new Value new Literal('this'), [new Accessor($2)], 'this'
   ]
 
   # The array literal.
   Array: [
-    o "[ ]",                                    -> new Arr []
-    o "[ ArgList OptComma ]",                   -> new Arr $2
+    o '[ ]',                                    -> new Arr []
+    o '[ ArgList OptComma ]',                   -> new Arr $2
   ]
 
   # The **ArgList** is both the list of objects passed into a function call,
   # as well as the contents of an array literal
   # (i.e. comma-separated expressions). Newlines work as well.
   ArgList: [
-    o "Arg",                                    -> [$1]
-    o "ArgList , Arg",                          -> $1.concat $3
-    o "ArgList OptComma TERMINATOR Arg",        -> $1.concat $4
-    o "INDENT ArgList OptComma OUTDENT",        -> $2
-    o "ArgList OptComma INDENT ArgList OptComma OUTDENT", -> $1.concat $4
+    o 'Arg',                                              -> [$1]
+    o 'ArgList , Arg',                                    -> $1.concat $3
+    o 'ArgList OptComma TERMINATOR Arg',                  -> $1.concat $4
+    o 'INDENT ArgList OptComma OUTDENT',                  -> $2
+    o 'ArgList OptComma INDENT ArgList OptComma OUTDENT', -> $1.concat $4
   ]
 
   # Valid arguments are Expressions or Splats.
   Arg: [
-    o "Expression"
-    o "Splat"
+    o 'Expression'
+    o 'Splat'
   ]
 
   # Just simple, comma-separated, required arguments (no fancy syntax). We need
   # this to be separate from the **ArgList** for use in **Switch** blocks, where
   # having the newlines wouldn't make sense.
   SimpleArgs: [
-    o "Expression"
-    o "SimpleArgs , Expression",                -> [].concat $1, $3
+    o 'Expression'
+    o 'SimpleArgs , Expression',                -> [].concat $1, $3
   ]
 
   # The variants of *try/catch/finally* exception handling blocks.
   Try: [
-    o "TRY Block",                              -> new Try $2
-    o "TRY Block Catch",                        -> new Try $2, $3[0], $3[1]
-    o "TRY Block FINALLY Block",                -> new Try $2, null, null, $4
-    o "TRY Block Catch FINALLY Block",          -> new Try $2, $3[0], $3[1], $5
+    o 'TRY Block',                              -> new Try $2
+    o 'TRY Block Catch',                        -> new Try $2, $3[0], $3[1]
+    o 'TRY Block FINALLY Block',                -> new Try $2, null, null, $4
+    o 'TRY Block Catch FINALLY Block',          -> new Try $2, $3[0], $3[1], $5
   ]
 
   # A catch clause names its error and runs a block of code.
   Catch: [
-    o "CATCH Identifier Block",                 -> [$2, $3]
+    o 'CATCH Identifier Block',                 -> [$2, $3]
   ]
 
   # Throw an exception object.
   Throw: [
-    o "THROW Expression",                       -> new Throw $2
+    o 'THROW Expression',                       -> new Throw $2
   ]
 
   # Parenthetical expressions. Note that the **Parenthetical** is a **Value**,
@@ -394,29 +390,29 @@ grammar =
   # where only values are accepted, wrapping it in parentheses will always do
   # the trick.
   Parenthetical: [
-    o "( Expression )",                         -> new Parens $2
+    o '( Expression )',                         -> new Parens $2
   ]
 
   # The condition portion of a while loop.
   WhileSource: [
-    o "WHILE Expression",                       -> new While $2
-    o "WHILE Expression WHEN Expression",       -> new While $2, guard: $4
-    o "UNTIL Expression",                       -> new While $2, invert: true
-    o "UNTIL Expression WHEN Expression",       -> new While $2, invert: true, guard: $4
+    o 'WHILE Expression',                       -> new While $2
+    o 'WHILE Expression WHEN Expression',       -> new While $2, guard: $4
+    o 'UNTIL Expression',                       -> new While $2, invert: true
+    o 'UNTIL Expression WHEN Expression',       -> new While $2, invert: true, guard: $4
   ]
 
   # The while loop can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression. There is no do..while.
   While: [
-    o "WhileSource Block",                      -> $1.addBody $2
-    o "Statement WhileSource",                  -> $2.addBody Expressions.wrap [$1]
-    o "Expression WhileSource",                 -> $2.addBody Expressions.wrap [$1]
-    o "Loop",                                   -> $1
+    o 'WhileSource Block',                      -> $1.addBody $2
+    o 'Statement  WhileSource',                 -> $2.addBody Expressions.wrap [$1]
+    o 'Expression WhileSource',                 -> $2.addBody Expressions.wrap [$1]
+    o 'Loop',                                   -> $1
   ]
 
   Loop: [
-    o "LOOP Block",                             -> new While(new Literal 'true').addBody $2
-    o "LOOP Expression",                        -> new While(new Literal 'true').addBody Expressions.wrap [$2]
+    o 'LOOP Block',      -> new While(new Literal 'true').addBody $2
+    o 'LOOP Expression', -> new While(new Literal 'true').addBody Expressions.wrap [$2]
   ]
 
   # Array, object, and range comprehensions, at the most generic level.
@@ -469,41 +465,45 @@ grammar =
   ]
 
   Switch: [
-    o "SWITCH Expression INDENT Whens OUTDENT", -> new Switch $2, $4
-    o "SWITCH Expression INDENT Whens ELSE Block OUTDENT", -> new Switch $2, $4, $6
-    o "SWITCH INDENT Whens OUTDENT",            -> new Switch null, $3
-    o "SWITCH INDENT Whens ELSE Block OUTDENT", -> new Switch null, $3, $5
+    o 'SWITCH Expression INDENT Whens OUTDENT',            -> new Switch $2, $4
+    o 'SWITCH Expression INDENT Whens ELSE Block OUTDENT', -> new Switch $2, $4, $6
+    o 'SWITCH INDENT Whens OUTDENT',                       -> new Switch null, $3
+    o 'SWITCH INDENT Whens ELSE Block OUTDENT',            -> new Switch null, $3, $5
   ]
 
   Whens: [
-    o "When"
-    o "Whens When",                             -> $1.concat $2
+    o 'When'
+    o 'Whens When',                             -> $1.concat $2
   ]
 
   # An individual **When** clause, with action.
   When: [
-    o "LEADING_WHEN SimpleArgs Block",            -> [[$2, $3]]
-    o "LEADING_WHEN SimpleArgs Block TERMINATOR", -> [[$2, $3]]
+    o 'LEADING_WHEN SimpleArgs Block',            -> [[$2, $3]]
+    o 'LEADING_WHEN SimpleArgs Block TERMINATOR', -> [[$2, $3]]
   ]
 
   # The most basic form of *if* is a condition and an action. The following
   # if-related rules are broken up along these lines in order to avoid
   # ambiguity.
   IfBlock: [
-    o "IF Expression Block",                    -> new If $2, $3
-    o "UNLESS Expression Block",                -> new If $2, $3, invert: true
-    o "IfBlock ELSE IF Expression Block",       -> $1.addElse new If $4, $5
-    o "IfBlock ELSE Block",                     -> $1.addElse $3
+    o 'IF Expression Block',                    -> new If $2, $3
+    o 'UNLESS Expression Block',                -> new If $2, $3, invert: true
+    o 'IfBlock ELSE IF Expression Block',       -> $1.addElse new If $4, $5
+    o 'IfBlock ELSE Block',                     -> $1.addElse $3
   ]
 
   # The full complement of *if* expressions, including postfix one-liner
   # *if* and *unless*.
   If: [
-    o "IfBlock"
-    o "Statement POST_IF Expression",           -> new If $3, Expressions.wrap([$1]), statement: true
-    o "Expression POST_IF Expression",          -> new If $3, Expressions.wrap([$1]), statement: true
-    o "Statement POST_UNLESS Expression",       -> new If $3, Expressions.wrap([$1]), statement: true, invert: true
-    o "Expression POST_UNLESS Expression",      -> new If $3, Expressions.wrap([$1]), statement: true, invert: true
+    o 'IfBlock'
+    o 'Statement  POST_IF Expression',     ->
+      new If $3, Expressions.wrap([$1]), statement: true
+    o 'Expression POST_IF Expression',     ->
+      new If $3, Expressions.wrap([$1]), statement: true
+    o 'Statement  POST_UNLESS Expression', ->
+      new If $3, Expressions.wrap([$1]), statement: true, invert: true
+    o 'Expression POST_UNLESS Expression', ->
+      new If $3, Expressions.wrap([$1]), statement: true, invert: true
   ]
 
   # Arithmetic and logical operators, working on one or more operands.
@@ -522,6 +522,9 @@ grammar =
     o 'SimpleAssignable --',                    -> new Op '--', $1, null, true
     o 'SimpleAssignable ++',                    -> new Op '++', $1, null, true
 
+    # [The existential operator](http://jashkenas.github.com/coffee-script/#existence).
+    o 'Expression ?',                           -> new Existence $1
+
     o 'Expression +  Expression',               -> new Op '+' , $1, $3
     o 'Expression -  Expression',               -> new Op '-' , $1, $3
 
@@ -535,8 +538,10 @@ grammar =
       else
         new Op $2, $1, $3
 
-    o 'SimpleAssignable COMPOUND_ASSIGN Expression', -> new Assign $1, $3, $2
-    o 'SimpleAssignable COMPOUND_ASSIGN INDENT Expression OUTDENT', -> new Assign $1, $4, $2
+    o 'SimpleAssignable COMPOUND_ASSIGN
+       Expression',                             -> new Assign $1, $3, $2
+    o 'SimpleAssignable COMPOUND_ASSIGN
+       INDENT Expression OUTDENT',              -> new Assign $1, $4, $2
   ]
 
 
