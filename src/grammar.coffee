@@ -237,10 +237,10 @@ grammar =
   # The general group of accessors into an object, by property, by prototype
   # or by array index or slice.
   Accessor: [
-    o '. Identifier',             -> new Accessor $2
-    o ':: Identifier',            -> new Accessor $2, 'prototype'
+    o '.  Identifier',                          -> new Accessor $2
+    o '?. Identifier',                          -> new Accessor $2, 'soak'
+    o ':: Identifier',                          -> new Accessor $2, 'proto'
     o '::',                                     -> new Accessor new Literal 'prototype'
-    o '?. Identifier',                 -> new Accessor $2, 'soak'
     o 'Index'
   ]
 

@@ -116,16 +116,11 @@ exports.Lexer = class Lexer
         @identifierError id
     unless forcedIdentifier
       id  = COFFEE_ALIASES[id] if COFFEE_ALIASES.hasOwnProperty id
-      tag = if id is '!'
-        'UNARY'
-      else if id in ['==', '!=']
-        'COMPARE'
-      else if id in ['&&', '||']
-        'LOGIC'
-      else if id in ['true', 'false', 'null']
-        'BOOL'
-      else
-        tag
+      tag = if id is '!'                       then 'UNARY'
+      else  if id in ['==', '!=']              then 'COMPARE'
+      else  if id in ['&&', '||']              then 'LOGIC'
+      else  if id in ['true', 'false', 'null'] then 'BOOL'
+      else  tag
     @token tag, id
     @token ':', ':' if colon
     input.length
@@ -534,16 +529,15 @@ IDENTIFIER = /// ^
 ///
 NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
 HEREDOC    = /^("""|''')([\s\S]*?)(?:\n[ \t]*)?\1/
-OPERATOR   = /// ^
-  (?: [-=]>             # function
-    | [-+*/%<>&|^!?=]=  # compound assign / compare
-    | >>>=?             # zero-fill right shift
-    | ([-+:])\1         # doubles
-    | ([&|<>])\2=?      # logic / shift
-    | \?\.              # soak access
-    | \.{3}             # splat
-    )
-///
+OPERATOR   = /// ^ (
+  ?: [-=]>             # function
+   | [-+*/%<>&|^!?=]=  # compound assign / compare
+   | >>>=?             # zero-fill right shift
+   | ([-+:])\1         # doubles
+   | ([&|<>])\2=?      # logic / shift
+   | \?\.              # soak access
+   | \.{3}             # splat
+) ///
 WHITESPACE = /^[ \t]+/
 COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
 CODE       = /^[-=]>/
@@ -575,14 +569,11 @@ ASSIGNED        = /^\s*@?[$A-Za-z_][$\w]*[ \t]*?[:=][^:=>]/
 LINE_CONTINUER  = /// ^ \s* (?: , | \??\.(?!\.) | :: ) ///
 LEADING_SPACES  = /^\s+/
 TRAILING_SPACES = /\s+$/
-NO_NEWLINE      = /// ^
-  (?:                                   # non-capturing...
-    [-+*&|/%=<>!.\\][<>=&|]* |          # symbol operators
-    and | or | is(?:nt)? | n(?:ot|ew) | # word operators
-    delete | typeof | instanceof
-  )$
-///
-
+NO_NEWLINE      = /// ^ (?:            # non-capturing group
+  [-+*&|/%=<>!.\\][<>=&|]* |           # symbol operators
+  and | or | is(?:nt)? | n(?:ot|ew) |  # word operators
+  delete | typeof | instanceof
+) $ ///
 
 # Compound assignment tokens.
 COMPOUND_ASSIGN = ['-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=', '<<=', '>>=', '>>>=', '&=', '^=', '|=']

@@ -527,7 +527,7 @@ exports.Accessor = class Accessor extends Base
 
   constructor: (@name, tag) ->
     super()
-    @proto = if tag is 'prototype' then '.prototype' else ''
+    @proto = if tag is 'proto' then '.prototype' else ''
     @soak  = tag is 'soak'
 
   compile: (o) ->
@@ -679,11 +679,11 @@ exports.Class = class Class extends Base
 
     if @parent
       applied = new Value @parent, [new Accessor new Literal 'apply']
-      constructor = new Code [], new Expressions [
+      ctor = new Code [], new Expressions [
         new Call applied, [new Literal('this'), new Literal('arguments')]
       ]
     else
-      constructor = new Code [], new Expressions [new Return new Literal 'this']
+      ctor = new Code [], new Expressions [new Return new Literal 'this']
 
     for prop in @properties
       {variable: pvar, value: func} = prop
@@ -699,33 +699,37 @@ exports.Class = class Class extends Base
         func.body.push new Return new Literal 'this'
         variable = new Value variable
         variable.namespaced = 0 < className.indexOf '.'
-        constructor = func
-        constructor.comment = props.expressions.pop() if last(props.expressions) instanceof Comment
+        ctor = func
+        ctor.comment = props.expressions.pop() if last(props.expressions) instanceof Comment
         continue
       if func instanceof Code and func.bound
         if prop.context is 'this'
           func.context = className
         else
           func.bound = false
-          constScope or= new Scope o.scope, constructor.body, constructor
+          constScope or= new Scope o.scope, ctor.body, ctor
           me or= constScope.freeVariable 'this'
           pname = pvar.compile o
-          constructor.body.push    new Return new Literal 'this' if constructor.body.isEmpty()
-          constructor.body.unshift new Literal "this.#{pname} = function(){ return #{className}.prototype.#{pname}.apply(#{me}, arguments); }"
+          ctor.body.push    new Return new Literal 'this' if ctor.body.isEmpty()
+          ret = "return #{className}.prototype.#{pname}.apply(#{me}, arguments);"
+          ctor.body.unshift new Literal "this.#{pname} = function() { #{ret} }"
       if pvar
-        access = if prop.context is 'this' then pvar.properties[0] else new Accessor(pvar, 'prototype')
-        val    = new Value variable, [access]
-        prop   = new Assign val, func
+        access = if prop.context is 'this'
+          pvar.properties[0]
+        else
+          new Accessor pvar, 'proto'
+        val  = new Value variable, [access]
+        prop = new Assign val, func
       props.push prop
 
-    constructor.className = className.match /[$\w]+$/
-    constructor.body.unshift new Literal "#{me} = this" if me
+    ctor.className = className.match /[$\w]+$/
+    ctor.body.unshift new Literal "#{me} = this" if me
     o.sharedScope = constScope
-    construct  = @tab + new Assign(variable, constructor).compile(o) + ';'
-    construct += '\n' + @tab + extension.compile(o) + ';' if extension
-    construct += '\n' + props.compile o                   if !props.isEmpty()
-    construct += '\n' + new Return(variable).compile o    if @returns
-    construct
+    code  = @tab + new Assign(variable, ctor).compile(o) + ';'
+    code += '\n' + @tab + extension.compile(o) + ';' if extension
+    code += '\n' + props.compile o                   if !props.isEmpty()
+    code += '\n' + new Return(variable).compile o    if @returns
+    code
 
 #### Assign
 
