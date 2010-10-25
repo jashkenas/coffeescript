@@ -235,12 +235,19 @@ obj = {
   (4 * 2): 8
   ### cached shorthand ###
   (++i)
-  "#{'interpolated'}": """#{"key"}""": 123
+  ###   normal keys    ###
+  key: ok
+  's': ok
+  0.0: ok
+
+  "#{'interpolated'}":
+    """#{"nested"}""": 123: 456
   ### traling comment  ###
 }
-eq obj.interpolated.key, 123
+eq obj.interpolated.nested[123], 456
 eq obj[8], 8
 eq obj[1], 1
+ok obj.key is obj.s is obj[0]
 
 eq 'braceless dynamic key',
   (key for key of """braceless #{ 0 of ((0):(0)) and 'dynamic' } key""": 0)[0]

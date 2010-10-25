@@ -588,15 +588,22 @@ exports.Obj = class Obj extends Base
     obj  = o.scope.freeVariable 'obj'
     code = "#{obj} = #{ new Obj(@properties.slice 0, idx).compile o }, "
     for prop, i in @properties.slice idx
-      if prop instanceof Assign
-        key   = prop.variable.compile o, LEVEL_PAREN
-        code += "#{obj}[#{key}] = #{ prop.value.compile o, LEVEL_LIST }, "
-        continue
       if prop instanceof Comment
         code += prop.compile(o) + ' '
         continue
-      [sub, ref] = prop.base.cache o, LEVEL_LIST, ref
-      code += "#{obj}[#{sub}] = #{ref}, "
+      if prop instanceof Assign
+        acc = prop.variable.base
+        key = acc.compile o, LEVEL_PAREN
+        val = prop.value.compile o, LEVEL_LIST
+      else
+        acc = prop.base
+        [key, val] = acc.cache o, LEVEL_LIST, ref
+        ref = val
+      key = if acc instanceof Literal and IDENTIFIER.test key
+        '.' + key
+      else
+        '[' + key + ']'
+      code += "#{obj}#{key} = #{val}, "
     code += obj
     if o.level <= LEVEL_PAREN then code else "(#{code})"
 
