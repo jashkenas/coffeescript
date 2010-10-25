@@ -1367,7 +1367,7 @@ exports.Switch = class Switch extends Base
       for cond in flatten [conditions]
         cond  = cond.invert() unless @subject
         code += idt1 + "case #{ cond.compile o, LEVEL_PAREN }:\n"
-      code += block.compile(o, LEVEL_TOP) + '\n'
+      code += body + '\n' if body = block.compile o, LEVEL_TOP
       break if i is @cases.length - 1 and not @otherwise
       for expr in block.expressions by -1 when expr not instanceof Comment
         code += idt2 + 'break;\n' unless expr instanceof Return
@@ -1432,7 +1432,8 @@ exports.If = class If extends Base
     cond     = @condition.compile o, LEVEL_PAREN
     o.indent = @idt 1
     body     = @ensureExpressions(@body).compile o
-    ifPart   = "if (#{cond}) {\n#{body}\n#{@tab}}"
+    body     = "\n#{body}\n#{@tab}" if body
+    ifPart   = "if (#{cond}) {#{body}}"
     ifPart   = @tab + ifPart unless child
     return ifPart unless @elseBody
     ifPart + ' else ' + if @isChain
