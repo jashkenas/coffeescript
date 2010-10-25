@@ -178,7 +178,7 @@ class exports.Rewriter
         return yes if not seenSingle and token.fromThen
         [tag] = token
         seenSingle = yes if tag in ['IF', 'ELSE', 'UNLESS', '->', '=>']
-        return yes if tag is 'PROPERTY_ACCESS' and @tag(i - 1) is 'OUTDENT'
+        return yes if tag in ['.', '?.', '::'] and @tag(i - 1) is 'OUTDENT'
         not token.generated and @tag(i - 1) isnt ',' and tag in IMPLICIT_END and
         (tag isnt 'INDENT' or
          (@tag(i - 2) isnt 'CLASS' and @tag(i - 1) not in IMPLICIT_BLOCK and

@@ -237,10 +237,10 @@ grammar =
   # The general group of accessors into an object, by property, by prototype
   # or by array index or slice.
   Accessor: [
-    o 'PROPERTY_ACCESS Identifier',             -> new Accessor $2
-    o 'PROTOTYPE_ACCESS Identifier',            -> new Accessor $2, 'prototype'
+    o '. Identifier',             -> new Accessor $2
+    o ':: Identifier',            -> new Accessor $2, 'prototype'
     o '::',                                     -> new Accessor new Literal 'prototype'
-    o 'SOAK_ACCESS Identifier',                 -> new Accessor $2, 'soak'
+    o '?. Identifier',                 -> new Accessor $2, 'soak'
     o 'Index'
   ]
 
@@ -557,6 +557,7 @@ grammar =
 #
 #     (2 + 3) * 4
 operators = [
+  ['left',      '.', '?.', '::']
   ['left',      'CALL_START', 'CALL_END']
   ['nonassoc',  '++', '--']
   ['left',      '?']
@@ -567,7 +568,6 @@ operators = [
   ['left',      'RELATION']
   ['left',      'COMPARE']
   ['left',      'LOGIC']
-  ['left',      '.']
   ['nonassoc',  'INDENT', 'OUTDENT']
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN']
   ['right',     'WHEN', 'LEADING_WHEN', 'FORIN', 'FOROF', 'FROM', 'TO', 'BY',

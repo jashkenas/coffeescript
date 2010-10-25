@@ -86,7 +86,8 @@ exports.Lexer = class Lexer
       @seenFrom = no
       @token 'TO', id
       return id.length
-    forcedIdentifier = colon or @tagAccessor()
+    forcedIdentifier = colon or
+      (prev = last @tokens) and not prev.spaced and prev[0] in ['.', '?.', '@', '::']
     tag = 'IDENTIFIER'
     if id in JS_KEYWORDS or
        not forcedIdentifier and id in COFFEE_KEYWORDS
@@ -134,7 +135,6 @@ exports.Lexer = class Lexer
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
     number = match[0]
-    return 0 if @tag() is '.' and number.charAt(0) is '.'
     @token 'NUMBER', number
     number.length
 
@@ -240,8 +240,7 @@ exports.Lexer = class Lexer
     @line += count indent, '\n'
     prev = last @tokens, 1
     size = indent.length - 1 - indent.lastIndexOf '\n'
-    nextCharacter = NEXT_CHARACTER.exec(@chunk)[1]
-    noNewlines    = (nextCharacter in ['.', ','] and not NEXT_ELLIPSIS.test(@chunk)) or @unfinished()
+    noNewlines = @unfinished()
     if size - @indebt is @indent
       if noNewlines then @suppressNewlines() else @newlineToken()
       return indent.length
@@ -342,23 +341,6 @@ exports.Lexer = class Lexer
 
   # Token Manipulators
   # ------------------
-
-  # As we consume a new `IDENTIFIER`, look at the previous token to determine
-  # if it's a special kind of accessor. Return `true` if any type of accessor
-  # is the previous token.
-  tagAccessor: ->
-    return false if not (prev = last @tokens) or prev.spaced
-    if prev[1] is '::'
-      @tag 0, 'PROTOTYPE_ACCESS'
-    else if prev[1] is '.' and @value(1) isnt '.'
-      if @tag(1) is '?'
-        @tag 0, 'SOAK_ACCESS'
-        @tokens.splice -2, 1
-      else
-        @tag 0, 'PROPERTY_ACCESS'
-    else
-      return prev[0] is '@'
-    true
 
   # Sanitize a heredoc or herecomment by
   # erasing all external indentation on the left-hand side.
@@ -490,7 +472,8 @@ exports.Lexer = class Lexer
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->
-    (prev  = last @tokens, 1) and prev[0] isnt '.' and
+    LINE_CONTINUER.test(@chunk) or
+    (prev = last @tokens, 1) and prev[0] isnt '.' and
       (value = @value()) and not value.reserved and
       NO_NEWLINE.test(value) and not CODE.test(value) and not ASSIGNED.test(@chunk)
 
@@ -551,7 +534,16 @@ IDENTIFIER = /// ^
 ///
 NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
 HEREDOC    = /^("""|''')([\s\S]*?)(?:\n[ \t]*)?\1/
-OPERATOR   = /// ^ (?: -[-=>]? | \+[+=]? | \.{3} | [*&|/%=<>^:!?]+ ) ///
+OPERATOR   = /// ^
+  (?: [-=]>             # function
+    | [-+*/%<>&|^!?=]=  # compound assign / compare
+    | >>>=?             # zero-fill right shift
+    | ([-+:])\1         # doubles
+    | ([&|<>])\2=?      # logic / shift
+    | \?\.              # soak access
+    | \.{3}             # splat
+    )
+///
 WHITESPACE = /^[ \t]+/
 COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
 CODE       = /^[-=]>/
@@ -580,8 +572,7 @@ HEREGEX_OMIT = /\s+(?:#.*)?/g
 MULTILINER      = /\n/g
 HEREDOC_INDENT  = /\n+([ \t]*)/g
 ASSIGNED        = /^\s*@?[$A-Za-z_][$\w]*[ \t]*?[:=][^:=>]/
-NEXT_CHARACTER  = /^\s*(\S?)/
-NEXT_ELLIPSIS   = /^\s*\.{3}/
+LINE_CONTINUER  = /// ^ \s* (?: , | \??\.(?!\.) | :: ) ///
 LEADING_SPACES  = /^\s+/
 TRAILING_SPACES = /\s+$/
 NO_NEWLINE      = /// ^

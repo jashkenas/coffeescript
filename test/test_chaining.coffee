@@ -54,3 +54,7 @@ greeting = id(
               """)
 
 ok greeting is "Hello"
+
+ok not Date
+::
+?.foo, '`?.` and `::` should also continue lines'
