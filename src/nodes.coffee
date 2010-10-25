@@ -111,7 +111,7 @@ exports.Base = class Base
   toString: (idt, override) ->
     idt or= ''
     children = (child.toString idt + TAB for child in @collectChildren()).join('')
-    klass = override or @constructor.name + if @soakNode then '?' else ''
+    klass = override or @constructor.name + if @soak then '?' else ''
     '\n' + idt + klass + children
 
   # Passes each child to a function, breaking when the function returns `false`.
@@ -325,7 +325,7 @@ exports.Value = class Value extends Base
   isSimpleNumber : -> @base instanceof Literal and SIMPLENUM.test @base.value
   isAtomic       : ->
     for node in @properties.concat @base
-      return no if node.soakNode or node instanceof Call
+      return no if node.soak or node instanceof Call
     yes
 
   isStatement : (o)    -> not @properties.length and @base.isStatement o
@@ -372,8 +372,8 @@ exports.Value = class Value extends Base
     if ifn = @base.unfoldSoak o
       Array::push.apply ifn.body.properties, @properties
       return ifn
-    for prop, i in @properties when prop.soakNode
-      prop.soakNode = off
+    for prop, i in @properties when prop.soak
+      prop.soak = off
       fst = new Value @base, @properties.slice 0, i
       snd = new Value @base, @properties.slice i
       if fst.isComplex()
@@ -406,7 +406,7 @@ exports.Call = class Call extends Base
 
   children: ['variable', 'args']
 
-  constructor: (variable, @args, @soakNode) ->
+  constructor: (variable, @args, @soak) ->
     super()
     @isNew    = false
     @isSuper  = variable is 'super'
@@ -431,7 +431,7 @@ exports.Call = class Call extends Base
 
   # Soaked chained invocations unfold into if/else ternary structures.
   unfoldSoak: (o) ->
-    if @soakNode
+    if @soak
       if @variable
         return ifn if ifn = If.unfoldSoak o, this, 'variable'
         [left, rite] = new Value(@variable).cacheReference o
@@ -527,8 +527,8 @@ exports.Accessor = class Accessor extends Base
 
   constructor: (@name, tag) ->
     super()
-    @proto    = if tag is 'prototype' then '.prototype' else ''
-    @soakNode = tag is 'soak'
+    @proto = if tag is 'prototype' then '.prototype' else ''
+    @soak  = tag is 'soak'
 
   compile: (o) ->
     name = @name.compile o
@@ -1389,7 +1389,7 @@ exports.If = class If extends Base
   constructor: (condition, @body, tags) ->
     @tags      = tags or= {}
     @condition = if tags.invert then condition.invert() else condition
-    @soakNode  = tags.soak
+    @soak      = tags.soak
     @elseBody  = null
     @isChain   = false
 
@@ -1448,7 +1448,7 @@ exports.If = class If extends Base
            @elseBodyNode()?.compile o, LEVEL_LIST
     if o.level >= LEVEL_COND then "(#{code})" else code
 
-  unfoldSoak: -> @soakNode and this
+  unfoldSoak: -> @soak and this
 
   # Unfold a node's child if soak, then tuck the node under created `If`
   @unfoldSoak: (o, parent, name) ->

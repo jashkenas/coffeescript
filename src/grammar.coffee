@@ -247,7 +247,7 @@ grammar =
   # Indexing into an object or array using bracket notation.
   Index: [
     o 'INDEX_START Expression INDEX_END',       -> new Index $2
-    o 'INDEX_SOAK  Index',                      -> extend $2, soakNode: yes
+    o 'INDEX_SOAK  Index',                      -> extend $2, soak : yes
     o 'INDEX_PROTO Index',                      -> extend $2, proto: yes
   ]
 
