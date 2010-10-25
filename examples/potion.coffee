@@ -172,7 +172,7 @@ print a for a from 1 to 5
 # if (3 ?gender):
 #   "Huh? Numbers are sexed? That's amazing." print.
 
-if (3).gender?
+if 3.gender?
   print "Huh? Numbers are sexed? That's amazing."
 
 
