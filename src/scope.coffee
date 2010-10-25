@@ -19,7 +19,6 @@ exports.Scope = class Scope
   # it wraps.
   constructor: (@parent, @expressions, @method) ->
     @variables = [{name: 'arguments', type: 'arguments'}]
-    @positions = {}
     if @parent
       @garbage = @parent.garbage
     else
@@ -28,11 +27,11 @@ exports.Scope = class Scope
 
   # Adds a new variable or overrides an existing one.
   add: (name, type) ->
-    if @positions.hasOwnProperty name
-      @variables[@positions[name]].type = type
-    else
-      @positions[name] = @variables.push({name, type}) - 1
-    this
+    for variable, i in @variables
+      if variable.name is name
+        @variables[i].type = type
+        return
+    @variables.push {name, type}
 
   # Create a new garbage level
   startLevel: ->
