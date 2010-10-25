@@ -390,6 +390,7 @@ exports.Value = class Value extends Base
 exports.Comment = class Comment extends Base
 
   isPureStatement: YES
+  isStatement:     YES
 
   constructor: (@comment) -> super()
 
