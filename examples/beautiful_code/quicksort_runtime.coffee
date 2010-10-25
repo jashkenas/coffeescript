@@ -3,7 +3,7 @@
 
 runtime = (N) ->
   [sum, t] = [0, 0]
-  for n in [1..N]
+  for n from 1 to N
     sum += 2 * t
     t = n - 1 + sum / n
   t
