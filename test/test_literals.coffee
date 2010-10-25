@@ -232,13 +232,13 @@ eq result.two, obj.list()[1]
 i = 0
 obj = {
   ### leading comment  ###
-  "interpolated#{'key'}": 123
   (4 * 2): 8
   ### cached shorthand ###
   (++i)
+  "#{'interpolated'}": """#{"key"}""": 123
   ### traling comment  ###
 }
-eq obj.interpolatedkey, 123
+eq obj.interpolated.key, 123
 eq obj[8], 8
 eq obj[1], 1
 

@@ -134,14 +134,15 @@ class exports.Rewriter
       if tag in EXPRESSION_END
         start = stack.pop()
         return 1
-      return 1 unless tag is ':'
-      ago2 = @tag i - 2
-      return 1 unless ago2 is ':' or stack[stack.length - 1]?[0] isnt '{'
+      return 1 unless tag is ':' and
+        ((ago2 = @tag i - 2) is ':' or
+         (ago1 = @tag i - 1) is ')' and @tag(start[1] - 1) is ':' or
+         stack[stack.length - 1]?[0] isnt '{')
       stack.push ['{']
-      idx = if ago2 is '@'
-        i - 2
-      else  if @tag(i - 1) is ')'
+      idx = if ago1 is ')'
         start[1]
+      else  if ago2 is '@'
+        i - 2
       else
         i - 1
       idx -= 2 if @tag(idx - 2) is 'HERECOMMENT'
