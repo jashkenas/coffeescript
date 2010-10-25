@@ -39,7 +39,7 @@ class exports.Rewriter
   scanTokens: (block) ->
     {tokens} = this
     i = 0
-    (i += block.call this, token, i, tokens) while token = tokens[i]
+    i += block.call this, token, i, tokens while token = tokens[i]
     true
 
   detectEnd: (i, condition, action) ->
@@ -117,6 +117,7 @@ class exports.Rewriter
   # Insert the missing braces here, so that the parser doesn't have to.
   addImplicitBraces: ->
     stack = []
+    start = null
     condition = (token, i) ->
       return false if 'HERECOMMENT' in [@tag(i + 1), @tag(i - 1)]
       {(i+1): one, (i+2): two, (i+3): three} = @tokens
@@ -126,7 +127,6 @@ class exports.Rewriter
       tag is ',' and one and
         one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT', '(']
     action = (token, i) -> @tokens.splice i, 0, ['}', '}', token[2]]
-    start = null
     @scanTokens (token, i, tokens) ->
       if (tag = token[0]) in EXPRESSION_START
         stack.push [(if tag is 'INDENT' and @tag(i - 1) is '{' then '{' else tag), i]
@@ -134,12 +134,14 @@ class exports.Rewriter
       if tag in EXPRESSION_END
         start = stack.pop()
         return 1
-      return 1 unless tag is ':' and stack[stack.length - 1]?[0] isnt '{'
+      return 1 unless tag is ':'
+      ago2 = @tag i - 2
+      return 1 unless ago2 is ':' or stack[stack.length - 1]?[0] isnt '{'
       stack.push ['{']
-      idx = if @tag(i - 1) is ')'
-        start[1]
-      else  if @tag(i - 2) is '@'
+      idx = if ago2 is '@'
         i - 2
+      else  if @tag(i - 1) is ')'
+        start[1]
       else
         i - 1
       idx -= 2 if @tag(idx - 2) is 'HERECOMMENT'

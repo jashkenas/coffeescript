@@ -205,10 +205,7 @@ ok obj.three is 3
 
 # Implicit objects as part of chained calls.
 pluck = (x) -> x.a
-eq 100, pluck pluck pluck
-  a:
-    a:
-      a: 100
+eq 100, pluck pluck pluck a: a: a: 100
 
 
 eq '\\`', `
