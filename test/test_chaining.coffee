@@ -7,6 +7,17 @@ result = identityWrap(identityWrap(true))()()
 ok result
 
 
+# Should be able to look at prototypes on keywords.
+obj =
+  withAt:   -> @::prop
+  withThis: -> this::prop
+  proto:
+    prop: 100
+obj.prototype = obj.proto
+eq obj.withAt()  , 100
+eq obj.withThis(), 100
+
+
 # Chained accesses split on period/newline, backwards and forwards.
 str = 'god'
 

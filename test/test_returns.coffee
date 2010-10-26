@@ -30,4 +30,29 @@ func = ->
     when 'a' then 42
     else return 23
 
-ok func() is 42
+eq func(), 42
+
+# Ensure that we don't wrap Nodes that are "pureStatement" in a closure.
+items = [1, 2, 3, "bacon", 4, 5]
+
+findit = (items) ->
+  for item in items
+    return item if item is "bacon"
+
+ok findit(items) is "bacon"
+
+
+# When a closure wrapper is generated for expression conversion, make sure
+# that references to "this" within the wrapper are safely converted as well.
+obj =
+  num: 5
+  func: ->
+    this.result = if false
+      10
+    else
+      "a"
+      "b"
+      this.num
+
+eq obj.num, obj.func()
+eq obj.num, obj.result
