@@ -833,10 +833,8 @@ exports.Code = class Code extends Base
 
   children: ['params', 'body']
 
-  constructor: (params, body, tag) ->
+  constructor: (@params = [], @body = new Expressions, tag) ->
     super()
-    @params  = params or []
-    @body    = body   or new Expressions
     @bound   = tag is 'boundfunc'
     @context = 'this' if @bound
 
@@ -852,21 +850,27 @@ exports.Code = class Code extends Base
     empty       = @body.expressions.length is 0
     delete o.bare
     delete o.globals
-    splat = undefined
+    splat  = null
     params = []
     for param, i in @params
       if splat
         if param.attach
-          param.assign = new Assign new Value new Literal('this'), [new Accessor param.value]
+          param.assign = new Assign param.name
           @body.expressions.splice splat.index + 1, 0, param.assign
+        else if param.value
+          @body.unshift new Assign new Value(param.name), param.value, '?='
         splat.trailings.push param
       else
         if param.attach
-          {value} = param
-          [param, param.splat] = [new Literal(scope.freeVariable 'arg'), param.splat]
-          @body.unshift new Assign new Value(new Literal('this'), [new Accessor value]), param
+          {name, value, splat} = param
+          param       = new Literal scope.freeVariable 'arg'
+          param.splat = splat
+          @body.unshift new Assign name,
+            if value then new Op '?', param, value else param
+        else if param.value
+          @body.unshift new Assign new Value(param.name), param.value, '?='
         if param.splat
-          splat           = new Splat param.value
+          splat           = new Splat param.name or param
           splat.index     = i
           splat.trailings = []
           splat.arglength = @params.length
@@ -875,13 +879,12 @@ exports.Code = class Code extends Base
           params.push param
     scope.startLevel()
     @body.makeReturn() unless empty or @noReturn
-    params = for param in params
-      scope.parameter param = param.compile o
-      param
-    comm  = if @comment then @comment.compile(o) + '\n' else ''
+    scope.parameter params[i] = param.compile o for param, i in params
+    comm     = if @comment then @comment.compile(o) + '\n' else ''
     o.indent = @idt 2 if @className
-    idt  = @idt 1
-    code = if @body.expressions.length then "\n#{ @body.compileWithDeclarations o }\n" else ''
+    idt      = @idt 1
+    code     = if @body.isEmpty() then ''
+    else "\n#{ @body.compileWithDeclarations o }\n"
     if @className
       open  = "(function() {\n#{comm}#{idt}function #{@className}("
       close = "#{ code and idt }}\n#{idt}return #{@className};\n#{@tab}})()"
@@ -904,19 +907,13 @@ exports.Code = class Code extends Base
 # as well as be a splat, gathering up a group of parameters into an array.
 exports.Param = class Param extends Base
 
-  children: ['name']
+  children: ['name', 'value']
 
-  constructor: (name, @attach, @splat) ->
+  constructor: (@name, @value, @splat) ->
     super()
-    @value = new Literal @name = name
+    @attach = @name instanceof Value
 
-  compile: (o) -> @value.compile o, LEVEL_LIST
-
-  toString: ->
-    {name} = this
-    name   = '@' + name if @attach
-    name  += '...'      if @splat
-    new Literal(name).toString()
+  compile: (o) -> @name.compile o, LEVEL_LIST
 
 #### Splat
 
@@ -948,13 +945,13 @@ exports.Splat = class Splat extends Base
       variadic = o.scope.freeVariable 'result'
       o.scope.assign variadic, len + ' >= ' + @arglength
       end = if @trailings.length then ", #{len} - #{@trailings.length}"
-      for trailing, idx in @trailings
-        if trailing.attach
-          assign        = trailing.assign
-          trailing      = new Literal o.scope.freeVariable 'arg'
-          assign.value  = trailing
+      for param, idx in @trailings
+        if param.attach
+          {assign, value} = param
+          param        = new Literal o.scope.freeVariable 'arg'
+          assign.value = if value then new Op '?', param, value else param
         pos = @trailings.length - idx
-        o.scope.assign trailing.compile(o),
+        o.scope.assign param.compile(o),
           "arguments[#{variadic} ? #{len} - #{pos} : #{ @index + idx }]"
     "#{name} = #{ utility 'slice' }.call(arguments, #{@index}#{end})"
 

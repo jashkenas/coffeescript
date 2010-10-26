@@ -41,3 +41,9 @@ obj = new Klass 1, 2
 
 ok obj.one is 1
 ok obj.two is 2
+
+
+# Default arguments.
+obj = f: (q = 123, @p = 456) -> q
+eq obj.f(), 123
+eq obj.p  , 456

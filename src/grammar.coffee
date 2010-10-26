@@ -199,10 +199,12 @@ grammar =
   # A single parameter in a function definition can be ordinary, or a splat
   # that hoovers up the remaining arguments.
   Param: [
-    o 'PARAM',                                  -> new Literal $1
-    o 'PARAM ...',                              -> new Param $1, false, true
-    o '@ PARAM',                                -> new Param $2, true
-    o '@ PARAM ...',                            -> new Param $2, true, true
+    o 'Identifier',                  -> new Param $1
+    o 'Identifier   ...',            -> new Param $1, null, on
+    o 'Identifier    =  Expression', -> new Param $1, $3
+    o 'ThisProperty',                -> new Param $1, null
+    o 'ThisProperty ...',            -> new Param $1, null, on
+    o 'ThisProperty  =  Expression', -> new Param $1, $3
   ]
 
   # A splat that occurs outside of a parameter list.

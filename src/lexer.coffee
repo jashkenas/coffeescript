@@ -353,12 +353,19 @@ exports.Lexer = class Lexer
   # parameters specially in order to make things easier for the parser.
   tagParameters: ->
     return this if @tag() isnt ')'
-    i = @tokens.length
-    while tok = @tokens[--i]
+    stack = []
+    {tokens} = this
+    i = tokens.length
+    tokens[--i][0] = 'PARAM_END'
+    while tok = tokens[--i]
       switch tok[0]
-        when 'IDENTIFIER'       then tok[0] = 'PARAM'
-        when ')'                then tok[0] = 'PARAM_END'
-        when '(', 'CALL_START'  then tok[0] = 'PARAM_START'; return true
+        when ')'
+          stack.push tok
+        when '(', 'CALL_START'
+          if stack.length then stack.pop()
+          else
+            tok[0] = 'PARAM_START'
+            return this
     this
 
   # Close up all remaining open blocks at the end of the file.
