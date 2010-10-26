@@ -764,9 +764,9 @@ exports.Assign = class Assign extends Base
     top       = o.level is LEVEL_TOP
     {value}   = this
     {objects} = @variable.base
-    return value.compile o unless olength = objects.length
+    return value.compile o unless olen = objects.length
     isObject = @variable.isObject()
-    if top and olength is 1 and (obj = objects[0]) not instanceof Splat
+    if top and olen is 1 and (obj = objects[0]) not instanceof Splat
       # Unroll simplest cases: `{v} = x` -> `v = x.v`
       if obj instanceof Assign
         {variable: {base: idx}, value: obj} = obj
@@ -781,12 +781,12 @@ exports.Assign = class Assign extends Base
       value = new Value value
       value.properties.push new (if acc then Accessor else Index) idx
       return new Assign(obj, value).compile o
-    valVar  = value.compile o, LEVEL_LIST
+    vvar    = value.compile o, LEVEL_LIST
     assigns = []
     splat   = false
-    if not IDENTIFIER.test(valVar) or @variable.assigns(valVar)
-      assigns.push "#{ ref = o.scope.freeVariable 'ref' } = #{valVar}"
-      valVar = ref
+    if not IDENTIFIER.test(vvar) or @variable.assigns(vvar)
+      assigns.push "#{ ref = o.scope.freeVariable 'ref' } = #{vvar}"
+      vvar = ref
     for obj, i in objects
       # A regular array pattern-match.
       idx = i
@@ -800,11 +800,14 @@ exports.Assign = class Assign extends Base
           then [obj, idx] = new Value(obj.unwrapAll()).cacheReference o
           else idx = if obj.tags.this then obj.properties[0].name else obj
       if not splat and obj instanceof Splat
-        if rest = olength - i - 1 or ''
+        val = "#{olen} <= #{vvar}.length ? #{ utility 'slice' }.call(#{vvar}, #{i}"
+        if rest = olen - i - 1
           ivar = o.scope.freeVariable 'i'
-          rest = ", #{ivar} = #{valVar}.length - #{rest}"
-        val   = new Literal utility('slice') + ".call(#{valVar}, #{i}#{rest})"
-        splat = "#{ivar} < #{i} ? #{ivar} = #{i} : #{ivar}++"
+          val += ", #{ivar} = #{vvar}.length - #{rest}) : (#{ivar} = #{i}, [])"
+        else
+          val += ") : []"
+        val   = new Literal val
+        splat = "#{ivar}++"
       else
         if obj instanceof Splat
           obj = obj.name.compile o
@@ -815,9 +818,9 @@ exports.Assign = class Assign extends Base
           acc = no
         else
           acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
-        val = new Value new Literal(valVar), [new (if acc then Accessor else Index) idx]
+        val = new Value new Literal(vvar), [new (if acc then Accessor else Index) idx]
       assigns.push new Assign(obj, val).compile o, LEVEL_LIST
-    assigns.push valVar unless top
+    assigns.push vvar unless top
     code = assigns.join ', '
     if o.level < LEVEL_LIST then code else "(#{code})"
 
