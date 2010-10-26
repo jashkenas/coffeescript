@@ -806,6 +806,10 @@ exports.Assign = class Assign extends Base
         val   = new Literal utility('slice') + ".call(#{valVar}, #{i}#{rest})"
         splat = "#{ivar} < #{i} ? #{ivar} = #{i} : #{ivar}++"
       else
+        if obj instanceof Splat
+          obj = obj.name.compile o
+          throw SyntaxError \
+            "multiple splats are disallowed in an assignment: #{obj} ..."
         if typeof idx is 'number'
           idx = new Literal splat or idx
           acc = no
