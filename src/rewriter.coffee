@@ -49,7 +49,7 @@ class exports.Rewriter
       return action.call this, token, i     if levels is 0 and condition.call this, token, i
       return action.call this, token, i - 1 if not token or levels < 0
       if token[0] in EXPRESSION_START
-       levels += 1
+        levels += 1
       else if token[0] in EXPRESSION_END
         levels -= 1
       i += 1
@@ -64,8 +64,9 @@ class exports.Rewriter
       if after?[0] is 'INDENT'
         tokens.splice i + 2, 1
         if before?[0] is 'OUTDENT' and post?[0] is 'TERMINATOR'
-        then tokens.splice i - 2, 1
-        else tokens.splice i, 0, after
+          tokens.splice i - 2, 1
+        else
+          tokens.splice i, 0, after
       else if prev and prev[0] not in ['TERMINATOR', 'INDENT', 'OUTDENT']
         if post?[0] is 'TERMINATOR' and after?[0] is 'OUTDENT'
           tokens.splice i + 2, 0, tokens.splice(i, 2)...
@@ -139,10 +140,11 @@ class exports.Rewriter
          stack[stack.length - 1]?[0] isnt '{')
       stack.push ['{']
       idx = if ago1 is ')'
-      then start[1]
+        start[1]
       else  if ago2 is '@'
-      then i - 2
-      else i - 1
+        i - 2
+      else
+        i - 1
       idx -= 2 if @tag(idx - 2) is 'HERECOMMENT'
       tok = ['{', '{', token[2]]
       tok.generated = yes
