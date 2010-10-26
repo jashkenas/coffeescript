@@ -207,6 +207,8 @@ grammar =
   ParamVar: [
     o 'Identifier'
     o 'ThisProperty'
+    o 'Array'
+    o 'Object'
   ]
 
   # A splat that occurs outside of a parameter list.

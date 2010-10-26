@@ -43,7 +43,14 @@ eq obj.one, 1
 eq obj.two, 2
 
 
-# Default arguments.
+# Destructuring.
+(([{a: [b], c}]...) ->
+  eq b, 123
+  eq c, 456
+) {a: [123], c: 456}
+
+
+# Default values.
 obj = f: (q = 123, @p = 456) -> q
 eq obj.f(), 123
 eq obj.p  , 456

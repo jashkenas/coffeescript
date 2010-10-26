@@ -863,9 +863,9 @@ exports.Code = class Code extends Base
                           new Value new Literal 'arguments'
       break
     for param in @params
-      if param.attach
+      if param.isComplex()
         ref = param.asReference o
-        exprs.push new Assign param.name,
+        exprs.push new Assign new Value(param.name),
           if param.value then new Op '?', ref, param.value else ref
       else
         ref = param
@@ -908,16 +908,17 @@ exports.Param = class Param extends Base
 
   constructor: (@name, @value, @splat) ->
     super()
-    @attach = @name instanceof Value
 
   compile: (o) -> @name.compile o, LEVEL_LIST
 
   asReference: (o) ->
     return @reference if @reference
-    node = if @attach then new Literal o.scope.freeVariable 'arg' else this.name
+    node = if @isComplex() then new Literal o.scope.freeVariable 'arg' else @name
     node = new Value node
     node = new Splat node if @splat
     @reference = node
+
+  isComplex: -> @name.isComplex()
 
 #### Splat
 
