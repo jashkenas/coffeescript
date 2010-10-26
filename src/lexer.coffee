@@ -386,8 +386,7 @@ exports.Lexer = class Lexer
   # a series of delimiters, all of which must be nested correctly within the
   # contents of the string. This method allows us to have strings within
   # interpolations within strings, ad infinitum.
-  balancedString: (str, delimited, options) ->
-    options or= {}
+  balancedString: (str, delimited, options = {}) ->
     levels = []
     i = 0
     slen = str.length
@@ -420,8 +419,8 @@ exports.Lexer = class Lexer
   # If it encounters an interpolation, this method will recursively create a
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
-  interpolateString: (str, options) ->
-    {heredoc, regex} = options or= {}
+  interpolateString: (str, options = {}) ->
+    {heredoc, regex} = options
     tokens = []
     pi = 0
     i  = -1

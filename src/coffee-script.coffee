@@ -27,8 +27,7 @@ exports.helpers = require './helpers'
 
 # Compile a string of CoffeeScript code to JavaScript, using the Coffee/Jison
 # compiler.
-exports.compile = compile = (code, options) ->
-  options or= {}
+exports.compile = compile = (code, options = {}) ->
   try
     (parser.parse lexer.tokenize code).compile options
   catch err
