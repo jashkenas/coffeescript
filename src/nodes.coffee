@@ -961,8 +961,8 @@ exports.Splat = class Splat extends Base
   # A compiling a splat as a destructuring assignment means slicing arguments
   # from the right-hand-side's corresponding array.
   compileValue: (o, name, index, trailings) ->
-    trail = if trailings then ", #{name}.length - #{trailings}" else ''
-    "#{ utility 'slice' }.call(#{name}, #{index}#{trail})"
+    trail = if trailings then ', -' + trailings else ''
+    utility('slice') + ".call(#{name}, #{index}#{trail})"
 
   # Utility function that converts arbitrary number of elements, mixed with
   # splats, to a proper array
