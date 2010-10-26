@@ -573,10 +573,12 @@ NO_NEWLINE      = /// ^ (?:            # non-capturing group
 ) $ ///
 
 # Compound assignment tokens.
-COMPOUND_ASSIGN = ['-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=', '<<=', '>>=', '>>>=', '&=', '^=', '|=']
+COMPOUND_ASSIGN = [
+  '-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=', '<<=', '>>=', '>>>=', '&=', '^=', '|='
+]
 
 # Unary tokens.
-UNARY   = ['UMINUS', 'UPLUS', '!', '!!', '~', 'NEW', 'TYPEOF', 'DELETE']
+UNARY   = ['!', '~', 'NEW', 'TYPEOF', 'DELETE']
 
 # Logical tokens.
 LOGIC   = ['&&', '||', '&', '|', '^']
