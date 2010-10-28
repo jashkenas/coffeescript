@@ -56,9 +56,7 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   require 'jison'
   parser = require('./lib/grammar').parser
-  js = parser.generate()
-  js = js.replace /else {\s+parseError/m, 'else { if (symbol === 1) symbol = "EOF"; parseError'
-  fs.writeFile 'lib/parser.js', js
+  fs.writeFile 'lib/parser.js', parser.generate()
 
 
 task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter', ->
