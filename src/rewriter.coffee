@@ -200,7 +200,7 @@ class exports.Rewriter
       if tag is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
         tokens.splice i, 0, @indentation(token)...
         return 2
-      if tag is 'CATCH' and @tag(i + 2) in ['TERMINATOR', 'FINALLY']
+      if tag is 'CATCH' and @tag(i + 2) in ['OUTDENT', 'TERMINATOR', 'FINALLY']
         tokens.splice i + 2, 0, @indentation(token)...
         return 4
       if tag in SINGLE_LINERS and @tag(i + 1) isnt 'INDENT' and
