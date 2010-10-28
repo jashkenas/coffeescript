@@ -58,6 +58,7 @@ task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   parser = require('./lib/grammar').parser
   js = parser.generate()
   js = js.replace 'if (require.main === module)', "if (typeof module !== 'undefined' && require.main === module)"
+  js = js.replace /else {\s+parseError/m, 'else { if (symbol === 1) symbol = "EOF"; parseError'
   fs.writeFile 'lib/parser.js', js
 
 
