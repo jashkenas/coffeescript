@@ -1,5 +1,5 @@
 # Basic array comprehensions.
-nums    = (n * n for n in [1, 2, 3] when n&1)
+nums    = (n * n for n in [1, 2, 3] when n & 1)
 results = (n * 2 for n in nums)
 
 ok results.join(',') is '2,18'
@@ -8,7 +8,7 @@ ok results.join(',') is '2,18'
 # Basic object comprehensions.
 obj   = {one: 1, two: 2, three: 3}
 names = (prop + '!' for prop of obj)
-odds  = (prop + '!' for prop, value of obj when value&1)
+odds  = (prop + '!' for prop, value of obj when value & 1)
 
 ok names.join(' ') is "one! two! three!"
 ok odds.join(' ')  is "one! three!"
@@ -27,7 +27,7 @@ eq "#{ x for x from 3*3 to 0*0 by 0-3 }", '9,6,3,0'
 
 
 # Multiline array comprehension with filter.
-evens = for num in [1, 2, 3, 4, 5, 6] when not (num&1)
+evens = for num in [1, 2, 3, 4, 5, 6] when not (num & 1)
            num *= -1
            num -= 2
            num * -1
