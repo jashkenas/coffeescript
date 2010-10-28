@@ -43,6 +43,13 @@ SWITCHES = [
   ['-h', '--help',            'display this help message']
 ]
 
+# Switches that are still supported, but will cause a warning message.
+DEPRECATED_SWITCHES = [
+  ['--no-wrap',               'compile without the top-level function wrapper']
+]
+
+ALL_SWITCHES = SWITCHES.concat DEPRECATED_SWITCHES
+
 # Top-level objects shared by all the functions.
 opts         = {}
 sources      = []
@@ -173,19 +180,22 @@ printTokens = (tokens) ->
 # Use the [OptionParser module](optparse.html) to extract all options from
 # `process.argv` that are specified in `SWITCHES`.
 parseOptions = ->
-  optionParser  = new optparse.OptionParser SWITCHES, BANNER
+  optionParser  = new optparse.OptionParser ALL_SWITCHES, BANNER
   o = opts      = optionParser.parse process.argv.slice 2
   o.compile     or=  !!o.output
   o.run         = not (o.compile or o.print or o.lint)
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
   sources       = o.arguments
+  if opts['no-wrap']
+    console.log '--no-wrap is deprecated; please use --bare instead.\n'
 
 # The compile-time options to pass to the CoffeeScript compiler.
-compileOptions = (fileName) -> {fileName, bare: opts.bare}
+compileOptions = (fileName) -> {fileName, bare: opts.bare or opts['no-wrap']}
 
-# Print the `--help` usage message and exit.
+# Print the `--help` usage message and exit. Deprecated switches are not
+# shown.
 usage = ->
-  console.log optionParser.help()
+  console.log (new optparse.OptionParser SWITCHES).help()
   process.exit 0
 
 # Print the `--version` message and exit.
