@@ -131,7 +131,8 @@ grammar =
     o 'AlphaNumeric'
     o 'JS',                                     -> new Literal $1
     o 'REGEX',                                  -> new Literal $1
-    o 'BOOL',                                   -> new Literal $1
+    o 'BOOL',                                   ->
+      new Literal if $1 is 'undefined' then 'void 0' else $1
   ]
 
   # Assignment of a variable, property, or index to a value.
@@ -486,24 +487,20 @@ grammar =
   # if-related rules are broken up along these lines in order to avoid
   # ambiguity.
   IfBlock: [
-    o 'IF Expression Block',                    -> new If $2, $3
-    o 'UNLESS Expression Block',                -> new If $2, $3, invert: true
-    o 'IfBlock ELSE IF Expression Block',       -> $1.addElse new If $4, $5
-    o 'IfBlock ELSE Block',                     -> $1.addElse $3
+    o 'IF Expression Block',              -> new If $2, $3
+    o 'UNLESS Expression Block',          -> new If $2, $3, invert: true
+    o 'IfBlock ELSE IF Expression Block', -> $1.addElse new If $4, $5
+    o 'IfBlock ELSE Block',               -> $1.addElse $3
   ]
 
   # The full complement of *if* expressions, including postfix one-liner
   # *if* and *unless*.
   If: [
     o 'IfBlock'
-    o 'Statement  POST_IF Expression',     ->
-      new If $3, Expressions.wrap([$1]), statement: true
-    o 'Expression POST_IF Expression',     ->
-      new If $3, Expressions.wrap([$1]), statement: true
-    o 'Statement  POST_UNLESS Expression', ->
-      new If $3, Expressions.wrap([$1]), statement: true, invert: true
-    o 'Expression POST_UNLESS Expression', ->
-      new If $3, Expressions.wrap([$1]), statement: true, invert: true
+    o 'Statement  POST_IF Expression',     -> new If $3, Expressions.wrap([$1]), statement: true
+    o 'Expression POST_IF Expression',     -> new If $3, Expressions.wrap([$1]), statement: true
+    o 'Statement  POST_UNLESS Expression', -> new If $3, Expressions.wrap([$1]), statement: true, invert: true
+    o 'Expression POST_UNLESS Expression', -> new If $3, Expressions.wrap([$1]), statement: true, invert: true
   ]
 
   # Arithmetic and logical operators, working on one or more operands.

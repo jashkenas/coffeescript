@@ -1453,9 +1453,10 @@ exports.If = class If extends Base
 
   # Compile the If as a conditional operator.
   compileExpression: (o) ->
-    code = @condition .compile(o, LEVEL_COND) + ' ? ' +
-           @bodyNode().compile(o, LEVEL_LIST) + ' : ' +
-           @elseBodyNode()?.compile o, LEVEL_LIST
+    cond = @condition.compile o, LEVEL_COND
+    body = @bodyNode().compile o, LEVEL_LIST
+    alt  = if @elseBodyNode() then @elseBodyNode().compile(o, LEVEL_LIST) else 'void 0'
+    code = "#{cond} ? #{body} : #{alt}"
     if o.level >= LEVEL_COND then "(#{code})" else code
 
   unfoldSoak: -> @soak and this

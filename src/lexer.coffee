@@ -116,10 +116,10 @@ exports.Lexer = class Lexer
         @identifierError id
     unless forcedIdentifier
       id  = COFFEE_ALIASES[id] if COFFEE_ALIASES.hasOwnProperty id
-      tag = if id is '!'                       then 'UNARY'
-      else  if id in ['==', '!=']              then 'COMPARE'
-      else  if id in ['&&', '||']              then 'LOGIC'
-      else  if id in ['true', 'false', 'null'] then 'BOOL'
+      tag = if id is '!'                                    then 'UNARY'
+      else  if id in ['==', '!=']                           then 'COMPARE'
+      else  if id in ['&&', '||']                           then 'LOGIC'
+      else  if id in ['true', 'false', 'null', 'undefined'] then 'BOOL'
       else  tag
     @token tag, id
     @token ':', ':' if colon
@@ -497,7 +497,7 @@ JS_KEYWORDS = [
 ]
 
 # CoffeeScript-only keywords.
-COFFEE_KEYWORDS = ['then', 'unless', 'until', 'loop', 'of', 'by', 'when']
+COFFEE_KEYWORDS = ['undefined', 'then', 'unless', 'until', 'loop', 'of', 'by', 'when']
 COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES =
   and  : '&&'
   or   : '||'
@@ -599,7 +599,7 @@ MATH    = ['*', '/', '%']
 RELATION = ['IN', 'OF', 'INSTANCEOF']
 
 # Boolean tokens.
-BOOL = ['TRUE', 'FALSE', 'NULL']
+BOOL = ['TRUE', 'FALSE', 'NULL', 'UNDEFINED']
 
 # Tokens which a regular expression will never immediately follow, but which
 # a division operator might.
