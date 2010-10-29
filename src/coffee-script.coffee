@@ -53,7 +53,10 @@ exports.run = (code, options) ->
   while root.parent
     root = root.parent
   # Set the filename
-  root.filename = fs.realpathSync options.fileName
+  if options.fileName.length > 0
+    root.filename = fs.realpathSync options.fileName
+  else
+    root.filename = fs.realpathSync '.' # run eval code in working directory
   # Clear the module cache
   root.moduleCache = {} if root.moduleCache
   # Compile
