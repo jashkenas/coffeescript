@@ -57,7 +57,7 @@ exports.run = ->
   return version()                            if opts.version
   return require './repl'                     if opts.interactive
   return compileStdio()                       if opts.stdio
-  return compileScript '', sources[0]         if opts.eval
+  return compileScript null, sources[0]         if opts.eval
   return require './repl'                     unless sources.length
   separator = sources.indexOf '--'
   flags = []
