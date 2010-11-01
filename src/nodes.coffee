@@ -764,7 +764,8 @@ exports.Assign = class Assign extends Base
     return "#{name}: #{val}" if @context is 'object'
     unless @variable.isAssignable()
       throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned."
-    o.scope.find name unless isValue and (@variable.hasProperties() or @variable.namespaced)
+    o.scope.find name unless @context or
+      isValue and (@variable.namespaced or @variable.hasProperties())
     val = name + " #{ @context or '=' } " + val
     if o.level <= LEVEL_LIST then val else "(#{val})"
 
@@ -833,7 +834,7 @@ exports.Assign = class Assign extends Base
   # more than once.
   compileConditional: (o) ->
     [left, rite] = @variable.cacheReference o
-    return new Op(@context.slice(0, -1), left, new Assign(rite, @value)).compile o
+    new Op(@context.slice(0, -1), left, new Assign(rite, @value, '=')).compile o
 
 #### Code
 
