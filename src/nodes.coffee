@@ -28,8 +28,6 @@ THIS = -> this
 # scope, and indentation level.
 exports.Base = class Base
 
-  constructor: -> @tags = {}
-
   # Common logic for determining whether to wrap this node in a closure before
   # compiling it, or to compile directly. We need to wrap if this node is a
   # *statement*, and it's not a *pureStatement*, and we're not at
@@ -166,7 +164,6 @@ exports.Expressions = class Expressions extends Base
   isStatement: YES
 
   constructor: (nodes) ->
-    super()
     @expressions = compact flatten nodes or []
 
   # Tack an expression on to the end of this expression list.
@@ -234,7 +231,7 @@ exports.Expressions = class Expressions extends Base
   compileExpression: (node, o) ->
     node = node.unwrapAll()
     node = node.unfoldSoak(o) or node
-    node.tags.front = on
+    node.front = yes
     o.level = LEVEL_TOP
     code    = node.compile o
     if node.isStatement o then code else @tab + code + ';'
@@ -252,7 +249,7 @@ exports.Expressions = class Expressions extends Base
 # `true`, `false`, `null`...
 exports.Literal = class Literal extends Base
 
-  constructor: (@value) -> super()
+  constructor: (@value) ->
 
   makeReturn: -> if @isStatement() then this else super()
 
@@ -281,7 +278,7 @@ exports.Return = class Return extends Base
   isStatement    : YES
   isPureStatement: YES
 
-  constructor: (@expression) -> super()
+  constructor: (@expression) ->
 
   makeReturn: THIS
 
@@ -306,7 +303,7 @@ exports.Value = class Value extends Base
     return base if not props and base instanceof Value
     @base       = base
     @properties = props or []
-    @tags       = if tag then {(tag): on} else {}
+    @[tag]      = true if tag
 
   # Add a property access to the list.
   push: (prop) ->
@@ -358,7 +355,7 @@ exports.Value = class Value extends Base
   # operators `?.` interspersed. Then we have to take care not to accidentally
   # evaluate anything twice when building the soak chain.
   compileNode: (o) ->
-    @base.tags.front = @tags.front
+    @base.front = @front
     props = @properties
     code  = @base.compile o, if props.length then LEVEL_ACCESS else null
     code  = "(#{code})" if props[0] instanceof Accessor and @isSimpleNumber()
@@ -390,7 +387,7 @@ exports.Comment = class Comment extends Base
   isPureStatement: YES
   isStatement:     YES
 
-  constructor: (@comment) -> super()
+  constructor: (@comment) ->
 
   makeReturn: THIS
 
@@ -405,7 +402,6 @@ exports.Call = class Call extends Base
   children: ['variable', 'args']
 
   constructor: (variable, @args = [], @soak) ->
-    super()
     @isNew    = false
     @isSuper  = variable is 'super'
     @variable = if @isSuper then null else variable
@@ -460,7 +456,7 @@ exports.Call = class Call extends Base
 
   # Compile a vanilla function call.
   compileNode: (o) ->
-    @variable?.tags.front = @tags.front
+    @variable?.front = @front
     for arg in @args when arg instanceof Splat
       return @compileSplat o
     args = (arg.compile o, LEVEL_LIST for arg in @args).join ', '
@@ -508,7 +504,7 @@ exports.Extends = class Extends extends Base
 
   children: ['child', 'parent']
 
-  constructor: (@child, @parent) -> super()
+  constructor: (@child, @parent) ->
 
   # Hooks one constructor into another's prototype chain.
   compile: (o) ->
@@ -523,7 +519,6 @@ exports.Accessor = class Accessor extends Base
   children: ['name']
 
   constructor: (@name, tag) ->
-    super()
     @proto = if tag is 'proto' then '.prototype' else ''
     @soak  = tag is 'soak'
 
@@ -540,7 +535,7 @@ exports.Index = class Index extends Base
 
   children: ['index']
 
-  constructor: (@index) -> super()
+  constructor: (@index) ->
 
   compile: (o) ->
     (if @proto then '.prototype' else '') + "[#{ @index.compile o, LEVEL_PAREN }]"
@@ -555,7 +550,6 @@ exports.Obj = class Obj extends Base
   children: ['properties']
 
   constructor: (props) ->
-    super()
     @objects = @properties = props or []
 
   compileNode: (o) ->
@@ -573,7 +567,7 @@ exports.Obj = class Obj extends Base
       else
         ',\n'
       indent = if prop instanceof Comment then '' else idt
-      if prop instanceof Value and prop.tags.this
+      if prop instanceof Value and prop.this
         prop = new Assign prop.properties[0].name, prop, 'object'
       else if prop not instanceof Assign and prop not instanceof Comment
         prop = new Assign prop, prop, 'object'
@@ -581,7 +575,7 @@ exports.Obj = class Obj extends Base
     props = props.join ''
     obj   = "{#{ props and '\n' + props + '\n' + @tab }}"
     return @compileDynamic o, obj, rest if rest
-    if @tags.front then "(#{obj})" else obj
+    if @front then "(#{obj})" else obj
 
   compileDynamic: (o, code, props) ->
     code = "#{ oref = o.scope.freeVariable 'obj' } = #{code}, "
@@ -617,7 +611,6 @@ exports.Arr = class Arr extends Base
   children: ['objects']
 
   constructor: (objs) ->
-    super()
     @objects = objs or []
 
   compileNode: (o) ->
@@ -655,10 +648,7 @@ exports.Class = class Class extends Base
 
   # Initialize a **Class** with its name, an optional superclass, and a
   # list of prototype property assignments.
-  constructor: (@variable, @parent, props) ->
-    super()
-    @properties = props or []
-    @returns    = false
+  constructor: (@variable, @parent, @properties = []) ->
 
   makeReturn: ->
     @returns = true
@@ -739,7 +729,7 @@ exports.Assign = class Assign extends Base
 
   children: ['variable', 'value']
 
-  constructor: (@variable, @value, @context) -> super()
+  constructor: (@variable, @value, @context) ->
 
   assigns: (name) ->
     @[if @context is 'object' then 'value' else 'variable'].assigns name
@@ -786,7 +776,7 @@ exports.Assign = class Assign extends Base
           [obj, idx] = new Value(obj.unwrapAll()).cacheReference o
         else
           idx = if isObject
-            if obj.tags.this then obj.properties[0].name else obj
+            if obj.this then obj.properties[0].name else obj
           else
             new Literal 0
       acc   = IDENTIFIER.test idx.unwrap().value or 0
@@ -811,7 +801,7 @@ exports.Assign = class Assign extends Base
           if obj.base instanceof Parens
             [obj, idx] = new Value(obj.unwrapAll()).cacheReference o
           else
-            idx = if obj.tags.this then obj.properties[0].name else obj
+            idx = if obj.this then obj.properties[0].name else obj
       if not splat and obj instanceof Splat
         val = "#{olen} <= #{vvar}.length ? #{ utility 'slice' }.call(#{vvar}, #{i}"
         if rest = olen - i - 1
@@ -854,7 +844,6 @@ exports.Code = class Code extends Base
   children: ['params', 'body']
 
   constructor: (@params = [], @body = new Expressions, tag) ->
-    super()
     @bound   = tag is 'boundfunc'
     @context = 'this' if @bound
 
@@ -907,7 +896,7 @@ exports.Code = class Code extends Base
     func = "#{open}#{ vars.join ', ' }) {#{code}#{close}"
     scope.endLevel()
     return "#{ utility 'bind' }(#{func}, #{@context})" if @bound
-    if @tags.front then "(#{func})" else func
+    if @front then "(#{func})" else func
 
   # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
   # unless `crossScope` is `true`.
@@ -923,7 +912,6 @@ exports.Param = class Param extends Base
   children: ['name', 'value']
 
   constructor: (@name, @value, @splat) ->
-    super()
 
   compile: (o) -> @name.compile o, LEVEL_LIST
 
@@ -947,7 +935,6 @@ exports.Splat = class Splat extends Base
   isAssignable: YES
 
   constructor: (name) ->
-    super()
     @name = if name.compile then name else new Literal name
 
   assigns: (name) -> @name.assigns name
@@ -984,10 +971,9 @@ exports.While = class While extends Base
 
   isStatement: YES
 
-  constructor: (condition, opts) ->
-    super()
-    @condition = if opts?.invert then condition.invert() else condition
-    @guard     = opts?.guard
+  constructor: (condition, options) ->
+    @condition = if options?.invert then condition.invert() else condition
+    @guard     = options?.guard
 
   addBody: (body) ->
     @body = body
@@ -1043,7 +1029,6 @@ exports.Op = class Op extends Base
     if op is 'new'
       return first.newInstance() if first instanceof Call
       first = new Parens first   if first instanceof Code and first.bound
-    super()
     @operator = @CONVERSIONS[op] or op
     @first    = first
     @second   = second
@@ -1071,7 +1056,7 @@ exports.Op = class Op extends Base
     return @compileUnary     o if @isUnary()
     return @compileChain     o if @isChainable() and @first.isChainable()
     return @compileExistence o if @operator is '?'
-    @first.tags.front = @tags.front
+    @first.front = @front
     "#{ @first.compile o, LEVEL_OP } #{@operator} #{ @second.compile o, LEVEL_OP }"
 
   # Mimic Python's chained comparisons when multiple comparison operators are
@@ -1111,7 +1096,7 @@ exports.In = class In extends Base
 
   children: ['object', 'array']
 
-  constructor: (@object, @array) -> super()
+  constructor: (@object, @array) ->
 
   invert: ->
     @negated = not @negated
@@ -1151,7 +1136,7 @@ exports.Try = class Try extends Base
 
   isStatement: YES
 
-  constructor: (@attempt, @error, @recovery, @ensure) -> super()
+  constructor: (@attempt, @error, @recovery, @ensure) ->
 
   makeReturn: ->
     @attempt  = @attempt .makeReturn() if @attempt
@@ -1182,7 +1167,7 @@ exports.Throw = class Throw extends Base
 
   isStatement: YES
 
-  constructor: (@expression) -> super()
+  constructor: (@expression) ->
 
   # A **Throw** is already a return, of sorts...
   makeReturn: THIS
@@ -1198,7 +1183,7 @@ exports.Existence = class Existence extends Base
 
   children: ['expression']
 
-  constructor: (@expression) -> super()
+  constructor: (@expression) ->
 
   compileNode: (o) ->
     code = @expression.compile o
@@ -1219,7 +1204,7 @@ exports.Parens = class Parens extends Base
 
   children: ['expression']
 
-  constructor: (@expression) -> super()
+  constructor: (@expression) ->
 
   unwrap    : -> @expression
   isComplex : -> @expression.isComplex()
@@ -1228,7 +1213,7 @@ exports.Parens = class Parens extends Base
   compileNode: (o) ->
     expr = @expression
     if expr instanceof Value and expr.isAtomic()
-      expr.tags.front = @tags.front
+      expr.front = @front
       return expr.compile o
     bare = o.level < LEVEL_OP and (expr instanceof Op or expr instanceof Call)
     code = expr.compile o, LEVEL_PAREN
@@ -1252,7 +1237,6 @@ exports.For = class For extends Base
   constructor: (@body, head) ->
     if head.index instanceof Value
       throw SyntaxError 'index cannot be a pattern matching expression'
-    super()
     extend this, head
     @step  or= new Literal 1 unless @object
     @pattern = @name instanceof Value
@@ -1341,7 +1325,7 @@ exports.Switch = class Switch extends Base
 
   isStatement: YES
 
-  constructor: (@subject, @cases, @otherwise) -> super()
+  constructor: (@subject, @cases, @otherwise) ->
 
   makeReturn: ->
     pair[1].makeReturn() for pair in @cases
@@ -1375,11 +1359,11 @@ exports.If = class If extends Base
 
   children: ['condition', 'body', 'elseBody']
 
-  constructor: (condition, @body, @tags = {}) ->
-    @condition = if @tags.invert then condition.invert() else condition
+  constructor: (condition, @body, options = {}) ->
+    @condition = if options.invert then condition.invert() else condition
     @elseBody  = null
     @isChain   = false
-    {@soak}    = @tags
+    {@soak}    = options
 
   bodyNode: -> @body?.unwrap()
   elseBodyNode: -> @elseBody?.unwrap()
