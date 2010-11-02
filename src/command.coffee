@@ -187,7 +187,7 @@ parseOptions = ->
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
   sources       = o.arguments
   if opts['no-wrap']
-    console.log '--no-wrap is deprecated; please use --bare instead.\n'
+    console.warn '--no-wrap is deprecated; please use --bare instead.'
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (fileName) -> {fileName, bare: opts.bare or opts['no-wrap']}
