@@ -882,11 +882,7 @@ exports.Code = class Code extends Base
           if param.value then new Op '?', ref, param.value else ref
       else
         ref = param
-        if param.value
-          exprs.push new Op('||',
-                     new Literal("#{param.name.value} != null"),
-                     new Assign(param.name, param.value)
-          )
+        exprs.push new Assign new Value(param.name), param.value, '?=' if param.value
       vars.push ref unless splats
     scope.startLevel()
     wasEmpty = @body.isEmpty()
