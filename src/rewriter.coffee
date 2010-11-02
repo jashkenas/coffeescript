@@ -141,7 +141,7 @@ class exports.Rewriter
       stack.push ['{']
       idx = if ago1 is ')'
         start[1]
-      else  if ago2 is '@'
+      else if ago2 is '@'
         i - 2
       else
         i - 1
@@ -345,7 +345,7 @@ IMPLICIT_UNSPACED_CALL = ['+', '-']
 IMPLICIT_BLOCK   = ['->', '=>', '{', '[', ',']
 
 # Tokens that always mark the end of an implicit call for single-liners.
-IMPLICIT_END     = ['POST_IF', 'POST_UNLESS', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'TERMINATOR', 'INDENT']
+IMPLICIT_END     = ['POST_IF', 'POST_UNLESS', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'LOOP', 'TERMINATOR', 'INDENT']
 
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.
