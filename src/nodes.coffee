@@ -108,8 +108,7 @@ exports.Base = class Base
 
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
-  toString: (idt, override) ->
-    idt or= ''
+  toString: (idt = '', override) ->
     children = (child.toString idt + TAB for child in @collectChildren()).join('')
     klass = override or @constructor.name + if @soak then '?' else ''
     '\n' + idt + klass + children
@@ -199,8 +198,7 @@ exports.Expressions = class Expressions extends Base
     this
 
   # An **Expressions** is the only node that can serve as the root.
-  compile: (o, level) ->
-    o or= {}
+  compile: (o = {}, level) ->
     if o.scope then super o, level else @compileRoot o
 
   compileNode: (o) ->
@@ -406,12 +404,11 @@ exports.Call = class Call extends Base
 
   children: ['variable', 'args']
 
-  constructor: (variable, @args, @soak) ->
+  constructor: (variable, @args = [], @soak) ->
     super()
     @isNew    = false
     @isSuper  = variable is 'super'
     @variable = if @isSuper then null else variable
-    @args   or= []
 
   # Tag this invocation as creating a new instance.
   newInstance: ->
@@ -778,9 +775,9 @@ exports.Assign = class Assign extends Base
     top       = o.level is LEVEL_TOP
     {value}   = this
     {objects} = @variable.base
-    return value.compile o unless olength = objects.length
+    return value.compile o unless olen = objects.length
     isObject = @variable.isObject()
-    if top and olength is 1 and (obj = objects[0]) not instanceof Splat
+    if top and olen is 1 and (obj = objects[0]) not instanceof Splat
       # Unroll simplest cases: `{v} = x` -> `v = x.v`
       if obj instanceof Assign
         {variable: {base: idx}, value: obj} = obj
@@ -796,12 +793,12 @@ exports.Assign = class Assign extends Base
       value = new Value value
       value.properties.push new (if acc then Accessor else Index) idx
       return new Assign(obj, value).compile o
-    valVar  = value.compile o, LEVEL_LIST
+    vvar    = value.compile o, LEVEL_LIST
     assigns = []
     splat   = false
-    if not IDENTIFIER.test(valVar) or @variable.assigns(valVar)
-      assigns.push "#{ ref = o.scope.freeVariable 'ref' } = #{valVar}"
-      valVar = ref
+    if not IDENTIFIER.test(vvar) or @variable.assigns(vvar)
+      assigns.push "#{ ref = o.scope.freeVariable 'ref' } = #{vvar}"
+      vvar = ref
     for obj, i in objects
       # A regular array pattern-match.
       idx = i
@@ -816,17 +813,27 @@ exports.Assign = class Assign extends Base
           else
             idx = if obj.tags.this then obj.properties[0].name else obj
       if not splat and obj instanceof Splat
-        val   = new Literal obj.compileValue o, valVar, i, olength - i - 1
-        splat = true
+        val = "#{olen} <= #{vvar}.length ? #{ utility 'slice' }.call(#{vvar}, #{i}"
+        if rest = olen - i - 1
+          ivar = o.scope.freeVariable 'i'
+          val += ", #{ivar} = #{vvar}.length - #{rest}) : (#{ivar} = #{i}, [])"
+        else
+          val += ") : []"
+        val   = new Literal val
+        splat = "#{ivar}++"
       else
-        if typeof idx isnt 'object'
-          idx = new Literal(if splat then "#{valVar}.length - #{ olength - idx }" else idx)
+        if obj instanceof Splat
+          obj = obj.name.compile o
+          throw SyntaxError \
+            "multiple splats are disallowed in an assignment: #{obj} ..."
+        if typeof idx is 'number'
+          idx = new Literal splat or idx
           acc = no
         else
           acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
-        val = new Value new Literal(valVar), [new (if acc then Accessor else Index) idx]
+        val = new Value new Literal(vvar), [new (if acc then Accessor else Index) idx]
       assigns.push new Assign(obj, val).compile o, LEVEL_LIST
-    assigns.push valVar unless top
+    assigns.push vvar unless top
     code = assigns.join ', '
     if o.level < LEVEL_LIST then code else "(#{code})"
 
@@ -846,10 +853,8 @@ exports.Code = class Code extends Base
 
   children: ['params', 'body']
 
-  constructor: (params, body, tag) ->
+  constructor: (@params = [], @body = new Expressions, tag) ->
     super()
-    @params  = params or []
-    @body    = body   or new Expressions
     @bound   = tag is 'boundfunc'
     @context = 'this' if @bound
 
@@ -862,46 +867,41 @@ exports.Code = class Code extends Base
     sharedScope = del o, 'sharedScope'
     o.scope     = scope = sharedScope or new Scope o.scope, @body, this
     o.indent    = @idt 1
-    empty       = @body.expressions.length is 0
     delete o.bare
     delete o.globals
-    splat = undefined
-    params = []
-    for param, i in @params
-      if splat
-        if param.attach
-          param.assign = new Assign new Value new Literal('this'), [new Accessor param.value]
-          @body.expressions.splice splat.index + 1, 0, param.assign
-        splat.trailings.push param
+    vars   = []
+    exprs  = []
+    for param in @params when param.splat
+      splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
+                          new Value new Literal 'arguments'
+      break
+    for param in @params
+      if param.isComplex()
+        ref = param.asReference o
+        exprs.push new Assign new Value(param.name),
+          if param.value then new Op '?', ref, param.value else ref
       else
-        if param.attach
-          {value} = param
-          [param, param.splat] = [new Literal(scope.freeVariable 'arg'), param.splat]
-          @body.unshift new Assign new Value(new Literal('this'), [new Accessor value]), param
-        if param.splat
-          splat           = new Splat param.value
-          splat.index     = i
-          splat.trailings = []
-          splat.arglength = @params.length
-          @body.unshift splat
-        else
-          params.push param
+        ref = param
+        exprs.push new Assign new Value(param.name), param.value, '?=' if param.value
+      vars.push ref unless splats
     scope.startLevel()
-    @body.makeReturn() unless empty or @noReturn
-    params = for param in params
-      scope.parameter param = param.compile o
-      param
-    comm  = if @comment then @comment.compile(o) + '\n' else ''
+    wasEmpty = @body.isEmpty()
+    exprs.unshift splats if splats
+    @body.expressions.splice 0, 0, exprs... if exprs.length
+    @body.makeReturn() unless wasEmpty or @noReturn
+    scope.parameter vars[i] = v.compile o for v, i in vars unless splats
+    comm     = if @comment then @comment.compile(o) + '\n' else ''
     o.indent = @idt 2 if @className
-    idt  = @idt 1
-    code = if @body.expressions.length then "\n#{ @body.compileWithDeclarations o }\n" else ''
+    idt      = @idt 1
+    code     = if @body.isEmpty() then ''
+    else "\n#{ @body.compileWithDeclarations o }\n"
     if @className
       open  = "(function() {\n#{comm}#{idt}function #{@className}("
       close = "#{ code and idt }}\n#{idt}return #{@className};\n#{@tab}})()"
     else
-      open  = "function("
+      open  = 'function('
       close = "#{ code and @tab }}"
-    func = "#{open}#{ params.join ', ' }) {#{code}#{close}"
+    func = "#{open}#{ vars.join ', ' }) {#{code}#{close}"
     scope.endLevel()
     return "#{ utility 'bind' }(#{func}, #{@context})" if @bound
     if @tags.front then "(#{func})" else func
@@ -917,19 +917,21 @@ exports.Code = class Code extends Base
 # as well as be a splat, gathering up a group of parameters into an array.
 exports.Param = class Param extends Base
 
-  children: ['name']
+  children: ['name', 'value']
 
-  constructor: (name, @attach, @splat) ->
+  constructor: (@name, @value, @splat) ->
     super()
-    @value = new Literal @name = name
 
-  compile: (o) -> @value.compile o, LEVEL_LIST
+  compile: (o) -> @name.compile o, LEVEL_LIST
 
-  toString: ->
-    {name} = this
-    name   = '@' + name if @attach
-    name  += '...'      if @splat
-    new Literal(name).toString()
+  asReference: (o) ->
+    return @reference if @reference
+    node = if @isComplex() then new Literal o.scope.freeVariable 'arg' else @name
+    node = new Value node
+    node = new Splat node if @splat
+    @reference = node
+
+  isComplex: -> @name.isComplex()
 
 #### Splat
 
@@ -948,34 +950,6 @@ exports.Splat = class Splat extends Base
   assigns: (name) -> @name.assigns name
 
   compile: (o) -> if @index? then @compileParam o else @name.compile o
-
-  # Compiling a parameter splat means recovering the parameters that succeed
-  # the splat in the parameter list, by slicing the arguments object.
-  compileParam: (o) ->
-    name = @name.compile o
-    o.scope.find name
-    end = ''
-    if @trailings.length
-      len = o.scope.freeVariable 'len'
-      o.scope.assign len, 'arguments.length'
-      variadic = o.scope.freeVariable 'result'
-      o.scope.assign variadic, len + ' >= ' + @arglength
-      end = if @trailings.length then ", #{len} - #{@trailings.length}"
-      for trailing, idx in @trailings
-        if trailing.attach
-          assign        = trailing.assign
-          trailing      = new Literal o.scope.freeVariable 'arg'
-          assign.value  = trailing
-        pos = @trailings.length - idx
-        o.scope.assign trailing.compile(o),
-          "arguments[#{variadic} ? #{len} - #{pos} : #{ @index + idx }]"
-    "#{name} = #{ utility 'slice' }.call(arguments, #{@index}#{end})"
-
-  # A compiling a splat as a destructuring assignment means slicing arguments
-  # from the right-hand-side's corresponding array.
-  compileValue: (o, name, index, trailings) ->
-    trail = if trailings then ', -' + trailings else ''
-    utility('slice') + ".call(#{name}, #{index}#{trail})"
 
   # Utility function that converts arbitrary number of elements, mixed with
   # splats, to a proper array
@@ -1398,12 +1372,11 @@ exports.If = class If extends Base
 
   children: ['condition', 'body', 'elseBody']
 
-  constructor: (condition, @body, tags) ->
-    @tags      = tags or= {}
-    @condition = if tags.invert then condition.invert() else condition
-    @soak      = tags.soak
+  constructor: (condition, @body, @tags = {}) ->
+    @condition = if @tags.invert then condition.invert() else condition
     @elseBody  = null
     @isChain   = false
+    {@soak}    = @tags
 
   bodyNode: -> @body?.unwrap()
   elseBodyNode: -> @elseBody?.unwrap()
