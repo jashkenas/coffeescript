@@ -64,3 +64,7 @@ eq val, 'value'
 for nonref in ['""', '0', 'f()']
   try ok not CoffeeScript.compile "{k: #{nonref}} = v"
   catch e then eq e.message, "\"#{nonref}\" cannot be assigned."
+
+
+# Compound assignments should not declare.
+eq Math, (-> Math or= 0)()

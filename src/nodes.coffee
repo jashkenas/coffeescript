@@ -563,8 +563,9 @@ exports.Obj = class Obj extends Base
 
   compileNode: (o) ->
     for prop, i in @properties when (prop.variable or prop).base instanceof Parens
-      return @compileDynamic o, i
-    o.indent = @idt 1
+      rest = @properties.splice i
+      break
+    o.indent    = idt = @idt 1
     nonComments = (prop for prop in @properties when prop not instanceof Comment)
     lastNoncom  = last nonComments
     props = for prop, i in @properties
@@ -574,20 +575,20 @@ exports.Obj = class Obj extends Base
         '\n'
       else
         ',\n'
-      indent = if prop instanceof Comment then '' else @idt 1
+      indent = if prop instanceof Comment then '' else idt
       if prop instanceof Value and prop.tags.this
         prop = new Assign prop.properties[0].name, prop, 'object'
       else if prop not instanceof Assign and prop not instanceof Comment
         prop = new Assign prop, prop, 'object'
       indent + prop.compile(o) + join
     props = props.join ''
-    obj   = "{#{ if props then '\n' + props + '\n' + @idt() else '' }}"
+    obj   = "{#{ props and '\n' + props + '\n' + @tab }}"
+    return @compileDynamic o, obj, rest if rest
     if @tags.front then "(#{obj})" else obj
 
-  compileDynamic: (o, idx) ->
-    obj  = o.scope.freeVariable 'obj'
-    code = "#{obj} = #{ new Obj(@properties.slice 0, idx).compile o }, "
-    for prop, i in @properties.slice idx
+  compileDynamic: (o, code, props) ->
+    code = "#{ oref = o.scope.freeVariable 'obj' } = #{code}, "
+    for prop, i in props
       if prop instanceof Comment
         code += prop.compile(o) + ' '
         continue
@@ -598,13 +599,13 @@ exports.Obj = class Obj extends Base
       else
         acc = prop.base
         [key, val] = acc.cache o, LEVEL_LIST, ref
-        ref = val
+        ref = val if key isnt val
       key = if acc instanceof Literal and IDENTIFIER.test key
         '.' + key
       else
         '[' + key + ']'
-      code += "#{obj}#{key} = #{val}, "
-    code += obj
+      code += "#{oref}#{key} = #{val}, "
+    code += oref
     if o.level <= LEVEL_PAREN then code else "(#{code})"
 
   assigns: (name) ->
@@ -764,7 +765,8 @@ exports.Assign = class Assign extends Base
     return "#{name}: #{val}" if @context is 'object'
     unless @variable.isAssignable()
       throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned."
-    o.scope.find name unless isValue and (@variable.hasProperties() or @variable.namespaced)
+    o.scope.find name unless @context or
+      isValue and (@variable.namespaced or @variable.hasProperties())
     val = name + " #{ @context or '=' } " + val
     if o.level <= LEVEL_LIST then val else "(#{val})"
 
@@ -833,7 +835,7 @@ exports.Assign = class Assign extends Base
   # more than once.
   compileConditional: (o) ->
     [left, rite] = @variable.cacheReference o
-    return new Op(@context.slice(0, -1), left, new Assign(rite, @value)).compile o
+    new Op(@context.slice(0, -1), left, new Assign(rite, @value, '=')).compile o
 
 #### Code
 
