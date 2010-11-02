@@ -877,16 +877,15 @@ exports.Code = class Code extends Base
       break
     for param in @params
       if param.isComplex()
-        ref = param.asReference o
-        exprs.push new Assign new Value(param.name),
-          if param.value then new Op '?', ref, param.value else ref
+        val = ref = param.asReference o
+        val = new Op '?', ref, param.value if param.value
+        exprs.push new Assign new Value(param.name), val, '='
       else
         ref = param
         if param.value
-          exprs.push new Op('||',
-                     new Literal("#{param.name.value} != null"),
-                     new Assign(param.name, param.value)
-          )
+          lit = new Literal ref.name.value + ' == null'
+          val = new Assign new Value(param.name), param.value, '='
+          exprs.push new Op '&&', lit, val
       vars.push ref unless splats
     scope.startLevel()
     wasEmpty = @body.isEmpty()
