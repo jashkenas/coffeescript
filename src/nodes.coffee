@@ -85,11 +85,12 @@ exports.Base = class Base
   # Recursively traverses down the *children* of the nodes, yielding to a block
   # and returning true when the block finds a match. `contains` does not cross
   # scope boundaries.
-  contains: (block, arg) ->
+  contains: (pred) ->
     contains = no
-    @traverseChildren false, (node, arg) ->
-      if (rearg = block node, arg) is true then not contains = true else if arg? then rearg
-    , arg
+    @traverseChildren no, (node) ->
+      if pred node
+        contains = yes
+        return no
     contains
 
   # Is this node of a certain type, or does it contain the type?
@@ -99,11 +100,7 @@ exports.Base = class Base
   # Convenience for the most common use of contains. Does the node contain
   # a pure statement?
   containsPureStatement: ->
-    @isPureStatement() or @contains (node, func) ->
-      func(node) or if node instanceof While or node instanceof For
-        (node) -> node instanceof Return
-      else func
-    , (node) -> node.isPureStatement()
+    @isPureStatement() or @contains (node) -> node.isPureStatement()
 
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
@@ -125,10 +122,10 @@ exports.Base = class Base
     @eachChild (node) -> nodes.push node
     nodes
 
-  traverseChildren: (crossScope, func, arg) ->
+  traverseChildren: (crossScope, func) ->
     @eachChild (child) ->
-      return false if (arg = func child, arg) is false
-      child.traverseChildren crossScope, func, arg
+      return false if func(child) is false
+      child.traverseChildren crossScope, func
 
   invert: ->
     new Op '!', this
@@ -996,13 +993,20 @@ exports.While = class While extends Base
     @condition = if options?.invert then condition.invert() else condition
     @guard     = options?.guard
 
-  addBody: (body) ->
-    @body = body
+  addBody: (@body) ->
     this
 
   makeReturn: ->
     @returns = true
     this
+
+  containsPureStatement: ->
+    {expressions} = @body
+    i = expressions.length
+    return true if expressions[--i]?.containsPureStatement()
+    ret = (node) -> node instanceof Return
+    return true while i-- when expressions[i].contains ret
+    false
 
   # The main difference from a JavaScript *while* is that the CoffeeScript
   # *while* can be used as a part of a larger expression -- while loops may
@@ -1259,10 +1263,11 @@ exports.For = class For extends Base
 
   isStatement: YES
 
-  constructor: (@body, head) ->
+  constructor: (body, head) ->
     if head.index instanceof Value
       throw SyntaxError 'index cannot be a pattern matching expression'
     extend this, head
+    @body    = Expressions.wrap [body]
     @step  or= new Literal 1 unless @object
     @pattern = @name instanceof Value
     @returns = false
@@ -1270,6 +1275,8 @@ exports.For = class For extends Base
   makeReturn: ->
     @returns = true
     this
+
+  containsPureStatement: While::containsPureStatement
 
   compileReturnValue: (val, o) ->
     return '\n' + new Return(new Literal val).compile o if @returns
@@ -1282,11 +1289,11 @@ exports.For = class For extends Base
   # some cannot.
   compileNode: (o) ->
     {scope} = o
+    {body}  = this
     name    = not @pattern and @name?.compile o
     index   = @index?.compile o
     ivar    = if not index then scope.freeVariable 'i' else index
     varPart = guardPart = defPart = retPart = ''
-    body    = Expressions.wrap [@body]
     idt     = @idt 1
     scope.find(name,  immediate: yes) if name
     scope.find(index, immediate: yes) if index

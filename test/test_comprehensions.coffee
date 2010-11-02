@@ -114,6 +114,14 @@ ok val[0] is i
 # Comprehensions only wrap their last line in a closure, allowing other lines
 # to have pure expressions in them.
 func = -> for i in [1]
-  return if false
+  break if i is 2
   j for j in [1]
+
 ok func()[0][0] is 1
+
+i = 6
+odds = while i--
+  continue unless i & 1
+  i
+
+ok odds.join(', ') is '5, 3, 1'
