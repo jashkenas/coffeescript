@@ -882,7 +882,11 @@ exports.Code = class Code extends Base
           if param.value then new Op '?', ref, param.value else ref
       else
         ref = param
-        exprs.push new Assign new Value(param.name), param.value, '?=' if param.value
+        if param.value
+          exprs.push new Op('||',
+                     new Literal("#{param.name.value} != null"),
+                     new Assign(param.name, param.value)
+          )
       vars.push ref unless splats
     scope.startLevel()
     wasEmpty = @body.isEmpty()
@@ -1084,13 +1088,17 @@ exports.Op = class Op extends Base
     if o.level < LEVEL_OP then code else "(#{code})"
 
   compileExistence: (o) ->
-    if @first.isComplex()
+    if @first.isComplex() and o.level > LEVEL_TOP
       ref = o.scope.freeVariable 'ref'
       fst = new Parens new Assign new Literal(ref), @first
     else
       fst = @first
       ref = fst.compile o
-    new Existence(fst).compile(o) + " ? #{ref} : #{ @second.compile o, LEVEL_LIST }"
+    if o.level is LEVEL_TOP
+      end = " || #{@second.compile o, LEVEL_OP}"
+    else
+      end = " ? #{ref} : #{@second.compile o, LEVEL_LIST}"
+    new Existence(fst).compile(o) + end
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
