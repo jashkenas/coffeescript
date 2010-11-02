@@ -106,7 +106,11 @@ exports.Scope = class Scope
 
   # Return the list of variables first declared in this scope.
   declaredVariables: ->
-    (v.name for v in @variables when v.type in ['var', 'reuse']).sort()
+    usr = []
+    tmp = []
+    for {name, type} in @variables when type in ['var', 'reuse']
+      (if name.charAt(0) is '_' then tmp else usr).push name
+    usr.sort().concat tmp.sort()
 
   # Return the list of assignments that are supposed to be made at the top
   # of this scope.
