@@ -53,8 +53,8 @@ exports.Scope = class Scope
 
   # Test variables and return `true` the first time `fn(v)` returns `true`
   any: (fn) ->
-    for v in @variables when fn v then return true
-    return false
+    return yes for v in @variables when fn v
+    no
 
   # Reserve a variable name as originating from a function parameter for this
   # scope. No `var` required for internal references.
@@ -63,9 +63,9 @@ exports.Scope = class Scope
 
   # Just check to see if a variable has already been declared, without reserving,
   # walks up to the root scope.
-  check: (name, options) ->
-    immediate = !!@type(name)
-    return immediate if immediate or options?.immediate
+  check: (name, immediate) ->
+    found = !!@type(name)
+    return found if found or immediate
     !!@parent?.check name
 
   # Generate a temporary variable name at the given index.
@@ -84,7 +84,7 @@ exports.Scope = class Scope
   # compiler-generated variable. `_var`, `_var2`, and so on...
   freeVariable: (type) ->
     index = 0
-    index++ while @check(temp = @temporary type, index) and @type(temp) isnt 'reuse'
+    index++ while @check((temp = @temporary type, index), true) and @type(temp) isnt 'reuse'
     @add temp, 'var'
     last(@garbage)?.push temp
     temp
@@ -108,8 +108,8 @@ exports.Scope = class Scope
   declaredVariables: ->
     usr = []
     tmp = []
-    for {name, type} in @variables when type in ['var', 'reuse']
-      (if name.charAt(0) is '_' then tmp else usr).push name
+    for v in @variables when v.type in ['var', 'reuse']
+      (if v.name.charAt(0) is '_' then tmp else usr).push v.name
     usr.sort().concat tmp.sort()
 
   # Return the list of assignments that are supposed to be made at the top

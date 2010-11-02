@@ -67,7 +67,7 @@ exports.Base = class Base
   # Compile to a source/variable pair suitable for looping.
   compileLoopReference: (o, name) ->
     src = tmp = @compile o, LEVEL_LIST
-    unless NUMBER.test(src) or IDENTIFIER.test(src) and o.scope.check(src, immediate: on)
+    unless NUMBER.test(src) or IDENTIFIER.test(src) and o.scope.check(src, yes)
       src = "#{ tmp = o.scope.freeVariable name } = #{src}"
     [src, tmp]
 
@@ -1295,8 +1295,8 @@ exports.For = class For extends Base
     ivar    = if not index then scope.freeVariable 'i' else index
     varPart = guardPart = defPart = retPart = ''
     idt     = @idt 1
-    scope.find(name,  immediate: yes) if name
-    scope.find(index, immediate: yes) if index
+    scope.find(name,  yes) if name
+    scope.find(index, yes) if index
     [step, pvar] = @step.compileLoopReference o, 'step' if @step
     if @from
       [tail, tvar] = @to.compileLoopReference o, 'to'
