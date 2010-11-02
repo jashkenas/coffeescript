@@ -78,7 +78,8 @@ exports.Base = class Base
   # Construct a node that returns the current node's result.
   # Note that this is overridden for smarter behavior for
   # many statement nodes (eg If, For)...
-  makeReturn: -> new Return this
+  makeReturn: -> 
+    new Return this
 
   # Does this node, or any of its children, contain a node of a certain kind?
   # Recursively traverses down the *children* of the nodes, yielding to a block
@@ -129,7 +130,8 @@ exports.Base = class Base
       return false if (arg = func child, arg) is false
       child.traverseChildren crossScope, func, arg
 
-  invert: -> new Op '!', this
+  invert: -> 
+    new Op '!', this
 
   unwrapAll: ->
     node = this
@@ -172,7 +174,8 @@ exports.Expressions = class Expressions extends Base
     this
 
   # Remove and return the last expression of this expression list.
-  pop: -> @expressions.pop()
+  pop: -> 
+    @expressions.pop()
 
   # Add an expression at the beginning of this expression list.
   unshift: (node) ->
@@ -181,10 +184,12 @@ exports.Expressions = class Expressions extends Base
 
   # If this Expressions consists of just a single node, unwrap it by pulling
   # it back out.
-  unwrap: -> if @expressions.length is 1 then @expressions[0] else this
+  unwrap: -> 
+    if @expressions.length is 1 then @expressions[0] else this
 
   # Is this an empty block of code?
-  isEmpty: -> not @expressions.length
+  isEmpty: -> 
+    not @expressions.length
 
   # An Expressions node does not return its entire body, rather it
   # ensures that the final expression is returned.
@@ -251,21 +256,27 @@ exports.Literal = class Literal extends Base
 
   constructor: (@value) ->
 
-  makeReturn: -> if @isStatement() then this else super()
+  makeReturn: -> 
+    if @isStatement() then this else super()
 
   # Break and continue must be treated as pure statements -- they lose their
   # meaning when wrapped in a closure.
-  isPureStatement: -> @value in ['break', 'continue', 'debugger']
+  isPureStatement: -> 
+    @value in ['break', 'continue', 'debugger']
 
-  isAssignable: -> IDENTIFIER.test @value
+  isAssignable: -> 
+    IDENTIFIER.test @value
 
   isComplex: NO
 
-  assigns: (name) -> name is @value
+  assigns: (name) -> 
+    name is @value
 
-  compile: -> if @value.reserved then "\"#{@value}\"" else @value
+  compile: -> 
+    if @value.reserved then "\"#{@value}\"" else @value
 
-  toString: -> ' "' + @value + '"'
+  toString: -> 
+    ' "' + @value + '"'
 
 #### Return
 
@@ -310,7 +321,8 @@ exports.Value = class Value extends Base
     @properties.push prop
     this
 
-  hasProperties: -> !!@properties.length
+  hasProperties: -> 
+    !!@properties.length
 
   # Some boolean checks for the benefit of other nodes.
   isArray        : -> not @properties.length and @base instanceof Arr
@@ -326,11 +338,13 @@ exports.Value = class Value extends Base
   isStatement : (o)    -> not @properties.length and @base.isStatement o
   assigns     : (name) -> not @properties.length and @base.assigns name
 
-  makeReturn: -> if @properties.length then super() else @base.makeReturn()
+  makeReturn: -> 
+    if @properties.length then super() else @base.makeReturn()
 
   # The value can be unwrapped as its inner node, if there are no attached
   # properties.
-  unwrap: -> if @properties.length then this else @base
+  unwrap: -> 
+    if @properties.length then this else @base
 
   # A reference has base part (`this` value) and name part.
   # We cache them separately for compiling complex expressions.
@@ -391,7 +405,8 @@ exports.Comment = class Comment extends Base
 
   makeReturn: THIS
 
-  compileNode: (o) -> @tab + '/*' + multident(@comment, @tab) + '*/'
+  compileNode: (o) -> 
+    @tab + '/*' + multident(@comment, @tab) + '*/'
 
 #### Call
 
@@ -540,7 +555,8 @@ exports.Index = class Index extends Base
   compile: (o) ->
     (if @proto then '.prototype' else '') + "[#{ @index.compile o, LEVEL_PAREN }]"
 
-  isComplex: -> @index.isComplex()
+  isComplex: -> 
+    @index.isComplex()
 
 #### Obj
 
@@ -734,7 +750,8 @@ exports.Assign = class Assign extends Base
   assigns: (name) ->
     @[if @context is 'object' then 'value' else 'variable'].assigns name
 
-  unfoldSoak: (o) -> If.unfoldSoak o, this, 'variable'
+  unfoldSoak: (o) -> 
+    If.unfoldSoak o, this, 'variable'
 
   # Compile an assignment, delegating to `compilePatternMatch` or
   # `compileSplice` if appropriate. Keep track of the name of the base object
@@ -900,7 +917,8 @@ exports.Code = class Code extends Base
 
   # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
   # unless `crossScope` is `true`.
-  traverseChildren: (crossScope, func) -> super(crossScope, func) if crossScope
+  traverseChildren: (crossScope, func) ->
+    super(crossScope, func) if crossScope
 
 #### Param
 
@@ -913,7 +931,8 @@ exports.Param = class Param extends Base
 
   constructor: (@name, @value, @splat) ->
 
-  compile: (o) -> @name.compile o, LEVEL_LIST
+  compile: (o) -> 
+    @name.compile o, LEVEL_LIST
 
   asReference: (o) ->
     return @reference if @reference
@@ -922,7 +941,8 @@ exports.Param = class Param extends Base
     node = new Splat node if @splat
     @reference = node
 
-  isComplex: -> @name.isComplex()
+  isComplex: -> 
+    @name.isComplex()
 
 #### Splat
 
@@ -937,9 +957,11 @@ exports.Splat = class Splat extends Base
   constructor: (name) ->
     @name = if name.compile then name else new Literal name
 
-  assigns: (name) -> @name.assigns name
+  assigns: (name) -> 
+    @name.assigns name
 
-  compile: (o) -> if @index? then @compileParam o else @name.compile o
+  compile: (o) -> 
+    if @index? then @compileParam o else @name.compile o
 
   # Utility function that converts arbitrary number of elements, mixed with
   # splats, to a proper array
@@ -1034,11 +1056,13 @@ exports.Op = class Op extends Base
     @second   = second
     @flip     = !!flip
 
-  isUnary: -> not @second
+  isUnary: -> 
+    not @second
 
   # Am I capable of
   # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
-  isChainable: -> @operator in ['<', '>', '>=', '<=', '===', '!==']
+  isChainable: -> 
+    @operator in ['<', '>', '>=', '<=', '===', '!==']
 
   invert: ->
     if op = @INVERSIONS[@operator]
@@ -1089,7 +1113,8 @@ exports.Op = class Op extends Base
     parts.reverse() if @flip
     parts.join ''
 
-  toString: (idt) -> super idt, @constructor.name + ' ' + @operator
+  toString: (idt) -> 
+    super idt, @constructor.name + ' ' + @operator
 
 #### In
 exports.In = class In extends Base
@@ -1172,7 +1197,8 @@ exports.Throw = class Throw extends Base
   # A **Throw** is already a return, of sorts...
   makeReturn: THIS
 
-  compileNode: (o) -> @tab + "throw #{ @expression.compile o };"
+  compileNode: (o) -> 
+    @tab + "throw #{ @expression.compile o };"
 
 #### Existence
 
@@ -1365,7 +1391,7 @@ exports.If = class If extends Base
     @isChain   = false
     {@soak}    = options
 
-  bodyNode: -> @body?.unwrap()
+  bodyNode:     -> @body?.unwrap()
   elseBodyNode: -> @elseBody?.unwrap()
 
   # Rewrite a chain of **Ifs** to add a default case as the final *else*.
@@ -1421,7 +1447,8 @@ exports.If = class If extends Base
     code = "#{cond} ? #{body} : #{alt}"
     if o.level >= LEVEL_COND then "(#{code})" else code
 
-  unfoldSoak: -> @soak and this
+  unfoldSoak: -> 
+    @soak and this
 
   # Unfold a node's child if soak, then tuck the node under created `If`
   @unfoldSoak: (o, parent, name) ->
@@ -1541,4 +1568,5 @@ utility = (name) ->
   Scope.root.assign ref, UTILITIES[name]
   ref
 
-multident = (code, tab) -> code.replace /\n/g, '$&' + tab
+multident = (code, tab) -> 
+  code.replace /\n/g, '$&' + tab
