@@ -70,10 +70,9 @@ buildRules = (rules) ->
 
 # Build a rule from a `-o` short flag, a `--output [DIR]` long flag, and the
 # description of what the option does.
-buildRule = (shortFlag, longFlag, description, options) ->
+buildRule = (shortFlag, longFlag, description, options = {}) ->
   match     = longFlag.match(OPTIONAL)
   longFlag  = longFlag.match(LONG_FLAG)[1]
-  options or= {}
   {
     name:         longFlag.substr 2
     shortFlag:    shortFlag
