@@ -76,14 +76,11 @@ lexer = new Lexer
 # directly as a "Jison lexer".
 parser.lexer =
   lex: ->
-    token = @tokens[@pos] or [""]
-    @pos += 1
-    this.yylineno = token[2]
-    this.yytext   = token[1]
-    token[0]
-  setInput: (tokens) ->
-    @tokens = tokens
-    @pos    = 0
-  upcomingInput: -> ""
+    [tag, @yytext, @yylineno] = @tokens[@pos++] or ['']
+    tag
+  setInput: (@tokens) ->
+    @pos = 0
+  upcomingInput: ->
+    ""
 
 parser.yy = require './nodes'
