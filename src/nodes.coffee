@@ -78,7 +78,7 @@ exports.Base = class Base
   # Construct a node that returns the current node's result.
   # Note that this is overridden for smarter behavior for
   # many statement nodes (eg If, For)...
-  makeReturn: -> 
+  makeReturn: ->
     new Return this
 
   # Does this node, or any of its children, contain a node of a certain kind?
@@ -130,7 +130,7 @@ exports.Base = class Base
       return false if (arg = func child, arg) is false
       child.traverseChildren crossScope, func, arg
 
-  invert: -> 
+  invert: ->
     new Op '!', this
 
   unwrapAll: ->
@@ -174,7 +174,7 @@ exports.Expressions = class Expressions extends Base
     this
 
   # Remove and return the last expression of this expression list.
-  pop: -> 
+  pop: ->
     @expressions.pop()
 
   # Add an expression at the beginning of this expression list.
@@ -184,11 +184,11 @@ exports.Expressions = class Expressions extends Base
 
   # If this Expressions consists of just a single node, unwrap it by pulling
   # it back out.
-  unwrap: -> 
+  unwrap: ->
     if @expressions.length is 1 then @expressions[0] else this
 
   # Is this an empty block of code?
-  isEmpty: -> 
+  isEmpty: ->
     not @expressions.length
 
   # An Expressions node does not return its entire body, rather it
@@ -256,26 +256,26 @@ exports.Literal = class Literal extends Base
 
   constructor: (@value) ->
 
-  makeReturn: -> 
+  makeReturn: ->
     if @isStatement() then this else super()
 
   # Break and continue must be treated as pure statements -- they lose their
   # meaning when wrapped in a closure.
-  isPureStatement: -> 
+  isPureStatement: ->
     @value in ['break', 'continue', 'debugger']
 
-  isAssignable: -> 
+  isAssignable: ->
     IDENTIFIER.test @value
 
   isComplex: NO
 
-  assigns: (name) -> 
+  assigns: (name) ->
     name is @value
 
-  compile: -> 
+  compile: ->
     if @value.reserved then "\"#{@value}\"" else @value
 
-  toString: -> 
+  toString: ->
     ' "' + @value + '"'
 
 #### Return
@@ -321,7 +321,7 @@ exports.Value = class Value extends Base
     @properties.push prop
     this
 
-  hasProperties: -> 
+  hasProperties: ->
     !!@properties.length
 
   # Some boolean checks for the benefit of other nodes.
@@ -338,12 +338,12 @@ exports.Value = class Value extends Base
   isStatement : (o)    -> not @properties.length and @base.isStatement o
   assigns     : (name) -> not @properties.length and @base.assigns name
 
-  makeReturn: -> 
+  makeReturn: ->
     if @properties.length then super() else @base.makeReturn()
 
   # The value can be unwrapped as its inner node, if there are no attached
   # properties.
-  unwrap: -> 
+  unwrap: ->
     if @properties.length then this else @base
 
   # A reference has base part (`this` value) and name part.
@@ -405,7 +405,7 @@ exports.Comment = class Comment extends Base
 
   makeReturn: THIS
 
-  compileNode: (o) -> 
+  compileNode: (o) ->
     @tab + '/*' + multident(@comment, @tab) + '*/'
 
 #### Call
@@ -472,8 +472,8 @@ exports.Call = class Call extends Base
   # Compile a vanilla function call.
   compileNode: (o) ->
     @variable?.front = @front
-    for arg in @args when arg instanceof Splat
-      return @compileSplat o
+    if code = Splat.compileSplattedArray o, @args, true
+      return @compileSplat o, code
     args = (arg.compile o, LEVEL_LIST for arg in @args).join ', '
     if @isSuper
       @compileSuper args, o
@@ -489,9 +489,8 @@ exports.Call = class Call extends Base
   # `.apply()` call to allow an array of arguments to be passed.
   # If it's a constructor, then things get real tricky. We have to inject an
   # inner constructor in order to be able to pass the varargs.
-  compileSplat: (o) ->
-    splatargs = Splat.compileSplattedArray @args, o
-    return "#{ @superReference o }.apply(this, #{splatargs})" if @isSuper
+  compileSplat: (o, splatArgs) ->
+    return "#{ @superReference o }.apply(this, #{splatArgs})" if @isSuper
     unless @isNew
       base = new Value @variable
       if (name = base.properties.pop()) and base.isComplex()
@@ -500,14 +499,14 @@ exports.Call = class Call extends Base
       else
         fun = ref = base.compile o, LEVEL_ACCESS
         fun += name.compile o if name
-      return "#{fun}.apply(#{ref}, #{splatargs})"
+      return "#{fun}.apply(#{ref}, #{splatArgs})"
     idt = @idt 1
     """
     (function(func, args, ctor) {
     #{idt}ctor.prototype = func.prototype;
     #{idt}var child = new ctor, result = func.apply(child, args);
     #{idt}return typeof result === "object" ? result : child;
-    #{@tab}})(#{ @variable.compile o, LEVEL_LIST }, #{splatargs}, function() {})
+    #{@tab}})(#{ @variable.compile o, LEVEL_LIST }, #{splatArgs}, function() {})
     """
 
 #### Extends
@@ -555,7 +554,7 @@ exports.Index = class Index extends Base
   compile: (o) ->
     (if @proto then '.prototype' else '') + "[#{ @index.compile o, LEVEL_PAREN }]"
 
-  isComplex: -> 
+  isComplex: ->
     @index.isComplex()
 
 #### Obj
@@ -631,8 +630,7 @@ exports.Arr = class Arr extends Base
 
   compileNode: (o) ->
     o.indent = @idt 1
-    for obj in @objects when obj instanceof Splat
-      return Splat.compileSplattedArray @objects, o
+    return code if code = Splat.compileSplattedArray o, @objects
     objects = []
     for obj, i in @objects
       code = obj.compile o, LEVEL_LIST
@@ -750,7 +748,7 @@ exports.Assign = class Assign extends Base
   assigns: (name) ->
     @[if @context is 'object' then 'value' else 'variable'].assigns name
 
-  unfoldSoak: (o) -> 
+  unfoldSoak: (o) ->
     If.unfoldSoak o, this, 'variable'
 
   # Compile an assignment, delegating to `compilePatternMatch` or
@@ -931,7 +929,7 @@ exports.Param = class Param extends Base
 
   constructor: (@name, @value, @splat) ->
 
-  compile: (o) -> 
+  compile: (o) ->
     @name.compile o, LEVEL_LIST
 
   asReference: (o) ->
@@ -941,7 +939,7 @@ exports.Param = class Param extends Base
     node = new Splat node if @splat
     @reference = node
 
-  isComplex: -> 
+  isComplex: ->
     @name.isComplex()
 
 #### Splat
@@ -957,30 +955,31 @@ exports.Splat = class Splat extends Base
   constructor: (name) ->
     @name = if name.compile then name else new Literal name
 
-  assigns: (name) -> 
+  assigns: (name) ->
     @name.assigns name
 
-  compile: (o) -> 
+  compile: (o) ->
     if @index? then @compileParam o else @name.compile o
 
   # Utility function that converts arbitrary number of elements, mixed with
-  # splats, to a proper array
-  @compileSplattedArray: (list, o) ->
-    args = []
-    end  = -1
-    for arg, i in list
-      code = arg.compile o, LEVEL_LIST
-      prev = args[end]
-      if arg not instanceof Splat
-        if prev and starts(prev, '[') and ends(prev, ']')
-          args[end] = "#{prev.slice 0, -1}, #{code}]"
-          continue
-        if prev and starts(prev, '.concat([') and ends(prev, '])')
-          args[end] = "#{prev.slice 0, -2}, #{code}])"
-          continue
-        code = "[#{code}]"
-      args[++end] = if i is 0 then code else ".concat(#{code})"
-    args.join ''
+  # splats, to a proper array.
+  @compileSplattedArray: (o, list, apply) ->
+    index = -1
+    continue while (node = list[++index]) and node not instanceof Splat
+    return '' if index >= list.length
+    if list.length is 1
+      code = list[0].compile o, LEVEL_LIST
+      return code if apply
+      return "#{ utility 'slice' }.call(#{code})"
+    args = list.slice index
+    for node, i in args
+      code = node.compile o, LEVEL_LIST
+      args[i] = if node instanceof Splat
+      then "#{ utility 'slice' }.call(#{code})"
+      else "[#{code}]"
+    return args[0] + ".concat(#{ args.slice(1).join ', ' })" if index is 0
+    base = (node.compile o, LEVEL_LIST for node in list.slice 0, index)
+    "[#{ base.join ', ' }].concat(#{ args.join ', ' })"
 
 #### While
 
@@ -1056,12 +1055,12 @@ exports.Op = class Op extends Base
     @second   = second
     @flip     = !!flip
 
-  isUnary: -> 
+  isUnary: ->
     not @second
 
   # Am I capable of
   # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
-  isChainable: -> 
+  isChainable: ->
     @operator in ['<', '>', '>=', '<=', '===', '!==']
 
   invert: ->
@@ -1113,7 +1112,7 @@ exports.Op = class Op extends Base
     parts.reverse() if @flip
     parts.join ''
 
-  toString: (idt) -> 
+  toString: (idt) ->
     super idt, @constructor.name + ' ' + @operator
 
 #### In
@@ -1197,7 +1196,7 @@ exports.Throw = class Throw extends Base
   # A **Throw** is already a return, of sorts...
   makeReturn: THIS
 
-  compileNode: (o) -> 
+  compileNode: (o) ->
     @tab + "throw #{ @expression.compile o };"
 
 #### Existence
@@ -1447,7 +1446,7 @@ exports.If = class If extends Base
     code = "#{cond} ? #{body} : #{alt}"
     if o.level >= LEVEL_COND then "(#{code})" else code
 
-  unfoldSoak: -> 
+  unfoldSoak: ->
     @soak and this
 
   # Unfold a node's child if soak, then tuck the node under created `If`
@@ -1568,5 +1567,5 @@ utility = (name) ->
   Scope.root.assign ref, UTILITIES[name]
   ref
 
-multident = (code, tab) -> 
+multident = (code, tab) ->
   code.replace /\n/g, '$&' + tab
