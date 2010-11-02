@@ -1140,13 +1140,13 @@ exports.In = class In extends Base
     [sub, ref] = @object.cache o, LEVEL_OP
     [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
     tests = for item, i in @array.base.objects
-      (if i then ref else sub) + cmp + item.compile o
+      (if i then ref else sub) + cmp + item.compile o, LEVEL_OP
     tests = tests.join cnj
     if o.level < LEVEL_OP then tests else "(#{tests})"
 
   compileLoopTest: (o) ->
     [sub, ref] = @object.cache o, LEVEL_LIST
-    code = utility('indexOf') + ".call(#{ @array.compile o }, #{ref}) " +
+    code = utility('indexOf') + ".call(#{ @array.compile o, LEVEL_LIST }, #{ref}) " +
            if @negated then '< 0' else '>= 0'
     return code if sub is ref
     code = sub + ', ' + code
