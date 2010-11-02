@@ -144,10 +144,10 @@ grammar =
   # Assignment when it happens within an object literal. The difference from
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
-    o 'ObjAssignable',                -> new Value $1
-    o 'ObjAssignable : Expression',   -> new Assign new Value($1), $3, 'object'
+    o 'ObjAssignable',                          -> new Value $1
+    o 'ObjAssignable : Expression',             -> new Assign new Value($1), $3, 'object'
     o 'ObjAssignable :
-       INDENT Expression OUTDENT',    -> new Assign new Value($1), $4, 'object'
+       INDENT Expression OUTDENT',              -> new Assign new Value($1), $4, 'object'
     o 'ThisProperty'
     o 'Comment'
   ]
@@ -200,9 +200,9 @@ grammar =
   # A single parameter in a function definition can be ordinary, or a splat
   # that hoovers up the remaining arguments.
   Param: [
-    o 'ParamVar',                 -> new Param $1
-    o 'ParamVar ...',             -> new Param $1, null, on
-    o 'ParamVar  =  Expression',  -> new Param $1, $3
+    o 'ParamVar',                               -> new Param $1
+    o 'ParamVar ...',                           -> new Param $1, null, on
+    o 'ParamVar = Expression',                  -> new Param $1, $3
   ]
 
   ParamVar: [
@@ -228,8 +228,8 @@ grammar =
   # Everything that can be assigned to.
   Assignable: [
     o 'SimpleAssignable'
-    o 'Array',           -> new Value $1
-    o 'Object',          -> new Value $1
+    o 'Array',                                  -> new Value $1
+    o 'Object',                                 -> new Value $1
   ]
 
   # The types of things that can be treated as values -- assigned to, invoked
@@ -276,17 +276,17 @@ grammar =
   # Class definitions have optional bodies of prototype property assignments,
   # and optional references to the superclass.
   Class: [
-    o 'CLASS SimpleAssignable',               -> new Class $2
-    o 'CLASS SimpleAssignable EXTENDS Value', -> new Class $2, $4
+    o 'CLASS SimpleAssignable',                 -> new Class $2
+    o 'CLASS SimpleAssignable EXTENDS Value',   -> new Class $2, $4
     o 'CLASS SimpleAssignable
-       INDENT ClassBody OUTDENT',             -> new Class $2, null, $4
+       INDENT ClassBody OUTDENT',               -> new Class $2, null, $4
     o 'CLASS SimpleAssignable EXTENDS Value
-       INDENT ClassBody OUTDENT',             -> new Class $2, $4, $6
-    o 'CLASS INDENT ClassBody OUTDENT',       -> new Class null, null, $3
-    o 'CLASS',                                -> new Class null, null, new Expressions
-    o 'CLASS EXTENDS Value',                  -> new Class null, $3  , new Expressions
+       INDENT ClassBody OUTDENT',               -> new Class $2, $4, $6
+    o 'CLASS INDENT ClassBody OUTDENT',         -> new Class null, null, $3
+    o 'CLASS',                                  -> new Class null, null, new Expressions
+    o 'CLASS EXTENDS Value',                    -> new Class null, $3  , new Expressions
     o 'CLASS EXTENDS Value
-       INDENT ClassBody OUTDENT',             -> new Class null, $3, $5
+       INDENT ClassBody OUTDENT',               -> new Class null, $3, $5
   ]
 
   # Assignments that can happen directly inside a class declaration.
@@ -340,7 +340,7 @@ grammar =
 
   # A reference to a property on *this*.
   ThisProperty: [
-    o '@ Identifier', -> new Value new Literal('this'), [new Accessor($2)], 'this'
+    o '@ Identifier',                           -> new Value new Literal('this'), [new Accessor($2)], 'this'
   ]
 
   # The array literal.
@@ -418,25 +418,25 @@ grammar =
   ]
 
   Loop: [
-    o 'LOOP Block',      -> new While(new Literal 'true').addBody $2
-    o 'LOOP Expression', -> new While(new Literal 'true').addBody Expressions.wrap [$2]
+    o 'LOOP Block',                             -> new While(new Literal 'true').addBody $2
+    o 'LOOP Expression',                        -> new While(new Literal 'true').addBody Expressions.wrap [$2]
   ]
 
   # Array, object, and range comprehensions, at the most generic level.
   # Comprehensions can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression.
   For: [
-    o 'Statement  ForBody', -> new For $1, $2
-    o 'Expression ForBody', -> new For $1, $2
-    o 'ForBody    Block',   -> new For $2, $1
+    o 'Statement  ForBody',                     -> new For $1, $2
+    o 'Expression ForBody',                     -> new For $1, $2
+    o 'ForBody    Block',                       -> new For $2, $1
   ]
 
   # An array of all accepted values for a variable inside the loop. This
   # enables support for pattern matching.
   ForValue: [
     o 'Identifier'
-    o 'Array',  -> new Value $1
-    o 'Object', -> new Value $1
+    o 'Array',                                  -> new Value $1
+    o 'Object',                                 -> new Value $1
   ]
 
   ForIn: [
@@ -447,8 +447,8 @@ grammar =
   ]
 
   ForOf: [
-    o 'FOROF Expression',                 -> object: on, source: $2
-    o 'FOROF Expression WHEN Expression', -> object: on, source: $2, guard: $4
+    o 'FOROF Expression',                       -> object: on, source: $2
+    o 'FOROF Expression WHEN Expression',       -> object: on, source: $2, guard: $4
   ]
 
   ForTo: [
@@ -462,13 +462,13 @@ grammar =
   # clause. If it's an array comprehension, you can also choose to step through
   # in fixed-size increments.
   ForBody: [
-    o 'FOR ForValue ForIn',                   -> extend $3, name: $2
-    o 'FOR ForValue , Identifier ForIn',      -> extend $5, name: $2, index: $4
-    o 'FOR Identifier ForOf',                 -> extend $3, index: $2
-    o 'FOR ForValue , ForValue ForOf',        -> extend $5, index: $2, name: $4
-    o 'FOR ALL Identifier ForOf',             -> extend $4, raw: on, index: $3
-    o 'FOR ALL Identifier , ForValue ForOf',  -> extend $6, raw: on, index: $3, name: $5
-    o 'FOR Identifier FROM Expression ForTo', -> extend $5, index: $2, from: $4
+    o 'FOR ForValue ForIn',                     -> extend $3, name: $2
+    o 'FOR ForValue , Identifier ForIn',        -> extend $5, name: $2, index: $4
+    o 'FOR Identifier ForOf',                   -> extend $3, index: $2
+    o 'FOR ForValue , ForValue ForOf',          -> extend $5, index: $2, name: $4
+    o 'FOR ALL Identifier ForOf',               -> extend $4, raw: on, index: $3
+    o 'FOR ALL Identifier , ForValue ForOf',    -> extend $6, raw: on, index: $3, name: $5
+    o 'FOR Identifier FROM Expression ForTo',   -> extend $5, index: $2, from: $4
   ]
 
   Switch: [
@@ -493,20 +493,20 @@ grammar =
   # if-related rules are broken up along these lines in order to avoid
   # ambiguity.
   IfBlock: [
-    o 'IF Expression Block',              -> new If $2, $3
-    o 'UNLESS Expression Block',          -> new If $2, $3, invert: true
-    o 'IfBlock ELSE IF Expression Block', -> $1.addElse new If $4, $5
-    o 'IfBlock ELSE Block',               -> $1.addElse $3
+    o 'IF Expression Block',                    -> new If $2, $3
+    o 'UNLESS Expression Block',                -> new If $2, $3, invert: true
+    o 'IfBlock ELSE IF Expression Block',       -> $1.addElse new If $4, $5
+    o 'IfBlock ELSE Block',                     -> $1.addElse $3
   ]
 
   # The full complement of *if* expressions, including postfix one-liner
   # *if* and *unless*.
   If: [
     o 'IfBlock'
-    o 'Statement  POST_IF Expression',     -> new If $3, Expressions.wrap([$1]), statement: true
-    o 'Expression POST_IF Expression',     -> new If $3, Expressions.wrap([$1]), statement: true
-    o 'Statement  POST_UNLESS Expression', -> new If $3, Expressions.wrap([$1]), statement: true, invert: true
-    o 'Expression POST_UNLESS Expression', -> new If $3, Expressions.wrap([$1]), statement: true, invert: true
+    o 'Statement  POST_IF Expression',          -> new If $3, Expressions.wrap([$1]), statement: true
+    o 'Expression POST_IF Expression',          -> new If $3, Expressions.wrap([$1]), statement: true
+    o 'Statement  POST_UNLESS Expression',      -> new If $3, Expressions.wrap([$1]), statement: true, invert: true
+    o 'Expression POST_UNLESS Expression',      -> new If $3, Expressions.wrap([$1]), statement: true, invert: true
   ]
 
   # Arithmetic and logical operators, working on one or more operands.
