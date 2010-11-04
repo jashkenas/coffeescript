@@ -123,7 +123,7 @@ class exports.Rewriter
       {(i+1): one, (i+2): two, (i+3): three} = @tokens
       [tag] = token
       tag in ['TERMINATOR', 'OUTDENT'] and
-        not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':' or one?[0] is '(') or
+        not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':') or
       tag is ',' and one and
         one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT', '(']
     action = (token, i) -> @tokens.splice i, 0, ['}', '}', token[2]]
