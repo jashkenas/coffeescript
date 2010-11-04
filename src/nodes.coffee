@@ -1359,10 +1359,10 @@ exports.For = class For extends Base
       continue unless expr instanceof Call
       val = expr.variable.unwrapAll()
       continue unless (val instanceof Code and not expr.args.length) or
-        (val instanceof Value and val.base.unwrapAll() instanceof Code and
+        (val instanceof Value and val.base?.unwrapAll() instanceof Code and
         val.properties.length is 1 and
         val.properties[0].name?.value is 'call')
-      fn    = val.base.unwrapAll() or val
+      fn    = val.base?.unwrapAll() or val
       ref   = new Literal o.scope.freeVariable 'fn'
       base  = new Value ref
       args  = compact [name, index]
