@@ -1290,13 +1290,15 @@ exports.For = class For extends Base
   compileNode: (o) ->
     {scope} = o
     {body}  = this
+    hasCode = @body.contains (node) -> node instanceof Code
     name    = not @pattern and @name?.compile o
     index   = @index?.compile o
-    ivar    = if not index then scope.freeVariable 'i' else index
+    ivar    = if not index or hasCode then scope.freeVariable 'i' else index
     varPart = guardPart = defPart = retPart = ''
     idt     = @idt 1
-    scope.find(name,  yes) if name
-    scope.find(index, yes) if index
+    unless hasCode
+      scope.find(name,  yes) if name
+      scope.find(index, yes) if index
     [step, pvar] = @step.compileLoopReference o, 'step' if @step
     if @from
       [tail, tvar] = @to.compileLoopReference o, 'to'
@@ -1334,6 +1336,7 @@ exports.For = class For extends Base
         when  1 then '++'
         when -1 then '--'
         else (if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar)
+    body    = Closure.wrap(body, yes) if hasCode
     varPart = idt + namePart + ';\n' if namePart
     defPart += @pluckDirectCall o, body, name, index unless @pattern
     code = guardPart + varPart
@@ -1355,11 +1358,11 @@ exports.For = class For extends Base
       expr = expr.unwrapAll()
       continue unless expr instanceof Call
       val = expr.variable.unwrapAll()
-      continue unless val instanceof Code and not expr.args.length or
-        val instanceof Value and val.base instanceof Code and
+      continue unless (val instanceof Code and not expr.args.length) or
+        (val instanceof Value and val.base.unwrapAll() instanceof Code and
         val.properties.length is 1 and
-        val.properties[0].name?.value is 'call'
-      fn    = val.base or val
+        val.properties[0].name?.value is 'call')
+      fn    = val.base.unwrapAll() or val
       ref   = new Literal o.scope.freeVariable 'fn'
       base  = new Value ref
       args  = compact [name, index]
