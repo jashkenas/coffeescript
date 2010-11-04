@@ -1293,7 +1293,7 @@ exports.For = class For extends Base
     hasCode = @body.contains (node) -> node instanceof Code
     name    = not @pattern and @name?.compile o
     index   = @index?.compile o
-    ivar    = if not index or hasCode then scope.freeVariable 'i' else index
+    ivar    = if not index then scope.freeVariable 'i' else index
     varPart = guardPart = defPart = retPart = ''
     idt     = @idt 1
     unless hasCode

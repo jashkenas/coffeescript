@@ -46,6 +46,43 @@ ok 2 of evens
 all = from = to = 1
 
 
+# Ensure that the closure wrapper preserves local variables.
+obj = {}
+
+for method in ['one', 'two', 'three']
+  obj[method] = ->
+    "I'm " + method
+
+ok obj.one()   is "I'm one"
+ok obj.two()   is "I'm two"
+ok obj.three() is "I'm three"
+
+i = 0
+for i from 1 to 3
+  -> 'func'
+  break if false
+ok i is 4
+
+
+# Ensure that local variables are closed over for range comprehensions.
+funcs = for i from 1 to 3
+  -> -i
+
+ok (func() for func in funcs).join(' ') is '-1 -2 -3'
+ok i is 4
+
+
+# Even when referenced in the filter.
+list = ['one', 'two', 'three']
+
+methods = for num, i in list when num isnt 'two' and i isnt 1
+  -> num + ' ' + i
+
+ok methods.length is 2
+ok methods[0]() is 'one 0'
+ok methods[1]() is 'three 2'
+
+
 # Nested comprehensions.
 multiLiner =
   for x from 3 to 5
