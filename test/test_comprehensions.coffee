@@ -83,6 +83,26 @@ ok methods[0]() is 'one 0'
 ok methods[1]() is 'three 2'
 
 
+# Even a convoluted one.
+funcs = []
+
+for i from 1 to 3
+  x = i * 2
+  ((z)->
+    funcs.push -> z + ' ' + i
+  )(x)
+
+ok (func() for func in funcs).join(', ') is '2 1, 4 2, 6 3'
+
+funcs = []
+
+results = for i from 1 to 3
+  z = (x * 3 for x from 1 to i)
+  ((a, b, c) -> [a, b, c].join(' ')).apply this, z
+
+ok results.join(', ') is '3  , 3 6 , 3 6 9'
+
+
 # Nested comprehensions.
 multiLiner =
   for x from 3 to 5
