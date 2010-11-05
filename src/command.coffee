@@ -7,22 +7,18 @@
 # External dependencies.
 fs             = require 'fs'
 path           = require 'path'
+helpers        = require './helpers'
 optparse       = require './optparse'
 CoffeeScript   = require './coffee-script'
-helpers        = require './helpers'
 {spawn, exec}  = require 'child_process'
 {EventEmitter} = require 'events'
 
-# Allow CoffeeScript to emit Node.js events, and add it to global scope.
+# Allow CoffeeScript to emit Node.js events.
 helpers.extend CoffeeScript, new EventEmitter
-global.CoffeeScript = CoffeeScript
 
 # The help banner that is printed when `coffee` is called without arguments.
 BANNER = '''
-  coffee compiles CoffeeScript source files into JavaScript.
-
-  Usage:
-    coffee path/to/script.coffee
+  Usage: coffee [options] path/to/script.coffee
          '''
 
 # The list of all the valid option flags that `coffee` knows how to handle.
@@ -64,7 +60,7 @@ exports.run = ->
   return version()                            if opts.version
   return require './repl'                     if opts.interactive
   return compileStdio()                       if opts.stdio
-  return compileScript null, sources[0]         if opts.eval
+  return compileScript null, sources[0]       if opts.eval
   return require './repl'                     unless sources.length
   separator = sources.indexOf '--'
   flags = []
@@ -195,7 +191,7 @@ compileOptions = (fileName) -> {fileName, bare: opts.bare or opts['no-wrap']}
 # Print the `--help` usage message and exit. Deprecated switches are not
 # shown.
 usage = ->
-  console.log (new optparse.OptionParser SWITCHES).help()
+  console.log (new optparse.OptionParser SWITCHES, BANNER).help()
   process.exit 0
 
 # Print the `--version` message and exit.
