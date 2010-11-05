@@ -31,18 +31,18 @@ exports.Lexer = class Lexer
   #
   # Before returning the token stream, run it through the [Rewriter](rewriter.html)
   # unless explicitly asked not to.
-  tokenize: (code, options) ->
+  tokenize: (code, opts = {}) ->
     code     = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
-    o        = options or {}
-    @code    = code         # The remainder of the source code.
-    @line    = o.line or 0  # The current line.
-    @indent  = 0            # The current indentation level.
-    @indebt  = 0            # The over-indentation at the current level.
-    @outdebt = 0            # The under-outdentation at the current level.
-    @indents = []           # The stack of all current indentation levels.
-    @tokens  = []           # Stream of parsed tokens in the form ['TYPE', value, line]
-    # Flags for distinguishing FORIN/FOROF/FROM/TO.
-    @seenFor = @seenFrom = no
+
+    @code    = code           # The remainder of the source code.
+    @line    = opts.line or 0 # The current line.
+    @indent  = 0              # The current indentation level.
+    @indebt  = 0              # The over-indentation at the current level.
+    @outdebt = 0              # The under-outdentation at the current level.
+    @indents = []             # The stack of all current indentation levels.
+    @tokens  = []             # Stream of parsed tokens in the form `['TYPE', value, line]`.
+    @seenFor = @seenFrom = no # Flags for distinguishing `FORIN/FOROF/FROM/TO`.
+
     # At every position, run through this list of attempted matches,
     # short-circuiting if any of them succeed. Their order determines precedence:
     # `@literalToken` is the fallback catch-all.
@@ -58,8 +58,9 @@ exports.Lexer = class Lexer
            @regexToken()      or
            @jsToken()         or
            @literalToken()
+
     @closeIndentation()
-    return @tokens if o.rewrite is off
+    return @tokens if opts.rewrite is off
     (new Rewriter).rewrite @tokens
 
   # Tokenizers
@@ -74,6 +75,7 @@ exports.Lexer = class Lexer
   identifierToken: ->
     return 0 unless match = IDENTIFIER.exec @chunk
     [input, id, colon] = match
+
     if id is 'all' and @tag() is 'FOR'
       @token 'ALL', id
       return id.length
@@ -89,6 +91,7 @@ exports.Lexer = class Lexer
     forcedIdentifier = colon or
       (prev = last @tokens) and not prev.spaced and prev[0] in ['.', '?.', '@', '::']
     tag = 'IDENTIFIER'
+
     if id in JS_KEYWORDS or
        not forcedIdentifier and id in COFFEE_KEYWORDS
       tag = id.toUpperCase()
@@ -107,6 +110,7 @@ exports.Lexer = class Lexer
           if @value() is '!'
             @tokens.pop()
             id = '!' + id
+
     if id in JS_FORBIDDEN
       if forcedIdentifier
         tag = 'IDENTIFIER'
@@ -114,13 +118,16 @@ exports.Lexer = class Lexer
         id.reserved = yes
       else if id in RESERVED
         @identifierError id
+
     unless forcedIdentifier
       id  = COFFEE_ALIASES[id] if COFFEE_ALIASES.hasOwnProperty id
-      tag = if id is '!'                                    then 'UNARY'
-      else  if id in ['==', '!=']                           then 'COMPARE'
-      else  if id in ['&&', '||']                           then 'LOGIC'
-      else  if id in ['true', 'false', 'null', 'undefined'] then 'BOOL'
-      else  tag
+      tag = switch id
+        when '!'                                  then 'UNARY'
+        when '==', '!='                           then 'COMPARE'
+        when '&&', '||'                           then 'LOGIC'
+        when 'true', 'false', 'null', 'undefined' then 'BOOL'
+        else  tag
+
     @token tag, id
     @token ':', ':' if colon
     input.length
@@ -157,7 +164,7 @@ exports.Lexer = class Lexer
     return 0 unless match = HEREDOC.exec @chunk
     heredoc = match[0]
     quote = heredoc.charAt 0
-    doc = @sanitizeHeredoc match[2], {quote, indent: null}
+    doc = @sanitizeHeredoc match[2], quote: quote, indent: null
     if quote is '"' and 0 <= doc.indexOf '#{'
       @interpolateString doc, heredoc: yes
     else
@@ -194,7 +201,7 @@ exports.Lexer = class Lexer
     @token 'REGEX', if regex is '//' then '/(?:)/' else regex
     regex.length
 
-  # Matches experimental, multiline and extended regular expression literals.
+  # Matches multiline extended regular expressions.
   heregexToken: (match) ->
     [heregex, body, flags] = match
     if 0 > body.indexOf '#{'
@@ -433,7 +440,7 @@ exports.Lexer = class Lexer
       unless letter is '#' and str.charAt(i+1) is '{' and
              (expr = @balancedString str.slice(i+1), [['{', '}']])
         continue
-      tokens.push ['TO_BE_STRING', str.slice(pi, i)] if pi < i
+      tokens.push ['NEOSTRING', str.slice(pi, i)] if pi < i
       inner = expr.slice(1, -1).replace(LEADING_SPACES, '').replace(TRAILING_SPACES, '')
       if inner.length
         nested = new Lexer().tokenize inner, line: @line, rewrite: off
@@ -444,10 +451,10 @@ exports.Lexer = class Lexer
         tokens.push ['TOKENS', nested]
       i += expr.length
       pi = i + 1
-    tokens.push ['TO_BE_STRING', str.slice pi] if i > pi < str.length
+    tokens.push ['NEOSTRING', str.slice pi] if i > pi < str.length
     return tokens if regex
     return @token 'STRING', '""' unless tokens.length
-    tokens.unshift ['', ''] unless tokens[0][0] is 'TO_BE_STRING'
+    tokens.unshift ['', ''] unless tokens[0][0] is 'NEOSTRING'
     @token '(', '(' if interpolated = tokens.length > 1
     for [tag, value], i in tokens
       @token '+', '+' if i
@@ -465,11 +472,13 @@ exports.Lexer = class Lexer
   token: (tag, value) ->
     @tokens.push [tag, value, @line]
 
-  # Peek at a tag/value in the current token stream.
-  tag  : (index, tag) ->
-    (tok = last @tokens, index) and if tag? then tok[0] = tag else tok[0]
+  # Peek at a tag in the current token stream.
+  tag: (index, tag) ->
+    (tok = last @tokens, index) and if tag then tok[0] = tag else tok[0]
+
+  # Peek at a value in the current token stream.
   value: (index, val) ->
-    (tok = last @tokens, index) and if val? then tok[1] = val else tok[1]
+    (tok = last @tokens, index) and if val then tok[1] = val else tok[1]
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->
@@ -533,8 +542,11 @@ IDENTIFIER = /// ^
   ( [$A-Za-z_][$\w]* )
   ( [^\n\S]* : (?!:) )?  # Is this a property name?
 ///
+
 NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
+
 HEREDOC    = /^("""|''')([\s\S]*?)(?:\n[ \t]*)?\1/
+
 OPERATOR   = /// ^ (
   ?: [-=]>             # function
    | [-+*/%<>&|^!?=]=  # compound assign / compare
@@ -544,11 +556,17 @@ OPERATOR   = /// ^ (
    | \?\.              # soak access
    | \.{3}             # splat
 ) ///
+
 WHITESPACE = /^[ \t]+/
+
 COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
+
 CODE       = /^[-=]>/
+
 MULTI_DENT = /^(?:\n[ \t]*)+/
+
 SIMPLESTR  = /^'[^\\']*(?:\\.[^\\']*)*'/
+
 JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
 # Regex-matching-regexes.
@@ -565,16 +583,24 @@ REGEX = /// ^
   )*
   / [imgy]{0,4} (?![A-Za-z])
 ///
+
 HEREGEX      = /^\/{3}([\s\S]+?)\/{3}([imgy]{0,4})(?![A-Za-z])/
+
 HEREGEX_OMIT = /\s+(?:#.*)?/g
 
 # Token cleaning regexes.
 MULTILINER      = /\n/g
+
 HEREDOC_INDENT  = /\n+([ \t]*)/g
+
 ASSIGNED        = /^\s*@?[$A-Za-z_][$\w]*[ \t]*?[:=][^:=>]/
+
 LINE_CONTINUER  = /// ^ \s* (?: , | \??\.(?!\.) | :: ) ///
+
 LEADING_SPACES  = /^\s+/
+
 TRAILING_SPACES = /\s+$/
+
 NO_NEWLINE      = /// ^ (?:            # non-capturing group
   [-+*&|/%=<>!.\\][<>=&|]* |           # symbol operators
   and | or | is(?:nt)? | n(?:ot|ew) |  # word operators
