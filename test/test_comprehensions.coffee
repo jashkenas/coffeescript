@@ -26,6 +26,18 @@ eq "#{ x for x from 9 to 0 by -3 }", '9,6,3,0'
 eq "#{ x for x from 3*3 to 0*0 by 0-3 }", '9,6,3,0'
 
 
+# Range comprehension gymnastics.
+eq "#{i for i from 5 to 1}", '5,4,3,2,1'
+eq "#{i for i from 5 to -5 by -5}", '5,0,-5'
+
+a = 6
+b = 0
+c = -2
+
+eq "#{i for i from a to b}", '6,5,4,3,2,1,0'
+eq "#{i for i from a to b by c}", '6,4,2,0'
+
+
 # Multiline array comprehension with filter.
 evens = for num in [1, 2, 3, 4, 5, 6] when not (num & 1)
            num *= -1

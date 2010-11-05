@@ -1268,7 +1268,6 @@ exports.For = class For extends Base
       throw SyntaxError 'index cannot be a pattern matching expression'
     extend this, head
     @body    = Expressions.wrap [body]
-    @step  or= new Literal 1 unless @object
     @pattern = @name instanceof Value
     @returns = false
 
@@ -1301,13 +1300,23 @@ exports.For = class For extends Base
       scope.find(index, yes) if index
     [step, pvar] = @step.compileLoopReference o, 'step' if @step
     if @from
+      [head, fvar] = @from.compileLoopReference o, 'from'
       [tail, tvar] = @to.compileLoopReference o, 'to'
-      vars  = ivar + ' = ' + @from.compile o
+      vars = ivar + ' = ' + head
       vars += ', ' + tail if tail isnt tvar
-      cond = if +pvar
-        "#{ivar} #{ if pvar < 0 then '>' else '<' }= #{tvar}"
+      if SIMPLENUM.test(head) and SIMPLENUM.test(tail)
+        if +head <= +tail
+          cond = "#{ivar} <= #{tail}"
+        else
+          pvar or= -1
+          cond = "#{ivar} >= #{tail}"
       else
-        "#{pvar} < 0 ? #{ivar} >= #{tvar} : #{ivar} <= #{tvar}"
+        if +pvar
+          cond = "#{ivar} #{ if pvar < 0 then '>' else '<' }= #{tvar}"
+        else
+          intro = "#{fvar} <= #{tvar} ? #{ivar}"
+          cond = "#{intro} <= #{tvar} : #{ivar} >= #{tvar}"
+          incr = if pvar then "#{ivar} += #{pvar}" else "#{intro}++ : #{ivar}--"
     else
       if name or @object and not @raw
         [sourcePart, svar] = @source.compileLoopReference o, 'ref'
@@ -1330,12 +1339,14 @@ exports.For = class For extends Base
       guardPart = if @raw then '' else
         idt + "if (!#{ utility 'hasProp' }.call(#{svar}, #{ivar})) continue;\n"
     else
-      vars   += ', ' + step if step isnt pvar
+      pvar  or= 1
+      vars   += ', ' + step if step and (step isnt pvar)
       defPart = @tab + sourcePart + ';\n' if svar isnt sourcePart
-      forPart = vars + "; #{cond}; " + ivar + switch +pvar
+      forPart = vars + "; #{cond}; " + (incr or (ivar + switch +pvar
         when  1 then '++'
         when -1 then '--'
         else (if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar)
+      ))
     body    = Closure.wrap(body, yes) if hasCode
     varPart = idt + namePart + ';\n' if namePart
     defPart += @pluckDirectCall o, body, name, index unless @pattern
