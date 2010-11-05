@@ -11,7 +11,7 @@ path      = require 'path'
 {Lexer}   = require './lexer'
 {parser}  = require './parser'
 
-# TODO: Remove registerExtension when fully deprecated
+# TODO: Remove registerExtension when fully deprecated.
 if require.extensions
   require.extensions['.coffee'] = (module, filename) ->
     content = compile fs.readFileSync filename, 'utf8'
@@ -51,13 +51,13 @@ exports.run = (code, options) ->
   root = module
   while root.parent
     root = root.parent
-  # Set the filename
+  # Set the filename.
   root.filename = fs.realpathSync options.fileName or '.'
-  # Clear the module cache
+  # Clear the module cache.
   root.moduleCache = {} if root.moduleCache
-  # Compile
+  # Compile.
   if path.extname(root.filename) isnt '.coffee' or require.extensions
-    root._compile exports.compile(code, options), root.filename
+    root._compile compile(code, options), root.filename
   else
     root._compile code, root.filename
 
@@ -66,7 +66,7 @@ exports.run = (code, options) ->
 exports.eval = (code, options) ->
   __filename = options.fileName
   __dirname  = path.dirname __filename
-  eval exports.compile(code, options)
+  eval compile code, options
 
 # Instantiate a Lexer for our use here.
 lexer = new Lexer

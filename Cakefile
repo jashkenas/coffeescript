@@ -1,7 +1,7 @@
 fs            = require 'fs'
+path          = require 'path'
 CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
-path          = require 'path'
 
 # ANSI Terminal Colors.
 red   = '\033[0;31m'
@@ -97,12 +97,10 @@ task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
 runTests = (CoffeeScript) ->
   startTime = Date.now()
   passedTests = failedTests = 0
-  wrap = (name, func) ->
+  for all name, func of require 'assert'
     global[name] = ->
       passedTests += 1
       func arguments...
-  for all name, func of require 'assert'
-    wrap name, func
   global.eq = global.strictEqual
   global.CoffeeScript = CoffeeScript
   process.on 'exit', ->

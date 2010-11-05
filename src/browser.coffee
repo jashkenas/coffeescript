@@ -35,6 +35,8 @@ runScripts = ->
       else
         CoffeeScript.run script.innerHTML
   null
+
+# Listen for window load, both in browsers and in IE.
 if window.addEventListener
   addEventListener 'DOMContentLoaded', runScripts, no
 else
