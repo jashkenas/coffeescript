@@ -71,10 +71,6 @@ exports.Base = class Base
       src = "#{ tmp = o.scope.freeVariable name } = #{src}"
     [src, tmp]
 
-  # Convenience method to grab the current indentation level, plus tabbing in.
-  idt: (tabs) ->
-    (@tab or '') + Array((tabs or 0) + 1).join TAB
-
   # Construct a node that returns the current node's result.
   # Note that this is overridden for smarter behavior for
   # many statement nodes (eg If, For)...
@@ -506,7 +502,7 @@ exports.Call = class Call extends Base
         fun = ref = base.compile o, LEVEL_ACCESS
         fun += name.compile o if name
       return "#{fun}.apply(#{ref}, #{splatArgs})"
-    idt = @idt 1
+    idt = @tab + TAB
     """
     (function(func, args, ctor) {
     #{idt}ctor.prototype = func.prototype;
@@ -577,7 +573,7 @@ exports.Obj = class Obj extends Base
     for prop, i in @properties when (prop.variable or prop).base instanceof Parens
       rest = @properties.splice i
       break
-    o.indent    = idt = @idt 1
+    idt         = o.indent += TAB
     nonComments = (prop for prop in @properties when prop not instanceof Comment)
     lastNoncom  = last nonComments
     props = for prop, i in @properties
@@ -635,7 +631,7 @@ exports.Arr = class Arr extends Base
     @objects = objs or []
 
   compileNode: (o) ->
-    o.indent = @idt 1
+    o.indent += TAB
     return code if code = Splat.compileSplattedArray o, @objects
     objects = []
     for obj, i in @objects
@@ -876,7 +872,7 @@ exports.Code = class Code extends Base
   compileNode: (o) ->
     sharedScope = del o, 'sharedScope'
     o.scope     = scope = sharedScope or new Scope o.scope, @body, this
-    o.indent    = @idt 1
+    o.indent    += TAB
     delete o.bare
     delete o.globals
     vars   = []
@@ -904,10 +900,9 @@ exports.Code = class Code extends Base
     @body.makeReturn() unless wasEmpty or @noReturn
     scope.parameter vars[i] = v.compile o for v, i in vars unless splats
     comm     = if @comment then @comment.compile(o) + '\n' else ''
-    o.indent = @idt 2 if @className
-    idt      = @idt 1
-    code     = if @body.isEmpty() then ''
-    else "\n#{ @body.compileWithDeclarations o }\n"
+    idt      = o.indent
+    o.indent += TAB if @className
+    code     = if @body.isEmpty() then '' else "\n#{ @body.compileWithDeclarations o }\n"
     if @className
       open  = "(function() {\n#{comm}#{idt}function #{@className}("
       close = "#{ code and idt }}\n#{idt}return #{@className};\n#{@tab}})()"
@@ -1021,7 +1016,7 @@ exports.While = class While extends Base
   # *while* can be used as a part of a larger expression -- while loops may
   # return an array containing the computed result of each iteration.
   compileNode: (o) ->
-    o.indent = @idt 1
+    o.indent += TAB
     set      = ''
     {body}   = this
     if body.isEmpty()
@@ -1183,7 +1178,7 @@ exports.Try = class Try extends Base
   # Compilation is more or less as you would expect -- the *finally* clause
   # is optional, the *catch* is not.
   compileNode: (o) ->
-    o.indent  = @idt 1
+    o.indent  += TAB
     errorPart = if @error then " (#{ @error.compile o }) " else ' '
     catchPart = if @recovery
       " catch#{errorPart}{\n#{ @recovery.compile o, LEVEL_TOP }\n#{@tab}}"
@@ -1311,7 +1306,7 @@ exports.For = class For extends Base
     index   = @index?.compile o
     ivar    = if not index then scope.freeVariable 'i' else index
     varPart = guardPart = defPart = retPart = ''
-    idt     = @idt 1
+    idt     = o.indent + TAB
     unless hasCode
       scope.find(name,  yes) if name
       scope.find(index, yes) if index
@@ -1422,8 +1417,8 @@ exports.Switch = class Switch extends Base
     this
 
   compileNode: (o) ->
-    idt1 = @idt 1
-    idt2 = o.indent = @idt 2
+    idt1 = o.indent + TAB
+    idt2 = o.indent = idt1 + TAB
     code = @tab + "switch (#{ @subject?.compile(o, LEVEL_PAREN) or false }) {\n"
     for [conditions, block], i in @cases
       for cond in flatten [conditions]
@@ -1488,7 +1483,7 @@ exports.If = class If extends Base
   compileStatement: (o) ->
     child    = del o, 'chainChild'
     cond     = @condition.compile o, LEVEL_PAREN
-    o.indent = @idt 1
+    o.indent += TAB
     body     = @ensureExpressions(@body).compile o
     body     = "\n#{body}\n#{@tab}" if body
     ifPart   = "if (#{cond}) {#{body}}"
