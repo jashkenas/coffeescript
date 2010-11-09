@@ -126,7 +126,7 @@ compileStdio = ->
   stdin.on 'data', (buffer) ->
     code += buffer.toString() if buffer
   stdin.on 'end', ->
-    compileScript 'stdio', code
+    compileScript null, code
 
 # Watch a source CoffeeScript file using `fs.watchFile`, recompiling it every
 # time the file is updated. May be used in combination with other options,
