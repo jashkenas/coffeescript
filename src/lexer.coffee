@@ -543,9 +543,12 @@ IDENTIFIER = /// ^
   ( [^\n\S]* : (?!:) )?  # Is this a property name?
 ///
 
-NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
+NUMBER     = ///
+  ^ 0x[\da-f]+ |                              # hex
+  ^ (?: \d+(\.\d+)? | \.\d+ ) (?:e[+-]?\d+)?  # decimal
+///i
 
-HEREDOC    = /^("""|''')([\s\S]*?)(?:\n[ \t]*)?\1/
+HEREDOC    = /// ^ ("""|''') ([\s\S]*?) (?:\n[^\n\S]*)? \1 ///
 
 OPERATOR   = /// ^ (
   ?: [-=]>             # function
@@ -557,13 +560,13 @@ OPERATOR   = /// ^ (
    | \.{3}             # splat
 ) ///
 
-WHITESPACE = /^[ \t]+/
+WHITESPACE = /^[^\n\S]+/
 
-COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
+COMMENT    = /^###([^#][\s\S]*?)(?:###[^\n\S]*\n|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
 
 CODE       = /^[-=]>/
 
-MULTI_DENT = /^(?:\n[ \t]*)+/
+MULTI_DENT = /^(?:\n[^\n\S]*)+/
 
 SIMPLESTR  = /^'[^\\']*(?:\\.[^\\']*)*'/
 
@@ -591,9 +594,9 @@ HEREGEX_OMIT = /\s+(?:#.*)?/g
 # Token cleaning regexes.
 MULTILINER      = /\n/g
 
-HEREDOC_INDENT  = /\n+([ \t]*)/g
+HEREDOC_INDENT  = /\n+([^\n\S]*)/g
 
-ASSIGNED        = /^\s*@?[$A-Za-z_][$\w]*[ \t]*?[:=][^:=>]/
+ASSIGNED        = /^\s*@?[$A-Za-z_][$\w]*[^\n\S]*?[:=][^:=>]/
 
 LINE_CONTINUER  = /// ^ \s* (?: , | \??\.(?!\.) | :: ) ///
 
