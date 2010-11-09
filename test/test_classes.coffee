@@ -78,19 +78,19 @@ Base::['func-func'] = (string) ->
   "dynamic-#{string}"
 
 FirstChild = ->
-FirstChild extends Base
-FirstChild::func = (string) ->
-  super('one/') + string
-
 SecondChild = ->
-SecondChild extends FirstChild
-SecondChild::func = (string) ->
-  super('two/') + string
-
 ThirdChild = ->
   @array = [1, 2, 3]
   this
-ThirdChild extends SecondChild
+
+ThirdChild extends SecondChild extends FirstChild extends Base
+
+FirstChild::func = (string) ->
+  super('one/') + string
+
+SecondChild::func = (string) ->
+  super('two/') + string
+
 ThirdChild::func = (string) ->
   super('three/') + string
 

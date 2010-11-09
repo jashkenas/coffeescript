@@ -100,7 +100,6 @@ grammar =
     o 'While'
     o 'For'
     o 'Switch'
-    o 'Extends'
     o 'Class'
   ]
 
@@ -302,12 +301,6 @@ grammar =
     o 'ClassAssign',                            -> [$1]
     o 'ClassBody TERMINATOR ClassAssign',       -> $1.concat $3
     o '{ ClassBody }',                          -> $2
-  ]
-
-  # Extending an object by setting its prototype chain to reference a parent
-  # object.
-  Extends: [
-    o 'SimpleAssignable EXTENDS Value',         -> new Extends $1, $3
   ]
 
   # Ordinary function invocation, or a chained series of calls.
@@ -545,6 +538,7 @@ grammar =
        Expression',                             -> new Assign $1, $3, $2
     o 'SimpleAssignable COMPOUND_ASSIGN
        INDENT Expression OUTDENT',              -> new Assign $1, $4, $2
+    o 'SimpleAssignable EXTENDS Expression',    -> new Extends $1, $3
   ]
 
 
@@ -572,10 +566,10 @@ operators = [
   ['left',      'COMPARE']
   ['left',      'LOGIC']
   ['nonassoc',  'INDENT', 'OUTDENT']
-  ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN']
+  ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'EXTENDS']
   ['right',     'WHEN', 'LEADING_WHEN', 'FORIN', 'FOROF', 'FROM', 'TO', 'BY',
                 'THROW', 'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP',
-                'SUPER', 'CLASS', 'EXTENDS']
+                'SUPER', 'CLASS']
   ['right',     'POST_IF', 'POST_UNLESS']
 ]
 
