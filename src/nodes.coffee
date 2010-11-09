@@ -1016,7 +1016,7 @@ exports.While = class While extends Base
       body = ''
     else
       if o.level > LEVEL_TOP or @returns
-        rvar = o.scope.freeVariable 'result'
+        rvar = o.scope.freeVariable 'results'
         set  = "#{@tab}#{rvar} = [];\n"
         body = Push.wrap rvar, body if body
       body = Expressions.wrap [new If @guard, body] if @guard
@@ -1351,7 +1351,7 @@ exports.For = class For extends Base
     code = guardPart + varPart
     unless body.isEmpty()
       if o.level > LEVEL_TOP or @returns
-        rvar     = scope.freeVariable 'result'
+        rvar     = scope.freeVariable 'results'
         defPart += @tab + rvar + ' = [];\n'
         retPart  = @compileReturnValue rvar, o
         body     = Push.wrap rvar, body
