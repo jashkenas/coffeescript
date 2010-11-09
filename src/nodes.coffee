@@ -35,7 +35,7 @@ exports.Base = class Base
   # already been asked to return the result (because statements know how to
   # return results).
   compile: (o, lvl) ->
-    o        = if o then extend {}, o else {}
+    o        = extend {}, o
     o.level  = lvl if lvl?
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
@@ -160,8 +160,6 @@ exports.Expressions = class Expressions extends Base
 
   children: ['expressions']
 
-  isStatement: YES
-
   constructor: (nodes) ->
     @expressions = compact flatten nodes or []
 
@@ -188,6 +186,11 @@ exports.Expressions = class Expressions extends Base
   isEmpty: ->
     not @expressions.length
 
+  isStatement: (o) ->
+    for exp in @expressions when exp.isPureStatement() or exp.isStatement o
+      return yes
+    no
+
   # An Expressions node does not return its entire body, rather it
   # ensures that the final expression is returned.
   makeReturn: ->
@@ -200,9 +203,25 @@ exports.Expressions = class Expressions extends Base
   compile: (o = {}, level) ->
     if o.scope then super o, level else @compileRoot o
 
+  # Compile all expressions within the **Expressions** body. If we need to
+  # return the result, and it's an expression, simply return it. If it's a
+  # statement, ask the statement to do so.
   compileNode: (o) ->
-    @tab = o.indent
-    (@compileExpression node, o for node in @expressions).join '\n'
+    @tab  = o.indent
+    top   = o.level is LEVEL_TOP
+    codes = []
+    for node in @expressions
+      node = node.unwrapAll()
+      node = (node.unfoldSoak(o) or node)
+      if top
+        node.front = true
+        code = node.compile o
+        codes.push if node.isStatement o then code else @tab + code + ';'
+      else
+        codes.push node.compile o, LEVEL_LIST
+    return codes.join '\n' if top
+    code = codes.join(', ') or 'void 0'
+    if codes.length > 1 and o.level >= LEVEL_LIST then "(#{code})" else code
 
   # If we happen to be the top-level **Expressions**, wrap everything in
   # a safety closure, unless requested not to.
@@ -219,6 +238,7 @@ exports.Expressions = class Expressions extends Base
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
   compileWithDeclarations: (o) ->
+    o.level = LEVEL_TOP
     code    = @compileNode o
     {scope} = o
     if scope.hasAssignments this
@@ -226,17 +246,6 @@ exports.Expressions = class Expressions extends Base
     if not o.globals and o.scope.hasDeclarations this
       code = "#{@tab}var #{ scope.compiledDeclarations() };\n#{code}"
     code
-
-  # Compiles a single expression within the expressions body. If we need to
-  # return the result, and it's an expression, simply return it. If it's a
-  # statement, ask the statement to do so.
-  compileExpression: (node, o) ->
-    node = node.unwrapAll()
-    node = node.unfoldSoak(o) or node
-    node.front = yes
-    o.level = LEVEL_TOP
-    code    = node.compile o
-    if node.isStatement o then code else @tab + code + ';'
 
   # Wrap up the given nodes as an **Expressions**, unless it already happens
   # to be one.
@@ -254,7 +263,7 @@ exports.Literal = class Literal extends Base
   constructor: (@value) ->
 
   makeReturn: ->
-    if @isStatement() then this else super()
+    if @isPureStatement() then this else new Return this
 
   # Break and continue must be treated as pure statements -- they lose their
   # meaning when wrapped in a closure.
@@ -1467,12 +1476,9 @@ exports.If = class If extends Base
     if @isStatement o then @compileStatement o else @compileExpression o
 
   makeReturn: ->
-    if @isStatement()
-      @body     and= @ensureExpressions @body.makeReturn()
-      @elseBody and= @ensureExpressions @elseBody.makeReturn()
-      this
-    else
-      new Return this
+    @body     and= new Expressions [@body.makeReturn()]
+    @elseBody and= new Expressions [@elseBody.makeReturn()]
+    this
 
   ensureExpressions: (node) ->
     if node instanceof Expressions then node else new Expressions [node]
@@ -1489,7 +1495,9 @@ exports.If = class If extends Base
     ifPart   = @tab + ifPart unless child
     return ifPart unless @elseBody
     ifPart + ' else ' + if @isChain
-       @elseBodyNode().compile merge o, indent: @tab, chainChild: true
+      o.indent = @tab
+      o.chainChild = yes
+      @elseBody.unwrap().compile o, LEVEL_TOP
     else
       "{\n#{ @elseBody.compile o, LEVEL_TOP }\n#{@tab}}"
 
