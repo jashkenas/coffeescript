@@ -15,6 +15,10 @@ YES  = -> yes
 NO   = -> no
 THIS = -> this
 
+# Default implementations of common functions.
+RETURN = -> @returns = yes; this
+NEGATE = -> @negated = not @negated; this
+
 #### Base
 
 # The **Base** is the abstract base class for all nodes in the syntax tree.
@@ -571,9 +575,12 @@ exports.Obj = class Obj extends Base
     @objects = @properties = props or []
 
   compileNode: (o) ->
-    for prop, i in @properties when (prop.variable or prop).base instanceof Parens
-      rest = @properties.splice i
-      break
+    props = @properties
+    return (if @front then '({})' else '{}') unless props.length
+    for prop, i in props
+      if prop instanceof Splat or (prop.variable or prop).base instanceof Parens
+        rest = @properties.splice i
+        break
     idt         = o.indent += TAB
     nonComments = (prop for prop in @properties when prop not instanceof Comment)
     lastNoncom  = last nonComments
@@ -632,6 +639,7 @@ exports.Arr = class Arr extends Base
     @objects = objs or []
 
   compileNode: (o) ->
+    return '[]' unless @objects.length
     o.indent += TAB
     return code if code = Splat.compileSplattedArray o, @objects
     code = (obj.compile o, LEVEL_LIST for obj in @objects).join ', '
@@ -652,14 +660,11 @@ exports.Class = class Class extends Base
   children: ['variable', 'parent', 'properties']
 
   isStatement: YES
+  makeReturn:  RETURN
 
   # Initialize a **Class** with its name, an optional superclass, and a
   # list of prototype property assignments.
   constructor: (@variable, @parent, @properties = []) ->
-
-  makeReturn: ->
-    @returns = true
-    this
 
   # Instead of generating the JavaScript string directly, we build up the
   # equivalent syntax tree and compile that, in pieces. You can see the
@@ -983,16 +988,13 @@ exports.While = class While extends Base
   children: ['condition', 'guard', 'body']
 
   isStatement: YES
+  makeReturn:  RETURN
 
   constructor: (condition, options) ->
     @condition = if options?.invert then condition.invert() else condition
     @guard     = options?.guard
 
   addBody: (@body) ->
-    this
-
-  makeReturn: ->
-    @returns = true
     this
 
   containsPureStatement: ->
@@ -1119,11 +1121,9 @@ exports.In = class In extends Base
 
   children: ['object', 'array']
 
-  constructor: (@object, @array) ->
+  invert: NEGATE
 
-  invert: ->
-    @negated = not @negated
-    this
+  constructor: (@object, @array) ->
 
   compileNode: (o) ->
     if @array instanceof Value and @array.isArray()
@@ -1207,11 +1207,9 @@ exports.Existence = class Existence extends Base
 
   children: ['expression']
 
-  constructor: (@expression) ->
+  invert: NEGATE
 
-  invert: ->
-    @negated = not @negated
-    this
+  constructor: (@expression) ->
 
   compileNode: (o) ->
     code = @expression.compile o
@@ -1265,6 +1263,7 @@ exports.For = class For extends Base
   children: ['body', 'source', 'guard', 'step', 'from', 'to']
 
   isStatement: YES
+  makeReturn:  RETURN
 
   constructor: (body, head) ->
     if head.index instanceof Value
@@ -1273,10 +1272,6 @@ exports.For = class For extends Base
     @body    = Expressions.wrap [body]
     @pattern = @name instanceof Value
     @returns = false
-
-  makeReturn: ->
-    @returns = true
-    this
 
   containsPureStatement: While::containsPureStatement
 
