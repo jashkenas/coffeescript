@@ -400,15 +400,16 @@ exports.Value = class Value extends Base
 # at the same position.
 exports.Comment = class Comment extends Base
 
-  isPureStatement: YES
-  isStatement:     YES
-
   constructor: (@comment) ->
 
-  makeReturn: THIS
+  isPureStatement: YES
+  isStatement:     YES
+  makeReturn:      THIS
 
-  compileNode: (o) ->
-    @tab + '/*' + multident(@comment, @tab) + '*/'
+  compileNode: (o, level) ->
+    code = '/*' + multident(@comment, @tab) + '*/'
+    code = o.indent + code if (level ? o.level) is LEVEL_TOP
+    code
 
 #### Call
 
@@ -588,7 +589,7 @@ exports.Obj = class Obj extends Base
         prop = new Assign prop.properties[0].name, prop, 'object'
       else if prop not instanceof Assign and prop not instanceof Comment
         prop = new Assign prop, prop, 'object'
-      indent + prop.compile(o) + join
+      indent + prop.compile(o, LEVEL_TOP) + join
     props = props.join ''
     obj   = "{#{ props and '\n' + props + '\n' + @tab }}"
     return @compileDynamic o, obj, rest if rest
@@ -598,7 +599,7 @@ exports.Obj = class Obj extends Base
     code = "#{ oref = o.scope.freeVariable 'obj' } = #{code}, "
     for prop, i in props
       if prop instanceof Comment
-        code += prop.compile(o) + ' '
+        code += prop.compile(o, LEVEL_LIST) + ' '
         continue
       if prop instanceof Assign
         acc = prop.variable.base
@@ -633,21 +634,11 @@ exports.Arr = class Arr extends Base
   compileNode: (o) ->
     o.indent += TAB
     return code if code = Splat.compileSplattedArray o, @objects
-    objects = []
-    for obj, i in @objects
-      code = obj.compile o, LEVEL_LIST
-      objects.push (if obj instanceof Comment
-        "\n#{code}\n#{o.indent}"
-      else if i is @objects.length - 1
-        code
-      else
-        code + ', '
-      )
-    objects = objects.join ''
-    if 0 < objects.indexOf '\n'
-      "[\n#{o.indent}#{objects}\n#{@tab}]"
+    code = (obj.compile o, LEVEL_LIST for obj in @objects).join ', '
+    if code.indexOf('\n') >= 0
+      "[\n#{o.indent}#{code}\n#{@tab}]"
     else
-      "[#{objects}]"
+      "[#{code}]"
 
   assigns: (name) ->
     for obj in @objects when obj.assigns name then return yes

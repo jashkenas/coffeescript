@@ -82,6 +82,7 @@ grammar =
     o 'BREAK',                                  -> new Literal $1
     o 'CONTINUE',                               -> new Literal $1
     o 'DEBUGGER',                               -> new Literal $1
+    o 'Comment'
   ]
 
   # All the different types of expressions in our language. The basic unit of
@@ -101,7 +102,6 @@ grammar =
     o 'Switch'
     o 'Extends'
     o 'Class'
-    o 'Comment'
   ]
 
   # An indented block of expressions. Note that the [Rewriter](rewriter.html)
