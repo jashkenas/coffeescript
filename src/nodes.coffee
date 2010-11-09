@@ -1043,6 +1043,10 @@ exports.Op = class Op extends Base
   INVERSIONS:
     '!==': '==='
     '===': '!=='
+    '>':   '<='
+    '<=':  '>'
+    '<':   '>='
+    '>=':  '<'
 
   children: ['first', 'second']
 
@@ -1071,7 +1075,7 @@ exports.Op = class Op extends Base
     else if @second
       new Parens(this).invert()
     else
-      super()
+      new Op '!', this
 
   unfoldSoak: (o) ->
     @operator in ['++', '--', 'delete'] and If.unfoldSoak o, this, 'first'
