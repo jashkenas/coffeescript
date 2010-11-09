@@ -1216,7 +1216,7 @@ exports.Existence = class Existence extends Base
   constructor: (@expression) ->
 
   compileNode: (o) ->
-    code = @expression.compile o
+    code = @expression.compile o, LEVEL_OP
     code = if IDENTIFIER.test(code) and not o.scope.check code
       if @negated
         "typeof #{code} == \"undefined\" || #{code} === null"
