@@ -20,8 +20,7 @@ class exports.Rewriter
   rewrite: (@tokens) ->
     @removeLeadingNewlines()
     @removeMidExpressionNewlines()
-    @closeOpenCalls()
-    @closeOpenIndexes()
+    @closeOpenPairs()
     @addImplicitIndentation()
     @tagPostfixConditionals()
     @addImplicitBraces()
@@ -68,27 +67,19 @@ class exports.Rewriter
       tokens.splice i, 1
       0
 
-  # The lexer has tagged the opening parenthesis of a method call. Match it with
-  # its paired close. We have the mis-nested outdent case included here for
-  # calls that close on the same line, just before their outdent.
-  closeOpenCalls: ->
-    condition = (token, i) ->
-      token[0] in [')', 'CALL_END'] or
-      token[0] is 'OUTDENT' and @tag(i - 1) is ')'
-    action = (token, i) ->
-      @tokens[if token[0] is 'OUTDENT' then i - 1 else i][0] = 'CALL_END'
-    @scanTokens (token, i) ->
-      @detectEnd i + 1, condition, action if token[0] is 'CALL_START'
-      1
-
-  # The lexer has tagged the opening parenthesis of an indexing operation call.
-  # Match it with its paired close.
-  closeOpenIndexes: ->
-    condition = (token, i) -> token[0] in [']', 'INDEX_END']
-    action    = (token, i) -> token[0] = 'INDEX_END'
-    @scanTokens (token, i) ->
-      @detectEnd i + 1, condition, action if token[0] is 'INDEX_START'
-      1
+  # The lexer has tagged the opening parenthesis of a method call, or the open
+  # bracket of an indexing operation. Match it with its paired close.
+  closeOpenPairs: ->
+    stack = []
+    for token in @tokens
+      switch token[0]
+        when 'CALL_START', 'INDEX_START', '(', '['
+          stack.push token[0]
+        when 'CALL_END', 'INDEX_END', ')', ']'
+          switch stack.pop()
+            when 'CALL_START'   then token[0] = 'CALL_END'
+            when 'INDEX_START'  then token[0] = 'INDEX_END'
+    this
 
   # Object literals may be written with implicit braces, for simple cases.
   # Insert the missing braces here, so that the parser doesn't have to.
