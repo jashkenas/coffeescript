@@ -1214,12 +1214,20 @@ exports.Existence = class Existence extends Base
 
   constructor: (@expression) ->
 
+  invert: ->
+    @negated = not @negated
+    this
+
   compileNode: (o) ->
     code = @expression.compile o
     code = if IDENTIFIER.test(code) and not o.scope.check code
-      "typeof #{code} !== \"undefined\" && #{code} !== null"
+      if @negated
+        "typeof #{code} == \"undefined\" || #{code} === null"
+      else
+        "typeof #{code} != \"undefined\" && #{code} !== null"
     else
-      "#{code} != null"
+      sym = if @negated then '==' else '!='
+      "#{code} #{sym} null"
     if o.level <= LEVEL_COND then code else "(#{code})"
 
 #### Parens
