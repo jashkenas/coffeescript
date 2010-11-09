@@ -1,1 +1,1 @@
-$('.account').css class: 'active'
+$('.account').attr class: 'active'
