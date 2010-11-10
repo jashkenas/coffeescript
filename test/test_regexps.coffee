@@ -37,9 +37,13 @@ eq '\\\\#{}\\\\\\\"', ///
 eq ///  /// + '', '/(?:)/'
 
 
-#584: Unescaped slashes in character classes.
-ok /:\/[/]goog/.test 'http://google.com'
-
-
 #764: Should be indexable.
 eq /0/['source'], ///#{0}///['source']
+
+
+# If not preceded by whitespace, should be stricter.
+i = 5
+eq (1000)/200/i, 1
+
+#584: Unescaped slashes in character classes.
+ok /:\/[/]goog/.test 'http://google.com'

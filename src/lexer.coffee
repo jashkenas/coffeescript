@@ -195,7 +195,8 @@ exports.Lexer = class Lexer
   regexToken: ->
     return 0 if @chunk.charAt(0) isnt '/'
     return @heregexToken match if match = HEREGEX.exec @chunk
-    return 0 if @tag() in NOT_REGEX
+    prev = last @tokens
+    return 0 if prev and (prev[0] in (if prev.spaced then NOT_REGEX else NOT_SPACED_REGEX))
     return 0 unless match = REGEX.exec @chunk
     [regex] = match
     @token 'REGEX', if regex is '//' then '/(?:)/' else regex
@@ -643,6 +644,10 @@ BOOL = ['TRUE', 'FALSE', 'NULL', 'UNDEFINED']
 #
 # Our list is shorter, due to sans-parentheses method calls.
 NOT_REGEX = ['NUMBER', 'REGEX', 'BOOL', '++', '--', ']']
+
+# If the previous token is not spaced, there are more preceding tokens that
+# force a division parse:
+NOT_SPACED_REGEX = NOT_REGEX.concat ')', '}', 'THIS'
 
 # Tokens which could legitimately be invoked or indexed. A opening
 # parentheses or bracket following these tokens will be recorded as the start
