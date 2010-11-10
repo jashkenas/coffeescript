@@ -45,5 +45,7 @@ eq /0/['source'], ///#{0}///['source']
 i = 5
 eq (1000)/200/i, 1
 
+eq i/i/i, 0.2
+
 #584: Unescaped slashes in character classes.
 ok /:\/[/]goog/.test 'http://google.com'

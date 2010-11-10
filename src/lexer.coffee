@@ -647,7 +647,7 @@ NOT_REGEX = ['NUMBER', 'REGEX', 'BOOL', '++', '--', ']']
 
 # If the previous token is not spaced, there are more preceding tokens that
 # force a division parse:
-NOT_SPACED_REGEX = NOT_REGEX.concat ')', '}', 'THIS'
+NOT_SPACED_REGEX = NOT_REGEX.concat ')', '}', 'THIS', 'IDENTIFIER', 'STRING'
 
 # Tokens which could legitimately be invoked or indexed. A opening
 # parentheses or bracket following these tokens will be recorded as the start
