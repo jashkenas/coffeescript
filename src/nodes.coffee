@@ -579,13 +579,13 @@ exports.Obj = class Obj extends Base
     return (if @front then '({})' else '{}') unless props.length
     for prop, i in props
       if prop instanceof Splat or (prop.variable or prop).base instanceof Parens
-        rest = @properties.splice i
+        rest = props.splice i, 1/0
         break
     idt         = o.indent += TAB
     nonComments = (prop for prop in @properties when prop not instanceof Comment)
     lastNoncom  = last nonComments
-    props = for prop, i in @properties
-      join = if i is @properties.length - 1
+    props = for prop, i in props
+      join = if i is props.length - 1
         ''
       else if prop is lastNoncom or prop instanceof Comment
         '\n'
