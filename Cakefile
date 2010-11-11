@@ -8,6 +8,17 @@ red   = '\033[0;31m'
 green = '\033[0;32m'
 reset = '\033[0m'
 
+# Built file header.
+header = """
+  /**
+   * CoffeeScript Compiler v#{CoffeeScript.VERSION}
+   * http://coffeescript.org
+   *
+   * Copyright 2010, Jeremy Ashkenas
+   * Released under the MIT License
+   */
+"""
+
 # Run a CoffeeScript through our node/coffee interpreter.
 run = (args) ->
   proc =         spawn 'bin/coffee', args
@@ -66,8 +77,25 @@ task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter'
 
 
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
-  exec 'rake browser', (err) ->
-    throw err if err
+  code = ''
+  for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'nodes', 'coffee-script', 'browser']
+    code += """
+      require['./#{name}'] = new function() {
+        var exports = this;
+        #{fs.readFileSync "lib/#{name}.js"}
+      };
+    """
+  {parser, uglify} = require 'uglify-js'
+  ast = parser.parse """
+    this.CoffeeScript = function() {
+      function require(path){ return require[path]; }
+      #{code}
+      return require['./coffee-script']
+    }()
+  """
+  code = uglify.gen_code uglify.ast_squeeze uglify.ast_mangle ast, extra: yes
+  fs.writeFileSync 'extras/coffee-script.js', header + '\n' + code
+  invoke 'test:browser'
 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
