@@ -60,6 +60,7 @@ class OneClass
   (name) -> @name = name
 
 class TwoClass extends OneClass
+delete TwoClass.new
 
 Function.prototype.new = -> new this arguments...
 
@@ -211,28 +212,28 @@ c.method 1, 2, 3, 4
 ok c.args.join(' ') is '1 2 3 4'
 
 
-# Test `extended` callback.
-class Base
-  @extended = (subclass) ->
-    for key, value of @
-      subclass[key] = value
-
-class Element extends Base
-  @fromHTML = (html) ->
-    node = "..."
-    new @(node)
-
-  (node) ->
-    @node = node
-
-ok Element.extended is Base.extended
-ok Element.__super__ is Base.prototype
-
-class MyElement extends Element
-
-ok MyElement.extended is Base.extended
-ok MyElement.fromHTML is Element.fromHTML
-ok MyElement.__super__ is Element.prototype
+# # Test `extended` callback.
+# class Base
+#   @extended = (subclass) ->
+#     for key, value of @
+#       subclass[key] = value
+#
+# class Element extends Base
+#   @fromHTML = (html) ->
+#     node = "..."
+#     new @(node)
+#
+#   (node) ->
+#     @node = node
+#
+# ok Element.extended is Base.extended
+# ok Element.__super__ is Base.prototype
+#
+# class MyElement extends Element
+#
+# ok MyElement.extended is Base.extended
+# ok MyElement.fromHTML is Element.fromHTML
+# ok MyElement.__super__ is Element.prototype
 
 
 # Test classes wrapped in decorators.
@@ -308,13 +309,12 @@ eq a.c, undefined
 
 # Light metaprogramming.
 class Base
-  @extended = (child) ->
-    child.attr = (name) ->
-      child::[name] = (val) ->
-        if arguments.length > 0
-          @["_#{name}"] = val
-        else
-          @["_#{name}"]
+  @attr = (name) ->
+    @::[name] = (val) ->
+      if arguments.length > 0
+        @["_#{name}"] = val
+      else
+        @["_#{name}"]
 
 class Robot extends Base
   @attr 'power'

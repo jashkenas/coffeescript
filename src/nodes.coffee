@@ -526,6 +526,7 @@ exports.Extends = class Extends extends Base
 
   # Hooks one constructor into another's prototype chain.
   compile: (o) ->
+    utility 'hasProp'
     new Call(new Value(new Literal utility 'extends'), [@child, @parent]).compile o
 
 #### Accessor
@@ -1572,7 +1573,7 @@ UTILITIES =
       function ctor() { this.constructor = child; }
       ctor.prototype = parent.prototype;
       child.prototype = new ctor;
-      if (typeof parent.extended === "function") parent.extended(child);
+      for (var key in parent) if (__hasProp.call(parent, key)) child[key] = parent[key];
       child.__super__ = parent.prototype;
       return child;
     }
