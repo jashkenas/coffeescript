@@ -683,8 +683,9 @@ exports.Class = class Class extends Base
     for node, i in exps = @body.expressions
       if node instanceof Value and node.isObject()
         assigns = for assign in node.base.properties
-          assign.variable = new Value(lname, [new Accessor(assign.variable.base, 'proto')])
-          delete assign.context
+          if assign instanceof Assign
+            assign.variable = new Value(lname, [new Accessor(assign.variable.base, 'proto')])
+            delete assign.context
           assign
         exps[i] = assigns
       else if node instanceof Code

@@ -3,7 +3,7 @@ class Base
   func: (string) ->
     "zero/#{string}"
 
-  @static: (string) ->
+  @static = (string) ->
     "static/#{string}"
 
 class FirstChild extends Base
@@ -55,7 +55,7 @@ ok (new SubClass).prop is 'top-super-sub'
 
 
 class OneClass
-  @new: 'new'
+  @new = 'new'
   function: 'function'
   constructor: (name) -> @name = name
 
@@ -121,7 +121,7 @@ ok (new SubClass).prop is 'top-super-sub'
 
 # '@' referring to the current instance, and not being coerced into a call.
 class ClassName
-  amI: ->
+  amI = ->
     @ instanceof ClassName
 
 obj = new ClassName
@@ -130,10 +130,10 @@ ok obj.amI()
 
 # super() calls in constructors of classes that are defined as object properties.
 class Hive
-  constructor: (name) -> @name = name
+  (name) -> @name = name
 
 class Hive.Bee extends Hive
-  constructor: (name) -> super
+  (name) -> super
 
 maya = new Hive.Bee 'Maya'
 ok maya.name is 'Maya'
@@ -153,13 +153,13 @@ ok instance.name() is 'class'
 # ... or statically, to the class.
 class Dog
 
-  constructor: (name) ->
+  (name) ->
     @name = name
 
   bark: =>
     "#{@name} woofs!"
 
-  @static: =>
+  @static = =>
     new this('Dog')
 
 spark = new Dog('Spark')
@@ -187,7 +187,7 @@ eq (func() for func in m.generate()).join(' '), '10 10 10'
 
 # Testing a contructor called with varargs.
 class Connection
-  constructor: (one, two, three) ->
+  (one, two, three) ->
     [@one, @two, @three] = [one, two, three]
 
   out: ->
@@ -213,16 +213,16 @@ ok c.args.join(' ') is '1 2 3 4'
 
 # Test `extended` callback.
 class Base
-  @extended: (subclass) ->
+  @extended = (subclass) ->
     for key, value of @
       subclass[key] = value
 
 class Element extends Base
-  @fromHTML: (html) ->
+  @fromHTML = (html) ->
     node = "..."
     new @(node)
 
-  constructor: (node) ->
+  (node) ->
     @node = node
 
 ok Element.extended is Base.extended
@@ -258,7 +258,7 @@ ok instance.method() is 'value'
 
 # Implicit objects as static properties.
 class Static
-  @static:
+  @static =
     one: 1
     two: 2
 
@@ -280,10 +280,12 @@ classMaker = ->
     @value = inner
 
 class One
-  constructor: classMaker()
+  ctor = classMaker()
+  -> return new ctor
 
 class Two
-  constructor: classMaker()
+  ctor = classMaker()
+  -> return new ctor
 
 ok (new One).value is 1
 ok (new Two).value is 2
