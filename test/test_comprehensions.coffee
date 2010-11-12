@@ -146,7 +146,7 @@ ok expr(2, 4, 8).join(' ') is '4 16 64'
 
 # Fast object comprehensions over all properties, including prototypal ones.
 class Cat
-  constructor: -> @name = 'Whiskers'
+  -> @name = 'Whiskers'
   breed: 'tabby'
   hair:  'cream'
 
