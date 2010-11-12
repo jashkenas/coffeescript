@@ -11,13 +11,13 @@
 exports.Scope = class Scope
 
   # The top-level **Scope** object.
-  @root: null
+  @root = null
 
   # Initialize a scope with its parent, for lookups up the chain,
   # as well as a reference to the **Expressions** node is belongs to, which is
   # where it should declare its variables, and a reference to the function that
   # it wraps.
-  constructor: (@parent, @expressions, @method) ->
+  (@parent, @expressions, @method) ->
     @variables = [{name: 'arguments', type: 'arguments'}]
     @positions = {}
     if @parent

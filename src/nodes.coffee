@@ -11,13 +11,10 @@
 exports.extend = extend  # for parser
 
 # Constant functions for nodes that don't need customization.
-YES  = -> yes
-NO   = -> no
-THIS = -> this
-
-# Default implementations of common functions.
-RETURN = -> @returns = yes; this
-NEGATE = -> @negated = not @negated; this
+YES     = -> yes
+NO      = -> no
+THIS    = -> this
+NEGATE  = -> @negated = not @negated; this
 
 #### Base
 
@@ -160,7 +157,7 @@ exports.Expressions = class Expressions extends Base
 
   children: ['expressions']
 
-  constructor: (nodes) ->
+  (nodes) ->
     @expressions = compact flatten nodes or []
 
   # Tack an expression on to the end of this expression list.
@@ -249,7 +246,7 @@ exports.Expressions = class Expressions extends Base
 
   # Wrap up the given nodes as an **Expressions**, unless it already happens
   # to be one.
-  @wrap: (nodes) ->
+  @wrap = (nodes) ->
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Expressions
     new Expressions nodes
 
@@ -260,7 +257,7 @@ exports.Expressions = class Expressions extends Base
 # `true`, `false`, `null`...
 exports.Literal = class Literal extends Base
 
-  constructor: (@value) ->
+  (@value) ->
 
   makeReturn: ->
     if @isPureStatement() then this else new Return this
@@ -295,7 +292,7 @@ exports.Return = class Return extends Base
   isStatement    : YES
   isPureStatement: YES
 
-  constructor: (@expression) ->
+  (@expression) ->
 
   makeReturn: THIS
 
@@ -316,7 +313,7 @@ exports.Value = class Value extends Base
   children: ['base', 'properties']
 
   # A **Value** has a base and a list of property accesses.
-  constructor: (base, props, tag) ->
+  (base, props, tag) ->
     return base if not props and base instanceof Value
     @base       = base
     @properties = props or []
@@ -404,7 +401,7 @@ exports.Value = class Value extends Base
 # at the same position.
 exports.Comment = class Comment extends Base
 
-  constructor: (@comment) ->
+  (@comment) ->
 
   isPureStatement: YES
   isStatement:     YES
@@ -423,7 +420,7 @@ exports.Call = class Call extends Base
 
   children: ['variable', 'args']
 
-  constructor: (variable, @args = [], @soak) ->
+  (variable, @args = [], @soak) ->
     @isNew    = false
     @isSuper  = variable is 'super'
     @variable = if @isSuper then null else variable
@@ -448,7 +445,7 @@ exports.Call = class Call extends Base
   unfoldSoak: (o) ->
     if @soak
       if @variable
-        return ifn if ifn = If.unfoldSoak o, this, 'variable'
+        return ifn if ifn = unfoldSoak o, this, 'variable'
         [left, rite] = new Value(@variable).cacheReference o
       else
         left = new Literal @superReference o
@@ -473,7 +470,7 @@ exports.Call = class Call extends Base
           call.variable = ifn
         else
           call.variable.base = ifn
-      ifn = If.unfoldSoak o, call, 'variable'
+      ifn = unfoldSoak o, call, 'variable'
     ifn
 
   # Compile a vanilla function call.
@@ -525,7 +522,7 @@ exports.Extends = class Extends extends Base
 
   children: ['child', 'parent']
 
-  constructor: (@child, @parent) ->
+  (@child, @parent) ->
 
   # Hooks one constructor into another's prototype chain.
   compile: (o) ->
@@ -539,7 +536,7 @@ exports.Accessor = class Accessor extends Base
 
   children: ['name']
 
-  constructor: (@name, tag) ->
+  (@name, tag) ->
     @proto = if tag is 'proto' then '.prototype' else ''
     @soak  = tag is 'soak'
 
@@ -556,7 +553,7 @@ exports.Index = class Index extends Base
 
   children: ['index']
 
-  constructor: (@index) ->
+  (@index) ->
 
   compile: (o) ->
     (if @proto then '.prototype' else '') + "[#{ @index.compile o, LEVEL_PAREN }]"
@@ -571,7 +568,7 @@ exports.Obj = class Obj extends Base
 
   children: ['properties']
 
-  constructor: (props) ->
+  (props) ->
     @objects = @properties = props or []
 
   compileNode: (o) ->
@@ -635,7 +632,7 @@ exports.Arr = class Arr extends Base
 
   children: ['objects']
 
-  constructor: (objs) ->
+  (objs) ->
     @objects = objs or []
 
   compileNode: (o) ->
@@ -657,78 +654,62 @@ exports.Arr = class Arr extends Base
 # The CoffeeScript class definition.
 exports.Class = class Class extends Base
 
-  children: ['variable', 'parent', 'properties']
-
-  isStatement: YES
-  makeReturn:  RETURN
+  children: ['variable', 'parent', 'body']
 
   # Initialize a **Class** with its name, an optional superclass, and a
   # list of prototype property assignments.
-  constructor: (@variable, @parent, @properties = []) ->
+  (@variable, @parent, @body = new Expressions) ->
 
   # Instead of generating the JavaScript string directly, we build up the
   # equivalent syntax tree and compile that, in pieces. You can see the
   # constructor, property assignments, and inheritance getting built out below.
   compileNode: (o) ->
-    variable   = @variable or new Literal o.scope.freeVariable 'ctor'
-    extension  = @parent  and new Extends variable, @parent
-    props      = new Expressions
-    me         = null
-    className  = variable.compile o
-    constScope = null
+    if @variable
+      decl = if tail = last @variable.properties
+        tail instanceof Accessor and tail.name.value
+      else
+        @variable.base.value
+      decl and= IDENTIFIER.test(decl) and decl
 
-    if @parent
-      applied = new Value @parent, [new Accessor new Literal 'apply']
-      ctor = new Code [], new Expressions [
-        new Call applied, [new Literal('this'), new Literal('arguments')]
-      ]
-    else
-      ctor = new Code [], new Expressions [new Return new Literal 'this']
+    name  = decl or @name or '_Class'
+    lname = new Literal name
+    @body.traverseChildren false, (node) ->
+      if node instanceof Literal and node.value is 'this'
+        node.value    = name
+      else if node instanceof Code
+        node.klass    = name
+        node.context  = name if node.bound
 
-    for prop in @properties
-      {variable: pvar, value: func} = prop
-      if pvar and pvar.base.value is 'constructor'
-        if func not instanceof Code
-          [func, ref] = func.cache o
-          props.push func if func isnt ref
-          apply = new Call new Value(ref, [new Accessor new Literal 'apply']),
-                           [new Literal('this'), new Literal('arguments')]
-          func  = new Code [], new Expressions([apply])
-        throw SyntaxError 'cannot define a constructor as a bound function.' if func.bound
-        func.name = className
-        func.body.push new Return new Literal 'this'
-        variable = new Value variable
-        variable.namespaced = 0 < className.indexOf '.'
-        ctor = func
-        ctor.comment = props.expressions.pop() if last(props.expressions) instanceof Comment
-        continue
-      if func instanceof Code and func.bound
-        if prop.context is 'this'
-          func.context = className
-        else
-          func.bound = false
-          constScope or= new Scope o.scope, ctor.body, ctor
-          me or= constScope.freeVariable 'this'
-          pname = pvar.compile o
-          ctor.body.push    new Return new Literal 'this' if ctor.body.isEmpty()
-          ret = "return #{className}.prototype.#{pname}.apply(#{me}, arguments);"
-          ctor.body.unshift new Literal "this.#{pname} = function() { #{ret} }"
-      if pvar
-        access = if prop.context is 'this'
-        then pvar.properties[0]
-        else new Accessor pvar, 'proto'
-        val  = new Value variable, [access]
-        prop = new Assign val, func
-      props.push prop
+    for node, i in exps = @body.expressions
+      if node instanceof Value and node.isObject()
+        assigns = for assign in node.base.properties
+          assign.variable = new Value(lname, [new Accessor(assign.variable.base, 'proto')])
+          delete assign.context
+          assign
+        exps[i] = assigns
+      else if node instanceof Code
+        if ctor
+          throw new Error 'cannot define more than one constructor in a class'
+        if node.bound
+          throw new Error 'cannot define a constructor as a bound function'
+        ctor = node
+        exps.splice(i, 1)
+        exps.unshift ctor
 
-    ctor.className = className.match /[$\w]+$/
-    ctor.body.unshift new Literal "#{me} = this" if me
-    o.sharedScope = constScope
-    code  = @tab + new Assign(variable, ctor).compile(o) + ';'
-    code += '\n' + @tab + extension.compile(o) + ';' if extension
-    code += '\n' + props.compile o                   if !props.isEmpty()
-    code += '\n' + new Return(variable).compile o    if @returns
-    code
+    @body.expressions = exps = flatten exps
+    unless ctor
+      exps.unshift ctor = new Code
+      if @parent
+        ctor.body.push new Call 'super', [new Splat new Literal 'arguments']
+    ctor.ctor     = ctor.name = name
+    ctor.klass    = null
+    ctor.noReturn = yes
+    exps.splice 1, 0, new Extends lname, @parent if @parent
+    exps.push lname
+    klass = new Parens new Call(new Code [], @body), true
+    klass = new Assign new Value(lname), klass if decl and @variable?.isComplex()
+    klass = new Assign @variable, klass if @variable
+    klass.compile o
 
 #### Assign
 
@@ -737,17 +718,17 @@ exports.Class = class Class extends Base
 exports.Assign = class Assign extends Base
 
   # Matchers for detecting class/method names
-  METHOD_DEF: /^(?:(\S+)\.prototype\.)?([$A-Za-z_][$\w]*)$/
+  METHOD_DEF: /^(?:(\S+)\.prototype\.|\S+?)?\b([$A-Za-z_][$\w]*)$/
 
   children: ['variable', 'value']
 
-  constructor: (@variable, @value, @context) ->
+  (@variable, @value, @context) ->
 
   assigns: (name) ->
     @[if @context is 'object' then 'value' else 'variable'].assigns name
 
   unfoldSoak: (o) ->
-    If.unfoldSoak o, this, 'variable'
+    unfoldSoak o, this, 'variable'
 
   # Compile an assignment, delegating to `compilePatternMatch` or
   # `compileSplice` if appropriate. Keep track of the name of the base object
@@ -760,7 +741,7 @@ exports.Assign = class Assign extends Base
     name = @variable.compile o, LEVEL_LIST
     if @value instanceof Code and match = @METHOD_DEF.exec name
       @value.name  = match[2]
-      @value.klass = match[1]
+      @value.klass = match[1] if match[1]
     val = @value.compile o, LEVEL_LIST
     return "#{name}: #{val}" if @context is 'object'
     unless @variable.isAssignable()
@@ -856,9 +837,13 @@ exports.Code = class Code extends Base
 
   children: ['params', 'body']
 
-  constructor: (@params = [], @body = new Expressions, tag) ->
+  (params, body, tag) ->
+    @params  = params or []
+    @body    = body or new Expressions
     @bound   = tag is 'boundfunc'
     @context = 'this' if @bound
+
+  isStatement: -> !!@ctor
 
   # Compilation creates a new scope unless explicitly asked to share with the
   # outer scope. Handles splat parameters in the parameter list by peeking at
@@ -892,23 +877,18 @@ exports.Code = class Code extends Base
     scope.startLevel()
     wasEmpty = @body.isEmpty()
     exprs.unshift splats if splats
-    @body.expressions.splice 0, 0, exprs... if exprs.length
-    @body.makeReturn() unless wasEmpty or @noReturn
+    @body.expressions.unshift exprs... if exprs.length
     scope.parameter vars[i] = v.compile o for v, i in vars unless splats
-    comm     = if @comment then @comment.compile(o) + '\n' else ''
-    idt      = o.indent
-    o.indent += TAB if @className
-    code     = if @body.isEmpty() then '' else "\n#{ @body.compileWithDeclarations o }\n"
-    if @className
-      open  = "(function() {\n#{comm}#{idt}function #{@className}("
-      close = "#{ code and idt }}\n#{idt}return #{@className};\n#{@tab}})()"
-    else
-      open  = 'function('
-      close = "#{ code and @tab }}"
-    func = "#{open}#{ vars.join ', ' }) {#{code}#{close}"
-    scope.endLevel()
-    return "#{ utility 'bind' }(#{func}, #{@context})" if @bound
-    if @front then "(#{func})" else func
+    @body.makeReturn() unless wasEmpty or @noReturn
+    idt   = o.indent
+    code  = 'function'
+    code  += ' ' + @name if @ctor
+    code  += '(' + vars.join(', ') + ') {'
+    code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
+    code  += '}'
+    return @tab + code if @ctor
+    return utility('bind') + "(#{code}, #{@context})" if @bound
+    if @front then "(#{code})" else code
 
   # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
   # unless `crossScope` is `true`.
@@ -924,7 +904,7 @@ exports.Param = class Param extends Base
 
   children: ['name', 'value']
 
-  constructor: (@name, @value, @splat) ->
+  (@name, @value, @splat) ->
 
   compile: (o) ->
     @name.compile o, LEVEL_LIST
@@ -949,7 +929,7 @@ exports.Splat = class Splat extends Base
 
   isAssignable: YES
 
-  constructor: (name) ->
+  (name) ->
     @name = if name.compile then name else new Literal name
 
   assigns: (name) ->
@@ -960,7 +940,7 @@ exports.Splat = class Splat extends Base
 
   # Utility function that converts arbitrary number of elements, mixed with
   # splats, to a proper array.
-  @compileSplattedArray: (o, list, apply) ->
+  @compileSplattedArray = (o, list, apply) ->
     index = -1
     continue while (node = list[++index]) and node not instanceof Splat
     return '' if index >= list.length
@@ -988,11 +968,14 @@ exports.While = class While extends Base
   children: ['condition', 'guard', 'body']
 
   isStatement: YES
-  makeReturn:  RETURN
 
-  constructor: (condition, options) ->
+  (condition, options) ->
     @condition = if options?.invert then condition.invert() else condition
     @guard     = options?.guard
+
+  makeReturn: ->
+    @returns = yes
+    this
 
   addBody: (@body) ->
     this
@@ -1050,7 +1033,7 @@ exports.Op = class Op extends Base
 
   children: ['first', 'second']
 
-  constructor: (op, first, second, flip) ->
+  (op, first, second, flip) ->
     return new In first, second if op is 'in'
     if op is 'new'
       return first.newInstance() if first instanceof Call
@@ -1078,7 +1061,7 @@ exports.Op = class Op extends Base
       new Op '!', this
 
   unfoldSoak: (o) ->
-    @operator in ['++', '--', 'delete'] and If.unfoldSoak o, this, 'first'
+    @operator in ['++', '--', 'delete'] and unfoldSoak o, this, 'first'
 
   compileNode: (o) ->
     return @compileUnary     o if @isUnary()
@@ -1127,7 +1110,7 @@ exports.In = class In extends Base
 
   invert: NEGATE
 
-  constructor: (@object, @array) ->
+  (@object, @array) ->
 
   compileNode: (o) ->
     if @array instanceof Value and @array.isArray()
@@ -1163,7 +1146,7 @@ exports.Try = class Try extends Base
 
   isStatement: YES
 
-  constructor: (@attempt, @error, @recovery, @ensure) ->
+  (@attempt, @error, @recovery, @ensure) ->
 
   makeReturn: ->
     @attempt  = @attempt .makeReturn() if @attempt
@@ -1194,7 +1177,7 @@ exports.Throw = class Throw extends Base
 
   isStatement: YES
 
-  constructor: (@expression) ->
+  (@expression) ->
 
   # A **Throw** is already a return, of sorts...
   makeReturn: THIS
@@ -1213,7 +1196,7 @@ exports.Existence = class Existence extends Base
 
   invert: NEGATE
 
-  constructor: (@expression) ->
+  (@expression) ->
 
   compileNode: (o) ->
     code = @expression.compile o, LEVEL_OP
@@ -1238,7 +1221,7 @@ exports.Parens = class Parens extends Base
 
   children: ['expression']
 
-  constructor: (@expression) ->
+  (@expression) ->
 
   unwrap    : -> @expression
   isComplex : -> @expression.isComplex()
@@ -1267,15 +1250,18 @@ exports.For = class For extends Base
   children: ['body', 'source', 'guard', 'step', 'from', 'to']
 
   isStatement: YES
-  makeReturn:  RETURN
 
-  constructor: (body, head) ->
+  (body, head) ->
     if head.index instanceof Value
       throw SyntaxError 'index cannot be a pattern matching expression'
     extend this, head
     @body    = Expressions.wrap [body]
     @pattern = @name instanceof Value
     @returns = false
+
+  makeReturn: ->
+    @returns = yes
+    this
 
   containsPureStatement: While::containsPureStatement
 
@@ -1399,7 +1385,7 @@ exports.Switch = class Switch extends Base
 
   isStatement: YES
 
-  constructor: (@subject, @cases, @otherwise) ->
+  (@subject, @cases, @otherwise) ->
 
   makeReturn: ->
     pair[1].makeReturn() for pair in @cases
@@ -1433,7 +1419,7 @@ exports.If = class If extends Base
 
   children: ['condition', 'body', 'elseBody']
 
-  constructor: (condition, @body, options = {}) ->
+  (condition, @body, options = {}) ->
     @condition = if options.invert then condition.invert() else condition
     @elseBody  = null
     @isChain   = false
@@ -1497,13 +1483,6 @@ exports.If = class If extends Base
   unfoldSoak: ->
     @soak and this
 
-  # Unfold a node's child if soak, then tuck the node under created `If`
-  @unfoldSoak: (o, parent, name) ->
-    return unless ifn = parent[name].unfoldSoak o
-    parent[name] = ifn.body
-    ifn.body     = new Value parent
-    ifn
-
 # Faux-Nodes
 # ----------
 # Faux-nodes are never created by the grammar, but are used during code
@@ -1544,6 +1523,13 @@ Closure =
   literalArgs: (node) -> node instanceof Literal and node.value is 'arguments'
   literalThis: (node) -> node instanceof Literal and node.value is 'this' or
                          node instanceof Code    and node.bound
+
+# Unfold a node's child if soak, then tuck the node under created `If`
+unfoldSoak = (o, parent, name) ->
+  return unless ifn = parent[name].unfoldSoak o
+  parent[name] = ifn.body
+  ifn.body = new Value parent
+  ifn
 
 # Constants
 # ---------
