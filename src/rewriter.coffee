@@ -133,19 +133,19 @@ class exports.Rewriter
   # Insert the implicit parentheses here, so that the parser doesn't have to
   # deal with them.
   addImplicitParentheses: ->
-    classLine = no
+    noCall = no
     action = (token, i) ->
       idx = if token[0] is 'OUTDENT' then i + 1 else i
       @tokens.splice idx, 0, ['CALL_END', ')', token[2]]
     @scanTokens (token, i, tokens) ->
-      tag        = token[0]
-      classLine  = yes if tag is 'CLASS'
+      tag     = token[0]
+      noCall  = yes if tag in ['CLASS', 'IF', 'UNLESS']
       {(i-1): prev, (i+1): next} = tokens
-      callObject = not classLine and tag is 'INDENT' and
+      callObject = not noCall and tag is 'INDENT' and
                    next and next.generated and next[0] is '{' and
                    prev and prev[0] in IMPLICIT_FUNC
       seenSingle = no
-      classLine  = no  if tag in LINEBREAKS
+      noCall     = no  if tag in LINEBREAKS
       token.call = yes if prev and not prev.spaced and tag is '?'
       return 1 unless callObject or
         prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and

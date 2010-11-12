@@ -291,3 +291,43 @@ ok (new One).value is 1
 ok (new Two).value is 2
 ok (new One).value is 1
 ok (new Two).value is 2
+
+
+# Exectuable class bodies.
+class A
+  if true
+    b: 'b'
+  else
+    c: 'c'
+
+a = new A
+
+eq a.b, 'b'
+eq a.c, undefined
+
+
+# Light metaprogramming.
+class Base
+  @extended = (child) ->
+    child.attr = (name) ->
+      child::[name] = (val) ->
+        if arguments.length > 0
+          @["_#{name}"] = val
+        else
+          @["_#{name}"]
+
+class Robot extends Base
+  @attr 'power'
+  @attr 'speed'
+
+robby = new Robot
+
+ok robby.power() is undefined
+
+robby.power 11
+robby.speed Infinity
+
+eq robby.power(), 11
+eq robby.speed(), Infinity
+
+

@@ -652,6 +652,7 @@ exports.Arr = class Arr extends Base
 #### Class
 
 # The CoffeeScript class definition.
+# TODO: Refactor and comment.
 exports.Class = class Class extends Base
 
   children: ['variable', 'parent', 'body']
@@ -680,20 +681,23 @@ exports.Class = class Class extends Base
         node.klass    = name
         node.context  = name if node.bound
 
+    convert = (node) ->
+      for assign in node.base.properties
+        if assign instanceof Assign
+          base = assign.variable.base
+          assign.variable = new Value(lname, [new Accessor(base, 'proto')])
+          delete assign.context
+          func = assign.value
+          if func instanceof Code and func.bound
+            boundFuncs.push base
+            func.bound = no
+        assign
+
     boundFuncs = []
+    others = []
     for node, i in exps = @body.expressions
       if node instanceof Value and node.isObject()
-        assigns = for assign in node.base.properties
-          if assign instanceof Assign
-            base = assign.variable.base
-            assign.variable = new Value(lname, [new Accessor(base, 'proto')])
-            delete assign.context
-            func = assign.value
-            if func instanceof Code and func.bound
-              boundFuncs.push base
-              func.bound = no
-          assign
-        exps[i] = assigns
+        exps[i] = convert node
       else if node instanceof Code
         if ctor
           throw new Error 'cannot define more than one constructor in a class'
@@ -702,6 +706,17 @@ exports.Class = class Class extends Base
         ctor = node
         exps.splice(i, 1)
         exps.unshift ctor
+      else
+        others.push node
+
+    # TODO: refactor
+    for other in others
+      other.traverseChildren false, (n2) ->
+        if n2 instanceof Expressions
+          for expr2, j in n2.expressions
+            if expr2 instanceof Value and expr2.isObject()
+              n2.expressions[j] = convert expr2
+          n2.expressions = flatten n2.expressions
 
     @body.expressions = exps = flatten exps
     unless ctor
