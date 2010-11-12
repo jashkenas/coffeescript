@@ -680,12 +680,18 @@ exports.Class = class Class extends Base
         node.klass    = name
         node.context  = name if node.bound
 
+    boundFuncs = []
     for node, i in exps = @body.expressions
       if node instanceof Value and node.isObject()
         assigns = for assign in node.base.properties
           if assign instanceof Assign
-            assign.variable = new Value(lname, [new Accessor(assign.variable.base, 'proto')])
+            base = assign.variable.base
+            assign.variable = new Value(lname, [new Accessor(base, 'proto')])
             delete assign.context
+            func = assign.value
+            if func instanceof Code and func.bound
+              boundFuncs.push base
+              func.bound = no
           assign
         exps[i] = assigns
       else if node instanceof Code
@@ -707,6 +713,12 @@ exports.Class = class Class extends Base
     ctor.noReturn = yes
     exps.splice 1, 0, new Extends lname, @parent if @parent
     exps.push lname
+
+    if boundFuncs.length
+      for bvar in boundFuncs
+        bname = bvar.compile o
+        ctor.body.unshift new Literal "this.#{bname} = #{utility 'bind'}(this.#{bname}, this);"
+
     klass = new Parens new Call(new Code [], @body), true
     klass = new Assign new Value(lname), klass if decl and @variable?.isComplex()
     klass = new Assign @variable, klass if @variable

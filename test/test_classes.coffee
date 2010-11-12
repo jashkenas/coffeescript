@@ -18,7 +18,7 @@ thirdCtor = ->
   @array = [1, 2, 3]
 
 class ThirdChild extends SecondChild
-  constructor: thirdCtor
+  -> thirdCtor.call this
 
   # Gratuitous comment for testing.
   func: (string) ->
@@ -40,15 +40,15 @@ ok (new ThirdChild).array.join(' ') is '1 2 3'
 
 
 class TopClass
-  constructor: (arg) ->
+  (arg) ->
     @prop = 'top-' + arg
 
 class SuperClass extends TopClass
-  constructor: (arg) ->
+  (arg) ->
     super 'super-' + arg
 
 class SubClass extends SuperClass
-  constructor: ->
+  ->
     super 'sub'
 
 ok (new SubClass).prop is 'top-super-sub'
@@ -57,7 +57,7 @@ ok (new SubClass).prop is 'top-super-sub'
 class OneClass
   @new = 'new'
   function: 'function'
-  constructor: (name) -> @name = name
+  (name) -> @name = name
 
 class TwoClass extends OneClass
 
@@ -121,7 +121,7 @@ ok (new SubClass).prop is 'top-super-sub'
 
 # '@' referring to the current instance, and not being coerced into a call.
 class ClassName
-  amI = ->
+  amI: ->
     @ instanceof ClassName
 
 obj = new ClassName
