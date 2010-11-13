@@ -1,7 +1,7 @@
 # "Classic" linked list implementation that doesn't keep track of its size.
 class LinkedList
 
-  constructor: ->
+  ->
     this._head = null # Pointer to the first item in the list.
 
 

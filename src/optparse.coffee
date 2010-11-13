@@ -13,7 +13,7 @@ exports.OptionParser = class OptionParser
   #     [short-flag, long-flag, description]
   #
   # Along with an an optional banner for the usage help.
-  constructor: (rules, @banner) ->
+  (rules, @banner) ->
     @rules = buildRules rules
 
   # Parse the list of arguments, populating an `options` object with all of the

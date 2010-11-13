@@ -135,7 +135,7 @@ aliquam erat volutpat. Ut wisi enim ad."
 
 # Inheritance and calling super.
 class Animal
-  constructor: (@name) ->
+  (@name) ->
 
   move: (meters) ->
     alert this.name + " moved " + meters + "m."

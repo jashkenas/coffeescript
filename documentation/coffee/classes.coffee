@@ -1,5 +1,5 @@
 class Animal
-  constructor: (@name) ->
+  (@name) ->
 
   move: (meters) ->
     alert @name + " moved " + meters + "m."

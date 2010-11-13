@@ -71,7 +71,7 @@ print p.name
 # Policeman ('Constable') print
 
 class Policeman extends Person
-  constructor: (@rank) ->
+  (@rank) ->
 
   print: ->
     print 'My name is ' + @name + " and I'm a " + @rank + '.'
