@@ -665,22 +665,20 @@ exports.Class = class Class extends Base
   # Initialize a **Class** with its name, an optional superclass, and a
   # list of prototype property assignments.
   (@variable, @parent, @body = new Expressions) ->
+    @boundFuncs = []
 
-  # Instead of generating the JavaScript string directly, we build up the
-  # equivalent syntax tree and compile that, in pieces. You can see the
-  # constructor, property assignments, and inheritance getting built out below.
-  compileNode: (o) ->
-    ctor = null
+  # Figure out the appropriate name for the constructor function of this class.
+  determineName: ->
+    return null unless @variable
+    decl = if tail = last @variable.properties
+      tail instanceof Accessor and tail.name.value
+    else
+      @variable.base.value
+    decl and= IDENTIFIER.test(decl) and decl
 
-    if @variable
-      decl = if tail = last @variable.properties
-        tail instanceof Accessor and tail.name.value
-      else
-        @variable.base.value
-      decl and= IDENTIFIER.test(decl) and decl
-
-    name  = decl or @name or '_Class'
-    lname = new Literal name
+  # For all `this`-references and bound functions in the class definition,
+  # `this` is the Class being constructed.
+  setContext: (name) ->
     @body.traverseChildren false, (node) ->
       if node instanceof Literal and node.value is 'this'
         node.value    = name
@@ -688,25 +686,36 @@ exports.Class = class Class extends Base
         node.klass    = name
         node.context  = name if node.bound
 
-    convert = (node) ->
-      props = node.base.properties.slice 0
-      while assign = props.shift()
-        if assign instanceof Assign
-          base = assign.variable.base
-          delete assign.context
-          func = assign.value
-          unless assign.variable.this
-            assign.variable = new Value(lname, [new Accessor(base, 'proto')])
-          if func instanceof Code and func.bound
-            boundFuncs.push base
-            func.bound = no
-        assign
+  # Merge the properties from a top-level object as prototypal properties
+  # on the class.
+  addProperties: (node, name) ->
+    props = node.base.properties.slice 0
+    while assign = props.shift()
+      if assign instanceof Assign
+        base = assign.variable.base
+        delete assign.context
+        func = assign.value
+        unless assign.variable.this
+          assign.variable = new Value(new Literal(name), [new Accessor(base, 'proto')])
+        if func instanceof Code and func.bound
+          @boundFuncs.push base
+          func.bound = no
+      assign
 
-    boundFuncs = []
-    others = []
+  # Instead of generating the JavaScript string directly, we build up the
+  # equivalent syntax tree and compile that, in pieces. You can see the
+  # constructor, property assignments, and inheritance getting built out below.
+  compileNode: (o) ->
+    ctor = null
+
+    decl  = @determineName()
+    name  = decl or @name or '_Class'
+    lname = new Literal name
+    @setContext name
+
     for node, i in exps = @body.expressions
       if node instanceof Value and node.isObject(true)
-        exps[i] = compact convert node
+        exps[i] = compact @addProperties node, name
       else if node instanceof Code
         if ctor
           throw new Error 'cannot define more than one constructor in a class'
@@ -715,16 +724,12 @@ exports.Class = class Class extends Base
         ctor = node
         exps[i] = null
       else
-        others.push node
-
-    # TODO: refactor
-    for other in others
-      other.traverseChildren false, (n2) ->
-        if n2 instanceof Expressions
-          for expr2, j in n2.expressions
-            if expr2 instanceof Value and expr2.isObject(true)
-              n2.expressions[j] = compact convert expr2
-          n2.expressions = flatten n2.expressions
+        node.traverseChildren false, (n2) =>
+          if n2 instanceof Expressions
+            for expr2, j in n2.expressions
+              if expr2 instanceof Value and expr2.isObject(true)
+                n2.expressions[j] = compact @addProperties expr2, name
+            n2.expressions = flatten n2.expressions
 
     @body.expressions = exps = compact flatten exps
     unless ctor
@@ -738,8 +743,8 @@ exports.Class = class Class extends Base
     exps.unshift ctor
     exps.push lname
 
-    if boundFuncs.length
-      for bvar in boundFuncs
+    if @boundFuncs.length
+      for bvar in @boundFuncs
         bname = bvar.compile o
         ctor.body.unshift new Literal "this.#{bname} = #{utility 'bind'}(this.#{bname}, this);"
 
