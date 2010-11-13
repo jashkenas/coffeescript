@@ -35,7 +35,7 @@ eq context.arg, 3
 eq context.arg.join(' '), '1 2 3'
 
 class Klass
-  (@one, @two) ->
+  constructor: (@one, @two) ->
 
 obj = new Klass 1, 2
 

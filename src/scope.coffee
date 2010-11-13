@@ -17,7 +17,7 @@ exports.Scope = class Scope
   # as well as a reference to the **Expressions** node is belongs to, which is
   # where it should declare its variables, and a reference to the function that
   # it wraps.
-  (@parent, @expressions, @method) ->
+  constructor: (@parent, @expressions, @method) ->
     @variables = [{name: 'arguments', type: 'arguments'}]
     @positions = {}
     if @parent

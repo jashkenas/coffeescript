@@ -157,7 +157,7 @@ exports.Expressions = class Expressions extends Base
 
   children: ['expressions']
 
-  (nodes) ->
+  constructor: (nodes) ->
     @expressions = compact flatten nodes or []
 
   # Tack an expression on to the end of this expression list.
@@ -257,7 +257,7 @@ exports.Expressions = class Expressions extends Base
 # `true`, `false`, `null`...
 exports.Literal = class Literal extends Base
 
-  (@value) ->
+  constructor: (@value) ->
 
   makeReturn: ->
     if @isPureStatement() then this else new Return this
@@ -292,7 +292,7 @@ exports.Return = class Return extends Base
   isStatement    : YES
   isPureStatement: YES
 
-  (@expression) ->
+  constructor: (@expression) ->
 
   makeReturn: THIS
 
@@ -313,7 +313,7 @@ exports.Value = class Value extends Base
   children: ['base', 'properties']
 
   # A **Value** has a base and a list of property accesses.
-  (base, props, tag) ->
+  constructor: (base, props, tag) ->
     return base if not props and base instanceof Value
     @base       = base
     @properties = props or []
@@ -329,7 +329,6 @@ exports.Value = class Value extends Base
 
   # Some boolean checks for the benefit of other nodes.
   isArray        : -> not @properties.length and @base instanceof Arr
-  isObject       : -> not @properties.length and @base instanceof Obj
   isComplex      : -> @hasProperties() or @base.isComplex()
   isAssignable   : -> @hasProperties() or @base.isAssignable()
   isSimpleNumber : -> @base instanceof Literal and SIMPLENUM.test @base.value
@@ -340,6 +339,10 @@ exports.Value = class Value extends Base
 
   isStatement : (o)    -> not @properties.length and @base.isStatement o
   assigns     : (name) -> not @properties.length and @base.assigns name
+
+  isObject: (onlyGenerated) ->
+    return no if @properties.length
+    (@base instanceof Obj) and (not onlyGenerated or @base.generated)
 
   makeReturn: ->
     if @properties.length then super() else @base.makeReturn()
@@ -401,7 +404,7 @@ exports.Value = class Value extends Base
 # at the same position.
 exports.Comment = class Comment extends Base
 
-  (@comment) ->
+  constructor: (@comment) ->
 
   isPureStatement: YES
   isStatement:     YES
@@ -420,7 +423,7 @@ exports.Call = class Call extends Base
 
   children: ['variable', 'args']
 
-  (variable, @args = [], @soak) ->
+  constructor: (variable, @args = [], @soak) ->
     @isNew    = false
     @isSuper  = variable is 'super'
     @variable = if @isSuper then null else variable
@@ -523,7 +526,7 @@ exports.Extends = class Extends extends Base
 
   children: ['child', 'parent']
 
-  (@child, @parent) ->
+  constructor: (@child, @parent) ->
 
   # Hooks one constructor into another's prototype chain.
   compile: (o) ->
@@ -538,7 +541,7 @@ exports.Accessor = class Accessor extends Base
 
   children: ['name']
 
-  (@name, tag) ->
+  constructor: (@name, tag) ->
     @proto = if tag is 'proto' then '.prototype' else ''
     @soak  = tag is 'soak'
 
@@ -555,7 +558,7 @@ exports.Index = class Index extends Base
 
   children: ['index']
 
-  (@index) ->
+  constructor: (@index) ->
 
   compile: (o) ->
     (if @proto then '.prototype' else '') + "[#{ @index.compile o, LEVEL_PAREN }]"
@@ -570,7 +573,7 @@ exports.Obj = class Obj extends Base
 
   children: ['properties']
 
-  (props) ->
+  constructor: (props, @generated = false) ->
     @objects = @properties = props or []
 
   compileNode: (o) ->
@@ -634,7 +637,7 @@ exports.Arr = class Arr extends Base
 
   children: ['objects']
 
-  (objs) ->
+  constructor: (objs) ->
     @objects = objs or []
 
   compileNode: (o) ->
@@ -661,12 +664,14 @@ exports.Class = class Class extends Base
 
   # Initialize a **Class** with its name, an optional superclass, and a
   # list of prototype property assignments.
-  (@variable, @parent, @body = new Expressions) ->
+  constructor: (@variable, @parent, @body = new Expressions) ->
 
   # Instead of generating the JavaScript string directly, we build up the
   # equivalent syntax tree and compile that, in pieces. You can see the
   # constructor, property assignments, and inheritance getting built out below.
   compileNode: (o) ->
+    ctor = null
+
     if @variable
       decl = if tail = last @variable.properties
         tail instanceof Accessor and tail.name.value
@@ -684,30 +689,34 @@ exports.Class = class Class extends Base
         node.context  = name if node.bound
 
     convert = (node) ->
-      for assign in node.base.properties
+      props = node.base.properties.slice 0
+      while assign = props.shift()
         if assign instanceof Assign
           base = assign.variable.base
-          assign.variable = new Value(lname, [new Accessor(base, 'proto')])
           delete assign.context
           func = assign.value
-          if func instanceof Code and func.bound
-            boundFuncs.push base
-            func.bound = no
+          if base.value is 'constructor'
+            if ctor
+              throw new Error 'cannot define more than one constructor in a class'
+            if func.bound
+              throw new Error 'cannot define a constructor as a bound function'
+            if func instanceof Code
+              ctor = func
+            else
+              ctor = new Assign(new Value(lname), func)
+            assign = null
+          else
+            assign.variable = new Value(lname, [new Accessor(base, 'proto')])
+            if func instanceof Code and func.bound
+              boundFuncs.push base
+              func.bound = no
         assign
 
     boundFuncs = []
     others = []
     for node, i in exps = @body.expressions
-      if node instanceof Value and node.isObject()
-        exps[i] = convert node
-      else if node instanceof Code
-        if ctor
-          throw new Error 'cannot define more than one constructor in a class'
-        if node.bound
-          throw new Error 'cannot define a constructor as a bound function'
-        ctor = node
-        exps.splice(i, 1)
-        exps.unshift ctor
+      if node instanceof Value and node.isObject(true)
+        exps[i] = compact convert node
       else
         others.push node
 
@@ -716,19 +725,20 @@ exports.Class = class Class extends Base
       other.traverseChildren false, (n2) ->
         if n2 instanceof Expressions
           for expr2, j in n2.expressions
-            if expr2 instanceof Value and expr2.isObject()
-              n2.expressions[j] = convert expr2
+            if expr2 instanceof Value and expr2.isObject(true)
+              n2.expressions[j] = compact convert expr2
           n2.expressions = flatten n2.expressions
 
     @body.expressions = exps = flatten exps
     unless ctor
-      exps.unshift ctor = new Code
+      ctor = new Code
       if @parent
         ctor.body.push new Call 'super', [new Splat new Literal 'arguments']
     ctor.ctor     = ctor.name = name
     ctor.klass    = null
     ctor.noReturn = yes
-    exps.splice 1, 0, new Extends lname, @parent if @parent
+    exps.unshift new Extends lname, @parent if @parent
+    exps.unshift ctor
     exps.push lname
 
     if boundFuncs.length
@@ -752,7 +762,7 @@ exports.Assign = class Assign extends Base
 
   children: ['variable', 'value']
 
-  (@variable, @value, @context) ->
+  constructor: (@variable, @value, @context) ->
 
   assigns: (name) ->
     @[if @context is 'object' then 'value' else 'variable'].assigns name
@@ -867,7 +877,7 @@ exports.Code = class Code extends Base
 
   children: ['params', 'body']
 
-  (params, body, tag) ->
+  constructor: (params, body, tag) ->
     @params  = params or []
     @body    = body or new Expressions
     @bound   = tag is 'boundfunc'
@@ -934,7 +944,7 @@ exports.Param = class Param extends Base
 
   children: ['name', 'value']
 
-  (@name, @value, @splat) ->
+  constructor: (@name, @value, @splat) ->
 
   compile: (o) ->
     @name.compile o, LEVEL_LIST
@@ -959,7 +969,7 @@ exports.Splat = class Splat extends Base
 
   isAssignable: YES
 
-  (name) ->
+  constructor: (name) ->
     @name = if name.compile then name else new Literal name
 
   assigns: (name) ->
@@ -999,7 +1009,7 @@ exports.While = class While extends Base
 
   isStatement: YES
 
-  (condition, options) ->
+  constructor: (condition, options) ->
     @condition = if options?.invert then condition.invert() else condition
     @guard     = options?.guard
 
@@ -1063,7 +1073,7 @@ exports.Op = class Op extends Base
 
   children: ['first', 'second']
 
-  (op, first, second, flip) ->
+  constructor: (op, first, second, flip) ->
     return new In first, second if op is 'in'
     if op is 'new'
       return first.newInstance() if first instanceof Call
@@ -1140,7 +1150,7 @@ exports.In = class In extends Base
 
   invert: NEGATE
 
-  (@object, @array) ->
+  constructor: (@object, @array) ->
 
   compileNode: (o) ->
     if @array instanceof Value and @array.isArray()
@@ -1176,7 +1186,7 @@ exports.Try = class Try extends Base
 
   isStatement: YES
 
-  (@attempt, @error, @recovery, @ensure) ->
+  constructor: (@attempt, @error, @recovery, @ensure) ->
 
   makeReturn: ->
     @attempt  = @attempt .makeReturn() if @attempt
@@ -1207,7 +1217,7 @@ exports.Throw = class Throw extends Base
 
   isStatement: YES
 
-  (@expression) ->
+  constructor: (@expression) ->
 
   # A **Throw** is already a return, of sorts...
   makeReturn: THIS
@@ -1226,7 +1236,7 @@ exports.Existence = class Existence extends Base
 
   invert: NEGATE
 
-  (@expression) ->
+  constructor: (@expression) ->
 
   compileNode: (o) ->
     code = @expression.compile o, LEVEL_OP
@@ -1251,7 +1261,7 @@ exports.Parens = class Parens extends Base
 
   children: ['expression']
 
-  (@expression) ->
+  constructor: (@expression) ->
 
   unwrap    : -> @expression
   isComplex : -> @expression.isComplex()
@@ -1281,7 +1291,7 @@ exports.For = class For extends Base
 
   isStatement: YES
 
-  (body, head) ->
+  constructor: (body, head) ->
     if head.index instanceof Value
       throw SyntaxError 'index cannot be a pattern matching expression'
     extend this, head
@@ -1415,7 +1425,7 @@ exports.Switch = class Switch extends Base
 
   isStatement: YES
 
-  (@subject, @cases, @otherwise) ->
+  constructor: (@subject, @cases, @otherwise) ->
 
   makeReturn: ->
     pair[1].makeReturn() for pair in @cases
@@ -1449,7 +1459,7 @@ exports.If = class If extends Base
 
   children: ['condition', 'body', 'elseBody']
 
-  (condition, @body, options = {}) ->
+  constructor: (condition, @body, options = {}) ->
     @condition = if options.invert then condition.invert() else condition
     @elseBody  = null
     @isChain   = false

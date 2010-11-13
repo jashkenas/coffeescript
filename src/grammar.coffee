@@ -258,7 +258,7 @@ grammar =
 
   # In CoffeeScript, an object literal is simply a list of assignments.
   Object: [
-    o '{ AssignList OptComma }',                -> new Obj $2
+    o '{ AssignList OptComma }',                -> new Obj $2, $1.generated
   ]
 
   # Assignment of properties within an object literal can be separated by

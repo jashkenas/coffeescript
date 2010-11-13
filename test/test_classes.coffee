@@ -18,7 +18,7 @@ thirdCtor = ->
   @array = [1, 2, 3]
 
 class ThirdChild extends SecondChild
-  -> thirdCtor.call this
+  constructor: -> thirdCtor.call this
 
   # Gratuitous comment for testing.
   func: (string) ->
@@ -40,15 +40,15 @@ ok (new ThirdChild).array.join(' ') is '1 2 3'
 
 
 class TopClass
-  (arg) ->
+  constructor: (arg) ->
     @prop = 'top-' + arg
 
 class SuperClass extends TopClass
-  (arg) ->
+  constructor: (arg) ->
     super 'super-' + arg
 
 class SubClass extends SuperClass
-  ->
+  constructor: ->
     super 'sub'
 
 ok (new SubClass).prop is 'top-super-sub'
@@ -57,7 +57,7 @@ ok (new SubClass).prop is 'top-super-sub'
 class OneClass
   @new = 'new'
   function: 'function'
-  (name) -> @name = name
+  constructor: (name) -> @name = name
 
 class TwoClass extends OneClass
 delete TwoClass.new
@@ -131,10 +131,10 @@ ok obj.amI()
 
 # super() calls in constructors of classes that are defined as object properties.
 class Hive
-  (name) -> @name = name
+  constructor: (name) -> @name = name
 
 class Hive.Bee extends Hive
-  (name) -> super
+  constructor: (name) -> super
 
 maya = new Hive.Bee 'Maya'
 ok maya.name is 'Maya'
@@ -154,7 +154,7 @@ ok instance.name() is 'class'
 # ... or statically, to the class.
 class Dog
 
-  (name) ->
+  constructor: (name) ->
     @name = name
 
   bark: =>
@@ -188,7 +188,7 @@ eq (func() for func in m.generate()).join(' '), '10 10 10'
 
 # Testing a contructor called with varargs.
 class Connection
-  (one, two, three) ->
+  constructor: (one, two, three) ->
     [@one, @two, @three] = [one, two, three]
 
   out: ->
@@ -281,12 +281,10 @@ classMaker = ->
     @value = inner
 
 class One
-  ctor = classMaker()
-  -> return new ctor
+  constructor: classMaker()
 
 class Two
-  ctor = classMaker()
-  -> return new ctor
+  constructor: classMaker()
 
 ok (new One).value is 1
 ok (new Two).value is 2

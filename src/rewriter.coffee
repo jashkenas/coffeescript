@@ -123,7 +123,9 @@ class exports.Rewriter
       else
         i - 1
       idx -= 2 if @tag(idx - 2) is 'HERECOMMENT'
-      tok = ['{', '{', token[2]]
+      value = new String('{')
+      value.generated = yes
+      tok = ['{', value, token[2]]
       tok.generated = yes
       tokens.splice idx, 0, tok
       @detectEnd i + 2, condition, action
