@@ -1114,7 +1114,9 @@ exports.Op = class Op extends Base
     return @compileChain     o if @isChainable() and @first.isChainable()
     return @compileExistence o if @operator is '?'
     @first.front = @front
-    "#{ @first.compile o, LEVEL_OP } #{@operator} #{ @second.compile o, LEVEL_OP }"
+    code = @first.compile(o, LEVEL_OP) + ' ' + @operator + ' ' +
+           @second.compile(o, LEVEL_OP)
+    if o.level <= LEVEL_OP then code else "(#{code})"
 
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. For example:
