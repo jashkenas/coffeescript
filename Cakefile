@@ -1,5 +1,6 @@
 fs            = require 'fs'
 path          = require 'path'
+{extend}      = require './lib/helpers'
 CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 
@@ -65,6 +66,7 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
 
 
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
+  extend global, require('utils')
   require 'jison'
   parser = require('./lib/grammar').parser
   fs.writeFile 'lib/parser.js', parser.generate()
