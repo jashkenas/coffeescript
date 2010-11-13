@@ -1598,9 +1598,7 @@ UTILITIES =
 
   # Create a function bound to the current value of "this".
   bind: '''
-    function(func, context) {
-      return function() { return func.apply(context, arguments); };
-    }
+    function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
   '''
 
   # Discover if an item is in an array.
