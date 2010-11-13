@@ -146,7 +146,6 @@ grammar =
     o 'ObjAssignable : Expression',             -> new Assign new Value($1), $3, 'object'
     o 'ObjAssignable :
        INDENT Expression OUTDENT',              -> new Assign new Value($1), $4, 'object'
-    o 'ThisProperty'
     o 'Comment'
   ]
 
@@ -154,6 +153,7 @@ grammar =
     o 'Identifier'
     o 'AlphaNumeric'
     o 'Parenthetical'
+    o 'ThisProperty'
   ]
 
   # A return statement from a function body.

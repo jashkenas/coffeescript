@@ -246,7 +246,7 @@ exports.Expressions = class Expressions extends Base
 
   # Wrap up the given nodes as an **Expressions**, unless it already happens
   # to be one.
-  @wrap = (nodes) ->
+  @wrap: (nodes) ->
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Expressions
     new Expressions nodes
 
@@ -695,7 +695,8 @@ exports.Class = class Class extends Base
           base = assign.variable.base
           delete assign.context
           func = assign.value
-          assign.variable = new Value(lname, [new Accessor(base, 'proto')])
+          unless assign.variable.this
+            assign.variable = new Value(lname, [new Accessor(base, 'proto')])
           if func instanceof Code and func.bound
             boundFuncs.push base
             func.bound = no
@@ -976,7 +977,7 @@ exports.Splat = class Splat extends Base
 
   # Utility function that converts arbitrary number of elements, mixed with
   # splats, to a proper array.
-  @compileSplattedArray = (o, list, apply) ->
+  @compileSplattedArray: (o, list, apply) ->
     index = -1
     continue while (node = list[++index]) and node not instanceof Splat
     return '' if index >= list.length

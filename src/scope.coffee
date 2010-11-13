@@ -11,7 +11,7 @@
 exports.Scope = class Scope
 
   # The top-level **Scope** object.
-  @root = null
+  @root: null
 
   # Initialize a scope with its parent, for lookups up the chain,
   # as well as a reference to the **Expressions** node is belongs to, which is
