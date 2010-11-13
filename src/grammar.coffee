@@ -57,7 +57,6 @@ grammar =
   # all parsing must end here.
   Root: [
     o '',                                       -> new Expressions
-    o 'TERMINATOR',                             -> new Expressions
     o 'Body'
     o 'Block TERMINATOR'
   ]
