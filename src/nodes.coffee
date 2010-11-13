@@ -686,6 +686,14 @@ exports.Class = class Class extends Base
         node.klass    = name
         node.context  = name if node.bound
 
+  # Ensure that all functions bound to the instance are proxied in the
+  # constructor.
+  addBoundFunctions: (o) ->
+    if @boundFuncs.length
+      for bvar in @boundFuncs
+        bname = bvar.compile o
+        @ctor.body.unshift new Literal "this.#{bname} = #{utility 'bind'}(this.#{bname}, this);"
+
   # Merge the properties from a top-level object as prototypal properties
   # on the class.
   addProperties: (node, name) ->
@@ -702,26 +710,17 @@ exports.Class = class Class extends Base
           func.bound = no
       assign
 
-  # Instead of generating the JavaScript string directly, we build up the
-  # equivalent syntax tree and compile that, in pieces. You can see the
-  # constructor, property assignments, and inheritance getting built out below.
-  compileNode: (o) ->
-    ctor = null
-
-    decl  = @determineName()
-    name  = decl or @name or '_Class'
-    lname = new Literal name
-    @setContext name
-
+  # Walk the body of the class, looking for prototype properties to be converted.
+  walkBody: (name) ->
     for node, i in exps = @body.expressions
       if node instanceof Value and node.isObject(true)
         exps[i] = compact @addProperties node, name
       else if node instanceof Code
-        if ctor
+        if @ctor
           throw new Error 'cannot define more than one constructor in a class'
         if node.bound
           throw new Error 'cannot define a constructor as a bound function'
-        ctor = node
+        @ctor = node
         exps[i] = null
       else
         node.traverseChildren false, (n2) =>
@@ -730,23 +729,33 @@ exports.Class = class Class extends Base
               if expr2 instanceof Value and expr2.isObject(true)
                 n2.expressions[j] = compact @addProperties expr2, name
             n2.expressions = flatten n2.expressions
-
     @body.expressions = exps = compact flatten exps
-    unless ctor
-      ctor = new Code
-      if @parent
-        ctor.body.push new Call 'super', [new Splat new Literal 'arguments']
-    ctor.ctor     = ctor.name = name
-    ctor.klass    = null
-    ctor.noReturn = yes
-    exps.unshift new Extends lname, @parent if @parent
-    exps.unshift ctor
-    exps.push lname
 
-    if @boundFuncs.length
-      for bvar in @boundFuncs
-        bname = bvar.compile o
-        ctor.body.unshift new Literal "this.#{bname} = #{utility 'bind'}(this.#{bname}, this);"
+  # Make sure that a constructor is defined for the class, and properly
+  # configured.
+  ensureConstructor: (name) ->
+    if not @ctor
+      @ctor = new Code
+      @ctor.body.push new Call 'super', [new Splat new Literal 'arguments'] if @parent
+    @ctor.ctor     = @ctor.name = name
+    @ctor.klass    = null
+    @ctor.noReturn = yes
+
+  # Instead of generating the JavaScript string directly, we build up the
+  # equivalent syntax tree and compile that, in pieces. You can see the
+  # constructor, property assignments, and inheritance getting built out below.
+  compileNode: (o) ->
+    decl  = @determineName()
+    name  = decl or @name or '_Class'
+    lname = new Literal name
+
+    @setContext name
+    @walkBody name
+    @ensureConstructor name
+    @body.expressions.unshift new Extends lname, @parent if @parent
+    @body.expressions.unshift @ctor
+    @body.expressions.push lname
+    @addBoundFunctions o
 
     klass = new Parens new Call(new Code [], @body), true
     klass = new Assign new Value(lname), klass if decl and @variable?.isComplex()
