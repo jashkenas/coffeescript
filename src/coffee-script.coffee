@@ -1,7 +1,7 @@
 # CoffeeScript can be used both on the server, as a command-line compiler based
 # on Node.js/V8, or to run CoffeeScripts directly in the browser. This module
-# contains the main entry functions for tokenzing, parsing, and compiling source
-# CoffeeScript into JavaScript.
+# contains the main entry functions for tokenizing, parsing, and compiling
+# source CoffeeScript into JavaScript.
 #
 # If included on a webpage, it will automatically sniff out, compile, and
 # execute all scripts present in `text/coffeescript` tags.

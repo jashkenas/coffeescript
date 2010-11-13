@@ -18,7 +18,7 @@ exports.OptionParser = class OptionParser
 
   # Parse the list of arguments, populating an `options` object with all of the
   # specified options, and returning it. `options.arguments` will be an array
-  # containing the remaning non-option arguments. This is a simpler API than
+  # containing the remaining non-option arguments. This is a simpler API than
   # many option parsers that allow you to attach callback actions for every
   # flag. Instead, you're responsible for interpreting the options object.
   parse: (args) ->
