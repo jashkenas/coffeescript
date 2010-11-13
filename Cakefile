@@ -149,7 +149,7 @@ runTests = (CoffeeScript) ->
           CoffeeScript.run code.toString(), {fileName}
         catch err
           failedTests += 1
-          log "failed #{fileName}", red, '\n' + err.stack.toString()
+          log "failed #{fileName}", red, '\n' + err.stack?.toString()
 
 
 task 'test', 'run the CoffeeScript language test suite', ->

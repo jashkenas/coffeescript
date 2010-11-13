@@ -712,24 +712,19 @@ exports.Class = class Class extends Base
 
   # Walk the body of the class, looking for prototype properties to be converted.
   walkBody: (name) ->
-    for node, i in exps = @body.expressions
-      if node instanceof Value and node.isObject(true)
-        exps[i] = compact @addProperties node, name
-      else if node instanceof Code
-        if @ctor
-          throw new Error 'cannot define more than one constructor in a class'
-        if node.bound
-          throw new Error 'cannot define a constructor as a bound function'
-        @ctor = node
-        exps[i] = null
-      else
-        node.traverseChildren false, (n2) =>
-          if n2 instanceof Expressions
-            for expr2, j in n2.expressions
-              if expr2 instanceof Value and expr2.isObject(true)
-                n2.expressions[j] = compact @addProperties expr2, name
-            n2.expressions = flatten n2.expressions
-    @body.expressions = exps = compact flatten exps
+    @traverseChildren false, (child) =>
+      if child instanceof Expressions
+        for node, i in exps = child.expressions
+          if node instanceof Value and node.isObject(true)
+            exps[i] = compact @addProperties node, name
+          else if node instanceof Code
+            if @ctor
+              throw new Error 'cannot define more than one constructor in a class'
+            if node.bound
+              throw new Error 'cannot define a constructor as a bound function'
+            @ctor = node
+            exps[i] = null
+        child.expressions = exps = compact flatten exps
 
   # Make sure that a constructor is defined for the class, and properly
   # configured.
