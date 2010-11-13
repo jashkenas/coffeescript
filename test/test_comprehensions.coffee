@@ -194,3 +194,15 @@ odds = while i--
   i
 
 ok odds.join(', ') is '5, 3, 1'
+
+
+# Post-`for` chains.
+func = ->
+  a * b * c * d * e          \
+  for k, a of {1: 1}         \
+  for b in [2]               \
+  for c in [3, 4] by -1      \
+  for d in [5, 6] when d & 1 \
+  for e from 7 to 8
+
+eq func().toString(), '280,210,320,240'
