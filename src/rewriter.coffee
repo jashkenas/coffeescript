@@ -96,8 +96,8 @@ class exports.Rewriter
     stack = []
     start = null
     condition = (token, i) ->
-      return false if 'HERECOMMENT' in [@tag(i + 1), @tag(i - 1)]
       {(i+1): one, (i+2): two, (i+3): three} = @tokens
+      return false if 'HERECOMMENT' is one?[0]
       [tag] = token
       tag in ['TERMINATOR', 'OUTDENT'] and
         not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':') or
