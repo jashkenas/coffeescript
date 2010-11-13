@@ -15,7 +15,7 @@
 # The Lexer Class
 # ---------------
 
-# The Lexer class reads a stream of CoffeeScript and divvys it up into tagged
+# The Lexer class reads a stream of CoffeeScript and divvies it up into tagged
 # tokens. Some potential ambiguity in the grammar has been avoided by
 # pushing some extra smarts into the Lexer.
 exports.Lexer = class Lexer
@@ -304,7 +304,7 @@ exports.Lexer = class Lexer
     @tokens.pop() if @value() is '\\'
     this
 
-  # We treat all other single characters as a token. Eg.: `( ) , . !`
+  # We treat all other single characters as a token. E.g.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
   # the proper order of operations. There are some symbols that we tag specially
   # here. `;` and newlines are both treated as a `TERMINATOR`, we distinguish
@@ -628,7 +628,7 @@ SHIFT   = ['<<', '>>', '>>>']
 # Comparison tokens.
 COMPARE = ['==', '!=', '<', '>', '<=', '>=']
 
-# Mathmatical tokens.
+# Mathematical tokens.
 MATH    = ['*', '/', '%']
 
 # Relational tokens that are negatable with `not` prefix.

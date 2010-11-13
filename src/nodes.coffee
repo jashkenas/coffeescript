@@ -77,7 +77,7 @@ exports.Base = class Base
 
   # Construct a node that returns the current node's result.
   # Note that this is overridden for smarter behavior for
-  # many statement nodes (eg If, For)...
+  # many statement nodes (e.g. If, For)...
   makeReturn: ->
     new Return this
 
@@ -371,7 +371,7 @@ exports.Value = class Value extends Base
     [base.push(name), new Value(bref or base.base, [nref or name])]
 
   # We compile a value to JavaScript by compiling and joining each property.
-  # Things get much more insteresting if the chain of properties has *soak*
+  # Things get much more interesting if the chain of properties has *soak*
   # operators `?.` interspersed. Then we have to take care not to accidentally
   # evaluate anything twice when building the soak chain.
   compileNode: (o) ->
@@ -433,7 +433,8 @@ exports.Call = class Call extends Base
     @isNew = true
     this
 
-  # Grab the reference to the superclass' implementation of the current method.
+  # Grab the reference to the superclass's implementation of the current
+  # method.
   superReference: (o) ->
     {method} = o.scope
     throw SyntaxError 'cannot call super outside of a function.' unless method

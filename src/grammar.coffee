@@ -62,7 +62,7 @@ grammar =
     o 'Block TERMINATOR'
   ]
 
-  # Any list of statements and expressions, seperated by line breaks or semicolons.
+  # Any list of statements and expressions, separated by line breaks or semicolons.
   Body: [
     o 'Line',                                   -> Expressions.wrap [$1]
     o 'Body TERMINATOR Line',                   -> $1.push $3

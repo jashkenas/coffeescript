@@ -317,7 +317,7 @@ _.zip = ->
 
 
 # If the browser doesn't supply us with **indexOf** (I'm looking at you, MSIE),
-# we need this function. Return the position of the first occurence of an
+# we need this function. Return the position of the first occurrence of an
 # item in an array, or -1 if the item is not included in the array.
 _.indexOf = (array, item) ->
   return array.indexOf item if nativeIndexOf and array.indexOf is nativeIndexOf

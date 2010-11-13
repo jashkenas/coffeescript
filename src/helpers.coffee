@@ -15,7 +15,7 @@ exports.ends = (string, literal, back) ->
 exports.compact = (array) ->
   item for item in array when item
 
-# Count the number of occurences of a character in a string.
+# Count the number of occurrences of a character in a string.
 exports.count = (string, letter) ->
   num = pos = 0
   num++ while pos = 1 + string.indexOf letter, pos
