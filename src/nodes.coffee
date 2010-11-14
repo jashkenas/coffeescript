@@ -101,10 +101,11 @@ exports.Base = class Base
 
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
-  toString: (idt = '', override) ->
-    children = (child.toString idt + TAB for child in @collectChildren()).join('')
-    klass = override or @constructor.name + if @soak then '?' else ''
-    '\n' + idt + klass + children
+  toString: (idt = '', name = @constructor.name) ->
+    tree = '\n' + idt + name
+    tree += '?' if @soak
+    @eachChild (node) -> tree += node.toString idt + TAB
+    tree
 
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
@@ -113,11 +114,6 @@ exports.Base = class Base
       for child in flatten [@[attr]]
         return this if func(child) is false
     this
-
-  collectChildren: ->
-    nodes = []
-    @eachChild (node) -> nodes.push node
-    nodes
 
   traverseChildren: (crossScope, func) ->
     @eachChild (child) ->
