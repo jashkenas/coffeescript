@@ -1047,19 +1047,19 @@ exports.Op = class Op extends Base
     if op is 'new'
       return first.newInstance() if first instanceof Call
       first = new Parens first   if first instanceof Code and first.bound
-    @operator = @CONVERSIONS[op] or op
+    @operator = CONVERSIONS[op] or op
     @first    = first
     @second   = second
     @flip     = !!flip
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
-  CONVERSIONS:
+  CONVERSIONS =
     '==': '==='
     '!=': '!=='
     'of': 'in'
 
   # The map of invertible operators.
-  INVERSIONS:
+  INVERSIONS =
     '!==': '==='
     '===': '!=='
     '>':   '<='
@@ -1078,11 +1078,14 @@ exports.Op = class Op extends Base
     @operator in ['<', '>', '>=', '<=', '===', '!==']
 
   invert: ->
-    if op = @INVERSIONS[@operator]
+    if op = INVERSIONS[@operator]
       @operator = op
       this
     else if @second
       new Parens(this).invert()
+    else if @operator is '!' and (fst = @first.unwrap()) instanceof Op and
+                                  fst.operator in ['!', 'in', 'instanceof']
+      fst
     else
       new Op '!', this
 

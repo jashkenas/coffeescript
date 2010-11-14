@@ -54,11 +54,17 @@ ok result
 
 # Should be able to handle switches sans-condition.
 result = switch
-  when null then 1
-  when 'truthful string' then 2
-  else 3
+  when null                     then 0
+  when !1                       then 1
+  when '' not of {''}           then 2
+  when [] not instanceof Array  then 3
+  when true is false            then 4
+  when 'x' < 'y' > 'z'          then 5
+  when 'a' in ['b', 'c']        then 6
+  when 'd' in (['e', 'f'])      then 7
+  else ok
 
-ok result is 2
+eq result, ok
 
 
 # Should be able to use "@properties" within the switch clause.
