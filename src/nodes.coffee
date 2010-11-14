@@ -842,7 +842,7 @@ exports.Assign = class Assign extends Base
         else
           acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
         val = new Value new Literal(vvar), [new (if acc then Accessor else Index) idx]
-      assigns.push new Assign(obj, val).compile o, LEVEL_LIST
+      assigns.push new Assign(obj, val).compile o, LEVEL_TOP
     assigns.push vvar unless top
     code = assigns.join ', '
     if o.level < LEVEL_LIST then code else "(#{code})"
