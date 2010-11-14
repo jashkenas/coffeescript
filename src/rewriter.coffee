@@ -93,16 +93,17 @@ class exports.Rewriter
   # Object literals may be written with implicit braces, for simple cases.
   # Insert the missing braces here, so that the parser doesn't have to.
   addImplicitBraces: ->
-    stack = []
-    start = null
+    stack       = []
+    start       = null
+    startIndent = 0
     condition = (token, i) ->
       {(i+1): one, (i+2): two, (i+3): three} = @tokens
       return false if 'HERECOMMENT' is one?[0]
       [tag] = token
-      tag in ['TERMINATOR', 'OUTDENT'] and
-        not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':') or
-      tag is ',' and one and
-        one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT', '(']
+      (tag in ['TERMINATOR', 'OUTDENT'] and
+        not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':')) or
+        (tag is ',' and one and
+          one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT', '('])
     action = (token, i) -> @tokens.splice i, 0, ['}', '}', token[2]]
     @scanTokens (token, i, tokens) ->
       if (tag = token[0]) in EXPRESSION_START

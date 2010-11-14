@@ -150,7 +150,7 @@ exports.Base = class Base
 # indented block of code -- the implementation of a function, a clause in an
 # `if`, `switch`, or `try`, and so on...
 exports.Expressions = class Expressions extends Base
-  (nodes) ->
+  constructor: (nodes) ->
     @expressions = compact flatten nodes or []
 
   children: ['expressions']
@@ -251,7 +251,7 @@ exports.Expressions = class Expressions extends Base
 # JavaScript without translation, such as: strings, numbers,
 # `true`, `false`, `null`...
 exports.Literal = class Literal extends Base
-  (@value) ->
+  constructor: (@value) ->
 
   makeReturn: ->
     if @isPureStatement() then this else new Return this
@@ -280,7 +280,7 @@ exports.Literal = class Literal extends Base
 # A `return` is a *pureStatement* -- wrapping it in a closure wouldn't
 # make sense.
 exports.Return = class Return extends Base
-  (@expression) ->
+  constructor: (@expression) ->
 
   children: ['expression']
 
@@ -301,7 +301,7 @@ exports.Return = class Return extends Base
 # A value, variable or literal or parenthesized, indexed or dotted into,
 # or vanilla.
 exports.Value = class Value extends Base
-  (base, props, tag) ->
+  constructor: (base, props, tag) ->
     return base if not props and base instanceof Value
     @base       = base
     @properties = props or []
@@ -393,7 +393,7 @@ exports.Value = class Value extends Base
 # CoffeeScript passes through block comments as JavaScript block comments
 # at the same position.
 exports.Comment = class Comment extends Base
-  (@comment) ->
+  constructor: (@comment) ->
 
   isPureStatement: YES
   isStatement:     YES
@@ -409,7 +409,7 @@ exports.Comment = class Comment extends Base
 # Node for a function invocation. Takes care of converting `super()` calls into
 # calls against the prototype's function of the same name.
 exports.Call = class Call extends Base
-  (variable, @args = [], @soak) ->
+  constructor: (variable, @args = [], @soak) ->
     @isNew    = false
     @isSuper  = variable is 'super'
     @variable = if @isSuper then null else variable
@@ -511,7 +511,7 @@ exports.Call = class Call extends Base
 # After `goog.inherits` from the
 # [Closure Library](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.html).
 exports.Extends = class Extends extends Base
-  (@child, @parent) ->
+  constructor: (@child, @parent) ->
 
   children: ['child', 'parent']
 
@@ -525,7 +525,7 @@ exports.Extends = class Extends extends Base
 # A `.` accessor into a property of a value, or the `::` shorthand for
 # an accessor into the object's prototype.
 exports.Accessor = class Accessor extends Base
-  (@name, tag) ->
+  constructor: (@name, tag) ->
     @proto = if tag is 'proto' then '.prototype' else ''
     @soak  = tag is 'soak'
 
@@ -541,7 +541,7 @@ exports.Accessor = class Accessor extends Base
 
 # A `[ ... ]` indexed accessor into an array or object.
 exports.Index = class Index extends Base
-  (@index) ->
+  constructor: (@index) ->
 
   children: ['index']
 
@@ -555,7 +555,7 @@ exports.Index = class Index extends Base
 
 # An object literal, nothing fancy.
 exports.Obj = class Obj extends Base
-  (props, @generated = false) ->
+  constructor: (props, @generated = false) ->
     @objects = @properties = props or []
 
   children: ['properties']
@@ -618,7 +618,7 @@ exports.Obj = class Obj extends Base
 
 # An array literal.
 exports.Arr = class Arr extends Base
-  (objs) ->
+  constructor: (objs) ->
     @objects = objs or []
 
   children: ['objects']
@@ -643,7 +643,7 @@ exports.Arr = class Arr extends Base
 # Initialize a **Class** with its name, an optional superclass, and a
 # list of prototype property assignments.
 exports.Class = class Class extends Base
-  (@variable, @parent, @body = new Expressions) ->
+  constructor: (@variable, @parent, @body = new Expressions) ->
     @boundFuncs = []
 
   children: ['variable', 'parent', 'body']
@@ -684,11 +684,22 @@ exports.Class = class Class extends Base
         base = assign.variable.base
         delete assign.context
         func = assign.value
-        unless assign.variable.this
-          assign.variable = new Value(new Literal(name), [new Accessor(base, 'proto')])
-        if func instanceof Code and func.bound
-          @boundFuncs.push base
-          func.bound = no
+        if base.value is 'constructor'
+          if @ctor
+            throw new Error 'cannot define more than one constructor in a class'
+          if func.bound
+            throw new Error 'cannot define a constructor as a bound function'
+          if func instanceof Code
+            @ctor = func
+          else
+            @ctor = new Assign(new Value(new Literal name), func)
+          assign = null
+        else
+          unless assign.variable.this
+            assign.variable = new Value(new Literal(name), [new Accessor(base, 'proto')])
+          if func instanceof Code and func.bound
+            @boundFuncs.push base
+            func.bound = no
       assign
 
   # Walk the body of the class, looking for prototype properties to be converted.
@@ -698,13 +709,6 @@ exports.Class = class Class extends Base
         for node, i in exps = child.expressions
           if node instanceof Value and node.isObject(true)
             exps[i] = compact @addProperties node, name
-          else if node instanceof Code
-            if @ctor
-              throw new Error 'cannot define more than one constructor in a class'
-            if node.bound
-              throw new Error 'cannot define a constructor as a bound function'
-            @ctor = node
-            exps[i] = null
         child.expressions = exps = compact flatten exps
 
   # Make sure that a constructor is defined for the class, and properly
@@ -743,7 +747,7 @@ exports.Class = class Class extends Base
 # The **Assign** is used to assign a local variable to value, or to set the
 # property of an object -- including within object literals.
 exports.Assign = class Assign extends Base
-  (@variable, @value, @context) ->
+  constructor: (@variable, @value, @context) ->
 
   # Matchers for detecting class/method names
   METHOD_DEF: /^(?:(\S+)\.prototype\.|\S+?)?\b([$A-Za-z_][$\w]*)$/
@@ -860,7 +864,7 @@ exports.Assign = class Assign extends Base
 # When for the purposes of walking the contents of a function body, the Code
 # has no *children* -- they're within the inner scope.
 exports.Code = class Code extends Base
-  (params, body, tag) ->
+  constructor: (params, body, tag) ->
     @params  = params or []
     @body    = body or new Expressions
     @bound   = tag is 'boundfunc'
@@ -926,7 +930,7 @@ exports.Code = class Code extends Base
 # these parameters can also attach themselves to the context of the function,
 # as well as be a splat, gathering up a group of parameters into an array.
 exports.Param = class Param extends Base
-  (@name, @value, @splat) ->
+  constructor: (@name, @value, @splat) ->
 
   children: ['name', 'value']
 
@@ -953,7 +957,7 @@ exports.Splat = class Splat extends Base
 
   isAssignable: YES
 
-  (name) ->
+  constructor: (name) ->
     @name = if name.compile then name else new Literal name
 
   assigns: (name) ->
@@ -988,7 +992,7 @@ exports.Splat = class Splat extends Base
 # it, all other loops can be manufactured. Useful in cases where you need more
 # flexibility or more speed than a comprehension can provide.
 exports.While = class While extends Base
-  (condition, options) ->
+  constructor: (condition, options) ->
     @condition = if options?.invert then condition.invert() else condition
     @guard     = options?.guard
 
@@ -1038,7 +1042,7 @@ exports.While = class While extends Base
 # Simple Arithmetic and logical operations. Performs some conversion from
 # CoffeeScript operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
-  (op, first, second, flip) ->
+  constructor: (op, first, second, flip) ->
     return new In first, second if op is 'in'
     if op is 'new'
       return first.newInstance() if first instanceof Call
@@ -1129,7 +1133,7 @@ exports.Op = class Op extends Base
 
 #### In
 exports.In = class In extends Base
-  (@object, @array) ->
+  constructor: (@object, @array) ->
 
   children: ['object', 'array']
 
@@ -1164,7 +1168,7 @@ exports.In = class In extends Base
 
 # A classic *try/catch/finally* block.
 exports.Try = class Try extends Base
-  (@attempt, @error, @recovery, @ensure) ->
+  constructor: (@attempt, @error, @recovery, @ensure) ->
 
   children: ['attempt', 'recovery', 'ensure']
 
@@ -1194,7 +1198,7 @@ exports.Try = class Try extends Base
 
 # Simple node to throw an exception.
 exports.Throw = class Throw extends Base
-  (@expression) ->
+  constructor: (@expression) ->
 
   children: ['expression']
 
@@ -1212,7 +1216,7 @@ exports.Throw = class Throw extends Base
 # similar to `.nil?` in Ruby, and avoids having to consult a JavaScript truth
 # table.
 exports.Existence = class Existence extends Base
-  (@expression) ->
+  constructor: (@expression) ->
 
   children: ['expression']
 
@@ -1238,7 +1242,7 @@ exports.Existence = class Existence extends Base
 #
 # Parentheses are a good way to force any statement to become an expression.
 exports.Parens = class Parens extends Base
-  (@expression) ->
+  constructor: (@expression) ->
 
   children: ['expression']
 
@@ -1265,7 +1269,7 @@ exports.Parens = class Parens extends Base
 # the current index of the loop as a second parameter. Unlike Ruby blocks,
 # you can map and filter in a single pass.
 exports.For = class For extends Base
-  (body, head) ->
+  constructor: (body, head) ->
     if head.index instanceof Value
       throw SyntaxError 'index cannot be a pattern matching expression'
     extend this, head
@@ -1398,7 +1402,7 @@ exports.For = class For extends Base
 
 # A JavaScript *switch* statement. Converts into a returnable expression on-demand.
 exports.Switch = class Switch extends Base
-  (@subject, @cases, @otherwise) ->
+  constructor: (@subject, @cases, @otherwise) ->
 
   children: ['subject', 'cases', 'otherwise']
 
@@ -1433,7 +1437,7 @@ exports.Switch = class Switch extends Base
 # Single-expression **Ifs** are compiled into conditional operators if possible,
 # because ternaries are already proper expressions, and don't need conversion.
 exports.If = class If extends Base
-  (condition, @body, options = {}) ->
+  constructor: (condition, @body, options = {}) ->
     @condition = if options.invert then condition.invert() else condition
     @elseBody  = null
     @isChain   = false
