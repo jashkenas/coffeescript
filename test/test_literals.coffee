@@ -264,3 +264,12 @@ eq ok, obj.key
 #764: Boolean/Number should be indexable.
 ok 42['toString']
 ok on['toString']
+
+
+# String-keyed objects shouldn't suppress newlines.
+one =
+  '>!': 3
+six: -> 10
+
+ok not one.six
+

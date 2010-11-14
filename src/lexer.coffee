@@ -597,7 +597,7 @@ MULTILINER      = /\n/g
 
 HEREDOC_INDENT  = /\n+([^\n\S]*)/g
 
-ASSIGNED        = /^\s*@?[$A-Za-z_][$\w]*[^\n\S]*?[:=][^:=>]/
+ASSIGNED        = /^\s*@?([$A-Za-z_][$\w]*|['"].*['"])[^\n\S]*?[:=][^:=>]/
 
 LINE_CONTINUER  = /// ^ \s* (?: , | \??\.(?!\.) | :: ) ///
 
