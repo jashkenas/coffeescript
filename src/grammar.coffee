@@ -78,10 +78,8 @@ grammar =
   Statement: [
     o 'Return'
     o 'Throw'
-    o 'BREAK',                                  -> new Literal $1
-    o 'CONTINUE',                               -> new Literal $1
-    o 'DEBUGGER',                               -> new Literal $1
     o 'Comment'
+    o 'STATEMENT',                              -> new Literal $1
   ]
 
   # All the different types of expressions in our language. The basic unit of

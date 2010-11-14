@@ -126,6 +126,7 @@ exports.Lexer = class Lexer
         when '==', '!='                           then 'COMPARE'
         when '&&', '||'                           then 'LOGIC'
         when 'true', 'false', 'null', 'undefined' then 'BOOL'
+        when 'break', 'continue', 'debugger'      then 'STATEMENT'
         else  tag
 
     @token tag, id
