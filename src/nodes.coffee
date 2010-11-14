@@ -37,7 +37,7 @@ exports.Base = class Base
   # return results).
   compile: (o, lvl) ->
     o        = extend {}, o
-    o.level  = lvl if lvl?
+    o.level  = lvl if lvl
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
     if o.level is LEVEL_TOP or node.isPureStatement() or not node.isStatement(o)
@@ -405,7 +405,7 @@ exports.Comment = class Comment extends Base
 
   compileNode: (o, level) ->
     code = '/*' + multident(@comment, @tab) + '*/'
-    code = o.indent + code if (level ? o.level) is LEVEL_TOP
+    code = o.indent + code if (level or o.level) is LEVEL_TOP
     code
 
 #### Call
@@ -1590,12 +1590,12 @@ UTILITIES =
 
 # Levels indicates a node's position in the AST. Useful for knowing if
 # parens are necessary or superfluous.
-LEVEL_TOP    = 0  # ...;
-LEVEL_PAREN  = 1  # (...)
-LEVEL_LIST   = 2  # [...]
-LEVEL_COND   = 3  # ... ? x : y
-LEVEL_OP     = 4  # !...
-LEVEL_ACCESS = 5  # ...[0]
+LEVEL_TOP    = 1  # ...;
+LEVEL_PAREN  = 2  # (...)
+LEVEL_LIST   = 3  # [...]
+LEVEL_COND   = 4  # ... ? x : y
+LEVEL_OP     = 5  # !...
+LEVEL_ACCESS = 6  # ...[0]
 
 # Tabs are two spaces for pretty printing.
 TAB = '  '
