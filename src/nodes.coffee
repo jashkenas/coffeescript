@@ -154,11 +154,10 @@ exports.Base = class Base
 # indented block of code -- the implementation of a function, a clause in an
 # `if`, `switch`, or `try`, and so on...
 exports.Expressions = class Expressions extends Base
-
-  children: ['expressions']
-
   (nodes) ->
     @expressions = compact flatten nodes or []
+
+  children: ['expressions']
 
   # Tack an expression on to the end of this expression list.
   push: (node) ->
@@ -256,7 +255,6 @@ exports.Expressions = class Expressions extends Base
 # JavaScript without translation, such as: strings, numbers,
 # `true`, `false`, `null`...
 exports.Literal = class Literal extends Base
-
   (@value) ->
 
   makeReturn: ->
@@ -286,15 +284,13 @@ exports.Literal = class Literal extends Base
 # A `return` is a *pureStatement* -- wrapping it in a closure wouldn't
 # make sense.
 exports.Return = class Return extends Base
+  (@expression) ->
 
   children: ['expression']
 
-  isStatement    : YES
+  isStatement:     YES
   isPureStatement: YES
-
-  (@expression) ->
-
-  makeReturn: THIS
+  makeReturn:      THIS
 
   compile: (o, level) ->
     expr = @expression?.makeReturn()
@@ -309,15 +305,13 @@ exports.Return = class Return extends Base
 # A value, variable or literal or parenthesized, indexed or dotted into,
 # or vanilla.
 exports.Value = class Value extends Base
-
-  children: ['base', 'properties']
-
-  # A **Value** has a base and a list of property accesses.
   (base, props, tag) ->
     return base if not props and base instanceof Value
     @base       = base
     @properties = props or []
     @[tag]      = true if tag
+
+  children: ['base', 'properties']
 
   # Add a property access to the list.
   push: (prop) ->
@@ -403,7 +397,6 @@ exports.Value = class Value extends Base
 # CoffeeScript passes through block comments as JavaScript block comments
 # at the same position.
 exports.Comment = class Comment extends Base
-
   (@comment) ->
 
   isPureStatement: YES
@@ -420,13 +413,12 @@ exports.Comment = class Comment extends Base
 # Node for a function invocation. Takes care of converting `super()` calls into
 # calls against the prototype's function of the same name.
 exports.Call = class Call extends Base
-
-  children: ['variable', 'args']
-
   (variable, @args = [], @soak) ->
     @isNew    = false
     @isSuper  = variable is 'super'
     @variable = if @isSuper then null else variable
+
+  children: ['variable', 'args']
 
   # Tag this invocation as creating a new instance.
   newInstance: ->
@@ -523,10 +515,9 @@ exports.Call = class Call extends Base
 # After `goog.inherits` from the
 # [Closure Library](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.html).
 exports.Extends = class Extends extends Base
+  (@child, @parent) ->
 
   children: ['child', 'parent']
-
-  (@child, @parent) ->
 
   # Hooks one constructor into another's prototype chain.
   compile: (o) ->
@@ -538,12 +529,11 @@ exports.Extends = class Extends extends Base
 # A `.` accessor into a property of a value, or the `::` shorthand for
 # an accessor into the object's prototype.
 exports.Accessor = class Accessor extends Base
-
-  children: ['name']
-
   (@name, tag) ->
     @proto = if tag is 'proto' then '.prototype' else ''
     @soak  = tag is 'soak'
+
+  children: ['name']
 
   compile: (o) ->
     name = @name.compile o
@@ -555,10 +545,9 @@ exports.Accessor = class Accessor extends Base
 
 # A `[ ... ]` indexed accessor into an array or object.
 exports.Index = class Index extends Base
+  (@index) ->
 
   children: ['index']
-
-  (@index) ->
 
   compile: (o) ->
     (if @proto then '.prototype' else '') + "[#{ @index.compile o, LEVEL_PAREN }]"
@@ -570,11 +559,10 @@ exports.Index = class Index extends Base
 
 # An object literal, nothing fancy.
 exports.Obj = class Obj extends Base
-
-  children: ['properties']
-
   (props, @generated = false) ->
     @objects = @properties = props or []
+
+  children: ['properties']
 
   compileNode: (o) ->
     props = @properties
@@ -634,11 +622,10 @@ exports.Obj = class Obj extends Base
 
 # An array literal.
 exports.Arr = class Arr extends Base
-
-  children: ['objects']
-
   (objs) ->
     @objects = objs or []
+
+  children: ['objects']
 
   compileNode: (o) ->
     return '[]' unless @objects.length
@@ -657,15 +644,13 @@ exports.Arr = class Arr extends Base
 #### Class
 
 # The CoffeeScript class definition.
-# TODO: Refactor and comment.
+# Initialize a **Class** with its name, an optional superclass, and a
+# list of prototype property assignments.
 exports.Class = class Class extends Base
-
-  children: ['variable', 'parent', 'body']
-
-  # Initialize a **Class** with its name, an optional superclass, and a
-  # list of prototype property assignments.
   (@variable, @parent, @body = new Expressions) ->
     @boundFuncs = []
+
+  children: ['variable', 'parent', 'body']
 
   # Figure out the appropriate name for the constructor function of this class.
   determineName: ->
@@ -762,13 +747,12 @@ exports.Class = class Class extends Base
 # The **Assign** is used to assign a local variable to value, or to set the
 # property of an object -- including within object literals.
 exports.Assign = class Assign extends Base
+  (@variable, @value, @context) ->
 
   # Matchers for detecting class/method names
   METHOD_DEF: /^(?:(\S+)\.prototype\.|\S+?)?\b([$A-Za-z_][$\w]*)$/
 
   children: ['variable', 'value']
-
-  (@variable, @value, @context) ->
 
   assigns: (name) ->
     @[if @context is 'object' then 'value' else 'variable'].assigns name
@@ -880,14 +864,13 @@ exports.Assign = class Assign extends Base
 # When for the purposes of walking the contents of a function body, the Code
 # has no *children* -- they're within the inner scope.
 exports.Code = class Code extends Base
-
-  children: ['params', 'body']
-
   (params, body, tag) ->
     @params  = params or []
     @body    = body or new Expressions
     @bound   = tag is 'boundfunc'
     @context = 'this' if @bound
+
+  children: ['params', 'body']
 
   isStatement: -> !!@ctor
 
@@ -947,10 +930,9 @@ exports.Code = class Code extends Base
 # these parameters can also attach themselves to the context of the function,
 # as well as be a splat, gathering up a group of parameters into an array.
 exports.Param = class Param extends Base
+  (@name, @value, @splat) ->
 
   children: ['name', 'value']
-
-  (@name, @value, @splat) ->
 
   compile: (o) ->
     @name.compile o, LEVEL_LIST
@@ -1010,14 +992,13 @@ exports.Splat = class Splat extends Base
 # it, all other loops can be manufactured. Useful in cases where you need more
 # flexibility or more speed than a comprehension can provide.
 exports.While = class While extends Base
+  (condition, options) ->
+    @condition = if options?.invert then condition.invert() else condition
+    @guard     = options?.guard
 
   children: ['condition', 'guard', 'body']
 
   isStatement: YES
-
-  (condition, options) ->
-    @condition = if options?.invert then condition.invert() else condition
-    @guard     = options?.guard
 
   makeReturn: ->
     @returns = yes
@@ -1061,6 +1042,15 @@ exports.While = class While extends Base
 # Simple Arithmetic and logical operations. Performs some conversion from
 # CoffeeScript operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
+  (op, first, second, flip) ->
+    return new In first, second if op is 'in'
+    if op is 'new'
+      return first.newInstance() if first instanceof Call
+      first = new Parens first   if first instanceof Code and first.bound
+    @operator = @CONVERSIONS[op] or op
+    @first    = first
+    @second   = second
+    @flip     = !!flip
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
   CONVERSIONS:
@@ -1078,16 +1068,6 @@ exports.Op = class Op extends Base
     '>=':  '<'
 
   children: ['first', 'second']
-
-  (op, first, second, flip) ->
-    return new In first, second if op is 'in'
-    if op is 'new'
-      return first.newInstance() if first instanceof Call
-      first = new Parens first   if first instanceof Code and first.bound
-    @operator = @CONVERSIONS[op] or op
-    @first    = first
-    @second   = second
-    @flip     = !!flip
 
   isUnary: ->
     not @second
@@ -1153,12 +1133,11 @@ exports.Op = class Op extends Base
 
 #### In
 exports.In = class In extends Base
+  (@object, @array) ->
 
   children: ['object', 'array']
 
   invert: NEGATE
-
-  (@object, @array) ->
 
   compileNode: (o) ->
     if @array instanceof Value and @array.isArray()
@@ -1189,12 +1168,11 @@ exports.In = class In extends Base
 
 # A classic *try/catch/finally* block.
 exports.Try = class Try extends Base
+  (@attempt, @error, @recovery, @ensure) ->
 
   children: ['attempt', 'recovery', 'ensure']
 
   isStatement: YES
-
-  (@attempt, @error, @recovery, @ensure) ->
 
   makeReturn: ->
     @attempt  = @attempt .makeReturn() if @attempt
@@ -1220,12 +1198,11 @@ exports.Try = class Try extends Base
 
 # Simple node to throw an exception.
 exports.Throw = class Throw extends Base
+  (@expression) ->
 
   children: ['expression']
 
   isStatement: YES
-
-  (@expression) ->
 
   # A **Throw** is already a return, of sorts...
   makeReturn: THIS
@@ -1239,12 +1216,11 @@ exports.Throw = class Throw extends Base
 # similar to `.nil?` in Ruby, and avoids having to consult a JavaScript truth
 # table.
 exports.Existence = class Existence extends Base
+  (@expression) ->
 
   children: ['expression']
 
   invert: NEGATE
-
-  (@expression) ->
 
   compileNode: (o) ->
     code = @expression.compile o, LEVEL_OP
@@ -1266,10 +1242,9 @@ exports.Existence = class Existence extends Base
 #
 # Parentheses are a good way to force any statement to become an expression.
 exports.Parens = class Parens extends Base
+  (@expression) ->
 
   children: ['expression']
-
-  (@expression) ->
 
   unwrap    : -> @expression
   isComplex : -> @expression.isComplex()
@@ -1294,11 +1269,6 @@ exports.Parens = class Parens extends Base
 # the current index of the loop as a second parameter. Unlike Ruby blocks,
 # you can map and filter in a single pass.
 exports.For = class For extends Base
-
-  children: ['body', 'source', 'guard', 'step', 'from', 'to']
-
-  isStatement: YES
-
   (body, head) ->
     if head.index instanceof Value
       throw SyntaxError 'index cannot be a pattern matching expression'
@@ -1306,6 +1276,10 @@ exports.For = class For extends Base
     @body    = Expressions.wrap [body]
     @pattern = @name instanceof Value
     @returns = false
+
+  children: ['body', 'source', 'guard', 'step', 'from', 'to']
+
+  isStatement: YES
 
   makeReturn: ->
     @returns = yes
@@ -1428,12 +1402,11 @@ exports.For = class For extends Base
 
 # A JavaScript *switch* statement. Converts into a returnable expression on-demand.
 exports.Switch = class Switch extends Base
+  (@subject, @cases, @otherwise) ->
 
   children: ['subject', 'cases', 'otherwise']
 
   isStatement: YES
-
-  (@subject, @cases, @otherwise) ->
 
   makeReturn: ->
     pair[1].makeReturn() for pair in @cases
@@ -1464,14 +1437,13 @@ exports.Switch = class Switch extends Base
 # Single-expression **Ifs** are compiled into conditional operators if possible,
 # because ternaries are already proper expressions, and don't need conversion.
 exports.If = class If extends Base
-
-  children: ['condition', 'body', 'elseBody']
-
   (condition, @body, options = {}) ->
     @condition = if options.invert then condition.invert() else condition
     @elseBody  = null
     @isChain   = false
     {@soak}    = options
+
+  children: ['condition', 'body', 'elseBody']
 
   bodyNode:     -> @body?.unwrap()
   elseBodyNode: -> @elseBody?.unwrap()
@@ -1585,8 +1557,7 @@ unfoldSoak = (o, parent, name) ->
 UTILITIES =
 
   # Correctly set up a prototype chain for inheritance, including a reference
-  # to the superclass for `super()` calls. See:
-  # [goog.inherits](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.source.html#line1206).
+  # to the superclass for `super()` calls, and copies of any static properties.
   extends: '''
     function(child, parent) {
       function ctor() { this.constructor = child; }
@@ -1617,7 +1588,8 @@ UTILITIES =
   hasProp: 'Object.prototype.hasOwnProperty'
   slice  : 'Array.prototype.slice'
 
-# Levels indicates a node's position in the AST.
+# Levels indicates a node's position in the AST. Useful for knowing if
+# parens are necessary or superfluous.
 LEVEL_TOP    = 0  # ...;
 LEVEL_PAREN  = 1  # (...)
 LEVEL_LIST   = 2  # [...]
