@@ -230,14 +230,22 @@ exports.Expressions = class Expressions extends Base
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
   compileWithDeclarations: (o) ->
+    code = post = ''
+    for exp, i in @expressions
+      exp = exp.unwrap()
+      break unless exp instanceof Comment or exp instanceof Literal
     o.level = LEVEL_TOP
-    code    = @compileNode o
+    if i
+      rest = @expressions.splice i, @expressions.length
+      code = @compileNode o
+      @expressions = rest
+    post = @compileNode o
     {scope} = o
-    if scope.hasAssignments this
-      code = "#{@tab}var #{ multident scope.compiledAssignments(), @tab };\n#{code}"
     if not o.globals and o.scope.hasDeclarations this
-      code = "#{@tab}var #{ scope.compiledDeclarations() };\n#{code}"
-    code
+      code += "#{@tab}var #{ scope.compiledDeclarations() };\n"
+    if scope.hasAssignments this
+      code += "#{@tab}var #{ multident scope.compiledAssignments(), @tab };\n"
+    code + post
 
   # Wrap up the given nodes as an **Expressions**, unless it already happens
   # to be one.
