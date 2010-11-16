@@ -398,29 +398,22 @@ exports.Lexer = class Lexer
   # contents of the string. This method allows us to have strings within
   # interpolations within strings, ad infinitum.
   balancedString: (str, delimited, options = {}) ->
-    levels = []
-    i = 0
-    slen = str.length
-    while i < slen
-      if levels.length and str.charAt(i) is '\\'
-        i += 1
-      else
-        for pair in delimited
-          [open, close] = pair
-          if levels.length and starts(str, close, i) and last(levels) is pair
-            levels.pop()
-            i += close.length - 1
-            i += 1 unless levels.length
-            break
-          if starts str, open, i
-            levels.push(pair)
-            i += open.length - 1
-            break
-      break if not levels.length
-      i += 1
-    if levels.length
-      throw SyntaxError "Unterminated #{levels.pop()[0]} starting on line #{@line + 1}"
-    i and str.slice 0, i
+    stack = [delimited[0]]
+    for i from 1 to str.length - 1
+      switch str.charAt i
+        when '\\'
+          i++
+          continue
+        when stack[stack.length - 1][1]
+          stack.pop()
+          return str.slice 0, i + 1 unless stack.length
+          continue
+      for pair in delimited when (open = pair[0]) is str.substr i, open.length
+        stack.push pair
+        i += open.length - 1
+        break
+    throw new Error "unterminated #{ stack.pop()[0] } on line #{ @line + 1 }"
+
 
   # Expand variables and expressions inside double-quoted strings using
   # Ruby-like notation for substitution of arbitrary expressions.
