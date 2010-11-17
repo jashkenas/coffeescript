@@ -122,12 +122,19 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
     throw err if err
 
 task 'bench', 'quick benchmark of compilation time', ->
-  cs  = sources.map((name) -> fs.readFileSync name).join '\n'
-  now = Date.now()
-  js  = CoffeeScript.compile cs, bare: true
-  console.log """
-    #{bold}#{ Date.now() - now }[ms]#{reset} compiling #{js.length} bytes
-  """
+  {Rewriter} = require './lib/rewriter'
+  co     = sources.map((name) -> fs.readFileSync name).join '\n'
+  now    = Date.now()
+  time   = ->
+    bold + ('    ' + -(now - now = Date.now())).slice(-5) + reset + '[ms]'
+  tokens = CoffeeScript.tokens co, rewrite: false
+  console.log "Lex     :#{time()} (#{tokens.length} tokens)"
+  tokens = new Rewriter().rewrite tokens
+  console.log "Rewrite :#{time()} (#{tokens.length} tokens)"
+  nodes  = CoffeeScript.nodes tokens
+  console.log "Parse   :#{time()}"
+  js     = nodes.compile bare: true
+  console.log "Compile :#{time()} (#{js.length} bytes)"
 
 task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
   exec "cat #{ sources.join(' ') } | grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '", (err, stdout) ->
