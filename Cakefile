@@ -5,6 +5,7 @@ CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 
 # ANSI Terminal Colors.
+bold  = '\033[0;1m'
 red   = '\033[0;31m'
 green = '\033[0;32m'
 reset = '\033[0m'
@@ -19,6 +20,12 @@ header = """
    * Released under the MIT License
    */
 """
+
+sources = [
+  'src/coffee-script.coffee', 'src/grammar.coffee'
+  'src/helpers.coffee', 'src/lexer.coffee', 'src/nodes.coffee'
+  'src/rewriter.coffee', 'src/scope.coffee'
+]
 
 # Run a CoffeeScript through our node/coffee interpreter.
 run = (args) ->
@@ -114,12 +121,15 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
   exec 'docco examples/underscore.coffee && cp -rf docs documentation && rm -r docs', (err) ->
     throw err if err
 
-task 'bench', 'quick benchmark of compilation time (of everything in src)', ->
-  exec 'time bin/coffee -p src/ > /dev/null', (err, stdout, stderr) ->
-    console.log stderr.trim()
+task 'bench', 'quick benchmark of compilation time', ->
+  cs  = sources.map((name) -> fs.readFileSync name).join '\n'
+  now = Date.now()
+  js  = CoffeeScript.compile cs, bare: true
+  console.log """
+    #{bold}#{ Date.now() - now }[ms]#{reset} compiling #{js.length} bytes
+  """
 
 task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
-  sources = ['src/coffee-script.coffee', 'src/grammar.coffee', 'src/helpers.coffee', 'src/lexer.coffee', 'src/nodes.coffee', 'src/rewriter.coffee', 'src/scope.coffee']
   exec "cat #{ sources.join(' ') } | grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '", (err, stdout) ->
     console.log stdout.trim()
 
