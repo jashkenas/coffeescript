@@ -124,17 +124,19 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
 task 'bench', 'quick benchmark of compilation time', ->
   {Rewriter} = require './lib/rewriter'
   co     = sources.map((name) -> fs.readFileSync name).join '\n'
+  fmt    = (ms) -> " : #{bold}#{ "   #{ms}".slice -4 }#{reset}[ms]"
+  total  = 0
   now    = Date.now()
-  time   = ->
-    bold + ('    ' + -(now - now = Date.now())).slice(-5) + reset + '[ms]'
+  time   = -> total += ms = -(now - now = Date.now()); fmt ms
   tokens = CoffeeScript.tokens co, rewrite: false
-  console.log "Lex     :#{time()} (#{tokens.length} tokens)"
+  console.log "Lex    #{time()} (#{tokens.length} tokens)"
   tokens = new Rewriter().rewrite tokens
-  console.log "Rewrite :#{time()} (#{tokens.length} tokens)"
+  console.log "Rewrite#{time()} (#{tokens.length} tokens)"
   nodes  = CoffeeScript.nodes tokens
-  console.log "Parse   :#{time()}"
+  console.log "Parse  #{time()}"
   js     = nodes.compile bare: true
-  console.log "Compile :#{time()} (#{js.length} bytes)"
+  console.log "Compile#{time()} (#{js.length} chars)"
+  console.log "TOTAL  #{ fmt total }"
 
 task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
   exec "cat #{ sources.join(' ') } | grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '", (err, stdout) ->
