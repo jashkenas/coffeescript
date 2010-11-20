@@ -13,7 +13,20 @@ value = .25 + .75
 ok value is 1
 value = 0.0 + -.25 - -.75 + 0.0
 ok value is 0.5
+value = 500_000 + 40_000 + 3_000
+ok value is 543000
+# value = 0.000_5 - 0.000_4
+# ok value is 0.0001
+# value = 25E6
+# ok value is 25_000_000
 
+# Hex number literals.
+value = 0x10
+ok value is 16
+value = 0xf
+ok value is 15
+value = 0x1_000
+ok value is Math.pow(16, 3)
 
 # Can call methods directly on numbers.
 4.valueOf() is 4

@@ -138,7 +138,7 @@ exports.Lexer = class Lexer
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
     number = match[0]
-    @token 'NUMBER', number
+    @token 'NUMBER', number.replace(/_/g, '')
     number.length
 
   # Matches strings, including multi-line strings. Ensures that quotation marks
@@ -539,8 +539,8 @@ IDENTIFIER = /// ^
 ///
 
 NUMBER     = ///
-  ^ 0x[\da-f]+ |                              # hex
-  ^ (?: \d+(\.\d+)? | \.\d+ ) (?:e[+-]?\d+)?  # decimal
+  ^ 0x[\da-f][\da-f_]* |                                         # hex
+  ^ (?: \d*[\d_]+(\.\d[\d_]*)? | \.\d[\d_]* ) (?:e[+-]?\d[\d_]*)?  # decimal
 ///i
 
 HEREDOC    = /// ^ ("""|''') ([\s\S]*?) (?:\n[^\n\S]*)? \1 ///
