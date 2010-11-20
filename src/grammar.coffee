@@ -245,6 +245,7 @@ grammar =
     o ':: Identifier',                          -> new Accessor $2, 'proto'
     o '::',                                     -> new Accessor new Literal 'prototype'
     o 'Index'
+    o 'Slice',                                  -> new Slice $1
   ]
 
   # Indexing into an object or array using bracket notation.

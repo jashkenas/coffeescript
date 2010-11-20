@@ -871,6 +871,7 @@ exports.Assign = class Assign extends Base
   compileNode: (o) ->
     if isValue = @variable instanceof Value
       return @compilePatternMatch o if @variable.isArray() or @variable.isObject()
+      return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
     name = @variable.compile o, LEVEL_LIST
     if @value instanceof Code and match = @METHOD_DEF.exec name
