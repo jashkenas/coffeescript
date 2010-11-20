@@ -974,13 +974,6 @@ exports.Assign = class Assign extends Base
     val   = @value.compile(o)
     "([].splice.apply(#{name}, [#{from}, #{to}].concat(#{ref} = #{val})), #{ref})"
 
-  # When compiling a conditional assignment, take care to ensure that the
-  # operands are only evaluated once, even though we have to reference them
-  # more than once.
-  compileConditional: (o) ->
-    [left, rite] = @variable.cacheReference o
-    return new Op(@context.slice(0, -1), left, new Assign(rite, @value)).compile o
-
 #### Code
 
 # A function definition. This is the only node that creates a new Scope.
