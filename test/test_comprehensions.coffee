@@ -15,8 +15,8 @@ ok odds.join(' ')  is "one! three!"
 
 
 # Basic range comprehensions.
-nums = (i * 3 for i from 1 to 3)
-negs = (x for x from -20 to -5*2)
+nums = (i * 3 for i in [1..3])
+negs = (x for x in [-20..-5*2])
 eq nums.concat(negs.slice 0, 3).join(' '), '3 6 9 -20 -19 -18'
 
 

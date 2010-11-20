@@ -117,7 +117,7 @@ mult = (x, mids..., y) ->
 
 ok mult(1, 2,) is 2
 ok mult(1, 2, 3,) is 6
-ok mult(10, (i for i from 1 to 6)...) is 7200
+ok mult(10, (i for i in [1..6])...) is 7200
 
 
 # Test for inline functions with parentheses and implicit calls.

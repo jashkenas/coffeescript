@@ -317,6 +317,7 @@ exports.Value = class Value extends Base
     @base       = base
     @properties = props or []
     @[tag]      = true if tag
+    return this
 
   children: ['base', 'properties']
 
@@ -1173,6 +1174,7 @@ exports.Op = class Op extends Base
     @first    = first
     @second   = second
     @flip     = !!flip
+    return this
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
   CONVERSIONS =
@@ -1660,7 +1662,7 @@ UTILITIES =
       function ctor() { this.constructor = child; }
       ctor.prototype = parent.prototype;
       child.prototype = new ctor;
-      for (var key in parent) if (__hasProp.call(parent, key)) child[key] = parent[key];
+      for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
       child.__super__ = parent.prototype;
       return child;
     }
