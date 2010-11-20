@@ -38,11 +38,14 @@ exports.compile = compile = (code, options = {}) ->
 exports.tokens = (code, options) ->
   lexer.tokenize code, options
 
-# Tokenize and parse a string of CoffeeScript code, and return the AST. You can
-# then compile it by calling `.compile()` on the root, or traverse it by using
-# `.traverse()` with a callback.
-exports.nodes = (code, options) ->
-  parser.parse lexer.tokenize code, options
+# Parse a string of CoffeeScript code or an array of lexed tokens, and
+# return the AST. You can then compile it by calling `.compile()` on the root,
+# or traverse it by using `.traverse()` with a callback.
+exports.nodes = (source, options) ->
+  if typeof source is 'string'
+    parser.parse lexer.tokenize code, options
+  else
+    parser.parse source
 
 # Compile and execute a string of CoffeeScript (on the server), correctly
 # setting `__filename`, `__dirname`, and relative `require()`.
