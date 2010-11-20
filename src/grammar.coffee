@@ -233,6 +233,7 @@ grammar =
     o 'Assignable'
     o 'Literal',                                -> new Value $1
     o 'Parenthetical',                          -> new Value $1
+    o 'Range',                                  -> new Value $1
     o 'This'
   ]
 
@@ -320,6 +321,24 @@ grammar =
     o '[ ArgList OptComma ]',                   -> new Arr $2
   ]
 
+  # Inclusive and exclusive range dots.
+  RangeDots: [
+    o '..',                                     -> 'inclusive'
+    o '...',                                    -> 'exclusive'
+  ]
+
+  # The CoffeeScript range literal.
+  Range: [
+    o '[ Expression RangeDots Expression ]',    -> new Range $2, $4, $3
+  ]
+
+  # Array slice literals.
+  Slice: [
+    o 'INDEX_START Expression RangeDots Expression INDEX_END', -> new Range $2, $4, $3
+    o 'INDEX_START Expression RangeDots INDEX_END', -> new Range $2, null, $3
+    o 'INDEX_START RangeDots Expression INDEX_END', -> new Range null, $3, $2
+  ]
+
   # The **ArgList** is both the list of objects passed into a function call,
   # as well as the contents of an array literal
   # (i.e. comma-separated expressions). Newlines work as well.
@@ -397,49 +416,48 @@ grammar =
   # Comprehensions can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression.
   For: [
-    o 'Statement  ForBody',                     -> new For $1, $2
-    o 'Expression ForBody',                     -> new For $1, $2
-    o 'ForBody    Block',                       -> new For $2, $1
+    o 'Statement  ForBody',                     -> new For $1, $2, $2.vars[0], $2.vars[1]
+    o 'Expression ForBody',                     -> new For $1, $2, $2.vars[0], $2.vars[1]
+    o 'ForBody    Block',                       -> new For $2, $1, $1.vars[0], $1.vars[1]
   ]
 
-  # An array of all accepted values for a variable inside the loop. This
-  # enables support for pattern matching.
+  ForBody: [
+    o 'FOR Range',                              -> source: new Value($2), vars: []
+    o 'ForStart ForSource',                     -> $2.raw = $1.raw; $2.vars = $1; $2
+  ]
+
+  ForStart: [
+    o 'FOR ForVariables',                       -> $2
+    o 'FOR ALL ForVariables',                   -> $3.raw = yes; $3
+  ]
+
+  # An array of all accepted values for a variable inside the loop.
+  # This enables support for pattern matching.
   ForValue: [
     o 'Identifier'
     o 'Array',                                  -> new Value $1
     o 'Object',                                 -> new Value $1
   ]
 
-  ForIn: [
-    o 'FORIN Expression',                               -> source: $2
-    o 'FORIN Expression WHEN Expression',               -> source: $2, guard: $4
-    o 'FORIN Expression BY Expression',                 -> source: $2, step: $4
-    o 'FORIN Expression BY Expression WHEN Expression', -> source: $2, step: $4, guard: $6
-  ]
-
-  ForOf: [
-    o 'FOROF Expression',                       -> object: on, source: $2
-    o 'FOROF Expression WHEN Expression',       -> object: on, source: $2, guard: $4
-  ]
-
-  ForTo: [
-    o 'TO Expression',                               -> to: $2
-    o 'TO Expression WHEN Expression',               -> to: $2, guard: $4
-    o 'TO Expression BY Expression',                 -> to: $2, step: $4
-    o 'TO Expression BY Expression WHEN Expression', -> to: $2, step: $4, guard: $6
+  # An array or range comprehension has variables for the current element
+  # and (optional) reference to the current index. Or, *key, value*, in the case
+  # of object comprehensions.
+  ForVariables: [
+    o 'ForValue',                               -> [$1]
+    o 'ForValue , ForValue',                    -> [$1, $3]
   ]
 
   # The source of a comprehension is an array or object with an optional guard
   # clause. If it's an array comprehension, you can also choose to step through
   # in fixed-size increments.
-  ForBody: [
-    o 'FOR ForValue ForIn',                     -> extend $3, name: $2
-    o 'FOR ForValue , Identifier ForIn',        -> extend $5, name: $2, index: $4
-    o 'FOR Identifier ForOf',                   -> extend $3, index: $2
-    o 'FOR ForValue , ForValue ForOf',          -> extend $5, index: $2, name: $4
-    o 'FOR ALL Identifier ForOf',               -> extend $4, raw: on, index: $3
-    o 'FOR ALL Identifier , ForValue ForOf',    -> extend $6, raw: on, index: $3, name: $5
-    o 'FOR Identifier FROM Expression ForTo',   -> extend $5, index: $2, from: $4
+  ForSource: [
+    o 'FORIN Expression',                               -> source: $2
+    o 'FOROF Expression',                               -> source: $2, object: yes
+    o 'FORIN Expression WHEN Expression',               -> source: $2, guard: $4
+    o 'FOROF Expression WHEN Expression',               -> source: $2, guard: $4, object: yes
+    o 'FORIN Expression BY Expression',                 -> source: $2, step:  $4
+    o 'FORIN Expression WHEN Expression BY Expression', -> source: $2, guard: $4, step: $6
+    o 'FORIN Expression BY Expression WHEN Expression', -> source: $2, step:  $4, guard: $6
   ]
 
   Switch: [
@@ -545,7 +563,7 @@ operators = [
   ['left',      'LOGIC']
   ['nonassoc',  'INDENT', 'OUTDENT']
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
-  ['right',     'FORIN', 'FOROF', 'FROM', 'TO', 'BY', 'WHEN']
+  ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
   ['right',     'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
   ['right',     'POST_IF', 'POST_UNLESS']
 ]

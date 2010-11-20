@@ -43,7 +43,7 @@ exports.tokens = (code, options) ->
 # or traverse it by using `.traverse()` with a callback.
 exports.nodes = (source, options) ->
   if typeof source is 'string'
-    parser.parse lexer.tokenize code, options
+    parser.parse lexer.tokenize source, options
   else
     parser.parse source
 

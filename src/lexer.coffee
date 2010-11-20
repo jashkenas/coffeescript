@@ -41,7 +41,6 @@ exports.Lexer = class Lexer
     @outdebt = 0              # The under-outdentation at the current level.
     @indents = []             # The stack of all current indentation levels.
     @tokens  = []             # Stream of parsed tokens in the form `['TYPE', value, line]`.
-    @seenFor = @seenFrom = no # Flags for distinguishing `FORIN/FOROF/FROM/TO`.
 
     # At every position, run through this list of attempted matches,
     # short-circuiting if any of them succeed. Their order determines precedence:
@@ -78,15 +77,6 @@ exports.Lexer = class Lexer
 
     if id is 'all' and @tag() is 'FOR'
       @token 'ALL', id
-      return id.length
-    if id is 'from' and @tag(1) is 'FOR'
-      @seenFor  = no
-      @seenFrom = yes
-      @token 'FROM', id
-      return id.length
-    if id is 'to' and @seenFrom
-      @seenFrom = no
-      @token 'TO', id
       return id.length
     forcedIdentifier = colon or
       (prev = last @tokens) and not prev.spaced and prev[0] in ['.', '?.', '@', '::']
@@ -399,7 +389,7 @@ exports.Lexer = class Lexer
   # interpolations within strings, ad infinitum.
   balancedString: (str, delimited, options = {}) ->
     stack = [delimited[0]]
-    for i from 1 to str.length - 1
+    for i in [1...str.length]
       switch str.charAt i
         when '\\'
           i++
@@ -552,7 +542,7 @@ OPERATOR   = /// ^ (
    | ([-+:])\1         # doubles
    | ([&|<>])\2=?      # logic / shift
    | \?\.              # soak access
-   | \.{3}             # splat
+   | \.{2,3}             # range or splat
 ) ///
 
 WHITESPACE = /^[^\n\S]+/
