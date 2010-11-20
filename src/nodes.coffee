@@ -1423,17 +1423,19 @@ exports.For = class For extends Base
   # comprehensions. Some of the generated code can be shared in common, and
   # some cannot.
   compileNode: (o) ->
+    hasCode       = @body.contains (node) -> node instanceof Code
     source        = if @range then @source.base else @source
     scope         = o.scope
     name          = @name  and @name.compile o, LEVEL_LIST
     index         = @index and @index.compile o, LEVEL_LIST
-    scope.find(name,  immediate: yes) if name and not @pattern
-    scope.find(index, immediate: yes) if index
+    unless hasCode
+      scope.find(name,  immediate: yes) if name and not @pattern
+      scope.find(index, immediate: yes) if index
     rvar          = scope.freeVariable 'results' if @returns
     ivar          = (if @range then name else index) or scope.freeVariable 'i'
     varPart       = ''
     guardPart     = ''
-    unstepPart    = ''
+    defPart       = ''
     body          = Expressions.wrap [@body]
     idt1          = @tab + TAB
     if @range
@@ -1442,35 +1444,34 @@ exports.For = class For extends Base
       svar = @source.compile o, LEVEL_TOP
       if (name or not @raw) and
          not (IDENTIFIER.test(svar) and scope.check svar, immediate: on)
-        sourcePart = "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
+        defPart = "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
         svar = ref
       namePart = if @pattern
         new Assign(@name, new Literal "#{svar}[#{ivar}]").compile o, LEVEL_TOP
       else if name
         "#{name} = #{svar}[#{ivar}]"
       unless @object
-        lvar      = scope.freeVariable 'len'
-        stepPart  = if @step then "#{ivar} += #{ @step.compile(o, LEVEL_OP) }" else "#{ivar}++"
-        forPart   = "#{ivar} = 0, #{lvar} = #{svar}.length; #{ivar} < #{lvar}; #{stepPart}"
+        lvar        = scope.freeVariable 'len'
+        stepPart    = if @step then "#{ivar} += #{ @step.compile(o, LEVEL_OP) }" else "#{ivar}++"
+        forPart     = "#{ivar} = 0, #{lvar} = #{svar}.length; #{ivar} < #{lvar}; #{stepPart}"
     if @returns
       resultPart    = "#{@tab}#{rvar} = [];\n"
       returnResult  = '\n' + (new Return(new Literal(rvar)).compile o, LEVEL_PAREN)
       body          = Push.wrap rvar, body if @returns
     if @guard
-      body        = Expressions.wrap [new If @guard, body]
-    varPart     = "#{idt1}#{namePart};\n" if namePart
-    if forPart and name is ivar
-      unstepPart = if @step then "#{name} -= #{ @step.compile(o) };" else "#{name}--;"
-      unstepPart = "\n#{@tab}" + unstepPart
+      body          = Expressions.wrap [new If @guard, body]
+    if hasCode
+      body          = Closure.wrap(body, yes)
+    varPart         = "#{idt1}#{namePart};\n" if namePart
     if @object
-      forPart     = "#{ivar} in #{svar}"
-      guardPart   = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" unless @raw
-    body          = body.compile merge o, indent: idt1, top: true
-    vars          = if @range then name else "#{name}, #{ivar}"
+      forPart       = "#{ivar} in #{svar}"
+      guardPart     = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" unless @raw
+    defPart         += @pluckDirectCall o, body, name, index unless @pattern
+    body            = body.compile merge(o, indent: idt1), LEVEL_TOP
     """
-    #{sourcePart or ''}#{resultPart or ''}#{@tab}for (#{forPart}) {#{guardPart}
+    #{defPart}#{resultPart or ''}#{@tab}for (#{forPart}) {#{guardPart}
     #{varPart}#{body}
-    #{@tab}}#{unstepPart}#{returnResult or ''}
+    #{@tab}}#{returnResult or ''}
     """
 
   pluckDirectCall: (o, body, name, index) ->
