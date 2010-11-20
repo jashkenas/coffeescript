@@ -178,7 +178,7 @@ ok obj.func().name is 'Dog'
 class Mini
   num: 10
   generate: =>
-    for i from 1 to 3
+    for i in [1..3]
       =>
         @num
 

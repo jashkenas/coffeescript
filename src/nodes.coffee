@@ -1455,16 +1455,15 @@ exports.For = class For extends Base
       body          = Expressions.wrap [new If @guard, body]
     if hasCode
       body          = Closure.wrap(body, yes)
-    varPart         = "#{idt1}#{namePart};\n" if namePart
+    varPart         = "\n#{idt1}#{namePart};" if namePart
     if @object
       forPart       = "#{ivar} in #{svar}"
       guardPart     = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" unless @raw
     defPart         += @pluckDirectCall o, body, name, index unless @pattern
     body            = body.compile merge(o, indent: idt1), LEVEL_TOP
+    body            = '\n' + body + '\n' if body
     """
-    #{defPart}#{resultPart or ''}#{@tab}for (#{forPart}) {#{guardPart}
-    #{varPart}#{body}
-    #{@tab}}#{returnResult or ''}
+    #{defPart}#{resultPart or ''}#{@tab}for (#{forPart}) {#{guardPart}#{varPart}#{body}#{@tab}}#{returnResult or ''}
     """
 
   pluckDirectCall: (o, body, name, index) ->
