@@ -104,31 +104,29 @@
     <span class="bookmark" id="top"></span>
 
     <p>
-      CoffeeScript is a little language that compiles into JavaScript. Think
-      of it as JavaScript's less ostentatious kid brother &mdash; the same genes,
-      roughly the same height, but a different sense of style. Apart from a handful of
-      bonus goodies, statements in CoffeeScript correspond one-to-one with their
-      equivalent in JavaScript, it's just another way of saying it.
+      CoffeeScript is a little language that compiles into JavaScript. Underneath
+      all of those embarrassing braces and semicolons, JavaScript has always had
+      a gorgeous object model at its heart. CoffeeScript is an attempt to expose 
+      the good parts of JavaScript in a simple way.
     </p>
 
     <p>
-      <b>Disclaimer:</b>
-      CoffeeScript is just for fun. Until it reaches 1.0, <i>there are no guarantees
-      that the syntax won't change between versions.</i> That said,
-      it compiles into clean JavaScript (the good parts) that can use existing
-      JavaScript libraries seamlessly, and passes through
-      <a href="http://www.jslint.com/">JSLint</a> without warnings. The compiled
-      output is pretty-printed and quite readable.
+      The golden rule of CoffeeScript is: <i>"It's just JavaScript"</i>. The code
+      compiles one-to-one into the equivalent JS, and there is
+      no interpretation at runtime. You can use any existing JavaScript library 
+      seamlessly (and vice-versa). The compiled output is readable and pretty-printed, 
+      passes through <a href="http://www.javascriptlint.com/">JavaScript Lint</a> 
+      without warnings, and can be run by any JavaScript implementation. 
     </p>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.4">0.9.4</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.5">0.9.5</a>
     </p>
 
     <h2>
       <span id="overview" class="bookmark"></span>
-      Mini Overview
+      Overview
     </h2>
 
     <p><i>CoffeeScript on the left, compiled JavaScript output on the right.</i></p>
@@ -168,7 +166,7 @@
       Then clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffee-script">source repository</a>
       from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.4">0.9.4</a>.
+      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.5">0.9.5</a>.
       To install the CoffeeScript compiler system-wide
       under <tt>/usr/local</tt>, open the directory and run:
     </p>
@@ -511,7 +509,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       in fixed-size increments, you can use a range to specify the start and
       end of your comprehension.
     </p>
-    <%= code_for('range_comprehensions', 'count') %>
+    <%= code_for('range_comprehensions', 'countdown') %>
     <p>
       Comprehensions can also be used to iterate over the keys and values in
       an object. Use <tt>of</tt> to signal comprehension over the properties of

@@ -1,17 +1,17 @@
-var _result, lyrics, num;
+var lyrics, num, _results;
 if (this.studyingEconomics) {
   while (supply > demand) {
     buy();
   }
-  while (!(supply > demand)) {
+  while (supply <= demand) {
     sell();
   }
 }
 num = 6;
 lyrics = (function() {
-  _result = [];
+  _results = [];
   while (num -= 1) {
-    _result.push(num + " little monkeys, jumping on the bed.    One fell out and bumped his head.");
+    _results.push(num + " little monkeys, jumping on the bed.    One fell out and bumped his head.");
   }
-  return _result;
+  return _results;
 })();

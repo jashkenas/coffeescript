@@ -27,8 +27,7 @@ unless explicitly asked not to.</p>             </td>             <td class="cod
     <span class="vi">@indebt  = </span><span class="mi">0</span>              <span class="c1"># The over-indentation at the current level.</span>
     <span class="vi">@outdebt = </span><span class="mi">0</span>              <span class="c1"># The under-outdentation at the current level.</span>
     <span class="vi">@indents = </span><span class="p">[]</span>             <span class="c1"># The stack of all current indentation levels.</span>
-    <span class="vi">@tokens  = </span><span class="p">[]</span>             <span class="c1"># Stream of parsed tokens in the form `[&#39;TYPE&#39;, value, line]`.</span>
-    <span class="vi">@seenFor = @seenFrom = </span><span class="kc">no</span> <span class="c1"># Flags for distinguishing `FORIN/FOROF/FROM/TO`.</span></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <p>At every position, run through this list of attempted matches,
+    <span class="vi">@tokens  = </span><span class="p">[]</span>             <span class="c1"># Stream of parsed tokens in the form `[&#39;TYPE&#39;, value, line]`.</span></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <p>At every position, run through this list of attempted matches,
 short-circuiting if any of them succeed. Their order determines precedence:
 <code>@literalToken</code> is the fallback catch-all.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">i = </span><span class="mi">0</span>
     <span class="k">while</span> <span class="vi">@chunk = </span><span class="nx">code</span><span class="p">.</span><span class="nx">slice</span> <span class="nx">i</span>
@@ -56,15 +55,6 @@ though <code>is</code> means <code>===</code> otherwise.</p>             </td>  
 
     <span class="k">if</span> <span class="nx">id</span> <span class="o">is</span> <span class="s1">&#39;all&#39;</span> <span class="o">and</span> <span class="nx">@tag</span><span class="p">()</span> <span class="o">is</span> <span class="s1">&#39;FOR&#39;</span>
       <span class="nx">@token</span> <span class="s1">&#39;ALL&#39;</span><span class="p">,</span> <span class="nx">id</span>
-      <span class="k">return</span> <span class="nx">id</span><span class="p">.</span><span class="nx">length</span>
-    <span class="k">if</span> <span class="nx">id</span> <span class="o">is</span> <span class="s1">&#39;from&#39;</span> <span class="o">and</span> <span class="nx">@tag</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">is</span> <span class="s1">&#39;FOR&#39;</span>
-      <span class="vi">@seenFor  = </span><span class="kc">no</span>
-      <span class="vi">@seenFrom = </span><span class="kc">yes</span>
-      <span class="nx">@token</span> <span class="s1">&#39;FROM&#39;</span><span class="p">,</span> <span class="nx">id</span>
-      <span class="k">return</span> <span class="nx">id</span><span class="p">.</span><span class="nx">length</span>
-    <span class="k">if</span> <span class="nx">id</span> <span class="o">is</span> <span class="s1">&#39;to&#39;</span> <span class="o">and</span> <span class="nx">@seenFrom</span>
-      <span class="vi">@seenFrom = </span><span class="kc">no</span>
-      <span class="nx">@token</span> <span class="s1">&#39;TO&#39;</span><span class="p">,</span> <span class="nx">id</span>
       <span class="k">return</span> <span class="nx">id</span><span class="p">.</span><span class="nx">length</span>
     <span class="nv">forcedIdentifier = </span><span class="nx">colon</span> <span class="o">or</span>
       <span class="p">(</span><span class="nv">prev = </span><span class="nx">last</span> <span class="nx">@tokens</span><span class="p">)</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">prev</span><span class="p">.</span><span class="nx">spaced</span> <span class="o">and</span> <span class="nx">prev</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">in</span> <span class="p">[</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;?.&#39;</span><span class="p">,</span> <span class="s1">&#39;@&#39;</span><span class="p">,</span> <span class="s1">&#39;::&#39;</span><span class="p">]</span>
@@ -318,7 +308,7 @@ a series of delimiters, all of which must be nested correctly within the
 contents of the string. This method allows us to have strings within
 interpolations within strings, ad infinitum.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">balancedString</span><span class="o">:</span> <span class="p">(</span><span class="nx">str</span><span class="p">,</span> <span class="nx">delimited</span><span class="p">,</span> <span class="nv">options = </span><span class="p">{})</span> <span class="o">-&gt;</span>
     <span class="nv">stack = </span><span class="p">[</span><span class="nx">delimited</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
-    <span class="k">for</span> <span class="nx">i</span> <span class="nx">from</span> <span class="mi">1</span> <span class="nx">to</span> <span class="nx">str</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="k">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">...</span><span class="nx">str</span><span class="p">.</span><span class="nx">length</span><span class="p">]</span>
       <span class="k">switch</span> <span class="nx">str</span><span class="p">.</span><span class="nx">charAt</span> <span class="nx">i</span>
         <span class="k">when</span> <span class="s1">&#39;\\&#39;</span>
           <span class="nx">i</span><span class="o">++</span>
@@ -352,10 +342,11 @@ token stream.</p>             </td>             <td class="code">               
              <span class="p">(</span><span class="nv">expr = </span><span class="nx">@balancedString</span> <span class="nx">str</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="nx">i</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">[[</span><span class="s1">&#39;{&#39;</span><span class="p">,</span> <span class="s1">&#39;}&#39;</span><span class="p">]])</span>
         <span class="k">continue</span>
       <span class="nx">tokens</span><span class="p">.</span><span class="nx">push</span> <span class="p">[</span><span class="s1">&#39;NEOSTRING&#39;</span><span class="p">,</span> <span class="nx">str</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="nx">pi</span><span class="p">,</span> <span class="nx">i</span><span class="p">)]</span> <span class="k">if</span> <span class="nx">pi</span> <span class="o">&lt;</span> <span class="nx">i</span>
-      <span class="nv">inner = </span><span class="nx">expr</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="nx">replace</span><span class="p">(</span><span class="nx">LEADING_SPACES</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">).</span><span class="nx">replace</span><span class="p">(</span><span class="nx">TRAILING_SPACES</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+      <span class="nv">inner = </span><span class="nx">expr</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
       <span class="k">if</span> <span class="nx">inner</span><span class="p">.</span><span class="nx">length</span>
         <span class="nv">nested = </span><span class="k">new</span> <span class="nx">Lexer</span><span class="p">().</span><span class="nx">tokenize</span> <span class="nx">inner</span><span class="p">,</span> <span class="nx">line</span><span class="o">:</span> <span class="nx">@line</span><span class="p">,</span> <span class="nx">rewrite</span><span class="o">:</span> <span class="kc">off</span>
         <span class="nx">nested</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span>
+        <span class="nx">nested</span><span class="p">.</span><span class="nx">shift</span><span class="p">()</span> <span class="k">if</span> <span class="nx">nested</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">?</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="s1">&#39;TERMINATOR&#39;</span>
         <span class="k">if</span> <span class="nx">nested</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">1</span>
           <span class="nx">nested</span><span class="p">.</span><span class="nx">unshift</span> <span class="p">[</span><span class="s1">&#39;(&#39;</span><span class="p">,</span> <span class="s1">&#39;(&#39;</span><span class="p">]</span>
           <span class="nx">nested</span><span class="p">.</span><span class="nx">push</span>    <span class="p">[</span><span class="s1">&#39;)&#39;</span><span class="p">,</span> <span class="s1">&#39;)&#39;</span><span class="p">]</span>
@@ -429,7 +420,7 @@ be used as identifiers or properties.</p>             </td>             <td clas
    <span class="o">|</span> <span class="p">([</span><span class="o">-+:</span><span class="p">])</span><span class="err">\</span><span class="mi">1</span>         <span class="c1"># doubles</span>
    <span class="o">|</span> <span class="p">([</span><span class="o">&amp;|&lt;&gt;</span><span class="p">])</span><span class="err">\</span><span class="mi">2</span><span class="o">=?</span>      <span class="c1"># logic / shift</span>
    <span class="o">|</span> <span class="err">\</span><span class="o">?</span><span class="err">\</span><span class="p">.</span>              <span class="c1"># soak access</span>
-   <span class="o">|</span> <span class="err">\</span><span class="p">.{</span><span class="mi">3</span><span class="p">}</span>             <span class="c1"># splat</span>
+   <span class="o">|</span> <span class="err">\</span><span class="p">.{</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">}</span>             <span class="c1"># range or splat</span>
 <span class="p">)</span> <span class="o">/</span><span class="err">//</span>
 
 <span class="nv">WHITESPACE = </span><span class="sr">/^[^\n\S]+/</span>
@@ -465,8 +456,6 @@ be used as identifiers or properties.</p>             </td>             <td clas
 <span class="nv">ASSIGNED        = </span><span class="sr">/^\s*@?([$A-Za-z_][$\w]*|[&#39;&quot;].*[&#39;&quot;])[^\n\S]*?[:=][^:=&gt;]/</span>
 
 <span class="nv">LINE_CONTINUER  = </span><span class="err">/// ^ \s* (?: , | \??\.(?!\.) | :: ) ///</span>
-
-<span class="nv">LEADING_SPACES  = </span><span class="sr">/^\s+/</span>
 
 <span class="nv">TRAILING_SPACES = </span><span class="sr">/\s+$/</span>
 

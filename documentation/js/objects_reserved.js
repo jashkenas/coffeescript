@@ -1,3 +1,3 @@
-$('.account').css({
+$('.account').attr({
   "class": 'active'
 });

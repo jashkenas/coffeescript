@@ -1,4 +1,4 @@
-var _i, _j, _len, _len2, _len3, _ref, _ref2, _ref3, food, lunch, pos, roid, roid2;
+var food, lunch, pos, roid, roid2, _i, _j, _len, _len2, _len3, _ref, _ref2, _ref3;
 _ref = ['toast', 'cheese', 'wine'];
 for (_i = 0, _len = _ref.length; _i < _len; _i++) {
   food = _ref[_i];

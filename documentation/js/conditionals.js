@@ -1,4 +1,4 @@
-var date, mood, options;
+var date, mood;
 if (singing) {
   mood = greatlyImproved;
 }

@@ -20,7 +20,7 @@ else if require.registerExtension
   require.registerExtension '.coffee', (content) -> compile content
 
 # The current CoffeeScript version number.
-exports.VERSION = '0.9.4'
+exports.VERSION = '0.9.5'
 
 # Expose helpers for testing.
 exports.helpers = require './helpers'

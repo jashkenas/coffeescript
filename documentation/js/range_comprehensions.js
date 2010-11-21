@@ -1,8 +1,8 @@
-var _result, count, num;
-count = ((function() {
-  _result = [];
-  for (num = 1; num <= 10; num++) {
-    _result.push(num);
+var countdown, num, _results;
+countdown = ((function() {
+  _results = [];
+  for (num = 10; num >= 1; num--) {
+    _results.push(num);
   }
-  return _result;
+  return _results;
 })());

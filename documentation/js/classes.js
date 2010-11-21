@@ -1,43 +1,43 @@
 var Animal, Horse, Snake, sam, tom;
-var __extends = function(child, parent) {
+var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
+  for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
   function ctor() { this.constructor = child; }
   ctor.prototype = parent.prototype;
   child.prototype = new ctor;
-  if (typeof parent.extended === "function") parent.extended(child);
   child.__super__ = parent.prototype;
+  return child;
 };
-Animal = (function() {
-  function Animal(_arg) {
-    this.name = _arg;
-    return this;
+Animal = function() {
+  function Animal(name) {
+    this.name = name;
   }
+  Animal.prototype.move = function(meters) {
+    return alert(this.name + " moved " + meters + "m.");
+  };
   return Animal;
-})();
-Animal.prototype.move = function(meters) {
-  return alert(this.name + " moved " + meters + "m.");
-};
-Snake = (function() {
+}();
+Snake = function() {
   function Snake() {
-    return Animal.apply(this, arguments);
+    Snake.__super__.constructor.apply(this, arguments);
   }
+  __extends(Snake, Animal);
+  Snake.prototype.move = function() {
+    alert("Slithering...");
+    return Snake.__super__.move.call(this, 5);
+  };
   return Snake;
-})();
-__extends(Snake, Animal);
-Snake.prototype.move = function() {
-  alert("Slithering...");
-  return Snake.__super__.move.call(this, 5);
-};
-Horse = (function() {
+}();
+Horse = function() {
   function Horse() {
-    return Animal.apply(this, arguments);
+    Horse.__super__.constructor.apply(this, arguments);
   }
+  __extends(Horse, Animal);
+  Horse.prototype.move = function() {
+    alert("Galloping...");
+    return Horse.__super__.move.call(this, 45);
+  };
   return Horse;
-})();
-__extends(Horse, Animal);
-Horse.prototype.move = function() {
-  alert("Galloping...");
-  return Horse.__super__.move.call(this, 45);
-};
+}();
 sam = new Snake("Sammy the Python");
 tom = new Horse("Tommy the Palomino");
 sam.move();

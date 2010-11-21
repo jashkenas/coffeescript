@@ -1,6 +1,6 @@
 alert((function() {
   try {
-    return nonexistent / undefined;
+    return nonexistent / void 0;
   } catch (error) {
     return "And the error is ... " + error;
   }

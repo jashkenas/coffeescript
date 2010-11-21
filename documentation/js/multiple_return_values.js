@@ -1,4 +1,4 @@
-var _ref, city, forecast, temp, weatherReport;
+var city, forecast, temp, weatherReport, _ref;
 weatherReport = function(location) {
   return [location, 72, "Mostly Sunny"];
 };

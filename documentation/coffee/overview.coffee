@@ -25,4 +25,4 @@ race = (winner, runners...) ->
 alert "I knew it!" if elvis?
 
 # Array comprehensions:
-cubes = math.cube num for num in list
+cubes = (math.cube num for num in list)

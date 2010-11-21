@@ -1,9 +1,9 @@
 var awardMedals, contenders, gold, rest, silver;
 var __slice = Array.prototype.slice;
 gold = silver = rest = "unknown";
-awardMedals = function(first, second) {
-  var others;
-  others = __slice.call(arguments, 2);
+awardMedals = function() {
+  var first, others, second;
+  first = arguments[0], second = arguments[1], others = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
   gold = first;
   silver = second;
   return rest = others;
