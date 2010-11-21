@@ -56,3 +56,8 @@ obj =
 
 eq obj.num, obj.func()
 eq obj.num, obj.result
+
+
+# Multiple semicolon-separated statements in parentheticals.
+eq 3, (1; 2; 3)
+eq 3, (-> return (1; 2; 3))()

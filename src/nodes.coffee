@@ -1363,16 +1363,16 @@ exports.Existence = class Existence extends Base
 #
 # Parentheses are a good way to force any statement to become an expression.
 exports.Parens = class Parens extends Base
-  constructor: (@expression) ->
+  constructor: (@body) ->
 
-  children: ['expression']
+  children: ['body']
 
-  unwrap    : -> @expression
-  isComplex : -> @expression.isComplex()
-  makeReturn: -> @expression.makeReturn()
+  unwrap    : -> @body
+  isComplex : -> @body.isComplex()
+  makeReturn: -> @body.makeReturn()
 
   compileNode: (o) ->
-    expr = @expression
+    expr = @body.unwrap()
     if expr instanceof Value and expr.isAtomic()
       expr.front = @front
       return expr.compile o

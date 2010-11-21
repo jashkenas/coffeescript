@@ -388,7 +388,7 @@ grammar =
   # where only values are accepted, wrapping it in parentheses will always do
   # the trick.
   Parenthetical: [
-    o '( Expression )',                         -> new Parens $2
+    o '( Body )',                               -> new Parens $2
   ]
 
   # The condition portion of a while loop.
