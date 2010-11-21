@@ -566,8 +566,8 @@ operators = [
   ['nonassoc',  'INDENT', 'OUTDENT']
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
   ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
-  ['right',     'IF', 'UNLESS', 'ELSE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
-  ['left',      'POST_IF', 'POST_UNLESS', 'FOR', 'WHILE']
+  ['right',     'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
+  ['right',     'POST_IF', 'POST_UNLESS']
 ]
 
 # Wrapping Up
