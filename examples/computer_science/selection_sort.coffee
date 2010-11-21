@@ -3,13 +3,13 @@ selection_sort = (list) ->
   len = list.length
 
   # For each item in the list.
-  for i from 0 to len - 1
+  for i in [0...len]
 
     # Set the minimum to this position.
     min = i
 
     # Check the rest of the array to see if anything is smaller.
-    min = j if list[j] < list[min] for j from i + 1 to len - 1
+    min = j if list[j] < list[min] for j in [i + 1...len]
 
     # Swap if a smaller item has been found.
     [list[i], list[min]] = [list[min], list[i]] if i isnt min

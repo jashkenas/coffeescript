@@ -83,9 +83,9 @@ _.each = (obj, iterator, context) ->
     if nativeForEach and obj.forEach is nativeForEach
       obj.forEach iterator, context
     else if _.isNumber obj.length
-      iterator.call(context, obj[i], i, obj) for i from 0 to obj.length - 1
+      iterator.call context, obj[i], i, obj for i in [0...obj.length]
     else
-      iterator.call(context, val, key, obj) for key, val of obj
+      iterator.call context, val, key, obj  for key, val of obj
   catch e
     throw e if e isnt breaker
   obj
@@ -311,7 +311,7 @@ _.intersect = (array) ->
 _.zip = ->
   length =  _.max _.pluck arguments, 'length'
   results = new Array length
-  for i from 0 to length - 1
+  for i in [0...length]
     results[i] = _.pluck arguments, String i
   results
 
@@ -410,7 +410,7 @@ _.compose = ->
   funcs = arguments
   ->
     args = arguments
-    for i from funcs.length - 1 to 0 by -1
+    for i in [funcs.length - 1..0] by -1
       args = [funcs[i].apply(this, args)]
     args[0]
 
@@ -562,7 +562,7 @@ _.identity = (value) -> value
 
 # Run a function `n` times.
 _.times = (n, iterator, context) ->
-  iterator.call(context, i) for i from 0 to n - 1
+  iterator.call context, i for i in [0...n]
 
 
 # Break out of the middle of an iteration.

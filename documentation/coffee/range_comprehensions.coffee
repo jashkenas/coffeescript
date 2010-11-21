@@ -1,2 +1,2 @@
-count = (num for num from 1 to 10)
+countdown = (num for num in [10..1])
 
