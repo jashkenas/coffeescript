@@ -1056,7 +1056,12 @@ exports.Param = class Param extends Base
 
   asReference: (o) ->
     return @reference if @reference
-    node = if @isComplex() then new Literal o.scope.freeVariable 'arg' else @name
+    node = @name
+    if node.this
+      node = node.properties[0].name
+      node = new Literal '_' + node.value if node.value.reserved
+    else if node.isComplex()
+      node = new Literal o.scope.freeVariable 'arg'
     node = new Value node
     node = new Splat node if @splat
     @reference = node
