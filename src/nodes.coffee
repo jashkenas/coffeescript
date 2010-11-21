@@ -68,7 +68,7 @@ exports.Base = class Base
   # Compile to a source/variable pair suitable for looping.
   compileLoopReference: (o, name) ->
     src = tmp = @compile o, LEVEL_LIST
-    unless NUMBER.test(src) or IDENTIFIER.test(src) and o.scope.check(src, yes)
+    unless -Infinity < +src < Infinity or IDENTIFIER.test(src) and o.scope.check(src, yes)
       src = "#{ tmp = o.scope.freeVariable name } = #{src}"
     [src, tmp]
 
@@ -1704,7 +1704,6 @@ TAB = '  '
 TRAILING_WHITESPACE = /[ \t]+$/gm
 
 IDENTIFIER = /^[$A-Za-z_][$\w]*$/
-NUMBER     = /// ^ -? (?: 0x[\da-f]+ | (?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)? ) $ ///i
 SIMPLENUM  = /^[+-]?\d+$/
 
 # Is a literal value a string?
