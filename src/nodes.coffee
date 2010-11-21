@@ -1654,10 +1654,10 @@ UTILITIES =
   # to the superclass for `super()` calls, and copies of any static properties.
   extends: '''
     function(child, parent) {
+      for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
       function ctor() { this.constructor = child; }
       ctor.prototype = parent.prototype;
       child.prototype = new ctor;
-      for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
       child.__super__ = parent.prototype;
       return child;
     }
