@@ -383,7 +383,7 @@ exports.Value = class Value extends Base
     @base.front = @front
     props = @properties
     code  = @base.compile o, if props.length then LEVEL_ACCESS else null
-    code  = "(#{code})" if props[0] instanceof Accessor and @isSimpleNumber()
+    code  = "(#{code})" if props[0] instanceof Access and @isSimpleNumber()
     code += prop.compile o for prop in props
     code
 
@@ -535,11 +535,11 @@ exports.Extends = class Extends extends Base
     utility 'hasProp'
     new Call(new Value(new Literal utility 'extends'), [@child, @parent]).compile o
 
-#### Accessor
+#### Access
 
-# A `.` accessor into a property of a value, or the `::` shorthand for
-# an accessor into the object's prototype.
-exports.Accessor = class Accessor extends Base
+# A `.` access into a property of a value, or the `::` shorthand for
+# an access into the object's prototype.
+exports.Access = class Access extends Base
   constructor: (@name, tag) ->
     @proto = if tag is 'proto' then '.prototype' else ''
     @soak  = tag is 'soak'
@@ -554,7 +554,7 @@ exports.Accessor = class Accessor extends Base
 
 #### Index
 
-# A `[ ... ]` indexed accessor into an array or object.
+# A `[ ... ]` indexed access into an array or object.
 exports.Index = class Index extends Base
   constructor: (@index) ->
 
@@ -756,7 +756,7 @@ exports.Class = class Class extends Base
   determineName: ->
     return null unless @variable
     decl = if tail = last @variable.properties
-      tail instanceof Accessor and tail.name.value
+      tail instanceof Access and tail.name.value
     else
       @variable.base.value
     decl and= IDENTIFIER.test(decl) and decl
@@ -800,7 +800,7 @@ exports.Class = class Class extends Base
           assign = null
         else
           unless assign.variable.this
-            assign.variable = new Value(new Literal(name), [new Accessor(base, 'proto')])
+            assign.variable = new Value(new Literal(name), [new Access(base, 'proto')])
           if func instanceof Code and func.bound
             @boundFuncs.push base
             func.bound = no
@@ -910,7 +910,7 @@ exports.Assign = class Assign extends Base
             new Literal 0
       acc   = IDENTIFIER.test idx.unwrap().value or 0
       value = new Value value
-      value.properties.push new (if acc then Accessor else Index) idx
+      value.properties.push new (if acc then Access else Index) idx
       return new Assign(obj, value).compile o
     vvar    = value.compile o, LEVEL_LIST
     assigns = []
@@ -950,7 +950,7 @@ exports.Assign = class Assign extends Base
           acc = no
         else
           acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
-        val = new Value new Literal(vvar), [new (if acc then Accessor else Index) idx]
+        val = new Value new Literal(vvar), [new (if acc then Access else Index) idx]
       assigns.push new Assign(obj, val).compile o, LEVEL_TOP
     assigns.push vvar unless top
     code = assigns.join ', '
@@ -1610,7 +1610,7 @@ exports.If = class If extends Base
 Push =
   wrap: (name, exps) ->
     return exps if exps.isEmpty() or last(exps.expressions).containsPureStatement()
-    exps.push new Call new Value(new Literal(name), [new Accessor new Literal 'push']), [exps.pop()]
+    exps.push new Call new Value(new Literal(name), [new Access new Literal 'push']), [exps.pop()]
 
 #### Closure
 
@@ -1629,7 +1629,7 @@ Closure =
       meth = new Literal if mentionsArgs then 'apply' else 'call'
       args = [new Literal 'this']
       args.push new Literal 'arguments' if mentionsArgs
-      func = new Value func, [new Accessor meth]
+      func = new Value func, [new Access meth]
       func.noReturn = noReturn
     call = new Call func, args
     if statement then Expressions.wrap [call] else call

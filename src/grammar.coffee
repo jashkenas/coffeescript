@@ -240,10 +240,10 @@ grammar =
   # The general group of accessors into an object, by property, by prototype
   # or by array index or slice.
   Accessor: [
-    o '.  Identifier',                          -> new Accessor $2
-    o '?. Identifier',                          -> new Accessor $2, 'soak'
-    o ':: Identifier',                          -> new Accessor $2, 'proto'
-    o '::',                                     -> new Accessor new Literal 'prototype'
+    o '.  Identifier',                          -> new Access $2
+    o '?. Identifier',                          -> new Access $2, 'soak'
+    o ':: Identifier',                          -> new Access $2, 'proto'
+    o '::',                                     -> new Access new Literal 'prototype'
     o 'Index'
     o 'Slice',                                  -> new Slice $1
   ]
@@ -313,7 +313,7 @@ grammar =
 
   # A reference to a property on *this*.
   ThisProperty: [
-    o '@ Identifier',                           -> new Value new Literal('this'), [new Accessor($2)], 'this'
+    o '@ Identifier',                           -> new Value new Literal('this'), [new Access($2)], 'this'
   ]
 
   # The array literal.
