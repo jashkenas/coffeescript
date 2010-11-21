@@ -2,7 +2,7 @@ body {
   font-size: 13px;
   line-height: 20px;
   color: #191933;
-  font-family: "Lucida Grande", Helvetica,Arial, sans-serif !important;
+  font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, sans-serif !important;
 }
 .container {
   width: 950px;
