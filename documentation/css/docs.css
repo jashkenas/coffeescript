@@ -2,7 +2,7 @@ body {
   font-size: 13px;
   line-height: 20px;
   color: #191933;
-  font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica,Arial, sans-serif !important;
+  font-family: "Lucida Grande", Helvetica,Arial, sans-serif !important;
 }
 .container {
   width: 950px;
@@ -15,8 +15,9 @@ p, li {
 a {
   color: #000055;
 }
-h1, h2, h3, h4, h5, h6 {
-  margin-top: 50px;
+h1, h2, h3, h4, h5, h6, b.header {
+  margin-top: 40px;
+  margin-bottom: 15px;
 }
 br.clear {
   height: 0;
@@ -28,7 +29,6 @@ ul {
 b.header {
   color: #000055;
   display: block;
-  margin: 40px 0 5px 0;
   font-size: 16px;
 }
 li {
@@ -73,7 +73,7 @@ div.code {
   position: relative;
   border: 1px solid #cacaca;
   background: #fafaff;
-  padding: 7px 0 10px 0;
+  padding: 11px 3px;
   -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px;
   -webkit-box-shadow: 0px 0px 7px #cacaca;
   zoom: 1;
