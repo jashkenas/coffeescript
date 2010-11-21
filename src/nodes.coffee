@@ -1417,7 +1417,9 @@ exports.For = class For extends Base
   # comprehensions. Some of the generated code can be shared in common, and
   # some cannot.
   compileNode: (o) ->
-    hasCode       = @body.contains (node) -> node instanceof Code
+    body          = Expressions.wrap [@body]
+    hasCode       = body.contains (node) -> node instanceof Code
+    hasPure       = last(body.expressions)?.containsPureStatement()
     source        = if @range then @source.base else @source
     scope         = o.scope
     name          = @name  and @name.compile o, LEVEL_LIST
@@ -1425,12 +1427,11 @@ exports.For = class For extends Base
     unless hasCode
       scope.find(name,  immediate: yes) if name and not @pattern
       scope.find(index, immediate: yes) if index
-    rvar          = scope.freeVariable 'results' if @returns
+    rvar          = scope.freeVariable 'results' if @returns and not hasPure
     ivar          = (if @range then name else index) or scope.freeVariable 'i'
     varPart       = ''
     guardPart     = ''
     defPart       = ''
-    body          = Expressions.wrap [@body]
     idt1          = @tab + TAB
     if @range
       forPart = source.compile merge(o, {index: ivar, @step})
@@ -1448,10 +1449,10 @@ exports.For = class For extends Base
         lvar        = scope.freeVariable 'len'
         stepPart    = if @step then "#{ivar} += #{ @step.compile(o, LEVEL_OP) }" else "#{ivar}++"
         forPart     = "#{ivar} = 0, #{lvar} = #{svar}.length; #{ivar} < #{lvar}; #{stepPart}"
-    if @returns
+    if @returns and not hasPure
       resultPart    = "#{@tab}#{rvar} = [];\n"
       returnResult  = '\n' + (new Return(new Literal(rvar)).compile o, LEVEL_PAREN)
-      body          = Push.wrap rvar, body if @returns
+      body          = Push.wrap rvar, body
     if @guard
       body          = Expressions.wrap [new If @guard, body]
     if hasCode
