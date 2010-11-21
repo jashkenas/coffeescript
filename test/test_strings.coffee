@@ -99,3 +99,11 @@ ok result is 'a bb c'
 
 foo = "hello"
 ok "#{foo.replace("\"", "")}" is 'hello'
+
+
+eq 'multiline nested "interpolations" work', """multiline #{
+  "nested #{
+    ok true
+    "\"interpolations\""
+  }"
+} work"""

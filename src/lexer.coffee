@@ -426,10 +426,11 @@ exports.Lexer = class Lexer
              (expr = @balancedString str.slice(i+1), [['{', '}']])
         continue
       tokens.push ['NEOSTRING', str.slice(pi, i)] if pi < i
-      inner = expr.slice(1, -1).replace(LEADING_SPACES, '').replace(TRAILING_SPACES, '')
+      inner = expr.slice(1, -1)
       if inner.length
         nested = new Lexer().tokenize inner, line: @line, rewrite: off
         nested.pop()
+        nested.shift() if nested[0]?[0] is 'TERMINATOR'
         if nested.length > 1
           nested.unshift ['(', '(']
           nested.push    [')', ')']
@@ -584,8 +585,6 @@ HEREDOC_INDENT  = /\n+([^\n\S]*)/g
 ASSIGNED        = /^\s*@?([$A-Za-z_][$\w]*|['"].*['"])[^\n\S]*?[:=][^:=>]/
 
 LINE_CONTINUER  = /// ^ \s* (?: , | \??\.(?!\.) | :: ) ///
-
-LEADING_SPACES  = /^\s+/
 
 TRAILING_SPACES = /\s+$/
 

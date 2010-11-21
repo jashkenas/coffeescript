@@ -389,6 +389,7 @@ grammar =
   # the trick.
   Parenthetical: [
     o '( Body )',                               -> new Parens $2
+    o '( INDENT Body OUTDENT )',                -> new Parens $3
   ]
 
   # The condition portion of a while loop.
