@@ -1,6 +1,8 @@
+require 'rubygems'
 require 'erb'
 require 'fileutils'
 require 'rake/testtask'
+require 'json'
 
 desc "Build the documentation page"
 task :doc do
@@ -26,8 +28,8 @@ task :gem do
 
   gemspec = Gem::Specification.new do |s|
     s.name      = 'coffee-script-source'
-    s.version   = '0.9.5'
-    s.date      = '2010-11-21'
+    s.version   = JSON.parse(File.read('package.json'))["version"]
+    s.date      = Time.now.strftime("%Y-%m-%d")
 
     s.homepage    = "http://jashkenas.github.com/coffee-script/"
     s.summary     = "The CoffeeScript Compiler"
