@@ -24,11 +24,11 @@ race = function() {
 if (typeof elvis != "undefined" && elvis !== null) {
   alert("I knew it!");
 }
-cubes = ((function() {
+cubes = (function() {
   _results = [];
   for (_i = 0, _len = list.length; _i < _len; _i++) {
     num = list[_i];
     _results.push(math.cube(num));
   }
   return _results;
-})());
+}());

@@ -42,8 +42,8 @@
         <a href="#switch">The Switch Statement</a>
         <a href="#try">Try/Catch/Finally</a>
         <a href="#comparisons">Chained Comparisons</a>
-        <a href="#interpolation">String and RegExp Interpolation</a>
-        <a href="#heredocs">Multiline Strings, Heredocs, and Block Comments</a>
+        <a href="#strings">String Interpolation, Heredocs, and Block Comments</a>
+        <a href="#regexes">Extended Regular Expressions</a>
         <a href="#cake">Cake, and Cakefiles</a>
         <a href="#scripts">"text/coffeescript" Script Tags</a>
         <a href="#examples">Examples</a>
@@ -94,17 +94,17 @@
     <p>
       CoffeeScript is a little language that compiles into JavaScript. Underneath
       all of those embarrassing braces and semicolons, JavaScript has always had
-      a gorgeous object model at its heart. CoffeeScript is an attempt to expose 
+      a gorgeous object model at its heart. CoffeeScript is an attempt to expose
       the good parts of JavaScript in a simple way.
     </p>
 
     <p>
       The golden rule of CoffeeScript is: <i>"It's just JavaScript"</i>. The code
       compiles one-to-one into the equivalent JS, and there is
-      no interpretation at runtime. You can use any existing JavaScript library 
-      seamlessly (and vice-versa). The compiled output is readable and pretty-printed, 
-      passes through <a href="http://www.javascriptlint.com/">JavaScript Lint</a> 
-      without warnings, and can be run by any JavaScript implementation. 
+      no interpretation at runtime. You can use any existing JavaScript library
+      seamlessly (and vice-versa). The compiled output is readable and pretty-printed,
+      passes through <a href="http://www.javascriptlint.com/">JavaScript Lint</a>
+      without warnings, and can be run by any JavaScript implementation.
     </p>
 
     <p>
@@ -173,14 +173,14 @@ math <span class="Keyword">=</span> {
 <span class="Keyword">if</span> (<span class="Keyword">typeof</span> elvis <span class="Keyword">!</span><span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> elvis <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) {
   <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>I knew it!<span class="String">&quot;</span></span>);
 }
-cubes <span class="Keyword">=</span> ((<span class="Storage">function</span>() {
+cubes <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">for</span> (_i <span class="Keyword">=</span> <span class="Number">0</span>, _len <span class="Keyword">=</span> list.<span class="LibraryConstant">length</span>; _i <span class="Keyword">&lt;</span> _len; _i<span class="Keyword">++</span>) {
     num <span class="Keyword">=</span> list[_i];
     _results.<span class="LibraryFunction">push</span>(math.cube(num));
   }
   <span class="Keyword">return</span> _results;
-})());
+}());
 </pre><button onclick='javascript: var cubes, list, math, num, number, opposite, race, square, _i, _len, _results;
 var __slice = Array.prototype.slice;
 number = 42;
@@ -207,14 +207,14 @@ race = function() {
 if (typeof elvis != "undefined" && elvis !== null) {
   alert("I knew it!");
 }
-cubes = ((function() {
+cubes = (function() {
   _results = [];
   for (_i = 0, _len = list.length; _i < _len; _i++) {
     num = list[_i];
     _results.push(math.cube(num));
   }
   return _results;
-})());;alert(cubes);'>run: cubes</button><br class='clear' /></div>
+}());;alert(cubes);'>run: cubes</button><br class='clear' /></div>
 
     <h2>
       <span id="installation" class="bookmark"></span>
@@ -222,17 +222,17 @@ cubes = ((function() {
     </h2>
 
     <p>
-      The CoffeeScript compiler 
+      The CoffeeScript compiler
       <a href="documentation/docs/grammar.html">is itself written in CoffeeScript</a>,
       using the <a href="http://jison.org">Jison parser generator</a>. The command-line
-      version of <tt>coffee</tt> is available as a <a href="http://nodejs.org/">Node.js</a> utility. 
-      The core compiler however, does not depend on Node, and can be run in any 
+      version of <tt>coffee</tt> is available as a <a href="http://nodejs.org/">Node.js</a> utility.
+      The core compiler however, does not depend on Node, and can be run in any
       JavaScript environment, or in the browser (see "Try CoffeeScript", above).
     </p>
 
     <p>
       To install, first make sure you have a working copy of the latest tagged version of
-      <a href="http://nodejs.org/">Node.js</a>, and <a href="http://npmjs.org">NPM</a> 
+      <a href="http://nodejs.org/">Node.js</a>, and <a href="http://npmjs.org">NPM</a>
       (the Node Package Manager). You can then install CoffeeScript with NPM:
     </p>
 
@@ -240,7 +240,7 @@ cubes = ((function() {
 npm install coffee-script</pre>
 
   <p>
-    If you'd prefer to install the latest master version of CoffeeScript, you 
+    If you'd prefer to install the latest master version of CoffeeScript, you
     can clone the CoffeeScript
     <a href="http://github.com/jashkenas/coffee-script">source repository</a>
     from GitHub, or download
@@ -251,11 +251,11 @@ npm install coffee-script</pre>
 
   <pre>
 sudo bin/cake install</pre>
-    
+
     <p>
       Both of these provide the <tt>coffee</tt> command, which can execute
-      coffee scripts, compile <tt>.coffee</tt> files into <tt>.js</tt>, and 
-      provides an interactive REPL. The <tt>coffee</tt> command takes the 
+      coffee scripts, compile <tt>.coffee</tt> files into <tt>.js</tt>, and
+      provides an interactive REPL. The <tt>coffee</tt> command takes the
       following options:
     </p>
 
@@ -408,7 +408,7 @@ coffee --bare --print --stdio</pre>
       arguments:<br /><tt>print "coffee"</tt>. The implicit call wraps forward
       to the end of the line or block expression.
     </p>
-    
+
     <p>
       Within object literals, indentation can be used to create nested objects.
     </p>
@@ -435,6 +435,31 @@ square = function(x) {
 cube = function(x) {
   return square(x) * x;
 };;alert(cube(5));'>run: cube(5)</button><br class='clear' /></div>
+    <p>
+      Functions may also have default values for arguments.
+    </p>
+    <div class='code'><pre class="idle"><span class="FunctionName">fill </span><span class="Keyword">=</span> <span class="FunctionArgument">(container, liquid = &quot;coffee&quot;)</span> <span class="Storage">-&gt;</span>
+  <span class="String"><span class="String">&quot;</span>Filling the <span class="String"><span class="String">#{</span>container<span class="String">}</span></span> with <span class="String"><span class="String">#{</span>liquid<span class="String">}</span></span>...<span class="String">&quot;</span></span>
+
+
+
+
+
+
+</pre><pre class="idle"><span class="Storage">var</span> fill;
+<span class="FunctionName">fill</span> = <span class="Storage">function</span>(<span class="FunctionArgument">container, liquid</span>) {
+  <span class="Keyword">if</span> (liquid <span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) {
+    liquid <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>coffee<span class="String">&quot;</span></span>;
+  }
+  <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>Filling the <span class="String">&quot;</span></span> <span class="Keyword">+</span> container <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> with <span class="String">&quot;</span></span> <span class="Keyword">+</span> liquid <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>...<span class="String">&quot;</span></span>;
+};
+</pre><button onclick='javascript: var fill;
+fill = function(container, liquid) {
+  if (liquid == null) {
+    liquid = "coffee";
+  }
+  return "Filling the " + container + " with " + liquid + "...";
+};;alert(fill("cup"));'>run: fill("cup")</button><br class='clear' /></div>
 
     <p>
       <span id="objects_and_arrays" class="bookmark"></span>
@@ -498,7 +523,7 @@ kids = {
     <p>
       In JavaScript, you can't use reserved words, like <tt>class</tt>, as properties
       of an object, without quoting them as strings. CoffeeScript notices reserved words
-      used as keys in objects and quotes them for you, so you don't have to worry 
+      used as keys in objects and quotes them for you, so you don't have to worry
       about it (say, when using jQuery).
     </p>
     <div class='code'><pre class="idle">$(<span class="String"><span class="String">'</span>.account<span class="String">'</span></span>).attr class: <span class="String"><span class="String">'</span>active<span class="String">'</span></span>
@@ -643,11 +668,11 @@ options <span class="Keyword">||</span> (options <span class="Keyword">=</span> 
       You can use <tt>in</tt> to test for array presence, and <tt>of</tt> to
       test for JavaScript object-key presence.
     </p>
-    
+
     <p>
       All together now:
     </p>
-    
+
     <table class="definitions">
       <tr><th>CoffeeScript</th><th>JavaScript</th></tr>
       <tr><td><tt>is</tt></td><td><tt>===</tt></td></tr>
@@ -661,7 +686,7 @@ options <span class="Keyword">||</span> (options <span class="Keyword">=</span> 
       <tr><td><tt>of</tt></td><td><tt>in</tt></td></tr>
       <tr><td><tt>in</tt></td><td>(no JS equivalent)</td></tr>
     </table>
-    
+
     <div class='code'><pre class="idle">launch() <span class="Keyword">if</span> ignition <span class="Keyword">is</span> <span class="BuiltInConstant">on</span>
 
 volume <span class="Keyword">=</span> <span class="Number">10</span> <span class="Keyword">if</span> band <span class="Keyword">isnt</span> SpinalTap
@@ -784,13 +809,13 @@ lyrics <span class="Keyword">=</span> <span class="Keyword">while</span> num <sp
   }
 }
 num <span class="Keyword">=</span> <span class="Number">6</span>;
-lyrics <span class="Keyword">=</span> (<span class="Storage">function</span>() {
+<span class="FunctionName">lyrics</span> = <span class="Storage">function</span>() {
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">while</span> (num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>) {
     _results.<span class="LibraryFunction">push</span>(num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed.    One fell out and bumped his head.<span class="String">&quot;</span></span>);
   }
   <span class="Keyword">return</span> _results;
-})();
+}();
 </pre><button onclick='javascript: var lyrics, num, _results;
 if (this.studyingEconomics) {
   while (supply > demand) {
@@ -801,13 +826,13 @@ if (this.studyingEconomics) {
   }
 }
 num = 6;
-lyrics = (function() {
+lyrics = function() {
   _results = [];
   while (num -= 1) {
     _results.push(num + " little monkeys, jumping on the bed.    One fell out and bumped his head.");
   }
   return _results;
-})();;alert(lyrics.join("\n"));'>run: lyrics.join("\n")</button><br class='clear' /></div>
+}();;alert(lyrics.join("\n"));'>run: lyrics.join("\n")</button><br class='clear' /></div>
     <p>
       For readability, the <b>until</b> keyword is equivalent to <tt>while not</tt>,
       and the <b>loop</b> keyword is equivalent to <tt>while true</tt>.
@@ -860,21 +885,21 @@ _ref <span class="Keyword">=</span> [<span class="String"><span class="String">'
     <div class='code'><pre class="idle">countdown <span class="Keyword">=</span> (num <span class="Keyword">for</span> num <span class="Keyword">in</span> [<span class="Number">10</span>..<span class="Number">1</span>])
 
 </pre><pre class="idle"><span class="Storage">var</span> countdown, num, _results;
-countdown <span class="Keyword">=</span> ((<span class="Storage">function</span>() {
+countdown <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">for</span> (num <span class="Keyword">=</span> <span class="Number">10</span>; num <span class="Keyword">&gt;=</span> <span class="Number">1</span>; num<span class="Keyword">--</span>) {
     _results.<span class="LibraryFunction">push</span>(num);
   }
   <span class="Keyword">return</span> _results;
-})());
+}());
 </pre><button onclick='javascript: var countdown, num, _results;
-countdown = ((function() {
+countdown = (function() {
   _results = [];
   for (num = 10; num >= 1; num--) {
     _results.push(num);
   }
   return _results;
-})());;alert(countdown);'>run: countdown</button><br class='clear' /></div>
+}());;alert(countdown);'>run: countdown</button><br class='clear' /></div>
     <p>
       Comprehensions can also be used to iterate over the keys and values in
       an object. Use <tt>of</tt> to signal comprehension over the properties of
@@ -891,7 +916,7 @@ yearsOld <span class="Keyword">=</span> {
   ida: <span class="Number">9</span>,
   tim: <span class="Number">11</span>
 };
-ages <span class="Keyword">=</span> (<span class="Storage">function</span>() {
+<span class="FunctionName">ages</span> = <span class="Storage">function</span>() {
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">for</span> (child <span class="Keyword">in</span> yearsOld) {
     <span class="Keyword">if</span> (<span class="Keyword">!</span>__hasProp.<span class="LibraryFunction">call</span>(yearsOld, child)) <span class="Keyword">continue</span>;
@@ -899,7 +924,7 @@ ages <span class="Keyword">=</span> (<span class="Storage">function</span>() {
     _results.<span class="LibraryFunction">push</span>(child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age);
   }
   <span class="Keyword">return</span> _results;
-})();
+}();
 </pre><button onclick='javascript: var age, ages, child, yearsOld, _results;
 var __hasProp = Object.prototype.hasOwnProperty;
 yearsOld = {
@@ -907,7 +932,7 @@ yearsOld = {
   ida: 9,
   tim: 11
 };
-ages = (function() {
+ages = function() {
   _results = [];
   for (child in yearsOld) {
     if (!__hasProp.call(yearsOld, child)) continue;
@@ -915,7 +940,7 @@ ages = (function() {
     _results.push(child + " is " + age);
   }
   return _results;
-})();;alert(ages.join(", "));'>run: ages.join(", ")</button><br class='clear' /></div>
+}();;alert(ages.join(", "));'>run: ages.join(", ")</button><br class='clear' /></div>
     <p>
       By default, object comprehensions are safe, and use a <tt>hasOwnProperty</tt>
       check to make sure that you're dealing with properties on the current
@@ -997,24 +1022,24 @@ six = (one = 1) + (two = 2) + (three = 3);;alert(six);'>run: six</button><br cla
 globals <span class="Keyword">=</span> (name <span class="Keyword">for</span> name <span class="Keyword">of</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
 </pre><pre class="idle"><span class="Storage">var</span> globals, name, _results;
 <span class="Storage">var</span> __hasProp <span class="Keyword">=</span> <span class="LibraryClassType">Object</span>.<span class="LibraryConstant">prototype</span>.hasOwnProperty;
-globals <span class="Keyword">=</span> ((<span class="Storage">function</span>() {
+globals <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">for</span> (name <span class="Keyword">in</span> <span class="LibraryClassType">window</span>) {
     <span class="Keyword">if</span> (<span class="Keyword">!</span>__hasProp.<span class="LibraryFunction">call</span>(<span class="LibraryClassType">window</span>, name)) <span class="Keyword">continue</span>;
     _results.<span class="LibraryFunction">push</span>(name);
   }
   <span class="Keyword">return</span> _results;
-})()).<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
+}()).<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
 </pre><button onclick='javascript: var globals, name, _results;
 var __hasProp = Object.prototype.hasOwnProperty;
-globals = ((function() {
+globals = (function() {
   _results = [];
   for (name in window) {
     if (!__hasProp.call(window, name)) continue;
     _results.push(name);
   }
   return _results;
-})()).slice(0, 10);;alert(globals);'>run: globals</button><br class='clear' /></div>
+}()).slice(0, 10);;alert(globals);'>run: globals</button><br class='clear' /></div>
     <p>
       As well as silly things, like passing a <b>try/catch</b> statement directly
       into a function call:
@@ -1025,20 +1050,20 @@ globals = ((function() {
   <span class="Keyword">catch</span> error
     <span class="String"><span class="String">&quot;</span>And the error is ... <span class="String">&quot;</span></span> <span class="Keyword">+</span> error
 )
-</pre><pre class="idle"><span class="LibraryFunction">alert</span>((<span class="Storage">function</span>() {
+</pre><pre class="idle"><span class="LibraryFunction">alert</span>(<span class="Storage">function</span>() {
   <span class="Keyword">try</span> {
     <span class="Keyword">return</span> nonexistent / <span class="Storage">void</span> <span class="Number">0</span>;
   } <span class="Keyword">catch</span> (error) {
     <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>And the error is ... <span class="String">&quot;</span></span> <span class="Keyword">+</span> error;
   }
-})());
-</pre><button onclick='javascript: alert((function() {
+}());
+</pre><button onclick='javascript: alert(function() {
   try {
     return nonexistent / void 0;
   } catch (error) {
     return "And the error is ... " + error;
   }
-})());;'>run</button><br class='clear' /></div>
+}());;'>run</button><br class='clear' /></div>
     <p>
       There are a handful of statements in JavaScript that can't be meaningfully
       converted into expressions, namely <tt>break</tt>, <tt>continue</tt>,
@@ -1116,6 +1141,10 @@ zip <span class="Keyword">=</span> <span class="Keyword">typeof</span> lottery.d
       provides a basic <tt>class</tt> structure that allows you to name your class,
       set the superclass, assign prototypal properties, and define the constructor,
       in a single assignable expression.
+    </p>
+    <p>
+      Constructor functions are named, to better support reflection. In the
+      example below for the first class, <tt>this.constructor.name is "Animal"</tt>.
     </p>
     <div class='code'><pre class="idle"><span class="Storage">class</span> <span class="TypeName">Animal</span>
   <span class="FunctionName">constructor</span><span class="Keyword">:</span> <span class="FunctionArgument">(@name)</span> <span class="Storage">-&gt;</span>
@@ -1246,8 +1275,11 @@ tom.move();;'>run</button><br class='clear' /></div>
   return this.replace(/_/g, "-");
 };;alert("one_two".dasherize());'>run: "one_two".dasherize()</button><br class='clear' /></div>
     <p>
-      Finally, you may assign Class-level (static) properties within a class
-      definition by using<br /><tt>@property: value</tt>
+      Finally class definitions are blocks of executable code, which make for interesting
+      metaprogramming possibilities. Because in the context of a class definition,
+      <tt>this</tt> is the class object itself (the constructor function), you
+      can assign static properties by using <br /><tt>@property: value</tt>, and call
+      functions defined in parent classes: <tt>@attr 'title', type: 'text'</tt>
     </p>
 
     <p>
@@ -1505,41 +1537,27 @@ cholesterol = 127;
 healthy = 200 > cholesterol && cholesterol > 60;;alert(healthy);'>run: healthy</button><br class='clear' /></div>
 
     <p>
-      <span id="interpolation" class="bookmark"></span>
-      <b class="header">String and RegExp Interpolation</b>
+      <span id="strings" class="bookmark"></span>
+      <b class="header">String Interpolation, Heredocs, and Block Comments</b>
       Ruby-style string interpolation is included in CoffeeScript. Double-quoted
-      strings allow for interpolated values, while single-quoted strings are literal.
+      strings allow for interpolated values, using <tt>#{ ... }</tt>,
+      and single-quoted strings are literal.
     </p>
     <div class='code'><pre class="idle">author <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Wittgenstein<span class="String">&quot;</span></span>
-quote  <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String"><span class="String">#{</span>author<span class="String">}</span></span><span class="String">&quot;</span></span>
-</pre><pre class="idle"><span class="Storage">var</span> author, quote;
+quote  <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String"><span class="String">#{</span> author <span class="String">}</span></span><span class="String">&quot;</span></span>
+
+sentence <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span><span class="String"><span class="String">#{</span> <span class="Number">22</span> <span class="Keyword">/</span> <span class="Number">7</span> <span class="String">}</span></span> is a decent approximation of π<span class="String">&quot;</span></span>
+
+
+</pre><pre class="idle"><span class="Storage">var</span> author, quote, sentence;
 author <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Wittgenstein<span class="String">&quot;</span></span>;
 quote <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String">&quot;</span></span> <span class="Keyword">+</span> author;
-</pre><button onclick='javascript: var author, quote;
-author = "Wittgenstein";
-quote = "A picture is a fact. -- " + author;;alert(quote);'>run: quote</button><br class='clear' /></div>
-    <p>
-      And arbitrary expressions can be interpolated by using brackets <tt>#{ ... }</tt><br />
-      Interpolation works the same way within regular expressions.
-    </p>
-    <div class='code'><pre class="idle">sentence <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span><span class="String"><span class="String">#{</span> <span class="Number">22</span> <span class="Keyword">/</span> <span class="Number">7</span> <span class="String">}</span></span> is a decent approximation of π<span class="String">&quot;</span></span>
-
-sep   <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>[.<span class="UserDefinedConstant">\\</span>/<span class="UserDefinedConstant">\\</span>- ]<span class="String">&quot;</span></span>
-dates <span class="Keyword">=</span> <span class="String">/\d+#{sep}\d+#{sep}\d+/g</span>
-
-
-</pre><pre class="idle"><span class="Storage">var</span> dates, sentence, sep;
 sentence <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> (<span class="Number">22</span> / <span class="Number">7</span>) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is a decent approximation of π<span class="String">&quot;</span></span>;
-sep <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>[.<span class="UserDefinedConstant">\\</span>/<span class="UserDefinedConstant">\\</span>- ]<span class="String">&quot;</span></span>;
-dates <span class="Keyword">=</span><span class="String"> <span class="String">/</span><span class="UserDefinedConstant">\d</span>+#{sep}<span class="UserDefinedConstant">\d</span>+#{sep}<span class="UserDefinedConstant">\d</span>+<span class="String">/</span>g</span>;
-</pre><button onclick='javascript: var dates, sentence, sep;
-sentence = "" + (22 / 7) + " is a decent approximation of π";
-sep = "[.\\/\\- ]";
-dates = /\d+#{sep}\d+#{sep}\d+/g;;alert(sentence);'>run: sentence</button><br class='clear' /></div>
-
+</pre><button onclick='javascript: var author, quote, sentence;
+author = "Wittgenstein";
+quote = "A picture is a fact. -- " + author;
+sentence = "" + (22 / 7) + " is a decent approximation of π";;alert(sentence);'>run: sentence</button><br class='clear' /></div>
     <p>
-      <span id="heredocs" class="bookmark"></span>
-      <b class="header">Multiline Strings, Heredocs, and Block Comments</b>
       Multiline strings are allowed in CoffeeScript.
     </p>
     <div class='code'><pre class="idle">mobyDick <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago --</span>
@@ -1586,6 +1604,29 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">'<
 <span class="Comment">Released under the MIT License</span>
 <span class="Comment"><span class="Comment">*/</span></span>
 </pre><br class='clear' /></div>
+
+    <p>
+      <span id="regexes" class="bookmark"></span>
+      <b class="header">Extended Regular Expressions</b>
+      Similar to "heredocs" and "herecomments", CoffeeScript supports "heregexes" &mdash;
+      extended regular expressions that ignore internal whitespace and can contain
+      comments, after Perl's <tt>/x</tt> modifier, but delimited by <tt>///</tt>.
+      They go a long way towards making complex regular expressions readable.
+      To quote from the CoffeeScript source:
+    </p>
+    <div class='code'><pre class="idle">OPERATOR <span class="Keyword">=</span> <span class="String">/// ^ (</span>
+<span class="String">  ?: [-=]&gt;             <span class="Comment"><span class="Comment">#</span> function</span></span>
+<span class="String">   | [-+*/%&lt;&gt;&amp;|^!?=]=  <span class="Comment"><span class="Comment">#</span> compound assign / compare</span></span>
+<span class="String">   | &gt;&gt;&gt;=?             <span class="Comment"><span class="Comment">#</span> zero-fill right shift</span></span>
+<span class="String">   | ([-+:])\1         <span class="Comment"><span class="Comment">#</span> doubles</span></span>
+<span class="String">   | ([&amp;|&lt;&gt;])\2=?      <span class="Comment"><span class="Comment">#</span> logic / shift</span></span>
+<span class="String">   | \?\.              <span class="Comment"><span class="Comment">#</span> soak access</span></span>
+<span class="String">   | \.{2,3}           <span class="Comment"><span class="Comment">#</span> range or splat</span></span>
+<span class="String">) ///</span>
+</pre><pre class="idle"><span class="Storage">var</span> OPERATOR;
+OPERATOR <span class="Keyword">=</span><span class="String"> <span class="String">/</span>^(?:[-=]&gt;|[-+*<span class="UserDefinedConstant">\/</span>%&lt;&gt;&amp;|^!?=]=|&gt;&gt;&gt;=?|([-+:])<span class="UserDefinedConstant">\1</span>|([&amp;|&lt;&gt;])<span class="UserDefinedConstant">\2</span>=?|<span class="UserDefinedConstant">\?</span><span class="UserDefinedConstant">\.</span>|<span class="UserDefinedConstant">\.</span>{2,3})<span class="String">/</span></span>;
+</pre><br class='clear' /></div>
+
 
     <h2>
       <span id="cake" class="bookmark"></span>
@@ -1645,7 +1686,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       While it's not recommended for serious use, CoffeeScripts may be included
       directly within the browser using <tt>&lt;script type="text/coffeescript"&gt;</tt>
       tags. The source includes a compressed and minified version of the compiler
-      (<a href="extras/coffee-script.js">Download current version here, 43k when gzipped</a>)
+      (<a href="extras/coffee-script.js">Download current version here, 39k when gzipped</a>)
       as <tt>extras/coffee-script.js</tt>. Include this file on a page with
       inline CoffeeScript tags, and it will compile and evaluate them in order.
     </p>
@@ -1663,15 +1704,15 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       run within a closure wrapper, so if you want to expose global variables or
       functions, attach them to the <tt>window</tt> object.
     </p>
-    
+
     <h2>
       <span id="examples" class="bookmark"></span>
       Examples
     </h2>
-    
+
     <ul>
       <li>
-        <b>frank06</b>'s <a href="http://riakjs.org/">riak-js</a>, a Node.js client for 
+        <b>frank06</b>'s <a href="http://riakjs.org/">riak-js</a>, a Node.js client for
         <a href="http://www.basho.com/Riak.html">Riak</a>, with support for HTTP
         and Protocol Buffers.
       </li>
@@ -1689,11 +1730,11 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
         the Bolo tank game for modern browsers.
       </li>
       <li>
-        <b>josh</b>'s <a href="http://josh.github.com/nack/">nack</a>, a Node.js-powered 
+        <b>josh</b>'s <a href="http://josh.github.com/nack/">nack</a>, a Node.js-powered
         <a href="http://rack.rubyforge.org/">Rack</a> server.
       </li>
       <li>
-        <b>sstephenson</b>'s <a href="http://sstephenson.github.com/strscan-js/">StringScanner</a>, 
+        <b>sstephenson</b>'s <a href="http://sstephenson.github.com/strscan-js/">StringScanner</a>,
         a simple tokenizer and lexical scanner for JavaScript strings.
       </li>
     </ul>
@@ -1835,6 +1876,18 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <b class="header" style="margin-top: 20px;">0.9.5</b>
+      0.9.5 should be considered the first release candidate for CoffeeScript 1.0.
+      There have been a large number of internal changes since the previous release,
+      many contributed from <b>satyr</b>'s <a href="http://github.com/satyr/coco">Coco</a>
+      dialect of CoffeeScript. Heregexes (extended regexes) were added. Functions
+      can now have default arguments. Class bodies are now executable code.
+      Improved syntax errors for invalid CoffeeScript code. <tt>undefined</tt> now
+      works like <tt>null</tt>, and cannot be assigned a new value. Object literals
+      can now take dynamic keys, like this: <tt>{(key): value}</tt>
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.9.4</b>

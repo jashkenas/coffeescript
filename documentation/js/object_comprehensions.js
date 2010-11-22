@@ -5,7 +5,7 @@ yearsOld = {
   ida: 9,
   tim: 11
 };
-ages = (function() {
+ages = function() {
   _results = [];
   for (child in yearsOld) {
     if (!__hasProp.call(yearsOld, child)) continue;
@@ -13,4 +13,4 @@ ages = (function() {
     _results.push(child + " is " + age);
   }
   return _results;
-})();
+}();

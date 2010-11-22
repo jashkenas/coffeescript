@@ -8,10 +8,10 @@ if (this.studyingEconomics) {
   }
 }
 num = 6;
-lyrics = (function() {
+lyrics = function() {
   _results = [];
   while (num -= 1) {
     _results.push(num + " little monkeys, jumping on the bed.    One fell out and bumped his head.");
   }
   return _results;
-})();
+}();

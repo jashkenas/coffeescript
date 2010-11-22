@@ -55,8 +55,8 @@
         <a href="#switch">The Switch Statement</a>
         <a href="#try">Try/Catch/Finally</a>
         <a href="#comparisons">Chained Comparisons</a>
-        <a href="#interpolation">String and RegExp Interpolation</a>
-        <a href="#heredocs">Multiline Strings, Heredocs, and Block Comments</a>
+        <a href="#strings">String Interpolation, Heredocs, and Block Comments</a>
+        <a href="#regexes">Extended Regular Expressions</a>
         <a href="#cake">Cake, and Cakefiles</a>
         <a href="#scripts">"text/coffeescript" Script Tags</a>
         <a href="#examples">Examples</a>
@@ -107,17 +107,17 @@
     <p>
       CoffeeScript is a little language that compiles into JavaScript. Underneath
       all of those embarrassing braces and semicolons, JavaScript has always had
-      a gorgeous object model at its heart. CoffeeScript is an attempt to expose 
+      a gorgeous object model at its heart. CoffeeScript is an attempt to expose
       the good parts of JavaScript in a simple way.
     </p>
 
     <p>
       The golden rule of CoffeeScript is: <i>"It's just JavaScript"</i>. The code
       compiles one-to-one into the equivalent JS, and there is
-      no interpretation at runtime. You can use any existing JavaScript library 
-      seamlessly (and vice-versa). The compiled output is readable and pretty-printed, 
-      passes through <a href="http://www.javascriptlint.com/">JavaScript Lint</a> 
-      without warnings, and can be run by any JavaScript implementation. 
+      no interpretation at runtime. You can use any existing JavaScript library
+      seamlessly (and vice-versa). The compiled output is readable and pretty-printed,
+      passes through <a href="http://www.javascriptlint.com/">JavaScript Lint</a>
+      without warnings, and can be run by any JavaScript implementation.
     </p>
 
     <p>
@@ -140,17 +140,17 @@
     </h2>
 
     <p>
-      The CoffeeScript compiler 
+      The CoffeeScript compiler
       <a href="documentation/docs/grammar.html">is itself written in CoffeeScript</a>,
       using the <a href="http://jison.org">Jison parser generator</a>. The command-line
-      version of <tt>coffee</tt> is available as a <a href="http://nodejs.org/">Node.js</a> utility. 
-      The core compiler however, does not depend on Node, and can be run in any 
+      version of <tt>coffee</tt> is available as a <a href="http://nodejs.org/">Node.js</a> utility.
+      The core compiler however, does not depend on Node, and can be run in any
       JavaScript environment, or in the browser (see "Try CoffeeScript", above).
     </p>
 
     <p>
       To install, first make sure you have a working copy of the latest tagged version of
-      <a href="http://nodejs.org/">Node.js</a>, and <a href="http://npmjs.org">NPM</a> 
+      <a href="http://nodejs.org/">Node.js</a>, and <a href="http://npmjs.org">NPM</a>
       (the Node Package Manager). You can then install CoffeeScript with NPM:
     </p>
 
@@ -158,7 +158,7 @@
 npm install coffee-script</pre>
 
   <p>
-    If you'd prefer to install the latest master version of CoffeeScript, you 
+    If you'd prefer to install the latest master version of CoffeeScript, you
     can clone the CoffeeScript
     <a href="http://github.com/jashkenas/coffee-script">source repository</a>
     from GitHub, or download
@@ -169,11 +169,11 @@ npm install coffee-script</pre>
 
   <pre>
 sudo bin/cake install</pre>
-    
+
     <p>
       Both of these provide the <tt>coffee</tt> command, which can execute
-      coffee scripts, compile <tt>.coffee</tt> files into <tt>.js</tt>, and 
-      provides an interactive REPL. The <tt>coffee</tt> command takes the 
+      coffee scripts, compile <tt>.coffee</tt> files into <tt>.js</tt>, and
+      provides an interactive REPL. The <tt>coffee</tt> command takes the
       following options:
     </p>
 
@@ -326,7 +326,7 @@ coffee --bare --print --stdio</pre>
       arguments:<br /><tt>print "coffee"</tt>. The implicit call wraps forward
       to the end of the line or block expression.
     </p>
-    
+
     <p>
       Within object literals, indentation can be used to create nested objects.
     </p>
@@ -338,6 +338,10 @@ coffee --bare --print --stdio</pre>
       function body. The empty function looks like this: <tt>-></tt>
     </p>
     <%= code_for('functions', 'cube(5)') %>
+    <p>
+      Functions may also have default values for arguments.
+    </p>
+    <%= code_for('default_args', 'fill("cup")') %>
 
     <p>
       <span id="objects_and_arrays" class="bookmark"></span>
@@ -351,7 +355,7 @@ coffee --bare --print --stdio</pre>
     <p>
       In JavaScript, you can't use reserved words, like <tt>class</tt>, as properties
       of an object, without quoting them as strings. CoffeeScript notices reserved words
-      used as keys in objects and quotes them for you, so you don't have to worry 
+      used as keys in objects and quotes them for you, so you don't have to worry
       about it (say, when using jQuery).
     </p>
     <%= code_for('objects_reserved') %>
@@ -446,11 +450,11 @@ coffee --bare --print --stdio</pre>
       You can use <tt>in</tt> to test for array presence, and <tt>of</tt> to
       test for JavaScript object-key presence.
     </p>
-    
+
     <p>
       All together now:
     </p>
-    
+
     <table class="definitions">
       <tr><th>CoffeeScript</th><th>JavaScript</th></tr>
       <tr><td><tt>is</tt></td><td><tt>===</tt></td></tr>
@@ -464,7 +468,7 @@ coffee --bare --print --stdio</pre>
       <tr><td><tt>of</tt></td><td><tt>in</tt></td></tr>
       <tr><td><tt>in</tt></td><td>(no JS equivalent)</td></tr>
     </table>
-    
+
     <%= code_for('aliases') %>
 
     <p>
@@ -616,6 +620,10 @@ coffee --bare --print --stdio</pre>
       set the superclass, assign prototypal properties, and define the constructor,
       in a single assignable expression.
     </p>
+    <p>
+      Constructor functions are named, to better support reflection. In the
+      example below for the first class, <tt>this.constructor.name is "Animal"</tt>.
+    </p>
     <%= code_for('classes', true) %>
     <p>
       If structuring your prototypes classically isn't your cup of tea, CoffeeScript
@@ -626,8 +634,11 @@ coffee --bare --print --stdio</pre>
     </p>
     <%= code_for('prototypes', '"one_two".dasherize()') %>
     <p>
-      Finally, you may assign Class-level (static) properties within a class
-      definition by using<br /><tt>@property: value</tt>
+      Finally class definitions are blocks of executable code, which make for interesting
+      metaprogramming possibilities. Because in the context of a class definition,
+      <tt>this</tt> is the class object itself (the constructor function), you
+      can assign static properties by using <br /><tt>@property: value</tt>, and call
+      functions defined in parent classes: <tt>@attr 'title', type: 'text'</tt>
     </p>
 
     <p>
@@ -727,21 +738,14 @@ coffee --bare --print --stdio</pre>
     <%= code_for('comparisons', 'healthy') %>
 
     <p>
-      <span id="interpolation" class="bookmark"></span>
-      <b class="header">String and RegExp Interpolation</b>
+      <span id="strings" class="bookmark"></span>
+      <b class="header">String Interpolation, Heredocs, and Block Comments</b>
       Ruby-style string interpolation is included in CoffeeScript. Double-quoted
-      strings allow for interpolated values, while single-quoted strings are literal.
+      strings allow for interpolated values, using <tt>#{ ... }</tt>,
+      and single-quoted strings are literal.
     </p>
-    <%= code_for('interpolation', 'quote') %>
+    <%= code_for('interpolation', 'sentence') %>
     <p>
-      And arbitrary expressions can be interpolated by using brackets <tt>#{ ... }</tt><br />
-      Interpolation works the same way within regular expressions.
-    </p>
-    <%= code_for('interpolation_expression', 'sentence') %>
-
-    <p>
-      <span id="heredocs" class="bookmark"></span>
-      <b class="header">Multiline Strings, Heredocs, and Block Comments</b>
       Multiline strings are allowed in CoffeeScript.
     </p>
     <%= code_for('strings', 'mobyDick') %>
@@ -762,6 +766,18 @@ coffee --bare --print --stdio</pre>
       are preserved in the generated code.
     </p>
     <%= code_for('block_comment') %>
+
+    <p>
+      <span id="regexes" class="bookmark"></span>
+      <b class="header">Extended Regular Expressions</b>
+      Similar to "heredocs" and "herecomments", CoffeeScript supports "heregexes" &mdash;
+      extended regular expressions that ignore internal whitespace and can contain
+      comments, after Perl's <tt>/x</tt> modifier, but delimited by <tt>///</tt>.
+      They go a long way towards making complex regular expressions readable.
+      To quote from the CoffeeScript source:
+    </p>
+    <%= code_for('heregexes') %>
+
 
     <h2>
       <span id="cake" class="bookmark"></span>
@@ -802,7 +818,7 @@ coffee --bare --print --stdio</pre>
       While it's not recommended for serious use, CoffeeScripts may be included
       directly within the browser using <tt>&lt;script type="text/coffeescript"&gt;</tt>
       tags. The source includes a compressed and minified version of the compiler
-      (<a href="extras/coffee-script.js">Download current version here, 43k when gzipped</a>)
+      (<a href="extras/coffee-script.js">Download current version here, 39k when gzipped</a>)
       as <tt>extras/coffee-script.js</tt>. Include this file on a page with
       inline CoffeeScript tags, and it will compile and evaluate them in order.
     </p>
@@ -820,15 +836,15 @@ coffee --bare --print --stdio</pre>
       run within a closure wrapper, so if you want to expose global variables or
       functions, attach them to the <tt>window</tt> object.
     </p>
-    
+
     <h2>
       <span id="examples" class="bookmark"></span>
       Examples
     </h2>
-    
+
     <ul>
       <li>
-        <b>frank06</b>'s <a href="http://riakjs.org/">riak-js</a>, a Node.js client for 
+        <b>frank06</b>'s <a href="http://riakjs.org/">riak-js</a>, a Node.js client for
         <a href="http://www.basho.com/Riak.html">Riak</a>, with support for HTTP
         and Protocol Buffers.
       </li>
@@ -846,11 +862,11 @@ coffee --bare --print --stdio</pre>
         the Bolo tank game for modern browsers.
       </li>
       <li>
-        <b>josh</b>'s <a href="http://josh.github.com/nack/">nack</a>, a Node.js-powered 
+        <b>josh</b>'s <a href="http://josh.github.com/nack/">nack</a>, a Node.js-powered
         <a href="http://rack.rubyforge.org/">Rack</a> server.
       </li>
       <li>
-        <b>sstephenson</b>'s <a href="http://sstephenson.github.com/strscan-js/">StringScanner</a>, 
+        <b>sstephenson</b>'s <a href="http://sstephenson.github.com/strscan-js/">StringScanner</a>,
         a simple tokenizer and lexical scanner for JavaScript strings.
       </li>
     </ul>
@@ -992,6 +1008,18 @@ coffee --bare --print --stdio</pre>
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <b class="header" style="margin-top: 20px;">0.9.5</b>
+      0.9.5 should be considered the first release candidate for CoffeeScript 1.0.
+      There have been a large number of internal changes since the previous release,
+      many contributed from <b>satyr</b>'s <a href="http://github.com/satyr/coco">Coco</a>
+      dialect of CoffeeScript. Heregexes (extended regexes) were added. Functions
+      can now have default arguments. Class bodies are now executable code.
+      Improved syntax errors for invalid CoffeeScript code. <tt>undefined</tt> now
+      works like <tt>null</tt>, and cannot be assigned a new value. Object literals
+      can now take dynamic keys, like this: <tt>{(key): value}</tt>
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.9.4</b>

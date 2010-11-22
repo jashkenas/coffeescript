@@ -1018,7 +1018,7 @@ exports.Code = class Code extends Base
         if param.value
           lit = new Literal ref.name.value + ' == null'
           val = new Assign new Value(param.name), param.value, '='
-          exprs.push new Op '&&', lit, val
+          exprs.push new If lit, val
       vars.push ref unless splats
     scope.startLevel()
     wasEmpty = @body.isEmpty()

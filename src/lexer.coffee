@@ -543,7 +543,7 @@ OPERATOR   = /// ^ (
    | ([-+:])\1         # doubles
    | ([&|<>])\2=?      # logic / shift
    | \?\.              # soak access
-   | \.{2,3}             # range or splat
+   | \.{2,3}           # range or splat
 ) ///
 
 WHITESPACE = /^[^\n\S]+/
