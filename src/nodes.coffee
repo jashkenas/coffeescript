@@ -1626,7 +1626,7 @@ Closure =
   # then make sure that the closure wrapper preserves the original values.
   wrap: (expressions, statement, noReturn) ->
     return expressions if expressions.containsPureStatement()
-    func = new Parens new Code [], Expressions.wrap [expressions]
+    func = new Code [], Expressions.wrap [expressions]
     args = []
     if (mentionsArgs = expressions.contains @literalArgs) or
        (               expressions.contains @literalThis)
