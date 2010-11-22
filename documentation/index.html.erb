@@ -34,7 +34,7 @@
         Table of Contents
       </div>
       <div class="contents">
-        <a href="#overview">Mini Overview</a>
+        <a href="#overview">Overview</a>
         <a href="#installation">Installation and Usage</a>
         <a href="#language">Language Reference</a>
         <a href="#whitespace">Significant Whitespace</a>
@@ -59,6 +59,7 @@
         <a href="#heredocs">Multiline Strings, Heredocs, and Block Comments</a>
         <a href="#cake">Cake, and Cakefiles</a>
         <a href="#scripts">"text/coffeescript" Script Tags</a>
+        <a href="#examples">Examples</a>
         <a href="#resources">Resources</a>
         <a href="#webchat">Web Chat (IRC)</a>
         <a href="#change_log">Change Log</a>
@@ -133,63 +134,47 @@
 
     <%= code_for('overview', 'cubes') %>
 
-    <p>
-      For a longer CoffeeScript example, check out
-      <a href="documentation/docs/underscore.html">Underscore.coffee</a>, a port
-      of the <a href="http://documentcloud.github.com/underscore/">Underscore.js</a>
-      library of helper functions. Underscore.coffee can pass the entire Underscore.js
-      test suite. The CoffeeScript version is faster than the original for a number
-      of methods (in general, due to the speed of CoffeeScript's array comprehensions), and
-      after being minified and gzipped, is only 241 bytes larger than the original
-      JavaScript version.
-      Additional examples are included in the source repository, inside the
-      <a href="http://github.com/jashkenas/coffee-script/tree/master/examples/">examples</a> folder.
-    </p>
-
     <h2>
       <span id="installation" class="bookmark"></span>
       Installation and Usage
     </h2>
 
     <p>
-      The CoffeeScript compiler is written in pure CoffeeScript, using a
-      <a href="documentation/docs/grammar.html">small DSL</a>
-      on top of the <a href="http://github.com/zaach/jison">Jison parser generator</a>, and is available
-      as a <a href="http://nodejs.org/">Node.js</a> utility. The core compiler however,
-      does not depend on Node, and can be run in other server-side-JavaScript environments,
-      or in the browser (see "Try CoffeeScript", above).
+      The CoffeeScript compiler 
+      <a href="documentation/docs/grammar.html">is itself written in CoffeeScript</a>,
+      using the <a href="http://jison.org">Jison parser generator</a>. The command-line
+      version of <tt>coffee</tt> is available as a <a href="http://nodejs.org/">Node.js</a> utility. 
+      The core compiler however, does not depend on Node, and can be run in any 
+      JavaScript environment, or in the browser (see "Try CoffeeScript", above).
     </p>
 
     <p>
       To install, first make sure you have a working copy of the latest tagged version of
-      <a href="http://nodejs.org/">Node.js</a>, currently <b>0.1.102</b> or higher.
-      Then clone the CoffeeScript
-      <a href="http://github.com/jashkenas/coffee-script">source repository</a>
-      from GitHub, or download the latest
-      release: <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.5">0.9.5</a>.
-      To install the CoffeeScript compiler system-wide
-      under <tt>/usr/local</tt>, open the directory and run:
-    </p>
-
-    <pre>
-sudo bin/cake install</pre>
-
-    <p>
-      Alternatively, if you already have the
-      <a href="http://npmjs.org/">Node Package Manager</a> installed,
-      you can use that to grab the latest CoffeeScript:
+      <a href="http://nodejs.org/">Node.js</a>, and <a href="http://npmjs.org">NPM</a> 
+      (the Node Package Manager). You can then install CoffeeScript with NPM:
     </p>
 
     <pre>
 npm install coffee-script</pre>
 
+  <p>
+    If you'd prefer to install the latest master version of CoffeeScript, you 
+    can clone the CoffeeScript
+    <a href="http://github.com/jashkenas/coffee-script">source repository</a>
+    from GitHub, or download
+    <a href="http://github.com/jashkenas/coffee-script/tarball/master">the source</a> directly.
+    To install the CoffeeScript compiler system-wide
+    under <tt>/usr/local</tt>, open the directory and run:
+  </p>
+
+  <pre>
+sudo bin/cake install</pre>
+    
     <p>
-      Both of these provide the <tt>coffee</tt> command, which will execute CoffeeScripts
-      under Node.js by default, but is also used to compile CoffeeScript
-      <tt>.coffee</tt> files into JavaScript, or to run an an interactive REPL.
-      When compiling to JavaScript, <tt>coffee</tt> writes the output
-      as <tt>.js</tt> files in the same directory by default, but output
-      can be customized with the following options:
+      Both of these provide the <tt>coffee</tt> command, which can execute
+      coffee scripts, compile <tt>.coffee</tt> files into <tt>.js</tt>, and 
+      provides an interactive REPL. The <tt>coffee</tt> command takes the 
+      following options:
     </p>
 
     <table>
@@ -297,10 +282,10 @@ Expressions
     </p>
 
     <pre>
-coffee -c path/to/script.coffee
-coffee --interactive
+coffee -o lib/ -c src/
 coffee --watch --lint experimental.coffee
-coffee --print app/scripts/*.coffee > concatenation.js</pre>
+coffee --print app/scripts/*.coffee > concatenation.js
+coffee --bare --print --stdio</pre>
 
     <h2>
       <span id="language" class="bookmark"></span>
@@ -338,20 +323,17 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
 
     <p>
       You don't need to use parentheses to invoke a function if you're passing
-      arguments:<br /><tt>print "coffee"</tt>. Implicit parentheses wrap forwards
-      to the end of the line, or block expression.
+      arguments:<br /><tt>print "coffee"</tt>. The implicit call wraps forward
+      to the end of the line or block expression.
     </p>
-
+    
     <p>
-      You can use newlines to break up your expression into smaller pieces,
-      as long as CoffeeScript can determine that the line hasn't finished yet,
-      because it ends with an operator or a dot ... seen most commonly
-      in jQuery-chaining style JavaScript.
+      Within object literals, indentation can be used to create nested objects.
     </p>
 
     <p>
       <span id="functions" class="bookmark"></span>
-      <b class="header">Functions and Invocation</b>
+      <b class="header">Functions</b>
       Functions are defined by a list of parameters, an arrow, and the
       function body. The empty function looks like this: <tt>-></tt>
     </p>
@@ -361,15 +343,16 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       <span id="objects_and_arrays" class="bookmark"></span>
       <b class="header">Objects and Arrays</b>
       Object and Array literals look very similar to their JavaScript cousins.
-      When you spread out each property on a separate line, the commas are
-      optional. Implicit objects may be created with indentation instead of
-      brackets, winding up looking quite similar to YAML.
+      When each property is listed on its own line, the commas are
+      optional. Objects may be created using indentation instead of
+      explicit braces, similar to YAML.
     </p>
     <%= code_for('objects_and_arrays', 'song.join(",")') %>
     <p>
       In JavaScript, you can't use reserved words, like <tt>class</tt>, as properties
-      of an object, without quoting them as strings. CoffeeScript notices and quotes
-      them for you, so you don't have to worry about it (say, when using jQuery).
+      of an object, without quoting them as strings. CoffeeScript notices reserved words
+      used as keys in objects and quotes them for you, so you don't have to worry 
+      about it (say, when using jQuery).
     </p>
     <%= code_for('objects_reserved') %>
 
@@ -408,7 +391,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       attach them as properties on <b>window</b>, or on the <b>exports</b>
       object in CommonJS. The <b>existential operator</b> (covered below), gives you a
       reliable way to figure out where to add them, if you're targeting both
-      CommonJS and the browser: <tt>root = exports ? this</tt>
+      CommonJS and the browser: <tt>exports ? this</tt>
     </p>
 
     <p>
@@ -423,7 +406,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       CoffeeScript can compile <b>if</b> statements into JavaScript expressions,
       using the ternary operator when possible, and closure wrapping otherwise. There
       is no explicit ternary statement in CoffeeScript &mdash; you simply use
-      a regular <b>if</b> statement inline.
+      a regular <b>if</b> statement on a single line.
     </p>
     <%= code_for('conditionals') %>
 
@@ -463,6 +446,25 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       You can use <tt>in</tt> to test for array presence, and <tt>of</tt> to
       test for JavaScript object-key presence.
     </p>
+    
+    <p>
+      All together now:
+    </p>
+    
+    <table class="definitions">
+      <tr><th>CoffeeScript</th><th>JavaScript</th></tr>
+      <tr><td><tt>is</tt></td><td><tt>===</tt></td></tr>
+      <tr><td><tt>isnt</tt></td><td><tt>!==</tt></td></tr>
+      <tr><td><tt>not</tt></td><td><tt>!</tt></td></tr>
+      <tr><td><tt>and</tt></td><td><tt>&amp;&amp;</tt></td></tr>
+      <tr><td><tt>or</tt></td><td><tt>||</tt></td></tr>
+      <tr><td><tt>true, yes, on</tt></td><td><tt>true</tt></td></tr>
+      <tr><td><tt>false, no, off</tt></td><td><tt>false</tt></td></tr>
+      <tr><td><tt>@, this</tt></td><td><tt>this</tt></td></tr>
+      <tr><td><tt>of</tt></td><td><tt>in</tt></td></tr>
+      <tr><td><tt>in</tt></td><td>(no JS equivalent)</td></tr>
+    </table>
+    
     <%= code_for('aliases') %>
 
     <p>
@@ -818,6 +820,40 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
       run within a closure wrapper, so if you want to expose global variables or
       functions, attach them to the <tt>window</tt> object.
     </p>
+    
+    <h2>
+      <span id="examples" class="bookmark"></span>
+      Examples
+    </h2>
+    
+    <ul>
+      <li>
+        <b>frank06</b>'s <a href="http://riakjs.org/">riak-js</a>, a Node.js client for 
+        <a href="http://www.basho.com/Riak.html">Riak</a>, with support for HTTP
+        and Protocol Buffers.
+      </li>
+      <li>
+        <b>technoweenie</b>'s <a href="https://github.com/technoweenie/coffee-resque">Coffee-Resque</a>,
+        a port of <a href="https://github.com/defunkt/resque">Resque</a> for Node.js.
+      </li>
+      <li>
+        <b>jashkenas</b>' <a href="documentation/docs/underscore.html">Underscore.coffee</a>, a port
+        of the <a href="http://documentcloud.github.com/underscore/">Underscore.js</a>
+        library of helper functions.
+      </li>
+      <li>
+        <b>stephank</b>'s <a href="https://github.com/stephank/orona">Orona</a>, a remake of
+        the Bolo tank game for modern browsers.
+      </li>
+      <li>
+        <b>josh</b>'s <a href="http://josh.github.com/nack/">nack</a>, a Node.js-powered 
+        <a href="http://rack.rubyforge.org/">Rack</a> server.
+      </li>
+      <li>
+        <b>sstephenson</b>'s <a href="http://sstephenson.github.com/strscan-js/">StringScanner</a>, 
+        a simple tokenizer and lexical scanner for JavaScript strings.
+      </li>
+    </ul>
 
     <h2>
       <span id="resources" class="bookmark"></span>
@@ -848,6 +884,10 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
         <a href="http://webchat.freenode.net/">webchat.freenode.net</a>.
       </li>
       <li>
+        <b>satyr</b>'s <a href="http://github.com/satyr/coco">Coco</a>
+        &mdash; a CoffeeScript dialect that aims to be more radical and practical.
+      </li>
+      <li>
         <b>yeungda</b>'s <a href="http://github.com/yeungda/jcoffeescript">JCoffeeScript</a>
         &mdash; A Java Library that uses Rhino to compile CoffeeScript, allowing
         compilation within Java projects or on systems that Node.js doesn't support.
@@ -858,7 +898,7 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
         support, and some bonus commands.
       </li>
       <li>
-        <b>jashkenas</b>'s <a href="http://github.com/jashkenas/coffee-script-tmbundle">CoffeeScript TextMate Bundle</a>
+        <b>jashkenas</b>' <a href="http://github.com/jashkenas/coffee-script-tmbundle">CoffeeScript TextMate Bundle</a>
         &mdash; which provides syntax highlighting, snippet expansion, and the
         ability to run bits of CoffeeScript from within TextMate itself.
       </li>
@@ -910,28 +950,26 @@ coffee --print app/scripts/*.coffee > concatenation.js</pre>
         directly from CouchDB.
       </li>
       <li>
+        <b>sstephenson</b>'s <a href="http://github.com/sstephenson/eco">Eco</a>
+        &mdash; high-performance embedded CoffeeScript templates, after EJS and ERB.
+      </li>
+      <li>
         <b>mauricemach</b>'s <a href="http://github.com/mauricemach/coffeekup">CoffeeKup</a>
         &mdash; Markup as CoffeeScript. After _why's
         <a href="http://markaby.github.com/">Markaby</a>.
       </li>
       <li>
-        <b>jashkenas</b>'s <a href="http://jashkenas.github.com/docco/">Docco</a>
+        <b>jashkenas</b>' <a href="http://jashkenas.github.com/docco/">Docco</a>
         &mdash; a quick-and-dirty literate-programming-style documentation generator
         for CoffeeScript. Used to produce the annotated source.
       </li>
       <li>
-        <b>satyr</b>'s <a href="http://satyr.github.com/cup/">CUP</a>
-        &mdash; The CoffeeScript Unofficial Playpen, where the changes to
-        the latest <tt>master</tt> can be experimented with.
-      </li>
-      <li>
-        <b>satyr</b>'s <a href="https://addons.mozilla.org/en-US/firefox/addon/159546/">xqjs</a>
-        &mdash; A Firefox add-on that provides a simple JavaScript console
-        with the ability to execute CoffeeScripts within the current window.
-      </li>
-      <li>
         <b>naturalethic</b>'s <a href="http://github.com/naturalethic/Congo">Congo</a>
-        &mdash; An asynchronous MongoDB ORM, for use with Node.js and CoffeeScript.
+        &mdash; an asynchronous MongoDB ORM, for use with Node.js and CoffeeScript.
+      </li>
+      <li>
+        <b>mauricemach</b>'s <a href="https://github.com/mauricemach/zappa">Zappa</a>
+        &mdash; a DSL for building web apps, built on top of Express and Socket.IO.
       </li>
     </ul>
 

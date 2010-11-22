@@ -1442,8 +1442,7 @@ exports.For = class For extends Base
       forPart = source.compile merge(o, {index: ivar, @step})
     else
       svar = @source.compile o, LEVEL_TOP
-      if (name or not @raw) and
-         not (IDENTIFIER.test(svar) and scope.check svar, immediate: on)
+      if (name or not @raw) and not IDENTIFIER.test svar
         defPart = "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
         svar = ref
       namePart = if @pattern

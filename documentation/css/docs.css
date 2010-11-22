@@ -44,6 +44,15 @@ table {
     td {
       padding: 9px 15px 9px 0;
     }
+table.definitions {
+  width: auto;
+  margin: 30px 0;
+  border-left: 6px solid #ccccdd;
+}
+  table.definitions td {
+    text-align: center;
+    padding: 5px 20px;
+  }
 code, pre, tt, textarea {
   font-family: Monaco, Consolas, "Lucida Console", monospace;
   font-size: 12px;
@@ -55,12 +64,10 @@ code, pre, tt, textarea {
   tt {
     background: #f8f8ff;
     border: 1px solid #dedede;
-    font-size: 85%;
     padding: 0px 0.2em;
   }
   pre {
-    border-left: 6px solid #222255;
-    margin-left: 13px;
+    border-left: 6px solid #ccccdd;
     padding: 3px 0 3px 12px;
     font-size: 12px;
   }
@@ -73,7 +80,7 @@ div.code {
   position: relative;
   border: 1px solid #cacaca;
   background: #fafaff;
-  padding: 11px 3px;
+  padding: 7px 0 10px 0;
   -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px;
   -webkit-box-shadow: 0px 0px 7px #cacaca;
   zoom: 1;
