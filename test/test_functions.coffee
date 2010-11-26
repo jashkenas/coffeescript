@@ -345,3 +345,13 @@ eq ok, new ->
   ok
   ### Should `return` implicitly   ###
   ### even with trailing comments. ###
+
+#855: execution context for `func arr...` should be `null`
+(->
+  global = @
+  contextTest = -> ok global is @
+  array = []
+  contextTest array
+  contextTest.apply null, array
+  contextTest array...
+)()
