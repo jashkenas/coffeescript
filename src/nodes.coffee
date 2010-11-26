@@ -487,7 +487,7 @@ exports.Call = class Call extends Base
       return @compileSplat o, code
     args = (arg.compile o, LEVEL_LIST for arg in @args).join ', '
     if @isSuper
-      @compileSuper args, o
+      @superReference(o) + ".call(this#{ args and ', ' + args })"
     else
       (if @isNew then 'new ' else '') + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
 
@@ -502,23 +502,27 @@ exports.Call = class Call extends Base
   # inner constructor in order to be able to pass the varargs.
   compileSplat: (o, splatArgs) ->
     return "#{ @superReference o }.apply(this, #{splatArgs})" if @isSuper
-    unless @isNew
-      base = new Value @variable
-      if (name = base.properties.pop()) and base.isComplex()
-        ref = o.scope.freeVariable 'this'
-        fun = "(#{ref} = #{ base.compile o, LEVEL_LIST })#{ name.compile o }"
+    if @isNew
+      idt = @tab + TAB
+      return """
+		(function(func, args, ctor) {
+		#{idt}ctor.prototype = func.prototype;
+		#{idt}var child = new ctor, result = func.apply(child, args);
+		#{idt}return typeof result === "object" ? result : child;
+		#{@tab}})(#{ @variable.compile o, LEVEL_LIST }, #{splatArgs}, function() {})
+      """
+    base = new Value @variable
+    if (name = base.properties.pop()) and base.isComplex()
+      ref = o.scope.temporary 'ref'
+      fun = "(#{ref} = #{ base.compile o, LEVEL_LIST })#{ name.compile o }"
+    else
+      fun = base.compile o, LEVEL_ACCESS
+      if name
+        ref = fun
+        fun += name.compile o
       else
-        fun = ref = base.compile o, LEVEL_ACCESS
-        fun += name.compile o if name
-      return "#{fun}.apply(#{ref}, #{splatArgs})"
-    idt = @tab + TAB
-    """
-    (function(func, args, ctor) {
-    #{idt}ctor.prototype = func.prototype;
-    #{idt}var child = new ctor, result = func.apply(child, args);
-    #{idt}return typeof result === "object" ? result : child;
-    #{@tab}})(#{ @variable.compile o, LEVEL_LIST }, #{splatArgs}, function() {})
-    """
+        ref = 'null'
+    "#{fun}.apply(#{ref}, #{splatArgs})"
 
 #### Extends
 
