@@ -20,11 +20,7 @@ exports.Scope = class Scope
   constructor:(@parent, @expressions, @method) ->
     @variables = [{name: 'arguments', type: 'arguments'}]
     @positions = {}
-    if @parent
-      @garbage = @parent.garbage
-    else
-      @garbage   = []
-      Scope.root = this
+    Scope.root = this unless @parent
 
   # Adds a new variable or overrides an existing one.
   add: (name, type) ->
@@ -32,17 +28,6 @@ exports.Scope = class Scope
       @variables[pos].type = type
     else
       @positions[name] = @variables.push({name, type}) - 1
-
-  # Create a new garbage level
-  startLevel: ->
-    @garbage.push []
-    this
-
-  # Return to the previous garbage level and erase referenced temporary
-  # variables in current level from scope.
-  endLevel: ->
-    @add name, 'reuse' for name in @garbage.pop() when @type(name) is 'var'
-    this
 
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
@@ -70,10 +55,7 @@ exports.Scope = class Scope
 
   # Generate a temporary variable name at the given index.
   temporary: (name, index) ->
-    if name.length > 1
-      '_' + name + if index > 1 then index else ''
-    else
-      '_' + (index + parseInt name, 36).toString(36).replace /\d/g, 'a'
+    '_' + name + if index > 1 then index else ''
 
   # Gets the type of a variable.
   type: (name) ->
@@ -84,9 +66,8 @@ exports.Scope = class Scope
   # compiler-generated variable. `_var`, `_var2`, and so on...
   freeVariable: (type) ->
     index = 0
-    index++ while @check((temp = @temporary type, index), true) and @type(temp) isnt 'reuse'
+    index++ while @check((temp = @temporary type, index), true)
     @add temp, 'var'
-    last(@garbage)?.push temp
     temp
 
   # Ensure that an assignment is made at the top of this scope
@@ -97,7 +78,7 @@ exports.Scope = class Scope
   # Does this scope reference any variables that need to be declared in the
   # given function body?
   hasDeclarations: (body) ->
-    body is @expressions and @any (v) -> v.type in ['var', 'reuse']
+    body is @expressions and @any (v) -> v.type is 'var'
 
   # Does this scope reference any assignments that need to be declared at the
   # top of the given function body?
@@ -108,7 +89,7 @@ exports.Scope = class Scope
   declaredVariables: ->
     usr = []
     tmp = []
-    for v in @variables when v.type in ['var', 'reuse']
+    for v in @variables when v.type is 'var'
       (if v.name.charAt(0) is '_' then tmp else usr).push v.name
     usr.sort().concat tmp.sort()
 

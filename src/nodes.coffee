@@ -1024,7 +1024,6 @@ exports.Code = class Code extends Base
           val = new Assign new Value(param.name), param.value, '='
           exprs.push new If lit, val
       vars.push ref unless splats
-    scope.startLevel()
     wasEmpty = @body.isEmpty()
     exprs.unshift splats if splats
     @body.expressions.unshift exprs... if exprs.length
