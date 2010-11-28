@@ -318,3 +318,16 @@ class two.Klass
 eq typeof Klass, 'undefined'
 eq one.Klass.label, 'one'
 eq two.Klass.label, 'two'
+
+
+# Nested classes.
+class Outer
+  constructor: ->
+    @label = 'outer'
+
+  class @Inner
+    constructor: ->
+      @label = 'inner'
+
+eq (new Outer).label, 'outer'
+eq (new Outer.Inner).label, 'inner'

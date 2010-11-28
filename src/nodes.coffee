@@ -786,6 +786,7 @@ exports.Class = class Class extends Base
   # Walk the body of the class, looking for prototype properties to be converted.
   walkBody: (name) ->
     @traverseChildren false, (child) =>
+      return false if child instanceof Class
       if child instanceof Expressions
         for node, i in exps = child.expressions
           if node instanceof Value and node.isObject(true)
