@@ -97,13 +97,13 @@ class exports.Rewriter
     start       = null
     startIndent = 0
     condition = (token, i) ->
-      {(i+1): one, (i+2): two, (i+3): three} = @tokens
+      [one, two, three] = @tokens[i + 1 .. i + 3]
       return false if 'HERECOMMENT' is one?[0]
       [tag] = token
       (tag in ['TERMINATOR', 'OUTDENT'] and
         not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':')) or
         (tag is ',' and one and
-          one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT', '('])
+          one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT'])
     action = (token, i) -> @tokens.splice i, 0, ['}', '}', token[2]]
     @scanTokens (token, i, tokens) ->
       if (tag = token[0]) in EXPRESSION_START
@@ -113,16 +113,9 @@ class exports.Rewriter
         start = stack.pop()
         return 1
       return 1 unless tag is ':' and
-        ((ago2 = @tag i - 2) is ':' or
-         (ago1 = @tag i - 1) is ')' and @tag(start[1] - 1) is ':' or
-         stack[stack.length - 1]?[0] isnt '{')
+        ((ago = @tag i - 2) is ':' or stack[stack.length - 1]?[0] isnt '{')
       stack.push ['{']
-      idx = if ago1 is ')'
-        start[1]
-      else if ago2 is '@'
-        i - 2
-      else
-        i - 1
+      idx = if ago is '@' then i - 2 else i - 1
       idx -= 2 if @tag(idx - 2) is 'HERECOMMENT'
       value = new String('{')
       value.generated = yes
@@ -143,7 +136,7 @@ class exports.Rewriter
     @scanTokens (token, i, tokens) ->
       tag     = token[0]
       noCall  = yes if tag in ['CLASS', 'IF', 'UNLESS']
-      {(i-1): prev, (i+1): next} = tokens
+      [prev, current, next] = tokens[i - 1 .. i + 1]
       callObject = not noCall and tag is 'INDENT' and
                    next and next.generated and next[0] is '{' and
                    prev and prev[0] in IMPLICIT_FUNC

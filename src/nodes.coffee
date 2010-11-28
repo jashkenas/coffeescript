@@ -671,10 +671,6 @@ exports.Obj = class Obj extends Base
   compileNode: (o) ->
     props = @properties
     return (if @front then '({})' else '{}') unless props.length
-    for prop, i in props
-      if prop instanceof Splat or (prop.variable or prop).base instanceof Parens
-        rest = props.splice i, 1/0
-        break
     idt         = o.indent += TAB
     nonComments = (prop for prop in @properties when prop not instanceof Comment)
     lastNoncom  = last nonComments
@@ -693,30 +689,7 @@ exports.Obj = class Obj extends Base
       indent + prop.compile(o, LEVEL_TOP) + join
     props = props.join ''
     obj   = "{#{ props and '\n' + props + '\n' + @tab }}"
-    return @compileDynamic o, obj, rest if rest
     if @front then "(#{obj})" else obj
-
-  compileDynamic: (o, code, props) ->
-    code = "#{ oref = o.scope.freeVariable 'obj' } = #{code}, "
-    for prop, i in props
-      if prop instanceof Comment
-        code += prop.compile(o, LEVEL_LIST) + ' '
-        continue
-      if prop instanceof Assign
-        acc = prop.variable.base
-        key = acc.compile o, LEVEL_PAREN
-        val = prop.value.compile o, LEVEL_LIST
-      else
-        acc = prop.base
-        [key, val] = acc.cache o, LEVEL_LIST, ref
-        ref = val if key isnt val
-      key = if acc instanceof Literal and IDENTIFIER.test key
-        '.' + key
-      else
-        '[' + key + ']'
-      code += "#{oref}#{key} = #{val}, "
-    code += oref
-    if o.level <= LEVEL_PAREN then code else "(#{code})"
 
   assigns: (name) ->
     for prop in @properties when prop.assigns name then return yes

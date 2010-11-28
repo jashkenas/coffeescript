@@ -149,7 +149,6 @@ grammar =
   ObjAssignable: [
     o 'Identifier'
     o 'AlphaNumeric'
-    o 'Parenthetical'
     o 'ThisProperty'
   ]
 
