@@ -16,6 +16,9 @@ CoffeeScript   = require './coffee-script'
 # Allow CoffeeScript to emit Node.js events.
 helpers.extend CoffeeScript, new EventEmitter
 
+printLine = (line) -> process.stdout.write line + '\n'
+printWarn = (line) -> process.binding('stdio').writeError line + '\n'
+
 # The help banner that is printed when `coffee` is called without arguments.
 BANNER = '''
   Usage: coffee [options] path/to/script.coffee
@@ -103,19 +106,19 @@ compileScript = (file, input, base) ->
     t = task = {file, input, options}
     CoffeeScript.emit 'compile', task
     if      o.tokens      then printTokens CoffeeScript.tokens t.input
-    else if o.nodes       then console.log CoffeeScript.nodes(t.input).toString().trim()
+    else if o.nodes       then printLine CoffeeScript.nodes(t.input).toString().trim()
     else if o.run         then CoffeeScript.run t.input, t.options
     else
       t.output = CoffeeScript.compile t.input, t.options
       CoffeeScript.emit 'success', task
-      if o.print          then console.log t.output.trim()
+      if o.print          then printLine t.output.trim()
       else if o.compile   then writeJs t.file, t.output, base
       else if o.lint      then lint t.file, t.output
   catch err
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
-    return console.log err.message if o.watch
-    console.error err.stack
+    return printLine err.message if o.watch
+    printWarn err.stack
     process.exit 1
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
@@ -150,15 +153,15 @@ writeJs = (source, js, base) ->
   compile   = ->
     js = ' ' if js.length <= 0
     fs.writeFile jsPath, js, (err) ->
-      if err then console.log err.message
-      else if opts.compile and opts.watch then console.log "Compiled #{source}"
+      if err then printLine err.message
+      else if opts.compile and opts.watch then printLine "Compiled #{source}"
   path.exists dir, (exists) ->
     if exists then compile() else exec "mkdir -p #{dir}", compile
 
 # Pipe compiled JS through JSLint (requires a working `jsl` command), printing
 # any errors or warnings that arise.
 lint = (file, js) ->
-  printIt = (buffer) -> console.log file + ':\t' + buffer.toString().trim()
+  printIt = (buffer) -> printLine file + ':\t' + buffer.toString().trim()
   conf = __dirname + '/../extras/jsl.conf'
   jsl = spawn 'jsl', ['-nologo', '-stdin', '-conf', conf]
   jsl.stdout.on 'data', printIt
@@ -171,7 +174,7 @@ printTokens = (tokens) ->
   strings = for token in tokens
     [tag, value] = [token[0], token[1].toString().replace(/\n/, '\\n')]
     "[#{tag} #{value}]"
-  console.log strings.join(' ')
+  printLine strings.join(' ')
 
 # Use the [OptionParser module](optparse.html) to extract all options from
 # `process.argv` that are specified in `SWITCHES`.
@@ -183,7 +186,7 @@ parseOptions = ->
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
   sources       = o.arguments
   if opts['no-wrap']
-    console.warn '--no-wrap is deprecated; please use --bare instead.'
+    printWarn '--no-wrap is deprecated; please use --bare instead.'
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (fileName) -> {fileName, bare: opts.bare or opts['no-wrap']}
@@ -191,10 +194,10 @@ compileOptions = (fileName) -> {fileName, bare: opts.bare or opts['no-wrap']}
 # Print the `--help` usage message and exit. Deprecated switches are not
 # shown.
 usage = ->
-  console.log (new optparse.OptionParser SWITCHES, BANNER).help()
+  printLine (new optparse.OptionParser SWITCHES, BANNER).help()
   process.exit 0
 
 # Print the `--version` message and exit.
 version = ->
-  console.log "CoffeeScript version #{CoffeeScript.VERSION}"
+  printLine "CoffeeScript version #{CoffeeScript.VERSION}"
   process.exit 0
