@@ -12,7 +12,7 @@ ok 'passed' is CoffeeScript.eval '"passed"', bare: on, fileName: 'test'
 try ok not CoffeeScript.nodes 'f(->'
 catch e then eq e.message, 'unclosed CALL_START on line 1'
 
-eq CoffeeScript.compile('for all k of o then', bare: on, globals: on),
+eq CoffeeScript.compile('for k of o then', bare: on, globals: on),
    'for (k in o) {}'
 
 #875: %d and %s in strings causes node.js to apply formatting

@@ -85,7 +85,7 @@ _.each = (obj, iterator, context) ->
     else if _.isNumber obj.length
       iterator.call context, obj[i], i, obj for i in [0...obj.length]
     else
-      iterator.call context, val, key, obj  for key, val of obj
+      iterator.call context, val, key, obj  for own key, val of obj
   catch e
     throw e if e isnt breaker
   obj
@@ -176,8 +176,7 @@ _.some = (obj, iterator, context) ->
 # based on `===`.
 _.include = (obj, target) ->
   return _.indexOf(obj, target) isnt -1 if nativeIndexOf and obj.indexOf is nativeIndexOf
-  for key, val of obj
-    return true if val is target
+  return true for own key, val of obj when val is target
   false
 
 
@@ -486,14 +485,14 @@ _.isEqual = (a, b) ->
   # Different object sizes?
   return false if aKeys.length isnt bKeys.length
   # Recursive comparison of contents.
-  return false for all key, val of a when !(key of b) or !_.isEqual(val, b[key])
+  return false for key, val of a when !(key of b) or !_.isEqual(val, b[key])
   true
 
 
 # Is a given array or object empty?
 _.isEmpty = (obj) ->
   return obj.length is 0 if _.isArray(obj) or _.isString(obj)
-  return false for key of obj when hasOwnProperty.call(obj, key)
+  return false for own key of obj
   true
 
 
@@ -654,7 +653,7 @@ addToWrapper = (name, func) ->
     result func.apply(_, args), this._chain
 
 
-# Add all of the Underscore functions to the wrapper object.
+# Add all ofthe Underscore functions to the wrapper object.
 _.mixin _
 
 

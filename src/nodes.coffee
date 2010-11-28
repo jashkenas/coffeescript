@@ -1374,7 +1374,7 @@ exports.For = class For extends Base
   constructor: (body, source, @name, @index) ->
     {@source, @guard, @step} = source
     @body    = Expressions.wrap [body]
-    @raw     = !!source.raw
+    @own     = !!source.own
     @object  = !!source.object
     [@name, @index] = [@index, @name] if @object
     throw SyntaxError 'index cannot be a pattern matching expression' if @index instanceof Value
@@ -1418,7 +1418,7 @@ exports.For = class For extends Base
       forPart = source.compile merge(o, {index: ivar, @step})
     else
       svar = @source.compile o, LEVEL_TOP
-      if (name or not @raw) and not IDENTIFIER.test svar
+      if (name or @own) and not IDENTIFIER.test svar
         defPart = "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
         svar = ref
       namePart = if @pattern
@@ -1440,7 +1440,7 @@ exports.For = class For extends Base
     varPart         = "\n#{idt1}#{namePart};" if namePart
     if @object
       forPart       = "#{ivar} in #{svar}"
-      guardPart     = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" unless @raw
+      guardPart     = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" if @own
     defPart         += @pluckDirectCall o, body, name, index unless @pattern
     body            = body.compile merge(o, indent: idt1), LEVEL_TOP
     body            = '\n' + body + '\n' if body

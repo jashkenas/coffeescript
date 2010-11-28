@@ -171,8 +171,8 @@ class Cat
   hair:  'cream'
 
 whiskers = new Cat
-own = (value for key, value of whiskers)
-all = (value for all key, value of whiskers)
+own = (value for own key, value of whiskers)
+all = (value for key, value of whiskers)
 
 ok own.join(' ') is 'Whiskers'
 ok all.sort().join(' ') is 'Whiskers cream tabby'

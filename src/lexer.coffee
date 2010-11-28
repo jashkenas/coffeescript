@@ -75,8 +75,8 @@ exports.Lexer = class Lexer
     return 0 unless match = IDENTIFIER.exec @chunk
     [input, id, colon] = match
 
-    if id is 'all' and @tag() is 'FOR'
-      @token 'ALL', id
+    if id is 'own' and @tag() is 'FOR'
+      @token 'OWN', id
       return id.length
     forcedIdentifier = colon or
       (prev = last @tokens) and not prev.spaced and prev[0] in ['.', '?.', '@', '::']
@@ -499,7 +499,7 @@ JS_KEYWORDS = [
 
 # CoffeeScript-only keywords.
 COFFEE_KEYWORDS = ['undefined', 'then', 'unless', 'until', 'loop', 'of', 'by', 'when']
-COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES =
+COFFEE_KEYWORDS.push op for op of COFFEE_ALIASES =
   and  : '&&'
   or   : '||'
   is   : '=='

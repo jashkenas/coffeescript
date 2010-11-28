@@ -424,12 +424,12 @@ grammar =
 
   ForBody: [
     o 'FOR Range',                              -> source: new Value($2), vars: []
-    o 'ForStart ForSource',                     -> $2.raw = $1.raw; $2.vars = $1; $2
+    o 'ForStart ForSource',                     -> $2.own = $1.own; $2.vars = $1; $2
   ]
 
   ForStart: [
     o 'FOR ForVariables',                       -> $2
-    o 'FOR ALL ForVariables',                   -> $3.raw = yes; $3
+    o 'FOR OWN ForVariables',                   -> $3.own = yes; $3
   ]
 
   # An array of all accepted values for a variable inside the loop.
@@ -577,7 +577,7 @@ operators = [
 # terminals (every symbol which does not appear as the name of a rule above)
 # as "tokens".
 tokens = []
-for all name, alternatives of grammar
+for name, alternatives of grammar
   grammar[name] = for alt in alternatives
     for token in alt[0].split ' '
       tokens.push token unless grammar[token]

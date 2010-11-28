@@ -217,7 +217,7 @@ class exports.Rewriter
           openLine[open] = token[2] if levels[open]++ is 0
         else if tag is close and --levels[open] < 0
           throw Error "too many #{token[1]} on line #{token[2] + 1}"
-    for all open, level of levels when level > 0
+    for open, level of levels when level > 0
       throw Error "unclosed #{ open } on line #{openLine[open] + 1}"
     this
 
@@ -240,7 +240,7 @@ class exports.Rewriter
   rewriteClosingParens: ->
     stack = []
     debt  = {}
-    debt[key] = 0 for all key of INVERSES
+    debt[key] = 0 for key of INVERSES
     @scanTokens (token, i, tokens) ->
       if (tag = token[0]) in EXPRESSION_START
         stack.push token

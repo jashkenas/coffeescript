@@ -147,7 +147,7 @@ runTests = (CoffeeScript) ->
   startTime = Date.now()
   passedTests = failedTests = 0
 
-  for all name, func of require 'assert'
+  for name, func of require 'assert'
     global[name] = ->
       passedTests += 1
       func arguments...
