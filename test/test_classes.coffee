@@ -305,3 +305,16 @@ eq robby.power(), 11
 eq robby.speed(), Infinity
 
 
+# Namespaced classes do not reserve their function name in outside scope.
+one = {}
+two = {}
+
+class one.Klass
+  @label = "one"
+
+class two.Klass
+  @label = "two"
+
+eq typeof Klass, 'undefined'
+eq one.Klass.label, 'one'
+eq two.Klass.label, 'two'
