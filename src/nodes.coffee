@@ -1380,7 +1380,8 @@ exports.For = class For extends Base
     throw SyntaxError 'index cannot be a pattern matching expression' if @index instanceof Value
     @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length
     @pattern = @name instanceof Value
-    throw SyntaxError 'cannot pattern match a range loop' if @range and @pattern
+    throw SyntaxError 'indexes do not apply to range loops' if @range and @index
+    throw SyntaxError 'cannot pattern match over range loops' if @range and @pattern
     @returns = false
 
   children: ['body', 'source', 'guard', 'step']
