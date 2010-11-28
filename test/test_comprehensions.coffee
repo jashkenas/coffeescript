@@ -219,3 +219,12 @@ odds = while i--
   i
 
 ok odds.join(', ') is '5, 3, 1'
+
+
+# Nested shared scopes.
+foo = ->
+  for i in [0..7]
+    for j in [0..7]
+      -> i + j
+
+eq foo()[3][4](), 7
