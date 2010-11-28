@@ -146,12 +146,15 @@ task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
 runTests = (CoffeeScript) ->
   startTime = Date.now()
   passedTests = failedTests = 0
+
   for all name, func of require 'assert'
     global[name] = ->
       passedTests += 1
       func arguments...
+
   global.eq = global.strictEqual
   global.CoffeeScript = CoffeeScript
+
   process.on 'exit', ->
     time = ((Date.now() - startTime) / 1000).toFixed(2)
     message = "passed #{passedTests} tests in #{time} seconds#{reset}"
@@ -159,6 +162,7 @@ runTests = (CoffeeScript) ->
       log "failed #{failedTests} and #{message}", red
     else
       log message, green
+
   fs.readdir 'test', (err, files) ->
     files.forEach (file) ->
       return unless file.match(/\.coffee$/i)
