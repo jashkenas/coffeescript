@@ -115,8 +115,8 @@ class exports.Rewriter
       return 1 unless tag is ':' and
         ((ago = @tag i - 2) is ':' or stack[stack.length - 1]?[0] isnt '{')
       stack.push ['{']
-      idx = if ago is '@' then i - 2 else i - 1
-      idx -= 2 if @tag(idx - 2) is 'HERECOMMENT'
+      idx =  if ago is '@' then i - 2 else i - 1
+      idx -= 2 while @tag(idx - 2) is 'HERECOMMENT'
       value = new String('{')
       value.generated = yes
       tok = ['{', value, token[2]]

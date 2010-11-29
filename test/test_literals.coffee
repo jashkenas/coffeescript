@@ -216,6 +216,8 @@ eq '\\`', `
 
 # Shorthand objects with property references.
 obj =
+  ### comment one ###
+  ### comment two ###
   one: 1
   two: 2
   object: -> {@one, @two}
