@@ -761,7 +761,7 @@ gold <span class="Keyword">=</span> silver <span class="Keyword">=</span> rest <
   <span class="Keyword">return</span> rest <span class="Keyword">=</span> others;
 };
 contenders <span class="Keyword">=</span> [<span class="String"><span class="String">&quot;</span>Michael Phelps<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Liu Xiang<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Yao Ming<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Allyson Felix<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Shawn Johnson<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Roman Sebrle<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Guo Jingjing<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Tyson Gay<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Asafa Powell<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Usain Bolt<span class="String">&quot;</span></span>];
-awardMedals.<span class="LibraryFunction">apply</span>(awardMedals, contenders);
+awardMedals.<span class="LibraryFunction">apply</span>(<span class="BuiltInConstant">null</span>, contenders);
 <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Gold: <span class="String">&quot;</span></span> <span class="Keyword">+</span> gold);
 <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Silver: <span class="String">&quot;</span></span> <span class="Keyword">+</span> silver);
 <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>The Field: <span class="String">&quot;</span></span> <span class="Keyword">+</span> rest);
@@ -776,7 +776,7 @@ awardMedals = function() {
   return rest = others;
 };
 contenders = ["Michael Phelps", "Liu Xiang", "Yao Ming", "Allyson Felix", "Shawn Johnson", "Roman Sebrle", "Guo Jingjing", "Tyson Gay", "Asafa Powell", "Usain Bolt"];
-awardMedals.apply(awardMedals, contenders);
+awardMedals.apply(null, contenders);
 alert("Gold: " + gold);
 alert("Silver: " + silver);
 alert("The Field: " + rest);;'>run</button><br class='clear' /></div>
@@ -910,7 +910,6 @@ countdown = (function() {
 ages <span class="Keyword">=</span> <span class="Keyword">for</span> child, age <span class="Keyword">of</span> yearsOld
   child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age
 </pre><pre class="idle"><span class="Storage">var</span> age, ages, child, yearsOld, _results;
-<span class="Storage">var</span> __hasProp <span class="Keyword">=</span> <span class="LibraryClassType">Object</span>.<span class="LibraryConstant">prototype</span>.hasOwnProperty;
 yearsOld <span class="Keyword">=</span> {
   max: <span class="Number">10</span>,
   ida: <span class="Number">9</span>,
@@ -919,14 +918,12 @@ yearsOld <span class="Keyword">=</span> {
 <span class="FunctionName">ages</span> = <span class="Storage">function</span>() {
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">for</span> (child <span class="Keyword">in</span> yearsOld) {
-    <span class="Keyword">if</span> (<span class="Keyword">!</span>__hasProp.<span class="LibraryFunction">call</span>(yearsOld, child)) <span class="Keyword">continue</span>;
     age <span class="Keyword">=</span> yearsOld[child];
     _results.<span class="LibraryFunction">push</span>(child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age);
   }
   <span class="Keyword">return</span> _results;
 }();
 </pre><button onclick='javascript: var age, ages, child, yearsOld, _results;
-var __hasProp = Object.prototype.hasOwnProperty;
 yearsOld = {
   max: 10,
   ida: 9,
@@ -935,7 +932,6 @@ yearsOld = {
 ages = function() {
   _results = [];
   for (child in yearsOld) {
-    if (!__hasProp.call(yearsOld, child)) continue;
     age = yearsOld[child];
     _results.push(child + " is " + age);
   }
@@ -1021,21 +1017,17 @@ six = (one = 1) + (two = 2) + (three = 3);;alert(six);'>run: six</button><br cla
 
 globals <span class="Keyword">=</span> (name <span class="Keyword">for</span> name <span class="Keyword">of</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
 </pre><pre class="idle"><span class="Storage">var</span> globals, name, _results;
-<span class="Storage">var</span> __hasProp <span class="Keyword">=</span> <span class="LibraryClassType">Object</span>.<span class="LibraryConstant">prototype</span>.hasOwnProperty;
 globals <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">for</span> (name <span class="Keyword">in</span> <span class="LibraryClassType">window</span>) {
-    <span class="Keyword">if</span> (<span class="Keyword">!</span>__hasProp.<span class="LibraryFunction">call</span>(<span class="LibraryClassType">window</span>, name)) <span class="Keyword">continue</span>;
     _results.<span class="LibraryFunction">push</span>(name);
   }
   <span class="Keyword">return</span> _results;
 }()).<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
 </pre><button onclick='javascript: var globals, name, _results;
-var __hasProp = Object.prototype.hasOwnProperty;
 globals = (function() {
   _results = [];
   for (name in window) {
-    if (!__hasProp.call(window, name)) continue;
     _results.push(name);
   }
   return _results;
@@ -1884,9 +1876,11 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       many contributed from <b>satyr</b>'s <a href="http://github.com/satyr/coco">Coco</a>
       dialect of CoffeeScript. Heregexes (extended regexes) were added. Functions
       can now have default arguments. Class bodies are now executable code.
-      Improved syntax errors for invalid CoffeeScript. Object literals
-      can now take dynamic keys, like this: <tt>{(key): value}</tt>. <tt>undefined</tt> now
+      Improved syntax errors for invalid CoffeeScript. <tt>undefined</tt> now
       works like <tt>null</tt>, and cannot be assigned a new value.
+      There was a precedence change with respect to single-line comprehensions:
+      <tt>result = i for i in list</tt><br /> used to parse as <tt>result = (i for i in list)</tt> 
+      by default ... it now parses as <br /><tt>(result = i) for i in list</tt>.
     </p>
 
     <p>
