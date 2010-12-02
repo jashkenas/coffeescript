@@ -1179,6 +1179,7 @@ exports.Op = class Op extends Base
   invert: ->
     if op = INVERSIONS[@operator]
       @operator = op
+      @first.invert() if @first.isChainable()
       this
     else if @second
       new Parens(this).invert()
@@ -1207,7 +1208,7 @@ exports.Op = class Op extends Base
   #     true
   compileChain: (o) ->
     [@first.second, shared] = @first.second.cache o
-    fst  = @first .compile o, LEVEL_OP
+    fst  = @first.compile o, LEVEL_OP
     fst  = fst.slice 1, -1 if fst.charAt(0) is '('
     code = "#{fst} && #{ shared.compile o } #{@operator} #{ @second.compile o, LEVEL_OP }"
     if o.level < LEVEL_OP then code else "(#{code})"
