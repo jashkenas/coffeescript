@@ -97,7 +97,7 @@ compileScripts = ->
 # Compile a single source script, containing the given code, according to the
 # requested options. If evaluating the script directly sets `__filename`,
 # `__dirname` and `module.filename` to be correct relative to the script's path.
-compileScript = (file, input, base) ->
+compileScript = (file, input, base, prefix = 'Compiled') ->
   o = opts
   options = compileOptions file
   if o.require
@@ -112,7 +112,7 @@ compileScript = (file, input, base) ->
       t.output = CoffeeScript.compile t.input, t.options
       CoffeeScript.emit 'success', task
       if o.print          then printLine t.output.trim()
-      else if o.compile   then writeJs t.file, t.output, base
+      else if o.compile   then writeJs t.file, t.output, base, prefix
       else if o.lint      then lint t.file, t.output
   catch err
     CoffeeScript.emit 'failure', err, task
@@ -137,15 +137,14 @@ compileStdio = ->
 watch = (source, base) ->
   fs.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
     return if curr.size is prev.size and curr.mtime.getTime() is prev.mtime.getTime()
-    printLine "Change detected at #{curr.mtime}:"
     fs.readFile source, (err, code) ->
       throw err if err
-      compileScript(source, code.toString(), base)
+      compileScript(source, code.toString(), base, "#{toTimestamp(curr.mtime)} Recompiled")
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
 # directory can be customized with `--output`.
-writeJs = (source, js, base) ->
+writeJs = (source, js, base, prefix) ->
   filename  = path.basename(source, path.extname(source)) + '.js'
   srcDir    = path.dirname source
   baseDir   = srcDir.substring base.length
@@ -155,7 +154,7 @@ writeJs = (source, js, base) ->
     js = ' ' if js.length <= 0
     fs.writeFile jsPath, js, (err) ->
       if err then printLine err.message
-      else if opts.compile and opts.watch then printLine "Compiled #{source}"
+      else if opts.compile and opts.watch then printLine "#{prefix} #{source}"
   path.exists dir, (exists) ->
     if exists then compile() else exec "mkdir -p #{dir}", compile
 
@@ -176,6 +175,12 @@ printTokens = (tokens) ->
     [tag, value] = [token[0], token[1].toString().replace(/\n/, '\\n')]
     "[#{tag} #{value}]"
   printLine strings.join(' ')
+
+# Convert a date to a timestamp of the form YYYY-mm-dd HH:ii:ss
+toTimestamp = (d) ->
+  pad = (x) -> str = '' + x; if str.length is 1 then "0#{str}" else str
+  "#{d.getFullYear()}-#{pad(d.getMonth() + 1)}-#{pad(d.getDate())} " +
+    d.toTimeString()[0...8]
 
 # Use the [OptionParser module](optparse.html) to extract all options from
 # `process.argv` that are specified in `SWITCHES`.
