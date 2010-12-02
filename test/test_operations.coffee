@@ -173,3 +173,6 @@ ok a is '123456'
 
 # Multiple operators should space themselves.
 ok + +1 is - -1
+
+#891: incorrect inversion of chained comparisons
+ok (true unless 0 > 1 > 2)

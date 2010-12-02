@@ -59,7 +59,7 @@ result = switch
   when '' not of {''}           then 2
   when [] not instanceof Array  then 3
   when true is false            then 4
-  when 'x' < 'y' > 'z'          then 5
+  when 'x' > 'y' > 'z'          then 5
   when 'a' in ['b', 'c']        then 6
   when 'd' in (['e', 'f'])      then 7
   else ok
