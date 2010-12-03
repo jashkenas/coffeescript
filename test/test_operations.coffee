@@ -175,4 +175,7 @@ ok a is '123456'
 ok + +1 is - -1
 
 #891: incorrect inversion of chained comparisons
-ok (true unless 0 > 1 > 2)
+(->
+  ok (true unless 0 > 1 > 2)
+  ok (true unless (NaN = 0/0) < 0/0 < NaN)
+)()
