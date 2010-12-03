@@ -1175,13 +1175,13 @@ exports.Op = class Op extends Base
   invert: ->
     if @isChainable() and @first.isChainable()
       allInvertable = yes
-      curr = @
-      while curr and curr.operator?
-        allInvertable &&= (curr.operator of INVERSIONS)
+      curr = this
+      while curr and curr.operator
+        allInvertable and= (curr.operator of INVERSIONS)
         curr = curr.first
       return new Parens(this).invert() unless allInvertable
-      curr = @
-      while curr and curr.operator?
+      curr = this
+      while curr and curr.operator
         curr.invert = !curr.invert
         curr.operator = INVERSIONS[curr.operator]
         curr = curr.first
