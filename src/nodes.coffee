@@ -1182,6 +1182,7 @@ exports.Op = class Op extends Base
       return new Parens(this).invert() unless allInvertable
       curr = @
       while curr and curr.operator?
+        curr.invert = !curr.invert
         curr.operator = INVERSIONS[curr.operator]
         curr = curr.first
       this
@@ -1219,7 +1220,7 @@ exports.Op = class Op extends Base
     [@first.second, shared] = @first.second.cache o
     fst = @first.compile o, LEVEL_OP
     fst = fst.slice 1, -1 if @first.unwrap() instanceof Op and @first.isChainable() and fst.charAt(0) is '('
-    code = "#{fst} && #{ shared.compile o } #{@operator} #{ @second.compile o, LEVEL_OP }"
+    code = "#{fst} #{if @invert then '&&' else '||'} #{ shared.compile o } #{@operator} #{ @second.compile o, LEVEL_OP }"
     "(#{code})"
 
   compileExistence: (o) ->

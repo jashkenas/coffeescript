@@ -1,6 +1,9 @@
 # CoffeeScript's operations should be chainable, like Python's.
 ok 500 > 50 > 5 > -5
 
+# Some chainable operators can be negated by `unless`
+ok (true unless 0==10!=100)
+
 ok true is not false is true is not false
 
 ok 0 is 0 isnt 50 is 50
