@@ -1174,10 +1174,21 @@ exports.Op = class Op extends Base
 
   invert: ->
     if @isChainable() and @first.isChainable()
-      @inverted = !@inverted
+      allInvertable = yes
+      curr = @
+      while curr and curr.operator?
+        allInvertable &&= (curr.operator of INVERSIONS)
+        curr = curr.first
+      return new Parens(this).invert() unless allInvertable
+      curr = @
+      while curr and curr.operator?
+        curr.operator = INVERSIONS[curr.operator]
+        curr = curr.first
       this
     else if op = INVERSIONS[@operator]
       @operator = op
+      if @first.unwrap() instanceof Op
+        @first.invert()
       this
     else if @second
       new Parens(this).invert()
@@ -1207,8 +1218,9 @@ exports.Op = class Op extends Base
   compileChain: (o) ->
     [@first.second, shared] = @first.second.cache o
     fst = @first.compile o, LEVEL_OP
+    fst = fst.slice 1, -1 if @first.unwrap() instanceof Op and @first.isChainable() and fst.charAt(0) is '('
     code = "#{fst} && #{ shared.compile o } #{@operator} #{ @second.compile o, LEVEL_OP }"
-    if o.level < LEVEL_OP and not @inverted then code else "#{if @inverted then '!' else ''}(#{code})"
+    "(#{code})"
 
   compileExistence: (o) ->
     if @first.isComplex()
