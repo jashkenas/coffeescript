@@ -6,10 +6,10 @@
 # If included on a webpage, it will automatically sniff out, compile, and
 # execute all scripts present in `text/coffeescript` tags.
 
-fs        = require 'fs'
-path      = require 'path'
-{Lexer}   = require './lexer'
-{parser}  = require './parser'
+fs               = require 'fs'
+path             = require 'path'
+{Lexer,RESERVED} = require './lexer'
+{parser}         = require './parser'
 
 # TODO: Remove registerExtension when fully deprecated.
 if require.extensions
@@ -21,6 +21,9 @@ else if require.registerExtension
 
 # The current CoffeeScript version number.
 exports.VERSION = '0.9.5'
+
+# Words that cannot be used as identifiers in CoffeeScript code
+exports.RESERVED = RESERVED
 
 # Expose helpers for testing.
 exports.helpers = require './helpers'
