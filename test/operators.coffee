@@ -34,7 +34,6 @@ eq (+ +1), (- -1)
   eq (10 <<  3), 80
   eq (10 >>  3), 1
   eq (10 >>> 3), 1
-
   num = 10; eq (num &=   3), 2
   num = 10; eq (num |=   3), 11
   num = 10; eq (num ^=   3), 9
@@ -53,25 +52,27 @@ eq (+ +1), (- -1)
 )()
 
 
-#### compound assignment operators
+#### Compound Assignment Operators
 
 # boolean operators
 (->
+  nonce = {}
+
   a  = 0
-  a or= 2
-  eq a, 2
+  a or= nonce
+  eq a, nonce
 
   b  = 1
-  b or= 2
+  b or= nonce
   eq b, 1
 
   c = 0
-  c and= 2
+  c and= nonce
   eq c, 0
 
   d = 1
-  d and= 2
-  eq d, 2
+  d and= nonce
+  eq d, nonce
 
   # ensure that RHS is treated as a group
   e = f = false
@@ -89,6 +90,7 @@ eq (+ +1), (- -1)
 )()
 
 # compound assignment should be careful about caching variables
+# *note: this test could still use refactoring*
 (->
   count = 0
   list = []
@@ -216,7 +218,7 @@ eq 1, 1 in [1] and 1
 )()
 
 
-#### chainable operators
+#### Chainable Operators
 
 ok 100 > 10 > 1 > 0 > -1
 ok -1 < 0 < 1 < 10 < 100
@@ -239,6 +241,7 @@ eq 1, 1 | 2 < 3 < 4
 (->
   a = b = c = 1
   # `a == b <= c` should become `a === b && b <= c`
+  # (this test does not seem to test for this)
   ok a == b <= c
 )()
 
