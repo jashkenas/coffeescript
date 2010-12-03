@@ -1,42 +1,44 @@
+#### Operators
+
 # binary (2-ary) math operators do not require spaces
 (->
   a = 1
   b = -1
-  ok a*-b is 1
-  ok a*+b is -1
-  ok a/-b is 1
-  ok a/+b is -1
+  eq a*-b, 1
+  eq a*+b, -1
+  eq a/-b, 1
+  eq a/+b, -1
 )()
 
 # operators should respect new lines as spaced
 (->
   a = 123 +
   456
-  ok a is 579
+  eq a, 579
 
   b = "1#{2}3" +
   "456"
-  ok b is '123456'
+  eq b, '123456'
 )()
 
 # multiple operators should space themselves
-ok + +1 is - -1
+eq (+ +1), (- -1)
 
 # bitwise operators
 (->
-  ok (10 &   3) is 2
-  ok (10 |   3) is 11
-  ok (10 ^   3) is 9
-  ok (10 <<  3) is 80
-  ok (10 >>  3) is 1
-  ok (10 >>> 3) is 1
+  eq (10 &   3), 2
+  eq (10 |   3), 11
+  eq (10 ^   3), 9
+  eq (10 <<  3), 80
+  eq (10 >>  3), 1
+  eq (10 >>> 3), 1
 
-  num = 10; ok (num <<=  3) is 80
-  num = 10; ok (num >>=  3) is 1
-  num = 10; ok (num >>>= 3) is 1
-  num = 10; ok (num &=   3) is 2
-  num = 10; ok (num ^=   3) is 9
-  num = 10; ok (num |=   3) is 11
+  num = 10; eq (num &=   3), 2
+  num = 10; eq (num |=   3), 11
+  num = 10; eq (num ^=   3), 9
+  num = 10; eq (num <<=  3), 80
+  num = 10; eq (num >>=  3), 1
+  num = 10; eq (num >>>= 3), 1
 )()
 
 # `instanceof`
@@ -49,7 +51,7 @@ ok + +1 is - -1
 )()
 
 
-## compound assignment operators
+#### compound assignment operators
 (->
 
   # boolean operators
@@ -73,16 +75,16 @@ ok + +1 is - -1
     # ensure that RHS is treated as a group
     e = f = false
     e and= f or true
-    ok e is false
+    eq e, false
   )()
 
   # compound assignment as a sub expression
   (->
     [a, b, c] = [1, 2, 3]
-    ok (a + b += c) is 6
-    ok a is 1
-    ok b is 5
-    ok c is 3
+    eq (a + b += c), 6
+    eq a, 1
+    eq b, 5
+    eq c, 3
   )()
 
   # compound assignment should be careful about caching variables
@@ -121,19 +123,19 @@ ok + +1 is - -1
     obj ?=
       one: 1
 
-    ok obj.one is 1
+    eq obj.one, 1
 
     obj and=
       two: 2
 
-    ok not obj.one
-    ok obj.two is 2
+    eq obj.one, undefined
+    eq obj.two, 2
   )()
 
 )()
 
 
-## `is`,`isnt`,`==`,`!=`
+#### `is`,`isnt`,`==`,`!=`
 (->
 
   # `==` and `is` should be interchangeable.
@@ -156,7 +158,7 @@ ok + +1 is - -1
 )()
 
 
-## `in`, `of`
+#### `in`, `of`
 (->
 
   # `in` should check if an array contains a value using `indexOf`
@@ -214,13 +216,14 @@ ok + +1 is - -1
     a = -> share++ if share is 0
     b = -> share++ if share is 1
     c = -> share++ if share is 2
-    ok a() not in [b(),c()] and share is 3
+    ok a() not in [b(),c()]
+    eq share, 3
   )()
 
 )()
 
 
-## CoffeeScript supports chainable operators like Python
+#### chainable operators
 (->
 
   ok 100 > 10 > 1 > 0 > -1
