@@ -1161,10 +1161,6 @@ exports.Op = class Op extends Base
   INVERSIONS =
     '!==': '==='
     '===': '!=='
-    '>':   '<='
-    '<=':  '>'
-    '<':   '>='
-    '>=':  '<'
 
   children: ['first', 'second']
 
@@ -1177,9 +1173,11 @@ exports.Op = class Op extends Base
     @operator in ['<', '>', '>=', '<=', '===', '!==']
 
   invert: ->
-    if op = INVERSIONS[@operator]
+    if @isChainable() and @first.isChainable()
+      @inverted = !@inverted
+      this
+    else if op = INVERSIONS[@operator]
       @operator = op
-      @first.invert() if @first.isChainable()
       this
     else if @second
       new Parens(this).invert()
@@ -1208,10 +1206,9 @@ exports.Op = class Op extends Base
   #     true
   compileChain: (o) ->
     [@first.second, shared] = @first.second.cache o
-    fst  = @first.compile o, LEVEL_OP
-    fst  = fst.slice 1, -1 if fst.charAt(0) is '('
+    fst = @first.compile o, LEVEL_OP
     code = "#{fst} && #{ shared.compile o } #{@operator} #{ @second.compile o, LEVEL_OP }"
-    if o.level < LEVEL_OP then code else "(#{code})"
+    if o.level < LEVEL_OP and not @inverted then code else "#{if @inverted then '!' else ''}(#{code})"
 
   compileExistence: (o) ->
     if @first.isComplex()
