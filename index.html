@@ -33,6 +33,7 @@
         <a href="#splats">Splats...</a>
         <a href="#while">While, Until, and Loop</a>
         <a href="#comprehensions">Comprehensions (Arrays, Objects, and Ranges)</a>
+        <a href="#slices">Array Slicing and Splicing</a>
         <a href="#expressions">Everything is an Expression</a>
         <a href="#existence">The Existential Operator</a>
         <a href="#classes">Classes, Inheritance, and Super</a>
@@ -804,7 +805,7 @@ lyrics <span class="Keyword">=</span> <span class="Keyword">while</span> num <sp
   <span class="Keyword">while</span> (supply <span class="Keyword">&gt;</span> demand) {
     buy();
   }
-  <span class="Keyword">while</span> (supply <span class="Keyword">&lt;=</span> demand) {
+  <span class="Keyword">while</span> (<span class="Keyword">!</span>(supply <span class="Keyword">&gt;</span> demand)) {
     sell();
   }
 }
@@ -821,7 +822,7 @@ if (this.studyingEconomics) {
   while (supply > demand) {
     buy();
   }
-  while (supply <= demand) {
+  while (!(supply > demand)) {
     sell();
   }
 }
@@ -943,6 +944,45 @@ ages = function() {
       object. If you'd like the regular JavaScript <br /><tt>for (key in obj) ...</tt>
       loop, for speed or for another reason, you can use <br />
       <tt>for all key, value of object</tt> in CoffeeScript.
+    </p>
+    <p>
+      <span id="slices" class="bookmark"></span>
+      <b class="header">Array Slicing and Splicing with Ranges</b>
+      Ranges can also be used to extract slices of arrays.
+      With two dots (<tt>3..6</tt>), the range is inclusive (<tt>3, 4, 5, 6</tt>);
+      with three docs (<tt>3...6</tt>), the range excludes the end (<tt>3, 4, 5</tt>).
+    </p>
+    <div class='code'><pre class="idle">numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>]
+
+copy    <span class="Keyword">=</span> numbers[<span class="Number">0</span>...numbers.length]
+
+middle  <span class="Keyword">=</span> copy[<span class="Number">3</span>..<span class="Number">6</span>]
+
+</pre><pre class="idle"><span class="Storage">var</span> copy, middle, numbers;
+numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
+copy <span class="Keyword">=</span> numbers.<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, numbers.<span class="LibraryConstant">length</span>);
+middle <span class="Keyword">=</span> copy.<span class="LibraryFunction">slice</span>(<span class="Number">3</span>, <span class="Number">6</span> <span class="Keyword">+</span> <span class="Number">1</span>);
+</pre><button onclick='javascript: var copy, middle, numbers;
+numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+copy = numbers.slice(0, numbers.length);
+middle = copy.slice(3, 6 + 1);;alert(middle);'>run: middle</button><br class='clear' /></div>
+    <p>
+      The same syntax can be used with assignment to replace a segment of an array
+      with new values, splicing it.
+    </p>
+    <div class='code'><pre class="idle">numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>]
+
+numbers[<span class="Number">3</span>..<span class="Number">6</span>] <span class="Keyword">=</span> [<span class="Keyword">-</span><span class="Number">3</span>, <span class="Keyword">-</span><span class="Number">4</span>, <span class="Keyword">-</span><span class="Number">5</span>, <span class="Keyword">-</span><span class="Number">6</span>]
+
+
+</pre><pre class="idle"><span class="Storage">var</span> numbers, _ref;
+numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
+([].splice.<span class="LibraryFunction">apply</span>(numbers, [<span class="Number">3</span>, <span class="Number">6</span> <span class="Keyword">-</span> <span class="Number">3</span> <span class="Keyword">+</span> <span class="Number">1</span>].<span class="LibraryFunction">concat</span>(_ref <span class="Keyword">=</span> [<span class="Keyword">-</span><span class="Number">3</span>, <span class="Keyword">-</span><span class="Number">4</span>, <span class="Keyword">-</span><span class="Number">5</span>, <span class="Keyword">-</span><span class="Number">6</span>])), _ref);
+</pre><button onclick='javascript: var numbers, _ref;
+numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+([].splice.apply(numbers, [3, 6 - 3 + 1].concat(_ref = [-3, -4, -5, -6])), _ref);;alert(numbers);'>run: numbers</button><br class='clear' /></div>
+    <p>
+      Note that JavaScript strings are immutable, and can't be spliced.
     </p>
     <p>
       <span id="expressions" class="bookmark"></span>
@@ -1523,10 +1563,10 @@ healthy <span class="Keyword">=</span> <span class="Number">200</span> <span cla
 
 </pre><pre class="idle"><span class="Storage">var</span> cholesterol, healthy;
 cholesterol <span class="Keyword">=</span> <span class="Number">127</span>;
-healthy <span class="Keyword">=</span> <span class="Number">200</span> <span class="Keyword">&gt;</span> cholesterol <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> cholesterol <span class="Keyword">&gt;</span> <span class="Number">60</span>;
+healthy <span class="Keyword">=</span> (<span class="Number">200</span> <span class="Keyword">&gt;</span> cholesterol <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> cholesterol <span class="Keyword">&gt;</span> <span class="Number">60</span>);
 </pre><button onclick='javascript: var cholesterol, healthy;
 cholesterol = 127;
-healthy = 200 > cholesterol && cholesterol > 60;;alert(healthy);'>run: healthy</button><br class='clear' /></div>
+healthy = (200 > cholesterol && cholesterol > 60);;alert(healthy);'>run: healthy</button><br class='clear' /></div>
 
     <p>
       <span id="strings" class="bookmark"></span>
@@ -1879,8 +1919,8 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       Improved syntax errors for invalid CoffeeScript. <tt>undefined</tt> now
       works like <tt>null</tt>, and cannot be assigned a new value.
       There was a precedence change with respect to single-line comprehensions:
-      <tt>result = i for i in list</tt><br /> used to parse as <tt>result = (i for i in list)</tt> 
-      by default ... it now parses as <br /><tt>(result = i) for i in list</tt>.
+      <tt>result = i for i in list</tt><br /> used to parse as <tt>result = (i for i in list)</tt>
+      by default ... it now parses as <br /ea><tt>(result = i) for i in list</tt>.
     </p>
 
     <p>
