@@ -944,13 +944,17 @@ exports.Assign = class Assign extends Base
   # `Array#splice` method.
   compileSplice: (o) ->
     {range} = @variable.properties.pop()
-    name  = @variable.compile o
-    plus  = if range.exclusive then '' else ' + 1'
-    from  = if range.from then range.from.compile(o) else '0'
-    to    = if range.to then range.to.compile(o) + ' - ' + from + plus else "#{name}.length"
-    ref   = o.scope.freeVariable 'ref'
-    val   = @value.compile(o)
-    "([].splice.apply(#{name}, [#{from}, #{to}].concat(#{ref} = #{val})), #{ref})"
+    name    = @variable.compile o
+    plus    = if range.exclusive then '' else ' + 1'
+    from    = if range.from then range.from.compile(o) else '0'
+    to      = "#{name}.length" unless range.to
+    unless to
+      if range.from and range.from.isSimpleNumber() and range.to.isSimpleNumber()
+        to = (+range.to.compile(o)) - +from + +plus
+      else
+        to = range.to.compile(o) + ' - ' + from + plus
+    val = @value.compile(o)
+    "[].splice.apply(#{name}, [#{from}, #{to}].concat(#{val}))"
 
 #### Code
 
