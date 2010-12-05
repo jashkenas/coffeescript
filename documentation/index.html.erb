@@ -518,6 +518,15 @@ coffee --bare --print --stdio</pre>
     </p>
     <%= code_for('range_comprehensions', 'countdown') %>
     <p>
+      Note how because we are assigning the value of the comprehensions to a 
+      variable in the example above, CoffeeScript is collecting the result of 
+      each iteration into an array. Sometimes functions end with loops that are
+      intended to run only for their side-effects. Be careful that you're not
+      accidentally returning the results of the comprehension in these cases,
+      by adding a meaningful return value, like <tt>true</tt>, or <tt>null</tt>, 
+      to the bottom of your function.
+    </p>
+    <p>
       Comprehensions can also be used to iterate over the keys and values in
       an object. Use <tt>of</tt> to signal comprehension over the properties of
       an object instead of the values in an array.
