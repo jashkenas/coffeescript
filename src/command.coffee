@@ -7,7 +7,7 @@
 # External dependencies.
 fs             = require 'fs'
 path           = require 'path'
-utils          = require 'utils'
+util           = require 'util'
 helpers        = require './helpers'
 optparse       = require './optparse'
 CoffeeScript   = require './coffee-script'
@@ -155,7 +155,7 @@ writeJs = (source, js, base) ->
     js = ' ' if js.length <= 0
     fs.writeFile jsPath, js, (err) ->
       if err then printLine err.message
-      else if opts.compile and opts.watch then utils.log "compiled #{source}"
+      else if opts.compile and opts.watch then util.log "compiled #{source}"
   path.exists dir, (exists) ->
     if exists then compile() else exec "mkdir -p #{dir}", compile
 
