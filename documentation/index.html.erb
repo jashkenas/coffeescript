@@ -46,6 +46,7 @@
         <a href="#splats">Splats...</a>
         <a href="#while">While, Until, and Loop</a>
         <a href="#comprehensions">Comprehensions (Arrays, Objects, and Ranges)</a>
+        <a href="#slices">Array Slicing and Splicing</a>
         <a href="#expressions">Everything is an Expression</a>
         <a href="#existence">The Existential Operator</a>
         <a href="#classes">Classes, Inheritance, and Super</a>
@@ -528,6 +529,22 @@ coffee --bare --print --stdio</pre>
       object. If you'd like the regular JavaScript <br /><tt>for (key in obj) ...</tt>
       loop, for speed or for another reason, you can use <br />
       <tt>for all key, value of object</tt> in CoffeeScript.
+    </p>
+    <p>
+      <span id="slices" class="bookmark"></span>
+      <b class="header">Array Slicing and Splicing with Ranges</b>
+      Ranges can also be used to extract slices of arrays.
+      With two dots (<tt>3..6</tt>), the range is inclusive (<tt>3, 4, 5, 6</tt>);
+      with three docs (<tt>3...6</tt>), the range excludes the end (<tt>3, 4, 5</tt>).
+    </p>
+    <%= code_for('slices', 'middle') %>
+    <p>
+      The same syntax can be used with assignment to replace a segment of an array
+      with new values, splicing it.
+    </p>
+    <%= code_for('splices', 'numbers') %>
+    <p>
+      Note that JavaScript strings are immutable, and can't be spliced.
     </p>
     <p>
       <span id="expressions" class="bookmark"></span>
@@ -1019,7 +1036,7 @@ coffee --bare --print --stdio</pre>
       Improved syntax errors for invalid CoffeeScript. <tt>undefined</tt> now
       works like <tt>null</tt>, and cannot be assigned a new value.
       There was a precedence change with respect to single-line comprehensions:
-      <tt>result = i for i in list</tt><br /> used to parse as <tt>result = (i for i in list)</tt> 
+      <tt>result = i for i in list</tt><br /> used to parse as <tt>result = (i for i in list)</tt>
       by default ... it now parses as <br /><tt>(result = i) for i in list</tt>.
     </p>
 
