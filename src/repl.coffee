@@ -23,8 +23,12 @@ run = (buffer) ->
     val = CoffeeScript.eval buffer.toString(), bare: on, globals: on, fileName: 'repl'
     console.log val if val isnt undefined
   catch err
-    console.error err.stack or err.toString()
+    stdio.write err.stack or err.toString()
   repl.prompt()
+
+# Make sure that uncaught exceptions don't kill the REPL.
+process.on 'uncaughtException', (err) ->
+  stdio.write err.stack or err.toString()
 
 # Create the REPL by listening to **stdin**.
 repl = readline.createInterface stdio
