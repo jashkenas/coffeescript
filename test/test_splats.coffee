@@ -123,3 +123,13 @@ try
   failed = false
 catch err
 ok failed
+
+
+# multiple generated references
+(->
+  a = {b: []}
+  a.b[true] = -> this == a.b
+  c = 0
+  d = []
+  ok a.b[0<++c<2] d...
+)()
