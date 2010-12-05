@@ -433,7 +433,10 @@ exports.Call = class Call extends Base
 
   # Tag this invocation as creating a new instance.
   newInstance: ->
-    @isNew = true
+    if @variable.base instanceof Call
+      @variable.base.newInstance()
+    else
+      @isNew = true
     this
 
   # Grab the reference to the superclass's implementation of the current
