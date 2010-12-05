@@ -513,7 +513,7 @@ exports.Call = class Call extends Base
       """
     base = new Value @variable
     if (name = base.properties.pop()) and base.isComplex()
-      ref = o.scope.temporary 'ref'
+      ref = o.scope.freeVariable 'ref'
       fun = "(#{ref} = #{ base.compile o, LEVEL_LIST })#{ name.compile o }"
     else
       fun = base.compile o, LEVEL_ACCESS
