@@ -433,7 +433,11 @@ exports.Call = class Call extends Base
 
   # Tag this invocation as creating a new instance.
   newInstance: ->
-    @isNew = true
+    base = @variable.base or @variable
+    if base instanceof Call
+      base.newInstance()
+    else
+      @isNew = true
     this
 
   # Grab the reference to the superclass's implementation of the current
@@ -978,9 +982,10 @@ exports.Code = class Code extends Base
   # arrow, generates a wrapper that saves the current value of `this` through
   # a closure.
   compileNode: (o) ->
-    sharedScope = del o, 'sharedScope'
-    o.scope     = scope = sharedScope or new Scope o.scope, @body, this
-    o.indent    += TAB
+    sharedScope     = del o, 'sharedScope'
+    o.scope         = sharedScope or new Scope o.scope, @body, this
+    o.scope.shared  = yes if sharedScope
+    o.indent        += TAB
     delete o.bare
     delete o.globals
     vars   = []
@@ -1004,7 +1009,7 @@ exports.Code = class Code extends Base
     wasEmpty = @body.isEmpty()
     exprs.unshift splats if splats
     @body.expressions.unshift exprs... if exprs.length
-    scope.parameter vars[i] = v.compile o for v, i in vars unless splats
+    o.scope.parameter vars[i] = v.compile o for v, i in vars unless splats
     @body.makeReturn() unless wasEmpty or @noReturn
     idt   = o.indent
     code  = 'function'
@@ -1421,9 +1426,8 @@ exports.For = class For extends Base
     scope         = o.scope
     name          = @name  and @name.compile o, LEVEL_LIST
     index         = @index and @index.compile o, LEVEL_LIST
-    unless hasCode
-      scope.find(name,  immediate: yes) if name and not @pattern
-      scope.find(index, immediate: yes) if index
+    scope.find(name,  immediate: yes) if name and not @pattern
+    scope.find(index, immediate: yes) if index
     rvar          = scope.freeVariable 'results' if @returns and not hasPure
     ivar          = (if @range then name else index) or scope.freeVariable 'i'
     varPart       = ''

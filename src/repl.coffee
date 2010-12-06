@@ -12,6 +12,10 @@ readline     = require 'readline'
 # Start by opening up **stdio**.
 stdio = process.openStdin()
 
+# Log an error.
+error = (err) ->
+  stdio.write (err.stack or err.toString()) + '\n\n'
+
 # Quick alias for quitting the REPL.
 helpers.extend global, quit: -> process.exit(0)
 
@@ -23,8 +27,11 @@ run = (buffer) ->
     val = CoffeeScript.eval buffer.toString(), bare: on, globals: on, fileName: 'repl'
     console.log val if val isnt undefined
   catch err
-    console.error err.stack or err.toString()
+    error err
   repl.prompt()
+
+# Make sure that uncaught exceptions don't kill the REPL.
+process.on 'uncaughtException', error
 
 # Create the REPL by listening to **stdin**.
 repl = readline.createInterface stdio

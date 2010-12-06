@@ -44,6 +44,7 @@ exports.Scope = class Scope
   # Reserve a variable name as originating from a function parameter for this
   # scope. No `var` required for internal references.
   parameter: (name) ->
+    return if @shared and @check name, yes
     @add name, 'param'
 
   # Just check to see if a variable has already been declared, without reserving,

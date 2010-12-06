@@ -346,6 +346,7 @@ eq ok, new ->
   ### Should `return` implicitly   ###
   ### even with trailing comments. ###
 
+
 #855: execution context for `func arr...` should be `null`
 (->
   global = @
@@ -355,3 +356,14 @@ eq ok, new ->
   contextTest.apply null, array
   contextTest array...
 )()
+
+
+# #894: Splatting against constructor-chained functions.
+x = null
+
+class Foo
+  bar: (y) -> x = y
+
+new Foo().bar([101]...)
+
+eq x, 101

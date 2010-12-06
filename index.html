@@ -854,28 +854,12 @@ lyrics = function() {
       would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>.
     </p>
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> Eat lunch.</span>
-lunch <span class="Keyword">=</span> eat food <span class="Keyword">for</span> food <span class="Keyword">in</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>]
-
-<span class="Comment"><span class="Comment">#</span> Naive collision detection.</span>
-<span class="Keyword">for</span> roid, pos <span class="Keyword">in</span> asteroids
-  <span class="Keyword">for</span> roid2 <span class="Keyword">in</span> asteroids <span class="Keyword">when</span> roid <span class="Keyword">isnt</span> roid2
-    roid.explode() <span class="Keyword">if</span> roid.overlaps roid2
-</pre><pre class="idle"><span class="Storage">var</span> food, lunch, pos, roid, roid2, _i, _j, _len, _len2, _len3, _ref;
+eat food <span class="Keyword">for</span> food <span class="Keyword">in</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>]
+</pre><pre class="idle"><span class="Storage">var</span> food, _i, _len, _ref;
 _ref <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
 <span class="Keyword">for</span> (_i <span class="Keyword">=</span> <span class="Number">0</span>, _len <span class="Keyword">=</span> _ref.<span class="LibraryConstant">length</span>; _i <span class="Keyword">&lt;</span> _len; _i<span class="Keyword">++</span>) {
   food <span class="Keyword">=</span> _ref[_i];
-  lunch <span class="Keyword">=</span> eat(food);
-}
-<span class="Keyword">for</span> (pos <span class="Keyword">=</span> <span class="Number">0</span>, _len2 <span class="Keyword">=</span> asteroids.<span class="LibraryConstant">length</span>; pos <span class="Keyword">&lt;</span> _len2; pos<span class="Keyword">++</span>) {
-  roid <span class="Keyword">=</span> asteroids[pos];
-  <span class="Keyword">for</span> (_j <span class="Keyword">=</span> <span class="Number">0</span>, _len3 <span class="Keyword">=</span> asteroids.<span class="LibraryConstant">length</span>; _j <span class="Keyword">&lt;</span> _len3; _j<span class="Keyword">++</span>) {
-    roid2 <span class="Keyword">=</span> asteroids[_j];
-    <span class="Keyword">if</span> (roid <span class="Keyword">!</span><span class="Keyword">==</span> roid2) {
-      <span class="Keyword">if</span> (roid.overlaps(roid2)) {
-        roid.explode();
-      }
-    }
-  }
+  eat(food);
 }
 </pre><br class='clear' /></div>
     <p>
@@ -901,6 +885,15 @@ countdown = (function() {
   }
   return _results;
 }());;alert(countdown);'>run: countdown</button><br class='clear' /></div>
+    <p>
+      Note how because we are assigning the value of the comprehensions to a 
+      variable in the example above, CoffeeScript is collecting the result of 
+      each iteration into an array. Sometimes functions end with loops that are
+      intended to run only for their side-effects. Be careful that you're not
+      accidentally returning the results of the comprehension in these cases,
+      by adding a meaningful return value, like <tt>true</tt>, or <tt>null</tt>, 
+      to the bottom of your function.
+    </p>
     <p>
       Comprehensions can also be used to iterate over the keys and values in
       an object. Use <tt>of</tt> to signal comprehension over the properties of
@@ -975,12 +968,12 @@ middle = copy.slice(3, 6 + 1);;alert(middle);'>run: middle</button><br class='cl
 numbers[<span class="Number">3</span>..<span class="Number">6</span>] <span class="Keyword">=</span> [<span class="Keyword">-</span><span class="Number">3</span>, <span class="Keyword">-</span><span class="Number">4</span>, <span class="Keyword">-</span><span class="Number">5</span>, <span class="Keyword">-</span><span class="Number">6</span>]
 
 
-</pre><pre class="idle"><span class="Storage">var</span> numbers, _ref;
+</pre><pre class="idle"><span class="Storage">var</span> numbers;
 numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
-([].splice.<span class="LibraryFunction">apply</span>(numbers, [<span class="Number">3</span>, <span class="Number">6</span> <span class="Keyword">-</span> <span class="Number">3</span> <span class="Keyword">+</span> <span class="Number">1</span>].<span class="LibraryFunction">concat</span>(_ref <span class="Keyword">=</span> [<span class="Keyword">-</span><span class="Number">3</span>, <span class="Keyword">-</span><span class="Number">4</span>, <span class="Keyword">-</span><span class="Number">5</span>, <span class="Keyword">-</span><span class="Number">6</span>])), _ref);
-</pre><button onclick='javascript: var numbers, _ref;
+[].splice.<span class="LibraryFunction">apply</span>(numbers, [<span class="Number">3</span>, <span class="Number">4</span>].<span class="LibraryFunction">concat</span>([<span class="Keyword">-</span><span class="Number">3</span>, <span class="Keyword">-</span><span class="Number">4</span>, <span class="Keyword">-</span><span class="Number">5</span>, <span class="Keyword">-</span><span class="Number">6</span>]));
+</pre><button onclick='javascript: var numbers;
 numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-([].splice.apply(numbers, [3, 6 - 3 + 1].concat(_ref = [-3, -4, -5, -6])), _ref);;alert(numbers);'>run: numbers</button><br class='clear' /></div>
+[].splice.apply(numbers, [3, 4].concat([-3, -4, -5, -6]));;alert(numbers);'>run: numbers</button><br class='clear' /></div>
     <p>
       Note that JavaScript strings are immutable, and can't be spliced.
     </p>
@@ -1920,7 +1913,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       works like <tt>null</tt>, and cannot be assigned a new value.
       There was a precedence change with respect to single-line comprehensions:
       <tt>result = i for i in list</tt><br /> used to parse as <tt>result = (i for i in list)</tt>
-      by default ... it now parses as <br /ea><tt>(result = i) for i in list</tt>.
+      by default ... it now parses as <br /><tt>(result = i) for i in list</tt>.
     </p>
 
     <p>
