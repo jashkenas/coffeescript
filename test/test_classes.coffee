@@ -331,3 +331,18 @@ class Outer
 
 eq (new Outer).label, 'outer'
 eq (new Outer.Inner).label, 'inner'
+
+
+# Variables in constructor bodies are correctly scoped.
+class A
+  x = 1
+  constructor: ->
+    x = 10
+    y = 20
+  y = 2
+  captured: ->
+    {x, y}
+
+a = new A
+eq a.captured().x, 10
+eq a.captured().y, 2

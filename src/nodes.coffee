@@ -775,10 +775,9 @@ exports.Class = class Class extends Base
           if func.bound
             throw new Error 'cannot define a constructor as a bound function'
           if func instanceof Code
-            @ctor = func
+            assign = @ctor = func
           else
-            @ctor = new Assign(new Value(new Literal name), func)
-          assign = null
+            assign = @ctor = new Assign(new Value(new Literal name), func)
         else
           unless assign.variable.this
             assign.variable = new Value(new Literal(name), [new Access(base, 'proto')])
@@ -794,8 +793,8 @@ exports.Class = class Class extends Base
       if child instanceof Expressions
         for node, i in exps = child.expressions
           if node instanceof Value and node.isObject(true)
-            exps[i] = compact @addProperties node, name
-        child.expressions = exps = compact flatten exps
+            exps[i] = @addProperties node, name
+        child.expressions = exps = flatten exps
 
   # Make sure that a constructor is defined for the class, and properly
   # configured.
@@ -803,6 +802,7 @@ exports.Class = class Class extends Base
     if not @ctor
       @ctor = new Code
       @ctor.body.push new Call 'super', [new Splat new Literal 'arguments'] if @parent
+      @body.expressions.unshift @ctor
     @ctor.ctor     = @ctor.name = name
     @ctor.klass    = null
     @ctor.noReturn = yes
@@ -817,9 +817,8 @@ exports.Class = class Class extends Base
 
     @setContext name
     @walkBody name
-    @ensureConstructor name
     @body.expressions.unshift new Extends lname, @parent if @parent
-    @body.expressions.unshift @ctor
+    @ensureConstructor name
     @body.expressions.push lname
     @addBoundFunctions o
 
