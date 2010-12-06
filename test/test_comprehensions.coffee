@@ -228,3 +228,16 @@ foo = ->
       -> i + j
 
 eq foo()[3][4](), 7
+
+
+# Issue #897: Ensure that plucked function variables aren't leaked.
+facets = {}
+list = ['one', 'two']
+
+(->
+  for entity in list
+	  facets[entity] = -> entity
+)()
+
+eq typeof entity, 'undefined'
+eq facets['two'](), 'two'
