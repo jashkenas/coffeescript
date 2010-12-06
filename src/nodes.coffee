@@ -433,8 +433,9 @@ exports.Call = class Call extends Base
 
   # Tag this invocation as creating a new instance.
   newInstance: ->
-    if @variable.base instanceof Call
-      @variable.base.newInstance()
+    base = @variable.base or @variable
+    if base instanceof Call
+      base.newInstance()
     else
       @isNew = true
     this
