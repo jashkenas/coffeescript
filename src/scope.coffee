@@ -59,7 +59,7 @@ exports.Scope = class Scope
 
   # Gets the type of a variable.
   type: (name) ->
-    for v in @variables when v.name is name then return v.type
+    return v.type for v in @variables when v.name is name
     null
 
   # If we need to store an intermediate result, find an available name for a
