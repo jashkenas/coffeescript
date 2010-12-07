@@ -99,7 +99,6 @@ the ordinary <strong>Assign</strong> is that these allow numbers and strings as 
   <span class="nx">ObjAssignable</span><span class="o">:</span> <span class="p">[</span>
     <span class="nx">o</span> <span class="s1">&#39;Identifier&#39;</span>
     <span class="nx">o</span> <span class="s1">&#39;AlphaNumeric&#39;</span>
-    <span class="nx">o</span> <span class="s1">&#39;Parenthetical&#39;</span>
     <span class="nx">o</span> <span class="s1">&#39;ThisProperty&#39;</span>
   <span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-19">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-19">&#182;</a>               </div>               <p>A return statement from a function body.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">Return</span><span class="o">:</span> <span class="p">[</span>
     <span class="nx">o</span> <span class="s1">&#39;RETURN Expression&#39;</span><span class="p">,</span>                      <span class="o">-&gt;</span> <span class="k">new</span> <span class="nx">Return</span> <span class="nx">$2</span>
@@ -270,12 +269,12 @@ or postfix, with a single expression.</p>             </td>             <td clas
 
   <span class="nx">ForBody</span><span class="o">:</span> <span class="p">[</span>
     <span class="nx">o</span> <span class="s1">&#39;FOR Range&#39;</span><span class="p">,</span>                              <span class="o">-&gt;</span> <span class="nx">source</span><span class="o">:</span> <span class="k">new</span> <span class="nx">Value</span><span class="p">(</span><span class="nx">$2</span><span class="p">),</span> <span class="nx">vars</span><span class="o">:</span> <span class="p">[]</span>
-    <span class="nx">o</span> <span class="s1">&#39;ForStart ForSource&#39;</span><span class="p">,</span>                     <span class="o">-&gt;</span> <span class="nv">$2.raw = </span><span class="nx">$1</span><span class="p">.</span><span class="nx">raw</span><span class="p">;</span> <span class="nv">$2.vars = </span><span class="nx">$1</span><span class="p">;</span> <span class="nx">$2</span>
+    <span class="nx">o</span> <span class="s1">&#39;ForStart ForSource&#39;</span><span class="p">,</span>                     <span class="o">-&gt;</span> <span class="nv">$2.own = </span><span class="nx">$1</span><span class="p">.</span><span class="nx">own</span><span class="p">;</span> <span class="nv">$2.vars = </span><span class="nx">$1</span><span class="p">;</span> <span class="nx">$2</span>
   <span class="p">]</span>
 
   <span class="nx">ForStart</span><span class="o">:</span> <span class="p">[</span>
     <span class="nx">o</span> <span class="s1">&#39;FOR ForVariables&#39;</span><span class="p">,</span>                       <span class="o">-&gt;</span> <span class="nx">$2</span>
-    <span class="nx">o</span> <span class="s1">&#39;FOR ALL ForVariables&#39;</span><span class="p">,</span>                   <span class="o">-&gt;</span> <span class="nv">$3.raw = </span><span class="kc">yes</span><span class="p">;</span> <span class="nx">$3</span>
+    <span class="nx">o</span> <span class="s1">&#39;FOR OWN ForVariables&#39;</span><span class="p">,</span>                   <span class="o">-&gt;</span> <span class="nv">$3.own = </span><span class="kc">yes</span><span class="p">;</span> <span class="nx">$3</span>
   <span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-54">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-54">&#182;</a>               </div>               <p>An array of all accepted values for a variable inside the loop.
 This enables support for pattern matching.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">ForValue</span><span class="o">:</span> <span class="p">[</span>
     <span class="nx">o</span> <span class="s1">&#39;Identifier&#39;</span>
@@ -388,7 +387,7 @@ down. Following these rules is what makes <code>2 + 3 * 4</code> parse as:</p>
 our <strong>Jison.Parser</strong>. We do this by processing all of our rules, recording all
 terminals (every symbol which does not appear as the name of a rule above)
 as "tokens".</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">tokens = </span><span class="p">[]</span>
-<span class="k">for</span> <span class="nx">all</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">alternatives</span> <span class="k">of</span> <span class="nx">grammar</span>
+<span class="k">for</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">alternatives</span> <span class="k">of</span> <span class="nx">grammar</span>
   <span class="nx">grammar</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="k">for</span> <span class="nx">alt</span> <span class="k">in</span> <span class="nx">alternatives</span>
     <span class="k">for</span> <span class="nx">token</span> <span class="k">in</span> <span class="nx">alt</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">split</span> <span class="s1">&#39; &#39;</span>
       <span class="nx">tokens</span><span class="p">.</span><span class="nx">push</span> <span class="nx">token</span> <span class="nx">unless</span> <span class="nx">grammar</span><span class="p">[</span><span class="nx">token</span><span class="p">]</span>

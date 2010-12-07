@@ -32,13 +32,9 @@ exports.Scope = class Scope
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
   find: (name, options) ->
-    return true if @check name, options
+    return yes if @check name, options
     @add name, 'var'
-    false
-
-  # Test variables and return `true` the first time `fn(v)` returns `true`
-  any: (fn) ->
-    return yes for v in @variables when fn v
+    @hasDeclarations = yes
     no
 
   # Reserve a variable name as originating from a function parameter for this
@@ -63,7 +59,7 @@ exports.Scope = class Scope
 
   # Gets the type of a variable.
   type: (name) ->
-    for v in @variables when v.name is name then return v.type
+    return v.type for v in @variables when v.name is name
     null
 
   # If we need to store an intermediate result, find an available name for a
@@ -72,40 +68,24 @@ exports.Scope = class Scope
     index = 0
     index++ while @check((temp = @temporary type, index), true)
     @add temp, 'var'
+    @hasDeclarations = yes
     temp
 
   # Ensure that an assignment is made at the top of this scope
   # (or at the top-level scope, if requested).
   assign: (name, value) ->
     @add name, value: value, assigned: true
-
-  # Does this scope reference any variables that need to be declared in the
-  # given function body?
-  hasDeclarations: (body) ->
-    body is @expressions and @any (v) -> v.type is 'var'
-
-  # Does this scope reference any assignments that need to be declared at the
-  # top of the given function body?
-  hasAssignments: (body) ->
-    body is @expressions and @any (v) -> v.type.assigned
+    @hasAssignments = yes
 
   # Return the list of variables first declared in this scope.
   declaredVariables: ->
-    usr = []
-    tmp = []
+    realVars = []
+    tempVars = []
     for v in @variables when v.type is 'var'
-      (if v.name.charAt(0) is '_' then tmp else usr).push v.name
-    usr.sort().concat tmp.sort()
+      (if v.name.charAt(0) is '_' then tempVars else realVars).push v.name
+    realVars.sort().concat tempVars.sort()
 
   # Return the list of assignments that are supposed to be made at the top
   # of this scope.
   assignedVariables: ->
-    ("#{v.name} = #{v.type.value}" for v in @variables when v.type.assigned)
-
-  # Compile the JavaScript for all of the variable declarations in this scope.
-  compiledDeclarations: ->
-    @declaredVariables().join ', '
-
-  # Compile the JavaScript for all of the variable assignments in this scope.
-  compiledAssignments: ->
-    @assignedVariables().join ', '
+    "#{v.name} = #{v.type.value}" for v in @variables when v.type.assigned

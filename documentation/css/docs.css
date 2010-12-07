@@ -76,6 +76,11 @@ code, pre, tt, textarea {
       margin-left: 0;
       padding-left: 0;
     }
+.timestamp {
+  font-size: 12px;
+  font-weight: normal;
+  color: black;
+}
 div.code {
   position: relative;
   border: 1px solid #cacaca;
