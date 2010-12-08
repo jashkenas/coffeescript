@@ -1,6 +1,7 @@
-#############
-## Assignment
-#############
+################
+## Assignment ##
+################
+
 
 # context property assignment (using @)
 (->
@@ -8,7 +9,7 @@
   addMethod = ->
     @method = -> nonce
     this
-  eq addMethod.call({}).method(), nonce
+  eq nonce, addMethod.call({}).method()
 )()
 
 # unassignable values
@@ -20,6 +21,7 @@
 
 # compound assignments should not declare
 # TODO: make description more clear
+# TODO: remove reference to Math
 eq Math, (-> Math or= 0)()
 
 
@@ -32,11 +34,11 @@ eq Math, (-> Math or= 0)()
     nonexistent * missing
   catch error
     true
-  eq result, true
+  eq true, result
 
   # single line
   result = try nonexistent * missing catch error then true
-  eq result, true
+  eq true, result
 )()
 
 # conditionals
@@ -44,13 +46,13 @@ eq Math, (-> Math or= 0)()
   # assign inside the condition of a conditional statement
   nonce = {}
   if a = nonce then 1
-  eq a, nonce
+  eq nonce, a
   1 if b = nonce
-  eq b, nonce
+  eq nonce, b
 
   # assign the result of a conditional statement
   c = if true then nonce
-  eq c, nonce
+  eq nonce, c
 )()
 
 # assign inside the condition of a `while` loop
@@ -58,11 +60,11 @@ eq Math, (-> Math or= 0)()
   nonce = {}
   count = 1
   a = nonce while count--
-  eq a, nonce
+  eq nonce, a
   count = 1
   while count--
     b = nonce
-  eq b, nonce
+  eq nonce, b
 )()
 
 
@@ -72,16 +74,16 @@ eq Math, (-> Math or= 0)()
 (->
   num = 10
   num -= 5
-  eq num, 5
+  eq 5, num
 
   num *= 10
-  eq num, 50
+  eq 50, num
 
   num /= 10
-  eq num, 5
+  eq 5, num
 
   num %= 3
-  eq num, 2
+  eq 2, num
 )()
 
 # more compound assignment
@@ -90,22 +92,23 @@ eq Math, (-> Math or= 0)()
   val = undefined
   val ||= a
   val ||= true
-  eq val, a
+  eq a, val
 
   b = {}
   val &&= true
   eq val, true
   val &&= b
-  eq val, b
+  eq b, val
 
   c = {}
   val = null
   val ?= c
   val ?= true
-  eq val, c
+  eq c, val
 )()
 
 
 #### Destructuring Assignment
 
 # NO TESTS?!
+# TODO: make tests for destructuring assignment

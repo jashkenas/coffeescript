@@ -1,6 +1,7 @@
-############
-## Arguments
-############
+###############
+## Arguments ##
+###############
+
 
 id = (_) ->
   if arguments.length is 1 then _ else Array::slice.call(arguments)
@@ -10,10 +11,10 @@ id = (_) ->
   a = {}
   b = {}
   c = {}
-  eq (id 1), 1
-  eq (id 1, 2)[1], 2
-  eq (id a), a
-  eq (id a, b, c)[2], c
+  eq 1, (id 1)
+  eq 2, (id 1, 2)[1]
+  eq a, (id a)
+  eq c, (id a, b, c)[2]
 )()
 
 # passing arguments on separate lines
@@ -26,15 +27,15 @@ id = (_) ->
     b
     c
   )[1] is b)
-  eq(id(
+  eq(0, id(
     0
     10
-  )[0], 0)
-  eq(id(
+  )[0])
+  eq(a,id(
     a
-  ),a)
-  eq (id b),
-  b
+  ))
+  eq b,
+  (id b)
 )()
 
 # reference `arguments` inside of functions
@@ -43,35 +44,35 @@ id = (_) ->
     sum = (a,b)-> a + b
     Array::reduce.call(arguments,sum,0)
 
-  eq sumOfArgs(0, 1, 2, 3, 4), 10
+  eq 10, sumOfArgs(0, 1, 2, 3, 4)
 )()
 
 
 #### Parameter List Features
 
 # splats
-eq (((splat...) -> splat) 0,1,2)[2], 2
-eq (((_, _, splat...) -> splat) 0,1,2,3)[1], 3
-eq (((splat..., _, _) -> splat) 0,1,2,3)[1], 1
-eq (((_, _, splat..., _) -> splat) 0,1,2,3)[0], 2
+eq 2, (((splat...) -> splat) 0,1,2)[2]
+eq 3, (((_, _, splat...) -> splat) 0,1,2,3)[1]
+eq 1, (((splat..., _, _) -> splat) 0,1,2,3)[1]
+eq 2, (((_, _, splat..., _) -> splat) 0,1,2,3)[0]
 
 # @-parameters: automatically assign an argument's value to a property of the context
 (->
   nonce = {}
 
   ((@prop) ->).call context = {}, nonce
-  eq context.prop, nonce
+  eq nonce, context.prop
 
   # allow splats along side the special argument
   ((splat..., @prop) ->).apply context = {}, [0, 0, nonce]
-  eq context.prop, nonce
+  eq nonce, context.prop
 
   # allow the argument itself to be a splat
   ((@prop...) ->).call context = {}, 0, nonce, 0
-  eq context.prop[1], nonce
+  eq nonce, context.prop[1]
 
   # the argument should still be able to be referenced normally
-  eq (((@prop) -> prop).call {}, nonce), nonce
+  eq nonce, (((@prop) -> prop).call {}, nonce)
 )()
 
 # @-parameters and splats with constructors
@@ -82,14 +83,14 @@ eq (((_, _, splat..., _) -> splat) 0,1,2,3)[0], 2
     constructor: (@first, splat..., @last) ->
 
   obj = new Klass a, 0, 0, b
-  eq obj.first, a
-  eq obj.last, b
+  eq a, obj.first
+  eq b, obj.last
 )()
 
 # destructuring in function definition
 (([{a: [b], c}]...) ->
-  eq b, 1
-  eq c, 2
+  eq 1, b
+  eq 2, c
 ) {a: [1], c: 2}
 
 # default values
@@ -97,29 +98,29 @@ eq (((_, _, splat..., _) -> splat) 0,1,2,3)[0], 2
   nonceA = {}
   nonceB = {}
   a = (_,_,arg=nonceA) -> arg
-  eq a(), nonceA
-  eq a(0), nonceA
-  eq a(0,0,nonceB), nonceB
-  eq a(0,0,undefined), nonceA
-  eq a(0,0,null), nonceA
-  eq a(0,0,false), false
-  eq a(undefined,undefined,nonceB,undefined), nonceB
+  eq nonceA, a()
+  eq nonceA, a(0)
+  eq nonceB, a(0,0,nonceB)
+  eq nonceA, a(0,0,undefined)
+  eq nonceA, a(0,0,null)
+  eq false , a(0,0,false)
+  eq nonceB, a(undefined,undefined,nonceB,undefined)
   b = (_,arg=nonceA,_,_) -> arg
-  eq b(), nonceA
-  eq b(0), nonceA
-  eq b(0,nonceB), nonceB
-  eq b(0,undefined), nonceA
-  eq b(0,null), nonceA
-  eq b(0,false), false
-  eq b(undefined,nonceB,undefined), nonceB
+  eq nonceA, b()
+  eq nonceA, b(0)
+  eq nonceB, b(0,nonceB)
+  eq nonceA, b(0,undefined)
+  eq nonceA, b(0,null)
+  eq false , b(0,false)
+  eq nonceB, b(undefined,nonceB,undefined)
   c = (arg=nonceA,_,_) -> arg
-  eq c(), nonceA
-  eq c(0), 0
-  eq c(nonceB), nonceB
-  eq c(undefined), nonceA
-  eq c(null), nonceA
-  eq c(false), false
-  eq c(nonceB,undefined,undefined), nonceB
+  eq nonceA, c()
+  eq      0, c(0)
+  eq nonceB, c(nonceB)
+  eq nonceA, c(undefined)
+  eq nonceA, c(null)
+  eq false , c(false)
+  eq nonceB, c(nonceB,undefined,undefined)
 )()
 
 # default values with @-parameters
@@ -127,16 +128,16 @@ eq (((_, _, splat..., _) -> splat) 0,1,2,3)[0], 2
   a = {}
   b = {}
   obj = f: (q = a, @p = b) -> q
-  eq obj.f(), a
-  eq obj.p  , b
+  eq a, obj.f()
+  eq b, obj.p
 )()
 
 # default values with splatted arguments
 (->
   withSplats = (a = 2, b..., c = 3, d = 5) -> a * (b.length + 1) * c * d
   eq 30, withSplats()
-  eq 15, withSplats 1
-  eq  5, withSplats 1, 1
-  eq  1, withSplats 1, 1, 1
-  eq  2, withSplats 1, 1, 1, 1
+  eq 15, withSplats(1)
+  eq  5, withSplats(1,1)
+  eq  1, withSplats(1,1,1)
+  eq  2, withSplats(1,1,1,1)
 )()

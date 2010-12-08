@@ -4,6 +4,7 @@
 # note: some tests purposely left in outermost scope
 # note: awkward spacing seen in some tests is likely intentional
 
+
 # comments in objects
 obj1 = {
 # comment

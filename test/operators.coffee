@@ -1,26 +1,27 @@
-############
-## Operators
-############
+###############
+## Operators ##
+###############
+
 
 # binary (2-ary) math operators do not require spaces
 (->
   a = 1
   b = -1
-  eq a*-b, 1
-  eq a*+b, -1
-  eq a/-b, 1
-  eq a/+b, -1
+  eq +1, a*-b
+  eq -1, a*+b
+  eq +1, a/-b
+  eq -1, a/+b
 )()
 
 # operators should respect new lines as spaced
 (->
   a = 123 +
   456
-  eq a, 579
+  eq 579, a
 
   b = "1#{2}3" +
   "456"
-  eq b, '123456'
+  eq '123456', b
 )()
 
 # multiple operators should space themselves
@@ -28,18 +29,18 @@ eq (+ +1), (- -1)
 
 # bitwise operators
 (->
-  eq (10 &   3), 2
-  eq (10 |   3), 11
-  eq (10 ^   3), 9
-  eq (10 <<  3), 80
-  eq (10 >>  3), 1
-  eq (10 >>> 3), 1
-  num = 10; eq (num &=   3), 2
-  num = 10; eq (num |=   3), 11
-  num = 10; eq (num ^=   3), 9
-  num = 10; eq (num <<=  3), 80
-  num = 10; eq (num >>=  3), 1
-  num = 10; eq (num >>>= 3), 1
+  eq  2, (10 &   3)
+  eq 11, (10 |   3)
+  eq  9, (10 ^   3)
+  eq 80, (10 <<  3)
+  eq  1, (10 >>  3)
+  eq  1, (10 >>> 3)
+  num = 10; eq  2, (num &=   3)
+  num = 10; eq 11, (num |=   3)
+  num = 10; eq  9, (num ^=   3)
+  num = 10; eq 80, (num <<=  3)
+  num = 10; eq  1, (num >>=  3)
+  num = 10; eq  1, (num >>>= 3)
 )()
 
 # `instanceof`
@@ -60,33 +61,33 @@ eq (+ +1), (- -1)
 
   a  = 0
   a or= nonce
-  eq a, nonce
+  eq nonce, a
 
   b  = 1
   b or= nonce
-  eq b, 1
+  eq 1, b
 
   c = 0
   c and= nonce
-  eq c, 0
+  eq 0, c
 
   d = 1
   d and= nonce
-  eq d, nonce
+  eq nonce, d
 
   # ensure that RHS is treated as a group
   e = f = false
   e and= f or true
-  eq e, false
+  eq false, e
 )()
 
 # compound assignment as a sub expression
 (->
   [a, b, c] = [1, 2, 3]
-  eq (a + b += c), 6
-  eq a, 1
-  eq b, 5
-  eq c, 3
+  eq 6, (a + b += c)
+  eq 1, a
+  eq 5, b
+  eq 3, c
 )()
 
 # compound assignment should be careful about caching variables
@@ -96,28 +97,28 @@ eq (+ +1), (- -1)
   list = []
 
   list[++count] or= 1
-  eq list[1], 1
-  eq count, 1
+  eq 1, list[1]
+  eq 1, count
 
   list[++count] ?= 2
-  eq list[2], 2
-  eq count, 2
+  eq 2, list[2]
+  eq 2, count
 
-  list[count++] and= 'two'
-  eq list[2], 'two'
-  eq count, 3
+  list[count++] and= 6
+  eq 6, list[2]
+  eq 3, count
 
   base = ->
     ++count
     base
 
   base().four or= 4
-  eq base.four, 4
-  eq count, 4
+  eq 4, base.four
+  eq 4, count
 
   base().five ?= 5
-  eq base.five, 5
-  eq count, 5
+  eq 5, base.five
+  eq 5, count
 )()
 
 # compound assignment with implicit objects
@@ -126,13 +127,13 @@ eq (+ +1), (- -1)
   obj ?=
     one: 1
 
-  eq obj.one, 1
+  eq 1, obj.one
 
   obj and=
     two: 2
 
-  eq obj.one, undefined
-  eq obj.two, 2
+  eq undefined, obj.one
+  eq         2, obj.two
 )()
 
 
@@ -202,7 +203,7 @@ eq (+ +1), (- -1)
 )()
 
 #???: `in` with cache and `__indexOf` should work in argument lists
-eq [Object() in Array()].length, 1
+eq 1, [Object() in Array()].length
 
 #737: `in` should have higher precedence than logical operators.
 eq 1, 1 in [1] and 1
@@ -214,7 +215,7 @@ eq 1, 1 in [1] and 1
   b = -> share++ if share is 1
   c = -> share++ if share is 2
   ok a() not in [b(),c()]
-  eq share, 3
+  eq 3, share
 )()
 
 

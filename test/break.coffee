@@ -1,6 +1,7 @@
-########
-## Break
-########
+###########
+## Break ##
+###########
+
 
 # break at the top level
 (->
@@ -8,7 +9,7 @@
     result = i
     if i == 2
       break
-  eq result, 2
+  eq 2, result
 )()
 
 # break *not* at the top level
@@ -19,5 +20,5 @@
       result = i
       break if i > 1
     result
-  eq someFunc(), 2
+  eq 2, someFunc()
 )()
