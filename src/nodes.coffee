@@ -949,14 +949,16 @@ exports.Assign = class Assign extends Base
   compileSplice: (o) ->
     {range} = @variable.properties.pop()
     name    = @variable.compile o
-    plus    = if range.exclusive then '' else ' + 1'
+    excl    = range.exclusive
     from    = if range.from then range.from.compile(o) else '0'
     to      = "#{name}.length" unless range.to
     unless to
       if range.from and range.from.isSimpleNumber() and range.to.isSimpleNumber()
-        to = (+range.to.compile(o)) - +from + +plus
+        to = +range.to.compile(o) - +from
+        to += 1 unless excl
       else
-        to = range.to.compile(o) + ' - ' + from + plus
+        to = range.to.compile(o) + ' - ' + from
+        to += ' + 1' unless excl
     val = @value.compile(o)
     "[].splice.apply(#{name}, [#{from}, #{to}].concat(#{val}))"
 
@@ -1228,7 +1230,6 @@ exports.Op = class Op extends Base
   compileChain: (o) ->
     [@first.second, shared] = @first.second.cache o
     fst = @first.compile o, LEVEL_OP
-    fst = fst.slice 1, -1 if @first.unwrap() instanceof Op and @first.isChainable() and fst.charAt(0) is '('
     code = "#{fst} #{if @invert then '&&' else '||'} #{ shared.compile o } #{@operator} #{ @second.compile o, LEVEL_OP }"
     "(#{code})"
 
