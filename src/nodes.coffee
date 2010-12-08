@@ -949,14 +949,16 @@ exports.Assign = class Assign extends Base
   compileSplice: (o) ->
     {range} = @variable.properties.pop()
     name    = @variable.compile o
-    plus    = if range.exclusive then '' else ' + 1'
+    excl    = range.exclusive
     from    = if range.from then range.from.compile(o) else '0'
     to      = "#{name}.length" unless range.to
     unless to
       if range.from and range.from.isSimpleNumber() and range.to.isSimpleNumber()
-        to = (+range.to.compile(o)) - +from + +plus
+        to = +range.to.compile(o) - +from
+        to += 1 unless excl
       else
-        to = range.to.compile(o) + ' - ' + from + plus
+        to = range.to.compile(o) + ' - ' + from
+        to += ' + 1' unless excl
     val = @value.compile(o)
     "[].splice.apply(#{name}, [#{from}, #{to}].concat(#{val}))"
 
