@@ -1228,8 +1228,6 @@ exports.Op = class Op extends Base
   compileChain: (o) ->
     [@first.second, shared] = @first.second.cache o
     fst = @first.compile o, LEVEL_OP
-    # TODO: find a way to make this next line a proper check or remove it entirely and deal with extra parens
-    fst = fst.slice 1, -1 if @first.unwrap() instanceof Op and @first.isChainable() and fst.charAt(0) is '(' and fst.charAt(fst.length-1) is ')'
     code = "#{fst} #{if @invert then '&&' else '||'} #{ shared.compile o } #{@operator} #{ @second.compile o, LEVEL_OP }"
     "(#{code})"
 
