@@ -170,7 +170,10 @@ runTests = (CoffeeScript) ->
     else
       log "failed #{failures.length} and #{message}", red
       for fail in failures
-        [match,line,column] = fail.error.stack.match(new RegExp(fail.file+":(\\d+):(\\d+)"))
+        match = fail.error.stack.match(new RegExp(fail.file+":(\\d+):(\\d+)"))
+        [match,line,column] = match if match
+        line ?= "unknown"
+        column ?= "unknown"
         log "  #{fail.file.replace(/\.coffee$/,'.js')}: line #{line}, column #{column}", red
         console.log "  #{fail.error.message}" if fail.error.message?
         # output a cleaned-up version of the function source
