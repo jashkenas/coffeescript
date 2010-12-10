@@ -1461,7 +1461,7 @@ exports.For = class For extends Base
     if @guard
       body          = Expressions.wrap [new If @guard, body]
     if hasCode
-      body          = Closure.wrap(body, yes)
+      body          = Closure.wrap(body, yes, not @returns)
     varPart         = "\n#{idt1}#{namePart};" if namePart
     if @object
       forPart       = "#{ivar} in #{svar}"
@@ -1636,7 +1636,7 @@ Closure =
       args = [new Literal 'this']
       args.push new Literal 'arguments' if mentionsArgs
       func = new Value func, [new Access meth]
-      func.noReturn = noReturn
+    func.noReturn = noReturn
     call = new Call func, args
     if statement then Expressions.wrap [call] else call
 
