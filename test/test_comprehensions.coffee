@@ -241,3 +241,11 @@ list = ['one', 'two']
 
 eq typeof entity, 'undefined'
 eq facets['two'](), 'two'
+
+
+# Issue #905. Soaks as the for loop subject.
+a = {b: {c: [1, 2, 3]}}
+for d in a.b?.c
+  e = d
+
+eq e, 3

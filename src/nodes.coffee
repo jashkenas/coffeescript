@@ -832,7 +832,8 @@ exports.Class = class Class extends Base
 # The **Assign** is used to assign a local variable to value, or to set the
 # property of an object -- including within object literals.
 exports.Assign = class Assign extends Base
-  constructor: (@variable, @value, @context) ->
+  constructor: (@variable, @value, @context, options) ->
+    @param = options and options.param
 
   # Matchers for detecting class/method names
   METHOD_DEF: /^(?:(\S+)\.prototype\.|\S+?)?\b([$A-Za-z_][$\w]*)$/
@@ -862,8 +863,11 @@ exports.Assign = class Assign extends Base
     return "#{name}: #{val}" if @context is 'object'
     unless @variable.isAssignable()
       throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned."
-    o.scope.find name unless @context or
-      isValue and (@variable.namespaced or @variable.hasProperties())
+    unless @context or isValue and (@variable.namespaced or @variable.hasProperties())
+      if @param
+        o.scope.add name, 'var'
+      else
+        o.scope.find name
     val = name + " #{ @context or '=' } " + val
     if o.level <= LEVEL_LIST then val else "(#{val})"
 
@@ -932,7 +936,7 @@ exports.Assign = class Assign extends Base
         else
           acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
         val = new Value new Literal(vvar), [new (if acc then Access else Index) idx]
-      assigns.push new Assign(obj, val).compile o, LEVEL_TOP
+      assigns.push new Assign(obj, val, null, param: @param).compile o, LEVEL_TOP
     assigns.push vvar unless top
     code = assigns.join ', '
     if o.level < LEVEL_LIST then code else "(#{code})"
@@ -1000,7 +1004,7 @@ exports.Code = class Code extends Base
       if param.isComplex()
         val = ref = param.asReference o
         val = new Op '?', ref, param.value if param.value
-        exprs.push new Assign new Value(param.name), val, '='
+        exprs.push new Assign new Value(param.name), val, '=', param: yes
       else
         ref = param
         if param.value
@@ -1438,7 +1442,7 @@ exports.For = class For extends Base
     if @range
       forPart = source.compile merge(o, {index: ivar, @step})
     else
-      svar = @source.compile o, LEVEL_TOP
+      svar = @source.compile o, LEVEL_LIST
       if (name or @own) and not IDENTIFIER.test svar
         defPart = "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
         svar = ref
@@ -1457,7 +1461,7 @@ exports.For = class For extends Base
     if @guard
       body          = Expressions.wrap [new If @guard, body]
     if hasCode
-      body          = Closure.wrap(body, yes)
+      body          = Closure.wrap(body, yes, not @returns)
     varPart         = "\n#{idt1}#{namePart};" if namePart
     if @object
       forPart       = "#{ivar} in #{svar}"
@@ -1632,7 +1636,7 @@ Closure =
       args = [new Literal 'this']
       args.push new Literal 'arguments' if mentionsArgs
       func = new Value func, [new Access meth]
-      func.noReturn = noReturn
+    func.noReturn = noReturn
     call = new Call func, args
     if statement then Expressions.wrap [call] else call
 
