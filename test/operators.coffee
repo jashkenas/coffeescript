@@ -3,18 +3,15 @@
 ###############
 
 
-# binary (2-ary) math operators do not require spaces
-(->
+test "binary (2-ary) math operators do not require spaces", ->
   a = 1
   b = -1
   eq +1, a*-b
   eq -1, a*+b
   eq +1, a/-b
   eq -1, a/+b
-)()
 
-# operators should respect new lines as spaced
-(->
+test "operators should respect new lines as spaced", ->
   a = 123 +
   456
   eq 579, a
@@ -22,13 +19,11 @@
   b = "1#{2}3" +
   "456"
   eq '123456', b
-)()
 
-# multiple operators should space themselves
-eq (+ +1), (- -1)
+test "multiple operators should space themselves", ->
+  eq (+ +1), (- -1)
 
-# bitwise operators
-(->
+test "bitwise operators", ->
   eq  2, (10 &   3)
   eq 11, (10 |   3)
   eq  9, (10 ^   3)
@@ -41,22 +36,18 @@ eq (+ +1), (- -1)
   num = 10; eq 80, (num <<=  3)
   num = 10; eq  1, (num >>=  3)
   num = 10; eq  1, (num >>>= 3)
-)()
 
-# `instanceof`
-(->
+test "`instanceof`", ->
   ok new String instanceof String
   ok new Boolean instanceof Boolean
   # `instanceof` supports negation by prefixing the operator with `not`
   ok new Number not instanceof String
   ok new Array not instanceof Boolean
-)()
 
 
 #### Compound Assignment Operators
 
-# boolean operators
-(->
+test "boolean operators", ->
   nonce = {}
 
   a  = 0
@@ -79,20 +70,16 @@ eq (+ +1), (- -1)
   e = f = false
   e and= f or true
   eq false, e
-)()
 
-# compound assignment as a sub expression
-(->
+test "compound assignment as a sub expression", ->
   [a, b, c] = [1, 2, 3]
   eq 6, (a + b += c)
   eq 1, a
   eq 5, b
   eq 3, c
-)()
 
-# compound assignment should be careful about caching variables
 # *note: this test could still use refactoring*
-(->
+test "compound assignment should be careful about caching variables", ->
   count = 0
   list = []
 
@@ -119,10 +106,8 @@ eq (+ +1), (- -1)
   base().five ?= 5
   eq 5, base.five
   eq 5, count
-)()
 
-# compound assignment with implicit objects
-(->
+test "compound assignment with implicit objects", ->
   obj = undefined
   obj ?=
     one: 1
@@ -134,44 +119,37 @@ eq (+ +1), (- -1)
 
   eq undefined, obj.one
   eq         2, obj.two
-)()
 
 
 #### `is`,`isnt`,`==`,`!=`
 
-# `==` and `is` should be interchangeable.
-(->
+test "`==` and `is` should be interchangeable", ->
   a = b = 1
   ok a is 1 and b == 1
   ok a == b
   ok a is b
-)()
 
-# `!=` and `isnt` should be interchangeable.
-(->
+test "`!=` and `isnt` should be interchangeable", ->
   a = 0
   b = 1
   ok a isnt 1 and b != 0
   ok a != b
   ok a isnt b
-)()
 
 
 #### `in`, `of`
 
 # - `in` should check if an array contains a value using `indexOf`
 # - `of` should check if a property is defined on an object using `in`
-(->
+test "in, of", ->
   arr = [1]
   ok 0 of arr
   ok 1 in arr
   # prefixing `not` to `in and `of` should negate them
   ok 1 not of arr
   ok 0 not in arr
-)()
 
-# `in` should be able to operate on an array literal
-(->
+test "`in` should be able to operate on an array literal", ->
   ok 2 in [0, 1, 2, 3]
   ok 4 not in [0, 1, 2, 3]
   arr = [0, 1, 2, 3]
@@ -185,10 +163,8 @@ eq (+ +1), (- -1)
   val = 0
   ok val++ of arr
   ok val++ not of arr
-)()
 
-# `of` and `in` should be able to operate on instance variables
-(->
+test "`of` and `in` should be able to operate on instance variables", ->
   obj = {
     list: [2,3]
     in_list: (value) -> value in @list
@@ -200,60 +176,52 @@ eq (+ +1), (- -1)
   ok obj.not_in_list 1
   ok obj.of_list 0
   ok obj.not_of_list 2
-)()
 
-#???: `in` with cache and `__indexOf` should work in argument lists
-eq 1, [Object() in Array()].length
+test "#???: `in` with cache and `__indexOf` should work in argument lists", ->
+  eq 1, [Object() in Array()].length
 
-#737: `in` should have higher precedence than logical operators.
-eq 1, 1 in [1] and 1
+test "#737: `in` should have higher precedence than logical operators", ->
+  eq 1, 1 in [1] and 1
 
-#768: `in` should preserve evaluation order.
-(->
+test "#768: `in` should preserve evaluation order", ->
   share = 0
   a = -> share++ if share is 0
   b = -> share++ if share is 1
   c = -> share++ if share is 2
   ok a() not in [b(),c()]
   eq 3, share
-)()
 
 
 #### Chainable Operators
 
-ok 100 > 10 > 1 > 0 > -1
-ok -1 < 0 < 1 < 10 < 100
+test "chainable operators", ->
+  ok 100 > 10 > 1 > 0 > -1
+  ok -1 < 0 < 1 < 10 < 100
 
-# `is` and `isnt` may be chained
-ok true is not false is true is not false
-ok 0 is 0 isnt 1 is 1
+test "`is` and `isnt` may be chained", ->
+  ok true is not false is true is not false
+  ok 0 is 0 isnt 1 is 1
 
-# different comparison operators (`>`,`<`,`is`,etc.) may be combined
-ok 1 < 2 > 1
-ok 10 < 20 > 2+3 is 5
+test "different comparison operators (`>`,`<`,`is`,etc.) may be combined", ->
+  ok 1 < 2 > 1
+  ok 10 < 20 > 2+3 is 5
 
-# some chainable operators can be negated by `unless`
-ok (true unless 0==10!=100)
+test "some chainable operators can be negated by `unless`", ->
+  ok (true unless 0==10!=100)
 
-# operator precedence: `|` lower than `<`
-eq 1, 1 | 2 < 3 < 4
+test "operator precedence: `|` lower than `<`", ->
+  eq 1, 1 | 2 < 3 < 4
 
-# preserve references
-(->
+test "preserve references", ->
   a = b = c = 1
   # `a == b <= c` should become `a === b && b <= c`
   # (this test does not seem to test for this)
   ok a == b <= c
-)()
 
-# chained operations should evaluate each value only once
-(->
+test "chained operations should evaluate each value only once", ->
   a = 0
   ok 1 > a++ < 1
-)()
 
-#891: incorrect inversion of chained comparisons
-(->
+test "#891: incorrect inversion of chained comparisons", ->
   ok (true unless 0 > 1 > 2)
   ok (true unless (NaN = 0/0) < 0/0 < NaN)
-)()

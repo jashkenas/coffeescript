@@ -3,32 +3,27 @@
 ################
 
 
-# context property assignment (using @)
-(->
+test "context property assignment (using @)", ->
   nonce = {}
   addMethod = ->
     @method = -> nonce
     this
   eq nonce, addMethod.call({}).method()
-)()
 
-# unassignable values
-(->
+test "unassignable values", ->
   nonce = {}
   for nonref in ['', '""', '0', 'f()'].concat CoffeeScript.RESERVED
     eq nonce, (try CoffeeScript.compile "#{nonref} = v" catch e then nonce)
-)()
 
-# compound assignments should not declare
-# TODO: make description more clear
-# TODO: remove reference to Math
-eq Math, (-> Math or= 0)()
+test "compound assignments should not declare", ->
+  # TODO: make description more clear
+  # TODO: remove reference to Math
+  eq Math, (-> Math or= 0)()
 
 
 #### Statements as Expressions
 
-# assign the result of a try/catch block
-(->
+test "assign the result of a try/catch block", ->
   # multiline
   result = try
     nonexistent * missing
@@ -39,10 +34,8 @@ eq Math, (-> Math or= 0)()
   # single line
   result = try nonexistent * missing catch error then true
   eq true, result
-)()
 
-# conditionals
-(->
+test "conditionals", ->
   # assign inside the condition of a conditional statement
   nonce = {}
   if a = nonce then 1
@@ -53,10 +46,8 @@ eq Math, (-> Math or= 0)()
   # assign the result of a conditional statement
   c = if true then nonce
   eq nonce, c
-)()
 
-# assign inside the condition of a `while` loop
-(->
+test "assign inside the condition of a `while` loop", ->
   nonce = {}
   count = 1
   a = nonce while count--
@@ -65,13 +56,11 @@ eq Math, (-> Math or= 0)()
   while count--
     b = nonce
   eq nonce, b
-)()
 
 
 #### Compound Assignment
 
-# compound assignment (math operators)
-(->
+test "compound assignment (math operators)", ->
   num = 10
   num -= 5
   eq 5, num
@@ -84,10 +73,8 @@ eq Math, (-> Math or= 0)()
 
   num %= 3
   eq 2, num
-)()
 
-# more compound assignment
-(->
+test "more compound assignment", ->
   a = {}
   val = undefined
   val ||= a
@@ -105,7 +92,6 @@ eq Math, (-> Math or= 0)()
   val ?= c
   val ?= true
   eq c, val
-)()
 
 
 #### Destructuring Assignment
