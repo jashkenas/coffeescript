@@ -11,7 +11,7 @@ class exports.Rewriter
 
   # Helpful snippet for debugging:
   #     console.log (t[0] + '/' + t[1] for t in @tokens).join ' '
-
+  
   # Rewrite the token stream in multiple passes, one logical filter at
   # a time. This could certainly be changed into a single pass through the
   # stream, with a big ol' efficient switch, but it's much nicer to work with
@@ -26,6 +26,7 @@ class exports.Rewriter
     @tagPostfixConditionals()
     @addImplicitBraces()
     @addImplicitParentheses()
+    @rewriteArrayShorthand()
     @ensureBalance BALANCED_PAIRS
     @rewriteClosingParens()
     @tokens
@@ -220,6 +221,60 @@ class exports.Rewriter
     for open, level of levels when level > 0
       throw Error "unclosed #{ open } on line #{openLine[open] + 1}"
     this
+  
+  isUnaryStar: (token, i)->
+    # checks for an unary *, as it's the indicator for an array shorthand expression
+    if token[0] is 'MATH' and token[1] is '*' and @tokens[i-1][0]!='IDENTIFIER' and @tokens[i-1][0]!='NUMBER' and @tokens[i-1][0] not in EXPRESSION_END
+      return true
+    false
+  
+  withTopLevelTokens: (tokens, condition, action) ->
+    level=0
+    for token, i in tokens
+      if(token!=undefined) # can happen when we delete tokens while iterating
+        level++ if token[0] is 'INDENT'
+        level-- if token[0] is 'OUTDENT'
+        if level==0 and condition(token, i, tokens)
+          action(token, i, tokens)    
+      
+  ensureArrayShorthandSyntax: (tokens) ->
+    # évery line on the top level must start with a *
+    condition= (token, i, tokens) ->
+      token[0] is 'TERMINATOR' and tokens[i+1]!=undefined and (tokens[i+1][0]!='MATH' or tokens[i+1][1]!='*')
+    @withTopLevelTokens tokens, condition, (token, i, tokens) ->
+      throw Error " no * in array shorthand on line #{token[2] + 1}"
+      
+  rewriteArrayShorthand: ->
+    @scanTokens (token, i, tokens) ->
+      if @isUnaryStar(token, i)
+        # we found an unary *, make sure every line in this expression starts with an unary *
+        endCondition=(token, i) ->
+          token[0] in EXPRESSION_END
+        end=@detectEnd i, endCondition, (token, i) ->
+          return i
+        begin=i
+
+        # syntax check for omitted *'s
+        @ensureArrayShorthandSyntax(@tokens[begin..end])
+
+        end-=1
+        tokens.splice(end,0,[']',']',tokens[end][2]])
+        tokens.splice(begin,0,['[','[',tokens[begin][2]])
+        
+        # remove the unary stars
+        level=0
+        for idx in [end..begin]
+          level++ if tokens[idx][0] is 'INDENT'
+          level-- if tokens[idx][0] is 'OUTDENT'          
+          if level is 0 and tokens[idx][0] is 'MATH' and tokens[idx][1] is '*'
+            tokens[idx]=undefined
+        idx=0
+        while idx<tokens.length
+          if tokens[idx]==undefined
+            tokens.splice(idx,1)
+          else
+            idx++
+      return 1
 
   # We'd like to support syntax like this:
   #
@@ -262,7 +317,7 @@ class exports.Rewriter
       else
         tokens.splice i, 0, val
       1
-
+        
   # Generate the indentation tokens, based on another token on the same line.
   indentation: (token) ->
     [['INDENT', 2, token[2]], ['OUTDENT', 2, token[2]]]
