@@ -145,7 +145,8 @@ task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
 
 runTests = (CoffeeScript) ->
   startTime = Date.now()
-  passedTests = failedTests = 0
+  passedTests = 0
+  failures = []
 
   for name, func of require 'assert'
     global[name] = ->
@@ -154,14 +155,42 @@ runTests = (CoffeeScript) ->
 
   global.eq = global.strictEqual
   global.CoffeeScript = CoffeeScript
+  global.test = (description, fn) ->
+    try fn()
+    catch e
+      e.message = description if description?
+      e.source = fn.toString() if fn.toString?
+      throw e
 
   process.on 'exit', ->
     time = ((Date.now() - startTime) / 1000).toFixed(2)
     message = "passed #{passedTests} tests in #{time} seconds#{reset}"
-    if failedTests
-      log "failed #{failedTests} and #{message}", red
-    else
+    if failures.length is 0
       log message, green
+    else
+      log "failed #{failures.length} and #{message}", red
+      for fail in failures
+        [match,line,column] = fail.error.stack.match(new RegExp(fail.file+":(\\d+):(\\d+)"))
+        log "  #{fail.file.replace(/\.coffee$/,'.js')}: line #{line}, column #{column}", red
+        console.log "  #{fail.error.message}" if fail.error.message?
+        # output a cleaned-up version of the function source
+        if fail.error.source?
+          source = fail.error.source
+          splitSource = source.split("\n")
+          # count the number of spaces on the last line to determine indentation level
+          [lastLineSpaces] = splitSource[splitSource.length-1].match(/\ */)
+          if splitSource.length > 1 and lastLineSpaces
+            paddedSource = []
+            splitSource[0] = lastLineSpaces + splitSource[0]
+            for line in splitSource
+              # this should read a single value for indentation size (currently 4)
+              newLine = if lastLineSpaces.length > 4
+                line[(lastLineSpaces.length-4)..]
+              else
+                "    "[lastLineSpaces.length..] + line
+              paddedSource.push newLine
+            source = paddedSource.join("\n")
+          console.log source
 
   fs.readdir 'test', (err, files) ->
     files.forEach (file) ->
@@ -171,8 +200,7 @@ runTests = (CoffeeScript) ->
         try
           CoffeeScript.run code.toString(), {fileName}
         catch err
-          failedTests += 1
-          log "failed #{fileName}", red, '\n' + err.stack?.toString()
+          failures.push {file: fileName, error: err}
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
