@@ -1438,7 +1438,7 @@ exports.For = class For extends Base
     if @range
       forPart = source.compile merge(o, {index: ivar, @step})
     else
-      svar = @source.compile o, LEVEL_PAREN
+      svar = @source.compile o, LEVEL_LIST
       if (name or @own) and not IDENTIFIER.test svar
         defPart = "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
         svar = ref
