@@ -73,7 +73,7 @@ exports.run = ->
     sources.pop()
   if opts.run
     flags = sources.splice(1).concat flags
-  process.ARGV = process.argv = flags
+  process.ARGV = process.argv = process.argv.slice(0, 2).concat flags
   compileScripts()
 
 # Asynchronously read in each CoffeeScript in a list of source files and
