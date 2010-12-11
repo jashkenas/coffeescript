@@ -1,92 +1,88 @@
 ##############
 ## Comments ##
 ##############
-# note: some tests purposely left in outermost scope
 # note: awkward spacing seen in some tests is likely intentional
 
 
-# comments in objects
-obj1 = {
-# comment
+test "comments in objects", ->
+  obj1 = {
   # comment
     # comment
-  one: 1
-# comment
-  two: 2
-    # comment
-}
+      # comment
+    one: 1
+  # comment
+    two: 2
+      # comment
+  }
 
-ok Object::hasOwnProperty.call(obj1,'one')
-eq obj1.one, 1
-ok Object::hasOwnProperty.call(obj1,'two')
-eq obj1.two, 2
+  ok Object::hasOwnProperty.call(obj1,'one')
+  eq obj1.one, 1
+  ok Object::hasOwnProperty.call(obj1,'two')
+  eq obj1.two, 2
 
-# comments in YAML-style objects
-obj2 =
-# comment
+test "comments in YAML-style objects", ->
+  obj2 =
   # comment
     # comment
-  three: 3
-# comment
-  four: 4
-    # comment
+      # comment
+    three: 3
+  # comment
+    four: 4
+      # comment
 
-ok Object::hasOwnProperty.call(obj2,'three')
-eq obj2.three, 3
-ok Object::hasOwnProperty.call(obj2,'four')
-eq obj2.four, 4
+  ok Object::hasOwnProperty.call(obj2,'three')
+  eq obj2.three, 3
+  ok Object::hasOwnProperty.call(obj2,'four')
+  eq obj2.four, 4
 
-# comments following operators that continue lines
-(->
+test "comments following operators that continue lines", ->
   sum =
     1 +
     1 + # comment
     1
   eq 3, sum
-)()
 
-# comments in functions
-fn = ->
-# comment
-  false
-  false   # comment
-  false
+test "comments in functions", ->
+  fn = ->
   # comment
+    false
+    false   # comment
+    false
+    # comment
 
-# comment
-  true
-
-ok fn()
-
-fn2 = -> #comment
-  fn()
   # comment
+    true
 
-ok fn2()
+  ok fn()
 
-# trailing comment before an outdent
-nonce = {}
-fn3 = ->
-  if true
-    undefined # comment
-  nonce
+  fn2 = -> #comment
+    fn()
+    # comment
 
-eq nonce, fn3()
+  ok fn2()
 
-# comments in a switch
-nonce = {}
-result = switch nonce #comment
-  # comment
-  when false then undefined
-  # comment
-  when null #comment
-    undefined
-  else nonce # comment
+test "trailing comment before an outdent", ->
+  nonce = {}
+  fn3 = ->
+    if true
+      undefined # comment
+    nonce
 
-eq nonce, result
+  eq nonce, fn3()
 
-# comment with conditional statements
-(->
+test "comments in a switch", ->
+  nonce = {}
+  result = switch nonce #comment
+    # comment
+    when false then undefined
+    # comment
+    when null #comment
+      undefined
+    else nonce # comment
+
+  eq nonce, result
+
+test "comment with conditional statements", ->
   nonce = {}
   result = if false # comment
     undefined
@@ -95,22 +91,21 @@ eq nonce, result
     nonce
     # comment
   eq nonce, result
-)()
 
-# spaced comments with conditional statements
-nonce = {}
-result = if false
-  undefined
+test "spaced comments with conditional statements", ->
+  nonce = {}
+  result = if false
+    undefined
 
-# comment
-else if false
-  undefined
+  # comment
+  else if false
+    undefined
 
-# comment
-else
-  nonce
+  # comment
+  else
+    nonce
 
-eq nonce, result
+  eq nonce, result
 
 
 #### Block Comments
@@ -119,17 +114,36 @@ eq nonce, result
   This is a here-comment.
   Kind of like a heredoc.
 ###
-#
-obj = {
-  a: 'b'
-  ###
-  comment
-  ###
-  c: 'd'
-}
 
-# block comments in functions
-(->
+test "block comments in objects", ->
+  a = {}
+  b = {}
+  obj = {
+    a: a
+    ###
+    comment
+    ###
+    b: b
+  }
+
+  eq a, obj.a
+  eq b, obj.b
+
+test "block comments in YAML-style", ->
+  a = {}
+  b = {}
+  obj =
+    a: a
+    ###
+    comment
+    ###
+    b: b
+
+  eq a, obj.a
+  eq b, obj.b
+
+
+test "block comments in functions", ->
   nonce = {}
 
   fn1 = ->
@@ -166,10 +180,8 @@ obj = {
           nonce
 
   eq nonce, fn4()()()()
-)()
 
-# block comments inside class bodies
-(->
+test "block comments inside class bodies", ->
   class A
     a: ->
 
@@ -188,4 +200,3 @@ obj = {
     b: ->
 
   ok B.prototype.a instanceof Function
-)()
