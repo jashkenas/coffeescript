@@ -1,6 +1,8 @@
 solipsism = true if mind? and not world?
 
-speed ?= 140
+speed ?= 75
+
+footprints = yeti ? "bear"
 
 
 
