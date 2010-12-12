@@ -369,11 +369,11 @@ new Foo().bar([101]...)
 eq x, 101
 
 
-# Issue #904: Destructuring function arguments with same-named variables in scope.
-key for key, value of a: 1
-f = ([key, value]) ->
-  key + value
-
-eq f([10, 11]), 21
-eq key, 'a'
-eq value, 1
+test "#904: Destructuring function arguments with same-named variables in scope", ->
+  a = b = nonce = {}
+  fn = ([a,b]) -> {a:a,b:b}
+  result = fn([c={},d={}])
+  eq c, result.a
+  eq d, result.b
+  eq nonce, a
+  eq nonce, b
