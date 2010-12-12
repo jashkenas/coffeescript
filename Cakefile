@@ -143,67 +143,56 @@ task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
     console.log stdout.trim()
 
 
+# Run the CoffeeScript test suite.
 runTests = (CoffeeScript) ->
-  startTime = Date.now()
+  startTime   = Date.now()
+  currentFile = null
   passedTests = 0
-  failures = []
+  failures    = []
 
+  # Mix in the assert module globally, to make it available for tests.
   for name, func of require 'assert'
     global[name] = ->
       passedTests += 1
       func arguments...
 
+  # Convenience aliases.
   global.eq = global.strictEqual
   global.CoffeeScript = CoffeeScript
+
+  # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
-    try fn()
+    try
+      fn()
     catch e
       e.message = description if description?
-      e.source = fn.toString() if fn.toString?
-      throw e
+      e.source  = fn.toString() if fn.toString?
+      failures.push file: currentFile, error: e
 
+  # When all the tests have run, collect and print errors.
+  # If a stacktrace is available, output the compiled function source.
   process.on 'exit', ->
     time = ((Date.now() - startTime) / 1000).toFixed(2)
     message = "passed #{passedTests} tests in #{time} seconds#{reset}"
-    if failures.length is 0
-      log message, green
-    else
-      log "failed #{failures.length} and #{message}", red
-      for fail in failures
-        match = fail.error.stack.match(new RegExp(fail.file+":(\\d+):(\\d+)"))
-        [match,line,column] = match if match
-        line ?= "unknown"
-        column ?= "unknown"
-        log "  #{fail.file.replace(/\.coffee$/,'.js')}: line #{line}, column #{column}", red
-        console.log "  #{fail.error.message}" if fail.error.message?
-        # output a cleaned-up version of the function source
-        if fail.error.source?
-          source = fail.error.source
-          splitSource = source.split("\n")
-          # count the number of spaces on the last line to determine indentation level
-          [lastLineSpaces] = splitSource[splitSource.length-1].match(/\ */)
-          if splitSource.length > 1 and lastLineSpaces
-            paddedSource = []
-            splitSource[0] = lastLineSpaces + splitSource[0]
-            for line in splitSource
-              # this should read a single value for indentation size (currently 4)
-              newLine = if lastLineSpaces.length > 4
-                line[(lastLineSpaces.length-4)..]
-              else
-                "    "[lastLineSpaces.length..] + line
-              paddedSource.push newLine
-            source = paddedSource.join("\n")
-          console.log source
+    return log(message, green) unless failures.length
+    log "failed #{failures.length} and #{message}", red
+    for fail in failures
+      {error, file}      = fail
+      jsFile             = file.replace(/\.coffee$/,'.js')
+      match              = error.stack?.match(new RegExp(fail.file+":(\\d+):(\\d+)"))
+      [match, line, col] = match if match
+      log "\n  #{error.message}", red if error.message
+      log "  #{jsFile}: line #{line or 'unknown'}, column #{col or 'unknown'}", red
+      console.log "  #{error.source}" if error.source
 
+  # Run every test in the `test` folder, recording failures.
   fs.readdir 'test', (err, files) ->
     files.forEach (file) ->
       return unless file.match(/\.coffee$/i)
       fileName = path.join 'test', file
       fs.readFile fileName, (err, code) ->
-        try
-          CoffeeScript.run code.toString(), {fileName}
-        catch err
-          failures.push {file: fileName, error: err}
+        currentFile = fileName
+        CoffeeScript.run code.toString(), {fileName}
 
 
 task 'test', 'run the CoffeeScript language test suite', ->

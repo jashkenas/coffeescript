@@ -1,7 +1,5 @@
-###########
-## Break ##
-###########
-
+# Break
+# -----
 
 test "break at the top level", ->
   for i in [1,2,3]

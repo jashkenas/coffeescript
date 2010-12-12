@@ -1,7 +1,5 @@
-################
-## Assignment ##
-################
-
+# Assignment
+# ----------
 
 test "context property assignment (using @)", ->
   nonce = {}

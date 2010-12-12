@@ -1,6 +1,5 @@
-################
-## Exceptions ##
-################
+# Exceptions
+# ----------
 
 # shared nonce
 nonce = {}
@@ -8,8 +7,7 @@ nonce = {}
 #### Throw
 
 test "basic exception throwing", ->
-  throws (-> throw ->), ->
-  throws (-> throw new ->), ->
+  throws (-> throw 'error'), 'error'
 
 #### Empty Try/Catch/Finally
 

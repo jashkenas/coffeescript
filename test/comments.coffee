@@ -1,8 +1,7 @@
-##############
-## Comments ##
-##############
-# note: awkward spacing seen in some tests is likely intentional
+# Comments
+# --------
 
+# Note: awkward spacing seen in some tests is likely intentional.
 
 test "comments in objects", ->
   obj1 = {

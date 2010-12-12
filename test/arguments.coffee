@@ -1,7 +1,5 @@
-###############
-## Arguments ##
-###############
-
+# Arguments
+# ---------
 
 id = (_) ->
   if arguments.length is 1 then _ else Array::slice.call(arguments)

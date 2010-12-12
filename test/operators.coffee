@@ -1,7 +1,5 @@
-###############
-## Operators ##
-###############
-
+# Operators
+# ---------
 
 test "binary (2-ary) math operators do not require spaces", ->
   a = 1
