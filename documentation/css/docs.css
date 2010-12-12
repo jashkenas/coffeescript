@@ -1,9 +1,9 @@
 body {
-  font-size: 13px;
-  line-height: 20px;
-  color: #000;
+  font-size: 14px;
+  line-height: 21px;
+  color: #333;
   background: #f6f6f6 url(../images/background.png);
-  font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, sans-serif !important;
+  font-family: "Helvetica Neue", "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, sans-serif !important;
 }
 .container {
   width: 950px;
@@ -17,6 +17,8 @@ a {
   color: #000055;
 }
 h1, h2, h3, h4, h5, h6, b.header {
+  font-size: 18px;
+  color: #000;
   margin-top: 40px;
   margin-bottom: 15px;
 }
@@ -28,9 +30,7 @@ ul {
   padding-left: 20px;
 }
 b.header {
-  color: #000055;
   display: block;
-  font-size: 16px;
 }
 li {
   margin-bottom: 10px;
@@ -208,7 +208,6 @@ div.code {
         width: 290px;
         text-transform: none;
         text-decoration: none;
-        font-weight: normal;
         height: 12px;
         line-height: 12px;
         padding: 4px 10px;
