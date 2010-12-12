@@ -14,13 +14,14 @@ p, li {
   width: 625px;
 }
 a {
-  color: #000055;
+  color: #191933;
 }
 h1, h2, h3, h4, h5, h6, b.header {
   font-size: 18px;
   color: #000;
   margin-top: 40px;
   margin-bottom: 15px;
+  text-shadow: #fff 0 1px 1px;
 }
 br.clear {
   height: 0;
@@ -48,7 +49,7 @@ table {
 table.definitions {
   width: auto;
   margin: 30px 0;
-  border-left: 6px solid #ccccdd;
+  border-left: 5px solid rgba(0,0,0,0.2);;
 }
   table.definitions td {
     text-align: center;
@@ -58,7 +59,7 @@ code, pre, tt, textarea {
   font-family: Monaco, Consolas, "Lucida Console", monospace;
   font-size: 12px;
   line-height: 18px;
-  color: #191955;
+  color: #155;
   white-space: pre-wrap;
   word-wrap: break-word;
 }
@@ -68,7 +69,7 @@ code, pre, tt, textarea {
     padding: 0px 0.2em;
   }
   pre {
-    border-left: 6px solid #ccccdd;
+    border-left: 5px solid rgba(0,0,0,0.2);
     padding: 3px 0 3px 12px;
     font-size: 12px;
   }
@@ -91,7 +92,7 @@ div.code {
   box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
   zoom: 1;
 }
-  div.code button {
+  div.code .minibutton {
     position: absolute;
     right: 8px; bottom: 8px;
   }
@@ -124,8 +125,8 @@ div.code {
   left: 40px; right: 40px; top: 25px;
   padding-left: 235px;
   background: #eee;
-  background: -webkit-gradient(linear, left top, left bottom, from(#fafafa), to(#dadada));
-  background: -moz-linear-gradient(top, #f5f5f5, #d0d0d0);
+  background: -webkit-gradient(linear, left top, left bottom, from(#f8f8f8), to(#dadada));
+  background: -moz-linear-gradient(top, #f8f8f8, #dadada);
   border: 1px solid #aaa;
   border-top: 1px solid #bbb;
   border-bottom: 1px solid #888;
@@ -176,8 +177,8 @@ div.code {
     .navigation:hover,
     .navigation.active {
       background: #eee;
-      background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#fff));
-      background: -moz-linear-gradient(top, #eee, #fff);
+      background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#f8f8f8));
+      background: -moz-linear-gradient(top, #eee, #f8f8f8);
     }
       .navigation.active {
         height: 51px;
@@ -241,7 +242,7 @@ div.code {
               height: 100%;
               padding: 0; margin: 0;
             }
-          .navigation .code button {
+          .navigation .code .button {
             bottom: 10px;
             text-transform: none;
             line-height: 14px;
@@ -309,3 +310,30 @@ div.code {
       body.full_screen #repl_results {
         left: 50%;
       }
+
+/*----------------------------- Mini Buttons ---------------------------------*/
+.minibutton {
+  cursor: pointer;
+  color: #333;
+  text-shadow: #eee 0 1px 1px;
+  font-weight: bold;
+  font-size: 11px;
+  line-height: 11px;
+  padding: 5px 10px 6px;
+  height: 11px;
+  text-align: center;
+  -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px;
+  box-shadow: 0 1px 2px #c4c4c4; -webkit-box-shadow: 0 1px 2px #c4c4c4; -moz-box-shadow: 0 1px 2px #c4c4c4;
+  border: 1px solid #b2b2b2; border-top-color: #c9c9c9; border-bottom-color: #9a9a9a;
+  background: url(../images/button_bg.png) repeat-x left top;
+}
+  .minibutton:active {
+    border-color: #aaa;
+    box-shadow: 0 1px 2px #e4e4e4; -webkit-box-shadow: 0 1px 2px #e4e4e4; -moz-box-shadow: 0 1px 2px #e4e4e4;
+  }
+  .minibutton::selection {
+    background: transparent;
+  }
+  .minibutton ::-moz-selection {
+    background: transparent;
+  }
