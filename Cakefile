@@ -192,7 +192,10 @@ runTests = (CoffeeScript) ->
       fileName = path.join 'test', file
       fs.readFile fileName, (err, code) ->
         currentFile = fileName
-        CoffeeScript.run code.toString(), {fileName}
+        try
+          CoffeeScript.run code.toString(), {fileName}
+        catch e
+          failures.push file: currentFile, error: e
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
