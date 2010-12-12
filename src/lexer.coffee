@@ -523,6 +523,8 @@ RESERVED = [
 # be used as identifiers or properties.
 JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
 
+exports.RESERVED = RESERVED.concat(JS_KEYWORDS).concat(COFFEE_KEYWORDS)
+
 # Token matching regexes.
 IDENTIFIER = /// ^
   ( [$A-Za-z_][$\w]* )
