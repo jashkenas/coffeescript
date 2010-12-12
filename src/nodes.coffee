@@ -245,7 +245,7 @@ exports.Expressions = class Expressions extends Base
     post = @compileNode o
     {scope} = o
     if scope.expressions is this
-      if not o.globals and o.scope.hasDeclarations
+      if not o.globals and o.scope.hasDeclarations()
         code += "#{@tab}var #{ scope.declaredVariables().join(', ') };\n"
       if scope.hasAssignments
         code += "#{@tab}var #{ multident scope.assignedVariables().join(', '), @tab };\n"
