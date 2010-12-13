@@ -4,10 +4,12 @@
 # shared nonce
 nonce = {}
 
+
 #### Throw
 
 test "basic exception throwing", ->
   throws (-> throw 'error'), 'error'
+
 
 #### Empty Try/Catch/Finally
 
@@ -57,20 +59,25 @@ test "single-line result of try when no exception is thrown", ->
   eq nonce, result
 
 test "return the result of catch when an exception is thrown", ->
-  result = try
-    throw ->
-  catch err
-    nonce
-  eq nonce, result
+  fn = ->
+    try
+      throw ->
+    catch err
+      nonce
+  doesNotThrow fn
+  eq nonce, fn()
 
 test "single-line result of catch when an exception is thrown", ->
-  result = try throw -> catch err then nonce
-  eq nonce, result
+  fn = ->
+    try throw (->) catch err then nonce
+  doesNotThrow fn
+  eq nonce, fn()
 
 test "optional catch", ->
   fn = ->
     try throw ->
     nonce
+  doesNotThrow fn
   eq nonce, fn()
 
 
