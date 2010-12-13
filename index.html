@@ -2396,29 +2396,27 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
     window.loadConsole = (coffee) ->
       $('#repl_source').val coffee
       compileSource()
-      $('.navigation.try').addClass 'active'
-
-    currentNav = null
+      $('.navigation.try').addClass('active')
+      false
 
     # Helper to hide the menus.
     closeMenus = ->
-      if currentNav
-        currentNav.removeClass 'active'
-      currentNav = null
+      $('.navigation.active').removeClass 'active'
 
     # Bind navigation buttons to open the menus.
     $('.navigation').click (e) ->
       return if e.target.tagName.toLowerCase() is 'a'
       return false if $(e.target).closest('.repl_wrapper').length
-      if this is (currentNav and currentNav[0])
+      if $(this).hasClass('active')
         closeMenus()
       else
         closeMenus()
-        currentNav = $(this)
-        currentNav.addClass 'active'
+        $(this).addClass 'active'
       false
 
-    $(document.body).click -> closeMenus()
+    $(document.body).click (e) ->
+      return false if $(e.target).hasClass('minibutton')
+      closeMenus()
 
     $('#open_webchat').click ->
       $(this).replaceWith $('<iframe src="http://webchat.freenode.net/?channels=coffeescript" width="625" height="400"></iframe>')

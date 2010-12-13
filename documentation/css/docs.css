@@ -315,7 +315,6 @@ div.code {
     #repl_results {
       text-transform: none;
       overflow-y: auto;
-      width: 370px;
       left: 50%;
       border-left-color: #555;
     }
