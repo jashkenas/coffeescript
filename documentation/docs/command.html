@@ -52,7 +52,7 @@ Many flags cause us to divert before compiling anything. Flags passed after
     <span class="nx">sources</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span>
   <span class="k">if</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">run</span>
     <span class="nv">flags = </span><span class="nx">sources</span><span class="p">.</span><span class="nx">splice</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="nx">concat</span> <span class="nx">flags</span>
-  <span class="nv">process.ARGV = process.argv = </span><span class="nx">flags</span>
+  <span class="nv">process.ARGV = process.argv = </span><span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">).</span><span class="nx">concat</span> <span class="nx">flags</span>
   <span class="nx">compileScripts</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-9">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-9">&#182;</a>               </div>               <p>Asynchronously read in each CoffeeScript in a list of source files and
 compile them. If a directory is passed, recursively compile all
 '.coffee' extension source files in it and all subdirectories.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">compileScripts = </span><span class="o">-&gt;</span>

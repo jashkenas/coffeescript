@@ -4,3 +4,4 @@ copy    = numbers[0...numbers.length]
 
 middle  = copy[3..6]
 
+
