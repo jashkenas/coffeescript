@@ -4,3 +4,4 @@ alert(
   catch error
     "And the error is ... " + error
 )
+
