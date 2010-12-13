@@ -43,10 +43,10 @@ test "reference `arguments` inside of functions", ->
 #### Parameter List Features
 
 test "splats", ->
-  eq 2, (((splat...) -> splat) 0,1,2)[2]
-  eq 3, (((_, _, splat...) -> splat) 0,1,2,3)[1]
-  eq 1, (((splat..., _, _) -> splat) 0,1,2,3)[1]
-  eq 2, (((_, _, splat..., _) -> splat) 0,1,2,3)[0]
+  deepEqual [0, 1, 2], (((splat...) -> splat) 0, 1, 2)
+  deepEqual [2, 3], (((_, _, splat...) -> splat) 0, 1, 2, 3)
+  deepEqual [0, 1], (((splat..., _, _) -> splat) 0, 1, 2, 3)
+  deepEqual [2], (((_, _, splat..., _) -> splat) 0, 1, 2, 3)
 
 test "@-parameters: automatically assign an argument's value to a property of the context", ->
   nonce = {}
