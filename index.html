@@ -93,7 +93,7 @@
     <span class="bookmark" id="top"></span>
 
     <p>
-      CoffeeScript is a little language that compiles into JavaScript. Underneath
+      <b>CoffeeScript is a little language that compiles into JavaScript.</b> Underneath
       all of those embarrassing braces and semicolons, JavaScript has always had
       a gorgeous object model at its heart. CoffeeScript is an attempt to expose
       the good parts of JavaScript in a simple way.
@@ -105,7 +105,7 @@
       no interpretation at runtime. You can use any existing JavaScript library
       seamlessly (and vice-versa). The compiled output is readable and pretty-printed,
       passes through <a href="http://www.javascriptlint.com/">JavaScript Lint</a>
-      without warnings, and can be run by any JavaScript implementation.
+      without warnings, and runs in every JavaScript implementation.
     </p>
 
     <p>
@@ -182,7 +182,7 @@ cubes <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   }
   <span class="Keyword">return</span> _results;
 }());
-</pre><button onclick='javascript: var cubes, list, math, num, number, opposite, race, square, _i, _len, _results;
+</pre><div class='minibutton' onclick='javascript: var cubes, list, math, num, number, opposite, race, square, _i, _len, _results;
 var __slice = Array.prototype.slice;
 number = 42;
 opposite = true;
@@ -215,7 +215,7 @@ cubes = (function() {
     _results.push(math.cube(num));
   }
   return _results;
-}());;alert(cubes);'>run: cubes</button><br class='clear' /></div>
+}());;alert(cubes);'>run: cubes</div><br class='clear' /></div>
 
     <h2>
       <span id="installation" class="bookmark"></span>
@@ -429,13 +429,13 @@ coffee --bare --print --stdio</pre>
 <span class="FunctionName">cube</span> = <span class="Storage">function</span>(<span class="FunctionArgument">x</span>) {
   <span class="Keyword">return</span> square(x) <span class="Keyword">*</span> x;
 };
-</pre><button onclick='javascript: var cube, square;
+</pre><div class='minibutton' onclick='javascript: var cube, square;
 square = function(x) {
   return x * x;
 };
 cube = function(x) {
   return square(x) * x;
-};;alert(cube(5));'>run: cube(5)</button><br class='clear' /></div>
+};;alert(cube(5));'>run: cube(5)</div><br class='clear' /></div>
     <p>
       Functions may also have default values for arguments.
     </p>
@@ -454,13 +454,13 @@ cube = function(x) {
   }
   <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>Filling the <span class="String">&quot;</span></span> <span class="Keyword">+</span> container <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> with <span class="String">&quot;</span></span> <span class="Keyword">+</span> liquid <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>...<span class="String">&quot;</span></span>;
 };
-</pre><button onclick='javascript: var fill;
+</pre><div class='minibutton' onclick='javascript: var fill;
 fill = function(container, liquid) {
   if (liquid == null) {
     liquid = "coffee";
   }
   return "Filling the " + container + " with " + liquid + "...";
-};;alert(fill("cup"));'>run: fill("cup")</button><br class='clear' /></div>
+};;alert(fill("cup"));'>run: fill("cup")</div><br class='clear' /></div>
 
     <p>
       <span id="objects_and_arrays" class="bookmark"></span>
@@ -504,7 +504,7 @@ kids <span class="Keyword">=</span> {
     age: <span class="Number">9</span>
   }
 };
-</pre><button onclick='javascript: var kids, matrix, singers, song;
+</pre><div class='minibutton' onclick='javascript: var kids, matrix, singers, song;
 song = ["do", "re", "mi", "fa", "so"];
 singers = {
   Jagger: "Rock",
@@ -520,7 +520,7 @@ kids = {
     name: "Ida",
     age: 9
   }
-};;alert(song.join(","));'>run: song.join(",")</button><br class='clear' /></div>
+};;alert(song.join(","));'>run: song.join(",")</div><br class='clear' /></div>
     <p>
       In JavaScript, you can't use reserved words, like <tt>class</tt>, as properties
       of an object, without quoting them as strings. CoffeeScript notices reserved words
@@ -556,14 +556,14 @@ outer <span class="Keyword">=</span> <span class="Number">1</span>;
   <span class="Keyword">return</span> outer <span class="Keyword">=</span> <span class="Number">10</span>;
 };
 inner <span class="Keyword">=</span> changeNumbers();
-</pre><button onclick='javascript: var changeNumbers, inner, outer;
+</pre><div class='minibutton' onclick='javascript: var changeNumbers, inner, outer;
 outer = 1;
 changeNumbers = function() {
   var inner;
   inner = -1;
   return outer = 10;
 };
-inner = changeNumbers();;alert(inner);'>run: inner</button><br class='clear' /></div>
+inner = changeNumbers();;alert(inner);'>run: inner</div><br class='clear' /></div>
     <p>
       Notice how all of the variable declarations have been pushed up to
       the top of the closest scope, the first time they appear.
@@ -685,7 +685,7 @@ options <span class="Keyword">||</span> (options <span class="Keyword">=</span> 
       <tr><td><tt>false, no, off</tt></td><td><tt>false</tt></td></tr>
       <tr><td><tt>@, this</tt></td><td><tt>this</tt></td></tr>
       <tr><td><tt>of</tt></td><td><tt>in</tt></td></tr>
-      <tr><td><tt>in</tt></td><td>(no JS equivalent)</td></tr>
+      <tr><td><tt>in</tt></td><td><i><small>no JS equivalent</small></i></td></tr>
     </table>
 
     <div class='code'><pre class="idle">launch() <span class="Keyword">if</span> ignition <span class="Keyword">is</span> <span class="BuiltInConstant">on</span>
@@ -766,7 +766,7 @@ awardMedals.<span class="LibraryFunction">apply</span>(<span class="BuiltInConst
 <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Gold: <span class="String">&quot;</span></span> <span class="Keyword">+</span> gold);
 <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Silver: <span class="String">&quot;</span></span> <span class="Keyword">+</span> silver);
 <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>The Field: <span class="String">&quot;</span></span> <span class="Keyword">+</span> rest);
-</pre><button onclick='javascript: var awardMedals, contenders, gold, rest, silver;
+</pre><div class='minibutton' onclick='javascript: var awardMedals, contenders, gold, rest, silver;
 var __slice = Array.prototype.slice;
 gold = silver = rest = "unknown";
 awardMedals = function() {
@@ -780,7 +780,7 @@ contenders = ["Michael Phelps", "Liu Xiang", "Yao Ming", "Allyson Felix", "Shawn
 awardMedals.apply(null, contenders);
 alert("Gold: " + gold);
 alert("Silver: " + silver);
-alert("The Field: " + rest);;'>run</button><br class='clear' /></div>
+alert("The Field: " + rest);;'>run</div><br class='clear' /></div>
 
     <p>
       <span id="while" class="bookmark"></span>
@@ -817,7 +817,7 @@ num <span class="Keyword">=</span> <span class="Number">6</span>;
   }
   <span class="Keyword">return</span> _results;
 }();
-</pre><button onclick='javascript: var lyrics, num, _results;
+</pre><div class='minibutton' onclick='javascript: var lyrics, num, _results;
 if (this.studyingEconomics) {
   while (supply > demand) {
     buy();
@@ -833,7 +833,7 @@ lyrics = function() {
     _results.push(num + " little monkeys, jumping on the bed.    One fell out and bumped his head.");
   }
   return _results;
-}();;alert(lyrics.join("\n"));'>run: lyrics.join("\n")</button><br class='clear' /></div>
+}();;alert(lyrics.join("\n"));'>run: lyrics.join("\n")</div><br class='clear' /></div>
     <p>
       For readability, the <b>until</b> keyword is equivalent to <tt>while not</tt>,
       and the <b>loop</b> keyword is equivalent to <tt>while true</tt>.
@@ -877,14 +877,14 @@ countdown <span class="Keyword">=</span> (<span class="Storage">function</span>(
   }
   <span class="Keyword">return</span> _results;
 }());
-</pre><button onclick='javascript: var countdown, num, _results;
+</pre><div class='minibutton' onclick='javascript: var countdown, num, _results;
 countdown = (function() {
   _results = [];
   for (num = 10; num >= 1; num--) {
     _results.push(num);
   }
   return _results;
-}());;alert(countdown);'>run: countdown</button><br class='clear' /></div>
+}());;alert(countdown);'>run: countdown</div><br class='clear' /></div>
     <p>
       Note how because we are assigning the value of the comprehensions to a
       variable in the example above, CoffeeScript is collecting the result of
@@ -917,7 +917,7 @@ yearsOld <span class="Keyword">=</span> {
   }
   <span class="Keyword">return</span> _results;
 }();
-</pre><button onclick='javascript: var age, ages, child, yearsOld, _results;
+</pre><div class='minibutton' onclick='javascript: var age, ages, child, yearsOld, _results;
 yearsOld = {
   max: 10,
   ida: 9,
@@ -930,7 +930,7 @@ ages = function() {
     _results.push(child + " is " + age);
   }
   return _results;
-}();;alert(ages.join(", "));'>run: ages.join(", ")</button><br class='clear' /></div>
+}();;alert(ages.join(", "));'>run: ages.join(", ")</div><br class='clear' /></div>
     <p>
       By default, object comprehensions are safe, and use a <tt>hasOwnProperty</tt>
       check to make sure that you're dealing with properties on the current
@@ -955,10 +955,10 @@ middle  <span class="Keyword">=</span> copy[<span class="Number">3</span>..<span
 numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
 copy <span class="Keyword">=</span> numbers.<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, numbers.<span class="LibraryConstant">length</span>);
 middle <span class="Keyword">=</span> copy.<span class="LibraryFunction">slice</span>(<span class="Number">3</span>, <span class="Number">6</span> <span class="Keyword">+</span> <span class="Number">1</span>);
-</pre><button onclick='javascript: var copy, middle, numbers;
+</pre><div class='minibutton' onclick='javascript: var copy, middle, numbers;
 numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 copy = numbers.slice(0, numbers.length);
-middle = copy.slice(3, 6 + 1);;alert(middle);'>run: middle</button><br class='clear' /></div>
+middle = copy.slice(3, 6 + 1);;alert(middle);'>run: middle</div><br class='clear' /></div>
     <p>
       The same syntax can be used with assignment to replace a segment of an array
       with new values, splicing it.
@@ -971,9 +971,9 @@ numbers[<span class="Number">3</span>..<span class="Number">6</span>] <span clas
 </pre><pre class="idle"><span class="Storage">var</span> numbers;
 numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
 [].splice.<span class="LibraryFunction">apply</span>(numbers, [<span class="Number">3</span>, <span class="Number">4</span>].<span class="LibraryFunction">concat</span>([<span class="Keyword">-</span><span class="Number">3</span>, <span class="Keyword">-</span><span class="Number">4</span>, <span class="Keyword">-</span><span class="Number">5</span>, <span class="Keyword">-</span><span class="Number">6</span>]));
-</pre><button onclick='javascript: var numbers;
+</pre><div class='minibutton' onclick='javascript: var numbers;
 numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-[].splice.apply(numbers, [3, 4].concat([-3, -4, -5, -6]));;alert(numbers);'>run: numbers</button><br class='clear' /></div>
+[].splice.apply(numbers, [3, 4].concat([-3, -4, -5, -6]));;alert(numbers);'>run: numbers</div><br class='clear' /></div>
     <p>
       Note that JavaScript strings are immutable, and can't be spliced.
     </p>
@@ -1011,7 +1011,7 @@ eldest <span class="Keyword">=</span> <span class="Keyword">if</span> <span clas
   }
 };
 eldest <span class="Keyword">=</span> <span class="Number">24</span> <span class="Keyword">&gt;</span> <span class="Number">21</span> ? <span class="String"><span class="String">&quot;</span>Liz<span class="String">&quot;</span></span> : <span class="String"><span class="String">&quot;</span>Ike<span class="String">&quot;</span></span>;
-</pre><button onclick='javascript: var eldest, grade;
+</pre><div class='minibutton' onclick='javascript: var eldest, grade;
 grade = function(student) {
   if (student.excellentWork) {
     return "A+";
@@ -1025,7 +1025,7 @@ grade = function(student) {
     return "C";
   }
 };
-eldest = 24 > 21 ? "Liz" : "Ike";;alert(eldest);'>run: eldest</button><br class='clear' /></div>
+eldest = 24 > 21 ? "Liz" : "Ike";;alert(eldest);'>run: eldest</div><br class='clear' /></div>
     <p>
       Even though functions will always return their final value, it's both possible
       and encouraged to return early from a function body writing out the explicit
@@ -1038,8 +1038,8 @@ eldest = 24 > 21 ? "Liz" : "Ike";;alert(eldest);'>run: eldest</button><br class=
     <div class='code'><pre class="idle">six <span class="Keyword">=</span> (one <span class="Keyword">=</span> <span class="Number">1</span>) <span class="Keyword">+</span> (two <span class="Keyword">=</span> <span class="Number">2</span>) <span class="Keyword">+</span> (three <span class="Keyword">=</span> <span class="Number">3</span>)
 </pre><pre class="idle"><span class="Storage">var</span> one, six, three, two;
 six <span class="Keyword">=</span> (one <span class="Keyword">=</span> <span class="Number">1</span>) <span class="Keyword">+</span> (two <span class="Keyword">=</span> <span class="Number">2</span>) <span class="Keyword">+</span> (three <span class="Keyword">=</span> <span class="Number">3</span>);
-</pre><button onclick='javascript: var one, six, three, two;
-six = (one = 1) + (two = 2) + (three = 3);;alert(six);'>run: six</button><br class='clear' /></div>
+</pre><div class='minibutton' onclick='javascript: var one, six, three, two;
+six = (one = 1) + (two = 2) + (three = 3);;alert(six);'>run: six</div><br class='clear' /></div>
     <p>
       Things that would otherwise be statements in JavaScript, when used
       as part of an expression in CoffeeScript, are converted into expressions
@@ -1057,14 +1057,14 @@ globals <span class="Keyword">=</span> (<span class="Storage">function</span>() 
   }
   <span class="Keyword">return</span> _results;
 }()).<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
-</pre><button onclick='javascript: var globals, name, _results;
+</pre><div class='minibutton' onclick='javascript: var globals, name, _results;
 globals = (function() {
   _results = [];
   for (name in window) {
     _results.push(name);
   }
   return _results;
-}()).slice(0, 10);;alert(globals);'>run: globals</button><br class='clear' /></div>
+}()).slice(0, 10);;alert(globals);'>run: globals</div><br class='clear' /></div>
     <p>
       As well as silly things, like passing a <b>try/catch</b> statement directly
       into a function call:
@@ -1082,13 +1082,13 @@ globals = (function() {
     <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>And the error is ... <span class="String">&quot;</span></span> <span class="Keyword">+</span> error;
   }
 }());
-</pre><button onclick='javascript: alert(function() {
+</pre><div class='minibutton' onclick='javascript: alert(function() {
   try {
     return nonexistent / void 0;
   } catch (error) {
     return "And the error is ... " + error;
   }
-}());;'>run</button><br class='clear' /></div>
+}());;'>run</div><br class='clear' /></div>
     <p>
       There are a handful of statements in JavaScript that can't be meaningfully
       converted into expressions, namely <tt>break</tt>, <tt>continue</tt>,
@@ -1125,12 +1125,12 @@ footprints <span class="Keyword">=</span> yeti <span class="Keyword">?</span> <s
 }
 <span class="Keyword">typeof</span> speed <span class="Keyword">!</span><span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> speed <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span> ? speed : speed <span class="Keyword">=</span> <span class="Number">75</span>;
 footprints <span class="Keyword">=</span> <span class="Keyword">typeof</span> yeti <span class="Keyword">!</span><span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> yeti <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span> ? yeti : <span class="String"><span class="String">&quot;</span>bear<span class="String">&quot;</span></span>;
-</pre><button onclick='javascript: var footprints, solipsism;
+</pre><div class='minibutton' onclick='javascript: var footprints, solipsism;
 if ((typeof mind != "undefined" && mind !== null) && !(typeof world != "undefined" && world !== null)) {
   solipsism = true;
 }
 typeof speed != "undefined" && speed !== null ? speed : speed = 75;
-footprints = typeof yeti != "undefined" && yeti !== null ? yeti : "bear";;alert(footprints);'>run: footprints</button><br class='clear' /></div>
+footprints = typeof yeti != "undefined" && yeti !== null ? yeti : "bear";;alert(footprints);'>run: footprints</div><br class='clear' /></div>
     <p>
       The accessor variant of the existential operator <tt>?.</tt> can be used to soak
       up null references in a chain of properties. Use it instead
@@ -1244,7 +1244,7 @@ sam <span class="Keyword">=</span> <span class="Keyword">new</span> <span class=
 tom <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span>(<span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>);
 sam.move();
 tom.move();
-</pre><button onclick='javascript: var Animal, Horse, Snake, sam, tom;
+</pre><div class='minibutton' onclick='javascript: var Animal, Horse, Snake, sam, tom;
 var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
   for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
   function ctor() { this.constructor = child; }
@@ -1287,7 +1287,7 @@ Horse = function() {
 sam = new Snake("Sammy the Python");
 tom = new Horse("Tommy the Palomino");
 sam.move();
-tom.move();;'>run</button><br class='clear' /></div>
+tom.move();;'>run</div><br class='clear' /></div>
     <p>
       If structuring your prototypes classically isn't your cup of tea, CoffeeScript
       provides a couple of lower-level conveniences. The <tt>extends</tt> operator
@@ -1300,9 +1300,9 @@ tom.move();;'>run</button><br class='clear' /></div>
 </pre><pre class="idle"><span class="LibraryClassType">String</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">dasherize</span> = <span class="Storage">function</span>() {
   <span class="Keyword">return</span> <span class="Variable">this</span>.<span class="LibraryFunction">replace</span>(<span class="String"><span class="String">/</span>_<span class="String">/</span>g</span>, <span class="String"><span class="String">&quot;</span>-<span class="String">&quot;</span></span>);
 };
-</pre><button onclick='javascript: String.prototype.dasherize = function() {
+</pre><div class='minibutton' onclick='javascript: String.prototype.dasherize = function() {
   return this.replace(/_/g, "-");
-};;alert("one_two".dasherize());'>run: "one_two".dasherize()</button><br class='clear' /></div>
+};;alert("one_two".dasherize());'>run: "one_two".dasherize()</div><br class='clear' /></div>
     <p>
       Finally class definitions are blocks of executable code, which make for interesting
       metaprogramming possibilities. Because in the context of a class definition,
@@ -1330,10 +1330,10 @@ theSwitch <span class="Keyword">=</span> <span class="Number">0</span>
 theBait <span class="Keyword">=</span> <span class="Number">1000</span>;
 theSwitch <span class="Keyword">=</span> <span class="Number">0</span>;
 _ref <span class="Keyword">=</span> [theSwitch, theBait], theBait <span class="Keyword">=</span> _ref[<span class="Number">0</span>], theSwitch <span class="Keyword">=</span> _ref[<span class="Number">1</span>];
-</pre><button onclick='javascript: var theBait, theSwitch, _ref;
+</pre><div class='minibutton' onclick='javascript: var theBait, theSwitch, _ref;
 theBait = 1000;
 theSwitch = 0;
-_ref = [theSwitch, theBait], theBait = _ref[0], theSwitch = _ref[1];;alert(theBait);'>run: theBait</button><br class='clear' /></div>
+_ref = [theSwitch, theBait], theBait = _ref[0], theSwitch = _ref[1];;alert(theBait);'>run: theBait</div><br class='clear' /></div>
     <p>
       But it's also helpful for dealing with functions that return multiple
       values.
@@ -1350,11 +1350,11 @@ _ref = [theSwitch, theBait], theBait = _ref[0], theSwitch = _ref[1];;alert(theBa
   <span class="Keyword">return</span> [location, <span class="Number">72</span>, <span class="String"><span class="String">&quot;</span>Mostly Sunny<span class="String">&quot;</span></span>];
 };
 _ref <span class="Keyword">=</span> weatherReport(<span class="String"><span class="String">&quot;</span>Berkeley, CA<span class="String">&quot;</span></span>), city <span class="Keyword">=</span> _ref[<span class="Number">0</span>], temp <span class="Keyword">=</span> _ref[<span class="Number">1</span>], forecast <span class="Keyword">=</span> _ref[<span class="Number">2</span>];
-</pre><button onclick='javascript: var city, forecast, temp, weatherReport, _ref;
+</pre><div class='minibutton' onclick='javascript: var city, forecast, temp, weatherReport, _ref;
 weatherReport = function(location) {
   return [location, 72, "Mostly Sunny"];
 };
-_ref = weatherReport("Berkeley, CA"), city = _ref[0], temp = _ref[1], forecast = _ref[2];;alert(forecast);'>run: forecast</button><br class='clear' /></div>
+_ref = weatherReport("Berkeley, CA"), city = _ref[0], temp = _ref[1], forecast = _ref[2];;alert(forecast);'>run: forecast</div><br class='clear' /></div>
     <p>
       Pattern matching can be used with any depth of array and object nesting,
       to help pull out deeply nested properties.
@@ -1382,7 +1382,7 @@ futurists <span class="Keyword">=</span> {
   }
 };
 _ref <span class="Keyword">=</span> futurists.poet, name <span class="Keyword">=</span> _ref.<span class="LibraryConstant">name</span>, _ref2 <span class="Keyword">=</span> _ref.address, street <span class="Keyword">=</span> _ref2[<span class="Number">0</span>], city <span class="Keyword">=</span> _ref2[<span class="Number">1</span>];
-</pre><button onclick='javascript: var city, futurists, name, street, _ref, _ref2;
+</pre><div class='minibutton' onclick='javascript: var city, futurists, name, street, _ref, _ref2;
 futurists = {
   sculptor: "Umberto Boccioni",
   painter: "Vladimir Burliuk",
@@ -1391,7 +1391,7 @@ futurists = {
     address: ["Via Roma 42R", "Bellagio, Italy 22021"]
   }
 };
-_ref = futurists.poet, name = _ref.name, _ref2 = _ref.address, street = _ref2[0], city = _ref2[1];;alert(name + " — " + street);'>run: name + " — " + street</button><br class='clear' /></div>
+_ref = futurists.poet, name = _ref.name, _ref2 = _ref.address, street = _ref2[0], city = _ref2[1];;alert(name + " — " + street);'>run: name + " — " + street</div><br class='clear' /></div>
     <p>
       Pattern matching can even be combined with splats.
     </p>
@@ -1406,10 +1406,10 @@ _ref = futurists.poet, name = _ref.name, _ref2 = _ref.address, street = _ref2[0]
 <span class="Storage">var</span> __slice <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice;
 tag <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>&lt;impossible&gt;<span class="String">&quot;</span></span>;
 _ref <span class="Keyword">=</span> tag.<span class="LibraryFunction">split</span>(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span>), open <span class="Keyword">=</span> _ref[<span class="Number">0</span>], contents <span class="Keyword">=</span> <span class="Number">3</span> <span class="Keyword">&lt;=</span> _ref.<span class="LibraryConstant">length</span> ? __slice.<span class="LibraryFunction">call</span>(_ref, <span class="Number">1</span>, _i <span class="Keyword">=</span> _ref.<span class="LibraryConstant">length</span> <span class="Keyword">-</span> <span class="Number">1</span>) : (_i <span class="Keyword">=</span> <span class="Number">1</span>, []), close <span class="Keyword">=</span> _ref[_i<span class="Keyword">++</span>];
-</pre><button onclick='javascript: var close, contents, open, tag, _i, _ref;
+</pre><div class='minibutton' onclick='javascript: var close, contents, open, tag, _i, _ref;
 var __slice = Array.prototype.slice;
 tag = "<impossible>";
-_ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? __slice.call(_ref, 1, _i = _ref.length - 1) : (_i = 1, []), close = _ref[_i++];;alert(contents.join(""));'>run: contents.join("")</button><br class='clear' /></div>
+_ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? __slice.call(_ref, 1, _i = _ref.length - 1) : (_i = 1, []), close = _ref[_i++];;alert(contents.join(""));'>run: contents.join("")</div><br class='clear' /></div>
 
     <p>
       <span id="fat_arrow" class="bookmark"></span>
@@ -1467,10 +1467,10 @@ _ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? __slice.call
 <span class="FunctionName">hi</span> = <span class="Storage">function</span>() {
   <span class="Keyword">return</span> [<span class="LibraryClassType">document</span>.<span class="LibraryConstant">title</span>, <span class="String"><span class="String">&quot;</span>Hello JavaScript<span class="String">&quot;</span></span>].<span class="LibraryFunction">join</span>(<span class="String"><span class="String">&quot;</span>: <span class="String">&quot;</span></span>);
 };
-</pre><button onclick='javascript: var hi;
+</pre><div class='minibutton' onclick='javascript: var hi;
 hi = function() {
   return [document.title, "Hello JavaScript"].join(": ");
-};;alert(hi());'>run: hi()</button><br class='clear' /></div>
+};;alert(hi());'>run: hi()</div><br class='clear' /></div>
 
     <p>
       <span id="switch" class="bookmark"></span>
@@ -1561,9 +1561,9 @@ healthy <span class="Keyword">=</span> <span class="Number">200</span> <span cla
 </pre><pre class="idle"><span class="Storage">var</span> cholesterol, healthy;
 cholesterol <span class="Keyword">=</span> <span class="Number">127</span>;
 healthy <span class="Keyword">=</span> (<span class="Number">200</span> <span class="Keyword">&gt;</span> cholesterol <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> cholesterol <span class="Keyword">&gt;</span> <span class="Number">60</span>);
-</pre><button onclick='javascript: var cholesterol, healthy;
+</pre><div class='minibutton' onclick='javascript: var cholesterol, healthy;
 cholesterol = 127;
-healthy = (200 > cholesterol && cholesterol > 60);;alert(healthy);'>run: healthy</button><br class='clear' /></div>
+healthy = (200 > cholesterol && cholesterol > 60);;alert(healthy);'>run: healthy</div><br class='clear' /></div>
 
     <p>
       <span id="strings" class="bookmark"></span>
@@ -1582,10 +1582,10 @@ sentence <span class="Keyword">=</span> <span class="String"><span class="String
 author <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Wittgenstein<span class="String">&quot;</span></span>;
 quote <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String">&quot;</span></span> <span class="Keyword">+</span> author;
 sentence <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> (<span class="Number">22</span> / <span class="Number">7</span>) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is a decent approximation of π<span class="String">&quot;</span></span>;
-</pre><button onclick='javascript: var author, quote, sentence;
+</pre><div class='minibutton' onclick='javascript: var author, quote, sentence;
 author = "Wittgenstein";
 quote = "A picture is a fact. -- " + author;
-sentence = "" + (22 / 7) + " is a decent approximation of π";;alert(sentence);'>run: sentence</button><br class='clear' /></div>
+sentence = "" + (22 / 7) + " is a decent approximation of π";;alert(sentence);'>run: sentence</div><br class='clear' /></div>
     <p>
       Multiline strings are allowed in CoffeeScript.
     </p>
@@ -1599,8 +1599,8 @@ sentence = "" + (22 / 7) + " is a decent approximation of π";;alert(sentence);'
 
 </pre><pre class="idle"><span class="Storage">var</span> mobyDick;
 mobyDick <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...<span class="String">&quot;</span></span>;
-</pre><button onclick='javascript: var mobyDick;
-mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...";;alert(mobyDick);'>run: mobyDick</button><br class='clear' /></div>
+</pre><div class='minibutton' onclick='javascript: var mobyDick;
+mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...";;alert(mobyDick);'>run: mobyDick</div><br class='clear' /></div>
     <p>
       Heredocs can be used to hold formatted or indentation-sensitive text
       (or, if you just don't feel like escaping quotes and apostrophes). The

@@ -34,7 +34,6 @@ exports.Scope = class Scope
   find: (name, options) ->
     return yes if @check name, options
     @add name, 'var'
-    @hasDeclarations = yes
     no
 
   # Reserve a variable name as originating from a function parameter for this
@@ -68,7 +67,6 @@ exports.Scope = class Scope
     index = 0
     index++ while @check((temp = @temporary type, index), true)
     @add temp, 'var'
-    @hasDeclarations = yes
     temp
 
   # Ensure that an assignment is made at the top of this scope
@@ -76,6 +74,10 @@ exports.Scope = class Scope
   assign: (name, value) ->
     @add name, value: value, assigned: true
     @hasAssignments = yes
+
+  # Does this scope have any declared variables?
+  hasDeclarations: ->
+    !!@declaredVariables().length
 
   # Return the list of variables first declared in this scope.
   declaredVariables: ->

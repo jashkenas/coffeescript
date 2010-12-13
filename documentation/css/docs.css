@@ -1,8 +1,9 @@
 body {
-  font-size: 13px;
-  line-height: 20px;
-  color: #191933;
-  font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, sans-serif !important;
+  font-size: 14px;
+  line-height: 21px;
+  color: #333;
+  background: #f6f6f6 url(../images/background.png);
+  font-family: "Helvetica Neue", "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, sans-serif !important;
 }
 .container {
   width: 950px;
@@ -13,11 +14,14 @@ p, li {
   width: 625px;
 }
 a {
-  color: #000055;
+  color: #191933;
 }
 h1, h2, h3, h4, h5, h6, b.header {
+  font-size: 18px;
+  color: #000;
   margin-top: 40px;
   margin-bottom: 15px;
+  text-shadow: #fff 0 1px 1px;
 }
 br.clear {
   height: 0;
@@ -27,9 +31,7 @@ ul {
   padding-left: 20px;
 }
 b.header {
-  color: #000055;
   display: block;
-  font-size: 16px;
 }
 li {
   margin-bottom: 10px;
@@ -47,7 +49,7 @@ table {
 table.definitions {
   width: auto;
   margin: 30px 0;
-  border-left: 6px solid #ccccdd;
+  border-left: 5px solid rgba(0,0,0,0.2);;
 }
   table.definitions td {
     text-align: center;
@@ -57,17 +59,17 @@ code, pre, tt, textarea {
   font-family: Monaco, Consolas, "Lucida Console", monospace;
   font-size: 12px;
   line-height: 18px;
-  color: #191955;
+  color: #155;
   white-space: pre-wrap;
   word-wrap: break-word;
 }
   tt {
-    background: #f8f8ff;
+    background: #fff;
     border: 1px solid #dedede;
     padding: 0px 0.2em;
   }
   pre {
-    border-left: 6px solid #ccccdd;
+    border-left: 5px solid rgba(0,0,0,0.2);
     padding: 3px 0 3px 12px;
     font-size: 12px;
   }
@@ -83,23 +85,23 @@ code, pre, tt, textarea {
 }
 div.code {
   position: relative;
-  border: 1px solid #cacaca;
-  background: #fafaff;
-  padding: 7px 0 10px 0;
-  -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px;
-  -webkit-box-shadow: 0px 0px 7px #cacaca;
+  background: #fff;
+  -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+  -webkit-box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
+  -moz-box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
+  box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
   zoom: 1;
 }
-  div.code button {
+  div.code .minibutton {
     position: absolute;
     right: 8px; bottom: 8px;
   }
   div.code pre, div.code textarea {
     float: left;
     width: 450px;
-    background: #fafaff;
-    border-left: 1px dotted #559;
-    padding: 0 0 0 12px;
+    background: #fff;
+    border-left: 1px dotted #d0d0d0;
+    padding: 10px 0 15px 15px;
     margin: 0;
   }
     div.code pre:first-child {
@@ -123,11 +125,15 @@ div.code {
   left: 40px; right: 40px; top: 25px;
   padding-left: 235px;
   background: #eee;
-  background: -webkit-gradient(linear, left top, left bottom, from(#f5f5f5), to(#d0d0d0));
-  background: -moz-linear-gradient(top, #f5f5f5, #d0d0d0);
+  background: -webkit-gradient(linear, left top, left bottom, from(#f8f8f8), to(#dadada));
+  background: -moz-linear-gradient(top, #f8f8f8, #dadada);
   border: 1px solid #aaa;
-  -webkit-border-radius: 20px; -moz-border-radius: 20px; border-radius: 20px;
-  -webkit-box-shadow: 0 0 7px #aaa; -moz-box-shadow: 0 0 7px #aaa;
+  border-top: 1px solid #bbb;
+  border-bottom: 1px solid #888;
+  -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px;
+  -webkit-box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+  -moz-box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 5px rgba(0,0,0,0.1);
 }
   #logo {
     display: block;
@@ -158,7 +164,7 @@ div.code {
     position: relative;
     float: left;
     padding: 0 20px;
-    border: 1px solid #bbb;
+    border: 1px solid #aaa;
     border-top: 0; border-bottom: 0; border-left-width: 0;
     cursor: pointer;
   }
@@ -171,9 +177,14 @@ div.code {
     .navigation:hover,
     .navigation.active {
       background: #eee;
-      background: -webkit-gradient(linear, left top, left bottom, from(#f0f0f0), to(#c0c0c0));
-      background: -moz-linear-gradient(top, #f0f0f0, #c0c0c0);
+      background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#f8f8f8));
+      background: -moz-linear-gradient(top, #eee, #f8f8f8);
     }
+      .navigation.active {
+        height: 51px;
+        background: -webkit-gradient(linear, left top, left bottom, from(#e5e5e5), to(#fff));
+        background: -moz-linear-gradient(top, #e5e5e5, #fff);
+      }
     .navigation .button {
       font-weight: bold;
     }
@@ -181,15 +192,33 @@ div.code {
       display: none;
       position: absolute;
       background: #fff;
+      opacity: 0.97;
       top: 51px; left: 0;
       padding: 5px 0;
       margin-left: -1px;
       border: 1px solid #aaa; border-top: 0;
-      -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px;
-      -webkit-border-top-left-radius: 0; -moz-border-radius-topleft: 0;
-      -webkit-border-top-right-radius: 0; -moz-border-radius-topright: 0;
-      -webkit-box-shadow: 0 5px 10px #999; -moz-box-shadow: 0 5px 10px #999;
+      -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px;
+      -webkit-border-top-left-radius: 0; -moz-border-radius-topleft: 0; border-top-left-radius: 0;
+      -webkit-border-top-right-radius: 0; -moz-border-radius-topright: 0; border-top-right-radius: 0;
+      -webkit-box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+      -moz-box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+      box-shadow: 0 3px 5px rgba(0,0,0,0.2);
     }
+      .navigation .contents a {
+        display: block;
+        width: 290px;
+        text-transform: none;
+        text-decoration: none;
+        height: 12px;
+        line-height: 12px;
+        padding: 4px 10px;
+        border: 1px solid transparent;
+        border-left: 0; border-right: 0;
+      }
+        .navigation .contents a:hover {
+          border-color: #ddd;
+          background: #eee;
+        }
       .navigation.active .contents {
         display: block;
       }
@@ -213,7 +242,7 @@ div.code {
               height: 100%;
               padding: 0; margin: 0;
             }
-          .navigation .code button {
+          .navigation .code .button {
             bottom: 10px;
             text-transform: none;
             line-height: 14px;
@@ -231,19 +260,6 @@ div.code {
             body.minimized .code .full_screen, body.full_screen .code .minimize {
               display: inline;
             }
-      .navigation .contents a {
-        display: block;
-        width: 290px;
-        text-transform: none;
-        text-decoration: none;
-        font-weight: normal;
-        height: 12px;
-        line-height: 12px;
-        padding: 4px 10px;
-      }
-        .navigation .contents a:hover {
-          background: #f0f0f0;
-        }
 
 .bookmark {
   display: block;
@@ -294,3 +310,30 @@ div.code {
       body.full_screen #repl_results {
         left: 50%;
       }
+
+/*----------------------------- Mini Buttons ---------------------------------*/
+.minibutton {
+  cursor: pointer;
+  color: #333;
+  text-shadow: #eee 0 1px 1px;
+  font-weight: bold;
+  font-size: 11px;
+  line-height: 11px;
+  padding: 5px 10px 6px;
+  height: 11px;
+  text-align: center;
+  -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px;
+  box-shadow: 0 1px 2px #c4c4c4; -webkit-box-shadow: 0 1px 2px #c4c4c4; -moz-box-shadow: 0 1px 2px #c4c4c4;
+  border: 1px solid #b2b2b2; border-top-color: #c9c9c9; border-bottom-color: #9a9a9a;
+  background: url(../images/button_bg.png) repeat-x left top;
+}
+  .minibutton:active {
+    border-color: #aaa;
+    box-shadow: 0 1px 2px #e4e4e4; -webkit-box-shadow: 0 1px 2px #e4e4e4; -moz-box-shadow: 0 1px 2px #e4e4e4;
+  }
+  .minibutton::selection {
+    background: transparent;
+  }
+  .minibutton ::-moz-selection {
+    background: transparent;
+  }
