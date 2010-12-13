@@ -43,6 +43,17 @@
 
   this.eq = (x, y, msg) -> ok x is y, msg ? x + ' !== ' + y
 
+  this.deepEqual = (a, b, msg) -> ok deepEq(a,b), msg
+
+  deepEq = (a, b) ->
+    if a instanceof Array and b instanceof Array
+      success = yes
+      success and= deepEq(a[prop],b[prop]) for prop in a
+      success and= deepEq(a[prop],b[prop]) for prop in b when prop not in a
+      success
+    else
+      `a == b`
+
   this.throws = (fun, err, msg) ->
     try fun(); throw new String 'No Error'
     catch e then eq e, err
@@ -71,6 +82,7 @@
     'break'
     'comments'
     'exception_handling'
+    'helpers'
     'operators'
     'regular_expressions'
     'test_chaining'
@@ -79,7 +91,6 @@
     'test_comprehensions'
     'test_existence'
     'test_functions'
-    'test_helpers'
     'test_heredocs'
     'test_if'
     'test_literals'
