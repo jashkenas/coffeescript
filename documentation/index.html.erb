@@ -1,6 +1,9 @@
 <%
   require 'uv'
+  require 'json'
+  @counter = 0
   def code_for(file, executable=false)
+    @counter += 1
     return '' unless File.exists?("documentation/js/#{file}.js")
     cs = File.read("documentation/coffee/#{file}.coffee")
     js = File.read("documentation/js/#{file}.js")
@@ -8,8 +11,11 @@
     jshtml = Uv.parse(js, 'xhtml', 'javascript', false, 'idle', false)
     append = executable == true ? '' : "alert(#{executable});"
     run    = executable == true ? 'run' : "run: #{executable}"
-    button = executable ? "<div class='minibutton' onclick='javascript: #{js};#{append}'>#{run}</div>" : ''
-    "<div class='code'>#{cshtml}#{jshtml}#{button}<br class='clear' /></div>"
+    name   = "example#{@counter}"
+    script = "<script>window.#{name} = #{cs.to_json}</script>"
+    import = "<div class='minibutton load' onclick='javascript: loadConsole(#{name});'>Load</div>"
+    button = executable ? "<div class='minibutton ok' onclick='javascript: #{js};#{append}'>#{run}</div>" : ''
+    "<div class='code'>#{cshtml}#{jshtml}#{script}#{import}#{button}<br class='clear' /></div>"
   end
 %>
 
@@ -23,7 +29,7 @@
   <link rel="stylesheet" type="text/css" href="documentation/css/idle.css" />
   <link rel="shortcut icon" href="documentation/images/favicon.ico" />
 </head>
-<body class="minimized">
+<body>
 
   <div id="fadeout"></div>
 
@@ -33,7 +39,7 @@
       <div class="button">
         Table of Contents
       </div>
-      <div class="contents">
+      <div class="contents menu">
         <a href="#overview">Overview</a>
         <a href="#installation">Installation and Usage</a>
         <a href="#language">Language Reference</a>
@@ -71,12 +77,17 @@
         Try CoffeeScript
       </div>
       <div class="contents repl_wrapper">
+        <div class="repl_bridge"></div>
         <div class="code">
-          <div id="repl_source_wrap"><textarea id="repl_source" rows="100">alert "Hello CoffeeScript!"</textarea></div>
+          <div class="screenshadow tl"></div>
+          <div class="screenshadow tr"></div>
+          <div class="screenshadow bl"></div>
+          <div class="screenshadow br"></div>
+          <div id="repl_source_wrap">
+            <textarea id="repl_source" rows="100">alert "Hello CoffeeScript!"</textarea>
+          </div>
           <pre id="repl_results"></pre>
-          <button class="full_screen">go full screen</button>
-          <button class="minimize">minimize</button>
-          <button class="run">run</button>
+          <div class="minibutton dark run">Run</div>
           <br class="clear" />
         </div>
       </div>
@@ -85,7 +96,7 @@
       <div class="button">
         Annotated Source
       </div>
-      <div class="contents">
+      <div class="contents menu">
         <a href="documentation/docs/grammar.html">Grammar Rules &mdash; src/grammar</a>
         <a href="documentation/docs/lexer.html">Lexing Tokens &mdash; src/lexer</a>
         <a href="documentation/docs/rewriter.html">The Rewriter &mdash; src/rewriter</a>
@@ -1476,55 +1487,57 @@ coffee --bare --print --stdio</pre>
   <script type="text/coffeescript">
 
     # Set up the compilation function, to run when you stop typing.
-    compile_source = ->
+    compileSource = ->
       source = $('#repl_source').val()
-      window.compiled_js = ''
+      window.compiledJS = ''
       try
-        window.compiled_js = CoffeeScript.compile source, bare: on
-        $('#repl_results').text window.compiled_js
+        window.compiledJS = CoffeeScript.compile source, bare: on
+        $('#repl_results').text window.compiledJS
         $('#error').hide()
       catch error
         $('#error').text(error.message).show()
 
     # Listen for keypresses and recompile.
-    $('#repl_source').keyup -> compile_source()
+    $('#repl_source').keyup -> compileSource()
 
     # Eval the compiled js.
-    $('button.run').click ->
+    $('.minibutton.run').click ->
       try
-        eval window.compiled_js
+        eval window.compiledJS
       catch error then alert error
 
-    current_nav = null
+    # Load the console with a string of CoffeeScript.
+    window.loadConsole = (coffee) ->
+      $('#repl_source').val coffee
+      compileSource()
+      $('.navigation.try').addClass 'active'
+
+    currentNav = null
 
     # Helper to hide the menus.
-    close_menus = ->
-      if current_nav
-        current_nav.removeClass 'active'
-        document.body.className = 'minimized'
-      current_nav = null
+    closeMenus = ->
+      if currentNav
+        currentNav.removeClass 'active'
+      currentNav = null
 
     # Bind navigation buttons to open the menus.
     $('.navigation').click (e) ->
       return if e.target.tagName.toLowerCase() is 'a'
-      if this isnt (current_nav and current_nav[0])
-        close_menus()
-        current_nav = $(this)
-        current_nav.addClass 'active'
+      return false if $(e.target).closest('.repl_wrapper').length
+      if this is (currentNav and currentNav[0])
+        closeMenus()
+      else
+        closeMenus()
+        currentNav = $(this)
+        currentNav.addClass 'active'
       false
 
-    $(document.body).click -> close_menus()
-
-    $('.navigation .full_screen').click ->
-      document.body.className = 'full_screen'
-
-    $('.navigation .minimize').click ->
-      document.body.className = 'minimized'
+    $(document.body).click -> closeMenus()
 
     $('#open_webchat').click ->
       $(this).replaceWith $('<iframe src="http://webchat.freenode.net/?channels=coffeescript" width="625" height="400"></iframe>')
 
-    compile_source()
+    compileSource()
 
   </script>
 

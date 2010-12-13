@@ -202,5 +202,6 @@ task 'test', 'run the CoffeeScript language test suite', ->
 task 'test:browser', 'run the test suite against the merged browser script', ->
   source = fs.readFileSync 'extras/coffee-script.js', 'utf-8'
   result = {}
+  global.testingBrowser = yes
   (-> eval source).call result
   runTests result.CoffeeScript

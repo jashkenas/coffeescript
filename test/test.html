@@ -34,6 +34,9 @@
     stdout.appendChild div
     msg
 
+  this.test = (desc, fn) ->
+    fn()
+
   this.ok = (good, msg) ->
     ++total
     if good then ++success else throw Error say msg
@@ -50,7 +53,7 @@
     cb yes
 
   run = (name) ->
-    CoffeeScript.load "test_#{name}.coffee", (yay) ->
+    CoffeeScript.load "#{name}.coffee", (yay) ->
       say "#{ if yay then '\u2714' else '\u3000' } #{name}", yay
       ++failed unless yay
       fin() if ++done is names.length
@@ -66,26 +69,27 @@
     'arguments'
     'assignment'
     'break'
-    'chaining'
-    'classes'
     'comments'
-    'compilation'
-    'comprehensions'
-    'existence'
-    'functions'
-    'helpers'
-    'heredocs'
-    'if'
-    'literals'
-    'operations'
-    'pattern_matching'
-    'regexps'
-    'returns'
-    'splats'
-    'strings'
-    'switch'
-    'try_catch'
-    'while'
+    'exception_handling'
+    'operators'
+    'regular_expressions'
+    'test_chaining'
+    'test_classes'
+    'test_compilation'
+    'test_comprehensions'
+    'test_existence'
+    'test_functions'
+    'test_helpers'
+    'test_heredocs'
+    'test_if'
+    'test_literals'
+    'test_pattern_matching'
+    'test_ranges_slices_and_splices'
+    'test_returns'
+    'test_splats'
+    'test_strings'
+    'test_switch'
+    'test_while'
   ]
   </script>
 
