@@ -85,7 +85,7 @@ code, pre, tt, textarea {
 }
 div.code {
   position: relative;
-  background: #fff;
+  background: #1A1814;
   -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
   -webkit-box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
   -moz-box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
@@ -99,8 +99,7 @@ div.code {
   div.code pre, div.code textarea {
     float: left;
     width: 450px;
-    background: #fff;
-    border-left: 1px dotted #d0d0d0;
+    border-left: 1px dotted #999;
     padding: 10px 0 15px 15px;
     margin: 0;
   }
@@ -314,7 +313,7 @@ div.code {
 /*----------------------------- Mini Buttons ---------------------------------*/
 .minibutton {
   cursor: pointer;
-  color: #333;
+  color: #4A4440;
   text-shadow: #eee 0 1px 1px;
   font-weight: bold;
   font-size: 11px;
@@ -322,14 +321,24 @@ div.code {
   padding: 5px 10px 6px;
   height: 11px;
   text-align: center;
-  -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px;
-  box-shadow: 0 1px 2px #c4c4c4; -webkit-box-shadow: 0 1px 2px #c4c4c4; -moz-box-shadow: 0 1px 2px #c4c4c4;
-  border: 1px solid #b2b2b2; border-top-color: #c9c9c9; border-bottom-color: #9a9a9a;
   background: url(../images/button_bg.png) repeat-x left top;
+  text-shadow: 0 1px 0 #FFF;
+          border-radius: 3px;
+  -webkit-border-radius: 3px;
+     -moz-border-radius: 3px;
+          box-shadow: 0 1px 3px rgba(126, 126, 126, 0.6);
+  -webkit-box-shadow: 0 1px 3px rgba(126, 126, 126, 0.6);
+     -moz-box-shadow: 0 1px 3px rgba(126, 126, 126, 0.6);
 }
+  .minibutton:hover {
+            box-shadow: 0 0 7px rgba(255, 255, 255, 1);
+    -webkit-box-shadow: 0 0 7px rgba(255, 255, 255, 1);
+       -moz-box-shadow: 0 0 7px rgba(255, 255, 255, 1);
+  }
   .minibutton:active {
-    border-color: #aaa;
-    box-shadow: 0 1px 2px #e4e4e4; -webkit-box-shadow: 0 1px 2px #e4e4e4; -moz-box-shadow: 0 1px 2px #e4e4e4;
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.8);
+    -webkit-box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.8);
+       -moz-box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.8);
   }
   .minibutton::selection {
     background: transparent;
