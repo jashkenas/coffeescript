@@ -15,10 +15,11 @@ exports.ends = (string, literal, back) ->
 exports.compact = (array) ->
   item for item in array when item
 
-# Count the number of occurrences of a character in a string.
-exports.count = (string, letter) ->
+# Count the number of occurrences of a string in a string.
+exports.count = (string, substr) ->
   num = pos = 0
-  num++ while pos = 1 + string.indexOf letter, pos
+  return 1/0 unless substr.length
+  num++ while pos = 1 + string.indexOf substr, pos
   num
 
 # Merge objects, returning a fresh copy with attributes from both sides.
