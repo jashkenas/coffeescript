@@ -50,7 +50,7 @@ exports.Base = class Base
   compileClosure: (o) ->
     if @containsPureStatement()
       throw SyntaxError 'cannot include a pure statement in an expression.'
-    o.sharedScope = o.scope
+    o.sharedScope = yes
     Closure.wrap(this).compileNode o
 
   # If the code generation wishes to use the result of a complex expression
@@ -988,9 +988,8 @@ exports.Code = class Code extends Base
   # arrow, generates a wrapper that saves the current value of `this` through
   # a closure.
   compileNode: (o) ->
-    sharedScope     = del o, 'sharedScope'
-    o.scope         = sharedScope or new Scope o.scope, @body, this
-    o.scope.shared  = yes if sharedScope
+    o.scope         = new Scope o.scope, @body, this
+    o.scope.shared  = del o, 'sharedScope'
     o.indent        += TAB
     delete o.bare
     delete o.globals
@@ -1495,7 +1494,7 @@ exports.For = class For extends Base
         [val.base, base] = [base, val]
         args.unshift new Literal 'this'
       body.expressions[idx] = new Call base, args
-      o.sharedScope = o.scope
+      o.sharedScope = yes
       defs += @tab + new Assign(ref, fn).compile(o, LEVEL_TOP) + ';\n'
     defs
 

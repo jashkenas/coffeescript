@@ -236,7 +236,7 @@ list = ['one', 'two']
 
 (->
   for entity in list
-	  facets[entity] = -> entity
+    facets[entity] = -> entity
 )()
 
 eq typeof entity, 'undefined'
