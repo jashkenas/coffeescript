@@ -23,7 +23,8 @@ exports.Scope = class Scope
     Scope.root = this unless @parent
 
   # Adds a new variable or overrides an existing one.
-  add: (name, type) ->
+  add: (name, type, immediate) ->
+    return @parent.add name, type, immediate if @shared and not immediate
     if typeof (pos = @positions[name]) is 'number'
       @variables[pos].type = type
     else
@@ -39,7 +40,7 @@ exports.Scope = class Scope
   # Reserve a variable name as originating from a function parameter for this
   # scope. No `var` required for internal references.
   parameter: (name) ->
-    return if @shared and @check name, yes
+    return if @shared and @parent.check name, yes
     @add name, 'param'
 
   # Just check to see if a variable has already been declared, without reserving,
@@ -66,7 +67,7 @@ exports.Scope = class Scope
   freeVariable: (type) ->
     index = 0
     index++ while @check((temp = @temporary type, index), true)
-    @add temp, 'var'
+    @add temp, 'var', yes
     temp
 
   # Ensure that an assignment is made at the top of this scope
