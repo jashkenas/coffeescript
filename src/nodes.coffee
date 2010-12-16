@@ -660,10 +660,15 @@ exports.Slice = class Slice extends Base
 
   compileNode: (o) ->
     from  =  if @range.from then @range.from.compile(o) else '0'
-    to    =  if @range.to then @range.to.compile(o) else ''
-    to    += if not to or @range.exclusive then '' else ' + 1'
-    to    =  ', ' + to if to
-    ".slice(#{from}#{to})"
+    if @range.to and +@range.to.unwrap().value isnt -1
+      to  = ', ' + if @range.exclusive
+        @range.to.compile(o)
+      else unless @range.to.isComplex()
+        new Literal(+@range.to.unwrap().value + 1).compile o
+      else
+        [definition, ref] = @range.to.cache o
+        '(' + definition.compile(o,LEVEL_PAREN) + ' + 1) ? ' + ref.compile(o) + ' : 1/0'
+    ".slice(#{from}#{to||''})"
 
 #### Obj
 
