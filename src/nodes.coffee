@@ -97,7 +97,8 @@ exports.Base = class Base
   # Convenience for the most common use of contains. Does the node contain
   # a pure statement?
   containsPureStatement: ->
-    @isPureStatement() or @contains (node) -> node.isPureStatement()
+    @isPureStatement() or @contains (node) ->
+      node.isPureStatement() and node not instanceof Comment
 
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
