@@ -100,6 +100,12 @@ exports.Base = class Base
     @isPureStatement() or @contains (node) ->
       node.isPureStatement() and node not instanceof Comment
 
+  # Pull out the last non-comment node of a node list.
+  lastNonComment: (list) ->
+    i = list.length
+    return list[i] while i-- when list[i] not instanceof Comment
+    null
+
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   toString: (idt = '', name = @constructor.name) ->
@@ -687,8 +693,7 @@ exports.Obj = class Obj extends Base
     props = @properties
     return (if @front then '({})' else '{}') unless props.length
     idt         = o.indent += TAB
-    nonComments = (prop for prop in @properties when prop not instanceof Comment)
-    lastNoncom  = last nonComments
+    lastNoncom  = @lastNonComment @properties
     props = for prop, i in props
       join = if i is props.length - 1
         ''
@@ -1533,8 +1538,8 @@ exports.Switch = class Switch extends Base
         code += idt1 + "case #{ cond.compile o, LEVEL_PAREN }:\n"
       code += body + '\n' if body = block.compile o, LEVEL_TOP
       break if i is @cases.length - 1 and not @otherwise
-      exprs = block.expressions
-      if not exprs.length or not last(exprs).isPureStatement()
+      expr = @lastNonComment block.expressions
+      if not expr or not expr.isPureStatement()
         code += idt2 + 'break;\n'
     code += idt1 + "default:\n#{ @otherwise.compile o, LEVEL_TOP }\n" if @otherwise
     code +  @tab + '}'
