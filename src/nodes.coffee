@@ -666,7 +666,7 @@ exports.Slice = class Slice extends Base
       toStr = ', ' + if @range.exclusive
         to.compile(o)
       else if /^[+-]?\d+$/.test compiled
-        new Literal(+compiled + 1).compile o
+        '' + (+compiled + 1)
       else
         [definition, ref] = to.cache o
         '(' + definition.compile(o,LEVEL_PAREN) + ' + 1) ? ' + ref.compile(o) + ' : 1/0'
