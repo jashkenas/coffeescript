@@ -669,7 +669,9 @@ exports.Slice = class Slice extends Base
         '' + (+compiled + 1)
       else
         [definition, ref] = to.cache o
-        '(' + definition.compile(o,LEVEL_PAREN) + ' + 1) ? ' + ref.compile(o) + ' : 1/0'
+		# `9e9` used below because not all implementations respect `undefined` or `1/0`
+        # `9e9` should be safe because `9e9` > `2**32`, the max array length
+        '(' + definition.compile(o,LEVEL_PAREN) + ' + 1) ? ' + ref.compile(o) + ' : 9e9'
     ".slice(#{fromStr}#{toStr||''})"
 
 #### Obj
