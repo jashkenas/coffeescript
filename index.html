@@ -153,7 +153,7 @@ alert <span class="String"><span class="String">&quot;</span>I knew it!<span cla
 
 <span class="Comment"><span class="Comment">#</span> Array comprehensions:</span>
 cubes <span class="Keyword">=</span> (math.cube num <span class="Keyword">for</span> num <span class="Keyword">in</span> list)
-</pre><pre class="idle"><span class="Storage">var</span> cubes, list, math, num, number, opposite, race, square, _i, _len, _results;
+</pre><pre class="idle"><span class="Storage">var</span> cubes, list, math, num, number, opposite, race, square;
 <span class="Storage">var</span> __slice <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice;
 number <span class="Keyword">=</span> <span class="Number">42</span>;
 opposite <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
@@ -180,6 +180,7 @@ math <span class="Keyword">=</span> {
   <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>I knew it!<span class="String">&quot;</span></span>);
 }
 cubes <span class="Keyword">=</span> (<span class="Storage">function</span>() {
+  <span class="Storage">var</span> _i, _len, _results;
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">for</span> (_i <span class="Keyword">=</span> <span class="Number">0</span>, _len <span class="Keyword">=</span> list.<span class="LibraryConstant">length</span>; _i <span class="Keyword">&lt;</span> _len; _i<span class="Keyword">++</span>) {
     num <span class="Keyword">=</span> list[_i];
@@ -187,7 +188,7 @@ cubes <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   }
   <span class="Keyword">return</span> _results;
 }());
-</pre><script>window.example1 = "# Assignment:\nnumber   = 42\nopposite = true\n\n# Conditions:\nnumber = -42 if opposite\n\n# Functions:\nsquare = (x) -> x * x\n\n# Arrays:\nlist = [1, 2, 3, 4, 5]\n\n# Objects:\nmath =\n  root:   Math.sqrt\n  square: square\n  cube:   (x) -> x * square x\n\n# Splats:\nrace = (winner, runners...) ->\n  print winner, runners\n\n# Existence:\nalert \"I knew it!\" if elvis?\n\n# Array comprehensions:\ncubes = (math.cube num for num in list)\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example1);'>Load</div><div class='minibutton ok' onclick='javascript: var cubes, list, math, num, number, opposite, race, square, _i, _len, _results;
+</pre><script>window.example1 = "# Assignment:\nnumber   = 42\nopposite = true\n\n# Conditions:\nnumber = -42 if opposite\n\n# Functions:\nsquare = (x) -> x * x\n\n# Arrays:\nlist = [1, 2, 3, 4, 5]\n\n# Objects:\nmath =\n  root:   Math.sqrt\n  square: square\n  cube:   (x) -> x * square x\n\n# Splats:\nrace = (winner, runners...) ->\n  print winner, runners\n\n# Existence:\nalert \"I knew it!\" if elvis?\n\n# Array comprehensions:\ncubes = (math.cube num for num in list)\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example1);'>Load</div><div class='minibutton ok' onclick='javascript: var cubes, list, math, num, number, opposite, race, square;
 var __slice = Array.prototype.slice;
 number = 42;
 opposite = true;
@@ -214,6 +215,7 @@ if (typeof elvis != "undefined" && elvis !== null) {
   alert("I knew it!");
 }
 cubes = (function() {
+  var _i, _len, _results;
   _results = [];
   for (_i = 0, _len = list.length; _i < _len; _i++) {
     num = list[_i];
@@ -813,7 +815,7 @@ num <span class="Keyword">=</span> <span class="Number">6</span>
 lyrics <span class="Keyword">=</span> <span class="Keyword">while</span> num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>
   num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed.</span>
 <span class="String">    One fell out and bumped his head.<span class="String">&quot;</span></span>
-</pre><pre class="idle"><span class="Storage">var</span> lyrics, num, _results;
+</pre><pre class="idle"><span class="Storage">var</span> lyrics, num;
 <span class="Keyword">if</span> (<span class="Variable">this</span>.studyingEconomics) {
   <span class="Keyword">while</span> (supply <span class="Keyword">&gt;</span> demand) {
     buy();
@@ -824,13 +826,14 @@ lyrics <span class="Keyword">=</span> <span class="Keyword">while</span> num <sp
 }
 num <span class="Keyword">=</span> <span class="Number">6</span>;
 <span class="FunctionName">lyrics</span> = <span class="Storage">function</span>() {
+  <span class="Storage">var</span> _results;
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">while</span> (num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>) {
     _results.<span class="LibraryFunction">push</span>(num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed.    One fell out and bumped his head.<span class="String">&quot;</span></span>);
   }
   <span class="Keyword">return</span> _results;
 }();
-</pre><script>window.example10 = "# Econ 101\nif this.studyingEconomics\n  buy()  while supply > demand\n  sell() until supply > demand\n\n# Nursery Rhyme\nnum = 6\nlyrics = while num -= 1\n  num + \" little monkeys, jumping on the bed.\n    One fell out and bumped his head.\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example10);'>Load</div><div class='minibutton ok' onclick='javascript: var lyrics, num, _results;
+</pre><script>window.example10 = "# Econ 101\nif this.studyingEconomics\n  buy()  while supply > demand\n  sell() until supply > demand\n\n# Nursery Rhyme\nnum = 6\nlyrics = while num -= 1\n  num + \" little monkeys, jumping on the bed.\n    One fell out and bumped his head.\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example10);'>Load</div><div class='minibutton ok' onclick='javascript: var lyrics, num;
 if (this.studyingEconomics) {
   while (supply > demand) {
     buy();
@@ -841,6 +844,7 @@ if (this.studyingEconomics) {
 }
 num = 6;
 lyrics = function() {
+  var _results;
   _results = [];
   while (num -= 1) {
     _results.push(num + " little monkeys, jumping on the bed.    One fell out and bumped his head.");
@@ -882,16 +886,18 @@ _ref <span class="Keyword">=</span> [<span class="String"><span class="String">'
     </p>
     <div class='code'><pre class="idle">countdown <span class="Keyword">=</span> (num <span class="Keyword">for</span> num <span class="Keyword">in</span> [<span class="Number">10</span>..<span class="Number">1</span>])
 
-</pre><pre class="idle"><span class="Storage">var</span> countdown, num, _results;
+</pre><pre class="idle"><span class="Storage">var</span> countdown, num;
 countdown <span class="Keyword">=</span> (<span class="Storage">function</span>() {
+  <span class="Storage">var</span> _results;
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">for</span> (num <span class="Keyword">=</span> <span class="Number">10</span>; num <span class="Keyword">&gt;=</span> <span class="Number">1</span>; num<span class="Keyword">--</span>) {
     _results.<span class="LibraryFunction">push</span>(num);
   }
   <span class="Keyword">return</span> _results;
 }());
-</pre><script>window.example12 = "countdown = (num for num in [10..1])\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example12);'>Load</div><div class='minibutton ok' onclick='javascript: var countdown, num, _results;
+</pre><script>window.example12 = "countdown = (num for num in [10..1])\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example12);'>Load</div><div class='minibutton ok' onclick='javascript: var countdown, num;
 countdown = (function() {
+  var _results;
   _results = [];
   for (num = 10; num >= 1; num--) {
     _results.push(num);
@@ -916,13 +922,14 @@ countdown = (function() {
 
 ages <span class="Keyword">=</span> <span class="Keyword">for</span> child, age <span class="Keyword">of</span> yearsOld
   child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age
-</pre><pre class="idle"><span class="Storage">var</span> age, ages, child, yearsOld, _results;
+</pre><pre class="idle"><span class="Storage">var</span> age, ages, child, yearsOld;
 yearsOld <span class="Keyword">=</span> {
   max: <span class="Number">10</span>,
   ida: <span class="Number">9</span>,
   tim: <span class="Number">11</span>
 };
 <span class="FunctionName">ages</span> = <span class="Storage">function</span>() {
+  <span class="Storage">var</span> _results;
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">for</span> (child <span class="Keyword">in</span> yearsOld) {
     age <span class="Keyword">=</span> yearsOld[child];
@@ -930,13 +937,14 @@ yearsOld <span class="Keyword">=</span> {
   }
   <span class="Keyword">return</span> _results;
 }();
-</pre><script>window.example13 = "yearsOld = max: 10, ida: 9, tim: 11\n\nages = for child, age of yearsOld\n  child + \" is \" + age"</script><div class='minibutton load' onclick='javascript: loadConsole(example13);'>Load</div><div class='minibutton ok' onclick='javascript: var age, ages, child, yearsOld, _results;
+</pre><script>window.example13 = "yearsOld = max: 10, ida: 9, tim: 11\n\nages = for child, age of yearsOld\n  child + \" is \" + age"</script><div class='minibutton load' onclick='javascript: loadConsole(example13);'>Load</div><div class='minibutton ok' onclick='javascript: var age, ages, child, yearsOld;
 yearsOld = {
   max: 10,
   ida: 9,
   tim: 11
 };
 ages = function() {
+  var _results;
   _results = [];
   for (child in yearsOld) {
     age = yearsOld[child];
@@ -1065,16 +1073,18 @@ six = (one = 1) + (two = 2) + (three = 3);;alert(six);'>run: six</div><br class=
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> The first ten global properties.</span>
 
 globals <span class="Keyword">=</span> (name <span class="Keyword">for</span> name <span class="Keyword">of</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
-</pre><pre class="idle"><span class="Storage">var</span> globals, name, _results;
+</pre><pre class="idle"><span class="Storage">var</span> globals, name;
 globals <span class="Keyword">=</span> (<span class="Storage">function</span>() {
+  <span class="Storage">var</span> _results;
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">for</span> (name <span class="Keyword">in</span> <span class="LibraryClassType">window</span>) {
     _results.<span class="LibraryFunction">push</span>(name);
   }
   <span class="Keyword">return</span> _results;
 }()).<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
-</pre><script>window.example18 = "# The first ten global properties.\n\nglobals = (name for name of window)[0...10]"</script><div class='minibutton load' onclick='javascript: loadConsole(example18);'>Load</div><div class='minibutton ok' onclick='javascript: var globals, name, _results;
+</pre><script>window.example18 = "# The first ten global properties.\n\nglobals = (name for name of window)[0...10]"</script><div class='minibutton load' onclick='javascript: loadConsole(example18);'>Load</div><div class='minibutton ok' onclick='javascript: var globals, name;
 globals = (function() {
+  var _results;
   _results = [];
   for (name in window) {
     _results.push(name);
@@ -2425,7 +2435,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
 
   </script>
 
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+  <script src="documentation/vendor/jquery-1.4.2.js"></script>
   <script src="extras/coffee-script.js"></script>
 
 </body>
