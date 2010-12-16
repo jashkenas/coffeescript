@@ -659,16 +659,18 @@ exports.Slice = class Slice extends Base
     super()
 
   compileNode: (o) ->
-    from  =  if @range.from then @range.from.compile(o) else '0'
-    if @range.to and +@range.to.unwrap().value isnt -1
-      to  = ', ' + if @range.exclusive
-        @range.to.compile(o)
-      else unless @range.to.isComplex()
-        new Literal(+@range.to.unwrap().value + 1).compile o
+    {to,from} = @range
+    fromStr  =  if from then from.compile(o) else '0'
+    compiled = to?.compile o, LEVEL_PAREN
+    if to and not (not @range.exclusive and +compiled is -1)
+      toStr = ', ' + if @range.exclusive
+        to.compile(o)
+      else if /^[+-]?\d+$/.test compiled
+        new Literal(+compiled + 1).compile o
       else
-        [definition, ref] = @range.to.cache o
+        [definition, ref] = to.cache o
         '(' + definition.compile(o,LEVEL_PAREN) + ' + 1) ? ' + ref.compile(o) + ' : 1/0'
-    ".slice(#{from}#{to||''})"
+    ".slice(#{fromStr}#{toStr||''})"
 
 #### Obj
 
