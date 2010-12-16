@@ -199,3 +199,13 @@ test "block comments inside class bodies", ->
     b: ->
 
   ok B.prototype.a instanceof Function
+
+test "#934, block comments inside conditional bodies", ->
+
+  eq undefined, (if true
+    ###
+    block comment
+    ###
+  else
+    # comment
+  )

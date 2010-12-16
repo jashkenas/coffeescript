@@ -97,7 +97,8 @@ exports.Base = class Base
   # Convenience for the most common use of contains. Does the node contain
   # a pure statement?
   containsPureStatement: ->
-    @isPureStatement() or @contains (node) -> node.isPureStatement()
+    @isPureStatement() or @contains (node) ->
+      node.isPureStatement() and node not instanceof Comment
 
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
@@ -1523,9 +1524,9 @@ exports.Switch = class Switch extends Base
         code += idt1 + "case #{ cond.compile o, LEVEL_PAREN }:\n"
       code += body + '\n' if body = block.compile o, LEVEL_TOP
       break if i is @cases.length - 1 and not @otherwise
-      for expr in block.expressions by -1 when expr not instanceof Comment
-        code += idt2 + 'break;\n' unless expr instanceof Return
-        break
+      exprs = block.expressions
+      if not exprs.length or not last(exprs).isPureStatement()
+        code += idt2 + 'break;\n'
     code += idt1 + "default:\n#{ @otherwise.compile o, LEVEL_TOP }\n" if @otherwise
     code +  @tab + '}'
 
