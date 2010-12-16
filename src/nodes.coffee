@@ -1524,8 +1524,8 @@ exports.Switch = class Switch extends Base
         code += idt1 + "case #{ cond.compile o, LEVEL_PAREN }:\n"
       code += body + '\n' if body = block.compile o, LEVEL_TOP
       break if i is @cases.length - 1 and not @otherwise
-      exprs = block.expressions
-      if not exprs.length or not last(exprs).isPureStatement()
+      expr = last block.expressions
+      if not expr or not expr.isPureStatement() or expr instanceof Comment
         code += idt2 + 'break;\n'
     code += idt1 + "default:\n#{ @otherwise.compile o, LEVEL_TOP }\n" if @otherwise
     code +  @tab + '}'
