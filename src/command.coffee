@@ -27,6 +27,7 @@ BANNER = '''
 
 # The list of all the valid option flags that `coffee` knows how to handle.
 SWITCHES = [
+  [      '--node [ARGS]',     'pass arguments through to the node binary']
   ['-c', '--compile',         'compile to JavaScript and save as .js files']
   ['-i', '--interactive',     'run an interactive CoffeeScript REPL']
   ['-o', '--output [DIR]',    'set the directory for compiled JavaScript']
@@ -60,12 +61,13 @@ optionParser = null
 # `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run = ->
   parseOptions()
-  return usage()                              if opts.help
-  return version()                            if opts.version
-  return require './repl'                     if opts.interactive
-  return compileStdio()                       if opts.stdio
-  return compileScript null, sources[0]       if opts.eval
-  return require './repl'                     unless sources.length
+  return execl()                         if opts.node
+  return usage()                         if opts.help
+  return version()                       if opts.version
+  return require './repl'                if opts.interactive
+  return compileStdio()                  if opts.stdio
+  return compileScript null, sources[0]  if opts.eval
+  return require './repl'                unless sources.length
   separator = sources.indexOf '--'
   flags = []
   if separator >= 0
@@ -191,6 +193,28 @@ parseOptions = ->
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (fileName) -> {fileName, bare: opts.bare or opts['no-wrap']}
+
+# Start up a new node instance with the arguments in opts.node passed to node,
+# preserving the other options
+execl = ->
+  nodeArgs = opts.node.split /\s+/
+  files = opts.arguments
+  flags = []
+  args = []
+  if (idx = files.indexOf '--') > -1
+    flags = ['--', files[(idx+1)..]...]
+    files[idx..] = []
+  for name, value of opts
+    # the three magic values listed below are the long-name of the argument that causes
+    # this function to be invoked, a generated option, and the non-option arguments
+    continue if !value or name in ['node','run','arguments']
+    args.push '--' + name
+    args.push value unless value is true
+  spawn process.execPath,
+    [nodeArgs..., process.argv[1], args..., files..., flags...]
+    cwd: process.cwd()
+    env: process.env
+    customFds: [0, 1, 2]
 
 # Print the `--help` usage message and exit. Deprecated switches are not
 # shown.
