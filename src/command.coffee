@@ -183,16 +183,16 @@ compileOptions = (fileName) -> {fileName, bare: opts.bare}
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
 # the `node` binary, preserving the other options.
 forkNode = ->
-  nodeArgs = opts.nodejs.split /\s+/
   args     = process.argv[1..]
-  args.splice args.indexOf('--nodejs'), 2
+  nodeArgs = []
+  while (idx = args.indexOf '--nodejs') > -1
+    nodeArgs = nodeArgs.concat args.splice(idx,2)[1].split(/\s+/)
   spawn process.execPath, nodeArgs.concat(args),
     cwd:        process.cwd()
     env:        process.env
     customFds:  [0, 1, 2]
 
-# Print the `--help` usage message and exit. Deprecated switches are not
-# shown.
+# Print the `--help` usage message and exit.
 usage = ->
   printLine (new optparse.OptionParser SWITCHES, BANNER).help()
   process.exit 0
