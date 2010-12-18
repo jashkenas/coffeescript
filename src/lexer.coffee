@@ -407,7 +407,7 @@ exports.Lexer = class Lexer
       else if end is '"' and prev is '#' and letter is '{'
         stack.push end = '}'
       prev = letter
-    throw new Error "missing #{ stack.pop()[0] }, starting on line #{ @line + 1 }"
+    throw new Error "missing #{ stack.pop() }, starting on line #{ @line + 1 }"
 
 
   # Expand variables and expressions inside double-quoted strings using
