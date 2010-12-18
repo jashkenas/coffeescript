@@ -139,7 +139,7 @@ exports.Lexer = class Lexer
         return 0 unless match = SIMPLESTR.exec @chunk
         @token 'STRING', (string = match[0]).replace MULTILINER, '\\\n'
       when '"'
-        return 0 unless string = @balancedString @chunk, '"', '"'
+        return 0 unless string = @balancedString @chunk, '"'
         if 0 < string.indexOf '#{', 1
           @interpolateString string.slice 1, -1
         else
@@ -387,7 +387,7 @@ exports.Lexer = class Lexer
   # a series of delimiters, all of which must be nested correctly within the
   # contents of the string. This method allows us to have strings within
   # interpolations within strings, ad infinitum.
-  balancedString: (str, start, end) ->
+  balancedString: (str, end) ->
     stack = [end]
     for i in [1...str.length]
       switch letter = str.charAt i
@@ -428,7 +428,7 @@ exports.Lexer = class Lexer
         i += 1
         continue
       unless letter is '#' and str.charAt(i+1) is '{' and
-             (expr = @balancedString str.slice(i + 1), '#{', '}')
+             (expr = @balancedString str.slice(i + 1), '}')
         continue
       tokens.push ['NEOSTRING', str.slice(pi, i)] if pi < i
       inner = expr.slice(1, -1)
