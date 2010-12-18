@@ -140,6 +140,7 @@ ok obj.fn() is null
 
 # Implicit arguments to function calls:
 func = (obj) -> obj.a
+func2 = -> arguments
 
 result = func
   a: 10
@@ -159,6 +160,25 @@ obj =
 ok obj.one is 'one'
 ok obj.two is 'three'
 
+result = func
+    b:1
+    a
+
+ok result is undefined
+
+result = func
+    a:
+        b:2
+    b:1
+ok result.b is 2
+
+result = func2
+    a:1
+    b
+    c:1
+
+ok result.length is 3
+ok result[2].c is 1
 
 # Implicit objects with wacky indentation:
 obj =
