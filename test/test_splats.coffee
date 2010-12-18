@@ -1,8 +1,9 @@
 # Splats
 # ------
-
 # note: splats in parameter lists of function definitions are tested in `arguments.coffee`
 
+# shared identity function
+id = (_) -> if arguments.length is 1 then _ else Array::slice.call(arguments)
 
 test "passing splats to functions", ->
   arrayEq [0..4], id id [0..4]...

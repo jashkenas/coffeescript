@@ -158,8 +158,6 @@ runTests = (CoffeeScript) ->
 
   # Convenience aliases.
   global.eq = global.strictEqual
-  global.id = (_) ->
-    if arguments.length is 1 then _ else Array::slice.call(arguments)
   global.CoffeeScript = CoffeeScript
 
   # Our test helper function for delimiting different test cases.

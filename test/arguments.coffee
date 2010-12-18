@@ -1,6 +1,9 @@
 # Arguments
 # ---------
 
+# shared identity function
+id = (_) -> if arguments.length is 1 then _ else Array::slice.call(arguments)
+
 test "basic argument passing tests", ->
   a = {}
   b = {}

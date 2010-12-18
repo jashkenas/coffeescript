@@ -1,3 +1,11 @@
+# Chaining
+# --------
+
+# shared identity function
+id = (_) -> if arguments.length is 1 then _ else Array::slice.call(arguments)
+
+
+
 # Basic chained function calls.
 identityWrap = (x) ->
   -> x
