@@ -1,10 +1,6 @@
 # Conditionals
 # ------------
 
-# shared "identity" function
-id = (_) -> _
-
-
 #### Basic Conditionals
 
 test "basic conditionals", ->

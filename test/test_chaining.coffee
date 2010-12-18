@@ -57,8 +57,6 @@ func(
               [[]]]],
     []])
 
-id = (x) -> x
-
 greeting = id(
               """
               Hello

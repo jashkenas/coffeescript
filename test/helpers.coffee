@@ -32,7 +32,7 @@ test "the `ends` helper can take an optional offset", ->
 test "the `compact` helper removes falsey values from an array, preserves truthy ones", ->
   allValues = [1, 0, false, obj={}, [], '', ' ', -1, null, undefined, true]
   truthyValues = [1, obj, [], ' ', -1, true]
-  arrayEqual truthyValues, compact(allValues)
+  arrayEq truthyValues, compact(allValues)
 
 
 #### `count`

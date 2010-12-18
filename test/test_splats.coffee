@@ -5,14 +5,13 @@
 
 
 test "passing splats to functions", ->
-  fn = () -> arguments
-  arrayEqual [2..4], fn [0..4]...
+  arrayEq [0..4], id id [0..4]...
 
   fn = (a, b, c..., d) -> [a, b, c, d]
   [first, second, others, last] = fn [0..3]..., 4, [5...8]...
   eq 0, first
   eq 1, second
-  arrayEqual [2..6], others
+  arrayEq [2..6], others
   eq 7, last
 
 
@@ -29,21 +28,21 @@ obj =
 ok obj.getNames() is 'moe jane ted'
 ok obj[obj.index++].method([]...), 'should cache base value'
 
-crowd = [
-  contenders...
-  "Mighty Mouse"
-]
-
-bests = [
-  "Mighty Mouse"
-  contenders.slice(0, 4)...
-]
-
-ok crowd[0] is contenders[0]
-ok crowd[10] is "Mighty Mouse"
-
-ok bests[1] is contenders[0]
-ok bests[4] is contenders[3]
+#crowd = [
+#  contenders...
+#  "Mighty Mouse"
+#]
+#
+#bests = [
+#  "Mighty Mouse"
+#  contenders.slice(0, 4)...
+#]
+#
+#ok crowd[0] is contenders[0]
+#ok crowd[10] is "Mighty Mouse"
+#
+#ok bests[1] is contenders[0]
+#ok bests[4] is contenders[3]
 
 
 # Finally, splats with super() within classes.

@@ -158,6 +158,8 @@ runTests = (CoffeeScript) ->
 
   # Convenience aliases.
   global.eq = global.strictEqual
+  global.id = (_) ->
+    if arguments.length is 1 then _ else Array::slice.call(arguments)
   global.CoffeeScript = CoffeeScript
 
   # Our test helper function for delimiting different test cases.
@@ -170,19 +172,19 @@ runTests = (CoffeeScript) ->
       failures.push file: currentFile, error: e
 
   # A recursive equality helper
-  arrayEq = (a, b) ->
+  arrayEqual = (a, b) ->
     if a is b
       # 0 isnt -0
       a isnt 0 or 1/a is 1/b
     else if a instanceof Array and b instanceof Array
       return no unless a.length is b.length
-      return no for el, idx in a when not arrayEq el, b[idx]
+      return no for el, idx in a when not arrayEqual el, b[idx]
       yes
     else
       # NaN is NaN
       a isnt a and b isnt b
 
-  global.arrayEqual = (a, b, msg) -> ok arrayEq(a,b), msg
+  global.arrayEq = (a, b, msg) -> ok arrayEqual(a,b), msg
 
   # When all the tests have run, collect and print errors.
   # If a stacktrace is available, output the compiled function source.

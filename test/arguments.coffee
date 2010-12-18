@@ -1,9 +1,6 @@
 # Arguments
 # ---------
 
-id = (_) ->
-  if arguments.length is 1 then _ else Array::slice.call(arguments)
-
 test "basic argument passing tests", ->
   a = {}
   b = {}
@@ -43,10 +40,10 @@ test "reference `arguments` inside of functions", ->
 #### Parameter List Features
 
 test "splats", ->
-  arrayEqual [0, 1, 2], (((splat...) -> splat) 0, 1, 2)
-  arrayEqual [2, 3], (((_, _, splat...) -> splat) 0, 1, 2, 3)
-  arrayEqual [0, 1], (((splat..., _, _) -> splat) 0, 1, 2, 3)
-  arrayEqual [2], (((_, _, splat..., _) -> splat) 0, 1, 2, 3)
+  arrayEq [0, 1, 2], (((splat...) -> splat) 0, 1, 2)
+  arrayEq [2, 3], (((_, _, splat...) -> splat) 0, 1, 2, 3)
+  arrayEq [0, 1], (((splat..., _, _) -> splat) 0, 1, 2, 3)
+  arrayEq [2], (((_, _, splat..., _) -> splat) 0, 1, 2, 3)
 
 test "@-parameters: automatically assign an argument's value to a property of the context", ->
   nonce = {}
