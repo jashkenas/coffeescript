@@ -287,6 +287,14 @@ Expressions
         Value "x"</pre>
         </td>
       </tr>
+      <tr>
+        <td><code>--nodejs</code></td>
+        <td>
+          The <tt>node</tt> executable has some useful options you can set,
+          such as <tt>--debug</tt> and <tt>--max-stack-size</tt>. Use this
+          flag to forward options directly to Node.js.
+        </td>
+      </tr>
     </table>
 
     <p>
@@ -536,6 +544,11 @@ coffee --bare --print --stdio</pre>
       accidentally returning the results of the comprehension in these cases,
       by adding a meaningful return value, like <tt>true</tt>, or <tt>null</tt>,
       to the bottom of your function.
+    </p>
+    <p>
+      To step through a range comprehension in fixed-size chunks, 
+      use <tt>by</tt>, for example:<br />
+      <tt>evens = (x for x in [0..10] by 2)</tt>
     </p>
     <p>
       Comprehensions can also be used to iterate over the keys and values in

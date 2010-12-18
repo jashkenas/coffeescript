@@ -107,3 +107,12 @@ eq 'multiline nested "interpolations" work', """multiline #{
     "\"interpolations\""
   }"
 } work"""
+
+
+# Issue #923: Tricky interpolation.
+eq "#{ "{" }", "{"
+
+eq "#{ '#{}}' } }", '#{}} }'
+
+eq "#{"'#{ ({a: "b#{1}"}['a']) }'"}", "'b1'"
+

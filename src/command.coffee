@@ -39,16 +39,10 @@ SWITCHES = [
   ['-b', '--bare',            'compile without the top-level function wrapper']
   ['-t', '--tokens',          'print the tokens that the lexer produces']
   ['-n', '--nodes',           'print the parse tree that Jison produces']
+  [      '--nodejs [ARGS]',   'pass options through to the "node" binary']
   ['-v', '--version',         'display CoffeeScript version']
   ['-h', '--help',            'display this help message']
 ]
-
-# Switches that are still supported, but will cause a warning message.
-DEPRECATED_SWITCHES = [
-  ['--no-wrap',               'compile without the top-level function wrapper']
-]
-
-ALL_SWITCHES = SWITCHES.concat DEPRECATED_SWITCHES
 
 # Top-level objects shared by all the functions.
 opts         = {}
@@ -60,20 +54,16 @@ optionParser = null
 # `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run = ->
   parseOptions()
-  return usage()                              if opts.help
-  return version()                            if opts.version
-  return require './repl'                     if opts.interactive
-  return compileStdio()                       if opts.stdio
-  return compileScript null, sources[0]       if opts.eval
-  return require './repl'                     unless sources.length
-  separator = sources.indexOf '--'
-  flags = []
-  if separator >= 0
-    flags = sources.splice separator + 1
-    sources.pop()
+  return forkNode()                      if opts.nodejs
+  return usage()                         if opts.help
+  return version()                       if opts.version
+  return require './repl'                if opts.interactive
+  return compileStdio()                  if opts.stdio
+  return compileScript null, sources[0]  if opts.eval
+  return require './repl'                unless sources.length
   if opts.run
-    flags = sources.splice(1).concat flags
-  process.ARGV = process.argv = process.argv.slice(0, 2).concat flags
+    opts.literals = sources.splice(1).concat opts.literals
+  process.ARGV = process.argv = process.argv.slice(0, 2).concat opts.literals
   compileScripts()
 
 # Asynchronously read in each CoffeeScript in a list of source files and
@@ -180,17 +170,26 @@ printTokens = (tokens) ->
 # Use the [OptionParser module](optparse.html) to extract all options from
 # `process.argv` that are specified in `SWITCHES`.
 parseOptions = ->
-  optionParser  = new optparse.OptionParser ALL_SWITCHES, BANNER
+  optionParser  = new optparse.OptionParser SWITCHES, BANNER
   o = opts      = optionParser.parse process.argv.slice 2
   o.compile     or=  !!o.output
   o.run         = not (o.compile or o.print or o.lint)
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
   sources       = o.arguments
-  if opts['no-wrap']
-    printWarn '--no-wrap is deprecated; please use --bare instead.'
 
 # The compile-time options to pass to the CoffeeScript compiler.
-compileOptions = (fileName) -> {fileName, bare: opts.bare or opts['no-wrap']}
+compileOptions = (fileName) -> {fileName, bare: opts.bare}
+
+# Start up a new Node.js instance with the arguments in `--nodejs` passed to
+# the `node` binary, preserving the other options.
+forkNode = ->
+  nodeArgs = opts.nodejs.split /\s+/
+  args     = process.argv[1..]
+  args.splice args.indexOf('--nodejs'), 2
+  spawn process.execPath, nodeArgs.concat(args),
+    cwd:        process.cwd()
+    env:        process.env
+    customFds:  [0, 1, 2]
 
 # Print the `--help` usage message and exit. Deprecated switches are not
 # shown.

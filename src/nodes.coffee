@@ -1512,7 +1512,6 @@ exports.For = class For extends Base
         [val.base, base] = [base, val]
         args.unshift new Literal 'this'
       body.expressions[idx] = new Call base, args
-      o.sharedScope = yes
       defs += @tab + new Assign(ref, fn).compile(o, LEVEL_TOP) + ';\n'
     defs
 

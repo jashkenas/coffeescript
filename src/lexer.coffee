@@ -139,7 +139,7 @@ exports.Lexer = class Lexer
         return 0 unless match = SIMPLESTR.exec @chunk
         @token 'STRING', (string = match[0]).replace MULTILINER, '\\\n'
       when '"'
-        return 0 unless string = @balancedString @chunk, [['"', '"'], ['#{', '}']]
+        return 0 unless string = @balancedString @chunk, '"'
         if 0 < string.indexOf '#{', 1
           @interpolateString string.slice 1, -1
         else
@@ -387,22 +387,27 @@ exports.Lexer = class Lexer
   # a series of delimiters, all of which must be nested correctly within the
   # contents of the string. This method allows us to have strings within
   # interpolations within strings, ad infinitum.
-  balancedString: (str, delimited, options = {}) ->
-    stack = [delimited[0]]
+  balancedString: (str, end) ->
+    stack = [end]
     for i in [1...str.length]
-      switch str.charAt i
+      switch letter = str.charAt i
         when '\\'
           i++
           continue
-        when stack[stack.length - 1][1]
+        when end
           stack.pop()
-          return str.slice 0, i + 1 unless stack.length
+          unless stack.length
+            return str.slice 0, i + 1
+          end = stack[stack.length - 1]
           continue
-      for pair in delimited when (open = pair[0]) is str.substr i, open.length
-        stack.push pair
-        i += open.length - 1
-        break
-    throw new Error "unterminated #{ stack.pop()[0] } on line #{ @line + 1 }"
+      if end is '}' and letter in ['"', "'"]
+        stack.push end = letter
+      else if end is '}' and letter is '{'
+        stack.push end = '}'
+      else if end is '"' and prev is '#' and letter is '{'
+        stack.push end = '}'
+      prev = letter
+    throw new Error "missing #{ stack.pop() }, starting on line #{ @line + 1 }"
 
 
   # Expand variables and expressions inside double-quoted strings using
@@ -423,7 +428,7 @@ exports.Lexer = class Lexer
         i += 1
         continue
       unless letter is '#' and str.charAt(i+1) is '{' and
-             (expr = @balancedString str.slice(i+1), [['{', '}']])
+             (expr = @balancedString str.slice(i + 1), '}')
         continue
       tokens.push ['NEOSTRING', str.slice(pi, i)] if pi < i
       inner = expr.slice(1, -1)
