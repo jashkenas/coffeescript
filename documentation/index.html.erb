@@ -546,6 +546,11 @@ coffee --bare --print --stdio</pre>
       to the bottom of your function.
     </p>
     <p>
+      To step through a range comprehension in fixed-size chunks, 
+      use <tt>by</tt>, for example:<br />
+      <tt>evens = (x for x in [0..10] by 2)</tt>
+    </p>
+    <p>
       Comprehensions can also be used to iterate over the keys and values in
       an object. Use <tt>of</tt> to signal comprehension over the properties of
       an object instead of the values in an array.
