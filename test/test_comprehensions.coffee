@@ -249,3 +249,12 @@ for d in a.b?.c
   e = d
 
 eq e, 3
+
+
+# Issue #948. Capturing loop variables.
+funcs = []
+for y in [1, 2, 3]
+  z = y
+  funcs.push -> "y is #{y} and z is #{z}"
+
+eq funcs[1](), "y is 2 and z is 2"
