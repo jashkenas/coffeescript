@@ -171,7 +171,8 @@ runTests = (CoffeeScript) ->
       e.source  = fn.toString() if fn.toString?
       failures.push file: currentFile, error: e
 
-  # A recursive equality helper
+  # A recursive functional equivalence helper; uses egal for testing equivalence.
+  # See http://wiki.ecmascript.org/doku.php?id=harmony:egal
   arrayEqual = (a, b) ->
     if a is b
       # 0 isnt -0
