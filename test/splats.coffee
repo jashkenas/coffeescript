@@ -1,52 +1,19 @@
-func = (first, second, rest...) ->
-  rest.join ' '
+# Splats
+# ------
 
-result = func 1, 2, 3, 4, 5
-
-ok result is "3 4 5"
+# note: splats in parameter lists of function definitions are tested in `arguments.coffee`
 
 
-gold = silver = bronze = theField = last = null
+test "passing splats to functions", ->
+  fn = () -> arguments
+  arrayEqual [2..4], fn [0..4]...
 
-medalists = (first, second, third, rest..., unlucky) ->
-  gold     = first
-  silver   = second
-  bronze   = third
-  theField = rest.concat([last])
-  last     = unlucky
-
-contenders = [
-  "Michael Phelps"
-  "Liu Xiang"
-  "Yao Ming"
-  "Allyson Felix"
-  "Shawn Johnson"
-  "Roman Sebrle"
-  "Guo Jingjing"
-  "Tyson Gay"
-  "Asafa Powell"
-  "Usain Bolt"
-]
-
-medalists "Mighty Mouse", contenders...
-
-ok gold is "Mighty Mouse"
-ok silver is "Michael Phelps"
-ok bronze is "Liu Xiang"
-ok last is "Usain Bolt"
-ok theField.length is 8
-
-contenders.reverse()
-medalists contenders.slice(0, 2)..., "Mighty Mouse", contenders.slice(2)...
-
-ok gold is "Usain Bolt"
-ok silver is "Asafa Powell"
-ok bronze is "Mighty Mouse"
-ok last is "Michael Phelps"
-ok theField.length is 8
-
-medalists contenders..., 'Tim', 'Moe', 'Jim'
-ok last is 'Jim'
+  fn = (a, b, c..., d) -> [a, b, c, d]
+  [first, second, others, last] = fn [0..3]..., 4, [5...8]...
+  eq 0, first
+  eq 1, second
+  arrayEqual [2..6], others
+  eq 7, last
 
 
 obj =
