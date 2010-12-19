@@ -34,7 +34,11 @@ o = (patternString, action, options) ->
   patternString = patternString.replace /\s{2,}/g, ' '
   return [patternString, '$$ = $1;', options] unless action
   action = if match = unwrap.exec action then match[1] else "(#{action}())"
-  action = action.replace /\bnew /g, '$&yy.'
+  
+  # Set <code>.lineno</code> for each new node.
+  # Regex matches e.g. <code>"new Return"</code>, <code>"new For("</code>
+  action = action.replace /\b(new )([a-zA-Z0-9_]+)(\(?)/g, (g0, g1, name, paren) -> "(function(q,w,e,r,t,y,u,i,o,p){var x = new yy.#{name}(q,w,e,r,t,y,u,i,o,p); x.lineno = yylineno; return x;})" + (if paren then '(' else '()')
+  
   action = action.replace /\b(?:Expressions\.wrap|extend)\b/g, 'yy.$&'
   [patternString, "$$ = #{action};", options]
 
