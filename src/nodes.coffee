@@ -664,24 +664,25 @@ exports.Slice = class Slice extends Base
   constructor: (@range) ->
     super()
 
+  # We have to be careful when trying to slice through the end of the array,
+  # `9e9` is used because not all implementations respect `undefined` or `1/0`.
+  # `9e9` should be safe because `9e9` > `2**32`, the max array length.
   compileNode: (o) ->
-    {to,from} = @range
-    fromStr  =  if from then from.compile(o) else '0'
-    compiled = to?.compile o, LEVEL_PAREN
+    {to, from} = @range
+    fromStr    = from and from.compile(o, LEVEL_PAREN) or '0'
+    compiled   = to and to.compile o, LEVEL_PAREN
     if to and not (not @range.exclusive and +compiled is -1)
       toStr = ', ' + if @range.exclusive
-        to.compile(o)
-      else if /^[+-]?\d+$/.test compiled
-        '' + (+compiled + 1)
+        compiled
+      else if SIMPLENUM.test compiled
+        (+compiled + 1).toString()
       else
-        [definition, reference] = (ref.compile(o,LEVEL_PAREN) for ref in to.cache o)
-        # `9e9` used below because not all implementations respect `undefined` or `1/0`
-        # `9e9` should be safe because `9e9` > `2**32`, the max array length
+        [definition, reference] = to.cache o, LEVEL_PAREN
         if reference is definition
-          reference + ' + 1 ? ' + reference + ' + 1 : 9e9'
+          "#{reference} + 1 ? #{reference} + 1 : 9e9"
         else
-          '(' + definition + ' + 1) ? ' + reference + ' : 9e9'
-    ".slice(#{fromStr}#{toStr||''})"
+          "(#{definition} + 1) ? #{reference} : 9e9"
+    ".slice(#{ fromStr }#{ toStr or '' })"
 
 #### Obj
 
