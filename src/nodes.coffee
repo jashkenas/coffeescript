@@ -677,11 +677,7 @@ exports.Slice = class Slice extends Base
       else if SIMPLENUM.test compiled
         (+compiled + 1).toString()
       else
-        [definition, reference] = to.cache o, LEVEL_PAREN
-        if reference is definition
-          "#{reference} + 1 ? #{reference} + 1 : 9e9"
-        else
-          "(#{definition} + 1) ? #{reference} : 9e9"
+        "(#{compiled} + 1) || 9e9"
     ".slice(#{ fromStr }#{ toStr or '' })"
 
 #### Obj
