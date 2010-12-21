@@ -89,6 +89,8 @@ exports.Lexer = class Lexer
         tag = 'LEADING_WHEN'
       else if tag is 'FOR'
         @seenFor = yes
+      else if tag is 'UNLESS'
+        tag = 'IF'
       else if tag in UNARY
         tag = 'UNARY'
       else if tag in RELATION

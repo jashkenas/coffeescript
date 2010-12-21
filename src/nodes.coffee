@@ -1552,7 +1552,7 @@ exports.Switch = class Switch extends Base
 # because ternaries are already proper expressions, and don't need conversion.
 exports.If = class If extends Base
   constructor: (condition, @body, options = {}) ->
-    @condition = if options.invert then condition.invert() else condition
+    @condition = if options.type is 'unless' then condition.invert() else condition
     @elseBody  = null
     @isChain   = false
     {@soak}    = options

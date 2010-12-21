@@ -483,9 +483,8 @@ grammar =
   # if-related rules are broken up along these lines in order to avoid
   # ambiguity.
   IfBlock: [
-    o 'IF Expression Block',                    -> new If $2, $3
-    o 'UNLESS Expression Block',                -> new If $2, $3, invert: true
-    o 'IfBlock ELSE IF Expression Block',       -> $1.addElse new If $4, $5
+    o 'IF Expression Block',                    -> new If $2, $3, type: $1
+    o 'IfBlock ELSE IF Expression Block',       -> $1.addElse new If $4, $5, type: $3
     o 'IfBlock ELSE Block',                     -> $1.addElse $3
   ]
 
@@ -493,10 +492,8 @@ grammar =
   # *if* and *unless*.
   If: [
     o 'IfBlock'
-    o 'Statement  POST_IF Expression',          -> new If $3, Expressions.wrap([$1]), statement: true
-    o 'Expression POST_IF Expression',          -> new If $3, Expressions.wrap([$1]), statement: true
-    o 'Statement  POST_UNLESS Expression',      -> new If $3, Expressions.wrap([$1]), statement: true, invert: true
-    o 'Expression POST_UNLESS Expression',      -> new If $3, Expressions.wrap([$1]), statement: true, invert: true
+    o 'Statement  POST_IF Expression',          -> new If $3, Expressions.wrap([$1]), type: $2, statement: true
+    o 'Expression POST_IF Expression',          -> new If $3, Expressions.wrap([$1]), type: $2, statement: true
   ]
 
   # Arithmetic and logical operators, working on one or more operands.
@@ -565,8 +562,8 @@ operators = [
   ['nonassoc',  'INDENT', 'OUTDENT']
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
   ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
-  ['right',     'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
-  ['right',     'POST_IF', 'POST_UNLESS']
+  ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
+  ['right',     'POST_IF']
 ]
 
 # Wrapping Up
