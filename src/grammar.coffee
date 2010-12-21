@@ -417,14 +417,15 @@ grammar =
   # Comprehensions can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression.
   For: [
-    o 'Statement  ForBody',                     -> new For $1, $2, $2.vars[0], $2.vars[1]
-    o 'Expression ForBody',                     -> new For $1, $2, $2.vars[0], $2.vars[1]
-    o 'ForBody    Block',                       -> new For $2, $1, $1.vars[0], $1.vars[1]
+    o 'Statement  ForBody',                     -> new For $1, $2
+    o 'Expression ForBody',                     -> new For $1, $2
+    o 'ForBody    Block',                       -> new For $2, $1
+    o 'ForBody FuncGlyph Block',                -> $1.scoped = yes; new For $3, $1
   ]
 
   ForBody: [
-    o 'FOR Range',                              -> source: new Value($2), vars: []
-    o 'ForStart ForSource',                     -> $2.own = $1.own; $2.vars = $1; $2
+    o 'FOR Range',                              -> source: new Value($2)
+    o 'ForStart ForSource',                     -> $2.own = $1.own; $2.name = $1[0]; $2.index = $1[1]; $2
   ]
 
   ForStart: [

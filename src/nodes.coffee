@@ -1171,7 +1171,6 @@ exports.While = class While extends Base
 exports.Op = class Op extends Base
   constructor: (op, first, second, flip) ->
     return new In first, second if op is 'in'
-    return new Call first, []   if op is 'do'
     if op is 'new'
       return first.newInstance() if first instanceof Call
       first = new Parens first   if first instanceof Code and first.bound
@@ -1413,8 +1412,8 @@ exports.Parens = class Parens extends Base
 # the current index of the loop as a second parameter. Unlike Ruby blocks,
 # you can map and filter in a single pass.
 exports.For = class For extends Base
-  constructor: (body, source, @name, @index) ->
-    {@source, @guard, @step} = source
+  constructor: (body, source) ->
+    {@source, @guard, @step, @name, @index, @scoped} = source
     @body    = Expressions.wrap [body]
     @own     = !!source.own
     @object  = !!source.object
@@ -1470,6 +1469,8 @@ exports.For = class For extends Base
         lvar        = scope.freeVariable 'len'
         stepPart    = if @step then "#{ivar} += #{ @step.compile(o, LEVEL_OP) }" else "#{ivar}++"
         forPart     = "#{ivar} = 0, #{lvar} = #{svar}.length; #{ivar} < #{lvar}; #{stepPart}"
+    if @scoped
+      body          = Closure.wrap body, true, not @returns
     defPart         += @pluckDirectCall o, body, name, index unless @pattern
     if @returns and not hasPure
       resultPart    = "#{@tab}#{rvar} = [];\n"

@@ -76,10 +76,9 @@ all = 1
 # Ensure that the closure wrapper preserves local variables.
 obj = {}
 
-for method in ['one', 'two', 'three']
-  do ->
-    obj[method] = ->
-      "I'm " + method
+for method in ['one', 'two', 'three'] ->
+  obj[method] = ->
+    "I'm " + method
 
 ok obj.one()   is "I'm one"
 ok obj.two()   is "I'm two"
@@ -95,9 +94,8 @@ ok i is 4
 
 
 # Ensure that local variables are closed over for range comprehensions.
-funcs = for i in [1..3]
-  do ->
-    -> -i
+funcs = for i in [1..3] ->
+  -> -i
 
 eq (func() for func in funcs).join(' '), '-1 -2 -3'
 ok i is 4
@@ -106,9 +104,8 @@ ok i is 4
 # Even when referenced in the filter.
 list = ['one', 'two', 'three']
 
-methods = for num, i in list when num isnt 'two' and i isnt 1
-  do ->
-    -> num + ' ' + i
+methods = for num, i in list when num isnt 'two' and i isnt 1 ->
+  -> num + ' ' + i
 
 ok methods.length is 2
 ok methods[0]() is 'one 0'
@@ -118,21 +115,19 @@ ok methods[1]() is 'three 2'
 # Even a convoluted one.
 funcs = []
 
-for i in [1..3]
-  do ->
-    x = i * 2
-    ((z)->
-      funcs.push -> z + ' ' + i
-    )(x)
+for i in [1..3] ->
+  x = i * 2
+  ((z)->
+    funcs.push -> z + ' ' + i
+  )(x)
 
 ok (func() for func in funcs).join(', ') is '2 1, 4 2, 6 3'
 
 funcs = []
 
-results = for i in [1..3]
-  do ->
-    z = (x * 3 for x in [1..i])
-    ((a, b, c) -> [a, b, c].join(' ')).apply this, z
+results = for i in [1..3] ->
+  z = (x * 3 for x in [1..i])
+  ((a, b, c) -> [a, b, c].join(' ')).apply this, z
 
 ok results.join(', ') is '3  , 3 6 , 3 6 9'
 
@@ -144,11 +139,9 @@ ok(num % 2 is 0 for num in array by 2)
 
 # Nested shared scopes.
 foo = ->
-  for i in [0..7]
-    do ->
-      for j in [0..7]
-        do ->
-          -> i + j
+  for i in [0..7] ->
+    for j in [0..7] ->
+      -> i + j
 
 eq foo()[3][4](), 7
 
@@ -262,9 +255,8 @@ eq e, 3
 
 # Issue #948. Capturing loop variables.
 funcs = []
-for y in [1, 2, 3]
-  do ->
-    z = y
-    funcs.push -> "y is #{y} and z is #{z}"
+for y in [1, 2, 3] ->
+  z = y
+  funcs.push -> "y is #{y} and z is #{z}"
 
 eq funcs[1](), "y is 2 and z is 2"
