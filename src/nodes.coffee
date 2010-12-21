@@ -966,21 +966,18 @@ exports.Assign = class Assign extends Base
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
   compileSplice: (o) ->
-    {range} = @variable.properties.pop()
-    name    = @variable.compile o
-    excl    = range.exclusive
-    to      = "#{name}.length" unless range.to
-    if range.from
-      [fromDecl, fromRef] = range.from.cache o, LEVEL_OP
-    else
-      [fromDecl, fromRef] = ['0', '0']
-    unless to
-      if range.from and range.from.isSimpleNumber() and range.to.isSimpleNumber()
-        to = +range.to.compile(o) - +fromRef
-        to += 1 unless excl
+    {range: {from, to, exclusive}} = @variable.properties.pop()
+    name = @variable.compile o
+    [fromDecl, fromRef] = if from then from.cache(o, LEVEL_OP) else ['0', '0']
+    if to
+      if from and from.isSimpleNumber() and to.isSimpleNumber()
+        to = +to.compile(o) - +fromRef
+        to += 1 unless exclusive
       else
-        to = range.to.compile(o) + ' - ' + fromRef
-        to += ' + 1' unless excl
+        to = to.compile(o) + ' - ' + fromRef
+        to += ' + 1' unless exclusive
+    else
+      to = "#{name}.length"
     val = @value.compile(o)
     "[].splice.apply(#{name}, [#{fromDecl}, #{to}].concat(#{val}))"
 
