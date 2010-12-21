@@ -973,11 +973,10 @@ ages = function() {
   return _results;
 }();;alert(ages.join(", "));'>run: ages.join(", ")</div><br class='clear' /></div>
     <p>
-      By default, object comprehensions are safe, and use a <tt>hasOwnProperty</tt>
-      check to make sure that you're dealing with properties on the current
-      object. If you'd like the regular JavaScript <br /><tt>for (key in obj) ...</tt>
-      loop, for speed or for another reason, you can use <br />
-      <tt>for all key, value of object</tt> in CoffeeScript.
+      If you would like to iterate over just the keys that are defined on the 
+      object itself, by adding a <tt>hasOwnProperty</tt>
+      check to avoid properties that may be interited from the prototype, use<br />
+      <tt>for own key, value of object</tt>
     </p>
     <p>
       <span id="slices" class="bookmark"></span>
