@@ -165,8 +165,8 @@ runTests = (CoffeeScript) ->
     try
       fn()
     catch e
-      e.message = description if description?
-      e.source  = fn.toString() if fn.toString?
+      e.description = description if description?
+      e.source      = fn.toString() if fn.toString?
       failures.push file: currentFile, error: e
 
   # A recursive functional equivalence helper; uses egal for testing equivalence.
@@ -197,7 +197,8 @@ runTests = (CoffeeScript) ->
       jsFile             = file.replace(/\.coffee$/,'.js')
       match              = error.stack?.match(new RegExp(fail.file+":(\\d+):(\\d+)"))
       [match, line, col] = match if match
-      log "\n  #{error.message}", red if error.message
+      log "\n  #{error.toString()}", red
+      log "  #{error.description}", red if error.description
       log "  #{jsFile}: line #{line or 'unknown'}, column #{col or 'unknown'}", red
       console.log "  #{error.source}" if error.source
 

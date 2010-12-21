@@ -153,10 +153,9 @@ test "splicing with variables as endpoints", ->
   ary[a...b] = [5]
   arrayEq [0, 5, 8, 9], ary
 
-# currently broken:
-# test "splicing with expressions as endpoints", ->
-#   [a, b] = [1, 3]
-# 
-#   ary = [0..9]
-#   ary[ a+1 .. 2*b+1 ] = [4]
-#   arrayEq [0, 1, 4, 7, 8, 9], ary
+test "splicing with expressions as endpoints", ->
+  [a, b] = [1, 3]
+
+  ary = [0..9]
+  ary[ a+1 .. 2*b+1 ] = [4]
+  arrayEq [0, 1, 4, 8, 9], ary
