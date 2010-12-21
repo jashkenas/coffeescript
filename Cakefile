@@ -151,10 +151,12 @@ runTests = (CoffeeScript) ->
   failures    = []
 
   # Mix in the assert module globally, to make it available for tests.
-  for name, func of require 'assert'
+  addGlobal = (name, func) ->
     global[name] = ->
       passedTests += 1
       func arguments...
+
+  addGlobal name, func for name, func of require 'assert'
 
   # Convenience aliases.
   global.eq = global.strictEqual

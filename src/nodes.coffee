@@ -1441,7 +1441,6 @@ exports.For = class For extends Base
   # some cannot.
   compileNode: (o) ->
     body          = Expressions.wrap [@body]
-    hasCode       = body.contains (node) -> node instanceof Code
     hasPure       = last(body.expressions)?.containsPureStatement()
     source        = if @range then @source.base else @source
     scope         = o.scope
@@ -1476,8 +1475,6 @@ exports.For = class For extends Base
       body          = Push.wrap rvar, body
     if @guard
       body          = Expressions.wrap [new If @guard, body]
-    if hasCode
-      body          = Closure.wrap(body, yes, not @returns)
     varPart         = "\n#{idt1}#{namePart};" if namePart
     if @object
       forPart       = "#{ivar} in #{svar}"
