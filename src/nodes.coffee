@@ -1171,6 +1171,7 @@ exports.While = class While extends Base
 exports.Op = class Op extends Base
   constructor: (op, first, second, flip) ->
     return new In first, second if op is 'in'
+    return new Call first, []   if op is 'do'
     if op is 'new'
       return first.newInstance() if first instanceof Call
       first = new Parens first   if first instanceof Code and first.bound
@@ -1469,6 +1470,7 @@ exports.For = class For extends Base
         lvar        = scope.freeVariable 'len'
         stepPart    = if @step then "#{ivar} += #{ @step.compile(o, LEVEL_OP) }" else "#{ivar}++"
         forPart     = "#{ivar} = 0, #{lvar} = #{svar}.length; #{ivar} < #{lvar}; #{stepPart}"
+    defPart         += @pluckDirectCall o, body, name, index unless @pattern
     if @returns and not hasPure
       resultPart    = "#{@tab}#{rvar} = [];\n"
       returnResult  = '\n' + (new Return(new Literal(rvar)).compile o, LEVEL_PAREN)
@@ -1479,7 +1481,6 @@ exports.For = class For extends Base
     if @object
       forPart       = "#{ivar} in #{svar}"
       guardPart     = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" if @own
-    defPart         += @pluckDirectCall o, body, name, index unless @pattern
     body            = body.compile merge(o, indent: idt1), LEVEL_TOP
     body            = '\n' + body + '\n' if body
     """
