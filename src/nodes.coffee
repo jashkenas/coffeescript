@@ -968,9 +968,9 @@ exports.Assign = class Assign extends Base
   compileSplice: (o) ->
     {range: {from, to, exclusive}} = @variable.properties.pop()
     name = @variable.compile o
-    [fromDecl, fromRef] = if from then from.cache(o, LEVEL_OP) else ['0', '0']
+    [fromDecl, fromRef] = from?.cache(o, LEVEL_OP) or ['0', '0']
     if to
-      if from and from.isSimpleNumber() and to.isSimpleNumber()
+      if from?.isSimpleNumber() and to.isSimpleNumber()
         to = +to.compile(o) - +fromRef
         to += 1 unless exclusive
       else
