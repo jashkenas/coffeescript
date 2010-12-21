@@ -261,6 +261,13 @@ npm install coffee-script</pre>
 sudo bin/cake install</pre>
 
     <p>
+      If installing on Ubuntu or Debian, 
+      <a href="http://opinionated-programmer.com/2010/12/installing-coffeescript-on-debian-or-ubuntu/">be 
+      careful not to use the existing out-of-date package</a>. If installing on
+      Windows, your best bet is probably to run Node.js under Cygwin.
+    </p>
+
+    <p>
       Both of these provide the <tt>coffee</tt> command, which can execute
       coffee scripts, compile <tt>.coffee</tt> files into <tt>.js</tt>, and
       provides an interactive REPL. The <tt>coffee</tt> command takes the
@@ -989,11 +996,11 @@ middle  <span class="Keyword">=</span> copy[<span class="Number">3</span>..<span
 </pre><pre class="idle"><span class="Storage">var</span> copy, middle, numbers;
 numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
 copy <span class="Keyword">=</span> numbers.<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, numbers.<span class="LibraryConstant">length</span>);
-middle <span class="Keyword">=</span> copy.<span class="LibraryFunction">slice</span>(<span class="Number">3</span>, <span class="Number">6</span> <span class="Keyword">+</span> <span class="Number">1</span>);
+middle <span class="Keyword">=</span> copy.<span class="LibraryFunction">slice</span>(<span class="Number">3</span>, <span class="Number">7</span>);
 </pre><script>window.example14 = "numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\ncopy    = numbers[0...numbers.length]\n\nmiddle  = copy[3..6]\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example14);'>Load</div><div class='minibutton ok' onclick='javascript: var copy, middle, numbers;
 numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 copy = numbers.slice(0, numbers.length);
-middle = copy.slice(3, 6 + 1);;alert(middle);'>run: middle</div><br class='clear' /></div>
+middle = copy.slice(3, 7);;alert(middle);'>run: middle</div><br class='clear' /></div>
     <p>
       The same syntax can be used with assignment to replace a segment of an array
       with new values, splicing it.
@@ -1926,7 +1933,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
         for CoffeeScript. Used to produce the annotated source.
       </li>
       <li>
-        <b>naturalethic</b>'s <a href="http://github.com/naturalethic/Congo">Congo</a>
+        <b>naturalethic</b>'s <a href="http://github.com/naturalethic/coffee-mongo">coffee-mongo</a>
         &mdash; an asynchronous MongoDB ORM, for use with Node.js and CoffeeScript.
       </li>
       <li>
