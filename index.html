@@ -188,7 +188,7 @@ cubes <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   }
   <span class="Keyword">return</span> _results;
 }());
-</pre><script>window.example1 = "# Assignment:\nnumber   = 42\nopposite = true\n\n# Conditions:\nnumber = -42 if opposite\n\n# Functions:\nsquare = (x) -> x * x\n\n# Arrays:\nlist = [1, 2, 3, 4, 5]\n\n# Objects:\nmath =\n  root:   Math.sqrt\n  square: square\n  cube:   (x) -> x * square x\n\n# Splats:\nrace = (winner, runners...) ->\n  print winner, runners\n\n# Existence:\nalert \"I knew it!\" if elvis?\n\n# Array comprehensions:\ncubes = (math.cube num for num in list)\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example1);'>Load</div><div class='minibutton ok' onclick='javascript: var cubes, list, math, num, number, opposite, race, square;
+</pre><script>window.example1 = "# Assignment:\nnumber   = 42\nopposite = true\n\n# Conditions:\nnumber = -42 if opposite\n\n# Functions:\nsquare = (x) -> x * x\n\n# Arrays:\nlist = [1, 2, 3, 4, 5]\n\n# Objects:\nmath =\n  root:   Math.sqrt\n  square: square\n  cube:   (x) -> x * square x\n\n# Splats:\nrace = (winner, runners...) ->\n  print winner, runners\n\n# Existence:\nalert \"I knew it!\" if elvis?\n\n# Array comprehensions:\ncubes = (math.cube num for num in list)\n"</script><div class='minibutton ok' onclick='javascript: var cubes, list, math, num, number, opposite, race, square;
 var __slice = Array.prototype.slice;
 number = 42;
 opposite = true;
@@ -261,8 +261,8 @@ npm install coffee-script</pre>
 sudo bin/cake install</pre>
 
     <p>
-      If installing on Ubuntu or Debian, 
-      <a href="http://opinionated-programmer.com/2010/12/installing-coffeescript-on-debian-or-ubuntu/">be 
+      If installing on Ubuntu or Debian,
+      <a href="http://opinionated-programmer.com/2010/12/installing-coffeescript-on-debian-or-ubuntu/">be
       careful not to use the existing out-of-date package</a>. If installing on
       Windows, your best bet is probably to run Node.js under Cygwin.
     </p>
@@ -929,7 +929,7 @@ countdown = (function() {
       to the bottom of your function.
     </p>
     <p>
-      To step through a range comprehension in fixed-size chunks, 
+      To step through a range comprehension in fixed-size chunks,
       use <tt>by</tt>, for example:<br />
       <tt>evens = (x for x in [0..10] by 2)</tt>
     </p>
@@ -973,7 +973,7 @@ ages = function() {
   return _results;
 }();;alert(ages.join(", "));'>run: ages.join(", ")</div><br class='clear' /></div>
     <p>
-      If you would like to iterate over just the keys that are defined on the 
+      If you would like to iterate over just the keys that are defined on the
       object itself, by adding a <tt>hasOwnProperty</tt>
       check to avoid properties that may be interited from the prototype, use<br />
       <tt>for own key, value of object</tt>

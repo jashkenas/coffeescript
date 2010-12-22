@@ -2,7 +2,7 @@
   require 'uv'
   require 'json'
   @counter = 0
-  def code_for(file, executable=false)
+  def code_for(file, executable=false, show_load=true)
     @counter += 1
     return '' unless File.exists?("documentation/js/#{file}.js")
     cs = File.read("documentation/coffee/#{file}.coffee")
@@ -13,7 +13,7 @@
     run    = executable == true ? 'run' : "run: #{executable}"
     name   = "example#{@counter}"
     script = "<script>window.#{name} = #{cs.to_json}</script>"
-    import = "<div class='minibutton load' onclick='javascript: loadConsole(#{name});'>Load</div>"
+    import = show_load ? "<div class='minibutton load' onclick='javascript: loadConsole(#{name});'>Load</div>" : ''
     button = executable ? "<div class='minibutton ok' onclick='javascript: #{js};#{append}'>#{run}</div>" : ''
     "<div class='code'>#{cshtml}#{jshtml}#{script}#{import}#{button}<br class='clear' /></div>"
   end
@@ -144,7 +144,7 @@
 
     <p><i>CoffeeScript on the left, compiled JavaScript output on the right.</i></p>
 
-    <%= code_for('overview', 'cubes') %>
+    <%= code_for('overview', 'cubes', false) %>
 
     <h2>
       <span id="installation" class="bookmark"></span>
@@ -183,8 +183,8 @@ npm install coffee-script</pre>
 sudo bin/cake install</pre>
 
     <p>
-      If installing on Ubuntu or Debian, 
-      <a href="http://opinionated-programmer.com/2010/12/installing-coffeescript-on-debian-or-ubuntu/">be 
+      If installing on Ubuntu or Debian,
+      <a href="http://opinionated-programmer.com/2010/12/installing-coffeescript-on-debian-or-ubuntu/">be
       careful not to use the existing out-of-date package</a>. If installing on
       Windows, your best bet is probably to run Node.js under Cygwin.
     </p>
@@ -553,7 +553,7 @@ coffee --bare --print --stdio</pre>
       to the bottom of your function.
     </p>
     <p>
-      To step through a range comprehension in fixed-size chunks, 
+      To step through a range comprehension in fixed-size chunks,
       use <tt>by</tt>, for example:<br />
       <tt>evens = (x for x in [0..10] by 2)</tt>
     </p>
@@ -564,7 +564,7 @@ coffee --bare --print --stdio</pre>
     </p>
     <%= code_for('object_comprehensions', 'ages.join(", ")') %>
     <p>
-      If you would like to iterate over just the keys that are defined on the 
+      If you would like to iterate over just the keys that are defined on the
       object itself, by adding a <tt>hasOwnProperty</tt>
       check to avoid properties that may be interited from the prototype, use<br />
       <tt>for own key, value of object</tt>
