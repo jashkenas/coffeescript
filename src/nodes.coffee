@@ -1451,6 +1451,7 @@ exports.For = class For extends Base
     scope.find(index, immediate: yes) if index
     rvar          = scope.freeVariable 'results' if @returns and not hasPureLast
     ivar          = (if @range then name else index) or scope.freeVariable 'i'
+    name          = ivar if @pattern
     varPart       = ''
     guardPart     = ''
     defPart       = ''
@@ -1464,23 +1465,23 @@ exports.For = class For extends Base
       if (name or @own) and not IDENTIFIER.test svar
         defPart = "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
         svar = ref
-      namePart = if @pattern
-        new Assign(@name, new Literal "#{svar}[#{ivar}]").compile o, LEVEL_TOP
-      else if name
-        "#{name} = #{svar}[#{ivar}]"
+      if name and not @pattern
+        namePart = "#{name} = #{svar}[#{ivar}]"
       unless @object
         lvar        = scope.freeVariable 'len'
         stepPart    = if @step then "#{ivar} += #{ @step.compile(o, LEVEL_OP) }" else "#{ivar}++"
         forPart     = "#{ivar} = 0, #{lvar} = #{svar}.length; #{ivar} < #{lvar}; #{stepPart}"
     if @scoped
       body          = Closure.wrap body, true, not @returns
-    defPart         += @pluckDirectCall o, body, name, index unless @pattern
+    defPart         += @pluckDirectCall o, body, name, index
     if @returns and not hasPureLast
       resultPart    = "#{@tab}#{rvar} = [];\n"
       returnResult  = '\n' + (new Return(new Literal(rvar)).compile o, LEVEL_PAREN)
       body          = Push.wrap rvar, body
     if @guard
       body          = Expressions.wrap [new If @guard, body]
+    if @pattern
+      body.expressions.unshift new Assign @name, new Literal "#{svar}[#{ivar}]"
     varPart         = "\n#{idt1}#{namePart};" if namePart
     if @object
       forPart       = "#{ivar} in #{svar}"
