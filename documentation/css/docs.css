@@ -126,7 +126,7 @@ div.code {
   height: 50px;
   min-width: 490px;
   left: 40px; right: 40px; top: 25px;
-  padding-left: 235px;
+  padding-left: 252px;
   background: #eee;
   background: -webkit-gradient(linear, left top, left bottom, from(#f8f8f8), to(#dadada));
   background: -moz-linear-gradient(top, #f8f8f8, #dadada);
@@ -140,7 +140,7 @@ div.code {
 }
   #logo {
     display: block;
-    width: 215px; height: 50px;
+    width: 225px; height: 50px;
     background: url('../images/logo.png');
     position: absolute;
     top: 0px; left: 10px;
