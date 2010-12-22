@@ -139,8 +139,8 @@ ok(num % 2 is 0 for num in array by 2)
 
 # Nested shared scopes.
 foo = ->
-  for i in [0..7] ->
-    for j in [0..7] ->
+  for i in [0..7] =>
+    for j in [0..7] =>
       -> i + j
 
 eq foo()[3][4](), 7

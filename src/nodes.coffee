@@ -49,7 +49,7 @@ exports.Base = class Base
   # object with their parent closure, to preserve the expected lexical scope.
   compileClosure: (o) ->
     if @containsPureStatement()
-      throw SyntaxError 'cannot include a pure statement in an expression.'
+      throw SyntaxError 'cannot use a pure statement in an expression.'
     o.sharedScope = yes
     Closure.wrap(this).compileNode o
 
@@ -1454,6 +1454,8 @@ exports.For = class For extends Base
     guardPart     = ''
     defPart       = ''
     idt1          = @tab + TAB
+    if @scoped and @containsPureStatement()
+      throw SyntaxError 'cannot use a pure statement in a scoped loop.'
     if @range
       forPart = source.compile merge(o, {index: ivar, @step})
     else

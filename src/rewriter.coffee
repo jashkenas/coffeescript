@@ -148,7 +148,7 @@ class exports.Rewriter
       return 1 unless callObject or
         prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
         (tag in IMPLICIT_CALL or not (token.spaced or token.newLine) and tag in IMPLICIT_UNSPACED_CALL) and
-        not (seenFor and tag is '->' and next and next[0] is 'INDENT')
+        not (seenFor and tag in ['->', '=>'] and next and next[0] is 'INDENT')
       tokens.splice i, 0, ['CALL_START', '(', token[2]]
       @detectEnd i + 1, (token, i) ->
         return yes if not seenSingle and token.fromThen
