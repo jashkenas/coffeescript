@@ -1471,9 +1471,6 @@ exports.For = class For extends Base
         lvar        = scope.freeVariable 'len'
         stepPart    = if @step then "#{ivar} += #{ @step.compile(o, LEVEL_OP) }" else "#{ivar}++"
         forPart     = "#{ivar} = 0, #{lvar} = #{svar}.length; #{ivar} < #{lvar}; #{stepPart}"
-    if @scoped
-      body          = Closure.wrap body, true, not @returns
-    defPart         += @pluckDirectCall o, body, name, index
     if @returns and not hasPureLast
       resultPart    = "#{@tab}#{rvar} = [];\n"
       returnResult  = '\n' + (new Return(new Literal(rvar)).compile o, LEVEL_PAREN)
@@ -1482,6 +1479,9 @@ exports.For = class For extends Base
       body          = Expressions.wrap [new If @guard, body]
     if @pattern
       body.expressions.unshift new Assign @name, new Literal "#{svar}[#{ivar}]"
+    if @scoped
+      body          = Closure.wrap body, true, not @returns
+    defPart         += @pluckDirectCall o, body, name, index
     varPart         = "\n#{idt1}#{namePart};" if namePart
     if @object
       forPart       = "#{ivar} in #{svar}"

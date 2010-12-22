@@ -146,6 +146,16 @@ foo = ->
 eq foo()[3][4](), 7
 
 
+# Scoped loop pattern matching.
+a = [[0], [1]]
+funcs = []
+
+for [v] in a -> funcs.push -> v
+
+eq funcs[0](), 0
+eq funcs[1](), 1
+
+
 # Nested comprehensions.
 multiLiner =
   for x in [3..5]
