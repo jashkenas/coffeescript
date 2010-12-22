@@ -104,8 +104,12 @@ grammar =
   # will convert some postfix forms into blocks for us, by adjusting the
   # token stream.
   Block: [
-    o 'INDENT Body OUTDENT',                    -> $2
     o 'INDENT OUTDENT',                         -> new Expressions
+    o 'FullBlock'
+  ]
+
+  FullBlock: [
+    o 'INDENT Body OUTDENT',                    -> $2
   ]
 
   # A literal identifier, a variable name or property.
@@ -420,7 +424,7 @@ grammar =
     o 'Statement  ForBody',                     -> new For $1, $2
     o 'Expression ForBody',                     -> new For $1, $2
     o 'ForBody    Block',                       -> new For $2, $1
-    o 'ForBody FuncGlyph Block',                -> $1.scoped = yes; new For $3, $1
+    o 'ForBody FuncGlyph FullBlock',            -> $1.scoped = yes; new For $3, $1
   ]
 
   ForBody: [

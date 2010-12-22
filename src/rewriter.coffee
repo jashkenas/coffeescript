@@ -151,8 +151,9 @@ class exports.Rewriter
         not (seenFor and tag in ['->', '=>'] and next and next[0] is 'INDENT')
       tokens.splice i, 0, ['CALL_START', '(', token[2]]
       @detectEnd i + 1, (token, i) ->
-        return yes if not seenSingle and token.fromThen
         [tag] = token
+        return yes if seenFor and tag in ['->', '=>'] and @tokens[i + 1]?[0] is 'INDENT'
+        return yes if not seenSingle and token.fromThen
         seenSingle = yes if tag in ['IF', 'ELSE', '->', '=>']
         return yes if tag in ['.', '?.', '::'] and @tag(i - 1) is 'OUTDENT'
         not token.generated and @tag(i - 1) isnt ',' and tag in IMPLICIT_END and

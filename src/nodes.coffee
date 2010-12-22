@@ -1472,7 +1472,7 @@ exports.For = class For extends Base
         lvar        = scope.freeVariable 'len'
         stepPart    = if @step then "#{ivar} += #{ @step.compile(o, LEVEL_OP) }" else "#{ivar}++"
         forPart     = "#{ivar} = 0, #{lvar} = #{svar}.length; #{ivar} < #{lvar}; #{stepPart}"
-    if @scoped and body.expressions.length
+    if @scoped
       body          = Closure.wrap body, true, not @returns
     defPart         += @pluckDirectCall o, body, name, index unless @pattern
     if @returns and not hasPureLast
