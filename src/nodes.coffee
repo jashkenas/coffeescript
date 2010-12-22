@@ -40,7 +40,7 @@ exports.Base = class Base
     o.level  = lvl if lvl
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
-    if o.level is LEVEL_TOP or node.isPureStatement() or not node.isStatement(o)
+    if o.level is LEVEL_TOP or not node.isStatement(o)
       node.compileNode o
     else
       node.compileClosure o
@@ -134,7 +134,6 @@ exports.Base = class Base
   children: []
 
   isStatement     : NO
-  isPureStatement : NO
   jumps           : NO
   isComplex       : YES
   isChainable     : NO
@@ -181,7 +180,7 @@ exports.Expressions = class Expressions extends Base
     not @expressions.length
 
   isStatement: (o) ->
-    for exp in @expressions when exp.isPureStatement() or exp.isStatement o
+    for exp in @expressions when exp.isStatement o
       return yes
     no
 
@@ -272,12 +271,7 @@ exports.Literal = class Literal extends Base
   constructor: (@value) ->
 
   makeReturn: ->
-    if @isPureStatement() then this else new Return this
-
-  # Break and continue must be treated as pure statements -- they lose their
-  # meaning when wrapped in a closure.
-  isPureStatement: ->
-    @value in ['break', 'continue', 'debugger']
+    if @jumps() then this else new Return this
 
   isAssignable: ->
     IDENTIFIER.test @value
@@ -288,7 +282,8 @@ exports.Literal = class Literal extends Base
     name is @value
 
   jumps: (o) ->
-    @isPureStatement() and not (o and (o.loop or o.block and (@value isnt 'continue')))
+    return no unless @value in ['break', 'continue', 'debugger']
+    not (o and (o.loop or o.block and (@value isnt 'continue')))
 
   compile: ->
     if @value.reserved then "\"#{@value}\"" else @value
@@ -306,7 +301,6 @@ exports.Return = class Return extends Base
   children: ['expression']
 
   isStatement:     YES
-  isPureStatement: YES
   makeReturn:      THIS
   jumps:           YES
 
@@ -422,7 +416,6 @@ exports.Value = class Value extends Base
 exports.Comment = class Comment extends Base
   constructor: (@comment) ->
 
-  isPureStatement: YES
   isStatement:     YES
   makeReturn:      THIS
 
@@ -1165,8 +1158,7 @@ exports.While = class While extends Base
       body = "\n#{ body.compile o, LEVEL_TOP }\n#{@tab}"
     code = set + @tab + "while (#{ @condition.compile o, LEVEL_PAREN }) {#{body}}"
     if @returns
-      o.indent = @tab
-      code += '\n' + new Return(new Literal rvar).compile o
+      code += "\n#{@tab}return #{rvar};"
     code
 
 #### Op
@@ -1447,14 +1439,14 @@ exports.For = class For extends Base
   # some cannot.
   compileNode: (o) ->
     body          = Expressions.wrap [@body]
-    hasPureLast   = last(body.expressions)?.jumps()
+    lastJumps     = last(body.expressions)?.jumps()
     source        = if @range then @source.base else @source
     scope         = o.scope
     name          = @name  and @name.compile o, LEVEL_LIST
     index         = @index and @index.compile o, LEVEL_LIST
     scope.find(name,  immediate: yes) if name and not @pattern
     scope.find(index, immediate: yes) if index
-    rvar          = scope.freeVariable 'results' if @returns and not hasPureLast
+    rvar          = scope.freeVariable 'results' if @returns and not lastJumps
     ivar          = (if @range then name else index) or scope.freeVariable 'i'
     name          = ivar if @pattern
     varPart       = ''
@@ -1476,9 +1468,9 @@ exports.For = class For extends Base
         lvar        = scope.freeVariable 'len'
         stepPart    = if @step then "#{ivar} += #{ @step.compile(o, LEVEL_OP) }" else "#{ivar}++"
         forPart     = "#{ivar} = 0, #{lvar} = #{svar}.length; #{ivar} < #{lvar}; #{stepPart}"
-    if @returns and not hasPureLast
+    if @returns and not lastJumps
       resultPart    = "#{@tab}#{rvar} = [];\n"
-      returnResult  = '\n' + (new Return(new Literal(rvar)).compile o, LEVEL_PAREN)
+      returnResult  = "\n#{@tab}return #{rvar};"
       body          = Push.wrap rvar, body
     if @guard
       body          = Expressions.wrap [new If @guard, body]
@@ -1553,7 +1545,7 @@ exports.Switch = class Switch extends Base
       code += body + '\n' if body = block.compile o, LEVEL_TOP
       break if i is @cases.length - 1 and not @otherwise
       expr = @lastNonComment block.expressions
-      if not expr or not expr.isPureStatement()
+      if not expr or not expr.jumps()
         code += idt2 + 'break;\n'
     code += idt1 + "default:\n#{ @otherwise.compile o, LEVEL_TOP }\n" if @otherwise
     code +  @tab + '}'
