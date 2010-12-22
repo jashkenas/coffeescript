@@ -238,13 +238,18 @@ div.code {
       }
         .navigation .repl_bridge {
           position: absolute;
-          left: 397px;
-          width: 150px; height: 13px;
-          top: -15px;
+          height: 12px;
+          left: -1px; right: -1px;
+          bottom: -14px;
           border: 1px solid #aaa;
+          z-index: 5;
           background: #fff;
+          display: none;
           border-top-color: #fff; border-bottom-color: #fff;
         }
+          .navigation.active .repl_bridge {
+            display: block;
+          }
         .navigation .code .minibutton {
           top: 10px; right: 10px;
           width: 40px;
