@@ -94,12 +94,6 @@ exports.Base = class Base
   containsType: (type) ->
     this instanceof type or @contains (node) -> node instanceof type
 
-  # Convenience for the most common use of contains. Does the node contain
-  # a pure statement?
-  containsPureStatement: ->
-    @isPureStatement() or @contains (node) ->
-      node.isPureStatement() and node not instanceof Comment
-
   # Pull out the last non-comment node of a node list.
   lastNonComment: (list) ->
     i = list.length
@@ -1153,14 +1147,6 @@ exports.While = class While extends Base
       return yes if node.jumps loop: yes
     no
 
-  containsPureStatement: ->
-    {expressions} = @body
-    i = expressions.length
-    return true if expressions[--i]?.containsPureStatement()
-    ret = (node) -> node instanceof Return
-    return true while i-- when expressions[i].contains ret
-    false
-
   # The main difference from a JavaScript *while* is that the CoffeeScript
   # *while* can be used as a part of a larger expression -- while loops may
   # return an array containing the computed result of each iteration.
@@ -1455,15 +1441,13 @@ exports.For = class For extends Base
     @returns = yes
     this
 
-  containsPureStatement: While::containsPureStatement
-
   # Welcome to the hairiest method in all of CoffeeScript. Handles the inner
   # loop, filtering, stepping, and result saving for array, object, and range
   # comprehensions. Some of the generated code can be shared in common, and
   # some cannot.
   compileNode: (o) ->
     body          = Expressions.wrap [@body]
-    hasPureLast   = last(body.expressions)?.containsPureStatement()
+    hasPureLast   = last(body.expressions)?.jumps()
     source        = if @range then @source.base else @source
     scope         = o.scope
     name          = @name  and @name.compile o, LEVEL_LIST
@@ -1661,7 +1645,7 @@ exports.If = class If extends Base
 # which is helpful for recording the result arrays from comprehensions.
 Push =
   wrap: (name, exps) ->
-    return exps if exps.isEmpty() or last(exps.expressions).containsPureStatement()
+    return exps if exps.isEmpty() or last(exps.expressions).jumps()
     exps.push new Call new Value(new Literal(name), [new Access new Literal 'push']), [exps.pop()]
 
 #### Closure
@@ -1673,7 +1657,7 @@ Closure =
   # in which case, no dice. If the body mentions `this` or `arguments`,
   # then make sure that the closure wrapper preserves the original values.
   wrap: (expressions, statement, noReturn) ->
-    return expressions if expressions.containsPureStatement()
+    return expressions if expressions.jumps()
     func = new Code [], Expressions.wrap [expressions]
     args = []
     if (mentionsArgs = expressions.contains @literalArgs) or
