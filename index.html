@@ -188,7 +188,7 @@ cubes <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   }
   <span class="Keyword">return</span> _results;
 }());
-</pre><script>window.example1 = "# Assignment:\nnumber   = 42\nopposite = true\n\n# Conditions:\nnumber = -42 if opposite\n\n# Functions:\nsquare = (x) -> x * x\n\n# Arrays:\nlist = [1, 2, 3, 4, 5]\n\n# Objects:\nmath =\n  root:   Math.sqrt\n  square: square\n  cube:   (x) -> x * square x\n\n# Splats:\nrace = (winner, runners...) ->\n  print winner, runners\n\n# Existence:\nalert \"I knew it!\" if elvis?\n\n# Array comprehensions:\ncubes = (math.cube num for num in list)\n"</script><div class='minibutton ok' onclick='javascript: var cubes, list, math, num, number, opposite, race, square;
+</pre><script>window.example1 = "# Assignment:\nnumber   = 42\nopposite = true\n\n# Conditions:\nnumber = -42 if opposite\n\n# Functions:\nsquare = (x) -> x * x\n\n# Arrays:\nlist = [1, 2, 3, 4, 5]\n\n# Objects:\nmath =\n  root:   Math.sqrt\n  square: square\n  cube:   (x) -> x * square x\n\n# Splats:\nrace = (winner, runners...) ->\n  print winner, runners\n\n# Existence:\nalert \"I knew it!\" if elvis?\n\n# Array comprehensions:\ncubes = (math.cube num for num in list)\n\nalert cubes"</script><div class='minibutton ok' onclick='javascript: var cubes, list, math, num, number, opposite, race, square;
 var __slice = Array.prototype.slice;
 number = 42;
 opposite = true;
@@ -451,7 +451,7 @@ coffee --bare --print --stdio</pre>
 <span class="FunctionName">cube</span> = <span class="Storage">function</span>(<span class="FunctionArgument">x</span>) {
   <span class="Keyword">return</span> square(x) <span class="Keyword">*</span> x;
 };
-</pre><script>window.example2 = "square = (x) -> x * x\ncube   = (x) -> square(x) * x\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example2);'>Load</div><div class='minibutton ok' onclick='javascript: var cube, square;
+</pre><script>window.example2 = "square = (x) -> x * x\ncube   = (x) -> square(x) * x\n\nalert cube(5)"</script><div class='minibutton load' onclick='javascript: loadConsole(example2);'>Load</div><div class='minibutton ok' onclick='javascript: var cube, square;
 square = function(x) {
   return x * x;
 };
@@ -476,7 +476,7 @@ cube = function(x) {
   }
   <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>Filling the <span class="String">&quot;</span></span> <span class="Keyword">+</span> container <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> with <span class="String">&quot;</span></span> <span class="Keyword">+</span> liquid <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>...<span class="String">&quot;</span></span>;
 };
-</pre><script>window.example3 = "fill = (container, liquid = \"coffee\") ->\n  \"Filling the #{container} with #{liquid}...\"\n\n\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example3);'>Load</div><div class='minibutton ok' onclick='javascript: var fill;
+</pre><script>window.example3 = "fill = (container, liquid = \"coffee\") ->\n  \"Filling the #{container} with #{liquid}...\"\n\nalert fill(\"cup\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example3);'>Load</div><div class='minibutton ok' onclick='javascript: var fill;
 fill = function(container, liquid) {
   if (liquid == null) {
     liquid = "coffee";
@@ -528,7 +528,7 @@ kids <span class="Keyword">=</span> {
     age: <span class="Number">9</span>
   }
 };
-</pre><script>window.example4 = "song = [\"do\", \"re\", \"mi\", \"fa\", \"so\"]\n\nsingers = {Jagger: \"Rock\", Elvis: \"Roll\"}\n\nmatrix = [\n  1, 0, 1\n  0, 0, 1\n  1, 1, 0\n]\n\nkids =\n  brother:\n    name: \"Max\"\n    age:  11\n  sister:\n    name: \"Ida\"\n    age:  9\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example4);'>Load</div><div class='minibutton ok' onclick='javascript: var kids, matrix, singers, song;
+</pre><script>window.example4 = "song = [\"do\", \"re\", \"mi\", \"fa\", \"so\"]\n\nsingers = {Jagger: \"Rock\", Elvis: \"Roll\"}\n\nmatrix = [\n  1, 0, 1\n  0, 0, 1\n  1, 1, 0\n]\n\nkids =\n  brother:\n    name: \"Max\"\n    age:  11\n  sister:\n    name: \"Ida\"\n    age:  9\n\nalert song.join(\",\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example4);'>Load</div><div class='minibutton ok' onclick='javascript: var kids, matrix, singers, song;
 song = ["do", "re", "mi", "fa", "so"];
 singers = {
   Jagger: "Rock",
@@ -582,7 +582,7 @@ outer <span class="Keyword">=</span> <span class="Number">1</span>;
   <span class="Keyword">return</span> outer <span class="Keyword">=</span> <span class="Number">10</span>;
 };
 inner <span class="Keyword">=</span> changeNumbers();
-</pre><script>window.example6 = "outer = 1\nchangeNumbers = ->\n  inner = -1\n  outer = 10\ninner = changeNumbers()"</script><div class='minibutton load' onclick='javascript: loadConsole(example6);'>Load</div><div class='minibutton ok' onclick='javascript: var changeNumbers, inner, outer;
+</pre><script>window.example6 = "outer = 1\nchangeNumbers = ->\n  inner = -1\n  outer = 10\ninner = changeNumbers()\n\nalert inner"</script><div class='minibutton load' onclick='javascript: loadConsole(example6);'>Load</div><div class='minibutton ok' onclick='javascript: var changeNumbers, inner, outer;
 outer = 1;
 changeNumbers = function() {
   var inner;
@@ -848,7 +848,7 @@ num <span class="Keyword">=</span> <span class="Number">6</span>;
   }
   <span class="Keyword">return</span> _results;
 }();
-</pre><script>window.example10 = "# Econ 101\nif this.studyingEconomics\n  buy()  while supply > demand\n  sell() until supply > demand\n\n# Nursery Rhyme\nnum = 6\nlyrics = while num -= 1\n  num + \" little monkeys, jumping on the bed.\n    One fell out and bumped his head.\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example10);'>Load</div><div class='minibutton ok' onclick='javascript: var lyrics, num;
+</pre><script>window.example10 = "# Econ 101\nif this.studyingEconomics\n  buy()  while supply > demand\n  sell() until supply > demand\n\n# Nursery Rhyme\nnum = 6\nlyrics = while num -= 1\n  num + \" little monkeys, jumping on the bed.\n    One fell out and bumped his head.\"\n\nalert lyrics.join(\"\\n\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example10);'>Load</div><div class='minibutton ok' onclick='javascript: var lyrics, num;
 if (this.studyingEconomics) {
   while (supply > demand) {
     buy();
@@ -910,7 +910,7 @@ countdown <span class="Keyword">=</span> (<span class="Storage">function</span>(
   }
   <span class="Keyword">return</span> _results;
 }());
-</pre><script>window.example12 = "countdown = (num for num in [10..1])\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example12);'>Load</div><div class='minibutton ok' onclick='javascript: var countdown, num;
+</pre><script>window.example12 = "countdown = (num for num in [10..1])\n\nalert countdown"</script><div class='minibutton load' onclick='javascript: loadConsole(example12);'>Load</div><div class='minibutton ok' onclick='javascript: var countdown, num;
 countdown = (function() {
   var _results;
   _results = [];
@@ -957,7 +957,7 @@ yearsOld <span class="Keyword">=</span> {
   }
   <span class="Keyword">return</span> _results;
 }();
-</pre><script>window.example13 = "yearsOld = max: 10, ida: 9, tim: 11\n\nages = for child, age of yearsOld\n  child + \" is \" + age"</script><div class='minibutton load' onclick='javascript: loadConsole(example13);'>Load</div><div class='minibutton ok' onclick='javascript: var age, ages, child, yearsOld;
+</pre><script>window.example13 = "yearsOld = max: 10, ida: 9, tim: 11\n\nages = for child, age of yearsOld\n  child + \" is \" + age\n\nalert ages.join(\", \")"</script><div class='minibutton load' onclick='javascript: loadConsole(example13);'>Load</div><div class='minibutton ok' onclick='javascript: var age, ages, child, yearsOld;
 yearsOld = {
   max: 10,
   ida: 9,
@@ -996,7 +996,7 @@ middle  <span class="Keyword">=</span> copy[<span class="Number">3</span>..<span
 numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
 copy <span class="Keyword">=</span> numbers.<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, numbers.<span class="LibraryConstant">length</span>);
 middle <span class="Keyword">=</span> copy.<span class="LibraryFunction">slice</span>(<span class="Number">3</span>, <span class="Number">7</span>);
-</pre><script>window.example14 = "numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\ncopy    = numbers[0...numbers.length]\n\nmiddle  = copy[3..6]\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example14);'>Load</div><div class='minibutton ok' onclick='javascript: var copy, middle, numbers;
+</pre><script>window.example14 = "numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\ncopy    = numbers[0...numbers.length]\n\nmiddle  = copy[3..6]\n\nalert middle"</script><div class='minibutton load' onclick='javascript: loadConsole(example14);'>Load</div><div class='minibutton ok' onclick='javascript: var copy, middle, numbers;
 numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 copy = numbers.slice(0, numbers.length);
 middle = copy.slice(3, 7);;alert(middle);'>run: middle</div><br class='clear' /></div>
@@ -1012,7 +1012,7 @@ numbers[<span class="Number">3</span>..<span class="Number">6</span>] <span clas
 </pre><pre class="idle"><span class="Storage">var</span> numbers;
 numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
 [].splice.<span class="LibraryFunction">apply</span>(numbers, [<span class="Number">3</span>, <span class="Number">4</span>].<span class="LibraryFunction">concat</span>([<span class="Keyword">-</span><span class="Number">3</span>, <span class="Keyword">-</span><span class="Number">4</span>, <span class="Keyword">-</span><span class="Number">5</span>, <span class="Keyword">-</span><span class="Number">6</span>]));
-</pre><script>window.example15 = "numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nnumbers[3..6] = [-3, -4, -5, -6]\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example15);'>Load</div><div class='minibutton ok' onclick='javascript: var numbers;
+</pre><script>window.example15 = "numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nnumbers[3..6] = [-3, -4, -5, -6]\n\nalert numbers"</script><div class='minibutton load' onclick='javascript: loadConsole(example15);'>Load</div><div class='minibutton ok' onclick='javascript: var numbers;
 numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 [].splice.apply(numbers, [3, 4].concat([-3, -4, -5, -6]));;alert(numbers);'>run: numbers</div><br class='clear' /></div>
     <p>
@@ -1052,7 +1052,7 @@ eldest <span class="Keyword">=</span> <span class="Keyword">if</span> <span clas
   }
 };
 eldest <span class="Keyword">=</span> <span class="Number">24</span> <span class="Keyword">&gt;</span> <span class="Number">21</span> ? <span class="String"><span class="String">&quot;</span>Liz<span class="String">&quot;</span></span> : <span class="String"><span class="String">&quot;</span>Ike<span class="String">&quot;</span></span>;
-</pre><script>window.example16 = "grade = (student) ->\n  if student.excellentWork\n    \"A+\"\n  else if student.okayStuff\n    if student.triedHard then \"B\" else \"B-\"\n  else\n    \"C\"\n\neldest = if 24 > 21 then \"Liz\" else \"Ike\""</script><div class='minibutton load' onclick='javascript: loadConsole(example16);'>Load</div><div class='minibutton ok' onclick='javascript: var eldest, grade;
+</pre><script>window.example16 = "grade = (student) ->\n  if student.excellentWork\n    \"A+\"\n  else if student.okayStuff\n    if student.triedHard then \"B\" else \"B-\"\n  else\n    \"C\"\n\neldest = if 24 > 21 then \"Liz\" else \"Ike\"\n\nalert eldest"</script><div class='minibutton load' onclick='javascript: loadConsole(example16);'>Load</div><div class='minibutton ok' onclick='javascript: var eldest, grade;
 grade = function(student) {
   if (student.excellentWork) {
     return "A+";
@@ -1081,7 +1081,7 @@ eldest = 24 > 21 ? "Liz" : "Ike";;alert(eldest);'>run: eldest</div><br class='cl
 
 </pre><pre class="idle"><span class="Storage">var</span> one, six, three, two;
 six <span class="Keyword">=</span> (one <span class="Keyword">=</span> <span class="Number">1</span>) <span class="Keyword">+</span> (two <span class="Keyword">=</span> <span class="Number">2</span>) <span class="Keyword">+</span> (three <span class="Keyword">=</span> <span class="Number">3</span>);
-</pre><script>window.example17 = "six = (one = 1) + (two = 2) + (three = 3)\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example17);'>Load</div><div class='minibutton ok' onclick='javascript: var one, six, three, two;
+</pre><script>window.example17 = "six = (one = 1) + (two = 2) + (three = 3)\n\nalert six"</script><div class='minibutton load' onclick='javascript: loadConsole(example17);'>Load</div><div class='minibutton ok' onclick='javascript: var one, six, three, two;
 six = (one = 1) + (two = 2) + (three = 3);;alert(six);'>run: six</div><br class='clear' /></div>
     <p>
       Things that would otherwise be statements in JavaScript, when used
@@ -1101,7 +1101,7 @@ globals <span class="Keyword">=</span> (<span class="Storage">function</span>() 
   }
   <span class="Keyword">return</span> _results;
 }()).<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
-</pre><script>window.example18 = "# The first ten global properties.\n\nglobals = (name for name of window)[0...10]"</script><div class='minibutton load' onclick='javascript: loadConsole(example18);'>Load</div><div class='minibutton ok' onclick='javascript: var globals, name;
+</pre><script>window.example18 = "# The first ten global properties.\n\nglobals = (name for name of window)[0...10]\n\nalert globals"</script><div class='minibutton load' onclick='javascript: loadConsole(example18);'>Load</div><div class='minibutton ok' onclick='javascript: var globals, name;
 globals = (function() {
   var _results;
   _results = [];
@@ -1171,7 +1171,7 @@ footprints <span class="Keyword">=</span> yeti <span class="Keyword">?</span> <s
 }
 <span class="Keyword">typeof</span> speed <span class="Keyword">!</span><span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> speed <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span> ? speed : speed <span class="Keyword">=</span> <span class="Number">75</span>;
 footprints <span class="Keyword">=</span> <span class="Keyword">typeof</span> yeti <span class="Keyword">!</span><span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> yeti <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span> ? yeti : <span class="String"><span class="String">&quot;</span>bear<span class="String">&quot;</span></span>;
-</pre><script>window.example20 = "solipsism = true if mind? and not world?\n\nspeed ?= 75\n\nfootprints = yeti ? \"bear\"\n\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example20);'>Load</div><div class='minibutton ok' onclick='javascript: var footprints, solipsism;
+</pre><script>window.example20 = "solipsism = true if mind? and not world?\n\nspeed ?= 75\n\nfootprints = yeti ? \"bear\"\n\nalert footprints"</script><div class='minibutton load' onclick='javascript: loadConsole(example20);'>Load</div><div class='minibutton ok' onclick='javascript: var footprints, solipsism;
 if ((typeof mind != "undefined" && mind !== null) && !(typeof world != "undefined" && world !== null)) {
   solipsism = true;
 }
@@ -1347,7 +1347,7 @@ tom.move();;'>run</div><br class='clear' /></div>
 </pre><pre class="idle"><span class="LibraryClassType">String</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">dasherize</span> = <span class="Storage">function</span>() {
   <span class="Keyword">return</span> <span class="Variable">this</span>.<span class="LibraryFunction">replace</span>(<span class="String"><span class="String">/</span>_<span class="String">/</span>g</span>, <span class="String"><span class="String">&quot;</span>-<span class="String">&quot;</span></span>);
 };
-</pre><script>window.example23 = "String::dasherize = ->\n  this.replace /_/g, \"-\"\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example23);'>Load</div><div class='minibutton ok' onclick='javascript: String.prototype.dasherize = function() {
+</pre><script>window.example23 = "String::dasherize = ->\n  this.replace /_/g, \"-\"\n\nalert \"one_two\".dasherize()"</script><div class='minibutton load' onclick='javascript: loadConsole(example23);'>Load</div><div class='minibutton ok' onclick='javascript: String.prototype.dasherize = function() {
   return this.replace(/_/g, "-");
 };;alert("one_two".dasherize());'>run: "one_two".dasherize()</div><br class='clear' /></div>
     <p>
@@ -1378,7 +1378,7 @@ theSwitch <span class="Keyword">=</span> <span class="Number">0</span>
 theBait <span class="Keyword">=</span> <span class="Number">1000</span>;
 theSwitch <span class="Keyword">=</span> <span class="Number">0</span>;
 _ref <span class="Keyword">=</span> [theSwitch, theBait], theBait <span class="Keyword">=</span> _ref[<span class="Number">0</span>], theSwitch <span class="Keyword">=</span> _ref[<span class="Number">1</span>];
-</pre><script>window.example24 = "theBait   = 1000\ntheSwitch = 0\n\n[theBait, theSwitch] = [theSwitch, theBait]\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example24);'>Load</div><div class='minibutton ok' onclick='javascript: var theBait, theSwitch, _ref;
+</pre><script>window.example24 = "theBait   = 1000\ntheSwitch = 0\n\n[theBait, theSwitch] = [theSwitch, theBait]\n\nalert theBait"</script><div class='minibutton load' onclick='javascript: loadConsole(example24);'>Load</div><div class='minibutton ok' onclick='javascript: var theBait, theSwitch, _ref;
 theBait = 1000;
 theSwitch = 0;
 _ref = [theSwitch, theBait], theBait = _ref[0], theSwitch = _ref[1];;alert(theBait);'>run: theBait</div><br class='clear' /></div>
@@ -1398,7 +1398,7 @@ _ref = [theSwitch, theBait], theBait = _ref[0], theSwitch = _ref[1];;alert(theBa
   <span class="Keyword">return</span> [location, <span class="Number">72</span>, <span class="String"><span class="String">&quot;</span>Mostly Sunny<span class="String">&quot;</span></span>];
 };
 _ref <span class="Keyword">=</span> weatherReport(<span class="String"><span class="String">&quot;</span>Berkeley, CA<span class="String">&quot;</span></span>), city <span class="Keyword">=</span> _ref[<span class="Number">0</span>], temp <span class="Keyword">=</span> _ref[<span class="Number">1</span>], forecast <span class="Keyword">=</span> _ref[<span class="Number">2</span>];
-</pre><script>window.example25 = "weatherReport = (location) ->\n  # Make an Ajax request to fetch the weather...\n  [location, 72, \"Mostly Sunny\"]\n\n[city, temp, forecast] = weatherReport \"Berkeley, CA\"\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example25);'>Load</div><div class='minibutton ok' onclick='javascript: var city, forecast, temp, weatherReport, _ref;
+</pre><script>window.example25 = "weatherReport = (location) ->\n  # Make an Ajax request to fetch the weather...\n  [location, 72, \"Mostly Sunny\"]\n\n[city, temp, forecast] = weatherReport \"Berkeley, CA\"\n\nalert forecast"</script><div class='minibutton load' onclick='javascript: loadConsole(example25);'>Load</div><div class='minibutton ok' onclick='javascript: var city, forecast, temp, weatherReport, _ref;
 weatherReport = function(location) {
   return [location, 72, "Mostly Sunny"];
 };
@@ -1430,7 +1430,7 @@ futurists <span class="Keyword">=</span> {
   }
 };
 _ref <span class="Keyword">=</span> futurists.poet, name <span class="Keyword">=</span> _ref.<span class="LibraryConstant">name</span>, _ref2 <span class="Keyword">=</span> _ref.address, street <span class="Keyword">=</span> _ref2[<span class="Number">0</span>], city <span class="Keyword">=</span> _ref2[<span class="Number">1</span>];
-</pre><script>window.example26 = "futurists =\n  sculptor: \"Umberto Boccioni\"\n  painter:  \"Vladimir Burliuk\"\n  poet:\n    name:   \"F.T. Marinetti\"\n    address: [\n      \"Via Roma 42R\"\n      \"Bellagio, Italy 22021\"\n    ]\n\n{poet: {name, address: [street, city]}} = futurists\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example26);'>Load</div><div class='minibutton ok' onclick='javascript: var city, futurists, name, street, _ref, _ref2;
+</pre><script>window.example26 = "futurists =\n  sculptor: \"Umberto Boccioni\"\n  painter:  \"Vladimir Burliuk\"\n  poet:\n    name:   \"F.T. Marinetti\"\n    address: [\n      \"Via Roma 42R\"\n      \"Bellagio, Italy 22021\"\n    ]\n\n{poet: {name, address: [street, city]}} = futurists\n\nalert name + \" — \" + street"</script><div class='minibutton load' onclick='javascript: loadConsole(example26);'>Load</div><div class='minibutton ok' onclick='javascript: var city, futurists, name, street, _ref, _ref2;
 futurists = {
   sculptor: "Umberto Boccioni",
   painter: "Vladimir Burliuk",
@@ -1454,7 +1454,7 @@ _ref = futurists.poet, name = _ref.name, _ref2 = _ref.address, street = _ref2[0]
 <span class="Storage">var</span> __slice <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice;
 tag <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>&lt;impossible&gt;<span class="String">&quot;</span></span>;
 _ref <span class="Keyword">=</span> tag.<span class="LibraryFunction">split</span>(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span>), open <span class="Keyword">=</span> _ref[<span class="Number">0</span>], contents <span class="Keyword">=</span> <span class="Number">3</span> <span class="Keyword">&lt;=</span> _ref.<span class="LibraryConstant">length</span> ? __slice.<span class="LibraryFunction">call</span>(_ref, <span class="Number">1</span>, _i <span class="Keyword">=</span> _ref.<span class="LibraryConstant">length</span> <span class="Keyword">-</span> <span class="Number">1</span>) : (_i <span class="Keyword">=</span> <span class="Number">1</span>, []), close <span class="Keyword">=</span> _ref[_i<span class="Keyword">++</span>];
-</pre><script>window.example27 = "tag = \"<impossible>\"\n\n[open, contents..., close] = tag.split(\"\")\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example27);'>Load</div><div class='minibutton ok' onclick='javascript: var close, contents, open, tag, _i, _ref;
+</pre><script>window.example27 = "tag = \"<impossible>\"\n\n[open, contents..., close] = tag.split(\"\")\n\nalert contents.join(\"\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example27);'>Load</div><div class='minibutton ok' onclick='javascript: var close, contents, open, tag, _i, _ref;
 var __slice = Array.prototype.slice;
 tag = "<impossible>";
 _ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? __slice.call(_ref, 1, _i = _ref.length - 1) : (_i = 1, []), close = _ref[_i++];;alert(contents.join(""));'>run: contents.join("")</div><br class='clear' /></div>
@@ -1515,7 +1515,7 @@ _ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? __slice.call
 <span class="FunctionName">hi</span> = <span class="Storage">function</span>() {
   <span class="Keyword">return</span> [<span class="LibraryClassType">document</span>.<span class="LibraryConstant">title</span>, <span class="String"><span class="String">&quot;</span>Hello JavaScript<span class="String">&quot;</span></span>].<span class="LibraryFunction">join</span>(<span class="String"><span class="String">&quot;</span>: <span class="String">&quot;</span></span>);
 };
-</pre><script>window.example29 = "hi = `function() {\n  return [document.title, \"Hello JavaScript\"].join(\": \");\n}`\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example29);'>Load</div><div class='minibutton ok' onclick='javascript: var hi;
+</pre><script>window.example29 = "hi = `function() {\n  return [document.title, \"Hello JavaScript\"].join(\": \");\n}`\n\nalert hi()"</script><div class='minibutton load' onclick='javascript: loadConsole(example29);'>Load</div><div class='minibutton ok' onclick='javascript: var hi;
 hi = function() {
   return [document.title, "Hello JavaScript"].join(": ");
 };;alert(hi());'>run: hi()</div><br class='clear' /></div>
@@ -1610,7 +1610,7 @@ healthy <span class="Keyword">=</span> <span class="Number">200</span> <span cla
 </pre><pre class="idle"><span class="Storage">var</span> cholesterol, healthy;
 cholesterol <span class="Keyword">=</span> <span class="Number">127</span>;
 healthy <span class="Keyword">=</span> (<span class="Number">200</span> <span class="Keyword">&gt;</span> cholesterol <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> cholesterol <span class="Keyword">&gt;</span> <span class="Number">60</span>);
-</pre><script>window.example32 = "cholesterol = 127\n\nhealthy = 200 > cholesterol > 60\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example32);'>Load</div><div class='minibutton ok' onclick='javascript: var cholesterol, healthy;
+</pre><script>window.example32 = "cholesterol = 127\n\nhealthy = 200 > cholesterol > 60\n\nalert healthy"</script><div class='minibutton load' onclick='javascript: loadConsole(example32);'>Load</div><div class='minibutton ok' onclick='javascript: var cholesterol, healthy;
 cholesterol = 127;
 healthy = (200 > cholesterol && cholesterol > 60);;alert(healthy);'>run: healthy</div><br class='clear' /></div>
 
@@ -1631,7 +1631,7 @@ sentence <span class="Keyword">=</span> <span class="String"><span class="String
 author <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Wittgenstein<span class="String">&quot;</span></span>;
 quote <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String">&quot;</span></span> <span class="Keyword">+</span> author;
 sentence <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> (<span class="Number">22</span> / <span class="Number">7</span>) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is a decent approximation of π<span class="String">&quot;</span></span>;
-</pre><script>window.example33 = "author = \"Wittgenstein\"\nquote  = \"A picture is a fact. -- #{ author }\"\n\nsentence = \"#{ 22 / 7 } is a decent approximation of π\"\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example33);'>Load</div><div class='minibutton ok' onclick='javascript: var author, quote, sentence;
+</pre><script>window.example33 = "author = \"Wittgenstein\"\nquote  = \"A picture is a fact. -- #{ author }\"\n\nsentence = \"#{ 22 / 7 } is a decent approximation of π\"\n\nalert sentence"</script><div class='minibutton load' onclick='javascript: loadConsole(example33);'>Load</div><div class='minibutton ok' onclick='javascript: var author, quote, sentence;
 author = "Wittgenstein";
 quote = "A picture is a fact. -- " + author;
 sentence = "" + (22 / 7) + " is a decent approximation of π";;alert(sentence);'>run: sentence</div><br class='clear' /></div>
@@ -1648,7 +1648,7 @@ sentence = "" + (22 / 7) + " is a decent approximation of π";;alert(sentence);'
 
 </pre><pre class="idle"><span class="Storage">var</span> mobyDick;
 mobyDick <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...<span class="String">&quot;</span></span>;
-</pre><script>window.example34 = "mobyDick = \"Call me Ishmael. Some years ago --\n never mind how long precisely -- having little\n or no money in my purse, and nothing particular\n to interest me on shore, I thought I would sail\n about a little and see the watery part of the\n world...\"\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example34);'>Load</div><div class='minibutton ok' onclick='javascript: var mobyDick;
+</pre><script>window.example34 = "mobyDick = \"Call me Ishmael. Some years ago --\n never mind how long precisely -- having little\n or no money in my purse, and nothing particular\n to interest me on shore, I thought I would sail\n about a little and see the watery part of the\n world...\"\n\nalert mobyDick"</script><div class='minibutton load' onclick='javascript: loadConsole(example34);'>Load</div><div class='minibutton ok' onclick='javascript: var mobyDick;
 mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...";;alert(mobyDick);'>run: mobyDick</div><br class='clear' /></div>
     <p>
       Heredocs can be used to hold formatted or indentation-sensitive text

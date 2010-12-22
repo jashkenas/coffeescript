@@ -9,8 +9,11 @@
     js = File.read("documentation/js/#{file}.js")
     cshtml = Uv.parse(cs, 'xhtml', 'coffeescript', false, 'idle', false)
     jshtml = Uv.parse(js, 'xhtml', 'javascript', false, 'idle', false)
-    append = executable == true ? '' : "alert(#{executable});"
-    run    = executable == true ? 'run' : "run: #{executable}"
+    append = executable  == true ? '' : "alert(#{executable});"
+    if executable and executable != true
+      cs.sub!(/(\S)\s*\Z/m, "\\1\n\nalert #{executable}")
+    end
+    run    = executable  == true ? 'run' : "run: #{executable}"
     name   = "example#{@counter}"
     script = "<script>window.#{name} = #{cs.to_json}</script>"
     import = show_load ? "<div class='minibutton load' onclick='javascript: loadConsole(#{name});'>Load</div>" : ''
