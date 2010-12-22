@@ -48,7 +48,7 @@ exports.Base = class Base
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
   compileClosure: (o) ->
-    if @containsPureStatement()
+    if @jumps()
       throw SyntaxError 'cannot use a pure statement in an expression.'
     o.sharedScope = yes
     Closure.wrap(this).compileNode o
@@ -141,6 +141,7 @@ exports.Base = class Base
 
   isStatement     : NO
   isPureStatement : NO
+  jumps           : NO
   isComplex       : YES
   isChainable     : NO
   isAssignable    : NO
@@ -189,6 +190,10 @@ exports.Expressions = class Expressions extends Base
     for exp in @expressions when exp.isPureStatement() or exp.isStatement o
       return yes
     no
+
+  jumps: (o) ->
+    for exp in @expressions
+      return true if exp.jumps o
 
   # An Expressions node does not return its entire body, rather it
   # ensures that the final expression is returned.
@@ -288,6 +293,9 @@ exports.Literal = class Literal extends Base
   assigns: (name) ->
     name is @value
 
+  jumps: (o) ->
+    @isPureStatement() and not (o and (o.loop or o.block and (@value isnt 'continue')))
+
   compile: ->
     if @value.reserved then "\"#{@value}\"" else @value
 
@@ -306,6 +314,7 @@ exports.Return = class Return extends Base
   isStatement:     YES
   isPureStatement: YES
   makeReturn:      THIS
+  jumps:           YES
 
   compile: (o, level) ->
     expr = @expression?.makeReturn()
@@ -349,6 +358,7 @@ exports.Value = class Value extends Base
 
   isStatement : (o)    -> not @properties.length and @base.isStatement o
   assigns     : (name) -> not @properties.length and @base.assigns name
+  jumps       : (o)    -> not @properties.length and @base.jumps o
 
   isObject: (onlyGenerated) ->
     return no if @properties.length
@@ -997,6 +1007,8 @@ exports.Code = class Code extends Base
 
   isStatement: -> !!@ctor
 
+  jumps: NO
+
   # Compilation creates a new scope unless explicitly asked to share with the
   # outer scope. Handles splat parameters in the parameter list by peeking at
   # the JavaScript `arguments` objects. If the function is bound with the `=>`
@@ -1133,6 +1145,13 @@ exports.While = class While extends Base
 
   addBody: (@body) ->
     this
+
+  jumps: ->
+    {expressions} = @body
+    return no unless expressions.length
+    for node in expressions
+      return yes if node.jumps loop: yes
+    no
 
   containsPureStatement: ->
     {expressions} = @body
@@ -1317,6 +1336,8 @@ exports.Try = class Try extends Base
 
   isStatement: YES
 
+  jumps: (o) -> @attempt.jumps(o) or @recovery?.jumps(o)
+
   makeReturn: ->
     @attempt  = @attempt .makeReturn() if @attempt
     @recovery = @recovery.makeReturn() if @recovery
@@ -1346,6 +1367,7 @@ exports.Throw = class Throw extends Base
   children: ['expression']
 
   isStatement: YES
+  jumps:       NO
 
   # A **Throw** is already a return, of sorts...
   makeReturn: THIS
@@ -1527,6 +1549,11 @@ exports.Switch = class Switch extends Base
 
   isStatement: YES
 
+  jumps: (o = {block: yes}) ->
+    for [conds, block] in @cases
+      return yes if block.jumps o
+    @otherwise?.jumps o
+
   makeReturn: ->
     pair[1].makeReturn() for pair in @cases
     @otherwise?.makeReturn()
@@ -1581,6 +1608,8 @@ exports.If = class If extends Base
   isStatement: (o) ->
     o?.level is LEVEL_TOP or
       @bodyNode().isStatement(o) or @elseBodyNode()?.isStatement(o)
+
+  jumps: (o) -> @body.jumps(o) or @elseBody?.jumps(o)
 
   compileNode: (o) ->
     if @isStatement o then @compileStatement o else @compileExpression o
