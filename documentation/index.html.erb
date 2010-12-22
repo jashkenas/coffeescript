@@ -46,32 +46,25 @@
         <a href="#overview">Overview</a>
         <a href="#installation">Installation and Usage</a>
         <a href="#language">Language Reference</a>
-        <a href="#whitespace">Significant Whitespace</a>
-        <a href="#functions">Functions and Invocation</a>
-        <a href="#objects_and_arrays">Objects and Arrays</a>
+        <a href="#literals">Literals: Functions, Objects and Arrays</a>
         <a href="#lexical_scope">Lexical Scoping and Variable Safety</a>
         <a href="#conditionals">If, Else, Unless, and Conditional Assignment</a>
-        <a href="#aliases">Aliases</a>
         <a href="#splats">Splats...</a>
-        <a href="#while">While, Until, and Loop</a>
-        <a href="#comprehensions">Comprehensions (Arrays, Objects, and Ranges)</a>
+        <a href="#loops">Loops and Comprehensions</a>
         <a href="#slices">Array Slicing and Splicing</a>
         <a href="#expressions">Everything is an Expression</a>
-        <a href="#existence">The Existential Operator</a>
+        <a href="#operators">Operators and Aliases</a>
         <a href="#classes">Classes, Inheritance, and Super</a>
         <a href="#pattern_matching">Pattern Matching</a>
         <a href="#fat_arrow">Function Binding</a>
         <a href="#embedded">Embedded JavaScript</a>
-        <a href="#switch">The Switch Statement</a>
-        <a href="#try">Try/Catch/Finally</a>
+        <a href="#switch">Switch and Try/Catch</a>
         <a href="#comparisons">Chained Comparisons</a>
         <a href="#strings">String Interpolation, Heredocs, and Block Comments</a>
         <a href="#regexes">Extended Regular Expressions</a>
         <a href="#cake">Cake, and Cakefiles</a>
         <a href="#scripts">"text/coffeescript" Script Tags</a>
-        <a href="#examples">Examples</a>
-        <a href="#resources">Resources</a>
-        <a href="#webchat">Web Chat (IRC)</a>
+        <a href="#resources">Examples and Resources</a>
         <a href="#change_log">Change Log</a>
       </div>
     </div>
@@ -339,8 +332,6 @@ coffee --bare --print --stdio</pre>
         "Try CoffeeScript" in the toolbar, and play with them from there.
       </i>
     <p>
-      <span id="whitespace" class="bookmark"></span>
-      <b class="header">Significant Whitespace</b>
       CoffeeScript uses Python-style significant whitespace: You don't need to
       use semicolons <tt>;</tt> to terminate expressions, ending
       the line will do just as well. Semicolons can still be used to fit
@@ -362,7 +353,7 @@ coffee --bare --print --stdio</pre>
     </p>
 
     <p>
-      <span id="functions" class="bookmark"></span>
+      <span id="literals" class="bookmark"></span>
       <b class="header">Functions</b>
       Functions are defined by a list of parameters, an arrow, and the
       function body. The empty function looks like this: <tt>-></tt>
@@ -445,63 +436,6 @@ coffee --bare --print --stdio</pre>
     <%= code_for('conditionals') %>
 
     <p>
-      <span id="aliases" class="bookmark"></span>
-      <b class="header">Aliases</b>
-      Because the <tt>==</tt> operator frequently causes undesirable coercion,
-      is intransitive, and has a different meaning than in other languages,
-      CoffeeScript compiles <tt>==</tt> into <tt>===</tt>, and <tt>!=</tt> into
-      <tt>!==</tt>.
-      In addition, <tt>is</tt> compiles into <tt>===</tt>,
-      and <tt>isnt</tt> into <tt>!==</tt>.
-    </p>
-    <p>
-      You can use <tt>not</tt> as an alias for <tt>!</tt>.
-    </p>
-    <p>
-      For logic, <tt>and</tt> compiles to <tt>&amp;&amp;</tt>, and <tt>or</tt>
-      into <tt>||</tt>.
-    </p>
-    <p>
-      Instead of a newline or semicolon, <tt>then</tt> can be used to separate
-      conditions from expressions, in <b>while</b>,
-      <b>if</b>/<b>else</b>, and <b>switch</b>/<b>when</b> statements.
-    </p>
-    <p>
-      As in <a href="http://yaml.org/">YAML</a>, <tt>on</tt> and <tt>yes</tt>
-      are the same as boolean <tt>true</tt>, while <tt>off</tt> and <tt>no</tt> are boolean <tt>false</tt>.
-    </p>
-    <p>
-      For single-line statements, <tt>unless</tt> can be used as the inverse of <tt>if</tt>.
-    </p>
-    <p>
-      As a shortcut for <tt>this.property</tt>, you can use <tt>@property</tt>.
-    </p>
-    <p>
-      You can use <tt>in</tt> to test for array presence, and <tt>of</tt> to
-      test for JavaScript object-key presence.
-    </p>
-
-    <p>
-      All together now:
-    </p>
-
-    <table class="definitions">
-      <tr><th>CoffeeScript</th><th>JavaScript</th></tr>
-      <tr><td><tt>is</tt></td><td><tt>===</tt></td></tr>
-      <tr><td><tt>isnt</tt></td><td><tt>!==</tt></td></tr>
-      <tr><td><tt>not</tt></td><td><tt>!</tt></td></tr>
-      <tr><td><tt>and</tt></td><td><tt>&amp;&amp;</tt></td></tr>
-      <tr><td><tt>or</tt></td><td><tt>||</tt></td></tr>
-      <tr><td><tt>true, yes, on</tt></td><td><tt>true</tt></td></tr>
-      <tr><td><tt>false, no, off</tt></td><td><tt>false</tt></td></tr>
-      <tr><td><tt>@, this</tt></td><td><tt>this</tt></td></tr>
-      <tr><td><tt>of</tt></td><td><tt>in</tt></td></tr>
-      <tr><td><tt>in</tt></td><td><i><small>no JS equivalent</small></i></td></tr>
-    </table>
-
-    <%= code_for('aliases') %>
-
-    <p>
       <span id="splats" class="bookmark"></span>
       <b class="header">Splats...</b>
       The JavaScript <b>arguments object</b> is a useful way to work with
@@ -512,8 +446,8 @@ coffee --bare --print --stdio</pre>
     <%= code_for('splats', true) %>
 
     <p>
-      <span id="while" class="bookmark"></span>
-      <b class="header">While, Until, and Loop</b>
+      <span id="loops" class="bookmark"></span>
+      <b class="header">Loops</b>
       The only low-level loop that CoffeeScript provides is the <b>while</b> loop. The
       main difference from JavaScript is that the <b>while</b> loop can be used
       as an expression, returning an array containing the result of each iteration
@@ -523,18 +457,14 @@ coffee --bare --print --stdio</pre>
     <p>
       For readability, the <b>until</b> keyword is equivalent to <tt>while not</tt>,
       and the <b>loop</b> keyword is equivalent to <tt>while true</tt>.
-      Other JavaScript loops, such as <b>for</b> loops and <b>do-while</b> loops
-      can be mimicked by variations on <b>loop</b>, but the hope is that you
-      won't need to do that with CoffeeScript, either because you're using
-      <b>each</b> (<b>forEach</b>) style iterators, or...
     </p>
 
     <p>
       <span id="comprehensions" class="bookmark"></span>
-      <b class="header">Comprehensions (Arrays, Objects, and Ranges)</b>
-      For your looping needs, CoffeeScript provides array comprehensions
-      similar to Python's. They replace (and compile into) <b>for</b> loops, with
-      optional guard clauses and the value of the current array index.
+      <b class="header">Comprehensions</b>
+      Hopefully, the majority of your loops can be implemented with <b>comprehensions</b>
+      over arrays, objects, and ranges. Comprehensions replace (and compile into) 
+      <b>for</b> loops, with optional guard clauses and the value of the current array index.
       Unlike for loops, array comprehensions are expressions, and can be returned
       and assigned. They should be able to handle most places where you otherwise
       would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>.
@@ -627,9 +557,65 @@ coffee --bare --print --stdio</pre>
       and <tt>return</tt>. If you make use of them within a block of code,
       CoffeeScript won't try to perform the conversion.
     </p>
+    
+    <p>
+      <span id="operators" class="bookmark"></span>
+      <b class="header">Operators and Aliases</b>
+      Because the <tt>==</tt> operator frequently causes undesirable coercion,
+      is intransitive, and has a different meaning than in other languages,
+      CoffeeScript compiles <tt>==</tt> into <tt>===</tt>, and <tt>!=</tt> into
+      <tt>!==</tt>.
+      In addition, <tt>is</tt> compiles into <tt>===</tt>,
+      and <tt>isnt</tt> into <tt>!==</tt>.
+    </p>
+    <p>
+      You can use <tt>not</tt> as an alias for <tt>!</tt>.
+    </p>
+    <p>
+      For logic, <tt>and</tt> compiles to <tt>&amp;&amp;</tt>, and <tt>or</tt>
+      into <tt>||</tt>.
+    </p>
+    <p>
+      Instead of a newline or semicolon, <tt>then</tt> can be used to separate
+      conditions from expressions, in <b>while</b>,
+      <b>if</b>/<b>else</b>, and <b>switch</b>/<b>when</b> statements.
+    </p>
+    <p>
+      As in <a href="http://yaml.org/">YAML</a>, <tt>on</tt> and <tt>yes</tt>
+      are the same as boolean <tt>true</tt>, while <tt>off</tt> and <tt>no</tt> are boolean <tt>false</tt>.
+    </p>
+    <p>
+      For single-line statements, <tt>unless</tt> can be used as the inverse of <tt>if</tt>.
+    </p>
+    <p>
+      As a shortcut for <tt>this.property</tt>, you can use <tt>@property</tt>.
+    </p>
+    <p>
+      You can use <tt>in</tt> to test for array presence, and <tt>of</tt> to
+      test for JavaScript object-key presence.
+    </p>
 
     <p>
-      <span id="existence" class="bookmark"></span>
+      All together now:
+    </p>
+
+    <table class="definitions">
+      <tr><th>CoffeeScript</th><th>JavaScript</th></tr>
+      <tr><td><tt>is</tt></td><td><tt>===</tt></td></tr>
+      <tr><td><tt>isnt</tt></td><td><tt>!==</tt></td></tr>
+      <tr><td><tt>not</tt></td><td><tt>!</tt></td></tr>
+      <tr><td><tt>and</tt></td><td><tt>&amp;&amp;</tt></td></tr>
+      <tr><td><tt>or</tt></td><td><tt>||</tt></td></tr>
+      <tr><td><tt>true, yes, on</tt></td><td><tt>true</tt></td></tr>
+      <tr><td><tt>false, no, off</tt></td><td><tt>false</tt></td></tr>
+      <tr><td><tt>@, this</tt></td><td><tt>this</tt></td></tr>
+      <tr><td><tt>of</tt></td><td><tt>in</tt></td></tr>
+      <tr><td><tt>in</tt></td><td><i><small>no JS equivalent</small></i></td></tr>
+    </table>
+
+    <%= code_for('aliases') %>
+
+    <p>
       <b class="header">The Existential Operator</b>
       It's a little difficult to check for the existence of a variable in
       JavaScript. <tt>if (variable) ...</tt> comes close, but fails for zero,
@@ -897,7 +883,7 @@ coffee --bare --print --stdio</pre>
     </p>
 
     <h2>
-      <span id="examples" class="bookmark"></span>
+      <span id="resources" class="bookmark"></span>
       Examples
     </h2>
 
@@ -931,7 +917,6 @@ coffee --bare --print --stdio</pre>
     </ul>
 
     <h2>
-      <span id="resources" class="bookmark"></span>
       Resources
     </h2>
 
