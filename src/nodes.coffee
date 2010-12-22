@@ -1441,20 +1441,21 @@ exports.For = class For extends Base
   # some cannot.
   compileNode: (o) ->
     body          = Expressions.wrap [@body]
-    hasPure       = last(body.expressions)?.containsPureStatement()
+    hasPure       = body.containsPureStatement()
+    hasPureLast   = last(body.expressions)?.containsPureStatement()
     source        = if @range then @source.base else @source
     scope         = o.scope
     name          = @name  and @name.compile o, LEVEL_LIST
     index         = @index and @index.compile o, LEVEL_LIST
     scope.find(name,  immediate: yes) if name and not @pattern
     scope.find(index, immediate: yes) if index
-    rvar          = scope.freeVariable 'results' if @returns and not hasPure
+    rvar          = scope.freeVariable 'results' if @returns and not hasPureLast
     ivar          = (if @range then name else index) or scope.freeVariable 'i'
     varPart       = ''
     guardPart     = ''
     defPart       = ''
     idt1          = @tab + TAB
-    if @scoped and @containsPureStatement()
+    if @scoped and hasPure
       throw SyntaxError 'cannot use a pure statement in a scoped loop.'
     if @range
       forPart = source.compile merge(o, {index: ivar, @step})
@@ -1471,10 +1472,10 @@ exports.For = class For extends Base
         lvar        = scope.freeVariable 'len'
         stepPart    = if @step then "#{ivar} += #{ @step.compile(o, LEVEL_OP) }" else "#{ivar}++"
         forPart     = "#{ivar} = 0, #{lvar} = #{svar}.length; #{ivar} < #{lvar}; #{stepPart}"
-    if @scoped
+    if @scoped and body.expressions.length
       body          = Closure.wrap body, true, not @returns
     defPart         += @pluckDirectCall o, body, name, index unless @pattern
-    if @returns and not hasPure
+    if @returns and not hasPureLast
       resultPart    = "#{@tab}#{rvar} = [];\n"
       returnResult  = '\n' + (new Return(new Literal(rvar)).compile o, LEVEL_PAREN)
       body          = Push.wrap rvar, body
