@@ -270,3 +270,12 @@ for y in [1, 2, 3] ->
   funcs.push -> "y is #{y} and z is #{z}"
 
 eq funcs[1](), "y is 2 and z is 2"
+
+
+# Cancel the comprehension if there's a jump inside the loop.
+result = try
+  for i in [0...10]
+    continue if i < 5
+  i
+
+eq result, 10
