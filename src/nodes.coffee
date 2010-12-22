@@ -1463,7 +1463,6 @@ exports.For = class For extends Base
   # some cannot.
   compileNode: (o) ->
     body          = Expressions.wrap [@body]
-    hasPure       = body.containsPureStatement()
     hasPureLast   = last(body.expressions)?.containsPureStatement()
     source        = if @range then @source.base else @source
     scope         = o.scope
@@ -1478,7 +1477,7 @@ exports.For = class For extends Base
     guardPart     = ''
     defPart       = ''
     idt1          = @tab + TAB
-    if @scoped and hasPure
+    if @scoped and @jumps()
       throw SyntaxError 'cannot use a pure statement in a scoped loop.'
     if @range
       forPart = source.compile merge(o, {index: ivar, @step})
