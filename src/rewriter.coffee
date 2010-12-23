@@ -54,6 +54,20 @@ class exports.Rewriter
       i += 1
     i - 1
 
+  scanLineBack: (i, condition) ->
+    {tokens} = this
+    levels = 0
+    while token = tokens[i--]
+      return no if token[0] in LINEBREAKS and not token.generated
+      if token[0] in EXPRESSION_START
+        levels -= 1
+      else if token[0] in EXPRESSION_END
+        levels += 1
+      continue if levels > 0
+      return no if levels < 0
+      return yes if condition.call this, token, i
+    no
+
   # Leading newlines would introduce an ambiguity in the grammar, so we
   # dispatch them here.
   removeLeadingNewlines: ->
@@ -129,30 +143,28 @@ class exports.Rewriter
   # Insert the implicit parentheses here, so that the parser doesn't have to
   # deal with them.
   addImplicitParentheses: ->
-    noCall = seenFor = no
+    noCall = no
     action = (token, i) ->
       idx = if token[0] is 'OUTDENT' then i + 1 else i
       @tokens.splice idx, 0, ['CALL_END', ')', token[2]]
     @scanTokens (token, i, tokens) ->
       tag     = token[0]
       noCall  = yes if tag in ['CLASS', 'IF']
-      seenFor = yes if tag is 'FOR'
       [prev, current, next] = tokens[i - 1 .. i + 1]
       callObject = not noCall and tag is 'INDENT' and
                    next and next.generated and next[0] is '{' and
                    prev and prev[0] in IMPLICIT_FUNC
       seenSingle = no
-      if tag in LINEBREAKS
-        noCall = seenFor = no
+      noCall     = no if tag in LINEBREAKS
       token.call = yes if prev and not prev.spaced and tag is '?'
       return 1 unless callObject or
         prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
-        (tag in IMPLICIT_CALL or not (token.spaced or token.newLine) and tag in IMPLICIT_UNSPACED_CALL) and
-        not (seenFor and tag in ['->', '=>'] and next and next[0] is 'INDENT')
+        (tag in IMPLICIT_CALL or not (token.spaced or token.newLine) and tag in IMPLICIT_UNSPACED_CALL)
+      if tag in ['->', '=>'] and @scanLineBack(i, (token, i) -> token[0] is 'FOR')
+        return 1
       tokens.splice i, 0, ['CALL_START', '(', token[2]]
       @detectEnd i + 1, (token, i) ->
         [tag] = token
-        return yes if seenFor and tag in ['->', '=>'] and @tokens[i + 1]?[0] is 'INDENT'
         return yes if not seenSingle and token.fromThen
         seenSingle = yes if tag in ['IF', 'ELSE', '->', '=>']
         return yes if tag in ['.', '?.', '::'] and @tag(i - 1) is 'OUTDENT'

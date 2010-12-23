@@ -286,3 +286,10 @@ arrayEq (break for [1..10]), []
 
 # Comprehensions over continue.
 arrayEq (break for [1..10]), []
+
+
+# Comprehensions over function literals.
+a = 0
+for f in [-> a = 1] -> f()
+
+eq a, 1
