@@ -160,6 +160,8 @@ obj =
 ok obj.one is 'one'
 ok obj.two is 'three'
 
+a = b = undefined
+
 result = func
     b:1
     a
