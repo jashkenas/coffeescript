@@ -33,7 +33,7 @@
         <a href="#expressions">Everything is an Expression</a>
         <a href="#operators">Operators and Aliases</a>
         <a href="#classes">Classes, Inheritance, and Super</a>
-        <a href="#pattern_matching">Pattern Matching</a>
+        <a href="#destructuring">Destructuring Assignment</a>
         <a href="#fat_arrow">Function Binding</a>
         <a href="#embedded">Embedded JavaScript</a>
         <a href="#switch">Switch and Try/Catch</a>
@@ -224,18 +224,20 @@ cubes = (function() {
     </h2>
 
     <p>
-      The CoffeeScript compiler
-      <a href="documentation/docs/grammar.html">is itself written in CoffeeScript</a>,
-      using the <a href="http://jison.org">Jison parser generator</a>. The command-line
-      version of <tt>coffee</tt> is available as a <a href="http://nodejs.org/">Node.js</a> utility.
-      The core compiler however, does not depend on Node, and can be run in any
-      JavaScript environment, or in the browser (see "Try CoffeeScript", above).
+      The CoffeeScript compiler is itself
+      <a href="documentation/docs/grammar.html">written in CoffeeScript</a>,
+      using the <a href="http://jison.org">Jison parser generator</a>. The 
+      command-line version of <tt>coffee</tt> is available as a 
+      <a href="http://nodejs.org/">Node.js</a> utility. The 
+      <a href="extras/coffee-script.js">core compiler</a> however, does not 
+      depend on Node, and can be run in any JavaScript environment, or in the 
+      browser (see "Try CoffeeScript", above).
     </p>
 
     <p>
       To install, first make sure you have a working copy of the latest stable version of
-      <a href="http://nodejs.org/">Node.js</a>, and <a href="http://npmjs.org">NPM</a>
-      (the Node Package Manager). You can then install CoffeeScript with NPM:
+      <a href="http://nodejs.org/">Node.js</a>, and <a href="http://npmjs.org">npm</a>
+      (the Node Package Manager). You can then install CoffeeScript with npm:
     </p>
 
     <pre>
@@ -262,9 +264,9 @@ sudo bin/cake install</pre>
     </p>
 
     <p>
-      Both of these provide the <tt>coffee</tt> command, which can execute
-      coffee scripts, compile <tt>.coffee</tt> files into <tt>.js</tt>, and
-      provides an interactive REPL. The <tt>coffee</tt> command takes the
+      Once installed, you should have access to the <tt>coffee</tt> command, 
+      which can execute scripts, compile <tt>.coffee</tt> files into <tt>.js</tt>, 
+      and provide an interactive REPL. The <tt>coffee</tt> command takes the
       following options:
     </p>
 
@@ -377,7 +379,7 @@ Expressions
         <td><code>--nodejs</code></td>
         <td>
           The <tt>node</tt> executable has some useful options you can set,
-          such as <tt>--debug</tt> and <tt>--max-stack-size</tt>. Use this
+          such as<br /> <tt>--debug</tt> and <tt>--max-stack-size</tt>. Use this
           flag to forward options directly to Node.js.
         </td>
       </tr>
@@ -386,12 +388,30 @@ Expressions
     <p>
       <b>Examples:</b>
     </p>
-
-    <pre>
-coffee -o lib/ -c src/
-coffee --watch --lint experimental.coffee
-coffee --print app/scripts/*.coffee > concatenation.js
-coffee --bare --print --stdio</pre>
+    
+    <ul>
+      <li>
+        Compile a directory tree of <tt>.coffee</tt> files into a parallel
+        tree of <tt>.js</tt>, in <tt>lib</tt>:<br />
+        <tt>coffee -o lib/ -c src/</tt>
+      </li>
+      <li>
+        Watch a file for changes, and recompile it every time the file is saved:<br />
+        <tt>coffee --watch --compile experimental.coffee</tt>
+      </li>
+      <li>
+        Concatenate a list of files into a single script:<br />
+        <tt>coffee -o lib/ --join --compile src/*.coffee</tt>
+      </li>
+      <li>
+        Print out the compiled JS from a one-liner:<br />
+        <tt>coffee -bpe "alert i for i in [0..10]"</tt>
+      </li>
+      <li>
+        Start the CoffeeScript REPL:<br />
+        <tt>coffee</tt>
+      </li>
+    </ul>
 
     <h2>
       <span id="language" class="bookmark"></span>
@@ -1385,8 +1405,8 @@ tom.move();;'>run</div><br class='clear' /></div>
     </p>
 
     <p>
-      <span id="pattern_matching" class="bookmark"></span>
-      <b class="header">Pattern Matching (Destructuring Assignment)</b>
+      <span id="destructuring" class="bookmark"></span>
+      <b class="header">Destructuring Assignment</b>
       To make extracting values from complex arrays and objects more convenient,
       CoffeeScript implements ECMAScript Harmony's proposed
       <a href="http://wiki.ecmascript.org/doku.php?id=harmony:destructuring">destructuring assignment</a>
@@ -1430,7 +1450,7 @@ weatherReport = function(location) {
 };
 _ref = weatherReport("Berkeley, CA"), city = _ref[0], temp = _ref[1], forecast = _ref[2];;alert(forecast);'>run: forecast</div><br class='clear' /></div>
     <p>
-      Pattern matching can be used with any depth of array and object nesting,
+      Destructuring assignment can be used with any depth of array and object nesting,
       to help pull out deeply nested properties.
     </p>
     <div class='code'><pre class="idle">futurists <span class="Keyword">=</span>
@@ -1467,7 +1487,7 @@ futurists = {
 };
 _ref = futurists.poet, name = _ref.name, _ref2 = _ref.address, street = _ref2[0], city = _ref2[1];;alert(name + " — " + street);'>run: name + " — " + street</div><br class='clear' /></div>
     <p>
-      Pattern matching can even be combined with splats.
+      Destructuring assignment can even be combined with splats.
     </p>
     <div class='code'><pre class="idle">tag <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>&lt;impossible&gt;<span class="String">&quot;</span></span>
 
