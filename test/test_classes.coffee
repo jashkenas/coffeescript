@@ -39,17 +39,19 @@ ok result is '9two/three/four'
 ok (new ThirdChild).array.join(' ') is '1 2 3'
 
 
+identity = (f) -> f
+
 class TopClass
   constructor: (arg) ->
     @prop = 'top-' + arg
 
 class SuperClass extends TopClass
   constructor: (arg) ->
-    super 'super-' + arg
+    identity super 'super-' + arg
 
 class SubClass extends SuperClass
   constructor: ->
-    super 'sub'
+    identity super 'sub'
 
 ok (new SubClass).prop is 'top-super-sub'
 
