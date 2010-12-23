@@ -1431,6 +1431,8 @@ exports.For = class For extends Base
 
   isStatement: YES
 
+  jumps: While::jumps
+
   makeReturn: ->
     @returns = yes
     this
