@@ -557,7 +557,7 @@ exports.Extends = class Extends extends Base
 # an access into the object's prototype.
 exports.Access = class Access extends Base
   constructor: (@name, tag) ->
-    @name.accessed = yes
+    @name.asKey = yes
     @proto = if tag is 'proto' then '.prototype' else ''
     @soak  = tag is 'soak'
 
@@ -707,6 +707,7 @@ exports.Obj = class Obj extends Base
         prop = new Assign prop.properties[0].name, prop, 'object'
       else if prop not instanceof Assign and prop not instanceof Comment
         prop = new Assign prop, prop, 'object'
+      prop.variable.base.asKey = yes if prop instanceof Value
       indent + prop.compile(o, LEVEL_TOP) + join
     props = props.join ''
     obj   = "{#{ props and '\n' + props + '\n' + @tab }}"
@@ -1673,9 +1674,9 @@ Closure =
     if statement then Expressions.wrap [call] else call
 
   literalArgs: (node) ->
-    node instanceof Literal and node.value is 'arguments' and not node.accessed
+    node instanceof Literal and node.value is 'arguments' and not node.asKey
   literalThis: (node) ->
-    (node instanceof Literal and node.value is 'this' and not node.accessed) or
+    (node instanceof Literal and node.value is 'this' and not node.asKey) or
       (node instanceof Code and node.bound)
 
 # Unfold a node's child if soak, then tuck the node under created `If`
