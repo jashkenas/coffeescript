@@ -217,6 +217,13 @@ sudo bin/cake install</pre>
         </td>
       </tr>
       <tr>
+        <td><code>-j, --join</code></td>
+        <td>
+          Before compiling, concatenate all scripts together in the order they
+          were passed. Useful for building large projects.
+        </td>
+      </tr>
+      <tr>
         <td><code>-w, --watch</code></td>
         <td>
           Watch the modification times of the coffee-scripts, recompiling as
@@ -464,7 +471,7 @@ coffee --bare --print --stdio</pre>
       <span id="comprehensions" class="bookmark"></span>
       <b class="header">Comprehensions</b>
       Hopefully, the majority of your loops can be implemented with <b>comprehensions</b>
-      over arrays, objects, and ranges. Comprehensions replace (and compile into) 
+      over arrays, objects, and ranges. Comprehensions replace (and compile into)
       <b>for</b> loops, with optional guard clauses and the value of the current array index.
       Unlike for loops, array comprehensions are expressions, and can be returned
       and assigned. They should be able to handle most places where you otherwise
@@ -503,6 +510,15 @@ coffee --bare --print --stdio</pre>
       check to avoid properties that may be interited from the prototype, use<br />
       <tt>for own key, value of object</tt>
     </p>
+    <p>
+      In JavaScript, it's extremely common to run into trouble when trying to
+      generate functions within a loop &mdash; all of the created functions share
+      the final value of loop variables. CoffeeScript provides a "scoped loop"
+      syntax for loops that should have function scope, similar to a <tt>forEach</tt>.
+      Note how the body of the loop gets lifted into a cached function.
+    </p>
+    <%= code_for('scoped_loops', 'funcs[3](2)') %>
+
     <p>
       <span id="slices" class="bookmark"></span>
       <b class="header">Array Slicing and Splicing with Ranges</b>
@@ -558,7 +574,7 @@ coffee --bare --print --stdio</pre>
       and <tt>return</tt>. If you make use of them within a block of code,
       CoffeeScript won't try to perform the conversion.
     </p>
-    
+
     <p>
       <span id="operators" class="bookmark"></span>
       <b class="header">Operators and Aliases</b>
