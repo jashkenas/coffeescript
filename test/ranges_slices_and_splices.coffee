@@ -175,3 +175,12 @@ test "splicing to the end, against a one-time function", ->
   fn()[0..] = 1
 
   arrayEq ary, [1]
+
+test "the return value of a splice literal should be the RHS", ->
+  ary = [0, 0, 0]
+  eq (ary[0..1] = 2), 2
+
+  ary = [0, 0, 0]
+  eq (ary[0..] = 3), 3
+
+  arrayEq [ary[0..0] = 0], [0]

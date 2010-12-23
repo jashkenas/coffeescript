@@ -983,8 +983,9 @@ exports.Assign = class Assign extends Base
         to += ' + 1' unless exclusive
     else
       to = "9e9"
-    val = @value.compile(o)
-    "[].splice.apply(#{name}, [#{fromDecl}, #{to}].concat(#{val}))"
+    [valDef, valRef] = @value.cache o, LEVEL_LIST
+    code = "[].splice.apply(#{name}, [#{fromDecl}, #{to}].concat(#{valDef})), #{valRef}"
+    if o.level > LEVEL_TOP then "(#{code})" else code
 
 #### Code
 
