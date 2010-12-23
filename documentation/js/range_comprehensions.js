@@ -6,4 +6,4 @@ countdown = (function() {
     _results.push(num);
   }
   return _results;
-}());
+})();

@@ -4,7 +4,7 @@ yearsOld = {
   ida: 9,
   tim: 11
 };
-ages = function() {
+ages = (function() {
   var _results;
   _results = [];
   for (child in yearsOld) {
@@ -12,4 +12,4 @@ ages = function() {
     _results.push(child + " is " + age);
   }
   return _results;
-}();
+})();

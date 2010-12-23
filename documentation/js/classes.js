@@ -7,7 +7,7 @@ var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, par
   child.__super__ = parent.prototype;
   return child;
 };
-Animal = function() {
+Animal = (function() {
   function Animal(name) {
     this.name = name;
   }
@@ -15,8 +15,8 @@ Animal = function() {
     return alert(this.name + " moved " + meters + "m.");
   };
   return Animal;
-}();
-Snake = function() {
+})();
+Snake = (function() {
   function Snake() {
     Snake.__super__.constructor.apply(this, arguments);
   }
@@ -26,8 +26,8 @@ Snake = function() {
     return Snake.__super__.move.call(this, 5);
   };
   return Snake;
-}();
-Horse = function() {
+})();
+Horse = (function() {
   function Horse() {
     Horse.__super__.constructor.apply(this, arguments);
   }
@@ -37,7 +37,7 @@ Horse = function() {
     return Horse.__super__.move.call(this, 45);
   };
   return Horse;
-}();
+})();
 sam = new Snake("Sammy the Python");
 tom = new Horse("Tommy the Palomino");
 sam.move();

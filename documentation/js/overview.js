@@ -32,4 +32,4 @@ cubes = (function() {
     _results.push(math.cube(num));
   }
   return _results;
-}());
+})();

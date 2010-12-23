@@ -181,7 +181,7 @@ cubes <span class="Keyword">=</span> (<span class="Storage">function</span>() {
     _results.<span class="LibraryFunction">push</span>(math.cube(num));
   }
   <span class="Keyword">return</span> _results;
-}());
+})();
 </pre><script>window.example1 = "# Assignment:\nnumber   = 42\nopposite = true\n\n# Conditions:\nnumber = -42 if opposite\n\n# Functions:\nsquare = (x) -> x * x\n\n# Arrays:\nlist = [1, 2, 3, 4, 5]\n\n# Objects:\nmath =\n  root:   Math.sqrt\n  square: square\n  cube:   (x) -> x * square x\n\n# Splats:\nrace = (winner, runners...) ->\n  print winner, runners\n\n# Existence:\nalert \"I knew it!\" if elvis?\n\n# Array comprehensions:\ncubes = (math.cube num for num in list)\n\nalert cubes"</script><div class='minibutton ok' onclick='javascript: var cubes, list, math, num, number, opposite, race, square;
 var __slice = Array.prototype.slice;
 number = 42;
@@ -216,7 +216,7 @@ cubes = (function() {
     _results.push(math.cube(num));
   }
   return _results;
-}());;alert(cubes);'>run: cubes</div><br class='clear' /></div>
+})();;alert(cubes);'>run: cubes</div><br class='clear' /></div>
 
     <h2>
       <span id="installation" class="bookmark"></span>
@@ -754,14 +754,14 @@ lyrics <span class="Keyword">=</span> <span class="Keyword">while</span> num <sp
   }
 }
 num <span class="Keyword">=</span> <span class="Number">6</span>;
-<span class="FunctionName">lyrics</span> = <span class="Storage">function</span>() {
+lyrics <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   <span class="Storage">var</span> _results;
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">while</span> (num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>) {
     _results.<span class="LibraryFunction">push</span>(num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed.    One fell out and bumped his head.<span class="String">&quot;</span></span>);
   }
   <span class="Keyword">return</span> _results;
-}();
+})();
 </pre><script>window.example9 = "# Econ 101\nif this.studyingEconomics\n  buy()  while supply > demand\n  sell() until supply > demand\n\n# Nursery Rhyme\nnum = 6\nlyrics = while num -= 1\n  num + \" little monkeys, jumping on the bed.\n    One fell out and bumped his head.\"\n\nalert lyrics.join(\"\\n\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example9);'>Load</div><div class='minibutton ok' onclick='javascript: var lyrics, num;
 if (this.studyingEconomics) {
   while (supply > demand) {
@@ -772,14 +772,14 @@ if (this.studyingEconomics) {
   }
 }
 num = 6;
-lyrics = function() {
+lyrics = (function() {
   var _results;
   _results = [];
   while (num -= 1) {
     _results.push(num + " little monkeys, jumping on the bed.    One fell out and bumped his head.");
   }
   return _results;
-}();;alert(lyrics.join("\n"));'>run: lyrics.join("\n")</div><br class='clear' /></div>
+})();;alert(lyrics.join("\n"));'>run: lyrics.join("\n")</div><br class='clear' /></div>
     <p>
       For readability, the <b>until</b> keyword is equivalent to <tt>while not</tt>,
       and the <b>loop</b> keyword is equivalent to <tt>while true</tt>.
@@ -819,7 +819,7 @@ countdown <span class="Keyword">=</span> (<span class="Storage">function</span>(
     _results.<span class="LibraryFunction">push</span>(num);
   }
   <span class="Keyword">return</span> _results;
-}());
+})();
 </pre><script>window.example11 = "countdown = (num for num in [10..1])\n\nalert countdown"</script><div class='minibutton load' onclick='javascript: loadConsole(example11);'>Load</div><div class='minibutton ok' onclick='javascript: var countdown, num;
 countdown = (function() {
   var _results;
@@ -828,7 +828,7 @@ countdown = (function() {
     _results.push(num);
   }
   return _results;
-}());;alert(countdown);'>run: countdown</div><br class='clear' /></div>
+})();;alert(countdown);'>run: countdown</div><br class='clear' /></div>
     <p>
       Note how because we are assigning the value of the comprehensions to a
       variable in the example above, CoffeeScript is collecting the result of
@@ -858,7 +858,7 @@ yearsOld <span class="Keyword">=</span> {
   ida: <span class="Number">9</span>,
   tim: <span class="Number">11</span>
 };
-<span class="FunctionName">ages</span> = <span class="Storage">function</span>() {
+ages <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   <span class="Storage">var</span> _results;
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">for</span> (child <span class="Keyword">in</span> yearsOld) {
@@ -866,14 +866,14 @@ yearsOld <span class="Keyword">=</span> {
     _results.<span class="LibraryFunction">push</span>(child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age);
   }
   <span class="Keyword">return</span> _results;
-}();
+})();
 </pre><script>window.example12 = "yearsOld = max: 10, ida: 9, tim: 11\n\nages = for child, age of yearsOld\n  child + \" is \" + age\n\nalert ages.join(\", \")"</script><div class='minibutton load' onclick='javascript: loadConsole(example12);'>Load</div><div class='minibutton ok' onclick='javascript: var age, ages, child, yearsOld;
 yearsOld = {
   max: 10,
   ida: 9,
   tim: 11
 };
-ages = function() {
+ages = (function() {
   var _results;
   _results = [];
   for (child in yearsOld) {
@@ -881,7 +881,7 @@ ages = function() {
     _results.push(child + " is " + age);
   }
   return _results;
-}();;alert(ages.join(", "));'>run: ages.join(", ")</div><br class='clear' /></div>
+})();;alert(ages.join(", "));'>run: ages.join(", ")</div><br class='clear' /></div>
     <p>
       If you would like to iterate over just the keys that are defined on the
       object itself, by adding a <tt>hasOwnProperty</tt>
@@ -1035,23 +1035,23 @@ six = (one = 1) + (two = 2) + (three = 3);;alert(six);'>run: six</div><br class=
 
 globals <span class="Keyword">=</span> (name <span class="Keyword">for</span> name <span class="Keyword">of</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
 </pre><pre class="idle"><span class="Storage">var</span> globals, name;
-globals <span class="Keyword">=</span> (<span class="Storage">function</span>() {
+globals <span class="Keyword">=</span> ((<span class="Storage">function</span>() {
   <span class="Storage">var</span> _results;
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">for</span> (name <span class="Keyword">in</span> <span class="LibraryClassType">window</span>) {
     _results.<span class="LibraryFunction">push</span>(name);
   }
   <span class="Keyword">return</span> _results;
-}()).<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
+})()).<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
 </pre><script>window.example18 = "# The first ten global properties.\n\nglobals = (name for name of window)[0...10]\n\nalert globals"</script><div class='minibutton load' onclick='javascript: loadConsole(example18);'>Load</div><div class='minibutton ok' onclick='javascript: var globals, name;
-globals = (function() {
+globals = ((function() {
   var _results;
   _results = [];
   for (name in window) {
     _results.push(name);
   }
   return _results;
-}()).slice(0, 10);;alert(globals);'>run: globals</div><br class='clear' /></div>
+})()).slice(0, 10);;alert(globals);'>run: globals</div><br class='clear' /></div>
     <p>
       As well as silly things, like passing a <b>try/catch</b> statement directly
       into a function call:
@@ -1063,20 +1063,20 @@ globals = (function() {
     <span class="String"><span class="String">&quot;</span>And the error is ... <span class="String">&quot;</span></span> <span class="Keyword">+</span> error
 )
 
-</pre><pre class="idle"><span class="LibraryFunction">alert</span>(<span class="Storage">function</span>() {
+</pre><pre class="idle"><span class="LibraryFunction">alert</span>((<span class="Storage">function</span>() {
   <span class="Keyword">try</span> {
     <span class="Keyword">return</span> nonexistent / <span class="Storage">void</span> <span class="Number">0</span>;
   } <span class="Keyword">catch</span> (error) {
     <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>And the error is ... <span class="String">&quot;</span></span> <span class="Keyword">+</span> error;
   }
-}());
-</pre><script>window.example19 = "alert(\n  try\n    nonexistent / undefined\n  catch error\n    \"And the error is ... \" + error\n)\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example19);'>Load</div><div class='minibutton ok' onclick='javascript: alert(function() {
+})());
+</pre><script>window.example19 = "alert(\n  try\n    nonexistent / undefined\n  catch error\n    \"And the error is ... \" + error\n)\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example19);'>Load</div><div class='minibutton ok' onclick='javascript: alert((function() {
   try {
     return nonexistent / void 0;
   } catch (error) {
     return "And the error is ... " + error;
   }
-}());;'>run</div><br class='clear' /></div>
+})());;'>run</div><br class='clear' /></div>
     <p>
       There are a handful of statements in JavaScript that can't be meaningfully
       converted into expressions, namely <tt>break</tt>, <tt>continue</tt>,
@@ -1281,7 +1281,7 @@ tom.move()
   child.__super__ <span class="Keyword">=</span> parent.<span class="LibraryConstant">prototype</span>;
   <span class="Keyword">return</span> child;
 };
-<span class="FunctionName">Animal</span> = <span class="Storage">function</span>() {
+Animal <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   <span class="Storage">function</span> <span class="FunctionName">Animal</span>(<span class="FunctionArgument">name</span>) {
     <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
   }
@@ -1289,8 +1289,8 @@ tom.move()
     <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>);
   };
   <span class="Keyword">return</span> Animal;
-}();
-<span class="FunctionName">Snake</span> = <span class="Storage">function</span>() {
+})();
+Snake <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   <span class="Storage">function</span> <span class="FunctionName">Snake</span>() {
     Snake.__super__.<span class="LibraryConstant">constructor</span>.<span class="LibraryFunction">apply</span>(<span class="Variable">this</span>, arguments);
   }
@@ -1300,8 +1300,8 @@ tom.move()
     <span class="Keyword">return</span> Snake.__super__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">5</span>);
   };
   <span class="Keyword">return</span> Snake;
-}();
-<span class="FunctionName">Horse</span> = <span class="Storage">function</span>() {
+})();
+Horse <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   <span class="Storage">function</span> <span class="FunctionName">Horse</span>() {
     Horse.__super__.<span class="LibraryConstant">constructor</span>.<span class="LibraryFunction">apply</span>(<span class="Variable">this</span>, arguments);
   }
@@ -1311,7 +1311,7 @@ tom.move()
     <span class="Keyword">return</span> Horse.__super__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">45</span>);
   };
   <span class="Keyword">return</span> Horse;
-}();
+})();
 sam <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Snake</span>(<span class="String"><span class="String">&quot;</span>Sammy the Python<span class="String">&quot;</span></span>);
 tom <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span>(<span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>);
 sam.move();
@@ -1325,7 +1325,7 @@ var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, par
   child.__super__ = parent.prototype;
   return child;
 };
-Animal = function() {
+Animal = (function() {
   function Animal(name) {
     this.name = name;
   }
@@ -1333,8 +1333,8 @@ Animal = function() {
     return alert(this.name + " moved " + meters + "m.");
   };
   return Animal;
-}();
-Snake = function() {
+})();
+Snake = (function() {
   function Snake() {
     Snake.__super__.constructor.apply(this, arguments);
   }
@@ -1344,8 +1344,8 @@ Snake = function() {
     return Snake.__super__.move.call(this, 5);
   };
   return Snake;
-}();
-Horse = function() {
+})();
+Horse = (function() {
   function Horse() {
     Horse.__super__.constructor.apply(this, arguments);
   }
@@ -1355,7 +1355,7 @@ Horse = function() {
     return Horse.__super__.move.call(this, 45);
   };
   return Horse;
-}();
+})();
 sam = new Snake("Sammy the Python");
 tom = new Horse("Tommy the Palomino");
 sam.move();
