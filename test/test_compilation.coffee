@@ -13,3 +13,14 @@ catch e then eq e.message, 'unclosed CALL_START on line 1'
 eq CoffeeScript.compile('for k of o then', bare: on, globals: on),
    'for (k in o) {}'
 
+# Compilations that should fail.
+cantCompile = (code) ->
+  throws -> CoffeeScript.compile code
+
+cantCompile 'a = (break)'
+
+cantCompile 'a = (return 5 for item in list)'
+
+cantCompile 'a = (return 5 while condition)'
+
+cantCompile 'a = for x in y\n  return 5'

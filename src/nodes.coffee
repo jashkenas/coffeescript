@@ -271,10 +271,13 @@ exports.Literal = class Literal extends Base
   constructor: (@value) ->
 
   makeReturn: ->
-    if @jumps() then this else new Return this
+    new Return this
 
   isAssignable: ->
     IDENTIFIER.test @value
+
+  isStatement: ->
+    @value in ['break', 'continue', 'debugger']
 
   isComplex: NO
 
@@ -282,11 +285,12 @@ exports.Literal = class Literal extends Base
     name is @value
 
   jumps: (o) ->
-    return no unless @value in ['break', 'continue', 'debugger']
+    return no unless @isStatement()
     if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
 
-  compile: ->
-    if @value.reserved then "\"#{@value}\"" else @value
+  compileNode: (o) ->
+    code = if @value.reserved then "\"#{@value}\"" else @value
+    if @isStatement() then "#{@tab}#{code};" else code
 
   toString: ->
     ' "' + @value + '"'
