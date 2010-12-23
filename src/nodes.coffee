@@ -982,7 +982,7 @@ exports.Assign = class Assign extends Base
         to = to.compile(o) + ' - ' + fromRef
         to += ' + 1' unless exclusive
     else
-      to = "#{name}.length"
+      to = "9e9"
     val = @value.compile(o)
     "[].splice.apply(#{name}, [#{fromDecl}, #{to}].concat(#{val}))"
 

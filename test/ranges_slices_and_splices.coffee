@@ -163,3 +163,15 @@ test "splicing with expressions as endpoints", ->
   ary = [0..9]
   ary[a+1...2*b+1] = [4]
   arrayEq [0, 1, 4, 7, 8, 9], ary
+
+test "splicing to the end, against a one-time function", ->
+  ary = null
+  fn = ->
+    if ary
+      throw 'err'
+    else
+      ary = [1, 2, 3]
+
+  fn()[0..] = 1
+
+  arrayEq ary, [1]
