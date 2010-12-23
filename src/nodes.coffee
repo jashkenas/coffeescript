@@ -841,7 +841,7 @@ exports.Class = class Class extends Base
     @body.expressions.push lname
     @addBoundFunctions o
 
-    klass = new Parens new Call(new Code [], @body), true
+    klass = new Parens Closure.wrap(@body), true
     klass = new Assign @variable, klass if @variable
     klass.compile o
 

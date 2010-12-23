@@ -354,3 +354,17 @@ class A
     @c = -> 5
 
 eq A.B.c(), 5
+
+
+# `class extends this` ...
+class A
+  func: -> 'A'
+
+B = null
+makeClass = ->
+  B = class extends this
+    func: -> super + ' B'
+
+makeClass.call A
+
+eq (new B()).func(), 'A B'
