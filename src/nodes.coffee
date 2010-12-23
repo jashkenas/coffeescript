@@ -271,7 +271,7 @@ exports.Literal = class Literal extends Base
   constructor: (@value) ->
 
   makeReturn: ->
-    new Return this
+    if @isStatement() then this else new Return this
 
   isAssignable: ->
     IDENTIFIER.test @value

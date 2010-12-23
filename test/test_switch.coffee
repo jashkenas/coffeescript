@@ -90,3 +90,14 @@ obj = {
 }
 
 ok obj.func(yes) is 101
+
+
+# Switch with break as the return value of a loop.
+i = 10
+results = while i > 0
+  i--
+  switch i % 2
+    when 1 then i
+    when 0 then break
+
+eq results.join(', '), '9, , 7, , 5, , 3, , 1, '
