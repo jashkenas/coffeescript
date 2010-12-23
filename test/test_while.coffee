@@ -51,3 +51,21 @@ ok list.join(' ') is '8 6 4 2'
 
 #759: `if` within `while` condition
 2 while if 1 then 0
+
+
+# While over break.
+i = 0
+result = while i < 10
+  i++
+  break
+
+arrayEq result, []
+
+
+# While over continue.
+i = 0
+result = while i < 10
+  i++
+  continue
+
+arrayEq result, []

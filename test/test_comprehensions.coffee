@@ -279,3 +279,10 @@ result = try
   i
 
 eq result, 10
+
+
+# Comprehensions over break.
+arrayEq (break for [1..10]), []
+
+# Comprehensions over continue.
+arrayEq (break for [1..10]), []

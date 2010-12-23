@@ -186,7 +186,7 @@ exports.Expressions = class Expressions extends Base
 
   jumps: (o) ->
     for exp in @expressions
-      return true if exp.jumps o
+      return exp if exp.jumps o
 
   # An Expressions node does not return its entire body, rather it
   # ensures that the final expression is returned.
@@ -283,7 +283,7 @@ exports.Literal = class Literal extends Base
 
   jumps: (o) ->
     return no unless @value in ['break', 'continue', 'debugger']
-    not (o and (o.loop or o.block and (@value isnt 'continue')))
+    if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
 
   compile: ->
     if @value.reserved then "\"#{@value}\"" else @value
@@ -302,7 +302,7 @@ exports.Return = class Return extends Base
 
   isStatement:     YES
   makeReturn:      THIS
-  jumps:           YES
+  jumps:           THIS
 
   compile: (o, level) ->
     expr = @expression?.makeReturn()
@@ -1139,7 +1139,7 @@ exports.While = class While extends Base
     {expressions} = @body
     return no unless expressions.length
     for node in expressions
-      return yes if node.jumps loop: yes
+      return node if node.jumps loop: yes
     no
 
   # The main difference from a JavaScript *while* is that the CoffeeScript
@@ -1444,13 +1444,14 @@ exports.For = class For extends Base
   compileNode: (o) ->
     body          = Expressions.wrap [@body]
     lastJumps     = last(body.expressions)?.jumps()
+    @returns      = no if lastJumps and lastJumps instanceof Return
     source        = if @range then @source.base else @source
     scope         = o.scope
     name          = @name  and @name.compile o, LEVEL_LIST
     index         = @index and @index.compile o, LEVEL_LIST
     scope.find(name,  immediate: yes) if name and not @pattern
     scope.find(index, immediate: yes) if index
-    rvar          = scope.freeVariable 'results' if @returns and not lastJumps
+    rvar          = scope.freeVariable 'results' if @returns
     ivar          = (if @range then name else index) or scope.freeVariable 'i'
     name          = ivar if @pattern
     varPart       = ''
@@ -1472,7 +1473,7 @@ exports.For = class For extends Base
         lvar        = scope.freeVariable 'len'
         stepPart    = if @step then "#{ivar} += #{ @step.compile(o, LEVEL_OP) }" else "#{ivar}++"
         forPart     = "#{ivar} = 0, #{lvar} = #{svar}.length; #{ivar} < #{lvar}; #{stepPart}"
-    if @returns and not lastJumps
+    if @returns
       resultPart    = "#{@tab}#{rvar} = [];\n"
       returnResult  = "\n#{@tab}return #{rvar};"
       body          = Push.wrap rvar, body
@@ -1530,7 +1531,7 @@ exports.Switch = class Switch extends Base
 
   jumps: (o = {block: yes}) ->
     for [conds, block] in @cases
-      return yes if block.jumps o
+      return block if block.jumps o
     @otherwise?.jumps o
 
   makeReturn: ->
