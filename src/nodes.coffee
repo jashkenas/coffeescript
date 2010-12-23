@@ -1554,9 +1554,10 @@ exports.Switch = class Switch extends Base
       code += body + '\n' if body = block.compile o, LEVEL_TOP
       break if i is @cases.length - 1 and not @otherwise
       expr = @lastNonComment block.expressions
-      if not expr or not expr.jumps()
+      jumper = expr.jumps()
+      if not expr or not jumper or (jumper instanceof Literal and jumper.value is 'debugger')
         code += idt2 + 'break;\n'
-    code += idt1 + "default:\n#{ @otherwise.compile o, LEVEL_TOP }\n" if @otherwise
+    code += idt1 + "default:\n#{ @otherwise.compile o, LEVEL_TOP }\n" if @otherwise and @otherwise.expressions.length
     code +  @tab + '}'
 
 #### If
