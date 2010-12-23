@@ -30,6 +30,7 @@ SWITCHES = [
   ['-c', '--compile',         'compile to JavaScript and save as .js files']
   ['-i', '--interactive',     'run an interactive CoffeeScript REPL']
   ['-o', '--output [DIR]',    'set the directory for compiled JavaScript']
+  ['-j', '--join',            'concatenate the scripts before compiling']
   ['-w', '--watch',           'watch scripts for changes, and recompile']
   ['-p', '--print',           'print the compiled JavaScript to stdout']
   ['-l', '--lint',            'pipe the compiled JavaScript through JSLint']
@@ -47,6 +48,7 @@ SWITCHES = [
 # Top-level objects shared by all the functions.
 opts         = {}
 sources      = []
+contents     = []
 optionParser = null
 
 # Run `coffee` by parsing passed options and determining what action to take.
@@ -81,7 +83,12 @@ compileScripts = ->
               for file in files
                 compile path.join(source, file)
           else if topLevel or path.extname(source) is '.coffee'
-            fs.readFile source, (err, code) -> compileScript(source, code.toString(), base)
+            fs.readFile source, (err, code) ->
+              if opts.join
+                contents[sources.indexOf source] = code.toString()
+                compileJoin() if helpers.compact(contents).length is sources.length
+              else
+                compileScript(source, code.toString(), base)
             watch source, base if opts.watch
     compile source, true
 
@@ -121,6 +128,12 @@ compileStdio = ->
     code += buffer.toString() if buffer
   stdin.on 'end', ->
     compileScript null, code
+
+# After all of the source files are done being read, concatenate and compile
+# them together.
+compileJoin = ->
+  code = contents.join '\n'
+  compileScript "concatenation", code, "concatenation"
 
 # Watch a source CoffeeScript file using `fs.watchFile`, recompiling it every
 # time the file is updated. May be used in combination with other options,
