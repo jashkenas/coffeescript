@@ -293,3 +293,10 @@ a = 0
 for f in [-> a = 1] -> f()
 
 eq a, 1
+
+
+# Comprehensions that mention arguments.
+list = [arguments: 10]
+args = for f in list -> f.arguments
+
+eq args[0], 10

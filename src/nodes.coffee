@@ -557,6 +557,7 @@ exports.Extends = class Extends extends Base
 # an access into the object's prototype.
 exports.Access = class Access extends Base
   constructor: (@name, tag) ->
+    @name.accessed = yes
     @proto = if tag is 'proto' then '.prototype' else ''
     @soak  = tag is 'soak'
 
@@ -1671,9 +1672,11 @@ Closure =
     call = new Call func, args
     if statement then Expressions.wrap [call] else call
 
-  literalArgs: (node) -> node instanceof Literal and node.value is 'arguments'
-  literalThis: (node) -> node instanceof Literal and node.value is 'this' or
-                         node instanceof Code    and node.bound
+  literalArgs: (node) ->
+    node instanceof Literal and node.value is 'arguments' and not node.accessed
+  literalThis: (node) ->
+    (node instanceof Literal and node.value is 'this' and not node.accessed) or
+      (node instanceof Code and node.bound)
 
 # Unfold a node's child if soak, then tuck the node under created `If`
 unfoldSoak = (o, parent, name) ->
