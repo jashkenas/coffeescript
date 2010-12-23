@@ -242,7 +242,7 @@ exports.Expressions = class Expressions extends Base
     for exp, i in @expressions
       exp = exp.unwrap()
       break unless exp instanceof Comment or exp instanceof Literal
-    o.level = LEVEL_TOP
+    o = merge(o, level: LEVEL_TOP)
     if i
       rest = @expressions.splice i, @expressions.length
       code = @compileNode o
@@ -313,8 +313,7 @@ exports.Return = class Return extends Base
     if expr and expr not instanceof Return then expr.compile o, level else super o, level
 
   compileNode: (o) ->
-    o.level = LEVEL_PAREN
-    @tab + "return#{ if @expression then ' ' + @expression.compile o else '' };"
+    @tab + "return#{ if @expression then ' ' + @expression.compile(o, LEVEL_PAREN) else '' };"
 
 #### Value
 
@@ -1044,7 +1043,7 @@ exports.Code = class Code extends Base
     code  += '}'
     return @tab + code if @ctor
     return utility('bind') + "(#{code}, #{@context})" if @bound
-    if @front then "(#{code})" else code
+    if @front or (o.level >= LEVEL_ACCESS) then "(#{code})" else code
 
   # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
   # unless `crossScope` is `true`.
