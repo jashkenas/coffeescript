@@ -705,9 +705,10 @@ exports.Obj = class Obj extends Base
       indent = if prop instanceof Comment then '' else idt
       if prop instanceof Value and prop.this
         prop = new Assign prop.properties[0].name, prop, 'object'
-      else if prop not instanceof Assign and prop not instanceof Comment
-        prop = new Assign prop, prop, 'object'
-      prop.variable.base.asKey = yes if prop instanceof Value
+      if prop not instanceof Comment
+        if prop not instanceof Assign
+          prop = new Assign prop, prop, 'object'
+        (prop.variable.base or prop.variable).asKey = yes
       indent + prop.compile(o, LEVEL_TOP) + join
     props = props.join ''
     obj   = "{#{ props and '\n' + props + '\n' + @tab }}"
