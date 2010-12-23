@@ -346,3 +346,11 @@ class A
 a = new A
 eq a.captured().x, 10
 eq a.captured().y, 2
+
+
+# Issue #924: Static methods in nested classes.
+class A
+  @B: class
+    @c = -> 5
+
+eq A.B.c(), 5

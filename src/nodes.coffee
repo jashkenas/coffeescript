@@ -743,6 +743,7 @@ exports.Arr = class Arr extends Base
 exports.Class = class Class extends Base
   constructor: (@variable, @parent, @body = new Expressions) ->
     @boundFuncs = []
+    @body.classBody = yes
 
   children: ['variable', 'parent', 'body']
 
@@ -759,6 +760,7 @@ exports.Class = class Class extends Base
   # `this` is the Class being constructed.
   setContext: (name) ->
     @body.traverseChildren false, (node) ->
+      return false if node.classBody
       if node instanceof Literal and node.value is 'this'
         node.value    = name
       else if node instanceof Code
