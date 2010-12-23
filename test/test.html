@@ -43,7 +43,7 @@
 
   @eq = (x, y, msg) -> ok x is y, msg ? x + ' !== ' + y
 
-  window.arrayEq = (a, b) ->
+  arrayEqual = (a, b) ->
     if a is b
       # 0 isnt -0
       a isnt 0 or 1/a is 1/b
@@ -55,11 +55,11 @@
       # NaN is NaN
       a isnt a and b isnt b
 
-  window.doesNotThrow = (fn) ->
+  @doesNotThrow = (fn) ->
     fn()
     ok true
 
-  @arrayEqual = (a, b, msg) -> ok arrayEq(a,b), msg
+  @arrayEq = (a, b, msg) -> ok arrayEqual(a,b), msg
 
   @throws = (fun, err, msg) ->
     try fun(); throw new String 'No Error'
