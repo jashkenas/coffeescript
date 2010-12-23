@@ -43,7 +43,7 @@
 
   @eq = (x, y, msg) -> ok x is y, msg ? x + ' !== ' + y
 
-  arrayEq = (a, b) ->
+  window.arrayEq = (a, b) ->
     if a is b
       # 0 isnt -0
       a isnt 0 or 1/a is 1/b
@@ -54,6 +54,10 @@
     else
       # NaN is NaN
       a isnt a and b isnt b
+
+  window.doesNotThrow = (fn) ->
+    fn()
+    ok true
 
   @arrayEqual = (a, b, msg) -> ok arrayEq(a,b), msg
 
@@ -95,10 +99,10 @@
     'test_existence'
     'test_functions'
     'test_heredocs'
-    'test_if'
+    'conditionals'
     'test_literals'
     'test_pattern_matching'
-    'test_ranges_slices_and_splices'
+    'ranges_slices_and_splices'
     'test_returns'
     'test_splats'
     'test_strings'
