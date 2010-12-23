@@ -435,31 +435,29 @@ Expressions
         console by pressing the <b>load</b> button on the left.
       </i>
     <p>
-      CoffeeScript uses Python-style significant whitespace: You don't need to
-      use semicolons <tt>;</tt> to terminate expressions, ending
-      the line will do just as well. Semicolons can still be used to fit
-      multiple expressions onto a single line. Instead of using curly braces
-      <tt>{ }</tt> to delimit blocks of code (like <a href="#functions">functions</a>,
+      First, the basics: CoffeeScript uses significant whitespace to delimit blocks of code.
+      You don't need to use semicolons <tt>;</tt> to terminate expressions,
+      ending the line will do just as well, (although semicolons can still
+      be used to fit multiple expressions onto a single line.)
+      Instead of using curly braces
+      <tt>{ }</tt> to surround blocks of code in <a href="#functions">functions</a>,
       <a href="#conditionals">if-statements</a>,
-      <a href="#switch">switch</a>, and <a href="#try">try/catch</a>),
+      <a href="#switch">switch</a>, and <a href="#try">try/catch</a>,
       use indentation.
     </p>
 
     <p>
       You don't need to use parentheses to invoke a function if you're passing
-      arguments:<br /><tt>print "coffee"</tt>. The implicit call wraps forward
-      to the end of the line or block expression.
-    </p>
-
-    <p>
-      Within object literals, indentation can be used to create nested objects.
+      arguments. The implicit call wraps forward to the end of the line or block expression.<br />
+      <tt>console.log sys.inspect object</tt> &rarr; <tt>console.log(sys.inspect(object));</tt>
     </p>
 
     <p>
       <span id="literals" class="bookmark"></span>
       <b class="header">Functions</b>
-      Functions are defined by a list of parameters, an arrow, and the
-      function body. The empty function looks like this: <tt>-></tt>
+      Functions are defined by an optional list of parameters in parentheses,
+      an arrow, and the function body. The empty function looks like this:
+      <tt>-></tt>
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">square </span><span class="Keyword">=</span> <span class="FunctionArgument">(x)</span> <span class="Storage">-&gt;</span> x <span class="Keyword">*</span> x
 <span class="FunctionName">cube   </span><span class="Keyword">=</span> <span class="FunctionArgument">(x)</span> <span class="Storage">-&gt;</span> square(x) <span class="Keyword">*</span> x
@@ -478,7 +476,8 @@ cube = function(x) {
   return square(x) * x;
 };;alert(cube(5));'>run: cube(5)</div><br class='clear' /></div>
     <p>
-      Functions may also have default values for arguments.
+      Functions may also have default values for arguments. Override the default
+      value by passing a non-null argument.
     </p>
     <div class='code'><pre class="idle"><span class="FunctionName">fill </span><span class="Keyword">=</span> <span class="FunctionArgument">(container, liquid = &quot;coffee&quot;)</span> <span class="Storage">-&gt;</span>
   <span class="String"><span class="String">&quot;</span>Filling the <span class="String"><span class="String">#{</span>container<span class="String">}</span></span> with <span class="String"><span class="String">#{</span>liquid<span class="String">}</span></span>...<span class="String">&quot;</span></span>
@@ -506,16 +505,16 @@ fill = function(container, liquid) {
     <p>
       <span id="objects_and_arrays" class="bookmark"></span>
       <b class="header">Objects and Arrays</b>
-      Object and Array literals look very similar to their JavaScript cousins.
-      When each property is listed on its own line, the commas are
-      optional. Objects may be created using indentation instead of
-      explicit braces, similar to YAML.
+      The CoffeeScript literals for objects and arrays look very similar to
+      their JavaScript cousins. When each property is listed on its own line,
+      the commas are optional. Objects may be created using indentation instead
+      of explicit braces, similar to <a href="http://yaml.org">YAML</a>.
     </p>
     <div class='code'><pre class="idle">song <span class="Keyword">=</span> [<span class="String"><span class="String">&quot;</span>do<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>re<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>mi<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>fa<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>so<span class="String">&quot;</span></span>]
 
 singers <span class="Keyword">=</span> {Jagger: <span class="String"><span class="String">&quot;</span>Rock<span class="String">&quot;</span></span>, Elvis: <span class="String"><span class="String">&quot;</span>Roll<span class="String">&quot;</span></span>}
 
-matrix <span class="Keyword">=</span> [
+bitlist <span class="Keyword">=</span> [
   <span class="Number">1</span>, <span class="Number">0</span>, <span class="Number">1</span>
   <span class="Number">0</span>, <span class="Number">0</span>, <span class="Number">1</span>
   <span class="Number">1</span>, <span class="Number">1</span>, <span class="Number">0</span>
@@ -530,13 +529,13 @@ kids <span class="Keyword">=</span>
     age:  <span class="Number">9</span>
 
 
-</pre><pre class="idle"><span class="Storage">var</span> kids, matrix, singers, song;
+</pre><pre class="idle"><span class="Storage">var</span> bitlist, kids, singers, song;
 song <span class="Keyword">=</span> [<span class="String"><span class="String">&quot;</span>do<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>re<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>mi<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>fa<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>so<span class="String">&quot;</span></span>];
 singers <span class="Keyword">=</span> {
   Jagger: <span class="String"><span class="String">&quot;</span>Rock<span class="String">&quot;</span></span>,
   Elvis: <span class="String"><span class="String">&quot;</span>Roll<span class="String">&quot;</span></span>
 };
-matrix <span class="Keyword">=</span> [<span class="Number">1</span>, <span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">0</span>, <span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">1</span>, <span class="Number">1</span>, <span class="Number">0</span>];
+bitlist <span class="Keyword">=</span> [<span class="Number">1</span>, <span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">0</span>, <span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">1</span>, <span class="Number">1</span>, <span class="Number">0</span>];
 kids <span class="Keyword">=</span> {
   brother: {
     name: <span class="String"><span class="String">&quot;</span>Max<span class="String">&quot;</span></span>,
@@ -547,13 +546,13 @@ kids <span class="Keyword">=</span> {
     age: <span class="Number">9</span>
   }
 };
-</pre><script>window.example4 = "song = [\"do\", \"re\", \"mi\", \"fa\", \"so\"]\n\nsingers = {Jagger: \"Rock\", Elvis: \"Roll\"}\n\nmatrix = [\n  1, 0, 1\n  0, 0, 1\n  1, 1, 0\n]\n\nkids =\n  brother:\n    name: \"Max\"\n    age:  11\n  sister:\n    name: \"Ida\"\n    age:  9\n\nalert song.join(\",\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example4);'>load</div><div class='minibutton ok' onclick='javascript: var kids, matrix, singers, song;
+</pre><script>window.example4 = "song = [\"do\", \"re\", \"mi\", \"fa\", \"so\"]\n\nsingers = {Jagger: \"Rock\", Elvis: \"Roll\"}\n\nbitlist = [\n  1, 0, 1\n  0, 0, 1\n  1, 1, 0\n]\n\nkids =\n  brother:\n    name: \"Max\"\n    age:  11\n  sister:\n    name: \"Ida\"\n    age:  9\n\nalert song.join(\" ... \")"</script><div class='minibutton load' onclick='javascript: loadConsole(example4);'>load</div><div class='minibutton ok' onclick='javascript: var bitlist, kids, singers, song;
 song = ["do", "re", "mi", "fa", "so"];
 singers = {
   Jagger: "Rock",
   Elvis: "Roll"
 };
-matrix = [1, 0, 1, 0, 0, 1, 1, 1, 0];
+bitlist = [1, 0, 1, 0, 0, 1, 1, 1, 0];
 kids = {
   brother: {
     name: "Max",
@@ -563,7 +562,7 @@ kids = {
     name: "Ida",
     age: 9
   }
-};;alert(song.join(","));'>run: song.join(",")</div><br class='clear' /></div>
+};;alert(song.join(" ... "));'>run: song.join(" ... ")</div><br class='clear' /></div>
     <p>
       In JavaScript, you can't use reserved words, like <tt>class</tt>, as properties
       of an object, without quoting them as strings. CoffeeScript notices reserved words

@@ -360,47 +360,46 @@ Expressions
         console by pressing the <b>load</b> button on the left.
       </i>
     <p>
-      CoffeeScript uses Python-style significant whitespace: You don't need to
-      use semicolons <tt>;</tt> to terminate expressions, ending
-      the line will do just as well. Semicolons can still be used to fit
-      multiple expressions onto a single line. Instead of using curly braces
-      <tt>{ }</tt> to delimit blocks of code (like <a href="#functions">functions</a>,
+      First, the basics: CoffeeScript uses significant whitespace to delimit blocks of code.
+      You don't need to use semicolons <tt>;</tt> to terminate expressions,
+      ending the line will do just as well, (although semicolons can still
+      be used to fit multiple expressions onto a single line.)
+      Instead of using curly braces
+      <tt>{ }</tt> to surround blocks of code in <a href="#functions">functions</a>,
       <a href="#conditionals">if-statements</a>,
-      <a href="#switch">switch</a>, and <a href="#try">try/catch</a>),
+      <a href="#switch">switch</a>, and <a href="#try">try/catch</a>,
       use indentation.
     </p>
 
     <p>
       You don't need to use parentheses to invoke a function if you're passing
-      arguments:<br /><tt>print "coffee"</tt>. The implicit call wraps forward
-      to the end of the line or block expression.
-    </p>
-
-    <p>
-      Within object literals, indentation can be used to create nested objects.
+      arguments. The implicit call wraps forward to the end of the line or block expression.<br />
+      <tt>console.log sys.inspect object</tt> &rarr; <tt>console.log(sys.inspect(object));</tt>
     </p>
 
     <p>
       <span id="literals" class="bookmark"></span>
       <b class="header">Functions</b>
-      Functions are defined by a list of parameters, an arrow, and the
-      function body. The empty function looks like this: <tt>-></tt>
+      Functions are defined by an optional list of parameters in parentheses,
+      an arrow, and the function body. The empty function looks like this:
+      <tt>-></tt>
     </p>
     <%= code_for('functions', 'cube(5)') %>
     <p>
-      Functions may also have default values for arguments.
+      Functions may also have default values for arguments. Override the default
+      value by passing a non-null argument.
     </p>
     <%= code_for('default_args', 'fill("cup")') %>
 
     <p>
       <span id="objects_and_arrays" class="bookmark"></span>
       <b class="header">Objects and Arrays</b>
-      Object and Array literals look very similar to their JavaScript cousins.
-      When each property is listed on its own line, the commas are
-      optional. Objects may be created using indentation instead of
-      explicit braces, similar to YAML.
+      The CoffeeScript literals for objects and arrays look very similar to
+      their JavaScript cousins. When each property is listed on its own line,
+      the commas are optional. Objects may be created using indentation instead
+      of explicit braces, similar to <a href="http://yaml.org">YAML</a>.
     </p>
-    <%= code_for('objects_and_arrays', 'song.join(",")') %>
+    <%= code_for('objects_and_arrays', 'song.join(" ... ")') %>
     <p>
       In JavaScript, you can't use reserved words, like <tt>class</tt>, as properties
       of an object, without quoting them as strings. CoffeeScript notices reserved words
