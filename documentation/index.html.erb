@@ -16,7 +16,7 @@
     run    = executable  == true ? 'run' : "run: #{executable}"
     name   = "example#{@counter}"
     script = "<script>window.#{name} = #{cs.to_json}</script>"
-    import = show_load ? "<div class='minibutton load' onclick='javascript: loadConsole(#{name});'>Load</div>" : ''
+    import = show_load ? "<div class='minibutton load' onclick='javascript: loadConsole(#{name});'>load</div>" : ''
     button = executable ? "<div class='minibutton ok' onclick='javascript: #{js};#{append}'>#{run}</div>" : ''
     "<div class='code'>#{cshtml}#{jshtml}#{script}#{import}#{button}<br class='clear' /></div>"
   end
@@ -151,11 +151,11 @@
     <p>
       The CoffeeScript compiler is itself
       <a href="documentation/docs/grammar.html">written in CoffeeScript</a>,
-      using the <a href="http://jison.org">Jison parser generator</a>. The 
-      command-line version of <tt>coffee</tt> is available as a 
-      <a href="http://nodejs.org/">Node.js</a> utility. The 
-      <a href="extras/coffee-script.js">core compiler</a> however, does not 
-      depend on Node, and can be run in any JavaScript environment, or in the 
+      using the <a href="http://jison.org">Jison parser generator</a>. The
+      command-line version of <tt>coffee</tt> is available as a
+      <a href="http://nodejs.org/">Node.js</a> utility. The
+      <a href="extras/coffee-script.js">core compiler</a> however, does not
+      depend on Node, and can be run in any JavaScript environment, or in the
       browser (see "Try CoffeeScript", above).
     </p>
 
@@ -189,8 +189,8 @@ sudo bin/cake install</pre>
     </p>
 
     <p>
-      Once installed, you should have access to the <tt>coffee</tt> command, 
-      which can execute scripts, compile <tt>.coffee</tt> files into <tt>.js</tt>, 
+      Once installed, you should have access to the <tt>coffee</tt> command,
+      which can execute scripts, compile <tt>.coffee</tt> files into <tt>.js</tt>,
       and provide an interactive REPL. The <tt>coffee</tt> command takes the
       following options:
     </p>
@@ -313,7 +313,7 @@ Expressions
     <p>
       <b>Examples:</b>
     </p>
-    
+
     <ul>
       <li>
         Compile a directory tree of <tt>.coffee</tt> files into a parallel
@@ -355,9 +355,9 @@ Expressions
 
     <p>
       <i>
-        Many of the examples can be run (where it makes sense) by pressing the "run"
-        button towards the bottom right. You can also paste examples into
-        "Try CoffeeScript" in the toolbar, and play with them from there.
+        Many of the examples can be run (where it makes sense) by pressing the <b>run</b>
+        button on the right, and can be loaded into the "Try CoffeeScript"
+        console by pressing the <b>load</b> button on the left.
       </i>
     <p>
       CoffeeScript uses Python-style significant whitespace: You don't need to
