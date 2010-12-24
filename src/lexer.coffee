@@ -95,7 +95,6 @@ exports.Lexer = class Lexer
         tag = 'UNARY'
       else if tag in RELATION
         if tag isnt 'INSTANCEOF' and @seenFor
-          @seenFor = no
           tag = 'FOR' + tag
         else
           tag = 'RELATION'
@@ -232,6 +231,7 @@ exports.Lexer = class Lexer
   # can close multiple indents, so we need to know how far in we happen to be.
   lineToken: ->
     return 0 unless match = MULTI_DENT.exec @chunk
+    @seenFor = no
     indent = match[0]
     @line += count indent, '\n'
     prev = last @tokens, 1
@@ -305,7 +305,7 @@ exports.Lexer = class Lexer
   literalToken: ->
     if match = OPERATOR.exec @chunk
       [value] = match
-      @tagParameters() if CODE.test value
+      @tagParameters() if not @seenFor and CODE.test value
     else
       value = @chunk.charAt 0
     tag  = value
