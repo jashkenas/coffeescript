@@ -64,6 +64,7 @@ code, pre, tt, textarea {
   word-wrap: break-word;
 }
   tt {
+    display: inline-block;
     background: #fff;
     border: 1px solid #dedede;
     padding: 0px 0.2em;
@@ -86,9 +87,10 @@ code, pre, tt, textarea {
 div.code {
   position: relative;
   background: #fff;
-  -webkit-box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
-  -moz-box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
-  box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
+  border: 1px solid #d8d8d8;
+  -webkit-box-shadow: 0px 0px 4px rgba(0,0,0,0.23);
+  -moz-box-shadow: 0px 0px 4px rgba(0,0,0,0.23);
+  box-shadow: 0px 0px 4px rgba(0,0,0,0.23);
   zoom: 1;
 }
   div.code .minibutton {
@@ -313,20 +315,23 @@ div.code {
       width: 47%; right: 50%;
       float: left;
     }
-    #repl_source {
-      padding-left: 5px;
-      width: 100%;
-      height: 100%;
-      border: 0;
-      overflow-y: auto;
-      resize: none;
+      #repl_source {
+        padding-left: 5px;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        overflow-y: auto;
+        resize: none;
+      }
+    #repl_results_wrap {
+      white-space: pre;
     }
-    #repl_results {
-      text-transform: none;
-      overflow-y: auto;
-      left: 50%;
-      border-left-color: #555;
-    }
+      #repl_results {
+        text-transform: none;
+        overflow-y: auto;
+        left: 50%;
+        border-left-color: #555;
+      }
 
 /*----------------------------- Mini Buttons ---------------------------------*/
 .minibutton {

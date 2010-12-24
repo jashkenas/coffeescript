@@ -1,5 +1,5 @@
 ###
-CoffeeScript Compiler v0.9.6
+CoffeeScript Compiler v1.0.0
 Released under the MIT License
 ###
 

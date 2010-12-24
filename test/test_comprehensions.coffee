@@ -76,10 +76,9 @@ all = 1
 # Ensure that the closure wrapper preserves local variables.
 obj = {}
 
-for method in ['one', 'two', 'three']
-  do (method) ->
-    obj[method] = ->
-      "I'm " + method
+for method in ['one', 'two', 'three'] then do (method) ->
+  obj[method] = ->
+    "I'm " + method
 
 ok obj.one()   is "I'm one"
 ok obj.two()   is "I'm two"

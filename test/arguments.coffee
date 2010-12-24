@@ -34,8 +34,10 @@ test "passing arguments on separate lines", ->
 
 test "reference `arguments` inside of functions", ->
   sumOfArgs = ->
-    sum = (a,b)-> a + b
-    Array::reduce.call(arguments,sum,0)
+    sum = (a,b) -> a + b
+    sum = 0
+    sum += num for num in arguments
+    sum
 
   eq 10, sumOfArgs(0, 1, 2, 3, 4)
 

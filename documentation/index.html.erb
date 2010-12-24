@@ -82,7 +82,7 @@
           <div id="repl_source_wrap">
             <textarea id="repl_source" rows="100">alert "Hello CoffeeScript!"</textarea>
           </div>
-          <pre id="repl_results"></pre>
+          <div id="repl_results_wrap"><pre id="repl_results"></pre></div>
           <div class="minibutton dark run">Run</div>
           <br class="clear" />
         </div>
@@ -131,7 +131,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/0.9.6">0.9.6</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.0.0">1.0.0</a>
     </p>
 
     <h2>
@@ -474,22 +474,8 @@ Expressions
 
     <p>
       <span id="loops" class="bookmark"></span>
-      <b class="header">Loops</b>
-      The only low-level loop that CoffeeScript provides is the <b>while</b> loop. The
-      main difference from JavaScript is that the <b>while</b> loop can be used
-      as an expression, returning an array containing the result of each iteration
-      through the loop.
-    </p>
-    <%= code_for('while', 'lyrics.join("\n")') %>
-    <p>
-      For readability, the <b>until</b> keyword is equivalent to <tt>while not</tt>,
-      and the <b>loop</b> keyword is equivalent to <tt>while true</tt>.
-    </p>
-
-    <p>
-      <span id="comprehensions" class="bookmark"></span>
-      <b class="header">Comprehensions</b>
-      Hopefully, the majority of your loops can be implemented with <b>comprehensions</b>
+      <b class="header">Loops and Comprehensions</b>
+      Most of the loops you'll write in CoffeeScript will be <b>comprehensions</b>
       over arrays, objects, and ranges. Comprehensions replace (and compile into)
       <b>for</b> loops, with optional guard clauses and the value of the current array index.
       Unlike for loops, array comprehensions are expressions, and can be returned
@@ -530,10 +516,22 @@ Expressions
       <tt>for own key, value of object</tt>
     </p>
     <p>
+      The only low-level loop that CoffeeScript provides is the <b>while</b> loop. The
+      main difference from JavaScript is that the <b>while</b> loop can be used
+      as an expression, returning an array containing the result of each iteration
+      through the loop.
+    </p>
+    <%= code_for('while', 'lyrics.join("\n")') %>
+    <p>
+      For readability, the <b>until</b> keyword is equivalent to <tt>while not</tt>,
+      and the <b>loop</b> keyword is equivalent to <tt>while true</tt>.
+    </p>
+    <p>
       When using a JavaScript loop to generate functions, it's common to insert
       a closure wrapper in order to ensure that loop variables are closed over,
       and all the generated functions don't just share the final values. CoffeeScript
-      provides the <tt>do</tt> keyword, which immediately invokes a passed function.
+      provides the <tt>do</tt> keyword, which immediately invokes a passed function,
+      forwarding any arguments.
     </p>
     <%= code_for('do') %>
 
@@ -980,7 +978,10 @@ Expressions
       </li>
       <li>
         <b>satyr</b>'s <a href="http://github.com/satyr/coco">Coco</a>
-        &mdash; a CoffeeScript dialect that aims to be more radical and practical.
+        &mdash; An avant-garde dialect of CoffeeScript that frequently pioneers
+        features and optimizations, some of which CoffeeScript later adopts.
+        Check out the <a href="https://github.com/satyr/coco/wiki/additions">list of additions</a>
+        to the language.
       </li>
       <li>
         <b>yeungda</b>'s <a href="http://github.com/yeungda/jcoffeescript">JCoffeeScript</a>
@@ -1087,6 +1088,20 @@ Expressions
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <b class="header" style="margin-top: 20px;">1.0.0
+        <span class="timestamp"> &ndash; <small>Dec 24, 2010</small></span>
+      </b>
+      CoffeeScript loops no longer try to preserve block scope when functions
+      are being generated within the loop body. Instead, you can use the
+      <tt>do</tt> keyword to create a convenient closure wrapper.
+      Added a <tt>--nodejs</tt> flag for passing through options directly
+      to the <tt>node</tt> executable.
+      Better behavior around the use of pure statements within expressions.
+      Fixed inclusive slicing through <tt>-1</tt>, for all browsers, and splicing
+      with arbitrary expressions as endpoints.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">0.9.6
@@ -1534,7 +1549,11 @@ Expressions
       window.compiledJS = ''
       try
         window.compiledJS = CoffeeScript.compile source, bare: on
-        $('#repl_results').text window.compiledJS
+        el = $('#repl_results')[0]
+        if el.innerText
+          el.innerText = window.compiledJS
+        else
+          $(el).text window.compiledJS
         $('#error').hide()
       catch error
         $('#error').text(error.message).show()

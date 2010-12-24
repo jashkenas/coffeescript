@@ -14,12 +14,17 @@ option) list, and all subsequent arguments are left unparsed.</p>             </
 <p>Along with an an optional banner for the usage help.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">constructor</span><span class="o">:</span> <span class="p">(</span><span class="nx">rules</span><span class="p">,</span> <span class="nx">@banner</span><span class="p">)</span> <span class="o">-&gt;</span>
     <span class="vi">@rules = </span><span class="nx">buildRules</span> <span class="nx">rules</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>Parse the list of arguments, populating an <code>options</code> object with all of the
 specified options, and returning it. <code>options.arguments</code> will be an array
-containing the remaining non-option arguments. This is a simpler API than
-many option parsers that allow you to attach callback actions for every
-flag. Instead, you're responsible for interpreting the options object.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">parse</span><span class="o">:</span> <span class="p">(</span><span class="nx">args</span><span class="p">)</span> <span class="o">-&gt;</span>
-    <span class="nv">options = </span><span class="nx">arguments</span><span class="o">:</span> <span class="p">[]</span>
+containing the remaining non-option arguments. <code>options.literals</code> will be
+an array of options that are meant to be passed through directly to the
+executing script. This is a simpler API than many option parsers that allow
+you to attach callback actions for every flag. Instead, you're responsible
+for interpreting the options object.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">parse</span><span class="o">:</span> <span class="p">(</span><span class="nx">args</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="nv">options = </span><span class="nx">arguments</span><span class="o">:</span> <span class="p">[],</span> <span class="nx">literals</span><span class="o">:</span> <span class="p">[]</span>
     <span class="nv">args    = </span><span class="nx">normalizeArguments</span> <span class="nx">args</span>
     <span class="k">for</span> <span class="nx">arg</span><span class="p">,</span> <span class="nx">i</span> <span class="k">in</span> <span class="nx">args</span>
+      <span class="k">if</span> <span class="nx">arg</span> <span class="o">is</span> <span class="s1">&#39;--&#39;</span>
+        <span class="nv">options.literals = </span><span class="nx">args</span><span class="p">[(</span><span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)..]</span>
+        <span class="k">break</span>
       <span class="nv">isOption = </span><span class="o">!!</span><span class="p">(</span><span class="nx">arg</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">LONG_FLAG</span><span class="p">)</span> <span class="o">or</span> <span class="nx">arg</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">SHORT_FLAG</span><span class="p">))</span>
       <span class="nv">matchedRule = </span><span class="kc">no</span>
       <span class="k">for</span> <span class="nx">rule</span> <span class="k">in</span> <span class="nx">@rules</span>
