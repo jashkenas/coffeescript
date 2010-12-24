@@ -89,7 +89,7 @@ compileScripts = ->
                 compileJoin() if helpers.compact(contents).length is sources.length
               else
                 compileScript(source, code.toString(), base)
-            watch source, base if opts.watch
+            watch source, base if opts.watch and not opts.join
     compile source, true
 
 # Compile a single source script, containing the given code, according to the
