@@ -908,36 +908,26 @@ ages = (function() {
       <tt>for own key, value of object</tt>
     </p>
     <p>
-      In JavaScript, it's extremely common to run into trouble when trying to
-      generate functions within a loop &mdash; all of the created functions share
-      the final value of loop variables. CoffeeScript provides a "scoped loop"
-      syntax for loops that should have function scope, similar to a <tt>forEach</tt>.
-      Note how the body of the loop gets lifted into a cached function.
+      When using a JavaScript loop to generate functions, it's common to insert
+      a closure wrapper in order to ensure that loop variables are closed over,
+      and all the generated functions don't just share the final values. CoffeeScript
+      provides the <tt>do</tt> keyword, which immediately invokes a passed function.
     </p>
-    <div class='code'><pre class="idle">funcs <span class="Keyword">=</span> []
-
-<span class="Keyword">for</span> i <span class="Keyword">in</span> [<span class="Number">0</span>..<span class="Number">3</span>] <span class="Keyword">-</span><span class="Keyword">&gt;</span>
-  funcs.push <span class="FunctionArgument">(number)</span> <span class="Storage">-&gt;</span> number <span class="Keyword">+</span> i
-</pre><pre class="idle"><span class="Storage">var</span> funcs, i, _fn;
-funcs <span class="Keyword">=</span> [];
-<span class="FunctionName">_fn</span> = <span class="Storage">function</span>(<span class="FunctionArgument">i</span>) {
-  funcs.<span class="LibraryFunction">push</span>(<span class="Storage">function</span>(number) {
-    <span class="Keyword">return</span> number <span class="Keyword">+</span> i;
+    <div class='code'><pre class="idle"><span class="Keyword">for</span> fileName <span class="Keyword">in</span> list
+  do <span class="FunctionArgument">(fileName)</span> <span class="Storage">-&gt;</span>
+    fs.readFile fileName, <span class="FunctionArgument">(err, contents)</span> <span class="Storage">-&gt;</span>
+      compile fileName, contents.toString()
+</pre><pre class="idle"><span class="Storage">var</span> fileName, _fn, _i, _len;
+<span class="FunctionName">_fn</span> = <span class="Storage">function</span>(<span class="FunctionArgument">fileName</span>) {
+  <span class="Keyword">return</span> fs.readFile(fileName, <span class="Storage">function</span>(err, contents) {
+    <span class="Keyword">return</span> <span class="LibraryFunction">compile</span>(fileName, contents.<span class="LibraryFunction">toString</span>());
   });
 };
-<span class="Keyword">for</span> (i <span class="Keyword">=</span> <span class="Number">0</span>; i <span class="Keyword">&lt;=</span> <span class="Number">3</span>; i<span class="Keyword">++</span>) {
-  _fn(i);
+<span class="Keyword">for</span> (_i <span class="Keyword">=</span> <span class="Number">0</span>, _len <span class="Keyword">=</span> list.<span class="LibraryConstant">length</span>; _i <span class="Keyword">&lt;</span> _len; _i<span class="Keyword">++</span>) {
+  fileName <span class="Keyword">=</span> list[_i];
+  _fn(fileName);
 }
-</pre><script>window.example13 = "funcs = []\n\nfor i in [0..3] ->\n  funcs.push (number) -> number + i\n\nalert funcs[3](2)"</script><div class='minibutton load' onclick='javascript: loadConsole(example13);'>load</div><div class='minibutton ok' onclick='javascript: var funcs, i, _fn;
-funcs = [];
-_fn = function(i) {
-  funcs.push(function(number) {
-    return number + i;
-  });
-};
-for (i = 0; i <= 3; i++) {
-  _fn(i);
-};alert(funcs[3](2));'>run: funcs[3](2)</div><br class='clear' /></div>
+</pre><script>window.example13 = "for fileName in list\n  do (fileName) ->\n    fs.readFile fileName, (err, contents) ->\n      compile fileName, contents.toString()"</script><div class='minibutton load' onclick='javascript: loadConsole(example13);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="slices" class="bookmark"></span>
@@ -970,12 +960,12 @@ middle = copy.slice(3, 7);;alert(middle);'>run: middle</div><br class='clear' />
 numbers[<span class="Number">3</span>..<span class="Number">6</span>] <span class="Keyword">=</span> [<span class="Keyword">-</span><span class="Number">3</span>, <span class="Keyword">-</span><span class="Number">4</span>, <span class="Keyword">-</span><span class="Number">5</span>, <span class="Keyword">-</span><span class="Number">6</span>]
 
 
-</pre><pre class="idle"><span class="Storage">var</span> numbers;
+</pre><pre class="idle"><span class="Storage">var</span> numbers, _ref;
 numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
-[].splice.<span class="LibraryFunction">apply</span>(numbers, [<span class="Number">3</span>, <span class="Number">4</span>].<span class="LibraryFunction">concat</span>([<span class="Keyword">-</span><span class="Number">3</span>, <span class="Keyword">-</span><span class="Number">4</span>, <span class="Keyword">-</span><span class="Number">5</span>, <span class="Keyword">-</span><span class="Number">6</span>]));
-</pre><script>window.example15 = "numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nnumbers[3..6] = [-3, -4, -5, -6]\n\nalert numbers"</script><div class='minibutton load' onclick='javascript: loadConsole(example15);'>load</div><div class='minibutton ok' onclick='javascript: var numbers;
+[].splice.<span class="LibraryFunction">apply</span>(numbers, [<span class="Number">3</span>, <span class="Number">4</span>].<span class="LibraryFunction">concat</span>(_ref <span class="Keyword">=</span> [<span class="Keyword">-</span><span class="Number">3</span>, <span class="Keyword">-</span><span class="Number">4</span>, <span class="Keyword">-</span><span class="Number">5</span>, <span class="Keyword">-</span><span class="Number">6</span>])), _ref;
+</pre><script>window.example15 = "numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nnumbers[3..6] = [-3, -4, -5, -6]\n\nalert numbers"</script><div class='minibutton load' onclick='javascript: loadConsole(example15);'>load</div><div class='minibutton ok' onclick='javascript: var numbers, _ref;
 numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-[].splice.apply(numbers, [3, 4].concat([-3, -4, -5, -6]));;alert(numbers);'>run: numbers</div><br class='clear' /></div>
+[].splice.apply(numbers, [3, 4].concat(_ref = [-3, -4, -5, -6])), _ref;;alert(numbers);'>run: numbers</div><br class='clear' /></div>
     <p>
       Note that JavaScript strings are immutable, and can't be spliced.
     </p>

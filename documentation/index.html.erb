@@ -530,13 +530,12 @@ Expressions
       <tt>for own key, value of object</tt>
     </p>
     <p>
-      In JavaScript, it's extremely common to run into trouble when trying to
-      generate functions within a loop &mdash; all of the created functions share
-      the final value of loop variables. CoffeeScript provides a "scoped loop"
-      syntax for loops that should have function scope, similar to a <tt>forEach</tt>.
-      Note how the body of the loop gets lifted into a cached function.
+      When using a JavaScript loop to generate functions, it's common to insert
+      a closure wrapper in order to ensure that loop variables are closed over,
+      and all the generated functions don't just share the final values. CoffeeScript
+      provides the <tt>do</tt> keyword, which immediately invokes a passed function.
     </p>
-    <%= code_for('scoped_loops', 'funcs[3](2)') %>
+    <%= code_for('do') %>
 
     <p>
       <span id="slices" class="bookmark"></span>

@@ -22,18 +22,18 @@ obj = {
   name: 'Fred'
 
   bound: ->
-    (=> eq this, obj)()
+    do (=> eq this, obj)
 
   unbound: ->
-    (-> ok this isnt obj)()
+    do (-> ok this isnt obj)
 
   nested: ->
     (=>
-      (=>
+      do (=>
         (=>
           eq this, obj
         )()
-      )()
+      )
     )()
 }
 
