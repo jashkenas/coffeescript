@@ -1177,6 +1177,7 @@ exports.While = class While extends Base
 exports.Op = class Op extends Base
   constructor: (op, first, second, flip) ->
     return new In first, second if op is 'in'
+    return new Call first, first.params or [] if op is 'do'
     if op is 'new'
       return first.newInstance() if first instanceof Call
       first = new Parens first   if first instanceof Code and first.bound
@@ -1423,7 +1424,7 @@ exports.Parens = class Parens extends Base
 # you can map and filter in a single pass.
 exports.For = class For extends Base
   constructor: (body, source) ->
-    {@source, @guard, @step, @name, @index, @scoped} = source
+    {@source, @guard, @step, @name, @index} = source
     @body    = Expressions.wrap [body]
     @own     = !!source.own
     @object  = !!source.object
@@ -1466,8 +1467,6 @@ exports.For = class For extends Base
     guardPart     = ''
     defPart       = ''
     idt1          = @tab + TAB
-    if @scoped and @jumps()
-      throw SyntaxError 'cannot use a pure statement in a scoped loop.'
     if @range
       forPart = source.compile merge(o, {index: ivar, @step})
     else
@@ -1489,9 +1488,7 @@ exports.For = class For extends Base
       body          = Expressions.wrap [new If @guard, body]
     if @pattern
       body.expressions.unshift new Assign @name, new Literal "#{svar}[#{ivar}]"
-    if @scoped
-      body          = Closure.wrap body, true, not @returns
-    defPart         += @pluckDirectCall o, body, name, index
+    defPart         += @pluckDirectCall o, body
     varPart         = "\n#{idt1}#{namePart};" if namePart
     if @object
       forPart       = "#{ivar} in #{svar}"
@@ -1502,7 +1499,7 @@ exports.For = class For extends Base
     #{defPart}#{resultPart or ''}#{@tab}for (#{forPart}) {#{guardPart}#{varPart}#{body}#{@tab}}#{returnResult or ''}
     """
 
-  pluckDirectCall: (o, body, name, index) ->
+  pluckDirectCall: (o, body) ->
     defs = ''
     for expr, idx in body.expressions
       expr = expr.unwrapAll()
@@ -1516,14 +1513,10 @@ exports.For = class For extends Base
       fn    = val.base?.unwrapAll() or val
       ref   = new Literal o.scope.freeVariable 'fn'
       base  = new Value ref
-      args  = compact [name, index]
-      args.reverse() if @object
-      for arg, i in args
-        fn.params.push new Param args[i] = new Literal arg
       if val.base
         [val.base, base] = [base, val]
         args.unshift new Literal 'this'
-      body.expressions[idx] = new Call base, args
+      body.expressions[idx] = new Call base, expr.args
       defs += @tab + new Assign(ref, fn).compile(o, LEVEL_TOP) + ';\n'
     defs
 

@@ -54,20 +54,6 @@ class exports.Rewriter
       i += 1
     i - 1
 
-  scanLineBack: (i, condition) ->
-    {tokens} = this
-    levels = 0
-    while token = tokens[i--]
-      return no if token[0] in LINEBREAKS and not token.generated
-      if token[0] in EXPRESSION_START
-        levels -= 1
-      else if token[0] in EXPRESSION_END
-        levels += 1
-      continue if levels > 0
-      return no if levels < 0
-      return yes if condition.call this, token, i
-    no
-
   # Leading newlines would introduce an ambiguity in the grammar, so we
   # dispatch them here.
   removeLeadingNewlines: ->
@@ -160,8 +146,6 @@ class exports.Rewriter
       return 1 unless callObject or
         prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
         (tag in IMPLICIT_CALL or not (token.spaced or token.newLine) and tag in IMPLICIT_UNSPACED_CALL)
-      if tag in ['->', '=>'] and @scanLineBack(i, (token, i) -> token[0] is 'FOR')
-        return 1
       tokens.splice i, 0, ['CALL_START', '(', token[2]]
       @detectEnd i + 1, (token, i) ->
         [tag] = token

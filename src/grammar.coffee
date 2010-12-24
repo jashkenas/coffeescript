@@ -105,10 +105,6 @@ grammar =
   # token stream.
   Block: [
     o 'INDENT OUTDENT',                         -> new Expressions
-    o 'FullBlock'
-  ]
-
-  FullBlock: [
     o 'INDENT Body OUTDENT',                    -> $2
   ]
 
@@ -422,7 +418,6 @@ grammar =
     o 'Statement  ForBody',                     -> new For $1, $2
     o 'Expression ForBody',                     -> new For $1, $2
     o 'ForBody    Block',                       -> new For $2, $1
-    o 'ForBody FuncGlyph FullBlock',            -> $1.scoped = yes; new For $3, $1
   ]
 
   ForBody: [
@@ -565,7 +560,7 @@ operators = [
   ['nonassoc',  'INDENT', 'OUTDENT']
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
   ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
-  ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
+  ['right',     'IF', 'ELSE', 'FOR', 'DO', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
   ['right',     'POST_IF']
 ]
 

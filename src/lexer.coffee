@@ -96,6 +96,7 @@ exports.Lexer = class Lexer
       else if tag in RELATION
         if tag isnt 'INSTANCEOF' and @seenFor
           tag = 'FOR' + tag
+          @seenFor = no
         else
           tag = 'RELATION'
           if @value() is '!'
@@ -231,7 +232,6 @@ exports.Lexer = class Lexer
   # can close multiple indents, so we need to know how far in we happen to be.
   lineToken: ->
     return 0 unless match = MULTI_DENT.exec @chunk
-    @seenFor = no
     indent = match[0]
     @line += count indent, '\n'
     prev = last @tokens, 1
@@ -305,7 +305,7 @@ exports.Lexer = class Lexer
   literalToken: ->
     if match = OPERATOR.exec @chunk
       [value] = match
-      @tagParameters() if not @seenFor and CODE.test value
+      @tagParameters() if CODE.test value
     else
       value = @chunk.charAt 0
     tag  = value
@@ -500,7 +500,7 @@ JS_KEYWORDS = [
   'true', 'false', 'null', 'this'
   'new', 'delete', 'typeof', 'in', 'instanceof'
   'return', 'throw', 'break', 'continue', 'debugger'
-  'if', 'else', 'switch', 'for', 'while', 'try', 'catch', 'finally'
+  'if', 'else', 'switch', 'for', 'while', 'do', 'try', 'catch', 'finally'
   'class', 'extends', 'super'
 ]
 
@@ -521,7 +521,7 @@ COFFEE_KEYWORDS.push op for op of COFFEE_ALIASES =
 # used by CoffeeScript internally. We throw an error when these are encountered,
 # to avoid having a JavaScript error at runtime.
 RESERVED = [
-  'case', 'default', 'function', 'var', 'void', 'with', 'do'
+  'case', 'default', 'function', 'var', 'void', 'with'
   'const', 'let', 'enum', 'export', 'import', 'native'
   '__hasProp', '__extends', '__slice', '__bind', '__indexOf'
 ]
@@ -609,7 +609,7 @@ COMPOUND_ASSIGN = [
 ]
 
 # Unary tokens.
-UNARY   = ['!', '~', 'NEW', 'TYPEOF', 'DELETE']
+UNARY   = ['!', '~', 'NEW', 'TYPEOF', 'DELETE', 'DO']
 
 # Logical tokens.
 LOGIC   = ['&&', '||', '&', '|', '^']
