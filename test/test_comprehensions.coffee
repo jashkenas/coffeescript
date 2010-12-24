@@ -265,7 +265,10 @@ eq e, 3
 
 # Issue #948. Capturing loop variables.
 funcs = []
-for y in [1, 2, 3] ->
+list  = ->
+  [1, 2, 3]
+
+for y in list() ->
   z = y
   funcs.push -> "y is #{y} and z is #{z}"
 
