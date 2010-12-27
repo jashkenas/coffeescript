@@ -208,9 +208,7 @@ forkNode = ->
 # shown.
 usage = ->
   printLine (new optparse.OptionParser SWITCHES, BANNER).help()
-  process.exit 0
 
 # Print the `--version` message and exit.
 version = ->
   printLine "CoffeeScript version #{CoffeeScript.VERSION}"
-  process.exit 0
