@@ -50,10 +50,10 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
   exec([
     "mkdir -p #{lib} #{bin}"
     "cp -rf bin lib LICENSE README package.json src #{lib}"
-    "ln -sf #{lib}/bin/coffee #{bin}/coffee"
-    "ln -sf #{lib}/bin/cake #{bin}/cake"
+    "ln -sfn #{lib}/bin/coffee #{bin}/coffee"
+    "ln -sfn #{lib}/bin/cake #{bin}/cake"
     "mkdir -p ~/.node_libraries"
-    "ln -sf #{lib}/lib #{node}"
+    "ln -sfn #{lib}/lib #{node}"
   ].join(' && '), (err, stdout, stderr) ->
     if err then console.log stderr.trim() else log 'done', green
   )
