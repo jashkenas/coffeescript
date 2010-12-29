@@ -76,7 +76,7 @@ compileScripts = ->
     base = path.join(source)
     compile = (source, topLevel) ->
       path.exists source, (exists) ->
-        throw new Error "File not found: #{source}" unless exists
+        throw new Error "File not found: #{source}" if topLevel and not exists
         fs.stat source, (err, stats) ->
           if stats.isDirectory()
             fs.readdir source, (err, files) ->
