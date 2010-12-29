@@ -856,7 +856,7 @@ exports.Assign = class Assign extends Base
     @param = options and options.param
 
   # Matchers for detecting class/method names
-  METHOD_DEF: /^(?:(\S+)\.prototype\.|\S+?)?\b([$A-Za-z_][$\w]*)$/
+  METHOD_DEF: /^(?:(\S+)\.prototype\.|\S+?)?\b([$A-Za-z_][$\w\x7f-\uffff]*)$/
 
   children: ['variable', 'value']
 
@@ -1735,7 +1735,7 @@ TAB = '  '
 # with Git.
 TRAILING_WHITESPACE = /[ \t]+$/gm
 
-IDENTIFIER = /^[$A-Za-z_][$\w]*$/
+IDENTIFIER = /^[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*$/
 SIMPLENUM  = /^[+-]?\d+$/
 
 # Is a literal value a string?

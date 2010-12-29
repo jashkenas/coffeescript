@@ -268,3 +268,7 @@ six: -> 10
 
 ok not one.six
 
+
+# Issue #986: Unicode identifiers.
+λ = 5
+eq λ, 5

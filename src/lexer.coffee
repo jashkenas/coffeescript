@@ -534,7 +534,7 @@ exports.RESERVED = RESERVED.concat(JS_KEYWORDS).concat(COFFEE_KEYWORDS)
 
 # Token matching regexes.
 IDENTIFIER = /// ^
-  ( [$A-Za-z_][$\w]* )
+  ( [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]* )
   ( [^\n\S]* : (?!:) )?  # Is this a property name?
 ///
 
@@ -591,7 +591,7 @@ MULTILINER      = /\n/g
 
 HEREDOC_INDENT  = /\n+([^\n\S]*)/g
 
-ASSIGNED        = /^\s*@?([$A-Za-z_][$\w]*|['"].*['"])[^\n\S]*?[:=][^:=>]/
+ASSIGNED        = /^\s*@?([$A-Za-z_][$\w\x7f-\uffff]*|['"].*['"])[^\n\S]*?[:=][^:=>]/
 
 LINE_CONTINUER  = /// ^ \s* (?: , | \??\.(?!\.) | :: ) ///
 
