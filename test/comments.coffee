@@ -1,6 +1,9 @@
 # Comments
 # --------
 
+# * Single-Line Comments
+# * Block Comments
+
 # Note: awkward spacing seen in some tests is likely intentional.
 
 test "comments in objects", ->

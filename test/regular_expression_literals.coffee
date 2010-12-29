@@ -1,6 +1,9 @@
 # Regular Expression Literals
 # ---------------------------
 
+# * Regexen
+# * Heregexen
+
 test "basic regular expression literals", ->
   ok 'a'.match(/a/)
   ok 'a'.match /a/

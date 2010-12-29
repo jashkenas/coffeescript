@@ -1,6 +1,10 @@
 # Classes
 # -------
 
+# * Class Definition
+# * Class Instantiation
+# * Inheritance and Super
+
 # TODO: refactor class tests
 
 # Test classes with a four-level inheritance chain.

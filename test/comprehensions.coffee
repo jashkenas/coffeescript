@@ -1,6 +1,11 @@
 # Comprehensions
 # --------------
 
+# * Array Comprehensions
+# * Range Comprehensions
+# * Object Comprehensions
+# * Comprehensions with Nonstandard Step
+
 # TODO: refactor comprehension tests
 
 # Basic array comprehensions.

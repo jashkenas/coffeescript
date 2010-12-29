@@ -1,6 +1,13 @@
 # Operators
 # ---------
 
+# * Operators
+# * Existential Operator (Binary)
+# * Existential Operator (Unary)
+# * Aliased Operators
+# * [not] in/of
+# * Chained Comparison
+
 test "binary (2-ary) math operators do not require spaces", ->
   a = 1
   b = -1
@@ -135,7 +142,7 @@ test "`!=` and `isnt` should be interchangeable", ->
   ok a isnt b
 
 
-#### `in`, `of`
+#### [not] in/of
 
 # - `in` should check if an array contains a value using `indexOf`
 # - `of` should check if a property is defined on an object using `in`
@@ -190,7 +197,7 @@ test "#768: `in` should preserve evaluation order", ->
   eq 3, share
 
 
-#### Chainable Operators
+#### Chained Comparison
 
 test "chainable operators", ->
   ok 100 > 10 > 1 > 0 > -1

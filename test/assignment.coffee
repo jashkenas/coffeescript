@@ -1,6 +1,13 @@
-
 # Assignment
 # ----------
+
+# TODO: organize assignment file
+
+# * Assignment
+# * Compound Assignment
+# * Destructuring Assignment
+# * Context Property (@) Assignment
+# * Existential Assignment (?=)
 
 test "context property assignment (using @)", ->
   nonce = {}
