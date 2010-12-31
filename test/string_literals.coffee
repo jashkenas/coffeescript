@@ -3,6 +3,9 @@
 
 # TODO: refactor string literal tests
 
+test "backslash escapes", ->
+  eq "\\/\\\\", /\/\\/.source
+
 eq '(((dollars)))', '\(\(\(dollars\)\)\)'
 eq 'one two three', "one
  two

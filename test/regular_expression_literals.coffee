@@ -26,9 +26,6 @@ test "division is not confused for a regular expression", ->
   eq 2, (4)/2/i
   eq 1, i/i/i
 
-test "backslash escapes", ->
-  eq "\\/\\\\", /\/\\/.source
-
 test "#764: regular expressions should be indexable", ->
   eq /0/['source'], ///#{0}///['source']
 

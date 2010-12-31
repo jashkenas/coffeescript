@@ -39,6 +39,10 @@ func = ->
   obj.key - 5
 eq func(), 5
 
+# Ensure that functions with the same name don't clash with helper functions.
+del = -> 5
+ok del() is 5
+
 
 #### Bound Function Definition
 
