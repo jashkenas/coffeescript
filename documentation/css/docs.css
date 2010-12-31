@@ -45,6 +45,7 @@ table {
   }
     td {
       padding: 9px 15px 9px 0;
+      vertical-align: top;
     }
 table.definitions {
   width: auto;
