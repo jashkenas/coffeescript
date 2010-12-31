@@ -471,7 +471,7 @@ exports.Call = class Call extends Base
         rite = new Value left
       rite = new Call rite, @args
       rite.isNew = @isNew
-      left = new Literal "typeof #{ left.compile o } === \"function\""
+      left = new Literal "typeof #{ left.compile o } == \"function\""
       return new If left, new Value(rite), soak: yes
     call = this
     list = []
@@ -520,7 +520,7 @@ exports.Call = class Call extends Base
 		(function(func, args, ctor) {
 		#{idt}ctor.prototype = func.prototype;
 		#{idt}var child = new ctor, result = func.apply(child, args);
-		#{idt}return typeof result === "object" ? result : child;
+		#{idt}return typeof result == "object" ? result : child;
 		#{@tab}})(#{ @variable.compile o, LEVEL_LIST }, #{splatArgs}, function() {})
       """
     base = new Value @variable
