@@ -324,5 +324,17 @@ list = [arguments: 10]
 args = for f in list
   do (f) ->
     f.arguments
-
 eq args[0], 10
+
+
+test "expression conversion under explicit returns", ->
+  nonce = {}
+  fn = ->
+    return (nonce for x in [1,2,3])
+  arrayEq [nonce,nonce,nonce], fn()
+  fn = ->
+    return [nonce for x in [1,2,3]][0]
+  arrayEq [nonce,nonce,nonce], fn()
+  fn = ->
+    return [(nonce for x in [1..3])][0]
+  arrayEq [nonce,nonce,nonce], fn()

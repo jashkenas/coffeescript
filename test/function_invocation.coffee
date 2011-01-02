@@ -64,6 +64,13 @@ ok fn(fn {prop: 101}).prop is 101
 okFunc = (f) -> ok(f())
 okFunc -> true
 
+test "chained function calls", ->
+  nonce = {}
+  identityWrap = (x) ->
+    -> x
+  eq nonce, identityWrap(identityWrap(nonce))()()
+  eq nonce, (identityWrap identityWrap nonce)()()
+
 # Multi-blocks with optional parens.
 result = fn( ->
   fn ->
@@ -296,3 +303,46 @@ eq ok, new ->
   ok
   ### Should `return` implicitly   ###
   ### even with trailing comments. ###
+
+test "implicit returns with multiple branches", ->
+  nonce = {}
+  fn = ->
+    if false
+      for a in b
+        return c if d
+    else
+      nonce
+  eq nonce, fn()
+
+test "implicit returns with switches", ->
+  nonce = {}
+  fn = ->
+    switch nonce
+      when nonce then nonce
+      else return undefined
+  eq nonce, fn()
+
+test "preserve context when generating closure wrappers for expression conversions", ->
+  nonce = {}
+  obj =
+    property: nonce
+    method: ->
+      this.result = if false
+        10
+      else
+        "a"
+        "b"
+        this.property
+  eq nonce, obj.method()
+  eq nonce, obj.property
+
+
+#### Explicit Returns
+
+test "don't wrap \"pure\" statements in a closure", ->
+  nonce = {}
+  items = [0, 1, 2, 3, nonce, 4, 5]
+  fn = (items) ->
+    for item in items
+      return item if item is nonce
+  eq nonce, fn items

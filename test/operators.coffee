@@ -49,6 +49,15 @@ test "`instanceof`", ->
   ok new Number not instanceof String
   ok new Array not instanceof Boolean
 
+test "use `::` operator on keywords `this` and `@`", ->
+  nonce = {}
+  obj =
+    withAt:   -> @::prop
+    withThis: -> this::prop
+  obj.prototype = prop: nonce
+  eq nonce, obj.withAt()
+  eq nonce, obj.withThis()
+
 
 #### Compound Assignment Operators
 
