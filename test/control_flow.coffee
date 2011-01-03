@@ -9,6 +9,8 @@
 #   * Loop
 # * Switch
 
+# TODO: make sure postfix forms and expression coercion are properly tested
+
 # shared identity function
 id = (_) -> if arguments.length is 1 then _ else Array::slice.call(arguments)
 
