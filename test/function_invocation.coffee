@@ -45,6 +45,19 @@ test "optional parens can be used in a nested fashion", ->
       add 5, 5
   ok result is 10
 
+test "hanging commas and semicolons in argument list", ->
+  fn = () -> arguments.length
+  eq 2, fn(0,1,)
+  eq 3, fn 0, 1,
+  2
+  eq 2, fn(0, 1;)
+  # TODO: this test fails (the string compiles), but should it?
+  #throws -> CoffeeScript.compile "fn(0,1,;)"
+  throws -> CoffeeScript.compile "fn(0,1,;;)"
+  throws -> CoffeeScript.compile "fn(0, 1;,)"
+  throws -> CoffeeScript.compile "fn(,0)"
+  throws -> CoffeeScript.compile "fn(;0)"
+
 func = ->
   return if true
 eq undefined, func()
