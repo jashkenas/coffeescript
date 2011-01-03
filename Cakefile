@@ -150,6 +150,9 @@ runTests = (CoffeeScript) ->
   passedTests = 0
   failures    = []
 
+  # make "global" reference available to tests
+  global.global = global
+
   # Mix in the assert module globally, to make it available for tests.
   addGlobal = (name, func) ->
     global[name] = ->
