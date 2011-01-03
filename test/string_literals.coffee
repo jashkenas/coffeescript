@@ -2,6 +2,7 @@
 # ---------------
 
 # TODO: refactor string literal tests
+# TODO: add indexing and method invocation tests: "string"["toString"] is String::toString, "string".toString() is "string"
 
 test "backslash escapes", ->
   eq "\\/\\\\", /\/\\/.source

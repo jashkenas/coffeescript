@@ -4,6 +4,7 @@
 # * Array Comprehensions
 # * Range Comprehensions
 # * Object Comprehensions
+# * Implicit Destructuring Assignment
 # * Comprehensions with Nonstandard Step
 
 # TODO: refactor comprehension tests
@@ -338,3 +339,32 @@ test "expression conversion under explicit returns", ->
   fn = ->
     return [(nonce for x in [1..3])][0]
   arrayEq [nonce,nonce,nonce], fn()
+
+
+#### Implicit Destructuring Assignment
+
+test "implicit destructuring assignment in object of objects", ->
+  a={}; b={}; c={}
+  obj = {
+    a: { d: a },
+    b: { d: b }
+    c: { d: c }
+  }
+  result = ([y,z] for y, { d: z } of obj)
+  arrayEq [['a',a],['b',b],['c',c]], result
+
+test "implicit destructuring assignment in array of objects", ->
+  a={}; b={}; c={}; d={}; e={}; f={}
+  arr = [
+    { a: a, b: { c: b } },
+    { a: c, b: { c: d } },
+    { a: e, b: { c: f } }
+  ]
+  result = ([y,z] for { a: y, b: { c: z } } in arr)
+  arrayEq [[a,b],[c,d],[e,f]], result
+
+test "implicit destructuring assignment in array of arrays", ->
+  a={}; b={}; c={}; d={}; e={}; f={}
+  arr = [[a, [b]], [c, [d]], [e, [f]]]
+  result = ([y,z] for [y, [z]] in arr)
+  arrayEq [[a,b],[c,d],[e,f]], result

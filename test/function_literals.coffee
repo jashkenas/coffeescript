@@ -1,6 +1,8 @@
 # Function Literals
 # -----------------
 
+# TODO: add indexing and method invocation tests: (->)[0], (->).call()
+
 # * Function Definition
 # * Bound Function Definition
 # * Parameter List Features

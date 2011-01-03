@@ -5,6 +5,7 @@
 # * Splats in Array Literals
 
 # TODO: refactor array literal tests
+# TODO: add indexing and method invocation tests: [1][0] is 1, [].toString()
 
 trailingComma = [1, 2, 3,]
 ok (trailingComma[0] is 1) and (trailingComma[2] is 3) and (trailingComma.length is 3)

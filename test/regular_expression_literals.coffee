@@ -1,6 +1,8 @@
 # Regular Expression Literals
 # ---------------------------
 
+# TODO: add method invocation tests: /regex/.toString()
+
 # * Regexen
 # * Heregexen
 

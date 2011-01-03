@@ -1,3 +1,7 @@
+# Boolean Literals
+# ----------------
+
+# TODO: add method invocation tests: true.toString() is "true"
 
 #764: Boolean should be indexable
 eq Boolean::toString, true['toString']

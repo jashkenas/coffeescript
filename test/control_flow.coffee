@@ -135,7 +135,7 @@ test "passing a conditional value to a function", ->
 test "unmatched `then` should catch implicit calls", ->
   a = 0
   trueFn = -> true
-  if trueFn undefined then a += 1
+  if trueFn undefined then a++
   eq 1, a
 
 
@@ -260,7 +260,7 @@ value = false
 i = 0
 results = until value
   value = true if i is 5
-  i += 1
+  i++
 ok i is 6
 
 # Loop

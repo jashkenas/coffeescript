@@ -59,80 +59,59 @@ test "use `::` operator on keywords `this` and `@`", ->
   eq nonce, obj.withThis()
 
 
-#### Compound Assignment Operators
+#### Existential Operator (Binary)
 
-test "boolean operators", ->
+test "binary existential operator", ->
   nonce = {}
 
-  a  = 0
-  a or= nonce
-  eq nonce, a
+  b = a ? nonce
+  eq nonce, b
 
-  b  = 1
-  b or= nonce
-  eq 1, b
+  a = null
+  b = undefined
+  b = a ? nonce
+  eq nonce, b
 
-  c = 0
-  c and= nonce
-  eq 0, c
+  a = false
+  b = a ? nonce
+  eq false, b
 
-  d = 1
-  d and= nonce
-  eq nonce, d
+  a = 0
+  b = a ? nonce
+  eq 0, b
 
-  # ensure that RHS is treated as a group
-  e = f = false
-  e and= f or true
-  eq false, e
+test "binary existential operator conditionally evaluates second operand", ->
+  i = 1
+  func = -> i -= 1
+  result = func() ? func()
+  eq result, 0
 
-test "compound assignment as a sub expression", ->
-  [a, b, c] = [1, 2, 3]
-  eq 6, (a + b += c)
-  eq 1, a
-  eq 5, b
-  eq 3, c
+test "binary existential operator with negative number", ->
+  a = null ? - 1
+  eq -1, a
 
-# *note: this test could still use refactoring*
-test "compound assignment should be careful about caching variables", ->
-  count = 0
-  list = []
 
-  list[++count] or= 1
-  eq 1, list[1]
-  eq 1, count
+#### Existential Operator (Unary)
 
-  list[++count] ?= 2
-  eq 2, list[2]
-  eq 2, count
+test "postfix existential operator", ->
+  ok (if nonexistent? then false else true)
+  defined = true
+  ok defined?
+  defined = false
+  ok defined?
 
-  list[count++] and= 6
-  eq 6, list[2]
-  eq 3, count
+test "postfix existential operator only evaluates its operand once", ->
+  semaphore = 0
+  fn = ->
+    ok false if semaphore
+    ++semaphore
+  ok(if fn()? then true else false)
 
-  base = ->
-    ++count
-    base
+test "negated postfix existential operator", ->
+  ok !nothing?.value
 
-  base().four or= 4
-  eq 4, base.four
-  eq 4, count
-
-  base().five ?= 5
-  eq 5, base.five
-  eq 5, count
-
-test "compound assignment with implicit objects", ->
-  obj = undefined
-  obj ?=
-    one: 1
-
-  eq 1, obj.one
-
-  obj and=
-    two: 2
-
-  eq undefined, obj.one
-  eq         2, obj.two
+test "postfix existential operator on expressions", ->
+  eq true, (1 or 0)?, true
 
 
 #### `is`,`isnt`,`==`,`!=`

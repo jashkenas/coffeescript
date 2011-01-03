@@ -234,8 +234,7 @@ val = 5
 ok (func --val) is 5
 
 test "#855: execution context for `func arr...` should be `null`", ->
-  global = @
-  contextTest = -> ok global is @
+  contextTest = -> eq @, global
   array = []
   contextTest array
   contextTest.apply null, array

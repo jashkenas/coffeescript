@@ -165,7 +165,8 @@ runTests = (CoffeeScript) ->
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
     try
-      fn()
+      fn.test = {description, currentFile}
+      fn.call(fn)
     catch e
       e.description = description if description?
       e.source      = fn.toString() if fn.toString?

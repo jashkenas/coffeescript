@@ -262,7 +262,7 @@ ok c instanceof Function
 # Classes with value'd constructors.
 counter = 0
 classMaker = ->
-  counter += 1
+  counter++
   inner = counter
   ->
     @value = inner

@@ -2,6 +2,7 @@
 # ---------------
 
 # TODO: refactor object literal tests
+# TODO: add indexing and method invocation tests: {a}['a'] is a, {a}.a()
 
 trailingComma = {k1: "v1", k2: 4, k3: (-> true),}
 ok trailingComma.k3() and (trailingComma.k2 is 4) and (trailingComma.k1 is "v1")
@@ -138,7 +139,7 @@ obj =
 ok obj.one is 'one'
 ok obj.two is 'three'
 
-test "", ->
+test "invoking functions with implicit object literals", ->
   generateGetter = (prop) -> (obj) -> obj[prop]
   getA = generateGetter 'a'
   getArgs = -> arguments
@@ -146,35 +147,41 @@ test "", ->
 
   result = getA
     a: 10
-  ok result is 10
+  eq 10, result
 
   result = getA
     "a": 20
-  ok result is 20
+  eq 20, result
 
   result = getA a,
-      b:1
-  ok result is undefined
+    b:1
+  eq undefined, result
 
-  # TODO: this looks like a failing test case; verify
-  #result = getA
-  #    b:1
-  #    a
-  #ok result is 30
+  result = getA b:1
+  a:43
+  eq 43, result
+
+  result = getA b:1,
+    a:62
+  eq undefined, result
 
   result = getA
-      a:
-          b:2
-      b:1
-  ok result.b is 2
+    b:1
+    a
+  eq undefined, result
 
-  # TODO: should this test be changed? this is unexpected (and not the displayed) behaviour
-  #result = getArgs
-  #    a:1
-  #    b
-  #    c:1
-  #ok result.length is 3
-  #ok result[2].c is 1
+  result = getA
+    a:
+      b:2
+    b:1
+  eq 2, result.b
+
+  result = getArgs
+    a:1
+    b
+    c:1
+  ok result.length is 3
+  ok result[2].c is 1
 
 test "some weird indentation in YAML-style object literals", ->
   two = (a, b) -> b
