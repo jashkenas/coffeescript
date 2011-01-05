@@ -12,12 +12,16 @@ path         = require 'path'
 helpers      = require './helpers'
 optparse     = require './optparse'
 CoffeeScript = require './coffee-script'
+EE           = require('events').EventEmitter
 
 # Keep track of the list of defined tasks, the accepted options, and so on.
 tasks     = {}
 options   = {}
 switches  = []
 oparse    = null
+
+# Mixin the event emitter methods to allow task completion messages
+helpers.extend global, new EE()
 
 # Mixin the top-level Cake functions for Cakefiles to use directly.
 helpers.extend global,
@@ -34,10 +38,40 @@ helpers.extend global,
   option: (letter, flag, description) ->
     switches.push [letter, flag, description]
 
-  # Invoke another task in the current Cakefile.
+  # Invoke another task in the current Cakefile and, when finished, notify
+  # potential listeners of the task's completion.
   invoke: (name) ->
     missingTask name unless tasks[name]
-    tasks[name].action options
+    result = tasks[name].action options
+    emit name
+    result
+
+  # Provides a convenient and readable syntax for specifying that tasks rely
+  # on the completion of other tasks. Use it as the action in a task definition.
+  #      
+  #      task 'pre-build', 'Performs some common pre-build tasks', ->
+  #        # Pre-build stuff
+  #
+  #      task 'build', 'Builds the project', dependsOn 'pre-build', ->
+  #        # Build stuff
+  # 
+  #      task 'test:db:clean', 'Cleans the test database.', ->
+  #        # Some cool stuff here that truncates tables
+  #
+  #      task 'test', 'Runs the tests in the project.',
+  #      dependsOn: 'build', 'test:db:clean', ->
+  #        # Run the tests, buddy!
+  dependsOn: (dependables..., action) ->
+    return () ->
+      ((dependables, action) ->
+        if dependables.length is 0
+          return action options
+        thisFn = arguments.callee
+        [first, rest...] = dependables
+        addListener first, ->
+          thisFn rest, action
+        invoke first
+      )(dependables, action)
 
 
 # Run `cake`. Executes all of the tasks you pass, in order. Note that Node's
