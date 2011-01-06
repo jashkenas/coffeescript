@@ -529,6 +529,7 @@ exports.Call = class Call extends Base
       fun = "(#{ref} = #{ base.compile o, LEVEL_LIST })#{ name.compile o }"
     else
       fun = base.compile o, LEVEL_ACCESS
+      fun = "(#{fun})" if SIMPLENUM.test fun
       if name
         ref = fun
         fun += name.compile o
