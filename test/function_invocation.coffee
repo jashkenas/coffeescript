@@ -298,7 +298,7 @@ ok pen is 2
 method 1, 2
 ok pen is 2
 
-# Finally, splats with super() within classes.
+# splats with super() within classes.
 class Parent
   meth: (args...) ->
     args
@@ -307,6 +307,12 @@ class Child extends Parent
     nums = [3, 2, 1]
     super nums...
 ok (new Child).meth().join(' ') is '3 2 1'
+
+test "#1011: passing a splat to a method of a number", ->
+  eq '1011', 11.toString [2]...
+  eq '1011', (31).toString [3]...
+  eq '1011', 69.0.toString [4]...
+  eq '1011', (131.0).toString [5]...
 
 
 #### Implicit Return
