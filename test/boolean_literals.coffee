@@ -4,16 +4,18 @@
 # TODO: add method invocation tests: true.toString() is "true"
 
 #764: Boolean should be indexable
-eq Boolean::toString, true['toString']
-eq Boolean::toString, false['toString']
-eq Boolean::toString, yes['toString']
-eq Boolean::toString, no['toString']
-eq Boolean::toString, on['toString']
-eq Boolean::toString, off['toString']
+toString = Boolean::toString
 
-eq Boolean::toString, true.toString
-eq Boolean::toString, false.toString
-eq Boolean::toString, yes.toString
-eq Boolean::toString, no.toString
-eq Boolean::toString, on.toString
-eq Boolean::toString, off.toString
+eq toString, true['toString']
+eq toString, false['toString']
+eq toString, yes['toString']
+eq toString, no['toString']
+eq toString, on['toString']
+eq toString, off['toString']
+
+eq toString, true.toString
+eq toString, false.toString
+eq toString, yes.toString
+eq toString, no.toString
+eq toString, on.toString
+eq toString, off.toString
