@@ -44,6 +44,32 @@ test "#930, #835, #831, #746 #624: inclusive slices to -1 should slice to end", 
   arrayEq shared, shared[..-1]
   arrayEq shared.slice(1,shared.length), shared[1..-1]
 
+test "#1014 slices with arguments object", ->
+  useArg0AtEnd = ->
+    ary = -> [0..arguments[0]]
+    ary 9
+  arg0End = useArg0AtEnd()
+  
+  useArg0AtStart = ->
+    ary = -> [arguments[0]..9]
+    ary 0
+  arg0Start = useArg0AtStart()
+  
+  useArgs0And1 = ->
+    ary = -> [arguments[0]..arguments[1]]
+    ary 0,9
+  args0And1 = useArgs0And1()
+  
+  useArg0FromOuter = ->
+    ary = -> [arguments[0]..9]
+    ary(arguments[0])
+  arg0FromOuter = useArg0FromOuter(0)
+  
+  arrayEq arg0End       , shared
+  arrayEq arg0Start     , shared
+  arrayEq args0And1     , shared
+  arrayEq arg0FromOuter , shared
+  
 test "string slicing", ->
   str = "abcdefghijklmnopqrstuvwxyz"
   ok str[1...1] is ""
