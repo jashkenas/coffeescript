@@ -74,3 +74,29 @@ test "large ranges are generated with looping constructs", ->
   up = [0...100]
   eq 100, (len = up.length)
   eq  99, up[len - 1]
+
+test "#1014 slices with arguments object", ->
+  useArg0AtEnd = ->
+    ary = -> [0..arguments[0]]
+    ary 9
+  arg0End = useArg0AtEnd()
+
+  useArg0AtStart = ->
+    ary = -> [arguments[0]..9]
+    ary 0
+  arg0Start = useArg0AtStart()
+
+  useArgs0And1 = ->
+    ary = -> [arguments[0]..arguments[1]]
+    ary 0,9
+  args0And1 = useArgs0And1()
+
+  useArg0FromOuter = ->
+    ary = -> [arguments[0]..9]
+    ary(arguments[0])
+  arg0FromOuter = useArg0FromOuter(0)
+
+  arrayEq arg0End       , shared
+  arrayEq arg0Start     , shared
+  arrayEq args0And1     , shared
+  arrayEq arg0FromOuter , shared
