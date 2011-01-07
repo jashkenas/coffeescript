@@ -651,7 +651,7 @@ exports.Range = class Range extends Base
       clause = "#{@fromVar} <= #{@toVar} ?"
       body   = "var #{vars}; #{clause} #{i} <#{@equals} #{@toVar} : #{i} >#{@equals} #{@toVar}; #{clause} #{i} += 1 : #{i} -= 1"
     post   = "{ #{result}.push(#{i}); }\n#{idt}return #{result};\n#{o.indent}"
-    "(function() {#{pre}\n#{idt}for (#{body})#{post}}).apply(this,arguments)"
+    "(function() {#{pre}\n#{idt}for (#{body})#{post}}).apply(this, arguments)"
 
 #### Slice
 
