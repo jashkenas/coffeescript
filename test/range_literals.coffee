@@ -75,7 +75,7 @@ test "large ranges are generated with looping constructs", ->
   eq 100, (len = up.length)
   eq  99, up[len - 1]
 
-test "#1014 slices with arguments object", ->
+test "#1012 slices with arguments object", ->
   expected = [0..9]
   argsAtStart = (-> [arguments[0]..9]) 0
   arrayEq expected, argsAtStart
