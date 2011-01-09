@@ -74,8 +74,7 @@ helpers.extend global,
       )()
 
 
-# Run `cake`. Executes all of the tasks you pass, in order. Note that Node's
-# asynchrony may cause tasks to execute in a different order than you'd expect.
+# Run `cake`. Executes all of the tasks you pass, in order. 
 # If no tasks are passed, print the help screen.
 exports.run = ->
   path.exists 'Cakefile', (exists) ->
