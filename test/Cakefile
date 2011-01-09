@@ -1,11 +1,11 @@
 # Test by running, `cake test`
-# To see it fail with not enough time allocated for tasks, `cake --timeout 0 test`
+# To see it fail with not enough time for async tasks, `cake --timeout 0 test`
 
 assert = require('assert')
 
 order = []
 
-option '-t', '--timeout [millieconds]', 'Timeout for async callbacks'
+option '-t', '--timeout [milliseconds]', 'Timeout for async callbacks'
 
 task 'test', ->
   invoke 'clean', 'generate', 'post', ->

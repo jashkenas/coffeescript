@@ -1,7 +1,7 @@
 fs = require 'fs'
 
 option '-o', '--output [DIR]', 'directory for compiled code'
-option '-t', '--timeout [milleseconds]', 'Timeout used by async callbacks'
+option '-t', '--timeout [milliseconds]', 'Timeout used by async callbacks'
 
 task 'build:parser', 'rebuild the Jison parser', (options) ->
     require 'jison'
@@ -9,8 +9,7 @@ task 'build:parser', 'rebuild the Jison parser', (options) ->
     dir  = options.output or 'lib'
     fs.writeFile "#{dir}/parser.js", code
 
-# Add an optional `done` parameter to declare an async task. Tiemout 
-# exception occurs if `done` is not called.
+# Add an optional `done` parameter to declare an async task.
 task 'longTask', (options, done) ->
   doSomething()
   done()

@@ -19,6 +19,8 @@ tasks     = {}
 options   = {}
 switches  = []
 oparse    = null
+
+# Default timeout for asynchronous tasks.
 timeout   = 15000
 
 # Mixin the top-level Cake functions for Cakefiles to use directly.
@@ -40,8 +42,7 @@ helpers.extend global,
   # when all tasks have completed.
   invoke: ->
 
-      # Iterate through the arguments collecting names and find the optional
-      # callback.
+      # Collect all names and find optional callback.
       names = []
       for name in arguments
         if typeof name is 'function'
@@ -56,19 +57,18 @@ helpers.extend global,
           name = names.shift()
           task = tasks[name].action
 
-          if task
-            # An asynchronous task.
-            if task.length < 2
-              task options
-              next()
+          # Synchronous task.
+          if task.length < 2
+            task options
+            next()
 
-            # Synchronous tasks are declared with a callback as the second parameter.
-            else
-              # Guard against long tasks with user-defineable timeout option. 
-              id = setTimeout (-> throw new Error("Task #{name} timed out")), timeout
-              task options, ->
-                clearTimeout id
-                next()
+          # Asynchronous tasks are declared with a callback.
+          else
+            # Guard against long tasks with user-defineable timeout option. 
+            id = setTimeout (-> throw new Error("Task #{name} timed out")), timeout
+            task options, ->
+              clearTimeout id
+              next()
         else
           callback() if callback?
       )()
