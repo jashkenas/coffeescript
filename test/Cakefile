@@ -1,0 +1,34 @@
+# Test by running, `cake test`
+# To see it fail with not enough time allocated for tasks, `cake --timeout 0 test`
+
+assert = require('assert')
+
+order = []
+
+option '-t', '--timeout [millieconds]', 'Timeout for async callbacks'
+
+task 'test', ->
+  invoke 'clean', 'generate', 'post', ->
+    order.push 'test'
+    assert.deepEqual order, ['clean', 'generate', 'coffeeToJS', 'post', 'test']
+    console.log 'Cake PASSED!'
+    
+task 'clean', 'Clean the project.',  (options, done) ->
+  setTimeout (->
+    order.push 'clean'
+    done()
+  ), 125
+
+task 'generate', ->
+  order.push 'generate'
+  invoke 'coffeeToJS'
+
+task 'coffeeToJS', ->
+  order.push 'coffeeToJS'
+
+task 'post', (options, done) ->
+  setTimeout (->
+    order.push 'post'
+    done()
+  ), 125
+  
