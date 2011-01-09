@@ -13,11 +13,13 @@ helpers      = require './helpers'
 optparse     = require './optparse'
 CoffeeScript = require './coffee-script'
 
+
 # Keep track of the list of defined tasks, the accepted options, and so on.
 tasks     = {}
 options   = {}
 switches  = []
 oparse    = null
+timeout   = 15000
 
 # Mixin the top-level Cake functions for Cakefiles to use directly.
 helpers.extend global,
@@ -34,10 +36,41 @@ helpers.extend global,
   option: (letter, flag, description) ->
     switches.push [letter, flag, description]
 
-  # Invoke another task in the current Cakefile.
-  invoke: (name) ->
-    missingTask name unless tasks[name]
-    tasks[name].action options
+  # Invoke one or more tasks in the current file, and an optional callback 
+  # when all tasks have completed.
+  invoke: ->
+
+      # Iterate through the arguments calling names and the optional
+      # callback.
+      names = []
+      for name in arguments
+        if typeof name is 'function'
+          callback = name
+        else
+          missingTask name unless tasks[name]
+          names.push name
+
+      # Sequentially invoke each task 
+      (next = ->
+        if names.length
+          name = names.shift()
+          task = tasks[name].action
+          if task
+            # An asynchronous task.
+            if task.length < 2
+              task options
+              next()
+
+            # Synchronous tasks are declared with a callback as the second parameter.
+            else
+              # Guard against long tasks with user-defineable timeout option. 
+              id = setTimeout (-> throw new Error("Task #{name} timed out")), timeout
+              task options, ->
+                clearTimeout id
+                next()
+        else
+          callback() if callback?
+      )()
 
 
 # Run `cake`. Executes all of the tasks you pass, in order. Note that Node's
@@ -51,6 +84,7 @@ exports.run = ->
     oparse = new optparse.OptionParser switches
     return printTasks() unless args.length
     options = oparse.parse(args)
+    timeout = parseInt(options.timeout) if options.timeout?
     invoke arg for arg in options.arguments
 
 # Display the list of Cake tasks in a format similar to `rake -T`
