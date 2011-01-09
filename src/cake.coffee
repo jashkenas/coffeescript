@@ -40,7 +40,7 @@ helpers.extend global,
   # when all tasks have completed.
   invoke: ->
 
-      # Iterate through the arguments calling names and the optional
+      # Iterate through the arguments collecting names and find the optional
       # callback.
       names = []
       for name in arguments
@@ -50,11 +50,12 @@ helpers.extend global,
           missingTask name unless tasks[name]
           names.push name
 
-      # Sequentially invoke each task 
+      # Serially invoke each task.
       (next = ->
         if names.length
           name = names.shift()
           task = tasks[name].action
+
           if task
             # An asynchronous task.
             if task.length < 2
