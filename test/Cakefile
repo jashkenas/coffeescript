@@ -9,11 +9,10 @@ option '-t', '--timeout [milliseconds]', 'Timeout for async callbacks'
 
 task 'test', ->
   invoke 'clean', 'generate', 'post', ->
-    order.push 'test'
-    assert.deepEqual order, ['clean', 'generate', 'coffeeToJS', 'post', 'test']
+    assert.deepEqual order, ['clean', 'generate', 'coffeeToJS', 'post']
     console.log 'Cake PASSED!'
     
-task 'clean', 'Clean the project.',  (options, done) ->
+task 'clean', 'Clean the project.', (options, done) ->
   setTimeout (->
     order.push 'clean'
     done()
