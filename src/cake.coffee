@@ -41,37 +41,36 @@ helpers.extend global,
   # Invoke one or more tasks in the current file, and an optional callback 
   # when all tasks have completed.
   invoke: ->
+    # Collect all names and find optional callback.
+    names = []
+    for name in arguments
+      if typeof name is 'function'
+        finished = name
+      else
+        missingTask name unless tasks[name]
+        names.push name
 
-      # Collect all names and find optional callback.
-      names = []
-      for name in arguments
-        if typeof name is 'function'
-          callback = name
+    # Serially invoke each task.
+    (next = ->
+      if names.length
+        name = names.shift()
+        task = tasks[name].action
+
+        # Synchronous task.
+        if task.length < 2
+          task options
+          next()
+
+        # Asynchronous tasks are declared with a callback.
         else
-          missingTask name unless tasks[name]
-          names.push name
-
-      # Serially invoke each task.
-      (next = ->
-        if names.length
-          name = names.shift()
-          task = tasks[name].action
-
-          # Synchronous task.
-          if task.length < 2
-            task options
+          # Guard against long tasks with user-defineable timeout option. 
+          id = setTimeout (-> timeoutTask name), timeout
+          task options, ->
+            clearTimeout id
             next()
-
-          # Asynchronous tasks are declared with a callback.
-          else
-            # Guard against long tasks with user-defineable timeout option. 
-            id = setTimeout (-> throw new Error("Task #{name} timed out")), timeout
-            task options, ->
-              clearTimeout id
-              next()
-        else
-          callback() if callback?
-      )()
+      else
+        finished() if finished?
+    )()
 
 
 # Run `cake`. Executes all of the tasks you pass, in order. 
@@ -97,7 +96,12 @@ printTasks = ->
     console.log "cake #{name}#{spaces} #{desc}"
   console.log oparse.help() if switches.length
 
-# Print an error and exit when attempting to all an undefined task.
+# Print an error and exit when attempting to call an undefined task.
 missingTask = (task) ->
   console.log "No such task: \"#{task}\""
+  process.exit 1
+
+# Print an error and exit when a tasks times out.
+timeoutTask = (task) ->
+  console.log "Task timed out: \"#{task}\"\nTry increasing default option `--timeout 15000` ms"
   process.exit 1
