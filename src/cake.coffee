@@ -59,15 +59,15 @@ helpers.extend global,
         # Synchronous task.
         if task.length < 2
           task options
-          next()
+          setTimeout (-> next()), 0
 
         # Asynchronous tasks are declared with a callback.
         else
-          # Guard against long tasks with user-defineable timeout option. 
+          # Guard against long tasks with user-overidable timeout. 
           id = setTimeout (-> timeoutTask name), timeout
           task options, ->
             clearTimeout id
-            next()
+            setTimeout (-> next()), 0
       else
         finished() if finished?
     )()
