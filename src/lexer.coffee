@@ -32,6 +32,7 @@ exports.Lexer = class Lexer
   # Before returning the token stream, run it through the [Rewriter](rewriter.html)
   # unless explicitly asked not to.
   tokenize: (code, opts = {}) ->
+    code     = "\n#{code}" if WHITESPACE.test code
     code     = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
 
     @code    = code           # The remainder of the source code.
