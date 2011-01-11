@@ -45,3 +45,13 @@ eq λ, 5
 
 test "don't accidentally stringify keywords", ->
   ok (-> this == 'this')() is false
+
+test "#1026", ->
+  cantCompile '''
+    if a
+      b
+    else
+      c
+    else
+      d
+  '''

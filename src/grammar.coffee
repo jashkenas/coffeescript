@@ -483,13 +483,13 @@ grammar =
   IfBlock: [
     o 'IF Expression Block',                    -> new If $2, $3, type: $1
     o 'IfBlock ELSE IF Expression Block',       -> $1.addElse new If $4, $5, type: $3
-    o 'IfBlock ELSE Block',                     -> $1.addElse $3
   ]
 
   # The full complement of *if* expressions, including postfix one-liner
   # *if* and *unless*.
   If: [
     o 'IfBlock'
+    o 'IfBlock ELSE Block',                     -> $1.addElse $3
     o 'Statement  POST_IF Expression',          -> new If $3, Expressions.wrap([$1]), type: $2, statement: true
     o 'Expression POST_IF Expression',          -> new If $3, Expressions.wrap([$1]), type: $2, statement: true
   ]
