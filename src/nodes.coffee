@@ -899,7 +899,9 @@ exports.Assign = class Assign extends Base
     top       = o.level is LEVEL_TOP
     {value}   = this
     {objects} = @variable.base
-    return value.compile o unless olen = objects.length
+    unless olen = objects.length
+      code = value.compile o
+      return if o.level >= LEVEL_OP then "(#{code})" else code
     isObject = @variable.isObject()
     if top and olen is 1 and (obj = objects[0]) not instanceof Splat
       # Unroll simplest cases: `{v} = x` -> `v = x.v`

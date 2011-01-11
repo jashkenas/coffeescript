@@ -247,6 +247,9 @@ test "destructuring assignment with context (@) properties", ->
   eq d, obj.d
   eq e, obj.e
 
+test "#1024", ->
+  eq 2 * [] = 3 + 5, 16
+
 
 #### Existential Assignment
 
