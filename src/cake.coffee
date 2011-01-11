@@ -13,7 +13,6 @@ helpers      = require './helpers'
 optparse     = require './optparse'
 CoffeeScript = require './coffee-script'
 
-
 # Keep track of the list of defined tasks, the accepted options, and so on.
 tasks     = {}
 options   = {}
@@ -51,7 +50,7 @@ helpers.extend global,
         names.push name
 
     # Serially invoke each task.
-    (next = ->
+    do next = ->
       if names.length
         name = names.shift()
         task = tasks[name].action
@@ -70,7 +69,6 @@ helpers.extend global,
             setTimeout (-> next()), 0
       else
         finished() if finished?
-    )()
 
 
 # Run `cake`. Executes all of the tasks you pass, in order. 
