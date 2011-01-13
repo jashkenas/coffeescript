@@ -59,6 +59,11 @@ exports.run = ->
   return forkNode()                      if opts.nodejs
   return usage()                         if opts.help
   return version()                       if opts.version
+  if opts.require
+    oldModuleFilename = module.filename
+    module.filename = '.'
+    require req for req in opts.require
+    module.filename = oldModuleFilename
   return require './repl'                if opts.interactive
   return compileStdio()                  if opts.stdio
   return compileScript null, sources[0]  if opts.eval
@@ -98,8 +103,6 @@ compileScripts = ->
 compileScript = (file, input, base) ->
   o = opts
   options = compileOptions file
-  if o.require
-    require(if helpers.starts(req, '.') then fs.realpathSync(req) else req) for req in o.require
   try
     t = task = {file, input, options}
     CoffeeScript.emit 'compile', task
