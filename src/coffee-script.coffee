@@ -58,7 +58,7 @@ exports.run = (code, options) ->
   while root.parent
     root = root.parent
   # Set the filename.
-  root.filename = fs.realpathSync options.fileName or '.'
+  root.filename = if options.fileName then fs.realpathSync(options.fileName) else '.'
   # Clear the module cache.
   root.moduleCache = {} if root.moduleCache
   # Compile.
@@ -70,7 +70,7 @@ exports.run = (code, options) ->
 # Compile and evaluate a string of CoffeeScript (in a Node.js-like environment).
 # The CoffeeScript REPL uses this to run the input.
 exports.eval = (code, options) ->
-  __filename = options.fileName
+  __filename = module.filename = options.fileName
   __dirname  = path.dirname __filename
   eval compile code, options
 
