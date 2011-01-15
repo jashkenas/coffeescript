@@ -14,7 +14,7 @@ doesNotThrow -> CoffeeScript.compile 'one\r\ntwo', bare: on
 # `globals: on` removes `var`s
 eq -1, CoffeeScript.compile('x = y', bare: on, globals: on).indexOf 'var'
 
-ok 'passed' is CoffeeScript.eval '"passed"', bare: on, fileName: 'test'
+ok 'passed' is CoffeeScript.eval '"passed"', bare: on, filename: 'test'
 
 # multiple generated references
 (->

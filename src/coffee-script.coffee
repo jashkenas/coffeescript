@@ -34,7 +34,7 @@ exports.compile = compile = (code, options = {}) ->
   try
     (parser.parse lexer.tokenize code).compile options
   catch err
-    err.message = "In #{options.fileName}, #{err.message}" if options.fileName
+    err.message = "In #{options.filename}, #{err.message}" if options.filename
     throw err
 
 # Tokenize a string of CoffeeScript code, and return the array of tokens.
@@ -58,7 +58,7 @@ exports.run = (code, options) ->
   while root.parent
     root = root.parent
   # Set the filename.
-  root.filename = if options.fileName then fs.realpathSync(options.fileName) else '.'
+  root.filename = if options.filename then fs.realpathSync(options.filename) else '.'
   # Clear the module cache.
   root.moduleCache = {} if root.moduleCache
   # Compile.
@@ -70,7 +70,7 @@ exports.run = (code, options) ->
 # Compile and evaluate a string of CoffeeScript (in a Node.js-like environment).
 # The CoffeeScript REPL uses this to run the input.
 exports.eval = (code, options) ->
-  __filename = module.filename = options.fileName
+  __filename = module.filename = options.filename
   __dirname  = path.dirname __filename
   eval compile code, options
 
