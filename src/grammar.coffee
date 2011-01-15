@@ -35,7 +35,7 @@ o = (patternString, action, options) ->
   return [patternString, '$$ = $1;', options] unless action
   action = if match = unwrap.exec action then match[1] else "(#{action}())"
   action = action.replace /\bnew /g, '$&yy.'
-  action = action.replace /\b(?:Expressions\.wrap|extend)\b/g, 'yy.$&'
+  action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
   [patternString, "$$ = #{action};", options]
 
 # Grammatical Rules
@@ -56,19 +56,19 @@ grammar =
   # The **Root** is the top-level node in the syntax tree. Since we parse bottom-up,
   # all parsing must end here.
   Root: [
-    o '',                                       -> new Expressions
+    o '',                                       -> new Block
     o 'Body'
     o 'Block TERMINATOR'
   ]
 
   # Any list of statements and expressions, separated by line breaks or semicolons.
   Body: [
-    o 'Line',                                   -> Expressions.wrap [$1]
+    o 'Line',                                   -> Block.wrap [$1]
     o 'Body TERMINATOR Line',                   -> $1.push $3
     o 'Body TERMINATOR'
   ]
 
-  # Expressions and statements, which make up a line in a body.
+  # Block and statements, which make up a line in a body.
   Line: [
     o 'Expression'
     o 'Statement'
@@ -84,7 +84,7 @@ grammar =
 
   # All the different types of expressions in our language. The basic unit of
   # CoffeeScript is the **Expression** -- everything that can be an expression
-  # is one. Expressions serve as the building blocks of many other rules, making
+  # is one. Block serve as the building blocks of many other rules, making
   # them somewhat circular.
   Expression: [
     o 'Value'
@@ -104,7 +104,7 @@ grammar =
   # will convert some postfix forms into blocks for us, by adjusting the
   # token stream.
   Block: [
-    o 'INDENT OUTDENT',                         -> new Expressions
+    o 'INDENT OUTDENT',                         -> new Block
     o 'INDENT Body OUTDENT',                    -> $2
   ]
 
@@ -166,7 +166,7 @@ grammar =
   ]
 
   # The **Code** node is the function literal. It's defined by an indented block
-  # of **Expressions** preceded by a function arrow, with an optional parameter
+  # of **Block** preceded by a function arrow, with an optional parameter
   # list.
   Code: [
     o 'PARAM_START ParamList PARAM_END FuncGlyph Block', -> new Code $2, $5, $4
@@ -350,7 +350,7 @@ grammar =
     o 'ArgList OptComma INDENT ArgList OptComma OUTDENT', -> $1.concat $4
   ]
 
-  # Valid arguments are Expressions or Splats.
+  # Valid arguments are Block or Splats.
   Arg: [
     o 'Expression'
     o 'Splat'
@@ -403,14 +403,14 @@ grammar =
   # or postfix, with a single expression. There is no do..while.
   While: [
     o 'WhileSource Block',                      -> $1.addBody $2
-    o 'Statement  WhileSource',                 -> $2.addBody Expressions.wrap [$1]
-    o 'Expression WhileSource',                 -> $2.addBody Expressions.wrap [$1]
+    o 'Statement  WhileSource',                 -> $2.addBody Block.wrap [$1]
+    o 'Expression WhileSource',                 -> $2.addBody Block.wrap [$1]
     o 'Loop',                                   -> $1
   ]
 
   Loop: [
     o 'LOOP Block',                             -> new While(new Literal 'true').addBody $2
-    o 'LOOP Expression',                        -> new While(new Literal 'true').addBody Expressions.wrap [$2]
+    o 'LOOP Expression',                        -> new While(new Literal 'true').addBody Block.wrap [$2]
   ]
 
   # Array, object, and range comprehensions, at the most generic level.
@@ -492,8 +492,8 @@ grammar =
   If: [
     o 'IfBlock'
     o 'IfBlock ELSE Block',                     -> $1.addElse $3
-    o 'Statement  POST_IF Expression',          -> new If $3, Expressions.wrap([$1]), type: $2, statement: true
-    o 'Expression POST_IF Expression',          -> new If $3, Expressions.wrap([$1]), type: $2, statement: true
+    o 'Statement  POST_IF Expression',          -> new If $3, Block.wrap([$1]), type: $2, statement: true
+    o 'Expression POST_IF Expression',          -> new If $3, Block.wrap([$1]), type: $2, statement: true
   ]
 
   # Arithmetic and logical operators, working on one or more operands.
