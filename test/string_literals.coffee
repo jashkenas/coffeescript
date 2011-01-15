@@ -101,3 +101,7 @@ eq ''' '\\\' ''', " '\\' "
 eq """ "\\\" """, ' "\\" '
 
 eq '''  <- keep these spaces ->  ''', '  <- keep these spaces ->  '
+
+
+test "#1046, empty string interpolations", ->
+  eq "#{ }", ''
