@@ -7,6 +7,7 @@
 # Require the **coffee-script** module to get access to the compiler.
 CoffeeScript = require './coffee-script'
 helpers      = require './helpers'
+autocomplete = require './autocomplete'
 readline     = require 'readline'
 
 # Start by opening up **stdio**.
@@ -34,7 +35,7 @@ run = (buffer) ->
 process.on 'uncaughtException', error
 
 # Create the REPL by listening to **stdin**.
-repl = readline.createInterface stdio
+repl = readline.createInterface stdio, autocomplete.complete
 repl.setPrompt 'coffee> '
 stdio.on 'data',   (buffer) -> repl.write buffer
 repl.on  'close',  -> stdio.destroy()
