@@ -104,6 +104,7 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
   """
   code = uglify.gen_code uglify.ast_squeeze uglify.ast_mangle ast, extra: yes
   fs.writeFileSync 'extras/coffee-script.js', header + '\n' + code
+  console.log "built ... running browser tests:"
   invoke 'test:browser'
 
 
