@@ -7,8 +7,10 @@
 # Require the **coffee-script** module to get access to the compiler.
 CoffeeScript = require './coffee-script'
 helpers      = require './helpers'
-autocomplete = require './autocomplete'
 readline     = require 'readline'
+Script       = process.binding('evals').Script
+
+# REPL Setup
 
 # Start by opening up **stdio**.
 stdio = process.openStdin()
@@ -16,9 +18,6 @@ stdio = process.openStdin()
 # Log an error.
 error = (err) ->
   stdio.write (err.stack or err.toString()) + '\n\n'
-
-# Quick alias for quitting the REPL.
-helpers.extend global, quit: -> process.exit(0)
 
 # The main REPL function. **run** is called every time a line of code is entered.
 # Attempt to evaluate the command. If there's an exception, print it out instead
@@ -31,11 +30,47 @@ run = (buffer) ->
     error err
   repl.prompt()
 
+## Autocompletion
+
+# Regexes to match complete-able bits of text.
+ACCESSOR  = /\s*([\w\.]+)(?:\.(\w*))$/
+SIMPLEVAR = /\s*(\w*)$/i
+
+# Returns a list of completions, and the completed text.
+autocomplete = (text) ->
+  completeAttribute(text) or completeVariable(text) or [[], text]
+
+# Attempt to autocomplete a chained dotted attribute: `one.two.three`.
+completeAttribute = (text) ->
+  if match = text.match ACCESSOR
+    [all, obj, prefix] = match
+    try
+      val = Script.runInThisContext obj
+    catch error
+      return [[], text]
+    completions = getCompletions prefix, getPropertyNames val
+    [completions, prefix]
+
+# Attempt to autocomplete an in-scope free variable: `one`.
+completeVariable = (text) ->
+  if free = text.match(SIMPLEVAR)?[1]
+    scope = Script.runInThisContext 'this'
+    completions = getCompletions free, CoffeeScript.RESERVED.concat(getPropertyNames scope)
+    [completions, free]
+
+# Return elements of candidates for which `prefix` is a prefix.
+getCompletions = (prefix, candidates) ->
+  (el for el in candidates when el.indexOf(prefix) is 0)
+
+# Return all "own" properties of an object.
+getPropertyNames = (obj) ->
+  (name for own name of obj)
+
 # Make sure that uncaught exceptions don't kill the REPL.
 process.on 'uncaughtException', error
 
 # Create the REPL by listening to **stdin**.
-repl = readline.createInterface stdio, autocomplete.complete
+repl = readline.createInterface stdio, autocomplete
 repl.setPrompt 'coffee> '
 stdio.on 'data',   (buffer) -> repl.write buffer
 repl.on  'close',  -> stdio.destroy()
