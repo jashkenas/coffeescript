@@ -147,7 +147,7 @@ exports.Base = class Base
 
 #### Block
 
-# The expressions body is the list of expressions that forms the body of an
+# The block is the list of expressions that forms the body of an
 # indented block of code -- the implementation of a function, a clause in an
 # `if`, `switch`, or `try`, and so on...
 exports.Block = class Block extends Base
