@@ -145,12 +145,12 @@ exports.Base = class Base
   # Is this node used to assign a certain variable?
   assigns: NO
 
-#### Expressions
+#### Block
 
-# The expressions body is the list of expressions that forms the body of an
+# The block is the list of expressions that forms the body of an
 # indented block of code -- the implementation of a function, a clause in an
 # `if`, `switch`, or `try`, and so on...
-exports.Expressions = class Expressions extends Base
+exports.Block = class Block extends Base
   constructor: (nodes) ->
     @expressions = compact flatten nodes or []
 
@@ -170,7 +170,7 @@ exports.Expressions = class Expressions extends Base
     @expressions.unshift node
     this
 
-  # If this Expressions consists of just a single node, unwrap it by pulling
+  # If this Block consists of just a single node, unwrap it by pulling
   # it back out.
   unwrap: ->
     if @expressions.length is 1 then @expressions[0] else this
@@ -188,7 +188,7 @@ exports.Expressions = class Expressions extends Base
     for exp in @expressions
       return exp if exp.jumps o
 
-  # An Expressions node does not return its entire body, rather it
+  # An Block node does not return its entire body, rather it
   # ensures that the final expression is returned.
   makeReturn: ->
     len = @expressions.length
@@ -196,14 +196,15 @@ exports.Expressions = class Expressions extends Base
       expr = @expressions[len]
       if expr not instanceof Comment
         @expressions[len] = expr.makeReturn()
+        @expressions.splice(len, 1) if expr instanceof Return and not expr.expression
         break
     this
 
-  # An **Expressions** is the only node that can serve as the root.
+  # An **Block** is the only node that can serve as the root.
   compile: (o = {}, level) ->
     if o.scope then super o, level else @compileRoot o
 
-  # Compile all expressions within the **Expressions** body. If we need to
+  # Compile all expressions within the **Block** body. If we need to
   # return the result, and it's an expression, simply return it. If it's a
   # statement, ask the statement to do so.
   compileNode: (o) ->
@@ -223,7 +224,7 @@ exports.Expressions = class Expressions extends Base
     code = codes.join(', ') or 'void 0'
     if codes.length > 1 and o.level >= LEVEL_LIST then "(#{code})" else code
 
-  # If we happen to be the top-level **Expressions**, wrap everything in
+  # If we happen to be the top-level **Block**, wrap everything in
   # a safety closure, unless requested not to.
   # It would be better not to generate them in the first place, but for now,
   # clean up obvious double-parentheses.
@@ -256,11 +257,11 @@ exports.Expressions = class Expressions extends Base
         code += "#{@tab}var #{ multident scope.assignedVariables().join(', '), @tab };\n"
     code + post
 
-  # Wrap up the given nodes as an **Expressions**, unless it already happens
+  # Wrap up the given nodes as an **Block**, unless it already happens
   # to be one.
   @wrap: (nodes) ->
-    return nodes[0] if nodes.length is 1 and nodes[0] instanceof Expressions
-    new Expressions nodes
+    return nodes[0] if nodes.length is 1 and nodes[0] instanceof Block
+    new Block nodes
 
 #### Literal
 
@@ -289,7 +290,12 @@ exports.Literal = class Literal extends Base
     if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
 
   compileNode: (o) ->
-    code = if @value.reserved then "\"#{@value}\"" else @value
+    code = if @isUndefined
+      'void 0'
+    else if @value.reserved
+      "\"#{@value}\""
+    else
+      @value
     if @isStatement() then "#{@tab}#{code};" else code
 
   toString: ->
@@ -300,7 +306,8 @@ exports.Literal = class Literal extends Base
 # A `return` is a *pureStatement* -- wrapping it in a closure wouldn't
 # make sense.
 exports.Return = class Return extends Base
-  constructor: (@expression) ->
+  constructor: (expr) ->
+    @expression = expr if expr and not expr.unwrap().isUndefined
 
   children: ['expression']
 
@@ -748,7 +755,7 @@ exports.Arr = class Arr extends Base
 # Initialize a **Class** with its name, an optional superclass, and a
 # list of prototype property assignments.
 exports.Class = class Class extends Base
-  constructor: (@variable, @parent, @body = new Expressions) ->
+  constructor: (@variable, @parent, @body = new Block) ->
     @boundFuncs = []
     @body.classBody = yes
 
@@ -812,7 +819,7 @@ exports.Class = class Class extends Base
   walkBody: (name) ->
     @traverseChildren false, (child) =>
       return false if child instanceof Class
-      if child instanceof Expressions
+      if child instanceof Block
         for node, i in exps = child.expressions
           if node instanceof Value and node.isObject(true)
             exps[i] = @addProperties node, name
@@ -998,7 +1005,7 @@ exports.Assign = class Assign extends Base
 exports.Code = class Code extends Base
   constructor: (params, body, tag) ->
     @params  = params or []
-    @body    = body or new Expressions
+    @body    = body or new Block
     @bound   = tag is 'boundfunc'
     @context = 'this' if @bound
 
@@ -1166,7 +1173,7 @@ exports.While = class While extends Base
         rvar = o.scope.freeVariable 'results'
         set  = "#{@tab}#{rvar} = [];\n"
         body = Push.wrap rvar, body if body
-      body = Expressions.wrap [new If @guard, body] if @guard
+      body = Block.wrap [new If @guard, body] if @guard
       body = "\n#{ body.compile o, LEVEL_TOP }\n#{@tab}"
     code = set + @tab + "while (#{ @condition.compile o, LEVEL_PAREN }) {#{body}}"
     if @returns
@@ -1428,7 +1435,7 @@ exports.Parens = class Parens extends Base
 exports.For = class For extends Base
   constructor: (body, source) ->
     {@source, @guard, @step, @name, @index} = source
-    @body    = Expressions.wrap [body]
+    @body    = Block.wrap [body]
     @own     = !!source.own
     @object  = !!source.object
     [@name, @index] = [@index, @name] if @object
@@ -1454,7 +1461,7 @@ exports.For = class For extends Base
   # comprehensions. Some of the generated code can be shared in common, and
   # some cannot.
   compileNode: (o) ->
-    body          = Expressions.wrap [@body]
+    body          = Block.wrap [@body]
     lastJumps     = last(body.expressions)?.jumps()
     @returns      = no if lastJumps and lastJumps instanceof Return
     source        = if @range then @source.base else @source
@@ -1488,7 +1495,7 @@ exports.For = class For extends Base
       returnResult  = "\n#{@tab}return #{rvar};"
       body          = Push.wrap rvar, body
     if @guard
-      body          = Expressions.wrap [new If @guard, body]
+      body          = Block.wrap [new If @guard, body]
     if @pattern
       body.expressions.unshift new Assign @name, new Literal "#{svar}[#{ivar}]"
     defPart         += @pluckDirectCall o, body
@@ -1585,7 +1592,7 @@ exports.If = class If extends Base
       @elseBodyNode().addElse elseBody
     else
       @isChain  = elseBody instanceof If
-      @elseBody = @ensureExpressions elseBody
+      @elseBody = @ensureBlock elseBody
     this
 
   # The **If** only compiles into a statement if either of its bodies needs
@@ -1600,12 +1607,12 @@ exports.If = class If extends Base
     if @isStatement o then @compileStatement o else @compileExpression o
 
   makeReturn: ->
-    @body     and= new Expressions [@body.makeReturn()]
-    @elseBody and= new Expressions [@elseBody.makeReturn()]
+    @body     and= new Block [@body.makeReturn()]
+    @elseBody and= new Block [@elseBody.makeReturn()]
     this
 
-  ensureExpressions: (node) ->
-    if node instanceof Expressions then node else new Expressions [node]
+  ensureBlock: (node) ->
+    if node instanceof Block then node else new Block [node]
 
   # Compile the **If** as a regular *if-else* statement. Flattened chains
   # force inner *else* bodies into statement form.
@@ -1613,7 +1620,7 @@ exports.If = class If extends Base
     child    = del o, 'chainChild'
     cond     = @condition.compile o, LEVEL_PAREN
     o.indent += TAB
-    body     = @ensureExpressions(@body).compile o
+    body     = @ensureBlock(@body).compile o
     body     = "\n#{body}\n#{@tab}" if body
     ifPart   = "if (#{cond}) {#{body}}"
     ifPart   = @tab + ifPart unless child
@@ -1660,7 +1667,7 @@ Closure =
   # then make sure that the closure wrapper preserves the original values.
   wrap: (expressions, statement, noReturn) ->
     return expressions if expressions.jumps()
-    func = new Code [], Expressions.wrap [expressions]
+    func = new Code [], Block.wrap [expressions]
     args = []
     if (mentionsArgs = expressions.contains @literalArgs) or
        (               expressions.contains @literalThis)
@@ -1670,7 +1677,7 @@ Closure =
       func = new Value func, [new Access meth]
     func.noReturn = noReturn
     call = new Call func, args
-    if statement then Expressions.wrap [call] else call
+    if statement then Block.wrap [call] else call
 
   literalArgs: (node) ->
     node instanceof Literal and node.value is 'arguments' and not node.asKey

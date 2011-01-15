@@ -47,7 +47,7 @@ exports.OptionParser = class OptionParser
   # Return the help text for this **OptionParser**, listing and describing all
   # of the valid options, for `--help` and such.
   help: ->
-    lines = ['Available options:']
+    lines = []
     lines.unshift "#{@banner}\n" if @banner
     for rule in @rules
       spaces  = 15 - rule.longFlag.length

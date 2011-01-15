@@ -47,7 +47,7 @@ exports.run = ->
   path.exists 'Cakefile', (exists) ->
     throw new Error("Cakefile not found in #{process.cwd()}") unless exists
     args = process.argv.slice 2
-    CoffeeScript.run fs.readFileSync('Cakefile').toString(), fileName: 'Cakefile'
+    CoffeeScript.run fs.readFileSync('Cakefile').toString(), filename: 'Cakefile'
     oparse = new optparse.OptionParser switches
     return printTasks() unless args.length
     options = oparse.parse(args)

@@ -439,10 +439,11 @@ exports.Lexer = class Lexer
         nested = new Lexer().tokenize inner, line: @line, rewrite: off
         nested.pop()
         nested.shift() if nested[0]?[0] is 'TERMINATOR'
-        if nested.length > 1
-          nested.unshift ['(', '(']
-          nested.push    [')', ')']
-        tokens.push ['TOKENS', nested]
+        if len = nested.length
+          if len > 1
+            nested.unshift ['(', '(']
+            nested.push    [')', ')']
+          tokens.push ['TOKENS', nested]
       i += expr.length
       pi = i + 1
     tokens.push ['NEOSTRING', str.slice pi] if i > pi < str.length
