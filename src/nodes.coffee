@@ -196,6 +196,7 @@ exports.Expressions = class Expressions extends Base
       expr = @expressions[len]
       if expr not instanceof Comment
         @expressions[len] = expr.makeReturn()
+        @expressions.splice(len, 1) if expr instanceof Return and not expr.expression
         break
     this
 
@@ -289,7 +290,12 @@ exports.Literal = class Literal extends Base
     if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
 
   compileNode: (o) ->
-    code = if @value.reserved then "\"#{@value}\"" else @value
+    code = if @isUndefined
+      'void 0'
+    else if @value.reserved
+      "\"#{@value}\""
+    else
+      @value
     if @isStatement() then "#{@tab}#{code};" else code
 
   toString: ->
@@ -300,7 +306,8 @@ exports.Literal = class Literal extends Base
 # A `return` is a *pureStatement* -- wrapping it in a closure wouldn't
 # make sense.
 exports.Return = class Return extends Base
-  constructor: (@expression) ->
+  constructor: (expr) ->
+    @expression = expr if expr and not expr.unwrap().isUndefined
 
   children: ['expression']
 
