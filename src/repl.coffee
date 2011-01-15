@@ -6,7 +6,6 @@
 
 # Require the **coffee-script** module to get access to the compiler.
 CoffeeScript = require './coffee-script'
-helpers      = require './helpers'
 readline     = require 'readline'
 Script       = process.binding('evals').Script
 
@@ -19,12 +18,19 @@ stdio = process.openStdin()
 error = (err) ->
   stdio.write (err.stack or err.toString()) + '\n\n'
 
+# The current backlog of multi-line code.
+backlog = ''
+
 # The main REPL function. **run** is called every time a line of code is entered.
 # Attempt to evaluate the command. If there's an exception, print it out instead
 # of exiting.
 run = (buffer) ->
+  code = backlog += '\n' + buffer.toString()
+  if code[code.length - 1] is '\\'
+    return backlog = backlog[0...backlog.length - 1]
+  backlog = ''
   try
-    val = CoffeeScript.eval buffer.toString(), bare: on, globals: on, filename: 'repl'
+    val = CoffeeScript.eval code, bare: on, globals: on, filename: 'repl'
     console.log val if val isnt undefined
   catch err
     error err
