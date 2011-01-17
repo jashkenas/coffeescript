@@ -202,3 +202,8 @@ test "block comments inside class bodies", ->
     b: ->
 
   ok B.prototype.a instanceof Function
+
+test "#1050: `*/` within block comment", ->
+  a = b = {}
+  ### */ b = {} /* ###
+  eq a, b
