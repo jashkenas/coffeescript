@@ -717,8 +717,11 @@ exports.Obj = class Obj extends Base
 
   compileNode: (o) ->
     props = @properties
-    props = props.filter ((x) -> x not instanceof Value) if @generated
     return (if @front then '({})' else '{}') unless props.length
+    if @generated
+      for node in props
+        if node instanceof Value
+          throw new Error 'No implicit values in implict objects allowed'
     idt         = o.indent += TAB
     lastNoncom  = @lastNonComment @properties
     props = for prop, i in props
