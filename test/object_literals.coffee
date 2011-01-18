@@ -183,6 +183,22 @@ test "invoking functions with implicit object literals", ->
   ok result.length is 3
   ok result[2].c is 1
 
+  result = getA b: 13, a: 42, 2
+  eq 42, result
+
+  result = getArgs a:1, (1 + 1)
+  ok result[1] is 2
+
+  result = getArgs a:1, b
+  ok result.length is 2
+  ok result[1] is 30
+
+  result = getArgs a:1, b, b:1, a
+  ok result.length is 4
+  ok result[2].b is 1
+
+  throws -> CoffeeScript.compile "a = b:1, c"
+
 test "some weird indentation in YAML-style object literals", ->
   two = (a, b) -> b
   obj = then two 1,
@@ -193,3 +209,4 @@ test "some weird indentation in YAML-style object literals", ->
           d: e
     f: 1
   eq 1, obj[1]
+
