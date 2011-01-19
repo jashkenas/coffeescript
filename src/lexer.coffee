@@ -170,11 +170,11 @@ exports.Lexer = class Lexer
   commentToken: ->
     return 0 unless match = @chunk.match COMMENT
     [comment, here] = match
-    @line += count comment, '\n'
     if here
       @token 'HERECOMMENT', @sanitizeHeredoc here,
         herecomment: true, indent: Array(@indent + 1).join(' ')
       @token 'TERMINATOR', '\n'
+    @line += count comment, '\n'
     comment.length
 
   # Matches JavaScript interpolated directly into the source via backticks.
@@ -343,8 +343,11 @@ exports.Lexer = class Lexer
   # erasing all external indentation on the left-hand side.
   sanitizeHeredoc: (doc, options) ->
     {indent, herecomment} = options
-    return doc if herecomment and 0 > doc.indexOf '\n'
-    unless herecomment
+    if herecomment
+      if HEREDOC_ILLEGAL.test doc
+        throw new Error "block comment cannot contain \"*/\", starting on line #{@line + 1}"
+      return doc if doc.indexOf('\n') <= 0
+    else
       while match = HEREDOC_INDENT.exec doc
         attempt = match[1]
         indent = attempt if indent is null or 0 < attempt.length < indent.length
@@ -592,6 +595,8 @@ HEREGEX_OMIT = /\s+(?:#.*)?/g
 MULTILINER      = /\n/g
 
 HEREDOC_INDENT  = /\n+([^\n\S]*)/g
+
+HEREDOC_ILLEGAL = /\*\//
 
 ASSIGNED        = /^\s*@?([$A-Za-z_][$\w\x7f-\uffff]*|['"].*['"])[^\n\S]*?[:=][^:=>]/
 
