@@ -162,8 +162,10 @@ writeJs = (source, js, base) ->
   compile   = ->
     js = ' ' if js.length <= 0
     fs.writeFile jsPath, js, (err) ->
-      if err then printLine err.message
-      else if opts.compile and opts.watch then console.log "compiled #{source}"
+      if err
+        printLine err.message
+      else if opts.compile and opts.watch
+        console.log "#{(new Date).toTimeString()} - compiled #{source}"
   path.exists dir, (exists) ->
     if exists then compile() else exec "mkdir -p #{dir}", compile
 
