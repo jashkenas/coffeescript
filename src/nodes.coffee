@@ -504,7 +504,24 @@ exports.Call = class Call extends Base
     @variable?.front = @front
     if code = Splat.compileSplattedArray o, @args, true
       return @compileSplat o, code
-    args = (arg.compile o, LEVEL_LIST for arg in @args).join ', '
+
+    args = []
+    for arg in @args
+      unless arg.isObject?() and arg.base.generated
+        args.push arg
+      else
+        properties = []
+        obj = null
+        for prop in arg.base.properties
+          if prop instanceof Assign
+            unless obj
+              args.push obj = new Obj properties = [], true
+            properties.push prop
+          else
+            args.push prop
+            obj = null
+
+    args = (arg.compile o, LEVEL_LIST for arg in args).join ', '
     if @isSuper
       @superReference(o) + ".call(this#{ args and ', ' + args })"
     else
@@ -701,6 +718,10 @@ exports.Obj = class Obj extends Base
   compileNode: (o) ->
     props = @properties
     return (if @front then '({})' else '{}') unless props.length
+    if @generated
+      for node in props
+        if node instanceof Value
+          throw new Error 'No implicit values in implict objects allowed'
     idt         = o.indent += TAB
     lastNoncom  = @lastNonComment @properties
     props = for prop, i in props
