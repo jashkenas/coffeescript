@@ -505,21 +505,21 @@ exports.Call = class Call extends Base
     if code = Splat.compileSplattedArray o, @args, true
       return @compileSplat o, code
 
+    # Walk through the objects in the arguments, moving over simple values.
+    # This allows syntax like `call a: b, c` into `call({a: b}, c);`
     args = []
     for arg in @args
       unless arg.isObject?() and arg.base.generated
         args.push arg
-      else
-        properties = []
-        obj = null
-        for prop in arg.base.properties
-          if prop instanceof Assign
-            unless obj
-              args.push obj = new Obj properties = [], true
-            properties.push prop
-          else
-            args.push prop
-            obj = null
+        continue
+      obj = null
+      for prop in arg.base.properties
+        if prop instanceof Assign
+          args.push obj = new Obj properties = [], true if not obj
+          properties.push prop
+        else
+          args.push prop
+          obj = null
 
     args = (arg.compile o, LEVEL_LIST for arg in args).join ', '
     if @isSuper
@@ -719,9 +719,8 @@ exports.Obj = class Obj extends Base
     props = @properties
     return (if @front then '({})' else '{}') unless props.length
     if @generated
-      for node in props
-        if node instanceof Value
-          throw new Error 'No implicit values in implict objects allowed'
+      for node in props when node instanceof Value
+        throw new Error 'cannot have an implicit value in an implicit object'
     idt         = o.indent += TAB
     lastNoncom  = @lastNonComment @properties
     props = for prop, i in props
