@@ -165,7 +165,7 @@ writeJs = (source, js, base) ->
       if err
         printLine err.message
       else if opts.compile and opts.watch
-        console.log "#{(new Date).toTimeString()} - compiled #{source}"
+        console.log "#{(new Date).toLocaleTimeString()} - compiled #{source}"
   path.exists dir, (exists) ->
     if exists then compile() else exec "mkdir -p #{dir}", compile
 
