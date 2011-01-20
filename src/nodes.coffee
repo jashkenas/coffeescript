@@ -499,28 +499,30 @@ exports.Call = class Call extends Base
       ifn = unfoldSoak o, call, 'variable'
     ifn
 
+  # Walk through the objects in the arguments, moving over simple values.
+  # This allows syntax like `call a: b, c` into `call({a: b}, c);`
+  filterImplicitObjects: (list) ->
+    nodes = []
+    for node in list
+      unless node.isObject?() and node.base.generated
+        nodes.push node
+        continue
+      obj = null
+      for prop in node.base.properties
+        if prop instanceof Assign
+          nodes.push obj = new Obj properties = [], true if not obj
+          properties.push prop
+        else
+          nodes.push prop
+          obj = null
+    nodes
+
   # Compile a vanilla function call.
   compileNode: (o) ->
     @variable?.front = @front
     if code = Splat.compileSplattedArray o, @args, true
       return @compileSplat o, code
-
-    # Walk through the objects in the arguments, moving over simple values.
-    # This allows syntax like `call a: b, c` into `call({a: b}, c);`
-    args = []
-    for arg in @args
-      unless arg.isObject?() and arg.base.generated
-        args.push arg
-        continue
-      obj = null
-      for prop in arg.base.properties
-        if prop instanceof Assign
-          args.push obj = new Obj properties = [], true if not obj
-          properties.push prop
-        else
-          args.push prop
-          obj = null
-
+    args = @filterImplicitObjects @args
     args = (arg.compile o, LEVEL_LIST for arg in args).join ', '
     if @isSuper
       @superReference(o) + ".call(this#{ args and ', ' + args })"
@@ -755,11 +757,14 @@ exports.Arr = class Arr extends Base
 
   children: ['objects']
 
+  filterImplicitObjects: Call::filterImplicitObjects
+
   compileNode: (o) ->
     return '[]' unless @objects.length
     o.indent += TAB
-    return code if code = Splat.compileSplattedArray o, @objects
-    code = (obj.compile o, LEVEL_LIST for obj in @objects).join ', '
+    objs = @filterImplicitObjects @objects
+    return code if code = Splat.compileSplattedArray o, objs
+    code = (obj.compile o, LEVEL_LIST for obj in objs).join ', '
     if code.indexOf('\n') >= 0
       "[\n#{o.indent}#{code}\n#{@tab}]"
     else
