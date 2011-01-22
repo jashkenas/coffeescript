@@ -364,3 +364,8 @@ test "don't wrap \"pure\" statements in a closure", ->
     for item in items
       return item if item is nonce
   eq nonce, fn items
+
+#### Unusual `new` Usage
+
+test "usage of `new` is careful about where the invocation parens end up", ->
+  ok 'object' is typeof new try Array
