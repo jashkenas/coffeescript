@@ -79,6 +79,12 @@ doesNotThrow -> CoffeeScript.compile """
   oh:: return
   """
 
+doesNotThrow -> CoffeeScript.compile """
+  a?[b..]
+  a?[...b]
+  a?[b..c]
+  """
+
 # Array Literals
 
 test "indented array literals don't trigger whitespace rewriting", ->
