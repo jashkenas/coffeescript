@@ -80,8 +80,8 @@ exports.Lexer = class Lexer
       @token 'OWN', id
       return id.length
     forcedIdentifier = colon or
-      (prev = last @tokens) and (prev[0] in ['.', '?.'] or
-      not prev.spaced and prev[0] in ['@', '::'])
+      (prev = last @tokens) and (prev[0] in ['.', '?.', '::'] or
+      not prev.spaced and prev[0] is '@')
     tag = 'IDENTIFIER'
 
     if id in JS_KEYWORDS or
