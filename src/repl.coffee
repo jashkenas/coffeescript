@@ -12,11 +12,12 @@ Script       = process.binding('evals').Script
 # REPL Setup
 
 # Start by opening up **stdio**.
-stdio = process.openStdin()
+stdin = process.openStdin()
+stdout = process.stdout
 
 # Log an error.
 error = (err) ->
-  stdio.write (err.stack or err.toString()) + '\n\n'
+  stdout.write (err.stack or err.toString()) + '\n\n'
 
 # The current backlog of multi-line code.
 backlog = ''
@@ -76,9 +77,13 @@ getPropertyNames = (obj) ->
 process.on 'uncaughtException', error
 
 # Create the REPL by listening to **stdin**.
-repl = readline.createInterface stdio, autocomplete
+if readline.createInterface.length == 3
+  repl = readline.createInterface stdin, stdout, autocomplete
+else
+  repl = readline.createInterface stdin, autocomplete
+  stdin.on 'data',   (buffer) -> repl.write buffer
+
 repl.setPrompt 'coffee> '
-stdio.on 'data',   (buffer) -> repl.write buffer
-repl.on  'close',  -> stdio.destroy()
+repl.on  'close',  -> stdin.destroy()
 repl.on  'line',   run
 repl.prompt()
