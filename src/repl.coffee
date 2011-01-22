@@ -77,7 +77,12 @@ getPropertyNames = (obj) ->
 process.on 'uncaughtException', error
 
 # Create the REPL by listening to **stdin**.
-repl = readline.createInterface stdin, stdout, autocomplete
+if readline.createInterface.length == 3
+  repl = readline.createInterface stdin, stdout, autocomplete
+else
+  repl = readline.createInterface stdin, autocomplete
+  stdin.on 'data',   (buffer) -> repl.write buffer
+
 repl.setPrompt 'coffee> '
 repl.on  'close',  -> stdin.destroy()
 repl.on  'line',   run
