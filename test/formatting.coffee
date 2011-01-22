@@ -73,6 +73,12 @@ test "`?.` and `::` should continue lines", ->
   #::
   #?.foo
 
+doesNotThrow -> CoffeeScript.compile """
+  oh. yes
+  oh. true
+  oh . return
+  """
+
 # Array Literals
 
 test "indented array literals don't trigger whitespace rewriting", ->
