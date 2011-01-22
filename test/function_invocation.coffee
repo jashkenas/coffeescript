@@ -368,4 +368,5 @@ test "don't wrap \"pure\" statements in a closure", ->
 #### Unusual `new` Usage
 
 test "usage of `new` is careful about where the invocation parens end up", ->
-  ok 'object' is typeof new try Array
+  eq 'object', typeof new try Array
+  eq 'object', typeof new do -> ->

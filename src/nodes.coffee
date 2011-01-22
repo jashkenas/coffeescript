@@ -1212,10 +1212,13 @@ exports.While = class While extends Base
 exports.Op = class Op extends Base
   constructor: (op, first, second, flip) ->
     return new In first, second if op is 'in'
-    return new Call first, first.params or [] if op is 'do'
+    if op is 'do'
+      call = new Call first, first.params or []
+      call.do = yes
+      return call
     if op is 'new'
-      return first.newInstance() if first instanceof Call
-      first = new Parens first   if first instanceof Code and first.bound
+      return first.newInstance() if first instanceof Call and not first.do
+      first = new Parens first   if first instanceof Code and first.bound or first.do
     @operator = CONVERSIONS[op] or op
     @first    = first
     @second   = second
