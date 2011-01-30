@@ -752,8 +752,7 @@ alert("The Field: " + rest);;'>run</div><br class='clear' /></div>
       over arrays, objects, and ranges. Comprehensions replace (and compile into)
       <b>for</b> loops, with optional guard clauses and the value of the current array index.
       Unlike for loops, array comprehensions are expressions, and can be returned
-      and assigned. They should be able to handle most places where you otherwise
-      would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>.
+      and assigned.
     </p>
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> Eat lunch.</span>
 eat food <span class="Keyword">for</span> food <span class="Keyword">in</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>]
@@ -765,6 +764,9 @@ _ref <span class="Keyword">=</span> [<span class="String"><span class="String">'
 }
 </pre><script>window.example9 = "# Eat lunch.\neat food for food in ['toast', 'cheese', 'wine']\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example9);'>load</div><br class='clear' /></div>
     <p>
+      Comprehensions should be able to handle most places where you otherwise
+      would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>:
+      <tt>evens = (i for i in list when i % 2 is 0)</tt><br />
       If you know the start and end of your loop, or would like to step through
       in fixed-size increments, you can use a range to specify the start and
       end of your comprehension.
@@ -911,21 +913,21 @@ lyrics = (function() {
       provides the <tt>do</tt> keyword, which immediately invokes a passed function,
       forwarding any arguments.
     </p>
-    <div class='code'><pre class="idle"><span class="Keyword">for</span> fileName <span class="Keyword">in</span> list
-  <span class="Keyword">do</span> <span class="FunctionArgument">(fileName)</span> <span class="Storage">-&gt;</span>
-    fs.readFile fileName, <span class="FunctionArgument">(err, contents)</span> <span class="Storage">-&gt;</span>
-      compile fileName, contents.toString()
-</pre><pre class="idle"><span class="Storage">var</span> fileName, _fn, _i, _len;
-<span class="FunctionName">_fn</span> = <span class="Storage">function</span>(<span class="FunctionArgument">fileName</span>) {
-  <span class="Keyword">return</span> fs.readFile(fileName, <span class="Storage">function</span>(err, contents) {
-    <span class="Keyword">return</span> <span class="LibraryFunction">compile</span>(fileName, contents.<span class="LibraryFunction">toString</span>());
+    <div class='code'><pre class="idle"><span class="Keyword">for</span> filename <span class="Keyword">in</span> list
+  <span class="Keyword">do</span> <span class="FunctionArgument">(filename)</span> <span class="Storage">-&gt;</span>
+    fs.readFile filename, <span class="FunctionArgument">(err, contents)</span> <span class="Storage">-&gt;</span>
+      compile filename, contents.toString()
+</pre><pre class="idle"><span class="Storage">var</span> filename, _fn, _i, _len;
+<span class="FunctionName">_fn</span> = <span class="Storage">function</span>(<span class="FunctionArgument">filename</span>) {
+  <span class="Keyword">return</span> fs.readFile(filename, <span class="Storage">function</span>(err, contents) {
+    <span class="Keyword">return</span> <span class="LibraryFunction">compile</span>(filename, contents.<span class="LibraryFunction">toString</span>());
   });
 };
 <span class="Keyword">for</span> (_i <span class="Keyword">=</span> <span class="Number">0</span>, _len <span class="Keyword">=</span> list.<span class="LibraryConstant">length</span>; _i <span class="Keyword">&lt;</span> _len; _i<span class="Keyword">++</span>) {
-  fileName <span class="Keyword">=</span> list[_i];
-  _fn(fileName);
+  filename <span class="Keyword">=</span> list[_i];
+  _fn(filename);
 }
-</pre><script>window.example13 = "for fileName in list\n  do (fileName) ->\n    fs.readFile fileName, (err, contents) ->\n      compile fileName, contents.toString()"</script><div class='minibutton load' onclick='javascript: loadConsole(example13);'>load</div><br class='clear' /></div>
+</pre><script>window.example13 = "for filename in list\n  do (filename) ->\n    fs.readFile filename, (err, contents) ->\n      compile filename, contents.toString()"</script><div class='minibutton load' onclick='javascript: loadConsole(example13);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="slices" class="bookmark"></span>
@@ -1220,7 +1222,7 @@ footprints = typeof yeti != "undefined" && yeti !== null ? yeti : "bear";;alert(
     </p>
     <div class='code'><pre class="idle">zip <span class="Keyword">=</span> lottery.drawWinner<span class="Keyword">?</span>().address<span class="Keyword">?</span>.zipcode
 </pre><pre class="idle"><span class="Storage">var</span> zip, _ref;
-zip <span class="Keyword">=</span> <span class="Keyword">typeof</span> lottery.drawWinner <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>function<span class="String">&quot;</span></span> ? (_ref <span class="Keyword">=</span> lottery.drawWinner().address) <span class="Keyword">!</span><span class="Keyword">=</span> <span class="BuiltInConstant">null</span> ? _ref.zipcode : <span class="Storage">void</span> <span class="Number">0</span> : <span class="Storage">void</span> <span class="Number">0</span>;
+zip <span class="Keyword">=</span> <span class="Keyword">typeof</span> lottery.drawWinner <span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>function<span class="String">&quot;</span></span> ? (_ref <span class="Keyword">=</span> lottery.drawWinner().address) <span class="Keyword">!</span><span class="Keyword">=</span> <span class="BuiltInConstant">null</span> ? _ref.zipcode : <span class="Storage">void</span> <span class="Number">0</span> : <span class="Storage">void</span> <span class="Number">0</span>;
 </pre><script>window.example22 = "zip = lottery.drawWinner?().address?.zipcode\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example22);'>load</div><br class='clear' /></div>
     <p>
       Soaking up nulls is similar to Ruby's
@@ -1919,6 +1921,10 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
         &mdash; a plugin for IntelliJ IDEA and RubyMine providing syntax highlighting.
       </li>
       <li>
+        <b>dhotson</b>'s <a href="https://github.com/dhotson/coffeescript-jedit">coffeescript-jedit</a>
+        &mdash; which provides syntax highlighting support in jEdit.
+      </li>
+      <li>
         <b>mattly</b>'s <a href="http://github.com/mattly/rack-coffee">rack-coffee</a>
         &mdash; a small Rack middleware for serving CoffeeScript files as
         compiled JavaScript on the fly.
@@ -1942,11 +1948,6 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
         <b>inem</b> and <b>gerad</b>'s <a href="http://github.com/gerad/coffee-haml-filter">coffee-haml-filter</a>
         &mdash; a custom filter for rendering CoffeeScript inline within
         <a href="http://haml-lang.com/">HAML</a> templates.
-      </li>
-      <li>
-        <b>chrislloyd</b>'s <a href="http://github.com/chrislloyd/roast">Roast</a>
-        &mdash; a CoffeeScript compiler plug-in that allows you to include external
-        source files.
       </li>
       <li>
         <b>andrzejsliwa</b>'s <a href="http://github.com/andrzejsliwa/coffeeapp">CoffeeApp</a>
