@@ -908,6 +908,7 @@ exports.Assign = class Assign extends Base
     {value}   = this
     {objects} = @variable.base
     unless olen = objects.length
+      return false if top
       code = value.compile o
       return if o.level >= LEVEL_OP then "(#{code})" else code
     isObject = @variable.isObject()
@@ -968,7 +969,7 @@ exports.Assign = class Assign extends Base
         val = new Value new Literal(vvar), [new (if acc then Access else Index) idx]
       assigns.push new Assign(obj, val, null, param: @param).compile o, LEVEL_TOP
     assigns.push vvar unless top
-    code = assigns.join ', '
+    code = (compact assigns).join ', '
     if o.level < LEVEL_LIST then code else "(#{code})"
 
   # When compiling a conditional assignment, take care to ensure that the
