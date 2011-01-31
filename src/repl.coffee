@@ -32,7 +32,7 @@ run = (buffer) ->
   backlog = ''
   try
     val = CoffeeScript.eval code, bare: on, globals: on, filename: 'repl'
-    console.log val if val isnt undefined
+    process.stdout.write val + '\n' if val isnt undefined
   catch err
     error err
   repl.prompt()

@@ -479,11 +479,13 @@ Expressions
       over arrays, objects, and ranges. Comprehensions replace (and compile into)
       <b>for</b> loops, with optional guard clauses and the value of the current array index.
       Unlike for loops, array comprehensions are expressions, and can be returned
-      and assigned. They should be able to handle most places where you otherwise
-      would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>.
+      and assigned.
     </p>
     <%= code_for('array_comprehensions') %>
     <p>
+      Comprehensions should be able to handle most places where you otherwise
+      would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>:
+      <tt>shortNames = (name for name in list when name.length &lt; 5)</tt><br />
       If you know the start and end of your loop, or would like to step through
       in fixed-size increments, you can use a range to specify the start and
       end of your comprehension.
