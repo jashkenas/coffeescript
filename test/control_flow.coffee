@@ -404,3 +404,15 @@ results = while i > 0
     when 0 then break
 
 eq results.join(', '), '9, , 7, , 5, , 3, , 1, '
+
+
+# Issue #997. Switch doesn't fallthrough.
+val = 1
+switch true
+  when true
+    if false
+      return 5
+  else
+    val = 2
+
+eq val, 1
