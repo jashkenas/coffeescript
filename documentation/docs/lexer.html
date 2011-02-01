@@ -19,6 +19,7 @@ it has consumed.</p>
 
 <p>Before returning the token stream, run it through the <a href="rewriter.html">Rewriter</a>
 unless explicitly asked not to.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">tokenize</span><span class="o">:</span> <span class="p">(</span><span class="nx">code</span><span class="p">,</span> <span class="nv">opts = </span><span class="p">{})</span> <span class="o">-&gt;</span>
+    <span class="nv">code     = </span><span class="s2">&quot;\n#{code}&quot;</span> <span class="k">if</span> <span class="nx">WHITESPACE</span><span class="p">.</span><span class="nx">test</span> <span class="nx">code</span>
     <span class="nv">code     = </span><span class="nx">code</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/\r/g</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">).</span><span class="nx">replace</span> <span class="nx">TRAILING_SPACES</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
 
     <span class="vi">@code    = </span><span class="nx">code</span>           <span class="c1"># The remainder of the source code.</span>
@@ -354,10 +355,11 @@ token stream.</p>             </td>             <td class="code">               
         <span class="nv">nested = </span><span class="k">new</span> <span class="nx">Lexer</span><span class="p">().</span><span class="nx">tokenize</span> <span class="nx">inner</span><span class="p">,</span> <span class="nx">line</span><span class="o">:</span> <span class="nx">@line</span><span class="p">,</span> <span class="nx">rewrite</span><span class="o">:</span> <span class="kc">off</span>
         <span class="nx">nested</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span>
         <span class="nx">nested</span><span class="p">.</span><span class="nx">shift</span><span class="p">()</span> <span class="k">if</span> <span class="nx">nested</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">?</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="s1">&#39;TERMINATOR&#39;</span>
-        <span class="k">if</span> <span class="nx">nested</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">1</span>
-          <span class="nx">nested</span><span class="p">.</span><span class="nx">unshift</span> <span class="p">[</span><span class="s1">&#39;(&#39;</span><span class="p">,</span> <span class="s1">&#39;(&#39;</span><span class="p">]</span>
-          <span class="nx">nested</span><span class="p">.</span><span class="nx">push</span>    <span class="p">[</span><span class="s1">&#39;)&#39;</span><span class="p">,</span> <span class="s1">&#39;)&#39;</span><span class="p">]</span>
-        <span class="nx">tokens</span><span class="p">.</span><span class="nx">push</span> <span class="p">[</span><span class="s1">&#39;TOKENS&#39;</span><span class="p">,</span> <span class="nx">nested</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nv">len = </span><span class="nx">nested</span><span class="p">.</span><span class="nx">length</span>
+          <span class="k">if</span> <span class="nx">len</span> <span class="o">&gt;</span> <span class="mi">1</span>
+            <span class="nx">nested</span><span class="p">.</span><span class="nx">unshift</span> <span class="p">[</span><span class="s1">&#39;(&#39;</span><span class="p">,</span> <span class="s1">&#39;(&#39;</span><span class="p">]</span>
+            <span class="nx">nested</span><span class="p">.</span><span class="nx">push</span>    <span class="p">[</span><span class="s1">&#39;)&#39;</span><span class="p">,</span> <span class="s1">&#39;)&#39;</span><span class="p">]</span>
+          <span class="nx">tokens</span><span class="p">.</span><span class="nx">push</span> <span class="p">[</span><span class="s1">&#39;TOKENS&#39;</span><span class="p">,</span> <span class="nx">nested</span><span class="p">]</span>
       <span class="nx">i</span> <span class="o">+=</span> <span class="nx">expr</span><span class="p">.</span><span class="nx">length</span>
       <span class="nv">pi = </span><span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span>
     <span class="nx">tokens</span><span class="p">.</span><span class="nx">push</span> <span class="p">[</span><span class="s1">&#39;NEOSTRING&#39;</span><span class="p">,</span> <span class="nx">str</span><span class="p">.</span><span class="nx">slice</span> <span class="nx">pi</span><span class="p">]</span> <span class="k">if</span> <span class="nx">i</span> <span class="o">&gt;</span> <span class="nx">pi</span> <span class="o">&lt;</span> <span class="nx">str</span><span class="p">.</span><span class="nx">length</span>
@@ -411,7 +413,7 @@ to avoid having a JavaScript error at runtime.</p>             </td>            
 be used as identifiers or properties.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">JS_FORBIDDEN = </span><span class="nx">JS_KEYWORDS</span><span class="p">.</span><span class="nx">concat</span> <span class="nx">RESERVED</span>
 
 <span class="nv">exports.RESERVED = </span><span class="nx">RESERVED</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">JS_KEYWORDS</span><span class="p">).</span><span class="nx">concat</span><span class="p">(</span><span class="nx">COFFEE_KEYWORDS</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-42">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-42">&#182;</a>               </div>               <p>Token matching regexes.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">IDENTIFIER = </span><span class="err">/// ^</span>
-  <span class="p">(</span> <span class="p">[</span><span class="nx">$A</span><span class="o">-</span><span class="nx">Za</span><span class="o">-</span><span class="nx">z_</span><span class="p">][</span><span class="nx">$</span><span class="err">\</span><span class="nx">w</span><span class="p">]</span><span class="o">*</span> <span class="p">)</span>
+  <span class="p">(</span> <span class="p">[</span><span class="nx">$A</span><span class="o">-</span><span class="nx">Za</span><span class="o">-</span><span class="nx">z_</span><span class="err">\</span><span class="nx">x7f</span><span class="o">-</span><span class="err">\</span><span class="nx">uffff</span><span class="p">][</span><span class="nx">$</span><span class="err">\</span><span class="nx">w</span><span class="err">\</span><span class="nx">x7f</span><span class="o">-</span><span class="err">\</span><span class="nx">uffff</span><span class="p">]</span><span class="o">*</span> <span class="p">)</span>
   <span class="p">(</span> <span class="p">[</span><span class="o">^</span><span class="err">\</span><span class="nx">n</span><span class="err">\</span><span class="nx">S</span><span class="p">]</span><span class="o">*</span> <span class="o">:</span> <span class="p">(</span><span class="o">?!:</span><span class="p">)</span> <span class="p">)</span><span class="o">?</span>  <span class="c1"># Is this a property name?</span>
 <span class="err">///</span>
 
@@ -462,7 +464,7 @@ be used as identifiers or properties.</p>             </td>             <td clas
 
 <span class="nv">HEREDOC_INDENT  = </span><span class="sr">/\n+([^\n\S]*)/g</span>
 
-<span class="nv">ASSIGNED        = </span><span class="sr">/^\s*@?([$A-Za-z_][$\w]*|[&#39;&quot;].*[&#39;&quot;])[^\n\S]*?[:=][^:=&gt;]/</span>
+<span class="nv">ASSIGNED        = </span><span class="sr">/^\s*@?([$A-Za-z_][$\w\x7f-\uffff]*|[&#39;&quot;].*[&#39;&quot;])[^\n\S]*?[:=][^:=&gt;]/</span>
 
 <span class="nv">LINE_CONTINUER  = </span><span class="err">/// ^ \s* (?: , | \??\.(?!\.) | :: ) ///</span>
 

@@ -11,7 +11,7 @@ Script       = process.binding('evals').Script
 
 # REPL Setup
 
-# Start by opening up **stdio**.
+# Start by opening up `stdin` and `stdout`.
 stdin = process.openStdin()
 stdout = process.stdout
 

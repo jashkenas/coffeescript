@@ -291,7 +291,7 @@ exports.Literal = class Literal extends Base
 
   compileNode: (o) ->
     code = if @isUndefined
-      'void 0'
+      if o.level >= LEVEL_ACCESS then '(void 0)' else 'void 0'
     else if @value.reserved
       "\"#{@value}\""
     else
@@ -933,6 +933,7 @@ exports.Assign = class Assign extends Base
     {value}   = this
     {objects} = @variable.base
     unless olen = objects.length
+      return false if top
       code = value.compile o
       return if o.level >= LEVEL_OP then "(#{code})" else code
     isObject = @variable.isObject()
@@ -993,7 +994,7 @@ exports.Assign = class Assign extends Base
         val = new Value new Literal(vvar), [new (if acc then Access else Index) idx]
       assigns.push new Assign(obj, val, null, param: @param).compile o, LEVEL_TOP
     assigns.push vvar unless top
-    code = assigns.join ', '
+    code = (compact assigns).join ', '
     if o.level < LEVEL_LIST then code else "(#{code})"
 
   # When compiling a conditional assignment, take care to ensure that the
@@ -1590,9 +1591,8 @@ exports.Switch = class Switch extends Base
       code += body + '\n' if body = block.compile o, LEVEL_TOP
       break if i is @cases.length - 1 and not @otherwise
       expr = @lastNonComment block.expressions
-      jumper = expr.jumps()
-      if not expr or not jumper or (jumper instanceof Literal and jumper.value is 'debugger')
-        code += idt2 + 'break;\n'
+      continue if expr instanceof Return or (expr instanceof Literal and expr.jumps() and expr.value isnt 'debugger')
+      code += idt2 + 'break;\n'
     code += idt1 + "default:\n#{ @otherwise.compile o, LEVEL_TOP }\n" if @otherwise and @otherwise.expressions.length
     code +  @tab + '}'
 

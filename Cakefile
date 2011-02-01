@@ -16,7 +16,7 @@ header = """
    * CoffeeScript Compiler v#{CoffeeScript.VERSION}
    * http://coffeescript.org
    *
-   * Copyright 2010, Jeremy Ashkenas
+   * Copyright 2011, Jeremy Ashkenas
    * Released under the MIT License
    */
 """

@@ -109,7 +109,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/1.0.0">1.0.0</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.0.1">1.0.1</a>
     </p>
 
     <h2>
@@ -1712,16 +1712,16 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">'<
       are preserved in the generated code.
     </p>
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">###</span></span>
-<span class="Comment">CoffeeScript Compiler v1.0.0</span>
+<span class="Comment">CoffeeScript Compiler v1.0.1</span>
 <span class="Comment">Released under the MIT License</span>
 <span class="Comment"><span class="Comment">###</span></span>
 
 
 </pre><pre class="idle"><span class="Comment"><span class="Comment">/*</span></span>
-<span class="Comment">CoffeeScript Compiler v1.0.0</span>
+<span class="Comment">CoffeeScript Compiler v1.0.1</span>
 <span class="Comment">Released under the MIT License</span>
 <span class="Comment"><span class="Comment">*/</span></span>
-</pre><script>window.example37 = "###\nCoffeeScript Compiler v1.0.0\nReleased under the MIT License\n###\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example37);'>load</div><br class='clear' /></div>
+</pre><script>window.example37 = "###\nCoffeeScript Compiler v1.0.1\nReleased under the MIT License\n###\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example37);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="regexes" class="bookmark"></span>
@@ -1997,6 +1997,19 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">1.0.1
+        <span class="timestamp"> &ndash; <small>Jan 31, 2011</small></span>
+      </b>
+      Fixed a lexer bug with Unicode identifiers. Updated REPL for compatibility
+      with Node.js 0.3.7. Fixed requiring relative paths in the REPL. Trailing
+      <tt>return</tt> and <tt>return undefined</tt> are now optimized away. 
+      Stopped requiring the core Node.js <tt>"util"</tt> module for 
+      back-compatibility with Node.js 0.2.5. Fixed a case where a
+      conditional <tt>return</tt> would cause fallthrough in a <tt>switch</tt> 
+      statement. Optimized empty objects in destructuring assignment.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">1.0.0
