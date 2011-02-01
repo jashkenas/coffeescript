@@ -39,7 +39,7 @@ for interpreting the options object.</p>             </td>             <td class
         <span class="k">break</span>
     <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>Return the help text for this <strong>OptionParser</strong>, listing and describing all
 of the valid options, for <code>--help</code> and such.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">help</span><span class="o">:</span> <span class="o">-&gt;</span>
-    <span class="nv">lines = </span><span class="p">[</span><span class="s1">&#39;Available options:&#39;</span><span class="p">]</span>
+    <span class="nv">lines = </span><span class="p">[]</span>
     <span class="nx">lines</span><span class="p">.</span><span class="nx">unshift</span> <span class="s2">&quot;#{@banner}\n&quot;</span> <span class="k">if</span> <span class="nx">@banner</span>
     <span class="k">for</span> <span class="nx">rule</span> <span class="k">in</span> <span class="nx">@rules</span>
       <span class="nv">spaces  = </span><span class="mi">15</span> <span class="o">-</span> <span class="nx">rule</span><span class="p">.</span><span class="nx">longFlag</span><span class="p">.</span><span class="nx">length</span>
