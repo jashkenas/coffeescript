@@ -61,7 +61,7 @@
             <textarea id="repl_source" rows="100">alert "Hello CoffeeScript!"</textarea>
           </div>
           <div id="repl_results_wrap"><pre id="repl_results"></pre></div>
-          <div class="minibutton dark run">Run</div>
+          <div class="minibutton dark run" title="Ctrl-Enter">Run</div>
           <br class="clear" />
         </div>
       </div>
@@ -2484,7 +2484,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
     $('#repl_source').keyup -> compileSource()
 
     # Eval the compiled js.
-    $('.minibutton.run').click ->
+    evalJS = ->
       try
         eval window.compiledJS
       catch error then alert error
@@ -2500,6 +2500,8 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
     closeMenus = ->
       $('.navigation.active').removeClass 'active'
 
+    $('.minibutton.run').click -> evalJS()
+
     # Bind navigation buttons to open the menus.
     $('.navigation').click (e) ->
       return if e.target.tagName.toLowerCase() is 'a'
@@ -2511,9 +2513,15 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
         $(this).addClass 'active'
       false
 
-    $(document.body).click (e) ->
-      return false if $(e.target).hasClass('minibutton')
-      closeMenus()
+    # Dismiss console if Escape pressed or click falls outside console
+    # Trigger Run button on Ctrl-Enter
+    $(document.body)
+      .keydown (e) ->
+        closeMenus() if e.which == 27
+        evalJS() if e.which == 13 and (e.metaKey or e.ctrlKey) and $('.minibutton.run:visible').length
+      .click (e) ->
+        return false if $(e.target).hasClass('minibutton')
+        closeMenus()
 
     $('#open_webchat').click ->
       $(this).replaceWith $('<iframe src="http://webchat.freenode.net/?channels=coffeescript" width="625" height="400"></iframe>')
