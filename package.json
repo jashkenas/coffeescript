@@ -18,5 +18,6 @@
     "bin":          {
       "coffee":     "./bin/coffee",
       "cake":       "./bin/cake"
-    }
+    },
+    "homepage":     "http://jashkenas.github.com/coffee-script/"
 }
