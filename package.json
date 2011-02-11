@@ -19,5 +19,9 @@
       "coffee":     "./bin/coffee",
       "cake":       "./bin/cake"
     },
-    "homepage":     "http://jashkenas.github.com/coffee-script/"
+    "homepage":     "http://jashkenas.github.com/coffee-script/",
+    "repository":   {
+      "type": "git",
+      "url": "https://github.com/jashkenas/coffee-script.git"
+    }
 }
