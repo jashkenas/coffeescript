@@ -37,12 +37,13 @@ test "array splat expansions with assignments", ->
   arrayEq [0,1,2,3,4], list
 
 test "array splats with nested arrays", ->
-  a = [1]
+  nonce = {}
+  a = [nonce]
   list = [1, 2, a...]
   eq list[0], 1
-  eq list[2], 1
+  eq list[2], nonce
 
-  a = [[1]]
+  a = [[nonce]]
   list = [1, 2, a...]
-  ok list[2] instanceof Array
+  arrayEq list, [1, 2, [nonce]]
 
