@@ -35,3 +35,14 @@ test "array splat expansions with assignments", ->
   eq 0, a
   eq 4, b
   arrayEq [0,1,2,3,4], list
+
+test "array splats with nested arrays", ->
+  a = [1]
+  list = [1, 2, a...]
+  eq list[0], 1
+  eq list[2], 1
+
+  a = [[1]]
+  list = [1, 2, a...]
+  ok list[2] instanceof Array
+
