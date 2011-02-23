@@ -369,9 +369,9 @@ exports.Lexer = class Lexer
       switch tok[0]
         when ')'
           stack.push tok
-        when '('
+        when '(', 'CALL_START'
           if stack.length then stack.pop()
-          else
+          else if tok[0] is '('
             tok[0] = 'PARAM_START'
             return this
     this
