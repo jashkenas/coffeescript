@@ -601,7 +601,7 @@ HEREDOC_ILLEGAL = /\*\//
 
 ASSIGNED        = /^\s*@?([$A-Za-z_][$\w\x7f-\uffff]*|['"].*['"])[^\n\S]*?[:=][^:=>]/
 
-LINE_CONTINUER  = /// ^ \s* (?: , | \??\.(?!\.) | :: ) ///
+LINE_CONTINUER  = /// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///
 
 TRAILING_SPACES = /\s+$/
 
