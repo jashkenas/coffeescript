@@ -37,3 +37,8 @@ eq Number::toString, .42['toString']
 
 eq Number::toString, 4.2.toString
 eq Number::toString, .42.toString
+
+test '#1168: leading floating point suppresses newline', ->
+	eq 1, do ->
+		1
+		.5 + 0.5
