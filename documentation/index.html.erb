@@ -846,6 +846,14 @@ Expressions
       are preserved in the generated code.
     </p>
     <%= code_for('block_comment') %>
+    <p>
+      It is occasionally useful to output block comments that start with
+      <tt>/**</tt> rather than <tt>/*</tt>, for example when outputting
+      annotations for Google's Closure Compiler. Rather than having special
+      syntax for this, you can simply put an additional <tt>*</tt> at the
+      start of your block comment.
+    </p>
+    <%= code_for('block_comment_annotation') %>
 
     <p>
       <span id="regexes" class="bookmark"></span>
@@ -1093,17 +1101,17 @@ Expressions
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">1.0.1
         <span class="timestamp"> &ndash; <small>Jan 31, 2011</small></span>
       </b>
       Fixed a lexer bug with Unicode identifiers. Updated REPL for compatibility
       with Node.js 0.3.7. Fixed requiring relative paths in the REPL. Trailing
-      <tt>return</tt> and <tt>return undefined</tt> are now optimized away. 
-      Stopped requiring the core Node.js <tt>"util"</tt> module for 
+      <tt>return</tt> and <tt>return undefined</tt> are now optimized away.
+      Stopped requiring the core Node.js <tt>"util"</tt> module for
       back-compatibility with Node.js 0.2.5. Fixed a case where a
-      conditional <tt>return</tt> would cause fallthrough in a <tt>switch</tt> 
+      conditional <tt>return</tt> would cause fallthrough in a <tt>switch</tt>
       statement. Optimized empty objects in destructuring assignment.
     </p>
 
