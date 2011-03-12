@@ -59,7 +59,7 @@ test "use `::` operator on keywords `this` and `@`", ->
   eq nonce, obj.withThis()
 
 
-#### Existential Operator (Binary)
+# Existential Operator (Binary)
 
 test "binary existential operator", ->
   nonce = {}
@@ -91,7 +91,7 @@ test "binary existential operator with negative number", ->
   eq -1, a
 
 
-#### Existential Operator (Unary)
+# Existential Operator (Unary)
 
 test "postfix existential operator", ->
   ok (if nonexistent? then false else true)
@@ -114,7 +114,7 @@ test "postfix existential operator on expressions", ->
   eq true, (1 or 0)?, true
 
 
-#### `is`,`isnt`,`==`,`!=`
+# `is`,`isnt`,`==`,`!=`
 
 test "`==` and `is` should be interchangeable", ->
   a = b = 1
@@ -130,7 +130,7 @@ test "`!=` and `isnt` should be interchangeable", ->
   ok a isnt b
 
 
-#### [not] in/of
+# [not] in/of
 
 # - `in` should check if an array contains a value using `indexOf`
 # - `of` should check if a property is defined on an object using `in`
@@ -185,7 +185,7 @@ test "#768: `in` should preserve evaluation order", ->
   eq 3, share
 
 
-#### Chained Comparison
+# Chained Comparison
 
 test "chainable operators", ->
   ok 100 > 10 > 1 > 0 > -1

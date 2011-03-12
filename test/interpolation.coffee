@@ -4,7 +4,7 @@
 # * String Interpolation
 # * Regular Expression Interpolation
 
-#### String Interpolation
+# String Interpolation
 
 # TODO: refactor string interpolation tests
 
@@ -109,7 +109,7 @@ eq 'multiline nested "interpolations" work', """multiline #{
 } work"""
 
 
-#### Regular Expression Interpolation
+# Regular Expression Interpolation
 
 # TODO: improve heregex interpolation tests
 
