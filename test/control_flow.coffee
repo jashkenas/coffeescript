@@ -14,7 +14,7 @@
 # shared identity function
 id = (_) -> if arguments.length is 1 then _ else Array::slice.call(arguments)
 
-#### Conditionals
+# Conditionals
 
 test "basic conditionals", ->
   if false
@@ -198,7 +198,7 @@ test "#748: trailing reserved identifiers", ->
   eq nonce, result
 
 
-#### For / While / Until / Loop
+# For / While / Until / Loop
 
 # TODO: refactor while tests
 
@@ -298,7 +298,7 @@ test "break *not* at the top level", ->
   eq 2, someFunc()
 
 
-#### Switch
+# Switch
 
 # TODO: refactor switch tests
 

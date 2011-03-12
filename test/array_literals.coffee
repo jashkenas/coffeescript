@@ -27,7 +27,7 @@ ok result[0][0] is 'a'
 ok result[1]['b'] is 'c'
 
 
-#### Splats in Array Literals
+# Splats in Array Literals
 
 test "array splat expansions with assignments", ->
   nums = [1, 2, 3]

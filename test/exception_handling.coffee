@@ -5,13 +5,13 @@
 nonce = {}
 
 
-#### Throw
+# Throw
 
 test "basic exception throwing", ->
   throws (-> throw 'error'), 'error'
 
 
-#### Empty Try/Catch/Finally
+# Empty Try/Catch/Finally
 
 test "try can exist alone", ->
   try
@@ -43,7 +43,7 @@ test "single-line try/catch/finally with empty try, empty catch, empty finally",
   try catch err then finally
 
 
-#### Try/Catch/Finally as an Expression
+# Try/Catch/Finally as an Expression
 
 test "return the result of try when no exception is thrown", ->
   result = try
@@ -81,7 +81,7 @@ test "optional catch", ->
   eq nonce, fn()
 
 
-#### Try/Catch/Finally Interaction With Other Constructs
+# Try/Catch/Finally Interaction With Other Constructs
 
 test "try/catch with empty catch as last statement in a function body", ->
   fn = ->

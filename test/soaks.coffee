@@ -6,7 +6,7 @@
 # * Soaked Function Invocation
 
 
-#### Soaked Property Access
+# Soaked Property Access
 
 test "soaked property access", ->
   nonce = {}
@@ -73,7 +73,7 @@ test "operations on soaked properties", ->
   eq yes, delete a?.b.c
 
 
-#### Soaked Method Invocation
+# Soaked Method Invocation
 
 test "soaked method invocation", ->
   nonce = {}
@@ -96,7 +96,7 @@ test "#733", ->
   eq a.b?.c?([2, 3]...), 2
 
 
-#### Soaked Function Invocation
+# Soaked Function Invocation
 
 test "soaked function invocation", ->
   nonce = {}

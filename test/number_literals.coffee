@@ -9,7 +9,7 @@
 # * Non-Integer Literals
 
 
-#### Decimal Integer Literals
+# Decimal Integer Literals
 
 test "call methods directly on numbers", ->
   eq 4, 4.valueOf()
@@ -23,7 +23,7 @@ eq Number::toString, 42['toString']
 eq Number::toString, 42.toString
 
 
-#### Non-Integer Literals
+# Non-Integer Literals
 
 # Decimal number literals.
 value = .25 + .75

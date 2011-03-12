@@ -268,7 +268,7 @@ obj =
 ok obj[obj.index++].method([]...), 'should cache base value'
 
 
-#### Splats in Function Invocations
+# Splats in Function Invocations
 
 test "passing splats to functions", ->
   arrayEq [0..4], id id [0..4]...
@@ -315,7 +315,7 @@ test "#1011: passing a splat to a method of a number", ->
   eq '1011', (131.0).toString [5]...
 
 
-#### Implicit Return
+# Implicit Return
 
 eq ok, new ->
   ok
@@ -355,7 +355,7 @@ test "preserve context when generating closure wrappers for expression conversio
   eq nonce, obj.property
 
 
-#### Explicit Returns
+# Explicit Returns
 
 test "don't wrap \"pure\" statements in a closure", ->
   nonce = {}

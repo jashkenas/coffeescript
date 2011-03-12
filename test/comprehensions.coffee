@@ -341,7 +341,7 @@ test "expression conversion under explicit returns", ->
   arrayEq [nonce,nonce,nonce], fn()
 
 
-#### Implicit Destructuring Assignment
+# Implicit Destructuring Assignment
 
 test "implicit destructuring assignment in object of objects", ->
   a={}; b={}; c={}

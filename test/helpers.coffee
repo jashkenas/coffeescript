@@ -5,7 +5,7 @@
 {starts, ends, compact, count, merge, extend, flatten, del, last} = CoffeeScript.helpers
 
 
-#### `starts`
+# `starts`
 
 test "the `starts` helper tests if a string starts with another string", ->
   ok     starts('01234', '012')
@@ -16,7 +16,7 @@ test "the `starts` helper can take an optional offset", ->
   ok not starts('01234', '01', 1)
 
 
-#### `ends`
+# `ends`
 
 test "the `ends` helper tests if a string ends with another string", ->
   ok     ends('01234', '234')
@@ -27,7 +27,7 @@ test "the `ends` helper can take an optional offset", ->
   ok not ends('01234', '234', 6)
 
 
-#### `compact`
+# `compact`
 
 test "the `compact` helper removes falsey values from an array, preserves truthy ones", ->
   allValues = [1, 0, false, obj={}, [], '', ' ', -1, null, undefined, true]
@@ -35,7 +35,7 @@ test "the `compact` helper removes falsey values from an array, preserves truthy
   arrayEq truthyValues, compact(allValues)
 
 
-#### `count`
+# `count`
 
 test "the `count` helper counts the number of occurances of a string in another string", ->
   eq 1/0, count('abc', '')
@@ -46,7 +46,7 @@ test "the `count` helper counts the number of occurances of a string in another 
   eq 2, count('abcdabcd','abc')
 
 
-#### `merge`
+# `merge`
 
 test "the `merge` helper makes a new object with all properties of the objects given as its arguments", ->
   ary = [0, 1, 2, 3, 4]
@@ -58,7 +58,7 @@ test "the `merge` helper makes a new object with all properties of the objects g
     eq val, merged[key]
 
 
-#### `extend`
+# `extend`
 
 test "the `extend` helper performs a shallow copy", ->
   ary = [0, 1, 2, 3]
@@ -69,7 +69,7 @@ test "the `extend` helper performs a shallow copy", ->
   eq 2, obj[2]
 
 
-#### `flatten`
+# `flatten`
 
 test "the `flatten` helper flattens an array", ->
   success = yes
@@ -77,7 +77,7 @@ test "the `flatten` helper flattens an array", ->
   ok success
 
 
-#### `del`
+# `del`
 
 test "the `del` helper deletes a property from an object and returns the deleted value", ->
   obj = [0, 1, 2]
@@ -85,7 +85,7 @@ test "the `del` helper deletes a property from an object and returns the deleted
   ok 1 not of obj
 
 
-#### `last`
+# `last`
 
 test "the `last` helper returns the last item of an array-like object", ->
   ary = [0, 1, 2, 3, 4]

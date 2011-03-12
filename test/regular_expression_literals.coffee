@@ -35,7 +35,7 @@ test "#584: slashes are allowed unescaped in character classes", ->
   ok /^a\/[/]b$/.test 'a//b'
 
 
-#### Heregexe(n|s)
+# Heregexe(n|s)
 
 test "a heregex will ignore whitespace and comments", ->
   eq /^I'm\x20+[a]\s+Heregex?\/\/\//gim + '', ///

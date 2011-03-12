@@ -21,7 +21,7 @@ test "multiple semicolon-separated statements in parentheticals", ->
   eq nonce, (1; 2; nonce)
   eq nonce, (-> return (1; 2; nonce))()
 
-#### Line Continuation
+# Line Continuation
 
 # Property Access
 
