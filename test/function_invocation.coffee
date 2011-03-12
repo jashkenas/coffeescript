@@ -339,6 +339,12 @@ test "passing splats to functions", ->
   arrayEq [2..6], others
   eq 7, last
 
+test "splat variables are local to the function", ->
+  outer = "x"
+  clobber = (avar, outer...) -> outer
+  clobber "foo", "bar"
+  eq "x", outer
+
 
 test "Issue 894: Splatting against constructor-chained functions.", ->
 
@@ -431,3 +437,9 @@ test "don't wrap 'pure' statements in a closure", ->
     for item in items
       return item if item is nonce
   eq nonce, fn items
+
+#### Unusual `new` Usage
+
+test "usage of `new` is careful about where the invocation parens end up", ->
+  eq 'object', typeof new try Array
+  eq 'object', typeof new do -> ->

@@ -51,3 +51,6 @@ test "#1026", ->
     else
       d
   '''
+
+test "#1050", ->
+  cantCompile "### */ ###"

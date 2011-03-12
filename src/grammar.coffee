@@ -246,14 +246,18 @@ grammar =
     o ':: Identifier',                          -> new Access $2, 'proto'
     o '::',                                     -> new Access new Literal 'prototype'
     o 'Index'
-    o 'Slice',                                  -> new Slice $1
   ]
 
   # Indexing into an object or array using bracket notation.
   Index: [
-    o 'INDEX_START Expression INDEX_END',       -> new Index $2
+    o 'INDEX_START IndexValue INDEX_END',       -> $2
     o 'INDEX_SOAK  Index',                      -> extend $2, soak : yes
     o 'INDEX_PROTO Index',                      -> extend $2, proto: yes
+  ]
+  
+  IndexValue: [
+    o 'Expression',                             -> new Index $1
+    o 'Slice',                                  -> new Slice $1
   ]
 
   # In CoffeeScript, an object literal is simply a list of assignments.
@@ -334,9 +338,9 @@ grammar =
 
   # Array slice literals.
   Slice: [
-    o 'INDEX_START Expression RangeDots Expression INDEX_END', -> new Range $2, $4, $3
-    o 'INDEX_START Expression RangeDots INDEX_END', -> new Range $2, null, $3
-    o 'INDEX_START RangeDots Expression INDEX_END', -> new Range null, $3, $2
+    o 'Expression RangeDots Expression',        -> new Range $1, $3, $2
+    o 'Expression RangeDots',                   -> new Range $1, null, $2
+    o 'RangeDots Expression',                   -> new Range null, $2, $1
   ]
 
   # The **ArgList** is both the list of objects passed into a function call,

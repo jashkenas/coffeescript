@@ -48,7 +48,7 @@ exports.Base = class Base
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
   compileClosure: (o) ->
-    if @jumps()
+    if @jumps() or this instanceof Throw
       throw SyntaxError 'cannot use a pure statement in an expression.'
     o.sharedScope = yes
     Closure.wrap(this).compileNode o
@@ -498,12 +498,31 @@ exports.Call = class Call extends Base
       ifn = unfoldSoak o, call, 'variable'
     ifn
 
+  # Walk through the objects in the arguments, moving over simple values.
+  # This allows syntax like `call a: b, c` into `call({a: b}, c);`
+  filterImplicitObjects: (list) ->
+    nodes = []
+    for node in list
+      unless node.isObject?() and node.base.generated
+        nodes.push node
+        continue
+      obj = null
+      for prop in node.base.properties
+        if prop instanceof Assign
+          nodes.push obj = new Obj properties = [], true if not obj
+          properties.push prop
+        else
+          nodes.push prop
+          obj = null
+    nodes
+
   # Compile a vanilla function call.
   compileNode: (o) ->
     @variable?.front = @front
     if code = Splat.compileSplattedArray o, @args, true
       return @compileSplat o, code
-    args = (arg.compile o, LEVEL_LIST for arg in @args).join ', '
+    args = @filterImplicitObjects @args
+    args = (arg.compile o, LEVEL_LIST for arg in args).join ', '
     if @isSuper
       @superReference(o) + ".call(this#{ args and ', ' + args })"
     else
@@ -700,6 +719,9 @@ exports.Obj = class Obj extends Base
   compileNode: (o) ->
     props = @properties
     return (if @front then '({})' else '{}') unless props.length
+    if @generated
+      for node in props when node instanceof Value
+        throw new Error 'cannot have an implicit value in an implicit object'
     idt         = o.indent += TAB
     lastNoncom  = @lastNonComment @properties
     props = for prop, i in props
@@ -734,11 +756,14 @@ exports.Arr = class Arr extends Base
 
   children: ['objects']
 
+  filterImplicitObjects: Call::filterImplicitObjects
+
   compileNode: (o) ->
     return '[]' unless @objects.length
     o.indent += TAB
-    return code if code = Splat.compileSplattedArray o, @objects
-    code = (obj.compile o, LEVEL_LIST for obj in @objects).join ', '
+    objs = @filterImplicitObjects @objects
+    return code if code = Splat.compileSplattedArray o, objs
+    code = (obj.compile o, LEVEL_LIST for obj in objs).join ', '
     if code.indexOf('\n') >= 0
       "[\n#{o.indent}#{code}\n#{@tab}]"
     else
@@ -1029,6 +1054,7 @@ exports.Code = class Code extends Base
     vars   = []
     exprs  = []
     for param in @params when param.splat
+      o.scope.add param.name.value, 'var' if param.name.value
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
                           new Value new Literal 'arguments'
       break
@@ -1187,10 +1213,13 @@ exports.While = class While extends Base
 exports.Op = class Op extends Base
   constructor: (op, first, second, flip) ->
     return new In first, second if op is 'in'
-    return new Call first, first.params or [] if op is 'do'
+    if op is 'do'
+      call = new Call first, first.params or []
+      call.do = yes
+      return call
     if op is 'new'
-      return first.newInstance() if first instanceof Call
-      first = new Parens first   if first instanceof Code and first.bound
+      return first.newInstance() if first instanceof Call and not first.do
+      first = new Parens first   if first instanceof Code and first.bound or first.do
     @operator = CONVERSIONS[op] or op
     @first    = first
     @second   = second
@@ -1284,6 +1313,7 @@ exports.Op = class Op extends Base
     parts = [op = @operator]
     parts.push ' ' if op in ['new', 'typeof', 'delete'] or
                       op in ['+', '-'] and @first instanceof Op and @first.operator is op
+    @first = new Parens @first if op is 'new' and @first.isStatement o
     parts.push @first.compile o, LEVEL_OP
     parts.reverse() if @flip
     parts.join ''

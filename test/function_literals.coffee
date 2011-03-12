@@ -147,3 +147,11 @@ test "default values with splatted arguments", ->
   eq  5, withSplats(1,1)
   eq  1, withSplats(1,1,1)
   eq  2, withSplats(1,1,1,1)
+
+test "default values with function calls", ->
+  doesNotThrow -> CoffeeScript.compile "(x = f()) ->"
+
+test "arguments vs parameters", ->
+  doesNotThrow -> CoffeeScript.compile "f(x) ->"
+  f = (g) -> g()
+  eq 5, f (x) -> 5

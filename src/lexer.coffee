@@ -80,7 +80,8 @@ exports.Lexer = class Lexer
       @token 'OWN', id
       return id.length
     forcedIdentifier = colon or
-      (prev = last @tokens) and not prev.spaced and prev[0] in ['.', '?.', '@', '::']
+      (prev = last @tokens) and (prev[0] in ['.', '?.', '::'] or
+      not prev.spaced and prev[0] is '@')
     tag = 'IDENTIFIER'
 
     if id in JS_KEYWORDS or
@@ -170,11 +171,11 @@ exports.Lexer = class Lexer
   commentToken: ->
     return 0 unless match = @chunk.match COMMENT
     [comment, here] = match
-    @line += count comment, '\n'
     if here
       @token 'HERECOMMENT', @sanitizeHeredoc here,
         herecomment: true, indent: Array(@indent + 1).join(' ')
       @token 'TERMINATOR', '\n'
+    @line += count comment, '\n'
     comment.length
 
   # Matches JavaScript interpolated directly into the source via backticks.
@@ -343,8 +344,11 @@ exports.Lexer = class Lexer
   # erasing all external indentation on the left-hand side.
   sanitizeHeredoc: (doc, options) ->
     {indent, herecomment} = options
-    return doc if herecomment and 0 > doc.indexOf '\n'
-    unless herecomment
+    if herecomment
+      if HEREDOC_ILLEGAL.test doc
+        throw new Error "block comment cannot contain \"*/\", starting on line #{@line + 1}"
+      return doc if doc.indexOf('\n') <= 0
+    else
       while match = HEREDOC_INDENT.exec doc
         attempt = match[1]
         indent = attempt if indent is null or 0 < attempt.length < indent.length
@@ -367,7 +371,7 @@ exports.Lexer = class Lexer
           stack.push tok
         when '(', 'CALL_START'
           if stack.length then stack.pop()
-          else
+          else if tok[0] is '('
             tok[0] = 'PARAM_START'
             return this
     this
@@ -593,9 +597,11 @@ MULTILINER      = /\n/g
 
 HEREDOC_INDENT  = /\n+([^\n\S]*)/g
 
+HEREDOC_ILLEGAL = /\*\//
+
 ASSIGNED        = /^\s*@?([$A-Za-z_][$\w\x7f-\uffff]*|['"].*['"])[^\n\S]*?[:=][^:=>]/
 
-LINE_CONTINUER  = /// ^ \s* (?: , | \??\.(?!\.) | :: ) ///
+LINE_CONTINUER  = /// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///
 
 TRAILING_SPACES = /\s+$/
 

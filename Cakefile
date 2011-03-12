@@ -94,15 +94,16 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
         #{fs.readFileSync "lib/#{name}.js"}
       };
     """
-  {parser, uglify} = require 'uglify-js'
-  ast = parser.parse """
+  code = """
     this.CoffeeScript = function() {
       function require(path){ return require[path]; }
       #{code}
       return require['./coffee-script']
     }()
   """
-  code = uglify.gen_code uglify.ast_squeeze uglify.ast_mangle ast, extra: yes
+  unless process.env.MINIFY is 'false'
+    {parser, uglify} = require 'uglify-js'
+    code = uglify.gen_code uglify.ast_squeeze uglify.ast_mangle parser.parse code
   fs.writeFileSync 'extras/coffee-script.js', header + '\n' + code
   console.log "built ... running browser tests:"
   invoke 'test:browser'
