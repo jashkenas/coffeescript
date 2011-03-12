@@ -37,18 +37,6 @@ test "array splat expansions with assignments", ->
   arrayEq [0,1,2,3,4], list
 
 
-test "array splats with nested arrays", ->
-  nonce = {}
-  a = [nonce]
-  list = [1, 2, a...]
-  eq list[0], 1
-  eq list[2], nonce
-
-  a = [[nonce]]
-  list = [1, 2, a...]
-  arrayEq list, [1, 2, [nonce]]
-
-
 test "mixed shorthand objects in array lists", ->
 
   arr = [
@@ -69,3 +57,16 @@ test "mixed shorthand objects in array lists", ->
   eq arr.length, 4
   eq arr[2].b, 1
   eq arr[3], 'b'
+
+
+test "array splats with nested arrays", ->
+  nonce = {}
+  a = [nonce]
+  list = [1, 2, a...]
+  eq list[0], 1
+  eq list[2], nonce
+
+  a = [[nonce]]
+  list = [1, 2, a...]
+  arrayEq list, [1, 2, [nonce]]
+

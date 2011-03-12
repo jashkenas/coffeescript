@@ -1054,6 +1054,7 @@ exports.Code = class Code extends Base
     vars   = []
     exprs  = []
     for param in @params when param.splat
+      o.scope.add param.name.value, 'var' if param.name.value
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
                           new Value new Literal 'arguments'
       break
