@@ -1,8 +1,6 @@
 # Assignment
 # ----------
 
-# TODO: organize assignment file
-
 # * Assignment
 # * Compound Assignment
 # * Destructuring Assignment
