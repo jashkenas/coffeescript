@@ -48,7 +48,7 @@ exports.Base = class Base
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
   compileClosure: (o) ->
-    if @jumps()
+    if @jumps() or this instanceof Throw
       throw SyntaxError 'cannot use a pure statement in an expression.'
     o.sharedScope = yes
     Closure.wrap(this).compileNode o
