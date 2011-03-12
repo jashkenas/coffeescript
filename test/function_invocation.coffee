@@ -280,6 +280,12 @@ test "passing splats to functions", ->
   arrayEq [2..6], others
   eq 7, last
 
+test "splat variables are local to the function", ->
+  outer = "x"
+  clobber = (avar, outer...) -> outer
+  clobber "foo", "bar"
+  eq "x", outer
+
 #894: Splatting against constructor-chained functions.
 x = null
 class Foo
