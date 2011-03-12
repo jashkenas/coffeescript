@@ -1,47 +1,43 @@
 # Compilation
 # -----------
 
-# TODO: refactor compilation tests
-
 # helper to assert that a string should fail compilation
 cantCompile = (code) ->
   throws -> CoffeeScript.compile code
 
 
-# Ensure that carriage returns don't break compilation on Windows.
-doesNotThrow -> CoffeeScript.compile 'one\r\ntwo', bare: on
+test "ensure that carriage returns don't break compilation on Windows", ->
+  doesNotThrow -> CoffeeScript.compile 'one\r\ntwo', bare: on
 
-# `globals: on` removes `var`s
-eq -1, CoffeeScript.compile('x = y', bare: on, globals: on).indexOf 'var'
+test "--bare and globals:on", ->
+  eq -1, CoffeeScript.compile('x = y', bare: on, globals: on).indexOf 'var'
+  ok 'passed' is CoffeeScript.eval '"passed"', bare: on, filename: 'test'
 
-ok 'passed' is CoffeeScript.eval '"passed"', bare: on, filename: 'test'
-
-# multiple generated references
-(->
+test "multiple generated references", ->
   a = {b: []}
   a.b[true] = -> this == a.b
   c = 0
   d = []
   ok a.b[0<++c<2] d...
-)()
 
-# Splat on a line by itself is invalid.
-cantCompile "x 'a'\n...\n"
+test "splat on a line by itself is invalid", ->
+  cantCompile "x 'a'\n...\n"
 
-#750
-cantCompile 'f(->'
+test "Issue 750", ->
 
-cantCompile 'a = (break)'
+  cantCompile 'f(->'
 
-cantCompile 'a = (return 5 for item in list)'
+  cantCompile 'a = (break)'
 
-cantCompile 'a = (return 5 while condition)'
+  cantCompile 'a = (return 5 for item in list)'
 
-cantCompile 'a = for x in y\n  return 5'
+  cantCompile 'a = (return 5 while condition)'
 
-# Issue #986: Unicode identifiers.
-λ = 5
-eq λ, 5
+  cantCompile 'a = for x in y\n  return 5'
+
+test "Issue #986: Unicode identifiers", ->
+  λ = 5
+  eq λ, 5
 
 test "don't accidentally stringify keywords", ->
   ok (-> this == 'this')() is false
