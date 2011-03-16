@@ -7,7 +7,7 @@
 # Require the **coffee-script** module to get access to the compiler.
 CoffeeScript = require './coffee-script'
 readline     = require 'readline'
-Script       = process.binding('evals').Script
+{Script}     = require 'vm'
 
 # REPL Setup
 
