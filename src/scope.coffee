@@ -17,7 +17,7 @@ exports.Scope = class Scope
   # as well as a reference to the **Block** node is belongs to, which is
   # where it should declare its variables, and a reference to the function that
   # it wraps.
-  constructor:(@parent, @expressions, @method) ->
+  constructor: (@parent, @expressions, @method) ->
     @variables = [{name: 'arguments', type: 'arguments'}]
     @positions = {}
     Scope.root = this unless @parent
