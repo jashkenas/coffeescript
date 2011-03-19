@@ -7,7 +7,7 @@
 # shared array
 shared = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-#### Slicing
+# Slicing
 
 test "basic slicing", ->
   arrayEq [7, 8, 9]   , shared[7..9]
@@ -53,7 +53,7 @@ test "string slicing", ->
   ok str[-5..] is "vwxyz"
 
 
-#### Splicing
+# Splicing
 
 test "basic splicing", ->
   ary = [0..9]

@@ -1,4 +1,0 @@
-# Command
-# -------
-
-# TODO: add tests

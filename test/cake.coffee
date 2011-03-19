@@ -1,4 +1,0 @@
-# Cake
-# ----
-
-# TODO: add tests

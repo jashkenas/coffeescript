@@ -1,22 +1,27 @@
 {
-    "name":         "coffee-script",
-    "description":  "Unfancy JavaScript",
-    "keywords":     ["javascript", "language", "coffeescript", "compiler"],
-    "author":       "Jeremy Ashkenas",
-    "version":      "1.1.0-pre",
-    "licenses":     [{
-      "type":       "MIT",
-      "url":        "http://github.com/jashkenas/coffee-script/raw/master/LICENSE"
-    }],
-    "engines":      {
-      "node":       ">=0.2.5"
-    },
-    "directories" : {
-      "lib" : "./lib"
-    },
-    "main" : "./lib/coffee-script",
-    "bin":          {
-      "coffee":     "./bin/coffee",
-      "cake":       "./bin/cake"
-    }
+  "name":         "coffee-script",
+  "description":  "Unfancy JavaScript",
+  "keywords":     ["javascript", "language", "coffeescript", "compiler"],
+  "author":       "Jeremy Ashkenas",
+  "version":      "1.1.0-pre",
+  "licenses":     [{
+    "type":       "MIT",
+    "url":        "http://github.com/jashkenas/coffee-script/raw/master/LICENSE"
+  }],
+  "engines":      {
+    "node":       ">=0.2.5"
+  },
+  "directories" : {
+    "lib" : "./lib"
+  },
+  "main" : "./lib/coffee-script",
+  "bin":          {
+    "coffee":     "./bin/coffee",
+    "cake":       "./bin/cake"
+  },
+  "homepage":     "http://coffeescript.org",
+  "repository":   {
+    "type": "git",
+    "url": "git://github.com/jashkenas/coffee-script.git"
+  }
 }

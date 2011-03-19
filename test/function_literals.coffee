@@ -11,7 +11,7 @@
 #   * Parameter Destructuring
 #   * Default Parameters
 
-#### Function Definition
+# Function Definition
 
 x = 1
 y = {}
@@ -46,7 +46,7 @@ del = -> 5
 ok del() is 5
 
 
-#### Bound Function Definition
+# Bound Function Definition
 
 obj =
   bound: ->
@@ -64,7 +64,7 @@ ok obj isnt obj.unbound()
 eq obj, obj.nested()
 
 
-#### Parameter List Features
+# Parameter List Features
 
 test "splats", ->
   arrayEq [0, 1, 2], (((splat...) -> splat) 0, 1, 2)
@@ -147,6 +147,9 @@ test "default values with splatted arguments", ->
   eq  5, withSplats(1,1)
   eq  1, withSplats(1,1,1)
   eq  2, withSplats(1,1,1,1)
+
+test "default values with function calls", ->
+  doesNotThrow -> CoffeeScript.compile "(x = f()) ->"
 
 test "arguments vs parameters", ->
   doesNotThrow -> CoffeeScript.compile "f(x) ->"

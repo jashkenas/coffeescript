@@ -1,8 +1,6 @@
 # Assignment
 # ----------
 
-# TODO: organize assignment file
-
 # * Assignment
 # * Compound Assignment
 # * Destructuring Assignment
@@ -27,7 +25,7 @@ test "compound assignments should not declare", ->
   eq Math, (-> Math or= 0)()
 
 
-#### Compound Assignment
+# Compound Assignment
 
 test "boolean operators", ->
   nonce = {}
@@ -136,7 +134,7 @@ test "more compound assignment", ->
   eq c, val
 
 
-#### Destructuring Assignment
+# Destructuring Assignment
 
 test "empty destructuring assignment", ->
   {} = [] = undefined
@@ -251,7 +249,7 @@ test "#1024", ->
   eq 2 * [] = 3 + 5, 16
 
 
-#### Existential Assignment
+# Existential Assignment
 
 test "existential assignment", ->
   nonce = {}

@@ -48,7 +48,7 @@ exports.Base = class Base
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
   compileClosure: (o) ->
-    if @jumps()
+    if @jumps() or this instanceof Throw
       throw SyntaxError 'cannot use a pure statement in an expression.'
     o.sharedScope = yes
     Closure.wrap(this).compileNode o
@@ -233,7 +233,6 @@ exports.Block = class Block extends Base
     o.scope  = new Scope null, this, null
     o.level  = LEVEL_TOP
     code     = @compileWithDeclarations o
-    code     = code.replace TRAILING_WHITESPACE, ''
     if o.bare then code else "(function() {\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
@@ -1055,6 +1054,7 @@ exports.Code = class Code extends Base
     vars   = []
     exprs  = []
     for param in @params when param.splat
+      o.scope.add param.name.value, 'var' if param.name.value
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
                           new Value new Literal 'arguments'
       break
@@ -1698,8 +1698,7 @@ Closure =
     return expressions if expressions.jumps()
     func = new Code [], Block.wrap [expressions]
     args = []
-    if (mentionsArgs = expressions.contains @literalArgs) or
-       (               expressions.contains @literalThis)
+    if (mentionsArgs = expressions.contains @literalArgs) or expressions.contains @literalThis
       meth = new Literal if mentionsArgs then 'apply' else 'call'
       args = [new Literal 'this']
       args.push new Literal 'arguments' if mentionsArgs
@@ -1769,10 +1768,6 @@ LEVEL_ACCESS = 6  # ...[0]
 
 # Tabs are two spaces for pretty printing.
 TAB = '  '
-
-# Trim out all trailing whitespace, so that the generated code plays nice
-# with Git.
-TRAILING_WHITESPACE = /[ \t]+$/gm
 
 IDENTIFIER = /^[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*$/
 SIMPLENUM  = /^[+-]?\d+$/

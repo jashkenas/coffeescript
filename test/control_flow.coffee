@@ -14,7 +14,7 @@
 # shared identity function
 id = (_) -> if arguments.length is 1 then _ else Array::slice.call(arguments)
 
-#### Conditionals
+# Conditionals
 
 test "basic conditionals", ->
   if false
@@ -198,38 +198,38 @@ test "#748: trailing reserved identifiers", ->
   eq nonce, result
 
 
-#### For / While / Until / Loop
+test "basic `while` loops", ->
 
-# TODO: refactor while tests
+  i = 5
+  list = while i -= 1
+    i * 2
+  ok list.join(' ') is "8 6 4 2"
 
-# While
+  i = 5
+  list = (i * 3 while i -= 1)
+  ok list.join(' ') is "12 9 6 3"
 
-i = 5
-list = while i -= 1
-  i * 2
-ok list.join(' ') is "8 6 4 2"
+  i = 5
+  func   = (num) -> i -= num
+  assert = -> ok i < 5 > 0
+  results = while func 1
+    assert()
+    i
+  ok results.join(' ') is '4 3 2 1'
 
-i = 5
-list = (i * 3 while i -= 1)
-ok list.join(' ') is "12 9 6 3"
+  i = 10
+  results = while i -= 1 when i % 2 is 0
+    i * 2
+  ok results.join(' ') is '16 12 8 4'
 
-i = 5
-func   = (num) -> i -= num
-assert = -> ok i < 5 > 0
-results = while func 1
-  assert()
-  i
-ok results.join(' ') is '4 3 2 1'
 
-i = 10
-results = while i -= 1 when i % 2 is 0
-  i * 2
-ok results.join(' ') is '16 12 8 4'
+test "Issue 759: `if` within `while` condition", ->
 
-#759: `if` within `while` condition
-2 while if 1 then 0
+  2 while if 1 then 0
+
 
 test "assignment inside the condition of a `while` loop", ->
+
   nonce = {}
   count = 1
   a = nonce while count--
@@ -239,47 +239,45 @@ test "assignment inside the condition of a `while` loop", ->
     b = nonce
   eq nonce, b
 
-# While over break.
-i = 0
-result = while i < 10
-  i++
-  break
-arrayEq result, []
 
-# While over continue.
-i = 0
-result = while i < 10
-  i++
-  continue
-arrayEq result, []
+test "While over break.", ->
 
-# Until
+  i = 0
+  result = while i < 10
+    i++
+    break
+  arrayEq result, []
 
-# TODO: refactor until tests
-# TODO: add until tests
 
-value = false
-i = 0
-results = until value
-  value = true if i is 5
-  i++
-ok i is 6
+test "While over continue.", ->
 
-# Loop
+  i = 0
+  result = while i < 10
+    i++
+    continue
+  arrayEq result, []
 
-# TODO: refactor loop tests
-# TODO: add loop tests
 
-i = 5
-list = []
-loop
-  i -= 1
-  break if i is 0
-  list.push i * 2
-ok list.join(' ') is '8 6 4 2'
+test "Basic `until`", ->
 
-# TODO: refactor for tests
-# TODO: add for tests
+  value = false
+  i = 0
+  results = until value
+    value = true if i is 5
+    i++
+  ok i is 6
+
+
+test "Basic `loop`", ->
+
+  i = 5
+  list = []
+  loop
+    i -= 1
+    break if i is 0
+    list.push i * 2
+  ok list.join(' ') is '8 6 4 2'
+
 
 test "break at the top level", ->
   for i in [1,2,3]
@@ -289,7 +287,7 @@ test "break at the top level", ->
   eq 2, result
 
 test "break *not* at the top level", ->
-  someFunc = () ->
+  someFunc = ->
     i = 0
     while ++i < 3
       result = i
@@ -298,121 +296,125 @@ test "break *not* at the top level", ->
   eq 2, someFunc()
 
 
-#### Switch
+test "basic `switch`", ->
 
-# TODO: refactor switch tests
-
-num = 10
-result = switch num
-  when 5 then false
-  when 'a'
-    true
-    true
-    false
-  when 10 then true
-
-
-  # Mid-switch comment with whitespace
-  # and multi line
-  when 11 then false
-  else false
-
-ok result
-
-
-func = (num) ->
-  switch num
-    when 2, 4, 6
+  num = 10
+  result = switch num
+    when 5 then false
+    when 'a'
       true
-    when 1, 3, 5
+      true
       false
-
-ok func(2)
-ok func(6)
-ok !func(3)
-eq func(8), undefined
+    when 10 then true
 
 
-# Ensure that trailing switch elses don't get rewritten.
-result = false
-switch "word"
-  when "one thing"
-    doSomething()
-  else
-    result = true unless false
+    # Mid-switch comment with whitespace
+    # and multi line
+    when 11 then false
+    else false
 
-ok result
-
-result = false
-switch "word"
-  when "one thing"
-    doSomething()
-  when "other thing"
-    doSomething()
-  else
-    result = true unless false
-
-ok result
+  ok result
 
 
-# Should be able to handle switches sans-condition.
-result = switch
-  when null                     then 0
-  when !1                       then 1
-  when '' not of {''}           then 2
-  when [] not instanceof Array  then 3
-  when true is false            then 4
-  when 'x' < 'y' > 'z'          then 5
-  when 'a' in ['b', 'c']        then 6
-  when 'd' in (['e', 'f'])      then 7
-  else ok
+  func = (num) ->
+    switch num
+      when 2, 4, 6
+        true
+      when 1, 3, 5
+        false
 
-eq result, ok
+  ok func(2)
+  ok func(6)
+  ok !func(3)
+  eq func(8), undefined
 
 
-# Should be able to use "@properties" within the switch clause.
-obj = {
-  num: 101
-  func: ->
-    switch @num
-      when 101 then '101!'
-      else 'other'
-}
+test "Ensure that trailing switch elses don't get rewritten.", ->
 
-ok obj.func() is '101!'
+  result = false
+  switch "word"
+    when "one thing"
+      doSomething()
+    else
+      result = true unless false
 
+  ok result
 
-# Should be able to use "@properties" within the switch cases.
-obj = {
-  num: 101
-  func: (yesOrNo) ->
-    result = switch yesOrNo
-      when yes then @num
-      else 'other'
-    result
-}
+  result = false
+  switch "word"
+    when "one thing"
+      doSomething()
+    when "other thing"
+      doSomething()
+    else
+      result = true unless false
 
-ok obj.func(yes) is 101
+  ok result
 
 
-# Switch with break as the return value of a loop.
-i = 10
-results = while i > 0
-  i--
-  switch i % 2
-    when 1 then i
-    when 0 then break
+test "Should be able to handle switches sans-condition.", ->
 
-eq results.join(', '), '9, , 7, , 5, , 3, , 1, '
+  result = switch
+    when null                     then 0
+    when !1                       then 1
+    when '' not of {''}           then 2
+    when [] not instanceof Array  then 3
+    when true is false            then 4
+    when 'x' < 'y' > 'z'          then 5
+    when 'a' in ['b', 'c']        then 6
+    when 'd' in (['e', 'f'])      then 7
+    else ok
+
+  eq result, ok
 
 
-# Issue #997. Switch doesn't fallthrough.
-val = 1
-switch true
-  when true
-    if false
-      return 5
-  else
-    val = 2
+test "Should be able to use `@properties` within the switch clause.", ->
 
-eq val, 1
+  obj = {
+    num: 101
+    func: ->
+      switch @num
+        when 101 then '101!'
+        else 'other'
+  }
+
+  ok obj.func() is '101!'
+
+
+test "Should be able to use `@properties` within the switch cases.", ->
+
+  obj = {
+    num: 101
+    func: (yesOrNo) ->
+      result = switch yesOrNo
+        when yes then @num
+        else 'other'
+      result
+  }
+
+  ok obj.func(yes) is 101
+
+
+test "Switch with break as the return value of a loop.", ->
+
+  i = 10
+  results = while i > 0
+    i--
+    switch i % 2
+      when 1 then i
+      when 0 then break
+
+  eq results.join(', '), '9, , 7, , 5, , 3, , 1, '
+
+
+test "Issue #997. Switch doesn't fallthrough.", ->
+
+  val = 1
+  switch true
+    when true
+      if false
+        return 5
+    else
+      val = 2
+
+  eq val, 1
