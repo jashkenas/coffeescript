@@ -210,3 +210,12 @@ test "some weird indentation in YAML-style object literals", ->
     f: 1
   eq 1, obj[1]
 
+test "default values", ->
+  data = a:5, b:6, c:7
+  {y or 2:y} = data
+  #{a or 5:a} = data
+  {a or 2:a,z or 2:z,c} = data
+  eq y, 2
+  eq a, 5
+  eq z, 2
+  eq c, 7

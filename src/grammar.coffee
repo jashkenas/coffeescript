@@ -141,12 +141,18 @@ grammar =
   # Assignment when it happens within an object literal. The difference from
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
-    o 'ObjAssignable',                          -> new Value $1
-    o 'ObjAssignable : Expression',             -> new Assign new Value($1), $3, 'object'
+    o 'ObjAssignable',                           -> new Value $1
+    o 'ObjAssignable : Expression',              -> new Assign new Value($1), $3, 'object'
+    o 'ObjAssignable LOGIC Expression : Expression', -> new Assign new Value($1), $5, 'object', default: $3
     o 'ObjAssignable :
-       INDENT Expression OUTDENT',              -> new Assign new Value($1), $4, 'object'
+       INDENT Expression OUTDENT',               -> new Assign new Value($1), $4, 'object'
     o 'Comment'
   ]
+  
+  #AssignObjDefault: [
+  #  o '= Expression',                           -> $2
+  #  o '',                                       -> null
+  #]
 
   ObjAssignable: [
     o 'Identifier'

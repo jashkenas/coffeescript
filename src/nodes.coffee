@@ -886,6 +886,7 @@ exports.Class = class Class extends Base
 exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options) ->
     @param = options and options.param
+    @default = options and options.default
 
   # Matchers for detecting class/method names
   METHOD_DEF: /^(?:(\S+)\.prototype\.|\S+?)?\b([$A-Za-z_][$\w\x7f-\uffff]*)$/
@@ -912,9 +913,11 @@ exports.Assign = class Assign extends Base
       @value.name  = match[2]
       @value.klass = match[1] if match[1]
     val = @value.compile o, LEVEL_LIST
+    if @default?
+      val = "#{name} !== null ? #{val} : #{@default.compile o}"
     return "#{name}: #{val}" if @context is 'object'
     unless @variable.isAssignable()
-      throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned."
+      throw SyntaxError "\"#{ @variable.compile o }\" (a #{ typeof @variable }) cannot be assigned."
     unless @context or isValue and (@variable.namespaced or @variable.hasProperties())
       if @param
         o.scope.add name, 'var'
@@ -939,6 +942,7 @@ exports.Assign = class Assign extends Base
     if top and olen is 1 and (obj = objects[0]) not instanceof Splat
       # Unroll simplest cases: `{v} = x` -> `v = x.v`
       if obj instanceof Assign
+        assign = obj
         {variable: {base: idx}, value: obj} = obj
       else
         if obj.base instanceof Parens
@@ -951,6 +955,8 @@ exports.Assign = class Assign extends Base
       acc   = IDENTIFIER.test idx.unwrap().value or 0
       value = new Value value
       value.properties.push new (if acc then Access else Index) idx
+      if assign?.default?
+        value = new Op '||', value, assign.default
       return new Assign(obj, value).compile o
     vvar    = value.compile o, LEVEL_LIST
     assigns = []
@@ -964,6 +970,7 @@ exports.Assign = class Assign extends Base
       if isObject
         if obj instanceof Assign
           # A regular object pattern-match.
+          assign = obj
           {variable: {base: idx}, value: obj} = obj
         else
           # A shorthand `{a, b, @c} = val` pattern-match.
@@ -991,6 +998,8 @@ exports.Assign = class Assign extends Base
         else
           acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
         val = new Value new Literal(vvar), [new (if acc then Access else Index) idx]
+        if assign?.default?
+          val = new Op '||', val, assign.default
       assigns.push new Assign(obj, val, null, param: @param).compile o, LEVEL_TOP
     assigns.push vvar unless top
     code = (compact assigns).join ', '
