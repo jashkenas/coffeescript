@@ -642,10 +642,9 @@ exports.Range = class Range extends Base
     idx      = del o, 'index'
     step     = del o, 'step'
     vars     = "#{idx} = #{@from}" + if @to isnt @toVar then ", #{@to}" else ''
-    intro    = "(#{@fromVar} <= #{@toVar} ? #{idx}"
-    compare  = "#{intro} <#{@equals} #{@toVar} : #{idx} >#{@equals} #{@toVar})"
-    stepPart = if step then step.compile(o) else '1'
-    incr     = if step then "#{idx} += #{stepPart}" else "#{intro} += #{stepPart} : #{idx} -= #{stepPart})"
+    cond     = "#{@fromVar} <= #{@toVar}"
+    compare  = "#{cond} ? #{idx} <#{@equals} #{@toVar} : #{idx} >#{@equals} #{@toVar}"
+    incr     = if step then "#{idx} += #{step.compile(o)}" else "#{cond} ? #{idx}++ : #{idx}--"
     "#{vars}; #{compare}; #{incr}"
 
   # Compile a simple range comprehension, with integers.
@@ -671,11 +670,11 @@ exports.Range = class Range extends Base
     pre    = "\n#{idt}#{result} = [];"
     if @fromNum and @toNum
       o.index = i
-      body = @compileSimple o
+      body    = @compileSimple o
     else
-      vars = "#{i} = #{@from}" + if @to isnt @toVar then ", #{@to}" else ''
-      clause = "#{@fromVar} <= #{@toVar} ?"
-      body   = "var #{vars}; #{clause} #{i} <#{@equals} #{@toVar} : #{i} >#{@equals} #{@toVar}; #{clause} #{i} += 1 : #{i} -= 1"
+      vars    = "#{i} = #{@from}" + if @to isnt @toVar then ", #{@to}" else ''
+      cond    = "#{@fromVar} <= #{@toVar}"
+      body    = "var #{vars}; #{cond} ? #{i} <#{@equals} #{@toVar} : #{i} >#{@equals} #{@toVar}; #{cond} ? #{i}++ : #{i}--"
     post   = "{ #{result}.push(#{i}); }\n#{idt}return #{result};\n#{o.indent}"
     "(function() {#{pre}\n#{idt}for (#{body})#{post}}).apply(this, arguments)"
 
