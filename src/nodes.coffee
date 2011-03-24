@@ -1475,6 +1475,7 @@ exports.For = class For extends Base
     @pattern = @name instanceof Value
     throw SyntaxError 'indexes do not apply to range loops' if @range and @index
     throw SyntaxError 'cannot pattern match over range loops' if @range and @pattern
+    throw SyntaxError 'no multidimensionality for objects' if @indexes?.length > 1 and @object
     @returns = false
 
   children: ['body', 'source', 'guard', 'step']
