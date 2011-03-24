@@ -212,10 +212,18 @@ test "some weird indentation in YAML-style object literals", ->
 
 test "default values", ->
   data = a:5, b:6, c:7
-  {y or 2:y} = data
+  {y or 2} = data
   #{a or 5:a} = data
   {a or 2:a,z or 2:z,c} = data
   eq y, 2
   eq a, 5
   eq z, 2
   eq c, 7
+  
+  class TestThing
+    constructor: ->
+      list = x:4
+      {@x or 2, @y or 3} = list
+      eq @x, 4
+      eq @y, 3
+  new TestThing()

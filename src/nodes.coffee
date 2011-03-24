@@ -326,8 +326,11 @@ exports.Return = class Return extends Base
 # A value, variable or literal or parenthesized, indexed or dotted into,
 # or vanilla.
 exports.Value = class Value extends Base
-  constructor: (base, props, tag) ->
-    return base if not props and base instanceof Value
+  constructor: (base, props, tag, options) ->
+    if not props and base instanceof Value
+      base.default = options.default if options?.default?
+      return base
+    {@default} = options if options?
     @base       = base
     @properties = props or []
     @[tag]      = true if tag
@@ -941,8 +944,8 @@ exports.Assign = class Assign extends Base
     isObject = @variable.isObject()
     if top and olen is 1 and (obj = objects[0]) not instanceof Splat
       # Unroll simplest cases: `{v} = x` -> `v = x.v`
+      origobj = obj
       if obj instanceof Assign
-        assign = obj
         {variable: {base: idx}, value: obj} = obj
       else
         if obj.base instanceof Parens
@@ -955,8 +958,8 @@ exports.Assign = class Assign extends Base
       acc   = IDENTIFIER.test idx.unwrap().value or 0
       value = new Value value
       value.properties.push new (if acc then Access else Index) idx
-      if assign?.default?
-        value = new Op '||', value, assign.default
+      if origobj.default?
+        value = new Op '||', value, origobj.default
       return new Assign(obj, value).compile o
     vvar    = value.compile o, LEVEL_LIST
     assigns = []
@@ -968,9 +971,10 @@ exports.Assign = class Assign extends Base
       # A regular array pattern-match.
       idx = i
       if isObject
+        obj = obj.variable if obj instanceof Assign and not obj.value?
+        origobj = obj
         if obj instanceof Assign
           # A regular object pattern-match.
-          assign = obj
           {variable: {base: idx}, value: obj} = obj
         else
           # A shorthand `{a, b, @c} = val` pattern-match.
@@ -998,8 +1002,8 @@ exports.Assign = class Assign extends Base
         else
           acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
         val = new Value new Literal(vvar), [new (if acc then Access else Index) idx]
-        if assign?.default?
-          val = new Op '||', val, assign.default
+        if origobj?.default?
+          val = new Op '||', val, origobj.default
       assigns.push new Assign(obj, val, null, param: @param).compile o, LEVEL_TOP
     assigns.push vvar unless top
     code = (compact assigns).join ', '

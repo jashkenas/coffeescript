@@ -143,6 +143,7 @@ grammar =
   AssignObj: [
     o 'ObjAssignable',                           -> new Value $1
     o 'ObjAssignable : Expression',              -> new Assign new Value($1), $3, 'object'
+    o 'ObjAssignable LOGIC Expression',              -> new Value $1, null, null, default: $3
     o 'ObjAssignable LOGIC Expression : Expression', -> new Assign new Value($1), $5, 'object', default: $3
     o 'ObjAssignable :
        INDENT Expression OUTDENT',               -> new Assign new Value($1), $4, 'object'
