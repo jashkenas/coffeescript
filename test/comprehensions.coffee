@@ -402,3 +402,8 @@ test "implicit destructuring assignment in array of arrays", ->
   arr = [[a, [b]], [c, [d]], [e, [f]]]
   result = ([y,z] for [y, [z]] in arr)
   arrayEq [[a,b],[c,d],[e,f]], result
+
+test "multidimensional loops over arrays", ->
+  cells = [[0,1],[3,4]]
+  cellsIncreased = (cell+1 for cell, y, x in cells)
+  arrayEq [[1,2],[4,5]], cellsIncreased
