@@ -1464,8 +1464,8 @@ exports.Parens = class Parens extends Base
 # you can map and filter in a single pass.
 exports.For = class For extends Base
   constructor: (body, source) ->
-    {@source, @guard, @step, @name, indexes} = source
-    @index = if indexes then indexes[0]
+    {@source, @guard, @step, @name, @indexes} = source
+    @index = @indexes and @indexes[@indexes.length-1]
     @body    = Block.wrap [body]
     @own     = !!source.own
     @object  = !!source.object
@@ -1492,6 +1492,11 @@ exports.For = class For extends Base
   # comprehensions. Some of the generated code can be shared in common, and
   # some cannot.
   compileNode: (o) ->
+    if @indexes?.length > 1
+      outername = new Literal o.scope.freeVariable 'ref'
+      @body = new For @body, {source: outername, @guard, @step, name: @name, indexes: @indexes.slice 0, -1}
+      @name = outername
+    
     body          = Block.wrap [@body]
     lastJumps     = last(body.expressions)?.jumps()
     @returns      = no if lastJumps and lastJumps instanceof Return
