@@ -1464,7 +1464,8 @@ exports.Parens = class Parens extends Base
 # you can map and filter in a single pass.
 exports.For = class For extends Base
   constructor: (body, source) ->
-    {@source, @guard, @step, @name, @index} = source
+    {@source, @guard, @step, @name, indexes} = source
+    @index = if indexes then indexes[0]
     @body    = Block.wrap [body]
     @own     = !!source.own
     @object  = !!source.object

@@ -428,7 +428,7 @@ grammar =
 
   ForBody: [
     o 'FOR Range',                              -> source: new Value($2)
-    o 'ForStart ForSource',                     -> $2.own = $1.own; $2.name = $1[0]; $2.index = $1[1]; $2
+    o 'ForStart ForSource',                     -> $2.own = $1.own; $2.name = $1.shift(); $2.indexes = $1; $2
   ]
 
   ForStart: [
@@ -449,7 +449,7 @@ grammar =
   # of object comprehensions.
   ForVariables: [
     o 'ForValue',                               -> [$1]
-    o 'ForValue , ForValue',                    -> [$1, $3]
+    o 'ForVariables , ForValue',                -> $1.push $3; $1
   ]
 
   # The source of a comprehension is an array or object with an optional guard
