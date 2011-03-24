@@ -211,14 +211,15 @@ test "some weird indentation in YAML-style object literals", ->
   eq 1, obj[1]
 
 test "default values", ->
-  data = a:5, b:6, c:7
+  data = a:5, b:6, c:7, d:0
   {y or 2} = data
   #{a or 5:a} = data
-  {a or 2:a,z or 2:z,c} = data
+  {a or 2:a,z or 2:z,c, d or 4} = data
   eq y, 2
   eq a, 5
   eq z, 2
   eq c, 7
+  eq d, 0
   
   class TestThing
     constructor: ->

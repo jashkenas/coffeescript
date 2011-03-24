@@ -16,6 +16,14 @@ NO      = -> no
 THIS    = -> this
 NEGATE  = -> @negated = not @negated; this
 
+# wraps something so that it has a default
+wrapDefaulted = (o, undefaulted, standard) ->
+  [assignment, ref] = undefaulted.cache o
+  condition = new Op '!=', assignment, new Literal("null"), false, true
+  conditional = new If condition, ref
+  conditional.addElse standard
+  conditional
+
 #### Base
 
 # The **Base** is the abstract base class for all nodes in the syntax tree.
@@ -959,7 +967,7 @@ exports.Assign = class Assign extends Base
       value = new Value value
       value.properties.push new (if acc then Access else Index) idx
       if origobj.default?
-        value = new Op '||', value, origobj.default
+        value = wrapDefaulted o, value, origobj.default
       return new Assign(obj, value).compile o
     vvar    = value.compile o, LEVEL_LIST
     assigns = []
@@ -1003,7 +1011,7 @@ exports.Assign = class Assign extends Base
           acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
         val = new Value new Literal(vvar), [new (if acc then Access else Index) idx]
         if origobj?.default?
-          val = new Op '||', val, origobj.default
+          val = wrapDefaulted o, val, origobj.default
       assigns.push new Assign(obj, val, null, param: @param).compile o, LEVEL_TOP
     assigns.push vvar unless top
     code = (compact assigns).join ', '
@@ -1224,7 +1232,7 @@ exports.While = class While extends Base
 # Simple Arithmetic and logical operations. Performs some conversion from
 # CoffeeScript operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
-  constructor: (op, first, second, flip) ->
+  constructor: (op, first, second, flip, dontConvert) ->
     return new In first, second if op is 'in'
     if op is 'do'
       call = new Call first, first.params or []
@@ -1233,7 +1241,7 @@ exports.Op = class Op extends Base
     if op is 'new'
       return first.newInstance() if first instanceof Call and not first.do
       first = new Parens first   if first instanceof Code and first.bound or first.do
-    @operator = CONVERSIONS[op] or op
+    @operator = if dontConvert then op else CONVERSIONS[op] or op
     @first    = first
     @second   = second
     @flip     = !!flip
