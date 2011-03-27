@@ -184,6 +184,9 @@ test "#768: `in` should preserve evaluation order", ->
   ok a() not in [b(),c()]
   eq 3, share
 
+test "#1099: empty array after `in` should compile to `false`", ->
+  eq 5 in [], false
+
 
 # Chained Comparison
 
