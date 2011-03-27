@@ -1301,12 +1301,12 @@ exports.Op = class Op extends Base
 
   compileExistence: (o) ->
     if @first.isComplex()
-      ref = o.scope.freeVariable 'ref'
-      fst = new Parens new Assign new Literal(ref), @first
+      ref = new Literal o.scope.freeVariable 'ref'
+      fst = new Parens new Assign ref, @first
     else
       fst = @first
-      ref = fst.compile o
-    new Existence(fst).compile(o) + " ? #{ref} : #{ @second.compile o, LEVEL_LIST }"
+      ref = fst
+    new If(new Existence(fst), ref, type: 'if').addElse(@second).compile o
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
