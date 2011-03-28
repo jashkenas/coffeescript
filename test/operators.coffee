@@ -185,7 +185,8 @@ test "#768: `in` should preserve evaluation order", ->
   eq 3, share
 
 test "#1099: empty array after `in` should compile to `false`", ->
-  eq 5 in [], false
+  eq 1, [5 in []].length
+  eq false, do -> return 0 in []
 
 
 # Chained Comparison
