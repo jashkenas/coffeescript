@@ -58,6 +58,7 @@ test "mixed shorthand objects in array lists", ->
   eq arr[2].b, 1
   eq arr[3], 'b'
 
+
 test "array splats with nested arrays", ->
   nonce = {}
   a = [nonce]

@@ -229,6 +229,10 @@ test "destructuring assignment against an expression", ->
   eq a, y
   eq b, z
 
+test "bracket insertion when necessary", ->
+  [a] = [0] ? [1]
+  eq a, 0
+
 # for implicit destructuring assignment in comprehensions, see the comprehension tests
 
 test "destructuring assignment with context (@) properties", ->
