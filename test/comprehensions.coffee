@@ -402,3 +402,8 @@ test "implicit destructuring assignment in array of arrays", ->
   arr = [[a, [b]], [c, [d]], [e, [f]]]
   result = ([y,z] for [y, [z]] in arr)
   arrayEq [[a,b],[c,d],[e,f]], result
+
+test "issue #1124: don't assign a variable in two scopes", ->
+  lista = [1, 2, 3, 4, 5]
+  listb = (_i + 1 for _i in lista)
+  arrayEq [2, 3, 4, 5, 6], listb
