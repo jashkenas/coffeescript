@@ -1419,9 +1419,9 @@ exports.Existence = class Existence extends Base
     code = @expression.compile o, LEVEL_OP
     code = if IDENTIFIER.test(code) and not o.scope.check code
       if @negated
-        "typeof #{code} == \"undefined\" || #{code} === null"
+        "typeof #{code} == \"undefined\" || #{code} == null"
       else
-        "typeof #{code} != \"undefined\" && #{code} !== null"
+        "typeof #{code} != \"undefined\" && #{code} != null"
     else
       sym = if @negated then '==' else '!='
       "#{code} #{sym} null"
