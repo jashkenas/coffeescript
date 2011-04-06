@@ -12,6 +12,11 @@ Script       = process.binding('evals').Script
 
 # REPL Setup
 
+# Config
+enableColours = no
+if process.platform isnt 'win32'
+  enableColours = !process.env.NODE_DISABLE_COLORS
+
 # Start by opening up `stdin` and `stdout`.
 stdin = process.openStdin()
 stdout = process.stdout
@@ -33,7 +38,7 @@ run = (buffer) ->
   backlog = ''
   try
     val = CoffeeScript.eval code, bare: on, globals: on, filename: 'repl'
-    process.stdout.write inspect(val, no, 2, yes) + '\n' if val isnt undefined
+    process.stdout.write inspect(val, no, 2, enableColours) + '\n' if val isnt undefined
   catch err
     error err
   repl.prompt()
