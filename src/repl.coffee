@@ -7,6 +7,7 @@
 # Require the **coffee-script** module to get access to the compiler.
 CoffeeScript = require './coffee-script'
 readline     = require 'readline'
+{inspect}    = require 'util'
 Script       = process.binding('evals').Script
 
 # REPL Setup
@@ -32,7 +33,7 @@ run = (buffer) ->
   backlog = ''
   try
     val = CoffeeScript.eval code, bare: on, globals: on, filename: 'repl'
-    process.stdout.write val + '\n' if val isnt undefined
+    process.stdout.write inspect(val, no, 2, yes) + '\n' if val isnt undefined
   catch err
     error err
   repl.prompt()
