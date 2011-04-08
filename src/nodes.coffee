@@ -872,6 +872,7 @@ exports.Class = class Class extends Base
     @walkBody name
     @body.expressions.unshift new Extends lname, @parent if @parent
     @ensureConstructor name
+    @body.expressions.push new Assign (new Value lname,[new Access new Literal "name"]), (new Value new Literal "'#{name}'")
     @body.expressions.push lname
     @addBoundFunctions o
 
