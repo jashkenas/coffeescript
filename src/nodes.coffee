@@ -991,7 +991,7 @@ exports.Assign = class Assign extends Base
         val = new Value new Literal(vvar), [new (if acc then Access else Index) idx]
       assigns.push new Assign(obj, val, null, param: @param).compile o, LEVEL_TOP
     assigns.push vvar unless top
-    code = (compact assigns).join ', '
+    code = assigns.join ', '
     if o.level < LEVEL_LIST then code else "(#{code})"
 
   # When compiling a conditional assignment, take care to ensure that the
