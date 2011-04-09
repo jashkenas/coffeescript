@@ -642,10 +642,9 @@ exports.Range = class Range extends Base
     idx      = del o, 'index'
     step     = del o, 'step'
     vars     = "#{idx} = #{@from}" + if @to isnt @toVar then ", #{@to}" else ''
-    intro    = "(#{@fromVar} <= #{@toVar} ? #{idx}"
-    compare  = "#{intro} <#{@equals} #{@toVar} : #{idx} >#{@equals} #{@toVar})"
-    stepPart = if step then step.compile(o) else '1'
-    incr     = if step then "#{idx} += #{stepPart}" else "#{intro} += #{stepPart} : #{idx} -= #{stepPart})"
+    cond     = "#{@fromVar} <= #{@toVar}"
+    compare  = "#{cond} ? #{idx} <#{@equals} #{@toVar} : #{idx} >#{@equals} #{@toVar}"
+    incr     = if step then "#{idx} += #{step.compile(o)}" else "#{cond} ? #{idx}++ : #{idx}--"
     "#{vars}; #{compare}; #{incr}"
 
   # Compile a simple range comprehension, with integers.
@@ -671,11 +670,11 @@ exports.Range = class Range extends Base
     pre    = "\n#{idt}#{result} = [];"
     if @fromNum and @toNum
       o.index = i
-      body = @compileSimple o
+      body    = @compileSimple o
     else
-      vars = "#{i} = #{@from}" + if @to isnt @toVar then ", #{@to}" else ''
-      clause = "#{@fromVar} <= #{@toVar} ?"
-      body   = "var #{vars}; #{clause} #{i} <#{@equals} #{@toVar} : #{i} >#{@equals} #{@toVar}; #{clause} #{i} += 1 : #{i} -= 1"
+      vars    = "#{i} = #{@from}" + if @to isnt @toVar then ", #{@to}" else ''
+      cond    = "#{@fromVar} <= #{@toVar}"
+      body    = "var #{vars}; #{cond} ? #{i} <#{@equals} #{@toVar} : #{i} >#{@equals} #{@toVar}; #{cond} ? #{i}++ : #{i}--"
     post   = "{ #{result}.push(#{i}); }\n#{idt}return #{result};\n#{o.indent}"
     "(function() {#{pre}\n#{idt}for (#{body})#{post}}).apply(this, arguments)"
 
@@ -932,7 +931,6 @@ exports.Assign = class Assign extends Base
     {value}   = this
     {objects} = @variable.base
     unless olen = objects.length
-      return false if top
       code = value.compile o
       return if o.level >= LEVEL_OP then "(#{code})" else code
     isObject = @variable.isObject()
@@ -993,7 +991,7 @@ exports.Assign = class Assign extends Base
         val = new Value new Literal(vvar), [new (if acc then Access else Index) idx]
       assigns.push new Assign(obj, val, null, param: @param).compile o, LEVEL_TOP
     assigns.push vvar unless top
-    code = (compact assigns).join ', '
+    code = assigns.join ', '
     if o.level < LEVEL_LIST then code else "(#{code})"
 
   # When compiling a conditional assignment, take care to ensure that the
@@ -1301,12 +1299,12 @@ exports.Op = class Op extends Base
 
   compileExistence: (o) ->
     if @first.isComplex()
-      ref = o.scope.freeVariable 'ref'
-      fst = new Parens new Assign new Literal(ref), @first
+      ref = new Literal o.scope.freeVariable 'ref'
+      fst = new Parens new Assign ref, @first
     else
       fst = @first
-      ref = fst.compile o
-    new Existence(fst).compile(o) + " ? #{ref} : #{ @second.compile o, LEVEL_LIST }"
+      ref = fst
+    new If(new Existence(fst), ref, type: 'if').addElse(@second).compile o
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
@@ -1340,6 +1338,7 @@ exports.In = class In extends Base
     [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
     tests = for item, i in @array.base.objects
       (if i then ref else sub) + cmp + item.compile o, LEVEL_OP
+    return 'false' if tests.length is 0
     tests = tests.join cnj
     if o.level < LEVEL_OP then tests else "(#{tests})"
 
@@ -1419,9 +1418,9 @@ exports.Existence = class Existence extends Base
     code = @expression.compile o, LEVEL_OP
     code = if IDENTIFIER.test(code) and not o.scope.check code
       if @negated
-        "typeof #{code} == \"undefined\" || #{code} === null"
+        "typeof #{code} == \"undefined\" || #{code} == null"
       else
-        "typeof #{code} != \"undefined\" && #{code} !== null"
+        "typeof #{code} != \"undefined\" && #{code} != null"
     else
       sym = if @negated then '==' else '!='
       "#{code} #{sym} null"
