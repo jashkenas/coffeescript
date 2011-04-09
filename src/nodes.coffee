@@ -931,7 +931,6 @@ exports.Assign = class Assign extends Base
     {value}   = this
     {objects} = @variable.base
     unless olen = objects.length
-      return false if top
       code = value.compile o
       return if o.level >= LEVEL_OP then "(#{code})" else code
     isObject = @variable.isObject()
