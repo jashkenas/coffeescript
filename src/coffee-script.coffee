@@ -60,9 +60,15 @@ exports.run = (code, options) ->
   # Set the filename.
   root.filename = process.argv[1] =
       if options.filename then fs.realpathSync(options.filename) else '.'
-  
+
   # Clear the module cache.
   root.moduleCache = {} if root.moduleCache
+
+  # Assign paths for node_modules loading
+  if process.binding('natives').module
+    {Module} = require 'module'
+    root.paths = Module._nodeModulePaths path.dirname options.filename
+
   # Compile.
   if path.extname(root.filename) isnt '.coffee' or require.extensions
     root._compile compile(code, options), root.filename
