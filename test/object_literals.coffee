@@ -210,3 +210,8 @@ test "some weird indentation in YAML-style object literals", ->
     f: 1
   eq 1, obj[1]
 
+test "#1274: `{} = a()` compiles to `false` instead of `a()`", ->
+  a = false
+  fn = -> a = true
+  {} = fn()
+  ok a

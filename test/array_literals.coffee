@@ -70,3 +70,8 @@ test "array splats with nested arrays", ->
   list = [1, 2, a...]
   arrayEq list, [1, 2, [nonce]]
 
+test "#1274: `[] = a()` compiles to `false` instead of `a()`", ->
+  a = false
+  fn = -> a = true
+  [] = fn()
+  ok a
