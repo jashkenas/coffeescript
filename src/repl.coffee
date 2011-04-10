@@ -7,9 +7,15 @@
 # Require the **coffee-script** module to get access to the compiler.
 CoffeeScript = require './coffee-script'
 readline     = require 'readline'
+{inspect}    = require 'util'
 {Script}     = require 'vm'
 
 # REPL Setup
+
+# Config
+enableColours = no
+unless process.platform is 'win32'
+  enableColours = not process.env.NODE_DISABLE_COLORS
 
 # Start by opening up `stdin` and `stdout`.
 stdin = process.openStdin()
@@ -32,7 +38,8 @@ run = (buffer) ->
   backlog = ''
   try
     val = CoffeeScript.eval code, bare: on, globals: on, filename: 'repl'
-    process.stdout.write val + '\n' if val isnt undefined
+    unless val is undefined
+      process.stdout.write inspect(val, no, 2, enableColours) + '\n'
   catch err
     error err
   repl.prompt()
