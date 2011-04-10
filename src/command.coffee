@@ -86,7 +86,7 @@ compileScripts = ->
             fs.readFile source, (err, code) ->
               if opts.join
                 contents[sources.indexOf source] = code.toString()
-                compileJoin() if helpers.compact(contents).length is sources.length
+                compileJoin() if helpers.compact(contents).length > 0
               else
                 compileScript(source, code.toString(), base)
             watch source, base if opts.watch and not opts.join
