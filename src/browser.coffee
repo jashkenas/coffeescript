@@ -34,7 +34,7 @@ CoffeeScript.load = (url, options, callback) ->
     if xhr.readyState is 4
       error = result = null
       if xhr.status is 200
-        try result = CoffeeScript.run xhr.responseText catch error then error = exception
+        try result = CoffeeScript.run xhr.responseText catch exception then error = exception
       else
         error = new Error "An error occurred while loading the script `#{url}`."
       callback? error, result
