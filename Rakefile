@@ -4,22 +4,42 @@ require 'fileutils'
 require 'rake/testtask'
 require 'json'
 
-desc "Build the documentation page"
-task :doc do
-  source = 'documentation/index.html.erb'
-  child = fork { exec "bin/coffee -bcw -o documentation/js documentation/coffee/*.coffee" }
-  at_exit { Process.kill("INT", child) }
-  Signal.trap("INT") { exit }
-  loop do
-    mtime = File.stat(source).mtime
-    if !@mtime || mtime > @mtime
-      rendered = ERB.new(File.read(source)).result(binding)
-      File.open('index.html', 'w+') {|f| f.write(rendered) }
+namespace :doc do
+
+  desc "Build the documentation page"
+  task :build => :check_dependencies do
+    source = 'documentation/index.html.erb'
+    child = fork { exec "bin/coffee -bcw -o documentation/js documentation/coffee/*.coffee" }
+    at_exit { Process.kill("INT", child) }
+    Signal.trap("INT") { exit }
+    loop do
+      mtime = File.stat(source).mtime
+      if !@mtime || mtime > @mtime
+        rendered = ERB.new(File.read(source)).result(binding)
+        File.open('index.html', 'w+') {|f| f.write(rendered) }
+      end
+      @mtime = mtime
+      sleep 1
     end
-    @mtime = mtime
-    sleep 1
   end
+
+  desc "Check dependencies needed to build documentation page"
+  task :check_dependencies do
+    unless Gem.available?('ultraviolet')
+      message = <<-EOM
+        Ultraviolet is missing, please install it using: $ gem install ultraviolet
+        Warning: Ultraviolet gem depends on the Oniguruma gem, wich has a native
+        dependency with the development file for the Oniguruma regular expressions 
+        library
+      EOM
+      fail message
+    end
+  end
+
 end
+
+desc "Build the documentation page"
+task :doc => 'doc:build'
 
 desc "Build coffee-script-source gem"
 task :gem do
@@ -76,3 +96,4 @@ end
     end
   end
 end
+
