@@ -66,7 +66,7 @@ exports.Scope = class Scope
   # compiler-generated variable. `_var`, `_var2`, and so on...
   freeVariable: (type) ->
     index = 0
-    index++ while @check((temp = @temporary type, index), true)
+    index++ while @check((temp = @temporary type, index))
     @add temp, 'var', yes
     temp
 
