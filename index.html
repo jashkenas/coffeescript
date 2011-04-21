@@ -170,7 +170,7 @@ math <span class="Keyword">=</span> {
   winner <span class="Keyword">=</span> arguments[<span class="Number">0</span>], runners <span class="Keyword">=</span> <span class="Number">2</span> <span class="Keyword">&lt;=</span> arguments.<span class="LibraryConstant">length</span> ? __slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">1</span>) : [];
   <span class="Keyword">return</span> <span class="LibraryFunction">print</span>(winner, runners);
 };
-<span class="Keyword">if</span> (<span class="Keyword">typeof</span> elvis <span class="Keyword">!</span><span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> elvis <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) {
+<span class="Keyword">if</span> (<span class="Keyword">typeof</span> elvis <span class="Keyword">!</span><span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> elvis <span class="Keyword">!</span><span class="Keyword">=</span> <span class="BuiltInConstant">null</span>) {
   <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>I knew it!<span class="String">&quot;</span></span>);
 }
 cubes <span class="Keyword">=</span> (<span class="Storage">function</span>() {
@@ -205,7 +205,7 @@ race = function() {
   winner = arguments[0], runners = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
   return print(winner, runners);
 };
-if (typeof elvis != "undefined" && elvis !== null) {
+if (typeof elvis != "undefined" && elvis != null) {
   alert("I knew it!");
 }
 cubes = (function() {
@@ -1201,17 +1201,25 @@ footprints <span class="Keyword">=</span> yeti <span class="Keyword">?</span> <s
 
 
 </pre><pre class="idle"><span class="Storage">var</span> footprints, solipsism;
-<span class="Keyword">if</span> ((<span class="Keyword">typeof</span> mind <span class="Keyword">!</span><span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> <span class="Keyword">!</span>(<span class="Keyword">typeof</span> world <span class="Keyword">!</span><span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>)) {
+<span class="Keyword">if</span> ((<span class="Keyword">typeof</span> mind <span class="Keyword">!</span><span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> mind <span class="Keyword">!</span><span class="Keyword">=</span> <span class="BuiltInConstant">null</span>) <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> <span class="Keyword">!</span>(<span class="Keyword">typeof</span> world <span class="Keyword">!</span><span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> world <span class="Keyword">!</span><span class="Keyword">=</span> <span class="BuiltInConstant">null</span>)) {
   solipsism <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
 }
-<span class="Keyword">typeof</span> speed <span class="Keyword">!</span><span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> speed <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span> ? speed : speed <span class="Keyword">=</span> <span class="Number">75</span>;
-footprints <span class="Keyword">=</span> <span class="Keyword">typeof</span> yeti <span class="Keyword">!</span><span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> yeti <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span> ? yeti : <span class="String"><span class="String">&quot;</span>bear<span class="String">&quot;</span></span>;
+<span class="Keyword">if</span> (<span class="Keyword">typeof</span> speed <span class="Keyword">!</span><span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> speed <span class="Keyword">!</span><span class="Keyword">=</span> <span class="BuiltInConstant">null</span>) {
+  speed;
+} <span class="Keyword">else</span> {
+  speed <span class="Keyword">=</span> <span class="Number">75</span>;
+};
+footprints <span class="Keyword">=</span> <span class="Keyword">typeof</span> yeti <span class="Keyword">!</span><span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> yeti <span class="Keyword">!</span><span class="Keyword">=</span> <span class="BuiltInConstant">null</span> ? yeti : <span class="String"><span class="String">&quot;</span>bear<span class="String">&quot;</span></span>;
 </pre><script>window.example21 = "solipsism = true if mind? and not world?\n\nspeed ?= 75\n\nfootprints = yeti ? \"bear\"\n\nalert footprints"</script><div class='minibutton load' onclick='javascript: loadConsole(example21);'>load</div><div class='minibutton ok' onclick='javascript: var footprints, solipsism;
-if ((typeof mind != "undefined" && mind !== null) && !(typeof world != "undefined" && world !== null)) {
+if ((typeof mind != "undefined" && mind != null) && !(typeof world != "undefined" && world != null)) {
   solipsism = true;
 }
-typeof speed != "undefined" && speed !== null ? speed : speed = 75;
-footprints = typeof yeti != "undefined" && yeti !== null ? yeti : "bear";;alert(footprints);'>run: footprints</div><br class='clear' /></div>
+if (typeof speed != "undefined" && speed != null) {
+  speed;
+} else {
+  speed = 75;
+};
+footprints = typeof yeti != "undefined" && yeti != null ? yeti : "bear";;alert(footprints);'>run: footprints</div><br class='clear' /></div>
     <p>
       The accessor variant of the existential operator <tt>?.</tt> can be used to soak
       up null references in a chain of properties. Use it instead
@@ -1832,6 +1840,10 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
 
     <ul>
       <li>
+        <b>sstephenson</b>'s <a href="http://pow.cx/">Pow</a>,
+        a zero-configuration Rack server, with comprehensive annotated source.
+      </li>
+      <li>
         <b>frank06</b>'s <a href="http://riakjs.org/">riak-js</a>, a Node.js client for
         <a href="http://www.basho.com/Riak.html">Riak</a>, with support for HTTP
         and Protocol Buffers.
@@ -1839,6 +1851,10 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       <li>
         <b>technoweenie</b>'s <a href="https://github.com/technoweenie/coffee-resque">Coffee-Resque</a>,
         a port of <a href="https://github.com/defunkt/resque">Resque</a> for Node.js.
+      </li>
+      <li>
+        <b>assaf</b>'s <a href="http://zombie.labnotes.org/">Zombie.js</a>,
+        A headless, full-stack, faux-browser testing library for Node.js.
       </li>
       <li>
         <b>jashkenas</b>' <a href="documentation/docs/underscore.html">Underscore.coffee</a>, a port
@@ -1852,10 +1868,6 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       <li>
         <b>josh</b>'s <a href="http://josh.github.com/nack/">nack</a>, a Node.js-powered
         <a href="http://rack.rubyforge.org/">Rack</a> server.
-      </li>
-      <li>
-        <b>sstephenson</b>'s <a href="http://sstephenson.github.com/strscan-js/">StringScanner</a>,
-        a simple tokenizer and lexical scanner for JavaScript strings.
       </li>
     </ul>
 
@@ -1879,106 +1891,23 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       </li>
       <li>
         <a href="http://github.com/jashkenas/coffee-script/issues">CoffeeScript Issues</a><br />
-        Bugs reports, feature requests, and general discussion all belong here.
+        Bug reports, feature proposals, and ideas for changes to the language belong here.
       </li>
       <li>
-        If you'd like to chat, stop by <tt>#coffeescript</tt> on Freenode in the
-        IRC client of your choice, or on
-        <a href="http://webchat.freenode.net/">webchat.freenode.net</a>.
+        <a href="https://groups.google.com/forum/#!forum/coffeescript">CoffeeScript Google Group</a><br />
+        If you'd like to ask a question, the mailing list is a good place to get help.
       </li>
       <li>
-        <b>satyr</b>'s <a href="http://github.com/satyr/coco">Coco</a>
-        &mdash; An avant-garde dialect of CoffeeScript that frequently pioneers
-        features and optimizations, some of which CoffeeScript later adopts.
-        Check out the <a href="https://github.com/satyr/coco/wiki/additions">list of additions</a>
-        to the language.
+        <a href="http://github.com/jashkenas/coffee-script/wiki">The CoffeeScript Wiki</a><br />
+        If you've ever learned a neat CoffeeScript tip or trick, or ran into a gotcha &mdash; share it on the wiki.
+        The wiki also serves as a directory of handy 
+        <a href="http://github.com/jashkenas/coffee-script/wiki/Text-editor-plugins">text editor extensions</a>,
+        <a href="http://github.com/jashkenas/coffee-script/wiki/Web-framework-plugins">web framework plugins</a>,
+        and general <a href="http://github.com/jashkenas/coffee-script/wiki/Build-tools">CoffeeScript build tools</a>.
       </li>
       <li>
-        <b>yeungda</b>'s <a href="http://github.com/yeungda/jcoffeescript">JCoffeeScript</a>
-        &mdash; A Java Library that uses Rhino to compile CoffeeScript, allowing
-        compilation within Java projects or on systems that Node.js doesn't support.
-      </li>
-      <li>
-        <b>defunkt</b>'s <a href="http://github.com/defunkt/coffee-mode">CoffeeScript Major Mode</a>
-        &mdash; a Emacs major mode that provides syntax highlighting, indentation
-        support, and some bonus commands.
-      </li>
-      <li>
-        <b>jashkenas</b>' <a href="http://github.com/jashkenas/coffee-script-tmbundle">CoffeeScript TextMate Bundle</a>
-        &mdash; which provides syntax highlighting, snippet expansion, and the
-        ability to run bits of CoffeeScript from within TextMate itself.
-      </li>
-      <li>
-        <b>kchmck</b>'s <a href="http://github.com/kchmck/vim-coffee-script">Vim CoffeeScript</a>
-        &mdash; which adds Vim syntax highlighting and indentation support.
-      </li>
-      <li>
-        <b>nfiniteset</b>'s <a href="https://github.com/nfiniteset/CoffeeScript.mode">CoffeeScript.mode</a>
-        &mdash; a syntax mode that provides highlighting for SubEthaEdit and Coda.
-      </li>
-      <li>
-        <b>wavded</b>'s <a href="http://github.com/wavded/gedit-coffeescript">gedit-coffeescript</a>
-        &mdash; a CoffeeScript syntax highlighter for the gedit text editor.
-      </li>
-      <li>
-        <b>yeungda</b>'s <a href="http://yeungda.github.com/coffeescript-idea/">coffeescript-idea</a>
-        &mdash; a plugin for IntelliJ IDEA and RubyMine providing syntax highlighting.
-      </li>
-      <li>
-        <b>dhotson</b>'s <a href="https://github.com/dhotson/coffeescript-jedit">coffeescript-jedit</a>
-        &mdash; which provides syntax highlighting support in jEdit.
-      </li>
-      <li>
-        <b>mattly</b>'s <a href="http://github.com/mattly/rack-coffee">rack-coffee</a>
-        &mdash; a small Rack middleware for serving CoffeeScript files as
-        compiled JavaScript on the fly.
-      </li>
-      <li>
-        <b>jnicklas</b>'s <a href="http://github.com/jnicklas/bistro_car">BistroCar</a>
-        &mdash; a plugin that serves and bundles CoffeeScript from within your
-        Rails application.
-      </li>
-      <li>
-        <b>dsc</b>'s <a href="http://github.com/dsc/coffeecup">CoffeeCup</a>
-        &mdash; a Python WSGI middleware that compiles CoffeeScript to JavaScript
-        on-demand during development.
-      </li>
-      <li>
-        <b>sutto</b>'s <a href="http://github.com/Sutto/barista">Barista</a>
-        &mdash; a BistroCar alternative that integrates well with
-        <a href="http://documentcloud.github.com/jammit">Jammit</a> and Rails 3.
-      </li>
-      <li>
-        <b>inem</b> and <b>gerad</b>'s <a href="http://github.com/gerad/coffee-haml-filter">coffee-haml-filter</a>
-        &mdash; a custom filter for rendering CoffeeScript inline within
-        <a href="http://haml-lang.com/">HAML</a> templates.
-      </li>
-      <li>
-        <b>andrzejsliwa</b>'s <a href="http://github.com/andrzejsliwa/coffeeapp">CoffeeApp</a>
-        &mdash; a CoffeeScript wrapper for CouchApps, web applications served
-        directly from CouchDB.
-      </li>
-      <li>
-        <b>sstephenson</b>'s <a href="http://github.com/sstephenson/eco">Eco</a>
-        &mdash; high-performance embedded CoffeeScript templates, after EJS and ERB.
-      </li>
-      <li>
-        <b>mauricemach</b>'s <a href="http://github.com/mauricemach/coffeekup">CoffeeKup</a>
-        &mdash; Markup as CoffeeScript. After _why's
-        <a href="http://markaby.github.com/">Markaby</a>.
-      </li>
-      <li>
-        <b>jashkenas</b>' <a href="http://jashkenas.github.com/docco/">Docco</a>
-        &mdash; a quick-and-dirty literate-programming-style documentation generator
-        for CoffeeScript. Used to produce the annotated source.
-      </li>
-      <li>
-        <b>naturalethic</b>'s <a href="http://github.com/naturalethic/coffee-mongo">coffee-mongo</a>
-        &mdash; an asynchronous MongoDB ORM, for use with Node.js and CoffeeScript.
-      </li>
-      <li>
-        <b>mauricemach</b>'s <a href="https://github.com/mauricemach/zappa">Zappa</a>
-        &mdash; a DSL for building web apps, built on top of Express and Socket.IO.
+        <a href="http://github.com/jashkenas/coffee-script/wiki/FAQ">The FAQ</a><br />
+        Perhaps your CoffeeScript-related question has been asked before. Check the FAQ first.
       </li>
     </ul>
 
@@ -2001,17 +1930,17 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">1.0.1
         <span class="timestamp"> &ndash; <small>Jan 31, 2011</small></span>
       </b>
       Fixed a lexer bug with Unicode identifiers. Updated REPL for compatibility
       with Node.js 0.3.7. Fixed requiring relative paths in the REPL. Trailing
-      <tt>return</tt> and <tt>return undefined</tt> are now optimized away. 
-      Stopped requiring the core Node.js <tt>"util"</tt> module for 
+      <tt>return</tt> and <tt>return undefined</tt> are now optimized away.
+      Stopped requiring the core Node.js <tt>"util"</tt> module for
       back-compatibility with Node.js 0.2.5. Fixed a case where a
-      conditional <tt>return</tt> would cause fallthrough in a <tt>switch</tt> 
+      conditional <tt>return</tt> would cause fallthrough in a <tt>switch</tt>
       statement. Optimized empty objects in destructuring assignment.
     </p>
 
