@@ -907,18 +907,18 @@ exports.Assign = class Assign extends Base
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
     name = @variable.compile o, LEVEL_LIST
-    if @value instanceof Code and match = @METHOD_DEF.exec name
-      @value.name  = match[2]
-      @value.klass = match[1] if match[1]
-    val = @value.compile o, LEVEL_LIST
-    return "#{name}: #{val}" if @context is 'object'
-    unless @variable.isAssignable()
+    unless @context or @variable.isAssignable()
       throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned."
     unless @context or isValue and (@variable.namespaced or @variable.hasProperties())
       if @param
         o.scope.add name, 'var'
       else
         o.scope.find name
+    if @value instanceof Code and match = @METHOD_DEF.exec name
+      @value.name  = match[2]
+      @value.klass = match[1] if match[1]
+    val = @value.compile o, LEVEL_LIST
+    return "#{name}: #{val}" if @context is 'object'
     val = name + " #{ @context or '=' } " + val
     if o.level <= LEVEL_LIST then val else "(#{val})"
 

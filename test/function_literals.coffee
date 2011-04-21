@@ -64,6 +64,14 @@ ok obj isnt obj.unbound()
 eq obj, obj.nested()
 
 
+test "self-referencing functions", ->
+  changeMe = ->
+    changeMe = 2
+
+  changeMe()
+  eq changeMe, 2
+
+
 # Parameter List Features
 
 test "splats", ->
