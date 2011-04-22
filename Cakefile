@@ -43,17 +43,17 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
   base = options.prefix or '/usr/local'
   lib  = "#{base}/lib/coffee-script"
   bin  = "#{base}/bin"
-  node = "~/.node_libraries/coffee-script"
+  node_coffee_lib = "#{base}/lib/node/coffee-script"
   console.log   "Installing CoffeeScript to #{lib}"
-  console.log   "Linking to #{node}"
+  console.log   "Linking to #{node_coffee_lib}"
   console.log   "Linking 'coffee' to #{bin}/coffee"
   exec([
     "mkdir -p #{lib} #{bin}"
     "cp -rf bin lib LICENSE README package.json src #{lib}"
+    "chmod -R a+rx #{lib}"
     "ln -sfn #{lib}/bin/coffee #{bin}/coffee"
     "ln -sfn #{lib}/bin/cake #{bin}/cake"
-    "mkdir -p ~/.node_libraries"
-    "ln -sfn #{lib}/lib #{node}"
+    "ln -sfn #{lib}/lib #{node_coffee_lib}"
   ].join(' && '), (err, stdout, stderr) ->
     if err then console.log stderr.trim() else log 'done', green
   )
