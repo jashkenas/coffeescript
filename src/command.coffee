@@ -78,6 +78,7 @@ compileScripts = ->
       path.exists source, (exists) ->
         throw new Error "File not found: #{source}" if topLevel and not exists
         fs.stat source, (err, stats) ->
+          throw err if err
           if stats.isDirectory()
             fs.readdir source, (err, files) ->
               for file in files
