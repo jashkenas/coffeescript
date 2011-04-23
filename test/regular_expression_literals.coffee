@@ -20,6 +20,10 @@ test "division is not confused for a regular expression", ->
   g = 1
   eq 2, a / b/g
 
+  a = 10
+  b = a /= 4 / 2
+  eq a, 5
+
   obj = method: -> 2
   two = 2
   eq 2, (obj.method()/two + obj.method()/two)
