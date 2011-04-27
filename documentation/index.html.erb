@@ -701,8 +701,9 @@ Expressions
       in a single assignable expression.
     </p>
     <p>
-      Constructor functions are named, to better support reflection. In the
-      example below for the first class, <tt>this.constructor.name is "Animal"</tt>.
+      Constructor functions are named, to better support helpful stack traces. In the
+      example below for the first class, <tt>this.constructor.name is "Animal"</tt>
+      (in JS runtimes that support function names).
     </p>
     <%= code_for('classes', true) %>
     <p>
