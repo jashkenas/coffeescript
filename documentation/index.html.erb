@@ -708,8 +708,9 @@ Expressions
     <p>
       If structuring your prototypes classically isn't your cup of tea, CoffeeScript
       provides a couple of lower-level conveniences. The <tt>extends</tt> operator
-      helps with proper prototype setup, <tt>::</tt> gives you
-      quick access to an object's prototype, and <tt>super()</tt>
+      helps with proper prototype setup, and can be used to create an inheritance
+      chain between any pair of constructor functions; <tt>::</tt> gives you
+      quick access to an object's prototype; and <tt>super()</tt>
       is converted into a call against the immediate ancestor's method of the same name.
     </p>
     <%= code_for('prototypes', '"one_two".dasherize()') %>
