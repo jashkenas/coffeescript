@@ -542,11 +542,11 @@ exports.Call = class Call extends Base
     if @isNew
       idt = @tab + TAB
       return """
-		(function(func, args, ctor) {
-		#{idt}ctor.prototype = func.prototype;
-		#{idt}var child = new ctor, result = func.apply(child, args);
-		#{idt}return typeof result === "object" ? result : child;
-		#{@tab}})(#{ @variable.compile o, LEVEL_LIST }, #{splatArgs}, function() {})
+        (function(func, args, ctor) {
+        #{idt}ctor.prototype = func.prototype;
+        #{idt}var child = new ctor, result = func.apply(child, args);
+        #{idt}return typeof result === "object" ? result : child;
+        #{@tab}})(#{ @variable.compile o, LEVEL_LIST }, #{splatArgs}, function() {})
       """
     base = new Value @variable
     if (name = base.properties.pop()) and base.isComplex()
