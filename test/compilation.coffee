@@ -54,3 +54,7 @@ test "#1026", ->
 
 test "#1050", ->
   cantCompile "### */ ###"
+
+test "#1106: __proto__ compilation", ->
+  object = eq
+  ok __proto__
