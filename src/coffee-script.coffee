@@ -82,6 +82,7 @@ exports.run = (code, options) ->
 # Compile and evaluate a string of CoffeeScript (in a Node.js-like environment).
 # The CoffeeScript REPL uses this to run the input.
 exports.eval = (code, options) ->
+  process.argv[0] = 'coffee'
   __filename = module.filename = process.argv[1] = options.filename
   __dirname  = path.dirname __filename
   eval compile code, options
