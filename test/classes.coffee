@@ -436,3 +436,14 @@ test "`new` works against bare function", ->
   eq Date, new ->
     eq this, new => this
     Date
+
+
+test "a subclass should be able to set its constructor to an external function", ->
+  
+  ctor = ->
+    @val = 1
+  class A
+  class B extends A
+    constructor: ctor
+    
+  eq (new B).val, 1
