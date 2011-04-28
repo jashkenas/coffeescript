@@ -701,9 +701,7 @@ Expressions
       in a single assignable expression.
     </p>
     <p>
-      Constructor functions are named, to better support helpful stack traces. In the
-      example below for the first class, <tt>this.constructor.name is "Animal"</tt>
-      (in JS runtimes that support function names).
+      Constructor functions are named, to better support helpful stack traces.
     </p>
     <%= code_for('classes', true) %>
     <p>
@@ -844,7 +842,7 @@ Expressions
     <p>
       Sometimes you'd like to pass a block comment through to the generated
       JavaScript. For example, when you need to embed a licensing header at
-      the top of a file. Block comments, which mirror the synax for heredocs,
+      the top of a file. Block comments, which mirror the syntax for heredocs,
       are preserved in the generated code.
     </p>
     <%= code_for('block_comment') %>
