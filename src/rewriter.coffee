@@ -143,6 +143,7 @@ class exports.Rewriter
       seenSingle = no
       noCall     = no if tag in LINEBREAKS
       token.call = yes if prev and not prev.spaced and tag is '?'
+      return 1 if token.fromThen
       return 1 unless callObject or
         prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
         (tag in IMPLICIT_CALL or not (token.spaced or token.newLine) and tag in IMPLICIT_UNSPACED_CALL)
