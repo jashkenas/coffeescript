@@ -57,4 +57,5 @@ test "#1050", ->
 
 test "#1106: __proto__ compilation", ->
   object = eq
+  @["__proto__"] = true
   ok __proto__
