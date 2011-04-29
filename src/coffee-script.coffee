@@ -80,7 +80,7 @@ exports.run = (code, options) ->
 exports.eval = (code, options) ->
   __filename = module.filename = process.argv[1] = options.filename
   __dirname  = path.dirname __filename
-  eval compile code, options
+  (0;eval) compile code, options
 
 # Instantiate a Lexer for our use here.
 lexer = new Lexer
