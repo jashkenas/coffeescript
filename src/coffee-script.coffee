@@ -8,6 +8,7 @@
 
 fs               = require 'fs'
 path             = require 'path'
+vm               = require 'vm'
 {Lexer,RESERVED} = require './lexer'
 {parser}         = require './parser'
 
@@ -77,12 +78,21 @@ exports.run = (code, options) ->
 
 # Compile and evaluate a string of CoffeeScript (in a Node.js-like environment).
 # The CoffeeScript REPL uses this to run the input.
-exports.eval = (code, options) ->
-  global.__filename = module.filename = process.argv[1] = options.filename
-  global.__dirname  = path.dirname __filename
-  global.require    = require
-  global.module     = module
-  (0;eval) compile code, options
+exports.eval = (code, options = {}) ->
+  sandbox = options.sandbox
+  unless sandbox
+    sandbox =
+      require: require
+      module : { exports: {} }
+      global : {}
+    sandbox[g] = global[g] for g of global
+    sandbox.global.global = sandbox.global
+    sandbox.global.root   = sandbox.global
+    sandbox.global.GLOBAL = sandbox.global
+  sandbox.__filename = options.filename || 'eval'
+  sandbox.__dirname  = path.dirname sandbox.__filename
+  js = compile "_=(#{code.trim()})", options
+  vm.runInNewContext js, sandbox, sandbox.__filename
 
 # Instantiate a Lexer for our use here.
 lexer = new Lexer
