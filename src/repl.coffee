@@ -36,7 +36,7 @@ run = do ->
     require: require
     module : { exports: {} }
     global : {}
-  sandbox[g] = global[g] for g of global
+  sandbox.global[g] = global[g] for g of global
   sandbox.global.global = sandbox.global
   sandbox.global.root   = sandbox.global
   sandbox.global.GLOBAL = sandbox.global
@@ -49,7 +49,6 @@ run = do ->
       val = CoffeeScript.eval code, {
         sandbox,
         bare: on,
-        globals: on,
         filename: 'repl'
       }
       unless val is undefined

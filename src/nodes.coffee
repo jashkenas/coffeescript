@@ -250,7 +250,7 @@ exports.Block = class Block extends Base
     post = @compileNode o
     {scope} = o
     if scope.expressions is this
-      if not o.globals and o.scope.hasDeclarations()
+      if o.scope.hasDeclarations()
         code += "#{@tab}var #{ scope.declaredVariables().join(', ') };\n"
       if scope.hasAssignments
         code += "#{@tab}var #{ multident scope.assignedVariables().join(', '), @tab };\n"
@@ -1048,7 +1048,6 @@ exports.Code = class Code extends Base
     o.scope.shared  = del o, 'sharedScope'
     o.indent        += TAB
     delete o.bare
-    delete o.globals
     vars   = []
     exprs  = []
     for param in @params when param.splat

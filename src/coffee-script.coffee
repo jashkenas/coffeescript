@@ -85,7 +85,7 @@ exports.eval = (code, options = {}) ->
       require: require
       module : { exports: {} }
       global : {}
-    sandbox[g] = global[g] for g of global
+    sandbox.global[g] = global[g] for g of global
     sandbox.global.global = sandbox.global
     sandbox.global.root   = sandbox.global
     sandbox.global.GLOBAL = sandbox.global
