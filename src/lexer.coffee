@@ -114,7 +114,7 @@ exports.Lexer = class Lexer
         @identifierError id
 
     unless forcedIdentifier
-      id  = COFFEE_ALIASES[id] if COFFEE_ALIASES[id] and not [][id]
+      id  = COFFEE_ALIAS_MAP[id] if id in COFFEE_ALIASES
       tag = switch id
         when '!'                                  then 'UNARY'
         when '==', '!='                           then 'COMPARE'
@@ -512,7 +512,8 @@ JS_KEYWORDS = [
 
 # CoffeeScript-only keywords.
 COFFEE_KEYWORDS = ['undefined', 'then', 'unless', 'until', 'loop', 'of', 'by', 'when']
-COFFEE_KEYWORDS.push op for op of COFFEE_ALIASES =
+
+COFFEE_ALIAS_MAP =
   and  : '&&'
   or   : '||'
   is   : '=='
@@ -522,6 +523,9 @@ COFFEE_KEYWORDS.push op for op of COFFEE_ALIASES =
   no   : 'false'
   on   : 'true'
   off  : 'false'
+  
+COFFEE_ALIASES  = (key for key of COFFEE_ALIAS_MAP)
+COFFEE_KEYWORDS = COFFEE_KEYWORDS.concat COFFEE_ALIASES
 
 # The list of keywords that are reserved by JavaScript, but not used, or are
 # used by CoffeeScript internally. We throw an error when these are encountered,
