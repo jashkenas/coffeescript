@@ -114,7 +114,7 @@ exports.Lexer = class Lexer
         @identifierError id
 
     unless forcedIdentifier
-      id  = COFFEE_ALIASES[id] if COFFEE_ALIASES.hasOwnProperty id
+      id  = COFFEE_ALIASES[id] if COFFEE_ALIASES[id] and not [][id]
       tag = switch id
         when '!'                                  then 'UNARY'
         when '==', '!='                           then 'COMPARE'
