@@ -404,19 +404,22 @@ exports.Value = class Value extends Base
 
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
-    if ifn = @base.unfoldSoak o
-      Array::push.apply ifn.body.properties, @properties
-      return ifn
-    for prop, i in @properties when prop.soak
-      prop.soak = off
-      fst = new Value @base, @properties.slice 0, i
-      snd = new Value @base, @properties.slice i
-      if fst.isComplex()
-        ref = new Literal o.scope.freeVariable 'ref'
-        fst = new Parens new Assign ref, fst
-        snd.base = ref
-      return new If new Existence(fst), snd, soak: on
-    null
+    return @unfoldedSoak if @unfoldedSoak?
+    result = do => 
+      if ifn = @base.unfoldSoak o
+        Array::push.apply ifn.body.properties, @properties
+        return ifn
+      for prop, i in @properties when prop.soak
+        prop.soak = off
+        fst = new Value @base, @properties.slice 0, i
+        snd = new Value @base, @properties.slice i
+        if fst.isComplex()
+          ref = new Literal o.scope.freeVariable 'ref'
+          fst = new Parens new Assign ref, fst
+          snd.base = ref
+        return new If new Existence(fst), snd, soak: on
+      null
+    @unfoldedSoak = result or no
 
 #### Comment
 
