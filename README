@@ -26,7 +26,7 @@
   sudo bin/cake install
 
   Or, if you have the Node Package Manager installed:
-  npm install coffee-script
+  npm install -g coffee-script
 
   Compile a script:
   coffee /path/to/script.coffee
