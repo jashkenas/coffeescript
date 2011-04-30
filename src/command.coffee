@@ -66,6 +66,7 @@ exports.run = ->
   if opts.run
     opts.literals = sources.splice(1).concat opts.literals
   process.ARGV = process.argv = process.argv.slice(0, 2).concat opts.literals
+  process.argv[0] = 'coffee'
   compileScripts()
 
 # Asynchronously read in each CoffeeScript in a list of source files and
