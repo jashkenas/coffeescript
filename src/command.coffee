@@ -53,7 +53,7 @@ optionParser = null
 # Run `coffee` by parsing passed options and determining what action to take.
 # Many flags cause us to divert before compiling anything. Flags passed after
 # `--` will be passed verbatim to your script as arguments in `process.argv`
-exports.run = ->
+exports.run = (coffeePath) ->
   parseOptions()
   return forkNode()                      if opts.nodejs
   return usage()                         if opts.help
@@ -67,6 +67,7 @@ exports.run = ->
     opts.literals = sources.splice(1).concat opts.literals
   process.ARGV = process.argv = process.argv.slice(0, 2).concat opts.literals
   process.argv[0] = 'coffee'
+  process.execPath = coffeePath
   compileScripts()
 
 # Asynchronously read in each CoffeeScript in a list of source files and
