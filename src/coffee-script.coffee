@@ -58,6 +58,10 @@ exports.run = (code, options) ->
   root = module
   while root.parent
     root = root.parent
+
+  # Set the process command to `coffee`
+  process.argv[0] = 'coffee'
+
   # Set the filename.
   root.filename = process.argv[1] =
       if options.filename then fs.realpathSync(options.filename) else '.'
