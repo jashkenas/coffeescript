@@ -8,6 +8,7 @@
 
 # shared identity function
 id = (_) -> if arguments.length is 1 then _ else [arguments...]
+global = do -> @
 
 
 test "basic argument passing", ->
