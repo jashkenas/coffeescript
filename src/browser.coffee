@@ -1,7 +1,9 @@
 # Override exported methods for non-Node.js engines.
-
 CoffeeScript = require './coffee-script'
 CoffeeScript.require = require
+
+# Capture the global object in browsers and CommonJS environments.
+global = do -> @
 
 # Use standard JavaScript `eval` to eval code.
 CoffeeScript.eval = (code, options) ->
@@ -12,43 +14,53 @@ CoffeeScript.run = (code, options = {}) ->
   options.bare = on
   Function(CoffeeScript.compile code, options)()
 
-# If we're not in a browser environment, we're finished with the public API.
-return unless window?
+# Capture a reference to the `document` object in the browser.
+document = if 'document' of global then global.document else null
 
-# Load a remote script from the current domain via XHR.
-CoffeeScript.load = (url, callback) ->
-  xhr = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
-  xhr.open 'GET', url, true
+# Creates a new `XMLHttpRequest` object in IE and W3C-compliant browsers.
+create = -> throw new Error '`XMLHttpRequest` is not supported.'
+if 'ActiveXObject' of global
+  create = -> new global.ActiveXObject 'Microsoft.XMLHTTP'
+else if 'XMLHttpRequest' of global
+  create = -> new global.XMLHttpRequest
+
+# Load a remote script from the current domain via XHR. The optional `callback`
+# function accepts two arguments: an error object if the script could not be
+# loaded or failed to run, and the result of executing the script using
+# `CoffeeScript.run`.
+CoffeeScript.load = (url, options, callback) ->
+  xhr = create()
+  xhr.open 'GET', url, yes
   xhr.overrideMimeType 'text/plain' if 'overrideMimeType' of xhr
   xhr.onreadystatechange = ->
     if xhr.readyState is 4
+      error = result = null
       if xhr.status is 200
-        CoffeeScript.run xhr.responseText 
+        try result = CoffeeScript.run xhr.responseText catch exception then error = exception
       else
-        throw new Error "Could not load #{url}"
-      callback() if callback
+        error = new Error "An error occurred while loading the script `#{url}`."
+      callback? error, result
   xhr.send null
 
-# Activate CoffeeScript in the browser by having it compile and evaluate
-# all script tags with a content-type of `text/coffeescript`.
-# This happens on page load.
+# In the browser, the CoffeeScript compiler will asynchronously load, compile,
+# and evaluate all `script` elements with a content type of 
+# `text/coffeescript`. The scripts are loaded and executed in order on page
+# load.
 runScripts = ->
   scripts = document.getElementsByTagName 'script'
-  coffees = (s for s in scripts when s.type is 'text/coffeescript')
   index = 0
-  length = coffees.length
-  do execute = ->
-    script = coffees[index++]
-    if script?.type is 'text/coffeescript'
-      if script.src
-        CoffeeScript.load script.src, execute
-      else
+  length = scripts.length
+  do execute = (error) ->
+    throw error if error
+    script = scripts[index++]
+    if script.type isnt 'text/coffeescript' then execute() else
+      if script.src then CoffeeScript.load script.src, null, execute else
         CoffeeScript.run script.innerHTML
         execute()
   null
 
-# Listen for window load, both in browsers and in IE.
-if window.addEventListener
-  addEventListener 'DOMContentLoaded', runScripts, no
-else
-  attachEvent 'onload', runScripts
+# Execute scripts on page load in W3C-compliant browsers and IE.
+if 'addEventListener' of global
+  global.addEventListener 'DOMContentLoaded', runScripts, no
+else if 'attachEvent' of global
+  global.attachEvent 'onload', runScripts
