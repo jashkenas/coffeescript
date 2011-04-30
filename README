@@ -27,6 +27,7 @@
 
   Or, if you have the Node Package Manager installed:
   npm install -g coffee-script
+  (Leave off the -g if you don't wish to install globally.)
 
   Compile a script:
   coffee /path/to/script.coffee
