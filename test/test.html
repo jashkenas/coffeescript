@@ -27,10 +27,9 @@
   start   = new Date
   success = total = done = failed = 0
 
-  say = (msg, yay) ->
+  say = (msg) ->
     div = document.createElement 'div'
     div.appendChild document.createTextNode msg
-    div.style.color = if yay then 'green' else 'red'
     stdout.appendChild div
     msg
 
@@ -72,16 +71,9 @@
       return
     ok no
 
-
-  CoffeeScript.run = (code, cb) ->
-    try Function(CoffeeScript.compile code, wrap: no)()
-    catch e then cb(); throw e
-    cb yes
-
   run = (name) ->
-    CoffeeScript.load "#{name}.coffee", (yay) ->
-      say "#{ if yay then '\u2714' else '\u3000' } #{name}", yay
-      ++failed unless yay
+    CoffeeScript.load "#{name}.coffee", ->
+      say '\u2714 ' + name
       fin() if ++done is names.length
 
   fin = ->
@@ -92,12 +84,10 @@
     say msg, yay
 
   run name for name in names = [
-    'array_literals'
+    'arrays'
     'assignment'
-    'boolean_literals'
-    'cake'
+    'booleans'
     'classes'
-    'command'
     'comments'
     'compilation'
     'comprehensions'
@@ -105,22 +95,22 @@
     'exception_handling'
     'formatting'
     'function_invocation'
-    'function_literals'
+    'functions'
     'helpers'
     'importing'
     'interpolation'
     'javascript_literals'
-    'number_literals'
-    'object_literals'
+    'numbers'
+    'objects'
     'operators'
     'option_parser'
-    'range_literals'
-    'regular_expression_literals'
+    'ranges'
+    'regexps'
     'repl'
     'scope'
     'slicing_and_splicing'
     'soaks'
-    'string_literals'
+    'strings'
   ]
   </script>
 
