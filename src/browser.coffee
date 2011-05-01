@@ -50,7 +50,7 @@ runScripts = ->
   scripts = document.getElementsByTagName 'script'
   index = -1
   length = scripts.length
-  (execute = (error) ->
+  do execute = (error) ->
     throw error if error
     index++
     return if index is length
@@ -64,7 +64,6 @@ runScripts = ->
         CoffeeScript.run script.innerHTML, null, execute
     else
       execute()
-  )()
   null
 
 # Execute scripts on page load in W3C-compliant browsers and IE.
