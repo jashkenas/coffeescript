@@ -35,11 +35,9 @@ run = do ->
   sandbox =
     require: require
     module : { exports: {} }
-    global : {}
-  sandbox.global[g] = global[g] for g of global
-  sandbox.global.global = sandbox.global
-  sandbox.global.root   = sandbox.global
-  sandbox.global.GLOBAL = sandbox.global
+  sandbox[g] = global[g] for g of global
+  sandbox.global = sandbox
+  sandbox.global.global = sandbox.global.root = sandbox.global.GLOBAL = sandbox
   (buffer) ->
     code = backlog += '\n' + buffer.toString()
     if code[code.length - 1] is '\\'
