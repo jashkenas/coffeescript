@@ -147,23 +147,9 @@ test "Trying an implicit object call with a trailing function.", ->
 
   a = null
   meth = (arg, obj, func) -> a = [obj.a, arg, func()].join ' '
-  meth 'apple', {b: 1, a: 13}, ->
+  meth 'apple', b: 1, a: 13, ->
     'orange'
   ok a is '13 apple orange'
-  
-  
-test "Ensure that trailing calls in implicit objects can be parsed.", ->
-  
-  obj = 
-    a: id 0, ->
-      1
-    b: id 0, =>
-      1
-      
-  eq obj.a[0], 0
-  eq obj.a[1](), 1
-  eq obj.b[0], 0
-  eq obj.b[1](), 1
 
 
 test "Ensure that empty functions don't return mistaken values.", ->
