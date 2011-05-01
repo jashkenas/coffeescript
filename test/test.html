@@ -27,10 +27,10 @@
   start   = new Date
   success = total = done = failed = 0
 
-  say = (msg, yay) ->
+  say = (msg, error) ->
     div = document.createElement 'div'
     div.appendChild document.createTextNode msg
-    div.style.color = if yay then 'green' else 'red'
+    div.style.color = if error then 'red' else 'green'
     stdout.appendChild div
     msg
 
@@ -72,32 +72,27 @@
       return
     ok no
 
-
-  CoffeeScript.run = (code, cb) ->
-    try Function(CoffeeScript.compile code, wrap: no)()
-    catch e then cb(); throw e
-    cb yes
-
   run = (name) ->
-    CoffeeScript.load "#{name}.coffee", (yay) ->
-      say "#{ if yay then '\u2714' else '\u3000' } #{name}", yay
-      ++failed unless yay
+    CoffeeScript.load "#{name}.coffee", wrap: no, (error, code) ->
+      if code then (try Function(code)() catch exception then error = exception)
+      #console.warn error if error
+      #console.warn name, code
+      say "#{ if error then '\u3000' else '\u2714' } #{name}", error
+      ++failed if error
       fin() if ++done is names.length
 
   fin = ->
-    yay = success is total and not failed
+    error = success isnt total or failed
     sec = (new Date - start) / 1000
     msg = "passed #{success} tests in #{ sec.toFixed 2 } seconds"
-    msg = "failed #{ total - success } tests and #{msg}" unless yay
-    say msg, yay
+    msg = "failed #{ failed } tests and #{msg}" if error
+    say msg, error
 
   run name for name in names = [
-    'array_literals'
+    'arrays'
     'assignment'
-    'boolean_literals'
-    'cake'
+    'booleans'
     'classes'
-    'command'
     'comments'
     'compilation'
     'comprehensions'
@@ -105,22 +100,22 @@
     'exception_handling'
     'formatting'
     'function_invocation'
-    'function_literals'
+    'functions'
     'helpers'
     'importing'
     'interpolation'
     'javascript_literals'
-    'number_literals'
-    'object_literals'
+    'numbers'
+    'objects'
     'operators'
     'option_parser'
-    'range_literals'
-    'regular_expression_literals'
+    'ranges'
+    'regexps'
     'repl'
     'scope'
     'slicing_and_splicing'
     'soaks'
-    'string_literals'
+    'strings'
   ]
   </script>
 
