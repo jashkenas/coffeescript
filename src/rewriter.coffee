@@ -104,7 +104,10 @@ class exports.Rewriter
         not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':')) or
         (tag is ',' and one and
           one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT'])
-    action = (token, i) -> @tokens.splice i, 0, ['}', '}', token[2]]
+    action = (token, i) ->
+      tok = ['}', '}', token[2]]
+      tok.generated = yes
+      @tokens.splice i, 0, tok
     @scanTokens (token, i, tokens) ->
       if (tag = token[0]) in EXPRESSION_START
         stack.push [(if tag is 'INDENT' and @tag(i - 1) is '{' then '{' else tag), i]
