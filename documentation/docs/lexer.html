@@ -58,7 +58,8 @@ though <code>is</code> means <code>===</code> otherwise.</p>             </td>  
       <span class="nx">@token</span> <span class="s1">&#39;OWN&#39;</span><span class="p">,</span> <span class="nx">id</span>
       <span class="k">return</span> <span class="nx">id</span><span class="p">.</span><span class="nx">length</span>
     <span class="nv">forcedIdentifier = </span><span class="nx">colon</span> <span class="o">or</span>
-      <span class="p">(</span><span class="nv">prev = </span><span class="nx">last</span> <span class="nx">@tokens</span><span class="p">)</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">prev</span><span class="p">.</span><span class="nx">spaced</span> <span class="o">and</span> <span class="nx">prev</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">in</span> <span class="p">[</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;?.&#39;</span><span class="p">,</span> <span class="s1">&#39;@&#39;</span><span class="p">,</span> <span class="s1">&#39;::&#39;</span><span class="p">]</span>
+      <span class="p">(</span><span class="nv">prev = </span><span class="nx">last</span> <span class="nx">@tokens</span><span class="p">)</span> <span class="o">and</span> <span class="p">(</span><span class="nx">prev</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">in</span> <span class="p">[</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;?.&#39;</span><span class="p">,</span> <span class="s1">&#39;::&#39;</span><span class="p">]</span> <span class="o">or</span>
+      <span class="o">not</span> <span class="nx">prev</span><span class="p">.</span><span class="nx">spaced</span> <span class="o">and</span> <span class="nx">prev</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="s1">&#39;@&#39;</span><span class="p">)</span>
     <span class="nv">tag = </span><span class="s1">&#39;IDENTIFIER&#39;</span>
 
     <span class="k">if</span> <span class="nx">id</span> <span class="k">in</span> <span class="nx">JS_KEYWORDS</span> <span class="o">or</span>
@@ -91,7 +92,7 @@ though <code>is</code> means <code>===</code> otherwise.</p>             </td>  
         <span class="nx">@identifierError</span> <span class="nx">id</span>
 
     <span class="nx">unless</span> <span class="nx">forcedIdentifier</span>
-      <span class="nv">id  = </span><span class="nx">COFFEE_ALIASES</span><span class="p">[</span><span class="nx">id</span><span class="p">]</span> <span class="k">if</span> <span class="nx">COFFEE_ALIASES</span><span class="p">.</span><span class="nx">hasOwnProperty</span> <span class="nx">id</span>
+      <span class="nv">id  = </span><span class="nx">COFFEE_ALIAS_MAP</span><span class="p">[</span><span class="nx">id</span><span class="p">]</span> <span class="k">if</span> <span class="nx">id</span> <span class="k">in</span> <span class="nx">COFFEE_ALIASES</span>
       <span class="nv">tag = </span><span class="k">switch</span> <span class="nx">id</span>
         <span class="k">when</span> <span class="s1">&#39;!&#39;</span>                                  <span class="k">then</span> <span class="s1">&#39;UNARY&#39;</span>
         <span class="k">when</span> <span class="s1">&#39;==&#39;</span><span class="p">,</span> <span class="s1">&#39;!=&#39;</span>                           <span class="k">then</span> <span class="s1">&#39;COMPARE&#39;</span>
@@ -136,11 +137,11 @@ preserve whitespace, but ignore indentation to the left.</p>             </td>  
     <span class="nx">heredoc</span><span class="p">.</span><span class="nx">length</span></pre></div>             </td>           </tr>                               <tr id="section-12">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-12">&#182;</a>               </div>               <p>Matches and consumes comments.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">commentToken</span><span class="o">:</span> <span class="o">-&gt;</span>
     <span class="k">return</span> <span class="mi">0</span> <span class="nx">unless</span> <span class="nv">match = </span><span class="nx">@chunk</span><span class="p">.</span><span class="nx">match</span> <span class="nx">COMMENT</span>
     <span class="p">[</span><span class="nx">comment</span><span class="p">,</span> <span class="nx">here</span><span class="p">]</span> <span class="o">=</span> <span class="nx">match</span>
-    <span class="nx">@line</span> <span class="o">+=</span> <span class="nx">count</span> <span class="nx">comment</span><span class="p">,</span> <span class="s1">&#39;\n&#39;</span>
     <span class="k">if</span> <span class="nx">here</span>
       <span class="nx">@token</span> <span class="s1">&#39;HERECOMMENT&#39;</span><span class="p">,</span> <span class="nx">@sanitizeHeredoc</span> <span class="nx">here</span><span class="p">,</span>
         <span class="nx">herecomment</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">indent</span><span class="o">:</span> <span class="nb">Array</span><span class="p">(</span><span class="nx">@indent</span> <span class="o">+</span> <span class="mi">1</span><span class="p">).</span><span class="nx">join</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
       <span class="nx">@token</span> <span class="s1">&#39;TERMINATOR&#39;</span><span class="p">,</span> <span class="s1">&#39;\n&#39;</span>
+    <span class="nx">@line</span> <span class="o">+=</span> <span class="nx">count</span> <span class="nx">comment</span><span class="p">,</span> <span class="s1">&#39;\n&#39;</span>
     <span class="nx">comment</span><span class="p">.</span><span class="nx">length</span></pre></div>             </td>           </tr>                               <tr id="section-13">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-13">&#182;</a>               </div>               <p>Matches JavaScript interpolated directly into the source via backticks.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">jsToken</span><span class="o">:</span> <span class="o">-&gt;</span>
     <span class="k">return</span> <span class="mi">0</span> <span class="nx">unless</span> <span class="nx">@chunk</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">is</span> <span class="s1">&#39;`&#39;</span> <span class="o">and</span> <span class="nv">match = </span><span class="nx">JSTOKEN</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">@chunk</span>
     <span class="nx">@token</span> <span class="s1">&#39;JS&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nv">script = </span><span class="nx">match</span><span class="p">[</span><span class="mi">0</span><span class="p">]).</span><span class="nx">slice</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
@@ -277,8 +278,11 @@ parentheses that indicate a method call from regular parentheses, and so on.</p>
     <span class="nx">value</span><span class="p">.</span><span class="nx">length</span></pre></div>             </td>           </tr>                               <tr id="section-22">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-22">&#182;</a>               </div>               <h2>Token Manipulators</h2>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-23">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-23">&#182;</a>               </div>               <p>Sanitize a heredoc or herecomment by
 erasing all external indentation on the left-hand side.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">sanitizeHeredoc</span><span class="o">:</span> <span class="p">(</span><span class="nx">doc</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="o">-&gt;</span>
     <span class="p">{</span><span class="nx">indent</span><span class="p">,</span> <span class="nx">herecomment</span><span class="p">}</span> <span class="o">=</span> <span class="nx">options</span>
-    <span class="k">return</span> <span class="nx">doc</span> <span class="k">if</span> <span class="nx">herecomment</span> <span class="o">and</span> <span class="mi">0</span> <span class="o">&gt;</span> <span class="nx">doc</span><span class="p">.</span><span class="nx">indexOf</span> <span class="s1">&#39;\n&#39;</span>
-    <span class="nx">unless</span> <span class="nx">herecomment</span>
+    <span class="k">if</span> <span class="nx">herecomment</span>
+      <span class="k">if</span> <span class="nx">HEREDOC_ILLEGAL</span><span class="p">.</span><span class="nx">test</span> <span class="nx">doc</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span> <span class="s2">&quot;block comment cannot contain \&quot;*/\&quot;, starting on line #{@line + 1}&quot;</span>
+      <span class="k">return</span> <span class="nx">doc</span> <span class="k">if</span> <span class="nx">doc</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="s1">&#39;\n&#39;</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span>
+    <span class="k">else</span>
       <span class="k">while</span> <span class="nv">match = </span><span class="nx">HEREDOC_INDENT</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">doc</span>
         <span class="nv">attempt = </span><span class="nx">match</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="nv">indent = </span><span class="nx">attempt</span> <span class="k">if</span> <span class="nx">indent</span> <span class="o">is</span> <span class="kc">null</span> <span class="o">or</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="nx">attempt</span><span class="p">.</span><span class="nx">length</span> <span class="o">&lt;</span> <span class="nx">indent</span><span class="p">.</span><span class="nx">length</span>
@@ -298,7 +302,7 @@ parameters specially in order to make things easier for the parser.</p>         
           <span class="nx">stack</span><span class="p">.</span><span class="nx">push</span> <span class="nx">tok</span>
         <span class="k">when</span> <span class="s1">&#39;(&#39;</span><span class="p">,</span> <span class="s1">&#39;CALL_START&#39;</span>
           <span class="k">if</span> <span class="nx">stack</span><span class="p">.</span><span class="nx">length</span> <span class="k">then</span> <span class="nx">stack</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span>
-          <span class="k">else</span>
+          <span class="k">else</span> <span class="k">if</span> <span class="nx">tok</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="s1">&#39;(&#39;</span>
             <span class="nx">tok</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;PARAM_START&#39;</span>
             <span class="k">return</span> <span class="k">this</span>
     <span class="k">this</span></pre></div>             </td>           </tr>                               <tr id="section-25">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-25">&#182;</a>               </div>               <p>Close up all remaining open blocks at the end of the file.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">closeIndentation</span><span class="o">:</span> <span class="o">-&gt;</span>
@@ -394,7 +398,8 @@ token stream.</p>             </td>             <td class="code">               
   <span class="s1">&#39;if&#39;</span><span class="p">,</span> <span class="s1">&#39;else&#39;</span><span class="p">,</span> <span class="s1">&#39;switch&#39;</span><span class="p">,</span> <span class="s1">&#39;for&#39;</span><span class="p">,</span> <span class="s1">&#39;while&#39;</span><span class="p">,</span> <span class="s1">&#39;do&#39;</span><span class="p">,</span> <span class="s1">&#39;try&#39;</span><span class="p">,</span> <span class="s1">&#39;catch&#39;</span><span class="p">,</span> <span class="s1">&#39;finally&#39;</span>
   <span class="s1">&#39;class&#39;</span><span class="p">,</span> <span class="s1">&#39;extends&#39;</span><span class="p">,</span> <span class="s1">&#39;super&#39;</span>
 <span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-39">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-39">&#182;</a>               </div>               <p>CoffeeScript-only keywords.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">COFFEE_KEYWORDS = </span><span class="p">[</span><span class="s1">&#39;undefined&#39;</span><span class="p">,</span> <span class="s1">&#39;then&#39;</span><span class="p">,</span> <span class="s1">&#39;unless&#39;</span><span class="p">,</span> <span class="s1">&#39;until&#39;</span><span class="p">,</span> <span class="s1">&#39;loop&#39;</span><span class="p">,</span> <span class="s1">&#39;of&#39;</span><span class="p">,</span> <span class="s1">&#39;by&#39;</span><span class="p">,</span> <span class="s1">&#39;when&#39;</span><span class="p">]</span>
-<span class="nx">COFFEE_KEYWORDS</span><span class="p">.</span><span class="nx">push</span> <span class="nx">op</span> <span class="k">for</span> <span class="nx">op</span> <span class="k">of</span> <span class="nv">COFFEE_ALIASES =</span>
+
+<span class="nv">COFFEE_ALIAS_MAP =</span>
   <span class="o">and</span>  <span class="o">:</span> <span class="s1">&#39;&amp;&amp;&#39;</span>
   <span class="o">or</span>   <span class="o">:</span> <span class="s1">&#39;||&#39;</span>
   <span class="o">is</span>   <span class="o">:</span> <span class="s1">&#39;==&#39;</span>
@@ -403,7 +408,10 @@ token stream.</p>             </td>             <td class="code">               
   <span class="kc">yes</span>  <span class="o">:</span> <span class="s1">&#39;true&#39;</span>
   <span class="kc">no</span>   <span class="o">:</span> <span class="s1">&#39;false&#39;</span>
   <span class="kc">on</span>   <span class="o">:</span> <span class="s1">&#39;true&#39;</span>
-  <span class="kc">off</span>  <span class="o">:</span> <span class="s1">&#39;false&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-40">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-40">&#182;</a>               </div>               <p>The list of keywords that are reserved by JavaScript, but not used, or are
+  <span class="kc">off</span>  <span class="o">:</span> <span class="s1">&#39;false&#39;</span>
+  
+<span class="nv">COFFEE_ALIASES  = </span><span class="p">(</span><span class="nx">key</span> <span class="k">for</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">COFFEE_ALIAS_MAP</span><span class="p">)</span>
+<span class="nv">COFFEE_KEYWORDS = </span><span class="nx">COFFEE_KEYWORDS</span><span class="p">.</span><span class="nx">concat</span> <span class="nx">COFFEE_ALIASES</span></pre></div>             </td>           </tr>                               <tr id="section-40">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-40">&#182;</a>               </div>               <p>The list of keywords that are reserved by JavaScript, but not used, or are
 used by CoffeeScript internally. We throw an error when these are encountered,
 to avoid having a JavaScript error at runtime.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">RESERVED = </span><span class="p">[</span>
   <span class="s1">&#39;case&#39;</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="s1">&#39;function&#39;</span><span class="p">,</span> <span class="s1">&#39;var&#39;</span><span class="p">,</span> <span class="s1">&#39;void&#39;</span><span class="p">,</span> <span class="s1">&#39;with&#39;</span>
@@ -445,7 +453,7 @@ be used as identifiers or properties.</p>             </td>             <td clas
 <span class="nv">SIMPLESTR  = </span><span class="sr">/^&#39;[^\\&#39;]*(?:\\.[^\\&#39;]*)*&#39;/</span>
 
 <span class="nv">JSTOKEN    = </span><span class="sr">/^`[^\\`]*(?:\\.[^\\`]*)*`/</span></pre></div>             </td>           </tr>                               <tr id="section-43">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-43">&#182;</a>               </div>               <p>Regex-matching-regexes.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">REGEX = </span><span class="err">/// ^</span>
-  <span class="o">/</span> <span class="p">(</span><span class="o">?!</span> <span class="err">\</span><span class="nx">s</span> <span class="p">)</span>       <span class="c1"># disallow leading whitespace</span>
+  <span class="o">/</span> <span class="p">(</span><span class="o">?!</span> <span class="p">[</span><span class="err">\</span><span class="nx">s</span><span class="o">=</span><span class="p">]</span> <span class="p">)</span>       <span class="c1"># disallow leading whitespace or equals signs</span>
   <span class="p">[</span><span class="o">^</span> <span class="p">[</span> <span class="err">/ \n \\ ]*  # every other thing</span>
   <span class="p">(</span><span class="o">?:</span>
     <span class="p">(</span><span class="o">?:</span> <span class="err">\\</span><span class="p">[</span><span class="err">\</span><span class="nx">s</span><span class="err">\</span><span class="nx">S</span><span class="p">]</span>   <span class="c1"># anything escaped</span>
@@ -464,9 +472,11 @@ be used as identifiers or properties.</p>             </td>             <td clas
 
 <span class="nv">HEREDOC_INDENT  = </span><span class="sr">/\n+([^\n\S]*)/g</span>
 
+<span class="nv">HEREDOC_ILLEGAL = </span><span class="sr">/\*\//</span>
+
 <span class="nv">ASSIGNED        = </span><span class="sr">/^\s*@?([$A-Za-z_][$\w\x7f-\uffff]*|[&#39;&quot;].*[&#39;&quot;])[^\n\S]*?[:=][^:=&gt;]/</span>
 
-<span class="nv">LINE_CONTINUER  = </span><span class="err">/// ^ \s* (?: , | \??\.(?!\.) | :: ) ///</span>
+<span class="nv">LINE_CONTINUER  = </span><span class="err">/// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///</span>
 
 <span class="nv">TRAILING_SPACES = </span><span class="sr">/\s+$/</span>
 

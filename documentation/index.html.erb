@@ -131,7 +131,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/1.0.1">1.0.1</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.1.0">1.1.0</a>
     </p>
 
     <h2>
@@ -223,10 +223,11 @@ sudo bin/cake install</pre>
         </td>
       </tr>
       <tr>
-        <td><code>-j, --join</code></td>
+        <td><code>-j, --join [FILE]</code></td>
         <td>
           Before compiling, concatenate all scripts together in the order they
-          were passed. Useful for building large projects.
+          were passed, and write them into the specified file. 
+          Useful for building large projects.
         </td>
       </tr>
       <tr>
@@ -330,7 +331,7 @@ Expressions
       </li>
       <li>
         Concatenate a list of files into a single script:<br />
-        <tt>coffee -o lib/ --join --compile src/*.coffee</tt>
+        <tt>coffee --join project.js --compile src/*.coffee</tt>
       </li>
       <li>
         Print out the compiled JS from a one-liner:<br />
@@ -1018,6 +1019,25 @@ Expressions
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">1.1.0
+        <span class="timestamp"> &ndash; <small>May 1, 2011</small></span>
+      </b>
+      When running via <tt>coffee</tt> executable, <tt>process.argv</tt> and 
+      friends now report <tt>coffee</tt> instead of <tt>node</tt>.
+      Better compatibility with <b>Node.js 0.4.x</b> module lookup changes.
+      The output in the REPL is now colorized, like Node's is.
+      Giving your concatenated CoffeeScripts a name when using <tt>--join</tt> is now mandatory.
+      Fix for lexing compound division <tt>/=</tt> as a regex accidentally.
+      All <tt>text/coffeescript</tt> tags should now execute in the order they're included.
+      Fixed an issue with extended subclasses using external constructor functions.
+      Fixed an edge-case infinite loop in <tt>addImplicitParentheses</tt>.
+      Fixed exponential slowdown with long chains of function calls.
+      Globals no longer leak into the CoffeeScript REPL.
+      Function calls can be used as default values for parameters. 
+      Splatted parameters are declared local to the function.
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">1.0.1
