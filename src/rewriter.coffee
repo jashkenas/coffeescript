@@ -103,7 +103,7 @@ class exports.Rewriter
       (tag in ['TERMINATOR', 'OUTDENT'] and
         not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':')) or
         (tag is ',' and one and
-          one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT'])
+          one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT', '->', '=>'])
     action = (token, i) ->
       tok = ['}', '}', token[2]]
       tok.generated = yes
