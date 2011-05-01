@@ -85,11 +85,9 @@ exports.eval = (code, options = {}) ->
     sandbox =
       require: require
       module : { exports: {} }
-      global : {}
-    sandbox.global[g] = global[g] for g of global
-    sandbox.global.global = sandbox.global
-    sandbox.global.root   = sandbox.global
-    sandbox.global.GLOBAL = sandbox.global
+    sandbox[g] = global[g] for g of global
+    sandbox.global = sandbox
+    sandbox.global.global = sandbox.global.root = sandbox.global.GLOBAL = sandbox
   sandbox.__filename = options.filename || 'eval'
   sandbox.__dirname  = path.dirname sandbox.__filename
   js = compile "_=(#{code.trim()})", options
