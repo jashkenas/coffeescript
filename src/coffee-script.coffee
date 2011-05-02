@@ -90,7 +90,7 @@ exports.eval = (code, options = {}) ->
     sandbox.global.global = sandbox.global.root = sandbox.global.GLOBAL = sandbox
   sandbox.__filename = options.filename || 'eval'
   sandbox.__dirname  = path.dirname sandbox.__filename
-  js = compile "_=(#{code.trim()})", options
+  js = compile "#{if options.bare then '_=' else 'return '}(#{code.trim()})", options
   vm.runInNewContext js, sandbox, sandbox.__filename
 
 # Instantiate a Lexer for our use here.

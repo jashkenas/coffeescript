@@ -59,3 +59,6 @@ test "#1106: __proto__ compilation", ->
   object = eq
   @["__proto__"] = true
   ok __proto__
+
+test "eval returns result when bare is false and filename is not set", ->
+  ok 'passed' is CoffeeScript.eval '"passed"'
