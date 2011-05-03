@@ -168,7 +168,7 @@ writeJs = (source, js, base) ->
       if err
         printLine err.message
       else if opts.compile and opts.watch
-        console.log "#{(new Date).toLocaleTimeString()} - compiled #{source}"
+        printLine "#{(new Date).toLocaleTimeString()} - compiled #{source}"
   path.exists dir, (exists) ->
     if exists then compile() else exec "mkdir -p #{dir}", compile
 
@@ -197,7 +197,7 @@ parseOptions = ->
   optionParser  = new optparse.OptionParser SWITCHES, BANNER
   o = opts      = optionParser.parse process.argv.slice 2
   if o.join and o.watch
-    return console.log '--join with --watch is not supported'
+    printLine '--join with --watch is not supported'; return false
   o.compile     or=  !!o.output
   o.run         = not (o.compile or o.print or o.lint)
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
