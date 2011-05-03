@@ -54,25 +54,25 @@ exports.nodes = (source, options) ->
 # Compile and execute a string of CoffeeScript (on the server), correctly
 # setting `__filename`, `__dirname`, and relative `require()`.
 exports.run = (code, options) ->
-  root = require.main
+  mainModule = require.main
 
   # Set the filename.
-  root.filename = process.argv[1] =
+  mainModule.filename = process.argv[1] =
       if options.filename then fs.realpathSync(options.filename) else '.'
 
   # Clear the module cache.
-  root.moduleCache = {} if root.moduleCache
+  mainModule.moduleCache = {} if mainModule.moduleCache
 
   # Assign paths for node_modules loading
   if process.binding('natives').module
     {Module} = require 'module'
-    root.paths = Module._nodeModulePaths path.dirname options.filename
+    mainModule.paths = Module._nodeModulePaths path.dirname options.filename
 
   # Compile.
-  if path.extname(root.filename) isnt '.coffee' or require.extensions
-    root._compile compile(code, options), root.filename
+  if path.extname(mainModule.filename) isnt '.coffee' or require.extensions
+    mainModule._compile compile(code, options), mainModule.filename
   else
-    root._compile code, root.filename
+    mainModule._compile code, mainModule.filename
 
 # Compile and evaluate a string of CoffeeScript (in a Node.js-like environment).
 # The CoffeeScript REPL uses this to run the input.
