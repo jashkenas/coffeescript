@@ -54,10 +54,7 @@ exports.nodes = (source, options) ->
 # Compile and execute a string of CoffeeScript (on the server), correctly
 # setting `__filename`, `__dirname`, and relative `require()`.
 exports.run = (code, options) ->
-  # We want the root module.
-  root = module
-  while root.parent
-    root = root.parent
+  root = require.main
 
   # Set the filename.
   root.filename = process.argv[1] =
