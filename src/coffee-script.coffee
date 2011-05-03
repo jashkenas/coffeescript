@@ -61,7 +61,7 @@ exports.run = (code, options) ->
       if options.filename then fs.realpathSync(options.filename) else '.'
 
   # Clear the module cache.
-  mainModule.moduleCache = {} if mainModule.moduleCache
+  mainModule.moduleCache and= {}
 
   # Assign paths for node_modules loading
   if process.binding('natives').module
