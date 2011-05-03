@@ -111,7 +111,7 @@ compileScript = (file, input, base) ->
       t.output = CoffeeScript.compile t.input, t.options
       CoffeeScript.emit 'success', task
       if o.print          then printLine t.output.trim()
-      else if o.compile or o.output   then writeJs t.file, t.output, base
+      else if o.recompile then writeJs t.file, t.output, base
       else if o.lint      then lint t.file, t.output
   catch err
     CoffeeScript.emit 'failure', err, task
@@ -167,7 +167,7 @@ writeJs = (source, js, base) ->
     fs.writeFile jsPath, js, (err) ->
       if err
         printLine err.message
-      else if (opts.compile or opts.output) and opts.watch
+      else if opts.watch and opts.recompile
         printLine "#{(new Date).toLocaleTimeString()} - compiled #{source}"
   path.exists dir, (exists) ->
     if exists then compile() else exec "mkdir -p #{dir}", compile
@@ -198,7 +198,8 @@ parseOptions = ->
   o = opts      = optionParser.parse process.argv.slice 2
   if o.join and o.watch
     printLine '--join with --watch is not supported'; return false
-  o.run         = not (o.compile or o.output or o.print or o.lint)
+  o.recompile   = o.compile or o.output
+  o.run         = not (o.recompile or o.print or o.lint)
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
   sources       = o.arguments
   true
