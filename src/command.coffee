@@ -54,7 +54,7 @@ optionParser = null
 # Many flags cause us to divert before compiling anything. Flags passed after
 # `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run = ->
-  parseOptions()
+  return unless parseOptions()
   return forkNode()                      if opts.nodejs
   return usage()                         if opts.help
   return version()                       if opts.version
@@ -92,7 +92,7 @@ compileScripts = ->
                 compileJoin() if helpers.compact(contents).length > 0
               else
                 compileScript(source, code.toString(), base)
-            watch source, base if opts.watch and not opts.join
+            watch source, base if opts.watch
     compile source, true
 
 # Compile a single source script, containing the given code, according to the
@@ -191,14 +191,18 @@ printTokens = (tokens) ->
   printLine strings.join(' ')
 
 # Use the [OptionParser module](optparse.html) to extract all options from
-# `process.argv` that are specified in `SWITCHES`.
+# `process.argv` that are specified in `SWITCHES`. Sets defaults and
+# reports invalid combinations.
 parseOptions = ->
   optionParser  = new optparse.OptionParser SWITCHES, BANNER
   o = opts      = optionParser.parse process.argv.slice 2
+  if o.join and o.watch
+    return console.log '--join with --watch is not supported'
   o.compile     or=  !!o.output
   o.run         = not (o.compile or o.print or o.lint)
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
   sources       = o.arguments
+  true
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (filename) -> {filename, bare: opts.bare}
