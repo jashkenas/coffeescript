@@ -407,3 +407,24 @@ test "issue #1124: don't assign a variable in two scopes", ->
   lista = [1, 2, 3, 4, 5]
   listb = (_i + 1 for _i in lista)
   arrayEq [2, 3, 4, 5, 6], listb
+
+test "Issue #1326. `by` value is uncached", ->
+  a = [0,1,2]
+  fi = gi = hi = 0
+  f = -> ++fi
+  g = -> ++gi
+  h = -> ++hi
+  
+  forCompile = []
+  rangeCompileSimple = []
+  
+  #exercises For.compile
+  for v,i in a by f() then forCompile.push i
+    
+  #exercises Range.compileSimple
+  rangeCompileSimple = (i for i in [0..2] by g())
+
+  arrayEq a, forCompile
+  arrayEq a, rangeCompileSimple
+  #exercises Range.compile
+  eq "#{i for i in [0..2] by h()}", '0,1,2'
