@@ -1,6 +1,6 @@
 # The `coffee` utility. Handles command-line compilation of CoffeeScript
 # into various forms: saved into `.js` files or printed to stdout, piped to
-# [JSLint](http://javascriptlint.com/) or recompiled every time the source is
+# [JavaScript Lint](http://javascriptlint.com/) or recompiled every time the source is
 # saved, printed as a token stream or as the syntax tree, or launch an
 # interactive REPL.
 
@@ -32,7 +32,7 @@ SWITCHES = [
   ['-j', '--join [FILE]',     'concatenate the scripts before compiling']
   ['-w', '--watch',           'watch scripts for changes, and recompile']
   ['-p', '--print',           'print the compiled JavaScript to stdout']
-  ['-l', '--lint',            'pipe the compiled JavaScript through JSLint']
+  ['-l', '--lint',            'pipe the compiled JavaScript through JavaScript Lint']
   ['-s', '--stdio',           'listen for and compile scripts over stdio']
   ['-e', '--eval',            'compile a string from the command line']
   ['-r', '--require [FILE*]', 'require a library before executing your script']
