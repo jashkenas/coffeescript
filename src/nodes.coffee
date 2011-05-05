@@ -405,7 +405,7 @@ exports.Value = class Value extends Base
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
     return @unfoldedSoak if @unfoldedSoak?
-    result = do => 
+    result = do =>
       if ifn = @base.unfoldSoak o
         Array::push.apply ifn.body.properties, @properties
         return ifn
@@ -857,7 +857,11 @@ exports.Class = class Class extends Base
     if not @ctor
       @ctor = new Code
       @ctor.body.push new Call 'super', [new Splat new Literal 'arguments'] if @parent
-      @body.expressions.unshift @ctor
+    else
+      for e,i in @body.expressions
+        if e == @ctor
+          @body.expressions.splice i, 1
+    @body.expressions.unshift @ctor
     @ctor.ctor     = @ctor.name = name
     @ctor.klass    = null
     @ctor.noReturn = yes

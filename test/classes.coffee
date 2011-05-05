@@ -439,11 +439,18 @@ test "`new` works against bare function", ->
 
 
 test "a subclass should be able to set its constructor to an external function", ->
-  
+
   ctor = ->
     @val = 1
   class A
   class B extends A
     constructor: ctor
-    
+
   eq (new B).val, 1
+
+test "a property appears before the constructor", ->
+  class A
+  class B extends A
+    foo: 1
+    constructor: ->
+  eq (new B).foo, 1
