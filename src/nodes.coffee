@@ -819,7 +819,7 @@ exports.Class = class Class extends Base
   # on the class.
   addProperties: (node, name) ->
     props = node.base.properties.slice 0
-    while assign = props.shift()
+    exprs = while assign = props.shift()
       if assign instanceof Assign
         base = assign.variable.base
         delete assign.context
@@ -832,7 +832,8 @@ exports.Class = class Class extends Base
           if func instanceof Code
             assign = @ctor = func
           else
-            assign = @ctor = new Assign(new Value(new Literal name), func)
+            assign = null
+            @ctor = new Assign new Value(new Literal name), func
         else
           unless assign.variable.this
             assign.variable = new Value(new Literal(name), [new Access(base, 'proto')])
@@ -840,6 +841,7 @@ exports.Class = class Class extends Base
             @boundFuncs.push base
             func.bound = no
       assign
+    compact exprs
 
   # Walk the body of the class, looking for prototype properties to be converted.
   walkBody: (name) ->
@@ -873,7 +875,13 @@ exports.Class = class Class extends Base
     @setContext name
     @walkBody name
     @ensureConstructor name
-    @body.expressions.splice 1, 0, new Extends(lname, @parent) if @parent
+    @body.expressions.unshift @ctor unless @ctor instanceof Code
+    if @parent
+      extension = new Extends lname, @parent
+      if @ctor instanceof Code
+        @body.expressions.unshift extension
+      else
+        @body.expressions.splice 1, 0, extension
     @body.expressions.push lname
     @addBoundFunctions o
 
