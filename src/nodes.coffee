@@ -875,13 +875,8 @@ exports.Class = class Class extends Base
     @setContext name
     @walkBody name
     @ensureConstructor name
+    @body.expressions.unshift new Extends lname, @parent if @parent
     @body.expressions.unshift @ctor unless @ctor instanceof Code
-    if @parent
-      extension = new Extends lname, @parent
-      if @ctor instanceof Code
-        @body.expressions.unshift extension
-      else
-        @body.expressions.splice 1, 0, extension
     @body.expressions.push lname
     @addBoundFunctions o
 
