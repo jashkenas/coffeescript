@@ -461,3 +461,10 @@ test "#1313: misplaced __extends", ->
     prop: nonce
     constructor: ->
   eq nonce, B::prop
+
+test "#1182: execution order needs to be considered as well", ->
+  counter = 0
+  makeFn = (n) -> eq n, ++counter; ->
+  class B extends (makeFn 1)
+    @B: makeFn 2
+    constructor: makeFn 3
