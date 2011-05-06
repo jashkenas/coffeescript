@@ -640,26 +640,29 @@ exports.Range = class Range extends Base
   # needed to iterate over the values in the range. Used by comprehensions.
   compileNode: (o) ->
     @compileVariables o
-    return    @compileArray(o)  unless o.index
-    return    @compileSimple(o) if @fromNum and @toNum
-    idx      = del o, 'index'
-    step     = del o, 'step'
-    vars     = "#{idx} = #{@from}" + if @to isnt @toVar then ", #{@to}" else ''
-    cond     = "#{@fromVar} <= #{@toVar}"
-    compare  = "#{cond} ? #{idx} <#{@equals} #{@toVar} : #{idx} >#{@equals} #{@toVar}"
-    incr     = if step then "#{idx} += #{step.compile(o)}" else "#{cond} ? #{idx}++ : #{idx}--"
-    "#{vars}; #{compare}; #{incr}"
+    return        @compileArray(o)  unless o.index
+    return        @compileSimple(o) if @fromNum and @toNum
+    idx           = del o, 'index'
+    step          = del o, 'step'
+    byvar         = o.scope.freeVariable "by" if step
+    varPart       = "#{idx} = #{@from}" + ( if @to isnt @toVar then ", #{@to}" else '' ) + if step then ", #{byvar} = #{step.compile(o)}" else ''
+    cond          = "#{@fromVar} <= #{@toVar}"
+    condPart      = "#{cond} ? #{idx} <#{@equals} #{@toVar} : #{idx} >#{@equals} #{@toVar}"
+    stepPart      = if step then "#{idx} += #{byvar}" else "#{cond} ? #{idx}++ : #{idx}--"
+    "#{varPart}; #{condPart}; #{stepPart}"
 
   # Compile a simple range comprehension, with integers.
   compileSimple: (o) ->
     [from, to] = [+@fromNum, +@toNum]
     idx        = del o, 'index'
     step       = del o, 'step'
-    step       and= "#{idx} += #{step.compile(o)}"
-    if from <= to
-      "#{idx} = #{from}; #{idx} <#{@equals} #{to}; #{step or "#{idx}++"}"
-    else
-      "#{idx} = #{from}; #{idx} >#{@equals} #{to}; #{step or "#{idx}--"}"
+    byvar      = o.scope.freeVariable "by" if step
+    varPart    = "#{idx} = #{from}"
+    varPart   += ", #{byvar} = #{step.compile(o)}" if step
+    condPart   = if from <= to then "#{idx} <#{@equals} #{to}" else "#{idx} >#{@equals} #{to}"
+    stepPart   = "#{idx} += #{byvar}" if step 
+    stepPart   = ( if from <= to then "#{idx}++" else "#{idx}--" ) if not step
+    "#{varPart}; #{condPart}; #{stepPart}"
 
   # When used as a value, expand the range into the equivalent array.
   compileArray: (o) ->
@@ -1506,6 +1509,8 @@ exports.For = class For extends Base
     scope.find(index, immediate: yes) if index
     rvar          = scope.freeVariable 'results' if @returns
     ivar          = (if @range then name else index) or scope.freeVariable 'i'
+    # the `_by` variable is created twice in `Range`s if we don't prevent it from being declared here
+    byvar         = scope.freeVariable 'by' if @step and not @range 
     name          = ivar if @pattern
     varPart       = ''
     guardPart     = ''
@@ -1522,8 +1527,9 @@ exports.For = class For extends Base
         namePart = "#{name} = #{svar}[#{ivar}]"
       unless @object
         lvar        = scope.freeVariable 'len'
-        stepPart    = if @step then "#{ivar} += #{ @step.compile(o, LEVEL_OP) }" else "#{ivar}++"
-        forPart     = "#{ivar} = 0, #{lvar} = #{svar}.length; #{ivar} < #{lvar}; #{stepPart}"
+        forVarPart  = "#{ivar} = 0, #{lvar} = #{svar}.length" + if @step then ", #{byvar} = #{@step.compile(o, LEVEL_OP)}" else ''
+        stepPart    = if @step then "#{ivar} += #{byvar}" else "#{ivar}++"
+        forPart     = "#{forVarPart}; #{ivar} < #{lvar}; #{stepPart}"
     if @returns
       resultPart    = "#{@tab}#{rvar} = [];\n"
       returnResult  = "\n#{@tab}return #{rvar};"
