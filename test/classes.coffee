@@ -278,8 +278,7 @@ test "classes with value'd constructors", ->
 
   counter = 0
   classMaker = ->
-    counter++
-    inner = counter
+    inner = ++counter
     ->
       @value = inner
 
@@ -438,12 +437,27 @@ test "`new` works against bare function", ->
     Date
 
 
-test "a subclass should be able to set its constructor to an external function", ->
-  
+test "#1182: a subclass should be able to set its constructor to an external function", ->
   ctor = ->
     @val = 1
   class A
   class B extends A
     constructor: ctor
-    
   eq (new B).val, 1
+
+test "#1182: external constructors continued", ->
+  ctor = ->
+  class A
+  class B extends A
+    method: ->
+    constructor: ctor
+  eq ctor, B
+  ok B::method
+
+test "#1313: misplaced __extends", ->
+  nonce = {}
+  class A
+  class B extends A
+    prop: nonce
+    constructor: ->
+  eq nonce, B::prop
