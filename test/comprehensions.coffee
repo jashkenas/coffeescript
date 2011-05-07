@@ -408,19 +408,19 @@ test "issue #1124: don't assign a variable in two scopes", ->
   listb = (_i + 1 for _i in lista)
   arrayEq [2, 3, 4, 5, 6], listb
 
-test "Issue #1326. `by` value is uncached", ->
+test "#1326: `by` value is uncached", ->
   a = [0,1,2]
   fi = gi = hi = 0
   f = -> ++fi
   g = -> ++gi
   h = -> ++hi
-  
+
   forCompile = []
   rangeCompileSimple = []
-  
+
   #exercises For.compile
   for v,i in a by f() then forCompile.push i
-    
+
   #exercises Range.compileSimple
   rangeCompileSimple = (i for i in [0..2] by g())
 

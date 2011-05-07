@@ -405,7 +405,7 @@ exports.Value = class Value extends Base
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
     return @unfoldedSoak if @unfoldedSoak?
-    result = do => 
+    result = do =>
       if ifn = @base.unfoldSoak o
         Array::push.apply ifn.body.properties, @properties
         return ifn
@@ -640,15 +640,15 @@ exports.Range = class Range extends Base
   # needed to iterate over the values in the range. Used by comprehensions.
   compileNode: (o) ->
     @compileVariables o
-    return        @compileArray(o)  unless o.index
-    return        @compileSimple(o) if @fromNum and @toNum
-    idx           = del o, 'index'
-    step          = del o, 'step'
-    byvar         = o.scope.freeVariable "by" if step
-    varPart       = "#{idx} = #{@from}" + ( if @to isnt @toVar then ", #{@to}" else '' ) + if step then ", #{byvar} = #{step.compile(o)}" else ''
-    cond          = "#{@fromVar} <= #{@toVar}"
-    condPart      = "#{cond} ? #{idx} <#{@equals} #{@toVar} : #{idx} >#{@equals} #{@toVar}"
-    stepPart      = if step then "#{idx} += #{byvar}" else "#{cond} ? #{idx}++ : #{idx}--"
+    return @compileArray(o) unless o.index
+    return @compileSimple(o) if @fromNum and @toNum
+    idx      = del o, 'index'
+    step     = del o, 'step'
+    stepvar  = o.scope.freeVariable "step" if step
+    varPart  = "#{idx} = #{@from}" + ( if @to isnt @toVar then ", #{@to}" else '' ) + if step then ", #{stepvar} = #{step.compile(o)}" else ''
+    cond     = "#{@fromVar} <= #{@toVar}"
+    condPart = "#{cond} ? #{idx} <#{@equals} #{@toVar} : #{idx} >#{@equals} #{@toVar}"
+    stepPart = if step then "#{idx} += #{stepvar}" else "#{cond} ? #{idx}++ : #{idx}--"
     "#{varPart}; #{condPart}; #{stepPart}"
 
   # Compile a simple range comprehension, with integers.
@@ -656,11 +656,11 @@ exports.Range = class Range extends Base
     [from, to] = [+@fromNum, +@toNum]
     idx        = del o, 'index'
     step       = del o, 'step'
-    byvar      = o.scope.freeVariable "by" if step
+    stepvar    = o.scope.freeVariable "step" if step
     varPart    = "#{idx} = #{from}"
-    varPart   += ", #{byvar} = #{step.compile(o)}" if step
+    varPart   += ", #{stepvar} = #{step.compile(o)}" if step
     condPart   = if from <= to then "#{idx} <#{@equals} #{to}" else "#{idx} >#{@equals} #{to}"
-    stepPart   = "#{idx} += #{byvar}" if step 
+    stepPart   = "#{idx} += #{stepvar}" if step
     stepPart   = ( if from <= to then "#{idx}++" else "#{idx}--" ) if not step
     "#{varPart}; #{condPart}; #{stepPart}"
 
@@ -1498,53 +1498,53 @@ exports.For = class For extends Base
   # comprehensions. Some of the generated code can be shared in common, and
   # some cannot.
   compileNode: (o) ->
-    body          = Block.wrap [@body]
-    lastJumps     = last(body.expressions)?.jumps()
-    @returns      = no if lastJumps and lastJumps instanceof Return
-    source        = if @range then @source.base else @source
-    scope         = o.scope
-    name          = @name  and @name.compile o, LEVEL_LIST
-    index         = @index and @index.compile o, LEVEL_LIST
+    body      = Block.wrap [@body]
+    lastJumps = last(body.expressions)?.jumps()
+    @returns  = no if lastJumps and lastJumps instanceof Return
+    source    = if @range then @source.base else @source
+    scope     = o.scope
+    name      = @name  and @name.compile o, LEVEL_LIST
+    index     = @index and @index.compile o, LEVEL_LIST
     scope.find(name,  immediate: yes) if name and not @pattern
     scope.find(index, immediate: yes) if index
-    rvar          = scope.freeVariable 'results' if @returns
-    ivar          = (if @range then name else index) or scope.freeVariable 'i'
+    rvar      = scope.freeVariable 'results' if @returns
+    ivar      = (if @range then name else index) or scope.freeVariable 'i'
     # the `_by` variable is created twice in `Range`s if we don't prevent it from being declared here
-    byvar         = scope.freeVariable 'by' if @step and not @range 
-    name          = ivar if @pattern
-    varPart       = ''
-    guardPart     = ''
-    defPart       = ''
-    idt1          = @tab + TAB
+    stepvar   = scope.freeVariable "step" if @step and not @range
+    name      = ivar if @pattern
+    varPart   = ''
+    guardPart = ''
+    defPart   = ''
+    idt1      = @tab + TAB
     if @range
       forPart = source.compile merge(o, {index: ivar, @step})
     else
-      svar = @source.compile o, LEVEL_LIST
+      svar    = @source.compile o, LEVEL_LIST
       if (name or @own) and not IDENTIFIER.test svar
-        defPart = "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
-        svar = ref
+        defPart    = "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
+        svar       = ref
       if name and not @pattern
-        namePart = "#{name} = #{svar}[#{ivar}]"
+        namePart   = "#{name} = #{svar}[#{ivar}]"
       unless @object
-        lvar        = scope.freeVariable 'len'
-        forVarPart  = "#{ivar} = 0, #{lvar} = #{svar}.length" + if @step then ", #{byvar} = #{@step.compile(o, LEVEL_OP)}" else ''
-        stepPart    = if @step then "#{ivar} += #{byvar}" else "#{ivar}++"
-        forPart     = "#{forVarPart}; #{ivar} < #{lvar}; #{stepPart}"
+        lvar       = scope.freeVariable 'len'
+        forVarPart = "#{ivar} = 0, #{lvar} = #{svar}.length" + if @step then ", #{stepvar} = #{@step.compile(o, LEVEL_OP)}" else ''
+        stepPart   = if @step then "#{ivar} += #{stepvar}" else "#{ivar}++"
+        forPart    = "#{forVarPart}; #{ivar} < #{lvar}; #{stepPart}"
     if @returns
-      resultPart    = "#{@tab}#{rvar} = [];\n"
-      returnResult  = "\n#{@tab}return #{rvar};"
-      body          = Push.wrap rvar, body
+      resultPart   = "#{@tab}#{rvar} = [];\n"
+      returnResult = "\n#{@tab}return #{rvar};"
+      body         = Push.wrap rvar, body
     if @guard
-      body          = Block.wrap [new If @guard, body]
+      body         = Block.wrap [new If @guard, body]
     if @pattern
       body.expressions.unshift new Assign @name, new Literal "#{svar}[#{ivar}]"
-    defPart         += @pluckDirectCall o, body
-    varPart         = "\n#{idt1}#{namePart};" if namePart
+    defPart     += @pluckDirectCall o, body
+    varPart     = "\n#{idt1}#{namePart};" if namePart
     if @object
-      forPart       = "#{ivar} in #{svar}"
-      guardPart     = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" if @own
-    body            = body.compile merge(o, indent: idt1), LEVEL_TOP
-    body            = '\n' + body + '\n' if body
+      forPart   = "#{ivar} in #{svar}"
+      guardPart = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" if @own
+    body        = body.compile merge(o, indent: idt1), LEVEL_TOP
+    body        = '\n' + body + '\n' if body
     """
     #{defPart}#{resultPart or ''}#{@tab}for (#{forPart}) {#{guardPart}#{varPart}#{body}#{@tab}}#{returnResult or ''}
     """
