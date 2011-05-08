@@ -919,7 +919,7 @@ lyrics = (function() {
       forwarding any arguments.
     </p>
     <div class='code'><pre class="idle"><span class="Keyword">for</span> filename <span class="Keyword">in</span> list
-  <span class="Keyword">do</span> <span class="FunctionArgument">(filename)</span> <span class="Storage">-&gt;</span>
+  do <span class="FunctionArgument">(filename)</span> <span class="Storage">-&gt;</span>
     fs.readFile filename, <span class="FunctionArgument">(err, contents)</span> <span class="Storage">-&gt;</span>
       compile filename, contents.toString()
 </pre><pre class="idle"><span class="Storage">var</span> filename, _fn, _i, _len;
@@ -1312,10 +1312,10 @@ Animal <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   <span class="Keyword">return</span> Animal;
 })();
 Snake <span class="Keyword">=</span> (<span class="Storage">function</span>() {
+  __extends(Snake, Animal);
   <span class="Storage">function</span> <span class="FunctionName">Snake</span>() {
     Snake.__super__.<span class="LibraryConstant">constructor</span>.<span class="LibraryFunction">apply</span>(<span class="Variable">this</span>, arguments);
   }
-  __extends(Snake, Animal);
   <span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>() {
     <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>);
     <span class="Keyword">return</span> Snake.__super__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">5</span>);
@@ -1323,10 +1323,10 @@ Snake <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   <span class="Keyword">return</span> Snake;
 })();
 Horse <span class="Keyword">=</span> (<span class="Storage">function</span>() {
+  __extends(Horse, Animal);
   <span class="Storage">function</span> <span class="FunctionName">Horse</span>() {
     Horse.__super__.<span class="LibraryConstant">constructor</span>.<span class="LibraryFunction">apply</span>(<span class="Variable">this</span>, arguments);
   }
-  __extends(Horse, Animal);
   <span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>() {
     <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>);
     <span class="Keyword">return</span> Horse.__super__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">45</span>);
@@ -1356,10 +1356,10 @@ Animal = (function() {
   return Animal;
 })();
 Snake = (function() {
+  __extends(Snake, Animal);
   function Snake() {
     Snake.__super__.constructor.apply(this, arguments);
   }
-  __extends(Snake, Animal);
   Snake.prototype.move = function() {
     alert("Slithering...");
     return Snake.__super__.move.call(this, 5);
@@ -1367,10 +1367,10 @@ Snake = (function() {
   return Snake;
 })();
 Horse = (function() {
+  __extends(Horse, Animal);
   function Horse() {
     Horse.__super__.constructor.apply(this, arguments);
   }
-  __extends(Horse, Animal);
   Horse.prototype.move = function() {
     alert("Galloping...");
     return Horse.__super__.move.call(this, 45);
