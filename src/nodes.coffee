@@ -1059,10 +1059,8 @@ exports.Code = class Code extends Base
     delete o.bare
     vars   = []
     exprs  = []
-    for param,index in @params when param.splat
-      for p in @params
-        o.scope.add p.name.value, 'var', yes if p.name.value 
-
+    for param in @params when param.splat
+      o.scope.add p.name.value, 'var', yes for p in @params when p.name.value 
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
                           new Value new Literal 'arguments'
       break
