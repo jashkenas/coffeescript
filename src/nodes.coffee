@@ -958,7 +958,7 @@ exports.Assign = class Assign extends Base
       acc   = IDENTIFIER.test idx.unwrap().value or 0
       value = new Value value
       value.properties.push new (if acc then Access else Index) idx
-      return new Assign(obj, value).compile o
+      return new Assign(obj, value, null, param: @param).compile o, LEVEL_TOP
     vvar    = value.compile o, LEVEL_LIST
     assigns = []
     splat   = false
