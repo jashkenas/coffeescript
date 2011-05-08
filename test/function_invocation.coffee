@@ -320,7 +320,7 @@ test "#904: Destructuring function arguments with same-named variables in scope"
   eq nonce, a
   eq nonce, b
 
-test "Simple Destructuring Failure", ->
+test "Simple Destructuring function arguments with same-named variables in scope", ->
   x = 1
   f = ([x]) -> x
   eq f([2]), 2
