@@ -468,3 +468,11 @@ test "#1182: execution order needs to be considered as well", ->
   class B extends (makeFn 1)
     @B: makeFn 2
     constructor: makeFn 3
+
+test "#1182: external constructors with bound functions", ->
+  fn = ->
+  class B
+  class A
+    constructor: fn
+    method: => this instanceof A
+  ok (new A).method.call(new B)
