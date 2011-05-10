@@ -816,11 +816,11 @@ exports.Class = class Class extends Base
     if @boundFuncs.length
       for bvar in @boundFuncs
         bname = bvar.compile o
-        @ctor.body.unshift new Literal "this.#{bname} = #{utility 'bind'}(this.#{bname}, this);"
+        @ctor.body.unshift new Literal "this.#{bname} = #{utility 'bind'}(this.#{bname}, this)"
 
   # Merge the properties from a top-level object as prototypal properties
   # on the class.
-  addProperties: (node, name) ->
+  addProperties: (node, name, o) ->
     props = node.base.properties.slice 0
     exprs = while assign = props.shift()
       if assign instanceof Assign
@@ -835,8 +835,8 @@ exports.Class = class Class extends Base
           if func instanceof Code
             assign = @ctor = func
           else
-            assign = null
-            @ctor = new Assign new Value(new Literal name), func
+            @externalCtor = o.scope.freeVariable 'class'
+            assign = new Assign new Literal(@externalCtor), func
         else
           unless assign.variable.this
             assign.variable = new Value(new Literal(name), [new Access(base, 'proto')])
@@ -847,13 +847,13 @@ exports.Class = class Class extends Base
     compact exprs
 
   # Walk the body of the class, looking for prototype properties to be converted.
-  walkBody: (name) ->
+  walkBody: (name, o) ->
     @traverseChildren false, (child) =>
       return false if child instanceof Class
       if child instanceof Block
         for node, i in exps = child.expressions
           if node instanceof Value and node.isObject(true)
-            exps[i] = @addProperties node, name
+            exps[i] = @addProperties node, name, o
         child.expressions = exps = flatten exps
 
   # Make sure that a constructor is defined for the class, and properly
@@ -861,7 +861,8 @@ exports.Class = class Class extends Base
   ensureConstructor: (name) ->
     if not @ctor
       @ctor = new Code
-      @ctor.body.push new Call 'super', [new Splat new Literal 'arguments'] if @parent
+      @ctor.body.push new Literal "#{name}.__super__.constructor.apply(this, arguments)" if @parent
+      @ctor.body.push new Literal "return #{@externalCtor}.apply(this, arguments)" if @externalCtor
       @body.expressions.unshift @ctor
     @ctor.ctor     = @ctor.name = name
     @ctor.klass    = null
@@ -876,7 +877,7 @@ exports.Class = class Class extends Base
     lname = new Literal name
 
     @setContext name
-    @walkBody name
+    @walkBody name, o
     @ensureConstructor name
     @body.expressions.unshift new Extends lname, @parent if @parent
     @body.expressions.unshift @ctor unless @ctor instanceof Code

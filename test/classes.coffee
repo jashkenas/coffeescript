@@ -288,10 +288,10 @@ test "classes with value'd constructors", ->
   class Two
     constructor: classMaker()
 
-  ok (new One).value is 1
-  ok (new Two).value is 2
-  ok (new One).value is 1
-  ok (new Two).value is 2
+  eq (new One).value, 1
+  eq (new Two).value, 2
+  eq (new One).value, 1
+  eq (new Two).value, 2
 
 
 test "exectuable class bodies", ->
@@ -451,7 +451,6 @@ test "#1182: external constructors continued", ->
   class B extends A
     method: ->
     constructor: ctor
-  eq ctor, B
   ok B::method
 
 test "#1313: misplaced __extends", ->
