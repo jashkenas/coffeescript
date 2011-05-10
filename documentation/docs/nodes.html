@@ -635,7 +635,7 @@ configured.</p>             </td>             <td class="code">               <d
     <span class="k">if</span> <span class="o">not</span> <span class="nx">@ctor</span>
       <span class="vi">@ctor = </span><span class="k">new</span> <span class="nx">Code</span>
       <span class="nx">@ctor</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">push</span> <span class="k">new</span> <span class="nx">Literal</span> <span class="s2">&quot;#{name}.__super__.constructor.apply(this, arguments)&quot;</span> <span class="k">if</span> <span class="nx">@parent</span>
-      <span class="nx">@ctor</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">push</span> <span class="k">new</span> <span class="nx">Literal</span> <span class="s2">&quot;return #{@externalCtor}.apply(this, arguments)&quot;</span> <span class="k">if</span> <span class="nx">@externalCtor</span>
+      <span class="nx">@ctor</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">push</span> <span class="k">new</span> <span class="nx">Literal</span> <span class="s2">&quot;#{@externalCtor}.apply(this, arguments)&quot;</span> <span class="k">if</span> <span class="nx">@externalCtor</span>
       <span class="nx">@body</span><span class="p">.</span><span class="nx">expressions</span><span class="p">.</span><span class="nx">unshift</span> <span class="nx">@ctor</span>
     <span class="vi">@ctor.ctor     = @ctor.name = </span><span class="nx">name</span>
     <span class="vi">@ctor.klass    = </span><span class="kc">null</span>
