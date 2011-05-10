@@ -862,7 +862,7 @@ exports.Class = class Class extends Base
     if not @ctor
       @ctor = new Code
       @ctor.body.push new Literal "#{name}.__super__.constructor.apply(this, arguments)" if @parent
-      @ctor.body.push new Literal "return #{@externalCtor}.apply(this, arguments)" if @externalCtor
+      @ctor.body.push new Literal "#{@externalCtor}.apply(this, arguments)" if @externalCtor
       @body.expressions.unshift @ctor
     @ctor.ctor     = @ctor.name = name
     @ctor.klass    = null

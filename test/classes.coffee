@@ -470,6 +470,7 @@ test "#1182: execution order needs to be considered as well", ->
 
 test "#1182: external constructors with bound functions", ->
   fn = ->
+    {one: 1}
   class B
   class A
     constructor: fn
