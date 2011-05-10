@@ -268,3 +268,38 @@ test "existential assignment", ->
   eq nonce, c
   d ?= nonce
   eq nonce, d
+
+test "#1216 ?= compilation", ->
+  c = (s) -> CoffeeScript.compile( s, {bare:true} )
+
+  # ?= with locally scoped var defined
+  eq c('a = 0; a ?= b'),
+    '''var a;
+    a = 0;
+    if (a == null) {
+      a = b;
+    };'''
+
+  # ?= with locally scoped var not defined
+  eq c('a ?= b'),
+    '''if (typeof a === "undefined" || a === null) {
+      a = b;
+    };'''
+
+  # ? with locally scoped var defined
+  eq c('a = 0; return unless a?'),
+    '''
+    var a;
+    a = 0;
+    if (a == null) {
+      return;
+    }
+    '''
+
+  # ? with locally scoped var not defined
+  eq c('return unless a?'),
+    '''
+    if (typeof a === "undefined" || a === null) {
+      return;
+    }
+    '''
