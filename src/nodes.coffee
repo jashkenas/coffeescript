@@ -1317,7 +1317,7 @@ exports.Op = class Op extends Base
       fst = @first
       ref = fst
     if @isExistentialEquals
-      new If(new Existence(fst).invert(), @second, type: 'if').compile o
+      new If(new Existence(fst).invert(), @second, type: 'if').addElse(fst).compile o
     else
       new If(new Existence(fst), ref, type: 'if').addElse(@second).compile o
 
