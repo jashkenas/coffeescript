@@ -269,8 +269,20 @@ test "existential assignment", ->
   d ?= nonce
   eq nonce, d
 
-test "#1348, #1216: existential assignment comilation", ->
+test "#1348, #1216: existential assignment compilation", ->
   nonce = {}
   a = nonce
   b = (a ?= 0)
   eq nonce, b
+  #the first ?= compiles into a statement; the second ?= compiles to a ternary expression
+  eq a ?= b ?= 1, nonce
+  
+  e ?= f ?= g ?= 1
+  eq e + g, 2
+  
+  #need to ensure the two vars are not defined, hence the strange names;
+  # broke earlier when using c ?= d ?= 1 because `d` is declared elsewhere
+  eq und1_1348 ?= und2_1348 ?= 1, 1
+  
+  if a then a ?= 2 else a = 3
+  eq a, nonce
