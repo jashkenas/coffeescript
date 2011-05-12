@@ -39,6 +39,25 @@ helpers.extend global,
     missingTask name unless tasks[name]
     tasks[name].action options
 
+  # Ask Question on Console
+  # Example
+  # ask 'What is your name', /.+/, (name) -> console.log name
+  #
+  ask: (question, format, callback) ->
+    stdin = process.stdin
+    stdout = process.stdout
+
+    stdin.resume()
+    stdout.write "#{question}:"
+
+    stdin.once 'data', (data) ->
+      data = data.toString().trim()
+      if format.test(data)
+        callback data
+      else
+        stdout.write "It should match: #{format}\n"
+        ask(question, format, callback)
+
 
 # Run `cake`. Executes all of the tasks you pass, in order. Note that Node's
 # asynchrony may cause tasks to execute in a different order than you'd expect.
