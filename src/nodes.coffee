@@ -632,41 +632,47 @@ exports.Range = class Range extends Base
   # Compiles the range's source variables -- where it starts and where it ends.
   # But only if they need to be cached to avoid double evaluation.
   compileVariables: (o) ->
-    o = merge(o, top: true)
-    [@from, @fromVar] =  @from.cache o, LEVEL_LIST
-    [@to, @toVar] =      @to.cache o, LEVEL_LIST
-    [@fromNum, @toNum] = [@fromVar.match(SIMPLENUM), @toVar.match(SIMPLENUM)]
-    parts = []
-    parts.push @from if @from isnt @fromVar
-    parts.push @to if @to isnt @toVar
+    o = merge o, top: true
+    [@from, @fromVar]   =  @from.cache o, LEVEL_LIST
+    [@to, @toVar]       =  @to.cache o, LEVEL_LIST
+    [@step, @stepVar]   =  step.cache o, LEVEL_LIST if step = del o, 'step'
+    [@fromNum, @toNum]  = [@fromVar.match(SIMPLENUM), @toVar.match(SIMPLENUM)]
+    @stepNum            = @stepVar.match(SIMPLENUM) if @stepVar
 
   # When compiled normally, the range returns the contents of the *for loop*
   # needed to iterate over the values in the range. Used by comprehensions.
   compileNode: (o) ->
-    @compileVariables o
+    @compileVariables o unless @fromVar
     return @compileArray(o) unless o.index
-    return @compileSimple(o) if @fromNum and @toNum
+    
+    # Set up endpoints.
+    known    = @fromNum and @toNum
     idx      = del o, 'index'
-    step     = del o, 'step'
-    stepvar  = o.scope.freeVariable "step" if step
-    varPart  = "#{idx} = #{@from}" + ( if @to isnt @toVar then ", #{@to}" else '' ) + if step then ", #{stepvar} = #{step.compile(o)}" else ''
-    cond     = "#{@fromVar} <= #{@toVar}"
-    condPart = "#{cond} ? #{idx} <#{@equals} #{@toVar} : #{idx} >#{@equals} #{@toVar}"
-    stepPart = if step then "#{idx} += #{stepvar}" else "#{cond} ? #{idx}++ : #{idx}--"
+    varPart  = "#{idx} = #{@from}"
+    varPart += ", #{@to}" if @to isnt @toVar
+    varPart += ", #{@step}" if @step isnt @stepVar
+    
+    # Generate the condition.
+    condPart = if @stepNum
+      condPart = if +@stepNum > 0 then "#{idx} <#{@equals} #{@toVar}" else "#{idx} >#{@equals} #{@toVar}"
+    else if known
+      [from, to] = [+@fromNum, +@toNum]
+      condPart   = if from <= to then "#{idx} <#{@equals} #{to}" else "#{idx} >#{@equals} #{to}"
+    else
+      cond     = "#{@fromVar} <= #{@toVar}"
+      condPart = "#{cond} ? #{idx} <#{@equals} #{@toVar} : #{idx} >#{@equals} #{@toVar}"
+    
+    # Generate the step.
+    stepPart = if @stepVar
+      "#{idx} += #{@stepVar}"
+    else if known
+      if from <= to then "#{idx}++" else "#{idx}--"
+    else
+      "#{cond} ? #{idx}++ : #{idx}--"
+      
+    # The final loop body.
     "#{varPart}; #{condPart}; #{stepPart}"
-
-  # Compile a simple range comprehension, with integers.
-  compileSimple: (o) ->
-    [from, to] = [+@fromNum, +@toNum]
-    idx        = del o, 'index'
-    step       = del o, 'step'
-    stepvar    = o.scope.freeVariable "step" if step
-    varPart    = "#{idx} = #{from}"
-    varPart   += ", #{stepvar} = #{step.compile(o)}" if step
-    condPart   = if from <= to then "#{idx} <#{@equals} #{to}" else "#{idx} >#{@equals} #{to}"
-    stepPart   = "#{idx} += #{stepvar}" if step
-    stepPart   = ( if from <= to then "#{idx}++" else "#{idx}--" ) if not step
-    "#{varPart}; #{condPart}; #{stepPart}"
+    
 
   # When used as a value, expand the range into the equivalent array.
   compileArray: (o) ->
@@ -680,7 +686,7 @@ exports.Range = class Range extends Base
     pre    = "\n#{idt}#{result} = [];"
     if @fromNum and @toNum
       o.index = i
-      body    = @compileSimple o
+      body    = @compileNode o
     else
       vars    = "#{i} = #{@from}" + if @to isnt @toVar then ", #{@to}" else ''
       cond    = "#{@fromVar} <= #{@toVar}"
@@ -1222,9 +1228,7 @@ exports.While = class While extends Base
 # Simple Arithmetic and logical operations. Performs some conversion from
 # CoffeeScript operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
-
-
-
+  
   constructor: (op, first, second, flip, @isExistentialEquals ) ->
     return new In first, second if op is 'in'
     if op is 'do'
@@ -1257,6 +1261,9 @@ exports.Op = class Op extends Base
 
   isUnary: ->
     not @second
+    
+  isComplex: ->
+    not (@isUnary() and (@operator in ['+', '-'])) or @first.isComplex()
 
   # Am I capable of
   # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
