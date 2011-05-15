@@ -1020,7 +1020,8 @@ exports.Assign = class Assign extends Base
   # more than once.
   compileConditional: (o) ->
     [left, rite] = @variable.cacheReference o
-    new Op(@context.slice(0, -1), left, new Assign(rite, @value, '='), undefined, "?" in @context ).compile o
+    if "?" in @context then o.isExistentialEquals = true
+    new Op(@context.slice(0, -1), left, new Assign(rite, @value, '=') ).compile o
 
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
@@ -1229,8 +1230,7 @@ exports.While = class While extends Base
 # Simple Arithmetic and logical operations. Performs some conversion from
 # CoffeeScript operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
-  
-  constructor: (op, first, second, flip, @isExistentialEquals ) ->
+  constructor: (op, first, second, flip ) ->
     return new In first, second if op is 'in'
     if op is 'do'
       call = new Call first, first.params or []
@@ -1328,10 +1328,7 @@ exports.Op = class Op extends Base
     else
       fst = @first
       ref = fst
-    if @isExistentialEquals
-      new If(new Existence(fst).invert(), @second, type: 'if').addElse(fst).compile o
-    else
-      new If(new Existence(fst), ref, type: 'if').addElse(@second).compile o
+    new If(new Existence(fst), ref, type: 'if').addElse(@second).compile o
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
@@ -1676,6 +1673,11 @@ exports.If = class If extends Base
   # force inner *else* bodies into statement form.
   compileStatement: (o) ->
     child    = del o, 'chainChild'
+    exeq     = del o, 'isExistentialEquals'
+    
+    if exeq
+      return new If(@condition.invert(), @elseBodyNode(), type: 'if').compile o
+    
     cond     = @condition.compile o, LEVEL_PAREN
     o.indent += TAB
     body     = @ensureBlock(@body).compile o
