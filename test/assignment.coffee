@@ -268,3 +268,9 @@ test "existential assignment", ->
   eq nonce, c
   d ?= nonce
   eq nonce, d
+
+test "#1348, #1216: existential assignment comilation", ->
+  nonce = {}
+  a = nonce
+  b = (a ?= 0)
+  eq nonce, b

@@ -1013,7 +1013,7 @@ exports.Assign = class Assign extends Base
   # more than once.
   compileConditional: (o) ->
     [left, rite] = @variable.cacheReference o
-    new Op(@context.slice(0, -1), left, new Assign(rite, @value, '=')).compile o
+    new Op(@context.slice(0, -1), left, new Assign(rite, @value, '='), undefined, "?" in @context ).compile o
 
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
@@ -1222,7 +1222,10 @@ exports.While = class While extends Base
 # Simple Arithmetic and logical operations. Performs some conversion from
 # CoffeeScript operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
-  constructor: (op, first, second, flip) ->
+
+
+
+  constructor: (op, first, second, flip, @isExistentialEquals ) ->
     return new In first, second if op is 'in'
     if op is 'do'
       call = new Call first, first.params or []
@@ -1317,7 +1320,10 @@ exports.Op = class Op extends Base
     else
       fst = @first
       ref = fst
-    new If(new Existence(fst), ref, type: 'if').addElse(@second).compile o
+    if @isExistentialEquals
+      new If(new Existence(fst).invert(), @second, type: 'if').addElse(fst).compile o
+    else
+      new If(new Existence(fst), ref, type: 'if').addElse(@second).compile o
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
@@ -1430,13 +1436,11 @@ exports.Existence = class Existence extends Base
   compileNode: (o) ->
     code = @expression.compile o, LEVEL_OP
     code = if IDENTIFIER.test(code) and not o.scope.check code
-      if @negated
-        "typeof #{code} === \"undefined\" || #{code} === null"
-      else
-        "typeof #{code} !== \"undefined\" && #{code} !== null"
+        [cmp, cnj] = if @negated then ['===', '||'] else ['!==', '&&']
+        "typeof #{code} #{cmp} \"undefined\" #{cnj} #{code} #{cmp} null"
     else
-      sym = if @negated then '==' else '!='
-      "#{code} #{sym} null"
+      # do not use strict equality here; it will break existing code
+      "#{code} #{if @negated then '==' else '!='} null"
     if o.level <= LEVEL_COND then code else "(#{code})"
 
 #### Parens
