@@ -155,7 +155,7 @@ class exports.Rewriter
       @detectEnd i + 1, (token, i) ->
         [tag] = token
         return yes if not seenSingle and token.fromThen
-        seenSingle  = yes if tag in ['IF', 'ELSE', '->', '=>']
+        seenSingle  = yes if tag in ['IF', 'ELSE', 'CATCH', '->', '=>']
         seenControl = yes if tag in ['IF', 'ELSE', 'SWITCH', 'TRY']
         return yes if tag in ['.', '?.', '::'] and @tag(i - 1) is 'OUTDENT'
         not token.generated and @tag(i - 1) isnt ',' and (tag in IMPLICIT_END or

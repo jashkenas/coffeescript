@@ -476,6 +476,10 @@ test "implicit call against control structures", ->
     'caught'
     
   eq result, 'caught'
+  
+  save try doesnt(exist) catch error then 'caught2'
+  
+  eq result, 'caught2'
 
 
 
