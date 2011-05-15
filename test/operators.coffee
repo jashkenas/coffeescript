@@ -187,6 +187,10 @@ test "#768: `in` should preserve evaluation order", ->
 test "#1099: empty array after `in` should compile to `false`", ->
   eq 1, [5 in []].length
   eq false, do -> return 0 in []
+  
+test "#1354: optimized `in` checks should not happen when splats are present", ->
+  a = [6, 9]
+  eq 9 in [3, a...], true
 
 
 # Chained Comparison
