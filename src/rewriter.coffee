@@ -140,12 +140,13 @@ class exports.Rewriter
       tag     = token[0]
       noCall  = yes if tag in ['CLASS', 'IF']
       [prev, current, next] = tokens[i - 1 .. i + 1]
-      callObject = not noCall and tag is 'INDENT' and
-                   next and next.generated and next[0] is '{' and
-                   prev and prev[0] in IMPLICIT_FUNC
-      seenSingle = no
-      noCall     = no if tag in LINEBREAKS
-      token.call = yes if prev and not prev.spaced and tag is '?'
+      callObject  = not noCall and tag is 'INDENT' and
+                    next and next.generated and next[0] is '{' and
+                    prev and prev[0] in IMPLICIT_FUNC
+      seenSingle  = no
+      seenControl = no
+      noCall      = no if tag in LINEBREAKS
+      token.call  = yes if prev and not prev.spaced and tag is '?'
       return 1 if token.fromThen
       return 1 unless callObject or
         prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
@@ -154,9 +155,11 @@ class exports.Rewriter
       @detectEnd i + 1, (token, i) ->
         [tag] = token
         return yes if not seenSingle and token.fromThen
-        seenSingle = yes if tag in ['IF', 'ELSE', '->', '=>']
+        seenSingle  = yes if tag in ['IF', 'ELSE', '->', '=>']
+        seenControl = yes if tag in ['IF', 'ELSE', 'SWITCH', 'TRY']
         return yes if tag in ['.', '?.', '::'] and @tag(i - 1) is 'OUTDENT'
-        not token.generated and @tag(i - 1) isnt ',' and tag in IMPLICIT_END and
+        not token.generated and @tag(i - 1) isnt ',' and (tag in IMPLICIT_END or
+        (tag is 'INDENT' and not seenControl)) and
         (tag isnt 'INDENT' or
          (@tag(i - 2) isnt 'CLASS' and @tag(i - 1) not in IMPLICIT_BLOCK and
           not ((post = @tokens[i + 1]) and post.generated and post[0] is '{')))
@@ -319,7 +322,7 @@ IMPLICIT_UNSPACED_CALL = ['+', '-']
 IMPLICIT_BLOCK   = ['->', '=>', '{', '[', ',']
 
 # Tokens that always mark the end of an implicit call for single-liners.
-IMPLICIT_END     = ['POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY', 'LOOP', 'TERMINATOR', 'INDENT']
+IMPLICIT_END     = ['POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY', 'LOOP', 'TERMINATOR']
 
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.

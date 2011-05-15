@@ -438,8 +438,44 @@ test "don't wrap 'pure' statements in a closure", ->
       return item if item is nonce
   eq nonce, fn items
 
-#### Unusual `new` Usage
 
 test "usage of `new` is careful about where the invocation parens end up", ->
   eq 'object', typeof new try Array
   eq 'object', typeof new do -> ->
+
+
+test "implicit call against control structures", ->
+  result = null
+  save   = (obj) -> result = obj
+  
+  save switch id false
+    when true
+      'true'
+    when false
+      'false'
+    
+  eq result, 'false'
+
+  save if id false
+    'false'
+  else
+    'true'
+    
+  eq result, 'true'
+
+  save unless id false
+    'true'
+  else
+    'false'
+    
+  eq result, 'true'
+
+  save try 
+    doesnt exist
+  catch error
+    'caught'
+    
+  eq result, 'caught'
+
+
+
