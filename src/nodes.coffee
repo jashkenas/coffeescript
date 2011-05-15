@@ -907,9 +907,6 @@ exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options) ->
     @param = options and options.param
 
-  # Matchers for detecting class/method names
-  METHOD_DEF: /^(?:(\S+)\.prototype\.|\S+?)?\b([$A-Za-z_][$\w\x7f-\uffff]*)$/
-
   children: ['variable', 'value']
 
   assigns: (name) ->
@@ -935,7 +932,7 @@ exports.Assign = class Assign extends Base
         o.scope.add name, 'var'
       else
         o.scope.find name
-    if @value instanceof Code and match = @METHOD_DEF.exec name
+    if @value instanceof Code and match = METHOD_DEF.exec name
       @value.name  = match[2]
       @value.klass = match[1] if match[1]
     val = @value.compile o, LEVEL_LIST
@@ -1802,6 +1799,7 @@ TAB = '  '
 
 IDENTIFIER = /^[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*$/
 SIMPLENUM  = /^[+-]?\d+$/
+METHOD_DEF = /^(?:([$A-Za-z_][$\w\x7f-\uffff]*)\.prototype\.)?([$A-Za-z_][$\w\x7f-\uffff]*)$/
 
 # Is a literal value a string?
 IS_STRING = /^['"]/
