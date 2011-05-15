@@ -252,7 +252,7 @@ exports.Block = class Block extends Base
     if scope.expressions is this
       declars = o.scope.hasDeclarations()
       assigns = scope.hasAssignments
-      if declars or assigns
+      if (declars or assigns) and i
         code += '\n' 
       if declars
         code += "#{@tab}var #{ scope.declaredVariables().join(', ') };\n"
