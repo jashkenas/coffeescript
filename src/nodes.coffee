@@ -245,14 +245,18 @@ exports.Block = class Block extends Base
     o = merge(o, level: LEVEL_TOP)
     if i
       rest = @expressions.splice i, @expressions.length
-      code = @compileNode o
+      code = @compileNode(o)
       @expressions = rest
     post = @compileNode o
     {scope} = o
     if scope.expressions is this
-      if o.scope.hasDeclarations()
+      declars = o.scope.hasDeclarations()
+      assigns = scope.hasAssignments
+      if declars or assigns
+        code += '\n' 
+      if declars
         code += "#{@tab}var #{ scope.declaredVariables().join(', ') };\n"
-      if scope.hasAssignments
+      if assigns
         code += "#{@tab}var #{ multident scope.assignedVariables().join(', '), @tab };\n"
     code + post
 
