@@ -1349,12 +1349,13 @@ exports.In = class In extends Base
   invert: NEGATE
 
   compileNode: (o) ->
-    isArray = @array instanceof Value and @array.isArray()
-    splat   = obj for obj in @array.base.objects when obj instanceof Splat if isArray
-    if isArray and not splat
-      @compileOrTest o
-    else
-      @compileLoopTest o
+    if @array instanceof Value and @array.isArray()
+      for obj in @array.base.objects when obj instanceof Splat
+        hasSplat = yes
+        break
+      # `compileOrTest` only if we have an array literal with no splats
+      return @compileOrTest o unless hasSplat
+    @compileLoopTest o
 
   compileOrTest: (o) ->
     [sub, ref] = @object.cache o, LEVEL_OP
