@@ -967,7 +967,7 @@ exports.Assign = class Assign extends Base
       acc   = IDENTIFIER.test idx.unwrap().value or 0
       value = new Value value
       value.properties.push new (if acc then Access else Index) idx
-      return new Assign(obj, value).compile o
+      return new Assign(obj, value, null, param: @param).compile o, LEVEL_TOP
     vvar    = value.compile o, LEVEL_LIST
     assigns = []
     splat   = false
@@ -1070,7 +1070,7 @@ exports.Code = class Code extends Base
     vars   = []
     exprs  = []
     for param in @params when param.splat
-      o.scope.add param.name.value, 'var' if param.name.value
+      o.scope.add p.name.value, 'var', yes for p in @params when p.name.value 
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
                           new Value new Literal 'arguments'
       break
