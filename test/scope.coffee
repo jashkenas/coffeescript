@@ -20,3 +20,9 @@ test "assignment to an Object.prototype-named variable should not leak to outer 
     constructor = 'word'
   )()
   ok constructor isnt 'word'
+
+test "siblings of variadic arguments shouldn't break out.", ->
+  x = 10
+  oops = (x,args...) ->
+  oops(20, 1,2,3)
+  eq x, 10
