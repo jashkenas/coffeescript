@@ -189,7 +189,11 @@ exports.Lexer = class Lexer
   # JavaScript and Ruby.
   regexToken: ->
     return 0 if @chunk.charAt(0) isnt '/'
-    return @heregexToken match if match = HEREGEX.exec @chunk
+    if match = HEREGEX.exec @chunk
+      length = @heregexToken match 
+      @line += count match[0], '\n'
+      return length
+
     prev = last @tokens
     return 0 if prev and (prev[0] in (if prev.spaced then NOT_REGEX else NOT_SPACED_REGEX))
     return 0 unless match = REGEX.exec @chunk
