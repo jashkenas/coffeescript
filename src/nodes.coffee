@@ -826,8 +826,8 @@ exports.Class = class Class extends Base
   addBoundFunctions: (o) ->
     if @boundFuncs.length
       for bvar in @boundFuncs
-        bname = bvar.compile o
-        @ctor.body.unshift new Literal "this.#{bname} = #{utility 'bind'}(this.#{bname}, this)"
+        lhs = (new Value (new Literal "this"), [new Access bvar]).compile o
+        @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
 
   # Merge the properties from a top-level object as prototypal properties
   # on the class.

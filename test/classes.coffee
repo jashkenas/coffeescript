@@ -476,3 +476,8 @@ test "#1182: external constructors with bound functions", ->
     constructor: fn
     method: => this instanceof A
   ok (new A).method.call(new B)
+
+test "#1372: bound class methods with reserved names", ->
+	class C
+      delete: =>
+    ok C::delete
