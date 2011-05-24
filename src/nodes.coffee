@@ -402,7 +402,7 @@ exports.Value = class Value extends Base
     @base.front = @front
     props = @properties
     code  = @base.compile o, if props.length then LEVEL_ACCESS else null
-    code  = "(#{code})" if props[0] instanceof Access and @isSimpleNumber()
+    code  = "#{code}." if (@base instanceof Parens or props.length) and SIMPLENUM.test code
     code += prop.compile o for prop in props
     code
 

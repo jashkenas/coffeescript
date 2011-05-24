@@ -32,11 +32,15 @@ value = 0.0 + -.25 - -.75 + 0.0
 ok value is 0.5
 
 #764: Numbers should be indexable
+eq Number::toString,   4['toString']
 eq Number::toString, 4.2['toString']
 eq Number::toString, .42['toString']
+eq Number::toString, (4)['toString']
 
+eq Number::toString,   4.toString
 eq Number::toString, 4.2.toString
 eq Number::toString, .42.toString
+eq Number::toString, (4).toString
 
 test '#1168: leading floating point suppresses newline', ->
 	eq 1, do ->
