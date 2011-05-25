@@ -932,7 +932,6 @@ exports.Assign = class Assign extends Base
         o.scope.add name, 'var'
       else
         o.scope.find name
-    console.log @variable.constructor.name, name
     if @value instanceof Code and match = METHOD_DEF.exec name
       @value.klass = match[1] if match[1]
       @value.name  = match[2] ? match[3] ? match[4]
