@@ -76,7 +76,7 @@ exports.run = ->
 compileScripts = ->
   for source in sources
     base = path.join(source)
-    compile = (source, topLevel) ->
+    compile = (source, sourceIndex, topLevel) ->
       path.exists source, (exists) ->
         throw new Error "File not found: #{source}" if topLevel and not exists
         fs.stat source, (err, stats) ->
@@ -84,16 +84,16 @@ compileScripts = ->
           if stats.isDirectory()
             fs.readdir source, (err, files) ->
               for file in files
-                compile path.join(source, file)
+                compile path.join(source, file), sourceIndex
           else if topLevel or path.extname(source) is '.coffee'
             fs.readFile source, (err, code) ->
               if opts.join
-                contents[sources.indexOf source] = code.toString()
+                contents[sourceIndex] = helpers.compact([contents[sourceIndex], code.toString()]).join('\n')
                 compileJoin() if helpers.compact(contents).length > 0
               else
                 compileScript(source, code.toString(), base)
             watch source, base if opts.watch and not opts.join
-    compile source, true
+    compile source, sources.indexOf(source), true
 
 # Compile a single source script, containing the given code, according to the
 # requested options. If evaluating the script directly sets `__filename`,
