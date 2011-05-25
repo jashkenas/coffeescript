@@ -486,3 +486,7 @@ test "#1380: `super` with reserved names", ->
   class C
     do: -> super
   ok C::do
+
+  class B
+    0: -> super
+  ok B::[0]

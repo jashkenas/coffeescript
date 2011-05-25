@@ -554,7 +554,7 @@ IDENTIFIER = /// ^
 
 NUMBER     = ///
   ^ 0x[\da-f]+ |                              # hex
-  ^ (?: \d+(\.\d+)? | \.\d+ ) (?:e[+-]?\d+)?  # decimal
+  ^ \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
 ///i
 
 HEREDOC    = /// ^ ("""|''') ([\s\S]*?) (?:\n[^\n\S]*)? \1 ///

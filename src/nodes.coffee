@@ -467,7 +467,7 @@ exports.Call = class Call extends Base
     {method} = o.scope
     throw SyntaxError 'cannot call super outside of a function.' unless method
     {name} = method
-    throw SyntaxError 'cannot call super on an anonymous function.' unless name
+    throw SyntaxError 'cannot call super on an anonymous function.' unless name?
     if method.klass
       (new Value (new Literal method.klass), [new Access(new Literal "__super__"), new Access new Literal name]).compile o
     else
@@ -934,7 +934,7 @@ exports.Assign = class Assign extends Base
         o.scope.find name
     if @value instanceof Code and match = METHOD_DEF.exec name
       @value.klass = match[1] if match[1]
-      @value.name  = match[2] ? match[3] ? match[4]
+      @value.name  = match[2] ? match[3] ? match[4] ? match[5]
     val = @value.compile o, LEVEL_LIST
     return "#{name}: #{val}" if @context is 'object'
     val = name + " #{ @context or '=' } " + val
@@ -1802,19 +1802,19 @@ IDENTIFIER_STR = "[$A-Za-z_\\x7f-\\uffff][$\\w\\x7f-\\uffff]*"
 IDENTIFIER = /// ^ #{IDENTIFIER_STR} $ ///
 SIMPLENUM  = /^[+-]?\d+$/
 METHOD_DEF = ///
-	^
-		(?:
-			(#{IDENTIFIER_STR})
-			\.prototype
-				(?:
-					\.(#{IDENTIFIER_STR})
-				|
-					\[("(?:[^"\r\n]|\\")*"|'(?:[^'\r\n]|\\')*')\]
-				)
-		)
-	|
-		(#{IDENTIFIER_STR})
-	$
+  ^
+    (?:
+      (#{IDENTIFIER_STR})
+      \.prototype
+      (?:
+        \.(#{IDENTIFIER_STR})
+      | \[("(?:[^\\"\r\n]|\\.)*"|'(?:[^\\'\r\n]|\\.)*')\]
+      | \[(0x[\da-fA-F]+ | \d*\.?\d+ (?:[eE][+-]?\d+)?)\]
+      )
+    )
+  |
+    (#{IDENTIFIER_STR})
+  $
 ///
 
 # Is a literal value a string?
