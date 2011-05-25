@@ -478,6 +478,11 @@ test "#1182: external constructors with bound functions", ->
   ok (new A).method.call(new B)
 
 test "#1372: bound class methods with reserved names", ->
-	class C
-      delete: =>
-    ok C::delete
+  class C
+    delete: =>
+  ok C::delete
+
+test "#1380: `super` with reserved names", ->
+  class C
+    do: -> super
+  ok C::do
