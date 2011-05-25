@@ -35,7 +35,7 @@ run = do ->
   sandbox =
     require: require
     module : { exports: {} }
-  sandbox[g] = global[g] for g of global
+  sandbox[g] = global[g] for g in Object.getOwnPropertyNames global
   sandbox.global = sandbox
   sandbox.global.global = sandbox.global.root = sandbox.global.GLOBAL = sandbox
   (buffer) ->
