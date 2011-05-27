@@ -1770,12 +1770,12 @@ UTILITIES =
   # Create a function bound to the current value of "this".
   bind: '''
     (Function.prototype.bind ? Function.prototype.call.bind(Function.prototype.bind) : function(fn, me){
+      var ctor = function(){};
+      ctor.prototype = fn.prototype;
       return function bound(){
         if (!(this instanceof bound))
           return fn.apply(me, arguments);
-        var ctor = function(){};
-        ctor.prototype = fn.prototype;
-        var obj = new ctor();
+        var obj = new ctor;
         fn.apply(obj, arguments);
         return obj;
       };
