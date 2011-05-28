@@ -431,12 +431,10 @@ test "`new` shouldn't add extra parens", ->
 
 
 test "`new` works against bare function", ->
-  nonceA = {}
-  nonceB = null
-  eq nonceA, new ->
-    eq (new => nonceB = this), nonceB
-    notEqual this, new => this
-    nonceA
+
+  eq Date, new ->
+    eq this, new => this
+    Date
 
 
 test "#1182: a subclass should be able to set its constructor to an external function", ->
