@@ -89,7 +89,7 @@ exports.eval = (code, options = {}) ->
   sandbox.__dirname  = path.dirname sandbox.__filename
   o = {}; o[k] = v for k, v of options
   o.bare = on # ensure return value
-  js = compile "_=(#{code.trim()})", o
+  js = compile "_=(#{code.trim()}\n)", o
   vm.runInNewContext js, sandbox, sandbox.__filename
 
 # Instantiate a Lexer for our use here.
