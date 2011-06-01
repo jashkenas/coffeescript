@@ -429,13 +429,14 @@ test "`new` shouldn't add extra parens", ->
 
   ok new Date().constructor is Date
 
+test "`new` works against function literals", ->
+  nonce = {}
+  eq nonce, new -> nonce
 
-test "`new` works against bare function", ->
-
-  eq Date, new ->
-    eq this, new => this
-    Date
-
+test "`new` works against bound function literals", ->
+  nonce = null
+  eq (new => nonce = this), nonce
+  notEqual this, new => this
 
 test "#1182: a subclass should be able to set its constructor to an external function", ->
   ctor = ->

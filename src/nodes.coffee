@@ -1813,7 +1813,17 @@ UTILITIES =
 
   # Create a function bound to the current value of "this".
   bind: -> '''
-    function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
+    (Function.prototype.bind ? Function.prototype.call.bind(Function.prototype.bind) : function(fn, me){
+      var ctor = function(){};
+      ctor.prototype = fn.prototype;
+      return function bound(){
+        if (!(this instanceof bound))
+          return fn.apply(me, arguments);
+        var obj = new ctor;
+        fn.apply(obj, arguments);
+        return obj;
+      };
+    })
   '''
 
   # Discover if an item is in an array.
