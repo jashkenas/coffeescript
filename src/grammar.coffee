@@ -254,7 +254,7 @@ grammar =
     o 'INDEX_SOAK  Index',                      -> extend $2, soak : yes
     o 'INDEX_PROTO Index',                      -> extend $2, proto: yes
   ]
-  
+
   IndexValue: [
     o 'Expression',                             -> new Index $1
     o 'Slice',                                  -> new Slice $1

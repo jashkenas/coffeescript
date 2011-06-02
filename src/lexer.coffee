@@ -190,7 +190,7 @@ exports.Lexer = class Lexer
   regexToken: ->
     return 0 if @chunk.charAt(0) isnt '/'
     if match = HEREGEX.exec @chunk
-      length = @heregexToken match 
+      length = @heregexToken match
       @line += count match[0], '\n'
       return length
 
@@ -527,7 +527,7 @@ COFFEE_ALIAS_MAP =
   no   : 'false'
   on   : 'true'
   off  : 'false'
-  
+
 COFFEE_ALIASES  = (key for key of COFFEE_ALIAS_MAP)
 COFFEE_KEYWORDS = COFFEE_KEYWORDS.concat COFFEE_ALIASES
 

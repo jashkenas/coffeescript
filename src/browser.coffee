@@ -23,10 +23,10 @@ CoffeeScript.load = (url, callback) ->
   xhr.onreadystatechange = ->
     if xhr.readyState is 4
       if xhr.status in [0, 200]
-        CoffeeScript.run xhr.responseText 
+        CoffeeScript.run xhr.responseText
       else
         throw new Error "Could not load #{url}"
-      callback() if callback  
+      callback() if callback
   xhr.send null
 
 # Activate CoffeeScript in the browser by having it compile and evaluate

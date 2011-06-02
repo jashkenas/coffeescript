@@ -253,7 +253,7 @@ exports.Block = class Block extends Base
       declars = o.scope.hasDeclarations()
       assigns = scope.hasAssignments
       if (declars or assigns) and i
-        code += '\n' 
+        code += '\n'
       if declars
         code += "#{@tab}var #{ scope.declaredVariables().join(', ') };\n"
       if assigns
@@ -1076,7 +1076,7 @@ exports.Code = class Code extends Base
     vars   = []
     exprs  = []
     for param in @params when param.splat
-      o.scope.add p.name.value, 'var', yes for p in @params when p.name.value 
+      o.scope.add p.name.value, 'var', yes for p in @params when p.name.value
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
                           new Value new Literal 'arguments'
       break
@@ -1265,7 +1265,7 @@ exports.Op = class Op extends Base
 
   isUnary: ->
     not @second
-    
+
   isComplex: ->
     not (@isUnary() and (@operator in ['+', '-'])) or @first.isComplex()
 
@@ -1678,10 +1678,10 @@ exports.If = class If extends Base
   compileStatement: (o) ->
     child    = del o, 'chainChild'
     exeq     = del o, 'isExistentialEquals'
-    
+
     if exeq
       return new If(@condition.invert(), @elseBodyNode(), type: 'if').compile o
-    
+
     cond     = @condition.compile o, LEVEL_PAREN
     o.indent += TAB
     body     = @ensureBlock(@body).compile o
