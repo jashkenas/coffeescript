@@ -77,6 +77,7 @@ exports.run = (code, options) ->
 # Compile and evaluate a string of CoffeeScript (in a Node.js-like environment).
 # The CoffeeScript REPL uses this to run the input.
 exports.eval = (code, options = {}) ->
+  return unless code = code.trim()
   sandbox = options.sandbox
   unless sandbox
     sandbox =
@@ -89,7 +90,7 @@ exports.eval = (code, options = {}) ->
   sandbox.__dirname  = path.dirname sandbox.__filename
   o = {}; o[k] = v for k, v of options
   o.bare = on # ensure return value
-  js = compile "_=(#{code.trim()}\n)", o
+  js = compile "_=(#{code}\n)", o
   vm.runInNewContext js, sandbox, sandbox.__filename
 
 # Instantiate a Lexer for our use here.
