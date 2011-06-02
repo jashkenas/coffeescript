@@ -693,12 +693,8 @@ exports.Range = class Range extends Base
       cond    = "#{@fromVar} <= #{@toVar}"
       body    = "var #{vars}; #{cond} ? #{i} <#{@equals} #{@toVar} : #{i} >#{@equals} #{@toVar}; #{cond} ? #{i}++ : #{i}--"
     post   = "{ #{result}.push(#{i}); }\n#{idt}return #{result};\n#{o.indent}"
-    hasArgs = (node) ->
-      node?.contains (n) ->
-        n instanceof Literal and
-        n.value is 'arguments' and
-        not n.asKey
-    args   = ', arguments' if hasArgs(@from) or hasArgs(@to) or hasArgs(@step)
+    hasArgs = (node) -> node?.contains (n) -> n instanceof Literal and n.value is 'arguments' and not n.asKey
+    args   = ', arguments' if hasArgs(@from) or hasArgs(@to)
     "(function() {#{pre}\n#{idt}for (#{body})#{post}}).apply(this#{args ? ''})"
 
 #### Slice
