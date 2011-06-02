@@ -633,8 +633,8 @@ exports.Range = class Range extends Base
   # But only if they need to be cached to avoid double evaluation.
   compileVariables: (o) ->
     o = merge o, top: true
-    [@from, @fromVar]   =  @from.cache o, LEVEL_LIST
-    [@to, @toVar]       =  @to.cache o, LEVEL_LIST
+    [@fromC, @fromVar]  =  @from.cache o, LEVEL_LIST
+    [@toC, @toVar]      =  @to.cache o, LEVEL_LIST
     [@step, @stepVar]   =  step.cache o, LEVEL_LIST if step = del o, 'step'
     [@fromNum, @toNum]  = [@fromVar.match(SIMPLENUM), @toVar.match(SIMPLENUM)]
     @stepNum            = @stepVar.match(SIMPLENUM) if @stepVar
@@ -644,15 +644,15 @@ exports.Range = class Range extends Base
   compileNode: (o) ->
     @compileVariables o unless @fromVar
     return @compileArray(o) unless o.index
-    
+
     # Set up endpoints.
     known    = @fromNum and @toNum
     idx      = del o, 'index'
-    varPart  = "#{idx} = #{@from}"
-    varPart += ", #{@to}" if @to isnt @toVar
+    varPart  = "#{idx} = #{@fromC}"
+    varPart += ", #{@toC}" if @toC isnt @toVar
     varPart += ", #{@step}" if @step isnt @stepVar
     [lt, gt] = ["#{idx} <#{@equals}", "#{idx} >#{@equals}"]
-    
+
     # Generate the condition.
     condPart = if @stepNum
       condPart = if +@stepNum > 0 then "#{lt} #{@toVar}" else "#{gt} #{@toVar}"
@@ -662,7 +662,7 @@ exports.Range = class Range extends Base
     else
       cond     = "#{@fromVar} <= #{@toVar}"
       condPart = "#{cond} ? #{lt} #{@toVar} : #{gt} #{@toVar}"
-    
+
     # Generate the step.
     stepPart = if @stepVar
       "#{idx} += #{@stepVar}"
@@ -670,10 +670,10 @@ exports.Range = class Range extends Base
       if from <= to then "#{idx}++" else "#{idx}--"
     else
       "#{cond} ? #{idx}++ : #{idx}--"
-      
+
     # The final loop body.
     "#{varPart}; #{condPart}; #{stepPart}"
-    
+
 
   # When used as a value, expand the range into the equivalent array.
   compileArray: (o) ->
@@ -689,11 +689,17 @@ exports.Range = class Range extends Base
       o.index = i
       body    = @compileNode o
     else
-      vars    = "#{i} = #{@from}" + if @to isnt @toVar then ", #{@to}" else ''
+      vars    = "#{i} = #{@fromC}" + if @toC isnt @toVar then ", #{@toC}" else ''
       cond    = "#{@fromVar} <= #{@toVar}"
       body    = "var #{vars}; #{cond} ? #{i} <#{@equals} #{@toVar} : #{i} >#{@equals} #{@toVar}; #{cond} ? #{i}++ : #{i}--"
     post   = "{ #{result}.push(#{i}); }\n#{idt}return #{result};\n#{o.indent}"
-    "(function() {#{pre}\n#{idt}for (#{body})#{post}}).apply(this, arguments)"
+    hasArgs = (node) ->
+      node?.contains (n) ->
+        n instanceof Literal and
+        n.value is 'arguments' and
+        not n.asKey
+    args   = ', arguments' if hasArgs(@from) or hasArgs(@to) or hasArgs(@step)
+    "(function() {#{pre}\n#{idt}for (#{body})#{post}}).apply(this#{args ? ''})"
 
 #### Slice
 
