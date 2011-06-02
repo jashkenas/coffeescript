@@ -83,3 +83,6 @@ test "#1012 slices with arguments object", ->
   arrayEq expected, argsAtEnd
   argsAtBoth = (-> [arguments[0]..arguments[1]]) 0, 9
   arrayEq expected, argsAtBoth
+
+test "#1409: creating large ranges outside of a function body", ->
+  CoffeeScript.eval '[0..100]'
