@@ -452,39 +452,42 @@ test "usage of `new` is careful about where the invocation parens end up", ->
 test "implicit call against control structures", ->
   result = null
   save   = (obj) -> result = obj
-  
+
   save switch id false
     when true
       'true'
     when false
       'false'
-    
+
   eq result, 'false'
 
   save if id false
     'false'
   else
     'true'
-    
+
   eq result, 'true'
 
   save unless id false
     'true'
   else
     'false'
-    
+
   eq result, 'true'
 
-  save try 
+  save try
     doesnt exist
   catch error
     'caught'
-    
+
   eq result, 'caught'
-  
+
   save try doesnt(exist) catch error then 'caught2'
-  
+
   eq result, 'caught2'
 
 
-
+test "#1420: things like `(fn() ->)`; there are no words for this one",
+  fn = -> (f) -> f()
+  nonce = {}
+  eq nonce, (fn() -> nonce)
