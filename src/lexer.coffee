@@ -378,6 +378,7 @@ exports.Lexer = class Lexer
           else if tok[0] is '('
             tok[0] = 'PARAM_START'
             return this
+          else return this
     this
 
   # Close up all remaining open blocks at the end of the file.
