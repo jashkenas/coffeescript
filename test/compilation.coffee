@@ -62,3 +62,6 @@ test "#1106: __proto__ compilation", ->
 
 test "eval returns result when bare is false and filename is not set", ->
   ok 'passed' is CoffeeScript.eval '"passed"'
+
+test "don't generate consecutive semicolons", ->
+  ok CoffeeScript.compile("(0;0)").indexOf(';;') < 0
