@@ -20,11 +20,6 @@ eq "#{ "{" }", "{"
 eq "#{ '#{}}' } }", '#{}} }'
 eq "#{"'#{ ({a: "b#{1}"}['a']) }'"}", "'b1'"
 
-# Issue 1150: String interpolation regression
-eq "#{/'/.test ''}", 'false'
-eq "#{"'/" + '/"' + /"'/.test ''}", '\'//"false'
-eq "#{"'/"}#{'/"'}#{/"'/.test ''}", '\'//"false'
-
 hello = 'Hello'
 world = 'World'
 ok '#{hello} #{world}!' is '#{hello} #{world}!'

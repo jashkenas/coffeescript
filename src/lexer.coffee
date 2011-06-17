@@ -181,9 +181,7 @@ exports.Lexer = class Lexer
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
     return 0 unless @chunk.charAt(0) is '`' and match = JSTOKEN.exec @chunk
-    script = match[0]
-    @line += count script, '\n'
-    @token 'JS', script[1...-1]
+    @token 'JS', (script = match[0]).slice 1, -1
     script.length
 
   # Matches regular expression literals. Lexing regular expressions is difficult
@@ -414,7 +412,7 @@ exports.Lexer = class Lexer
             return str.slice 0, i + 1
           end = stack[stack.length - 1]
           continue
-      if end is '}' and letter in ['"', "'", '/']
+      if end is '}' and letter in ['"', "'"]
         stack.push end = letter
       else if end is '}' and letter is '{'
         stack.push end = '}'
