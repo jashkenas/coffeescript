@@ -414,7 +414,7 @@ exports.Lexer = class Lexer
             return str.slice 0, i + 1
           end = stack[stack.length - 1]
           continue
-      if end is '}' and letter in ['"', "'"]
+      if end is '}' and letter in ['"', "'", '/']
         stack.push end = letter
       else if end is '}' and letter is '{'
         stack.push end = '}'
