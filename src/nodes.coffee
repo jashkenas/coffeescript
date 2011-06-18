@@ -298,7 +298,11 @@ exports.Literal = class Literal extends Base
     else if @value.reserved
       "\"#{@value}\""
     else
-      @value
+      if @identifier and aliasValue = o["alias_#{@value}"]
+        @isAlias = true
+        aliasValue
+      else
+        @value
     if @isStatement() then "#{@tab}#{code};" else code
 
   toString: ->
@@ -402,6 +406,7 @@ exports.Value = class Value extends Base
     @base.front = @front
     props = @properties
     code  = @base.compile o, if props.length then LEVEL_ACCESS else null
+    @isAlias = true if @base.isAlias
     code  = "#{code}." if (@base instanceof Parens or props.length) and SIMPLENUM.test code
     code += prop.compile o for prop in props
     code
@@ -930,10 +935,11 @@ exports.Assign = class Assign extends Base
     unless @context or @variable.isAssignable()
       throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned."
     unless @context or isValue and (@variable.namespaced or @variable.hasProperties())
-      if @param
-        o.scope.add name, 'var'
-      else
-        o.scope.find name
+      if not @variable.isAlias
+        if @param
+          o.scope.add name, 'var'
+        else
+          o.scope.find name
     if @value instanceof Code and match = METHOD_DEF.exec name
       @value.klass = match[1] if match[1]
       @value.name  = match[2] ? match[3] ? match[4] ? match[5]
@@ -1492,6 +1498,7 @@ exports.For = class For extends Base
     @own     = !!source.own
     @object  = !!source.object
     [@name, @index] = [@index, @name] if @object
+    throw SyntaxError 'index cannot be an alias' if @index and @index.asAlias
     throw SyntaxError 'index cannot be a pattern matching expression' if @index instanceof Value
     @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length
     @pattern = @name instanceof Value
@@ -1521,7 +1528,7 @@ exports.For = class For extends Base
     scope     = o.scope
     name      = @name  and @name.compile o, LEVEL_LIST
     index     = @index and @index.compile o, LEVEL_LIST
-    scope.find(name,  immediate: yes) if name and not @pattern
+    scope.find(name,  immediate: yes) if name and not @pattern and not @name.asAlias
     scope.find(index, immediate: yes) if index
     rvar      = scope.freeVariable 'results' if @returns
     ivar      = (if @range then name else index) or scope.freeVariable 'i'
@@ -1540,12 +1547,14 @@ exports.For = class For extends Base
         defPart    = "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
         svar       = ref
       if name and not @pattern
-        namePart   = "#{name} = #{svar}[#{ivar}]"
+        namePart   = "#{name} = #{svar}[#{ivar}]" unless @name.asAlias
       unless @object
         lvar       = scope.freeVariable 'len'
         forVarPart = "#{ivar} = 0, #{lvar} = #{svar}.length" + if @step then ", #{stepvar} = #{@step.compile(o, LEVEL_OP)}" else ''
         stepPart   = if @step then "#{ivar} += #{stepvar}" else "#{ivar}++"
         forPart    = "#{forVarPart}; #{ivar} < #{lvar}; #{stepPart}"
+    o = extend {}, o
+    o["alias_#{name}"] = "#{svar}[#{ivar}]" if name and @name.asAlias
     if @returns
       resultPart   = "#{@tab}#{rvar} = [];\n"
       returnResult = "\n#{@tab}return #{rvar};"

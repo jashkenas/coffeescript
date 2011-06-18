@@ -110,7 +110,7 @@ grammar =
 
   # A literal identifier, a variable name or property.
   Identifier: [
-    o 'IDENTIFIER',                             -> new Literal $1
+    o 'IDENTIFIER',                             -> l = new Literal($1); l.identifier = true; l
   ]
 
   # Alphanumerics are separated from the other **Literal** matchers because
@@ -440,6 +440,7 @@ grammar =
   # This enables support for pattern matching.
   ForValue: [
     o 'Identifier'
+    o 'MATH Identifier',                        -> $2.asAlias = true; $2
     o 'Array',                                  -> new Value $1
     o 'Object',                                 -> new Value $1
   ]
