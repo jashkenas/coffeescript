@@ -869,9 +869,9 @@ exports.Class = class Class extends Base
     @traverseChildren false, (child) =>
       return false if child instanceof Class
       if child instanceof Block
-        for node, i in exps = child.expressions
+        for *node in exps = child.expressions
           if node instanceof Value and node.isObject(true)
-            exps[i] = @addProperties node, name, o
+            node = @addProperties node, name, o
         child.expressions = exps = flatten exps
 
   # Make sure that a constructor is defined for the class, and properly
@@ -1097,7 +1097,7 @@ exports.Code = class Code extends Base
     wasEmpty = @body.isEmpty()
     exprs.unshift splats if splats
     @body.expressions.unshift exprs... if exprs.length
-    o.scope.parameter vars[i] = v.compile o for v, i in vars unless splats
+    o.scope.parameter v = v.compile o for *v in vars unless splats
     @body.makeReturn() unless wasEmpty or @noReturn
     idt   = o.indent
     code  = 'function'
@@ -1172,9 +1172,9 @@ exports.Splat = class Splat extends Base
       return code if apply
       return "#{ utility 'slice' }.call(#{code})"
     args = list.slice index
-    for node, i in args
+    for *node in args
       code = node.compile o, LEVEL_LIST
-      args[i] = if node instanceof Splat
+      node = if node instanceof Splat
       then "#{ utility 'slice' }.call(#{code})"
       else "[#{code}]"
     return args[0] + ".concat(#{ args.slice(1).join ', ' })" if index is 0
