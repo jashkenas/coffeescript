@@ -414,6 +414,8 @@ exports.Lexer = class Lexer
           continue
       if end is '}' and letter in ['"', "'"]
         stack.push end = letter
+      else if end is '}' and letter is '/' and match = (HEREGEX.exec(str.slice i) or REGEX.exec(str.slice i))
+        i += match[0].length - 1
       else if end is '}' and letter is '{'
         stack.push end = '}'
       else if end is '"' and prev is '#' and letter is '{'
