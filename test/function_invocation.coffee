@@ -491,3 +491,7 @@ test "#1420: things like `(fn() ->)`; there are no words for this one",
   fn = -> (f) -> f()
   nonce = {}
   eq nonce, (fn() -> nonce)
+
+test "#1416: don't omit one 'new' when compiling 'new new'", ->
+  obj = new new Function "this.foo = 3"
+  eq obj.foo, 3
