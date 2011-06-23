@@ -99,8 +99,8 @@ compileScripts = ->
               unprocessed[sourceIndex] -= 1
               if opts.join
                 contents[sourceIndex] = helpers.compact([contents[sourceIndex], code.toString()]).join('\n')
-                if remaining_files() == 0
-                  compileJoin() if helpers.compact(contents).length > 0
+                if helpers.compact(contents).length > 0 and remaining_files() == 0
+                  compileJoin()
               else
                 compileScript(source, code.toString(), base)
             watch source, base if opts.watch and not opts.join
