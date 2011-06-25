@@ -26,3 +26,9 @@ test "siblings of variadic arguments shouldn't break out.", ->
   oops = (x,args...) ->
   oops(20, 1,2,3)
   eq x, 10
+
+test "catch statements should introduce their argument to scope", ->
+  try throw ''
+  catch e
+    do -> e = 5
+    eq 5, e
