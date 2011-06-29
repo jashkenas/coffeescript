@@ -1405,8 +1405,11 @@ exports.Try = class Try extends Base
     o.indent  += TAB
     errorPart = if @error then " (#{ @error.compile o }) " else ' '
     catchPart = if @recovery
-      o.scope.add @error.value, 'param'
-      " catch#{errorPart}{\n#{ @recovery.compile o, LEVEL_TOP }\n#{@tab}}"
+      subO = extend {}, o
+      subO.scope = new Scope o.scope, this, o.scope.method
+      subO.scope.shared = true
+      subO.scope.add @error.value, 'param', true
+      " catch#{errorPart}{\n#{ @recovery.compile subO, LEVEL_TOP }\n#{@tab}}"
     else unless @ensure or @recovery
       ' catch (_e) {}'
     """

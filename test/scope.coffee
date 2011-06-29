@@ -32,3 +32,21 @@ test "catch statements should introduce their argument to scope", ->
   catch e
     do -> e = 5
     eq 5, e
+
+test "catch statements should create shared scope with their argument", ->
+  g = ->
+    try
+    catch e
+    e = 2 # e should local to g
+    try
+      throw "error"
+    catch e
+      e = 3 # e should local to catch clause
+      x = 1 # x should local to g, not catch clause
+
+    ok e is 2
+    ok x is 1
+
+  e = 1 # this e should be different to e in g
+  g()
+  ok e is 1
