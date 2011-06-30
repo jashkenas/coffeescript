@@ -217,4 +217,7 @@ test "#1274: `{} = a()` compiles to `false` instead of `a()`", ->
   ok a
 
 test "#1436: `for` etc. work as normal property names", ->
-  doesNotThrow -> CoffeeScript.compile "foo.for = 'bar' of foo"
+  obj = {}
+  eq no, obj.hasOwnProperty 'for'
+  obj.for = 'foo' of obj
+  eq yes, obj.hasOwnProperty 'for'
