@@ -215,3 +215,6 @@ test "#1274: `{} = a()` compiles to `false` instead of `a()`", ->
   fn = -> a = true
   {} = fn()
   ok a
+
+test "#1436: `for` etc. work as normal property names", ->
+  doesNotThrow -> CoffeeScript.compile "foo.for = 'bar' of foo"

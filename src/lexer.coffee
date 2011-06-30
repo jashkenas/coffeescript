@@ -84,8 +84,7 @@ exports.Lexer = class Lexer
       not prev.spaced and prev[0] is '@')
     tag = 'IDENTIFIER'
 
-    if id in JS_KEYWORDS or
-       not forcedIdentifier and id in COFFEE_KEYWORDS
+    if not forcedIdentifier and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS)
       tag = id.toUpperCase()
       if tag is 'WHEN' and @tag() in LINE_BREAK
         tag = 'LEADING_WHEN'
