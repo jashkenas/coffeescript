@@ -455,7 +455,7 @@ exports.Call = class Call extends Base
   # Tag this invocation as creating a new instance.
   newInstance: ->
     base = @variable.base or @variable
-    if base instanceof Call
+    if base instanceof Call and not base.isNew
       base.newInstance()
     else
       @isNew = true
@@ -911,6 +911,9 @@ exports.Assign = class Assign extends Base
 
   children: ['variable', 'value']
 
+  isStatement: (o) ->
+    o?.level is LEVEL_TOP and "?" in @context
+
   assigns: (name) ->
     @[if @context is 'object' then 'value' else 'variable'].assigns name
 
@@ -1236,7 +1239,7 @@ exports.Op = class Op extends Base
       call.do = yes
       return call
     if op is 'new'
-      return first.newInstance() if first instanceof Call and not first.do
+      return first.newInstance() if first instanceof Call and not first.do and not first.isNew
       first = new Parens first   if first instanceof Code and first.bound or first.do
     @operator = CONVERSIONS[op] or op
     @first    = first
@@ -1402,6 +1405,7 @@ exports.Try = class Try extends Base
     o.indent  += TAB
     errorPart = if @error then " (#{ @error.compile o }) " else ' '
     catchPart = if @recovery
+      o.scope.add @error.value, 'param'
       " catch#{errorPart}{\n#{ @recovery.compile o, LEVEL_TOP }\n#{@tab}}"
     else unless @ensure or @recovery
       ' catch (_e) {}'

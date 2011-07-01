@@ -487,7 +487,22 @@ test "implicit call against control structures", ->
   eq result, 'caught2'
 
 
-test "#1420: things like `(fn() ->)`; there are no words for this one",
+test "#1420: things like `(fn() ->)`; there are no words for this one", ->
   fn = -> (f) -> f()
   nonce = {}
   eq nonce, (fn() -> nonce)
+
+test "#1416: don't omit one 'new' when compiling 'new new'", ->
+  nonce = {}
+  obj = new new -> -> {prop: nonce}
+  eq obj.prop, nonce
+
+test "#1416: don't omit one 'new' when compiling 'new new fn()()'", ->
+  nonce = {}
+  argNonceA = {}
+  argNonceB = {}
+  fn = (a) -> (b) -> {a, b, prop: nonce}
+  obj = new new fn(argNonceA)(argNonceB)
+  eq obj.prop, nonce
+  eq obj.a, argNonceA
+  eq obj.b, argNonceB
