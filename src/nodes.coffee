@@ -129,6 +129,8 @@ exports.Base = class Base
     continue until node is node = node.unwrap()
     node
 
+  printLineno: -> "/*@line: #{@lineno + 1}*/"
+
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
   children: []
@@ -144,6 +146,8 @@ exports.Base = class Base
 
   # Is this node used to assign a certain variable?
   assigns: NO
+
+  lineno: -1
 
 #### Block
 
@@ -1837,3 +1841,18 @@ utility = (name) ->
 
 multident = (code, tab) ->
   code.replace /\n/g, '$&' + tab
+
+exports.printLinenos = () ->
+  # grab all the nodes, but not `extends` and other lowercase, non-classes (like this method)
+  nodes = ( node for name,node of exports when name[0].toUpperCase() is name[0] )
+
+  # monkey patch their compileNode methods so that lineno is appended to their compiled form
+  for node in nodes
+    do ( node ) ->
+      $compile = node::compile
+      node::compile = () ->
+        compiled = $compile.apply( this, Array::slice.call arguments )
+        haslineno = compiled.match(/(.*?)(\/\*\@line\:\ (\d*)\*\/)/gm)
+        # lineno > -1 : filters out node.js code (such as `console.log`)
+        if not haslineno and @lineno > -1 then compiled += @printLineno()
+        compiled

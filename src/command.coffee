@@ -27,6 +27,7 @@ BANNER = '''
 # The list of all the valid option flags that `coffee` knows how to handle.
 SWITCHES = [
   ['-c', '--compile',         'compile to JavaScript and save as .js files']
+  ['-d', '--debug',           'print debug info when a running .coffee file encounters an error']
   ['-i', '--interactive',     'run an interactive CoffeeScript REPL']
   ['-o', '--output [DIR]',    'set the directory for compiled JavaScript']
   ['-j', '--join [FILE]',     'concatenate the scripts before compiling']
@@ -117,7 +118,12 @@ compileScript = (file, input, base) ->
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
     return printLine err.message if o.watch
-    printWarn err.stack
+    if o.debug
+      # while this feature is being developed, sometimes a bug prevents .debug
+      # from having a value, so we must check that here
+      if err.debug then printWarn err.debug else printWarn err.stack
+    else
+      printWarn err.stack
     process.exit 1
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
@@ -201,7 +207,7 @@ parseOptions = ->
   sources       = o.arguments
 
 # The compile-time options to pass to the CoffeeScript compiler.
-compileOptions = (filename) -> {filename, bare: opts.bare}
+compileOptions = (filename) -> {filename, bare: opts.bare, debug: opts.debug}
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
 # the `node` binary, preserving the other options.

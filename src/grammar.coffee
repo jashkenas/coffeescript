@@ -36,7 +36,8 @@ o = (patternString, action, options) ->
   action = if match = unwrap.exec action then match[1] else "(#{action}())"
   action = action.replace /\bnew /g, '$&yy.'
   action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
-  [patternString, "$$ = #{action};", options]
+  [patternString, "$$ = (function(){ var _ = #{action}; if(typeof _.lineno !== 'undefined'){_.lineno = yylineno; }; return _; })()", options]
+  #[patternString, "$$ = (function(){ var _ = #{action}; _.lineno && _.lineno = yylineno; }; return _; })()", options]
 
 # Grammatical Rules
 # -----------------
