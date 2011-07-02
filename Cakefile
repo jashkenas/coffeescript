@@ -39,6 +39,22 @@ log = (message, color, explanation) ->
 
 option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
 
+option '-r', '--require [FILE*]', 'require a library before executing your script'
+
+# Load files that are to-be-required before compilation occurs.
+loadRequires = (opts) ->
+  realFilename = module.filename
+  module.filename = '.'
+  require req for req in opts.require
+  module.filename = realFilename
+
+originalTask = global.task
+task = (name, description, action) ->
+  newAction = (options) ->
+    loadRequires(options) if options.require
+    action(options)
+  originalTask(name, description, newAction)
+
 task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) ->
   base = options.prefix or '/usr/local'
   lib  = "#{base}/lib/coffee-script"
@@ -65,8 +81,10 @@ task 'build', 'build the CoffeeScript language from source', ->
   run ['-c', '-o', 'lib'].concat(files)
 
 
-task 'build:full', 'rebuild the source twice, and run the tests', ->
-  exec 'bin/cake build && bin/cake build && bin/cake test', (err, stdout, stderr) ->
+task 'build:full', 'rebuild the source twice, and run the tests', (options) ->
+  option_string =
+    ("--require #{req}" for req in (options.require or [])).join(' ')
+  exec "bin/cake #{option_string} build && bin/cake #{option_string} build && bin/cake #{option_string} test", (err, stdout, stderr) ->
     console.log stdout.trim() if stdout
     console.log stderr.trim() if stderr
     throw err    if err
