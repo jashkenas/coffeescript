@@ -101,10 +101,11 @@ exports.eval = (code, options = {}) ->
   o = {}
   o[k] = v for own k, v of options
   o.bare = on # ensure return value
-  js = compile "(#{code}\n)", o
-  _ = Script.runInContext js, sandbox
-  sandbox._ = _ if _?
-  _
+  js = compile "_=(#{code}\n)", o
+  _ = sandbox._
+  returnValue = Script.runInContext js, sandbox
+  sandbox._ = _ if returnValue is undefined
+  returnValue
 
 # Instantiate a Lexer for our use here.
 lexer = new Lexer
