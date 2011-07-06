@@ -99,6 +99,8 @@ else
   repl = readline.createInterface stdin, stdout, autocomplete
 
 repl.setPrompt 'coffee> '
-repl.on  'close',  -> stdin.destroy()
+repl.on  'close',  ->
+  process.stdout.write '\n'
+  stdin.destroy()
 repl.on  'line',   run
 repl.prompt()
