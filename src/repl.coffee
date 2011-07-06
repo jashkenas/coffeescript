@@ -32,12 +32,7 @@ backlog = ''
 # Attempt to evaluate the command. If there's an exception, print it out instead
 # of exiting.
 run = do ->
-  sandbox =
-    require: require
-    module : { exports: {} }
-  sandbox[g] = global[g] for g in Object.getOwnPropertyNames global
-  sandbox.global = sandbox
-  sandbox.global.global = sandbox.global.root = sandbox.global.GLOBAL = sandbox
+  sandbox = {}  # properties are set by `CoffeeScript.eval`
   (buffer) ->
     code = backlog += '\n' + buffer.toString()
     if code[code.length - 1] is '\\'
