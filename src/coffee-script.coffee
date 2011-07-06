@@ -8,7 +8,8 @@
 
 fs               = require 'fs'
 path             = require 'path'
-vm               = require 'vm'
+{Script}         = require 'vm'
+Module           = require 'module'
 {Lexer,RESERVED} = require './lexer'
 {parser}         = require './parser'
 
@@ -78,20 +79,33 @@ exports.run = (code, options) ->
 # The CoffeeScript REPL uses this to run the input.
 exports.eval = (code, options = {}) ->
   return unless code = code.trim()
-  sandbox = options.sandbox
-  unless sandbox
-    sandbox =
-      require: require
-      module : { exports: {} }
-    sandbox[g] = global[g] for g in Object.getOwnPropertyNames global
-    sandbox.global = sandbox
-    sandbox.global.global = sandbox.global.root = sandbox.global.GLOBAL = sandbox
+  sandbox = Script.createContext()
+  sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
+  if options.sandbox?
+    if options.sandbox instanceof sandbox.constructor
+      sandbox = options.sandbox
+    else
+      sandbox[k] = v for own k, v of options.sandbox
   sandbox.__filename = options.filename || 'eval'
   sandbox.__dirname  = path.dirname sandbox.__filename
-  o = {}; o[k] = v for k, v of options
+  # define module/require only if they chose not to specify their own
+  unless sandbox.module or sandbox.require
+    Module = require 'module'
+    sandbox.module  = _module  = new Module(options.modulename || 'eval')
+    sandbox.require = _require = (path) -> Module._load path, _module
+    _module.filename = sandbox.__filename
+    _require[r] = require[r] for r in Object.getOwnPropertyNames require
+    # use the same hack node currently uses for their own REPL
+    _require.paths = _module.paths = Module._nodeModulePaths process.cwd()
+    _require.resolve = (request) -> Module._resolveFilename request, _module
+  o = {}
+  o[k] = v for own k, v of options
   o.bare = on # ensure return value
   js = compile "_=(#{code}\n)", o
-  vm.runInNewContext js, sandbox, sandbox.__filename
+  _ = sandbox._
+  returnValue = Script.runInContext js, sandbox
+  sandbox._ = _ if returnValue is undefined
+  returnValue
 
 # Instantiate a Lexer for our use here.
 lexer = new Lexer

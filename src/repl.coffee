@@ -9,6 +9,7 @@ CoffeeScript = require './coffee-script'
 readline     = require 'readline'
 {inspect}    = require 'util'
 {Script}     = require 'vm'
+Module       = require 'module'
 
 # REPL Setup
 
@@ -32,12 +33,8 @@ backlog = ''
 # Attempt to evaluate the command. If there's an exception, print it out instead
 # of exiting.
 run = do ->
-  sandbox =
-    require: require
-    module : { exports: {} }
-  sandbox[g] = global[g] for g in Object.getOwnPropertyNames global
-  sandbox.global = sandbox
-  sandbox.global.global = sandbox.global.root = sandbox.global.GLOBAL = sandbox
+  sandbox = Script.createContext()
+  sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
   (buffer) ->
     code = backlog += '\n' + buffer.toString()
     if code[code.length - 1] is '\\'
@@ -46,8 +43,8 @@ run = do ->
     try
       val = CoffeeScript.eval code, {
         sandbox,
-        bare: on,
         filename: 'repl'
+        modulename: 'repl'
       }
       unless val is undefined
         process.stdout.write inspect(val, no, 2, enableColours) + '\n'
@@ -102,6 +99,8 @@ else
   repl = readline.createInterface stdin, stdout, autocomplete
 
 repl.setPrompt 'coffee> '
-repl.on  'close',  -> stdin.destroy()
+repl.on  'close',  ->
+  process.stdout.write '\n'
+  stdin.destroy()
 repl.on  'line',   run
 repl.prompt()
