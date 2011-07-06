@@ -28,18 +28,18 @@ stdout = process.stdout
 error = (err) ->
   stdout.write (err.stack or err.toString()) + '\n\n'
 
+# The current backlog of multi-line code.
+backlog = ''
 
 # The main REPL function. **run** is called every time a line of code is entered.
 # Attempt to evaluate the command. If there's an exception, print it out instead
 # of exiting.
 run = do ->
-  # The current backlog of multi-line code.
-  backlog = ''
   # The REPL context
   sandbox = Script.createContext()
   sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
   (buffer) ->
-    unless buffer.toString().trim()
+    if !buffer.toString().trim() and !backlog
       repl.prompt()
       return
     code = backlog += buffer
@@ -111,9 +111,20 @@ if readline.createInterface.length < 3
 else
   repl = readline.createInterface stdin, stdout, autocomplete
 
-repl.setPrompt REPL_PROMPT
-repl.on  'close',  ->
+repl.on 'attemptClose', ->
+  if backlog
+    backlog = ''
+    process.stdout.write '\n'
+    repl.setPrompt REPL_PROMPT
+    repl.prompt()
+  else
+    repl.close()
+
+repl.on 'close', ->
   process.stdout.write '\n'
   stdin.destroy()
-repl.on  'line',   run
+
+repl.on 'line', run
+
+repl.setPrompt REPL_PROMPT
 repl.prompt()
