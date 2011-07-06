@@ -83,6 +83,8 @@ exports.eval = (code, options = {}) ->
   unless sandbox and sandbox.require
     sandbox.module = new Module('repl')
     sandbox.require = (path) -> Module._load path, sandbox.module
+    sandbox.require[x] = require[x] for x of require
+    sandbox.require.resolve = (request) -> Module._resolveFilename request, sandbox.module
     sandbox[g] = global[g] for g in Object.getOwnPropertyNames global
     sandbox.global = sandbox
     sandbox.global.global = sandbox.global.root = sandbox.global.GLOBAL = sandbox
