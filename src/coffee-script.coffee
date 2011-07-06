@@ -9,6 +9,7 @@
 fs               = require 'fs'
 path             = require 'path'
 vm               = require 'vm'
+{Module}         = require 'module'
 {Lexer,RESERVED} = require './lexer'
 {parser}         = require './parser'
 
@@ -78,16 +79,17 @@ exports.run = (code, options) ->
 # The CoffeeScript REPL uses this to run the input.
 exports.eval = (code, options = {}) ->
   return unless code = code.trim()
-  sandbox = options.sandbox
-  unless sandbox
-    sandbox =
-      require: require
-      module : { exports: {} }
+  sandbox = options.sandbox ? {}
+  unless sandbox and sandbox.require
+    sandbox.module = new Module('repl')
+    sandbox.require = (path) -> Module._load path, sandbox.module
     sandbox[g] = global[g] for g in Object.getOwnPropertyNames global
     sandbox.global = sandbox
     sandbox.global.global = sandbox.global.root = sandbox.global.GLOBAL = sandbox
-  sandbox.__filename = options.filename || 'eval'
-  sandbox.__dirname  = path.dirname sandbox.__filename
+    sandbox.global = sandbox
+    sandbox.global.global = sandbox.global.root = sandbox.global.GLOBAL = sandbox
+    sandbox.__filename = sandbox.module.filename = options.filename || 'eval'
+    sandbox.__dirname  = path.dirname sandbox.__filename
   o = {}; o[k] = v for k, v of options
   o.bare = on # ensure return value
   js = compile "_=(#{code}\n)", o
