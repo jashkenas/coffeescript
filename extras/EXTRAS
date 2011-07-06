@@ -1,7 +1,0 @@
-EXTRAS:
-
-"extras/coffee-script.js" is a concatenated and compressed version of the 
-CoffeeScript compiler. To use it in the browser, include the script after any 
-inline script tags of type "text/coffeescript" on the page. It will compile
-and evaluate all of the scripts in order.
-
