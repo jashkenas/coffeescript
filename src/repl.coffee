@@ -14,6 +14,8 @@ Module       = require 'module'
 # REPL Setup
 
 # Config
+REPL_PROMPT = 'coffee> '
+REPL_PROMPT_CONTINUATION = '......> '
 enableColours = no
 unless process.platform is 'win32'
   enableColours = not process.env.NODE_DISABLE_COLORS
@@ -26,28 +28,39 @@ stdout = process.stdout
 error = (err) ->
   stdout.write (err.stack or err.toString()) + '\n\n'
 
-# The current backlog of multi-line code.
-backlog = ''
 
 # The main REPL function. **run** is called every time a line of code is entered.
 # Attempt to evaluate the command. If there's an exception, print it out instead
 # of exiting.
 run = do ->
+  # The current backlog of multi-line code.
+  backlog = ''
+  # The REPL context
   sandbox = Script.createContext()
   sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
   (buffer) ->
-    code = backlog += '\n' + buffer.toString()
+    unless buffer.toString().trim()
+      repl.prompt()
+      return
+    code = backlog += buffer
     if code[code.length - 1] is '\\'
-      return backlog = backlog[0...backlog.length - 1]
+      backlog = "#{backlog[...-1]}\n"
+      repl.setPrompt REPL_PROMPT_CONTINUATION
+      repl.prompt()
+      return
+    repl.setPrompt REPL_PROMPT
     backlog = ''
     try
-      val = CoffeeScript.eval code, {
+      _ = sandbox._
+      returnValue = CoffeeScript.eval "_=(#{code}\n)", {
         sandbox,
         filename: 'repl'
         modulename: 'repl'
       }
-      unless val is undefined
-        process.stdout.write inspect(val, no, 2, enableColours) + '\n'
+      if returnValue is undefined
+        sandbox._ = _
+      else
+        process.stdout.write inspect(returnValue, no, 2, enableColours) + '\n'
     catch err
       error err
     repl.prompt()
@@ -98,7 +111,7 @@ if readline.createInterface.length < 3
 else
   repl = readline.createInterface stdin, stdout, autocomplete
 
-repl.setPrompt 'coffee> '
+repl.setPrompt REPL_PROMPT
 repl.on  'close',  ->
   process.stdout.write '\n'
   stdin.destroy()
