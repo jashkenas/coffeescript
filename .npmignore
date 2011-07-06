@@ -5,7 +5,7 @@
 Cakefile
 documentation/
 examples/
-extras/
+extras/coffee-script.js
 raw/
 src/
 test/
