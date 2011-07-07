@@ -9,7 +9,7 @@ ages = (function() {
   _results = [];
   for (child in yearsOld) {
     age = yearsOld[child];
-    _results.push(child + " is " + age);
+    _results.push("" + child + " is " + age);
   }
   return _results;
 })();
