@@ -179,10 +179,7 @@ exports.Block = class Block extends Base
   isEmpty: ->
     not @expressions.length
 
-  isStatement: (o) ->
-    for exp in @expressions when exp.isStatement o
-      return yes
-    no
+  isStatement: YES
 
   jumps: (o) ->
     for exp in @expressions
