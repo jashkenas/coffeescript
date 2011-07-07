@@ -12,7 +12,7 @@ lyrics = (function() {
   var _results;
   _results = [];
   while (num -= 1) {
-    _results.push(num + " little monkeys, jumping on the bed.    One fell out and bumped his head.");
+    _results.push("" + num + " little monkeys, jumping on the bed.    One fell out and bumped his head.");
   }
   return _results;
 })();
