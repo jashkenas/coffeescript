@@ -4,5 +4,5 @@ if ((typeof mind !== "undefined" && mind !== null) && !(typeof world !== "undefi
 }
 if (typeof speed === "undefined" || speed === null) {
   speed = 75;
-};
+}
 footprints = typeof yeti !== "undefined" && yeti !== null ? yeti : "bear";

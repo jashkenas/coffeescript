@@ -188,7 +188,7 @@ exports.Block = class Block extends Base
     for exp in @expressions
       return exp if exp.jumps o
 
-  # An Block node does not return its entire body, rather it
+  # A Block node does not return its entire body, rather it
   # ensures that the final expression is returned.
   makeReturn: ->
     len = @expressions.length
@@ -200,7 +200,7 @@ exports.Block = class Block extends Base
         break
     this
 
-  # An **Block** is the only node that can serve as the root.
+  # A **Block** is the only node that can serve as the root.
   compile: (o = {}, level) ->
     if o.scope then super o, level else @compileRoot o
 
@@ -260,7 +260,7 @@ exports.Block = class Block extends Base
         code += "#{@tab}var #{ multident scope.assignedVariables().join(', '), @tab };\n"
     code + post
 
-  # Wrap up the given nodes as an **Block**, unless it already happens
+  # Wrap up the given nodes as a **Block**, unless it already happens
   # to be one.
   @wrap: (nodes) ->
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Block
@@ -1064,7 +1064,7 @@ exports.Code = class Code extends Base
 
   # Compilation creates a new scope unless explicitly asked to share with the
   # outer scope. Handles splat parameters in the parameter list by peeking at
-  # the JavaScript `arguments` objects. If the function is bound with the `=>`
+  # the JavaScript `arguments` object. If the function is bound with the `=>`
   # arrow, generates a wrapper that saves the current value of `this` through
   # a closure.
   compileNode: (o) ->
@@ -1158,7 +1158,7 @@ exports.Splat = class Splat extends Base
   compile: (o) ->
     if @index? then @compileParam o else @name.compile o
 
-  # Utility function that converts arbitrary number of elements, mixed with
+  # Utility function that converts an arbitrary number of elements, mixed with
   # splats, to a proper array.
   @compileSplattedArray: (o, list, apply) ->
     index = -1
@@ -1673,7 +1673,7 @@ exports.If = class If extends Base
   ensureBlock: (node) ->
     if node instanceof Block then node else new Block [node]
 
-  # Compile the **If** as a regular *if-else* statement. Flattened chains
+  # Compile the `If` as a regular *if-else* statement. Flattened chains
   # force inner *else* bodies into statement form.
   compileStatement: (o) ->
     child    = del o, 'chainChild'
@@ -1696,7 +1696,7 @@ exports.If = class If extends Base
     else
       "{\n#{ @elseBody.compile o, LEVEL_TOP }\n#{@tab}}"
 
-  # Compile the If as a conditional operator.
+  # Compile the `If` as a conditional operator.
   compileExpression: (o) ->
     cond = @condition.compile o, LEVEL_COND
     body = @bodyNode().compile o, LEVEL_LIST
@@ -1792,7 +1792,7 @@ UTILITIES =
   hasProp: 'Object.prototype.hasOwnProperty'
   slice  : 'Array.prototype.slice'
 
-# Levels indicates a node's position in the AST. Useful for knowing if
+# Levels indicate a node's position in the AST. Useful for knowing if
 # parens are necessary or superfluous.
 LEVEL_TOP    = 1  # ...;
 LEVEL_PAREN  = 2  # (...)

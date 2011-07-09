@@ -84,7 +84,7 @@ grammar =
 
   # All the different types of expressions in our language. The basic unit of
   # CoffeeScript is the **Expression** -- everything that can be an expression
-  # is one. Block serve as the building blocks of many other rules, making
+  # is one. Blocks serve as the building blocks of many other rules, making
   # them somewhat circular.
   Expression: [
     o 'Value'
@@ -120,7 +120,7 @@ grammar =
     o 'STRING',                                 -> new Literal $1
   ]
 
-  # All of our immediate values. These can (in general), be passed straight
+  # All of our immediate values. These can (in general) be passed straight
   # through and printed to JavaScript.
   Literal: [
     o 'AlphaNumeric'
@@ -201,6 +201,7 @@ grammar =
     o 'ParamVar = Expression',                  -> new Param $1, $3
   ]
 
+ # Function Parameters
   ParamVar: [
     o 'Identifier'
     o 'ThisProperty'
@@ -354,7 +355,7 @@ grammar =
     o 'ArgList OptComma INDENT ArgList OptComma OUTDENT', -> $1.concat $4
   ]
 
-  # Valid arguments are Block or Splats.
+  # Valid arguments are Blocks or Splats.
   Arg: [
     o 'Expression'
     o 'Splat'
@@ -573,7 +574,7 @@ operators = [
 # Wrapping Up
 # -----------
 
-# Finally, now what we have our **grammar** and our **operators**, we can create
+# Finally, now that we have our **grammar** and our **operators**, we can create
 # our **Jison.Parser**. We do this by processing all of our rules, recording all
 # terminals (every symbol which does not appear as the name of a rule above)
 # as "tokens".
