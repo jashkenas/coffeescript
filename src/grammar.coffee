@@ -120,7 +120,7 @@ grammar =
     o 'STRING',                                 -> new Literal $1
   ]
 
-  # All of our immediate values. These can (in general) be passed straight
+  # All of our immediate values. Generally these can be passed straight
   # through and printed to JavaScript.
   Literal: [
     o 'AlphaNumeric'
