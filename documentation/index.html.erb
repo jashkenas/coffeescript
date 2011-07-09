@@ -189,7 +189,9 @@ sudo bin/cake install</pre>
       If installing on Ubuntu or Debian,
       <a href="http://opinionated-programmer.com/2010/12/installing-coffeescript-on-debian-or-ubuntu/">be
       careful not to use the existing out-of-date package</a>. If installing on
-      Windows, your best bet is probably to run Node.js under Cygwin.
+      Windows, your best bet is probably to run Node.js under Cygwin. If you'd
+      just like to experiment, you can try 
+      <a href="https://github.com/alisey/CoffeeScript-Compiler-for-Windows">The CoffeeScript Compiler For Windows</a>.
     </p>
 
     <p>
@@ -309,7 +311,7 @@ Expressions
         <td><code>--nodejs</code></td>
         <td>
           The <tt>node</tt> executable has some useful options you can set,
-          such as<br /> <tt>--debug</tt> and <tt>--max-stack-size</tt>. Use this
+          such as<br /> <tt>--debug</tt>, <tt>--debug-brk</tt> and <tt>--max-stack-size</tt>. Use this
           flag to forward options directly to Node.js.
         </td>
       </tr>
@@ -367,8 +369,8 @@ Expressions
     <p>
       First, the basics: CoffeeScript uses significant whitespace to delimit blocks of code.
       You don't need to use semicolons <tt>;</tt> to terminate expressions,
-      ending the line will do just as well, (although semicolons can still
-      be used to fit multiple expressions onto a single line.)
+      ending the line will do just as well (although semicolons can still
+      be used to fit multiple expressions onto a single line).
       Instead of using curly braces
       <tt>{ }</tt> to surround blocks of code in <a href="#functions">functions</a>,
       <a href="#conditionals">if-statements</a>,
@@ -447,7 +449,7 @@ Expressions
       If you'd like to create top-level variables for other scripts to use,
       attach them as properties on <b>window</b>, or on the <b>exports</b>
       object in CommonJS. The <b>existential operator</b> (covered below), gives you a
-      reliable way to figure out where to add them, if you're targeting both
+      reliable way to figure out where to add them; if you're targeting both
       CommonJS and the browser: <tt>exports ? this</tt>
     </p>
 
@@ -502,7 +504,7 @@ Expressions
       each iteration into an array. Sometimes functions end with loops that are
       intended to run only for their side-effects. Be careful that you're not
       accidentally returning the results of the comprehension in these cases,
-      by adding a meaningful return value, like <tt>true</tt>, or <tt>null</tt>,
+      by adding a meaningful return value &mdash; like <tt>true</tt> &mdash; or <tt>null</tt>,
       to the bottom of your function.
     </p>
     <p>
@@ -565,7 +567,7 @@ Expressions
       to CoffeeScript functions, they nonetheless return their final value.
       The CoffeeScript compiler tries to make sure that all statements in the
       language can be used as expressions. Watch how the <tt>return</tt> gets
-      pushed down into each possible branch of execution, in the function
+      pushed down into each possible branch of execution in the function
       below.
     </p>
     <%= code_for('expressions', 'eldest') %>
@@ -719,7 +721,7 @@ Expressions
     </p>
     <%= code_for('prototypes', '"one_two".dasherize()') %>
     <p>
-      Finally class definitions are blocks of executable code, which make for interesting
+      Finally, class definitions are blocks of executable code, which make for interesting
       metaprogramming possibilities. Because in the context of a class definition,
       <tt>this</tt> is the class object itself (the constructor function), you
       can assign static properties by using <br /><tt>@property: value</tt>, and call
@@ -758,7 +760,7 @@ Expressions
       <b class="header">Function binding</b>
       In JavaScript, the <tt>this</tt> keyword is dynamically scoped to mean the
       object that the current function is attached to. If you pass a function as
-      as callback, or attach it to a different object, the original value of <tt>this</tt>
+      a callback, or attach it to a different object, the original value of <tt>this</tt>
       will be lost. If you're not familiar with this behavior,
       <a href="http://www.digital-web.com/articles/scope_in_javascript/">this Digital Web article</a>
       gives a good overview of the quirks.
@@ -910,7 +912,7 @@ Expressions
 
     <p>
       In fact, the little bit of glue script that runs "Try CoffeeScript" above,
-      as well as jQuery for the menu, is implemented in just this way.
+      as well as the jQuery for the menu, is implemented in just this way.
       View source and look at the bottom of the page to see the example.
       Including the script also gives you access to <tt>CoffeeScript.compile()</tt>
       so you can pop open Firebug and try compiling some strings.
@@ -1032,7 +1034,7 @@ Expressions
       <b class="header" style="margin-top: 20px;">1.1.0
         <span class="timestamp"> &ndash; <small>May 1, 2011</small></span>
       </b>
-      When running via <tt>coffee</tt> executable, <tt>process.argv</tt> and 
+      When running via the <tt>coffee</tt> executable, <tt>process.argv</tt> and 
       friends now report <tt>coffee</tt> instead of <tt>node</tt>.
       Better compatibility with <b>Node.js 0.4.x</b> module lookup changes.
       The output in the REPL is now colorized, like Node's is.
