@@ -31,39 +31,39 @@ error = (err) ->
 # The current backlog of multi-line code.
 backlog = ''
 
+# The REPL context; must be visible outside `run` to allow for tab completion
+sandbox = Script.createContext()
+sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
+
 # The main REPL function. **run** is called every time a line of code is entered.
 # Attempt to evaluate the command. If there's an exception, print it out instead
 # of exiting.
-run = do ->
-  # The REPL context
-  sandbox = Script.createContext()
-  sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
-  (buffer) ->
-    if !buffer.toString().trim() and !backlog
-      repl.prompt()
-      return
-    code = backlog += buffer
-    if code[code.length - 1] is '\\'
-      backlog = "#{backlog[...-1]}\n"
-      repl.setPrompt REPL_PROMPT_CONTINUATION
-      repl.prompt()
-      return
-    repl.setPrompt REPL_PROMPT
-    backlog = ''
-    try
-      _ = sandbox._
-      returnValue = CoffeeScript.eval "_=(#{code}\n)", {
-        sandbox,
-        filename: 'repl'
-        modulename: 'repl'
-      }
-      if returnValue is undefined
-        sandbox._ = _
-      else
-        process.stdout.write inspect(returnValue, no, 2, enableColours) + '\n'
-    catch err
-      error err
+run = (buffer) ->
+  if !buffer.toString().trim() and !backlog
     repl.prompt()
+    return
+  code = backlog += buffer
+  if code[code.length - 1] is '\\'
+    backlog = "#{backlog[...-1]}\n"
+    repl.setPrompt REPL_PROMPT_CONTINUATION
+    repl.prompt()
+    return
+  repl.setPrompt REPL_PROMPT
+  backlog = ''
+  try
+    _ = sandbox._
+    returnValue = CoffeeScript.eval "_=(#{code}\n)", {
+      sandbox,
+      filename: 'repl'
+      modulename: 'repl'
+    }
+    if returnValue is undefined
+      sandbox._ = _
+    else
+      process.stdout.write inspect(returnValue, no, 2, enableColours) + '\n'
+  catch err
+    error err
+  repl.prompt()
 
 ## Autocompletion
 
@@ -80,26 +80,23 @@ completeAttribute = (text) ->
   if match = text.match ACCESSOR
     [all, obj, prefix] = match
     try
-      val = Script.runInThisContext obj
+      val = Script.runInContext obj, sandbox
     catch error
-      return [[], text]
-    completions = getCompletions prefix, getPropertyNames val
+      return
+    completions = getCompletions prefix, Object.getOwnPropertyNames val
     [completions, prefix]
 
 # Attempt to autocomplete an in-scope free variable: `one`.
 completeVariable = (text) ->
-  if free = text.match(SIMPLEVAR)?[1]
-    scope = Script.runInThisContext 'this'
-    completions = getCompletions free, CoffeeScript.RESERVED.concat(getPropertyNames scope)
+  if free = (text.match SIMPLEVAR)?[1]
+    vars = Script.runInContext 'Object.getOwnPropertyNames(this)', sandbox
+    possibilities = vars.concat CoffeeScript.RESERVED
+    completions = getCompletions free, possibilities
     [completions, free]
 
 # Return elements of candidates for which `prefix` is a prefix.
 getCompletions = (prefix, candidates) ->
   (el for el in candidates when el.indexOf(prefix) is 0)
-
-# Return all "own" properties of an object.
-getPropertyNames = (obj) ->
-  (name for own name of obj)
 
 # Make sure that uncaught exceptions don't kill the REPL.
 process.on 'uncaughtException', error
