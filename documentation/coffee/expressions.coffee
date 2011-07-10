@@ -6,4 +6,9 @@ grade = (student) ->
   else
     "C"
 
-eldest = if 24 > 21 then "Liz" else "Ike"
+students =
+  "salvador":
+    okayStuff: true
+    triedHard: true
+
+alert grade(students["salvador"])
