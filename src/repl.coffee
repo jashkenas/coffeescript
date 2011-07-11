@@ -33,7 +33,11 @@ backlog = ''
 
 # The REPL context; must be visible outside `run` to allow for tab completion
 sandbox = Script.createContext()
-nonContextGlobals = ['clearInterval', 'Buffer', 'setTimeout', 'console', 'process', 'clearTimeout', 'setInterval']
+nonContextGlobals = [
+  'Buffer', 'console', 'process'
+  'setInterval', 'clearInterval'
+  'setTimeout', 'clearTimeout'
+]
 sandbox[g] = global[g] for g in nonContextGlobals
 sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
 
