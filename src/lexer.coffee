@@ -659,7 +659,7 @@ NOT_REGEX = ['NUMBER', 'REGEX', 'BOOL', '++', '--', ']']
 # force a division parse:
 NOT_SPACED_REGEX = NOT_REGEX.concat ')', '}', 'THIS', 'IDENTIFIER', 'STRING'
 
-# Tokens which could legitimately be invoked or indexed. A opening
+# Tokens which could legitimately be invoked or indexed. An opening
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
 CALLABLE  = ['IDENTIFIER', 'STRING', 'REGEX', ')', ']', '}', '?', '::', '@', 'THIS', 'SUPER']

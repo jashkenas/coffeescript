@@ -127,7 +127,7 @@ opposite <span class="Keyword">=</span> <span class="BuiltInConstant">true</span
 number <span class="Keyword">=</span> <span class="Keyword">-</span><span class="Number">42</span> <span class="Keyword">if</span> opposite
 
 <span class="Comment"><span class="Comment">#</span> Functions:</span>
-<span class="FunctionName">square </span><span class="Keyword">=</span> <span class="FunctionArgument">(x)</span> <span class="Storage">-&gt;</span> x <span class="Keyword">*</span> x
+<span class="FunctionName">squar<span class="FunctionName">e</span> </span>=<span class="FunctionArgument"> (x)</span> <span class="Storage">-&gt;</span><span class="Keyword">=</span> <span class="FunctionArgument">(x)</span> <span class="Storage">-&gt;</span> x <span class="Keyword">*</span> x
 
 <span class="Comment"><span class="Comment">#</span> Arrays:</span>
 list <span class="Keyword">=</span> [<span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>]
@@ -136,10 +136,10 @@ list <span class="Keyword">=</span> [<span class="Number">1</span>, <span class=
 math <span class="Keyword">=</span>
   root:   Math.sqrt
   square: square
-  <span class="FunctionName">cube</span><span class="Keyword">:</span>   <span class="FunctionArgument">(x)</span> <span class="Storage">-&gt;</span> x <span class="Keyword">*</span> square x
+  <span class="FunctionName">cub<span class="FunctionName">e</span></span>:<span class="FunctionArgument">   (x)</span> <span class="Storage">-&gt;</span><span class="Keyword">:</span>   <span class="FunctionArgument">(x)</span> <span class="Storage">-&gt;</span> x <span class="Keyword">*</span> square x
 
 <span class="Comment"><span class="Comment">#</span> Splats:</span>
-<span class="FunctionName">race </span><span class="Keyword">=</span> <span class="FunctionArgument">(winner, runners...)</span> <span class="Storage">-&gt;</span>
+<span class="FunctionName">rac<span class="FunctionName">e</span> </span>=<span class="FunctionArgument"> (winner, runners...)</span> <span class="Storage">-&gt;</span><span class="Keyword">=</span> <span class="FunctionArgument">(winner, runners...)</span> <span class="Storage">-&gt;</span>
   print winner, runners
 
 <span class="Comment"><span class="Comment">#</span> Existence:</span>
@@ -264,7 +264,9 @@ sudo bin/cake install</pre>
       If installing on Ubuntu or Debian,
       <a href="http://opinionated-programmer.com/2010/12/installing-coffeescript-on-debian-or-ubuntu/">be
       careful not to use the existing out-of-date package</a>. If installing on
-      Windows, your best bet is probably to run Node.js under Cygwin.
+      Windows, your best bet is probably to run Node.js under Cygwin. If you'd
+      just like to experiment, you can try the 
+      <a href="https://github.com/alisey/CoffeeScript-Compiler-for-Windows">CoffeeScript Compiler For Windows</a>.
     </p>
 
     <p>
@@ -341,7 +343,7 @@ sudo bin/cake install</pre>
         <td><code>-e, --eval</code></td>
         <td>
           Compile and print a little snippet of CoffeeScript directly from the
-          command line. For example:<br /><tt>coffee -e "puts num for num in [10..1]"</tt>
+          command line. For example:<br /><tt>coffee -e "console.log num for num in [10..1]"</tt>
         </td>
       </tr>
       <tr>
@@ -384,7 +386,7 @@ Expressions
         <td><code>--nodejs</code></td>
         <td>
           The <tt>node</tt> executable has some useful options you can set,
-          such as<br /> <tt>--debug</tt> and <tt>--max-stack-size</tt>. Use this
+          such as<br /> <tt>--debug</tt>, <tt>--debug-brk</tt> and <tt>--max-stack-size</tt>. Use this
           flag to forward options directly to Node.js.
         </td>
       </tr>
@@ -442,8 +444,8 @@ Expressions
     <p>
       First, the basics: CoffeeScript uses significant whitespace to delimit blocks of code.
       You don't need to use semicolons <tt>;</tt> to terminate expressions,
-      ending the line will do just as well, (although semicolons can still
-      be used to fit multiple expressions onto a single line.)
+      ending the line will do just as well (although semicolons can still
+      be used to fit multiple expressions onto a single line).
       Instead of using curly braces
       <tt>{ }</tt> to surround blocks of code in <a href="#functions">functions</a>,
       <a href="#conditionals">if-statements</a>,
@@ -464,8 +466,8 @@ Expressions
       an arrow, and the function body. The empty function looks like this:
       <tt>-></tt>
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">square </span><span class="Keyword">=</span> <span class="FunctionArgument">(x)</span> <span class="Storage">-&gt;</span> x <span class="Keyword">*</span> x
-<span class="FunctionName">cube   </span><span class="Keyword">=</span> <span class="FunctionArgument">(x)</span> <span class="Storage">-&gt;</span> square(x) <span class="Keyword">*</span> x
+    <div class='code'><pre class="idle"><span class="FunctionName">squar<span class="FunctionName">e</span> </span>=<span class="FunctionArgument"> (x)</span> <span class="Storage">-&gt;</span><span class="Keyword">=</span> <span class="FunctionArgument">(x)</span> <span class="Storage">-&gt;</span> x <span class="Keyword">*</span> x
+<span class="FunctionName">cub<span class="FunctionName">e</span>   </span>=<span class="FunctionArgument"> (x)</span> <span class="Storage">-&gt;</span><span class="Keyword">=</span> <span class="FunctionArgument">(x)</span> <span class="Storage">-&gt;</span> square(x) <span class="Keyword">*</span> x
 </pre><pre class="idle"><span class="Storage">var</span> cube, square;
 <span class="FunctionName">square</span> = <span class="Storage">function</span>(<span class="FunctionArgument">x</span>) {
   <span class="Keyword">return</span> x <span class="Keyword">*</span> x;
@@ -484,7 +486,7 @@ cube = function(x) {
       Functions may also have default values for arguments. Override the default
       value by passing a non-null argument.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">fill </span><span class="Keyword">=</span> <span class="FunctionArgument">(container, liquid = &quot;coffee&quot;)</span> <span class="Storage">-&gt;</span>
+    <div class='code'><pre class="idle"><span class="FunctionName">fil<span class="FunctionName">l</span> </span>=<span class="FunctionArgument"> (container, liquid = &quot;coffee&quot;)</span> <span class="Storage">-&gt;</span><span class="Keyword">=</span> <span class="FunctionArgument">(container, liquid = &quot;coffee&quot;)</span> <span class="Storage">-&gt;</span>
   <span class="String"><span class="String">&quot;</span>Filling the <span class="String"><span class="String">#{</span>container<span class="String">}</span></span> with <span class="String"><span class="String">#{</span>liquid<span class="String">}</span></span>...<span class="String">&quot;</span></span>
 
 
@@ -593,7 +595,7 @@ log object.<span class="Storage">class</span>
       <tt>var</tt> yourself.
     </p>
     <div class='code'><pre class="idle">outer <span class="Keyword">=</span> <span class="Number">1</span>
-<span class="FunctionName">changeNumbers </span><span class="Keyword">=</span> <span class="Keyword">-</span><span class="Keyword">&gt;</span>
+<span class="FunctionName">changeNumber<span class="FunctionName">s</span> </span>= <span class="Storage">-&gt;</span><span class="Keyword">=</span> <span class="Keyword">-</span><span class="Keyword">&gt;</span>
   inner <span class="Keyword">=</span> <span class="Keyword">-</span><span class="Number">1</span>
   outer <span class="Keyword">=</span> <span class="Number">10</span>
 inner <span class="Keyword">=</span> changeNumbers()
@@ -639,7 +641,7 @@ inner = changeNumbers();;alert(inner);'>run: inner</div><br class='clear' /></di
       If you'd like to create top-level variables for other scripts to use,
       attach them as properties on <b>window</b>, or on the <b>exports</b>
       object in CommonJS. The <b>existential operator</b> (covered below), gives you a
-      reliable way to figure out where to add them, if you're targeting both
+      reliable way to figure out where to add them; if you're targeting both
       CommonJS and the browser: <tt>exports ? this</tt>
     </p>
 
@@ -694,7 +696,7 @@ options <span class="Keyword">||</span> (options <span class="Keyword">=</span> 
     </p>
     <div class='code'><pre class="idle">gold <span class="Keyword">=</span> silver <span class="Keyword">=</span> rest <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>unknown<span class="String">&quot;</span></span>
 
-<span class="FunctionName">awardMedals </span><span class="Keyword">=</span> <span class="FunctionArgument">(first, second, others...)</span> <span class="Storage">-&gt;</span>
+<span class="FunctionName">awardMedal<span class="FunctionName">s</span> </span>=<span class="FunctionArgument"> (first, second, others...)</span> <span class="Storage">-&gt;</span><span class="Keyword">=</span> <span class="FunctionArgument">(first, second, others...)</span> <span class="Storage">-&gt;</span>
   gold   <span class="Keyword">=</span> first
   silver <span class="Keyword">=</span> second
   rest   <span class="Keyword">=</span> others
@@ -802,7 +804,7 @@ countdown = (function() {
       each iteration into an array. Sometimes functions end with loops that are
       intended to run only for their side-effects. Be careful that you're not
       accidentally returning the results of the comprehension in these cases,
-      by adding a meaningful return value, like <tt>true</tt>, or <tt>null</tt>,
+      by adding a meaningful return value &mdash; like <tt>true</tt> &mdash; or <tt>null</tt>,
       to the bottom of your function.
     </p>
     <p>
@@ -818,7 +820,7 @@ countdown = (function() {
     <div class='code'><pre class="idle">yearsOld <span class="Keyword">=</span> max: <span class="Number">10</span>, ida: <span class="Number">9</span>, tim: <span class="Number">11</span>
 
 ages <span class="Keyword">=</span> <span class="Keyword">for</span> child, age <span class="Keyword">of</span> yearsOld
-  child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age
+  <span class="String"><span class="String">&quot;</span><span class="String"><span class="String">#{</span>child<span class="String">}</span></span> is <span class="String"><span class="String">#{</span>age<span class="String">}</span></span><span class="String">&quot;</span></span>
 </pre><pre class="idle"><span class="Storage">var</span> age, ages, child, yearsOld;
 yearsOld <span class="Keyword">=</span> {
   max: <span class="Number">10</span>,
@@ -830,11 +832,11 @@ ages <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">for</span> (child <span class="Keyword">in</span> yearsOld) {
     age <span class="Keyword">=</span> yearsOld[child];
-    _results.<span class="LibraryFunction">push</span>(child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age);
+    _results.<span class="LibraryFunction">push</span>(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age);
   }
   <span class="Keyword">return</span> _results;
 })();
-</pre><script>window.example11 = "yearsOld = max: 10, ida: 9, tim: 11\n\nages = for child, age of yearsOld\n  child + \" is \" + age\n\nalert ages.join(\", \")"</script><div class='minibutton load' onclick='javascript: loadConsole(example11);'>load</div><div class='minibutton ok' onclick='javascript: var age, ages, child, yearsOld;
+</pre><script>window.example11 = "yearsOld = max: 10, ida: 9, tim: 11\n\nages = for child, age of yearsOld\n  \"#{child} is #{age}\"\n\nalert ages.join(\", \")"</script><div class='minibutton load' onclick='javascript: loadConsole(example11);'>load</div><div class='minibutton ok' onclick='javascript: var age, ages, child, yearsOld;
 yearsOld = {
   max: 10,
   ida: 9,
@@ -845,7 +847,7 @@ ages = (function() {
   _results = [];
   for (child in yearsOld) {
     age = yearsOld[child];
-    _results.push(child + " is " + age);
+    _results.push("" + child + " is " + age);
   }
   return _results;
 })();;alert(ages.join(", "));'>run: ages.join(", ")</div><br class='clear' /></div>
@@ -869,7 +871,7 @@ ages = (function() {
 <span class="Comment"><span class="Comment">#</span> Nursery Rhyme</span>
 num <span class="Keyword">=</span> <span class="Number">6</span>
 lyrics <span class="Keyword">=</span> <span class="Keyword">while</span> num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>
-  num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed.</span>
+  <span class="String"><span class="String">&quot;</span><span class="String"><span class="String">#{</span>num<span class="String">}</span></span> little monkeys, jumping on the bed.</span>
 <span class="String">    One fell out and bumped his head.<span class="String">&quot;</span></span>
 </pre><pre class="idle"><span class="Storage">var</span> lyrics, num;
 <span class="Keyword">if</span> (<span class="Variable">this</span>.studyingEconomics) {
@@ -885,11 +887,11 @@ lyrics <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   <span class="Storage">var</span> _results;
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">while</span> (num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>) {
-    _results.<span class="LibraryFunction">push</span>(num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed.    One fell out and bumped his head.<span class="String">&quot;</span></span>);
+    _results.<span class="LibraryFunction">push</span>(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed.    One fell out and bumped his head.<span class="String">&quot;</span></span>);
   }
   <span class="Keyword">return</span> _results;
 })();
-</pre><script>window.example12 = "# Econ 101\nif this.studyingEconomics\n  buy()  while supply > demand\n  sell() until supply > demand\n\n# Nursery Rhyme\nnum = 6\nlyrics = while num -= 1\n  num + \" little monkeys, jumping on the bed.\n    One fell out and bumped his head.\"\n\nalert lyrics.join(\"\\n\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example12);'>load</div><div class='minibutton ok' onclick='javascript: var lyrics, num;
+</pre><script>window.example12 = "# Econ 101\nif this.studyingEconomics\n  buy()  while supply > demand\n  sell() until supply > demand\n\n# Nursery Rhyme\nnum = 6\nlyrics = while num -= 1\n  \"#{num} little monkeys, jumping on the bed.\n    One fell out and bumped his head.\"\n\nalert lyrics.join(\"\\n\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example12);'>load</div><div class='minibutton ok' onclick='javascript: var lyrics, num;
 if (this.studyingEconomics) {
   while (supply > demand) {
     buy();
@@ -903,7 +905,7 @@ lyrics = (function() {
   var _results;
   _results = [];
   while (num -= 1) {
-    _results.push(num + " little monkeys, jumping on the bed.    One fell out and bumped his head.");
+    _results.push("" + num + " little monkeys, jumping on the bed.    One fell out and bumped his head.");
   }
   return _results;
 })();;alert(lyrics.join("\n"));'>run: lyrics.join("\n")</div><br class='clear' /></div>
@@ -981,10 +983,10 @@ numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       to CoffeeScript functions, they nonetheless return their final value.
       The CoffeeScript compiler tries to make sure that all statements in the
       language can be used as expressions. Watch how the <tt>return</tt> gets
-      pushed down into each possible branch of execution, in the function
+      pushed down into each possible branch of execution in the function
       below.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">grade </span><span class="Keyword">=</span> <span class="FunctionArgument">(student)</span> <span class="Storage">-&gt;</span>
+    <div class='code'><pre class="idle"><span class="FunctionName">grad<span class="FunctionName">e</span> </span>=<span class="FunctionArgument"> (student)</span> <span class="Storage">-&gt;</span><span class="Keyword">=</span> <span class="FunctionArgument">(student)</span> <span class="Storage">-&gt;</span>
   <span class="Keyword">if</span> student.excellentWork
     <span class="String"><span class="String">&quot;</span>A+<span class="String">&quot;</span></span>
   <span class="Keyword">else</span> <span class="Keyword">if</span> student.okayStuff
@@ -1074,7 +1076,7 @@ globals = ((function() {
   <span class="Keyword">try</span>
     nonexistent <span class="Keyword">/</span> <span class="BuiltInConstant">undefined</span>
   <span class="Keyword">catch</span> error
-    <span class="String"><span class="String">&quot;</span>And the error is ... <span class="String">&quot;</span></span> <span class="Keyword">+</span> error
+    <span class="String"><span class="String">&quot;</span>And the error is ... <span class="String"><span class="String">#{</span>error<span class="String">}</span></span><span class="String">&quot;</span></span>
 )
 
 </pre><pre class="idle"><span class="LibraryFunction">alert</span>((<span class="Storage">function</span>() {
@@ -1084,7 +1086,7 @@ globals = ((function() {
     <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>And the error is ... <span class="String">&quot;</span></span> <span class="Keyword">+</span> error;
   }
 })());
-</pre><script>window.example19 = "alert(\n  try\n    nonexistent / undefined\n  catch error\n    \"And the error is ... \" + error\n)\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example19);'>load</div><div class='minibutton ok' onclick='javascript: alert((function() {
+</pre><script>window.example19 = "alert(\n  try\n    nonexistent / undefined\n  catch error\n    \"And the error is ... #{error}\"\n)\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example19);'>load</div><div class='minibutton ok' onclick='javascript: alert((function() {
   try {
     return nonexistent / void 0;
   } catch (error) {
@@ -1163,7 +1165,7 @@ letTheWildRumpusBegin() <span class="Keyword">unless</span> answer <span class="
 
 winner <span class="Keyword">=</span> <span class="BuiltInConstant">yes</span> <span class="Keyword">if</span> pick <span class="Keyword">in</span> [<span class="Number">47</span>, <span class="Number">92</span>, <span class="Number">13</span>]
 
-print inspect <span class="String"><span class="String">&quot;</span>My name is <span class="String">&quot;</span></span> <span class="Keyword">+</span> <span class="Variable">@name</span>
+print inspect <span class="String"><span class="String">&quot;</span>My name is <span class="String"><span class="String">#{</span><span class="Variable">@name</span><span class="String">}</span></span><span class="String">&quot;</span></span>
 </pre><pre class="idle"><span class="Storage">var</span> volume, winner;
 <span class="Keyword">if</span> (ignition <span class="Keyword">===</span> <span class="BuiltInConstant">true</span>) {
   launch();
@@ -1181,7 +1183,7 @@ print inspect <span class="String"><span class="String">&quot;</span>My name is 
   winner <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
 }
 <span class="LibraryFunction">print</span>(inspect(<span class="String"><span class="String">&quot;</span>My name is <span class="String">&quot;</span></span> <span class="Keyword">+</span> <span class="Variable">this</span>.<span class="LibraryConstant">name</span>));
-</pre><script>window.example20 = "launch() if ignition is on\n\nvolume = 10 if band isnt SpinalTap\n\nletTheWildRumpusBegin() unless answer is no\n\nif car.speed < limit then accelerate()\n\nwinner = yes if pick in [47, 92, 13]\n\nprint inspect \"My name is \" + @name\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example20);'>load</div><br class='clear' /></div>
+</pre><script>window.example20 = "launch() if ignition is on\n\nvolume = 10 if band isnt SpinalTap\n\nletTheWildRumpusBegin() unless answer is no\n\nif car.speed < limit then accelerate()\n\nwinner = yes if pick in [47, 92, 13]\n\nprint inspect \"My name is #{@name}\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example20);'>load</div><br class='clear' /></div>
 
     <p>
       <b class="header">The Existential Operator</b>
@@ -1209,21 +1211,17 @@ footprints <span class="Keyword">=</span> yeti <span class="Keyword">?</span> <s
 <span class="Keyword">if</span> ((<span class="Keyword">typeof</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> <span class="Keyword">!</span>(<span class="Keyword">typeof</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>)) {
   solipsism <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
 }
-<span class="Keyword">if</span> (<span class="Keyword">typeof</span> speed <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> speed <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) {
-  speed;
-} <span class="Keyword">else</span> {
+<span class="Keyword">if</span> (<span class="Keyword">typeof</span> speed <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">||</span> speed <span class="Keyword">===</span> <span class="BuiltInConstant">null</span>) {
   speed <span class="Keyword">=</span> <span class="Number">75</span>;
-};
+}
 footprints <span class="Keyword">=</span> <span class="Keyword">typeof</span> yeti <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> yeti <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span> ? yeti : <span class="String"><span class="String">&quot;</span>bear<span class="String">&quot;</span></span>;
 </pre><script>window.example21 = "solipsism = true if mind? and not world?\n\nspeed ?= 75\n\nfootprints = yeti ? \"bear\"\n\nalert footprints"</script><div class='minibutton load' onclick='javascript: loadConsole(example21);'>load</div><div class='minibutton ok' onclick='javascript: var footprints, solipsism;
 if ((typeof mind !== "undefined" && mind !== null) && !(typeof world !== "undefined" && world !== null)) {
   solipsism = true;
 }
-if (typeof speed !== "undefined" && speed !== null) {
-  speed;
-} else {
+if (typeof speed === "undefined" || speed === null) {
   speed = 75;
-};
+}
 footprints = typeof yeti !== "undefined" && yeti !== null ? yeti : "bear";;alert(footprints);'>run: footprints</div><br class='clear' /></div>
     <p>
       The accessor variant of the existential operator <tt>?.</tt> can be used to soak
@@ -1269,18 +1267,18 @@ zip <span class="Keyword">=</span> <span class="Keyword">typeof</span> lottery.d
       Constructor functions are named, to better support helpful stack traces.
     </p>
     <div class='code'><pre class="idle"><span class="Storage">class</span> <span class="TypeName">Animal</span>
-  <span class="FunctionName">constructor</span><span class="Keyword">:</span> <span class="FunctionArgument">(@name)</span> <span class="Storage">-&gt;</span>
+  <span class="FunctionName">constructo<span class="FunctionName">r</span></span>:<span class="FunctionArgument"> (@name)</span> <span class="Storage">-&gt;</span><span class="Keyword">:</span> <span class="FunctionArgument">(@name)</span> <span class="Storage">-&gt;</span>
 
-  <span class="FunctionName">move</span><span class="Keyword">:</span> <span class="FunctionArgument">(meters)</span> <span class="Storage">-&gt;</span>
-    alert <span class="Variable">@name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>
+  <span class="FunctionName">mov<span class="FunctionName">e</span></span>:<span class="FunctionArgument"> (meters)</span> <span class="Storage">-&gt;</span><span class="Keyword">:</span> <span class="FunctionArgument">(meters)</span> <span class="Storage">-&gt;</span>
+    alert <span class="Variable">@name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String"><span class="String">#{</span>meters<span class="String">}</span></span>m.<span class="String">&quot;</span></span>
 
-<span class="Storage">class</span> <span class="TypeName">Snake</span><span class="InheritedClass"> <span class="Keyword">extends</span> Animal</span>
-  <span class="FunctionName">move</span><span class="Keyword">:</span> <span class="Keyword">-</span><span class="Keyword">&gt;</span>
+<span class="Storage">class</span> <span class="TypeName">Snake</span> <span class="Keyword">extends</span> <span class="InheritedClass">Animal</span>
+  <span class="FunctionName">mov<span class="FunctionName">e</span></span>: <span class="Storage">-&gt;</span><span class="Keyword">:</span> <span class="Keyword">-</span><span class="Keyword">&gt;</span>
     alert <span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>
     <span class="Variable">super</span> <span class="Number">5</span>
 
-<span class="Storage">class</span> <span class="TypeName">Horse</span><span class="InheritedClass"> <span class="Keyword">extends</span> Animal</span>
-  <span class="FunctionName">move</span><span class="Keyword">:</span> <span class="Keyword">-</span><span class="Keyword">&gt;</span>
+<span class="Storage">class</span> <span class="TypeName">Horse</span> <span class="Keyword">extends</span> <span class="InheritedClass">Animal</span>
+  <span class="FunctionName">mov<span class="FunctionName">e</span></span>: <span class="Storage">-&gt;</span><span class="Keyword">:</span> <span class="Keyword">-</span><span class="Keyword">&gt;</span>
     alert <span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>
     <span class="Variable">super</span> <span class="Number">45</span>
 
@@ -1307,7 +1305,7 @@ Animal <span class="Keyword">=</span> (<span class="Storage">function</span>() {
     <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
   }
   <span class="LibraryClassType">Animal</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>(<span class="FunctionArgument">meters</span>) {
-    <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>);
+    <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">+</span> (<span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>));
   };
   <span class="Keyword">return</span> Animal;
 })();
@@ -1337,7 +1335,7 @@ sam <span class="Keyword">=</span> <span class="Keyword">new</span> <span class=
 tom <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span>(<span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>);
 sam.move();
 tom.move();
-</pre><script>window.example23 = "class Animal\n  constructor: (@name) ->\n\n  move: (meters) ->\n    alert @name + \" moved \" + meters + \"m.\"\n\nclass Snake extends Animal\n  move: ->\n    alert \"Slithering...\"\n    super 5\n\nclass Horse extends Animal\n  move: ->\n    alert \"Galloping...\"\n    super 45\n\nsam = new Snake \"Sammy the Python\"\ntom = new Horse \"Tommy the Palomino\"\n\nsam.move()\ntom.move()\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example23);'>load</div><div class='minibutton ok' onclick='javascript: var Animal, Horse, Snake, sam, tom;
+</pre><script>window.example23 = "class Animal\n  constructor: (@name) ->\n\n  move: (meters) ->\n    alert @name + \" moved #{meters}m.\"\n\nclass Snake extends Animal\n  move: ->\n    alert \"Slithering...\"\n    super 5\n\nclass Horse extends Animal\n  move: ->\n    alert \"Galloping...\"\n    super 45\n\nsam = new Snake \"Sammy the Python\"\ntom = new Horse \"Tommy the Palomino\"\n\nsam.move()\ntom.move()\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example23);'>load</div><div class='minibutton ok' onclick='javascript: var Animal, Horse, Snake, sam, tom;
 var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
   for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
   function ctor() { this.constructor = child; }
@@ -1351,7 +1349,7 @@ Animal = (function() {
     this.name = name;
   }
   Animal.prototype.move = function(meters) {
-    return alert(this.name + " moved " + meters + "m.");
+    return alert(this.name + (" moved " + meters + "m."));
   };
   return Animal;
 })();
@@ -1389,7 +1387,7 @@ tom.move();;'>run</div><br class='clear' /></div>
       quick access to an object's prototype; and <tt>super()</tt>
       is converted into a call against the immediate ancestor's method of the same name.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">String::dasherize </span><span class="Keyword">=</span> <span class="Keyword">-</span><span class="Keyword">&gt;</span>
+    <div class='code'><pre class="idle"><span class="FunctionName">String::dasheriz<span class="FunctionName">e</span> </span>= <span class="Storage">-&gt;</span><span class="Keyword">=</span> <span class="Keyword">-</span><span class="Keyword">&gt;</span>
   <span class="Variable">this</span>.replace <span class="String">/_/g</span>, <span class="String"><span class="String">&quot;</span>-<span class="String">&quot;</span></span>
 
 </pre><pre class="idle"><span class="LibraryClassType">String</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">dasherize</span> = <span class="Storage">function</span>() {
@@ -1399,7 +1397,7 @@ tom.move();;'>run</div><br class='clear' /></div>
   return this.replace(/_/g, "-");
 };;alert("one_two".dasherize());'>run: "one_two".dasherize()</div><br class='clear' /></div>
     <p>
-      Finally class definitions are blocks of executable code, which make for interesting
+      Finally, class definitions are blocks of executable code, which make for interesting
       metaprogramming possibilities. Because in the context of a class definition,
       <tt>this</tt> is the class object itself (the constructor function), you
       can assign static properties by using <br /><tt>@property: value</tt>, and call
@@ -1435,7 +1433,7 @@ _ref = [theSwitch, theBait], theBait = _ref[0], theSwitch = _ref[1];;alert(theBa
       But it's also helpful for dealing with functions that return multiple
       values.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">weatherReport </span><span class="Keyword">=</span> <span class="FunctionArgument">(location)</span> <span class="Storage">-&gt;</span>
+    <div class='code'><pre class="idle"><span class="FunctionName">weatherRepor<span class="FunctionName">t</span> </span>=<span class="FunctionArgument"> (location)</span> <span class="Storage">-&gt;</span><span class="Keyword">=</span> <span class="FunctionArgument">(location)</span> <span class="Storage">-&gt;</span>
   <span class="Comment"><span class="Comment">#</span> Make an Ajax request to fetch the weather...</span>
   [location, <span class="Number">72</span>, <span class="String"><span class="String">&quot;</span>Mostly Sunny<span class="String">&quot;</span></span>]
 
@@ -1479,7 +1477,7 @@ futurists <span class="Keyword">=</span> {
   }
 };
 _ref <span class="Keyword">=</span> futurists.poet, name <span class="Keyword">=</span> _ref.<span class="LibraryConstant">name</span>, _ref2 <span class="Keyword">=</span> _ref.address, street <span class="Keyword">=</span> _ref2[<span class="Number">0</span>], city <span class="Keyword">=</span> _ref2[<span class="Number">1</span>];
-</pre><script>window.example27 = "futurists =\n  sculptor: \"Umberto Boccioni\"\n  painter:  \"Vladimir Burliuk\"\n  poet:\n    name:   \"F.T. Marinetti\"\n    address: [\n      \"Via Roma 42R\"\n      \"Bellagio, Italy 22021\"\n    ]\n\n{poet: {name, address: [street, city]}} = futurists\n\nalert name + \" — \" + street"</script><div class='minibutton load' onclick='javascript: loadConsole(example27);'>load</div><div class='minibutton ok' onclick='javascript: var city, futurists, name, street, _ref, _ref2;
+</pre><script>window.example27 = "futurists =\n  sculptor: \"Umberto Boccioni\"\n  painter:  \"Vladimir Burliuk\"\n  poet:\n    name:   \"F.T. Marinetti\"\n    address: [\n      \"Via Roma 42R\"\n      \"Bellagio, Italy 22021\"\n    ]\n\n{poet: {name, address: [street, city]}} = futurists\n\nalert name + \" \u2014 \" + street"</script><div class='minibutton load' onclick='javascript: loadConsole(example27);'>load</div><div class='minibutton ok' onclick='javascript: var city, futurists, name, street, _ref, _ref2;
 futurists = {
   sculptor: "Umberto Boccioni",
   painter: "Vladimir Burliuk",
@@ -1513,7 +1511,7 @@ _ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? __slice.call
       <b class="header">Function binding</b>
       In JavaScript, the <tt>this</tt> keyword is dynamically scoped to mean the
       object that the current function is attached to. If you pass a function as
-      as callback, or attach it to a different object, the original value of <tt>this</tt>
+      a callback or attach it to a different object, the original value of <tt>this</tt>
       will be lost. If you're not familiar with this behavior,
       <a href="http://www.digital-web.com/articles/scope_in_javascript/">this Digital Web article</a>
       gives a good overview of the quirks.
@@ -1526,7 +1524,7 @@ _ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? __slice.call
       to use with <tt>bind</tt>. Functions created with the fat arrow are able to access
       properties of the <tt>this</tt> where they're defined.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">Account </span><span class="Keyword">=</span> <span class="FunctionArgument">(customer, cart)</span> <span class="Storage">-&gt;</span>
+    <div class='code'><pre class="idle"><span class="FunctionName">Accoun<span class="FunctionName">t</span> </span>=<span class="FunctionArgument"> (customer, cart)</span> <span class="Storage">-&gt;</span><span class="Keyword">=</span> <span class="FunctionArgument">(customer, cart)</span> <span class="Storage">-&gt;</span>
   <span class="Variable">@customer</span> <span class="Keyword">=</span> customer
   <span class="Variable">@cart</span> <span class="Keyword">=</span> cart
 
@@ -1680,7 +1678,7 @@ sentence <span class="Keyword">=</span> <span class="String"><span class="String
 author <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Wittgenstein<span class="String">&quot;</span></span>;
 quote <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String">&quot;</span></span> <span class="Keyword">+</span> author;
 sentence <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> (<span class="Number">22</span> / <span class="Number">7</span>) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is a decent approximation of π<span class="String">&quot;</span></span>;
-</pre><script>window.example34 = "author = \"Wittgenstein\"\nquote  = \"A picture is a fact. -- #{ author }\"\n\nsentence = \"#{ 22 / 7 } is a decent approximation of π\"\n\nalert sentence"</script><div class='minibutton load' onclick='javascript: loadConsole(example34);'>load</div><div class='minibutton ok' onclick='javascript: var author, quote, sentence;
+</pre><script>window.example34 = "author = \"Wittgenstein\"\nquote  = \"A picture is a fact. -- #{ author }\"\n\nsentence = \"#{ 22 / 7 } is a decent approximation of \u03c0\"\n\nalert sentence"</script><div class='minibutton load' onclick='javascript: loadConsole(example34);'>load</div><div class='minibutton ok' onclick='javascript: var author, quote, sentence;
 author = "Wittgenstein";
 quote = "A picture is a fact. -- " + author;
 sentence = "" + (22 / 7) + " is a decent approximation of π";;alert(sentence);'>run: sentence</div><br class='clear' /></div>
@@ -1826,7 +1824,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
 
     <p>
       In fact, the little bit of glue script that runs "Try CoffeeScript" above,
-      as well as jQuery for the menu, is implemented in just this way.
+      as well as the jQuery for the menu, is implemented in just this way.
       View source and look at the bottom of the page to see the example.
       Including the script also gives you access to <tt>CoffeeScript.compile()</tt>
       so you can pop open Firebug and try compiling some strings.
@@ -1948,7 +1946,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       <b class="header" style="margin-top: 20px;">1.1.0
         <span class="timestamp"> &ndash; <small>May 1, 2011</small></span>
       </b>
-      When running via <tt>coffee</tt> executable, <tt>process.argv</tt> and 
+      When running via the <tt>coffee</tt> executable, <tt>process.argv</tt> and 
       friends now report <tt>coffee</tt> instead of <tt>node</tt>.
       Better compatibility with <b>Node.js 0.4.x</b> module lookup changes.
       The output in the REPL is now colorized, like Node's is.

@@ -14,7 +14,7 @@ exports.Scope = class Scope
   @root: null
 
   # Initialize a scope with its parent, for lookups up the chain,
-  # as well as a reference to the **Block** node is belongs to, which is
+  # as well as a reference to the **Block** node it belongs to, which is
   # where it should declare its variables, and a reference to the function that
   # it wraps.
   constructor: (@parent, @expressions, @method) ->
