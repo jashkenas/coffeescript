@@ -63,7 +63,7 @@ printTasks = ->
     console.log "cake #{name}#{spaces} #{desc}"
   console.log oparse.help() if switches.length
 
-# Print an error and exit when attempting to all an undefined task.
+# Print an error and exit when attempting to call an undefined task.
 missingTask = (task) ->
   console.log "No such task: \"#{task}\""
   process.exit 1

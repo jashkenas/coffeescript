@@ -17,7 +17,7 @@ exports.OptionParser = class OptionParser
     @rules = buildRules rules
 
   # Parse the list of arguments, populating an `options` object with all of the
-  # specified options, and returning it. `options.arguments` will be an array
+  # specified options, and return it. `options.arguments` will be an array
   # containing the remaining non-option arguments. `options.literals` will be
   # an array of options that are meant to be passed through directly to the
   # executing script. This is a simpler API than many option parsers that allow
