@@ -79,7 +79,7 @@ compileScripts = ->
     compile = (source, sourceIndex, topLevel) ->
       path.exists source, (exists) ->
         if topLevel and not exists and source[-7..] isnt '.coffee'
-            return compile source + ".coffee", sourceIndex, topLevel
+            return compile "#{source}.coffee", sourceIndex, topLevel
                 
         throw new Error "File not found: #{source}" if topLevel and not exists
         fs.stat source, (err, stats) ->
