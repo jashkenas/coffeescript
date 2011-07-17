@@ -1074,34 +1074,75 @@ exports.Code = class Code extends Base
     delete o.bare
     vars   = []
     exprs  = []
-    for param in @params when param.splat
-      o.scope.add p.name.value, 'var', yes for p in @params when p.name.value
-      splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
-                          new Value new Literal 'arguments'
-      break
-    for param in @params
+
+    wasEmpty = @body.isEmpty()
+
+    for param, idx in @params
+      if param.splat
+        if splat then throw new Error 'multiple splats in a single parameter list'
+        splat = param
+        splatIndex = idx
+      ref = param
       if param.isComplex()
-        val = ref = param.asReference o
+        @params[idx] = val = ref = param.asReference o
         val = new Op '?', ref, param.value if param.value
         exprs.push new Assign new Value(param.name), val, '=', param: yes
-      else
-        ref = param
-        if param.value
-          lit = new Literal ref.name.value + ' == null'
-          val = new Assign new Value(param.name), param.value, '='
-          exprs.push new If lit, val
-      vars.push ref unless splats
-    wasEmpty = @body.isEmpty()
-    exprs.unshift splats if splats
+      else if param.value
+        lit = new Literal ref.name.value + ' == null'
+        val = new Assign new Value(param.name), param.value, '='
+        exprs.push new If lit, val
+      ref.splat = param.splat
+      ref.value = param.value
+      vars.push ref
+
+    if splat
+      splat = splat.name.properties[0] if splat.name?.this
+      splatName = splat.reference?.name || splat.name
+      o.scope.add splatName.value, 'var', yes unless splat.name.objects?
+      argLengthVar = '_numArgs'
+      o.scope.add argLengthVar, 'var', yes
+      exprs.unshift [
+        new Assign (new Value splatName), new Arr []
+        new If (new Op '>', (new Assign (new Value new Literal argLengthVar), new Value (new Literal 'arguments'), [new Access new Literal 'length']), new Value new Literal @params.length - 1), [
+          (
+            callArgs = [(new Literal 'arguments'), (new Literal splatIndex)]
+            callArgs.push new Op '-', (new Literal argLengthVar), new Literal ''+(@params.length - splatIndex - 1) unless splatIndex is @params.length - 1
+            new Assign (new Value splatName), new Call (new Value (new Literal utility 'slice'), [new Access new Literal 'call']), callArgs
+          )
+          (
+            for param, i in @params[splatIndex+1...]
+              param = param.name.properties[0] if param.name?.this
+              pName = param.reference?.name || param.base || param.name
+              continue if param is splat
+              idx = new Op '-', (new Literal argLengthVar), new Literal @params.length - splatIndex - i - 1
+              new Assign (new Value pName), new Value (new Literal 'arguments'), [new Index idx]
+          )...
+        ]
+      ]...
+
     @body.expressions.unshift exprs... if exprs.length
-    o.scope.parameter vars[i] = v.compile o for v, i in vars unless splats
+    for v, i in vars
+      if v instanceof Splat
+        v = new Param v, null, yes
+        v.splat = yes
+      vc = (v.compile o).replace /\s/g, ''
+      o.scope.parameter vc unless v.splat
+      vc = "#{if v.splat then '@' else '/*@*/'}#{vc}" if v.base?.asKey
+      if v.value
+        vvc = (v.value.compile o).replace /\s/g, ''
+        vc = "#{vc}#{"/* = #{vvc}*/"}"
+      vc = "#{vc}..." if v.splat
+      # XXX: ugly hack:
+      vc += ',' unless i is vars.length - 1 or (i is vars.length - 2 and (vars[vars.length - 1].splat or vars[vars.length - 1] instanceof Splat))
+      vc = "/*#{vc}*/" if v.splat
+      vars[i] = vc
     @body.makeReturn() unless wasEmpty or @noReturn
-    idt   = o.indent
-    code  = 'function'
-    code  += ' ' + @name if @ctor
-    code  += '(' + vars.join(', ') + ') {'
-    code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
-    code  += '}'
+    idt  = o.indent
+    code = 'function'
+    code += ' ' + @name if @ctor
+    code += "(#{vars.join ' '}) {"
+    code += "\n#{@body.compileWithDeclarations o}\n#{@tab}" unless @body.isEmpty()
+    code += '}'
     return @tab + code if @ctor
     return utility('bind') + "(#{code}, #{@context})" if @bound
     if @front or (o.level >= LEVEL_ACCESS) then "(#{code})" else code
