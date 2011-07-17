@@ -214,7 +214,12 @@ exports.Block = class Block extends Base
     for node in @expressions
       node = node.unwrapAll()
       node = (node.unfoldSoak(o) or node)
-      if top
+      if node instanceof Block
+        # This is a nested block.  We don't do anything special here like enclose
+        # it in a new scope; we just compile the statements in this block along with
+        # our own
+        codes.push node.compileNode o
+      else if top
         node.front = true
         code = node.compile o
         codes.push if node.isStatement o then code else @tab + code + ';'

@@ -116,3 +116,10 @@ test "indented heredoc", ->
                 abc
                 """)
   eq "abc", result
+
+# Nested blocks caused by paren unwrapping
+test "#1492: Nested blocks don't cause double semicolons", ->
+  js = CoffeeScript.compile """
+    (0;0)
+    """
+  eq -1, js.indexOf ';;'
