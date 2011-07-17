@@ -119,7 +119,5 @@ test "indented heredoc", ->
 
 # Nested blocks caused by paren unwrapping
 test "#1492: Nested blocks don't cause double semicolons", ->
-  js = CoffeeScript.compile """
-    (0;0)
-    """
+  js = CoffeeScript.compile '(0;0)'
   eq -1, js.indexOf ';;'
