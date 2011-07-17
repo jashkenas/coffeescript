@@ -1125,11 +1125,13 @@ exports.Code = class Code extends Base
       if v instanceof Splat
         v = new Param v, null, yes
         v.splat = yes
-      vc = (v.compile o).replace /\s/g, ''
+      vc = (v.compile o).replace /[\r\n]+\s*/g, ''
       o.scope.parameter vc unless v.splat
       vc = "#{if v.splat then '@' else '/*@*/'}#{vc}" if v.base?.asKey
       if v.value
-        vvc = (v.value.compile o).replace /\s/g, ''
+        vvc = (v.value.compile o).replace /[\r\n]+\s*/g, ''
+        vvc = "#{vvc[...27]}..." if vvc.length > 30
+        vvc = "#{vvc[..pos]}..." if (pos = vvc.indexOf('*/')) >= 0
         vc = "#{vc}#{"/* = #{vvc}*/"}"
       vc = "#{vc}..." if v.splat
       # XXX: ugly hack:
