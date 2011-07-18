@@ -1590,7 +1590,6 @@ exports.For = class For extends Base
       base  = new Value ref
       if val.base
         [val.base, base] = [base, val]
-        args.unshift new Literal 'this'
       body.expressions[idx] = new Call base, expr.args
       defs += @tab + new Assign(ref, fn).compile(o, LEVEL_TOP) + ';\n'
     defs
