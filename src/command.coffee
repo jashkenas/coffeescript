@@ -85,6 +85,9 @@ compileScripts = ->
         total += x for x in unprocessed
         total
       path.exists source, (exists) ->
+        if topLevel and not exists and source[-7..] isnt '.coffee'
+            return compile "#{source}.coffee", sourceIndex, topLevel
+                
         throw new Error "File not found: #{source}" if topLevel and not exists
         fs.stat source, (err, stats) ->
           throw err if err
