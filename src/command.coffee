@@ -93,12 +93,14 @@ compileScripts = ->
           throw err if err
           if stats.isDirectory()
             fs.readdir source, (err, files) ->
+              throw err if err
               unprocessed[sourceIndex] += files.length
               for file in files
                 compile path.join(source, file), sourceIndex
               unprocessed[sourceIndex] -= 1
           else if topLevel or path.extname(source) is '.coffee'
             fs.readFile source, (err, code) ->
+              throw err if err
               unprocessed[sourceIndex] -= 1
               if opts.join
                 contents[sourceIndex] = helpers.compact([contents[sourceIndex], code.toString()]).join('\n')
