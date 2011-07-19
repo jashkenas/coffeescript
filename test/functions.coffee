@@ -76,9 +76,9 @@ test "self-referencing functions", ->
 
 test "splats", ->
   arrayEq [0, 1, 2], (((splat...) -> splat) 0, 1, 2)
-  arrayEq [2, 3], (((_, _, splat...) -> splat) 0, 1, 2, 3)
-  arrayEq [0, 1], (((splat..., _, _) -> splat) 0, 1, 2, 3)
-  arrayEq [2], (((_, _, splat..., _) -> splat) 0, 1, 2, 3)
+  arrayEq [2, 3], (((_, __, splat...) -> splat) 0, 1, 2, 3)
+  arrayEq [0, 1], (((splat..., _, __) -> splat) 0, 1, 2, 3)
+  arrayEq [2], (((_, __, splat..., ___) -> splat) 0, 1, 2, 3)
 
 test "@-parameters: automatically assign an argument's value to a property of the context", ->
   nonce = {}
@@ -116,7 +116,7 @@ test "destructuring in function definition", ->
 test "default values", ->
   nonceA = {}
   nonceB = {}
-  a = (_,_,arg=nonceA) -> arg
+  a = (_,__,arg=nonceA) -> arg
   eq nonceA, a()
   eq nonceA, a(0)
   eq nonceB, a(0,0,nonceB)
@@ -124,7 +124,7 @@ test "default values", ->
   eq nonceA, a(0,0,null)
   eq false , a(0,0,false)
   eq nonceB, a(undefined,undefined,nonceB,undefined)
-  b = (_,arg=nonceA,_,_) -> arg
+  b = (_,arg=nonceA,__,___) -> arg
   eq nonceA, b()
   eq nonceA, b(0)
   eq nonceB, b(0,nonceB)
@@ -132,7 +132,7 @@ test "default values", ->
   eq nonceA, b(0,null)
   eq false , b(0,false)
   eq nonceB, b(undefined,nonceB,undefined)
-  c = (arg=nonceA,_,_) -> arg
+  c = (arg=nonceA,_,__) -> arg
   eq nonceA, c()
   eq      0, c(0)
   eq nonceB, c(nonceB)
@@ -163,3 +163,46 @@ test "arguments vs parameters", ->
   doesNotThrow -> CoffeeScript.compile "f(x) ->"
   f = (g) -> g()
   eq 5, f (x) -> 5
+  
+test "#1002: parameters with identical names", ->
+  
+  # exercises param.isComplex() branch
+  # (tests for false positives)
+  doesNotThrow -> ((@prop1002, splat1002...) -> ) 0, 1
+  
+  # the second @prop had the name `undefined` 
+  # until I added the check for ref.base?.value
+  # (tests for false positives)
+  doesNotThrow -> ((@first1002, splat..., @last1002) -> ) 0, 1, 2
+
+  nonce = {}
+  testNames = (code,msg) -> eq nonce, (try CoffeeScript.eval "#{code}", bare: on catch e then nonce), msg
+  
+  # a Param can be an Identifier, ThisProperty( @param ), Array, or Object
+  # a Param can also be a splat (...) or an assignment (param=value)
+  testNames '(_,_)->',          'param, param'
+  testNames '(_,@_)->',         'param, @param'
+  testNames '(_,_...)->',       'param, param...'
+  testNames '(@_,_...)->',      '@param, param...'
+  testNames '(_,_ = true)->',   'param, param='
+  testNames '(@_,@_)->',        'two @params'
+  testNames '(_,@_ = true)->',  'param, @param='
+  testNames '(_,{_})->',        'param, {param}'
+  testNames '(@_,{_})->',       '@param, {param}'
+  testNames '({_,_})->',        '{param, param}'
+  testNames '({_,@_})->',       '{param, @param}'
+  testNames '(_,[_])->',        'param, [param]'
+  testNames '([_,_])->',        '[param, param]'
+  testNames '([_,@_])->',       '[param, @param]'
+  testNames '(_,[_]=true)->',   'param, [param]='
+  testNames '(_,[@_,{_}])->',   'param, [@param, {param}]'
+  testNames '(_,[_,{@_}])->',   'param, [param, {@param}]'
+  testNames '(_,[_,{_}])->',    'param, [param, {param}]'
+  testNames '(_,[_,{__}])->',   'param, [param, {param2}]'
+  testNames '(_,[__,{_}])->',   'param, [param2, {param}]'
+  testNames '(__,[_,{_}])->',   'param, [param2, {param2}]'
+  testNames '({}, _arg)->',      'object literal, _arg to test compiler renaming of references'
+  doesNotThrow -> do ({},{}) -> #compiler should give each {} a unique name
+  testNames '(@case, _case)->', '@case, _case to test compiler renaming of reserved keywords'
+  testNames '(@case, @case)->', '@case, @case'
+
