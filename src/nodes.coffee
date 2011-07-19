@@ -1076,6 +1076,7 @@ exports.Code = class Code extends Base
     o.scope         = new Scope o.scope, @body, this
     o.scope.shared  = del o, 'sharedScope'
     o.indent        += TAB
+    o.uniqs         = {}
     delete o.bare
     vars   = []
     exprs  = []
@@ -1087,6 +1088,7 @@ exports.Code = class Code extends Base
     for param in @params
       if param.isComplex()
         val = ref = param.asReference o
+        o.uniqs[param.refName] = true if param.refName?
         val = new Op '?', ref, param.value if param.value
         exprs.push new Assign new Value(param.name), val, '=', param: yes
       else
@@ -1095,6 +1097,7 @@ exports.Code = class Code extends Base
           lit = new Literal ref.name.value + ' == null'
           val = new Assign new Value(param.name), param.value, '='
           exprs.push new If lit, val
+      param.checkUnique o
       vars.push ref unless splats
     wasEmpty = @body.isEmpty()
     exprs.unshift splats if splats
@@ -1128,19 +1131,38 @@ exports.Param = class Param extends Base
 
   compile: (o) ->
     @name.compile o, LEVEL_LIST
-
+  
   asReference: (o) ->
     return @reference if @reference
     node = @name
     if node.this
       node = node.properties[0].name
-      node = new Literal '_' + node.value if node.value.reserved
+      node = new Literal (@refName = o.scope.freeVariable node.value) if node.value.reserved
     else if node.isComplex()
-      node = new Literal o.scope.freeVariable 'arg'
+      node = new Literal (@refName = o.scope.freeVariable 'arg')
     node = new Value node
     node = new Splat node if @splat
     @reference = node
-
+  
+  checkUnique: (o) ->
+    for name in @collectNames()
+      throw SyntaxError "parameter names must be unique; a parameter '#{name}' already exists." if o.uniqs.hasOwnProperty name
+      o.uniqs[name] = true
+  
+  # Some parameters may be in the form of object literals or arrays.
+  # Collect each parameter name to allow `checkUnique` to ensure they're each unique.
+  collectNames: (node = @name)->
+    names = []
+    unless node.objects
+      return [node.properties[0].name.value] if node.properties?.length
+      return [node.value] if node.value?
+    for obj in node.objects
+      if obj.variable? then names.push obj.variable.base.value 
+      else if obj.base?.objects?.length then names = names.concat(@collectNames(obj.base))
+      else unless obj.properties?.length then names.push(obj.base.value)
+      else names.push(obj.properties[0].name.value)
+    names
+  
   isComplex: ->
     @name.isComplex()
 
