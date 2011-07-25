@@ -1077,16 +1077,22 @@ exports.Code = class Code extends Base
     o.scope.shared  = del o, 'sharedScope'
     o.indent        += TAB
     delete o.bare
-    vars   = []
-    exprs  = []
+    formalParams    = []
+    paramNames      = []
+    exprs           = [] 
     for param in @params when param.splat
       o.scope.add p.name.value, 'var', yes for p in @params when p.name.value
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
                           new Value new Literal 'arguments'
       break
     for param in @params
+      for pname in allNames = param.simpleNames()
+        unless o.scope.check pname then o.scope.parameter pname
+      paramNames.unshift allNames...
+    for param in @params
       if param.isComplex()
         val = ref = param.asReference o
+        paramNames.push param.refName if param.refName?
         val = new Op '?', ref, param.value if param.value
         exprs.push new Assign new Value(param.name), val, '=', param: yes
       else
@@ -1095,16 +1101,21 @@ exports.Code = class Code extends Base
           lit = new Literal ref.name.value + ' == null'
           val = new Assign new Value(param.name), param.value, '='
           exprs.push new If lit, val
-      vars.push ref unless splats
+      formalParams.push ref unless splats
     wasEmpty = @body.isEmpty()
     exprs.unshift splats if splats
     @body.expressions.unshift exprs... if exprs.length
-    o.scope.parameter vars[i] = v.compile o for v, i in vars unless splats
+    o.scope.parameter formalParams[i] = fp.compile o for fp, i in formalParams
+    uniqs = {}
+    for pname in paramNames
+      if uniqs.hasOwnProperty(pname) 
+        throw SyntaxError "parameter names must be unique; a parameter '#{pname}' already exists."
+      uniqs[pname] = true
     @body.makeReturn() unless wasEmpty or @noReturn
     idt   = o.indent
     code  = 'function'
     code  += ' ' + @name if @ctor
-    code  += '(' + vars.join(', ') + ') {'
+    code  += '(' + formalParams.join(', ') + ') {'
     code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
     code  += '}'
     return @tab + code if @ctor
@@ -1128,19 +1139,34 @@ exports.Param = class Param extends Base
 
   compile: (o) ->
     @name.compile o, LEVEL_LIST
-
+  
   asReference: (o) ->
     return @reference if @reference
     node = @name
     if node.this
       node = node.properties[0].name
-      node = new Literal '_' + node.value if node.value.reserved
+      node = new Literal (@refName = o.scope.freeVariable node.value) if node.value.reserved
     else if node.isComplex()
-      node = new Literal o.scope.freeVariable 'arg'
+      node = new Literal (@refName = o.scope.freeVariable 'arg')
     node = new Value node
     node = new Splat node if @splat
     @reference = node
-
+  
+  simpleNames: (node=@name)->
+    names = []
+    unless node.objects
+      return [] if node.this and node.properties[0].name.value.reserved
+      return [node.properties[0].name.value] if node.this
+      return [node.value]
+    for obj in node.objects
+      if obj instanceof Value
+        continue if obj.this and obj.properties[0].name.value.reserved
+        if obj.isArray() or obj.isObject() then names.unshift @simpleNames(obj.base)...
+        else if obj.this then names.push obj.properties[0].name.value
+        else names.push obj.base.value
+      else names.push obj.variable.base.value
+    names
+  
   isComplex: ->
     @name.isComplex()
 
