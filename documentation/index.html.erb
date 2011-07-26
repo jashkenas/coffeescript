@@ -197,11 +197,21 @@ sudo bin/cake install</pre>
     <p>
       Once installed, you should have access to the <tt>coffee</tt> command,
       which can execute scripts, compile <tt>.coffee</tt> files into <tt>.js</tt>,
-      and provide an interactive REPL. The <tt>coffee</tt> command takes the
-      following options:
+      and provide an interactive REPL. The command <tt>coffee [options] [file]</tt>
+      takes the following arguments:
     </p>
-
     <table>
+      <tr>
+        <td><code>file</code></td>
+        <td>
+          The <tt>.coffee</tt> script file to execute or compile. Running 
+          <tt>coffee file.coffee</tt> will compile and execute the
+          <tt>.coffee</tt> script and print its output to <b>stdout</b>.
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">Options:</td>
+      </tr>
       <tr>
         <td><code>-c, --compile</code></td>
         <td>
@@ -322,6 +332,10 @@ Expressions
     </p>
 
     <ul>
+      <li>
+        Run a <tt>.coffee</tt> script and echo its output to the console:<br />
+        <tt>coffee helloworld.coffee</tt>
+      </li>
       <li>
         Compile a directory tree of <tt>.coffee</tt> files into a parallel
         tree of <tt>.js</tt>, in <tt>lib</tt>:<br />
@@ -923,6 +937,26 @@ Expressions
       run within a closure wrapper, so if you want to expose global variables or
       functions, attach them to the <tt>window</tt> object.
     </p>
+
+
+    <h2>
+      <span id="shell_scripts" class="bookmark"></span>
+      Shell Scripting
+    </h2>
+
+    <p>
+      You can write command line executables in CoffeeScript by invoking the
+      <tt>coffee</tt> interpreter on the first line of the script. The
+      <tt>.coffee</tt> script will be compiled to JavaScript and executed using
+      <a href="http://nodejs.org/docs/latest/api/">Node.js</a>.
+    </p>
+    <%= code_for('hello_world') %>
+    <p>
+      If this was saved to a file called <tt>helloworld.coffee</tt> and marked
+      as executable, you could run it directly from the command line with
+      <tt>$ ./helloworld.coffee</tt>.
+    </p>
+
 
     <h2>
       <span id="resources" class="bookmark"></span>

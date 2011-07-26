@@ -29,8 +29,11 @@
   npm install -g coffee-script
   (Leave off the -g if you don't wish to install globally.)
 
-  Compile a script:
+  Run a script:
   coffee /path/to/script.coffee
+
+  Compile to JavaScript:
+  coffee -c /path/to/script.coffee
 
   For documentation, usage, and examples, see:
   http://coffeescript.org/
