@@ -520,7 +520,7 @@ exports.Call = class Call extends Base
         continue
       obj = null
       for prop in node.base.properties
-        if prop instanceof Assign
+        if prop instanceof Assign or prop instanceof Comment
           nodes.push obj = new Obj properties = [], true if not obj
           properties.push prop
         else
