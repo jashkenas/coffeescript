@@ -388,7 +388,7 @@ exports.Value = class Value extends Base
     name = last @properties
     if @properties.length < 2 and not @base.isComplex() and not name?.isComplex()
       return [this, this]  # `a` `a.b`
-    base = new Value @base, @properties.slice 0, -1
+    base = new Value @base, @properties[...-1]
     if base.isComplex()  # `a().b`
       bref = new Literal o.scope.freeVariable 'base'
       base = new Value new Parens new Assign bref, base
@@ -420,8 +420,8 @@ exports.Value = class Value extends Base
         return ifn
       for prop, i in @properties when prop.soak
         prop.soak = off
-        fst = new Value @base, @properties.slice 0, i
-        snd = new Value @base, @properties.slice i
+        fst = new Value @base, @properties[...i]
+        snd = new Value @base, @properties[i..]
         if fst.isComplex()
           ref = new Literal o.scope.freeVariable 'ref'
           fst = new Parens new Assign ref, fst
@@ -839,7 +839,7 @@ exports.Class = class Class extends Base
   # Merge the properties from a top-level object as prototypal properties
   # on the class.
   addProperties: (node, name, o) ->
-    props = node.base.properties.slice 0
+    props = node.base.properties[0..]
     exprs = while assign = props.shift()
       if assign instanceof Assign
         base = assign.variable.base
@@ -1028,7 +1028,7 @@ exports.Assign = class Assign extends Base
   compileConditional: (o) ->
     [left, rite] = @variable.cacheReference o
     if "?" in @context then o.isExistentialEquals = true
-    new Op(@context.slice(0, -1), left, new Assign(rite, @value, '=') ).compile o
+    new Op(@context[0...-1], left, new Assign(rite, @value, '=') ).compile o
 
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
@@ -1173,14 +1173,14 @@ exports.Splat = class Splat extends Base
       code = list[0].compile o, LEVEL_LIST
       return code if apply
       return "#{ utility 'slice' }.call(#{code})"
-    args = list.slice index
+    args = list[index..]
     for node, i in args
       code = node.compile o, LEVEL_LIST
       args[i] = if node instanceof Splat
       then "#{ utility 'slice' }.call(#{code})"
       else "[#{code}]"
-    return args[0] + ".concat(#{ args.slice(1).join ', ' })" if index is 0
-    base = (node.compile o, LEVEL_LIST for node in list.slice 0, index)
+    return args[0] + ".concat(#{ args[1..].join ', ' })" if index is 0
+    base = (node.compile o, LEVEL_LIST for node in list[0...index])
     "[#{ base.join ', ' }].concat(#{ args.join ', ' })"
 
 #### While
