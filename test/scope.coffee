@@ -21,10 +21,10 @@ test "assignment to an Object.prototype-named variable should not leak to outer 
   )()
   ok constructor isnt 'word'
 
-test "siblings of variadic arguments shouldn't break out.", ->
+test "siblings of splat parameters shouldn't leak to surrounding scope", ->
   x = 10
-  oops = (x,args...) ->
-  oops(20, 1,2,3)
+  oops = (x, args...) ->
+  oops(20, 1, 2, 3)
   eq x, 10
 
 test "catch statements should introduce their argument to scope", ->
