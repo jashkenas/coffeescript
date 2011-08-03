@@ -49,6 +49,7 @@ coffee_repl.stdout.on('data', (data) ->
 #   proc: (The REPL process)
 #   send: (The command to send)
 #   expect: (The output to expect)((Make sure to use inspect() if needed))
+$   message: (A friendly message to display if the test passes)
 # ]
 
 send_expect = (list) ->
