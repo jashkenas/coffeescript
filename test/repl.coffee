@@ -2,6 +2,11 @@ sys = require('sys')
 {inspect}    = require 'util'
 assert = require('assert')
 
+enableColours = no
+unless process.platform is 'win32'
+  enableColours = not process.env.NODE_DISABLE_COLORS
+
+
 spawn = require('child_process').spawn
 
 path = require('path')
@@ -52,11 +57,11 @@ send_expect([
 ,
   proc: coffee_repl
   send: "test='test'", 
-  expect: inspect('test', no, 2, true) + '\n' 
+  expect: inspect('test', no, 2, enableColours) + '\n' 
 ,
   proc: coffee_repl
   send: 'song = ["do", "re", "mi", "fa", "so"]', 
-  expect: inspect(["do", "re", "mi", "fa", "so"], no, 2, true) + '\n' 
+  expect: inspect(["do", "re", "mi", "fa", "so"], no, 2, enableColours) + '\n' 
 ,
   proc: coffee_repl
   send: ':exit', 
