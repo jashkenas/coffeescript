@@ -1451,12 +1451,12 @@ exports.Existence = class Existence extends Base
 
   compileNode: (o) ->
     code = @expression.compile o, LEVEL_OP
-    code = if IDENTIFIER.test(code) and not o.scope.check code
-        [cmp, cnj] = if @negated then ['===', '||'] else ['!==', '&&']
-        "typeof #{code} #{cmp} \"undefined\" #{cnj} #{code} #{cmp} null"
+    if IDENTIFIER.test(code) and not o.scope.check code
+      [cmp, cnj] = if @negated then ['===', '||'] else ['!==', '&&']
+      code = "typeof #{code} #{cmp} \"undefined\" #{cnj} #{code} #{cmp} null"
     else
       # do not use strict equality here; it will break existing code
-      "#{code} #{if @negated then '==' else '!='} null"
+      code = "#{code} #{if @negated then '==' else '!='} null"
     if o.level <= LEVEL_COND then code else "(#{code})"
 
 #### Parens
