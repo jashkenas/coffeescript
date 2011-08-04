@@ -659,7 +659,7 @@ exports.Range = class Range extends Base
     [lt, gt] = ["#{idx} <#{@equals}", "#{idx} >#{@equals}"]
 
     # Generate the condition.
-    condPart = if @stepNum
+    if @stepNum
       condPart = if +@stepNum > 0 then "#{lt} #{@toVar}" else "#{gt} #{@toVar}"
     else if known
       [from, to] = [+@fromNum, +@toNum]
