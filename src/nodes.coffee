@@ -858,7 +858,7 @@ exports.Class = class Class extends Base
         else
           unless assign.variable.this
             assign.variable = new Value(new Literal(name), [new Access(base, 'proto')])
-          if func instanceof Code and func.bound
+          if func instanceof Code and func.bound and not assign.variable.this
             @boundFuncs.push base
             func.bound = no
       assign
