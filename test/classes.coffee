@@ -490,3 +490,13 @@ test "#1380: `super` with reserved names", ->
   class B
     0: -> super
   ok B::[0]
+
+test "#1464: bound class methods should keep context", ->
+  nonce  = {}
+  nonce2 = {}
+  class C
+    constructor: (@id) ->
+    @boundStaticColon: => new this(nonce)
+    @boundStaticEqual= => new this(nonce2)
+  eq nonce,  C.boundStaticColon().id
+  eq nonce2, C.boundStaticEqual().id
