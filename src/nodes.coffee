@@ -917,7 +917,7 @@ exports.Assign = class Assign extends Base
   children: ['variable', 'value']
 
   isStatement: (o) ->
-    o?.level is LEVEL_TOP and "?" in @context
+    o?.level is LEVEL_TOP and @context? and "?" in @context
 
   assigns: (name) ->
     @[if @context is 'object' then 'value' else 'variable'].assigns name
