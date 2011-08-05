@@ -26,6 +26,6 @@
   },
   "devDependencies": {
     "uglify-js":  "1.0.6",
-    "jison":      "0.2.9"
+    "jison":      "0.2.11"
   }
 }
