@@ -896,8 +896,8 @@ exports.Class = class Class extends Base
 
     @setContext name
     @walkBody name, o
-    @ensureConstructor name
     @body.expressions.unshift new Extends lname, @parent if @parent
+    @ensureConstructor name
     @body.expressions.unshift @ctor unless @ctor instanceof Code
     @body.expressions.push lname
     @addBoundFunctions o
