@@ -22,11 +22,9 @@ header = """
 """
 
 sources = [
-  'coffee-script.coffee', 'grammar.coffee'
-  'helpers.coffee', 'lexer.coffee', 'nodes.coffee'
-  'rewriter.coffee', 'scope.coffee'
-].map (filename) ->
-  'src/coffee-script/' + filename
+  'coffee-script', 'grammar', 'helpers'
+  'lexer', 'nodes', 'rewriter', 'scope'
+].map (filename) -> "src/#{filename}.coffee"
 
 # Run a CoffeeScript through our node/coffee interpreter.
 run = (args, cb) ->
@@ -64,7 +62,8 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
 
 task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   files = fs.readdirSync 'src'
-  run ['-c', '-o', 'lib', 'src']
+  files = ('src/' + file for file in files when file.match(/\.coffee$/))
+  run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
 
 
 task 'build:full', 'rebuild the source twice, and run the tests', ->
@@ -116,7 +115,7 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
 
 
 task 'doc:source', 'rebuild the internal documentation', ->
-  exec 'docco src/coffee-script/*.coffee && cp -rf docs documentation && rm -r docs', (err) ->
+  exec 'docco src/*.coffee && cp -rf docs documentation && rm -r docs', (err) ->
     throw err if err
 
 
