@@ -127,6 +127,12 @@ repl.on 'close', ->
   process.stdout.write '\n'
   stdin.destroy()
 
+exit = (buffer) ->
+ if buffer.toString().trim() is ":exit"
+  process.stdout.write "Exiting\n" 
+  process.exit() 
+
+repl.on 'line', exit
 repl.on 'line', run
 
 repl.setPrompt REPL_PROMPT
