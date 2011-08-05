@@ -23,5 +23,9 @@
   "repository":   {
     "type": "git",
     "url": "git://github.com/jashkenas/coffee-script.git"
+  },
+  "devDependencies": {
+    "uglify-js":  "1.0.6",
+    "jison":      "0.2.9"
   }
 }
