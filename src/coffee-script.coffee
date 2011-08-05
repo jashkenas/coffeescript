@@ -8,8 +8,6 @@
 
 fs               = require 'fs'
 path             = require 'path'
-{Script}         = require 'vm'
-Module           = require 'module'
 {Lexer,RESERVED} = require './lexer'
 {parser}         = require './parser'
 
@@ -22,7 +20,7 @@ else if require.registerExtension
   require.registerExtension '.coffee', (content) -> compile content
 
 # The current CoffeeScript version number.
-exports.VERSION = '1.1.1'
+exports.VERSION = '1.1.2'
 
 # Words that cannot be used as identifiers in CoffeeScript code
 exports.RESERVED = RESERVED
@@ -79,30 +77,34 @@ exports.run = (code, options) ->
 # The CoffeeScript REPL uses this to run the input.
 exports.eval = (code, options = {}) ->
   return unless code = code.trim()
-  sandbox = Script.createContext()
-  sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
-  if options.sandbox?
-    if options.sandbox instanceof sandbox.constructor
-      sandbox = options.sandbox
-    else
-      sandbox[k] = v for own k, v of options.sandbox
-  sandbox.__filename = options.filename || 'eval'
-  sandbox.__dirname  = path.dirname sandbox.__filename
-  # define module/require only if they chose not to specify their own
-  unless sandbox.module or sandbox.require
-    Module = require 'module'
-    sandbox.module  = _module  = new Module(options.modulename || 'eval')
-    sandbox.require = _require = (path) -> Module._load path, _module
-    _module.filename = sandbox.__filename
-    _require[r] = require[r] for r in Object.getOwnPropertyNames require
-    # use the same hack node currently uses for their own REPL
-    _require.paths = _module.paths = Module._nodeModulePaths process.cwd()
-    _require.resolve = (request) -> Module._resolveFilename request, _module
+  if {Script} = require 'vm'
+    sandbox = Script.createContext()
+    sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
+    if options.sandbox?
+      if options.sandbox instanceof sandbox.constructor
+        sandbox = options.sandbox
+      else
+        sandbox[k] = v for own k, v of options.sandbox
+    sandbox.__filename = options.filename || 'eval'
+    sandbox.__dirname  = path.dirname sandbox.__filename
+    # define module/require only if they chose not to specify their own
+    unless sandbox.module or sandbox.require
+      Module = require 'module'
+      sandbox.module  = _module  = new Module(options.modulename || 'eval')
+      sandbox.require = _require = (path) -> Module._load path, _module
+      _module.filename = sandbox.__filename
+      _require[r] = require[r] for r in Object.getOwnPropertyNames require
+      # use the same hack node currently uses for their own REPL
+      _require.paths = _module.paths = Module._nodeModulePaths process.cwd()
+      _require.resolve = (request) -> Module._resolveFilename request, _module
   o = {}
   o[k] = v for own k, v of options
   o.bare = on # ensure return value
   js = compile code, o
-  Script.runInContext js, sandbox
+  if Script
+    Script.runInContext js, sandbox
+  else
+    eval js
 
 # Instantiate a Lexer for our use here.
 lexer = new Lexer

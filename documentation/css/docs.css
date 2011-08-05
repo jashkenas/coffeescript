@@ -85,6 +85,10 @@ code, pre, tt, textarea {
   font-weight: normal;
   color: black;
 }
+  .timestamp small {
+    font-size: 11px;
+    text-transform: uppercase;
+  }
 div.code {
   position: relative;
   background: #fff;

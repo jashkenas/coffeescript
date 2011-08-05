@@ -9,10 +9,10 @@
   <span class="nv">xhr.onreadystatechange = </span><span class="o">-&gt;</span>
     <span class="k">if</span> <span class="nx">xhr</span><span class="p">.</span><span class="nx">readyState</span> <span class="o">is</span> <span class="mi">4</span>
       <span class="k">if</span> <span class="nx">xhr</span><span class="p">.</span><span class="nx">status</span> <span class="k">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">]</span>
-        <span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">run</span> <span class="nx">xhr</span><span class="p">.</span><span class="nx">responseText</span> 
+        <span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">run</span> <span class="nx">xhr</span><span class="p">.</span><span class="nx">responseText</span>
       <span class="k">else</span>
         <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span> <span class="s2">&quot;Could not load #{url}&quot;</span>
-      <span class="nx">callback</span><span class="p">()</span> <span class="k">if</span> <span class="nx">callback</span>  
+      <span class="nx">callback</span><span class="p">()</span> <span class="k">if</span> <span class="nx">callback</span>
   <span class="nx">xhr</span><span class="p">.</span><span class="nx">send</span> <span class="kc">null</span></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <p>Activate CoffeeScript in the browser by having it compile and evaluate
 all script tags with a content-type of <code>text/coffeescript</code>.
 This happens on page load.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">runScripts = </span><span class="o">-&gt;</span>
