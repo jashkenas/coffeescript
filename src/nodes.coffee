@@ -1226,7 +1226,11 @@ exports.While = class While extends Base
         rvar = o.scope.freeVariable 'results'
         set  = "#{@tab}#{rvar} = [];\n"
         body = Push.wrap rvar, body if body
-      body = Block.wrap [new If @guard, body] if @guard
+      if @guard
+        if body.expressions.length > 1
+          body.expressions.unshift new If (new Parens @guard).invert(), new Literal "continue"
+        else
+          body = Block.wrap [new If @guard, body] if @guard
       body = "\n#{ body.compile o, LEVEL_TOP }\n#{@tab}"
     code = set + @tab + "while (#{ @condition.compile o, LEVEL_PAREN }) {#{body}}"
     if @returns
@@ -1561,7 +1565,10 @@ exports.For = class For extends Base
       returnResult = "\n#{@tab}return #{rvar};"
       body         = Push.wrap rvar, body
     if @guard
-      body         = Block.wrap [new If @guard, body]
+      if body.expressions.length > 1
+        body.expressions.unshift new If (new Parens @guard).invert(), new Literal "continue"
+      else
+        body = Block.wrap [new If @guard, body] if @guard
     if @pattern
       body.expressions.unshift new Assign @name, new Literal "#{svar}[#{ivar}]"
     defPart     += @pluckDirectCall o, body
@@ -1689,9 +1696,12 @@ exports.If = class If extends Base
 
     cond     = @condition.compile o, LEVEL_PAREN
     o.indent += TAB
-    body     = @ensureBlock(@body).compile o
-    body     = "\n#{body}\n#{@tab}" if body
-    ifPart   = "if (#{cond}) {#{body}}"
+    body     = @ensureBlock(@body)
+    bodyc    = body.compile o
+    if body.expressions.length is 1 and !@elseBody and !child and bodyc and -1 is bodyc.indexOf '\n'
+      return "#{@tab}if (#{cond}) #{bodyc.replace /^\s+/, ''}"
+    bodyc    = "\n#{bodyc}\n#{@tab}" if bodyc
+    ifPart   = "if (#{cond}) {#{bodyc}}"
     ifPart   = @tab + ifPart unless child
     return ifPart unless @elseBody
     ifPart + ' else ' + if @isChain
