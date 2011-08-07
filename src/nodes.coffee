@@ -441,7 +441,7 @@ exports.Comment = class Comment extends Base
   makeReturn:      THIS
 
   compileNode: (o, level) ->
-    code = '/*' + multident(@comment, @tab) + '*/'
+    code = '/*' + multident(@comment, @tab) + "\n#{@tab}*/\n"
     code = o.indent + code if (level or o.level) is LEVEL_TOP
     code
 
@@ -1851,4 +1851,5 @@ utility = (name) ->
   ref
 
 multident = (code, tab) ->
-  code.replace /\n/g, '$&' + tab
+  code = code.replace /\n/g, '$&' + tab
+  code.replace /\s+$/, ''
