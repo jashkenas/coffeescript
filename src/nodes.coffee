@@ -222,7 +222,7 @@ exports.Block = class Block extends Base
       else if top
         node.front = true
         code = node.compile o
-        codes.push if node.isStatement o then code else @tab + code + ';'
+        codes.push if node.isStatement o then code else "#{@tab}#{code};"
       else
         codes.push node.compile o, LEVEL_LIST
     return codes.join '\n' if top
@@ -328,7 +328,7 @@ exports.Return = class Return extends Base
     if expr and expr not instanceof Return then expr.compile o, level else super o, level
 
   compileNode: (o) ->
-    @tab + "return#{ if @expression then ' ' + @expression.compile(o, LEVEL_PAREN) else '' };"
+    @tab + "return#{[" #{@expression.compile o, LEVEL_PAREN}" if @expression]};"
 
 #### Value
 
