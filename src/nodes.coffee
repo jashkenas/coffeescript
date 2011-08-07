@@ -892,6 +892,7 @@ exports.Class = class Class extends Base
   compileNode: (o) ->
     decl  = @determineName()
     name  = decl or @name or '_Class'
+    name = "_#{name}" if name.reserved
     lname = new Literal name
 
     @setContext name
