@@ -12,9 +12,9 @@
     "node":       ">=0.2.5"
   },
   "directories" : {
-    "lib" : "./lib"
+    "lib" : "./lib/coffee-script"
   },
-  "main" : "./lib/coffee-script",
+  "main" : "./lib/coffee-script/coffee-script",
   "bin":          {
     "coffee":     "./bin/coffee",
     "cake":       "./bin/cake"
