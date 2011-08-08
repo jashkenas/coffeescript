@@ -93,7 +93,7 @@ exports.eval = (code, options = {}) ->
       sandbox.module  = _module  = new Module(options.modulename || 'eval')
       sandbox.require = _require = (path) -> Module._load path, _module
       _module.filename = sandbox.__filename
-      _require[r] = require[r] for r in Object.getOwnPropertyNames require
+      _require[r] = require[r] for r in Object.getOwnPropertyNames require when r isnt 'paths'
       # use the same hack node currently uses for their own REPL
       _require.paths = _module.paths = Module._nodeModulePaths process.cwd()
       _require.resolve = (request) -> Module._resolveFilename request, _module

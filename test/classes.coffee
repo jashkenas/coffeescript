@@ -500,3 +500,13 @@ test "#1464: bound class methods should keep context", ->
     @boundStaticEqual= => new this(nonce2)
   eq nonce,  C.boundStaticColon().id
   eq nonce2, C.boundStaticEqual().id
+
+test "#1009: classes with reserved words as determined names", ->
+  eq 'function', typeof (-> class @for).call {}
+
+test "#1482: classes can extend expressions", ->
+  id = (x) -> x
+  nonce = {}
+  class A then nonce: nonce
+  class B extends id A
+  eq nonce, (new B).nonce

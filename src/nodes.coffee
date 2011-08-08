@@ -222,7 +222,7 @@ exports.Block = class Block extends Base
       else if top
         node.front = true
         code = node.compile o
-        codes.push if node.isStatement o then code else @tab + code + ';'
+        codes.push if node.isStatement o then code else "#{@tab}#{code};"
       else
         codes.push node.compile o, LEVEL_LIST
     return codes.join '\n' if top
@@ -328,7 +328,7 @@ exports.Return = class Return extends Base
     if expr and expr not instanceof Return then expr.compile o, level else super o, level
 
   compileNode: (o) ->
-    @tab + "return#{ if @expression then ' ' + @expression.compile(o, LEVEL_PAREN) else '' };"
+    @tab + "return#{[" #{@expression.compile o, LEVEL_PAREN}" if @expression]};"
 
 #### Value
 
@@ -441,7 +441,7 @@ exports.Comment = class Comment extends Base
   makeReturn:      THIS
 
   compileNode: (o, level) ->
-    code = '/*' + multident(@comment, @tab) + '*/'
+    code = '/*' + multident(@comment, @tab) + "\n#{@tab}*/\n"
     code = o.indent + code if (level or o.level) is LEVEL_TOP
     code
 
@@ -659,14 +659,14 @@ exports.Range = class Range extends Base
     [lt, gt] = ["#{idx} <#{@equals}", "#{idx} >#{@equals}"]
 
     # Generate the condition.
-    if @stepNum
-      condPart = if +@stepNum > 0 then "#{lt} #{@toVar}" else "#{gt} #{@toVar}"
+    condPart = if @stepNum
+      if +@stepNum > 0 then "#{lt} #{@toVar}" else "#{gt} #{@toVar}"
     else if known
       [from, to] = [+@fromNum, +@toNum]
-      condPart   = if from <= to then "#{lt} #{to}" else "#{gt} #{to}"
+      if from <= to then "#{lt} #{to}" else "#{gt} #{to}"
     else
       cond     = "#{@fromVar} <= #{@toVar}"
-      condPart = "#{cond} ? #{lt} #{@toVar} : #{gt} #{@toVar}"
+      "#{cond} ? #{lt} #{@toVar} : #{gt} #{@toVar}"
 
     # Generate the step.
     stepPart = if @stepVar
@@ -892,6 +892,7 @@ exports.Class = class Class extends Base
   compileNode: (o) ->
     decl  = @determineName()
     name  = decl or @name or '_Class'
+    name = "_#{name}" if name.reserved
     lname = new Literal name
 
     @setContext name
@@ -1225,7 +1226,11 @@ exports.While = class While extends Base
         rvar = o.scope.freeVariable 'results'
         set  = "#{@tab}#{rvar} = [];\n"
         body = Push.wrap rvar, body if body
-      body = Block.wrap [new If @guard, body] if @guard
+      if @guard
+        if body.expressions.length > 1
+          body.expressions.unshift new If (new Parens @guard).invert(), new Literal "continue"
+        else
+          body = Block.wrap [new If @guard, body] if @guard
       body = "\n#{ body.compile o, LEVEL_TOP }\n#{@tab}"
     code = set + @tab + "while (#{ @condition.compile o, LEVEL_PAREN }) {#{body}}"
     if @returns
@@ -1371,7 +1376,7 @@ exports.In = class In extends Base
     [sub, ref] = @object.cache o, LEVEL_OP
     [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
     tests = for item, i in @array.base.objects
-      (if i then ref else sub) + cmp + item.compile o, LEVEL_OP
+      (if i then ref else sub) + cmp + item.compile o, LEVEL_ACCESS
     return 'false' if tests.length is 0
     tests = tests.join cnj
     if o.level < LEVEL_OP then tests else "(#{tests})"
@@ -1560,7 +1565,10 @@ exports.For = class For extends Base
       returnResult = "\n#{@tab}return #{rvar};"
       body         = Push.wrap rvar, body
     if @guard
-      body         = Block.wrap [new If @guard, body]
+      if body.expressions.length > 1
+        body.expressions.unshift new If (new Parens @guard).invert(), new Literal "continue"
+      else
+        body = Block.wrap [new If @guard, body] if @guard
     if @pattern
       body.expressions.unshift new Assign @name, new Literal "#{svar}[#{ivar}]"
     defPart     += @pluckDirectCall o, body
@@ -1688,9 +1696,12 @@ exports.If = class If extends Base
 
     cond     = @condition.compile o, LEVEL_PAREN
     o.indent += TAB
-    body     = @ensureBlock(@body).compile o
-    body     = "\n#{body}\n#{@tab}" if body
-    ifPart   = "if (#{cond}) {#{body}}"
+    body     = @ensureBlock(@body)
+    bodyc    = body.compile o
+    if body.expressions.length is 1 and !@elseBody and !child and bodyc and -1 is bodyc.indexOf '\n'
+      return "#{@tab}if (#{cond}) #{bodyc.replace /^\s+/, ''}"
+    bodyc    = "\n#{bodyc}\n#{@tab}" if bodyc
+    ifPart   = "if (#{cond}) {#{bodyc}}"
     ifPart   = @tab + ifPart unless child
     return ifPart unless @elseBody
     ifPart + ' else ' + if @isChain
@@ -1840,4 +1851,5 @@ utility = (name) ->
   ref
 
 multident = (code, tab) ->
-  code.replace /\n/g, '$&' + tab
+  code = code.replace /\n/g, '$&' + tab
+  code.replace /\s+$/, ''
