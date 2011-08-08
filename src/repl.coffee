@@ -94,9 +94,11 @@ completeAttribute = (text) ->
 
 # Attempt to autocomplete an in-scope free variable: `one`.
 completeVariable = (text) ->
-  if free = (text.match SIMPLEVAR)?[1]
+  free = (text.match SIMPLEVAR)?[1]
+  if free?
     vars = Script.runInContext 'Object.getOwnPropertyNames(this)', sandbox
-    possibilities = vars.concat CoffeeScript.RESERVED
+    keywords = (r for r in CoffeeScript.RESERVED when r[0..1] isnt '__')
+    possibilities = vars.concat keywords
     completions = getCompletions free, possibilities
     [completions, free]
 
