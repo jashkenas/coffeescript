@@ -1698,9 +1698,14 @@ exports.If = class If extends Base
     o.indent += TAB
     body     = @ensureBlock(@body)
     bodyc    = body.compile o
-    if body.expressions.length is 1 and !@elseBody and !child and bodyc and -1 is bodyc.indexOf '\n'
-      separator = if cond.length + bodyc.length > 100 then "\n#{@tab}#{TAB}" else ' '
-      return "#{@tab}if (#{cond})#{separator}#{bodyc.replace /^\s+/, ''}"
+    if (
+      1 is body.expressions?.length and
+      !@elseBody and !child and
+      bodyc and cond and
+      -1 is (bodyc.indexOf '\n') and
+      80 > cond.length + bodyc.length
+    )
+      return "#{@tab}if (#{cond}) #{bodyc.replace /^\s+/, ''}"
     bodyc    = "\n#{bodyc}\n#{@tab}" if bodyc
     ifPart   = "if (#{cond}) {#{bodyc}}"
     ifPart   = @tab + ifPart unless child
