@@ -1699,7 +1699,8 @@ exports.If = class If extends Base
     body     = @ensureBlock(@body)
     bodyc    = body.compile o
     if body.expressions.length is 1 and !@elseBody and !child and bodyc and -1 is bodyc.indexOf '\n'
-      return "#{@tab}if (#{cond}) #{bodyc.replace /^\s+/, ''}"
+      separator = if cond.length + bodyc.length > 100 then "\n#{@tab}#{TAB}" else ' '
+      return "#{@tab}if (#{cond})#{separator}#{bodyc.replace /^\s+/, ''}"
     bodyc    = "\n#{bodyc}\n#{@tab}" if bodyc
     ifPart   = "if (#{cond}) {#{bodyc}}"
     ifPart   = @tab + ifPart unless child
