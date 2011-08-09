@@ -75,8 +75,8 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   extend global, require('util')
   require 'jison'
-  parser = require('./lib/grammar').parser
-  fs.writeFile 'lib/parser.js', parser.generate()
+  parser = require('./lib/coffee-script/grammar').parser
+  fs.writeFile 'lib/coffee-script/parser.js', parser.generate()
 
 
 task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter', ->
