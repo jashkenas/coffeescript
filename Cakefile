@@ -69,7 +69,9 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
 task 'build:full', 'rebuild the source twice, and run the tests', ->
   build ->
     build ->
-      process.exit 1 unless runTests CoffeeScript
+      csPath = fs.realpathSync './lib/coffee-script'
+      unless runTests require csPath
+        process.exit 1
 
 
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
