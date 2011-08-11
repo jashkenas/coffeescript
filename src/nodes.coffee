@@ -344,9 +344,14 @@ exports.Value = class Value extends Base
 
   children: ['base', 'properties']
 
-  # Add a property access to the list.
+  # Add a property `Access` to the list.
   push: (prop) ->
     @properties.push prop
+    this
+    
+  # Add multiple property `Access`s to the list.
+  concat: (props) ->
+    @properties = @properties.concat props
     this
 
   hasProperties: ->
@@ -596,14 +601,13 @@ exports.Extends = class Extends extends Base
 exports.Access = class Access extends Base
   constructor: (@name, tag) ->
     @name.asKey = yes
-    @proto = if tag is 'proto' then '.prototype' else ''
     @soak  = tag is 'soak'
 
   children: ['name']
 
   compile: (o) ->
     name = @name.compile o
-    @proto + if IDENTIFIER.test name then ".#{name}" else "[#{name}]"
+    if IDENTIFIER.test name then ".#{name}" else "[#{name}]"
 
   isComplex: NO
 
@@ -616,7 +620,7 @@ exports.Index = class Index extends Base
   children: ['index']
 
   compile: (o) ->
-    (if @proto then '.prototype' else '') + "[#{ @index.compile o, LEVEL_PAREN }]"
+    "[#{ @index.compile o, LEVEL_PAREN }]"
 
   isComplex: ->
     @index.isComplex()
@@ -857,10 +861,10 @@ exports.Class = class Class extends Base
             assign = new Assign new Literal(@externalCtor), func
         else
           unless assign.variable.this
-            assign.variable = new Value(new Literal(name), [new Access(base, 'proto')])
-          if func instanceof Code and func.bound and not assign.variable.this
-            @boundFuncs.push base
-            func.bound = no
+            assign.variable = new Value(new Literal(name), [(new Access new Literal 'prototype'), new Access base ])
+            if func instanceof Code and func.bound
+              @boundFuncs.push base
+              func.bound = no
       assign
     compact exprs
 
