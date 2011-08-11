@@ -501,8 +501,11 @@ test "#1464: bound class methods should keep context", ->
   eq nonce,  C.boundStaticColon().id
   eq nonce2, C.boundStaticEqual().id
 
-test "#1009: classes with reserved words as determined names", ->
-  eq 'function', typeof (-> class @for).call {}
+test "#1009: classes with reserved words as determined names", -> (->
+  eq 'function', typeof (class @for)
+  ok not /\beval\b/.test (class @eval).toString()
+  ok not /\barguments\b/.test (class @arguments).toString()
+).call {}
 
 test "#1482: classes can extend expressions", ->
   id = (x) -> x

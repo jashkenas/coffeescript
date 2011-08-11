@@ -104,7 +104,7 @@ exports.Lexer = class Lexer
             @tokens.pop()
             id = '!' + id
 
-    if id in JS_FORBIDDEN
+    if id in ['eval', 'arguments'].concat JS_FORBIDDEN
       if forcedIdentifier
         tag = 'IDENTIFIER'
         id  = new String id

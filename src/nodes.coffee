@@ -301,7 +301,7 @@ exports.Literal = class Literal extends Base
   compileNode: (o) ->
     code = if @isUndefined
       if o.level >= LEVEL_ACCESS then '(void 0)' else 'void 0'
-    else if @value.reserved
+    else if @value.reserved and "#{@value}" not in ['eval', 'arguments']
       "\"#{@value}\""
     else
       @value
