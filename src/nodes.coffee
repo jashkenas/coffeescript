@@ -4,6 +4,7 @@
 # the syntax tree into a string of JavaScript code, call `compile()` on the root.
 
 {Scope} = require './scope'
+{RESERVED} = require './lexer'
 
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, last} = require './helpers'
@@ -978,6 +979,8 @@ exports.Assign = class Assign extends Base
       acc   = IDENTIFIER.test idx.unwrap().value or 0
       value = new Value value
       value.properties.push new (if acc then Access else Index) idx
+      if obj.unwrap().value in ['arguments','eval'].concat RESERVED
+        throw new SyntaxError "assignment to a reserved word: #{obj.compile o} = #{value.compile o}"
       return new Assign(obj, value, null, param: @param).compile o, LEVEL_TOP
     vvar    = value.compile o, LEVEL_LIST
     assigns = []
@@ -999,6 +1002,7 @@ exports.Assign = class Assign extends Base
           else
             idx = if obj.this then obj.properties[0].name else obj
       if not splat and obj instanceof Splat
+        name = obj.name.unwrap().value
         val = "#{olen} <= #{vvar}.length ? #{ utility 'slice' }.call(#{vvar}, #{i}"
         if rest = olen - i - 1
           ivar = o.scope.freeVariable 'i'
@@ -1008,16 +1012,19 @@ exports.Assign = class Assign extends Base
         val   = new Literal val
         splat = "#{ivar}++"
       else
+        name = obj.unwrap().value
         if obj instanceof Splat
           obj = obj.name.compile o
-          throw SyntaxError \
-            "multiple splats are disallowed in an assignment: #{obj} ..."
+          throw new SyntaxError \
+            "multiple splats are disallowed in an assignment: #{obj}..."
         if typeof idx is 'number'
           idx = new Literal splat or idx
           acc = no
         else
           acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
         val = new Value new Literal(vvar), [new (if acc then Access else Index) idx]
+      if name? and name in ['arguments','eval'].concat RESERVED
+        throw new SyntaxError "assignment to a reserved word: #{obj.compile o} = #{val.compile o}"
       assigns.push new Assign(obj, val, null, param: @param).compile o, LEVEL_TOP
     assigns.push vvar unless top
     code = assigns.join ', '

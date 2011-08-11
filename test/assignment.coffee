@@ -252,6 +252,20 @@ test "destructuring assignment with context (@) properties", ->
 test "#1024", ->
   eq 2 * [] = 3 + 5, 16
 
+test "#1005: invalid identifiers allowed on LHS of destructuring assignment", ->
+  disallowed = ['eval', 'arguments'].concat CoffeeScript.RESERVED
+  throws -> CoffeeScript.compile "[#{disallowed.join ', '}] = x"
+  throws -> CoffeeScript.compile "[#{disallowed.join '..., '}...] = x"
+  for v in disallowed when v isnt 'class' # `class` by itself is an expression
+    throws -> CoffeeScript.compile "[#{v}] = x"
+    throws -> CoffeeScript.compile "[#{v}...] = x"
+  doesNotThrow ->
+    for v in disallowed
+      CoffeeScript.compile "[a.#{v}] = x"
+      CoffeeScript.compile "[a.#{v}...] = x"
+      CoffeeScript.compile "[@#{v}] = x"
+      CoffeeScript.compile "[@#{v}...] = x"
+
 
 # Existential Assignment
 
