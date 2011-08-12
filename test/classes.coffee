@@ -513,3 +513,17 @@ test "#1482: classes can extend expressions", ->
   class A then nonce: nonce
   class B extends id A
   eq nonce, (new B).nonce
+
+test "#1598: super works for static methods too", ->
+
+  class Parent
+    method: ->
+      'NO'
+    @method: ->
+      'yes'
+
+  class Child extends Parent
+    @method: ->
+      'pass? ' + super
+
+  eq Child.method(), 'pass? yes'
