@@ -234,11 +234,9 @@ test "#891: incorrect inversion of chained comparisons", ->
 
 test "#1234: Applying a splat to :: applies the splat to the wrong object", ->
   nonce = {}
-  class A
-    b: (arr) ->
-      eq this.toString(), nonce
-    toString: -> nonce
+  class C
+    method: -> @nonce
+    nonce: nonce
 
-  c = [0]
-
-  A::b c...
+  arr = []
+  eq nonce, C::method arr... # should be applied to `C::`
