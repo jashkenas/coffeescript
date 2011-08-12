@@ -344,13 +344,8 @@ exports.Value = class Value extends Base
 
   children: ['base', 'properties']
 
-  # Add a property `Access` to the list.
-  push: (prop) ->
-    @properties.push prop
-    this
-    
-  # Add multiple property `Access`s to the list.
-  concat: (props) ->
+  # Add a property (or *properties* ) `Access` to the list.
+  add: (props) ->
     @properties = @properties.concat props
     this
 
@@ -402,7 +397,7 @@ exports.Value = class Value extends Base
       nref = new Literal o.scope.freeVariable 'name'
       name = new Index new Assign nref, name.index
       nref = new Index nref
-    [base.push(name), new Value(bref or base.base, [nref or name])]
+    [base.add(name), new Value(bref or base.base, [nref or name])]
 
   # We compile a value to JavaScript by compiling and joining each property.
   # Things get much more interesting if the chain of properties has *soak*
