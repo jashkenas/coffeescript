@@ -217,7 +217,7 @@ grammar =
   # Variables and properties that can be assigned to.
   SimpleAssignable: [
     o 'Identifier',                             -> new Value $1
-    o 'Value Accessor',                         -> $1.push $2
+    o 'Value Accessor',                         -> $1.add $2
     o 'Invocation Accessor',                    -> new Value $1, [$2]
     o 'ThisProperty'
   ]
@@ -244,7 +244,7 @@ grammar =
   Accessor: [
     o '.  Identifier',                          -> new Access $2
     o '?. Identifier',                          -> new Access $2, 'soak'
-    o ':: Identifier',                          -> new Access $2, 'proto'
+    o ':: Identifier',                          -> [(new Access new Literal 'prototype'), new Access $2]
     o '::',                                     -> new Access new Literal 'prototype'
     o 'Index'
   ]
@@ -253,7 +253,6 @@ grammar =
   Index: [
     o 'INDEX_START IndexValue INDEX_END',       -> $2
     o 'INDEX_SOAK  Index',                      -> extend $2, soak : yes
-    o 'INDEX_PROTO Index',                      -> extend $2, proto: yes
   ]
 
   IndexValue: [
