@@ -336,7 +336,6 @@ exports.Lexer = class Lexer
         tag = 'INDEX_START'
         switch prev[0]
           when '?'  then prev[0] = 'INDEX_SOAK'
-          when '::' then prev[0] = 'INDEX_PROTO'
     @token tag, value
     value.length
 
