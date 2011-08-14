@@ -195,6 +195,26 @@ runTests = (CoffeeScript) ->
 
   global.arrayEq = (a, b, msg) -> ok arrayEqual(a,b), msg
 
+  # When all the tests have run, collect and print errors.
+  # If a stacktrace is available, output the compiled function source.
+  process.on 'exit', ->
+    time = ((Date.now() - startTime) / 1000).toFixed(2)
+    message = "passed #{passedTests} tests in #{time} seconds#{reset}"
+    return log(message, green) unless failures.length
+    log "failed #{failures.length} and #{message}", red
+    for fail in failures
+      {error, filename}  = fail
+      jsFilename         = filename.replace(/\.coffee$/,'.js')
+      match              = error.stack?.match(new RegExp(fail.file+":(\\d+):(\\d+)"))
+      match              = error.stack?.match(/on line (\d+):/) unless match
+      [match, line, col] = match if match
+      console.log ''
+      log "  #{error.description}", red if error.description
+      log "  #{error.stack}", red
+      log "  #{jsFilename}: line #{line ? 'unknown'}, column #{col ? 'unknown'}", red
+      console.log "  #{error.source}" if error.source
+    return
+
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
   for file in files when file.match /\.coffee$/i
@@ -204,28 +224,6 @@ runTests = (CoffeeScript) ->
       CoffeeScript.run code.toString(), {filename}
     catch error
       failures.push {filename, error}
-
-  # When all the tests have run, collect and print errors.
-  # If a stacktrace is available, output the compiled function source.
-  time = ((Date.now() - startTime) / 1000).toFixed(2)
-  message = "passed #{passedTests} tests in #{time} seconds#{reset}"
-  return log(message, green) unless failures.length
-  log "failed #{failures.length} and #{message}", red
-  for fail in failures
-    {error, filename}  = fail
-    jsFilename         = filename.replace(/\.coffee$/,'.js')
-    match              = error.stack?.match(new RegExp(fail.file+":(\\d+):(\\d+)"))
-    match              = error.stack?.match(/on line (\d+):/) unless match
-    [match, line, col] = match if match
-    console.log ''
-    log "  #{error.description}", red if error.description
-    log "  #{error.stack}", red
-    log "  #{jsFilename}: line #{line ? 'unknown'}, column #{col ? 'unknown'}", red
-    console.log "  #{error.source}" if error.source
-
-  # ensure process waits for console.log to drain before exiting
-  process.stdout.on 'drain', ->
-
   return !failures.length
 
 
