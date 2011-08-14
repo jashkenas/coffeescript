@@ -88,3 +88,15 @@ test "try/catch with empty catch as last statement in a function body", ->
     try nonce
     catch err
   eq nonce, fn()
+  
+  
+# Catch leads to broken scoping: #1595
+
+test "try/catch with a reused variable name.", ->
+  do ->
+    try 
+      inner = 5
+    catch inner
+      # nothing
+  eq typeof inner, 'undefined'
+    
