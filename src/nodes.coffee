@@ -475,7 +475,10 @@ exports.Call = class Call extends Base
     {name} = method
     throw SyntaxError 'cannot call super on an anonymous function.' unless name?
     if method.klass
-      (new Value (new Literal method.klass), [new Access(new Literal "__super__"), new Access new Literal name]).compile o
+      accesses = [new Access(new Literal '__super__')]
+      accesses.push new Access new Literal 'constructor' if method.static
+      accesses.push new Access new Literal name
+      (new Value (new Literal method.klass), accesses).compile o
     else
       "#{name}.__super__.constructor"
 
@@ -856,7 +859,9 @@ exports.Class = class Class extends Base
             @externalCtor = o.scope.freeVariable 'class'
             assign = new Assign new Literal(@externalCtor), func
         else
-          unless assign.variable.this
+          if assign.variable.this
+            func.static = yes
+          else
             assign.variable = new Value(new Literal(name), [(new Access new Literal 'prototype'), new Access base ])
             if func instanceof Code and func.bound
               @boundFuncs.push base
