@@ -872,13 +872,13 @@ Expressions
     </h2>
 
     <p>
-      CoffeeScript includes a simple build system similar to
+      CoffeeScript includes a (very) simple build system similar to
       <a href="http://www.gnu.org/software/make/">Make</a> and
       <a href="http://rake.rubyforge.org/">Rake</a>. Naturally,
-      it's called Cake, and is used for the build and test tasks for the CoffeeScript
+      it's called Cake, and is used for the tasks that build and test the CoffeeScript
       language itself. Tasks are defined in a file named <tt>Cakefile</tt>, and
-      can be invoked by running <tt>cake taskname</tt> from within the directory.
-      To print a list of all the tasks and options, just run <tt>cake</tt>.
+      can be invoked by running <tt>cake [task]</tt> from within the directory.
+      To print a list of all the tasks and options, just type <tt>cake</tt>.
     </p>
 
     <p>
@@ -893,7 +893,11 @@ Expressions
     <p>
       If you need to invoke one task before another &mdash; for example, running
       <tt>build</tt> before <tt>test</tt>, you can use the <tt>invoke</tt> function:
-      <tt>invoke 'build'</tt>
+      <tt>invoke 'build'</tt>. Cake tasks are a minimal way to expose your
+      CoffeeScript functions to the command line, so
+      <a href="documentation/docs/cake.html">don't expect any fanciness built-in</a>.
+      If you need dependencies, or async callbacks, it's best to put them in your
+      code itself &mdash; not the cake task.
     </p>
 
     <h2>

@@ -151,9 +151,7 @@ cubes <span class="Keyword">=</span> (math.cube num <span class="Keyword">for</s
 <span class="Storage">var</span> __slice <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice;
 number <span class="Keyword">=</span> <span class="Number">42</span>;
 opposite <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
-<span class="Keyword">if</span> (opposite) {
-  number <span class="Keyword">=</span> <span class="Keyword">-</span><span class="Number">42</span>;
-}
+<span class="Keyword">if</span> (opposite) number <span class="Keyword">=</span> <span class="Keyword">-</span><span class="Number">42</span>;
 <span class="FunctionName">square</span> = <span class="Storage">function</span>(<span class="FunctionArgument">x</span>) {
   <span class="Keyword">return</span> x <span class="Keyword">*</span> x;
 };
@@ -170,9 +168,7 @@ math <span class="Keyword">=</span> {
   winner <span class="Keyword">=</span> arguments[<span class="Number">0</span>], runners <span class="Keyword">=</span> <span class="Number">2</span> <span class="Keyword">&lt;=</span> arguments.<span class="LibraryConstant">length</span> ? __slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">1</span>) : [];
   <span class="Keyword">return</span> <span class="LibraryFunction">print</span>(winner, runners);
 };
-<span class="Keyword">if</span> (<span class="Keyword">typeof</span> elvis <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> elvis <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) {
-  <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>I knew it!<span class="String">&quot;</span></span>);
-}
+<span class="Keyword">if</span> (<span class="Keyword">typeof</span> elvis <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> elvis <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>I knew it!<span class="String">&quot;</span></span>);
 cubes <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   <span class="Storage">var</span> _i, _len, _results;
   _results <span class="Keyword">=</span> [];
@@ -186,9 +182,7 @@ cubes <span class="Keyword">=</span> (<span class="Storage">function</span>() {
 var __slice = Array.prototype.slice;
 number = 42;
 opposite = true;
-if (opposite) {
-  number = -42;
-}
+if (opposite) number = -42;
 square = function(x) {
   return x * x;
 };
@@ -205,9 +199,7 @@ race = function() {
   winner = arguments[0], runners = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
   return print(winner, runners);
 };
-if (typeof elvis !== "undefined" && elvis !== null) {
-  alert("I knew it!");
-}
+if (typeof elvis !== "undefined" && elvis !== null) alert("I knew it!");
 cubes = (function() {
   var _i, _len, _results;
   _results = [];
@@ -496,16 +488,12 @@ cube = function(x) {
 
 </pre><pre class="idle"><span class="Storage">var</span> fill;
 <span class="FunctionName">fill</span> = <span class="Storage">function</span>(<span class="FunctionArgument">container, liquid</span>) {
-  <span class="Keyword">if</span> (liquid <span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) {
-    liquid <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>coffee<span class="String">&quot;</span></span>;
-  }
+  <span class="Keyword">if</span> (liquid <span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) liquid <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>coffee<span class="String">&quot;</span></span>;
   <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>Filling the <span class="String">&quot;</span></span> <span class="Keyword">+</span> container <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> with <span class="String">&quot;</span></span> <span class="Keyword">+</span> liquid <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>...<span class="String">&quot;</span></span>;
 };
 </pre><script>window.example3 = "fill = (container, liquid = \"coffee\") ->\n  \"Filling the #{container} with #{liquid}...\"\n\nalert fill(\"cup\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example3);'>load</div><div class='minibutton ok' onclick='javascript: var fill;
 fill = function(container, liquid) {
-  if (liquid == null) {
-    liquid = "coffee";
-  }
+  if (liquid == null) liquid = "coffee";
   return "Filling the " + container + " with " + liquid + "...";
 };;alert(fill("cup"));'>run: fill("cup")</div><br class='clear' /></div>
 
@@ -673,9 +661,7 @@ options <span class="Keyword">or=</span> defaults
 
 
 </pre><pre class="idle"><span class="Storage">var</span> date, mood;
-<span class="Keyword">if</span> (singing) {
-  mood <span class="Keyword">=</span> greatlyImproved;
-}
+<span class="Keyword">if</span> (singing) mood <span class="Keyword">=</span> greatlyImproved;
 <span class="Keyword">if</span> (happy <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> knowsIt) {
   clapsHands();
   chaChaCha();
@@ -1167,21 +1153,11 @@ winner <span class="Keyword">=</span> <span class="BuiltInConstant">yes</span> <
 
 print inspect <span class="String"><span class="String">&quot;</span>My name is <span class="String"><span class="String">#{</span><span class="Variable">@name</span><span class="String">}</span></span><span class="String">&quot;</span></span>
 </pre><pre class="idle"><span class="Storage">var</span> volume, winner;
-<span class="Keyword">if</span> (ignition <span class="Keyword">===</span> <span class="BuiltInConstant">true</span>) {
-  launch();
-}
-<span class="Keyword">if</span> (band <span class="Keyword">!</span><span class="Keyword">==</span> SpinalTap) {
-  volume <span class="Keyword">=</span> <span class="Number">10</span>;
-}
-<span class="Keyword">if</span> (answer <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">false</span>) {
-  letTheWildRumpusBegin();
-}
-<span class="Keyword">if</span> (car.speed <span class="Keyword">&lt;</span> limit) {
-  accelerate();
-}
-<span class="Keyword">if</span> (pick <span class="Keyword">===</span> <span class="Number">47</span> <span class="Keyword">||</span> pick <span class="Keyword">===</span> <span class="Number">92</span> <span class="Keyword">||</span> pick <span class="Keyword">===</span> <span class="Number">13</span>) {
-  winner <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
-}
+<span class="Keyword">if</span> (ignition <span class="Keyword">===</span> <span class="BuiltInConstant">true</span>) launch();
+<span class="Keyword">if</span> (band <span class="Keyword">!</span><span class="Keyword">==</span> SpinalTap) volume <span class="Keyword">=</span> <span class="Number">10</span>;
+<span class="Keyword">if</span> (answer <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">false</span>) letTheWildRumpusBegin();
+<span class="Keyword">if</span> (car.speed <span class="Keyword">&lt;</span> limit) accelerate();
+<span class="Keyword">if</span> (pick <span class="Keyword">===</span> <span class="Number">47</span> <span class="Keyword">||</span> pick <span class="Keyword">===</span> <span class="Number">92</span> <span class="Keyword">||</span> pick <span class="Keyword">===</span> <span class="Number">13</span>) winner <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
 <span class="LibraryFunction">print</span>(inspect(<span class="String"><span class="String">&quot;</span>My name is <span class="String">&quot;</span></span> <span class="Keyword">+</span> <span class="Variable">this</span>.<span class="LibraryConstant">name</span>));
 </pre><script>window.example20 = "launch() if ignition is on\n\nvolume = 10 if band isnt SpinalTap\n\nletTheWildRumpusBegin() unless answer is no\n\nif car.speed < limit then accelerate()\n\nwinner = yes if pick in [47, 92, 13]\n\nprint inspect \"My name is #{@name}\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example20);'>load</div><br class='clear' /></div>
 
@@ -1211,17 +1187,13 @@ footprints <span class="Keyword">=</span> yeti <span class="Keyword">?</span> <s
 <span class="Keyword">if</span> ((<span class="Keyword">typeof</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> <span class="Keyword">!</span>(<span class="Keyword">typeof</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>)) {
   solipsism <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
 }
-<span class="Keyword">if</span> (<span class="Keyword">typeof</span> speed <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">||</span> speed <span class="Keyword">===</span> <span class="BuiltInConstant">null</span>) {
-  speed <span class="Keyword">=</span> <span class="Number">75</span>;
-}
+<span class="Keyword">if</span> (<span class="Keyword">typeof</span> speed <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">||</span> speed <span class="Keyword">===</span> <span class="BuiltInConstant">null</span>) speed <span class="Keyword">=</span> <span class="Number">75</span>;
 footprints <span class="Keyword">=</span> <span class="Keyword">typeof</span> yeti <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> yeti <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span> ? yeti : <span class="String"><span class="String">&quot;</span>bear<span class="String">&quot;</span></span>;
 </pre><script>window.example21 = "solipsism = true if mind? and not world?\n\nspeed ?= 75\n\nfootprints = yeti ? \"bear\"\n\nalert footprints"</script><div class='minibutton load' onclick='javascript: loadConsole(example21);'>load</div><div class='minibutton ok' onclick='javascript: var footprints, solipsism;
 if ((typeof mind !== "undefined" && mind !== null) && !(typeof world !== "undefined" && world !== null)) {
   solipsism = true;
 }
-if (typeof speed === "undefined" || speed === null) {
-  speed = 75;
-}
+if (typeof speed === "undefined" || speed === null) speed = 75;
 footprints = typeof yeti !== "undefined" && yeti !== null ? yeti : "bear";;alert(footprints);'>run: footprints</div><br class='clear' /></div>
     <p>
       The accessor variant of the existential operator <tt>?.</tt> can be used to soak
@@ -1765,13 +1737,13 @@ OPERATOR <span class="Keyword">=</span><span class="String"> <span class="String
     </h2>
 
     <p>
-      CoffeeScript includes a simple build system similar to
+      CoffeeScript includes a (very) simple build system similar to
       <a href="http://www.gnu.org/software/make/">Make</a> and
       <a href="http://rake.rubyforge.org/">Rake</a>. Naturally,
-      it's called Cake, and is used for the build and test tasks for the CoffeeScript
+      it's called Cake, and is used for the tasks that build and test the CoffeeScript
       language itself. Tasks are defined in a file named <tt>Cakefile</tt>, and
-      can be invoked by running <tt>cake taskname</tt> from within the directory.
-      To print a list of all the tasks and options, just run <tt>cake</tt>.
+      can be invoked by running <tt>cake [task]</tt> from within the directory.
+      To print a list of all the tasks and options, just type <tt>cake</tt>.
     </p>
 
     <p>
@@ -1805,7 +1777,11 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
     <p>
       If you need to invoke one task before another &mdash; for example, running
       <tt>build</tt> before <tt>test</tt>, you can use the <tt>invoke</tt> function:
-      <tt>invoke 'build'</tt>
+      <tt>invoke 'build'</tt>. Cake tasks are a minimal way to expose your
+      CoffeeScript functions to the command line, so
+      <a href="documentation/docs/cake.html">don't expect any fanciness built-in</a>.
+      If you need dependencies, or async callbacks, it's best to put them in your
+      code itself &mdash; not the cake task.
     </p>
 
     <h2>
