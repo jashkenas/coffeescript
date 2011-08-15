@@ -233,3 +233,7 @@ test "#1322: implicit call against implicit object with block comments", ->
     x: 2
     ### y ###
     y: 3
+
+test "#1513: Top level bare objs need to be wrapped in parens for unary and existence ops", ->
+  doesNotThrow -> CoffeeScript.run "{}?", bare: true
+  doesNotThrow -> CoffeeScript.run "{}.a++", bare: true
