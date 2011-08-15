@@ -1324,11 +1324,14 @@ exports.Op = class Op extends Base
   unfoldSoak: (o) ->
     @operator in ['++', '--', 'delete'] and unfoldSoak o, this, 'first'
 
-  compileNode: (o) ->
+  compileNode: (o) ->    
+    isChain = @isChainable() and @first.isChainable()
+    # In chains, there's no need to wrap bare obj literals in parens, 
+    # as the chained expression is wrapped.
+    @first.front = @front unless isChain
     return @compileUnary     o if @isUnary()
-    return @compileChain     o if @isChainable() and @first.isChainable()
+    return @compileChain     o if isChain
     return @compileExistence o if @operator is '?'
-    @first.front = @front
     code = @first.compile(o, LEVEL_OP) + ' ' + @operator + ' ' +
            @second.compile(o, LEVEL_OP)
     if o.level <= LEVEL_OP then code else "(#{code})"
@@ -1469,6 +1472,7 @@ exports.Existence = class Existence extends Base
   invert: NEGATE
 
   compileNode: (o) ->
+    @expression.front = @front
     code = @expression.compile o, LEVEL_OP
     if IDENTIFIER.test(code) and not o.scope.check code
       [cmp, cnj] = if @negated then ['===', '||'] else ['!==', '&&']
