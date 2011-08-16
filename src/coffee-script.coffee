@@ -77,7 +77,8 @@ exports.run = (code, options) ->
 # The CoffeeScript REPL uses this to run the input.
 exports.eval = (code, options = {}) ->
   return unless code = code.trim()
-  if {Script} = require 'vm'
+  {Script} = require 'vm'
+  if Script
     sandbox = Script.createContext()
     sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
     if options.sandbox?
@@ -101,10 +102,8 @@ exports.eval = (code, options = {}) ->
   o[k] = v for own k, v of options
   o.bare = on # ensure return value
   js = compile code, o
-  if Script
-    Script.runInContext js, sandbox
-  else
-    eval js
+  if Script then Script.runInContext js, sandbox
+  else eval js
 
 # Instantiate a Lexer for our use here.
 lexer = new Lexer
