@@ -1,1 +1,1 @@
-zip = lottery.drawWinner?().address?.zipcode
+zip = lottery.drawWinner()?.address?.zipcode
