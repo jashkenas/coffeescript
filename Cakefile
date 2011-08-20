@@ -206,7 +206,7 @@ runTests = (CoffeeScript) ->
       match              = error.stack?.match(new RegExp(fail.file+":(\\d+):(\\d+)"))
       match              = error.stack?.match(/on line (\d+):/) unless match
       [match, line, col] = match if match
-      log "\n  #{error.stack}", red
+      log "\n  #{error.toString()}", red
       log "  #{error.description}", red if error.description
       log "  #{jsFile}: line #{line or 'unknown'}, column #{col or 'unknown'}", red
       console.log "  #{error.source}" if error.source
