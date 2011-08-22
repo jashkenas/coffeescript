@@ -75,42 +75,47 @@ exports.run = ->
 # '.coffee' extension source files in it and all subdirectories.
 compileScripts = ->
   unprocessed = []
+  remaining_files = ->
+    total = 0
+    total += x for x in unprocessed
+    total
+  trackUnprocessedFiles = (sourceIndex, fileCount) ->
+    unprocessed[sourceIndex] ?= 0
+    unprocessed[sourceIndex] += fileCount
+  trackCompleteFiles = (sourceIndex, fileCount) ->
+    unprocessed[sourceIndex] -= fileCount
+    if opts.join
+      if helpers.compact(contents).length > 0 and remaining_files() == 0
+        compileJoin()
   for source in sources
-    unprocessed[sources.indexOf(source)]=1
+    trackUnprocessedFiles sources.indexOf(source), 1
   for source in sources
     base = path.join(source)
     compile = (source, sourceIndex, topLevel) ->
-      remaining_files = ->
-        total = 0
-        total += x for x in unprocessed
-        total
       path.exists source, (exists) ->
         if topLevel and not exists and source[-7..] isnt '.coffee'
-            return compile "#{source}.coffee", sourceIndex, topLevel
-                
+          return compile "#{source}.coffee", sourceIndex, topLevel
         throw new Error "File not found: #{source}" if topLevel and not exists
         fs.stat source, (err, stats) ->
           throw err if err
           if stats.isDirectory()
             fs.readdir source, (err, files) ->
               throw err if err
-              unprocessed[sourceIndex] += files.length
+              trackUnprocessedFiles sourceIndex, files.length
               for file in files
                 compile path.join(source, file), sourceIndex
-              unprocessed[sourceIndex] -= 1
+              trackCompleteFiles sourceIndex, 1
           else if topLevel or path.extname(source) is '.coffee'
             fs.readFile source, (err, code) ->
               throw err if err
-              unprocessed[sourceIndex] -= 1
               if opts.join
                 contents[sourceIndex] = helpers.compact([contents[sourceIndex], code.toString()]).join('\n')
-                if helpers.compact(contents).length > 0 and remaining_files() == 0
-                  compileJoin()
               else
                 compileScript(source, code.toString(), base)
+              trackCompleteFiles sourceIndex, 1
             watch source, base if opts.watch and not opts.join
           else
-            unprocessed[sourceIndex] -= 1
+            trackCompleteFiles sourceIndex, 1
     compile source, sources.indexOf(source), true
 
 # Compile a single source script, containing the given code, according to the
