@@ -2476,6 +2476,9 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
         $('#error').hide()
       catch error
         $('#error').text(error.message).show()
+      
+      if $(".navigation.try").hasClass("active")
+        location.hash = "#src:#{encodeURIComponent source}"
 
     # Listen for keypresses and recompile.
     $('#repl_source').keyup -> compileSource()
@@ -2505,9 +2508,20 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       return false if $(e.target).closest('.repl_wrapper').length
       if $(this).hasClass('active')
         closeMenus()
+        
+        if $(this).is(".try")
+           location.hash = ""
+        else if /^#src:/.test location.hash
+           location.hash = ''
       else
         closeMenus()
         $(this).addClass 'active'
+        
+        if $(this).hasClass("try")
+           location.hash = "#src:#{encodeURIComponent $('#repl_source').val()}"
+        else if /^#src:/.test location.hash
+           location.hash = ''
+        
       false
 
     # Dismiss console if Escape pressed or click falls outside console
@@ -2522,6 +2536,12 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
 
     $('#open_webchat').click ->
       $(this).replaceWith $('<iframe src="http://webchat.freenode.net/?channels=coffeescript" width="625" height="400"></iframe>')
+
+    # If source code is included in location.hash, display it.
+    hash = decodeURIComponent location.hash.substr(1)
+    if matches = /^src:/.exec(hash)
+      src = hash.substr "src:".length
+      loadConsole src
 
     compileSource()
 
