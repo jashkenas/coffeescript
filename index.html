@@ -2478,7 +2478,11 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
         $('#error').text(error.message).show()
       
       if $(".navigation.try").hasClass("active")
-        location.hash = "#src:#{encodeURIComponent source}"
+        # If possible, use history.replaceState to avoid creating excessive history entries.
+        if history.replaceState?
+            history.replaceState {}, "", "#src:#{encodeURIComponent source}"
+        else
+            location.hash = "#src:#{encodeURIComponent source}"
 
     # Listen for keypresses and recompile.
     $('#repl_source').keyup -> compileSource()
