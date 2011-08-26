@@ -197,6 +197,9 @@ test "#1100: precedence in or-test compilation of `in`", ->
   ok 0 in [1, 1 and 0]
   ok not (0 in [1, 0 or 1])
 
+test "#1630: `in` should check `hasOwnProperty`", ->
+  ok undefined not in length: 1
+
 
 # Chained Comparison
 

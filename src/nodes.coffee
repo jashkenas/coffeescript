@@ -590,7 +590,6 @@ exports.Extends = class Extends extends Base
 
   # Hooks one constructor into another's prototype chain.
   compile: (o) ->
-    utility 'hasProp'
     new Call(new Value(new Literal utility 'extends'), [@child, @parent]).compile o
 
 #### Access
@@ -1593,7 +1592,7 @@ exports.For = class For extends Base
     varPart     = "\n#{idt1}#{namePart};" if namePart
     if @object
       forPart   = "#{ivar} in #{svar}"
-      guardPart = "\n#{idt1}if (!#{utility('hasProp')}.call(#{svar}, #{ivar})) continue;" if @own
+      guardPart = "\n#{idt1}if (!#{utility 'hasProp'}.call(#{svar}, #{ivar})) continue;" if @own
     body        = body.compile merge(o, indent: idt1), LEVEL_TOP
     body        = '\n' + body + '\n' if body
     """
@@ -1801,35 +1800,35 @@ UTILITIES =
 
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls, and copies of any static properties.
-  extends: '''
+  extends: -> """
     function(child, parent) {
-      for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
+      for (var key in parent) { if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key]; }
       function ctor() { this.constructor = child; }
       ctor.prototype = parent.prototype;
       child.prototype = new ctor;
       child.__super__ = parent.prototype;
       return child;
     }
-  '''
+  """
 
   # Create a function bound to the current value of "this".
-  bind: '''
+  bind: -> '''
     function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
   '''
 
   # Discover if an item is in an array.
-  indexOf: '''
+  indexOf: -> """
     Array.prototype.indexOf || function(item) {
       for (var i = 0, l = this.length; i < l; i++) {
-        if (this[i] === item) return i;
+        if (#{utility 'hasProp'}.call(this, i) && this[i] === item) return i;
       }
       return -1;
     }
-  '''
+  """
 
   # Shortcuts to speed up the lookup time for native functions.
-  hasProp: 'Object.prototype.hasOwnProperty'
-  slice  : 'Array.prototype.slice'
+  hasProp: -> 'Object.prototype.hasOwnProperty'
+  slice  : -> 'Array.prototype.slice'
 
 # Levels indicate a node's position in the AST. Useful for knowing if
 # parens are necessary or superfluous.
@@ -1871,7 +1870,7 @@ IS_STRING = /^['"]/
 # Helper for ensuring that utility functions are assigned at the top level.
 utility = (name) ->
   ref = "__#{name}"
-  Scope.root.assign ref, UTILITIES[name]
+  Scope.root.assign ref, UTILITIES[name]()
   ref
 
 multident = (code, tab) ->
