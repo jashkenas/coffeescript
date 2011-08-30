@@ -301,3 +301,8 @@ test "#1348, #1216: existential assignment compilation", ->
   
   if a then a ?= 2 else a = 3
   eq a, nonce
+
+test "#1591, #1101: splatted expressions in destructuring assignment must be assignable", ->
+  nonce = {}
+  for nonref in ['', '""', '0', 'f()', '(->)'].concat CoffeeScript.RESERVED
+    eq nonce, (try CoffeeScript.compile "[#{nonref}...] = v" catch e then nonce)
