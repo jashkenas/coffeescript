@@ -1005,6 +1005,8 @@ exports.Assign = class Assign extends Base
           else
             idx = if obj.this then obj.properties[0].name else obj
       if not splat and obj instanceof Splat
+        unless obj.name.unwrapAll().isAssignable()
+          throw SyntaxError "\"#{ obj.name.compile(o) }\" cannot be assigned."
         name = obj.name.unwrap().value
         val = "#{olen} <= #{vvar}.length ? #{ utility 'slice' }.call(#{vvar}, #{i}"
         if rest = olen - i - 1
