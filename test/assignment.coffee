@@ -306,3 +306,17 @@ test "#1591, #1101: splatted expressions in destructuring assignment must be ass
   nonce = {}
   for nonref in ['', '""', '0', 'f()', '(->)'].concat CoffeeScript.RESERVED
     eq nonce, (try CoffeeScript.compile "[#{nonref}...] = v" catch e then nonce)
+
+test "#1643: splatted accesses in destructuring assignments should not be declared as variables", -> 
+  nonce = {}
+  accesses = ['o.a', 'C::a', 'C::', 'o["a"]', '(o.a)', 'f().a', '(o.a).a', '@o.a', 'o?.a', 'f?().a']
+  for access in accesses
+    code = 
+    """
+    nonce = {}; @o = o = new (class C then a:{}); f = -> o
+    [#{access}...] = [nonce]
+    unless #{access}[0] is nonce then throw 'error'
+    """
+    eq nonce, unless (try CoffeeScript.run code, bare: true catch e then true) then nonce
+    
+  
