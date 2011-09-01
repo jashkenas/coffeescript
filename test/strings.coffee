@@ -102,6 +102,46 @@ eq """ "\\\" """, ' "\\" '
 
 eq '''  <- keep these spaces ->  ''', '  <- keep these spaces ->  '
 
+# long string
+a = <<< one
+ok a is 'one'
+
+a = <<<one
+ok a is 'one'
+
+a = <<<
+  one
+ok a is 'one'
+
+a = <<< one
+  two
+ok a is "one\ntwo"
+
+a = <<<  one
+ok a is " one"
+
+a = <<<
+
+  one
+  two
+
+ok a is "\none\ntwo\n"
+
+a = <<< one
+  two
+
+ok a is "one\ntwo\n"
+
+a = <<< one
+  two
+  three
+
+
+ok a is "one\ntwo\nthree\n\n"
+
+# Symbol style
+eq :one, 'one'
+
 
 test "#1046, empty string interpolations", ->
   eq "#{ }", ''
