@@ -20,6 +20,7 @@ class exports.Rewriter
   rewrite: (@tokens) ->
     @removeLeadingNewlines()
     @removeMidExpressionNewlines()
+    @removeTrailingSemicolons()
     @closeOpenCalls()
     @closeOpenIndexes()
     @addImplicitIndentation()
@@ -66,6 +67,14 @@ class exports.Rewriter
     @scanTokens (token, i, tokens) ->
       return 1 unless token[0] is 'TERMINATOR' and @tag(i + 1) in EXPRESSION_CLOSE
       tokens.splice i, 1
+      0
+  
+  # Semicolons found at the end of a line (before a linebreak or at the end 
+  # of the program) should act as newline terminators, not as comma operators. 
+  removeTrailingSemicolons: ->
+    @scanTokens (token, i, tokens) ->
+      return 1 unless token[1] is ';' and (token.newLine or !@tag(i + 1))
+      tokens.splice i, 1, ['TERMINATOR', '\n']
       0
 
   # The lexer has tagged the opening parenthesis of a method call. Match it with
