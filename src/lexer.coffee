@@ -137,20 +137,48 @@ exports.Lexer = class Lexer
   # Matches strings, including multi-line strings. Ensures that quotation marks
   # are balanced within the string's contents, and within nested interpolations.
   stringToken: ->
+    length = 0
     switch @chunk.charAt 0
       when "'"
         return 0 unless match = SIMPLESTR.exec @chunk
         @token 'STRING', (string = match[0]).replace MULTILINER, '\\\n'
+        length = string.length
       when '"'
         return 0 unless string = @balancedString @chunk, '"'
         if 0 < string.indexOf '#{', 1
           @interpolateString string.slice 1, -1
         else
           @token 'STRING', @escapeLines string
+        length = string.length
+      when '<'
+        return 0 unless @chunk.substr(0,3) == '<<<'
+        indentString = ''
+        for i in [1..@indent]
+          indentString += ' '
+        string = @getStringUntilLevel @chunk.substr(3)
+        length = string.length + 3
+        if string.substr(0,1+indentString.length) == "\n#{indentString}"
+          string = string.substr(1+indentString.length)
+        else if string[0] == " " || string[0] == "\n"
+          string = string.substr(1)
+        string = string.replace ///\n#{indentString}///g, "\n"
+        unless -1 == string.indexOf '#{'
+          string = string.replace /\n/g, '\\n'
+          @interpolateString string
+        else
+          string = string.replace /\\(.)/g, '$1'
+          string = string.replace /\n/g, '\\n'
+          string = string.replace /"/g, '\\"'
+          string = "\"#{string}\""
+          @token 'STRING', string
+      when ":"
+        return 0 unless match = SYMBOLSTR.exec @chunk
+        @token 'STRING', (string = "'#{match[1]}'")
+        length = string.length - 1
       else
         return 0
     @line += count string, '\n'
-    string.length
+    length
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
   # preserve whitespace, but ignore indentation to the left.
@@ -170,12 +198,31 @@ exports.Lexer = class Lexer
   commentToken: ->
     return 0 unless match = @chunk.match COMMENT
     [comment, here] = match
+    length = comment.length
     if here
       @token 'HERECOMMENT', @sanitizeHeredoc here,
         herecomment: true, indent: Array(@indent + 1).join(' ')
       @token 'TERMINATOR', '\n'
+    else
+      # Block comment
+      # Ignore all deeper indentation after the #
+      # For example:
+      # # Hello
+      #   World
+      # Will ignore Hello World instead of Hello only.
+      # But unfortually, It conflict with old comments setting,
+      # and cannot pass test/comments.coffee 25 YAML-style objects
+      # so I comment it :(
+      ###
+      match = comment.match /^[^ ]*( *)#/
+      if match
+        indent = match[1].length
+        if indent >= @indent
+          comment = @getStringUntilLevel @chunk.substr(length), indent
+          length += comment.length
+      ###
     @line += count comment, '\n'
-    comment.length
+    length
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
@@ -503,6 +550,14 @@ exports.Lexer = class Lexer
     body = body.replace /// #{quote} ///g, '\\$&'
     quote + @escapeLines(body, heredoc) + quote
 
+  getStringUntil: (string, pattern)->
+    match = string.split pattern
+    match[0]
+  getStringUntilLevel: (string, level = null) ->
+    level ?= @indent
+    indentPattern = new RegExp("\\n {0,#{level}}\\S")
+    @getStringUntil string, indentPattern
+
 # Constants
 # ---------
 
@@ -550,7 +605,10 @@ exports.RESERVED = RESERVED.concat(JS_KEYWORDS).concat(COFFEE_KEYWORDS)
 # Token matching regexes.
 IDENTIFIER = /// ^
   ( [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]* )
-  ( [^\n\S]* : (?!:) )?  # Is this a property name?
+  # ( [^\n\S]* : (?!:) )?  # Is this a property name?, old comment
+  (   : (?!:)
+    | [^\n\S]* : (?!:|\w)
+  )?
 ///
 
 NUMBER     = ///
@@ -579,6 +637,8 @@ CODE       = /^[-=]>/
 MULTI_DENT = /^(?:\n[^\n\S]*)+/
 
 SIMPLESTR  = /^'[^\\']*(?:\\.[^\\']*)*'/
+
+SYMBOLSTR  = /^\:((?:\\.|\w|-)+)/
 
 JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
