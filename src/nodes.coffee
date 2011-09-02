@@ -1378,7 +1378,9 @@ exports.RegexMatch = class RegexMatch extends Base
     data    = @data.compile o, LEVEL_ACCESS
     pattern = @pattern.compile o, LEVEL_PAREN
 
-    "#{data}.match(#{pattern})"
+    # use (...) wrap the code to ensure the match is a whole part
+    # without (...) the 'unless' will broke the code
+    "(#{utility('matches')} = #{data}.match(#{pattern}))"
 
 #### In
 exports.In = class In extends Base
@@ -1757,6 +1759,7 @@ exports.If = class If extends Base
   unfoldSoak: ->
     @soak and this
 
+
 # Faux-Nodes
 # ----------
 # Faux-nodes are never created by the grammar, but are used during code
@@ -1841,6 +1844,8 @@ UTILITIES =
   # Shortcuts to speed up the lookup time for native functions.
   hasProp: -> 'Object.prototype.hasOwnProperty'
   slice  : -> 'Array.prototype.slice'
+
+  matches: -> 'null'
 
 # Levels indicate a node's position in the AST. Useful for knowing if
 # parens are necessary or superfluous.
