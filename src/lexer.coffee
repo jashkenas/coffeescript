@@ -162,11 +162,14 @@ exports.Lexer = class Lexer
         else if string[0] == " " || string[0] == "\n"
           string = string.substr(1)
         string = string.replace ///\n#{indentString}///g, "\n"
-        string = string.replace /\n/g, '\\n'
-        string = "\"#{string}\""
-        if 0 < string.indexOf '#{', 1
-          @interpolateString string.slice 1, -1
+        unless -1 == string.indexOf '#{'
+          string = string.replace /\n/g, '\\n'
+          @interpolateString string
         else
+          string = string.replace /\\(.)/g, '$1'
+          string = string.replace /\n/g, '\\n'
+          string = string.replace /"/g, '\\"'
+          string = "\"#{string}\""
           @token 'STRING', string
       when ":"
         return 0 unless match = SYMBOLSTR.exec @chunk
@@ -635,7 +638,7 @@ MULTI_DENT = /^(?:\n[^\n\S]*)+/
 
 SIMPLESTR  = /^'[^\\']*(?:\\.[^\\']*)*'/
 
-SYMBOLSTR  = /^\:(\w+)/
+SYMBOLSTR  = /^\:((?:\\.|\w|-)+)/
 
 JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
