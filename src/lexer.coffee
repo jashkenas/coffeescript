@@ -116,7 +116,7 @@ exports.Lexer = class Lexer
       id  = COFFEE_ALIAS_MAP[id] if id in COFFEE_ALIASES
       tag = switch id
         when '!'                                  then 'UNARY'
-        when '==', '!='                           then 'COMPARE'
+        when '==', '!=', '=~'                     then 'COMPARE'
         when '&&', '||'                           then 'LOGIC'
         when 'true', 'false', 'null', 'undefined' then 'BOOL'
         when 'break', 'continue', 'debugger'      then 'STATEMENT'
@@ -566,6 +566,7 @@ OPERATOR   = /// ^ (
    | >>>=?             # zero-fill right shift
    | ([-+:])\1         # doubles
    | ([&|<>])\2=?      # logic / shift
+   | =~                # regexp
    | \?\.              # soak access
    | \.{2,3}           # range or splat
 ) ///
@@ -635,7 +636,7 @@ LOGIC   = ['&&', '||', '&', '|', '^']
 SHIFT   = ['<<', '>>', '>>>']
 
 # Comparison tokens.
-COMPARE = ['==', '!=', '<', '>', '<=', '>=']
+COMPARE = ['==', '!=', '<', '>', '<=', '>=', '=~']
 
 # Mathematical tokens.
 MATH    = ['*', '/', '%']
