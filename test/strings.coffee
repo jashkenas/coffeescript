@@ -139,9 +139,11 @@ a = <<< one
 
 ok a is "one\ntwo\nthree\n\n"
 
+a = <<<     one
+ok a is "    one"
+
 # Symbol style
 eq :one, 'one'
-
 
 test "#1046, empty string interpolations", ->
   eq "#{ }", ''

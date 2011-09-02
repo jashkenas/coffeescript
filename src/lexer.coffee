@@ -75,6 +75,7 @@ exports.Lexer = class Lexer
   identifierToken: ->
     return 0 unless match = IDENTIFIER.exec @chunk
     [input, id, colon] = match
+
     if id is 'own' and @tag() is 'FOR'
       @token 'OWN', id
       return id.length
@@ -154,13 +155,12 @@ exports.Lexer = class Lexer
         indentString = ''
         for i in [1..@indent]
           indentString += ' '
-        start = 3
-        # Ignore first blank
-        if @chunk[3].match /\s/
-          start = 4
-        string = @getStringUntilLevel @chunk.substr(start)
-        length = string.length + start
-        string = string.replace ///^#{indentString}///, ''
+        string = @getStringUntilLevel @chunk.substr(3)
+        length = string.length + 3
+        if string.substr(0,1+indentString.length) == "\n#{indentString}"
+          string = string.substr(1+indentString.length)
+        else if string[0] == " " || string[0] == "\n"
+          string = string.substr(1)
         string = string.replace ///\n#{indentString}///g, "\n"
         string = string.replace /\n/g, '\\n'
         string = "\"#{string}\""
@@ -607,6 +607,7 @@ IDENTIFIER = /// ^
     | [^\n\S]* : (?!:|\w)
   )?
 ///
+
 NUMBER     = ///
   ^ 0x[\da-f]+ |                              # hex
   ^ \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
