@@ -1256,6 +1256,7 @@ exports.While = class While extends Base
 exports.Op = class Op extends Base
   constructor: (op, first, second, flip ) ->
     return new In first, second if op is 'in'
+    return new RegexMatch first, second if op is '=~'
     if op is 'do'
       call = new Call first, first.params or []
       call.do = yes
@@ -1325,7 +1326,7 @@ exports.Op = class Op extends Base
   unfoldSoak: (o) ->
     @operator in ['++', '--', 'delete'] and unfoldSoak o, this, 'first'
 
-  compileNode: (o) ->    
+  compileNode: (o) ->
     isChain = @isChainable() and @first.isChainable()
     # In chains, there's no need to wrap bare obj literals in parens, 
     # as the chained expression is wrapped.
@@ -1369,6 +1370,15 @@ exports.Op = class Op extends Base
 
   toString: (idt) ->
     super idt, @constructor.name + ' ' + @operator
+
+#### Regex Match =~
+exports.RegexMatch = class RegexMatch extends Base
+  constructor: (@data, @pattern) ->
+  compileNode: (o) ->
+    data    = @data.compile o, LEVEL_ACCESS
+    pattern = @pattern.compile o, LEVEL_PAREN
+
+    "#{utility('matches')} = #{data}.match(#{pattern})"
 
 #### In
 exports.In = class In extends Base
@@ -1747,6 +1757,7 @@ exports.If = class If extends Base
   unfoldSoak: ->
     @soak and this
 
+
 # Faux-Nodes
 # ----------
 # Faux-nodes are never created by the grammar, but are used during code
@@ -1831,6 +1842,8 @@ UTILITIES =
   # Shortcuts to speed up the lookup time for native functions.
   hasProp: -> 'Object.prototype.hasOwnProperty'
   slice  : -> 'Array.prototype.slice'
+
+  matches: -> 'null'
 
 # Levels indicate a node's position in the AST. Useful for knowing if
 # parens are necessary or superfluous.
