@@ -62,11 +62,12 @@ _ = (obj) -> new wrapper(obj)
 
 
 # Export the Underscore object for **CommonJS**.
-if typeof(exports) != 'undefined' then exports._ = _
-
-
-# Export Underscore to global scope.
-root._ = _
+if module?.exports?
+  module.exports = _
+  _._ = _
+else
+# If we're not in CommonJS, add _ to the global object.
+  root['_'] = _
 
 
 # Current version.
