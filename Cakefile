@@ -69,7 +69,8 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
 task 'build:full', 'rebuild the source twice, and run the tests', ->
   build ->
     build ->
-      csPath = fs.realpathSync './lib/coffee-script'
+      csPath = './lib/coffee-script'
+      delete require.cache[require.resolve csPath]
       unless runTests require csPath
         process.exit 1
 
