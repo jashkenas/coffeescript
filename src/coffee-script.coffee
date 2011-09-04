@@ -10,6 +10,7 @@ fs               = require 'fs'
 path             = require 'path'
 {Lexer,RESERVED} = require './lexer'
 {parser}         = require './parser'
+vm               = require 'vm'
 
 # TODO: Remove registerExtension when fully deprecated.
 if require.extensions
@@ -77,21 +78,21 @@ exports.run = (code, options) ->
 # The CoffeeScript REPL uses this to run the input.
 exports.eval = (code, options = {}) ->
   return unless code = code.trim()
-  {Script} = require 'vm'
+  Script = vm.Script
   if Script
     if options.sandbox?
-      if options.sandbox instanceof sandbox.constructor
+      if options.sandbox instanceof Script.createContext().constructor
         sandbox = options.sandbox
-        sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
       else
         sandbox = Script.createContext()
         sandbox[k] = v for own k, v of options.sandbox
+      sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
     else
       sandbox = global
     sandbox.__filename = options.filename || 'eval'
     sandbox.__dirname  = path.dirname sandbox.__filename
     # define module/require only if they chose not to specify their own
-    if sandbox isnt global and not (sandbox.module or sandbox.require)
+    unless sandbox isnt global or sandbox.module or sandbox.require
       Module = require 'module'
       sandbox.module  = _module  = new Module(options.modulename || 'eval')
       sandbox.require = _require = (path) ->  Module._load path, _module, true
