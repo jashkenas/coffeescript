@@ -10,6 +10,7 @@ fs               = require 'fs'
 path             = require 'path'
 {Lexer,RESERVED} = require './lexer'
 {parser}         = require './parser'
+vm               = require 'vm'
 
 # TODO: Remove registerExtension when fully deprecated.
 if require.extensions
@@ -77,35 +78,21 @@ exports.run = (code, options) ->
 # The CoffeeScript REPL uses this to run the input.
 exports.eval = (code, options = {}) ->
   return unless code = code.trim()
-  {Script} = require 'vm'
-  if Script
-    sandbox = Script.createContext()
-    sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
-    if options.sandbox?
-      if options.sandbox instanceof sandbox.constructor
-        sandbox = options.sandbox
-      else
-        sandbox[k] = v for own k, v of options.sandbox
-    sandbox.__filename = options.filename || 'eval'
-    sandbox.__dirname  = path.dirname sandbox.__filename
-    # define module/require only if they chose not to specify their own
-    unless sandbox.module or sandbox.require
-      Module = require 'module'
-      sandbox.module  = _module  = new Module(options.modulename || 'eval')
-      sandbox.require = _require = (path) -> Module._load path, _module
-      _module.filename = sandbox.__filename
-      _require[r] = require[r] for r in Object.getOwnPropertyNames require when r isnt 'paths'
-      # use the same hack node currently uses for their own REPL
-      _require.paths = _module.paths = Module._nodeModulePaths process.cwd()
-      _require.resolve = (request) -> Module._resolveFilename request, _module
+  Module = require 'module'
+  _module  = new Module(options.modulename || 'eval')
+  _require = (path) -> Module._load path, _module, true
+  _module.filename = options.filename || 'eval'
+  _require[r] = require[r] for r in Object.getOwnPropertyNames require when r isnt 'paths'
+  # use the same hack node currently uses for their own REPL
+  _require.paths = _module.paths = Module._nodeModulePaths process.cwd()
+  _require.resolve = (request) -> Module._resolveFilename request, _module
+  global.require = _require
+  
   o = {}
   o[k] = v for own k, v of options
   o.bare = on # ensure return value
   js = compile code, o
-  if Script
-    Script.runInContext js, sandbox
-  else
-    eval js
+  vm.runInThisContext js
 
 # Instantiate a Lexer for our use here.
 lexer = new Lexer

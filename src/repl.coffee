@@ -31,13 +31,6 @@ error = (err) ->
 # The current backlog of multi-line code.
 backlog = ''
 
-# The REPL context; must be visible outside `run` to allow for tab completion
-sandbox = Script.createContext()
-excludedGlobals = [
-  'global', 'GLOBAL', 'root'
-]
-sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
-
 # The main REPL function. **run** is called every time a line of code is entered.
 # Attempt to evaluate the command. If there's an exception, print it out instead
 # of exiting.
@@ -54,15 +47,13 @@ run = (buffer) ->
   repl.setPrompt REPL_PROMPT
   backlog = ''
   try
-    sandbox[g] = global[g] for g of global when g not in excludedGlobals
-    _ = sandbox._
+    _ = global._
     returnValue = CoffeeScript.eval "_=(#{code}\n)", {
-      sandbox,
       filename: 'repl'
       modulename: 'repl'
     }
     if returnValue is undefined
-      sandbox._ = _
+      global._ = _
     else
       process.stdout.write inspect(returnValue, no, 2, enableColours) + '\n'
   catch err
@@ -84,7 +75,7 @@ completeAttribute = (text) ->
   if match = text.match ACCESSOR
     [all, obj, prefix] = match
     try
-      val = Script.runInContext obj, sandbox
+      val = Script.runInThisContext obj
     catch error
       return
     completions = getCompletions prefix, Object.getOwnPropertyNames val
@@ -94,7 +85,7 @@ completeAttribute = (text) ->
 completeVariable = (text) ->
   free = (text.match SIMPLEVAR)?[1]
   if free?
-    vars = Script.runInContext 'Object.getOwnPropertyNames(this)', sandbox
+    vars = Script.runInThisContext 'Object.getOwnPropertyNames(this)'
     keywords = (r for r in CoffeeScript.RESERVED when r[0..1] isnt '__')
     possibilities = vars.concat keywords
     completions = getCompletions free, possibilities
