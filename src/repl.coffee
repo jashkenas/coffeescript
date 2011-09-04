@@ -33,12 +33,15 @@ backlog = ''
 
 # The REPL context; must be visible outside `run` to allow for tab completion
 sandbox = Script.createContext()
+excludedGlobals = [
+  'global', 'GLOBAL', 'root'
+]
 nonContextGlobals = [
   'Buffer', 'console', 'process'
   'setInterval', 'clearInterval'
   'setTimeout', 'clearTimeout'
 ]
-sandbox[g] = global[g] for g in nonContextGlobals
+sandbox[g] = global[g] for g of global when g not in excludedGlobals
 sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
 
 # The main REPL function. **run** is called every time a line of code is entered.
