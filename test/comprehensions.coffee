@@ -113,7 +113,7 @@ test "Index values at the end of a loop.", ->
   for i in [1..3]
     -> 'func'
     break if false
-  ok i is 4
+  ok i is 3
 
 
 test "Ensure that local variables are closed over for range comprehensions.", ->
@@ -123,7 +123,7 @@ test "Ensure that local variables are closed over for range comprehensions.", ->
       -> -i
 
   eq (func() for func in funcs).join(' '), '-1 -2 -3'
-  ok i is 4
+  ok i is 3
 
 
 test "Even when referenced in the filter.", ->
@@ -330,7 +330,7 @@ test "Cancel the comprehension if there's a jump inside the loop.", ->
       continue if i < 5
     i
 
-  eq result, 10
+  eq result, 9
 
 
 test "Comprehensions over break.", ->
