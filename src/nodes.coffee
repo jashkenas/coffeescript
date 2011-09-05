@@ -674,9 +674,9 @@ exports.Range = class Range extends Base
     stepPart = if @stepVar
       "#{idx} += #{@stepVar}"
     else if known
-      if from <= to then "#{idx}++" else "#{idx}--"
+      if from <= to then "++#{idx}" else "--#{idx}"
     else
-      "#{cond} ? #{idx}++ : #{idx}--"
+      "#{cond} ? ++#{idx} : --#{idx}"
 
     # The final loop body.
     "#{varPart}; #{condPart}; #{stepPart}"
@@ -698,7 +698,7 @@ exports.Range = class Range extends Base
     else
       vars    = "#{i} = #{@fromC}" + if @toC isnt @toVar then ", #{@toC}" else ''
       cond    = "#{@fromVar} <= #{@toVar}"
-      body    = "var #{vars}; #{cond} ? #{i} <#{@equals} #{@toVar} : #{i} >#{@equals} #{@toVar}; #{cond} ? #{i}++ : #{i}--"
+      body    = "var #{vars}; #{cond} ? #{i} <#{@equals} #{@toVar} : #{i} >#{@equals} #{@toVar}; #{cond} ? ++#{i} : --#{i}"
     post   = "{ #{result}.push(#{i}); }\n#{idt}return #{result};\n#{o.indent}"
     hasArgs = (node) -> node?.contains (n) -> n instanceof Literal and n.value is 'arguments' and not n.asKey
     args   = ', arguments' if hasArgs(@from) or hasArgs(@to)
@@ -1567,6 +1567,7 @@ exports.For = class For extends Base
     idt1      = @tab + TAB
     if @range
       forPart = source.compile merge(o, {index: ivar, @step})
+      decrement = "\n#{@tab}--#{ivar};"
     else
       svar    = @source.compile o, LEVEL_LIST
       if (name or @own) and not IDENTIFIER.test svar
@@ -1577,7 +1578,7 @@ exports.For = class For extends Base
       unless @object
         lvar       = scope.freeVariable 'len'
         forVarPart = "#{ivar} = 0, #{lvar} = #{svar}.length" + if @step then ", #{stepvar} = #{@step.compile(o, LEVEL_OP)}" else ''
-        stepPart   = if @step then "#{ivar} += #{stepvar}" else "#{ivar}++"
+        stepPart   = if @step then "#{ivar} += #{stepvar}" else "++#{ivar}"
         forPart    = "#{forVarPart}; #{ivar} < #{lvar}; #{stepPart}"
     if @returns
       resultPart   = "#{@tab}#{rvar} = [];\n"
@@ -1598,7 +1599,7 @@ exports.For = class For extends Base
     body        = body.compile merge(o, indent: idt1), LEVEL_TOP
     body        = '\n' + body + '\n' if body
     """
-    #{defPart}#{resultPart or ''}#{@tab}for (#{forPart}) {#{guardPart}#{varPart}#{body}#{@tab}}#{returnResult or ''}
+    #{defPart}#{resultPart or ''}#{@tab}for (#{forPart}) {#{guardPart}#{varPart}#{body}#{@tab}}#{decrement or ''}#{returnResult or ''}
     """
 
   pluckDirectCall: (o, body) ->
@@ -1821,7 +1822,7 @@ UTILITIES =
   # Discover if an item is in an array.
   indexOf: -> """
     Array.prototype.indexOf || function(item) {
-      for (var i = 0, l = this.length; i < l; i++) {
+      for (var i = 0, l = this.length; i < l; ++i) {
         if (#{utility 'hasProp'}.call(this, i) && this[i] === item) return i;
       }
       return -1;
