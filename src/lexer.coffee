@@ -489,9 +489,8 @@ exports.Lexer = class Lexer
   # Are we in the midst of an unfinished expression?
   unfinished: ->
     LINE_CONTINUER.test(@chunk) or
-    (prev = last @tokens, 1) and prev[0] isnt '.' and
-      (value = @value()) and not value.reserved and
-      NO_NEWLINE.test(value) and not CODE.test(value) and not ASSIGNED.test(@chunk)
+    @tag() in ['\\', '.', '?.', 'UNARY', 'MATH', '+', '-', 'SHIFT', 'RELATION'
+               'COMPARE', 'LOGIC', 'COMPOUND_ASSIGN', 'THROW', 'EXTENDS']
 
   # Converts newlines for string literals.
   escapeLines: (str, heredoc) ->
@@ -610,17 +609,9 @@ HEREDOC_INDENT  = /\n+([^\n\S]*)/g
 
 HEREDOC_ILLEGAL = /\*\//
 
-ASSIGNED        = /^\s*@?([$A-Za-z_][$\w\x7f-\uffff]*|['"].*['"])[^\n\S]*?[:=][^:=>]/
-
 LINE_CONTINUER  = /// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///
 
 TRAILING_SPACES = /\s+$/
-
-NO_NEWLINE      = /// ^ (?:            # non-capturing group
-  [-+*&|/%=<>!.\\][<>=&|]* |           # symbol operators
-  and | or | is(?:nt)? | n(?:ot|ew) |  # word operators
-  delete | typeof | instanceof
-) $ ///
 
 # Compound assignment tokens.
 COMPOUND_ASSIGN = [

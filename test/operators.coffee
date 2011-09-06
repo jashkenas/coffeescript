@@ -243,3 +243,7 @@ test "#1234: Applying a splat to :: applies the splat to the wrong object", ->
 
   arr = []
   eq nonce, C::method arr... # should be applied to `C::`
+
+test "#1102: String literal prevents line continuation", ->
+  eq "': '", '' +
+     "': '"
