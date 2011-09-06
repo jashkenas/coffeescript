@@ -62,11 +62,12 @@ _ = (obj) -> new wrapper(obj)
 
 
 # Export the Underscore object for **CommonJS**.
-if typeof(exports) != 'undefined' then exports._ = _
-
-
-# Export Underscore to global scope.
-root._ = _
+if module?.exports?
+  module.exports = _
+  _._ = _
+else
+# If we're not in CommonJS, add _ to the global object.
+  root['_'] = _
 
 
 # Current version.
@@ -460,8 +461,6 @@ _.isEqual = (a, b) ->
   # Different types?
   atype = typeof(a); btype = typeof(b)
   return false if atype isnt btype
-  # Basic equality test (watch out for coercions).
-  return true if `a == b`
   # One is falsy and the other truthy.
   return false if (!a and b) or (a and !b)
   # One of them implements an `isEqual()`?
