@@ -121,3 +121,16 @@ test "indented heredoc", ->
 test "#1492: Nested blocks don't cause double semicolons", ->
   js = CoffeeScript.compile '(0;0)'
   eq -1, js.indexOf ';;'
+
+test "#1195 Ignore trailing semicolons (before newlines or as the last char in a program)", ->
+    preNewline = (numSemicolons) ->
+      """
+      nonce = {}; nonce2 = {}
+      f = -> nonce#{Array(numSemicolons+1).join(';')}
+      nonce2
+      unless f() is nonce then throw new Error('; before linebreak should = newline')
+      """
+    CoffeeScript.run(preNewline(n), bare: true) for n in [1,2,3]
+    
+    lastChar = '-> lastChar;'
+    doesNotThrow -> CoffeeScript.compile lastChar, bare: true
