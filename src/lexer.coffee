@@ -279,6 +279,7 @@ exports.Lexer = class Lexer
         @outdebt = 0
         @token 'OUTDENT', dent
     @outdebt -= moveOut if dent
+    @tokens.pop() while @value() is ';'
     @token 'TERMINATOR', '\n' unless @tag() is 'TERMINATOR' or noNewlines
     this
 
@@ -293,6 +294,7 @@ exports.Lexer = class Lexer
 
   # Generate a newline token. Consecutive newlines get merged together.
   newlineToken: ->
+    @tokens.pop() while @value() is ';'
     @token 'TERMINATOR', '\n' unless @tag() is 'TERMINATOR'
     this
 
