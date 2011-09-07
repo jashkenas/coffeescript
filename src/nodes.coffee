@@ -76,8 +76,12 @@ exports.Base = class Base
   # Construct a node that returns the current node's result.
   # Note that this is overridden for smarter behavior for
   # many statement nodes (e.g. If, For)...
-  makeReturn: ->
-    new Return this
+  makeReturn: (res) ->
+    me = @unwrapAll()
+    if res
+      new Call new Literal("#{res}.push"), [me]
+    else
+      new Return me
 
   # Does this node, or any of its children, contain a node of a certain kind?
   # Recursively traverses down the *children* of the nodes, yielding to a block
@@ -191,12 +195,12 @@ exports.Block = class Block extends Base
 
   # A Block node does not return its entire body, rather it
   # ensures that the final expression is returned.
-  makeReturn: ->
+  makeReturn: (res) ->
     len = @expressions.length
     while len--
       expr = @expressions[len]
       if expr not instanceof Comment
-        @expressions[len] = expr.makeReturn()
+        @expressions[len] = expr.makeReturn res
         @expressions.splice(len, 1) if expr instanceof Return and not expr.expression
         break
     this
@@ -281,7 +285,7 @@ exports.Literal = class Literal extends Base
   constructor: (@value) ->
 
   makeReturn: ->
-    if @isStatement() then this else new Return this
+    if @isStatement() then this else super
 
   isAssignable: ->
     IDENTIFIER.test @value
@@ -373,9 +377,6 @@ exports.Value = class Value extends Base
 
   isSplice: ->
     last(@properties) instanceof Slice
-
-  makeReturn: ->
-    if @properties.length then super() else @base.makeReturn()
 
   # The value can be unwrapped as its inner node, if there are no attached
   # properties.
@@ -1210,9 +1211,12 @@ exports.While = class While extends Base
 
   isStatement: YES
 
-  makeReturn: ->
-    @returns = yes
-    this
+  makeReturn: (res) ->
+    if res
+      super
+    else
+      @returns = yes
+      this
 
   addBody: (@body) ->
     this
@@ -1234,10 +1238,9 @@ exports.While = class While extends Base
     if body.isEmpty()
       body = ''
     else
-      if o.level > LEVEL_TOP or @returns
-        rvar = o.scope.freeVariable 'results'
+      if @returns
+        body.makeReturn rvar = o.scope.freeVariable 'results'
         set  = "#{@tab}#{rvar} = [];\n"
-        body = Push.wrap rvar, body if body
       if @guard
         if body.expressions.length > 1
           body.expressions.unshift new If (new Parens @guard).invert(), new Literal "continue"
@@ -1419,9 +1422,9 @@ exports.Try = class Try extends Base
 
   jumps: (o) -> @attempt.jumps(o) or @recovery?.jumps(o)
 
-  makeReturn: ->
-    @attempt  = @attempt .makeReturn() if @attempt
-    @recovery = @recovery.makeReturn() if @recovery
+  makeReturn: (res) ->
+    @attempt  = @attempt .makeReturn res if @attempt
+    @recovery = @recovery.makeReturn res if @recovery
     this
 
   # Compilation is more or less as you would expect -- the *finally* clause
@@ -1497,7 +1500,6 @@ exports.Parens = class Parens extends Base
 
   unwrap    : -> @body
   isComplex : -> @body.isComplex()
-  makeReturn: -> @body.makeReturn()
 
   compileNode: (o) ->
     expr = @body.unwrap()
@@ -1518,7 +1520,7 @@ exports.Parens = class Parens extends Base
 # Unlike Python array comprehensions, they can be multi-line, and you can pass
 # the current index of the loop as a second parameter. Unlike Ruby blocks,
 # you can map and filter in a single pass.
-exports.For = class For extends Base
+exports.For = class For extends While
   constructor: (body, source) ->
     {@source, @guard, @step, @name, @index} = source
     @body    = Block.wrap [body]
@@ -1533,14 +1535,6 @@ exports.For = class For extends Base
     @returns = false
 
   children: ['body', 'source', 'guard', 'step']
-
-  isStatement: YES
-
-  jumps: While::jumps
-
-  makeReturn: ->
-    @returns = yes
-    this
 
   # Welcome to the hairiest method in all of CoffeeScript. Handles the inner
   # loop, filtering, stepping, and result saving for array, object, and range
@@ -1582,7 +1576,7 @@ exports.For = class For extends Base
     if @returns
       resultPart   = "#{@tab}#{rvar} = [];\n"
       returnResult = "\n#{@tab}return #{rvar};"
-      body         = Push.wrap rvar, body
+      body.makeReturn rvar
     if @guard
       if body.expressions.length > 1
         body.expressions.unshift new If (new Parens @guard).invert(), new Literal "continue"
@@ -1636,9 +1630,10 @@ exports.Switch = class Switch extends Base
       return block if block.jumps o
     @otherwise?.jumps o
 
-  makeReturn: ->
-    pair[1].makeReturn() for pair in @cases
-    @otherwise?.makeReturn()
+  makeReturn: (res) ->
+    pair[1].makeReturn res for pair in @cases
+    @otherwise or= new Block [new Literal 'void 0'] if res
+    @otherwise?.makeReturn res
     this
 
   compileNode: (o) ->
@@ -1696,9 +1691,10 @@ exports.If = class If extends Base
   compileNode: (o) ->
     if @isStatement o then @compileStatement o else @compileExpression o
 
-  makeReturn: ->
-    @body     and= new Block [@body.makeReturn()]
-    @elseBody and= new Block [@elseBody.makeReturn()]
+  makeReturn: (res) ->
+    @elseBody  or= new Block [new Literal 'void 0'] if res
+    @body     and= new Block [@body.makeReturn res]
+    @elseBody and= new Block [@elseBody.makeReturn res]
     this
 
   ensureBlock: (node) ->
@@ -1751,15 +1747,6 @@ exports.If = class If extends Base
 # ----------
 # Faux-nodes are never created by the grammar, but are used during code
 # generation to generate other combinations of nodes.
-
-#### Push
-
-# The **Push** creates the tree for `array.push(value)`,
-# which is helpful for recording the result arrays from comprehensions.
-Push =
-  wrap: (name, exps) ->
-    return exps if exps.isEmpty() or last(exps.expressions).jumps()
-    exps.push new Call new Value(new Literal(name), [new Access new Literal 'push']), [exps.pop()]
 
 #### Closure
 
