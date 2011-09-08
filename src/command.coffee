@@ -30,7 +30,7 @@ SWITCHES = [
   ['-i', '--interactive',     'run an interactive CoffeeScript REPL']
   ['-o', '--output [DIR]',    'set the directory for compiled JavaScript']
   ['-j', '--join [FILE]',     'concatenate the scripts before compiling']
-  ['-w', '--watch',           'watch scripts, and apply current command to any that change']
+  ['-w', '--watch',           'watch scripts and repeat enabled task(s) for any that change']
   ['-p', '--print',           'print the compiled JavaScript to stdout']
   ['-l', '--lint',            'pipe the compiled JavaScript through JavaScript Lint']
   ['-s', '--stdio',           'listen for and compile scripts over stdio']
