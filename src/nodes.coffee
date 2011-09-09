@@ -919,6 +919,7 @@ exports.Class = class Class extends Base
 exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options) ->
     @param = options and options.param
+    @subpattern = options and options.subpattern
 
   children: ['variable', 'value']
 
@@ -941,13 +942,14 @@ exports.Assign = class Assign extends Base
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
     name = @variable.compile o, LEVEL_LIST
-    unless @context or @variable.isAssignable()
-      throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned."
-    unless @context or isValue and (@variable.namespaced or @variable.hasProperties())
-      if @param
-        o.scope.add name, 'var'
-      else
-        o.scope.find name
+    unless @context
+      unless (varBase = @variable.unwrapAll()).isAssignable()
+        throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned."
+      unless varBase.hasProperties?()
+        if @param
+          o.scope.add name, 'var'
+        else
+          o.scope.find name
     if @value instanceof Code and match = METHOD_DEF.exec name
       @value.klass = match[1] if match[1]
       @value.name  = match[2] ? match[3] ? match[4] ? match[5]
@@ -1006,9 +1008,8 @@ exports.Assign = class Assign extends Base
           else
             idx = if obj.this then obj.properties[0].name else obj
       if not splat and obj instanceof Splat
-        unless obj.name.unwrapAll().isAssignable()
-          throw SyntaxError "\"#{ obj.name.compile(o) }\" cannot be assigned."
         name = obj.name.unwrap().value
+        obj = obj.unwrap()
         val = "#{olen} <= #{vvar}.length ? #{ utility 'slice' }.call(#{vvar}, #{i}"
         if rest = olen - i - 1
           ivar = o.scope.freeVariable 'i'
@@ -1031,8 +1032,8 @@ exports.Assign = class Assign extends Base
         val = new Value new Literal(vvar), [new (if acc then Access else Index) idx]
       if name? and name in ['arguments','eval'].concat RESERVED
         throw new SyntaxError "assignment to a reserved word: #{obj.compile o} = #{val.compile o}"
-      assigns.push new Assign(obj, val, null, param: @param).compile o, LEVEL_TOP
-    assigns.push vvar unless top
+      assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compile o, LEVEL_LIST
+    assigns.push vvar unless top or @subpattern
     code = assigns.join ', '
     if o.level < LEVEL_LIST then code else "(#{code})"
 
@@ -1176,6 +1177,8 @@ exports.Splat = class Splat extends Base
 
   compile: (o) ->
     if @index? then @compileParam o else @name.compile o
+    
+  unwrap: -> @name
 
   # Utility function that converts an arbitrary number of elements, mixed with
   # splats, to a proper array.
