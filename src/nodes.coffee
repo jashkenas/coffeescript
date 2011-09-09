@@ -1009,6 +1009,7 @@ exports.Assign = class Assign extends Base
         unless obj.name.unwrapAll().isAssignable()
           throw SyntaxError "\"#{ obj.name.compile(o) }\" cannot be assigned."
         name = obj.name.unwrap().value
+        obj = obj.unwrap()
         val = "#{olen} <= #{vvar}.length ? #{ utility 'slice' }.call(#{vvar}, #{i}"
         if rest = olen - i - 1
           ivar = o.scope.freeVariable 'i'
@@ -1032,7 +1033,7 @@ exports.Assign = class Assign extends Base
       if name? and name in ['arguments','eval'].concat RESERVED
         throw new SyntaxError "assignment to a reserved word: #{obj.compile o} = #{val.compile o}"
       isSoak = (soakNode = obj.name or obj) and soakNode.base?.soak or soakNode.properties?[0]?.soak
-      assigns.push new Assign(obj.name or obj, val, null, param: @param).compile o, if isSoak then LEVEL_ACCESS else LEVEL_TOP
+      assigns.push new Assign(obj, val, null, param: @param).compile o, if isSoak then LEVEL_ACCESS else LEVEL_TOP
     assigns.push vvar unless top
     code = assigns.join ', '
     if o.level < LEVEL_LIST then code else "(#{code})"
@@ -1177,6 +1178,8 @@ exports.Splat = class Splat extends Base
 
   compile: (o) ->
     if @index? then @compileParam o else @name.compile o
+    
+  unwrap: -> @name
 
   # Utility function that converts an arbitrary number of elements, mixed with
   # splats, to a proper array.
