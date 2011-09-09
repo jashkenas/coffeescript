@@ -940,14 +940,14 @@ exports.Assign = class Assign extends Base
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
     name = @variable.compile o, LEVEL_LIST
-    unless @context or @variable.unwrapAll().isAssignable()
-      throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned."
-    hasProps = (isValue and @variable.unwrapAll().hasProperties?()) or (@variable instanceof Splat and @variable.name.unwrapAll().hasProperties?())
-    unless @context or hasProps
-      if @param
-        o.scope.add name, 'var'
-      else
-        o.scope.find name
+    unless @context
+      unless (varBase = @variable.unwrapAll()).isAssignable()
+        throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned."
+      unless varBase.hasProperties?()
+        if @param
+          o.scope.add name, 'var'
+        else
+          o.scope.find name
     if @value instanceof Code and match = METHOD_DEF.exec name
       @value.klass = match[1] if match[1]
       @value.name  = match[2] ? match[3] ? match[4] ? match[5]
@@ -1032,8 +1032,7 @@ exports.Assign = class Assign extends Base
         val = new Value new Literal(vvar), [new (if acc then Access else Index) idx]
       if name? and name in ['arguments','eval'].concat RESERVED
         throw new SyntaxError "assignment to a reserved word: #{obj.compile o} = #{val.compile o}"
-      isSoak = (soakNode = obj.name or obj) and soakNode.base?.soak or soakNode.properties?[0]?.soak
-      assigns.push new Assign(obj, val, null, param: @param).compile o, if isSoak then LEVEL_ACCESS else LEVEL_TOP
+      assigns.push new Assign(obj, val, null, param: @param).compile o, LEVEL_LIST
     assigns.push vvar unless top
     code = assigns.join ', '
     if o.level < LEVEL_LIST then code else "(#{code})"
