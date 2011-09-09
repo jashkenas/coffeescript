@@ -918,6 +918,7 @@ exports.Class = class Class extends Base
 exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options) ->
     @param = options and options.param
+    @subpattern = options and options.subpattern
 
   children: ['variable', 'value']
 
@@ -1032,8 +1033,8 @@ exports.Assign = class Assign extends Base
         val = new Value new Literal(vvar), [new (if acc then Access else Index) idx]
       if name? and name in ['arguments','eval'].concat RESERVED
         throw new SyntaxError "assignment to a reserved word: #{obj.compile o} = #{val.compile o}"
-      assigns.push new Assign(obj, val, null, param: @param).compile o, LEVEL_LIST
-    assigns.push vvar unless top
+      assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compile o, LEVEL_LIST
+    assigns.push vvar unless top or @subpattern
     code = assigns.join ', '
     if o.level < LEVEL_LIST then code else "(#{code})"
 
