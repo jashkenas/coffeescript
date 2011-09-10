@@ -239,11 +239,20 @@ exports.Block = class Block extends Base
   # It would be better not to generate them in the first place, but for now,
   # clean up obvious double-parentheses.
   compileRoot: (o) ->
-    o.indent = @tab = if o.bare then '' else TAB
     o.scope  = new Scope null, this, null
     o.level  = LEVEL_TOP
+    # If the first expression is a comment, write it before everything else.
+    comment  = ''
+    if !o.bare and @expressions.length > 0 and @expressions[0] instanceof Comment
+      exp = @expressions
+      node = @expressions[0]
+      @expressions = [node]
+      o.indent = @tab = ''
+      comment = @compileNode o
+      @expressions = exp.splice 1, exp.length
+    o.indent = @tab = if o.bare then '' else TAB
     code     = @compileWithDeclarations o
-    if o.bare then code else "(function() {\n#{code}\n}).call(this);\n"
+    if o.bare then code else "#{comment}(function() {\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
