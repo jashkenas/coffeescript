@@ -47,7 +47,8 @@ SWITCHES = [
 # Top-level objects shared by all the functions.
 opts         = {}
 sources      = []
-contents     = []
+watching     = {}
+contents     = {}
 optionParser = null
 
 # Run `coffee` by parsing passed options and determining what action to take.
@@ -68,55 +69,31 @@ exports.run = ->
   process.ARGV = process.argv = process.argv.slice(0, 2).concat opts.literals
   process.argv[0] = 'coffee'
   process.execPath = require.main.filename
-  compileScripts()
+  compileScripts(sources, null, true)
+  compileJoin() if opts.join
 
 # Asynchronously read in each CoffeeScript in a list of source files and
 # compile them. If a directory is passed, recursively compile all
 # '.coffee' extension source files in it and all subdirectories.
-compileScripts = ->
-  unprocessed = []
-  remaining_files = ->
-    total = 0
-    total += x for x in unprocessed
-    total
-  trackUnprocessedFiles = (sourceIndex, fileCount) ->
-    unprocessed[sourceIndex] ?= 0
-    unprocessed[sourceIndex] += fileCount
-  trackCompleteFiles = (sourceIndex, fileCount) ->
-    unprocessed[sourceIndex] -= fileCount
-    if opts.join
-      if helpers.compact(contents).length > 0 and remaining_files() == 0
-        compileJoin()
+compileScripts = (sources, base, topLevel) ->
   for source in sources
-    trackUnprocessedFiles sources.indexOf(source), 1
-  for source in sources
-    base = path.join(source)
-    compile = (source, sourceIndex, topLevel) ->
-      path.exists source, (exists) ->
-        if topLevel and not exists and source[-7..] isnt '.coffee'
-          return compile "#{source}.coffee", sourceIndex, topLevel
-        throw new Error "File not found: #{source}" if topLevel and not exists
-        fs.stat source, (err, stats) ->
-          throw err if err
-          if stats.isDirectory()
-            fs.readdir source, (err, files) ->
-              throw err if err
-              trackUnprocessedFiles sourceIndex, files.length
-              for file in files
-                compile path.join(source, file), sourceIndex
-              trackCompleteFiles sourceIndex, 1
-          else if topLevel or path.extname(source) is '.coffee'
-            fs.readFile source, (err, code) ->
-              throw err if err
-              if opts.join
-                contents[sourceIndex] = helpers.compact([contents[sourceIndex], code.toString()]).join('\n')
-              else
-                compileScript(source, code.toString(), base)
-              trackCompleteFiles sourceIndex, 1
-            watch source, base if opts.watch and not opts.join
-          else
-            trackCompleteFiles sourceIndex, 1
-    compile source, sources.indexOf(source), true
+    base ?= path.join(source)
+    if not (path.existsSync source)
+      if topLevel and path.extname(source) isnt '.coffee'
+        return compileScripts ["#{source}.coffee"], base
+      throw new Error "File not found: #{source}" if topLevel
+    stats = fs.statSync source
+    if stats.isDirectory()
+      files = fs.readdirSync source
+      for file in files
+        compileScripts [path.join(source, file)], base
+    else if topLevel or path.extname(source) is '.coffee'
+      code = fs.readFileSync source
+      if opts.join
+        contents[source] = code.toString()
+      else
+        compileScript(source, code.toString(), base)
+    watch source, base if opts.watch
 
 # Compile a single source script, containing the given code, according to the
 # requested options. If evaluating the script directly sets `__filename`,
@@ -156,8 +133,8 @@ compileStdio = ->
 # After all of the source files are done being read, concatenate and compile
 # them together.
 compileJoin = ->
-  code = contents.join '\n'
-  compileScript opts.join, code, opts.join
+  code = (content for own source, content of contents).join '\n'
+  compileScript opts.join, code, opts.join if code.length
 
 # Load files that are to-be-required before compilation occurs.
 loadRequires = ->
@@ -170,11 +147,69 @@ loadRequires = ->
 # time the file is updated. May be used in combination with other options,
 # such as `--lint` or `--print`.
 watch = (source, base) ->
+  return if watching[source]
   fs.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
     return if curr.size is prev.size and curr.mtime.getTime() is prev.mtime.getTime()
+    if curr.isDirectory()
+      recompile = no
+      files = fs.readdirSync source
+      # lWatching will contain files being watched in this directory
+      lWatching = {}
+      for file, isWatched of watching
+        if path.dirname(file) is source
+          lWatching[file] = true
+      newSources = []
+      for file in files
+        pathed = path.join source, file
+        if not lWatching[pathed]
+          newSources.push pathed
+        else
+          delete lWatching[pathed]
+      recompile = yes if newSources.length
+      # remaining files in lWatching no longer exist
+      for own file, isWatched of lWatching
+        recompile = yes
+        rmOutput file, base
+      if recompile
+        compileScripts newSources, base
+        compileJoin() if opts.join
+      return
+    # source is a file, not a directory
     fs.readFile source, (err, code) ->
       throw err if err
-      compileScript(source, code.toString(), base)
+      if opts.join
+        contents[source] = code.toString()
+        compileJoin()
+      else
+        compileScript(source, code.toString(), base)
+  watching[source] = true
+
+# Unlink generated Javascript source file or directory
+# only used when using --watch
+rmOutput = (source, base) ->
+  delete contents[source]
+  delete watching[source]
+  fs.unwatchFile source
+  for own file, isWatched of watching
+    if path.dirname(file) is source
+      rmOutput file, base
+  return if opts.join
+  filename  = path.basename(source, path.extname(source))
+  srcDir    = path.dirname source
+  baseDir   = if base is '.' then srcDir else srcDir.substring base.length
+  dir       = if opts.output then path.join opts.output, baseDir else srcDir
+  fullPath  = path.join dir, filename
+  if path.existsSync(fullPath)
+    try
+      fs.rmdirSync fullPath
+      printLine "#{(new Date).toLocaleTimeString()} - removed #{fullPath}"
+    catch x
+      printWarn "#{(new Date).toLocaleTimeString()} - could not remove #{fullPath}
+        #{x}"
+  else
+    fullPath += '.js'
+    fs.unlinkSync fullPath
+    printLine "#{(new Date).toLocaleTimeString()} - removed #{fullPath}"
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
@@ -191,7 +226,7 @@ writeJs = (source, js, base) ->
       if err
         printLine err.message
       else if opts.compile and opts.watch
-        console.log "#{(new Date).toLocaleTimeString()} - compiled #{source}"
+        printLine "#{(new Date).toLocaleTimeString()} - compiled #{source}"
   path.exists dir, (exists) ->
     if exists then compile() else exec "mkdir -p #{dir}", compile
 
