@@ -313,21 +313,21 @@ test "#1643: splatted accesses in destructuring assignments should not be declar
   for access in accesses
     for i,j in [1,2,3] #position can matter
       code = 
-      """
-      nonce = {}; nonce2 = {}; nonce3 = {}; 
-      @o = o = new (class C then a:{}); f = -> o
-      [#{new Array(i).join('x,')}#{access}...] = [#{new Array(i).join('0,')}nonce, nonce2, nonce3]
-      unless #{access}[0] is nonce and #{access}[1] is nonce2 and #{access}[2] is nonce3 then throw new Error('[...]')
-      """
+        """
+        nonce = {}; nonce2 = {}; nonce3 = {}; 
+        @o = o = new (class C then a:{}); f = -> o
+        [#{new Array(i).join('x,')}#{access}...] = [#{new Array(i).join('0,')}nonce, nonce2, nonce3]
+        unless #{access}[0] is nonce and #{access}[1] is nonce2 and #{access}[2] is nonce3 then throw new Error('[...]')
+        """
       eq nonce, unless (try CoffeeScript.run code, bare: true catch e then true) then nonce
   # subpatterns like `[[a]...]` and `[{a}...]`
   subpatterns = ['[sub, sub2, sub3]', '{0: sub, 1: sub2, 2: sub3}']
   for subpattern in subpatterns
     for i,j in [1,2,3]
       code =
-      """
-      nonce = {}; nonce2 = {}; nonce3 = {}; 
-      [#{new Array(i).join('x,')}#{subpattern}...] = [#{new Array(i).join('0,')}nonce, nonce2, nonce3]
-      unless sub is nonce and sub2 is nonce2 and sub3 is nonce3 then throw new Error('[sub...]')
-      """
+        """
+        nonce = {}; nonce2 = {}; nonce3 = {}; 
+        [#{new Array(i).join('x,')}#{subpattern}...] = [#{new Array(i).join('0,')}nonce, nonce2, nonce3]
+        unless sub is nonce and sub2 is nonce2 and sub3 is nonce3 then throw new Error('[sub...]')
+        """
       eq nonce, unless (try CoffeeScript.run code, bare: true catch e then true) then nonce
