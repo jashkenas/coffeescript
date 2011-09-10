@@ -2502,6 +2502,9 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
 
     # Helper to hide the menus.
     closeMenus = ->
+      if /^#src:/.test location.hash
+        location.hash = ""
+      
       $('.navigation.active').removeClass 'active'
 
     $('.minibutton.run').click evalJS
@@ -2512,11 +2515,6 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       return false if $(e.target).closest('.repl_wrapper').length
       if $(this).hasClass('active')
         closeMenus()
-        
-        if $(this).is(".try")
-           location.hash = ""
-        else if /^#src:/.test location.hash
-           location.hash = ''
       else
         closeMenus()
         $(this).addClass 'active'
