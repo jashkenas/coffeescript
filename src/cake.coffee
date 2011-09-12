@@ -45,14 +45,12 @@ helpers.extend global,
 # If no tasks are passed, print the help screen.
 exports.run = ->
   process.chdir findCakefilePathSync(fs.realpathSync '.')
-  path.exists 'Cakefile', (exists) ->
-    throw new Error("Cakefile not found in #{process.cwd()}") unless exists
-    args = process.argv.slice 2
-    CoffeeScript.run fs.readFileSync('Cakefile').toString(), filename: 'Cakefile'
-    oparse = new optparse.OptionParser switches
-    return printTasks() unless args.length
-    options = oparse.parse(args)
-    invoke arg for arg in options.arguments
+  args = process.argv.slice 2
+  CoffeeScript.run fs.readFileSync('Cakefile').toString(), filename: 'Cakefile'
+  oparse = new optparse.OptionParser switches
+  return printTasks() unless args.length
+  options = oparse.parse(args)
+  invoke arg for arg in options.arguments
 
 # Display the list of Cake tasks in a format similar to `rake -T`
 printTasks = ->
@@ -74,5 +72,5 @@ findCakefilePathSync = (curPath) ->
   return curPath if path.existsSync path.join(curPath, 'Cakefile')
   parent = path.normalize path.join(curPath, '..')
   return findCakefilePathSync parent unless parent == curPath
-  # If none found, stay in current directory
-  return '.'
+  # None found
+  throw new Error("Cakefile not found in #{process.cwd()}")
