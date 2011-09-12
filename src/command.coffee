@@ -22,25 +22,27 @@ printWarn = (line) -> process.binding('stdio').writeError line + '\n'
 # The help banner that is printed when `coffee` is called without arguments.
 BANNER = '''
   Usage: coffee [options] path/to/script.coffee
+  
+  If called without options, `coffee` will run your script.
          '''
 
 # The list of all the valid option flags that `coffee` knows how to handle.
 SWITCHES = [
-  ['-b', '--bare',            'compile without the top-level function wrapper']
+  ['-b', '--bare',            'compile without a top-level function wrapper']
   ['-c', '--compile',         'compile to JavaScript and save as .js files']
-  ['-e', '--eval',            'compile a string from the command line']
+  ['-e', '--eval',            'pass a string from the command line as input']
   ['-h', '--help',            'display this help message']
   ['-i', '--interactive',     'run an interactive CoffeeScript REPL']
-  ['-j', '--join [FILE]',     'concatenate the scripts before compiling']
+  ['-j', '--join [FILE]',     'concatenate the source CoffeeScript before compiling']
   ['-l', '--lint',            'pipe the compiled JavaScript through JavaScript Lint']
-  ['-n', '--nodes',           'print the parse tree that Jison produces']
-  [      '--nodejs [ARGS]',   'pass options through to the "node" binary']
-  ['-o', '--output [DIR]',    'set the directory for compiled JavaScript']
-  ['-p', '--print',           'print the compiled JavaScript to stdout']
+  ['-n', '--nodes',           'print out the parse tree that the parser produces']
+  [      '--nodejs [ARGS]',   'pass options directly to the "node" binary']
+  ['-o', '--output [DIR]',    'set the output directory for compiled JavaScript']
+  ['-p', '--print',           'print out the compiled JavaScript']
   ['-r', '--require [FILE*]', 'require a library before executing your script']
   ['-s', '--stdio',           'listen for and compile scripts over stdio']
-  ['-t', '--tokens',          'print the tokens that the lexer produces']
-  ['-v', '--version',         'display CoffeeScript version']
+  ['-t', '--tokens',          'print out the tokens that the lexer/rewriter produce']
+  ['-v', '--version',         'display the version number']
   ['-w', '--watch',           'watch scripts for changes and rerun commands']
 ]
 
