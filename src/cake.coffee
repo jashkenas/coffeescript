@@ -44,7 +44,7 @@ helpers.extend global,
 # asynchrony may cause tasks to execute in a different order than you'd expect.
 # If no tasks are passed, print the help screen.
 exports.run = ->
-  process.chdir findCakefilePathSync(fs.realpathSync '.')
+  process.chdir cakefileDirectory fs.realpathSync '.'
   args = process.argv.slice 2
   CoffeeScript.run fs.readFileSync('Cakefile').toString(), filename: 'Cakefile'
   oparse = new optparse.OptionParser switches
@@ -67,10 +67,10 @@ missingTask = (task) ->
   console.log "No such task: \"#{task}\""
   process.exit 1
 
-# Search in current and parent directories for Cakefile
-findCakefilePathSync = (curPath) ->
-  return curPath if path.existsSync path.join(curPath, 'Cakefile')
-  parent = path.normalize path.join(curPath, '..')
-  return findCakefilePathSync parent unless parent == curPath
-  # None found
-  throw new Error("Cakefile not found in #{process.cwd()}")
+# When `cake` is invoked, search in the current and all parent directories 
+# to find the relevant Cakefile.
+cakefileDirectory = (dir) ->
+  return dir if path.existsSync path.join dir, 'Cakefile'
+  parent = path.normalize path.join dir, '..'
+  return cakefileDirectory parent unless parent is dir
+  throw new Error "Cakefile not found in #{process.cwd()}"
