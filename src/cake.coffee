@@ -44,14 +44,13 @@ helpers.extend global,
 # asynchrony may cause tasks to execute in a different order than you'd expect.
 # If no tasks are passed, print the help screen.
 exports.run = ->
-  path.exists 'Cakefile', (exists) ->
-    throw new Error("Cakefile not found in #{process.cwd()}") unless exists
-    args = process.argv.slice 2
-    CoffeeScript.run fs.readFileSync('Cakefile').toString(), filename: 'Cakefile'
-    oparse = new optparse.OptionParser switches
-    return printTasks() unless args.length
-    options = oparse.parse(args)
-    invoke arg for arg in options.arguments
+  process.chdir findCakefilePathSync(fs.realpathSync '.')
+  args = process.argv.slice 2
+  CoffeeScript.run fs.readFileSync('Cakefile').toString(), filename: 'Cakefile'
+  oparse = new optparse.OptionParser switches
+  return printTasks() unless args.length
+  options = oparse.parse(args)
+  invoke arg for arg in options.arguments
 
 # Display the list of Cake tasks in a format similar to `rake -T`
 printTasks = ->
@@ -67,3 +66,11 @@ printTasks = ->
 missingTask = (task) ->
   console.log "No such task: \"#{task}\""
   process.exit 1
+
+# Search in current and parent directories for Cakefile
+findCakefilePathSync = (curPath) ->
+  return curPath if path.existsSync path.join(curPath, 'Cakefile')
+  parent = path.normalize path.join(curPath, '..')
+  return findCakefilePathSync parent unless parent == curPath
+  # None found
+  throw new Error("Cakefile not found in #{process.cwd()}")
