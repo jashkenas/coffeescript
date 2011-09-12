@@ -39,12 +39,13 @@ helpers.extend global,
     missingTask name unless tasks[name]
     tasks[name].action options
 
-
 # Run `cake`. Executes all of the tasks you pass, in order. Note that Node's
 # asynchrony may cause tasks to execute in a different order than you'd expect.
-# If no tasks are passed, print the help screen.
+# If no tasks are passed, print the help screen. Keep a reference to the 
+# original directory name, when running Cake tasks from subdirectories. 
 exports.run = ->
-  process.chdir cakefileDirectory fs.realpathSync '.'
+  global.__originalDirname = fs.realpathSync '.'
+  process.chdir cakefileDirectory __originalDirname
   args = process.argv.slice 2
   CoffeeScript.run fs.readFileSync('Cakefile').toString(), filename: 'Cakefile'
   oparse = new optparse.OptionParser switches
