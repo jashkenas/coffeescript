@@ -109,13 +109,6 @@ exports.Base = class Base
     @eachChild (node) -> tree += node.toString idt + TAB
     tree
 
-  # `toJson` representation of the node, for inspecting the parse tree.
-  # This is what `coffee --jsonast` prints out.
-  toJson: () ->
-    nodes = []
-    @eachChild (node) -> nodes.push(node)
-    return JSON.stringify(nodes, null, TAB)
-
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
     return this unless @children

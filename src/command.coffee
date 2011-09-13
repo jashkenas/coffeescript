@@ -39,7 +39,6 @@ SWITCHES = [
   ['-b', '--bare',            'compile without the top-level function wrapper']
   ['-t', '--tokens',          'print the tokens that the lexer produces']
   ['-n', '--nodes',           'print the parse tree that Jison produces']
-  [      '--jsonast',         'print the parse tree that Jison produces as JSON']
   [      '--nodejs [ARGS]',   'pass options through to the "node" binary']
   ['-v', '--version',         'display CoffeeScript version']
   ['-h', '--help',            'display this help message']
@@ -130,7 +129,6 @@ compileScript = (file, input, base) ->
     CoffeeScript.emit 'compile', task
     if      o.tokens      then printTokens CoffeeScript.tokens t.input
     else if o.nodes       then printLine CoffeeScript.nodes(t.input).toString().trim()
-    else if o.jsonast     then printLine CoffeeScript.nodes(t.input).toJson().trim()
     else if o.run         then CoffeeScript.run t.input, t.options
     else
       t.output = CoffeeScript.compile t.input, t.options
