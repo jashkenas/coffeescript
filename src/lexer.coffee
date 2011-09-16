@@ -7,7 +7,7 @@
 #
 # Which is a format that can be fed directly into [Jison](http://github.com/zaach/jison).
 
-{Rewriter} = require './rewriter'
+{Rewriter, INVERSES} = require './rewriter'
 
 # Import the helpers we need.
 {count, starts, compact, last} = require './helpers'
@@ -41,6 +41,7 @@ exports.Lexer = class Lexer
     @indebt  = 0              # The over-indentation at the current level.
     @outdebt = 0              # The under-outdentation at the current level.
     @indents = []             # The stack of all current indentation levels.
+    @ends    = []             # The stack for pairing up tokens.
     @tokens  = []             # Stream of parsed tokens in the form `['TYPE', value, line]`.
 
     # At every position, run through this list of attempted matches,
@@ -60,6 +61,7 @@ exports.Lexer = class Lexer
            @literalToken()
 
     @closeIndentation()
+    @carp "missing #{tag}" if tag = @ends.pop()
     return @tokens if opts.rewrite is off
     (new Rewriter).rewrite @tokens
 
@@ -253,6 +255,7 @@ exports.Lexer = class Lexer
       diff = size - @indent + @outdebt
       @token 'INDENT', diff
       @indents.push diff
+      @ends   .push 'OUTDENT'
       @outdebt = @indebt = 0
     else
       @indebt = 0
@@ -262,7 +265,7 @@ exports.Lexer = class Lexer
 
   # Record an outdent token or multiple tokens, if we happen to be moving back
   # inwards past several recorded indents.
-  outdentToken: (moveOut, noNewlines, close) ->
+  outdentToken: (moveOut, noNewlines) ->
     while moveOut > 0
       len = @indents.length - 1
       if @indents[len] is undefined
@@ -277,6 +280,7 @@ exports.Lexer = class Lexer
         dent = @indents.pop() - @outdebt
         moveOut -= dent
         @outdebt = 0
+        @pair 'OUTDENT'
         @token 'OUTDENT', dent
     @outdebt -= moveOut if dent
     @tokens.pop() while @value() is ';'
@@ -338,6 +342,9 @@ exports.Lexer = class Lexer
         tag = 'INDEX_START'
         switch prev[0]
           when '?'  then prev[0] = 'INDEX_SOAK'
+    switch value
+      when '(', '{', '[' then @ends.push INVERSES[value]
+      when ')', '}', ']' then @pair value
     @token tag, value
     value.length
 
@@ -350,7 +357,7 @@ exports.Lexer = class Lexer
     {indent, herecomment} = options
     if herecomment
       if HEREDOC_ILLEGAL.test doc
-        throw new Error "block comment cannot contain \"*/\", starting on line #{@line + 1}"
+        @carp "block comment cannot contain \"*/\", starting"
       return doc if doc.indexOf('\n') <= 0
     else
       while match = HEREDOC_INDENT.exec doc
@@ -421,8 +428,7 @@ exports.Lexer = class Lexer
       else if end is '"' and prev is '#' and letter is '{'
         stack.push end = '}'
       prev = letter
-    throw new Error "missing #{ stack.pop() }, starting on line #{ @line + 1 }"
-
+    @carp "missing #{ stack.pop() }, starting"
 
   # Expand variables and expressions inside double-quoted strings using
   # Ruby-like notation for substitution of arbitrary expressions.
@@ -471,6 +477,21 @@ exports.Lexer = class Lexer
     @token ')', ')' if interpolated
     tokens
 
+  # Pairs up a closing token, ensuring that all listed pairs of tokens are
+  # correctly balanced throughout the course of the token stream.
+  pair: (tag) ->
+    unless tag is wanted = last @ends
+      @carp "unmatched #{tag}" unless 'OUTDENT' is wanted
+      # Auto-close INDENT to support syntax like this:
+      #
+      #     el.click((event) ->
+      #       el.hide())
+      #
+      @indent -= size = last @indents
+      @outdentToken size, true
+      return @pair tag
+    @ends.pop()
+
   # Helpers
   # -------
 
@@ -503,6 +524,9 @@ exports.Lexer = class Lexer
       if contents in ['\n', quote] then contents else match
     body = body.replace /// #{quote} ///g, '\\$&'
     quote + @escapeLines(body, heredoc) + quote
+
+  # Throws a syntax error from current `@line`.
+  carp: (message) -> throw SyntaxError "#{message} on line #{ @line + 1}"
 
 # Constants
 # ---------

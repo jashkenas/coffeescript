@@ -3,7 +3,7 @@
 # the resulting parse table. Instead of making the parser handle it all, we take
 # a series of passes over the token stream, using this **Rewriter** to convert
 # shorthand into the unambiguous long form, add implicit indentation and
-# parentheses, balance incorrect nestings, and generally clean things up.
+# parentheses, and generally clean things up.
 
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
 # its internal array of tokens.
@@ -26,8 +26,6 @@ class exports.Rewriter
     @tagPostfixConditionals()
     @addImplicitBraces()
     @addImplicitParentheses()
-    @ensureBalance BALANCED_PAIRS
-    @rewriteClosingParens()
     @tokens
 
   # Rewrite the token stream, looking one token ahead and behind.
@@ -134,7 +132,7 @@ class exports.Rewriter
   addImplicitParentheses: ->
     noCall = no
     action = (token, i) ->
-      idx = if token[0] is 'OUTDENT' then i + 1 else i
+      idx = if token[0] is 'OUTDENT' then i else i
       @tokens.splice idx, 0, ['CALL_END', ')', token[2]]
     @scanTokens (token, i, tokens) ->
       tag     = token[0]
@@ -211,65 +209,6 @@ class exports.Rewriter
         original[0] = 'POST_' + original[0] if token[0] isnt 'INDENT'
       1
 
-  # Ensure that all listed pairs of tokens are correctly balanced throughout
-  # the course of the token stream.
-  ensureBalance: (pairs) ->
-    levels   = {}
-    openLine = {}
-    for token in @tokens
-      [tag] = token
-      for [open, close] in pairs
-        levels[open] |= 0
-        if tag is open
-          openLine[open] = token[2] if levels[open]++ is 0
-        else if tag is close and --levels[open] < 0
-          throw Error "too many #{token[1]} on line #{token[2] + 1}"
-    for open, level of levels when level > 0
-      throw Error "unclosed #{ open } on line #{openLine[open] + 1}"
-    this
-
-  # We'd like to support syntax like this:
-  #
-  #     el.click((event) ->
-  #       el.hide())
-  #
-  # In order to accomplish this, move outdents that follow closing parens
-  # inwards, safely. The steps to accomplish this are:
-  #
-  # 1. Check that all paired tokens are balanced and in order.
-  # 2. Rewrite the stream with a stack: if you see an `EXPRESSION_START`, add it
-  #    to the stack. If you see an `EXPRESSION_END`, pop the stack and replace
-  #    it with the inverse of what we've just popped.
-  # 3. Keep track of "debt" for tokens that we manufacture, to make sure we end
-  #    up balanced in the end.
-  # 4. Be careful not to alter array or parentheses delimiters with overzealous
-  #    rewriting.
-  rewriteClosingParens: ->
-    stack = []
-    debt  = {}
-    debt[key] = 0 for key of INVERSES
-    @scanTokens (token, i, tokens) ->
-      if (tag = token[0]) in EXPRESSION_START
-        stack.push token
-        return 1
-      return 1 unless tag in EXPRESSION_END
-      if debt[inv = INVERSES[tag]] > 0
-        debt[inv] -= 1
-        tokens.splice i, 1
-        return 0
-      match = stack.pop()
-      mtag  = match[0]
-      oppos = INVERSES[mtag]
-      return 1 if tag is oppos
-      debt[mtag] += 1
-      val = [oppos, if mtag is 'INDENT' then match[1] else oppos]
-      if @tag(i + 2) is mtag
-        tokens.splice i + 3, 0, val
-        stack.push match
-      else
-        tokens.splice i, 0, val
-      1
-
   # Generate the indentation tokens, based on another token on the same line.
   indentation: (token) ->
     [['INDENT', 2, token[2]], ['OUTDENT', 2, token[2]]]
@@ -293,7 +232,7 @@ BALANCED_PAIRS = [
 
 # The inverse mappings of `BALANCED_PAIRS` we're trying to fix up, so we can
 # look things up from either end.
-INVERSES = {}
+exports.INVERSES = INVERSES = {}
 
 # The tokens that signal the start/end of a balanced pair.
 EXPRESSION_START = []

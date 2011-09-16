@@ -134,3 +134,13 @@ test "#1195 Ignore trailing semicolons (before newlines or as the last char in a
     
     lastChar = '-> lastChar;'
     doesNotThrow -> CoffeeScript.compile lastChar, bare: true
+
+test "#1299: Disallow token misnesting", ->
+  try
+    CoffeeScript.compile '''
+      [{
+         ]}
+    '''
+    ok no
+  catch e
+    eq 'unmatched ] on line 2', e.message
