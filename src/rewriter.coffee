@@ -131,9 +131,7 @@ class exports.Rewriter
   # deal with them.
   addImplicitParentheses: ->
     noCall = no
-    action = (token, i) ->
-      idx = if token[0] is 'OUTDENT' then i else i
-      @tokens.splice idx, 0, ['CALL_END', ')', token[2]]
+    action = (token, i) -> @tokens.splice i, 0, ['CALL_END', ')', token[2]]
     @scanTokens (token, i, tokens) ->
       tag     = token[0]
       noCall  = yes if tag in ['CLASS', 'IF']
