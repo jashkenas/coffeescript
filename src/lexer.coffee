@@ -61,7 +61,7 @@ exports.Lexer = class Lexer
            @literalToken()
 
     @closeIndentation()
-    @carp "missing #{tag}" if tag = @ends.pop()
+    @error "missing #{tag}" if tag = @ends.pop()
     return @tokens if opts.rewrite is off
     (new Rewriter).rewrite @tokens
 
@@ -112,7 +112,7 @@ exports.Lexer = class Lexer
         id  = new String id
         id.reserved = yes
       else if id in RESERVED
-        @identifierError id
+        @error "Reserved word \"#{word}\""
 
     unless forcedIdentifier
       id  = COFFEE_ALIAS_MAP[id] if id in COFFEE_ALIASES
@@ -322,7 +322,8 @@ exports.Lexer = class Lexer
     tag  = value
     prev = last @tokens
     if value is '=' and prev
-      @assignmentError() if not prev[1].reserved and prev[1] in JS_FORBIDDEN
+      if not prev[1].reserved and prev[1] in JS_FORBIDDEN
+        @error "Reserved word \"#{@value()}\" can't be assigned"
       if prev[1] in ['||', '&&']
         prev[0] = 'COMPOUND_ASSIGN'
         prev[1] += '='
@@ -357,7 +358,7 @@ exports.Lexer = class Lexer
     {indent, herecomment} = options
     if herecomment
       if HEREDOC_ILLEGAL.test doc
-        @carp "block comment cannot contain \"*/\", starting"
+        @error "block comment cannot contain \"*/\", starting"
       return doc if doc.indexOf('\n') <= 0
     else
       while match = HEREDOC_INDENT.exec doc
@@ -392,16 +393,6 @@ exports.Lexer = class Lexer
   closeIndentation: ->
     @outdentToken @indent
 
-  # The error for when you try to use a forbidden word in JavaScript as
-  # an identifier.
-  identifierError: (word) ->
-    throw SyntaxError "Reserved word \"#{word}\" on line #{@line + 1}"
-
-  # The error for when you try to assign to a reserved word in JavaScript,
-  # like "function" or "default".
-  assignmentError: ->
-    throw SyntaxError "Reserved word \"#{@value()}\" on line #{@line + 1} can't be assigned"
-
   # Matches a balanced group such as a single or double-quoted string. Pass in
   # a series of delimiters, all of which must be nested correctly within the
   # contents of the string. This method allows us to have strings within
@@ -428,7 +419,7 @@ exports.Lexer = class Lexer
       else if end is '"' and prev is '#' and letter is '{'
         stack.push end = '}'
       prev = letter
-    @carp "missing #{ stack.pop() }, starting"
+    @error "missing #{ stack.pop() }, starting"
 
   # Expand variables and expressions inside double-quoted strings using
   # Ruby-like notation for substitution of arbitrary expressions.
@@ -481,7 +472,7 @@ exports.Lexer = class Lexer
   # correctly balanced throughout the course of the token stream.
   pair: (tag) ->
     unless tag is wanted = last @ends
-      @carp "unmatched #{tag}" unless 'OUTDENT' is wanted
+      @error "unmatched #{tag}" unless 'OUTDENT' is wanted
       # Auto-close INDENT to support syntax like this:
       #
       #     el.click((event) ->
@@ -524,9 +515,10 @@ exports.Lexer = class Lexer
       if contents in ['\n', quote] then contents else match
     body = body.replace /// #{quote} ///g, '\\$&'
     quote + @escapeLines(body, heredoc) + quote
-
-  # Throws a syntax error from current `@line`.
-  carp: (message) -> throw SyntaxError "#{message} on line #{ @line + 1}"
+    
+  # Throws a syntax error on the current `@line`.
+  error: (message) -> 
+    throw SyntaxError "#{message} on line #{ @line + 1}"
 
 # Constants
 # ---------
