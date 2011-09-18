@@ -230,7 +230,11 @@ exports.Block = class Block extends Base
         codes.push if node.isStatement o then code else "#{@tab}#{code};"
       else
         codes.push node.compile o, LEVEL_LIST
-    return codes.join '\n' if top
+    if top
+      if @spaced
+        return '\n' + codes.join('\n\n') + '\n'
+      else
+        return codes.join '\n'
     code = codes.join(', ') or 'void 0'
     if codes.length > 1 and o.level >= LEVEL_LIST then "(#{code})" else code
 
@@ -242,6 +246,7 @@ exports.Block = class Block extends Base
     o.indent = @tab = if o.bare then '' else TAB
     o.scope  = new Scope null, this, null
     o.level  = LEVEL_TOP
+    @spaced  = yes
     code     = @compileWithDeclarations o
     if o.bare then code else "(function() {\n#{code}\n}).call(this);\n"
 
@@ -903,6 +908,7 @@ exports.Class = class Class extends Base
     @setContext name
     @walkBody name, o
     @ensureConstructor name
+    @body.spaced = yes
     @body.expressions.unshift new Extends lname, @parent if @parent
     @body.expressions.unshift @ctor unless @ctor instanceof Code
     @body.expressions.push lname
