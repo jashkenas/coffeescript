@@ -247,3 +247,7 @@ test "#1234: Applying a splat to :: applies the splat to the wrong object", ->
 test "#1102: String literal prevents line continuation", ->
   eq "': '", '' +
      "': '"
+
+test "#1703, ---x is invalid JS", ->
+  x = 2
+  eq (- --x), -1
