@@ -62,6 +62,7 @@
           </div>
           <div id="repl_results_wrap"><pre id="repl_results"></pre></div>
           <div class="minibutton dark run" title="Ctrl-Enter">Run</div>
+          <a class="minibutton permalink" id="repl_permalink" style="display: block; top: 38px;" href="#src:">Link</a>
           <br class="clear" />
         </div>
       </div>
@@ -2478,6 +2479,9 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       catch error
         $('#error').text(error.message).show()
 
+      # Update permalink
+      $('#repl_permalink').attr 'href', "#src:#{encodeURIComponent source}"
+
     # Listen for keypresses and recompile.
     $('#repl_source').keyup -> compileSource()
 
@@ -2523,6 +2527,16 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
 
     $('#open_webchat').click ->
       $(this).replaceWith $('<iframe src="http://webchat.freenode.net/?channels=coffeescript" width="625" height="400"></iframe>')
+
+    $("#repl_permalink").click (e) ->
+        window.location = $(this).attr("href")
+        return false
+
+    # If source code is included in location.hash, display it.
+    hash = decodeURIComponent location.hash.replace(/^#/, '')
+    if matches = /^src:/.exec(hash)
+        src = hash.substr "src:".length
+        loadConsole src
 
     compileSource()
 
