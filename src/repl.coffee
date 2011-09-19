@@ -26,7 +26,7 @@ stdout = process.stdout
 
 # Log an error.
 error = (err) ->
-  stdout.write (err.stack or err.toString()) + '\n\n'
+  stdout.write (err.stack or err.toString()) + '\n'
 
 # The current backlog of multi-line code.
 backlog = ''
