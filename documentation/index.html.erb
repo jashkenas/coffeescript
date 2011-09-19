@@ -84,7 +84,7 @@
           </div>
           <div id="repl_results_wrap"><pre id="repl_results"></pre></div>
           <div class="minibutton dark run" title="Ctrl-Enter">Run</div>
-          <a class="minibutton permalink" id="repl_permalink" style="display: block; top: 38px;" href="#src:">Link</a>
+          <a class="minibutton permalink" id="repl_permalink" style="display: block; top: 38px;">Link</a>
           <br class="clear" />
         </div>
       </div>
@@ -1578,6 +1578,7 @@ Expressions
   </div>
 
   <script type="text/coffeescript">
+    source_fragment_prefix = "try_src:"
 
     # Set up the compilation function, to run when you stop typing.
     compileSource = ->
@@ -1595,7 +1596,7 @@ Expressions
         $('#error').text(error.message).show()
 
       # Update permalink
-      $('#repl_permalink').attr 'href', "#src:#{encodeURIComponent source}"
+      $('#repl_permalink').attr 'href', "##{source_fragment_prefix}#{encodeURIComponent source}"
 
     # Listen for keypresses and recompile.
     $('#repl_source').keyup -> compileSource()
@@ -1645,12 +1646,12 @@ Expressions
 
     $("#repl_permalink").click (e) ->
         window.location = $(this).attr("href")
-        return false
+        false
 
     # If source code is included in location.hash, display it.
     hash = decodeURIComponent location.hash.replace(/^#/, '')
-    if matches = /^src:/.exec(hash)
-        src = hash.substr "src:".length
+    if hash.indexOf(source_fragment_prefix) == 0
+        src = hash.substr source_fragment_prefix.length
         loadConsole src
 
     compileSource()
