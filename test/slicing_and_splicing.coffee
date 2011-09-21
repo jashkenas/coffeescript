@@ -114,3 +114,10 @@ test "the return value of a splice literal should be the RHS", ->
   eq (ary[0..] = 3), 3
 
   arrayEq [ary[0..0] = 0], [0]
+
+test "#1722: operator precedence in unbounded slice compilation", ->
+  list = [0..9]
+  n = 2 # some truthy number in `list`
+  arrayEq [0..n], list[..n]
+  arrayEq [0..n], list[..n or 0]
+  arrayEq [0..n], list[..if n then n else 0]
