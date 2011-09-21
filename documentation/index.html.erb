@@ -84,6 +84,7 @@
           </div>
           <div id="repl_results_wrap"><pre id="repl_results"></pre></div>
           <div class="minibutton dark run" title="Ctrl-Enter">Run</div>
+          <a class="minibutton permalink" id="repl_permalink">Link</a>
           <br class="clear" />
         </div>
       </div>
@@ -1577,6 +1578,7 @@ Expressions
   </div>
 
   <script type="text/coffeescript">
+    source_fragment_prefix = "try_src:"
 
     # Set up the compilation function, to run when you stop typing.
     compileSource = ->
@@ -1592,6 +1594,9 @@ Expressions
         $('#error').hide()
       catch error
         $('#error').text(error.message).show()
+
+      # Update permalink
+      $('#repl_permalink').attr 'href', "##{source_fragment_prefix}#{encodeURIComponent source}"
 
     # Listen for keypresses and recompile.
     $('#repl_source').keyup -> compileSource()
@@ -1638,6 +1643,16 @@ Expressions
 
     $('#open_webchat').click ->
       $(this).replaceWith $('<iframe src="http://webchat.freenode.net/?channels=coffeescript" width="625" height="400"></iframe>')
+
+    $("#repl_permalink").click (e) ->
+        window.location = $(this).attr("href")
+        false
+
+    # If source code is included in location.hash, display it.
+    hash = decodeURIComponent location.hash.replace(/^#/, '')
+    if hash.indexOf(source_fragment_prefix) == 0
+        src = hash.substr source_fragment_prefix.length
+        loadConsole src
 
     compileSource()
 
