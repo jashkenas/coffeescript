@@ -1,3 +1,4 @@
+
 switch (day) {
   case "Mon":
     go(work);

@@ -172,7 +172,7 @@ npm install -g coffee-script</pre>
     <p>
       (Leave off the <tt>-g</tt> if you don't wish to install globally.)
     </p>
-    
+
     <p>
       If you'd prefer to install the latest master version of CoffeeScript, you
       can clone the CoffeeScript
@@ -191,7 +191,7 @@ sudo bin/cake install</pre>
       <a href="http://opinionated-programmer.com/2010/12/installing-coffeescript-on-debian-or-ubuntu/">be
       careful not to use the existing out-of-date package</a>. If installing on
       Windows, your best bet is probably to run Node.js under Cygwin. If you'd
-      just like to experiment, you can try the 
+      just like to experiment, you can try the
       <a href="https://github.com/alisey/CoffeeScript-Compiler-for-Windows">CoffeeScript Compiler For Windows</a>.
     </p>
 
@@ -229,7 +229,7 @@ sudo bin/cake install</pre>
         <td><code>-j, --join [FILE]</code></td>
         <td>
           Before compiling, concatenate all scripts together in the order they
-          were passed, and write them into the specified file. 
+          were passed, and write them into the specified file.
           Useful for building large projects.
         </td>
       </tr>
@@ -933,17 +933,17 @@ Expressions
       <span id="resources" class="bookmark"></span>
       Books and Screencasts
     </h2>
-    
+
     <p>
-      There are a number of excellent books and screencasts to help you get 
+      There are a number of excellent books and screencasts to help you get
       started with CoffeeScript, some of which are freely available online.
     </p>
-    
+
     <ul>
       <li>
         <a href="http://arcturo.github.com/library/coffeescript/">The Little Book on CoffeeScript</a>
         is a brief 5-chapter introduction to CoffeeScript, written with great
-        clarity and precision by 
+        clarity and precision by
         <a href="http://alexmaccaw.co.uk/">Alex MacCaw</a>.
       </li>
       <li>
@@ -956,7 +956,7 @@ Expressions
       </li>
       <li>
         <a href="http://pragprog.com/book/tbcoffee/coffeescript">CoffeeScript: Accelerated JavaScript Development</a>
-        is <a href="http://trevorburnham.com/">Trevor Burnham</a>'s thorough 
+        is <a href="http://trevorburnham.com/">Trevor Burnham</a>'s thorough
         introduction to the language. By the end of the book, you'll have built
         a fast-paced multiplayer word game, writing both the client-side and Node.js
         portions in CoffeeScript.
@@ -974,7 +974,7 @@ Expressions
         in 11 minutes.
       </li>
     </ul>
-    
+
     <h2>
       Examples
     </h2>
@@ -1041,7 +1041,7 @@ Expressions
       <li>
         <a href="http://github.com/jashkenas/coffee-script/wiki">The CoffeeScript Wiki</a><br />
         If you've ever learned a neat CoffeeScript tip or trick, or ran into a gotcha &mdash; share it on the wiki.
-        The wiki also serves as a directory of handy 
+        The wiki also serves as a directory of handy
         <a href="http://github.com/jashkenas/coffee-script/wiki/Text-editor-plugins">text editor extensions</a>,
         <a href="http://github.com/jashkenas/coffee-script/wiki/Web-framework-plugins">web framework plugins</a>,
         and general <a href="http://github.com/jashkenas/coffee-script/wiki/Build-tools">CoffeeScript build tools</a>.
@@ -1071,7 +1071,7 @@ Expressions
       <span id="change_log" class="bookmark"></span>
       Change Log
     </h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">
         <a href="https://github.com/jashkenas/coffee-script/compare/1.1.1...1.1.2">1.1.2</a>
@@ -1081,24 +1081,24 @@ Expressions
       against control structures, implicit invocation of a try/catch block,
       variadic arguments leaking from local scope, line numbers in syntax errors
       following heregexes, property access on parenthesized number literals,
-      bound class methods and super with reserved names, a REPL overhaul, 
+      bound class methods and super with reserved names, a REPL overhaul,
       consecutive compiled semicolons, block comments in implicitly called objects,
       and a Chrome bug.
     </p>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">1.1.1
         <span class="timestamp"> &ndash; <small>May 10, 2011</small></span>
       </b>
-      Bugfix release for classes with external constructor functions, see 
+      Bugfix release for classes with external constructor functions, see
       issue #1182.
     </p>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">1.1.0
         <span class="timestamp"> &ndash; <small>May 1, 2011</small></span>
       </b>
-      When running via the <tt>coffee</tt> executable, <tt>process.argv</tt> and 
+      When running via the <tt>coffee</tt> executable, <tt>process.argv</tt> and
       friends now report <tt>coffee</tt> instead of <tt>node</tt>.
       Better compatibility with <b>Node.js 0.4.x</b> module lookup changes.
       The output in the REPL is now colorized, like Node's is.
@@ -1578,7 +1578,7 @@ Expressions
   </div>
 
   <script type="text/coffeescript">
-    source_fragment_prefix = "try_src:"
+    sourceFragment = "try:"
 
     # Set up the compilation function, to run when you stop typing.
     compileSource = ->
@@ -1596,7 +1596,7 @@ Expressions
         $('#error').text(error.message).show()
 
       # Update permalink
-      $('#repl_permalink').attr 'href', "##{source_fragment_prefix}#{encodeURIComponent source}"
+      $('#repl_permalink').attr 'href', "##{sourceFragment}#{encodeURIComponent source}"
 
     # Listen for keypresses and recompile.
     $('#repl_source').keyup -> compileSource()
@@ -1650,8 +1650,8 @@ Expressions
 
     # If source code is included in location.hash, display it.
     hash = decodeURIComponent location.hash.replace(/^#/, '')
-    if hash.indexOf(source_fragment_prefix) == 0
-        src = hash.substr source_fragment_prefix.length
+    if hash.indexOf(sourceFragment) == 0
+        src = hash.substr sourceFragment.length
         loadConsole src
 
     compileSource()

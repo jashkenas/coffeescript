@@ -1,6 +1,9 @@
 var fs;
+
 fs = require('fs');
+
 option('-o', '--output [DIR]', 'directory for compiled code');
+
 task('build:parser', 'rebuild the Jison parser', function(options) {
   var code, dir;
   require('jison');

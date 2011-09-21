@@ -1,4 +1,5 @@
 var globals, name;
+
 globals = ((function() {
   var _results;
   _results = [];
