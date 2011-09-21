@@ -199,6 +199,10 @@ test "#1100: precedence in or-test compilation of `in`", ->
 
 test "#1630: `in` should check `hasOwnProperty`", ->
   ok undefined not in length: 1
+  
+test "#1714: lexer bug with raw range `for` followed by `in`", ->
+  0 for [1..10]
+  ok not ('a' in ['b'])
 
 
 # Chained Comparison
