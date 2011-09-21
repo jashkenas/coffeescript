@@ -1,6 +1,4 @@
-Account = (customer, cart) ->
-  @customer = customer
-  @cart = cart
-
-  $('.shopping_cart').bind 'click', (event) =>
-    @customer.purchase @cart
+class Account
+  constructor: (@customer, @cart) ->
+    $('.shopping_cart').bind 'click', (event) =>
+      @customer.purchase @cart
