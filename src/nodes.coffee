@@ -1062,7 +1062,7 @@ exports.Assign = class Assign extends Base
         to = +to.compile(o) - +fromRef
         to += 1 unless exclusive
       else
-        to = to.compile(o) + ' - ' + fromRef
+        to = to.compile(o, LEVEL_ACCESS) + ' - ' + fromRef
         to += ' + 1' unless exclusive
     else
       to = "9e9"

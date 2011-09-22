@@ -52,6 +52,13 @@ test "string slicing", ->
   ok str[0..4] is "abcde"
   ok str[-5..] is "vwxyz"
 
+test "#1722: operator precedence in unbounded slice compilation", ->
+  list = [0..9]
+  n = 2 # some truthy number in `list`
+  arrayEq [0..n], list[..n]
+  arrayEq [0..n], list[..n or 0]
+  arrayEq [0..n], list[..if n then n else 0]
+
 
 # Splicing
 
@@ -115,9 +122,17 @@ test "the return value of a splice literal should be the RHS", ->
 
   arrayEq [ary[0..0] = 0], [0]
 
-test "#1722: operator precedence in unbounded slice compilation", ->
+test "#1723: operator precedence in unbounded splice compilation", ->
+  n = 4 # some truthy number in `list`
+
   list = [0..9]
-  n = 2 # some truthy number in `list`
-  arrayEq [0..n], list[..n]
-  arrayEq [0..n], list[..n or 0]
-  arrayEq [0..n], list[..if n then n else 0]
+  list[..n] = n
+  arrayEq [n..9], list
+
+  list = [0..9]
+  list[..n or 0] = n
+  arrayEq [n..9], list
+
+  list = [0..9]
+  list[..if n then n else 0] = n
+  arrayEq [n..9], list
