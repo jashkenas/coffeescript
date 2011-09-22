@@ -1048,6 +1048,9 @@ exports.Assign = class Assign extends Base
   # more than once.
   compileConditional: (o) ->
     [left, rite] = @variable.cacheReference o
+    # Disallow conditional assignment of undefined variables.
+    if left.base instanceof Literal and IDENTIFIER.test(left.base.value) and left.base.value != "this" and not o.scope.check left.base.value
+      throw new Error "#{left.base.value} can't be re-assigned with #{@context} because it's not defined in lexical scope."
     if "?" in @context then o.isExistentialEquals = true
     new Op(@context[0...-1], left, new Assign(rite, @value, '=') ).compile o
 
