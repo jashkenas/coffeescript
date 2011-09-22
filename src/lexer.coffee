@@ -112,7 +112,7 @@ exports.Lexer = class Lexer
         id  = new String id
         id.reserved = yes
       else if id in RESERVED
-        @error "Reserved word \"#{word}\""
+        @error "reserved word \"#{word}\""
 
     unless forcedIdentifier
       id  = COFFEE_ALIAS_MAP[id] if id in COFFEE_ALIASES
@@ -199,7 +199,9 @@ exports.Lexer = class Lexer
     return 0 if prev and (prev[0] in (if prev.spaced then NOT_REGEX else NOT_SPACED_REGEX))
     return 0 unless match = REGEX.exec @chunk
     [regex] = match
-    @token 'REGEX', if regex is '//' then '/(?:)/' else regex
+    if regex.match /^\/\*/ then @error 'regular expressions cannot begin with `*`'
+    if regex is '//' then regex = '/(?:)/'
+    @token 'REGEX', regex
     regex.length
 
   # Matches multiline extended regular expressions.
@@ -324,7 +326,7 @@ exports.Lexer = class Lexer
     prev = last @tokens
     if value is '=' and prev
       if not prev[1].reserved and prev[1] in JS_FORBIDDEN
-        @error "Reserved word \"#{@value()}\" can't be assigned"
+        @error "reserved word \"#{@value()}\" can't be assigned"
       if prev[1] in ['||', '&&']
         prev[0] = 'COMPOUND_ASSIGN'
         prev[1] += '='
