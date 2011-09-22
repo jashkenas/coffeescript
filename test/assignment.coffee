@@ -281,10 +281,13 @@ test "#1627: prohibit conditional assignment of undefined variables", ->
   
   eq nonce, (try CoffeeScript.compile "x ?= 10"; false catch e then nonce), "prohibit (x ?= 10)"
   eq nonce, (try CoffeeScript.compile("x = null; x ?= 10"); nonce), "allow (x = null; x ?= 10)"
+  eq nonce, (try CoffeeScript.compile("x = null; (-> x ?= 10)()"); nonce), "allow (x = null; (-> x ?= 10)())"
   eq nonce, (try CoffeeScript.compile "x ||= 10"; false catch e then nonce), "prohibit (x ||= 10)"
   eq nonce, (try CoffeeScript.compile("x = null; x ||= 10"); nonce), "allow (x = null; x ||= 10)"
+  eq nonce, (try CoffeeScript.compile("x = null; (-> x ||= 10)()"); nonce), "allow (x = null; (-> x ||= 10)())"
   eq nonce, (try CoffeeScript.compile "x or= 10"; false catch e then nonce), "prohibit (x or= 10)"
   eq nonce, (try CoffeeScript.compile("x = null; x or= 10"); nonce), "allow (x = null; x or= 10)"
+  eq nonce, (try CoffeeScript.compile("x = null; (-> x or= 10)()"); nonce), "allow (x = null; (-> x or= 10)())"
 
 test "#1348, #1216: existential assignment compilation", ->
   nonce = {}
