@@ -52,3 +52,6 @@ test "a heregex will ignore whitespace and comments", ->
 
 test "an empty heregex will compile to an empty, non-capturing group", ->
   eq /(?:)/ + '', ///  /// + ''
+
+test "#1724: regular expressions beginning with `*`", ->
+  throws -> CoffeeScript.compile '/// * ///'

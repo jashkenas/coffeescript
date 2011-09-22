@@ -209,6 +209,7 @@ exports.Lexer = class Lexer
     [heregex, body, flags] = match
     if 0 > body.indexOf '#{'
       re = body.replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
+      if re.match /^\*/ then @error 'regular expressions cannot begin with `*`'
       @token 'REGEX', "/#{ re or '(?:)' }/#{flags}"
       return heregex.length
     @token 'IDENTIFIER', 'RegExp'
