@@ -2695,8 +2695,8 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
     # Set up the compilation function, to run when you stop typing.
     compileSource = ->
       source = $('#repl_source').val()
-      window.compiledJS = ''
       $results = $('#repl_results')
+      window.compiledJS = ''
       try
         window.compiledJS = CoffeeScript.compile source, bare: on
         el = $results[0]
@@ -2705,8 +2705,10 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
         else
           $results.text(window.compiledJS)
         $results.removeClass 'error'
+        $('.minibutton.run').removeClass 'error'
       catch error
-        $results.text(error.message).addClass "error"
+        $results.text(error.message).addClass 'error'
+        $('.minibutton.run').addClass 'error'
 
       # Update permalink
       $('#repl_permalink').attr 'href', "##{sourceFragment}#{encodeURIComponent source}"

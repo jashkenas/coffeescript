@@ -368,3 +368,8 @@ div.code {
     background-image: url(../images/button_bg_dark.gif);
     text-shadow: none;
   }
+  .minibutton.error {
+    opacity: 0.5;
+    color: #600;
+    cursor: not-allowed;
+  }
