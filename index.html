@@ -85,7 +85,6 @@
         <a href="documentation/docs/repl.html">Interactive REPL &mdash; src/repl</a>
       </div>
     </div>
-    <div id="error" style="display:none;"></div>
   </div>
 
   <div class="container">
@@ -2697,16 +2696,17 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
     compileSource = ->
       source = $('#repl_source').val()
       window.compiledJS = ''
+      $results = $('#repl_results')
       try
         window.compiledJS = CoffeeScript.compile source, bare: on
-        el = $('#repl_results')[0]
+        el = $results[0]
         if el.innerText
           el.innerText = window.compiledJS
         else
-          $(el).text window.compiledJS
-        $('#error').hide()
+          $results.text(window.compiledJS)
+        $results.removeClass 'error'
       catch error
-        $('#error').text(error.message).show()
+        $results.text(error.message).addClass "error"
 
       # Update permalink
       $('#repl_permalink').attr 'href', "##{sourceFragment}#{encodeURIComponent source}"
