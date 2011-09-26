@@ -310,6 +310,8 @@ exports.Literal = class Literal extends Base
   compileNode: (o) ->
     code = if @isUndefined
       if o.level >= LEVEL_ACCESS then '(void 0)' else 'void 0'
+    else if @value is 'this'
+      if o.scope.method?.bound then o.scope.method.context else @value
     else if @value.reserved and "#{@value}" not in ['eval', 'arguments']
       "\"#{@value}\""
     else
@@ -1080,7 +1082,7 @@ exports.Code = class Code extends Base
     @params  = params or []
     @body    = body or new Block
     @bound   = tag is 'boundfunc'
-    @context = 'this' if @bound
+    @context = '_this' if @bound
 
   children: ['params', 'body']
 
@@ -1095,7 +1097,7 @@ exports.Code = class Code extends Base
   # a closure.
   compileNode: (o) ->
     o.scope         = new Scope o.scope, @body, this
-    o.scope.shared  = del o, 'sharedScope'
+    o.scope.shared  = del(o, 'sharedScope')
     o.indent        += TAB
     delete o.bare
     vars   = []
@@ -1122,6 +1124,11 @@ exports.Code = class Code extends Base
     @body.expressions.unshift exprs... if exprs.length
     o.scope.parameter vars[i] = v.compile o for v, i in vars unless splats
     @body.makeReturn() unless wasEmpty or @noReturn
+    if @bound
+      if o.scope.parent.method?.bound
+        @bound = o.scope.parent.method.context
+      else
+        o.scope.parent.assign '_this', 'this'
     idt   = o.indent
     code  = 'function'
     code  += ' ' + @name if @ctor
@@ -1129,7 +1136,6 @@ exports.Code = class Code extends Base
     code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
     code  += '}'
     return @tab + code if @ctor
-    return utility('bind') + "(#{code}, #{@context})" if @bound
     if @front or (o.level >= LEVEL_ACCESS) then "(#{code})" else code
 
   # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
