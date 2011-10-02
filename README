@@ -1,4 +1,3 @@
-
             {
          }   }   {
         {   {  }  }
@@ -49,3 +48,17 @@
 
   All contributors are listed here:
   http://github.com/jashkenas/coffee-script/contributors
+
+
+  Windows Instructions
+
+  Download windows node directly from the node.js website.  This is an command-line executable, not a self-extracting archive.  It muat be at least 0.5.7.  This is an "unstable" version, 
+  but we know of no coffeescript related problems.  http://nodejs.org/dist/v0.5.7/node.exe
+
+  git clone the source repository (git://github.com/jashkenas/coffee-script.git)
+
+  The coffee command is in bin/coffee (there's no extension) relative to your current directory.
+
+  From the same directory, run <<PATH TO NODE.EXE>> <<PATH TO BIN/COFFEE>> <<COMMAND LINE ARGUMENTS>>.
+  For instance, to compile a script as shown above:  ./node.exe ./bin/coffee -c /path/to/script.coffee
+
