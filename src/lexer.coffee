@@ -198,11 +198,11 @@ exports.Lexer = class Lexer
     prev = last @tokens
     return 0 if prev and (prev[0] in (if prev.spaced then NOT_REGEX else NOT_SPACED_REGEX))
     return 0 unless match = REGEX.exec @chunk
-    [regex] = match
-    if regex.match /^\/\*/ then @error 'regular expressions cannot begin with `*`'
+    [match, regex, flags] = match
+    if regex[..1] is '/*' then @error 'regular expressions cannot begin with `*`'
     if regex is '//' then regex = '/(?:)/'
-    @token 'REGEX', regex
-    regex.length
+    @token 'REGEX', "#{regex}#{flags}"
+    match.length
 
   # Matches multiline extended regular expressions.
   heregexToken: (match) ->
@@ -607,7 +607,7 @@ JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
 # Regex-matching-regexes.
 REGEX = /// ^
-  / (?! [\s=] )       # disallow leading whitespace or equals signs
+  (/ (?! [\s=] )   # disallow leading whitespace or equals signs
   [^ [ / \n \\ ]*  # every other thing
   (?:
     (?: \\[\s\S]   # anything escaped
@@ -617,7 +617,7 @@ REGEX = /// ^
          ]
     ) [^ [ / \n \\ ]*
   )*
-  / [imgy]{0,4} (?!\w)
+  /) ([imgy]{0,4}) (?!\w)
 ///
 
 HEREGEX      = /// ^ /{3} ([\s\S]+?) /{3} ([imgy]{0,4}) (?!\w) ///
