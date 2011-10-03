@@ -1408,11 +1408,11 @@ exports.In = class In extends Base
     @compileLoopTest o
 
   compileOrTest: (o) ->
+    return "#{!!@negated}" if @array.base.objects.length is 0
     [sub, ref] = @object.cache o, LEVEL_OP
     [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
     tests = for item, i in @array.base.objects
       (if i then ref else sub) + cmp + item.compile o, LEVEL_ACCESS
-    return 'false' if tests.length is 0
     tests = tests.join cnj
     if o.level < LEVEL_OP then tests else "(#{tests})"
 

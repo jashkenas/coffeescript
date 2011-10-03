@@ -199,15 +199,18 @@ test "#1100: precedence in or-test compilation of `in`", ->
 
 test "#1630: `in` should check `hasOwnProperty`", ->
   ok undefined not in length: 1
-  
+
 test "#1714: lexer bug with raw range `for` followed by `in`", ->
   0 for [1..2]
   ok not ('a' in ['b'])
-  
+
   0 for [1..2]; ok not ('a' in ['b'])
-  
+
   0 for [1..10] # comment ending
   ok not ('a' in ['b'])
+
+test "#1099: statically determined `not in []` reporting incorrect result", ->
+  ok 0 not in []
 
 
 # Chained Comparison
