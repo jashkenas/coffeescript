@@ -277,17 +277,21 @@ test "existential assignment", ->
   eq nonce, c
 
 test "#1627: prohibit conditional assignment of undefined variables", ->
-  nonce = {}
+  throws (-> CoffeeScript.compile "x ?= 10"),        null, "prohibit (x ?= 10)"
+  throws (-> CoffeeScript.compile "x ||= 10"),       null, "prohibit (x ||= 10)"
+  throws (-> CoffeeScript.compile "x or= 10"),       null, "prohibit (x or= 10)"
+  throws (-> CoffeeScript.compile "do -> x ?= 10"),  null, "prohibit (do -> x ?= 10)"
+  throws (-> CoffeeScript.compile "do -> x ||= 10"), null, "prohibit (do -> x ||= 10)"
+  throws (-> CoffeeScript.compile "do -> x or= 10"), null, "prohibit (do -> x or= 10)"
+  doesNotThrow (-> CoffeeScript.compile "x = null; x ?= 10"),        "allow (x = null; x ?= 10)"
+  doesNotThrow (-> CoffeeScript.compile "x = null; x ||= 10"),       "allow (x = null; x ||= 10)"
+  doesNotThrow (-> CoffeeScript.compile "x = null; x or= 10"),       "allow (x = null; x or= 10)"
+  doesNotThrow (-> CoffeeScript.compile "x = null; do -> x ?= 10"),  "allow (x = null; do -> x ?= 10)"
+  doesNotThrow (-> CoffeeScript.compile "x = null; do -> x ||= 10"), "allow (x = null; do -> x ||= 10)"
+  doesNotThrow (-> CoffeeScript.compile "x = null; do -> x or= 10"), "allow (x = null; do -> x or= 10)"
   
-  eq nonce, (try CoffeeScript.compile "x ?= 10"; false catch e then nonce), "prohibit (x ?= 10)"
-  eq nonce, (try CoffeeScript.compile("x = null; x ?= 10"); nonce), "allow (x = null; x ?= 10)"
-  eq nonce, (try CoffeeScript.compile("x = null; (-> x ?= 10)()"); nonce), "allow (x = null; (-> x ?= 10)())"
-  eq nonce, (try CoffeeScript.compile "x ||= 10"; false catch e then nonce), "prohibit (x ||= 10)"
-  eq nonce, (try CoffeeScript.compile("x = null; x ||= 10"); nonce), "allow (x = null; x ||= 10)"
-  eq nonce, (try CoffeeScript.compile("x = null; (-> x ||= 10)()"); nonce), "allow (x = null; (-> x ||= 10)())"
-  eq nonce, (try CoffeeScript.compile "x or= 10"; false catch e then nonce), "prohibit (x or= 10)"
-  eq nonce, (try CoffeeScript.compile("x = null; x or= 10"); nonce), "allow (x = null; x or= 10)"
-  eq nonce, (try CoffeeScript.compile("x = null; (-> x or= 10)()"); nonce), "allow (x = null; (-> x or= 10)())"
+  throws (-> CoffeeScript.compile "-> -> -> x ?= 10"), null, "prohibit (-> -> -> x ?= 10)"
+  doesNotThrow (-> CoffeeScript.compile "x = null; -> -> -> x ?= 10"), "allow (x = null; -> -> -> x ?= 10)"
 
 test "#1348, #1216: existential assignment compilation", ->
   nonce = {}
