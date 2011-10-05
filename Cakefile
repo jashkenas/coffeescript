@@ -5,10 +5,10 @@ CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 
 # ANSI Terminal Colors.
-bold  = '\033[0;1m'
-red   = '\033[0;31m'
-green = '\033[0;32m'
-reset = '\033[0m'
+boldColor  = '\033[0;1m'
+redColor   = '\033[0;31m'
+greenColor = '\033[0;32m'
+resetColor = '\033[0m'
 
 # Built file header.
 header = """
@@ -36,9 +36,11 @@ run = (args, cb) ->
 
 # Log a message with a color.
 log = (message, color, explanation) ->
+  reset = if color is "" then "" else resetColor
   console.log color + message + reset + ' ' + (explanation or '')
 
 option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
+option '-c', '--nocolor', 'do not print output with color highlights'
 
 task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) ->
   base = options.prefix or '/usr/local'
@@ -56,6 +58,7 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
     "mkdir -p ~/.node_libraries"
     "ln -sfn #{lib}/lib/coffee-script #{node}"
   ].join(' && '), (err, stdout, stderr) ->
+    green = if options.nocolor then "" else greenColor
     if err then console.log stderr.trim() else log 'done', green
   )
 
@@ -66,12 +69,12 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
 
 
-task 'build:full', 'rebuild the source twice, and run the tests', ->
+task 'build:full', 'rebuild the source twice, and run the tests', (options) ->
   build ->
     build ->
       csPath = './lib/coffee-script'
       delete require.cache[require.resolve csPath]
-      unless runTests require csPath
+      unless runTests (require csPath), options
         process.exit 1
 
 
@@ -126,8 +129,11 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
   exec 'docco examples/underscore.coffee && cp -rf docs documentation && rm -r docs', (err) ->
     throw err if err
 
-task 'bench', 'quick benchmark of compilation time', ->
+task 'bench', 'quick benchmark of compilation time', (options) ->
   {Rewriter} = require './lib/coffee-script/rewriter'
+  bold   = if options.nocolor then "" else boldColor
+  reset  = if options.nocolor then "" else resetColor
+
   co     = sources.map((name) -> fs.readFileSync name).join '\n'
   fmt    = (ms) -> " #{bold}#{ "   #{ms}".slice -4 }#{reset} ms"
   total  = 0
@@ -149,7 +155,7 @@ task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
 
 
 # Run the CoffeeScript test suite.
-runTests = (CoffeeScript) ->
+runTests = (CoffeeScript, options) ->
   startTime   = Date.now()
   currentFile = null
   passedTests = 0
@@ -200,7 +206,10 @@ runTests = (CoffeeScript) ->
   # If a stacktrace is available, output the compiled function source.
   process.on 'exit', ->
     time = ((Date.now() - startTime) / 1000).toFixed(2)
-    message = "passed #{passedTests} tests in #{time} seconds#{reset}"
+    message = "passed #{passedTests} tests in #{time} seconds"
+    green = if options.nocolor then "" else greenColor
+    red = if options.nocolor then "" else redColor
+
     return log(message, green) unless failures.length
     log "failed #{failures.length} and #{message}", red
     for fail in failures
@@ -228,13 +237,13 @@ runTests = (CoffeeScript) ->
   return !failures.length
 
 
-task 'test', 'run the CoffeeScript language test suite', ->
-  runTests CoffeeScript
+task 'test', 'run the CoffeeScript language test suite', (options) ->
+  runTests CoffeeScript, options
 
 
-task 'test:browser', 'run the test suite against the merged browser script', ->
+task 'test:browser', 'run the test suite against the merged browser script', (options) ->
   source = fs.readFileSync 'extras/coffee-script.js', 'utf-8'
   result = {}
   global.testingBrowser = yes
   (-> eval source).call result
-  runTests result.CoffeeScript
+  runTests result.CoffeeScript, options
