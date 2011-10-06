@@ -25,10 +25,11 @@ exports.OptionParser = class OptionParser
   # for interpreting the options object.
   parse: (args) ->
     options = arguments: [], literals: []
-    args    = normalizeArguments args
+    originalArgs = args
+    args = normalizeArguments args
     for arg, i in args
       if arg is '--'
-        options.literals = args[(i + 1)..]
+        options.literals = originalArgs[(1 + originalArgs.indexOf '--')..]
         break
       isOption = !!(arg.match(LONG_FLAG) or arg.match(SHORT_FLAG))
       matchedRule = no
@@ -40,7 +41,7 @@ exports.OptionParser = class OptionParser
           break
       throw new Error "unrecognized option: #{arg}" if isOption and not matchedRule
       if not isOption
-        options.arguments = args.slice i
+        options.arguments = originalArgs[(originalArgs.indexOf arg)..]
         break
     options
 
