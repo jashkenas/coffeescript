@@ -29,7 +29,9 @@ exports.OptionParser = class OptionParser
     args = normalizeArguments args
     for arg, i in args
       if arg is '--'
-        options.literals = originalArgs[(1 + originalArgs.indexOf '--')..]
+        pos = originalArgs.indexOf '--'
+        options.arguments = [originalArgs[1 + pos]]
+        options.literals = originalArgs[(2 + pos)..]
         break
       isOption = !!(arg.match(LONG_FLAG) or arg.match(SHORT_FLAG))
       matchedRule = no
