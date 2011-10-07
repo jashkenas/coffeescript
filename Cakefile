@@ -5,10 +5,14 @@ CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 
 # ANSI Terminal Colors.
-boldColor  = '\033[0;1m'
-redColor   = '\033[0;31m'
-greenColor = '\033[0;32m'
-resetColor = '\033[0m'
+enableColors = no
+unless process.platform is 'win32'
+  enableColors = not process.env.NODE_DISABLE_COLORS
+
+bold  = if enableColors then '\033[0;1m' else ""
+red   = if enableColors then '\033[0;31m' else ""
+green = if enableColors then '\033[0;32m' else ""
+reset = if enableColors then '\033[0m' else ""
 
 # Built file header.
 header = """
@@ -36,11 +40,9 @@ run = (args, cb) ->
 
 # Log a message with a color.
 log = (message, color, explanation) ->
-  reset = if color is "" then "" else resetColor
   console.log color + message + reset + ' ' + (explanation or '')
 
 option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
-option '-c', '--nocolor', 'do not print output with color highlights'
 
 task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) ->
   base = options.prefix or '/usr/local'
@@ -58,7 +60,6 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
     "mkdir -p ~/.node_libraries"
     "ln -sfn #{lib}/lib/coffee-script #{node}"
   ].join(' && '), (err, stdout, stderr) ->
-    green = if options.nocolor then "" else greenColor
     if err then console.log stderr.trim() else log 'done', green
   )
 
@@ -131,8 +132,6 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
 
 task 'bench', 'quick benchmark of compilation time', (options) ->
   {Rewriter} = require './lib/coffee-script/rewriter'
-  bold   = if options.nocolor then "" else boldColor
-  reset  = if options.nocolor then "" else resetColor
 
   co     = sources.map((name) -> fs.readFileSync name).join '\n'
   fmt    = (ms) -> " #{bold}#{ "   #{ms}".slice -4 }#{reset} ms"
@@ -207,8 +206,6 @@ runTests = (CoffeeScript, options) ->
   process.on 'exit', ->
     time = ((Date.now() - startTime) / 1000).toFixed(2)
     message = "passed #{passedTests} tests in #{time} seconds"
-    green = if options.nocolor then "" else greenColor
-    red = if options.nocolor then "" else redColor
 
     return log(message, green) unless failures.length
     log "failed #{failures.length} and #{message}", red
