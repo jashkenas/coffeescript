@@ -9,10 +9,12 @@ enableColors = no
 unless process.platform is 'win32'
   enableColors = not process.env.NODE_DISABLE_COLORS
 
-bold  = if enableColors then '\033[0;1m' else ""
-red   = if enableColors then '\033[0;31m' else ""
-green = if enableColors then '\033[0;32m' else ""
-reset = if enableColors then '\033[0m' else ""
+bold = red = green = reset = ''
+if enableColors
+  bold  = '\033[0;1m'
+  red   = '\033[0;31m'
+  green = '\033[0;32m'
+  reset = '\033[0m'
 
 # Built file header.
 header = """
@@ -70,12 +72,12 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
 
 
-task 'build:full', 'rebuild the source twice, and run the tests', (options) ->
+task 'build:full', 'rebuild the source twice, and run the tests', ->
   build ->
     build ->
       csPath = './lib/coffee-script'
       delete require.cache[require.resolve csPath]
-      unless runTests (require csPath), options
+      unless runTests require csPath
         process.exit 1
 
 
@@ -130,9 +132,8 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
   exec 'docco examples/underscore.coffee && cp -rf docs documentation && rm -r docs', (err) ->
     throw err if err
 
-task 'bench', 'quick benchmark of compilation time', (options) ->
+task 'bench', 'quick benchmark of compilation time', ->
   {Rewriter} = require './lib/coffee-script/rewriter'
-
   co     = sources.map((name) -> fs.readFileSync name).join '\n'
   fmt    = (ms) -> " #{bold}#{ "   #{ms}".slice -4 }#{reset} ms"
   total  = 0
@@ -154,7 +155,7 @@ task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
 
 
 # Run the CoffeeScript test suite.
-runTests = (CoffeeScript, options) ->
+runTests = (CoffeeScript) ->
   startTime   = Date.now()
   currentFile = null
   passedTests = 0
@@ -205,8 +206,7 @@ runTests = (CoffeeScript, options) ->
   # If a stacktrace is available, output the compiled function source.
   process.on 'exit', ->
     time = ((Date.now() - startTime) / 1000).toFixed(2)
-    message = "passed #{passedTests} tests in #{time} seconds"
-
+    message = "passed #{passedTests} tests in #{time} seconds#{reset}"
     return log(message, green) unless failures.length
     log "failed #{failures.length} and #{message}", red
     for fail in failures
@@ -234,13 +234,13 @@ runTests = (CoffeeScript, options) ->
   return !failures.length
 
 
-task 'test', 'run the CoffeeScript language test suite', (options) ->
-  runTests CoffeeScript, options
+task 'test', 'run the CoffeeScript language test suite', ->
+  runTests CoffeeScript
 
 
-task 'test:browser', 'run the test suite against the merged browser script', (options) ->
+task 'test:browser', 'run the test suite against the merged browser script', ->
   source = fs.readFileSync 'extras/coffee-script.js', 'utf-8'
   result = {}
   global.testingBrowser = yes
   (-> eval source).call result
-  runTests result.CoffeeScript, options
+  runTests result.CoffeeScript
