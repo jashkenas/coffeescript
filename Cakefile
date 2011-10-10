@@ -5,10 +5,16 @@ CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 
 # ANSI Terminal Colors.
-bold  = '\033[0;1m'
-red   = '\033[0;31m'
-green = '\033[0;32m'
-reset = '\033[0m'
+enableColors = no
+unless process.platform is 'win32'
+  enableColors = not process.env.NODE_DISABLE_COLORS
+
+bold = red = green = reset = ''
+if enableColors
+  bold  = '\033[0;1m'
+  red   = '\033[0;31m'
+  green = '\033[0;32m'
+  reset = '\033[0m'
 
 # Built file header.
 header = """
