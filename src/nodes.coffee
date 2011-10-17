@@ -248,7 +248,9 @@ exports.Block = class Block extends Base
     o.level  = LEVEL_TOP
     @spaced  = yes
     code     = @compileWithDeclarations o
-    if o.bare then code else "(function() {\n#{code}\n}).call(this);\n"
+    # the `1` below accounts for `arguments`, always "in scope"
+    return code if o.bare or o.scope.variables.length <= 1
+    "(function() {\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
