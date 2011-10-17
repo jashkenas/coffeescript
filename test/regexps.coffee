@@ -41,6 +41,11 @@ test "#584: slashes are allowed unescaped in character classes", ->
 test "#1724: regular expressions beginning with `*`", ->
   throws -> CoffeeScript.compile '/*/'
 
+test "#1772: statically catch invalid regular expressions of any sort", ->
+  throws -> CoffeeScript.compile '/?/'
+  throws -> CoffeeScript.compile '/[/'
+  throws -> CoffeeScript.compile '/// ? ///'
+
 
 # Heregexe(n|s)
 

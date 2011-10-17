@@ -199,18 +199,18 @@ exports.Lexer = class Lexer
     return 0 if prev and (prev[0] in (if prev.spaced then NOT_REGEX else NOT_SPACED_REGEX))
     return 0 unless match = REGEX.exec @chunk
     [match, regex, flags] = match
-    if regex[..1] is '/*' then @error 'regular expressions cannot begin with `*`'
-    if regex is '//' then regex = '/(?:)/'
-    @token 'REGEX', "#{regex}#{flags}"
+    regex = regex[1...-1] or '(?:)'
+    try new RegExp regex, flags catch e then @error e.message
+    @token 'REGEX', "/#{regex}/#{flags}"
     match.length
 
   # Matches multiline extended regular expressions.
   heregexToken: (match) ->
     [heregex, body, flags] = match
     if 0 > body.indexOf '#{'
-      re = body.replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
-      if re.match /^\*/ then @error 'regular expressions cannot begin with `*`'
-      @token 'REGEX', "/#{ re or '(?:)' }/#{flags}"
+      regex = body.replace(HEREGEX_OMIT, '').replace(/\//g, '\\/') or '(?:)'
+      try new RegExp regex, flags catch e then @error e.message
+      @token 'REGEX', "/#{regex}/#{flags}"
       return heregex.length
     @token 'IDENTIFIER', 'RegExp'
     @tokens.push ['CALL_START', '(']
