@@ -1582,7 +1582,7 @@ exports.For = class For extends While
       forPart = source.compile merge(o, {index: ivar, @step})
     else
       svar    = @source.compile o, LEVEL_LIST
-      if (name or @own) and not IDENTIFIER.test svar
+      unless IDENTIFIER.test svar
         defPart    = "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
         svar       = ref
       if name and not @pattern
@@ -1592,6 +1592,7 @@ exports.For = class For extends While
         forVarPart = "#{ivar} = 0, #{lvar} = #{svar}.length" + if @step then ", #{stepvar} = #{@step.compile(o, LEVEL_OP)}" else ''
         stepPart   = if @step then "#{ivar} += #{stepvar}" else "#{ivar}++"
         forPart    = "#{forVarPart}; #{ivar} < #{lvar}; #{stepPart}"
+      guardPart    = "\n#{idt1}if (!(#{ivar} in #{svar})) continue;"
     if @returns
       resultPart   = "#{@tab}#{rvar} = [];\n"
       returnResult = "\n#{@tab}return #{rvar};"
@@ -1819,7 +1820,7 @@ UTILITIES =
 
   # Discover if an item is in an array.
   indexOf: -> """
-    Array.prototype.indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (#{utility 'hasProp'}.call(this, i) && this[i] === item) return i; } return -1; }
+    Array.prototype.indexOf || function(x) { var i = 0, l = this.length >>> 0; while (i++ < l) if (i in this && this[i] === x) return i; return -1; }
   """
 
   # Shortcuts to speed up the lookup time for native functions.

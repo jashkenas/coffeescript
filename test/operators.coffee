@@ -212,6 +212,17 @@ test "#1714: lexer bug with raw range `for` followed by `in`", ->
 test "#1099: statically determined `not in []` reporting incorrect result", ->
   ok 0 not in []
 
+test "#1771: `in` on sparse arrays and array-like objects", ->
+  nonceA = {}
+  nonceB = {}
+  o = new (class C then 0: nonceA)
+  o.length = 3
+  o[3] = nonceB
+  ok nonceA in o
+  ok nonceB not in o
+  ok not (nonceB in o)
+  ok not (nonceA not in o)
+
 
 # Chained Comparison
 
