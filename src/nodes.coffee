@@ -1592,7 +1592,7 @@ exports.For = class For extends While
         forVarPart = "#{ivar} = 0, #{lvar} = #{svar}.length" + if @step then ", #{stepvar} = #{@step.compile(o, LEVEL_OP)}" else ''
         stepPart   = if @step then "#{ivar} += #{stepvar}" else "#{ivar}++"
         forPart    = "#{forVarPart}; #{ivar} < #{lvar}; #{stepPart}"
-      guardPart    = "\n#{idt1}if (!(#{ivar} in #{svar})) continue;"
+        guardPart    = "\n#{idt1}if (!(#{ivar} in #{svar})) continue;"
     if @returns
       resultPart   = "#{@tab}#{rvar} = [];\n"
       returnResult = "\n#{@tab}return #{rvar};"
