@@ -1,0 +1,36 @@
+Beautiful Literate Programming
+------------------------------
+
+If this file parses at all, that is the test, and it has passed.
+
+Originally, literate programming did not mean heavily-commented code. However, owing to the System, that is what it evolved to mean.
+Literate programming is supposed to be where code invades the commentary, not lots of comments invading the code.
+
+  test "If this parses, literate coffee works.", ->
+    eq 'So beautiful, I want to cry.', 'So beautiful, I want to cry.'
+
+Under this scheme, everything is a comment.
+Except the bits that are indented. If a line does not start with whitespace, it is a comment.
+Everything else is code.
+
+  test "I parse, therefore I work.", ->
+    eq 4, 100 - 96
+
+This is how we shall proceed with writing a string reverse in CoffeeScript.
+
+  reverse = (str) ->
+    rez = ''
+    for chr in str
+      rez = chr + rez
+    rez
+
+And then we will use it.
+
+  test "Using a function defined within literate CoffeeScript.", ->
+    eq 'So beautiful, I want to cry.', reverse '.yrc ot tnaw I ,lufituaeb oS'
+
+
+See? Wasn't ugly, was it?
+Work on a syntax mode should not be difficult, in my opinion. (Although the only
+syntax things I know how to do are Vim, and even those, not *too* perfectly.)
+That will be all.
