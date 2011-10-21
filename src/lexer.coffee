@@ -135,7 +135,7 @@ exports.Lexer = class Lexer
     number = match[0]
     lexedLength = number.length
     if is_binary = /0b([01]+)/.exec number
-        number = (parseInt is_binary[1], 2).toString()
+      number = (parseInt is_binary[1], 2).toString()
     @token 'NUMBER', number
     lexedLength
 
