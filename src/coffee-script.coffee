@@ -32,7 +32,7 @@ exports.helpers = require './helpers'
 # compiler.
 exports.compile = compile = (code, options = {}) ->
   try
-    (parser.parse lexer.tokenize code).compile options
+    (parser.parse lexer.tokenize (if (options.filename or '').match /\.literatecoffee$/ then code.replace(/(^|\n)(\S)/gi, '$1#$2') else code)).compile options
   catch err
     err.message = "In #{options.filename}, #{err.message}" if options.filename
     throw err
