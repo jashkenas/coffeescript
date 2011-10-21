@@ -133,14 +133,11 @@ exports.Lexer = class Lexer
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
     number = match[0]
-    numlen = number.length
-    # Now, since it is not JavaScript-descended, if it is binary, we will have
-    # to massage it into something similar and then hand it over. May the user
-    # forgive us.
-    is_binary = /0b([01]+)/.exec number
-    number = (parseInt is_binary[1], 2).toString() if is_binary
+    lexedLength = number.length
+    if is_binary = /0b([01]+)/.exec number
+        number = (parseInt is_binary[1], 2).toString()
     @token 'NUMBER', number
-    numlen
+    lexedLength
 
   # Matches strings, including multi-line strings. Ensures that quotation marks
   # are balanced within the string's contents, and within nested interpolations.
