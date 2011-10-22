@@ -33,7 +33,7 @@ exports.helpers = require './helpers'
 exports.compile = compile = (code, options = {}) ->
   try
     transformedCode = code
-    if options.filename?.match /\.literatecoffee$/ then
+    if options.filename?.match /\.literatecoffee$/
         transformedCode = code.replace /(^|\n)(\S)/gi, '$1#$2'
     (parser.parse lexer.tokenize transformedCode).compile options
   catch err
