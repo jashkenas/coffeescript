@@ -16,13 +16,10 @@ CoffeeScript   = require './coffee-script'
 # Allow CoffeeScript to emit Node.js events.
 helpers.extend CoffeeScript, new EventEmitter
 
-printLine = (line) -> process.stdout.write line + '\n'
-printWarn = (line) -> process.binding('stdio').writeError line + '\n'
-
 # The help banner that is printed when `coffee` is called without arguments.
 BANNER = '''
   Usage: coffee [options] path/to/script.coffee
-  
+
   If called without options, `coffee` will run your script.
          '''
 
@@ -130,19 +127,19 @@ compileScript = (file, input, base) ->
     t = task = {file, input, options}
     CoffeeScript.emit 'compile', task
     if      o.tokens      then printTokens CoffeeScript.tokens t.input
-    else if o.nodes       then printLine CoffeeScript.nodes(t.input).toString().trim()
+    else if o.nodes       then console.log CoffeeScript.nodes(t.input).toString().trim()
     else if o.run         then CoffeeScript.run t.input, t.options
     else
       t.output = CoffeeScript.compile t.input, t.options
       CoffeeScript.emit 'success', task
-      if o.print          then printLine t.output.trim()
+      if o.print          then console.log t.output.trim()
       else if o.compile   then writeJs t.file, t.output, base
       else if o.lint      then lint t.file, t.output
   catch err
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
-    return printLine err.message if o.watch
-    printWarn err instanceof Error and err.stack or "ERROR: #{err}"
+    return console.log err.message if o.watch
+    console.error err instanceof Error and err.stack or "ERROR: #{err}"
     process.exit 1
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
@@ -191,7 +188,7 @@ writeJs = (source, js, base) ->
     js = ' ' if js.length <= 0
     fs.writeFile jsPath, js, (err) ->
       if err
-        printLine err.message
+        console.log err.message
       else if opts.compile and opts.watch
         console.log "#{(new Date).toLocaleTimeString()} - compiled #{source}"
   path.exists dir, (exists) ->
@@ -200,7 +197,7 @@ writeJs = (source, js, base) ->
 # Pipe compiled JS through JSLint (requires a working `jsl` command), printing
 # any errors or warnings that arise.
 lint = (file, js) ->
-  printIt = (buffer) -> printLine file + ':\t' + buffer.toString().trim()
+  printIt = (buffer) -> console.log file + ':\t' + buffer.toString().trim()
   conf = __dirname + '/../extras/jsl.conf'
   jsl = spawn 'jsl', ['-nologo', '-stdin', '-conf', conf]
   jsl.stdout.on 'data', printIt
@@ -213,7 +210,7 @@ printTokens = (tokens) ->
   strings = for token in tokens
     [tag, value] = [token[0], token[1].toString().replace(/\n/, '\\n')]
     "[#{tag} #{value}]"
-  printLine strings.join(' ')
+  console.log strings.join(' ')
 
 # Use the [OptionParser module](optparse.html) to extract all options from
 # `process.argv` that are specified in `SWITCHES`.
@@ -242,8 +239,8 @@ forkNode = ->
 # Print the `--help` usage message and exit. Deprecated switches are not
 # shown.
 usage = ->
-  printLine (new optparse.OptionParser SWITCHES, BANNER).help()
+  console.log (new optparse.OptionParser SWITCHES, BANNER).help()
 
 # Print the `--version` message and exit.
 version = ->
-  printLine "CoffeeScript version #{CoffeeScript.VERSION}"
+  console.log "CoffeeScript version #{CoffeeScript.VERSION}"
