@@ -5,10 +5,16 @@ CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 
 # ANSI Terminal Colors.
-bold  = '\033[0;1m'
-red   = '\033[0;31m'
-green = '\033[0;32m'
-reset = '\033[0m'
+enableColors = no
+unless process.platform is 'win32'
+  enableColors = not process.env.NODE_DISABLE_COLORS
+
+bold = red = green = reset = ''
+if enableColors
+  bold  = '\033[0;1m'
+  red   = '\033[0;31m'
+  green = '\033[0;32m'
+  reset = '\033[0m'
 
 # Built file header.
 header = """
@@ -69,7 +75,8 @@ task 'build', 'build the CoffeeScript language from source', build = (cb) ->
 task 'build:full', 'rebuild the source twice, and run the tests', ->
   build ->
     build ->
-      csPath = fs.realpathSync './lib/coffee-script'
+      csPath = './lib/coffee-script'
+      delete require.cache[require.resolve csPath]
       unless runTests require csPath
         process.exit 1
 

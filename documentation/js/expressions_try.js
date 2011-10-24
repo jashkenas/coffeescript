@@ -1,3 +1,4 @@
+
 alert((function() {
   try {
     return nonexistent / void 0;
