@@ -10,6 +10,7 @@ fs               = require 'fs'
 path             = require 'path'
 {Lexer,RESERVED} = require './lexer'
 {parser}         = require './parser'
+vm               = require 'vm'
 
 # TODO: Remove registerExtension when fully deprecated.
 if require.extensions
@@ -77,22 +78,24 @@ exports.run = (code, options) ->
 # The CoffeeScript REPL uses this to run the input.
 exports.eval = (code, options = {}) ->
   return unless code = code.trim()
-  {Script} = require 'vm'
+  Script = vm.Script
   if Script
-    sandbox = Script.createContext()
-    sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
     if options.sandbox?
-      if options.sandbox instanceof sandbox.constructor
+      if options.sandbox instanceof Script.createContext().constructor
         sandbox = options.sandbox
       else
+        sandbox = Script.createContext()
         sandbox[k] = v for own k, v of options.sandbox
+      sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
+    else
+      sandbox = global
     sandbox.__filename = options.filename || 'eval'
     sandbox.__dirname  = path.dirname sandbox.__filename
     # define module/require only if they chose not to specify their own
-    unless sandbox.module or sandbox.require
+    unless sandbox isnt global or sandbox.module or sandbox.require
       Module = require 'module'
       sandbox.module  = _module  = new Module(options.modulename || 'eval')
-      sandbox.require = _require = (path) -> Module._load path, _module
+      sandbox.require = _require = (path) ->  Module._load path, _module, true
       _module.filename = sandbox.__filename
       _require[r] = require[r] for r in Object.getOwnPropertyNames require when r isnt 'paths'
       # use the same hack node currently uses for their own REPL
@@ -102,10 +105,10 @@ exports.eval = (code, options = {}) ->
   o[k] = v for own k, v of options
   o.bare = on # ensure return value
   js = compile code, o
-  if Script
-    Script.runInContext js, sandbox
+  if sandbox is global
+    vm.runInThisContext js
   else
-    eval js
+    vm.runInContext js, sandbox
 
 # Instantiate a Lexer for our use here.
 lexer = new Lexer
