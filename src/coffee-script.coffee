@@ -30,10 +30,13 @@ exports.helpers = require './helpers'
 
 # Compile a string of CoffeeScript code to JavaScript, using the Coffee/Jison
 # compiler.
+# If the string fulfils any of two literacy criteria, it is considered
+# Literate Coffee.
 exports.compile = compile = (code, options = {}) ->
   try
-    transformedCode = code
-    if options.filename?.match /\.literatecoffee$/
+    transformedCode   = code
+    declaresLiteracy  = code.indexOf('Literate CoffeeScript\n') == 0
+    if declaresLiteracy or options.filename?.match /\.literatecoffee$/
       transformedCode = code.replace /(^|\n)(\S)/gi, '$1#$2'
     (parser.parse lexer.tokenize transformedCode).compile options
   catch err
