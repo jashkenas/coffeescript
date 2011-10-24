@@ -453,3 +453,14 @@ test "#1669: break/continue should skip the result only for that branch", ->
         continue unless n % 5
         n
   eq "#{ns}", "1,,3,,,7,,9"
+
+test "#1771: comprehensions over sparse arrays and array-like objects", ->
+  nonceA = {}
+  nonceB = {}
+  o = new (class C then 0: nonceA)
+  o[2] = nonceA
+  o.length = 3
+  o[3] = nonceB
+  n = (p for p in o)
+  eq 2, n.length
+  arrayEq [nonceA, nonceA], n
