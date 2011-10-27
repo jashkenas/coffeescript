@@ -43,7 +43,10 @@ runScripts = ->
       if script.src
         CoffeeScript.load script.src, execute
       else
-        CoffeeScript.run script.innerHTML
+        src = script.innerHTML
+        if match = src.match /^\s*<!\[CDATA\[([\S\s]*)]]>\s*$/
+          src = match[1]
+        CoffeeScript.run src
         execute()
   null
 
