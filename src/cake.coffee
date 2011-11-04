@@ -22,11 +22,19 @@ oparse    = null
 # Mixin the top-level Cake functions for Cakefiles to use directly.
 helpers.extend global,
 
+  # Define an asynchronous Cake task with a short name, an optional sentence
+  # description, and the function to run as the action itself.  The function
+  # takes an additional callback argument to call when it completes.
+  asyncTask: (name, description, action) ->
+    [action, description] = [description, action] unless action
+    tasks[name] = {name, description, action}
+
   # Define a Cake task with a short name, an optional sentence description,
   # and the function to run as the action itself.
   task: (name, description, action) ->
-    [action, description] = [description, action] unless action
-    tasks[name] = {name, description, action}
+    global.asyncTask name, description, (options, cb) ->
+      action(options)
+      cb()
 
   # Define an option that the Cakefile accepts. The parsed options hash,
   # containing all of the command-line options passed, will be made available
@@ -35,9 +43,9 @@ helpers.extend global,
     switches.push [letter, flag, description]
 
   # Invoke another task in the current Cakefile.
-  invoke: (name) ->
+  invoke: (name, cb) ->
     missingTask name unless tasks[name]
-    tasks[name].action options
+    tasks[name].action options, cb or (->)
 
 # Run `cake`. Executes all of the tasks you pass, in order. Note that Node's
 # asynchrony may cause tasks to execute in a different order than you'd expect.
