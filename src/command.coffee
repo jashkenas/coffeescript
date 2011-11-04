@@ -30,6 +30,7 @@ BANNER = '''
 SWITCHES = [
   ['-b', '--bare',            'compile without a top-level function wrapper']
   ['-c', '--compile',         'compile to JavaScript and save as .js files']
+  [      '--crlf',            'use crlf as line endings']
   ['-e', '--eval',            'pass a string from the command line as input']
   ['-h', '--help',            'display this help message']
   ['-i', '--interactive',     'run an interactive CoffeeScript REPL']
@@ -67,6 +68,7 @@ exports.run = ->
   return require './repl'                unless sources.length
   if opts.run
     opts.literals = sources.splice(1).concat opts.literals
+  opts.lineEnd = '\r\n'                  if opts.crlf
   process.ARGV = process.argv = process.argv.slice(0, 2).concat opts.literals
   process.argv[0] = 'coffee'
   process.execPath = require.main.filename
@@ -226,7 +228,7 @@ parseOptions = ->
   sources       = o.arguments
 
 # The compile-time options to pass to the CoffeeScript compiler.
-compileOptions = (filename) -> {filename, bare: opts.bare}
+compileOptions = (filename) -> {filename, bare: opts.bare, lineEnd: opts.lineEnd}
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
 # the `node` binary, preserving the other options.
