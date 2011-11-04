@@ -120,7 +120,6 @@ task 'build:utilities', 'rebuild the utilities file for use with compile(utiliti
   code = 'var ' + (for utility, func of require('./lib/coffee-script/nodes.js').UTILITIES
     "__#{utility} = #{func()}"
   ).join(',\n') + ';'
-  console.log code
   fs.writeFileSync 'extras/utilities.js', code
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
