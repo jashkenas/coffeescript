@@ -121,7 +121,7 @@ task 'build:utilities', 'rebuild the utilities file for use with compile(utiliti
     "__#{utility} = #{func()}"
   ).join(',\n') + ';'
   fs.writeFileSync 'extras/utilities.js', code
-  consoole.log "built utilities.js"
+  console.log "built utilities.js"
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
   exec 'rake doc', (err) ->
