@@ -1804,7 +1804,7 @@ unfoldSoak = (o, parent, name) ->
 # Constants
 # ---------
 
-UTILITIES =
+exports.UTILITIES = UTILITIES =
 
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls, and copies of any static properties.
