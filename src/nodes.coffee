@@ -214,6 +214,7 @@ exports.Block = class Block extends Base
   # statement, ask the statement to do so.
   compileNode: (o) ->
     @tab  = o.indent
+    lineEnd = o.lineEnd ? '\n'
     top   = o.level is LEVEL_TOP
     codes = []
     for node in @expressions
@@ -232,9 +233,9 @@ exports.Block = class Block extends Base
         codes.push node.compile o, LEVEL_LIST
     if top
       if @spaced
-        return '\n' + codes.join('\n\n') + '\n'
+        return lineEnd + codes.join(lineEnd + lineEnd) + lineEnd
       else
-        return codes.join '\n'
+        return codes.join lineEnd
     code = codes.join(', ') or 'void 0'
     if codes.length > 1 and o.level >= LEVEL_LIST then "(#{code})" else code
 
@@ -248,13 +249,15 @@ exports.Block = class Block extends Base
     o.level  = LEVEL_TOP
     @spaced  = yes
     code     = @compileWithDeclarations o
+    lineEnd = o.lineEnd ? '\n'
     # the `1` below accounts for `arguments`, always "in scope"
     return code if o.bare or o.scope.variables.length <= 1
-    "(function() {\n#{code}\n}).call(this);\n"
+    "(function() {#{lineEnd}#{code}#{lineEnd}}).call(this);#{lineEnd}"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
   compileWithDeclarations: (o) ->
+    lineEnd = o.lineEnd ? '\n'
     code = post = ''
     for exp, i in @expressions
       exp = exp.unwrap()
@@ -270,11 +273,11 @@ exports.Block = class Block extends Base
       declars = o.scope.hasDeclarations()
       assigns = scope.hasAssignments
       if (declars or assigns) and i
-        code += '\n'
+        code += lineEnd
       if declars
-        code += "#{@tab}var #{ scope.declaredVariables().join(', ') };\n"
+        code += "#{@tab}var #{ scope.declaredVariables().join(', ') };#{lineEnd}"
       if assigns
-        code += "#{@tab}var #{ multident scope.assignedVariables().join(', '), @tab };\n"
+        code += "#{@tab}var #{ multident scope.assignedVariables().join(', '), @tab };#{lineEnd}"
     code + post
 
   # Wrap up the given nodes as a **Block**, unless it already happens
@@ -452,7 +455,8 @@ exports.Comment = class Comment extends Base
   makeReturn:      THIS
 
   compileNode: (o, level) ->
-    code = '/*' + multident(@comment, @tab) + "\n#{@tab}*/"
+    lineEnd = o.lineEnd ? '\n'
+    code = '/*' + multident(@comment, @tab) + "#{lineEnd}#{@tab}*/"
     code = o.indent + code if (level or o.level) is LEVEL_TOP
     code
 
@@ -694,6 +698,7 @@ exports.Range = class Range extends Base
 
   # When used as a value, expand the range into the equivalent array.
   compileArray: (o) ->
+    lineEnd = o.lineEnd ? '\n'
     if @fromNum and @toNum and Math.abs(@fromNum - @toNum) <= 20
       range = [+@fromNum..+@toNum]
       range.pop() if @exclusive
@@ -701,7 +706,7 @@ exports.Range = class Range extends Base
     idt    = @tab + TAB
     i      = o.scope.freeVariable 'i'
     result = o.scope.freeVariable 'results'
-    pre    = "\n#{idt}#{result} = [];"
+    pre    = "#{lineEnd}#{idt}#{result} = [];"
     if @fromNum and @toNum
       o.index = i
       body    = @compileNode o
@@ -709,10 +714,10 @@ exports.Range = class Range extends Base
       vars    = "#{i} = #{@fromC}" + if @toC isnt @toVar then ", #{@toC}" else ''
       cond    = "#{@fromVar} <= #{@toVar}"
       body    = "var #{vars}; #{cond} ? #{i} <#{@equals} #{@toVar} : #{i} >#{@equals} #{@toVar}; #{cond} ? #{i}++ : #{i}--"
-    post   = "{ #{result}.push(#{i}); }\n#{idt}return #{result};\n#{o.indent}"
+    post   = "{ #{result}.push(#{i}); }#{lineEnd}#{idt}return #{result};#{lineEnd}#{o.indent}"
     hasArgs = (node) -> node?.contains (n) -> n instanceof Literal and n.value is 'arguments' and not n.asKey
     args   = ', arguments' if hasArgs(@from) or hasArgs(@to)
-    "(function() {#{pre}\n#{idt}for (#{body})#{post}}).apply(this#{args ? ''})"
+    "(function() {#{pre}#{lineEnd}#{idt}for (#{body})#{post}}).apply(this#{args ? ''})"
 
 #### Slice
 
@@ -757,15 +762,16 @@ exports.Obj = class Obj extends Base
     if @generated
       for node in props when node instanceof Value
         throw new Error 'cannot have an implicit value in an implicit object'
+    lineEnd     = o.lineEnd ? '\n'
     idt         = o.indent += TAB
     lastNoncom  = @lastNonComment @properties
     props = for prop, i in props
       join = if i is props.length - 1
         ''
       else if prop is lastNoncom or prop instanceof Comment
-        '\n'
+        lineEnd
       else
-        ',\n'
+        ',' + lineEnd
       indent = if prop instanceof Comment then '' else idt
       if prop instanceof Value and prop.this
         prop = new Assign prop.properties[0].name, prop, 'object'
@@ -775,7 +781,7 @@ exports.Obj = class Obj extends Base
         (prop.variable.base or prop.variable).asKey = yes
       indent + prop.compile(o, LEVEL_TOP) + join
     props = props.join ''
-    obj   = "{#{ props and '\n' + props + '\n' + @tab }}"
+    obj   = "{#{ props and lineEnd + props + lineEnd + @tab }}"
     if @front then "(#{obj})" else obj
 
   assigns: (name) ->
@@ -795,12 +801,13 @@ exports.Arr = class Arr extends Base
 
   compileNode: (o) ->
     return '[]' unless @objects.length
+    lineEnd = o.lineEnd ? '\n'
     o.indent += TAB
     objs = @filterImplicitObjects @objects
     return code if code = Splat.compileSplattedArray o, objs
     code = (obj.compile o, LEVEL_LIST for obj in objs).join ', '
     if code.indexOf('\n') >= 0
-      "[\n#{o.indent}#{code}\n#{@tab}]"
+      "[#{lineEnd}#{o.indent}#{code}#{lineEnd}#{@tab}]"
     else
       "[#{code}]"
 
@@ -1132,10 +1139,11 @@ exports.Code = class Code extends Base
       else
         o.scope.parent.assign '_this', 'this'
     idt   = o.indent
+    lineEnd = o.lineEnd ? '\n'
     code  = 'function'
     code  += ' ' + @name if @ctor
     code  += '(' + vars.join(', ') + ') {'
-    code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
+    code  += "#{lineEnd}#{ @body.compileWithDeclarations o }#{lineEnd}#{@tab}" unless @body.isEmpty()
     code  += '}'
     return @tab + code if @ctor
     if @front or (o.level >= LEVEL_ACCESS) then "(#{code})" else code
@@ -1250,6 +1258,7 @@ exports.While = class While extends Base
   # return an array containing the computed result of each iteration.
   compileNode: (o) ->
     o.indent += TAB
+    lineEnd  = o.lineEnd ? '\n'
     set      = ''
     {body}   = this
     if body.isEmpty()
@@ -1257,16 +1266,16 @@ exports.While = class While extends Base
     else
       if @returns
         body.makeReturn rvar = o.scope.freeVariable 'results'
-        set  = "#{@tab}#{rvar} = [];\n"
+        set  = "#{@tab}#{rvar} = [];#{lineEnd}"
       if @guard
         if body.expressions.length > 1
           body.expressions.unshift new If (new Parens @guard).invert(), new Literal "continue"
         else
           body = Block.wrap [new If @guard, body] if @guard
-      body = "\n#{ body.compile o, LEVEL_TOP }\n#{@tab}"
+      body = "#{lineEnd}#{ body.compile o, LEVEL_TOP }#{lineEnd}#{@tab}"
     code = set + @tab + "while (#{ @condition.compile o, LEVEL_PAREN }) {#{body}}"
     if @returns
-      code += "\n#{@tab}return #{rvar};"
+      code += "#{lineEnd}#{@tab}return #{rvar};"
     code
 
 #### Op
@@ -1450,16 +1459,17 @@ exports.Try = class Try extends Base
   # is optional, the *catch* is not.
   compileNode: (o) ->
     o.indent  += TAB
+    lineEnd = o.lineEnd ? '\n'
     errorPart = if @error then " (#{ @error.compile o }) " else ' '
     tryPart   = @attempt.compile o, LEVEL_TOP
     
     catchPart = if @recovery
       o.scope.add @error.value, 'param' unless o.scope.check @error.value
-      " catch#{errorPart}{\n#{ @recovery.compile o, LEVEL_TOP }\n#{@tab}}"
+      " catch#{errorPart}{#{lineEnd}#{ @recovery.compile o, LEVEL_TOP }#{lineEnd}#{@tab}}"
     else unless @ensure or @recovery
       ' catch (_error) {}'
       
-    ensurePart = if @ensure then " finally {\n#{ @ensure.compile o, LEVEL_TOP }\n#{@tab}}" else ''
+    ensurePart = if @ensure then " finally {#{lineEnd}#{ @ensure.compile o, LEVEL_TOP }#{lineEnd}#{@tab}}" else ''
       
     """#{@tab}try {
     #{tryPart}
@@ -1578,12 +1588,13 @@ exports.For = class For extends While
     guardPart = ''
     defPart   = ''
     idt1      = @tab + TAB
+    lineEnd = o.lineEnd ? '\n'
     if @range
       forPart = source.compile merge(o, {index: ivar, @step})
     else
       svar    = @source.compile o, LEVEL_LIST
       if (name or @own) and not IDENTIFIER.test svar
-        defPart    = "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
+        defPart    = "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};#{lineEnd}"
         svar       = ref
       if name and not @pattern
         namePart   = "#{name} = #{svar}[#{ivar}]"
@@ -1593,8 +1604,8 @@ exports.For = class For extends While
         stepPart   = if @step then "#{ivar} += #{stepvar}" else "#{ivar}++"
         forPart    = "#{forVarPart}; #{ivar} < #{lvar}; #{stepPart}"
     if @returns
-      resultPart   = "#{@tab}#{rvar} = [];\n"
-      returnResult = "\n#{@tab}return #{rvar};"
+      resultPart   = "#{@tab}#{rvar} = [];#{lineEnd}"
+      returnResult = "#{lineEnd}#{@tab}return #{rvar};"
       body.makeReturn rvar
     if @guard
       if body.expressions.length > 1
@@ -1604,17 +1615,18 @@ exports.For = class For extends While
     if @pattern
       body.expressions.unshift new Assign @name, new Literal "#{svar}[#{ivar}]"
     defPart     += @pluckDirectCall o, body
-    varPart     = "\n#{idt1}#{namePart};" if namePart
+    varPart     = "#{lineEnd}#{idt1}#{namePart};" if namePart
     if @object
       forPart   = "#{ivar} in #{svar}"
-      guardPart = "\n#{idt1}if (!#{utility 'hasProp'}.call(#{svar}, #{ivar})) continue;" if @own
+      guardPart = "#{lineEnd}#{idt1}if (!#{utility 'hasProp'}.call(#{svar}, #{ivar})) continue;" if @own
     body        = body.compile merge(o, indent: idt1), LEVEL_TOP
-    body        = '\n' + body + '\n' if body
+    body        = lineEnd + body + lineEnd if body
     """
     #{defPart}#{resultPart or ''}#{@tab}for (#{forPart}) {#{guardPart}#{varPart}#{body}#{@tab}}#{returnResult or ''}
     """
 
   pluckDirectCall: (o, body) ->
+    lineEnd = o.lineEnd ? '\n'
     defs = ''
     for expr, idx in body.expressions
       expr = expr.unwrapAll()
@@ -1631,7 +1643,7 @@ exports.For = class For extends While
       if val.base
         [val.base, base] = [base, val]
       body.expressions[idx] = new Call base, expr.args
-      defs += @tab + new Assign(ref, fn).compile(o, LEVEL_TOP) + ';\n'
+      defs += @tab + new Assign(ref, fn).compile(o, LEVEL_TOP) + ';' + lineEnd
     defs
 
 #### Switch
@@ -1656,19 +1668,20 @@ exports.Switch = class Switch extends Base
     this
 
   compileNode: (o) ->
+    lineEnd = o.lineEnd ? '\n'
     idt1 = o.indent + TAB
     idt2 = o.indent = idt1 + TAB
-    code = @tab + "switch (#{ @subject?.compile(o, LEVEL_PAREN) or false }) {\n"
+    code = @tab + "switch (#{ @subject?.compile(o, LEVEL_PAREN) or false }) {" + lineEnd
     for [conditions, block], i in @cases
       for cond in flatten [conditions]
         cond  = cond.invert() unless @subject
-        code += idt1 + "case #{ cond.compile o, LEVEL_PAREN }:\n"
-      code += body + '\n' if body = block.compile o, LEVEL_TOP
+        code += idt1 + "case #{ cond.compile o, LEVEL_PAREN }:" + lineEnd
+      code += body + lineEnd if body = block.compile o, LEVEL_TOP
       break if i is @cases.length - 1 and not @otherwise
       expr = @lastNonComment block.expressions
       continue if expr instanceof Return or (expr instanceof Literal and expr.jumps() and expr.value isnt 'debugger')
-      code += idt2 + 'break;\n'
-    code += idt1 + "default:\n#{ @otherwise.compile o, LEVEL_TOP }\n" if @otherwise and @otherwise.expressions.length
+      code += idt2 + 'break;' + lineEnd
+    code += idt1 + "default:#{lineEnd}#{ @otherwise.compile o, LEVEL_TOP }#{lineEnd}" if @otherwise and @otherwise.expressions.length
     code +  @tab + '}'
 
 #### If
@@ -1722,6 +1735,7 @@ exports.If = class If extends Base
   # Compile the `If` as a regular *if-else* statement. Flattened chains
   # force inner *else* bodies into statement form.
   compileStatement: (o) ->
+    lineEnd  = o.lineEnd ? '\n'
     child    = del o, 'chainChild'
     exeq     = del o, 'isExistentialEquals'
 
@@ -1740,7 +1754,7 @@ exports.If = class If extends Base
       80 > cond.length + bodyc.length
     )
       return "#{@tab}if (#{cond}) #{bodyc.replace /^\s+/, ''}"
-    bodyc    = "\n#{bodyc}\n#{@tab}" if bodyc
+    bodyc    = "#{lineEnd}#{bodyc}#{lineEnd}#{@tab}" if bodyc
     ifPart   = "if (#{cond}) {#{bodyc}}"
     ifPart   = @tab + ifPart unless child
     return ifPart unless @elseBody
@@ -1749,7 +1763,7 @@ exports.If = class If extends Base
       o.chainChild = yes
       @elseBody.unwrap().compile o, LEVEL_TOP
     else
-      "{\n#{ @elseBody.compile o, LEVEL_TOP }\n#{@tab}}"
+      "{#{lineEnd}#{ @elseBody.compile o, LEVEL_TOP }#{lineEnd}#{@tab}}"
 
   # Compile the `If` as a conditional operator.
   compileExpression: (o) ->
@@ -1870,5 +1884,6 @@ utility = (name) ->
   ref
 
 multident = (code, tab) ->
+  code = code.replace /\r\n/g, '$&' + tab
   code = code.replace /\n/g, '$&' + tab
   code.replace /\s+$/, ''
