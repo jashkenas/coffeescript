@@ -527,3 +527,18 @@ test "#1598: super works for static methods too", ->
       'pass? ' + super
 
   eq Child.method(), 'pass? yes'
+
+test "#1819: bound instance methods should reflect prototype changes", ->
+  class C
+    a: => false
+    "b": => false
+  before = new C
+  ok not before.a()
+  ok not before.b()
+  C::a = -> true
+  C::b = => true
+  after = new C
+  ok before.a()
+  ok before.b()
+  ok after.a()
+  ok after.b()
