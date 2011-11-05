@@ -67,7 +67,7 @@ exports.run = ->
   return require './repl'                unless sources.length
   if opts.run
     opts.literals = sources.splice(1).concat opts.literals
-  process.ARGV = process.argv = process.argv.slice(0, 2).concat opts.literals
+  process.argv = process.argv.slice(0, 2).concat opts.literals
   process.argv[0] = 'coffee'
   process.execPath = require.main.filename
   compileScripts()
