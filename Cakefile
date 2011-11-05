@@ -161,16 +161,7 @@ runTests = (CoffeeScript) ->
   passedTests = 0
   failures    = []
 
-  # Make "global" reference available to tests
-  global.global = global
-
-  # Mix in the assert module globally, to make it available for tests.
-  addGlobal = (name, func) ->
-    global[name] = ->
-      passedTests += 1
-      func arguments...
-
-  addGlobal name, func for name, func of require 'assert'
+  global[name] = func for name, func of require 'assert'
 
   # Convenience aliases.
   global.eq = global.strictEqual
@@ -181,6 +172,7 @@ runTests = (CoffeeScript) ->
     try
       fn.test = {description, currentFile}
       fn.call(fn)
+      ++passedTests
     catch e
       e.description = description if description?
       e.source      = fn.toString() if fn.toString?
