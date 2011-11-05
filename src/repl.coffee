@@ -54,8 +54,7 @@ run = (buffer) ->
     }
     if returnValue is undefined
       global._ = _
-    else
-      process.stdout.write inspect(returnValue, no, 2, enableColours) + '\n'
+    process.stdout.write inspect(returnValue, no, 2, enableColours) + '\n'
   catch err
     error err
   repl.prompt()
