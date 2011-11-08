@@ -201,7 +201,7 @@ writeJs = (source, js, base) ->
 # any errors or warnings that arise.
 lint = (file, js) ->
   printIt = (buffer) -> printLine file + ':\t' + buffer.toString().trim()
-  conf = __dirname + '/../extras/jsl.conf'
+  conf = __dirname + '/../../extras/jsl.conf'
   jsl = spawn 'jsl', ['-nologo', '-stdin', '-conf', conf]
   jsl.stdout.on 'data', printIt
   jsl.stderr.on 'data', printIt
