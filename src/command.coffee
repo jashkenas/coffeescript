@@ -168,15 +168,21 @@ loadRequires = ->
   require req for req in opts.require
   module.filename = realFilename
 
-# Watch a source CoffeeScript file using `fs.watchFile`, recompiling it every
-# time the file is updated. May be used in combination with other options,
-# such as `--lint` or `--print`.
+# Watch a source CoffeeScript file using `fs.watchFile` (or `fs.watch` if
+# available--see #1803), recompiling it every time the file is updated. May be
+# used in combination with other options, such as `--lint` or `--print`.
 watch = (source, base) ->
-  fs.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
-    return if curr.size is prev.size and curr.mtime.getTime() is prev.mtime.getTime()
+  onChange = ->
     fs.readFile source, (err, code) ->
       throw err if err
       compileScript(source, code.toString(), base)
+
+  if process.platform is 'win32'
+    fs.watch source, (event) ->
+      onChange() if event is 'change'
+  else
+    fs.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
+      onChange() unless curr.size is prev.size and curr.mtime.getTime() is prev.mtime.getTime()
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
