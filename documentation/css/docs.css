@@ -264,6 +264,10 @@ div.code {
           width: 40px;
           text-transform: none;
         }
+          .navigation .code a.minibutton.permalink {
+            top: 38px;
+            display: block;
+          }
 
 .bookmark {
   display: block;

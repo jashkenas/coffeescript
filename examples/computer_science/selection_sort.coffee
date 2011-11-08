@@ -9,7 +9,7 @@ selection_sort = (list) ->
     min = i
 
     # Check the rest of the array to see if anything is smaller.
-    min = j if list[j] < list[min] for j in [i + 1...len]
+    min = k for v, k in list[i+1...] when v < list[min]
 
     # Swap if a smaller item has been found.
     [list[i], list[min]] = [list[min], list[i]] if i isnt min

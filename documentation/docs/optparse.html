@@ -20,10 +20,13 @@ executing script. This is a simpler API than many option parsers that allow
 you to attach callback actions for every flag. Instead, you're responsible
 for interpreting the options object.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">parse</span><span class="o">:</span> <span class="p">(</span><span class="nx">args</span><span class="p">)</span> <span class="o">-&gt;</span>
     <span class="nv">options = </span><span class="nx">arguments</span><span class="o">:</span> <span class="p">[],</span> <span class="nx">literals</span><span class="o">:</span> <span class="p">[]</span>
-    <span class="nv">args    = </span><span class="nx">normalizeArguments</span> <span class="nx">args</span>
+    <span class="nv">originalArgs = </span><span class="nx">args</span>
+    <span class="nv">args = </span><span class="nx">normalizeArguments</span> <span class="nx">args</span>
     <span class="k">for</span> <span class="nx">arg</span><span class="p">,</span> <span class="nx">i</span> <span class="k">in</span> <span class="nx">args</span>
       <span class="k">if</span> <span class="nx">arg</span> <span class="o">is</span> <span class="s1">&#39;--&#39;</span>
-        <span class="nv">options.literals = </span><span class="nx">args</span><span class="p">[(</span><span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)..]</span>
+        <span class="nv">pos = </span><span class="nx">originalArgs</span><span class="p">.</span><span class="nx">indexOf</span> <span class="s1">&#39;--&#39;</span>
+        <span class="nv">options.arguments = </span><span class="p">[</span><span class="nx">originalArgs</span><span class="p">[</span><span class="mi">1</span> <span class="o">+</span> <span class="nx">pos</span><span class="p">]]</span>
+        <span class="nv">options.literals = </span><span class="nx">originalArgs</span><span class="p">[(</span><span class="mi">2</span> <span class="o">+</span> <span class="nx">pos</span><span class="p">)..]</span>
         <span class="k">break</span>
       <span class="nv">isOption = </span><span class="o">!!</span><span class="p">(</span><span class="nx">arg</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">LONG_FLAG</span><span class="p">)</span> <span class="o">or</span> <span class="nx">arg</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">SHORT_FLAG</span><span class="p">))</span>
       <span class="nv">matchedRule = </span><span class="kc">no</span>
@@ -35,7 +38,7 @@ for interpreting the options object.</p>             </td>             <td class
           <span class="k">break</span>
       <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span> <span class="s2">&quot;unrecognized option: #{arg}&quot;</span> <span class="k">if</span> <span class="nx">isOption</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">matchedRule</span>
       <span class="k">if</span> <span class="o">not</span> <span class="nx">isOption</span>
-        <span class="nv">options.arguments = </span><span class="nx">args</span><span class="p">.</span><span class="nx">slice</span> <span class="nx">i</span>
+        <span class="nv">options.arguments = </span><span class="nx">originalArgs</span><span class="p">[(</span><span class="nx">originalArgs</span><span class="p">.</span><span class="nx">indexOf</span> <span class="nx">arg</span><span class="p">)..]</span>
         <span class="k">break</span>
     <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>Return the help text for this <strong>OptionParser</strong>, listing and describing all
 of the valid options, for <code>--help</code> and such.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">help</span><span class="o">:</span> <span class="o">-&gt;</span>

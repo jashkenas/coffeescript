@@ -187,10 +187,30 @@ test "#768: `in` should preserve evaluation order", ->
 test "#1099: empty array after `in` should compile to `false`", ->
   eq 1, [5 in []].length
   eq false, do -> return 0 in []
-  
+
 test "#1354: optimized `in` checks should not happen when splats are present", ->
   a = [6, 9]
   eq 9 in [3, a...], true
+
+test "#1100: precedence in or-test compilation of `in`", ->
+  ok 0 in [1 and 0]
+  ok 0 in [1, 1 and 0]
+  ok not (0 in [1, 0 or 1])
+
+test "#1630: `in` should check `hasOwnProperty`", ->
+  ok undefined not in length: 1
+
+test "#1714: lexer bug with raw range `for` followed by `in`", ->
+  0 for [1..2]
+  ok not ('a' in ['b'])
+
+  0 for [1..2]; ok not ('a' in ['b'])
+
+  0 for [1..10] # comment ending
+  ok not ('a' in ['b'])
+
+test "#1099: statically determined `not in []` reporting incorrect result", ->
+  ok 0 not in []
 
 
 # Chained Comparison
@@ -226,3 +246,20 @@ test "chained operations should evaluate each value only once", ->
 test "#891: incorrect inversion of chained comparisons", ->
   ok (true unless 0 > 1 > 2)
   ok (true unless (NaN = 0/0) < 0/0 < NaN)
+
+test "#1234: Applying a splat to :: applies the splat to the wrong object", ->
+  nonce = {}
+  class C
+    method: -> @nonce
+    nonce: nonce
+
+  arr = []
+  eq nonce, C::method arr... # should be applied to `C::`
+
+test "#1102: String literal prevents line continuation", ->
+  eq "': '", '' +
+     "': '"
+
+test "#1703, ---x is invalid JS", ->
+  x = 2
+  eq (- --x), -1

@@ -490,3 +490,40 @@ test "#1380: `super` with reserved names", ->
   class B
     0: -> super
   ok B::[0]
+
+test "#1464: bound class methods should keep context", ->
+  nonce  = {}
+  nonce2 = {}
+  class C
+    constructor: (@id) ->
+    @boundStaticColon: => new this(nonce)
+    @boundStaticEqual= => new this(nonce2)
+  eq nonce,  C.boundStaticColon().id
+  eq nonce2, C.boundStaticEqual().id
+
+test "#1009: classes with reserved words as determined names", -> (->
+  eq 'function', typeof (class @for)
+  ok not /\beval\b/.test (class @eval).toString()
+  ok not /\barguments\b/.test (class @arguments).toString()
+).call {}
+
+test "#1482: classes can extend expressions", ->
+  id = (x) -> x
+  nonce = {}
+  class A then nonce: nonce
+  class B extends id A
+  eq nonce, (new B).nonce
+
+test "#1598: super works for static methods too", ->
+
+  class Parent
+    method: ->
+      'NO'
+    @method: ->
+      'yes'
+
+  class Child extends Parent
+    @method: ->
+      'pass? ' + super
+
+  eq Child.method(), 'pass? yes'

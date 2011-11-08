@@ -39,19 +39,19 @@ helpers.extend global,
     missingTask name unless tasks[name]
     tasks[name].action options
 
-
 # Run `cake`. Executes all of the tasks you pass, in order. Note that Node's
 # asynchrony may cause tasks to execute in a different order than you'd expect.
-# If no tasks are passed, print the help screen.
+# If no tasks are passed, print the help screen. Keep a reference to the 
+# original directory name, when running Cake tasks from subdirectories. 
 exports.run = ->
-  path.exists 'Cakefile', (exists) ->
-    throw new Error("Cakefile not found in #{process.cwd()}") unless exists
-    args = process.argv.slice 2
-    CoffeeScript.run fs.readFileSync('Cakefile').toString(), filename: 'Cakefile'
-    oparse = new optparse.OptionParser switches
-    return printTasks() unless args.length
-    options = oparse.parse(args)
-    invoke arg for arg in options.arguments
+  global.__originalDirname = fs.realpathSync '.'
+  process.chdir cakefileDirectory __originalDirname
+  args = process.argv.slice 2
+  CoffeeScript.run fs.readFileSync('Cakefile').toString(), filename: 'Cakefile'
+  oparse = new optparse.OptionParser switches
+  return printTasks() unless args.length
+  options = oparse.parse(args)
+  invoke arg for arg in options.arguments
 
 # Display the list of Cake tasks in a format similar to `rake -T`
 printTasks = ->
@@ -67,3 +67,11 @@ printTasks = ->
 missingTask = (task) ->
   console.log "No such task: \"#{task}\""
   process.exit 1
+
+# When `cake` is invoked, search in the current and all parent directories 
+# to find the relevant Cakefile.
+cakefileDirectory = (dir) ->
+  return dir if path.existsSync path.join dir, 'Cakefile'
+  parent = path.normalize path.join dir, '..'
+  return cakefileDirectory parent unless parent is dir
+  throw new Error "Cakefile not found in #{process.cwd()}"

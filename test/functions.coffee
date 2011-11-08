@@ -64,6 +64,21 @@ ok obj isnt obj.unbound()
 eq obj, obj.nested()
 
 
+test "even more fancy bound functions", ->
+  obj = 
+    one: ->
+      do =>
+        return this.two()
+    two: ->
+      do =>
+        do =>
+          do =>
+            return this.three
+    three: 3
+
+  eq obj.one(), 3
+
+
 test "self-referencing functions", ->
   changeMe = ->
     changeMe = 2

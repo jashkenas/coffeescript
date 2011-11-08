@@ -252,6 +252,21 @@ test "destructuring assignment with context (@) properties", ->
 test "#1024", ->
   eq 2 * [] = 3 + 5, 16
 
+test "#1005: invalid identifiers allowed on LHS of destructuring assignment", ->
+  disallowed = ['eval', 'arguments'].concat CoffeeScript.RESERVED
+  throws (-> CoffeeScript.compile "[#{disallowed.join ', '}] = x"), null, 'all disallowed'
+  throws (-> CoffeeScript.compile "[#{disallowed.join '..., '}...] = x"), null, 'all disallowed as splats'
+  t = tSplat = null
+  for v in disallowed when v isnt 'class' # `class` by itself is an expression
+    throws (-> CoffeeScript.compile t), null, t = "[#{v}] = x"
+    throws (-> CoffeeScript.compile tSplat), null, tSplat = "[#{v}...] = x"
+  doesNotThrow ->
+    for v in disallowed
+      CoffeeScript.compile "[a.#{v}] = x"
+      CoffeeScript.compile "[a.#{v}...] = x"
+      CoffeeScript.compile "[@#{v}] = x"
+      CoffeeScript.compile "[@#{v}...] = x"
+
 
 # Existential Assignment
 
@@ -286,3 +301,33 @@ test "#1348, #1216: existential assignment compilation", ->
   
   if a then a ?= 2 else a = 3
   eq a, nonce
+
+test "#1591, #1101: splatted expressions in destructuring assignment must be assignable", ->
+  nonce = {}
+  for nonref in ['', '""', '0', 'f()', '(->)'].concat CoffeeScript.RESERVED
+    eq nonce, (try CoffeeScript.compile "[#{nonref}...] = v" catch e then nonce)
+
+test "#1643: splatted accesses in destructuring assignments should not be declared as variables", -> 
+  nonce = {}
+  accesses = ['o.a', 'o["a"]', '(o.a)', '(o.a).a', '@o.a', 'C::a', 'C::', 'f().a', 'o?.a', 'o?.a.b', 'f?().a']
+  for access in accesses
+    for i,j in [1,2,3] #position can matter
+      code = 
+        """
+        nonce = {}; nonce2 = {}; nonce3 = {}; 
+        @o = o = new (class C then a:{}); f = -> o
+        [#{new Array(i).join('x,')}#{access}...] = [#{new Array(i).join('0,')}nonce, nonce2, nonce3]
+        unless #{access}[0] is nonce and #{access}[1] is nonce2 and #{access}[2] is nonce3 then throw new Error('[...]')
+        """
+      eq nonce, unless (try CoffeeScript.run code, bare: true catch e then true) then nonce
+  # subpatterns like `[[a]...]` and `[{a}...]`
+  subpatterns = ['[sub, sub2, sub3]', '{0: sub, 1: sub2, 2: sub3}']
+  for subpattern in subpatterns
+    for i,j in [1,2,3]
+      code =
+        """
+        nonce = {}; nonce2 = {}; nonce3 = {}; 
+        [#{new Array(i).join('x,')}#{subpattern}...] = [#{new Array(i).join('0,')}nonce, nonce2, nonce3]
+        unless sub is nonce and sub2 is nonce2 and sub3 is nonce3 then throw new Error('[sub...]')
+        """
+      eq nonce, unless (try CoffeeScript.run code, bare: true catch e then true) then nonce

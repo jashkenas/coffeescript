@@ -428,3 +428,28 @@ test "#1326: `by` value is uncached", ->
   arrayEq a, rangeCompileSimple
   #exercises Range.compile
   eq "#{i for i in [0..2] by h()}", '0,1,2'
+
+test "#1669: break/continue should skip the result only for that branch", ->
+  ns = for n in [0..99]
+    if n > 9
+      break
+    else if n & 1
+      continue
+    else
+      n
+  eq "#{ns}", '0,2,4,6,8'
+
+  # `else undefined` is implied.
+  ns = for n in [1..9]
+    if n % 2
+      continue unless n % 5
+      n
+  eq "#{ns}", "1,,3,,,7,,9"
+
+  # Ditto.
+  ns = for n in [1..9]
+    switch
+      when n % 2
+        continue unless n % 5
+        n
+  eq "#{ns}", "1,,3,,,7,,9"

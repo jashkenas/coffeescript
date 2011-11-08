@@ -1,14 +1,20 @@
 fs            = require 'fs'
 path          = require 'path'
-{extend}      = require './lib/helpers'
+{extend}      = require './lib/coffee-script/helpers'
 CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 
 # ANSI Terminal Colors.
-bold  = '\033[0;1m'
-red   = '\033[0;31m'
-green = '\033[0;32m'
-reset = '\033[0m'
+enableColors = no
+unless process.platform is 'win32'
+  enableColors = not process.env.NODE_DISABLE_COLORS
+
+bold = red = green = reset = ''
+if enableColors
+  bold  = '\033[0;1m'
+  red   = '\033[0;31m'
+  green = '\033[0;32m'
+  reset = '\033[0m'
 
 # Built file header.
 header = """
@@ -22,10 +28,9 @@ header = """
 """
 
 sources = [
-  'src/coffee-script.coffee', 'src/grammar.coffee'
-  'src/helpers.coffee', 'src/lexer.coffee', 'src/nodes.coffee'
-  'src/rewriter.coffee', 'src/scope.coffee'
-]
+  'coffee-script', 'grammar', 'helpers'
+  'lexer', 'nodes', 'rewriter', 'scope'
+].map (filename) -> "src/#{filename}.coffee"
 
 # Run a CoffeeScript through our node/coffee interpreter.
 run = (args, cb) ->
@@ -55,7 +60,7 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
     "ln -sfn #{lib}/bin/coffee #{bin}/coffee"
     "ln -sfn #{lib}/bin/cake #{bin}/cake"
     "mkdir -p ~/.node_libraries"
-    "ln -sfn #{lib}/lib #{node}"
+    "ln -sfn #{lib}/lib/coffee-script #{node}"
   ].join(' && '), (err, stdout, stderr) ->
     if err then console.log stderr.trim() else log 'done', green
   )
@@ -64,20 +69,23 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
 task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   files = fs.readdirSync 'src'
   files = ('src/' + file for file in files when file.match(/\.coffee$/))
-  run ['-c', '-o', 'lib'].concat(files), cb
+  run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
 
 
 task 'build:full', 'rebuild the source twice, and run the tests', ->
   build ->
     build ->
-      process.exit 1 unless runTests CoffeeScript
+      csPath = './lib/coffee-script'
+      delete require.cache[require.resolve csPath]
+      unless runTests require csPath
+        process.exit 1
 
 
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   extend global, require('util')
   require 'jison'
-  parser = require('./lib/grammar').parser
-  fs.writeFile 'lib/parser.js', parser.generate()
+  parser = require('./lib/coffee-script/grammar').parser
+  fs.writeFile 'lib/coffee-script/parser.js', parser.generate()
 
 
 task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter', ->
@@ -92,7 +100,7 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
     code += """
       require['./#{name}'] = new function() {
         var exports = this;
-        #{fs.readFileSync "lib/#{name}.js"}
+        #{fs.readFileSync "lib/coffee-script/#{name}.js"}
       };
     """
   code = """
@@ -125,7 +133,7 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
     throw err if err
 
 task 'bench', 'quick benchmark of compilation time', ->
-  {Rewriter} = require './lib/rewriter'
+  {Rewriter} = require './lib/coffee-script/rewriter'
   co     = sources.map((name) -> fs.readFileSync name).join '\n'
   fmt    = (ms) -> " #{bold}#{ "   #{ms}".slice -4 }#{reset} ms"
   total  = 0
@@ -153,19 +161,9 @@ runTests = (CoffeeScript) ->
   passedTests = 0
   failures    = []
 
-  # Make "global" reference available to tests
-  global.global = global
-
-  # Mix in the assert module globally, to make it available for tests.
-  addGlobal = (name, func) ->
-    global[name] = ->
-      passedTests += 1
-      func arguments...
-
-  addGlobal name, func for name, func of require 'assert'
+  global[name] = func for name, func of require 'assert'
 
   # Convenience aliases.
-  global.eq = global.strictEqual
   global.CoffeeScript = CoffeeScript
 
   # Our test helper function for delimiting different test cases.
@@ -173,26 +171,29 @@ runTests = (CoffeeScript) ->
     try
       fn.test = {description, currentFile}
       fn.call(fn)
+      ++passedTests
     catch e
       e.description = description if description?
       e.source      = fn.toString() if fn.toString?
       failures.push filename: currentFile, error: e
 
-  # A recursive functional equivalence helper; uses egal for testing equivalence.
   # See http://wiki.ecmascript.org/doku.php?id=harmony:egal
-  arrayEqual = (a, b) ->
+  egal = (a, b) ->
     if a is b
-      # 0 isnt -0
       a isnt 0 or 1/a is 1/b
-    else if a instanceof Array and b instanceof Array
-      return no unless a.length is b.length
-      return no for el, idx in a when not arrayEqual el, b[idx]
-      yes
     else
-      # NaN is NaN
       a isnt a and b isnt b
 
-  global.arrayEq = (a, b, msg) -> ok arrayEqual(a,b), msg
+  # A recursive functional equivalence helper; uses egal for testing equivalence.
+  arrayEgal = (a, b) ->
+    if egal a, b then yes
+    else if a instanceof Array and b instanceof Array
+      return no unless a.length is b.length
+      return no for el, idx in a when not arrayEgal el, b[idx]
+      yes
+
+  global.eq      = (a, b, msg) -> ok egal(a, b), msg
+  global.arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg
 
   # When all the tests have run, collect and print errors.
   # If a stacktrace is available, output the compiled function source.

@@ -26,20 +26,10 @@ stdout = process.stdout
 
 # Log an error.
 error = (err) ->
-  stdout.write (err.stack or err.toString()) + '\n\n'
+  stdout.write (err.stack or err.toString()) + '\n'
 
 # The current backlog of multi-line code.
 backlog = ''
-
-# The REPL context; must be visible outside `run` to allow for tab completion
-sandbox = Script.createContext()
-nonContextGlobals = [
-  'Buffer', 'console', 'process'
-  'setInterval', 'clearInterval'
-  'setTimeout', 'clearTimeout'
-]
-sandbox[g] = global[g] for g in nonContextGlobals
-sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
 
 # The main REPL function. **run** is called every time a line of code is entered.
 # Attempt to evaluate the command. If there's an exception, print it out instead
@@ -57,16 +47,14 @@ run = (buffer) ->
   repl.setPrompt REPL_PROMPT
   backlog = ''
   try
-    _ = sandbox._
+    _ = global._
     returnValue = CoffeeScript.eval "_=(#{code}\n)", {
-      sandbox,
       filename: 'repl'
       modulename: 'repl'
     }
     if returnValue is undefined
-      sandbox._ = _
-    else
-      process.stdout.write inspect(returnValue, no, 2, enableColours) + '\n'
+      global._ = _
+    process.stdout.write inspect(returnValue, no, 2, enableColours) + '\n'
   catch err
     error err
   repl.prompt()
@@ -86,7 +74,7 @@ completeAttribute = (text) ->
   if match = text.match ACCESSOR
     [all, obj, prefix] = match
     try
-      val = Script.runInContext obj, sandbox
+      val = Script.runInThisContext obj
     catch error
       return
     completions = getCompletions prefix, Object.getOwnPropertyNames val
@@ -94,9 +82,11 @@ completeAttribute = (text) ->
 
 # Attempt to autocomplete an in-scope free variable: `one`.
 completeVariable = (text) ->
-  if free = (text.match SIMPLEVAR)?[1]
-    vars = Script.runInContext 'Object.getOwnPropertyNames(this)', sandbox
-    possibilities = vars.concat CoffeeScript.RESERVED
+  free = (text.match SIMPLEVAR)?[1]
+  if free?
+    vars = Script.runInThisContext 'Object.getOwnPropertyNames(this)'
+    keywords = (r for r in CoffeeScript.RESERVED when r[0..1] isnt '__')
+    possibilities = vars.concat keywords
     completions = getCompletions free, possibilities
     [completions, free]
 
