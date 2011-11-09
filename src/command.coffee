@@ -174,9 +174,10 @@ loadRequires = ->
 watch = (source, base) ->
   fs.stat source, (err, prevStats)->
     throw err if err
-    fs.watch source, callback = (event) ->
+    watcher = fs.watch source, callback = (event) ->
       if event is 'rename'
-        fs.watch source, callback
+        watcher.close()
+        watcher = fs.watch source, callback
       else if event is 'change'
         fs.stat source, (err, stats) ->
           throw err if err
