@@ -4,8 +4,9 @@ CoffeeScript = require './coffee-script'
 CoffeeScript.require = require
 
 # Use standard JavaScript `eval` to eval code.
+global ?= this
 CoffeeScript.eval = (code, options) ->
-  eval CoffeeScript.compile code, options
+  global.eval CoffeeScript.compile code, options
 
 # Running code does not provide access to this scope.
 CoffeeScript.run = (code, options = {}) ->
