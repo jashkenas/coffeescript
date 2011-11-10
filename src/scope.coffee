@@ -73,7 +73,7 @@ exports.Scope = class Scope
   # Ensure that an assignment is made at the top of this scope
   # (or at the top-level scope, if requested).
   assign: (name, value) ->
-    @add name, (value: value, assigned: true), yes
+    @add name, {value, assigned: yes}, yes
     @hasAssignments = yes
 
   # Does this scope have any declared variables?
