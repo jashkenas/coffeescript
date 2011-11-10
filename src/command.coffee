@@ -62,6 +62,9 @@ exports.run = ->
   return version()                       if opts.version
   loadRequires()                         if opts.require
   return require './repl'                if opts.interactive
+  if opts.watch and !fs.watch
+    printWarn "The --watch feature depends on Node v0.6.0+. You are running \
+#{process.version}."
   return compileStdio()                  if opts.stdio
   return compileScript null, sources[0]  if opts.eval
   return require './repl'                unless sources.length
@@ -172,6 +175,7 @@ loadRequires = ->
 # time the file is updated. May be used in combination with other options,
 # such as `--lint` or `--print`.
 watch = (source, base) ->
+  return unless fs.watch
   fs.stat source, (err, prevStats)->
     throw err if err
     watcher = fs.watch source, callback = (event) ->
