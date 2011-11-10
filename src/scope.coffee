@@ -25,8 +25,8 @@ exports.Scope = class Scope
   # Adds a new variable or overrides an existing one.
   add: (name, type, immediate) ->
     return @parent.add name, type, immediate if @shared and not immediate
-    if typeof (pos = @positions[name]) is 'number'
-      @variables[pos].type = type
+    if @positions.hasOwnProperty name
+      @variables[@positions[name]].type = type
     else
       @positions[name] = @variables.push({name, type}) - 1
 
@@ -73,7 +73,7 @@ exports.Scope = class Scope
   # Ensure that an assignment is made at the top of this scope
   # (or at the top-level scope, if requested).
   assign: (name, value) ->
-    @add name, value: value, assigned: true
+    @add name, (value: value, assigned: true), yes
     @hasAssignments = yes
 
   # Does this scope have any declared variables?
