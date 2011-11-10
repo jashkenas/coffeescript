@@ -458,8 +458,8 @@ exports.Lexer = class Lexer
         nested.shift() if nested[0]?[0] is 'TERMINATOR'
         if len = nested.length
           if len > 1
-            nested.unshift ['(', '(']
-            nested.push    [')', ')']
+            nested.unshift ['(', '(', @line]
+            nested.push    [')', ')', @line]
           tokens.push ['TOKENS', nested]
       i += expr.length
       pi = i + 1
