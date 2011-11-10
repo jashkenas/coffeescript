@@ -174,11 +174,15 @@ loadRequires = ->
 watch = (source, base) ->
   fs.stat source, (err, prevStats)->
     throw err if err
-    fs.watch source, (event) ->
-      if event is 'change'
+    watcher = fs.watch source, callback = (event) ->
+      if event is 'rename'
+        watcher.close()
+        try  # if source no longer exists, never mind
+          watcher = fs.watch source, callback
+      else if event is 'change'
         fs.stat source, (err, stats) ->
           throw err if err
-          return if stats.size is prevStats.size and 
+          return if stats.size is prevStats.size and
             stats.mtime.getTime() is prevStats.mtime.getTime()
           prevStats = stats
           fs.readFile source, (err, code) ->
