@@ -275,11 +275,8 @@ exports.Block = class Block extends Base
         if declars
           code += scope.declaredVariables().join ', '
         if assigns
-          tab = @tab
-          if declars
-            tab += TAB
-            code += ",\n#{tab}"
-          code += scope.assignedVariables().join ",\n#{tab}"
+          code += ",\n#{@tab + TAB}" if declars
+          code += scope.assignedVariables().join ",\n#{@tab + TAB}"
         code += ';\n'
     code + post
 
