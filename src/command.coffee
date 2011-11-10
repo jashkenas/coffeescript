@@ -177,7 +177,8 @@ watch = (source, base) ->
     watcher = fs.watch source, callback = (event) ->
       if event is 'rename'
         watcher.close()
-        watcher = fs.watch source, callback
+        try  # if source no longer exists, never mind
+          watcher = fs.watch source, callback
       else if event is 'change'
         fs.stat source, (err, stats) ->
           throw err if err
