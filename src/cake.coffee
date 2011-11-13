@@ -50,7 +50,6 @@ exports.run = ->
   CoffeeScript.run fs.readFileSync('Cakefile').toString(), filename: 'Cakefile'
   oparse = new optparse.OptionParser switches
   return printTasks() unless args.length
-  console.log args
   try
     options = oparse.parse(args)
   catch e
@@ -59,7 +58,6 @@ exports.run = ->
 
 # Display the list of Cake tasks in a format similar to `rake -T`
 printTasks = ->
-  console.log ''
   for name, task of tasks
     spaces = 20 - name.length
     spaces = if spaces > 0 then Array(spaces + 1).join(' ') else ''
@@ -69,12 +67,12 @@ printTasks = ->
 
 # Print an error and exit when attempting to use an invalid option.
 missingOption = (option) ->
-  console.log "No such option: \"#{option}\""
+  console.error """No such option: "#{option}"\n"""
   process.exit 1
 
 # Print an error and exit when attempting to call an undefined task.
 missingTask = (task) ->
-  console.log "No such task: \"#{task}\""
+  console.error """No such task: "#{task}"\n"""
   process.exit 1
 
 # When `cake` is invoked, search in the current and all parent directories
