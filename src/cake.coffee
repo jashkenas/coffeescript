@@ -53,7 +53,7 @@ exports.run = ->
   try
     options = oparse.parse(args)
   catch e
-    return missingOption "#{e}".match(/option: (.+)/)[1]
+    return badArgument "#{e}".match(/option: (.+)/)[1], "option"
   invoke arg for arg in options.arguments
 
 # Display the list of Cake tasks in a format similar to `rake -T`
@@ -67,17 +67,13 @@ printTasks = ->
     console.log "cake #{name}#{spaces} #{desc}"
   console.log oparse.help() if switches.length
 
-# Print an error and exit when attempting to use an invalid option.
-missingOption = (option) ->
-  console.error """No such option: "#{option}"\n"""
-  printTasks()
+# Print an error and exit when attempting to use an invalid task/option.
+badArgument = (arg, type) ->
+  console.error """No such #{type}: "#{arg}"\n"""
+  console.log 'To see a list of all tasks/options, run "cake"'
   process.exit 1
 
-# Print an error and exit when attempting to call an undefined task.
-missingTask = (task) ->
-  console.error """No such task: "#{task}"\n"""
-  printTasks()
-  process.exit 1
+missingTask = (task) -> badArgument task, "task"
 
 # When `cake` is invoked, search in the current and all parent directories
 # to find the relevant Cakefile.
