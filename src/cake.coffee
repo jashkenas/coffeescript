@@ -41,8 +41,8 @@ helpers.extend global,
 
 # Run `cake`. Executes all of the tasks you pass, in order. Note that Node's
 # asynchrony may cause tasks to execute in a different order than you'd expect.
-# If no tasks are passed, print the help screen. Keep a reference to the 
-# original directory name, when running Cake tasks from subdirectories. 
+# If no tasks are passed, print the help screen. Keep a reference to the
+# original directory name, when running Cake tasks from subdirectories.
 exports.run = ->
   global.__originalDirname = fs.realpathSync '.'
   process.chdir cakefileDirectory __originalDirname
@@ -50,7 +50,11 @@ exports.run = ->
   CoffeeScript.run fs.readFileSync('Cakefile').toString(), filename: 'Cakefile'
   oparse = new optparse.OptionParser switches
   return printTasks() unless args.length
-  options = oparse.parse(args)
+  console.log args
+  try
+    options = oparse.parse(args)
+  catch e
+    return missingOption "#{e}".match(/option: (.+)/)[1]
   invoke arg for arg in options.arguments
 
 # Display the list of Cake tasks in a format similar to `rake -T`
@@ -63,12 +67,17 @@ printTasks = ->
     console.log "cake #{name}#{spaces} #{desc}"
   console.log oparse.help() if switches.length
 
+# Print an error and exit when attempting to use an invalid option.
+missingOption = (option) ->
+  console.log "No such option: \"#{option}\""
+  process.exit 1
+
 # Print an error and exit when attempting to call an undefined task.
 missingTask = (task) ->
   console.log "No such task: \"#{task}\""
   process.exit 1
 
-# When `cake` is invoked, search in the current and all parent directories 
+# When `cake` is invoked, search in the current and all parent directories
 # to find the relevant Cakefile.
 cakefileDirectory = (dir) ->
   return dir if path.existsSync path.join dir, 'Cakefile'
