@@ -68,11 +68,13 @@ printTasks = ->
 # Print an error and exit when attempting to use an invalid option.
 missingOption = (option) ->
   console.error """No such option: "#{option}"\n"""
+  printTasks()
   process.exit 1
 
 # Print an error and exit when attempting to call an undefined task.
 missingTask = (task) ->
   console.error """No such task: "#{task}"\n"""
+  printTasks()
   process.exit 1
 
 # When `cake` is invoked, search in the current and all parent directories
