@@ -79,6 +79,11 @@ grammar =
     o 'Return'
     o 'Comment'
     o 'STATEMENT',                              -> new Literal $1
+    o 'Await'
+  ]
+
+  Await: [
+    o 'AWAIT Block',                            -> new Await $2
   ]
 
   # All the different types of expressions in our language. The basic unit of

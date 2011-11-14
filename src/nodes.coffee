@@ -1567,6 +1567,22 @@ exports.In = class In extends Base
   toString: (idt) ->
     super idt, @constructor.name + if @negated then '!' else ''
 
+#### Await
+
+exports.Await = class Await extends Base
+  constructor : (body) ->
+    @body = body
+
+  children: ['body']
+
+  isStatement: YES
+  
+  compileNode: (o) ->
+    body = @body.compile o, LEVEL_TOP
+    """(function () { /* await translation */
+    #{body}
+     })();"""
+
 #### Try
 
 # A classic *try/catch/finally* block.
