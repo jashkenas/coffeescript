@@ -178,3 +178,7 @@ test "arguments vs parameters", ->
   doesNotThrow -> CoffeeScript.compile "f(x) ->"
   f = (g) -> g()
   eq 5, f (x) -> 5
+
+test "#1844: bound functions in nested comprehensions causing empty var statements", ->
+  a = ((=>) for a in [0] for b in [0])
+  eq 1, a.length
