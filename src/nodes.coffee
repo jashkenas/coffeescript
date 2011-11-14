@@ -1,3 +1,4 @@
+# -*- mode: coffee; tab-width: 2; c-basic-offset: 2; indent-tabs-mode: nil; -*-
 # `nodes.coffee` contains all of the node classes for the syntax tree. Most
 # nodes are created as the result of actions in the [grammar](grammar.html),
 # but some are created by other nodes as a method of code generation. To convert
@@ -119,6 +120,8 @@ exports.Base = class Base
     for attr in @children when @[attr]
       for child in flatten [@[attr]]
         return this if func(child) is false
+    for c in @cpsChildren
+      return this if func(child) is false
     this
 
   traverseChildren: (crossScope, func) ->
@@ -138,11 +141,15 @@ exports.Base = class Base
   # will override these with custom logic, if needed.
   children: []
 
+  # children folded into this node via the tame CPS translation
+  cpsChildren : []
+
   isStatement     : NO
   jumps           : NO
   isComplex       : YES
   isChainable     : NO
   isAssignable    : NO
+  isControlBreak  : NO
 
   unwrap     : THIS
   unfoldSoak : NO

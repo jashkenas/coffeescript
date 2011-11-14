@@ -3,9 +3,7 @@ exports.AstTamer = class AstTamer
 
     constructor: (rest...) ->
 
-    transform: (x) ->
-        console.log ("transforming...")
-        x
+    transform: (x) -> x
 
 
 
