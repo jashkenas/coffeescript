@@ -218,7 +218,7 @@ grammar =
   SimpleAssignable: [
     o 'Identifier',                             -> new Value $1
     o 'Value Accessor',                         -> $1.add $2
-    o 'Invocation Accessor',                    -> new Value $1, [$2]
+    o 'Invocation Accessor',                    -> new Value $1, [].concat $2
     o 'ThisProperty'
   ]
 
