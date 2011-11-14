@@ -269,12 +269,15 @@ exports.Block = class Block extends Base
     if scope.expressions is this
       declars = o.scope.hasDeclarations()
       assigns = scope.hasAssignments
-      if (declars or assigns) and i
-        code += '\n'
-      if declars
-        code += "#{@tab}var #{ scope.declaredVariables().join(', ') };\n"
-      if assigns
-        code += "#{@tab}var #{ multident scope.assignedVariables().join(', '), @tab };\n"
+      if declars or assigns
+        code += '\n' if i
+        code += "#{@tab}var "
+        if declars
+          code += scope.declaredVariables().join ', '
+        if assigns
+          code += ",\n#{@tab + TAB}" if declars
+          code += scope.assignedVariables().join ",\n#{@tab + TAB}"
+        code += ';\n'
     code + post
 
   # Wrap up the given nodes as a **Block**, unless it already happens
