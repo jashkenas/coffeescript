@@ -1596,12 +1596,13 @@ exports.Await = class Await extends Base
   children: ['body']
 
   isStatement: YES
+
+  makeReturn: THIS
   
   compileNode: (o) ->
-    body = @body.compile o, LEVEL_TOP
-    """(function () { /* await translation */
-    #{body}
-     })();"""
+    o.indent += TAB
+    body = "\n#{ @body.compile o }\n#{@tab}"
+    @tab + "(function () { /* await translation */ #{body} })();"
 
   # We still need to walk our children to see if there are any embedded
   # function which might also be tamed.  But we're always going to report
