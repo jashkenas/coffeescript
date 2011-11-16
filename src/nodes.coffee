@@ -42,7 +42,9 @@ exports.Base = class Base
     o.level  = lvl if lvl
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
-    if o.level is LEVEL_TOP or not node.isStatement(o)
+    if node.isCpsTranslated and not node.gotCpsSplit
+      node.compileCps o
+    else if o.level is LEVEL_TOP or not node.isStatement(o)
       node.compileNode o
     else
       node.compileClosure o
@@ -54,6 +56,12 @@ exports.Base = class Base
       throw SyntaxError 'cannot use a pure statement in an expression.'
     o.sharedScope = yes
     Closure.wrap(this).compileNode o
+
+  # Statements that need CPS translation will have to be split into two
+  # pieces as so
+  compileCps : (o) ->
+    @gotCpsSplit = true
+    CpsCascade.wrap(this, @tameContinuationBlock).compileNode o
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -109,9 +117,21 @@ exports.Base = class Base
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   toString: (idt = '', name = @constructor.name) ->
-    tree = '\n' + idt + name
+    extras = ""
+    if @hasTaming
+      extras += "T"
+    if @isCpsTranslated
+      extras += "C"
+    if extras.length
+      extras = " (" + extras + ")"
+    tree = '\n' + idt + name 
     tree += '?' if @soak
+    tree += extras
     @eachChild (node) -> tree += node.toString idt + TAB
+    if @tameContinuationBlock
+      idt += TAB
+      tree += '\n' + idt + "Continuation"
+      tree += @tameContinuationBlock.toString idt + TAB
     tree
 
   # Passes each child to a function, breaking when the function returns `false`.
@@ -156,11 +176,8 @@ exports.Base = class Base
   # to be called after walkTaming.  All children of a node that
   # hasTaming needs to be CPS-translated, of course, stopping on
   # function boundaries.
-  walkCpsTranslation : (x) ->
-    @isCpsTranslated = (x || @hasTaming)
-    for child in @flattenChildren()
-      child.walkCpsTranslation @isCpsTranslated
-    this
+  markCpsTranslation : ->
+    @traverseChildren false, (x) -> x.isCpsTranslated = true
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
@@ -185,8 +202,10 @@ exports.Base = class Base
   isAssignable    : NO
   isControlBreak  : NO
   isTamedFunc     : NO
-  hasTaming       : NO
-  isCpsTranslated : NO
+
+  hasTaming       : false
+  isCpsTranslated : false
+  gotCpsSplit     : false
 
   unwrap     : THIS
   unfoldSoak : NO
@@ -337,36 +356,34 @@ exports.Block = class Block extends Base
     code + post
 
   cpsRotate : ->
-    console.log("Block.tameAstRotate #{@expressions.length}")
     pivot = null
 
     # If this Block has taming, then we go ahead and look for a pivot
-    if @isCpsTranslated
+    if @hasTaming
       i = 0
       for e in @expressions
         if e.hasTaming
-          console.log("has taming @#{i}")
           pivot = e
           break
-        console.log("no taming @#{i}")
         i++
 
     # We find a pivot if this node hasTaming, and it's not an Await
     # itself
     if pivot
+      # flood that all children of the pivot need to be CPS-Translated
+      pivot.markCpsTranslation()
+      # include the pivot in this slice!
       rest = @expressions.slice(i+1)
-      @expressions = @expressions.slice(0,i)
-      child = new Block rest
-      console.log("child rotation #{i}")
-      child.cpsRotate()
-      pivot.tameNestContinuationBlock(child)
+      @expressions = @expressions.slice(0,i+1)
+      if rest.length
+        child = new Block rest
+        pivot.tameNestContinuationBlock child
       
     # After we have pivoted this guy, we still need to walk all of the
     # expressions, because maybe the expressions that we left still have
     # embedded functions that need the rotation run on them.  Thus,
     # hasTaming will be false, but children might have blocks that still
     # need to be tamed
-    console.log("super rotation")
     super()
     # return this for chaining
     this
@@ -377,11 +394,10 @@ exports.Block = class Block extends Base
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Block
     new Block nodes
 
+  # Perform all steps of the Tame transform
   tameTransform : ->
     @walkTaming()
-    @walkCpsTranslation()
     @cpsRotate()
-    this
 
 #### Literal
 
@@ -1316,10 +1332,6 @@ exports.Code = class Code extends Base
     @hasTaming = super()
     return false
 
-  # Reset at this point in the tree, for the above reason
-  walkCpsTranslation : (x) ->
-    super(false)
-
 #### Param
 
 # A parameter in a function definition. Beyond a typical Javascript parameter,
@@ -2051,6 +2063,15 @@ Closure =
   literalThis: (node) ->
     (node instanceof Literal and node.value is 'this' and not node.asKey) or
       (node instanceof Code and node.bound)
+
+#### CpsCascade
+
+CpsCascade =
+
+  wrap: (statement, rest) ->
+    func = new Code [ new Param new Literal "_k" ], Block.wrap [ statement ]
+    cont = new Code [], Block.wrap [ rest ]
+    call = new Call func, [ cont ]
 
 # Unfold a node's child if soak, then tuck the node under created `If`
 unfoldSoak = (o, parent, name) ->
