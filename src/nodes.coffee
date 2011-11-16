@@ -120,8 +120,6 @@ exports.Base = class Base
     for attr in @children when @[attr]
       for child in flatten [@[attr]]
         return this if func(child) is false
-    for c in @cpsChildren
-      return this if func(child) is false
     this
 
   traverseChildren: (crossScope, func) ->
@@ -137,22 +135,48 @@ exports.Base = class Base
     continue until node is node = node.unwrap()
     node
 
+  # Don't try this at home with actually human kids
+  flattenChildren : ->
+    out = []
+    for attr in @children when @[attr]
+      for child in flatten [@[attr]]
+        out.push (child)
+    out
+
   # Walk the AST looking for taming. Mark a node as 'hasTaming'
   # if any of its children are tamed, but don't cross scope boundary
   # when considering the children
   walkTaming : ->
     @hasTaming = false
-    for attr in @children when @[attr]
-      for child in flatten [@[attr]]
-        @hasTaming = true if child.walkTaming()
+    for child in @flattenChildren() 
+      @hasTaming = true if child.walkTaming()
     return @hasTaming
+
+  # Mark each node as weather or not it needs CPS translation,
+  # to be called after walkTaming.  All children of a node that
+  # hasTaming needs to be CPS-translated, of course, stopping on
+  # function boundaries.
+  walkCpsTranslation : (x) ->
+    @isCpsTranslated = (x || @hasTaming)
+    for child in @flattenChildren()
+      child.walkCpsTranslation @isCpsTranslated
+    this
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
   children: []
 
-  # children folded into this node via the tame CPS translation
-  cpsChildren : []
+  # A potential for a nested tame continuation here
+  tameContinuationBlock : null
+
+  # A generic tame AST rotation is just to push down to its children
+  cpsRotate: ->
+    for child in @flattenChildren()
+      child.cpsRotate()
+    this
+
+  tameNestContinuationBlock : (b) ->
+    @tameContinuationBlock = b
 
   isStatement     : NO
   jumps           : NO
@@ -162,6 +186,7 @@ exports.Base = class Base
   isControlBreak  : NO
   isTamedFunc     : NO
   hasTaming       : NO
+  isCpsTranslated : NO
 
   unwrap     : THIS
   unfoldSoak : NO
@@ -311,11 +336,52 @@ exports.Block = class Block extends Base
         code += ';\n'
     code + post
 
+  cpsRotate : ->
+    console.log("Block.tameAstRotate #{@expressions.length}")
+    pivot = null
+
+    # If this Block has taming, then we go ahead and look for a pivot
+    if @isCpsTranslated
+      i = 0
+      for e in @expressions
+        if e.hasTaming
+          console.log("has taming @#{i}")
+          pivot = e
+          break
+        console.log("no taming @#{i}")
+        i++
+
+    # We find a pivot if this node hasTaming, and it's not an Await
+    # itself
+    if pivot
+      rest = @expressions.slice(i+1)
+      @expressions = @expressions.slice(0,i)
+      child = new Block rest
+      console.log("child rotation #{i}")
+      child.cpsRotate()
+      pivot.tameNestContinuationBlock(child)
+      
+    # After we have pivoted this guy, we still need to walk all of the
+    # expressions, because maybe the expressions that we left still have
+    # embedded functions that need the rotation run on them.  Thus,
+    # hasTaming will be false, but children might have blocks that still
+    # need to be tamed
+    console.log("super rotation")
+    super()
+    # return this for chaining
+    this
+
   # Wrap up the given nodes as a **Block**, unless it already happens
   # to be one.
   @wrap: (nodes) ->
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Block
     new Block nodes
+
+  tameTransform : ->
+    @walkTaming()
+    @walkCpsTranslation()
+    @cpsRotate()
+    this
 
 #### Literal
 
@@ -1250,6 +1316,10 @@ exports.Code = class Code extends Base
     @hasTaming = super()
     return false
 
+  # Reset at this point in the tree, for the above reason
+  walkCpsTranslation : (x) ->
+    super(false)
+
 #### Param
 
 # A parameter in a function definition. Beyond a typical Javascript parameter,
@@ -1608,8 +1678,8 @@ exports.Await = class Await extends Base
   # function which might also be tamed.  But we're always going to report
   # to our parent that we are tamed, since we are!
   walkTaming : ->
-    @hasTaming = super()
-    return true
+    super()
+    @hasTaming = true
 
 #### Try
 
