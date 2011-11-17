@@ -18,6 +18,8 @@ NO      = -> no
 THIS    = -> this
 NEGATE  = -> @negated = not @negated; this
 
+CALL_CONTINUATION =  -> new Call(new Literal "_k", [])
+
 #### Base
 
 # The **Base** is the abstract base class for all nodes in the syntax tree.
@@ -42,7 +44,7 @@ exports.Base = class Base
     o.level  = lvl if lvl
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
-    if node.isCpsTranslated and not node.gotCpsSplit
+    if node.hasTaming and not node.gotCpsSplit and node.isStatement(o)
       node.compileCps o
     else if o.level is LEVEL_TOP or not node.isStatement(o)
       node.compileNode o
@@ -61,7 +63,7 @@ exports.Base = class Base
   # pieces as so
   compileCps : (o) ->
     @gotCpsSplit = true
-    CpsCascade.wrap(this, @tameContinuationBlock).compileNode o
+    @tab + CpsCascade.wrap(this, @tameContinuationBlock).compileNode o
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -176,8 +178,9 @@ exports.Base = class Base
   # to be called after walkTaming.  All children of a node that
   # hasTaming needs to be CPS-translated, of course, stopping on
   # function boundaries.
-  markCpsTranslation : ->
-    @traverseChildren false, (x) -> x.isCpsTranslated = true
+  floodCpsTranslation : ->
+    @isCpsTranslated = true
+    @traverseChildren false, (x) -> x.floodCpsTranslation()
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
@@ -194,6 +197,8 @@ exports.Base = class Base
 
   tameNestContinuationBlock : (b) ->
     @tameContinuationBlock = b
+
+  callContinuation : ->
 
   isStatement     : NO
   jumps           : NO
@@ -371,13 +376,14 @@ exports.Block = class Block extends Base
     # itself
     if pivot
       # flood that all children of the pivot need to be CPS-Translated
-      pivot.markCpsTranslation()
+      pivot.floodCpsTranslation()
       # include the pivot in this slice!
       rest = @expressions.slice(i+1)
       @expressions = @expressions.slice(0,i+1)
       if rest.length
         child = new Block rest
         pivot.tameNestContinuationBlock child
+      pivot.callContinuation()
       
     # After we have pivoted this guy, we still need to walk all of the
     # expressions, because maybe the expressions that we left still have
@@ -387,6 +393,9 @@ exports.Block = class Block extends Base
     super()
     # return this for chaining
     this
+
+  addCpsChain : ->
+    @expressions.push(new Call(new Literal "_k", []))
 
   # Wrap up the given nodes as a **Block**, unless it already happens
   # to be one.
@@ -1693,6 +1702,9 @@ exports.Await = class Await extends Base
     super()
     @hasTaming = true
 
+  # make up stuff here for generating real code
+  callContinuation : ->
+
 #### Try
 
 # A classic *try/catch/finally* block.
@@ -1968,6 +1980,14 @@ exports.If = class If extends Base
       @elseBody = @ensureBlock elseBody
     this
 
+  callContinuation : ->
+    code = CALL_CONTINUATION()
+    if @elseBody
+      @elseBody.push code
+    else
+      @addElse code
+    @body.push code
+
   # The **If** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a conditional operator is safe.
   isStatement: (o) ->
@@ -1977,7 +1997,7 @@ exports.If = class If extends Base
   jumps: (o) -> @body.jumps(o) or @elseBody?.jumps(o)
 
   compileNode: (o) ->
-    if @isStatement o then @compileStatement o else @compileExpression o
+    if @isStatement o or @isCpsTranslated then @compileStatement o else @compileExpression o
 
   makeReturn: (res) ->
     @elseBody  or= new Block [new Literal 'void 0'] if res
@@ -1999,7 +2019,7 @@ exports.If = class If extends Base
 
     cond     = @condition.compile o, LEVEL_PAREN
     o.indent += TAB
-    body     = @ensureBlock(@body)
+    body     = @ensureBlock @body
     bodyc    = body.compile o
     if (
       1 is body.expressions?.length and
