@@ -63,8 +63,7 @@ exports.run = ->
   loadRequires()                         if opts.require
   return require './repl'                if opts.interactive
   if opts.watch and !fs.watch
-    printWarn "The --watch feature depends on Node v0.6.0+. You are running \
-#{process.version}."
+    printWarn "The --watch feature depends on Node v0.6.0+. You are running #{process.version}."
   return compileStdio()                  if opts.stdio
   return compileScript null, sources[0]  if opts.eval
   return require './repl'                unless sources.length
