@@ -1682,7 +1682,13 @@ exports.In = class In extends Base
 
 exports.Await = class Await extends Base
   constructor : (body) ->
-    @body = body
+    lhs = new Value new Literal "__tame_deferrals"
+    cls = new Value new Literal "tame"
+    cls.add(new Access(new Value new Literal "Deferrals"))
+    call = new Call cls, [ new Value new Literal "_k" ]
+    rhs = new Op "new", call
+    assign = new Assign lhs, rhs
+    @body = [ assign ] + body
 
   children: ['body']
 
@@ -1692,8 +1698,9 @@ exports.Await = class Await extends Base
   
   compileNode: (o) ->
     o.indent += TAB
-    body = "\n#{ @body.compile o }\n#{@tab}"
-    @tab + "(function () { /* await translation */ #{body} })();"
+    body += "#{ @body.compile o }\n#{@tab}"
+    body += "__tame_deferrals._fulfill();"
+    body
 
   # We still need to walk our children to see if there are any embedded
   # function which might also be tamed.  But we're always going to report
@@ -1703,7 +1710,8 @@ exports.Await = class Await extends Base
     @hasTaming = true
 
   # make up stuff here for generating real code
-  callContinuation : ->
+  #callContinuation : ->
+  #  a = "var _tame_deferrals = new tame.Deferrals (_k);"
 
 #### Try
 
