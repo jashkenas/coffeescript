@@ -64,7 +64,11 @@ exports.Base = class Base
   # pieces as so
   compileCps : (o) ->
     @gotCpsSplit = true
-    @tab + CpsCascade.wrap(this, @tameContinuationBlock).compileNode o
+    node = CpsCascade.wrap(this, @tameContinuationBlock)
+    console.log("yo INDENT#{o.indent}TNEDNI")
+    ret = node.compile o
+    console.log("yo TAB#{node.tab}BAT")
+    ret
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
