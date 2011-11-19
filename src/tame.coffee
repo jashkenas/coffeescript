@@ -2,7 +2,7 @@
 exports.AstTamer = class AstTamer
 
     constructor: (rest...) ->
-    	
+
     transform: (x) ->
       x.tameTransform()
 
@@ -12,3 +12,4 @@ exports.const =
   Deferrals : "Deferrals"
   deferrals : "__tame_deferrals"
   fulfill : "_fulfill"
+  k_while : "_kw"

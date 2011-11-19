@@ -129,7 +129,7 @@ exports.Base = class Base
       extras += "C"
     if extras.length
       extras = " (" + extras + ")"
-    tree = '\n' + idt + name 
+    tree = '\n' + idt + name
     tree += '?' if @soak
     tree += extras
     @eachChild (node) -> tree += node.toString idt + TAB
@@ -173,7 +173,7 @@ exports.Base = class Base
   # when considering the children
   walkTaming : ->
     @hasTaming = false
-    for child in @flattenChildren() 
+    for child in @flattenChildren()
       @hasTaming = true if child.walkTaming()
     return @hasTaming
 
@@ -276,6 +276,16 @@ exports.Block = class Block extends Base
         break
     this
 
+  # Optimization!
+  # Blocks typically don't need their own cpsCascading.  This saves
+  # wasted code.
+  compileCps : (o) ->
+    @gotCpsSplit = true
+    if @expressions.length > 1
+      super o
+    else
+      @compileNode o
+
   # A **Block** is the only node that can serve as the root.
   compile: (o = {}, level) ->
     if o.scope then super o, level else @compileRoot o
@@ -365,6 +375,7 @@ exports.Block = class Block extends Base
 
   cpsRotate : ->
     pivot = null
+    child = null
 
     # If this Block has taming, then we go ahead and look for a pivot
     if @hasTaming
@@ -378,6 +389,7 @@ exports.Block = class Block extends Base
     # We find a pivot if this node hasTaming, and it's not an Await
     # itself
     if pivot
+      console.log("found pvito")
       # flood that all children of the pivot need to be CPS-Translated
       pivot.floodCpsTranslation()
       # include the pivot in this slice!
@@ -386,14 +398,22 @@ exports.Block = class Block extends Base
       if rest.length
         child = new Block rest
         pivot.tameNestContinuationBlock child
+        # we have to set the taming bit on the new Block
+        for e in rest
+          child.hasTaming = true if e.hasTaming
+        # now recursive apply the transformation to the new child,
+        # this being especially import in blocks that have multiple
+        # awaits on the same level
+        child.cpsRotate()
       pivot.callContinuation()
-      
+
     # After we have pivoted this guy, we still need to walk all of the
     # expressions, because maybe the expressions that we left still have
     # embedded functions that need the rotation run on them.  Thus,
     # hasTaming will be false, but children might have blocks that still
     # need to be tamed
     super()
+
     # return this for chaining
     this
 
@@ -1477,6 +1497,10 @@ exports.While = class While extends Base
       return node if node.jumps loop: yes
     no
 
+  callContinuation : ->
+    k = new Call(new Literal tame.const.k_while, [])
+    @body.push k
+
   # The main difference from a JavaScript *while* is that the CoffeeScript
   # *while* can be used as a part of a larger expression -- while loops may
   # return an array containing the computed result of each iteration.
@@ -1702,7 +1726,7 @@ exports.Await = class Await extends Base
   isStatement: YES
 
   makeReturn: THIS
-  
+
   compileNode: (o) ->
     o.indent += TAB
     @body.compile o
@@ -1990,7 +2014,7 @@ exports.If = class If extends Base
     this
 
   # propogate the closing continuation call down both branches of the if.
-  # note this prevents if ...else if... inline chaining, and makes it 
+  # note this prevents if ...else if... inline chaining, and makes it
   # fully nested if { .. } else { if { } ..} ..'s
   callContinuation : ->
     code = CALL_CONTINUATION()
