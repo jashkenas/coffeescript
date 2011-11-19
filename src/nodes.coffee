@@ -65,9 +65,7 @@ exports.Base = class Base
   compileCps : (o) ->
     @gotCpsSplit = true
     node = CpsCascade.wrap(this, @tameContinuationBlock)
-    console.log("yo INDENT#{o.indent}TNEDNI")
     ret = node.compile o
-    console.log("yo TAB#{node.tab}BAT")
     ret
 
   # If the code generation wishes to use the result of a complex expression
@@ -1991,10 +1989,14 @@ exports.If = class If extends Base
       @elseBody = @ensureBlock elseBody
     this
 
+  # propogate the closing continuation call down both branches of the if.
+  # note this prevents if ...else if... inline chaining, and makes it 
+  # fully nested if { .. } else { if { } ..} ..'s
   callContinuation : ->
     code = CALL_CONTINUATION()
     if @elseBody
       @elseBody.push code
+      @isChain = false
     else
       @addElse code
     @body.push code
@@ -2103,6 +2105,7 @@ CpsCascade =
     func = new Code [ new Param new Literal tame.const.k ], Block.wrap [ statement ]
     cont = new Code [], Block.wrap [ rest ]
     call = new Call func, [ cont ]
+    new Block [ call ]
 
 # Unfold a node's child if soak, then tuck the node under created `If`
 unfoldSoak = (o, parent, name) ->
