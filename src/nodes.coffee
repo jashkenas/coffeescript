@@ -6,6 +6,7 @@
 
 {Scope} = require './scope'
 {RESERVED, STRICT_PROSCRIBED} = require './lexer'
+tame = require './tame'
 
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, last} = require './helpers'
@@ -18,7 +19,7 @@ NO      = -> no
 THIS    = -> this
 NEGATE  = -> @negated = not @negated; this
 
-CALL_CONTINUATION =  -> new Call(new Literal "_k", [])
+CALL_CONTINUATION =  -> new Call(new Literal tame.const.k, [])
 
 #### Base
 
@@ -395,7 +396,7 @@ exports.Block = class Block extends Base
     this
 
   addCpsChain : ->
-    @expressions.push(new Call(new Literal "_k", []))
+    @expressions.push(new Call(new Literal tame.const.k, []))
 
   # Wrap up the given nodes as a **Block**, unless it already happens
   # to be one.
@@ -1682,14 +1683,14 @@ exports.In = class In extends Base
 
 exports.Await = class Await extends Base
   constructor : (body) ->
-    lhs = new Value new Literal "__tame_deferrals"
-    cls = new Value new Literal "tame"
-    cls.add(new Access(new Value new Literal "Deferrals"))
-    call = new Call cls, [ new Value new Literal "_k" ]
+    lhs = new Value new Literal tame.const.deferrals
+    cls = new Value new Literal tame.const.ns
+    cls.add(new Access(new Value new Literal tame.const.Deferrals))
+    call = new Call cls, [ new Value new Literal tame.const.k ]
     rhs = new Op "new", call
     assign = new Assign lhs, rhs
     body.unshift assign
-    meth = lhs.add new Access new Value new Literal "_fulfill"
+    meth = lhs.add new Access new Value new Literal tame.const.fulfill
     call = new Call meth, []
     body.push (call)
     @body = body
@@ -1710,10 +1711,6 @@ exports.Await = class Await extends Base
   walkTaming : ->
     super()
     @hasTaming = true
-
-  # make up stuff here for generating real code
-  #callContinuation : ->
-  #  a = "var _tame_deferrals = new tame.Deferrals (_k);"
 
 #### Try
 
@@ -2099,7 +2096,7 @@ Closure =
 CpsCascade =
 
   wrap: (statement, rest) ->
-    func = new Code [ new Param new Literal "_k" ], Block.wrap [ statement ]
+    func = new Code [ new Param new Literal tame.const.k ], Block.wrap [ statement ]
     cont = new Code [], Block.wrap [ rest ]
     call = new Call func, [ cont ]
 
