@@ -21,6 +21,13 @@ NEGATE  = -> @negated = not @negated; this
 
 CALL_CONTINUATION =  -> new Call(new Literal tame.const.k, [])
 
+
+TAME_NODE =
+  NONE     : 0x0
+  BLOCK    : 0x1
+  CODE     : 0x2
+  FULL     : 0x3
+
 #### Base
 
 # The **Base** is the abstract base class for all nodes in the syntax tree.
@@ -45,7 +52,7 @@ exports.Base = class Base
     o.level  = lvl if lvl
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
-    if node.hasTaming and not node.gotCpsSplit and node.isStatement(o)
+    if node.tameNodeFlag and not node.gotCpsSplit and node.isStatement(o)
       node.compileCps o
     else if o.level is LEVEL_TOP or not node.isStatement(o)
       node.compileNode o
@@ -123,10 +130,10 @@ exports.Base = class Base
   # This is what `coffee --nodes` prints out.
   toString: (idt = '', name = @constructor.name) ->
     extras = ""
-    if @hasTaming
+    if @tameNodeFlag == TAME_NODE.FULL
       extras += "T"
-    if @isCpsTranslated
-      extras += "C"
+    else if @tameNodeFlag == TAME_NODE.BLOCK || @tameNodeFlag == TAME_NODE.CODE
+      extras += "t"
     if extras.length
       extras = " (" + extras + ")"
     tree = '\n' + idt + name
@@ -168,18 +175,19 @@ exports.Base = class Base
         out.push (child)
     out
 
-  # Walk the AST looking for taming. Mark a node as 'hasTaming'
+  # Walk the AST looking for taming. Mark a node as with tame flags
   # if any of its children are tamed, but don't cross scope boundary
-  # when considering the children
-  walkTaming : ->
-    @hasTaming = false
+  # when considering the children.
+  # We consider two types of nodes -- blocks who have a child that's
+  # tamed, and all other nodes who have a child that's tamed
+  walkAstTame : ->
     for child in @flattenChildren()
-      @hasTaming = true if child.walkTaming()
-    return @hasTaming
+      @tameNodeFlag = TAME_NODE.FULL if child.walkAstTame()
+    @tameNodeFlag
 
   # Mark each node as weather or not it needs CPS translation,
-  # to be called after walkTaming.  All children of a node that
-  # hasTaming needs to be CPS-translated, of course, stopping on
+  # to be called after walkAstTame.  All children of a node that
+  # have taming need to be CPS-translated, of course, stopping on
   # function boundaries.
   floodCpsTranslation : ->
     @isCpsTranslated = true
@@ -210,8 +218,8 @@ exports.Base = class Base
   isAssignable    : NO
   isControlBreak  : NO
   isTamedFunc     : NO
+  tameNodeFlag    : TAME_NODE.NONE
 
-  hasTaming       : false
   isCpsTranslated : false
   gotCpsSplit     : false
 
@@ -378,18 +386,17 @@ exports.Block = class Block extends Base
     child = null
 
     # If this Block has taming, then we go ahead and look for a pivot
-    if @hasTaming
+    if @tameNodeFlag
       i = 0
       for e in @expressions
-        if e.hasTaming
+        if e.tameNodeFlag
           pivot = e
           break
         i++
 
-    # We find a pivot if this node hasTaming, and it's not an Await
+    # We find a pivot if this node has taming, and it's not an Await
     # itself
     if pivot
-      console.log("found pvito")
       # flood that all children of the pivot need to be CPS-Translated
       pivot.floodCpsTranslation()
       # include the pivot in this slice!
@@ -400,7 +407,7 @@ exports.Block = class Block extends Base
         pivot.tameNestContinuationBlock child
         # we have to set the taming bit on the new Block
         for e in rest
-          child.hasTaming = true if e.hasTaming
+          child.tameNodeFlag = e.tameNodeFlag
         # now recursive apply the transformation to the new child,
         # this being especially import in blocks that have multiple
         # awaits on the same level
@@ -410,7 +417,7 @@ exports.Block = class Block extends Base
     # After we have pivoted this guy, we still need to walk all of the
     # expressions, because maybe the expressions that we left still have
     # embedded functions that need the rotation run on them.  Thus,
-    # hasTaming will be false, but children might have blocks that still
+    # tameNodeFlag will be 0, but children might have blocks that still
     # need to be tamed
     super()
 
@@ -428,8 +435,15 @@ exports.Block = class Block extends Base
 
   # Perform all steps of the Tame transform
   tameTransform : ->
-    @walkTaming()
+    @walkAstTame()
     @cpsRotate()
+
+  walkAstTame : ->
+    f = super()
+    # If it's a block, it need not "taint" its brothers in the AST
+    if f == TAME_NODE.FULL
+      f = TAME_NODE.BLOCK
+    @tameNodeFlag = f
 
 #### Literal
 
@@ -1340,8 +1354,7 @@ exports.Code = class Code extends Base
     code  = 'function'
     code  += ' ' + @name if @ctor
     code  += '(' + params.join(', ') + ') {'
-    if @hasTaming
-      code  += ' /* TAMED */ '
+    code  += ' /* TAMED */ ' if @tameNodeFlag
     code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
     code  += '}'
     return @tab + code if @ctor
@@ -1360,9 +1373,9 @@ exports.Code = class Code extends Base
 
   # we are taming as a feature of all of our children.  However, if we
   # are tamed, it's not the case that our parent is tamed!
-  walkTaming : ->
-    @hasTaming = super()
-    return false
+  walkAstTame : ->
+    @tameNodeFlag = TAME_NODE.CODE if super()
+    TAME_NODE.NONE
 
 #### Param
 
@@ -1734,9 +1747,9 @@ exports.Await = class Await extends Base
   # We still need to walk our children to see if there are any embedded
   # function which might also be tamed.  But we're always going to report
   # to our parent that we are tamed, since we are!
-  walkTaming : ->
+  walkAstTame : ->
     super()
-    @hasTaming = true
+    @tameNodeFlag = TAME_NODE.FULL
 
 #### Try
 
