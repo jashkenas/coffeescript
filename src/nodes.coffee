@@ -27,6 +27,7 @@ TAME_NODE =
   BLOCK    : 0x1
   CODE     : 0x2
   FULL     : 0x3
+  AWAIT    : 0x4
 
 #### Base
 
@@ -52,7 +53,7 @@ exports.Base = class Base
     o.level  = lvl if lvl
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
-    if node.tameNodeFlag and not node.gotCpsSplit and node.isStatement(o)
+    if node.needsCpsRotation() and not node.gotCpsSplit and node.isStatement(o)
       node.compileCps o
     else if o.level is LEVEL_TOP or not node.isStatement(o)
       node.compileNode o
@@ -130,10 +131,12 @@ exports.Base = class Base
   # This is what `coffee --nodes` prints out.
   toString: (idt = '', name = @constructor.name) ->
     extras = ""
-    if @tameNodeFlag == TAME_NODE.FULL
+    if @tameNodeFlag == TAME_NODE.FULL || @tameNodeFlag == TAME_NODE.AWAIT
       extras += "T"
     else if @tameNodeFlag == TAME_NODE.BLOCK || @tameNodeFlag == TAME_NODE.CODE
       extras += "t"
+    if @cpsNodeFlag
+      extras += "c"
     if extras.length
       extras = " (" + extras + ")"
     tree = '\n' + idt + name
@@ -185,13 +188,14 @@ exports.Base = class Base
       @tameNodeFlag = TAME_NODE.FULL if child.walkAstTame()
     @tameNodeFlag
 
-  # Mark each node as weather or not it needs CPS translation,
-  # to be called after walkAstTame.  All children of a node that
-  # have taming need to be CPS-translated, of course, stopping on
-  # function boundaries.
-  floodCpsTranslation : ->
-    @isCpsTranslated = true
-    @traverseChildren false, (x) -> x.floodCpsTranslation()
+  # See if having paths in the AST marked as "tamed" mean that
+  # other paths with interesting jumps need to be marked for
+  # CPS rotations too.
+  walkAstCps : (tame) ->
+    tame = true if @tameNodeFlag == TAME_NODE.FULL
+    for child in @flattenChildren()
+      @cpsNodeFlag = true if child.walkAstCps(tame)
+    @cpsNodeFlag
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
@@ -206,6 +210,9 @@ exports.Base = class Base
       child.cpsRotate()
     this
 
+  needsCpsRotation : ->
+    return @tameNodeFlag or @cpsNodeFlag
+
   tameNestContinuationBlock : (b) ->
     @tameContinuationBlock = b
 
@@ -218,9 +225,9 @@ exports.Base = class Base
   isAssignable    : NO
   isControlBreak  : NO
   isTamedFunc     : NO
+  
   tameNodeFlag    : TAME_NODE.NONE
-
-  isCpsTranslated : false
+  cpsNodeFlag     : false
   gotCpsSplit     : false
 
   unwrap     : THIS
@@ -386,10 +393,10 @@ exports.Block = class Block extends Base
     child = null
 
     # If this Block has taming, then we go ahead and look for a pivot
-    if @tameNodeFlag
+    if @needsCpsRotation()
       i = 0
       for e in @expressions
-        if e.tameNodeFlag
+        if e.needsCpsRotation()
           pivot = e
           break
         i++
@@ -397,17 +404,18 @@ exports.Block = class Block extends Base
     # We find a pivot if this node has taming, and it's not an Await
     # itself
     if pivot
-      # flood that all children of the pivot need to be CPS-Translated
-      pivot.floodCpsTranslation()
       # include the pivot in this slice!
       rest = @expressions.slice(i+1)
       @expressions = @expressions.slice(0,i+1)
       if rest.length
         child = new Block rest
         pivot.tameNestContinuationBlock child
+        
         # we have to set the taming bit on the new Block
         for e in rest
           child.tameNodeFlag = e.tameNodeFlag
+          child.cpsNodeFlag = e.cpsNodeFlag
+          
         # now recursive apply the transformation to the new child,
         # this being especially import in blocks that have multiple
         # awaits on the same level
@@ -436,13 +444,13 @@ exports.Block = class Block extends Base
   # Perform all steps of the Tame transform
   tameTransform : ->
     @walkAstTame()
+    @walkAstCps()
     @cpsRotate()
 
   walkAstTame : ->
     f = super()
     # If it's a block, it need not "taint" its brothers in the AST
-    if f == TAME_NODE.FULL
-      f = TAME_NODE.BLOCK
+    f = TAME_NODE.BLOCK if f
     @tameNodeFlag = f
 
 #### Literal
@@ -470,6 +478,9 @@ exports.Literal = class Literal extends Base
   jumps: (o) ->
     return this if @value is 'break' and not (o?.loop or o?.block)
     return this if @value is 'continue' and not o?.loop
+
+  walkAstCps: (tame) ->
+    @cpsNodeFlag = tame and @isStatement()
 
   compileNode: (o) ->
     code = if @isUndefined
@@ -505,6 +516,10 @@ exports.Return = class Return extends Base
 
   compileNode: (o) ->
     @tab + "return#{[" #{@expression.compile o, LEVEL_PAREN}" if @expression]};"
+    
+  walkAstCps: (tame) ->
+    console.log("Return.walkAstCps -> #{tame}")
+    @cpsNodeFlag = tame
 
 #### Value
 
@@ -1377,6 +1392,10 @@ exports.Code = class Code extends Base
     @tameNodeFlag = TAME_NODE.CODE if super()
     TAME_NODE.NONE
 
+  walkAstCps : (tame) ->
+    @cpsNodeFlag = true if super(false)
+    false
+
 #### Param
 
 # A parameter in a function definition. Beyond a typical Javascript parameter,
@@ -1749,7 +1768,12 @@ exports.Await = class Await extends Base
   # to our parent that we are tamed, since we are!
   walkAstTame : ->
     super()
-    @tameNodeFlag = TAME_NODE.FULL
+    @tameNodeFlag = TAME_NODE.AWAIT
+    TAME_NODE.FULL
+
+  walkAstCps : (tame) ->
+    super(false)
+    @cpsNodeFlag = false
 
 #### Try
 
@@ -2047,7 +2071,7 @@ exports.If = class If extends Base
   jumps: (o) -> @body.jumps(o) or @elseBody?.jumps(o)
 
   compileNode: (o) ->
-    if @isStatement o or @isCpsTranslated then @compileStatement o else @compileExpression o
+    if @isStatement o or @needsCpsRotation() then @compileStatement o else @compileExpression o
 
   makeReturn: (res) ->
     @elseBody  or= new Block [new Literal 'void 0'] if res
