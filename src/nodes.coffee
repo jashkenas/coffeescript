@@ -45,7 +45,7 @@ exports.Base = class Base
     o.level  = lvl if lvl
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
-    if node.needsCpsRotation() and not node.gotCpsSplit and node.isStatement(o)
+    if node.hasContinuation() and not node.gotCpsSplit and node.isStatement(o)
       node.compileCps o
     else if o.level is LEVEL_TOP or not node.isStatement(o)
       node.compileNode o
@@ -203,7 +203,7 @@ exports.Base = class Base
     return @tameNodeFlag or @cpsNodeFlag
 
   isCpsPivot : ->
-    return @tameNodeFlag or (@cpsNodeFlag and @isJump())
+    return @tameNodeFlag or @cpsNodeFlag
 
   tameNestContinuationBlock : (b) ->
     @tameContinuationBlock = b
@@ -403,6 +403,7 @@ exports.Block = class Block extends Base
     # We find a pivot if this node has taming, and it's not an Await
     # itself
     if pivot
+      console.log " --> doing the pivot"
       # include the pivot in this slice!
       rest = @expressions.slice(i+1)
       @expressions = @expressions.slice(0,i+1)
@@ -1546,8 +1547,13 @@ exports.While = class While extends Base
     top_func = new Code [ k_id ], top_body
     top_assign = new Assign top_id, top_func
     top_call = new Call top_id, [ k_id ]
-    block = new Block [ top_assign, top_call ]
-    return block.compile o
+    top_statements = [ top_assign, top_call ]
+    if not @gotCpsSplit
+      empty = new Code [], new Block []
+      outer_k_assign = new Assign k_id, empty
+      top_statements.unshift outer_k_assign
+    top_block = new Block top_statements
+    return top_block.compile o
 
   # The main difference from a JavaScript *while* is that the CoffeeScript
   # *while* can be used as a part of a larger expression -- while loops may
