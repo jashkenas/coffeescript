@@ -21,14 +21,6 @@ NEGATE  = -> @negated = not @negated; this
 
 CALL_CONTINUATION =  -> new Call(new Literal tame.const.k, [])
 
-
-TAME_NODE =
-  NONE     : 0x0
-  BLOCK    : 0x1
-  CODE     : 0x2
-  FULL     : 0x3
-  AWAIT    : 0x4
-
 #### Base
 
 # The **Base** is the abstract base class for all nodes in the syntax tree.
@@ -131,12 +123,10 @@ exports.Base = class Base
   # This is what `coffee --nodes` prints out.
   toString: (idt = '', name = @constructor.name) ->
     extras = ""
-    if @tameNodeFlag == TAME_NODE.FULL || @tameNodeFlag == TAME_NODE.AWAIT
+    if @tameNodeFlag
       extras += "T"
-    else if @tameNodeFlag == TAME_NODE.BLOCK || @tameNodeFlag == TAME_NODE.CODE
-      extras += "t"
     if @cpsNodeFlag
-      extras += "c"
+      extras += "C"
     if extras.length
       extras = " (" + extras + ")"
     tree = '\n' + idt + name
@@ -185,16 +175,16 @@ exports.Base = class Base
   # tamed, and all other nodes who have a child that's tamed
   walkAstTame : ->
     for child in @flattenChildren()
-      @tameNodeFlag = TAME_NODE.FULL if child.walkAstTame()
+      @tameNodeFlag = true if child.walkAstTame()
     @tameNodeFlag
 
-  # See if having paths in the AST marked as "tamed" mean that
-  # other paths with interesting jumps need to be marked for
-  # CPS rotations too.
-  walkAstCps : (tame) ->
-    tame = true if @tameNodeFlag == TAME_NODE.FULL
+  walkAstCps : (flood) ->
+    flood = true if @isLoop()
+    if @isAwait()
+      flood = false
+    @cpsNodeFlag = flood
     for child in @flattenChildren()
-      @cpsNodeFlag = true if child.walkAstCps(tame)
+      @cpsNodeFlag = true if child.walkAstCps(flood)
     @cpsNodeFlag
 
   # Default implementations of the common node properties and methods. Nodes
@@ -225,9 +215,11 @@ exports.Base = class Base
   isAssignable    : NO
   isControlBreak  : NO
   isTamedFunc     : NO
-  
-  tameNodeFlag    : TAME_NODE.NONE
+  isLoop          : NO
+  isAwait         : NO
+
   cpsNodeFlag     : false
+  tameNodeFlag    : false
   gotCpsSplit     : false
 
   unwrap     : THIS
@@ -413,8 +405,8 @@ exports.Block = class Block extends Base
         
         # we have to set the taming bit on the new Block
         for e in rest
-          child.tameNodeFlag = e.tameNodeFlag
-          child.cpsNodeFlag = e.cpsNodeFlag
+          child.tameNodeFlag = true if e.tameNodeFlag
+          child.cpsNodeFlag = true if e.cpsNodeFlag
           
         # now recursive apply the transformation to the new child,
         # this being especially import in blocks that have multiple
@@ -444,14 +436,8 @@ exports.Block = class Block extends Base
   # Perform all steps of the Tame transform
   tameTransform : ->
     @walkAstTame()
-    @walkAstCps()
+    @walkAstCps(false)
     @cpsRotate()
-
-  walkAstTame : ->
-    f = super()
-    # If it's a block, it need not "taint" its brothers in the AST
-    f = TAME_NODE.BLOCK if f
-    @tameNodeFlag = f
 
 #### Literal
 
@@ -478,9 +464,6 @@ exports.Literal = class Literal extends Base
   jumps: (o) ->
     return this if @value is 'break' and not (o?.loop or o?.block)
     return this if @value is 'continue' and not o?.loop
-
-  walkAstCps: (tame) ->
-    @cpsNodeFlag = tame and @isStatement()
 
   compileNode: (o) ->
     code = if @isUndefined
@@ -517,10 +500,6 @@ exports.Return = class Return extends Base
   compileNode: (o) ->
     @tab + "return#{[" #{@expression.compile o, LEVEL_PAREN}" if @expression]};"
     
-  walkAstCps: (tame) ->
-    console.log("Return.walkAstCps -> #{tame}")
-    @cpsNodeFlag = tame
-
 #### Value
 
 # A value, variable or literal or parenthesized, indexed or dotted into,
@@ -1389,11 +1368,11 @@ exports.Code = class Code extends Base
   # we are taming as a feature of all of our children.  However, if we
   # are tamed, it's not the case that our parent is tamed!
   walkAstTame : ->
-    @tameNodeFlag = TAME_NODE.CODE if super()
-    TAME_NODE.NONE
+    @tameNodeFlag = true if super()
+    false
 
-  walkAstCps : (tame) ->
-    @cpsNodeFlag = true if super(false)
+  walkAstCps : (flood) ->
+    @cpsNodeFlag = super(false)
     false
 
 #### Param
@@ -1511,6 +1490,7 @@ exports.While = class While extends Base
   children: ['condition', 'guard', 'body']
 
   isStatement: YES
+  isLoop : YES
 
   makeReturn: (res) ->
     if res
@@ -1756,8 +1736,8 @@ exports.Await = class Await extends Base
   children: ['body']
 
   isStatement: YES
-
-  makeReturn: THIS
+  isAwait    : YES
+  makeReturn : THIS
 
   compileNode: (o) ->
     o.indent += TAB
@@ -1768,12 +1748,7 @@ exports.Await = class Await extends Base
   # to our parent that we are tamed, since we are!
   walkAstTame : ->
     super()
-    @tameNodeFlag = TAME_NODE.AWAIT
-    TAME_NODE.FULL
-
-  walkAstCps : (tame) ->
-    super(false)
-    @cpsNodeFlag = false
+    @tameNodeFlag = true
 
 #### Try
 
