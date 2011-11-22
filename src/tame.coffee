@@ -13,3 +13,6 @@ exports.const =
   deferrals : "__tame_deferrals"
   fulfill : "_fulfill"
   k_while : "_kw"
+  b_while : "_break"
+  t_while : "_while"
+  c_while : "_continue"

@@ -202,8 +202,13 @@ exports.Base = class Base
   needsCpsRotation : ->
     return @tameNodeFlag or @cpsNodeFlag
 
+  isCpsPivot : ->
+    return @tameNodeFlag or (@cpsNodeFlag and @isJump())
+
   tameNestContinuationBlock : (b) ->
     @tameContinuationBlock = b
+
+  hasContinuation : -> @tameContinuationBlock
 
   callContinuation : ->
 
@@ -216,6 +221,7 @@ exports.Base = class Base
   isTamedFunc     : NO
   isLoop          : NO
   isAwait         : NO
+  isJump          : NO
 
   cpsNodeFlag     : false
   tameNodeFlag    : false
@@ -387,10 +393,12 @@ exports.Block = class Block extends Base
     if @needsCpsRotation()
       i = 0
       for e in @expressions
-        if e.needsCpsRotation()
+        if e.isCpsPivot()
           pivot = e
           break
         i++
+
+    console.log "CPS Rotate #{@expressions.length} #{pivot} #{i}"
 
     # We find a pivot if this node has taming, and it's not an Await
     # itself
@@ -456,9 +464,15 @@ exports.Literal = class Literal extends Base
     @value in ['break', 'continue', 'debugger']
 
   isComplex: NO
+  isJump : -> @isStatement()
 
   assigns: (name) ->
     name is @value
+
+  compileTame: (o) ->
+    func = new Value new Literal tame.const.c_while
+    call = new Call func, []
+    return call.compile o
 
   jumps: (o) ->
     return this if @value is 'break' and not (o?.loop or o?.block)
@@ -471,6 +485,8 @@ exports.Literal = class Literal extends Base
       if o.scope.method?.bound then o.scope.method.context else @value
     else if @value.reserved
       "\"#{@value}\""
+    else if @cpsNodeFlag and @isJump()
+      @compileTame o
     else
       @value
     if @isStatement() then "#{@tab}#{code};" else code
@@ -1512,10 +1528,32 @@ exports.While = class While extends Base
     k = new Call(new Literal tame.const.k_while, [])
     @body.push k
 
+  compileTame: (o) ->
+    return null unless @tameNodeFlag
+    outStatements = []
+    top_id = new Value new Literal tame.const.t_while
+    k_id = new Value new Literal tame.const.k
+    break_id = new Value new Literal tame.const.b_while
+    inner_k_id = new Value new Literal tame.const.k_while
+    break_assign = new Assign break_id, k_id
+    continue_id = new Value new Literal tame.const.c_while
+    continue_body = new Code [], new Block [ new Call top_id, [ k_id ] ]
+    continue_assign = new Assign continue_id, continue_body
+    inner_k_assign = new Assign inner_k_id, continue_id
+    cond = new If @condition, @body
+    cond.addElse new Block [ new Call break_id, [] ]
+    top_body = new Block [ break_assign, continue_assign, inner_k_assign, cond ]
+    top_func = new Code [ k_id ], top_body
+    top_assign = new Assign top_id, top_func
+    top_call = new Call top_id, [ k_id ]
+    block = new Block [ top_assign, top_call ]
+    return block.compile o
+
   # The main difference from a JavaScript *while* is that the CoffeeScript
   # *while* can be used as a part of a larger expression -- while loops may
   # return an array containing the computed result of each iteration.
   compileNode: (o) ->
+    return code if code = @compileTame o
     o.indent += TAB
     set      = ''
     {body}   = this
