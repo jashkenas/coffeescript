@@ -3,7 +3,7 @@ eat food for food in ['toast', 'cheese', 'wine']
 
 # Fine dining
 courses = ['salad', 'entree', 'dessert']
-menu course + 1, dish for dish, course in courses
+menu index + 1, dish for dish, index in courses
 
 # Health conscious meal
 foods = ['broccoli', 'spinach', 'chocolate']
