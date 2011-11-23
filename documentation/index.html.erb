@@ -780,9 +780,14 @@ Expressions
     </p>
     <%= code_for('fat_arrow') %>
     <p>
-      If we had used <tt>-></tt> in the callback above, <tt>@customer</tt> would
+      If we had used <tt>-&gt;</tt> in the callback above, <tt>@customer</tt> would
       have referred to the undefined "customer" property of the DOM element,
       and trying to call <tt>purchase()</tt> on it would have raised an exception.
+    </p>
+    <p>
+      When used in a class definition, methods declared with the fat arrow will
+      be automatically bound to each instance of the class when the instance is
+      constructed.
     </p>
 
     <p>
