@@ -309,8 +309,8 @@ exports.Literal = class Literal extends Base
     name is @value
 
   jumps: (o) ->
-    return no unless @isStatement()
-    if not (o and (o.loop or o.block and (@value isnt 'continue'))) then this else no
+    return this if @value is 'break' and not (o?.loop or o?.block)
+    return this if @value is 'continue' and not o?.loop
 
   compileNode: (o) ->
     code = if @isUndefined
