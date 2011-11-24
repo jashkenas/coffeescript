@@ -125,8 +125,10 @@ exports.Base = class Base
     extras = ""
     if @tameNodeFlag
       extras += "T"
-    if @cpsNodeFlag
-      extras += "C"
+    if @tameLoopFlag
+      extras += "L"
+    if @cpsPivotFlag
+      extras += "P"
     if extras.length
       extras = " (" + extras + ")"
     tree = '\n' + idt + name
@@ -178,13 +180,23 @@ exports.Base = class Base
       @tameNodeFlag = true if child.walkAstTame()
     @tameNodeFlag
 
-  walkAstCps : (flood) ->
-    flood = true  if @isLoop() and @tameNodeFlag
-    flood = false if @isAwait()
-    @cpsNodeFlag = flood
+  # Walk all loops that are marked as "tamed" and mark their children
+  # as being children in a tamed loop. They'll need more translations
+  # than other nodes. Eventually, "switch" statements might also be "loops
+  walkAstTamedLoop : (flood) ->
+    flood = true if @isLoop() and @tameNodeFlag
+    @tameLoopFlag = flood
     for child in @flattenChildren()
-      @cpsNodeFlag = true if child.walkAstCps(flood)
-    @cpsNodeFlag
+      @tameLoopFlag = true if child.walkAstTamedLoop (flood)
+    @tameLoopFlag
+
+  # A node is marked as a "cpsPivot" of it is (a) a 'tamed' node,
+  # (b) a jump node in a tamed while loop; or (c) an ancestor of (a) or (b).
+  walkCpsPivots : ->
+    @cpsPivotFlag = true if @tameNodeFlag or (@tameLoopFlag and @isJump())
+    for child in @flattenChildren()
+      @cpsPivotFlag = true if child.walkCpsPivots()
+    @cpsPivotFlag
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
@@ -199,11 +211,7 @@ exports.Base = class Base
       child.cpsRotate()
     this
 
-  needsCpsRotation : ->
-    return @tameNodeFlag or @cpsNodeFlag
-
-  isCpsPivot : ->
-    return @tameNodeFlag or @cpsNodeFlag
+  isCpsPivot : -> @cpsPivotFlag
 
   tameNestContinuationBlock : (b) ->
     @tameContinuationBlock = b
@@ -223,9 +231,10 @@ exports.Base = class Base
   isAwait         : NO
   isJump          : NO
 
-  cpsNodeFlag     : false
+  tameLoopFlag    : false
   tameNodeFlag    : false
   gotCpsSplit     : false
+  cpsPivotFlag    : false
 
   unwrap     : THIS
   unfoldSoak : NO
@@ -390,7 +399,7 @@ exports.Block = class Block extends Base
     child = null
 
     # If this Block has taming, then we go ahead and look for a pivot
-    if @needsCpsRotation()
+    if @isCpsPivot()
       i = 0
       for e in @expressions
         if e.isCpsPivot()
@@ -398,24 +407,22 @@ exports.Block = class Block extends Base
           break
         i++
 
-    console.log "CPS Rotate #{@expressions.length} #{pivot} #{i}"
-
     # We find a pivot if this node has taming, and it's not an Await
     # itself
     if pivot
-      console.log " --> doing the pivot"
       # include the pivot in this slice!
       rest = @expressions.slice(i+1)
       @expressions = @expressions.slice(0,i+1)
       if rest.length
         child = new Block rest
         pivot.tameNestContinuationBlock child
-        
+
         # we have to set the taming bit on the new Block
         for e in rest
           child.tameNodeFlag = true if e.tameNodeFlag
-          child.cpsNodeFlag = true if e.cpsNodeFlag
-          
+          child.tameLoopFlag = true if e.tameLoopFlag
+          child.cpsPivotFlag = true if e.cpsPivotFlag
+
         # now recursive apply the transformation to the new child,
         # this being especially import in blocks that have multiple
         # awaits on the same level
@@ -444,7 +451,8 @@ exports.Block = class Block extends Base
   # Perform all steps of the Tame transform
   tameTransform : ->
     @walkAstTame()
-    @walkAstCps(false)
+    @walkAstTamedLoop(false)
+    @walkCpsPivots()
     @cpsRotate()
 
 #### Literal
@@ -471,7 +479,11 @@ exports.Literal = class Literal extends Base
     name is @value
 
   compileTame: (o) ->
-    func = new Value new Literal tame.const.c_while
+    d =
+      'continue' : tame.const.c_while
+      'break'    : tame.const.b_while
+    l = d[@value]
+    func = new Value new Literal l
     call = new Call func, []
     return call.compile o
 
@@ -486,7 +498,7 @@ exports.Literal = class Literal extends Base
       if o.scope.method?.bound then o.scope.method.context else @value
     else if @value.reserved
       "\"#{@value}\""
-    else if @cpsNodeFlag and @isJump()
+    else if @tameLoopFlag and @isJump()
       @compileTame o
     else
       @value
@@ -515,7 +527,7 @@ exports.Return = class Return extends Base
 
   compileNode: (o) ->
     @tab + "return#{[" #{@expression.compile o, LEVEL_PAREN}" if @expression]};"
-    
+
 #### Value
 
 # A value, variable or literal or parenthesized, indexed or dotted into,
@@ -1387,8 +1399,12 @@ exports.Code = class Code extends Base
     @tameNodeFlag = true if super()
     false
 
-  walkAstCps : (flood) -> 
-    @cpsNodeFlag = true if super(false)
+  walkAstTamedLoop : (flood) ->
+    @tameLoopFlag = true if super(false)
+    false
+
+  walkAstPivots: () ->
+    @cpsPivotFlag = true if super()
     false
 
 #### Param
@@ -2089,7 +2105,7 @@ exports.If = class If extends Base
   jumps: (o) -> @body.jumps(o) or @elseBody?.jumps(o)
 
   compileNode: (o) ->
-    if @isStatement o or @needsCpsRotation() then @compileStatement o else @compileExpression o
+    if @isStatement o or @isCpsPivot() then @compileStatement o else @compileExpression o
 
   makeReturn: (res) ->
     @elseBody  or= new Block [new Literal 'void 0'] if res
