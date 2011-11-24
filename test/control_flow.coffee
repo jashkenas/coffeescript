@@ -427,6 +427,6 @@ test "Throw should be usable as an expression.", ->
     false or throw 'up'
     throw new Error 'failed'
   catch e
-    ok false unless e is 'up'
+    ok e is 'up'
     
   
