@@ -8,6 +8,7 @@
 #   * Until
 #   * Loop
 # * Switch
+# * Throw
 
 # TODO: make sure postfix forms and expression coercion are properly tested
 
@@ -418,3 +419,14 @@ test "Issue #997. Switch doesn't fallthrough.", ->
       val = 2
 
   eq val, 1
+
+
+test "Throw should be usable as an expression.", ->
+  
+  try
+    false or throw 'up'
+    throw new Error 'failed'
+  catch e
+    ok false unless e is 'up'
+    
+  
