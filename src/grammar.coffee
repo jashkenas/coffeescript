@@ -77,7 +77,6 @@ grammar =
   # Pure statements which cannot be expressions.
   Statement: [
     o 'Return'
-    o 'Throw'
     o 'Comment'
     o 'STATEMENT',                              -> new Literal $1
   ]
@@ -98,6 +97,7 @@ grammar =
     o 'For'
     o 'Switch'
     o 'Class'
+    o 'Throw'
   ]
 
   # An indented block of expressions. Note that the [Rewriter](rewriter.html)
