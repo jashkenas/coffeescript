@@ -1776,6 +1776,21 @@ exports.In = class In extends Base
   toString: (idt) ->
     super idt, @constructor.name + if @negated then '!' else ''
 
+#### Defer
+
+exports.Defer = class Defer extends Base
+  constructor : (args) ->
+    @args = args
+
+  children : ['args']
+
+##### Call or Defer
+#
+#exports.CallOrDefer = class CallOrDefer
+#  wrap: (val, args, opt) ->
+#    if val == 'defer' new Defer args
+#    else new Call val, args, opts
+
 #### Await
 
 exports.Await = class Await extends Base

@@ -104,6 +104,7 @@ grammar =
     o 'Switch'
     o 'Class'
     o 'Throw'
+    o 'Defer'
   ]
 
   # An indented block of expressions. Note that the [Rewriter](rewriter.html)
@@ -302,6 +303,10 @@ grammar =
     o 'Invocation OptFuncExist Arguments',      -> new Call $1, $3, $2
     o 'SUPER',                                  -> new Call 'super', [new Splat new Literal 'arguments']
     o 'SUPER Arguments',                        -> new Call 'super', $2
+  ]
+
+  Defer : [
+    o 'DEFER Arguments',                        -> new Defer $2
   ]
 
   # An optional existence check on a function.
