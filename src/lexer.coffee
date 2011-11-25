@@ -112,7 +112,7 @@ exports.Lexer = class Lexer
         id  = new String id
         id.reserved = yes
       else if id in RESERVED
-        @error "reserved word \"#{word}\""
+        @error "reserved word \"#{id}\""
 
     unless forcedIdentifier
       id  = COFFEE_ALIAS_MAP[id] if id in COFFEE_ALIASES
