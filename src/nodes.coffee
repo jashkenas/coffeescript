@@ -198,6 +198,12 @@ exports.Base = class Base
       @cpsPivotFlag = true if child.walkCpsPivots()
     @cpsPivotFlag
 
+  needsDummyContinuation : ->
+    if not @gotCpsSplit
+      k_id = new Value new Literal tame.const.k
+      empty = new Code [], new Block []
+      new Assign k_id, empty
+
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
   children: []
@@ -1564,10 +1570,8 @@ exports.While = class While extends Base
     top_assign = new Assign top_id, top_func
     top_call = new Call top_id, [ k_id ]
     top_statements = [ top_assign, top_call ]
-    if not @gotCpsSplit
-      empty = new Code [], new Block []
-      outer_k_assign = new Assign k_id, empty
-      top_statements.unshift outer_k_assign
+    if k = @needsDummyContinuation()
+      top_statements.unshift k
     top_block = new Block top_statements
     return top_block.compile o
 
@@ -1784,6 +1788,10 @@ exports.Defer = class Defer extends Base
 
   children : ['args']
 
+  compileNode : (p) ->
+    # fix me
+    "defer()"
+
 ##### Call or Defer
 #
 #exports.CallOrDefer = class CallOrDefer
@@ -1795,6 +1803,10 @@ exports.Defer = class Defer extends Base
 
 exports.Await = class Await extends Base
   constructor : (body) ->
+    @body = body
+
+  transform : ->
+    body = @body
     lhs = new Value new Literal tame.const.deferrals
     cls = new Value new Literal tame.const.ns
     cls.add(new Access(new Value new Literal tame.const.Deferrals))
@@ -1802,6 +1814,8 @@ exports.Await = class Await extends Base
     rhs = new Op "new", call
     assign = new Assign lhs, rhs
     body.unshift assign
+    if k = @needsDummyContinuation()
+      body.unshift (k)
     meth = lhs.add new Access new Value new Literal tame.const.fulfill
     call = new Call meth, []
     body.push (call)
@@ -1814,6 +1828,7 @@ exports.Await = class Await extends Base
   makeReturn : THIS
 
   compileNode: (o) ->
+    @transform()
     o.indent += TAB
     @body.compile o
 
