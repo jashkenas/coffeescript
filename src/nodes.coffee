@@ -1789,7 +1789,9 @@ exports.Defer = class Defer extends Base
   children : ['args']
 
   compileNode : (p) ->
-    # fix me
+    call = new Value new Literal tame.const.deferrals
+    meth = new Value new Literal tame.const.defer_method
+    call.add new Access meth
     "defer()"
 
 ##### Call or Defer

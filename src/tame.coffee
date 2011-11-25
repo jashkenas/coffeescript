@@ -16,3 +16,4 @@ exports.const =
   b_while : "_break"
   t_while : "_while"
   c_while : "_continue"
+  defer_method : "defer"
