@@ -126,6 +126,7 @@ grammar =
     o 'AlphaNumeric'
     o 'JS',                                     -> new Literal $1
     o 'REGEX',                                  -> new Literal $1
+    o 'DEBUGGER',                               -> new Literal $1
     o 'BOOL',                                   ->
       val = new Literal $1
       val.isUndefined = yes if $1 is 'undefined'
