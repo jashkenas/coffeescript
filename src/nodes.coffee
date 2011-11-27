@@ -583,6 +583,15 @@ exports.Value = class Value extends Base
   unwrap: ->
     if @properties.length then this else @base
 
+  # If this value is being used as a slot for the purposes of a defer
+  # then export it here
+  toSlot : ->
+    slotLoc = null
+    props = @properties
+    if props and props.length
+      slotLoc = props.pop()
+    return new Slot @base, props, slotLoc
+
   # A reference has base part (`this` value) and name part.
   # We cache them separately for compiling complex expressions.
   # `a()[b()] ?= c` -> `(_base = a())[_name = b()] ? _base[_name] = c`
@@ -1780,13 +1789,23 @@ exports.In = class In extends Base
   toString: (idt) ->
     super idt, @constructor.name + if @negated then '!' else ''
 
+#### Slot
+
+exports.Slot = class Slot extends Base
+  constructor : (base, props, loc) ->
+    @base = base
+    @props = props
+    @loc = loc
+
+  children : [ 'base', 'props', 'loc' ]
+
 #### Defer
 
 exports.Defer = class Defer extends Base
   constructor : (args) ->
-    @args = args
+    @slots = a.toSlot() for a in args
 
-  children : ['args']
+  children : ['slots']
 
   compileNode : (p) ->
     call = new Value new Literal tame.const.deferrals
