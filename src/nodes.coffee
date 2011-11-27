@@ -586,11 +586,10 @@ exports.Value = class Value extends Base
   # If this value is being used as a slot for the purposes of a defer
   # then export it here
   toSlot : ->
-    slotLoc = null
-    props = @properties
-    if props and props.length
-      slotLoc = props.pop()
-    return new Slot @base, props, slotLoc
+    sufffix = null
+    if @properties and @properties.length
+      suffix = @properties.pop()
+    return new Slot this, suffix
 
   # A reference has base part (`this` value) and name part.
   # We cache them separately for compiling complex expressions.
@@ -1792,26 +1791,74 @@ exports.In = class In extends Base
 #### Slot
 
 exports.Slot = class Slot extends Base
-  constructor : (base, props, loc) ->
-    @base = base
-    @props = props
-    @loc = loc
+  constructor : (value, suffix) ->
+    @value = value
+    @suffix = suffix
 
-  children : [ 'base', 'props', 'loc' ]
+  children : [ 'value', 'suffix' ]
+
+  pieces: (o) ->
+    ret = []
+    if suffix
+      ret.push @value.compile o
+      ret.push @suffix.compile o
+    ret
 
 #### Defer
 
 exports.Defer = class Defer extends Base
   constructor : (args) ->
     @slots = a.toSlot() for a in args
+    @params = []
 
   children : ['slots']
 
-  compileNode : (p) ->
-    call = new Value new Literal tame.const.deferrals
+  # return a copy so we don't have problems in making our function
+  newParam : ->
+    n = "#{tame.const.slot}#{@vars.length + 1}"
+    @param.push new Value new Literal n
+    new Value new Literal n
+
+  makeAssignFn : (o) ->
+    pieces = []
+    for s in @slots pieces.concat s.pieces o
+    i = 1
+    assignments = []
+    args = []
+    i = 1
+    for s in @slots
+      a = new Value new Literal "arguments"
+      a.add new Index i
+      if not s.suffix
+        slot = s.value
+      else
+        args.push s.value
+        params.push p
+        slot = @newParam()
+        if s.suffix instanceof Index
+          prop = new Index @newParam()
+          args.push s.suffix.index
+        else
+          prop = s.suffix
+        slot.add prop
+      assign = new Assign slot, a
+      assignments.push assign
+      i++
+    block = new Block assignments
+    inner_fn = new Code [], block
+    outer_block = new Block new Return inner_fn
+    outer_fn = new Code @params, outer_block
+    call = new Call outer_fn, args
+
+  compileNode : (o) ->
+    fn = new Value new Literal tame.const.deferrals
     meth = new Value new Literal tame.const.defer_method
-    call.add new Access meth
-    "defer()"
+    fn.add new Access meth
+    assign_fn = @makeAssignFn()
+    args =
+      assign_fn : assign_fn
+    call = new Call fn, [ args ]
+    call.compile o
 
 ##### Call or Defer
 #
