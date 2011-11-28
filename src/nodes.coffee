@@ -548,6 +548,9 @@ exports.Value = class Value extends Base
 
   children: ['base', 'properties']
 
+  copy : ->
+    return new Value @base, @properties
+
   # Add a property (or *properties* ) `Access` to the list.
   add: (props) ->
     @properties = @properties.concat props
@@ -1390,7 +1393,9 @@ exports.Code = class Code extends Base
     code  = 'function'
     code  += ' ' + @name if @ctor
     code  += '(' + params.join(', ') + ') {'
-    code  += ' /* TAMED */ ' if @tameNodeFlag
+    if @tameNodeFlag
+      code  += ' /* TAMED */ '
+      o.tamed_scope = o.scope
     code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
     code  += '}'
     return @tab + code if @ctor
@@ -1797,43 +1802,36 @@ exports.Slot = class Slot extends Base
 
   children : [ 'value', 'suffix' ]
 
-  pieces: (o) ->
-    ret = []
-    if suffix
-      ret.push @value.compile o
-      ret.push @suffix.compile o
-    ret
-
 #### Defer
 
 exports.Defer = class Defer extends Base
   constructor : (args) ->
-    @slots = a.toSlot() for a in args
+    @slots = for a in args
+      a.toSlot()
     @params = []
+    @vars = []
 
-  children : ['slots']
+  children : ['slots' ]
 
   # return a copy so we don't have problems in making our function
   newParam : ->
-    n = "#{tame.const.slot}#{@vars.length + 1}"
-    @param.push new Value new Literal n
-    new Value new Literal n
+    l = "#{tame.const.slot}_#{@params.length + 1}"
+    v = new Value new Literal l
+    @params.push v.copy()
+    v
 
   makeAssignFn : (o) ->
-    pieces = []
-    for s in @slots pieces.concat s.pieces o
-    i = 1
     assignments = []
     args = []
-    i = 1
+    i = 0
     for s in @slots
       a = new Value new Literal "arguments"
-      a.add new Index i
+      a.add new Index new Value new Literal i
       if not s.suffix
         slot = s.value
+        @vars.push slot
       else
         args.push s.value
-        params.push p
         slot = @newParam()
         if s.suffix instanceof Index
           prop = new Index @newParam()
@@ -1846,26 +1844,27 @@ exports.Defer = class Defer extends Base
       i++
     block = new Block assignments
     inner_fn = new Code [], block
-    outer_block = new Block new Return inner_fn
+    outer_block = new Block [ new Return inner_fn ]
     outer_fn = new Code @params, outer_block
     call = new Call outer_fn, args
 
-  compileNode : (o) ->
+  transform : ->
     fn = new Value new Literal tame.const.deferrals
     meth = new Value new Literal tame.const.defer_method
     fn.add new Access meth
     assign_fn = @makeAssignFn()
-    args =
-      assign_fn : assign_fn
-    call = new Call fn, [ args ]
-    call.compile o
+    assign_assign = new Assign(new Value(new Literal(tame.const.assign_fn)),
+                               assign_fn, "object")
+    o = new Obj [ assign_assign ]
+    @call = new Call fn, [ new Value o ]
 
-##### Call or Defer
-#
-#exports.CallOrDefer = class CallOrDefer
-#  wrap: (val, args, opt) ->
-#    if val == 'defer' new Defer args
-#    else new Call val, args, opts
+  compileNode : (o) ->
+    @transform()
+    for v in @vars
+      name = v.compile o, LEVEL_LIST
+      scope = o.tamed_scope || o.scope
+      scope.add name, 'var'
+    @call.compile o
 
 #### Await
 
@@ -1884,7 +1883,7 @@ exports.Await = class Await extends Base
     body.unshift assign
     if k = @needsDummyContinuation()
       body.unshift (k)
-    meth = lhs.add new Access new Value new Literal tame.const.fulfill
+    meth = lhs.copy().add new Access new Value new Literal tame.const.fulfill
     call = new Call meth, []
     body.push (call)
     @body = body

@@ -18,3 +18,4 @@ exports.const =
   c_while : "_continue"
   defer_method : "defer"
   slot : "__slot"
+  assign_fn : "assign_fn"
