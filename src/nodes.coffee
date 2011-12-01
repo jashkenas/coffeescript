@@ -1560,13 +1560,41 @@ exports.While = class While extends Base
       return node if node.jumps loop: yes
     no
 
+  tameWrap : (d) ->
+    condition = d.condition
+    body = d.body
+    outStatements = []
+    top_id = new Value new Literal tame.const.t_while
+    k_id = new Value new Literal tame.const.k
+    break_id = new Value new Literal tame.const.b_while
+    inner_k_id = new Value new Literal tame.const.k_while
+    break_assign = new Assign break_id, k_id
+    continue_id = new Value new Literal tame.const.c_while
+    continue_block = new Block [ new Call top_id, [ k_id ] ]
+    continue_block.unshift d.step if d.step
+    continue_body = new Code [], continue_block
+    continue_assign = new Assign continue_id, continue_body
+    inner_k_assign = new Assign inner_k_id, continue_id
+    cond = new If condition, body
+    cond.addElse new Block [ new Call break_id, [] ]
+    top_body = new Block [ break_assign, continue_assign, inner_k_assign, cond ]
+    top_func = new Code [ k_id ], top_body
+    top_assign = new Assign top_id, top_func
+    top_call = new Call top_id, [ k_id ]
+    top_statements = []
+    top_statements = top_statements.concat d.init if d.init
+    top_statements = top_statements.concat [ top_assign, top_call ]
+    if k = @needsDummyContinuation()
+      top_statements.unshift k
+    top_block = new Block top_statements
+
   callContinuation : ->
     k = new Call(new Literal tame.const.k_while, [])
     @body.push k
 
   compileTame: (o) ->
     return null unless @tameNodeFlag
-    b = TameLoop.wrap this, @condition, @body
+    b = @tameWrap { @condition, @body }
     return b.compile o
 
   # The main difference from a JavaScript *while* is that the CoffeeScript
@@ -2017,13 +2045,39 @@ exports.For = class For extends While
 
   compileTame: (o, d) ->
     return null unless @tameNodeFlag
-    if @range and d.name
-      condition = new Op '<', d.name, @source.base.to
-      init = new Assign d.name, @source.base.from
-      step = new Op '++', d.name
-      b = TameLoop.wrap this, { condition, @body, init, step }
-      b.compile o
 
+    body = d.body
+    condition = null
+    init = []
+    step = null
+
+    # Handle the case of 'for i in [0..10]'
+    if @range and @name
+      condition = new Op '<', @name, @source.base.to
+      init = [ new Assign @name, @source.base.from ]
+      step = new Op '++', @name
+
+    # Handle the case of 'for i,blah in arr'
+    else if ! @range and @name
+      ival = new Value new Literal d.ivar
+      len = o.scope.freeVariable 'len'
+      ref = o.scope.freeVariable 'ref'
+      ref_val = new Value new Literal ref
+      len_val = new Value new Literal len
+      a1 = new Assign ref_val, @source
+      len_rhs = ref_val.copy().add new Access new Value new Literal "length"
+      a2 = new Assign len_val, len_rhs
+      a3 = new Assign ival, new Value new Literal 0
+      init = [ a1, a2, a3 ]
+      condition = new Op '<', ival, len_val
+      step = new Op '++', ival
+      ref_val_copy = ref_val.copy()
+      ref_val_copy.add new Index ival
+      a4 = new Assign @name, ref_val_copy
+      body.unshift a4
+      
+    b = @tameWrap { condition, body, init, step }
+    b.compile o
 
   # Welcome to the hairiest method in all of CoffeeScript. Handles the inner
   # loop, filtering, stepping, and result saving for array, object, and range
@@ -2051,8 +2105,8 @@ exports.For = class For extends While
     defPart   = ''
     idt1      = @tab + TAB
 
-    return code if code = @compileTame o, {
-        @name, @index, ivar, stepvar, body, source }
+    return code if code = @compileTame o, { ivar, stepvar, body }
+    
     if @range
       forPart = source.compile merge(o, {index: ivar, name, @step})
     else
@@ -2303,35 +2357,6 @@ unfoldSoak = (o, parent, name) ->
 
 #### Unrolled loops
 #
-
-TameLoop =
-
-  wrap : (obj, d) ->
-    condition = d.condition
-    body = d.body
-    outStatements = []
-    top_id = new Value new Literal tame.const.t_while
-    k_id = new Value new Literal tame.const.k
-    break_id = new Value new Literal tame.const.b_while
-    inner_k_id = new Value new Literal tame.const.k_while
-    break_assign = new Assign break_id, k_id
-    continue_id = new Value new Literal tame.const.c_while
-    continue_block = new Block [ new Call top_id, [ k_id ] ]
-    continue_block.unshift d.step if d.step
-    continue_body = new Code [], continue_block
-    continue_assign = new Assign continue_id, continue_body
-    inner_k_assign = new Assign inner_k_id, continue_id
-    cond = new If condition, body
-    cond.addElse new Block [ new Call break_id, [] ]
-    top_body = new Block [ break_assign, continue_assign, inner_k_assign, cond ]
-    top_func = new Code [ k_id ], top_body
-    top_assign = new Assign top_id, top_func
-    top_call = new Call top_id, [ k_id ]
-    top_statements = [ top_assign, top_call ]
-    top_statements.unshift d.init if d.init
-    if k = obj.needsDummyContinuation()
-      top_statements.unshift k
-    top_block = new Block top_statements
 
 # Constants
 # ---------
