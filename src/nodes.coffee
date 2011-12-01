@@ -1566,27 +1566,8 @@ exports.While = class While extends Base
 
   compileTame: (o) ->
     return null unless @tameNodeFlag
-    outStatements = []
-    top_id = new Value new Literal tame.const.t_while
-    k_id = new Value new Literal tame.const.k
-    break_id = new Value new Literal tame.const.b_while
-    inner_k_id = new Value new Literal tame.const.k_while
-    break_assign = new Assign break_id, k_id
-    continue_id = new Value new Literal tame.const.c_while
-    continue_body = new Code [], new Block [ new Call top_id, [ k_id ] ]
-    continue_assign = new Assign continue_id, continue_body
-    inner_k_assign = new Assign inner_k_id, continue_id
-    cond = new If @condition, @body
-    cond.addElse new Block [ new Call break_id, [] ]
-    top_body = new Block [ break_assign, continue_assign, inner_k_assign, cond ]
-    top_func = new Code [ k_id ], top_body
-    top_assign = new Assign top_id, top_func
-    top_call = new Call top_id, [ k_id ]
-    top_statements = [ top_assign, top_call ]
-    if k = @needsDummyContinuation()
-      top_statements.unshift k
-    top_block = new Block top_statements
-    return top_block.compile o
+    b = TameLoop.wrap this, @condition, @body
+    return b.compile o
 
   # The main difference from a JavaScript *while* is that the CoffeeScript
   # *while* can be used as a part of a larger expression -- while loops may
@@ -2034,6 +2015,16 @@ exports.For = class For extends While
 
   children: ['body', 'source', 'guard', 'step']
 
+  compileTame: (o, d) ->
+    return null unless @tameNodeFlag
+    if @range and d.name
+      condition = new Op '<', d.name, @source.base.to
+      init = new Assign d.name, @source.base.from
+      step = new Op '++', d.name
+      b = TameLoop.wrap this, { condition, @body, init, step }
+      b.compile o
+
+
   # Welcome to the hairiest method in all of CoffeeScript. Handles the inner
   # loop, filtering, stepping, and result saving for array, object, and range
   # comprehensions. Some of the generated code can be shared in common, and
@@ -2059,6 +2050,9 @@ exports.For = class For extends While
     guardPart = ''
     defPart   = ''
     idt1      = @tab + TAB
+
+    return code if code = @compileTame o, {
+        @name, @index, ivar, stepvar, body, source }
     if @range
       forPart = source.compile merge(o, {index: ivar, name, @step})
     else
@@ -2305,6 +2299,39 @@ unfoldSoak = (o, parent, name) ->
   parent[name] = ifn.body
   ifn.body = new Value parent
   ifn
+
+
+#### Unrolled loops
+#
+
+TameLoop =
+
+  wrap : (obj, d) ->
+    condition = d.condition
+    body = d.body
+    outStatements = []
+    top_id = new Value new Literal tame.const.t_while
+    k_id = new Value new Literal tame.const.k
+    break_id = new Value new Literal tame.const.b_while
+    inner_k_id = new Value new Literal tame.const.k_while
+    break_assign = new Assign break_id, k_id
+    continue_id = new Value new Literal tame.const.c_while
+    continue_block = new Block [ new Call top_id, [ k_id ] ]
+    continue_block.unshift d.step if d.step
+    continue_body = new Code [], continue_block
+    continue_assign = new Assign continue_id, continue_body
+    inner_k_assign = new Assign inner_k_id, continue_id
+    cond = new If condition, body
+    cond.addElse new Block [ new Call break_id, [] ]
+    top_body = new Block [ break_assign, continue_assign, inner_k_assign, cond ]
+    top_func = new Code [ k_id ], top_body
+    top_assign = new Assign top_id, top_func
+    top_call = new Call top_id, [ k_id ]
+    top_statements = [ top_assign, top_call ]
+    top_statements.unshift d.init if d.init
+    if k = obj.needsDummyContinuation()
+      top_statements.unshift k
+    top_block = new Block top_statements
 
 # Constants
 # ---------
