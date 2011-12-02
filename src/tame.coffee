@@ -1,4 +1,7 @@
 
+#=======================================================================
+# Compile Time!
+# 
 exports.AstTamer = class AstTamer
 
     constructor: (rest...) ->
@@ -19,3 +22,6 @@ exports.const =
   defer_method : "defer"
   slot : "__slot"
   assign_fn : "assign_fn"
+  runtime : "tamerun"
+
+

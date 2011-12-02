@@ -180,6 +180,11 @@ exports.Base = class Base
       @tameNodeFlag = true if child.walkAstTame()
     @tameNodeFlag
 
+  needsRuntime : ->
+    for child in @flattenChildren()
+      return true if child.needsRuntime()
+    return false
+
   # Walk all loops that are marked as "tamed" and mark their children
   # as being children in a tamed loop. They'll need more translations
   # than other nodes. Eventually, "switch" statements might also be "loops
@@ -454,12 +459,22 @@ exports.Block = class Block extends Base
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Block
     new Block nodes
 
+  addRuntime : ->
+    ns = new Value new Literal tame.const.ns
+    req = new Value new Literal 'require'
+    lib = '"' + tame.const.runtime + '"'
+    call = new Call req, [ new Value new Literal lib ]
+    assign = new Assign ns, call
+    @expressions.unshift assign
+
   # Perform all steps of the Tame transform
   tameTransform : ->
     @walkAstTame()
+    @addRuntime() if @needsRuntime()
     @walkAstTamedLoop(false)
     @walkCpsPivots()
     @cpsRotate()
+    this
 
 #### Literal
 
@@ -1422,9 +1437,9 @@ exports.Code = class Code extends Base
     @tameLoopFlag = true if super(false)
     false
 
-  walkAstPivots: () ->
-    @cpsPivotFlag = true if super()
-    false
+  walkCpsPivots: ->
+    super()
+    @cpsPivotFlag = false
 
 #### Param
 
@@ -1874,6 +1889,8 @@ exports.Defer = class Defer extends Base
       scope = o.tamed_scope || o.scope
       scope.add name, 'var'
     @call.compile o
+
+  needsRuntime : -> true
 
 #### Await
 
