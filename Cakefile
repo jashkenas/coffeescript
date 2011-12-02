@@ -30,7 +30,7 @@ header = """
 sources = [
   'coffee-script', 'grammar', 'helpers'
   'lexer', 'nodes', 'rewriter', 'scope',
-  'tame', 'tamerun'
+  'tame'
 ].map (filename) -> "src/#{filename}.coffee"
 
 # Run a CoffeeScript through our node/coffee interpreter.

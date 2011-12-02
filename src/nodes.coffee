@@ -462,9 +462,11 @@ exports.Block = class Block extends Base
   addRuntime : ->
     ns = new Value new Literal tame.const.ns
     req = new Value new Literal 'require'
-    lib = '"' + tame.const.runtime + '"'
+    lib = '"coffee-script"'
     call = new Call req, [ new Value new Literal lib ]
-    assign = new Assign ns, call
+    rhs = new Value call
+    rhs.add new Access ns
+    assign = new Assign ns, rhs
     @expressions.unshift assign
 
   # Perform all steps of the Tame transform
@@ -2092,7 +2094,7 @@ exports.For = class For extends While
       ref_val_copy.add new Index ival
       a4 = new Assign @name, ref_val_copy
       body.unshift a4
-      
+
     b = @tameWrap { condition, body, init, step }
     b.compile o
 
@@ -2123,7 +2125,7 @@ exports.For = class For extends While
     idt1      = @tab + TAB
 
     return code if code = @compileTame o, { ivar, stepvar, body }
-    
+
     if @range
       forPart = source.compile merge(o, {index: ivar, name, @step})
     else
