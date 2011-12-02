@@ -15,6 +15,7 @@ CoffeeScript = require './coffee-script'
 
 # Keep track of the list of defined tasks, the accepted options, and so on.
 tasks     = {}
+atasks    = {}
 options   = {}
 switches  = []
 oparse    = null
@@ -24,9 +25,9 @@ helpers.extend global,
 
   # Define a Cake task with a short name, an optional sentence description,
   # and the function to run as the action itself.
-  task: (name, description, action) ->
+  task: (name, description, action, async) ->
     [action, description] = [description, action] unless action
-    tasks[name] = {name, description, action}
+    tasks[name] = {name, description, action, async}
 
   # Define an option that the Cakefile accepts. The parsed options hash,
   # containing all of the command-line options passed, will be made available
@@ -35,15 +36,19 @@ helpers.extend global,
     switches.push [letter, flag, description]
 
   # Invoke another task in the current Cakefile.
-  invoke: (name) ->
-    missingTask name unless tasks[name]
-    tasks[name].action options
+  invoke: (name, cb) ->
+    missingTask name unless (t = tasks[name])
+    if t.async
+      await t.action options, defer()
+    else
+      t.action options
+    cb() if cb
 
 # Run `cake`. Executes all of the tasks you pass, in order. Note that Node's
 # asynchrony may cause tasks to execute in a different order than you'd expect.
 # If no tasks are passed, print the help screen. Keep a reference to the
 # original directory name, when running Cake tasks from subdirectories.
-exports.run = ->
+exports.run = (cb) ->
   global.__originalDirname = fs.realpathSync '.'
   process.chdir cakefileDirectory __originalDirname
   args = process.argv[2..]
@@ -54,7 +59,9 @@ exports.run = ->
     options = oparse.parse(args)
   catch e
     return fatalError "#{e}"
-  invoke arg for arg in options.arguments
+  for arg in options.arguments
+    await invoke arg, defer()
+  cb() if cb
 
 # Display the list of Cake tasks in a format similar to `rake -T`
 printTasks = ->
@@ -74,8 +81,11 @@ fatalError = (message) ->
   console.log 'To see a list of all tasks/options, run "cake"'
   process.exit 1
 
+<<<<<<< HEAD
 missingTask = (task) -> fatalError "No such task: #{task}"
 
+=======
+>>>>>>> try this, it might be a fail.
 # When `cake` is invoked, search in the current and all parent directories
 # to find the relevant Cakefile.
 cakefileDirectory = (dir) ->
