@@ -1577,17 +1577,15 @@ exports.While = class While extends Base
     top_id = new Value new Literal tame.const.t_while
     k_id = new Value new Literal tame.const.k
     break_id = new Value new Literal tame.const.b_while
-    inner_k_id = new Value new Literal tame.const.k_while
     break_assign = new Assign break_id, k_id
     continue_id = new Value new Literal tame.const.c_while
     continue_block = new Block [ new Call top_id, [ k_id ] ]
     continue_block.unshift d.step if d.step
     continue_body = new Code [], continue_block
     continue_assign = new Assign continue_id, continue_body
-    inner_k_assign = new Assign inner_k_id, continue_id
     cond = new If condition, body
     cond.addElse new Block [ new Call break_id, [] ]
-    top_body = new Block [ break_assign, continue_assign, inner_k_assign, cond ]
+    top_body = new Block [ break_assign, continue_assign, cond ]
     top_func = new Code [ k_id ], top_body
     top_assign = new Assign top_id, top_func
     top_call = new Call top_id, [ k_id ]
@@ -1599,7 +1597,7 @@ exports.While = class While extends Base
     top_block = new Block top_statements
 
   callContinuation : ->
-    k = new Call(new Literal tame.const.k_while, [])
+    k = new Call(new Literal tame.const.c_while, [])
     @body.push k
 
   compileTame: (o) ->
