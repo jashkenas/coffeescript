@@ -36,13 +36,9 @@ helpers.extend global,
     switches.push [letter, flag, description]
 
   # Invoke another task in the current Cakefile.
-  invoke: (name, cb) ->
+  invoke: (name) ->
     missingTask name unless (t = tasks[name])
-    if t.async
-      await t.action options, defer()
-    else
-      t.action options
-    cb() if cb
+    t.action options
 
 # Run `cake`. Executes all of the tasks you pass, in order. Note that Node's
 # asynchrony may cause tasks to execute in a different order than you'd expect.
@@ -60,8 +56,7 @@ exports.run = (cb) ->
   catch e
     return fatalError "#{e}"
   for arg in options.arguments
-    await invoke arg, defer()
-  cb() if cb
+    invoke arg
 
 # Display the list of Cake tasks in a format similar to `rake -T`
 printTasks = ->

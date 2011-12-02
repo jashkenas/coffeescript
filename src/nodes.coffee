@@ -460,14 +460,7 @@ exports.Block = class Block extends Base
     new Block nodes
 
   addRuntime : ->
-    ns = new Value new Literal tame.const.ns
-    req = new Value new Literal 'require'
-    lib = '"coffee-script"'
-    call = new Call req, [ new Value new Literal lib ]
-    rhs = new Value call
-    rhs.add new Access ns
-    assign = new Assign ns, rhs
-    @expressions.unshift assign
+    @expressions.unshift InlineDeferral.generate()
 
   # Perform all steps of the Tame transform
   tameTransform : ->
@@ -2365,6 +2358,105 @@ CpsCascade =
     cont = new Code [], Block.wrap [ rest ]
     call = new Call func, [ cont ]
     new Block [ call ]
+
+#### Deferral class, the most basic one...
+
+InlineDeferral =
+
+  # Generate this code, inline. Is there a better way?
+  # 
+  # class __Deferrals
+  #   constructor: (@continuation) ->
+  #     @count = 1
+  #   _fulfill : ->
+  #     @continuation if ! --@count
+  #   defer : (defer_params) ->
+  #     @count++
+  #     (inner_params...) =>
+  #       defer_params?.assign_fn?.apply(null, inner_params)
+  #       @_fulfill()
+  # tame =
+  #    Deferrals : __Deferrals
+  # 
+  generate : ->
+    k = new Literal "continuation"
+    cnt = new Literal "count"
+    cn = new Literal tame.const.Deferrals
+    ns = new Value new Literal tame.const.ns
+
+    # make the constructor:
+    # 
+    #   constructor: (@continuation) ->
+    #     @count = 1
+    # 
+    k_member = new Value new Literal "this"
+    k_member.add new Access k
+    p1 = new Param k_member
+    cnt_member = new Value new Literal "this"
+    cnt_member.add new Access cnt
+    a1 = new Assign cnt_member, new Value new Literal 1
+    constructor_params = [ p1 ]
+    constructor_body = new Block [ a1 ]
+    constructor_code = new Code constructor_params, constructor_body
+    constructor_name = new Value new Literal "constructor"
+    constructor_assign = new Assign constructor_name, constructor_code
+
+    # make the _fulfill member:
+    # 
+    #   _fulfill : ->
+    #     @continuation if ! --@count
+    # 
+    if_expr = new Call k_member, []
+    if_body = new Block [ if_expr ]
+    decr = new Op '--', cnt_member
+    if_cond = new Op '!', decr
+    my_if = new If if_cond, if_body
+    _fulfill_body = new Block [ my_if ]
+    _fulfill_code = new Code [], _fulfill_body
+    _fulfill_name = new Value new Literal tame.const.fulfill
+    _fulfill_assign = new Assign _fulfill_name, _fulfill_code
+
+    # Make the defer member:
+    #   defer : (defer_params) ->
+    #     @count++
+    #     (inner_params...) =>
+    #       defer_params?.assign_fn?.apply(null, inner_params)
+    #       @_fulfill()
+    # 
+    inc = new Op "++", cnt_member
+    ip = new Literal "inner_params"
+    dp = new Literal "defer_params"
+    call_meth = new Value dp
+    af = new Literal tame.const.assign_fn
+    call_meth.add new Access af, "soak"
+    my_apply = new Literal "apply"
+    call_meth.add new Access my_apply, "soak"
+    my_null = new Value new Literal "null"
+    apply_call = new Call call_meth, [ my_null, new Value ip ]
+    _fulfill_method = new Value new Literal "this"
+    _fulfill_method.add new Access new Literal tame.const.fulfill
+    _fulfill_call = new Call _fulfill_method, []
+    inner_body = new Block [ apply_call, _fulfill_call ]
+    inner_params = [ new Param ip, null, on ]
+    inner_code = new Code inner_params, inner_body, "boundfunc"
+    defer_body = new Block [ inc, inner_code ]
+    defer_params = [ new Param dp ]
+    defer_code = new Code defer_params, defer_body
+    defer_name = new Value new Literal tame.const.defer_method
+    defer_assign = new Assign defer_name, defer_code
+
+    # Piece the class together
+    assignments = [ constructor_assign, _fulfill_assign, defer_assign ]
+    obj = new Obj assignments, true
+    body = new Block [ new Value obj ]
+    tmp = new Value new Literal "__" + tame.const.Deferrals
+    klass = new Class tmp, null, body
+    ns_access = ns.copy()
+    ns_access.add new Access cn
+    klass_assign = new Assign ns_access, klass
+    empty = new Obj []
+    tame_init = new Assign ns, empty
+    new Block [ tame_init, klass_assign ]
 
 # Unfold a node's child if soak, then tuck the node under created `If`
 unfoldSoak = (o, parent, name) ->

@@ -42,7 +42,8 @@ makeDeferReturn = (obj, defer_args, id) ->
 #-----------------------------------------------------------------------
 # Deferrals
 #
-#   A collection of Deferrals that can
+#   A collection of Deferrals; this is a better version than the one
+#   that's inline; it allows for tame tracing
 #
 class Deferrals
 
