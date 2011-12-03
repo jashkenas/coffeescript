@@ -246,3 +246,9 @@ task 'test:browser', 'run the test suite against the merged browser script', ->
   global.testingBrowser = yes
   (-> eval source).call result
   runTests result.CoffeeScript
+
+atask 'test:acake', 'run a test for Cakefile async', (opts,cb) ->
+  console.log "start sleep"
+  await setTimeout defer(), 1000
+  console.log "end sleep"
+  cb()

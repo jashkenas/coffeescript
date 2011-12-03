@@ -29,6 +29,9 @@ helpers.extend global,
     [action, description] = [description, action] unless action
     tasks[name] = {name, description, action, async}
 
+  atask: (name, description, action) ->
+    task name, description, action, true
+
   # Define an option that the Cakefile accepts. The parsed options hash,
   # containing all of the command-line options passed, will be made available
   # as the first argument to the action.
@@ -36,9 +39,13 @@ helpers.extend global,
     switches.push [letter, flag, description]
 
   # Invoke another task in the current Cakefile.
-  invoke: (name) ->
+  invoke: (name, cb) ->
     missingTask name unless (t = tasks[name])
-    t.action options
+    if t.async
+      await t.action(options, defer())
+    else
+      t.action options
+    cb()
 
 # Run `cake`. Executes all of the tasks you pass, in order. Note that Node's
 # asynchrony may cause tasks to execute in a different order than you'd expect.
@@ -56,7 +63,7 @@ exports.run = (cb) ->
   catch e
     return fatalError "#{e}"
   for arg in options.arguments
-    invoke arg
+    await invoke(arg,defer())
 
 # Display the list of Cake tasks in a format similar to `rake -T`
 printTasks = ->
