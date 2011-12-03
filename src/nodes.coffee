@@ -2447,8 +2447,7 @@ InlineDeferral =
     assignments = [ constructor_assign, _fulfill_assign, defer_assign ]
     obj = new Obj assignments, true
     body = new Block [ new Value obj ]
-    tmp = new Value new Literal "__" + tame.const.Deferrals
-    klass = new Class tmp, null, body
+    klass = new Class null, null, body
     ns_access = ns.copy()
     ns_access.add new Access cn
     klass_assign = new Assign ns_access, klass
