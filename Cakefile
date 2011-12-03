@@ -185,9 +185,9 @@ runTests = (CoffeeScript) ->
       e.description = description if description?
       e.source      = fn.toString() if fn.toString?
       failures.push filename: currentFile, error: e
-  
+
   # An async testing primitive
-  global.atest = (description, fn, cb) ->
+  global.atest = (description, fn) ->
     fn.test = { description, currentFile }
     await fn.call(fn, defer(ok, e))
     if ok
