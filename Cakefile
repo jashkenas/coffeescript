@@ -97,7 +97,7 @@ task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter'
 
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
   code = ''
-  for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'nodes', 'coffee-script', 'browser']
+  for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'nodes', 'coffee-script', 'browser', 'tame']
     code += """
       require['./#{name}'] = new function() {
         var exports = this;
@@ -185,6 +185,17 @@ runTests = (CoffeeScript) ->
       e.description = description if description?
       e.source      = fn.toString() if fn.toString?
       failures.push filename: currentFile, error: e
+  
+  # An async testing primitive
+  global.atest = (description, fn, cb) ->
+    fn.test = { description, currentFile }
+    await fn.call(fn, defer(ok, e))
+    if ok
+      ++passedTests
+    else
+      e.description = description if description?
+      e.source      = fn.toString() if fn.toString?
+      failures.push filename : currentFile, error : e
 
   # See http://wiki.ecmascript.org/doku.php?id=harmony:egal
   egal = (a, b) ->
@@ -252,3 +263,4 @@ atask 'test:acake', 'run a test for Cakefile async', (opts,cb) ->
   await setTimeout defer(), 1000
   console.log "end sleep"
   cb()
+
