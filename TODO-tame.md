@@ -5,5 +5,6 @@ Todos to get Tame Running
    * continuations must therefore return a value
  * other use cases for `for`
  * regression tests
+ * `switch`es
 
 
