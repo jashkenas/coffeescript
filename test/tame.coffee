@@ -1,4 +1,7 @@
 
+delay = (cb) ->
+   setTimeout cb, 10
+
 atest "basic tame waiting", (cb) ->
    i = 1
    await setTimeout(defer(), 10)
@@ -29,4 +32,12 @@ atest "basic tame set structs", (cb) ->
      field = "bar" # change the field to make sure that we captured "yo"
    cb(obj.cat.yo == i, {})
 
+atest "continue / brek test" , (cb) ->
+  tot = 0
+  for i in [0..100]
+    await delay defer()
+    continue if i == 3
+    tot += i
+    break if i == 10
+  cb(tot == 52, {})
 
