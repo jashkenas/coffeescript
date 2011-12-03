@@ -2363,23 +2363,22 @@ InlineDeferral =
 
   # Generate this code, inline. Is there a better way?
   # 
-  # class __Deferrals
-  #   constructor: (@continuation) ->
-  #     @count = 1
-  #   _fulfill : ->
-  #     @continuation if ! --@count
-  #   defer : (defer_params) ->
-  #     @count++
-  #     (inner_params...) =>
-  #       defer_params?.assign_fn?.apply(null, inner_params)
-  #       @_fulfill()
   # tame =
-  #    Deferrals : __Deferrals
+  #   Deferrals : class
+  #     constructor: (@continuation) ->
+  #       @count = 1
+  #     _fulfill : ->
+  #       @continuation if ! --@count
+  #     defer : (defer_params) ->
+  #       @count++
+  #       (inner_params...) =>
+  #         defer_params?.assign_fn?.apply(null, inner_params)
+  #         @_fulfill()
   # 
   generate : ->
     k = new Literal "continuation"
     cnt = new Literal "count"
-    cn = new Literal tame.const.Deferrals
+    cn = new Value new Literal tame.const.Deferrals
     ns = new Value new Literal tame.const.ns
 
     # make the constructor:
@@ -2448,12 +2447,14 @@ InlineDeferral =
     obj = new Obj assignments, true
     body = new Block [ new Value obj ]
     klass = new Class null, null, body
-    ns_access = ns.copy()
-    ns_access.add new Access cn
-    klass_assign = new Assign ns_access, klass
-    empty = new Obj []
-    tame_init = new Assign ns, empty
-    new Block [ tame_init, klass_assign ]
+    
+    # tame =
+    #   Deferrals : <class>
+    # 
+    klass_assign = new Assign cn, klass, "object"
+    ns_obj = new Obj [ klass_assign ], true
+    ns_val = new Value ns_obj
+    new Assign ns, ns_val
 
 # Unfold a node's child if soak, then tuck the node under created `If`
 unfoldSoak = (o, parent, name) ->
