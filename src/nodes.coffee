@@ -261,8 +261,9 @@ exports.Block = class Block extends Base
       break unless exp instanceof Comment or exp instanceof Literal
     o = merge(o, level: LEVEL_TOP)
     if i
-      rest = @expressions.splice i, @expressions.length
-      code = @compileNode(o)
+      rest = @expressions.splice i, 9e9
+      [spaced, @spaced] = [@spaced, no]
+      [code  , @spaced] = [(@compileNode o), spaced]
       @expressions = rest
     post = @compileNode o
     {scope} = o
