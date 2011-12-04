@@ -1,20 +1,21 @@
 
-delay = (cb) ->
-   setTimeout cb, 10
+delay = (cb, i) ->
+   i = i || 10
+   setTimeout cb, i
 
 atest "basic tame waiting", (cb) ->
    i = 1
-   await setTimeout(defer(), 10)
+   await delay defer()
    i++
    cb(i == 2, {})
 
 foo = (i, cb) ->
-  await setTimeout(defer(), i);
+  await delay(defer(), i)
   cb(i)
 
 atest "basic tame waiting", (cb) ->
    i = 1
-   await setTimeout(defer(), 10)
+   await delay defer()
    i++
    cb(i == 2, {})
 
