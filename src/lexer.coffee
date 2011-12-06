@@ -89,7 +89,7 @@ exports.Lexer = class Lexer
       return id.length
     forcedIdentifier = colon or
       (prev = last @tokens) and (prev[0] in ['.', '?.', '::'] or
-      not prev.spaced and prev[0] is '@')
+      not prev.spaced and prev[0] is '@') and id isnt 'defer'
     tag = 'IDENTIFIER'
 
     if not forcedIdentifier and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS)

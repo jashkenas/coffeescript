@@ -827,7 +827,7 @@ exports.Access = class Access extends Base
 
   compile: (o) ->
     name = @name.compile o
-    if IDENTIFIER.test name then ".#{name}" else "[#{name}]"
+    if (IDENTIFIER.test name) or (@name instanceof Defer) then ".#{name}" else "[#{name}]"
 
   isComplex: NO
 
