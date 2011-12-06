@@ -24,6 +24,7 @@ class exports.Rewriter
     @closeOpenIndexes()
     @addImplicitIndentation()
     @tagPostfixConditionals()
+    @addImplicitParentheses()
     @addImplicitBraces()
     @addImplicitParentheses()
     @tokens
@@ -101,7 +102,7 @@ class exports.Rewriter
       (tag in ['TERMINATOR', 'OUTDENT'] and
         not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':')) or
         (tag is ',' and one and
-          one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT', '{'])
+          one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT'])
     action = (token, i) ->
       tok = ['}', '}', token[2]]
       tok.generated = yes
@@ -132,6 +133,16 @@ class exports.Rewriter
   addImplicitParentheses: ->
     noCall = no
     action = (token, i) -> @tokens.splice i, 0, ['CALL_END', ')', token[2]]
+
+    addImplicitBracesCondition = (token, i) ->
+      [one, two, three] = @tokens[i + 1 .. i + 3]
+      return false if 'HERECOMMENT' is one?[0]
+      [tag] = token
+      (tag in ['TERMINATOR', 'OUTDENT'] and
+        not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':')) or
+        (tag is ',' and one and
+          one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT'])
+
     @scanTokens (token, i, tokens) ->
       tag     = token[0]
       noCall  = yes if tag in ['CLASS', 'IF']
@@ -148,12 +159,20 @@ class exports.Rewriter
         prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
         (tag in IMPLICIT_CALL or not (token.spaced or token.newLine) and tag in IMPLICIT_UNSPACED_CALL)
       tokens.splice i, 0, ['CALL_START', '(', token[2]]
+      in_object = false
       @detectEnd i + 1, (token, i) ->
         [tag] = token
         return yes if not seenSingle and token.fromThen
         seenSingle  = yes if tag in ['IF', 'ELSE', 'CATCH', '->', '=>']
         seenControl = yes if tag in ['IF', 'ELSE', 'SWITCH', 'TRY']
         return yes if tag in ['.', '?.', '::'] and @tag(i - 1) is 'OUTDENT'
+
+        if !in_object and tag is ':'
+          in_object = true
+        else if in_object and addImplicitBracesCondition.call this, token, i
+          in_object = false
+        return no if in_object
+
         not token.generated and @tag(i - 1) isnt ',' and (tag in IMPLICIT_END or
         (tag is 'INDENT' and not seenControl)) and
         (tag isnt 'INDENT' or
