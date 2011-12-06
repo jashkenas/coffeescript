@@ -2060,9 +2060,57 @@ exports.For = class For extends While
     condition = null
     init = []
     step = null
+    scope = o.scope
+
+    # Handle 'for k,v of obj'
+    if @object
+      # _ref = source
+      ref = scope.freeVariable 'ref'
+      ref_val = new Value new Literal ref
+      a1 = new Assign ref_val, @source
+
+      # keys = for k of _ref 
+      #   k 
+      keys = scope.freeVariable 'keys'
+      keys_val = new Value new Literal keys
+      key = scope.freeVariable 'k'
+      key_lit = new Literal key
+      key_val = new Value key_lit
+      empty_arr = new Value new Arr
+      loop_body = new Block [ key_val ]
+      loop_source = { object : yes, name : key_lit, source : ref_val }
+      loop_keys = new For loop_body, loop_source
+      a2 = new Assign keys_val, loop_keys
+
+      # _i = 0
+      ival = new Value new Literal 'i'
+      a3 = new Assign ival, new Value new Literal 0
+
+      init = [ a1, a2, a3 ]
+
+      # _i < keys.length
+      keys_len = keys_val.copy()
+      keys_len.add new Access new Value new Literal "length"
+      condition = new Op '<', ival, keys_len
+
+      # _i++
+      step = new Op '++', ival
+
+      # value = _ref[name]
+      if @name
+        source_access = ref_val.copy()
+        source_access.add new Index @index
+        a5 = new Assign @name, source_access
+        body.unshift a5
+
+      # key = keys[_i]
+      keys_access = keys_val.copy()
+      keys_access.add new Index ival
+      a4 = new Assign @index, keys_access
+      body.unshift a4
 
     # Handle the case of 'for i in [0..10]'
-    if @range and @name
+    else if @range and @name
       condition = new Op '<', @name, @source.base.to
       init = [ new Assign @name, @source.base.from ]
       step = new Op '++', @name
@@ -2070,8 +2118,8 @@ exports.For = class For extends While
     # Handle the case of 'for i,blah in arr'
     else if ! @range and @name
       ival = new Value new Literal d.ivar
-      len = o.scope.freeVariable 'len'
-      ref = o.scope.freeVariable 'ref'
+      len = scope.freeVariable 'len'
+      ref = scope.freeVariable 'ref'
       ref_val = new Value new Literal ref
       len_val = new Value new Literal len
       a1 = new Assign ref_val, @source
