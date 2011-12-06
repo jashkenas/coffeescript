@@ -1,5 +1,5 @@
 
-#=======================================================================
+# =======================================================================
 # Compile Time!
 #
 exports.AstTamer = class AstTamer
@@ -60,4 +60,60 @@ class Deferrals
 
 #=======================================================================
 
-exports.runtime = { Deferrals }
+class Rendezvous
+  constructor: ->
+    @completed = []
+    @waiters = []
+    @defer_id = 0
+    # This is a hack to work with the semantic desugaring of
+    # 'defers' output by the tamejs compiler.
+    @__tame_defers = this
+
+  #-----------------------------------------
+    
+  class RvId
+    constructor: (@rv,@id)->
+    defer: (defer_args) ->
+      @rv._deferWithId @id, defer_args
+
+  #-----------------------------------------
+  # 
+  # The public interface has 3 methods --- wait, defer and id
+  wait: (cb) ->
+    if @completed.length
+      x = @completed.shift()
+      cb(x)
+    else
+      @waiters.push cb
+
+  #-----------------------------------------
+
+  defer: (defer_args) ->
+    id = @defer_id++
+    @deferWithId id, defer_args
+
+  #-----------------------------------------
+  
+  id: (i) ->
+    { __tame_defers : new @RvId(this, i) }
+  
+  #-----------------------------------------
+
+  _fulfill: (id) ->
+    if @waiters.length
+      cb = @waiters.shift()
+      cb(id)
+    else
+      @completed.push id
+
+  #-----------------------------------------
+  
+  _deferWithId: (id, defer_args) ->
+    @count++
+    makeDeferReturn this, defer_args, id
+
+#=======================================================================
+
+exports.runtime = { Deferrals, Rendezvous }
+
+#=======================================================================
