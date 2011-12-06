@@ -42,3 +42,20 @@ atest "continue / brek test" , (cb) ->
     break if i == 10
   cb(tot == 52, {})
 
+atest "for k,v of obj testing", (cb) ->
+  obj = { the : "quick", brown : "fox", jumped : "over" };
+  s = ""
+  for k,v of obj
+    await delay defer()
+    s += k + " " + v + " "
+  cb( s == "the quick brown fox jumped over ", {} )
+
+atest "for k,v in arr testing", (cb) ->
+  obj = [ "the", "quick", "brown" ]
+  s = ""
+  for v,i in obj
+    await delay defer()
+    s += v + " " + i + " "
+  cb( s == "the 0 quick 1 brown 2 ", {} )
+
+
