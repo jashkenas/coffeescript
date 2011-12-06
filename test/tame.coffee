@@ -58,4 +58,25 @@ atest "for k,v in arr testing", (cb) ->
     s += v + " " + i + " "
   cb( s == "the 0 quick 1 brown 2 ", {} )
 
+atest "switch-a-roos", (cb) ->
+  res = 0
+  for i in [0..5]
+    await delay defer()
+    switch i
+      when 0 then res += 1
+      when 1
+        await delay defer()
+        res += 20
+      when 2
+        await delay defer()
+        if false
+          res += 100000
+        else
+          await delay defer()
+          res += 300
+      else
+        res += i*1000
+    res += 10000 if i == 2
+  console.log "logging #{res}" 
+  cb( res == 17321, {} )
 
