@@ -470,7 +470,7 @@ exports.Block = class Block extends Base
   # Perform all steps of the Tame transform
   tameTransform : ->
     @walkAstTame()
-    @addRuntime() if @needsRuntime() # and not @findTameRequire()
+    @addRuntime() if @needsRuntime() and not @findTameRequire()
     @walkAstTamedLoop(false)
     @walkCpsPivots()
     @cpsRotate()
