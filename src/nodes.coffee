@@ -1932,27 +1932,36 @@ exports.Await = class Await extends Base
 
 
 #### tameRequire
-
+#
+# By default, the tame libraries are inlined.  But if you preface your file
+# with 'tameRequire(ext)', you can have it require external libraries
+# of your choosing.
+# 
 exports.TameRequire = class TameRequire extends Base
   constructor: (args) ->
     @typ = null
     if args and args.length > 2
-       throw SyntaxError "Args to tameRequire are either 'inline' or 'ext'"
+       throw SyntaxError "args to tameRequire are either 'inline' or 'ext'"
     if args and args.length == 1
        @typ = args[0]
 
   compileNode: (o) ->
     v = if @typ then @typ.compile(o) else "inline"
-    @body = if v == "inline"
-      InlineDeferral.generate()
-    else
-      file = if v == "ext" then (new Literal new Value "'coffee-script'") else @typ
+    @body = null
+    if v == "inline"
+      @body = InlineDeferral.generate()
+    else if v == "ext"
+      file = new Literal "'coffee-script'"
+      access = new Access new Literal tame.const.ns
       req = new Value new Literal "require"
       call = new Call req, [ file ]
-      call.add new Access new Literal tame.const.ns
-      ns = new Access new Literal tame.const.ns
-      new Assign ns, call
-    @body.compile o
+      callv = new Value call
+      callv.add access
+      ns = new Value new Literal tame.const.ns
+      @body = new Assign ns, callv
+    else if v != "skip"
+      throw SyntaxError "tameRequire takes either 'inline', 'ext' or 'skip'"
+    if @body then @body.compile o else ''
 
   children = [ 'typ']
 
