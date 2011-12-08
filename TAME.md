@@ -115,12 +115,10 @@ a standard CoffeeScript-style abstract syntax tree (AST).
    A. Find all `continue` or `break` nodes marked with an **L** flag.
      Mark them and their descendants with a **P** flag.
 
-At this point, all those nodes marked with **A** or **P** are those
-that need to be "rotated" in the next step.
-
-1. `Rotate` the AST as follows.
+1. ``Rotate'' all those nodes marked with **A** or **P**:
 
    A. For each `Block` node _b_ in the `AST` marked **A** or **P**:
+
       i. Find _b_'s first child _c_ marked with with **A** or **P**.
 
 1. Output preamble/boilerplate
