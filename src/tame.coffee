@@ -3,11 +3,9 @@
 # Compile Time!
 #
 exports.AstTamer = class AstTamer
-
-    constructor: (rest...) ->
-
-    transform: (x) ->
-      x.tameTransform()
+  constructor: (rest...) ->
+  transform: (x) ->
+    x.tameTransform()
 
 exports.const =
   k : "__tame_k"
@@ -66,7 +64,7 @@ class Rendezvous
     @waiters = []
     @defer_id = 0
     # This is a hack to work with the semantic desugaring of
-    # 'defers' output by the tamejs compiler.
+    # 'defers' output by the coffee compiler.
     @__tame_defers = this
 
   #-----------------------------------------

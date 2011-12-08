@@ -80,6 +80,12 @@ grammar =
     o 'Comment'
     o 'STATEMENT',                              -> new Literal $1
     o 'Await'
+    o 'Require'
+  ]
+
+  Require : [
+    o 'TAMEREQUIRE Arguments',                  -> new TameRequire $2
+
   ]
 
   Await: [

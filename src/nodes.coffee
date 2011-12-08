@@ -185,6 +185,11 @@ exports.Base = class Base
       return true if child.needsRuntime()
     return false
 
+  findTameRequire : ->
+    for child in @flattenChildren()
+      return r if (r = child.hasTameRequire())
+    return null 
+
   # Walk all loops that are marked as "tamed" and mark their children
   # as being children in a tamed loop. They'll need more translations
   # than other nodes. Eventually, "switch" statements might also be "loops
@@ -460,12 +465,12 @@ exports.Block = class Block extends Base
     new Block nodes
 
   addRuntime : ->
-    @expressions.unshift InlineDeferral.generate()
+    @expressions.unshift new TameRequire()
 
   # Perform all steps of the Tame transform
   tameTransform : ->
     @walkAstTame()
-    @addRuntime() if @needsRuntime()
+    @addRuntime() if @needsRuntime() and not @findTameRequire
     @walkAstTamedLoop(false)
     @walkCpsPivots()
     @cpsRotate()
@@ -1924,6 +1929,34 @@ exports.Await = class Await extends Base
   walkAstTame : ->
     super()
     @tameNodeFlag = true
+
+
+#### tameRequire
+
+exports.TameRequire = class Try extends Base
+  constructor: (args) ->
+    @typ = null
+    if args.length > 2
+       throw SyntaxError "Args to tameRequire are either 'inline' or 'ext'"
+    if args.length == 1
+       @typ = args[0]
+
+  compileNode: (o) ->
+    v = if @typ then @typ.compile(o) else "inline"
+    @body = if v == "inline"
+      InlineDeferral.generate()
+    else
+      file = if v == "ext" then (new Literal new Value "'coffee-script'") else @typ
+      req = new Value new Literal "require"
+      call = new Call req, [ file ]
+      call.add new Access new Literal tame.const.ns
+      ns = new Access new Literal tame.const.ns
+      new Assign ns, call
+    @body.compile o
+
+  children = [ 'typ']
+
+  findTameRequire: -> this
 
 #### Try
 
