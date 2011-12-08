@@ -2450,7 +2450,8 @@ CpsCascade =
 
   wrap: (statement, rest) ->
     func = new Code [ new Param new Literal tame.const.k ], Block.wrap [ statement ]
-    cont = new Code [], Block.wrap [ rest ]
+    block = Block.wrap [ rest ]
+    cont = new Code [], block, 'boundfunc'
     call = new Call func, [ cont ]
     new Block [ call ]
 

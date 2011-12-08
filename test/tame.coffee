@@ -86,9 +86,8 @@ atest "parallel awaits with buggy classes", (cb) ->
     constructor: ->
       @val = 0
     increment: (wait, i, cb) =>
-      self = this
       await setTimeout(defer(),wait)
-      self.val += i
+      @val += i
       cb()
     getVal: -> @val
 
