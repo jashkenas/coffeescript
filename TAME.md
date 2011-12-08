@@ -108,6 +108,9 @@ a standard CoffeeScript-style abstract syntax tree (AST).
 
 1. Apply *tame annotations*:
 
+   1. Find all `await` nodes in the AST.  Mark these nodes and their
+     ancestors with an _A_ flag.
+
 1. Output preamble/boilerplate
 
 1. Rotate the AST
