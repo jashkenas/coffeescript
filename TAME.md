@@ -110,8 +110,10 @@ a standard CoffeeScript-style abstract syntax tree (AST).
 
    A. Find all `await` nodes in the AST.  Mark these nodes and their
      ancestors with an **A** flag.
+
    A. Find all `for`, `while`, or `loop` nodes marked with **A**.
      Mark them and their descendants with an **L** flag.
+
    A. Find all `continue` or `break` nodes marked with an **L** flag.
      Mark them and their descendants with a **P** flag.
 
