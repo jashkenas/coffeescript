@@ -162,23 +162,13 @@ exports.Base = class Base
     continue until node is node = node.unwrap()
     node
 
-  # Don't try this at home with actually human kids
+  # Don't try this at home with actual human kids
   flattenChildren : ->
     out = []
     for attr in @children when @[attr]
       for child in flatten [@[attr]]
         out.push (child)
     out
-
-  # Walk the AST looking for taming. Mark a node as with tame flags
-  # if any of its children are tamed, but don't cross scope boundary
-  # when considering the children.
-  # We consider two types of nodes -- blocks who have a child that's
-  # tamed, and all other nodes who have a child that's tamed
-  walkAstTame : ->
-    for child in @flattenChildren()
-      @tameNodeFlag = true if child.walkAstTame()
-    @tameNodeFlag
 
   needsRuntime : ->
     for child in @flattenChildren()
@@ -188,11 +178,28 @@ exports.Base = class Base
   findTameRequire : ->
     for child in @flattenChildren()
       return r if (r = child.findTameRequire())
-    return null 
+    return null
+
+  #-----------------------------------------------------------------------
+  # AST Walking Routines for CPS Pivots, etc.
+  #
+  #  There are three passes:
+  #    1. Find await's and trace upward.
+  #    2. Find loops found in #1, and flood downward
+  #    3. Find break/continue found in #2, and trace upward
+  # 
+
+  # Walk the AST looking for taming. Mark a node as with tame flags
+  # if any of its children are tamed, but don't cross scope boundary
+  # when considering the children.
+  walkAstTame : ->
+    for child in @flattenChildren()
+      @tameNodeFlag = true if child.walkAstTame()
+    @tameNodeFlag
 
   # Walk all loops that are marked as "tamed" and mark their children
   # as being children in a tamed loop. They'll need more translations
-  # than other nodes. Eventually, "switch" statements might also be "loops
+  # than other nodes. Eventually, "switch" statements might also be "loops"
   walkAstTamedLoop : (flood) ->
     flood = true if @isLoop() and @tameNodeFlag
     @tameLoopFlag = flood
@@ -207,6 +214,9 @@ exports.Base = class Base
     for child in @flattenChildren()
       @cpsPivotFlag = true if child.walkCpsPivots()
     @cpsPivotFlag
+
+  #
+  #-----------------------------------------------------------------------
 
   needsDummyContinuation : ->
     if not @gotCpsSplit
@@ -426,9 +436,12 @@ exports.Block = class Block extends Base
     # We find a pivot if this node has taming, and it's not an Await
     # itself
     if pivot
-      # include the pivot in this slice!
       rest = @expressions.slice(i+1)
+      
+      # Leave the pivot in the list of expressions
       @expressions = @expressions.slice(0,i+1)
+
+      # If there are elements in rest, then we need to nest a continuation block 
       if rest.length
         child = new Block rest
         pivot.tameNestContinuationBlock child
