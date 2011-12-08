@@ -187,7 +187,7 @@ exports.Base = class Base
 
   findTameRequire : ->
     for child in @flattenChildren()
-      return r if (r = child.hasTameRequire())
+      return r if (r = child.findTameRequire())
     return null 
 
   # Walk all loops that are marked as "tamed" and mark their children
@@ -470,7 +470,7 @@ exports.Block = class Block extends Base
   # Perform all steps of the Tame transform
   tameTransform : ->
     @walkAstTame()
-    @addRuntime() if @needsRuntime() and not @findTameRequire
+    @addRuntime() if @needsRuntime() # and not @findTameRequire()
     @walkAstTamedLoop(false)
     @walkCpsPivots()
     @cpsRotate()
@@ -1933,12 +1933,12 @@ exports.Await = class Await extends Base
 
 #### tameRequire
 
-exports.TameRequire = class Try extends Base
+exports.TameRequire = class TameRequire extends Base
   constructor: (args) ->
     @typ = null
-    if args.length > 2
+    if args and args.length > 2
        throw SyntaxError "Args to tameRequire are either 'inline' or 'ext'"
-    if args.length == 1
+    if args and args.length == 1
        @typ = args[0]
 
   compileNode: (o) ->
