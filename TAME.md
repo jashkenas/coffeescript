@@ -109,11 +109,18 @@ a standard CoffeeScript-style abstract syntax tree (AST).
 1. Apply *tame annotations*:
 
    1. Find all `await` nodes in the AST.  Mark these nodes and their
-     ancestors with an _A_ flag.
+     ancestors with an **A** flag.
+   1. Find all `for`, `while`, or `loop` nodes marked with **A**.
+     Mark them and their descendants with an **L** flag.
+   1. Find all `continue` or `break` nodes marked with an **L** flag.
+     Mark them and their descendants with a **P** flag.
 
-1. Output preamble/boilerplate
+At this point, all those nodes marked with **A** or **P** are those
+that need to be "rotated" in the next step.
 
 1. Rotate the AST
+
+1. Output preamble/boilerplate
 
 1. Compile as normal
 

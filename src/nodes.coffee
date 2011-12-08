@@ -123,7 +123,7 @@ exports.Base = class Base
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   #
-  # Add some Tame-specific additions --- the 'T' flag if this node
+  # Add some Tame-specific additions --- the 'A' flag if this node
   # is an await or its ancestor; the 'L' flag, if this node is a tamed
   # loop or its descendant; and a 'P' flag if this node is going to be
   # a 'pivot' in the CPS tree rotation.
@@ -131,7 +131,7 @@ exports.Base = class Base
   toString: (idt = '', name = @constructor.name) ->
     extras = ""
     if @tameNodeFlag
-      extras += "T"
+      extras += "A"
     if @tameLoopFlag
       extras += "L"
     if @cpsPivotFlag
