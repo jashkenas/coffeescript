@@ -80,3 +80,23 @@ atest "switch-a-roos", (cb) ->
   console.log "logging #{res}" 
   cb( res == 17321, {} )
 
+
+atest "parallel awaits with buggy classes", (cb) ->
+  class MyClass
+    constructor: ->
+      @val = 0
+    increment: (wait, i, cb) =>
+      self = this
+      await setTimeout(defer(),wait)
+      self.val += i
+      cb()
+    getVal: -> @val
+
+  obj = new MyClass()      
+  await
+    obj.increment 10, 1, defer()
+    obj.increment 20, 2, defer()
+    obj.increment 30, 4, defer()
+  v = obj.getVal()
+  cb(v == 7, {})  
+
