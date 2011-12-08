@@ -95,3 +95,22 @@ do_all = (lst) ->
 ```
 
 
+Tranlsation Technique
+---------------------
+
+The CoffeeScript tame addition uses a simlar continuation-passing
+translation to *tamejs*, but it's been refined greatly.  Here are
+the general steps involved:
+
+1. Run the standard CoffeeScript lexer, rewriter, and parser, with a 
+few small additions (for `await` and `defer`), yielding
+a standard CoffeeScript-style abstract syntax tree (AST).
+
+1. Apply *tame annotations*:
+
+1. Output preamble/boilerplate
+
+1. Rotate the AST
+
+1. Compile as normal
+
