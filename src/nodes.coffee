@@ -119,8 +119,15 @@ exports.Base = class Base
     return list[i] while i-- when list[i] not instanceof Comment
     null
 
+  #
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
+  #
+  # Add some Tame-specific additions --- the 'T' flag if this node
+  # is an await or its ancestor; the 'L' flag, if this node is a tamed
+  # loop or its descendant; and a 'P' flag if this node is going to be
+  # a 'pivot' in the CPS tree rotation.
+  # 
   toString: (idt = '', name = @constructor.name) ->
     extras = ""
     if @tameNodeFlag
@@ -420,6 +427,15 @@ exports.Block = class Block extends Base
         code += ';\n'
     code + post
 
+  #-----------------------------------------------------------------------
+  #
+  # cpsRotate -- This is the key abstract syntax tree rotation of the
+  # CPS translation. Take a block with a bunch of sequential statements
+  # and "pivot" the AST on the first available pivot.  The expressions
+  # on the LHS of the pivot stay where the are.  The expressions on the RHS
+  # of the pivot become the pivot's continuation. And the process is applied
+  # recursively.
+  # 
   cpsRotate : ->
     pivot = null
     child = null
@@ -456,6 +472,10 @@ exports.Block = class Block extends Base
         # this being especially import in blocks that have multiple
         # awaits on the same level
         child.cpsRotate()
+        
+      # The pivot value needs to call the currently active continuation
+      # after it's all done.  For things like if..else.. this does something
+      # interesting and pushes the continuation down both branches.
       pivot.callContinuation()
 
     # After we have pivoted this guy, we still need to walk all of the
@@ -467,6 +487,10 @@ exports.Block = class Block extends Base
 
     # return this for chaining
     this
+    
+  #   
+  #-----------------------------------------------------------------------
+  
 
   addCpsChain : ->
     @expressions.push(new Call(new Literal tame.const.k, []))
@@ -1856,6 +1880,7 @@ exports.Defer = class Defer extends Base
     v
 
   makeAssignFn : (o) ->
+    return null if @slots.length == 0
     assignments = []
     args = []
     i = 0
@@ -1887,10 +1912,11 @@ exports.Defer = class Defer extends Base
     fn = new Value new Literal tame.const.deferrals
     meth = new Value new Literal tame.const.defer_method
     fn.add new Access meth
-    assign_fn = @makeAssignFn()
-    assign_assign = new Assign(new Value(new Literal(tame.const.assign_fn)),
-                               assign_fn, "object")
-    o = new Obj [ assign_assign ]
+    assignments = []
+    if (assign_fn = @makeAssignFn())
+      assignments.push new Assign(new Value(new Literal(tame.const.assign_fn)),
+                                  assign_fn, "object")
+    o = new Obj assignments
     @call = new Call fn, [ new Value o ]
 
   compileNode : (o) ->
