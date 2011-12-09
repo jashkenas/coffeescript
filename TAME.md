@@ -106,24 +106,47 @@ the general steps involved:
 few small additions (for `await` and `defer`), yielding
 a standard CoffeeScript-style abstract syntax tree (AST).
 
-1. Apply *tame annotations*:
+2. Apply *tame annotations*:
 
    A. Find all `await` nodes in the AST.  Mark these nodes and their
-     ancestors with an **A** flag.
+   ancestors with an **A** flag.
 
-   A. Find all `for`, `while`, or `loop` nodes marked with **A**.
-     Mark them and their descendants with an **L** flag.
+   B. Find all `for`, `while`, or `loop` nodes marked with **A**.
+   Mark them and their descendants with an **L** flag.
 
-   A. Find all `continue` or `break` nodes marked with an **L** flag.
-     Mark them and their descendants with a **P** flag.
+   C. Find all `continue` or `break` nodes marked with an **L** flag.
+   Mark them and their descendants with a **P** flag.
 
-1. ``Rotate'' all those nodes marked with **A** or **P**:
+3. ``Rotate'' all those nodes marked with **A** or **P**:
 
    A. For each `Block` node _b_ in the `AST` marked **A** or **P**:
 
       i. Find _b_'s first child _c_ marked with with **A** or **P**.
 
-1. Output preamble/boilerplate
+      ii. Cut _b_'s list of expressions after _c_, and move those
+      expressions on the right of the cut into a new block, called
+      _d_.  This block is _b_'s continuation block and becomes _c_'s
+      child in the AST.  This is the actual ``rotation.''
 
-1. Compile as normal
+      iii. Call the rotation recursively on the child block _d_.
+
+      iv. Add an additional code to _c_'s body, which is to call the
+      continuation represented by _d_.  For `if` statements this means
+      calling the continuation in both branches; for `switch`
+      statements, this means calling the continuation from all
+      branches; for loops, this means calling `continue` at the end of
+      the loop body; for blocks, this means just calling the
+      continuation as the last statement in the block.  See
+      `callContinuation` in `nodes.coffee.`
+
+4. Output preamble/boilerplate; for the case of JavaScript output to
+browsers, inline the small class `Deferrals` needed during runtime;
+for node-based server-side JavaScript, a `require` statement suffices
+here.  Only do this if the source file has a `defer` statement
+in it.
+
+5. Compile as normal.  The effect of the above is to mutate the original
+CoffeeScript AST into another valid CoffeeScript AST.  This AST is then
+compiled with the normal rules.
+
 
