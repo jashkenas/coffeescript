@@ -102,35 +102,35 @@ The CoffeeScript tame addition uses a simlar continuation-passing
 translation to *tamejs*, but it's been refined greatly.  Here are
 the general steps involved:
 
-* Run the standard CoffeeScript lexer, rewriter, and parser, with a 
+* **1** Run the standard CoffeeScript lexer, rewriter, and parser, with a 
 few small additions (for `await` and `defer`), yielding
 a standard CoffeeScript-style abstract syntax tree (AST).
 
-* Apply *tame annotations*:
+* **2** Apply *tame annotations*:
 
-   * Find all `await` nodes in the AST.  Mark these nodes and their
+   * **2.1** Find all `await` nodes in the AST.  Mark these nodes and their
    ancestors with an **A** flag.
 
-   * Find all `for`, `while`, or `loop` nodes marked with **A**.
+   * **2.2** Find all `for`, `while`, or `loop` nodes marked with **A**.
    Mark them and their descendants with an **L** flag.
 
-   * Find all `continue` or `break` nodes marked with an **L** flag.
+   * **2.3** Find all `continue` or `break` nodes marked with an **L** flag.
    Mark them and their descendants with a **P** flag.
 
-* ``Rotate'' all those nodes marked with **A** or **P**:
+* **3** ``Rotate'' all those nodes marked with **A** or **P**:
 
-   * For each `Block` node _b_ in the `AST` marked **A** or **P**:
+   * **3.1** For each `Block` node _b_ in the `AST` marked **A** or **P**:
 
-      * Find _b_'s first child _c_ marked with with **A** or **P**.
+      * **3.1.1** Find _b_'s first child _c_ marked with with **A** or **P**.
 
-      * Cut _b_'s list of expressions after _c_, and move those
+      * **3.1.2** Cut _b_'s list of expressions after _c_, and move those
       expressions on the right of the cut into a new block, called
       _d_.  This block is _b_'s continuation block and becomes _c_'s
       child in the AST.  This is the actual ``rotation.''
 
-      * Call the rotation recursively on the child block _d_.
+      * **3.1.3** Call the rotation recursively on the child block _d_.
 
-      * Add an additional code to _c_'s body, which is to call the
+      * **3.1.4** Add an additional code to _c_'s body, which is to call the
       continuation represented by _d_.  For `if` statements this means
       calling the continuation in both branches; for `switch`
       statements, this means calling the continuation from all
@@ -139,13 +139,13 @@ a standard CoffeeScript-style abstract syntax tree (AST).
       continuation as the last statement in the block.  See
       `callContinuation` in `nodes.coffee.`
 
-* Output preamble/boilerplate; for the case of JavaScript output to
+* **4** Output preamble/boilerplate; for the case of JavaScript output to
 browsers, inline the small class `Deferrals` needed during runtime;
 for node-based server-side JavaScript, a `require` statement suffices
 here.  Only do this if the source file has a `defer` statement
 in it.
 
-* Compile as normal.  The effect of the above is to mutate the original
+* **5** Compile as normal.  The effect of the above is to mutate the original
 CoffeeScript AST into another valid CoffeeScript AST.  This AST is then
 compiled with the normal rules.
 
