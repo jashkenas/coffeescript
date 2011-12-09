@@ -150,3 +150,28 @@ CoffeeScript AST into another valid CoffeeScript AST.  This AST is then
 compiled with the normal rules.
 
 
+Translation Example
+------------------
+
+For an example translation, consider the following block of code:
+
+```coffeescript
+
+while x1
+  f1()
+
+while x2
+  if y
+    f2() 
+    continue
+    f3()
+  await 
+    f4(defer())
+  if z
+    f5()
+    break
+    f6()
+
+while x3
+  f7()
+```
