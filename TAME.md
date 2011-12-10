@@ -177,4 +177,4 @@ while x3
 ```
 
 Here is schematic diagram for this AST:
-![media/rotate1.png]
+![graph](media/rotate1.png)
