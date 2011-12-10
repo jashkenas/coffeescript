@@ -175,3 +175,6 @@ while x2
 while x3
   f7()
 ```
+
+Here is schematic diagram for this AST:
+![media/rotate1.png]
