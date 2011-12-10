@@ -159,7 +159,6 @@ f = (cb) ->
         await setTimeout defer(), 4*Math.random()
       )(defer())
   cb()
-}
 ```
 
 
