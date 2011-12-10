@@ -177,4 +177,4 @@ while x3
 ```
 
 Here is schematic diagram for this AST:
-![graph](/blob/master/media/rotate1.png)
+![graph](/maxtaco/coffee-script/blob/master/media/rotate1.png)
