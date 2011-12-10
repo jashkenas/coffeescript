@@ -99,7 +99,7 @@ Tranlsation Technique
 ---------------------
 
 The CoffeeScript tame addition uses a simlar continuation-passing
-translation to *tamejs*, but it's been refined greatly.  Here are
+translation to *tamejs*, but it's been refined.  Here are
 the general steps involved:
 
 * **1** Run the standard CoffeeScript lexer, rewriter, and parser, with a 

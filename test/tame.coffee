@@ -43,7 +43,7 @@ atest "continue / brek test" , (cb) ->
   cb(tot == 52, {})
 
 atest "for k,v of obj testing", (cb) ->
-  obj = { the : "quick", brown : "fox", jumped : "over" };
+  obj = { the : "quick", brown : "fox", jumped : "over" }
   s = ""
   for k,v of obj
     await delay defer()
@@ -77,11 +77,10 @@ atest "switch-a-roos", (cb) ->
       else
         res += i*1000
     res += 10000 if i == 2
-  console.log "logging #{res}" 
   cb( res == 17321, {} )
 
 
-atest "parallel awaits with buggy classes", (cb) ->
+atest "parallel awaits with classes", (cb) ->
   class MyClass
     constructor: ->
       @val = 0
@@ -101,3 +100,12 @@ atest "parallel awaits with buggy classes", (cb) ->
   v = obj.getVal()
   cb(v == 14, {})
 
+atest "loop construct", (cb) ->
+  i = 0
+  loop
+    await delay defer()
+    i += 1
+    await delay defer()
+    break if i == 10
+    await delay defer()
+  cb(i == 10, {})
