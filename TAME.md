@@ -192,6 +192,7 @@ while x3
 * The green nodes are those marked with **A** and **P**.
 ![graph](/maxtaco/coffee-script/raw/master/media/rotate5.png)
 
-* In Step 3, rotate all marked nodes AST nodes. The red dashed
-arrows are between parents and their new rotated children.
+* In Step 3, rotate all marked nodes AST nodes. This rotation
+introduces the new yellow `block` nodes in the graph, and attaches
+them to pivot nodes as _continuation_ blocks.
 ![graph](/maxtaco/coffee-script/raw/master/media/post-rotate.png)
