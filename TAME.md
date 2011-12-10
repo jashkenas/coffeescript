@@ -176,5 +176,14 @@ while x3
   f7()
 ```
 
-Here is schematic diagram for this AST:
-![graph](https://github.com/maxtaco/coffee-script/raw/master/media/rotate1.png)
+#### Here is schematic diagram for this AST:
+![graph](/maxtaco/coffee-script/raw/master/media/rotate1.png)
+
+#### After Step 2.1, nodes in blue are marked with **A**.
+![graph](/maxtaco/coffee-script/raw/master/media/rotate2.png)
+
+#### After Step 2.2, nodes in purple are marked with **L**.
+![graph](/maxtaco/coffee-script/raw/master/media/rotate3.png)
+
+#### After Step 2.3, nodes in yellow are marked with **P**
+![graph](/maxtaco/coffee-script/raw/master/media/rotate3.png)
