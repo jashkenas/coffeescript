@@ -95,7 +95,7 @@ exports.Base = class Base
     if res
       new Call new Literal("#{res}.push"), [me]
     else
-      new Return me
+      new Return me, @hasAutocb
 
   # Does this node, or any of its children, contain a node of a certain kind?
   # Recursively traverses down the *children* of the nodes, yielding to a block
@@ -130,12 +130,10 @@ exports.Base = class Base
   # 
   toString: (idt = '', name = @constructor.name) ->
     extras = ""
-    if @tameNodeFlag
-      extras += "A"
-    if @tameLoopFlag
-      extras += "L"
-    if @cpsPivotFlag
-      extras += "P"
+    extras += "A" if @tameNodeFlag
+    extras += "L" if @tameLoopFlag
+    extras += "P" if @cpsPivotFlag
+    extras += "C" if @hasAutocb
     if extras.length
       extras = " (" + extras + ")"
     tree = '\n' + idt + name
@@ -211,7 +209,7 @@ exports.Base = class Base
     flood = true if @isLoop() and @tameNodeFlag
     @tameLoopFlag = flood
     for child in @flattenChildren()
-      @tameLoopFlag = true if child.walkAstTamedLoop (flood)
+      @tameLoopFlag = true if child.walkAstTamedLoop flood
     @tameLoopFlag
 
   # A node is marked as a "cpsPivot" of it is (a) a 'tamed' node,
@@ -223,6 +221,13 @@ exports.Base = class Base
     @cpsPivotFlag
 
   #
+  #-----------------------------------------------------------------------
+ 
+  markAutocbs : (found) ->
+    @hasAutocb = found
+    for child in @flattenChildren()
+      child.markAutocbs(found)
+  
   #-----------------------------------------------------------------------
 
   needsDummyContinuation : ->
@@ -268,6 +273,7 @@ exports.Base = class Base
   tameNodeFlag    : false
   gotCpsSplit     : false
   cpsPivotFlag    : false
+  hasAutocb       : false
 
   unwrap     : THIS
   unfoldSoak : NO
@@ -462,11 +468,12 @@ exports.Block = class Block extends Base
         child = new Block rest
         pivot.tameNestContinuationBlock child
 
-        # we have to set the taming bit on the new Block
+        # Pass our node bits onto our new children
         for e in rest
           child.tameNodeFlag = true if e.tameNodeFlag
           child.tameLoopFlag = true if e.tameLoopFlag
           child.cpsPivotFlag = true if e.cpsPivotFlag
+          child.hasAutocb = true    if e.hasAutocb
 
         # now recursive apply the transformation to the new child,
         # this being especially import in blocks that have multiple
@@ -510,6 +517,7 @@ exports.Block = class Block extends Base
     @addRuntime() if @needsRuntime() and not @findTameRequire()
     @walkAstTamedLoop(false)
     @walkCpsPivots()
+    @markAutocbs()
     @cpsRotate()
     this
 
@@ -570,7 +578,7 @@ exports.Literal = class Literal extends Base
 # A `return` is a *pureStatement* -- wrapping it in a closure wouldn't
 # make sense.
 exports.Return = class Return extends Base
-  constructor: (expr) ->
+  constructor: (expr, @hasAutocb) ->
     @expression = expr if expr and not expr.unwrap().isUndefined
 
   children: ['expression']
@@ -584,7 +592,15 @@ exports.Return = class Return extends Base
     if expr and expr not instanceof Return then expr.compile o, level else super o, level
 
   compileNode: (o) ->
-    @tab + "return#{[" #{@expression.compile o, LEVEL_PAREN}" if @expression]};"
+    if @hasAutocb
+      cb = new Value new Literal tame.const.autocb
+      args = if @expression then [ @expression ] else []
+      call = new Call cb, args
+      ret = new Literal "return"
+      block = new Block [ call, ret];
+      block.compile o
+    else
+      @tab + "return#{[" #{@expression.compile o, LEVEL_PAREN}" if @expression]};"
 
 #### Value
 
@@ -1395,6 +1411,14 @@ exports.Code = class Code extends Base
   isStatement: -> !!@ctor
 
   jumps: NO
+
+  markAutocbs: (found) ->
+    found = false
+    for p in @params
+      if p.name instanceof Literal and p.name.value == tame.const.autocb
+        found = true
+        break
+    super(found)
 
   # Compilation creates a new scope unless explicitly asked to share with the
   # outer scope. Handles splat parameters in the parameter list by peeking at

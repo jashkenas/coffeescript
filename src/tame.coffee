@@ -20,6 +20,7 @@ exports.const =
   slot : "__slot"
   assign_fn : "assign_fn"
   runtime : "tamerun"
+  autocb : "autocb"
 
 #=======================================================================
 # runtime
