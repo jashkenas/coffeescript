@@ -192,5 +192,6 @@ while x3
 * The green nodes are those marked with **A** and **P**.
 ![graph](/maxtaco/coffee-script/raw/master/media/rotate5.png)
 
-* In Step 3, rotate all marked nodes AST nodes.
+* In Step 3, rotate all marked nodes AST nodes. The red dashed
+arrows are between parents and their new rotated children.
 ![graph](/maxtaco/coffee-script/raw/master/media/post-rotate.png)
