@@ -189,7 +189,7 @@ while x3
 * After Step 2.3, nodes in yellow are marked with **P**
 ![graph](/maxtaco/coffee-script/raw/master/media/rotate4.png)
 
-* The green nodes are those marked with **A** and **P**.
+* The green nodes are those marked with **A** or **P**.
 ![graph](/maxtaco/coffee-script/raw/master/media/rotate5.png)
 
 * In Step 3, rotate all marked nodes AST nodes. This rotation
