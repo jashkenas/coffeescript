@@ -7,7 +7,7 @@ exports.AstTamer = class AstTamer
   transform: (x) ->
     x.tameTransform()
 
-exports.const =
+exports.const = 
   k : "__tame_k"
   ns: "tame"
   Deferrals : "Deferrals"
@@ -63,9 +63,9 @@ class Rendezvous
     @completed = []
     @waiters = []
     @defer_id = 0
-    # This is a hack to work with the semantic desugaring of
-    # 'defers' output by the coffee compiler.
-    @__tame_defers = this
+    # This is a hack to work with the desugaring of
+    # 'defer' output by the coffee compiler.
+    @[exports.const.deferrals] = this
 
   #-----------------------------------------
     
@@ -93,7 +93,9 @@ class Rendezvous
   #-----------------------------------------
   
   id: (i) ->
-    { __tame_defers : new @RvId(this, i) }
+    ret = {}
+    ret[exports.const.deferrals] = new RvId(this, i)
+    ret
   
   #-----------------------------------------
 

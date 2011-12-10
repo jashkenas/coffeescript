@@ -88,14 +88,16 @@ atest "parallel awaits with buggy classes", (cb) ->
     increment: (wait, i, cb) ->
       await setTimeout(defer(),wait)
       @val += i
+      await setTimeout(defer(),wait)
+      @val += i
       cb()
     getVal: -> @val
 
-  obj = new MyClass()      
+  obj = new MyClass()
   await
     obj.increment 10, 1, defer()
     obj.increment 20, 2, defer()
     obj.increment 30, 4, defer()
   v = obj.getVal()
-  cb(v == 7, {})  
+  cb(v == 14, {})
 
