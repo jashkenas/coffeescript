@@ -191,3 +191,6 @@ while x3
 
 * The green nodes are those marked with **A** and **P**.
 ![graph](/maxtaco/coffee-script/raw/master/media/rotate5.png)
+
+* In Step 3, rotate all marked nodes AST nodes.
+![graph](/maxtaco/coffee-script/raw/master/media/post-rotate.png)
