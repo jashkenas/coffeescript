@@ -94,8 +94,76 @@ do_all = (lst) ->
       do_one defer(), h
 ```
 
+Slightly More Advanced Example
+-----------------------------
 
-Tranlsation Technique
+We've shown parallel and serial work flows, what about something in between?
+For instance, we might want to make progress in parallel on our DNS lookups,
+but not smash the server all at once. A compromise is windowing, which can be
+achieved in *tamejs* conveniently in a number of different ways.  The [2007
+academic paper on tame](http://pdos.csail.mit.edu/~max/docs/tame.pdf)
+suggests a technique called a *rendezvous*.  A rendezvous is implemented in
+*tamejs* as a pure JS construct (no rewriting involved), which allows a
+program to continue as soon as the first deferral is fulfilled (rather than
+the last):
+
+```coffeescript
+tameRequire(external) # need full library via require() for rendezvous
+
+do_all = (lst, windowsz) ->
+  rv = new tame.Rendezvous
+  nsent = 0
+  nrecv = 0
+
+  while nrecv < lst.length
+    if nsent - nrecv < windowsz && nsent < n
+      do_one(rv.id(nsent).defer (), lst[nsent])
+      nsent++
+    else
+      await rv.wait defer(evid)
+      console.log "got back lookup nsent=#{evid}"
+      nrecv++
+```
+
+This code maintains two counters: the number of requests sent, and the
+number received.  It keeps looping until the last lookup is received.
+Inside the loop, if there is room in the window and there are more to
+send, then send; otherwise, wait and harvest.  `Rendezvous.defer`
+makes a deferral much like the `defer` primitive, but it can be
+labeled with an identifier.  This way, the waiter can know which
+deferral has fulfilled.  In this case we use the variable `nsent` as the
+defer ID --- it's the ID of this deferral in launch order.  When we
+harvest the deferral, `rv.wait` fires its callback with the ID of the
+deferral that's harvested.  
+
+Note that with windowing, the arrival order might not be the same as
+the issue order. In this example, a slower DNS lookup might arrive
+after faster ones, even if issued before them.
+
+Composing Serial And Parallel Patterns
+--------------------------------------
+
+In Tame, arbitrary composition of serial and parallel control flows is
+possible with just normal functional decomposition.  Therefore, we
+don't allow direct `await` nesting.  With inline anonymous JavaScript
+functions, you can concisely achieve interesting patterns.  The code
+below launches 10 parallel computations, each of which must complete
+two serial actions before finishing:
+
+```coffeescript
+f = (cb) ->
+  await
+    for i in [0..n]
+      ((cb) ->
+        await setTimeout defer(), 5*Math.random()
+        await setTimeout defer(), 4*Math.random()
+      )(defer())
+  cb()
+}
+```
+
+
+Translation Technique
 ---------------------
 
 The CoffeeScript tame addition uses a simlar continuation-passing
