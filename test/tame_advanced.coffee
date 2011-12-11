@@ -1,5 +1,5 @@
 
-tameRequire(skip)
+tameRequire(none)
 tame = require('../lib/coffee-script/coffee-script').tame;
 
 atest "rendezvous & windowing example", (cb) ->

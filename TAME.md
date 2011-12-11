@@ -108,7 +108,7 @@ program to continue as soon as the first deferral is fulfilled (rather than
 the last):
 
 ```coffeescript
-tameRequire(external) # need full library via require() for rendezvous
+tameRequire(node) # need full library via require() for rendezvous
 
 do_all = (lst, windowsz) ->
   rv = new tame.Rendezvous
@@ -209,8 +209,22 @@ rand_wait = (autocb) ->
 ```
 
 Implicitly, `return 0;` is mapped by the CoffeeScript compiler to `autocb(0); return`.
- 
 
+New Keywords
+------------
+
+In sum, the tame additions to CoffeeScript consist of three new keywords:
+
+* **await***, marking off a block or a single statement.
+* **defer**, which is quite similar to a normal function call, but is compiled specially
+to accommodate argument passing.
+* **tameRequire**, which is used to control the "require"ing of the tame runtime.  By
+default, the runtime is pasted inline, but with `tameRequire(node)`, it is loaded
+via node's `require`, and with `tameRequire(none)`, it is skipped altogether.
+
+Finally, `autocb` isn't a bonafide keyword, but the compiler searches for it in paramaters
+to CoffeeScript functions, and updates the behavior of the `Code` block accordingly.
+ 
 
 Translation Technique
 ---------------------
