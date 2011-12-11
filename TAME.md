@@ -346,6 +346,7 @@ them to pivot nodes as _continuation_ blocks.
 })(function () {
    // the continuation block.
 }
+```
 
 To focus on how pivots and continuations are output, we can look
 at this portion of the AST, introduced after Step 3:
