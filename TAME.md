@@ -342,3 +342,36 @@ at this portion of the AST, introduced after Step 3:
    
    ![detail](/maxtaco/coffee-script/raw/master/media/detail.png)
 
+Here is the translation output (slightly hand-edited for clarity):
+
+```javascript
+(function() {
+  // await block f4()
+  (function(k) {
+    var __deferrals = new tame.Deferrals(k);
+    f4(__deferrals.defer({}));
+    __deferrals._fulfill();
+  })(function() {
+    // The continuation block, starting at 'if z'
+    (function(k) {
+      if (z) {
+        f5();
+        (function(k) {
+          // 'break' throws away the current continuation 'k'
+          // and just calls _break()
+          _break();
+        })(function() {
+          // This code will never be reached
+          f6();
+          return k();
+        });
+      } else {
+        return k();
+      }
+    })(function() {
+      // end of the loop, call _continue() to start at the top
+      return _continue();
+    });
+  });
+});
+```
