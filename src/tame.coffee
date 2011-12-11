@@ -2,10 +2,8 @@
 # =======================================================================
 # Compile Time!
 #
-exports.AstTamer = class AstTamer
-  constructor: (rest...) ->
-  transform: (x) ->
-    x.tameTransform()
+exports.transform = (x) ->
+  x.tameTransform()
 
 exports.const = 
   k : "__tame_k"
