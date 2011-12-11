@@ -171,7 +171,7 @@ name this callback `autocb` and it will fire whenever your tamed function
 returns.  For instance, the above example could be equivalently written as:
 
 ```coffeescript
-f = -> (n,autocb) 
+f = (n,autocb) ->
   await
     for i in [0..n]
       ((autocb) ->
@@ -189,7 +189,7 @@ for a random number of seconds between 0 and 4. After waiting, it
 then fulfills its callback `cb` with the amount of time it waited:
 
 ```coffeescript
-rand_wait = -> (cb)
+rand_wait = (cb) ->
   time = Math.floor (Math.random()*5);
   if time == 0
    cb(0)
@@ -201,7 +201,7 @@ rand_wait = -> (cb)
 This function can written equivalently with `autocb` as:
 
 ```coffeescript
-rand_wait = -> (autocb)
+rand_wait = (autocb) ->
   time = Math.floor (Math.random()*5);
   return 0 if time == 0
   await setTimeout defer(), time
