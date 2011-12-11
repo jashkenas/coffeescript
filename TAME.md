@@ -337,12 +337,22 @@ them to pivot nodes as _continuation_ blocks.
 
    <img src="/maxtaco/coffee-script/raw/master/media/post-rotate.png" width=650 />
 
-* To focus on how pivots and continuations are actually output, we can look
+
+* In translated code, the general format of a _pivot_ node is:
+
+```javascript
+(function (k) {
+   // the body
+})(function () {
+   // the continuation block.
+}
+
+To focus on how pivots and continuations are output, we can look
 at this portion of the AST, introduced after Step 3:
    
    ![detail](/maxtaco/coffee-script/raw/master/media/detail.png)
 
-Here is the translation output (slightly hand-edited for clarity):
+Here is the translated output (slightly hand-edited for clarity):
 
 ```javascript
 (function() {
@@ -375,3 +385,4 @@ Here is the translation output (slightly hand-edited for clarity):
   });
 });
 ```
+
