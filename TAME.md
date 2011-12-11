@@ -309,24 +309,26 @@ while x3
 
 * Here is schematic diagram for this AST:
 
-<style type="text/css">
-#imgcenter { margin-left : auto; margin-right: auto; display: block }
-</style>
-<img src="/maxtaco/coffee-script/raw/master/media/rotate1.png" width=500 class=imgcenter/>
+   <img src="/maxtaco/coffee-script/raw/master/media/rotate1.png" width=500 />
 
 * After Step 2.1, nodes in blue are marked with **A**.
-![graph](/maxtaco/coffee-script/raw/master/media/rotate2.png)
+
+   <img src="/maxtaco/coffee-script/raw/master/media/rotate2.png" width=500 />
 
 * After Step 2.2, nodes in purple are marked with **L**.
-![graph](/maxtaco/coffee-script/raw/master/media/rotate3.png)
+
+   <img src="/maxtaco/coffee-script/raw/master/media/rotate3.png" width=500 />
 
 * After Step 2.3, nodes in yellow are marked with **P**
-![graph](/maxtaco/coffee-script/raw/master/media/rotate4.png)
+
+   <img src="/maxtaco/coffee-script/raw/master/media/rotate4.png" width=500 />
 
 * The green nodes are those marked with **A** or **P**.
-![graph](/maxtaco/coffee-script/raw/master/media/rotate5.png)
+
+   <img src="/maxtaco/coffee-script/raw/master/media/rotate5.png" width=500 />
 
 * In Step 3, rotate all marked nodes AST nodes. This rotation
 introduces the new yellow `block` nodes in the graph, and attaches
 them to pivot nodes as _continuation_ blocks.
-![graph](/maxtaco/coffee-script/raw/master/media/post-rotate.png)
+
+   <img src="/maxtaco/coffee-script/raw/master/media/post-rotate.png" width=500 />
