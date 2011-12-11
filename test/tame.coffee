@@ -131,3 +131,22 @@ atest "test nested serial/parallel", (cb) ->
   for slot in slots
     ok = false unless slot
   cb(ok, {})
+
+atest "more advanced autocb test", (cb) ->
+  bar = -> "yoyo"
+  foo = (val, autocb) ->
+    await delay defer()
+    if val == 0 then [1,2,3]
+    else if val == 1 then { a : 10 }
+    else if val == 2 then bar()
+    else 33
+  oks = 0
+  await foo 0, defer x
+  oks++ if x[2] == 3
+  await foo 1, defer x
+  oks++ if x.a == 10
+  await foo 2, defer x
+  oks++ if x == "yoyo"
+  await foo 100, defer x
+  oks++ if x == 33
+  cb(oks == 4, {})
