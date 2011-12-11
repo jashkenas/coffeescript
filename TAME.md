@@ -343,12 +343,13 @@ them to pivot nodes as _continuation_ blocks.
 ```javascript
 (function (k) {
    // the body
+   k();
 })(function () {
    // the continuation block.
 }
 ```
 
-To focus on how pivots and continuations are output, we can look
+To see how pivots and continuations are output in our example, look
 at this portion of the AST, introduced after Step 3:
    
    ![detail](/maxtaco/coffee-script/raw/master/media/detail.png)
@@ -372,6 +373,7 @@ Here is the translated output (slightly hand-edited for clarity):
           // and just calls _break()
           _break();
         })(function() {
+          // A continuation block, after 'break', up to 'f6()'
           // This code will never be reached
           f6();
           return k();
