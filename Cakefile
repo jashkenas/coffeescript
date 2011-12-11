@@ -93,7 +93,6 @@ task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter'
     throw err if err
     exec 'sudo mv coffeescript.yaml /usr/local/lib/ruby/gems/1.8/gems/ultraviolet-0.10.2/syntax/coffeescript.syntax'
 
-
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
   code = ''
   for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'nodes', 'coffee-script', 'browser']
@@ -123,6 +122,12 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
   console.log "built ... running browser tests:"
   invoke 'test:browser'
 
+task 'build:utilities', 'rebuild the utilities file for use with compile(utilities: false)', ->
+  code = 'var ' + (for utility, func of require('./lib/coffee-script/nodes.js').UTILITIES
+    "__#{utility} = #{func()}"
+  ).join(',\n') + ';'
+  fs.writeFileSync 'extras/utilities.js', code
+  console.log "built utilities.js"
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
   exec 'rake doc', (err) ->
