@@ -232,7 +232,7 @@ exports.Block = class Block extends Base
         codes.push node.compile o, LEVEL_LIST
     if top
       if @spaced
-        return '\n' + codes.join('\n\n') + '\n'
+        return '\n' + codes.join('\n\n')
       else
         return codes.join '\n'
     code = codes.join(', ') or 'void 0'
