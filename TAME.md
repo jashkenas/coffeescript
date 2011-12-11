@@ -151,15 +151,65 @@ below launches 10 parallel computations, each of which must complete
 two serial actions before finishing:
 
 ```coffeescript
-f = (cb) ->
+f = (n,cb) ->
   await
     for i in [0..n]
       ((cb) ->
         await setTimeout defer(), 5*Math.random()
         await setTimeout defer(), 4*Math.random()
+        cb()
       )(defer())
   cb()
 ```
+
+autocb
+-------------------
+
+Most of the times, a tamed function will call its callback and return
+at the same time.  To get this behavior "for free", you can simply
+name this callback `autocb` and it will fire whenever your tamed function
+returns.  For instance, the above example could be equivalently written as:
+
+```coffeescript
+f = -> (n,autocb) 
+  await
+    for i in [0..n]
+      ((autocb) ->
+        setTimeout defer(), 5*Math.random ()
+        setTimeout defer(), 4*Math.random ()
+      )(defer())
+```
+In the first example, recall, you call `cb()` explicitly.  In this
+example, because the callback is named `autocb`, it's fired
+automatically when the tamed function returns.
+
+If your callback needs to fulfill with a value, then you can pass
+that value via `return`.  Consider the following function, that waits
+for a random number of seconds between 0 and 4. After waiting, it
+then fulfills its callback `cb` with the amount of time it waited:
+
+```coffeescript
+rand_wait = -> (cb)
+  time = Math.floor (Math.random()*5);
+  if time == 0
+   cb(0)
+   return
+  await setTimeout defer(), time
+  cb(time) # return here, implicitly.....
+```
+
+This function can written equivalently with `autocb` as:
+
+```coffeescript
+rand_wait = -> (autocb)
+  time = Math.floor (Math.random()*5);
+  return 0 if time == 0
+  await setTimeout defer(), time
+  return time 
+```
+
+Implicitly, `return 0;` is mapped by the CoffeeScript compiler to `autocb(0); return`.
+ 
 
 
 Translation Technique
