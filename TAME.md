@@ -3,12 +3,14 @@ What Is Tame?
 
 Tame is a system for handling callbacks in event-based code.  There
 were two existing implementations, one in [the sfslite library for
-C++](https://github.com/maxtaco/sfslite), and another in [tamejs
-translator for JavaScript](https://github.com/maxtaco/tamejs), and
-this extension to CoffeeScript is a third implementation. The code
+C++](https://github.com/maxtaco/sfslite), and another in the [tamejs
+translator for JavaScript](https://github.com/maxtaco/tamejs).
+This extension to CoffeeScript is a third implementation. The code
 and translation techniques are derived from experience with JS, but
-with some new Coffee-style flavoring. Also, some of the features in
-tamejs are not yet available here.
+with some new Coffee-style flavoring. 
+
+This document first presents a tame tutorial (adapted from the JavaScript
+version), and then discusses the specifics of the CoffeeScript implementation.
 
 Examples
 ----------
@@ -34,7 +36,7 @@ in each iteration of the loop, so after it's fulfilled by `setTimer`
 in 100ms, control continues past the `await` block, onto the log line,
 and back to the next iteration of the loop.  The code looks and feels
 like threaded code, but is still in the asynchronous idiom (if you
-look at the rewritten code output by the *tamejs* compiler).
+look at the rewritten code output by the *coffee* compiler).
 
 This next example does the same, while showcasing power of the
 `await..` language addition.  In the example below, the two timers
@@ -57,10 +59,8 @@ dns = require("dns");
 
 do_one = (cb, host) ->
   await dns.resolve host, "A", defer(err, ip)
-  if err
-    console.log "ERROR! " + err
-  else 
-    console.log host + " -> " + ip
+  msg = if err then "ERROR! #{err}" else "#{host} -> #{ip}"
+  console.log msg
   cb()
 
 do_all = (lst) ->
@@ -100,10 +100,10 @@ Slightly More Advanced Example
 We've shown parallel and serial work flows, what about something in between?
 For instance, we might want to make progress in parallel on our DNS lookups,
 but not smash the server all at once. A compromise is windowing, which can be
-achieved in *tamejs* conveniently in a number of different ways.  The [2007
+achieved in tamed CoffeeScript conveniently in a number of different ways.  The [2007
 academic paper on tame](http://pdos.csail.mit.edu/~max/docs/tame.pdf)
 suggests a technique called a *rendezvous*.  A rendezvous is implemented in
-*tamejs* as a pure JS construct (no rewriting involved), which allows a
+CoffeeScript as a pure CS construct (no rewriting involved), which allows a
 program to continue as soon as the first deferral is fulfilled (rather than
 the last):
 
@@ -117,7 +117,7 @@ do_all = (lst, windowsz) ->
 
   while nrecv < lst.length
     if nsent - nrecv < windowsz && nsent < n
-      do_one(rv.id(nsent).defer (), lst[nsent])
+      do_one(rv.id(nsent).defer(), lst[nsent])
       nsent++
     else
       await rv.wait defer(evid)
@@ -145,7 +145,7 @@ Composing Serial And Parallel Patterns
 
 In Tame, arbitrary composition of serial and parallel control flows is
 possible with just normal functional decomposition.  Therefore, we
-don't allow direct `await` nesting.  With inline anonymous JavaScript
+don't allow direct `await` nesting.  With inline anonymous CoffeeScript
 functions, you can concisely achieve interesting patterns.  The code
 below launches 10 parallel computations, each of which must complete
 two serial actions before finishing:
@@ -163,9 +163,9 @@ f = (n,cb) ->
 ```
 
 autocb
--------------------
+------
 
-Most of the times, a tamed function will call its callback and return
+Most of the time, a tamed function will call its callback and return
 at the same time.  To get this behavior "for free", you can simply
 name this callback `autocb` and it will fire whenever your tamed function
 returns.  For instance, the above example could be equivalently written as:
@@ -222,16 +222,16 @@ to accommodate argument passing.
 default, the runtime is pasted inline, but with `tameRequire(node)`, it is loaded
 via node's `require`, and with `tameRequire(none)`, it is skipped altogether.
 
-Finally, `autocb` isn't a bonafide keyword, but the compiler searches for it in paramaters
+Finally, `autocb` isn't a bona-fide keyword, but the compiler searches for it in parameters
 to CoffeeScript functions, and updates the behavior of the `Code` block accordingly.
  
 
 Translation Technique
 ---------------------
 
-The CoffeeScript tame addition uses a simlar continuation-passing
-translation to *tamejs*, but it's been refined.  Here are
-the general steps involved:
+The CoffeeScript tame addition uses a similar continuation-passing translation
+to *tamejs*, but it's been refined to generate cleaner code, and to translate
+only when necessary.  Here are the general steps involved:
 
 * **1** Run the standard CoffeeScript lexer, rewriter, and parser, with a 
 few small additions (for `await` and `defer`), yielding
@@ -256,7 +256,7 @@ a standard CoffeeScript-style abstract syntax tree (AST).
 
       * **3.1.2** Cut _b_'s list of expressions after _c_, and move those
       expressions on the right of the cut into a new block, called
-      _d_.  This block is _b_'s continuation block and becomes _c_'s
+      _d_.  This block is _c_'s continuation block and becomes _c_'s
       child in the AST.  This is the actual ``rotation.''
 
       * **3.1.3** Call the rotation recursively on the child block _d_.
@@ -308,8 +308,7 @@ while x3
 ```
 
 * Here is schematic diagram for this AST:
-
-![graph](/maxtaco/coffee-script/raw/master/media/rotate1.png)
+<img src="/maxtaco/coffee-script/raw/master/media/rotate1.png" width=500 />
 
 * After Step 2.1, nodes in blue are marked with **A**.
 ![graph](/maxtaco/coffee-script/raw/master/media/rotate2.png)
