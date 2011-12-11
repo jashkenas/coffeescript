@@ -309,7 +309,10 @@ while x3
 
 * Here is schematic diagram for this AST:
 
-<img src="/maxtaco/coffee-script/raw/master/media/rotate1.png" width=500 />
+<style type="text/css">
+#imgcenter { margin-left : auto; margin-right: auto; display: block }
+</style>
+<img src="/maxtaco/coffee-script/raw/master/media/rotate1.png" width=500 class=imgcenter/>
 
 * After Step 2.1, nodes in blue are marked with **A**.
 ![graph](/maxtaco/coffee-script/raw/master/media/rotate2.png)
