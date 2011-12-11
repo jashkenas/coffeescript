@@ -109,3 +109,25 @@ atest "loop construct", (cb) ->
     break if i == 10
     await delay defer()
   cb(i == 10, {})
+
+atest "simple autocb operations", (cb) ->
+  b = false
+  foo = (autocb) ->
+    await delay defer()
+    true
+  await foo defer b
+  cb(b, {})
+    
+atest "test nested serial/parallel", (cb) ->
+  slots = []
+  await
+    for i in [0..10]
+      ( (autocb) ->
+        await delay defer(), 5*Math.random()
+        await delay defer(), 4*Math.random()
+        slots[i] = true
+      )(defer())
+  ok = true
+  for slot in slots
+    ok = false unless slot
+  cb(ok, {})
