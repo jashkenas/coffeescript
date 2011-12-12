@@ -175,6 +175,8 @@ exports.Base = class Base
         out.push (child)
     out
 
+  # needsRuntime, findTameRequires and markAutocbs are
+  # various traversals of the AST for tame attributes
   needsRuntime : ->
     for child in @flattenChildren()
       return true if child.needsRuntime()
@@ -184,8 +186,13 @@ exports.Base = class Base
     for child in @flattenChildren()
       return r if (r = child.findTameRequire())
     return null
+ 
+  markAutocbs : (found) ->
+    @hasAutocb = found
+    for child in @flattenChildren()
+      child.markAutocbs(found)
 
-  #-----------------------------------------------------------------------
+  #
   # AST Walking Routines for CPS Pivots, etc.
   #
   #  There are three passes:
@@ -193,18 +200,20 @@ exports.Base = class Base
   #    2. Find loops found in #1, and flood downward
   #    3. Find break/continue found in #2, and trace upward
   # 
-
-  # Walk the AST looking for taming. Mark a node as with tame flags
-  # if any of its children are tamed, but don't cross scope boundary
-  # when considering the children.
+  # walkAstTame
+  #   Walk the AST looking for taming. Mark a node as with tame flags
+  #   if any of its children are tamed, but don't cross scope boundary
+  #   when considering the children.
+  # 
   walkAstTame : ->
     for child in @flattenChildren()
       @tameNodeFlag = true if child.walkAstTame()
     @tameNodeFlag
 
-  # Walk all loops that are marked as "tamed" and mark their children
-  # as being children in a tamed loop. They'll need more translations
-  # than other nodes. Eventually, "switch" statements might also be "loops"
+  # walkAstTamedLoop
+  #   Walk all loops that are marked as "tamed" and mark their children
+  #   as being children in a tamed loop. They'll need more translations
+  #   than other nodes. Eventually, "switch" statements might also be "loops"
   walkAstTamedLoop : (flood) ->
     flood = true if @isLoop() and @tameNodeFlag
     @tameLoopFlag = flood
@@ -212,23 +221,14 @@ exports.Base = class Base
       @tameLoopFlag = true if child.walkAstTamedLoop flood
     @tameLoopFlag
 
-  # A node is marked as a "cpsPivot" of it is (a) a 'tamed' node,
-  # (b) a jump node in a tamed while loop; or (c) an ancestor of (a) or (b).
+  # walkCpsPivots
+  #   A node is marked as a "cpsPivot" of it is (a) a 'tamed' node,
+  #   (b) a jump node in a tamed while loop; or (c) an ancestor of (a) or (b).
   walkCpsPivots : ->
     @cpsPivotFlag = true if @tameNodeFlag or (@tameLoopFlag and @isJump())
     for child in @flattenChildren()
       @cpsPivotFlag = true if child.walkCpsPivots()
     @cpsPivotFlag
-
-  #
-  #-----------------------------------------------------------------------
- 
-  markAutocbs : (found) ->
-    @hasAutocb = found
-    for child in @flattenChildren()
-      child.markAutocbs(found)
-  
-  #-----------------------------------------------------------------------
 
   needsDummyContinuation : ->
     if not @gotCpsSplit
@@ -433,7 +433,6 @@ exports.Block = class Block extends Base
         code += ';\n'
     code + post
 
-  #-----------------------------------------------------------------------
   #
   # cpsRotate -- This is the key abstract syntax tree rotation of the
   # CPS translation. Take a block with a bunch of sequential statements
@@ -495,13 +494,6 @@ exports.Block = class Block extends Base
     # return this for chaining
     this
     
-  #   
-  #-----------------------------------------------------------------------
-  
-
-  addCpsChain : ->
-    @expressions.push(new Call(new Literal tame.const.k, []))
-
   # Wrap up the given nodes as a **Block**, unless it already happens
   # to be one.
   @wrap: (nodes) ->
