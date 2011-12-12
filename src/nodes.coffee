@@ -1879,7 +1879,12 @@ exports.In = class In extends Base
     super idt, @constructor.name + if @negated then '!' else ''
 
 #### Slot
-
+#
+#  A Slot is an argument passed to `defer(..)`.  It's a bit different
+#  from a normal parameters, since it's trying to implement pass-by-reference.
+#  It's used only in concert with the Defer class.  Splats and Values
+#  can be converted to slots with the `toSlot` method.
+#
 exports.Slot = class Slot extends Base
   constructor : (value, suffix, splat) ->
     @value = value
@@ -1898,7 +1903,9 @@ exports.Defer = class Defer extends Base
 
   children : ['slots' ]
 
-  # return a copy so we don't have problems in making our function
+  # Count hidden parameters up from 1.  Make a note of which parameter
+  # we passed out.  Return a copy of that parameter, in case we mutate
+  # it later before we output it.
   newParam : ->
     l = "#{tame.const.slot}_#{@params.length + 1}"
     v = new Value new Literal l
@@ -1962,23 +1969,32 @@ exports.Defer = class Defer extends Base
     call = new Call outer_fn, args
 
   transform : ->
+    # fn is 'Deferrals.defer'
     fn = new Value new Literal tame.const.deferrals
     meth = new Value new Literal tame.const.defer_method
     fn.add new Access meth
+
+    # There is one argument to Deferrals.defer(), which is a dictionary.
+    # The dictionary currently only has one slot: assign_fn, which 
+    #   indicates a function.
+    # More slots will be needed if we ever want to keep track of tame-aware
+    #   stack traces.
     assignments = []
     if (assign_fn = @makeAssignFn())
       assignments.push new Assign(new Value(new Literal(tame.const.assign_fn)),
                                   assign_fn, "object")
     o = new Obj assignments
-    @call = new Call fn, [ new Value o ]
+
+    # Return the final call
+    new Call fn, [ new Value o ]
 
   compileNode : (o) ->
-    @transform()
+    call = @transform()
     for v in @vars
       name = v.compile o, LEVEL_LIST
       scope = o.tamed_scope || o.scope
       scope.add name, 'var'
-    @call.compile o
+    call.compile o
 
   needsRuntime : -> true
 
