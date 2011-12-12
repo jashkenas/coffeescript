@@ -1583,6 +1583,9 @@ exports.Splat = class Splat extends Base
 
   unwrap: -> @name
 
+  toSlot: () ->
+    new Slot(new Value(@name), null, true)
+
   # Utility function that converts an arbitrary number of elements, mixed with
   # splats, to a proper array.
   @compileSplattedArray: (o, list, apply) ->
@@ -1878,9 +1881,10 @@ exports.In = class In extends Base
 #### Slot
 
 exports.Slot = class Slot extends Base
-  constructor : (value, suffix) ->
+  constructor : (value, suffix, splat) ->
     @value = value
     @suffix = suffix
+    @splat = splat
 
   children : [ 'value', 'suffix' ]
 
@@ -1888,8 +1892,7 @@ exports.Slot = class Slot extends Base
 
 exports.Defer = class Defer extends Base
   constructor : (args) ->
-    @slots = for a in args
-      a.toSlot()
+    @slots = (a.toSlot() for a in args)
     @params = []
     @vars = []
 
@@ -1902,6 +1905,24 @@ exports.Defer = class Defer extends Base
     @params.push v.copy()
     v
 
+  #
+  # makeAssignFn 
+  #   - Implement C++-style pass-by-reference in Coffee
+  #
+  # the 'assign_fn' returned by here will set all parameters to defer()
+  # to have the appropriate values after the defer is fulfilled. The
+  # four cases to consider are listed in the following call:
+  #
+  #     defer(x, a.b, c.d[i], rest...)
+  # 
+  # Case 1 -- defer(x) --  Regular assignment to a local variable 
+  # Case 2 -- defer(a.b) --  Assignment to an object; must capture 
+  #    object when defer() is called
+  # Case 3 -- defer(c.d[i]) --  Assignment to an array slot; must capture 
+  #   array and slot index with defer() is called
+  # Case 4 -- defer(rest...) -- rest is an array, assign it to all
+  #   leftover arguments.
+  #
   makeAssignFn : (o) ->
     return null if @slots.length == 0
     assignments = []
@@ -1909,20 +1930,29 @@ exports.Defer = class Defer extends Base
     i = 0
     for s in @slots
       a = new Value new Literal "arguments"
-      a.add new Index new Value new Literal i
-      if not s.suffix
+      i_lit = new Value new Literal i
+      if s.splat # case 4
+        func = new Value new Literal(utility 'slice')
+        func.add new Access new Value new Literal 'call'
+        call = new Call func, [ a, i_lit ]
         slot = s.value
         @vars.push slot
+        assign = new Assign slot, call
       else
-        args.push s.value
-        slot = @newParam()
-        if s.suffix instanceof Index
-          prop = new Index @newParam()
-          args.push s.suffix.index
+        a.add new Index i_lit
+        if not s.suffix # case 1
+          slot = s.value
+          @vars.push slot
         else
-          prop = s.suffix
-        slot.add prop
-      assign = new Assign slot, a
+          args.push s.value
+          slot = @newParam()
+          if s.suffix instanceof Index # case 3
+            prop = new Index @newParam()
+            args.push s.suffix.index
+          else # case 2
+            prop = s.suffix
+          slot.add prop
+        assign = new Assign slot, a
       assignments.push assign
       i++
     block = new Block assignments

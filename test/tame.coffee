@@ -33,7 +33,21 @@ atest "basic tame set structs", (cb) ->
      field = "bar" # change the field to make sure that we captured "yo"
    cb(obj.cat.yo == i, {})
 
-atest "continue / brek test" , (cb) ->
+multi = (cb, arr) ->
+  await delay defer()
+  cb.apply(null, arr)
+
+atest "defer splats", (cb) ->
+  v = [ 1, 2, 3, 4]
+  obj = { x : 0 }
+  await multi(defer(obj.x, out...), v)
+  out.unshift obj.x
+  ok = true
+  for i in [0..v.length-1]
+    ok = false if v[i] != out[i]
+  cb(ok, {})
+
+atest "continue / break test" , (cb) ->
   tot = 0
   for i in [0..100]
     await delay defer()
