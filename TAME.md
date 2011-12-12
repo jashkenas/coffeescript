@@ -12,8 +12,7 @@ with some new Coffee-style flavoring.
 This document first presents a tame tutorial (adapted from the JavaScript
 version), and then discusses the specifics of the CoffeeScript implementation.
 
-Examples
-----------
+# Quick Tutorial and Examples
 
 Here is a simple example that prints "hello" 10 times, with 100ms
 delay slots in between:
@@ -94,8 +93,7 @@ do_all = (lst) ->
       do_one defer(), h
 ```
 
-Slightly More Advanced Example
------------------------------
+### Slightly More Advanced Example
 
 We've shown parallel and serial work flows, what about something in between?
 For instance, we might want to make progress in parallel on our DNS lookups,
@@ -140,8 +138,7 @@ Note that with windowing, the arrival order might not be the same as
 the issue order. In this example, a slower DNS lookup might arrive
 after faster ones, even if issued before them.
 
-Composing Serial And Parallel Patterns
---------------------------------------
+### Composing Serial And Parallel Patterns
 
 In Tame, arbitrary composition of serial and parallel control flows is
 possible with just normal functional decomposition.  Therefore, we
@@ -162,8 +159,7 @@ f = (n,cb) ->
   cb()
 ```
 
-autocb
-------
+### autocb
 
 Most of the time, a tamed function will call its callback and return
 at the same time.  To get this behavior "for free", you can simply
@@ -210,8 +206,7 @@ rand_wait = (autocb) ->
 
 Implicitly, `return 0;` is mapped by the CoffeeScript compiler to `autocb(0); return`.
 
-New Keywords
-------------
+## Language Design Considerations
 
 In sum, the tame additions to CoffeeScript consist of three new keywords:
 
@@ -222,12 +217,68 @@ to accommodate argument passing.
 default, the runtime is pasted inline, but with `tameRequire(node)`, it is loaded
 via node's `require`, and with `tameRequire(none)`, it is skipped altogether.
 
-Finally, `autocb` isn't a bona-fide keyword, but the compiler searches for it in parameters
-to CoffeeScript functions, and updates the behavior of the `Code` block accordingly.
- 
+Finally, `autocb` isn't a bona-fide keyword, but the compiler searches
+for it in parameters to CoffeeScript functions, and updates the
+behavior of the `Code` block accordingly.
 
-Translation Technique
----------------------
+These keywords represent the potential for these tame additions to
+break existing CoffeeScript code --- any preexisting use of these
+keywords as regular function, variable or class names will cause
+headaches.
+
+### The Lowdown on defer
+
+The implementation of `defer` is interesting --- it's trying to
+emulate ``call by reference'' in languages like C++ or Java.  Here is an 
+example that shows off the four different cases required to make this
+happen:
+
+```coffeescript
+cb = defer x, obj.field, arr[i], rest..
+```
+
+And here is the output from the tamed `coffee` compiler:
+
+```javascript
+cb = __tame_deferrals.defer({
+    assign_fn: (function(__slot_1, __slot_2, __slot_3) {
+      return function() {
+        x = arguments[0];
+        __slot_1.field = arguments[1];
+        __slot_2[__slot_3] = arguments[2];
+        return rest = __slice.call(arguments, 3);
+      };
+    })(obj, arr, i)
+  });
+```
+
+The `__tame_deferrals` object is an internal object of type `Deferrals`
+that's collecting all calls to `defer` in the current `await` block.
+The one in question should fulfill with 3 or more values.  When it does,
+it will call into the innermost anonymous function to perform the 
+appropriate assignments in the original scope. The four cases are:
+
+1. *Simple assignment* --- seen in `x = arguments[0]`.  Here, the
+`x` variable is in the scope of the original `defer` call.
+
+1. *Object slot assignment* --- seen in `__slot_1.field = arguments[1]`.
+Here, the reference `obj` must be captured at the time of the `defer` call,
+and `obj.field` is filled in later.
+
+1. *Array cell assignment* --- seen in `__slot_2[__slot_3] = arguments[2]`.
+This of course will work on an array or an object.  Here, the reference
+to the array, and the value of the index must be captured when `defer`
+is called, and the cell is assigned later.
+
+1. *Splat assignment* --- seen in `res = __slice.call(arguments,3)`.
+This is much like a simple assignment, but allows a ``splat'' meaning
+assignment of multiple values at once, accessed as an array.
+
+These specifics are also detailed in the code in the `Defer` class,
+file `nodes.coffee`.
+
+
+## Translation Technique
 
 The CoffeeScript tame addition uses a similar continuation-passing translation
 to *tamejs*, but it's been refined to generate cleaner code, and to translate
