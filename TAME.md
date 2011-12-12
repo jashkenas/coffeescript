@@ -210,7 +210,7 @@ Implicitly, `return 0;` is mapped by the CoffeeScript compiler to `autocb(0); re
 
 In sum, the tame additions to CoffeeScript consist of three new keywords:
 
-* **await***, marking off a block or a single statement.
+* **await**, marking off a block or a single statement.
 * **defer**, which is quite similar to a normal function call, but is compiled specially
 to accommodate argument passing.
 * **tameRequire**, which is used to control the "require"ing of the tame runtime.  By
@@ -277,6 +277,26 @@ assignment of multiple values at once, accessed as an array.
 These specifics are also detailed in the code in the `Defer` class,
 file `nodes.coffee`.
 
+### Why Can't `await` Blocks Act Like Expressions?
+
+It might be possible, with an insane amount of hoop-jumping, to make
+something like this work:
+
+```coffeescript
+x = await myfunc defer(_)
+```
+
+And have the value of the right hand side evaluate to whatever the value `_`
+when `myfunc` fulfills its deferral. That /might/ be possible, but something 
+like this seems even uglier to implement:
+
+```coffescript
+yourfunc (await myfunc defer _), (await otherfunc defer _)
+```
+
+In other words, if it's not possible to get `await` statements working
+like expressions everywhere, it's probably not worth having them work like
+expressions at all.
 
 ## Translation Technique
 
