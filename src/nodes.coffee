@@ -243,18 +243,32 @@ exports.Block = class Block extends Base
   # It would be better not to generate them in the first place, but for now,
   # clean up obvious double-parentheses.
   compileRoot: (o) ->
-    o.indent  = @tab = if o.bare then '' else TAB
+    o.indent  = ""
     o.scope   = new Scope null, this, null
     o.level   = LEVEL_TOP
     @spaced   = yes
-    code      = @compileWithDeclarations o
+    prelude   = ""
     hasReturn = no
     @traverseChildren no, (e) ->
       hasReturn = yes if e instanceof Return
       !hasReturn
+    if hasReturn or not o.bare
+      preludeExps = for exp, i in @expressions
+        e = exp.unwrap()
+        break unless e instanceof Comment or e instanceof Literal
+        exp
+      rest = @expressions[preludeExps.length...]
+      @expressions = preludeExps
+      prelude = "#{@compileNode o}\n\n" if preludeExps.length
+      @expressions = rest
+      # We assume that we will need the safety wrapper.
+      # This is our best guess without actually compiling.
+      o.indent = TAB
+    code = @compileWithDeclarations o
     # the `1` below accounts for `arguments`, always "in scope"
-    return code if (o.bare or o.scope.variables.length <= 1) and not hasReturn
-    "(function() {\n#{code}\n}).call(this);\n"
+    if hasReturn or (not o.bare and o.scope.variables.length > 1)
+      return "#{prelude}(function() {\n#{code}\n}).call(this);\n"
+    prelude + code
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
