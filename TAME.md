@@ -286,9 +286,9 @@ something like this work:
 x = await myfunc defer(_)
 ```
 
-And have the value of the right hand side evaluate to whatever the value `_`
-when `myfunc` fulfills its deferral. That /might/ be possible, but something 
-like this seems even uglier to implement:
+And have the value of the right hand side evaluate to whatever the
+value `_` gets when `myfunc` fulfills its deferral. That /might/ be
+possible, but something like this seems even uglier to implement:
 
 ```coffescript
 yourfunc (await myfunc defer _), (await otherfunc defer _)
