@@ -131,20 +131,6 @@ atest "simple autocb operations", (cb) ->
     true
   await foo defer b
   cb(b, {})
-    
-atest "test nested serial/parallel", (cb) ->
-  slots = []
-  await
-    for i in [0..10]
-      ( (j, autocb) ->
-        await delay defer(), 5*Math.random()
-        await delay defer(), 4*Math.random()
-        slots[j] = true
-      )(i, defer())
-  ok = true
-  for i in [0..10]
-    ok = false unless slots[i]
-  cb(ok, {})
 
 atest "AT variable works in an await (1)", (cb) ->
   class MyClass
@@ -159,21 +145,6 @@ atest "AT variable works in an await (1)", (cb) ->
   o = new MyClass
   await o.run defer()
   cb(o.getFlag(), {})
-
-atest "AT variable works in an await (2)", (cb) ->
-  class MyClass
-    constructor : -> @val = 0
-    inc : -> @val++
-    chill : (autocb) -> await delay defer()
-    run : (autocb) ->
-      await @chill defer()
-      for i in [0..10]
-        await @chill defer()
-        @inc()
-    getVal : -> @val
-  o = new MyClass
-  await o.run defer()
-  cb(o.getVal() == 10, {})
     
 atest "more advanced autocb test", (cb) ->
   bar = -> "yoyo"
@@ -201,3 +172,32 @@ atest "test of autocb in a simple function", (cb) ->
   await simple defer()
   ok = true
   cb(ok,{})
+    
+atest "test nested serial/parallel", (cb) ->
+  slots = []
+  await
+    for i in [0..10]
+      ( (j, autocb) ->
+        await delay defer(), 5*Math.random()
+        await delay defer(), 4*Math.random()
+        slots[j] = true
+      )(i, defer())
+  ok = true
+  for i in [0..10]
+    ok = false unless slots[i]
+  cb(ok, {})
+
+atest "AT variable works in an await (2)", (cb) ->
+  class MyClass
+    constructor : -> @val = 0
+    inc : -> @val++
+    chill : (autocb) -> await delay defer()
+    run : (autocb) ->
+      await @chill defer()
+      for i in [0..10]
+        await @chill defer()
+        @inc()
+    getVal : -> @val
+  o = new MyClass
+  await o.run defer()
+  cb(o.getVal() == 10, {})

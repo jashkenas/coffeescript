@@ -555,7 +555,13 @@ exports.Literal = class Literal extends Base
     code = if @isUndefined
       if o.level >= LEVEL_ACCESS then '(void 0)' else 'void 0'
     else if @value is 'this'
-      if o.scope.method?.bound then o.scope.method.context else @value
+      if o.scope.method?.bound
+        o.scope.method.context
+      else if o.tamed_scope
+        o.tamed_scope.assign '_this', 'this'
+        '_this'
+      else
+        @value
     else if @value.reserved
       "\"#{@value}\""
     else if @tameLoopFlag and @tameIsJump()
@@ -1398,6 +1404,7 @@ exports.Code = class Code extends Base
     @params  = params or []
     @body    = body or new Block
     @bound   = tag is 'boundfunc'
+    @tamegen = tag is 'tamegen'
     @context = '_this' if @bound
 
   children: ['params', 'body']
@@ -1466,9 +1473,17 @@ exports.Code = class Code extends Base
     idt   = o.indent
     code  = 'function'
     code  += ' ' + @name if @ctor
+<<<<<<< HEAD
     code  += '(' + params.join(', ') + ') {'
     if @tameNodeFlag
       o.tamed_scope = o.scope
+=======
+    code  += '(' + vars.join(', ') + ') {'
+
+    unless @tamegen
+      o.tamed_scope = if @tameNodeFlag then o.scope else null
+    
+>>>>>>> betteR! gotta run, but close!
     code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
     code  += '}'
     return @tab + code if @ctor
@@ -1647,12 +1662,12 @@ exports.While = class While extends Base
     continue_id = new Value new Literal tame.const.c_while
     continue_block = new Block [ new Call top_id, [ k_id ] ]
     continue_block.unshift d.step if d.step
-    continue_body = new Code [], continue_block
+    continue_body = new Code [], continue_block, 'tamegen'
     continue_assign = new Assign continue_id, continue_body
     cond = new If condition, body
     cond.addElse new Block [ new Call break_id, [] ]
     top_body = new Block [ break_assign, continue_assign, cond ]
-    top_func = new Code [ k_id ], top_body
+    top_func = new Code [ k_id ], top_body, 'tamegen'
     top_assign = new Assign top_id, top_func
     top_call = new Call top_id, [ k_id ]
     top_statements = []
@@ -1961,9 +1976,9 @@ exports.Defer = class Defer extends Base
       assignments.push assign
       i++
     block = new Block assignments
-    inner_fn = new Code [], block
+    inner_fn = new Code [], block, 'tamegen'
     outer_block = new Block [ new Return inner_fn ]
-    outer_fn = new Code @params, outer_block
+    outer_fn = new Code @params, outer_block, 'tamegen'
     call = new Call outer_fn, args
 
   transform : ->
@@ -2560,9 +2575,9 @@ Closure =
 CpsCascade =
 
   wrap: (statement, rest) ->
-    func = new Code [ new Param new Literal tame.const.k ], (Block.wrap [ statement ]), 'boundfunc'
+    func = new Code [ new Param new Literal tame.const.k ], (Block.wrap [ statement ]), 'tamegen'
     block = Block.wrap [ rest ]
-    cont = new Code [], block, 'boundfunc'
+    cont = new Code [], block, 'tamegen'
     call = new Call func, [ cont ]
     new Block [ call ]
 
