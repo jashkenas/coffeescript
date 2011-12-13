@@ -146,7 +146,7 @@ atest "test nested serial/parallel", (cb) ->
     ok = false unless slots[i]
   cb(ok, {})
 
-atest "AT variable works in an await", (cb) ->
+atest "AT variable works in an await (1)", (cb) ->
   class MyClass
     constructor : ->
       @flag = false
@@ -158,7 +158,22 @@ atest "AT variable works in an await", (cb) ->
     getFlag : -> @flag
   o = new MyClass
   await o.run defer()
-  cb(true, {})
+  cb(o.getFlag(), {})
+
+atest "AT variable works in an await (2)", (cb) ->
+  class MyClass
+    constructor : -> @val = 0
+    inc : -> @val++
+    chill : (autocb) -> await delay defer()
+    run : (autocb) ->
+      await @chill defer()
+      for i in [0..10]
+        await @chill defer()
+        @inc()
+    getVal : -> @val
+  o = new MyClass
+  await o.run defer()
+  cb(o.getVal() == 10, {})
     
 atest "more advanced autocb test", (cb) ->
   bar = -> "yoyo"
