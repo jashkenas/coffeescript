@@ -258,19 +258,19 @@ The one in question should fulfill with 3 or more values.  When it does,
 it will call into the innermost anonymous function to perform the 
 appropriate assignments in the original scope. The four cases are:
 
-1. *Simple assignment* --- seen in `x = arguments[0]`.  Here, the
+1. **Simple assignment** --- seen in `x = arguments[0]`.  Here, the
 `x` variable is in the scope of the original `defer` call.
 
-1. *Object slot assignment* --- seen in `__slot_1.field = arguments[1]`.
+1. **Object slot assignment** --- seen in `__slot_1.field = arguments[1]`.
 Here, the reference `obj` must be captured at the time of the `defer` call,
 and `obj.field` is filled in later.
 
-1. *Array cell assignment* --- seen in `__slot_2[__slot_3] = arguments[2]`.
+1. **Array cell assignment** --- seen in `__slot_2[__slot_3] = arguments[2]`.
 This of course will work on an array or an object.  Here, the reference
 to the array, and the value of the index must be captured when `defer`
 is called, and the cell is assigned later.
 
-1. *Splat assignment* --- seen in `res = __slice.call(arguments,3)`.
+1. **Splat assignment** --- seen in `res = __slice.call(arguments,3)`.
 This is much like a simple assignment, but allows a ``splat'' meaning
 assignment of multiple values at once, accessed as an array.
 
