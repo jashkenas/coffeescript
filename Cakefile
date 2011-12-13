@@ -168,6 +168,7 @@ runTests = (CoffeeScript) ->
   startTime   = Date.now()
   currentFile = null
   passedTests = 0
+  attemptedTests = 0
   failures    = []
 
   global[name] = func for name, func of require 'assert'
@@ -178,6 +179,7 @@ runTests = (CoffeeScript) ->
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
     try
+      ++attemptedTests
       fn.test = {description, currentFile}
       fn.call(fn)
       ++passedTests
@@ -188,6 +190,7 @@ runTests = (CoffeeScript) ->
 
   # An async testing primitive
   global.atest = (description, fn) ->
+    ++attemptedTests
     fn.test = { description, currentFile }
     await fn.call(fn, defer(ok, e))
     if ok
@@ -220,6 +223,7 @@ runTests = (CoffeeScript) ->
   process.on 'exit', ->
     time = ((Date.now() - startTime) / 1000).toFixed(2)
     message = "passed #{passedTests} tests in #{time} seconds#{reset}"
+    log("Only #{passedTests} of #{attemptedTests} came back; some went missing!", red) unless passedTests == attemptedTests
     return log(message, green) unless failures.length
     log "failed #{failures.length} and #{message}", red
     for fail in failures
