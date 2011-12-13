@@ -85,11 +85,8 @@ fatalError = (message) ->
   console.log 'To see a list of all tasks/options, run "cake"'
   process.exit 1
 
-<<<<<<< HEAD
 missingTask = (task) -> fatalError "No such task: #{task}"
 
-=======
->>>>>>> try this, it might be a fail.
 # When `cake` is invoked, search in the current and all parent directories
 # to find the relevant Cakefile.
 cakefileDirectory = (dir) ->
