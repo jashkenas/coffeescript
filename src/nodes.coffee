@@ -125,8 +125,9 @@ exports.Base = class Base
   #
   # Add some Tame-specific additions --- the 'A' flag if this node
   # is an await or its ancestor; the 'L' flag, if this node is a tamed
-  # loop or its descendant; and a 'P' flag if this node is going to be
-  # a 'pivot' in the CPS tree rotation.
+  # loop or its descendant; a 'P' flag if this node is going to be
+  # a 'pivot' in the CPS tree rotation; a 'C' flag if this node is inside
+  # a function with an autocb.
   # 
   toString: (idt = '', name = @constructor.name) ->
     extras = ""
@@ -167,7 +168,8 @@ exports.Base = class Base
     continue until node is node = node.unwrap()
     node
 
-  # Don't try this at home with actual human kids
+  # Don't try this at home with actual human kids.  Added for tame
+  # for slightly different tree traversal mechanics.
   flattenChildren : ->
     out = []
     for attr in @children when @[attr]
@@ -175,22 +177,22 @@ exports.Base = class Base
         out.push (child)
     out
 
-  # needsRuntime, findTameRequires and markAutocbs are
+  # tameNeedsRuntime, tameFindRequires and tameMarkAutocbs are
   # various traversals of the AST for tame attributes
-  needsRuntime : ->
+  tameNeedsRuntime : ->
     for child in @flattenChildren()
-      return true if child.needsRuntime()
+      return true if child.tameNeedsRuntime()
     return false
 
-  findTameRequire : ->
+  tameFindRequire : ->
     for child in @flattenChildren()
-      return r if (r = child.findTameRequire())
+      return r if (r = child.tameFindRequire())
     return null
  
-  markAutocbs : (found) ->
+  tameMarkAutocbs : (found) ->
     @hasAutocb = found
     for child in @flattenChildren()
-      child.markAutocbs(found)
+      child.tameMarkAutocbs(found)
 
   #
   # AST Walking Routines for CPS Pivots, etc.
@@ -200,37 +202,37 @@ exports.Base = class Base
   #    2. Find loops found in #1, and flood downward
   #    3. Find break/continue found in #2, and trace upward
   # 
-  # walkAstTame
+  # tameWalkAst
   #   Walk the AST looking for taming. Mark a node as with tame flags
   #   if any of its children are tamed, but don't cross scope boundary
   #   when considering the children.
   # 
-  walkAstTame : ->
+  tameWalkAst : ->
     for child in @flattenChildren()
-      @tameNodeFlag = true if child.walkAstTame()
+      @tameNodeFlag = true if child.tameWalkAst()
     @tameNodeFlag
 
-  # walkAstTamedLoop
+  # tameWalkAstLoops
   #   Walk all loops that are marked as "tamed" and mark their children
   #   as being children in a tamed loop. They'll need more translations
   #   than other nodes. Eventually, "switch" statements might also be "loops"
-  walkAstTamedLoop : (flood) ->
+  tameWalkAstLoops : (flood) ->
     flood = true if @isLoop() and @tameNodeFlag
     @tameLoopFlag = flood
     for child in @flattenChildren()
-      @tameLoopFlag = true if child.walkAstTamedLoop flood
+      @tameLoopFlag = true if child.tameWalkAstLoops flood
     @tameLoopFlag
 
-  # walkCpsPivots
+  # tameWalkCpsPivots
   #   A node is marked as a "cpsPivot" of it is (a) a 'tamed' node,
   #   (b) a jump node in a tamed while loop; or (c) an ancestor of (a) or (b).
-  walkCpsPivots : ->
+  tameWalkCpsPivots : ->
     @cpsPivotFlag = true if @tameNodeFlag or (@tameLoopFlag and @isJump())
     for child in @flattenChildren()
-      @cpsPivotFlag = true if child.walkCpsPivots()
+      @cpsPivotFlag = true if child.tameWalkCpsPivots()
     @cpsPivotFlag
 
-  needsDummyContinuation : ->
+  tameNeedsDummyContinuation : ->
     if not @gotCpsSplit
       k_id = new Value new Literal tame.const.k
       empty = new Code [], new Block []
@@ -244,12 +246,12 @@ exports.Base = class Base
   tameContinuationBlock : null
 
   # A generic tame AST rotation is just to push down to its children
-  cpsRotate: ->
+  tameCpsRotate: ->
     for child in @flattenChildren()
-      child.cpsRotate()
+      child.tameCpsRotate()
     this
 
-  isCpsPivot : -> @cpsPivotFlag
+  tameIsCpsPivot : -> @cpsPivotFlag
 
   tameNestContinuationBlock : (b) ->
     @tameContinuationBlock = b
@@ -434,22 +436,22 @@ exports.Block = class Block extends Base
     code + post
 
   #
-  # cpsRotate -- This is the key abstract syntax tree rotation of the
+  # tameCpsRotate -- This is the key abstract syntax tree rotation of the
   # CPS translation. Take a block with a bunch of sequential statements
   # and "pivot" the AST on the first available pivot.  The expressions
   # on the LHS of the pivot stay where the are.  The expressions on the RHS
   # of the pivot become the pivot's continuation. And the process is applied
   # recursively.
   # 
-  cpsRotate : ->
+  tameCpsRotate : ->
     pivot = null
     child = null
 
     # If this Block has taming, then we go ahead and look for a pivot
-    if @isCpsPivot()
+    if @tameIsCpsPivot()
       i = 0
       for e in @expressions
-        if e.isCpsPivot()
+        if e.tameIsCpsPivot()
           pivot = e
           break
         i++
@@ -477,7 +479,7 @@ exports.Block = class Block extends Base
         # now recursive apply the transformation to the new child,
         # this being especially import in blocks that have multiple
         # awaits on the same level
-        child.cpsRotate()
+        child.tameCpsRotate()
         
       # The pivot value needs to call the currently active continuation
       # after it's all done.  For things like if..else.. this does something
@@ -503,17 +505,17 @@ exports.Block = class Block extends Base
   isOnlyAwait : ->
     return @expressions?.length == 1 and @expressions[0] instanceof Await
 
-  addRuntime : ->
+  tameAddRuntime : ->
     @expressions.unshift new TameRequire()
 
   # Perform all steps of the Tame transform
   tameTransform : ->
-    @walkAstTame()
-    @addRuntime() if @needsRuntime() and not @findTameRequire()
-    @walkAstTamedLoop(false)
-    @walkCpsPivots()
-    @markAutocbs()
-    @cpsRotate()
+    @tameWalkAst()
+    @tameAddRuntime() if @tameNeedsRuntime() and not @tameFindRequire()
+    @tameWalkAstLoops(false)
+    @tameWalkCpsPivots()
+    @tameMarkAutocbs()
+    @tameCpsRotate()
     this
 
 #### Literal
@@ -1407,7 +1409,7 @@ exports.Code = class Code extends Base
 
   jumps: NO
 
-  markAutocbs: (found) ->
+  tameMarkAutocbs: (found) ->
     found = false
     for p in @params
       if p.name instanceof Literal and p.name.value == tame.const.autocb
@@ -1488,15 +1490,15 @@ exports.Code = class Code extends Base
 
   # we are taming as a feature of all of our children.  However, if we
   # are tamed, it's not the case that our parent is tamed!
-  walkAstTame : ->
+  tameWalkAst : ->
     @tameNodeFlag = true if super()
     false
 
-  walkAstTamedLoop : (flood) ->
+  tameWalkAstLoops : (flood) ->
     @tameLoopFlag = true if super(false)
     false
 
-  walkCpsPivots: ->
+  tameWalkCpsPivots: ->
     super()
     @cpsPivotFlag = false
 
@@ -1659,7 +1661,7 @@ exports.While = class While extends Base
     top_statements = []
     top_statements = top_statements.concat d.init if d.init
     top_statements = top_statements.concat [ top_assign, top_call ]
-    if k = @needsDummyContinuation()
+    if k = @tameNeedsDummyContinuation()
       top_statements.unshift k
     top_block = new Block top_statements
 
@@ -1995,7 +1997,7 @@ exports.Defer = class Defer extends Base
       scope.add name, 'var'
     call.compile o
 
-  needsRuntime : -> true
+  tameNeedsRuntime : -> true
 
 #### Await
 
@@ -2014,7 +2016,7 @@ exports.Await = class Await extends Base
     rhs = new Op "new", call
     assign = new Assign lhs, rhs
     body.unshift assign
-    if k = @needsDummyContinuation()
+    if k = @tameNeedsDummyContinuation()
       body.unshift (k)
     meth = lhs.copy().add new Access new Value new Literal tame.const.fulfill
     call = new Call meth, []
@@ -2034,7 +2036,7 @@ exports.Await = class Await extends Base
   # We still need to walk our children to see if there are any embedded
   # function which might also be tamed.  But we're always going to report
   # to our parent that we are tamed, since we are!
-  walkAstTame : ->
+  tameWalkAst : ->
     super()
     @tameNodeFlag = true
 
@@ -2078,7 +2080,7 @@ exports.TameRequire = class TameRequire extends Base
 
   children = [ 'typ']
 
-  findTameRequire: -> this
+  tameFindRequire: -> this
 
 #### Try
 
@@ -2470,7 +2472,7 @@ exports.If = class If extends Base
   jumps: (o) -> @body.jumps(o) or @elseBody?.jumps(o)
 
   compileNode: (o) ->
-    if @isStatement o or @isCpsPivot() then @compileStatement o else @compileExpression o
+    if @isStatement o or @tameIsCpsPivot() then @compileStatement o else @compileExpression o
 
   makeReturn: (res) ->
     @elseBody  or= new Block [new Literal 'void 0'] if res
