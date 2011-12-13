@@ -283,11 +283,11 @@ It might be possible, with an insane amount of hoop-jumping, to make
 something like this work:
 
 ```coffeescript
-x = await myfunc defer(_)
+x = await myfunc defer _
 ```
 
 And have the value of the right hand side evaluate to whatever the
-value `_` gets when `myfunc` fulfills its deferral. That /might/ be
+value `_` gets when `myfunc` fulfills its deferral. That _might_ be
 possible, but something like this seems even uglier to implement:
 
 ```coffescript
