@@ -251,25 +251,22 @@ exports.Base = class Base
       child.tameCpsRotate()
     this
 
-  tameIsCpsPivot : -> @tameCpsPivotFlag
-
-  tameNestContinuationBlock : (b) ->
-    @tameContinuationBlock = b
-
-  tameHasContinuation : -> @tameContinuationBlock
-
-  tameCallContinuation : ->
+  tameIsCpsPivot            :     -> @tameCpsPivotFlag
+  tameNestContinuationBlock : (b) -> @tameContinuationBlock = b
+  tameHasContinuation       :     -> @tameContinuationBlock
+  tameCallContinuation      :     ->
+  tameIsJump                :     NO
 
   isStatement     : NO
   jumps           : NO
   isComplex       : YES
   isChainable     : NO
   isAssignable    : NO
-  isControlBreak  : NO
   isLoop          : NO
-  
-  tameIsJump          : NO
 
+  # tame AST node flags -- since we make several passes through the
+  # tree setting these bits, we'll actually just flip bits in the nodes,
+  # rather than setting function pointers to YES or NO.
   tameLoopFlag        : false
   tameNodeFlag        : false
   tameGotCpsSplitFlag : false
