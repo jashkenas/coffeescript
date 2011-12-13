@@ -294,9 +294,10 @@ possible, but something like this seems even uglier to implement:
 yourfunc (await myfunc defer _), (await otherfunc defer _)
 ```
 
-In other words, if it's not possible to get `await` statements working
-like expressions everywhere, it's probably not worth having them work like
-expressions at all.
+It would be a significant additional implementation challenge to get
+`await` statements working like expressions everywhere. 
+It's not worth, in our opinion, a lot of added complexity
+to get a half-baked solution.
 
 ## Translation Technique
 
