@@ -19,7 +19,7 @@ NO      = -> no
 THIS    = -> this
 NEGATE  = -> @negated = not @negated; this
 
-CALL_CONTINUATION =  -> new Call(new Literal tame.const.k, [])
+TAME_CALL_CONTINUATION =  -> new Call(new Literal tame.const.k, [])
 
 #### Base
 
@@ -45,7 +45,7 @@ exports.Base = class Base
     o.level  = lvl if lvl
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
-    if node.hasContinuation() and not node.gotCpsSplit and node.isStatement(o)
+    if node.tameHasContinuation() and not node.tameGotCpsSplitFlag and node.isStatement(o)
       node.compileCps o
     else if o.level is LEVEL_TOP or not node.isStatement(o)
       node.compileNode o
@@ -63,7 +63,7 @@ exports.Base = class Base
   # Statements that need CPS translation will have to be split into two
   # pieces as so
   compileCps : (o) ->
-    @gotCpsSplit = true
+    @tameGotCpsSplitFlag = true
     node = CpsCascade.wrap(this, @tameContinuationBlock)
     ret = node.compile o
     ret
@@ -95,7 +95,7 @@ exports.Base = class Base
     if res
       new Call new Literal("#{res}.push"), [me]
     else
-      new Return me, @hasAutocb
+      new Return me, @tameHasAutocbFlag
 
   # Does this node, or any of its children, contain a node of a certain kind?
   # Recursively traverses down the *children* of the nodes, yielding to a block
@@ -133,8 +133,8 @@ exports.Base = class Base
     extras = ""
     extras += "A" if @tameNodeFlag
     extras += "L" if @tameLoopFlag
-    extras += "P" if @cpsPivotFlag
-    extras += "C" if @hasAutocb
+    extras += "P" if @tameCpsPivotFlag
+    extras += "C" if @tameHasAutocbFlag
     if extras.length
       extras = " (" + extras + ")"
     tree = '\n' + idt + name
@@ -190,7 +190,7 @@ exports.Base = class Base
     return null
  
   tameMarkAutocbs : (found) ->
-    @hasAutocb = found
+    @tameHasAutocbFlag = found
     for child in @flattenChildren()
       child.tameMarkAutocbs(found)
 
@@ -227,13 +227,13 @@ exports.Base = class Base
   #   A node is marked as a "cpsPivot" of it is (a) a 'tamed' node,
   #   (b) a jump node in a tamed while loop; or (c) an ancestor of (a) or (b).
   tameWalkCpsPivots : ->
-    @cpsPivotFlag = true if @tameNodeFlag or (@tameLoopFlag and @isJump())
+    @tameCpsPivotFlag = true if @tameNodeFlag or (@tameLoopFlag and @tameIsJump())
     for child in @flattenChildren()
-      @cpsPivotFlag = true if child.tameWalkCpsPivots()
-    @cpsPivotFlag
+      @tameCpsPivotFlag = true if child.tameWalkCpsPivots()
+    @tameCpsPivotFlag
 
   tameNeedsDummyContinuation : ->
-    if not @gotCpsSplit
+    if not @tameGotCpsSplitFlag
       k_id = new Value new Literal tame.const.k
       empty = new Code [], new Block []
       new Assign k_id, empty
@@ -251,14 +251,14 @@ exports.Base = class Base
       child.tameCpsRotate()
     this
 
-  tameIsCpsPivot : -> @cpsPivotFlag
+  tameIsCpsPivot : -> @tameCpsPivotFlag
 
   tameNestContinuationBlock : (b) ->
     @tameContinuationBlock = b
 
-  hasContinuation : -> @tameContinuationBlock
+  tameHasContinuation : -> @tameContinuationBlock
 
-  callContinuation : ->
+  tameCallContinuation : ->
 
   isStatement     : NO
   jumps           : NO
@@ -266,16 +266,15 @@ exports.Base = class Base
   isChainable     : NO
   isAssignable    : NO
   isControlBreak  : NO
-  isTamedFunc     : NO
   isLoop          : NO
-  isAwait         : NO
-  isJump          : NO
+  
+  tameIsJump          : NO
 
-  tameLoopFlag    : false
-  tameNodeFlag    : false
-  gotCpsSplit     : false
-  cpsPivotFlag    : false
-  hasAutocb       : false
+  tameLoopFlag        : false
+  tameNodeFlag        : false
+  tameGotCpsSplitFlag : false
+  tameCpsPivotFlag    : false
+  tameHasAutocbFlag   : false
 
   unwrap     : THIS
   unfoldSoak : NO
@@ -334,7 +333,8 @@ exports.Block = class Block extends Base
       expr = @expressions[len]
       if expr not instanceof Comment
         @expressions[len] = expr.makeReturn res
-        @expressions.splice(len, 1) if expr instanceof Return and not expr.expression and not expr.hasAutocb
+        @expressions.splice(len, 1) if expr instanceof Return and not expr.expression and
+          not expr.tameHasAutocbFlag
         break
     this
 
@@ -342,7 +342,7 @@ exports.Block = class Block extends Base
   # Blocks typically don't need their own cpsCascading.  This saves
   # wasted code.
   compileCps : (o) ->
-    @gotCpsSplit = true
+    @tameGotCpsSplitFlag = true
     if @expressions.length > 1
       super o
     else
@@ -473,8 +473,8 @@ exports.Block = class Block extends Base
         for e in rest
           child.tameNodeFlag = true if e.tameNodeFlag
           child.tameLoopFlag = true if e.tameLoopFlag
-          child.cpsPivotFlag = true if e.cpsPivotFlag
-          child.hasAutocb = true    if e.hasAutocb
+          child.tameCpsPivotFlag = true if e.tameCpsPivotFlag
+          child.tameHasAutocbFlag = true    if e.tameHasAutocbFlag
 
         # now recursive apply the transformation to the new child,
         # this being especially import in blocks that have multiple
@@ -484,7 +484,7 @@ exports.Block = class Block extends Base
       # The pivot value needs to call the currently active continuation
       # after it's all done.  For things like if..else.. this does something
       # interesting and pushes the continuation down both branches.
-      pivot.callContinuation()
+      pivot.tameCallContinuation()
 
     # After we have pivoted this guy, we still need to walk all of the
     # expressions, because maybe the expressions that we left still have
@@ -536,7 +536,7 @@ exports.Literal = class Literal extends Base
     @value in ['break', 'continue', 'debugger']
 
   isComplex: NO
-  isJump : -> @isStatement()
+  tameIsJump : -> @isStatement()
 
   assigns: (name) ->
     name is @value
@@ -561,7 +561,7 @@ exports.Literal = class Literal extends Base
       if o.scope.method?.bound then o.scope.method.context else @value
     else if @value.reserved
       "\"#{@value}\""
-    else if @tameLoopFlag and @isJump()
+    else if @tameLoopFlag and @tameIsJump()
       @compileTame o
     else
       @value
@@ -575,7 +575,7 @@ exports.Literal = class Literal extends Base
 # A `return` is a *pureStatement* -- wrapping it in a closure wouldn't
 # make sense.
 exports.Return = class Return extends Base
-  constructor: (expr, @hasAutocb) ->
+  constructor: (expr, @tameHasAutocbFlag) ->
     @expression = expr if expr and not expr.unwrap().isUndefined
 
   children: ['expression']
@@ -589,7 +589,7 @@ exports.Return = class Return extends Base
     if expr and expr not instanceof Return then expr.compile o, level else super o, level
 
   compileNode: (o) ->
-    if @hasAutocb
+    if @tameHasAutocbFlag
       cb = new Value new Literal tame.const.autocb
       args = if @expression then [ @expression ] else []
       call = new Call cb, args
@@ -1500,7 +1500,7 @@ exports.Code = class Code extends Base
 
   tameWalkCpsPivots: ->
     super()
-    @cpsPivotFlag = false
+    @tameCpsPivotFlag = false
 
 #### Param
 
@@ -1665,7 +1665,7 @@ exports.While = class While extends Base
       top_statements.unshift k
     top_block = new Block top_statements
 
-  callContinuation : ->
+  tameCallContinuation : ->
     k = new Call(new Literal tame.const.c_while, [])
     @body.push k
 
@@ -2026,7 +2026,6 @@ exports.Await = class Await extends Base
   children: ['body']
 
   isStatement: YES
-  isAwait    : YES
   makeReturn : THIS
 
   compileNode: (o) ->
@@ -2400,8 +2399,8 @@ exports.Switch = class Switch extends Base
     @otherwise?.makeReturn res
     this
 
-  callContinuation : ->
-    code = CALL_CONTINUATION()
+  tameCallContinuation : ->
+    code = TAME_CALL_CONTINUATION()
     for [condition,block] in @cases
       block.push code
     @otherwise?.push code
@@ -2453,8 +2452,8 @@ exports.If = class If extends Base
   # propogate the closing continuation call down both branches of the if.
   # note this prevents if ...else if... inline chaining, and makes it
   # fully nested if { .. } else { if { } ..} ..'s
-  callContinuation : ->
-    code = CALL_CONTINUATION()
+  tameCallContinuation : ->
+    code = TAME_CALL_CONTINUATION()
     if @elseBody
       @elseBody.push code
       @isChain = false
@@ -2467,7 +2466,7 @@ exports.If = class If extends Base
   isStatement: (o) ->
     o?.level is LEVEL_TOP or
       @bodyNode().isStatement(o) or @elseBodyNode()?.isStatement(o) or
-      @hasContinuation()
+      @tameHasContinuation()
 
   jumps: (o) -> @body.jumps(o) or @elseBody?.jumps(o)
 
