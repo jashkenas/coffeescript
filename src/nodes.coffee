@@ -332,7 +332,7 @@ exports.Block = class Block extends Base
       expr = @expressions[len]
       if expr not instanceof Comment
         @expressions[len] = expr.makeReturn res
-        @expressions.splice(len, 1) if expr instanceof Return and not expr.expression
+        @expressions.splice(len, 1) if expr instanceof Return and not expr.expression and not expr.hasAutocb
         break
     this
 
@@ -499,6 +499,9 @@ exports.Block = class Block extends Base
   @wrap: (nodes) ->
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Block
     new Block nodes
+
+  isOnlyAwait : ->
+    return @expressions?.length == 1 and @expressions[0] instanceof Await
 
   addRuntime : ->
     @expressions.unshift new TameRequire()
@@ -1410,6 +1413,10 @@ exports.Code = class Code extends Base
       if p.name instanceof Literal and p.name.value == tame.const.autocb
         found = true
         break
+    # for functions that call await and do nothing else, and have an
+    # autocb, we need to put in a dummy return so the autocb is triggered
+    if found and @body.isOnlyAwait()
+      @body.push new Return(null, true)
     super(found)
 
   # Compilation creates a new scope unless explicitly asked to share with the
@@ -1996,9 +2003,11 @@ exports.Await = class Await extends Base
   constructor : (body) ->
     @body = body
 
-  transform : ->
+  transform : (o) ->
     body = @body
-    lhs = new Value new Literal tame.const.deferrals
+    name = tame.const.deferrals
+    o.scope.add name, 'var'
+    lhs = new Value new Literal name
     cls = new Value new Literal tame.const.ns
     cls.add(new Access(new Value new Literal tame.const.Deferrals))
     call = new Call cls, [ new Value new Literal tame.const.k ]
@@ -2019,7 +2028,7 @@ exports.Await = class Await extends Base
   makeReturn : THIS
 
   compileNode: (o) ->
-    @transform()
+    @transform(o)
     @body.compile o
 
   # We still need to walk our children to see if there are any embedded
@@ -2553,7 +2562,7 @@ Closure =
 CpsCascade =
 
   wrap: (statement, rest) ->
-    func = new Code [ new Param new Literal tame.const.k ], Block.wrap [ statement ]
+    func = new Code [ new Param new Literal tame.const.k ], (Block.wrap [ statement ]), 'boundfunc'
     block = Block.wrap [ rest ]
     cont = new Code [], block, 'boundfunc'
     call = new Call func, [ cont ]

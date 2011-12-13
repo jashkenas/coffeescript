@@ -136,16 +136,30 @@ atest "test nested serial/parallel", (cb) ->
   slots = []
   await
     for i in [0..10]
-      ( (autocb) ->
+      ( (j, autocb) ->
         await delay defer(), 5*Math.random()
         await delay defer(), 4*Math.random()
-        slots[i] = true
-      )(defer())
+        slots[j] = true
+      )(i, defer())
   ok = true
-  for slot in slots
-    ok = false unless slot
+  for i in [0..10]
+    ok = false unless slots[i]
   cb(ok, {})
 
+atest "AT variable works in an await", (cb) ->
+  class MyClass
+    constructor : ->
+      @flag = false
+    chill : (autocb) ->
+      await delay defer()
+    run : (autocb) ->
+      await @chill defer()
+      @flag = true
+    getFlag : -> @flag
+  o = new MyClass
+  await o.run defer()
+  cb(true, {})
+    
 atest "more advanced autocb test", (cb) ->
   bar = -> "yoyo"
   foo = (val, autocb) ->
@@ -164,3 +178,11 @@ atest "more advanced autocb test", (cb) ->
   await foo 100, defer x
   oks++ if x == 33
   cb(oks == 4, {})
+
+atest "test of autocb in a simple function", (cb) ->
+  simple = (autocb) ->
+    await delay defer()
+  ok = false  
+  await simple defer()
+  ok = true
+  cb(ok,{})
