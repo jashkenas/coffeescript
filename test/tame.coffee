@@ -201,3 +201,12 @@ atest "AT variable works in an await (2)", (cb) ->
   o = new MyClass
   await o.run defer()
   cb(o.getVal() == 10, {})
+  
+atest "loops respect autocbs", (cb) ->
+  ok = false
+  bar = (autocb) ->
+    for i in [0..10]
+      await delay defer()
+      ok = true
+  await bar defer()
+  cb(ok, {})
