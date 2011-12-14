@@ -537,3 +537,22 @@ test "#1842: Regression with bound functions within bound class methods", ->
       
   Store.bound()
   
+  # And a fancier case:
+  
+  class Store
+    
+    eq this, Store
+    
+    @bound: =>
+      do =>
+        eq this, Store
+            
+    @unbound: ->
+      eq this, Store
+      
+    instance: =>
+      ok this instanceof Store
+      
+  Store.bound()
+  Store.unbound()
+  (new Store).instance()
