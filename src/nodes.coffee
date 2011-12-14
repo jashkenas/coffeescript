@@ -259,7 +259,7 @@ exports.Block = class Block extends Base
         exp
       rest = @expressions[preludeExps.length...]
       @expressions = preludeExps
-      prelude = "#{@compileNode o}\n\n" if preludeExps.length
+      prelude = "#{@compileNode o}\n" if preludeExps.length
       @expressions = rest
       # We assume that we will need the safety wrapper.
       # This is our best guess without actually compiling.
