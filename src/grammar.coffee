@@ -136,6 +136,7 @@ grammar =
   # Assignment of a variable, property, or index to a value.
   Assign: [
     o 'Assignable = Expression',                -> new Assign $1, $3
+    o 'Assignable = TERMINATOR Expression',     -> new Assign $1, $4
     o 'Assignable = INDENT Expression OUTDENT', -> new Assign $1, $4
   ]
 

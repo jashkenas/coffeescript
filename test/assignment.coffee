@@ -331,3 +331,9 @@ test "#1643: splatted accesses in destructuring assignments should not be declar
         unless sub is nonce and sub2 is nonce2 and sub3 is nonce3 then throw new Error('[sub...]')
         """
       eq nonce, unless (try CoffeeScript.run code, bare: true catch e then true) then nonce
+
+test "#1838: Regression with variable assignment", ->
+  name =
+  'dave'
+  
+  eq name, 'dave'
