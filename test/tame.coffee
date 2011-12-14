@@ -251,3 +251,33 @@ atest "another autocb gotcha", (cb) ->
   ok = true
   cb(ok, {})
       
+atest "fat arrow versus tame", (cb) ->
+  class Foo
+    constructor : ->
+      @bindings = {}
+
+    addHandler : (key,cb) ->
+      @bindings[key] = cb
+
+    useHandler : (key, args...) ->
+      @bindings[key](args...)
+
+    delay : (autocb) ->
+      await delay defer()
+    
+    addHandlers : ->
+      @addHandler "sleep1", (cb) =>
+        await delay defer()
+        await @delay defer()
+        cb(true)
+      @addHandler "sleep2", (cb) =>
+        await @delay defer()
+        await delay defer()
+        cb(true)
+
+  ok1 = ok2 = false
+  f = new Foo()
+  f.addHandlers()
+  await f.useHandler "sleep1", defer(ok1)
+  await f.useHandler "sleep2", defer(ok2)
+  cb(ok1 and ok2, {})
