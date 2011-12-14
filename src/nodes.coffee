@@ -330,8 +330,8 @@ exports.Block = class Block extends Base
       expr = @expressions[len]
       if expr not instanceof Comment
         @expressions[len] = expr.makeReturn res
-        @expressions.splice(len, 1) if expr instanceof Return and not expr.expression and
-          not expr.tameHasAutocbFlag
+        @expressions.splice(len, 1) if expr instanceof Return and
+           not expr.expression and not expr.tameHasAutocbFlag
         break
     this
 
@@ -468,10 +468,10 @@ exports.Block = class Block extends Base
 
         # Pass our node bits onto our new children
         for e in rest
-          child.tameNodeFlag = true if e.tameNodeFlag
-          child.tameLoopFlag = true if e.tameLoopFlag
-          child.tameCpsPivotFlag = true if e.tameCpsPivotFlag
-          child.tameHasAutocbFlag = true    if e.tameHasAutocbFlag
+          child.tameNodeFlag = true      if e.tameNodeFlag
+          child.tameLoopFlag = true      if e.tameLoopFlag
+          child.tameCpsPivotFlag = true  if e.tameCpsPivotFlag
+          child.tameHasAutocbFlag = true if e.tameHasAutocbFlag
 
         # now recursive apply the transformation to the new child,
         # this being especially import in blocks that have multiple
@@ -1655,17 +1655,35 @@ exports.While = class While extends Base
     condition = d.condition
     body = d.body
     outStatements = []
+
+    # Set up all of the IDs
     top_id = new Value new Literal tame.const.t_while
     k_id = new Value new Literal tame.const.k
+    acb_id = new Value new Literal tame.const.autocb
     break_id = new Value new Literal tame.const.b_while
-    break_assign = new Assign break_id, k_id
+
+    # If this loop is the last loop in the given function, then
+    # returns will be set, and we're responsible for calling out
+    # into an autocb (if one exists)
+    break_rhs = if @returns and @tameHasAutocbFlag then acb_id else k_id
+    break_assign = new Assign break_id, break_rhs
+
+    # The continue assignment is the increment at the end
+    # of the loop (if it's there), and also the recursive
+    # call back to the top.
     continue_id = new Value new Literal tame.const.c_while
     continue_block = new Block [ new Call top_id, [ k_id ] ]
     continue_block.unshift d.step if d.step
     continue_body = new Code [], continue_block, 'tamegen'
     continue_assign = new Assign continue_id, continue_body
+
+    # The whole body is wrapped in an if, with the positive
+    # condition being the loop, and the negative condition
+    # being the break out of the loop 
     cond = new If condition, body
     cond.addElse new Block [ new Call break_id, [] ]
+
+    # The top of the loop construct.
     top_body = new Block [ break_assign, continue_assign, cond ]
     top_func = new Code [ k_id ], top_body, 'tamegen'
     top_assign = new Assign top_id, top_func
@@ -1708,7 +1726,11 @@ exports.While = class While extends Base
       body = "\n#{ body.compile o, LEVEL_TOP }\n#{@tab}"
     code = set + @tab + "while (#{ @condition.compile o, LEVEL_PAREN }) {#{body}}"
     if @returns
-      code += "\n#{@tab}return #{rvar};"
+      if @tameHasAutocbFlag
+        code += "\n#{@tab}#{tame.const.autocb}(#{rvar});"
+        code += "\n#{@tab}return;"
+      else
+        code += "\n#{@tab}return #{rvar};"
     code
 
 #### Op
