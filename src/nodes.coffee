@@ -183,12 +183,14 @@ exports.Base = class Base
     for child in @flattenChildren()
       return true if child.tameNeedsRuntime()
     return false
-
+  
   tameFindRequire : ->
     for child in @flattenChildren()
       return r if (r = child.tameFindRequire())
     return null
- 
+
+  # Mark all of the autocbs, and all of their descendants in the AST.
+  # The smart sub-class behavior here is in Code.
   tameMarkAutocbs : (found) ->
     @tameHasAutocbFlag = found
     for child in @flattenChildren()
@@ -553,9 +555,6 @@ exports.Literal = class Literal extends Base
     else if @value is 'this'
       if o.scope.method?.bound
         o.scope.method.context
-      else if o.tamed_scope
-        o.tamed_scope.assign '_this', 'this'
-        '_this'
       else
         @value
     else if @value.reserved
@@ -1399,9 +1398,9 @@ exports.Code = class Code extends Base
   constructor: (params, body, tag) ->
     @params  = params or []
     @body    = body or new Block
-    @bound   = tag is 'boundfunc'
     @tamegen = tag is 'tamegen'
-    @context = '_this' if @bound
+    @bound   = tag is 'boundfunc' or @tamegen
+    @context = '_this' if @bound or @tamegen
 
   children: ['params', 'body']
 
@@ -1424,7 +1423,7 @@ exports.Code = class Code extends Base
   # a closure.
   compileNode: (o) ->
     o.scope         = new Scope o.scope, @body, this
-    o.scope.shared  = del(o, 'sharedScope')
+    o.scope.shared  = del(o, 'sharedScope') or @tamegen
     o.indent        += TAB
     delete o.bare
     params = []
@@ -1472,18 +1471,23 @@ exports.Code = class Code extends Base
 =======
     code  += '(' + vars.join(', ') + ') {'
 
-    unless @tamegen
-      stored_tamed_scope = o.tamed_scope
-      o.tamed_scope = if @tameNodeFlag then o.scope else null
-      if @tameNodeFlag and @tameHasAutocbFlag
-        rhs = new Value new Literal tame.const.autocb
-        k_id = new Value new Literal tame.const.k
-        @body.unshift(new Assign k_id, rhs, null, { param : yes })
+    # There are two important cases to consider in terms of autocb;
+    # In the case of an explicit call to return, we handle it in
+    # 'new Return' constructor.  The subtler case is when control
+    # falls off the end of a function.  But that's just the top-level
+    # continuation within the function.  So we assign it to the autocb
+    # here.  There's a slight scoping hack, to supply  { param : yes },
+    # which forces __tame_k to be locally scoped.  Note that there's a
+    # global __tame_k that's just the no-op, and we definitely don't
+    # want to molest that!
+    if not @tamegen and @tameNodeFlag and @tameHasAutocbFlag
+      rhs = new Value new Literal tame.const.autocb
+      k_id = new Value new Literal tame.const.k
+      @body.unshift(new Assign k_id, rhs, null, { param : yes })
     
 >>>>>>> betteR! gotta run, but close!
     code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
     code  += '}'
-    o.tamed_scope = stored_tamed_scope
     return @tab + code if @ctor
     if @front or (o.level >= LEVEL_ACCESS) then "(#{code})" else code
 
@@ -2018,7 +2022,7 @@ exports.Defer = class Defer extends Base
     call = @transform()
     for v in @vars
       name = v.compile o, LEVEL_LIST
-      scope = o.tamed_scope || o.scope
+      scope = o.scope
       scope.add name, 'var'
     call.compile o
 

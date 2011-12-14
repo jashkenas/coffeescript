@@ -21,7 +21,7 @@ atest "basic tame waiting", (cb) ->
 
 atest "basic tame trigger values", (cb) ->
    i = 10
-   await foo(i, defer (j))
+   await foo(i, defer j)
    cb(i == j, {})
 
 atest "basic tame set structs", (cb) ->
@@ -29,7 +29,7 @@ atest "basic tame set structs", (cb) ->
    i = 10
    obj = { cat : { dog : 0 } }
    await
-     foo(i, defer(obj.cat[field]))
+     foo(i, defer obj.cat[field])
      field = "bar" # change the field to make sure that we captured "yo"
    cb(obj.cat.yo == i, {})
 
@@ -186,21 +186,6 @@ atest "test nested serial/parallel", (cb) ->
   for i in [0..10]
     ok = false unless slots[i]
   cb(ok, {})
-
-atest "AT variable works in an await (2)", (cb) ->
-  class MyClass
-    constructor : -> @val = 0
-    inc : -> @val++
-    chill : (autocb) -> await delay defer()
-    run : (autocb) ->
-      await @chill defer()
-      for i in [0..10]
-        await @chill defer()
-        @inc()
-    getVal : -> @val
-  o = new MyClass
-  await o.run defer()
-  cb(o.getVal() == 10, {})
   
 atest "loops respect autocbs", (cb) ->
   ok = false
@@ -242,3 +227,27 @@ atest "test scoping", (cb) ->
   o = new MyClass
   await o.run defer(v)
   cb(v == 5, {})
+
+atest "AT variable works in an await (2)", (cb) ->
+  class MyClass
+    constructor : -> @val = 0
+    inc : -> @val++
+    chill : (autocb) -> await delay defer()
+    run : (autocb) ->
+      await @chill defer()
+      for i in [0..10]
+        await @chill defer()
+        @inc()
+    getVal : -> @val
+  o = new MyClass
+  await o.run defer()
+  cb(o.getVal() == 10, {})
+
+atest "another autocb gotcha", (cb) ->
+  bar = (autocb) ->
+    await delay defer() if yes
+  ok = false
+  await bar defer()
+  ok = true
+  cb(ok, {})
+      
