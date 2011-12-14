@@ -210,3 +210,21 @@ atest "loops respect autocbs", (cb) ->
       ok = true
   await bar defer()
   cb(ok, {})
+
+atest "test scoping", (cb) ->
+  class MyClass
+    constructor : -> @val = 0
+    run : (autocb) ->
+      @val++
+      await delay defer()
+      @val++
+      ( -> val = 0 )()
+      @val++
+      await delay defer()
+      @val++
+      ( -> val = 0 )()
+      ++@val
+    getVal : -> @val
+  o = new MyClass
+  await o.run defer(v)
+  cb(v == 5, {})
