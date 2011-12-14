@@ -892,6 +892,8 @@ exports.Class = class Class extends Base
         else
           if assign.variable.this
             func.static = yes
+            if func.bound
+              func.context = name
           else
             assign.variable = new Value(new Literal(name), [(new Access new Literal 'prototype'), new Access base ])
             if func instanceof Code and func.bound
@@ -1150,8 +1152,8 @@ exports.Code = class Code extends Base
     @body.makeReturn() unless wasEmpty or @noReturn
     if @bound
       if o.scope.parent.method?.bound
-        @bound = o.scope.parent.method.context
-      else
+        @bound = @context = o.scope.parent.method.context
+      else if not @static
         o.scope.parent.assign '_this', 'this'
     idt   = o.indent
     code  = 'function'
@@ -1812,6 +1814,7 @@ Closure =
 
   literalArgs: (node) ->
     node instanceof Literal and node.value is 'arguments' and not node.asKey
+    
   literalThis: (node) ->
     (node instanceof Literal and node.value is 'this' and not node.asKey) or
       (node instanceof Code and node.bound)

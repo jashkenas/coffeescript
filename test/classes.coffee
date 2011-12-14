@@ -527,3 +527,13 @@ test "#1598: super works for static methods too", ->
       'pass? ' + super
 
   eq Child.method(), 'pass? yes'
+  
+test "#1842: Regression with bound functions within bound class methods", ->
+  
+  class Store
+    @bound: =>
+      do =>
+        eq this, Store
+      
+  Store.bound()
+  
