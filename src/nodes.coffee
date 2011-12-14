@@ -232,15 +232,6 @@ exports.Base = class Base
       @tameCpsPivotFlag = true if child.tameWalkCpsPivots()
     @tameCpsPivotFlag
 
-  tameNeedsDummyContinuation : ->
-    if not @tameGotCpsSplitFlag
-      rhs = if @tameHasAutocbFlag
-        new Value new Literal tame.const.autocb
-      else
-        new Code [], new Block []
-      k_id = new Value new Literal tame.const.k
-      new Assign k_id, rhs
-
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
   children: []
@@ -398,7 +389,9 @@ exports.Block = class Block extends Base
       preludeExps = for exp, i in @expressions
         break unless exp.unwrap() instanceof Comment
         exp
+        
       rest = @expressions[preludeExps.length...]
+        
       @expressions = preludeExps
       prelude = "#{@compileNode merge(o, indent: '')}\n" if preludeExps.length
       @expressions = rest
@@ -1422,12 +1415,6 @@ exports.Code = class Code extends Base
       if p.name instanceof Literal and p.name.value == tame.const.autocb
         found = true
         break
-    # for functions that end in an await call, and have an
-    # autocb, we need to put in a dummy return so the autocb is triggered
-    # We need to do this **before** the CPS translation, which is why
-    # we're not using the makeReturn mechanism
-    if found and @body.endsInAwait() and false
-      @body.push new Return(null, true)
     super(found)
 
   # Compilation creates a new scope unless explicitly asked to share with the
@@ -1488,6 +1475,10 @@ exports.Code = class Code extends Base
     unless @tamegen
       stored_tamed_scope = o.tamed_scope
       o.tamed_scope = if @tameNodeFlag then o.scope else null
+      if @tameNodeFlag and @tameHasAutocbFlag
+        rhs = new Value new Literal tame.const.autocb
+        k_id = new Value new Literal tame.const.k
+        @body.unshift(new Assign k_id, rhs, null, { param : yes })
     
 >>>>>>> betteR! gotta run, but close!
     code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
@@ -1693,8 +1684,6 @@ exports.While = class While extends Base
     top_statements = []
     top_statements = top_statements.concat d.init if d.init
     top_statements = top_statements.concat [ top_assign, top_call ]
-    if k = @tameNeedsDummyContinuation()
-      top_statements.unshift k
     top_block = new Block top_statements
 
   tameCallContinuation : ->
@@ -2052,8 +2041,6 @@ exports.Await = class Await extends Base
     rhs = new Op "new", call
     assign = new Assign lhs, rhs
     body.unshift assign
-    if k = @tameNeedsDummyContinuation()
-      body.unshift (k)
     meth = lhs.copy().add new Access new Value new Literal tame.const.fulfill
     call = new Call meth, []
     body.push (call)
@@ -2096,22 +2083,31 @@ exports.TameRequire = class TameRequire extends Base
        @typ = args[0]
 
   compileNode: (o) ->
+    @tab = o.indent
     v = if @typ then @typ.compile(o) else "inline"
-    @body = null
-    if v == "inline"
-      @body = InlineDeferral.generate()
-    else if v == "node"
-      file = new Literal "'coffee-script'"
-      access = new Access new Literal tame.const.ns
-      req = new Value new Literal "require"
-      call = new Call req, [ file ]
-      callv = new Value call
-      callv.add access
-      ns = new Value new Literal tame.const.ns
-      @body = new Assign ns, callv
-    else if v != "none"
-      throw SyntaxError @usage
-    if @body then @body.compile o else ''
+    inc = null
+    inc = switch (v)
+      when "inline"
+        InlineDeferral.generate()
+      when "node"
+        file = new Literal "'coffee-script'"
+        access = new Access new Literal tame.const.ns
+        req = new Value new Literal "require"
+        call = new Call req, [ file ]
+        callv = new Value call
+        callv.add access
+        ns = new Value new Literal tame.const.ns
+        new Assign ns, callv
+      when "none" then null
+      else throw SyntaxError @usage
+
+    out = if inc then "\n#{@tab}" + inc.compile o, LEVEL_TOP else ""
+    
+    rhs = new Code [], new Block []
+    lhs = new Value new Literal tame.const.k
+    k = new Assign lhs, rhs
+    
+    out + "\n#{@tab}" + k.compile(o, LEVEL_TOP)
 
   children = [ 'typ']
 

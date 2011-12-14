@@ -38,7 +38,7 @@ atest "pipeliner example", (cb) ->
   slots = []
   call = (i, cb) ->
     slots[i] = 1
-    await setTimeout(defer(), 10*Math.random())
+    await setTimeout(defer(), 3*Math.random())
     slots[i] |= 2
     cb(4)
 
