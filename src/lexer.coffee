@@ -262,7 +262,7 @@ exports.Lexer = class Lexer
       diff = size - @indent + @outdebt
       @token 'INDENT', diff
       @indents.push diff
-      @ends   .push 'OUTDENT'
+      @ends.push 'OUTDENT'
       @outdebt = @indebt = 0
     else
       @indebt = 0
