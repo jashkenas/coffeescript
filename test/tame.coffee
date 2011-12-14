@@ -218,11 +218,25 @@ atest "test scoping", (cb) ->
       @val++
       await delay defer()
       @val++
-      ( -> val = 0 )()
+      await
+        class Inner
+          chill : (autocb) ->
+            await delay defer()
+            @val = 0
+        i = new Inner
+        i.chill defer()
       @val++
       await delay defer()
       @val++
-      ( -> val = 0 )()
+      await
+        ( (autocb) ->
+          class Inner
+            chill : (autocb) ->
+              await delay defer()
+              @val = 0
+          i = new Inner
+          await i.chill defer()
+        )(defer())
       ++@val
     getVal : -> @val
   o = new MyClass

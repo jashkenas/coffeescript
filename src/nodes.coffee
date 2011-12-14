@@ -499,8 +499,8 @@ exports.Block = class Block extends Base
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Block
     new Block nodes
 
-  isOnlyAwait : ->
-    return @expressions?.length == 1 and @expressions[0] instanceof Await
+  endsInAwait : ->
+    return @expressions?.length and @expressions[@expressions.length-1] instanceof Await
 
   tameAddRuntime : ->
     @expressions.unshift new TameRequire()
@@ -1419,9 +1419,11 @@ exports.Code = class Code extends Base
       if p.name instanceof Literal and p.name.value == tame.const.autocb
         found = true
         break
-    # for functions that call await and do nothing else, and have an
+    # for functions that end in an await call, and have an
     # autocb, we need to put in a dummy return so the autocb is triggered
-    if found and @body.isOnlyAwait()
+    # We need to do this **before** the CPS translation, which is why
+    # we're not using the makeReturn mechanism
+    if found and @body.endsInAwait()
       @body.push new Return(null, true)
     super(found)
 
