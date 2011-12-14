@@ -556,3 +556,10 @@ test "#1842: Regression with bound functions within bound class methods", ->
   Store.bound()
   Store.unbound()
   (new Store).instance()
+  
+test "#1876: Class @A extends A", ->
+  class A
+  class @A extends A
+  
+  ok (new @A) instanceof A
+  

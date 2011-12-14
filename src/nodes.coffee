@@ -937,12 +937,20 @@ exports.Class = class Class extends Base
     @walkBody name, o
     @ensureConstructor name
     @body.spaced = yes
-    @body.expressions.unshift new Extends lname, @parent if @parent
+    if @parent
+      @superClass = new Literal o.scope.freeVariable 'super'
+      @body.expressions.unshift new Extends lname, @superClass
     @body.expressions.unshift @ctor unless @ctor instanceof Code
     @body.expressions.push lname
     @addBoundFunctions o
 
-    klass = new Parens Closure.wrap(@body), true
+    call  = Closure.wrap @body
+    
+    if @parent
+      call.args.push @parent
+      call.variable.params.push new Param @superClass
+    
+    klass = new Parens call, true
     klass = new Assign @variable, klass if @variable
     klass.compile o
 
