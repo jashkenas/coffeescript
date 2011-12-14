@@ -234,9 +234,12 @@ exports.Base = class Base
 
   tameNeedsDummyContinuation : ->
     if not @tameGotCpsSplitFlag
+      rhs = if @tameHasAutocbFlag
+        new Value new Literal tame.const.autocb
+      else
+        new Code [], new Block []
       k_id = new Value new Literal tame.const.k
-      empty = new Code [], new Block []
-      new Assign k_id, empty
+      new Assign k_id, rhs
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
@@ -1423,7 +1426,7 @@ exports.Code = class Code extends Base
     # autocb, we need to put in a dummy return so the autocb is triggered
     # We need to do this **before** the CPS translation, which is why
     # we're not using the makeReturn mechanism
-    if found and @body.endsInAwait()
+    if found and @body.endsInAwait() and false
       @body.push new Return(null, true)
     super(found)
 
@@ -1663,14 +1666,9 @@ exports.While = class While extends Base
     # Set up all of the IDs
     top_id = new Value new Literal tame.const.t_while
     k_id = new Value new Literal tame.const.k
-    acb_id = new Value new Literal tame.const.autocb
     break_id = new Value new Literal tame.const.b_while
 
-    # If this loop is the last loop in the given function, then
-    # returns will be set, and we're responsible for calling out
-    # into an autocb (if one exists)
-    break_rhs = if @returns and @tameHasAutocbFlag then acb_id else k_id
-    break_assign = new Assign break_id, break_rhs
+    break_assign = new Assign break_id, k_id
 
     # The continue assignment is the increment at the end
     # of the loop (if it's there), and also the recursive
