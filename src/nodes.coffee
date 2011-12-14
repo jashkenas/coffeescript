@@ -868,7 +868,9 @@ exports.Class = class Class extends Base
     if @boundFuncs.length
       for bvar in @boundFuncs
         lhs = (new Value (new Literal "this"), [new Access bvar]).compile o
-        @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
+        method = bvar.compile o
+        method = if IS_STRING.test method then method else "\"#{method}\""
+        @ctor.body.unshift new Literal "#{lhs} = #{utility 'bindMethod'}(#{method}, this)"
 
   # Merge the properties from a top-level object as prototypal properties
   # on the class.
@@ -1837,6 +1839,10 @@ UTILITIES =
   # Create a function bound to the current value of "this".
   bind: -> '''
     function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
+  '''
+
+  bindMethod: -> '''
+    function(method, me){ var proto = me.constructor.prototype; return function(){ return proto[method].apply(me, arguments); }; }
   '''
 
   # Discover if an item is in an array.
