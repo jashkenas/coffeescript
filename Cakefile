@@ -108,12 +108,14 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
       var CoffeeScript = function() {
         function require(path){ return require[path]; }
         #{code}
-        return require['./coffee-script']
+        return require['./coffee-script'];
       }();
 
-      if(typeof define === 'function' && define.amd) {
-        define(function() { return CoffeeScript });
-      } else { root.CoffeeScript = CoffeeScript }
+      if (typeof define === 'function' && define.amd) {
+        define(function() { return CoffeeScript; });
+      } else { 
+        root.CoffeeScript = CoffeeScript; 
+      }
     }(this));
   """
   unless process.env.MINIFY is 'false'
