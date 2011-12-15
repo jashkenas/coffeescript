@@ -157,7 +157,7 @@ test "invoking functions with implicit object literals", ->
     b:1
   eq undefined, result
 
-  result = getA b:1
+  result = getA b:1,
   a:43
   eq 43, result
 

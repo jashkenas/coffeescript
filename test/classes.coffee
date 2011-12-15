@@ -272,6 +272,25 @@ test "nothing classes", ->
 
   c = class
   ok c instanceof Function
+  
+  
+test "classes with static-level implicit objects", ->
+  
+  class A
+    @static = one: 1
+    two: 2
+    
+  class B
+    @static = one: 1,
+    two: 2
+    
+  eq A.static.one, 1
+  eq A.static.two, undefined
+  eq (new A).two, 2
+  
+  eq B.static.one, 1
+  eq B.static.two, 2
+  eq (new B).two, undefined
 
 
 test "classes with value'd constructors", ->

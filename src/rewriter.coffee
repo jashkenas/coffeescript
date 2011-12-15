@@ -93,13 +93,15 @@ class exports.Rewriter
   addImplicitBraces: ->
     stack       = []
     start       = null
+    startsLine  = null
     startIndent = 0
     condition = (token, i) ->
       [one, two, three] = @tokens[i + 1 .. i + 3]
       return false if 'HERECOMMENT' is one?[0]
       [tag] = token
       (tag in ['TERMINATOR', 'OUTDENT'] and
-        not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':')) or
+          ((!startsLine and @tag(i - 1) isnt ',') or 
+          not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':'))) or
         (tag is ',' and one and
           one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT'])
     action = (token, i) ->
@@ -118,6 +120,8 @@ class exports.Rewriter
       stack.push ['{']
       idx =  if ago is '@' then i - 2 else i - 1
       idx -= 2 while @tag(idx - 2) is 'HERECOMMENT'
+      prevTag = @tag(idx - 1)
+      startsLine = not prevTag or (prevTag in LINEBREAKS)
       value = new String('{')
       value.generated = yes
       tok = ['{', value, token[2]]
