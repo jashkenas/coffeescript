@@ -237,3 +237,17 @@ test "#1322: implicit call against implicit object with block comments", ->
 test "#1513: Top level bare objs need to be wrapped in parens for unary and existence ops", ->
   doesNotThrow -> CoffeeScript.run "{}?", bare: true
   doesNotThrow -> CoffeeScript.run "{}.a++", bare: true
+  
+test "#1871: Special case for IMPLICIT_END in the middle of an implicit object", ->
+  result = 'result'
+  ident = (x) -> x
+  
+  result = ident one: 1 if false
+  
+  eq result, 'result'
+
+  result = ident
+    one: 1
+    two: 2 for i in [1..3]
+    
+  eq result.two.join(' '), '2 2 2'  
