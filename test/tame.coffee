@@ -281,3 +281,17 @@ atest "fat arrow versus tame", (cb) ->
   await f.useHandler "sleep1", defer(ok1)
   await f.useHandler "sleep2", defer(ok2)
   cb(ok1 and ok2, {})
+
+ atest "nested loops", (cb) ->
+  val = 0
+  for i in [0..10]
+    await delay(defer(),1)
+    for j in [0..10]
+      await delay(defer(),1)
+      val++
+  cb(val == 100, {})
+
+atest "empty autocb", (cb) ->
+  bar = (autocb) ->
+  await bar defer()
+  cb(true, {})
