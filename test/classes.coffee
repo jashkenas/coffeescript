@@ -582,3 +582,15 @@ test "#1876: Class @A extends A", ->
   
   ok (new @A) instanceof A
   
+test "#1813: Passing class definitions as expressions", ->
+  ident = (x) -> x
+  
+  result = ident class A then x = 1
+    
+  eq result, A
+  
+  result = ident class B extends A
+    x = 1
+    
+  eq result, B
+  

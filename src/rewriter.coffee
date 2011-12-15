@@ -155,13 +155,13 @@ class exports.Rewriter
     condition = (token, i) ->
       [tag] = token
       return yes if not seenSingle and token.fromThen
-      seenSingle  = yes if tag in ['IF', 'ELSE', 'CATCH', '->', '=>']
+      seenSingle  = yes if tag in ['IF', 'ELSE', 'CATCH', '->', '=>', 'CLASS']
       seenControl = yes if tag in ['IF', 'ELSE', 'SWITCH', 'TRY', '=']
       return yes if tag in ['.', '?.', '::'] and @tag(i - 1) is 'OUTDENT'
       not token.generated and @tag(i - 1) isnt ',' and (tag in IMPLICIT_END or
         (tag is 'INDENT' and not seenControl)) and
         (tag isnt 'INDENT' or
-          (@tag(i - 2) isnt 'CLASS' and @tag(i - 1) not in IMPLICIT_BLOCK and
+          (@tag(i - 2) not in ['CLASS', 'EXTENDS'] and @tag(i - 1) not in IMPLICIT_BLOCK and
           not ((post = @tokens[i + 1]) and post.generated and post[0] is '{')))
     
     action = (token, i) -> 
