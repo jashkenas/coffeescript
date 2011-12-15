@@ -1456,6 +1456,12 @@ exports.Code = class Code extends Base
     for name in @paramNames()
       throw SyntaxError "multiple parameters named '#{name}'" if name in uniqs
       uniqs.push name
+
+    # Empty guys should still autocb
+    if wasEmpty and @tameHasAutocbFlag
+      @body.expressions.unshift(new Return null, true)
+      wasEmpty = false
+      
     @body.makeReturn() unless wasEmpty or @noReturn
     if @bound
       if o.scope.parent.method?.bound
@@ -1465,12 +1471,9 @@ exports.Code = class Code extends Base
     idt   = o.indent
     code  = 'function'
     code  += ' ' + @name if @ctor
-<<<<<<< HEAD
     code  += '(' + params.join(', ') + ') {'
     if @tameNodeFlag
       o.tamed_scope = o.scope
-=======
-    code  += '(' + vars.join(', ') + ') {'
 
     # There are two important cases to consider in terms of autocb;
     # In the case of an explicit call to return, we handle it in
@@ -1486,7 +1489,6 @@ exports.Code = class Code extends Base
       k_id = new Value new Literal tame.const.k
       @body.unshift(new Assign k_id, rhs, null, { param : yes })
     
->>>>>>> betteR! gotta run, but close!
     code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
     code  += '}'
     return @tab + code if @ctor
