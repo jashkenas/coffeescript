@@ -295,3 +295,42 @@ atest "empty autocb", (cb) ->
   bar = (autocb) ->
   await bar defer()
   cb(true, {})
+
+atest "more autocb (false)", (cb) ->
+  bar = (autocb) ->
+    if false
+      console.log "not reached"
+  await bar defer()    
+  cb(true, {}) 
+
+atest "more autocb (true)", (cb) ->
+  bar = (autocb) ->
+    if true
+      10
+  await bar defer()    
+  cb(true, {}) 
+
+atest "more autocb (true & false)", (cb) ->
+  bar = (autocb) ->
+    if false
+      10
+    else
+      if false
+        11
+  await bar defer()    
+  cb(true, {}) 
+
+atest "more autocb (while)", (cb) ->
+  bar = (autocb) ->
+    while false
+      10
+  await bar defer()    
+  cb(true, {}) 
+
+atest "more autocb (comments)", (cb) ->
+  bar = (autocb) ->
+    ###
+    blah blah blah
+    ###
+  await bar defer()    
+  cb(true, {}) 

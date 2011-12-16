@@ -322,13 +322,20 @@ exports.Block = class Block extends Base
   # ensures that the final expression is returned.
   makeReturn: (res) ->
     len = @expressions.length
+    foundReturn = false
     while len--
       expr = @expressions[len]
       if expr not instanceof Comment
         @expressions[len] = expr.makeReturn res
-        @expressions.splice(len, 1) if expr instanceof Return and
+        if expr instanceof Return and
            not expr.expression and not expr.tameHasAutocbFlag
+          @expressions.splice(len, 1)
+          foundReturn = true
+        else if not (expr instanceof If) or expr.elseBody
+          foundReturn = true
         break
+    if @tameHasAutocbFlag and not @tameNodeFlag and not foundReturn
+      @expressions.push(new Return null, true)
     this
 
   # Optimization!
@@ -1457,11 +1464,7 @@ exports.Code = class Code extends Base
       throw SyntaxError "multiple parameters named '#{name}'" if name in uniqs
       uniqs.push name
 
-    # Empty guys should still autocb
-    if wasEmpty and @tameHasAutocbFlag
-      @body.expressions.unshift(new Return null, true)
-      wasEmpty = false
-      
+    wasEmpty = false if @tameHasAutocbFlag
     @body.makeReturn() unless wasEmpty or @noReturn
     if @bound
       if o.scope.parent.method?.bound
