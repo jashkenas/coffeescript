@@ -1419,7 +1419,7 @@ exports.Code = class Code extends Base
   tameMarkAutocbs: (found) ->
     found = false
     for p in @params
-      if p.name instanceof Literal and p.name.value == tame.const.autocb
+      if p.name instanceof Literal and p.name.value is tame.const.autocb
         found = true
         break
     super(found)
@@ -1966,7 +1966,7 @@ exports.Defer = class Defer extends Base
   #   leftover arguments.
   #
   makeAssignFn : (o) ->
-    return null if @slots.length == 0
+    return null if @slots.length is 0
     assignments = []
     args = []
     i = 0
@@ -2088,7 +2088,7 @@ exports.TameRequire = class TameRequire extends Base
     @usage =  "tameRequire takes either 'inline', 'node' or 'none'"
     if args and args.length > 2
        throw SyntaxError @usage
-    if args and args.length == 1
+    if args and args.length is 1
        @typ = args[0]
 
   compileNode: (o) ->

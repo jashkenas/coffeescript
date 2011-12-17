@@ -67,7 +67,7 @@ do_all = (lst) ->
     for h in lst
       do_one defer(), h
 
-do_all process.argv.slice(2)
+do_all process.argv[2...]
 ```
 
 You can run this on the command line like so:
@@ -114,11 +114,11 @@ do_all = (lst, windowsz) ->
   nrecv = 0
 
   while nrecv < lst.length
-    if nsent - nrecv < windowsz && nsent < n
-      do_one(rv.id(nsent).defer(), lst[nsent])
+    if nsent - nrecv < windowsz and  nsent < n
+      do_one rv.id(nsent).defer(), lst[nsent]
       nsent++
     else
-      await rv.wait defer(evid)
+      await rv.wait defer evid
       console.log "got back lookup nsent=#{evid}"
       nrecv++
 ```
@@ -152,8 +152,8 @@ f = (n,cb) ->
   await
     for i in [0..n]
       ((cb) ->
-        await setTimeout defer(), 5*Math.random()
-        await setTimeout defer(), 4*Math.random()
+        await setTimeout defer(), 5 * Math.random()
+        await setTimeout defer(), 4 * Math.random()
         cb()
       )(defer())
   cb()
@@ -171,8 +171,8 @@ f = (n,autocb) ->
   await
     for i in [0..n]
       ((autocb) ->
-        setTimeout defer(), 5*Math.random ()
-        setTimeout defer(), 4*Math.random ()
+        setTimeout defer(), 5 * Math.random()
+        setTimeout defer(), 4 * Math.random()
       )(defer())
 ```
 In the first example, recall, you call `cb()` explicitly.  In this
@@ -186,8 +186,8 @@ then fulfills its callback `cb` with the amount of time it waited:
 
 ```coffeescript
 rand_wait = (cb) ->
-  time = Math.floor (Math.random()*5);
-  if time == 0
+  time = Math.floor Math.random() * 5
+  if time is 0
    cb(0)
    return
   await setTimeout defer(), time
@@ -198,8 +198,8 @@ This function can written equivalently with `autocb` as:
 
 ```coffeescript
 rand_wait = (autocb) ->
-  time = Math.floor (Math.random()*5);
-  return 0 if time == 0
+  time = Math.floor  Math.random() * 5 
+  return 0 if time is 0
   await setTimeout defer(), time
   return time 
 ```
@@ -234,7 +234,7 @@ example that shows off the four different cases required to make this
 happen:
 
 ```coffeescript
-cb = defer x, obj.field, arr[i], rest..
+cb = defer x, obj.field, arr[i], rest...
 ```
 
 And here is the output from the tamed `coffee` compiler:
@@ -314,8 +314,8 @@ a standard CoffeeScript-style abstract syntax tree (AST).
    * **2.1** Find all `await` nodes in the AST.  Mark these nodes and their
    ancestors with an **A** flag.
 
-   * **2.2** Find all `for`, `while`, or `loop` nodes marked with **A**.
-   Mark them and their descendants with an **L** flag.
+   * **2.2** Find all `for`, `while`, `until`, or `loop` nodes marked with
+   **A**.  Mark them and their descendants with an **L** flag.
 
    * **2.3** Find all `continue` or `break` nodes marked with an **L** flag.
    Mark them and their descendants with a **P** flag.
@@ -324,7 +324,7 @@ a standard CoffeeScript-style abstract syntax tree (AST).
 
    * **3.1** For each `Block` node _b_ in the `AST` marked **A** or **P**:
 
-      * **3.1.1** Find _b_'s first child _c_ marked with with **A** or **P**.
+      * **3.1.1** Find _b_'s first child _c_ marked with **A** or **P**.
 
       * **3.1.2** Cut _b_'s list of expressions after _c_, and move those
       expressions on the right of the cut into a new block, called

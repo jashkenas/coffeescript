@@ -1,13 +1,13 @@
 
 delay = (cb, i) ->
-   i = i || 10
+   i = i || 3
    setTimeout cb, i
 
 atest "basic tame waiting", (cb) ->
    i = 1
    await delay defer()
    i++
-   cb(i == 2, {})
+   cb(i is 2, {})
 
 foo = (i, cb) ->
   await delay(defer(), i)
@@ -17,12 +17,12 @@ atest "basic tame waiting", (cb) ->
    i = 1
    await delay defer()
    i++
-   cb(i == 2, {})
+   cb(i is 2, {})
 
 atest "basic tame trigger values", (cb) ->
    i = 10
    await foo(i, defer j)
-   cb(i == j, {})
+   cb(i is j, {})
 
 atest "basic tame set structs", (cb) ->
    field = "yo"
@@ -31,7 +31,7 @@ atest "basic tame set structs", (cb) ->
    await
      foo(i, defer obj.cat[field])
      field = "bar" # change the field to make sure that we captured "yo"
-   cb(obj.cat.yo == i, {})
+   cb(obj.cat.yo is i, {})
 
 multi = (cb, arr) ->
   await delay defer()
@@ -51,10 +51,10 @@ atest "continue / break test" , (cb) ->
   tot = 0
   for i in [0..100]
     await delay defer()
-    continue if i == 3
+    continue if i is 3
     tot += i
-    break if i == 10
-  cb(tot == 52, {})
+    break if i is 10
+  cb(tot is 52, {})
 
 atest "for k,v of obj testing", (cb) ->
   obj = { the : "quick", brown : "fox", jumped : "over" }
@@ -62,7 +62,7 @@ atest "for k,v of obj testing", (cb) ->
   for k,v of obj
     await delay defer()
     s += k + " " + v + " "
-  cb( s == "the quick brown fox jumped over ", {} )
+  cb( s is "the quick brown fox jumped over ", {} )
 
 atest "for k,v in arr testing", (cb) ->
   obj = [ "the", "quick", "brown" ]
@@ -70,7 +70,7 @@ atest "for k,v in arr testing", (cb) ->
   for v,i in obj
     await delay defer()
     s += v + " " + i + " "
-  cb( s == "the 0 quick 1 brown 2 ", {} )
+  cb( s is "the 0 quick 1 brown 2 ", {} )
 
 atest "switch-a-roos", (cb) ->
   res = 0
@@ -90,8 +90,8 @@ atest "switch-a-roos", (cb) ->
           res += 300
       else
         res += i*1000
-    res += 10000 if i == 2
-  cb( res == 17321, {} )
+    res += 10000 if i is 2
+  cb( res is 17321, {} )
 
 
 atest "parallel awaits with classes", (cb) ->
@@ -112,7 +112,7 @@ atest "parallel awaits with classes", (cb) ->
     obj.increment 20, 2, defer()
     obj.increment 30, 4, defer()
   v = obj.getVal()
-  cb(v == 14, {})
+  cb(v is 14, {})
 
 atest "loop construct", (cb) ->
   i = 0
@@ -120,9 +120,9 @@ atest "loop construct", (cb) ->
     await delay defer()
     i += 1
     await delay defer()
-    break if i == 10
+    break if i is 10
     await delay defer()
-  cb(i == 10, {})
+  cb(i is 10, {})
 
 atest "simple autocb operations", (cb) ->
   b = false
@@ -145,48 +145,48 @@ atest "AT variable works in an await (1)", (cb) ->
   o = new MyClass
   await o.run defer()
   cb(o.getFlag(), {})
-    
+
 atest "more advanced autocb test", (cb) ->
   bar = -> "yoyo"
   foo = (val, autocb) ->
     await delay defer()
-    if val == 0 then [1,2,3]
-    else if val == 1 then { a : 10 }
-    else if val == 2 then bar()
+    if val is 0 then [1,2,3]
+    else if val is 1 then { a : 10 }
+    else if val is 2 then bar()
     else 33
   oks = 0
   await foo 0, defer x
-  oks++ if x[2] == 3
+  oks++ if x[2] is 3
   await foo 1, defer x
-  oks++ if x.a == 10
+  oks++ if x.a is 10
   await foo 2, defer x
-  oks++ if x == "yoyo"
+  oks++ if x is "yoyo"
   await foo 100, defer x
-  oks++ if x == 33
-  cb(oks == 4, {})
+  oks++ if x is 33
+  cb(oks is 4, {})
 
 atest "test of autocb in a simple function", (cb) ->
   simple = (autocb) ->
     await delay defer()
-  ok = false  
+  ok = false
   await simple defer()
   ok = true
   cb(ok,{})
-    
+
 atest "test nested serial/parallel", (cb) ->
   slots = []
   await
     for i in [0..10]
       ( (j, autocb) ->
-        await delay defer(), 5*Math.random()
-        await delay defer(), 4*Math.random()
+        await delay defer(), 5 * Math.random()
+        await delay defer(), 4 * Math.random()
         slots[j] = true
       )(i, defer())
   ok = true
   for i in [0..10]
     ok = false unless slots[i]
   cb(ok, {})
-  
+
 atest "loops respect autocbs", (cb) ->
   ok = false
   bar = (autocb) ->
@@ -226,7 +226,7 @@ atest "test scoping", (cb) ->
     getVal : -> @val
   o = new MyClass
   await o.run defer(v)
-  cb(v == 5, {})
+  cb(v is 5, {})
 
 atest "AT variable works in an await (2)", (cb) ->
   class MyClass
@@ -241,7 +241,7 @@ atest "AT variable works in an await (2)", (cb) ->
     getVal : -> @val
   o = new MyClass
   await o.run defer()
-  cb(o.getVal() == 10, {})
+  cb(o.getVal() is 10, {})
 
 atest "another autocb gotcha", (cb) ->
   bar = (autocb) ->
@@ -250,7 +250,7 @@ atest "another autocb gotcha", (cb) ->
   await bar defer()
   ok = true
   cb(ok, {})
-      
+
 atest "fat arrow versus tame", (cb) ->
   class Foo
     constructor : ->
@@ -264,7 +264,7 @@ atest "fat arrow versus tame", (cb) ->
 
     delay : (autocb) ->
       await delay defer()
-    
+
     addHandlers : ->
       @addHandler "sleep1", (cb) =>
         await delay defer()
@@ -289,7 +289,7 @@ atest "fat arrow versus tame", (cb) ->
     for j in [0..10]
       await delay(defer(),1)
       val++
-  cb(val == 100, {})
+  cb(val is 100, {})
 
 atest "empty autocb", (cb) ->
   bar = (autocb) ->
@@ -300,15 +300,15 @@ atest "more autocb (false)", (cb) ->
   bar = (autocb) ->
     if false
       console.log "not reached"
-  await bar defer()    
-  cb(true, {}) 
+  await bar defer()
+  cb(true, {})
 
 atest "more autocb (true)", (cb) ->
   bar = (autocb) ->
     if true
       10
-  await bar defer()    
-  cb(true, {}) 
+  await bar defer()
+  cb(true, {})
 
 atest "more autocb (true & false)", (cb) ->
   bar = (autocb) ->
@@ -317,20 +317,28 @@ atest "more autocb (true & false)", (cb) ->
     else
       if false
         11
-  await bar defer()    
-  cb(true, {}) 
+  await bar defer()
+  cb(true, {})
 
 atest "more autocb (while)", (cb) ->
   bar = (autocb) ->
     while false
       10
-  await bar defer()    
-  cb(true, {}) 
+  await bar defer()
+  cb(true, {})
 
 atest "more autocb (comments)", (cb) ->
   bar = (autocb) ->
     ###
     blah blah blah
     ###
-  await bar defer()    
-  cb(true, {}) 
+  await bar defer()
+  cb(true, {})
+
+atest "until", (cb) ->
+  i = 10
+  out = 0
+  until i is 0
+    await delay defer()
+    out += i--
+  cb(out is 55, {})

@@ -17,7 +17,7 @@ atest "rendezvous & windowing example", (cb) ->
     nsent = 0
     nrecv = 0
     while nrecv < n
-      if nsent - nrecv < window && nsent < n
+      if nsent - nrecv < window and nsent < n
         call nsent, rv.id(nsent).defer()
         nsent++
       else
@@ -54,7 +54,7 @@ atest "pipeliner example", (cb) ->
     cb()
 
   await window 100, 10, defer()
-  
+
   ok = true
   for s in slots
     ok = false unless s == 7
