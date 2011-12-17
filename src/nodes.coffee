@@ -128,7 +128,7 @@ exports.Base = class Base
   # loop or its descendant; a 'P' flag if this node is going to be
   # a 'pivot' in the CPS tree rotation; a 'C' flag if this node is inside
   # a function with an autocb.
-  # 
+  #
   toString: (idt = '', name = @constructor.name) ->
     extras = ""
     extras += "A" if @tameNodeFlag
@@ -183,7 +183,7 @@ exports.Base = class Base
     for child in @flattenChildren()
       return true if child.tameNeedsRuntime()
     return false
-  
+
   tameFindRequire : ->
     for child in @flattenChildren()
       return r if (r = child.tameFindRequire())
@@ -203,12 +203,12 @@ exports.Base = class Base
   #    1. Find await's and trace upward.
   #    2. Find loops found in #1, and flood downward
   #    3. Find break/continue found in #2, and trace upward
-  # 
+  #
   # tameWalkAst
   #   Walk the AST looking for taming. Mark a node as with tame flags
   #   if any of its children are tamed, but don't cross scope boundary
   #   when considering the children.
-  # 
+  #
   tameWalkAst : ->
     for child in @flattenChildren()
       @tameNodeFlag = true if child.tameWalkAst()
@@ -398,9 +398,9 @@ exports.Block = class Block extends Base
       preludeExps = for exp, i in @expressions
         break unless exp.unwrap() instanceof Comment
         exp
-        
+
       rest = @expressions[preludeExps.length...]
-        
+
       @expressions = preludeExps
       prelude = "#{@compileNode merge(o, indent: '')}\n" if preludeExps.length
       @expressions = rest
@@ -444,7 +444,7 @@ exports.Block = class Block extends Base
   # on the LHS of the pivot stay where the are.  The expressions on the RHS
   # of the pivot become the pivot's continuation. And the process is applied
   # recursively.
-  # 
+  #
   tameCpsRotate : ->
     pivot = null
     child = null
@@ -462,11 +462,11 @@ exports.Block = class Block extends Base
     # itself
     if pivot
       rest = @expressions.slice(i+1)
-      
+
       # Leave the pivot in the list of expressions
       @expressions = @expressions.slice(0,i+1)
 
-      # If there are elements in rest, then we need to nest a continuation block 
+      # If there are elements in rest, then we need to nest a continuation block
       if rest.length
         child = new Block rest
         pivot.tameNestContinuationBlock child
@@ -482,7 +482,7 @@ exports.Block = class Block extends Base
         # this being especially import in blocks that have multiple
         # awaits on the same level
         child.tameCpsRotate()
-        
+
       # The pivot value needs to call the currently active continuation
       # after it's all done.  For things like if..else.. this does something
       # interesting and pushes the continuation down both branches.
@@ -497,7 +497,7 @@ exports.Block = class Block extends Base
 
     # return this for chaining
     this
-    
+
   # Wrap up the given nodes as a **Block**, unless it already happens
   # to be one.
   @wrap: (nodes) ->
@@ -1491,7 +1491,7 @@ exports.Code = class Code extends Base
       rhs = new Value new Literal tame.const.autocb
       k_id = new Value new Literal tame.const.k
       @body.unshift(new Assign k_id, rhs, null, { param : yes })
-    
+
     code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
     code  += '}'
     return @tab + code if @ctor
@@ -1677,11 +1677,11 @@ exports.While = class While extends Base
     continue_block = new Block [ new Call top_id, [ k_id ] ]
     continue_block.unshift d.step if d.step
     continue_body = new Code [], continue_block, 'tamegen'
-    continue_assign = new Assign continue_id, continue_body, null, { tamelocal : yes } 
+    continue_assign = new Assign continue_id, continue_body, null, { tamelocal : yes }
 
     # The whole body is wrapped in an if, with the positive
     # condition being the loop, and the negative condition
-    # being the break out of the loop 
+    # being the break out of the loop
     cond = new If condition, body
     cond.addElse new Block [ new Call break_id, [] ]
 
@@ -1948,7 +1948,7 @@ exports.Defer = class Defer extends Base
     v
 
   #
-  # makeAssignFn 
+  # makeAssignFn
   #   - Implement C++-style pass-by-reference in Coffee
   #
   # the 'assign_fn' returned by here will set all parameters to defer()
@@ -1956,11 +1956,11 @@ exports.Defer = class Defer extends Base
   # four cases to consider are listed in the following call:
   #
   #     defer(x, a.b, c.d[i], rest...)
-  # 
-  # Case 1 -- defer(x) --  Regular assignment to a local variable 
-  # Case 2 -- defer(a.b) --  Assignment to an object; must capture 
+  #
+  # Case 1 -- defer(x) --  Regular assignment to a local variable
+  # Case 2 -- defer(a.b) --  Assignment to an object; must capture
   #    object when defer() is called
-  # Case 3 -- defer(c.d[i]) --  Assignment to an array slot; must capture 
+  # Case 3 -- defer(c.d[i]) --  Assignment to an array slot; must capture
   #   array and slot index with defer() is called
   # Case 4 -- defer(rest...) -- rest is an array, assign it to all
   #   leftover arguments.
@@ -2010,7 +2010,7 @@ exports.Defer = class Defer extends Base
     fn.add new Access meth
 
     # There is one argument to Deferrals.defer(), which is a dictionary.
-    # The dictionary currently only has one slot: assign_fn, which 
+    # The dictionary currently only has one slot: assign_fn, which
     #   indicates a function.
     # More slots will be needed if we ever want to keep track of tame-aware
     #   stack traces.
@@ -2076,12 +2076,12 @@ exports.Await = class Await extends Base
 #
 # By default, the tame libraries are inlined.  But if you preface your file
 # with 'tameRequire(node)', it will assume a node runtime, emitting:
-# 
+#
 #   tame = require('coffee-script').tame
 #
 # With 'tameRequire(none)', you can supply a runtime of
 # your choosing.
-# 
+#
 exports.TameRequire = class TameRequire extends Base
   constructor: (args) ->
     @typ = null
@@ -2111,11 +2111,11 @@ exports.TameRequire = class TameRequire extends Base
       else throw SyntaxError @usage
 
     out = if inc then "\n#{@tab}" + inc.compile o, LEVEL_TOP else ""
-    
+
     rhs = new Code [], new Block []
     lhs = new Value new Literal tame.const.k
     k = new Assign lhs, rhs
-    
+
     out + "\n#{@tab}" + k.compile(o, LEVEL_TOP)
 
   children = [ 'typ']
@@ -2266,8 +2266,8 @@ exports.For = class For extends While
       ref_val = new Value new Literal ref
       a1 = new Assign ref_val, @source
 
-      # keys = for k of _ref 
-      #   k 
+      # keys = for k of _ref
+      #   k
       keys = scope.freeVariable 'keys'
       keys_val = new Value new Literal keys
       key = scope.freeVariable 'k'
@@ -2716,9 +2716,6 @@ unfoldSoak = (o, parent, name) ->
   ifn.body = new Value parent
   ifn
 
-
-#### Unrolled loops
-#
 
 # Constants
 # ---------
