@@ -381,33 +381,33 @@ while x3
 
 * Here is schematic diagram for this AST:
 
-   <img src="/maxtaco/coffee-script/raw/master/media/rotate1.png" width=650 />
+   <img src="/maxtaco/coffee-script/raw/tame/media/rotate1.png" width=650 />
 
 * After Step 2.1, nodes in blue are marked with **A**.  Recall, Step 2.1 traces
 upwards from all `await` blocks.
 
-   <img src="/maxtaco/coffee-script/raw/master/media/rotate2.png" width=650 />
+   <img src="/maxtaco/coffee-script/raw/tame/media/rotate2.png" width=650 />
 
 * After Step 2.2, nodes in purple are marked with **L**.  Recall, Step 2.2 floods
 downwards from any any loops marked with **A**.
 
-   <img src="/maxtaco/coffee-script/raw/master/media/rotate3.png" width=650 />
+   <img src="/maxtaco/coffee-script/raw/tame/media/rotate3.png" width=650 />
 
 * After Step 2.3, nodes in yellow are marked with **P**.  Recall, Step 2.3 
 traces upwards from any jumps marked with **L**.
 
-   <img src="/maxtaco/coffee-script/raw/master/media/rotate4.png" width=650 />
+   <img src="/maxtaco/coffee-script/raw/tame/media/rotate4.png" width=650 />
 
 * The green nodes are those marked with **A** or **P**.  They are "marked"
 for rotations in the next step.
 
-   <img src="/maxtaco/coffee-script/raw/master/media/rotate5.png" width=650 />
+   <img src="/maxtaco/coffee-script/raw/tame/media/rotate5.png" width=650 />
 
 * In Step 3, rotate all marked nodes AST nodes. This rotation
 introduces the new orange `block` nodes in the graph, and attaches
 them to pivot nodes as _continuation_ blocks.
 
-   <img src="/maxtaco/coffee-script/raw/master/media/post-rotate.png" width=650 />
+   <img src="/maxtaco/coffee-script/raw/tame/media/post-rotate.png" width=650 />
 
 
 * In translated code, the general format of a _pivot_ node is:
@@ -424,7 +424,7 @@ them to pivot nodes as _continuation_ blocks.
 To see how pivots and continuations are output in our example, look
 at this portion of the AST, introduced after Step 3:
    
-   ![detail](/maxtaco/coffee-script/raw/master/media/detail.png)
+   ![detail](/maxtaco/coffee-script/raw/tame/media/detail.png)
 
 Here is the translated output (slightly hand-edited for clarity):
 
