@@ -118,8 +118,7 @@ class exports.Rewriter
           one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT'])
 
     action = (token, i) ->
-      tok = ['}', '}', token[2]]
-      tok.generated = yes
+      tok = @generated(['}', '}', token[2]])
       @tokens.splice i, 0, tok
 
     @scanTokens (token, i, tokens) ->
@@ -137,10 +136,8 @@ class exports.Rewriter
       idx -= 2 while @tag(idx - 2) is 'HERECOMMENT'
       prevTag = @tag(idx - 1)
       startsLine = not prevTag or (prevTag in LINEBREAKS)
-      value = new String('{')
-      value.generated = yes
-      tok = ['{', value, token[2]]
-      tok.generated = yes
+      value = @generated(new String('{'))
+      tok = @generated(['{', value, token[2]])
       tokens.splice idx, 0, tok
       @detectEnd i + 2, condition, action
       2
@@ -218,7 +215,8 @@ class exports.Rewriter
         starter = tag
         [indent, outdent] = @indentation token
         indent.fromThen   = true if starter is 'THEN'
-        indent.generated  = outdent.generated = true
+        @generated(indent)
+        @generated(outdent)
         tokens.splice i + 1, 0, indent
         @detectEnd i + 2, condition, action
         tokens.splice i, 1 if tag is 'THEN'
@@ -249,6 +247,11 @@ class exports.Rewriter
 
   # Look up a tag by token index.
   tag: (i) -> @tokens[i]?[0]
+
+  # Mark the given token or value generated.
+  generated : (token) ->
+    token.generated = true
+    token
 
 # Constants
 # ---------
