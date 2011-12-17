@@ -70,14 +70,14 @@ class exports.Rewriter
   # its paired close. We have the mis-nested outdent case included here for
   # calls that close on the same line, just before their outdent.
   closeOpenCalls: ->
-    
+
     condition = (token, i) ->
       token[0] in [')', 'CALL_END'] or
       token[0] is 'OUTDENT' and @tag(i - 1) is ')'
-      
+
     action = (token, i) ->
       @tokens[if token[0] is 'OUTDENT' then i - 1 else i][0] = 'CALL_END'
-      
+
     @scanTokens (token, i) ->
       @detectEnd i + 1, condition, action if token[0] is 'CALL_START'
       1
@@ -85,13 +85,13 @@ class exports.Rewriter
   # The lexer has tagged the opening parenthesis of an indexing operation call.
   # Match it with its paired close.
   closeOpenIndexes: ->
-    
-    condition = (token, i) -> 
+
+    condition = (token, i) ->
       token[0] in [']', 'INDEX_END']
-      
-    action = (token, i) -> 
+
+    action = (token, i) ->
       token[0] = 'INDEX_END'
-      
+
     @scanTokens (token, i) ->
       @detectEnd i + 1, condition, action if token[0] is 'INDEX_START'
       1
@@ -99,29 +99,29 @@ class exports.Rewriter
   # Object literals may be written with implicit braces, for simple cases.
   # Insert the missing braces here, so that the parser doesn't have to.
   addImplicitBraces: ->
-    
+
     stack       = []
     start       = null
     startsLine  = null
     sameLine    = yes
     startIndent = 0
-    
+
     condition = (token, i) ->
       [one, two, three] = @tokens[i + 1 .. i + 3]
       return no if 'HERECOMMENT' is one?[0]
       [tag] = token
       sameLine = no if tag in LINEBREAKS
       ((tag in ['TERMINATOR', 'OUTDENT'] or (tag in IMPLICIT_END and sameLine)) and
-          ((!startsLine and @tag(i - 1) isnt ',') or 
+          ((!startsLine and @tag(i - 1) isnt ',') or
           not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':'))) or
         (tag is ',' and one and
           one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT'])
-          
+
     action = (token, i) ->
       tok = ['}', '}', token[2]]
       tok.generated = yes
       @tokens.splice i, 0, tok
-      
+
     @scanTokens (token, i, tokens) ->
       if (tag = token[0]) in EXPRESSION_START
         stack.push [(if tag is 'INDENT' and @tag(i - 1) is '{' then '{' else tag), i]
@@ -149,9 +149,9 @@ class exports.Rewriter
   # Insert the implicit parentheses here, so that the parser doesn't have to
   # deal with them.
   addImplicitParentheses: ->
-    
+
     noCall = seenSingle = seenControl = no
-    
+
     condition = (token, i) ->
       [tag] = token
       return yes if not seenSingle and token.fromThen
@@ -163,10 +163,10 @@ class exports.Rewriter
         (tag isnt 'INDENT' or
           (@tag(i - 2) not in ['CLASS', 'EXTENDS'] and @tag(i - 1) not in IMPLICIT_BLOCK and
           not ((post = @tokens[i + 1]) and post.generated and post[0] is '{')))
-    
-    action = (token, i) -> 
+
+    action = (token, i) ->
       @tokens.splice i, 0, ['CALL_END', ')', token[2]]
-      
+
     @scanTokens (token, i, tokens) ->
       tag     = token[0]
       noCall  = yes if tag in ['CLASS', 'IF']
@@ -192,16 +192,16 @@ class exports.Rewriter
   # blocks, so it doesn't need to. ')' can close a single-line block,
   # but we need to make sure it's balanced.
   addImplicitIndentation: ->
-    
+
     starter = indent = outdent = null
-    
+
     condition = (token, i) ->
       token[1] isnt ';' and token[0] in SINGLE_CLOSERS and
       not (token[0] is 'ELSE' and starter not in ['IF', 'THEN'])
-      
+
     action = (token, i) ->
       @tokens.splice (if @tag(i - 1) is ',' then i - 1 else i), 0, outdent
-    
+
     @scanTokens (token, i, tokens) ->
       [tag] = token
       if tag is 'TERMINATOR' and @tag(i + 1) is 'THEN'
@@ -228,15 +228,15 @@ class exports.Rewriter
   # Tag postfix conditionals as such, so that we can parse them with a
   # different precedence.
   tagPostfixConditionals: ->
-    
+
     original = null
-    
-    condition = (token, i) -> 
+
+    condition = (token, i) ->
       token[0] in ['TERMINATOR', 'INDENT']
-      
+
     action = (token, i) ->
       original[0] = 'POST_' + original[0] if token[0] isnt 'INDENT'
-    
+
     @scanTokens (token, i) ->
       return 1 unless token[0] is 'IF'
       original = token
