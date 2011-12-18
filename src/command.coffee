@@ -94,7 +94,8 @@ compilePath = (source, topLevel, base) ->
     if stats.isDirectory()
       watchDir source, base if opts.watch
       fs.readdir source, (err, files) ->
-        throw err if err
+        throw err if err and err.code isnt 'ENOENT'
+        return if err?.code is 'ENOENT'
         files = files.map (file) -> path.join source, file
         index = sources.indexOf source
         sources[index..index] = files
@@ -103,7 +104,8 @@ compilePath = (source, topLevel, base) ->
     else if topLevel or path.extname(source) is '.coffee'
       watch source, base if opts.watch
       fs.readFile source, (err, code) ->
-        throw err if err
+        throw err if err and err.code isnt 'ENOENT'
+        return if err?.code is 'ENOENT'
         compileScript(source, code.toString(), base)
     else
       notSources[source] = yes
