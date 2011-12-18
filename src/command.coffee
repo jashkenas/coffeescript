@@ -237,7 +237,7 @@ unwatchDir = (source, base) ->
   prevSources = sources.slice()
   toRemove = (file for file in sources when file.indexOf(source) >= 0)
   removeSource file, base, yes for file in toRemove
-  return if sources[i] is prevSources[i] for i in [0...sources.length]
+  return unless sources.some (s, i) -> prevSources[i] isnt s
   compileJoin()
 
 # Remove a file from our source list, and source code cache. Optionally remove
