@@ -277,27 +277,20 @@ assignment of multiple values at once, accessed as an array.
 These specifics are also detailed in the code in the `Defer` class,
 file `nodes.coffee`.
 
-### Why Can't `await` Blocks Act Like Expressions?
+### Awaits Can work as Expressions
 
-It might be possible, with an insane amount of hoop-jumping, to make
-something like this work:
+*In a rush*
+
+An `await` block takes the value of its first `defer'ed slot.
 
 ```coffeescript
-x = await myfunc defer _
+add = (a,b,cb) ->
+  await setTimeout defer(), 10
+  cb(a+b)
+
+x = (await add 3, 4, defer()) + (await add 1, 2, defer())
+console.log "#{x} == 10"
 ```
-
-And have the value of the right hand side evaluate to whatever the
-value `_` gets when `myfunc` fulfills its deferral. That _might_ be
-possible, but something like this seems even uglier to implement:
-
-```coffescript
-yourfunc (await myfunc defer _), (await otherfunc defer _)
-```
-
-It would be a significant additional implementation challenge to get
-`await` statements working like expressions everywhere. 
-It's not worth, in our opinion, a lot of added complexity
-to get a half-baked solution.
 
 ## Translation Technique
 
