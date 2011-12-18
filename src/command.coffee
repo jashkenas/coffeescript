@@ -99,7 +99,9 @@ compileScripts = ->
       path.exists source, (exists) ->
         if topLevel and not exists and source[-7..] isnt '.coffee'
           return compile "#{source}.coffee", sourceIndex, topLevel
-        throw new Error "File not found: #{source}" if topLevel and not exists
+        if topLevel and not exists 
+          console.error "File not found: #{source}"
+          process.exit 1
         fs.stat source, (err, stats) ->
           throw err if err
           if stats.isDirectory()
@@ -174,23 +176,28 @@ loadRequires = ->
 # time the file is updated. May be used in combination with other options,
 # such as `--lint` or `--print`.
 watch = (source, base) ->
-  return unless fs.watch
-  fs.stat source, (err, prevStats)->
-    throw err if err
-    watcher = fs.watch source, callback = (event) ->
-      if event is 'rename'
-        watcher.close()
-        try  # if source no longer exists, never mind
-          watcher = fs.watch source, callback
-      else if event is 'change'
-        fs.stat source, (err, stats) ->
-          throw err if err
-          return if stats.size is prevStats.size and
-            stats.mtime.getTime() is prevStats.mtime.getTime()
-          prevStats = stats
-          fs.readFile source, (err, code) ->
-            throw err if err
-            compileScript(source, code.toString(), base)
+  
+  prevStats = null
+  
+  compile = ->
+    fs.stat source, (err, stats) ->
+      throw err if err
+      return if prevStats and (stats.size is prevStats.size and
+        stats.mtime.getTime() is prevStats.mtime.getTime())
+      prevStats = stats
+      fs.readFile source, (err, code) ->
+        throw err if err
+        compileScript(source, code.toString(), base)
+      
+  watcher = fs.watch source, callback = (event) ->
+    if event is 'change'
+      compile()
+    else if event is 'rename'
+      watcher.close()
+      setTimeout -> 
+        compile()
+        watcher = fs.watch source, callback
+      , 250
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
