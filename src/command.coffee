@@ -79,7 +79,7 @@ exports.run = ->
 # '.coffee' extension source files in it and all subdirectories.
 compileScripts = ->
   unprocessed = []
-  remaining_files = ->
+  remainingFiles = ->
     total = 0
     total += x for x in unprocessed
     total
@@ -89,7 +89,7 @@ compileScripts = ->
   trackCompleteFiles = (sourceIndex, fileCount) ->
     unprocessed[sourceIndex] -= fileCount
     if opts.join
-      if helpers.compact(contents).length > 0 and remaining_files() == 0
+      if helpers.compact(contents).length > 0 and remainingFiles() is 0
         compileJoin()
   for source in sources
     trackUnprocessedFiles sources.indexOf(source), 1
