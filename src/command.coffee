@@ -76,38 +76,39 @@ exports.run = ->
   process.execPath = require.main.filename
   for source in sources
     compilePath source, yes, path.normalize source
-    
-# Compile a path, which could be a script or a directory. If a directory 
-# is passed, recursively compile all '.coffee' extension source files in it 
+
+# Compile a path, which could be a script or a directory. If a directory
+# is passed, recursively compile all '.coffee' extension source files in it
 # and all subdirectories.
 compilePath = (source, topLevel, base) ->
-  path.exists source, (exists) ->
-    if topLevel and not exists and source[-7..] isnt '.coffee'
-      source = sources[sources.indexOf(source)] = "#{source}.coffee"
-      return compilePath source, topLevel, base
-    if topLevel and not exists 
-      console.error "File not found: #{source}"
-      process.exit 1
-    fs.stat source, (err, stats) ->
-      throw err if err
-      if stats.isDirectory()
-        watchDir source, base if opts.watch
-        fs.readdir source, (err, files) ->
-          throw err if err
-          files = files.map (file) -> path.join source, file
-          index = sources.indexOf source
-          sources[index..index] = files
-          sourceCode[index..index] = files.map -> null
-          compilePath file, no, base for file in files
-      else if topLevel or path.extname(source) is '.coffee'
-        watch source, base if opts.watch
-        fs.readFile source, (err, code) ->
-          throw err if err
-          compileScript(source, code.toString(), base)
-      else
-        notSources[source] = yes
-        removeSource source, base
-            
+  fs.stat source, (err, stats) ->
+    throw err if err and err.code isnt 'ENOENT'
+    if err?.code is 'ENOENT'
+      if topLevel and source[-7..] isnt '.coffee'
+        source = sources[sources.indexOf(source)] = "#{source}.coffee"
+        return compilePath source, topLevel, base
+      if topLevel
+        console.error "File not found: #{source}"
+        process.exit 1
+      return
+    if stats.isDirectory()
+      watchDir source, base if opts.watch
+      fs.readdir source, (err, files) ->
+        throw err if err
+        files = files.map (file) -> path.join source, file
+        index = sources.indexOf source
+        sources[index..index] = files
+        sourceCode[index..index] = files.map -> null
+        compilePath file, no, base for file in files
+    else if topLevel or path.extname(source) is '.coffee'
+      watch source, base if opts.watch
+      fs.readFile source, (err, code) ->
+        throw err if err
+        compileScript(source, code.toString(), base)
+    else
+      notSources[source] = yes
+      removeSource source, base
+
 
 # Compile a single source script, containing the given code, according to the
 # requested options. If evaluating the script directly sets `__filename`,
@@ -165,9 +166,9 @@ loadRequires = ->
 # time the file is updated. May be used in combination with other options,
 # such as `--lint` or `--print`.
 watch = (source, base) ->
-  
+
   prevStats = null
-  
+
   compile = ->
     fs.stat source, (err, stats) ->
       throw err if err
@@ -177,13 +178,13 @@ watch = (source, base) ->
       fs.readFile source, (err, code) ->
         throw err if err
         compileScript(source, code.toString(), base)
-      
+
   watcher = fs.watch source, callback = (event) ->
     if event is 'change'
       compile()
     else if event is 'rename'
       watcher.close()
-      setTimeout -> 
+      setTimeout ->
         path.exists source, (exists) ->
           if exists
             compile()
@@ -192,7 +193,7 @@ watch = (source, base) ->
             removeSource source, base, yes
             compileJoin()
       , 250
-      
+
 # Watch a directory of files for new additions.
 watchDir = (source, base) ->
   watcher = fs.watch source, ->
@@ -201,7 +202,7 @@ watchDir = (source, base) ->
         fs.readdir source, (err, files) ->
           throw err if err
           files = files.map (file) -> path.join source, file
-          for file in files when not notSources[file] 
+          for file in files when not notSources[file]
             continue if sources.some (s) -> s.indexOf(file) >= 0
             sources.push file
             sourceCode.push null
@@ -211,7 +212,7 @@ watchDir = (source, base) ->
         toRemove = (file for file in sources when file.indexOf(source) >= 0)
         removeSource file, base, yes for file in toRemove
         compileJoin()
-        
+
 # Remove a file from our source list, and source code cache. Optionally remove
 # the compiled JS version as well.
 removeSource = (source, base, removeJs) ->
@@ -222,10 +223,10 @@ removeSource = (source, base, removeJs) ->
     jsPath = outputPath source, base
     path.exists jsPath, (exists) ->
       if exists
-        fs.unlink jsPath, (err) -> 
+        fs.unlink jsPath, (err) ->
           throw err if err
           timeLog "removed #{source}"
-        
+
 # Get the corresponding output JavaScript path for a source file.
 outputPath = (source, base) ->
   filename  = path.basename(source, path.extname(source)) + '.js'
@@ -249,7 +250,7 @@ writeJs = (source, js, base) ->
         timeLog "compiled #{source}"
   path.exists jsDir, (exists) ->
     if exists then compile() else exec "mkdir -p #{jsDir}", compile
-    
+
 # When watching scripts, it's useful to log changes with the timestamp.
 timeLog = (message) ->
   console.log "#{(new Date).toLocaleTimeString()} - #{message}"
