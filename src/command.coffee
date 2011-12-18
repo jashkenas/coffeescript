@@ -152,10 +152,14 @@ compileStdio = ->
 
 # If all of the source files are done being read, concatenate and compile
 # them together.
+joinTimeout = null
 compileJoin = ->
   return unless opts.join
   unless sourceCode.some((code) -> code is null)
-    compileScript opts.join, sourceCode.join('\n'), opts.join
+    clearTimeout joinTimeout
+    joinTimeout = setTimeout ->
+      compileScript opts.join, sourceCode.join('\n'), opts.join
+    , 100
 
 # Load files that are to-be-required before compilation occurs.
 loadRequires = ->
@@ -174,7 +178,7 @@ watch = (source, base) ->
 
   watchErr = (e) ->
     if e.code is 'ENOENT'
-      return if sources.indexOf source is -1
+      return if sources.indexOf(source) is -1
       removeSource source, base, yes
       compileJoin()
     else throw e
@@ -209,25 +213,32 @@ watch = (source, base) ->
 
 # Watch a directory of files for new additions.
 watchDir = (source, base) ->
+  readdirTimeout = null
   try
     watcher = fs.watch source, ->
-      fs.readdir source, (err, files) ->
-        if err
-          throw err unless err.code is 'ENOENT'
-          prevSources = sources.slice()
-          toRemove = (file for file in sources when file.indexOf(source) >= 0)
-          removeSource file, base, yes for file in toRemove
-          return if sources[i] is prevSources[i] for i in [0...sources.length]
-          compileJoin()
-        else
+      clearTimeout readdirTimeout
+      readdirTimeout = setTimeout ->
+        fs.readdir source, (err, files) ->
+          if err
+            throw err unless err.code is 'ENOENT'
+            watcher.close()
+            return unwatchDir source, base
           files = files.map (file) -> path.join source, file
           for file in files when not notSources[file]
             continue if sources.some (s) -> s.indexOf(file) >= 0
             sources.push file
             sourceCode.push null
             compilePath file, no, base
+      , 25
   catch e
     throw e unless e.code is 'ENOENT'
+
+unwatchDir = (source, base) ->
+  prevSources = sources.slice()
+  toRemove = (file for file in sources when file.indexOf(source) >= 0)
+  removeSource file, base, yes for file in toRemove
+  return if sources[i] is prevSources[i] for i in [0...sources.length]
+  compileJoin()
 
 # Remove a file from our source list, and source code cache. Optionally remove
 # the compiled JS version as well.
