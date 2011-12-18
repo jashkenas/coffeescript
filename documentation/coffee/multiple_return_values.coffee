@@ -5,3 +5,5 @@ weatherReport = (location) ->
 [city, temp, forecast] = weatherReport "Berkeley, CA"
 
 
+
+

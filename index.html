@@ -22,7 +22,8 @@
       </div>
       <div class="contents menu">
         <a href="#overview">Overview</a>
-        <a href="#installation">Installation and Usage</a>
+        <a href="#installation">Installation</a>
+        <a href="#usage">Usage</a>
         <a href="#language">Language Reference</a>
         <a href="#literals">Literals: Functions, Objects and Arrays</a>
         <a href="#lexical_scope">Lexical Scoping and Variable Safety</a>
@@ -111,7 +112,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/1.1.3">1.1.3</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.2.0">1.2.0</a>
     </p>
 
     <h2>
@@ -149,8 +150,8 @@ alert <span class="String"><span class="String">&quot;</span>I knew it!<span cla
 
 <span class="Comment"><span class="Comment">#</span> Array comprehensions:</span>
 cubes <span class="Keyword">=</span> (math.cube num <span class="Keyword">for</span> num <span class="Keyword">in</span> list)
-</pre><pre class="idle"><span class="Storage">var</span> cubes, list, math, num, number, opposite, race, square;
-<span class="Storage">var</span> __slice <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice;
+</pre><pre class="idle"><span class="Storage">var</span> cubes, list, math, num, number, opposite, race, square,
+  __slice <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice;
 
 number <span class="Keyword">=</span> <span class="Number">42</span>;
 
@@ -189,8 +190,8 @@ cubes <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   }
   <span class="Keyword">return</span> _results;
 })();
-</pre><script>window.example1 = "# Assignment:\nnumber   = 42\nopposite = true\n\n# Conditions:\nnumber = -42 if opposite\n\n# Functions:\nsquare = (x) -> x * x\n\n# Arrays:\nlist = [1, 2, 3, 4, 5]\n\n# Objects:\nmath =\n  root:   Math.sqrt\n  square: square\n  cube:   (x) -> x * square x\n\n# Splats:\nrace = (winner, runners...) ->\n  print winner, runners\n\n# Existence:\nalert \"I knew it!\" if elvis?\n\n# Array comprehensions:\ncubes = (math.cube num for num in list)\n\nalert cubes"</script><div class='minibutton ok' onclick='javascript: var cubes, list, math, num, number, opposite, race, square;
-var __slice = Array.prototype.slice;
+</pre><script>window.example1 = "# Assignment:\nnumber   = 42\nopposite = true\n\n# Conditions:\nnumber = -42 if opposite\n\n# Functions:\nsquare = (x) -> x * x\n\n# Arrays:\nlist = [1, 2, 3, 4, 5]\n\n# Objects:\nmath =\n  root:   Math.sqrt\n  square: square\n  cube:   (x) -> x * square x\n\n# Splats:\nrace = (winner, runners...) ->\n  print winner, runners\n\n# Existence:\nalert \"I knew it!\" if elvis?\n\n# Array comprehensions:\ncubes = (math.cube num for num in list)\n\nalert cubes"</script><div class='minibutton ok' onclick='javascript: var cubes, list, math, num, number, opposite, race, square,
+  __slice = Array.prototype.slice;
 
 number = 42;
 
@@ -233,7 +234,7 @@ cubes = (function() {
 
     <h2>
       <span id="installation" class="bookmark"></span>
-      Installation and Usage
+      Installation
     </h2>
 
     <p>
@@ -281,6 +282,11 @@ sudo bin/cake install</pre>
       just like to experiment, you can try the
       <a href="https://github.com/alisey/CoffeeScript-Compiler-for-Windows">CoffeeScript Compiler For Windows</a>.
     </p>
+
+    <h2>
+      <span id="usage" class="bookmark"></span>
+      Usage
+    </h2>
 
     <p>
       Once installed, you should have access to the <tt>coffee</tt> command,
@@ -761,8 +767,8 @@ alert <span class="String"><span class="String">&quot;</span>Silver: <span class
 alert <span class="String"><span class="String">&quot;</span>The Field: <span class="String">&quot;</span></span> <span class="Keyword">+</span> rest
 
 
-</pre><pre class="idle"><span class="Storage">var</span> awardMedals, contenders, gold, rest, silver;
-<span class="Storage">var</span> __slice <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice;
+</pre><pre class="idle"><span class="Storage">var</span> awardMedals, contenders, gold, rest, silver,
+  __slice <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice;
 
 gold <span class="Keyword">=</span> silver <span class="Keyword">=</span> rest <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>unknown<span class="String">&quot;</span></span>;
 
@@ -783,8 +789,8 @@ awardMedals.<span class="LibraryFunction">apply</span>(<span class="BuiltInConst
 <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Silver: <span class="String">&quot;</span></span> <span class="Keyword">+</span> silver);
 
 <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>The Field: <span class="String">&quot;</span></span> <span class="Keyword">+</span> rest);
-</pre><script>window.example8 = "gold = silver = rest = \"unknown\"\n\nawardMedals = (first, second, others...) ->\n  gold   = first\n  silver = second\n  rest   = others\n\ncontenders = [\n  \"Michael Phelps\"\n  \"Liu Xiang\"\n  \"Yao Ming\"\n  \"Allyson Felix\"\n  \"Shawn Johnson\"\n  \"Roman Sebrle\"\n  \"Guo Jingjing\"\n  \"Tyson Gay\"\n  \"Asafa Powell\"\n  \"Usain Bolt\"\n]\n\nawardMedals contenders...\n\nalert \"Gold: \" + gold\nalert \"Silver: \" + silver\nalert \"The Field: \" + rest\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example8);'>load</div><div class='minibutton ok' onclick='javascript: var awardMedals, contenders, gold, rest, silver;
-var __slice = Array.prototype.slice;
+</pre><script>window.example8 = "gold = silver = rest = \"unknown\"\n\nawardMedals = (first, second, others...) ->\n  gold   = first\n  silver = second\n  rest   = others\n\ncontenders = [\n  \"Michael Phelps\"\n  \"Liu Xiang\"\n  \"Yao Ming\"\n  \"Allyson Felix\"\n  \"Shawn Johnson\"\n  \"Roman Sebrle\"\n  \"Guo Jingjing\"\n  \"Tyson Gay\"\n  \"Asafa Powell\"\n  \"Usain Bolt\"\n]\n\nawardMedals contenders...\n\nalert \"Gold: \" + gold\nalert \"Silver: \" + silver\nalert \"The Field: \" + rest\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example8);'>load</div><div class='minibutton ok' onclick='javascript: var awardMedals, contenders, gold, rest, silver,
+  __slice = Array.prototype.slice;
 
 gold = silver = rest = "unknown";
 
@@ -819,14 +825,14 @@ alert("The Field: " + rest);
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> Eat lunch.</span>
 eat food <span class="Keyword">for</span> food <span class="Keyword">in</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>]
 
-<span class="Comment"><span class="Comment">#</span> Fine dining</span>
-courses <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>salad<span class="String">'</span></span>, <span class="String"><span class="String">'</span>entree<span class="String">'</span></span>, <span class="String"><span class="String">'</span>dessert<span class="String">'</span></span>]
-menu course <span class="Keyword">+</span> <span class="Number">1</span>, dish <span class="Keyword">for</span> dish, course <span class="Keyword">in</span> courses
+<span class="Comment"><span class="Comment">#</span> Fine five course dining.</span>
+courses <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>greens<span class="String">'</span></span>, <span class="String"><span class="String">'</span>caviar<span class="String">'</span></span>, <span class="String"><span class="String">'</span>truffles<span class="String">'</span></span>, <span class="String"><span class="String">'</span>roast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cake<span class="String">'</span></span>]
+menu i <span class="Keyword">+</span> <span class="Number">1</span>, dish <span class="Keyword">for</span> dish, i <span class="Keyword">in</span> courses
 
-<span class="Comment"><span class="Comment">#</span> Health conscious meal</span>
+<span class="Comment"><span class="Comment">#</span> Health conscious meal.</span>
 foods <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>broccoli<span class="String">'</span></span>, <span class="String"><span class="String">'</span>spinach<span class="String">'</span></span>, <span class="String"><span class="String">'</span>chocolate<span class="String">'</span></span>]
 eat food <span class="Keyword">for</span> food <span class="Keyword">in</span> foods <span class="Keyword">when</span> food <span class="Keyword">isnt</span> <span class="String"><span class="String">'</span>chocolate<span class="String">'</span></span>
-</pre><pre class="idle"><span class="Storage">var</span> course, courses, dish, food, foods, _i, _j, _len, _len2, _len3, _ref;
+</pre><pre class="idle"><span class="Storage">var</span> courses, dish, food, foods, i, _i, _j, _len, _len2, _len3, _ref;
 
 _ref <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
 <span class="Keyword">for</span> (_i <span class="Keyword">=</span> <span class="Number">0</span>, _len <span class="Keyword">=</span> _ref.<span class="LibraryConstant">length</span>; _i <span class="Keyword">&lt;</span> _len; _i<span class="Keyword">++</span>) {
@@ -834,11 +840,11 @@ _ref <span class="Keyword">=</span> [<span class="String"><span class="String">'
   eat(food);
 }
 
-courses <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>salad<span class="String">'</span></span>, <span class="String"><span class="String">'</span>entree<span class="String">'</span></span>, <span class="String"><span class="String">'</span>dessert<span class="String">'</span></span>];
+courses <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>greens<span class="String">'</span></span>, <span class="String"><span class="String">'</span>caviar<span class="String">'</span></span>, <span class="String"><span class="String">'</span>truffles<span class="String">'</span></span>, <span class="String"><span class="String">'</span>roast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cake<span class="String">'</span></span>];
 
-<span class="Keyword">for</span> (course <span class="Keyword">=</span> <span class="Number">0</span>, _len2 <span class="Keyword">=</span> courses.<span class="LibraryConstant">length</span>; course <span class="Keyword">&lt;</span> _len2; course<span class="Keyword">++</span>) {
-  dish <span class="Keyword">=</span> courses[course];
-  menu(course <span class="Keyword">+</span> <span class="Number">1</span>, dish);
+<span class="Keyword">for</span> (i <span class="Keyword">=</span> <span class="Number">0</span>, _len2 <span class="Keyword">=</span> courses.<span class="LibraryConstant">length</span>; i <span class="Keyword">&lt;</span> _len2; i<span class="Keyword">++</span>) {
+  dish <span class="Keyword">=</span> courses[i];
+  menu(i <span class="Keyword">+</span> <span class="Number">1</span>, dish);
 }
 
 foods <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>broccoli<span class="String">'</span></span>, <span class="String"><span class="String">'</span>spinach<span class="String">'</span></span>, <span class="String"><span class="String">'</span>chocolate<span class="String">'</span></span>];
@@ -847,10 +853,10 @@ foods <span class="Keyword">=</span> [<span class="String"><span class="String">
   food <span class="Keyword">=</span> foods[_j];
   <span class="Keyword">if</span> (food <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">'</span>chocolate<span class="String">'</span></span>) eat(food);
 }
-</pre><script>window.example9 = "# Eat lunch.\neat food for food in ['toast', 'cheese', 'wine']\n\n# Fine dining\ncourses = ['salad', 'entree', 'dessert']\nmenu course + 1, dish for dish, course in courses\n\n# Health conscious meal\nfoods = ['broccoli', 'spinach', 'chocolate']\neat food for food in foods when food isnt 'chocolate'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example9);'>load</div><br class='clear' /></div>
+</pre><script>window.example9 = "# Eat lunch.\neat food for food in ['toast', 'cheese', 'wine']\n\n# Fine five course dining.\ncourses = ['greens', 'caviar', 'truffles', 'roast', 'cake']\nmenu i + 1, dish for dish, i in courses\n\n# Health conscious meal.\nfoods = ['broccoli', 'spinach', 'chocolate']\neat food for food in foods when food isnt 'chocolate'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example9);'>load</div><br class='clear' /></div>
     <p>
       Comprehensions should be able to handle most places where you otherwise
-      would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>:
+      would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>, for example:
       <tt>shortNames = (name for name in list when name.length &lt; 5)</tt><br />
       If you know the start and end of your loop, or would like to step through
       in fixed-size increments, you can use a range to specify the start and
@@ -1068,6 +1074,8 @@ middle = copy.slice(3, 7);
 numbers[<span class="Number">3</span>..<span class="Number">6</span>] <span class="Keyword">=</span> [<span class="Keyword">-</span><span class="Number">3</span>, <span class="Keyword">-</span><span class="Number">4</span>, <span class="Keyword">-</span><span class="Number">5</span>, <span class="Keyword">-</span><span class="Number">6</span>]
 
 
+
+ 
 </pre><pre class="idle"><span class="Storage">var</span> numbers, _ref;
 
 numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
@@ -1323,6 +1331,8 @@ footprints <span class="Keyword">=</span> yeti <span class="Keyword">?</span> <s
 
 
 
+
+ 
 </pre><pre class="idle"><span class="Storage">var</span> footprints, solipsism;
 
 <span class="Keyword">if</span> ((<span class="Keyword">typeof</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> <span class="Keyword">!</span>(<span class="Keyword">typeof</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>)) {
@@ -1411,8 +1421,9 @@ tom.move()
 
 
 
-</pre><pre class="idle"><span class="Storage">var</span> Animal, Horse, Snake, sam, tom;
-<span class="Storage">var</span> __hasProp <span class="Keyword">=</span> <span class="LibraryClassType">Object</span>.<span class="LibraryConstant">prototype</span>.hasOwnProperty, <span class="FunctionName">__extends</span> = <span class="Storage">function</span>(<span class="FunctionArgument">child, parent</span>) { <span class="Keyword">for</span> (<span class="Storage">var</span> key <span class="Keyword">in</span> parent) { <span class="Keyword">if</span> (__hasProp.<span class="LibraryFunction">call</span>(parent, key)) child[key] <span class="Keyword">=</span> parent[key]; } <span class="Storage">function</span> <span class="FunctionName">ctor</span>() { <span class="Variable">this</span>.<span class="LibraryConstant">constructor</span> <span class="Keyword">=</span> child; } <span class="LibraryClassType">ctor</span>.<span class="LibraryConstant">prototype</span> = parent.<span class="LibraryConstant">prototype</span>; <span class="LibraryClassType">child</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">ctor</span>; child.__super__ <span class="Keyword">=</span> parent.<span class="LibraryConstant">prototype</span>; <span class="Keyword">return</span> child; };
+</pre><pre class="idle"><span class="Storage">var</span> Animal, Horse, Snake, sam, tom,
+  __hasProp <span class="Keyword">=</span> <span class="LibraryClassType">Object</span>.<span class="LibraryConstant">prototype</span>.hasOwnProperty,
+  <span class="FunctionName">__extends</span> = <span class="Storage">function</span>(<span class="FunctionArgument">child, parent</span>) { <span class="Keyword">for</span> (<span class="Storage">var</span> key <span class="Keyword">in</span> parent) { <span class="Keyword">if</span> (__hasProp.<span class="LibraryFunction">call</span>(parent, key)) child[key] <span class="Keyword">=</span> parent[key]; } <span class="Storage">function</span> <span class="FunctionName">ctor</span>() { <span class="Variable">this</span>.<span class="LibraryConstant">constructor</span> <span class="Keyword">=</span> child; } <span class="LibraryClassType">ctor</span>.<span class="LibraryConstant">prototype</span> = parent.<span class="LibraryConstant">prototype</span>; <span class="LibraryClassType">child</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">ctor</span>; child.__super__ <span class="Keyword">=</span> parent.<span class="LibraryConstant">prototype</span>; <span class="Keyword">return</span> child; };
 
 Animal <span class="Keyword">=</span> (<span class="Storage">function</span>() {
 
@@ -1428,9 +1439,9 @@ Animal <span class="Keyword">=</span> (<span class="Storage">function</span>() {
 
 })();
 
-Snake <span class="Keyword">=</span> (<span class="Storage">function</span>() {
+Snake <span class="Keyword">=</span> (<span class="Storage">function</span>(_super) {
 
-  __extends(Snake, Animal);
+  __extends(Snake, _super);
 
   <span class="Storage">function</span> <span class="FunctionName">Snake</span>() {
     Snake.__super__.<span class="LibraryConstant">constructor</span>.<span class="LibraryFunction">apply</span>(<span class="Variable">this</span>, arguments);
@@ -1443,11 +1454,11 @@ Snake <span class="Keyword">=</span> (<span class="Storage">function</span>() {
 
   <span class="Keyword">return</span> Snake;
 
-})();
+})(Animal);
 
-Horse <span class="Keyword">=</span> (<span class="Storage">function</span>() {
+Horse <span class="Keyword">=</span> (<span class="Storage">function</span>(_super) {
 
-  __extends(Horse, Animal);
+  __extends(Horse, _super);
 
   <span class="Storage">function</span> <span class="FunctionName">Horse</span>() {
     Horse.__super__.<span class="LibraryConstant">constructor</span>.<span class="LibraryFunction">apply</span>(<span class="Variable">this</span>, arguments);
@@ -1460,7 +1471,7 @@ Horse <span class="Keyword">=</span> (<span class="Storage">function</span>() {
 
   <span class="Keyword">return</span> Horse;
 
-})();
+})(Animal);
 
 sam <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Snake</span>(<span class="String"><span class="String">&quot;</span>Sammy the Python<span class="String">&quot;</span></span>);
 
@@ -1469,8 +1480,9 @@ tom <span class="Keyword">=</span> <span class="Keyword">new</span> <span class=
 sam.move();
 
 tom.move();
-</pre><script>window.example23 = "class Animal\n  constructor: (@name) ->\n\n  move: (meters) ->\n    alert @name + \" moved #{meters}m.\"\n\nclass Snake extends Animal\n  move: ->\n    alert \"Slithering...\"\n    super 5\n\nclass Horse extends Animal\n  move: ->\n    alert \"Galloping...\"\n    super 45\n\nsam = new Snake \"Sammy the Python\"\ntom = new Horse \"Tommy the Palomino\"\n\nsam.move()\ntom.move()\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example23);'>load</div><div class='minibutton ok' onclick='javascript: var Animal, Horse, Snake, sam, tom;
-var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+</pre><script>window.example23 = "class Animal\n  constructor: (@name) ->\n\n  move: (meters) ->\n    alert @name + \" moved #{meters}m.\"\n\nclass Snake extends Animal\n  move: ->\n    alert \"Slithering...\"\n    super 5\n\nclass Horse extends Animal\n  move: ->\n    alert \"Galloping...\"\n    super 45\n\nsam = new Snake \"Sammy the Python\"\ntom = new Horse \"Tommy the Palomino\"\n\nsam.move()\ntom.move()\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example23);'>load</div><div class='minibutton ok' onclick='javascript: var Animal, Horse, Snake, sam, tom,
+  __hasProp = Object.prototype.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
 Animal = (function() {
 
@@ -1486,9 +1498,9 @@ Animal = (function() {
 
 })();
 
-Snake = (function() {
+Snake = (function(_super) {
 
-  __extends(Snake, Animal);
+  __extends(Snake, _super);
 
   function Snake() {
     Snake.__super__.constructor.apply(this, arguments);
@@ -1501,11 +1513,11 @@ Snake = (function() {
 
   return Snake;
 
-})();
+})(Animal);
 
-Horse = (function() {
+Horse = (function(_super) {
 
-  __extends(Horse, Animal);
+  __extends(Horse, _super);
 
   function Horse() {
     Horse.__super__.constructor.apply(this, arguments);
@@ -1518,7 +1530,7 @@ Horse = (function() {
 
   return Horse;
 
-})();
+})(Animal);
 
 sam = new Snake("Sammy the Python");
 
@@ -1573,6 +1585,9 @@ theSwitch <span class="Keyword">=</span> <span class="Number">0</span>
 <span class="Keyword">[</span>theBait, theSwitch<span class="Keyword">] =</span> [theSwitch, theBait]
 
 
+
+
+ 
 </pre><pre class="idle"><span class="Storage">var</span> theBait, theSwitch, _ref;
 
 theBait <span class="Keyword">=</span> <span class="Number">1000</span>;
@@ -1597,6 +1612,8 @@ _ref = [theSwitch, theBait], theBait = _ref[0], theSwitch = _ref[1];
   [location, <span class="Number">72</span>, <span class="String"><span class="String">&quot;</span>Mostly Sunny<span class="String">&quot;</span></span>]
 
 <span class="Keyword">[</span>city, temp, forecast<span class="Keyword">] =</span> weatherReport <span class="String"><span class="String">&quot;</span>Berkeley, CA<span class="String">&quot;</span></span>
+
+
 
 
 </pre><pre class="idle"><span class="Storage">var</span> city, forecast, temp, weatherReport, _ref;
@@ -1629,6 +1646,7 @@ _ref = weatherReport("Berkeley, CA"), city = _ref[0], temp = _ref[1], forecast =
     ]
 
 <span class="Keyword">{</span>poet: {name, address: [street, city]}<span class="Keyword">} =</span> futurists
+
 
 
 </pre><pre class="idle"><span class="Storage">var</span> city, futurists, name, street, _ref, _ref2;
@@ -1666,14 +1684,16 @@ _ref = futurists.poet, name = _ref.name, (_ref2 = _ref.address, street = _ref2[0
 
 
 
-</pre><pre class="idle"><span class="Storage">var</span> close, contents, open, tag, _i, _ref;
-<span class="Storage">var</span> __slice <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice;
+
+
+</pre><pre class="idle"><span class="Storage">var</span> close, contents, open, tag, _i, _ref,
+  __slice <span class="Keyword">=</span> <span class="LibraryClassType">Array</span>.<span class="LibraryConstant">prototype</span>.slice;
 
 tag <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>&lt;impossible&gt;<span class="String">&quot;</span></span>;
 
 _ref <span class="Keyword">=</span> tag.<span class="LibraryFunction">split</span>(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span>), open <span class="Keyword">=</span> _ref[<span class="Number">0</span>], contents <span class="Keyword">=</span> <span class="Number">3</span> <span class="Keyword">&lt;=</span> _ref.<span class="LibraryConstant">length</span> ? __slice.<span class="LibraryFunction">call</span>(_ref, <span class="Number">1</span>, _i <span class="Keyword">=</span> _ref.<span class="LibraryConstant">length</span> <span class="Keyword">-</span> <span class="Number">1</span>) : (_i <span class="Keyword">=</span> <span class="Number">1</span>, []), close <span class="Keyword">=</span> _ref[_i<span class="Keyword">++</span>];
-</pre><script>window.example28 = "tag = \"<impossible>\"\n\n[open, contents..., close] = tag.split(\"\")\n\nalert contents.join(\"\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example28);'>load</div><div class='minibutton ok' onclick='javascript: var close, contents, open, tag, _i, _ref;
-var __slice = Array.prototype.slice;
+</pre><script>window.example28 = "tag = \"<impossible>\"\n\n[open, contents..., close] = tag.split(\"\")\n\nalert contents.join(\"\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example28);'>load</div><div class='minibutton ok' onclick='javascript: var close, contents, open, tag, _i, _ref,
+  __slice = Array.prototype.slice;
 
 tag = "<impossible>";
 
@@ -1716,9 +1736,14 @@ _ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? __slice.call
 };
 </pre><script>window.example29 = "Account = (customer, cart) ->\n  @customer = customer\n  @cart = cart\n\n  $('.shopping_cart').bind 'click', (event) =>\n    @customer.purchase @cart"</script><div class='minibutton load' onclick='javascript: loadConsole(example29);'>load</div><br class='clear' /></div>
     <p>
-      If we had used <tt>-></tt> in the callback above, <tt>@customer</tt> would
+      If we had used <tt>-&gt;</tt> in the callback above, <tt>@customer</tt> would
       have referred to the undefined "customer" property of the DOM element,
       and trying to call <tt>purchase()</tt> on it would have raised an exception.
+    </p>
+    <p>
+      When used in a class definition, methods declared with the fat arrow will
+      be automatically bound to each instance of the class when the instance is
+      constructed.
     </p>
 
     <p>
@@ -1731,6 +1756,7 @@ _ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? __slice.call
     <div class='code'><pre class="idle">hi <span class="Keyword">=</span> <span class="String"><span class="String">`</span>function() {</span>
 <span class="String">  return [document.title, &quot;Hello JavaScript&quot;].join(&quot;: &quot;);</span>
 <span class="String">}<span class="String">`</span></span>
+
 
 
 </pre><pre class="idle"><span class="Storage">var</span> hi;
@@ -1859,6 +1885,9 @@ quote  <span class="Keyword">=</span> <span class="String"><span class="String">
 sentence <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span><span class="String"><span class="String">#{</span> <span class="Number">22</span> <span class="Keyword">/</span> <span class="Number">7</span> <span class="String">}</span></span> is a decent approximation of π<span class="String">&quot;</span></span>
 
 
+
+
+
 </pre><pre class="idle"><span class="Storage">var</span> author, quote, sentence;
 
 author <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Wittgenstein<span class="String">&quot;</span></span>;
@@ -1898,19 +1927,18 @@ mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- 
       indentation level that begins the heredoc is maintained throughout, so
       you can keep it all aligned with the body of your code.
     </p>
-    <div class='code'><pre class="idle">html <span class="Keyword">=</span> <span class="String"><span class="String">'''</span></span>
+    <div class='code'><pre class="idle">html <span class="Keyword">=</span> <span class="String"><span class="String">&quot;&quot;&quot;</span></span>
 <span class="String">       &lt;strong&gt;</span>
 <span class="String">         cup of coffeescript</span>
 <span class="String">       &lt;/strong&gt;</span>
-<span class="String">       <span class="String">'''</span></span>
-
-
+<span class="String">       <span class="String">&quot;&quot;&quot;</span></span>
+       
 </pre><pre class="idle"><span class="Storage">var</span> html;
 
-html <span class="Keyword">=</span> <span class="String"><span class="String">'</span>&lt;strong&gt;<span class="UserDefinedConstant">\n</span>  cup of coffeescript<span class="UserDefinedConstant">\n</span>&lt;/strong&gt;<span class="String">'</span></span>;
-</pre><script>window.example36 = "html = '''\n       <strong>\n         cup of coffeescript\n       </strong>\n       '''\n\nalert html"</script><div class='minibutton load' onclick='javascript: loadConsole(example36);'>load</div><div class='minibutton ok' onclick='javascript: var html;
+html <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>&lt;strong&gt;<span class="UserDefinedConstant">\n</span>  cup of coffeescript<span class="UserDefinedConstant">\n</span>&lt;/strong&gt;<span class="String">&quot;</span></span>;
+</pre><script>window.example36 = "html = \"\"\"\n       <strong>\n         cup of coffeescript\n       </strong>\n       \"\"\"\n\nalert html"</script><div class='minibutton load' onclick='javascript: loadConsole(example36);'>load</div><div class='minibutton ok' onclick='javascript: var html;
 
-html = '<strong>\n  cup of coffeescript\n</strong>';
+html = "<strong>\n  cup of coffeescript\n</strong>";
 ;alert(html);'>run: html</div><br class='clear' /></div>
     <p>
       Double-quoted heredocs, like double-quoted strings, allow interpolation.
@@ -1922,19 +1950,17 @@ html = '<strong>\n  cup of coffeescript\n</strong>';
       are preserved in the generated code.
     </p>
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">###</span></span>
-<span class="Comment">CoffeeScript Compiler v1.1.3</span>
+<span class="Comment">CoffeeScript Compiler v1.2.0</span>
 <span class="Comment">Released under the MIT License</span>
 <span class="Comment"><span class="Comment">###</span></span>
 
 
-</pre><pre class="idle">
-<span class="Comment"><span class="Comment">/*</span></span>
-<span class="Comment">CoffeeScript Compiler v1.1.3</span>
+</pre><pre class="idle"><span class="Comment"><span class="Comment">/*</span></span>
+<span class="Comment">CoffeeScript Compiler v1.2.0</span>
 <span class="Comment">Released under the MIT License</span>
 <span class="Comment"><span class="Comment">*/</span></span>
 
-
-</pre><script>window.example37 = "###\nCoffeeScript Compiler v1.1.3\nReleased under the MIT License\n###\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example37);'>load</div><br class='clear' /></div>
+</pre><script>window.example37 = "###\nCoffeeScript Compiler v1.2.0\nReleased under the MIT License\n###\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example37);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="regexes" class="bookmark"></span>

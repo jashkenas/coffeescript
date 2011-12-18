@@ -1,5 +1,5 @@
-var cubes, list, math, num, number, opposite, race, square;
-var __slice = Array.prototype.slice;
+var cubes, list, math, num, number, opposite, race, square,
+  __slice = Array.prototype.slice;
 
 number = 42;
 
