@@ -1099,6 +1099,33 @@ Expressions
     
     <p>
       <b class="header" style="margin-top: 20px;">
+        <a href="https://github.com/jashkenas/coffee-script/compare/1.1.3...1.2.0">1.2.0</a>
+        <span class="timestamp"> &ndash; <small>Dec. 18, 2011</small></span>
+      </b>
+      <ul>
+        <li>
+          Multiple improvements to <tt>coffee --watch</tt> and <tt>--join</tt>.
+          You may now use both together, as well as add and remove
+          files and directories within a <tt>--watch</tt>'d folder.
+        </li>
+        <li>
+          The <tt>throw</tt> statement can now be used as part of an expression.
+        </li>
+        <li>
+          Block comments at the top of the file will now appear outside of the
+          safety closure wrapper.
+        </li>
+        <li>
+          Fixed a number of minor 1.1.3 regressions having to do with trailing
+          operators and unfinished lines, and a more major 1.1.3 regression that
+          caused bound functions <i>within</i> bound class functions to have the incorrect
+          <tt>this</tt>.
+        </li>
+      </ul>
+    </p>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">
         <a href="https://github.com/jashkenas/coffee-script/compare/1.1.2...1.1.3">1.1.3</a>
         <span class="timestamp"> &ndash; <small>Nov. 8, 2011</small></span>
       </b>

@@ -178,7 +178,7 @@ watch = (source, base) ->
 
   compile = ->
     clearTimeout compileTimeout
-    compileTimeout = setTimeout ->
+    compileTimeout = wait 25, ->
       fs.stat source, (err, stats) ->
         return watchErr err if err
         return if prevStats and (stats.size is prevStats.size and
@@ -187,7 +187,11 @@ watch = (source, base) ->
         fs.readFile source, (err, code) ->
           return watchErr err if err
           compileScript(source, code.toString(), base)
-    , 25
+
+  watchErr = (e) ->
+    throw e unless e.code is 'ENOENT'
+    removeSource source, base, yes
+    compileJoin()
 
   try
     watcher = fs.watch source, callback = (event) ->
@@ -195,13 +199,14 @@ watch = (source, base) ->
         compile()
       else if event is 'rename'
         watcher.close()
-        setTimeout ->
+        wait 250, ->
           compile()
           try
             watcher = fs.watch source, callback
-          catch e then watchErr e
-        , 250
-  catch e then watchErr e
+          catch e  
+            watchErr e
+  catch e 
+    watchErr e
 
 
 # Watch a directory of files for new additions.
@@ -266,6 +271,9 @@ writeJs = (source, js, base) ->
         timeLog "compiled #{source}"
   path.exists jsDir, (exists) ->
     if exists then compile() else exec "mkdir -p #{jsDir}", compile
+    
+# Convenience for cleaner setTimeouts.
+wait = (milliseconds, func) -> setTimeout func, milliseconds
 
 # When watching scripts, it's useful to log changes with the timestamp.
 timeLog = (message) ->
