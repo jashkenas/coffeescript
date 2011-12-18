@@ -179,39 +179,51 @@ watch = (source, base) ->
         throw err if err
         compileScript(source, code.toString(), base)
 
-  watcher = fs.watch source, callback = (event) ->
-    if event is 'change'
-      compile()
-    else if event is 'rename'
-      watcher.close()
-      setTimeout ->
-        path.exists source, (exists) ->
-          if exists
-            compile()
+  watchErr = (e) ->
+    if e.code is 'ENOENT'
+      removeSource source, base, yes
+      compileJoin()
+    else throw e
+
+  try
+    watcher = fs.watch source, callback = (event) ->
+      if event is 'change'
+        compile()
+      else if event is 'rename'
+        watcher.close()
+        setTimeout ->
+          compile()
+          try
             watcher = fs.watch source, callback
-          else
-            removeSource source, base, yes
-            compileJoin()
-      , 250
+          catch e then watchErr e
+        , 250
+  catch e then watchErr e
+
 
 # Watch a directory of files for new additions.
 watchDir = (source, base) ->
-  watcher = fs.watch source, ->
-    path.exists source, (exists) ->
-      if exists
-        fs.readdir source, (err, files) ->
-          throw err if err
+  watchErr = (e) ->
+    toRemove = (file for file in sources when file.indexOf(source) >= 0)
+    removeSource file, base, yes for file in toRemove
+    compileJoin()
+
+  try
+    watcher = fs.watch source, ->
+      fs.readdir source, (err, files) ->
+        if err
+          throw err unless err.code is 'ENOENT'
+          toRemove = (file for file in sources when file.indexOf(source) >= 0)
+          removeSource file, base, yes for file in toRemove
+          compileJoin()
+        else
           files = files.map (file) -> path.join source, file
           for file in files when not notSources[file]
             continue if sources.some (s) -> s.indexOf(file) >= 0
             sources.push file
             sourceCode.push null
             compilePath file, no, base
-      else
-        watcher.close()
-        toRemove = (file for file in sources when file.indexOf(source) >= 0)
-        removeSource file, base, yes for file in toRemove
-        compileJoin()
+  catch e
+    throw e unless e.code is 'ENOENT'
 
 # Remove a file from our source list, and source code cache. Optionally remove
 # the compiled JS version as well.
