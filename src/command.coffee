@@ -168,16 +168,20 @@ loadRequires = ->
 watch = (source, base) ->
 
   prevStats = null
+  compileTimeout = null
 
   compile = ->
-    fs.stat source, (err, stats) ->
-      throw err if err
-      return if prevStats and (stats.size is prevStats.size and
-        stats.mtime.getTime() is prevStats.mtime.getTime())
-      prevStats = stats
-      fs.readFile source, (err, code) ->
+    clearTimeout compileTimeout
+    compileTimeout = setTimeout ->
+      fs.stat source, (err, stats) ->
         throw err if err
-        compileScript(source, code.toString(), base)
+        return if prevStats and (stats.size is prevStats.size and
+          stats.mtime.getTime() is prevStats.mtime.getTime())
+        prevStats = stats
+        fs.readFile source, (err, code) ->
+          throw err if err
+          compileScript(source, code.toString(), base)
+    , 25
 
   watchErr = (e) ->
     if e.code is 'ENOENT'
