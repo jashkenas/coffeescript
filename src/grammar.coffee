@@ -79,7 +79,6 @@ grammar =
     o 'Return'
     o 'Comment'
     o 'STATEMENT',                              -> new Literal $1
-    o 'Await'
     o 'Require'
   ]
 
@@ -111,6 +110,7 @@ grammar =
     o 'Class'
     o 'Throw'
     o 'Defer'
+    o 'Await'
   ]
 
   # An indented block of expressions. Note that the [Rewriter](rewriter.html)
