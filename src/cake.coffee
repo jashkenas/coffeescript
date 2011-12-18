@@ -41,8 +41,8 @@ helpers.extend global,
 
 # Run `cake`. Executes all of the tasks you pass, in order. Note that Node's
 # asynchrony may cause tasks to execute in a different order than you'd expect.
-# If no tasks are passed, print the help screen. Keep a reference to the 
-# original directory name, when running Cake tasks from subdirectories. 
+# If no tasks are passed, print the help screen. Keep a reference to the
+# original directory name, when running Cake tasks from subdirectories.
 exports.run = ->
   global.__originalDirname = fs.realpathSync '.'
   process.chdir cakefileDirectory __originalDirname
@@ -50,12 +50,16 @@ exports.run = ->
   CoffeeScript.run fs.readFileSync('Cakefile').toString(), filename: 'Cakefile'
   oparse = new optparse.OptionParser switches
   return printTasks() unless args.length
-  options = oparse.parse(args)
+  try
+    options = oparse.parse(args)
+  catch e
+    return fatalError "#{e}"
   invoke arg for arg in options.arguments
 
 # Display the list of Cake tasks in a format similar to `rake -T`
 printTasks = ->
-  console.log ''
+  cakefilePath = path.join path.relative(__originalDirname, process.cwd()), 'Cakefile'
+  console.log "#{cakefilePath} defines the following tasks:\n"
   for name, task of tasks
     spaces = 20 - name.length
     spaces = if spaces > 0 then Array(spaces + 1).join(' ') else ''
@@ -63,12 +67,15 @@ printTasks = ->
     console.log "cake #{name}#{spaces} #{desc}"
   console.log oparse.help() if switches.length
 
-# Print an error and exit when attempting to call an undefined task.
-missingTask = (task) ->
-  console.log "No such task: \"#{task}\""
+# Print an error and exit when attempting to use an invalid task/option.
+fatalError = (message) ->
+  console.error message + '\n'
+  console.log 'To see a list of all tasks/options, run "cake"'
   process.exit 1
 
-# When `cake` is invoked, search in the current and all parent directories 
+missingTask = (task) -> fatalError "No such task: #{task}"
+
+# When `cake` is invoked, search in the current and all parent directories
 # to find the relevant Cakefile.
 cakefileDirectory = (dir) ->
   return dir if path.existsSync path.join dir, 'Cakefile'

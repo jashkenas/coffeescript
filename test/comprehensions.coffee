@@ -453,3 +453,10 @@ test "#1669: break/continue should skip the result only for that branch", ->
         continue unless n % 5
         n
   eq "#{ns}", "1,,3,,,7,,9"
+
+test "#1850: inner `for` should not be expression-ized if `return`ing", ->
+  eq '3,4,5', do ->
+    for a in [1..9] then \
+    for b in [1..9]
+      c = Math.sqrt a*a + b*b
+      return String [a, b, c] unless c % 1

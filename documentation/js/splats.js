@@ -1,5 +1,5 @@
-var awardMedals, contenders, gold, rest, silver;
-var __slice = Array.prototype.slice;
+var awardMedals, contenders, gold, rest, silver,
+  __slice = Array.prototype.slice;
 
 gold = silver = rest = "unknown";
 

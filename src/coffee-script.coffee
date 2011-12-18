@@ -21,7 +21,7 @@ else if require.registerExtension
   require.registerExtension '.coffee', (content) -> compile content
 
 # The current CoffeeScript version number.
-exports.VERSION = '1.1.3'
+exports.VERSION = '1.2.0'
 
 # Words that cannot be used as identifiers in CoffeeScript code
 exports.RESERVED = RESERVED
@@ -32,8 +32,9 @@ exports.helpers = require './helpers'
 # Compile a string of CoffeeScript code to JavaScript, using the Coffee/Jison
 # compiler.
 exports.compile = compile = (code, options = {}) ->
+  {merge} = exports.helpers
   try
-    (parser.parse lexer.tokenize code).compile options
+    (parser.parse lexer.tokenize code).compile merge {}, options
   catch err
     err.message = "In #{options.filename}, #{err.message}" if options.filename
     throw err
@@ -44,7 +45,7 @@ exports.tokens = (code, options) ->
 
 # Parse a string of CoffeeScript code or an array of lexed tokens, and
 # return the AST. You can then compile it by calling `.compile()` on the root,
-# or traverse it by using `.traverse()` with a callback.
+# or traverse it by using `.traverseChildren()` with a callback.
 exports.nodes = (source, options) ->
   if typeof source is 'string'
     parser.parse lexer.tokenize source, options

@@ -6,20 +6,20 @@ options = parser.parse process.argv
 </code></pre>
 
 <p>The first non-option is considered to be the start of the file (and file
-option) list, and all subsequent arguments are left unparsed.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">exports.OptionParser = </span><span class="nx">class</span> <span class="nx">OptionParser</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>Initialize with a list of valid options, in the form:</p>
+option) list, and all subsequent arguments are left unparsed.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">exports.OptionParser = </span><span class="k">class</span> <span class="nx">OptionParser</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>Initialize with a list of valid options, in the form:</p>
 
 <pre><code>[short-flag, long-flag, description]
 </code></pre>
 
-<p>Along with an an optional banner for the usage help.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">constructor</span><span class="o">:</span> <span class="p">(</span><span class="nx">rules</span><span class="p">,</span> <span class="nx">@banner</span><span class="p">)</span> <span class="o">-&gt;</span>
+<p>Along with an an optional banner for the usage help.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">constructor: </span><span class="nf">(rules, @banner) -&gt;</span>
     <span class="vi">@rules = </span><span class="nx">buildRules</span> <span class="nx">rules</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>Parse the list of arguments, populating an <code>options</code> object with all of the
 specified options, and return it. <code>options.arguments</code> will be an array
 containing the remaining non-option arguments. <code>options.literals</code> will be
 an array of options that are meant to be passed through directly to the
 executing script. This is a simpler API than many option parsers that allow
 you to attach callback actions for every flag. Instead, you're responsible
-for interpreting the options object.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">parse</span><span class="o">:</span> <span class="p">(</span><span class="nx">args</span><span class="p">)</span> <span class="o">-&gt;</span>
-    <span class="nv">options = </span><span class="nx">arguments</span><span class="o">:</span> <span class="p">[],</span> <span class="nx">literals</span><span class="o">:</span> <span class="p">[]</span>
+for interpreting the options object.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">parse: </span><span class="nf">(args) -&gt;</span>
+    <span class="nv">options = arguments: </span><span class="p">[],</span> <span class="nv">literals: </span><span class="p">[]</span>
     <span class="nv">originalArgs = </span><span class="nx">args</span>
     <span class="nv">args = </span><span class="nx">normalizeArguments</span> <span class="nx">args</span>
     <span class="k">for</span> <span class="nx">arg</span><span class="p">,</span> <span class="nx">i</span> <span class="k">in</span> <span class="nx">args</span>
@@ -41,7 +41,7 @@ for interpreting the options object.</p>             </td>             <td class
         <span class="nv">options.arguments = </span><span class="nx">originalArgs</span><span class="p">[(</span><span class="nx">originalArgs</span><span class="p">.</span><span class="nx">indexOf</span> <span class="nx">arg</span><span class="p">)..]</span>
         <span class="k">break</span>
     <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>Return the help text for this <strong>OptionParser</strong>, listing and describing all
-of the valid options, for <code>--help</code> and such.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">help</span><span class="o">:</span> <span class="o">-&gt;</span>
+of the valid options, for <code>--help</code> and such.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">help: </span><span class="o">-&gt;</span>
     <span class="nv">lines = </span><span class="p">[]</span>
     <span class="nx">lines</span><span class="p">.</span><span class="nx">unshift</span> <span class="s2">&quot;#{@banner}\n&quot;</span> <span class="k">if</span> <span class="nx">@banner</span>
     <span class="k">for</span> <span class="nx">rule</span> <span class="k">in</span> <span class="nx">@rules</span>
@@ -53,22 +53,22 @@ of the valid options, for <code>--help</code> and such.</p>             </td>   
 <span class="nv">SHORT_FLAG = </span><span class="sr">/^(-\w)/</span>
 <span class="nv">MULTI_FLAG = </span><span class="sr">/^-(\w{2,})/</span>
 <span class="nv">OPTIONAL   = </span><span class="sr">/\[(\w+(\*?))\]/</span></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <p>Build and return the list of option rules. If the optional <em>short-flag</em> is
-unspecified, leave it out by padding with <code>null</code>.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">buildRules = </span><span class="p">(</span><span class="nx">rules</span><span class="p">)</span> <span class="o">-&gt;</span>
+unspecified, leave it out by padding with <code>null</code>.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">buildRules = </span><span class="nf">(rules) -&gt;</span>
   <span class="k">for</span> <span class="nx">tuple</span> <span class="k">in</span> <span class="nx">rules</span>
     <span class="nx">tuple</span><span class="p">.</span><span class="nx">unshift</span> <span class="kc">null</span> <span class="k">if</span> <span class="nx">tuple</span><span class="p">.</span><span class="nx">length</span> <span class="o">&lt;</span> <span class="mi">3</span>
     <span class="nx">buildRule</span> <span class="nx">tuple</span><span class="p">...</span></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <p>Build a rule from a <code>-o</code> short flag, a <code>--output [DIR]</code> long flag, and the
-description of what the option does.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">buildRule = </span><span class="p">(</span><span class="nx">shortFlag</span><span class="p">,</span> <span class="nx">longFlag</span><span class="p">,</span> <span class="nx">description</span><span class="p">,</span> <span class="nv">options = </span><span class="p">{})</span> <span class="o">-&gt;</span>
+description of what the option does.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">buildRule = </span><span class="nf">(shortFlag, longFlag, description, options = {}) -&gt;</span>
   <span class="nv">match     = </span><span class="nx">longFlag</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">OPTIONAL</span><span class="p">)</span>
   <span class="nv">longFlag  = </span><span class="nx">longFlag</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">LONG_FLAG</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
   <span class="p">{</span>
-    <span class="nx">name</span><span class="o">:</span>         <span class="nx">longFlag</span><span class="p">.</span><span class="nx">substr</span> <span class="mi">2</span>
-    <span class="nx">shortFlag</span><span class="o">:</span>    <span class="nx">shortFlag</span>
-    <span class="nx">longFlag</span><span class="o">:</span>     <span class="nx">longFlag</span>
-    <span class="nx">description</span><span class="o">:</span>  <span class="nx">description</span>
-    <span class="nx">hasArgument</span><span class="o">:</span>  <span class="o">!!</span><span class="p">(</span><span class="nx">match</span> <span class="o">and</span> <span class="nx">match</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-    <span class="nx">isList</span><span class="o">:</span>       <span class="o">!!</span><span class="p">(</span><span class="nx">match</span> <span class="o">and</span> <span class="nx">match</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="nv">name: </span>        <span class="nx">longFlag</span><span class="p">.</span><span class="nx">substr</span> <span class="mi">2</span>
+    <span class="nv">shortFlag: </span>   <span class="nx">shortFlag</span>
+    <span class="nv">longFlag: </span>    <span class="nx">longFlag</span>
+    <span class="nv">description: </span> <span class="nx">description</span>
+    <span class="nv">hasArgument: </span> <span class="o">!!</span><span class="p">(</span><span class="nx">match</span> <span class="o">and</span> <span class="nx">match</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="nv">isList: </span>      <span class="o">!!</span><span class="p">(</span><span class="nx">match</span> <span class="o">and</span> <span class="nx">match</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
   <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-9">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-9">&#182;</a>               </div>               <p>Normalize arguments by expanding merged flags into multiple flags. This allows
-you to have <code>-wl</code> be the same as <code>--watch --lint</code>.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">normalizeArguments = </span><span class="p">(</span><span class="nx">args</span><span class="p">)</span> <span class="o">-&gt;</span>
+you to have <code>-wl</code> be the same as <code>--watch --lint</code>.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">normalizeArguments = </span><span class="nf">(args) -&gt;</span>
   <span class="nv">args = </span><span class="nx">args</span><span class="p">.</span><span class="nx">slice</span> <span class="mi">0</span>
   <span class="nv">result = </span><span class="p">[]</span>
   <span class="k">for</span> <span class="nx">arg</span> <span class="k">in</span> <span class="nx">args</span>
