@@ -170,24 +170,24 @@ watch = (source, base) ->
   prevStats = null
   compileTimeout = null
 
-  compile = ->
-    clearTimeout compileTimeout
-    compileTimeout = setTimeout ->
-      fs.stat source, (err, stats) ->
-        throw err if err
-        return if prevStats and (stats.size is prevStats.size and
-          stats.mtime.getTime() is prevStats.mtime.getTime())
-        prevStats = stats
-        fs.readFile source, (err, code) ->
-          throw err if err
-          compileScript(source, code.toString(), base)
-    , 25
-
   watchErr = (e) ->
     if e.code is 'ENOENT'
       removeSource source, base, yes
       compileJoin()
     else throw e
+
+  compile = ->
+    clearTimeout compileTimeout
+    compileTimeout = setTimeout ->
+      fs.stat source, (err, stats) ->
+        return watchErr err if err
+        return if prevStats and (stats.size is prevStats.size and
+          stats.mtime.getTime() is prevStats.mtime.getTime())
+        prevStats = stats
+        fs.readFile source, (err, code) ->
+          return watchErr err if err
+          compileScript(source, code.toString(), base)
+    , 25
 
   try
     watcher = fs.watch source, callback = (event) ->
@@ -240,7 +240,7 @@ removeSource = (source, base, removeJs) ->
     path.exists jsPath, (exists) ->
       if exists
         fs.unlink jsPath, (err) ->
-          throw err if err
+          throw err if err and err.code isnt 'ENOENT'
           timeLog "removed #{source}"
 
 # Get the corresponding output JavaScript path for a source file.
