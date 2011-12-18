@@ -49,7 +49,7 @@ SWITCHES = [
 # Top-level objects shared by all the functions.
 opts         = {}
 sources      = []
-contents     = []
+sourceCode   = []
 optionParser = null
 
 # Run `coffee` by parsing passed options and determining what action to take.
@@ -78,27 +78,17 @@ exports.run = ->
 # compile them. If a directory is passed, recursively compile all
 # '.coffee' extension source files in it and all subdirectories.
 compileScripts = ->
-  unprocessed = []
-  remainingFiles = ->
-    total = 0
-    total += x for x in unprocessed
-    total
-  trackUnprocessedFiles = (sourceIndex, fileCount) ->
-    unprocessed[sourceIndex] ?= 0
-    unprocessed[sourceIndex] += fileCount
-  trackCompleteFiles = (sourceIndex, fileCount) ->
-    unprocessed[sourceIndex] -= fileCount
-    if opts.join
-      if helpers.compact(contents).length > 0 and remainingFiles() is 0
-        compileJoin()
-  for source in sources
-    trackUnprocessedFiles sources.indexOf(source), 1
-  for source in sources
-    base = path.join(source)
-    compile = (source, sourceIndex, topLevel) ->
+        
+  for source, index in sources
+    sourceCode[index] = null
+    
+    base = path.join source
+    
+    compile = (source, topLevel) ->
       path.exists source, (exists) ->
         if topLevel and not exists and source[-7..] isnt '.coffee'
-          return compile "#{source}.coffee", sourceIndex, topLevel
+          source = sources[sources.indexOf(source)] = "#{source}.coffee"
+          return compile source, topLevel
         if topLevel and not exists 
           console.error "File not found: #{source}"
           process.exit 1
@@ -107,22 +97,22 @@ compileScripts = ->
           if stats.isDirectory()
             fs.readdir source, (err, files) ->
               throw err if err
-              trackUnprocessedFiles sourceIndex, files.length
-              for file in files
-                compile path.join(source, file), sourceIndex
-              trackCompleteFiles sourceIndex, 1
+              files = files.map (file) -> path.join source, file
+              index = sources.indexOf source
+              sources[index..index] = files
+              sourceCode[index..index] = files.map -> null
+              compile file for file in files
           else if topLevel or path.extname(source) is '.coffee'
             fs.readFile source, (err, code) ->
               throw err if err
-              if opts.join
-                contents[sourceIndex] = helpers.compact([contents[sourceIndex], code.toString()]).join('\n')
-              else
-                compileScript(source, code.toString(), base)
-              trackCompleteFiles sourceIndex, 1
-            watch source, base if opts.watch and not opts.join
+              compileScript(source, code.toString(), base)
+            watch source, base if opts.watch
           else
-            trackCompleteFiles sourceIndex, 1
-    compile source, sources.indexOf(source), true
+            index = sources.indexOf source
+            sources.splice index, 1
+            sourceCode.splice index, 1
+            
+    compile source, true
 
 # Compile a single source script, containing the given code, according to the
 # requested options. If evaluating the script directly sets `__filename`,
@@ -136,6 +126,8 @@ compileScript = (file, input, base) ->
     if      o.tokens      then printTokens CoffeeScript.tokens t.input
     else if o.nodes       then printLine CoffeeScript.nodes(t.input).toString().trim()
     else if o.run         then CoffeeScript.run t.input, t.options
+    else if o.join and file isnt o.join
+      compileJoin t.file, t.input
     else
       t.output = CoffeeScript.compile t.input, t.options
       CoffeeScript.emit 'success', task
@@ -159,11 +151,12 @@ compileStdio = ->
   stdin.on 'end', ->
     compileScript null, code
 
-# After all of the source files are done being read, concatenate and compile
+# If all of the source files are done being read, concatenate and compile
 # them together.
-compileJoin = ->
-  code = contents.join '\n'
-  compileScript opts.join, code, opts.join
+compileJoin = (file, code) ->
+  sourceCode[sources.indexOf(file)] = code
+  unless sourceCode.some((code) -> code is null)
+    compileScript opts.join, sourceCode.join('\n'), opts.join
 
 # Load files that are to-be-required before compilation occurs.
 loadRequires = ->
