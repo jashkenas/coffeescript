@@ -214,8 +214,10 @@ watchDir = (source, base) ->
       fs.readdir source, (err, files) ->
         if err
           throw err unless err.code is 'ENOENT'
+          prevSources = sources.slice()
           toRemove = (file for file in sources when file.indexOf(source) >= 0)
           removeSource file, base, yes for file in toRemove
+          return if sources[i] is prevSources[i] for i in [0...sources.length]
           compileJoin()
         else
           files = files.map (file) -> path.join source, file
