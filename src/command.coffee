@@ -50,6 +50,7 @@ SWITCHES = [
 opts         = {}
 sources      = []
 sourceCode   = []
+notSources   = {}
 optionParser = null
 
 # Run `coffee` by parsing passed options and determining what action to take.
@@ -72,47 +73,40 @@ exports.run = ->
   process.argv = process.argv.slice(0, 2).concat opts.literals
   process.argv[0] = 'coffee'
   process.execPath = require.main.filename
-  compileScripts()
-
-# Asynchronously read in each CoffeeScript in a list of source files and
-# compile them. If a directory is passed, recursively compile all
-# '.coffee' extension source files in it and all subdirectories.
-compileScripts = ->
-        
-  for source, index in sources
-    sourceCode[index] = null
+  for source in sources
+    compilePath source, yes, path.join source
     
-    base = path.join source
-    
-    compile = (source, topLevel) ->
-      path.exists source, (exists) ->
-        if topLevel and not exists and source[-7..] isnt '.coffee'
-          source = sources[sources.indexOf(source)] = "#{source}.coffee"
-          return compile source, topLevel
-        if topLevel and not exists 
-          console.error "File not found: #{source}"
-          process.exit 1
-        fs.stat source, (err, stats) ->
+# Compile a path, which could be a script or a directory. If a directory 
+# is passed, recursively compile all '.coffee' extension source files in it 
+# and all subdirectories.
+compilePath = (source, topLevel, base) ->
+  path.exists source, (exists) ->
+    if topLevel and not exists and source[-7..] isnt '.coffee'
+      source = sources[sources.indexOf(source)] = "#{source}.coffee"
+      return compilePath source, topLevel, base
+    if topLevel and not exists 
+      console.error "File not found: #{source}"
+      process.exit 1
+    fs.stat source, (err, stats) ->
+      throw err if err
+      if stats.isDirectory()
+        watchDir source, base if opts.watch
+        fs.readdir source, (err, files) ->
           throw err if err
-          if stats.isDirectory()
-            fs.readdir source, (err, files) ->
-              throw err if err
-              files = files.map (file) -> path.join source, file
-              index = sources.indexOf source
-              sources[index..index] = files
-              sourceCode[index..index] = files.map -> null
-              compile file for file in files
-          else if topLevel or path.extname(source) is '.coffee'
-            fs.readFile source, (err, code) ->
-              throw err if err
-              compileScript(source, code.toString(), base)
-            watch source, base if opts.watch
-          else
-            index = sources.indexOf source
-            sources.splice index, 1
-            sourceCode.splice index, 1
+          files = files.map (file) -> path.join source, file
+          index = sources.indexOf source
+          sources[index..index] = files
+          sourceCode[index..index] = files.map -> null
+          compilePath file, no, base for file in files
+      else if topLevel or path.extname(source) is '.coffee'
+        watch source, base if opts.watch
+        fs.readFile source, (err, code) ->
+          throw err if err
+          compileScript(source, code.toString(), base)
+      else
+        notSources[source] = yes
+        removeSource source
             
-    compile source, true
 
 # Compile a single source script, containing the given code, according to the
 # requested options. If evaluating the script directly sets `__filename`,
@@ -126,8 +120,9 @@ compileScript = (file, input, base) ->
     if      o.tokens      then printTokens CoffeeScript.tokens t.input
     else if o.nodes       then printLine CoffeeScript.nodes(t.input).toString().trim()
     else if o.run         then CoffeeScript.run t.input, t.options
-    else if o.join and file isnt o.join
-      compileJoin t.file, t.input
+    else if o.join and t.file isnt o.join
+      sourceCode[sources.indexOf(t.file)] = t.input
+      compileJoin()
     else
       t.output = CoffeeScript.compile t.input, t.options
       CoffeeScript.emit 'success', task
@@ -153,8 +148,7 @@ compileStdio = ->
 
 # If all of the source files are done being read, concatenate and compile
 # them together.
-compileJoin = (file, code) ->
-  sourceCode[sources.indexOf(file)] = code
+compileJoin = ->
   unless sourceCode.some((code) -> code is null)
     compileScript opts.join, sourceCode.join('\n'), opts.join
 
@@ -188,28 +182,64 @@ watch = (source, base) ->
     else if event is 'rename'
       watcher.close()
       setTimeout -> 
-        compile()
-        watcher = fs.watch source, callback
+        path.exists source, (exists) ->
+          if exists
+            compile()
+            watcher = fs.watch source, callback
+          else
+            removeSource source
+            if opts.join
+              compileJoin()
+            else
+              fs.unlink outputPath(source, base), (err) ->
+                throw err if err
+            timeLog "removed #{source}"
       , 250
+      
+# Watch a directory of files for new additions.
+watchDir = (source, base) ->
+  watcher = fs.watch source, ->
+    fs.readdir source, (err, files) ->
+      throw err if err
+      files = files.map (file) -> path.join source, file
+      for file in files when not notSources[file] and sources.indexOf(file) < 0
+        sources.push file
+        sourceCode.push null
+        compilePath file, no, base
+        
+# Remove a file from our source list, and source code cache.
+removeSource = (source) ->
+  index = sources.indexOf source
+  sources.splice index, 1
+  sourceCode.splice index, 1
+        
+# Get the corresponding output JavaScript path for a source file.
+outputPath = (source, base) ->
+  filename  = path.basename(source, path.extname(source)) + '.js'
+  srcDir    = path.dirname source
+  baseDir   = if base is '.' then srcDir else srcDir.substring base.length
+  dir       = if opts.output then path.join opts.output, baseDir else srcDir
+  path.join dir, filename
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
 # directory can be customized with `--output`.
 writeJs = (source, js, base) ->
-  filename  = path.basename(source, path.extname(source)) + '.js'
-  srcDir    = path.dirname source
-  baseDir   = if base is '.' then srcDir else srcDir.substring base.length
-  dir       = if opts.output then path.join opts.output, baseDir else srcDir
-  jsPath    = path.join dir, filename
-  compile   = ->
+  jsPath = outputPath source, base
+  jsDir  = path.dirname jsPath
+  compile = ->
     js = ' ' if js.length <= 0
     fs.writeFile jsPath, js, (err) ->
       if err
         printLine err.message
       else if opts.compile and opts.watch
-        console.log "#{(new Date).toLocaleTimeString()} - compiled #{source}"
-  path.exists dir, (exists) ->
-    if exists then compile() else exec "mkdir -p #{dir}", compile
+        timeLog "compiled #{source}"
+  path.exists jsDir, (exists) ->
+    if exists then compile() else exec "mkdir -p #{jsDir}", compile
+    
+# When watching scripts, it's useful to log changes with the timestamp.
+timeLog = (message) ->
+  console.log "#{(new Date).toLocaleTimeString()} - #{message}"
 
 # Pipe compiled JS through JSLint (requires a working `jsl` command), printing
 # any errors or warnings that arise.
@@ -238,6 +268,8 @@ parseOptions = ->
   o.run         = not (o.compile or o.print or o.lint)
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
   sources       = o.arguments
+  sourceCode[i] = null for source, i in sources
+  return
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (filename) -> {filename, bare: opts.bare}
