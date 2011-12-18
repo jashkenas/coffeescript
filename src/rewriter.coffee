@@ -228,14 +228,15 @@ class exports.Rewriter
   # Tag postfix conditionals as such, so that we can parse them with a
   # different precedence.
   tagPostfixConditionals: ->
-    
+        
     original = null
     
     condition = (token, i) -> 
       token[0] in ['TERMINATOR', 'INDENT']
       
     action = (token, i) ->
-      original[0] = 'POST_' + original[0] if token[0] isnt 'INDENT'
+      if token[0] isnt 'INDENT' or (token.generated and not token.fromThen)
+        original[0] = 'POST_' + original[0] 
     
     @scanTokens (token, i) ->
       return 1 unless token[0] is 'IF'

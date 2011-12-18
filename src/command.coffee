@@ -202,7 +202,7 @@ watchDir = (source, base) ->
           throw err if err
           files = files.map (file) -> path.join source, file
           for file in files when not notSources[file] 
-            continue if sources.some((s) -> s.indexOf(file) >= 0)
+            continue if sources.some (s) -> s.indexOf(file) >= 0
             sources.push file
             sourceCode.push null
             compilePath file, no, base
