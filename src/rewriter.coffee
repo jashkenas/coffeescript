@@ -118,8 +118,7 @@ class exports.Rewriter
           one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT'])
           
     action = (token, i) ->
-      tok = ['}', '}', token[2]]
-      tok.generated = yes
+      tok = @generate '}', '}', token[2]
       @tokens.splice i, 0, tok
       
     @scanTokens (token, i, tokens) ->
@@ -139,8 +138,7 @@ class exports.Rewriter
       startsLine = not prevTag or (prevTag in LINEBREAKS)
       value = new String('{')
       value.generated = yes
-      tok = ['{', value, token[2]]
-      tok.generated = yes
+      tok = @generate '{', value, token[2]
       tokens.splice idx, 0, tok
       @detectEnd i + 2, condition, action
       2
@@ -165,7 +163,7 @@ class exports.Rewriter
           not ((post = @tokens[i + 1]) and post.generated and post[0] is '{')))
     
     action = (token, i) -> 
-      @tokens.splice i, 0, ['CALL_END', ')', token[2]]
+      @tokens.splice i, 0, @generate 'CALL_END', ')', token[2]
       
     @scanTokens (token, i, tokens) ->
       tag     = token[0]
@@ -182,7 +180,7 @@ class exports.Rewriter
       return 1 unless callObject or
         prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
         (tag in IMPLICIT_CALL or not (token.spaced or token.newLine) and tag in IMPLICIT_UNSPACED_CALL)
-      tokens.splice i, 0, ['CALL_START', '(', token[2]]
+      tokens.splice i, 0, @generate 'CALL_START', '(', token[2]
       @detectEnd i + 1, condition, action
       prev[0] = 'FUNC_EXIST' if prev[0] is '?'
       2
@@ -216,9 +214,8 @@ class exports.Rewriter
       if tag in SINGLE_LINERS and @tag(i + 1) isnt 'INDENT' and
          not (tag is 'ELSE' and @tag(i + 1) is 'IF')
         starter = tag
-        [indent, outdent] = @indentation token
+        [indent, outdent] = @indentation token, yes
         indent.fromThen   = true if starter is 'THEN'
-        indent.generated  = outdent.generated = true
         tokens.splice i + 1, 0, indent
         @detectEnd i + 2, condition, action
         tokens.splice i, 1 if tag is 'THEN'
@@ -245,8 +242,17 @@ class exports.Rewriter
       1
 
   # Generate the indentation tokens, based on another token on the same line.
-  indentation: (token) ->
-    [['INDENT', 2, token[2]], ['OUTDENT', 2, token[2]]]
+  indentation: (token, implicit = no) ->
+    indent  = ['INDENT', 2, token[2]]
+    outdent = ['OUTDENT', 2, token[2]]
+    indent.generated = outdent.generated = yes if implicit
+    [indent, outdent]
+    
+  # Create a generated token: one that exists due to a use of implicit syntax.
+  generate: (tag, value, line) ->
+    tok = [tag, value, line]
+    tok.generated = yes
+    tok
 
   # Look up a tag by token index.
   tag: (i) -> @tokens[i]?[0]
