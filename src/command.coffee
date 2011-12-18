@@ -51,6 +51,7 @@ opts         = {}
 sources      = []
 sourceCode   = []
 notSources   = {}
+watchers     = {}
 optionParser = null
 
 # Run `coffee` by parsing passed options and determining what action to take.
@@ -74,7 +75,7 @@ exports.run = ->
   process.argv[0] = 'coffee'
   process.execPath = require.main.filename
   for source in sources
-    compilePath source, yes, path.join source
+    compilePath source, yes, path.normalize source
     
 # Compile a path, which could be a script or a directory. If a directory 
 # is passed, recursively compile all '.coffee' extension source files in it 
@@ -105,7 +106,7 @@ compilePath = (source, topLevel, base) ->
           compileScript(source, code.toString(), base)
       else
         notSources[source] = yes
-        removeSource source
+        removeSource source, base
             
 
 # Compile a single source script, containing the given code, according to the
@@ -149,6 +150,7 @@ compileStdio = ->
 # If all of the source files are done being read, concatenate and compile
 # them together.
 compileJoin = ->
+  return unless opts.join
   unless sourceCode.some((code) -> code is null)
     compileScript opts.join, sourceCode.join('\n'), opts.join
 
@@ -187,31 +189,42 @@ watch = (source, base) ->
             compile()
             watcher = fs.watch source, callback
           else
-            removeSource source
-            if opts.join
-              compileJoin()
-            else
-              fs.unlink outputPath(source, base), (err) ->
-                throw err if err
-            timeLog "removed #{source}"
+            removeSource source, base, yes
+            compileJoin()
       , 250
       
 # Watch a directory of files for new additions.
 watchDir = (source, base) ->
   watcher = fs.watch source, ->
-    fs.readdir source, (err, files) ->
-      throw err if err
-      files = files.map (file) -> path.join source, file
-      for file in files when not notSources[file] and sources.indexOf(file) < 0
-        sources.push file
-        sourceCode.push null
-        compilePath file, no, base
+    path.exists source, (exists) ->
+      if exists
+        fs.readdir source, (err, files) ->
+          throw err if err
+          files = files.map (file) -> path.join source, file
+          for file in files when not notSources[file] 
+            continue if sources.some((s) -> s.indexOf(file) >= 0)
+            sources.push file
+            sourceCode.push null
+            compilePath file, no, base
+      else
+        watcher.close()
+        toRemove = (file for file in sources when file.indexOf(source) >= 0)
+        removeSource file, base, yes for file in toRemove
+        compileJoin()
         
-# Remove a file from our source list, and source code cache.
-removeSource = (source) ->
+# Remove a file from our source list, and source code cache. Optionally remove
+# the compiled JS version as well.
+removeSource = (source, base, removeJs) ->
   index = sources.indexOf source
   sources.splice index, 1
   sourceCode.splice index, 1
+  if removeJs and not opts.join
+    jsPath = outputPath source, base
+    path.exists jsPath, (exists) ->
+      if exists
+        fs.unlink jsPath, (err) -> 
+          throw err if err
+          timeLog "removed #{source}"
         
 # Get the corresponding output JavaScript path for a source file.
 outputPath = (source, base) ->
