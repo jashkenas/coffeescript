@@ -172,6 +172,7 @@ watch = (source, base) ->
 
   watchErr = (e) ->
     if e.code is 'ENOENT'
+      return if sources.indexOf source is -1
       removeSource source, base, yes
       compileJoin()
     else throw e
@@ -206,11 +207,6 @@ watch = (source, base) ->
 
 # Watch a directory of files for new additions.
 watchDir = (source, base) ->
-  watchErr = (e) ->
-    toRemove = (file for file in sources when file.indexOf(source) >= 0)
-    removeSource file, base, yes for file in toRemove
-    compileJoin()
-
   try
     watcher = fs.watch source, ->
       fs.readdir source, (err, files) ->
