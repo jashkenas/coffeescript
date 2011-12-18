@@ -157,9 +157,8 @@ compileJoin = ->
   return unless opts.join
   unless sourceCode.some((code) -> code is null)
     clearTimeout joinTimeout
-    joinTimeout = setTimeout ->
+    joinTimeout = wait 100, ->
       compileScript opts.join, sourceCode.join('\n'), opts.join
-    , 100
 
 # Load files that are to-be-required before compilation occurs.
 loadRequires = ->
@@ -222,7 +221,7 @@ watchDir = (source, base) ->
   try
     watcher = fs.watch source, ->
       clearTimeout readdirTimeout
-      readdirTimeout = setTimeout ->
+      readdirTimeout = wait 25, ->
         fs.readdir source, (err, files) ->
           if err
             throw err unless err.code is 'ENOENT'
@@ -234,7 +233,6 @@ watchDir = (source, base) ->
             sources.push file
             sourceCode.push null
             compilePath file, no, base
-      , 25
   catch e
     throw e unless e.code is 'ENOENT'
 
