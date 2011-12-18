@@ -461,3 +461,140 @@ Here is the translated output (slightly hand-edited for clarity):
 });
 ```
 
+## API and Library Documentation
+
+### tamelib.Rendezvous
+
+The `Rendezvous` is a not a core feature, meaning it's written as a 
+straight-ahead CoffeeScript library.  It's quite useful for more advanced
+control flows, so we've included it in the main runtime library.
+
+The `Rendezvous` is similar to a blocking condition variable (or a
+"Hoare sytle monitor") in threaded programming.
+
+#### tamelib.Rendezvous.id(i).defer slots...
+
+Associate a new deferral with the given Rendezvous, whose deferral ID
+is `i`, and whose callbacks slots are supplied as `slots`.  Those
+slots can take the two forms of `defer` return as above.  As with
+standard `defer`, the return value of the `Rendezvous`'s `defer` is
+fed to a function expecting a callback.  As soon as that callback
+fires (and the deferral is fulfilled), the provided slots will be
+filled with the arguments to that callback.
+
+#### tamelib.Rendezvous.defer slots...
+
+You don't need to explicitly assign an ID to a deferral generated from a
+Rendezvous.  If you don't, one will automatically be assigned, in
+ascending order starting from `0`.
+
+#### tamelib.Rendezvous.wait cb
+
+Wait until the next deferral on this rendezvous is fulfilled.  When it
+is, callback `cb` with the ID of the fulfilled deferral.  If an
+unclaimed deferral fulfilled before `wait` was called, then `cb` is fired
+immediately.
+
+Though `wait` would work with any hand-rolled JS function expecting
+a callback, it's meant to work particularly well with *tamejs*'s
+`await` function.
+
+#### Example
+
+Here is an example that shows off the different inputs and 
+outputs of a `Rendezvous`.  It does two parallel DNS lookups,
+and reports only when the first returns:
+
+```coffeescript
+hosts = [ "okcupid.com", "google.com" ];
+ips = errs = []
+rv = new tamelib.Rendezvous ();
+for h,i in hosts
+    dns.resolve hosts[i], rv.id(i).defer errs[i], ips[i]
+
+await rv.wait defer which
+console.log "#{hosts[which]}  -> #{ips[which]}"
+```
+
+### connectors
+
+A *connector* is a function that takes as input
+a callback, and outputs another callback.   The best example 
+is a `timeout`, given here:
+
+#### tamelib.timeout(cb, time, res = [])
+
+Timeout an arbitrary async operation.
+
+Given a callback `cb`, a time to wait `time`, and an array to output a
+result `res`, return another callback.  This connector will set up a
+race between the callback returned to the caller, and the timer that
+fires after `time` milliseconds.  If the callback returned to the
+caller fires first, then fill `res[0] = true;`.  If the timer won
+(i.e., if there was a timeout), then fill `res[0] = false;`.
+
+In the following example, we timeout a DNS lookup after 100ms:
+
+```coffeescript
+{timeout} = require 'tamelib'
+info = [];
+host = "pirateWarezSite.ru";
+await dns.lookup host, timeout(defer(err, ip), 100, info)
+if not info[0]
+    console.log "#{host}: timed out!"
+else if (err)
+    console.log "#{host}: error: #{err}"
+else
+    console.log "#{host} -> #{ip}"
+```
+
+### The Pipeliner library
+
+There's another way to do the windowed DNS lookups we saw earlier ---
+you can use the control flow library called `Pipeliner`, which 
+manages the common pattern of having "m calls total, with only
+n of them in flight at once, where m > n."
+
+The Pipeliner class is available in the `tamelib` library:
+
+```coffeescript
+{Pipeliner} = require 'tamelib'
+pipeliner = new Pipeliner w,s 
+```
+
+Using the pipeliner, we can rewrite our earlier windowed DNS lookups
+as follows:
+
+```coffescript
+do_all = (lst, windowsz) ->
+  pipeliner = new Pipeliner windowsz
+  for x in list
+    await pipeliner.waitInQueue defer()
+    do_one pipeliner.defer(), x
+  await pipeliner.flush defer()
+```
+
+The API is as follows:
+
+### new Pipeliner w, s
+
+Create a new Pipeliner controller, with a window of at most `w` calls
+out at once, and waiting `s` seconds before launching each call.  The
+default values are `w = 10` and `s = 0`.
+
+### Pipeliner.waitInQueue c
+
+Wait in a queue until there's room in the window to launch a new call.
+The callback `c` will be fulfilled when there is room.
+
+### Pipeliner.defer args...
+
+Create a new `defer`al for this pipeline, and pass it to whatever
+function is doing the actual work.  When the work completes, fulfill
+this `defer`al --- that will update the accounting in the pipeliner
+class, allowing queued actions to proceed.
+
+### Pipeliner.flush c
+
+Wait for the pipeline to clear out.  Fulfills the callback `c`
+when the last action in the pipeline is done.
