@@ -463,7 +463,7 @@ Here is the translated output (slightly hand-edited for clarity):
 
 ## API and Library Documentation
 
-### tamelib.Rendezvous
+### tame.Rendezvous
 
 The `Rendezvous` is a not a core feature, meaning it's written as a 
 straight-ahead CoffeeScript library.  It's quite useful for more advanced
@@ -472,7 +472,7 @@ control flows, so we've included it in the main runtime library.
 The `Rendezvous` is similar to a blocking condition variable (or a
 "Hoare sytle monitor") in threaded programming.
 
-#### tamelib.Rendezvous.id(i).defer slots...
+#### tame.Rendezvous.id(i).defer slots...
 
 Associate a new deferral with the given Rendezvous, whose deferral ID
 is `i`, and whose callbacks slots are supplied as `slots`.  Those
@@ -482,13 +482,13 @@ fed to a function expecting a callback.  As soon as that callback
 fires (and the deferral is fulfilled), the provided slots will be
 filled with the arguments to that callback.
 
-#### tamelib.Rendezvous.defer slots...
+#### tame.Rendezvous.defer slots...
 
 You don't need to explicitly assign an ID to a deferral generated from a
 Rendezvous.  If you don't, one will automatically be assigned, in
 ascending order starting from `0`.
 
-#### tamelib.Rendezvous.wait cb
+#### tame.Rendezvous.wait cb
 
 Wait until the next deferral on this rendezvous is fulfilled.  When it
 is, callback `cb` with the ID of the fulfilled deferral.  If an
@@ -508,7 +508,7 @@ and reports only when the first returns:
 ```coffeescript
 hosts = [ "okcupid.com", "google.com" ];
 ips = errs = []
-rv = new tamelib.Rendezvous ();
+rv = new tame.Rendezvous ();
 for h,i in hosts
     dns.resolve hosts[i], rv.id(i).defer errs[i], ips[i]
 
@@ -522,7 +522,7 @@ A *connector* is a function that takes as input
 a callback, and outputs another callback.   The best example 
 is a `timeout`, given here:
 
-#### tamelib.timeout(cb, time, res = [])
+#### tame.timeout(cb, time, res = [])
 
 Timeout an arbitrary async operation.
 
@@ -576,25 +576,25 @@ do_all = (lst, windowsz) ->
 
 The API is as follows:
 
-### new Pipeliner w, s
+#### new Pipeliner w, s
 
 Create a new Pipeliner controller, with a window of at most `w` calls
 out at once, and waiting `s` seconds before launching each call.  The
 default values are `w = 10` and `s = 0`.
 
-### Pipeliner.waitInQueue c
+#### Pipeliner.waitInQueue c
 
 Wait in a queue until there's room in the window to launch a new call.
 The callback `c` will be fulfilled when there is room.
 
-### Pipeliner.defer args...
+#### Pipeliner.defer args...
 
 Create a new `defer`al for this pipeline, and pass it to whatever
 function is doing the actual work.  When the work completes, fulfill
 this `defer`al --- that will update the accounting in the pipeliner
 class, allowing queued actions to proceed.
 
-### Pipeliner.flush c
+#### Pipeliner.flush c
 
 Wait for the pipeline to clear out.  Fulfills the callback `c`
 when the last action in the pipeline is done.
