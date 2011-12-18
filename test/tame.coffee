@@ -342,3 +342,10 @@ atest "until", (cb) ->
     await delay defer()
     out += i--
   cb(out is 55, {})
+
+atest 'tame expressions', (cb) ->
+  adder = (x, cb) ->
+    await delay defer()
+    cb(x+1)
+  ret = (await adder ((await adder 1, defer()) + (await adder 2, defer())), defer())
+  cb(ret == 6, {})
