@@ -29,6 +29,6 @@
     "jison":      ">=0.2.0"
   },
   "scripts" : {
-    "test" : ".bin/cake build:full"
+    "test" : "./bin/cake build:full"
   }
 }
