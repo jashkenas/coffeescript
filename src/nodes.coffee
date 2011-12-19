@@ -101,17 +101,17 @@ exports.Base = class Base
   # Recursively traverses down the *children* of the nodes, yielding to a block
   # and returning true when the block finds a match. `contains` does not cross
   # scope boundaries.
-  contains: (pred, traverseFuncBoundary) ->
+  contains: (pred) ->
     contains = no
-    @traverseChildren traverseFuncBoundary, (node) ->
+    @traverseChildren no, (node) ->
       if pred node
         contains = yes
         return no
     contains
 
   # Is this node of a certain type, or does it contain the type?
-  containsType: (type, traverseFuncBoundary) ->
-    this instanceof type or @contains (node, traverseFuncBoundary) -> node instanceof type
+  containsType: (type) ->
+    this instanceof type or @contains (node) -> node instanceof type
 
   # Pull out the last non-comment node of a node list.
   lastNonComment: (list) ->
