@@ -1299,9 +1299,7 @@ exports.Op = class Op extends Base
   constructor: (op, first, second, flip ) ->
     return new In first, second if op is 'in'
     if op is 'do'
-      call = new Call first, first.params or []
-      call.do = yes
-      return call
+      return @generateDo first
     if op is 'new'
       return first.newInstance() if first instanceof Call and not first.do and not first.isNew
       first = new Parens first   if first instanceof Code and first.bound or first.do
@@ -1366,6 +1364,22 @@ exports.Op = class Op extends Base
 
   unfoldSoak: (o) ->
     @operator in ['++', '--', 'delete'] and unfoldSoak o, this, 'first'
+    
+  generateDo: (exp) ->
+    passedParams = []
+    func = if exp instanceof Assign and (ref = exp.value.unwrap()) instanceof Code
+      ref
+    else 
+      exp
+    for param in func.params or []
+      if param.value
+        passedParams.push param.value
+        delete param.value
+      else
+        passedParams.push param
+    call = new Call exp, passedParams
+    call.do = yes
+    call
 
   compileNode: (o) ->    
     isChain = @isChainable() and @first.isChainable()

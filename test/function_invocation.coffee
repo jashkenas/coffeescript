@@ -518,3 +518,19 @@ test "#1840: accessing the `prototype` after function invocation should compile"
   
   eq dotAccess().id, nonce
   eq protoAccess()::id, nonce
+
+test "#960: improved 'do'", ->
+  
+  do (nonExistent = 'one') ->
+    eq nonExistent, 'one'
+  
+  two = 2
+  do (one = 1, two, three = 3) ->
+    eq one, 1
+    eq two, 2
+    eq three, 3
+    
+  do func = (two, func) ->
+    eq two, 2
+    eq func, func
+  
