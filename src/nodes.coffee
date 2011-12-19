@@ -928,6 +928,7 @@ exports.Class = class Class extends Base
     @ensureConstructor name
     @body.spaced = yes
     @body.expressions.unshift @ctor unless @ctor instanceof Code
+    @body.expressions.unshift new Literal "#{name}.name = '#{name}'" if decl
     @body.expressions.push lname
     @addBoundFunctions o
 

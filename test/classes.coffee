@@ -594,3 +594,13 @@ test "#1813: Passing class definitions as expressions", ->
     
   eq result, B
   
+test "#494: Named classes", ->
+  
+  class A
+  eq A.name, 'A'
+    
+  class A.B
+  eq A.B.name, 'B'  
+    
+  class A.B["C"]        
+  ok A.B.C.name isnt 'C'
