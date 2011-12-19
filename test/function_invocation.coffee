@@ -530,7 +530,8 @@ test "#960: improved 'do'", ->
     eq two, 2
     eq three, 3
     
-  do func = (two, func) ->
+  ret = do func = (two) ->
     eq two, 2
-    eq func, func
+    func
+  eq ret, func
   
