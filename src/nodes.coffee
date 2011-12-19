@@ -919,7 +919,7 @@ exports.Class = class Class extends Base
   # constructor, property assignments, and inheritance getting built out below.
   compileNode: (o) ->
     decl  = @determineName()
-    name  = decl or @name or '_Class'
+    name  = decl or '_Class'
     name = "_#{name}" if name.reserved
     lname = new Literal name
 
