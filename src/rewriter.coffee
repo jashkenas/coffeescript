@@ -303,7 +303,7 @@ IMPLICIT_UNSPACED_CALL = ['+', '-']
 IMPLICIT_BLOCK   = ['->', '=>', '{', '[', ',']
 
 # Tokens that always mark the end of an implicit call for single-liners.
-IMPLICIT_END     = ['POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY', 'LOOP', 'TERMINATOR']
+IMPLICIT_END     = ['POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY', 'LOOP', 'TERMINATOR', 'AWAIT' ]
 
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.
