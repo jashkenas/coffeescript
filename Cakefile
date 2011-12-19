@@ -30,7 +30,7 @@ header = """
 sources = [
   'coffee-script', 'grammar', 'helpers'
   'lexer', 'nodes', 'rewriter', 'scope',
-  'tame', 'tamelib'
+  'tame'
 ].map (filename) -> "src/#{filename}.coffee"
 
 # Run a CoffeeScript through our node/coffee interpreter.
@@ -192,13 +192,13 @@ runTests = (CoffeeScript) ->
   global.atest = (description, fn) ->
     ++attemptedTests
     fn.test = { description, currentFile }
-    await fn.call(fn, defer(ok, e))
-    if ok
-      ++passedTests
-    else
-      e.description = description if description?
-      e.source      = fn.toString() if fn.toString?
-      failures.push filename : currentFile, error : e
+    fn.call fn, (ok, e) =>
+      if ok
+        ++passedTests
+      else
+        e.description = description if description?
+        e.source      = fn.toString() if fn.toString?
+        failures.push filename : currentFile, error : e
 
   # See http://wiki.ecmascript.org/doku.php?id=harmony:egal
   egal = (a, b) ->
@@ -261,10 +261,4 @@ task 'test:browser', 'run the test suite against the merged browser script', ->
   global.testingBrowser = yes
   (-> eval source).call result
   runTests result.CoffeeScript
-
-atask 'test:acake', 'run a test for Cakefile async', (opts,cb) ->
-  console.log "start sleep"
-  await setTimeout defer(), 1000
-  console.log "end sleep"
-  cb()
 

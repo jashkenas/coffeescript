@@ -101,17 +101,17 @@ exports.Base = class Base
   # Recursively traverses down the *children* of the nodes, yielding to a block
   # and returning true when the block finds a match. `contains` does not cross
   # scope boundaries.
-  contains: (pred) ->
+  contains: (pred, traverseFuncBoundary) ->
     contains = no
-    @traverseChildren no, (node) ->
+    @traverseChildren traverseFuncBoundary, (node) ->
       if pred node
         contains = yes
         return no
     contains
 
   # Is this node of a certain type, or does it contain the type?
-  containsType: (type) ->
-    this instanceof type or @contains (node) -> node instanceof type
+  containsType: (type, traverseFuncBoundary) ->
+    this instanceof type or @contains (node, traverseFuncBoundary) -> node instanceof type
 
   # Pull out the last non-comment node of a node list.
   lastNonComment: (list) ->
@@ -247,6 +247,11 @@ exports.Base = class Base
     for child in @flattenChildren()
       @tameCpsPivotFlag = true if child.tameWalkCpsPivots()
     @tameCpsPivotFlag
+
+  tameGo : ->
+    for child in @flattenChildren()
+      return true if (child instanceof Await) or child.tameGo()
+    return false
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
@@ -539,6 +544,7 @@ exports.Block = class Block extends Base
 
   # Perform all steps of the Tame transform
   tameTransform : ->
+    return this unless @tameGo()
     @tameExtractExpressions(true)
     @tameAssignDefersToAwait()
     @tameWalkAst()
