@@ -65,7 +65,7 @@ exports.run = ->
   loadRequires()                         if opts.require
   return require './repl'                if opts.interactive
   if opts.watch and !fs.watch
-    printWarn "The --watch feature depends on Node v0.6.0+. You are running #{process.version}."
+    return printWarn "The --watch feature depends on Node v0.6.0+. You are running #{process.version}."
   return compileStdio()                  if opts.stdio
   return compileScript null, sources[0]  if opts.eval
   return require './repl'                unless sources.length
@@ -209,9 +209,9 @@ watch = (source, base) ->
           compile()
           try
             watcher = fs.watch source, callback
-          catch e  
+          catch e
             watchErr e
-  catch e 
+  catch e
     watchErr e
 
 
@@ -280,7 +280,7 @@ writeJs = (source, js, base) ->
         timeLog "compiled #{source}"
   path.exists jsDir, (exists) ->
     if exists then compile() else exec "mkdir -p #{jsDir}", compile
-    
+
 # Convenience for cleaner setTimeouts.
 wait = (milliseconds, func) -> setTimeout func, milliseconds
 
