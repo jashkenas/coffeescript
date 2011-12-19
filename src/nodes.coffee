@@ -206,7 +206,6 @@ exports.Base = class Base
   #    4. Find loops found in #1, and flood downward
   #    5. Find break/continue found in #2, and trace upward
   #
-  #
   tameAssignDefersToAwait : (aw) ->
     for child in @flattenChildren()
       child.tameAssignDefersToAwait aw
@@ -248,9 +247,13 @@ exports.Base = class Base
       @tameCpsPivotFlag = true if child.tameWalkCpsPivots()
     @tameCpsPivotFlag
 
+  # tameGo
+  #   See if there are any Await nodes, and if not, don't do
+  #   any of our passes.
   tameGo : ->
     for child in @flattenChildren()
-      return true if (child instanceof Await) or child.tameGo()
+      return true if (child instanceof Await or child instanceof Defer) or 
+         child.tameGo()
     return false
 
   # Default implementations of the common node properties and methods. Nodes
