@@ -44,6 +44,7 @@ SWITCHES = [
   ['-t', '--tokens',          'print out the tokens that the lexer/rewriter produce']
   ['-v', '--version',         'display the version number']
   ['-w', '--watch',           'watch scripts for changes and rerun commands']
+  [      '--beep',            'beep (print \\007) on compilation errors with --watch']
 ]
 
 # Top-level objects shared by all the functions.
@@ -136,7 +137,7 @@ compileScript = (file, input, base) ->
   catch err
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
-    return printLine err.message if o.watch
+    return printLine err.message + (if opts.beep then '\007' else '') if o.watch
     printWarn err instanceof Error and err.stack or "ERROR: #{err}"
     process.exit 1
 
