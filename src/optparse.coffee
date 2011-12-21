@@ -25,9 +25,13 @@ exports.OptionParser = class OptionParser
   # for interpreting the options object.
   parse: (args) ->
     options = arguments: [], literals: []
+    skippingArgument = no
     originalArgs = args
     args = normalizeArguments args
     for arg, i in args
+      if skippingArgument
+        skippingArgument = no
+        continue
       if arg is '--'
         pos = originalArgs.indexOf '--'
         options.arguments = [originalArgs[1 + pos]]
@@ -37,7 +41,11 @@ exports.OptionParser = class OptionParser
       matchedRule = no
       for rule in @rules
         if rule.shortFlag is arg or rule.longFlag is arg
-          value = if rule.hasArgument then args[i += 1] else true
+          value = if rule.hasArgument
+            skippingArgument = yes
+            args[i + 1]
+          else
+            true
           options[rule.name] = if rule.isList then (options[rule.name] or []).concat value else value
           matchedRule = yes
           break
