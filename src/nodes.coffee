@@ -678,10 +678,10 @@ exports.Range = class Range extends Base
     known    = @fromNum and @toNum
     idx      = del o, 'index'
     idxName  = del o, 'name'
+    namedIndex = idxName and idxName isnt idx
     varPart  = "#{idx} = #{@fromC}"
     varPart += ", #{@toC}" if @toC isnt @toVar
     varPart += ", #{@step}" if @step isnt @stepVar
-    varPart  = "#{idxName} = #{varPart}" if idxName and idxName isnt idx
     [lt, gt] = ["#{idx} <#{@equals}", "#{idx} >#{@equals}"]
 
     # Generate the condition.
@@ -698,10 +698,18 @@ exports.Range = class Range extends Base
     stepPart = if @stepVar
       "#{idx} += #{@stepVar}"
     else if known
-      if from <= to then "++#{idx}" else "--#{idx}"
+      if namedIndex
+        if from <= to then "++#{idx}" else "--#{idx}"
+      else
+        if from <= to then "#{idx}++" else "#{idx}--"
     else
-      "#{cond} ? ++#{idx} : --#{idx}"
-    stepPart = "#{idxName} = #{stepPart}" if idxName and idxName isnt idx
+      if namedIndex
+        "#{cond} ? ++#{idx} : --#{idx}"
+      else
+        "#{cond} ? #{idx}++ : #{idx}--"
+
+    varPart  = "#{idxName} = #{varPart}" if namedIndex
+    stepPart = "#{idxName} = #{stepPart}" if namedIndex
 
     # The final loop body.
     "#{varPart}; #{condPart}; #{stepPart}"
@@ -1632,7 +1640,7 @@ exports.For = class For extends While
         lvar       = scope.freeVariable 'len'
         forVarPart = "#{kvarAssign}#{ivar} = 0, #{lvar} = #{svar}.length"
         forVarPart += ", #{stepvar} = #{@step.compile o, LEVEL_OP}" if @step
-        stepPart   = "#{kvarAssign}#{if @step then "#{ivar} += #{stepvar}" else "++#{ivar}"}"
+        stepPart   = "#{kvarAssign}#{if @step then "#{ivar} += #{stepvar}" else (if kvar isnt ivar then "++#{ivar}" else "#{ivar}++")}"
         forPart    = "#{forVarPart}; #{ivar} < #{lvar}; #{stepPart}"
     if @returns
       resultPart   = "#{@tab}#{rvar} = [];\n"
