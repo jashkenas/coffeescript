@@ -407,11 +407,15 @@ exports.Lexer = class Lexer
   # contents of the string. This method allows us to have strings within
   # interpolations within strings, ad infinitum.
   balancedString: (str, end) ->
+    continueCount = 0
     stack = [end]
     for i in [1...str.length]
+      if continueCount
+        --continueCount
+        continue
       switch letter = str.charAt i
         when '\\'
-          i++
+          ++continueCount
           continue
         when end
           stack.pop()
@@ -422,7 +426,7 @@ exports.Lexer = class Lexer
       if end is '}' and letter in ['"', "'"]
         stack.push end = letter
       else if end is '}' and letter is '/' and match = (HEREGEX.exec(str.slice i) or REGEX.exec(str.slice i))
-        i += match[0].length - 1
+        continueCount += match[0].length - 1
       else if end is '}' and letter is '{'
         stack.push end = '}'
       else if end is '"' and prev is '#' and letter is '{'
