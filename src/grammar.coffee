@@ -343,6 +343,7 @@ grammar =
     o 'Expression RangeDots Expression',        -> new Range $1, $3, $2
     o 'Expression RangeDots',                   -> new Range $1, null, $2
     o 'RangeDots Expression',                   -> new Range null, $2, $1
+    o 'RangeDots',                              -> new Range null, null, $1
   ]
 
   # The **ArgList** is both the list of objects passed into a function call,
