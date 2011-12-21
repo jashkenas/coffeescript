@@ -39,6 +39,8 @@ test "unbounded slicing", ->
   for a in [-shared.length+1...shared.length]
     arrayEq shared[..a][...-1] , shared[...a]
 
+  arrayEq [1, 2, 3], [1, 2, 3][..]
+
 test "#930, #835, #831, #746 #624: inclusive slices to -1 should slice to end", ->
   arrayEq shared, shared[0..-1]
   arrayEq shared, shared[..-1]
@@ -78,6 +80,9 @@ test "unbounded splicing", ->
 
   ary[...3] = [7, 8, 9]
   arrayEq [7, 8, 9, 9, 8, 7], ary
+
+  ary[..] = [1, 2, 3]
+  arrayEq [1, 2, 3], ary
 
 test "splicing with variables as endpoints", ->
   [a, b] = [1, 8]
