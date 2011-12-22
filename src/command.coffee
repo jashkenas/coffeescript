@@ -174,35 +174,40 @@ watch = (source, base) ->
 
   prevStats = null
   compileTimeout = null
+  rewatchTimeout = null
 
   watchErr = (e) ->
     if e.code is 'ENOENT'
       return if sources.indexOf(source) is -1
-      removeSource source, base, yes
-      compileJoin()
+      clearTimeout rewatchTimeout
+      rewatchTimeout = wait 25, ->
+        try
+          rewatch()
+          compile()
+        catch e
+          removeSource source, base, yes
+          compileJoin()
     else throw e
+
+  rewatch = ->
+    watcher?.close()
+    watcher = fs.watch source, compile
 
   compile = ->
     clearTimeout compileTimeout
     compileTimeout = wait 25, ->
       fs.stat source, (err, stats) ->
         return watchErr err if err
-        return if prevStats and (stats.size is prevStats.size and
+        return rewatch() if prevStats and (stats.size is prevStats.size and
           stats.mtime.getTime() is prevStats.mtime.getTime())
         prevStats = stats
         fs.readFile source, (err, code) ->
           return watchErr err if err
           compileScript(source, code.toString(), base)
+          rewatch()
 
   try
-    watcher = fs.watch source, callback = (event) ->
-      compile()
-      wait 250, ->
-        try
-          watcher.close()
-          watcher = fs.watch source, callback
-        catch e
-          watchErr e
+    watcher = fs.watch source, compile
   catch e
     watchErr e
 
