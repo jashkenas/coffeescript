@@ -174,19 +174,16 @@ watch = (source, base) ->
 
   prevStats = null
   compileTimeout = null
-  rewatchTimeout = null
 
   watchErr = (e) ->
     if e.code is 'ENOENT'
       return if sources.indexOf(source) is -1
-      clearTimeout rewatchTimeout
-      rewatchTimeout = wait 25, ->
-        try
-          rewatch()
-          compile()
-        catch e
-          removeSource source, base, yes
-          compileJoin()
+      try
+        rewatch()
+        compile()
+      catch e
+        removeSource source, base, yes
+        compileJoin()
     else throw e
 
   rewatch = ->
