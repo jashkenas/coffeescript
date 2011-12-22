@@ -194,11 +194,6 @@ watch = (source, base) ->
           return watchErr err if err
           compileScript(source, code.toString(), base)
 
-  watchErr = (e) ->
-    throw e unless e.code is 'ENOENT'
-    removeSource source, base, yes
-    compileJoin()
-
   try
     watcher = fs.watch source, callback = (event) ->
       if event is 'change'
