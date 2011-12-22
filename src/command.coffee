@@ -196,16 +196,13 @@ watch = (source, base) ->
 
   try
     watcher = fs.watch source, callback = (event) ->
-      if event is 'change'
+      wait 250, ->
         compile()
-      else if event is 'rename'
-        watcher.close()
-        wait 250, ->
-          compile()
-          try
-            watcher = fs.watch source, callback
-          catch e
-            watchErr e
+        try
+          watcher.close()
+          watcher = fs.watch source, callback
+        catch e
+          watchErr e
   catch e
     watchErr e
 
