@@ -196,8 +196,8 @@ watch = (source, base) ->
 
   try
     watcher = fs.watch source, callback = (event) ->
+      compile()
       wait 250, ->
-        compile()
         try
           watcher.close()
           watcher = fs.watch source, callback
