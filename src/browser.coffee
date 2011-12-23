@@ -45,9 +45,8 @@ runScripts = ->
         CoffeeScript.run script.innerHTML
         execute()
     else
-      event = document.createEvent "HTMLEvents"
-      event.initEvent "coffee-ready", true
-      document.dispatchEvent event
+      if jQuery?
+        jQuery(document).trigger('coffeeReady')
 
   null
 
