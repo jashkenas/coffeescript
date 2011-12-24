@@ -191,8 +191,8 @@ watch = (source, base) ->
     compileTimeout = wait 25, ->
       fs.stat source, (err, stats) ->
         return watchErr err if err
-        return rewatch() if prevStats and (stats.size is prevStats.size and
-          stats.mtime.getTime() is prevStats.mtime.getTime())
+        return rewatch() if prevStats and stats.size is prevStats.size and
+          stats.mtime.getTime() is prevStats.mtime.getTime()
         prevStats = stats
         fs.readFile source, (err, code) ->
           return watchErr err if err
