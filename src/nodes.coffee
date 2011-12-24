@@ -227,7 +227,10 @@ exports.Block = class Block extends Base
       else if top
         node.front = true
         code = node.compile o
-        codes.push if node.isStatement o then code else "#{@tab}#{code};"
+        unless node.isStatement o
+          code = "#{@tab}#{code};"
+          code = "#{code}\n" if node instanceof Literal
+        codes.push code
       else
         codes.push node.compile o, LEVEL_LIST
     if top
