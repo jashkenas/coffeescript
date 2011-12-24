@@ -11,10 +11,6 @@ helpers        = require './helpers'
 optparse       = require './optparse'
 CoffeeScript   = require './coffee-script'
 {spawn, exec}  = require 'child_process'
-{EventEmitter} = require 'events'
-
-# Allow CoffeeScript to emit Node.js events.
-helpers.extend CoffeeScript, new EventEmitter
 
 printLine = (line) -> process.stdout.write line + '\n'
 printWarn = (line) -> process.stderr.write line + '\n'
@@ -120,7 +116,6 @@ compileScript = (file, input, base) ->
   options = compileOptions file
   try
     t = task = {file, input, options}
-    CoffeeScript.emit 'compile', task
     if      o.tokens      then printTokens CoffeeScript.tokens t.input
     else if o.nodes       then printLine CoffeeScript.nodes(t.input).toString().trim()
     else if o.run         then CoffeeScript.run t.input, t.options
@@ -129,12 +124,10 @@ compileScript = (file, input, base) ->
       compileJoin()
     else
       t.output = CoffeeScript.compile t.input, t.options
-      CoffeeScript.emit 'success', task
       if o.print          then printLine t.output.trim()
       else if o.compile   then writeJs t.file, t.output, base
       else if o.lint      then lint t.file, t.output
   catch err
-    CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
     return printLine err.message if o.watch
     printWarn err instanceof Error and err.stack or "ERROR: #{err}"

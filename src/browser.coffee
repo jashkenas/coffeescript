@@ -23,7 +23,9 @@ CoffeeScript.load = (url, callback) ->
   xhr.onreadystatechange = ->
     if xhr.readyState is 4
       if xhr.status in [0, 200]
-        CoffeeScript.run xhr.responseText
+        options = {}
+        task = {url, input: xhr.responseText, options}
+        CoffeeScript.run xhr.responseText, task
       else
         throw new Error "Could not load #{url}"
       callback() if callback
@@ -42,7 +44,9 @@ runScripts = ->
     if script.src
       CoffeeScript.load script.src, execute
     else
-      CoffeeScript.run script.innerHTML
+      options = {}
+      task = {input: script.innerHTML, options}
+      CoffeeScript.run script.innerHTML, task
       execute()
   null
 

@@ -62,3 +62,17 @@ test "#1106: __proto__ compilation", ->
 
 test "reference named hasOwnProperty", ->
   CoffeeScript.compile 'hasOwnProperty = 0; a = 1'
+
+test "emitted events", ->
+  counts = compile: 0, success: 0, failure: 0
+  CoffeeScript.on 'compile', -> counts.compile++
+  CoffeeScript.on 'success', -> counts.success++
+  CoffeeScript.on 'failure', -> counts.failure++
+  CoffeeScript.compile 'should work'
+  eq counts.compile, 1
+  eq counts.success, 1
+  eq counts.failure, 0
+  try CoffeeScript.compile "shouldn't work"
+  eq counts.compile, 2
+  eq counts.success, 1
+  eq counts.failure, 1
