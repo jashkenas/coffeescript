@@ -39,12 +39,11 @@ runScripts = ->
   length = coffees.length
   do execute = ->
     script = coffees[index++]
-    if script?.type is 'text/coffeescript'
-      if script.src
-        CoffeeScript.load script.src, execute
-      else
-        CoffeeScript.run script.innerHTML
-        execute()
+    if script.src
+      CoffeeScript.load script.src, execute
+    else
+      CoffeeScript.run script.innerHTML
+      execute()
   null
 
 # Listen for window load, both in browsers and in IE.
