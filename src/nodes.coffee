@@ -948,13 +948,13 @@ exports.Class = class Class extends Base
     @addBoundFunctions o
 
     call  = Closure.wrap @body
-    
+
     if @parent
       @superClass = new Literal o.scope.freeVariable 'super', no
       @body.expressions.unshift new Extends lname, @superClass
       call.args.push @parent
       call.variable.params.push new Param @superClass
-    
+
     klass = new Parens call, yes
     klass = new Assign @variable, klass if @variable
     klass.compile o
@@ -1228,7 +1228,7 @@ exports.Splat = class Splat extends Base
 
   compile: (o) ->
     if @index? then @compileParam o else @name.compile o
-    
+
   unwrap: -> @name
 
   # Utility function that converts an arbitrary number of elements, mixed with
@@ -1379,12 +1379,12 @@ exports.Op = class Op extends Base
 
   unfoldSoak: (o) ->
     @operator in ['++', '--', 'delete'] and unfoldSoak o, this, 'first'
-    
+
   generateDo: (exp) ->
     passedParams = []
     func = if exp instanceof Assign and (ref = exp.value.unwrap()) instanceof Code
       ref
-    else 
+    else
       exp
     for param in func.params or []
       if param.value
@@ -1396,9 +1396,9 @@ exports.Op = class Op extends Base
     call.do = yes
     call
 
-  compileNode: (o) ->    
+  compileNode: (o) ->
     isChain = @isChainable() and @first.isChainable()
-    # In chains, there's no need to wrap bare obj literals in parens, 
+    # In chains, there's no need to wrap bare obj literals in parens,
     # as the chained expression is wrapped.
     @first.front = @front unless isChain
     return @compileUnary     o if @isUnary()
@@ -1435,7 +1435,7 @@ exports.Op = class Op extends Base
     parts.push ' ' if op in ['new', 'typeof', 'delete'] or
                       plusMinus and @first instanceof Op and @first.operator is op
     if (plusMinus && @first instanceof Op) or (op is 'new' and @first.isStatement o)
-      @first = new Parens @first 
+      @first = new Parens @first
     parts.push @first.compile o, LEVEL_OP
     parts.reverse() if @flip
     parts.join ''
@@ -1503,15 +1503,15 @@ exports.Try = class Try extends Base
     o.indent  += TAB
     errorPart = if @error then " (#{ @error.compile o }) " else ' '
     tryPart   = @attempt.compile o, LEVEL_TOP
-    
+
     catchPart = if @recovery
       o.scope.add @error.value, 'param' unless o.scope.check @error.value
       " catch#{errorPart}{\n#{ @recovery.compile o, LEVEL_TOP }\n#{@tab}}"
     else unless @ensure or @recovery
       ' catch (_error) {}'
-      
+
     ensurePart = if @ensure then " finally {\n#{ @ensure.compile o, LEVEL_TOP }\n#{@tab}}" else ''
-      
+
     """#{@tab}try {
     #{tryPart}
     #{@tab}}#{ catchPart or '' }#{ensurePart}"""
@@ -1844,7 +1844,7 @@ Closure =
 
   literalArgs: (node) ->
     node instanceof Literal and node.value is 'arguments' and not node.asKey
-    
+
   literalThis: (node) ->
     (node instanceof Literal and node.value is 'this' and not node.asKey) or
       (node instanceof Code and node.bound)

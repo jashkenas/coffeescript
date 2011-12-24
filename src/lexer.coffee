@@ -335,7 +335,7 @@ exports.Lexer = class Lexer
         prev[0] = 'COMPOUND_ASSIGN'
         prev[1] += '='
         return value.length
-    if value is ';'             
+    if value is ';'
      @seenFor = no
      tag = 'TERMINATOR'
     else if value in MATH            then tag = 'MATH'
@@ -528,9 +528,9 @@ exports.Lexer = class Lexer
       if contents in ['\n', quote] then contents else match
     body = body.replace /// #{quote} ///g, '\\$&'
     quote + @escapeLines(body, heredoc) + quote
-    
+
   # Throws a syntax error on the current `@line`.
-  error: (message) -> 
+  error: (message) ->
     throw SyntaxError "#{message} on line #{ @line + 1}"
 
 # Constants

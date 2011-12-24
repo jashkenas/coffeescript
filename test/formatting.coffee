@@ -131,7 +131,7 @@ test "#1195 Ignore trailing semicolons (before newlines or as the last char in a
       unless f() is nonce then throw new Error('; before linebreak should = newline')
       """
     CoffeeScript.run(preNewline(n), bare: true) for n in [1,2,3]
-    
+
     lastChar = '-> lastChar;'
     doesNotThrow -> CoffeeScript.compile lastChar, bare: true
 
