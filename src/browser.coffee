@@ -36,15 +36,18 @@ runScripts = ->
   scripts = document.getElementsByTagName 'script'
   coffees = (s for s in scripts when s.type is 'text/coffeescript')
   index = 0
-  length = coffees.length
   do execute = ->
     script = coffees[index++]
-    if script?.type is 'text/coffeescript'
+    if script?
       if script.src
         CoffeeScript.load script.src, execute
       else
         CoffeeScript.run script.innerHTML
         execute()
+    else
+      if jQuery?
+        jQuery(document).trigger('coffeeReady')
+
   null
 
 # Listen for window load, both in browsers and in IE.
