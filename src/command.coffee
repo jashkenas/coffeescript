@@ -186,10 +186,6 @@ watch = (source, base) ->
         compileJoin()
     else throw e
 
-  rewatch = ->
-    watcher?.close()
-    watcher = fs.watch source, compile
-
   compile = ->
     clearTimeout compileTimeout
     compileTimeout = wait 25, ->
@@ -207,6 +203,10 @@ watch = (source, base) ->
     watcher = fs.watch source, compile
   catch e
     watchErr e
+
+  rewatch = ->
+    watcher?.close()
+    watcher = fs.watch source, compile
 
 
 # Watch a directory of files for new additions.
