@@ -874,7 +874,7 @@ exports.Class = class Class extends Base
   # Merge the properties from a top-level object as prototypal properties
   # on the class.
   addProperties: (node, name, o) ->
-    props = node.base.properties[0..]
+    props = node.base.properties[..]
     exprs = while assign = props.shift()
       if assign instanceof Assign
         base = assign.variable.base
@@ -1086,7 +1086,7 @@ exports.Assign = class Assign extends Base
   compileConditional: (o) ->
     [left, rite] = @variable.cacheReference o
     if "?" in @context then o.isExistentialEquals = true
-    new Op(@context[0...-1], left, new Assign(rite, @value, '=') ).compile o
+    new Op(@context[...-1], left, new Assign(rite, @value, '=') ).compile o
 
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
@@ -1244,7 +1244,7 @@ exports.Splat = class Splat extends Base
       then "#{ utility 'slice' }.call(#{code})"
       else "[#{code}]"
     return args[0] + ".concat(#{ args[1..].join ', ' })" if index is 0
-    base = (node.compile o, LEVEL_LIST for node in list[0...index])
+    base = (node.compile o, LEVEL_LIST for node in list[...index])
     "[#{ base.join ', ' }].concat(#{ args.join ', ' })"
 
 #### While

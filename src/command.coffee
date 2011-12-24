@@ -71,7 +71,7 @@ exports.run = ->
   return require './repl'                unless sources.length
   if opts.run
     opts.literals = sources.splice(1).concat opts.literals
-  process.argv = process.argv.slice(0, 2).concat opts.literals
+  process.argv = process.argv[0..1].concat opts.literals
   process.argv[0] = 'coffee'
   process.execPath = require.main.filename
   for source in sources
@@ -231,7 +231,7 @@ watchDir = (source, base) ->
     throw e unless e.code is 'ENOENT'
 
 unwatchDir = (source, base) ->
-  prevSources = sources.slice()
+  prevSources = sources[..]
   toRemove = (file for file in sources when file.indexOf(source) >= 0)
   removeSource file, base, yes for file in toRemove
   return unless sources.some (s, i) -> prevSources[i] isnt s
@@ -304,7 +304,7 @@ printTokens = (tokens) ->
 # `process.argv` that are specified in `SWITCHES`.
 parseOptions = ->
   optionParser  = new optparse.OptionParser SWITCHES, BANNER
-  o = opts      = optionParser.parse process.argv.slice 2
+  o = opts      = optionParser.parse process.argv[2..]
   o.compile     or=  !!o.output
   o.run         = not (o.compile or o.print or o.lint)
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))

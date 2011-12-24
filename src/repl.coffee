@@ -85,7 +85,7 @@ completeVariable = (text) ->
   free = (text.match SIMPLEVAR)?[1]
   if free?
     vars = Script.runInThisContext 'Object.getOwnPropertyNames(this)'
-    keywords = (r for r in CoffeeScript.RESERVED when r[0..1] isnt '__')
+    keywords = (r for r in CoffeeScript.RESERVED when r[..1] isnt '__')
     possibilities = vars.concat keywords
     completions = getCompletions free, possibilities
     [completions, free]

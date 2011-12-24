@@ -100,7 +100,7 @@ buildRule = (shortFlag, longFlag, description, options = {}) ->
 # Normalize arguments by expanding merged flags into multiple flags. This allows
 # you to have `-wl` be the same as `--watch --lint`.
 normalizeArguments = (args) ->
-  args = args.slice 0
+  args = args[..]
   result = []
   for arg in args
     if match = arg.match MULTI_FLAG

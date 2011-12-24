@@ -531,7 +531,7 @@ grammar =
     o 'Expression LOGIC    Expression',         -> new Op $2, $1, $3
     o 'Expression RELATION Expression',         ->
       if $2.charAt(0) is '!'
-        new Op($2.slice(1), $1, $3).invert()
+        new Op($2[1..], $1, $3).invert()
       else
         new Op $2, $1, $3
 
