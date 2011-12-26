@@ -896,8 +896,10 @@ exports.Class = class Class extends Base
   ensureConstructor: (name) ->
     if not @ctor
       @ctor = new Code
-      @ctor.body.push new Literal "#{name}.__super__.constructor.apply(this, arguments)" if @parent
+      @ctor.body.push new Literal "var instance = this"
+      @ctor.body.push new Literal "instance = #{name}.__super__.constructor.apply(this, arguments)" if @parent
       @ctor.body.push new Literal "#{@externalCtor}.apply(this, arguments)" if @externalCtor
+      @ctor.body.push new Literal "return instance"
       @body.expressions.unshift @ctor
     @ctor.ctor     = @ctor.name = name
     @ctor.klass    = null
