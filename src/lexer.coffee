@@ -515,7 +515,7 @@ exports.Lexer = class Lexer
   unfinished: ->
     LINE_CONTINUER.test(@chunk) or
     @tag() in ['\\', '.', '?.', 'UNARY', 'MATH', '+', '-', 'SHIFT', 'RELATION'
-               'COMPARE', 'LOGIC', 'COMPOUND_ASSIGN', 'THROW', 'EXTENDS']
+               'COMPARE', 'LOGIC', 'THROW', 'EXTENDS']
 
   # Converts newlines for string literals.
   escapeLines: (str, heredoc) ->
