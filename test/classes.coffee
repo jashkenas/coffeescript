@@ -66,6 +66,28 @@ test "constructors with inheritance and super", ->
   ok (new SubClass).prop is 'top-super-sub'
 
 
+test "default constructors for subclasses return value from constructor", ->
+  class SuperClass
+    @__identityMap: {}
+    
+    constructor: (@id) ->
+      instance = SuperClass.__identityMap[@id]
+      return instance ?= SuperClass.__identityMap[@id] = this # explicit return required here
+  
+  class SubClass extends SuperClass
+  
+  one = new SuperClass(1)
+  
+  ok (new SuperClass(1) is one)
+  ok (new SubClass(1)   is one)
+  ok (new SuperClass(2) isnt one)
+  ok (new SubClass(2)   isnt one)
+  
+  instanceCount = 0
+  instanceCount += 1 for own key, value of SuperClass.__identityMap
+  ok (instanceCount is 2)
+
+
 test "Overriding the static property new doesn't clobber Function::new", ->
 
   class OneClass
