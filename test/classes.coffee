@@ -604,3 +604,14 @@ test "#494: Named classes", ->
 
   class A.B["C"]
   ok A.B.C.name isnt 'C'
+
+test "#841: bring back the `extended` hook", ->
+  class A
+    @extended: (subclass) =>
+      subclass.extended = @extended
+      subclass.another = @extended
+  class B extends A
+  ok Object::hasOwnProperty.call B, 'extended'
+  eq B.extended, A.extended
+  ok Object::hasOwnProperty.call B, 'another'
+  eq B.another, A.extended
