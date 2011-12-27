@@ -63,7 +63,7 @@ run = (buffer) ->
 
 # Regexes to match complete-able bits of text.
 ACCESSOR  = /\s*([\w\.]+)(?:\.(\w*))$/
-SIMPLEVAR = /\s*(\w*)$/i
+SIMPLEVAR = /(\w+)$/i
 
 # Returns a list of completions, and the completed text.
 autocomplete = (text) ->
@@ -77,14 +77,15 @@ completeAttribute = (text) ->
       val = Script.runInThisContext obj
     catch error
       return
-    completions = getCompletions prefix, Object.getOwnPropertyNames val
+    completions = getCompletions prefix, Object.getOwnPropertyNames Object val
     [completions, prefix]
 
 # Attempt to autocomplete an in-scope free variable: `one`.
 completeVariable = (text) ->
-  free = (text.match SIMPLEVAR)?[1]
+  free = text.match(SIMPLEVAR)?[1]
+  free = "" if text is ""
   if free?
-    vars = Script.runInThisContext 'Object.getOwnPropertyNames(this)'
+    vars = Script.runInThisContext 'Object.getOwnPropertyNames(Object(this))'
     keywords = (r for r in CoffeeScript.RESERVED when r[..1] isnt '__')
     possibilities = vars.concat keywords
     completions = getCompletions free, possibilities
