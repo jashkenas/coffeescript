@@ -490,6 +490,7 @@ test "#1182: execution order needs to be considered as well", ->
 test "#1182: external constructors with bound functions", ->
   fn = ->
     {one: 1}
+    this
   class B
   class A
     constructor: fn
@@ -604,3 +605,8 @@ test "#494: Named classes", ->
 
   class A.B["C"]
   ok A.B.C.name isnt 'C'
+
+test "#1966: external constructors should produce their return value", ->
+  ctor = -> {}
+  class A then constructor: ctor
+  ok (new A) not instanceof A
