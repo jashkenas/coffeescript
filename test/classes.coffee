@@ -610,3 +610,12 @@ test "#1966: external constructors should produce their return value", ->
   ctor = -> {}
   class A then constructor: ctor
   ok (new A) not instanceof A
+
+test "#1980: regression with an inherited class with static function members", ->
+  
+  class A
+
+  class B extends A
+    @static: => 'value'
+    
+  eq B.static(), 'value'

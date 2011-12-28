@@ -954,7 +954,8 @@ exports.Class = class Class extends Base
       @superClass = new Literal o.scope.freeVariable 'super', no
       @body.expressions.unshift new Extends lname, @superClass
       call.args.push @parent
-      call.variable.params.push new Param @superClass
+      params = call.variable.params or call.variable.base.params
+      params.push new Param @superClass
 
     klass = new Parens call, yes
     klass = new Assign @variable, klass if @variable
