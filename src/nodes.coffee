@@ -19,8 +19,6 @@ NO      = -> no
 THIS    = -> this
 NEGATE  = -> @negated = not @negated; this
 
-TAME_CALL_CONTINUATION =  -> new Call(new Literal tame.const.k, [])
-
 #### Base
 
 # The **Base** is the abstract base class for all nodes in the syntax tree.
@@ -1737,7 +1735,7 @@ exports.While = class While extends Base
     top_block = new Block top_statements
 
   tameCallContinuation : ->
-    k = new Call(new Literal tame.const.c_while, [])
+    k = new TameTailCall tame.const.c_while
     @body.push k
 
   compileTame: (o) ->
@@ -2529,7 +2527,7 @@ exports.Switch = class Switch extends Base
     this
 
   tameCallContinuation : ->
-    code = TAME_CALL_CONTINUATION()
+    code = new TameTailCall
     for [condition,block] in @cases
       block.push code
     @otherwise?.push code
@@ -2582,7 +2580,7 @@ exports.If = class If extends Base
   # note this prevents if ...else if... inline chaining, and makes it
   # fully nested if { .. } else { if { } ..} ..'s
   tameCallContinuation : ->
-    code = TAME_CALL_CONTINUATION()
+    code = new TameTailCall
     if @elseBody
       @elseBody.push code
       @isChain = false
@@ -2697,6 +2695,19 @@ CpsCascade =
     cont = new Code [], block, 'tamegen'
     call = new Call func, [ cont ]
     new Block [ call ]
+
+#### TailCall
+#
+# At the end of a tamed if, loop, or switch statement, we tail call off
+# to the next continuation
+
+class TameTailCall extends Base
+  constructor : (@func) ->
+    @func = tame.const.k unless @func
+
+  compileNode : (o) ->
+    s = new Call(new Literal @func, [])
+    s.compileNode o
 
 #### Deferral class, the most basic one...
 
