@@ -43,7 +43,7 @@ exports.Base = class Base
     o.level  = lvl if lvl
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
-    if node.tameHasContinuation() and not node.tameGotCpsSplitFlag and node.isStatement(o)
+    if node.tameHasContinuation() and not node.tameGotCpsSplitFlag
       node.compileCps o
     else if o.level is LEVEL_TOP or not node.isStatement(o)
       node.compileNode o
@@ -59,10 +59,26 @@ exports.Base = class Base
     Closure.wrap(this).compileNode o
 
   # Statements that need CPS translation will have to be split into two
-  # pieces as so
+  # pieces as so.  Note that the tamePrequelBlock is a slight ugly thing
+  # going on.  The problem is this: tameCpsRotate when working on an expression
+  # will want to extract the tame part **first** and then write the vanilla
+  # expression **second**.  But we're not allowed to change the 'this' node as
+  # we traverse the AST.  So therefore we introduct a Prequel, it's like the
+  # opposite of the continuation.  It's the part of the program that comes before
+  # 'this'.
   compileCps : (o) ->
     @tameGotCpsSplitFlag = true
-    node = CpsCascade.wrap(this, @tameContinuationBlock)
+    if @tamePrequelBlock
+      first = @tamePrequelBlock
+      if @tameContinuationBlock
+        second = @tameContinuationBlock
+        second.unshift this
+      else
+        second = this
+    else
+      first = this
+      second = @tameContinuationBlock
+    node = CpsCascade.wrap(first, second, @tameReturnValue, o)
     ret = node.compile o
     ret
 
@@ -138,6 +154,10 @@ exports.Base = class Base
     tree = '\n' + idt + name
     tree += '?' if @soak
     tree += extras
+    if @tamePrequelBlock
+      pidt = idt + TAB
+      tree += '\n' + pidt + "Prequel"
+      tree += @tamePrequelBlock.toString pidt + TAB
     @eachChild (node) -> tree += node.toString idt + TAB
     if @tameContinuationBlock
       idt += TAB
@@ -198,22 +218,11 @@ exports.Base = class Base
   # AST Walking Routines for CPS Pivots, etc.
   #
   #  There are five passes:
-  #    1. Extract expresions
-  #    2. Assign Defers to their awaits
   #    3. Find await's and trace upward.
   #    4. Find loops found in #1, and flood downward
   #    5. Find break/continue found in #2, and trace upward
   #
-  tameAssignDefersToAwait : (aw) ->
-    for child in @flattenChildren()
-      child.tameAssignDefersToAwait aw
 
-  tameExtractExpressions : (inBlock) ->
-    lst = []
-    for child in @flattenChildren()
-      v = child.tameExtractExpressions(false)
-      lst = lst.concat v
-    lst
 
   # tameWalkAst
   #   Walk the AST looking for taming. Mark a node as with tame flags
@@ -260,6 +269,7 @@ exports.Base = class Base
 
   # A potential for a nested tame continuation here
   tameContinuationBlock : null
+  tamePrequelBlock      : null
 
   # A generic tame AST rotation is just to push down to its children
   tameCpsRotate: ->
@@ -267,11 +277,22 @@ exports.Base = class Base
       child.tameCpsRotate()
     this
 
+  # A CPS Rotation routine for expressions
+  tameCpsExprRotate : (v) ->
+    doRotate = v.tameIsTamedExpr()
+    v.tameCpsRotate() # do our children first, regardless...
+    if v.tameIsTamedExpr()
+      v.tameCallContinuation()
+      @tameNestPrequelBlock v
+      @tameReturnValue = new TameReturnValue()
+
   tameIsCpsPivot            :     -> @tameCpsPivotFlag
   tameNestContinuationBlock : (b) -> @tameContinuationBlock = b
-  tameHasContinuation       :     -> @tameContinuationBlock
+  tameNestPrequelBlock      : (b) -> @tamePrequelBlock = b
+  tameHasContinuation       :     -> !!@tameContinuationBlock || !!@tamePrequelBlock
   tameCallContinuation      :     ->
   tameIsJump                :     NO
+  tameIsTamedExpr           :     -> (this not instanceof Code) and @tameNodeFlag
 
   isStatement     : NO
   jumps           : NO
@@ -303,7 +324,6 @@ exports.Base = class Base
 exports.Block = class Block extends Base
   constructor: (nodes) ->
     @expressions = compact flatten nodes or []
-    @awaitExpressions = []
 
   children: ['expressions']
 
@@ -380,8 +400,6 @@ exports.Block = class Block extends Base
     @tab  = o.indent
     top   = o.level is LEVEL_TOP
     codes = []
-    for a in @awaitExpressions
-      a.allocateTemporary o
     for node in @expressions
       node = node.unwrapAll()
       node = (node.unfoldSoak(o) or node)
@@ -533,21 +551,9 @@ exports.Block = class Block extends Base
   tameAddRuntime : ->
     @expressions.unshift new TameRequire()
 
-  tameExtractExpressions : (inBlock) ->
-    return super if @parens
-    newExpressions = []
-    for e in @expressions
-      l = e.tameExtractExpressions(true)
-      newExpressions = newExpressions.concat l.concat [e]
-      @awaitExpressions = @awaitExpressions.concat l
-    @expressions = newExpressions
-    []
-
   # Perform all steps of the Tame transform
   tameTransform : ->
     return this unless @tameGo()
-    @tameExtractExpressions(true)
-    @tameAssignDefersToAwait()
     @tameWalkAst()
     @tameAddRuntime() if @tameNeedsRuntime() and not @tameFindRequire()
     @tameWalkAstLoops(false)
@@ -1301,6 +1307,10 @@ exports.Assign = class Assign extends Base
   unfoldSoak: (o) ->
     unfoldSoak o, this, 'variable'
 
+  # If our value needs a CPS rotation....
+  tameCpsRotate :  ->
+    @value = nv if (nv = @tameCpsExprRotate @value)
+
   # Compile an assignment, delegating to `compilePatternMatch` or
   # `compileSplice` if appropriate. Keep track of the name of the base object
   # we've been assigned to, for correct internal references. If the variable
@@ -1557,9 +1567,6 @@ exports.Code = class Code extends Base
   tameWalkCpsPivots: ->
     super()
     @tameCpsPivotFlag = false
-
-  tameAssignDefersToAwait : (aw) ->
-    super null
 
 #### Param
 
@@ -1974,7 +1981,6 @@ exports.Defer = class Defer extends Base
     @slots = (a.toSlot() for a in args)
     @params = []
     @vars = []
-    @finalVal = null
 
   children : ['slots' ]
 
@@ -2005,17 +2011,20 @@ exports.Defer = class Defer extends Base
   # Case 4 -- defer(rest...) -- rest is an array, assign it to all
   #   leftover arguments.
   #
-  makeAssignFn : () ->
-    return null if @slots.length is 0 and not @finalVal
+  # There is a special subcase of Case 1, which we call case 1(b):
+  #
+  #    defer _
+  #
+  # In this case, the slot used is the return value for the surrounding await call,
+  # for cases such as:
+  #
+  #    x = await foo defer _
+  #
+  makeAssignFn : (o) ->
+    return null if @slots.length is 0
     assignments = []
     args = []
     i = 0
-    if @finalVal
-      rhs = new Value new Literal "arguments"
-      rhs.add new Index new Value new Literal 0
-      lhs = new Value new Literal @finalVal
-      assign = new Assign lhs, rhs
-      assignments.push assign
     for s in @slots
       a = new Value new Literal "arguments"
       i_lit = new Value new Literal i
@@ -2029,8 +2038,13 @@ exports.Defer = class Defer extends Base
       else
         a.add new Index i_lit
         if not s.suffix # case 1
-          slot = s.value
-          @vars.push slot
+          lit = s.value.compile o, LEVEL_TOP
+          if lit is "_"
+            slot = new Value new Literal tame.const.deferrals
+            slot.add new Access new Value new Literal tame.const.retslot
+          else
+            slot = s.value
+            @vars.push slot
         else
           args.push s.value
           slot = @newParam()
@@ -2050,7 +2064,7 @@ exports.Defer = class Defer extends Base
     outer_fn = new Code @params, outer_block, 'tamegen'
     call = new Call outer_fn, args
 
-  transform : ->
+  transform : (o) ->
     # fn is 'Deferrals.defer'
     fn = new Value new Literal tame.const.deferrals
     meth = new Value new Literal tame.const.defer_method
@@ -2062,7 +2076,7 @@ exports.Defer = class Defer extends Base
     # More slots will be needed if we ever want to keep track of tame-aware
     #   stack traces.
     assignments = []
-    if (assign_fn = @makeAssignFn())
+    if (assign_fn = @makeAssignFn o)
       assignments.push new Assign(new Value(new Literal(tame.const.assign_fn)),
                                   assign_fn, "object")
     o = new Obj assignments
@@ -2071,8 +2085,7 @@ exports.Defer = class Defer extends Base
     new Call fn, [ new Value o ]
 
   compileNode : (o) ->
-    @finalVal = @myAwait?.getFinalVal()
-    call = @transform()
+    call = @transform o
     for v in @vars
       name = v.compile o, LEVEL_LIST
       scope = o.scope
@@ -2081,27 +2094,10 @@ exports.Defer = class Defer extends Base
 
   tameNeedsRuntime : -> true
 
-  tameAssignDefersToAwait : (aw) ->
-    @myAwait = aw
-    super aw
-
 #### Await
 
 exports.Await = class Await extends Base
-  constructor : (body) ->
-    @body = body
-    @temporary = null
-    @used = false
-    @parent = null
-    @displaced = false
-    body.parens = true
-
-  displace : () ->
-    ret = new Await @body
-    @body = null
-    @parent = ret
-    ret.displaced = true
-    ret
+  constructor : (@body) ->
 
   transform : (o) ->
     body = @body
@@ -2121,26 +2117,14 @@ exports.Await = class Await extends Base
 
   children: ['body']
 
-  isStatement: -> not @parent
+  # ??? Revisit!
+  isStatement: -> YES
+
   makeReturn : THIS
 
-  allocateTemporary : (o) ->
-    if @displaced
-      @temporary = o.scope.freeVariable '_await'
-
   compileNode: (o) ->
-    if @parent
-      @parent.temporary
-    else
-      @transform(o)
-      @body.compile o
-
-  getFinalVal : () ->
-    if @temporary and not @used
-      @used = true
-      @temporary
-    else
-      null
+    @transform(o)
+    @body.compile o
 
   # We still need to walk our children to see if there are any embedded
   # function which might also be tamed.  But we're always going to report
@@ -2148,14 +2132,6 @@ exports.Await = class Await extends Base
   tameWalkAst : ->
     super()
     @tameNodeFlag = not @parent
-
-  tameExtractExpressions : (inBlock) ->
-    children = super false
-    if inBlock and not children.length then []
-    else children.concat [ @displace() ]
-
-  tameAssignDefersToAwait : (aw) ->
-    super this
 
 #### tameRequire
 #
@@ -2689,10 +2665,14 @@ Closure =
 
 CpsCascade =
 
-  wrap: (statement, rest) ->
+  wrap: (statement, rest, returnValue, o) ->
     func = new Code [ new Param new Literal tame.const.k ], (Block.wrap [ statement ]), 'tamegen'
     block = Block.wrap [ rest ]
-    cont = new Code [], block, 'tamegen'
+    args = []
+    if returnValue
+      returnValue.bindName o
+      args.push returnValue
+    cont = new Code args, block, 'tamegen'
     call = new Call func, [ cont ]
     new Block [ call ]
 
@@ -2709,6 +2689,22 @@ class TameTailCall extends Base
     s = new Call(new Literal @func, [])
     s.compileNode o
 
+#### TameReturnValue
+#
+# A variable reference to a deferred computation
+
+class TameReturnValue extends Param
+  constructor : () ->
+    super null, null, no
+
+  bindName : (o) ->
+    l = o.scope.freeVariable tame.const.param
+    @name = new Literal l
+
+  compile : (o) ->
+    @bindName o if not @name
+    super o
+
 #### Deferral class, the most basic one...
 
 InlineDeferral =
@@ -2719,8 +2715,9 @@ InlineDeferral =
   #   Deferrals : class
   #     constructor: (@continuation) ->
   #       @count = 1
+  #       @ret = null
   #     _fulfill : ->
-  #       @continuation if ! --@count
+  #       @continuation @ret if not --@count
   #     defer : (defer_params) ->
   #       @count++
   #       (inner_params...) =>
@@ -2737,15 +2734,19 @@ InlineDeferral =
     #
     #   constructor: (@continuation) ->
     #     @count = 1
+    #     @ret = null
     #
     k_member = new Value new Literal "this"
     k_member.add new Access k
     p1 = new Param k_member
     cnt_member = new Value new Literal "this"
     cnt_member.add new Access cnt
+    ret_member = new Value new Literal "this"
+    ret_member.add new Access new Value new Literal tame.const.retslot
     a1 = new Assign cnt_member, new Value new Literal 1
+    a2 = new Assign ret_member, new Value new Literal "null"
     constructor_params = [ p1 ]
-    constructor_body = new Block [ a1 ]
+    constructor_body = new Block [ a1, a2 ]
     constructor_code = new Code constructor_params, constructor_body
     constructor_name = new Value new Literal "constructor"
     constructor_assign = new Assign constructor_name, constructor_code
@@ -2753,9 +2754,9 @@ InlineDeferral =
     # make the _fulfill member:
     #
     #   _fulfill : ->
-    #     @continuation if ! --@count
+    #     @continuation @ret if not --@count
     #
-    if_expr = new Call k_member, []
+    if_expr = new Call k_member, [ ret_member ]
     if_body = new Block [ if_expr ]
     decr = new Op '--', cnt_member
     if_cond = new Op '!', decr

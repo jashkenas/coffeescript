@@ -7,6 +7,7 @@ exports.transform = (x) ->
 
 exports.const = 
   k : "__tame_k"
+  param : "__tame_p_"
   ns: "tame"
   Deferrals : "Deferrals"
   deferrals : "__tame_deferrals"
@@ -19,6 +20,7 @@ exports.const =
   assign_fn : "assign_fn"
   runtime : "tamerun"
   autocb : "autocb"
+  retslot : "ret"
 
 #=======================================================================
 # runtime
@@ -46,9 +48,10 @@ class Deferrals
   constructor: (k) ->
     @continuation = k
     @count = 1
+    @ret = null
 
   _fulfill : ->
-    @continuation() if --@count == 0
+    @continuation @ret if --@count == 0
 
   defer : (args) ->
     @count++
