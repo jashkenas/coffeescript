@@ -280,9 +280,10 @@ exports.Base = class Base
   # A CPS Rotation routine for expressions
   tameCpsExprRotate : (v) ->
     doRotate = v.tameIsTamedExpr()
-    v.tameCpsRotate() # do our children first, regardless...
     if doRotate
       v.tameCallContinuation()
+    v.tameCpsRotate() # do our children first, regardless...
+    if doRotate
       @tameNestPrequelBlock v
       @tameReturnValue = new TameReturnValue()
     else
@@ -490,53 +491,64 @@ exports.Block = class Block extends Base
   #
   tameCpsRotate : ->
     pivot = null
-    child = null
+    
+    # Go ahead an look for a pivot
+    for e,i in @expressions
+      if e.tameIsCpsPivot()
+        pivot = e
+        # The pivot value needs to call the currently active continuation
+        # after it's all done.  For things like if..else.. this does something
+        # interesting and pushes the continuation down both branches.
+        # Note that it's convenient to do this **before** anything is
+        # rotated.
+        pivot.tameCallContinuation()
 
-    # If this Block has taming, then we go ahead and look for a pivot
-    if @tameIsCpsPivot()
-      i = 0
-      for e in @expressions
-        if e.tameIsCpsPivot()
-          pivot = e
-          break
-        i++
+      # Recursively rotate the children, in depth-first order.
+      e.tameCpsRotate()
 
+      # If we've found a pivot, then we break out of here, and then
+      # handle the rest of these children
+      break if pivot
+
+    # If there's no pivot, then the above should be as in the base
+    # class, and it's safe to return out of here.
+    # 
     # We find a pivot if this node has taming, and it's not an Await
-    # itself
-    if pivot
-      rest = @expressions.slice(i+1)
+    # itself.
+    return this unless pivot
 
-      # Leave the pivot in the list of expressions
-      @expressions = @expressions.slice(0,i+1)
+    # We should never have a continuation here, even though we rotated
+    # this guy above.  This is true for one of two cases:
+    #   1. If pivot is a statement, then the continuation will be in the
+    #      grandchild Block node
+    #   2. If pivot is an expression, the pivoted code will be a prequel
+    #      and not a continuation (since we can't replace nodes as we
+    #      walk).
+    if pivot.tameContinuationBlock
+      throw SyntaxError "unexpected continuation block in node"
 
-      # If there are elements in rest, then we need to nest a continuation block
-      if rest.length
-        child = new Block rest
-        pivot.tameNestContinuationBlock child
+    # These are the expressions on the RHS of the pivot split
+    rest = @expressions.slice(i+1)
 
-        # Pass our node bits onto our new children
-        for e in rest
-          child.tameNodeFlag = true      if e.tameNodeFlag
-          child.tameLoopFlag = true      if e.tameLoopFlag
-          child.tameCpsPivotFlag = true  if e.tameCpsPivotFlag
-          child.tameHasAutocbFlag = true if e.tameHasAutocbFlag
+    # Leave the pivot in the list of expressions
+    @expressions = @expressions.slice(0,i+1)
 
-        # now recursive apply the transformation to the new child,
-        # this being especially import in blocks that have multiple
-        # awaits on the same level
-        child.tameCpsRotate()
+    # If there are elements in rest, then we need to nest a continuation block
+    if rest.length
+      child = new Block rest
+      pivot.tameNestContinuationBlock child
 
-      # The pivot value needs to call the currently active continuation
-      # after it's all done.  For things like if..else.. this does something
-      # interesting and pushes the continuation down both branches.
-      pivot.tameCallContinuation()
+      # Pass our node bits onto our new children
+      for e in rest
+        child.tameNodeFlag = true      if e.tameNodeFlag
+        child.tameLoopFlag = true      if e.tameLoopFlag
+        child.tameCpsPivotFlag = true  if e.tameCpsPivotFlag
+        child.tameHasAutocbFlag = true if e.tameHasAutocbFlag
 
-    # After we have pivoted this guy, we still need to walk all of the
-    # expressions, because maybe the expressions that we left still have
-    # embedded functions that need the rotation run on them.  Thus,
-    # tameNodeFlag will be 0, but children might have blocks that still
-    # need to be tamed
-    super()
+      # now recursive apply the transformation to the new child,
+      # this being especially important in blocks that have multiple
+      # awaits on the same level
+      child.tameCpsRotate()
 
     # return this for chaining
     this
