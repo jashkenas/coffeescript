@@ -10,6 +10,7 @@ readline     = require 'readline'
 {inspect}    = require 'util'
 {Script}     = require 'vm'
 Module       = require 'module'
+fs           = require 'fs'
 
 # REPL Setup
 
@@ -34,7 +35,7 @@ backlog = ''
 # The main REPL function. **run** is called every time a line of code is entered.
 # Attempt to evaluate the command. If there's an exception, print it out instead
 # of exiting.
-run = (buffer) ->
+run = (buffer, echo_output=true) ->
   if !buffer.toString().trim() and !backlog
     repl.prompt()
     return
@@ -54,7 +55,8 @@ run = (buffer) ->
     }
     if returnValue is undefined
       global._ = _
-    process.stdout.write inspect(returnValue, no, 2, enableColours) + '\n'
+    if echo_output
+      process.stdout.write inspect(returnValue, no, 2, enableColours) + '\n'
   catch err
     error err
   repl.prompt()
@@ -119,6 +121,11 @@ repl.on 'close', ->
   stdin.destroy()
 
 repl.on 'line', run
+
+fs.readFile '.coffeerc',
+  (err, data) ->
+    unless err
+      run data, false
 
 repl.setPrompt REPL_PROMPT
 repl.prompt()
