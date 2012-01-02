@@ -350,6 +350,10 @@ exports.Block = class Block extends Base
   unwrap: ->
     if @expressions.length is 1 then @expressions[0] else this
 
+  # Like unwrap, but will return if not a single
+  getSingle : ->
+    if @expressions.length is 1 then @expressions[0] else null
+
   # Is this an empty block of code?
   isEmpty: ->
     not @expressions.length
@@ -2699,13 +2703,19 @@ Closure =
 CpsCascade =
 
   wrap: (statement, rest, returnValue, o) ->
-    func = new Code [ new Param new Literal tame.const.k ], (Block.wrap [ statement ]), 'tamegen'
-    block = Block.wrap [ rest ]
+    func = new Code [ new Param new Literal tame.const.k ],
+      (Block.wrap [ statement ]), 'tamegen'
     args = []
     if returnValue
       returnValue.bindName o
       args.push returnValue
-    cont = new Code args, block, 'tamegen'
+      
+    block = Block.wrap [ rest ]
+    cont = if (e = block.getSingle()) and e instanceof TameTailCall and not e.value
+      e.extractFunc()
+    else
+      new Code args, block, 'tamegen'
+      
     call = new Call func, [ cont ]
     new Block [ call ]
 
@@ -2724,8 +2734,11 @@ class TameTailCall extends Base
   assignValue : (v) ->
     @value = v
 
+  literalFunc: -> new Literal @func
+  extractFunc: -> new Value @literalFunc()
+
   compileNode : (o) ->
-    f = new Literal @func
+    f = @literalFunc()
     out = if o.level is LEVEL_TOP
       if @value
         new Block [ @value, new Call f ]

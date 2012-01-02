@@ -364,6 +364,16 @@ atest 'test expressions -- simple, but recursive (2)', (cb) ->
     x = await adder 4, defer _
     ++x
   cb(y == 6, {})
+  
+atest 'test expressions -- simple, but recursive (3)', (cb) ->
+  adder = (x, cb) ->
+    await delay defer()
+    cb(x+1)
+  y = if true
+    await adder 5, defer _
+  cb(y == 6, {})
+
+#atest 'arrays and objects', (cb) ->
 
 #atest 'arrays and objects', (cb) ->
 #  id = "image data"
