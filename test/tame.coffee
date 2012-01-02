@@ -343,20 +343,20 @@ atest "until", (cb) ->
     out += i--
   cb(out is 55, {})
 
-atest 'tame expressions -- simple assignment', (cb) ->
+atest 'expressions -- simple assignment', (cb) ->
   adder = (x, cb) ->
     await delay defer()
     cb(x+1)
   ret = await adder 5, defer _
   cb(ret == 6, {})
 
-atest 'test expressions -- simple, but recursive', (cb) ->
+atest 'expressions -- simple, but recursive', (cb) ->
   y = if true
     await delay defer()
     10
   cb(y == 10, {})
 
-atest 'test expressions -- simple, but recursive (2)', (cb) ->
+atest 'expressions -- simple, but recursive (2)', (cb) ->
   adder = (x, cb) ->
     await delay defer()
     cb(x+1)
@@ -365,7 +365,7 @@ atest 'test expressions -- simple, but recursive (2)', (cb) ->
     ++x
   cb(y == 6, {})
   
-atest 'test expressions -- simple, but recursive (3)', (cb) ->
+atest 'expressions -- pass value of tail calls', (cb) ->
   adder = (x, cb) ->
     await delay defer()
     cb(x+1)
@@ -373,7 +373,12 @@ atest 'test expressions -- simple, but recursive (3)', (cb) ->
     await adder 5, defer _
   cb(y == 6, {})
 
-#atest 'arrays and objects', (cb) ->
+atest 'expressions -- addition', (cb) ->
+  slowAdd = (a, b, autocb) ->
+    await delay defer()
+    a+b
+  y = (await slowAdd 10, 20, defer _) + (await slowAdd 30, 40, defer _)
+  cb(y == 100, {})
 
 #atest 'arrays and objects', (cb) ->
 #  id = "image data"

@@ -69,19 +69,25 @@ exports.Base = class Base
   # 'this'.
   compileCps : (o) ->
     @tameGotCpsSplitFlag = true
-    if @tamePrequelBlock
-      first = @tamePrequelBlock
+
+    if (l = @tamePrequelBlocks.length)
+      console.log "yo"
       if @tameContinuationBlock
-        second = @tameContinuationBlock
-        second.unshift this
+        k = @tameContinuationBlock
+        k.unshift this
       else
-        second = this
+        k = this
+        
+      while l--
+        console.log "yuck"
+        pb = @tamePrequelBlocks[l]
+        k = CpsCascade.wrap pb.block, k, pb.retval, o
+      code = k
+      
     else
-      first = this
-      second = @tameContinuationBlock
-    node = CpsCascade.wrap(first, second, @tameReturnValue, o)
-    ret = node.compile o
-    ret
+      code = CpsCascade.wrap this, @tameContinuationBlock, null, o
+      
+    code.compile o
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -155,10 +161,10 @@ exports.Base = class Base
     tree = '\n' + idt + name
     tree += '?' if @soak
     tree += extras
-    if @tamePrequelBlock
+    for b in @tamePrequelBlocks
       pidt = idt + TAB
       tree += '\n' + pidt + "Prequel"
-      tree += @tamePrequelBlock.toString pidt + TAB
+      tree += b.block.toString pidt + TAB
     @eachChild (node) -> tree += node.toString idt + TAB
     if @tameContinuationBlock
       idt += TAB
@@ -270,7 +276,7 @@ exports.Base = class Base
 
   # A potential for a nested tame continuation here
   tameContinuationBlock : null
-  tamePrequelBlock      : null
+  tamePrequelBlocks     : []
 
   # A generic tame AST rotation is just to push down to its children
   tameCpsRotate: ->
@@ -286,17 +292,23 @@ exports.Base = class Base
     v.tameCpsRotate() # do our children first, regardless...
     if doRotate
       @tameNestPrequelBlock v
-      @tameReturnValue = new TameReturnValue()
     else
       null
 
   tameIsCpsPivot            :     -> @tameCpsPivotFlag
   tameNestContinuationBlock : (b) -> @tameContinuationBlock = b
-  tameNestPrequelBlock      : (b) -> @tamePrequelBlock = b
-  tameHasContinuation       :     -> !!@tameContinuationBlock || !!@tamePrequelBlock
+  tameHasContinuation       :     -> (!!@tameContinuationBlock or @tamePrequelBlocks.length)
   tameCallContinuation      :     ->
   tameIsJump                :     NO
   tameIsTamedExpr           :     -> (this not instanceof Code) and @tameNodeFlag
+  tameNestPrequelBlock: (bb) ->
+    console.log "call with #{bb.toString()}"
+    rv = new TameReturnValue()
+    console.log "trv done #{bb.toString()}"
+    @tamePrequelBlocks.push { block : bb, retval : rv }
+    console.log "call done #{bb}"
+    console.log "len: #{@tamePrequelBlocks.length} #{bb.toString()}"
+    rv
 
   isStatement     : NO
   jumps           : NO
@@ -380,11 +392,6 @@ exports.Block = class Block extends Base
         return
     # if nothing was found, just push the call on
     @expressions.push call
-
-  # Optimization!
-  # Blocks typically don't need their own cpsCascading.  This saves
-  # wasted code.
-  compileCps : (o) ->
 
   # A Block node does not return its entire body, rather it
   # ensures that the final expression is returned.
@@ -1861,6 +1868,11 @@ exports.Op = class Op extends Base
   isChainable: ->
     @operator in ['<', '>', '>=', '<=', '===', '!==']
 
+  # this is F'ed up!!
+  #tameCpsRotate :  ->
+  #  @first = nv if @first and (nv = @tameCpsExprRotate @first)
+  #  @second = nv if @second and (nv = @tameCpsExprRotate @second)
+
   invert: ->
     if @isChainable() and @first.isChainable()
       allInvertable = yes
@@ -2711,10 +2723,15 @@ CpsCascade =
       args.push returnValue
       
     block = Block.wrap [ rest ]
-    cont = if (e = block.getSingle()) and e instanceof TameTailCall and not e.value
-      e.extractFunc()
+
+    # This is both for optimization and for correctness.  If the continuation
+    # block is just a tail call to another continuation, then we just pass
+    # that call directly.  This will also thread values through the
+    # call chain.
+    if (e = block.getSingle()) and e instanceof TameTailCall and not e.value
+      cont = e.extractFunc()
     else
-      new Code args, block, 'tamegen'
+      cont = new Code args, block, 'tamegen'
       
     call = new Call func, [ cont ]
     new Block [ call ]
