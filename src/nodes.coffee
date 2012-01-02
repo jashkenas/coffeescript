@@ -2727,7 +2727,10 @@ class TameTailCall extends Base
   compileNode : (o) ->
     f = new Literal @func
     out = if o.level is LEVEL_TOP
-      new Block [ @value, new Call f ]
+      if @value
+        new Block [ @value, new Call f ]
+      else
+        new Call f
     else
       args = if @value then [ @value ] else []
       new Call f, args
