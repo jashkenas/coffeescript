@@ -281,10 +281,12 @@ exports.Base = class Base
   tameCpsExprRotate : (v) ->
     doRotate = v.tameIsTamedExpr()
     v.tameCpsRotate() # do our children first, regardless...
-    if v.tameIsTamedExpr()
+    if doRotate
       v.tameCallContinuation()
       @tameNestPrequelBlock v
       @tameReturnValue = new TameReturnValue()
+    else
+      null
 
   tameIsCpsPivot            :     -> @tameCpsPivotFlag
   tameNestContinuationBlock : (b) -> @tameContinuationBlock = b
