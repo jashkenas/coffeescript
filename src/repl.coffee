@@ -20,6 +20,8 @@ enableColours = no
 unless process.platform is 'win32'
   enableColours = not process.env.NODE_DISABLE_COLORS
 
+global.__fake_outer_scope = {}
+
 # Start by opening up `stdin` and `stdout`.
 stdin = process.openStdin()
 stdout = process.stdout
@@ -48,10 +50,19 @@ run = (buffer) ->
   backlog = ''
   try
     _ = global._
-    returnValue = CoffeeScript.eval "_=(#{code}\n)", {
+    code = code.replace /\bglobal([[.])/, "__fake_outer_scope$1"
+    scopeFix = (for key of global when key.match /^[a-zA-Z_$][0-9a-zA-Z_$]*$/
+      "#{key} = global.#{key};"
+    ).join('')
+    scopeFix += (for key of __fake_outer_scope when key.match /^[a-zA-Z_$][0-9a-zA-Z_$]*$/
+      "#{key} = global.__fake_outer_scope.#{key};"
+    ).join('')
+
+    returnValue = CoffeeScript.eval "_=(#{scopeFix}#{code}\n)", {
       filename: 'repl'
       modulename: 'repl'
     }
+
     if returnValue is undefined
       global._ = _
     process.stdout.write inspect(returnValue, no, 2, enableColours) + '\n'
