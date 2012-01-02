@@ -11,6 +11,7 @@ readline     = require 'readline'
 {Script}     = require 'vm'
 Module       = require 'module'
 fs           = require 'fs'
+path         = require 'path'
 
 
 # REPL Setup
@@ -123,8 +124,8 @@ repl.on 'close', ->
 
 repl.on 'line', run
 
-for dir in [process.env['HOME'], process.cwd()]
-  fs.readFile "#{dir}/.coffeerc", 
+for dir in [process.env['USERPROFILE'], process.env['HOME'], process.cwd()]
+  fs.readFile path.normalize("#{dir}/.coffeerc"), 
     (err, data) ->
       unless err
         run data, false
