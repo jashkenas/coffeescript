@@ -2,6 +2,7 @@ raw
 presentation
 test.coffee
 parser.output
+.coffeerc
 test/fixtures/underscore
 test/*.js
 examples/beautiful_code/parse.coffee
