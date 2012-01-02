@@ -350,6 +350,21 @@ atest 'tame expressions -- simple assignment', (cb) ->
   ret = await adder 5, defer _
   cb(ret == 6, {})
 
+atest 'test expressions -- simple, but recursive', (cb) ->
+  y = if true
+    await delay defer()
+    10
+  cb(y == 10, {})
+
+atest 'test expressions -- simple, but recursive (2)', (cb) ->
+  adder = (x, cb) ->
+    await delay defer()
+    cb(x+1)
+  y = if true
+    x = await adder 4, defer _
+    ++x
+  cb(y == 6, {})
+
 #atest 'arrays and objects', (cb) ->
 #  id = "image data"
 #  loadImage = (n, cb) ->

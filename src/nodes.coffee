@@ -18,6 +18,7 @@ YES     = -> yes
 NO      = -> no
 THIS    = -> this
 NEGATE  = -> @negated = not @negated; this
+NULL    = -> new Value new Literal 'null'
 
 #### Base
 
@@ -361,6 +362,25 @@ exports.Block = class Block extends Base
   jumps: (o) ->
     for exp in @expressions
       return exp if exp.jumps o
+
+  tameThreadReturn: (call)  ->
+    len = @expressions.length
+    foundReturn = false
+    while len--
+      expr = @expressions[len]
+      if expr.isStatement()
+        break
+      if expr not instanceof Comment and expr not instanceof Return
+        call.assignValue expr
+        @expressions[len] = call
+        return
+    # if nothing was found, just push the call on
+    @expressions.push call
+
+  # Optimization!
+  # Blocks typically don't need their own cpsCascading.  This saves
+  # wasted code.
+  compileCps : (o) ->
 
   # A Block node does not return its entire body, rather it
   # ensures that the final expression is returned.
@@ -2570,13 +2590,12 @@ exports.If = class If extends Base
   # note this prevents if ...else if... inline chaining, and makes it
   # fully nested if { .. } else { if { } ..} ..'s
   tameCallContinuation : ->
-    code = new TameTailCall
     if @elseBody
-      @elseBody.push code
+      @elseBody.tameThreadReturn new TameTailCall
       @isChain = false
     else
-      @addElse code
-    @body.push code
+      @addElse new TameTailCall
+    @body.tameThreadReturn new TameTailCall
 
   # The **If** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a conditional operator is safe.
@@ -2698,10 +2717,21 @@ CpsCascade =
 class TameTailCall extends Base
   constructor : (@func) ->
     @func = tame.const.k unless @func
+    @value = null
+
+  children : [ 'value' ]
+
+  assignValue : (v) ->
+    @value = v
 
   compileNode : (o) ->
-    s = new Call(new Literal @func, [])
-    s.compileNode o
+    f = new Literal @func
+    out = if o.level is LEVEL_TOP
+      new Block [ @value, new Call f ]
+    else
+      args = if @value then [ @value ] else []
+      new Call f, args
+    out.compileNode o
 
 #### TameReturnValue
 #
@@ -2712,7 +2742,7 @@ class TameReturnValue extends Param
     super null, null, no
 
   bindName : (o) ->
-    l = o.scope.freeVariable tame.const.param
+    l = o.scope.freeVariable tame.const.param, no
     @name = new Literal l
 
   compile : (o) ->
@@ -2758,7 +2788,7 @@ InlineDeferral =
     ret_member = new Value new Literal "this"
     ret_member.add new Access new Value new Literal tame.const.retslot
     a1 = new Assign cnt_member, new Value new Literal 1
-    a2 = new Assign ret_member, new Value new Literal "null"
+    a2 = new Assign ret_member, NULL()
     constructor_params = [ p1 ]
     constructor_body = new Block [ a1, a2 ]
     constructor_code = new Code constructor_params, constructor_body
@@ -2795,7 +2825,7 @@ InlineDeferral =
     call_meth.add new Access af, "soak"
     my_apply = new Literal "apply"
     call_meth.add new Access my_apply, "soak"
-    my_null = new Value new Literal "null"
+    my_null = NULL()
     apply_call = new Call call_meth, [ my_null, new Value ip ]
     _fulfill_method = new Value new Literal "this"
     _fulfill_method.add new Access new Literal tame.const.fulfill
