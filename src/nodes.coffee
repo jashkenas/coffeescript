@@ -239,15 +239,22 @@ exports.Base = class Base
   # AST Walking Routines for CPS Pivots, etc.
   #
   #  There are three passes:
-  #    3. Find await's and trace upward.
-  #    4. Find loops found in #1, and flood downward
-  #    5. Find break/continue found in #2, and trace upward
+  #    1. Find await's and trace upward.
+  #    2. Find loops found in #1, and flood downward
+  #    3. Find break/continue found in #2, and trace upward
   #
 
   # tameWalkAst
+  # 
   #   Walk the AST looking for taming. Mark a node as with tame flags
   #   if any of its children are tamed, but don't cross scope boundary
   #   when considering the children.
+  #
+  #   The paremeter `p` is the parent `await`.  All nodes beneath the
+  #   first `await` in a function scope should point to its highest
+  #   parent `await`.  This is so in the case of nested `await`s,
+  #   they're really pulled out and run in sequence as the level of the
+  #   topmost await.
   #
   tameWalkAst : (p) ->
     @tameParentAwait = p
