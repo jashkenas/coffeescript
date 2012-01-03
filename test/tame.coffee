@@ -387,6 +387,16 @@ atest 'expressions -- addition (2)', (cb) ->
     a+b
   y = (await slowAdd 10, 20, defer _) + (await slowAdd 30, 40, defer _)
   cb(y == 100, {})
+  
+atest 'chaining', (cb) ->
+  id = "image data"
+  class Img
+    render : -> id
+  loadImage = (n, cb) ->
+    await delay defer()
+    cb new Img
+  x = (await loadImage "test.png", defer _).render()
+  cb(x is id, {})
 
 #atest 'arrays and objects', (cb) ->
 #  id = "image data"
@@ -401,16 +411,8 @@ atest 'expressions -- addition (2)', (cb) ->
 #    v : "another value"
 #  cb(arr[0] is id and obj.i is id, {})
 #
-#atest 'chaining', (cb) ->
-#  id = "image data"
-#  class Img
-#    render : -> id
-#  loadImage = (n, cb) ->
-#    await delay defer()
-#    cb new Img
-#  x = (await loadImage "test.png", defer()).render()
-#  cb(x is id, {})
-#
+# 
+
 #atest 'nesting', (cb) ->
 #  id = "image data"
 #  loadImage = (n, cb) ->
