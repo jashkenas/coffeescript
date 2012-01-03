@@ -12,7 +12,7 @@ readline     = require 'readline'
 Module       = require 'module'
 fs           = require 'fs'
 path         = require 'path'
-
+os           = require 'os'
 
 # REPL Setup
 
@@ -37,7 +37,7 @@ backlog = ''
 # The main REPL function. **run** is called every time a line of code is entered.
 # Attempt to evaluate the command. If there's an exception, print it out instead
 # of exiting.
-run = (buffer, echoOutput = true) ->
+run = (buffer) ->
   if !buffer.toString().trim() and !backlog
     repl.prompt()
     return
@@ -57,8 +57,7 @@ run = (buffer, echoOutput = true) ->
     }
     if returnValue is undefined
       global._ = _
-    if echoOutput
-      process.stdout.write inspect(returnValue, no, 2, enableColours) + '\n'
+    process.stdout.write inspect(returnValue, no, 2, enableColours) + '\n'
   catch err
     error err
   repl.prompt()
@@ -124,11 +123,12 @@ repl.on 'close', ->
 
 repl.on 'line', run
 
-for dir in [process.env['USERPROFILE'], process.env['HOME'], process.cwd()]
-  fs.readFile path.normalize("#{dir}/.coffeerc"), 
-    (err, data) ->
-      unless err
-        run data, false
+# If present, evaluate .coffeerc files in home directory or current directory
+homedir = if os.platform() is 'win32' then process.env.USERPROFILE else process.env.HOME
+for dir in [homedir, process.cwd()]
+  rcfile = path.join dir, '.coffeerc'
+  data = fs.readFileSync rcfile, 'utf8' 
+  CoffeeScript.eval data, {filename: rcfile, module: '.coffeerc'}
 
 repl.setPrompt REPL_PROMPT
 repl.prompt()
