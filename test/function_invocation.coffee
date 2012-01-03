@@ -506,3 +506,35 @@ test "#1416: don't omit one 'new' when compiling 'new new fn()()'", ->
   eq obj.prop, nonce
   eq obj.a, argNonceA
   eq obj.b, argNonceB
+
+test "#1840: accessing the `prototype` after function invocation should compile", ->
+  doesNotThrow -> CoffeeScript.compile 'fn()::prop'
+
+  nonce = {}
+  class Test then id: nonce
+
+  dotAccess = -> Test::
+  protoAccess = -> Test
+
+  eq dotAccess().id, nonce
+  eq protoAccess()::id, nonce
+
+test "#960: improved 'do'", ->
+
+  do (nonExistent = 'one') ->
+    eq nonExistent, 'one'
+
+  overridden = 1
+  do (overridden = 2) ->
+    eq overridden, 2
+
+  two = 2
+  do (one = 1, two, three = 3) ->
+    eq one, 1
+    eq two, 2
+    eq three, 3
+
+  ret = do func = (two) ->
+    eq two, 2
+    func
+  eq ret, func

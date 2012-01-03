@@ -7,7 +7,14 @@
 # * Scientific Notation Integer Literals
 # * Scientific Notation Non-Integer Literals
 # * Non-Integer Literals
+# * Binary Integer Literals
 
+
+# Binary Integer Literals
+# Binary notation is understood as would be decimal notation.
+
+test "Parser recognises binary numbers", ->
+  eq 4, 0b100
 
 # Decimal Integer Literals
 

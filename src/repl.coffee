@@ -31,16 +31,6 @@ error = (err) ->
 # The current backlog of multi-line code.
 backlog = ''
 
-# The REPL context; must be visible outside `run` to allow for tab completion
-sandbox = Script.createContext()
-nonContextGlobals = [
-  'Buffer', 'console', 'process'
-  'setInterval', 'clearInterval'
-  'setTimeout', 'clearTimeout'
-]
-sandbox[g] = global[g] for g in nonContextGlobals
-sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
-
 # The main REPL function. **run** is called every time a line of code is entered.
 # Attempt to evaluate the command. If there's an exception, print it out instead
 # of exiting.
@@ -57,16 +47,14 @@ run = (buffer) ->
   repl.setPrompt REPL_PROMPT
   backlog = ''
   try
-    _ = sandbox._
+    _ = global._
     returnValue = CoffeeScript.eval "_=(#{code}\n)", {
-      sandbox,
       filename: 'repl'
       modulename: 'repl'
     }
     if returnValue is undefined
-      sandbox._ = _
-    else
-      process.stdout.write inspect(returnValue, no, 2, enableColours) + '\n'
+      global._ = _
+    process.stdout.write inspect(returnValue, no, 2, enableColours) + '\n'
   catch err
     error err
   repl.prompt()
@@ -75,7 +63,7 @@ run = (buffer) ->
 
 # Regexes to match complete-able bits of text.
 ACCESSOR  = /\s*([\w\.]+)(?:\.(\w*))$/
-SIMPLEVAR = /\s*(\w*)$/i
+SIMPLEVAR = /(\w+)$/i
 
 # Returns a list of completions, and the completed text.
 autocomplete = (text) ->
@@ -86,18 +74,19 @@ completeAttribute = (text) ->
   if match = text.match ACCESSOR
     [all, obj, prefix] = match
     try
-      val = Script.runInContext obj, sandbox
+      val = Script.runInThisContext obj
     catch error
       return
-    completions = getCompletions prefix, Object.getOwnPropertyNames val
+    completions = getCompletions prefix, Object.getOwnPropertyNames Object val
     [completions, prefix]
 
 # Attempt to autocomplete an in-scope free variable: `one`.
 completeVariable = (text) ->
-  free = (text.match SIMPLEVAR)?[1]
+  free = text.match(SIMPLEVAR)?[1]
+  free = "" if text is ""
   if free?
-    vars = Script.runInContext 'Object.getOwnPropertyNames(this)', sandbox
-    keywords = (r for r in CoffeeScript.RESERVED when r[0..1] isnt '__')
+    vars = Script.runInThisContext 'Object.getOwnPropertyNames(Object(this))'
+    keywords = (r for r in CoffeeScript.RESERVED when r[..1] isnt '__')
     possibilities = vars.concat keywords
     completions = getCompletions free, possibilities
     [completions, free]

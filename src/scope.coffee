@@ -25,8 +25,8 @@ exports.Scope = class Scope
   # Adds a new variable or overrides an existing one.
   add: (name, type, immediate) ->
     return @parent.add name, type, immediate if @shared and not immediate
-    if typeof (pos = @positions[name]) is 'number'
-      @variables[pos].type = type
+    if Object::hasOwnProperty.call @positions, name
+      @variables[@positions[name]].type = type
     else
       @positions[name] = @variables.push({name, type}) - 1
 
@@ -64,16 +64,16 @@ exports.Scope = class Scope
 
   # If we need to store an intermediate result, find an available name for a
   # compiler-generated variable. `_var`, `_var2`, and so on...
-  freeVariable: (type) ->
+  freeVariable: (name, reserve=true) ->
     index = 0
-    index++ while @check((temp = @temporary type, index))
-    @add temp, 'var', yes
+    index++ while @check((temp = @temporary name, index))
+    @add temp, 'var', yes if reserve
     temp
 
   # Ensure that an assignment is made at the top of this scope
   # (or at the top-level scope, if requested).
   assign: (name, value) ->
-    @add name, value: value, assigned: true
+    @add name, {value, assigned: yes}, yes
     @hasAssignments = yes
 
   # Does this scope have any declared variables?

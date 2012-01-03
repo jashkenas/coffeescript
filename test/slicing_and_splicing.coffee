@@ -39,6 +39,8 @@ test "unbounded slicing", ->
   for a in [-shared.length+1...shared.length]
     arrayEq shared[..a][...-1] , shared[...a]
 
+  arrayEq [1, 2, 3], [1, 2, 3][..]
+
 test "#930, #835, #831, #746 #624: inclusive slices to -1 should slice to end", ->
   arrayEq shared, shared[0..-1]
   arrayEq shared, shared[..-1]
@@ -51,6 +53,13 @@ test "string slicing", ->
   ok str[1...5] is "bcde"
   ok str[0..4] is "abcde"
   ok str[-5..] is "vwxyz"
+
+test "#1722: operator precedence in unbounded slice compilation", ->
+  list = [0..9]
+  n = 2 # some truthy number in `list`
+  arrayEq [0..n], list[..n]
+  arrayEq [0..n], list[..n or 0]
+  arrayEq [0..n], list[..if n then n else 0]
 
 
 # Splicing
@@ -71,6 +80,9 @@ test "unbounded splicing", ->
 
   ary[...3] = [7, 8, 9]
   arrayEq [7, 8, 9, 9, 8, 7], ary
+
+  ary[..] = [1, 2, 3]
+  arrayEq [1, 2, 3], ary
 
 test "splicing with variables as endpoints", ->
   [a, b] = [1, 8]
@@ -114,3 +126,18 @@ test "the return value of a splice literal should be the RHS", ->
   eq (ary[0..] = 3), 3
 
   arrayEq [ary[0..0] = 0], [0]
+
+test "#1723: operator precedence in unbounded splice compilation", ->
+  n = 4 # some truthy number in `list`
+
+  list = [0..9]
+  list[..n] = n
+  arrayEq [n..9], list
+
+  list = [0..9]
+  list[..n or 0] = n
+  arrayEq [n..9], list
+
+  list = [0..9]
+  list[..if n then n else 0] = n
+  arrayEq [n..9], list

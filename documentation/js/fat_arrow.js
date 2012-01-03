@@ -1,10 +1,10 @@
 var Account;
-var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 Account = function(customer, cart) {
+  var _this = this;
   this.customer = customer;
   this.cart = cart;
-  return $('.shopping_cart').bind('click', __bind(function(event) {
-    return this.customer.purchase(this.cart);
-  }, this));
+  return $('.shopping_cart').bind('click', function(event) {
+    return _this.customer.purchase(_this.cart);
+  });
 };

@@ -59,3 +59,6 @@ test "#1106: __proto__ compilation", ->
   object = eq
   @["__proto__"] = true
   ok __proto__
+
+test "reference named hasOwnProperty", ->
+  CoffeeScript.compile 'hasOwnProperty = 0; a = 1'
