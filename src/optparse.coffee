@@ -25,22 +25,33 @@ exports.OptionParser = class OptionParser
   # for interpreting the options object.
   parse: (args) ->
     options = arguments: [], literals: []
-    args    = normalizeArguments args
+    skippingArgument = no
+    originalArgs = args
+    args = normalizeArguments args
     for arg, i in args
+      if skippingArgument
+        skippingArgument = no
+        continue
       if arg is '--'
-        options.literals = args[(i + 1)..]
+        pos = originalArgs.indexOf '--'
+        options.arguments = [originalArgs[1 + pos]]
+        options.literals = originalArgs[(2 + pos)..]
         break
       isOption = !!(arg.match(LONG_FLAG) or arg.match(SHORT_FLAG))
       matchedRule = no
       for rule in @rules
         if rule.shortFlag is arg or rule.longFlag is arg
-          value = if rule.hasArgument then args[i += 1] else true
+          value = if rule.hasArgument
+            skippingArgument = yes
+            args[i + 1]
+          else
+            true
           options[rule.name] = if rule.isList then (options[rule.name] or []).concat value else value
           matchedRule = yes
           break
       throw new Error "unrecognized option: #{arg}" if isOption and not matchedRule
       if not isOption
-        options.arguments = args.slice i
+        options.arguments = originalArgs[(originalArgs.indexOf arg)..]
         break
     options
 
@@ -89,7 +100,7 @@ buildRule = (shortFlag, longFlag, description, options = {}) ->
 # Normalize arguments by expanding merged flags into multiple flags. This allows
 # you to have `-wl` be the same as `--watch --lint`.
 normalizeArguments = (args) ->
-  args = args.slice 0
+  args = args[..]
   result = []
   for arg in args
     if match = arg.match MULTI_FLAG

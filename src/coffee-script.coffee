@@ -10,6 +10,7 @@ fs               = require 'fs'
 path             = require 'path'
 {Lexer,RESERVED} = require './lexer'
 {parser}         = require './parser'
+vm               = require 'vm'
 
 # TODO: Remove registerExtension when fully deprecated.
 if require.extensions
@@ -20,7 +21,7 @@ else if require.registerExtension
   require.registerExtension '.coffee', (content) -> compile content
 
 # The current CoffeeScript version number.
-exports.VERSION = '1.1.3-pre'
+exports.VERSION = '1.2.1-pre'
 
 # Words that cannot be used as identifiers in CoffeeScript code
 exports.RESERVED = RESERVED
@@ -31,8 +32,9 @@ exports.helpers = require './helpers'
 # Compile a string of CoffeeScript code to JavaScript, using the Coffee/Jison
 # compiler.
 exports.compile = compile = (code, options = {}) ->
+  {merge} = exports.helpers
   try
-    (parser.parse lexer.tokenize code).compile options
+    (parser.parse lexer.tokenize code).compile merge {}, options
   catch err
     err.message = "In #{options.filename}, #{err.message}" if options.filename
     throw err
@@ -43,7 +45,7 @@ exports.tokens = (code, options) ->
 
 # Parse a string of CoffeeScript code or an array of lexed tokens, and
 # return the AST. You can then compile it by calling `.compile()` on the root,
-# or traverse it by using `.traverse()` with a callback.
+# or traverse it by using `.traverseChildren()` with a callback.
 exports.nodes = (source, options) ->
   if typeof source is 'string'
     parser.parse lexer.tokenize source, options
@@ -63,9 +65,7 @@ exports.run = (code, options) ->
   mainModule.moduleCache and= {}
 
   # Assign paths for node_modules loading
-  if process.binding('natives').module
-    {Module} = require 'module'
-    mainModule.paths = Module._nodeModulePaths path.dirname options.filename
+  mainModule.paths = require('module')._nodeModulePaths path.dirname options.filename
 
   # Compile.
   if path.extname(mainModule.filename) isnt '.coffee' or require.extensions
@@ -77,22 +77,24 @@ exports.run = (code, options) ->
 # The CoffeeScript REPL uses this to run the input.
 exports.eval = (code, options = {}) ->
   return unless code = code.trim()
-  {Script} = require 'vm'
+  Script = vm.Script
   if Script
-    sandbox = Script.createContext()
-    sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
     if options.sandbox?
-      if options.sandbox instanceof sandbox.constructor
+      if options.sandbox instanceof Script.createContext().constructor
         sandbox = options.sandbox
       else
+        sandbox = Script.createContext()
         sandbox[k] = v for own k, v of options.sandbox
+      sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
+    else
+      sandbox = global
     sandbox.__filename = options.filename || 'eval'
     sandbox.__dirname  = path.dirname sandbox.__filename
     # define module/require only if they chose not to specify their own
-    unless sandbox.module or sandbox.require
+    unless sandbox isnt global or sandbox.module or sandbox.require
       Module = require 'module'
       sandbox.module  = _module  = new Module(options.modulename || 'eval')
-      sandbox.require = _require = (path) -> Module._load path, _module
+      sandbox.require = _require = (path) ->  Module._load path, _module, true
       _module.filename = sandbox.__filename
       _require[r] = require[r] for r in Object.getOwnPropertyNames require when r isnt 'paths'
       # use the same hack node currently uses for their own REPL
@@ -102,10 +104,10 @@ exports.eval = (code, options = {}) ->
   o[k] = v for own k, v of options
   o.bare = on # ensure return value
   js = compile code, o
-  if Script
-    Script.runInContext js, sandbox
+  if sandbox is global
+    vm.runInThisContext js
   else
-    eval js
+    vm.runInContext js, sandbox
 
 # Instantiate a Lexer for our use here.
 lexer = new Lexer

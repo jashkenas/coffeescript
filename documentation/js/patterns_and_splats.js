@@ -1,5 +1,5 @@
-var close, contents, open, tag, _i, _ref;
-var __slice = Array.prototype.slice;
+var close, contents, open, tag, _i, _ref,
+  __slice = Array.prototype.slice;
 
 tag = "<impossible>";
 

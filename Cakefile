@@ -5,10 +5,16 @@ CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 
 # ANSI Terminal Colors.
-bold  = '\033[0;1m'
-red   = '\033[0;31m'
-green = '\033[0;32m'
-reset = '\033[0m'
+enableColors = no
+unless process.platform is 'win32'
+  enableColors = not process.env.NODE_DISABLE_COLORS
+
+bold = red = green = reset = ''
+if enableColors
+  bold  = '\033[0;1m'
+  red   = '\033[0;31m'
+  green = '\033[0;32m'
+  reset = '\033[0m'
 
 # Built file header.
 header = """
@@ -98,11 +104,19 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
       };
     """
   code = """
-    this.CoffeeScript = function() {
-      function require(path){ return require[path]; }
-      #{code}
-      return require['./coffee-script']
-    }()
+    (function(root) {
+      var CoffeeScript = function() {
+        function require(path){ return require[path]; }
+        #{code}
+        return require['./coffee-script'];
+      }();
+
+      if (typeof define === 'function' && define.amd) {
+        define(function() { return CoffeeScript; });
+      } else { 
+        root.CoffeeScript = CoffeeScript; 
+      }
+    }(this));
   """
   unless process.env.MINIFY is 'false'
     {parser, uglify} = require 'uglify-js'
@@ -155,19 +169,9 @@ runTests = (CoffeeScript) ->
   passedTests = 0
   failures    = []
 
-  # Make "global" reference available to tests
-  global.global = global
-
-  # Mix in the assert module globally, to make it available for tests.
-  addGlobal = (name, func) ->
-    global[name] = ->
-      passedTests += 1
-      func arguments...
-
-  addGlobal name, func for name, func of require 'assert'
+  global[name] = func for name, func of require 'assert'
 
   # Convenience aliases.
-  global.eq = global.strictEqual
   global.CoffeeScript = CoffeeScript
 
   # Our test helper function for delimiting different test cases.
@@ -175,26 +179,29 @@ runTests = (CoffeeScript) ->
     try
       fn.test = {description, currentFile}
       fn.call(fn)
+      ++passedTests
     catch e
       e.description = description if description?
       e.source      = fn.toString() if fn.toString?
       failures.push filename: currentFile, error: e
 
-  # A recursive functional equivalence helper; uses egal for testing equivalence.
   # See http://wiki.ecmascript.org/doku.php?id=harmony:egal
-  arrayEqual = (a, b) ->
+  egal = (a, b) ->
     if a is b
-      # 0 isnt -0
       a isnt 0 or 1/a is 1/b
-    else if a instanceof Array and b instanceof Array
-      return no unless a.length is b.length
-      return no for el, idx in a when not arrayEqual el, b[idx]
-      yes
     else
-      # NaN is NaN
       a isnt a and b isnt b
 
-  global.arrayEq = (a, b, msg) -> ok arrayEqual(a,b), msg
+  # A recursive functional equivalence helper; uses egal for testing equivalence.
+  arrayEgal = (a, b) ->
+    if egal a, b then yes
+    else if a instanceof Array and b instanceof Array
+      return no unless a.length is b.length
+      return no for el, idx in a when not arrayEgal el, b[idx]
+      yes
+
+  global.eq      = (a, b, msg) -> ok egal(a, b), msg
+  global.arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg
 
   # When all the tests have run, collect and print errors.
   # If a stacktrace is available, output the compiled function source.

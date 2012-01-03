@@ -48,7 +48,7 @@ exports.Lexer = class Lexer
     # short-circuiting if any of them succeed. Their order determines precedence:
     # `@literalToken` is the fallback catch-all.
     i = 0
-    while @chunk = code.slice i
+    while @chunk = code[i..]
       i += @identifierToken() or
            @commentToken()    or
            @whitespaceToken() or
@@ -112,7 +112,7 @@ exports.Lexer = class Lexer
         id  = new String id
         id.reserved = yes
       else if id in RESERVED
-        @error "reserved word \"#{word}\""
+        @error "reserved word \"#{id}\""
 
     unless forcedIdentifier
       id  = COFFEE_ALIAS_MAP[id] if id in COFFEE_ALIASES
@@ -121,7 +121,7 @@ exports.Lexer = class Lexer
         when '==', '!='                           then 'COMPARE'
         when '&&', '||'                           then 'LOGIC'
         when 'true', 'false', 'null', 'undefined' then 'BOOL'
-        when 'break', 'continue', 'debugger'      then 'STATEMENT'
+        when 'break', 'continue'                  then 'STATEMENT'
         else  tag
 
     @token tag, id
@@ -133,8 +133,11 @@ exports.Lexer = class Lexer
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
     number = match[0]
+    lexedLength = number.length
+    if binaryLiteral = /0b([01]+)/.exec number
+      number = (parseInt binaryLiteral[1], 2).toString()
     @token 'NUMBER', number
-    number.length
+    lexedLength
 
   # Matches strings, including multi-line strings. Ensures that quotation marks
   # are balanced within the string's contents, and within nested interpolations.
@@ -146,7 +149,7 @@ exports.Lexer = class Lexer
       when '"'
         return 0 unless string = @balancedString @chunk, '"'
         if 0 < string.indexOf '#{', 1
-          @interpolateString string.slice 1, -1
+          @interpolateString string[1...-1]
         else
           @token 'STRING', @escapeLines string
       else
@@ -182,7 +185,7 @@ exports.Lexer = class Lexer
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
     return 0 unless @chunk.charAt(0) is '`' and match = JSTOKEN.exec @chunk
-    @token 'JS', (script = match[0]).slice 1, -1
+    @token 'JS', (script = match[0])[1...-1]
     script.length
 
   # Matches regular expression literals. Lexing regular expressions is difficult
@@ -198,11 +201,11 @@ exports.Lexer = class Lexer
     prev = last @tokens
     return 0 if prev and (prev[0] in (if prev.spaced then NOT_REGEX else NOT_SPACED_REGEX))
     return 0 unless match = REGEX.exec @chunk
-    [regex] = match
-    if regex.match /^\/\*/ then @error 'regular expressions cannot begin with `*`'
+    [match, regex, flags] = match
+    if regex[..1] is '/*' then @error 'regular expressions cannot begin with `*`'
     if regex is '//' then regex = '/(?:)/'
-    @token 'REGEX', regex
-    regex.length
+    @token 'REGEX', "#{regex}#{flags}"
+    match.length
 
   # Matches multiline extended regular expressions.
   heregexToken: (match) ->
@@ -259,7 +262,7 @@ exports.Lexer = class Lexer
       diff = size - @indent + @outdebt
       @token 'INDENT', diff
       @indents.push diff
-      @ends   .push 'OUTDENT'
+      @ends.push 'OUTDENT'
       @outdebt = @indebt = 0
     else
       @indebt = 0
@@ -332,7 +335,7 @@ exports.Lexer = class Lexer
         prev[0] = 'COMPOUND_ASSIGN'
         prev[1] += '='
         return value.length
-    if value is ';'             
+    if value is ';'
      @seenFor = no
      tag = 'TERMINATOR'
     else if value in MATH            then tag = 'MATH'
@@ -404,22 +407,26 @@ exports.Lexer = class Lexer
   # contents of the string. This method allows us to have strings within
   # interpolations within strings, ad infinitum.
   balancedString: (str, end) ->
+    continueCount = 0
     stack = [end]
     for i in [1...str.length]
+      if continueCount
+        --continueCount
+        continue
       switch letter = str.charAt i
         when '\\'
-          i++
+          ++continueCount
           continue
         when end
           stack.pop()
           unless stack.length
-            return str.slice 0, i + 1
+            return str[0..i]
           end = stack[stack.length - 1]
           continue
       if end is '}' and letter in ['"', "'"]
         stack.push end = letter
-      else if end is '}' and letter is '/' and match = (HEREGEX.exec(str.slice i) or REGEX.exec(str.slice i))
-        i += match[0].length - 1
+      else if end is '}' and letter is '/' and match = (HEREGEX.exec(str[i..]) or REGEX.exec(str[i..]))
+        continueCount += match[0].length - 1
       else if end is '}' and letter is '{'
         stack.push end = '}'
       else if end is '"' and prev is '#' and letter is '{'
@@ -445,22 +452,22 @@ exports.Lexer = class Lexer
         i += 1
         continue
       unless letter is '#' and str.charAt(i+1) is '{' and
-             (expr = @balancedString str.slice(i + 1), '}')
+             (expr = @balancedString str[i + 1..], '}')
         continue
-      tokens.push ['NEOSTRING', str.slice(pi, i)] if pi < i
-      inner = expr.slice(1, -1)
+      tokens.push ['NEOSTRING', str[pi...i]] if pi < i
+      inner = expr[1...-1]
       if inner.length
         nested = new Lexer().tokenize inner, line: @line, rewrite: off
         nested.pop()
         nested.shift() if nested[0]?[0] is 'TERMINATOR'
         if len = nested.length
           if len > 1
-            nested.unshift ['(', '(']
-            nested.push    [')', ')']
+            nested.unshift ['(', '(', @line]
+            nested.push    [')', ')', @line]
           tokens.push ['TOKENS', nested]
       i += expr.length
       pi = i + 1
-    tokens.push ['NEOSTRING', str.slice pi] if i > pi < str.length
+    tokens.push ['NEOSTRING', str[pi..]] if i > pi < str.length
     return tokens if regex
     return @token 'STRING', '""' unless tokens.length
     tokens.unshift ['', ''] unless tokens[0][0] is 'NEOSTRING'
@@ -508,7 +515,7 @@ exports.Lexer = class Lexer
   unfinished: ->
     LINE_CONTINUER.test(@chunk) or
     @tag() in ['\\', '.', '?.', 'UNARY', 'MATH', '+', '-', 'SHIFT', 'RELATION'
-               'COMPARE', 'LOGIC', 'COMPOUND_ASSIGN', 'THROW', 'EXTENDS']
+               'COMPARE', 'LOGIC', 'THROW', 'EXTENDS']
 
   # Converts newlines for string literals.
   escapeLines: (str, heredoc) ->
@@ -521,9 +528,9 @@ exports.Lexer = class Lexer
       if contents in ['\n', quote] then contents else match
     body = body.replace /// #{quote} ///g, '\\$&'
     quote + @escapeLines(body, heredoc) + quote
-    
+
   # Throws a syntax error on the current `@line`.
-  error: (message) -> 
+  error: (message) ->
     throw SyntaxError "#{message} on line #{ @line + 1}"
 
 # Constants
@@ -578,6 +585,7 @@ IDENTIFIER = /// ^
 
 NUMBER     = ///
   ^ 0x[\da-f]+ |                              # hex
+  ^ 0b[01]+ |                              # binary
   ^ \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
 ///i
 
@@ -607,7 +615,7 @@ JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
 # Regex-matching-regexes.
 REGEX = /// ^
-  / (?! [\s=] )       # disallow leading whitespace or equals signs
+  (/ (?! [\s=] )   # disallow leading whitespace or equals signs
   [^ [ / \n \\ ]*  # every other thing
   (?:
     (?: \\[\s\S]   # anything escaped
@@ -617,7 +625,7 @@ REGEX = /// ^
          ]
     ) [^ [ / \n \\ ]*
   )*
-  / [imgy]{0,4} (?!\w)
+  /) ([imgy]{0,4}) (?!\w)
 ///
 
 HEREGEX      = /// ^ /{3} ([\s\S]+?) /{3} ([imgy]{0,4}) (?!\w) ///

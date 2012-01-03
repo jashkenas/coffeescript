@@ -1,4 +1,4 @@
-var course, courses, dish, food, foods, _i, _j, _len, _len2, _len3, _ref;
+var courses, dish, food, foods, i, _i, _j, _len, _len2, _len3, _ref;
 
 _ref = ['toast', 'cheese', 'wine'];
 for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -6,11 +6,11 @@ for (_i = 0, _len = _ref.length; _i < _len; _i++) {
   eat(food);
 }
 
-courses = ['salad', 'entree', 'dessert'];
+courses = ['greens', 'caviar', 'truffles', 'roast', 'cake'];
 
-for (course = 0, _len2 = courses.length; course < _len2; course++) {
-  dish = courses[course];
-  menu(course + 1, dish);
+for (i = 0, _len2 = courses.length; i < _len2; i++) {
+  dish = courses[i];
+  menu(i + 1, dish);
 }
 
 foods = ['broccoli', 'spinach', 'chocolate'];

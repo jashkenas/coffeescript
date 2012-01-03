@@ -44,7 +44,8 @@
       </div>
       <div class="contents menu">
         <a href="#overview">Overview</a>
-        <a href="#installation">Installation and Usage</a>
+        <a href="#installation">Installation</a>
+        <a href="#usage">Usage</a>
         <a href="#language">Language Reference</a>
         <a href="#literals">Literals: Functions, Objects and Arrays</a>
         <a href="#lexical_scope">Lexical Scoping and Variable Safety</a>
@@ -65,7 +66,7 @@
         <a href="#cake">Cake, and Cakefiles</a>
         <a href="#scripts">"text/coffeescript" Script Tags</a>
         <a href="#resources">Books, Screencasts, Examples and Resources</a>
-        <a href="#change_log">Change Log</a>
+        <a href="#changelog">Change Log</a>
       </div>
     </div>
     <div class="navigation try">
@@ -115,7 +116,7 @@
 
     <p>
       <b>CoffeeScript is a little language that compiles into JavaScript.</b> Underneath
-      all of those embarrassing braces and semicolons, JavaScript has always had
+      all those awkward braces and semicolons, JavaScript has always had
       a gorgeous object model at its heart. CoffeeScript is an attempt to expose
       the good parts of JavaScript in a simple way.
     </p>
@@ -124,15 +125,16 @@
       The golden rule of CoffeeScript is: <i>"It's just JavaScript"</i>. The code
       compiles one-to-one into the equivalent JS, and there is
       no interpretation at runtime. You can use any existing JavaScript library
-      seamlessly (and vice-versa). The compiled output is readable and pretty-printed,
-      passes through <a href="http://www.javascriptlint.com/">JavaScript Lint</a>
+      seamlessly from CoffeeScript (and vice-versa). The compiled output is 
+      readable and pretty-printed, passes through 
+      <a href="http://www.javascriptlint.com/">JavaScript Lint</a>
       without warnings, will work in every JavaScript implementation, and tends
       to run as fast or faster than the equivalent handwritten JavaScript.
     </p>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/1.1.2">1.1.2</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.2.0">1.2.0</a>
     </p>
 
     <h2>
@@ -146,7 +148,7 @@
 
     <h2>
       <span id="installation" class="bookmark"></span>
-      Installation and Usage
+      Installation
     </h2>
 
     <p>
@@ -188,12 +190,14 @@ sudo bin/cake install</pre>
 
     <p>
       If installing on Ubuntu or Debian,
-      <a href="http://opinionated-programmer.com/2010/12/installing-coffeescript-on-debian-or-ubuntu/">be
-      careful not to use the existing out-of-date package</a>. If installing on
-      Windows, your best bet is probably to run Node.js under Cygwin. If you'd
-      just like to experiment, you can try the
-      <a href="https://github.com/alisey/CoffeeScript-Compiler-for-Windows">CoffeeScript Compiler For Windows</a>.
+      <a href="http://opinionatedprogrammer.com/2010/12/installing-coffeescript-on-debian-or-ubuntu/">be
+      careful not to use the existing out-of-date package</a>.
     </p>
+
+    <h2>
+      <span id="usage" class="bookmark"></span>
+      Usage
+    </h2>
 
     <p>
       Once installed, you should have access to the <tt>coffee</tt> command,
@@ -214,8 +218,7 @@ sudo bin/cake install</pre>
         <td width="25%"><code>-i, --interactive</code></td>
         <td>
           Launch an interactive CoffeeScript session to try short snippets.
-          More pleasant if wrapped with
-          <a href="http://utopia.knoware.nl/~hlub/uck/rlwrap/rlwrap.html">rlwrap</a>.
+          Identical to calling <tt>coffee</tt> with no arguments.
         </td>
       </tr>
       <tr>
@@ -236,8 +239,8 @@ sudo bin/cake install</pre>
       <tr>
         <td><code>-w, --watch</code></td>
         <td>
-          Watch the modification times of the coffee-scripts, recompiling as
-          soon as a change occurs.
+          Watch files for changes, rerunning the specified command when any
+          file is updated.
         </td>
       </tr>
       <tr>
@@ -282,8 +285,8 @@ sudo bin/cake install</pre>
       <tr>
         <td><code>-b, --bare</code></td>
         <td>
-          Compile the JavaScript without the top-level function safety wrapper.
-          (Used for CoffeeScript as a Node.js module.)
+          Compile the JavaScript without the 
+          <a href="#lexical_scope">top-level function safety wrapper</a>.
         </td>
       </tr>
       <tr>
@@ -324,9 +327,9 @@ Expressions
 
     <ul>
       <li>
-        Compile a directory tree of <tt>.coffee</tt> files into a parallel
-        tree of <tt>.js</tt>, in <tt>lib</tt>:<br />
-        <tt>coffee -o lib/ -c src/</tt>
+        Compile a directory tree of <tt>.coffee</tt> files in <tt>src</tt> into a parallel
+        tree of <tt>.js</tt> files in <tt>lib</tt>:<br />
+        <tt>coffee --compile --output lib/ src/</tt>
       </li>
       <li>
         Watch a file for changes, and recompile it every time the file is saved:<br />
@@ -339,6 +342,10 @@ Expressions
       <li>
         Print out the compiled JS from a one-liner:<br />
         <tt>coffee -bpe "alert i for i in [0..10]"</tt>
+      </li>
+      <li>
+        All together now, watch and recompile an entire project as you work on it:<br />
+        <tt>coffee -o lib/ -cw src/</tt>
       </li>
       <li>
         Start the CoffeeScript REPL:<br />
@@ -492,7 +499,7 @@ Expressions
     <%= code_for('array_comprehensions') %>
     <p>
       Comprehensions should be able to handle most places where you otherwise
-      would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>:
+      would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>, for example:
       <tt>shortNames = (name for name in list when name.length &lt; 5)</tt><br />
       If you know the start and end of your loop, or would like to step through
       in fixed-size increments, you can use a range to specify the start and
@@ -628,7 +635,7 @@ Expressions
       are the same as boolean <tt>true</tt>, while <tt>off</tt> and <tt>no</tt> are boolean <tt>false</tt>.
     </p>
     <p>
-      For single-line statements, <tt>unless</tt> can be used as the inverse of <tt>if</tt>.
+      <tt>unless</tt> can be used as the inverse of <tt>if</tt>.
     </p>
     <p>
       As a shortcut for <tt>this.property</tt>, you can use <tt>@property</tt>.
@@ -710,6 +717,7 @@ Expressions
     </p>
     <p>
       Constructor functions are named, to better support helpful stack traces.
+      In the first class in the example below, <tt>this.constructor.name is "Animal"</tt>.
     </p>
     <%= code_for('classes', true) %>
     <p>
@@ -776,9 +784,14 @@ Expressions
     </p>
     <%= code_for('fat_arrow') %>
     <p>
-      If we had used <tt>-></tt> in the callback above, <tt>@customer</tt> would
+      If we had used <tt>-&gt;</tt> in the callback above, <tt>@customer</tt> would
       have referred to the undefined "customer" property of the DOM element,
       and trying to call <tt>purchase()</tt> on it would have raised an exception.
+    </p>
+    <p>
+      When used in a class definition, methods declared with the fat arrow will
+      be automatically bound to each instance of the class when the instance is
+      constructed.
     </p>
 
     <p>
@@ -931,11 +944,11 @@ Expressions
 
     <h2>
       <span id="resources" class="bookmark"></span>
-      Books and Screencasts
+      Books
     </h2>
 
     <p>
-      There are a number of excellent books and screencasts to help you get
+      There are a number of excellent resources to help you get
       started with CoffeeScript, some of which are freely available online.
     </p>
 
@@ -961,6 +974,17 @@ Expressions
         a fast-paced multiplayer word game, writing both the client-side and Node.js
         portions in CoffeeScript.
       </li>
+    </ul>
+    
+    <h2>
+      Screencasts
+    </h2>
+    
+    <ul>
+      <li>
+        <a href="http://coffeescript.codeschool.com">A Sip of CoffeeScript</a> is a <a href="http://www.codeschool.com">Code School Course</a>
+        which combines 6 screencasts with in-browser coding to make learning fun.  The first level is free to try out.
+      </li>
       <li>
         <a href="http://peepcode.com/products/coffeescript">Meet CoffeeScript</a>
         is a 75-minute long screencast by <a href="http://peepcode.com/">PeepCode</a>.
@@ -978,8 +1002,18 @@ Expressions
     <h2>
       Examples
     </h2>
+    
+    <p>
+      The <a href="https://github.com/languages/coffeescript">best list of 
+      open-source CoffeeScript examples</a> can be found on GitHub. But just
+      to throw out few more:
+    </p>
 
     <ul>
+      <li>
+        <b>github</b>'s <a href="http://hubot.github.com/">Hubot</a>,
+        a friendly IRC robot that can perform any number of useful and useless tasks.
+      </li>
       <li>
         <b>sstephenson</b>'s <a href="http://pow.cx/">Pow</a>,
         a zero-configuration Rack server, with comprehensive annotated source.
@@ -995,7 +1029,7 @@ Expressions
       </li>
       <li>
         <b>assaf</b>'s <a href="http://zombie.labnotes.org/">Zombie.js</a>,
-        A headless, full-stack, faux-browser testing library for Node.js.
+        a headless, full-stack, faux-browser testing library for Node.js.
       </li>
       <li>
         <b>jashkenas</b>' <a href="documentation/docs/underscore.html">Underscore.coffee</a>, a port
@@ -1068,9 +1102,79 @@ Expressions
     </p>
 
     <h2>
-      <span id="change_log" class="bookmark"></span>
+      <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">
+        <a href="https://github.com/jashkenas/coffee-script/compare/1.1.3...1.2.0">1.2.0</a>
+        <span class="timestamp"> &ndash; <small>Dec. 18, 2011</small></span>
+      </b>
+      <ul>
+        <li>
+          Multiple improvements to <tt>coffee --watch</tt> and <tt>--join</tt>.
+          You may now use both together, as well as add and remove
+          files and directories within a <tt>--watch</tt>'d folder.
+        </li>
+        <li>
+          The <tt>throw</tt> statement can now be used as part of an expression.
+        </li>
+        <li>
+          Block comments at the top of the file will now appear outside of the
+          safety closure wrapper.
+        </li>
+        <li>
+          Fixed a number of minor 1.1.3 regressions having to do with trailing
+          operators and unfinished lines, and a more major 1.1.3 regression that
+          caused bound functions <i>within</i> bound class functions to have the incorrect
+          <tt>this</tt>.
+        </li>
+      </ul>
+    </p>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">
+        <a href="https://github.com/jashkenas/coffee-script/compare/1.1.2...1.1.3">1.1.3</a>
+        <span class="timestamp"> &ndash; <small>Nov. 8, 2011</small></span>
+      </b>
+      <ul>
+        <li>
+          Ahh, whitespace. CoffeeScript's compiled JS now tries to space things
+          out and keep it readable, as you can see in the examples on this page.
+        </li>
+        <li>
+          You can now call <tt>super</tt> in class level methods in class bodies, 
+          and bound class methods now preserve their correct context.
+        </li>
+        <li>
+          JavaScript has always supported octal numbers <tt>010 is 8</tt>,
+          and hexadecimal numbers <tt>0xf is 15</tt>, but CoffeeScript now
+          also supports binary numbers: <tt>0b10 is 2</tt>.
+        </li>
+        <li>
+          The CoffeeScript module has been nested under a subdirectory to make 
+          it easier to <tt>require</tt> individual components separately, without
+          having to use <b>npm</b>. For example, after adding the CoffeeScript
+          folder to your path: <tt>require('coffee-script/lexer')</tt>
+        </li>
+        <li>
+          There's a new "link" feature in Try CoffeeScript on this webpage. Use
+          it to get a shareable permalink for your example script.
+        </li>
+        <li>
+          The <tt>coffee --watch</tt> feature now only works on Node.js 0.6.0 
+          and higher, but now also works properly on Windows.
+        </li>
+        <li>
+          Lots of small bug fixes from 
+          <b><a href="https://github.com/michaelficarra">@michaelficarra</a></b>,
+          <b><a href="https://github.com/geraldalewis">@geraldalewis</a></b>,
+          <b><a href="https://github.com/satyr">@satyr</a></b>, and
+          <b><a href="https://github.com/trevorburnham">@trevorburnham</a></b>.
+        </li>
+      </ul>
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">
