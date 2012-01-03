@@ -388,7 +388,7 @@ atest 'expressions -- addition (2)', (cb) ->
   y = (await slowAdd 10, 20, defer _) + (await slowAdd 30, 40, defer _)
   cb(y == 100, {})
   
-atest 'chaining', (cb) ->
+atest 'expressions - chaining', (cb) ->
   id = "image data"
   class Img
     render : -> id
@@ -397,6 +397,20 @@ atest 'chaining', (cb) ->
     cb new Img
   x = (await loadImage "test.png", defer _).render()
   cb(x is id, {})
+  
+atest 'expressions - call args', (cb) ->
+  slowAdd = (a,b,autocb) ->
+    await delay defer()
+    a+b
+  x = await slowAdd 3, (await slowAdd 3, 4, defer _), defer _
+  cb(x is 10, {})
+  
+atest 'expressions - call args (2)', (cb) ->
+  slowAdd = (a,b,autocb) ->
+    await delay defer()
+    a+b
+  x = await slowAdd (await slowAdd 1, 2, defer _), (await slowAdd 3, 4, defer _), defer _
+  cb(x is 10, {})
 
 #atest 'arrays and objects', (cb) ->
 #  id = "image data"

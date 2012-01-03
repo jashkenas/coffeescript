@@ -45,8 +45,7 @@ exports.Base = class Base
     @tameGotCpsSplitFlag = false
     @tameCpsPivotFlag    = false
     @tameHasAutocbFlag   = false
-
-
+    @tameParentAwait     = null
 
   # Common logic for determining whether to wrap this node in a closure before
   # compiling it, or to compile directly. We need to wrap if this node is a
@@ -170,6 +169,7 @@ exports.Base = class Base
     extras += "L" if @tameLoopFlag
     extras += "P" if @tameCpsPivotFlag
     extras += "C" if @tameHasAutocbFlag
+    extras += "D" if @tameParentAwait
     if extras.length
       extras = " (" + extras + ")"
     tree = '\n' + idt + name
@@ -238,21 +238,21 @@ exports.Base = class Base
   #
   # AST Walking Routines for CPS Pivots, etc.
   #
-  #  There are five passes:
+  #  There are three passes:
   #    3. Find await's and trace upward.
   #    4. Find loops found in #1, and flood downward
   #    5. Find break/continue found in #2, and trace upward
   #
-
 
   # tameWalkAst
   #   Walk the AST looking for taming. Mark a node as with tame flags
   #   if any of its children are tamed, but don't cross scope boundary
   #   when considering the children.
   #
-  tameWalkAst : ->
+  tameWalkAst : (p) ->
+    @tameParentAwait = p
     for child in @flattenChildren()
-      @tameNodeFlag = true if child.tameWalkAst()
+      @tameNodeFlag = true if child.tameWalkAst p
     @tameNodeFlag
 
   # tameWalkAstLoops
@@ -315,7 +315,8 @@ exports.Base = class Base
 
   tameNestPrequelBlock: (bb) ->
     rv = new TameReturnValue()
-    @tamePrequels.push { block : bb, retval : rv }
+    obj = @tameParentAwait || this
+    obj.tamePrequels.push { block : bb, retval : rv }
     rv
 
   isStatement     : NO
@@ -599,7 +600,7 @@ exports.Block = class Block extends Base
   # Perform all steps of the Tame transform
   tameTransform : ->
     return this unless @tameGo()
-    @tameWalkAst()
+    @tameWalkAst null
     @tameAddRuntime() if @tameNeedsRuntime() and not @tameFindRequire()
     @tameWalkAstLoops(false)
     @tameWalkCpsPivots()
@@ -1633,12 +1634,13 @@ exports.Code = class Code extends Base
 
   # we are taming as a feature of all of our children.  However, if we
   # are tamed, it's not the case that our parent is tamed!
-  tameWalkAst : ->
-    @tameNodeFlag = true if super()
+  tameWalkAst : (p) ->
+    @tameParentAwait = p
+    @tameNodeFlag = true if super null
     false
 
   tameWalkAstLoops : (flood) ->
-    @tameLoopFlag = true if super(false)
+    @tameLoopFlag = true if super false
     false
 
   tameWalkCpsPivots: ->
@@ -2221,9 +2223,11 @@ exports.Await = class Await extends Base
   # We still need to walk our children to see if there are any embedded
   # function which might also be tamed.  But we're always going to report
   # to our parent that we are tamed, since we are!
-  tameWalkAst : ->
-    super()
-    @tameNodeFlag = not @parent
+  tameWalkAst : (p) ->
+    p = p || this
+    @tameParentAwait = p
+    super p
+    @tameNodeFlag = true
 
 #### tameRequire
 #
