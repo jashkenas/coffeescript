@@ -17,6 +17,23 @@ NO      = -> no
 THIS    = -> this
 NEGATE  = -> @negated = not @negated; this
 
+exports.Location = class Location
+  @setCurrentFile: (currentFile) -> 
+    Location.currentFile = currentFile
+    
+  constructor: (jisonLocation) ->
+    @firstLine = jisonLocation.first_line
+    @lastLine = jisonLocation.last_line
+    @file = Location.currentFile || "unknown"
+    
+  toString: () ->
+    if @firstLine == @lastLine
+      "#{@file}: #{@firstLine+1}: "
+    else
+      "#{@file}: #{@firstLine+1}-#{@lastLine+1}: "
+
+  
+
 #### Base
 
 # The **Base** is the abstract base class for all nodes in the syntax tree.
@@ -29,6 +46,8 @@ NEGATE  = -> @negated = not @negated; this
 # being requested by the surrounding function), information about the current
 # scope, and indentation level.
 exports.Base = class Base
+  
+  setLocation: (@location) -> this
 
   # Common logic for determining whether to wrap this node in a closure before
   # compiling it, or to compile directly. We need to wrap if this node is a
@@ -108,7 +127,10 @@ exports.Base = class Base
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   toString: (idt = '', name = @constructor.name) ->
-    tree = '\n' + idt + name
+    if @location
+      tree = '\n' + idt + @location + name
+    else
+      tree = '\n' + idt + name
     tree += '?' if @soak
     @eachChild (node) -> tree += node.toString idt + TAB
     tree
