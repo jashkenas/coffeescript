@@ -29,12 +29,30 @@ unless process.platform is 'win32'
 error = (err) ->
   stdout.write (err.stack or err.toString()) + '\n'
 
-# Create the REPL by listening to **stdin**.
-if readline.createInterface.length < 3
-  repl = readline.createInterface stdin, autocomplete
-  stdin.on 'data', (buffer) -> repl.write buffer
+if stdin.readable
+  # run piped input directly instead of running the REPL
+  pipedInput = ''
+  stdout.write REPL_PROMPT
+  stdin.on 'data', (chunk) ->
+    pipedInput += chunk
+    stdout.write chunk
+  stdin.on 'end', ->
+    stdout.write '\n'
+    try
+      CoffeeScript.eval pipedInput, {
+        filename: 'pipe'
+        modulename: 'pipe'
+      }
+    catch e
+      error e
+  return
 else
-  repl = readline.createInterface stdin, stdout, autocomplete
+  # Create the REPL by listening to **stdin**.
+  if readline.createInterface.length < 3
+    repl = readline.createInterface stdin, autocomplete
+    stdin.on 'data', (buffer) -> repl.write buffer
+  else
+    repl = readline.createInterface stdin, stdout, autocomplete
 
 # Make sure that uncaught exceptions don't kill the REPL.
 process.on 'uncaughtException', error
