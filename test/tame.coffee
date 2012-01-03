@@ -412,20 +412,29 @@ atest 'expressions - call args (2)', (cb) ->
   x = await slowAdd (await slowAdd 1, 2, defer _), (await slowAdd 3, 4, defer _), defer _
   cb(x is 10, {})
 
-#atest 'arrays and objects', (cb) ->
-#  id = "image data"
-#  loadImage = (n, cb) ->
-#    await delay defer()
-#    cb id
-#  arr = [
-#    (await loadImage "file.jpg", defer()),
-#    "another value" ]
-#  obj =
-#    i : (await loadImage "file.jpg", defer())
-#    v : "another value"
-#  cb(arr[0] is id and obj.i is id, {})
-#
-# 
+atest 'arrays and objects', (cb) ->
+  id = "image data"
+  loadImage = (n, cb) ->
+    await delay defer()
+    cb id
+  arr = [
+    (await loadImage "file.jpg", defer _),
+    "another value" ]
+  obj =
+    i : (await loadImage "file.jpg", defer _)
+    v : "another value"
+  cb(arr[0] is id and obj.i is id, {})
+
+atest 'arrays 2', (cb) ->
+  parrot = (n, cb) ->
+    await delay defer()
+    cb n
+  arr = [
+    (await parrot 1, defer _),
+    [ (await parrot 2, defer _),
+      (await parrot 3, defer _) ],
+    (await parrot 4, defer _) ]
+  cb(arr[0] + arr[1][0] + arr[1][1] + arr[2] is 10, {})
 
 atest 'nesting', (cb) ->
   id = "image data"
