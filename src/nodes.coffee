@@ -33,6 +33,21 @@ NULL    = -> new Value new Literal 'null'
 # scope, and indentation level.
 exports.Base = class Base
 
+  constructor: ->
+    @tameContinuationBlock = null
+    @tamePrequels          = []
+
+    # tame AST node flags -- since we make several passes through the
+    # tree setting these bits, we'll actually just flip bits in the nodes,
+    # rather than setting function pointers to YES or NO.
+    @tameLoopFlag        = false
+    @tameNodeFlag        = false
+    @tameGotCpsSplitFlag = false
+    @tameCpsPivotFlag    = false
+    @tameHasAutocbFlag   = false
+
+
+
   # Common logic for determining whether to wrap this node in a closure before
   # compiling it, or to compile directly. We need to wrap if this node is a
   # *statement*, and it's not a *pureStatement*, and we're not at
@@ -60,7 +75,7 @@ exports.Base = class Base
     Closure.wrap(this).compileNode o
 
   # Statements that need CPS translation will have to be split into two
-  # pieces as so.  Note that the tamePrequelBlock is a slight ugly thing
+  # pieces as so.  Note that the tamePrequelsBlock is a slight ugly thing
   # going on.  The problem is this: tameCpsRotate when working on an expression
   # will want to extract the tame part **first** and then write the vanilla
   # expression **second**.  But we're not allowed to change the 'this' node as
@@ -70,17 +85,16 @@ exports.Base = class Base
   compileCps : (o) ->
     @tameGotCpsSplitFlag = true
 
-    if (l = @tamePrequelBlocks.length)
-      console.log "yo"
+    if (l = @tamePrequels.length)
+      me = if @tameWrapContinuation() then (new TameTailCall null, this) else this
       if @tameContinuationBlock
         k = @tameContinuationBlock
-        k.unshift this
+        k.unshift me
       else
-        k = this
+        k = me
         
       while l--
-        console.log "yuck"
-        pb = @tamePrequelBlocks[l]
+        pb = @tamePrequels[l]
         k = CpsCascade.wrap pb.block, k, pb.retval, o
       code = k
       
@@ -161,7 +175,7 @@ exports.Base = class Base
     tree = '\n' + idt + name
     tree += '?' if @soak
     tree += extras
-    for b in @tamePrequelBlocks
+    for b in @tamePrequels
       pidt = idt + TAB
       tree += '\n' + pidt + "Prequel"
       tree += b.block.toString pidt + TAB
@@ -274,10 +288,6 @@ exports.Base = class Base
   # will override these with custom logic, if needed.
   children: []
 
-  # A potential for a nested tame continuation here
-  tameContinuationBlock : null
-  tamePrequelBlocks     : []
-
   # A generic tame AST rotation is just to push down to its children
   tameCpsRotate: ->
     for child in @flattenChildren()
@@ -297,17 +307,15 @@ exports.Base = class Base
 
   tameIsCpsPivot            :     -> @tameCpsPivotFlag
   tameNestContinuationBlock : (b) -> @tameContinuationBlock = b
-  tameHasContinuation       :     -> (!!@tameContinuationBlock or @tamePrequelBlocks.length)
+  tameHasContinuation       :     -> (!!@tameContinuationBlock or @tamePrequels?.length)
   tameCallContinuation      :     ->
+  tameWrapContinuation      :     NO
   tameIsJump                :     NO
   tameIsTamedExpr           :     -> (this not instanceof Code) and @tameNodeFlag
+
   tameNestPrequelBlock: (bb) ->
-    console.log "call with #{bb.toString()}"
     rv = new TameReturnValue()
-    console.log "trv done #{bb.toString()}"
-    @tamePrequelBlocks.push { block : bb, retval : rv }
-    console.log "call done #{bb}"
-    console.log "len: #{@tamePrequelBlocks.length} #{bb.toString()}"
+    @tamePrequels.push { block : bb, retval : rv }
     rv
 
   isStatement     : NO
@@ -316,15 +324,6 @@ exports.Base = class Base
   isChainable     : NO
   isAssignable    : NO
   isLoop          : NO
-
-  # tame AST node flags -- since we make several passes through the
-  # tree setting these bits, we'll actually just flip bits in the nodes,
-  # rather than setting function pointers to YES or NO.
-  tameLoopFlag        : false
-  tameNodeFlag        : false
-  tameGotCpsSplitFlag : false
-  tameCpsPivotFlag    : false
-  tameHasAutocbFlag   : false
 
   unwrap     : THIS
   unfoldSoak : NO
@@ -339,6 +338,7 @@ exports.Base = class Base
 # `if`, `switch`, or `try`, and so on...
 exports.Block = class Block extends Base
   constructor: (nodes) ->
+    super()
     @expressions = compact flatten nodes or []
 
   children: ['expressions']
@@ -614,6 +614,7 @@ exports.Block = class Block extends Base
 # `true`, `false`, `null`...
 exports.Literal = class Literal extends Base
   constructor: (@value) ->
+    super()
 
   makeReturn: ->
     if @isStatement() then this else super
@@ -667,7 +668,9 @@ exports.Literal = class Literal extends Base
 # A `return` is a *pureStatement* -- wrapping it in a closure wouldn't
 # make sense.
 exports.Return = class Return extends Base
-  constructor: (expr, @tameHasAutocbFlag) ->
+  constructor: (expr, auto) ->
+    super()
+    @tameHasAutocbFlag = auto
     @expression = expr if expr and not expr.unwrap().isUndefined
 
   children: ['expression']
@@ -697,6 +700,7 @@ exports.Return = class Return extends Base
 # or vanilla.
 exports.Value = class Value extends Base
   constructor: (base, props, tag) ->
+    super()
     return base if not props and base instanceof Value
     @base       = base
     @properties = props or []
@@ -806,6 +810,7 @@ exports.Value = class Value extends Base
 # at the same position.
 exports.Comment = class Comment extends Base
   constructor: (@comment) ->
+    super()
 
   isStatement:     YES
   makeReturn:      THIS
@@ -821,6 +826,7 @@ exports.Comment = class Comment extends Base
 # calls against the prototype's function of the same name.
 exports.Call = class Call extends Base
   constructor: (variable, @args = [], @soak) ->
+    super()
     @isNew    = false
     @isSuper  = variable is 'super'
     @variable = if @isSuper then null else variable
@@ -954,6 +960,7 @@ exports.Call = class Call extends Base
 # [Closure Library](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.html).
 exports.Extends = class Extends extends Base
   constructor: (@child, @parent) ->
+    super()
 
   children: ['child', 'parent']
 
@@ -967,6 +974,7 @@ exports.Extends = class Extends extends Base
 # an access into the object's prototype.
 exports.Access = class Access extends Base
   constructor: (@name, tag) ->
+    super()
     @name.asKey = yes
     @soak  = tag is 'soak'
 
@@ -983,6 +991,7 @@ exports.Access = class Access extends Base
 # A `[ ... ]` indexed access into an array or object.
 exports.Index = class Index extends Base
   constructor: (@index) ->
+    super()
 
   children: ['index']
 
@@ -1002,6 +1011,7 @@ exports.Range = class Range extends Base
   children: ['from', 'to']
 
   constructor: (@from, @to, tag) ->
+    super()
     @exclusive = tag is 'exclusive'
     @equals = if @exclusive then '' else '='
 
@@ -1118,6 +1128,7 @@ exports.Slice = class Slice extends Base
 # An object literal, nothing fancy.
 exports.Obj = class Obj extends Base
   constructor: (props, @generated = false) ->
+    super()
     @objects = @properties = props or []
 
   children: ['properties']
@@ -1166,6 +1177,7 @@ exports.Obj = class Obj extends Base
 # An array literal.
 exports.Arr = class Arr extends Base
   constructor: (objs) ->
+    super()
     @objects = objs or []
 
   children: ['objects']
@@ -1194,6 +1206,7 @@ exports.Arr = class Arr extends Base
 # list of prototype property assignments.
 exports.Class = class Class extends Base
   constructor: (@variable, @parent, @body = new Block) ->
+    super()
     @boundFuncs = []
     @body.classBody = yes
 
@@ -1334,6 +1347,7 @@ exports.Class = class Class extends Base
 # property of an object -- including within object literals.
 exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options) ->
+    super()
     @param = options and options.param
     @subpattern = options and options.subpattern
     forbidden = (name = @variable.unwrapAll().value) in STRICT_PROSCRIBED
@@ -1495,6 +1509,7 @@ exports.Assign = class Assign extends Base
 # has no *children* -- they're within the inner scope.
 exports.Code = class Code extends Base
   constructor: (params, body, tag) ->
+    super()
     @params  = params or []
     @body    = body or new Block
     @tamegen = tag is 'tamegen'
@@ -1620,7 +1635,8 @@ exports.Code = class Code extends Base
 # as well as be a splat, gathering up a group of parameters into an array.
 exports.Param = class Param extends Base
   constructor: (@name, @value, @splat) ->
-    if name = @name.unwrapAll().value in STRICT_PROSCRIBED
+    super()
+    if name = @name?.unwrapAll().value in STRICT_PROSCRIBED
       throw SyntaxError "parameter name \"#{name}\" is not allowed"
 
   children: ['name', 'value']
@@ -1685,6 +1701,7 @@ exports.Splat = class Splat extends Base
   isAssignable: YES
 
   constructor: (name) ->
+    super()
     @name = if name.compile then name else new Literal name
 
   assigns: (name) ->
@@ -1725,6 +1742,7 @@ exports.Splat = class Splat extends Base
 # flexibility or more speed than a comprehension can provide.
 exports.While = class While extends Base
   constructor: (condition, options) ->
+    super()
     @condition = if options?.invert then condition.invert() else condition
     @guard     = options?.guard
 
@@ -1830,6 +1848,7 @@ exports.While = class While extends Base
 # CoffeeScript operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
   constructor: (op, first, second, flip ) ->
+    super()
     return new In first, second if op is 'in'
     if op is 'do'
       return @generateDo first
@@ -1840,7 +1859,10 @@ exports.Op = class Op extends Base
     @first    = first
     @second   = second
     @flip     = !!flip
+    @tameCallContinuationFlag = false
     return this
+
+  tameWrapContinuation : YES
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
   CONVERSIONS =
@@ -1868,10 +1890,9 @@ exports.Op = class Op extends Base
   isChainable: ->
     @operator in ['<', '>', '>=', '<=', '===', '!==']
 
-  # this is F'ed up!!
-  #tameCpsRotate :  ->
-  #  @first = nv if @first and (nv = @tameCpsExprRotate @first)
-  #  @second = nv if @second and (nv = @tameCpsExprRotate @second)
+  tameCpsRotate :  ->
+    @first = fnv if @first and (fnv = @tameCpsExprRotate @first)
+    @second = snv if @second and (snv = @tameCpsExprRotate @second)
 
   invert: ->
     if @isChainable() and @first.isChainable()
@@ -1975,6 +1996,7 @@ exports.Op = class Op extends Base
 #### In
 exports.In = class In extends Base
   constructor: (@object, @array) ->
+    super()
 
   children: ['object', 'array']
 
@@ -2018,6 +2040,7 @@ exports.In = class In extends Base
 #
 exports.Slot = class Slot extends Base
   constructor : (value, suffix, splat) ->
+    super()
     @value = value
     @suffix = suffix
     @splat = splat
@@ -2028,6 +2051,7 @@ exports.Slot = class Slot extends Base
 
 exports.Defer = class Defer extends Base
   constructor : (args) ->
+    super()
     @slots = (a.toSlot() for a in args)
     @params = []
     @vars = []
@@ -2148,6 +2172,7 @@ exports.Defer = class Defer extends Base
 
 exports.Await = class Await extends Base
   constructor : (@body) ->
+    super()
 
   transform : (o) ->
     body = @body
@@ -2195,6 +2220,7 @@ exports.Await = class Await extends Base
 #
 exports.TameRequire = class TameRequire extends Base
   constructor: (args) ->
+    super()
     @typ = null
     @usage =  "tameRequire takes either 'inline', 'node' or 'none'"
     if args and args.length > 2
@@ -2238,6 +2264,7 @@ exports.TameRequire = class TameRequire extends Base
 # A classic *try/catch/finally* block.
 exports.Try = class Try extends Base
   constructor: (@attempt, @error, @recovery, @ensure) ->
+    super()
 
   children: ['attempt', 'recovery', 'ensure']
 
@@ -2276,6 +2303,7 @@ exports.Try = class Try extends Base
 # Simple node to throw an exception.
 exports.Throw = class Throw extends Base
   constructor: (@expression) ->
+    super()
 
   children: ['expression']
 
@@ -2295,6 +2323,7 @@ exports.Throw = class Throw extends Base
 # table.
 exports.Existence = class Existence extends Base
   constructor: (@expression) ->
+    super()
 
   children: ['expression']
 
@@ -2320,6 +2349,7 @@ exports.Existence = class Existence extends Base
 # Parentheses are a good way to force any statement to become an expression.
 exports.Parens = class Parens extends Base
   constructor: (@body) ->
+    super()
     @body.parens = true
 
   children: ['body']
@@ -2348,6 +2378,8 @@ exports.Parens = class Parens extends Base
 # you can map and filter in a single pass.
 exports.For = class For extends While
   constructor: (body, source) ->
+    super()
+    @condition = null
     {@source, @guard, @step, @name, @index} = source
     @body    = Block.wrap [body]
     @own     = !!source.own
@@ -2536,6 +2568,7 @@ exports.For = class For extends While
 # A JavaScript *switch* statement. Converts into a returnable expression on-demand.
 exports.Switch = class Switch extends Base
   constructor: (@subject, @cases, @otherwise) ->
+    super()
 
   children: ['subject', 'cases', 'otherwise']
 
@@ -2583,6 +2616,7 @@ exports.Switch = class Switch extends Base
 # because ternaries are already proper expressions, and don't need conversion.
 exports.If = class If extends Base
   constructor: (condition, @body, options = {}) ->
+    super()
     @condition = if options.type is 'unless' then condition.invert() else condition
     @elseBody  = null
     @isChain   = false
@@ -2742,9 +2776,10 @@ CpsCascade =
 # to the next continuation
 
 class TameTailCall extends Base
-  constructor : (@func) ->
+  constructor : (@func, val = null) ->
+    super()
     @func = tame.const.k unless @func
-    @value = null
+    @value = val
 
   children : [ 'value' ]
 
@@ -2771,11 +2806,12 @@ class TameTailCall extends Base
 # A variable reference to a deferred computation
 
 class TameReturnValue extends Param
+  @counter : 0
   constructor : () ->
     super null, null, no
 
   bindName : (o) ->
-    l = o.scope.freeVariable tame.const.param, no
+    l = "#{o.scope.freeVariable tame.const.param, no}_#{TameReturnValue.counter++}"
     @name = new Literal l
 
   compile : (o) ->

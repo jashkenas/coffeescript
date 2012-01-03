@@ -373,7 +373,15 @@ atest 'expressions -- pass value of tail calls', (cb) ->
     await adder 5, defer _
   cb(y == 6, {})
 
-atest 'expressions -- addition', (cb) ->
+atest 'expressions -- addition (1)', (cb) ->
+  slowAdd = (a, b, autocb) ->
+    await delay defer()
+    a+b
+  y = 30 + (await slowAdd 30, 40, defer _)
+  cb(y == 100, {})
+
+
+atest 'expressions -- addition (2)', (cb) ->
   slowAdd = (a, b, autocb) ->
     await delay defer()
     a+b
