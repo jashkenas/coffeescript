@@ -29,6 +29,42 @@ unless process.platform is 'win32'
 error = (err) ->
   stdout.write (err.stack or err.toString()) + '\n'
 
+## Autocompletion
+
+# Regexes to match complete-able bits of text.
+ACCESSOR  = /\s*([\w\.]+)(?:\.(\w*))$/
+SIMPLEVAR = /(\w+)$/i
+
+# Returns a list of completions, and the completed text.
+autocomplete = (text) ->
+  completeAttribute(text) or completeVariable(text) or [[], text]
+
+# Attempt to autocomplete a chained dotted attribute: `one.two.three`.
+completeAttribute = (text) ->
+  if match = text.match ACCESSOR
+    [all, obj, prefix] = match
+    try
+      val = Script.runInThisContext obj
+    catch error
+      return
+    completions = getCompletions prefix, Object.getOwnPropertyNames Object val
+    [completions, prefix]
+
+# Attempt to autocomplete an in-scope free variable: `one`.
+completeVariable = (text) ->
+  free = text.match(SIMPLEVAR)?[1]
+  free = "" if text is ""
+  if free?
+    vars = Script.runInThisContext 'Object.getOwnPropertyNames(Object(this))'
+    keywords = (r for r in CoffeeScript.RESERVED when r[..1] isnt '__')
+    possibilities = vars.concat keywords
+    completions = getCompletions free, possibilities
+    [completions, free]
+
+# Return elements of candidates for which `prefix` is a prefix.
+getCompletions = (prefix, candidates) ->
+  (el for el in candidates when el.indexOf(prefix) is 0)
+
 # Create the REPL by listening to **stdin**.
 if readline.createInterface.length < 3
   repl = readline.createInterface stdin, autocomplete
@@ -119,39 +155,3 @@ repl.on 'line', (buffer) ->
 
 repl.setPrompt REPL_PROMPT
 repl.prompt()
-
-## Autocompletion
-
-# Regexes to match complete-able bits of text.
-ACCESSOR  = /\s*([\w\.]+)(?:\.(\w*))$/
-SIMPLEVAR = /(\w+)$/i
-
-# Returns a list of completions, and the completed text.
-autocomplete = (text) ->
-  completeAttribute(text) or completeVariable(text) or [[], text]
-
-# Attempt to autocomplete a chained dotted attribute: `one.two.three`.
-completeAttribute = (text) ->
-  if match = text.match ACCESSOR
-    [all, obj, prefix] = match
-    try
-      val = Script.runInThisContext obj
-    catch error
-      return
-    completions = getCompletions prefix, Object.getOwnPropertyNames Object val
-    [completions, prefix]
-
-# Attempt to autocomplete an in-scope free variable: `one`.
-completeVariable = (text) ->
-  free = text.match(SIMPLEVAR)?[1]
-  free = "" if text is ""
-  if free?
-    vars = Script.runInThisContext 'Object.getOwnPropertyNames(Object(this))'
-    keywords = (r for r in CoffeeScript.RESERVED when r[..1] isnt '__')
-    possibilities = vars.concat keywords
-    completions = getCompletions free, possibilities
-    [completions, free]
-
-# Return elements of candidates for which `prefix` is a prefix.
-getCompletions = (prefix, candidates) ->
-  (el for el in candidates when el.indexOf(prefix) is 0)
