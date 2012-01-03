@@ -10,6 +10,9 @@ readline     = require 'readline'
 {inspect}    = require 'util'
 {Script}     = require 'vm'
 Module       = require 'module'
+fs           = require 'fs'
+path         = require 'path'
+os           = require 'os'
 
 # REPL Setup
 
@@ -119,6 +122,13 @@ repl.on 'close', ->
   stdin.destroy()
 
 repl.on 'line', run
+
+# If present, evaluate .coffeerc files in home directory or current directory
+homedir = if os.platform() is 'win32' then process.env.USERPROFILE else process.env.HOME
+for dir in [homedir, process.cwd()]
+  rcfile = path.join dir, '.coffeerc'
+  data = fs.readFileSync rcfile, 'utf8' 
+  CoffeeScript.eval data, {filename: rcfile, module: '.coffeerc'}
 
 repl.setPrompt REPL_PROMPT
 repl.prompt()
