@@ -394,7 +394,7 @@ exports.Block = class Block extends Base
       expr = @expressions[len]
       if expr.isStatement()
         break
-      if expr not instanceof Comment and expr not instanceof Return
+      if expr not instanceof Comment and expr not instanceof Return 
         call.assignValue expr
         @expressions[len] = call
         return
@@ -1807,13 +1807,27 @@ exports.While = class While extends Base
   tameWrap : (d) ->
     condition = d.condition
     body = d.body
+    rvar = d.rvar
     outStatements = []
+    
+    if rvar
+      rvar_value = new Value new Literal rvar
 
     # Set up all of the IDs
     top_id = new Value new Literal tame.const.t_while
     k_id = new Value new Literal tame.const.k
+
+    # Break will just call the parent continuation, but in some
+    # cases, there will be a return value, so then we have to pass
+    # that back out.  Hence the split below:
     break_id = new Value new Literal tame.const.b_while
-    break_assign = new Assign break_id, k_id, null, { tamelocal : yes }
+    if rvar
+      break_expr = new Call k_id, [ rvar_value ]
+      break_block = new Block [ break_expr ]
+      break_body = new Code [], break_block, 'tamegen'
+      break_assign = new Assign break_id, break_body, null, { tamelocal : yes }
+    else
+      break_assign = new Assign break_id, k_id, null, { tamelocal : yes }
 
     # The continue assignment is the increment at the end
     # of the loop (if it's there), and also the recursive
@@ -1824,6 +1838,21 @@ exports.While = class While extends Base
     continue_body = new Code [], continue_block, 'tamegen'
     continue_assign = new Assign continue_id, continue_body, null, { tamelocal : yes }
 
+    # Next is like continue, but it also squirrels away the return
+    # value, if required!
+    next_id = new Value new Literal tame.const.n_while
+    if rvar
+      next_arg = new Value new Literal tame.const.n_arg
+      f = rvar_value.copy()
+      f.add new Access new Value new Literal 'push'
+      call1 = new Call f, [ next_arg ]
+      call2 = new Call continue_id, []
+      next_block = new Block [ call1, call2 ]
+      next_body = new Code [ next_arg ], next_block, 'tamegen'
+      next_assign = new Assign next_id, next_body, null, { tamelocal : yes }
+    else
+      next_assign = new Assign next_id, continue_id
+
     # The whole body is wrapped in an if, with the positive
     # condition being the loop, and the negative condition
     # being the break out of the loop
@@ -1831,22 +1860,27 @@ exports.While = class While extends Base
     cond.addElse new Block [ new Call break_id, [] ]
 
     # The top of the loop construct.
-    top_body = new Block [ break_assign, continue_assign, cond ]
+    top_body = new Block [ break_assign, continue_assign, next_assign, cond ]
     top_func = new Code [ k_id ], top_body, 'tamegen'
     top_assign = new Assign top_id, top_func, null, { tamelocal : yes }
     top_call = new Call top_id, [ k_id ]
     top_statements = []
     top_statements = top_statements.concat d.init if d.init
+    if rvar
+      rvar_init = new Assign rvar_value, new Arr
+      top_statements.push rvar_init
     top_statements = top_statements.concat [ top_assign, top_call ]
     top_block = new Block top_statements
 
   tameCallContinuation : ->
-    k = new TameTailCall tame.const.c_while
-    @body.push k
+    @body.tameThreadReturn new TameTailCall tame.const.n_while
 
   compileTame: (o) ->
     return null unless @tameNodeFlag
-    b = @tameWrap { @condition, @body }
+    opts = { @condition, @body }
+    if @returns
+      opts.rvar = o.scope.freeVariable 'results'
+    b = @tameWrap opts
     return b.compile o
 
   # The main difference from a JavaScript *while* is that the CoffeeScript
@@ -2388,12 +2422,15 @@ exports.Existence = class Existence extends Base
 exports.Parens = class Parens extends Base
   constructor: (@body) ->
     super()
-    @body.parens = true
 
   children: ['body']
 
   unwrap    : -> @body
   isComplex : -> @body.isComplex()
+
+  #tameWrapContinuation : YES
+  #tameCpsRotate: ->
+  #  @body = b if (b = @tameCpsExprRotate @body)
 
   compileNode: (o) ->
     expr = @body.unwrap()
@@ -2513,7 +2550,8 @@ exports.For = class For extends While
       a4 = new Assign @name, ref_val_copy
       body.unshift a4
 
-    b = @tameWrap { condition, body, init, step }
+    rvar = d.rvar
+    b = @tameWrap { condition, body, init, step, rvar }
     b.compile o
 
   # Welcome to the hairiest method in all of CoffeeScript. Handles the inner
@@ -2542,7 +2580,7 @@ exports.For = class For extends While
     defPart   = ''
     idt1      = @tab + TAB
 
-    return code if code = @compileTame o, { ivar, stepvar, body }
+    return code if code = @compileTame o, { ivar, stepvar, body, rvar }
 
     if @range
       forPart = source.compile merge(o, {index: ivar, name, @step})

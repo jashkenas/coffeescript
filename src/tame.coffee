@@ -15,6 +15,8 @@ exports.const =
   b_while : "_break"
   t_while : "_while"
   c_while : "_continue"
+  n_while : "_next"
+  n_arg   : "__tame_next_arg"
   defer_method : "defer"
   slot : "__slot"
   assign_fn : "assign_fn"

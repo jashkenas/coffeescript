@@ -444,3 +444,25 @@ atest 'nesting', (cb) ->
   render = (x) -> x + x
   y = render(await loadImage "test.png", defer _)
   cb(y is (id + id), {})
+
+atest 'expressions + loops', (cb) ->
+  parrot = (n, cb) ->
+    await delay defer()
+    cb n
+  x = for i in [0..10]
+    await parrot i, defer _
+  y = while i--
+    await parrot i, defer _
+  z = (v + y[i] for v,i in x)
+  ok = true
+  for v in z
+    ok = false unless v == 9
+  cb(ok, {})
+
+#atest 'expressions + loops', (cb) ->
+#  eat = (item, cb) ->
+#    await delay defer()
+#    cb item.length
+#  lunch = ((await eat food, defer _) for food in ['toast', 'wine', 'pea'])
+#  ok = (lunch[0] is 5 and lunch[1] is 4 and lunch[2] is 3)
+#  cb(ok, {})
