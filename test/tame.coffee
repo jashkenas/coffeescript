@@ -427,11 +427,11 @@ atest 'expressions - call args (2)', (cb) ->
 #
 # 
 
-#atest 'nesting', (cb) ->
-#  id = "image data"
-#  loadImage = (n, cb) ->
-#    await delay defer()
-#    cb id
-#  render = (x) -> x + x
-#  y = render(await loadImage "test.png", defer())
-#  cb(y is (id + id), {})
+atest 'nesting', (cb) ->
+  id = "image data"
+  loadImage = (n, cb) ->
+    await delay defer()
+    cb id
+  render = (x) -> x + x
+  y = render(await loadImage "test.png", defer _)
+  cb(y is (id + id), {})
