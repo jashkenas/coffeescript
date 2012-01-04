@@ -64,13 +64,13 @@ atest "for k,v of obj testing", (cb) ->
     s += k + " " + v + " "
   cb( s is "the quick brown fox jumped over ", {} )
 
-#atest "for k,v in arr testing", (cb) ->
-#  obj = [ "the", "quick", "brown" ]
-#  s = ""
-#  for v,i in obj
-#    await delay defer()
-#    s += v + " " + i + " "
-#  cb( s is "the 0 quick 1 brown 2 ", {} )
+atest "for k,v in arr testing", (cb) ->
+  obj = [ "the", "quick", "brown" ]
+  s = ""
+  for v,i in obj
+    await delay defer()
+    s += v + " " + i + " "
+  cb( s is "the 0 quick 1 brown 2 ", {} )
 
 atest "switch-a-roos", (cb) ->
   res = 0

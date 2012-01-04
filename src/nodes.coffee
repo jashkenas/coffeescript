@@ -2553,7 +2553,7 @@ exports.For = class For extends While
 
     # Handle the case of 'for i,blah in arr'
     else if ! @range and @name
-      ival = new Value new Literal d.ivar
+      kval = new Value new Literal d.kvar
       len = scope.freeVariable 'len'
       ref = scope.freeVariable 'ref'
       ref_val = new Value new Literal ref
@@ -2561,12 +2561,12 @@ exports.For = class For extends While
       a1 = new Assign ref_val, @source
       len_rhs = ref_val.copy().add new Access new Value new Literal "length"
       a2 = new Assign len_val, len_rhs
-      a3 = new Assign ival, new Value new Literal 0
+      a3 = new Assign kval, new Value new Literal 0
       init = [ a1, a2, a3 ]
-      condition = new Op '<', ival, len_val
-      step = new Op '++', ival
+      condition = new Op '<', kval, len_val
+      step = new Op '++', kval
       ref_val_copy = ref_val.copy()
-      ref_val_copy.add new Index ival
+      ref_val_copy.add new Index kval
       a4 = new Assign @name, ref_val_copy
       body.unshift a4
 
@@ -2600,7 +2600,7 @@ exports.For = class For extends While
     defPart   = ''
     idt1      = @tab + TAB
 
-    return code if code = @compileTame o, { ivar, stepvar, body, rvar }
+    return code if code = @compileTame o, { stepvar, body, rvar, kvar }
 
     if @range
       forPart = source.compile merge(o, {index: ivar, name, @step})
