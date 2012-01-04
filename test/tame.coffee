@@ -459,10 +459,10 @@ atest 'expressions + loops', (cb) ->
     ok = false unless v == 9
   cb(ok, {})
 
-#atest 'expressions + loops', (cb) ->
-#  eat = (item, cb) ->
-#    await delay defer()
-#    cb item.length
-#  lunch = ((await eat food, defer _) for food in ['toast', 'wine', 'pea'])
-#  ok = (lunch[0] is 5 and lunch[1] is 4 and lunch[2] is 3)
-#  cb(ok, {})
+atest 'expressions + loops', (cb) ->
+  eat = (item, cb) ->
+    await delay defer()
+    cb item.length
+  lunch = ((await eat food, defer _) for food in ['toast', 'wine', 'pea'])
+  ok = (lunch[0] is 5 and lunch[1] is 4 and lunch[2] is 3)
+  cb(ok, {})

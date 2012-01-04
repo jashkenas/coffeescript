@@ -326,6 +326,11 @@ exports.Base = class Base
     obj.tamePrequels.push { block : bb, retval : rv }
     rv
 
+  tameUnwrap: (e) ->
+    e.tameContinuationBlock = @tameContinuationBlock
+    e.tamePrequels = @tamePrequels
+    e
+
   isStatement     : NO
   jumps           : NO
   isComplex       : YES
@@ -368,7 +373,7 @@ exports.Block = class Block extends Base
   # If this Block consists of just a single node, unwrap it by pulling
   # it back out.
   unwrap: ->
-    if @expressions.length is 1 then @expressions[0] else this
+    if @expressions.length is 1 then @tameUnwrap @expressions[0] else this
 
   # Like unwrap, but will return if not a single
   getSingle : ->
@@ -753,7 +758,7 @@ exports.Value = class Value extends Base
   # The value can be unwrapped as its inner node, if there are no attached
   # properties.
   unwrap: ->
-    if @properties.length then this else @base
+    if @properties.length then this else @tameUnwrap @base
 
   # If this value is being used as a slot for the purposes of a defer
   # then export it here
@@ -2425,7 +2430,7 @@ exports.Parens = class Parens extends Base
 
   children: ['body']
 
-  unwrap    : -> @body
+  unwrap    : -> @tameUnwrap @body
   isComplex : -> @body.isComplex()
 
   #tameWrapContinuation : YES
