@@ -65,18 +65,69 @@ completeVariable = (text) ->
 getCompletions = (prefix, candidates) ->
   (el for el in candidates when el.indexOf(prefix) is 0)
 
-# Create the REPL by listening to **stdin**.
-if readline.createInterface.length < 3
-  repl = readline.createInterface stdin, autocomplete
-  stdin.on 'data', (buffer) -> repl.write buffer
-else
-  repl = readline.createInterface stdin, stdout, autocomplete
-
 # Make sure that uncaught exceptions don't kill the REPL.
 process.on 'uncaughtException', error
 
 # The current backlog of multi-line code.
 backlog = ''
+
+# The main REPL function. **run** is called every time a line of code is entered.
+# Attempt to evaluate the command. If there's an exception, print it out instead
+# of exiting.
+run = (buffer) ->
+  if multilineMode
+    backlog += "#{buffer}\n"
+    repl.setPrompt REPL_PROMPT_CONTINUATION
+    repl.prompt()
+    return
+  if !buffer.toString().trim() and !backlog
+    repl.prompt()
+    return
+  code = backlog += buffer
+  if code[code.length - 1] is '\\'
+    backlog = "#{backlog[...-1]}\n"
+    repl.setPrompt REPL_PROMPT_CONTINUATION
+    repl.prompt()
+    return
+  repl.setPrompt REPL_PROMPT
+  backlog = ''
+  try
+    _ = global._
+    returnValue = CoffeeScript.eval "_=(#{code}\n)", {
+      filename: 'repl'
+      modulename: 'repl'
+    }
+    if returnValue is undefined
+      global._ = _
+    repl.output.write "#{inspect returnValue, no, 2, enableColours}\n"
+  catch err
+    error err
+  repl.prompt()
+
+if stdin.readable
+  # handled piped input
+  pipedInput = ''
+  repl =
+    prompt: -> stdout.write @_prompt
+    setPrompt: (p) -> @_prompt = p
+    input: stdin
+    output: stdout
+    on: ->
+  stdin.on 'data', (chunk) ->
+    pipedInput += chunk
+  stdin.on 'end', ->
+    for line in pipedInput.trim().split "\n"
+      stdout.write "#{line}\n"
+      run line
+    stdout.write '\n'
+    process.exit 0
+else
+  # Create the REPL by listening to **stdin**.
+  if readline.createInterface.length < 3
+    repl = readline.createInterface stdin, autocomplete
+    stdin.on 'data', (buffer) -> repl.write buffer
+  else
+    repl = readline.createInterface stdin, stdout, autocomplete
 
 multilineMode = off
 
@@ -120,38 +171,7 @@ repl.on 'close', ->
   repl.output.write '\n'
   repl.input.destroy()
 
-# The main REPL function. **run** is called every time a line of code is entered.
-# Attempt to evaluate the command. If there's an exception, print it out instead
-# of exiting.
-repl.on 'line', (buffer) ->
-  if multilineMode
-    backlog += "#{buffer}\n"
-    repl.setPrompt REPL_PROMPT_CONTINUATION
-    repl.prompt()
-    return
-  if !buffer.toString().trim() and !backlog
-    repl.prompt()
-    return
-  code = backlog += buffer
-  if code[code.length - 1] is '\\'
-    backlog = "#{backlog[...-1]}\n"
-    repl.setPrompt REPL_PROMPT_CONTINUATION
-    repl.prompt()
-    return
-  repl.setPrompt REPL_PROMPT
-  backlog = ''
-  try
-    _ = global._
-    returnValue = CoffeeScript.eval "_=(#{code}\n)", {
-      filename: 'repl'
-      modulename: 'repl'
-    }
-    if returnValue is undefined
-      global._ = _
-    repl.output.write "#{inspect returnValue, no, 2, enableColours}\n"
-  catch err
-    error err
-  repl.prompt()
+repl.on 'line', run
 
 repl.setPrompt REPL_PROMPT
 repl.prompt()
