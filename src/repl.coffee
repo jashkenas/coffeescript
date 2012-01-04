@@ -105,7 +105,7 @@ run = (buffer) ->
   repl.prompt()
 
 if stdin.readable
-  # handled piped input
+  # handle piped input
   pipedInput = ''
   repl =
     prompt: -> stdout.write @_prompt
