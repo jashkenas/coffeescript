@@ -203,8 +203,10 @@ exports.Base = class Base
     new Op '!', this
 
   unwrapAll: ->
+    #console.log "pre #{@toString()}"
     node = this
     continue until node is node = node.unwrap()
+    #console.log "post #{node.toString()}"
     node
 
   # Don't try this at home with actual human kids.  Added for tame
@@ -327,9 +329,13 @@ exports.Base = class Base
     rv
 
   tameUnwrap: (e) ->
-    e.tameContinuationBlock = @tameContinuationBlock
-    e.tamePrequels = @tamePrequels
-    e
+    if e.tameHasContinuation() and @tameHasContinuation()
+      this
+    else
+      if @tameHasContinuation()
+        e.tameContinuationBlock = @tameContinuationBlock 
+        e.tamePrequels = @tamePrequels
+      e
 
   isStatement     : NO
   jumps           : NO
@@ -393,16 +399,25 @@ exports.Block = class Block extends Base
       return exp if exp.jumps o
 
   tameThreadReturn: (call)  ->
+    call = call || new TameTailCall
     len = @expressions.length
     foundReturn = false
     while len--
       expr = @expressions[len]
-      if expr.isStatement()
+      
+      # If the last expression in the block is either a bonafide statement
+      # or if it's going to be pivoted, then don't thread the return value
+      # through the TameTailCall, just bolt it onto the end.
+      if expr.isStatement() or expr.tameIsCpsPivot()
         break
+
+      # In this case, we have a value that we're going to return out
+      # of the block, so apply the TameTamilCall onto the value
       if expr not instanceof Comment and expr not instanceof Return 
         call.assignValue expr
         @expressions[len] = call
         return
+        
     # if nothing was found, just push the call on
     @expressions.push call
 
@@ -2667,10 +2682,9 @@ exports.Switch = class Switch extends Base
     this
 
   tameCallContinuation : ->
-    code = new TameTailCall
     for [condition,block] in @cases
-      block.push code
-    @otherwise?.push code
+      block.tameThreadReturn()
+    @otherwise?.tameThreadReturn()
 
   compileNode: (o) ->
     idt1 = o.indent + TAB
@@ -2722,11 +2736,11 @@ exports.If = class If extends Base
   # fully nested if { .. } else { if { } ..} ..'s
   tameCallContinuation : ->
     if @elseBody
-      @elseBody.tameThreadReturn new TameTailCall
+      @elseBody.tameThreadReturn()
       @isChain = false
     else
       @addElse new TameTailCall
-    @body.tameThreadReturn new TameTailCall
+    @body.tameThreadReturn()
 
   # The **If** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a conditional operator is safe.
