@@ -408,12 +408,12 @@ exports.Block = class Block extends Base
       # If the last expression in the block is either a bonafide statement
       # or if it's going to be pivoted, then don't thread the return value
       # through the TameTailCall, just bolt it onto the end.
-      if expr.isStatement() or expr.tameIsCpsPivot()
+      if expr.isStatement()
         break
 
       # In this case, we have a value that we're going to return out
       # of the block, so apply the TameTamilCall onto the value
-      if expr not instanceof Comment and expr not instanceof Return 
+      if expr not instanceof Comment and expr not instanceof Return
         call.assignValue expr
         @expressions[len] = call
         return
@@ -2853,11 +2853,9 @@ CpsCascade =
       
     block = Block.wrap [ rest ]
 
-    # This is both for optimization and for correctness.  If the continuation
-    # block is just a tail call to another continuation, then we just pass
-    # that call directly.  This will also thread values through the
-    # call chain.
-    if (e = block.getSingle()) and e instanceof TameTailCall and not e.value
+    # Optimization! If the block is just a tail call to another continuation
+    # that can be inlined, then we just call that call directly.
+    if (e = block.getSingle()) and e instanceof TameTailCall and e.canInline()
       cont = e.extractFunc()
     else
       cont = new Code args, block, 'tamegen'
@@ -2881,8 +2879,15 @@ class TameTailCall extends Base
   assignValue : (v) ->
     @value = v
 
+  canInline : ->
+    return not @value or @value instanceof TameReturnValue
+
   literalFunc: -> new Literal @func
   extractFunc: -> new Value @literalFunc()
+
+  tameCpsRotate : ->
+    if @value
+      @value = nv if (nv = @tameCpsExprRotate @value)
 
   compileNode : (o) ->
     f = @literalFunc()

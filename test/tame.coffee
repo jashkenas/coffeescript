@@ -466,3 +466,19 @@ atest 'expressions + loops', (cb) ->
   lunch = ((await eat food, defer _) for food in ['toast', 'wine', 'pea'])
   ok = (lunch[0] is 5 and lunch[1] is 4 and lunch[2] is 3)
   cb(ok, {})
+
+atest 'expressions + ops + if', (cb) ->
+  parrot = (n, cb) ->
+    await delay defer()
+    cb n
+  y = if true
+    (await parrot 10, defer _) + 1
+  cb(y == 11, {})
+
+atest 'expressions + ops + if (2)', (cb) ->
+  parrot = (n, cb) ->
+    await delay defer()
+    cb n
+  y = if true
+    (await parrot 10, defer _) + 1 + (await parrot 12, defer _)
+  cb(y == 23, {})
