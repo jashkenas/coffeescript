@@ -45,7 +45,9 @@ exports.Base = class Base
     @tameGotCpsSplitFlag = false
     @tameCpsPivotFlag    = false
     @tameHasAutocbFlag   = false
+    
     @tameParentAwait     = null
+    @tameCallContinuationFlag = false
 
   # Common logic for determining whether to wrap this node in a closure before
   # compiling it, or to compile directly. We need to wrap if this node is a
@@ -85,12 +87,15 @@ exports.Base = class Base
     @tameGotCpsSplitFlag = true
 
     if (l = @tamePrequels.length)
-      me = if @tameWrapContinuation() then (new TameTailCall null, this) else this
-      if @tameContinuationBlock
-        k = @tameContinuationBlock
-        k.unshift me
+
+      # This is an optimization.  We smush the "this" expression and the continuation
+      # into a flat block.
+      k = if @tameContinuationBlock
+        [ this, @tameContinuationBlock ]
+      else if @tameWrapContinuation()
+        new TameTailCall null, this
       else
-        k = me
+        this
         
       while l--
         pb = @tamePrequels[l]
@@ -99,7 +104,7 @@ exports.Base = class Base
       
     else
       code = CpsCascade.wrap this, @tameContinuationBlock, null, o
-      
+
     code.compile o
 
   # If the code generation wishes to use the result of a complex expression
@@ -203,10 +208,8 @@ exports.Base = class Base
     new Op '!', this
 
   unwrapAll: ->
-    #console.log "pre #{@toString()}"
     node = this
     continue until node is node = node.unwrap()
-    #console.log "post #{node.toString()}"
     node
 
   # Don't try this at home with actual human kids.  Added for tame
@@ -317,7 +320,7 @@ exports.Base = class Base
   tameIsCpsPivot            :     -> @tameCpsPivotFlag
   tameNestContinuationBlock : (b) -> @tameContinuationBlock = b
   tameHasContinuation       :     -> (!!@tameContinuationBlock or @tamePrequels?.length)
-  tameCallContinuation      :     ->
+  tameCallContinuation      :     -> @tameCallContinuationFlag = true
   tameWrapContinuation      :     NO
   tameIsJump                :     NO
   tameIsTamedExpr           :     -> (this not instanceof Code) and @tameNodeFlag
@@ -1949,10 +1952,9 @@ exports.Op = class Op extends Base
     @first    = first
     @second   = second
     @flip     = !!flip
-    @tameCallContinuationFlag = false
     return this
 
-  tameWrapContinuation : YES
+  tameWrapContinuation : -> @tameCallContinuationFlag
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
   CONVERSIONS =

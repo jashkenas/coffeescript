@@ -482,3 +482,12 @@ atest 'expressions + ops + if (2)', (cb) ->
   y = if true
     (await parrot 10, defer _) + 1 + (await parrot 12, defer _)
   cb(y == 23, {})
+
+atest 'expressions + ops + if (3)', (cb) ->
+  parrot = (n, cb) ->
+    await delay defer()
+    cb n
+  y = if true
+    (await parrot 10, defer _) + 1
+    3
+  cb(y == 3, {})
