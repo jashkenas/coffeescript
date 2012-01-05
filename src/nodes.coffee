@@ -75,26 +75,43 @@ exports.Base = class Base
     o.sharedScope = yes
     Closure.wrap(this).compileNode o
 
-  # Statements that need CPS translation will have to be split into two
+  # Statements that need CPS translation will have to be split into
   # pieces as so.  Note that the tamePrequelsBlock is a slight ugly thing
   # going on.  The problem is this: tameCpsRotate when working on an expression
   # will want to extract the tame part **first** and then write the vanilla
   # expression **second**.  But we're not allowed to change the 'this' node as
-  # we traverse the AST.  So therefore we introduct a Prequel, it's like the
+  # we traverse the AST.  So therefore we introduce a Prequel, it's like the
   # opposite of the continuation.  It's the part of the program that comes before
   # 'this'.
+  #
+  # In the case of regular, easy-to-understand statements, we'll be in a nice
+  # situation, in which every Block has code, and potentially a continuation.
+  #
+  # In the case of expressions with nested await'ing, things are sadly way
+  # more complicated.  We could have an arbitrarily deep chain here, hence
+  # the calls to CpsCascading in a loop.
+  # 
   compileCps : (o) ->
     @tameGotCpsSplitFlag = true
 
     if (l = @tamePrequels.length)
 
-      # This is an optimization.  We smush the "this" expression and the continuation
-      # into a flat block.
       k = if @tameContinuationBlock
+        # Optimization:  We smush the "this" expression and the continuation
+        # into a flat block.
         [ this, @tameContinuationBlock ]
+        
       else if @tameWrapContinuation()
+        # For some types of objects, we wrap the value of the object in a
+        # tamed tail call here.  We might have done this earlier (in
+        # tameCallContinuation) but at that point we don't have the option
+        # to replace an AST node with TameTailCall(this).  So instead, we
+        # do that now.
         new TameTailCall null, this
+        
       else
+        # The simple case is no continuation, and no added TameTailCall
+        # needed.
         this
         
       while l--
@@ -261,10 +278,13 @@ exports.Base = class Base
   #   they're really pulled out and run in sequence as the level of the
   #   topmost await.
   #
-  tameWalkAst : (p) ->
+  #   The parameter `o` is a global object, passed through all without
+  #   copies, to push information up and down the AST.
+  #
+  tameWalkAst : (p, o) ->
     @tameParentAwait = p
     for child in @flattenChildren()
-      @tameNodeFlag = true if child.tameWalkAst p
+      @tameNodeFlag = true if child.tameWalkAst p, o
     @tameNodeFlag
 
   # tameWalkAstLoops
@@ -286,15 +306,6 @@ exports.Base = class Base
     for child in @flattenChildren()
       @tameCpsPivotFlag = true if child.tameWalkCpsPivots()
     @tameCpsPivotFlag
-
-  # tameGo
-  #   See if there are any Await nodes, and if not, don't do
-  #   any of our passes.
-  tameGo : ->
-    for child in @flattenChildren()
-      return true if (child instanceof Await or child instanceof Defer) or 
-         child.tameGo()
-    return false
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
@@ -629,8 +640,9 @@ exports.Block = class Block extends Base
 
   # Perform all steps of the Tame transform
   tameTransform : ->
-    return this unless @tameGo()
-    @tameWalkAst null
+    obj = {}
+    @tameWalkAst null, obj
+    return this unless obj.found
     @tameAddRuntime() if @tameNeedsRuntime() and not @tameFindRequire()
     @tameWalkAstLoops(false)
     @tameWalkCpsPivots()
@@ -1674,9 +1686,9 @@ exports.Code = class Code extends Base
 
   # we are taming as a feature of all of our children.  However, if we
   # are tamed, it's not the case that our parent is tamed!
-  tameWalkAst : (p) ->
+  tameWalkAst : (p, o) ->
     @tameParentAwait = p
-    @tameNodeFlag = true if super null
+    @tameNodeFlag = true if super null, o
     false
 
   tameWalkAstLoops : (flood) ->
@@ -2296,11 +2308,11 @@ exports.Await = class Await extends Base
   # We still need to walk our children to see if there are any embedded
   # function which might also be tamed.  But we're always going to report
   # to our parent that we are tamed, since we are!
-  tameWalkAst : (p) ->
+  tameWalkAst : (p, o) ->
     p = p || this
     @tameParentAwait = p
-    super p
-    @tameNodeFlag = true
+    super p, o
+    @tameNodeFlag = o.found = true
 
 #### tameRequire
 #
