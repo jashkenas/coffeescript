@@ -15,10 +15,10 @@ vm               = require 'vm'
 # TODO: Remove registerExtension when fully deprecated.
 if require.extensions
   require.extensions['.coffee'] = (module, filename) ->
-    content = compile fs.readFileSync(filename, 'utf8'), {filename}
+    content = exports.compile fs.readFileSync(filename, 'utf8'), {filename}
     module._compile content, filename
 else if require.registerExtension
-  require.registerExtension '.coffee', (content) -> compile content
+  require.registerExtension '.coffee', (content) -> exports.compile content
 
 # The current CoffeeScript version number.
 exports.VERSION = '1.2.1-pre'
@@ -29,14 +29,33 @@ exports.RESERVED = RESERVED
 # Expose helpers for testing.
 exports.helpers = require './helpers'
 
+# Miniature `EventEmitter` implementation for compilation events.
+_listeners = {}
+exports.listeners = (event) ->
+  _listeners[event] ?= []
+exports.on = exports.addListener = (event, listener) ->
+  (_listeners[event] ?= []).push listener
+exports.emit = (event, args...) ->
+  return unless _listeners[event]
+  for listener in _listeners[event]
+    listener args...
+
 # Compile a string of CoffeeScript code to JavaScript, using the Coffee/Jison
 # compiler.
-exports.compile = compile = (code, options = {}) ->
+exports.compile = (code, options = {}) ->
   {merge} = exports.helpers
+  if options.options
+    task      = options
+    {options} = options
+  else task = options
+  @emit 'compile', task
   try
-    (parser.parse lexer.tokenize code).compile merge {}, options
+    js = (parser.parse lexer.tokenize code).compile merge {}, options
+    @emit 'success', task
+    js
   catch err
     err.message = "In #{options.filename}, #{err.message}" if options.filename
+    @emit 'failure', err, task
     throw err
 
 # Tokenize a string of CoffeeScript code, and return the array of tokens.
@@ -69,7 +88,7 @@ exports.run = (code, options) ->
 
   # Compile.
   if path.extname(mainModule.filename) isnt '.coffee' or require.extensions
-    mainModule._compile compile(code, options), mainModule.filename
+    mainModule._compile @compile(code, options), mainModule.filename
   else
     mainModule._compile code, mainModule.filename
 
@@ -103,7 +122,7 @@ exports.eval = (code, options = {}) ->
   o = {}
   o[k] = v for own k, v of options
   o.bare = on # ensure return value
-  js = compile code, o
+  js = @compile code, o
   if sandbox is global
     vm.runInThisContext js
   else

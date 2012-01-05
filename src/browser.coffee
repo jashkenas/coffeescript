@@ -23,7 +23,9 @@ CoffeeScript.load = (url, callback) ->
   xhr.onreadystatechange = ->
     if xhr.readyState is 4
       if xhr.status in [0, 200]
-        CoffeeScript.run xhr.responseText
+        options = {}
+        task = {url, input: xhr.responseText, options}
+        CoffeeScript.run xhr.responseText, task
       else
         throw new Error "Could not load #{url}"
       callback() if callback
@@ -39,12 +41,13 @@ runScripts = ->
   length = coffees.length
   do execute = ->
     script = coffees[index++]
-    if script?.type is 'text/coffeescript'
-      if script.src
-        CoffeeScript.load script.src, execute
-      else
-        CoffeeScript.run script.innerHTML
-        execute()
+    if script.src
+      CoffeeScript.load script.src, execute
+    else
+      options = {}
+      task = {input: script.innerHTML, options}
+      CoffeeScript.run script.innerHTML, task
+      execute()
   null
 
 # Listen for window load, both in browsers and in IE.
