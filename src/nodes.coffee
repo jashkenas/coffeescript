@@ -238,25 +238,6 @@ exports.Base = class Base
         out.push (child)
     out
 
-  # tameNeedsRuntime, tameFindRequires and tameMarkAutocbs are
-  # various traversals of the AST for tame attributes
-  tameNeedsRuntime : ->
-    for child in @flattenChildren()
-      return true if child.tameNeedsRuntime()
-    return false
-
-  tameFindRequire : ->
-    for child in @flattenChildren()
-      return r if (r = child.tameFindRequire())
-    return null
-
-  # Mark all of the autocbs, and all of their descendants in the AST.
-  # The smart sub-class behavior here is in Code.
-  tameMarkAutocbs : (found) ->
-    @tameHasAutocbFlag = found
-    for child in @flattenChildren()
-      child.tameMarkAutocbs(found)
-
   #
   # AST Walking Routines for CPS Pivots, etc.
   #
@@ -279,10 +260,17 @@ exports.Base = class Base
   #   topmost await.
   #
   #   The parameter `o` is a global object, passed through all without
-  #   copies, to push information up and down the AST.
+  #   copies, to push information up and down the AST. This parameter is
+  #   used with subfields:
+  #
+  #      o.foundAutocb  -- on if the parent function has an autocb
+  #      o.foundRequire -- on if tameRequire() was found anywhere in the AST
+  #      o.foundDefer   -- on if defer() was found anywhere in the AST
+  #      o.foundAwait   -- on if await... was found anywhere in the AST
   #
   tameWalkAst : (p, o) ->
     @tameParentAwait = p
+    @tameHasAutocbFlag = o.foundAutocb
     for child in @flattenChildren()
       @tameNodeFlag = true if child.tameWalkAst p, o
     @tameNodeFlag
@@ -640,14 +628,19 @@ exports.Block = class Block extends Base
 
   # Perform all steps of the Tame transform
   tameTransform : ->
+
+    # we need to do at least 1 walk -- do the most important walk first
     obj = {}
     @tameWalkAst null, obj
-    return this unless obj.found
-    @tameAddRuntime() if @tameNeedsRuntime() and not @tameFindRequire()
-    @tameWalkAstLoops(false)
-    @tameWalkCpsPivots()
-    @tameMarkAutocbs()
-    @tameCpsRotate()
+
+    # short-circuit here for optimization. If we didn't find await
+    # then no need to tame anything in this AST
+    if obj.foundAwait 
+      @tameAddRuntime() if obj.foundDefer and not obj.foundRequire
+      @tameWalkAstLoops(false)
+      @tameWalkCpsPivots()
+      @tameCpsRotate()
+      
     this
 
 #### Literal
@@ -1592,14 +1585,6 @@ exports.Code = class Code extends Base
 
   jumps: NO
 
-  tameMarkAutocbs: (found) ->
-    found = false
-    for p in @params
-      if p.name instanceof Literal and p.name.value is tame.const.autocb
-        found = true
-        break
-    super(found)
-
   # Compilation creates a new scope unless explicitly asked to share with the
   # outer scope. Handles splat parameters in the parameter list by peeking at
   # the JavaScript `arguments` object. If the function is bound with the `=>`
@@ -1686,9 +1671,17 @@ exports.Code = class Code extends Base
 
   # we are taming as a feature of all of our children.  However, if we
   # are tamed, it's not the case that our parent is tamed!
-  tameWalkAst : (p, o) ->
-    @tameParentAwait = p
-    @tameNodeFlag = true if super null, o
+  tameWalkAst : (parent, o) ->
+    @tameParentAwait = parent
+    fa_prev = o.foundAutocb
+    o.foundAutocb = false
+    for param in @params
+      if param.name instanceof Literal and param.name.value is tame.const.autocb
+        o.foundAutocb = true
+        break
+    @tameHasAutocbFlag = o.foundAutocb
+    super parent, o
+    o.foundAutocb = fa_prev
     false
 
   tameWalkAstLoops : (flood) ->
@@ -2270,7 +2263,10 @@ exports.Defer = class Defer extends Base
       scope.add name, 'var'
     call.compile o
 
-  tameNeedsRuntime : -> true
+  tameWalkAst : (p, o) ->
+    @tameHasAutocbFlag = o.foundAutocb
+    o.foundDefer = true
+    super p, o
 
 #### Await
 
@@ -2309,10 +2305,11 @@ exports.Await = class Await extends Base
   # function which might also be tamed.  But we're always going to report
   # to our parent that we are tamed, since we are!
   tameWalkAst : (p, o) ->
+    @tameHasAutocbFlag = o.foundAutocb
     p = p || this
     @tameParentAwait = p
     super p, o
-    @tameNodeFlag = o.found = true
+    @tameNodeFlag = o.foundAwait = true
 
 #### tameRequire
 #
@@ -2363,7 +2360,10 @@ exports.TameRequire = class TameRequire extends Base
 
   children = [ 'typ']
 
-  tameFindRequire: -> this
+  tameWalkAst : (p,o) ->
+    @tameHasAutocbFlag = o.foundAutocb
+    o.foundRequire = true
+    super p, o
 
 #### Try
 
