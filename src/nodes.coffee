@@ -2319,13 +2319,14 @@ exports.Await = class Await extends Base
 #   tame = require('coffee-script').tame
 #
 # With 'tameRequire(none)', you can supply a runtime of
-# your choosing.
+# your choosing. 'tameRequire(window)', will set `window.tame`
+# to have the tame runtime.
 #
 exports.TameRequire = class TameRequire extends Base
   constructor: (args) ->
     super()
     @typ = null
-    @usage =  "tameRequire takes either 'inline', 'node' or 'none'"
+    @usage =  "tameRequire takes either 'inline', 'node', 'window' or 'none'"
     if args and args.length > 2
        throw SyntaxError @usage
     if args and args.length is 1
@@ -2343,8 +2344,8 @@ exports.TameRequire = class TameRequire extends Base
 
     inc = null
     inc = switch (v)
-      when "inline"
-        InlineDeferral.generate()
+      when "inline", "window"
+        InlineDeferral.generate(if v is "window" then v else null)
       when "node"
         file = new Literal "'coffee-script'"
         access = new Access new Literal tame.const.ns
@@ -2958,11 +2959,15 @@ InlineDeferral =
   #         defer_params?.assign_fn?.apply(null, inner_params)
   #         @_fulfill()
   #
-  generate : ->
+  generate : (ns_window) ->
     k = new Literal "continuation"
     cnt = new Literal "count"
     cn = new Value new Literal tame.const.Deferrals
     ns = new Value new Literal tame.const.ns
+    if ns_window # window.tame = ...
+      ns_window_val = new Value new Literal ns_window
+      ns_window_val.add new Access ns
+      ns = ns_window_val
 
     # make the constructor:
     #
