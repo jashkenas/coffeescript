@@ -2357,13 +2357,13 @@ exports.TameRequire = class TameRequire extends Base
       when "none" then null
       else throw SyntaxError @usage
 
-    out = if inc then "\n#{@tab}" + inc.compile o, LEVEL_TOP else ""
+    out = if inc then "#{@tab}#{inc.compile o, LEVEL_TOP}\n" else ""
 
     rhs = new Code [], new Block []
     lhs = new Value new Literal tame.const.k
     k = new Assign lhs, rhs
 
-    out + "\n#{@tab}" + k.compile(o, LEVEL_TOP)
+    out + "#{@tab}" + k.compile(o, LEVEL_TOP)
 
   children = [ 'typ']
 
