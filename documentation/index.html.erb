@@ -48,7 +48,9 @@
         <a href="#installation">Installation</a>
         <a href="#usage">Usage</a>
         <a href="#language">Language Reference</a>
-        <a href="#tame">Tame Features</a>
+        <a href="#tame">Tame Basic Features</a>
+        <a href="#tame_defer">Tame Defer Values</a>
+        <a href="#tame_expr">Tame Expressions</a>
         <a href="#literals">Literals: Functions, Objects and Arrays</a>
         <a href="#lexical_scope">Lexical Scoping and Variable Safety</a>
         <a href="#conditionals">If, Else, Unless, and Conditional Assignment</a>
@@ -454,7 +456,71 @@ Here is simple example that waits for 1 second, and then calls <tt>alert</tt>:
     <p>
     <%= code_for('tame_loops_2', true) %>
     </p>
+
+    Things start to get interesting when you combine parallel and
+    serial control flow, but the syntax remains the same:
+
+    <p>
+    <%= code_for('tame_loops_3', true) %>
+    </p>
+
+    <p>
+     <span id ="tame_defer" class = "bookmark"></span>
+     <b class="header">Tame Defer Values</b>
+    Many JS and coffee libraries use callbacks passed as parameters
+    to signify when the given operation has completed, and which values
+    were produced.  As such, <tt>defer</tt> can take one or more arguments
+    which are filled in after a deferral is fulfilled. Note that the
+    snippet below is <i>node.js</i> code that requires a DNS resolver:
+    <p>
+    <%= code_for('tame_defer') %>
+    </p>
+
+    <p>
+     <span id="tame_expr" class = "bookmark"></span>
+     <b class="header">Tame in an Expression Context</b> 
+     It's possible
+     to use <tt>await</tt> blocks as expressions. And recursively
+     speaking, it's possible to use statements that contain `await`
+     blocks as expressions.
+    </p>
+
+    <p>
+     The simple rule is that an <tt>await</tt> block takes on the value of the
+     <tt>defer</tt> slot named <tt>_</tt> after its been fulfilled.  If there
+     are multiple defer slots named <tt>_</tt> within the await block, then
+     the last writer wins.  In practice, there's usually only one. Thus:
+    </p>
+
+    <p><%= code_for('tame_expr_1', true) %></p>
+
+    <p>
+     Of course, things can get arbitrarily compicated and nested, so it
+     gets hairy.  Consider this:
+    </p>
+
+    <p><%= code_for('tame_expr_2', true) %></p>
+
+    <p>
+     The rule is that all nested <tt>await</tt> blocks (barf!) are evaluated
+     sequentially in DFS order. You will get <tt>10</tt> in the above example
+     after three sequential calls to <tt>add</tt>.
+    </p>
+
+    <p>
+     I really don't like this feature for two reasons: (1) it's tricky to
+     get the implementation right, and I'm sure I haven't tested all of the
+     corner cases yet; (2) it's difficult to read and understand what
+     happens in which order.  I would suggest you save yourself the heartache,
+     and just write the above as this:
+    </p>
     
+    <p><%= code_for('tame_expr_3', true) %></p>
+
+    <p>
+     It's just so much clearer what happens in which order, and it's easier
+     to parallelize or serialize as you see fit.
+    </p>
 
     <p>
       <span id="literals" class="bookmark"></span>
