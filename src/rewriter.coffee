@@ -5,10 +5,6 @@
 # shorthand into the unambiguous long form, add implicit indentation and
 # parentheses, and generally clean things up.
 
-local = (fn) -> fn()
-debug = (stuff...) ->
-#  console.log stuff...
-
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
 # its internal array of tokens.
 class exports.Rewriter
@@ -28,17 +24,7 @@ class exports.Rewriter
     @closeOpenIndexes()
     @addImplicitIndentation()
     @tagPostfixConditionals()
-    if false
-      @addImplicitBraces()
-    else
-      debug ''
-      debug (t[0] + '/' + t[1] for t in @tokens).join '  '
-      debug ''
-      @addImplicitBracesAndParentheses()
-      debug ''
-      debug (t[0] + '/' + t[1] for t in @tokens).join '  '
-      debug ''
-    @addImplicitParentheses()
+    @addImplicitBracesAndParentheses()
     @tokens
 
   # Rewrite the token stream, looking one token ahead and behind.
@@ -50,16 +36,6 @@ class exports.Rewriter
     {tokens} = this
     i += block.call this, token, i, tokens, state while token = tokens[i]
     true
-
-  scanEnd: (start, block, state={}) ->
-    {tokens} = this
-    i = start
-    try
-      i += block.call this, token, i, tokens, state while token = tokens[i]
-    catch stopValue
-      throw stopValue if typeof stopValue isnt 'number'
-      return i - start + stopValue
-    throw 'End not found in scanEnd.'
 
   detectEnd: (i, condition, action) ->
     {tokens} = this
@@ -122,13 +98,31 @@ class exports.Rewriter
 
     # stack of EXPRESSION_STARTS
     stack = []
+    stackDelayed = null
+
+    # 'CLASS' line?
+    priorLineType = null
+    lineType = null
 
     # call and clear when LINEBREAKS is encountered
     lineBreakListeners = []
-      
+
+    scanEnd = (start, condition, action, state={}) =>
+      i = start
+      try
+        while token = @tokens[i]
+          i += condition.call this, token, i, state
+      catch stop
+        throw stop if stop isnt 'STOP'
+        i += action.call this, token, i if action?
+        return i - start
+      console.log "\tSTACK::\t" + stack.map((x)->x[0]).join('/')
+      console.log (t[0] + '/' + t[1] for t in @tokens).join '   '
+      throw new Error('End not found in scanEnd.')
+
     # true or false
     detectStartBrace = (token, i) =>
-      return token[0] is ':' and
+      token[0] is ':' and
         (not (stack[stack.length - 1]?[0] is '{' or
               stack[stack.length - 1]?[0] is 'INDENT' and
                 stack[stack.length - 2]?[0] is '{' and
@@ -137,16 +131,37 @@ class exports.Rewriter
 
     # true or false
     detectStartParentheses = (token, i) =>
-      false
+      return false if token.fromThen
+      tag     = token[0]
+      noCall  = lineType in ['CLASS'] or priorLineType in ['CLASS'] and tag is 'INDENT'
+      [prev, current, next1, next2] = @tokens[i - 1 .. i + 2]
+      while next1?[0] is 'HERECOMMENT'
+        i += 2
+        [next1, next2] = @tokens[i + 1 .. i + 2]
+      callObject  = prev and prev[0] in IMPLICIT_FUNC and
+                    not noCall and tag is 'INDENT' and
+                    next1 and
+                    next2 and next2[0] is ':'
+      token.call  = yes if prev and not prev.spaced and tag is '?'
+      return callObject or
+        prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
+        (tag in IMPLICIT_CALL or not (token.spaced or token.newLine) and tag in IMPLICIT_UNSPACED_CALL)
 
     # return token offset after end if something added, otherwise null
     addStartAndEnd = (token, i) =>
       if (tag = token[0]) in LINEBREAKS
         cb() for cb in lineBreakListeners
         lineBreakListeners = []
-      if tag in EXPRESSION_START
-        stack.push token
-        return 1
+        priorLineType = lineType
+        lineType = null
+      if tag in ['CLASS']
+        priorLineType = lineType
+        lineType = tag
+      if stackDelayed and token != stackDelayed
+        stack.push stackDelayed
+        stackDelayed = null
+      if token[0] in EXPRESSION_START
+        stackDelayed = token
       if tag in EXPRESSION_END
         if (stack[stack.length - 1]?.generated is token.generated and
               INVERSES[tag] is stack[stack.length - 1]?[0])
@@ -167,141 +182,85 @@ class exports.Rewriter
         value.generated = yes
         stack.push (tok = @generate '{', value, token[2])
         @tokens.splice idx, 0, tok
-        return 2 + @scanEnd(i + 2, addEndBrace, scanState)
+        return 2 + scanEnd(i + 2, detectEndBrace, addEndBrace, scanState)
       if detectStartParentheses token, i
         stack.push (tok = @generate 'CALL_START', '(', token[2])
+        @tokens[i - 1][0] = 'FUNC_EXIST' if @tag(i - 1) is '?'
         @tokens.splice i, 0, tok
-        return 2 + @scanEnd(i + 2, addEndParentheses)
+        if token[0] is 'INDENT'
+          return 2 + scanEnd(i + 2, detectEndParentheses, addEndParentheses)
+        else
+          return 1 + scanEnd(i + 1, detectEndParentheses, addEndParentheses)
       null
 
     # recursive call, return token offset after end
-    addEndBrace = (token, i, tokens, {sameLine, startsLine}) ->
+    detectEndBrace = (token, i, {sameLine, startsLine}) ->
       offset = addStartAndEnd token, i
       return offset if offset?
+
+      [tag, value, line] = token
 
       if not (stack[stack.length - 1]?.generated and stack[stack.length - 1]?[0] is '{')
         return 1
 
-      [one, two, three] = tokens[i + 1 .. i + 3]
+      if tag in EXPRESSION_END
+        throw 'STOP'
+
+      [one, two, three] = @tokens[i + 1 .. i + 3]
       return 1 if 'HERECOMMENT' is one?[0]
-      [tag, value, line] = token
-      
-      forcedEnd  = tag in EXPRESSION_END
+
       naiveEnd   = (tag in ['TERMINATOR'] or
                    (tag in IMPLICIT_END and sameLine))
       special1   = !startsLine and @tag(i - 1) isnt ','
       special2   = not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':')
       otherEnd   = (tag is ',' and one and
                      one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT'])
-      if forcedEnd or naiveEnd and (special1 or special2) or otherEnd
-        stack.pop()
-        tok = @generate '}', '}', token[2]
-        tokens.splice i, 0, tok
-        throw 1
+      if naiveEnd and (special1 or special2) or otherEnd
+        throw 'STOP'
+      1
+
+    addEndBrace = (token, i) ->
+      stack.pop()
+      tok = @generate '}', '}', token[2]
+      @tokens.splice i, 0, tok
       1
 
     # recursive call, return token offset after end
-    addEndParentheses = (token, i, tokens, {startLine}) ->
+    detectEndParentheses = (token, i, $) ->
       offset = addStartAndEnd token, i
       return offset if offset?
 
-      if false # WRONG
-        stack.pop()
-        tok = @generate 'CALL_END', ')', token[2]
-        tokens.splice i, 0, tok
-        throw 2
-      1
-      
-    @scanTokens 0, (token, i) ->
-      return addStartAndEnd(token, i) ? 1
-    
+      [tag, value, line] = token
 
-  # Object literals may be written with implicit braces, for simple cases.
-  # Insert the missing braces here, so that the parser doesn't have to.
-  addImplicitBraces: ->
-
-    stack       = []
-    startsLine  = null
-    sameLine    = yes
-
-    condition = (token, i) ->
-      [one, two, three] = @tokens[i + 1 .. i + 3]
-      return no if 'HERECOMMENT' is one?[0]
-      [tag] = token
-      sameLine = no if tag in LINEBREAKS
-      ((tag in ['TERMINATOR', 'OUTDENT'] or (tag in IMPLICIT_END and sameLine)) and
-          ((!startsLine and @tag(i - 1) isnt ',') or
-          not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':'))) or
-        (tag is ',' and one and
-          one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT'])
-
-    action = (token, i) ->
-      tok = @generate '}', '}', token[2]
-      @tokens.splice i, 0, tok
-
-    @scanTokens 0, (token, i, tokens) ->
-      if (tag = token[0]) in EXPRESSION_START
-        stack.push [(if tag is 'INDENT' and @tag(i - 1) is '{' then '{' else tag), i]
+      if not (stack[stack.length - 1]?.generated and stack[stack.length - 1]?[0] is 'CALL_START')
         return 1
+
       if tag in EXPRESSION_END
-        stack.pop()
-        return 1
-      return 1 unless tag is ':' and
-        (stack[stack.length - 1]?[0] isnt '{' or @tag(i - 2) is ':')
-      sameLine = yes
-      stack.push ['{']
-      idx =  if @tag(i - 2) is '@' then i - 2 else i - 1
-      idx -= 2 while @tag(idx - 2) is 'HERECOMMENT'
-      prevTag = @tag(idx - 1)
-      startsLine = not prevTag or (prevTag in LINEBREAKS)
-      value = new String('{')
-      value.generated = yes
-      tok = @generate '{', value, token[2]
-      tokens.splice idx, 0, tok
-      @detectEnd i + 2, condition, action
-      2
+        throw 'STOP'
 
-  # Methods may be optionally called without parentheses, for simple cases.
-  # Insert the implicit parentheses here, so that the parser doesn't have to
-  # deal with them.
-  addImplicitParentheses: ->
+      throw 'STOP' if not $.seenSingle and token.fromThen
+      $.seenSingle  = yes if tag in ['IF', 'ELSE', 'CATCH', '->', '=>', 'CLASS']
+      $.seenControl = yes if tag in ['IF', 'ELSE', 'SWITCH', 'TRY', '=']
+      throw 'STOP' if tag in ['.', '?.', '::'] and @tag(i - 1) is 'OUTDENT'
+      cond1  = not token.generated and @tag(i - 1) isnt ','
+      cond2  = tag in IMPLICIT_END or (tag is 'INDENT' and not $.seenControl)
+      cond3a = tag isnt 'INDENT'
+      cond3b = (@tag(i - 2) not in ['CLASS', 'EXTENDS'] and @tag(i - 1) not in IMPLICIT_BLOCK and
+                not ((post = @tokens[i + 1]) and post.generated and post[0] is '{'))
+      if cond1 and cond2 and (cond3a or cond3b)
+        throw 'STOP'
+      1
 
-    noCall = seenSingle = seenControl = no
+    addEndParentheses = (token, i) ->
+      stack.pop()
+      tok = @generate 'CALL_END', ')', token[2]
+      @tokens.splice i, 0, tok
+      1
 
-    condition = (token, i) ->
-      [tag] = token
-      return yes if not seenSingle and token.fromThen
-      seenSingle  = yes if tag in ['IF', 'ELSE', 'CATCH', '->', '=>', 'CLASS']
-      seenControl = yes if tag in ['IF', 'ELSE', 'SWITCH', 'TRY', '=']
-      return yes if tag in ['.', '?.', '::'] and @tag(i - 1) is 'OUTDENT'
-      not token.generated and @tag(i - 1) isnt ',' and (tag in IMPLICIT_END or
-        (tag is 'INDENT' and not seenControl)) and
-        (tag isnt 'INDENT' or
-          (@tag(i - 2) not in ['CLASS', 'EXTENDS'] and @tag(i - 1) not in IMPLICIT_BLOCK and
-          not ((post = @tokens[i + 1]) and post.generated and post[0] is '{')))
-
-    action = (token, i) ->
-      @tokens.splice i, 0, @generate 'CALL_END', ')', token[2]
-
-    @scanTokens 0, (token, i, tokens) ->
-      tag     = token[0]
-      noCall  = yes if tag in ['CLASS', 'IF']
-      [prev, current, next] = tokens[i - 1 .. i + 1]
-      callObject  = not noCall and tag is 'INDENT' and
-                    next and next.generated and next[0] is '{' and
-                    prev and prev[0] in IMPLICIT_FUNC
-      seenSingle  = no
-      seenControl = no
-      noCall      = no if tag in LINEBREAKS
-      token.call  = yes if prev and not prev.spaced and tag is '?'
-      return 1 if token.fromThen
-      return 1 unless callObject or
-        prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
-        (tag in IMPLICIT_CALL or not (token.spaced or token.newLine) and tag in IMPLICIT_UNSPACED_CALL)
-      tokens.splice i, 0, @generate 'CALL_START', '(', token[2]
-      @detectEnd i + 1, condition, action
-      prev[0] = 'FUNC_EXIST' if prev[0] is '?'
-      2
+    @scanTokens 0, (token, i) ->
+      offset = addStartAndEnd(token, i)
+      return offset if offset?
+      1
 
   # Because our grammar is LALR(1), it can't handle some single-line
   # expressions that lack ending delimiters. The **Rewriter** adds the implicit
