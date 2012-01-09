@@ -619,3 +619,15 @@ test "#1980: regression with an inherited class with static function members", -
     @static: => 'value'
     
   eq B.static(), 'value'
+
+test "#1896: decorators", ->
+
+  prefixDecorator = (prefix, fn) ->
+    (args...) ->
+      prefix + fn(args...)
+
+  class A
+    foobar: prefixDecorator 'foo', ->
+      'bar'
+
+  eq (new A).foobar(), 'foobar'
