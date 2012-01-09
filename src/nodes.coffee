@@ -780,6 +780,14 @@ exports.Obj = class Obj extends Base
 
   compileNode: (o) ->
     props = @properties
+    propNames = []
+    for prop in @properties
+      prop = prop.variable if prop.isComplex()
+      if prop?
+        propName = prop.unwrapAll().value.toString()
+        if propName in propNames
+          throw SyntaxError "duplicate data property #{propName} in object literals are not allowed"
+        propNames.push propName
     return (if @front then '({})' else '{}') unless props.length
     if @generated
       for node in props when node instanceof Value
