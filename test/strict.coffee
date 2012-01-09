@@ -31,11 +31,20 @@ test "Octal Integer Literals prohibited", ->
   strictOk  '`01`'
 
 test "Octal Escape Sequences prohibited", ->
-  strict    'e = "\\01"'
-  strict    'e = "\\0777"'
-  strictOk  'e = "\\09"'
-  strictOk  'e = "\\07777"'
-  strictOk  "e = `'\033[0;1m'`"
+  strict    '"\\0"'
+  strict    '"\\7"'
+  strict    '"\\000"'
+  strict    '"\\777"'
+  strict    '"_\\0"'
+  strict    '"\\0_"'
+  strict    '"_\\0_"'
+  strict    '"\\08"'
+  strict    '"\\\\\\0"'
+  strictOk  '"\\8"'
+  strictOk  '"\\\\0"'
+  strictOk  '"\\\\\\\\0"'
+  strictOk  "`'\\0'`"
+  
 
 test "duplicate property definitions in `Object Literal`s are prohibited", ->
   strict 'o = {x:1,x:1}'
