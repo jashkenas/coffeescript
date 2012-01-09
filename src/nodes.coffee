@@ -2351,7 +2351,7 @@ exports.TameRequire = class TameRequire extends Base
         window_mode = true if v is "window"
         if window_mode
           window_val = new Value new Literal v
-        InlineDeferral.generate(window_val.copy())
+        InlineDeferral.generate(if window_val then window_val.copy() else null)
       when "node"
         file = new Literal "'coffee-script'"
         access = new Access new Literal tame.const.ns
@@ -2580,7 +2580,7 @@ exports.For = class For extends While
 
     # Handle the case of 'for i in [0..10]'
     else if @range and @name
-      condition = new Op '<', @name, @source.base.to
+      condition = new Op '<=', @name, @source.base.to
       init = [ new Assign @name, @source.base.from ]
       step = new Op '++', @name
 
