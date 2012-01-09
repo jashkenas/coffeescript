@@ -670,7 +670,7 @@ i <span class="Keyword">=</span> <span class="Number">0</span>;
     <span class="Keyword">return</span> _while(__tame_k);
   };
   _next <span class="Keyword">=</span> _continue;
-  <span class="Keyword">if</span> (i <span class="Keyword">&lt;</span> <span class="Number">3</span>) {
+  <span class="Keyword">if</span> (i <span class="Keyword">&lt;=</span> <span class="Number">3</span>) {
     (<span class="Storage">function</span>(__tame_k) {
       __tame_deferrals <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">tame.Deferrals</span>(__tame_k);
       slowAlert(<span class="Number">200</span>, <span class="String"><span class="String">&quot;</span>loop iteration <span class="String">&quot;</span></span> <span class="Keyword">+</span> i, __tame_deferrals.<span class="LibraryConstant">defer</span>({}));
@@ -695,7 +695,7 @@ _while = function(__tame_k) {
     return _while(__tame_k);
   };
   _next = _continue;
-  if (i < 3) {
+  if (i <= 3) {
     (function(__tame_k) {
       __tame_deferrals = new tame.Deferrals(__tame_k);
       slowAlert(200, "loop iteration " + i, __tame_deferrals.defer({}));
