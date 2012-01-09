@@ -74,7 +74,7 @@ atest "for k,v in arr testing", (cb) ->
 
 atest "switch-a-roos", (cb) ->
   res = 0
-  for i in [0..5]
+  for i in [0..4]
     await delay defer()
     switch i
       when 0 then res += 1
@@ -235,7 +235,7 @@ atest "AT variable works in an await (2)", (cb) ->
     chill : (autocb) -> await delay defer()
     run : (autocb) ->
       await @chill defer()
-      for i in [0..10]
+      for i in [0..9]
         await @chill defer()
         @inc()
     getVal : -> @val
@@ -284,9 +284,9 @@ atest "fat arrow versus tame", (cb) ->
 
  atest "nested loops", (cb) ->
   val = 0
-  for i in [0..10]
+  for i in [0..9]
     await delay(defer(),1)
-    for j in [0..10]
+    for j in [0..9]
       await delay(defer(),1)
       val++
   cb(val is 100, {})
@@ -449,7 +449,7 @@ atest 'expressions + loops', (cb) ->
   parrot = (n, cb) ->
     await delay defer()
     cb n
-  x = for i in [0..10]
+  x = for i in [0..9]
     await parrot i, defer _
   y = while i--
     await parrot i, defer _
