@@ -269,4 +269,10 @@ test "#1961, #1974, regression with compound assigning to an implicit object", -
     four: 4
     
   eq obj.four, 4
-  
+
+test "#2007: Return object literal from comprehension", ->
+  y = for x in [1, 2]
+    foo: "foo"
+    bar: "bar"
+
+  eq y[0].foo, "foo"
