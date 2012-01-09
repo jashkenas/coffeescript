@@ -1467,6 +1467,10 @@ exports.Op = class Op extends Base
     # In chains, there's no need to wrap bare obj literals in parens,
     # as the chained expression is wrapped.
     @first.front = @front unless isChain
+    if @operator is 'delete' and o.scope.check(@first.unwrapAll().value)
+      throw SyntaxError 'delete operand may not be argument or var'
+    if @operator in ['--', '++'] and @first.unwrapAll().value in STRICT_PROSCRIBED
+        throw SyntaxError 'prefix increment/decrement may not have eval or arguments operand'
     return @compileUnary     o if @isUnary()
     return @compileChain     o if isChain
     return @compileExistence o if @operator is '?'
