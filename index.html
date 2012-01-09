@@ -1,6 +1,4 @@
 
-
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -10,8 +8,7 @@
   <link rel="stylesheet" type="text/css" href="documentation/css/idle.css" />
   <link rel="shortcut icon" href="documentation/images/favicon.ico" />
   <script>
-  var __tame_k,
-  __slice = Array.prototype.slice;
+  var __slice = Array.prototype.slice;
 
 window.tame = {
   Deferrals: (function() {
@@ -45,7 +42,7 @@ window.tame = {
 
   })()
 }
-__tame_k = function() {};
+window.__tame_k = function() {};
 
   </script>
 </head>
@@ -528,8 +525,9 @@ Expressions
     <p>
      <span id ="tame" class = "bookmark"></span>
      <b class="header">Tame Basics</b>
-    </p>
 Here is simple example that waits for 1 second, and then calls <tt>alert</tt>:
+    </p>
+    <p>
     <div class='code'><pre class="idle">await setTimeout defer(), 1000
 alert &quot;back after a 1s delay&quot;
 </pre><pre class="idle"><span class="Storage">var</span> __tame_deferrals, __tame_k,
@@ -544,21 +542,203 @@ alert &quot;back after a 1s delay&quot;
 })(<span class="Storage">function</span>() {
   <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>back after a 1s delay<span class="String">&quot;</span></span>);
 });
-</pre><script>window.example2 = "await setTimeout defer(), 1000\nalert \"back after a 1s delay\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example2);'>load</div><br class='clear' /></div>
+</pre><script>window.example2 = "await setTimeout defer(), 1000\nalert \"back after a 1s delay\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example2);'>load</div><div class='minibutton ok' onclick='javascript: var __tame_deferrals, __tame_k,
+  _this = this;
 
-There is one new language addition here, the <tt>await { ... }</tt>
-block, and also one new primitive function, <tt>defer</tt>.  The two
-of them work in concert.  A function must "wait" at the close of an
-await block until all deferrals made in that await block are
-fulfilled.  The function <tt>defer</tt> returns a callback, and a
-callee in an await block can fulfill a deferral by simply calling the
-callback it was given.  In the code above, there is only one deferral
-produced in each iteration of the loop, so after it's fulfilled by
-`setTimer` in 1000ms, control continues past the `await` block, onto
-the alert.  The code looks and feels like threaded code, but is still
-in the asynchronous idiom (if you look at the rewritten code output by
-the <tt>coffee</tt> compiler).
+__tame_k = function() {};
 
+(function(__tame_k) {
+  __tame_deferrals = new tame.Deferrals(__tame_k);
+  setTimeout(__tame_deferrals.defer({}), 1000);
+  __tame_deferrals._fulfill();
+})(function() {
+  return alert("back after a 1s delay");
+});
+;'>run</div><br class='clear' /></div>
+    </p>
+
+    <p>
+    There is one new language addition here, the <tt>await { ... }</tt> block, 
+    and also one new primitive
+    function, <tt>defer</tt>.  The two of them work in concert.  A
+    function must "wait" at the close of an await block until all
+    deferrals made in that await block are fulfilled.  The
+    function <tt>defer</tt> returns a callback, and a callee in an
+    await block can fulfill a deferral by simply calling the callback
+    it was given.  In the code above, there is only one deferral
+    produced, so after it's fulfilled by `setTimer` in 1000ms, control
+    continues past the `await` block, onto the alert.  The code looks
+    and feels like threaded code, but is still in the asynchronous
+    idiom (if you look at the rewritten code output by
+    the <tt>coffee</tt> compiler).
+    </p>
+
+    <p>
+    The next example shows some of the power of the tame primitives.
+    In the following examples, there are two operations that fire in
+    parallel, and a third that fires after the first two complete:
+    </p>
+
+    <p>
+    <div class='code'><pre class="idle">window.slowAlert = (w,s,cb) -&gt;
+  await setTimeout defer(), w
+  alert s
+  cb()
+await
+  slowAlert 500, &quot;hello&quot;, defer()
+  slowAlert 1000, &quot;friend&quot;, defer()
+await slowAlert 500, &quot;back after a delay&quot;, defer()
+</pre><pre class="idle"><span class="Storage">var</span> __tame_deferrals, __tame_k,
+  _this <span class="Keyword">=</span> <span class="Variable">this</span>;
+
+<span class="FunctionName">__tame_k</span> = <span class="Storage">function</span>() {};
+
+<span class="LibraryClassType">window</span>.<span class="FunctionName">slowAlert</span> = <span class="Storage">function</span>(<span class="FunctionArgument">w, s, cb</span>) {
+  <span class="Storage">var</span> __tame_deferrals,
+    _this <span class="Keyword">=</span> <span class="Variable">this</span>;
+  (<span class="Storage">function</span>(__tame_k) {
+    __tame_deferrals <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">tame.Deferrals</span>(__tame_k);
+    <span class="LibraryFunction">setTimeout</span>(__tame_deferrals.<span class="LibraryConstant">defer</span>({}), w);
+    __tame_deferrals._fulfill();
+  })(<span class="Storage">function</span>() {
+    <span class="LibraryFunction">alert</span>(s);
+    <span class="Keyword">return</span> cb();
+  });
+};
+
+(<span class="Storage">function</span>(__tame_k) {
+  __tame_deferrals <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">tame.Deferrals</span>(__tame_k);
+  slowAlert(<span class="Number">500</span>, <span class="String"><span class="String">&quot;</span>hello<span class="String">&quot;</span></span>, __tame_deferrals.<span class="LibraryConstant">defer</span>({}));
+  slowAlert(<span class="Number">1000</span>, <span class="String"><span class="String">&quot;</span>friend<span class="String">&quot;</span></span>, __tame_deferrals.<span class="LibraryConstant">defer</span>({}));
+  __tame_deferrals._fulfill();
+})(<span class="Storage">function</span>() {
+  __tame_deferrals <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">tame.Deferrals</span>(__tame_k);
+  slowAlert(<span class="Number">500</span>, <span class="String"><span class="String">&quot;</span>back after a delay<span class="String">&quot;</span></span>, __tame_deferrals.<span class="LibraryConstant">defer</span>({}));
+  __tame_deferrals._fulfill();
+});
+</pre><script>window.example3 = "window.slowAlert = (w,s,cb) ->\n  await setTimeout defer(), w\n  alert s\n  cb()\nawait\n  slowAlert 500, \"hello\", defer()\n  slowAlert 1000, \"friend\", defer()\nawait slowAlert 500, \"back after a delay\", defer()\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example3);'>load</div><div class='minibutton ok' onclick='javascript: var __tame_deferrals, __tame_k,
+  _this = this;
+
+__tame_k = function() {};
+
+window.slowAlert = function(w, s, cb) {
+  var __tame_deferrals,
+    _this = this;
+  (function(__tame_k) {
+    __tame_deferrals = new tame.Deferrals(__tame_k);
+    setTimeout(__tame_deferrals.defer({}), w);
+    __tame_deferrals._fulfill();
+  })(function() {
+    alert(s);
+    return cb();
+  });
+};
+
+(function(__tame_k) {
+  __tame_deferrals = new tame.Deferrals(__tame_k);
+  slowAlert(500, "hello", __tame_deferrals.defer({}));
+  slowAlert(1000, "friend", __tame_deferrals.defer({}));
+  __tame_deferrals._fulfill();
+})(function() {
+  __tame_deferrals = new tame.Deferrals(__tame_k);
+  slowAlert(500, "back after a delay", __tame_deferrals.defer({}));
+  __tame_deferrals._fulfill();
+});
+;'>run</div><br class='clear' /></div>
+    </p>
+
+    <p>
+    As one might expect, the tame constructs interoperate with standard
+    coffee control structures.  The following program will call
+    <tt>slowAlert</tt> three times sequentially:
+    </p>
+
+    <p>
+    <div class='code'><pre class="idle">for i in [0..3]
+  await slowAlert 200, &quot;loop iteration #{i}&quot;, defer()
+</pre><pre class="idle"><span class="Storage">var</span> i, __tame_deferrals, _i, _next, _while,
+  _this <span class="Keyword">=</span> <span class="Variable">this</span>;
+
+<span class="FunctionName">__tame_k</span> = <span class="Storage">function</span>() {};
+
+i <span class="Keyword">=</span> <span class="Number">0</span>;
+<span class="FunctionName">_while</span> = <span class="Storage">function</span>(<span class="FunctionArgument">__tame_k</span>) {
+  <span class="Storage">var</span> _break, _continue;
+  _break <span class="Keyword">=</span> __tame_k;
+  <span class="FunctionName">_continue</span> = <span class="Storage">function</span>() {
+    <span class="Keyword">++</span>i;
+    <span class="Keyword">return</span> _while(__tame_k);
+  };
+  _next <span class="Keyword">=</span> _continue;
+  <span class="Keyword">if</span> (i <span class="Keyword">&lt;</span> <span class="Number">3</span>) {
+    (<span class="Storage">function</span>(__tame_k) {
+      __tame_deferrals <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">tame.Deferrals</span>(__tame_k);
+      slowAlert(<span class="Number">200</span>, <span class="String"><span class="String">&quot;</span>loop iteration <span class="String">&quot;</span></span> <span class="Keyword">+</span> i, __tame_deferrals.<span class="LibraryConstant">defer</span>({}));
+      __tame_deferrals._fulfill();
+    })(_next);
+  } <span class="Keyword">else</span> {
+    <span class="Keyword">return</span> _break();
+  }
+};
+_while(__tame_k);
+</pre><script>window.example4 = "for i in [0..3]\n  await slowAlert 200, \"loop iteration #{i}\", defer()\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example4);'>load</div><div class='minibutton ok' onclick='javascript: var i, __tame_deferrals, _i, _next, _while,
+  _this = this;
+
+__tame_k = function() {};
+
+i = 0;
+_while = function(__tame_k) {
+  var _break, _continue;
+  _break = __tame_k;
+  _continue = function() {
+    ++i;
+    return _while(__tame_k);
+  };
+  _next = _continue;
+  if (i < 3) {
+    (function(__tame_k) {
+      __tame_deferrals = new tame.Deferrals(__tame_k);
+      slowAlert(200, "loop iteration " + i, __tame_deferrals.defer({}));
+      __tame_deferrals._fulfill();
+    })(_next);
+  } else {
+    return _break();
+  }
+};
+_while(__tame_k);
+;'>run</div><br class='clear' /></div>
+    </p>
+    
+    <p>
+    To fire those asynchronous calls in parallel, simply exchange 
+    the <tt>for</tt> and <tt>await</tt> blocks:
+    </p>
+
+    <p>
+    <div class='code'><pre class="idle">await
+  for i in [0..3]
+    slowAlert 200, &quot;loop iteration #{i}&quot;, defer()
+</pre><pre class="idle"><span class="Storage">var</span> i, __tame_deferrals, __tame_k, _i;
+
+<span class="FunctionName">__tame_k</span> = <span class="Storage">function</span>() {};
+
+__tame_deferrals <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">tame.Deferrals</span>(__tame_k);
+<span class="Keyword">for</span> (i <span class="Keyword">=</span> _i <span class="Keyword">=</span> <span class="Number">0</span>; _i <span class="Keyword">&lt;=</span> <span class="Number">3</span>; i <span class="Keyword">=</span> <span class="Keyword">++</span>_i) {
+  slowAlert(<span class="Number">200</span>, <span class="String"><span class="String">&quot;</span>loop iteration <span class="String">&quot;</span></span> <span class="Keyword">+</span> i, __tame_deferrals.<span class="LibraryConstant">defer</span>({}));
+}
+__tame_deferrals._fulfill();
+</pre><script>window.example5 = "await\n  for i in [0..3]\n    slowAlert 200, \"loop iteration #{i}\", defer()\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example5);'>load</div><div class='minibutton ok' onclick='javascript: var i, __tame_deferrals, __tame_k, _i;
+
+__tame_k = function() {};
+
+__tame_deferrals = new tame.Deferrals(__tame_k);
+for (i = _i = 0; _i <= 3; i = ++_i) {
+  slowAlert(200, "loop iteration " + i, __tame_deferrals.defer({}));
+}
+__tame_deferrals._fulfill();
+;'>run</div><br class='clear' /></div>
+    </p>
+    
 
     <p>
       <span id="literals" class="bookmark"></span>
@@ -578,7 +758,7 @@ cube   = (x) -&gt; square(x) * x
 <span class="FunctionName">cube</span> = <span class="Storage">function</span>(<span class="FunctionArgument">x</span>) {
   <span class="Keyword">return</span> square(x) <span class="Keyword">*</span> x;
 };
-</pre><script>window.example3 = "square = (x) -> x * x\ncube   = (x) -> square(x) * x\n\nalert cube(5)"</script><div class='minibutton load' onclick='javascript: loadConsole(example3);'>load</div><div class='minibutton ok' onclick='javascript: var cube, square;
+</pre><script>window.example6 = "square = (x) -> x * x\ncube   = (x) -> square(x) * x\n\nalert cube(5)"</script><div class='minibutton load' onclick='javascript: loadConsole(example6);'>load</div><div class='minibutton ok' onclick='javascript: var cube, square;
 
 square = function(x) {
   return x * x;
@@ -606,7 +786,7 @@ cube = function(x) {
   <span class="Keyword">if</span> (liquid <span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) liquid <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>coffee<span class="String">&quot;</span></span>;
   <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>Filling the <span class="String">&quot;</span></span> <span class="Keyword">+</span> container <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> with <span class="String">&quot;</span></span> <span class="Keyword">+</span> liquid <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>...<span class="String">&quot;</span></span>;
 };
-</pre><script>window.example4 = "fill = (container, liquid = \"coffee\") ->\n  \"Filling the #{container} with #{liquid}...\"\n\nalert fill(\"cup\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example4);'>load</div><div class='minibutton ok' onclick='javascript: var fill;
+</pre><script>window.example7 = "fill = (container, liquid = \"coffee\") ->\n  \"Filling the #{container} with #{liquid}...\"\n\nalert fill(\"cup\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example7);'>load</div><div class='minibutton ok' onclick='javascript: var fill;
 
 fill = function(container, liquid) {
   if (liquid == null) liquid = "coffee";
@@ -662,7 +842,7 @@ kids <span class="Keyword">=</span> {
     age: <span class="Number">9</span>
   }
 };
-</pre><script>window.example5 = "song = [\"do\", \"re\", \"mi\", \"fa\", \"so\"]\n\nsingers = {Jagger: \"Rock\", Elvis: \"Roll\"}\n\nbitlist = [\n  1, 0, 1\n  0, 0, 1\n  1, 1, 0\n]\n\nkids =\n  brother:\n    name: \"Max\"\n    age:  11\n  sister:\n    name: \"Ida\"\n    age:  9\n\nalert song.join(\" ... \")"</script><div class='minibutton load' onclick='javascript: loadConsole(example5);'>load</div><div class='minibutton ok' onclick='javascript: var bitlist, kids, singers, song;
+</pre><script>window.example8 = "song = [\"do\", \"re\", \"mi\", \"fa\", \"so\"]\n\nsingers = {Jagger: \"Rock\", Elvis: \"Roll\"}\n\nbitlist = [\n  1, 0, 1\n  0, 0, 1\n  1, 1, 0\n]\n\nkids =\n  brother:\n    name: \"Max\"\n    age:  11\n  sister:\n    name: \"Ida\"\n    age:  9\n\nalert song.join(\" ... \")"</script><div class='minibutton load' onclick='javascript: loadConsole(example8);'>load</div><div class='minibutton ok' onclick='javascript: var bitlist, kids, singers, song;
 
 song = ["do", "re", "mi", "fa", "so"];
 
@@ -701,7 +881,7 @@ log object.class
 });
 
 <span class="LibraryFunction">log</span>(object[<span class="String"><span class="String">&quot;</span>class<span class="String">&quot;</span></span>]);
-</pre><script>window.example6 = "$('.account').attr class: 'active'\n\nlog object.class\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example6);'>load</div><br class='clear' /></div>
+</pre><script>window.example9 = "$('.account').attr class: 'active'\n\nlog object.class\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example9);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="lexical_scope" class="bookmark"></span>
@@ -726,7 +906,7 @@ outer <span class="Keyword">=</span> <span class="Number">1</span>;
 };
 
 inner <span class="Keyword">=</span> changeNumbers();
-</pre><script>window.example7 = "outer = 1\nchangeNumbers = ->\n  inner = -1\n  outer = 10\ninner = changeNumbers()\n\nalert inner"</script><div class='minibutton load' onclick='javascript: loadConsole(example7);'>load</div><div class='minibutton ok' onclick='javascript: var changeNumbers, inner, outer;
+</pre><script>window.example10 = "outer = 1\nchangeNumbers = ->\n  inner = -1\n  outer = 10\ninner = changeNumbers()\n\nalert inner"</script><div class='minibutton load' onclick='javascript: loadConsole(example10);'>load</div><div class='minibutton ok' onclick='javascript: var changeNumbers, inner, outer;
 
 outer = 1;
 
@@ -809,7 +989,7 @@ options or= defaults
 date <span class="Keyword">=</span> friday ? sue : jill;
 
 options <span class="Keyword">||</span> (options <span class="Keyword">=</span> defaults);
-</pre><script>window.example8 = "mood = greatlyImproved if singing\n\nif happy and knowsIt\n  clapsHands()\n  chaChaCha()\nelse\n  showIt()\n\ndate = if friday then sue else jill\n\noptions or= defaults\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example8);'>load</div><br class='clear' /></div>
+</pre><script>window.example11 = "mood = greatlyImproved if singing\n\nif happy and knowsIt\n  clapsHands()\n  chaChaCha()\nelse\n  showIt()\n\ndate = if friday then sue else jill\n\noptions or= defaults\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example11);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="splats" class="bookmark"></span>
@@ -868,7 +1048,7 @@ awardMedals.<span class="LibraryFunction">apply</span>(<span class="BuiltInConst
 <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Silver: <span class="String">&quot;</span></span> <span class="Keyword">+</span> silver);
 
 <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>The Field: <span class="String">&quot;</span></span> <span class="Keyword">+</span> rest);
-</pre><script>window.example9 = "gold = silver = rest = \"unknown\"\n\nawardMedals = (first, second, others...) ->\n  gold   = first\n  silver = second\n  rest   = others\n\ncontenders = [\n  \"Michael Phelps\"\n  \"Liu Xiang\"\n  \"Yao Ming\"\n  \"Allyson Felix\"\n  \"Shawn Johnson\"\n  \"Roman Sebrle\"\n  \"Guo Jingjing\"\n  \"Tyson Gay\"\n  \"Asafa Powell\"\n  \"Usain Bolt\"\n]\n\nawardMedals contenders...\n\nalert \"Gold: \" + gold\nalert \"Silver: \" + silver\nalert \"The Field: \" + rest\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example9);'>load</div><div class='minibutton ok' onclick='javascript: var awardMedals, contenders, gold, rest, silver,
+</pre><script>window.example12 = "gold = silver = rest = \"unknown\"\n\nawardMedals = (first, second, others...) ->\n  gold   = first\n  silver = second\n  rest   = others\n\ncontenders = [\n  \"Michael Phelps\"\n  \"Liu Xiang\"\n  \"Yao Ming\"\n  \"Allyson Felix\"\n  \"Shawn Johnson\"\n  \"Roman Sebrle\"\n  \"Guo Jingjing\"\n  \"Tyson Gay\"\n  \"Asafa Powell\"\n  \"Usain Bolt\"\n]\n\nawardMedals contenders...\n\nalert \"Gold: \" + gold\nalert \"Silver: \" + silver\nalert \"The Field: \" + rest\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example12);'>load</div><div class='minibutton ok' onclick='javascript: var awardMedals, contenders, gold, rest, silver,
   __slice = Array.prototype.slice;
 
 gold = silver = rest = "unknown";
@@ -932,7 +1112,7 @@ foods <span class="Keyword">=</span> [<span class="String"><span class="String">
   food <span class="Keyword">=</span> foods[_k];
   <span class="Keyword">if</span> (food <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">'</span>chocolate<span class="String">'</span></span>) eat(food);
 }
-</pre><script>window.example10 = "# Eat lunch.\neat food for food in ['toast', 'cheese', 'wine']\n\n# Fine five course dining.\ncourses = ['greens', 'caviar', 'truffles', 'roast', 'cake']\nmenu i + 1, dish for dish, i in courses\n\n# Health conscious meal.\nfoods = ['broccoli', 'spinach', 'chocolate']\neat food for food in foods when food isnt 'chocolate'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example10);'>load</div><br class='clear' /></div>
+</pre><script>window.example13 = "# Eat lunch.\neat food for food in ['toast', 'cheese', 'wine']\n\n# Fine five course dining.\ncourses = ['greens', 'caviar', 'truffles', 'roast', 'cake']\nmenu i + 1, dish for dish, i in courses\n\n# Health conscious meal.\nfoods = ['broccoli', 'spinach', 'chocolate']\neat food for food in foods when food isnt 'chocolate'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example13);'>load</div><br class='clear' /></div>
     <p>
       Comprehensions should be able to handle most places where you otherwise
       would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>, for example:
@@ -953,7 +1133,7 @@ countdown <span class="Keyword">=</span> (<span class="Storage">function</span>(
   }
   <span class="Keyword">return</span> _results;
 })();
-</pre><script>window.example11 = "countdown = (num for num in [10..1])\n\nalert countdown"</script><div class='minibutton load' onclick='javascript: loadConsole(example11);'>load</div><div class='minibutton ok' onclick='javascript: var countdown, num;
+</pre><script>window.example14 = "countdown = (num for num in [10..1])\n\nalert countdown"</script><div class='minibutton load' onclick='javascript: loadConsole(example14);'>load</div><div class='minibutton ok' onclick='javascript: var countdown, num;
 
 countdown = (function() {
   var _i, _results;
@@ -1004,7 +1184,7 @@ ages <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   }
   <span class="Keyword">return</span> _results;
 })();
-</pre><script>window.example12 = "yearsOld = max: 10, ida: 9, tim: 11\n\nages = for child, age of yearsOld\n  \"#{child} is #{age}\"\n\nalert ages.join(\", \")"</script><div class='minibutton load' onclick='javascript: loadConsole(example12);'>load</div><div class='minibutton ok' onclick='javascript: var age, ages, child, yearsOld;
+</pre><script>window.example15 = "yearsOld = max: 10, ida: 9, tim: 11\n\nages = for child, age of yearsOld\n  \"#{child} is #{age}\"\n\nalert ages.join(\", \")"</script><div class='minibutton load' onclick='javascript: loadConsole(example15);'>load</div><div class='minibutton ok' onclick='javascript: var age, ages, child, yearsOld;
 
 yearsOld = {
   max: 10,
@@ -1065,7 +1245,7 @@ lyrics <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   }
   <span class="Keyword">return</span> _results;
 })();
-</pre><script>window.example13 = "# Econ 101\nif this.studyingEconomics\n  buy()  while supply > demand\n  sell() until supply > demand\n\n# Nursery Rhyme\nnum = 6\nlyrics = while num -= 1\n  \"#{num} little monkeys, jumping on the bed.\n    One fell out and bumped his head.\"\n\nalert lyrics.join(\"\\n\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example13);'>load</div><div class='minibutton ok' onclick='javascript: var lyrics, num;
+</pre><script>window.example16 = "# Econ 101\nif this.studyingEconomics\n  buy()  while supply > demand\n  sell() until supply > demand\n\n# Nursery Rhyme\nnum = 6\nlyrics = while num -= 1\n  \"#{num} little monkeys, jumping on the bed.\n    One fell out and bumped his head.\"\n\nalert lyrics.join(\"\\n\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example16);'>load</div><div class='minibutton ok' onclick='javascript: var lyrics, num;
 
 if (this.studyingEconomics) {
   while (supply > demand) {
@@ -1113,7 +1293,7 @@ lyrics = (function() {
   filename <span class="Keyword">=</span> list[_i];
   _fn(filename);
 }
-</pre><script>window.example14 = "for filename in list\n  do (filename) ->\n    fs.readFile filename, (err, contents) ->\n      compile filename, contents.toString()"</script><div class='minibutton load' onclick='javascript: loadConsole(example14);'>load</div><br class='clear' /></div>
+</pre><script>window.example17 = "for filename in list\n  do (filename) ->\n    fs.readFile filename, (err, contents) ->\n      compile filename, contents.toString()"</script><div class='minibutton load' onclick='javascript: loadConsole(example17);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="slices" class="bookmark"></span>
@@ -1136,7 +1316,7 @@ numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span cla
 copy <span class="Keyword">=</span> numbers.<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, numbers.<span class="LibraryConstant">length</span>);
 
 middle <span class="Keyword">=</span> copy.<span class="LibraryFunction">slice</span>(<span class="Number">3</span>, <span class="Number">7</span>);
-</pre><script>window.example15 = "numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\ncopy    = numbers[0...numbers.length]\n\nmiddle  = copy[3..6]\n\nalert middle"</script><div class='minibutton load' onclick='javascript: loadConsole(example15);'>load</div><div class='minibutton ok' onclick='javascript: var copy, middle, numbers;
+</pre><script>window.example18 = "numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\ncopy    = numbers[0...numbers.length]\n\nmiddle  = copy[3..6]\n\nalert middle"</script><div class='minibutton load' onclick='javascript: loadConsole(example18);'>load</div><div class='minibutton ok' onclick='javascript: var copy, middle, numbers;
 
 numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -1160,7 +1340,7 @@ numbers[3..6] = [-3, -4, -5, -6]
 numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
 
 [].splice.<span class="LibraryFunction">apply</span>(numbers, [<span class="Number">3</span>, <span class="Number">4</span>].<span class="LibraryFunction">concat</span>(_ref <span class="Keyword">=</span> [<span class="Keyword">-</span><span class="Number">3</span>, <span class="Keyword">-</span><span class="Number">4</span>, <span class="Keyword">-</span><span class="Number">5</span>, <span class="Keyword">-</span><span class="Number">6</span>])), _ref;
-</pre><script>window.example16 = "numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nnumbers[3..6] = [-3, -4, -5, -6]\n\nalert numbers"</script><div class='minibutton load' onclick='javascript: loadConsole(example16);'>load</div><div class='minibutton ok' onclick='javascript: var numbers, _ref;
+</pre><script>window.example19 = "numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nnumbers[3..6] = [-3, -4, -5, -6]\n\nalert numbers"</script><div class='minibutton load' onclick='javascript: loadConsole(example19);'>load</div><div class='minibutton ok' onclick='javascript: var numbers, _ref;
 
 numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -1205,7 +1385,7 @@ eldest = if 24 &gt; 21 then &quot;Liz&quot; else &quot;Ike&quot;
 };
 
 eldest <span class="Keyword">=</span> <span class="Number">24</span> <span class="Keyword">&gt;</span> <span class="Number">21</span> ? <span class="String"><span class="String">&quot;</span>Liz<span class="String">&quot;</span></span> : <span class="String"><span class="String">&quot;</span>Ike<span class="String">&quot;</span></span>;
-</pre><script>window.example17 = "grade = (student) ->\n  if student.excellentWork\n    \"A+\"\n  else if student.okayStuff\n    if student.triedHard then \"B\" else \"B-\"\n  else\n    \"C\"\n\neldest = if 24 > 21 then \"Liz\" else \"Ike\"\n\nalert eldest"</script><div class='minibutton load' onclick='javascript: loadConsole(example17);'>load</div><div class='minibutton ok' onclick='javascript: var eldest, grade;
+</pre><script>window.example20 = "grade = (student) ->\n  if student.excellentWork\n    \"A+\"\n  else if student.okayStuff\n    if student.triedHard then \"B\" else \"B-\"\n  else\n    \"C\"\n\neldest = if 24 > 21 then \"Liz\" else \"Ike\"\n\nalert eldest"</script><div class='minibutton load' onclick='javascript: loadConsole(example20);'>load</div><div class='minibutton ok' onclick='javascript: var eldest, grade;
 
 grade = function(student) {
   if (student.excellentWork) {
@@ -1238,7 +1418,7 @@ eldest = 24 > 21 ? "Liz" : "Ike";
 </pre><pre class="idle"><span class="Storage">var</span> one, six, three, two;
 
 six <span class="Keyword">=</span> (one <span class="Keyword">=</span> <span class="Number">1</span>) <span class="Keyword">+</span> (two <span class="Keyword">=</span> <span class="Number">2</span>) <span class="Keyword">+</span> (three <span class="Keyword">=</span> <span class="Number">3</span>);
-</pre><script>window.example18 = "six = (one = 1) + (two = 2) + (three = 3)\n\nalert six"</script><div class='minibutton load' onclick='javascript: loadConsole(example18);'>load</div><div class='minibutton ok' onclick='javascript: var one, six, three, two;
+</pre><script>window.example21 = "six = (one = 1) + (two = 2) + (three = 3)\n\nalert six"</script><div class='minibutton load' onclick='javascript: loadConsole(example21);'>load</div><div class='minibutton ok' onclick='javascript: var one, six, three, two;
 
 six = (one = 1) + (two = 2) + (three = 3);
 ;alert(six);'>run: six</div><br class='clear' /></div>
@@ -1261,7 +1441,7 @@ globals <span class="Keyword">=</span> ((<span class="Storage">function</span>()
   }
   <span class="Keyword">return</span> _results;
 })()).<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
-</pre><script>window.example19 = "# The first ten global properties.\n\nglobals = (name for name of window)[0...10]\n\nalert globals"</script><div class='minibutton load' onclick='javascript: loadConsole(example19);'>load</div><div class='minibutton ok' onclick='javascript: var globals, name;
+</pre><script>window.example22 = "# The first ten global properties.\n\nglobals = (name for name of window)[0...10]\n\nalert globals"</script><div class='minibutton load' onclick='javascript: loadConsole(example22);'>load</div><div class='minibutton ok' onclick='javascript: var globals, name;
 
 globals = ((function() {
   var _results;
@@ -1291,7 +1471,7 @@ globals = ((function() {
     <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>And the error is ... <span class="String">&quot;</span></span> <span class="Keyword">+</span> error;
   }
 })());
-</pre><script>window.example20 = "alert(\n  try\n    nonexistent / undefined\n  catch error\n    \"And the error is ... #{error}\"\n)\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example20);'>load</div><div class='minibutton ok' onclick='javascript: 
+</pre><script>window.example23 = "alert(\n  try\n    nonexistent / undefined\n  catch error\n    \"And the error is ... #{error}\"\n)\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example23);'>load</div><div class='minibutton ok' onclick='javascript: 
 alert((function() {
   try {
     return nonexistent / void 0;
@@ -1386,7 +1566,7 @@ print inspect &quot;My name is #{@name}&quot;
 <span class="Keyword">if</span> (pick <span class="Keyword">===</span> <span class="Number">47</span> <span class="Keyword">||</span> pick <span class="Keyword">===</span> <span class="Number">92</span> <span class="Keyword">||</span> pick <span class="Keyword">===</span> <span class="Number">13</span>) winner <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
 
 <span class="LibraryFunction">print</span>(inspect(<span class="String"><span class="String">&quot;</span>My name is <span class="String">&quot;</span></span> <span class="Keyword">+</span> <span class="Variable">this</span>.<span class="LibraryConstant">name</span>));
-</pre><script>window.example21 = "launch() if ignition is on\n\nvolume = 10 if band isnt SpinalTap\n\nletTheWildRumpusBegin() unless answer is no\n\nif car.speed < limit then accelerate()\n\nwinner = yes if pick in [47, 92, 13]\n\nprint inspect \"My name is #{@name}\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example21);'>load</div><br class='clear' /></div>
+</pre><script>window.example24 = "launch() if ignition is on\n\nvolume = 10 if band isnt SpinalTap\n\nletTheWildRumpusBegin() unless answer is no\n\nif car.speed < limit then accelerate()\n\nwinner = yes if pick in [47, 92, 13]\n\nprint inspect \"My name is #{@name}\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example24);'>load</div><br class='clear' /></div>
 
     <p>
       <b class="header">The Existential Operator</b>
@@ -1421,7 +1601,7 @@ footprints = yeti ? &quot;bear&quot;
 <span class="Keyword">if</span> (<span class="Keyword">typeof</span> speed <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">||</span> speed <span class="Keyword">===</span> <span class="BuiltInConstant">null</span>) speed <span class="Keyword">=</span> <span class="Number">75</span>;
 
 footprints <span class="Keyword">=</span> <span class="Keyword">typeof</span> yeti <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> yeti <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span> ? yeti : <span class="String"><span class="String">&quot;</span>bear<span class="String">&quot;</span></span>;
-</pre><script>window.example22 = "solipsism = true if mind? and not world?\n\nspeed ?= 75\n\nfootprints = yeti ? \"bear\"\n\nalert footprints"</script><div class='minibutton load' onclick='javascript: loadConsole(example22);'>load</div><div class='minibutton ok' onclick='javascript: var footprints, solipsism;
+</pre><script>window.example25 = "solipsism = true if mind? and not world?\n\nspeed ?= 75\n\nfootprints = yeti ? \"bear\"\n\nalert footprints"</script><div class='minibutton load' onclick='javascript: loadConsole(example25);'>load</div><div class='minibutton ok' onclick='javascript: var footprints, solipsism;
 
 if ((typeof mind !== "undefined" && mind !== null) && !(typeof world !== "undefined" && world !== null)) {
   solipsism = true;
@@ -1443,7 +1623,7 @@ footprints = typeof yeti !== "undefined" && yeti !== null ? yeti : "bear";
 </pre><pre class="idle"><span class="Storage">var</span> zip, _ref;
 
 zip <span class="Keyword">=</span> <span class="Keyword">typeof</span> lottery.drawWinner <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>function<span class="String">&quot;</span></span> ? (_ref <span class="Keyword">=</span> lottery.drawWinner().address) <span class="Keyword">!</span><span class="Keyword">=</span> <span class="BuiltInConstant">null</span> ? _ref.zipcode : <span class="Storage">void</span> <span class="Number">0</span> : <span class="Storage">void</span> <span class="Number">0</span>;
-</pre><script>window.example23 = "zip = lottery.drawWinner?().address?.zipcode\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example23);'>load</div><br class='clear' /></div>
+</pre><script>window.example26 = "zip = lottery.drawWinner?().address?.zipcode\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example26);'>load</div><br class='clear' /></div>
     <p>
       Soaking up nulls is similar to Ruby's
       <a href="http://andand.rubyforge.org/">andand gem</a>, and to the
@@ -1566,7 +1746,7 @@ tom <span class="Keyword">=</span> <span class="Keyword">new</span> <span class=
 sam.move();
 
 tom.move();
-</pre><script>window.example24 = "class Animal\n  constructor: (@name) ->\n\n  move: (meters) ->\n    alert @name + \" moved #{meters}m.\"\n\nclass Snake extends Animal\n  move: ->\n    alert \"Slithering...\"\n    super 5\n\nclass Horse extends Animal\n  move: ->\n    alert \"Galloping...\"\n    super 45\n\nsam = new Snake \"Sammy the Python\"\ntom = new Horse \"Tommy the Palomino\"\n\nsam.move()\ntom.move()\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example24);'>load</div><div class='minibutton ok' onclick='javascript: var Animal, Horse, Snake, sam, tom,
+</pre><script>window.example27 = "class Animal\n  constructor: (@name) ->\n\n  move: (meters) ->\n    alert @name + \" moved #{meters}m.\"\n\nclass Snake extends Animal\n  move: ->\n    alert \"Slithering...\"\n    super 5\n\nclass Horse extends Animal\n  move: ->\n    alert \"Galloping...\"\n    super 45\n\nsam = new Snake \"Sammy the Python\"\ntom = new Horse \"Tommy the Palomino\"\n\nsam.move()\ntom.move()\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example27);'>load</div><div class='minibutton ok' onclick='javascript: var Animal, Horse, Snake, sam, tom,
   __hasProp = Object.prototype.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
@@ -1647,7 +1827,7 @@ tom.move();
 <span class="LibraryClassType">String</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">dasherize</span> = <span class="Storage">function</span>() {
   <span class="Keyword">return</span> <span class="Variable">this</span>.<span class="LibraryFunction">replace</span>(<span class="String"><span class="String">/</span>_<span class="String">/</span>g</span>, <span class="String"><span class="String">&quot;</span>-<span class="String">&quot;</span></span>);
 };
-</pre><script>window.example25 = "String::dasherize = ->\n  this.replace /_/g, \"-\"\n\nalert \"one_two\".dasherize()"</script><div class='minibutton load' onclick='javascript: loadConsole(example25);'>load</div><div class='minibutton ok' onclick='javascript: 
+</pre><script>window.example28 = "String::dasherize = ->\n  this.replace /_/g, \"-\"\n\nalert \"one_two\".dasherize()"</script><div class='minibutton load' onclick='javascript: loadConsole(example28);'>load</div><div class='minibutton ok' onclick='javascript: 
 String.prototype.dasherize = function() {
   return this.replace(/_/g, "-");
 };
@@ -1687,7 +1867,7 @@ theBait <span class="Keyword">=</span> <span class="Number">1000</span>;
 theSwitch <span class="Keyword">=</span> <span class="Number">0</span>;
 
 _ref <span class="Keyword">=</span> [theSwitch, theBait], theBait <span class="Keyword">=</span> _ref[<span class="Number">0</span>], theSwitch <span class="Keyword">=</span> _ref[<span class="Number">1</span>];
-</pre><script>window.example26 = "theBait   = 1000\ntheSwitch = 0\n\n[theBait, theSwitch] = [theSwitch, theBait]\n\nalert theBait"</script><div class='minibutton load' onclick='javascript: loadConsole(example26);'>load</div><div class='minibutton ok' onclick='javascript: var theBait, theSwitch, _ref;
+</pre><script>window.example29 = "theBait   = 1000\ntheSwitch = 0\n\n[theBait, theSwitch] = [theSwitch, theBait]\n\nalert theBait"</script><div class='minibutton load' onclick='javascript: loadConsole(example29);'>load</div><div class='minibutton ok' onclick='javascript: var theBait, theSwitch, _ref;
 
 theBait = 1000;
 
@@ -1715,7 +1895,7 @@ _ref = [theSwitch, theBait], theBait = _ref[0], theSwitch = _ref[1];
 };
 
 _ref <span class="Keyword">=</span> weatherReport(<span class="String"><span class="String">&quot;</span>Berkeley, CA<span class="String">&quot;</span></span>), city <span class="Keyword">=</span> _ref[<span class="Number">0</span>], temp <span class="Keyword">=</span> _ref[<span class="Number">1</span>], forecast <span class="Keyword">=</span> _ref[<span class="Number">2</span>];
-</pre><script>window.example27 = "weatherReport = (location) ->\n  # Make an Ajax request to fetch the weather...\n  [location, 72, \"Mostly Sunny\"]\n\n[city, temp, forecast] = weatherReport \"Berkeley, CA\"\n\nalert forecast"</script><div class='minibutton load' onclick='javascript: loadConsole(example27);'>load</div><div class='minibutton ok' onclick='javascript: var city, forecast, temp, weatherReport, _ref;
+</pre><script>window.example30 = "weatherReport = (location) ->\n  # Make an Ajax request to fetch the weather...\n  [location, 72, \"Mostly Sunny\"]\n\n[city, temp, forecast] = weatherReport \"Berkeley, CA\"\n\nalert forecast"</script><div class='minibutton load' onclick='javascript: loadConsole(example30);'>load</div><div class='minibutton ok' onclick='javascript: var city, forecast, temp, weatherReport, _ref;
 
 weatherReport = function(location) {
   return [location, 72, "Mostly Sunny"];
@@ -1753,7 +1933,7 @@ futurists <span class="Keyword">=</span> {
 };
 
 _ref <span class="Keyword">=</span> futurists.poet, name <span class="Keyword">=</span> _ref.<span class="LibraryConstant">name</span>, (_ref2 <span class="Keyword">=</span> _ref.address, street <span class="Keyword">=</span> _ref2[<span class="Number">0</span>], city <span class="Keyword">=</span> _ref2[<span class="Number">1</span>]);
-</pre><script>window.example28 = "futurists =\n  sculptor: \"Umberto Boccioni\"\n  painter:  \"Vladimir Burliuk\"\n  poet:\n    name:   \"F.T. Marinetti\"\n    address: [\n      \"Via Roma 42R\"\n      \"Bellagio, Italy 22021\"\n    ]\n\n{poet: {name, address: [street, city]}} = futurists\n\nalert name + \" - \" + street"</script><div class='minibutton load' onclick='javascript: loadConsole(example28);'>load</div><div class='minibutton ok' onclick='javascript: var city, futurists, name, street, _ref, _ref2;
+</pre><script>window.example31 = "futurists =\n  sculptor: \"Umberto Boccioni\"\n  painter:  \"Vladimir Burliuk\"\n  poet:\n    name:   \"F.T. Marinetti\"\n    address: [\n      \"Via Roma 42R\"\n      \"Bellagio, Italy 22021\"\n    ]\n\n{poet: {name, address: [street, city]}} = futurists\n\nalert name + \" - \" + street"</script><div class='minibutton load' onclick='javascript: loadConsole(example31);'>load</div><div class='minibutton ok' onclick='javascript: var city, futurists, name, street, _ref, _ref2;
 
 futurists = {
   sculptor: "Umberto Boccioni",
@@ -1784,7 +1964,7 @@ _ref = futurists.poet, name = _ref.name, (_ref2 = _ref.address, street = _ref2[0
 tag <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>&lt;impossible&gt;<span class="String">&quot;</span></span>;
 
 _ref <span class="Keyword">=</span> tag.<span class="LibraryFunction">split</span>(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span>), open <span class="Keyword">=</span> _ref[<span class="Number">0</span>], contents <span class="Keyword">=</span> <span class="Number">3</span> <span class="Keyword">&lt;=</span> _ref.<span class="LibraryConstant">length</span> ? __slice.<span class="LibraryFunction">call</span>(_ref, <span class="Number">1</span>, _i <span class="Keyword">=</span> _ref.<span class="LibraryConstant">length</span> <span class="Keyword">-</span> <span class="Number">1</span>) : (_i <span class="Keyword">=</span> <span class="Number">1</span>, []), close <span class="Keyword">=</span> _ref[_i<span class="Keyword">++</span>];
-</pre><script>window.example29 = "tag = \"<impossible>\"\n\n[open, contents..., close] = tag.split(\"\")\n\nalert contents.join(\"\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example29);'>load</div><div class='minibutton ok' onclick='javascript: var close, contents, open, tag, _i, _ref,
+</pre><script>window.example32 = "tag = \"<impossible>\"\n\n[open, contents..., close] = tag.split(\"\")\n\nalert contents.join(\"\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example32);'>load</div><div class='minibutton ok' onclick='javascript: var close, contents, open, tag, _i, _ref,
   __slice = Array.prototype.slice;
 
 tag = "<impossible>";
@@ -1826,7 +2006,7 @@ _ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? __slice.call
     <span class="Keyword">return</span> _this.customer.purchase(_this.cart);
   });
 };
-</pre><script>window.example30 = "Account = (customer, cart) ->\n  @customer = customer\n  @cart = cart\n\n  $('.shopping_cart').bind 'click', (event) =>\n    @customer.purchase @cart"</script><div class='minibutton load' onclick='javascript: loadConsole(example30);'>load</div><br class='clear' /></div>
+</pre><script>window.example33 = "Account = (customer, cart) ->\n  @customer = customer\n  @cart = cart\n\n  $('.shopping_cart').bind 'click', (event) =>\n    @customer.purchase @cart"</script><div class='minibutton load' onclick='javascript: loadConsole(example33);'>load</div><br class='clear' /></div>
     <p>
       If we had used <tt>-&gt;</tt> in the callback above, <tt>@customer</tt> would
       have referred to the undefined "customer" property of the DOM element,
@@ -1856,7 +2036,7 @@ _ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? __slice.call
 <span class="FunctionName">hi</span> = <span class="Storage">function</span>() {
   <span class="Keyword">return</span> [<span class="LibraryClassType">document</span>.<span class="LibraryConstant">title</span>, <span class="String"><span class="String">&quot;</span>Hello JavaScript<span class="String">&quot;</span></span>].<span class="LibraryFunction">join</span>(<span class="String"><span class="String">&quot;</span>: <span class="String">&quot;</span></span>);
 };
-</pre><script>window.example31 = "hi = `function() {\n  return [document.title, \"Hello JavaScript\"].join(\": \");\n}`\n\nalert hi()"</script><div class='minibutton load' onclick='javascript: loadConsole(example31);'>load</div><div class='minibutton ok' onclick='javascript: var hi;
+</pre><script>window.example34 = "hi = `function() {\n  return [document.title, \"Hello JavaScript\"].join(\": \");\n}`\n\nalert hi()"</script><div class='minibutton load' onclick='javascript: loadConsole(example34);'>load</div><div class='minibutton ok' onclick='javascript: var hi;
 
 hi = function() {
   return [document.title, "Hello JavaScript"].join(": ");
@@ -1912,7 +2092,7 @@ hi = function() {
   <span class="Keyword">default</span>:
     <span class="LibraryFunction">go</span>(work);
 }
-</pre><script>window.example32 = "switch day\n  when \"Mon\" then go work\n  when \"Tue\" then go relax\n  when \"Thu\" then go iceFishing\n  when \"Fri\", \"Sat\"\n    if day is bingoDay\n      go bingo\n      go dancing\n  when \"Sun\" then go church\n  else go work"</script><div class='minibutton load' onclick='javascript: loadConsole(example32);'>load</div><br class='clear' /></div>
+</pre><script>window.example35 = "switch day\n  when \"Mon\" then go work\n  when \"Tue\" then go relax\n  when \"Thu\" then go iceFishing\n  when \"Fri\", \"Sat\"\n    if day is bingoDay\n      go bingo\n      go dancing\n  when \"Sun\" then go church\n  else go work"</script><div class='minibutton load' onclick='javascript: loadConsole(example35);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="try" class="bookmark"></span>
@@ -1937,7 +2117,7 @@ finally
 } <span class="Keyword">finally</span> {
   cleanUp();
 }
-</pre><script>window.example33 = "try\n  allHellBreaksLoose()\n  catsAndDogsLivingTogether()\ncatch error\n  print error\nfinally\n  cleanUp()\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example33);'>load</div><br class='clear' /></div>
+</pre><script>window.example36 = "try\n  allHellBreaksLoose()\n  catsAndDogsLivingTogether()\ncatch error\n  print error\nfinally\n  cleanUp()\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example36);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="comparisons" class="bookmark"></span>
@@ -1957,7 +2137,7 @@ healthy = 200 &gt; cholesterol &gt; 60
 cholesterol <span class="Keyword">=</span> <span class="Number">127</span>;
 
 healthy <span class="Keyword">=</span> (<span class="Number">200</span> <span class="Keyword">&gt;</span> cholesterol <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> cholesterol <span class="Keyword">&gt;</span> <span class="Number">60</span>);
-</pre><script>window.example34 = "cholesterol = 127\n\nhealthy = 200 > cholesterol > 60\n\nalert healthy"</script><div class='minibutton load' onclick='javascript: loadConsole(example34);'>load</div><div class='minibutton ok' onclick='javascript: var cholesterol, healthy;
+</pre><script>window.example37 = "cholesterol = 127\n\nhealthy = 200 > cholesterol > 60\n\nalert healthy"</script><div class='minibutton load' onclick='javascript: loadConsole(example37);'>load</div><div class='minibutton ok' onclick='javascript: var cholesterol, healthy;
 
 cholesterol = 127;
 
@@ -1987,7 +2167,7 @@ author <span class="Keyword">=</span> <span class="String"><span class="String">
 quote <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String">&quot;</span></span> <span class="Keyword">+</span> author;
 
 sentence <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> (<span class="Number">22</span> / <span class="Number">7</span>) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is a decent approximation of pi<span class="String">&quot;</span></span>;
-</pre><script>window.example35 = "author = \"Wittgenstein\"\nquote  = \"A picture is a fact. -- #{ author }\"\n\nsentence = \"#{ 22 / 7 } is a decent approximation of pi\"\n\nalert sentence"</script><div class='minibutton load' onclick='javascript: loadConsole(example35);'>load</div><div class='minibutton ok' onclick='javascript: var author, quote, sentence;
+</pre><script>window.example38 = "author = \"Wittgenstein\"\nquote  = \"A picture is a fact. -- #{ author }\"\n\nsentence = \"#{ 22 / 7 } is a decent approximation of pi\"\n\nalert sentence"</script><div class='minibutton load' onclick='javascript: loadConsole(example38);'>load</div><div class='minibutton ok' onclick='javascript: var author, quote, sentence;
 
 author = "Wittgenstein";
 
@@ -2009,7 +2189,7 @@ sentence = "" + (22 / 7) + " is a decent approximation of pi";
 </pre><pre class="idle"><span class="Storage">var</span> mobyDick;
 
 mobyDick <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...<span class="String">&quot;</span></span>;
-</pre><script>window.example36 = "mobyDick = \"Call me Ishmael. Some years ago --\n never mind how long precisely -- having little\n or no money in my purse, and nothing particular\n to interest me on shore, I thought I would sail\n about a little and see the watery part of the\n world...\"\n\nalert mobyDick"</script><div class='minibutton load' onclick='javascript: loadConsole(example36);'>load</div><div class='minibutton ok' onclick='javascript: var mobyDick;
+</pre><script>window.example39 = "mobyDick = \"Call me Ishmael. Some years ago --\n never mind how long precisely -- having little\n or no money in my purse, and nothing particular\n to interest me on shore, I thought I would sail\n about a little and see the watery part of the\n world...\"\n\nalert mobyDick"</script><div class='minibutton load' onclick='javascript: loadConsole(example39);'>load</div><div class='minibutton ok' onclick='javascript: var mobyDick;
 
 mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...";
 ;alert(mobyDick);'>run: mobyDick</div><br class='clear' /></div>
@@ -2028,7 +2208,7 @@ mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- 
 </pre><pre class="idle"><span class="Storage">var</span> html;
 
 html <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>&lt;strong&gt;<span class="UserDefinedConstant">\n</span>  cup of coffeescript<span class="UserDefinedConstant">\n</span>&lt;/strong&gt;<span class="String">&quot;</span></span>;
-</pre><script>window.example37 = "html = \"\"\"\n       <strong>\n         cup of coffeescript\n       </strong>\n       \"\"\"\n\nalert html"</script><div class='minibutton load' onclick='javascript: loadConsole(example37);'>load</div><div class='minibutton ok' onclick='javascript: var html;
+</pre><script>window.example40 = "html = \"\"\"\n       <strong>\n         cup of coffeescript\n       </strong>\n       \"\"\"\n\nalert html"</script><div class='minibutton load' onclick='javascript: loadConsole(example40);'>load</div><div class='minibutton ok' onclick='javascript: var html;
 
 html = "<strong>\n  cup of coffeescript\n</strong>";
 ;alert(html);'>run: html</div><br class='clear' /></div>
@@ -2052,7 +2232,7 @@ Released under the MIT License
 <span class="Comment">Released under the MIT License</span>
 <span class="Comment"><span class="Comment">*/</span></span>
 
-</pre><script>window.example38 = "###\nCoffeeScript Compiler v1.2.0\nReleased under the MIT License\n###\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example38);'>load</div><br class='clear' /></div>
+</pre><script>window.example41 = "###\nCoffeeScript Compiler v1.2.0\nReleased under the MIT License\n###\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example41);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="regexes" class="bookmark"></span>
@@ -2077,7 +2257,7 @@ Released under the MIT License
 </pre><pre class="idle"><span class="Storage">var</span> OPERATOR;
 
 OPERATOR <span class="Keyword">=</span><span class="String"> <span class="String">/</span>^(?:[-=]&gt;|[-+*<span class="UserDefinedConstant">\/</span>%&lt;&gt;&amp;|^!?=]=|&gt;&gt;&gt;=?|([-+:])<span class="UserDefinedConstant">\1</span>|([&amp;|&lt;&gt;])<span class="UserDefinedConstant">\2</span>=?|<span class="UserDefinedConstant">\?</span><span class="UserDefinedConstant">\.</span>|<span class="UserDefinedConstant">\.</span>{2,3})<span class="String">/</span></span>;
-</pre><script>window.example39 = "OPERATOR = /// ^ (\n  ?: [-=]>             # function\n   | [-+*/%<>&|^!?=]=  # compound assign / compare\n   | >>>=?             # zero-fill right shift\n   | ([-+:])\\1         # doubles\n   | ([&|<>])\\2=?      # logic / shift\n   | \\?\\.              # soak access\n   | \\.{2,3}           # range or splat\n) ///\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example39);'>load</div><br class='clear' /></div>
+</pre><script>window.example42 = "OPERATOR = /// ^ (\n  ?: [-=]>             # function\n   | [-+*/%<>&|^!?=]=  # compound assign / compare\n   | >>>=?             # zero-fill right shift\n   | ([-+:])\\1         # doubles\n   | ([&|<>])\\2=?      # logic / shift\n   | \\?\\.              # soak access\n   | \\.{2,3}           # range or splat\n) ///\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example42);'>load</div><br class='clear' /></div>
 
 
     <h2>
@@ -2125,7 +2305,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
   dir <span class="Keyword">=</span> options.output <span class="Keyword">||</span> <span class="String"><span class="String">'</span>lib<span class="String">'</span></span>;
   <span class="Keyword">return</span> fs.writeFile(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> dir <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>/parser.js<span class="String">&quot;</span></span>, code);
 });
-</pre><script>window.example40 = "fs = require 'fs'\n\noption '-o', '--output [DIR]', 'directory for compiled code'\n\ntask 'build:parser', 'rebuild the Jison parser', (options) ->\n  require 'jison'\n  code = require('./lib/grammar').parser.generate()\n  dir  = options.output or 'lib'\n  fs.writeFile \"#{dir}/parser.js\", code"</script><div class='minibutton load' onclick='javascript: loadConsole(example40);'>load</div><br class='clear' /></div>
+</pre><script>window.example43 = "fs = require 'fs'\n\noption '-o', '--output [DIR]', 'directory for compiled code'\n\ntask 'build:parser', 'rebuild the Jison parser', (options) ->\n  require 'jison'\n  code = require('./lib/grammar').parser.generate()\n  dir  = options.output or 'lib'\n  fs.writeFile \"#{dir}/parser.js\", code"</script><div class='minibutton load' onclick='javascript: loadConsole(example43);'>load</div><br class='clear' /></div>
     <p>
       If you need to invoke one task before another &mdash; for example, running
       <tt>build</tt> before <tt>test</tt>, you can use the <tt>invoke</tt> function:

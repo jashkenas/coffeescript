@@ -21,8 +21,6 @@
     "<div class='code'>#{cshtml}#{jshtml}#{script}#{import}#{button}<br class='clear' /></div>"
   end
 %>
-
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -406,23 +404,57 @@ Expressions
     <p>
      <span id ="tame" class = "bookmark"></span>
      <b class="header">Tame Basics</b>
-    </p>
 Here is simple example that waits for 1 second, and then calls <tt>alert</tt>:
-    <%= code_for('tame_basics_1') %>
+    </p>
+    <p>
+    <%= code_for('tame_basics_1', true) %>
+    </p>
 
-There is one new language addition here, the <tt>await { ... }</tt>
-block, and also one new primitive function, <tt>defer</tt>.  The two
-of them work in concert.  A function must "wait" at the close of an
-await block until all deferrals made in that await block are
-fulfilled.  The function <tt>defer</tt> returns a callback, and a
-callee in an await block can fulfill a deferral by simply calling the
-callback it was given.  In the code above, there is only one deferral
-produced in each iteration of the loop, so after it's fulfilled by
-`setTimer` in 1000ms, control continues past the `await` block, onto
-the alert.  The code looks and feels like threaded code, but is still
-in the asynchronous idiom (if you look at the rewritten code output by
-the <tt>coffee</tt> compiler).
+    <p>
+    There is one new language addition here, the <tt>await { ... }</tt> block, 
+    and also one new primitive
+    function, <tt>defer</tt>.  The two of them work in concert.  A
+    function must "wait" at the close of an await block until all
+    deferrals made in that await block are fulfilled.  The
+    function <tt>defer</tt> returns a callback, and a callee in an
+    await block can fulfill a deferral by simply calling the callback
+    it was given.  In the code above, there is only one deferral
+    produced, so after it's fulfilled by `setTimer` in 1000ms, control
+    continues past the `await` block, onto the alert.  The code looks
+    and feels like threaded code, but is still in the asynchronous
+    idiom (if you look at the rewritten code output by
+    the <tt>coffee</tt> compiler).
+    </p>
 
+    <p>
+    The next example shows some of the power of the tame primitives.
+    In the following examples, there are two operations that fire in
+    parallel, and a third that fires after the first two complete:
+    </p>
+
+    <p>
+    <%= code_for('tame_basics_2', true) %>
+    </p>
+
+    <p>
+    As one might expect, the tame constructs interoperate with standard
+    coffee control structures.  The following program will call
+    <tt>slowAlert</tt> three times sequentially:
+    </p>
+
+    <p>
+    <%= code_for('tame_loops_1', true) %>
+    </p>
+    
+    <p>
+    To fire those asynchronous calls in parallel, simply exchange 
+    the <tt>for</tt> and <tt>await</tt> blocks:
+    </p>
+
+    <p>
+    <%= code_for('tame_loops_2', true) %>
+    </p>
+    
 
     <p>
       <span id="literals" class="bookmark"></span>
