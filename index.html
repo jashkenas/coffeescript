@@ -9,6 +9,45 @@
   <link rel="stylesheet" type="text/css" href="documentation/css/docs.css" />
   <link rel="stylesheet" type="text/css" href="documentation/css/idle.css" />
   <link rel="shortcut icon" href="documentation/images/favicon.ico" />
+  <script>
+  var __tame_k,
+  __slice = Array.prototype.slice;
+
+window.tame = {
+  Deferrals: (function() {
+
+    function _Class(_arg) {
+      this.continuation = _arg;
+      this.count = 1;
+      this.ret = null;
+    }
+
+    _Class.prototype._fulfill = function() {
+      if (!--this.count) return this.continuation(this.ret);
+    };
+
+    _Class.prototype.defer = function(defer_params) {
+      var _this = this;
+      ++this.count;
+      return function() {
+        var inner_params, _ref;
+        inner_params = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        if (defer_params != null) {
+          if ((_ref = defer_params.assign_fn) != null) {
+            _ref.apply(null, inner_params);
+          }
+        }
+        return _this._fulfill();
+      };
+    };
+
+    return _Class;
+
+  })()
+}
+__tame_k = function() {};
+
+  </script>
 </head>
 <body>
 
@@ -490,7 +529,36 @@ Expressions
      <span id ="tame" class = "bookmark"></span>
      <b class="header">Tame Basics</b>
     </p>
-    
+Here is simple example that waits for 1 second, and then calls <tt>alert</tt>:
+    <div class='code'><pre class="idle">await setTimeout defer(), 1000
+alert &quot;back after a 1s delay&quot;
+</pre><pre class="idle"><span class="Storage">var</span> __tame_deferrals, __tame_k,
+  _this <span class="Keyword">=</span> <span class="Variable">this</span>;
+
+<span class="FunctionName">__tame_k</span> = <span class="Storage">function</span>() {};
+
+(<span class="Storage">function</span>(__tame_k) {
+  __tame_deferrals <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">tame.Deferrals</span>(__tame_k);
+  <span class="LibraryFunction">setTimeout</span>(__tame_deferrals.<span class="LibraryConstant">defer</span>({}), <span class="Number">1000</span>);
+  __tame_deferrals._fulfill();
+})(<span class="Storage">function</span>() {
+  <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>back after a 1s delay<span class="String">&quot;</span></span>);
+});
+</pre><script>window.example2 = "await setTimeout defer(), 1000\nalert \"back after a 1s delay\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example2);'>load</div><br class='clear' /></div>
+
+There is one new language addition here, the <tt>await { ... }</tt>
+block, and also one new primitive function, <tt>defer</tt>.  The two
+of them work in concert.  A function must "wait" at the close of an
+await block until all deferrals made in that await block are
+fulfilled.  The function <tt>defer</tt> returns a callback, and a
+callee in an await block can fulfill a deferral by simply calling the
+callback it was given.  In the code above, there is only one deferral
+produced in each iteration of the loop, so after it's fulfilled by
+`setTimer` in 1000ms, control continues past the `await` block, onto
+the alert.  The code looks and feels like threaded code, but is still
+in the asynchronous idiom (if you look at the rewritten code output by
+the <tt>coffee</tt> compiler).
+
 
     <p>
       <span id="literals" class="bookmark"></span>
