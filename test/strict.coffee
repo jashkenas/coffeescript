@@ -100,32 +100,50 @@ test "`delete` operand restrictions", ->
   strict '([a]) -> delete a'
   strict '({a}) -> delete a'
 
-test "`Future Reserved Word`s as identifiers prohibited", ->
-  futures = 'implements interface let package private protected public static yield'.split ' '
-  for keyword in futures
-    strict "#{keyword} = 1"
-    strict "class #{keyword}"
-    strict "try new Error catch #{keyword}"
-    strict "(#{keyword}) ->"
-    strict "{keyword}++"
-    strict "++{keyword}"
-    strict "{keyword}--"
-    strict "--{keyword}"
+test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
 
-test "`eval` and `arguments` use restricted", ->
-  proscribeds = 'eval arguments'.split ' '
-  for proscribed in proscribeds
-    strict "#{proscribed} = 1"
-    strict "class #{proscribed}"
-    strict "try new Error catch #{proscribed}"
-    strict "(#{proscribed}) ->"
-    strict "{proscribed}++"
-    strict "++{proscribed}"
-    strict "{proscribed}--"
-    strict "--{proscribed}"
-  strictOk "eval 'true'"
-  strictOk "-> arguments[0]"
+  access = (keyword, check = strict) ->
+    check "#{keyword}.a = 1"
+    check "#{keyword}[0] = 1"
+  assign = (keyword, check = strict) ->
+    check "#{keyword} = 1"
+    check "#{keyword} += 1"
+    check "#{keyword} -= 1"
+    check "#{keyword} *= 1"
+    check "#{keyword} /= 1"
+    check "#{keyword} ?= 1"
+    check "{keyword}++"
+    check "++{keyword}"
+    check "{keyword}--"
+    check "--{keyword}"
+  invoke = (keyword, check = strict) ->  
+    check "#{keyword} yes"
+    check "do #{keyword}"
+  fnDecl = (keyword, check = strict) ->
+    check "class #{keyword}"
+  param = (keyword, check = strict) ->
+    check "(#{keyword}) ->"
+    check "({#{keyword}}) ->"
+  prop = (keyword, check = strict) ->
+    check "a.#{keyword} = 1"
+  tryCatch = (keyword, check = strict) ->  
+    check "try new Error catch #{keyword}"
 
+  future = 'implements interface let package private protected public static yield'.split ' '
+  for keyword in future
+    access   keyword
+    assign   keyword
+    invoke   keyword
+    fnDecl   keyword
+    param    keyword
+    prop     keyword, strictOk
+    tryCatch keyword
   
-  
-  
+  for keyword in ['eval', 'arguments']
+    access   keyword, strictOk
+    assign   keyword
+    invoke   keyword, strictOk
+    fnDecl   keyword
+    param    keyword
+    prop     keyword, strictOk
+    tryCatch keyword

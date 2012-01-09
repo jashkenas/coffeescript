@@ -106,7 +106,7 @@ exports.Lexer = class Lexer
             @tokens.pop()
             id = '!' + id
 
-    if id in ['eval', 'arguments'].concat JS_FORBIDDEN
+    if id in JS_FORBIDDEN
       if forcedIdentifier
         tag = 'IDENTIFIER'
         id  = new String id
@@ -576,11 +576,14 @@ RESERVED = [
   'private', 'protected', 'public', 'static', 'yield'
 ]
 
+STRICT_PROSCRIBED = ['arguments', 'eval']
+
 # The superset of both JavaScript keywords and reserved words, none of which may
 # be used as identifiers or properties.
-JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
+JS_FORBIDDEN = JS_KEYWORDS.concat(RESERVED).concat(STRICT_PROSCRIBED)
 
-exports.RESERVED = RESERVED.concat(JS_KEYWORDS).concat(COFFEE_KEYWORDS)
+exports.RESERVED = RESERVED.concat(JS_KEYWORDS).concat(COFFEE_KEYWORDS).concat(STRICT_PROSCRIBED)
+exports.STRICT_PROSCRIBED = STRICT_PROSCRIBED
 
 # Token matching regexes.
 IDENTIFIER = /// ^
