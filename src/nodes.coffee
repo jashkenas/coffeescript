@@ -2342,10 +2342,16 @@ exports.TameRequire = class TameRequire extends Base
     else
       "inline"
 
+    window_mode = false
+    window_val = null
+
     inc = null
     inc = switch (v)
       when "inline", "window"
-        InlineDeferral.generate(if v is "window" then v else null)
+        window_mode = true if v is "window"
+        if window_mode
+          window_val = new Value new Literal v
+        InlineDeferral.generate(window_val.copy())
       when "node"
         file = new Literal "'coffee-script'"
         access = new Access new Literal tame.const.ns
@@ -2362,7 +2368,12 @@ exports.TameRequire = class TameRequire extends Base
 
     rhs = new Code [], new Block []
     lhs = new Value new Literal tame.const.k
+    if window_val
+      window_val.add new Access lhs
+      lhs = window_val
     k = new Assign lhs, rhs
+
+
 
     out + "#{@tab}" + k.compile(o, LEVEL_TOP)
 
@@ -2965,9 +2976,8 @@ InlineDeferral =
     cn = new Value new Literal tame.const.Deferrals
     ns = new Value new Literal tame.const.ns
     if ns_window # window.tame = ...
-      ns_window_val = new Value new Literal ns_window
-      ns_window_val.add new Access ns
-      ns = ns_window_val
+      ns_window.add new Access ns
+      ns = ns_window
 
     # make the constructor:
     #
