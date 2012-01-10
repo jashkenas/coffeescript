@@ -908,7 +908,7 @@ exports.Call = class Call extends Base
   tameCpsRotate: ->
     for a,i in @args
       @args[i] = v if (v = @tameCpsExprRotate a)
-    @variable = v if (v = @tameCpsExprRotate @variable)
+    @variable = v if (@variable and v = @tameCpsExprRotate @variable)
 
   # Soaked chained invocations unfold into if/else ternary structures.
   unfoldSoak: (o) ->
