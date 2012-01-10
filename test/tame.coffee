@@ -348,13 +348,13 @@ atest 'expressions -- simple assignment', (cb) ->
     await delay defer()
     cb(x+1)
   ret = await adder 5, defer _
-  cb(ret == 6, {})
+  cb(ret is 6, {})
 
 atest 'expressions -- simple, but recursive', (cb) ->
   y = if true
     await delay defer()
     10
-  cb(y == 10, {})
+  cb(y is 10, {})
 
 atest 'expressions -- simple, but recursive (2)', (cb) ->
   adder = (x, cb) ->
@@ -363,7 +363,7 @@ atest 'expressions -- simple, but recursive (2)', (cb) ->
   y = if true
     x = await adder 4, defer _
     ++x
-  cb(y == 6, {})
+  cb(y is 6, {})
   
 atest 'expressions -- pass value of tail calls', (cb) ->
   adder = (x, cb) ->
@@ -371,14 +371,14 @@ atest 'expressions -- pass value of tail calls', (cb) ->
     cb(x+1)
   y = if true
     await adder 5, defer _
-  cb(y == 6, {})
+  cb(y is 6, {})
 
 atest 'expressions -- addition (1)', (cb) ->
   slowAdd = (a, b, autocb) ->
     await delay defer()
     a+b
   y = 30 + (await slowAdd 30, 40, defer _)
-  cb(y == 100, {})
+  cb(y is 100, {})
 
 
 atest 'expressions -- addition (2)', (cb) ->
@@ -386,7 +386,7 @@ atest 'expressions -- addition (2)', (cb) ->
     await delay defer()
     a+b
   y = (await slowAdd 10, 20, defer _) + (await slowAdd 30, 40, defer _)
-  cb(y == 100, {})
+  cb(y is 100, {})
   
 atest 'expressions - chaining', (cb) ->
   id = "image data"
@@ -456,7 +456,7 @@ atest 'expressions + loops', (cb) ->
   z = (v + y[i] for v,i in x)
   ok = true
   for v in z
-    ok = false unless v == 9
+    ok = false unless v is 9
   cb(ok, {})
 
 atest 'expressions + loops', (cb) ->
@@ -473,7 +473,7 @@ atest 'expressions + ops + if', (cb) ->
     cb n
   y = if true
     (await parrot 10, defer _) + 1
-  cb(y == 11, {})
+  cb(y is 11, {})
 
 atest 'expressions + ops + if (2)', (cb) ->
   parrot = (n, cb) ->
@@ -481,7 +481,7 @@ atest 'expressions + ops + if (2)', (cb) ->
     cb n
   y = if true
     (await parrot 10, defer _) + 1 + (await parrot 12, defer _)
-  cb(y == 23, {})
+  cb(y is 23, {})
 
 atest 'expressions + ops + if (3)', (cb) ->
   parrot = (n, cb) ->
@@ -490,4 +490,19 @@ atest 'expressions + ops + if (3)', (cb) ->
   y = if true
     (await parrot 10, defer _) + 1
     3
-  cb(y == 3, {})
+  cb(y is 3, {})
+
+atest 'super with no args', (cb) ->
+  class P
+    constructor: ->
+      @x = 10
+  class A extends P
+    constructor : ->
+      super
+    foo : (cb) ->
+      await delay defer()
+      cb()
+  a = new A 
+  await a.foo defer()
+  cb(a.x is 10, {})
+
