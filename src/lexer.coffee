@@ -19,6 +19,9 @@
 # tokens. Some potential ambiguity in the grammar has been avoided by
 # pushing some extra smarts into the Lexer.
 exports.Lexer = class Lexer
+  
+  bumpLine: (label, delta) ->
+    @line += delta
 
   # **tokenize** is the Lexer's main method. Scan by attempting to match tokens
   # one at a time, using a regular expression anchored at the start of the
@@ -32,17 +35,18 @@ exports.Lexer = class Lexer
   # Before returning the token stream, run it through the [Rewriter](rewriter.html)
   # unless explicitly asked not to.
   tokenize: (code, opts = {}) ->
-    code     = "\n#{code}" if WHITESPACE.test code
-    code     = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
+    code       = "\n#{code}" if WHITESPACE.test code
+    code       = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
 
-    @code    = code           # The remainder of the source code.
-    @line    = opts.line or 0 # The current line.
-    @indent  = 0              # The current indentation level.
-    @indebt  = 0              # The over-indentation at the current level.
-    @outdebt = 0              # The under-outdentation at the current level.
-    @indents = []             # The stack of all current indentation levels.
-    @ends    = []             # The stack for pairing up tokens.
-    @tokens  = []             # Stream of parsed tokens in the form `['TYPE', value, line]`.
+    @code      = code           # The remainder of the source code.
+    @line      = opts.line or 0 # The current line.
+    @startLine = @line
+    @indent    = 0              # The current indentation level.
+    @indebt    = 0              # The over-indentation at the current level.
+    @outdebt   = 0              # The under-outdentation at the current level.
+    @indents   = []             # The stack of all current indentation levels.
+    @ends      = []             # The stack for pairing up tokens.
+    @tokens    = []             # Stream of parsed tokens in the form `['TYPE', value, line]`.
 
     # At every position, run through this list of attempted matches,
     # short-circuiting if any of them succeed. Their order determines precedence:
@@ -154,7 +158,7 @@ exports.Lexer = class Lexer
           @token 'STRING', @escapeLines string
       else
         return 0
-    @line += count string, '\n'
+    @bumpLine "stringToken", count string, '\n'
     string.length
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
@@ -168,7 +172,7 @@ exports.Lexer = class Lexer
       @interpolateString doc, heredoc: yes
     else
       @token 'STRING', @makeString doc, quote, yes
-    @line += count heredoc, '\n'
+    @bumpLine "heredocToken", count heredoc, '\n'
     heredoc.length
 
   # Matches and consumes comments.
@@ -179,7 +183,7 @@ exports.Lexer = class Lexer
       @token 'HERECOMMENT', @sanitizeHeredoc here,
         herecomment: true, indent: Array(@indent + 1).join(' ')
       @token 'TERMINATOR', '\n'
-    @line += count comment, '\n'
+    @bumpLine "commentToken", count comment, '\n'
     comment.length
 
   # Matches JavaScript interpolated directly into the source via backticks.
@@ -195,7 +199,7 @@ exports.Lexer = class Lexer
     return 0 if @chunk.charAt(0) isnt '/'
     if match = HEREGEX.exec @chunk
       length = @heregexToken match
-      @line += count match[0], '\n'
+      @bumpLine "regexToken", count match[0], '\n'
       return length
 
     prev = last @tokens
@@ -246,7 +250,7 @@ exports.Lexer = class Lexer
   lineToken: ->
     return 0 unless match = MULTI_DENT.exec @chunk
     indent = match[0]
-    @line += count indent, '\n'
+    @bumpLine "lineToken", count indent, '\n'
     @seenFor = no
     prev = last @tokens, 1
     size = indent.length - 1 - indent.lastIndexOf '\n'
@@ -306,7 +310,9 @@ exports.Lexer = class Lexer
   # Generate a newline token. Consecutive newlines get merged together.
   newlineToken: ->
     @tokens.pop() while @value() is ';'
+    @line -= 1
     @token 'TERMINATOR', '\n' unless @tag() is 'TERMINATOR'
+    @line += 1
     this
 
   # Use a `\` at a line-ending to suppress the newline.
@@ -501,7 +507,8 @@ exports.Lexer = class Lexer
 
   # Add a token to the results, taking note of the line number.
   token: (tag, value) ->
-    @tokens.push [tag, value, @line]
+    @tokens.push [tag, value, @startLine]
+    @startLine = @line
 
   # Peek at a tag in the current token stream.
   tag: (index, tag) ->

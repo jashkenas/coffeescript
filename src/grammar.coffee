@@ -35,6 +35,8 @@ o = (patternString, action, options) ->
   return [patternString, '$$ = $1;', options] unless action
   action = if match = unwrap.exec action then match[1] else "(#{action}())"
   action = action.replace /\bnew /g, '$&yy.'
+  action = action.replace /\$L\(([\w_$]+)\)/g, 'setLocation(new yy.Location(@$1))'
+  action = action.replace /\$L/g, 'setLocation(new yy.Location(@1))'
   action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
   [patternString, "$$ = #{action};", options]
 
@@ -63,7 +65,7 @@ grammar =
 
   # Any list of statements and expressions, separated by line breaks or semicolons.
   Body: [
-    o 'Line',                                   -> Block.wrap [$1]
+    o 'Line',                                   -> Block.wrap([$1]).$L
     o 'Body TERMINATOR Line',                   -> $1.push $3
     o 'Body TERMINATOR'
   ]
@@ -78,7 +80,7 @@ grammar =
   Statement: [
     o 'Return'
     o 'Comment'
-    o 'STATEMENT',                              -> new Literal $1
+    o 'STATEMENT',                              -> new Literal($1).$L
   ]
 
   # All the different types of expressions in our language. The basic unit of
@@ -104,49 +106,49 @@ grammar =
   # will convert some postfix forms into blocks for us, by adjusting the
   # token stream.
   Block: [
-    o 'INDENT OUTDENT',                         -> new Block
+    o 'INDENT OUTDENT',                         -> new Block().$L
     o 'INDENT Body OUTDENT',                    -> $2
   ]
 
   # A literal identifier, a variable name or property.
   Identifier: [
-    o 'IDENTIFIER',                             -> new Literal $1
+    o 'IDENTIFIER',                             -> new Literal($1).$L
   ]
 
   # Alphanumerics are separated from the other **Literal** matchers because
   # they can also serve as keys in object literals.
   AlphaNumeric: [
-    o 'NUMBER',                                 -> new Literal $1
-    o 'STRING',                                 -> new Literal $1
+    o 'NUMBER',                                 -> new Literal($1).$L
+    o 'STRING',                                 -> new Literal($1).$L
   ]
 
   # All of our immediate values. Generally these can be passed straight
   # through and printed to JavaScript.
   Literal: [
     o 'AlphaNumeric'
-    o 'JS',                                     -> new Literal $1
-    o 'REGEX',                                  -> new Literal $1
-    o 'DEBUGGER',                               -> new Literal $1
+    o 'JS',                                     -> new Literal($1).$L
+    o 'REGEX',                                  -> new Literal($1).$L
+    o 'DEBUGGER',                               -> new Literal($1).$L
     o 'BOOL',                                   ->
-      val = new Literal $1
+      val = new Literal($1).$L
       val.isUndefined = yes if $1 is 'undefined'
       val
   ]
 
   # Assignment of a variable, property, or index to a value.
   Assign: [
-    o 'Assignable = Expression',                -> new Assign $1, $3
-    o 'Assignable = TERMINATOR Expression',     -> new Assign $1, $4
-    o 'Assignable = INDENT Expression OUTDENT', -> new Assign $1, $4
+    o 'Assignable = Expression',                -> new Assign($1, $3).$L
+    o 'Assignable = TERMINATOR Expression',     -> new Assign($1, $4).$L
+    o 'Assignable = INDENT Expression OUTDENT', -> new Assign($1, $4).$L
   ]
 
   # Assignment when it happens within an object literal. The difference from
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
-    o 'ObjAssignable',                          -> new Value $1
-    o 'ObjAssignable : Expression',             -> new Assign new Value($1), $3, 'object'
+    o 'ObjAssignable',                          -> new Value($1).$L
+    o 'ObjAssignable : Expression',             -> new Assign(new Value($1).$L, $3, 'object').$L
     o 'ObjAssignable :
-       INDENT Expression OUTDENT',              -> new Assign new Value($1), $4, 'object'
+       INDENT Expression OUTDENT',              -> new Assign(new Value($1).$L, $4, 'object').$L
     o 'Comment'
   ]
 
@@ -158,21 +160,21 @@ grammar =
 
   # A return statement from a function body.
   Return: [
-    o 'RETURN Expression',                      -> new Return $2
-    o 'RETURN',                                 -> new Return
+    o 'RETURN Expression',                      -> new Return($2).$L
+    o 'RETURN',                                 -> new Return().$L
   ]
 
   # A block comment.
   Comment: [
-    o 'HERECOMMENT',                            -> new Comment $1
+    o 'HERECOMMENT',                            -> new Comment($1).$L
   ]
 
   # The **Code** node is the function literal. It's defined by an indented block
   # of **Block** preceded by a function arrow, with an optional parameter
   # list.
   Code: [
-    o 'PARAM_START ParamList PARAM_END FuncGlyph Block', -> new Code $2, $5, $4
-    o 'FuncGlyph Block',                        -> new Code [], $2, $1
+    o 'PARAM_START ParamList PARAM_END FuncGlyph Block', -> new Code($2, $5, $4).$L
+    o 'FuncGlyph Block',                        -> new Code([], $2, $1).$L
   ]
 
   # CoffeeScript has two different symbols for functions. `->` is for ordinary
@@ -198,9 +200,9 @@ grammar =
   # A single parameter in a function definition can be ordinary, or a splat
   # that hoovers up the remaining arguments.
   Param: [
-    o 'ParamVar',                               -> new Param $1
-    o 'ParamVar ...',                           -> new Param $1, null, on
-    o 'ParamVar = Expression',                  -> new Param $1, $3
+    o 'ParamVar',                               -> new Param($1).$L
+    o 'ParamVar ...',                           -> new Param($1, null, on).$L
+    o 'ParamVar = Expression',                  -> new Param($1, $3).$L
   ]
 
  # Function Parameters
@@ -213,41 +215,41 @@ grammar =
 
   # A splat that occurs outside of a parameter list.
   Splat: [
-    o 'Expression ...',                         -> new Splat $1
+    o 'Expression ...',                         -> new Splat($1).$L
   ]
 
   # Variables and properties that can be assigned to.
   SimpleAssignable: [
-    o 'Identifier',                             -> new Value $1
+    o 'Identifier',                             -> new Value($1).$L
     o 'Value Accessor',                         -> $1.add $2
-    o 'Invocation Accessor',                    -> new Value $1, [].concat $2
+    o 'Invocation Accessor',                    -> new Value($1, [].concat $2).$L
     o 'ThisProperty'
   ]
 
   # Everything that can be assigned to.
   Assignable: [
     o 'SimpleAssignable'
-    o 'Array',                                  -> new Value $1
-    o 'Object',                                 -> new Value $1
+    o 'Array',                                  -> new Value($1).$L
+    o 'Object',                                 -> new Value($1).$L
   ]
 
   # The types of things that can be treated as values -- assigned to, invoked
   # as functions, indexed into, named as a class, etc.
   Value: [
     o 'Assignable'
-    o 'Literal',                                -> new Value $1
-    o 'Parenthetical',                          -> new Value $1
-    o 'Range',                                  -> new Value $1
+    o 'Literal',                                -> new Value($1).$L
+    o 'Parenthetical',                          -> new Value($1).$L
+    o 'Range',                                  -> new Value($1).$L
     o 'This'
   ]
 
   # The general group of accessors into an object, by property, by prototype
   # or by array index or slice.
   Accessor: [
-    o '.  Identifier',                          -> new Access $2
-    o '?. Identifier',                          -> new Access $2, 'soak'
-    o ':: Identifier',                          -> [(new Access new Literal 'prototype'), new Access $2]
-    o '::',                                     -> new Access new Literal 'prototype'
+    o '.  Identifier',                          -> new Access($2).$L(2)
+    o '?. Identifier',                          -> new Access($2, 'soak').$L(2)
+    o ':: Identifier',                          -> [new Access(new Literal('prototype')).$L, new Access($2).$L(2)]
+    o '::',                                     -> new Access(new Literal('prototype').$L)
     o 'Index'
   ]
 
@@ -258,13 +260,13 @@ grammar =
   ]
 
   IndexValue: [
-    o 'Expression',                             -> new Index $1
-    o 'Slice',                                  -> new Slice $1
+    o 'Expression',                             -> new Index($1).$L
+    o 'Slice',                                  -> new Slice($1).$L
   ]
 
   # In CoffeeScript, an object literal is simply a list of assignments.
   Object: [
-    o '{ AssignList OptComma }',                -> new Obj $2, $1.generated
+    o '{ AssignList OptComma }',                -> new Obj($2, $1.generated).$L
   ]
 
   # Assignment of properties within an object literal can be separated by
@@ -280,22 +282,22 @@ grammar =
   # Class definitions have optional bodies of prototype property assignments,
   # and optional references to the superclass.
   Class: [
-    o 'CLASS',                                           -> new Class
-    o 'CLASS Block',                                     -> new Class null, null, $2
-    o 'CLASS EXTENDS Expression',                        -> new Class null, $3
-    o 'CLASS EXTENDS Expression Block',                  -> new Class null, $3, $4
-    o 'CLASS SimpleAssignable',                          -> new Class $2
-    o 'CLASS SimpleAssignable Block',                    -> new Class $2, null, $3
-    o 'CLASS SimpleAssignable EXTENDS Expression',       -> new Class $2, $4
-    o 'CLASS SimpleAssignable EXTENDS Expression Block', -> new Class $2, $4, $5
+    o 'CLASS',                                           -> new Class().$L
+    o 'CLASS Block',                                     -> new Class(null, null, $2).$L
+    o 'CLASS EXTENDS Expression',                        -> new Class(null, $3).$L
+    o 'CLASS EXTENDS Expression Block',                  -> new Class(null, $3, $4).$L
+    o 'CLASS SimpleAssignable',                          -> new Class($2).$L
+    o 'CLASS SimpleAssignable Block',                    -> new Class($2, null, $3).$L
+    o 'CLASS SimpleAssignable EXTENDS Expression',       -> new Class($2, $4).$L
+    o 'CLASS SimpleAssignable EXTENDS Expression Block', -> new Class($2, $4, $5).$L
   ]
 
   # Ordinary function invocation, or a chained series of calls.
   Invocation: [
-    o 'Value OptFuncExist Arguments',           -> new Call $1, $3, $2
-    o 'Invocation OptFuncExist Arguments',      -> new Call $1, $3, $2
-    o 'SUPER',                                  -> new Call 'super', [new Splat new Literal 'arguments']
-    o 'SUPER Arguments',                        -> new Call 'super', $2
+    o 'Value OptFuncExist Arguments',           -> new Call($1, $3, $2).$L
+    o 'Invocation OptFuncExist Arguments',      -> new Call($1, $3, $2).$L
+    o 'SUPER',                                  -> new Call('super', [new Splat(new Literal('arguments'))]).$L
+    o 'SUPER Arguments',                        -> new Call('super', $2).$L
   ]
 
   # An optional existence check on a function.
@@ -312,19 +314,19 @@ grammar =
 
   # A reference to the *this* current object.
   This: [
-    o 'THIS',                                   -> new Value new Literal 'this'
-    o '@',                                      -> new Value new Literal 'this'
+    o 'THIS',                                   -> new Value(new Literal('this').$L).$L
+    o '@',                                      -> new Value(new Literal('this').$L).$L
   ]
 
   # A reference to a property on *this*.
   ThisProperty: [
-    o '@ Identifier',                           -> new Value new Literal('this'), [new Access($2)], 'this'
+    o '@ Identifier',                           -> new Value(new Literal('this').$L, [new Access($2).$L(2)], 'this').$L
   ]
 
   # The array literal.
   Array: [
-    o '[ ]',                                    -> new Arr []
-    o '[ ArgList OptComma ]',                   -> new Arr $2
+    o '[ ]',                                    -> new Arr([]).$L
+    o '[ ArgList OptComma ]',                   -> new Arr($2).$L
   ]
 
   # Inclusive and exclusive range dots.
@@ -335,7 +337,7 @@ grammar =
 
   # The CoffeeScript range literal.
   Range: [
-    o '[ Expression RangeDots Expression ]',    -> new Range $2, $4, $3
+    o '[ Expression RangeDots Expression ]',    -> new Range($2, $4, $3).$L
   ]
 
   # Array slice literals.
@@ -344,6 +346,10 @@ grammar =
     o 'Expression RangeDots',                   -> new Range $1, null, $2
     o 'RangeDots Expression',                   -> new Range null, $2, $1
     o 'RangeDots',                              -> new Range null, null, $1
+    o 'Expression RangeDots Expression',        -> new Range($1, $3, $2).$L
+    o 'Expression RangeDots',                   -> new Range($1, null, $2).$L
+    o 'RangeDots Expression',                   -> new Range(null, $2, $1).$L
+    o 'RangeDots',                              -> new Range(null, null, $1).$L
   ]
 
   # The **ArgList** is both the list of objects passed into a function call,
@@ -373,10 +379,10 @@ grammar =
 
   # The variants of *try/catch/finally* exception handling blocks.
   Try: [
-    o 'TRY Block',                              -> new Try $2
-    o 'TRY Block Catch',                        -> new Try $2, $3[0], $3[1]
-    o 'TRY Block FINALLY Block',                -> new Try $2, null, null, $4
-    o 'TRY Block Catch FINALLY Block',          -> new Try $2, $3[0], $3[1], $5
+    o 'TRY Block',                              -> new Try($2).$L
+    o 'TRY Block Catch',                        -> new Try($2, $3[0], $3[1]).$L
+    o 'TRY Block FINALLY Block',                -> new Try($2, null, null, $4).$L
+    o 'TRY Block Catch FINALLY Block',          -> new Try($2, $3[0], $3[1], $5).$L
   ]
 
   # A catch clause names its error and runs a block of code.
@@ -386,7 +392,7 @@ grammar =
 
   # Throw an exception object.
   Throw: [
-    o 'THROW Expression',                       -> new Throw $2
+    o 'THROW Expression',                       -> new Throw($2).$L
   ]
 
   # Parenthetical expressions. Note that the **Parenthetical** is a **Value**,
@@ -394,16 +400,16 @@ grammar =
   # where only values are accepted, wrapping it in parentheses will always do
   # the trick.
   Parenthetical: [
-    o '( Body )',                               -> new Parens $2
-    o '( INDENT Body OUTDENT )',                -> new Parens $3
+    o '( Body )',                               -> new Parens($2).$L
+    o '( INDENT Body OUTDENT )',                -> new Parens($3).$L
   ]
 
   # The condition portion of a while loop.
   WhileSource: [
-    o 'WHILE Expression',                       -> new While $2
-    o 'WHILE Expression WHEN Expression',       -> new While $2, guard: $4
-    o 'UNTIL Expression',                       -> new While $2, invert: true
-    o 'UNTIL Expression WHEN Expression',       -> new While $2, invert: true, guard: $4
+    o 'WHILE Expression',                       -> new While($2).$L
+    o 'WHILE Expression WHEN Expression',       -> new While($2, guard: $4).$L
+    o 'UNTIL Expression',                       -> new While($2, invert: true).$L
+    o 'UNTIL Expression WHEN Expression',       -> new While($2, invert: true, guard: $4).$L
   ]
 
   # The while loop can either be normal, with a block of expressions to execute,
@@ -416,21 +422,21 @@ grammar =
   ]
 
   Loop: [
-    o 'LOOP Block',                             -> new While(new Literal 'true').addBody $2
-    o 'LOOP Expression',                        -> new While(new Literal 'true').addBody Block.wrap [$2]
+    o 'LOOP Block',                             -> new While(new Literal('true')).$L.addBody $2
+    o 'LOOP Expression',                        -> new While(new Literal('true')).$L.addBody Block.wrap [$2]
   ]
 
   # Array, object, and range comprehensions, at the most generic level.
   # Comprehensions can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression.
   For: [
-    o 'Statement  ForBody',                     -> new For $1, $2
-    o 'Expression ForBody',                     -> new For $1, $2
-    o 'ForBody    Block',                       -> new For $2, $1
+    o 'Statement  ForBody',                     -> new For($1, $2).$L
+    o 'Expression ForBody',                     -> new For($1, $2).$L
+    o 'ForBody    Block',                       -> new For($2, $1).$L
   ]
 
   ForBody: [
-    o 'FOR Range',                              -> source: new Value($2)
+    o 'FOR Range',                              -> source: new Value($2).$L
     o 'ForStart ForSource',                     -> $2.own = $1.own; $2.name = $1[0]; $2.index = $1[1]; $2
   ]
 
@@ -443,8 +449,8 @@ grammar =
   # This enables support for pattern matching.
   ForValue: [
     o 'Identifier'
-    o 'Array',                                  -> new Value $1
-    o 'Object',                                 -> new Value $1
+    o 'Array',                                  -> new Value($1).$L
+    o 'Object',                                 -> new Value($1).$L
   ]
 
   # An array or range comprehension has variables for the current element
@@ -469,10 +475,10 @@ grammar =
   ]
 
   Switch: [
-    o 'SWITCH Expression INDENT Whens OUTDENT',            -> new Switch $2, $4
-    o 'SWITCH Expression INDENT Whens ELSE Block OUTDENT', -> new Switch $2, $4, $6
-    o 'SWITCH INDENT Whens OUTDENT',                       -> new Switch null, $3
-    o 'SWITCH INDENT Whens ELSE Block OUTDENT',            -> new Switch null, $3, $5
+    o 'SWITCH Expression INDENT Whens OUTDENT',            -> new Switch($2, $4).$L
+    o 'SWITCH Expression INDENT Whens ELSE Block OUTDENT', -> new Switch($2, $4, $6).$L
+    o 'SWITCH INDENT Whens OUTDENT',                       -> new Switch(null, $3).$L
+    o 'SWITCH INDENT Whens ELSE Block OUTDENT',            -> new Switch(null, $3, $5).$L
   ]
 
   Whens: [
@@ -490,8 +496,8 @@ grammar =
   # if-related rules are broken up along these lines in order to avoid
   # ambiguity.
   IfBlock: [
-    o 'IF Expression Block',                    -> new If $2, $3, type: $1
-    o 'IfBlock ELSE IF Expression Block',       -> $1.addElse new If $4, $5, type: $3
+    o 'IF Expression Block',                    -> new If($2, $3, type: $1).$L
+    o 'IfBlock ELSE IF Expression Block',       -> $1.addElse new If($4, $5, type: $3)
   ]
 
   # The full complement of *if* expressions, including postfix one-liner
@@ -499,8 +505,8 @@ grammar =
   If: [
     o 'IfBlock'
     o 'IfBlock ELSE Block',                     -> $1.addElse $3
-    o 'Statement  POST_IF Expression',          -> new If $3, Block.wrap([$1]), type: $2, statement: true
-    o 'Expression POST_IF Expression',          -> new If $3, Block.wrap([$1]), type: $2, statement: true
+    o 'Statement  POST_IF Expression',          -> new If($3, Block.wrap([$1]).$L, type: $2, statement: true).$L(2)
+    o 'Expression POST_IF Expression',          -> new If($3, Block.wrap([$1]).$L, type: $2, statement: true).$L(2)
   ]
 
   # Arithmetic and logical operators, working on one or more operands.
@@ -510,36 +516,36 @@ grammar =
   # -type rule, but in order to make the precedence binding possible, separate
   # rules are necessary.
   Operation: [
-    o 'UNARY Expression',                       -> new Op $1 , $2
-    o '-     Expression',                      (-> new Op '-', $2), prec: 'UNARY'
-    o '+     Expression',                      (-> new Op '+', $2), prec: 'UNARY'
+    o 'UNARY Expression',                       -> new Op($1 , $2).$L
+    o '-     Expression',                      (-> new Op('-', $2).$L), prec: 'UNARY'
+    o '+     Expression',                      (-> new Op('+', $2).$L), prec: 'UNARY'
 
-    o '-- SimpleAssignable',                    -> new Op '--', $2
-    o '++ SimpleAssignable',                    -> new Op '++', $2
-    o 'SimpleAssignable --',                    -> new Op '--', $1, null, true
-    o 'SimpleAssignable ++',                    -> new Op '++', $1, null, true
+    o '-- SimpleAssignable',                    -> new Op('--', $2).$L
+    o '++ SimpleAssignable',                    -> new Op('++', $2).$L
+    o 'SimpleAssignable --',                    -> new Op('--', $1, null, true).$L
+    o 'SimpleAssignable ++',                    -> new Op('++', $1, null, true).$L
 
     # [The existential operator](http://jashkenas.github.com/coffee-script/#existence).
-    o 'Expression ?',                           -> new Existence $1
+    o 'Expression ?',                           -> new Existence($1).$L
 
-    o 'Expression +  Expression',               -> new Op '+' , $1, $3
-    o 'Expression -  Expression',               -> new Op '-' , $1, $3
+    o 'Expression +  Expression',               -> new Op('+' , $1, $3).$L
+    o 'Expression -  Expression',               -> new Op('-' , $1, $3).$L
 
-    o 'Expression MATH     Expression',         -> new Op $2, $1, $3
-    o 'Expression SHIFT    Expression',         -> new Op $2, $1, $3
-    o 'Expression COMPARE  Expression',         -> new Op $2, $1, $3
-    o 'Expression LOGIC    Expression',         -> new Op $2, $1, $3
+    o 'Expression MATH     Expression',         -> new Op($2, $1, $3).$L
+    o 'Expression SHIFT    Expression',         -> new Op($2, $1, $3).$L
+    o 'Expression COMPARE  Expression',         -> new Op($2, $1, $3).$L
+    o 'Expression LOGIC    Expression',         -> new Op($2, $1, $3).$L
     o 'Expression RELATION Expression',         ->
       if $2.charAt(0) is '!'
-        new Op($2[1..], $1, $3).invert()
+        new Op($2[1..], $1, $3).invert().$L
       else
-        new Op $2, $1, $3
+        new Op($2, $1, $3).$L
 
     o 'SimpleAssignable COMPOUND_ASSIGN
-       Expression',                             -> new Assign $1, $3, $2
+       Expression',                             -> new Assign($1, $3, $2).$L
     o 'SimpleAssignable COMPOUND_ASSIGN
-       INDENT Expression OUTDENT',              -> new Assign $1, $4, $2
-    o 'SimpleAssignable EXTENDS Expression',    -> new Extends $1, $3
+       INDENT Expression OUTDENT',              -> new Assign($1, $4, $2).$L
+    o 'SimpleAssignable EXTENDS Expression',    -> new Extends($1, $3).$L
   ]
 
 

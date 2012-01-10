@@ -10,6 +10,7 @@ path           = require 'path'
 helpers        = require './helpers'
 optparse       = require './optparse'
 CoffeeScript   = require './coffee-script'
+{Location}     = require './nodes'
 {spawn, exec}  = require 'child_process'
 {EventEmitter} = require 'events'
 
@@ -116,6 +117,7 @@ compilePath = (source, topLevel, base) ->
 # requested options. If evaluating the script directly sets `__filename`,
 # `__dirname` and `module.filename` to be correct relative to the script's path.
 compileScript = (file, input, base) ->
+  Location.setCurrentFile file
   o = opts
   options = compileOptions file
   try

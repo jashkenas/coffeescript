@@ -9,12 +9,14 @@
 fs               = require 'fs'
 path             = require 'path'
 {Lexer,RESERVED} = require './lexer'
+{Location}       = require './nodes'
 {parser}         = require './parser'
 vm               = require 'vm'
 
 # TODO: Remove registerExtension when fully deprecated.
 if require.extensions
   require.extensions['.coffee'] = (module, filename) ->
+    Location.setCurrentFile filename
     content = compile fs.readFileSync(filename, 'utf8'), {filename}
     module._compile content, filename
 else if require.registerExtension
@@ -121,10 +123,17 @@ lexer = new Lexer
 parser.lexer =
   lex: ->
     [tag, @yytext, @yylineno] = @tokens[@pos++] or ['']
+    @yylloc.first_line = @yylineno
+    @yylloc.last_line = @yylineno
     tag
   setInput: (@tokens) ->
     @pos = 0
   upcomingInput: ->
     ""
+  yylloc:
+    first_line: 0
+    first_col: 0
+    last_line: 0
+    last_col: 0
 
 parser.yy = require './nodes'
