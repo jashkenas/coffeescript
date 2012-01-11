@@ -786,7 +786,7 @@ exports.Obj = class Obj extends Base
       if prop?
         propName = prop.unwrapAll().value.toString()
         if propName in propNames
-          throw SyntaxError "duplicate data property #{propName} in object literals are not allowed"
+          throw SyntaxError "multiple object literal properties named \"#{propName}\""
         propNames.push propName
     return (if @front then '({})' else '{}') unless props.length
     if @generated
@@ -863,7 +863,7 @@ exports.Class = class Class extends Base
     else
       @variable.base.value
     if decl in STRICT_PROSCRIBED
-      throw SyntaxError 'variable name may not be eval or arguments'
+      throw SyntaxError "variable name may not be #{decl}"
     decl and= IDENTIFIER.test(decl) and decl
 
   # For all `this`-references and bound functions in the class definition,
@@ -992,8 +992,8 @@ exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options) ->
     @param = options and options.param
     @subpattern = options and options.subpattern
-    if @variable.unwrapAll().value in STRICT_PROSCRIBED
-      throw SyntaxError 'variable name may not be "eval" or "arguments"'
+    if name = @variable.unwrapAll().value in STRICT_PROSCRIBED
+      throw SyntaxError "variable name may not be \"#{name}\""
 
   children: ['variable', 'value']
 
@@ -1166,8 +1166,8 @@ exports.Code = class Code extends Base
     o.scope.shared  = del(o, 'sharedScope')
     o.indent        += TAB
     delete o.bare
-    params     = []
-    exprs      = []
+    params = []
+    exprs  = []
     for name in @paramNames() # this step must be performed before the others
       unless o.scope.check name then o.scope.parameter name
     for param in @params when param.splat
@@ -1228,8 +1228,8 @@ exports.Code = class Code extends Base
 # as well as be a splat, gathering up a group of parameters into an array.
 exports.Param = class Param extends Base
   constructor: (@name, @value, @splat) ->
-    if @name.unwrapAll().value in STRICT_PROSCRIBED
-      throw SyntaxError 'parameter name eval or arguments is not allowed'
+    if name = @name.unwrapAll().value in STRICT_PROSCRIBED
+      throw SyntaxError "parameter name \"#{name}\" is not allowed"
 
   children: ['name', 'value']
 
@@ -1582,7 +1582,7 @@ exports.Try = class Try extends Base
 
     catchPart = if @recovery
       if @error.value in STRICT_PROSCRIBED
-        throw SyntaxError "catch variable may not be eval or arguments"
+        throw SyntaxError "catch variable may not be \"#{@error.value}\""
       o.scope.add @error.value, 'param' unless o.scope.check @error.value
       " catch#{errorPart}{\n#{ @recovery.compile o, LEVEL_TOP }\n#{@tab}}"
     else unless @ensure or @recovery

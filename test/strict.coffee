@@ -23,7 +23,7 @@ strictOk = (code, msg) ->
   doesNotThrow (-> CoffeeScript.compile code), msg
 
 
-test "Octal Integer Literals prohibited", ->
+test "octal integer literals prohibited", ->
   strict    '01'
   strict    '07777'
   # decimals with a leading '0' are also prohibited
@@ -31,7 +31,7 @@ test "Octal Integer Literals prohibited", ->
   strict    '079'
   strictOk  '`01`'
 
-test "Octal Escape Sequences prohibited", ->
+test "octal escape sequences prohibited", ->
   strict    '"\\0"'
   strict    '"\\7"'
   strict    '"\\000"'
@@ -47,7 +47,7 @@ test "Octal Escape Sequences prohibited", ->
   strictOk  "`'\\0'`"
   
 
-test "duplicate property definitions in `Object Literal`s are prohibited", ->
+test "duplicate property definitions in object literals are prohibited", ->
   strict 'o = {x:1,x:1}'
   strict 'x = 1; o = {x, x: 2}'
 
