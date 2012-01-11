@@ -1406,6 +1406,7 @@ exports.Op = class Op extends Base
     return @compileUnary     o if @isUnary()
     return @compileChain     o if isChain
     return @compileExistence o if @operator is '?'
+    return @compilePower     o if @operator is '**'
     code = @first.compile(o, LEVEL_OP) + ' ' + @operator + ' ' +
            @second.compile(o, LEVEL_OP)
     if o.level <= LEVEL_OP then code else "(#{code})"
@@ -1441,6 +1442,11 @@ exports.Op = class Op extends Base
     parts.push @first.compile o, LEVEL_OP
     parts.reverse() if @flip
     parts.join ''
+  
+  compilePower: (o) ->
+    left = @first.compile o, LEVEL_OP
+    right = @second.compile o, LEVEL_OP
+    "Math.pow(#{left}, #{right})"
 
   toString: (idt) ->
     super idt, @constructor.name + ' ' + @operator

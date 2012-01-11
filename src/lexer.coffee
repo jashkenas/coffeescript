@@ -599,6 +599,7 @@ OPERATOR   = /// ^ (
    | ([&|<>])\2=?      # logic / shift
    | \?\.              # soak access
    | \.{2,3}           # range or splat
+   | \*\*              # power
 ) ///
 
 WHITESPACE = /^[^\n\S]+/
