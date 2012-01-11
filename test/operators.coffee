@@ -277,4 +277,4 @@ test "power operator has higher precedence than other maths operators", ->
   eq 55, 1 + 3 ** 3 * 2
 
 test "power operator is right associative", ->
-  eq 1, 1 ** 2 ** 3
+  eq 2, 2 ** 1 ** 3
