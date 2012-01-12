@@ -15,6 +15,7 @@
 
 test "Parser recognises binary numbers", ->
   eq 4, 0b100
+  eq 5, 0B101
 
 # Decimal Integer Literals
 

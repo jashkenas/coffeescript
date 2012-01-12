@@ -134,7 +134,7 @@ exports.Lexer = class Lexer
     return 0 unless match = NUMBER.exec @chunk
     number = match[0]
     lexedLength = number.length
-    if binaryLiteral = /0b([01]+)/.exec number
+    if binaryLiteral = /0b([01]+)/i.exec number
       number = (parseInt binaryLiteral[1], 2).toString()
     @token 'NUMBER', number
     lexedLength
