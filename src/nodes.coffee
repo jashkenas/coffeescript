@@ -915,6 +915,12 @@ exports.Class = class Class extends Base
           if node instanceof Value and node.isObject(true)
             exps[i] = @addProperties node, name, o
         child.expressions = exps = flatten exps
+  
+  checkStrict: ->
+    if (node = @body.expressions[0]) instanceof Value
+      if /^['"]use strict['"]$/.test node.unwrapAll().value
+        @strict = yes
+        @body.expressions.shift()
 
   # Make sure that a constructor is defined for the class, and properly
   # configured.
@@ -938,6 +944,7 @@ exports.Class = class Class extends Base
     name = "_#{name}" if name.reserved
     lname = new Literal name
 
+    @checkStrict()
     @setContext name
     @walkBody name, o
     @ensureConstructor name
@@ -946,6 +953,7 @@ exports.Class = class Class extends Base
     if decl
       @body.expressions.unshift new Assign (new Value (new Literal name), [new Access new Literal 'name']), (new Literal "'#{name}'")
     @body.expressions.push lname
+    @body.expressions.unshift(new Value(new Literal "'use strict'")) if @strict
     @addBoundFunctions o
 
     call  = Closure.wrap @body
