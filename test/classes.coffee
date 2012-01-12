@@ -619,3 +619,15 @@ test "#1980: regression with an inherited class with static function members", -
     @static: => 'value'
     
   eq B.static(), 'value'
+  
+test "#1534: class then 'use strict'", ->
+  # 'use strict' is only in effect if it's the first expression of a 
+  # function expression/declaration or Global code
+  nonce = {}
+  strictTest = 'do ->"use strict";arguments.callee'
+  strictEnv = (try CoffeeScript.run strictTest, bare: yes catch e then nonce) is nonce
+  return unless strictEnv
+  throws (-> CoffeeScript.run "class then 'use strict';arguments.callee", bare: yes)
+  doesNotThrow (-> CoffeeScript.run "class then arguments.callee", bare: yes)
+  doesNotThrow (-> CoffeeScript.run 'class then arguments.callee;"use strict"', bare: yes)
+
