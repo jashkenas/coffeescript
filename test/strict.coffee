@@ -26,8 +26,9 @@ strictOk = (code, msg) ->
 test "Octal Integer Literals prohibited", ->
   strict    '01'
   strict    '07777'
-  strictOk  '09'
-  strictOk  '079'
+  # decimals with a leading '0' are also prohibited
+  strict    '09' 
+  strict    '079'
   strictOk  '`01`'
 
 test "Octal Escape Sequences prohibited", ->
