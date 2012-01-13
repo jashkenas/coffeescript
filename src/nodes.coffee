@@ -60,10 +60,12 @@ exports.Base = class Base
     o.level  = lvl if lvl
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
-    if o.level is LEVEL_TOP or not node.isStatement(o)
+    result = CodeString node, if o.level is LEVEL_TOP or not node.isStatement(o)
       node.compileNode o
     else
       node.compileClosure o
+    if not result? then throw new Error "compile() fail, null result, node type: #{this.constructor.name}"
+    result
 
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
@@ -90,7 +92,7 @@ exports.Base = class Base
     src = tmp = @compile o, LEVEL_LIST
     unless -Infinity < +src < Infinity or IDENTIFIER.test(src) and o.scope.check(src, yes)
       src = "#{ tmp = o.scope.freeVariable name } = #{src}"
-    [src, tmp]
+    [(CodeString this, src), tmp]
 
   # Construct a node that returns the current node's result.
   # Note that this is overridden for smarter behavior for
@@ -229,7 +231,7 @@ exports.Block = class Block extends Base
 
   # A **Block** is the only node that can serve as the root.
   compile: (o = {}, level) ->
-    if o.scope then super o, level else @compileRoot o
+    CodeString this, (if o.scope then super o, level else @compileRoot o)
 
   # Compile all expressions within the **Block** body. If we need to
   # return the result, and it's an expression, simply return it. If it's a
@@ -250,25 +252,25 @@ exports.Block = class Block extends Base
         node.front = true
         code = node.compile o
         unless node.isStatement o
-          code = "#{@tab}#{code};"
-          code = "#{code}\n" if node instanceof Literal
+          code = CodeString this, @tab, code, ';'
+          code = CodeString this, code, '\n' if node instanceof Literal
         codes.push code
       else
         codes.push node.compile o, LEVEL_LIST
     if top
       if @spaced
-        return "\n#{codes.join '\n\n'}\n"
+        return CodeString this, '\n', (CodeString.join this, codes, '\n\n'), '\n'
       else
-        return codes.join '\n'
-    code = codes.join(', ') or 'void 0'
-    if codes.length > 1 and o.level >= LEVEL_LIST then "(#{code})" else code
+        return CodeString.join this, codes, '\n'
+    code = (CodeString.join this, codes, ', ') or (CodeString this, 'void 0')
+    if codes.length > 1 and o.level >= LEVEL_LIST then (CodeString this, '(', code, ')') else code
 
   # If we happen to be the top-level **Block**, wrap everything in
   # a safety closure, unless requested not to.
   # It would be better not to generate them in the first place, but for now,
   # clean up obvious double-parentheses.
   compileRoot: (o) ->
-    o.indent  = if o.bare then '' else TAB
+    o.indent  = if o.bare then '' else CodeString this, TAB
     o.scope   = new Scope null, this, null
     o.level   = LEVEL_TOP
     @spaced   = yes
@@ -279,11 +281,11 @@ exports.Block = class Block extends Base
         exp
       rest = @expressions[preludeExps.length...]
       @expressions = preludeExps
-      prelude = "#{@compileNode merge(o, indent: '')}\n" if preludeExps.length
+      prelude = (CodeString this, (@compileNode merge o, indent: ''), '\n') if preludeExps.length
       @expressions = rest
     code = @compileWithDeclarations o
     return code if o.bare
-    "#{prelude}(function() {\n#{code}\n}).call(this);\n"
+    CodeString this, prelude, '(function() {\n', code, '\n}).call(this);\n'
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
@@ -304,15 +306,15 @@ exports.Block = class Block extends Base
       declars = o.scope.hasDeclarations()
       assigns = scope.hasAssignments
       if declars or assigns
-        code += '\n' if i
-        code += "#{@tab}var "
+        code = CodeString this, code, '\n' if i
+        code = CodeString this, code, @tab, 'var '
         if declars
-          code += scope.declaredVariables().join ', '
+          code = CodeString this, code, (CodeString.join this, scope.declaredVariables(), ', ')
         if assigns
-          code += ",\n#{@tab + TAB}" if declars
-          code += scope.assignedVariables().join ",\n#{@tab + TAB}"
-        code += ';\n'
-    code + post
+          code = CodeString this, code, ',\n', @tab, TAB if declars
+          code = CodeString this, code, (CodeString.join this, scope.assignedVariables(), ",\n#{@tab + TAB}")
+        code = CodeString this, code, ';\n'
+    CodeString this, code, post
 
   # Wrap up the given nodes as a **Block**, unless it already happens
   # to be one.
@@ -327,6 +329,8 @@ exports.Block = class Block extends Base
 # `true`, `false`, `null`...
 exports.Literal = class Literal extends Base
   constructor: (@value) ->
+    if @value is undefined
+      throw new Error 'UNDEFINED VALUE'
 
   makeReturn: ->
     if @isStatement() then this else super
@@ -355,7 +359,9 @@ exports.Literal = class Literal extends Base
       "\"#{@value}\""
     else
       @value
-    if @isStatement() then "#{@tab}#{code};" else code
+    result = CodeString this, (if @isStatement() then "#{@tab}#{code};" else code)
+    if not result? then throw new Error "AAA"
+    result
 
   toString: ->
     ' "' + @value + '"'
@@ -379,7 +385,11 @@ exports.Return = class Return extends Base
     if expr and expr not instanceof Return then expr.compile o, level else super o, level
 
   compileNode: (o) ->
-    @tab + "return#{[" #{@expression.compile o, LEVEL_PAREN}" if @expression]};"
+    expr = if @expression
+      CodeString this, ' ', (@expression.compile o, LEVEL_PAREN)
+    else
+      ''
+    CodeString this, @tab, "return", expr, ";"
 
 #### Value
 
@@ -1060,6 +1070,7 @@ exports.Assign = class Assign extends Base
         throw new SyntaxError "assignment to a reserved word: #{obj.compile o} = #{value.compile o}"
       return new Assign(obj, value, null, param: @param).compile o, LEVEL_TOP
     vvar    = value.compile o, LEVEL_LIST
+    throw new Error('NULL VVAR, value type: '+value.constructor.name) if not vvar?
     assigns = []
     splat   = false
     if not IDENTIFIER.test(vvar) or @variable.assigns(vvar)
@@ -1879,6 +1890,44 @@ unfoldSoak = (o, parent, name) ->
   parent[name] = ifn.body
   ifn.body = new Value parent
   ifn
+
+# Pseudo-String that tracks location data
+class CodeString
+  constructor: (node, parts...) ->
+    if this not instanceof CodeString then return new CodeString node, parts
+    
+    parts = flatten parts
+    index = 0
+    @value = ''
+    @sources = {}
+    for part in parts
+      startindex = @value.length
+      @value += part
+      endindex = @value.length-1
+      if part?.value?
+        # a CodeString - shift and copy its sources
+        for childIndex, childNode of part.sources
+          @sources[+startindex + +childIndex] = childNode
+      else
+        # something else, casted to normal string
+        @sources[startindex] = node
+    
+    @length = @value.length
+    @indexOf = @value.indexOf.bind @value
+    @replace = @value.replace.bind @value # FIXME not necessary if everything works!
+    @charAt = @value.charAt.bind @value
+    @match = @value.match.bind @value
+    @trim = @value.trim.bind @value # FIXME this should be doable otherwise
+  
+  toString: -> @value
+  
+  @join: (node, parts, seperator) ->
+    copy = []
+    while parts.length
+      if copy.length > 0
+        copy.push seperator
+      copy.push parts.pop()
+    new CodeString node, copy
 
 # Constants
 # ---------
