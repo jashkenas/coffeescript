@@ -57,7 +57,7 @@ exports.nodes = (source, options) ->
 
 # Compile and execute a string of CoffeeScript (on the server), correctly
 # setting `__filename`, `__dirname`, and relative `require()`.
-exports.run = (code, options) ->
+exports.run = (code, options = {}) ->
   mainModule = require.main
 
   # Set the filename.
