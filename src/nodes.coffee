@@ -917,10 +917,11 @@ exports.Class = class Class extends Base
         child.expressions = exps = flatten exps
   
   checkStrict: ->
-    if (node = @body.expressions[0]) instanceof Value
-      if /^['"]use strict['"]$/.test node.unwrapAll().value
-        @strict = yes
-        @body.expressions.shift()
+    for node,i in @body.expressions when node not instanceof Comment
+      return unless node instanceof Value
+      return unless /^['"]use strict['"]$/.test node.unwrapAll().value
+      @body.expressions.splice i,1
+      return @strict = yes
 
   # Make sure that a constructor is defined for the class, and properly
   # configured.

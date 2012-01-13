@@ -625,9 +625,35 @@ test "#1534: class then 'use strict'", ->
   # function expression/declaration or Global code
   nonce = {}
   strictTest = 'do ->"use strict";arguments.callee'
-  strictEnv = (try CoffeeScript.run strictTest, bare: yes catch e then nonce) is nonce
-  return unless strictEnv
-  throws (-> CoffeeScript.run "class then 'use strict';arguments.callee", bare: yes)
-  doesNotThrow (-> CoffeeScript.run "class then arguments.callee", bare: yes)
-  doesNotThrow (-> CoffeeScript.run 'class then arguments.callee;"use strict"', bare: yes)
+  return unless (try CoffeeScript.run strictTest, bare: yes catch e then nonce) is nonce
+  
+  class then arguments.callee
+  class then arguments.callee;"use strict"
+  throws -> CoffeeScript.run "class then 'use strict';arguments.callee", bare: yes
+
+  comments = ['''
+  class
+    ### comment ###
+    'use strict'
+    arguments.callee''',
+  '''
+  class
+    ### comment 1 ###
+    ### comment 2 ###
+    'use strict'
+    arguments.callee''',
+  '''
+  class
+    ### comment 1 ###
+    ### comment 2 ###
+    'use strict'
+    arguments.callee
+    ### comment 3 ###''']
+  throws (-> CoffeeScript.run comment, bare: yes) for comment in comments
+  
+  class
+    ### comment 1 ###
+    'unrestricted'
+    'use strict'
+    arguments.callee
 
