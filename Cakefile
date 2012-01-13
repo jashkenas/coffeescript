@@ -260,5 +260,6 @@ task 'test:browser', 'run the test suite against the merged browser script', ->
   result = {}
   global.testingBrowser = yes
   (-> eval source).call result
+  global.tame = result.CoffeeScript.tame
   runTests result.CoffeeScript
 
