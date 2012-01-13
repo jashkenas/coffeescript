@@ -1926,7 +1926,7 @@ class CodeString
     while parts.length
       if copy.length > 0
         copy.push seperator
-      copy.push parts.pop()
+      copy.push parts.shift()
     new CodeString node, copy
 
 # Constants
