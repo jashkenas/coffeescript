@@ -1821,7 +1821,7 @@ exports.If = class If extends Base
     if (
       1 is body.expressions?.length and
       !@elseBody and !child and
-      bodyc and cond and
+      bodyc.length and cond.length and
       -1 is (bodyc.indexOf '\n') and
       80 > cond.length + bodyc.length
     )
