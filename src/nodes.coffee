@@ -344,7 +344,7 @@ exports.Literal = class Literal extends Base
   isComplex: NO
 
   assigns: (name) ->
-    name is @value
+    name.toString() is @value.toString()
 
   jumps: (o) ->
     return this if @value is 'break' and not (o?.loop or o?.block)
