@@ -164,6 +164,18 @@ test "variable swapping to verify caching of RHS values when appropriate", ->
   eq nonceB, b
   eq nonceC, c
 
+test "destructure array into self and something else (verify caching)", ->
+  a = [1, 2]
+  [a, b] = a
+  eq a, 1
+  eq b, 2
+
+test "destructure object into self and something else (verify caching)", ->
+  a = {a: 1, b: 2}
+  {a, b} = a
+  eq a, 1
+  eq b, 2
+
 test "#713", ->
   nonces = [nonceA={},nonceB={}]
   eq nonces, [a, b] = [c, d] = nonces
