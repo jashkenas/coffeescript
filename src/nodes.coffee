@@ -1032,9 +1032,9 @@ exports.Assign = class Assign extends Base
       @value.klass = match[1] if match[1]
       @value.name  = match[2] ? match[3] ? match[4] ? match[5]
     val = @value.compile o, LEVEL_LIST
-    return "#{name}: #{val}" if @context is 'object'
-    val = name + " #{ @context or '=' } " + val
-    if o.level <= LEVEL_LIST then val else "(#{val})"
+    return (CodeString this, name, ': ', val) if @context is 'object'
+    val = CodeString this, name, ' ', (@context or '='), ' ', val
+    if o.level <= LEVEL_LIST then val else CodeString this, '(', val, ')'
 
   # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
