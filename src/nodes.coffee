@@ -1918,6 +1918,7 @@ class CodeString
   
   @join: (node, parts, seperator) ->
     copy = []
+    parts = parts.slice()
     while parts.length
       if copy.length > 0
         copy.push seperator
