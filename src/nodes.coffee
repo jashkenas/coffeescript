@@ -464,9 +464,9 @@ exports.Value = class Value extends Base
   compileNode: (o) ->
     @base.front = @front
     props = @properties
-    code  = @base.compile o, if props.length then LEVEL_ACCESS else null
-    code  = "#{code}." if (@base instanceof Parens or props.length) and SIMPLENUM.test code
-    code += prop.compile o for prop in props
+    code  = CodeString this, @base.compile o, if props.length then LEVEL_ACCESS else null
+    code  = CodeString this, code, '.' if (@base instanceof Parens or props.length) and SIMPLENUM.test code
+    code  = CodeString this, code, prop.compile o for prop in props
     code
 
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
@@ -501,7 +501,7 @@ exports.Comment = class Comment extends Base
   compileNode: (o, level) ->
     code = '/*' + multident(@comment, @tab) + "\n#{@tab}*/"
     code = o.indent + code if (level or o.level) is LEVEL_TOP
-    code
+    CodeString this, code
 
 #### Call
 
@@ -595,23 +595,23 @@ exports.Call = class Call extends Base
     if code = Splat.compileSplattedArray o, @args, true
       return @compileSplat o, code
     args = @filterImplicitObjects @args
-    args = (arg.compile o, LEVEL_LIST for arg in args).join ', '
+    args = CodeString.join this, (arg.compile o, LEVEL_LIST for arg in args), ', '
     if @isSuper
-      @superReference(o) + ".call(this#{ args and ', ' + args })"
+      CodeString this, @superReference(o), '.call(this', (if args.length > 0 then CodeString ', ', args else ''), ')'
     else
-      (if @isNew then 'new ' else '') + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
+      CodeString this, (if @isNew then 'new ' else ''), @variable.compile(o, LEVEL_ACCESS), '(', args, ')'
 
   # `super()` is converted into a call against the superclass's implementation
   # of the current function.
   compileSuper: (args, o) ->
-    "#{@superReference(o)}.call(this#{ if args.length then ', ' else '' }#{args})"
+    CodeString this, @superReference(o), '.call(this', (if args.length then ', ' else ''), args, ')'
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
   # If it's a constructor, then things get real tricky. We have to inject an
   # inner constructor in order to be able to pass the varargs.
   compileSplat: (o, splatArgs) ->
-    return "#{ @superReference o }.apply(this, #{splatArgs})" if @isSuper
+    return CodeString this, (@superReference o), '.apply(this, ', splatArgs, ')' if @isSuper
     if @isNew
       idt = @tab + TAB
       return """
