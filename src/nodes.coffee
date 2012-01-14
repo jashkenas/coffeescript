@@ -1744,18 +1744,18 @@ exports.Switch = class Switch extends Base
   compileNode: (o) ->
     idt1 = o.indent + TAB
     idt2 = o.indent = idt1 + TAB
-    code = @tab + "switch (#{ @subject?.compile(o, LEVEL_PAREN) or false }) {\n"
+    code = CodeString this, @tab, 'switch (', (@subject?.compile(o, LEVEL_PAREN) or false ), ') {\n'
     for [conditions, block], i in @cases
       for cond in flatten [conditions]
         cond  = cond.invert() unless @subject
-        code += idt1 + "case #{ cond.compile o, LEVEL_PAREN }:\n"
-      code += body + '\n' if body = block.compile o, LEVEL_TOP
+        code = CodeString this, code, idt1, 'case ', (cond.compile o, LEVEL_PAREN), ':\n'
+      code = CodeString this, code, body, '\n' if body = block.compile o, LEVEL_TOP
       break if i is @cases.length - 1 and not @otherwise
       expr = @lastNonComment block.expressions
       continue if expr instanceof Return or (expr instanceof Literal and expr.jumps() and expr.value isnt 'debugger')
-      code += idt2 + 'break;\n'
-    code += idt1 + "default:\n#{ @otherwise.compile o, LEVEL_TOP }\n" if @otherwise and @otherwise.expressions.length
-    code +  @tab + '}'
+      code = CodeString this, code, idt2, 'break;\n'
+    code = CodeString this, code, idt1, 'default:\n', (@otherwise.compile o, LEVEL_TOP), '\n' if @otherwise and @otherwise.expressions.length
+    CodeString this, code, @tab, '}'
 
 #### If
 
