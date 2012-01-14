@@ -552,7 +552,7 @@ exports.Call = class Call extends Base
         rite = new Value left
       rite = new Call rite, @args
       rite.isNew = @isNew
-      left = new Literal "typeof #{ left.compile o } === \"function\""
+      left = new Literal CodeString this, 'typeof ', (left.compile o), ' === "function"'
       return new If left, new Value(rite), soak: yes
     call = this
     list = []
@@ -621,16 +621,16 @@ exports.Call = class Call extends Base
     base = new Value @variable
     if (name = base.properties.pop()) and base.isComplex()
       ref = o.scope.freeVariable 'ref'
-      fun = "(#{ref} = #{ base.compile o, LEVEL_LIST })#{ name.compile o }"
+      fun = CodeString this, '(', ref, ' = ', (base.compile o, LEVEL_LIST), ')', (name.compile o)
     else
       fun = base.compile o, LEVEL_ACCESS
-      fun = "(#{fun})" if SIMPLENUM.test fun
+      fun = CodeString this, '(', fun, ')' if SIMPLENUM.test fun
       if name
         ref = fun
-        fun += name.compile o
+        fun = CodeString this, fun, name.compile o
       else
         ref = 'null'
-    "#{fun}.apply(#{ref}, #{splatArgs})"
+    CodeString this, fun, '.apply(', ref, ', ', splatArgs, ')'
 
 #### Extends
 
@@ -1201,13 +1201,13 @@ exports.Code = class Code extends Base
       else if not @static
         o.scope.parent.assign '_this', 'this'
     idt   = o.indent
-    code  = 'function'
-    code  += ' ' + @name if @ctor
-    code  += '(' + vars.join(', ') + ') {'
-    code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
-    code  += '}'
-    return @tab + code if @ctor
-    if @front or (o.level >= LEVEL_ACCESS) then "(#{code})" else code
+    code  = CodeString this, 'function'
+    code  = CodeString this, code, ' ', @name if @ctor
+    code  = CodeString this, code, '(', (CodeString.join this, vars, ', '), ') {'
+    code  = CodeString this, code, '\n', (@body.compileWithDeclarations o), '\n', @tab unless @body.isEmpty()
+    code  = CodeString this, code, '}'
+    return (CodeString this, @tab, code) if @ctor
+    if @front or (o.level >= LEVEL_ACCESS) then (CodeString this, '(', code, ')') else code
 
   # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
   # unless `crossScope` is `true`.
