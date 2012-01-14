@@ -202,3 +202,6 @@ test "block comments inside class bodies", ->
     b: ->
 
   ok B.prototype.a instanceof Function
+
+test "#2037: herecomments shouldn't imply line terminators", ->
+  do (-> ### ###; fail)
