@@ -820,7 +820,7 @@ alert("The Field: " + rest);
       and assigned.
     </p>
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> Eat lunch.</span>
-eat food <span class="Keyword">for</span> food <span class="Keyword">in</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>]
+eat = food <span class="Keyword">for</span> food <span class="Keyword">in</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>]
 
 <span class="Comment"><span class="Comment">#</span> Fine five course dining.</span>
 courses <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>greens<span class="String">'</span></span>, <span class="String"><span class="String">'</span>caviar<span class="String">'</span></span>, <span class="String"><span class="String">'</span>truffles<span class="String">'</span></span>, <span class="String"><span class="String">'</span>roast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cake<span class="String">'</span></span>]
@@ -828,7 +828,7 @@ menu i <span class="Keyword">+</span> <span class="Number">1</span>, dish <span 
 
 <span class="Comment"><span class="Comment">#</span> Health conscious meal.</span>
 foods <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>broccoli<span class="String">'</span></span>, <span class="String"><span class="String">'</span>spinach<span class="String">'</span></span>, <span class="String"><span class="String">'</span>chocolate<span class="String">'</span></span>]
-eat food <span class="Keyword">for</span> food <span class="Keyword">in</span> foods <span class="Keyword">when</span> food <span class="Keyword">isnt</span> <span class="String"><span class="String">'</span>chocolate<span class="String">'</span></span>
+eat = food <span class="Keyword">for</span> food <span class="Keyword">in</span> foods <span class="Keyword">when</span> food <span class="Keyword">isnt</span> <span class="String"><span class="String">'</span>chocolate<span class="String">'</span></span>
 </pre><pre class="idle"><span class="Storage">var</span> courses, dish, food, foods, i, _i, _j, _len, _len2, _len3, _ref;
 
 _ref <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
@@ -850,7 +850,7 @@ foods <span class="Keyword">=</span> [<span class="String"><span class="String">
   food <span class="Keyword">=</span> foods[_j];
   <span class="Keyword">if</span> (food <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">'</span>chocolate<span class="String">'</span></span>) eat(food);
 }
-</pre><script>window.example9 = "# Eat lunch.\neat food for food in ['toast', 'cheese', 'wine']\n\n# Fine five course dining.\ncourses = ['greens', 'caviar', 'truffles', 'roast', 'cake']\nmenu i + 1, dish for dish, i in courses\n\n# Health conscious meal.\nfoods = ['broccoli', 'spinach', 'chocolate']\neat food for food in foods when food isnt 'chocolate'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example9);'>load</div><br class='clear' /></div>
+</pre><script>window.example9 = "# Eat lunch.\neat = food for food in ['toast', 'cheese', 'wine']\n\n# Fine five course dining.\ncourses = ['greens', 'caviar', 'truffles', 'roast', 'cake']\nmenu i + 1, dish for dish, i in courses\n\n# Health conscious meal.\nfoods = ['broccoli', 'spinach', 'chocolate']\neat = food for food in foods when food isnt 'chocolate'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example9);'>load</div><br class='clear' /></div>
     <p>
       Comprehensions should be able to handle most places where you otherwise
       would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>, for example:
