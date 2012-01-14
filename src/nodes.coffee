@@ -601,11 +601,6 @@ exports.Call = class Call extends Base
     else
       CodeString this, (if @isNew then 'new ' else ''), @variable.compile(o, LEVEL_ACCESS), '(', args, ')'
 
-  # `super()` is converted into a call against the superclass's implementation
-  # of the current function.
-  compileSuper: (args, o) ->
-    CodeString this, @superReference(o), '.call(this', (if args.length then ', ' else ''), args, ')'
-
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
   # If it's a constructor, then things get real tricky. We have to inject an
