@@ -24,6 +24,7 @@ exports.Scope = class Scope
 
   # Adds a new variable or overrides an existing one.
   add: (name, type, immediate) ->
+    name = name.toString()
     return @parent.add name, type, immediate if @shared and not immediate
     if Object::hasOwnProperty.call @positions, name
       @variables[@positions[name]].type = type
@@ -33,6 +34,7 @@ exports.Scope = class Scope
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
   find: (name, options) ->
+    name = name.toString()
     return yes if @check name, options
     @add name, 'var'
     no
@@ -40,18 +42,21 @@ exports.Scope = class Scope
   # Reserve a variable name as originating from a function parameter for this
   # scope. No `var` required for internal references.
   parameter: (name) ->
+    name = name.toString()
     return if @shared and @parent.check name, yes
     @add name, 'param'
 
   # Just check to see if a variable has already been declared, without reserving,
   # walks up to the root scope.
   check: (name, immediate) ->
+    name = name.toString()
     found = !!@type(name)
     return found if found or immediate
     !!@parent?.check name
 
   # Generate a temporary variable name at the given index.
   temporary: (name, index) ->
+    name = name.toString()
     if name.length > 1
       '_' + name + if index > 1 then index else ''
     else
@@ -59,12 +64,14 @@ exports.Scope = class Scope
 
   # Gets the type of a variable.
   type: (name) ->
+    name = name.toString()
     return v.type for v in @variables when v.name is name
     null
 
   # If we need to store an intermediate result, find an available name for a
   # compiler-generated variable. `_var`, `_var2`, and so on...
   freeVariable: (name, reserve=true) ->
+    name = name.toString()
     index = 0
     index++ while @check((temp = @temporary name, index))
     @add temp, 'var', yes if reserve
@@ -73,6 +80,7 @@ exports.Scope = class Scope
   # Ensure that an assignment is made at the top of this scope
   # (or at the top-level scope, if requested).
   assign: (name, value) ->
+    name = name.toString()
     @add name, {value, assigned: yes}, yes
     @hasAssignments = yes
 
