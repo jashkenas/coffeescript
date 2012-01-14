@@ -262,7 +262,9 @@ exports.Block = class Block extends Base
         return CodeString this, '\n', (CodeString.join this, codes, '\n\n'), '\n'
       else
         return CodeString.join this, codes, '\n'
-    code = (CodeString.join this, codes, ', ') or (CodeString this, 'void 0')
+    code = CodeString.join this, codes, ', '
+    if code.length is 0
+      code = CodeString this, 'void 0'
     if codes.length > 1 and o.level >= LEVEL_LIST then (CodeString this, '(', code, ')') else code
 
   # If we happen to be the top-level **Block**, wrap everything in
