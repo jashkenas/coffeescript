@@ -597,7 +597,7 @@ exports.Call = class Call extends Base
     args = @filterImplicitObjects @args
     args = CodeString.join this, (arg.compile o, LEVEL_LIST for arg in args), ', '
     if @isSuper
-      CodeString this, @superReference(o), '.call(this', (if args.length > 0 then CodeString ', ', args else ''), ')'
+      CodeString this, @superReference(o), '.call(this', (if args.length > 0 then CodeString this, ', ', args else ''), ')'
     else
       CodeString this, (if @isNew then 'new ' else ''), @variable.compile(o, LEVEL_ACCESS), '(', args, ')'
 
