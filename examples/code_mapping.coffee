@@ -4,8 +4,8 @@ http = require 'http'
 fs = require 'fs'
 coffee = require '../'
 
-#secret = Math.random().toString(36).slice(2)
-secret = 'foo'
+secret = Math.random().toString(36).slice(2)
+#secret = 'foo'
 
 console.log "Use http://localhost:#{PORT}/#{secret}/home/user/whatever.coffee to view compilation stuff"
 
