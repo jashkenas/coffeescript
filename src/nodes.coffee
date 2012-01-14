@@ -1825,25 +1825,25 @@ exports.If = class If extends Base
       -1 is (bodyc.indexOf '\n') and
       80 > cond.length + bodyc.length
     )
-      return "#{@tab}if (#{cond}) #{bodyc.replace /^\s+/, ''}"
-    bodyc    = "\n#{bodyc}\n#{@tab}" if bodyc
-    ifPart   = "if (#{cond}) {#{bodyc}}"
-    ifPart   = @tab + ifPart unless child
+      return CodeString this, @tab, 'if (', cond, ') ', (bodyc.replace /^\s+/, '')
+    bodyc    = CodeString this, '\n', bodyc, '\n', @tab if bodyc
+    ifPart   = CodeString this, 'if (', cond, ') {', bodyc, '}'
+    ifPart   = CodeString this, @tab, ifPart unless child
     return ifPart unless @elseBody
-    ifPart + ' else ' + if @isChain
+    CodeString this, ifPart, ' else ', if @isChain
       o.indent = @tab
       o.chainChild = yes
       @elseBody.unwrap().compile o, LEVEL_TOP
     else
-      "{\n#{ @elseBody.compile o, LEVEL_TOP }\n#{@tab}}"
+      CodeString this, '{\n', (@elseBody.compile o, LEVEL_TOP), '\n', @tab, '}'
 
   # Compile the `If` as a conditional operator.
   compileExpression: (o) ->
     cond = @condition.compile o, LEVEL_COND
     body = @bodyNode().compile o, LEVEL_LIST
     alt  = if @elseBodyNode() then @elseBodyNode().compile(o, LEVEL_LIST) else 'void 0'
-    code = "#{cond} ? #{body} : #{alt}"
-    if o.level >= LEVEL_COND then "(#{code})" else code
+    code = CodeString this, cond, ' ? ', body, ' : ', alt
+    if o.level >= LEVEL_COND then (CodeString this, '(', code, ')') else code
 
   unfoldSoak: ->
     @soak and this
