@@ -28,7 +28,7 @@ http.createServer (req, res) ->
       jscode.sources[j]
     
     locationString = (node) ->
-      return Object.keys(node) if not node?.location?
+      return if not node?.location?
       node.location.toString()
     
     console.log "rendering code for #{path}..."
@@ -47,9 +47,16 @@ http.createServer (req, res) ->
             }
           </script>
         </head>
-        <body style=\"white-space: pre\">#{
+        <body style=\"white-space: pre; font-family: monospace\">#{
+          lastloc = null
           (for char, i in jscode.value
-            "<span class=\"jschar\" data-text=\"#{locationString getNode i}\">#{char}</span>"
+            location = locationString getNode i
+            result = if location
+              "<span class=\"jschar\" #{[if location isnt lastloc then 'style="background-color: green"']} data-text=\"#{location}\">#{char}</span>"
+            else
+              "<span style=\"background-color: red\">#{char}</span>"
+            lastloc = location
+            result
           ).join('')
         }</body>
       </html>
