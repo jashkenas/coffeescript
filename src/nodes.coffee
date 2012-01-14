@@ -386,6 +386,7 @@ exports.Value = class Value extends Base
   isComplex      : -> @hasProperties() or @base.isComplex()
   isAssignable   : -> @hasProperties() or @base.isAssignable()
   isSimpleNumber : -> @base instanceof Literal and SIMPLENUM.test @base.value
+  isString       : -> @base instanceof Literal and IS_STRING.test @base.value
   isAtomic       : ->
     for node in @properties.concat @base
       return no if node.soak or node instanceof Call
@@ -915,13 +916,18 @@ exports.Class = class Class extends Base
           if node instanceof Value and node.isObject(true)
             exps[i] = @addProperties node, name, o
         child.expressions = exps = flatten exps
-  
-  checkStrict: ->
-    for node,i in @body.expressions when node not instanceof Comment
-      return unless node instanceof Value
-      return unless /^['"]use strict['"]$/.test node.unwrapAll().value
-      @body.expressions.splice i,1
-      return @strict = yes
+
+  # `use strict` (and other directives) must be the first expression statement(s)
+  # of a function body. This method ensures the prologue is correctly positioned 
+  # above the `constructor`.
+  hoistDirectivePrologue: ->
+    index = 0
+    {expressions} = @body
+    ++index while (node = expressions[index]) and 
+      node instanceof Comment or
+      node instanceof Value and
+      node.isString()
+    @directives = expressions.splice 0, index
 
   # Make sure that a constructor is defined for the class, and properly
   # configured.
@@ -945,7 +951,7 @@ exports.Class = class Class extends Base
     name = "_#{name}" if name.reserved
     lname = new Literal name
 
-    @checkStrict()
+    @hoistDirectivePrologue()
     @setContext name
     @walkBody name, o
     @ensureConstructor name
@@ -954,7 +960,7 @@ exports.Class = class Class extends Base
     if decl
       @body.expressions.unshift new Assign (new Value (new Literal name), [new Access new Literal 'name']), (new Literal "'#{name}'")
     @body.expressions.push lname
-    @body.expressions.unshift(new Value(new Literal "'use strict'")) if @strict
+    @body.expressions.unshift @directives...
     @addBoundFunctions o
 
     call  = Closure.wrap @body
