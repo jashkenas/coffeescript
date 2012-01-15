@@ -1444,9 +1444,9 @@ exports.Op = class Op extends Base
     return @compileUnary     o if @isUnary()
     return @compileChain     o if isChain
     return @compileExistence o if @operator is '?'
-    code = @first.compile(o, LEVEL_OP) + ' ' + @operator + ' ' +
-           @second.compile(o, LEVEL_OP)
-    if o.level <= LEVEL_OP then code else "(#{code})"
+    code = @s @first.compile(o, LEVEL_OP), ' ', @operator, ' ',
+              @second.compile(o, LEVEL_OP)
+    if o.level <= LEVEL_OP then code else @s '(', code, ')'
 
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. For example:
@@ -1456,8 +1456,8 @@ exports.Op = class Op extends Base
   compileChain: (o) ->
     [@first.second, shared] = @first.second.cache o
     fst = @first.compile o, LEVEL_OP
-    code = "#{fst} #{if @invert then '&&' else '||'} #{ shared.compile o } #{@operator} #{ @second.compile o, LEVEL_OP }"
-    "(#{code})"
+    code = @s fst, ' ', (if @invert then '&&' else '||'), ' ', (shared.compile o), ' ', @operator, ' ', (@second.compile o, LEVEL_OP)
+    @s '(', code, ')'
 
   compileExistence: (o) ->
     if @first.isComplex() and o.level > LEVEL_TOP
@@ -1478,7 +1478,7 @@ exports.Op = class Op extends Base
       @first = new Parens @first
     parts.push @first.compile o, LEVEL_OP
     parts.reverse() if @flip
-    parts.join ''
+    @sjoin parts, ''
 
   toString: (idt) ->
     super idt, @constructor.name + ' ' + @operator
@@ -1501,21 +1501,21 @@ exports.In = class In extends Base
     @compileLoopTest o
 
   compileOrTest: (o) ->
-    return "#{!!@negated}" if @array.base.objects.length is 0
+    return (@s "#{!!@negated}") if @array.base.objects.length is 0
     [sub, ref] = @object.cache o, LEVEL_OP
     [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
     tests = for item, i in @array.base.objects
-      (if i then ref else sub) + cmp + item.compile o, LEVEL_ACCESS
-    tests = tests.join cnj
-    if o.level < LEVEL_OP then tests else "(#{tests})"
+      @s (if i then ref else sub), cmp, item.compile o, LEVEL_ACCESS
+    tests = @sjoin tests, cnj
+    if o.level < LEVEL_OP then tests else @s '(', tests, ')'
 
   compileLoopTest: (o) ->
     [sub, ref] = @object.cache o, LEVEL_LIST
-    code = utility('indexOf') + ".call(#{ @array.compile o, LEVEL_LIST }, #{ref}) " +
-           if @negated then '< 0' else '>= 0'
+    code = @s utility('indexOf'), '.call(', (@array.compile o, LEVEL_LIST), ', ', ref, ') ',
+              if @negated then '< 0' else '>= 0'
     return code if sub is ref
-    code = sub + ', ' + code
-    if o.level < LEVEL_LIST then code else "(#{code})"
+    code = @s sub, ', ', code
+    if o.level < LEVEL_LIST then code else @s '(', code, ')'
 
   toString: (idt) ->
     super idt, @constructor.name + if @negated then '!' else ''
