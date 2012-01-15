@@ -92,7 +92,7 @@ exports.Base = class Base
     src = tmp = @compile o, LEVEL_LIST
     unless -Infinity < +src < Infinity or IDENTIFIER.test(src) and o.scope.check(src, yes)
       src = "#{ tmp = o.scope.freeVariable name } = #{src}"
-    [(CodeString this, src), tmp]
+    [(@s src), tmp]
 
   # Construct a node that returns the current node's result.
   # Note that this is overridden for smarter behavior for
@@ -157,6 +157,12 @@ exports.Base = class Base
     node = this
     continue until node is node = node.unwrap()
     node
+  
+  s: (args...) ->
+    new CodeString this, args
+  
+  sjoin: (arr, delimiter) ->
+    CodeString.join this, arr, delimiter
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
@@ -231,7 +237,7 @@ exports.Block = class Block extends Base
 
   # A **Block** is the only node that can serve as the root.
   compile: (o = {}, level) ->
-    CodeString this, (if o.scope then super o, level else @compileRoot o)
+    @s (if o.scope then super o, level else @compileRoot o)
 
   # Compile all expressions within the **Block** body. If we need to
   # return the result, and it's an expression, simply return it. If it's a
@@ -252,27 +258,27 @@ exports.Block = class Block extends Base
         node.front = true
         code = node.compile o
         unless node.isStatement o
-          code = CodeString this, @tab, code, ';'
-          code = CodeString this, code, '\n' if node instanceof Literal
+          code = @s @tab, code, ';'
+          code = @s code, '\n' if node instanceof Literal
         codes.push code
       else
         codes.push node.compile o, LEVEL_LIST
     if top
       if @spaced
-        return CodeString this, '\n', (CodeString.join this, codes, '\n\n'), '\n'
+        return @s '\n', (@sjoin codes, '\n\n'), '\n'
       else
-        return CodeString.join this, codes, '\n'
-    code = CodeString.join this, codes, ', '
+        return @sjoin codes, '\n'
+    code = @sjoin codes, ', '
     if code.length is 0
-      code = CodeString this, 'void 0'
-    if codes.length > 1 and o.level >= LEVEL_LIST then (CodeString this, '(', code, ')') else code
+      code = @s 'void 0'
+    if codes.length > 1 and o.level >= LEVEL_LIST then (@s '(', code, ')') else code
 
   # If we happen to be the top-level **Block**, wrap everything in
   # a safety closure, unless requested not to.
   # It would be better not to generate them in the first place, but for now,
   # clean up obvious double-parentheses.
   compileRoot: (o) ->
-    o.indent  = if o.bare then '' else CodeString this, TAB
+    o.indent  = if o.bare then '' else @s TAB
     o.scope   = new Scope null, this, null
     o.level   = LEVEL_TOP
     @spaced   = yes
@@ -283,11 +289,11 @@ exports.Block = class Block extends Base
         exp
       rest = @expressions[preludeExps.length...]
       @expressions = preludeExps
-      prelude = (CodeString this, (@compileNode merge o, indent: ''), '\n') if preludeExps.length
+      prelude = (@s (@compileNode merge o, indent: ''), '\n') if preludeExps.length
       @expressions = rest
     code = @compileWithDeclarations o
     return code if o.bare
-    CodeString this, prelude, '(function() {\n', code, '\n}).call(this);\n'
+    @s prelude, '(function() {\n', code, '\n}).call(this);\n'
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
@@ -308,15 +314,15 @@ exports.Block = class Block extends Base
       declars = o.scope.hasDeclarations()
       assigns = scope.hasAssignments
       if declars or assigns
-        code = CodeString this, code, '\n' if i
-        code = CodeString this, code, @tab, 'var '
+        code = @s code, '\n' if i
+        code = @s code, @tab, 'var '
         if declars
-          code = CodeString this, code, (CodeString.join this, scope.declaredVariables(), ', ')
+          code = @s code, (@sjoin scope.declaredVariables(), ', ')
         if assigns
-          code = CodeString this, code, ',\n', @tab, TAB if declars
-          code = CodeString this, code, (CodeString.join this, scope.assignedVariables(), ",\n#{@tab + TAB}")
-        code = CodeString this, code, ';\n'
-    CodeString this, code, post
+          code = @s code, ',\n', @tab, TAB if declars
+          code = @s code, (@sjoin scope.assignedVariables(), ",\n#{@tab + TAB}")
+        code = @s code, ';\n'
+    @s code, post
 
   # Wrap up the given nodes as a **Block**, unless it already happens
   # to be one.
@@ -361,7 +367,7 @@ exports.Literal = class Literal extends Base
       "\"#{@value}\""
     else
       @value
-    result = CodeString this, (if @isStatement() then "#{@tab}#{code};" else code)
+    result = @s (if @isStatement() then "#{@tab}#{code};" else code)
     if not result? then throw new Error "AAA"
     result
 
@@ -388,10 +394,10 @@ exports.Return = class Return extends Base
 
   compileNode: (o) ->
     expr = if @expression
-      CodeString this, ' ', (@expression.compile o, LEVEL_PAREN)
+      @s ' ', (@expression.compile o, LEVEL_PAREN)
     else
       ''
-    CodeString this, @tab, "return", expr, ";"
+    @s @tab, "return", expr, ";"
 
 #### Value
 
@@ -466,9 +472,9 @@ exports.Value = class Value extends Base
   compileNode: (o) ->
     @base.front = @front
     props = @properties
-    code  = CodeString this, @base.compile o, if props.length then LEVEL_ACCESS else null
-    code  = CodeString this, code, '.' if (@base instanceof Parens or props.length) and SIMPLENUM.test code
-    code  = CodeString this, code, prop.compile o for prop in props
+    code  = @s @base.compile o, if props.length then LEVEL_ACCESS else null
+    code  = @s code, '.' if (@base instanceof Parens or props.length) and SIMPLENUM.test code
+    code  = @s code, prop.compile o for prop in props
     code
 
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
@@ -503,7 +509,7 @@ exports.Comment = class Comment extends Base
   compileNode: (o, level) ->
     code = '/*' + multident(@comment, @tab) + "\n#{@tab}*/"
     code = o.indent + code if (level or o.level) is LEVEL_TOP
-    CodeString this, code
+    @s code
 
 #### Call
 
@@ -552,7 +558,7 @@ exports.Call = class Call extends Base
         rite = new Value left
       rite = new Call rite, @args
       rite.isNew = @isNew
-      left = new Literal CodeString this, 'typeof ', (left.compile o), ' === "function"'
+      left = new Literal @s 'typeof ', (left.compile o), ' === "function"'
       return new If left, new Value(rite), soak: yes
     call = this
     list = []
@@ -597,18 +603,18 @@ exports.Call = class Call extends Base
     if code = Splat.compileSplattedArray o, @args, true
       return @compileSplat o, code
     args = @filterImplicitObjects @args
-    args = CodeString.join this, (arg.compile o, LEVEL_LIST for arg in args), ', '
+    args = @sjoin (arg.compile o, LEVEL_LIST for arg in args), ', '
     if @isSuper
-      CodeString this, @superReference(o), '.call(this', (if args.length > 0 then CodeString this, ', ', args else ''), ')'
+      @s @superReference(o), '.call(this', (if args.length > 0 then @s ', ', args else ''), ')'
     else
-      CodeString this, (if @isNew then 'new ' else ''), @variable.compile(o, LEVEL_ACCESS), '(', args, ')'
+      @s (if @isNew then 'new ' else ''), @variable.compile(o, LEVEL_ACCESS), '(', args, ')'
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
   # If it's a constructor, then things get real tricky. We have to inject an
   # inner constructor in order to be able to pass the varargs.
   compileSplat: (o, splatArgs) ->
-    return CodeString this, (@superReference o), '.apply(this, ', splatArgs, ')' if @isSuper
+    return @s (@superReference o), '.apply(this, ', splatArgs, ')' if @isSuper
     if @isNew
       idt = @tab + TAB
       return """
@@ -621,16 +627,16 @@ exports.Call = class Call extends Base
     base = new Value @variable
     if (name = base.properties.pop()) and base.isComplex()
       ref = o.scope.freeVariable 'ref'
-      fun = CodeString this, '(', ref, ' = ', (base.compile o, LEVEL_LIST), ')', (name.compile o)
+      fun = @s '(', ref, ' = ', (base.compile o, LEVEL_LIST), ')', (name.compile o)
     else
       fun = base.compile o, LEVEL_ACCESS
-      fun = CodeString this, '(', fun, ')' if SIMPLENUM.test fun
+      fun = @s '(', fun, ')' if SIMPLENUM.test fun
       if name
         ref = fun
-        fun = CodeString this, fun, name.compile o
+        fun = @s fun, name.compile o
       else
         ref = 'null'
-    CodeString this, fun, '.apply(', ref, ', ', splatArgs, ')'
+    @s fun, '.apply(', ref, ', ', splatArgs, ')'
 
 #### Extends
 
@@ -1032,9 +1038,9 @@ exports.Assign = class Assign extends Base
       @value.klass = match[1] if match[1]
       @value.name  = match[2] ? match[3] ? match[4] ? match[5]
     val = @value.compile o, LEVEL_LIST
-    return (CodeString this, name, ': ', val) if @context is 'object'
-    val = CodeString this, name, ' ', (@context or '='), ' ', val
-    if o.level <= LEVEL_LIST then val else CodeString this, '(', val, ')'
+    return (@s name, ': ', val) if @context is 'object'
+    val = @s name, ' ', (@context or '='), ' ', val
+    if o.level <= LEVEL_LIST then val else @s '(', val, ')'
 
   # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
@@ -1201,13 +1207,13 @@ exports.Code = class Code extends Base
       else if not @static
         o.scope.parent.assign '_this', 'this'
     idt   = o.indent
-    code  = CodeString this, 'function'
-    code  = CodeString this, code, ' ', @name if @ctor
-    code  = CodeString this, code, '(', (CodeString.join this, vars, ', '), ') {'
-    code  = CodeString this, code, '\n', (@body.compileWithDeclarations o), '\n', @tab unless @body.isEmpty()
-    code  = CodeString this, code, '}'
-    return (CodeString this, @tab, code) if @ctor
-    if @front or (o.level >= LEVEL_ACCESS) then (CodeString this, '(', code, ')') else code
+    code  = @s 'function'
+    code  = @s code, ' ', @name if @ctor
+    code  = @s code, '(', (@sjoin vars, ', '), ') {'
+    code  = @s code, '\n', (@body.compileWithDeclarations o), '\n', @tab unless @body.isEmpty()
+    code  = @s code, '}'
+    return (@s @tab, code) if @ctor
+    if @front or (o.level >= LEVEL_ACCESS) then (@s '(', code, ')') else code
 
   # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
   # unless `crossScope` is `true`.
@@ -1744,18 +1750,18 @@ exports.Switch = class Switch extends Base
   compileNode: (o) ->
     idt1 = o.indent + TAB
     idt2 = o.indent = idt1 + TAB
-    code = CodeString this, @tab, 'switch (', (@subject?.compile(o, LEVEL_PAREN) or false ), ') {\n'
+    code = @s @tab, 'switch (', (@subject?.compile(o, LEVEL_PAREN) or false ), ') {\n'
     for [conditions, block], i in @cases
       for cond in flatten [conditions]
         cond  = cond.invert() unless @subject
-        code = CodeString this, code, idt1, 'case ', (cond.compile o, LEVEL_PAREN), ':\n'
-      code = CodeString this, code, body, '\n' if body = block.compile o, LEVEL_TOP
+        code = @s code, idt1, 'case ', (cond.compile o, LEVEL_PAREN), ':\n'
+      code = @s code, body, '\n' if body = block.compile o, LEVEL_TOP
       break if i is @cases.length - 1 and not @otherwise
       expr = @lastNonComment block.expressions
       continue if expr instanceof Return or (expr instanceof Literal and expr.jumps() and expr.value isnt 'debugger')
-      code = CodeString this, code, idt2, 'break;\n'
-    code = CodeString this, code, idt1, 'default:\n', (@otherwise.compile o, LEVEL_TOP), '\n' if @otherwise and @otherwise.expressions.length
-    CodeString this, code, @tab, '}'
+      code = @s code, idt2, 'break;\n'
+    code = @s code, idt1, 'default:\n', (@otherwise.compile o, LEVEL_TOP), '\n' if @otherwise and @otherwise.expressions.length
+    @s code, @tab, '}'
 
 #### If
 
@@ -1825,25 +1831,25 @@ exports.If = class If extends Base
       -1 is (bodyc.indexOf '\n') and
       80 > cond.length + bodyc.length
     )
-      return CodeString this, @tab, 'if (', cond, ') ', (bodyc.replace /^\s+/, '')
-    bodyc    = CodeString this, '\n', bodyc, '\n', @tab if bodyc
-    ifPart   = CodeString this, 'if (', cond, ') {', bodyc, '}'
-    ifPart   = CodeString this, @tab, ifPart unless child
+      return @s @tab, 'if (', cond, ') ', (bodyc.replace /^\s+/, '')
+    bodyc    = @s '\n', bodyc, '\n', @tab if bodyc
+    ifPart   = @s 'if (', cond, ') {', bodyc, '}'
+    ifPart   = @s @tab, ifPart unless child
     return ifPart unless @elseBody
-    CodeString this, ifPart, ' else ', if @isChain
+    @s ifPart, ' else ', if @isChain
       o.indent = @tab
       o.chainChild = yes
       @elseBody.unwrap().compile o, LEVEL_TOP
     else
-      CodeString this, '{\n', (@elseBody.compile o, LEVEL_TOP), '\n', @tab, '}'
+      @s '{\n', (@elseBody.compile o, LEVEL_TOP), '\n', @tab, '}'
 
   # Compile the `If` as a conditional operator.
   compileExpression: (o) ->
     cond = @condition.compile o, LEVEL_COND
     body = @bodyNode().compile o, LEVEL_LIST
     alt  = if @elseBodyNode() then @elseBodyNode().compile(o, LEVEL_LIST) else 'void 0'
-    code = CodeString this, cond, ' ? ', body, ' : ', alt
-    if o.level >= LEVEL_COND then (CodeString this, '(', code, ')') else code
+    code = @s cond, ' ? ', body, ' : ', alt
+    if o.level >= LEVEL_COND then (@s '(', code, ')') else code
 
   unfoldSoak: ->
     @soak and this
