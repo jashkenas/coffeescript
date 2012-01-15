@@ -816,7 +816,7 @@ exports.Obj = class Obj extends Base
 
   compileNode: (o) ->
     props = @properties
-    return (if @front then '({})' else '{}') unless props.length
+    return @s (if @front then '({})' else '{}') unless props.length
     if @generated
       for node in props when node instanceof Value
         throw new Error 'cannot have an implicit value in an implicit object'
@@ -836,10 +836,10 @@ exports.Obj = class Obj extends Base
         if prop not instanceof Assign
           prop = new Assign prop, prop, 'object'
         (prop.variable.base or prop.variable).asKey = yes
-      indent + prop.compile(o, LEVEL_TOP) + join
-    props = props.join ''
-    obj   = "{#{ props and '\n' + props + '\n' + @tab }}"
-    if @front then "(#{obj})" else obj
+      @s indent, prop.compile(o, LEVEL_TOP), join
+    props = @sjoin props, ''
+    obj   = @s '{', (if props.length then (@s '\n', props, '\n', @tab) else props), '}'
+    if @front then (@s '(', obj, ')') else obj
 
   assigns: (name) ->
     for prop in @properties when prop.assigns name then return yes
@@ -857,15 +857,15 @@ exports.Arr = class Arr extends Base
   filterImplicitObjects: Call::filterImplicitObjects
 
   compileNode: (o) ->
-    return '[]' unless @objects.length
+    return @s '[]' unless @objects.length
     o.indent += TAB
     objs = @filterImplicitObjects @objects
     return code if code = Splat.compileSplattedArray o, objs, false, this
-    code = (obj.compile o, LEVEL_LIST for obj in objs).join ', '
+    code = @sjoin (obj.compile o, LEVEL_LIST for obj in objs), ', '
     if code.indexOf('\n') >= 0
-      "[\n#{o.indent}#{code}\n#{@tab}]"
+      @s '[\n', o.indent, code, '\n', @tab, ']'
     else
-      "[#{code}]"
+      @s '[', code, ']'
 
   assigns: (name) ->
     for obj in @objects when obj.assigns name then return yes
@@ -909,7 +909,7 @@ exports.Class = class Class extends Base
     if @boundFuncs.length
       for bvar in @boundFuncs
         lhs = (new Value (new Literal "this"), [new Access bvar]).compile o
-        @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
+        @ctor.body.unshift new Literal @s lhs, ' = ', (utility 'bind'), '(', lhs, ', this)'
 
   # Merge the properties from a top-level object as prototypal properties
   # on the class.
@@ -958,8 +958,8 @@ exports.Class = class Class extends Base
   ensureConstructor: (name) ->
     if not @ctor
       @ctor = new Code
-      @ctor.body.push new Literal "#{name}.__super__.constructor.apply(this, arguments)" if @parent
-      @ctor.body.push new Literal "#{@externalCtor}.apply(this, arguments)" if @externalCtor
+      @ctor.body.push new Literal @s name, '.__super__.constructor.apply(this, arguments)' if @parent
+      @ctor.body.push new Literal @s @externalCtor, '.apply(this, arguments)' if @externalCtor
       @ctor.body.makeReturn()
       @body.expressions.unshift @ctor
     @ctor.ctor     = @ctor.name = name
@@ -972,7 +972,7 @@ exports.Class = class Class extends Base
   compileNode: (o) ->
     decl  = @determineName()
     name  = decl or '_Class'
-    name = "_#{name}" if name.reserved
+    name = @s '_', name if name.reserved
     lname = new Literal name
 
     @setContext name
@@ -981,7 +981,7 @@ exports.Class = class Class extends Base
     @body.spaced = yes
     @body.expressions.unshift @ctor unless @ctor instanceof Code
     if decl
-      @body.expressions.unshift new Assign (new Value (new Literal name), [new Access new Literal 'name']), (new Literal "'#{name}'")
+      @body.expressions.unshift new Assign (new Value (new Literal @s name), [new Access new Literal 'name']), (new Literal @s "'", name, "'")
     @body.expressions.push lname
     @addBoundFunctions o
 
