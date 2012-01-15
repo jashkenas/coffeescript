@@ -1833,7 +1833,7 @@ exports.If = class If extends Base
       -1 is (bodyc.indexOf '\n') and
       80 > cond.length + bodyc.length
     )
-      return @s @tab, 'if (', cond, ') ', (bodyc.replace /^\s+/, '')
+      return @s @tab, 'if (', cond, ') ', ((@s bodyc).trimLeadingSpace())
     bodyc    = @s '\n', bodyc, '\n', @tab if bodyc
     ifPart   = @s 'if (', cond, ') {', bodyc, '}'
     ifPart   = @s @tab, ifPart unless child
@@ -1925,6 +1925,15 @@ class CodeString
     @trim = @value.trim.bind @value # FIXME this should be doable otherwise
   
   toString: -> @value
+  
+  trimLeadingSpace: ->
+    copy = new CodeString null, this
+    copy.value = copy.value.replace /^\s+/, ''
+    # negative delta
+    delta = copy.value.length - @value.length
+    for index, sourcevalue of copy.sources
+      copy.sources[+index + delta] = sourcevalue
+    copy
   
   @join: (node, parts, seperator) ->
     copy = []
