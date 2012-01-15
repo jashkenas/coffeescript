@@ -1663,7 +1663,7 @@ exports.For = class For extends While
     rvar      = scope.freeVariable 'results' if @returns
     ivar      = (@object and index) or scope.freeVariable 'i'
     kvar      = (@range and name) or index or ivar
-    kvarAssign = if kvar isnt ivar then "#{kvar} = " else ""
+    kvarAssign = if kvar isnt ivar then (@s kvar, ' = ') else ""
     # the `_by` variable is created twice in `Range`s if we don't prevent it from being declared here
     stepvar   = scope.freeVariable "step" if @step and not @range
     name      = ivar if @pattern
@@ -1676,19 +1676,19 @@ exports.For = class For extends While
     else
       svar    = @source.compile o, LEVEL_LIST
       if (name or @own) and not IDENTIFIER.test svar
-        defPart    = "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
+        defPart    = @s @tab, (ref = scope.freeVariable 'ref'), ' = ', svar, ';\n'
         svar       = ref
       if name and not @pattern
-        namePart   = "#{name} = #{svar}[#{kvar}]"
+        namePart   = @s name, ' = ', svar, '[', kvar, ']'
       unless @object
         lvar       = scope.freeVariable 'len'
-        forVarPart = "#{kvarAssign}#{ivar} = 0, #{lvar} = #{svar}.length"
-        forVarPart += ", #{stepvar} = #{@step.compile o, LEVEL_OP}" if @step
-        stepPart   = "#{kvarAssign}#{if @step then "#{ivar} += #{stepvar}" else (if kvar isnt ivar then "++#{ivar}" else "#{ivar}++")}"
-        forPart    = "#{forVarPart}; #{ivar} < #{lvar}; #{stepPart}"
+        forVarPart = @s kvarAssign, ivar, ' = 0, ', lvar, ' = ', svar, '.length'
+        forVarPart = @s forVarPart, ', ', stepvar, ' = ', (@step.compile o, LEVEL_OP) if @step
+        stepPart   = @s kvarAssign, if @step then (@s ivar, ' += ', stepvar) else (if kvar isnt ivar then (@s '++', ivar) else @s ivar, '++')
+        forPart    = @s forVarPart, '; ', ivar, ' < ', lvar, '; ', stepPart
     if @returns
-      resultPart   = "#{@tab}#{rvar} = [];\n"
-      returnResult = "\n#{@tab}return #{rvar};"
+      resultPart   = @s @tab, rvar, ' = [];\n'
+      returnResult = @s '\n', @tab, 'return ', rvar, ';'
       body.makeReturn rvar
     if @guard
       if body.expressions.length > 1
@@ -1696,17 +1696,15 @@ exports.For = class For extends While
       else
         body = Block.wrap [new If @guard, body] if @guard
     if @pattern
-      body.expressions.unshift new Assign @name, new Literal "#{svar}[#{kvar}]"
-    defPart     += @pluckDirectCall o, body
-    varPart     = "\n#{idt1}#{namePart};" if namePart
+      body.expressions.unshift new Assign @name, new Literal @s svar, '[', kvar, ']'
+    defPart     = @s defPart, @pluckDirectCall o, body
+    varPart     = @s '\n', idt1, namePart, ';' if namePart
     if @object
-      forPart   = "#{kvar} in #{svar}"
-      guardPart = "\n#{idt1}if (!#{utility 'hasProp'}.call(#{svar}, #{kvar})) continue;" if @own
+      forPart   = @s kvar, ' in ', svar
+      guardPart = @s '\n', idt1, 'if (!', (utility 'hasProp'), '.call(', svar, ', ', kvar, ')) continue;' if @own
     body        = body.compile merge(o, indent: idt1), LEVEL_TOP
-    body        = '\n' + body + '\n' if body
-    """
-    #{defPart}#{resultPart or ''}#{@tab}for (#{forPart}) {#{guardPart}#{varPart}#{body}#{@tab}}#{returnResult or ''}
-    """
+    body        = @s '\n', body, '\n' if body
+    @s defPart, (resultPart or ''), @tab, 'for (', forPart, ') {', guardPart, varPart, body, @tab, '}', (returnResult or '')
 
   pluckDirectCall: (o, body) ->
     defs = ''
@@ -1725,7 +1723,7 @@ exports.For = class For extends While
       if val.base
         [val.base, base] = [base, val]
       body.expressions[idx] = new Call base, expr.args
-      defs += @tab + new Assign(ref, fn).compile(o, LEVEL_TOP) + ';\n'
+      defs = @s defs, @tab, new Assign(ref, fn).compile(o, LEVEL_TOP), ';\n'
     defs
 
 #### Switch
