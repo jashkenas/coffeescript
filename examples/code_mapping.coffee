@@ -29,7 +29,7 @@ http.createServer (req, res) ->
     
     locationString = (node) ->
       return if not node?.location?
-      node.location.toString()
+      node.constructor.name + ' at ' + node.location.toString()
     
     console.log "rendering code for #{path}..."
     
