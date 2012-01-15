@@ -602,7 +602,7 @@ exports.Call = class Call extends Base
   # Compile a vanilla function call.
   compileNode: (o) ->
     @variable?.front = @front
-    if code = Splat.compileSplattedArray o, @args, true
+    if code = Splat.compileSplattedArray o, @args, true, this
       return @compileSplat o, code
     args = @filterImplicitObjects @args
     args = @sjoin (arg.compile o, LEVEL_LIST for arg in args), ', '
@@ -860,7 +860,7 @@ exports.Arr = class Arr extends Base
     return '[]' unless @objects.length
     o.indent += TAB
     objs = @filterImplicitObjects @objects
-    return code if code = Splat.compileSplattedArray o, objs
+    return code if code = Splat.compileSplattedArray o, objs, false, this
     code = (obj.compile o, LEVEL_LIST for obj in objs).join ', '
     if code.indexOf('\n') >= 0
       "[\n#{o.indent}#{code}\n#{@tab}]"
@@ -1273,23 +1273,23 @@ exports.Splat = class Splat extends Base
 
   # Utility function that converts an arbitrary number of elements, mixed with
   # splats, to a proper array.
-  @compileSplattedArray: (o, list, apply) ->
+  @compileSplattedArray: (o, list, apply, node) ->
     index = -1
     continue while (node = list[++index]) and node not instanceof Splat
     return '' if index >= list.length
     if list.length is 1
       code = list[0].compile o, LEVEL_LIST
       return code if apply
-      return "#{ utility 'slice' }.call(#{code})"
+      return node.s (utility 'slice'), '.call(', code, ')'
     args = list[index..]
     for node, i in args
       code = node.compile o, LEVEL_LIST
       args[i] = if node instanceof Splat
-      then "#{ utility 'slice' }.call(#{code})"
-      else "[#{code}]"
-    return args[0] + ".concat(#{ args[1..].join ', ' })" if index is 0
+      then node.s (utility 'slice'), '.call(', code, ')'
+      else node.s '[', code, ']'
+    return node.s args[0], '.concat(', (node.sjoin args[1..], ', '), ')' if index is 0
     base = (node.compile o, LEVEL_LIST for node in list[...index])
-    "[#{ base.join ', ' }].concat(#{ args.join ', ' })"
+    node.s '[', (node.sjoin base, ', '), '].concat(', (args.join ', '), ')'
 
 #### While
 
@@ -1334,17 +1334,17 @@ exports.While = class While extends Base
     else
       if @returns
         body.makeReturn rvar = o.scope.freeVariable 'results'
-        set  = "#{@tab}#{rvar} = [];\n"
+        set  = @s @tab, rvar, ' = [];\n'
       if @guard
         if body.expressions.length > 1
           body.expressions.unshift new If (new Parens @guard).invert(), new Literal "continue"
         else
           body = Block.wrap [new If @guard, body] if @guard
-      body = "\n#{ body.compile o, LEVEL_TOP }\n#{@tab}"
-    code = set + @tab + "while (#{ @condition.compile o, LEVEL_PAREN }) {#{body}}"
+      body = @s '\n', (body.compile o, LEVEL_TOP), '\n', @tab
+    code = @s set, @tab, 'while (', (@condition.compile o, LEVEL_PAREN), ') {', body, '}'
     if @returns
-      code += "\n#{@tab}return #{rvar};"
-    code
+      code = @s code, '\n', @tab, 'return ', rvar, ';'
+    @s code
 
 #### Op
 
@@ -1619,7 +1619,7 @@ exports.Parens = class Parens extends Base
     code = expr.compile o, LEVEL_PAREN
     bare = o.level < LEVEL_OP and (expr instanceof Op or expr instanceof Call or
       (expr instanceof For and expr.returns))
-    if bare then code else "(#{code})"
+    if bare then code else @s '(', code, ')'
 
 #### For
 
