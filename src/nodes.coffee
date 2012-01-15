@@ -1541,20 +1541,18 @@ exports.Try = class Try extends Base
   # is optional, the *catch* is not.
   compileNode: (o) ->
     o.indent  += TAB
-    errorPart = if @error then " (#{ @error.compile o }) " else ' '
+    errorPart = if @error then (@s ' (', (@error.compile o), ') ') else ' '
     tryPart   = @attempt.compile o, LEVEL_TOP
 
     catchPart = if @recovery
       o.scope.add @error.value, 'param' unless o.scope.check @error.value
-      " catch#{errorPart}{\n#{ @recovery.compile o, LEVEL_TOP }\n#{@tab}}"
+      @s ' catch', errorPart, '{\n', (@recovery.compile o, LEVEL_TOP), '\n', @tab, '}'
     else unless @ensure or @recovery
       ' catch (_error) {}'
 
-    ensurePart = if @ensure then " finally {\n#{ @ensure.compile o, LEVEL_TOP }\n#{@tab}}" else ''
+    ensurePart = if @ensure then (@s ' finally {\n', (@ensure.compile o, LEVEL_TOP), '\n', @tab, '}') else ''
 
-    """#{@tab}try {
-    #{tryPart}
-    #{@tab}}#{ catchPart or '' }#{ensurePart}"""
+    @s @tab, 'try {\n', tryPart, '\n', @tab, '}', (catchPart or ''), ensurePart
 
 #### Throw
 
@@ -1571,7 +1569,7 @@ exports.Throw = class Throw extends Base
   makeReturn: THIS
 
   compileNode: (o) ->
-    @tab + "throw #{ @expression.compile o };"
+    @s @tab, 'throw ', (@expression.compile o), ';'
 
 #### Existence
 
@@ -1590,11 +1588,11 @@ exports.Existence = class Existence extends Base
     code = @expression.compile o, LEVEL_OP
     if IDENTIFIER.test(code) and not o.scope.check code
       [cmp, cnj] = if @negated then ['===', '||'] else ['!==', '&&']
-      code = "typeof #{code} #{cmp} \"undefined\" #{cnj} #{code} #{cmp} null"
+      code = @s 'typeof ', code, ' ', cmp, ' "undefined" ', cnj, ' ', code, ' ', cmp, ' null'
     else
       # do not use strict equality here; it will break existing code
-      code = "#{code} #{if @negated then '==' else '!='} null"
-    if o.level <= LEVEL_COND then code else "(#{code})"
+      code = @s code, ' ', (if @negated then '==' else '!='), ' null'
+    if o.level <= LEVEL_COND then code else @s '(', code, ')'
 
 #### Parens
 
