@@ -102,7 +102,7 @@ exports.Base = class Base
   makeReturn: (res) ->
     me = @unwrapAll()
     if res
-      new Call new Literal("#{res}.push"), [me]
+      new Call new Literal(@s res, '.push'), [me]
     else
       new Return me
 
