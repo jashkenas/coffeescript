@@ -1079,7 +1079,7 @@ exports.Assign = class Assign extends Base
     assigns = []
     splat   = false
     if not IDENTIFIER.test(vvar) or @variable.assigns(vvar)
-      assigns.push "#{ ref = o.scope.freeVariable 'ref' } = #{vvar}"
+      assigns.push @s (ref = o.scope.freeVariable 'ref'), ' = ', vvar
       vvar = ref
     for obj, i in objects
       # A regular array pattern-match.
@@ -1097,14 +1097,14 @@ exports.Assign = class Assign extends Base
       if not splat and obj instanceof Splat
         name = obj.name.unwrap().value
         obj = obj.unwrap()
-        val = "#{olen} <= #{vvar}.length ? #{ utility 'slice' }.call(#{vvar}, #{i}"
+        val = @s olen, ' <= ', vvar, '.length ? ', (utility 'slice'), '.call(', vvar, ', ', i
         if rest = olen - i - 1
           ivar = o.scope.freeVariable 'i'
-          val += ", #{ivar} = #{vvar}.length - #{rest}) : (#{ivar} = #{i}, [])"
+          val = @s val, ', ', ivar, ' = ', vvar, '.length - ', rest, ') : (', ivar, ' = ', i, ', [])'
         else
-          val += ") : []"
+          val = @s val, ") : []"
         val   = new Literal val
-        splat = "#{ivar}++"
+        splat = @s ivar, '++'
       else
         name = obj.unwrap().value
         if obj instanceof Splat
@@ -1121,8 +1121,8 @@ exports.Assign = class Assign extends Base
         throw new SyntaxError "assignment to a reserved word: #{obj.compile o} = #{val.compile o}"
       assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compile o, LEVEL_LIST
     assigns.push vvar unless top or @subpattern
-    code = assigns.join ', '
-    if o.level < LEVEL_LIST then code else "(#{code})"
+    code = @sjoin assigns, ', '
+    if o.level < LEVEL_LIST then code else @s '(', code, ')'
 
   # When compiling a conditional assignment, take care to ensure that the
   # operands are only evaluated once, even though we have to reference them
@@ -1143,13 +1143,13 @@ exports.Assign = class Assign extends Base
         to = +to.compile(o) - +fromRef
         to += 1 unless exclusive
       else
-        to = to.compile(o, LEVEL_ACCESS) + ' - ' + fromRef
-        to += ' + 1' unless exclusive
+        to = @s to.compile(o, LEVEL_ACCESS), ' - ', fromRef
+        to = @s to, ' + 1' unless exclusive
     else
       to = "9e9"
     [valDef, valRef] = @value.cache o, LEVEL_LIST
-    code = "[].splice.apply(#{name}, [#{fromDecl}, #{to}].concat(#{valDef})), #{valRef}"
-    if o.level > LEVEL_TOP then "(#{code})" else code
+    code = @s '[].splice.apply(', name, ', [', fromDecl, ', ', to, '].concat(', valDef, ')), ', valRef
+    if o.level > LEVEL_TOP then @s '(', code, ')' else @s code
 
 #### Code
 
