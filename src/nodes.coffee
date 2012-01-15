@@ -1929,7 +1929,10 @@ class CodeString
     copy.value = copy.value.replace /^\s+/, ''
     # negative delta
     delta = copy.value.length - @value.length
-    for index, sourcevalue of copy.sources
+    indexes = Object.keys copy.sources
+    for index in indexes
+      sourcevalue = copy.sources[index]
+      delete copy.sources[index]
       copy.sources[+index + delta] = sourcevalue
     copy
   
