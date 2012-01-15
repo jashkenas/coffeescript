@@ -23,14 +23,16 @@ exports.Location = class Location
     
   constructor: (jisonLocation) ->
     @firstLine = jisonLocation.first_line
+    @firstColumn = jisonLocation.first_column
     @lastLine = jisonLocation.last_line
+    @lastColumn = jisonLocation.last_column
     @file = Location.currentFile || "unknown"
     
   toString: () ->
-    if @firstLine == @lastLine
-      "#{@file}: #{@firstLine+1}: "
+    if @firstLine is @lastLine and @firstColumn is @lastColumn
+      "#{@file}: #{@firstLine+1}:#{@firstColumn}"
     else
-      "#{@file}: #{@firstLine+1}-#{@lastLine+1}: "
+      "#{@file}: #{@firstLine+1}:#{@firstColumn}-#{@lastLine+1}:#{@lastColumn}"
 
   
 

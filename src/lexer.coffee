@@ -53,6 +53,9 @@ exports.Lexer = class Lexer
     # `@literalToken` is the fallback catch-all.
     i = 0
     while @chunk = code[i..]
+      lexedCode = code[...i]
+      @tokenLine = count lexedCode, '\n'
+      @tokenColumn = lexedCode.length - lexedCode.lastIndexOf '\n'
       i += @identifierToken() or
            @commentToken()    or
            @whitespaceToken() or
@@ -507,7 +510,7 @@ exports.Lexer = class Lexer
 
   # Add a token to the results, taking note of the line number.
   token: (tag, value) ->
-    @tokens.push [tag, value, @startLine]
+    @tokens.push [tag, value, @tokenLine, @tokenColumn]
     @startLine = @line
 
   # Peek at a tag in the current token stream.
