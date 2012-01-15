@@ -71,7 +71,12 @@ exports.run = (code, options) ->
 
   # Compile.
   if path.extname(mainModule.filename) isnt '.coffee' or require.extensions
-    mainModule._compile compile(code, options), mainModule.filename
+    jscode = compile code, options
+    try
+      mainModule._compile jscode, mainModule.filename
+    catch err
+      hackTrace err, jscode, mainModule.filename
+      throw err
   else
     mainModule._compile code, mainModule.filename
 
@@ -110,6 +115,36 @@ exports.eval = (code, options = {}) ->
     vm.runInThisContext js
   else
     vm.runInContext js, sandbox
+
+getNode = (js, i) ->
+  j = i
+  j-- while j > 0 and not js.sources[j]?
+  js.sources[j]
+
+hackTrace = (error, js, filename) ->
+  traces = error?.stack.split '\n'
+  return error unless traces.length > 1
+  for trace, i in traces
+    continue if 0 > index = trace.indexOf "(#{filename}:"
+    {1: prefix, 2: lno, 3: col, 4: postfix} = /^(.*):(\d+):(\d+)\)$/.exec trace
+    lno = +lno - 1
+    col = +col - 1
+    continue unless lno? and col?
+    {length} = '' + end = lno+4
+    
+    # lno,col -> strpos
+    jscopy = js.toString()
+    while lno > 0
+      lno--
+      firstnl = jscopy.indexOf '\n'
+      col += firstnl+1
+      jscopy = jscopy.slice firstnl+1
+    
+    node = getNode js, col
+    continue if not (location = node?.location)?
+    traces[i] = "#{prefix}:#{location.firstLine+1}:#{location.firstColumn+1})"
+  error.stack = traces.join '\n'
+  error
 
 # Instantiate a Lexer for our use here.
 lexer = new Lexer
