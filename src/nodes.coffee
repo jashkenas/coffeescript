@@ -667,7 +667,7 @@ exports.Access = class Access extends Base
 
   compile: (o) ->
     name = @name.compile o
-    if IDENTIFIER.test name then ".#{name}" else "[#{name}]"
+    if IDENTIFIER.test name then (@s '.', name) else (@s '[', name, ']')
 
   isComplex: NO
 
@@ -680,7 +680,7 @@ exports.Index = class Index extends Base
   children: ['index']
 
   compile: (o) ->
-    "[#{ @index.compile o, LEVEL_PAREN }]"
+    @s '[', (@index.compile o, LEVEL_PAREN), ']'
 
   isComplex: ->
     @index.isComplex()
@@ -719,40 +719,40 @@ exports.Range = class Range extends Base
     idx      = del o, 'index'
     idxName  = del o, 'name'
     namedIndex = idxName and idxName isnt idx
-    varPart  = "#{idx} = #{@fromC}"
-    varPart += ", #{@toC}" if @toC isnt @toVar
-    varPart += ", #{@step}" if @step isnt @stepVar
-    [lt, gt] = ["#{idx} <#{@equals}", "#{idx} >#{@equals}"]
+    varPart  = @s idx, ' = ', @fromC
+    varPart  = @s varPart, ', ', @toC if @toC isnt @toVar
+    varPart  = @s varPart, ', ', @step if @step isnt @stepVar
+    [lt, gt] = [(@s idx, ' <', @equals), (@s idx, ' >', @equals)]
 
     # Generate the condition.
     condPart = if @stepNum
-      if +@stepNum > 0 then "#{lt} #{@toVar}" else "#{gt} #{@toVar}"
+      @s (if +@stepNum > 0 then lt else gt), ' ', @toVar
     else if known
       [from, to] = [+@fromNum, +@toNum]
-      if from <= to then "#{lt} #{to}" else "#{gt} #{to}"
+      @s (if from <= to then lt else gt), ' ', to
     else
-      cond     = "#{@fromVar} <= #{@toVar}"
-      "#{cond} ? #{lt} #{@toVar} : #{gt} #{@toVar}"
+      cond     = @s @fromVar, ' <= ', @toVar
+      @s cond, ' ? ', lt, ' ', @toVar, ' : ', gt, ' ', @toVar
 
     # Generate the step.
     stepPart = if @stepVar
-      "#{idx} += #{@stepVar}"
+      @s idx, ' += ', @stepVar
     else if known
       if namedIndex
-        if from <= to then "++#{idx}" else "--#{idx}"
+        if from <= to then (@s '++', idx) else (@s '--', idx)
       else
-        if from <= to then "#{idx}++" else "#{idx}--"
+        if from <= to then (@s idx, '++') else (@s idx, '--')
     else
       if namedIndex
-        "#{cond} ? ++#{idx} : --#{idx}"
+        @s cond, ' ? ++', idx, ' : --', idx
       else
-        "#{cond} ? #{idx}++ : #{idx}--"
+        @s cond, ' ? ', idx, '++ : ', idx, '--'
 
-    varPart  = "#{idxName} = #{varPart}" if namedIndex
-    stepPart = "#{idxName} = #{stepPart}" if namedIndex
+    varPart  = @s idxName, ' = ', varPart if namedIndex
+    stepPart = @s idxName, ' = ', stepPart if namedIndex
 
     # The final loop body.
-    "#{varPart}; #{condPart}; #{stepPart}"
+    @s varPart, '; ', condPart, '; ', stepPart
 
 
   # When used as a value, expand the range into the equivalent array.
@@ -760,22 +760,23 @@ exports.Range = class Range extends Base
     if @fromNum and @toNum and Math.abs(@fromNum - @toNum) <= 20
       range = [+@fromNum..+@toNum]
       range.pop() if @exclusive
-      return "[#{ range.join(', ') }]"
+      return @s '[', (@sjoin range, ', '), ']'
     idt    = @tab + TAB
     i      = o.scope.freeVariable 'i'
     result = o.scope.freeVariable 'results'
-    pre    = "\n#{idt}#{result} = [];"
+    pre    = @s '\n', idt, result, ' = [];'
     if @fromNum and @toNum
       o.index = i
       body    = @compileNode o
     else
-      vars    = "#{i} = #{@fromC}" + if @toC isnt @toVar then ", #{@toC}" else ''
-      cond    = "#{@fromVar} <= #{@toVar}"
-      body    = "var #{vars}; #{cond} ? #{i} <#{@equals} #{@toVar} : #{i} >#{@equals} #{@toVar}; #{cond} ? #{i}++ : #{i}--"
-    post   = "{ #{result}.push(#{i}); }\n#{idt}return #{result};\n#{o.indent}"
+      vars    = @s i, ' = ', @fromC, if @toC isnt @toVar then [', ', @toC] else ''
+      cond    = @s @fromVar, ' <= ', @toVar
+      body    = @s 'var ', vars, '; ', cond, ' ? ', i, ' <', @equals, ' ', @toVar, ' : ', i, ' >', @equals, ' ', @toVar, '; ',
+                   cond, ' ? ', i, '++ : ', i, '--'
+    post   = @s '{ ', result, '.push(', i, '); }\n', idt, 'return ', result, ';\n', o.indent
     hasArgs = (node) -> node?.contains (n) -> n instanceof Literal and n.value is 'arguments' and not n.asKey
     args   = ', arguments' if hasArgs(@from) or hasArgs(@to)
-    "(function() {#{pre}\n#{idt}for (#{body})#{post}}).apply(this#{args ? ''})"
+    @s '(function() {', pre, '\n', idt, 'for (', body, ')', post, '}).apply(this', (args ? ''), ')'
 
 #### Slice
 
@@ -797,13 +798,13 @@ exports.Slice = class Slice extends Base
     fromStr    = from and from.compile(o, LEVEL_PAREN) or '0'
     compiled   = to and to.compile o, LEVEL_ACCESS
     if to and not (not @range.exclusive and +compiled is -1)
-      toStr = ', ' + if @range.exclusive
+      toStr = @s ', ', if @range.exclusive
         compiled
       else if SIMPLENUM.test compiled
         (+compiled + 1).toString()
       else
-        "#{compiled} + 1 || 9e9"
-    ".slice(#{ fromStr }#{ toStr or '' })"
+        @s compiled, ' + 1 || 9e9'
+    @s '.slice(', fromStr, (toStr or ''), ')'
 
 #### Obj
 
