@@ -91,9 +91,9 @@ test "self-referencing functions", ->
 
 test "splats", ->
   arrayEq [0, 1, 2], (((splat...) -> splat) 0, 1, 2)
-  arrayEq [2, 3], (((_, _, splat...) -> splat) 0, 1, 2, 3)
-  arrayEq [0, 1], (((splat..., _, _) -> splat) 0, 1, 2, 3)
-  arrayEq [2], (((_, _, splat..., _) -> splat) 0, 1, 2, 3)
+  arrayEq [2, 3], (((_, _1, splat...) -> splat) 0, 1, 2, 3)
+  arrayEq [0, 1], (((splat..., _, _1) -> splat) 0, 1, 2, 3)
+  arrayEq [2], (((_, _1, splat..., _2) -> splat) 0, 1, 2, 3)
 
 test "@-parameters: automatically assign an argument's value to a property of the context", ->
   nonce = {}
@@ -131,7 +131,7 @@ test "destructuring in function definition", ->
 test "default values", ->
   nonceA = {}
   nonceB = {}
-  a = (_,_,arg=nonceA) -> arg
+  a = (_,_1,arg=nonceA) -> arg
   eq nonceA, a()
   eq nonceA, a(0)
   eq nonceB, a(0,0,nonceB)
@@ -139,7 +139,7 @@ test "default values", ->
   eq nonceA, a(0,0,null)
   eq false , a(0,0,false)
   eq nonceB, a(undefined,undefined,nonceB,undefined)
-  b = (_,arg=nonceA,_,_) -> arg
+  b = (_,arg=nonceA,_1,_2) -> arg
   eq nonceA, b()
   eq nonceA, b(0)
   eq nonceB, b(0,nonceB)
@@ -147,7 +147,7 @@ test "default values", ->
   eq nonceA, b(0,null)
   eq false , b(0,false)
   eq nonceB, b(undefined,nonceB,undefined)
-  c = (arg=nonceA,_,_) -> arg
+  c = (arg=nonceA,_,_1) -> arg
   eq nonceA, c()
   eq      0, c(0)
   eq nonceB, c(nonceB)

@@ -4,7 +4,7 @@
 # the syntax tree into a string of JavaScript code, call `compile()` on the root.
 
 {Scope} = require './scope'
-{RESERVED} = require './lexer'
+{RESERVED, STRICT_PROSCRIBED} = require './lexer'
 
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, last} = require './helpers'
@@ -329,7 +329,7 @@ exports.Literal = class Literal extends Base
       if o.level >= LEVEL_ACCESS then '(void 0)' else 'void 0'
     else if @value is 'this'
       if o.scope.method?.bound then o.scope.method.context else @value
-    else if @value.reserved and "#{@value}" not in ['eval', 'arguments']
+    else if @value.reserved
       "\"#{@value}\""
     else
       @value
@@ -780,6 +780,14 @@ exports.Obj = class Obj extends Base
 
   compileNode: (o) ->
     props = @properties
+    propNames = []
+    for prop in @properties
+      prop = prop.variable if prop.isComplex()
+      if prop?
+        propName = prop.unwrapAll().value.toString()
+        if propName in propNames
+          throw SyntaxError "multiple object literal properties named \"#{propName}\""
+        propNames.push propName
     return (if @front then '({})' else '{}') unless props.length
     if @generated
       for node in props when node instanceof Value
@@ -854,6 +862,8 @@ exports.Class = class Class extends Base
       tail instanceof Access and tail.name.value
     else
       @variable.base.value
+    if decl in STRICT_PROSCRIBED
+      throw SyntaxError "variable name may not be #{decl}"
     decl and= IDENTIFIER.test(decl) and decl
 
   # For all `this`-references and bound functions in the class definition,
@@ -982,6 +992,8 @@ exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options) ->
     @param = options and options.param
     @subpattern = options and options.subpattern
+    if name = @variable.unwrapAll().value in STRICT_PROSCRIBED
+      throw SyntaxError "variable name may not be \"#{name}\""
 
   children: ['variable', 'value']
 
@@ -1047,7 +1059,7 @@ exports.Assign = class Assign extends Base
       acc   = IDENTIFIER.test idx.unwrap().value or 0
       value = new Value value
       value.properties.push new (if acc then Access else Index) idx
-      if obj.unwrap().value in ['arguments','eval'].concat RESERVED
+      if obj.unwrap().value in RESERVED
         throw new SyntaxError "assignment to a reserved word: #{obj.compile o} = #{value.compile o}"
       return new Assign(obj, value, null, param: @param).compile o, LEVEL_TOP
     vvar    = value.compile o, LEVEL_LIST
@@ -1092,7 +1104,7 @@ exports.Assign = class Assign extends Base
         else
           acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
         val = new Value new Literal(vvar), [new (if acc then Access else Index) idx]
-      if name? and name in ['arguments','eval'].concat RESERVED
+      if name? and name in RESERVED
         throw new SyntaxError "assignment to a reserved word: #{obj.compile o} = #{val.compile o}"
       assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compile o, LEVEL_LIST
     assigns.push vvar unless top or @subpattern
@@ -1154,8 +1166,10 @@ exports.Code = class Code extends Base
     o.scope.shared  = del(o, 'sharedScope')
     o.indent        += TAB
     delete o.bare
-    vars   = []
+    params = []
     exprs  = []
+    for name in @paramNames() # this step must be performed before the others
+      unless o.scope.check name then o.scope.parameter name
     for param in @params when param.splat
       o.scope.add p.name.value, 'var', yes for p in @params when p.name.value
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
@@ -1172,11 +1186,15 @@ exports.Code = class Code extends Base
           lit = new Literal ref.name.value + ' == null'
           val = new Assign new Value(param.name), param.value, '='
           exprs.push new If lit, val
-      vars.push ref unless splats
+      params.push ref unless splats
     wasEmpty = @body.isEmpty()
     exprs.unshift splats if splats
     @body.expressions.unshift exprs... if exprs.length
-    o.scope.parameter vars[i] = v.compile o for v, i in vars unless splats
+    o.scope.parameter params[i] = p.compile o for p, i in params
+    uniqs = []
+    for name in @paramNames()
+      throw SyntaxError "multiple parameters named '#{name}'" if name in uniqs
+      uniqs.push name
     @body.makeReturn() unless wasEmpty or @noReturn
     if @bound
       if o.scope.parent.method?.bound
@@ -1186,11 +1204,17 @@ exports.Code = class Code extends Base
     idt   = o.indent
     code  = 'function'
     code  += ' ' + @name if @ctor
-    code  += '(' + vars.join(', ') + ') {'
+    code  += '(' + params.join(', ') + ') {'
     code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
     code  += '}'
     return @tab + code if @ctor
     if @front or (o.level >= LEVEL_ACCESS) then "(#{code})" else code
+
+  # A list of parameter names, excluding those generated by the compiler.
+  paramNames: ->
+    names = []
+    names.push param.names()... for param in @params
+    names
 
   # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
   # unless `crossScope` is `true`.
@@ -1204,6 +1228,8 @@ exports.Code = class Code extends Base
 # as well as be a splat, gathering up a group of parameters into an array.
 exports.Param = class Param extends Base
   constructor: (@name, @value, @splat) ->
+    if name = @name.unwrapAll().value in STRICT_PROSCRIBED
+      throw SyntaxError "parameter name \"#{name}\" is not allowed"
 
   children: ['name', 'value']
 
@@ -1215,7 +1241,8 @@ exports.Param = class Param extends Base
     node = @name
     if node.this
       node = node.properties[0].name
-      node = new Literal '_' + node.value if node.value.reserved
+      if node.value.reserved
+        node = new Literal o.scope.freeVariable node.value
     else if node.isComplex()
       node = new Literal o.scope.freeVariable 'arg'
     node = new Value node
@@ -1224,6 +1251,36 @@ exports.Param = class Param extends Base
 
   isComplex: ->
     @name.isComplex()
+
+  # Finds the name or names of a `Param`; useful for detecting duplicates.
+  # In a sense, a destructured parameter represents multiple JS parameters,
+  # thus this method returns an `Array` of names. 
+  # Reserved words used as param names, as well as the Object and Array 
+  # literals used for destructured params, get a compiler generated name 
+  # during the `Code` compilation step, so this is necessarily an incomplete
+  # list of a parameter's names.
+  names: (name = @name)->
+    atParam = (obj) ->
+      {value} = obj.properties[0].name
+      return if value.reserved then [] else [value]
+    # * simple literals `foo`
+    return [name.value] if name instanceof Literal
+    # * at-params `@foo`
+    return atParam(name) if name instanceof Value
+    names = []
+    for obj in name.objects
+      # * assignments within destructured parameters `{foo:bar}`
+      if obj instanceof Assign
+        names.push obj.variable.base.value
+      # * destructured parameters within destructured parameters `[{a}]`
+      else if obj.isArray() or obj.isObject()
+        names.push @names(obj.base)...
+      # * at-params within destructured parameters `{@foo}`
+      else if obj.this
+        names.push atParam(obj)...
+      # * simple destructured parameters {foo}
+      else names.push obj.base.value 
+    names
 
 #### Splat
 
@@ -1416,6 +1473,10 @@ exports.Op = class Op extends Base
     # In chains, there's no need to wrap bare obj literals in parens,
     # as the chained expression is wrapped.
     @first.front = @front unless isChain
+    if @operator is 'delete' and o.scope.check(@first.unwrapAll().value)
+      throw SyntaxError 'delete operand may not be argument or var'
+    if @operator in ['--', '++'] and @first.unwrapAll().value in STRICT_PROSCRIBED
+        throw SyntaxError 'prefix increment/decrement may not have eval or arguments operand'
     return @compileUnary     o if @isUnary()
     return @compileChain     o if isChain
     return @compileExistence o if @operator is '?'
@@ -1520,6 +1581,8 @@ exports.Try = class Try extends Base
     tryPart   = @attempt.compile o, LEVEL_TOP
 
     catchPart = if @recovery
+      if @error.value in STRICT_PROSCRIBED
+        throw SyntaxError "catch variable may not be \"#{@error.value}\""
       o.scope.add @error.value, 'param' unless o.scope.check @error.value
       " catch#{errorPart}{\n#{ @recovery.compile o, LEVEL_TOP }\n#{@tab}}"
     else unless @ensure or @recovery

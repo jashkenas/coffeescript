@@ -106,7 +106,7 @@ exports.Lexer = class Lexer
             @tokens.pop()
             id = '!' + id
 
-    if id in ['eval', 'arguments'].concat JS_FORBIDDEN
+    if id in JS_FORBIDDEN
       if forcedIdentifier
         tag = 'IDENTIFIER'
         id  = new String id
@@ -134,6 +134,12 @@ exports.Lexer = class Lexer
     return 0 unless match = NUMBER.exec @chunk
     number = match[0]
     lexedLength = number.length
+    if nonStrictOctalLiteral = /^0\d+/.test number
+      dec = if /[89]/.test number then "\"#{number}\" " else ''
+      oct = if dec then '' else "\"#{number}\" "
+      @error "decimal literals #{dec}must not be prefixed with '0'; octal literals #{oct}must be prefixed with '0o'"
+    if octalLiteral = /0o([0-7]+)/i.exec number
+      number = (parseInt octalLiteral[1], 8).toString()
     if binaryLiteral = /0b([01]+)/i.exec number
       number = (parseInt binaryLiteral[1], 2).toString()
     @token 'NUMBER', number
@@ -154,6 +160,8 @@ exports.Lexer = class Lexer
           @token 'STRING', @escapeLines string
       else
         return 0
+    if octalEsc = /^(?:\\.|[^\\])*\\[0-7]/.test string
+      @error "octal escape sequences #{string} are not allowed"
     @line += count string, '\n'
     string.length
 
@@ -568,13 +576,18 @@ RESERVED = [
   'case', 'default', 'function', 'var', 'void', 'with'
   'const', 'let', 'enum', 'export', 'import', 'native'
   '__hasProp', '__extends', '__slice', '__bind', '__indexOf'
+  'implements', 'interface', 'let', 'package',
+  'private', 'protected', 'public', 'static', 'yield'
 ]
+
+STRICT_PROSCRIBED = ['arguments', 'eval']
 
 # The superset of both JavaScript keywords and reserved words, none of which may
 # be used as identifiers or properties.
-JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
+JS_FORBIDDEN = JS_KEYWORDS.concat(RESERVED).concat(STRICT_PROSCRIBED)
 
-exports.RESERVED = RESERVED.concat(JS_KEYWORDS).concat(COFFEE_KEYWORDS)
+exports.RESERVED = RESERVED.concat(JS_KEYWORDS).concat(COFFEE_KEYWORDS).concat(STRICT_PROSCRIBED)
+exports.STRICT_PROSCRIBED = STRICT_PROSCRIBED
 
 # Token matching regexes.
 IDENTIFIER = /// ^
@@ -583,8 +596,9 @@ IDENTIFIER = /// ^
 ///
 
 NUMBER     = ///
-  ^ 0x[\da-f]+ |                              # hex
-  ^ 0b[01]+ |                              # binary
+  ^ 0x[\da-f]+ |              # hex
+  ^ 0b[01]+    |              # binary
+  ^ 0o[0-7]+   |              # octal
   ^ \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
 ///i
 
