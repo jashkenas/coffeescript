@@ -623,7 +623,7 @@ test "#1980: regression with an inherited class with static function members", -
 test "#1534: class then 'use strict'", ->
   # [14.1 Directive Prologues and the Use Strict Directive](http://es5.github.com/#x14.1)
   nonce = {}
-  error = '`arguments.callee`'
+  error = 'do -> ok this'
   strictTest = "do ->'use strict';#{error}"
   return unless (try CoffeeScript.run strictTest, bare: yes catch e then nonce) is nonce
   
