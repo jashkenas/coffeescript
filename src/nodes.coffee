@@ -918,15 +918,13 @@ exports.Class = class Class extends Base
         child.expressions = exps = flatten exps
 
   # `use strict` (and other directives) must be the first expression statement(s)
-  # of a function body. This method ensures the prologue is correctly positioned 
+  # of a function body. This method ensures the prologue is correctly positioned
   # above the `constructor`.
   hoistDirectivePrologue: ->
     index = 0
     {expressions} = @body
-    ++index while (node = expressions[index]) and 
-      node instanceof Comment or
-      node instanceof Value and
-      node.isString()
+    ++index while (node = expressions[index]) and node instanceof Comment or
+      node instanceof Value and node.isString()
     @directives = expressions.splice 0, index
 
   # Make sure that a constructor is defined for the class, and properly

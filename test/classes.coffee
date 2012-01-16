@@ -612,25 +612,25 @@ test "#1966: external constructors should produce their return value", ->
   ok (new A) not instanceof A
 
 test "#1980: regression with an inherited class with static function members", ->
-  
+
   class A
 
   class B extends A
     @static: => 'value'
-    
+
   eq B.static(), 'value'
-  
+
 test "#1534: class then 'use strict'", ->
   # [14.1 Directive Prologues and the Use Strict Directive](http://es5.github.com/#x14.1)
   nonce = {}
   error = 'do -> ok this'
   strictTest = "do ->'use strict';#{error}"
   return unless (try CoffeeScript.run strictTest, bare: yes catch e then nonce) is nonce
-  
+
   throws -> CoffeeScript.run "class then 'use strict';#{error}", bare: yes
   doesNotThrow -> CoffeeScript.run "class then #{error}", bare: yes
   doesNotThrow -> CoffeeScript.run "class then #{error};'use strict'", bare: yes
-  
+
   # comments are ignored in the Directive Prologue
   comments = ["""
   class
@@ -652,8 +652,8 @@ test "#1534: class then 'use strict'", ->
     ### comment 3 ###"""
   ]
   throws (-> CoffeeScript.run comment, bare: yes) for comment in comments
-  
-  # [ES5](http://es5.github.com/#x14.1) allows for other, implementation-specific, directives
+
+  # [ES5 §14.1](http://es5.github.com/#x14.1) allows for other directives
   directives = ["""
   class
     'directive 1'
