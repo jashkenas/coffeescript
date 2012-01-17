@@ -131,9 +131,9 @@ hackTrace = (stack, js, filename) ->
   return (traces.join '\n') unless traces.length > 1
   for trace, i in traces
     continue if 0 > index = trace.indexOf "(#{filename}:"
-    {1: prefix, 2: lno, 3: col, 4: postfix} = /^(.*):(\d+):(\d+)\)$/.exec trace
-    lno = +lno - 1
-    col = +col - 1
+    {1: prefix, 2: _lno, 3: _col, 4: postfix} = /^(.*):(\d+):(\d+)\)$/.exec trace
+    lno = +_lno - 1
+    col = +_col - 1
     continue unless lno? and col?
     {length} = '' + end = lno+4
     
@@ -147,7 +147,7 @@ hackTrace = (stack, js, filename) ->
     
     node = getNode js, col
     continue if not (location = node?.location)?
-    traces[i] = "#{prefix} js:#{lno+1}:#{col+1} coffee:#{location.firstLine+1}:#{if location.firstColumn? then location.firstColumn+1 else '?'})"
+    traces[i] = "#{prefix} js:#{_lno}:#{_col} coffee:#{location.firstLine+1}:#{if location.firstColumn? then location.firstColumn+1 else '?'})"
   traces.join '\n'
 
 makeStackTracesMonkeypatchable = ->
