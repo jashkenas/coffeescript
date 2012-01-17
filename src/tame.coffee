@@ -40,11 +40,27 @@ makeDeferReturn = (obj, defer_args, id) ->
   ret
 
 #-----------------------------------------------------------------------
+# 
+# Tick Counter --
+#    count off every mod processor ticks
+# 
+__c = 0
+
+tickCounter = (mod) ->
+  __c++
+  if (__c % mod) == 0
+    __c = 0
+    true
+  else
+    false
+
+#-----------------------------------------------------------------------
 # Deferrals
 #
 #   A collection of Deferrals; this is a better version than the one
 #   that's inline; it allows for tame tracing
 #
+
 class Deferrals
 
   constructor: (k) ->
@@ -53,7 +69,11 @@ class Deferrals
     @ret = null
 
   _fulfill : ->
-    @continuation @ret if --@count == 0
+    if --@count == 0
+      if tickCounter 500
+        process.nextTick (=> @continuation @ret)
+      else
+        @continuation @ret
 
   defer : (args) ->
     @count++

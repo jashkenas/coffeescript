@@ -64,3 +64,11 @@ if require?
     for s in slots
       ok = false unless s == 7
     cb(ok, {})
+
+##----------------------------------------------------------------------
+
+  atest "stack protector", (cb) ->
+    noop = (cb) -> cb()
+    for i in [0..10000]
+      await noop defer()
+    cb(true, {})
