@@ -506,3 +506,19 @@ atest 'super with no args', (cb) ->
   await a.foo defer()
   cb(a.x is 10, {})
 
+atest 'nested for .. of .. loops', (cb) ->
+  x =
+    christian:
+      age: 36
+      last: "rudder"
+    max:
+      age: 34
+      last: "krohn"
+
+  tot = 0
+  for first, info of x
+    tot += info.age
+    for k,v of info
+      await delay defer()
+      tot++
+  cb(tot is 74, {})
