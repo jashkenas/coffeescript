@@ -136,18 +136,9 @@ compileScript = (file, input, base) ->
   catch err
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
-    if o.watch
-      debouncedBeep()
-      return printLine err.message
+    return printLine err.message + '\007' if o.watch
     printWarn err instanceof Error and err.stack or "ERROR: #{err}"
     process.exit 1
-
-# Beep once if there are errors in compilation of watched script(s)
-beepTimeout = null
-debouncedBeep = ->
-  clearTimeout beepTimeout
-  beepTimeout = wait 100, ->
-    process.stdout.write '\007'
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
 # and write them back to **stdout**.
