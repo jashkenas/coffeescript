@@ -72,11 +72,16 @@ exports.run = (code, options) ->
   # Compile.
   if path.extname(mainModule.filename) isnt '.coffee' or require.extensions
     jscode = compile code, options
-    try
-      mainModule._compile jscode, mainModule.filename
-    catch err
-      hackTrace err, jscode, mainModule.filename
-      throw err
+    
+    # Hack into stack traces.
+    if not Error.prepareStackTrace?
+      makeStackTracesMonkeypatchable()
+    _prepareStackTrace = Error.prepareStackTrace
+    Error.prepareStackTrace = (error, structuredStackTrace) ->
+      plainStack = _prepareStackTrace error, structuredStackTrace
+      hackTrace plainStack, jscode, mainModule.filename
+
+    mainModule._compile jscode, mainModule.filename
   else
     mainModule._compile code, mainModule.filename
 
@@ -121,9 +126,9 @@ getNode = (js, i) ->
   j-- while j > 0 and not js.sources[j]?
   js.sources[j]
 
-hackTrace = (error, js, filename) ->
-  traces = error?.stack.split '\n'
-  return error unless traces.length > 1
+hackTrace = (stack, js, filename) ->
+  traces = stack.split '\n'
+  return (traces.join '\n') unless traces.length > 1
   for trace, i in traces
     continue if 0 > index = trace.indexOf "(#{filename}:"
     {1: prefix, 2: lno, 3: col, 4: postfix} = /^(.*):(\d+):(\d+)\)$/.exec trace
@@ -142,9 +147,11 @@ hackTrace = (error, js, filename) ->
     
     node = getNode js, col
     continue if not (location = node?.location)?
-    traces[i] = "#{prefix}:#{location.firstLine+1}:#{location.firstColumn+1})"
-  error.stack = traces.join '\n'
-  error
+    traces[i] = "#{prefix} js:#{lno+1}:#{col+1} coffee:#{location.firstLine+1}:#{if location.firstColumn? then location.firstColumn+1 else '?'})"
+  traces.join '\n'
+
+makeStackTracesMonkeypatchable = ->
+  Error.prepareStackTrace = FormatStackTrace
 
 # Instantiate a Lexer for our use here.
 lexer = new Lexer
@@ -171,3 +178,120 @@ parser.lexer =
     last_col: 0
 
 parser.yy = require './nodes'
+
+`
+// from v8/src/messages.js
+// The following applies to the rest of this file:
+// Copyright 2011 the V8 project authors. All rights reserved.
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+//       notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+//       copyright notice, this list of conditions and the following
+//       disclaimer in the documentation and/or other materials provided
+//       with the distribution.
+//     * Neither the name of Google Inc. nor the names of its
+//       contributors may be used to endorse or promote products derived
+//       from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+function FormatSourcePosition(frame) {
+  var fileName;
+  var fileLocation = "";
+  if (frame.isNative()) {
+    fileLocation = "native";
+  } else if (frame.isEval()) {
+    fileName = frame.getScriptNameOrSourceURL();
+    if (!fileName)
+      fileLocation = frame.getEvalOrigin();
+  } else {
+    fileName = frame.getFileName();
+  }
+
+  if (fileName) {
+    fileLocation += fileName;
+    var lineNumber = frame.getLineNumber();
+    if (lineNumber != null) {
+      fileLocation += ":" + lineNumber;
+      var columnNumber = frame.getColumnNumber();
+      if (columnNumber) {
+        fileLocation += ":" + columnNumber;
+      }
+    }
+  }
+
+  if (!fileLocation) {
+    fileLocation = "unknown source";
+  }
+  var line = "";
+  var functionName = frame.getFunction().name;
+  var addPrefix = true;
+  var isConstructor = frame.isConstructor();
+  var isMethodCall = !(frame.isToplevel() || isConstructor);
+  if (isMethodCall) {
+    var methodName = frame.getMethodName();
+    line += frame.getTypeName() + ".";
+    if (functionName) {
+      line += functionName;
+      if (methodName && (methodName != functionName)) {
+        line += " [as " + methodName + "]";
+      }
+    } else {
+      line += methodName || "<anonymous>";
+    }
+  } else if (isConstructor) {
+    line += "new " + (functionName || "<anonymous>");
+  } else if (functionName) {
+    line += functionName;
+  } else {
+    line += fileLocation;
+    addPrefix = false;
+  }
+  if (addPrefix) {
+    line += " (" + fileLocation + ")";
+  }
+  return line;
+}
+
+function FormatStackTrace(error, frames) {
+  var lines = [];
+  try {
+    lines.push(error.toString());
+  } catch (e) {
+    try {
+      lines.push("<error: " + e + ">");
+    } catch (ee) {
+      lines.push("<error>");
+    }
+  }
+  for (var i = 0; i < frames.length; i++) {
+    var frame = frames[i];
+    var line;
+    try {
+      line = FormatSourcePosition(frame);
+    } catch (e) {
+      try {
+        line = "<error: " + e + ">";
+      } catch (ee) {
+        // Any code that reaches this point is seriously nasty!
+        line = "<error>";
+      }
+    }
+    lines.push("    at " + line);
+  }
+  return lines.join("\n");
+}`
