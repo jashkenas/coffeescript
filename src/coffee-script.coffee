@@ -13,14 +13,23 @@ path             = require 'path'
 tame             = require './tame'
 vm               = require 'vm'
 
+# Native extensions we're willing to consider
+exports.EXTENSIONS = EXTENSIONS = [ ".coffee", ".toffee"]
+
+isCoffeeFile = (file) ->
+  for e in EXTENSIONS
+    return true if path.extname(file) is e
+ false
 
 # TODO: Remove registerExtension when fully deprecated.
 if require.extensions
-  require.extensions['.coffee'] = (module, filename) ->
-    content = compile fs.readFileSync(filename, 'utf8'), {filename}
-    module._compile content, filename
+  for e in EXTENSIONS
+    require.extensions[e] = (module, filename) ->
+      content = compile fs.readFileSync(filename, 'utf8'), {filename}
+      module._compile content, filename
 else if require.registerExtension
-  require.registerExtension '.coffee', (content) -> compile content
+  for e in EXTENSIONS
+    require.registerExtension e, (content) -> compile content
 
 # The current CoffeeScript version number.
 exports.VERSION = '1.2.1-pre'
@@ -73,7 +82,7 @@ exports.run = (code, options = {}) ->
   mainModule.paths = require('module')._nodeModulePaths path.dirname options.filename
 
   # Compile.
-  if path.extname(mainModule.filename) isnt '.coffee' or require.extensions
+  if not isCoffeeFile mainModule.filename or require.extensions
     mainModule._compile compile(code, options), mainModule.filename
   else
     mainModule._compile code, mainModule.filename

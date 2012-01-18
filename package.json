@@ -1,8 +1,8 @@
 {
-  "name":         "coffee-script",
-  "description":  "Unfancy JavaScript",
+  "name":         "taco-script",
+  "description":  "TAmed COffeeScript"
   "keywords":     ["javascript", "language", "coffeescript", "compiler"],
-  "author":       "Jeremy Ashkenas",
+  "author":       "Maxwell Krohn",
   "version":      "1.2.1-pre",
   "licenses":     [{
     "type":       "MIT",
@@ -16,13 +16,13 @@
   },
   "main" : "./lib/coffee-script/coffee-script",
   "bin":          {
-    "coffee":     "./bin/coffee",
-    "cake":       "./bin/cake"
+    "taco":     "./bin/coffee",
+    "take":     "./bin/cake"
   },
-  "homepage":     "http://coffeescript.org",
+  "homepage":     "http://maxtaco.github.com/coffee-script",
   "repository":   {
     "type": "git",
-    "url": "git://github.com/jashkenas/coffee-script.git"
+    "url": "git://github.com/maxtaco/coffee-script.git"
   },
   "devDependencies": {
     "uglify-js":  ">=1.0.0",
