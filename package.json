@@ -1,6 +1,6 @@
 {
   "name":         "taco-script",
-  "description":  "TAmed COffeeScript"
+  "description":  "TAmed COffeeScript",
   "keywords":     ["javascript", "language", "coffeescript", "compiler"],
   "author":       "Maxwell Krohn",
   "version":      "1.2.1-pre",
