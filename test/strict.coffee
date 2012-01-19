@@ -117,6 +117,9 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
     check "++{keyword}"
     check "{keyword}--"
     check "--{keyword}"
+  destruct = (keyword, check = strict) ->
+    check "{#{keyword}}"
+    check "o = {#{keyword}}"
   invoke = (keyword, check = strict) ->  
     check "#{keyword} yes"
     check "do #{keyword}"
@@ -134,6 +137,7 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
   for keyword in future
     access   keyword
     assign   keyword
+    destruct keyword
     invoke   keyword
     fnDecl   keyword
     param    keyword
@@ -143,6 +147,7 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
   for keyword in ['eval', 'arguments']
     access   keyword, strictOk
     assign   keyword
+    destruct keyword, strictOk
     invoke   keyword, strictOk
     fnDecl   keyword
     param    keyword
