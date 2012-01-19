@@ -1,5 +1,5 @@
 {
-  "name":         "taco-script",
+  "name":         "coffee-script",
   "description":  "TAmed COffeeScript",
   "keywords":     ["javascript", "language", "coffeescript", "compiler"],
   "author":       "Maxwell Krohn",
@@ -16,8 +16,8 @@
   },
   "main" : "./lib/coffee-script/coffee-script",
   "bin":          {
-    "taco":     "./bin/coffee",
-    "take":     "./bin/cake"
+    "coffee":     "./bin/coffee",
+    "cake":       "./bin/cake"
   },
   "homepage":     "http://maxtaco.github.com/coffee-script",
   "repository":   {
