@@ -14,12 +14,12 @@ tame             = require './tame'
 vm               = require 'vm'
 
 # Native extensions we're willing to consider
-exports.EXTENSIONS = EXTENSIONS = [ ".coffee", ".toffee"]
+exports.EXTENSIONS = EXTENSIONS = [ ".coffee" ]
 
 isCoffeeFile = (file) ->
   for e in EXTENSIONS
     return true if path.extname(file) is e
- false
+  false
 
 # TODO: Remove registerExtension when fully deprecated.
 if require.extensions
@@ -82,7 +82,7 @@ exports.run = (code, options = {}) ->
   mainModule.paths = require('module')._nodeModulePaths path.dirname options.filename
 
   # Compile.
-  if not isCoffeeFile mainModule.filename or require.extensions
+  if (not isCoffeeFile mainModule.filename) or require.extensions
     mainModule._compile compile(code, options), mainModule.filename
   else
     mainModule._compile code, mainModule.filename
