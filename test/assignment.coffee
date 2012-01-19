@@ -267,6 +267,10 @@ test "#1005: invalid identifiers allowed on LHS of destructuring assignment", ->
       CoffeeScript.compile "[@#{v}] = x"
       CoffeeScript.compile "[@#{v}...] = x"
 
+test "#2055: destructuring assignment with `new`", ->
+  {length} = new Array
+  eq 0, length
+
 
 # Existential Assignment
 

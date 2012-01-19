@@ -759,13 +759,14 @@ exports.Slice = class Slice extends Base
   compileNode: (o) ->
     {to, from} = @range
     fromStr    = from and from.compile(o, LEVEL_PAREN) or '0'
-    compiled   = to and to.compile o, LEVEL_ACCESS
+    compiled   = to and to.compile o, LEVEL_PAREN
     if to and not (not @range.exclusive and +compiled is -1)
       toStr = ', ' + if @range.exclusive
         compiled
       else if SIMPLENUM.test compiled
-        (+compiled + 1).toString()
+        "#{+compiled + 1}"
       else
+        compiled = to.compile o, LEVEL_ACCESS
         "#{compiled} + 1 || 9e9"
     ".slice(#{ fromStr }#{ toStr or '' })"
 
@@ -1506,6 +1507,8 @@ exports.Op = class Op extends Base
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
+    if o.level >= LEVEL_ACCESS
+      return (new Parens this).compile o
     parts = [op = @operator]
     plusMinus = op in ['+', '-']
     parts.push ' ' if op in ['new', 'typeof', 'delete'] or
