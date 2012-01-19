@@ -2653,7 +2653,10 @@ exports.For = class For extends While
         forPart    = "#{forVarPart}; #{ivar} < #{lvar}; #{stepPart}"
     if @returns
       resultPart   = "#{@tab}#{rvar} = [];\n"
-      returnResult = "\n#{@tab}return #{rvar};"
+      returnResult = if @tameHasAutocbFlag
+        "\n#{@tab}#{tame.const.autocb}(#{rvar}); return;"
+      else
+        "\n#{@tab}return #{rvar};"
       body.makeReturn rvar
     if @guard
       if body.expressions.length > 1
