@@ -1,6 +1,6 @@
 {
-  "name":         "coffee-script",
-  "description":  "TAmed COffeeScript",
+  "name":         "iced-coffee-script",
+  "description":  "IcedCoffeeScript",
   "keywords":     ["javascript", "language", "coffeescript", "compiler"],
   "author":       "Maxwell Krohn",
   "version":      "1.2.0b",
@@ -16,8 +16,8 @@
   },
   "main" : "./lib/coffee-script/coffee-script",
   "bin":          {
-    "coffee":     "./bin/coffee",
-    "cake":       "./bin/cake"
+    "iced":           "./bin/coffee",
+    "icake":           "./bin/cake"
   },
   "homepage":     "http://maxtaco.github.com/coffee-script",
   "repository":   {
