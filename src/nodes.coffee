@@ -993,7 +993,8 @@ exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options) ->
     @param = options and options.param
     @subpattern = options and options.subpattern
-    if name = @variable.unwrapAll().value in STRICT_PROSCRIBED
+    forbidden = (name = @variable.unwrapAll().value) in STRICT_PROSCRIBED
+    if forbidden and @context isnt 'object'
       throw SyntaxError "variable name may not be \"#{name}\""
 
   children: ['variable', 'value']
