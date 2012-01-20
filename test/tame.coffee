@@ -529,3 +529,11 @@ atest 'for + return + autocb', (cb) ->
     (i for i in [0..10])
   await bar defer v 
   cb(v[3] is 3, {})
+
+atest 'for + return + autocb (part 2)', (cb) ->
+  bar = (autocb) ->
+    await delay defer()
+    x = (i for i in [0..10])
+    [10..20]
+  await bar defer v
+  cb(v[3] is 13, {})

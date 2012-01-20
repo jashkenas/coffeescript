@@ -73,6 +73,18 @@ exports.Base = class Base
     if @jumps()
       throw SyntaxError 'cannot use a pure statement in an expression.'
     o.sharedScope = yes
+
+    #
+    # This solves this case:
+    # 
+    # foo = (autocb) ->
+    #   x = (i for i in [0..10])
+    #   x
+    #
+    #  We don't want the autocb to fire in the evaluation of the list
+    #  comprehension on the RHS.
+    # 
+    @tameClearAutocbFlags()
     Closure.wrap(this).compileNode o
 
   # Statements that need CPS translation will have to be split into
@@ -294,6 +306,12 @@ exports.Base = class Base
     for child in @flattenChildren()
       @tameCpsPivotFlag = true if child.tameWalkCpsPivots()
     @tameCpsPivotFlag
+
+  tameClearAutocbFlags : ->
+    @tameHasAutocbFlag = false
+    @traverseChildren false, (node) ->
+      node.tameHasAutocbFlag = false
+      true
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
