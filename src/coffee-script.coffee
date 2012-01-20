@@ -14,7 +14,7 @@ tame             = require './tame'
 vm               = require 'vm'
 
 # Native extensions we're willing to consider
-exports.EXTENSIONS = EXTENSIONS = [ ".coffee" ]
+exports.EXTENSIONS = EXTENSIONS = [ ".coffee", ".iced" ]
 
 isCoffeeFile = (file) ->
   for e in EXTENSIONS
