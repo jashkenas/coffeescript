@@ -649,6 +649,22 @@ exports.Index = class Index extends Base
   isComplex: ->
     @index.isComplex()
 
+#### ObjectAccessWithDefault
+# `object['key', 'default']` gets an attribute, returning a lazily evaluated
+# default value.
+exports.ObjectAccessWithDefault = class ObjectAccessWithDefault extends Base
+  constructor: (@obj, @key, @default) ->
+
+  children: ['obj', 'key', 'default']
+
+  compileNode: (o) ->
+    [objC, objVar] = @obj.cache o, LEVEL_COND
+    [keyC, keyVar] = @key.cache o, LEVEL_OP
+    "#{keyC} in #{objC} ? #{objVar}[#{keyVar}] : #{@default.compile o, LEVEL_TOP}"
+
+  isComplex: ->
+    @obj.isComplex() or @key.isComplex()
+
 #### Range
 
 # A range literal. Ranges can be used to extract portions (slices) of arrays,

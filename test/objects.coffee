@@ -270,3 +270,50 @@ test "#1961, #1974, regression with compound assigning to an implicit object", -
     
   eq obj.four, 4
   
+test "getting an object attribute with a default", ->
+  obj =
+    one: 1
+    two: 2
+
+  eq obj['two', 3], 2
+  eq obj['three', 3], 3
+
+  # make sure the default is lazily executed
+  x = 10
+  func = ->
+    x += 1
+
+  eq obj['one', func()], 1
+  eq x, 10
+  eq obj['zzzzz', func()], 11
+  eq x, 11
+
+test "object attribute with default from invocation", ->
+  x = 1
+  func = ->
+    x += 1
+    {} =
+      aoeu: 1
+      asdf: 2
+      htns: 3
+      jkl_: 4
+
+  y = 1
+  func2 = ->
+    y += 1
+    "ZZZZ"
+
+  eq func()[func2(), 'hi'], 'hi'
+  eq x, 2
+  eq y, 2
+
+  eq {'ZZZZ': 8}[func2(), 'default'], 8
+  eq y, 3
+
+test "object attribute with default used in a complex way", ->
+  x = 1
+  func = ->
+    x += 1
+
+  eq {'aoeu': 1}[func(), {'foo': 777}]['blarg', 888], 888
+  eq x, 2
