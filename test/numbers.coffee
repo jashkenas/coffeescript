@@ -15,7 +15,6 @@
 
 test "Parser recognises binary numbers", ->
   eq 4, 0b100
-  eq 5, 0B101
 
 # Decimal Integer Literals
 
@@ -57,12 +56,16 @@ test '#1168: leading floating point suppresses newline', ->
 
 test "Python-style octal literal notation '0o777'", ->
   eq 511, 0o777
-  eq 511, 0O777
   eq 1, 0o1
-  eq 1, 0O1
   eq 1, 0o00001
   eq parseInt('0777', 8), 0o777
   eq '777', 0o777.toString 8
   eq 4, 0o4.valueOf()
   eq Number::toString, 0o777['toString']
   eq Number::toString, 0o777.toString
+
+test "#2060: Disallow uppercase radix prefixes and exponential notation", ->
+  for char in ['b', 'o', 'x', 'e']
+    program = "0#{char}0"
+    doesNotThrow -> CoffeeScript.compile program, bare: yes
+    throws -> CoffeeScript.compile program.toUpperCase(), bare: yes
