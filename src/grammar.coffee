@@ -231,10 +231,20 @@ grammar =
     o 'Object',                                 -> new Value $1
   ]
 
+  ObjectAccessWithDefault: [
+    o 'Value AccessWithDefault',      -> new ObjectAccessWithDefault $1, $2[0], $2[1]
+    o 'Invocation AccessWithDefault', -> new ObjectAccessWithDefault $1, $2[0], $2[1]
+  ]
+
+  AccessWithDefault: [
+    o 'INDEX_START Expression , Expression INDEX_END', -> [$2, $4]
+  ]
+
   # The types of things that can be treated as values -- assigned to, invoked
   # as functions, indexed into, named as a class, etc.
   Value: [
     o 'Assignable'
+    o 'ObjectAccessWithDefault',                -> new Value $1
     o 'Literal',                                -> new Value $1
     o 'Parenthetical',                          -> new Value $1
     o 'Range',                                  -> new Value $1
