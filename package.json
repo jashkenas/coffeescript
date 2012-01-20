@@ -3,7 +3,7 @@
   "description":  "TAmed COffeeScript",
   "keywords":     ["javascript", "language", "coffeescript", "compiler"],
   "author":       "Maxwell Krohn",
-  "version":      "1.2.0a",
+  "version":      "1.2.0b",
   "licenses":     [{
     "type":       "MIT",
     "url":        "http://github.com/jashkenas/coffee-script/raw/master/LICENSE"
