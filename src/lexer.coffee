@@ -133,8 +133,8 @@ exports.Lexer = class Lexer
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
     number = match[0]
-    if /[E]/.test number
-      @error "exponential notation must be indicated with a lowercase 'e'"
+    if /E/.test number
+      @error "exponential notation '#{number}' must be indicated with a lowercase 'e'"
     else if /[BOX]/.test number
       @error "radix prefixes must be lowercase '#{number}'"
     else if /^0[89]/.test number
