@@ -1256,9 +1256,9 @@ exports.Param = class Param extends Base
 
   # Finds the name or names of a `Param`; useful for detecting duplicates.
   # In a sense, a destructured parameter represents multiple JS parameters,
-  # thus this method returns an `Array` of names. 
-  # Reserved words used as param names, as well as the Object and Array 
-  # literals used for destructured params, get a compiler generated name 
+  # thus this method returns an `Array` of names.
+  # Reserved words used as param names, as well as the Object and Array
+  # literals used for destructured params, get a compiler generated name
   # during the `Code` compilation step, so this is necessarily an incomplete
   # list of a parameter's names.
   names: (name = @name)->
@@ -1281,7 +1281,7 @@ exports.Param = class Param extends Base
       else if obj.this
         names.push atParam(obj)...
       # * simple destructured parameters {foo}
-      else names.push obj.base.value 
+      else names.push obj.base.value
     names
 
 #### Splat
@@ -1478,7 +1478,7 @@ exports.Op = class Op extends Base
     if @operator is 'delete' and o.scope.check(@first.unwrapAll().value)
       throw SyntaxError 'delete operand may not be argument or var'
     if @operator in ['--', '++'] and @first.unwrapAll().value in STRICT_PROSCRIBED
-        throw SyntaxError 'prefix increment/decrement may not have eval or arguments operand'
+      throw SyntaxError 'prefix increment/decrement may not have eval or arguments operand'
     return @compileUnary     o if @isUnary()
     return @compileChain     o if isChain
     return @compileExistence o if @operator is '?'
