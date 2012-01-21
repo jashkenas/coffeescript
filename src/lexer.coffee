@@ -133,14 +133,18 @@ exports.Lexer = class Lexer
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
     number = match[0]
+    if /[E]/.test number
+      @error "exponential notation must be indicated with a lowercase 'e'"
+    else if /[BOX]/.test number
+      @error "radix prefixes must be lowercase '#{number}'"
+    else if /^0[89]/.test number
+      @error "decimal literals '#{number}' must not be prefixed with '0'"
+    else if /^0[0-7]/.test number
+      @error "octal literals '#{number}' must be prefixed with '0o'"
     lexedLength = number.length
-    if nonStrictOctalLiteral = /^0\d+/.test number
-      dec = if /[89]/.test number then "\"#{number}\" " else ''
-      oct = if dec then '' else "\"#{number}\" "
-      @error "decimal literals #{dec}must not be prefixed with '0'; octal literals #{oct}must be prefixed with '0o'"
-    if octalLiteral = /0o([0-7]+)/i.exec number
+    if octalLiteral = /0o([0-7]+)/.exec number
       number = (parseInt octalLiteral[1], 8).toString()
-    if binaryLiteral = /0b([01]+)/i.exec number
+    if binaryLiteral = /0b([01]+)/.exec number
       number = (parseInt binaryLiteral[1], 2).toString()
     @token 'NUMBER', number
     lexedLength
@@ -596,9 +600,9 @@ IDENTIFIER = /// ^
 ///
 
 NUMBER     = ///
-  ^ 0x[\da-f]+ |              # hex
   ^ 0b[01]+    |              # binary
   ^ 0o[0-7]+   |              # octal
+  ^ 0x[\da-f]+ |              # hex
   ^ \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
 ///i
 
