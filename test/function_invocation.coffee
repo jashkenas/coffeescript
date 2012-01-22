@@ -553,9 +553,13 @@ test "#1896: recursive implicit object braces and function parentheses", ->
     f = makeFunc 'f'
     g = makeFunc 'g'
     whatisit = a: func b, {c: d}, e: f g h: e
-    # We actually want:
-    # expected = "{ a: 'func( b, { c: d }, { e: f( Function ), h: e } )' }"
     expected = "{ a: 'func( b, { c: d }, { e: f( g( { h: e } ) ) } )' }"
+    eq inspect(whatisit), expected
+
+  local (f) ->
+    f = makeFunc 'f'
+    whatisit = a: func b, {c: d}, e: f g, h: e
+    expected = "{ a: 'func( b, { c: d }, { e: f( g, { h: e } ) } )' }"
     eq inspect(whatisit), expected
 
   # #1865
