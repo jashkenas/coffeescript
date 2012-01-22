@@ -116,8 +116,6 @@ class exports.Rewriter
         throw stop if stop isnt 'STOP'
         i += action.call this, token, i if action?
         return i - start
-      console.log "\tSTACK::\t" + stack.map((x)->x[0]).join('/')
-      console.log (t[0] + '/' + t[1] for t in @tokens).join '   '
       throw new Error('End not found in scanEnd.')
 
     # true or false
@@ -157,7 +155,7 @@ class exports.Rewriter
       if tag in ['CLASS']
         priorLineType = lineType
         lineType = tag
-      if stackDelayed and token != stackDelayed
+      if stackDelayed and token isnt stackDelayed
         stack.push stackDelayed
         stackDelayed = null
       if token[0] in EXPRESSION_START
@@ -200,7 +198,7 @@ class exports.Rewriter
 
       [tag, value, line] = token
 
-      if not (stack[stack.length - 1]?.generated and stack[stack.length - 1]?[0] is '{')
+      unless stack[stack.length - 1]?.generated and stack[stack.length - 1]?[0] is '{'
         return 1
 
       if tag in EXPRESSION_END
