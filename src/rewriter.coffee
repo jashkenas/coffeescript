@@ -32,23 +32,39 @@ class exports.Rewriter
   # forwards (or backwards) in the stream, to make sure we don't miss anything
   # as tokens are inserted and removed, and the stream changes length under
   # our feet.
-  scanTokens: (i, block, state={}) ->
+  scanTokens: (block) ->
     {tokens} = this
-    i += block.call this, token, i, tokens, state while token = tokens[i]
+    i = 0
+    i += block.call this, token, i, tokens while token = tokens[i]
     true
 
-  detectEnd: (i, condition, action) ->
-    {tokens} = this
-    levels = 0
-    while token = tokens[i]
-      return action.call this, token, i     if levels is 0 and condition.call this, token, i
-      return action.call this, token, i - 1 if not token or levels < 0
-      if token[0] in EXPRESSION_START
-        levels += 1
-      else if token[0] in EXPRESSION_END
-        levels -= 1
-      i += 1
-    i - 1
+  detectEnd: (start, condition, action, state={}, recursiveAction=null, startLevels=0) ->
+    levels = startLevels
+    i = start
+    try
+      while token = @tokens[i]
+        if recursiveAction
+          skip = recursiveAction.call this, token, i
+          if skip?
+            i += skip
+            continue
+        if token[0] in EXPRESSION_END
+          levels -= 1
+          if levels < 0
+            throw 'STOP'
+          i += 1
+        else
+          if levels is 0
+            i += condition.call this, token, i, state
+          else
+            i += 1
+          if token[0] in EXPRESSION_START
+            levels += 1
+    catch stop
+      throw stop if stop isnt 'STOP'
+      i += action.call this, token, i if action?
+      return i - start
+    throw new Error("End not found in detectEnd")
 
   # Leading newlines would introduce an ambiguity in the grammar, so we
   # dispatch them here.
@@ -59,7 +75,7 @@ class exports.Rewriter
   # Some blocks occur in the middle of expressions -- when we're expecting
   # this, remove their trailing newlines.
   removeMidExpressionNewlines: ->
-    @scanTokens 0, (token, i, tokens) ->
+    @scanTokens (token, i, tokens) ->
       return 1 unless token[0] is 'TERMINATOR' and @tag(i + 1) in EXPRESSION_CLOSE
       tokens.splice i, 1
       0
@@ -70,13 +86,15 @@ class exports.Rewriter
   closeOpenCalls: ->
 
     condition = (token, i) ->
-      token[0] in [')', 'CALL_END'] or
-      token[0] is 'OUTDENT' and @tag(i - 1) is ')'
+      throw 'STOP' if \
+        token[0] in [')', 'CALL_END'] or
+        token[0] is 'OUTDENT' and @tag(i - 1) is ')'
+      1
 
     action = (token, i) ->
       @tokens[if token[0] is 'OUTDENT' then i - 1 else i][0] = 'CALL_END'
 
-    @scanTokens 0, (token, i) ->
+    @scanTokens (token, i) ->
       @detectEnd i + 1, condition, action if token[0] is 'CALL_START'
       1
 
@@ -85,12 +103,13 @@ class exports.Rewriter
   closeOpenIndexes: ->
 
     condition = (token, i) ->
-      token[0] in [']', 'INDEX_END']
+      throw 'STOP' if token[0] in [']', 'INDEX_END']
+      1
 
     action = (token, i) ->
       token[0] = 'INDEX_END'
 
-    @scanTokens 0, (token, i) ->
+    @scanTokens (token, i) ->
       @detectEnd i + 1, condition, action if token[0] is 'INDEX_START'
       1
 
@@ -98,7 +117,6 @@ class exports.Rewriter
 
     # stack of EXPRESSION_STARTS
     stack = []
-    stackDelayed = null
 
     # 'CLASS' line?
     priorLineType = null
@@ -106,17 +124,6 @@ class exports.Rewriter
 
     # call and clear when LINEBREAKS is encountered
     lineBreakListeners = []
-
-    scanEnd = (start, condition, action, state={}) =>
-      i = start
-      try
-        while token = @tokens[i]
-          i += condition.call this, token, i, state
-      catch stop
-        throw stop if stop isnt 'STOP'
-        i += action.call this, token, i if action?
-        return i - start
-      throw new Error('End not found in scanEnd.')
 
     # true or false
     detectStartBrace = (token, i) =>
@@ -152,21 +159,16 @@ class exports.Rewriter
         lineBreakListeners = []
         priorLineType = lineType
         lineType = null
-      if tag in ['CLASS']
-        priorLineType = lineType
-        lineType = tag
-      if stackDelayed and token isnt stackDelayed
-        stack.push stackDelayed
-        stackDelayed = null
-      if token[0] in EXPRESSION_START
-        stackDelayed = token
-      if tag in EXPRESSION_END
+      if tag in EXPRESSION_START
+        if stack[stack.length - 1] isnt token
+          stack.push token
+      else if tag in EXPRESSION_END
         if (stack[stack.length - 1]?.generated is token.generated and
               INVERSES[tag] is stack[stack.length - 1]?[0])
           stack.pop()
-          return 1
-        else
-          return null
+      if tag in ['CLASS']
+        priorLineType = lineType
+        lineType = tag
       if detectStartBrace token, i
         idx =  if @tag(i - 2) is '@' then i - 2 else i - 1
         idx -= 2 while @tag(idx - 2) is 'HERECOMMENT'
@@ -178,31 +180,30 @@ class exports.Rewriter
           scanState.sameLine = no
         value = new String('{')
         value.generated = yes
-        stack.push (tok = @generate '{', value, token[2])
+        tok = @generate '{', value, token[2]
+        if stack[stack.length - 1] is token
+          stack.splice stack.length-1, 0, tok
+        else
+          stack.push tok
         @tokens.splice idx, 0, tok
-        return 2 + scanEnd(i + 2, detectEndBrace, addEndBrace, scanState)
+        return 2 + @detectEnd(i + 2, detectEndBrace, addEndBrace, scanState, addStartAndEnd)
       if detectStartParentheses token, i
-        stack.push (tok = @generate 'CALL_START', '(', token[2])
+        tok = @generate 'CALL_START', '(', token[2]
+        if stack[stack.length - 1] is token
+          stack.splice stack.length-1, 0, tok
+        else
+          stack.push tok
         @tokens[i - 1][0] = 'FUNC_EXIST' if @tag(i - 1) is '?'
         @tokens.splice i, 0, tok
         if token[0] is 'INDENT'
-          return 2 + scanEnd(i + 2, detectEndParentheses, addEndParentheses)
+          return 2 + @detectEnd(i + 2, detectEndParentheses, addEndParentheses, null, addStartAndEnd, 1)
         else
-          return 1 + scanEnd(i + 1, detectEndParentheses, addEndParentheses)
+          return 1 + @detectEnd(i + 1, detectEndParentheses, addEndParentheses, null, addStartAndEnd, 0)
       null
 
     # recursive call, return token offset after end
     detectEndBrace = (token, i, {sameLine, startsLine}) ->
-      offset = addStartAndEnd token, i
-      return offset if offset?
-
       [tag, value, line] = token
-
-      unless stack[stack.length - 1]?.generated and stack[stack.length - 1]?[0] is '{'
-        return 1
-
-      if tag in EXPRESSION_END
-        throw 'STOP'
 
       [one, two, three] = @tokens[i + 1 .. i + 3]
       return 1 if 'HERECOMMENT' is one?[0]
@@ -225,16 +226,7 @@ class exports.Rewriter
 
     # recursive call, return token offset after end
     detectEndParentheses = (token, i, $) ->
-      offset = addStartAndEnd token, i
-      return offset if offset?
-
       [tag, value, line] = token
-
-      unless stack[stack.length - 1]?.generated and stack[stack.length - 1]?[0] is 'CALL_START'
-        return 1
-
-      if tag in EXPRESSION_END
-        throw 'STOP'
 
       throw 'STOP' if not $.seenSingle and token.fromThen
       $.seenSingle  = yes if tag in ['IF', 'ELSE', 'CATCH', '->', '=>', 'CLASS']
@@ -255,7 +247,7 @@ class exports.Rewriter
       @tokens.splice i, 0, tok
       1
 
-    @scanTokens 0, (token, i) ->
+    @scanTokens (token, i) ->
       offset = addStartAndEnd(token, i)
       return offset if offset?
       1
@@ -268,13 +260,15 @@ class exports.Rewriter
     starter = indent = outdent = null
 
     condition = (token, i) ->
-      token[1] isnt ';' and token[0] in SINGLE_CLOSERS and
-      not (token[0] is 'ELSE' and starter not in ['IF', 'THEN'])
+      throw 'STOP' if \
+        token[1] isnt ';' and token[0] in SINGLE_CLOSERS and
+          not (token[0] is 'ELSE' and starter not in ['IF', 'THEN'])
+      1
 
     action = (token, i) ->
       @tokens.splice (if @tag(i - 1) is ',' then i - 1 else i), 0, outdent
 
-    @scanTokens 0, (token, i, tokens) ->
+    @scanTokens (token, i, tokens) ->
       [tag] = token
       if tag is 'TERMINATOR' and @tag(i + 1) is 'THEN'
         tokens.splice i, 1
@@ -303,13 +297,14 @@ class exports.Rewriter
     original = null
 
     condition = (token, i) ->
-      token[0] in ['TERMINATOR', 'INDENT']
+      throw 'STOP' if token[0] in ['TERMINATOR', 'INDENT']
+      1
 
     action = (token, i) ->
       if token[0] isnt 'INDENT' or (token.generated and not token.fromThen)
         original[0] = 'POST_' + original[0]
 
-    @scanTokens 0, (token, i) ->
+    @scanTokens (token, i) ->
       return 1 unless token[0] is 'IF'
       original = token
       @detectEnd i + 1, condition, action
