@@ -230,7 +230,7 @@ class exports.Rewriter
 
       [tag, value, line] = token
 
-      if not (stack[stack.length - 1]?.generated and stack[stack.length - 1]?[0] is 'CALL_START')
+      unless stack[stack.length - 1]?.generated and stack[stack.length - 1]?[0] is 'CALL_START'
         return 1
 
       if tag in EXPRESSION_END
