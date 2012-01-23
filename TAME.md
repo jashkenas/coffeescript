@@ -1,7 +1,7 @@
-What Is Tame?
-============
+What Is IcedCoffeeScript?
+==================
 
-Tame is a system for handling callbacks in event-based code.  There
+IcedCoffeeScript is a system for handling callbacks in event-based code.  There
 were two existing implementations, one in [the sfslite library for
 C++](https://github.com/maxtaco/sfslite), and another in the [tamejs
 translator for JavaScript](https://github.com/maxtaco/tamejs).
@@ -9,8 +9,11 @@ This extension to CoffeeScript is a third implementation. The code
 and translation techniques are derived from experience with JS, but
 with some new Coffee-style flavoring. 
 
-This document first presents a tame tutorial (adapted from the JavaScript
+This document first presents a "Iced" tutorial (adapted from the JavaScript
 version), and then discusses the specifics of the CoffeeScript implementation.
+
+(Note: we are slowly changing all instances of the word "tame" over to
+"iced" in the repository, and in the general code.)
 
 # Quick Tutorial and Examples
 
@@ -72,7 +75,7 @@ do_all process.argv[2...]
 
 You can run this on the command line like so:
 
-    coffee examples/tame/dns.coffee yahoo.com google.com nytimes.com okcupid.com tinyurl.com
+    iced examples/tame/dns.coffee yahoo.com google.com nytimes.com okcupid.com tinyurl.com
 
 And you will get a response:
 
@@ -95,15 +98,16 @@ do_all = (lst) ->
 
 ### Slightly More Advanced Example
 
-We've shown parallel and serial work flows, what about something in between?
-For instance, we might want to make progress in parallel on our DNS lookups,
-but not smash the server all at once. A compromise is windowing, which can be
-achieved in tamed CoffeeScript conveniently in a number of different ways.  The [2007
-academic paper on tame](http://pdos.csail.mit.edu/~max/docs/tame.pdf)
-suggests a technique called a *rendezvous*.  A rendezvous is implemented in
-CoffeeScript as a pure CS construct (no rewriting involved), which allows a
-program to continue as soon as the first deferral is fulfilled (rather than
-the last):
+We've shown parallel and serial work flows, what about something in
+between?  For instance, we might want to make progress in parallel on
+our DNS lookups, but not smash the server all at once. A compromise is
+windowing, which can be achieved in IcedCoffeeScript conveniently in a
+number of different ways.  The [2007 academic paper on
+tame](http://pdos.csail.mit.edu/~max/docs/tame.pdf) suggests a
+technique called a *rendezvous*.  A rendezvous is implemented in
+CoffeeScript as a pure CS construct (no rewriting involved), which
+allows a program to continue as soon as the first deferral is
+fulfilled (rather than the last):
 
 ```coffeescript
 tameRequire(node) # need full library via require() for rendezvous
@@ -161,9 +165,9 @@ f = (n,cb) ->
 
 ### autocb
 
-Most of the time, a tamed function will call its callback and return
+Most of the time, an iced function will call its callback and return
 at the same time.  To get this behavior "for free", you can simply
-name this callback `autocb` and it will fire whenever your tamed function
+name this callback `autocb` and it will fire whenever your iced function
 returns.  For instance, the above example could be equivalently written as:
 
 ```coffeescript
@@ -177,7 +181,7 @@ f = (n,autocb) ->
 ```
 In the first example, recall, you call `cb()` explicitly.  In this
 example, because the callback is named `autocb`, it's fired
-automatically when the tamed function returns.
+automatically when the iced function returns.
 
 If your callback needs to fulfill with a value, then you can pass
 that value via `return`.  Consider the following function, that waits
@@ -208,20 +212,21 @@ Implicitly, `return 0;` is mapped by the CoffeeScript compiler to `autocb(0); re
 
 ## Language Design Considerations
 
-In sum, the tame additions to CoffeeScript consist of three new keywords:
+In sum, the iced additions to CoffeeScript consist of three new keywords:
 
 * **await**, marking off a block or a single statement.
 * **defer**, which is quite similar to a normal function call, but is compiled specially
 to accommodate argument passing.
-* **tameRequire**, which is used to control the "require"ing of the tame runtime.  By
-default, the runtime is pasted inline, but with `tameRequire(node)`, it is loaded
-via node's `require`, and with `tameRequire(none)`, it is skipped altogether.
+* **tameRequire**, which is used to control the "require"ing of the
+iced runtime.  By default, the runtime is pasted inline, but with
+`tameRequire(node)`, it is loaded via node's `require`, and with
+`tameRequire(none)`, it is skipped altogether.
 
 Finally, `autocb` isn't a bona-fide keyword, but the compiler searches
 for it in parameters to CoffeeScript functions, and updates the
 behavior of the `Code` block accordingly.
 
-These keywords represent the potential for these tame additions to
+These keywords represent the potential for these iced additions to
 break existing CoffeeScript code --- any preexisting use of these
 keywords as regular function, variable or class names will cause
 headaches.
@@ -237,7 +242,7 @@ happen:
 cb = defer x, obj.field, arr[i], rest...
 ```
 
-And here is the output from the tamed `coffee` compiler:
+And here is the output from the iced `coffee` compiler:
 
 ```javascript
 cb = __tame_deferrals.defer({
@@ -326,7 +331,7 @@ to parallelize or serialize as you see fit.
 
 ## Translation Technique
 
-The CoffeeScript tame addition uses a similar continuation-passing translation
+The IcedCoffeeScript addition uses a similar continuation-passing translation
 to *tamejs*, but it's been refined to generate cleaner code, and to translate
 only when necessary.  Here are the general steps involved:
 
@@ -334,7 +339,7 @@ only when necessary.  Here are the general steps involved:
 few small additions (for `await` and `defer`), yielding
 a standard CoffeeScript-style abstract syntax tree (AST).
 
-* **2** Apply *tame annotations*:
+* **2** Apply *iced annotations*:
 
    * **2.1** Find all `await` nodes in the AST.  Mark these nodes and their
    ancestors with an **A** flag.
