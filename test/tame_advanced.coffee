@@ -1,9 +1,9 @@
 if require?
 
-  tameRequire(none)
+  icedRequire(none)
 
-  tame = require('../lib/coffee-script/coffee-script').tame;
-  tamelib = require('../lib/coffee-script/tamelib')
+  tame = iced = require('../lib/coffee-script/coffee-script').iced;
+  icedlib = require('../lib/coffee-script/tamelib')
 
 ##----------------------------------------------------------------------
 
@@ -17,7 +17,7 @@ if require?
       cb()
 
     window = (n, window, cb) ->
-      rv = new tame.Rendezvous
+      rv = new iced.Rendezvous
       nsent = 0
       nrecv = 0
       while nrecv < n
@@ -49,7 +49,7 @@ if require?
 
     window = (n, window, cb) ->
       tmp = {}
-      p = new tamelib.Pipeliner window, .01
+      p = new icedlib.Pipeliner window, .01
       for i in [0..n]
         await p.waitInQueue defer()
         call i, p.defer tmp[i]

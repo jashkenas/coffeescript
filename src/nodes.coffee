@@ -276,7 +276,7 @@ exports.Base = class Base
   #   used with subfields:
   #
   #      o.foundAutocb  -- on if the parent function has an autocb
-  #      o.foundRequire -- on if tameRequire() was found anywhere in the AST
+  #      o.foundRequire -- on if icedRequire() was found anywhere in the AST
   #      o.foundDefer   -- on if defer() was found anywhere in the AST
   #      o.foundAwait   -- on if await... was found anywhere in the AST
   #
@@ -2329,22 +2329,22 @@ exports.Await = class Await extends Base
     super p, o
     @tameNodeFlag = o.foundAwait = true
 
-#### tameRequire
+#### icedRequire
 #
 # By default, the tame libraries are inlined.  But if you preface your file
-# with 'tameRequire(node)', it will assume a node runtime, emitting:
+# with 'icedRequire(node)', it will assume a node runtime, emitting:
 #
 #   tame = require('coffee-script').tame
 #
-# With 'tameRequire(none)', you can supply a runtime of
-# your choosing. 'tameRequire(window)', will set `window.tame`
+# With 'icedRequire(none)', you can supply a runtime of
+# your choosing. 'icedRequire(window)', will set `window.tame`
 # to have the tame runtime.
 #
 exports.TameRequire = class TameRequire extends Base
   constructor: (args) ->
     super()
     @typ = null
-    @usage =  "tameRequire takes either 'inline', 'node', 'window' or 'none'"
+    @usage =  "icedRequire takes either 'inline', 'node', 'window' or 'none'"
     if args and args.length > 2
        throw SyntaxError @usage
     if args and args.length is 1

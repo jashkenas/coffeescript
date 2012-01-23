@@ -1,4 +1,4 @@
-tameRequire(none)
+icedRequire(none)
 
 tame_internals = require('./tame')
 tame = tame_internals.runtime

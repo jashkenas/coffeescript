@@ -141,4 +141,4 @@ parser.lexer =
 parser.yy = require './nodes'
 
 # Export the tame runtime as 'tame'
-exports.tame = tame.runtime
+exports.tame = exports.iced = tame.runtime

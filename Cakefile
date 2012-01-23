@@ -30,7 +30,7 @@ header = """
 sources = [
   'coffee-script', 'grammar', 'helpers'
   'lexer', 'nodes', 'rewriter', 'scope',
-  'tame', 'tamelib'
+  'tame'
 ].map (filename) -> "src/#{filename}.coffee"
 
 # Run a CoffeeScript through our node/coffee interpreter.
@@ -97,7 +97,7 @@ task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter'
 
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
   code = ''
-  for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'tame', 'nodes', 'coffee-script', 'browser', 'tamelib']
+  for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'tame', 'nodes', 'coffee-script', 'browser' ]
     code += """
       require['./#{name}'] = new function() {
         var exports = this;
