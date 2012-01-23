@@ -555,7 +555,7 @@ test "#1896: recursive implicit object braces and function parentheses", ->
   [a, b, c, d, e, f, g, h] = 'abcdefgh'
   makeFunc = (name) ->
     (args...) ->
-      "#{name}(#{inspect(args).replace(/'|\[|\]/g, '')})"
+      "#{name}(#{inspect(args).replace(/'|\]|\[/g, '')})"
   func = makeFunc 'func'
 
   local (f, g) ->
