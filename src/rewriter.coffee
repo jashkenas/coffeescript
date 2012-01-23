@@ -38,13 +38,13 @@ class exports.Rewriter
     i += block.call this, token, i, tokens while token = tokens[i]
     true
 
-  # Detect the end of some condition starting at index `start`.
-  # When the condition is satisfied (e.g. throws 'STOP'), execute the action and
-  # return the number of tokens between `start` and the end point.
-  # Like scanTokens, the stream chances length under our feet.
+  # Detect some condition starting at index `start`.
+  # When `condition` is satisfied (e.g. throws 'STOP'), execute `action` and
+  # return the number of tokens between `start` and the detected end point.
+  # Like `scanTokens`, the stream changes length under our feet.
   # While seeking for the end point, more scanning actions may be performed
-  # with the recursiveAction callback. If present, it is expected to
-  # return the number of tokens to be skipped, or null if no recursive action
+  # with the `recursiveAction` callback. If present, it is expected to
+  # return the number of tokens to be skipped, or `null` if no recursive action
   # was performed.
   # Both `condition` and `action` are expected to return the number of tokens
   # to move forward.
