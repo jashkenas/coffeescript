@@ -1,19 +1,21 @@
 What Is IcedCoffeeScript?
 ==================
 
-IcedCoffeeScript is a system for handling callbacks in event-based code.  There
-were two existing implementations, one in [the sfslite library for
-C++](https://github.com/maxtaco/sfslite), and another in the [tamejs
-translator for JavaScript](https://github.com/maxtaco/tamejs).
-This extension to CoffeeScript is a third implementation. The code
-and translation techniques are derived from experience with JS, but
-with some new Coffee-style flavoring. 
+IcedCoffeeScript (ICS) is a system for handling callbacks in event-based code.
+There were two existing implementations, one in [the sfslite library for
+C++](https://github.com/maxtaco/sfslite), and another in the [tamejs translator
+for JavaScript](https://github.com/maxtaco/tamejs).  This extension to
+CoffeeScript is a third implementation. The code and translation techniques
+are derived from experience with JS, but with some new Coffee-style
+flavoring. 
 
 This document first presents a "Iced" tutorial (adapted from the JavaScript
 version), and then discusses the specifics of the CoffeeScript implementation.
 
-(Note: we are slowly changing all instances of the word "tame" over to
-"iced" in the repository, and in the general code.)
+(Note: we are slowly changing all instances of the word "tame" in 
+the repository and the generated code to "iced".  This should have
+little impact on ICS source in the wild, since the word "tame"
+only appears in your code if you're using advanced features.)
 
 # Quick Tutorial and Examples
 
@@ -113,7 +115,7 @@ fulfilled (rather than the last):
 icedRequire(node) # need full library via require() for rendezvous
 
 do_all = (lst, windowsz) ->
-  rv = new tame.Rendezvous
+  rv = new iced.Rendezvous
   nsent = 0
   nrecv = 0
 
@@ -144,7 +146,7 @@ after faster ones, even if issued before them.
 
 ### Composing Serial And Parallel Patterns
 
-In Tame, arbitrary composition of serial and parallel control flows is
+In IcedCoffeeScript, arbitrary composition of serial and parallel control flows is
 possible with just normal functional decomposition.  Therefore, we
 don't allow direct `await` nesting.  With inline anonymous CoffeeScript
 functions, you can concisely achieve interesting patterns.  The code
@@ -493,7 +495,7 @@ Here is the translated output (slightly hand-edited for clarity):
 
 ## API and Library Documentation
 
-### tame.Rendezvous
+### iced.Rendezvous
 
 The `Rendezvous` is a not a core feature, meaning it's written as a 
 straight-ahead CoffeeScript library.  It's quite useful for more advanced
@@ -502,7 +504,7 @@ control flows, so we've included it in the main runtime library.
 The `Rendezvous` is similar to a blocking condition variable (or a
 "Hoare sytle monitor") in threaded programming.
 
-#### tame.Rendezvous.id(i).defer slots...
+#### iced.Rendezvous.id(i).defer slots...
 
 Associate a new deferral with the given Rendezvous, whose deferral ID
 is `i`, and whose callbacks slots are supplied as `slots`.  Those
@@ -512,13 +514,13 @@ fed to a function expecting a callback.  As soon as that callback
 fires (and the deferral is fulfilled), the provided slots will be
 filled with the arguments to that callback.
 
-#### tame.Rendezvous.defer slots...
+#### iced.Rendezvous.defer slots...
 
 You don't need to explicitly assign an ID to a deferral generated from a
 Rendezvous.  If you don't, one will automatically be assigned, in
 ascending order starting from `0`.
 
-#### tame.Rendezvous.wait cb
+#### iced.Rendezvous.wait cb
 
 Wait until the next deferral on this rendezvous is fulfilled.  When it
 is, callback `cb` with the ID of the fulfilled deferral.  If an
@@ -538,7 +540,7 @@ and reports only when the first returns:
 ```coffeescript
 hosts = [ "okcupid.com", "google.com" ];
 ips = errs = []
-rv = new tame.Rendezvous ();
+rv = new iced.Rendezvous
 for h,i in hosts
     dns.resolve hosts[i], rv.id(i).defer errs[i], ips[i]
 
@@ -552,7 +554,7 @@ A *connector* is a function that takes as input
 a callback, and outputs another callback.   The best example 
 is a `timeout`, given here:
 
-#### tame.timeout(cb, time, res = [])
+#### iced.timeout(cb, time, res = [])
 
 Timeout an arbitrary async operation.
 
@@ -566,7 +568,7 @@ caller fires first, then fill `res[0] = true;`.  If the timer won
 In the following example, we timeout a DNS lookup after 100ms:
 
 ```coffeescript
-{timeout} = require 'tamelib'
+{timeout} = require 'icedlib'
 info = [];
 host = "pirateWarezSite.ru";
 await dns.lookup host, timeout(defer(err, ip), 100, info)
@@ -585,10 +587,10 @@ you can use the control flow library called `Pipeliner`, which
 manages the common pattern of having "m calls total, with only
 n of them in flight at once, where m > n."
 
-The Pipeliner class is available in the `tamelib` library:
+The Pipeliner class is available in the `icedlib` library:
 
 ```coffeescript
-{Pipeliner} = require 'tamelib'
+{Pipeliner} = require 'icedlib'
 pipeliner = new Pipeliner w,s 
 ```
 
