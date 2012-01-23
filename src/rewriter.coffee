@@ -242,7 +242,10 @@ class exports.Rewriter
       1
 
     addEndParentheses = (token, i) ->
-      stack.pop()
+      if stack[stack.length-1][0] is 'INDENT'
+        stack.pop() # HACK. INDENT was added prematurely, remove it.
+      popped = stack.pop()
+      require('assert').equal popped[0], 'CALL_START', "Illegal stack, expected CALL_START on top but found #{popped[0]}"
       tok = @generate 'CALL_END', ')', token[2]
       @tokens.splice i, 0, tok
       1

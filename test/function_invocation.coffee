@@ -253,6 +253,15 @@ test "Test implicit calls in functions in parens:", ->
   ok result is 10
 
 
+test "Test implicit call in an indented implicit object.", ->
+  a =
+    b: ->
+      if func BAZ
+        true
+    c: 'C'
+  ok a.c is 'C'
+
+
 test "Ensure that chained calls with indented implicit object literals below are alright.", ->
 
   result = null
