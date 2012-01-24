@@ -1862,6 +1862,7 @@ exports.While = class While extends Base
     # Set up all of the IDs
     top_id = new Value new Literal tame.const.t_while
     k_id = new Value new Literal tame.const.k
+    k_param = new Param new Literal tame.const.k
 
     # Break will just call the parent continuation, but in some
     # cases, there will be a return value, so then we have to pass
@@ -1888,7 +1889,7 @@ exports.While = class While extends Base
     # value, if required!
     next_id = new Value new Literal tame.const.n_while
     if rvar
-      next_arg = new Value new Literal tame.const.n_arg
+      next_arg = new Param new Literal tame.const.n_arg
       f = rvar_value.copy()
       f.add new Access new Value new Literal 'push'
       call1 = new Call f, [ next_arg ]
@@ -1907,7 +1908,7 @@ exports.While = class While extends Base
 
     # The top of the loop construct.
     top_body = new Block [ break_assign, continue_assign, next_assign, cond ]
-    top_func = new Code [ k_id ], top_body, 'tamegen'
+    top_func = new Code [ k_param ], top_body, 'tamegen'
     top_assign = new Assign top_id, top_func, null, { tamelocal : yes }
     top_call = new Call top_id, [ k_id ]
     top_statements = []
@@ -2178,9 +2179,8 @@ exports.Defer = class Defer extends Base
   # it later before we output it.
   newParam : ->
     l = "#{tame.const.slot}_#{@params.length + 1}"
-    v = new Value new Literal l
-    @params.push v.copy()
-    v
+    @params.push new Param new Literal l
+    new Value new Literal l
 
   #
   # makeAssignFn
