@@ -558,6 +558,8 @@ Expressions
       Ranges can also be used to extract slices of arrays.
       With two dots (<tt>3..6</tt>), the range is inclusive (<tt>3, 4, 5, 6</tt>);
       with three dots (<tt>3...6</tt>), the range excludes the end (<tt>3, 4, 5</tt>).
+      Slices indices have useful defaults. An omitted first index defaults to
+      zero and an omitted second index defaults to the size of the array.
     </p>
     <%= code_for('slices', 'middle') %>
     <p>
