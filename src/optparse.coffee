@@ -17,14 +17,13 @@ exports.OptionParser = class OptionParser
     @rules = buildRules rules
 
   # Parse the list of arguments, populating an `options` object with all of the
-  # specified options, and return it. `options.arguments` will be an array
-  # containing the remaining non-option arguments. `options.literals` will be
-  # an array of options that are meant to be passed through directly to the
-  # executing script. This is a simpler API than many option parsers that allow
-  # you to attach callback actions for every flag. Instead, you're responsible
-  # for interpreting the options object.
+  # specified options, and return it. Options after the first non-option
+  # argument are treated as arguments. `options.arguments` will be an array
+  # containing the remaining arguments. This is a simpler API than many option
+  # parsers that allow you to attach callback actions for every flag. Instead,
+  # you're responsible for interpreting the options object.
   parse: (args) ->
-    options = arguments: [], literals: []
+    options = arguments: []
     skippingArgument = no
     originalArgs = args
     args = normalizeArguments args
@@ -34,25 +33,26 @@ exports.OptionParser = class OptionParser
         continue
       if arg is '--'
         pos = originalArgs.indexOf '--'
-        options.arguments = [originalArgs[1 + pos]]
-        options.literals = originalArgs[(2 + pos)..]
+        options.arguments = options.arguments.concat originalArgs[(pos + 1)..]
         break
       isOption = !!(arg.match(LONG_FLAG) or arg.match(SHORT_FLAG))
-      matchedRule = no
-      for rule in @rules
-        if rule.shortFlag is arg or rule.longFlag is arg
-          value = if rule.hasArgument
-            skippingArgument = yes
-            args[i + 1]
-          else
-            true
-          options[rule.name] = if rule.isList then (options[rule.name] or []).concat value else value
-          matchedRule = yes
-          break
-      throw new Error "unrecognized option: #{arg}" if isOption and not matchedRule
-      if not isOption
-        options.arguments = originalArgs[(originalArgs.indexOf arg)..]
-        break
+      # the CS option parser is a little odd; options after the first
+      # non-option argument are treated as non-option arguments themselves
+      seenNonOptionArg = options.arguments.length > 0
+      unless seenNonOptionArg
+        matchedRule = no
+        for rule in @rules
+          if rule.shortFlag is arg or rule.longFlag is arg
+            value = true
+            if rule.hasArgument
+              skippingArgument = yes
+              value = args[i + 1]
+            options[rule.name] = if rule.isList then (options[rule.name] or []).concat value else value
+            matchedRule = yes
+            break
+        throw new Error "unrecognized option: #{arg}" if isOption and not matchedRule
+      if seenNonOptionArg or not isOption
+        options.arguments.push arg
     options
 
   # Return the help text for this **OptionParser**, listing and describing all
@@ -71,8 +71,8 @@ exports.OptionParser = class OptionParser
 # -------
 
 # Regex matchers for option flags.
-LONG_FLAG  = /^(--\w[\w\-]+)/
-SHORT_FLAG = /^(-\w)/
+LONG_FLAG  = /^(--\w[\w\-]*)/
+SHORT_FLAG = /^(-\w)$/
 MULTI_FLAG = /^-(\w{2,})/
 OPTIONAL   = /\[(\w+(\*?))\]/
 
