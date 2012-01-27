@@ -9,8 +9,6 @@
 # shared identity function
 id = (_) -> if arguments.length is 1 then _ else [arguments...]
 
-local = (fn) -> fn()
-
 test "basic argument passing", ->
 
   a = {}
@@ -551,36 +549,75 @@ test "#960: improved 'do'", ->
 
 test "#1896: recursive implicit object braces and function parentheses", ->
 
-  inspect = require('util').inspect
-  [a, b, c, d, e, f, g, h] = 'abcdefgh'
-  makeFunc = (name) ->
-    (args...) ->
-      "#{name}(#{inspect(args).replace(/'|\]|\[/g, '')})"
-  func = makeFunc 'func'
+  [a, b, c, d, e, f, g, h, i, j] = for name in 'abcdefghij' then do (name) ->
+    func = (args...) -> "#{name}( #{inspect Array.prototype.slice.call(args, 0), true} )"
+    func._name = name
+    func
 
-  local (f, g) ->
-    f = makeFunc 'f'
-    g = makeFunc 'g'
-    whatisit = a: func b, {c: d}, e: f g h: e
-    expected = "{ a: 'func( b, { c: d }, { e: f( g( { h: e } ) ) } )' }"
-    eq inspect(whatisit), expected
+  inspect = (result, isArgs=false) ->
+    switch typeof result
+      when 'string' then result
+      when 'function'
+        result._name or 'Func'
+      when 'object'
+        if result instanceof Array
+          str = (inspect(item) for item in result).join ', '
+          if isArgs then str else "[ #{str} ]"
+        else
+          pairs = for own key, value of result
+            "#{key}: #{inspect value}"
+          "{ #{pairs.join ', '} }"
+      else ''+result
 
-  local (f) ->
-    f = makeFunc 'f'
-    whatisit = a: func b, {c: d}, e: f g, h: e
-    expected = "{ a: 'func( b, { c: d }, { e: f( g, { h: e } ) } )' }"
-    eq inspect(whatisit), expected
+  _eq = (expected, fn) ->
+    try
+      eq expected, inspect(fn())
+    catch error
+      console.log "\n", expected, "\n",inspect(fn())
+      throw error
+
+  _eq "{ a: f( b, { c: d }, { e: f( g( { h: e } ) ) } ) }", ->
+    a: f b, {c: d}, e: f g h: e
+
+  _eq "{ a: f( b, { c: d }, { e: f( g, { h: e } ) } ) }", ->
+    a: f b, {c: d}, e: f g, h: e
 
   # #1865
-  local (b) ->
-    whatisit = a: func (->),
+  _eq "{ a: f( Func, { c: d } ) }", ->
+    a: f (->),
       c: d
-    expected = "{ a: 'func( Function, { c: d } )' }"
-    eq inspect(whatisit), expected
 
   # #1865
-  local (b) ->
-    b = makeFunc 'b'
-    whatisit = a: b (->), c: d
-    expected = "{ a: 'b( Function, { c: d } )' }"
-    eq inspect(whatisit), expected
+  _eq "{ a: f( Func, { c: d } ) }", ->
+    a: f (->), c: d
+
+  # #618
+  # https://github.com/jashkenas/coffee-script/pull/1061
+  _eq "f( { a: b }, c )", ->
+    f a: b, c
+
+  _eq "[ { a: b }, c ]", ->
+    [a: b, c]
+
+  one = 1
+  _eq "f( { a: b }, 2 )", ->
+    f a: b, one+1
+
+  _eq "f( { a: b }, g( c ) )", ->
+    f a: b, g c
+
+  _eq "f( { a: b }, g( c ) )", ->
+    f a: b, g (c)
+
+  _eq "f( { a: b }, g( [ c ] ) )", ->
+    f a: b, g [c]
+
+  _eq "f( { a: b }, g( { c: c } ) )", ->
+    f a: b, g {c}
+
+  _eq "f( { a: b }, c )", ->
+    f a: b, c._name
+
+  name = '_name'
+  _eq "f( { a: b }, c )", ->
+    f a: b, c[name]

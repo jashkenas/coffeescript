@@ -213,18 +213,20 @@ class exports.Rewriter
 
     # recursive call, return token offset after end
     detectEndBrace = (token, i, {sameLine, startsLine}) ->
+      return 1 if 'HERECOMMENT' is @tag(i + 1)
+
       [tag, value, line] = token
 
-      [one, two, three] = @tokens[i + 1 .. i + 3]
-      return 1 if 'HERECOMMENT' is one?[0]
-
-      naiveEnd   = (tag in ['TERMINATOR'] or
-                   (tag in IMPLICIT_END and sameLine))
-      special1   = !startsLine and @tag(i - 1) isnt ','
-      special2   = not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':')
-      otherEnd   = (tag is ',' and one and
-                     one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT'])
-      if naiveEnd and (special1 or special2) or otherEnd
+      embeddedEnd = tag is 'TERMINATOR' and
+                      !startsLine and @tag(i - 1) isnt ','
+      implicitEnd = tag in IMPLICIT_END and sameLine
+      followedByObjAssign = do (i) =>
+        i += 1 if @tag(i + 1) is 'TERMINATOR'
+        i += 1 if @tag(i + 1) is '@'
+        @tag(i + 2) is ':'
+      simpleEnd = tag is 'TERMINATOR' and not followedByObjAssign
+      paramEnd = tag is ',' and @tag(i + 1) isnt 'OUTDENT' and not followedByObjAssign
+      if embeddedEnd or implicitEnd or simpleEnd or paramEnd
         throw 'STOP'
       1
 
