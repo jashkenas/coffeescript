@@ -1898,6 +1898,43 @@ exports.If = class If extends Base
   unfoldSoak: ->
     @soak and this
 
+#### Package
+
+  # Create packages with o without classes
+  #   package "org.company.namespace"
+  #     class Main
+  #       constructor: (@a) ->
+  #
+  #     class Help
+  #       constructor: (@b) ->
+  #
+  #   package "org.company.empty"
+  #
+  #   package "org.company.full"
+  #     class Yo
+  #       act: -> alert "Yo!"
+  #
+  exports.Package = class Package extends Base
+    constructor: (@namespace, @classes) ->
+
+    children: ['namespace', 'classes']
+
+    compileNode: (o) ->
+      properties = []
+
+      for item in @classes when item instanceof Class
+        className = item.determineName()
+
+        if className is null
+          throw new Error "cannot create an anonymous class in the package #{@namespace.compile(o)}"
+
+        properties.push new Assign(new Value(new Literal(className)), item, 'object')
+
+      if properties.length is 0
+        return "#{utility 'namespace'}(#{@namespace.compile(o)}, {})"
+
+      "#{utility 'namespace'}(#{@namespace.compile(o)}, #{new Obj(properties, yes).compile(o)})"
+
 # Faux-Nodes
 # ----------
 # Faux-nodes are never created by the grammar, but are used during code
@@ -1962,6 +1999,16 @@ UTILITIES =
   # Shortcuts to speed up the lookup time for native functions.
   hasProp: -> '{}.hasOwnProperty'
   slice  : -> '[].slice'
+
+  # Creates namespace `ns`, then merge hash set and namespace.
+  # Example:
+  #   namespace = function(ns, hashSet) {...}
+  #   namespace("org.company.namespace", {key: "value"});
+  #   org.company.namespace.key === "value"; // true
+  # Returns namespace `ns` (ref to org.company.namespace if it was "org.company.namespace").
+  namespace: -> '''
+    function(ns, hashSet){ if (!(hashSet instanceof Object) || hashSet instanceof Array || typeof hashSet === "function") {return null;} var obj = this,nsa = ns.split(".");for (var i = 0, l = nsa.length; i < l; i++) { var pack = nsa[i];obj = obj[pack] || (obj[pack] = {}); } for (var key in hashSet) { obj[key] = hashSet[key]; } return obj; }
+  '''
 
 # Levels indicate a node's position in the AST. Useful for knowing if
 # parens are necessary or superfluous.
