@@ -86,6 +86,7 @@ grammar =
   # is one. Blocks serve as the building blocks of many other rules, making
   # them somewhat circular.
   Expression: [
+    o 'Package'
     o 'Value'
     o 'Invocation'
     o 'Code'
@@ -288,6 +289,21 @@ grammar =
     o 'CLASS SimpleAssignable Block',                    -> new Class $2, null, $3
     o 'CLASS SimpleAssignable EXTENDS Expression',       -> new Class $2, $4
     o 'CLASS SimpleAssignable EXTENDS Expression Block', -> new Class $2, $4, $5
+  ]
+
+  # Package definitions have optional classes definitions.
+  Package: [
+    o 'PACKAGE STRING',                         -> new Package new Literal($2), []
+    o 'PACKAGE STRING INDENT
+       PackageArgList OUTDENT',                 -> new Package new Literal($2), $4
+  ]
+
+  PackageArgList: [
+    o 'Class',                                  -> [$1]
+    o 'PackageArgList TERMINATOR Class',        -> $1.concat $3
+    o 'INDENT PackageArgList OUTDENT',          -> $2
+    o 'PackageArgList INDENT
+       PackageArgList OUTDENT',                 -> $1.concat $3
   ]
 
   # Ordinary function invocation, or a chained series of calls.
@@ -569,7 +585,7 @@ operators = [
   ['nonassoc',  'INDENT', 'OUTDENT']
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
   ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
-  ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
+  ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS', 'PACKAGE']
   ['right',     'POST_IF']
 ]
 
