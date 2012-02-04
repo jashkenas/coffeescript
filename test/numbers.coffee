@@ -50,9 +50,9 @@ eq Number::toString, .42.toString
 eq Number::toString, (4).toString
 
 test '#1168: leading floating point suppresses newline', ->
-	eq 1, do ->
-		1
-		.5 + 0.5
+  eq 1, do ->
+    1
+    .5 + 0.5
 
 test "Python-style octal literal notation '0o777'", ->
   eq 511, 0o777

@@ -27,7 +27,7 @@ test "octal integer literals prohibited", ->
   strict    '01'
   strict    '07777'
   # decimals with a leading '0' are also prohibited
-  strict    '09' 
+  strict    '09'
   strict    '079'
   strictOk  '`01`'
 
@@ -45,7 +45,7 @@ test "octal escape sequences prohibited", ->
   strictOk  '"\\\\0"'
   strictOk  '"\\\\\\\\0"'
   strictOk  "`'\\0'`"
-  
+
 
 test "duplicate property definitions in object literals are prohibited", ->
   strict 'o = {x:1,x:1}'
@@ -120,7 +120,7 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
   destruct = (keyword, check = strict) ->
     check "{#{keyword}}"
     check "o = {#{keyword}}"
-  invoke = (keyword, check = strict) ->  
+  invoke = (keyword, check = strict) ->
     check "#{keyword} yes"
     check "do #{keyword}"
   fnDecl = (keyword, check = strict) ->
@@ -130,7 +130,7 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
     check "({#{keyword}}) ->"
   prop = (keyword, check = strict) ->
     check "a.#{keyword} = 1"
-  tryCatch = (keyword, check = strict) ->  
+  tryCatch = (keyword, check = strict) ->
     check "try new Error catch #{keyword}"
 
   future = 'implements interface let package private protected public static yield'.split ' '
@@ -143,7 +143,7 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
     param    keyword
     prop     keyword, strictOk
     tryCatch keyword
-  
+
   for keyword in ['eval', 'arguments']
     access   keyword, strictOk
     assign   keyword
