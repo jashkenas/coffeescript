@@ -1,3 +1,4 @@
+# -*- mode: coffee; tab-width: 2; c-basic-offset: 2; indent-tabs-mode: nil; -*-
 # `nodes.coffee` contains all of the node classes for the syntax tree. Most
 # nodes are created as the result of actions in the [grammar](grammar.html),
 # but some are created by other nodes as a method of code generation. To convert
@@ -5,6 +6,7 @@
 
 {Scope} = require './scope'
 {RESERVED, STRICT_PROSCRIBED} = require './lexer'
+tame = require './tame'
 
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, last} = require './helpers'
@@ -16,6 +18,7 @@ YES     = -> yes
 NO      = -> no
 THIS    = -> this
 NEGATE  = -> @negated = not @negated; this
+NULL    = -> new Value new Literal 'null'
 
 #### Base
 
@@ -30,6 +33,22 @@ NEGATE  = -> @negated = not @negated; this
 # scope, and indentation level.
 exports.Base = class Base
 
+  constructor: ->
+    @tameContinuationBlock = null
+    @tamePrequels          = []
+
+    # tame AST node flags -- since we make several passes through the
+    # tree setting these bits, we'll actually just flip bits in the nodes,
+    # rather than setting function pointers to YES or NO.
+    @tameLoopFlag        = false
+    @tameNodeFlag        = false
+    @tameGotCpsSplitFlag = false
+    @tameCpsPivotFlag    = false
+    @tameHasAutocbFlag   = false
+
+    @tameParentAwait     = null
+    @tameCallContinuationFlag = false
+
   # Common logic for determining whether to wrap this node in a closure before
   # compiling it, or to compile directly. We need to wrap if this node is a
   # *statement*, and it's not a *pureStatement*, and we're not at
@@ -41,7 +60,9 @@ exports.Base = class Base
     o.level  = lvl if lvl
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
-    if o.level is LEVEL_TOP or not node.isStatement(o)
+    if node.tameHasContinuation() and not node.tameGotCpsSplitFlag
+      node.compileCps o
+    else if o.level is LEVEL_TOP or not node.isStatement(o)
       node.compileNode o
     else
       node.compileClosure o
@@ -52,7 +73,68 @@ exports.Base = class Base
     if @jumps()
       throw SyntaxError 'cannot use a pure statement in an expression.'
     o.sharedScope = yes
+
+    #
+    # This solves this case:
+    # 
+    # foo = (autocb) ->
+    #   x = (i for i in [0..10])
+    #   x
+    #
+    #  We don't want the autocb to fire in the evaluation of the list
+    #  comprehension on the RHS.
+    # 
+    @tameClearAutocbFlags()
     Closure.wrap(this).compileNode o
+
+  # Statements that need CPS translation will have to be split into
+  # pieces as so.  Note that the tamePrequelsBlock is a slight ugly thing
+  # going on.  The problem is this: tameCpsRotate when working on an expression
+  # will want to extract the tame part **first** and then write the vanilla
+  # expression **second**.  But we're not allowed to change the 'this' node as
+  # we traverse the AST.  So therefore we introduce a Prequel, it's like the
+  # opposite of the continuation.  It's the part of the program that comes before
+  # 'this'.
+  #
+  # In the case of regular, easy-to-understand statements, we'll be in a nice
+  # situation, in which every Block has code, and potentially a continuation.
+  #
+  # In the case of expressions with nested await'ing, things are sadly way
+  # more complicated.  We could have an arbitrarily deep chain here, hence
+  # the calls to CpsCascading in a loop.
+  #
+  compileCps : (o) ->
+    @tameGotCpsSplitFlag = true
+
+    if (l = @tamePrequels.length)
+
+      k = if @tameContinuationBlock
+        # Optimization:  We smush the "this" expression and the continuation
+        # into a flat block.
+        [ this, @tameContinuationBlock ]
+
+      else if @tameWrapContinuation()
+        # For some types of objects, we wrap the value of the object in a
+        # tamed tail call here.  We might have done this earlier (in
+        # tameCallContinuation) but at that point we don't have the option
+        # to replace an AST node with TameTailCall(this).  So instead, we
+        # do that now.
+        new TameTailCall null, this
+
+      else
+        # The simple case is no continuation, and no added TameTailCall
+        # needed.
+        this
+
+      while l--
+        pb = @tamePrequels[l]
+        k = CpsCascade.wrap pb.block, k, pb.retval, o
+      code = k
+
+    else
+      code = CpsCascade.wrap this, @tameContinuationBlock, null, o
+
+    code.compile o
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -81,7 +163,7 @@ exports.Base = class Base
     if res
       new Call new Literal("#{res}.push"), [me]
     else
-      new Return me
+      new Return me, @tameHasAutocbFlag
 
   # Does this node, or any of its children, contain a node of a certain kind?
   # Recursively traverses down the *children* of the nodes, yielding to a block
@@ -105,12 +187,37 @@ exports.Base = class Base
     return list[i] while i-- when list[i] not instanceof Comment
     null
 
+  #
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
+  #
+  # Add some Tame-specific additions --- the 'A' flag if this node
+  # is an await or its ancestor; the 'L' flag, if this node is a tamed
+  # loop or its descendant; a 'P' flag if this node is going to be
+  # a 'pivot' in the CPS tree rotation; a 'C' flag if this node is inside
+  # a function with an autocb.
+  #
   toString: (idt = '', name = @constructor.name) ->
+    extras = ""
+    extras += "A" if @tameNodeFlag
+    extras += "L" if @tameLoopFlag
+    extras += "P" if @tameCpsPivotFlag
+    extras += "C" if @tameHasAutocbFlag
+    extras += "D" if @tameParentAwait
+    if extras.length
+      extras = " (" + extras + ")"
     tree = '\n' + idt + name
     tree += '?' if @soak
+    tree += extras
+    for b in @tamePrequels
+      pidt = idt + TAB
+      tree += '\n' + pidt + "Prequel"
+      tree += b.block.toString pidt + TAB
     @eachChild (node) -> tree += node.toString idt + TAB
+    if @tameContinuationBlock
+      idt += TAB
+      tree += '\n' + idt + "Continuation"
+      tree += @tameContinuationBlock.toString idt + TAB
     tree
 
   # Passes each child to a function, breaking when the function returns `false`.
@@ -134,15 +241,128 @@ exports.Base = class Base
     continue until node is node = node.unwrap()
     node
 
+  # Don't try this at home with actual human kids.  Added for tame
+  # for slightly different tree traversal mechanics.
+  flattenChildren : ->
+    out = []
+    for attr in @children when @[attr]
+      for child in flatten [@[attr]]
+        out.push (child)
+    out
+
+  #
+  # AST Walking Routines for CPS Pivots, etc.
+  #
+  #  There are three passes:
+  #    1. Find await's and trace upward.
+  #    2. Find loops found in #1, and flood downward
+  #    3. Find break/continue found in #2, and trace upward
+  #
+
+  # tameWalkAst
+  #
+  #   Walk the AST looking for taming. Mark a node as with tame flags
+  #   if any of its children are tamed, but don't cross scope boundary
+  #   when considering the children.
+  #
+  #   The paremeter `p` is the parent `await`.  All nodes beneath the
+  #   first `await` in a function scope should point to its highest
+  #   parent `await`.  This is so in the case of nested `await`s,
+  #   they're really pulled out and run in sequence as the level of the
+  #   topmost await.
+  #
+  #   The parameter `o` is a global object, passed through all without
+  #   copies, to push information up and down the AST. This parameter is
+  #   used with subfields:
+  #
+  #      o.foundAutocb  -- on if the parent function has an autocb
+  #      o.foundRequire -- on if icedRequire() was found anywhere in the AST
+  #      o.foundDefer   -- on if defer() was found anywhere in the AST
+  #      o.foundAwait   -- on if await... was found anywhere in the AST
+  #
+  tameWalkAst : (p, o) ->
+    @tameParentAwait = p
+    @tameHasAutocbFlag = o.foundAutocb
+    for child in @flattenChildren()
+      @tameNodeFlag = true if child.tameWalkAst p, o
+    @tameNodeFlag
+
+  # tameWalkAstLoops
+  #   Walk all loops that are marked as "tamed" and mark their children
+  #   as being children in a tamed loop. They'll need more translations
+  #   than other nodes. Eventually, "switch" statements might also be "loops"
+  tameWalkAstLoops : (flood) ->
+    flood = true if @isLoop() and @tameNodeFlag
+    @tameLoopFlag = flood
+    for child in @flattenChildren()
+      @tameLoopFlag = true if child.tameWalkAstLoops flood
+    @tameLoopFlag
+
+  # tameWalkCpsPivots
+  #   A node is marked as a "cpsPivot" of it is (a) a 'tamed' node,
+  #   (b) a jump node in a tamed while loop; or (c) an ancestor of (a) or (b).
+  tameWalkCpsPivots : ->
+    @tameCpsPivotFlag = true if @tameNodeFlag or (@tameLoopFlag and @tameIsJump())
+    for child in @flattenChildren()
+      @tameCpsPivotFlag = true if child.tameWalkCpsPivots()
+    @tameCpsPivotFlag
+
+  tameClearAutocbFlags : ->
+    @tameHasAutocbFlag = false
+    @traverseChildren false, (node) ->
+      node.tameHasAutocbFlag = false
+      true
+
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
   children: []
+
+  # A generic tame AST rotation is just to push down to its children
+  tameCpsRotate: ->
+    for child in @flattenChildren()
+      child.tameCpsRotate()
+    this
+
+  # A CPS Rotation routine for expressions
+  tameCpsExprRotate : (v) ->
+    doRotate = v.tameIsTamedExpr()
+    if doRotate
+      v.tameCallContinuation()
+    v.tameCpsRotate() # do our children first, regardless...
+    if doRotate
+      @tameNestPrequelBlock v
+    else
+      null
+
+  tameIsCpsPivot            :     -> @tameCpsPivotFlag
+  tameNestContinuationBlock : (b) -> @tameContinuationBlock = b
+  tameHasContinuation       :     -> (!!@tameContinuationBlock or @tamePrequels?.length)
+  tameCallContinuation      :     -> @tameCallContinuationFlag = true
+  tameWrapContinuation      :     NO
+  tameIsJump                :     NO
+  tameIsTamedExpr           :     -> (this not instanceof Code) and @tameNodeFlag
+
+  tameNestPrequelBlock: (bb) ->
+    rv = new TameReturnValue()
+    obj = @tameParentAwait || this
+    obj.tamePrequels.push { block : bb, retval : rv }
+    rv
+
+  tameUnwrap: (e) ->
+    if e.tameHasContinuation() and @tameHasContinuation()
+      this
+    else
+      if @tameHasContinuation()
+        e.tameContinuationBlock = @tameContinuationBlock
+        e.tamePrequels = @tamePrequels
+      e
 
   isStatement     : NO
   jumps           : NO
   isComplex       : YES
   isChainable     : NO
   isAssignable    : NO
+  isLoop          : NO
 
   unwrap     : THIS
   unfoldSoak : NO
@@ -157,6 +377,7 @@ exports.Base = class Base
 # `if`, `switch`, or `try`, and so on...
 exports.Block = class Block extends Base
   constructor: (nodes) ->
+    super()
     @expressions = compact flatten nodes or []
 
   children: ['expressions']
@@ -178,7 +399,11 @@ exports.Block = class Block extends Base
   # If this Block consists of just a single node, unwrap it by pulling
   # it back out.
   unwrap: ->
-    if @expressions.length is 1 then @expressions[0] else this
+    if @expressions.length is 1 then @tameUnwrap @expressions[0] else this
+
+  # Like unwrap, but will return if not a single
+  getSingle : ->
+    if @expressions.length is 1 then @expressions[0] else null
 
   # Is this an empty block of code?
   isEmpty: ->
@@ -193,17 +418,58 @@ exports.Block = class Block extends Base
     for exp in @expressions
       return exp if exp.jumps o
 
+  tameThreadReturn: (call)  ->
+    call = call || new TameTailCall
+    len = @expressions.length
+    foundReturn = false
+    while len--
+      expr = @expressions[len]
+
+      # If the last expression in the block is either a bonafide statement
+      # or if it's going to be pivoted, then don't thread the return value
+      # through the TameTailCall, just bolt it onto the end.
+      if expr.isStatement()
+        break
+
+      # In this case, we have a value that we're going to return out
+      # of the block, so apply the TameTamilCall onto the value
+      if expr not instanceof Comment and expr not instanceof Return
+        call.assignValue expr
+        @expressions[len] = call
+        return
+
+    # if nothing was found, just push the call on
+    @expressions.push call
+
   # A Block node does not return its entire body, rather it
   # ensures that the final expression is returned.
   makeReturn: (res) ->
     len = @expressions.length
+    foundReturn = false
     while len--
       expr = @expressions[len]
       if expr not instanceof Comment
         @expressions[len] = expr.makeReturn res
-        @expressions.splice(len, 1) if expr instanceof Return and not expr.expression
+        if expr instanceof Return and
+           not expr.expression and not expr.tameHasAutocbFlag
+          @expressions.splice(len, 1)
+          foundReturn = true
+        else if not (expr instanceof If) or expr.elseBody
+          foundReturn = true
         break
+    if @tameHasAutocbFlag and not @tameNodeFlag and not foundReturn
+      @expressions.push(new Return null, true)
     this
+
+  # Optimization!
+  # Blocks typically don't need their own cpsCascading.  This saves
+  # wasted code.
+  compileCps : (o) ->
+    @tameGotCpsSplitFlag = true
+    if @expressions.length > 1
+      super o
+    else
+      @compileNode o
 
   # A **Block** is the only node that can serve as the root.
   compile: (o = {}, level) ->
@@ -255,7 +521,9 @@ exports.Block = class Block extends Base
       preludeExps = for exp, i in @expressions
         break unless exp.unwrap() instanceof Comment
         exp
+
       rest = @expressions[preludeExps.length...]
+
       @expressions = preludeExps
       prelude = "#{@compileNode merge(o, indent: '')}\n" if preludeExps.length
       @expressions = rest
@@ -292,11 +560,106 @@ exports.Block = class Block extends Base
         code += ';\n'
     code + post
 
+  #
+  # tameCpsRotate -- This is the key abstract syntax tree rotation of the
+  # CPS translation. Take a block with a bunch of sequential statements
+  # and "pivot" the AST on the first available pivot.  The expressions
+  # on the LHS of the pivot stay where the are.  The expressions on the RHS
+  # of the pivot become the pivot's continuation. And the process is applied
+  # recursively.
+  #
+  tameCpsRotate : ->
+    pivot = null
+
+    # Go ahead an look for a pivot
+    for e,i in @expressions
+      if e.tameIsCpsPivot()
+        pivot = e
+        # The pivot value needs to call the currently active continuation
+        # after it's all done.  For things like if..else.. this does something
+        # interesting and pushes the continuation down both branches.
+        # Note that it's convenient to do this **before** anything is
+        # rotated.
+        pivot.tameCallContinuation()
+
+      # Recursively rotate the children, in depth-first order.
+      e.tameCpsRotate()
+
+      # If we've found a pivot, then we break out of here, and then
+      # handle the rest of these children
+      break if pivot
+
+    # If there's no pivot, then the above should be as in the base
+    # class, and it's safe to return out of here.
+    #
+    # We find a pivot if this node has taming, and it's not an Await
+    # itself.
+    return this unless pivot
+
+    # We should never have a continuation here, even though we rotated
+    # this guy above.  This is true for one of two cases:
+    #   1. If pivot is a statement, then the continuation will be in the
+    #      grandchild Block node
+    #   2. If pivot is an expression, the pivoted code will be a prequel
+    #      and not a continuation (since we can't replace nodes as we
+    #      walk).
+    if pivot.tameContinuationBlock
+      throw SyntaxError "unexpected continuation block in node"
+
+    # These are the expressions on the RHS of the pivot split
+    rest = @expressions.slice(i+1)
+
+    # Leave the pivot in the list of expressions
+    @expressions = @expressions.slice(0,i+1)
+
+    # If there are elements in rest, then we need to nest a continuation block
+    if rest.length
+      child = new Block rest
+      pivot.tameNestContinuationBlock child
+
+      # Pass our node bits onto our new children
+      for e in rest
+        child.tameNodeFlag = true      if e.tameNodeFlag
+        child.tameLoopFlag = true      if e.tameLoopFlag
+        child.tameCpsPivotFlag = true  if e.tameCpsPivotFlag
+        child.tameHasAutocbFlag = true if e.tameHasAutocbFlag
+
+      # now recursive apply the transformation to the new child,
+      # this being especially important in blocks that have multiple
+      # awaits on the same level
+      child.tameCpsRotate()
+
+    # return this for chaining
+    this
+
   # Wrap up the given nodes as a **Block**, unless it already happens
   # to be one.
   @wrap: (nodes) ->
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Block
     new Block nodes
+
+  endsInAwait : ->
+    return @expressions?.length and @expressions[@expressions.length-1] instanceof Await
+
+  tameAddRuntime : ->
+    @expressions.unshift new TameRequire()
+
+  # Perform all steps of the Tame transform
+  tameTransform : ->
+
+    # we need to do at least 1 walk -- do the most important walk first
+    obj = {}
+    @tameWalkAst null, obj
+
+    # short-circuit here for optimization. If we didn't find await
+    # then no need to tame anything in this AST
+    if obj.foundAwait
+      @tameAddRuntime() if obj.foundDefer and not obj.foundRequire
+      @tameWalkAstLoops(false)
+      @tameWalkCpsPivots()
+      @tameCpsRotate()
+
+    this
 
 #### Literal
 
@@ -305,6 +668,7 @@ exports.Block = class Block extends Base
 # `true`, `false`, `null`...
 exports.Literal = class Literal extends Base
   constructor: (@value) ->
+    super()
 
   makeReturn: ->
     if @isStatement() then this else super
@@ -316,9 +680,19 @@ exports.Literal = class Literal extends Base
     @value in ['break', 'continue', 'debugger']
 
   isComplex: NO
+  tameIsJump : -> @isStatement()
 
   assigns: (name) ->
     name is @value
+
+  compileTame: (o) ->
+    d =
+      'continue' : tame.const.c_while
+      'break'    : tame.const.b_while
+    l = d[@value]
+    func = new Value new Literal l
+    call = new Call func, []
+    return call.compile o
 
   jumps: (o) ->
     return this if @value is 'break' and not (o?.loop or o?.block)
@@ -328,9 +702,14 @@ exports.Literal = class Literal extends Base
     code = if @isUndefined
       if o.level >= LEVEL_ACCESS then '(void 0)' else 'void 0'
     else if @value is 'this'
-      if o.scope.method?.bound then o.scope.method.context else @value
+      if o.scope.method?.bound
+        o.scope.method.context
+      else
+        @value
     else if @value.reserved
       "\"#{@value}\""
+    else if @tameLoopFlag and @tameIsJump()
+      @compileTame o
     else
       @value
     if @isStatement() then "#{@tab}#{code};" else code
@@ -343,7 +722,9 @@ exports.Literal = class Literal extends Base
 # A `return` is a *pureStatement* -- wrapping it in a closure wouldn't
 # make sense.
 exports.Return = class Return extends Base
-  constructor: (expr) ->
+  constructor: (expr, auto) ->
+    super()
+    @tameHasAutocbFlag = auto
     @expression = expr if expr and not expr.unwrap().isUndefined
 
   children: ['expression']
@@ -357,7 +738,15 @@ exports.Return = class Return extends Base
     if expr and expr not instanceof Return then expr.compile o, level else super o, level
 
   compileNode: (o) ->
-    @tab + "return#{[" #{@expression.compile o, LEVEL_PAREN}" if @expression]};"
+    if @tameHasAutocbFlag
+      cb = new Value new Literal tame.const.autocb
+      args = if @expression then [ @expression ] else []
+      call = new Call cb, args
+      ret = new Literal "return"
+      block = new Block [ call, ret];
+      block.compile o
+    else
+      @tab + "return#{[" #{@expression.compile o, LEVEL_PAREN}" if @expression]};"
 
 #### Value
 
@@ -365,6 +754,7 @@ exports.Return = class Return extends Base
 # or vanilla.
 exports.Value = class Value extends Base
   constructor: (base, props, tag) ->
+    super()
     return base if not props and base instanceof Value
     @base       = base
     @properties = props or []
@@ -372,6 +762,9 @@ exports.Value = class Value extends Base
     return this
 
   children: ['base', 'properties']
+
+  copy : ->
+    return new Value @base, @properties
 
   # Add a property (or *properties* ) `Access` to the list.
   add: (props) ->
@@ -406,7 +799,15 @@ exports.Value = class Value extends Base
   # The value can be unwrapped as its inner node, if there are no attached
   # properties.
   unwrap: ->
-    if @properties.length then this else @base
+    if @properties.length then this else @tameUnwrap @base
+
+  # If this value is being used as a slot for the purposes of a defer
+  # then export it here
+  toSlot : ->
+    sufffix = null
+    if @properties and @properties.length
+      suffix = @properties.pop()
+    return new Slot this, suffix
 
   # A reference has base part (`this` value) and name part.
   # We cache them separately for compiling complex expressions.
@@ -425,6 +826,16 @@ exports.Value = class Value extends Base
       name = new Index new Assign nref, name.index
       nref = new Index nref
     [base.add(name), new Value(bref or base.base, [nref or name])]
+
+  tameWrapContinuation : YES
+  tameCpsRotate: ->
+    unless @properties.length
+      super()
+      return
+    @base = nv if (nv = @tameCpsExprRotate @base)
+    for p in @properties
+      if (p.index? and @tameCpsExprRotate p.index)
+        p.index = v
 
   # We compile a value to JavaScript by compiling and joining each property.
   # Things get much more interesting if the chain of properties has *soak*
@@ -463,6 +874,7 @@ exports.Value = class Value extends Base
 # at the same position.
 exports.Comment = class Comment extends Base
   constructor: (@comment) ->
+    super()
 
   isStatement:     YES
   makeReturn:      THIS
@@ -478,6 +890,7 @@ exports.Comment = class Comment extends Base
 # calls against the prototype's function of the same name.
 exports.Call = class Call extends Base
   constructor: (variable, @args = [], @soak) ->
+    super()
     @isNew    = false
     @isSuper  = variable is 'super'
     @variable = if @isSuper then null else variable
@@ -507,6 +920,13 @@ exports.Call = class Call extends Base
       (new Value (new Literal method.klass), accesses).compile o
     else
       "#{name}.__super__.constructor"
+
+
+  tameWrapContinuation: YES
+  tameCpsRotate: ->
+    for a,i in @args
+      @args[i] = v if (v = @tameCpsExprRotate a)
+    @variable = v if (@variable and v = @tameCpsExprRotate @variable)
 
   # Soaked chained invocations unfold into if/else ternary structures.
   unfoldSoak: (o) ->
@@ -611,6 +1031,7 @@ exports.Call = class Call extends Base
 # [Closure Library](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.html).
 exports.Extends = class Extends extends Base
   constructor: (@child, @parent) ->
+    super()
 
   children: ['child', 'parent']
 
@@ -624,6 +1045,7 @@ exports.Extends = class Extends extends Base
 # an access into the object's prototype.
 exports.Access = class Access extends Base
   constructor: (@name, tag) ->
+    super()
     @name.asKey = yes
     @soak  = tag is 'soak'
 
@@ -631,7 +1053,7 @@ exports.Access = class Access extends Base
 
   compile: (o) ->
     name = @name.compile o
-    if IDENTIFIER.test name then ".#{name}" else "[#{name}]"
+    if (IDENTIFIER.test name) or (@name instanceof Defer) then ".#{name}" else "[#{name}]"
 
   isComplex: NO
 
@@ -640,6 +1062,7 @@ exports.Access = class Access extends Base
 # A `[ ... ]` indexed access into an array or object.
 exports.Index = class Index extends Base
   constructor: (@index) ->
+    super()
 
   children: ['index']
 
@@ -659,6 +1082,7 @@ exports.Range = class Range extends Base
   children: ['from', 'to']
 
   constructor: (@from, @to, tag) ->
+    super()
     @exclusive = tag is 'exclusive'
     @equals = if @exclusive then '' else '='
 
@@ -775,9 +1199,15 @@ exports.Slice = class Slice extends Base
 # An object literal, nothing fancy.
 exports.Obj = class Obj extends Base
   constructor: (props, @generated = false) ->
+    super()
     @objects = @properties = props or []
 
   children: ['properties']
+
+  tameWrapContinuation : YES
+  tameCpsRotate : ->
+    for prop in @properties when prop instanceof Assign
+      prop.value = v if (v = @tameCpsExprRotate prop.value)
 
   compileNode: (o) ->
     props = @properties
@@ -823,11 +1253,17 @@ exports.Obj = class Obj extends Base
 # An array literal.
 exports.Arr = class Arr extends Base
   constructor: (objs) ->
+    super()
     @objects = objs or []
 
   children: ['objects']
 
   filterImplicitObjects: Call::filterImplicitObjects
+
+  tameWrapContinuation : YES
+  tameCpsRotate: ->
+    for o,i in @objects
+      @objects[i] = v if (v = @tameCpsExprRotate o)
 
   compileNode: (o) ->
     return '[]' unless @objects.length
@@ -851,6 +1287,7 @@ exports.Arr = class Arr extends Base
 # list of prototype property assignments.
 exports.Class = class Class extends Base
   constructor: (@variable, @parent, @body = new Block) ->
+    super()
     @boundFuncs = []
     @body.classBody = yes
 
@@ -991,11 +1428,13 @@ exports.Class = class Class extends Base
 # property of an object -- including within object literals.
 exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options) ->
+    super()
     @param = options and options.param
     @subpattern = options and options.subpattern
     forbidden = (name = @variable.unwrapAll().value) in STRICT_PROSCRIBED
     if forbidden and @context isnt 'object'
       throw SyntaxError "variable name may not be \"#{name}\""
+    @tamelocal = options and options.tamelocal
 
   children: ['variable', 'value']
 
@@ -1007,6 +1446,10 @@ exports.Assign = class Assign extends Base
 
   unfoldSoak: (o) ->
     unfoldSoak o, this, 'variable'
+
+  # If our value needs a CPS rotation....
+  tameCpsRotate :  ->
+    @value = nv if (nv = @tameCpsExprRotate @value)
 
   # Compile an assignment, delegating to `compilePatternMatch` or
   # `compileSplice` if appropriate. Keep track of the name of the base object
@@ -1022,8 +1465,8 @@ exports.Assign = class Assign extends Base
       unless (varBase = @variable.unwrapAll()).isAssignable()
         throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned."
       unless varBase.hasProperties?()
-        if @param
-          o.scope.add name, 'var'
+        if @param or @tamelocal
+          o.scope.add name, 'var', @tamelocal
         else
           o.scope.find name
     if @value instanceof Code and match = METHOD_DEF.exec name
@@ -1147,10 +1590,12 @@ exports.Assign = class Assign extends Base
 # has no *children* -- they're within the inner scope.
 exports.Code = class Code extends Base
   constructor: (params, body, tag) ->
+    super()
     @params  = params or []
     @body    = body or new Block
-    @bound   = tag is 'boundfunc'
-    @context = '_this' if @bound
+    @tamegen = tag is 'tamegen'
+    @bound   = tag is 'boundfunc' or @tamegen
+    @context = '_this' if @bound or @tamegen
 
   children: ['params', 'body']
 
@@ -1165,7 +1610,7 @@ exports.Code = class Code extends Base
   # a closure.
   compileNode: (o) ->
     o.scope         = new Scope o.scope, @body, this
-    o.scope.shared  = del(o, 'sharedScope')
+    o.scope.shared  = del(o, 'sharedScope') or @tamegen
     o.indent        += TAB
     delete o.bare
     params = []
@@ -1197,6 +1642,8 @@ exports.Code = class Code extends Base
     for name in @paramNames()
       throw SyntaxError "multiple parameters named '#{name}'" if name in uniqs
       uniqs.push name
+
+    wasEmpty = false if @tameHasAutocbFlag
     @body.makeReturn() unless wasEmpty or @noReturn
     if @bound
       if o.scope.parent.method?.bound
@@ -1207,6 +1654,23 @@ exports.Code = class Code extends Base
     code  = 'function'
     code  += ' ' + @name if @ctor
     code  += '(' + params.join(', ') + ') {'
+    if @tameNodeFlag
+      o.tamed_scope = o.scope
+
+    # There are two important cases to consider in terms of autocb;
+    # In the case of an explicit call to return, we handle it in
+    # 'new Return' constructor.  The subtler case is when control
+    # falls off the end of a function.  But that's just the top-level
+    # continuation within the function.  So we assign it to the autocb
+    # here.  There's a slight scoping hack, to supply  { param : yes },
+    # which forces __tame_k to be locally scoped.  Note that there's a
+    # global __tame_k that's just the no-op, and we definitely don't
+    # want to molest that!
+    if not @tamegen and @tameNodeFlag and @tameHasAutocbFlag
+      rhs = new Value new Literal tame.const.autocb
+      k_id = new Value new Literal tame.const.k
+      @body.unshift(new Assign k_id, rhs, null, { param : yes })
+
     code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
     code  += '}'
     return @tab + code if @ctor
@@ -1223,6 +1687,29 @@ exports.Code = class Code extends Base
   traverseChildren: (crossScope, func) ->
     super(crossScope, func) if crossScope
 
+  # we are taming as a feature of all of our children.  However, if we
+  # are tamed, it's not the case that our parent is tamed!
+  tameWalkAst : (parent, o) ->
+    @tameParentAwait = parent
+    fa_prev = o.foundAutocb
+    o.foundAutocb = false
+    for param in @params
+      if param.name instanceof Literal and param.name.value is tame.const.autocb
+        o.foundAutocb = true
+        break
+    @tameHasAutocbFlag = o.foundAutocb
+    super parent, o
+    o.foundAutocb = fa_prev
+    false
+
+  tameWalkAstLoops : (flood) ->
+    @tameLoopFlag = true if super false
+    false
+
+  tameWalkCpsPivots: ->
+    super()
+    @tameCpsPivotFlag = false
+
 #### Param
 
 # A parameter in a function definition. Beyond a typical Javascript parameter,
@@ -1230,7 +1717,8 @@ exports.Code = class Code extends Base
 # as well as be a splat, gathering up a group of parameters into an array.
 exports.Param = class Param extends Base
   constructor: (@name, @value, @splat) ->
-    if name = @name.unwrapAll().value in STRICT_PROSCRIBED
+    super()
+    if name = @name?.unwrapAll().value in STRICT_PROSCRIBED
       throw SyntaxError "parameter name \"#{name}\" is not allowed"
 
   children: ['name', 'value']
@@ -1295,6 +1783,7 @@ exports.Splat = class Splat extends Base
   isAssignable: YES
 
   constructor: (name) ->
+    super()
     @name = if name.compile then name else new Literal name
 
   assigns: (name) ->
@@ -1304,6 +1793,9 @@ exports.Splat = class Splat extends Base
     if @index? then @compileParam o else @name.compile o
 
   unwrap: -> @name
+
+  toSlot: () ->
+    new Slot(new Value(@name), null, true)
 
   # Utility function that converts an arbitrary number of elements, mixed with
   # splats, to a proper array.
@@ -1332,12 +1824,14 @@ exports.Splat = class Splat extends Base
 # flexibility or more speed than a comprehension can provide.
 exports.While = class While extends Base
   constructor: (condition, options) ->
+    super()
     @condition = if options?.invert then condition.invert() else condition
     @guard     = options?.guard
 
   children: ['condition', 'guard', 'body']
 
   isStatement: YES
+  isLoop : YES
 
   makeReturn: (res) ->
     if res
@@ -1356,10 +1850,91 @@ exports.While = class While extends Base
       return node if node.jumps loop: yes
     no
 
+  tameWrap : (d) ->
+    condition = d.condition
+    body = d.body
+    rvar = d.rvar
+    outStatements = []
+
+    if rvar
+      rvar_value = new Value new Literal rvar
+
+    # Set up all of the IDs
+    top_id = new Value new Literal tame.const.t_while
+    k_id = new Value new Literal tame.const.k
+    k_param = new Param new Literal tame.const.k
+
+    # Break will just call the parent continuation, but in some
+    # cases, there will be a return value, so then we have to pass
+    # that back out.  Hence the split below:
+    break_id = new Value new Literal tame.const.b_while
+    if rvar
+      break_expr = new Call k_id, [ rvar_value ]
+      break_block = new Block [ break_expr ]
+      break_body = new Code [], break_block, 'tamegen'
+      break_assign = new Assign break_id, break_body, null, { tamelocal : yes }
+    else
+      break_assign = new Assign break_id, k_id, null, { tamelocal : yes }
+
+    # The continue assignment is the increment at the end
+    # of the loop (if it's there), and also the recursive
+    # call back to the top.
+    continue_id = new Value new Literal tame.const.c_while
+    continue_block = new Block [ new Call top_id, [ k_id ] ]
+    continue_block.unshift d.step if d.step
+    continue_body = new Code [], continue_block, 'tamegen'
+    continue_assign = new Assign continue_id, continue_body, null, { tamelocal : yes }
+
+    # Next is like continue, but it also squirrels away the return
+    # value, if required!
+    next_id = new Value new Literal tame.const.n_while
+    if rvar
+      next_arg = new Param new Literal tame.const.n_arg
+      f = rvar_value.copy()
+      f.add new Access new Value new Literal 'push'
+      call1 = new Call f, [ next_arg ]
+      call2 = new Call continue_id, []
+      next_block = new Block [ call1, call2 ]
+      next_body = new Code [ next_arg ], next_block, 'tamegen'
+      next_assign = new Assign next_id, next_body, null, { tamelocal : yes }
+    else
+      next_assign = new Assign next_id, continue_id
+
+    # The whole body is wrapped in an if, with the positive
+    # condition being the loop, and the negative condition
+    # being the break out of the loop
+    cond = new If condition, body
+    cond.addElse new Block [ new Call break_id, [] ]
+
+    # The top of the loop construct.
+    top_body = new Block [ break_assign, continue_assign, next_assign, cond ]
+    top_func = new Code [ k_param ], top_body, 'tamegen'
+    top_assign = new Assign top_id, top_func, null, { tamelocal : yes }
+    top_call = new Call top_id, [ k_id ]
+    top_statements = []
+    top_statements = top_statements.concat d.init if d.init
+    if rvar
+      rvar_init = new Assign rvar_value, new Arr
+      top_statements.push rvar_init
+    top_statements = top_statements.concat [ top_assign, top_call ]
+    top_block = new Block top_statements
+
+  tameCallContinuation : ->
+    @body.tameThreadReturn new TameTailCall tame.const.n_while
+
+  compileTame: (o) ->
+    return null unless @tameNodeFlag
+    opts = { @condition, @body }
+    if @returns
+      opts.rvar = o.scope.freeVariable 'results'
+    b = @tameWrap opts
+    return b.compile o
+
   # The main difference from a JavaScript *while* is that the CoffeeScript
   # *while* can be used as a part of a larger expression -- while loops may
   # return an array containing the computed result of each iteration.
   compileNode: (o) ->
+    return code if code = @compileTame o
     o.indent += TAB
     set      = ''
     {body}   = this
@@ -1377,7 +1952,11 @@ exports.While = class While extends Base
       body = "\n#{ body.compile o, LEVEL_TOP }\n#{@tab}"
     code = set + @tab + "while (#{ @condition.compile o, LEVEL_PAREN }) {#{body}}"
     if @returns
-      code += "\n#{@tab}return #{rvar};"
+      if @tameHasAutocbFlag
+        code += "\n#{@tab}#{tame.const.autocb}(#{rvar});"
+        code += "\n#{@tab}return;"
+      else
+        code += "\n#{@tab}return #{rvar};"
     code
 
 #### Op
@@ -1386,6 +1965,7 @@ exports.While = class While extends Base
 # CoffeeScript operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
   constructor: (op, first, second, flip ) ->
+    super()
     return new In first, second if op is 'in'
     if op is 'do'
       return @generateDo first
@@ -1397,6 +1977,8 @@ exports.Op = class Op extends Base
     @second   = second
     @flip     = !!flip
     return this
+
+  tameWrapContinuation : -> @tameCallContinuationFlag
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
   CONVERSIONS =
@@ -1423,6 +2005,10 @@ exports.Op = class Op extends Base
   # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
   isChainable: ->
     @operator in ['<', '>', '>=', '<=', '===', '!==']
+
+  tameCpsRotate :  ->
+    @first = fnv if @first and (fnv = @tameCpsExprRotate @first)
+    @second = snv if @second and (snv = @tameCpsExprRotate @second)
 
   invert: ->
     if @isChainable() and @first.isChainable()
@@ -1526,6 +2112,7 @@ exports.Op = class Op extends Base
 #### In
 exports.In = class In extends Base
   constructor: (@object, @array) ->
+    super()
 
   children: ['object', 'array']
 
@@ -1560,11 +2147,267 @@ exports.In = class In extends Base
   toString: (idt) ->
     super idt, @constructor.name + if @negated then '!' else ''
 
+#### Slot
+#
+#  A Slot is an argument passed to `defer(..)`.  It's a bit different
+#  from a normal parameters, since it's trying to implement pass-by-reference.
+#  It's used only in concert with the Defer class.  Splats and Values
+#  can be converted to slots with the `toSlot` method.
+#
+exports.Slot = class Slot extends Base
+  constructor : (value, suffix, splat) ->
+    super()
+    @value = value
+    @suffix = suffix
+    @splat = splat
+
+  children : [ 'value', 'suffix' ]
+
+#### Defer
+
+exports.Defer = class Defer extends Base
+  constructor : (args) ->
+    super()
+    @slots = (a.toSlot() for a in args)
+    @params = []
+    @vars = []
+
+  children : ['slots' ]
+
+  # Count hidden parameters up from 1.  Make a note of which parameter
+  # we passed out.  Return a copy of that parameter, in case we mutate
+  # it later before we output it.
+  newParam : ->
+    l = "#{tame.const.slot}_#{@params.length + 1}"
+    @params.push new Param new Literal l
+    new Value new Literal l
+
+  #
+  # makeAssignFn
+  #   - Implement C++-style pass-by-reference in Coffee
+  #
+  # the 'assign_fn' returned by here will set all parameters to defer()
+  # to have the appropriate values after the defer is fulfilled. The
+  # four cases to consider are listed in the following call:
+  #
+  #     defer(x, a.b, c.d[i], rest...)
+  #
+  # Case 1 -- defer(x) --  Regular assignment to a local variable
+  # Case 2 -- defer(a.b) --  Assignment to an object; must capture
+  #    object when defer() is called
+  # Case 3 -- defer(c.d[i]) --  Assignment to an array slot; must capture
+  #   array and slot index with defer() is called
+  # Case 4 -- defer(rest...) -- rest is an array, assign it to all
+  #   leftover arguments.
+  #
+  # There is a special subcase of Case 1, which we call case 1(b):
+  #
+  #    defer _
+  #
+  # In this case, the slot used is the return value for the surrounding await call,
+  # for cases such as:
+  #
+  #    x = await foo defer _
+  #
+  makeAssignFn : (o) ->
+    return null if @slots.length is 0
+    assignments = []
+    args = []
+    i = 0
+    for s in @slots
+      a = new Value new Literal "arguments"
+      i_lit = new Value new Literal i
+      if s.splat # case 4
+        func = new Value new Literal(utility 'slice')
+        func.add new Access new Value new Literal 'call'
+        call = new Call func, [ a, i_lit ]
+        slot = s.value
+        @vars.push slot
+        assign = new Assign slot, call
+      else
+        a.add new Index i_lit
+        if not s.suffix # case 1
+          lit = s.value.compile o, LEVEL_TOP
+          if lit is "_"
+            slot = new Value new Literal tame.const.deferrals
+            slot.add new Access new Value new Literal tame.const.retslot
+          else
+            slot = s.value
+            @vars.push slot
+        else
+          args.push s.value
+          slot = @newParam()
+          if s.suffix instanceof Index # case 3
+            prop = new Index @newParam()
+            args.push s.suffix.index
+          else # case 2
+            prop = s.suffix
+          slot.add prop
+        assign = new Assign slot, a
+      assignments.push assign
+      i++
+
+    block = new Block assignments
+    inner_fn = new Code [], block, 'tamegen'
+    outer_block = new Block [ new Return inner_fn ]
+    outer_fn = new Code @params, outer_block, 'tamegen'
+    call = new Call outer_fn, args
+
+  transform : (o) ->
+    # fn is 'Deferrals.defer'
+    fn = new Value new Literal tame.const.deferrals
+    meth = new Value new Literal tame.const.defer_method
+    fn.add new Access meth
+
+    # There is one argument to Deferrals.defer(), which is a dictionary.
+    # The dictionary currently only has one slot: assign_fn, which
+    #   indicates a function.
+    # More slots will be needed if we ever want to keep track of tame-aware
+    #   stack traces.
+    assignments = []
+    if (assign_fn = @makeAssignFn o)
+      assignments.push new Assign(new Value(new Literal(tame.const.assign_fn)),
+                                  assign_fn, "object")
+    o = new Obj assignments
+
+    # Return the final call
+    new Call fn, [ new Value o ]
+
+  compileNode : (o) ->
+    call = @transform o
+    for v in @vars
+      name = v.compile o, LEVEL_LIST
+      scope = o.scope
+      scope.add name, 'var'
+    call.compile o
+
+  tameWalkAst : (p, o) ->
+    @tameHasAutocbFlag = o.foundAutocb
+    o.foundDefer = true
+    super p, o
+
+#### Await
+
+exports.Await = class Await extends Base
+  constructor : (@body) ->
+    super()
+
+  transform : (o) ->
+    body = @body
+    name = tame.const.deferrals
+    o.scope.add name, 'var'
+    lhs = new Value new Literal name
+    cls = new Value new Literal tame.const.ns
+    cls.add(new Access(new Value new Literal tame.const.Deferrals))
+    call = new Call cls, [ new Value new Literal tame.const.k ]
+    rhs = new Op "new", call
+    assign = new Assign lhs, rhs
+    body.unshift assign
+    meth = lhs.copy().add new Access new Value new Literal tame.const.fulfill
+    call = new Call meth, []
+    body.push (call)
+    @body = body
+
+  children: ['body']
+
+  # ??? Revisit!
+  isStatement: -> YES
+
+  makeReturn : THIS
+
+  compileNode: (o) ->
+    @transform(o)
+    @body.compile o
+
+  # We still need to walk our children to see if there are any embedded
+  # function which might also be tamed.  But we're always going to report
+  # to our parent that we are tamed, since we are!
+  tameWalkAst : (p, o) ->
+    @tameHasAutocbFlag = o.foundAutocb
+    p = p || this
+    @tameParentAwait = p
+    super p, o
+    @tameNodeFlag = o.foundAwait = true
+
+#### icedRequire
+#
+# By default, the tame libraries are inlined.  But if you preface your file
+# with 'icedRequire(node)', it will assume a node runtime, emitting:
+#
+#   tame = require('coffee-script').tame
+#
+# With 'icedRequire(none)', you can supply a runtime of
+# your choosing. 'icedRequire(window)', will set `window.tame`
+# to have the tame runtime.
+#
+exports.TameRequire = class TameRequire extends Base
+  constructor: (args) ->
+    super()
+    @typ = null
+    @usage =  "icedRequire takes either 'inline', 'node', 'window' or 'none'"
+    if args and args.length > 2
+       throw SyntaxError @usage
+    if args and args.length is 1
+       @typ = args[0]
+
+  compileNode: (o) ->
+    @tab = o.indent
+
+    v = if @typ
+      @typ.compile(o)
+    else if o.bare
+      'none'
+    else
+      "inline"
+
+    window_mode = false
+    window_val = null
+
+    inc = null
+    inc = switch (v)
+      when "inline", "window"
+        window_mode = true if v is "window"
+        if window_mode
+          window_val = new Value new Literal v
+        InlineDeferral.generate(if window_val then window_val.copy() else null)
+      when "node"
+        file = new Literal "'coffee-script'"
+        access = new Access new Literal tame.const.ns
+        req = new Value new Literal "require"
+        call = new Call req, [ file ]
+        callv = new Value call
+        callv.add access
+        ns = new Value new Literal tame.const.ns
+        new Assign ns, callv
+      when "none" then null
+      else throw SyntaxError @usage
+
+    out = if inc then "#{@tab}#{inc.compile o, LEVEL_TOP}\n" else ""
+
+    rhs = new Code [], new Block []
+    lhs = new Value new Literal tame.const.k
+    if window_val
+      window_val.add new Access lhs
+      lhs = window_val
+    k = new Assign lhs, rhs
+
+
+
+    out + "#{@tab}" + k.compile(o, LEVEL_TOP)
+
+  children = [ 'typ']
+
+  tameWalkAst : (p,o) ->
+    @tameHasAutocbFlag = o.foundAutocb
+    o.foundRequire = true
+    super p, o
+
 #### Try
 
 # A classic *try/catch/finally* block.
 exports.Try = class Try extends Base
   constructor: (@attempt, @error, @recovery, @ensure) ->
+    super()
 
   children: ['attempt', 'recovery', 'ensure']
 
@@ -1603,6 +2446,7 @@ exports.Try = class Try extends Base
 # Simple node to throw an exception.
 exports.Throw = class Throw extends Base
   constructor: (@expression) ->
+    super()
 
   children: ['expression']
 
@@ -1622,6 +2466,7 @@ exports.Throw = class Throw extends Base
 # table.
 exports.Existence = class Existence extends Base
   constructor: (@expression) ->
+    super()
 
   children: ['expression']
 
@@ -1647,11 +2492,16 @@ exports.Existence = class Existence extends Base
 # Parentheses are a good way to force any statement to become an expression.
 exports.Parens = class Parens extends Base
   constructor: (@body) ->
+    super()
 
   children: ['body']
 
-  unwrap    : -> @body
+  unwrap    : -> @tameUnwrap @body
   isComplex : -> @body.isComplex()
+
+  #tameWrapContinuation : YES
+  #tameCpsRotate: ->
+  #  @body = b if (b = @tameCpsExprRotate @body)
 
   compileNode: (o) ->
     expr = @body.unwrap()
@@ -1674,6 +2524,8 @@ exports.Parens = class Parens extends Base
 # you can map and filter in a single pass.
 exports.For = class For extends While
   constructor: (body, source) ->
+    super()
+    @condition = null
     {@source, @guard, @step, @name, @index} = source
     @body    = Block.wrap [body]
     @own     = !!source.own
@@ -1687,6 +2539,92 @@ exports.For = class For extends While
     @returns = false
 
   children: ['body', 'source', 'guard', 'step']
+
+  compileTame: (o, d) ->
+    return null unless @tameNodeFlag
+
+    body = d.body
+    condition = null
+    init = []
+    step = null
+    scope = o.scope
+
+    # Handle 'for k,v of obj'
+    if @object
+      # _ref = source
+      ref = scope.freeVariable 'ref'
+      ref_val = new Value new Literal ref
+      a1 = new Assign ref_val, @source
+
+      # keys = for k of _ref
+      #   k
+      keys = scope.freeVariable 'keys'
+      keys_val = new Value new Literal keys
+      key = scope.freeVariable 'k'
+      key_lit = new Literal key
+      key_val = new Value key_lit
+      empty_arr = new Value new Arr
+      loop_body = new Block [ key_val ]
+      loop_source = { object : yes, name : key_lit, source : ref_val }
+      loop_keys = new For loop_body, loop_source
+      a2 = new Assign keys_val, loop_keys
+
+      # _i = 0
+      iname = scope.freeVariable 'i'
+      ival = new Value new Literal iname
+      a3 = new Assign ival, new Value new Literal 0
+
+      init = [ a1, a2, a3 ]
+
+      # _i < keys.length
+      keys_len = keys_val.copy()
+      keys_len.add new Access new Value new Literal "length"
+      condition = new Op '<', ival, keys_len
+
+      # _i++
+      step = new Op '++', ival
+
+      # value = _ref[name]
+      if @name
+        source_access = ref_val.copy()
+        source_access.add new Index @index
+        a5 = new Assign @name, source_access
+        body.unshift a5
+
+      # key = keys[_i]
+      keys_access = keys_val.copy()
+      keys_access.add new Index ival
+      a4 = new Assign @index, keys_access
+      body.unshift a4
+
+    # Handle the case of 'for i in [0..10]'
+    else if @range and @name
+      condition = new Op '<=', @name, @source.base.to
+      init = [ new Assign @name, @source.base.from ]
+      step = new Op '++', @name
+
+    # Handle the case of 'for i,blah in arr'
+    else if ! @range and @name
+      kval = new Value new Literal d.kvar
+      len = scope.freeVariable 'len'
+      ref = scope.freeVariable 'ref'
+      ref_val = new Value new Literal ref
+      len_val = new Value new Literal len
+      a1 = new Assign ref_val, @source
+      len_rhs = ref_val.copy().add new Access new Value new Literal "length"
+      a2 = new Assign len_val, len_rhs
+      a3 = new Assign kval, new Value new Literal 0
+      init = [ a1, a2, a3 ]
+      condition = new Op '<', kval, len_val
+      step = new Op '++', kval
+      ref_val_copy = ref_val.copy()
+      ref_val_copy.add new Index kval
+      a4 = new Assign @name, ref_val_copy
+      body.unshift a4
+
+    rvar = d.rvar
+    b = @tameWrap { condition, body, init, step, rvar }
+    b.compile o
 
   # Welcome to the hairiest method in all of CoffeeScript. Handles the inner
   # loop, filtering, stepping, and result saving for array, object, and range
@@ -1713,6 +2651,9 @@ exports.For = class For extends While
     guardPart = ''
     defPart   = ''
     idt1      = @tab + TAB
+
+    return code if code = @compileTame o, { stepvar, body, rvar, kvar }
+
     if @range
       forPart = source.compile merge(o, {index: ivar, name, @step})
     else
@@ -1730,7 +2671,10 @@ exports.For = class For extends While
         forPart    = "#{forVarPart}; #{ivar} < #{lvar}; #{stepPart}"
     if @returns
       resultPart   = "#{@tab}#{rvar} = [];\n"
-      returnResult = "\n#{@tab}return #{rvar};"
+      returnResult = if @tameHasAutocbFlag
+        "\n#{@tab}#{tame.const.autocb}(#{rvar}); return;"
+      else
+        "\n#{@tab}return #{rvar};"
       body.makeReturn rvar
     if @guard
       if body.expressions.length > 1
@@ -1775,6 +2719,7 @@ exports.For = class For extends While
 # A JavaScript *switch* statement. Converts into a returnable expression on-demand.
 exports.Switch = class Switch extends Base
   constructor: (@subject, @cases, @otherwise) ->
+    super()
 
   children: ['subject', 'cases', 'otherwise']
 
@@ -1790,6 +2735,11 @@ exports.Switch = class Switch extends Base
     @otherwise or= new Block [new Literal 'void 0'] if res
     @otherwise?.makeReturn res
     this
+
+  tameCallContinuation : ->
+    for [condition,block] in @cases
+      block.tameThreadReturn()
+    @otherwise?.tameThreadReturn()
 
   compileNode: (o) ->
     idt1 = o.indent + TAB
@@ -1816,6 +2766,7 @@ exports.Switch = class Switch extends Base
 # because ternaries are already proper expressions, and don't need conversion.
 exports.If = class If extends Base
   constructor: (condition, @body, options = {}) ->
+    super()
     @condition = if options.type is 'unless' then condition.invert() else condition
     @elseBody  = null
     @isChain   = false
@@ -1835,16 +2786,28 @@ exports.If = class If extends Base
       @elseBody = @ensureBlock elseBody
     this
 
+  # propogate the closing continuation call down both branches of the if.
+  # note this prevents if ...else if... inline chaining, and makes it
+  # fully nested if { .. } else { if { } ..} ..'s
+  tameCallContinuation : ->
+    if @elseBody
+      @elseBody.tameThreadReturn()
+      @isChain = false
+    else
+      @addElse new TameTailCall
+    @body.tameThreadReturn()
+
   # The **If** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a conditional operator is safe.
   isStatement: (o) ->
     o?.level is LEVEL_TOP or
-      @bodyNode().isStatement(o) or @elseBodyNode()?.isStatement(o)
+      @bodyNode().isStatement(o) or @elseBodyNode()?.isStatement(o) or
+      @tameHasContinuation()
 
   jumps: (o) -> @body.jumps(o) or @elseBody?.jumps(o)
 
   compileNode: (o) ->
-    if @isStatement o then @compileStatement o else @compileExpression o
+    if @isStatement o or @tameIsCpsPivot() then @compileStatement o else @compileExpression o
 
   makeReturn: (res) ->
     @elseBody  or= new Block [new Literal 'void 0'] if res
@@ -1866,7 +2829,7 @@ exports.If = class If extends Base
 
     cond     = @condition.compile o, LEVEL_PAREN
     o.indent += TAB
-    body     = @ensureBlock(@body)
+    body     = @ensureBlock @body
     bodyc    = body.compile o
     if (
       1 is body.expressions?.length and
@@ -1931,12 +2894,199 @@ Closure =
     (node instanceof Literal and node.value is 'this' and not node.asKey) or
       (node instanceof Code and node.bound)
 
+#### CpsCascade
+
+CpsCascade =
+
+  wrap: (statement, rest, returnValue, o) ->
+    func = new Code [ new Param new Literal tame.const.k ],
+      (Block.wrap [ statement ]), 'tamegen'
+    args = []
+    if returnValue
+      returnValue.bindName o
+      args.push returnValue
+
+    block = Block.wrap [ rest ]
+
+    # Optimization! If the block is just a tail call to another continuation
+    # that can be inlined, then we just call that call directly.
+    if (e = block.getSingle()) and e instanceof TameTailCall and e.canInline()
+      cont = e.extractFunc()
+    else
+      cont = new Code args, block, 'tamegen'
+
+    call = new Call func, [ cont ]
+    new Block [ call ]
+
+#### TailCall
+#
+# At the end of a tamed if, loop, or switch statement, we tail call off
+# to the next continuation
+
+class TameTailCall extends Base
+  constructor : (@func, val = null) ->
+    super()
+    @func = tame.const.k unless @func
+    @value = val
+
+  children : [ 'value' ]
+
+  assignValue : (v) ->
+    @value = v
+
+  canInline : ->
+    return not @value or @value instanceof TameReturnValue
+
+  literalFunc: -> new Literal @func
+  extractFunc: -> new Value @literalFunc()
+
+  tameCpsRotate : ->
+    if @value
+      @value = nv if (nv = @tameCpsExprRotate @value)
+
+  compileNode : (o) ->
+    f = @literalFunc()
+    out = if o.level is LEVEL_TOP
+      if @value
+        new Block [ @value, new Call f ]
+      else
+        new Call f
+    else
+      args = if @value then [ @value ] else []
+      new Call f, args
+    out.compileNode o
+
+#### TameReturnValue
+#
+# A variable reference to a deferred computation
+
+class TameReturnValue extends Param
+  @counter : 0
+  constructor : () ->
+    super null, null, no
+
+  bindName : (o) ->
+    l = "#{o.scope.freeVariable tame.const.param, no}_#{TameReturnValue.counter++}"
+    @name = new Literal l
+
+  compile : (o) ->
+    @bindName o if not @name
+    super o
+
+#### Deferral class, the most basic one...
+
+InlineDeferral =
+
+  # Generate this code, inline. Is there a better way?
+  #
+  # tame =
+  #   Deferrals : class
+  #     constructor: (@continuation) ->
+  #       @count = 1
+  #       @ret = null
+  #     _fulfill : ->
+  #       @continuation @ret if not --@count
+  #     defer : (defer_params) ->
+  #       @count++
+  #       (inner_params...) =>
+  #         defer_params?.assign_fn?.apply(null, inner_params)
+  #         @_fulfill()
+  #
+  generate : (ns_window) ->
+    k = new Literal "continuation"
+    cnt = new Literal "count"
+    cn = new Value new Literal tame.const.Deferrals
+    ns = new Value new Literal tame.const.ns
+    if ns_window # window.tame = ...
+      ns_window.add new Access ns
+      ns = ns_window
+
+    # make the constructor:
+    #
+    #   constructor: (@continuation) ->
+    #     @count = 1
+    #     @ret = null
+    #
+    k_member = new Value new Literal "this"
+    k_member.add new Access k
+    p1 = new Param k_member
+    cnt_member = new Value new Literal "this"
+    cnt_member.add new Access cnt
+    ret_member = new Value new Literal "this"
+    ret_member.add new Access new Value new Literal tame.const.retslot
+    a1 = new Assign cnt_member, new Value new Literal 1
+    a2 = new Assign ret_member, NULL()
+    constructor_params = [ p1 ]
+    constructor_body = new Block [ a1, a2 ]
+    constructor_code = new Code constructor_params, constructor_body
+    constructor_name = new Value new Literal "constructor"
+    constructor_assign = new Assign constructor_name, constructor_code
+
+    # make the _fulfill member:
+    #
+    #   _fulfill : ->
+    #     @continuation @ret if not --@count
+    #
+    if_expr = new Call k_member, [ ret_member ]
+    if_body = new Block [ if_expr ]
+    decr = new Op '--', cnt_member
+    if_cond = new Op '!', decr
+    my_if = new If if_cond, if_body
+    _fulfill_body = new Block [ my_if ]
+    _fulfill_code = new Code [], _fulfill_body
+    _fulfill_name = new Value new Literal tame.const.fulfill
+    _fulfill_assign = new Assign _fulfill_name, _fulfill_code
+
+    # Make the defer member:
+    #   defer : (defer_params) ->
+    #     @count++
+    #     (inner_params...) =>
+    #       defer_params?.assign_fn?.apply(null, inner_params)
+    #       @_fulfill()
+    #
+    inc = new Op "++", cnt_member
+    ip = new Literal "inner_params"
+    dp = new Literal "defer_params"
+    call_meth = new Value dp
+    af = new Literal tame.const.assign_fn
+    call_meth.add new Access af, "soak"
+    my_apply = new Literal "apply"
+    call_meth.add new Access my_apply, "soak"
+    my_null = NULL()
+    apply_call = new Call call_meth, [ my_null, new Value ip ]
+    _fulfill_method = new Value new Literal "this"
+    _fulfill_method.add new Access new Literal tame.const.fulfill
+    _fulfill_call = new Call _fulfill_method, []
+    inner_body = new Block [ apply_call, _fulfill_call ]
+    inner_params = [ new Param ip, null, on ]
+    inner_code = new Code inner_params, inner_body, "boundfunc"
+    defer_body = new Block [ inc, inner_code ]
+    defer_params = [ new Param dp ]
+    defer_code = new Code defer_params, defer_body
+    defer_name = new Value new Literal tame.const.defer_method
+    defer_assign = new Assign defer_name, defer_code
+
+    # Piece the class together
+    assignments = [ constructor_assign, _fulfill_assign, defer_assign ]
+    obj = new Obj assignments, true
+    body = new Block [ new Value obj ]
+    klass = new Class null, null, body
+
+    # tame =
+    #   Deferrals : <class>
+    #
+    klass_assign = new Assign cn, klass, "object"
+    ns_obj = new Obj [ klass_assign ], true
+    ns_val = new Value ns_obj
+    new Assign ns, ns_val
+
 # Unfold a node's child if soak, then tuck the node under created `If`
 unfoldSoak = (o, parent, name) ->
   return unless ifn = parent[name].unfoldSoak o
   parent[name] = ifn.body
   ifn.body = new Value parent
   ifn
+
 
 # Constants
 # ---------

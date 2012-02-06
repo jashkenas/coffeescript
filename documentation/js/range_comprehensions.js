@@ -1,9 +1,9 @@
 var countdown, num;
 
 countdown = (function() {
-  var _results;
+  var _i, _results;
   _results = [];
-  for (num = 10; num >= 1; num--) {
+  for (num = _i = 10; _i >= 1; num = --_i) {
     _results.push(num);
   }
   return _results;

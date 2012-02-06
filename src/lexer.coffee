@@ -63,7 +63,13 @@ exports.Lexer = class Lexer
     @closeIndentation()
     @error "missing #{tag}" if tag = @ends.pop()
     return @tokens if opts.rewrite is off
-    (new Rewriter).rewrite @tokens
+    debug = false # MK REMOVE: turn to true to debug the lexer!!
+    if debug
+      console.log (t[0] + '/' + t[1] for t in @tokens).join ' '
+    ret = (new Rewriter).rewrite @tokens
+    if debug
+      console.log (t[0] + '/' + t[1] for t in ret).join ' '
+    ret
 
   # Tokenizers
   # ----------
@@ -83,7 +89,7 @@ exports.Lexer = class Lexer
       return id.length
     forcedIdentifier = colon or
       (prev = last @tokens) and (prev[0] in ['.', '?.', '::'] or
-      not prev.spaced and prev[0] is '@')
+      not prev.spaced and prev[0] is '@') and id isnt 'defer'
     tag = 'IDENTIFIER'
 
     if not forcedIdentifier and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS)
@@ -557,7 +563,7 @@ JS_KEYWORDS = [
 ]
 
 # CoffeeScript-only keywords.
-COFFEE_KEYWORDS = ['undefined', 'then', 'unless', 'until', 'loop', 'of', 'by', 'when']
+COFFEE_KEYWORDS = ['undefined', 'then', 'unless', 'until', 'loop', 'of', 'by', 'when', 'await', 'defer', 'icedRequire' ]
 
 COFFEE_ALIAS_MAP =
   and  : '&&'
@@ -701,7 +707,7 @@ NOT_SPACED_REGEX = NOT_REGEX.concat ')', '}', 'THIS', 'IDENTIFIER', 'STRING'
 # Tokens which could legitimately be invoked or indexed. An opening
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
-CALLABLE  = ['IDENTIFIER', 'STRING', 'REGEX', ')', ']', '}', '?', '::', '@', 'THIS', 'SUPER']
+CALLABLE  = ['IDENTIFIER', 'STRING', 'REGEX', ')', ']', '}', '?', '::', '@', 'THIS', 'SUPER', 'DEFER', 'ICEDREQUIRE']
 INDEXABLE = CALLABLE.concat 'NUMBER', 'BOOL'
 
 # Tokens that, when immediately preceding a `WHEN`, indicate that the `WHEN`

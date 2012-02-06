@@ -29,7 +29,8 @@ header = """
 
 sources = [
   'coffee-script', 'grammar', 'helpers'
-  'lexer', 'nodes', 'rewriter', 'scope'
+  'lexer', 'nodes', 'rewriter', 'scope',
+  'tame', 'tamelib', 'icedlib' 
 ].map (filename) -> "src/#{filename}.coffee"
 
 # Run a CoffeeScript through our node/coffee interpreter.
@@ -96,7 +97,7 @@ task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter'
 
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
   code = ''
-  for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'nodes', 'coffee-script', 'browser']
+  for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'tame', 'nodes', 'coffee-script', 'browser', 'icedlib' ]
     code += """
       require['./#{name}'] = new function() {
         var exports = this;
@@ -167,6 +168,7 @@ runTests = (CoffeeScript) ->
   startTime   = Date.now()
   currentFile = null
   passedTests = 0
+  attemptedTests = 0
   failures    = []
 
   global[name] = func for name, func of require 'assert'
@@ -177,6 +179,7 @@ runTests = (CoffeeScript) ->
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
     try
+      ++attemptedTests
       fn.test = {description, currentFile}
       fn.call(fn)
       ++passedTests
@@ -184,6 +187,18 @@ runTests = (CoffeeScript) ->
       e.description = description if description?
       e.source      = fn.toString() if fn.toString?
       failures.push filename: currentFile, error: e
+
+  # An async testing primitive
+  global.atest = (description, fn) ->
+    ++attemptedTests
+    fn.test = { description, currentFile }
+    fn.call fn, (ok, e) =>
+      if ok
+        ++passedTests
+      else
+        e.description = description if description?
+        e.source      = fn.toString() if fn.toString?
+        failures.push filename : currentFile, error : e
 
   # See http://wiki.ecmascript.org/doku.php?id=harmony:egal
   egal = (a, b) ->
@@ -208,6 +223,7 @@ runTests = (CoffeeScript) ->
   process.on 'exit', ->
     time = ((Date.now() - startTime) / 1000).toFixed(2)
     message = "passed #{passedTests} tests in #{time} seconds#{reset}"
+    log("Only #{passedTests} of #{attemptedTests} came back; some went missing!", red) unless passedTests == attemptedTests
     return log(message, green) unless failures.length
     log "failed #{failures.length} and #{message}", red
     for fail in failures
@@ -244,4 +260,6 @@ task 'test:browser', 'run the test suite against the merged browser script', ->
   result = {}
   global.testingBrowser = yes
   (-> eval source).call result
+  global.tame = result.CoffeeScript.tame
   runTests result.CoffeeScript
+

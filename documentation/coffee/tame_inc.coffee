@@ -1,0 +1,1 @@
+tameRequire(window)

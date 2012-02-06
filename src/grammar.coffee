@@ -79,6 +79,17 @@ grammar =
     o 'Return'
     o 'Comment'
     o 'STATEMENT',                              -> new Literal $1
+    o 'Require'
+  ]
+
+  Require : [
+    o 'ICEDREQUIRE Arguments',                  -> new TameRequire $2
+
+  ]
+
+  Await: [
+    o 'AWAIT Block',                             -> new Await $2
+    o 'AWAIT Expression',                        -> new Await Block.wrap [$2 ]
   ]
 
   # All the different types of expressions in our language. The basic unit of
@@ -98,6 +109,8 @@ grammar =
     o 'Switch'
     o 'Class'
     o 'Throw'
+    o 'Defer'
+    o 'Await'
   ]
 
   # An indented block of expressions. Note that the [Rewriter](rewriter.html)
@@ -245,6 +258,7 @@ grammar =
   # or by array index or slice.
   Accessor: [
     o '.  Identifier',                          -> new Access $2
+    o '.  Defer',                               -> new Access $2
     o '?. Identifier',                          -> new Access $2, 'soak'
     o ':: Identifier',                          -> [(new Access new Literal 'prototype'), new Access $2]
     o '::',                                     -> new Access new Literal 'prototype'
@@ -296,6 +310,10 @@ grammar =
     o 'Invocation OptFuncExist Arguments',      -> new Call $1, $3, $2
     o 'SUPER',                                  -> new Call 'super', [new Splat new Literal 'arguments']
     o 'SUPER Arguments',                        -> new Call 'super', $2
+  ]
+
+  Defer : [
+    o 'DEFER Arguments',                        -> new Defer $2
   ]
 
   # An optional existence check on a function.
@@ -569,7 +587,7 @@ operators = [
   ['nonassoc',  'INDENT', 'OUTDENT']
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
   ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
-  ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
+  ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS', 'AWAIT' ]
   ['right',     'POST_IF']
 ]
 

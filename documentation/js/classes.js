@@ -4,6 +4,8 @@ var Animal, Horse, Snake, sam, tom,
 
 Animal = (function() {
 
+  Animal.name = 'Animal';
+
   function Animal(name) {
     this.name = name;
   }
@@ -20,8 +22,10 @@ Snake = (function(_super) {
 
   __extends(Snake, _super);
 
+  Snake.name = 'Snake';
+
   function Snake() {
-    Snake.__super__.constructor.apply(this, arguments);
+    return Snake.__super__.constructor.apply(this, arguments);
   }
 
   Snake.prototype.move = function() {
@@ -37,8 +41,10 @@ Horse = (function(_super) {
 
   __extends(Horse, _super);
 
+  Horse.name = 'Horse';
+
   function Horse() {
-    Horse.__super__.constructor.apply(this, arguments);
+    return Horse.__super__.constructor.apply(this, arguments);
   }
 
   Horse.prototype.move = function() {

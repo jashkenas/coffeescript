@@ -1,9 +1,9 @@
 {
-  "name":         "coffee-script",
-  "description":  "Unfancy JavaScript",
+  "name":         "iced-coffee-script",
+  "description":  "IcedCoffeeScript",
   "keywords":     ["javascript", "language", "coffeescript", "compiler"],
-  "author":       "Jeremy Ashkenas",
-  "version":      "1.2.1-pre",
+  "author":       "Maxwell Krohn",
+  "version":      "1.2.0d",
   "licenses":     [{
     "type":       "MIT",
     "url":        "http://github.com/jashkenas/coffee-script/raw/master/LICENSE"
@@ -16,13 +16,13 @@
   },
   "main" : "./lib/coffee-script/coffee-script",
   "bin":          {
-    "coffee":     "./bin/coffee",
-    "cake":       "./bin/cake"
+    "iced":           "./bin/coffee",
+    "icake":           "./bin/cake"
   },
-  "homepage":     "http://coffeescript.org",
+  "homepage":     "http://maxtaco.github.com/coffee-script",
   "repository":   {
     "type": "git",
-    "url": "git://github.com/jashkenas/coffee-script.git"
+    "url": "git://github.com/maxtaco/coffee-script.git"
   },
   "devDependencies": {
     "uglify-js":  ">=1.0.0",

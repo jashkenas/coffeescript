@@ -5,6 +5,8 @@
 #
 # Running `cake` with no arguments will print out a list of all the tasks in the
 # current directory's Cakefile.
+#
+#
 
 # External dependencies.
 fs           = require 'fs'
@@ -35,15 +37,15 @@ helpers.extend global,
     switches.push [letter, flag, description]
 
   # Invoke another task in the current Cakefile.
-  invoke: (name) ->
-    missingTask name unless tasks[name]
-    tasks[name].action options
+  invoke: (name, cb) ->
+    missingTask name unless (t = tasks[name])
+    t.action options
 
 # Run `cake`. Executes all of the tasks you pass, in order. Note that Node's
 # asynchrony may cause tasks to execute in a different order than you'd expect.
 # If no tasks are passed, print the help screen. Keep a reference to the
 # original directory name, when running Cake tasks from subdirectories.
-exports.run = ->
+exports.run = (cb) ->
   global.__originalDirname = fs.realpathSync '.'
   process.chdir cakefileDirectory __originalDirname
   args = process.argv[2..]
@@ -54,7 +56,8 @@ exports.run = ->
     options = oparse.parse(args)
   catch e
     return fatalError "#{e}"
-  invoke arg for arg in options.arguments
+  for arg in options.arguments
+    invoke arg
 
 # Display the list of Cake tasks in a format similar to `rake -T`
 printTasks = ->

@@ -262,6 +262,7 @@ test "#1005: invalid identifiers allowed on LHS of destructuring assignment", ->
     throws (-> CoffeeScript.compile tSplat), null, tSplat = "[#{v}...] = x"
   doesNotThrow ->
     for v in disallowed
+      continue if v is 'defer'
       CoffeeScript.compile "[a.#{v}] = x"
       CoffeeScript.compile "[a.#{v}...] = x"
       CoffeeScript.compile "[@#{v}] = x"
