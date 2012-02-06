@@ -21,7 +21,6 @@ Module       = require 'module'
 REPL_PROMPT = 'coffee> '
 REPL_PROMPT_MULTILINE = '------> '
 REPL_PROMPT_CONTINUATION = '......> '
-REPL_CHOMP = /(\n|\r)+$/
 enableColours = no
 unless process.platform is 'win32'
   enableColours = not process.env.NODE_DISABLE_COLORS
@@ -76,7 +75,7 @@ backlog = ''
 # Attempt to evaluate the command. If there's an exception, print it out instead
 # of exiting.
 run = (buffer) ->
-  buffer = buffer.replace REPL_CHOMP, ""
+  buffer = buffer.replace /[\r\n]+$/, ""
   if multilineMode
     backlog += "#{buffer}\n"
     repl.setPrompt REPL_PROMPT_CONTINUATION
