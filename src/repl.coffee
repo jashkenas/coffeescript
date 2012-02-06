@@ -75,6 +75,7 @@ backlog = ''
 # Attempt to evaluate the command. If there's an exception, print it out instead
 # of exiting.
 run = (buffer) ->
+  buffer = buffer.replace /[\r\n]+$/, ""
   if multilineMode
     backlog += "#{buffer}\n"
     repl.setPrompt REPL_PROMPT_CONTINUATION
