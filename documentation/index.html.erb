@@ -873,9 +873,9 @@ Expressions
       <b class="header">Extended Regular Expressions</b>
       Similar to "heredocs" and "herecomments", CoffeeScript supports "heregexes" &mdash;
       extended regular expressions that ignore internal whitespace and can contain
-      comments, after Perl's <tt>/x</tt> modifier, but delimited by <tt>///</tt>.
-      They go a long way towards making complex regular expressions readable.
-      To quote from the CoffeeScript source:
+      comments and interpolation. Modeled after Perl's <tt>/x</tt> modifier, CoffeeSctipt's
+      heregexes are delimited by <tt>///</tt> and go a long way towards making complex
+      regular expressions readable. To quote from the CoffeeScript source:
     </p>
     <%= code_for('heregexes') %>
 
