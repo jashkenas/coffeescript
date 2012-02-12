@@ -1230,7 +1230,7 @@ exports.Code = class Code extends Base
 # as well as be a splat, gathering up a group of parameters into an array.
 exports.Param = class Param extends Base
   constructor: (@name, @value, @splat) ->
-    if name = @name.unwrapAll().value in STRICT_PROSCRIBED
+    if (name = @name.unwrapAll().value) in STRICT_PROSCRIBED
       throw SyntaxError "parameter name \"#{name}\" is not allowed"
 
   children: ['name', 'value']
