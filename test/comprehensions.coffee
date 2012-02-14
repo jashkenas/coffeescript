@@ -485,3 +485,17 @@ test "#1910: loop index should be mutable within a loop iteration and immutable 
     ++iterations
   eq 6, k
   eq 5, iterations
+
+test "#2007: Return object literal from comprehension", ->
+  y = for x in [1, 2]
+    foo: "foo" + x
+  eq 2, y.length
+  eq "foo1", y[0].foo
+  eq "foo2", y[1].foo
+
+  x = 2
+  y = while x
+    x: --x
+  eq 2, y.length
+  eq 1, y[0].x
+  eq 0, y[1].x
