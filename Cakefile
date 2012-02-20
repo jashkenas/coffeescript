@@ -94,15 +94,22 @@ task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter'
     exec 'sudo mv coffeescript.yaml /usr/local/lib/ruby/gems/1.8/gems/ultraviolet-0.10.2/syntax/coffeescript.syntax'
 
 
-task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
+baseFiles = ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'nodes', 'coffee-script']
+merge = (extraFiles) ->
   code = ''
-  for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'nodes', 'coffee-script', 'browser']
+  append = (name) ->
     code += """
       require['./#{name}'] = new function() {
         var exports = this;
         #{fs.readFileSync "lib/coffee-script/#{name}.js"}
       };
     """
+  append name for name in baseFiles
+  append name for name in extraFiles
+  code
+
+task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
+  code = merge ['browser']
   code = """
     (function(root) {
       var CoffeeScript = function() {
@@ -124,6 +131,21 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
   fs.writeFileSync 'extras/coffee-script.js', header + '\n' + code
   console.log "built ... running browser tests:"
   invoke 'test:browser'
+
+task 'build:standalone', 'rebuild the merged script so it can be used standalone', ->
+  code = merge ['optparse', 'repl', 'command']
+  code = """
+    var __require = require;
+    (function() {
+      function require(path){ return require[path] || __require(path); }
+      #{code}
+      require('./command').run();
+    })()
+  """
+  unless process.env.MINIFY is 'false'
+    {parser, uglify} = require 'uglify-js'
+    code = uglify.gen_code uglify.ast_squeeze uglify.ast_mangle parser.parse code
+  fs.writeFileSync 'extras/standalone.js', header + '\n' + code
 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
