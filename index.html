@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -482,9 +481,10 @@ Expressions
       <span id="literals" class="bookmark"></span>
       <b class="header">Functions</b>
       Functions are defined by an optional list of parameters in parentheses,
-      an arrow, and the function body. The empty function looks like this:
+      an arrow (meaning "into", i.e. input into output), and the function body. The empty function looks like this:
       <tt>-></tt>
     </p>
+
     <div class='code'><pre class="idle"><span class="FunctionName">square </span><span class="Keyword">=</span> <span class="FunctionArgument">(x)</span> <span class="Storage">-&gt;</span> x <span class="Keyword">*</span> x
 <span class="FunctionName">cube   </span><span class="Keyword">=</span> <span class="FunctionArgument">(x)</span> <span class="Storage">-&gt;</span> square(x) <span class="Keyword">*</span> x
 </pre><pre class="idle"><span class="Storage">var</span> cube, square;
@@ -1823,7 +1823,7 @@ hi = function() {
       <span id="try" class="bookmark"></span>
       <b class="header">Try/Catch/Finally</b>
       Try/catch statements are just about the same as JavaScript (although
-      they work as expressions).
+      they work as expressions, meaning they can be assigned or otherwise used as values).
     </p>
     <div class='code'><pre class="idle"><span class="Keyword">try</span>
   allHellBreaksLoose()
