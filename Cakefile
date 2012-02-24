@@ -11,10 +11,10 @@ unless process.platform is 'win32'
 
 bold = red = green = reset = ''
 if enableColors
-  bold  = '\033[0;1m'
-  red   = '\033[0;31m'
-  green = '\033[0;32m'
-  reset = '\033[0m'
+  bold  = '\x1B[0;1m'
+  red   = '\x1B[0;31m'
+  green = '\x1B[0;32m'
+  reset = '\x1B[0m'
 
 # Built file header.
 header = """

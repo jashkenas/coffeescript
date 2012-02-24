@@ -58,7 +58,8 @@ exports.run = ->
 
 # Display the list of Cake tasks in a format similar to `rake -T`
 printTasks = ->
-  cakefilePath = path.join path.relative(__originalDirname, process.cwd()), 'Cakefile'
+  relative = path.relative or path.resolve
+  cakefilePath = path.join relative(__originalDirname, process.cwd()), 'Cakefile'
   console.log "#{cakefilePath} defines the following tasks:\n"
   for name, task of tasks
     spaces = 20 - name.length

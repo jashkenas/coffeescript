@@ -32,3 +32,12 @@ test "catch statements should introduce their argument to scope", ->
   catch e
     do -> e = 5
     eq 5, e
+
+class Array then slice: fail # needs to be global
+class Object then hasOwnProperty: fail
+test "#1973: redefining Array/Object constructors shouldn't confuse __X helpers", ->
+  arr = [1..4]
+  arrayEq [3, 4], arr[2..]
+  obj = {arr}
+  for own k of obj
+    eq arr, obj[k]

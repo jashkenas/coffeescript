@@ -106,7 +106,7 @@ exports.Lexer = class Lexer
             @tokens.pop()
             id = '!' + id
 
-    if id in ['eval', 'arguments'].concat JS_FORBIDDEN
+    if id in JS_FORBIDDEN
       if forcedIdentifier
         tag = 'IDENTIFIER'
         id  = new String id
@@ -133,7 +133,17 @@ exports.Lexer = class Lexer
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
     number = match[0]
+    if /E/.test number
+      @error "exponential notation '#{number}' must be indicated with a lowercase 'e'"
+    else if /[BOX]/.test number
+      @error "radix prefixes must be lowercase '#{number}'"
+    else if /^0[89]/.test number
+      @error "decimal literals '#{number}' must not be prefixed with '0'"
+    else if /^0[0-7]/.test number
+      @error "octal literals '#{number}' must be prefixed with '0o'"
     lexedLength = number.length
+    if octalLiteral = /0o([0-7]+)/.exec number
+      number = (parseInt octalLiteral[1], 8).toString()
     if binaryLiteral = /0b([01]+)/.exec number
       number = (parseInt binaryLiteral[1], 2).toString()
     @token 'NUMBER', number
@@ -154,6 +164,8 @@ exports.Lexer = class Lexer
           @token 'STRING', @escapeLines string
       else
         return 0
+    if octalEsc = /^(?:\\.|[^\\])*\\[0-7]/.test string
+      @error "octal escape sequences #{string} are not allowed"
     @line += count string, '\n'
     string.length
 
@@ -178,7 +190,6 @@ exports.Lexer = class Lexer
     if here
       @token 'HERECOMMENT', @sanitizeHeredoc here,
         herecomment: true, indent: Array(@indent + 1).join(' ')
-      @token 'TERMINATOR', '\n'
     @line += count comment, '\n'
     comment.length
 
@@ -336,8 +347,8 @@ exports.Lexer = class Lexer
         prev[1] += '='
         return value.length
     if value is ';'
-     @seenFor = no
-     tag = 'TERMINATOR'
+      @seenFor = no
+      tag = 'TERMINATOR'
     else if value in MATH            then tag = 'MATH'
     else if value in COMPARE         then tag = 'COMPARE'
     else if value in COMPOUND_ASSIGN then tag = 'COMPOUND_ASSIGN'
@@ -569,13 +580,18 @@ RESERVED = [
   'case', 'default', 'function', 'var', 'void', 'with'
   'const', 'let', 'enum', 'export', 'import', 'native'
   '__hasProp', '__extends', '__slice', '__bind', '__indexOf'
+  'implements', 'interface', 'let', 'package',
+  'private', 'protected', 'public', 'static', 'yield'
 ]
+
+STRICT_PROSCRIBED = ['arguments', 'eval']
 
 # The superset of both JavaScript keywords and reserved words, none of which may
 # be used as identifiers or properties.
-JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
+JS_FORBIDDEN = JS_KEYWORDS.concat(RESERVED).concat(STRICT_PROSCRIBED)
 
-exports.RESERVED = RESERVED.concat(JS_KEYWORDS).concat(COFFEE_KEYWORDS)
+exports.RESERVED = RESERVED.concat(JS_KEYWORDS).concat(COFFEE_KEYWORDS).concat(STRICT_PROSCRIBED)
+exports.STRICT_PROSCRIBED = STRICT_PROSCRIBED
 
 # Token matching regexes.
 IDENTIFIER = /// ^
@@ -584,8 +600,9 @@ IDENTIFIER = /// ^
 ///
 
 NUMBER     = ///
-  ^ 0x[\da-f]+ |                              # hex
-  ^ 0b[01]+ |                              # binary
+  ^ 0b[01]+    |              # binary
+  ^ 0o[0-7]+   |              # octal
+  ^ 0x[\da-f]+ |              # hex
   ^ \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
 ///i
 

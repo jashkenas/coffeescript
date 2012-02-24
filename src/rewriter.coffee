@@ -167,7 +167,7 @@ class exports.Rewriter
 
     @scanTokens (token, i, tokens) ->
       tag     = token[0]
-      noCall  = yes if tag in ['CLASS', 'IF']
+      noCall  = yes if tag in ['CLASS', 'IF', 'FOR', 'WHILE']
       [prev, current, next] = tokens[i - 1 .. i + 1]
       callObject  = not noCall and tag is 'INDENT' and
                     next and next.generated and next[0] is '{' and

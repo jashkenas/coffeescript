@@ -253,20 +253,19 @@ test "#1871: Special case for IMPLICIT_END in the middle of an implicit object",
   eq result.two.join(' '), '2 2 2'
 
 test "#1961, #1974, regression with compound assigning to an implicit object", ->
-  
+
   obj = null
-  
-  obj ?= 
+
+  obj ?=
     one: 1
     two: 2
-    
+
   eq obj.two, 2
-  
+
   obj = null
 
   obj or=
     three: 3
     four: 4
-    
+
   eq obj.four, 4
-  
