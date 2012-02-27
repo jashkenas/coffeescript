@@ -5,6 +5,7 @@ CoffeeScript.require = require
 
 # Use standard JavaScript `eval` to eval code.
 CoffeeScript.eval = (code, options) ->
+  options.bare ?= on
   eval CoffeeScript.compile code, options
 
 # Running code does not provide access to this scope.
