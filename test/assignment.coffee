@@ -19,12 +19,6 @@ test "unassignable values", ->
   for nonref in ['', '""', '0', 'f()'].concat CoffeeScript.RESERVED
     eq nonce, (try CoffeeScript.compile "#{nonref} = v" catch e then nonce)
 
-test "compound assignments should not declare", ->
-  # TODO: make description more clear
-  # TODO: remove reference to Math
-  eq Math, (-> Math or= 0)()
-
-
 # Compound Assignment
 
 test "boolean operators", ->
@@ -285,8 +279,23 @@ test "existential assignment", ->
   c = null
   c ?= nonce
   eq nonce, c
-  d ?= nonce
-  eq nonce, d
+
+test "#1627: prohibit conditional assignment of undefined variables", ->
+  throws (-> CoffeeScript.compile "x ?= 10"),        null, "prohibit (x ?= 10)"
+  throws (-> CoffeeScript.compile "x ||= 10"),       null, "prohibit (x ||= 10)"
+  throws (-> CoffeeScript.compile "x or= 10"),       null, "prohibit (x or= 10)"
+  throws (-> CoffeeScript.compile "do -> x ?= 10"),  null, "prohibit (do -> x ?= 10)"
+  throws (-> CoffeeScript.compile "do -> x ||= 10"), null, "prohibit (do -> x ||= 10)"
+  throws (-> CoffeeScript.compile "do -> x or= 10"), null, "prohibit (do -> x or= 10)"
+  doesNotThrow (-> CoffeeScript.compile "x = null; x ?= 10"),        "allow (x = null; x ?= 10)"
+  doesNotThrow (-> CoffeeScript.compile "x = null; x ||= 10"),       "allow (x = null; x ||= 10)"
+  doesNotThrow (-> CoffeeScript.compile "x = null; x or= 10"),       "allow (x = null; x or= 10)"
+  doesNotThrow (-> CoffeeScript.compile "x = null; do -> x ?= 10"),  "allow (x = null; do -> x ?= 10)"
+  doesNotThrow (-> CoffeeScript.compile "x = null; do -> x ||= 10"), "allow (x = null; do -> x ||= 10)"
+  doesNotThrow (-> CoffeeScript.compile "x = null; do -> x or= 10"), "allow (x = null; do -> x or= 10)"
+  
+  throws (-> CoffeeScript.compile "-> -> -> x ?= 10"), null, "prohibit (-> -> -> x ?= 10)"
+  doesNotThrow (-> CoffeeScript.compile "x = null; -> -> -> x ?= 10"), "allow (x = null; -> -> -> x ?= 10)"
 
 test "#1348, #1216: existential assignment compilation", ->
   nonce = {}
@@ -295,14 +304,7 @@ test "#1348, #1216: existential assignment compilation", ->
   eq nonce, b
   #the first ?= compiles into a statement; the second ?= compiles to a ternary expression
   eq a ?= b ?= 1, nonce
-
-  e ?= f ?= g ?= 1
-  eq e + g, 2
-
-  #need to ensure the two vars are not defined, hence the strange names;
-  # broke earlier when using c ?= d ?= 1 because `d` is declared elsewhere
-  eq und1_1348 ?= und2_1348 ?= 1, 1
-
+  
   if a then a ?= 2 else a = 3
   eq a, nonce
 
