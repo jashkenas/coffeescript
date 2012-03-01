@@ -1171,6 +1171,7 @@ exports.Code = class Code extends Base
     o.scope.shared  = del(o, 'sharedScope')
     o.indent        += TAB
     delete o.bare
+    delete o.isExistentialEquals
     params = []
     exprs  = []
     for name in @paramNames() # this step must be performed before the others

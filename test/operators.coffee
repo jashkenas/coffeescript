@@ -269,3 +269,9 @@ test "Regression with implicit calls against an indented assignment", ->
     1
 
   eq a, 1
+
+test "#2155 ... conditional assignment to a closure", ->
+  x = null
+  func = -> x ?= (-> if true then 'hi')
+  func()
+  eq x(), 'hi'
