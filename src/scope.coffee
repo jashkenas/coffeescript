@@ -53,7 +53,7 @@ exports.Scope = class Scope
   # Generate a temporary variable name at the given index.
   temporary: (name, index) ->
     if name.length > 1
-      '_' + name + if index > 1 then index else ''
+      '_' + name + if index > 1 then index - 1 else ''
     else
       '_' + (index + parseInt name, 36).toString(36).replace /\d/g, 'a'
 
