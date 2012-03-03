@@ -4,7 +4,7 @@ CoffeeScript = require './coffee-script'
 CoffeeScript.require = require
 
 # Use standard JavaScript `eval` to eval code.
-CoffeeScript.eval = (code, options) ->
+CoffeeScript.eval = (code, options = {}) ->
   options.bare ?= on
   eval CoffeeScript.compile code, options
 
