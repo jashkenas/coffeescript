@@ -67,6 +67,26 @@ exports.run = (code, options = {}) ->
   # Clear the module cache.
   mainModule.moduleCache and= {}
 
+  # Load the child_process module, we need to modify it
+  child_process = require 'child_process'
+
+  # Put a wrapper around child_process.fork
+  orig_fork = child_process.fork
+  child_process.fork = (modulePath) ->
+    # Duplicate the argument parsing logic in node.js's fork
+    args = []
+    options = arguments[1] || {}
+    if Array.isArray arguments[1]
+      args = arguments[1]
+      options = arguments[2] || {}
+
+    # The default value for env should be process.env, as per
+    # child_process.spawn
+    options.env = process.env unless options.env?
+
+    # Call the real child_process.fork
+    orig_fork modulePath, args, options
+
   # Assign paths for node_modules loading
   mainModule.paths = require('module')._nodeModulePaths path.dirname options.filename
 
