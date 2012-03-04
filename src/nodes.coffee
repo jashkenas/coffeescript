@@ -886,6 +886,20 @@ exports.Class = class Class extends Base
         lhs = (new Value (new Literal "this"), [new Access bvar]).compile o
         @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
 
+  addAttrReader: (props, name) ->
+    value = new Value(new Literal('get' + name[1].toUpperCase() + name[2..-2]))
+    code = new Code
+    code.body.push new Literal "this[#{name}]"
+    code.body.makeReturn()
+    props.push(new Assign(value, code, null))
+
+  addAttrWriter: (props, name) ->
+    value = new Value(new Literal('set' + name[1].toUpperCase() + name[2..-2]))
+    code = new Code [new Param(new Literal "value")]
+    code.body.push new Literal "this[#{name}] = value"
+    code.body.makeReturn()
+    props.push(new Assign(value, code, null))
+
   # Merge the properties from a top-level object as prototypal properties
   # on the class.
   addProperties: (node, name, o) ->
@@ -911,10 +925,21 @@ exports.Class = class Class extends Base
             if func.bound
               func.context = name
           else
-            assign.variable = new Value(new Literal(name), [(new Access new Literal 'prototype'), new Access base ])
-            if func instanceof Code and func.bound
-              @boundFuncs.push base
-              func.bound = no
+            if base.value is 'attr_reader' and func instanceof Value and func.isArray()
+              for prop in func.base.objects
+                @addAttrReader props, prop.base.value
+            else if base.value is 'attr_writer' and func instanceof Value and func.isArray()
+              for prop in func.base.objects
+                @addAttrWriter props, prop.base.value
+            else if base.value is 'attr_accessor' and func instanceof Value and func.isArray()
+              for prop in func.base.objects
+                @addAttrReader props, prop.base.value
+                @addAttrWriter props, prop.base.value
+            else
+              assign.variable = new Value(new Literal(name), [(new Access new Literal 'prototype'), new Access base ])
+              if func instanceof Code and func.bound
+                @boundFuncs.push base
+                func.bound = no
       assign
     compact exprs
 
