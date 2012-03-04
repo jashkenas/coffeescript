@@ -891,14 +891,14 @@ exports.Class = class Class extends Base
     code = new Code
     code.body.push new Literal "this[#{name}]"
     code.body.makeReturn()
-    props.push(new Assign(value, code, null))
+    props.unshift(new Assign(value, code, null))
 
   addAttrWriter: (props, name) ->
     value = new Value(new Literal('set' + name[1].toUpperCase() + name[2..-2]))
     code = new Code [new Param(new Literal "value")]
     code.body.push new Literal "this[#{name}] = value"
     code.body.makeReturn()
-    props.push(new Assign(value, code, null))
+    props.unshift(new Assign(value, code, null))
 
   # Merge the properties from a top-level object as prototypal properties
   # on the class.
