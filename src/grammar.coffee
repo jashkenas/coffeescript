@@ -138,6 +138,7 @@ grammar =
     o 'Assignable = Expression',                -> new Assign $1, $3
     o 'Assignable = TERMINATOR Expression',     -> new Assign $1, $4
     o 'Assignable = INDENT Expression OUTDENT', -> new Assign $1, $4
+    o 'Assignable .= INDENT Expression OUTDENT', -> new Assign $1, $4, '.='
   ]
 
   # Assignment when it happens within an object literal. The difference from
@@ -567,7 +568,7 @@ operators = [
   ['left',      'COMPARE']
   ['left',      'LOGIC']
   ['nonassoc',  'INDENT', 'OUTDENT']
-  ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
+  ['right',     '=', ':', '.=', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
   ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
   ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
   ['right',     'POST_IF']

@@ -1042,6 +1042,7 @@ exports.Assign = class Assign extends Base
       return @compilePatternMatch o if @variable.isArray() or @variable.isObject()
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
+      return @compileObjectExtensionLiteral o if @context is '.='
     name = @variable.compile o, LEVEL_LIST
     unless @context
       unless (varBase = @variable.unwrapAll()).isAssignable()
@@ -1058,6 +1059,13 @@ exports.Assign = class Assign extends Base
     return "#{name}: #{val}" if @context is 'object'
     val = name + " #{ @context or '=' } " + val
     if o.level <= LEVEL_LIST then val else "(#{val})"
+
+  compileObjectExtensionLiteral: (o) ->
+    name = @variable.compile o, LEVEL_LIST
+    code = []
+    for prop in @value.base.properties
+      code.push "#{name}[\"#{prop.variable.compile(o)}\"] = #{prop.value.compile(o, LEVEL_LIST)}"
+    code.join ";\n#{@tab}"
 
   # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.

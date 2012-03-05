@@ -346,12 +346,17 @@ exports.Lexer = class Lexer
         prev[0] = 'COMPOUND_ASSIGN'
         prev[1] += '='
         return value.length
+      if prev[1] is '.'
+        prev[0] = '.='
+        prev[1] += '='
+        return value.length
     if value is ';'
       @seenFor = no
       tag = 'TERMINATOR'
     else if value in MATH            then tag = 'MATH'
     else if value in COMPARE         then tag = 'COMPARE'
     else if value in COMPOUND_ASSIGN then tag = 'COMPOUND_ASSIGN'
+    else if value in EXTEND_ASSIGN   then tag = 'EXTEND_ASSIGN'
     else if value in UNARY           then tag = 'UNARY'
     else if value in SHIFT           then tag = 'SHIFT'
     else if value in LOGIC or value is '?' and prev?.spaced then tag = 'LOGIC'
@@ -663,6 +668,10 @@ TRAILING_SPACES = /\s+$/
 # Compound assignment tokens.
 COMPOUND_ASSIGN = [
   '-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=', '<<=', '>>=', '>>>=', '&=', '^=', '|='
+]
+
+EXTEND_ASSIGN = [
+  '.='
 ]
 
 # Unary tokens.
