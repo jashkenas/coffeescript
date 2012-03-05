@@ -68,7 +68,7 @@ exports.run = (code, options = {}) ->
   mainModule.moduleCache and= {}
 
   # Assign paths for node_modules loading
-  mainModule.paths = require('module')._nodeModulePaths path.dirname options.filename
+  mainModule.paths = require('module')._nodeModulePaths path.dirname fs.realpathSync options.filename
 
   # Compile.
   if path.extname(mainModule.filename) isnt '.coffee' or require.extensions
