@@ -1036,6 +1036,8 @@ exports.Assign = class Assign extends Base
     if o.level <= LEVEL_LIST then val else "(#{val})"
 
   compileObjectExtensionLiteral: (o) ->
+    unless o.scope.check @variable.base.value
+      throw new Error "the variable \"#{@variable.base.value}\" can't be assigned because it has not been defined."
     name = @variable.compile o, LEVEL_LIST
     code = []
     for prop in @value.base.properties
