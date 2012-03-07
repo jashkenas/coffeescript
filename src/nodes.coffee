@@ -587,7 +587,7 @@ exports.Call = class Call extends Base
         (function(func, args, ctor) {
         #{idt}ctor.prototype = func.prototype;
         #{idt}var child = new ctor, result = func.apply(child, args);
-        #{idt}return typeof result === "object" ? result : child;
+        #{idt}return typeof result === "object" && result !== null ? result : child;
         #{@tab}})(#{ @variable.compile o, LEVEL_LIST }, #{splatArgs}, function() {})
       """
     base = new Value @variable
