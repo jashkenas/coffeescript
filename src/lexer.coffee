@@ -136,11 +136,11 @@ exports.Lexer = class Lexer
     if /E/.test number
       @error "exponential notation '#{number}' must be indicated with a lowercase 'e'"
     else if /[BOX]/.test number
-      @error "radix prefixes must be lowercase '#{number}'"
+      @error "radix prefix '#{number}' must be lowercase"
     else if /^0[89]/.test number
-      @error "decimal literals '#{number}' must not be prefixed with '0'"
+      @error "decimal literal '#{number}' must not be prefixed with '0'"
     else if /^0[0-7]/.test number
-      @error "octal literals '#{number}' must be prefixed with '0o'"
+      @error "octal literal '#{number}' must be prefixed with '0o'"
     lexedLength = number.length
     if octalLiteral = /0o([0-7]+)/.exec number
       number = (parseInt octalLiteral[1], 8).toString()
