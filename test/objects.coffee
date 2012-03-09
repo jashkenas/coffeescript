@@ -276,14 +276,11 @@ test "#2176, #1632, object extension literal", ->
   
   obj .=
     y: ['a', 'b', 'c']
-    z: 3
   
   eq obj.y.join(', '), 'a, b, c'
   
-  eq obj.z, 3
+  do ->
+    obj .=
+      z: 3
   
-  e = """
-  a .=
-    x: 1
-  """
-  throws -> CoffeeScript.compile e
+  eq obj.z, 3
