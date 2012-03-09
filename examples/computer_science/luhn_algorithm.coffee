@@ -3,8 +3,7 @@
 # See: http://en.wikipedia.org/wiki/Luhn_algorithm
 
 is_valid_identifier = (identifier) ->
-  return false unless typeof identifier == "string"
-  return false unless identifier.length > 0
+  return false unless typeof identifier == "string" and identifier.length > 0 
 
   sum = 0
   alt = false
