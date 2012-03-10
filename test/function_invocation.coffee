@@ -392,11 +392,17 @@ test "#1011: passing a splat to a method of a number", ->
   eq '1011', (131.0).toString [5]...
 
 
-test "splats and the `new` operator: functions that return `null` should produce their instance", ->
+test "splats and the `new` operator: functions that return `null` should construct their instance", ->
   args = []
   child = new (constructor = -> null) args...
   ok child instanceof constructor
 
+test "splats and the `new` operator: functions that return functions should construct their return value", ->
+  args = []
+  fn = ->
+  child = new (constructor = -> fn) args...
+  ok child not instanceof constructor
+  eq fn, child
 
 test "implicit return", ->
 
