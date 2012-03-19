@@ -216,7 +216,7 @@ exports.Block = class Block extends Base
     @tab  = o.indent
     top   = o.level is LEVEL_TOP
     codes = []
-    for node in @expressions
+    for node in @expressions when node
       node = node.unwrapAll()
       node = (node.unfoldSoak(o) or node)
       if node instanceof Block
@@ -227,10 +227,11 @@ exports.Block = class Block extends Base
       else if top
         node.front = true
         code = node.compile o
-        unless node.isStatement o
-          code = "#{@tab}#{code};"
-          code = "#{code}\n" if node instanceof Literal
-        codes.push code
+        unless code == ''
+          unless node.isStatement o
+            code = "#{@tab}#{code};"
+            code = "#{code}\n" if node instanceof Literal
+          codes.push code
       else
         codes.push node.compile o, LEVEL_LIST
     if top
@@ -984,6 +985,35 @@ exports.Class = class Class extends Base
     klass = new Parens call, yes
     klass = new Assign @variable, klass if @variable
     klass.compile o
+
+#### LeftArrow
+
+exports.LeftArrow = class LeftArrow extends Base
+  constructor: (@variable, @value, @options) ->
+    if @variable.unwrapAll().value in STRICT_PROSCRIBED
+      throw SyntaxError "variable name may not be \"#{name}\""
+    unless @value instanceof Call
+      throw SyntaxError "the right side of an <- arrow must be a function call"
+
+  getSiblings: (n,f) ->
+    if n and n.children
+      for attr in n.children
+        for child in flatten [n[attr]]
+          return f n if n.expressions and @ in n.expressions
+          @getSiblings child, f
+
+  compileNode: (o) ->
+    @getSiblings o.scope.method, (n) =>
+      i = n.expressions.indexOf(@)
+      @block = n.expressions.slice(i + 1)
+      n.expressions.length = i + 2
+      for i in [i+1..n.expressions.length]
+        n.expressions[i] = new Literal('')
+
+    args = (new Param(new Literal(variable.compile(o))) for variable in @variable.base.objects || [@variable])
+    @value.args.push(new Code(args, new Block(@block)))
+    val = @value.compile o, LEVEL_LIST
+    val
 
 #### Assign
 
