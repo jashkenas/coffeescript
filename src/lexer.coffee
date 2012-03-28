@@ -146,6 +146,8 @@ exports.Lexer = class Lexer
       number = '0x' + (parseInt octalLiteral[1], 8).toString 16
     if binaryLiteral = /^0b([01]+)/.exec number
       number = '0x' + (parseInt binaryLiteral[1], 2).toString 16
+    if octalLiteral or binaryLiteral
+      number += " /* #{@chunk} */"
     @token 'NUMBER', number
     lexedLength
 
