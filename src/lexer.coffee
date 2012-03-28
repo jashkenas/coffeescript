@@ -142,10 +142,10 @@ exports.Lexer = class Lexer
     else if /^0\d+/.test number
       @error "octal literal '#{number}' must be prefixed with '0o'"
     lexedLength = number.length
-    if octalLiteral = /0o([0-7]+)/.exec number
-      number = (parseInt octalLiteral[1], 8).toString()
-    if binaryLiteral = /0b([01]+)/.exec number
-      number = (parseInt binaryLiteral[1], 2).toString()
+    if octalLiteral = /^0o([0-7]+)/.exec number
+      number = '0x' + (parseInt octalLiteral[1], 8).toString 16
+    if binaryLiteral = /^0b([01]+)/.exec number
+      number = '0x' + (parseInt binaryLiteral[1], 2).toString 16
     @token 'NUMBER', number
     lexedLength
 
