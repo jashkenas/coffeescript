@@ -288,11 +288,16 @@ timeLog = (message) ->
 lint = (file, js) ->
   printIt = (buffer) -> printLine file + ':\t' + buffer.toString().trim()
   conf = __dirname + '/../../extras/jsl.conf'
-  jsl = spawn 'jsl', ['-nologo', '-stdin', '-conf', conf]
-  jsl.stdout.on 'data', printIt
-  jsl.stderr.on 'data', printIt
-  jsl.stdin.write js
-  jsl.stdin.end()
+  switches = ['-nologo', '-stdin', '-conf', conf]
+  jsl = spawn 'jsl', switches
+  #if you install jslint as npm -g you have jslint command
+  unless jsl.pid
+    jsl = spawn 'jslint', switches
+  unless jsl.pid
+    jsl.stdout.on 'data', printIt
+    jsl.stderr.on 'data', printIt
+    jsl.stdin.write js
+    jsl.stdin.end()
 
 # Pretty-print a stream of tokens.
 printTokens = (tokens) ->
