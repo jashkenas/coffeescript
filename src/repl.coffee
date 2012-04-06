@@ -94,7 +94,7 @@ run = (buffer) ->
   backlog = ''
   try
     _ = global._
-    returnValue = CoffeeScript.eval "_=(undefined\n#{code}\n)", {
+    returnValue = CoffeeScript.eval "_=(undefined\n;#{code}\n)", {
       filename: 'repl'
       modulename: 'repl'
     }
