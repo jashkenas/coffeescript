@@ -296,6 +296,13 @@ test "#1627: prohibit conditional assignment of undefined variables", ->
   
   throws (-> CoffeeScript.compile "-> -> -> x ?= 10"), null, "prohibit (-> -> -> x ?= 10)"
   doesNotThrow (-> CoffeeScript.compile "x = null; -> -> -> x ?= 10"), "allow (x = null; -> -> -> x ?= 10)"
+  
+test "more existential assignment", ->
+  global.temp ?= 0
+  eq global.temp, 0
+  global.temp or= 100
+  eq global.temp, 100
+  delete global.temp
 
 test "#1348, #1216: existential assignment compilation", ->
   nonce = {}

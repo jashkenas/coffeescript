@@ -1119,7 +1119,8 @@ exports.Assign = class Assign extends Base
   compileConditional: (o) ->
     [left, right] = @variable.cacheReference o
     # Disallow conditional assignment of undefined variables.
-    if left.base instanceof Literal and left.base.value != "this" and not o.scope.check left.base.value
+    if not left.properties.length and left.base instanceof Literal and 
+           left.base.value != "this" and not o.scope.check left.base.value
       throw new Error "the variable \"#{left.base.value}\" can't be assigned with #{@context} because it has not been defined."
     if "?" in @context then o.isExistentialEquals = true
     new Op(@context[...-1], left, new Assign(right, @value, '=') ).compile o
