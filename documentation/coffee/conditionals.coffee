@@ -8,6 +8,5 @@ else
 
 date = if friday then sue else jill
 
-options or= defaults
 
 

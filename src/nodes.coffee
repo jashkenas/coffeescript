@@ -1871,17 +1871,7 @@ exports.If = class If extends Base
     cond     = @condition.compile o, LEVEL_PAREN
     o.indent += TAB
     body     = @ensureBlock(@body)
-    bodyc    = body.compile o
-    if (
-      1 is body.expressions?.length and
-      !@elseBody and !child and
-      bodyc and cond and
-      -1 is (bodyc.indexOf '\n') and
-      80 > cond.length + bodyc.length
-    )
-      return "#{@tab}if (#{cond}) #{bodyc.replace /^\s+/, ''}"
-    bodyc    = "\n#{bodyc}\n#{@tab}" if bodyc
-    ifPart   = "if (#{cond}) {#{bodyc}}"
+    ifPart   = "if (#{cond}) {\n#{body.compile(o)}\n#{@tab}}"
     ifPart   = @tab + ifPart unless child
     return ifPart unless @elseBody
     ifPart + ' else ' + if @isChain
