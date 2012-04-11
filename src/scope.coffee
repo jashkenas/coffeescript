@@ -30,6 +30,18 @@ exports.Scope = class Scope
     else
       @positions[name] = @variables.push({name, type}) - 1
 
+  # When `super somearg` is called, we need to find the name of the current
+  # method we're in, so we know how to address the same method of the
+  # super class.  This can get complicated if super is being called
+  # from a closure.  getMethodRecurse() will walk up the scope
+  # tree until it finds the first method object that has a name filled
+  # in.  It will return the topmost method object otherwise, which may
+  # be null if this is being called from outside a function.
+  getMethodRecurse: ->
+    if @method?.name? then @method
+    else if @parent then @parent.getMethodRecurse()
+    else @method # {} for a function, and null for a non-function
+
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
   find: (name, options) ->
