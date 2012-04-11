@@ -3,6 +3,7 @@
 # but some are created by other nodes as a method of code generation. To convert
 # the syntax tree into a string of JavaScript code, call `compile()` on the root.
 
+path    = require 'path'
 {Scope} = require './scope'
 {RESERVED, STRICT_PROSCRIBED} = require './lexer'
 
@@ -216,6 +217,7 @@ exports.Block = class Block extends Base
     @tab  = o.indent
     top   = o.level is LEVEL_TOP
     codes = []
+    lines = []
     for node in @expressions
       node = node.unwrapAll()
       node = (node.unfoldSoak(o) or node)
@@ -233,6 +235,18 @@ exports.Block = class Block extends Base
         codes.push code
       else
         codes.push node.compile o, LEVEL_LIST
+      lines.push
+        generated: 1
+        original: node.lineno
+    for line in lines when line.original
+      o.sm.addMapping
+        generated:
+          line: line.generated
+          column: 0
+        original:
+          line: line.original
+          column: 0
+        source: path.basename o.filename
     if top
       if @spaced
         return "\n#{codes.join '\n\n'}\n"

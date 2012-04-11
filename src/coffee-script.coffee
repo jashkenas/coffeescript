@@ -8,6 +8,7 @@
 
 fs               = require 'fs'
 path             = require 'path'
+sourceMap        = require 'source-map'
 {Lexer,RESERVED} = require './lexer'
 {parser}         = require './parser'
 vm               = require 'vm'
@@ -34,7 +35,12 @@ exports.helpers = require './helpers'
 exports.compile = compile = (code, options = {}) ->
   {merge} = exports.helpers
   try
-    js = (parser.parse lexer.tokenize code).compile options
+    options.sm = new sourceMap.SourceMapGenerator(
+      file: path.basename(options.filename, path.extname(options.filename)) + '.js'
+      sourceRoot: ''
+    )
+    js = Object((parser.parse lexer.tokenize code).compile options)
+    js.sm = options.sm;
     return js unless options.header
   catch err
     err.message = "In #{options.filename}, #{err.message}" if options.filename

@@ -34,7 +34,26 @@ o = (patternString, action, options) ->
   patternString = patternString.replace /\s{2,}/g, ' '
   return [patternString, '$$ = $1;', options] unless action
   action = if match = unwrap.exec action then match[1] else "(#{action}())"
-  action = action.replace /\bnew /g, '$&yy.'
+  
+  # action = action.replace /\bnew /g, '$&yy.'
+  
+  # Store line numbers (https://github.com/jashkenas/coffee-script/pull/955)
+  action = action.replace(
+    /\b(new )([a-zA-Z0-9_]+)(\(?)/g,
+    ((g0, g1, name, paren) -> [
+      "(function(q,w,e,r,t,y,u,i,o,p){"
+        "var x = new yy.#{name}(q,w,e,r,t,y,u,i,o,p);"
+        "x.lineno = yylineno;"
+        # If any of our kids has a lower lineno, use that
+        "for(var i = 0, len=arguments.length; i < len; i++) {"
+          "if (arguments[i] && arguments[i].lineno && arguments[i].lineno < x.lineno) {"
+            "x.lineno = arguments[i].lineno;"
+          "}"
+        "};"
+        "return x;"
+      "})" + if paren then '(' else '()'
+    ].join('')))
+  
   action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
   [patternString, "$$ = #{action};", options]
 

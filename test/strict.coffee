@@ -18,9 +18,9 @@
 
 # helper to assert that code complies with strict prohibitions
 strict = (code, msg) ->
-  throws (-> CoffeeScript.compile code), null, msg
+  throws (-> (CoffeeScript.compile code).toString()), null, msg
 strictOk = (code, msg) ->
-  doesNotThrow (-> CoffeeScript.compile code), msg
+  doesNotThrow (-> (CoffeeScript.compile code).toString()), msg
 
 
 test "octal integer literals prohibited", ->

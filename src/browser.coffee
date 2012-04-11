@@ -6,12 +6,12 @@ CoffeeScript.require = require
 # Use standard JavaScript `eval` to eval code.
 CoffeeScript.eval = (code, options = {}) ->
   options.bare ?= on
-  eval CoffeeScript.compile code, options
+  eval (CoffeeScript.compile code, options).toString()
 
 # Running code does not provide access to this scope.
 CoffeeScript.run = (code, options = {}) ->
   options.bare = on
-  Function(CoffeeScript.compile code, options)()
+  Function((CoffeeScript.compile code, options).toString())()
 
 # If we're not in a browser environment, we're finished with the public API.
 return unless window?

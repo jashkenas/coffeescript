@@ -32,6 +32,7 @@ BANNER = '''
 SWITCHES = [
   ['-b', '--bare',            'compile without a top-level function wrapper']
   ['-c', '--compile',         'compile to JavaScript and save as .js files']
+  ['-m', '--map',             'compile to JavaScript with source map and save as .js and .js.map files']
   ['-e', '--eval',            'pass a string from the command line as input']
   ['-h', '--help',            'display this help message']
   ['-i', '--interactive',     'run an interactive CoffeeScript REPL']
@@ -131,9 +132,14 @@ compileScript = (file, input, base) ->
     else
       t.output = CoffeeScript.compile t.input, t.options
       CoffeeScript.emit 'success', task
-      if o.print          then printLine t.output.trim()
-      else if o.compile   then writeJs t.file, t.output, base
-      else if o.lint      then lint t.file, t.output
+      if o.print          then printLine t.output.toString().trim()
+      else if o.map
+        sm = t.output.sm;
+        output = t.output.toString() + "\n\/\/@ sourceMappingURL=#{path.basename(t.file, path.extname(t.file))}.js.map"
+        writeSourceMap t.file, sm, base
+        writeJs t.file, output, base
+      else if o.compile   then writeJs t.file, t.output.toString(), base
+      else if o.lint      then lint t.file, t.output.toString()
   catch err
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
@@ -253,8 +259,12 @@ removeSource = (source, base, removeJs) ->
           timeLog "removed #{source}"
 
 # Get the corresponding output JavaScript path for a source file.
-outputPath = (source, base) ->
-  filename  = path.basename(source, path.extname(source)) + '.js'
+outputPath = (source, base, sm = false) ->
+  filename  = path.basename(source, path.extname(source))
+  if sm
+    filename += '.js.map'
+  else
+    filename += '.js'
   srcDir    = path.dirname source
   baseDir   = if base is '.' then srcDir else srcDir.substring base.length
   dir       = if opts.output then path.join opts.output, baseDir else srcDir
@@ -275,6 +285,19 @@ writeJs = (source, js, base) ->
         timeLog "compiled #{source}"
   path.exists jsDir, (exists) ->
     if exists then compile() else exec "mkdir -p #{jsDir}", compile
+
+writeSourceMap = (source, sourceMap, base) ->
+  smPath = outputPath source, base, true
+  smDir  = path.dirname smPath
+  compile = ->
+    sourceMap = ' ' if sourceMap.length <= 0
+    fs.writeFile smPath, sourceMap, (err) ->
+      if err
+        printLine err.message
+      else if opts.compile and opts.watch
+        timeLog "compiled #{source}"
+  path.exists smDir, (exists) ->
+    if exists then compile() else exec "mkdir -p #{smDir}", compile
 
 # Convenience for cleaner setTimeouts.
 wait = (milliseconds, func) -> setTimeout func, milliseconds
@@ -307,7 +330,7 @@ parseOptions = ->
   optionParser  = new optparse.OptionParser SWITCHES, BANNER
   o = opts      = optionParser.parse process.argv[2..]
   o.compile     or=  !!o.output
-  o.run         = not (o.compile or o.print or o.lint)
+  o.run         = not (o.compile or o.map or o.print or o.lint)
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
   sources       = o.arguments
   sourceCode[i] = null for source, i in sources
