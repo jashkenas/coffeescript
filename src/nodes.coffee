@@ -1929,7 +1929,8 @@ Closure =
 
   literalThis: (node) ->
     (node instanceof Literal and node.value is 'this' and not node.asKey) or
-      (node instanceof Code and node.bound)
+      (node instanceof Code and node.bound) or
+      (node instanceof Call and node.isSuper)
 
 # Unfold a node's child if soak, then tuck the node under created `If`
 unfoldSoak = (o, parent, name) ->

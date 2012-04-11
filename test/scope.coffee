@@ -42,7 +42,7 @@ test "#1973: redefining Array/Object constructors shouldn't confuse __X helpers"
   for own k of obj
     eq arr, obj[k]
 
-test "super + fat arrows", ->
+test "#1183: super + fat arrows", ->
   dolater = (cb) -> cb()
 
   class A
@@ -64,3 +64,12 @@ test "super + fat arrows", ->
           
   b = new B()
   b.foo => eq b._i, 3
+
+test "#1183: super + wrap", ->
+  class A
+    m : -> 10
+  class B extends A
+    constructor : -> super
+  B::m = -> r = try super()
+  eq (new B()).m(), 10
+  
