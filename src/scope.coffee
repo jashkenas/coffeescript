@@ -35,7 +35,8 @@ exports.Scope = class Scope
   # super class.  This can get complicated if super is being called
   # from a closure.  getMethodRecurse() will walk up the scope
   # tree until it finds the first method object that has a name filled
-  # in.  It will return an empty method object if none was found
+  # in.  It will return the topmost method object otherwise, which may
+  # be null if this is being called from outside a function.
   getMethodRecurse: ->
     if @method?.name? then @method
     else if @parent then @parent.getMethodRecurse()
