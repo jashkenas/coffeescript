@@ -496,7 +496,7 @@ exports.Call = class Call extends Base
   # Grab the reference to the superclass's implementation of the current
   # method.
   superReference: (o) ->
-    # keep walking up the scope chain until we find the original reference
+    # Keep walking up the scope chain until we find the original reference
     # to a method.  Stop at the first one.
     method = o.scope.getMethodRecurse()
     throw SyntaxError 'cannot call super outside of a function.' unless method
