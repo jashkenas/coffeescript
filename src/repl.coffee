@@ -75,6 +75,9 @@ backlog = ''
 # Attempt to evaluate the command. If there's an exception, print it out instead
 # of exiting.
 run = (buffer) ->
+  # remove single-line comments
+  buffer = buffer.replace /(^|[\r\n]+)(\s*)##?(?:[^#\r\n][^\r\n]*|)($|[\r\n])/, "$1$2$3"
+  # remove trailing newlines
   buffer = buffer.replace /[\r\n]+$/, ""
   if multilineMode
     backlog += "#{buffer}\n"
@@ -94,7 +97,7 @@ run = (buffer) ->
   backlog = ''
   try
     _ = global._
-    returnValue = CoffeeScript.eval "_=(undefined\n;#{code}\n)", {
+    returnValue = CoffeeScript.eval "_=(#{code}\n)", {
       filename: 'repl'
       modulename: 'repl'
     }
