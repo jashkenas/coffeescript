@@ -269,3 +269,18 @@ test "#1961, #1974, regression with compound assigning to an implicit object", -
     four: 4
 
   eq obj.four, 4
+
+test "#2176, #1632, object extension literal", ->
+  obj =
+    x: 1
+  
+  obj .=
+    y: ['a', 'b', 'c']
+  
+  eq obj.y.join(', '), 'a, b, c'
+  
+  do ->
+    obj .=
+      z: 3
+  
+  eq obj.z, 3
