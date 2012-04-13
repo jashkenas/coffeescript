@@ -676,3 +676,11 @@ test "#2052: classes should work in strict mode", ->
       class A
   catch e
     ok no
+
+test '#494: Named classes', ->
+  class A
+  eq A.__name__, 'A'
+  class A.B
+  eq A.B.__name__, 'B'
+  class A.B['C']
+  ok A.B.C.__name__ isnt 'C'
