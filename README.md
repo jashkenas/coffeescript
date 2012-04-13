@@ -19,8 +19,7 @@
      `-.._________..-'                                  | |
                                                         |_|
 
-  <img src="https://secure.travis-ci.org/spaghetticode/cofee-script.png" />
-
+  [![Build Status](https://secure.travis-ci.org/spaghetticode/coffee-script.png)](http://travis-ci.org/spaghetticode/coffee-script)
 
   CoffeeScript is a little language that compiles into JavaScript.
 

@@ -113,8 +113,8 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
 
       if (typeof define === 'function' && define.amd) {
         define(function() { return CoffeeScript; });
-      } else { 
-        root.CoffeeScript = CoffeeScript; 
+      } else {
+        root.CoffeeScript = CoffeeScript;
       }
     }(this));
   """
@@ -221,7 +221,7 @@ runTests = (CoffeeScript) ->
       log "  #{error.stack}", red
       log "  #{jsFilename}: line #{line ? 'unknown'}, column #{col ? 'unknown'}", red
       console.log "  #{error.source}" if error.source
-    return
+      process.exit(failures.length)
 
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
@@ -237,6 +237,8 @@ runTests = (CoffeeScript) ->
 
 task 'test', 'run the CoffeeScript language test suite', ->
   runTests CoffeeScript
+
+
 
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
