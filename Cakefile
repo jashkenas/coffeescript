@@ -221,7 +221,7 @@ runTests = (CoffeeScript) ->
       log "  #{error.stack}", red
       log "  #{jsFilename}: line #{line ? 'unknown'}, column #{col ? 'unknown'}", red
       console.log "  #{error.source}" if error.source
-      process.exit(failures.length)
+    process.exit(failures.length)
 
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
@@ -237,8 +237,6 @@ runTests = (CoffeeScript) ->
 
 task 'test', 'run the CoffeeScript language test suite', ->
   runTests CoffeeScript
-
-
 
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
