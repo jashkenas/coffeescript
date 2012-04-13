@@ -966,6 +966,8 @@ exports.Class = class Class extends Base
     @ensureConstructor name
     @body.spaced = yes
     @body.expressions.unshift @ctor unless @ctor instanceof Code
+    if decl
+      @body.expressions.unshift new Assign (new Value (new Literal name), [new Access new Literal '__name__']), (new Literal "'#{name}'")
     @body.expressions.push lname
     @body.expressions.unshift @directives...
     @addBoundFunctions o
