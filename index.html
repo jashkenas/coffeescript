@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -2951,7 +2950,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
     closeMenus = ->
       $('.navigation.active').removeClass 'active'
 
-    $('.minibutton.run').click evalJS
+    $('.minibutton.run').click -> evalJS()
 
     # Bind navigation buttons to open the menus.
     $('.navigation').click (e) ->
