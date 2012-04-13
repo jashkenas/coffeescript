@@ -1176,7 +1176,9 @@ exports.Code = class Code extends Base
     for name in @paramNames() # this step must be performed before the others
       unless o.scope.check name then o.scope.parameter name
     for param in @params when param.splat
-      o.scope.add p.name.value, 'var', yes for p in @params when p.name.value
+      for {name: p} in @params
+        if p.this then p = p.properties[0].name
+        if p.value then o.scope.add p.value, 'var', yes
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
                           new Value new Literal 'arguments'
       break
