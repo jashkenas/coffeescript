@@ -14,6 +14,10 @@ readline     = require 'readline'
 {inspect}    = require 'util'
 {Script}     = require 'vm'
 Module       = require 'module'
+tty          = require 'tty'
+child_process= require 'child_process'
+path         = require 'path'
+fs           = require 'fs'
 
 # REPL Setup
 
@@ -156,6 +160,31 @@ repl.input.on 'keypress', (char, key) ->
   return unless key and key.ctrl and not key.meta and not key.shift and key.name is 'd'
   multilineMode = off
   repl._line()
+
+# Handle Ctrl-e to switch to $EDITOR
+repl.input.on 'keypress', (char, key) ->
+  return unless key and key.ctrl and not key.meta and not key.shift and key.name is 'e'
+  file = (Math.random() * Math.pow(10,18)).toString(36)
+  tmp = process.env.TEMP || '/tmp'
+  filePath = path.join tmp, "#{file}.coffee"
+  stdinListeners = stdin.listeners('keypress')
+  rplListeners = repl.input.listeners('keypress')
+  stdin.removeAllListeners 'keypress'
+  tty.setRawMode true
+  editor = child_process.spawn( process.env.EDITOR || "vi", [filePath] )
+  stdin.on 'data', pso = (c) -> 
+    editor.stdin.write c
+  editor.stdout.on 'data', eso = (c) -> 
+    stdout.write c
+  editor.on 'exit', (code) ->
+    tty.setRawMode false
+    stdin.removeListener 'data', pso
+    editor.stdout.removeListener 'data', eso
+    stdin.on 'keypress', listener for listener in stdinListeners
+    repl.input.on 'keypress', listener for listener in rplListeners
+    if code == 0
+      fs.readFile filePath, (error, data) ->
+        repl.write data.toString()
 
 repl.on 'attemptClose', ->
   if multilineMode
