@@ -290,7 +290,7 @@ writeSourceMap = (source, sourceMap, base) ->
   smPath = outputPath source, base, true
   smDir  = path.dirname smPath
   compile = ->
-    sourceMap = ' ' if sourceMap.length <= 0
+    sourceMap = ' ' if !sourceMap or sourceMap.length <= 0
     fs.writeFile smPath, sourceMap, (err) ->
       if err
         printLine err.message
