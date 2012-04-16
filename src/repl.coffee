@@ -179,14 +179,12 @@ repl.input.on 'keypress', (char, key) ->
   getTmpFile (filePath) ->
     stdinListeners = stdin.listeners('keypress')
     stdin.removeAllListeners 'keypress'
-    tty.setRawMode true
     editor = child_process.spawn( process.env.EDITOR || "vi", [filePath] )
     stdin.on 'data', pso = (c) -> 
       editor.stdin.write c
     editor.stdout.on 'data', eso = (c) -> 
       stdout.write c
     editor.on 'exit', (code) ->
-      tty.setRawMode false
       stdin.removeListener 'data', pso
       editor.stdout.removeListener 'data', eso
       stdin.on 'keypress', listener for listener in stdinListeners
