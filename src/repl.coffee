@@ -190,7 +190,10 @@ repl.input.on 'keypress', (char, key) ->
       stdin.on 'keypress', listener for listener in stdinListeners
       if code == 0
         fs.readFile filePath, (error, data) ->
-          repl.write data.toString()
+          repl.output.write "\n"
+          repl.output.write data.toString()
+          backlog += data.toString()
+          repl._line();
 
 repl.on 'attemptClose', ->
   if multilineMode
