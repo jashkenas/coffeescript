@@ -169,7 +169,7 @@ repl.input.on 'keypress', (char, key) ->
     filePath = path.join tmp, "#{file}.coffee"
     try
       child_process.exec "mktemp --suffix=.coffee", (err, stdout, stderr) ->
-        cp (if err then filePath else stdout)
+        cb (if err then filePath else stdout)
     catch e
       cb filePath
   getTmpFile (filePath) ->
