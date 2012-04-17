@@ -14,7 +14,6 @@ readline     = require 'readline'
 {inspect}    = require 'util'
 {Script}     = require 'vm'
 Module       = require 'module'
-tty          = require 'tty'
 child_process= require 'child_process'
 path         = require 'path'
 fs           = require 'fs'
@@ -165,25 +164,20 @@ repl.input.on 'keypress', (char, key) ->
 repl.input.on 'keypress', (char, key) ->
   return unless key and key.ctrl and not key.meta and not key.shift and key.name is 'e'
   getTmpFile = (cb) ->
-    file = (Math.random() * Math.pow(10,18)).toString(36)
+    file = Math.random().toString(36)[2..]
     tmp = process.env.TEMP || '/tmp'
     filePath = path.join tmp, "#{file}.coffee"
     try
       child_process.exec "mktemp --suffix=.coffee", (err, stdout, stderr) ->
-        if err
-          cb filePath
-        else
-          cb stdout
+        cp (if err then filePath else stdout)
     catch e
       cb filePath
   getTmpFile (filePath) ->
-    stdinListeners = stdin.listeners('keypress')
+    stdinListeners = stdin.listeners 'keypress'
     stdin.removeAllListeners 'keypress'
-    editor = child_process.spawn( process.env.EDITOR || "vi", [filePath] )
-    stdin.on 'data', pso = (c) -> 
-      editor.stdin.write c
-    editor.stdout.on 'data', eso = (c) -> 
-      stdout.write c
+    editor = child_process.spawn (process.env.EDITOR || "vi"), [filePath]
+    stdin.on 'data', pso = (c) -> editor.stdin.write c
+    editor.stdout.on 'data', eso = (c) -> stdout.write c
     editor.on 'exit', (code) ->
       stdin.removeListener 'data', pso
       editor.stdout.removeListener 'data', eso
