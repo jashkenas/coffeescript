@@ -2012,7 +2012,7 @@ UTILITIES =
   # D4: `Class.__extend()` will overwrite this
   extends: -> """
     function(child, parent) { 
-      if(typeof parent.__extend == 'function') return parent.__extend();
+      if(typeof parent.__extend == 'function') return parent.__extend(child);
         
       for (var key in parent) { if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key]; } 
       function ctor() { this.constructor = child; } 
