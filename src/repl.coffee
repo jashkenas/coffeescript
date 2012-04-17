@@ -164,15 +164,18 @@ repl.input.on 'keypress', (char, key) ->
 repl.input.on 'keypress', (char, key) ->
   return unless key and key.ctrl and not key.meta and not key.shift and key.name is 'e'
   getTmpFile = (cb) ->
+    writeTemp = (file,cb) ->
+      fs.writeFile file, backlog + repl.line, -> cb file
     file = Math.random().toString(36)[2..]
     tmp = process.env.TEMP || '/tmp'
     filePath = path.join tmp, "#{file}.coffee"
     try
       child_process.exec "mktemp --suffix=.coffee", (err, stdout, stderr) ->
-        cb (if err then filePath else stdout)
+        writeTemp (if err then filePath else stdout), cb
     catch e
-      cb filePath
+      writeTemp filePath, cb
   getTmpFile (filePath) ->
+    backlog = repl.line = ""
     stdinListeners = stdin.listeners 'keypress'
     stdin.removeAllListeners 'keypress'
     editor = child_process.spawn (process.env.EDITOR || "vi"), [filePath]
