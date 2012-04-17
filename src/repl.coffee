@@ -175,22 +175,27 @@ repl.input.on 'keypress', (char, key) ->
     catch e
       writeTemp filePath, cb
   getTmpFile (filePath) ->
-    backlog = repl.line = ""
+    dirty = false
+    fs.watchFile filePath, ->
+      dirty = true
     stdinListeners = stdin.listeners 'keypress'
     stdin.removeAllListeners 'keypress'
     editor = child_process.spawn (process.env.EDITOR || "vi"), [filePath]
     stdin.on 'data', pso = (c) -> editor.stdin.write c
     editor.stdout.on 'data', eso = (c) -> stdout.write c
     editor.on 'exit', (code) ->
+      fs.unwatchFile filePath
       stdin.removeListener 'data', pso
       editor.stdout.removeListener 'data', eso
       stdin.on 'keypress', listener for listener in stdinListeners
       if code == 0
         fs.readFile filePath, (error, data) ->
-          repl.output.write "\n"
-          repl.output.write data.toString()
-          backlog += data.toString()
-          repl._line();
+          if data && dirty
+            backlog = repl.line = ""
+            repl.output.write "\n"
+            repl.output.write data.toString()
+            backlog += data.toString()
+            repl._line();
 
 repl.on 'attemptClose', ->
   if multilineMode
