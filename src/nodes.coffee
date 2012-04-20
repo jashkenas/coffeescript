@@ -1279,6 +1279,9 @@ exports.Param = class Param extends Base
       # * assignments within destructured parameters `{foo:bar}`
       if obj instanceof Assign
         names.push obj.variable.base.value
+      # * splats within destructured parameters `[xs...]`
+      else if obj instanceof Splat
+        names.push obj.name.unwrap().value
       # * destructured parameters within destructured parameters `[{a}]`
       else if obj.isArray() or obj.isObject()
         names.push @names(obj.base)...
