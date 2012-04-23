@@ -98,9 +98,10 @@ compilePath = (source, topLevel, base) ->
         throw err if err and err.code isnt 'ENOENT'
         return if err?.code is 'ENOENT'
         index = sources.indexOf source
+        files = files.filter (file) -> not hidden file
         sources[index..index] = (path.join source, file for file in files)
         sourceCode[index..index] = files.map -> null
-        for file in files when not hidden file
+        files.forEach (file) ->
           compilePath (path.join source, file), no, base
     else if topLevel or path.extname(source) is '.coffee'
       watch source, base if opts.watch
