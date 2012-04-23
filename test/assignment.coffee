@@ -350,3 +350,10 @@ test "#1838: Regression with variable assignment", ->
   'dave'
 
   eq name, 'dave'
+
+test '#2211: splats in destructured parameters', ->
+  doesNotThrow -> CoffeeScript.compile '([a...]) ->'
+  doesNotThrow -> CoffeeScript.compile '([a...],b) ->'
+  doesNotThrow -> CoffeeScript.compile '([a...],[b...]) ->'
+  throws -> CoffeeScript.compile '([a...,[a...]]) ->'
+  doesNotThrow -> CoffeeScript.compile '([a...,[b...]]) ->'
