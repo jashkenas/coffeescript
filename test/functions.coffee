@@ -95,6 +95,13 @@ test "splats", ->
   arrayEq [0, 1], (((splat..., _, _1) -> splat) 0, 1, 2, 3)
   arrayEq [2], (((_, _1, splat..., _2) -> splat) 0, 1, 2, 3)
 
+test "destructured splatted parameters", ->
+  arr = [0,1,2]
+  splatArray = ([a...]) -> a
+  splatArrayRest = ([a...],b...) -> arrayEq(a,b); b
+  arrayEq splatArray(arr), arr
+  arrayEq splatArrayRest(arr,0,1,2), arr
+
 test "@-parameters: automatically assign an argument's value to a property of the context", ->
   nonce = {}
 

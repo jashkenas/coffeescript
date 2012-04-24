@@ -41,3 +41,8 @@ test "#1973: redefining Array/Object constructors shouldn't confuse __X helpers"
   obj = {arr}
   for own k of obj
     eq arr, obj[k]
+
+test "#2255: global leak with splatted @-params", ->
+  ok not x?
+  arrayEq [0], ((@x...) -> @x).call {}, 0
+  ok not x?

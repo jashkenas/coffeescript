@@ -966,8 +966,6 @@ exports.Class = class Class extends Base
     @ensureConstructor name
     @body.spaced = yes
     @body.expressions.unshift @ctor unless @ctor instanceof Code
-    if decl
-      @body.expressions.unshift new Assign (new Value (new Literal name), [new Access new Literal 'name']), (new Literal "'#{name}'")
     @body.expressions.push lname
     @body.expressions.unshift @directives...
     @addBoundFunctions o
@@ -1178,7 +1176,9 @@ exports.Code = class Code extends Base
     for name in @paramNames() # this step must be performed before the others
       unless o.scope.check name then o.scope.parameter name
     for param in @params when param.splat
-      o.scope.add p.name.value, 'var', yes for p in @params when p.name.value
+      for {name: p} in @params
+        if p.this then p = p.properties[0].name
+        if p.value then o.scope.add p.value, 'var', yes
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
                           new Value new Literal 'arguments'
       break
@@ -1278,7 +1278,10 @@ exports.Param = class Param extends Base
     for obj in name.objects
       # * assignments within destructured parameters `{foo:bar}`
       if obj instanceof Assign
-        names.push obj.variable.base.value
+        names.push obj.value.base.value
+      # * splats within destructured parameters `[xs...]`
+      else if obj instanceof Splat
+        names.push obj.name.unwrap().value
       # * destructured parameters within destructured parameters `[{a}]`
       else if obj.isArray() or obj.isObject()
         names.push @names(obj.base)...

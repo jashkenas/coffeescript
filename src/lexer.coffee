@@ -164,7 +164,7 @@ exports.Lexer = class Lexer
           @token 'STRING', @escapeLines string
       else
         return 0
-    if octalEsc = /^(?:\\.|[^\\])*\\[0-7]/.test string
+    if octalEsc = /^(?:\\.|[^\\])*\\(?:0[0-7]|[1-7])/.test string
       @error "octal escape sequences #{string} are not allowed"
     @line += count string, '\n'
     string.length

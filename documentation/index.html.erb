@@ -1774,7 +1774,7 @@ Expressions
     closeMenus = ->
       $('.navigation.active').removeClass 'active'
 
-    $('.minibutton.run').click evalJS
+    $('.minibutton.run').click -> evalJS()
 
     # Bind navigation buttons to open the menus.
     $('.navigation').click (e) ->
