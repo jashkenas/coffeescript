@@ -246,21 +246,6 @@ test "Optimized range comprehensions.", ->
   ok exxes.join(' ') is 'x x x x x x x x x x'
 
 
-test "Comprehensions safely redeclare parameters if they're not present in closest scope.", ->
-
-  rule = (x) -> x
-
-  learn = ->
-    rule for rule in [1, 2, 3]
-
-  ok learn().join(' ') is '1 2 3'
-
-  ok rule(101) is 101
-
-  f = -> [-> ok no, 'should cache source']
-  ok yes for k of [f] = f()
-
-
 test "Lenient on pure statements not trying to reach out of the closure", ->
 
   val = for i in [1]

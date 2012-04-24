@@ -1708,8 +1708,8 @@ exports.For = class For extends While
     scope     = o.scope
     name      = @name  and @name.compile o, LEVEL_LIST
     index     = @index and @index.compile o, LEVEL_LIST
-    scope.find(name,  immediate: yes) if name and not @pattern
-    scope.find(index, immediate: yes) if index
+    scope.find(name)  if name and not @pattern
+    scope.find(index) if index
     rvar      = scope.freeVariable 'results' if @returns
     ivar      = (@object and index) or scope.freeVariable 'i'
     kvar      = (@range and name) or index or ivar

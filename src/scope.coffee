@@ -32,8 +32,8 @@ exports.Scope = class Scope
 
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
-  find: (name, options) ->
-    return yes if @check name, options
+  find: (name) ->
+    return yes if @check name
     @add name, 'var'
     no
 
@@ -45,10 +45,8 @@ exports.Scope = class Scope
 
   # Just check to see if a variable has already been declared, without reserving,
   # walks up to the root scope.
-  check: (name, immediate) ->
-    found = !!@type(name)
-    return found if found or immediate
-    !!@parent?.check name
+  check: (name) ->
+    !!(@type(name) or @parent?.check(name))
 
   # Generate a temporary variable name at the given index.
   temporary: (name, index) ->
