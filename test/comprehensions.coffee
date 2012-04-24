@@ -499,3 +499,14 @@ test "#2007: Return object literal from comprehension", ->
   eq 2, y.length
   eq 1, y[0].x
   eq 0, y[1].x
+  
+test "#2274: Allow @values as loop variables", ->
+  obj = {
+    item: null
+    method: ->
+      for @item in [1, 2, 3]
+        null
+  }
+  eq obj.item, null
+  obj.method()
+  eq obj.item, 3
