@@ -244,6 +244,13 @@ test "Optimized range comprehensions.", ->
 
   exxes = ('x' for [0...10])
   ok exxes.join(' ') is 'x x x x x x x x x x'
+  
+  
+test "Loop variables should be able to reference outer variables", ->
+  outer = 1
+  do ->
+    null for outer in [1, 2, 3]
+  eq outer, 3
 
 
 test "Lenient on pure statements not trying to reach out of the closure", ->
