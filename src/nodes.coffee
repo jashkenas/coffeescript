@@ -496,7 +496,7 @@ exports.Call = class Call extends Base
   # Grab the reference to the superclass's implementation of the current
   # method.
   superReference: (o) ->
-    {method} = o.scope
+    method = o.scope.namedMethod()
     throw SyntaxError 'cannot call super outside of a function.' unless method
     {name} = method
     throw SyntaxError 'cannot call super on an anonymous function.' unless name?
@@ -507,6 +507,10 @@ exports.Call = class Call extends Base
       (new Value (new Literal method.klass), accesses).compile o
     else
       "#{name}.__super__.constructor"
+
+  # The appropriate `this` value for a `super` call.
+  superThis : (o) ->
+    o.scope.method?.context or "this"
 
   # Soaked chained invocations unfold into if/else ternary structures.
   unfoldSoak: (o) ->
@@ -566,21 +570,21 @@ exports.Call = class Call extends Base
     args = @filterImplicitObjects @args
     args = (arg.compile o, LEVEL_LIST for arg in args).join ', '
     if @isSuper
-      @superReference(o) + ".call(this#{ args and ', ' + args })"
+      @superReference(o) + ".call(#{@superThis(o)}#{ args and ', ' + args })"
     else
       (if @isNew then 'new ' else '') + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
 
   # `super()` is converted into a call against the superclass's implementation
   # of the current function.
   compileSuper: (args, o) ->
-    "#{@superReference(o)}.call(this#{ if args.length then ', ' else '' }#{args})"
+    "#{@superReference(o)}.call(#{@superThis(o)}#{ if args.length then ', ' else '' }#{args})"
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
   # If it's a constructor, then things get real tricky. We have to inject an
   # inner constructor in order to be able to pass the varargs.
   compileSplat: (o, splatArgs) ->
-    return "#{ @superReference o }.apply(this, #{splatArgs})" if @isSuper
+    return "#{ @superReference o }.apply(#{@superThis(o)}, #{splatArgs})" if @isSuper
     if @isNew
       idt = @tab + TAB
       return """
