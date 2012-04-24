@@ -3,6 +3,7 @@ path          = require 'path'
 {extend}      = require './lib/coffee-script/helpers'
 CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
+{platform}    = require 'os'
 
 # ANSI Terminal Colors.
 enableColors = no
@@ -34,7 +35,10 @@ sources = [
 
 # Run a CoffeeScript through our node/coffee interpreter.
 run = (args, cb) ->
-  proc =         spawn 'bin/coffee', args
+  coffee_path_escaped = path.join('bin','coffee')
+  if platform()=='win32'
+    coffee_path_escaped = (coffee_path_escaped+'.cmd').replace('\\','\\\\')
+  proc =         spawn coffee_path_escaped, args
   proc.stderr.on 'data', (buffer) -> console.log buffer.toString()
   proc.on        'exit', (status) ->
     process.exit(1) if status != 0
