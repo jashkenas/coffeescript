@@ -193,6 +193,8 @@ grammar =
     o '',                                       -> []
     o 'Param',                                  -> [$1]
     o 'ParamList , Param',                      -> $1.concat $3
+    o 'ParamList OptComma TERMINATOR Param',    -> $1.concat $4
+    o 'ParamList OptComma INDENT ParamList OptComma OUTDENT', -> $1.concat $4
   ]
 
   # A single parameter in a function definition can be ordinary, or a splat
