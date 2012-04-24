@@ -14,6 +14,9 @@ readline     = require 'readline'
 {inspect}    = require 'util'
 {Script}     = require 'vm'
 Module       = require 'module'
+child_process= require 'child_process'
+path         = require 'path'
+fs           = require 'fs'
 
 # REPL Setup
 
@@ -156,6 +159,43 @@ repl.input.on 'keypress', (char, key) ->
   return unless key and key.ctrl and not key.meta and not key.shift and key.name is 'd'
   multilineMode = off
   repl._line()
+
+# Handle Ctrl-e to switch to $EDITOR
+repl.input.on 'keypress', (char, key) ->
+  return unless key and key.ctrl and not key.meta and not key.shift and key.name is 'e'
+  getTmpFile = (cb) ->
+    writeTemp = (file,cb) ->
+      fs.writeFile file, backlog + repl.line, -> cb file
+    file = Math.random().toString(36)[2..]
+    tmp = process.env.TEMP || '/tmp'
+    filePath = path.join tmp, "#{file}.coffee"
+    try
+      child_process.exec "mktemp --suffix=.coffee", (err, stdout, stderr) ->
+        writeTemp (if err then filePath else stdout), cb
+    catch e
+      writeTemp filePath, cb
+  getTmpFile (filePath) ->
+    dirty = false
+    fs.watchFile filePath, ->
+      dirty = true
+    stdinListeners = stdin.listeners 'keypress'
+    stdin.removeAllListeners 'keypress'
+    editor = child_process.spawn (process.env.EDITOR || "vi"), [filePath]
+    stdin.on 'data', pso = (c) -> editor.stdin.write c
+    editor.stdout.on 'data', eso = (c) -> stdout.write c
+    editor.on 'exit', (code) ->
+      fs.unwatchFile filePath
+      stdin.removeListener 'data', pso
+      editor.stdout.removeListener 'data', eso
+      stdin.on 'keypress', listener for listener in stdinListeners
+      if code == 0
+        fs.readFile filePath, (error, data) ->
+          if data && dirty
+            backlog = repl.line = ""
+            repl.output.write "\n"
+            repl.output.write data.toString()
+            backlog += data.toString()
+            repl._line();
 
 repl.on 'attemptClose', ->
   if multilineMode
