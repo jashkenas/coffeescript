@@ -19,21 +19,27 @@
      `-.._________..-'                                  | |
                                                         |_|
 
+  [![Build Status](https://secure.travis-ci.org/spaghetticode/coffee-script.png)](http://travis-ci.org/spaghetticode/coffee-script)
 
   CoffeeScript is a little language that compiles into JavaScript.
 
   Install Node.js, and then the CoffeeScript compiler:
-  sudo bin/cake install
+
+  `sudo bin/cake install`
 
   Or, if you have the Node Package Manager installed:
-  npm install -g coffee-script
+
+  `npm install -g coffee-script`
+
   (Leave off the -g if you don't wish to install globally.)
 
   Execute a script:
-  coffee /path/to/script.coffee
+
+  `coffee /path/to/script.coffee`
 
   Compile a script:
-  coffee -c /path/to/script.coffee
+
+  `coffee -c /path/to/script.coffee`
 
   For documentation, usage, and examples, see:
   http://coffeescript.org/
