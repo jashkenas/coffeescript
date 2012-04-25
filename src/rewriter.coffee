@@ -105,17 +105,21 @@ class exports.Rewriter
     startsLine  = null
     sameLine    = yes
     startIndent = 0
+    startIndex  = 0
 
     condition = (token, i) ->
       [one, two, three] = @tokens[i + 1 .. i + 3]
       return no if 'HERECOMMENT' is one?[0]
       [tag] = token
       sameLine = no if tag in LINEBREAKS
-      ((tag in ['TERMINATOR', 'OUTDENT'] or (tag in IMPLICIT_END and sameLine)) and
-          ((!startsLine and @tag(i - 1) isnt ',') or
+      return (
+        (tag in ['TERMINATOR', 'OUTDENT'] or 
+          (tag in IMPLICIT_END and sameLine and not (i - startIndex is 1))) and
+        ((!startsLine and @tag(i - 1) isnt ',') or
           not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':'))) or
         (tag is ',' and one and
-          one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT'])
+          one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT']
+      )
 
     action = (token, i) ->
       tok = @generate '}', '}', token[2]
@@ -131,6 +135,7 @@ class exports.Rewriter
       return 1 unless tag is ':' and
         ((ago = @tag i - 2) is ':' or stack[stack.length - 1]?[0] isnt '{')
       sameLine = yes
+      startIndex = i + 1
       stack.push ['{']
       idx =  if ago is '@' then i - 2 else i - 1
       idx -= 2 while @tag(idx - 2) is 'HERECOMMENT'

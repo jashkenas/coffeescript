@@ -269,3 +269,11 @@ test "#1961, #1974, regression with compound assigning to an implicit object", -
     four: 4
 
   eq obj.four, 4
+
+test "#2207: Immediate implicit closes don't close implicit objects", ->
+  func = ->
+    key: for i in [1, 2, 3] then i
+      
+  eq func().key.join(' '), '1 2 3'
+  
+  
