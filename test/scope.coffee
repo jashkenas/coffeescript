@@ -77,4 +77,18 @@ test "#1183: super + wrap", ->
     constructor : -> super
   B::m = -> r = try super()
   eq (new B()).m(), 10
+
+test "#1183: super + closures", ->
+  class A
+    constructor: ->
+      @i = 10
+    foo : -> @i
+  class B extends A
+    foo : ->
+      ret = switch 1
+        when 0 then 0
+        when 1 then super()
+      ret
+  eq (new B()).foo(), 10
+ 
   
