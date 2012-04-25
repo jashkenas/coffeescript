@@ -1510,7 +1510,7 @@ exports.Op = class Op extends Base
     "(#{code})"
 
   compileExistence: (o) ->
-    if @first.isComplex() and o.level > LEVEL_TOP
+    if @first.isComplex()
       ref = new Literal o.scope.freeVariable 'ref'
       fst = new Parens new Assign ref, @first
     else
