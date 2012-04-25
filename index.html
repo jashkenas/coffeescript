@@ -39,8 +39,8 @@
         <a href="#embedded">Embedded JavaScript</a>
         <a href="#switch">Switch and Try/Catch</a>
         <a href="#comparisons">Chained Comparisons</a>
-        <a href="#strings">String Interpolation, Heredocs, and Block Comments</a>
-        <a href="#regexes">Extended Regular Expressions</a>
+        <a href="#strings">String Interpolation, Block Strings, and Block Comments</a>
+        <a href="#regexes">Block Regular Expressions</a>
         <a href="#cake">Cake, and Cakefiles</a>
         <a href="#scripts">"text/coffeescript" Script Tags</a>
         <a href="#resources">Books, Screencasts, Examples and Resources</a>
@@ -1463,8 +1463,6 @@ tom.move()
 
 Animal <span class="Keyword">=</span> (<span class="Storage">function</span>() {
 
-  Animal.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> <span class="String"><span class="String">'</span>Animal<span class="String">'</span></span>;
-
   <span class="Storage">function</span> <span class="FunctionName">Animal</span>(<span class="FunctionArgument">name</span>) {
     <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
   }
@@ -1480,8 +1478,6 @@ Animal <span class="Keyword">=</span> (<span class="Storage">function</span>() {
 Snake <span class="Keyword">=</span> (<span class="Storage">function</span>(_super) {
 
   __extends(Snake, _super);
-
-  Snake.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> <span class="String"><span class="String">'</span>Snake<span class="String">'</span></span>;
 
   <span class="Storage">function</span> <span class="FunctionName">Snake</span>() {
     <span class="Keyword">return</span> Snake.__super__.<span class="LibraryConstant">constructor</span>.<span class="LibraryFunction">apply</span>(<span class="Variable">this</span>, arguments);
@@ -1499,8 +1495,6 @@ Snake <span class="Keyword">=</span> (<span class="Storage">function</span>(_sup
 Horse <span class="Keyword">=</span> (<span class="Storage">function</span>(_super) {
 
   __extends(Horse, _super);
-
-  Horse.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> <span class="String"><span class="String">'</span>Horse<span class="String">'</span></span>;
 
   <span class="Storage">function</span> <span class="FunctionName">Horse</span>() {
     <span class="Keyword">return</span> Horse.__super__.<span class="LibraryConstant">constructor</span>.<span class="LibraryFunction">apply</span>(<span class="Variable">this</span>, arguments);
@@ -1528,8 +1522,6 @@ tom.move();
 
 Animal = (function() {
 
-  Animal.name = 'Animal';
-
   function Animal(name) {
     this.name = name;
   }
@@ -1545,8 +1537,6 @@ Animal = (function() {
 Snake = (function(_super) {
 
   __extends(Snake, _super);
-
-  Snake.name = 'Snake';
 
   function Snake() {
     return Snake.__super__.constructor.apply(this, arguments);
@@ -1564,8 +1554,6 @@ Snake = (function(_super) {
 Horse = (function(_super) {
 
   __extends(Horse, _super);
-
-  Horse.name = 'Horse';
 
   function Horse() {
     return Horse.__super__.constructor.apply(this, arguments);
@@ -1922,7 +1910,7 @@ healthy = (200 > cholesterol && cholesterol > 60);
 
     <p>
       <span id="strings" class="bookmark"></span>
-      <b class="header">String Interpolation, Heredocs, and Block Comments</b>
+      <b class="header">String Interpolation, Block Strings, and Block Comments</b>
       Ruby-style string interpolation is included in CoffeeScript. Double-quoted
       strings allow for interpolated values, using <tt>#{ ... }</tt>,
       and single-quoted strings are literal.
@@ -1970,9 +1958,9 @@ mobyDick <span class="Keyword">=</span> <span class="String"><span class="String
 mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...";
 ;alert(mobyDick);'>run: mobyDick</div><br class='clear' /></div>
     <p>
-      Heredocs can be used to hold formatted or indentation-sensitive text
+      Block strings can be used to hold formatted or indentation-sensitive text
       (or, if you just don't feel like escaping quotes and apostrophes). The
-      indentation level that begins the heredoc is maintained throughout, so
+      indentation level that begins the block is maintained throughout, so
       you can keep it all aligned with the body of your code.
     </p>
     <div class='code'><pre class="idle">html <span class="Keyword">=</span> <span class="String"><span class="String">&quot;&quot;&quot;</span></span>
@@ -1989,12 +1977,12 @@ html <span class="Keyword">=</span> <span class="String"><span class="String">&q
 html = "<strong>\n  cup of coffeescript\n</strong>";
 ;alert(html);'>run: html</div><br class='clear' /></div>
     <p>
-      Double-quoted heredocs, like double-quoted strings, allow interpolation.
+      Double-quoted block strings, like other double-quoted strings, allow interpolation.
     </p>
     <p>
       Sometimes you'd like to pass a block comment through to the generated
       JavaScript. For example, when you need to embed a licensing header at
-      the top of a file. Block comments, which mirror the syntax for heredocs,
+      the top of a file. Block comments, which mirror the syntax for block strings,
       are preserved in the generated code.
     </p>
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">###</span></span>
@@ -2013,11 +2001,11 @@ html = "<strong>\n  cup of coffeescript\n</strong>";
 
     <p>
       <span id="regexes" class="bookmark"></span>
-      <b class="header">Extended Regular Expressions</b>
-      Similar to "heredocs" and "herecomments", CoffeeScript supports "heregexes" &mdash;
+      <b class="header">Block Regular Expressions</b>
+      Similar to block strings and comments, CoffeeScript supports block regexes &mdash;
       extended regular expressions that ignore internal whitespace and can contain
       comments and interpolation. Modeled after Perl's <tt>/x</tt> modifier, CoffeeSctipt's
-      heregexes are delimited by <tt>///</tt> and go a long way towards making complex
+      block regexes are delimited by <tt>///</tt> and go a long way towards making complex
       regular expressions readable. To quote from the CoffeeScript source:
     </p>
     <div class='code'><pre class="idle">OPERATOR <span class="Keyword">=</span> <span class="String">/// ^ (</span>
@@ -2956,7 +2944,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
     closeMenus = ->
       $('.navigation.active').removeClass 'active'
 
-    $('.minibutton.run').click evalJS
+    $('.minibutton.run').click -> evalJS()
 
     # Bind navigation buttons to open the menus.
     $('.navigation').click (e) ->
