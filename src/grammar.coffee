@@ -16,6 +16,7 @@
 
 # The only dependency is on the **Jison.Parser**.
 {Parser} = require 'jison'
+{modifyGrammar} = require 'grammar-extensions'
 
 # Jison DSL
 # ---------
@@ -575,6 +576,9 @@ operators = [
   ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
   ['right',     'POST_IF']
 ]
+
+# Give third-party extensions a chance to modify the CoffeeScript grammar.
+modifyGrammar({grammar, operators})
 
 # Wrapping Up
 # -----------
