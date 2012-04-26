@@ -181,6 +181,11 @@ class exports.Rewriter
       seenControl = no
       noCall      = no if tag in LINEBREAKS
       token.call  = yes if prev and not prev.spaced and tag is '?'
+
+      if tag is 'UNARY' and token[1] is '!' and prev? and prev[0] is 'IDENTIFIER' and not prev.spaced
+        callObject = true
+        tokens.splice i, 1
+
       return 1 if token.fromThen
       return 1 unless callObject or
         prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
