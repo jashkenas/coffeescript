@@ -550,3 +550,12 @@ test "#960: improved 'do'", ->
     eq two, 2
     func
   eq ret, func
+
+test "bang calling a function", ->
+  class Foo
+    bar: -> 3
+
+  foo = new Foo()
+
+  eq 3, foo.bar!
+
