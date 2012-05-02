@@ -357,3 +357,11 @@ test '#2211: splats in destructured parameters', ->
   doesNotThrow -> CoffeeScript.compile '([a...],[b...]) ->'
   throws -> CoffeeScript.compile '([a...,[a...]]) ->'
   doesNotThrow -> CoffeeScript.compile '([a...,[b...]]) ->'
+
+test '#2213: invocations within destructured parameters', ->
+  throws -> CoffeeScript.compile '([a()])->'
+  throws -> CoffeeScript.compile '([a:b()])->'
+  throws -> CoffeeScript.compile '([a:b.c()])->'
+  throws -> CoffeeScript.compile '({a()})->'
+  throws -> CoffeeScript.compile '({a:b()})->'
+  throws -> CoffeeScript.compile '({a:b.c()})->'

@@ -1282,18 +1282,21 @@ exports.Param = class Param extends Base
     for obj in name.objects
       # * assignments within destructured parameters `{foo:bar}`
       if obj instanceof Assign
-        names.push obj.value.base.value
+        names.push obj.value.unwrap().value
       # * splats within destructured parameters `[xs...]`
       else if obj instanceof Splat
         names.push obj.name.unwrap().value
-      # * destructured parameters within destructured parameters `[{a}]`
-      else if obj.isArray() or obj.isObject()
-        names.push @names(obj.base)...
-      # * at-params within destructured parameters `{@foo}`
-      else if obj.this
-        names.push atParam(obj)...
-      # * simple destructured parameters {foo}
-      else names.push obj.base.value
+      else if obj instanceof Value
+        # * destructured parameters within destructured parameters `[{a}]`
+        if obj.isArray() or obj.isObject()
+          names.push @names(obj.base)...
+        # * at-params within destructured parameters `{@foo}`
+        else if obj.this
+          names.push atParam(obj)...
+        # * simple destructured parameters {foo}
+        else names.push obj.base.value
+      else
+        throw SyntaxError "illegal parameter #{obj.compile()}"
     names
 
 #### Splat
