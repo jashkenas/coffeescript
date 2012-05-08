@@ -350,11 +350,7 @@ class exports.Null extends Base
 class exports.Bool extends Base
   isAssignable: NO
   isComplex: NO
-  compileNode: ->
-    switch @val
-      when 'yes', 'on' then 'true'
-      when 'no', 'off' then 'false'
-      else @val
+  compileNode: -> @val
   constructor: (@val) ->
 
 #### Return

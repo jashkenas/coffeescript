@@ -115,15 +115,12 @@ exports.Lexer = class Lexer
         @error "reserved word \"#{id}\""
 
     unless forcedIdentifier
-      originalId = id
       id  = COFFEE_ALIAS_MAP[id] if id in COFFEE_ALIASES
       tag = switch id
         when '!'                 then 'UNARY'
         when '==', '!='          then 'COMPARE'
         when '&&', '||'          then 'LOGIC'
-        when 'true', 'false'
-          id = originalId
-          'BOOL'
+        when 'true', 'false'     then 'BOOL'
         when 'undefined'         then 'UNDEFINED'
         when 'null'              then 'NULL'
         when 'break', 'continue' then 'STATEMENT'
