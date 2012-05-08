@@ -115,13 +115,18 @@ exports.Lexer = class Lexer
         @error "reserved word \"#{id}\""
 
     unless forcedIdentifier
+      originalId = id
       id  = COFFEE_ALIAS_MAP[id] if id in COFFEE_ALIASES
       tag = switch id
-        when '!'                                  then 'UNARY'
-        when '==', '!='                           then 'COMPARE'
-        when '&&', '||'                           then 'LOGIC'
-        when 'true', 'false', 'null', 'undefined' then 'BOOL'
-        when 'break', 'continue'                  then 'STATEMENT'
+        when '!'                 then 'UNARY'
+        when '==', '!='          then 'COMPARE'
+        when '&&', '||'          then 'LOGIC'
+        when 'true', 'false'
+          id = originalId
+          'BOOL'
+        when 'undefined'         then 'UNDEFINED'
+        when 'null'              then 'NULL'
+        when 'break', 'continue' then 'STATEMENT'
         else  tag
 
     @token tag, id
@@ -684,7 +689,7 @@ MATH    = ['*', '/', '%']
 RELATION = ['IN', 'OF', 'INSTANCEOF']
 
 # Boolean tokens.
-BOOL = ['TRUE', 'FALSE', 'NULL', 'UNDEFINED']
+BOOL = ['TRUE', 'FALSE']
 
 # Tokens which a regular expression will never immediately follow, but which
 # a division operator might.
@@ -692,7 +697,7 @@ BOOL = ['TRUE', 'FALSE', 'NULL', 'UNDEFINED']
 # See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
 #
 # Our list is shorter, due to sans-parentheses method calls.
-NOT_REGEX = ['NUMBER', 'REGEX', 'BOOL', '++', '--', ']']
+NOT_REGEX = ['NUMBER', 'REGEX', 'BOOL', 'NULL', 'UNDEFINED', '++', '--', ']']
 
 # If the previous token is not spaced, there are more preceding tokens that
 # force a division parse:
@@ -702,7 +707,7 @@ NOT_SPACED_REGEX = NOT_REGEX.concat ')', '}', 'THIS', 'IDENTIFIER', 'STRING'
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
 CALLABLE  = ['IDENTIFIER', 'STRING', 'REGEX', ')', ']', '}', '?', '::', '@', 'THIS', 'SUPER']
-INDEXABLE = CALLABLE.concat 'NUMBER', 'BOOL'
+INDEXABLE = CALLABLE.concat 'NUMBER', 'BOOL', 'NULL', 'UNDEFINED'
 
 # Tokens that, when immediately preceding a `WHEN`, indicate that the `WHEN`
 # occurs at the start of a line. We disambiguate these from trailing whens to

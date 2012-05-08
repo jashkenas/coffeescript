@@ -127,10 +127,9 @@ grammar =
     o 'JS',                                     -> new Literal $1
     o 'REGEX',                                  -> new Literal $1
     o 'DEBUGGER',                               -> new Literal $1
-    o 'BOOL',                                   ->
-      val = new Literal $1
-      val.isUndefined = yes if $1 is 'undefined'
-      val
+    o 'UNDEFINED',                              -> new Undefined
+    o 'NULL',                                   -> new Null
+    o 'BOOL',                                   -> new Bool $1
   ]
 
   # Assignment of a variable, property, or index to a value.

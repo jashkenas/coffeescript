@@ -325,9 +325,7 @@ exports.Literal = class Literal extends Base
     return this if @value is 'continue' and not o?.loop
 
   compileNode: (o) ->
-    code = if @isUndefined
-      if o.level >= LEVEL_ACCESS then '(void 0)' else 'void 0'
-    else if @value is 'this'
+    code = if @value is 'this'
       if o.scope.method?.bound then o.scope.method.context else @value
     else if @value.reserved
       "\"#{@value}\""
@@ -337,6 +335,27 @@ exports.Literal = class Literal extends Base
 
   toString: ->
     ' "' + @value + '"'
+
+class exports.Undefined extends Base
+  isAssignable: NO
+  isComplex: NO
+  compileNode: (o) ->
+    if o.level >= LEVEL_ACCESS then '(void 0)' else 'void 0'
+
+class exports.Null extends Base
+  isAssignable: NO
+  isComplex: NO
+  compileNode: -> "null"
+
+class exports.Bool extends Base
+  isAssignable: NO
+  isComplex: NO
+  compileNode: ->
+    switch @val
+      when 'yes', 'on' then 'true'
+      when 'no', 'off' then 'false'
+      else @val
+  constructor: (@val) ->
 
 #### Return
 
