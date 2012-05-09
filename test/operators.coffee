@@ -114,7 +114,7 @@ test "postfix existential operator on expressions", ->
   eq true, (1 or 0)?, true
 
 
-# `is`,`isnt`,`==`,`!=`
+# `is`,`isnt`,`==`,`!=`, `=~`, `!~`
 
 test "`==` and `is` should be interchangeable", ->
   a = b = 1
@@ -129,6 +129,13 @@ test "`!=` and `isnt` should be interchangeable", ->
   ok a != b
   ok a isnt b
 
+test "`=~` should return true on match", ->
+  ok "it's over 9000!!" =~ /90{3,}/
+  equal false, '<a href="#spice">spice</a>' =~ /"?#sand"?/
+
+test "`!~` should return true on non match", ->
+  equal false, "it's over 9000!!" !~ /90{3,}/
+  ok '<a href="#spice">spice</a>' !~ /"?#sand"?/
 
 # [not] in/of
 
@@ -275,10 +282,9 @@ test "#2155 ... conditional assignment to a closure", ->
   func = -> x ?= (-> if true then 'hi')
   func()
   eq x(), 'hi'
-  
+
 test "#2197: Existential existential double trouble", ->
   counter = 0
   func = -> counter++
   func()? ? 100
   eq counter, 1
-  
