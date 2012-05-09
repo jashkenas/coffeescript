@@ -117,11 +117,11 @@ exports.Lexer = class Lexer
     unless forcedIdentifier
       id  = COFFEE_ALIAS_MAP[id] if id in COFFEE_ALIASES
       tag = switch id
-        when '!'                 then 'UNARY'
-        when '==', '!='          then 'COMPARE'
-        when '&&', '||'          then 'LOGIC'
-        when 'true', 'false'     then 'BOOL'
-        when 'break', 'continue' then 'STATEMENT'
+        when '!'                      then 'UNARY'
+        when '==', '!=', '=~', '!~'   then 'COMPARE'
+        when '&&', '||'               then 'LOGIC'
+        when 'true', 'false'          then 'BOOL'
+        when 'break', 'continue'      then 'STATEMENT'
         else  tag
 
     @token tag, id
@@ -611,6 +611,7 @@ HEREDOC    = /// ^ ("""|''') ([\s\S]*?) (?:\n[^\n\S]*)? \1 ///
 OPERATOR   = /// ^ (
   ?: [-=]>             # function
    | [-+*/%<>&|^!?=]=  # compound assign / compare
+   | [!=]~             # match
    | >>>=?             # zero-fill right shift
    | ([-+:])\1         # doubles
    | ([&|<>])\2=?      # logic / shift
@@ -675,7 +676,7 @@ LOGIC   = ['&&', '||', '&', '|', '^']
 SHIFT   = ['<<', '>>', '>>>']
 
 # Comparison tokens.
-COMPARE = ['==', '!=', '<', '>', '<=', '>=']
+COMPARE = ['==', '!=', '<', '>', '<=', '>=', '=~', '!~']
 
 # Mathematical tokens.
 MATH    = ['*', '/', '%']

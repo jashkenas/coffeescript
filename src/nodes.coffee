@@ -1136,7 +1136,7 @@ exports.Assign = class Assign extends Base
   compileConditional: (o) ->
     [left, right] = @variable.cacheReference o
     # Disallow conditional assignment of undefined variables.
-    if not left.properties.length and left.base instanceof Literal and 
+    if not left.properties.length and left.base instanceof Literal and
            left.base.value != "this" and not o.scope.check left.base.value
       throw new Error "the variable \"#{left.base.value}\" can't be assigned with #{@context} because it has not been defined."
     if "?" in @context then o.isExistentialEquals = true
@@ -1446,6 +1446,9 @@ exports.Op = class Op extends Base
   isComplex: ->
     not (@isUnary() and (@operator in ['+', '-'])) or @first.isComplex()
 
+  isMatch: ->
+    @operator in ['=~', '!~']
+
   # Am I capable of
   # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
   isChainable: ->
@@ -1509,6 +1512,7 @@ exports.Op = class Op extends Base
     return @compileUnary     o if @isUnary()
     return @compileChain     o if isChain
     return @compileExistence o if @operator is '?'
+    return @compileMatch     o if @isMatch()
     code = @first.compile(o, LEVEL_OP) + ' ' + @operator + ' ' +
            @second.compile(o, LEVEL_OP)
     if o.level <= LEVEL_OP then code else "(#{code})"
@@ -1546,6 +1550,11 @@ exports.Op = class Op extends Base
     parts.push @first.compile o, LEVEL_OP
     parts.reverse() if @flip
     parts.join ''
+
+  compileMatch: (o) ->
+    code = "#{@second.compile(o, LEVEL_OP)}.test(#{@first.compile(o, LEVEL_OP)})"
+    code = '!' + code if @operator == '!~'
+    if o.level <= LEVEL_OP then code else "(#{code})"
 
   toString: (idt) ->
     super idt, @constructor.name + ' ' + @operator
