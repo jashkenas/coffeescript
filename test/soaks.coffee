@@ -23,7 +23,7 @@ test "soaked property access caches method calls", ->
   eq nonce    , obj.fn()?.a
   eq undefined, obj.fn()?.b
 
-test "soaked property access chaching", ->
+test "soaked property access caching", ->
   nonce = {}
   counter = 0
   fn = ->
