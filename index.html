@@ -113,7 +113,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/1.3.1">1.3.1</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.3.2">1.3.2</a>
     </p>
 
     <h2>
@@ -1460,7 +1460,7 @@ tom.move()
 
 </pre><pre class="idle"><span class="Storage">var</span> Animal, Horse, Snake, sam, tom,
   __hasProp <span class="Keyword">=</span> {}.hasOwnProperty,
-  <span class="FunctionName">__extends</span> = <span class="Storage">function</span>(<span class="FunctionArgument">child, parent</span>) { <span class="Keyword">for</span> (<span class="Storage">var</span> key <span class="Keyword">in</span> parent) { <span class="Keyword">if</span> (__hasProp.<span class="LibraryFunction">call</span>(parent, key)) child[key] <span class="Keyword">=</span> parent[key]; } <span class="Storage">function</span> <span class="FunctionName">ctor</span>() { <span class="Variable">this</span>.<span class="LibraryConstant">constructor</span> <span class="Keyword">=</span> child; } <span class="LibraryClassType">ctor</span>.<span class="LibraryConstant">prototype</span> = parent.<span class="LibraryConstant">prototype</span>; <span class="LibraryClassType">child</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">ctor</span>; child.__super__ <span class="Keyword">=</span> parent.<span class="LibraryConstant">prototype</span>; <span class="Keyword">return</span> child; };
+  <span class="FunctionName">__extends</span> = <span class="Storage">function</span>(<span class="FunctionArgument">child, parent</span>) { <span class="Keyword">for</span> (<span class="Storage">var</span> key <span class="Keyword">in</span> parent) { <span class="Keyword">if</span> (__hasProp.<span class="LibraryFunction">call</span>(parent, key)) child[key] <span class="Keyword">=</span> parent[key]; } <span class="Storage">function</span> <span class="FunctionName">ctor</span>() { <span class="Variable">this</span>.<span class="LibraryConstant">constructor</span> <span class="Keyword">=</span> child; } <span class="LibraryClassType">ctor</span>.<span class="LibraryConstant">prototype</span> = parent.<span class="LibraryConstant">prototype</span>; <span class="LibraryClassType">child</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">ctor</span>(); child.__super__ <span class="Keyword">=</span> parent.<span class="LibraryConstant">prototype</span>; <span class="Keyword">return</span> child; };
 
 Animal <span class="Keyword">=</span> (<span class="Storage">function</span>() {
 
@@ -1519,7 +1519,7 @@ sam.move();
 tom.move();
 </pre><script>window.example23 = "class Animal\n  constructor: (@name) ->\n\n  move: (meters) ->\n    alert @name + \" moved #{meters}m.\"\n\nclass Snake extends Animal\n  move: ->\n    alert \"Slithering...\"\n    super 5\n\nclass Horse extends Animal\n  move: ->\n    alert \"Galloping...\"\n    super 45\n\nsam = new Snake \"Sammy the Python\"\ntom = new Horse \"Tommy the Palomino\"\n\nsam.move()\ntom.move()\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example23);'>load</div><div class='minibutton ok' onclick='javascript: var Animal, Horse, Snake, sam, tom,
   __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Animal = (function() {
 
@@ -1987,18 +1987,18 @@ html = "<strong>\n  cup of coffeescript\n</strong>";
       are preserved in the generated code.
     </p>
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">###</span></span>
-<span class="Comment">CoffeeScript Compiler v1.3.1</span>
+<span class="Comment">CoffeeScript Compiler v1.3.2</span>
 <span class="Comment">Released under the MIT License</span>
 <span class="Comment"><span class="Comment">###</span></span>
 
 
 </pre><pre class="idle"><span class="Comment"><span class="Comment">/*</span></span>
-<span class="Comment">CoffeeScript Compiler v1.3.1</span>
+<span class="Comment">CoffeeScript Compiler v1.3.2</span>
 <span class="Comment">Released under the MIT License</span>
 <span class="Comment"><span class="Comment">*/</span></span>
 
 
-</pre><script>window.example37 = "###\nCoffeeScript Compiler v1.3.1\nReleased under the MIT License\n###\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example37);'>load</div><br class='clear' /></div>
+</pre><script>window.example37 = "###\nCoffeeScript Compiler v1.3.2\nReleased under the MIT License\n###\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example37);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="regexes" class="bookmark"></span>
@@ -2278,6 +2278,35 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">
+        <a href="https://github.com/jashkenas/coffee-script/compare/1.3.1...1.3.2">1.3.2</a>
+        <span class="timestamp"> &ndash; <small>May 14, 2012</small></span>
+      </b>
+      <ul>
+        <li>
+          Due to the new semantics of JavaScript's strict mode, CoffeeScript no
+          longer guarantees that constructor functions have names in all runtimes.
+          See <a href="https://github.com/jashkenas/coffee-script/issues/2052">#2052</a> 
+          for discussion.
+        </li>
+        <li>
+          Inside of a nested function inside of an instance method, it's now possible
+          to call <tt>super</tt> more reliably (walks recursively up).
+        </li>
+        <li>
+          Named loop variables no longer have different scoping heuristics than
+          other local variables. (Reverts #643)
+        </li>
+        <li>
+          Fix for splats nested within the LHS of destructuring assignment.
+        </li>
+        <li>
+          Corrections to our compile time strict mode forbidding of octal literals.
+        </li>
+      </ul>
+    </p>
     
     <p>
       <b class="header" style="margin-top: 20px;">
