@@ -4,6 +4,9 @@ path          = require 'path'
 CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 
+task 'refresh', ->
+  exec "git checkout lib && bin/cake build:full"
+
 # ANSI Terminal Colors.
 enableColors = no
 unless process.platform is 'win32'

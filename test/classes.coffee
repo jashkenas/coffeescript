@@ -8,6 +8,7 @@
 test "classes with a four-level inheritance chain", ->
 
   class Base
+    prop1: 'dude'
     func: (string) ->
       "zero/#{string}"
 

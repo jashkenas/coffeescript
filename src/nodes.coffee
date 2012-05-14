@@ -9,6 +9,11 @@
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, last} = require './helpers'
 
+LOG = console.log
+
+pretify = (src) ->
+  return JSON.stringify(src, null, 2)
+
 exports.extend = extend  # for parser
 
 # Constant functions for nodes that don't need customization.
@@ -514,6 +519,7 @@ exports.Call = class Call extends Base
     method = o.scope.namedMethod()
     throw SyntaxError 'cannot call super outside of a function.' unless method
     {name} = method
+
     throw SyntaxError 'cannot call super on an anonymous function.' unless name?
     if method.klass
       accesses = [new Access(new Literal '__super__')]
@@ -635,7 +641,8 @@ exports.Extends = class Extends extends Base
 
   # Hooks one constructor into another's prototype chain.
   compile: (o) ->
-    new Call(new Value(new Literal utility 'extends'), [@child, @parent]).compile o
+    # D4: Assigning child to result of __extends so constructor can be overwritten
+    new Assign(@child, new Call(new Value(new Literal utility 'extends'), [@child, @parent])).compile o
 
 #### Access
 
@@ -914,6 +921,7 @@ exports.Class = class Class extends Base
         base = assign.variable.base
         delete assign.context
         func = assign.value
+        # constructor
         if base.value is 'constructor'
           if @ctor
             throw new Error 'cannot define more than one constructor in a class'
@@ -924,18 +932,22 @@ exports.Class = class Class extends Base
           else
             @externalCtor = o.scope.freeVariable 'class'
             assign = new Assign new Literal(@externalCtor), func
-        else
+        else     
           if assign.variable.this
+            # D4: flag as static class prop
+            assign._isClassProp = true
             func.static = yes
             if func.bound
               func.context = name
           else
-            assign.variable = new Value(new Literal(name), [(new Access new Literal 'prototype'), new Access base ])
+            # D4: flag as class instance prop
+            assign._isInstanceProp = true
+            assign.variable = new Value(new Literal(name), [(new Access new Literal 'prototype'), new Access base ])        
             if func instanceof Code and func.bound
               @boundFuncs.push base
               func.bound = no
       assign
-    compact exprs
+    compact exprs # Trim out all falsy values from an array.
 
   # Walk the body of the class, looking for prototype properties to be converted.
   walkBody: (name, o) ->
@@ -969,6 +981,30 @@ exports.Class = class Class extends Base
     @ctor.ctor     = @ctor.name = name
     @ctor.klass    = null
     @ctor.noReturn = yes
+  
+  hookBodyExpression: (type, name, key, value) ->
+    if type is 'instance'
+      util = new Literal utility 'defineProperty'
+    else if type is 'class'
+      util = new Literal utility 'defineStaticProperty'
+    else
+      throw new Error 'hookBodyExpression() requires type of class or instance'
+
+    clazz = new Literal name
+    keyL = new Literal key 
+    
+    if value instanceof Code
+      #value.bound = true
+      value.klass = name # D4: ?
+      if !value.name?
+        value.name = key 
+      value.context = name if value.bound # D4: ?
+  
+    newExpression = new Call(new Value(util), [clazz, keyL, value])
+    newExpression.klass = name # D4: ?
+    newExpression.context = name if newExpression.bound #D4: ?
+    return newExpression
+    
 
   # Instead of generating the JavaScript string directly, we build up the
   # equivalent syntax tree and compile that, in pieces. You can see the
@@ -982,24 +1018,41 @@ exports.Class = class Class extends Base
     @hoistDirectivePrologue()
     @setContext name
     @walkBody name, o
+    # D4: moved extends call to come after constructor, 
+    #     so extends can over write constructor
+    if @parent
+      @superClass = new Literal o.scope.freeVariable 'super', no
+      @body.expressions.unshift new Extends lname, @superClass
     @ensureConstructor name
     @body.spaced = yes
     @body.expressions.unshift @ctor unless @ctor instanceof Code
     @body.expressions.push lname
     @body.expressions.unshift @directives...
+    
+    for e, i in @body.expressions      
+      if e._isInstanceProp         
+        key = e.variable.properties[e.variable.properties.length-1].name.toString()
+        value = e.value
+        @body.expressions[i] = @hookBodyExpression('instance', name, key, value)
+      else if e._isClassProp
+        key = e.variable.properties[e.variable.properties.length-1].name.toString()
+        value = e.value
+        @body.expressions[i] = @hookBodyExpression('class', name, key, value)
+    
     @addBoundFunctions o
-
+    
     call  = Closure.wrap @body
 
     if @parent
-      @superClass = new Literal o.scope.freeVariable 'super', no
-      @body.expressions.unshift new Extends lname, @superClass
+      #@superClass = new Literal o.scope.freeVariable 'super', no
+      #@body.expressions.unshift new Extends lname, @superClass
       call.args.push @parent
       params = call.variable.params or call.variable.base.params
       params.push new Param @superClass
-
+    
     klass = new Parens call, yes
     klass = new Assign @variable, klass if @variable
+    
     klass.compile o
 
 #### Assign
@@ -1195,9 +1248,7 @@ exports.Code = class Code extends Base
     for name in @paramNames() # this step must be performed before the others
       unless o.scope.check name then o.scope.parameter name
     for param in @params when param.splat
-      for {name: p} in @params
-        if p.this then p = p.properties[0].name
-        if p.value then o.scope.add p.value, 'var', yes
+      o.scope.add p.name.value, 'var', yes for p in @params when p.name.value
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
                           new Value new Literal 'arguments'
       break
@@ -1964,11 +2015,40 @@ unfoldSoak = (o, parent, name) ->
 
 UTILITIES =
 
+  # Define class instance property
+  # `Class.__defineStaticProperty(key, value)` will overwrite this
+  defineStaticProperty: -> """
+    function(clazz, key, value) {
+      if (typeof clazz.__defineStaticProperty == 'function') return clazz.__defineStaticProperty(key, value);
+      return clazz[key] = value;
+    }
+    """
+  
+  # Define static class property
+  # `Class.__defineProperty(key, value)` will overwrite this
+  defineProperty: -> """
+    function(clazz, key, value) {
+      if (typeof clazz.__defineProperty == 'function') return clazz.__defineProperty(key, value);
+      return clazz.prototype[key] = value;
+    }
+    """
+   
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls, and copies of any static properties.
+  # D4: `Class.__extend()` will overwrite this
   extends: -> """
-    function(child, parent) { for (var key in parent) { if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; }
+    function(child, parent) {
+      if (typeof parent.__extend == 'function') return parent.__extend(child);
+      for (var key in parent) { if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key]; } 
+      function ctor() { this.constructor = child; } 
+      ctor.prototype = parent.prototype; 
+      child.prototype = new ctor; 
+      child.__super__ = parent.prototype; 
+      if (typeof parent.extended == 'function') parent.extended(child); 
+      return child; 
+  }
   """
+  # function(child, parent) { for (var key in parent) { if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; }
 
   # Create a function bound to the current value of "this".
   bind: -> '''

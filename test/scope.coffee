@@ -90,5 +90,3 @@ test "#1183: super + closures", ->
         when 1 then super()
       ret
   eq (new B()).foo(), 10
- 
-  
