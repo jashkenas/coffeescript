@@ -6,7 +6,7 @@
   "version":      "1.3.2-pre",
   "licenses":     [{
     "type":       "MIT",
-    "url":        "http://github.com/jashkenas/coffee-script/raw/master/LICENSE"
+    "url":        "https://github.com/jashkenas/coffee-script/raw/master/LICENSE"
   }],
   "engines":      {
     "node":       ">=0.4.0"
@@ -20,6 +20,7 @@
     "cake":       "./bin/cake"
   },
   "homepage":     "http://coffeescript.org",
+  "bugs":         "https://github.com/jashkenas/coffee-script/issues",
   "repository":   {
     "type": "git",
     "url": "git://github.com/jashkenas/coffee-script.git"
