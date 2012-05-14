@@ -275,3 +275,10 @@ test "#2155 ... conditional assignment to a closure", ->
   func = -> x ?= (-> if true then 'hi')
   func()
   eq x(), 'hi'
+  
+test "#2197: Existential existential double trouble", ->
+  counter = 0
+  func = -> counter++
+  func()? ? 100
+  eq counter, 1
+  

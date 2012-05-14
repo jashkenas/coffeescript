@@ -95,6 +95,13 @@ test "splats", ->
   arrayEq [0, 1], (((splat..., _, _1) -> splat) 0, 1, 2, 3)
   arrayEq [2], (((_, _1, splat..., _2) -> splat) 0, 1, 2, 3)
 
+test "destructured splatted parameters", ->
+  arr = [0,1,2]
+  splatArray = ([a...]) -> a
+  splatArrayRest = ([a...],b...) -> arrayEq(a,b); b
+  arrayEq splatArray(arr), arr
+  arrayEq splatArrayRest(arr,0,1,2), arr
+
 test "@-parameters: automatically assign an argument's value to a property of the context", ->
   nonce = {}
 
@@ -186,3 +193,16 @@ test "#1844: bound functions in nested comprehensions causing empty var statemen
 test "#1859: inline function bodies shouldn't modify prior postfix ifs", ->
   list = [1, 2, 3]
   ok true if list.some (x) -> x is 2
+
+test "#2258: allow whitespace-style parameter lists in function definitions", ->
+  func = (
+    a, b, c
+  ) -> c
+  eq func(1, 2, 3), 3
+  
+  func = (
+    a
+    b
+    c
+  ) -> b
+  eq func(1, 2, 3), 2

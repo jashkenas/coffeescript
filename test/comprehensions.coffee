@@ -244,21 +244,13 @@ test "Optimized range comprehensions.", ->
 
   exxes = ('x' for [0...10])
   ok exxes.join(' ') is 'x x x x x x x x x x'
-
-
-test "Comprehensions safely redeclare parameters if they're not present in closest scope.", ->
-
-  rule = (x) -> x
-
-  learn = ->
-    rule for rule in [1, 2, 3]
-
-  ok learn().join(' ') is '1 2 3'
-
-  ok rule(101) is 101
-
-  f = -> [-> ok no, 'should cache source']
-  ok yes for k of [f] = f()
+  
+  
+test "Loop variables should be able to reference outer variables", ->
+  outer = 1
+  do ->
+    null for outer in [1, 2, 3]
+  eq outer, 3
 
 
 test "Lenient on pure statements not trying to reach out of the closure", ->
@@ -499,3 +491,14 @@ test "#2007: Return object literal from comprehension", ->
   eq 2, y.length
   eq 1, y[0].x
   eq 0, y[1].x
+  
+test "#2274: Allow @values as loop variables", ->
+  obj = {
+    item: null
+    method: ->
+      for @item in [1, 2, 3]
+        null
+  }
+  eq obj.item, null
+  obj.method()
+  eq obj.item, 3
