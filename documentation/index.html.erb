@@ -63,8 +63,8 @@
         <a href="#embedded">Embedded JavaScript</a>
         <a href="#switch">Switch and Try/Catch</a>
         <a href="#comparisons">Chained Comparisons</a>
-        <a href="#strings">String Interpolation, Heredocs, and Block Comments</a>
-        <a href="#regexes">Extended Regular Expressions</a>
+        <a href="#strings">String Interpolation, Block Strings, and Block Comments</a>
+        <a href="#regexes">Block Regular Expressions</a>
         <a href="#cake">Cake, and Cakefiles</a>
         <a href="#scripts">"text/coffeescript" Script Tags</a>
         <a href="#resources">Books, Screencasts, Examples and Resources</a>
@@ -136,7 +136,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/1.3.1">1.3.1</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.3.2">1.3.2</a>
     </p>
 
     <h2>
@@ -838,7 +838,7 @@ Expressions
 
     <p>
       <span id="strings" class="bookmark"></span>
-      <b class="header">String Interpolation, Heredocs, and Block Comments</b>
+      <b class="header">String Interpolation, Block Strings, and Block Comments</b>
       Ruby-style string interpolation is included in CoffeeScript. Double-quoted
       strings allow for interpolated values, using <tt>#{ ... }</tt>,
       and single-quoted strings are literal.
@@ -849,30 +849,30 @@ Expressions
     </p>
     <%= code_for('strings', 'mobyDick') %>
     <p>
-      Heredocs can be used to hold formatted or indentation-sensitive text
+      Block strings can be used to hold formatted or indentation-sensitive text
       (or, if you just don't feel like escaping quotes and apostrophes). The
-      indentation level that begins the heredoc is maintained throughout, so
+      indentation level that begins the block is maintained throughout, so
       you can keep it all aligned with the body of your code.
     </p>
     <%= code_for('heredocs', 'html') %>
     <p>
-      Double-quoted heredocs, like double-quoted strings, allow interpolation.
+      Double-quoted block strings, like other double-quoted strings, allow interpolation.
     </p>
     <p>
       Sometimes you'd like to pass a block comment through to the generated
       JavaScript. For example, when you need to embed a licensing header at
-      the top of a file. Block comments, which mirror the syntax for heredocs,
+      the top of a file. Block comments, which mirror the syntax for block strings,
       are preserved in the generated code.
     </p>
     <%= code_for('block_comment') %>
 
     <p>
       <span id="regexes" class="bookmark"></span>
-      <b class="header">Extended Regular Expressions</b>
-      Similar to "heredocs" and "herecomments", CoffeeScript supports "heregexes" &mdash;
+      <b class="header">Block Regular Expressions</b>
+      Similar to block strings and comments, CoffeeScript supports block regexes &mdash;
       extended regular expressions that ignore internal whitespace and can contain
       comments and interpolation. Modeled after Perl's <tt>/x</tt> modifier, CoffeeSctipt's
-      heregexes are delimited by <tt>///</tt> and go a long way towards making complex
+      block regexes are delimited by <tt>///</tt> and go a long way towards making complex
       regular expressions readable. To quote from the CoffeeScript source:
     </p>
     <%= code_for('heregexes') %>
@@ -1108,6 +1108,35 @@ Expressions
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">
+        <a href="https://github.com/jashkenas/coffee-script/compare/1.3.1...1.3.2">1.3.2</a>
+        <span class="timestamp"> &ndash; <small>May 14, 2012</small></span>
+      </b>
+      <ul>
+        <li>
+          Due to the new semantics of JavaScript's strict mode, CoffeeScript no
+          longer guarantees that constructor functions have names in all runtimes.
+          See <a href="https://github.com/jashkenas/coffee-script/issues/2052">#2052</a> 
+          for discussion.
+        </li>
+        <li>
+          Inside of a nested function inside of an instance method, it's now possible
+          to call <tt>super</tt> more reliably (walks recursively up).
+        </li>
+        <li>
+          Named loop variables no longer have different scoping heuristics than
+          other local variables. (Reverts #643)
+        </li>
+        <li>
+          Fix for splats nested within the LHS of destructuring assignment.
+        </li>
+        <li>
+          Corrections to our compile time strict mode forbidding of octal literals.
+        </li>
+      </ul>
+    </p>
     
     <p>
       <b class="header" style="margin-top: 20px;">
@@ -1775,7 +1804,7 @@ Expressions
     closeMenus = ->
       $('.navigation.active').removeClass 'active'
 
-    $('.minibutton.run').click evalJS
+    $('.minibutton.run').click -> evalJS()
 
     # Bind navigation buttons to open the menus.
     $('.navigation').click (e) ->

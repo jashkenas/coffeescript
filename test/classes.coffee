@@ -595,17 +595,6 @@ test "#1813: Passing class definitions as expressions", ->
 
   eq result, B
 
-test "#494: Named classes", ->
-
-  class A
-  eq A.name, 'A'
-
-  class A.B
-  eq A.B.name, 'B'
-
-  class A.B["C"]
-  ok A.B.C.name isnt 'C'
-
 test "#1966: external constructors should produce their return value", ->
   ctor = -> {}
   class A then constructor: ctor
@@ -679,3 +668,11 @@ test "#1534: class then 'use strict'", ->
     #{error}"""
   ]
   throws (-> CoffeeScript.run directive, bare: yes) for directive in directives
+
+test "#2052: classes should work in strict mode", ->
+  try
+    do ->
+      'use strict'
+      class A
+  catch e
+    ok no

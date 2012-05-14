@@ -18,9 +18,9 @@
 
 # helper to assert that code complies with strict prohibitions
 strict = (code, msg) ->
-  throws (-> CoffeeScript.compile code), null, msg
+  throws (-> CoffeeScript.compile code), null, msg ? code
 strictOk = (code, msg) ->
-  doesNotThrow (-> CoffeeScript.compile code), msg
+  doesNotThrow (-> CoffeeScript.compile code), msg ? code
 
 
 test "octal integer literals prohibited", ->
@@ -32,26 +32,35 @@ test "octal integer literals prohibited", ->
   strictOk  '`01`'
 
 test "octal escape sequences prohibited", ->
-  strict    '"\\0"'
+  strict    '"\\1"'
   strict    '"\\7"'
-  strict    '"\\000"'
+  strict    '"\\001"'
   strict    '"\\777"'
-  strict    '"_\\0"'
-  strict    '"\\0_"'
-  strict    '"_\\0_"'
-  strict    '"\\08"'
-  strict    '"\\\\\\0"'
+  strict    '"_\\1"'
+  strict    '"\\1_"'
+  strict    '"_\\1_"'
+  strict    '"\\\\\\1"'
+  strictOk  '"\\0"'
+  eq "\x00", "\0"
+  strictOk  '"\\08"'
+  eq "\x008", "\08"
+  strictOk  '"\\0\\8"'
+  eq "\x008", "\0\8"
   strictOk  '"\\8"'
-  strictOk  '"\\\\0"'
-  strictOk  '"\\\\\\\\0"'
-  strictOk  "`'\\0'`"
+  eq "8", "\8"
+  strictOk  '"\\\\1"'
+  eq "\\" + "1", "\\1"
+  strictOk  '"\\\\\\\\1"'
+  eq "\\\\" + "1", "\\\\1"
+  strictOk  "`'\\1'`"
+  eq "\\" + "1", `"\\1"`
 
 
 test "duplicate property definitions in object literals are prohibited", ->
   strict 'o = {x:1,x:1}'
   strict 'x = 1; o = {x, x: 2}'
 
-test "duplicate formal parameter are prohibited", ->
+test "duplicate formal parameters are prohibited", ->
   nonce = {}
 
   # a Param can be an Identifier, ThisProperty( @-param ), Array, or Object
@@ -78,6 +87,8 @@ test "duplicate formal parameter are prohibited", ->
   strict '(_,[_,{__}])->',   'param, [param, {param2}]'
   strict '(_,[__,{_}])->',   'param, [param2, {param}]'
   strict '(__,[_,{_}])->',   'param, [param2, {param2}]'
+  strict '(0:a,1:a)->',      '0:param,1:param'
+  strict '({0:a,1:a})->',    '{0:param,1:param}'
   # the following function expressions should **not** throw errors
   strictOk '({},_arg)->'
   strictOk '({},{})->'
@@ -90,6 +101,8 @@ test "duplicate formal parameter are prohibited", ->
   strictOk '(@case...,_case)->'
   strictOk '(_case,@case)->'
   strictOk '(_case,@case...)->'
+  strictOk '(a:a)->'
+  strictOk '(a:a,a:b)->'
 
 test "`delete` operand restrictions", ->
   strict 'a = 1; delete a'
