@@ -119,17 +119,17 @@ if stdin.readable
     on: ->
   stdin.on 'data', (chunk) ->
     pipedInput += chunk
-    return if -1 is pipedInput.indexOf "\n"
+    return unless /\n/.test pipedInput
     lines = pipedInput.split "\n"
     pipedInput = lines[lines.length - 1]
-    for line in lines[...-1]
+    for line in lines[...-1] when line
       stdout.write "#{line}\n"
       run line
+    return
   stdin.on 'end', ->
-    if trimmedInput = pipedInput.trim()
-      for line in trimmedInput.split "\n"
-        stdout.write "#{line}\n"
-        run line
+    for line in pipedInput.trim().split "\n" when line
+      stdout.write "#{line}\n"
+      run line
     stdout.write '\n'
     process.exit 0
 else
