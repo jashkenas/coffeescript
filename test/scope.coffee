@@ -67,28 +67,40 @@ test "#1183: super + fat arrows", ->
   				@_i += 2
   				super cb
           
-  b = new B()
+  b = new B
   b.foo => eq b._i, 3
 
 test "#1183: super + wrap", ->
   class A
     m : -> 10
+    
   class B extends A
     constructor : -> super
+    
   B::m = -> r = try super()
-  eq (new B()).m(), 10
+  
+  eq (new B).m(), 10
 
 test "#1183: super + closures", ->
   class A
     constructor: ->
       @i = 10
     foo : -> @i
+    
   class B extends A
     foo : ->
       ret = switch 1
         when 0 then 0
         when 1 then super()
       ret
-  eq (new B()).foo(), 10
+  eq (new B).foo(), 10
  
+test "#2331: bound super regression", ->
+  class A
+    @value = 'A'
+    method: -> @constructor.value
+    
+  class B extends A
+    method: => super
   
+  eq (new B).method(), 'A'
