@@ -47,7 +47,11 @@ completeAttribute = (text) ->
       val = Script.runInThisContext obj
     catch error
       return
-    completions = getCompletions prefix, (key for key of Object(val))
+    val = Object val
+    possibilities = Object.getOwnPropertyNames val
+    for key of val when ~possibilities.indexOf val
+      possibilities.push key
+    completions = getCompletions prefix, possibilities
     [completions, prefix]
 
 # Attempt to autocomplete an in-scope free variable: `one`.
