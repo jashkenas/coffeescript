@@ -23,7 +23,11 @@ Using it looks like this:</p>
       <span class="nv">val = </span><span class="nx">Script</span><span class="p">.</span><span class="nx">runInThisContext</span> <span class="nx">obj</span>
     <span class="k">catch</span> <span class="nx">error</span>
       <span class="k">return</span>
-    <span class="nv">completions = </span><span class="nx">getCompletions</span> <span class="nx">prefix</span><span class="p">,</span> <span class="p">(</span><span class="nx">key</span> <span class="k">for</span> <span class="nx">key</span> <span class="k">of</span> <span class="nb">Object</span><span class="p">(</span><span class="nx">val</span><span class="p">))</span>
+    <span class="nv">val = </span><span class="nb">Object</span> <span class="nx">val</span>
+    <span class="nv">possibilities = </span><span class="nb">Object</span><span class="p">.</span><span class="nx">getOwnPropertyNames</span> <span class="nx">val</span>
+    <span class="k">for</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">val</span> <span class="k">when</span> <span class="o">~</span><span class="nx">possibilities</span><span class="p">.</span><span class="nx">indexOf</span> <span class="nx">val</span>
+      <span class="nx">possibilities</span><span class="p">.</span><span class="nx">push</span> <span class="nx">key</span>
+    <span class="nv">completions = </span><span class="nx">getCompletions</span> <span class="nx">prefix</span><span class="p">,</span> <span class="nx">possibilities</span>
     <span class="p">[</span><span class="nx">completions</span><span class="p">,</span> <span class="nx">prefix</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-11">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-11">&#182;</a>               </div>               <p>Attempt to autocomplete an in-scope free variable: <code>one</code>.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">completeVariable = </span><span class="nf">(text) -&gt;</span>
   <span class="nv">free = </span><span class="nx">text</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">SIMPLEVAR</span><span class="p">)</span><span class="o">?</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
   <span class="nv">free = </span><span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="nx">text</span> <span class="o">is</span> <span class="s2">&quot;&quot;</span>
@@ -74,8 +78,15 @@ of exiting.</p>             </td>             <td class="code">               <d
     <span class="kc">on</span><span class="o">:</span> <span class="o">-&gt;</span>
   <span class="nx">stdin</span><span class="p">.</span><span class="kc">on</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="nf">(chunk) -&gt;</span>
     <span class="nx">pipedInput</span> <span class="o">+=</span> <span class="nx">chunk</span>
+    <span class="k">return</span> <span class="nx">unless</span> <span class="sr">/\n/</span><span class="p">.</span><span class="nx">test</span> <span class="nx">pipedInput</span>
+    <span class="nv">lines = </span><span class="nx">pipedInput</span><span class="p">.</span><span class="nx">split</span> <span class="s2">&quot;\n&quot;</span>
+    <span class="nv">pipedInput = </span><span class="nx">lines</span><span class="p">[</span><span class="nx">lines</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">for</span> <span class="nx">line</span> <span class="k">in</span> <span class="nx">lines</span><span class="p">[...</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">when</span> <span class="nx">line</span>
+      <span class="nx">stdout</span><span class="p">.</span><span class="nx">write</span> <span class="s2">&quot;#{line}\n&quot;</span>
+      <span class="nx">run</span> <span class="nx">line</span>
+    <span class="k">return</span>
   <span class="nx">stdin</span><span class="p">.</span><span class="kc">on</span> <span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="o">-&gt;</span>
-    <span class="k">for</span> <span class="nx">line</span> <span class="k">in</span> <span class="nx">pipedInput</span><span class="p">.</span><span class="nx">trim</span><span class="p">().</span><span class="nx">split</span> <span class="s2">&quot;\n&quot;</span>
+    <span class="k">for</span> <span class="nx">line</span> <span class="k">in</span> <span class="nx">pipedInput</span><span class="p">.</span><span class="nx">trim</span><span class="p">().</span><span class="nx">split</span> <span class="s2">&quot;\n&quot;</span> <span class="k">when</span> <span class="nx">line</span>
       <span class="nx">stdout</span><span class="p">.</span><span class="nx">write</span> <span class="s2">&quot;#{line}\n&quot;</span>
       <span class="nx">run</span> <span class="nx">line</span>
     <span class="nx">stdout</span><span class="p">.</span><span class="nx">write</span> <span class="s1">&#39;\n&#39;</span>
