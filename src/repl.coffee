@@ -178,11 +178,12 @@ repl.on 'attemptClose', ->
     repl.output.clearLine 1
     repl._onLine repl.line
     return
-  if backlog
+  if backlog or repl.line
     backlog = ''
-    repl.output.write '\n'
+    repl.historyIndex = -1
     repl.setPrompt REPL_PROMPT
-    repl.prompt()
+    repl.output.write '\n(^C again to quit)'
+    repl._line (repl.line = '')
   else
     repl.close()
 
