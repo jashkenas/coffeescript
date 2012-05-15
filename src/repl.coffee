@@ -47,7 +47,11 @@ completeAttribute = (text) ->
       val = Script.runInThisContext obj
     catch error
       return
-    completions = getCompletions prefix, (key for key of Object(val))
+    val = Object val
+    possibilities = Object.getOwnPropertyNames val
+    for key of val when ~possibilities.indexOf val
+      possibilities.push key
+    completions = getCompletions prefix, possibilities
     [completions, prefix]
 
 # Attempt to autocomplete an in-scope free variable: `one`.
@@ -119,8 +123,15 @@ if stdin.readable
     on: ->
   stdin.on 'data', (chunk) ->
     pipedInput += chunk
+    return unless /\n/.test pipedInput
+    lines = pipedInput.split "\n"
+    pipedInput = lines[lines.length - 1]
+    for line in lines[...-1] when line
+      stdout.write "#{line}\n"
+      run line
+    return
   stdin.on 'end', ->
-    for line in pipedInput.trim().split "\n"
+    for line in pipedInput.trim().split "\n" when line
       stdout.write "#{line}\n"
       run line
     stdout.write '\n'

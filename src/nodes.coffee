@@ -525,7 +525,8 @@ exports.Call = class Call extends Base
 
   # The appropriate `this` value for a `super` call.
   superThis : (o) ->
-    o.scope.method?.context or "this"
+    method = o.scope.method
+    (method and not method.klass and method.context) or "this"
 
   # Soaked chained invocations unfold into if/else ternary structures.
   unfoldSoak: (o) ->
