@@ -56,6 +56,6 @@ exports.del = (obj, key) ->
 exports.last = (array, back) -> array[array.length - (back or 0) - 1]
 
 # Typical Array::any
-exports.any = (array, fn) ->
-  return true for e in array when fn e
+exports.any = Array::some ? (fn) ->
+  return true for e in this when fn e
   false

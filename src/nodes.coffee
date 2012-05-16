@@ -806,19 +806,18 @@ exports.Obj = class Obj extends Base
       prop = prop.variable if prop.isComplex()
       if prop?
         propName = prop.unwrapAll().value.toString()
+        mp = propName.match /^['"]/
         isDuplicate = (x) ->
-          return true if propName is x
-          ex = ep = null
-          unless /^[a-z$_]/i.test x
-            ex = eval x
-            return true if propName is ex
-          unless /^[a-z$_]/i.test propName
-            ep = eval propName
-            return true if x is ep
-          if ex? and ep?
-            return true if ex is ep
+          return true if propName is x or +propName is +x
+          mx = x.match /^['"]/
+          if mp and mx
+            return true if eval "#{propName} === #{x}"
+          else if mx
+            return true if eval "#{x} === #{mx[0]}#{propName}#{mx[0]}"
+          else if mp
+            return true if eval "#{propName} === #{mp[0]}#{x}#{mp[0]}"
           false
-        if any propNames, isDuplicate
+        if any.call propNames, isDuplicate
           throw SyntaxError "multiple object literal properties named \"#{propName}\""
         propNames.push propName
     return (if @front then '({})' else '{}') unless props.length
