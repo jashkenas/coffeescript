@@ -71,7 +71,9 @@ test "#2333: more duplicate property prohibitions", ->
   strict '{100:0, 1e2:0}'
   strict '{"\\0":0, "\\x00":0}'
   strict '{"\\n":0, "\\x0A":0}'
+  strict '{"\\a", "\\u0061"}'
   strict '{"\\\\":0, "\\x5c":0}'
+  strict "{'\n0':0, 0:0}"
   strict 'a = 0; {a, "a":0}'
   strict "{'\\'a':0, \"'a\":0}"
   strict "{'\\\\a':0, '\\\\a':0}"
