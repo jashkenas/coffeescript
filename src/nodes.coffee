@@ -802,22 +802,26 @@ exports.Obj = class Obj extends Base
   compileNode: (o) ->
     props = @properties
     propNames = []
+    normalise = (s) -> switch s[0]
+      when '"' then s[1...-1].replace /\\"/g, '"'
+      when "'" then s[1...-1].replace /\\'/g, "'"
+    isDuplicate = (x) ->
+      mx = x.match /^['"]/
+      (y) ->
+        return true if y is x or +y is +x
+        my = y.match /^['"]/
+        if mx and my
+          return true if normalise(x) is normalise y
+        else if mx
+          return true if y is x[1...-1]
+        else if my
+          return true if x is y[1...-1]
+        false
     for prop in @properties
       prop = prop.variable if prop.isComplex()
       if prop?
         propName = prop.unwrapAll().value.toString()
-        mp = propName.match /^['"]/
-        isDuplicate = (x) ->
-          return true if propName is x or +propName is +x
-          mx = x.match /^['"]/
-          if mp and mx
-            return true if eval "#{propName} === #{x}"
-          else if mx
-            return true if eval "#{x} === #{mx[0]}#{propName}#{mx[0]}"
-          else if mp
-            return true if eval "#{propName} === #{mp[0]}#{x}#{mp[0]}"
-          false
-        if any.call propNames, isDuplicate
+        if any.call propNames, isDuplicate propName
           throw SyntaxError "multiple object literal properties named \"#{propName}\""
         propNames.push propName
     return (if @front then '({})' else '{}') unless props.length
