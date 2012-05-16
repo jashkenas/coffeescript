@@ -305,9 +305,9 @@ test "Prefix unary assignment operators are allowed in parenless calls.", ->
   ok (func --val) is 5
 
 test "#855: execution context for `func arr...` should be `null`", ->
-  contextTest = -> eq @, if window? then window else global
+  contextTest = -> eq @, null
   array = []
-  contextTest array
+  (-> eq @, undefined)(array)
   contextTest.apply null, array
   contextTest array...
 
