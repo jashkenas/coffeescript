@@ -305,10 +305,11 @@ test "Prefix unary assignment operators are allowed in parenless calls.", ->
   ok (func --val) is 5
 
 test "#855: execution context for `func arr...` should be `null`", ->
-  contextTest = -> eq @, null
+  contextTest = ->
+    eq this, window ? global if this?
   array = []
-  (-> eq @, undefined)(array)
-  contextTest.apply null, array
+  contextTest array
+  contextTest.apply undefined, array
   contextTest array...
 
 test "#904: Destructuring function arguments with same-named variables in scope", ->
