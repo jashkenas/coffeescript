@@ -7,7 +7,7 @@
 {RESERVED, STRICT_PROSCRIBED} = require './lexer'
 
 # Import the helpers we plan to use.
-{any, compact, flatten, extend, merge, del, starts, ends, last} = require './helpers'
+{compact, flatten, extend, merge, del, starts, ends, last, some} = require './helpers'
 
 exports.extend = extend  # for parser
 
@@ -821,7 +821,7 @@ exports.Obj = class Obj extends Base
       prop = prop.variable if prop.isComplex()
       if prop?
         propName = prop.unwrapAll().value.toString()
-        if any.call propNames, isDuplicate propName
+        if some.call propNames, isDuplicate propName
           throw SyntaxError "multiple object literal properties named \"#{propName}\""
         propNames.push propName
     return (if @front then '({})' else '{}') unless props.length
