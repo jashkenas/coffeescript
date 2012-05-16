@@ -306,7 +306,12 @@ test "Prefix unary assignment operators are allowed in parenless calls.", ->
 
 test "#855: execution context for `func arr...` should be `null`", ->
   contextTest = ->
-    eq this, window ? global if this?
+    if this is undefined
+      eq this, undefined
+    else if this is null
+      eq this, null
+    else
+      eq this, window ? global
   array = []
   contextTest array
   contextTest.apply undefined, array
