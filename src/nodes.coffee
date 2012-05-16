@@ -807,15 +807,18 @@ exports.Obj = class Obj extends Base
       if prop?
         propName = prop.unwrapAll().value.toString()
         isDuplicate = (x) ->
-          p0 = propName[0]
-          x0 = x[0]
           propName is x or +propName is +x or
-          if p0 is "'" and x0 is '"' or p0 is '"' and x0 is "'"
-            eval(x) is eval(propName)
-          else if p0 is "'" then propName is "'#{x}'"
-          else if p0 is '"' then propName is "\"#{x}\""
-          else if x0 is "'" then x is "'#{propName}'"
-          else if x0 is '"' then x is "\"#{propName}\""
+          do ->
+            ex = ep = null
+            unless /^[a-z$_]/i.test x
+              ex = eval x
+              return true if propName is ex
+            unless /^[a-z$_]/i.test propName
+              ep = eval propName
+              return true if x is ep
+            if ex? and ep?
+              return true if ex is ep
+            false
         if any propNames, isDuplicate
           throw SyntaxError "multiple object literal properties named \"#{propName}\""
         propNames.push propName

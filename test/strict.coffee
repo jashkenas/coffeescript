@@ -65,7 +65,10 @@ test "#2333: more duplicate property prohibitions", ->
   strict "{'a':0, a:0}"
   strict '{\'a\':0, "a":0}'
   strict '{0:0, 0x0:0}'
+  strict '{0:0, "\x30":0}'
+  strict '{"\0":0, "\x00":0}'
   strict 'a = 0; {a, "a":0}'
+  strictOk '{0:0, "0x0":0}'
   strictOk '{"a":0, "\'a\'":0}'
 
 test "duplicate formal parameters are prohibited", ->
