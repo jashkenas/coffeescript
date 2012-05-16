@@ -802,20 +802,25 @@ exports.Obj = class Obj extends Base
   compileNode: (o) ->
     props = @properties
     propNames = []
-    normalise = (s) -> switch s[0]
-      when '"' then s[1...-1].replace /\\"/g, '"'
-      when "'" then s[1...-1].replace /\\'/g, "'"
+    normaliseString = (s) ->
+      quoteNormalised = switch s[0]
+        when '"' then s[1...-1].replace /\\"/g, '"'
+        when "'" then s[1...-1].replace /\\'/g, "'"
+      octalNormalised = quoteNormalised.replace /\\([0btnvfr\\])/, (match, c) ->
+        {0:"\0", b:"\b", t:"\t", n:"\n", v:"\v", f:"\f", r:"\r", "\\":"\\"}[c]
+      octalNormalised.replace /\\x([0-9a-f]{2})|\\u([0-9a-f]{4})/i, (match, h, u) ->
+        String.fromCharCode parseInt (h ? u), 16
     isDuplicate = (x) ->
       mx = x.match /^['"]/
       (y) ->
         return true if y is x or +y is +x
         my = y.match /^['"]/
         if mx and my
-          return true if normalise(x) is normalise y
+          return true if normaliseString(x) is normaliseString y
         else if mx
-          return true if y is x[1...-1]
+          return true if y is normaliseString x
         else if my
-          return true if x is y[1...-1]
+          return true if x is normaliseString y
         false
     for prop in @properties
       prop = prop.variable if prop.isComplex()
