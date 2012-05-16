@@ -57,8 +57,16 @@ test "octal escape sequences prohibited", ->
 
 
 test "duplicate property definitions in object literals are prohibited", ->
-  strict 'o = {x:1,x:1}'
+  strict 'o = {x:1, x:1}'
   strict 'x = 1; o = {x, x: 2}'
+
+test "#2333: more duplicate property prohibitions", ->
+  strict '{a:0, "a":0}'
+  strict "{'a':0, a:0}"
+  strict '{\'a\':0, "a":0}'
+  strict '{0:0, 0x0:0}'
+  strict 'a = 0; {a, "a":0}'
+  strictOk '{"a":0, "\'a\'":0}'
 
 test "duplicate formal parameters are prohibited", ->
   nonce = {}
