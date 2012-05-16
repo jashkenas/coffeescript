@@ -806,13 +806,10 @@ exports.Obj = class Obj extends Base
       quoteNormalised = switch s[0]
         when '"' then s[1...-1].replace /\\"/g, '"'
         when "'" then s[1...-1].replace /\\'/g, "'"
-      octalNormalised = quoteNormalised.replace /\\([0abtnvfr\n\\])/, (match, c) ->
-        map =
-          0:"\0", a:"\a", b:"\b", t:"\t", n:"\n", v:"\v",
-          f:"\f", r:"\r", "\\":"\\", "\n":""
-        map[c]
-      octalNormalised.replace /\\x([0-9a-f]{2})|\\u([0-9a-f]{4})/i, (match, h, u) ->
+      escapeNormalised = quoteNormalised.replace /\\x([0-9a-f]{2})|\\u([0-9a-f]{4})/ig, (match, h, u) ->
         String.fromCharCode parseInt (h ? u), 16
+      escapeNormalised.replace /\\([\s\S])/g, (match, c) ->
+        {0:"\0", b:"\b", t:"\t", n:"\n", v:"\v", f:"\f", r:"\r", "\\":"\\", "\n":""}[c] ? c
     isDuplicate = (x) ->
       mx = x.match /^['"]/
       (y) ->
