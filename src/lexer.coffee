@@ -37,6 +37,7 @@ exports.Lexer = class Lexer
 
     @code    = code           # The remainder of the source code.
     @line    = opts.line or 0 # The current line.
+    @col     = 0              # The current column
     @indent  = 0              # The current indentation level.
     @indebt  = 0              # The over-indentation at the current level.
     @outdebt = 0              # The under-outdentation at the current level.
@@ -59,6 +60,12 @@ exports.Lexer = class Lexer
            @regexToken()      or
            @jsToken()         or
            @literalToken()
+      lastendl = code[...i].lastIndexOf '\n'
+      if lastendl == -1
+          lastendl = 0
+      else
+          lastendl = lastendl + 1
+      @col = i - lastendl
 
     @closeIndentation()
     @error "missing #{tag}" if tag = @ends.pop()
@@ -512,7 +519,7 @@ exports.Lexer = class Lexer
 
   # Add a token to the results, taking note of the line number.
   token: (tag, value) ->
-    @tokens.push [tag, value, @line]
+    @tokens.push [tag, value, @line, @col]
 
   # Peek at a tag in the current token stream.
   tag: (index, tag) ->
