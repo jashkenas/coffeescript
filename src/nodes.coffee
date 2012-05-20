@@ -787,7 +787,7 @@ exports.Slice = class Slice extends Base
         "#{+compiled + 1}"
       else
         compiled = to.compile o, LEVEL_ACCESS
-        "+#{compiled}+1 || 9e9"
+        "+#{compiled} + 1 || 9e9"
     ".slice(#{ fromStr }#{ toStr or '' })"
 
 #### Obj
