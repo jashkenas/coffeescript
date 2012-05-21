@@ -55,41 +55,8 @@ test "octal escape sequences prohibited", ->
   strictOk  "`'\\1'`"
   eq "\\" + "1", `"\\1"`
 
-
-test "duplicate property definitions in object literals are prohibited", ->
-  strict 'o = {x:1, x:1}'
-  strict 'x = 1; o = {x, x: 2}'
-
-test "#2333: more duplicate property prohibitions", ->
-  usingKeys = (a, b) -> "{#{a}:0, #{b}:0}"
-  strict '{a, "a":0}'
-  strict usingKeys "a", '"a"'
-  strict usingKeys "'a'", "a"
-  strict usingKeys "'a'", '"a"'
-  strict usingKeys "'a'", "'a'"
-  strict usingKeys "0", "0x0"
-  strict usingKeys "0", "'\\x30'"
-  strict usingKeys ".1", "0.1"
-  strict usingKeys ".1", "1e-1"
-  strict usingKeys "100", "1e2"
-  strict usingKeys "'\\0'", "'\\x00'"
-  strict usingKeys "'\\t'", "'\\x09'"
-  strict usingKeys "'\\\\x00'", "'\\\\\\x7800'"
-  strict usingKeys "'c'", "'\\c'"
-  strict usingKeys "'\\\\'", "'\\x5c'"
-  strict usingKeys "'\\\n0'", "0"
-  strict usingKeys "'\\\n0'", "'\\x00'"
-  strict usingKeys "'\\'a'", "\"'a\""
-  strict usingKeys "'\\\\a'", "'\\\\a'"
-  strictOk usingKeys "a", "b"
-  strictOk usingKeys "'\"a\"'", "'a'"
-  strictOk usingKeys "'\"a\"'", '"\'a\'"'
-  strictOk usingKeys "0", '"0x0"'
-  strictOk usingKeys "0", '"\\\\x30"'
-
 test "duplicate formal parameters are prohibited", ->
   nonce = {}
-
   # a Param can be an Identifier, ThisProperty( @-param ), Array, or Object
   # a Param can also be a splat (...) or an assignment (param=value)
   # the following function expressions should throw errors

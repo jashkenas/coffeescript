@@ -801,16 +801,6 @@ exports.Obj = class Obj extends Base
 
   compileNode: (o) ->
     props = @properties
-    propNames = []
-    normalise = (v) -> if IDENTIFIER.test v then v else "" + do Function "return #{v}"
-    for prop in @properties
-      prop = prop.variable if prop.isComplex()
-      if prop?
-        propName = prop.unwrapAll().value.toString()
-        normalisedPropName = normalise propName
-        if normalisedPropName in propNames
-          throw SyntaxError "multiple object literal properties named \"#{propName}\""
-        propNames.push normalisedPropName
     return (if @front then '({})' else '{}') unless props.length
     if @generated
       for node in props when node instanceof Value
