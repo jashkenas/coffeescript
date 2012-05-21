@@ -79,8 +79,8 @@ test "#2333: more duplicate property prohibitions", ->
   strict usingKeys "'\\\\'", "'\\x5c'"
   strict usingKeys "'\\\n0'", "0"
   strict usingKeys "'\\\n0'", "'\\x00'"
-  strict usingKeys "{'\\'a'", "\"'a\""
-  strict usingKeys "{'\\\\a'", "'\\\\a'"
+  strict usingKeys "'\\'a'", "\"'a\""
+  strict usingKeys "'\\\\a'", "'\\\\a'"
   strictOk usingKeys "a", "b"
   strictOk usingKeys "'\"a\"'", "'a'"
   strictOk usingKeys "'\"a\"'", '"\'a\'"'
