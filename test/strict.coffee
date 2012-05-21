@@ -61,27 +61,31 @@ test "duplicate property definitions in object literals are prohibited", ->
   strict 'x = 1; o = {x, x: 2}'
 
 test "#2333: more duplicate property prohibitions", ->
-  strict '{a:0, "a":0}'
-  strict "{'a':0, a:0}"
-  strict '{\'a\':0, "a":0}'
-  strict '{0:0, 0x0:0}'
-  strict '{0:0, "\\x30":0}'
-  strict '{.1:0, 0.1:0}'
-  strict '{.1:0, 1e-1:0}'
-  strict '{100:0, 1e2:0}'
-  strict '{"\\0":0, "\\x00":0}'
-  strict '{"\\t":0, "\\x09":0}'
-  strict '{"c":0, "\\c":0}'
-  strict '{"\\\\":0, "\\x5c":0}'
-  strict "{'\n0':0, 0:0}"
-  strict '{"\n0":0, 0:0}'
-  strict "{'\\\n0':0, 0:0}"
-  strict '{"\\\n0":0, "\\x00":0}'
-  strict 'a = 0; {a, "a":0}'
-  strict "{'\\'a':0, \"'a\":0}"
-  strict "{'\\\\a':0, '\\\\a':0}"
-  strictOk '{0:0, "0x0":0}'
-  strictOk '{"a":0, "\'a\'":0}'
+  usingKeys = (a, b) -> "{#{a}:0, #{b}:0}"
+  strict '{a, "a":0}'
+  strict usingKeys "a", '"a"'
+  strict usingKeys "'a'", "a"
+  strict usingKeys "'a'", '"a"'
+  strict usingKeys "'a'", "'a'"
+  strict usingKeys "0", "0x0"
+  strict usingKeys "0", "'\\x30'"
+  strict usingKeys ".1", "0.1"
+  strict usingKeys ".1", "1e-1"
+  strict usingKeys "100", "1e2"
+  strict usingKeys "'\\0'", "'\\x00'"
+  strict usingKeys "'\\t'", "'\\x09'"
+  strict usingKeys "'\\\\x00'", "'\\\\\\x7800'"
+  strict usingKeys "'c'", "'\\c'"
+  strict usingKeys "'\\\\'", "'\\x5c'"
+  strict usingKeys "'\\\n0'", "0"
+  strict usingKeys "'\\\n0'", "'\\x00'"
+  strict usingKeys "{'\\'a'", "\"'a\""
+  strict usingKeys "{'\\\\a'", "'\\\\a'"
+  strictOk usingKeys "a", "b"
+  strictOk usingKeys "'\"a\"'", "'a'"
+  strictOk usingKeys "'\"a\"'", '"\'a\'"'
+  strictOk usingKeys "0", '"0x0"'
+  strictOk usingKeys "0", '"\\\\x30"'
 
 test "duplicate formal parameters are prohibited", ->
   nonce = {}

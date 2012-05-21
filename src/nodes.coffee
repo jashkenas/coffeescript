@@ -802,33 +802,15 @@ exports.Obj = class Obj extends Base
   compileNode: (o) ->
     props = @properties
     propNames = []
-    normaliseString = (s) ->
-      quoteNormalised = switch s[0]
-        when '"' then s[1...-1].replace /\\"/g, '"'
-        when "'" then s[1...-1].replace /\\'/g, "'"
-      escapeNormalised = quoteNormalised.replace /\\x([0-9a-f]{2})|\\u([0-9a-f]{4})/ig, (match, h, u) ->
-        String.fromCharCode parseInt (h ? u), 16
-      escapeNormalised.replace /\\([\s\S])/g, (match, c) ->
-        {0:"\0", b:"\b", t:"\t", n:"\n", v:"\v", f:"\f", r:"\r", "\\":"\\", "\n":""}[c] ? c
-    isDuplicate = (x) ->
-      mx = x.match /^['"]/
-      (y) ->
-        return true if y is x or +y is +x
-        my = y.match /^['"]/
-        if mx and my
-          return true if normaliseString(x) is normaliseString y
-        else if mx
-          return true if y is normaliseString x
-        else if my
-          return true if x is normaliseString y
-        false
+    normalise = (v) -> if IDENTIFIER.test v then v else "" + do Function "return #{v}"
     for prop in @properties
       prop = prop.variable if prop.isComplex()
       if prop?
         propName = prop.unwrapAll().value.toString()
-        if some.call propNames, isDuplicate propName
+        normalisedPropName = normalise propName
+        if normalisedPropName in propNames
           throw SyntaxError "multiple object literal properties named \"#{propName}\""
-        propNames.push propName
+        propNames.push normalisedPropName
     return (if @front then '({})' else '{}') unless props.length
     if @generated
       for node in props when node instanceof Value
