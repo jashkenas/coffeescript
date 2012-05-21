@@ -115,7 +115,7 @@ run = (buffer) ->
     error err
   repl.prompt()
 
-if stdin.readable
+if stdin.readable and stdin.isRaw
   # handle piped input
   pipedInput = ''
   repl =
