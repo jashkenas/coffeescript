@@ -5,6 +5,7 @@
 # interactive REPL.
 
 # External dependencies.
+os             = require 'os'
 fs             = require 'fs'
 path           = require 'path'
 helpers        = require './helpers'
@@ -275,7 +276,10 @@ writeJs = (source, js, base) ->
       else if opts.compile and opts.watch
         timeLog "compiled #{source}"
   path.exists jsDir, (exists) ->
-    if exists then compile() else exec "mkdir -p #{jsDir}", compile
+    if os.isWindows() then
+      if exists then compile() else exec "mkdir #{jsDir}", compile
+    else
+      if exists then compile() else exec "mkdir -p #{jsDir}", compile
 
 # Convenience for cleaner setTimeouts.
 wait = (milliseconds, func) -> setTimeout func, milliseconds
