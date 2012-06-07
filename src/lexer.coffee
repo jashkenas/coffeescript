@@ -259,7 +259,6 @@ exports.Lexer = class Lexer
     indent = match[0]
     @line += count indent, '\n'
     @seenFor = no
-    prev = last @tokens, 1
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
     if size - @indebt is @indent
