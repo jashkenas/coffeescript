@@ -1736,6 +1736,37 @@ tag = "<impossible>";
 
 _ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? __slice.call(_ref, 1, _i = _ref.length - 1) : (_i = 1, []), close = _ref[_i++];
 ;alert(contents.join(""));'>run: contents.join("")</div><br class='clear' /></div>
+    <p>
+      Destructuring assignment is also useful when combined with class constructors 
+      to assign propeties to your instance from an options object passed to the constructor.
+    </p>
+    <div class='code'><pre class="idle">class Person
+  constructor: (options) -&gt; 
+    {@name, @age, @height} = options
+
+</pre><pre class="idle"><span class="Storage">var</span> Person;
+
+Person <span class="Keyword">=</span> (<span class="Storage">function</span>() {
+
+  <span class="Storage">function</span> <span class="FunctionName">Person</span>(<span class="FunctionArgument">options</span>) {
+    <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> options.<span class="LibraryConstant">name</span>, <span class="Variable">this</span>.age <span class="Keyword">=</span> options.age, <span class="Variable">this</span>.<span class="LibraryConstant">height</span> <span class="Keyword">=</span> options.<span class="LibraryConstant">height</span>;
+  }
+
+  <span class="Keyword">return</span> Person;
+
+})();
+</pre><script>window.example29 = "class Person\n  constructor: (options) -> \n    {@name, @age, @height} = options\n\nalert contents.join(\"\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example29);'>load</div><div class='minibutton ok' onclick='javascript: var Person;
+
+Person = (function() {
+
+  function Person(options) {
+    this.name = options.name, this.age = options.age, this.height = options.height;
+  }
+
+  return Person;
+
+})();
+;alert(contents.join(""));'>run: contents.join("")</div><br class='clear' /></div>
 
     <p>
       <span id="fat_arrow" class="bookmark"></span>
