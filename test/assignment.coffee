@@ -376,3 +376,6 @@ test 'Identifiers with dashes', ->
   obj.make-greeting = make-greeting
   eq (obj.make-greeting "Ice"), "Hello, Ice"
   eq (obj.makeGreetingSecond "Ice"), "Hello, Ice"
+  number = 10
+  eq number--, 10
+  eq number-- * 2, 18
