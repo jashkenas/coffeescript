@@ -365,3 +365,17 @@ test '#2213: invocations within destructured parameters', ->
   throws -> CoffeeScript.compile '({a()})->'
   throws -> CoffeeScript.compile '({a:b()})->'
   throws -> CoffeeScript.compile '({a:b.c()})->'
+
+test 'Identifiers with dashes', ->
+  make-greeting = (who-is-it) -> "Hello, #{who-is-it}"
+  eq (make-greeting "Ice"), "Hello, Ice"
+  eq (makeGreeting "Ice"), "Hello, Ice"
+  obj = {
+    make-greeting-second: makeGreeting
+  }
+  obj.make-greeting = make-greeting
+  eq (obj.make-greeting "Ice"), "Hello, Ice"
+  eq (obj.makeGreetingSecond "Ice"), "Hello, Ice"
+  number = 10
+  eq number--, 10
+  eq number-- * 2, 18

@@ -78,6 +78,9 @@ exports.Lexer = class Lexer
     return 0 unless match = IDENTIFIER.exec @chunk
     [input, id, colon] = match
 
+    # Uppercase first letter after dash.
+    id = id.replace /-+([a-zA-Z0-9$_])/g, (string) -> string[1].toUpperCase()
+
     if id is 'own' and @tag() is 'FOR'
       @token 'OWN', id
       return id.length
@@ -594,7 +597,7 @@ exports.STRICT_PROSCRIBED = STRICT_PROSCRIBED
 
 # Token matching regexes.
 IDENTIFIER = /// ^
-  ( [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]* )
+  ( [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*(?:(?:\-[a-zA-Z]+)?)* )
   ( [^\n\S]* : (?!:) )?  # Is this a property name?
 ///
 
