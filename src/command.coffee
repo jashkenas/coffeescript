@@ -16,6 +16,9 @@ CoffeeScript   = require './coffee-script'
 # Allow CoffeeScript to emit Node.js events.
 helpers.extend CoffeeScript, new EventEmitter
 
+# Extend fs for backwards compatibility with Node versions prior to 0.7
+helpers.fsCompat fs, path
+
 printLine = (line) -> process.stdout.write line + '\n'
 printWarn = (line) -> process.stderr.write line + '\n'
 
@@ -247,7 +250,7 @@ removeSource = (source, base, removeJs) ->
   sourceCode.splice index, 1
   if removeJs and not opts.join
     jsPath = outputPath source, base
-    path.exists jsPath, (exists) ->
+    fs.existsCompat jsPath, (exists) ->
       if exists
         fs.unlink jsPath, (err) ->
           throw err if err and err.code isnt 'ENOENT'
@@ -274,7 +277,7 @@ writeJs = (source, js, base) ->
         printLine err.message
       else if opts.compile and opts.watch
         timeLog "compiled #{source}"
-  path.exists jsDir, (exists) ->
+  fs.existsCompat jsDir, (exists) ->
     if exists then compile() else exec "mkdir -p #{jsDir}", compile
 
 # Convenience for cleaner setTimeouts.

@@ -19,6 +19,9 @@ options   = {}
 switches  = []
 oparse    = null
 
+# Extend fs for backwards compatibility with Node versions prior to 0.7
+helpers.fsCompat fs, path
+
 # Mixin the top-level Cake functions for Cakefiles to use directly.
 helpers.extend global,
 
@@ -79,7 +82,7 @@ missingTask = (task) -> fatalError "No such task: #{task}"
 # When `cake` is invoked, search in the current and all parent directories
 # to find the relevant Cakefile.
 cakefileDirectory = (dir) ->
-  return dir if path.existsSync path.join dir, 'Cakefile'
+  return dir if fs.existsSyncCompat path.join dir, 'Cakefile'
   parent = path.normalize path.join dir, '..'
   return cakefileDirectory parent unless parent is dir
   throw new Error "Cakefile not found in #{process.cwd()}"
