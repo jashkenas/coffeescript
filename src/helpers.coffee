@@ -59,3 +59,13 @@ exports.last = (array, back) -> array[array.length - (back or 0) - 1]
 exports.some = Array::some ? (fn) ->
   return true for e in this when fn e
   false
+
+# In Node 0.7+ exists & existsSync are on fs and deprecated on path.
+exports.fsCompat = (fs, _path) ->
+  extend fs,
+    existsSyncCompat: (path) ->
+      if @existsSync? then @existsSync(path) else _path.existsSync(path)
+
+    existsCompat: (path, callback) ->
+      if @exists? then @exists(path, callback) else _path.exists(path, callback)
+
