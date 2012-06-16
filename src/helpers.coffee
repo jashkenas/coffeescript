@@ -67,5 +67,5 @@ exports.fsCompat = (fs, _path) ->
       if @existsSync? then @existsSync(path) else _path.existsSync(path)
 
     existsCompat: (path, callback) ->
-      if @exists? then @exists(path, callback) else _path.existsSync(path, callback)
+      if @exists? then @exists(path, callback) else _path.exists(path, callback)
 
