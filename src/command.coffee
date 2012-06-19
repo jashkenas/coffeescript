@@ -37,6 +37,7 @@ SWITCHES = [
   ['-i', '--interactive',     'run an interactive CoffeeScript REPL']
   ['-j', '--join [FILE]',     'concatenate the source CoffeeScript before compiling']
   ['-l', '--lint',            'pipe the compiled JavaScript through JavaScript Lint']
+  ['-u', '--utf8bom',         'add a UTF8 BOM to the generated JavaScript file']
   ['-n', '--nodes',           'print out the parse tree that the parser produces']
   [      '--nodejs [ARGS]',   'pass options directly to the "node" binary']
   ['-o', '--output [DIR]',    'set the output directory for compiled JavaScript']
@@ -269,6 +270,15 @@ writeJs = (source, js, base) ->
   jsDir  = path.dirname jsPath
   compile = ->
     js = ' ' if js.length <= 0
+    if opts.utf8bom
+      jsBuffer = new Buffer(js)
+      buffer = new Buffer(jsBuffer.length+3)
+      buffer.writeUInt8 0xEF, 0
+      buffer.writeUInt8 0xBB, 1
+      buffer.writeUInt8 0xBF, 2
+      jsBuffer.copy(buffer, 3)
+      js = buffer
+
     fs.writeFile jsPath, js, (err) ->
       if err
         printLine err.message
