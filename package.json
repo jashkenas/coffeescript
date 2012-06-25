@@ -15,7 +15,8 @@
     "lib" : "./lib/coffee-script"
   },
   "jam": {
-    "main": "./extras/coffee-script.js"
+    "main": "./extras/coffee-script.js",
+    "include": ["extras/coffee-script.js"]
   },
   "main" : "./lib/coffee-script/coffee-script",
   "bin":          {
