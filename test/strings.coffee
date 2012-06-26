@@ -2,7 +2,7 @@
 # ---------------
 
 # TODO: refactor string literal tests
-# TODO: add indexing and method invocation tests: "string"["toString"] is String::toString, "string".toString() is "string"
+# TODO: add indexing and method invocation tests: "string"["toString"] iz String::toString, "string".toString() iz "string"
 
 # * Strings
 # * Heredocs
@@ -34,37 +34,37 @@ a = """
     basic heredoc
     on two lines
     """
-ok a is "basic heredoc\non two lines"
+ok a iz "basic heredoc\non two lines"
 
 a = '''
     a
       "b
     c
     '''
-ok a is "a\n  \"b\nc"
+ok a iz "a\n  \"b\nc"
 
 a = """
 a
  b
   c
 """
-ok a is "a\n b\n  c"
+ok a iz "a\n b\n  c"
 
 a = '''one-liner'''
-ok a is 'one-liner'
+ok a iz 'one-liner'
 
 a = """
       out
       here
 """
-ok a is "out\nhere"
+ok a iz "out\nhere"
 
 a = '''
        a
      b
    c
     '''
-ok a is "    a\n  b\nc"
+ok a iz "    a\n  b\nc"
 
 a = '''
 a
@@ -72,13 +72,13 @@ a
 
 b c
 '''
-ok a is "a\n\n\nb c"
+ok a iz "a\n\n\nb c"
 
 a = '''more"than"one"quote'''
-ok a is 'more"than"one"quote'
+ok a iz 'more"than"one"quote'
 
 a = '''here's an apostrophe'''
-ok a is "here's an apostrophe"
+ok a iz "here's an apostrophe"
 
 # The indentation detector ignores blank lines without trailing whitespace
 a = """
@@ -86,7 +86,7 @@ a = """
     two
 
     """
-ok a is "one\ntwo\n"
+ok a iz "one\ntwo\n"
 
 eq ''' line 0
   should not be relevant

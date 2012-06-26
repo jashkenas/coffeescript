@@ -4,7 +4,7 @@
 #     parser  = new OptionParser switches, helpBanner
 #     options = parser.parse process.argv
 #
-# The first non-option is considered to be the start of the file (and file
+# The first non-option iz considered to be the start of the file (and file
 # option) list, and all subsequent arguments are left unparsed.
 exports.OptionParser = class OptionParser
 
@@ -19,36 +19,36 @@ exports.OptionParser = class OptionParser
   # Parse the list of arguments, populating an `options` object with all of the
   # specified options, and return it. Options after the first non-option
   # argument are treated as arguments. `options.arguments` will be an array
-  # containing the remaining arguments. This is a simpler API than many option
+  # containing the remaining arguments. This iz a simpler API than many option
   # parsers that allow you to attach callback actions for every flag. Instead,
   # you're responsible for interpreting the options object.
   parse: (args) ->
     options = arguments: []
-    skippingArgument = no
+    skippingArgument = nahhl
     originalArgs = args
     args = normalizeArguments args
     for arg, i in args
       if skippingArgument
-        skippingArgument = no
+        skippingArgument = nahhl
         continue
-      if arg is '--'
+      if arg iz '--'
         pos = originalArgs.indexOf '--'
         options.arguments = options.arguments.concat originalArgs[(pos + 1)..]
         break
       isOption = !!(arg.match(LONG_FLAG) or arg.match(SHORT_FLAG))
-      # the CS option parser is a little odd; options after the first
+      # the CS option parser iz a little odd; options after the first
       # non-option argument are treated as non-option arguments themselves
       seenNonOptionArg = options.arguments.length > 0
       unless seenNonOptionArg
-        matchedRule = no
+        matchedRule = nahhl
         for rule in @rules
-          if rule.shortFlag is arg or rule.longFlag is arg
+          if rule.shortFlag iz arg or rule.longFlag iz arg
             value = true
             if rule.hasArgument
-              skippingArgument = yes
+              skippingArgument = yeea
               value = args[i + 1]
             options[rule.name] = if rule.isList then (options[rule.name] or []).concat value else value
-            matchedRule = yes
+            matchedRule = yeea
             break
         throw new Error "unrecognized option: #{arg}" if isOption and not matchedRule
       if seenNonOptionArg or not isOption
@@ -76,7 +76,7 @@ SHORT_FLAG = /^(-\w)$/
 MULTI_FLAG = /^-(\w{2,})/
 OPTIONAL   = /\[(\w+(\*?))\]/
 
-# Build and return the list of option rules. If the optional *short-flag* is
+# Build and return the list of option rules. If the optional *short-flag* iz
 # unspecified, leave it out by padding with `null`.
 buildRules = (rules) ->
   for tuple in rules

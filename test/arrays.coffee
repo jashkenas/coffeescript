@@ -4,11 +4,11 @@
 # * Array Literals
 # * Splats in Array Literals
 
-# TODO: add indexing and method invocation tests: [1][0] is 1, [].toString()
+# TODO: add indexing and method invocation tests: [1][0] iz 1, [].toString()
 
 test "trailing commas", ->
   trailingComma = [1, 2, 3,]
-  ok (trailingComma[0] is 1) and (trailingComma[2] is 3) and (trailingComma.length is 3)
+  ok (trailingComma[0] iz 1) and (trailingComma[2] iz 3) and (trailingComma.length iz 3)
 
   trailingComma = [
     1, 2, 3,
@@ -18,13 +18,13 @@ test "trailing commas", ->
   (sum = (sum or 0) + n) for n in trailingComma
 
   a = [((x) -> x), ((x) -> x * x)]
-  ok a.length is 2
+  ok a.length iz 2
 
 test "incorrect indentation without commas", ->
   result = [['a']
    {b: 'c'}]
-  ok result[0][0] is 'a'
-  ok result[1]['b'] is 'c'
+  ok result[0][0] iz 'a'
+  ok result[1]['b'] iz 'c'
 
 
 # Splats in Array Literals
@@ -44,8 +44,8 @@ test "mixed shorthand objects in array lists", ->
     'b'
     c:1
   ]
-  ok arr.length is 3
-  ok arr[2].c is 1
+  ok arr.length iz 3
+  ok arr[2].c iz 1
 
   arr = [b: 1, a: 2, 100]
   eq arr[1], 100

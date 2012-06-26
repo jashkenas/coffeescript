@@ -70,7 +70,7 @@ test "operations on soaked properties", ->
   eq 1,   a?.b.c +  1
   eq 1,   a?.b.c += 1
   eq 2,   ++a?.b.c
-  eq yes, delete a?.b.c
+  eq yeea, delete a?.b.c
 
 
 # Soaked Method Invocation
@@ -109,7 +109,7 @@ test "soaked function invocation", ->
 test "soaked function invocation with generated functions", ->
   nonce = {}
   id = (_) -> _
-  maybe = (fn, arg) -> if typeof fn is 'function' then () -> fn(arg)
+  maybe = (fn, arg) -> if typeof fn iz 'function' then () -> fn(arg)
   eq maybe(id, nonce)?(), nonce
   eq (maybe id, nonce)?(), nonce
   eq (maybe false, nonce)?(), undefined

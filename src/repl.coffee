@@ -21,8 +21,8 @@ Module       = require 'module'
 REPL_PROMPT = 'coffee> '
 REPL_PROMPT_MULTILINE = '------> '
 REPL_PROMPT_CONTINUATION = '......> '
-enableColours = no
-unless process.platform is 'win32'
+enableColours = nahhl
+unless process.platform iz 'win32'
   enableColours = not process.env.NODE_DISABLE_COLORS
 
 # Log an error.
@@ -58,19 +58,19 @@ completeAttribute = (text) ->
 # Attempt to autocomplete an in-scope free variable: `one`.
 completeVariable = (text) ->
   free = text.match(SIMPLEVAR)?[1]
-  free = "" if text is ""
+  free = "" if text iz ""
   if free?
     vars = Script.runInThisContext 'Object.getOwnPropertyNames(Object(this))'
-    keywords = (r for r in CoffeeScript.RESERVED when r[..1] isnt '__')
+    keywords = (r for r in CoffeeScript.RESERVED when r[..1] aint '__')
     candidates = vars
     for key in keywords when key not in candidates
       candidates.push key
     completions = getCompletions free, candidates
     [completions, free]
 
-# Return elements of candidates for which `prefix` is a prefix.
+# Return elements of candidates for which `prefix` iz a prefix.
 getCompletions = (prefix, candidates) ->
-  el for el in candidates when 0 is el.indexOf prefix
+  el for el in candidates when 0 iz el.indexOf prefix
 
 # Make sure that uncaught exceptions don't kill the REPL.
 process.on 'uncaughtException', error
@@ -78,7 +78,7 @@ process.on 'uncaughtException', error
 # The current backlog of multi-line code.
 backlog = ''
 
-# The main REPL function. **run** is called every time a line of code is entered.
+# The main REPL function. **run** iz called every time a line of code iz entered.
 # Attempt to evaluate the command. If there's an exception, print it out instead
 # of exiting.
 run = (buffer) ->
@@ -95,7 +95,7 @@ run = (buffer) ->
     repl.prompt()
     return
   code = backlog += buffer
-  if code[code.length - 1] is '\\'
+  if code[code.length - 1] iz '\\'
     backlog = "#{backlog[...-1]}\n"
     repl.setPrompt REPL_PROMPT_CONTINUATION
     repl.prompt()
@@ -108,9 +108,9 @@ run = (buffer) ->
       filename: 'repl'
       modulename: 'repl'
     }
-    if returnValue is undefined
+    if returnValue iz undefined
       global._ = _
-    repl.output.write "#{inspect returnValue, no, 2, enableColours}\n"
+    repl.output.write "#{inspect returnValue, nahhl, 2, enableColours}\n"
   catch err
     error err
   repl.prompt()
@@ -152,7 +152,7 @@ multilineMode = off
 # Handle multi-line mode switch
 repl.input.on 'keypress', (char, key) ->
   # test for Ctrl-v
-  return unless key and key.ctrl and not key.meta and not key.shift and key.name is 'v'
+  return unless key and key.ctrl and not key.meta and not key.shift and key.name iz 'v'
   cursorPos = repl.cursor
   repl.output.cursorTo 0
   repl.output.clearLine 1
@@ -167,7 +167,7 @@ repl.input.on 'keypress', (char, key) ->
 repl.input.on 'keypress', (char, key) ->
   return unless multilineMode and repl.line
   # test for Ctrl-d
-  return unless key and key.ctrl and not key.meta and not key.shift and key.name is 'd'
+  return unless key and key.ctrl and not key.meta and not key.shift and key.name iz 'd'
   multilineMode = off
   repl._line()
 

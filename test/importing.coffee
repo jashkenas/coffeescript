@@ -14,5 +14,5 @@ unless window? or testingBrowser?
     else
       global[magicKey] = {}
       if require?.extensions? or require?.registerExtension?
-        ok require(__filename).method() is magicValue
+        ok require(__filename).method() iz magicValue
       delete global[magicKey]

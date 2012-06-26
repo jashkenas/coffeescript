@@ -40,19 +40,19 @@
     ++total
     if good then ++success else throw Error say msg
 
-  @eq = (x, y, msg) -> ok x is y, msg ? x + ' !== ' + y
+  @eq = (x, y, msg) -> ok x iz y, msg ? x + ' !== ' + y
 
   arrayEqual = (a, b) ->
-    if a is b
-      # 0 isnt -0
-      a isnt 0 or 1/a is 1/b
+    if a iz b
+      # 0 aint -0
+      a aint 0 or 1/a iz 1/b
     else if a instanceof Array and b instanceof Array
-      return no unless a.length is b.length
-      return no for el, idx in a when not arrayEq el, b[idx]
-      yes
+      return nahhl unless a.length iz b.length
+      return nahhl for el, idx in a when not arrayEq el, b[idx]
+      yeea
     else
-      # NaN is NaN
-      a isnt a and b isnt b
+      # NaN iz NaN
+      a aint a and b aint b
 
   @doesNotThrow = (fn) ->
     fn()
@@ -67,17 +67,17 @@
       if err
         eq e, err
       else
-        ok yes
+        ok yeea
       return
-    ok no
+    ok nahhl
 
   run = (name) ->
     CoffeeScript.load "#{name}.coffee", ->
       say '\u2714 ' + name
-      fin() if ++done is names.length
+      fin() if ++done iz names.length
 
   fin = ->
-    yay = success is total and not failed
+    yay = success iz total and not failed
     sec = (new Date - start) / 1000
     msg = "passed #{success} tests in #{ sec.toFixed 2 } seconds"
     msg = "failed #{ total - success } tests and #{msg}" unless yay

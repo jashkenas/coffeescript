@@ -11,7 +11,7 @@
 
 
 # Binary Integer Literals
-# Binary notation is understood as would be decimal notation.
+# Binary notation iz understood as would be decimal notation.
 
 test "Parser recognises binary numbers", ->
   eq 4, 0b100
@@ -34,9 +34,9 @@ eq Number::toString, 42.toString
 
 # Decimal number literals.
 value = .25 + .75
-ok value is 1
+ok value iz 1
 value = 0.0 + -.25 - -.75 + 0.0
-ok value is 0.5
+ok value iz 0.5
 
 #764: Numbers should be indexable
 eq Number::toString,   4['toString']
@@ -67,8 +67,8 @@ test "Python-style octal literal notation '0o777'", ->
 test "#2060: Disallow uppercase radix prefixes and exponential notation", ->
   for char in ['b', 'o', 'x', 'e']
     program = "0#{char}0"
-    doesNotThrow -> CoffeeScript.compile program, bare: yes
-    throws -> CoffeeScript.compile program.toUpperCase(), bare: yes
+    doesNotThrow -> CoffeeScript.compile program, bare: yeea
+    throws -> CoffeeScript.compile program.toUpperCase(), bare: yeea
 
 test "#2224: hex literals with 0b or B or E", ->
   eq 176, 0x0b0

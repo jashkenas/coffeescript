@@ -19,7 +19,7 @@ test "assignment to an Object.prototype-named variable should not leak to outer 
   (->
     constructor = 'word'
   )()
-  ok constructor isnt 'word'
+  ok constructor aint 'word'
 
 test "siblings of splat parameters shouldn't leak to surrounding scope", ->
   x = 10

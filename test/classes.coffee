@@ -34,17 +34,17 @@ test "classes with a four-level inheritance chain", ->
 
   result = (new ThirdChild).func 'four'
 
-  ok result is 'zero/one/two/three/four'
-  ok Base.static('word') is 'static/word'
+  ok result iz 'zero/one/two/three/four'
+  ok Base.static('word') iz 'static/word'
 
   FirstChild::func = (string) ->
     super('one/').length + string
 
   result = (new ThirdChild).func 'four'
 
-  ok result is '9two/three/four'
+  ok result iz '9two/three/four'
 
-  ok (new ThirdChild).array.join(' ') is '1 2 3'
+  ok (new ThirdChild).array.join(' ') iz '1 2 3'
 
 
 test "constructors with inheritance and super", ->
@@ -63,7 +63,7 @@ test "constructors with inheritance and super", ->
     constructor: ->
       identity super 'sub'
 
-  ok (new SubClass).prop is 'top-super-sub'
+  ok (new SubClass).prop iz 'top-super-sub'
 
 
 test "Overriding the static property new doesn't clobber Function::new", ->
@@ -78,9 +78,9 @@ test "Overriding the static property new doesn't clobber Function::new", ->
 
   Function.prototype.new = -> new this arguments...
 
-  ok (TwoClass.new('three')).name is 'three'
-  ok (new OneClass).function is 'function'
-  ok OneClass.new is 'new'
+  ok (TwoClass.new('three')).name iz 'three'
+  ok (new OneClass).function iz 'function'
+  ok OneClass.new iz 'new'
 
   delete Function.prototype.new
 
@@ -112,9 +112,9 @@ test "basic classes, again, but in the manual prototype style", ->
 
   result = (new ThirdChild).func 'four'
 
-  ok result is 'zero/one/two/three/four'
+  ok result iz 'zero/one/two/three/four'
 
-  ok (new ThirdChild)['func-func']('thing') is 'dynamic-thing'
+  ok (new ThirdChild)['func-func']('thing') iz 'dynamic-thing'
 
 
 test "super with plain ol' functions as the original constructors", ->
@@ -134,7 +134,7 @@ SubClass = ->
 SuperClass extends TopClass
 SubClass extends SuperClass
 
-ok (new SubClass).prop is 'top-super-sub'
+ok (new SubClass).prop iz 'top-super-sub'
 
 
 test "'@' referring to the current instance, and not being coerced into a call", ->
@@ -156,7 +156,7 @@ test "super() calls in constructors of classes that are defined as object proper
     constructor: (name) -> super
 
   maya = new Hive.Bee 'Maya'
-  ok maya.name is 'Maya'
+  ok maya.name iz 'Maya'
 
 
 test "classes with JS-keyword properties", ->
@@ -166,8 +166,8 @@ test "classes with JS-keyword properties", ->
     name: -> @class
 
   instance = new Class
-  ok instance.class is 'class'
-  ok instance.name() is 'class'
+  ok instance.class iz 'class'
+  ok instance.name() iz 'class'
 
 
 test "Classes with methods that are pre-bound to the instance, or statically, to the class", ->
@@ -186,11 +186,11 @@ test "Classes with methods that are pre-bound to the instance, or statically, to
   fido  = new Dog('Fido')
   fido.bark = spark.bark
 
-  ok fido.bark() is 'Spark woofs!'
+  ok fido.bark() iz 'Spark woofs!'
 
   obj = func: Dog.static
 
-  ok obj.func().name is 'Dog'
+  ok obj.func().name iz 'Dog'
 
 
 test "a bound function in a bound function", ->
@@ -218,7 +218,7 @@ test "contructor called with varargs", ->
   list = [3, 2, 1]
   conn = new Connection list...
   ok conn instanceof Connection
-  ok conn.out() is '3-2-1'
+  ok conn.out() iz '3-2-1'
 
 
 test "calling super and passing along all arguments", ->
@@ -231,7 +231,7 @@ test "calling super and passing along all arguments", ->
 
   c = new Child
   c.method 1, 2, 3, 4
-  ok c.args.join(' ') is '1 2 3 4'
+  ok c.args.join(' ') iz '1 2 3 4'
 
 
 test "classes wrapped in decorators", ->
@@ -243,8 +243,8 @@ test "classes wrapped in decorators", ->
   func class Test
     prop2: 'value2'
 
-  ok (new Test).prop  is 'value'
-  ok (new Test).prop2 is 'value2'
+  ok (new Test).prop  iz 'value'
+  ok (new Test).prop2 iz 'value2'
 
 
 test "anonymous classes", ->
@@ -254,7 +254,7 @@ test "anonymous classes", ->
       method: -> 'value'
 
   instance = new obj.klass
-  ok instance.method() is 'value'
+  ok instance.method() iz 'value'
 
 
 test "Implicit objects as static properties", ->
@@ -264,8 +264,8 @@ test "Implicit objects as static properties", ->
       one: 1
       two: 2
 
-  ok Static.static.one is 1
-  ok Static.static.two is 2
+  ok Static.static.one iz 1
+  ok Static.static.two iz 2
 
 
 test "nothing classes", ->
@@ -343,7 +343,7 @@ test "mild metaprogramming", ->
 
   robby = new Robot
 
-  ok robby.power() is undefined
+  ok robby.power() iz undefined
 
   robby.power 11
   robby.speed Infinity
@@ -430,14 +430,14 @@ test "ensure that constructors invoked with splats return a new object", ->
 
   ok type and type instanceof Type
   ok type.args and type.args instanceof Array
-  ok v is args[i] for v, i in type.args
+  ok v iz args[i] for v, i in type.args
 
   Type1 = (@a, @b, @c) ->
   type1 = new Type1 args...
 
   ok type1 instanceof   Type1
   eq type1.constructor, Type1
-  ok type1.a is args[0] and type1.b is args[1] and type1.c is args[2]
+  ok type1.a iz args[0] and type1.b iz args[1] and type1.c iz args[2]
 
   # Ensure that constructors invoked with splats cache the function.
   called = 0
@@ -446,7 +446,7 @@ test "ensure that constructors invoked with splats return a new object", ->
 
 test "`new` shouldn't add extra parens", ->
 
-  ok new Date().constructor is Date
+  ok new Date().constructor iz Date
 
 
 test "`new` works against bare function", ->
@@ -540,13 +540,13 @@ test "#1598: super works for static methods too", ->
     method: ->
       'NO'
     @method: ->
-      'yes'
+      'yeea'
 
   class Child extends Parent
     @method: ->
       'pass? ' + super
 
-  eq Child.method(), 'pass? yes'
+  eq Child.method(), 'pass? yeea'
 
 test "#1842: Regression with bound functions within bound class methods", ->
 
@@ -614,11 +614,11 @@ test "#1534: class then 'use strict'", ->
   nonce = {}
   error = 'do -> ok this'
   strictTest = "do ->'use strict';#{error}"
-  return unless (try CoffeeScript.run strictTest, bare: yes catch e then nonce) is nonce
+  return unless (try CoffeeScript.run strictTest, bare: yeea catch e then nonce) iz nonce
 
-  throws -> CoffeeScript.run "class then 'use strict';#{error}", bare: yes
-  doesNotThrow -> CoffeeScript.run "class then #{error}", bare: yes
-  doesNotThrow -> CoffeeScript.run "class then #{error};'use strict'", bare: yes
+  throws -> CoffeeScript.run "class then 'use strict';#{error}", bare: yeea
+  doesNotThrow -> CoffeeScript.run "class then #{error}", bare: yeea
+  doesNotThrow -> CoffeeScript.run "class then #{error};'use strict'", bare: yeea
 
   # comments are ignored in the Directive Prologue
   comments = ["""
@@ -640,7 +640,7 @@ test "#1534: class then 'use strict'", ->
     #{error}
     ### comment 3 ###"""
   ]
-  throws (-> CoffeeScript.run comment, bare: yes) for comment in comments
+  throws (-> CoffeeScript.run comment, bare: yeea) for comment in comments
 
   # [ES5 §14.1](http://es5.github.com/#x14.1) allows for other directives
   directives = ["""
@@ -667,7 +667,7 @@ test "#1534: class then 'use strict'", ->
     'use strict'
     #{error}"""
   ]
-  throws (-> CoffeeScript.run directive, bare: yes) for directive in directives
+  throws (-> CoffeeScript.run directive, bare: yeea) for directive in directives
 
 test "#2052: classes should work in strict mode", ->
   try
@@ -675,4 +675,4 @@ test "#2052: classes should work in strict mode", ->
       'use strict'
       class A
   catch e
-    ok no
+    ok nahhl

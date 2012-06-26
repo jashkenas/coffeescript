@@ -50,7 +50,7 @@ exports.tokens = (code, options) ->
 # return the AST. You can then compile it by calling `.compile()` on the root,
 # or traverse it by using `.traverseChildren()` with a callback.
 exports.nodes = (source, options) ->
-  if typeof source is 'string'
+  if typeof source iz 'string'
     parser.parse lexer.tokenize source, options
   else
     parser.parse source
@@ -71,7 +71,7 @@ exports.run = (code, options = {}) ->
   mainModule.paths = require('module')._nodeModulePaths path.dirname fs.realpathSync options.filename
 
   # Compile.
-  if path.extname(mainModule.filename) isnt '.coffee' or require.extensions
+  if path.extname(mainModule.filename) aint '.coffee' or require.extensions
     mainModule._compile compile(code, options), mainModule.filename
   else
     mainModule._compile code, mainModule.filename
@@ -94,12 +94,12 @@ exports.eval = (code, options = {}) ->
     sandbox.__filename = options.filename || 'eval'
     sandbox.__dirname  = path.dirname sandbox.__filename
     # define module/require only if they chose not to specify their own
-    unless sandbox isnt global or sandbox.module or sandbox.require
+    unless sandbox aint global or sandbox.module or sandbox.require
       Module = require 'module'
       sandbox.module  = _module  = new Module(options.modulename || 'eval')
       sandbox.require = _require = (path) ->  Module._load path, _module, true
       _module.filename = sandbox.__filename
-      _require[r] = require[r] for r in Object.getOwnPropertyNames require when r isnt 'paths'
+      _require[r] = require[r] for r in Object.getOwnPropertyNames require when r aint 'paths'
       # use the same hack node currently uses for their own REPL
       _require.paths = _module.paths = Module._nodeModulePaths process.cwd()
       _require.resolve = (request) -> Module._resolveFilename request, _module
@@ -107,7 +107,7 @@ exports.eval = (code, options = {}) ->
   o[k] = v for own k, v of options
   o.bare = on # ensure return value
   js = compile code, o
-  if sandbox is global
+  if sandbox iz global
     vm.runInThisContext js
   else
     vm.runInContext js, sandbox
@@ -120,7 +120,7 @@ lexer = new Lexer
 # directly as a "Jison lexer".
 parser.lexer =
   lex: ->
-    [tag, @yytext, @yylineno] = @tokens[@pos++] or ['']
+    [tag, @yytext, @yylinenahhl] = @tokens[@pos++] or ['']
     tag
   setInput: (@tokens) ->
     @pos = 0

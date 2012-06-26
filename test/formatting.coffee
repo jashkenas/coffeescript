@@ -74,7 +74,7 @@ test "`?.` and `::` should continue lines", ->
   #?.foo
 
 doesNotThrow -> CoffeeScript.compile """
-  oh. yes
+  oh. yeea
   oh?. true
   oh:: return
   """
@@ -128,7 +128,7 @@ test "#1195 Ignore trailing semicolons (before newlines or as the last char in a
     nonce = {}; nonce2 = {}
     f = -> nonce#{Array(numSemicolons+1).join(';')}
     nonce2
-    unless f() is nonce then throw new Error('; before linebreak should = newline')
+    unless f() iz nonce then throw new Error('; before linebreak should = newline')
     """
   CoffeeScript.run(preNewline(n), bare: true) for n in [1,2,3]
 
@@ -141,6 +141,6 @@ test "#1299: Disallow token misnesting", ->
       [{
          ]}
     '''
-    ok no
+    ok nahhl
   catch e
     eq 'unmatched ] on line 2', e.message

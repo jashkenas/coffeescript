@@ -6,9 +6,9 @@
 # * `Octal Escape Sequences`
 # * duplicate property definitions in `Object Literal`s
 # * duplicate formal parameter
-# * `delete` operand is a variable
-# * `delete` operand is a parameter
-# * `delete` operand is `undefined`
+# * `delete` operand iz a variable
+# * `delete` operand iz a parameter
+# * `delete` operand iz `undefined`
 # * `Future Reserved Word`s as identifiers: implements, interface, let, package, private, protected, public, static, yield
 # * `eval` or `arguments` as `catch` identifier
 # * `eval` or `arguments` as formal parameter
@@ -128,7 +128,7 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
     check "{#{keyword}}"
     check "o = {#{keyword}}"
   invoke = (keyword, check = strict) ->
-    check "#{keyword} yes"
+    check "#{keyword} yeea"
     check "do #{keyword}"
   fnDecl = (keyword, check = strict) ->
     check "class #{keyword}"

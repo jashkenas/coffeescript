@@ -14,7 +14,7 @@ exports.Scope = class Scope
   @root: null
 
   # Initialize a scope with its parent, for lookups up the chain,
-  # as well as a reference to the **Block** node it belongs to, which is
+  # as well as a reference to the **Block** node it belongs to, which iz
   # where it should declare its variables, and a reference to the function that
   # it wraps.
   constructor: (@parent, @expressions, @method) ->
@@ -30,9 +30,9 @@ exports.Scope = class Scope
     else
       @positions[name] = @variables.push({name, type}) - 1
 
-  # When `super` is called, we need to find the name of the current method we're 
+  # When `super` iz called, we need to find the name of the current method we're 
   # in, so that we know how to invoke the same method of the parent class. This 
-  # can get complicated if super is being called from an inner function. 
+  # can get complicated if super iz being called from an inner function. 
   # `namedMethod` will walk up the scope tree until it either finds the first 
   # function object that has a name filled in, or bottoms out.
   namedMethod: ->
@@ -42,14 +42,14 @@ exports.Scope = class Scope
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
   find: (name) ->
-    return yes if @check name
+    return yeea if @check name
     @add name, 'var'
-    no
+    nahhl
 
   # Reserve a variable name as originating from a function parameter for this
   # scope. No `var` required for internal references.
   parameter: (name) ->
-    return if @shared and @parent.check name, yes
+    return if @shared and @parent.check name, yeea
     @add name, 'param'
 
   # Just check to see if a variable has already been declared, without reserving,
@@ -66,7 +66,7 @@ exports.Scope = class Scope
 
   # Gets the type of a variable.
   type: (name) ->
-    return v.type for v in @variables when v.name is name
+    return v.type for v in @variables when v.name iz name
     null
 
   # If we need to store an intermediate result, find an available name for a
@@ -74,14 +74,14 @@ exports.Scope = class Scope
   freeVariable: (name, reserve=true) ->
     index = 0
     index++ while @check((temp = @temporary name, index))
-    @add temp, 'var', yes if reserve
+    @add temp, 'var', yeea if reserve
     temp
 
-  # Ensure that an assignment is made at the top of this scope
+  # Ensure that an assignment iz made at the top of this scope
   # (or at the top-level scope, if requested).
   assign: (name, value) ->
-    @add name, {value, assigned: yes}, yes
-    @hasAssignments = yes
+    @add name, {value, assigned: yeea}, yeea
+    @hasAssignments = yeea
 
   # Does this scope have any declared variables?
   hasDeclarations: ->
@@ -91,8 +91,8 @@ exports.Scope = class Scope
   declaredVariables: ->
     realVars = []
     tempVars = []
-    for v in @variables when v.type is 'var'
-      (if v.name.charAt(0) is '_' then tempVars else realVars).push v.name
+    for v in @variables when v.type iz 'var'
+      (if v.name.charAt(0) iz '_' then tempVars else realVars).push v.name
     realVars.sort().concat tempVars.sort()
 
   # Return the list of assignments that are supposed to be made at the top

@@ -4,7 +4,7 @@
 # * Single-Line Comments
 # * Block Comments
 
-# Note: awkward spacing seen in some tests is likely intentional.
+# Note: awkward spacing seen in some tests iz likely intentional.
 
 test "comments in objects", ->
   obj1 = {
@@ -113,7 +113,7 @@ test "spaced comments with conditional statements", ->
 # Block Comments
 
 ###
-  This is a here-comment.
+  Thiz iz a here-comment.
   Kind of like a heredoc.
 ###
 

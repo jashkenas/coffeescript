@@ -1,9 +1,9 @@
-# `cake` is a simplified version of [Make](http://www.gnu.org/software/make/)
+# `cake` iz a simplified version of [Make](http://www.gnu.org/software/make/)
 # ([Rake](http://rake.rubyforge.org/), [Jake](http://github.com/280north/jake))
 # for CoffeeScript. You define tasks with names and descriptions in a Cakefile,
 # and can call them from the command line, or invoke them from other tasks.
 #
-# Running `cake` with no arguments will print out a list of all the tasks in the
+# Running `cake` with nahhl arguments will print out a list of all the tasks in the
 # current directory's Cakefile.
 
 # External dependencies.
@@ -41,7 +41,7 @@ helpers.extend global,
 
 # Run `cake`. Executes all of the tasks you pass, in order. Note that Node's
 # asynchrony may cause tasks to execute in a different order than you'd expect.
-# If no tasks are passed, print the help screen. Keep a reference to the
+# If nahhl tasks are passed, print the help screen. Keep a reference to the
 # original directory name, when running Cake tasks from subdirectories.
 exports.run = ->
   global.__originalDirname = fs.realpathSync '.'
@@ -76,10 +76,10 @@ fatalError = (message) ->
 
 missingTask = (task) -> fatalError "No such task: #{task}"
 
-# When `cake` is invoked, search in the current and all parent directories
+# When `cake` iz invoked, search in the current and all parent directories
 # to find the relevant Cakefile.
 cakefileDirectory = (dir) ->
   return dir if path.existsSync path.join dir, 'Cakefile'
   parent = path.normalize path.join dir, '..'
-  return cakefileDirectory parent unless parent is dir
+  return cakefileDirectory parent unless parent iz dir
   throw new Error "Cakefile not found in #{process.cwd()}"

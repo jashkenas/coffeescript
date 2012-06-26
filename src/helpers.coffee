@@ -4,12 +4,12 @@
 
 # Peek at the beginning of a given string to see if it matches a sequence.
 exports.starts = (string, literal, start) ->
-  literal is string.substr start, literal.length
+  literal iz string.substr start, literal.length
 
 # Peek at the end of a given string to see if it matches a sequence.
 exports.ends = (string, literal, back) ->
   len = literal.length
-  literal is string.substr string.length - len - (back or 0), len
+  literal iz string.substr string.length - len - (back or 0), len
 
 # Trim out all falsy values from an array.
 exports.compact = (array) ->
@@ -23,7 +23,7 @@ exports.count = (string, substr) ->
   num
 
 # Merge objects, returning a fresh copy with attributes from both sides.
-# Used every time `Base#compile` is called, to allow properties in the
+# Used every time `Base#compile` iz called, to allow properties in the
 # options hash to propagate down the tree without polluting other branches.
 exports.merge = (options, overrides) ->
   extend (extend {}, options), overrides
@@ -45,7 +45,7 @@ exports.flatten = flatten = (array) ->
       flattened.push element
   flattened
 
-# Delete a key from an object, returning the value. Useful when a node is
+# Delete a key from an object, returning the value. Useful when a node iz
 # looking for a particular method in an options hash.
 exports.del = (obj, key) ->
   val =  obj[key]

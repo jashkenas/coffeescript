@@ -53,10 +53,10 @@ test "use `::` operator on keywords `this` and `@`", ->
   nonce = {}
   obj =
     withAt:   -> @::prop
-    withThis: -> this::prop
+    withThiz: -> this::prop
   obj.prototype = prop: nonce
   eq nonce, obj.withAt()
-  eq nonce, obj.withThis()
+  eq nonce, obj.withThiz()
 
 
 # Existential Operator (Binary)
@@ -114,26 +114,26 @@ test "postfix existential operator on expressions", ->
   eq true, (1 or 0)?, true
 
 
-# `is`,`isnt`,`==`,`!=`
+# `iz`,`aint`,`==`,`!=`
 
-test "`==` and `is` should be interchangeable", ->
+test "`==` and `iz` should be interchangeable", ->
   a = b = 1
-  ok a is 1 and b == 1
+  ok a iz 1 and b == 1
   ok a == b
-  ok a is b
+  ok a iz b
 
-test "`!=` and `isnt` should be interchangeable", ->
+test "`!=` and `aint` should be interchangeable", ->
   a = 0
   b = 1
-  ok a isnt 1 and b != 0
+  ok a aint 1 and b != 0
   ok a != b
-  ok a isnt b
+  ok a aint b
 
 
 # [not] in/of
 
 # - `in` should check if an array contains a value using `indexOf`
-# - `of` should check if a property is defined on an object using `in`
+# - `of` should check if a property iz defined on an object using `in`
 test "in, of", ->
   arr = [1]
   ok 0 of arr
@@ -178,9 +178,9 @@ test "#737: `in` should have higher precedence than logical operators", ->
 
 test "#768: `in` should preserve evaluation order", ->
   share = 0
-  a = -> share++ if share is 0
-  b = -> share++ if share is 1
-  c = -> share++ if share is 2
+  a = -> share++ if share iz 0
+  b = -> share++ if share iz 1
+  c = -> share++ if share iz 2
   ok a() not in [b(),c()]
   eq 3, share
 
@@ -219,13 +219,13 @@ test "chainable operators", ->
   ok 100 > 10 > 1 > 0 > -1
   ok -1 < 0 < 1 < 10 < 100
 
-test "`is` and `isnt` may be chained", ->
-  ok true is not false is true is not false
-  ok 0 is 0 isnt 1 is 1
+test "`iz` and `aint` may be chained", ->
+  ok true iz not false iz true iz not false
+  ok 0 iz 0 aint 1 iz 1
 
-test "different comparison operators (`>`,`<`,`is`,etc.) may be combined", ->
+test "different comparison operators (`>`,`<`,`iz`,etc.) may be combined", ->
   ok 1 < 2 > 1
-  ok 10 < 20 > 2+3 is 5
+  ok 10 < 20 > 2+3 iz 5
 
 test "some chainable operators can be negated by `unless`", ->
   ok (true unless 0==10!=100)
@@ -260,7 +260,7 @@ test "#1102: String literal prevents line continuation", ->
   eq "': '", '' +
      "': '"
 
-test "#1703, ---x is invalid JS", ->
+test "#1703, ---x iz invalid JS", ->
   x = 2
   eq (- --x), -1
 

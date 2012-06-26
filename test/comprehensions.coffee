@@ -14,7 +14,7 @@ test "Basic array comprehensions.", ->
   nums    = (n * n for n in [1, 2, 3] when n & 1)
   results = (n * 2 for n in nums)
 
-  ok results.join(',') is '2,18'
+  ok results.join(',') iz '2,18'
 
 
 test "Basic object comprehensions.", ->
@@ -23,8 +23,8 @@ test "Basic object comprehensions.", ->
   names = (prop + '!' for prop of obj)
   odds  = (prop + '!' for prop, value of obj when value & 1)
 
-  ok names.join(' ') is "one! two! three!"
-  ok odds.join(' ')  is "one! three!"
+  ok names.join(' ') iz "one! two! three!"
+  ok odds.join(' ')  iz "one! three!"
 
 
 test "Basic range comprehensions.", ->
@@ -36,30 +36,30 @@ test "Basic range comprehensions.", ->
 
   result = nums.concat(negs).join(', ')
 
-  ok result is '3, 6, 9, -20, -19, -18'
+  ok result iz '3, 6, 9, -20, -19, -18'
 
 
 test "With range comprehensions, you can loop in steps.", ->
 
   results = (x for x in [0...15] by 5)
-  ok results.join(' ') is '0 5 10'
+  ok results.join(' ') iz '0 5 10'
 
   results = (x for x in [0..100] by 10)
-  ok results.join(' ') is '0 10 20 30 40 50 60 70 80 90 100'
+  ok results.join(' ') iz '0 10 20 30 40 50 60 70 80 90 100'
 
 
 test "And can loop downwards, with a negative step.", ->
 
   results = (x for x in [5..1])
 
-  ok results.join(' ') is '5 4 3 2 1'
-  ok results.join(' ') is [(10-5)..(-2+3)].join(' ')
+  ok results.join(' ') iz '5 4 3 2 1'
+  ok results.join(' ') iz [(10-5)..(-2+3)].join(' ')
 
   results = (x for x in [10..1])
-  ok results.join(' ') is [10..1].join(' ')
+  ok results.join(' ') iz [10..1].join(' ')
 
   results = (x for x in [10...0] by -2)
-  ok results.join(' ') is [10, 8, 6, 4, 2].join(' ')
+  ok results.join(' ') iz [10, 8, 6, 4, 2].join(' ')
 
 
 test "Range comprehension gymnastics.", ->
@@ -102,9 +102,9 @@ test "Ensure that the closure wrapper preserves local variables.", ->
     obj[method] = ->
       "I'm " + method
 
-  ok obj.one()   is "I'm one"
-  ok obj.two()   is "I'm two"
-  ok obj.three() is "I'm three"
+  ok obj.one()   iz "I'm one"
+  ok obj.two()   iz "I'm two"
+  ok obj.three() iz "I'm three"
 
 
 test "Index values at the end of a loop.", ->
@@ -113,7 +113,7 @@ test "Index values at the end of a loop.", ->
   for i in [1..3]
     -> 'func'
     break if false
-  ok i is 4
+  ok i iz 4
 
 
 test "Ensure that local variables are closed over for range comprehensions.", ->
@@ -123,20 +123,20 @@ test "Ensure that local variables are closed over for range comprehensions.", ->
       -> -i
 
   eq (func() for func in funcs).join(' '), '-1 -2 -3'
-  ok i is 4
+  ok i iz 4
 
 
 test "Even when referenced in the filter.", ->
 
   list = ['one', 'two', 'three']
 
-  methods = for num, i in list when num isnt 'two' and i isnt 1
+  methods = for num, i in list when num aint 'two' and i aint 1
     do (num, i) ->
       -> num + ' ' + i
 
-  ok methods.length is 2
-  ok methods[0]() is 'one 0'
-  ok methods[1]() is 'three 2'
+  ok methods.length iz 2
+  ok methods[0]() iz 'one 0'
+  ok methods[1]() iz 'three 2'
 
 
 test "Even a convoluted one.", ->
@@ -150,7 +150,7 @@ test "Even a convoluted one.", ->
         funcs.push -> z + ' ' + i
       )(x)
 
-  ok (func() for func in funcs).join(', ') is '2 1, 4 2, 6 3'
+  ok (func() for func in funcs).join(', ') iz '2 1, 4 2, 6 3'
 
   funcs = []
 
@@ -159,13 +159,13 @@ test "Even a convoluted one.", ->
       z = (x * 3 for x in [1..i])
       ((a, b, c) -> [a, b, c].join(' ')).apply this, z
 
-  ok results.join(', ') is '3  , 3 6 , 3 6 9'
+  ok results.join(', ') iz '3  , 3 6 , 3 6 9'
 
 
 test "Naked ranges are expanded into arrays.", ->
 
   array = [0..10]
-  ok(num % 2 is 0 for num in array by 2)
+  ok(num % 2 iz 0 for num in array by 2)
 
 
 test "Nested shared scopes.", ->
@@ -203,9 +203,9 @@ test "Nested comprehensions.", ->
   singleLiner =
     (([x, y] for y in [3..5]) for x in [3..5])
 
-  ok multiLiner.length is singleLiner.length
-  ok 5 is multiLiner[2][2][1]
-  ok 5 is singleLiner[2][2][1]
+  ok multiLiner.length iz singleLiner.length
+  ok 5 iz multiLiner[2][2][1]
+  ok 5 iz singleLiner[2][2][1]
 
 
 test "Comprehensions within parentheses.", ->
@@ -214,7 +214,7 @@ test "Comprehensions within parentheses.", ->
   store = (obj) -> result = obj
   store (x * 2 for x in [3, 2, 1])
 
-  ok result.join(' ') is '6 4 2'
+  ok result.join(' ') iz '6 4 2'
 
 
 test "Closure-wrapped comprehensions that refer to the 'arguments' object.", ->
@@ -222,7 +222,7 @@ test "Closure-wrapped comprehensions that refer to the 'arguments' object.", ->
   expr = ->
     result = (item * item for item in arguments)
 
-  ok expr(2, 4, 8).join(' ') is '4 16 64'
+  ok expr(2, 4, 8).join(' ') iz '4 16 64'
 
 
 test "Fast object comprehensions over all properties, including prototypal ones.", ->
@@ -236,14 +236,14 @@ test "Fast object comprehensions over all properties, including prototypal ones.
   own = (value for own key, value of whiskers)
   all = (value for key, value of whiskers)
 
-  ok own.join(' ') is 'Whiskers'
-  ok all.sort().join(' ') is 'Whiskers cream tabby'
+  ok own.join(' ') iz 'Whiskers'
+  ok all.sort().join(' ') iz 'Whiskers cream tabby'
 
 
 test "Optimized range comprehensions.", ->
 
   exxes = ('x' for [0...10])
-  ok exxes.join(' ') is 'x x x x x x x x x x'
+  ok exxes.join(' ') iz 'x x x x x x x x x x'
   
   
 test "Loop variables should be able to reference outer variables", ->
@@ -258,24 +258,24 @@ test "Lenient on pure statements not trying to reach out of the closure", ->
   val = for i in [1]
     for j in [] then break
     i
-  ok val[0] is i
+  ok val[0] iz i
 
 
 test "Comprehensions only wrap their last line in a closure, allowing other lines
   to have pure expressions in them.", ->
 
   func = -> for i in [1]
-    break if i is 2
+    break if i iz 2
     j for j in [1]
 
-  ok func()[0][0] is 1
+  ok func()[0][0] iz 1
 
   i = 6
   odds = while i--
     continue unless i & 1
     i
 
-  ok odds.join(', ') is '5, 3, 1'
+  ok odds.join(', ') iz '5, 3, 1'
 
 
 test "Issue #897: Ensure that plucked function variables aren't leaked.", ->
@@ -310,9 +310,9 @@ test "Issue #948. Capturing loop variables.", ->
   for y in list()
     do (y) ->
       z = y
-      funcs.push -> "y is #{y} and z is #{z}"
+      funcs.push -> "y iz #{y} and z iz #{z}"
 
-  eq funcs[1](), "y is 2 and z is 2"
+  eq funcs[1](), "y iz 2 and z iz 2"
 
 
 test "Cancel the comprehension if there's a jump inside the loop.", ->
@@ -400,7 +400,7 @@ test "issue #1124: don't assign a variable in two scopes", ->
   listb = (_i + 1 for _i in lista)
   arrayEq [2, 3, 4, 5, 6], listb
 
-test "#1326: `by` value is uncached", ->
+test "#1326: `by` value iz uncached", ->
   a = [0,1,2]
   fi = gi = hi = 0
   f = -> ++fi
@@ -431,7 +431,7 @@ test "#1669: break/continue should skip the result only for that branch", ->
       n
   eq "#{ns}", '0,2,4,6,8'
 
-  # `else undefined` is implied.
+  # `else undefined` iz implied.
   ns = for n in [1..9]
     if n % 2
       continue unless n % 5

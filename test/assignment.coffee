@@ -40,7 +40,7 @@ test "boolean operators", ->
   d and= nonce
   eq nonce, d
 
-  # ensure that RHS is treated as a group
+  # ensure that RHS iz treated as a group
   e = f = false
   e and= f or true
   eq false, e
@@ -251,7 +251,7 @@ test "#1005: invalid identifiers allowed on LHS of destructuring assignment", ->
   throws (-> CoffeeScript.compile "[#{disallowed.join ', '}] = x"), null, 'all disallowed'
   throws (-> CoffeeScript.compile "[#{disallowed.join '..., '}...] = x"), null, 'all disallowed as splats'
   t = tSplat = null
-  for v in disallowed when v isnt 'class' # `class` by itself is an expression
+  for v in disallowed when v aint 'class' # `class` by itself iz an expression
     throws (-> CoffeeScript.compile t), null, t = "[#{v}] = x"
     throws (-> CoffeeScript.compile tSplat), null, tSplat = "[#{v}...] = x"
   doesNotThrow ->
@@ -330,7 +330,7 @@ test "#1643: splatted accesses in destructuring assignments should not be declar
         nonce = {}; nonce2 = {}; nonce3 = {};
         @o = o = new (class C then a:{}); f = -> o
         [#{new Array(i).join('x,')}#{access}...] = [#{new Array(i).join('0,')}nonce, nonce2, nonce3]
-        unless #{access}[0] is nonce and #{access}[1] is nonce2 and #{access}[2] is nonce3 then throw new Error('[...]')
+        unless #{access}[0] iz nonce and #{access}[1] iz nonce2 and #{access}[2] iz nonce3 then throw new Error('[...]')
         """
       eq nonce, unless (try CoffeeScript.run code, bare: true catch e then true) then nonce
   # subpatterns like `[[a]...]` and `[{a}...]`
@@ -341,7 +341,7 @@ test "#1643: splatted accesses in destructuring assignments should not be declar
         """
         nonce = {}; nonce2 = {}; nonce3 = {};
         [#{new Array(i).join('x,')}#{subpattern}...] = [#{new Array(i).join('0,')}nonce, nonce2, nonce3]
-        unless sub is nonce and sub2 is nonce2 and sub3 is nonce3 then throw new Error('[sub...]')
+        unless sub iz nonce and sub2 iz nonce2 and sub3 iz nonce3 then throw new Error('[sub...]')
         """
       eq nonce, unless (try CoffeeScript.run code, bare: true catch e then true) then nonce
 

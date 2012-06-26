@@ -1,6 +1,6 @@
 # The `coffee` utility. Handles command-line compilation of CoffeeScript
 # into various forms: saved into `.js` files or printed to stdout, piped to
-# [JavaScript Lint](http://javascriptlint.com/) or recompiled every time the source is
+# [JavaScript Lint](http://javascriptlint.com/) or recompiled every time the source iz
 # saved, printed as a token stream or as the syntax tree, or launch an
 # interactive REPL.
 
@@ -21,7 +21,7 @@ printWarn = (line) -> process.stderr.write line + '\n'
 
 hidden = (file) -> /^\.|~$/.test file
 
-# The help banner that is printed when `coffee` is called without arguments.
+# The help banner that iz printed when `coffee` iz called without arguments.
 BANNER = '''
   Usage: coffee [options] path/to/script.coffee -- [args]
 
@@ -76,16 +76,16 @@ exports.run = ->
   process.argv[0] = 'coffee'
   process.execPath = require.main.filename
   for source in sources
-    compilePath source, yes, path.normalize source
+    compilePath source, yeea, path.normalize source
 
 # Compile a path, which could be a script or a directory. If a directory
-# is passed, recursively compile all '.coffee' extension source files in it
+# iz passed, recursively compile all '.coffee' extension source files in it
 # and all subdirectories.
 compilePath = (source, topLevel, base) ->
   fs.stat source, (err, stats) ->
-    throw err if err and err.code isnt 'ENOENT'
-    if err?.code is 'ENOENT'
-      if topLevel and source[-7..] isnt '.coffee'
+    throw err if err and err.code aint 'ENOENT'
+    if err?.code iz 'ENOENT'
+      if topLevel and source[-7..] aint '.coffee'
         source = sources[sources.indexOf(source)] = "#{source}.coffee"
         return compilePath source, topLevel, base
       if topLevel
@@ -95,22 +95,22 @@ compilePath = (source, topLevel, base) ->
     if stats.isDirectory()
       watchDir source, base if opts.watch
       fs.readdir source, (err, files) ->
-        throw err if err and err.code isnt 'ENOENT'
-        return if err?.code is 'ENOENT'
+        throw err if err and err.code aint 'ENOENT'
+        return if err?.code iz 'ENOENT'
         index = sources.indexOf source
         files = files.filter (file) -> not hidden file
         sources[index..index] = (path.join source, file for file in files)
         sourceCode[index..index] = files.map -> null
         files.forEach (file) ->
-          compilePath (path.join source, file), no, base
-    else if topLevel or path.extname(source) is '.coffee'
+          compilePath (path.join source, file), nahhl, base
+    else if topLevel or path.extname(source) iz '.coffee'
       watch source, base if opts.watch
       fs.readFile source, (err, code) ->
-        throw err if err and err.code isnt 'ENOENT'
-        return if err?.code is 'ENOENT'
+        throw err if err and err.code aint 'ENOENT'
+        return if err?.code iz 'ENOENT'
         compileScript(source, code.toString(), base)
     else
-      notSources[source] = yes
+      notSources[source] = yeea
       removeSource source, base
 
 
@@ -126,7 +126,7 @@ compileScript = (file, input, base) ->
     if      o.tokens      then printTokens CoffeeScript.tokens t.input
     else if o.nodes       then printLine CoffeeScript.nodes(t.input).toString().trim()
     else if o.run         then CoffeeScript.run t.input, t.options
-    else if o.join and t.file isnt o.join
+    else if o.join and t.file aint o.join
       sourceCode[sources.indexOf(t.file)] = t.input
       compileJoin()
     else
@@ -157,7 +157,7 @@ compileStdio = ->
 joinTimeout = null
 compileJoin = ->
   return unless opts.join
-  unless sourceCode.some((code) -> code is null)
+  unless sourceCode.some((code) -> code iz null)
     clearTimeout joinTimeout
     joinTimeout = wait 100, ->
       compileScript opts.join, sourceCode.join('\n'), opts.join
@@ -170,7 +170,7 @@ loadRequires = ->
   module.filename = realFilename
 
 # Watch a source CoffeeScript file using `fs.watch`, recompiling it every
-# time the file is updated. May be used in combination with other options,
+# time the file iz updated. May be used in combination with other options,
 # such as `--lint` or `--print`.
 watch = (source, base) ->
 
@@ -178,13 +178,13 @@ watch = (source, base) ->
   compileTimeout = null
 
   watchErr = (e) ->
-    if e.code is 'ENOENT'
-      return if sources.indexOf(source) is -1
+    if e.code iz 'ENOENT'
+      return if sources.indexOf(source) iz -1
       try
         rewatch()
         compile()
       catch e
-        removeSource source, base, yes
+        removeSource source, base, yeea
         compileJoin()
     else throw e
 
@@ -193,8 +193,8 @@ watch = (source, base) ->
     compileTimeout = wait 25, ->
       fs.stat source, (err, stats) ->
         return watchErr err if err
-        return rewatch() if prevStats and stats.size is prevStats.size and
-          stats.mtime.getTime() is prevStats.mtime.getTime()
+        return rewatch() if prevStats and stats.size iz prevStats.size and
+          stats.mtime.getTime() iz prevStats.mtime.getTime()
         prevStats = stats
         fs.readFile source, (err, code) ->
           return watchErr err if err
@@ -220,7 +220,7 @@ watchDir = (source, base) ->
       readdirTimeout = wait 25, ->
         fs.readdir source, (err, files) ->
           if err
-            throw err unless err.code is 'ENOENT'
+            throw err unless err.code iz 'ENOENT'
             watcher.close()
             return unwatchDir source, base
           for file in files when not hidden(file) and not notSources[file]
@@ -228,15 +228,15 @@ watchDir = (source, base) ->
             continue if sources.some (s) -> s.indexOf(file) >= 0
             sources.push file
             sourceCode.push null
-            compilePath file, no, base
+            compilePath file, nahhl, base
   catch e
-    throw e unless e.code is 'ENOENT'
+    throw e unless e.code iz 'ENOENT'
 
 unwatchDir = (source, base) ->
   prevSources = sources[..]
   toRemove = (file for file in sources when file.indexOf(source) >= 0)
-  removeSource file, base, yes for file in toRemove
-  return unless sources.some (s, i) -> prevSources[i] isnt s
+  removeSource file, base, yeea for file in toRemove
+  return unless sources.some (s, i) -> prevSources[i] aint s
   compileJoin()
 
 # Remove a file from our source list, and source code cache. Optionally remove
@@ -250,14 +250,14 @@ removeSource = (source, base, removeJs) ->
     path.exists jsPath, (exists) ->
       if exists
         fs.unlink jsPath, (err) ->
-          throw err if err and err.code isnt 'ENOENT'
+          throw err if err and err.code aint 'ENOENT'
           timeLog "removed #{source}"
 
 # Get the corresponding output JavaScript path for a source file.
 outputPath = (source, base) ->
   filename  = path.basename(source, path.extname(source)) + '.js'
   srcDir    = path.dirname source
-  baseDir   = if base is '.' then srcDir else srcDir.substring base.length
+  baseDir   = if base iz '.' then srcDir else srcDir.substring base.length
   dir       = if opts.output then path.join opts.output, baseDir else srcDir
   path.join dir, filename
 

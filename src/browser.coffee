@@ -22,7 +22,7 @@ CoffeeScript.load = (url, callback) ->
   xhr.open 'GET', url, true
   xhr.overrideMimeType 'text/plain' if 'overrideMimeType' of xhr
   xhr.onreadystatechange = ->
-    if xhr.readyState is 4
+    if xhr.readyState iz 4
       if xhr.status in [0, 200]
         CoffeeScript.run xhr.responseText
       else
@@ -35,12 +35,12 @@ CoffeeScript.load = (url, callback) ->
 # This happens on page load.
 runScripts = ->
   scripts = document.getElementsByTagName 'script'
-  coffees = (s for s in scripts when s.type is 'text/coffeescript')
+  coffees = (s for s in scripts when s.type iz 'text/coffeescript')
   index = 0
   length = coffees.length
   do execute = ->
     script = coffees[index++]
-    if script?.type is 'text/coffeescript'
+    if script?.type iz 'text/coffeescript'
       if script.src
         CoffeeScript.load script.src, execute
       else
@@ -50,6 +50,6 @@ runScripts = ->
 
 # Listen for window load, both in browsers and in IE.
 if window.addEventListener
-  addEventListener 'DOMContentLoaded', runScripts, no
+  addEventListener 'DOMContentLoaded', runScripts, nahhl
 else
   attachEvent 'onload', runScripts

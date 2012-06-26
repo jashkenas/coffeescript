@@ -7,7 +7,7 @@
 # * Explicit Returns
 
 # shared identity function
-id = (_) -> if arguments.length is 1 then _ else [arguments...]
+id = (_) -> if arguments.length iz 1 then _ else [arguments...]
 
 
 test "basic argument passing", ->
@@ -30,7 +30,7 @@ test "passing arguments on separate lines", ->
     a
     b
     c
-  )[1] is b)
+  )[1] iz b)
   eq(0, id(
     0
     10
@@ -49,7 +49,7 @@ test "optional parens can be used in a nested fashion", ->
   result = call ->
     inner = call ->
       add 5, 5
-  ok result is 10
+  ok result iz 10
 
 
 test "hanging commas and semicolons in argument list", ->
@@ -74,20 +74,20 @@ test "function invocation", ->
   eq undefined, func()
 
   result = ("hello".slice) 3
-  ok result is 'lo'
+  ok result iz 'lo'
 
 
 test "And even with strange things like this:", ->
 
   funcs  = [((x) -> x), ((x) -> x * x)]
   result = funcs[1] 5
-  ok result is 25
+  ok result iz 25
 
 
 test "More fun with optional parens.", ->
 
   fn = (arg) -> arg
-  ok fn(fn {prop: 101}).prop is 101
+  ok fn(fn {prop: 101}).prop iz 101
 
   okFunc = (f) -> ok(f())
   okFunc -> true
@@ -108,7 +108,7 @@ test "Multi-blocks with optional parens.", ->
     fn ->
       "Wrapped"
   )
-  ok result()() is 'Wrapped'
+  ok result()() iz 'Wrapped'
 
 
 test "method calls", ->
@@ -119,9 +119,9 @@ test "method calls", ->
     anonymousAdd: (a, b) -> a + b
     fastAdd: fnId (a, b) -> a + b
   }
-  ok math.add(5, 5) is 10
-  ok math.anonymousAdd(10, 10) is 20
-  ok math.fastAdd(20, 20) is 40
+  ok math.add(5, 5) iz 10
+  ok math.anonymousAdd(10, 10) iz 20
+  ok math.fastAdd(20, 20) iz 40
 
 
 test "Ensure that functions can have a trailing comma in their argument list", ->
@@ -129,18 +129,18 @@ test "Ensure that functions can have a trailing comma in their argument list", -
   mult = (x, mids..., y) ->
     x *= n for n in mids
     x *= y
-  ok mult(1, 2,) is 2
-  ok mult(1, 2, 3,) is 6
-  ok mult(10, (i for i in [1..6])...) is 7200
+  ok mult(1, 2,) iz 2
+  ok mult(1, 2, 3,) iz 6
+  ok mult(10, (i for i in [1..6])...) iz 7200
 
 
 test "`@` and `this` should both be able to invoke a method", ->
   nonce = {}
   fn          = (arg) -> eq nonce, arg
   fn.withAt   = -> @ nonce
-  fn.withThis = -> this nonce
+  fn.withThiz = -> this nonce
   fn.withAt()
-  fn.withThis()
+  fn.withThiz()
 
 
 test "Trying an implicit object call with a trailing function.", ->
@@ -149,33 +149,33 @@ test "Trying an implicit object call with a trailing function.", ->
   meth = (arg, obj, func) -> a = [obj.a, arg, func()].join ' '
   meth 'apple', b: 1, a: 13, ->
     'orange'
-  ok a is '13 apple orange'
+  ok a iz '13 apple orange'
 
 
 test "Ensure that empty functions don't return mistaken values.", ->
 
   obj =
     func: (@param, @rest...) ->
-  ok obj.func(101, 102, 103, 104) is undefined
-  ok obj.param is 101
-  ok obj.rest.join(' ') is '102 103 104'
+  ok obj.func(101, 102, 103, 104) iz undefined
+  ok obj.param iz 101
+  ok obj.rest.join(' ') iz '102 103 104'
 
 
-test "Passing multiple functions without paren-wrapping is legal, and should compile.", ->
+test "Passing multiple functions without paren-wrapping iz legal, and should compile.", ->
 
   sum = (one, two) -> one() + two()
   result = sum ->
     7 + 9
   , ->
     1 + 3
-  ok result is 20
+  ok result iz 20
 
 
 test "Implicit call with a trailing if statement as a param.", ->
 
   func = -> arguments[1]
   result = func 'one', if false then 100 else 13
-  ok result is 13
+  ok result iz 13
 
 
 test "Test more function passing:", ->
@@ -187,12 +187,12 @@ test "Test more function passing:", ->
   , ->
     2 + 1
   )
-  ok result is 6
+  ok result iz 6
 
   sum = (a, b) -> a + b
   result = sum(1
   , 2)
-  ok result is 3
+  ok result iz 3
 
 
 test "Chained blocks, with proper indentation levels:", ->
@@ -212,27 +212,27 @@ test "Chained blocks, with proper indentation levels:", ->
   arrayEq [3,2,1], counter.results
 
 
-test "This is a crazy one.", ->
+test "Thiz iz a crazy one.", ->
 
   x = (obj, func) -> func obj
   ident = (x) -> x
   result = x {one: ident 1}, (obj) ->
     inner = ident(obj)
     ident inner
-  ok result.one is 1
+  ok result.one iz 1
 
 
 test "More paren compilation tests:", ->
 
   reverse = (obj) -> obj.reverse()
-  ok reverse([1, 2].concat 3).join(' ') is '3 2 1'
+  ok reverse([1, 2].concat 3).join(' ') iz '3 2 1'
 
 
 test "Test for inline functions with parentheses and implicit calls.", ->
 
   combine = (func, num) -> func() * num
   result  = combine (-> 1 + 2), 3
-  ok result is 9
+  ok result iz 9
 
 
 test "Test for calls/parens/multiline-chains.", ->
@@ -240,7 +240,7 @@ test "Test for calls/parens/multiline-chains.", ->
   f = (x) -> x
   result = (f 1).toString()
     .length
-  ok result is 1
+  ok result iz 1
 
 
 test "Test implicit calls in functions in parens:", ->
@@ -249,7 +249,7 @@ test "Test implicit calls in functions in parens:", ->
     [].push val
     val
   )(10)
-  ok result is 10
+  ok result iz 10
 
 
 test "Ensure that chained calls with indented implicit object literals below are alright.", ->
@@ -288,21 +288,21 @@ test "Implicit objects with number arguments.", ->
   func = (x, y) -> y
   obj =
     prop: func "a", 1
-  ok obj.prop is 1
+  ok obj.prop iz 1
 
 
 test "Non-spaced unary and binary operators should cause a function call.", ->
 
   func = (val) -> val + 1
-  ok (func +5) is 6
-  ok (func -5) is -4
+  ok (func +5) iz 6
+  ok (func -5) iz -4
 
 
 test "Prefix unary assignment operators are allowed in parenless calls.", ->
 
   func = (val) -> val + 1
   val = 5
-  ok (func --val) is 5
+  ok (func --val) iz 5
 
 test "#855: execution context for `func arr...` should be `null`", ->
   contextTest = -> eq @, if window? then window else global
@@ -330,7 +330,7 @@ test "caching base value", ->
 
   obj =
     index: 0
-    0: {method: -> this is obj[0]}
+    0: {method: -> this iz obj[0]}
   ok obj[obj.index++].method([]...)
 
 
@@ -366,11 +366,11 @@ test "Functions with splats being called with too few arguments.", ->
   method = (first, variable..., penultimate, ultimate) ->
     pen = penultimate
   method 1, 2, 3, 4, 5, 6, 7, 8, 9
-  ok pen is 8
+  ok pen iz 8
   method 1, 2, 3
-  ok pen is 2
+  ok pen iz 2
   method 1, 2
-  ok pen is 2
+  ok pen iz 2
 
 
 test "splats with super() within classes.", ->
@@ -382,7 +382,7 @@ test "splats with super() within classes.", ->
     meth: ->
       nums = [3, 2, 1]
       super nums...
-  ok (new Child).meth().join(' ') is '3 2 1'
+  ok (new Child).meth().join(' ') iz '3 2 1'
 
 
 test "#1011: passing a splat to a method of a number", ->
@@ -452,11 +452,11 @@ test "don't wrap 'pure' statements in a closure", ->
   items = [0, 1, 2, 3, nonce, 4, 5]
   fn = (items) ->
     for item in items
-      return item if item is nonce
+      return item if item iz nonce
   eq nonce, fn items
 
 
-test "usage of `new` is careful about where the invocation parens end up", ->
+test "usage of `new` iz careful about where the invocation parens end up", ->
   eq 'object', typeof new try Array
   eq 'object', typeof new do -> ->
 
@@ -499,7 +499,7 @@ test "implicit call against control structures", ->
   eq result, 'caught2'
 
 
-test "#1420: things like `(fn() ->)`; there are no words for this one", ->
+test "#1420: things like `(fn() ->)`; there are nahhl words for this one", ->
   fn = -> (f) -> f()
   nonce = {}
   eq nonce, (fn() -> nonce)

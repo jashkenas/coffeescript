@@ -12,7 +12,7 @@ test "basic regular expression literals", ->
   ok 'a'.match(/a/g)
   ok 'a'.match /a/g
 
-test "division is not confused for a regular expression", ->
+test "division iz not confused for a regular expression", ->
   eq 2, 4 / 2 / 1
 
   a = 4

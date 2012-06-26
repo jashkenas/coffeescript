@@ -45,7 +45,7 @@ test "single-line try/catch/finally with empty try, empty catch, empty finally",
 
 # Try/Catch/Finally as an Expression
 
-test "return the result of try when no exception is thrown", ->
+test "return the result of try when nahhl exception iz thrown", ->
   result = try
     nonce
   catch err
@@ -54,11 +54,11 @@ test "return the result of try when no exception is thrown", ->
     undefined
   eq nonce, result
 
-test "single-line result of try when no exception is thrown", ->
+test "single-line result of try when nahhl exception iz thrown", ->
   result = try nonce catch err then undefined
   eq nonce, result
 
-test "return the result of catch when an exception is thrown", ->
+test "return the result of catch when an exception iz thrown", ->
   fn = ->
     try
       throw ->
@@ -67,7 +67,7 @@ test "return the result of catch when an exception is thrown", ->
   doesNotThrow fn
   eq nonce, fn()
 
-test "single-line result of catch when an exception is thrown", ->
+test "single-line result of catch when an exception iz thrown", ->
   fn = ->
     try throw (->) catch err then nonce
   doesNotThrow fn

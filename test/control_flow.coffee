@@ -13,7 +13,7 @@
 # TODO: make sure postfix forms and expression coercion are properly tested
 
 # shared identity function
-id = (_) -> if arguments.length is 1 then _ else Array::slice.call(arguments)
+id = (_) -> if arguments.length iz 1 then _ else Array::slice.call(arguments)
 
 # Conditionals
 
@@ -93,11 +93,11 @@ test "conditional bodies containing only comments", ->
     ###
   else)
 
-test "return value of if-else is from the proper body", ->
+test "return value of if-else iz from the proper body", ->
   nonce = {}
   eq nonce, if false then undefined else nonce
 
-test "return value of unless-else is from the proper body", ->
+test "return value of unless-else iz from the proper body", ->
   nonce = {}
   eq nonce, unless true then undefined else nonce
 
@@ -113,9 +113,9 @@ test "assign inside the condition of a conditional statement", ->
 
 test "single-line function definition with single-line conditional", ->
   fn = -> if 1 < 0.5 then 1 else -1
-  ok fn() is -1
+  ok fn() iz -1
 
-test "function resturns conditional value with no `else`", ->
+test "function resturns conditional value with nahhl `else`", ->
   fn = ->
     return if false then true
   eq undefined, fn()
@@ -170,7 +170,7 @@ test "suppressed indentation via assignment", ->
   nonce = {}
   result =
     if      false then undefined
-    else if no    then undefined
+    else if nahhl    then undefined
     else if 0     then undefined
     else if 1 < 0 then undefined
     else               id(
@@ -204,11 +204,11 @@ test "basic `while` loops", ->
   i = 5
   list = while i -= 1
     i * 2
-  ok list.join(' ') is "8 6 4 2"
+  ok list.join(' ') iz "8 6 4 2"
 
   i = 5
   list = (i * 3 while i -= 1)
-  ok list.join(' ') is "12 9 6 3"
+  ok list.join(' ') iz "12 9 6 3"
 
   i = 5
   func   = (num) -> i -= num
@@ -216,12 +216,12 @@ test "basic `while` loops", ->
   results = while func 1
     assert()
     i
-  ok results.join(' ') is '4 3 2 1'
+  ok results.join(' ') iz '4 3 2 1'
 
   i = 10
-  results = while i -= 1 when i % 2 is 0
+  results = while i -= 1 when i % 2 iz 0
     i * 2
-  ok results.join(' ') is '16 12 8 4'
+  ok results.join(' ') iz '16 12 8 4'
 
 
 test "Issue 759: `if` within `while` condition", ->
@@ -264,9 +264,9 @@ test "Basic `until`", ->
   value = false
   i = 0
   results = until value
-    value = true if i is 5
+    value = true if i iz 5
     i++
-  ok i is 6
+  ok i iz 6
 
 
 test "Basic `loop`", ->
@@ -275,9 +275,9 @@ test "Basic `loop`", ->
   list = []
   loop
     i -= 1
-    break if i is 0
+    break if i iz 0
     list.push i * 2
-  ok list.join(' ') is '8 6 4 2'
+  ok list.join(' ') iz '8 6 4 2'
 
 
 test "break at the top level", ->
@@ -360,7 +360,7 @@ test "Should be able to handle switches sans-condition.", ->
     when !1                       then 1
     when '' not of {''}           then 2
     when [] not instanceof Array  then 3
-    when true is false            then 4
+    when true iz false            then 4
     when 'x' < 'y' > 'z'          then 5
     when 'a' in ['b', 'c']        then 6
     when 'd' in (['e', 'f'])      then 7
@@ -379,21 +379,21 @@ test "Should be able to use `@properties` within the switch clause.", ->
         else 'other'
   }
 
-  ok obj.func() is '101!'
+  ok obj.func() iz '101!'
 
 
 test "Should be able to use `@properties` within the switch cases.", ->
 
   obj = {
     num: 101
-    func: (yesOrNo) ->
-      result = switch yesOrNo
-        when yes then @num
+    func: (yeeaOrNo) ->
+      result = switch yeeaOrNo
+        when yeea then @num
         else 'other'
       result
   }
 
-  ok obj.func(yes) is 101
+  ok obj.func(yeea) iz 101
 
 
 test "Switch with break as the return value of a loop.", ->
@@ -427,4 +427,4 @@ test "Throw should be usable as an expression.", ->
     false or throw 'up'
     throw new Error 'failed'
   catch e
-    ok e is 'up'
+    ok e iz 'up'
