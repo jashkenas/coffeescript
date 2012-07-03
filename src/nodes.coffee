@@ -261,7 +261,7 @@ exports.Block = class Block extends Base
       @expressions = rest
     code = @compileWithDeclarations o
     return code if o.bare
-    "#{prelude}(function() {\n#{code}\n}).call(this);\n"
+    "#{prelude}(function() {\n#{TAB}'use strict';\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
