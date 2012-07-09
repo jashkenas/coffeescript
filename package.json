@@ -19,6 +19,9 @@
     "coffee":     "./bin/coffee",
     "cake":       "./bin/cake"
   },
+  "scripts": {
+    "test": "node ./bin/cake test"
+  },
   "homepage":     "http://coffeescript.org",
   "bugs":         "https://github.com/jashkenas/coffee-script/issues",
   "repository":   {
