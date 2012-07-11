@@ -13,12 +13,12 @@ path             = require 'path'
 vm               = require 'vm'
 
 stripBOM = (content) ->
-  if content.charCodeAt 0 is 0xFEFF then content.substring 1 else content
+  if content.charCodeAt(0) is 0xFEFF then content.substring 1 else content
 
 # TODO: Remove registerExtension when fully deprecated.
 if require.extensions
   require.extensions['.coffee'] = (module, filename) ->
-    content = compile stripBOM fs.readFileSync(filename, 'utf8'), {filename}
+    content = compile stripBOM(fs.readFileSync filename, 'utf8'), {filename}
     module._compile content, filename
 else if require.registerExtension
   require.registerExtension '.coffee', (content) -> compile content
