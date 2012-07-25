@@ -579,7 +579,7 @@ RESERVED = [
   'case', 'default', 'function', 'var', 'void', 'with', 'const', 'let', 'enum'
   'export', 'import', 'native', '__hasProp', '__extends', '__slice', '__bind'
   '__indexOf', 'implements', 'interface', 'package', 'private', 'protected'
-  'public', 'static', 'yield'
+  'public', 'static', 'yield', '_this', '_this', '_super'
 ]
 
 STRICT_PROSCRIBED = ['arguments', 'eval']
