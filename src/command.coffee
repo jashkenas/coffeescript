@@ -97,8 +97,8 @@ compilePath = (source, topLevel, base) ->
     if stats.isDirectory()
       watchDir source, base if opts.watch
       fs.readdir source, (err, files) ->
-        throw err if err and err.code isnt 'ENOENT'
-        return if err?.code is 'ENOENT'
+        throw err if err and not err.code in ['ENOENT', 'ENOTDIR']
+        return if err?.code in ['ENOENT', 'ENOTDIR']
         index = sources.indexOf source
         files = files.filter (file) -> not hidden file
         sources[index..index] = (path.join source, file for file in files)
