@@ -30,10 +30,10 @@ exports.Scope = class Scope
     else
       @positions[name] = @variables.push({name, type}) - 1
 
-  # When `super` is called, we need to find the name of the current method we're 
-  # in, so that we know how to invoke the same method of the parent class. This 
-  # can get complicated if super is being called from an inner function. 
-  # `namedMethod` will walk up the scope tree until it either finds the first 
+  # When `super` is called, we need to find the name of the current method we're
+  # in, so that we know how to invoke the same method of the parent class. This
+  # can get complicated if super is being called from an inner function.
+  # `namedMethod` will walk up the scope tree until it either finds the first
   # function object that has a name filled in, or bottoms out.
   namedMethod: ->
     return @method if @method.name or !@parent
@@ -42,6 +42,7 @@ exports.Scope = class Scope
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
   find: (name) ->
+    console.log name
     return yes if @check name
     @add name, 'var'
     no
@@ -49,6 +50,7 @@ exports.Scope = class Scope
   # Reserve a variable name as originating from a function parameter for this
   # scope. No `var` required for internal references.
   parameter: (name) ->
+    name = name.replace(/\{\{=[0-9]+\}\}/, "")
     return if @shared and @parent.check name, yes
     @add name, 'param'
 

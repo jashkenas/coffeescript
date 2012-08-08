@@ -42,11 +42,15 @@ exports.Base = class Base
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
 
-    js = if o.map and @lineno? then "{{=#{ @lineno }=}}" else ""
     if o.level is LEVEL_TOP or not node.isStatement(o)
-      js + node.compileNode o
+      js = node.compileNode o
     else
-      js + node.compileClosure o
+      js = node.compileClosure o
+
+    if o.map and @lineno?
+      js = "{{=#{ @lineno }=}}#{js}"
+
+    return js
 
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
@@ -442,6 +446,12 @@ exports.Value = class Value extends Base
       name = new Index new Assign nref, name.index
       nref = new Index nref
     [base.add(name), new Value(bref or base.base, [nref or name])]
+
+  # DO NOT ATTACH LINE-NUMBERS TO VALUES
+  compile: (o) ->
+    o = extend {}, o
+    o.map = false
+    super(o)
 
   # We compile a value to JavaScript by compiling and joining each property.
   # Things get much more interesting if the chain of properties has *soak*

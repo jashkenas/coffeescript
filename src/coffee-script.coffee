@@ -145,18 +145,17 @@ LINE_MARKER_PATTERN = /\{\{=([0-9]+)=\}\}/g
 lineMap = (js, mapFile) ->
   lineno = 0
   output = []
-  mapping = {}
-  current = 1
+  mapping = []
+  current = 0
   for line in js.split("\n")
     output.push(line.replace(LINE_MARKER_PATTERN, ""))
-    lineno++
-
     markers = line.match(LINE_MARKER_PATTERN)
     if markers?
       numbers = (parseInt(marker.match(/[0-9]+/)) for marker in markers)
       current = Math.min(numbers...)
+    mapping.push([lineno, current])
+    lineno++
 
-    mapping[lineno] = current
   fs.writeFile(mapFile, JSON.stringify(mapping))
   return output.join("\n")
 
@@ -165,7 +164,7 @@ lineMap = (js, mapFile) ->
 oldAction = parser.performAction
 parser.performAction = (yytext,yyleng,yylineno,yy,yystate,$$,_$) ->
   result = oldAction.call(this, yytext,yyleng,yylineno,yy,yystate,$$,_$)
-  this.$.lineno = yylineno + 1
+  this.$.lineno = yylineno
   return result
 
 # This method will ensure any parent node's line is at most the minimum of all its children
