@@ -41,10 +41,12 @@ exports.Base = class Base
     o.level  = lvl if lvl
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
+
+    js = if o.map and @lineno? then "{{=#{ @lineno }=}}" else ""
     if o.level is LEVEL_TOP or not node.isStatement(o)
-      node.compileNode o
+      js + node.compileNode o
     else
-      node.compileClosure o
+      js + node.compileClosure o
 
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
@@ -108,7 +110,7 @@ exports.Base = class Base
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   toString: (idt = '', name = @constructor.name) ->
-    tree = '\n' + idt + name
+    tree = '\n' + (@lineno or "XX") + ":" + idt + name
     tree += '?' if @soak
     @eachChild (node) -> tree += node.toString idt + TAB
     tree
