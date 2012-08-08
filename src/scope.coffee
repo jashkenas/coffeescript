@@ -42,7 +42,6 @@ exports.Scope = class Scope
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
   find: (name) ->
-    console.log name
     return yes if @check name
     @add name, 'var'
     no
