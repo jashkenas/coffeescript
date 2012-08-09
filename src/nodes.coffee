@@ -331,7 +331,7 @@ exports.Literal = class Literal extends Base
     return this if @value is 'continue' and not o?.loop
 
   compileNode: (o) ->
-    o = extend o, {map: null}
+    @lineno = null
     code = if @value is 'this'
       if o.scope.method?.bound then o.scope.method.context else @value
     else if @value.reserved
@@ -454,7 +454,7 @@ exports.Value = class Value extends Base
   # operators `?.` interspersed. Then we have to take care not to accidentally
   # evaluate anything twice when building the soak chain.
   compileNode: (o) ->
-    o = extend o, {map: null}
+    @lineno = null
     @base.front = @front
     props = @properties
     code  = @base.compile o, if props.length then LEVEL_ACCESS else null
@@ -492,6 +492,7 @@ exports.Comment = class Comment extends Base
   makeReturn:      THIS
 
   compileNode: (o, level) ->
+    @lineno = null
     code = '/*' + multident(@comment, @tab) + "\n#{@tab}*/\n"
     code = o.indent + code if (level or o.level) is LEVEL_TOP
     code

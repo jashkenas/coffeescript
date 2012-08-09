@@ -143,19 +143,17 @@ parser.yy = require './nodes'
 LINE_MARKER_PATTERN = /\{\{=([0-9]+)=\}\}/g
 
 lineMap = (js, mapFile) ->
-  lineno = 0
   output = []
   mapping = []
   current = 0
+  js = js.trim()
   for line in js.split("\n")
-    output.push(line.replace(LINE_MARKER_PATTERN, ""))
     markers = line.match(LINE_MARKER_PATTERN)
     if markers?
       numbers = (parseInt(marker.match(/[0-9]+/)) for marker in markers)
       current = Math.min(numbers...)
     mapping.push(current)
-    lineno++
-
+    output.push(line.replace(LINE_MARKER_PATTERN, ""))
   fs.writeFile(mapFile, JSON.stringify(mapping))
   return output.join("\n")
 
