@@ -385,6 +385,7 @@ exports.Return = class Return extends Base
 # A value, variable or literal or parenthesized, indexed or dotted into,
 # or vanilla.
 exports.Value = class Value extends Base
+
   constructor: (base, props, tag) ->
     return base if not props and base instanceof Value
     @base       = base
@@ -447,17 +448,12 @@ exports.Value = class Value extends Base
       nref = new Index nref
     [base.add(name), new Value(bref or base.base, [nref or name])]
 
-  # DO NOT ATTACH LINE-NUMBERS TO VALUES
-  compile: (o) ->
-    o = extend {}, o
-    o.map = false
-    super(o)
-
   # We compile a value to JavaScript by compiling and joining each property.
   # Things get much more interesting if the chain of properties has *soak*
   # operators `?.` interspersed. Then we have to take care not to accidentally
   # evaluate anything twice when building the soak chain.
   compileNode: (o) ->
+    o = extend o, {map: null}
     @base.front = @front
     props = @properties
     code  = @base.compile o, if props.length then LEVEL_ACCESS else null
@@ -655,6 +651,7 @@ exports.Extends = class Extends extends Base
 # A `.` access into a property of a value, or the `::` shorthand for
 # an access into the object's prototype.
 exports.Access = class Access extends Base
+
   constructor: (@name, tag) ->
     @name.asKey = yes
     @soak  = tag is 'soak'
@@ -662,6 +659,7 @@ exports.Access = class Access extends Base
   children: ['name']
 
   compile: (o) ->
+    o = extend o, {map: null}
     name = @name.compile o
     if IDENTIFIER.test name then ".#{name}" else "[#{name}]"
 
