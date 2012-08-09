@@ -153,7 +153,7 @@ lineMap = (js, mapFile) ->
     if markers?
       numbers = (parseInt(marker.match(/[0-9]+/)) for marker in markers)
       current = Math.min(numbers...)
-    mapping.push([lineno, current])
+    mapping.push(current)
     lineno++
 
   fs.writeFile(mapFile, JSON.stringify(mapping))

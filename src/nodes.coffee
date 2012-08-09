@@ -331,6 +331,7 @@ exports.Literal = class Literal extends Base
     return this if @value is 'continue' and not o?.loop
 
   compileNode: (o) ->
+    o = extend o, {map: null}
     code = if @value is 'this'
       if o.scope.method?.bound then o.scope.method.context else @value
     else if @value.reserved
@@ -659,7 +660,6 @@ exports.Access = class Access extends Base
   children: ['name']
 
   compile: (o) ->
-    o = extend o, {map: null}
     name = @name.compile o
     if IDENTIFIER.test name then ".#{name}" else "[#{name}]"
 
