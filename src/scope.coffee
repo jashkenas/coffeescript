@@ -49,7 +49,6 @@ exports.Scope = class Scope
   # Reserve a variable name as originating from a function parameter for this
   # scope. No `var` required for internal references.
   parameter: (name) ->
-    name = name.replace(/\{\{=[0-9]+\}\}/, "")
     return if @shared and @parent.check name, yes
     @add name, 'param'
 
