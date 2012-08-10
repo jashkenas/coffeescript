@@ -187,8 +187,8 @@ watch = (source, base) ->
           rewatch()
           compile()
       catch e
-          removeSource source, base, yes
-          compileJoin()
+        removeSource source, base, yes
+        compileJoin()
 
     else throw e
 
