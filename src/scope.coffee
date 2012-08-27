@@ -20,7 +20,7 @@ exports.Scope = class Scope
   constructor: (@parent, @expressions, @method) ->
     @variables = [{name: 'arguments', type: 'arguments'}]
     @positions = {}
-    Scope.root = this unless @parent
+    Scope.root = this if not @parent or @parent.noRoot
 
   # Adds a new variable or overrides an existing one.
   add: (name, type, immediate) ->

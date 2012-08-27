@@ -137,6 +137,7 @@ grammar =
     o 'Assignable = Expression',                -> new Assign $1, $3
     o 'Assignable = TERMINATOR Expression',     -> new Assign $1, $4
     o 'Assignable = INDENT Expression OUTDENT', -> new Assign $1, $4
+    o 'EXPORT Assign',                          -> $2.export()
   ]
 
   # Assignment when it happens within an object literal. The difference from
