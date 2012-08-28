@@ -556,7 +556,7 @@ JS_KEYWORDS = [
 ]
 
 # CoffeeScript-only keywords.
-COFFEE_KEYWORDS = ['undefined', 'then', 'unless', 'until', 'loop', 'of', 'by', 'when', 'export']
+COFFEE_KEYWORDS = ['undefined', 'then', 'unless', 'until', 'loop', 'of', 'by', 'when']
 
 COFFEE_ALIAS_MAP =
   and  : '&&'
@@ -577,7 +577,7 @@ COFFEE_KEYWORDS = COFFEE_KEYWORDS.concat COFFEE_ALIASES
 # to avoid having a JavaScript error at runtime.
 RESERVED = [
   'case', 'default', 'function', 'var', 'void', 'with', 'const', 'let', 'enum'
-  'import', 'native', '__hasProp', '__extends', '__slice', '__bind'
+  'export', 'import', 'native', '__hasProp', '__extends', '__slice', '__bind'
   '__indexOf', 'implements', 'interface', 'package', 'private', 'protected'
   'public', 'static', 'yield'
 ]
@@ -667,7 +667,7 @@ COMPOUND_ASSIGN = [
 UNARY   = ['!', '~', 'NEW', 'TYPEOF', 'DELETE', 'DO']
 
 # Logical tokens.
-LOGIC   = ['&&', '||', '&', '|', '^']
+LOGIC   = ['&&', '||', '&', '|']
 
 # Bit-shifting tokens.
 SHIFT   = ['<<', '>>', '>>>']

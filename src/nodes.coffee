@@ -1023,11 +1023,7 @@ exports.Assign = class Assign extends Base
   unfoldSoak: (o) ->
     unfoldSoak o, this, 'variable'
 
-  exportCount: 0
-
-  export: ->
-    @exportCount++
-    @
+  upScopes: 0
 
   # Compile an assignment, delegating to `compilePatternMatch` or
   # `compileSplice` if appropriate. Keep track of the name of the base object
@@ -1044,7 +1040,7 @@ exports.Assign = class Assign extends Base
         throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned."
       unless varBase.hasProperties?()
         scope = o.scope
-        for [0...@exportCount]
+        for [0...@upScopes]
           scope = scope.parent
           unless scope
             throw SyntaxError "top-level identifier \"#{ @variable.compile o }\" cannot be exported further"
@@ -1053,7 +1049,7 @@ exports.Assign = class Assign extends Base
         else
           scope.find name
 
-    if @exportCount and not scope
+    if @upScopes and not scope
       throw SyntaxError "non-identifier \"#{ @variable.compile o }\" cannot be exported"
 
     if @value instanceof Code and match = METHOD_DEF.exec name

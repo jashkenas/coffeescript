@@ -137,7 +137,7 @@ grammar =
     o 'Assignable = Expression',                -> new Assign $1, $3
     o 'Assignable = TERMINATOR Expression',     -> new Assign $1, $4
     o 'Assignable = INDENT Expression OUTDENT', -> new Assign $1, $4
-    o 'EXPORT Assign',                          -> $2.export()
+    o '^ Assign',                               -> $2.upScopes++; $2
   ]
 
   # Assignment when it happens within an object literal. The difference from
@@ -532,6 +532,7 @@ grammar =
     o 'Expression SHIFT    Expression',         -> new Op $2, $1, $3
     o 'Expression COMPARE  Expression',         -> new Op $2, $1, $3
     o 'Expression LOGIC    Expression',         -> new Op $2, $1, $3
+    o 'Expression ^        Expression',         -> new Op $2, $1, $3
     o 'Expression RELATION Expression',         ->
       if $2.charAt(0) is '!'
         new Op($2[1..], $1, $3).invert()
@@ -568,7 +569,7 @@ operators = [
   ['left',      'SHIFT']
   ['left',      'RELATION']
   ['left',      'COMPARE']
-  ['left',      'LOGIC']
+  ['left',      'LOGIC', '^']
   ['nonassoc',  'INDENT', 'OUTDENT']
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
   ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
