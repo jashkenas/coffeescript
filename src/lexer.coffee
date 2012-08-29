@@ -197,6 +197,7 @@ exports.Lexer = class Lexer
   jsToken: ->
     return 0 unless @chunk.charAt(0) is '`' and match = JSTOKEN.exec @chunk
     @token 'JS', (script = match[0])[1...-1]
+    @line += count script, '\n'
     script.length
 
   # Matches regular expression literals. Lexing regular expressions is difficult
