@@ -58,7 +58,7 @@ table.definitions {
   }
 code, pre, tt, textarea {
   font-family: Monaco, Consolas, "Lucida Console", monospace;
-  font-size: 12px;
+  font-size: 0.75em;
   line-height: 18px;
   color: #155;
   white-space: pre-wrap;
@@ -73,7 +73,7 @@ code, pre, tt, textarea {
   pre {
     border-left: 5px solid rgba(0,0,0,0.2);
     padding: 3px 0 3px 12px;
-    font-size: 12px;
+    font-size: 0.75em;
   }
     pre.no_bar {
       border-left: 0;
