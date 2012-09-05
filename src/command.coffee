@@ -183,11 +183,13 @@ watch = (source, base) ->
     if e.code is 'ENOENT'
       return if sources.indexOf(source) is -1
       try
-        rewatch()
-        compile()
+        vimTimeout = wait 100, ->
+          rewatch()
+          compile()
       catch e
         removeSource source, base, yes
         compileJoin()
+
     else throw e
 
   compile = ->
