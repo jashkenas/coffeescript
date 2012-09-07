@@ -18,7 +18,10 @@ return unless window?
 
 # Load a remote script from the current domain via XHR.
 CoffeeScript.load = (url, callback) ->
-  xhr = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
+  xhr = if window.ActiveXObject
+    new window.ActiveXObject('Microsoft.XMLHTTP')
+  else
+    new XMLHttpRequest()
   xhr.open 'GET', url, true
   xhr.overrideMimeType 'text/plain' if 'overrideMimeType' of xhr
   xhr.onreadystatechange = ->
