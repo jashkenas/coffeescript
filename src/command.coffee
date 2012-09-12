@@ -259,7 +259,7 @@ removeSource = (source, base, removeJs) ->
 outputPath = (source, base) ->
   filename  = path.basename(source, path.extname(source)) + '.js'
   srcDir    = path.dirname source
-  baseDir   = if base is '.' then srcDir else srcDir.substring base.length
+  baseDir   = if base is '.' or base is './' then srcDir else srcDir.substring base.length
   dir       = if opts.output then path.join opts.output, baseDir else srcDir
   path.join dir, filename
 
