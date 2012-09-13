@@ -258,9 +258,11 @@ removeSource = (source, base, removeJs) ->
 # Get the corresponding output JavaScript path for a source file.
 outputPath = (source, base) ->
   filename  = path.basename(source, path.extname(source)) + '.js'
+  cwdDir = process.cwd()
   srcDir    = path.dirname source
-  baseDir   = if base is '.' or base is './' then srcDir else srcDir.substring base.length
-  dir       = if opts.output then path.join opts.output, baseDir else srcDir
+  baseDir = path.resolve(cwdDir, srcDir)
+  srcSubDir = path.relative(base, baseDir)
+  dir       = if opts.output then path.resolve(cwdDir, opts.output, srcSubDir) else srcDir
   path.join dir, filename
 
 # Write out a JavaScript source file with the compiled code. By default, files
