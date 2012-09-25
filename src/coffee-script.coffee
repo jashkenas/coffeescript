@@ -6,25 +6,27 @@
 # If included on a webpage, it will automatically sniff out, compile, and
 # execute all scripts present in `text/coffeescript` tags.
 
-fs               = require 'fs'
-path             = require 'path'
-{Lexer,RESERVED} = require './lexer'
-{parser}         = require './parser'
-vm               = require 'vm'
+fs        = require 'fs'
+path      = require 'path'
+{Lexer}   = require './lexer'
+{parser}  = require './parser'
+vm        = require 'vm'
 
-stripBOM = (content) ->
-  if content.charCodeAt(0) is 0xFEFF then content.substring 1 else content
+# The file extensions that are considered to be CoffeeScript.
+extensions = ['.coffee', '.litcoffee']
+  
+# Load and run a CoffeeScript file for Node, stripping any `BOM`s.
+loadFile = (module, filename) ->
+  raw = fs.readFileSync filename, 'utf8'
+  stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
+  module._compile compile(stripped, {filename}), filename
 
 if require.extensions
-  require.extensions['.coffee'] = (module, filename) ->
-    content = compile stripBOM(fs.readFileSync filename, 'utf8'), {filename}
-    module._compile content, filename
+  for ext in extensions
+    require.extensions[ext] = loadFile
 
 # The current CoffeeScript version number.
 exports.VERSION = '1.3.3'
-
-# Words that cannot be used as identifiers in CoffeeScript code
-exports.RESERVED = RESERVED
 
 # Expose helpers for testing.
 exports.helpers = require './helpers'
@@ -71,7 +73,7 @@ exports.run = (code, options = {}) ->
   mainModule.paths = require('module')._nodeModulePaths path.dirname fs.realpathSync options.filename
 
   # Compile.
-  if path.extname(mainModule.filename) isnt '.coffee' or require.extensions
+  if (path.extname(mainModule.filename) not in extensions) or require.extensions
     mainModule._compile compile(code, options), mainModule.filename
   else
     mainModule._compile code, mainModule.filename
