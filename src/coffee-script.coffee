@@ -36,7 +36,7 @@ exports.helpers = require './helpers'
 exports.compile = compile = (code, options = {}) ->
   {merge} = exports.helpers
   try
-    js = (parser.parse lexer.tokenize code).compile options
+    js = (parser.parse lexer.tokenize(code, options)).compile options
     return js unless options.header
   catch err
     err.message = "In #{options.filename}, #{err.message}" if options.filename

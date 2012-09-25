@@ -32,25 +32,27 @@ exports.Lexer = class Lexer
   # Before returning the token stream, run it through the [Rewriter](rewriter.html)
   # unless explicitly asked not to.
   tokenize: (code, opts = {}) ->
-    code     = "\n#{code}" if WHITESPACE.test code
-    code     = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
-
-    @code    = code           # The remainder of the source code.
-    @line    = opts.line or 0 # The current line.
-    @indent  = 0              # The current indentation level.
-    @indebt  = 0              # The over-indentation at the current level.
-    @outdebt = 0              # The under-outdentation at the current level.
-    @indents = []             # The stack of all current indentation levels.
-    @ends    = []             # The stack for pairing up tokens.
-    @tokens  = []             # Stream of parsed tokens in the form `['TYPE', value, line]`.
+    @literate = opts.extension is '.litcoffee'
+    
+    code      = "\n#{code}" if WHITESPACE.test code
+    code      = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
+              
+    @code     = code           # The remainder of the source code.
+    @line     = opts.line or 0 # The current line.
+    @indent   = 0              # The current indentation level.
+    @indebt   = 0              # The over-indentation at the current level.
+    @outdebt  = 0              # The under-outdentation at the current level.
+    @indents  = []             # The stack of all current indentation levels.
+    @ends     = []             # The stack for pairing up tokens.
+    @tokens   = []             # Stream of parsed tokens in the form `['TYPE', value, line]`.
 
     # At every position, run through this list of attempted matches,
     # short-circuiting if any of them succeed. Their order determines precedence:
     # `@literalToken` is the fallback catch-all.
     i = 0
     while @chunk = code[i..]
-      i += @identifierToken() or
-           @commentToken()    or
+      i += @commentToken()    or
+           @identifierToken() or
            @whitespaceToken() or
            @lineToken()       or
            @heredocToken()    or
