@@ -225,11 +225,12 @@ runTests = (CoffeeScript) ->
 
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
-  for file in files when file.match /\.coffee$/i
+  for file in files when file.match /\.(lit)?coffee$/i
+    literate = path.extname(file) is '.litcoffee'
     currentFile = filename = path.join 'test', file
     code = fs.readFileSync filename
     try
-      CoffeeScript.run code.toString(), {filename}
+      CoffeeScript.run code.toString(), {filename, literate}
     catch error
       failures.push {filename, error}
   return !failures.length

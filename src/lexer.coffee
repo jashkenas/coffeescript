@@ -389,7 +389,7 @@ exports.Lexer = class Lexer
     if herecomment
       if HEREDOC_ILLEGAL.test doc
         @error "block comment cannot contain \"*/\", starting"
-      return doc if doc.indexOf('\n') <= 0
+      return doc if doc.indexOf('\n') < 0
     else
       while match = HEREDOC_INDENT.exec doc
         attempt = match[1]
