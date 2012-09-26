@@ -1,3 +1,6 @@
+Literate CoffeeScript Test
+--------------------------
+
 comment comment
 
     test "basic literate CoffeeScript parsing", ->
@@ -27,3 +30,14 @@ Code in `backticks is not parsed` and...
           ###
           
           ok yes
+          
+Regular [Markdown](http://example.com/markdown) features, like links 
+and unordered lists, are fine:
+
+  * I 
+  
+  * Am
+  
+  * A
+  
+  * List
