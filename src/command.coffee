@@ -125,8 +125,8 @@ compileScript = (file, input, base) ->
   try
     t = task = {file, input, options}
     CoffeeScript.emit 'compile', task
-    if      o.tokens      then printTokens CoffeeScript.tokens t.input
-    else if o.nodes       then printLine CoffeeScript.nodes(t.input).toString().trim()
+    if      o.tokens      then printTokens CoffeeScript.tokens t.input, t.options
+    else if o.nodes       then printLine CoffeeScript.nodes(t.input, t.options).toString().trim()
     else if o.run         then CoffeeScript.run t.input, t.options
     else if o.join and t.file isnt o.join
       sourceCode[sources.indexOf(t.file)] = t.input
@@ -318,7 +318,8 @@ parseOptions = ->
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (filename) ->
-  {filename, extension: path.extname(filename), bare: opts.bare, header: opts.compile}
+  literate = path.extname(filename) is '.litcoffee'
+  {filename, literate, bare: opts.bare, header: opts.compile}
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
 # the `node` binary, preserving the other options.

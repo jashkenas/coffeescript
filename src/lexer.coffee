@@ -31,13 +31,9 @@ exports.Lexer = class Lexer
   #
   # Before returning the token stream, run it through the [Rewriter](rewriter.html)
   # unless explicitly asked not to.
-  tokenize: (code, opts = {}) ->
-    @literate = opts.extension is '.litcoffee'
-    
-    code      = "\n#{code}" if WHITESPACE.test code
-    code      = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
-              
-    @code     = code           # The remainder of the source code.
+  tokenize: (code, opts = {}) ->    
+    @literate = opts.literate  # Are we lexing literate CoffeeScript?          
+    code      = @clean code    # The stripped, cleaned original source code.
     @line     = opts.line or 0 # The current line.
     @indent   = 0              # The current indentation level.
     @indebt   = 0              # The over-indentation at the current level.
@@ -51,8 +47,8 @@ exports.Lexer = class Lexer
     # `@literalToken` is the fallback catch-all.
     i = 0
     while @chunk = code[i..]
-      i += @commentToken()    or
-           @identifierToken() or
+      i += @identifierToken() or
+           @commentToken()    or
            @whitespaceToken() or
            @lineToken()       or
            @heredocToken()    or
@@ -66,6 +62,18 @@ exports.Lexer = class Lexer
     @error "missing #{tag}" if tag = @ends.pop()
     return @tokens if opts.rewrite is off
     (new Rewriter).rewrite @tokens
+  
+  # Preprocess the code to remove leading and trailing whitespace, carriage 
+  # returns, etc. If we're lexing literate CoffeeScript, strip external Markdown 
+  # by removing all lines that aren't indented by at least four spaces.
+  clean: (code) ->
+    code = "\n#{code}" if WHITESPACE.test code
+    code = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
+    if @literate
+      lines = for line in code.split('\n') when line.substr(0, 4) is '    '
+        line.substr(4)
+      code = lines.join '\n'
+    code
 
   # Tokenizers
   # ----------
