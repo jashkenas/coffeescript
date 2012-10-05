@@ -29,6 +29,7 @@
     "url": "git://github.com/jashkenas/coffee-script.git"
   },
   "devDependencies": {
+    "nexpect":    "=0.2.4",
     "uglify-js":  ">=1.0.0",
     "jison":      ">=0.2.0"
   }
