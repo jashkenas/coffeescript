@@ -47,7 +47,7 @@ exports.compile = compile = (code, options = {}) ->
     js = "// #{header}\n#{js}"
 
   if options.map?
-    js = lineMap(js, options.map)
+    js = lineMap(js, options)
 
   return js
 
@@ -142,7 +142,7 @@ parser.yy = require './nodes'
 
 LINE_MARKER_PATTERN = /\{\{=([0-9]+)=\}\}/g
 
-lineMap = (js, mapFile) ->
+lineMap = (js, opts) ->
   output = []
   mapping = []
   current = 0
@@ -154,7 +154,7 @@ lineMap = (js, mapFile) ->
       current = Math.min(numbers...)
     mapping.push(current)
     output.push(line.replace(LINE_MARKER_PATTERN, ""))
-  fs.writeFile(mapFile, JSON.stringify(mapping))
+  fs.appendFileSync(opts.map, "#{ opts.filename }:#{ JSON.stringify(mapping) }\n")
   return output.join("\n")
 
 # Monkey-patch the JISON-generated parser for line-mappings
