@@ -606,8 +606,8 @@ exports.Call = class Call extends Base
       return """
         (function(func, args, ctor) {
         #{idt}ctor.prototype = func.prototype;
-        #{idt}var child = new ctor, result = func.apply(child, args), t = typeof result;
-        #{idt}return t == "object" || t == "function" ? result || child : child;
+        #{idt}var child = new ctor, result = func.apply(child, args);
+        #{idt}return Object(result) === result ? result : child;
         #{@tab}})(#{ @variable.compile o, LEVEL_LIST }, #{splatArgs}, function(){})
       """
     base = new Value @variable
