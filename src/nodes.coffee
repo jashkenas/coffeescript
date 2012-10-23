@@ -229,7 +229,6 @@ exports.Block = class Block extends Base
         code = node.compile o
         unless node.isStatement o
           code = "#{@tab}#{code};"
-          code = "#{code}\n" if node instanceof Literal
         codes.push code
       else
         codes.push node.compile o, LEVEL_LIST
