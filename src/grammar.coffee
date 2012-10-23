@@ -383,6 +383,7 @@ grammar =
   # A catch clause names its error and runs a block of code.
   Catch: [
     o 'CATCH Identifier Block',                 -> [$2, $3]
+    o 'CATCH Object Block',                     -> [new Value($2), $3]
   ]
 
   # Throw an exception object.
