@@ -1530,9 +1530,12 @@ exports.Op = class Op extends Base
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
+    parts = [op = @operator]
+    if op is '!' and @first instanceof Existence
+      @first.negated = not @first.negated
+      return @first.compile o
     if o.level >= LEVEL_ACCESS
       return (new Parens this).compile o
-    parts = [op = @operator]
     plusMinus = op in ['+', '-']
     parts.push ' ' if op in ['new', 'typeof', 'delete'] or
                       plusMinus and @first instanceof Op and @first.operator is op
