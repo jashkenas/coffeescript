@@ -21,7 +21,7 @@ if require.extensions
     module._compile content, filename
 
 # The current CoffeeScript version number.
-exports.VERSION = '1.3.3'
+exports.VERSION = '1.4.0'
 
 # Words that cannot be used as identifiers in CoffeeScript code
 exports.RESERVED = RESERVED

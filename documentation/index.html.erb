@@ -136,7 +136,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/1.3.3">1.3.3</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.4.0">1.4.0</a>
     </p>
 
     <h2>
@@ -1115,6 +1115,27 @@ Expressions
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+    
+    <p>
+      <b class="header" style="margin-top: 20px;">
+        <a href="https://github.com/jashkenas/coffee-script/compare/1.3.3...1.4.0">1.4.0</a>
+        <span class="timestamp"> &ndash; <small>Oct 23, 2012</small></span>
+      </b>
+      <ul>
+        <li>
+          The CoffeeScript compiler now strips Microsoft's UTF-8 BOM if it 
+          exists, allowing you to compile BOM-borked source files.
+        </li>
+        <li>
+          Fix Node/compiler deprecation warnings by removing <tt>registerExtension</tt>,
+          and moving from <tt>path.exists</tt> to <tt>fs.exists</tt>.
+        </li>
+        <li>
+          Small tweaks to splat compilation, backticks, slicing, and the 
+          error for duplicate keys in object literals.
+        </li>
+      </ul>
+    </p>
     
     <p>
       <b class="header" style="margin-top: 20px;">
