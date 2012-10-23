@@ -61,6 +61,9 @@ test "#1722: operator precedence in unbounded slice compilation", ->
   arrayEq [0..n], list[..n or 0]
   arrayEq [0..n], list[..if n then n else 0]
 
+test "#2349: inclusive slicing to numeric strings", ->
+  arrayEq [0, 1], [0..10][.."1"]
+
 
 # Splicing
 

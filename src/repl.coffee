@@ -43,15 +43,16 @@ autocomplete = (text) ->
 completeAttribute = (text) ->
   if match = text.match ACCESSOR
     [all, obj, prefix] = match
-    try
-      val = Script.runInThisContext obj
-    catch error
+    try obj = Script.runInThisContext obj
+    catch e
       return
-    val = Object val
-    possibilities = Object.getOwnPropertyNames val
-    for key of val when ~possibilities.indexOf val
-      possibilities.push key
-    completions = getCompletions prefix, possibilities
+    return unless obj?
+    obj = Object obj
+    candidates = Object.getOwnPropertyNames obj
+    while obj = Object.getPrototypeOf obj
+      for key in Object.getOwnPropertyNames obj when key not in candidates
+        candidates.push key
+    completions = getCompletions prefix, candidates
     [completions, prefix]
 
 # Attempt to autocomplete an in-scope free variable: `one`.
@@ -61,13 +62,15 @@ completeVariable = (text) ->
   if free?
     vars = Script.runInThisContext 'Object.getOwnPropertyNames(Object(this))'
     keywords = (r for r in CoffeeScript.RESERVED when r[..1] isnt '__')
-    possibilities = vars.concat keywords
-    completions = getCompletions free, possibilities
+    candidates = vars
+    for key in keywords when key not in candidates
+      candidates.push key
+    completions = getCompletions free, candidates
     [completions, free]
 
 # Return elements of candidates for which `prefix` is a prefix.
 getCompletions = (prefix, candidates) ->
-  (el for el in candidates when el.indexOf(prefix) is 0)
+  el for el in candidates when 0 is el.indexOf prefix
 
 # Make sure that uncaught exceptions don't kill the REPL.
 process.on 'uncaughtException', error
@@ -112,7 +115,7 @@ run = (buffer) ->
     error err
   repl.prompt()
 
-if stdin.readable
+if stdin.readable and stdin.isRaw
   # handle piped input
   pipedInput = ''
   repl =
@@ -175,11 +178,12 @@ repl.on 'attemptClose', ->
     repl.output.clearLine 1
     repl._onLine repl.line
     return
-  if backlog
+  if backlog or repl.line
     backlog = ''
-    repl.output.write '\n'
+    repl.historyIndex = -1
     repl.setPrompt REPL_PROMPT
-    repl.prompt()
+    repl.output.write '\n(^C again to quit)'
+    repl._line (repl.line = '')
   else
     repl.close()
 

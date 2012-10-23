@@ -12,16 +12,16 @@ path             = require 'path'
 {parser}         = require './parser'
 vm               = require 'vm'
 
-# TODO: Remove registerExtension when fully deprecated.
+stripBOM = (content) ->
+  if content.charCodeAt(0) is 0xFEFF then content.substring 1 else content
+
 if require.extensions
   require.extensions['.coffee'] = (module, filename) ->
-    content = compile fs.readFileSync(filename, 'utf8'), {filename}
+    content = compile stripBOM(fs.readFileSync filename, 'utf8'), {filename}
     module._compile content, filename
-else if require.registerExtension
-  require.registerExtension '.coffee', (content) -> compile content
 
 # The current CoffeeScript version number.
-exports.VERSION = '1.3.3'
+exports.VERSION = '1.4.0'
 
 # Words that cannot be used as identifiers in CoffeeScript code
 exports.RESERVED = RESERVED

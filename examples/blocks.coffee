@@ -8,7 +8,7 @@ get '/hello', ->
 # Append.
 append = (location, data) ->
   path = new Pathname location
-  throw new Error("Location does not exist") unless path.exists()
+  throw new Error "Location does not exist" unless fs.existsSync(location)
 
   File.open path, 'a', (file) ->
     file.console.log YAML.dump data
@@ -31,7 +31,7 @@ File.open = (path, mode, block) ->
 # Write.
 write = (location, data) ->
   path = new Pathname location
-  raise "Location does not exist" unless path.exists()
+  throw new Error "Location does not exist" unless fs.existsSync(location)
 
   File.open path, 'w', (file) ->
     return false if Digest.MD5.hexdigest(file.read()) is data.hash()

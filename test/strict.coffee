@@ -55,14 +55,8 @@ test "octal escape sequences prohibited", ->
   strictOk  "`'\\1'`"
   eq "\\" + "1", `"\\1"`
 
-
-test "duplicate property definitions in object literals are prohibited", ->
-  strict 'o = {x:1,x:1}'
-  strict 'x = 1; o = {x, x: 2}'
-
 test "duplicate formal parameters are prohibited", ->
   nonce = {}
-
   # a Param can be an Identifier, ThisProperty( @-param ), Array, or Object
   # a Param can also be a splat (...) or an assignment (param=value)
   # the following function expressions should throw errors
