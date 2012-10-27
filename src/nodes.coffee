@@ -688,12 +688,14 @@ exports.PartialApplication = class PartialApplication extends Base
   compileNode: (o) ->
     base = new Value @variable
     name = base.properties[0]
-    if name && name.name.asKey? && base.this?
-      ref = 'this'
-      base.base.value = 'this'
-    else
-      ref = 'null'
-          
+    
+    base.base.value = 'this' if o.scope.expressions.classBody?
+    ref = 'this'
+    
+    if o.scope.method.klass?
+      o.scope.assign '_this', 'this'
+      ref = base.base.value = '_this'
+    
     args = @filterImplicitObjects @args
     args = (arg.compile o, LEVEL_LIST for arg in args).join ', '
     

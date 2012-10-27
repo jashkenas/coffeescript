@@ -23,7 +23,7 @@ test "object assignment", ->
     
   eq 3, (obj.a1 2)
   
-test "oop version", ->
+test "oop outer version", ->
 
   class A
     constructor: (@value = 0) ->
@@ -33,3 +33,17 @@ test "oop version", ->
   a = new A
   a.increment()
   eq 1, a.value
+  
+test "oop inner version", ->
+
+  class B
+    constructor: (@value = 0) ->
+    increment_by: (val) -> @value += val
+    increment: -> 
+      inc = @increment_by(1, ...)
+      inc()
+
+  b = new B
+  b.increment()
+  eq 1, b.value
+
