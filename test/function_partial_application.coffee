@@ -10,12 +10,6 @@ test "basic delayed invocation", ->
   
   eq 3, (a1 2)
   eq 5, (a2 3)
-  eq 3, ((add 1, ...) 2)
-  
-  # doesn't work
-  # yield_add = -> add 
-  # d = yield_add() 3, ...
-  # eq 8, (d 5)
 
 test "object assignment", ->
   obj = 
@@ -47,3 +41,6 @@ test "oop inner version", ->
   b.increment()
   eq 1, b.value
 
+test "unusual usage", ->
+  eq 4, ((add 3, ...)(1))
+  eq 3, ((add 1, ...) 2)

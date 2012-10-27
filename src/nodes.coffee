@@ -692,14 +692,16 @@ exports.PartialApplication = class PartialApplication extends Base
     base.base.value = 'this' if o.scope.expressions.classBody?
     ref = 'this'
     
-    if o.scope.method.klass?
+    if o.scope.method?.klass?
       o.scope.assign '_this', 'this'
       ref = base.base.value = '_this'
     
     args = @filterImplicitObjects @args
     args = (arg.compile o, LEVEL_LIST for arg in args).join ', '
     
-    "(function() { return " + @variable.compile(o, LEVEL_ACCESS) + ".apply(#{ref}, [#{args}].concat(#{utility 'slice'}.call(arguments))); })"
+    code = "function() {\n"
+    code += "#{@tab}  return " + @variable.compile(o, LEVEL_ACCESS) + ".apply(#{ref}, [#{args}].concat(#{utility 'slice'}.call(arguments)));\n"
+    code + "#{@tab}}"
 
 #### Extends
 
