@@ -36,6 +36,7 @@ o = (patternString, action, options) ->
   action = if match = unwrap.exec action then match[1] else "(#{action}())"
   action = action.replace /\bnew /g, '$&yy.'
   action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
+  action = action.replace /\b(Op|Value\.create)\b/g, 'yy.$&'
   [patternString, "$$ = #{action};", options]
 
 # Grammatical Rules
@@ -142,10 +143,10 @@ grammar =
   # Assignment when it happens within an object literal. The difference from
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
-    o 'ObjAssignable',                          -> new Value $1
-    o 'ObjAssignable : Expression',             -> new Assign new Value($1), $3, 'object'
+    o 'ObjAssignable',                          -> Value.create $1
+    o 'ObjAssignable : Expression',             -> new Assign Value.create($1), $3, 'object'
     o 'ObjAssignable :
-       INDENT Expression OUTDENT',              -> new Assign new Value($1), $4, 'object'
+       INDENT Expression OUTDENT',              -> new Assign Value.create($1), $4, 'object'
     o 'Comment'
   ]
 
@@ -219,26 +220,26 @@ grammar =
 
   # Variables and properties that can be assigned to.
   SimpleAssignable: [
-    o 'Identifier',                             -> new Value $1
+    o 'Identifier',                             -> Value.create $1
     o 'Value Accessor',                         -> $1.add $2
-    o 'Invocation Accessor',                    -> new Value $1, [].concat $2
+    o 'Invocation Accessor',                    -> Value.create $1, [].concat $2
     o 'ThisProperty'
   ]
 
   # Everything that can be assigned to.
   Assignable: [
     o 'SimpleAssignable'
-    o 'Array',                                  -> new Value $1
-    o 'Object',                                 -> new Value $1
+    o 'Array',                                  -> Value.create $1
+    o 'Object',                                 -> Value.create $1
   ]
 
   # The types of things that can be treated as values -- assigned to, invoked
   # as functions, indexed into, named as a class, etc.
   Value: [
     o 'Assignable'
-    o 'Literal',                                -> new Value $1
-    o 'Parenthetical',                          -> new Value $1
-    o 'Range',                                  -> new Value $1
+    o 'Literal',                                -> Value.create $1
+    o 'Parenthetical',                          -> Value.create $1
+    o 'Range',                                  -> Value.create $1
     o 'This'
   ]
 
@@ -313,13 +314,13 @@ grammar =
 
   # A reference to the *this* current object.
   This: [
-    o 'THIS',                                   -> new Value new Literal 'this'
-    o '@',                                      -> new Value new Literal 'this'
+    o 'THIS',                                   -> Value.create new Literal 'this'
+    o '@',                                      -> Value.create new Literal 'this'
   ]
 
   # A reference to a property on *this*.
   ThisProperty: [
-    o '@ Identifier',                           -> new Value new Literal('this'), [new Access($2)], 'this'
+    o '@ Identifier',                           -> Value.create new Literal('this'), [new Access($2)], 'this'
   ]
 
   # The array literal.
@@ -383,7 +384,7 @@ grammar =
   # A catch clause names its error and runs a block of code.
   Catch: [
     o 'CATCH Identifier Block',                 -> [$2, $3]
-    o 'CATCH Object Block',                     -> [new Value($2), $3]
+    o 'CATCH Object Block',                     -> [Value.create($2), $3]
   ]
 
   # Throw an exception object.
@@ -432,7 +433,7 @@ grammar =
   ]
 
   ForBody: [
-    o 'FOR Range',                              -> source: new Value($2)
+    o 'FOR Range',                              -> source: Value.create($2)
     o 'ForStart ForSource',                     -> $2.own = $1.own; $2.name = $1[0]; $2.index = $1[1]; $2
   ]
 
@@ -446,8 +447,8 @@ grammar =
   ForValue: [
     o 'Identifier'
     o 'ThisProperty'
-    o 'Array',                                  -> new Value $1
-    o 'Object',                                 -> new Value $1
+    o 'Array',                                  -> Value.create $1
+    o 'Object',                                 -> Value.create $1
   ]
 
   # An array or range comprehension has variables for the current element
@@ -513,30 +514,30 @@ grammar =
   # -type rule, but in order to make the precedence binding possible, separate
   # rules are necessary.
   Operation: [
-    o 'UNARY Expression',                       -> new Op $1 , $2
-    o '-     Expression',                      (-> new Op '-', $2), prec: 'UNARY'
-    o '+     Expression',                      (-> new Op '+', $2), prec: 'UNARY'
+    o 'UNARY Expression',                       -> Op.create $1 , $2
+    o '-     Expression',                      (-> Op.create '-', $2), prec: 'UNARY'
+    o '+     Expression',                      (-> Op.create '+', $2), prec: 'UNARY'
 
-    o '-- SimpleAssignable',                    -> new Op '--', $2
-    o '++ SimpleAssignable',                    -> new Op '++', $2
-    o 'SimpleAssignable --',                    -> new Op '--', $1, null, true
-    o 'SimpleAssignable ++',                    -> new Op '++', $1, null, true
+    o '-- SimpleAssignable',                    -> Op.create '--', $2
+    o '++ SimpleAssignable',                    -> Op.create '++', $2
+    o 'SimpleAssignable --',                    -> Op.create '--', $1, null, true
+    o 'SimpleAssignable ++',                    -> Op.create '++', $1, null, true
 
     # [The existential operator](http://jashkenas.github.com/coffee-script/#existence).
     o 'Expression ?',                           -> new Existence $1
 
-    o 'Expression +  Expression',               -> new Op '+' , $1, $3
-    o 'Expression -  Expression',               -> new Op '-' , $1, $3
+    o 'Expression +  Expression',               -> Op.create '+' , $1, $3
+    o 'Expression -  Expression',               -> Op.create '-' , $1, $3
 
-    o 'Expression MATH     Expression',         -> new Op $2, $1, $3
-    o 'Expression SHIFT    Expression',         -> new Op $2, $1, $3
-    o 'Expression COMPARE  Expression',         -> new Op $2, $1, $3
-    o 'Expression LOGIC    Expression',         -> new Op $2, $1, $3
+    o 'Expression MATH     Expression',         -> Op.create $2, $1, $3
+    o 'Expression SHIFT    Expression',         -> Op.create $2, $1, $3
+    o 'Expression COMPARE  Expression',         -> Op.create $2, $1, $3
+    o 'Expression LOGIC    Expression',         -> Op.create $2, $1, $3
     o 'Expression RELATION Expression',         ->
       if $2.charAt(0) is '!'
-        new Op($2[1..], $1, $3).invert()
+        Op.create($2[1..], $1, $3).invert()
       else
-        new Op $2, $1, $3
+        Op.create $2, $1, $3
 
     o 'SimpleAssignable COMPOUND_ASSIGN
        Expression',                             -> new Assign $1, $3, $2

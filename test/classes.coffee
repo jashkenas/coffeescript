@@ -682,3 +682,13 @@ test '#2359: external constructors returning "other typed" objets', ->
   ok new A instanceof A
   ok new ctor not instanceof A
   ok new ctor not instanceof ctor
+
+test "#2359: constructors should not return an explicit value", ->
+  throws -> CoffeeScript.run "class then constructor: -> return 5"
+  throws -> CoffeeScript.run """
+    class
+      constructor: ->
+        if foo
+          return bar: 7
+        baz()
+  """
