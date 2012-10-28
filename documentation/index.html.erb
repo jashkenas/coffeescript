@@ -60,6 +60,7 @@
         <a href="#classes">Classes, Inheritance, and Super</a>
         <a href="#destructuring">Destructuring Assignment</a>
         <a href="#fat_arrow">Function Binding</a>
+        <a href="#partial_application">Partial Application</a>
         <a href="#embedded">Embedded JavaScript</a>
         <a href="#switch">Switch and Try/Catch</a>
         <a href="#comparisons">Chained Comparisons</a>
@@ -798,7 +799,19 @@ Expressions
       be automatically bound to each instance of the class when the instance is
       constructed.
     </p>
-
+    
+    <p>
+      <span id="partial_application" class="bookmark"></span>
+      <b class="header">Partial Application</b>
+      Sometimes when passing arguments to a function you want to indicate that more
+      arguments should be applied later. The computation will take place only when 
+      all the arguments are passed to the function.
+    </p>
+    <p>
+      This allows for defining functions in terms of other functions and providing
+      more elegant APIs with specialized functions.
+    </p>
+    <%= code_for('partial_application')%>
     <p>
       <span id="embedded" class="bookmark"></span>
       <b class="header">Embedded JavaScript</b>
