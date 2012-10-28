@@ -595,11 +595,6 @@ test "#1813: Passing class definitions as expressions", ->
 
   eq result, B
 
-test "#1966: external constructors should produce their return value", ->
-  ctor = -> {}
-  class A then constructor: ctor
-  ok (new A) not instanceof A
-
 test "#1980: regression with an inherited class with static function members", ->
 
   class A
@@ -676,3 +671,14 @@ test "#2052: classes should work in strict mode", ->
       class A
   catch e
     ok no
+
+test "#2359: instanceof should work when extending native objects", ->
+  class MyError extends Error
+  ok new MyError instanceof MyError
+
+test '#2359: external constructors returning "other typed" objets', ->
+  ctor = -> {}
+  class A then constructor: ctor
+  ok new A instanceof A
+  ok new ctor not instanceof A
+  ok new ctor not instanceof ctor
