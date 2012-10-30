@@ -643,23 +643,23 @@ exports.PartialApplication = class PartialApplication extends Base
       else
         left = new Literal @superReference o
         rite = new Value left
-      rite = new Call rite, @args
+      rite = new PartialApplication rite, @args
       rite.isNew = @isNew
       left = new Literal "typeof #{ left.compile o } === \"function\""
       return new If left, new Value(rite), soak: yes
     call = this
     list = []
     loop
-      if call.variable instanceof Call
+      if call.variable instanceof PartialApplication
         list.push call
         call = call.variable
         continue
       break unless call.variable instanceof Value
       list.push call
-      break unless (call = call.variable.base) instanceof Call
+      break unless (call = call.variable.base) instanceof PartialApplication
     for call in list.reverse()
       if ifn
-        if call.variable instanceof Call
+        if call.variable instanceof PartialApplication
           call.variable = ifn
         else
           call.variable.base = ifn
