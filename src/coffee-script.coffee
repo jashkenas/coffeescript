@@ -121,6 +121,7 @@ lexer = new Lexer
 parser.lexer =
   lex: ->
     [tag, @yytext, @yylineno] = @tokens[@pos++] or ['']
+    @yylloc = {first_line: @yylineno, last_line: @yylineno, first_column: 0, last_column: 0}
     tag
   setInput: (@tokens) ->
     @pos = 0
