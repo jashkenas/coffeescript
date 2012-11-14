@@ -108,7 +108,9 @@ exports.Base = class Base
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   toString: (idt = '', name = @constructor.name) ->
-    location = (@locationData?.first_line || "unknown") + ": "
+    firstLine = @locationData?.first_line || "unknown"
+    lastLine = @locationData?.last_line || "unknown"
+    location = firstLine  + (if lastLine != firstLine then "-" + lastLine else "") + ": "
     tree = '\n' + idt + location + name
     tree += '?' if @soak
     @eachChild (node) -> tree += node.toString idt + TAB
