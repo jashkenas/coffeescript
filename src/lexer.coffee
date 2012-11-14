@@ -258,13 +258,17 @@ exports.Lexer = class Lexer
   lineToken: ->
     return 0 unless match = MULTI_DENT.exec @chunk
     indent = match[0]
-    @line += count indent, '\n'
     @seenFor = no
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
     if size - @indebt is @indent
       if noNewlines then @suppressNewlines() else @newlineToken()
+      # Advance @line line after the newlineToken, so the TERMINATOR shows up
+      # on the right line.
+      @line += count indent, '\n'
       return indent.length
+
+    @line += count indent, '\n'
     if size > @indent
       if noNewlines
         @indebt = size - @indent
