@@ -177,7 +177,6 @@ runTests = (CoffeeScript) ->
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
     try
-      console.log description + " " + failures.length
       fn.test = {description, currentFile}
       fn.call(fn)
       ++passedTests
