@@ -10,7 +10,7 @@
 {Rewriter, INVERSES} = require './rewriter'
 
 # Import the helpers we need.
-{count, starts, compact, last} = require './helpers'
+{count, starts, compact, last, locationDataToString} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -35,8 +35,12 @@ exports.Lexer = class Lexer
     code     = "\n#{code}" if WHITESPACE.test code
     code     = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
 
-    @code    = code           # The remainder of the source code.
-    @line    = opts.line or 0 # The current line.
+    @code    = code           # The source code.
+    @line    = opts.line or 0 # TODO: Remove
+    @chunkLine =
+        opts.line or 0        # The start line for the current chunk.
+    @chunkColumn =
+        opts.column or 0      # The start column of the current chunk.
     @indent  = 0              # The current indentation level.
     @indebt  = 0              # The over-indentation at the current level.
     @outdebt = 0              # The under-outdentation at the current level.
@@ -49,7 +53,8 @@ exports.Lexer = class Lexer
     # `@literalToken` is the fallback catch-all.
     i = 0
     while @chunk = code[i..]
-      i += @identifierToken() or
+      consumed = \
+           @identifierToken() or
            @commentToken()    or
            @whitespaceToken() or
            @lineToken()       or
@@ -60,9 +65,15 @@ exports.Lexer = class Lexer
            @jsToken()         or
            @literalToken()
 
+      # Update position
+      [@chunkLine, @chunkColumn] = @getLineAndColumnFromChunk consumed
+
+      i += consumed
+
     @closeIndentation()
     @error "missing #{tag}" if tag = @ends.pop()
     return @tokens if opts.rewrite is off
+    # TODO: deal with Rewriter
     (new Rewriter).rewrite @tokens
 
   # Tokenizers
@@ -77,6 +88,9 @@ exports.Lexer = class Lexer
   identifierToken: ->
     return 0 unless match = IDENTIFIER.exec @chunk
     [input, id, colon] = match
+
+    idLength = id.length
+    poppedToken = undefined
 
     if id is 'own' and @tag() is 'FOR'
       @token 'OWN', id
@@ -103,7 +117,7 @@ exports.Lexer = class Lexer
         else
           tag = 'RELATION'
           if @value() is '!'
-            @tokens.pop()
+            poppedToken = @tokens.pop()
             id = '!' + id
 
     if id in JS_FORBIDDEN
@@ -124,8 +138,14 @@ exports.Lexer = class Lexer
         when 'break', 'continue' then 'STATEMENT'
         else  tag
 
-    @token tag, id
-    @token ':', ':' if colon
+    tagToken = @token tag, id, 0, idLength
+    if poppedToken
+      [tagToken.locationData.first_line, tagToken.locationData.first_column] =
+        [poppedToken.locationData.first_line, poppedToken.locationData.first_column]
+    if colon
+      colonOffset = input.lastIndexOf ':'
+      @token ':', ':', colonOffset, colon.length
+
     input.length
 
   # Matches numbers, including decimals, hex, and exponential notation.
@@ -146,7 +166,7 @@ exports.Lexer = class Lexer
       number = '0x' + (parseInt octalLiteral[1], 8).toString 16
     if binaryLiteral = /^0b([01]+)/.exec number
       number = '0x' + (parseInt binaryLiteral[1], 2).toString 16
-    @token 'NUMBER', number
+    @token 'NUMBER', number, 0, lexedLength
     lexedLength
 
   # Matches strings, including multi-line strings. Ensures that quotation marks
@@ -155,13 +175,14 @@ exports.Lexer = class Lexer
     switch @chunk.charAt 0
       when "'"
         return 0 unless match = SIMPLESTR.exec @chunk
-        @token 'STRING', (string = match[0]).replace MULTILINER, '\\\n'
+        string = match[0]
+        @token 'STRING', string.replace(MULTILINER, '\\\n'), 0, string.length
       when '"'
         return 0 unless string = @balancedString @chunk, '"'
         if 0 < string.indexOf '#{', 1
-          @interpolateString string[1...-1]
+          @interpolateString string[1...-1], offsetInChunk: 1
         else
-          @token 'STRING', @escapeLines string
+          @token 'STRING', @escapeLines string, 0, string.length
       else
         return 0
     if octalEsc = /^(?:\\.|[^\\])*\\(?:0[0-7]|[1-7])/.test string
@@ -177,9 +198,9 @@ exports.Lexer = class Lexer
     quote = heredoc.charAt 0
     doc = @sanitizeHeredoc match[2], quote: quote, indent: null
     if quote is '"' and 0 <= doc.indexOf '#{'
-      @interpolateString doc, heredoc: yes
+      @interpolateString doc, heredoc: yes, offsetInChunk: 3
     else
-      @token 'STRING', @makeString doc, quote, yes
+      @token 'STRING', @makeString(doc, quote, yes), 0, heredoc.length
     @line += count heredoc, '\n'
     heredoc.length
 
@@ -188,15 +209,17 @@ exports.Lexer = class Lexer
     return 0 unless match = @chunk.match COMMENT
     [comment, here] = match
     if here
-      @token 'HERECOMMENT', @sanitizeHeredoc here,
-        herecomment: true, indent: Array(@indent + 1).join(' ')
+      @token 'HERECOMMENT',
+        (@sanitizeHeredoc here,
+          herecomment: true, indent: Array(@indent + 1).join(' ')),
+        0, comment.length
     @line += count comment, '\n'
     comment.length
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
     return 0 unless @chunk.charAt(0) is '`' and match = JSTOKEN.exec @chunk
-    @token 'JS', (script = match[0])[1...-1]
+    @token 'JS', (script = match[0])[1...-1], 0, script.length
     @line += count script, '\n'
     script.length
 
@@ -216,7 +239,7 @@ exports.Lexer = class Lexer
     [match, regex, flags] = match
     if regex[..1] is '/*' then @error 'regular expressions cannot begin with `*`'
     if regex is '//' then regex = '/(?:)/'
-    @token 'REGEX', "#{regex}#{flags}"
+    @token 'REGEX', "#{regex}#{flags}", 0, match.length
     match.length
 
   # Matches multiline extended regular expressions.
@@ -225,24 +248,45 @@ exports.Lexer = class Lexer
     if 0 > body.indexOf '#{'
       re = body.replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
       if re.match /^\*/ then @error 'regular expressions cannot begin with `*`'
-      @token 'REGEX', "/#{ re or '(?:)' }/#{flags}"
+      @token 'REGEX', "/#{ re or '(?:)' }/#{flags}", 0, heregex.length
       return heregex.length
-    @token 'IDENTIFIER', 'RegExp'
-    @tokens.push ['CALL_START', '(']
+    @token 'IDENTIFIER', 'RegExp', 0, 0
+    @token 'CALL_START', '(', 0, 0
     tokens = []
-    for [tag, value] in @interpolateString(body, regex: yes)
+    for token in @interpolateString(body, regex: yes, offsetInChunk: 3)
+      [tag, value] = token
       if tag is 'TOKENS'
         tokens.push value...
-      else
+      else if tag is 'NEOSTRING'
         continue unless value = value.replace HEREGEX_OMIT, ''
+        # Convert NEOSTRING into STRING
         value = value.replace /\\/g, '\\\\'
-        tokens.push ['STRING', @makeString(value, '"', yes)]
-      tokens.push ['+', '+']
+        token[0] = 'STRING'
+        token[1] = @makeString(value, '"', yes)
+        tokens.push token
+      else
+        @error "Unexpected #{tag}"
+
+      prev = last @tokens
+      plusToken = ['+', '+']
+      plusToken.locationData = prev.locationData
+      tokens.push plusToken
+
+    # Remove the extra "+"
     tokens.pop()
-    @tokens.push ['STRING', '""'], ['+', '+'] unless tokens[0]?[0] is 'STRING'
+
+    unless tokens[0]?[0] is 'STRING'
+      @token 'STRING', '""', 0, 0
+      @token '+', '+', 0, 0
     @tokens.push tokens...
-    @tokens.push [',', ','], ['STRING', '"' + flags + '"'] if flags
-    @token ')', ')'
+
+    if flags
+      # Find the flags in the heregex
+      flagsOffset = heregex.lastIndexOf flags
+      @token ',', ',', flagsOffset, 0
+      @token 'STRING', '"' + flags + '"', flagsOffset, flags.length
+
+    @token ')', ')', heregex.length-1, 0
     heregex.length
 
   # Matches newlines, indents, and outdents, and determines which is which.
@@ -262,7 +306,7 @@ exports.Lexer = class Lexer
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
     if size - @indebt is @indent
-      if noNewlines then @suppressNewlines() else @newlineToken()
+      if noNewlines then @suppressNewlines() else @newlineToken 0
       # Advance @line line after the newlineToken, so the TERMINATOR shows up
       # on the right line.
       @line += count indent, '\n'
@@ -275,19 +319,19 @@ exports.Lexer = class Lexer
         @suppressNewlines()
         return indent.length
       diff = size - @indent + @outdebt
-      @token 'INDENT', diff
+      @token 'INDENT', diff, 0, indent.length
       @indents.push diff
       @ends.push 'OUTDENT'
       @outdebt = @indebt = 0
     else
       @indebt = 0
-      @outdentToken @indent - size, noNewlines
+      @outdentToken @indent - size, noNewlines, indent.length
     @indent = size
     indent.length
 
   # Record an outdent token or multiple tokens, if we happen to be moving back
   # inwards past several recorded indents.
-  outdentToken: (moveOut, noNewlines) ->
+  outdentToken: (moveOut, noNewlines, outdentLength) ->
     while moveOut > 0
       len = @indents.length - 1
       if @indents[len] is undefined
@@ -303,10 +347,11 @@ exports.Lexer = class Lexer
         moveOut -= dent
         @outdebt = 0
         @pair 'OUTDENT'
-        @token 'OUTDENT', dent
+        @token 'OUTDENT', dent, 0, outdentLength
     @outdebt -= moveOut if dent
     @tokens.pop() while @value() is ';'
-    @token 'TERMINATOR', '\n' unless @tag() is 'TERMINATOR' or noNewlines
+
+    @token 'TERMINATOR', '\n', outdentLength, 0 unless @tag() is 'TERMINATOR' or noNewlines
     this
 
   # Matches and consumes non-meaningful whitespace. Tag the previous token
@@ -319,9 +364,9 @@ exports.Lexer = class Lexer
     if match then match[0].length else 0
 
   # Generate a newline token. Consecutive newlines get merged together.
-  newlineToken: ->
+  newlineToken: (offset) ->
     @tokens.pop() while @value() is ';'
-    @token 'TERMINATOR', '\n' unless @tag() is 'TERMINATOR'
+    @token 'TERMINATOR', '\n', offset, 0 unless @tag() is 'TERMINATOR'
     this
 
   # Use a `\` at a line-ending to suppress the newline.
@@ -458,7 +503,22 @@ exports.Lexer = class Lexer
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
   interpolateString: (str, options = {}) ->
-    {heredoc, regex} = options
+    {heredoc, regex, offsetInChunk} = options
+
+    # TODO: we pass in offsetInChunk, but we've already discarded the " or the
+    # """, or the /// that got us here.  Those characters are not going to end
+    # up being part of any tokens.
+
+    originalOffsetInChunk = offsetInChunk
+    lexedLength = str.length
+
+    # Clip leading \n from heredoc
+    offsetInChunk = offsetInChunk || 0
+    if heredoc and str.length > 0 and str[0] == '\n'
+      str = str[1...]
+      offsetInChunk++
+
+    # Parse the string.
     tokens = []
     pi = 0
     i  = -1
@@ -469,31 +529,51 @@ exports.Lexer = class Lexer
       unless letter is '#' and str.charAt(i+1) is '{' and
              (expr = @balancedString str[i + 1..], '}')
         continue
-      tokens.push ['NEOSTRING', str[pi...i]] if pi < i
+      # NEOSTRING is a fake token.  This will be converted to a string below.
+      tokens.push @makeToken('NEOSTRING', str[pi...i], offsetInChunk + pi) if pi < i
       inner = expr[1...-1]
       if inner.length
-        nested = new Lexer().tokenize inner, line: @line, rewrite: off
-        nested.pop()
-        nested.shift() if nested[0]?[0] is 'TERMINATOR'
+        [line, column] = @getLineAndColumnFromChunk(offsetInChunk + i + 1)
+        nested = new Lexer().tokenize inner, line: line, column: column, rewrite: off
+        popped = nested.pop()
+        popped = nested.shift() if nested[0]?[0] is 'TERMINATOR'
         if len = nested.length
           if len > 1
-            nested.unshift ['(', '(', @line]
-            nested.push    [')', ')', @line]
+            nested.unshift @makeToken '(', '(', offsetInChunk + i + 1, 0
+            nested.push    @makeToken ')', ')', offsetInChunk + i + 1 + inner.length, 0
+          # Push a fake 'TOKENS' token, which will get turned into real tokens below.
           tokens.push ['TOKENS', nested]
       i += expr.length
       pi = i + 1
-    tokens.push ['NEOSTRING', str[pi..]] if i > pi < str.length
+    tokens.push @makeToken('NEOSTRING', str[pi..], offsetInChunk + pi) if i > pi < str.length
+
+    # If regex, then return now and let the regex code deal with all these fake tokens
     return tokens if regex
-    return @token 'STRING', '""' unless tokens.length
-    tokens.unshift ['', ''] unless tokens[0][0] is 'NEOSTRING'
-    @token '(', '(' if interpolated = tokens.length > 1
-    for [tag, value], i in tokens
+
+    # If we didn't find any tokens, then just return an empty string.
+    return @token 'STRING', '""', originalOffsetInChunk, lexedLength unless tokens.length
+
+    # If the first token is not a string, add a fake empty string to the beginning.
+    tokens.unshift @makeToken('NEOSTRING', '', originalOffsetInChunk) unless tokens[0][0] is 'NEOSTRING'
+
+    @token '(', '(', originalOffsetInChunk, 0 if interpolated = tokens.length > 1
+    # Push all the tokens
+    for token, i in tokens
+      [tag, value] = token
+      # TODO: this needs location data.
       @token '+', '+' if i
       if tag is 'TOKENS'
+        # Push all the tokens in the fake 'TOKENS' token.  These already have
+        # sane location data.
         @tokens.push value...
+      else if tag is 'NEOSTRING'
+        # Convert NEOSTRING into STRING
+        token[0] = 'STRING'
+        token[1] = @makeString value, '"', heredoc
+        @tokens.push token
       else
-        @token 'STRING', @makeString value, '"', heredoc
-    @token ')', ')' if interpolated
+        @error "Unexpected #{tag}"
+    @token ')', ')', originalOffsetInChunk + lexedLength, 0 if interpolated
     tokens
 
   # Pairs up a closing token, ensuring that all listed pairs of tokens are
@@ -514,9 +594,54 @@ exports.Lexer = class Lexer
   # Helpers
   # -------
 
-  # Add a token to the results, taking note of the line number.
-  token: (tag, value) ->
-    @tokens.push [tag, value, @line]
+  # Returns the line and column number from an offset into the current chunk.
+  getLineAndColumnFromChunk: (offset) ->
+    if offset is 0
+      return [@chunkLine, @chunkColumn]
+
+    if offset >= @chunk.length
+      string = @chunk
+    else
+      string = @chunk[..offset-1]
+
+    lineCount = count string, '\n'
+
+    column = @chunkColumn
+    if lineCount > 0
+      lines = string.split '\n'
+      column = (last lines).length
+    else
+      column += string.length
+
+    return [@chunkLine + lineCount, column]
+
+  # Same as "token", exception this just returns the token without adding it
+  # to the results.
+  makeToken: (tag, value, offsetInChunk, length) ->
+    offsetInChunk = offsetInChunk || 0
+    if length is undefined then length = value.length
+
+    locationData = {}
+    [locationData.first_line, locationData.first_column] =
+      @getLineAndColumnFromChunk offsetInChunk
+    [locationData.last_line, locationData.last_column] =
+      @getLineAndColumnFromChunk offsetInChunk + length
+
+    token = [tag, value, locationData.first_line]
+    token.locationData = locationData
+
+    return token
+
+  # Add a token to the results.
+  # `offset` is the offset into the current @chunk where the token starts.
+  # `length` is the length of the token in the @chunk, after the offset.  If
+  # not specified, the length of `value` will be used.
+  #
+  # Returns the new token.
+  token: (tag, value, offsetInChunk, length) ->
+    token = @makeToken tag, value, offsetInChunk, length
+    @tokens.push token
+    return token
 
   # Peek at a tag in the current token stream.
   tag: (index, tag) ->

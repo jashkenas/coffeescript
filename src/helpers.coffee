@@ -79,3 +79,17 @@ exports.addLocationDataFn = (first, last) ->
         obj.updateLocationDataIfMissing buildLocationData(first, last)
 
       return obj
+
+# Convert jison location data to a string.
+# `obj` can be a token, or a locationData.
+exports.locationDataToString = (obj) ->
+    if "locationData" of obj then locationData = obj.locationData
+    else if "first_line" of obj then locationData = obj
+
+    if locationData
+      "#{locationData.first_line + 1}:#{locationData.first_column + 1}-" +
+      "#{locationData.last_line + 1}:#{locationData.last_column + 1}"
+    else
+      "No location data"
+
+
