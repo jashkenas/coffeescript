@@ -36,7 +36,6 @@ exports.Lexer = class Lexer
     code     = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
 
     @code    = code           # The source code.
-    @line    = opts.line or 0 # TODO: Remove
     @chunkLine =
         opts.line or 0        # The start line for the current chunk.
     @chunkColumn =
@@ -73,7 +72,6 @@ exports.Lexer = class Lexer
     @closeIndentation()
     @error "missing #{tag}" if tag = @ends.pop()
     return @tokens if opts.rewrite is off
-    # TODO: deal with Rewriter
     (new Rewriter).rewrite @tokens
 
   # Tokenizers
@@ -187,7 +185,6 @@ exports.Lexer = class Lexer
         return 0
     if octalEsc = /^(?:\\.|[^\\])*\\(?:0[0-7]|[1-7])/.test string
       @error "octal escape sequences #{string} are not allowed"
-    @line += count string, '\n'
     string.length
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
@@ -201,7 +198,6 @@ exports.Lexer = class Lexer
       @interpolateString doc, heredoc: yes, offsetInChunk: 3
     else
       @token 'STRING', @makeString(doc, quote, yes), 0, heredoc.length
-    @line += count heredoc, '\n'
     heredoc.length
 
   # Matches and consumes comments.
@@ -213,14 +209,12 @@ exports.Lexer = class Lexer
         (@sanitizeHeredoc here,
           herecomment: true, indent: Array(@indent + 1).join(' ')),
         0, comment.length
-    @line += count comment, '\n'
     comment.length
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
     return 0 unless @chunk.charAt(0) is '`' and match = JSTOKEN.exec @chunk
     @token 'JS', (script = match[0])[1...-1], 0, script.length
-    @line += count script, '\n'
     script.length
 
   # Matches regular expression literals. Lexing regular expressions is difficult
@@ -230,7 +224,6 @@ exports.Lexer = class Lexer
     return 0 if @chunk.charAt(0) isnt '/'
     if match = HEREGEX.exec @chunk
       length = @heregexToken match
-      @line += count match[0], '\n'
       return length
 
     prev = last @tokens
@@ -307,12 +300,8 @@ exports.Lexer = class Lexer
     noNewlines = @unfinished()
     if size - @indebt is @indent
       if noNewlines then @suppressNewlines() else @newlineToken 0
-      # Advance @line line after the newlineToken, so the TERMINATOR shows up
-      # on the right line.
-      @line += count indent, '\n'
       return indent.length
 
-    @line += count indent, '\n'
     if size > @indent
       if noNewlines
         @indebt = size - @indent
@@ -560,8 +549,15 @@ exports.Lexer = class Lexer
     # Push all the tokens
     for token, i in tokens
       [tag, value] = token
-      # TODO: this needs location data.
-      @token '+', '+' if i
+      if i
+        # Create a 0-length "+" token.
+        plusToken = @token '+', '+' if i
+        locationToken = if tag == 'TOKENS' then value[0] else token
+        plusToken.locationData =
+          first_line: locationToken.locationData.first_line
+          first_column: locationToken.locationData.first_column
+          last_line: locationToken.locationData.first_line
+          last_column: locationToken.locationData.first_column
       if tag is 'TOKENS'
         # Push all the tokens in the fake 'TOKENS' token.  These already have
         # sane location data.
@@ -671,7 +667,9 @@ exports.Lexer = class Lexer
 
   # Throws a syntax error on the current `@line`.
   error: (message) ->
-    throw SyntaxError "#{message} on line #{ @line + 1}"
+    # TODO: Are there some cases we could improve the error line number by
+    # passing the offset in the chunk where the error happened?
+    throw SyntaxError "#{message} on line #{ @chunkLine + 1 }"
 
 # Constants
 # ---------
