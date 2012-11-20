@@ -178,7 +178,7 @@ exports.Lexer = class Lexer
       when '"'
         return 0 unless string = @balancedString @chunk, '"'
         if 0 < string.indexOf '#{', 1
-          @interpolateString string[1...-1], offsetInChunk: 1
+          @interpolateString string[1...-1], strOffset: 1, lexedLength: string.length
         else
           @token 'STRING', @escapeLines string, 0, string.length
       else
@@ -195,7 +195,7 @@ exports.Lexer = class Lexer
     quote = heredoc.charAt 0
     doc = @sanitizeHeredoc match[2], quote: quote, indent: null
     if quote is '"' and 0 <= doc.indexOf '#{'
-      @interpolateString doc, heredoc: yes, offsetInChunk: 3
+      @interpolateString doc, heredoc: yes, strOffset: 3, lexedLength: heredoc.length
     else
       @token 'STRING', @makeString(doc, quote, yes), 0, heredoc.length
     heredoc.length
@@ -246,7 +246,7 @@ exports.Lexer = class Lexer
     @token 'IDENTIFIER', 'RegExp', 0, 0
     @token 'CALL_START', '(', 0, 0
     tokens = []
-    for token in @interpolateString(body, regex: yes, offsetInChunk: 3)
+    for token in @interpolateString(body, regex: yes)
       [tag, value] = token
       if tag is 'TOKENS'
         tokens.push value...
@@ -491,21 +491,26 @@ exports.Lexer = class Lexer
   # If it encounters an interpolation, this method will recursively create a
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
+  #
+  #  - `str` is the start of the string contents (IE with the " or """ stripped
+  #    off.)
+  #  - `options.offsetInChunk` is the start of the interpolated string in the
+  #    current chunk, including the " or """, etc...  If not provided, this is
+  #    assumed to be 0.  `options.lexedLength` is the length of the
+  #    interpolated string, including both the start and end quotes.  Both of these
+  #    values are ignored if `options.regex` is true.
+  #  - `options.strOffset` is the offset of str, relative to the start of the
+  #    current chunk.
   interpolateString: (str, options = {}) ->
-    {heredoc, regex, offsetInChunk} = options
-
-    # TODO: we pass in offsetInChunk, but we've already discarded the " or the
-    # """, or the /// that got us here.  Those characters are not going to end
-    # up being part of any tokens.
-
-    originalOffsetInChunk = offsetInChunk
-    lexedLength = str.length
+    {heredoc, regex, offsetInChunk, strOffset, lexedLength} = options
+    offsetInChunk = offsetInChunk || 0
+    strOffset = strOffset || 0
+    lexedLength = lexedLength || str.length
 
     # Clip leading \n from heredoc
-    offsetInChunk = offsetInChunk || 0
     if heredoc and str.length > 0 and str[0] == '\n'
       str = str[1...]
-      offsetInChunk++
+      strOffset++
 
     # Parse the string.
     tokens = []
@@ -519,33 +524,33 @@ exports.Lexer = class Lexer
              (expr = @balancedString str[i + 1..], '}')
         continue
       # NEOSTRING is a fake token.  This will be converted to a string below.
-      tokens.push @makeToken('NEOSTRING', str[pi...i], offsetInChunk + pi) if pi < i
+      tokens.push @makeToken('NEOSTRING', str[pi...i], strOffset + pi) if pi < i
       inner = expr[1...-1]
       if inner.length
-        [line, column] = @getLineAndColumnFromChunk(offsetInChunk + i + 1)
+        [line, column] = @getLineAndColumnFromChunk(strOffset + i + 1)
         nested = new Lexer().tokenize inner, line: line, column: column, rewrite: off
         popped = nested.pop()
         popped = nested.shift() if nested[0]?[0] is 'TERMINATOR'
         if len = nested.length
           if len > 1
-            nested.unshift @makeToken '(', '(', offsetInChunk + i + 1, 0
-            nested.push    @makeToken ')', ')', offsetInChunk + i + 1 + inner.length, 0
+            nested.unshift @makeToken '(', '(', strOffset + i + 1, 0
+            nested.push    @makeToken ')', ')', strOffset + i + 1 + inner.length, 0
           # Push a fake 'TOKENS' token, which will get turned into real tokens below.
           tokens.push ['TOKENS', nested]
       i += expr.length
       pi = i + 1
-    tokens.push @makeToken('NEOSTRING', str[pi..], offsetInChunk + pi) if i > pi < str.length
+    tokens.push @makeToken('NEOSTRING', str[pi..], strOffset + pi) if i > pi < str.length
 
     # If regex, then return now and let the regex code deal with all these fake tokens
     return tokens if regex
 
     # If we didn't find any tokens, then just return an empty string.
-    return @token 'STRING', '""', originalOffsetInChunk, lexedLength unless tokens.length
+    return @token 'STRING', '""', offsetInChunk, lexedLength unless tokens.length
 
     # If the first token is not a string, add a fake empty string to the beginning.
-    tokens.unshift @makeToken('NEOSTRING', '', originalOffsetInChunk) unless tokens[0][0] is 'NEOSTRING'
+    tokens.unshift @makeToken('NEOSTRING', '', offsetInChunk) unless tokens[0][0] is 'NEOSTRING'
 
-    @token '(', '(', originalOffsetInChunk, 0 if interpolated = tokens.length > 1
+    @token '(', '(', offsetInChunk, 0 if interpolated = tokens.length > 1
     # Push all the tokens
     for token, i in tokens
       [tag, value] = token
@@ -569,7 +574,7 @@ exports.Lexer = class Lexer
         @tokens.push token
       else
         @error "Unexpected #{tag}"
-    @token ')', ')', originalOffsetInChunk + lexedLength, 0 if interpolated
+    @token ')', ')', offsetInChunk + lexedLength, 0 if interpolated
     tokens
 
   # Pairs up a closing token, ensuring that all listed pairs of tokens are
