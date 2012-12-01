@@ -914,8 +914,7 @@ exports.Class = class Class extends Base
           if func instanceof Code
             assign = @ctor = func
           else
-            @externalCtor = o.scope.freeVariable 'class'
-            assign = new Assign new Literal(@externalCtor), func
+            @externalCtor = 'constructor'
         else
           if assign.variable.this
             func.static = yes
@@ -954,8 +953,14 @@ exports.Class = class Class extends Base
   ensureConstructor: (name) ->
     if not @ctor
       @ctor = new Code
-      @ctor.body.push new Literal "#{name}.__super__.constructor.apply(this, arguments)" if @parent
-      @ctor.body.push new Literal "#{@externalCtor}.apply(this, arguments)" if @externalCtor
+      @ctor.body.push new Call(
+        new Literal "#{name}.__super__.constructor.apply"
+        [(new Literal 'this'), (new Literal 'arguments')]
+      ) if @parent
+      @ctor.body.push new Call(
+        new Literal "#{@externalCtor}.apply"
+        [(new Literal 'this'), (new Literal 'arguments')]
+      ) if @externalCtor
       @ctor.body.makeReturn()
       @body.expressions.unshift @ctor
     @ctor.ctor     = @ctor.name = name
@@ -1177,6 +1182,7 @@ exports.Code = class Code extends Base
   # arrow, generates a wrapper that saves the current value of `this` through
   # a closure.
   compileNode: (o) ->
+    delete o.scope if o.scope and del(o, 'noglobals')
     o.scope         = new Scope o.scope, @body, this
     o.scope.shared  = del(o, 'sharedScope')
     o.indent        += TAB
