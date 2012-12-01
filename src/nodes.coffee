@@ -914,8 +914,7 @@ exports.Class = class Class extends Base
           if func instanceof Code
             assign = @ctor = func
           else
-            @externalCtor = o.scope.freeVariable 'class'
-            assign = new Assign new Literal(@externalCtor), func
+            @externalCtor = 'constructor'
         else
           if assign.variable.this
             func.static = yes
