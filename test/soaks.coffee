@@ -132,3 +132,11 @@ test "soaked constructor invocations with caching and property access", ->
 test "soaked function invocation safe on non-functions", ->
   eq undefined, 0?(1)
   eq undefined, 0? 1, 2
+
+# Soaked partial application
+
+test "soaked partial application", ->
+  add = (a,b) -> a + b
+  maybe_add_1 = add? 1, ...
+  
+  eq 2, (maybe_add_1 1)

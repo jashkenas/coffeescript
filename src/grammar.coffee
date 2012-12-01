@@ -293,16 +293,22 @@ grammar =
 
   # Ordinary function invocation, or a chained series of calls.
   Invocation: [
-    o 'Value OptFuncExist Arguments',           -> new Call $1, $3, $2
-    o 'Invocation OptFuncExist Arguments',      -> new Call $1, $3, $2
-    o 'SUPER',                                  -> new Call 'super', [new Splat new Literal 'arguments']
-    o 'SUPER Arguments',                        -> new Call 'super', $2
+    o 'Value OptFuncExist PartialApplication',        -> new PartialApplication $1, $3, $2
+    o 'Value OptFuncExist Arguments',                 -> new Call $1, $3, $2
+    o 'Invocation OptFuncExist Arguments',            -> new Call $1, $3, $2
+    o 'SUPER',                                        -> new Call 'super', [new Splat new Literal 'arguments']
+    o 'SUPER Arguments',                              -> new Call 'super', $2
   ]
 
   # An optional existence check on a function.
   OptFuncExist: [
     o '',                                       -> no
     o 'FUNC_EXIST',                             -> yes
+  ]
+  
+  # The list of arguments to a function application
+  PartialApplication: [
+    o 'CALL_START ArgList , ... CALL_END',   -> $2
   ]
 
   # The list of arguments to a function call.

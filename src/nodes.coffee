@@ -623,6 +623,86 @@ exports.Call = class Call extends Base
         ref = 'null'
     "#{fun}.apply(#{ref}, #{splatArgs})"
 
+
+
+#### Partial Application
+
+# Node for a partial application.
+exports.PartialApplication = class PartialApplication extends Base
+  constructor: (@variable, @args = [], @soak) ->
+
+  children: ['variable', 'args']
+
+
+  # Soaked chained invocations unfold into if/else ternary structures.
+  unfoldSoak: (o) ->
+    if @soak
+      if @variable
+        return ifn if ifn = unfoldSoak o, this, 'variable'
+        [left, rite] = new Value(@variable).cacheReference o
+      else
+        left = new Literal @superReference o
+        rite = new Value left
+      rite = new PartialApplication rite, @args
+      rite.isNew = @isNew
+      left = new Literal "typeof #{ left.compile o } === \"function\""
+      return new If left, new Value(rite), soak: yes
+    call = this
+    list = []
+    loop
+      if call.variable instanceof PartialApplication
+        list.push call
+        call = call.variable
+        continue
+      break unless call.variable instanceof Value
+      list.push call
+      break unless (call = call.variable.base) instanceof PartialApplication
+    for call in list.reverse()
+      if ifn
+        if call.variable instanceof PartialApplication
+          call.variable = ifn
+        else
+          call.variable.base = ifn
+      ifn = unfoldSoak o, call, 'variable'
+    ifn
+
+  # Walk through the objects in the arguments, moving over simple values.
+  # This allows syntax like `call a: b, c` into `call({a: b}, c);`
+  filterImplicitObjects: (list) ->
+    nodes = []
+    for node in list
+      unless node.isObject?() and node.base.generated
+        nodes.push node
+        continue
+      obj = null
+      for prop in node.base.properties
+        if prop instanceof Assign or prop instanceof Comment
+          nodes.push obj = new Obj properties = [], true if not obj
+          properties.push prop
+        else
+          nodes.push prop
+          obj = null
+    nodes
+
+  # Compile a partial application
+  compileNode: (o) ->
+    base = new Value @variable
+    name = base.properties[0]
+    
+    base.base.value = 'this' if o.scope.expressions.classBody?
+    ref = 'this'
+    
+    if o.scope.method?.klass?
+      o.scope.assign '_this', 'this'
+      ref = base.base.value = '_this'
+    
+    args = @filterImplicitObjects @args
+    args = (arg.compile o, LEVEL_LIST for arg in args).join ', '
+    
+    code = "function() {\n"
+    code += "#{@tab}  return " + @variable.compile(o, LEVEL_ACCESS) + ".apply(#{ref}, [#{args}].concat(#{utility 'slice'}.call(arguments)));\n"
+    code + "#{@tab}}"
+
 #### Extends
 
 # Node to extend an object's prototype with an ancestor object.
