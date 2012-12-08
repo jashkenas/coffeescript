@@ -39,6 +39,7 @@ SWITCHES = [
   ['-i', '--interactive',     'run an interactive CoffeeScript REPL']
   ['-j', '--join [FILE]',     'concatenate the source CoffeeScript before compiling']
   ['-l', '--lint',            'pipe the compiled JavaScript through JavaScript Lint']
+  ['-m', '--map [FILE]',      'write the line-mappings JSON to a file']
   ['-n', '--nodes',           'print out the parse tree that the parser produces']
   [      '--nodejs [ARGS]',   'pass options directly to the "node" binary']
   ['-o', '--output [DIR]',    'set the output directory for compiled JavaScript']
@@ -77,19 +78,21 @@ exports.run = ->
   process.argv = process.argv[0..1].concat literals
   process.argv[0] = 'coffee'
   process.execPath = require.main.filename
+
+  if opts.map then fs.writeFileSync(opts.map, "")
   for source in sources
     compilePath source, yes, path.normalize source
 
 # Compile a path, which could be a script or a directory. If a directory
 # is passed, recursively compile all '.coffee' extension source files in it
 # and all subdirectories.
-compilePath = (source, topLevel, base) ->
+compilePath = (source, topLevel, base, cb=(->)) ->
   fs.stat source, (err, stats) ->
     throw err if err and err.code isnt 'ENOENT'
     if err?.code is 'ENOENT'
       if topLevel and source[-7..] isnt '.coffee'
         source = sources[sources.indexOf(source)] = "#{source}.coffee"
-        return compilePath source, topLevel, base
+        return compilePath source, topLevel, base, cb
       if topLevel
         console.error "File not found: #{source}"
         process.exit 1
@@ -114,7 +117,6 @@ compilePath = (source, topLevel, base) ->
     else
       notSources[source] = yes
       removeSource source, base
-
 
 # Compile a single source script, containing the given code, according to the
 # requested options. If evaluating the script directly sets `__filename`,
@@ -318,7 +320,7 @@ parseOptions = ->
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (filename) ->
-  {filename, bare: opts.bare, header: opts.compile}
+  {filename, bare: opts.bare, header: opts.compile, map: opts.map}
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
 # the `node` binary, preserving the other options.
