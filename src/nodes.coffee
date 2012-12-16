@@ -1901,7 +1901,7 @@ exports.If = class If extends Base
     hasReturn = unbody.hasReturn
     oneline = body.expressions.length is 1 \
                 and not hasReturn \
-                and not child \
+                and not @elseBody \
                 and (unbody instanceof Assign \
                   or unbody instanceof Call \
                   or unbody instanceof Return)
