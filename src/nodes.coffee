@@ -201,7 +201,8 @@ exports.Block = class Block extends Base
       expr = @expressions[len]
       if expr not instanceof Comment
         @expressions[len] = expr.makeReturn res
-        @expressions.splice(len, 1) if expr instanceof Return and not expr.expression
+        @hasReturn = not ( expr instanceof Return and not expr.expression )
+        @expressions.splice(len, 1) unless @hasReturn
         break
     this
 
@@ -1895,9 +1896,21 @@ exports.If = class If extends Base
     cond     = @condition.compile o, LEVEL_PAREN
     o.indent += TAB
     body     = @ensureBlock(@body)
-    ifPart   = "if (#{cond}) {\n#{body.compile(o)}\n#{@tab}}"
+
+    unbody = body.unwrapAll()
+    hasReturn = unbody.hasReturn
+    oneline = body.expressions.length is 1 \
+                and not hasReturn \
+                and not @elseBody \
+                and (unbody instanceof Assign \
+                  or unbody instanceof Call \
+                  or unbody instanceof Return)
+
+    ifPart   = "if (#{cond}) "
+    ifPart   += (if oneline then " \n#{ body.compile(o) }" else "{\n#{body.compile(o)} \n#{@tab}}")
     ifPart   = @tab + ifPart unless child
     return ifPart unless @elseBody
+
     ifPart + ' else ' + if @isChain
       o.indent = @tab
       o.chainChild = yes
