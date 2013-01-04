@@ -57,6 +57,7 @@ sourceCode   = []
 notSources   = {}
 watchers     = {}
 optionParser = null
+coffee_exts  = ['.coffee', '.litcoffee']
 
 # Run `coffee` by parsing passed options and determining what action to take.
 # Many flags cause us to divert before compiling anything. Flags passed after
@@ -81,13 +82,13 @@ exports.run = ->
     compilePath source, yes, path.normalize source
 
 # Compile a path, which could be a script or a directory. If a directory
-# is passed, recursively compile all '.coffee' extension source files in it
-# and all subdirectories.
+# is passed, recursively compile all '.coffee' and '.litcoffee' extension source
+# files in it and all subdirectories.
 compilePath = (source, topLevel, base) ->
   fs.stat source, (err, stats) ->
     throw err if err and err.code isnt 'ENOENT'
     if err?.code is 'ENOENT'
-      if topLevel and source[-7..] isnt '.coffee'
+      if topLevel and source[-7..] not in coffee_exts
         source = sources[sources.indexOf(source)] = "#{source}.coffee"
         return compilePath source, topLevel, base
       if topLevel
@@ -105,7 +106,7 @@ compilePath = (source, topLevel, base) ->
         sourceCode[index..index] = files.map -> null
         files.forEach (file) ->
           compilePath (path.join source, file), no, base
-    else if topLevel or path.extname(source) is '.coffee'
+    else if topLevel or path.extname(source) in coffee_exts
       watch source, base if opts.watch
       fs.readFile source, (err, code) ->
         throw err if err and err.code isnt 'ENOENT'
