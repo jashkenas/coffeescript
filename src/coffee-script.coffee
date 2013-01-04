@@ -14,7 +14,7 @@ vm        = require 'vm'
 
 # The file extensions that are considered to be CoffeeScript.
 extensions = ['.coffee', '.litcoffee']
-  
+
 # Load and run a CoffeeScript file for Node, stripping any `BOM`s.
 loadFile = (module, filename) ->
   raw = fs.readFileSync filename, 'utf8'
@@ -26,7 +26,7 @@ if require.extensions
     require.extensions[ext] = loadFile
 
 # The current CoffeeScript version number.
-exports.VERSION = '1.4.0'
+exports.VERSION = '1.5.0-pre'
 
 # Expose helpers for testing.
 exports.helpers = require './helpers'
