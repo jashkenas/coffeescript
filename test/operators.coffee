@@ -282,3 +282,9 @@ test "#2197: Existential existential double trouble", ->
   func()? ? 100
   eq counter, 1
   
+test "#2567: Optimization of negated existential produces correct result", ->
+  a = 1
+  ok !(!a?)
+  ok !b?
+  
+  

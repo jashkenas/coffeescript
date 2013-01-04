@@ -229,7 +229,6 @@ exports.Block = class Block extends Base
         code = node.compile o
         unless node.isStatement o
           code = "#{@tab}#{code};"
-          code = "#{code}\n" if node instanceof Literal
         codes.push code
       else
         codes.push node.compile o, LEVEL_LIST
@@ -606,8 +605,8 @@ exports.Call = class Call extends Base
       return """
         (function(func, args, ctor) {
         #{idt}ctor.prototype = func.prototype;
-        #{idt}var child = new ctor, result = func.apply(child, args), t = typeof result;
-        #{idt}return t == "object" || t == "function" ? result || child : child;
+        #{idt}var child = new ctor, result = func.apply(child, args);
+        #{idt}return Object(result) === result ? result : child;
         #{@tab}})(#{ @variable.compile o, LEVEL_LIST }, #{splatArgs}, function(){})
       """
     base = new Value @variable
@@ -1531,9 +1530,12 @@ exports.Op = class Op extends Base
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
+    parts = [op = @operator]
+    if op is '!' and @first instanceof Existence
+      @first.negated = not @first.negated
+      return @first.compile o
     if o.level >= LEVEL_ACCESS
       return (new Parens this).compile o
-    parts = [op = @operator]
     plusMinus = op in ['+', '-']
     parts.push ' ' if op in ['new', 'typeof', 'delete'] or
                       plusMinus and @first instanceof Op and @first.operator is op
@@ -1604,14 +1606,17 @@ exports.Try = class Try extends Base
   # is optional, the *catch* is not.
   compileNode: (o) ->
     o.indent  += TAB
-    errorPart = if @error then " (#{ @error.compile o }) " else ' '
     tryPart   = @attempt.compile o, LEVEL_TOP
 
     catchPart = if @recovery
+      if @error.isObject?()
+        placeholder = new Literal '_error'
+        @recovery.unshift new Assign @error, placeholder
+        @error = placeholder
       if @error.value in STRICT_PROSCRIBED
         throw SyntaxError "catch variable may not be \"#{@error.value}\""
       o.scope.add @error.value, 'param' unless o.scope.check @error.value
-      " catch#{errorPart}{\n#{ @recovery.compile o, LEVEL_TOP }\n#{@tab}}"
+      " catch (#{ @error.compile o }) {\n#{ @recovery.compile o, LEVEL_TOP }\n#{@tab}}"
     else unless @ensure or @recovery
       ' catch (_error) {}'
 

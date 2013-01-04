@@ -99,4 +99,17 @@ test "try/catch with a reused variable name.", ->
     catch inner
       # nothing
   eq typeof inner, 'undefined'
+  
+  
+# Allowed to destructure exceptions: #2580
+
+test "try/catch with destructuring the exception object", ->
+  
+  result = try
+    missing.object
+  catch {message}
+    message
+    
+  eq message, 'missing is not defined'
+    
 
