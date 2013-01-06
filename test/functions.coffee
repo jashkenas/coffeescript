@@ -199,10 +199,17 @@ test "#2258: allow whitespace-style parameter lists in function definitions", ->
     a, b, c
   ) -> c
   eq func(1, 2, 3), 3
-  
+
   func = (
     a
     b
     c
   ) -> b
   eq func(1, 2, 3), 2
+
+test "#2621: fancy destructuring in parameter lists", ->
+  func = ({ prop1: { key1 }, prop2: { key2, key3: [a, b, c] } }) ->
+    eq(key2, 'key2')
+    eq(a, 'a')
+
+  func({prop1: {key1: 'key1'}, prop2: {key2: 'key2', key3: ['a', 'b', 'c']}})

@@ -1128,7 +1128,7 @@ exports.Assign = class Assign extends Base
   compileConditional: (o) ->
     [left, right] = @variable.cacheReference o
     # Disallow conditional assignment of undefined variables.
-    if not left.properties.length and left.base instanceof Literal and 
+    if not left.properties.length and left.base instanceof Literal and
            left.base.value != "this" and not o.scope.check left.base.value
       throw new Error "the variable \"#{left.base.value}\" can't be assigned with #{@context} because it has not been defined."
     if "?" in @context then o.isExistentialEquals = true
@@ -1289,7 +1289,7 @@ exports.Param = class Param extends Base
     for obj in name.objects
       # * assignments within destructured parameters `{foo:bar}`
       if obj instanceof Assign
-        names.push obj.value.unwrap().value
+        names.push @names(obj.value.unwrap())...
       # * splats within destructured parameters `[xs...]`
       else if obj instanceof Splat
         names.push obj.name.unwrap().value
