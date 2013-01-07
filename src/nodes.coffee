@@ -1935,7 +1935,7 @@ Closure =
     args = []
     if (mentionsArgs = expressions.contains @literalArgs) or expressions.contains @literalThis
       if mentionsArgs and expressions.classBody
-        throw SyntaxError "Class bodies don't have arguments"
+        throw SyntaxError "Class bodies shouldn't reference arguments"
       meth = new Literal if mentionsArgs then 'apply' else 'call'
       args = [new Literal 'this']
       args.push new Literal 'arguments' if mentionsArgs
