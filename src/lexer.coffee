@@ -67,6 +67,7 @@ exports.Lexer = class Lexer
   # returns, etc. If we're lexing literate CoffeeScript, strip external Markdown
   # by removing all lines that aren't indented by at least four spaces.
   clean: (code) ->
+    code = code.slice(1) if code.charCodeAt(0) is BOM
     code = "\n#{code}" if WHITESPACE.test code
     code = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
     if @literate
@@ -604,6 +605,9 @@ JS_FORBIDDEN = JS_KEYWORDS.concat(RESERVED).concat(STRICT_PROSCRIBED)
 
 exports.RESERVED = RESERVED.concat(JS_KEYWORDS).concat(COFFEE_KEYWORDS).concat(STRICT_PROSCRIBED)
 exports.STRICT_PROSCRIBED = STRICT_PROSCRIBED
+
+# The character code of the nasty Microsoft madness otherwise known as the BOM.
+BOM = 65279
 
 # Token matching regexes.
 IDENTIFIER = /// ^
