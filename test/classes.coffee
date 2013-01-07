@@ -676,3 +676,7 @@ test "#2052: classes should work in strict mode", ->
       class A
   catch e
     ok no
+
+test "#2630: class bodies can't reference arguments", ->
+  throws ->
+    CoffeeScript.compile('class Test then arguments')
