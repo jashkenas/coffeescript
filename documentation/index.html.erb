@@ -446,13 +446,19 @@ Expressions
     <p>
       This behavior is effectively identical to Ruby's scope for local variables.
       Because you don't have direct access to the <tt>var</tt> keyword,
-      it's impossible to shadow an outer variable on purpose, you may only refer
-      to it. So be careful that you're not reusing the name of an external
+      be careful that you're not reusing the name of an external
       variable accidentally, if you're writing a deeply nested function.
     </p>
     <p>
+      If you need to "shadow" a variable on purpose, the <tt>do</tt> keyword
+      creates a new lexical scope and accepts a comma-delimited list of
+      variables and values. If you wish to shadow a variable, you must provide
+      a value, even if it's just <tt>undefined</tt>.
+    </p>
+    <%= code_for('namespace') %>
+    <p>
       Although suppressed within this documentation for clarity, all
-      CoffeeScript output is wrapped in an anonymous function:
+      CoffeeScript output is wrapped in an immediately invoked function expression:
       <tt>(function(){ ... })();</tt> This safety wrapper, combined with the
       automatic generation of the <tt>var</tt> keyword, make it exceedingly difficult
       to pollute the global namespace by accident.
