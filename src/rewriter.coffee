@@ -195,12 +195,7 @@ class exports.Rewriter
   addLocationDataToGeneratedTokens: ->
     @scanTokens (token, i, tokens) ->
       tag = token[0]
-      # Some generated indentation isn't '.generated'.  We want to treet these and generated
-      # anyways, since everything needs a location data.  We don't want to just blindly add
-      # location data, though, since we want to find bugs.  :)
-      generated = token.generated or (token.explicit and (tag is 'INDENT' or tag is 'OUTDENT'))
-
-      if generated and not token.locationData
+      if (token.generated or token.explicit) and not token.locationData
         if i > 0
           prevToken = tokens[i-1]
           token.locationData =
@@ -221,7 +216,6 @@ class exports.Rewriter
   # blocks, so it doesn't need to. ')' can close a single-line block,
   # but we need to make sure it's balanced.
   addImplicitIndentation: ->
-
     starter = indent = outdent = null
 
     condition = (token, i) ->
