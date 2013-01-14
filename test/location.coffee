@@ -25,4 +25,4 @@ test "Verify all tokens get a location", ->
   doesNotThrow ->
     tokens = CoffeeScript.tokens testScript
     for token in tokens
-        ok !!token.locationData
+        ok !!token[2]
