@@ -3,7 +3,7 @@
   "description":  "Unfancy JavaScript",
   "keywords":     ["javascript", "language", "coffeescript", "compiler"],
   "author":       "Jeremy Ashkenas",
-  "version":      "1.4.0",
+  "version":      "1.5.0-pre",
   "licenses":     [{
     "type":       "MIT",
     "url":        "https://raw.github.com/jashkenas/coffee-script/master/LICENSE"
@@ -29,7 +29,7 @@
     "url": "git://github.com/jashkenas/coffee-script.git"
   },
   "devDependencies": {
-    "uglify-js":  ">=1.0.0",
+    "uglify-js":  "~2.2",
     "jison":      ">=0.2.0"
   }
 }

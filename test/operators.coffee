@@ -28,6 +28,12 @@ test "operators should respect new lines as spaced", ->
 test "multiple operators should space themselves", ->
   eq (+ +1), (- -1)
 
+test "compound operators on successive lines", ->
+  a = 1
+  a +=
+  1
+  eq a, 2
+
 test "bitwise operators", ->
   eq  2, (10 &   3)
   eq 11, (10 |   3)
@@ -275,16 +281,16 @@ test "#2155 ... conditional assignment to a closure", ->
   func = -> x ?= (-> if true then 'hi')
   func()
   eq x(), 'hi'
-  
+
 test "#2197: Existential existential double trouble", ->
   counter = 0
   func = -> counter++
   func()? ? 100
   eq counter, 1
-  
+
 test "#2567: Optimization of negated existential produces correct result", ->
   a = 1
   ok !(!a?)
   ok !b?
-  
-  
+
+

@@ -1307,7 +1307,7 @@ exports.Param = class Param extends Base
     for obj in name.objects
       # * assignments within destructured parameters `{foo:bar}`
       if obj instanceof Assign
-        names.push obj.value.unwrap().value
+        names.push @names(obj.value.unwrap())...
       # * splats within destructured parameters `[xs...]`
       else if obj instanceof Splat
         names.push obj.name.unwrap().value
@@ -1952,6 +1952,8 @@ Closure =
     func = new Code [], Block.wrap [expressions]
     args = []
     if (mentionsArgs = expressions.contains @literalArgs) or expressions.contains @literalThis
+      if mentionsArgs and expressions.classBody
+        throw SyntaxError "Class bodies shouldn't reference arguments"
       meth = new Literal if mentionsArgs then 'apply' else 'call'
       args = [new Literal 'this']
       args.push new Literal 'arguments' if mentionsArgs

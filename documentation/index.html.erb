@@ -127,8 +127,8 @@
       The golden rule of CoffeeScript is: <i>"It's just JavaScript"</i>. The code
       compiles one-to-one into the equivalent JS, and there is
       no interpretation at runtime. You can use any existing JavaScript library
-      seamlessly from CoffeeScript (and vice-versa). The compiled output is 
-      readable and pretty-printed, passes through 
+      seamlessly from CoffeeScript (and vice-versa). The compiled output is
+      readable and pretty-printed, passes through
       <a href="http://www.javascriptlint.com/">JavaScript Lint</a>
       without warnings, will work in every JavaScript runtime, and tends
       to run as fast or faster than the equivalent handwritten JavaScript.
@@ -176,7 +176,7 @@ npm install -g coffee-script</pre>
     <p>
       (Leave off the <tt>-g</tt> if you don't wish to install globally.)
     </p>
-    
+
     <p>
       If you'd prefer to install the latest <b>master</b> version of CoffeeScript, you
       can clone the CoffeeScript
@@ -190,7 +190,7 @@ npm install -g coffee-script</pre>
 npm install -g http://github.com/jashkenas/coffee-script/tarball/master</pre>
 
     <p>
-      Or, if you want to install to <tt>/usr/local</tt>, and don't want to use 
+      Or, if you want to install to <tt>/usr/local</tt>, and don't want to use
       npm to manage it, open the <tt>coffee-script</tt> directory and run:
     </p>
 
@@ -288,7 +288,7 @@ sudo bin/cake install</pre>
       <tr>
         <td><code>-b, --bare</code></td>
         <td>
-          Compile the JavaScript without the 
+          Compile the JavaScript without the
           <a href="#lexical_scope">top-level function safety wrapper</a>.
         </td>
       </tr>
@@ -318,8 +318,9 @@ Expressions
         <td><code>--nodejs</code></td>
         <td>
           The <tt>node</tt> executable has some useful options you can set,
-          such as<br /> <tt>--debug</tt>, <tt>--debug-brk</tt> and <tt>--max-stack-size</tt>. Use this
-          flag to forward options directly to Node.js.
+          such as<br /> <tt>--debug</tt>, <tt>--debug-brk</tt>, <tt>--max-stack-size</tt>,
+          and <tt>--expose-gc</tt>. Use this flag to forward options directly to Node.js.
+          To pass multiple flags, use <tt>--nodejs</tt> multiple times.
         </td>
       </tr>
     </table>
@@ -980,11 +981,11 @@ Expressions
         portions in CoffeeScript.
       </li>
     </ul>
-    
+
     <h2>
       Screencasts
     </h2>
-    
+
     <ul>
       <li>
         <a href="http://coffeescript.codeschool.com">A Sip of CoffeeScript</a> is a <a href="http://www.codeschool.com">Code School Course</a>
@@ -1007,9 +1008,9 @@ Expressions
     <h2>
       Examples
     </h2>
-    
+
     <p>
-      The <a href="https://github.com/languages/coffeescript">best list of 
+      The <a href="https://github.com/languages/coffeescript">best list of
       open-source CoffeeScript examples</a> can be found on GitHub. But just
       to throw out few more:
     </p>
@@ -1115,7 +1116,7 @@ Expressions
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">
         <a href="https://github.com/jashkenas/coffee-script/compare/1.3.3...1.4.0">1.4.0</a>
@@ -1123,7 +1124,7 @@ Expressions
       </b>
       <ul>
         <li>
-          The CoffeeScript compiler now strips Microsoft's UTF-8 BOM if it 
+          The CoffeeScript compiler now strips Microsoft's UTF-8 BOM if it
           exists, allowing you to compile BOM-borked source files.
         </li>
         <li>
@@ -1131,12 +1132,12 @@ Expressions
           and moving from <tt>path.exists</tt> to <tt>fs.exists</tt>.
         </li>
         <li>
-          Small tweaks to splat compilation, backticks, slicing, and the 
+          Small tweaks to splat compilation, backticks, slicing, and the
           error for duplicate keys in object literals.
         </li>
       </ul>
     </p>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">
         <a href="https://github.com/jashkenas/coffee-script/compare/1.3.1...1.3.3">1.3.3</a>
@@ -1146,7 +1147,7 @@ Expressions
         <li>
           Due to the new semantics of JavaScript's strict mode, CoffeeScript no
           longer guarantees that constructor functions have names in all runtimes.
-          See <a href="https://github.com/jashkenas/coffee-script/issues/2052">#2052</a> 
+          See <a href="https://github.com/jashkenas/coffee-script/issues/2052">#2052</a>
           for discussion.
         </li>
         <li>
@@ -1165,7 +1166,7 @@ Expressions
         </li>
       </ul>
     </p>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">
         <a href="https://github.com/jashkenas/coffee-script/compare/1.2.0...1.3.1">1.3.1</a>
@@ -1173,26 +1174,26 @@ Expressions
       </b>
       <ul>
         <li>
-          CoffeeScript now enforces all of JavaScript's <b>Strict Mode</b> early syntax 
-          errors at compile time. This includes old-style octal literals, 
-          duplicate property names in object literals, duplicate parameters in 
+          CoffeeScript now enforces all of JavaScript's <b>Strict Mode</b> early syntax
+          errors at compile time. This includes old-style octal literals,
+          duplicate property names in object literals, duplicate parameters in
           a function definition, deleting naked variables, setting the value of
           <tt>eval</tt> or <tt>arguments</tt>, and more.
-          See a full discussion at 
+          See a full discussion at
           <a href="https://github.com/jashkenas/coffee-script/issues/1547">#1547</a>.
         </li>
         <li>
           The REPL now has a handy new multi-line mode for entering large
           blocks of code. It's useful when copy-and-pasting examples into the
-          REPL. Enter multi-line mode with <tt>Ctrl-V</tt>. You may also now 
+          REPL. Enter multi-line mode with <tt>Ctrl-V</tt>. You may also now
           pipe input directly into the REPL.
         </li>
         <li>
-          CoffeeScript now prints a <tt>Generated by CoffeeScript VERSION</tt> 
+          CoffeeScript now prints a <tt>Generated by CoffeeScript VERSION</tt>
           header at the top of each compiled file.
         </li>
         <li>
-          Conditional assignment of previously undefined variables 
+          Conditional assignment of previously undefined variables
           <tt>a or= b</tt> is now considered a syntax error.
         </li>
         <li>
@@ -1204,18 +1205,18 @@ Expressions
           between them.
         </li>
         <li>
-          Both endpoints of a slice are now allowed to be omitted for consistency, 
+          Both endpoints of a slice are now allowed to be omitted for consistency,
           effectively creating a shallow copy of the list.
         </li>
         <li>
-          Additional tweaks and improvments to <tt>coffee --watch</tt> under 
-          Node's "new" file watching API. Watch will now beep by default 
+          Additional tweaks and improvments to <tt>coffee --watch</tt> under
+          Node's "new" file watching API. Watch will now beep by default
           if you introduce a syntax error into a watched script. We also now
           ignore hidden directories by default when watching recursively.
         </li>
       </ul>
     </p>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">
         <a href="https://github.com/jashkenas/coffee-script/compare/1.1.3...1.2.0">1.2.0</a>
@@ -1242,7 +1243,7 @@ Expressions
         </li>
       </ul>
     </p>
-    
+
     <p>
       <b class="header" style="margin-top: 20px;">
         <a href="https://github.com/jashkenas/coffee-script/compare/1.1.2...1.1.3">1.1.3</a>
@@ -1254,7 +1255,7 @@ Expressions
           out and keep it readable, as you can see in the examples on this page.
         </li>
         <li>
-          You can now call <tt>super</tt> in class level methods in class bodies, 
+          You can now call <tt>super</tt> in class level methods in class bodies,
           and bound class methods now preserve their correct context.
         </li>
         <li>
@@ -1263,7 +1264,7 @@ Expressions
           also supports binary numbers: <tt>0b10 is 2</tt>.
         </li>
         <li>
-          The CoffeeScript module has been nested under a subdirectory to make 
+          The CoffeeScript module has been nested under a subdirectory to make
           it easier to <tt>require</tt> individual components separately, without
           having to use <b>npm</b>. For example, after adding the CoffeeScript
           folder to your path: <tt>require('coffee-script/lexer')</tt>
@@ -1273,11 +1274,11 @@ Expressions
           it to get a shareable permalink for your example script.
         </li>
         <li>
-          The <tt>coffee --watch</tt> feature now only works on Node.js 0.6.0 
+          The <tt>coffee --watch</tt> feature now only works on Node.js 0.6.0
           and higher, but now also works properly on Windows.
         </li>
         <li>
-          Lots of small bug fixes from 
+          Lots of small bug fixes from
           <b><a href="https://github.com/michaelficarra">@michaelficarra</a></b>,
           <b><a href="https://github.com/geraldalewis">@geraldalewis</a></b>,
           <b><a href="https://github.com/satyr">@satyr</a></b>, and

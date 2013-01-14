@@ -365,3 +365,13 @@ test '#2213: invocations within destructured parameters', ->
   throws -> CoffeeScript.compile '({a()})->'
   throws -> CoffeeScript.compile '({a:b()})->'
   throws -> CoffeeScript.compile '({a:b.c()})->'
+
+test '#2532: compound assignment with terminator', ->
+  doesNotThrow -> CoffeeScript.compile """
+  a = "hello"
+  a +=
+  "
+  world
+  !
+  "
+  """

@@ -68,7 +68,7 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
 
 task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   files = fs.readdirSync 'src'
-  files = ('src/' + file for file in files when file.match(/\.coffee$/))
+  files = ('src/' + file for file in files when file.match(/\.(lit)?coffee$/))
   run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
 
 
@@ -119,8 +119,7 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
     }(this));
   """
   unless process.env.MINIFY is 'false'
-    {parser, uglify} = require 'uglify-js'
-    code = uglify.gen_code uglify.ast_squeeze uglify.ast_mangle parser.parse code
+    {code} = require('uglify-js').minify code, fromString: true
   fs.writeFileSync 'extras/coffee-script.js', header + '\n' + code
   console.log "built ... running browser tests:"
   invoke 'test:browser'
@@ -227,11 +226,12 @@ runTests = (CoffeeScript) ->
 
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
-  for file in files when file.match /\.coffee$/i
+  for file in files when file.match /\.(lit)?coffee$/i
+    literate = path.extname(file) is '.litcoffee'
     currentFile = filename = path.join 'test', file
     code = fs.readFileSync filename
     try
-      CoffeeScript.run code.toString(), {filename}
+      CoffeeScript.run code.toString(), {filename, literate}
     catch error
       failures.push {filename, error}
   return !failures.length
