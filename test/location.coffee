@@ -16,10 +16,28 @@ x = () ->
 '''
 
 test "Verify location of generated tokens", ->
-  tokens = CoffeeScript.tokens "a = 7"
+  tokens = CoffeeScript.tokens "a = 79"
 
   eq tokens.length, 4
-  a = tokens[0]
+
+  aToken = tokens[0]
+  eq aToken[2].first_line, 0
+  eq aToken[2].first_column, 0
+  eq aToken[2].last_line, 0
+  eq aToken[2].last_column, 0
+
+  equalsToken = tokens[1]
+  eq equalsToken[2].first_line, 0
+  eq equalsToken[2].first_column, 2
+  eq equalsToken[2].last_line, 0
+  eq equalsToken[2].last_column, 2
+
+  numberToken = tokens[2]
+  eq numberToken[2].first_line, 0
+  eq numberToken[2].first_column, 4
+  eq numberToken[2].last_line, 0
+  eq numberToken[2].last_column, 5
+
 
 test "Verify all tokens get a location", ->
   doesNotThrow ->

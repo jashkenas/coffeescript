@@ -645,8 +645,12 @@ exports.Lexer = class Lexer
     locationData = {}
     [locationData.first_line, locationData.first_column] =
       @getLineAndColumnFromChunk offsetInChunk
+
+    # Use length - 1 for the final offset - we're supplying the last_line and the last_column,
+    # so if last_column == first_column, then we're looking at a character of length 1.
+    lastCharacter = if length > 0 then (length - 1) else 0
     [locationData.last_line, locationData.last_column] =
-      @getLineAndColumnFromChunk offsetInChunk + length
+      @getLineAndColumnFromChunk offsetInChunk + (length - 1)
 
     token = [tag, value, locationData]
 
