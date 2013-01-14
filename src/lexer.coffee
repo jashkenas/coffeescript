@@ -3,9 +3,11 @@
 # a token is produced, we consume the match, and start again. Tokens are in the
 # form:
 #
-#     [tag, value, lineNumber]
+#     [tag, value, locationData]
 #
-# Which is a format that can be fed directly into [Jison](http://github.com/zaach/jison).
+# where locationData is {first_line, first_column, last_line, last_column}, which is a
+# format that can be fed directly into [Jison](http://github.com/zaach/jison).  These
+# are read by jison in the `parser.lexer` function defined in coffee-script.coffee.
 
 {Rewriter, INVERSES} = require './rewriter'
 
@@ -154,8 +156,8 @@ exports.Lexer = class Lexer
 
     tagToken = @token tag, id, 0, idLength
     if poppedToken
-      [tagToken.locationData.first_line, tagToken.locationData.first_column] =
-        [poppedToken.locationData.first_line, poppedToken.locationData.first_column]
+      [tagToken[2].first_line, tagToken[2].first_column] =
+        [poppedToken[2].first_line, poppedToken[2].first_column]
     if colon
       colonOffset = input.lastIndexOf ':'
       @token ':', ':', colonOffset, colon.length
@@ -278,7 +280,7 @@ exports.Lexer = class Lexer
 
       prev = last @tokens
       plusToken = ['+', '+']
-      plusToken.locationData = prev.locationData
+      plusToken[2] = prev[2] # Copy location data
       tokens.push plusToken
 
     # Remove the extra "+"
@@ -574,11 +576,11 @@ exports.Lexer = class Lexer
         # Create a 0-length "+" token.
         plusToken = @token '+', '+' if i
         locationToken = if tag == 'TOKENS' then value[0] else token
-        plusToken.locationData =
-          first_line: locationToken.locationData.first_line
-          first_column: locationToken.locationData.first_column
-          last_line: locationToken.locationData.first_line
-          last_column: locationToken.locationData.first_column
+        plusToken[2] =
+          first_line: locationToken[2].first_line
+          first_column: locationToken[2].first_column
+          last_line: locationToken[2].first_line
+          last_column: locationToken[2].first_column
       if tag is 'TOKENS'
         # Push all the tokens in the fake 'TOKENS' token.  These already have
         # sane location data.
@@ -646,8 +648,7 @@ exports.Lexer = class Lexer
     [locationData.last_line, locationData.last_column] =
       @getLineAndColumnFromChunk offsetInChunk + length
 
-    token = [tag, value, locationData.first_line]
-    token.locationData = locationData
+    token = [tag, value, locationData]
 
     return token
 

@@ -83,7 +83,7 @@ exports.addLocationDataFn = (first, last) ->
 # Convert jison location data to a string.
 # `obj` can be a token, or a locationData.
 exports.locationDataToString = (obj) ->
-    if "locationData" of obj then locationData = obj.locationData
+    if ("2" of obj) and ("first_line" of obj[2]) then locationData = obj[2]
     else if "first_line" of obj then locationData = obj
 
     if locationData
