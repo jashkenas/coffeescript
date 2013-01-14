@@ -95,7 +95,7 @@ compilePath = (source, topLevel, base) ->
         console.error "File not found: #{source}"
         process.exit 1
       return
-    if stats.isDirectory()
+    if stats.isDirectory() and path.dirname(source) isnt 'node_modules'
       watchDir source, base if opts.watch
       fs.readdir source, (err, files) ->
         throw err if err and err.code isnt 'ENOENT'
