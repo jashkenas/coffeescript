@@ -11,7 +11,7 @@ testOutput = (expected, actual) ->
 
 testCommands = (input, expectedOutput) ->
   input          = [input]          if typeof input is 'string'
-  expectedOutput = [expectedOutput] if typeof expectedOutput is 'string'
+  expectedOutput = [expectedOutput] if typeof expectedOutput in ['string', 'undefined']
   output         = ''
   coffee         = spawn 'bin/coffee'
   input.push 'process.exit()'
@@ -41,3 +41,6 @@ test "variables are saved", ->
     "'foo'"
     "'foobar'"
   ]
+
+test "empty command evaluates to undefined", ->
+  testCommands "", undefined
