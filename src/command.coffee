@@ -68,12 +68,12 @@ exports.run = ->
   return usage()                         if opts.help
   return version()                       if opts.version
   loadRequires()                         if opts.require
-  return require './repl'                if opts.interactive
+  return require('./repl').start()       if opts.interactive
   if opts.watch and !fs.watch
     return printWarn "The --watch feature depends on Node v0.6.0+. You are running #{process.version}."
   return compileStdio()                  if opts.stdio
   return compileScript null, sources[0]  if opts.eval
-  return require './repl'                unless sources.length
+  return require('./repl').start()       unless sources.length
   literals = if opts.run then sources.splice 1 else []
   process.argv = process.argv[0..1].concat literals
   process.argv[0] = 'coffee'
