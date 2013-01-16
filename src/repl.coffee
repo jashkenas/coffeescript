@@ -4,7 +4,7 @@ CoffeeScript = require './coffee-script'
 {merge} = require './helpers'
 
 replDefaults =
-  prompt: "coffee> ",
+  prompt: 'coffee> ',
   eval: (code, context, file, cb) ->
     try
       code = '' if /^\(\s+\)$/.test code # Empty command won't parse
