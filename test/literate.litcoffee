@@ -41,3 +41,8 @@ and unordered lists, are fine:
   * A
   
   * List
+
+Tabs work too:
+
+	test "tabbed code", ->
+		ok yes

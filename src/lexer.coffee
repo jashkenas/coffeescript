@@ -65,15 +65,15 @@ exports.Lexer = class Lexer
 
   # Preprocess the code to remove leading and trailing whitespace, carriage
   # returns, etc. If we're lexing literate CoffeeScript, strip external Markdown
-  # by removing all lines that aren't indented by at least four spaces.
+  # by removing all lines that aren't indented by at least four spaces or a tab.
   clean: (code) ->
     code = code.slice(1) if code.charCodeAt(0) is BOM
     code = "\n#{code}" if WHITESPACE.test code
     code = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
     if @literate
       lines = for line in code.split('\n')
-        if LITERATE.test line
-          line.substr(4)
+        if match = LITERATE.exec line
+          line[match[0].length..]
         else
           '# ' + line
       code = lines.join '\n'
