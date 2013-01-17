@@ -450,12 +450,22 @@ Expressions
       variable accidentally, if you're writing a deeply nested function.
     </p>
     <p>
-      If you need to "shadow" a variable on purpose, the <tt>do</tt> keyword
-      creates a new lexical scope and accepts a comma-delimited list of
-      variables and values. If you wish to shadow a variable, you must provide
-      a value, even if it's just <tt>undefined</tt>.
+      If you need to protect a variable from being reused, CoffeeScript
+      provides the <tt>do</tt> keyword, which immediately invokes a passed function.
+      The function's variables are declared as parameters, and values assigned to
+      the parameters will be bound within the function.
     </p>
     <%= code_for('namespace') %>
+    <p>
+      When using a <a href="#loops">loop</a> to generate functions, it's common to insert
+      a closure wrapper in order to ensure that loop variables are closed over,
+      and all the generated functions don't just share the final values. 
+    </p>
+    <p>
+      The <tt>do</tt> keyword helps again. Parameters without values will be
+      passed through.
+    </p>
+    <%= code_for('do') %>
     <p>
       Although suppressed within this documentation for clarity, all
       CoffeeScript output is wrapped in an immediately invoked function expression:
@@ -553,14 +563,6 @@ Expressions
       For readability, the <b>until</b> keyword is equivalent to <tt>while not</tt>,
       and the <b>loop</b> keyword is equivalent to <tt>while true</tt>.
     </p>
-    <p>
-      When using a JavaScript loop to generate functions, it's common to insert
-      a closure wrapper in order to ensure that loop variables are closed over,
-      and all the generated functions don't just share the final values. CoffeeScript
-      provides the <tt>do</tt> keyword, which immediately invokes a passed function,
-      forwarding any arguments.
-    </p>
-    <%= code_for('do') %>
 
     <p>
       <span id="slices" class="bookmark"></span>
