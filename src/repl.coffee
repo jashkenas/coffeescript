@@ -7,9 +7,16 @@ replDefaults =
   prompt: 'coffee> ',
   eval: (input, context, filename, cb) ->
     try
-      return cb null if /^\(\s+\)$/.test input # Empty command
-      # TODO: pass in-scope vars and avoid accidentally shadowing them by omitting those declarations
-      js = CoffeeScript.compile input, {filename, bare: yes}
+      # XXX: multiline hack
+      input = input.replace /\uFF00/g, '\n'
+      # strip node-added parens
+      input = input[1...-1]
+      # strip single-line comments
+      input = input.replace /(^|[\r\n]+)(\s*)##?(?:[^#\r\n][^\r\n]*|)($|[\r\n])/, '$1$2$3'
+      # empty command
+      return cb null if /^\s*$/.test input
+      # TODO: fix #1829: pass in-scope vars and avoid accidentally shadowing them by omitting those declarations
+      js = CoffeeScript.compile "[]=(#{input}\n)", {filename, bare: yes}
       cb null, vm.runInContext js, context, filename
     catch err
       cb err
@@ -20,8 +27,8 @@ addMultilineHandler = (repl) ->
 
   multiline =
     enabled: off
-    initialPrompt: '------> '
-    prompt: '......> '
+    initialPrompt: repl.prompt.replace(/^[^> ]*/, (x) -> x.replace /./g, '-')
+    prompt: repl.prompt.replace(/^[^> ]*>?/, (x) -> x.replace /./g, '.')
     buffer: ''
 
   # Proxy node's line listener
@@ -54,6 +61,8 @@ addMultilineHandler = (repl) ->
       rli.cursor = 0
       rli.output.cursorTo 0
       rli.output.clearLine 1
+      # XXX: multiline hack
+      multiline.buffer = multiline.buffer.replace /\n/g, '\uFF00'
       rli.emit 'line', multiline.buffer
       multiline.buffer = ''
     else
