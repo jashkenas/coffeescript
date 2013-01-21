@@ -172,6 +172,7 @@ runTests = (CoffeeScript) ->
 
   # Convenience aliases.
   global.CoffeeScript = CoffeeScript
+  global.Repl = require './lib/coffee-script/repl'
 
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->

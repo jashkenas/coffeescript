@@ -54,7 +54,7 @@ addMultilineHandler = (repl) ->
         rli.prompt true
         return
       # no-op unless the current line is empty
-      return unless rli.line.match /^\s*$/
+      return unless not rli.line? or rli.line.match /^\s*$/
       # eval, print, loop
       multiline.enabled = not multiline.enabled
       rli.line = ''
