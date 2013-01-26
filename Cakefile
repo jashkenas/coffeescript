@@ -200,8 +200,8 @@ runTests = (CoffeeScript) ->
       return no for el, idx in a when not arrayEgal el, b[idx]
       yes
 
-  global.eq      = (a, b, msg) -> ok egal(a, b), msg
-  global.arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg
+  global.eq      = (a, b, msg) -> ok egal(a, b), msg ? "Expected #{a} to eqaul #{b}"
+  global.arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg ? "Expected #{a} to deep eqaul #{b}"
 
   # When all the tests have run, collect and print errors.
   # If a stacktrace is available, output the compiled function source.
