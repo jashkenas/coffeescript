@@ -21,7 +21,6 @@ replDefaults =
     catch err
       cb err
 
-# TODO: how to test?
 addMultilineHandler = (repl) ->
   {rli, inputStream, outputStream} = repl
 
