@@ -57,6 +57,7 @@ sourceCode   = []
 notSources   = {}
 watchers     = {}
 optionParser = null
+coffee_exts  = ['.coffee', '.litcoffee']
 
 # Run `coffee` by parsing passed options and determining what action to take.
 # Many flags cause us to divert before compiling anything. Flags passed after
@@ -67,12 +68,12 @@ exports.run = ->
   return usage()                         if opts.help
   return version()                       if opts.version
   loadRequires()                         if opts.require
-  return require './repl'                if opts.interactive
+  return require('./repl').start()       if opts.interactive
   if opts.watch and !fs.watch
     return printWarn "The --watch feature depends on Node v0.6.0+. You are running #{process.version}."
   return compileStdio()                  if opts.stdio
   return compileScript null, sources[0]  if opts.eval
-  return require './repl'                unless sources.length
+  return require('./repl').start()       unless sources.length
   literals = if opts.run then sources.splice 1 else []
   process.argv = process.argv[0..1].concat literals
   process.argv[0] = 'coffee'
@@ -81,20 +82,20 @@ exports.run = ->
     compilePath source, yes, path.normalize source
 
 # Compile a path, which could be a script or a directory. If a directory
-# is passed, recursively compile all '.coffee' extension source files in it
-# and all subdirectories.
+# is passed, recursively compile all '.coffee' and '.litcoffee' extension source
+# files in it and all subdirectories.
 compilePath = (source, topLevel, base) ->
   fs.stat source, (err, stats) ->
     throw err if err and err.code isnt 'ENOENT'
     if err?.code is 'ENOENT'
-      if topLevel and source[-7..] isnt '.coffee'
+      if topLevel and path.extname(source) not in coffee_exts
         source = sources[sources.indexOf(source)] = "#{source}.coffee"
         return compilePath source, topLevel, base
       if topLevel
         console.error "File not found: #{source}"
         process.exit 1
       return
-    if stats.isDirectory()
+    if stats.isDirectory() and path.dirname(source) isnt 'node_modules'
       watchDir source, base if opts.watch
       fs.readdir source, (err, files) ->
         throw err if err and err.code isnt 'ENOENT'
@@ -105,7 +106,7 @@ compilePath = (source, topLevel, base) ->
         sourceCode[index..index] = files.map -> null
         files.forEach (file) ->
           compilePath (path.join source, file), no, base
-    else if topLevel or path.extname(source) is '.coffee'
+    else if topLevel or path.extname(source) in coffee_exts
       watch source, base if opts.watch
       fs.readFile source, (err, code) ->
         throw err if err and err.code isnt 'ENOENT'
@@ -125,8 +126,8 @@ compileScript = (file, input, base) ->
   try
     t = task = {file, input, options}
     CoffeeScript.emit 'compile', task
-    if      o.tokens      then printTokens CoffeeScript.tokens t.input
-    else if o.nodes       then printLine CoffeeScript.nodes(t.input).toString().trim()
+    if      o.tokens      then printTokens CoffeeScript.tokens t.input, t.options
+    else if o.nodes       then printLine CoffeeScript.nodes(t.input, t.options).toString().trim()
     else if o.run         then CoffeeScript.run t.input, t.options
     else if o.join and t.file isnt o.join
       sourceCode[sources.indexOf(t.file)] = t.input
@@ -318,7 +319,8 @@ parseOptions = ->
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (filename) ->
-  {filename, bare: opts.bare, header: opts.compile}
+  literate = path.extname(filename) is '.litcoffee'
+  {filename, literate, bare: opts.bare, header: opts.compile}
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
 # the `node` binary, preserving the other options.

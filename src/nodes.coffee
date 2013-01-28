@@ -229,7 +229,6 @@ exports.Block = class Block extends Base
         code = node.compile o
         unless node.isStatement o
           code = "#{@tab}#{code};"
-          code = "#{code}\n" if node instanceof Literal
         codes.push code
       else
         codes.push node.compile o, LEVEL_LIST
@@ -1129,7 +1128,7 @@ exports.Assign = class Assign extends Base
   compileConditional: (o) ->
     [left, right] = @variable.cacheReference o
     # Disallow conditional assignment of undefined variables.
-    if not left.properties.length and left.base instanceof Literal and 
+    if not left.properties.length and left.base instanceof Literal and
            left.base.value != "this" and not o.scope.check left.base.value
       throw new Error "the variable \"#{left.base.value}\" can't be assigned with #{@context} because it has not been defined."
     if "?" in @context then o.isExistentialEquals = true
@@ -1290,7 +1289,7 @@ exports.Param = class Param extends Base
     for obj in name.objects
       # * assignments within destructured parameters `{foo:bar}`
       if obj instanceof Assign
-        names.push obj.value.unwrap().value
+        names.push @names(obj.value.unwrap())...
       # * splats within destructured parameters `[xs...]`
       else if obj instanceof Splat
         names.push obj.name.unwrap().value
@@ -1531,9 +1530,12 @@ exports.Op = class Op extends Base
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
+    parts = [op = @operator]
+    if op is '!' and @first instanceof Existence
+      @first.negated = not @first.negated
+      return @first.compile o
     if o.level >= LEVEL_ACCESS
       return (new Parens this).compile o
-    parts = [op = @operator]
     plusMinus = op in ['+', '-']
     parts.push ' ' if op in ['new', 'typeof', 'delete'] or
                       plusMinus and @first instanceof Op and @first.operator is op
@@ -1604,14 +1606,17 @@ exports.Try = class Try extends Base
   # is optional, the *catch* is not.
   compileNode: (o) ->
     o.indent  += TAB
-    errorPart = if @error then " (#{ @error.compile o }) " else ' '
     tryPart   = @attempt.compile o, LEVEL_TOP
 
     catchPart = if @recovery
+      if @error.isObject?()
+        placeholder = new Literal '_error'
+        @recovery.unshift new Assign @error, placeholder
+        @error = placeholder
       if @error.value in STRICT_PROSCRIBED
         throw SyntaxError "catch variable may not be \"#{@error.value}\""
       o.scope.add @error.value, 'param' unless o.scope.check @error.value
-      " catch#{errorPart}{\n#{ @recovery.compile o, LEVEL_TOP }\n#{@tab}}"
+      " catch (#{ @error.compile o }) {\n#{ @recovery.compile o, LEVEL_TOP }\n#{@tab}}"
     else unless @ensure or @recovery
       ' catch (_error) {}'
 
@@ -1929,6 +1934,8 @@ Closure =
     func = new Code [], Block.wrap [expressions]
     args = []
     if (mentionsArgs = expressions.contains @literalArgs) or expressions.contains @literalThis
+      if mentionsArgs and expressions.classBody
+        throw SyntaxError "Class bodies shouldn't reference arguments"
       meth = new Literal if mentionsArgs then 'apply' else 'call'
       args = [new Literal 'this']
       args.push new Literal 'arguments' if mentionsArgs

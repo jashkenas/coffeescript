@@ -383,6 +383,7 @@ grammar =
   # A catch clause names its error and runs a block of code.
   Catch: [
     o 'CATCH Identifier Block',                 -> [$2, $3]
+    o 'CATCH Object Block',                     -> [new Value($2), $3]
   ]
 
   # Throw an exception object.
@@ -541,6 +542,8 @@ grammar =
        Expression',                             -> new Assign $1, $3, $2
     o 'SimpleAssignable COMPOUND_ASSIGN
        INDENT Expression OUTDENT',              -> new Assign $1, $4, $2
+    o 'SimpleAssignable COMPOUND_ASSIGN TERMINATOR
+       Expression',                             -> new Assign $1, $4, $2
     o 'SimpleAssignable EXTENDS Expression',    -> new Extends $1, $3
   ]
 

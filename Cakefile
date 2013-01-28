@@ -68,7 +68,7 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
 
 task 'build', 'build the CoffeeScript language from source', build = (cb) ->
   files = fs.readdirSync 'src'
-  files = ('src/' + file for file in files when file.match(/\.coffee$/))
+  files = ('src/' + file for file in files when file.match(/\.(lit)?coffee$/))
   run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
 
 
@@ -113,14 +113,13 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
 
       if (typeof define === 'function' && define.amd) {
         define(function() { return CoffeeScript; });
-      } else { 
-        root.CoffeeScript = CoffeeScript; 
+      } else {
+        root.CoffeeScript = CoffeeScript;
       }
     }(this));
   """
   unless process.env.MINIFY is 'false'
-    {parser, uglify} = require 'uglify-js'
-    code = uglify.gen_code uglify.ast_squeeze uglify.ast_mangle parser.parse code
+    {code} = require('uglify-js').minify code, fromString: true
   fs.writeFileSync 'extras/coffee-script.js', header + '\n' + code
   console.log "built ... running browser tests:"
   invoke 'test:browser'
@@ -173,6 +172,7 @@ runTests = (CoffeeScript) ->
 
   # Convenience aliases.
   global.CoffeeScript = CoffeeScript
+  global.Repl = require './lib/coffee-script/repl'
 
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
@@ -200,8 +200,8 @@ runTests = (CoffeeScript) ->
       return no for el, idx in a when not arrayEgal el, b[idx]
       yes
 
-  global.eq      = (a, b, msg) -> ok egal(a, b), msg
-  global.arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg
+  global.eq      = (a, b, msg) -> ok egal(a, b), msg ? "Expected #{a} to equal #{b}"
+  global.arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg ? "Expected #{a} to deep equal #{b}"
 
   # When all the tests have run, collect and print errors.
   # If a stacktrace is available, output the compiled function source.
@@ -225,11 +225,12 @@ runTests = (CoffeeScript) ->
 
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
-  for file in files when file.match /\.coffee$/i
+  for file in files when file.match /\.(lit)?coffee$/i
+    literate = path.extname(file) is '.litcoffee'
     currentFile = filename = path.join 'test', file
     code = fs.readFileSync filename
     try
-      CoffeeScript.run code.toString(), {filename}
+      CoffeeScript.run code.toString(), {filename, literate}
     catch error
       failures.push {filename, error}
   return !failures.length

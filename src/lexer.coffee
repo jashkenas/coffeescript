@@ -32,17 +32,15 @@ exports.Lexer = class Lexer
   # Before returning the token stream, run it through the [Rewriter](rewriter.html)
   # unless explicitly asked not to.
   tokenize: (code, opts = {}) ->
-    code     = "\n#{code}" if WHITESPACE.test code
-    code     = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
-
-    @code    = code           # The remainder of the source code.
-    @line    = opts.line or 0 # The current line.
-    @indent  = 0              # The current indentation level.
-    @indebt  = 0              # The over-indentation at the current level.
-    @outdebt = 0              # The under-outdentation at the current level.
-    @indents = []             # The stack of all current indentation levels.
-    @ends    = []             # The stack for pairing up tokens.
-    @tokens  = []             # Stream of parsed tokens in the form `['TYPE', value, line]`.
+    @literate = opts.literate  # Are we lexing literate CoffeeScript?
+    code      = @clean code    # The stripped, cleaned original source code.
+    @line     = opts.line or 0 # The current line.
+    @indent   = 0              # The current indentation level.
+    @indebt   = 0              # The over-indentation at the current level.
+    @outdebt  = 0              # The under-outdentation at the current level.
+    @indents  = []             # The stack of all current indentation levels.
+    @ends     = []             # The stack for pairing up tokens.
+    @tokens   = []             # Stream of parsed tokens in the form `['TYPE', value, line]`.
 
     # At every position, run through this list of attempted matches,
     # short-circuiting if any of them succeed. Their order determines precedence:
@@ -64,6 +62,22 @@ exports.Lexer = class Lexer
     @error "missing #{tag}" if tag = @ends.pop()
     return @tokens if opts.rewrite is off
     (new Rewriter).rewrite @tokens
+
+  # Preprocess the code to remove leading and trailing whitespace, carriage
+  # returns, etc. If we're lexing literate CoffeeScript, strip external Markdown
+  # by removing all lines that aren't indented by at least four spaces or a tab.
+  clean: (code) ->
+    code = code.slice(1) if code.charCodeAt(0) is BOM
+    code = "\n#{code}" if WHITESPACE.test code
+    code = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
+    if @literate
+      lines = for line in code.split('\n')
+        if match = LITERATE.exec line
+          line[match[0].length..]
+        else
+          '# ' + line
+      code = lines.join '\n'
+    code
 
   # Tokenizers
   # ----------
@@ -379,7 +393,7 @@ exports.Lexer = class Lexer
     if herecomment
       if HEREDOC_ILLEGAL.test doc
         @error "block comment cannot contain \"*/\", starting"
-      return doc if doc.indexOf('\n') <= 0
+      return doc if doc.indexOf('\n') < 0
     else
       while match = HEREDOC_INDENT.exec doc
         attempt = match[1]
@@ -592,6 +606,9 @@ JS_FORBIDDEN = JS_KEYWORDS.concat(RESERVED).concat(STRICT_PROSCRIBED)
 exports.RESERVED = RESERVED.concat(JS_KEYWORDS).concat(COFFEE_KEYWORDS).concat(STRICT_PROSCRIBED)
 exports.STRICT_PROSCRIBED = STRICT_PROSCRIBED
 
+# The character code of the nasty Microsoft madness otherwise known as the BOM.
+BOM = 65279
+
 # Token matching regexes.
 IDENTIFIER = /// ^
   ( [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]* )
@@ -619,7 +636,9 @@ OPERATOR   = /// ^ (
 
 WHITESPACE = /^[^\n\S]+/
 
-COMMENT    = /^###([^#][\s\S]*?)(?:###[^\n\S]*|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
+COMMENT    = /^###([^#][\s\S]*?)(?:###[^\n\S]*|(?:###)$)|^(?:\s*#(?!##[^#]).*)+/
+
+LITERATE   = /^([ ]{4}|\t)/
 
 CODE       = /^[-=]>/
 
