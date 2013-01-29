@@ -49,6 +49,7 @@ task :gem do
     s.authors           = ['Jeremy Ashkenas']
     s.email             = 'jashkenas@gmail.com'
     s.rubyforge_project = 'coffee-script-source'
+    s.license           = "MIT"
   end
 
   file = File.open("coffee-script-source.gem", "w")
