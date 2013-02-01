@@ -86,7 +86,7 @@ compilePath = (source, topLevel, base) ->
   fs.stat source, (err, stats) ->
     throw err if err and err.code isnt 'ENOENT'
     if err?.code is 'ENOENT'
-      if topLevel and path.extname(source) not in coffee_exts
+      if topLevel and source and path.extname(source) not in coffee_exts
         source = sources[sources.indexOf(source)] = "#{source}.coffee"
         return compilePath source, topLevel, base
       if topLevel
