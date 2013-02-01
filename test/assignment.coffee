@@ -293,10 +293,10 @@ test "#1627: prohibit conditional assignment of undefined variables", ->
   doesNotThrow (-> CoffeeScript.compile "x = null; do -> x ?= 10"),  "allow (x = null; do -> x ?= 10)"
   doesNotThrow (-> CoffeeScript.compile "x = null; do -> x ||= 10"), "allow (x = null; do -> x ||= 10)"
   doesNotThrow (-> CoffeeScript.compile "x = null; do -> x or= 10"), "allow (x = null; do -> x or= 10)"
-  
+
   throws (-> CoffeeScript.compile "-> -> -> x ?= 10"), null, "prohibit (-> -> -> x ?= 10)"
   doesNotThrow (-> CoffeeScript.compile "x = null; -> -> -> x ?= 10"), "allow (x = null; -> -> -> x ?= 10)"
-  
+
 test "more existential assignment", ->
   global.temp ?= 0
   eq global.temp, 0
@@ -311,7 +311,7 @@ test "#1348, #1216: existential assignment compilation", ->
   eq nonce, b
   #the first ?= compiles into a statement; the second ?= compiles to a ternary expression
   eq a ?= b ?= 1, nonce
-  
+
   if a then a ?= 2 else a = 3
   eq a, nonce
 
@@ -375,3 +375,8 @@ test '#2532: compound assignment with terminator', ->
   !
   "
   """
+
+test "#2613: parens on LHS of destructuring", ->
+  a = {}
+  [(a).b] = [1, 2, 3]
+  eq a.b, 1
