@@ -1060,13 +1060,10 @@ exports.Assign = class Assign extends Base
       if obj instanceof Assign
         {variable: {base: idx}, value: obj} = obj
       else
-        if obj.base instanceof Parens
-          [obj, idx] = new Value(obj.unwrapAll()).cacheReference o
+        idx = if isObject
+          if obj.this then obj.properties[0].name else obj
         else
-          idx = if isObject
-            if obj.this then obj.properties[0].name else obj
-          else
-            new Literal 0
+          new Literal 0
       acc   = IDENTIFIER.test idx.unwrap().value or 0
       value = new Value value
       value.properties.push new (if acc then Access else Index) idx
