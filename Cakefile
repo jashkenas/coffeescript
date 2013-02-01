@@ -5,12 +5,8 @@ CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 
 # ANSI Terminal Colors.
-enableColors = no
-unless process.platform is 'win32'
-  enableColors = not process.env.NODE_DISABLE_COLORS
-
 bold = red = green = reset = ''
-if enableColors
+unless process.env.NODE_DISABLE_COLORS
   bold  = '\x1B[0;1m'
   red   = '\x1B[0;31m'
   green = '\x1B[0;32m'
