@@ -1742,7 +1742,9 @@ exports.For = class For extends While
     kvar      = (@range and name) or index or ivar
     kvarAssign = if kvar isnt ivar then "#{kvar} = " else ""
     # the `_by` variable is created twice in `Range`s if we don't prevent it from being declared here
-    stepvar   = scope.freeVariable "step" if @step and not @range
+    if @step and not @range
+      @complexStep = not @step.isSimpleNumber?()
+      stepvar = if @complexStep then scope.freeVariable "step" else @step.compile(o, LEVEL_OP)
     name      = ivar if @pattern
     varPart   = ''
     guardPart = ''
@@ -1760,7 +1762,7 @@ exports.For = class For extends While
       unless @object
         lvar       = scope.freeVariable 'len'
         forVarPart = "#{kvarAssign}#{ivar} = 0, #{lvar} = #{svar}.length"
-        forVarPart += ", #{stepvar} = #{@step.compile o, LEVEL_OP}" if @step
+        forVarPart += ", #{stepvar} = #{@step.compile o, LEVEL_OP}" if @complexStep
         stepPart   = "#{kvarAssign}#{if @step then "#{ivar} += #{stepvar}" else (if kvar isnt ivar then "++#{ivar}" else "#{ivar}++")}"
         forPart    = "#{forVarPart}; #{ivar} < #{lvar}; #{stepPart}"
     if @returns
