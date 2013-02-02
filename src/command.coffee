@@ -75,7 +75,6 @@ exports.run = ->
   literals = if opts.run then sources.splice 1 else []
   process.argv = process.argv[0..1].concat literals
   process.argv[0] = 'coffee'
-  process.execPath = require.main.filename
   for source in sources
     compilePath source, yes, path.normalize source
 
