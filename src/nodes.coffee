@@ -717,7 +717,7 @@ exports.Range = class Range extends Base
       [from, to] = [+@fromNum, +@toNum]
       if from <= to then "#{lt} #{to}" else "#{gt} #{to}"
     else
-      cond     = "#{@fromVar} <= #{@toVar}"
+      cond = if @stepVar then "#{@stepVar} > 0" else "#{@fromVar} <= #{@toVar}"
       "#{cond} ? #{lt} #{@toVar} : #{gt} #{@toVar}"
 
     # Generate the step.
