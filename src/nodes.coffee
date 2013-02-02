@@ -1741,9 +1741,9 @@ exports.For = class For extends While
     ivar      = (@object and index) or scope.freeVariable 'i'
     kvar      = (@range and name) or index or ivar
     kvarAssign = if kvar isnt ivar then "#{kvar} = " else ""
-    # the `_by` variable is created twice in `Range`s if we don't prevent it from being declared here
     if @step and not @range
       [step, stepVar] = @step.cache o, LEVEL_LIST
+      stepNum = stepVar.match SIMPLENUM
     name      = ivar if @pattern
     varPart   = ''
     guardPart = ''
@@ -1754,16 +1754,29 @@ exports.For = class For extends While
     else
       svar    = @source.compile o, LEVEL_LIST
       if (name or @own) and not IDENTIFIER.test svar
-        defPart    = "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
+        defPart    += "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
         svar       = ref
       if name and not @pattern
         namePart   = "#{name} = #{svar}[#{kvar}]"
-      unless @object
-        lvar       = scope.freeVariable 'len'
-        forVarPart = "#{kvarAssign}#{ivar} = 0, #{lvar} = #{svar}.length"
-        forVarPart += ", #{step}" if step isnt stepVar
-        stepPart   = "#{kvarAssign}#{if @step then "#{ivar} += #{stepVar}" else (if kvar isnt ivar then "++#{ivar}" else "#{ivar}++")}"
-        forPart    = "#{forVarPart}; #{ivar} < #{lvar}; #{stepPart}"
+      if not @object
+        defPart += "#{@tab}#{step};\n" if step isnt stepVar
+        lvar = scope.freeVariable 'len' unless @step and stepNum and down = (+stepNum < 0)
+        declare = "#{kvarAssign}#{ivar} = 0, #{lvar} = #{svar}.length"
+        declareDown = "#{kvarAssign}#{ivar} = #{svar}.length - 1"
+        compare = "#{ivar} < #{lvar}"
+        compareDown = "#{ivar} >= 0"
+        if @step
+          if stepNum
+            if down
+              compare = compareDown
+              declare = declareDown
+          else
+            compare = "#{stepVar} > 0 ? #{compare} : #{compareDown}"
+            declare = "(#{stepVar} > 0 ? (#{declare}) : #{declareDown})"
+          increment = "#{ivar} += #{stepVar}"
+        else
+          increment = "#{if kvar isnt ivar then "++#{ivar}" else "#{ivar}++"}"
+        forPart  = "#{declare}; #{compare}; #{kvarAssign}#{increment}"
     if @returns
       resultPart   = "#{@tab}#{rvar} = [];\n"
       returnResult = "\n#{@tab}return #{rvar};"
