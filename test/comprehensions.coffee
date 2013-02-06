@@ -244,8 +244,8 @@ test "Optimized range comprehensions.", ->
 
   exxes = ('x' for [0...10])
   ok exxes.join(' ') is 'x x x x x x x x x x'
-  
-  
+
+
 test "Loop variables should be able to reference outer variables", ->
   outer = 1
   do ->
@@ -411,7 +411,8 @@ test "#1326: `by` value is uncached", ->
   rangeCompileSimple = []
 
   #exercises For.compile
-  for v,i in a by f() then forCompile.push i
+  for v, i in a by f()
+    forCompile.push i
 
   #exercises Range.compileSimple
   rangeCompileSimple = (i for i in [0..2] by g())
@@ -491,7 +492,7 @@ test "#2007: Return object literal from comprehension", ->
   eq 2, y.length
   eq 1, y[0].x
   eq 0, y[1].x
-  
+
 test "#2274: Allow @values as loop variables", ->
   obj = {
     item: null
@@ -502,3 +503,41 @@ test "#2274: Allow @values as loop variables", ->
   eq obj.item, null
   obj.method()
   eq obj.item, 3
+
+test "#2525, #1187, #1208, #1758, looping over an array forwards", ->
+  list = [0, 1, 2, 3, 4]
+
+  ident = (x) -> x
+
+  arrayEq (i for i in list), list
+
+  arrayEq (index for i, index in list), list
+
+  arrayEq (i for i in list by 1), list
+
+  arrayEq (i for i in list by ident 1), list
+
+  arrayEq (i for i in list by ident(1) * 2), [0, 2, 4]
+
+  arrayEq (index for i, index in list by ident(1) * 2), [0, 2, 4]
+
+test "#2525, #1187, #1208, #1758, looping over an array backwards", ->
+  list = [0, 1, 2, 3, 4]
+  backwards = [4, 3, 2, 1, 0]
+
+  ident = (x) -> x
+
+  arrayEq (i for i in list by -1), backwards
+
+  arrayEq (index for i, index in list by -1), backwards
+
+  arrayEq (i for i in list by ident -1), backwards
+
+  arrayEq (i for i in list by ident(-1) * 2), [4, 2, 0]
+
+  arrayEq (index for i, index in list by ident(-1) * 2), [4, 2, 0]
+
+
+
+
+

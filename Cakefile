@@ -5,12 +5,8 @@ CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 
 # ANSI Terminal Colors.
-enableColors = no
-unless process.platform is 'win32'
-  enableColors = not process.env.NODE_DISABLE_COLORS
-
 bold = red = green = reset = ''
-if enableColors
+unless process.env.NODE_DISABLE_COLORS
   bold  = '\x1B[0;1m'
   red   = '\x1B[0;31m'
   green = '\x1B[0;32m'
@@ -26,11 +22,6 @@ header = """
    * Released under the MIT License
    */
 """
-
-sources = [
-  'coffee-script', 'grammar', 'helpers'
-  'lexer', 'nodes', 'rewriter', 'scope'
-].map (filename) -> "src/#{filename}.coffee"
 
 # Run a CoffeeScript through our node/coffee interpreter.
 run = (args, cb) ->
@@ -141,24 +132,24 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
 
 task 'bench', 'quick benchmark of compilation time', ->
   {Rewriter} = require './lib/coffee-script/rewriter'
-  co     = sources.map((name) -> fs.readFileSync name).join '\n'
+  sources = ['coffee-script', 'grammar', 'helpers', 'lexer', 'nodes', 'rewriter']
+  coffee  = sources.map((name) -> fs.readFileSync "src/#{name}.coffee").join '\n'
+  litcoffee = fs.readFileSync("src/scope.litcoffee").toString()
   fmt    = (ms) -> " #{bold}#{ "   #{ms}".slice -4 }#{reset} ms"
   total  = 0
   now    = Date.now()
   time   = -> total += ms = -(now - now = Date.now()); fmt ms
-  tokens = CoffeeScript.tokens co, rewrite: false
+  tokens = CoffeeScript.tokens coffee, rewrite: no
+  littokens = CoffeeScript.tokens litcoffee, rewrite: no, literate: yes
+  tokens = tokens.concat(littokens)
   console.log "Lex    #{time()} (#{tokens.length} tokens)"
   tokens = new Rewriter().rewrite tokens
   console.log "Rewrite#{time()} (#{tokens.length} tokens)"
   nodes  = CoffeeScript.nodes tokens
   console.log "Parse  #{time()}"
-  js     = nodes.compile bare: true
+  js     = nodes.compile bare: yes
   console.log "Compile#{time()} (#{js.length} chars)"
   console.log "total  #{ fmt total }"
-
-task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
-  exec "cat #{ sources.join(' ') } | grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '", (err, stdout) ->
-    console.log stdout.trim()
 
 
 # Run the CoffeeScript test suite.
@@ -172,6 +163,7 @@ runTests = (CoffeeScript) ->
 
   # Convenience aliases.
   global.CoffeeScript = CoffeeScript
+  global.Repl = require './lib/coffee-script/repl'
 
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
@@ -201,8 +193,8 @@ runTests = (CoffeeScript) ->
       return no for el, idx in a when not arrayEgal el, b[idx]
       yes
 
-  global.eq      = (a, b, msg) -> ok egal(a, b), msg
-  global.arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg
+  global.eq      = (a, b, msg) -> ok egal(a, b), msg ? "Expected #{a} to equal #{b}"
+  global.arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg ? "Expected #{a} to deep equal #{b}"
 
   # When all the tests have run, collect and print errors.
   # If a stacktrace is available, output the compiled function source.
