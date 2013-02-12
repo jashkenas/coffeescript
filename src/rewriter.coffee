@@ -113,7 +113,7 @@ class exports.Rewriter
       [tag] = token
       sameLine = no if tag in LINEBREAKS
       return (
-        (tag in ['TERMINATOR', 'OUTDENT'] or 
+        (tag in ['TERMINATOR', 'OUTDENT'] or
           (tag in IMPLICIT_END and sameLine and not (i - startIndex is 1))) and
         ((!startsLine and @tag(i - 1) isnt ',') or
           not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':'))) or
@@ -154,6 +154,7 @@ class exports.Rewriter
   addImplicitParentheses: ->
 
     noCall = seenSingle = seenControl = no
+    callIndex = null
 
     condition = (token, i) ->
       [tag] = token
@@ -165,7 +166,7 @@ class exports.Rewriter
         (tag is 'INDENT' and not seenControl)) and
         (tag isnt 'INDENT' or
           (@tag(i - 2) not in ['CLASS', 'EXTENDS'] and @tag(i - 1) not in IMPLICIT_BLOCK and
-          not ((post = @tokens[i + 1]) and post.generated and post[0] is '{')))
+          not (callIndex is i - 1 and (post = @tokens[i + 1]) and post.generated and post[0] is '{')))
 
     action = (token, i) ->
       @tokens.splice i, 0, @generate 'CALL_END', ')', token[2]
@@ -185,6 +186,7 @@ class exports.Rewriter
       return 1 unless callObject or
         prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
         (tag in IMPLICIT_CALL or not (token.spaced or token.newLine) and tag in IMPLICIT_UNSPACED_CALL)
+        callIndex = i
       tokens.splice i, 0, @generate 'CALL_START', '(', token[2]
       @detectEnd i + 1, condition, action
       prev[0] = 'FUNC_EXIST' if prev[0] is '?'
