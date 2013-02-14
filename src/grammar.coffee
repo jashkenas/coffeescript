@@ -39,6 +39,7 @@ o = (patternString, action, options) ->
   # All runtime functions we need are defined on "yy"
   action = action.replace /\bnew /g, '$&yy.'
   action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
+  action = action.replace /\b(Op|Value\.(create|wrap))\b/g, 'yy.$&'
 
   # Returns a function which adds location data to the first parameter passed
   # in, and returns the parameter.  If the parameter is not a node, it will
@@ -159,10 +160,10 @@ grammar =
   # Assignment when it happens within an object literal. The difference from
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
-    o 'ObjAssignable',                          -> Value.create $1
-    o 'ObjAssignable : Expression',             -> new Assign LOCDATA(1)(Value.create($1)), $3, 'object'
+    o 'ObjAssignable',                          -> Value.wrap $1
+    o 'ObjAssignable : Expression',             -> new Assign LOCDATA(1)(Value.wrap($1)), $3, 'object'
     o 'ObjAssignable :
-       INDENT Expression OUTDENT',              -> new Assign LOCDATA(1)(Value.create($1)), $4, 'object'
+       INDENT Expression OUTDENT',              -> new Assign LOCDATA(1)(Value.wrap($1)), $4, 'object'
     o 'Comment'
   ]
 
@@ -236,26 +237,26 @@ grammar =
 
   # Variables and properties that can be assigned to.
   SimpleAssignable: [
-    o 'Identifier',                             -> Value.create $1
+    o 'Identifier',                             -> Value.wrap $1
     o 'Value Accessor',                         -> $1.add $2
-    o 'Invocation Accessor',                    -> Value.create $1, [].concat $2
+    o 'Invocation Accessor',                    -> Value.wrap $1, [].concat $2
     o 'ThisProperty'
   ]
 
   # Everything that can be assigned to.
   Assignable: [
     o 'SimpleAssignable'
-    o 'Array',                                  -> Value.create $1
-    o 'Object',                                 -> Value.create $1
+    o 'Array',                                  -> Value.wrap $1
+    o 'Object',                                 -> Value.wrap $1
   ]
 
   # The types of things that can be treated as values -- assigned to, invoked
   # as functions, indexed into, named as a class, etc.
   Value: [
     o 'Assignable'
-    o 'Literal',                                -> Value.create $1
-    o 'Parenthetical',                          -> Value.create $1
-    o 'Range',                                  -> Value.create $1
+    o 'Literal',                                -> Value.wrap $1
+    o 'Parenthetical',                          -> Value.wrap $1
+    o 'Range',                                  -> Value.wrap $1
     o 'This'
   ]
 
@@ -330,13 +331,13 @@ grammar =
 
   # A reference to the *this* current object.
   This: [
-    o 'THIS',                                   -> Value.create new Literal 'this'
-    o '@',                                      -> Value.create new Literal 'this'
+    o 'THIS',                                   -> Value.wrap new Literal 'this'
+    o '@',                                      -> Value.wrap new Literal 'this'
   ]
 
   # A reference to a property on *this*.
   ThisProperty: [
-    o '@ Identifier',                           -> Value.create LOCDATA(1)(new Literal('this')), [LOCDATA(2)(new Access($2))], 'this'
+    o '@ Identifier',                           -> Value.wrap LOCDATA(1)(new Literal('this')), [LOCDATA(2)(new Access($2))], 'this'
   ]
 
   # The array literal.
@@ -400,7 +401,7 @@ grammar =
   # A catch clause names its error and runs a block of code.
   Catch: [
     o 'CATCH Identifier Block',                 -> [$2, $3]
-    o 'CATCH Object Block',                     -> [LOCDATA(2)(Value.create($2)), $3]
+    o 'CATCH Object Block',                     -> [LOCDATA(2)(Value.wrap($2)), $3]
   ]
 
   # Throw an exception object.
@@ -449,7 +450,7 @@ grammar =
   ]
 
   ForBody: [
-    o 'FOR Range',                              -> source: LOCDATA(2) Value.create($2)
+    o 'FOR Range',                              -> source: LOCDATA(2) Value.wrap($2)
     o 'ForStart ForSource',                     -> $2.own = $1.own; $2.name = $1[0]; $2.index = $1[1]; $2
   ]
 
@@ -463,8 +464,8 @@ grammar =
   ForValue: [
     o 'Identifier'
     o 'ThisProperty'
-    o 'Array',                                  -> Value.create $1
-    o 'Object',                                 -> Value.create $1
+    o 'Array',                                  -> Value.wrap $1
+    o 'Object',                                 -> Value.wrap $1
   ]
 
   # An array or range comprehension has variables for the current element
