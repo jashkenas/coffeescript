@@ -7,7 +7,7 @@
 {RESERVED, STRICT_PROSCRIBED} = require './lexer'
 
 # Import the helpers we plan to use.
-{compact, flatten, extend, merge, del, starts, ends, last, some, addLocationDataFn} = require './helpers'
+{compact, flatten, extend, merge, del, starts, ends, last, some, addLocationDataFn, locationDataToString} = require './helpers'
 
 # Functions required by parser
 exports.extend = extend
@@ -110,12 +110,8 @@ exports.Base = class Base
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   toString: (idt = '', name = @constructor.name) ->
-    location = ""
-    if @locationData
-      firstLine = @locationData.first_line + 1
-      lastLine = @locationData.last_line + 1
-      location = firstLine  + (if lastLine != firstLine then "-" + lastLine else "") + ": "
-    tree = '\n' + idt + location + name
+    location = if @locationData then locationDataToString @locationData else "??"
+    tree = '\n' + idt + location + ": " + name
     tree += '?' if @soak
     @eachChild (node) -> tree += node.toString idt + TAB
     tree

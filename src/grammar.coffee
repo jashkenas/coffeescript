@@ -52,7 +52,6 @@ o = (patternString, action, options) ->
 
   action = action.replace /LOCDATA\(([0-9]*)\)/g, addLocationDataFn('$1')
   action = action.replace /LOCDATA\(([0-9]*),\s*([0-9]*)\)/g, addLocationDataFn('$1', '$2')
-  action = action.replace /\b(Op|Value\.create)\b/g, 'yy.$&'
 
   [patternString, "$$ = #{addLocationDataFn(1, patternCount)}(#{action});", options]
 
