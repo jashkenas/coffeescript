@@ -895,10 +895,10 @@ exports.Class = class Class extends Base
   # Ensure that all functions bound to the instance are proxied in the
   # constructor.
   addBoundFunctions: (o) ->
-    if @boundFuncs.length
-      for bvar in @boundFuncs
-        lhs = (Value.wrap (new Literal "this"), [new Access bvar]).compile o
-        @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
+    for bvar in @boundFuncs
+      lhs = (Value.wrap (new Literal "this"), [new Access bvar]).compile o
+      @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
+    return
 
   # Merge the properties from a top-level object as prototypal properties
   # on the class.
