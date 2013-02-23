@@ -386,7 +386,7 @@ exports.Value = class Value extends Base
 
   constructor: (@base, @properties, tag) ->
     @properties or= []
-    @[tag] = true if tag
+    @this = true if tag is 'this'
 
   children: ['base', 'properties']
 
@@ -457,10 +457,9 @@ exports.Value = class Value extends Base
 
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
-    return @unfoldedSoak if @unfoldedSoak?
-    result = do =>
+    @unfoldedSoak ?= do =>
       if ifn = @base.unfoldSoak o
-        Array::push.apply ifn.body.properties, @properties
+        ifn.body.properties.push @properties...
         return ifn
       for prop, i in @properties when prop.soak
         prop.soak = off
@@ -471,8 +470,7 @@ exports.Value = class Value extends Base
           fst = new Parens new Assign ref, fst
           snd.base = ref
         return new If new Existence(fst), snd, soak: on
-      null
-    @unfoldedSoak = result or no
+      no
 
 #### Comment
 
@@ -895,10 +893,10 @@ exports.Class = class Class extends Base
   # Ensure that all functions bound to the instance are proxied in the
   # constructor.
   addBoundFunctions: (o) ->
-    if @boundFuncs.length
-      for bvar in @boundFuncs
-        lhs = (Value.wrap (new Literal "this"), [new Access bvar]).compile o
-        @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
+    for bvar in @boundFuncs
+      lhs = (Value.wrap (new Literal "this"), [new Access bvar]).compile o
+      @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
+    return
 
   # Merge the properties from a top-level object as prototypal properties
   # on the class.
