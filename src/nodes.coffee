@@ -386,7 +386,7 @@ exports.Value = class Value extends Base
 
   constructor: (@base, @properties, tag) ->
     @properties or= []
-    @[tag] = true if tag
+    @this = true if tag is 'this'
 
   children: ['base', 'properties']
 
