@@ -457,10 +457,9 @@ exports.Value = class Value extends Base
 
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
-    return @unfoldedSoak if @unfoldedSoak?
-    result = do =>
+    @unfoldedSoak ?= do =>
       if ifn = @base.unfoldSoak o
-        Array::push.apply ifn.body.properties, @properties
+        ifn.body.properties.push @properties...
         return ifn
       for prop, i in @properties when prop.soak
         prop.soak = off
@@ -471,8 +470,7 @@ exports.Value = class Value extends Base
           fst = new Parens new Assign ref, fst
           snd.base = ref
         return new If new Existence(fst), snd, soak: on
-      null
-    @unfoldedSoak = result or no
+      no
 
 #### Comment
 
