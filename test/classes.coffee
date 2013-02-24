@@ -696,3 +696,14 @@ test "#2359: constructors should not return an explicit value", ->
           return bar: 7
         baz()
   """
+
+test "#2319: fn class n extends o.p [INDENT] x = 123", ->
+  first = ->
+
+  base = onebase: ->
+
+  first class OneKeeper extends base.onebase
+    one = 1
+    one: -> one
+
+  eq new OneKeeper().one(), 1
