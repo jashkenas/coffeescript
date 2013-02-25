@@ -367,7 +367,9 @@ Expressions
       Besides being used as an ordinary programming language, CoffeeScript may
       also be written in "literate" mode. If you name your file with a
       <tt>.litcoffee</tt> extension, you can write it as a Markdown document &mdash;
-      a document that also happens to be executable CoffeeScript code.
+      a document that also happens to be executable CoffeeScript code. The compiler
+      will treat any indented blocks (Markdown's way of indicating source code)
+      as code, and ignore the rest as comments.
     </p>
 
     <p>
