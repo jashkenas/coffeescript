@@ -147,11 +147,13 @@ div.code {
 }
   #logo {
     display: block;
-    width: 225px; height: 50px;
-    background: url('../images/logo.png');
+    outline: none;
     position: absolute;
     top: 0px; left: 10px;
   }
+    #logo img {
+      margin: 5px 0 0 3px;
+    }
   #error {
     position: absolute;
     -webkit-border-radius: 2px; -moz-border-radius: 2px; border-radius: 2px;
