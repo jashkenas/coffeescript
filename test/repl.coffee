@@ -1,3 +1,5 @@
+return if global.testingBrowser
+
 # REPL
 # ----
 Stream = require 'stream'

@@ -5,12 +5,8 @@ CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 
 # ANSI Terminal Colors.
-enableColors = no
-unless process.platform is 'win32'
-  enableColors = not process.env.NODE_DISABLE_COLORS
-
 bold = red = green = reset = ''
-if enableColors
+unless process.env.NODE_DISABLE_COLORS
   bold  = '\x1B[0;1m'
   red   = '\x1B[0;31m'
   green = '\x1B[0;32m'
@@ -26,11 +22,6 @@ header = """
    * Released under the MIT License
    */
 """
-
-sources = [
-  'coffee-script', 'grammar', 'helpers'
-  'lexer', 'nodes', 'rewriter', 'scope'
-].map (filename) -> "src/#{filename}.coffee"
 
 # Run a CoffeeScript through our node/coffee interpreter.
 run = (args, cb) ->
@@ -76,7 +67,11 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
   build ->
     build ->
       csPath = './lib/coffee-script'
-      delete require.cache[require.resolve csPath]
+      csDir  = path.dirname require.resolve csPath
+
+      for mod of require.cache when csDir is mod[0 ... csDir.length]
+        delete require.cache[mod]
+
       unless runTests require csPath
         process.exit 1
 
@@ -141,24 +136,24 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
 
 task 'bench', 'quick benchmark of compilation time', ->
   {Rewriter} = require './lib/coffee-script/rewriter'
-  co     = sources.map((name) -> fs.readFileSync name).join '\n'
+  sources = ['coffee-script', 'grammar', 'helpers', 'lexer', 'nodes', 'rewriter']
+  coffee  = sources.map((name) -> fs.readFileSync "src/#{name}.coffee").join '\n'
+  litcoffee = fs.readFileSync("src/scope.litcoffee").toString()
   fmt    = (ms) -> " #{bold}#{ "   #{ms}".slice -4 }#{reset} ms"
   total  = 0
   now    = Date.now()
   time   = -> total += ms = -(now - now = Date.now()); fmt ms
-  tokens = CoffeeScript.tokens co, rewrite: false
+  tokens = CoffeeScript.tokens coffee, rewrite: no
+  littokens = CoffeeScript.tokens litcoffee, rewrite: no, literate: yes
+  tokens = tokens.concat(littokens)
   console.log "Lex    #{time()} (#{tokens.length} tokens)"
   tokens = new Rewriter().rewrite tokens
   console.log "Rewrite#{time()} (#{tokens.length} tokens)"
   nodes  = CoffeeScript.nodes tokens
   console.log "Parse  #{time()}"
-  js     = nodes.compile bare: true
+  js     = nodes.compile bare: yes
   console.log "Compile#{time()} (#{js.length} chars)"
   console.log "total  #{ fmt total }"
-
-task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
-  exec "cat #{ sources.join(' ') } | grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '", (err, stdout) ->
-    console.log stdout.trim()
 
 
 # Run the CoffeeScript test suite.
@@ -181,9 +176,11 @@ runTests = (CoffeeScript) ->
       fn.call(fn)
       ++passedTests
     catch e
-      e.description = description if description?
-      e.source      = fn.toString() if fn.toString?
-      failures.push filename: currentFile, error: e
+      failures.push
+        filename: currentFile
+        error: e
+        description: description if description?
+        source: fn.toString() if fn.toString?
 
   # See http://wiki.ecmascript.org/doku.php?id=harmony:egal
   egal = (a, b) ->
@@ -211,16 +208,16 @@ runTests = (CoffeeScript) ->
     return log(message, green) unless failures.length
     log "failed #{failures.length} and #{message}", red
     for fail in failures
-      {error, filename}  = fail
+      {error, filename, description, source}  = fail
       jsFilename         = filename.replace(/\.coffee$/,'.js')
       match              = error.stack?.match(new RegExp(fail.file+":(\\d+):(\\d+)"))
       match              = error.stack?.match(/on line (\d+):/) unless match
       [match, line, col] = match if match
       console.log ''
-      log "  #{error.description}", red if error.description
+      log "  #{description}", red if description
       log "  #{error.stack}", red
       log "  #{jsFilename}: line #{line ? 'unknown'}, column #{col ? 'unknown'}", red
-      console.log "  #{error.source}" if error.source
+      console.log "  #{source}" if source
     return
 
   # Run every test in the `test` folder, recording failures.

@@ -550,3 +550,11 @@ test "#960: improved 'do'", ->
     eq two, 2
     func
   eq ret, func
+
+test "#2617: implicit call before unrelated implicit object", ->
+  pass = ->
+    true
+
+  result = if pass 1
+    one: 1
+  eq result.one, 1

@@ -32,11 +32,28 @@ unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 # previous nonterminal.
 o = (patternString, action, options) ->
   patternString = patternString.replace /\s{2,}/g, ' '
+  patternCount = patternString.split(' ').length
   return [patternString, '$$ = $1;', options] unless action
   action = if match = unwrap.exec action then match[1] else "(#{action}())"
+
+  # All runtime functions we need are defined on "yy"
   action = action.replace /\bnew /g, '$&yy.'
   action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
-  [patternString, "$$ = #{action};", options]
+  action = action.replace /\b(Op|Value\.(create|wrap))\b/g, 'yy.$&'
+
+  # Returns a function which adds location data to the first parameter passed
+  # in, and returns the parameter.  If the parameter is not a node, it will
+  # just be passed through unaffected.
+  addLocationDataFn = (first, last) ->
+    if not last
+      "yy.addLocationDataFn(@#{first})"
+    else
+      "yy.addLocationDataFn(@#{first}, @#{last})"
+
+  action = action.replace /LOC\(([0-9]*)\)/g, addLocationDataFn('$1')
+  action = action.replace /LOC\(([0-9]*),\s*([0-9]*)\)/g, addLocationDataFn('$1', '$2')
+
+  [patternString, "$$ = #{addLocationDataFn(1, patternCount)}(#{action});", options]
 
 # Grammatical Rules
 # -----------------
@@ -142,10 +159,10 @@ grammar =
   # Assignment when it happens within an object literal. The difference from
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
-    o 'ObjAssignable',                          -> new Value $1
-    o 'ObjAssignable : Expression',             -> new Assign new Value($1), $3, 'object'
+    o 'ObjAssignable',                          -> Value.wrap $1
+    o 'ObjAssignable : Expression',             -> new Assign LOC(1)(Value.wrap($1)), $3, 'object'
     o 'ObjAssignable :
-       INDENT Expression OUTDENT',              -> new Assign new Value($1), $4, 'object'
+       INDENT Expression OUTDENT',              -> new Assign LOC(1)(Value.wrap($1)), $4, 'object'
     o 'Comment'
   ]
 
@@ -219,26 +236,26 @@ grammar =
 
   # Variables and properties that can be assigned to.
   SimpleAssignable: [
-    o 'Identifier',                             -> new Value $1
+    o 'Identifier',                             -> Value.wrap $1
     o 'Value Accessor',                         -> $1.add $2
-    o 'Invocation Accessor',                    -> new Value $1, [].concat $2
+    o 'Invocation Accessor',                    -> Value.wrap $1, [].concat $2
     o 'ThisProperty'
   ]
 
   # Everything that can be assigned to.
   Assignable: [
     o 'SimpleAssignable'
-    o 'Array',                                  -> new Value $1
-    o 'Object',                                 -> new Value $1
+    o 'Array',                                  -> Value.wrap $1
+    o 'Object',                                 -> Value.wrap $1
   ]
 
   # The types of things that can be treated as values -- assigned to, invoked
   # as functions, indexed into, named as a class, etc.
   Value: [
     o 'Assignable'
-    o 'Literal',                                -> new Value $1
-    o 'Parenthetical',                          -> new Value $1
-    o 'Range',                                  -> new Value $1
+    o 'Literal',                                -> Value.wrap $1
+    o 'Parenthetical',                          -> Value.wrap $1
+    o 'Range',                                  -> Value.wrap $1
     o 'This'
   ]
 
@@ -247,7 +264,7 @@ grammar =
   Accessor: [
     o '.  Identifier',                          -> new Access $2
     o '?. Identifier',                          -> new Access $2, 'soak'
-    o ':: Identifier',                          -> [(new Access new Literal 'prototype'), new Access $2]
+    o ':: Identifier',                          -> [LOC(1)(new Access new Literal 'prototype'), LOC(2)(new Access $2)]
     o '::',                                     -> new Access new Literal 'prototype'
     o 'Index'
   ]
@@ -313,13 +330,13 @@ grammar =
 
   # A reference to the *this* current object.
   This: [
-    o 'THIS',                                   -> new Value new Literal 'this'
-    o '@',                                      -> new Value new Literal 'this'
+    o 'THIS',                                   -> Value.wrap new Literal 'this'
+    o '@',                                      -> Value.wrap new Literal 'this'
   ]
 
   # A reference to a property on *this*.
   ThisProperty: [
-    o '@ Identifier',                           -> new Value new Literal('this'), [new Access($2)], 'this'
+    o '@ Identifier',                           -> Value.wrap LOC(1)(new Literal('this')), [LOC(2)(new Access($2))], 'this'
   ]
 
   # The array literal.
@@ -383,7 +400,7 @@ grammar =
   # A catch clause names its error and runs a block of code.
   Catch: [
     o 'CATCH Identifier Block',                 -> [$2, $3]
-    o 'CATCH Object Block',                     -> [new Value($2), $3]
+    o 'CATCH Object Block',                     -> [LOC(2)(Value.wrap($2)), $3]
   ]
 
   # Throw an exception object.
@@ -412,14 +429,14 @@ grammar =
   # or postfix, with a single expression. There is no do..while.
   While: [
     o 'WhileSource Block',                      -> $1.addBody $2
-    o 'Statement  WhileSource',                 -> $2.addBody Block.wrap [$1]
-    o 'Expression WhileSource',                 -> $2.addBody Block.wrap [$1]
+    o 'Statement  WhileSource',                 -> $2.addBody LOC(1) Block.wrap([$1])
+    o 'Expression WhileSource',                 -> $2.addBody LOC(1) Block.wrap([$1])
     o 'Loop',                                   -> $1
   ]
 
   Loop: [
-    o 'LOOP Block',                             -> new While(new Literal 'true').addBody $2
-    o 'LOOP Expression',                        -> new While(new Literal 'true').addBody Block.wrap [$2]
+    o 'LOOP Block',                             -> new While(LOC(1) new Literal 'true').addBody $2
+    o 'LOOP Expression',                        -> new While(LOC(1) new Literal 'true').addBody LOC(2) Block.wrap [$2]
   ]
 
   # Array, object, and range comprehensions, at the most generic level.
@@ -432,7 +449,7 @@ grammar =
   ]
 
   ForBody: [
-    o 'FOR Range',                              -> source: new Value($2)
+    o 'FOR Range',                              -> source: LOC(2) Value.wrap($2)
     o 'ForStart ForSource',                     -> $2.own = $1.own; $2.name = $1[0]; $2.index = $1[1]; $2
   ]
 
@@ -446,8 +463,8 @@ grammar =
   ForValue: [
     o 'Identifier'
     o 'ThisProperty'
-    o 'Array',                                  -> new Value $1
-    o 'Object',                                 -> new Value $1
+    o 'Array',                                  -> Value.wrap $1
+    o 'Object',                                 -> Value.wrap $1
   ]
 
   # An array or range comprehension has variables for the current element
@@ -502,8 +519,8 @@ grammar =
   If: [
     o 'IfBlock'
     o 'IfBlock ELSE Block',                     -> $1.addElse $3
-    o 'Statement  POST_IF Expression',          -> new If $3, Block.wrap([$1]), type: $2, statement: true
-    o 'Expression POST_IF Expression',          -> new If $3, Block.wrap([$1]), type: $2, statement: true
+    o 'Statement  POST_IF Expression',          -> new If $3, LOC(1)(Block.wrap [$1]), type: $2, statement: true
+    o 'Expression POST_IF Expression',          -> new If $3, LOC(1)(Block.wrap [$1]), type: $2, statement: true
   ]
 
   # Arithmetic and logical operators, working on one or more operands.
@@ -513,30 +530,30 @@ grammar =
   # -type rule, but in order to make the precedence binding possible, separate
   # rules are necessary.
   Operation: [
-    o 'UNARY Expression',                       -> new Op $1 , $2
-    o '-     Expression',                      (-> new Op '-', $2), prec: 'UNARY'
-    o '+     Expression',                      (-> new Op '+', $2), prec: 'UNARY'
+    o 'UNARY Expression',                       -> Op.create $1 , $2
+    o '-     Expression',                      (-> Op.create '-', $2), prec: 'UNARY'
+    o '+     Expression',                      (-> Op.create '+', $2), prec: 'UNARY'
 
-    o '-- SimpleAssignable',                    -> new Op '--', $2
-    o '++ SimpleAssignable',                    -> new Op '++', $2
-    o 'SimpleAssignable --',                    -> new Op '--', $1, null, true
-    o 'SimpleAssignable ++',                    -> new Op '++', $1, null, true
+    o '-- SimpleAssignable',                    -> Op.create '--', $2
+    o '++ SimpleAssignable',                    -> Op.create '++', $2
+    o 'SimpleAssignable --',                    -> Op.create '--', $1, null, true
+    o 'SimpleAssignable ++',                    -> Op.create '++', $1, null, true
 
     # [The existential operator](http://jashkenas.github.com/coffee-script/#existence).
     o 'Expression ?',                           -> new Existence $1
 
-    o 'Expression +  Expression',               -> new Op '+' , $1, $3
-    o 'Expression -  Expression',               -> new Op '-' , $1, $3
+    o 'Expression +  Expression',               -> Op.create '+' , $1, $3
+    o 'Expression -  Expression',               -> Op.create '-' , $1, $3
 
-    o 'Expression MATH     Expression',         -> new Op $2, $1, $3
-    o 'Expression SHIFT    Expression',         -> new Op $2, $1, $3
-    o 'Expression COMPARE  Expression',         -> new Op $2, $1, $3
-    o 'Expression LOGIC    Expression',         -> new Op $2, $1, $3
+    o 'Expression MATH     Expression',         -> Op.create $2, $1, $3
+    o 'Expression SHIFT    Expression',         -> Op.create $2, $1, $3
+    o 'Expression COMPARE  Expression',         -> Op.create $2, $1, $3
+    o 'Expression LOGIC    Expression',         -> Op.create $2, $1, $3
     o 'Expression RELATION Expression',         ->
       if $2.charAt(0) is '!'
-        new Op($2[1..], $1, $3).invert()
+        Op.create($2[1..], $1, $3).invert()
       else
-        new Op $2, $1, $3
+        Op.create $2, $1, $3
 
     o 'SimpleAssignable COMPOUND_ASSIGN
        Expression',                             -> new Assign $1, $3, $2

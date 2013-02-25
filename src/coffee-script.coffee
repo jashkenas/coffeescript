@@ -26,7 +26,7 @@ if require.extensions
     require.extensions[ext] = loadFile
 
 # The current CoffeeScript version number.
-exports.VERSION = '1.5.0-pre'
+exports.VERSION = '1.5.0'
 
 # Expose helpers for testing.
 exports.helpers = require './helpers'
@@ -122,7 +122,13 @@ lexer = new Lexer
 # directly as a "Jison lexer".
 parser.lexer =
   lex: ->
-    [tag, @yytext, @yylineno] = @tokens[@pos++] or ['']
+    token = @tokens[@pos++]
+    if token
+      [tag, @yytext, @yylloc] = token
+      @yylineno = @yylloc.first_line
+    else
+      tag = ''
+
     tag
   setInput: (@tokens) ->
     @pos = 0
