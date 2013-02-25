@@ -698,7 +698,7 @@ exports.Lexer = class Lexer
   error: (message) ->
     # TODO: Are there some cases we could improve the error line number by
     # passing the offset in the chunk where the error happened?
-    throw new CompilerError message, @chunkLine + 1, @chunkColumn + 1
+    throw new CompilerError message, @chunkLine, @chunkColumn
 
 # Constants
 # ---------

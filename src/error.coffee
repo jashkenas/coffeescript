@@ -15,11 +15,11 @@ exports.CompilerError = class CompilerError extends Error
   # showing where the error is.
   # TODO: tests
   prettyMessage: (fileName, code) ->
-    message = "#{fileName}:#{@startLine}:#{@startColumn}: error: #{@message}"
+    message = "#{fileName}:#{@startLine + 1}:#{@startColumn + 1}: error: #{@message}"
     if @startLine is @endLine
-      errorLine = code.split('\n')[@startLine - 1]
+      errorLine = code.split('\n')[@startLine]
       errorLength = @endColumn - @startColumn + 1
-      marker = (repeat ' ', @startColumn - 1) + (repeat '^', errorLength)
+      marker = (repeat ' ', @startColumn) + (repeat '^', errorLength)
       message += "\n#{errorLine}\n#{marker}"
     else
       # TODO: How do we show multi-line errors?

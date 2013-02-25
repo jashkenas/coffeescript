@@ -145,4 +145,4 @@ parser.yy.parseError = (message, {loc, token}) ->
   message = "unexpected #{token}"
 
   {first_line, first_column, last_line, last_column} = loc
-  throw new CompilerError message, first_line + 1, first_column + 1, last_line + 1, last_column + 1
+  throw new CompilerError message, first_line, first_column, last_line, last_column
