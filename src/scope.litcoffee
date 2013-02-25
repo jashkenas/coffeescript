@@ -41,7 +41,7 @@ can get complicated if super is being called from an inner function.
 function object that has a name filled in, or bottoms out.
 
       namedMethod: ->
-        return @method if @method.name or !@parent
+        return @method if @method?.name or !@parent
         @parent.namedMethod()
 
 Look up a variable name in lexical scope, and declare it if it does not
