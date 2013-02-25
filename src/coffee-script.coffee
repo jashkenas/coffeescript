@@ -122,7 +122,13 @@ lexer = new Lexer
 # directly as a "Jison lexer".
 parser.lexer =
   lex: ->
-    [tag, @yytext, @yylineno] = @tokens[@pos++] or ['']
+    token = @tokens[@pos++]
+    if token
+      [tag, @yytext, @yylloc] = token
+      @yylineno = @yylloc.first_line
+    else
+      tag = ''
+
     tag
   setInput: (@tokens) ->
     @pos = 0

@@ -7,9 +7,11 @@
 {RESERVED, STRICT_PROSCRIBED} = require './lexer'
 
 # Import the helpers we plan to use.
-{compact, flatten, extend, merge, del, starts, ends, last, some} = require './helpers'
+{compact, flatten, extend, merge, del, starts, ends, last, some, addLocationDataFn, locationDataToString} = require './helpers'
 
-exports.extend = extend  # for parser
+# Functions required by parser
+exports.extend = extend
+exports.addLocationDataFn = addLocationDataFn
 
 # Constant functions for nodes that don't need customization.
 YES     = -> yes
@@ -101,7 +103,8 @@ exports.Base = class Base
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   toString: (idt = '', name = @constructor.name) ->
-    tree = '\n' + idt + name
+    location = if @locationData then locationDataToString @locationData else "??"
+    tree = '\n' + idt + location + ": " + name
     tree += '?' if @soak
     @eachChild (node) -> tree += node.toString idt + TAB
     tree
@@ -142,6 +145,16 @@ exports.Base = class Base
 
   # Is this node used to assign a certain variable?
   assigns: NO
+
+  # For this node and all descendents, set the location data to `locationData` if the location
+  # data is not already set.
+  updateLocationDataIfMissing: (locationData) ->
+    if not @locationData
+      @locationData = {}
+      extend @locationData, locationData
+
+    @eachChild (child) ->
+      child.updateLocationDataIfMissing locationData
 
 #### Block
 
