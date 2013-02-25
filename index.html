@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -24,6 +25,7 @@
         <a href="#overview">Overview</a>
         <a href="#installation">Installation</a>
         <a href="#usage">Usage</a>
+        <a href="#literate">Literate CoffeeScript</a>
         <a href="#language">Language Reference</a>
         <a href="#literals">Literals: Functions, Objects and Arrays</a>
         <a href="#lexical_scope">Lexical Scoping and Variable Safety</a>
@@ -93,9 +95,9 @@
     <span class="bookmark" id="top"></span>
 
     <p>
-      <b>CoffeeScript is a little language that compiles into JavaScript.</b> Underneath
-      all those awkward braces and semicolons, JavaScript has always had
-      a gorgeous object model at its heart. CoffeeScript is an attempt to expose
+      <b>CoffeeScript is a little language that compiles into JavaScript.</b>
+      Underneath that awkward Java-esque patina, JavaScript has always had
+      a gorgeous heart. CoffeeScript is an attempt to expose
       the good parts of JavaScript in a simple way.
     </p>
 
@@ -112,7 +114,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/1.4.0">1.4.0</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.5.0">1.5.0</a>
     </p>
 
     <h2>
@@ -410,8 +412,9 @@ Expressions
         <td><code>--nodejs</code></td>
         <td>
           The <tt>node</tt> executable has some useful options you can set,
-          such as<br /> <tt>--debug</tt>, <tt>--debug-brk</tt> and <tt>--max-stack-size</tt>. Use this
-          flag to forward options directly to Node.js.
+          such as<br /> <tt>--debug</tt>, <tt>--debug-brk</tt>, <tt>--max-stack-size</tt>,
+          and <tt>--expose-gc</tt>. Use this flag to forward options directly to Node.js.
+          To pass multiple flags, use <tt>--nodejs</tt> multiple times.
         </td>
       </tr>
     </table>
@@ -447,6 +450,33 @@ Expressions
         <tt>coffee</tt>
       </li>
     </ul>
+
+    <h2>
+      <span id="literate" class="bookmark"></span>
+      Literate CoffeeScript
+    </h2>
+
+    <p>
+      Besides being used as an ordinary programming language, CoffeeScript may
+      also be written in "literate" mode. If you name your file with a
+      <tt>.litcoffee</tt> extension, you can write it as a Markdown document &mdash;
+      a document that also happens to be executable CoffeeScript code.
+    </p>
+
+    <p>
+      Just for kicks, a little bit of the compiler is currently implemented in this fashion:
+      See it
+      <a href="https://gist.github.com/jashkenas/3fc3c1a8b1009c00d9df">as a document</a>,
+      <a href="https://raw.github.com/jashkenas/coffee-script/master/src/scope.litcoffee">raw</a>,
+      and <a href="http://cl.ly/LxEu">properly highlighted in a text editor</a>.
+    </p>
+
+    <p>
+      I'm fairly excited about this direction for the language, and am looking
+      forward to writing (and more importantly, reading) more programs in this style.
+      As <b>1.5.0</b> is the first version of CoffeeScript that supports it, let us know
+      if you have any ideas for improving the feature.
+    </p>
 
     <h2>
       <span id="language" class="bookmark"></span>
@@ -1098,7 +1128,7 @@ numbers[<span class="Number">3</span>..<span class="Number">6</span>] <span clas
 
 
 
-
+ 
 </pre><pre class="idle"><span class="Storage">var</span> numbers, _ref;
 
 numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
@@ -1235,7 +1265,7 @@ globals = ((function() {
     <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>And the error is ... <span class="String">&quot;</span></span> <span class="Keyword">+</span> error;
   }
 })());
-</pre><script>window.example19 = "alert(\n  try\n    nonexistent / undefined\n  catch error\n    \"And the error is ... #{error}\"\n)\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example19);'>load</div><div class='minibutton ok' onclick='javascript:
+</pre><script>window.example19 = "alert(\n  try\n    nonexistent / undefined\n  catch error\n    \"And the error is ... #{error}\"\n)\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example19);'>load</div><div class='minibutton ok' onclick='javascript: 
 alert((function() {
   try {
     return nonexistent / void 0;
@@ -1366,10 +1396,10 @@ footprints <span class="Keyword">=</span> yeti <span class="Keyword">?</span> <s
 
 
 
-
+ 
 </pre><pre class="idle"><span class="Storage">var</span> footprints, solipsism, speed;
 
-<span class="Keyword">if</span> ((<span class="Keyword">typeof</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> <span class="Keyword">!</span>(<span class="Keyword">typeof</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> world <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>)) {
+<span class="Keyword">if</span> ((<span class="Keyword">typeof</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> (<span class="Keyword">typeof</span> world <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">||</span> world <span class="Keyword">===</span> <span class="BuiltInConstant">null</span>)) {
   solipsism <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
 }
 
@@ -1382,7 +1412,7 @@ speed <span class="Keyword">=</span> <span class="Number">0</span>;
 footprints <span class="Keyword">=</span> <span class="Keyword">typeof</span> yeti <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> yeti <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span> ? yeti : <span class="String"><span class="String">&quot;</span>bear<span class="String">&quot;</span></span>;
 </pre><script>window.example21 = "solipsism = true if mind? and not world?\n\nspeed = 0\nspeed ?= 15\n\nfootprints = yeti ? \"bear\"\n\nalert footprints"</script><div class='minibutton load' onclick='javascript: loadConsole(example21);'>load</div><div class='minibutton ok' onclick='javascript: var footprints, solipsism, speed;
 
-if ((typeof mind !== "undefined" && mind !== null) && !(typeof world !== "undefined" && world !== null)) {
+if ((typeof mind !== "undefined" && mind !== null) && (typeof world === "undefined" || world === null)) {
   solipsism = true;
 }
 
@@ -1487,7 +1517,7 @@ Snake <span class="Keyword">=</span> (<span class="Storage">function</span>(_sup
   __extends(Snake, _super);
 
   <span class="Storage">function</span> <span class="FunctionName">Snake</span>() {
-    <span class="Keyword">return</span> Snake.__super__.<span class="LibraryConstant">constructor</span>.<span class="LibraryFunction">apply</span>(<span class="Variable">this</span>, arguments);
+    Snake.__super__.<span class="LibraryConstant">constructor</span>.<span class="LibraryFunction">apply</span>(<span class="Variable">this</span>, arguments);
   }
 
   <span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>() {
@@ -1504,7 +1534,7 @@ Horse <span class="Keyword">=</span> (<span class="Storage">function</span>(_sup
   __extends(Horse, _super);
 
   <span class="Storage">function</span> <span class="FunctionName">Horse</span>() {
-    <span class="Keyword">return</span> Horse.__super__.<span class="LibraryConstant">constructor</span>.<span class="LibraryFunction">apply</span>(<span class="Variable">this</span>, arguments);
+    Horse.__super__.<span class="LibraryConstant">constructor</span>.<span class="LibraryFunction">apply</span>(<span class="Variable">this</span>, arguments);
   }
 
   <span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>() {
@@ -1546,7 +1576,7 @@ Snake = (function(_super) {
   __extends(Snake, _super);
 
   function Snake() {
-    return Snake.__super__.constructor.apply(this, arguments);
+    Snake.__super__.constructor.apply(this, arguments);
   }
 
   Snake.prototype.move = function() {
@@ -1563,7 +1593,7 @@ Horse = (function(_super) {
   __extends(Horse, _super);
 
   function Horse() {
-    return Horse.__super__.constructor.apply(this, arguments);
+    Horse.__super__.constructor.apply(this, arguments);
   }
 
   Horse.prototype.move = function() {
@@ -1598,7 +1628,7 @@ tom.move();
 <span class="LibraryClassType">String</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">dasherize</span> = <span class="Storage">function</span>() {
   <span class="Keyword">return</span> <span class="Variable">this</span>.<span class="LibraryFunction">replace</span>(<span class="String"><span class="String">/</span>_<span class="String">/</span>g</span>, <span class="String"><span class="String">&quot;</span>-<span class="String">&quot;</span></span>);
 };
-</pre><script>window.example24 = "String::dasherize = ->\n  this.replace /_/g, \"-\"\n\nalert \"one_two\".dasherize()"</script><div class='minibutton load' onclick='javascript: loadConsole(example24);'>load</div><div class='minibutton ok' onclick='javascript:
+</pre><script>window.example24 = "String::dasherize = ->\n  this.replace /_/g, \"-\"\n\nalert \"one_two\".dasherize()"</script><div class='minibutton load' onclick='javascript: loadConsole(example24);'>load</div><div class='minibutton ok' onclick='javascript: 
 String.prototype.dasherize = function() {
   return this.replace(/_/g, "-");
 };
@@ -1630,7 +1660,7 @@ theSwitch <span class="Keyword">=</span> <span class="Number">0</span>
 
 
 
-
+ 
 </pre><pre class="idle"><span class="Storage">var</span> theBait, theSwitch, _ref;
 
 theBait <span class="Keyword">=</span> <span class="Number">1000</span>;
@@ -1975,7 +2005,7 @@ mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- 
 <span class="String">         cup of coffeescript</span>
 <span class="String">       &lt;/strong&gt;</span>
 <span class="String">       <span class="String">&quot;&quot;&quot;</span></span>
-
+       
 </pre><pre class="idle"><span class="Storage">var</span> html;
 
 html <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>&lt;strong&gt;<span class="UserDefinedConstant">\n</span>  cup of coffeescript<span class="UserDefinedConstant">\n</span>&lt;/strong&gt;<span class="String">&quot;</span></span>;
@@ -1993,18 +2023,18 @@ html = "<strong>\n  cup of coffeescript\n</strong>";
       are preserved in the generated code.
     </p>
     <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">###</span></span>
-<span class="Comment">CoffeeScript Compiler v1.4.0</span>
+<span class="Comment">CoffeeScript Compiler v1.5.0</span>
 <span class="Comment">Released under the MIT License</span>
 <span class="Comment"><span class="Comment">###</span></span>
 
 
 </pre><pre class="idle"><span class="Comment"><span class="Comment">/*</span></span>
-<span class="Comment">CoffeeScript Compiler v1.4.0</span>
+<span class="Comment">CoffeeScript Compiler v1.5.0</span>
 <span class="Comment">Released under the MIT License</span>
 <span class="Comment"><span class="Comment">*/</span></span>
 
 
-</pre><script>window.example37 = "###\nCoffeeScript Compiler v1.4.0\nReleased under the MIT License\n###\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example37);'>load</div><br class='clear' /></div>
+</pre><script>window.example37 = "###\nCoffeeScript Compiler v1.5.0\nReleased under the MIT License\n###\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example37);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="regexes" class="bookmark"></span>
@@ -2138,7 +2168,7 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
         is a reimagination of the excellent book
         <a href="http://eloquentjavascript.net/">Eloquent JavaScript</a>, as if
         it had been written in CoffeeScript instead. Covers language features
-        as well a the functional and object oriented programming styles. By
+        as well as the functional and object oriented programming styles. By
         <a href="https://github.com/autotelicum">E. Hoigaard</a>.
       </li>
       <li>
@@ -2147,6 +2177,17 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
         introduction to the language. By the end of the book, you'll have built
         a fast-paced multiplayer word game, writing both the client-side and Node.js
         portions in CoffeeScript.
+      </li>
+      <li>
+        <a href="http://ristrettolo.gy">CoffeeScript Ristretto</a>
+        is a deep dive into CoffeeScript's semantics from simple functions up through
+        closures, higher-order functions, objects, classes, combinators, and decorators.
+        By <a href="http://braythwayt.com/">Reg Braithwaite</a>.
+      </li>
+      <li>
+        <a href="https://efendibooks.com/minibooks/testing-with-coffeescript">Testing with CoffeeScript</a>
+        is a succinct and freely downloadable guide to building testable
+        applications with CoffeeScript and Jasmine.
       </li>
     </ul>
 
@@ -2191,11 +2232,6 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       <li>
         <b>sstephenson</b>'s <a href="http://pow.cx/">Pow</a>,
         a zero-configuration Rack server, with comprehensive annotated source.
-      </li>
-      <li>
-        <b>frank06</b>'s <a href="http://riakjs.org/">riak-js</a>, a Node.js client for
-        <a href="http://www.basho.com/Riak.html">Riak</a>, with support for HTTP
-        and Protocol Buffers.
       </li>
       <li>
         <b>technoweenie</b>'s <a href="https://github.com/technoweenie/coffee-resque">Coffee-Resque</a>,
@@ -2284,6 +2320,34 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <b class="header" style="margin-top: 20px;">
+        <a href="https://github.com/jashkenas/coffee-script/compare/1.4.0...1.5.0">1.5.0</a>
+        <span class="timestamp"> &ndash; <small>Feb 25, 2013</small></span>
+      </b>
+      <ul>
+        <li>
+          First release of <a href="#literate">Literate CoffeeScript</a>.
+        </li>
+        <li>
+          The CoffeeScript REPL is now based on the Node.js REPL, and should work
+          better and more familiarly.
+        </li>
+        <li>
+          Returning explicit values from constructors is now forbidden. If you want
+          to return an arbitrary value, use a function, not a constructor.
+        </li>
+        <li>
+          You can now loop over an array backwards, without having to manually
+          deal with the indexes.
+        </li>
+        <li>
+          Source locations are now preserved in the CoffeeScript AST, although
+          source maps are not yet being emitted.
+        </li>
+      </ul>
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">
