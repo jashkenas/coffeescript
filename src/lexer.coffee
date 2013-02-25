@@ -104,7 +104,7 @@ exports.Lexer = class Lexer
     return 0 unless match = IDENTIFIER.exec @chunk
     [input, id, colon] = match
 
-    # Preserve lenght of id for location data
+    # Preserve length of id for location data
     idLength = id.length
     poppedToken = undefined
 
