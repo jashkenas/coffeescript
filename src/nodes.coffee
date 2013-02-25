@@ -66,13 +66,6 @@ exports.Base = class Base
       sub = new Assign ref, this
       if level then [sub.compile(o, level), ref.value] else [sub, ref]
 
-  # Compile to a source/variable pair suitable for looping.
-  compileLoopReference: (o, name) ->
-    src = tmp = @compile o, LEVEL_LIST
-    unless -Infinity < +src < Infinity or IDENTIFIER.test(src) and o.scope.check(src, yes)
-      src = "#{ tmp = o.scope.freeVariable name } = #{src}"
-    [src, tmp]
-
   # Construct a node that returns the current node's result.
   # Note that this is overridden for smarter behavior for
   # many statement nodes (e.g. If, For)...
