@@ -5,15 +5,16 @@
 # interactive REPL.
 
 # External dependencies.
-fs             = require 'fs'
-path           = require 'path'
-helpers        = require './helpers'
-optparse       = require './optparse'
-CoffeeScript   = require './coffee-script'
-{spawn, exec}  = require 'child_process'
-{EventEmitter} = require 'events'
+fs              = require 'fs'
+path            = require 'path'
+helpers         = require './helpers'
+optparse        = require './optparse'
+CoffeeScript    = require './coffee-script'
+{CompilerError} = require './error'
+{spawn, exec}   = require 'child_process'
+{EventEmitter}  = require 'events'
 
-exists         = fs.exists or path.exists
+exists          = fs.exists or path.exists
 
 # Allow CoffeeScript to emit Node.js events.
 helpers.extend CoffeeScript, new EventEmitter
@@ -138,9 +139,17 @@ compileScript = (file, input, base) ->
   catch err
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
-    return printLine err.message + '\x07' if o.watch
-    printWarn err instanceof Error and err.stack or "ERROR: #{err}"
-    process.exit 1
+
+    message = if err instanceof CompilerError
+      err.prettyMessage file or '[stdin]', input
+    else
+      err.stack or "ERROR: #{err}"
+
+    if o.watch
+      printLine message + '\x07' if o.watch
+    else
+      printWarn message
+      process.exit 1
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
 # and write them back to **stdout**.

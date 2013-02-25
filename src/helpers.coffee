@@ -11,6 +11,10 @@ exports.ends = (string, literal, back) ->
   len = literal.length
   literal is string.substr string.length - len - (back or 0), len
 
+# Repeat a string `n` times.
+exports.repeat = (string, n) ->
+  (Array n + 1).join string
+
 # Trim out all falsy values from an array.
 exports.compact = (array) ->
   item for item in array when item
@@ -71,8 +75,9 @@ buildLocationData = (first, last) ->
     last_line: last.last_line
     last_column: last.last_column
 
-# This returns a function which takes an object as a parameter, and if that object is an AST node,
-# updates that object's locationData.  The object is returned either way.
+# This returns a function which takes an object as a parameter, and if that
+# object is an AST node, updates that object's locationData.
+# The object is returned either way.
 exports.addLocationDataFn = (first, last) ->
     (obj) ->
       if ((typeof obj) is 'object') and (!!obj['updateLocationDataIfMissing'])
@@ -91,5 +96,3 @@ exports.locationDataToString = (obj) ->
       "#{locationData.last_line + 1}:#{locationData.last_column + 1}"
     else
       "No location data"
-
-

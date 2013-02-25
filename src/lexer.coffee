@@ -13,6 +13,7 @@
 
 # Import the helpers we need.
 {count, starts, compact, last, locationDataToString} = require './helpers'
+{CompilerError} = require './error'
 
 # The Lexer Class
 # ---------------
@@ -41,7 +42,7 @@ exports.Lexer = class Lexer
     @outdebt  = 0              # The under-outdentation at the current level.
     @indents  = []             # The stack of all current indentation levels.
     @ends     = []             # The stack for pairing up tokens.
-    @tokens   = []             # Stream of parsed tokens in the form `['TYPE', value, line]`.
+    @tokens   = []             # Stream of parsed tokens in the form `['TYPE', value, location data]`.
 
     @chunkLine =
         opts.line or 0         # The start line for the current @chunk.
@@ -693,11 +694,11 @@ exports.Lexer = class Lexer
     body = body.replace /// #{quote} ///g, '\\$&'
     quote + @escapeLines(body, heredoc) + quote
 
-  # Throws a syntax error on the current `@line`.
+  # Throws a compiler error on the current position.
   error: (message) ->
     # TODO: Are there some cases we could improve the error line number by
     # passing the offset in the chunk where the error happened?
-    throw SyntaxError "#{message} on line #{ @chunkLine + 1 }"
+    throw new CompilerError message, @chunkLine + 1, @chunkColumn + 1
 
 # Constants
 # ---------
