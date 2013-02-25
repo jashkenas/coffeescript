@@ -1327,7 +1327,7 @@ exports.Splat = class Splat extends Base
     @name.assigns name
 
   compile: (o) ->
-    if @index? then @compileParam o else @name.compile o
+    @name.compile o
 
   unwrap: -> @name
 
