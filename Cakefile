@@ -176,9 +176,11 @@ runTests = (CoffeeScript) ->
       fn.call(fn)
       ++passedTests
     catch e
-      e.description = description if description?
-      e.source      = fn.toString() if fn.toString?
-      failures.push filename: currentFile, error: e
+      failures.push
+        filename: currentFile
+        error: e
+        description: description if description?
+        source: fn.toString() if fn.toString?
 
   # See http://wiki.ecmascript.org/doku.php?id=harmony:egal
   egal = (a, b) ->
@@ -206,16 +208,16 @@ runTests = (CoffeeScript) ->
     return log(message, green) unless failures.length
     log "failed #{failures.length} and #{message}", red
     for fail in failures
-      {error, filename}  = fail
+      {error, filename, description, source}  = fail
       jsFilename         = filename.replace(/\.coffee$/,'.js')
       match              = error.stack?.match(new RegExp(fail.file+":(\\d+):(\\d+)"))
       match              = error.stack?.match(/on line (\d+):/) unless match
       [match, line, col] = match if match
       console.log ''
-      log "  #{error.description}", red if error.description
+      log "  #{description}", red if description
       log "  #{error.stack}", red
       log "  #{jsFilename}: line #{line ? 'unknown'}, column #{col ? 'unknown'}", red
-      console.log "  #{error.source}" if error.source
+      console.log "  #{source}" if source
     return
 
   # Run every test in the `test` folder, recording failures.

@@ -32,12 +32,28 @@ unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 # previous nonterminal.
 o = (patternString, action, options) ->
   patternString = patternString.replace /\s{2,}/g, ' '
+  patternCount = patternString.split(' ').length
   return [patternString, '$$ = $1;', options] unless action
   action = if match = unwrap.exec action then match[1] else "(#{action}())"
+
+  # All runtime functions we need are defined on "yy"
   action = action.replace /\bnew /g, '$&yy.'
   action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
   action = action.replace /\b(Op|Value\.(create|wrap))\b/g, 'yy.$&'
-  [patternString, "$$ = #{action};", options]
+
+  # Returns a function which adds location data to the first parameter passed
+  # in, and returns the parameter.  If the parameter is not a node, it will
+  # just be passed through unaffected.
+  addLocationDataFn = (first, last) ->
+    if not last
+      "yy.addLocationDataFn(@#{first})"
+    else
+      "yy.addLocationDataFn(@#{first}, @#{last})"
+
+  action = action.replace /LOCDATA\(([0-9]*)\)/g, addLocationDataFn('$1')
+  action = action.replace /LOCDATA\(([0-9]*),\s*([0-9]*)\)/g, addLocationDataFn('$1', '$2')
+
+  [patternString, "$$ = #{addLocationDataFn(1, patternCount)}(#{action});", options]
 
 # Grammatical Rules
 # -----------------
@@ -144,9 +160,9 @@ grammar =
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
     o 'ObjAssignable',                          -> Value.wrap $1
-    o 'ObjAssignable : Expression',             -> new Assign Value.wrap($1), $3, 'object'
+    o 'ObjAssignable : Expression',             -> new Assign LOCDATA(1)(Value.wrap($1)), $3, 'object'
     o 'ObjAssignable :
-       INDENT Expression OUTDENT',              -> new Assign Value.wrap($1), $4, 'object'
+       INDENT Expression OUTDENT',              -> new Assign LOCDATA(1)(Value.wrap($1)), $4, 'object'
     o 'Comment'
   ]
 
@@ -248,7 +264,7 @@ grammar =
   Accessor: [
     o '.  Identifier',                          -> new Access $2
     o '?. Identifier',                          -> new Access $2, 'soak'
-    o ':: Identifier',                          -> [(new Access new Literal 'prototype'), new Access $2]
+    o ':: Identifier',                          -> [LOCDATA(1)(new Access new Literal 'prototype'), LOCDATA(2)(new Access $2)]
     o '::',                                     -> new Access new Literal 'prototype'
     o 'Index'
   ]
@@ -320,7 +336,7 @@ grammar =
 
   # A reference to a property on *this*.
   ThisProperty: [
-    o '@ Identifier',                           -> Value.wrap new Literal('this'), [new Access($2)], 'this'
+    o '@ Identifier',                           -> Value.wrap LOCDATA(1)(new Literal('this')), [LOCDATA(2)(new Access($2))], 'this'
   ]
 
   # The array literal.
@@ -384,7 +400,7 @@ grammar =
   # A catch clause names its error and runs a block of code.
   Catch: [
     o 'CATCH Identifier Block',                 -> [$2, $3]
-    o 'CATCH Object Block',                     -> [Value.wrap($2), $3]
+    o 'CATCH Object Block',                     -> [LOCDATA(2)(Value.wrap($2)), $3]
   ]
 
   # Throw an exception object.
@@ -413,14 +429,14 @@ grammar =
   # or postfix, with a single expression. There is no do..while.
   While: [
     o 'WhileSource Block',                      -> $1.addBody $2
-    o 'Statement  WhileSource',                 -> $2.addBody Block.wrap [$1]
-    o 'Expression WhileSource',                 -> $2.addBody Block.wrap [$1]
+    o 'Statement  WhileSource',                 -> $2.addBody LOCDATA(1) Block.wrap([$1])
+    o 'Expression WhileSource',                 -> $2.addBody LOCDATA(1) Block.wrap([$1])
     o 'Loop',                                   -> $1
   ]
 
   Loop: [
-    o 'LOOP Block',                             -> new While(new Literal 'true').addBody $2
-    o 'LOOP Expression',                        -> new While(new Literal 'true').addBody Block.wrap [$2]
+    o 'LOOP Block',                             -> new While(LOCDATA(1) new Literal 'true').addBody $2
+    o 'LOOP Expression',                        -> new While(LOCDATA(1) new Literal 'true').addBody LOCDATA(2) Block.wrap [$2]
   ]
 
   # Array, object, and range comprehensions, at the most generic level.
@@ -433,7 +449,7 @@ grammar =
   ]
 
   ForBody: [
-    o 'FOR Range',                              -> source: Value.wrap($2)
+    o 'FOR Range',                              -> source: LOCDATA(2) Value.wrap($2)
     o 'ForStart ForSource',                     -> $2.own = $1.own; $2.name = $1[0]; $2.index = $1[1]; $2
   ]
 
@@ -503,8 +519,8 @@ grammar =
   If: [
     o 'IfBlock'
     o 'IfBlock ELSE Block',                     -> $1.addElse $3
-    o 'Statement  POST_IF Expression',          -> new If $3, Block.wrap([$1]), type: $2, statement: true
-    o 'Expression POST_IF Expression',          -> new If $3, Block.wrap([$1]), type: $2, statement: true
+    o 'Statement  POST_IF Expression',          -> new If $3, LOCDATA(1)(Block.wrap [$1]), type: $2, statement: true
+    o 'Expression POST_IF Expression',          -> new If $3, LOCDATA(1)(Block.wrap [$1]), type: $2, statement: true
   ]
 
   # Arithmetic and logical operators, working on one or more operands.
