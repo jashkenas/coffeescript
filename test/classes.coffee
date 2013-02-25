@@ -119,22 +119,22 @@ test "basic classes, again, but in the manual prototype style", ->
 
 test "super with plain ol' functions as the original constructors", ->
 
-TopClass = (arg) ->
-  @prop = 'top-' + arg
-  this
+  TopClass = (arg) ->
+    @prop = 'top-' + arg
+    this
 
-SuperClass = (arg) ->
-  super 'super-' + arg
-  this
+  SuperClass = (arg) ->
+    super 'super-' + arg
+    this
 
-SubClass = ->
-  super 'sub'
-  this
+  SubClass = ->
+    super 'sub'
+    this
 
-SuperClass extends TopClass
-SubClass extends SuperClass
+  SuperClass extends TopClass
+  SubClass extends SuperClass
 
-ok (new SubClass).prop is 'top-super-sub'
+  ok (new SubClass).prop is 'top-super-sub'
 
 
 test "'@' referring to the current instance, and not being coerced into a call", ->
