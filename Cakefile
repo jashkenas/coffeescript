@@ -67,7 +67,11 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
   build ->
     build ->
       csPath = './lib/coffee-script'
-      delete require.cache[require.resolve csPath]
+      csDir  = path.dirname require.resolve csPath
+
+      for mod of require.cache when csDir is mod[0 ... csDir.length]
+        delete require.cache[mod]
+
       unless runTests require csPath
         process.exit 1
 

@@ -309,7 +309,7 @@ exports.Lexer = class Lexer
         @outdebt -= @indents[len]
         moveOut  -= @indents[len]
       else
-        dent = @indents.pop() - @outdebt
+        dent = @indents.pop() + @outdebt
         moveOut -= dent
         @outdebt = 0
         @pair 'OUTDENT'
