@@ -15,7 +15,7 @@ exports.CompilerError = class CompilerError extends Error
   # showing where the error is.
   # TODO: tests
   prettyMessage: (fileName, code) ->
-    message = "#{fileName}:#{@startLine}:#{@startColumn}: #{@message}"
+    message = "#{fileName}:#{@startLine}:#{@startColumn}: error: #{@message}"
     if @startLine is @endLine
       errorLine = code.split('\n')[@startLine - 1]
       errorLength = @endColumn - @startColumn + 1

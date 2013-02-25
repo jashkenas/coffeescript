@@ -6,11 +6,12 @@
 # If included on a webpage, it will automatically sniff out, compile, and
 # execute all scripts present in `text/coffeescript` tags.
 
-fs        = require 'fs'
-path      = require 'path'
-{Lexer}   = require './lexer'
-{parser}  = require './parser'
-vm        = require 'vm'
+fs              = require 'fs'
+path            = require 'path'
+{Lexer}         = require './lexer'
+{parser}        = require './parser'
+{CompilerError} = require './error'
+vm              = require 'vm'
 
 # The file extensions that are considered to be CoffeeScript.
 extensions = ['.coffee', '.litcoffee']
@@ -135,4 +136,13 @@ parser.lexer =
   upcomingInput: ->
     ""
 
+# Make all the AST nodes visible to the parser.
 parser.yy = require './nodes'
+
+# Override Jison's default error handling function.
+parser.yy.parseError = (message, {loc, token}) ->
+  # Disregard Jison's message, it contains redundant line numer information.
+  message = "unexpected #{token}"
+
+  {first_line, first_column, last_line, last_column} = loc
+  throw new CompilerError message, first_line + 1, first_column + 1, last_line + 1, last_column + 1
