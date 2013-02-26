@@ -141,5 +141,9 @@ parser.yy.parseError = (message, {loc, token}) ->
   # Disregard Jison's message, it contains redundant line numer information.
   message = "unexpected #{token}"
 
+  # FIXME The `loc` received does not correspond to the `token` token, but to
+  # the one before it instead. That's why the test in error_messages.coffee is
+  # failing. There should be a way to get the location data... maybe accessing
+  # the lexer's tokens?
   {first_line, first_column, last_line, last_column} = loc
   throw new CompilerError message, first_line, first_column, last_line, last_column
