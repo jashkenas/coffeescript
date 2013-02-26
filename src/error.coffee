@@ -24,4 +24,8 @@ exports.CompilerError = class CompilerError extends Error
     else
       # TODO: How do we show multi-line errors?
       undefined
+
+    # Uncomment to add stacktrace.
+    #message += "\n#{@stack}"
+
     message
