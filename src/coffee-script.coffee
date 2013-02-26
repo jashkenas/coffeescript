@@ -137,13 +137,13 @@ parser.lexer =
 parser.yy = require './nodes'
 
 # Override Jison's default error handling function.
-parser.yy.parseError = (message, {loc, token}) ->
+parser.yy.parseError = (message, {token}) ->
   # Disregard Jison's message, it contains redundant line numer information.
   message = "unexpected #{token}"
 
-  # FIXME The `loc` received does not correspond to the `token` token, but to
-  # the one before it instead. That's why the test in error_messages.coffee is
-  # failing. There should be a way to get the location data... maybe accessing
-  # the lexer's tokens?
-  {first_line, first_column, last_line, last_column} = loc
+  # The second argument has a `loc` property, which should have the location
+  # data for this token. Unfortunately, Jison seems to send an outdated `loc`
+  # (from the previous token), so we take the location information directly
+  # from the lexer.
+  {first_line, first_column, last_line, last_column} = parser.lexer.yylloc
   throw new CompilerError message, first_line, first_column, last_line, last_column

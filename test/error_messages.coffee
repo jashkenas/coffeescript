@@ -20,13 +20,12 @@ test "lexer errors formating", ->
                       ^
   '''
 
-# FIXME Test not passing. See "parser.yy.parseError" in coffee-script.coffee
 test "parser error formating", ->
   assertErrorFormat '''
     foo in bar or in baz
   ''',
   '''
-    test.coffee:1:12: error: unexpected RELATION
+    test.coffee:1:15: error: unexpected RELATION
     foo in bar or in baz
                   ^^
   '''
