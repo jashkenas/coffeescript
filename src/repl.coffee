@@ -15,9 +15,9 @@ replDefaults =
     # TODO: fix #1829: pass in-scope vars and avoid accidentally shadowing them by omitting those declarations
     try
       js = CoffeeScript.compile "_=(#{input}\n)", {filename, bare: yes}
+      cb null, vm.runInContext(js, context, filename)
     catch err
       cb err
-    cb null, vm.runInContext(js, context, filename)
 
 addMultilineHandler = (repl) ->
   {rli, inputStream, outputStream} = repl
