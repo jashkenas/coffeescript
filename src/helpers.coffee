@@ -12,8 +12,14 @@ exports.ends = (string, literal, back) ->
   literal is string.substr string.length - len - (back or 0), len
 
 # Repeat a string `n` times.
-exports.repeat = (string, n) ->
-  (Array n + 1).join string
+exports.repeat = (str, n) ->
+  # Use clever algorithm to have O(lon(n)) string concatenation operations
+  res = ''
+  while n > 0
+    res += str if n & 1
+    n >>>= 1
+    str += str
+  res
 
 # Trim out all falsy values from an array.
 exports.compact = (array) ->
