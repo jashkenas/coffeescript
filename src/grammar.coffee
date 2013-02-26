@@ -193,9 +193,15 @@ grammar =
 
   # CoffeeScript has two different symbols for functions. `->` is for ordinary
   # functions, and `=>` is for functions bound to the current value of *this*.
+  #
+  # Two additional symbols exist for defining a "procedure" - a function that
+  # does not implicitly return a value. These are `->>` and `=>>`; they operate
+  # in the same manner as the two function symbols.
   FuncGlyph: [
     o '->',                                     -> 'func'
     o '=>',                                     -> 'boundfunc'
+    o '->>',                                    -> 'procedure'
+    o '=>>',                                    -> 'boundprocedure'
   ]
 
   # An optional, trailing comma.

@@ -225,3 +225,15 @@ test "#1435 Indented property access", ->
             rec.rec()
           .rec()
     1
+
+test "procedures do not implicitly return a value", ->
+  a = ->> yes
+  eq undefined, a()
+
+test "procedures can manually return a value", ->
+  a = ->> return yes
+  eq yes, a()
+
+test "bound procedures retain their \"this\" context", ->
+  a = =>> return this
+  eq this, a()
