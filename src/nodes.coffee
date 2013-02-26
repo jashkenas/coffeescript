@@ -963,13 +963,6 @@ exports.Class = class Class extends Base
     @ctor.klass    = null
     @ctor.noReturn = yes
 
-    # Prevent constructor from returning a value.
-    returnExpr = null
-    @ctor.body.traverseChildren no, (node) ->
-      return no if node instanceof Return and (returnExpr = node.expression)
-    if returnExpr
-      throw SyntaxError "cannot return a value from a constructor: \"#{returnExpr.compileNode o}\" in class #{name}"
-
   # Instead of generating the JavaScript string directly, we build up the
   # equivalent syntax tree and compile that, in pieces. You can see the
   # constructor, property assignments, and inheritance getting built out below.
@@ -1225,6 +1218,12 @@ exports.Code = class Code extends Base
         @bound = @context = o.scope.parent.method.context
       else if not @static
         o.scope.parent.assign '_this', 'this'
+    if @noReturn
+      returnExpr = null
+      @body.traverseChildren no, (node) ->
+        return no if node instanceof Return and (returnExpr = node.expression)
+      if returnExpr
+        throw SyntaxError 'cannot return a value from a constructor or procedure.'
     idt   = o.indent
     code  = 'function'
     code  += ' ' + @name if @ctor

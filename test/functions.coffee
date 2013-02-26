@@ -230,10 +230,18 @@ test "procedures do not implicitly return a value", ->
   a = ->> yes
   eq undefined, a()
 
-test "procedures can manually return a value", ->
-  a = ->> return yes
-  eq yes, a()
+test "returning a value from a procedure throws a syntax error", ->
+  throws -> CoffeeScript.run "a = ->> return yes", bare: yes
+
+test "procedures can return without returning a value", ->
+  passes = null
+  a = ->>
+    passes = yes
+    return
+    passes = no
+  a()
+  eq passes, true
 
 test "bound procedures retain their \"this\" context", ->
-  a = =>> return this
-  eq this, a()
+  that = this
+  a = =>> eq this, that
