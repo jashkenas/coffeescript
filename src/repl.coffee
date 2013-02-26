@@ -11,7 +11,7 @@ replDefaults =
     # strip single-line comments
     input = input.replace /(^|[\r\n]+)(\s*)##?(?:[^#\r\n][^\r\n]*|)($|[\r\n])/, '$1$2$3'
     # empty command
-    return cb null if /^(\()?\s*(\n\))?$/.test input
+    return cb null if /^(\s*|\(\s*\))$/.test input
     # TODO: fix #1829: pass in-scope vars and avoid accidentally shadowing them by omitting those declarations
     try
       js = CoffeeScript.compile "_=(#{input}\n)", {filename, bare: yes}
