@@ -57,15 +57,15 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
   )
 
 
-task 'build', 'build the CoffeeScript language from source', build = (cb) ->
+task 'build', 'build the CoffeeScript language from source', (options, cb) ->
   files = fs.readdirSync 'src'
   files = ('src/' + file for file in files when file.match(/\.(lit)?coffee$/))
   run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
 
 
 task 'build:full', 'rebuild the source twice, and run the tests', ->
-  build ->
-    build ->
+  invoke 'build', ->
+    invoke 'build', ->
       csPath = './lib/coffee-script'
       csDir  = path.dirname require.resolve csPath
 
