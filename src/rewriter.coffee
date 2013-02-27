@@ -68,12 +68,15 @@ class exports.Rewriter
       tokens.splice i, 1
       0
 
-  # Tag postfix returns as a separate token
+  # Tag postfix returns as a separate token, while preserving location
+  # information
   tagPostfixReturns: ->
     @scanTokens (token, i, tokens) ->
       return 1 unless token[0] is 'LOGIC' and token[1] is '&&' and @tag(i + 1) is 'RETURN'
+      tokens[i + 1][0] = 'POST_RETURN'
+      tokens[i + 1][2].first_line   = tokens[i][2].first_line
+      tokens[i + 1][2].first_column = tokens[i][2].first_column
       tokens.splice i, 1
-      tokens[i][0] = 'POST_RETURN'
       0
 
   # The lexer has tagged the opening parenthesis of a method call. Match it with
