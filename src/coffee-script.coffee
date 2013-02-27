@@ -140,10 +140,8 @@ parser.yy = require './nodes'
 parser.yy.parseError = (message, {token}) ->
   # Disregard Jison's message, it contains redundant line numer information.
   message = "unexpected #{token}"
-
   # The second argument has a `loc` property, which should have the location
   # data for this token. Unfortunately, Jison seems to send an outdated `loc`
   # (from the previous token), so we take the location information directly
   # from the lexer.
-  {first_line, first_column, last_line, last_column} = parser.lexer.yylloc
-  throw new CompilerError message, first_line, first_column, last_line, last_column
+  throw CompilerError.fromLocationData message, parser.lexer.yylloc

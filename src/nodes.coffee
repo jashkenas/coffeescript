@@ -163,8 +163,7 @@ exports.Base = class Base
 
   # Throw a compiler error associated with this node's location.
   error: (message) ->
-    {first_line, first_column, last_line, last_column} = @locationData
-    throw new CompilerError message, first_line, first_column, last_line, last_column
+    throw CompilerError.fromLocationData message, @locationData
 
 #### Block
 

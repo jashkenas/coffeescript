@@ -10,6 +10,10 @@ exports.CompilerError = class CompilerError extends Error
     # Add a stack trace in V8.
     Error.captureStackTrace? @, CompilerError
 
+  # Creates a CompilerError from a given locationData.
+  @fromLocationData = (message, {first_line, first_column, last_line, last_column}) ->
+    new CompilerError message, first_line, first_column, last_line, last_column
+
   # Creates a nice error message like, following the "standard" format
   # <filename>:<line>:<col>: <message> plus the line with the error and a marker
   # showing where the error is.
