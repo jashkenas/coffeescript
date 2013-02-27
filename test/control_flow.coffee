@@ -432,8 +432,10 @@ test "Throw should be usable as an expression.", ->
 test "Postfix return statements should combine with expressions.", ->
 
   passes = null
+  pass   = -> passes = yes
+
   do ->
-    passes = yes and return
+    pass() then return
     passes = no
 
   ok passes
@@ -442,8 +444,10 @@ test "Postfix return statements should combine with expressions.", ->
 test "Postfix return statements should nest under postfix conditionals", ->
 
   passes = null
+  pass   = -> passes = yes
+
   do ->
-    passes = yes and return if not passes?
+    pass() then return if not passes?
     passes = no
 
   ok passes
