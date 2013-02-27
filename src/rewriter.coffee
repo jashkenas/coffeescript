@@ -20,6 +20,7 @@ class exports.Rewriter
   rewrite: (@tokens) ->
     @removeLeadingNewlines()
     @removeMidExpressionNewlines()
+    @tagPostfixReturns()
     @closeOpenCalls()
     @closeOpenIndexes()
     @addImplicitIndentation()
@@ -64,6 +65,22 @@ class exports.Rewriter
   removeMidExpressionNewlines: ->
     @scanTokens (token, i, tokens) ->
       return 1 unless token[0] is 'TERMINATOR' and @tag(i + 1) in EXPRESSION_CLOSE
+      tokens.splice i, 1
+      0
+
+  # Tag postfix returns as a separate token, while preserving location
+  # information
+  tagPostfixReturns: ->
+    insideOpExpr = no
+    @scanTokens (token, i, tokens) ->
+      insideOpExpr = yes if token[0] in CONDITIONAL_OPERATIONS
+      insideOpExpr = no if token[0] is 'INDENT'
+      unless not insideOpExpr and token[0] is 'THEN' and @tag(i + 1) is 'RETURN'
+        insideOpExpr = no if token[0] is 'THEN'
+        return 1
+      tokens[i + 1][0] = 'POST_RETURN'
+      tokens[i + 1][2].first_line   = tokens[i][2].first_line
+      tokens[i + 1][2].first_column = tokens[i][2].first_column
       tokens.splice i, 1
       0
 
@@ -330,7 +347,7 @@ IMPLICIT_UNSPACED_CALL = ['+', '-']
 IMPLICIT_BLOCK   = ['->', '=>', '{', '[', ',']
 
 # Tokens that always mark the end of an implicit call for single-liners.
-IMPLICIT_END     = ['POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY', 'LOOP', 'TERMINATOR']
+IMPLICIT_END     = ['POST_IF', 'POST_RETURN', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY', 'LOOP', 'TERMINATOR']
 
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.
@@ -339,3 +356,7 @@ SINGLE_CLOSERS   = ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADIN
 
 # Tokens that end a line.
 LINEBREAKS       = ['TERMINATOR', 'INDENT', 'OUTDENT']
+
+# Tokens that denote operations that work from a conditional and return a
+# value - loops, conditionals, etc.
+CONDITIONAL_OPERATIONS = [ 'IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'CATCH' ]

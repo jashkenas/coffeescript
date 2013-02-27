@@ -69,8 +69,7 @@ test "nested single-line conditionals", ->
   eq nonce, c
 
   d = if true then id(if false then undefined else nonce)
-  eq nonce, d
-
+  eq nonce, d 
 test "empty conditional bodies", ->
   eq undefined, (if false
   else if false
@@ -428,3 +427,27 @@ test "Throw should be usable as an expression.", ->
     throw new Error 'failed'
   catch e
     ok e is 'up'
+
+
+test "Postfix return statements should combine with expressions.", ->
+
+  passes = null
+  pass   = -> passes = yes
+
+  do ->
+    pass() then return
+    passes = no
+
+  ok passes
+
+
+test "Postfix return statements should nest under postfix conditionals", ->
+
+  passes = null
+  pass   = -> passes = yes
+
+  do ->
+    pass() then return if not passes?
+    passes = no
+
+  ok passes

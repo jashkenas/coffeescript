@@ -176,6 +176,7 @@ grammar =
   Return: [
     o 'RETURN Expression',                      -> new Return $2
     o 'RETURN',                                 -> new Return
+    o 'Expression POST_RETURN',                 -> new Return $1, true
   ]
 
   # A block comment.
@@ -593,6 +594,7 @@ operators = [
   ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
   ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
   ['right',     'POST_IF']
+  ['right',     'POST_RETURN']
 ]
 
 # Wrapping Up
