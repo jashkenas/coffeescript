@@ -558,3 +558,15 @@ test "#2617: implicit call before unrelated implicit object", ->
   result = if pass 1
     one: 1
   eq result.one, 1
+
+test "#2715: nested call arguments on a new line", ->
+  template = (context) ->
+    '<html>'
+
+  update = (html) ->
+    null
+
+  update template variable: 42
+
+  update template
+    variable: 42
