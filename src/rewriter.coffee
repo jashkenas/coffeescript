@@ -344,4 +344,4 @@ LINEBREAKS       = ['TERMINATOR', 'INDENT', 'OUTDENT']
 
 # Tokens that denote operations that work from a conditional and return a
 # value - loops, conditionals, etc.
-CONDITIONAL_OPERATIONS = [ 'IF', 'FOR', 'WHILE', 'UNTIL' ]
+CONDITIONAL_OPERATIONS = [ 'IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'CATCH' ]
