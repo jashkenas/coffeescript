@@ -154,7 +154,7 @@ class exports.Rewriter
   # deal with them.
   addImplicitParentheses: ->
 
-    noCall = seenSingle = seenControl = no
+    noCall = seenSingle = seenControl = insideOpExpr = no
     callIndex = null
 
     condition = (token, i) ->
@@ -167,7 +167,7 @@ class exports.Rewriter
         (tag is 'INDENT' and not seenControl)) and
         (tag isnt 'INDENT' or
           (@tag(i - 2) not in ['CLASS', 'EXTENDS'] and @tag(i - 1) not in IMPLICIT_BLOCK and
-          not (callIndex is i - 1 and (post = @tokens[i + 1]) and post.generated and post[0] is '{')))
+          not ((not insideOpExpr or callIndex is i - 1) and (post = @tokens[i + 1]) and post.generated and post[0] is '{')))
 
     action = (token, i) ->
       @tokens.splice i, 0, @generate 'CALL_END', ')'
@@ -179,10 +179,12 @@ class exports.Rewriter
       callObject  = not noCall and tag is 'INDENT' and
                     next and next.generated and next[0] is '{' and
                     prev and prev[0] in IMPLICIT_FUNC
-      seenSingle  = no
-      seenControl = no
-      noCall      = no if tag in LINEBREAKS
-      token.call  = yes if prev and not prev.spaced and tag is '?'
+      seenSingle   = no
+      seenControl  = no
+      noCall       = no if tag in LINEBREAKS
+      insideOpExpr = yes if tag in CONDITIONAL_OPERATIONS
+      insideOpExpr = no if tag is 'INDENT'
+      token.call   = yes if prev and not prev.spaced and tag is '?'
       return 1 if token.fromThen
       return 1 unless callObject or
         prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
@@ -339,3 +341,7 @@ SINGLE_CLOSERS   = ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADIN
 
 # Tokens that end a line.
 LINEBREAKS       = ['TERMINATOR', 'INDENT', 'OUTDENT']
+
+# Tokens that denote operations that work from a conditional and return a
+# value - loops, conditionals, etc.
+CONDITIONAL_OPERATIONS = [ 'IF', 'FOR', 'WHILE', 'UNTIL' ]
