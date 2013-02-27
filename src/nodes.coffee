@@ -363,7 +363,7 @@ class exports.Bool extends Base
 # A `return` is a *pureStatement* -- wrapping it in a closure wouldn't
 # make sense.
 exports.Return = class Return extends Base
-  constructor: (expr) ->
+  constructor: (expr, @postfix) ->
     @expression = expr if expr and not expr.unwrap().isUndefined
 
   children: ['expression']
@@ -373,11 +373,17 @@ exports.Return = class Return extends Base
   jumps:           THIS
 
   compile: (o, level) ->
-    expr = @expression?.makeReturn()
-    if expr and expr not instanceof Return then expr.compile o, level else super o, level
+    unless @postfix
+      expr = @expression?.makeReturn()
+      if expr and expr not instanceof Return then expr.compile o, level else super o, level
+    else
+      super o, level
 
   compileNode: (o) ->
-    @tab + "return#{[" #{@expression.compile o, LEVEL_PAREN}" if @expression]};"
+    unless @postfix
+      @tab + "return#{[" #{@expression.compile o, LEVEL_PAREN}" if @expression]};"
+    else
+      "#{(new Block [@expression]).compile o}\n#{@tab}return;"
 
 #### Value
 

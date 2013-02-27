@@ -20,6 +20,7 @@ class exports.Rewriter
   rewrite: (@tokens) ->
     @removeLeadingNewlines()
     @removeMidExpressionNewlines()
+    @tagPostfixReturns()
     @closeOpenCalls()
     @closeOpenIndexes()
     @addImplicitIndentation()
@@ -65,6 +66,14 @@ class exports.Rewriter
     @scanTokens (token, i, tokens) ->
       return 1 unless token[0] is 'TERMINATOR' and @tag(i + 1) in EXPRESSION_CLOSE
       tokens.splice i, 1
+      0
+
+  # Tag postfix returns as a separate token
+  tagPostfixReturns: ->
+    @scanTokens (token, i, tokens) ->
+      return 1 unless token[0] is 'LOGIC' and token[1] is '&&' and @tag(i + 1) is 'RETURN'
+      tokens.splice i, 1
+      tokens[i][0] = 'POST_RETURN'
       0
 
   # The lexer has tagged the opening parenthesis of a method call. Match it with
@@ -330,7 +339,7 @@ IMPLICIT_UNSPACED_CALL = ['+', '-']
 IMPLICIT_BLOCK   = ['->', '=>', '{', '[', ',']
 
 # Tokens that always mark the end of an implicit call for single-liners.
-IMPLICIT_END     = ['POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY', 'LOOP', 'TERMINATOR']
+IMPLICIT_END     = ['POST_IF', 'POST_RETURN', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY', 'LOOP', 'TERMINATOR']
 
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.
