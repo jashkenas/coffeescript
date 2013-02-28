@@ -123,7 +123,7 @@ exports.Base = class Base
       child.traverseChildren crossScope, func
 
   invert: ->
-    Op.create '!', this
+    new Op '!', this
 
   unwrapAll: ->
     node = this
@@ -384,15 +384,12 @@ exports.Return = class Return extends Base
 # A value, variable or literal or parenthesized, indexed or dotted into,
 # or vanilla.
 exports.Value = class Value extends Base
-  @wrap: (base, props, tag) ->
-    if not props and base instanceof Value
-      base
-    else
-      new Value base, props, tag
-
-  constructor: (@base, @properties, tag) ->
-    @properties or= []
-    @this = true if tag is 'this'
+  constructor: (base, props, tag) ->
+    return base if not props and base instanceof Value
+    @base       = base
+    @properties = props or []
+    @[tag]      = true if tag
+    return this
 
   children: ['base', 'properties']
 
@@ -438,16 +435,16 @@ exports.Value = class Value extends Base
     name = last @properties
     if @properties.length < 2 and not @base.isComplex() and not name?.isComplex()
       return [this, this]  # `a` `a.b`
-    base = Value.wrap @base, @properties[...-1]
+    base = new Value @base, @properties[...-1]
     if base.isComplex()  # `a().b`
       bref = new Literal o.scope.freeVariable 'base'
-      base = Value.wrap new Parens new Assign bref, base
+      base = new Value new Parens new Assign bref, base
     return [base, bref] unless name  # `a()`
     if name.isComplex()  # `a[b()]`
       nref = new Literal o.scope.freeVariable 'name'
       name = new Index new Assign nref, name.index
       nref = new Index nref
-    [base.add(name), Value.wrap(bref or base.base, [nref or name])]
+    [base.add(name), new Value(bref or base.base, [nref or name])]
 
   # We compile a value to JavaScript by compiling and joining each property.
   # Things get much more interesting if the chain of properties has *soak*
@@ -469,8 +466,8 @@ exports.Value = class Value extends Base
         return ifn
       for prop, i in @properties when prop.soak
         prop.soak = off
-        fst = Value.wrap @base, @properties[...i]
-        snd = Value.wrap @base, @properties[i..]
+        fst = new Value @base, @properties[...i]
+        snd = new Value @base, @properties[i..]
         if fst.isComplex()
           ref = new Literal o.scope.freeVariable 'ref'
           fst = new Parens new Assign ref, fst
@@ -525,7 +522,7 @@ exports.Call = class Call extends Base
       accesses = [new Access(new Literal '__super__')]
       accesses.push new Access new Literal 'constructor' if method.static
       accesses.push new Access new Literal name
-      (Value.wrap (new Literal method.klass), accesses).compile o
+      (new Value (new Literal method.klass), accesses).compile o
     else
       "#{name}.__super__.constructor"
 
@@ -539,14 +536,14 @@ exports.Call = class Call extends Base
     if @soak
       if @variable
         return ifn if ifn = unfoldSoak o, this, 'variable'
-        [left, rite] = Value.wrap(@variable).cacheReference o
+        [left, rite] = new Value(@variable).cacheReference o
       else
         left = new Literal @superReference o
-        rite = Value.wrap left
+        rite = new Value left
       rite = new Call rite, @args
       rite.isNew = @isNew
       left = new Literal "typeof #{ left.compile o } === \"function\""
-      return new If left, Value.wrap(rite), soak: yes
+      return new If left, new Value(rite), soak: yes
     call = this
     list = []
     loop
@@ -592,7 +589,7 @@ exports.Call = class Call extends Base
         #{idt}return Object(result) === result ? result : child;
         #{@tab}})(#{ @variable.compile o, LEVEL_LIST }, #{splatArgs}, function(){})
       """
-    base = Value.wrap @variable
+    base = new Value @variable
     if (name = base.properties.pop()) and base.isComplex()
       ref = o.scope.freeVariable 'ref'
       fun = "(#{ref} = #{ base.compile o, LEVEL_LIST })#{ name.compile o }"
@@ -618,7 +615,7 @@ exports.Extends = class Extends extends Base
 
   # Hooks one constructor into another's prototype chain.
   compile: (o) ->
-    new Call(Value.wrap(new Literal utility 'extends'), [@child, @parent]).compile o
+    new Call(new Value(new Literal utility 'extends'), [@child, @parent]).compile o
 
 #### Access
 
@@ -873,7 +870,7 @@ exports.Class = class Class extends Base
   # constructor.
   addBoundFunctions: (o) ->
     for bvar in @boundFuncs
-      lhs = (Value.wrap (new Literal "this"), [new Access bvar]).compile o
+      lhs = (new Value (new Literal "this"), [new Access bvar]).compile o
       @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
     return
 
@@ -902,7 +899,7 @@ exports.Class = class Class extends Base
             if func.bound
               func.context = name
           else
-            assign.variable = Value.wrap(new Literal(name), [(new Access new Literal 'prototype'), new Access base ])
+            assign.variable = new Value(new Literal(name), [(new Access new Literal 'prototype'), new Access base ])
             if func instanceof Code and func.bound
               @boundFuncs.push base
               func.bound = no
@@ -931,22 +928,16 @@ exports.Class = class Class extends Base
 
   # Make sure that a constructor is defined for the class, and properly
   # configured.
-  ensureConstructor: (name, o) ->
+  ensureConstructor: (name) ->
     if not @ctor
       @ctor = new Code
       @ctor.body.push new Literal "#{name}.__super__.constructor.apply(this, arguments)" if @parent
       @ctor.body.push new Literal "#{@externalCtor}.apply(this, arguments)" if @externalCtor
+      @ctor.body.makeReturn()
       @body.expressions.unshift @ctor
     @ctor.ctor     = @ctor.name = name
     @ctor.klass    = null
     @ctor.noReturn = yes
-
-    # Prevent constructor from returning a value.
-    returnExpr = null
-    @ctor.body.traverseChildren no, (node) ->
-      return no if node instanceof Return and (returnExpr = node.expression)
-    if returnExpr
-      throw SyntaxError "cannot return a value from a constructor: \"#{returnExpr.compileNode o}\" in class #{name}"
 
   # Instead of generating the JavaScript string directly, we build up the
   # equivalent syntax tree and compile that, in pieces. You can see the
@@ -960,7 +951,7 @@ exports.Class = class Class extends Base
     @hoistDirectivePrologue()
     @setContext name
     @walkBody name, o
-    @ensureConstructor name, o
+    @ensureConstructor name
     @body.spaced = yes
     @body.expressions.unshift @ctor unless @ctor instanceof Code
     @body.expressions.push lname
@@ -1051,7 +1042,7 @@ exports.Assign = class Assign extends Base
         else
           new Literal 0
       acc   = IDENTIFIER.test idx.unwrap().value or 0
-      value = Value.wrap value
+      value = new Value value
       value.properties.push new (if acc then Access else Index) idx
       if obj.unwrap().value in RESERVED
         throw new SyntaxError "assignment to a reserved word: #{obj.compile o} = #{value.compile o}"
@@ -1072,7 +1063,7 @@ exports.Assign = class Assign extends Base
         else
           # A shorthand `{a, b, @c} = val` pattern-match.
           if obj.base instanceof Parens
-            [obj, idx] = Value.wrap(obj.unwrapAll()).cacheReference o
+            [obj, idx] = new Value(obj.unwrapAll()).cacheReference o
           else
             idx = if obj.this then obj.properties[0].name else obj
       if not splat and obj instanceof Splat
@@ -1097,7 +1088,7 @@ exports.Assign = class Assign extends Base
           acc = no
         else
           acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
-        val = Value.wrap new Literal(vvar), [new (if acc then Access else Index) idx]
+        val = new Value new Literal(vvar), [new (if acc then Access else Index) idx]
       if name? and name in RESERVED
         throw new SyntaxError "assignment to a reserved word: #{obj.compile o} = #{val.compile o}"
       assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compile o, LEVEL_LIST
@@ -1115,7 +1106,7 @@ exports.Assign = class Assign extends Base
            left.base.value != "this" and not o.scope.check left.base.value
       throw new Error "the variable \"#{left.base.value}\" can't be assigned with #{@context} because it has not been defined."
     if "?" in @context then o.isExistentialEquals = true
-    Op.create(@context[...-1], left, new Assign(right, @value, '=') ).compile o
+    new Op(@context[...-1], left, new Assign(right, @value, '=') ).compile o
 
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
@@ -1173,19 +1164,19 @@ exports.Code = class Code extends Base
       for {name: p} in @params
         if p.this then p = p.properties[0].name
         if p.value then o.scope.add p.value, 'var', yes
-      splats = new Assign Value.wrap(new Arr(p.asReference o for p in @params)),
-                          Value.wrap new Literal 'arguments'
+      splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
+                          new Value new Literal 'arguments'
       break
     for param in @params
       if param.isComplex()
         val = ref = param.asReference o
-        val = Op.create '?', ref, param.value if param.value
-        exprs.push new Assign Value.wrap(param.name), val, '=', param: yes
+        val = new Op '?', ref, param.value if param.value
+        exprs.push new Assign new Value(param.name), val, '=', param: yes
       else
         ref = param
         if param.value
           lit = new Literal ref.name.value + ' == null'
-          val = new Assign Value.wrap(param.name), param.value, '='
+          val = new Assign new Value(param.name), param.value, '='
           exprs.push new If lit, val
       params.push ref unless splats
     wasEmpty = @body.isEmpty()
@@ -1246,7 +1237,7 @@ exports.Param = class Param extends Base
         node = new Literal o.scope.freeVariable node.value
     else if node.isComplex()
       node = new Literal o.scope.freeVariable 'arg'
-    node = Value.wrap node
+    node = new Value node
     node = new Splat node if @splat
     @reference = node
 
@@ -1390,19 +1381,18 @@ exports.While = class While extends Base
 # Simple Arithmetic and logical operations. Performs some conversion from
 # CoffeeScript operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
-  @create: (op, first, second, flip) ->
-    if op is 'in'
-      return new In first, second
+  constructor: (op, first, second, flip ) ->
+    return new In first, second if op is 'in'
     if op is 'do'
       return @generateDo first
     if op is 'new'
       return first.newInstance() if first instanceof Call and not first.do and not first.isNew
       first = new Parens first   if first instanceof Code and first.bound or first.do
-    return new Op op, first, second, flip
-
-  constructor: (op, @first, @second, flip ) ->
     @operator = CONVERSIONS[op] or op
+    @first    = first
+    @second   = second
     @flip     = !!flip
+    return this
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
   CONVERSIONS =
@@ -1455,12 +1445,12 @@ exports.Op = class Op extends Base
                                   fst.operator in ['!', 'in', 'instanceof']
       fst
     else
-      Op.create '!', this
+      new Op '!', this
 
   unfoldSoak: (o) ->
     @operator in ['++', '--', 'delete'] and unfoldSoak o, this, 'first'
 
-  @generateDo: (exp) ->
+  generateDo: (exp) ->
     passedParams = []
     func = if exp instanceof Assign and (ref = exp.value.unwrap()) instanceof Code
       ref
@@ -1789,7 +1779,7 @@ exports.For = class For extends While
                       val.properties[0].name?.value in ['call', 'apply'])
       fn    = val.base?.unwrapAll() or val
       ref   = new Literal o.scope.freeVariable 'fn'
-      base  = Value.wrap ref
+      base  = new Value ref
       if val.base
         [val.base, base] = [base, val]
       body.expressions[idx] = new Call base, expr.args
@@ -1937,7 +1927,7 @@ Closure =
       meth = new Literal if mentionsArgs then 'apply' else 'call'
       args = [new Literal 'this']
       args.push new Literal 'arguments' if mentionsArgs
-      func = Value.wrap func, [new Access meth]
+      func = new Value func, [new Access meth]
     func.noReturn = noReturn
     call = new Call func, args
     if statement then Block.wrap [call] else call
@@ -1954,7 +1944,7 @@ Closure =
 unfoldSoak = (o, parent, name) ->
   return unless ifn = parent[name].unfoldSoak o
   parent[name] = ifn.body
-  ifn.body = Value.wrap parent
+  ifn.body = new Value parent
   ifn
 
 # Constants
