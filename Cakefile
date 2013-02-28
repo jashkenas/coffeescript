@@ -1,8 +1,8 @@
 fs            = require 'fs'
 path          = require 'path'
-{extend}      = require './lib/coffee-script/helpers'
 CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
+helpers       = require './lib/coffee-script/helpers'
 
 # ANSI Terminal Colors.
 bold = red = green = reset = ''
@@ -77,7 +77,7 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
 
 
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
-  extend global, require('util')
+  helpers.extend global, require('util')
   require 'jison'
   parser = require('./lib/coffee-script/grammar').parser
   fs.writeFile 'lib/coffee-script/parser.js', parser.generate()
@@ -223,7 +223,7 @@ runTests = (CoffeeScript) ->
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
   for file in files when file.match /\.(lit)?coffee$/i
-    literate = path.extname(file) is '.litcoffee'
+    literate = helpers.isLiterate file
     currentFile = filename = path.join 'test', file
     code = fs.readFileSync filename
     try
