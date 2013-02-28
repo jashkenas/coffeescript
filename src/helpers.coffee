@@ -2,8 +2,6 @@
 # the **Lexer**, **Rewriter**, and the **Nodes**. Merge objects, flatten
 # arrays, count characters, that sort of thing.
 
-path = require 'path'
-
 # Peek at the beginning of a given string to see if it matches a sequence.
 exports.starts = (string, literal, start) ->
   literal is string.substr start, literal.length
@@ -99,9 +97,5 @@ exports.isCoffee = (file) -> /\.((lit)?coffee|coffee\.md)$/.test file
 
 # Determine if a filename represents a Literate CoffeeScript file.
 exports.isLiterate = (file) -> /\.(litcoffee|coffee\.md)$/.test file
-
-# Extract the basename from a source file name, accounting for all possible
-# CoffeeScript extensions.
-exports.getBasename = (file) -> path.basename file, file?.match?(/\.((lit)?coffee|coffee\.md)$/)?[0] or path.extname(file)
 
 
