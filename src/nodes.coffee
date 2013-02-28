@@ -33,7 +33,8 @@ PARANOID = false
 # came from.  CodeFragments can be assembled together into working code just by catting together
 # all the CodeFragments' `code` snippets, in order.
 exports.CodeFragment = class CodeFragment
-  constructor: (parent, @code) ->
+  constructor: (parent, code) ->
+    @code = "#{code}"
     @locationData = parent?.locationData
     @type = parent?.constructor?.name or 'unknown'
 

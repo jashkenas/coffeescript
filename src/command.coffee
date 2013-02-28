@@ -10,6 +10,7 @@ path           = require 'path'
 helpers        = require './helpers'
 optparse       = require './optparse'
 CoffeeScript   = require './coffee-script'
+sourcemap      = require './sourcemap'
 {spawn, exec}  = require 'child_process'
 {EventEmitter} = require 'events'
 
@@ -39,6 +40,7 @@ SWITCHES = [
   ['-i', '--interactive',     'run an interactive CoffeeScript REPL']
   ['-j', '--join [FILE]',     'concatenate the source CoffeeScript before compiling']
   ['-l', '--lint',            'pipe the compiled JavaScript through JavaScript Lint']
+  ['-m', '--maps',            'generate source map and save as .map files']
   ['-n', '--nodes',           'print out the parse tree that the parser produces']
   [      '--nodejs [ARGS]',   'pass options directly to the "node" binary']
   ['-o', '--output [DIR]',    'set the output directory for compiled JavaScript']
@@ -131,9 +133,11 @@ compileScript = (file, input, base) ->
       compileJoin()
     else
       t.output = CoffeeScript.compile t.input, t.options
+
       CoffeeScript.emit 'success', task
       if o.print          then printLine t.output.trim()
-      else if o.compile   then writeJs t.file, t.output, base
+      else if o.compile || o.maps
+        writeJs base, t.file, t.output, t.options.sourceMap
       else if o.lint      then lint t.file, t.output
   catch err
     CoffeeScript.emit 'failure', err, task
@@ -247,8 +251,8 @@ removeSource = (source, base, removeJs) ->
           timeLog "removed #{source}"
 
 # Get the corresponding output JavaScript path for a source file.
-outputPath = (source, base) ->
-  filename  = path.basename(source, path.extname(source)) + '.js'
+outputPath = (source, base, extension=".js") ->
+  filename  = path.basename(source, path.extname(source)) + extension
   srcDir    = path.dirname source
   baseDir   = if base is '.' then srcDir else srcDir.substring base.length
   dir       = if opts.output then path.join opts.output, baseDir else srcDir
@@ -257,16 +261,27 @@ outputPath = (source, base) ->
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
 # directory can be customized with `--output`.
-writeJs = (source, js, base) ->
-  jsPath = outputPath source, base
+#
+# If source maps were also requested, this will write `.map` files into the same
+# directory as the `.js` files.
+writeJs = (base, sourcePath, js, sourceMap = null) ->
+  jsPath = outputPath sourcePath, base
+  sourceMapPath = outputPath sourcePath, base, ".map"
+
   jsDir  = path.dirname jsPath
   compile = ->
-    js = ' ' if js.length <= 0
-    fs.writeFile jsPath, js, (err) ->
-      if err
-        printLine err.message
-      else if opts.compile and opts.watch
-        timeLog "compiled #{source}"
+    if opts.compile
+      js = ' ' if js.length <= 0
+      if sourceMap then js = "//@ sourceMappingURL=#{path.basename sourceMapPath}\n" + js
+      fs.writeFile jsPath, js, (err) ->
+        if err
+          printLine err.message
+        else if opts.compile and opts.watch
+          timeLog "compiled #{sourcePath}"
+    if sourceMap
+      fs.writeFile sourceMapPath, (sourcemap.generateV3SourceMap sourceMap), (err) ->
+        if err
+          printLine "Could not write source map: #{err.message}"
   exists jsDir, (itExists) ->
     if itExists then compile() else exec "mkdir -p #{jsDir}", compile
 
@@ -303,7 +318,7 @@ parseOptions = ->
   optionParser  = new optparse.OptionParser SWITCHES, BANNER
   o = opts      = optionParser.parse process.argv[2..]
   o.compile     or=  !!o.output
-  o.run         = not (o.compile or o.print or o.lint)
+  o.run         = not (o.compile or o.print or o.lint or o.maps)
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
   sources       = o.arguments
   sourceCode[i] = null for source, i in sources
@@ -312,7 +327,8 @@ parseOptions = ->
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (filename) ->
   literate = path.extname(filename) is '.litcoffee'
-  {filename, literate, bare: opts.bare, header: opts.compile}
+  sourceMap = if opts.maps then new sourcemap.SourceMap()
+  {filename, literate, sourceMap, bare: opts.bare, header: opts.compile}
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
 # the `node` binary, preserving the other options.
