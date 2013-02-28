@@ -180,7 +180,7 @@ class exports.Rewriter
 
       # Don't end an implicit call on next indent if any of these are in an argument
       if inImplicitCall() and tag in ['IF', 'TRY', 'FINALLY', 'CATCH',
-        'CLASS', 'SWITCH', 'CATCH']
+        'CLASS', 'SWITCH']
         stack.push ['CONTROL', i, ours: true]
         return forward(1)
 
