@@ -691,3 +691,30 @@ test "#2319: fn class n extends o.p [INDENT] x = 123", ->
     one: -> one
 
   eq new OneKeeper().one(), 1
+
+
+test "#2599: other typed constructors should be inherited", ->
+  class Base
+    constructor: -> return {}
+
+  class Derived extends Base
+
+  ok (new Derived) not instanceof Derived
+  ok (new Derived) not instanceof Base
+  ok (new Base) not instanceof Base
+
+test "#2359: extending native objects that use other typed constructors requires defining a constructor", ->
+  class BrokenArray extends Array
+    method: -> 'no one will call me'
+
+  brokenArray = new BrokenArray
+  ok brokenArray not instanceof BrokenArray
+  ok typeof brokenArray.method is 'undefined'
+
+  class WorkingArray extends Array
+    constructor: -> super
+    method: -> 'yes!'
+
+  workingArray = new WorkingArray
+  ok workingArray instanceof WorkingArray
+  eq 'yes!', workingArray.method()
