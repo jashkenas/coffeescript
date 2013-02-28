@@ -23,6 +23,12 @@ header = """
    */
 """
 
+# Build the CoffeeScript language from source.
+build = (cb) ->
+  files = fs.readdirSync 'src'
+  files = ('src/' + file for file in files when file.match(/\.(lit)?coffee$/))
+  run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
+
 # Run a CoffeeScript through our node/coffee interpreter.
 run = (args, cb) ->
   proc =         spawn 'node', ['bin/coffee'].concat(args)
@@ -57,11 +63,7 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
   )
 
 
-task 'build', 'build the CoffeeScript language from source', build = (cb) ->
-  files = fs.readdirSync 'src'
-  files = ('src/' + file for file in files when file.match(/\.(lit)?coffee$/))
-  run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
-
+task 'build', 'build the CoffeeScript language from source', build
 
 task 'build:full', 'rebuild the source twice, and run the tests', ->
   build ->
