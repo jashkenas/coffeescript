@@ -10,19 +10,17 @@ fs        = require 'fs'
 path      = require 'path'
 {Lexer}   = require './lexer'
 {parser}  = require './parser'
+helpers   = require './helpers'
 vm        = require 'vm'
-
-# The file extensions that are considered to be CoffeeScript.
-extensions = ['.coffee', '.litcoffee']
 
 # Load and run a CoffeeScript file for Node, stripping any `BOM`s.
 loadFile = (module, filename) ->
   raw = fs.readFileSync filename, 'utf8'
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
-  module._compile compile(stripped, {filename}), filename
+  module._compile compile(stripped, {filename, literate: helpers.isLiterate filename}), filename
 
 if require.extensions
-  for ext in extensions
+  for ext in ['.coffee', '.litcoffee', '.md', '.coffee.md']
     require.extensions[ext] = loadFile
 
 # The current CoffeeScript version number.
@@ -73,7 +71,7 @@ exports.run = (code, options = {}) ->
   mainModule.paths = require('module')._nodeModulePaths path.dirname fs.realpathSync options.filename
 
   # Compile.
-  if (path.extname(mainModule.filename) not in extensions) or require.extensions
+  if not helpers.isCoffee(mainModule.filename) or require.extensions
     mainModule._compile compile(code, options), mainModule.filename
   else
     mainModule._compile code, mainModule.filename
