@@ -605,15 +605,6 @@ test "#2297, Different behaviors on interpreting literal", ->
   eq xyzzy.four, 4
   eq xyzzy.h, 2
 
-  thud = foo
-    1
-    one: 1
-    two: 2
-    three: 3
-    2
-    3
-  eq thud.two, 2
-
 test "#2715, Chained implicit calls", ->
   first  = (x)    -> x
   second = (x, y) -> y
@@ -631,30 +622,6 @@ test "#2715, Chained implicit calls", ->
     2
   eq baz, 2
 
-  qux = first second
-    1
-    2
-    3
-    4
-  eq qux, 2
-
-
-test "More implicit calls", ->
-  first  = (x) -> x
-  second = (x, y) -> y
-
-  foo = no
-  if (first
-    yes)
-    foo = yes
-  eq foo, yes
-
-  foo = no
-  if not first
-    no
-    foo = yes
-  eq foo, no
-
 test "Implicit calls and new", ->
   first = (x) -> x
   foo = (@x) ->
@@ -662,12 +629,23 @@ test "Implicit calls and new", ->
   eq bar.x, 1
 
   third = (x, y, z) -> z
-  baz = first new foo
-    new
-      foo third
+  baz = first new foo new foo third
         one: 1
         two: 2
         1
         three: 3
         2
   eq baz.x.x.three, 3
+
+test "Loose tokens inside of explicit call lists", ->
+  first = (x) -> x
+  second = (x, y) -> y
+  one = 1
+
+  foo = second( one
+                2)
+  eq foo, 2
+
+  bar = first( first
+               one: 1)
+  eq bar.one, 1
