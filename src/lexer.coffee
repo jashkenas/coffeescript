@@ -441,6 +441,7 @@ exports.Lexer = class Lexer
         attempt = match[1]
         indent = attempt if indent is null or 0 < attempt.length < indent.length
     doc = doc.replace /// \n #{indent} ///g, '\n' if indent
+    doc = doc.replace /\n# \n/g, '\n\n' if @literate
     doc = doc.replace /^\n/, '' unless herecomment
     doc
 
