@@ -104,7 +104,7 @@ exports.Lexer = class Lexer
     return 0 unless match = IDENTIFIER.exec @chunk
     [input, id, colon] = match
 
-    # Preserve lenght of id for location data
+    # Preserve length of id for location data
     idLength = id.length
     poppedToken = undefined
 
@@ -350,7 +350,7 @@ exports.Lexer = class Lexer
         @outdebt -= @indents[len]
         moveOut  -= @indents[len]
       else
-        dent = @indents.pop() - @outdebt
+        dent = @indents.pop() + @outdebt
         moveOut -= dent
         @outdebt = 0
         @pair 'OUTDENT'
@@ -441,6 +441,7 @@ exports.Lexer = class Lexer
         attempt = match[1]
         indent = attempt if indent is null or 0 < attempt.length < indent.length
     doc = doc.replace /// \n #{indent} ///g, '\n' if indent
+    doc = doc.replace /\n# \n/g, '\n\n' if @literate
     doc = doc.replace /^\n/, '' unless herecomment
     doc
 
@@ -634,27 +635,24 @@ exports.Lexer = class Lexer
     else
       column += string.length
 
-    return [@chunkLine + lineCount, column]
+    [@chunkLine + lineCount, column]
 
   # Same as "token", exception this just returns the token without adding it
   # to the results.
-  makeToken: (tag, value, offsetInChunk, length) ->
-    offsetInChunk = offsetInChunk || 0
-    if length is undefined then length = value.length
-
+  makeToken: (tag, value, offsetInChunk = 0, length = value.length) ->
     locationData = {}
     [locationData.first_line, locationData.first_column] =
       @getLineAndColumnFromChunk offsetInChunk
 
     # Use length - 1 for the final offset - we're supplying the last_line and the last_column,
     # so if last_column == first_column, then we're looking at a character of length 1.
-    lastCharacter = if length > 0 then (length - 1) else 0
+    lastCharacter = Math.max 0, length - 1
     [locationData.last_line, locationData.last_column] =
       @getLineAndColumnFromChunk offsetInChunk + (length - 1)
 
     token = [tag, value, locationData]
 
-    return token
+    token
 
   # Add a token to the results.
   # `offset` is the offset into the current @chunk where the token starts.
@@ -665,7 +663,7 @@ exports.Lexer = class Lexer
   token: (tag, value, offsetInChunk, length) ->
     token = @makeToken tag, value, offsetInChunk, length
     @tokens.push token
-    return token
+    token
 
   # Peek at a tag in the current token stream.
   tag: (index, tag) ->

@@ -422,7 +422,6 @@ test "Issue #997. Switch doesn't fallthrough.", ->
 
 
 test "Throw should be usable as an expression.", ->
-
   try
     false or throw 'up'
     throw new Error 'failed'

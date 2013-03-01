@@ -484,7 +484,7 @@ exports.Value = class Value extends Base
 
   constructor: (@base, @properties, tag) ->
     @properties or= []
-    @[tag] = true if tag
+    @this = true if tag is 'this'
 
   children: ['base', 'properties']
 
@@ -557,10 +557,9 @@ exports.Value = class Value extends Base
 
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
-    return @unfoldedSoak if @unfoldedSoak?
-    result = do =>
+    @unfoldedSoak ?= do =>
       if ifn = @base.unfoldSoak o
-        Array::push.apply ifn.body.properties, @properties
+        ifn.body.properties.push @properties...
         return ifn
       for prop, i in @properties when prop.soak
         prop.soak = off
@@ -571,8 +570,7 @@ exports.Value = class Value extends Base
           fst = new Parens new Assign ref, fst
           snd.base = ref
         return new If new Existence(fst), snd, soak: on
-      null
-    @unfoldedSoak = result or no
+      no
 
 #### Comment
 
@@ -662,33 +660,14 @@ exports.Call = class Call extends Base
       ifn = unfoldSoak o, call, 'variable'
     ifn
 
-  # Walk through the objects in the arguments, moving over simple values.
-  # This allows syntax like `call a: b, c` into `call({a: b}, c);`
-  filterImplicitObjects: (list) ->
-    nodes = []
-    for node in list
-      unless node.isObject?() and node.base.generated
-        nodes.push node
-        continue
-      obj = null
-      for prop in node.base.properties
-        if prop instanceof Assign or prop instanceof Comment
-          nodes.push obj = new Obj properties = [], true if not obj
-          properties.push prop
-        else
-          nodes.push prop
-          obj = null
-    nodes
-
   # Compile a vanilla function call.
   compileNode: (o) ->
     @variable?.front = @front
     compiledArray = Splat.compileSplattedArray o, @args, true
     if compiledArray.length
       return @compileSplat o, compiledArray
-    args = @filterImplicitObjects @args
     compiledArgs = []
-    for arg, argIndex in args
+    for arg, argIndex in @args
       if argIndex then compiledArgs.push @makeCode ", "
       compiledArgs.push (arg.compileToFragments o, LEVEL_LIST)...
 
@@ -974,17 +953,14 @@ exports.Arr = class Arr extends Base
 
   children: ['objects']
 
-  filterImplicitObjects: Call::filterImplicitObjects
-
   compileNode: (o) ->
     return [@makeCode '[]'] unless @objects.length
     o.indent += TAB
-    objs = @filterImplicitObjects @objects
-    answer = Splat.compileSplattedArray o, objs
+    answer = Splat.compileSplattedArray o, @objects
     return answer if answer.length
 
     answer = []
-    compiledObjs = (obj.compileToFragments o, LEVEL_LIST for obj in objs)
+    compiledObjs = (obj.compileToFragments o, LEVEL_LIST for obj in @objects)
     for fragments, index in compiledObjs
       if index
         answer.push @makeCode ", "
@@ -1038,10 +1014,10 @@ exports.Class = class Class extends Base
   # Ensure that all functions bound to the instance are proxied in the
   # constructor.
   addBoundFunctions: (o) ->
-    if @boundFuncs.length
-      for bvar in @boundFuncs
-        lhs = (Value.wrap (new Literal "this"), [new Access bvar]).compile o
-        @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
+    for bvar in @boundFuncs
+      lhs = (Value.wrap (new Literal "this"), [new Access bvar]).compile o
+      @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
+    return
 
   # Merge the properties from a top-level object as prototypal properties
   # on the class.
@@ -1487,7 +1463,7 @@ exports.Splat = class Splat extends Base
     @name.assigns name
 
   compileToFragments: (o) ->
-    if @index? then @compileParam o else @name.compileToFragments o
+    @name.compileToFragments o
 
   unwrap: -> @name
 

@@ -87,13 +87,8 @@ compilePath = (source, topLevel, base) ->
   fs.stat source, (err, stats) ->
     throw err if err and err.code isnt 'ENOENT'
     if err?.code is 'ENOENT'
-      if topLevel and source and path.extname(source) not in coffee_exts
-        source = sources[sources.indexOf(source)] = "#{source}.coffee"
-        return compilePath source, topLevel, base
-      if topLevel
-        console.error "File not found: #{source}"
-        process.exit 1
-      return
+      console.error "File not found: #{source}"
+      process.exit 1
     if stats.isDirectory() and path.dirname(source) isnt 'node_modules'
       watchDir source, base if opts.watch
       fs.readdir source, (err, files) ->

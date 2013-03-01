@@ -39,7 +39,7 @@
   <div id="fadeout"></div>
 
   <div id="flybar">
-    <a id="logo" href="#top"> </a>
+    <a id="logo" href="#top"><img src="documentation/images/logo.png" width="225" height="39" alt="CoffeeScript" /></a>
     <div class="navigation toc">
       <div class="button">
         Table of Contents
@@ -48,6 +48,7 @@
         <a href="#overview">Overview</a>
         <a href="#installation">Installation</a>
         <a href="#usage">Usage</a>
+        <a href="#literate">Literate CoffeeScript</a>
         <a href="#language">Language Reference</a>
         <a href="#literals">Literals: Functions, Objects and Arrays</a>
         <a href="#lexical_scope">Lexical Scoping and Variable Safety</a>
@@ -117,9 +118,9 @@
     <span class="bookmark" id="top"></span>
 
     <p>
-      <b>CoffeeScript is a little language that compiles into JavaScript.</b> Underneath
-      all those awkward braces and semicolons, JavaScript has always had
-      a gorgeous object model at its heart. CoffeeScript is an attempt to expose
+      <b>CoffeeScript is a little language that compiles into JavaScript.</b>
+      Underneath that awkward Java-esque patina, JavaScript has always had
+      a gorgeous heart. CoffeeScript is an attempt to expose
       the good parts of JavaScript in a simple way.
     </p>
 
@@ -136,7 +137,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/1.4.0">1.4.0</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.5.0">1.5.0</a>
     </p>
 
     <h2>
@@ -356,6 +357,35 @@ Expressions
         <tt>coffee</tt>
       </li>
     </ul>
+
+    <h2>
+      <span id="literate" class="bookmark"></span>
+      Literate CoffeeScript
+    </h2>
+
+    <p>
+      Besides being used as an ordinary programming language, CoffeeScript may
+      also be written in "literate" mode. If you name your file with a
+      <tt>.litcoffee</tt> extension, you can write it as a Markdown document &mdash;
+      a document that also happens to be executable CoffeeScript code. The compiler
+      will treat any indented blocks (Markdown's way of indicating source code)
+      as code, and ignore the rest as comments.
+    </p>
+
+    <p>
+      Just for kicks, a little bit of the compiler is currently implemented in this fashion:
+      See it
+      <a href="https://gist.github.com/jashkenas/3fc3c1a8b1009c00d9df">as a document</a>,
+      <a href="https://raw.github.com/jashkenas/coffee-script/master/src/scope.litcoffee">raw</a>,
+      and <a href="http://cl.ly/LxEu">properly highlighted in a text editor</a>.
+    </p>
+
+    <p>
+      I'm fairly excited about this direction for the language, and am looking
+      forward to writing (and more importantly, reading) more programs in this style.
+      As <b>1.5.0</b> is the first version of CoffeeScript that supports it, let us know
+      if you have any ideas for improving the feature.
+    </p>
 
     <h2>
       <span id="language" class="bookmark"></span>
@@ -981,6 +1011,12 @@ Expressions
         portions in CoffeeScript.
       </li>
       <li>
+        <a href="http://www.packtpub.com/coffeescript-programming-with-jquery-rails-nodejs/book">CoffeeScript Programming with jQuery, Rails, and Node.js</a>
+        is a new book by Michael Erasmus that covers CoffeeScript with an eye
+        towards real-world usage both in the browser (jQuery) and on the server
+        size (Rails, Node).
+      </li>
+      <li>
         <a href="http://ristrettolo.gy">CoffeeScript Ristretto</a>
         is a deep dive into CoffeeScript's semantics from simple functions up through
         closures, higher-order functions, objects, classes, combinators, and decorators.
@@ -1034,11 +1070,6 @@ Expressions
       <li>
         <b>sstephenson</b>'s <a href="http://pow.cx/">Pow</a>,
         a zero-configuration Rack server, with comprehensive annotated source.
-      </li>
-      <li>
-        <b>frank06</b>'s <a href="http://riakjs.org/">riak-js</a>, a Node.js client for
-        <a href="http://www.basho.com/Riak.html">Riak</a>, with support for HTTP
-        and Protocol Buffers.
       </li>
       <li>
         <b>technoweenie</b>'s <a href="https://github.com/technoweenie/coffee-resque">Coffee-Resque</a>,
@@ -1127,6 +1158,34 @@ Expressions
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <b class="header" style="margin-top: 20px;">
+        <a href="https://github.com/jashkenas/coffee-script/compare/1.4.0...1.5.0">1.5.0</a>
+        <span class="timestamp"> &ndash; <small>Feb 25, 2013</small></span>
+      </b>
+      <ul>
+        <li>
+          First release of <a href="#literate">Literate CoffeeScript</a>.
+        </li>
+        <li>
+          The CoffeeScript REPL is now based on the Node.js REPL, and should work
+          better and more familiarly.
+        </li>
+        <li>
+          Returning explicit values from constructors is now forbidden. If you want
+          to return an arbitrary value, use a function, not a constructor.
+        </li>
+        <li>
+          You can now loop over an array backwards, without having to manually
+          deal with the indexes: <tt>for item in list by -1</tt>
+        </li>
+        <li>
+          Source locations are now preserved in the CoffeeScript AST, although
+          source maps are not yet being emitted.
+        </li>
+      </ul>
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">

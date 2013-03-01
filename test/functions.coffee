@@ -213,3 +213,15 @@ test "#2621: fancy destructuring in parameter lists", ->
     eq(a, 'a')
 
   func({prop1: {key1: 'key1'}, prop2: {key2: 'key2', key3: ['a', 'b', 'c']}})
+
+test "#1435 Indented property access", ->
+  rec = -> rec: rec
+
+  eq 1, do ->
+    rec()
+      .rec ->
+        rec()
+          .rec ->
+            rec.rec()
+          .rec()
+    1
