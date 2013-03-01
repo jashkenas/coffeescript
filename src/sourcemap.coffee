@@ -10,8 +10,8 @@ class LineMapping
     # columnMappings is an array of all column mappings, sorted by generated-column.
     @columnMappings = []
 
-  addMapping: (generatedColumn, [sourceLine, sourceColumn]) ->
-    if @columnMap[generatedColumn]
+  addMapping: (generatedColumn, [sourceLine, sourceColumn], options={}) ->
+    if @columnMap[generatedColumn] and options.noReplace
       # We already have a mapping for this column.
       return
 
@@ -52,16 +52,17 @@ class exports.SourceMap
   # Adds a mapping to this SourceMap.
   #
   # `sourceLocation` and `generatedLocation` are both [line, column] arrays.
-  # If there is already a mapping for the specified `generatedLine` and
-  # `generatedColumn`, then this will have no effect.
-  addMapping: (sourceLocation, generatedLocation) ->
+  #
+  # If `options.noReplace` is true, then if there is already a mapping for
+  # the specified `generatedLine` and `generatedColumn`, this will have no effect.
+  addMapping: (sourceLocation, generatedLocation, options={}) ->
     [generatedLine, generatedColumn] = generatedLocation
 
     lineMapping = @generatedLines[generatedLine]
     if not lineMapping
       lineMapping = @generatedLines[generatedLine] = new LineMapping(generatedLine)
 
-    lineMapping.addMapping generatedColumn, sourceLocation
+    lineMapping.addMapping generatedColumn, sourceLocation, options
 
   # Returns [sourceLine, sourceColumn], or null if no mapping could be found.
   getSourcePosition: ([generatedLine, generatedColumn]) ->
