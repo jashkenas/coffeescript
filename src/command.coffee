@@ -127,7 +127,9 @@ compileScript = (file, input, base) ->
       compileJoin()
     else
       if o.maps
-        [t.output, t.sourceMap] = CoffeeScript.compileWithSourceMap t.input, t.options
+        compiled = CoffeeScript.compileWithSourceMap t.input, t.options
+        t.output = compiled.compiledJs
+        t.sourceMap = compiled.v3SourceMap
       else
         t.output = CoffeeScript.compile t.input, t.options
 

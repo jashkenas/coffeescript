@@ -12,7 +12,7 @@ path        = require 'path'
 {parser}    = require './parser'
 sourcemap   = require './sourcemap'
 vm          = require 'vm'
-{count}     = require './helpers'
+{count, extend} = require './helpers'
 
 # The file extensions that are considered to be CoffeeScript.
 extensions = ['.coffee', '.litcoffee']
@@ -70,17 +70,23 @@ exports.compile = compile = (code, options = {}) ->
   "// #{header}\n#{js}"
 
 # Generates a compiled code and a source map for a string of CoffeeScript code.
-# Callers should specifiy `options.filename`.  Returns a `[sourcemap, compiledCode]` pair, where
-# sourcemap is a v3 source map.
+# Callers should specifiy `options.filename`.  Returns a `{compiledJs, v3SourceMap, sourceMap}
+# object, where sourceMap is a sourcemap.coffee#SourceMap object, handy for doing programatic
+# lookups.
 exports.compileWithSourceMap = (code, options={}) ->
   {merge} = exports.helpers
   try
+    options = extend {}, options
     options.sourceMap = new sourcemap.SourceMap()
     coffeeFile = path.basename options.filename
     jsFile = baseFileName(options.filename) + ".js"
-    js = exports.compile code, options
-    map = sourcemap.generateV3SourceMap options.sourceMap, coffeeFile, jsFile
-    return [js, map]
+    compiledJs = exports.compile code, options
+    v3SourceMap = sourcemap.generateV3SourceMap options.sourceMap, coffeeFile, jsFile
+    return {
+      compiledJs,
+      v3SourceMap,
+      sourceMap: options.sourceMap
+    }
   catch err
     err.message = "In #{options.filename}, #{err.message}" if options.filename
     throw err
