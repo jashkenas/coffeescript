@@ -146,7 +146,7 @@ exports.generateV3SourceMap = (sourceMap, sourceFile=null, generatedFile=null) -
     version: 3
     file: generatedFile
     sourceRoot: ""
-    source: [sourceFile]
+    sources: if sourceFile then [sourceFile] else []
     names: []
     mappings
   }
