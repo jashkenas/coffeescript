@@ -117,24 +117,23 @@ test "basic classes, again, but in the manual prototype style", ->
   ok (new ThirdChild)['func-func']('thing') is 'dynamic-thing'
 
 
-test "super with plain ol' functions as the original constructors", ->
+test "super with plain ol' prototypes", ->
 
-  TopClass = (arg) ->
-    @prop = 'top-' + arg
-    this
+  TopClass = ->
+  TopClass::func = (arg) ->
+    'top-' + arg
 
-  SuperClass = (arg) ->
+  SuperClass = ->
+  SuperClass extends TopClass
+  SuperClass::func = (arg) ->
     super 'super-' + arg
-    this
 
   SubClass = ->
-    super 'sub'
-    this
-
-  SuperClass extends TopClass
   SubClass extends SuperClass
+  SubClass::func = ->
+    super 'sub'
 
-  ok (new SubClass).prop is 'top-super-sub'
+  eq (new SubClass).func(), 'top-super-sub'
 
 
 test "'@' referring to the current instance, and not being coerced into a call", ->

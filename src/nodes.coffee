@@ -523,8 +523,10 @@ exports.Call = class Call extends Base
       accesses.push new Access new Literal 'constructor' if method.static
       accesses.push new Access new Literal name
       (new Value (new Literal method.klass), accesses).compile o
-    else
+    else if method.ctor
       "#{name}.__super__.constructor"
+    else
+      "this.constructor.__super__.#{name}"
 
   # The appropriate `this` value for a `super` call.
   superThis : (o) ->
