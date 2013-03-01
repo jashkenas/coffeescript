@@ -920,11 +920,9 @@ exports.Class = class Class extends Base
         func = assign.value
         if base.value is 'constructor'
           if @ctor
-            base.error 'cannot define more than one constructor in a class'
+            assign.error 'cannot define more than one constructor in a class'
           if func.bound
-            # TODO It'd be better to mark the function glyph; but IDK if its
-            # location data survives until the AST phase.
-            base.error 'cannot define a constructor as a bound function'
+            assign.error 'cannot define a constructor as a bound function'
           if func instanceof Code
             assign = @ctor = func
           else
