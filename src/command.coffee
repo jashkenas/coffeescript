@@ -279,7 +279,8 @@ writeJs = (base, sourcePath, js, sourceMap = null) ->
         else if opts.compile and opts.watch
           timeLog "compiled #{sourcePath}"
     if sourceMap
-      fs.writeFile sourceMapPath, (sourcemap.generateV3SourceMap sourceMap), (err) ->
+      generatedSourceMap = sourcemap.generateV3SourceMap sourceMap, base
+      fs.writeFile sourceMapPath, generatedSourceMap, (err) ->
         if err
           printLine "Could not write source map: #{err.message}"
   exists jsDir, (itExists) ->

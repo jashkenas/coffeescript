@@ -30,7 +30,9 @@ test "SourceMap tests", ->
   map.addMapping [1, 6], [2, 7]
   map.addMapping [1, 9], [2, 8]
   map.addMapping [3, 0], [3, 4]
-  eq (sourcemap.generateV3SourceMap map, "source.coffee", "source.js"), '{"version":3,"file":"source.js","sourceRoot":"","source":["source.coffee"],"names":[],"mappings":"AAAA;;IACK,GAAC,CAAG;IAET"}'
+
+  eq (sourcemap.generateV3SourceMap map, "source.coffee", "source.js"), '{"version":3,"file":"source.js","sourceRoot":"","sources":["source.coffee"],"names":[],"mappings":"AAAA;;IACK,GAAC,CAAG;IAET"}'
+  eq (sourcemap.generateV3SourceMap map), '{"version":3,"file":null,"sourceRoot":"","sources":[],"names":[],"mappings":"AAAA;;IACK,GAAC,CAAG;IAET"}'
 
   # Look up a generated column - should get back the original source position.
   arrayEq map.getSourcePosition([2,8]), [1,9]
