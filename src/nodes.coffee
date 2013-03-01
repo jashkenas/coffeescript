@@ -22,7 +22,7 @@ THIS    = -> this
 NEGATE  = -> @negated = not @negated; this
 
 # If PARANOID is true, then certain extra internal consistency checks are done during the compile.
-# This is used for checks that would slow down the compiler.  This is really only useful if you're
+# This is used for checks that would slow down the compiler. This is really only useful if you're
 # doing compiler work.
 PARANOID = false
 
@@ -30,7 +30,7 @@ PARANOID = false
 
 # The various nodes defined below all compile to a collection of **CodeFragment** objects.
 # A CodeFragments is a block of generated code, and the location in the source file where the code
-# came from.  CodeFragments can be assembled together into working code just by catting together
+# came from. CodeFragments can be assembled together into working code just by catting together
 # all the CodeFragments' `code` snippets, in order.
 exports.CodeFragment = class CodeFragment
   constructor: (parent, code) ->
@@ -52,12 +52,12 @@ checkFragments = (fragments, node=null) ->
   if not PARANOID then return fragments
 
   nodeName = if node then " from #{node.constructor.name}" else ""
-  if !fragments
+  if not fragments
     throw new Error("Fragments is null#{nodeName}: #{fragments}\n" )
   if fragments instanceof CodeFragment
     throw new Error("Expected array of fragments but found fragment#{nodeName}: #{fragments}\n" )
   for fragment, i in fragments
-    if !(fragment instanceof CodeFragment)
+    if not (fragment instanceof CodeFragment)
       # This is not a fragment.
       inspected = (require 'util').inspect fragments
       nodeStr = if node then "node: #{node.toString()}\n" else ""
@@ -112,7 +112,7 @@ exports.Base = class Base
   # by assigning it to a temporary variable. Pass a level to precompile.
   #
   # If `level` is passed, then returns `[val, ref]`, where `val` is the compiled value, and `ref`
-  # is the compiled reference.  If `level` is not passed, this returns `[val, ref]` where
+  # is the compiled reference. If `level` is not passed, this returns `[val, ref]` where
   # the two values are raw nodes which have not been compiled.
   cache: (o, level, reused) ->
     unless @isComplex()
@@ -220,7 +220,7 @@ exports.Base = class Base
   wrapInBraces: (fragments) ->
     [].concat @makeCode('('), fragments, @makeCode(')')
 
-  # `fragmentsList` is an array of arrays of fragments.  Each array in fragmentsList will be
+  # `fragmentsList` is an array of arrays of fragments. Each array in fragmentsList will be
   # concatonated together, with `joinStr` added in between each, to produce a final flat array
   # of fragments.
   joinFragmentArrays: (fragmentsList, joinStr) ->
@@ -303,7 +303,7 @@ exports.Block = class Block extends Base
       node = node.unwrapAll()
       node = (node.unfoldSoak(o) or node)
       if node instanceof Block
-        # This is a nested block.  We don't do anything special here like enclose
+        # This is a nested block. We don't do anything special here like enclose
         # it in a new scope; we just compile the statements in this block along with
         # our own
         compiledNodes.push node.compileNode o
