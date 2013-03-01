@@ -10,7 +10,6 @@ path           = require 'path'
 helpers        = require './helpers'
 optparse       = require './optparse'
 CoffeeScript   = require './coffee-script'
-sourcemap      = require './sourcemap'
 {spawn, exec}  = require 'child_process'
 {EventEmitter} = require 'events'
 
@@ -127,12 +126,15 @@ compileScript = (file, input, base) ->
       sourceCode[sources.indexOf(t.file)] = t.input
       compileJoin()
     else
-      t.output = CoffeeScript.compile t.input, t.options
+      if o.maps
+        [t.output, t.sourceMap] = CoffeeScript.compileWithSourceMap t.input, t.options
+      else
+        t.output = CoffeeScript.compile t.input, t.options
 
       CoffeeScript.emit 'success', task
       if o.print          then printLine t.output.trim()
       else if o.compile || o.maps
-        writeJs base, t.file, t.output, t.options.sourceMap
+        writeJs base, t.file, t.output, t.sourceMap
       else if o.lint      then lint t.file, t.output
   catch err
     CoffeeScript.emit 'failure', err, task
@@ -257,23 +259,22 @@ outputPath = (source, base, extension=".js") ->
 # are written out in `cwd` as `.js` files with the same name, but the output
 # directory can be customized with `--output`.
 #
-# If source maps were also requested, this will write `.map` files into the same
-# directory as the `.js` files.
-writeJs = (base, sourcePath, js, sourceMap = null) ->
+# If `generatedSourceMap` is provided, this will write a `.map` file into the
+# same directory as the `.js` file.
+writeJs = (base, sourcePath, js, generatedSourceMap = null) ->
   jsPath = outputPath sourcePath, base
   sourceMapPath = outputPath sourcePath, base, ".map"
   jsDir  = path.dirname jsPath
   compile = ->
     if opts.compile
       js = ' ' if js.length <= 0
-      if sourceMap then js = "//@ sourceMappingURL=#{path.basename sourceMapPath}\n" + js
+      if generatedSourceMap then js = "//@ sourceMappingURL=#{path.basename sourceMapPath}\n#{js}"
       fs.writeFile jsPath, js, (err) ->
         if err
           printLine err.message
         else if opts.compile and opts.watch
           timeLog "compiled #{sourcePath}"
-    if sourceMap
-      generatedSourceMap = sourcemap.generateV3SourceMap sourceMap, base, (path.basename jsPath)
+    if generatedSourceMap
       fs.writeFile sourceMapPath, generatedSourceMap, (err) ->
         if err
           printLine "Could not write source map: #{err.message}"
@@ -322,8 +323,7 @@ parseOptions = ->
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (filename) ->
   literate = path.extname(filename) is '.litcoffee'
-  sourceMap = if opts.maps then new sourcemap.SourceMap()
-  {filename, literate, sourceMap, bare: opts.bare, header: opts.compile}
+  {filename, literate, bare: opts.bare, header: opts.compile}
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
 # the `node` binary, preserving the other options.

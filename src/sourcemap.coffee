@@ -151,7 +151,7 @@ exports.generateV3SourceMap = (sourceMap, sourceFile=null, generatedFile=null) -
     mappings
   }
 
-  return JSON.stringify answer
+  return JSON.stringify answer, null, 2
 
 # Load a SourceMap from a JSON string.  Returns the SourceMap object.
 exports.loadV3SourceMap = (sourceMap) ->
