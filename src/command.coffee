@@ -262,7 +262,6 @@ outputPath = (source, base, extension=".js") ->
 writeJs = (base, sourcePath, js, sourceMap = null) ->
   jsPath = outputPath sourcePath, base
   sourceMapPath = outputPath sourcePath, base, ".map"
-
   jsDir  = path.dirname jsPath
   compile = ->
     if opts.compile
@@ -274,7 +273,7 @@ writeJs = (base, sourcePath, js, sourceMap = null) ->
         else if opts.compile and opts.watch
           timeLog "compiled #{sourcePath}"
     if sourceMap
-      generatedSourceMap = sourcemap.generateV3SourceMap sourceMap, base
+      generatedSourceMap = sourcemap.generateV3SourceMap sourceMap, base, (path.basename jsPath)
       fs.writeFile sourceMapPath, generatedSourceMap, (err) ->
         if err
           printLine "Could not write source map: #{err.message}"
