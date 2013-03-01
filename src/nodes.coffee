@@ -49,7 +49,7 @@ fragmentsToText = (fragments) ->
 # Validates that `fragments` is an array of CodeFragment objects.
 # If PARANOID is false, then this does nothing.
 checkFragments = (fragments, node=null) ->
-  if !PARANOID then return fragments
+  if not PARANOID then return fragments
 
   nodeName = if node then " from #{node.constructor.name}" else ""
   if !fragments
