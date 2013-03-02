@@ -141,7 +141,8 @@ compileScript = (file, input, base) ->
     return if CoffeeScript.listeners('failure').length
 
     message = if err instanceof CompilerError
-      err.prettyMessage file or '[stdin]', input
+      useColors = process.stdout.isTTY and not process.env.NODE_DISABLE_COLORS
+      err.prettyMessage file or '[stdin]', input, useColors
     else
       err.stack or "ERROR: #{err}"
 

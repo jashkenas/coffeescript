@@ -17,12 +17,17 @@ exports.CompilerError = class CompilerError extends Error
   # Creates a nice error message like, following the "standard" format
   # <filename>:<line>:<col>: <message> plus the line with the error and a marker
   # showing where the error is.
-  prettyMessage: (fileName, code) ->
+  prettyMessage: (fileName, code, useColors) ->
     errorLine = code.split('\n')[@startLine]
     start     = @startColumn
     # Show only the first line on multi-line errors.
-    end       = if @startLine is @endLine then @endColumn else errorLine.length - 1
-    marker    = repeat(' ', start) + repeat('^', end - start + 1)
+    end       = if @startLine is @endLine then @endColumn + 1 else errorLine.length
+    marker    = repeat(' ', start) + repeat('^', end - start)
+
+    if useColors
+      colorize  = (str) -> "\x1B[1;31m#{str}\x1B[0m"
+      errorLine = errorLine[...start] + colorize(errorLine[start...end]) + errorLine[end..]
+      marker    = colorize marker
 
     message = """
       #{fileName}:#{@startLine + 1}:#{@startColumn + 1}: error: #{@message}
