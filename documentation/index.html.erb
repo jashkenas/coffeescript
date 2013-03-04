@@ -1877,8 +1877,10 @@ Expressions
         else
           $(el).text window.compiledJS
         $('#error').hide()
-      catch error
-        $('#error').text(error.message).show()
+      catch {startLine, startColumn, message}
+        if startLine? and startColumn?
+          message = "Error on line #{startLine + 1}, column #{startColumn + 1}: #{message}"
+        $('#error').text(message).show()
 
       # Update permalink
       $('#repl_permalink').attr 'href', "##{sourceFragment}#{encodeURIComponent source}"
