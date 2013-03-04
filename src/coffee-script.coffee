@@ -6,25 +6,22 @@
 # If included on a webpage, it will automatically sniff out, compile, and
 # execute all scripts present in `text/coffeescript` tags.
 
-fs          = require 'fs'
-path        = require 'path'
-{Lexer}     = require './lexer'
-{parser}    = require './parser'
+fs        = require 'fs'
+path      = require 'path'
+{Lexer}   = require './lexer'
+{parser}  = require './parser'
+helpers   = require './helpers'
+vm        = require 'vm'
 sourcemap   = require './sourcemap'
-vm          = require 'vm'
-{count, extend} = require './helpers'
-
-# The file extensions that are considered to be CoffeeScript.
-extensions = ['.coffee', '.litcoffee']
 
 # Load and run a CoffeeScript file for Node, stripping any `BOM`s.
 loadFile = (module, filename) ->
   raw = fs.readFileSync filename, 'utf8'
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
-  module._compile compile(stripped, {filename}), filename
+  module._compile compile(stripped, {filename, literate: helpers.isLiterate filename}), filename
 
 if require.extensions
-  for ext in extensions
+  for ext in ['.coffee', '.litcoffee', '.md', '.coffee.md']
     require.extensions[ext] = loadFile
 
 # The current CoffeeScript version number.
@@ -55,7 +52,7 @@ exports.compile = compile = (code, options = {}) ->
             [fragment.locationData.first_line, fragment.locationData.first_column],
             [currentLine, currentColumn],
             {noReplace: true})
-        newLines = count fragment.code, "\n"
+        newLines = helpers.count fragment.code, "\n"
         currentLine += newLines
         currentColumn = fragment.code.length - (if newLines then fragment.code.lastIndexOf "\n" else 0)
 
@@ -76,7 +73,7 @@ exports.compile = compile = (code, options = {}) ->
 exports.compileWithSourceMap = (code, options={}) ->
   {merge} = exports.helpers
   try
-    options = extend {}, options
+    options = helpers.extend {}, options
     options.sourceMap = new sourcemap.SourceMap()
     coffeeFile = path.basename options.filename
     jsFile = baseFileName(options.filename) + ".js"
@@ -121,7 +118,7 @@ exports.run = (code, options = {}) ->
   mainModule.paths = require('module')._nodeModulePaths path.dirname fs.realpathSync options.filename
 
   # Compile.
-  if (path.extname(mainModule.filename) not in extensions) or require.extensions
+  if not helpers.isCoffee(mainModule.filename) or require.extensions
     mainModule._compile compile(code, options), mainModule.filename
   else
     mainModule._compile code, mainModule.filename

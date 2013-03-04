@@ -117,24 +117,23 @@ test "basic classes, again, but in the manual prototype style", ->
   ok (new ThirdChild)['func-func']('thing') is 'dynamic-thing'
 
 
-test "super with plain ol' functions as the original constructors", ->
+test "super with plain ol' prototypes", ->
 
-  TopClass = (arg) ->
-    @prop = 'top-' + arg
-    this
+  TopClass = ->
+  TopClass::func = (arg) ->
+    'top-' + arg
 
-  SuperClass = (arg) ->
+  SuperClass = ->
+  SuperClass extends TopClass
+  SuperClass::func = (arg) ->
     super 'super-' + arg
-    this
 
   SubClass = ->
-    super 'sub'
-    this
-
-  SuperClass extends TopClass
   SubClass extends SuperClass
+  SubClass::func = ->
+    super 'sub'
 
-  ok (new SubClass).prop is 'top-super-sub'
+  eq (new SubClass).func(), 'top-super-sub'
 
 
 test "'@' referring to the current instance, and not being coerced into a call", ->
@@ -313,7 +312,7 @@ test "classes with value'd constructors", ->
   eq (new Two).value, 2
 
 
-test "exectuable class bodies", ->
+test "executable class bodies", ->
 
   class A
     if true
@@ -325,6 +324,17 @@ test "exectuable class bodies", ->
 
   eq a.b, 'b'
   eq a.c, undefined
+
+
+test "#2502: parenthesizing inner object values", ->
+
+  class A
+    category:  (type: 'string')
+    sections:  (type: 'number', default: 0)
+
+  eq (new A).category.type, 'string'
+
+  eq (new A).sections.default, 0
 
 
 test "mild metaprogramming", ->
@@ -595,6 +605,11 @@ test "#1813: Passing class definitions as expressions", ->
 
   eq result, B
 
+test "#1966: external constructors should produce their return value", ->
+  ctor = -> {}
+  class A then constructor: ctor
+  ok (new A) not instanceof A
+
 test "#1980: regression with an inherited class with static function members", ->
 
   class A
@@ -676,27 +691,6 @@ test "#2630: class bodies can't reference arguments", ->
   throws ->
     CoffeeScript.compile('class Test then arguments')
 
-test "#2359: instanceof should work when extending native objects", ->
-  class MyError extends Error
-  ok new MyError instanceof MyError
-
-test '#2359: external constructors returning "other typed" objets', ->
-  ctor = -> {}
-  class A then constructor: ctor
-  ok new A instanceof A
-  ok new ctor not instanceof A
-  ok new ctor not instanceof ctor
-
-test "#2359: constructors should not return an explicit value", ->
-  throws -> CoffeeScript.run "class then constructor: -> return 5"
-  throws -> CoffeeScript.run """
-    class
-      constructor: ->
-        if foo
-          return bar: 7
-        baz()
-  """
-
 test "#2319: fn class n extends o.p [INDENT] x = 123", ->
   first = ->
 
@@ -707,3 +701,42 @@ test "#2319: fn class n extends o.p [INDENT] x = 123", ->
     one: -> one
 
   eq new OneKeeper().one(), 1
+
+
+test "#2599: other typed constructors should be inherited", ->
+  class Base
+    constructor: -> return {}
+
+  class Derived extends Base
+
+  ok (new Derived) not instanceof Derived
+  ok (new Derived) not instanceof Base
+  ok (new Base) not instanceof Base
+
+test "#2359: extending native objects that use other typed constructors requires defining a constructor", ->
+  class BrokenArray extends Array
+    method: -> 'no one will call me'
+
+  brokenArray = new BrokenArray
+  ok brokenArray not instanceof BrokenArray
+  ok typeof brokenArray.method is 'undefined'
+
+  class WorkingArray extends Array
+    constructor: -> super
+    method: -> 'yes!'
+
+  workingArray = new WorkingArray
+  ok workingArray instanceof WorkingArray
+  eq 'yes!', workingArray.method()
+
+
+test "#2489: removing __bind", ->
+
+  class Thing
+    foo: (a, b, c) ->
+    bar: (a, b, c) =>
+
+  thing = new Thing
+
+  eq thing.foo.length, 3
+  eq thing.bar.length, 3

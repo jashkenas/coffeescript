@@ -323,6 +323,29 @@ test "#2549, Brace-less Object Literal as a Second Operand on a New Line", ->
     two: 2
   eq baz.two, 2
 
+test "#2757, Nested", ->
+  foo =
+    bar:
+      one: 1,
+  eq foo.bar.one, 1
+
+  baz =
+    qux:
+      one: 1,
+    corge:
+      two: 2,
+      three: three: three: 3,
+    xyzzy:
+      thud:
+        four:
+          four: 4,
+      five: 5,
+
+  eq baz.qux.one, 1
+  eq baz.corge.three.three.three, 3
+  eq baz.xyzzy.thud.four.four, 4
+  eq baz.xyzzy.five, 5
+
 test "#1865, syntax regression 1.1.3", ->
   foo = (x, y) -> y
 

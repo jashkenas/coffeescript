@@ -57,7 +57,6 @@ sourceCode   = []
 notSources   = {}
 watchers     = {}
 optionParser = null
-coffee_exts  = ['.coffee', '.litcoffee']
 
 # Run `coffee` by parsing passed options and determining what action to take.
 # Many flags cause us to divert before compiling anything. Flags passed after
@@ -80,8 +79,8 @@ exports.run = ->
     compilePath source, yes, path.normalize source
 
 # Compile a path, which could be a script or a directory. If a directory
-# is passed, recursively compile all '.coffee' and '.litcoffee' extension source
-# files in it and all subdirectories.
+# is passed, recursively compile all '.coffee', '.litcoffee', and '.coffee.md'
+# extension source files in it and all subdirectories.
 compilePath = (source, topLevel, base) ->
   fs.stat source, (err, stats) ->
     throw err if err and err.code isnt 'ENOENT'
@@ -99,7 +98,7 @@ compilePath = (source, topLevel, base) ->
         sourceCode[index..index] = files.map -> null
         files.forEach (file) ->
           compilePath (path.join source, file), no, base
-    else if topLevel or path.extname(source) in coffee_exts
+    else if topLevel or helpers.isCoffee source
       watch source, base if opts.watch
       fs.readFile source, (err, code) ->
         throw err if err and err.code isnt 'ENOENT'
@@ -251,11 +250,11 @@ removeSource = (source, base, removeJs) ->
 
 # Get the corresponding output JavaScript path for a source file.
 outputPath = (source, base, extension=".js") ->
-  filename  = path.basename(source, path.extname(source)) + extension
+  basename  = path.basename source, source.match(/\.((lit)?coffee|coffee\.md)$/)?[0] or path.extname(source)
   srcDir    = path.dirname source
   baseDir   = if base is '.' then srcDir else srcDir.substring base.length
   dir       = if opts.output then path.join opts.output, baseDir else srcDir
-  path.join dir, filename
+  path.join dir, basename + extension
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
@@ -301,13 +300,12 @@ lint = (file, js) ->
   jsl.stdin.write js
   jsl.stdin.end()
 
-# Pretty-print a stream of tokens.
+# Pretty-print a stream of tokens, sans location data.
 printTokens = (tokens) ->
   strings = for token in tokens
     tag = token[0]
     value = token[1].toString().replace(/\n/, '\\n')
-    locationData = helpers.locationDataToString token[2]
-    "[#{tag} #{value} #{locationData}]"
+    "[#{tag} #{value}]"
   printLine strings.join(' ')
 
 # Use the [OptionParser module](optparse.html) to extract all options from
@@ -324,8 +322,7 @@ parseOptions = ->
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (filename) ->
-  literate = path.extname(filename) is '.litcoffee'
-  {filename, literate, bare: opts.bare, header: opts.compile}
+  {filename, literate: helpers.isLiterate(filename), bare: opts.bare, header: opts.compile}
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
 # the `node` binary, preserving the other options.

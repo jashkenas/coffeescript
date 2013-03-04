@@ -92,4 +92,10 @@ exports.locationDataToString = (obj) ->
     else
       "No location data"
 
+# Determine if a filename represents a CoffeeScript file.
+exports.isCoffee = (file) -> /\.((lit)?coffee|coffee\.md)$/.test file
+
+# Determine if a filename represents a Literate CoffeeScript file.
+exports.isLiterate = (file) -> /\.(litcoffee|coffee\.md)$/.test file
+
 

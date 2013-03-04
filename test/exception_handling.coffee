@@ -129,9 +129,3 @@ test "Try catch finally as implicit arguments", ->
     bar = yes
   catch e
   eq bar, yes
-
-  baz = first
-    try iamwhoiam() catch e
-      "bar"
-    try iamwhoiam() catch e
-  eq baz, "bar"

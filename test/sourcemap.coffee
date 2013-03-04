@@ -23,6 +23,9 @@ test "vlqDecodeValue with offset", ->
     # Try with an offset, and some cruft at the end.
     arrayEq (sourcemap.vlqDecodeValue ("abc" + pair[1] + "efg"), 3), [pair[0], pair[1].length]
 
+eqJson = (a, b) ->
+  eq (JSON.stringify JSON.parse a), (JSON.stringify JSON.parse b)
+
 test "SourceMap tests", ->
   map = new sourcemap.SourceMap()
   map.addMapping [0, 0], [0, 0]
@@ -31,8 +34,8 @@ test "SourceMap tests", ->
   map.addMapping [1, 9], [2, 8]
   map.addMapping [3, 0], [3, 4]
 
-  eq (sourcemap.generateV3SourceMap map, "source.coffee", "source.js"), '{"version":3,"file":"source.js","sourceRoot":"","sources":["source.coffee"],"names":[],"mappings":"AAAA;;IACK,GAAC,CAAG;IAET"}'
-  eq (sourcemap.generateV3SourceMap map), '{"version":3,"file":null,"sourceRoot":"","sources":[],"names":[],"mappings":"AAAA;;IACK,GAAC,CAAG;IAET"}'
+  eqJson (sourcemap.generateV3SourceMap map, "source.coffee", "source.js"), '{"version":3,"file":"source.js","sourceRoot":"","sources":["source.coffee"],"names":[],"mappings":"AAAA;;IACK,GAAC,CAAG;IAET"}'
+  eqJson (sourcemap.generateV3SourceMap map), '{"version":3,"file":null,"sourceRoot":"","sources":[],"names":[],"mappings":"AAAA;;IACK,GAAC,CAAG;IAET"}'
 
   # Look up a generated column - should get back the original source position.
   arrayEq map.getSourcePosition([2,8]), [1,9]
