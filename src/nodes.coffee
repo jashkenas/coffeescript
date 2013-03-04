@@ -21,11 +21,6 @@ NO      = -> no
 THIS    = -> this
 NEGATE  = -> @negated = not @negated; this
 
-# If PARANOID is true, then certain extra internal consistency checks are done during the compile.
-# This is used for checks that would slow down the compiler. This is really only useful if you're
-# doing compiler work.
-PARANOID = false
-
 #### CodeFragment
 
 # The various nodes defined below all compile to a collection of **CodeFragment** objects.
@@ -43,27 +38,7 @@ exports.CodeFragment = class CodeFragment
 
 # Convert an array of CodeFragments into a string.
 fragmentsToText = (fragments) ->
-  checkFragments fragments
   (fragment.code for fragment in fragments).join('')
-
-# Validates that `fragments` is an array of CodeFragment objects.
-# If PARANOID is false, then this does nothing.
-checkFragments = (fragments, node=null) ->
-  if not PARANOID then return fragments
-
-  nodeName = if node then " from #{node.constructor.name}" else ""
-  if not fragments
-    throw new Error("Fragments is null#{nodeName}: #{fragments}\n" )
-  if fragments instanceof CodeFragment
-    throw new Error("Expected array of fragments but found fragment#{nodeName}: #{fragments}\n" )
-  for fragment, i in fragments
-    if not (fragment instanceof CodeFragment)
-      # This is not a fragment.
-      inspected = (require 'util').inspect fragments
-      nodeStr = if node then "node: #{node.toString()}\n" else ""
-      throw new Error("Expected fragment: #{i} of #{fragments.length}#{nodeName}: #{fragment}\nFragments: #{inspected}\n#{nodeStr}")
-
-  return fragments
 
 #### Base
 
@@ -93,11 +68,9 @@ exports.Base = class Base
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
     if o.level is LEVEL_TOP or not node.isStatement(o)
-      fragments = node.compileNode o
+      node.compileNode o
     else
-      fragments = node.compileClosure o
-    checkFragments fragments, node
-    fragments
+      node.compileClosure o
 
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
@@ -226,7 +199,6 @@ exports.Base = class Base
   joinFragmentArrays: (fragmentsList, joinStr) ->
     answer = []
     for fragments,i in fragmentsList
-      checkFragments fragments, @
       if i then answer.push @makeCode joinStr
       answer = answer.concat fragments
     answer
