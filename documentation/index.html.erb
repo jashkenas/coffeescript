@@ -799,6 +799,11 @@ Expressions
       Destructuring assignment can even be combined with splats.
     </p>
     <%= code_for('patterns_and_splats', 'contents.join("")') %>
+    <p>
+      And destructuring assignment can be used to destructure parameters in a function too.
+      This can be useful if you want to be a bit more explicit about which properties of the object the function requires.
+    </p>
+    <%= code_for('destructure_parameters', 'contents.join("")') %>
 
     <p>
       <span id="fat_arrow" class="bookmark"></span>
