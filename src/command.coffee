@@ -251,7 +251,7 @@ removeSource = (source, base, removeJs) ->
 
 # Get the corresponding output JavaScript path for a source file.
 outputPath = (source, base, extension=".js") ->
-  basename  = helpers.baseFileName source
+  basename  = helpers.baseFileName source, yes
   srcDir    = path.dirname source
   baseDir   = if base is '.' then srcDir else srcDir.substring base.length
   dir       = if opts.output then path.join opts.output, baseDir else srcDir
@@ -270,7 +270,7 @@ writeJs = (base, sourcePath, js, generatedSourceMap = null) ->
   compile = ->
     if opts.compile
       js = ' ' if js.length <= 0
-      if generatedSourceMap then js = "//@ sourceMappingURL=#{path.basename sourceMapPath}\n#{js}"
+      if generatedSourceMap then js = "//@ sourceMappingURL=#{helpers.baseFileName sourceMapPath}\n#{js}"
       fs.writeFile jsPath, js, (err) ->
         if err
           printLine err.message

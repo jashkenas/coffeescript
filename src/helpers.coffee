@@ -93,9 +93,10 @@ exports.locationDataToString = (obj) ->
       "No location data"
 
 # A `.coffee.md` compatible version of `basename`, that returns the file sans-extension.
-exports.baseFileName = (file) ->
+exports.baseFileName = (file, stripExt = no) ->
   parts = file.split('/')
   file = parts[parts.length - 1]
+  return file unless stripExt
   parts = file.split('.')
   parts.pop()
   parts.pop() if parts[parts.length - 1] is 'coffee'

@@ -25,7 +25,7 @@ if require.extensions
     require.extensions[ext] = loadFile
 
 # The current CoffeeScript version number.
-exports.VERSION = '1.6.0'
+exports.VERSION = '1.6.1'
 
 # Expose helpers for testing.
 exports.helpers = helpers
@@ -43,14 +43,15 @@ exports.compile = compile = (code, options = {}) ->
   try
 
     if options.sourceMap
-      coffeeFile = path.basename options.filename
-      jsFile = helpers.baseFileName(options.filename) + ".js"
+      coffeeFile = helpers.baseFileName options.filename
+      jsFile = helpers.baseFileName(options.filename, yes) + ".js"
       sourceMap = new sourcemap.SourceMap()
 
     fragments = (parser.parse lexer.tokenize(code, options)).compileToFragments options
 
-    # Two lines of comments will start the JS file.
-    currentLine = 2
+    currentLine = 0
+    currentLine += 1 if options.header
+    currentLine += 1 if options.sourceMap
     currentColumn = 0
     js = ""
     for fragment in fragments
