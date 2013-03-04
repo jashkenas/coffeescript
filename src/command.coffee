@@ -282,13 +282,12 @@ lint = (file, js) ->
   jsl.stdin.write js
   jsl.stdin.end()
 
-# Pretty-print a stream of tokens.
+# Pretty-print a stream of tokens, sans location data.
 printTokens = (tokens) ->
   strings = for token in tokens
     tag = token[0]
     value = token[1].toString().replace(/\n/, '\\n')
-    locationData = helpers.locationDataToString token[2]
-    "[#{tag} #{value} #{locationData}]"
+    "[#{tag} #{value}]"
   printLine strings.join(' ')
 
 # Use the [OptionParser module](optparse.html) to extract all options from
