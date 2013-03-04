@@ -38,6 +38,26 @@ test "Verify location of generated tokens", ->
   eq numberToken[2].last_line, 0
   eq numberToken[2].last_column, 5
 
+test "Verify location of generated tokens (with indented first line)", ->
+  tokens = CoffeeScript.tokens "  a = 83"
+
+  eq tokens.length, 6
+  [IndentToken, aToken, equalsToken, numberToken] = tokens
+
+  eq aToken[2].first_line, 0
+  eq aToken[2].first_column, 2
+  eq aToken[2].last_line, 0
+  eq aToken[2].last_column, 2
+
+  eq equalsToken[2].first_line, 0
+  eq equalsToken[2].first_column, 4
+  eq equalsToken[2].last_line, 0
+  eq equalsToken[2].last_column, 4
+
+  eq numberToken[2].first_line, 0
+  eq numberToken[2].first_column, 6
+  eq numberToken[2].last_line, 0
+  eq numberToken[2].last_column, 7
 
 test "Verify all tokens get a location", ->
   doesNotThrow ->

@@ -35,7 +35,6 @@ exports.Lexer = class Lexer
   # unless explicitly asked not to.
   tokenize: (code, opts = {}) ->
     @literate = opts.literate  # Are we lexing literate CoffeeScript?
-    code      = @clean code    # The stripped, cleaned original source code.
     @indent   = 0              # The current indentation level.
     @indebt   = 0              # The over-indentation at the current level.
     @outdebt  = 0              # The under-outdentation at the current level.
@@ -47,6 +46,7 @@ exports.Lexer = class Lexer
         opts.line or 0         # The start line for the current @chunk.
     @chunkColumn =
         opts.column or 0       # The start column of the current @chunk.
+    code = @clean code         # The stripped, cleaned original source code.
 
     # At every position, run through this list of attempted matches,
     # short-circuiting if any of them succeed. Their order determines precedence:
@@ -80,8 +80,10 @@ exports.Lexer = class Lexer
   # by removing all lines that aren't indented by at least four spaces or a tab.
   clean: (code) ->
     code = code.slice(1) if code.charCodeAt(0) is BOM
-    code = "\n#{code}" if WHITESPACE.test code
     code = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
+    if WHITESPACE.test code
+        code = "\n#{code}"
+        @chunkLine--
     if @literate
       lines = for line in code.split('\n')
         if match = LITERATE.exec line
