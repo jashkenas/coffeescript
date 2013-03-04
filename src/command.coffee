@@ -131,7 +131,7 @@ compileScript = (file, input, base) ->
 
       CoffeeScript.emit 'success', task
       if o.print          then printLine t.output.trim()
-      else if o.compile || o.maps
+      else if o.compile || o.map
         writeJs base, t.file, t.output, t.sourceMap
       else if o.lint      then lint t.file, t.output
   catch err
@@ -311,7 +311,7 @@ parseOptions = ->
   optionParser  = new optparse.OptionParser SWITCHES, BANNER
   o = opts      = optionParser.parse process.argv[2..]
   o.compile     or=  !!o.output
-  o.run         = not (o.compile or o.print or o.lint or o.maps)
+  o.run         = not (o.compile or o.print or o.lint or o.map)
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
   sources       = o.arguments
   sourceCode[i] = null for source, i in sources
