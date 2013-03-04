@@ -12,7 +12,7 @@ path      = require 'path'
 {parser}  = require './parser'
 helpers   = require './helpers'
 vm        = require 'vm'
-sourcemap   = require './sourcemap'
+sourcemap = require './sourcemap'
 
 # Load and run a CoffeeScript file for Node, stripping any `BOM`s.
 loadFile = (module, filename) ->
@@ -28,11 +28,7 @@ if require.extensions
 exports.VERSION = '1.6.0'
 
 # Expose helpers for testing.
-exports.helpers = require './helpers'
-
-baseFileName = (fileName) ->
-  extension = path.extname(fileName)
-  return path.basename fileName, extension
+exports.helpers = helpers
 
 # Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
 #
@@ -48,7 +44,7 @@ exports.compile = compile = (code, options = {}) ->
 
     if options.sourceMap
       coffeeFile = path.basename options.filename
-      jsFile = baseFileName(options.filename) + ".js"
+      jsFile = helpers.baseFileName(options.filename) + ".js"
       sourceMap = new sourcemap.SourceMap()
 
     fragments = (parser.parse lexer.tokenize(code, options)).compileToFragments options

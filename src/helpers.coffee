@@ -92,6 +92,15 @@ exports.locationDataToString = (obj) ->
     else
       "No location data"
 
+# A `.coffee.md` compatible version of `basename`, that returns the file sans-extension.
+exports.baseFileName = (file) ->
+  parts = file.split('/')
+  file = parts[parts.length - 1]
+  parts = file.split('.')
+  parts.pop()
+  parts.pop() if parts[parts.length - 1] is 'coffee'
+  parts.join('.')
+
 # Determine if a filename represents a CoffeeScript file.
 exports.isCoffee = (file) -> /\.((lit)?coffee|coffee\.md)$/.test file
 

@@ -127,7 +127,7 @@ compileScript = (file, input, base) ->
     else
       compiled = CoffeeScript.compile t.input, t.options
       t.output = compiled
-      if o.sourceMap
+      if o.map
         t.output = compiled.js
         t.sourceMap = compiled.v3SourceMap
 
@@ -251,7 +251,7 @@ removeSource = (source, base, removeJs) ->
 
 # Get the corresponding output JavaScript path for a source file.
 outputPath = (source, base, extension=".js") ->
-  basename  = path.basename source, source.match(/\.((lit)?coffee|coffee\.md)$/)?[0] or path.extname(source)
+  basename  = helpers.baseFileName source
   srcDir    = path.dirname source
   baseDir   = if base is '.' then srcDir else srcDir.substring base.length
   dir       = if opts.output then path.join opts.output, baseDir else srcDir
