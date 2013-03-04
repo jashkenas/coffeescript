@@ -325,12 +325,17 @@ class exports.Rewriter
     @scanTokens (token, i, tokens) ->
       return 1 if     token[2]
       return 1 unless token.generated or token.explicit
-      {last_line, last_column} = tokens[i - 1]?[2] ? last_line: 0, last_column: 0
+      if token[0] is '{' and nextLocation=tokens[i + 1]?[2]
+          {first_line: line, first_column: column} = nextLocation
+      else if prevLocation = tokens[i - 1]?[2]
+          {last_line: line, last_column: column} = prevLocation
+      else
+          line = column = 0
       token[2] =
-        first_line:   last_line
-        first_column: last_column
-        last_line:    last_line
-        last_column:  last_column
+        first_line:   line
+        first_column: column
+        last_line:    line
+        last_column:  column
       1
 
   # Because our grammar is LALR(1), it can't handle some single-line
