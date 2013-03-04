@@ -126,14 +126,18 @@ compileScript = (file, input, base) ->
       compileJoin()
     else
       compiled = CoffeeScript.compile t.input, t.options
-      t.output = compiled.js
-      t.sourceMap = compiled.v3SourceMap
+      t.output = compiled
+      if o.sourceMap
+        t.output = compiled.js
+        t.sourceMap = compiled.v3SourceMap
 
       CoffeeScript.emit 'success', task
-      if o.print          then printLine t.output.trim()
+      if o.print
+        printLine t.output.trim()
       else if o.compile || o.map
         writeJs base, t.file, t.output, t.sourceMap
-      else if o.lint      then lint t.file, t.output
+      else if o.lint
+        lint t.file, t.output
   catch err
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
@@ -325,7 +329,6 @@ compileOptions = (filename) ->
     bare: opts.bare
     header: opts.compile
     sourceMap: opts.map
-    returnObject: yes
   }
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
