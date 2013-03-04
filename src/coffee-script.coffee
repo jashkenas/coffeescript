@@ -6,12 +6,13 @@
 # If included on a webpage, it will automatically sniff out, compile, and
 # execute all scripts present in `text/coffeescript` tags.
 
-fs        = require 'fs'
-path      = require 'path'
-{Lexer}   = require './lexer'
-{parser}  = require './parser'
-helpers   = require './helpers'
-vm        = require 'vm'
+fs            = require 'fs'
+path          = require 'path'
+child_process = require 'child_process'
+{Lexer}       = require './lexer'
+{parser}      = require './parser'
+helpers       = require './helpers'
+vm            = require 'vm'
 
 # Load and run a CoffeeScript file for Node, stripping any `BOM`s.
 loadFile = (module, filename) ->
@@ -22,6 +23,15 @@ loadFile = (module, filename) ->
 if require.extensions
   for ext in ['.coffee', '.litcoffee', '.md', '.coffee.md']
     require.extensions[ext] = loadFile
+
+# Patch child_process.fork to properly run .coffee files
+do (fork = child_process.fork) ->
+  child_process.fork = (modulePath) ->
+    oldExecPath = process.execPath
+    process.execPath = 'coffee' if helpers.isCoffee modulePath
+    output = fork.apply this, arguments
+    process.execPath = oldExecPath
+    output
 
 # The current CoffeeScript version number.
 exports.VERSION = '1.5.0'
