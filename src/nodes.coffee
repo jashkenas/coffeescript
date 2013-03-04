@@ -2044,8 +2044,8 @@ exports.If = class If extends Base
       return new If(@condition.invert(), @elseBodyNode(), type: 'if').compileToFragments o
 
     indent   = o.indent + TAB
-    body     = @ensureBlock(@body).compileToFragments merge o, {indent}
     cond     = @condition.compileToFragments o, LEVEL_PAREN
+    body     = @ensureBlock(@body).compileToFragments merge o, {indent}
     ifPart   = [].concat @makeCode("if ("), cond, @makeCode(") {\n"), body, @makeCode("\n#{@tab}}")
     ifPart.unshift @makeCode @tab unless child
     return ifPart unless @elseBody
@@ -2059,8 +2059,8 @@ exports.If = class If extends Base
 
   # Compile the `If` as a conditional operator.
   compileExpression: (o) ->
-    body = @bodyNode().compileToFragments o, LEVEL_LIST
     cond = @condition.compileToFragments o, LEVEL_COND
+    body = @bodyNode().compileToFragments o, LEVEL_LIST
     alt  = if @elseBodyNode() then @elseBodyNode().compileToFragments(o, LEVEL_LIST) else [@makeCode('void 0')]
     fragments = cond.concat @makeCode(" ? "), body, @makeCode(" : "), alt
     if o.level >= LEVEL_COND then @wrapInBraces fragments else fragments
