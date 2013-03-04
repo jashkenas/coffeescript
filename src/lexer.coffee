@@ -328,7 +328,7 @@ exports.Lexer = class Lexer
         @suppressNewlines()
         return indent.length
       diff = size - @indent + @outdebt
-      @token 'INDENT', diff, 0, indent.length
+      @token 'INDENT', diff, indent.length - size, size
       @indents.push diff
       @ends.push 'OUTDENT'
       @outdebt = @indebt = 0
