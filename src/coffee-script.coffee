@@ -49,7 +49,8 @@ exports.compile = compile = (code, options = {}) ->
 
     fragments = (parser.parse lexer.tokenize(code, options)).compileToFragments options
 
-    currentLine = 0
+    # Two lines of comments will start the JS file.
+    currentLine = 2
     currentColumn = 0
     js = ""
     for fragment in fragments
