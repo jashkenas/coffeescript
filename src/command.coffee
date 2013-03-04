@@ -324,7 +324,7 @@ compileOptions = (filename) ->
     literate: helpers.isLiterate(filename)
     bare: opts.bare
     header: opts.compile
-    sourceMap: opts.maps
+    sourceMap: opts.map
     returnObject: yes
   }
 
