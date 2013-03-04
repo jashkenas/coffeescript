@@ -728,3 +728,15 @@ test "#2359: extending native objects that use other typed constructors requires
   workingArray = new WorkingArray
   ok workingArray instanceof WorkingArray
   eq 'yes!', workingArray.method()
+
+
+test "#2489: removing __bind", ->
+
+  class Thing
+    foo: (a, b, c) ->
+    bar: (a, b, c) =>
+
+  thing = new Thing
+
+  eq thing.foo.length, 3
+  eq thing.bar.length, 3
