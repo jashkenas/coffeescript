@@ -1895,23 +1895,22 @@ exports.If = class If extends Base
     if exeq
       return new If(@condition.invert(), @elseBodyNode(), type: 'if').compile o
 
+    indent   = o.indent + TAB
+    body     = @ensureBlock(@body).compile merge o, {indent}
     cond     = @condition.compile o, LEVEL_PAREN
-    o.indent += TAB
-    body     = @ensureBlock(@body)
-    ifPart   = "if (#{cond}) {\n#{body.compile(o)}\n#{@tab}}"
+    ifPart   = "if (#{cond}) {\n#{body}\n#{@tab}}"
     ifPart   = @tab + ifPart unless child
     return ifPart unless @elseBody
     ifPart + ' else ' + if @isChain
-      o.indent = @tab
       o.chainChild = yes
       @elseBody.unwrap().compile o, LEVEL_TOP
     else
-      "{\n#{ @elseBody.compile o, LEVEL_TOP }\n#{@tab}}"
+      "{\n#{ @elseBody.compile merge(o, {indent}), LEVEL_TOP }\n#{@tab}}"
 
   # Compile the `If` as a conditional operator.
   compileExpression: (o) ->
-    cond = @condition.compile o, LEVEL_COND
     body = @bodyNode().compile o, LEVEL_LIST
+    cond = @condition.compile o, LEVEL_COND
     alt  = if @elseBodyNode() then @elseBodyNode().compile(o, LEVEL_LIST) else 'void 0'
     code = "#{cond} ? #{body} : #{alt}"
     if o.level >= LEVEL_COND then "(#{code})" else code
