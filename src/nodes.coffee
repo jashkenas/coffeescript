@@ -515,17 +515,15 @@ exports.Call = class Call extends Base
   # method.
   superReference: (o) ->
     method = o.scope.namedMethod()
-    throw SyntaxError 'cannot call super outside of a named function.' unless method
-    {name} = method
-    if method.klass
+    if method?.klass
       accesses = [new Access(new Literal '__super__')]
       accesses.push new Access new Literal 'constructor' if method.static
-      accesses.push new Access new Literal name
+      accesses.push new Access new Literal method.name
       (new Value (new Literal method.klass), accesses).compile o
-    else if method.ctor
-      "#{name}.__super__.constructor"
+    else if method?.ctor
+      "#{method.name}.__super__.constructor"
     else
-      "this.constructor.__super__.#{name}"
+      throw SyntaxError 'cannot call super outside of an instance method.'
 
   # The appropriate `this` value for a `super` call.
   superThis : (o) ->
