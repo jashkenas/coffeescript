@@ -908,12 +908,15 @@ exports.Class = class Class extends Base
   # Walk the body of the class, looking for prototype properties to be converted.
   walkBody: (name, o) ->
     @traverseChildren false, (child) =>
+      cont = true
       return false if child instanceof Class
       if child instanceof Block
         for node, i in exps = child.expressions
           if node instanceof Value and node.isObject(true)
+            cont = false
             exps[i] = @addProperties node, name, o
         child.expressions = exps = flatten exps
+      cont and child not instanceof Class
 
   # `use strict` (and other directives) must be the first expression statement(s)
   # of a function body. This method ensures the prologue is correctly positioned

@@ -312,7 +312,7 @@ test "classes with value'd constructors", ->
   eq (new Two).value, 2
 
 
-test "exectuable class bodies", ->
+test "executable class bodies", ->
 
   class A
     if true
@@ -324,6 +324,17 @@ test "exectuable class bodies", ->
 
   eq a.b, 'b'
   eq a.c, undefined
+
+
+test "#2502: parenthesizing inner object values", ->
+
+  class A
+    category:  (type: 'string')
+    sections:  (type: 'number', default: 0)
+
+  eq (new A).category.type, 'string'
+
+  eq (new A).sections.default, 0
 
 
 test "mild metaprogramming", ->
