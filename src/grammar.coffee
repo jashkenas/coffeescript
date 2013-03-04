@@ -263,7 +263,8 @@ grammar =
   Accessor: [
     o '.  Identifier',                          -> new Access $2
     o '?. Identifier',                          -> new Access $2, 'soak'
-    o ':: Identifier',                          -> [LOC(1)(new Access new Literal 'prototype'), LOC(2)(new Access $2)]
+    o ':: Identifier',                          -> [LOC(1)(new Access new Literal('prototype')), LOC(2)(new Access $2)]
+    o '?:: Identifier',                         -> [LOC(1)(new Access new Literal('prototype'), 'soak'), LOC(2)(new Access $2)]
     o '::',                                     -> new Access new Literal 'prototype'
     o 'Index'
   ]
@@ -576,7 +577,7 @@ grammar =
 #
 #     (2 + 3) * 4
 operators = [
-  ['left',      '.', '?.', '::']
+  ['left',      '.', '?.', '::', '?::']
   ['left',      'CALL_START', 'CALL_END']
   ['nonassoc',  '++', '--']
   ['left',      '?']

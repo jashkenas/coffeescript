@@ -114,7 +114,7 @@ exports.Lexer = class Lexer
       @token 'OWN', id
       return id.length
     forcedIdentifier = colon or
-      (prev = last @tokens) and (prev[0] in ['.', '?.', '::'] or
+      (prev = last @tokens) and (prev[0] in ['.', '?.', '::', '?::'] or
       not prev.spaced and prev[0] is '@')
     tag = 'IDENTIFIER'
 
@@ -678,7 +678,7 @@ exports.Lexer = class Lexer
   # Are we in the midst of an unfinished expression?
   unfinished: ->
     LINE_CONTINUER.test(@chunk) or
-    @tag() in ['\\', '.', '?.', 'UNARY', 'MATH', '+', '-', 'SHIFT', 'RELATION'
+    @tag() in ['\\', '.', '?.', '?::', 'UNARY', 'MATH', '+', '-', 'SHIFT', 'RELATION'
                'COMPARE', 'LOGIC', 'THROW', 'EXTENDS']
 
   # Converts newlines for string literals.
@@ -771,7 +771,7 @@ OPERATOR   = /// ^ (
    | >>>=?             # zero-fill right shift
    | ([-+:])\1         # doubles
    | ([&|<>])\2=?      # logic / shift
-   | \?\.              # soak access
+   | \?(\.|::)         # soak access
    | \.{2,3}           # range or splat
 ) ///
 

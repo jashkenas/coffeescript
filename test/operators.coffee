@@ -293,4 +293,6 @@ test "#2567: Optimization of negated existential produces correct result", ->
   ok !(!a?)
   ok !b?
 
-
+test "#2508: Existential access of the prototype", ->
+  eq NonExistent?::nothing, undefined
+  ok Object?::toString

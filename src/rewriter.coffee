@@ -270,7 +270,7 @@ class exports.Rewriter
       # .g b, ->
       #   c
       # .h a
-      if prevTag is 'OUTDENT' and inImplicitCall() and tag in ['.', '?.', '::']
+      if prevTag is 'OUTDENT' and inImplicitCall() and tag in ['.', '?.', '::', '?::']
         endImplicitCall()
         return forward(1)
 
