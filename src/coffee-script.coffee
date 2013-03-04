@@ -118,7 +118,9 @@ exports.run = (code, options = {}) ->
 
   # Compile.
   if not helpers.isCoffee(mainModule.filename) or require.extensions
-    mainModule._compile compile(code, options), mainModule.filename
+    compiledCode = compile(code, options)
+    compiledCode = compiledCode.js if compiledCode.js?
+    mainModule._compile compiledCode, mainModule.filename
   else
     mainModule._compile code, mainModule.filename
 
