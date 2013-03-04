@@ -120,8 +120,13 @@ exports.Lexer = class Lexer
 
     if not forcedIdentifier and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS)
       tag = id.toUpperCase()
-      if tag is 'WHEN' and @tag() in LINE_BREAK
+      if tag is 'WHEN' and  @tag() in LINE_BREAK
         tag = 'LEADING_WHEN'
+        # implicit switch after function declaration
+        if @tag(1) in FUNCTION_DECLARATIONS
+          # add switch before line break
+          switchToken = ['SWITCH', 'switch', 0, 6]
+          @tokens.splice @tokens.length-1, 0, switchToken
       else if tag is 'FOR'
         @seenFor = yes
       else if tag is 'UNLESS'
@@ -762,6 +767,8 @@ NUMBER     = ///
   ^ 0x[\da-f]+ |              # hex
   ^ \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
 ///i
+
+FUNCTION_DECLARATIONS = ['->', '=>']
 
 HEREDOC    = /// ^ ("""|''') ([\s\S]*?) (?:\n[^\n\S]*)? \1 ///
 

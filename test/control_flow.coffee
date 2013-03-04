@@ -421,6 +421,12 @@ test "Issue #997. Switch doesn't fallthrough.", ->
   eq val, 1
 
 
+test "Issue #2490. Implicit switch after a function declaration.", ->
+  ok do ->
+    when true
+      true
+
+
 test "Throw should be usable as an expression.", ->
   try
     false or throw 'up'
