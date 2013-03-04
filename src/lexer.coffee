@@ -650,7 +650,7 @@ exports.Lexer = class Lexer
     # so if last_column == first_column, then we're looking at a character of length 1.
     lastCharacter = Math.max 0, length - 1
     [locationData.last_line, locationData.last_column] =
-      @getLineAndColumnFromChunk offsetInChunk + (length - 1)
+      @getLineAndColumnFromChunk offsetInChunk + (lastCharacter)
 
     token = [tag, value, locationData]
 
