@@ -1,3 +1,5 @@
+return if global.testingBrowser
+
 sourcemap = require '../src/sourcemap'
 
 vlqEncodedValues = [

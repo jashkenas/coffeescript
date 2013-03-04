@@ -51,7 +51,7 @@
         <a href="#literate">Literate CoffeeScript</a>
         <a href="#language">Language Reference</a>
         <a href="#literals">Literals: Functions, Objects and Arrays</a>
-        <a href="#lexical_scope">Lexical Scoping and Variable Safety</a>
+        <a href="#lexical-scope">Lexical Scoping and Variable Safety</a>
         <a href="#conditionals">If, Else, Unless, and Conditional Assignment</a>
         <a href="#splats">Splats...</a>
         <a href="#loops">Loops and Comprehensions</a>
@@ -60,13 +60,14 @@
         <a href="#operators">Operators and Aliases</a>
         <a href="#classes">Classes, Inheritance, and Super</a>
         <a href="#destructuring">Destructuring Assignment</a>
-        <a href="#fat_arrow">Function Binding</a>
+        <a href="#fat-arrow">Function Binding</a>
         <a href="#embedded">Embedded JavaScript</a>
         <a href="#switch">Switch and Try/Catch</a>
         <a href="#comparisons">Chained Comparisons</a>
         <a href="#strings">String Interpolation, Block Strings, and Block Comments</a>
         <a href="#regexes">Block Regular Expressions</a>
         <a href="#cake">Cake, and Cakefiles</a>
+        <a href="#source-maps">Source Maps</a>
         <a href="#scripts">"text/coffeescript" Script Tags</a>
         <a href="#resources">Books, Screencasts, Examples and Resources</a>
         <a href="#changelog">Change Log</a>
@@ -109,6 +110,7 @@
         <a href="documentation/docs/command.html">"coffee" Command-Line Utility &mdash; src/command</a>
         <a href="documentation/docs/optparse.html">Option Parsing &mdash; src/optparse</a>
         <a href="documentation/docs/repl.html">Interactive REPL &mdash; src/repl</a>
+        <a href="documentation/docs/sourcemap.html">Source Maps &mdash; src/sourcemap</a>
       </div>
     </div>
     <div id="error" style="display:none;"></div>
@@ -137,8 +139,11 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/1.5.0">1.5.0</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.6.0">1.6.0</a>
     </p>
+
+    <pre>
+sudo npm install -g coffee-script</pre>
 
     <h2>
       <span id="overview" class="bookmark"></span>
@@ -219,6 +224,13 @@ sudo bin/cake install</pre>
         </td>
       </tr>
       <tr>
+        <td><code>-m, --map</code></td>
+        <td>
+          Generate source maps alongside the compiled JavaScript files. Adds
+          <tt>sourceMappingURL</tt> directives to the JavaScript as well.
+        </td>
+      </tr>
+      <tr>
         <td width="25%"><code>-i, --interactive</code></td>
         <td>
           Launch an interactive CoffeeScript session to try short snippets.
@@ -290,7 +302,7 @@ sudo bin/cake install</pre>
         <td><code>-b, --bare</code></td>
         <td>
           Compile the JavaScript without the
-          <a href="#lexical_scope">top-level function safety wrapper</a>.
+          <a href="#lexical-scope">top-level function safety wrapper</a>.
         </td>
       </tr>
       <tr>
@@ -383,8 +395,9 @@ Expressions
     <p>
       I'm fairly excited about this direction for the language, and am looking
       forward to writing (and more importantly, reading) more programs in this style.
-      As <b>1.5.0</b> is the first version of CoffeeScript that supports it, let us know
-      if you have any ideas for improving the feature.
+      More information about Literate CoffeeScript, including an
+      <a href="https://github.com/jashkenas/journo">example program</a>,
+      are <a href="http://ashkenas.com/literate-coffeescript">available in this blog post</a>.
     </p>
 
     <h2>
@@ -458,7 +471,7 @@ Expressions
     <%= code_for('objects_reserved') %>
 
     <p>
-      <span id="lexical_scope" class="bookmark"></span>
+      <span id="lexical-scope" class="bookmark"></span>
       <b class="header">Lexical Scoping and Variable Safety</b>
       The CoffeeScript compiler takes care to make sure that all of your variables
       are properly declared within lexical scope &mdash; you never need to write
@@ -801,7 +814,7 @@ Expressions
     <%= code_for('patterns_and_splats', 'contents.join("")') %>
 
     <p>
-      <span id="fat_arrow" class="bookmark"></span>
+      <span id="fat-arrow" class="bookmark"></span>
       <b class="header">Function binding</b>
       In JavaScript, the <tt>this</tt> keyword is dynamically scoped to mean the
       object that the current function is attached to. If you pass a function as
@@ -948,6 +961,26 @@ Expressions
       <a href="documentation/docs/cake.html">don't expect any fanciness built-in</a>.
       If you need dependencies, or async callbacks, it's best to put them in your
       code itself &mdash; not the cake task.
+    </p>
+
+    <h2>
+      <span id="source-maps" class="bookmark"></span>
+      Source Maps
+    </h2>
+
+    <p>
+      CoffeeScript 1.6.0 and above include support for generating source maps,
+      a way to tell your JavaScript engine what part of your CoffeeScript
+      program matches up with the code being evaluated. Browsers that support it
+      can automatically use source maps to show your original source code
+      in the debugger. To generate source maps alongside your JavaScript files,
+      pass the <tt>--map</tt> or <tt>-m</tt> flag to the compiler.
+    </p>
+
+    <p>
+      For a full introduction to source maps, how they work, and how to hook
+      them up in your browser, read the
+      <a href="http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/">HTML5 Tutorial</a>.
     </p>
 
     <h2>
@@ -1158,6 +1191,35 @@ Expressions
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <b class="header" style="margin-top: 20px;">
+        <a href="https://github.com/jashkenas/coffee-script/compare/1.5.0...1.6.0">1.6.0</a>
+        <span class="timestamp"> &ndash; <small>March 5, 2013</small></span>
+      </b>
+      <ul>
+        <li>
+          First release of <a href="#source-maps">source maps</a>. Pass the
+          <tt>--map</tt> flag to the compiler, and off you go. Direct all your
+          thanks over to <a href="http://github.com/jwalton">Jason Walton</a>.
+        </li>
+        <li>
+          Fixed a 1.5.0 regression with multiple implicit calls against an
+          indented implicit object. Combinations of implicit function calls
+          and implicit objects should generally be parsed better now &mdash;
+          but it still isn't good <i>style</i> to nest them too heavily.
+        </li>
+        <li>
+          <tt>.coffee.md</tt> is now also supported as a Literate CoffeeScript
+          file extension, for existing tooling.
+          <tt>.litcoffee</tt> remains the canonical one.
+        </li>
+        <li>
+          Several minor fixes surrounding member properties, bound methods and
+          <tt>super</tt> in class declarations.
+        </li>
+      </ul>
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">
