@@ -125,12 +125,9 @@ compileScript = (file, input, base) ->
       sourceCode[sources.indexOf(t.file)] = t.input
       compileJoin()
     else
-      if o.maps
-        compiled = CoffeeScript.compileWithSourceMap t.input, t.options
-        t.output = compiled.compiledJs
-        t.sourceMap = compiled.v3SourceMap
-      else
-        t.output = CoffeeScript.compile t.input, t.options
+      compiled = CoffeeScript.compile t.input, t.options
+      t.output = compiled.js
+      t.sourceMap = compiled.v3SourceMap
 
       CoffeeScript.emit 'success', task
       if o.print          then printLine t.output.trim()
@@ -322,7 +319,14 @@ parseOptions = ->
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (filename) ->
-  {filename, literate: helpers.isLiterate(filename), bare: opts.bare, header: opts.compile}
+  {
+    filename
+    literate: helpers.isLiterate(filename)
+    bare: opts.bare
+    header: opts.compile
+    sourceMap: opts.maps
+    returnObject: yes
+  }
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
 # the `node` binary, preserving the other options.
