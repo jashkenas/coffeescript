@@ -53,16 +53,6 @@ exports.Base = class Base
   # object with their parent closure, to preserve the expected lexical scope.
   compileClosure: (o) ->
     if jumpNode = @jumps()
-      # TODO It'd be so freaking dope if we could mark the surrounding of the
-      # problematic expression in the error, something like:
-      #
-      #     error: cannot use a pure statement in an expression
-      #     foo = if bar then break else 42
-      #           ~~~~~~~~~~~~^^^^^~~~~~~~~
-      #
-      # Something like Clang does (http://clang.llvm.org/diagnostics.html).
-      # In this case the problematic expression would be `jumpNode` and the
-      # surroundings would be `@`.
       jumpNode.error 'cannot use a pure statement in an expression'
     o.sharedScope = yes
     Closure.wrap(this).compileNode o
@@ -814,7 +804,6 @@ exports.Obj = class Obj extends Base
     return (if @front then '({})' else '{}') unless props.length
     if @generated
       for node in props when node instanceof Value
-        # TODO Mark surrounding implicit object.
         node.error 'cannot have an implicit value in an implicit object'
     idt         = o.indent += TAB
     lastNoncom  = @lastNonComment @properties
