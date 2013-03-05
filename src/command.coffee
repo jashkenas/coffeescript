@@ -270,7 +270,7 @@ writeJs = (base, sourcePath, js, generatedSourceMap = null) ->
   compile = ->
     if opts.compile
       js = ' ' if js.length <= 0
-      if generatedSourceMap then js = "//@ sourceMappingURL=#{helpers.baseFileName sourceMapPath}\n#{js}"
+      if generatedSourceMap then js = "#{js}\n/*\n//@ sourceMappingURL=#{helpers.baseFileName sourceMapPath}\n*/\n"
       fs.writeFile jsPath, js, (err) ->
         if err
           printLine err.message
