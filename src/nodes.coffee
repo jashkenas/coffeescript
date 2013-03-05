@@ -3,6 +3,8 @@
 # but some are created by other nodes as a method of code generation. To convert
 # the syntax tree into a string of JavaScript code, call `compile()` on the root.
 
+Error.stackTraceLimit = Infinity
+
 {Scope} = require './scope'
 {RESERVED, STRICT_PROSCRIBED} = require './lexer'
 
@@ -20,6 +22,25 @@ NO      = -> no
 THIS    = -> this
 NEGATE  = -> @negated = not @negated; this
 
+#### CodeFragment
+
+# The various nodes defined below all compile to a collection of **CodeFragment** objects.
+# A CodeFragments is a block of generated code, and the location in the source file where the code
+# came from. CodeFragments can be assembled together into working code just by catting together
+# all the CodeFragments' `code` snippets, in order.
+exports.CodeFragment = class CodeFragment
+  constructor: (parent, code) ->
+    @code = "#{code}"
+    @locationData = parent?.locationData
+    @type = parent?.constructor?.name or 'unknown'
+
+  toString: () ->
+    "#{@code}#{[if @locationData then ": " + locationDataToString(@locationData)]}"
+
+# Convert an array of CodeFragments into a string.
+fragmentsToText = (fragments) ->
+  (fragment.code for fragment in fragments).join('')
+
 #### Base
 
 # The **Base** is the abstract base class for all nodes in the syntax tree.
@@ -33,13 +54,16 @@ NEGATE  = -> @negated = not @negated; this
 # scope, and indentation level.
 exports.Base = class Base
 
+  compile: (o, lvl) ->
+    fragmentsToText @compileToFragments o, lvl
+
   # Common logic for determining whether to wrap this node in a closure before
   # compiling it, or to compile directly. We need to wrap if this node is a
   # *statement*, and it's not a *pureStatement*, and we're not at
   # the top level of a block (which would be unnecessary), and we haven't
   # already been asked to return the result (because statements know how to
   # return results).
-  compile: (o, lvl) ->
+  compileToFragments: (o, lvl) ->
     o        = extend {}, o
     o.level  = lvl if lvl
     node     = @unfoldSoak(o) or this
@@ -60,14 +84,21 @@ exports.Base = class Base
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
   # by assigning it to a temporary variable. Pass a level to precompile.
+  #
+  # If `level` is passed, then returns `[val, ref]`, where `val` is the compiled value, and `ref`
+  # is the compiled reference. If `level` is not passed, this returns `[val, ref]` where
+  # the two values are raw nodes which have not been compiled.
   cache: (o, level, reused) ->
     unless @isComplex()
-      ref = if level then @compile o, level else this
+      ref = if level then @compileToFragments o, level else this
       [ref, ref]
     else
       ref = new Literal reused or o.scope.freeVariable 'ref'
       sub = new Assign ref, this
-      if level then [sub.compile(o, level), ref.value] else [sub, ref]
+      if level then [sub.compileToFragments(o, level), [@makeCode(ref.value)]] else [sub, ref]
+
+  cacheToCodeFragments: (cacheValues) ->
+    [fragmentsToText(cacheValues[0]), fragmentsToText(cacheValues[1])]
 
   # Construct a node that returns the current node's result.
   # Note that this is overridden for smarter behavior for
@@ -120,7 +151,7 @@ exports.Base = class Base
       child.traverseChildren crossScope, func
 
   invert: ->
-    Op.create '!', this
+    new Op '!', this
 
   unwrapAll: ->
     node = this
@@ -154,6 +185,22 @@ exports.Base = class Base
   # Throw a compiler error associated with this node's location.
   error: (message) ->
     throw CompilerError.fromLocationData message, @locationData
+
+  makeCode: (code) ->
+    new CodeFragment this, code
+
+  wrapInBraces: (fragments) ->
+    [].concat @makeCode('('), fragments, @makeCode(')')
+
+  # `fragmentsList` is an array of arrays of fragments. Each array in fragmentsList will be
+  # concatonated together, with `joinStr` added in between each, to produce a final flat array
+  # of fragments.
+  joinFragmentArrays: (fragmentsList, joinStr) ->
+    answer = []
+    for fragments,i in fragmentsList
+      if i then answer.push @makeCode joinStr
+      answer = answer.concat fragments
+    answer
 
 #### Block
 
@@ -211,7 +258,7 @@ exports.Block = class Block extends Base
     this
 
   # A **Block** is the only node that can serve as the root.
-  compile: (o = {}, level) ->
+  compileToFragments: (o = {}, level) ->
     if o.scope then super o, level else @compileRoot o
 
   # Compile all expressions within the **Block** body. If we need to
@@ -220,30 +267,36 @@ exports.Block = class Block extends Base
   compileNode: (o) ->
     @tab  = o.indent
     top   = o.level is LEVEL_TOP
-    codes = []
-    for node in @expressions
+    compiledNodes = []
+
+    for node, index in @expressions
+
       node = node.unwrapAll()
       node = (node.unfoldSoak(o) or node)
       if node instanceof Block
-        # This is a nested block.  We don't do anything special here like enclose
+        # This is a nested block. We don't do anything special here like enclose
         # it in a new scope; we just compile the statements in this block along with
         # our own
-        codes.push node.compileNode o
+        compiledNodes.push node.compileNode o
       else if top
         node.front = true
-        code = node.compile o
+        fragments = node.compileToFragments o
         unless node.isStatement o
-          code = "#{@tab}#{code};"
-        codes.push code
+          fragments.unshift @makeCode "#{@tab}"
+          fragments.push @makeCode ";"
+        compiledNodes.push fragments
       else
-        codes.push node.compile o, LEVEL_LIST
+        compiledNodes.push node.compileToFragments o, LEVEL_LIST
     if top
       if @spaced
-        return "\n#{codes.join '\n\n'}\n"
+        return [].concat @makeCode("\n"), @joinFragmentArrays(compiledNodes, '\n\n'), @makeCode("\n")
       else
-        return codes.join '\n'
-    code = codes.join(', ') or 'void 0'
-    if codes.length > 1 and o.level >= LEVEL_LIST then "(#{code})" else code
+        return @joinFragmentArrays(compiledNodes, '\n')
+    if compiledNodes.length
+      answer = @joinFragmentArrays(compiledNodes, ', ')
+    else
+      answer = [@makeCode "void 0"]
+    if compiledNodes.length > 1 and o.level >= LEVEL_LIST then @wrapInBraces answer else answer
 
   # If we happen to be the top-level **Block**, wrap everything in
   # a safety closure, unless requested not to.
@@ -254,31 +307,34 @@ exports.Block = class Block extends Base
     o.scope   = new Scope null, this, null
     o.level   = LEVEL_TOP
     @spaced   = yes
-    prelude   = ""
+    prelude   = []
     unless o.bare
       preludeExps = for exp, i in @expressions
         break unless exp.unwrap() instanceof Comment
         exp
       rest = @expressions[preludeExps.length...]
       @expressions = preludeExps
-      prelude = "#{@compileNode merge(o, indent: '')}\n" if preludeExps.length
+      if preludeExps.length
+        prelude = @compileNode merge(o, indent: '')
+        prelude.push @makeCode "\n"
       @expressions = rest
-    code = @compileWithDeclarations o
-    return code if o.bare
-    "#{prelude}(function() {\n#{code}\n}).call(this);\n"
+    fragments = @compileWithDeclarations o
+    return fragments if o.bare
+    [].concat prelude, @makeCode("(function() {\n"), fragments, @makeCode("\n}).call(this);\n")
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
   compileWithDeclarations: (o) ->
-    code = post = ''
+    fragments = []
+    post = []
     for exp, i in @expressions
       exp = exp.unwrap()
       break unless exp instanceof Comment or exp instanceof Literal
     o = merge(o, level: LEVEL_TOP)
     if i
       rest = @expressions.splice i, 9e9
-      [spaced, @spaced] = [@spaced, no]
-      [code  , @spaced] = [(@compileNode o), spaced]
+      [spaced,    @spaced] = [@spaced, no]
+      [fragments, @spaced] = [(@compileNode o), spaced]
       @expressions = rest
     post = @compileNode o
     {scope} = o
@@ -286,15 +342,15 @@ exports.Block = class Block extends Base
       declars = o.scope.hasDeclarations()
       assigns = scope.hasAssignments
       if declars or assigns
-        code += '\n' if i
-        code += "#{@tab}var "
+        fragments.push @makeCode '\n' if i
+        fragments.push @makeCode "#{@tab}var "
         if declars
-          code += scope.declaredVariables().join ', '
+          fragments.push @makeCode(scope.declaredVariables().join ', ')
         if assigns
-          code += ",\n#{@tab + TAB}" if declars
-          code += scope.assignedVariables().join ",\n#{@tab + TAB}"
-        code += ';\n'
-    code + post
+          fragments.push @makeCode ",\n#{@tab + TAB}" if declars
+          fragments.push @makeCode (scope.assignedVariables().join ",\n#{@tab + TAB}")
+        fragments.push @makeCode ';\n'
+    fragments.concat post
 
   # Wrap up the given nodes as a **Block**, unless it already happens
   # to be one.
@@ -335,7 +391,8 @@ exports.Literal = class Literal extends Base
       "\"#{@value}\""
     else
       @value
-    if @isStatement() then "#{@tab}#{code};" else code
+    answer = if @isStatement() then "#{@tab}#{code};" else code
+    [@makeCode answer]
 
   toString: ->
     ' "' + @value + '"'
@@ -344,17 +401,17 @@ class exports.Undefined extends Base
   isAssignable: NO
   isComplex: NO
   compileNode: (o) ->
-    if o.level >= LEVEL_ACCESS then '(void 0)' else 'void 0'
+    [@makeCode if o.level >= LEVEL_ACCESS then '(void 0)' else 'void 0']
 
 class exports.Null extends Base
   isAssignable: NO
   isComplex: NO
-  compileNode: -> "null"
+  compileNode: -> [@makeCode "null"]
 
 class exports.Bool extends Base
   isAssignable: NO
   isComplex: NO
-  compileNode: -> @val
+  compileNode: -> [@makeCode @val]
   constructor: (@val) ->
 
 #### Return
@@ -371,27 +428,31 @@ exports.Return = class Return extends Base
   makeReturn:      THIS
   jumps:           THIS
 
-  compile: (o, level) ->
+  compileToFragments: (o, level) ->
     expr = @expression?.makeReturn()
-    if expr and expr not instanceof Return then expr.compile o, level else super o, level
+    if expr and expr not instanceof Return then expr.compileToFragments o, level else super o, level
 
   compileNode: (o) ->
-    @tab + "return#{[" #{@expression.compile o, LEVEL_PAREN}" if @expression]};"
+    answer = []
+    # TODO: If we call expression.compile() here twice, we'll sometimes get back different results!
+    answer.push @makeCode(@tab + "return#{[" " if @expression]}")
+    if @expression
+      answer = answer.concat @expression.compileToFragments(o, LEVEL_PAREN)
+    answer.push @makeCode ";"
+    return answer
+
 
 #### Value
 
 # A value, variable or literal or parenthesized, indexed or dotted into,
 # or vanilla.
 exports.Value = class Value extends Base
-  @wrap: (base, props, tag) ->
-    if not props and base instanceof Value
-      base
-    else
-      new Value base, props, tag
-
-  constructor: (@base, @properties, tag) ->
-    @properties or= []
-    @this = true if tag is 'this'
+  constructor: (base, props, tag) ->
+    return base if not props and base instanceof Value
+    @base       = base
+    @properties = props or []
+    @[tag]      = true if tag
+    return this
 
   children: ['base', 'properties']
 
@@ -437,16 +498,16 @@ exports.Value = class Value extends Base
     name = last @properties
     if @properties.length < 2 and not @base.isComplex() and not name?.isComplex()
       return [this, this]  # `a` `a.b`
-    base = Value.wrap @base, @properties[...-1]
+    base = new Value @base, @properties[...-1]
     if base.isComplex()  # `a().b`
       bref = new Literal o.scope.freeVariable 'base'
-      base = Value.wrap new Parens new Assign bref, base
+      base = new Value new Parens new Assign bref, base
     return [base, bref] unless name  # `a()`
     if name.isComplex()  # `a[b()]`
       nref = new Literal o.scope.freeVariable 'name'
       name = new Index new Assign nref, name.index
       nref = new Index nref
-    [base.add(name), Value.wrap(bref or base.base, [nref or name])]
+    [base.add(name), new Value(bref or base.base, [nref or name])]
 
   # We compile a value to JavaScript by compiling and joining each property.
   # Things get much more interesting if the chain of properties has *soak*
@@ -455,10 +516,12 @@ exports.Value = class Value extends Base
   compileNode: (o) ->
     @base.front = @front
     props = @properties
-    code  = @base.compile o, if props.length then LEVEL_ACCESS else null
-    code  = "#{code}." if (@base instanceof Parens or props.length) and SIMPLENUM.test code
-    code += prop.compile o for prop in props
-    code
+    fragments = @base.compileToFragments o, (if props.length then LEVEL_ACCESS else null)
+    if (@base instanceof Parens or props.length) and SIMPLENUM.test fragmentsToText fragments
+      fragments.push @makeCode '.'
+    for prop in props
+      fragments.push (prop.compileToFragments o)...
+    fragments
 
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
@@ -468,8 +531,8 @@ exports.Value = class Value extends Base
         return ifn
       for prop, i in @properties when prop.soak
         prop.soak = off
-        fst = Value.wrap @base, @properties[...i]
-        snd = Value.wrap @base, @properties[i..]
+        fst = new Value @base, @properties[...i]
+        snd = new Value @base, @properties[i..]
         if fst.isComplex()
           ref = new Literal o.scope.freeVariable 'ref'
           fst = new Parens new Assign ref, fst
@@ -490,7 +553,7 @@ exports.Comment = class Comment extends Base
   compileNode: (o, level) ->
     code = '/*' + multident(@comment, @tab) + "\n#{@tab}*/\n"
     code = o.indent + code if (level or o.level) is LEVEL_TOP
-    code
+    [@makeCode code]
 
 #### Call
 
@@ -517,16 +580,15 @@ exports.Call = class Call extends Base
   # method.
   superReference: (o) ->
     method = o.scope.namedMethod()
-    @error 'cannot call super outside of a function' unless method
-    {name} = method
-    @error 'cannot call super on an anonymous function' unless name?
-    if method.klass
+    if method?.klass
       accesses = [new Access(new Literal '__super__')]
       accesses.push new Access new Literal 'constructor' if method.static
-      accesses.push new Access new Literal name
-      (Value.wrap (new Literal method.klass), accesses).compile o
+      accesses.push new Access new Literal method.name
+      (new Value (new Literal method.klass), accesses).compile o
+    else if method?.ctor
+      "#{method.name}.__super__.constructor"
     else
-      "#{name}.__super__.constructor"
+      @error 'cannot call super outside of an instance method.'
 
   # The appropriate `this` value for a `super` call.
   superThis : (o) ->
@@ -538,14 +600,14 @@ exports.Call = class Call extends Base
     if @soak
       if @variable
         return ifn if ifn = unfoldSoak o, this, 'variable'
-        [left, rite] = Value.wrap(@variable).cacheReference o
+        [left, rite] = new Value(@variable).cacheReference o
       else
         left = new Literal @superReference o
-        rite = Value.wrap left
+        rite = new Value left
       rite = new Call rite, @args
       rite.isNew = @isNew
       left = new Literal "typeof #{ left.compile o } === \"function\""
-      return new If left, Value.wrap(rite), soak: yes
+      return new If left, new Value(rite), soak: yes
     call = this
     list = []
     loop
@@ -565,64 +627,70 @@ exports.Call = class Call extends Base
       ifn = unfoldSoak o, call, 'variable'
     ifn
 
-  # Walk through the objects in the arguments, moving over simple values.
-  # This allows syntax like `call a: b, c` into `call({a: b}, c);`
-  filterImplicitObjects: (list) ->
-    nodes = []
-    for node in list
-      unless node.isObject?() and node.base.generated
-        nodes.push node
-        continue
-      obj = null
-      for prop in node.base.properties
-        if prop instanceof Assign or prop instanceof Comment
-          nodes.push obj = new Obj properties = [], true if not obj
-          properties.push prop
-        else
-          nodes.push prop
-          obj = null
-    nodes
-
   # Compile a vanilla function call.
   compileNode: (o) ->
     @variable?.front = @front
-    if code = Splat.compileSplattedArray o, @args, true
-      return @compileSplat o, code
-    args = @filterImplicitObjects @args
-    args = (arg.compile o, LEVEL_LIST for arg in args).join ', '
+    compiledArray = Splat.compileSplattedArray o, @args, true
+    if compiledArray.length
+      return @compileSplat o, compiledArray
+    compiledArgs = []
+    for arg, argIndex in @args
+      if argIndex then compiledArgs.push @makeCode ", "
+      compiledArgs.push (arg.compileToFragments o, LEVEL_LIST)...
+
+    fragments = []
     if @isSuper
-      @superReference(o) + ".call(#{@superThis(o)}#{ args and ', ' + args })"
+      preface = @superReference(o) + ".call(#{@superThis(o)}"
+      if compiledArgs.length then preface += ", "
+      fragments.push @makeCode preface
     else
-      (if @isNew then 'new ' else '') + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
+      if @isNew then fragments.push @makeCode 'new '
+      fragments.push (@variable.compileToFragments(o, LEVEL_ACCESS))...
+      fragments.push @makeCode "("
+    fragments.push compiledArgs...
+    fragments.push @makeCode ")"
+    fragments
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
   # If it's a constructor, then things get real tricky. We have to inject an
   # inner constructor in order to be able to pass the varargs.
+  #
+  # splatArgs is an array of CodeFragments to put into the 'apply'.
   compileSplat: (o, splatArgs) ->
-    return "#{ @superReference o }.apply(#{@superThis(o)}, #{splatArgs})" if @isSuper
+    if @isSuper
+      return [].concat @makeCode("#{ @superReference o }.apply(#{@superThis(o)}, "),
+        splatArgs, @makeCode(")")
+
     if @isNew
       idt = @tab + TAB
-      return """
+      return [].concat @makeCode("""
         (function(func, args, ctor) {
         #{idt}ctor.prototype = func.prototype;
         #{idt}var child = new ctor, result = func.apply(child, args);
         #{idt}return Object(result) === result ? result : child;
-        #{@tab}})(#{ @variable.compile o, LEVEL_LIST }, #{splatArgs}, function(){})
-      """
-    base = Value.wrap @variable
+        #{@tab}})("""),
+        (@variable.compileToFragments o, LEVEL_LIST),
+        @makeCode(", "), splatArgs, @makeCode(", function(){})")
+
+    answer = []
+    base = new Value @variable
     if (name = base.properties.pop()) and base.isComplex()
       ref = o.scope.freeVariable 'ref'
-      fun = "(#{ref} = #{ base.compile o, LEVEL_LIST })#{ name.compile o }"
+      answer = answer.concat @makeCode("(#{ref} = "),
+        (base.compileToFragments o, LEVEL_LIST),
+        @makeCode(")"),
+        name.compileToFragments(o)
     else
-      fun = base.compile o, LEVEL_ACCESS
-      fun = "(#{fun})" if SIMPLENUM.test fun
+      fun = base.compileToFragments o, LEVEL_ACCESS
+      fun = @wrapInBraces fun if SIMPLENUM.test fragmentsToText fun
       if name
-        ref = fun
-        fun += name.compile o
+        ref = fragmentsToText fun
+        fun.push (name.compileToFragments o)...
       else
         ref = 'null'
-    "#{fun}.apply(#{ref}, #{splatArgs})"
+      answer = answer.concat fun
+    answer = answer.concat @makeCode(".apply(#{ref}, "), splatArgs, @makeCode(")")
 
 #### Extends
 
@@ -635,8 +703,8 @@ exports.Extends = class Extends extends Base
   children: ['child', 'parent']
 
   # Hooks one constructor into another's prototype chain.
-  compile: (o) ->
-    new Call(Value.wrap(new Literal utility 'extends'), [@child, @parent]).compile o
+  compileToFragments: (o) ->
+    new Call(new Value(new Literal utility 'extends'), [@child, @parent]).compileToFragments o
 
 #### Access
 
@@ -649,9 +717,14 @@ exports.Access = class Access extends Base
 
   children: ['name']
 
-  compile: (o) ->
-    name = @name.compile o
-    if IDENTIFIER.test name then ".#{name}" else "[#{name}]"
+  compileToFragments: (o) ->
+    name = @name.compileToFragments o
+    if IDENTIFIER.test fragmentsToText name
+      name.unshift @makeCode "."
+    else
+      name.unshift @makeCode "["
+      name.push @makeCode "]"
+    name
 
   isComplex: NO
 
@@ -663,8 +736,8 @@ exports.Index = class Index extends Base
 
   children: ['index']
 
-  compile: (o) ->
-    "[#{ @index.compile o, LEVEL_PAREN }]"
+  compileToFragments: (o) ->
+    [].concat @makeCode("["), (@index.compileToFragments o, LEVEL_PAREN), @makeCode("]")
 
   isComplex: ->
     @index.isComplex()
@@ -682,13 +755,15 @@ exports.Range = class Range extends Base
     @exclusive = tag is 'exclusive'
     @equals = if @exclusive then '' else '='
 
+
+
   # Compiles the range's source variables -- where it starts and where it ends.
   # But only if they need to be cached to avoid double evaluation.
   compileVariables: (o) ->
     o = merge o, top: true
-    [@fromC, @fromVar]  =  @from.cache o, LEVEL_LIST
-    [@toC, @toVar]      =  @to.cache o, LEVEL_LIST
-    [@step, @stepVar]   =  step.cache o, LEVEL_LIST if step = del o, 'step'
+    [@fromC, @fromVar]  =  @cacheToCodeFragments @from.cache o, LEVEL_LIST
+    [@toC, @toVar]      =  @cacheToCodeFragments @to.cache o, LEVEL_LIST
+    [@step, @stepVar]   =  @cacheToCodeFragments step.cache o, LEVEL_LIST if step = del o, 'step'
     [@fromNum, @toNum]  = [@fromVar.match(SIMPLENUM), @toVar.match(SIMPLENUM)]
     @stepNum            = @stepVar.match(SIMPLENUM) if @stepVar
 
@@ -736,7 +811,7 @@ exports.Range = class Range extends Base
     stepPart = "#{idxName} = #{stepPart}" if namedIndex
 
     # The final loop body.
-    "#{varPart}; #{condPart}; #{stepPart}"
+    [@makeCode "#{varPart}; #{condPart}; #{stepPart}"]
 
 
   # When used as a value, expand the range into the equivalent array.
@@ -744,14 +819,14 @@ exports.Range = class Range extends Base
     if @fromNum and @toNum and Math.abs(@fromNum - @toNum) <= 20
       range = [+@fromNum..+@toNum]
       range.pop() if @exclusive
-      return "[#{ range.join(', ') }]"
+      return [@makeCode "[#{ range.join(', ') }]"]
     idt    = @tab + TAB
     i      = o.scope.freeVariable 'i'
     result = o.scope.freeVariable 'results'
     pre    = "\n#{idt}#{result} = [];"
     if @fromNum and @toNum
       o.index = i
-      body    = @compileNode o
+      body    = fragmentsToText @compileNode o
     else
       vars    = "#{i} = #{@fromC}" + if @toC isnt @toVar then ", #{@toC}" else ''
       cond    = "#{@fromVar} <= #{@toVar}"
@@ -759,7 +834,7 @@ exports.Range = class Range extends Base
     post   = "{ #{result}.push(#{i}); }\n#{idt}return #{result};\n#{o.indent}"
     hasArgs = (node) -> node?.contains (n) -> n instanceof Literal and n.value is 'arguments' and not n.asKey
     args   = ', arguments' if hasArgs(@from) or hasArgs(@to)
-    "(function() {#{pre}\n#{idt}for (#{body})#{post}}).apply(this#{args ? ''})"
+    [@makeCode "(function() {#{pre}\n#{idt}for (#{body})#{post}}).apply(this#{args ? ''})"]
 
 #### Slice
 
@@ -778,17 +853,20 @@ exports.Slice = class Slice extends Base
   # `9e9` should be safe because `9e9` > `2**32`, the max array length.
   compileNode: (o) ->
     {to, from} = @range
-    fromStr    = from and from.compile(o, LEVEL_PAREN) or '0'
-    compiled   = to and to.compile o, LEVEL_PAREN
-    if to and not (not @range.exclusive and +compiled is -1)
-      toStr = ', ' + if @range.exclusive
-        compiled
-      else if SIMPLENUM.test compiled
-        "#{+compiled + 1}"
-      else
-        compiled = to.compile o, LEVEL_ACCESS
-        "+#{compiled} + 1 || 9e9"
-    ".slice(#{ fromStr }#{ toStr or '' })"
+    fromCompiled = from and from.compileToFragments(o, LEVEL_PAREN) or [@makeCode '0']
+    # TODO: jwalton - move this into the 'if'?
+    if to
+      compiled     = to.compileToFragments o, LEVEL_PAREN
+      compiledText = fragmentsToText compiled
+      if not (not @range.exclusive and +compiledText is -1)
+        toStr = ', ' + if @range.exclusive
+          compiledText
+        else if SIMPLENUM.test compiledText
+          "#{+compiledText + 1}"
+        else
+          compiled = to.compileToFragments o, LEVEL_ACCESS
+          "+#{fragmentsToText compiled} + 1 || 9e9"
+    [@makeCode ".slice(#{ fragmentsToText fromCompiled }#{ toStr or '' })"]
 
 #### Obj
 
@@ -801,13 +879,14 @@ exports.Obj = class Obj extends Base
 
   compileNode: (o) ->
     props = @properties
-    return (if @front then '({})' else '{}') unless props.length
+    return [@makeCode(if @front then '({})' else '{}')] unless props.length
     if @generated
       for node in props when node instanceof Value
         node.error 'cannot have an implicit value in an implicit object'
     idt         = o.indent += TAB
     lastNoncom  = @lastNonComment @properties
-    props = for prop, i in props
+    answer = []
+    for prop, i in props
       join = if i is props.length - 1
         ''
       else if prop is lastNoncom or prop instanceof Comment
@@ -821,10 +900,12 @@ exports.Obj = class Obj extends Base
         if prop not instanceof Assign
           prop = new Assign prop, prop, 'object'
         (prop.variable.base or prop.variable).asKey = yes
-      indent + prop.compile(o, LEVEL_TOP) + join
-    props = props.join ''
-    obj   = "{#{ props and '\n' + props + '\n' + @tab }}"
-    if @front then "(#{obj})" else obj
+      if indent then answer.push @makeCode indent
+      answer.push prop.compileToFragments(o, LEVEL_TOP)...
+      if join then answer.push @makeCode join
+    answer.unshift @makeCode "{#{ props.length and '\n' }"
+    answer.push @makeCode "#{ props.length and '\n' + @tab }}"
+    if @front then @wrapInBraces answer else answer
 
   assigns: (name) ->
     for prop in @properties when prop.assigns name then return yes
@@ -839,18 +920,25 @@ exports.Arr = class Arr extends Base
 
   children: ['objects']
 
-  filterImplicitObjects: Call::filterImplicitObjects
-
   compileNode: (o) ->
-    return '[]' unless @objects.length
+    return [@makeCode '[]'] unless @objects.length
     o.indent += TAB
-    objs = @filterImplicitObjects @objects
-    return code if code = Splat.compileSplattedArray o, objs
-    code = (obj.compile o, LEVEL_LIST for obj in objs).join ', '
-    if code.indexOf('\n') >= 0
-      "[\n#{o.indent}#{code}\n#{@tab}]"
+    answer = Splat.compileSplattedArray o, @objects
+    return answer if answer.length
+
+    answer = []
+    compiledObjs = (obj.compileToFragments o, LEVEL_LIST for obj in @objects)
+    for fragments, index in compiledObjs
+      if index
+        answer.push @makeCode ", "
+      answer.push fragments...
+    if (fragmentsToText answer).indexOf('\n') >= 0
+      answer.unshift @makeCode "[\n#{o.indent}"
+      answer.push @makeCode "\n#{@tab}]"
     else
-      "[#{code}]"
+      answer.unshift @makeCode "["
+      answer.push @makeCode "]"
+    answer
 
   assigns: (name) ->
     for obj in @objects when obj.assigns name then return yes
@@ -893,9 +981,22 @@ exports.Class = class Class extends Base
   # Ensure that all functions bound to the instance are proxied in the
   # constructor.
   addBoundFunctions: (o) ->
-    for bvar in @boundFuncs
-      lhs = (Value.wrap (new Literal "this"), [new Access bvar]).compile o
-      @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
+    if @boundFuncs.length
+      o.scope.assign '_this', 'this'
+      for [name, func] in @boundFuncs
+        lhs = new Value (new Literal "this"), [new Access name]
+        body = new Block [new Return new Literal "#{@ctor.name}.prototype.#{name.value}.apply(_this, arguments)"]
+        rhs = new Code func.params, body, 'boundfunc'
+        bound = new Assign lhs, rhs
+
+        @ctor.body.unshift bound
+
+        # {base} = assign.variable
+        # lhs = (new Value (new Literal "this"), [new Access base]).compile o
+        # @ctor.body.unshift new Literal """#{lhs} = function() {
+        # #{o.indent}  return #{@ctor.name}.prototype.#{base.value}.apply(_this, arguments);
+        # #{o.indent}}\n
+        # """
     return
 
   # Merge the properties from a top-level object as prototypal properties
@@ -923,9 +1024,9 @@ exports.Class = class Class extends Base
             if func.bound
               func.context = name
           else
-            assign.variable = Value.wrap(new Literal(name), [(new Access new Literal 'prototype'), new Access base ])
+            assign.variable = new Value(new Literal(name), [(new Access new Literal 'prototype'), new Access base ])
             if func instanceof Code and func.bound
-              @boundFuncs.push base
+              @boundFuncs.push [base, func]
               func.bound = no
       assign
     compact exprs
@@ -933,12 +1034,15 @@ exports.Class = class Class extends Base
   # Walk the body of the class, looking for prototype properties to be converted.
   walkBody: (name, o) ->
     @traverseChildren false, (child) =>
+      cont = true
       return false if child instanceof Class
       if child instanceof Block
         for node, i in exps = child.expressions
           if node instanceof Value and node.isObject(true)
+            cont = false
             exps[i] = @addProperties node, name, o
         child.expressions = exps = flatten exps
+      cont and child not instanceof Class
 
   # `use strict` (and other directives) must be the first expression statement(s)
   # of a function body. This method ensures the prologue is correctly positioned
@@ -957,15 +1061,11 @@ exports.Class = class Class extends Base
       @ctor = new Code
       @ctor.body.push new Literal "#{name}.__super__.constructor.apply(this, arguments)" if @parent
       @ctor.body.push new Literal "#{@externalCtor}.apply(this, arguments)" if @externalCtor
+      @ctor.body.makeReturn()
       @body.expressions.unshift @ctor
     @ctor.ctor     = @ctor.name = name
     @ctor.klass    = null
     @ctor.noReturn = yes
-
-    # Prevent constructor from returning a value.
-    @ctor.body.traverseChildren no, (node) ->
-      if node instanceof Return and node.expression
-        node.expression.error "cannot return a value from a constructor"
 
   # Instead of generating the JavaScript string directly, we build up the
   # equivalent syntax tree and compile that, in pieces. You can see the
@@ -997,7 +1097,7 @@ exports.Class = class Class extends Base
 
     klass = new Parens call, yes
     klass = new Assign @variable, klass if @variable
-    klass.compile o
+    klass.compileToFragments o
 
 #### Assign
 
@@ -1031,7 +1131,8 @@ exports.Assign = class Assign extends Base
       return @compilePatternMatch o if @variable.isArray() or @variable.isObject()
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
-    name = @variable.compile o, LEVEL_LIST
+    compiledName = @variable.compileToFragments o, LEVEL_LIST
+    name = fragmentsToText compiledName
     unless @context
       varBase = @variable.unwrapAll()
       unless varBase.isAssignable()
@@ -1044,10 +1145,10 @@ exports.Assign = class Assign extends Base
     if @value instanceof Code and match = METHOD_DEF.exec name
       @value.klass = match[1] if match[1]
       @value.name  = match[2] ? match[3] ? match[4] ? match[5]
-    val = @value.compile o, LEVEL_LIST
-    return "#{name}: #{val}" if @context is 'object'
-    val = name + " #{ @context or '=' } " + val
-    if o.level <= LEVEL_LIST then val else "(#{val})"
+    val = @value.compileToFragments o, LEVEL_LIST
+    return (compiledName.concat @makeCode(": "), val) if @context is 'object'
+    answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
+    if o.level <= LEVEL_LIST then answer else @wrapInBraces answer
 
   # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
@@ -1058,8 +1159,8 @@ exports.Assign = class Assign extends Base
     {value}   = this
     {objects} = @variable.base
     unless olen = objects.length
-      code = value.compile o
-      return if o.level >= LEVEL_OP then "(#{code})" else code
+      code = value.compileToFragments o
+      return if o.level >= LEVEL_OP then @wrapInBraces code else code
     isObject = @variable.isObject()
     if top and olen is 1 and (obj = objects[0]) not instanceof Splat
       # Unroll simplest cases: `{v} = x` -> `v = x.v`
@@ -1071,17 +1172,20 @@ exports.Assign = class Assign extends Base
         else
           new Literal 0
       acc   = IDENTIFIER.test idx.unwrap().value or 0
-      value = Value.wrap value
+      value = new Value value
       value.properties.push new (if acc then Access else Index) idx
       if obj.unwrap().value in RESERVED
         obj.error "assignment to a reserved word: #{obj.compile o}"
-      return new Assign(obj, value, null, param: @param).compile o, LEVEL_TOP
-    vvar    = value.compile o, LEVEL_LIST
+      return new Assign(obj, value, null, param: @param).compileToFragments o, LEVEL_TOP
+    vvar    = value.compileToFragments o, LEVEL_LIST
+    vvarText = fragmentsToText vvar
     assigns = []
     splat   = false
-    if not IDENTIFIER.test(vvar) or @variable.assigns(vvar)
-      assigns.push "#{ ref = o.scope.freeVariable 'ref' } = #{vvar}"
-      vvar = ref
+    # Make vvar into a simple variable if it isn't already.
+    if not IDENTIFIER.test(vvarText) or @variable.assigns(vvarText)
+      assigns.push [@makeCode("#{ ref = o.scope.freeVariable 'ref' } = "), vvar...]
+      vvar = [@makeCode ref]
+      vvarText = ref
     for obj, i in objects
       # A regular array pattern-match.
       idx = i
@@ -1092,16 +1196,16 @@ exports.Assign = class Assign extends Base
         else
           # A shorthand `{a, b, @c} = val` pattern-match.
           if obj.base instanceof Parens
-            [obj, idx] = Value.wrap(obj.unwrapAll()).cacheReference o
+            [obj, idx] = new Value(obj.unwrapAll()).cacheReference o
           else
             idx = if obj.this then obj.properties[0].name else obj
       if not splat and obj instanceof Splat
         name = obj.name.unwrap().value
         obj = obj.unwrap()
-        val = "#{olen} <= #{vvar}.length ? #{ utility 'slice' }.call(#{vvar}, #{i}"
+        val = "#{olen} <= #{vvarText}.length ? #{ utility 'slice' }.call(#{vvarText}, #{i}"
         if rest = olen - i - 1
           ivar = o.scope.freeVariable 'i'
-          val += ", #{ivar} = #{vvar}.length - #{rest}) : (#{ivar} = #{i}, [])"
+          val += ", #{ivar} = #{vvarText}.length - #{rest}) : (#{ivar} = #{i}, [])"
         else
           val += ") : []"
         val   = new Literal val
@@ -1115,13 +1219,13 @@ exports.Assign = class Assign extends Base
           acc = no
         else
           acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
-        val = Value.wrap new Literal(vvar), [new (if acc then Access else Index) idx]
+        val = new Value new Literal(vvarText), [new (if acc then Access else Index) idx]
       if name? and name in RESERVED
         obj.error "assignment to a reserved word: #{obj.compile o}"
-      assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compile o, LEVEL_LIST
+      assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
     assigns.push vvar unless top or @subpattern
-    code = assigns.join ', '
-    if o.level < LEVEL_LIST then code else "(#{code})"
+    fragments = @joinFragmentArrays assigns, ', '
+    if o.level < LEVEL_LIST then fragments else @wrapInBraces fragments
 
   # When compiling a conditional assignment, take care to ensure that the
   # operands are only evaluated once, even though we have to reference them
@@ -1133,14 +1237,17 @@ exports.Assign = class Assign extends Base
            left.base.value != "this" and not o.scope.check left.base.value
       @variable.error "the variable \"#{left.base.value}\" can't be assigned with #{@context} because it has not been declared before"
     if "?" in @context then o.isExistentialEquals = true
-    Op.create(@context[...-1], left, new Assign(right, @value, '=') ).compile o
+    new Op(@context[...-1], left, new Assign(right, @value, '=') ).compileToFragments o
 
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
   compileSplice: (o) ->
     {range: {from, to, exclusive}} = @variable.properties.pop()
     name = @variable.compile o
-    [fromDecl, fromRef] = from?.cache(o, LEVEL_OP) or ['0', '0']
+    if from
+      [fromDecl, fromRef] = @cacheToCodeFragments from.cache o, LEVEL_OP
+    else
+      fromDecl = fromRef = '0'
     if to
       if from?.isSimpleNumber() and to.isSimpleNumber()
         to = +to.compile(o) - +fromRef
@@ -1151,8 +1258,8 @@ exports.Assign = class Assign extends Base
     else
       to = "9e9"
     [valDef, valRef] = @value.cache o, LEVEL_LIST
-    code = "[].splice.apply(#{name}, [#{fromDecl}, #{to}].concat(#{valDef})), #{valRef}"
-    if o.level > LEVEL_TOP then "(#{code})" else code
+    answer = [].concat @makeCode("[].splice.apply(#{name}, [#{fromDecl}, #{to}].concat("), valDef, @makeCode(")), "), valRef
+    if o.level > LEVEL_TOP then @wrapInBraces answer else answer
 
 #### Code
 
@@ -1191,25 +1298,27 @@ exports.Code = class Code extends Base
       for {name: p} in @params
         if p.this then p = p.properties[0].name
         if p.value then o.scope.add p.value, 'var', yes
-      splats = new Assign Value.wrap(new Arr(p.asReference o for p in @params)),
-                          Value.wrap new Literal 'arguments'
+      splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
+                          new Value new Literal 'arguments'
       break
     for param in @params
       if param.isComplex()
         val = ref = param.asReference o
-        val = Op.create '?', ref, param.value if param.value
-        exprs.push new Assign Value.wrap(param.name), val, '=', param: yes
+        val = new Op '?', ref, param.value if param.value
+        exprs.push new Assign new Value(param.name), val, '=', param: yes
       else
         ref = param
         if param.value
           lit = new Literal ref.name.value + ' == null'
-          val = new Assign Value.wrap(param.name), param.value, '='
+          val = new Assign new Value(param.name), param.value, '='
           exprs.push new If lit, val
       params.push ref unless splats
     wasEmpty = @body.isEmpty()
     exprs.unshift splats if splats
     @body.expressions.unshift exprs... if exprs.length
-    o.scope.parameter params[i] = p.compile o for p, i in params
+    for p, i in params
+      params[i] = p.compileToFragments o
+      o.scope.parameter fragmentsToText params[i]
     uniqs = []
     @eachParamName (name, node) ->
       node.error "multiple parameters named '#{name}'" if name in uniqs
@@ -1223,12 +1332,18 @@ exports.Code = class Code extends Base
     idt   = o.indent
     code  = 'function'
     code  += ' ' + @name if @ctor
-    code  += '(' + params.join(', ') + ') {'
-    code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
-    code  += '}'
-    return @tab + code if @ctor
-    if @front or (o.level >= LEVEL_ACCESS) then "(#{code})" else code
+    code  += '('
+    answer = [@makeCode(code)]
+    for p, i in params
+      if i then answer.push @makeCode ", "
+      answer.push p...
+    answer.push @makeCode ') {'
+    answer = answer.concat(@makeCode("\n"), @body.compileWithDeclarations(o), @makeCode("\n#{@tab}")) unless @body.isEmpty()
+    answer.push @makeCode '}'
 
+    return [@makeCode(@tab), answer...] if @ctor
+    if @front or (o.level >= LEVEL_ACCESS) then @wrapInBraces answer else answer
+    
   eachParamName: (iterator) ->
     param.eachName iterator for param in @params
 
@@ -1249,8 +1364,8 @@ exports.Param = class Param extends Base
 
   children: ['name', 'value']
 
-  compile: (o) ->
-    @name.compile o, LEVEL_LIST
+  compileToFragments: (o) ->
+    @name.compileToFragments o, LEVEL_LIST
 
   asReference: (o) ->
     return @reference if @reference
@@ -1261,7 +1376,7 @@ exports.Param = class Param extends Base
         node = new Literal o.scope.freeVariable node.value
     else if node.isComplex()
       node = new Literal o.scope.freeVariable 'arg'
-    node = Value.wrap node
+    node = new Value node
     node = new Splat node if @splat
     @reference = node
 
@@ -1319,8 +1434,8 @@ exports.Splat = class Splat extends Base
   assigns: (name) ->
     @name.assigns name
 
-  compile: (o) ->
-    @name.compile o
+  compileToFragments: (o) ->
+    @name.compileToFragments o
 
   unwrap: -> @name
 
@@ -1329,20 +1444,26 @@ exports.Splat = class Splat extends Base
   @compileSplattedArray: (o, list, apply) ->
     index = -1
     continue while (node = list[++index]) and node not instanceof Splat
-    return '' if index >= list.length
+    return [] if index >= list.length
     if list.length is 1
-      code = list[0].compile o, LEVEL_LIST
-      return code if apply
-      return "#{ utility 'slice' }.call(#{code})"
+      node = list[0]
+      fragments = node.compileToFragments o, LEVEL_LIST
+      return fragments if apply
+      return [].concat node.makeCode("#{ utility 'slice' }.call("), fragments, node.makeCode(")")
     args = list[index..]
     for node, i in args
-      code = node.compile o, LEVEL_LIST
+      compiledNode = node.compileToFragments o, LEVEL_LIST
       args[i] = if node instanceof Splat
-      then "#{ utility 'slice' }.call(#{code})"
-      else "[#{code}]"
-    return args[0] + ".concat(#{ args[1..].join ', ' })" if index is 0
-    base = (node.compile o, LEVEL_LIST for node in list[...index])
-    "[#{ base.join ', ' }].concat(#{ args.join ', ' })"
+      then [].concat node.makeCode("#{ utility 'slice' }.call("), compiledNode, node.makeCode(")")
+      else [].concat node.makeCode("["), compiledNode, node.makeCode("]")
+    if index is 0
+      node = list[0]
+      concatPart = (node.joinFragmentArrays args[1..], ', ')
+      return args[0].concat node.makeCode(".concat("), concatPart, node.makeCode(")")
+    base = (node.compileToFragments o, LEVEL_LIST for node in list[...index])
+    base = list[0].joinFragmentArrays base, ', '
+    concatPart = list[index].joinFragmentArrays args, ', '
+    [].concat list[0].makeCode("["), base, list[index].makeCode("].concat("), concatPart, (last list).makeCode(")")
 
 #### While
 
@@ -1393,30 +1514,30 @@ exports.While = class While extends Base
           body.expressions.unshift new If (new Parens @guard).invert(), new Literal "continue"
         else
           body = Block.wrap [new If @guard, body] if @guard
-      body = "\n#{ body.compile o, LEVEL_TOP }\n#{@tab}"
-    code = set + @tab + "while (#{ @condition.compile o, LEVEL_PAREN }) {#{body}}"
+      body = [].concat @makeCode("\n"), (body.compileToFragments o, LEVEL_TOP), @makeCode("\n#{@tab}")
+    answer = [].concat @makeCode(set + @tab + "while ("), @condition.compileToFragments(o, LEVEL_PAREN),
+      @makeCode(") {"), body, @makeCode("}")
     if @returns
-      code += "\n#{@tab}return #{rvar};"
-    code
+      answer.push @makeCode "\n#{@tab}return #{rvar};"
+    answer
 
 #### Op
 
 # Simple Arithmetic and logical operations. Performs some conversion from
 # CoffeeScript operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
-  @create: (op, first, second, flip) ->
-    if op is 'in'
-      return new In first, second
+  constructor: (op, first, second, flip ) ->
+    return new In first, second if op is 'in'
     if op is 'do'
       return @generateDo first
     if op is 'new'
       return first.newInstance() if first instanceof Call and not first.do and not first.isNew
       first = new Parens first   if first instanceof Code and first.bound or first.do
-    return new Op op, first, second, flip
-
-  constructor: (op, @first, @second, flip ) ->
     @operator = CONVERSIONS[op] or op
+    @first    = first
+    @second   = second
     @flip     = !!flip
+    return this
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
   CONVERSIONS =
@@ -1469,12 +1590,12 @@ exports.Op = class Op extends Base
                                   fst.operator in ['!', 'in', 'instanceof']
       fst
     else
-      Op.create '!', this
+      new Op '!', this
 
   unfoldSoak: (o) ->
     @operator in ['++', '--', 'delete'] and unfoldSoak o, this, 'first'
 
-  @generateDo: (exp) ->
+  generateDo: (exp) ->
     passedParams = []
     func = if exp instanceof Assign and (ref = exp.value.unwrap()) instanceof Code
       ref
@@ -1502,9 +1623,9 @@ exports.Op = class Op extends Base
     return @compileUnary     o if @isUnary()
     return @compileChain     o if isChain
     return @compileExistence o if @operator is '?'
-    code = @first.compile(o, LEVEL_OP) + ' ' + @operator + ' ' +
-           @second.compile(o, LEVEL_OP)
-    if o.level <= LEVEL_OP then code else "(#{code})"
+    answer = [].concat @first.compileToFragments(o, LEVEL_OP), @makeCode(' ' + @operator + ' '),
+            @second.compileToFragments(o, LEVEL_OP)
+    if o.level <= LEVEL_OP then answer else @wrapInBraces answer
 
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. For example:
@@ -1513,9 +1634,10 @@ exports.Op = class Op extends Base
   #     true
   compileChain: (o) ->
     [@first.second, shared] = @first.second.cache o
-    fst = @first.compile o, LEVEL_OP
-    code = "#{fst} #{if @invert then '&&' else '||'} #{ shared.compile o } #{@operator} #{ @second.compile o, LEVEL_OP }"
-    "(#{code})"
+    fst = @first.compileToFragments o, LEVEL_OP
+    fragments = fst.concat @makeCode(" #{if @invert then '&&' else '||'} "),
+      (shared.compileToFragments o), @makeCode(" #{@operator} "), (@second.compileToFragments o, LEVEL_OP)
+    @wrapInBraces fragments
 
   compileExistence: (o) ->
     if @first.isComplex()
@@ -1524,24 +1646,26 @@ exports.Op = class Op extends Base
     else
       fst = @first
       ref = fst
-    new If(new Existence(fst), ref, type: 'if').addElse(@second).compile o
+    new If(new Existence(fst), ref, type: 'if').addElse(@second).compileToFragments o
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
-    parts = [op = @operator]
+    parts = []
+    op = @operator
+    parts.push [@makeCode op]
     if op is '!' and @first instanceof Existence
       @first.negated = not @first.negated
-      return @first.compile o
+      return @first.compileToFragments o
     if o.level >= LEVEL_ACCESS
-      return (new Parens this).compile o
+      return (new Parens this).compileToFragments o
     plusMinus = op in ['+', '-']
-    parts.push ' ' if op in ['new', 'typeof', 'delete'] or
+    parts.push [@makeCode(' ')] if op in ['new', 'typeof', 'delete'] or
                       plusMinus and @first instanceof Op and @first.operator is op
     if (plusMinus && @first instanceof Op) or (op is 'new' and @first.isStatement o)
       @first = new Parens @first
-    parts.push @first.compile o, LEVEL_OP
+    parts.push @first.compileToFragments o, LEVEL_OP
     parts.reverse() if @flip
-    parts.join ''
+    @joinFragmentArrays parts, ''
 
   toString: (idt) ->
     super idt, @constructor.name + ' ' + @operator
@@ -1564,21 +1688,22 @@ exports.In = class In extends Base
     @compileLoopTest o
 
   compileOrTest: (o) ->
-    return "#{!!@negated}" if @array.base.objects.length is 0
+    return [@makeCode("#{!!@negated}")] if @array.base.objects.length is 0
     [sub, ref] = @object.cache o, LEVEL_OP
     [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
-    tests = for item, i in @array.base.objects
-      (if i then ref else sub) + cmp + item.compile o, LEVEL_ACCESS
-    tests = tests.join cnj
-    if o.level < LEVEL_OP then tests else "(#{tests})"
+    tests = []
+    for item, i in @array.base.objects
+      if i then tests.push @makeCode cnj
+      tests = tests.concat (if i then ref else sub), @makeCode(cmp), item.compileToFragments(o, LEVEL_ACCESS)
+    if o.level < LEVEL_OP then tests else @wrapInBraces tests
 
   compileLoopTest: (o) ->
     [sub, ref] = @object.cache o, LEVEL_LIST
-    code = utility('indexOf') + ".call(#{ @array.compile o, LEVEL_LIST }, #{ref}) " +
-           if @negated then '< 0' else '>= 0'
-    return code if sub is ref
-    code = sub + ', ' + code
-    if o.level < LEVEL_LIST then code else "(#{code})"
+    fragments = [].concat @makeCode(utility('indexOf') + ".call("), @array.compileToFragments(o, LEVEL_LIST),
+      @makeCode(", "), ref, @makeCode(") " + if @negated then '< 0' else '>= 0')
+    return fragments if (fragmentsToText sub) is (fragmentsToText ref)
+    fragments = sub.concat @makeCode(', '), fragments
+    if o.level < LEVEL_LIST then fragments else @wrapInBraces fragments
 
   toString: (idt) ->
     super idt, @constructor.name + if @negated then '!' else ''
@@ -1604,7 +1729,7 @@ exports.Try = class Try extends Base
   # is optional, the *catch* is not.
   compileNode: (o) ->
     o.indent  += TAB
-    tryPart   = @attempt.compile o, LEVEL_TOP
+    tryPart   = @attempt.compileToFragments o, LEVEL_TOP
 
     catchPart = if @recovery
       if @errorVariable.isObject?()
@@ -1614,15 +1739,18 @@ exports.Try = class Try extends Base
       if @errorVariable.value in STRICT_PROSCRIBED
         @errorVariable.error "catch variable may not be \"#{@errorVariable.value}\""
       o.scope.add @errorVariable.value, 'param' unless o.scope.check @errorVariable.value
-      " catch (#{ @errorVariable.compile o }) {\n#{ @recovery.compile o, LEVEL_TOP }\n#{@tab}}"
+      [].concat @makeCode(" catch ("), @errorVariable.compileToFragments(o), @makeCode(") {\n"),
+        @recovery.compileToFragments(o, LEVEL_TOP), @makeCode("\n#{@tab}}")
     else unless @ensure or @recovery
-      ' catch (_error) {}'
+      [@makeCode(' catch (_error) {}')]
+    else
+      []
 
-    ensurePart = if @ensure then " finally {\n#{ @ensure.compile o, LEVEL_TOP }\n#{@tab}}" else ''
+    ensurePart = if @ensure then ([].concat @makeCode(" finally {\n"), (@ensure.compileToFragments o, LEVEL_TOP), @makeCode("\n#{@tab}}")) else []
 
-    """#{@tab}try {
-    #{tryPart}
-    #{@tab}}#{ catchPart or '' }#{ensurePart}"""
+    [].concat @makeCode("#{@tab}try {\n"),
+      tryPart,
+      @makeCode("\n#{@tab}}"), catchPart, ensurePart
 
 #### Throw
 
@@ -1639,7 +1767,7 @@ exports.Throw = class Throw extends Base
   makeReturn: THIS
 
   compileNode: (o) ->
-    @tab + "throw #{ @expression.compile o };"
+    [].concat @makeCode(@tab + "throw "), (@expression.compileToFragments o), @makeCode(";")
 
 #### Existence
 
@@ -1662,7 +1790,7 @@ exports.Existence = class Existence extends Base
     else
       # do not use strict equality here; it will break existing code
       code = "#{code} #{if @negated then '==' else '!='} null"
-    if o.level <= LEVEL_COND then code else "(#{code})"
+    [@makeCode(if o.level <= LEVEL_COND then code else "(#{code})")]
 
 #### Parens
 
@@ -1683,11 +1811,11 @@ exports.Parens = class Parens extends Base
     expr = @body.unwrap()
     if expr instanceof Value and expr.isAtomic()
       expr.front = @front
-      return expr.compile o
-    code = expr.compile o, LEVEL_PAREN
+      return expr.compileToFragments o
+    fragments = expr.compileToFragments o, LEVEL_PAREN
     bare = o.level < LEVEL_OP and (expr instanceof Op or expr instanceof Call or
       (expr instanceof For and expr.returns))
-    if bare then code else "(#{code})"
+    if bare then fragments else @wrapInBraces fragments
 
 #### For
 
@@ -1724,8 +1852,8 @@ exports.For = class For extends While
     @returns  = no if lastJumps and lastJumps instanceof Return
     source    = if @range then @source.base else @source
     scope     = o.scope
-    name      = @name  and @name.compile o, LEVEL_LIST
-    index     = @index and @index.compile o, LEVEL_LIST
+    name      = @name  and (@name.compile o, LEVEL_LIST)
+    index     = @index and (@index.compile o, LEVEL_LIST)
     scope.find(name)  if name and not @pattern
     scope.find(index) if index
     rvar      = scope.freeVariable 'results' if @returns
@@ -1733,7 +1861,7 @@ exports.For = class For extends While
     kvar      = (@range and name) or index or ivar
     kvarAssign = if kvar isnt ivar then "#{kvar} = " else ""
     if @step and not @range
-      [step, stepVar] = @step.cache o, LEVEL_LIST
+      [step, stepVar] = @cacheToCodeFragments @step.cache o, LEVEL_LIST
       stepNum = stepVar.match SIMPLENUM
     name      = ivar if @pattern
     varPart   = ''
@@ -1741,7 +1869,7 @@ exports.For = class For extends While
     defPart   = ''
     idt1      = @tab + TAB
     if @range
-      forPart = source.compile merge(o, {index: ivar, name, @step})
+      forPartFragments = source.compileToFragments merge(o, {index: ivar, name, @step})
     else
       svar    = @source.compile o, LEVEL_LIST
       if (name or @own) and not IDENTIFIER.test svar
@@ -1767,7 +1895,7 @@ exports.For = class For extends While
           increment = "#{ivar} += #{stepVar}"
         else
           increment = "#{if kvar isnt ivar then "++#{ivar}" else "#{ivar}++"}"
-        forPart  = "#{declare}; #{compare}; #{kvarAssign}#{increment}"
+        forPartFragments  = [@makeCode("#{declare}; #{compare}; #{kvarAssign}#{increment}")]
     if @returns
       resultPart   = "#{@tab}#{rvar} = [];\n"
       returnResult = "\n#{@tab}return #{rvar};"
@@ -1779,19 +1907,20 @@ exports.For = class For extends While
         body = Block.wrap [new If @guard, body] if @guard
     if @pattern
       body.expressions.unshift new Assign @name, new Literal "#{svar}[#{kvar}]"
-    defPart     += @pluckDirectCall o, body
-    varPart     = "\n#{idt1}#{namePart};" if namePart
+    defPartFragments = [].concat @makeCode(defPart), @pluckDirectCall(o, body)
+    varPart = "\n#{idt1}#{namePart};" if namePart
     if @object
-      forPart   = "#{kvar} in #{svar}"
+      forPartFragments   = [@makeCode("#{kvar} in #{svar}")]
       guardPart = "\n#{idt1}if (!#{utility 'hasProp'}.call(#{svar}, #{kvar})) continue;" if @own
-    body        = body.compile merge(o, indent: idt1), LEVEL_TOP
-    body        = '\n' + body + '\n' if body
-    """
-    #{defPart}#{resultPart or ''}#{@tab}for (#{forPart}) {#{guardPart}#{varPart}#{body}#{@tab}}#{returnResult or ''}
-    """
+    bodyFragments = body.compileToFragments merge(o, indent: idt1), LEVEL_TOP
+    if bodyFragments and (bodyFragments.length > 0)
+      bodyFragments = [].concat @makeCode("\n"), bodyFragments, @makeCode("\n")
+    [].concat defPartFragments, @makeCode("#{resultPart or ''}#{@tab}for ("),
+      forPartFragments, @makeCode(") {#{guardPart}#{varPart}"), bodyFragments,
+      @makeCode("#{@tab}}#{returnResult or ''}")
 
   pluckDirectCall: (o, body) ->
-    defs = ''
+    defs = []
     for expr, idx in body.expressions
       expr = expr.unwrapAll()
       continue unless expr instanceof Call
@@ -1803,11 +1932,11 @@ exports.For = class For extends While
                       val.properties[0].name?.value in ['call', 'apply'])
       fn    = val.base?.unwrapAll() or val
       ref   = new Literal o.scope.freeVariable 'fn'
-      base  = Value.wrap ref
+      base  = new Value ref
       if val.base
         [val.base, base] = [base, val]
       body.expressions[idx] = new Call base, expr.args
-      defs += @tab + new Assign(ref, fn).compile(o, LEVEL_TOP) + ';\n'
+      defs = defs.concat @makeCode(@tab), (new Assign(ref, fn).compileToFragments(o, LEVEL_TOP)), @makeCode(';\n')
     defs
 
 #### Switch
@@ -1834,18 +1963,22 @@ exports.Switch = class Switch extends Base
   compileNode: (o) ->
     idt1 = o.indent + TAB
     idt2 = o.indent = idt1 + TAB
-    code = @tab + "switch (#{ @subject?.compile(o, LEVEL_PAREN) or false }) {\n"
+    fragments = [].concat @makeCode(@tab + "switch ("),
+      (if @subject then @subject.compileToFragments(o, LEVEL_PAREN) else @makeCode("false")),
+      @makeCode(") {\n")
     for [conditions, block], i in @cases
       for cond in flatten [conditions]
         cond  = cond.invert() unless @subject
-        code += idt1 + "case #{ cond.compile o, LEVEL_PAREN }:\n"
-      code += body + '\n' if body = block.compile o, LEVEL_TOP
+        fragments = fragments.concat @makeCode(idt1 + "case "), cond.compileToFragments(o, LEVEL_PAREN), @makeCode(":\n")
+      fragments = fragments.concat body, @makeCode('\n') if (body = block.compileToFragments o, LEVEL_TOP).length > 0
       break if i is @cases.length - 1 and not @otherwise
       expr = @lastNonComment block.expressions
       continue if expr instanceof Return or (expr instanceof Literal and expr.jumps() and expr.value isnt 'debugger')
-      code += idt2 + 'break;\n'
-    code += idt1 + "default:\n#{ @otherwise.compile o, LEVEL_TOP }\n" if @otherwise and @otherwise.expressions.length
-    code +  @tab + '}'
+      fragments.push cond.makeCode(idt2 + 'break;\n')
+    if @otherwise and @otherwise.expressions.length
+      fragments.push @makeCode(idt1 + "default:\n"), (@otherwise.compileToFragments o, LEVEL_TOP)..., @makeCode("\n")
+    fragments.push @makeCode @tab + '}'
+    fragments
 
 #### If
 
@@ -1902,28 +2035,29 @@ exports.If = class If extends Base
     exeq     = del o, 'isExistentialEquals'
 
     if exeq
-      return new If(@condition.invert(), @elseBodyNode(), type: 'if').compile o
+      return new If(@condition.invert(), @elseBodyNode(), type: 'if').compileToFragments o
 
-    cond     = @condition.compile o, LEVEL_PAREN
-    o.indent += TAB
-    body     = @ensureBlock(@body)
-    ifPart   = "if (#{cond}) {\n#{body.compile(o)}\n#{@tab}}"
-    ifPart   = @tab + ifPart unless child
+    indent   = o.indent + TAB
+    cond     = @condition.compileToFragments o, LEVEL_PAREN
+    body     = @ensureBlock(@body).compileToFragments merge o, {indent}
+    ifPart   = [].concat @makeCode("if ("), cond, @makeCode(") {\n"), body, @makeCode("\n#{@tab}}")
+    ifPart.unshift @makeCode @tab unless child
     return ifPart unless @elseBody
-    ifPart + ' else ' + if @isChain
-      o.indent = @tab
+    answer = ifPart.concat @makeCode(' else ')
+    if @isChain
       o.chainChild = yes
-      @elseBody.unwrap().compile o, LEVEL_TOP
+      answer = answer.concat @elseBody.unwrap().compileToFragments o, LEVEL_TOP
     else
-      "{\n#{ @elseBody.compile o, LEVEL_TOP }\n#{@tab}}"
+      answer = answer.concat @makeCode("{\n"), @elseBody.compileToFragments(merge(o, {indent}), LEVEL_TOP), @makeCode("\n#{@tab}}")
+    answer
 
   # Compile the `If` as a conditional operator.
   compileExpression: (o) ->
-    cond = @condition.compile o, LEVEL_COND
-    body = @bodyNode().compile o, LEVEL_LIST
-    alt  = if @elseBodyNode() then @elseBodyNode().compile(o, LEVEL_LIST) else 'void 0'
-    code = "#{cond} ? #{body} : #{alt}"
-    if o.level >= LEVEL_COND then "(#{code})" else code
+    cond = @condition.compileToFragments o, LEVEL_COND
+    body = @bodyNode().compileToFragments o, LEVEL_LIST
+    alt  = if @elseBodyNode() then @elseBodyNode().compileToFragments(o, LEVEL_LIST) else [@makeCode('void 0')]
+    fragments = cond.concat @makeCode(" ? "), body, @makeCode(" : "), alt
+    if o.level >= LEVEL_COND then @wrapInBraces fragments else fragments
 
   unfoldSoak: ->
     @soak and this
@@ -1952,7 +2086,7 @@ Closure =
       meth = new Literal if argumentsNode then 'apply' else 'call'
       args = [new Literal 'this']
       args.push new Literal 'arguments' if argumentsNode
-      func = Value.wrap func, [new Access meth]
+      func = new Value func, [new Access meth]
     func.noReturn = noReturn
     call = new Call func, args
     if statement then Block.wrap [call] else call
@@ -1969,7 +2103,7 @@ Closure =
 unfoldSoak = (o, parent, name) ->
   return unless ifn = parent[name].unfoldSoak o
   parent[name] = ifn.body
-  ifn.body = Value.wrap parent
+  ifn.body = new Value parent
   ifn
 
 # Constants
@@ -1982,11 +2116,6 @@ UTILITIES =
   extends: -> """
     function(child, parent) { for (var key in parent) { if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; }
   """
-
-  # Create a function bound to the current value of "this".
-  bind: -> '''
-    function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
-  '''
 
   # Discover if an item is in an array.
   indexOf: -> """

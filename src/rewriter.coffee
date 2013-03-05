@@ -5,6 +5,12 @@
 # shorthand into the unambiguous long form, add implicit indentation and
 # parentheses, and generally clean things up.
 
+# Create a generated token: one that exists due to a use of implicit syntax.
+generate = (tag, value) ->
+    tok = [tag, value]
+    tok.generated = yes
+    tok
+
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
 # its internal array of tokens.
 class exports.Rewriter
@@ -24,8 +30,7 @@ class exports.Rewriter
     @closeOpenIndexes()
     @addImplicitIndentation()
     @tagPostfixConditionals()
-    @addImplicitBraces()
-    @addImplicitParentheses()
+    @addImplicitBracesAndParens()
     @addLocationDataToGeneratedTokens()
     @tokens
 
@@ -71,7 +76,6 @@ class exports.Rewriter
   # its paired close. We have the mis-nested outdent case included here for
   # calls that close on the same line, just before their outdent.
   closeOpenCalls: ->
-
     condition = (token, i) ->
       token[0] in [')', 'CALL_END'] or
       token[0] is 'OUTDENT' and @tag(i - 1) is ')'
@@ -86,7 +90,6 @@ class exports.Rewriter
   # The lexer has tagged the opening parenthesis of an indexing operation call.
   # Match it with its paired close.
   closeOpenIndexes: ->
-
     condition = (token, i) ->
       token[0] in [']', 'INDEX_END']
 
@@ -97,121 +100,243 @@ class exports.Rewriter
       @detectEnd i + 1, condition, action if token[0] is 'INDEX_START'
       1
 
-  # Object literals may be written with implicit braces, for simple cases.
-  # Insert the missing braces here, so that the parser doesn't have to.
-  addImplicitBraces: ->
+  # Match tags in token stream starting at i with pattern, skipping HERECOMMENTs
+  # Pattern may consist of strings (equality), an array of strings (one of)
+  # or null (wildcard)
+  matchTags: (i, pattern...) ->
+    fuzz = 0
+    for j in [0 ... pattern.length]
+      fuzz += 2 while @tag(i + j + fuzz) is 'HERECOMMENT'
+      continue if not pattern[j]?
+      pattern[j] = [pattern[j]] if typeof pattern[j] is 'string'
+      return no if @tag(i + j + fuzz) not in pattern[j]
+    yes
 
-    stack       = []
-    start       = null
-    startsLine  = null
-    sameLine    = yes
-    startIndent = 0
-    startIndex  = 0
+  # yes iff standing in front of something looking like
+  # @<x>: or <x>:, skipping over 'HERECOMMENT's
+  looksObjectish: (j) ->
+    @matchTags(j, '@', null, ':') or @matchTags(j, null, ':')
 
-    condition = (token, i) ->
-      [one, two, three] = @tokens[i + 1 .. i + 3]
-      return no if 'HERECOMMENT' is one?[0]
-      [tag] = token
-      sameLine = no if tag in LINEBREAKS
-      return (
-        (tag in ['TERMINATOR', 'OUTDENT'] or
-          (tag in IMPLICIT_END and sameLine and not (i - startIndex is 1))) and
-        ((!startsLine and @tag(i - 1) isnt ',') or
-          not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':'))) or
-        (tag is ',' and one and
-          one[0] not in ['IDENTIFIER', 'NUMBER', 'STRING', '@', 'TERMINATOR', 'OUTDENT']
-      )
+  # yes iff current line of tokens contain an element of tags on same
+  # expression level. Stop searching at LINEBREAKS or explicit start of
+  # containing balanced expression.
+  findTagsBackwards: (i, tags) ->
+    backStack = []
+    while i >= 0 and (backStack.length or
+          @tag(i) not in tags and
+          (@tag(i) not in EXPRESSION_START or @tokens[i].generated) and
+          @tag(i) not in LINEBREAKS)
+      backStack.push @tag(i) if @tag(i) in EXPRESSION_END
+      backStack.pop() if @tag(i) in EXPRESSION_START and backStack.length
+      i -= 1
+    @tag(i) in tags
 
-    action = (token, i) ->
-      tok = @generate '}', '}'
-      @tokens.splice i, 0, tok
+  # Look for signs of implicit calls and objects in the token stream and
+  # add them.
+  addImplicitBracesAndParens: ->
+    # Track current balancing depth (both implicit and explicit) on stack.
+    stack = []
 
     @scanTokens (token, i, tokens) ->
-      if (tag = token[0]) in EXPRESSION_START
-        stack.push [(if tag is 'INDENT' and @tag(i - 1) is '{' then '{' else tag), i]
-        return 1
+      [tag]     = token
+      [prevTag] = if i > 0 then tokens[i - 1] else []
+      [nextTag] = if i < tokens.length - 1 then tokens[i + 1] else []
+      stackTop  = -> stack[stack.length - 1]
+      startIdx  = i
+
+      # Helper function, used for keeping track of the number of tokens consumed
+      # and spliced, when returning for getting a new token.
+      forward   = (n) -> i - startIdx + n
+
+      # Helper functions
+      inImplicit        = -> stackTop()?[2]?.ours
+      inImplicitCall    = -> inImplicit() and stackTop()?[0] is '('
+      inImplicitObject  = -> inImplicit() and stackTop()?[0] is '{'
+      # Unclosed control statement inside implicit parens (like
+      # class declaration or if-conditionals)
+      inImplicitControl = -> inImplicit and stackTop()?[0] is 'CONTROL'
+
+      startImplicitCall = (j) ->
+        idx = j ? i
+        stack.push ['(', idx, ours: yes]
+        tokens.splice idx, 0, generate 'CALL_START', '('
+        i += 1 if not j?
+
+      endImplicitCall = ->
+        stack.pop()
+        tokens.splice i, 0, generate 'CALL_END', ')'
+        i += 1
+
+      startImplicitObject = (j, startsLine = yes) ->
+        idx = j ? i
+        stack.push ['{', idx, sameLine: yes, startsLine: startsLine, ours: yes]
+        tokens.splice idx, 0, generate '{', generate(new String('{'))
+        i += 1 if not j?
+
+      endImplicitObject = (j) ->
+        j = j ? i
+        stack.pop()
+        tokens.splice j, 0, generate '}', '}'
+        i += 1
+
+      # Don't end an implicit call on next indent if any of these are in an argument
+      if inImplicitCall() and tag in ['IF', 'TRY', 'FINALLY', 'CATCH',
+        'CLASS', 'SWITCH']
+        stack.push ['CONTROL', i, ours: true]
+        return forward(1)
+
+      if tag is 'INDENT' and inImplicit()
+        # An INDENT closes an implicit call unless
+        # 1. We have seen a CONTROL argument on the line.
+        # 2. The last token before the indent is part of the list below
+        if prevTag not in ['=>', '->', '[', '(', ',', '{', 'TRY', 'ELSE', '=']
+          endImplicitCall() while inImplicitCall()
+        stack.pop() if inImplicitControl()
+        stack.push [tag, i]
+        return forward(1)
+
+      # Straightforward start of explicit expression
+      if tag in EXPRESSION_START
+        stack.push [tag, i]
+        return forward(1)
+
+      # Close all implicit expressions inside of explicitly closed expressions.
       if tag in EXPRESSION_END
-        start = stack.pop()
-        return 1
-      return 1 unless tag is ':' and
-        ((ago = @tag i - 2) is ':' or stack[stack.length - 1]?[0] isnt '{')
-      sameLine = yes
-      startIndex = i + 1
-      stack.push ['{']
-      idx =  if ago is '@' then i - 2 else i - 1
-      idx -= 2 while @tag(idx - 2) is 'HERECOMMENT'
-      prevTag = @tag(idx - 1)
-      startsLine = not prevTag or (prevTag in LINEBREAKS)
-      value = new String('{')
-      value.generated = yes
-      tok = @generate '{', value
-      tokens.splice idx, 0, tok
-      @detectEnd i + 2, condition, action
-      2
+        while inImplicit()
+          if inImplicitCall()
+            endImplicitCall()
+          else if inImplicitObject()
+            endImplicitObject()
+          else
+            stack.pop()
+        stack.pop()
 
-  # Methods may be optionally called without parentheses, for simple cases.
-  # Insert the implicit parentheses here, so that the parser doesn't have to
-  # deal with them.
-  addImplicitParentheses: ->
+      # Recognize standard implicit calls like
+      # f a, f() b, f? c, h[0] d etc.
+      if (tag in IMPLICIT_FUNC and token.spaced or
+          tag is '?' and i > 0 and not tokens[i - 1].spaced) and
+         (nextTag in IMPLICIT_CALL or
+          nextTag in IMPLICIT_UNSPACED_CALL and
+          not tokens[i + 1]?.spaced and not tokens[i + 1]?.newLine)
+        tag = token[0] = 'FUNC_EXIST' if tag is '?'
+        startImplicitCall i + 1
+        return forward(2)
 
-    noCall = seenSingle = seenControl = no
-    callIndex = null
+      # Implicit call taking an implicit indented object as first argument.
+      # f
+      #   a: b
+      #   c: d
+      # and
+      # f
+      #   1
+      #   a: b
+      #   b: c
+      # Don't accept implicit calls of this type, when on the same line
+      # as the control strucutures below as that may misinterpret constructs like:
+      # if f
+      #    a: 1
+      # as
+      # if f(a: 1)
+      # which is probably always unintended.
+      # Furthermore don't allow this in literal arrays, as
+      # that creates grammatical ambiguities.
+      if @matchTags(i, IMPLICIT_FUNC, 'INDENT', null, ':') and
+         not @findTagsBackwards(i, ['CLASS', 'EXTENDS', 'IF', 'CATCH',
+          'SWITCH', 'LEADING_WHEN', 'FOR', 'WHILE', 'UNTIL'])
+        startImplicitCall i + 1
+        stack.push ['INDENT', i + 2]
+        return forward(3)
 
-    condition = (token, i) ->
-      [tag] = token
-      return yes if not seenSingle and token.fromThen
-      seenSingle  = yes if tag in ['IF', 'ELSE', 'CATCH', '->', '=>', 'CLASS']
-      seenControl = yes if tag in ['IF', 'ELSE', 'SWITCH', 'TRY', '=']
-      return yes if tag in ['.', '?.', '::'] and @tag(i - 1) is 'OUTDENT'
-      not token.generated and @tag(i - 1) isnt ',' and (tag in IMPLICIT_END or
-        (tag is 'INDENT' and not seenControl)) and
-        (tag isnt 'INDENT' or
-          (@tag(i - 2) not in ['CLASS', 'EXTENDS'] and @tag(i - 1) not in IMPLICIT_BLOCK and
-          not (callIndex is i - 1 and (post = @tokens[i + 1]) and post.generated and post[0] is '{')))
+      # Implicit objects start here
+      if tag is ':'
+        # Go back to the (implicit) start of the object
+        if @tag(i - 2) is '@' then s = i - 2 else s = i - 1
+        s -= 2 while @tag(s - 2) is 'HERECOMMENT'
 
-    action = (token, i) ->
-      @tokens.splice i, 0, @generate 'CALL_END', ')'
+        startsLine = s is 0 or @tag(s - 1) in LINEBREAKS or tokens[s - 1].newLine
+        # Are we just continuing an already declared object?
+        if stackTop()
+          [stackTag, stackIdx] = stackTop()
+          if (stackTag is '{' or stackTag is 'INDENT' and @tag(stackIdx - 1) is '{') and
+             (startsLine or @tag(s - 1) is ',' or @tag(s - 1) is '{')
+            return forward(1)
 
-    @scanTokens (token, i, tokens) ->
-      tag     = token[0]
-      noCall  = yes if tag in ['CLASS', 'IF', 'FOR', 'WHILE']
-      [prev, current, next] = tokens[i - 1 .. i + 1]
-      callObject  = not noCall and tag is 'INDENT' and
-                    next and next.generated and next[0] is '{' and
-                    prev and prev[0] in IMPLICIT_FUNC
-      seenSingle  = no
-      seenControl = no
-      noCall      = no if tag in LINEBREAKS
-      token.call  = yes if prev and not prev.spaced and tag is '?'
-      return 1 if token.fromThen
-      return 1 unless callObject or
-        prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
-        (tag in IMPLICIT_CALL or not (token.spaced or token.newLine) and tag in IMPLICIT_UNSPACED_CALL)
-        callIndex = i
-      tokens.splice i, 0, @generate 'CALL_START', '(', token[2]
-      @detectEnd i + 1, condition, action
-      prev[0] = 'FUNC_EXIST' if prev[0] is '?'
-      2
+        startImplicitObject(s, !!startsLine)
+        return forward(2)
+
+      # End implicit calls when chaining method calls
+      # like e.g.:
+      # f ->
+      #   a
+      # .g b, ->
+      #   c
+      # .h a
+      if prevTag is 'OUTDENT' and inImplicitCall() and tag in ['.', '?.', '::', '?::']
+        endImplicitCall()
+        return forward(1)
+
+      stackTop()[2].sameLine = no if inImplicitObject() and tag in LINEBREAKS
+
+      if tag in IMPLICIT_END
+        while inImplicit()
+          [stackTag, stackIdx, {sameLine, startsLine}] = stackTop()
+          # Close implicit calls when reached end of argument list
+          if inImplicitCall() and prevTag isnt ','
+            endImplicitCall()
+          # Close implicit objects such as:
+          # return a: 1, b: 2 unless true
+          else if inImplicitObject() and sameLine and not startsLine
+            endImplicitObject()
+          # Close implicit objects when at end of line, line didn't end with a comma
+          # and the implicit object didn't start the line or the next line doesn't look like
+          # the continuation of an object.
+          else if inImplicitObject() and tag is 'TERMINATOR' and prevTag isnt ',' and
+                  not (startsLine and @looksObjectish(i + 1))
+            endImplicitObject()
+          else
+            break
+
+      # Close implicit object if comma is the last character
+      # and what comes after doesn't look like it belongs.
+      # This is used for trailing commas and calls, like:
+      # x =
+      #     a: b,
+      #     c: d,
+      # e = 2
+      #
+      # and
+      #
+      # f a, b: c, d: e, f, g: h: i, j
+      if tag is ',' and not @looksObjectish(i + 1) and inImplicitObject() and
+         (nextTag isnt 'TERMINATOR' or not @looksObjectish(i + 2))
+        # When nextTag is OUTDENT the comma is insignificant and
+        # should just be ignored so embed it in the implicit object.
+        #
+        # When it isn't the comma go on to play a role in a call or
+        # array further up the stack, so give it a chance.
+
+        offset = if nextTag is 'OUTDENT' then 1 else 0
+        while inImplicitObject()
+          endImplicitObject i + offset
+      return forward(1)
 
   # Add location data to all tokens generated by the rewriter.
   addLocationDataToGeneratedTokens: ->
     @scanTokens (token, i, tokens) ->
-      tag = token[0]
-      if (token.generated or token.explicit) and (not token[2])
-        if i > 0
-          prevToken = tokens[i-1]
-          token[2] =
-            first_line: prevToken[2].last_line
-            first_column: prevToken[2].last_column
-            last_line: prevToken[2].last_line
-            last_column: prevToken[2].last_column
-        else
-          token[2] =
-            first_line: 0
-            first_column: 0
-            last_line: 0
-            last_column: 0
-      return 1
+      return 1 if     token[2]
+      return 1 unless token.generated or token.explicit
+      if token[0] is '{' and nextLocation=tokens[i + 1]?[2]
+          {first_line: line, first_column: column} = nextLocation
+      else if prevLocation = tokens[i - 1]?[2]
+          {last_line: line, last_column: column} = prevLocation
+      else
+          line = column = 0
+      token[2] =
+        first_line:   line
+        first_column: column
+        last_line:    line
+        last_column:  column
+      1
 
   # Because our grammar is LALR(1), it can't handle some single-line
   # expressions that lack ending delimiters. The **Rewriter** adds the implicit
@@ -233,15 +358,15 @@ class exports.Rewriter
         tokens.splice i, 1
         return 0
       if tag is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
-        tokens.splice i, 0, @indentation(token)...
+        tokens.splice i, 0, @indentation()...
         return 2
       if tag is 'CATCH' and @tag(i + 2) in ['OUTDENT', 'TERMINATOR', 'FINALLY']
-        tokens.splice i + 2, 0, @indentation(token)...
+        tokens.splice i + 2, 0, @indentation()...
         return 4
       if tag in SINGLE_LINERS and @tag(i + 1) isnt 'INDENT' and
          not (tag is 'ELSE' and @tag(i + 1) is 'IF')
         starter = tag
-        [indent, outdent] = @indentation token, yes
+        [indent, outdent] = @indentation yes
         indent.fromThen   = true if starter is 'THEN'
         tokens.splice i + 1, 0, indent
         @detectEnd i + 2, condition, action
@@ -269,18 +394,14 @@ class exports.Rewriter
       1
 
   # Generate the indentation tokens, based on another token on the same line.
-  indentation: (token, implicit = no) ->
+  indentation: (implicit = no) ->
     indent  = ['INDENT', 2]
     outdent = ['OUTDENT', 2]
     indent.generated = outdent.generated = yes if implicit
     indent.explicit = outdent.explicit = yes if not implicit
     [indent, outdent]
 
-  # Create a generated token: one that exists due to a use of implicit syntax.
-  generate: (tag, value) ->
-    tok = [tag, value]
-    tok.generated = yes
-    tok
+  generate: generate
 
   # Look up a tag by token index.
   tag: (i) -> @tokens[i]?[0]
@@ -330,7 +451,8 @@ IMPLICIT_UNSPACED_CALL = ['+', '-']
 IMPLICIT_BLOCK   = ['->', '=>', '{', '[', ',']
 
 # Tokens that always mark the end of an implicit call for single-liners.
-IMPLICIT_END     = ['POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY', 'LOOP', 'TERMINATOR']
+IMPLICIT_END     = ['POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY',
+  'LOOP', 'TERMINATOR']
 
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.

@@ -17,7 +17,7 @@ CoffeeScript.run = (code, options = {}) ->
 return unless window?
 
 # Load a remote script from the current domain via XHR.
-CoffeeScript.load = (url, callback) ->
+CoffeeScript.load = (url, callback, options = {}) ->
   xhr = if window.ActiveXObject
     new window.ActiveXObject('Microsoft.XMLHTTP')
   else
@@ -27,7 +27,7 @@ CoffeeScript.load = (url, callback) ->
   xhr.onreadystatechange = ->
     if xhr.readyState is 4
       if xhr.status in [0, 200]
-        CoffeeScript.run xhr.responseText
+        CoffeeScript.run xhr.responseText, options
       else
         throw new Error "Could not load #{url}"
       callback() if callback
@@ -38,16 +38,19 @@ CoffeeScript.load = (url, callback) ->
 # This happens on page load.
 runScripts = ->
   scripts = document.getElementsByTagName 'script'
-  coffees = (s for s in scripts when s.type is 'text/coffeescript')
+  coffeetypes = ['text/coffeescript', 'text/literate-coffeescript']
+  coffees = (s for s in scripts when s.type in coffeetypes)
   index = 0
   length = coffees.length
   do execute = ->
     script = coffees[index++]
-    if script?.type is 'text/coffeescript'
+    mediatype = script?.type
+    if mediatype in coffeetypes
+      options = {literate: mediatype is 'text/literate-coffeescript'}
       if script.src
-        CoffeeScript.load script.src, execute
+        CoffeeScript.load script.src, execute, options
       else
-        CoffeeScript.run script.innerHTML
+        CoffeeScript.run script.innerHTML, options
         execute()
   null
 

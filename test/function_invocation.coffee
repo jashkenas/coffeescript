@@ -129,8 +129,8 @@ test "Ensure that functions can have a trailing comma in their argument list", -
   mult = (x, mids..., y) ->
     x *= n for n in mids
     x *= y
-  ok mult(1, 2,) is 2
-  ok mult(1, 2, 3,) is 6
+  #ok mult(1, 2,) is 2
+  #ok mult(1, 2, 3,) is 6
   ok mult(10, (i for i in [1..6])...) is 7200
 
 
@@ -558,3 +558,94 @@ test "#2617: implicit call before unrelated implicit object", ->
   result = if pass 1
     one: 1
   eq result.one, 1
+
+test "#2292, b: f (z),(x)", ->
+  f = (x, y) -> y
+  one = 1
+  two = 2
+  o = b: f (one),(two)
+  eq o.b, 2
+
+test "#2297, Different behaviors on interpreting literal", ->
+  foo = (x, y) -> y
+  bar =
+    baz: foo 100, on
+
+  eq bar.baz, on
+
+  qux = (x) -> x
+  quux = qux
+    corge: foo 100, true
+
+  eq quux.corge, on
+
+  xyzzy =
+    e: 1
+    f: foo
+      a: 1
+      b: 2
+    ,
+      one: 1
+      two: 2
+      three: 3
+    g:
+      a: 1
+      b: 2
+      c: foo 2,
+        one: 1
+        two: 2
+        three: 3
+      d: 3
+    four: 4
+    h: foo one: 1, two: 2, three: three: three: 3,
+      2
+
+  eq xyzzy.f.two, 2
+  eq xyzzy.g.c.three, 3
+  eq xyzzy.four, 4
+  eq xyzzy.h, 2
+
+test "#2715, Chained implicit calls", ->
+  first  = (x)    -> x
+  second = (x, y) -> y
+
+  foo = first first
+    one: 1
+  eq foo.one, 1
+
+  bar = first second
+    one: 1, 2
+  eq bar, 2
+
+  baz = first second
+    one: 1,
+    2
+  eq baz, 2
+
+test "Implicit calls and new", ->
+  first = (x) -> x
+  foo = (@x) ->
+  bar = first new foo first 1
+  eq bar.x, 1
+
+  third = (x, y, z) -> z
+  baz = first new foo new foo third
+        one: 1
+        two: 2
+        1
+        three: 3
+        2
+  eq baz.x.x.three, 3
+
+test "Loose tokens inside of explicit call lists", ->
+  first = (x) -> x
+  second = (x, y) -> y
+  one = 1
+
+  foo = second( one
+                2)
+  eq foo, 2
+
+  bar = first( first
+               one: 1)
+  eq bar.one, 1

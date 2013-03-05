@@ -99,17 +99,33 @@ test "try/catch with a reused variable name.", ->
     catch inner
       # nothing
   eq typeof inner, 'undefined'
-  
-  
+
+
 # Allowed to destructure exceptions: #2580
 
 test "try/catch with destructuring the exception object", ->
-  
+
   result = try
     missing.object
   catch {message}
     message
-    
-  eq message, 'missing is not defined'
-    
 
+  eq message, 'missing is not defined'
+
+
+
+test "Try catch finally as implicit arguments", ->
+  first = (x) -> x
+
+  foo = no
+  try
+    first try iamwhoiam() finally foo = yes
+  catch e
+  eq foo, yes
+
+  bar = no
+  try
+    first try iamwhoiam() catch e finally
+    bar = yes
+  catch e
+  eq bar, yes

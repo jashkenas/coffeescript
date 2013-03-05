@@ -222,6 +222,141 @@ test "#1436: `for` etc. work as normal property names", ->
   obj.for = 'foo' of obj
   eq yes, obj.hasOwnProperty 'for'
 
+test "#2706, Un-bracketed object as argument causes inconsistent behavior", ->
+  foo = (x, y) -> y
+  bar = baz: yes
+
+  eq yes, foo x: 1, bar.baz
+
+test "#2608, Allow inline objects in arguments to be followed by more arguments", ->
+  foo = (x, y) -> y
+
+  eq yes, foo x: 1, y: 2, yes
+
+test "#2308, a: b = c:1", ->
+  foo = a: b = c: yes
+  eq b.c, yes
+  eq foo.a.c, yes
+
+test "#2317, a: b c: 1", ->
+  foo = (x) -> x
+  bar = a: foo c: yes
+  eq bar.a.c, yes
+
+test "#1896, a: func b, {c: d}", ->
+  first = (x) -> x
+  second = (x, y) -> y
+  third = (x, y, z) -> z
+
+  one = 1
+  two = 2
+  three = 3
+  four = 4
+
+  foo = a: second one, {c: two}
+  eq foo.a.c, two
+
+  bar = a: second one, c: two
+  eq bar.a.c, two
+
+  baz = a: second one, {c: two}, e: first first h: three
+  eq baz.a.c, two
+
+  qux = a: third one, {c: two}, e: first first h: three
+  eq qux.a.e.h, three
+
+  quux = a: third one, {c: two}, e: first(three), h: four
+  eq quux.a.e, three
+  eq quux.a.h, four
+
+  corge = a: third one, {c: two}, e: second three, h: four
+  eq corge.a.e.h, four
+
+test "Implicit objects, functions and arrays", ->
+  first  = (x) -> x
+  second = (x, y) -> y
+
+  foo = [
+    1
+    one: 1
+    two: 2
+    three: 3
+    more:
+      four: 4
+      five: 5, six: 6
+    2, 3, 4
+    5]
+  eq foo[2], 2
+  eq foo[1].more.six, 6
+
+  bar = [
+    1
+    first first first second 1,
+      one: 1, twoandthree: twoandthree: two: 2, three: 3
+      2,
+    2
+    one: 1
+    two: 2
+    three: first second ->
+      no
+    , ->
+      3
+    3
+    4]
+  eq bar[2], 2
+  eq bar[1].twoandthree.twoandthree.two, 2
+  eq bar[3].three(), 3
+  eq bar[4], 3
+
+test "#2549, Brace-less Object Literal as a Second Operand on a New Line", ->
+  foo = no or
+    one: 1
+    two: 2
+    three: 3
+  eq foo.one, 1
+
+  bar = yes and one: 1
+  eq bar.one, 1
+
+  baz = null ?
+    one: 1
+    two: 2
+  eq baz.two, 2
+
+test "#2757, Nested", ->
+  foo =
+    bar:
+      one: 1,
+  eq foo.bar.one, 1
+
+  baz =
+    qux:
+      one: 1,
+    corge:
+      two: 2,
+      three: three: three: 3,
+    xyzzy:
+      thud:
+        four:
+          four: 4,
+      five: 5,
+
+  eq baz.qux.one, 1
+  eq baz.corge.three.three.three, 3
+  eq baz.xyzzy.thud.four.four, 4
+  eq baz.xyzzy.five, 5
+
+test "#1865, syntax regression 1.1.3", ->
+  foo = (x, y) -> y
+
+  bar = a: foo (->),
+    c: yes
+  eq bar.a.c, yes
+
+  baz = a: foo (->), c: yes
+  eq baz.a.c, yes
+
+
 test "#1322: implicit call against implicit object with block comments", ->
   ((obj, arg) ->
     eq obj.x * obj.y, 6
@@ -273,7 +408,5 @@ test "#1961, #1974, regression with compound assigning to an implicit object", -
 test "#2207: Immediate implicit closes don't close implicit objects", ->
   func = ->
     key: for i in [1, 2, 3] then i
-      
+
   eq func().key.join(' '), '1 2 3'
-  
-  
