@@ -812,6 +812,11 @@ Expressions
       Destructuring assignment can even be combined with splats.
     </p>
     <%= code_for('patterns_and_splats', 'contents.join("")') %>
+    <p>
+      Destructuring assignment is also useful when combined with class constructors 
+      to assign propeties to your instance from an options object passed to the constructor.
+    </p>
+    <%= code_for('constructor_destructuring', 'contents.join("")') %>
 
     <p>
       <span id="fat-arrow" class="bookmark"></span>
@@ -868,6 +873,11 @@ Expressions
       runs.
     </p>
     <%= code_for('switch') %>
+
+    <p>
+      Switch statements can also be used without a control expression, turning them in to a cleaner alternative to if/else chains.
+    </p>
+    <%= code_for('switch_with_no_expression') %>
 
     <p>
       <span id="try" class="bookmark"></span>
