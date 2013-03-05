@@ -60,6 +60,17 @@ exports.some = Array::some ? (fn) ->
   return true for e in this when fn e
   false
 
+# Simple function for inverting Literate CoffeeScript code by putting the
+# documentation in comments, and bumping the actual code back out to the edge ...
+# producing a string of CoffeeScript code that can be compiled "normally".
+exports.invertLiterate = (code) ->
+  lines = for line in code.split('\n')
+    if match = (/^([ ]{4}|\t)/).exec line
+      line[match[0].length..]
+    else
+      '# ' + line
+  lines.join '\n'
+
 # Merge two jison-style location data objects together.
 # If `last` is not provided, this will simply return `first`.
 buildLocationData = (first, last) ->

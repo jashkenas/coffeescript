@@ -10,7 +10,6 @@ path              = require 'path'
 helpers           = require './helpers'
 optparse          = require './optparse'
 CoffeeScript      = require './coffee-script'
-{rewriteLiterate} = require './lexer'
 {spawn, exec}     = require 'child_process'
 {EventEmitter}    = require 'events'
 
@@ -123,7 +122,8 @@ compileScript = (file, input, base) ->
     else if o.nodes       then printLine CoffeeScript.nodes(t.input, t.options).toString().trim()
     else if o.run         then CoffeeScript.run t.input, t.options
     else if o.join and t.file isnt o.join
-      sourceCode[sources.indexOf(t.file)] = if helpers.isLiterate file then rewriteLiterate t.input else t.input
+      t.input = helpers.invertLiterate t.input if helpers.isLiterate file
+      sourceCode[sources.indexOf(t.file)] = t.input
       compileJoin()
     else
       compiled = CoffeeScript.compile t.input, t.options
