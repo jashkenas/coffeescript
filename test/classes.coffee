@@ -169,6 +169,13 @@ test "classes with JS-keyword properties", ->
   ok instance.name() is 'class'
 
 
+test "classes with bound functions with non-alphanumeric properties", ->
+
+  class Class
+    'multi:word/member!name': =>
+
+  instance = new Class
+
 test "Classes with methods that are pre-bound to the instance, or statically, to the class", ->
 
   class Dog
