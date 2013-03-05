@@ -1,8 +1,7 @@
 vm = require 'vm'
 nodeREPL = require 'repl'
 CoffeeScript = require './coffee-script'
-{CompilerError} = require './error'
-{merge} = require './helpers'
+{merge, prettyErrorMessage} = require './helpers'
 
 replDefaults =
   prompt: 'coffee> ',
@@ -26,10 +25,7 @@ replDefaults =
       ]
       js = ast.compile bare: yes
     catch err
-      if err instanceof CompilerError
-        console.log err.prettyMessage filename, input, yes
-      else
-        cb err
+      console.log prettyErrorMessage err, filename, input, yes
     cb null, vm.runInContext(js, context, filename)
 
 addMultilineHandler = (repl) ->

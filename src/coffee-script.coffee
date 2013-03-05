@@ -11,7 +11,6 @@ path      = require 'path'
 {Lexer}   = require './lexer'
 {parser}  = require './parser'
 helpers   = require './helpers'
-{CompilerError} = require './error'
 vm        = require 'vm'
 sourcemap = require './sourcemap'
 
@@ -184,4 +183,4 @@ parser.yy.parseError = (message, {token}) ->
   # data for this token. Unfortunately, Jison seems to send an outdated `loc`
   # (from the previous token), so we take the location information directly
   # from the lexer.
-  throw CompilerError.fromLocationData message, parser.lexer.yylloc
+  helpers.throwSyntaxError message, parser.lexer.yylloc

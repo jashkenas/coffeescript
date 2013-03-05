@@ -1939,9 +1939,9 @@ Expressions
         else
           $(el).text window.compiledJS
         $('#error').hide()
-      catch {startLine, startColumn, message}
-        if startLine? and startColumn?
-          message = "Error on line #{startLine + 1}, column #{startColumn + 1}: #{message}"
+      catch {location, message}
+        if location?
+          message = "Error on line #{location.first_line + 1}, column #{location.first_column + 1}: #{message}"
         $('#error').text(message).show()
 
       # Update permalink

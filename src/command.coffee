@@ -10,7 +10,6 @@ path            = require 'path'
 helpers         = require './helpers'
 optparse        = require './optparse'
 CoffeeScript    = require './coffee-script'
-{CompilerError} = require './error'
 {spawn, exec}   = require 'child_process'
 {EventEmitter}  = require 'events'
 
@@ -142,15 +141,10 @@ compileScript = (file, input, base) ->
   catch err
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
-
-    message = if err instanceof CompilerError
-      useColors = process.stdout.isTTY and not process.env.NODE_DISABLE_COLORS
-      err.prettyMessage file or '[stdin]', input, useColors
-    else
-      err.stack or "ERROR: #{err}"
-
+    useColors = process.stdout.isTTY and not process.env.NODE_DISABLE_COLORS
+    message = helpers.prettyErrorMessage err, file or '[stdin]', input, useColors
     if o.watch
-      printLine message + '\x07' if o.watch
+      printLine message + '\x07'
     else
       printWarn message
       process.exit 1

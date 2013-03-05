@@ -4,9 +4,12 @@
 # Ensure that errors of different kinds (lexer, parser and compiler) are shown
 # in a consistent way.
 
+{prettyErrorMessage} = CoffeeScript.helpers
+
 assertErrorFormat = (code, expectedErrorFormat) ->
   throws (-> CoffeeScript.compile code), (err) ->
-    eq expectedErrorFormat, (err.prettyMessage 'test.coffee', code)
+    message = prettyErrorMessage err, 'test.coffee', code
+    eq expectedErrorFormat, message
     yes
 
 test "lexer errors formating", ->

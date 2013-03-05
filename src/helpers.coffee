@@ -12,7 +12,7 @@ exports.ends = (string, literal, back) ->
   literal is string.substr string.length - len - (back or 0), len
 
 # Repeat a string `n` times.
-exports.repeat = (str, n) ->
+exports.repeat = repeat = (str, n) ->
   # Use clever algorithm to have O(log(n)) string concatenation operations.
   res = ''
   while n > 0
@@ -119,4 +119,40 @@ exports.isCoffee = (file) -> /\.((lit)?coffee|coffee\.md)$/.test file
 # Determine if a filename represents a Literate CoffeeScript file.
 exports.isLiterate = (file) -> /\.(litcoffee|coffee\.md)$/.test file
 
+# Throws a SyntaxError with a source file location data attached to it in a
+# property called `location`.
+exports.throwSyntaxError = (message, location) ->
+  location.last_line ?= location.first_line
+  location.last_column ?= location.first_column
+  error = new SyntaxError message
+  error.location = location
+  throw error
 
+# Creates a nice error message like, following the "standard" format
+# <filename>:<line>:<col>: <message> plus the line with the error and a marker
+# showing where the error is.
+exports.prettyErrorMessage = (error, fileName, code, useColors) ->
+  return error.stack or "#{error}" unless error.location
+
+  {first_line, first_column, last_line, last_column} = error.location
+  codeLine = code.split('\n')[first_line]
+  start    = first_column
+  # Show only the first line on multi-line errors.
+  end      = if first_line is last_line then last_column + 1 else codeLine.length
+  marker   = repeat(' ', start) + repeat('^', end - start)
+
+  if useColors
+    colorize  = (str) -> "\x1B[1;31m#{str}\x1B[0m"
+    codeLine = codeLine[...start] + colorize(codeLine[start...end]) + codeLine[end..]
+    marker    = colorize marker
+
+  message = """
+  #{fileName}:#{first_line + 1}:#{first_column + 1}: error: #{error.message}
+  #{codeLine}
+  #{marker}
+            """
+
+  # Uncomment to add stacktrace.
+  #message += "\n#{error.stack}"
+
+  message

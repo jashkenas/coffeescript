@@ -9,8 +9,8 @@ Error.stackTraceLimit = Infinity
 {RESERVED, STRICT_PROSCRIBED} = require './lexer'
 
 # Import the helpers we plan to use.
-{compact, flatten, extend, merge, del, starts, ends, last, some, addLocationDataFn, locationDataToString} = require './helpers'
-{CompilerError} = require './error'
+{compact, flatten, extend, merge, del, starts, ends, last, some,
+addLocationDataFn, locationDataToString, throwSyntaxError} = require './helpers'
 
 # Functions required by parser
 exports.extend = extend
@@ -182,9 +182,9 @@ exports.Base = class Base
     @eachChild (child) ->
       child.updateLocationDataIfMissing locationData
 
-  # Throw a compiler error associated with this node's location.
+  # Throw a SyntaxError associated with this node's location.
   error: (message) ->
-    throw CompilerError.fromLocationData message, @locationData
+    throwSyntaxError message, @locationData
 
   makeCode: (code) ->
     new CodeFragment this, code

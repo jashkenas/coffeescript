@@ -12,8 +12,7 @@
 {Rewriter, INVERSES} = require './rewriter'
 
 # Import the helpers we need.
-{count, starts, compact, last, locationDataToString} = require './helpers'
-{CompilerError} = require './error'
+{count, starts, compact, last, locationDataToString, throwSyntaxError} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -698,7 +697,7 @@ exports.Lexer = class Lexer
   error: (message) ->
     # TODO: Are there some cases we could improve the error line number by
     # passing the offset in the chunk where the error happened?
-    throw new CompilerError message, @chunkLine, @chunkColumn
+    throwSyntaxError message, first_line: @chunkLine, first_column: @chunkColumn
 
 # Constants
 # ---------
