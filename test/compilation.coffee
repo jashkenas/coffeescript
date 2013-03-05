@@ -71,5 +71,8 @@ test "#1106: __proto__ compilation", ->
 test "reference named hasOwnProperty", ->
   CoffeeScript.compile 'hasOwnProperty = 0; a = 1'
 
-test "#1055", ->
+test "#1055: invalid keys in real (but not work-product) objects", ->
   cantCompile "@key: value"
+
+test "#1066: interpolated strings are not implicit functions", ->
+  cantCompile '"int#{er}polated" arg'

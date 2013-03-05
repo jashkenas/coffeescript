@@ -589,7 +589,10 @@ exports.Lexer = class Lexer
         @tokens.push token
       else
         @error "Unexpected #{tag}"
-    @token ')', ')', offsetInChunk + lexedLength, 0 if interpolated
+    if interpolated
+      rparen = @makeToken ')', ')', offsetInChunk + lexedLength, 0
+      rparen.stringEnd = true
+      @tokens.push rparen
     tokens
 
   # Pairs up a closing token, ensuring that all listed pairs of tokens are
