@@ -14,6 +14,15 @@
 # Import the helpers we need.
 {count, starts, compact, last, locationDataToString} = require './helpers'
 
+# Rewrite literate CoffeeScript code, converting Markdown text into inline comments.
+exports.rewriteLiterate = rewriteLiterate = (code) ->
+  lines = for line in code.split('\n')
+    if match = LITERATE.exec line
+      line[match[0].length..]
+    else
+      '# ' + line
+  lines.join '\n'
+
 # The Lexer Class
 # ---------------
 
@@ -84,13 +93,7 @@ exports.Lexer = class Lexer
     if WHITESPACE.test code
         code = "\n#{code}"
         @chunkLine--
-    if @literate
-      lines = for line in code.split('\n')
-        if match = LITERATE.exec line
-          line[match[0].length..]
-        else
-          '# ' + line
-      code = lines.join '\n'
+    code = rewriteLiterate code if @literate
     code
 
   # Tokenizers
