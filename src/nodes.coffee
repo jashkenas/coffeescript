@@ -989,15 +989,7 @@ exports.Class = class Class extends Base
         body = new Block [new Return new Literal "#{@ctor.name}.prototype.#{name.value}.apply(_this, arguments)"]
         rhs = new Code func.params, body, 'boundfunc'
         bound = new Assign lhs, rhs
-
         @ctor.body.unshift bound
-
-        # {base} = assign.variable
-        # lhs = (new Value (new Literal "this"), [new Access base]).compile o
-        # @ctor.body.unshift new Literal """#{lhs} = function() {
-        # #{o.indent}  return #{@ctor.name}.prototype.#{base.value}.apply(_this, arguments);
-        # #{o.indent}}\n
-        # """
     return
 
   # Merge the properties from a top-level object as prototypal properties
