@@ -328,7 +328,7 @@ exports.Lexer = class Lexer
         @suppressNewlines()
         return indent.length
       diff = size - @indent + @outdebt
-      @token 'INDENT', diff, 0, indent.length
+      @token 'INDENT', diff, indent.length - size, size
       @indents.push diff
       @ends.push 'OUTDENT'
       @outdebt = @indebt = 0
@@ -650,7 +650,7 @@ exports.Lexer = class Lexer
     # so if last_column == first_column, then we're looking at a character of length 1.
     lastCharacter = Math.max 0, length - 1
     [locationData.last_line, locationData.last_column] =
-      @getLineAndColumnFromChunk offsetInChunk + (length - 1)
+      @getLineAndColumnFromChunk offsetInChunk + (lastCharacter)
 
     token = [tag, value, locationData]
 
