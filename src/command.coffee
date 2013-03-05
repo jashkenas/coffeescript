@@ -5,13 +5,14 @@
 # interactive REPL.
 
 # External dependencies.
-fs             = require 'fs'
-path           = require 'path'
-helpers        = require './helpers'
-optparse       = require './optparse'
-CoffeeScript   = require './coffee-script'
-{spawn, exec}  = require 'child_process'
-{EventEmitter} = require 'events'
+fs                = require 'fs'
+path              = require 'path'
+helpers           = require './helpers'
+optparse          = require './optparse'
+CoffeeScript      = require './coffee-script'
+{rewriteLiterate} = require './lexer'
+{spawn, exec}     = require 'child_process'
+{EventEmitter}    = require 'events'
 
 exists         = fs.exists or path.exists
 
@@ -122,7 +123,7 @@ compileScript = (file, input, base) ->
     else if o.nodes       then printLine CoffeeScript.nodes(t.input, t.options).toString().trim()
     else if o.run         then CoffeeScript.run t.input, t.options
     else if o.join and t.file isnt o.join
-      sourceCode[sources.indexOf(t.file)] = t.input
+      sourceCode[sources.indexOf(t.file)] = if helpers.isLiterate file then rewriteLiterate t.input else t.input
       compileJoin()
     else
       compiled = CoffeeScript.compile t.input, t.options
