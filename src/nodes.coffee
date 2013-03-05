@@ -989,15 +989,7 @@ exports.Class = class Class extends Base
         body = new Block [new Return new Literal "#{@ctor.name}.prototype.#{name.value}.apply(_this, arguments)"]
         rhs = new Code func.params, body, 'boundfunc'
         bound = new Assign lhs, rhs
-
-        @ctor.body.unshift bound
-
-        # {base} = assign.variable
-        # lhs = (new Value (new Literal "this"), [new Access base]).compile o
-        # @ctor.body.unshift new Literal """#{lhs} = function() {
-        # #{o.indent}  return #{@ctor.name}.prototype.#{base.value}.apply(_this, arguments);
-        # #{o.indent}}\n
-        # """
+        @ctor.body.push bound
     return
 
   # Merge the properties from a top-level object as prototypal properties
@@ -1057,16 +1049,26 @@ exports.Class = class Class extends Base
 
   # Make sure that a constructor is defined for the class, and properly
   # configured.
-  ensureConstructor: (name) ->
-    if not @ctor
-      @ctor = new Code
-      @ctor.body.push new Literal "#{name}.__super__.constructor.apply(this, arguments)" if @parent
-      @ctor.body.push new Literal "#{@externalCtor}.apply(this, arguments)" if @externalCtor
-      @ctor.body.makeReturn()
-      @body.expressions.unshift @ctor
-    @ctor.ctor     = @ctor.name = name
-    @ctor.klass    = null
+  ensureConstructor: (name, o) ->
+    missing = not @ctor
+    @ctor or= new Code
+    @ctor.ctor = @ctor.name = name
+    @ctor.klass = null
     @ctor.noReturn = yes
+    if missing
+      superCall = new Literal "#{name}.__super__.constructor.apply(this, arguments)" if @parent
+      superCall = new Literal "#{@externalCtor}.apply(this, arguments)" if @externalCtor
+      if superCall
+        ref = new Literal o.scope.freeVariable 'ref'
+        @ctor.body.unshift new Assign ref, superCall
+      @addBoundFunctions o
+      if superCall
+        @ctor.body.push ref
+        @ctor.body.makeReturn()
+      @body.expressions.unshift @ctor
+    else
+      @addBoundFunctions o
+
 
   # Instead of generating the JavaScript string directly, we build up the
   # equivalent syntax tree and compile that, in pieces. You can see the
@@ -1080,12 +1082,11 @@ exports.Class = class Class extends Base
     @hoistDirectivePrologue()
     @setContext name
     @walkBody name, o
-    @ensureConstructor name
+    @ensureConstructor name, o
     @body.spaced = yes
     @body.expressions.unshift @ctor unless @ctor instanceof Code
     @body.expressions.push lname
     @body.expressions.unshift @directives...
-    @addBoundFunctions o
 
     call  = Closure.wrap @body
 

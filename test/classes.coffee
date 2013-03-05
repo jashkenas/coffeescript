@@ -740,3 +740,13 @@ test "#2489: removing __bind", ->
 
   eq thing.foo.length, 3
   eq thing.bar.length, 3
+
+
+test "#2773: overriding bound functions", ->
+  class Foo
+    method: => 'Foo'
+
+  class Bar extends Foo
+    method: => 'Bar'
+
+  eq (new Bar).method(), 'Bar'
