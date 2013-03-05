@@ -882,7 +882,7 @@ exports.Obj = class Obj extends Base
     return [@makeCode(if @front then '({})' else '{}')] unless props.length
     if @generated
       for node in props when node instanceof Value
-        throw new Error 'cannot have an implicit value in an implicit object'
+        throw new SyntaxError 'cannot have an implicit value in an implicit object'
     idt         = o.indent += TAB
     lastNoncom  = @lastNonComment @properties
     answer = []
@@ -894,6 +894,8 @@ exports.Obj = class Obj extends Base
       else
         ',\n'
       indent = if prop instanceof Comment then '' else idt
+      if prop instanceof Assign and prop.variable instanceof Value and prop.variable.hasProperties()
+        throw new SyntaxError 'Invalid object key'
       if prop instanceof Value and prop.this
         prop = new Assign prop.properties[0].name, prop, 'object'
       if prop not instanceof Comment
@@ -1002,9 +1004,9 @@ exports.Class = class Class extends Base
         func = assign.value
         if base.value is 'constructor'
           if @ctor
-            throw new Error 'cannot define more than one constructor in a class'
+            throw new SyntaxError 'cannot define more than one constructor in a class'
           if func.bound
-            throw new Error 'cannot define a constructor as a bound function'
+            throw new SyntaxError 'cannot define a constructor as a bound function'
           if func instanceof Code
             assign = @ctor = func
           else
@@ -1237,7 +1239,7 @@ exports.Assign = class Assign extends Base
     # Disallow conditional assignment of undefined variables.
     if not left.properties.length and left.base instanceof Literal and
            left.base.value != "this" and not o.scope.check left.base.value
-      throw new Error "the variable \"#{left.base.value}\" can't be assigned with #{@context} because it has not been defined."
+      throw new SyntaxError "the variable \"#{left.base.value}\" can't be assigned with #{@context} because it has not been defined."
     if "?" in @context then o.isExistentialEquals = true
     new Op(@context[...-1], left, new Assign(right, @value, '=') ).compileToFragments o
 

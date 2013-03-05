@@ -70,3 +70,6 @@ test "#1106: __proto__ compilation", ->
 
 test "reference named hasOwnProperty", ->
   CoffeeScript.compile 'hasOwnProperty = 0; a = 1'
+
+test "#1055", ->
+  cantCompile "@key: value"
