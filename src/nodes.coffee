@@ -1739,13 +1739,11 @@ exports.Try = class Try extends Base
     tryPart   = @attempt.compileToFragments o, LEVEL_TOP
 
     catchPart = if @recovery
-      if @error.isObject?()
-        placeholder = new Literal '_error'
-        @recovery.unshift new Assign @error, placeholder
-        @error = placeholder
+      placeholder = new Literal '_error'
+      @recovery.unshift new Assign @error, placeholder
+      @error = placeholder
       if @error.value in STRICT_PROSCRIBED
         throw SyntaxError "catch variable may not be \"#{@error.value}\""
-      o.scope.add @error.value, 'param' unless o.scope.check @error.value
       [].concat @makeCode(" catch ("), @error.compileToFragments(o), @makeCode(") {\n"),
         @recovery.compileToFragments(o, LEVEL_TOP), @makeCode("\n#{@tab}}")
     else unless @ensure or @recovery
