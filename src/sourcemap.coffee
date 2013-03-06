@@ -92,7 +92,11 @@ class exports.SourceMap
 # Builds a V3 source map from a SourceMap object.
 # Returns the generated JSON as a string.
 
-exports.generateV3SourceMap = (sourceMap, sourceFile=null, generatedFile=null) ->
+exports.generateV3SourceMap = (sourceMap, options={}) ->
+  sourceRoot = options.sourceRoot or ""
+  sourceFile = options.sourceFile or null
+  generatedFile = options.generatedFile or null
+
   writingGeneratedLine = 0
   lastGeneratedColumnWritten = 0
   lastSourceLineWritten = 0
@@ -146,7 +150,7 @@ exports.generateV3SourceMap = (sourceMap, sourceFile=null, generatedFile=null) -
   answer = {
     version: 3
     file: generatedFile
-    sourceRoot: ""
+    sourceRoot
     sources: if sourceFile then [sourceFile] else []
     names: []
     mappings

@@ -36,7 +36,11 @@ test "SourceMap tests", ->
   map.addMapping [1, 9], [2, 8]
   map.addMapping [3, 0], [3, 4]
 
-  eqJson (sourcemap.generateV3SourceMap map, "source.coffee", "source.js"), '{"version":3,"file":"source.js","sourceRoot":"","sources":["source.coffee"],"names":[],"mappings":"AAAA;;IACK,GAAC,CAAG;IAET"}'
+  testWithFilenames = sourcemap.generateV3SourceMap map, {
+        sourceRoot: "",
+        sourceFile: "source.coffee",
+        generatedFile: "source.js"}
+  eqJson testWithFilenames, '{"version":3,"file":"source.js","sourceRoot":"","sources":["source.coffee"],"names":[],"mappings":"AAAA;;IACK,GAAC,CAAG;IAET"}'
   eqJson (sourcemap.generateV3SourceMap map), '{"version":3,"file":null,"sourceRoot":"","sources":[],"names":[],"mappings":"AAAA;;IACK,GAAC,CAAG;IAET"}'
 
   # Look up a generated column - should get back the original source position.
