@@ -112,9 +112,9 @@ compilePath = (source, topLevel, base) ->
 # Compile a single source script, containing the given code, according to the
 # requested options. If evaluating the script directly sets `__filename`,
 # `__dirname` and `module.filename` to be correct relative to the script's path.
-compileScript = (file, input, base) ->
+compileScript = (file, input, base=null) ->
   o = opts
-  options = compileOptions file
+  options = compileOptions file, base
   try
     t = task = {file, input, options}
     CoffeeScript.emit 'compile', task
@@ -136,7 +136,7 @@ compileScript = (file, input, base) ->
       if o.print
         printLine t.output.trim()
       else if o.compile || o.map
-        writeJs base, t.file, t.output, t.sourceMap
+        writeJs base, t.file, t.output, options.jsPath, t.sourceMap
       else if o.lint
         lint t.file, t.output
   catch err
@@ -264,8 +264,7 @@ outputPath = (source, base, extension=".js") ->
 #
 # If `generatedSourceMap` is provided, this will write a `.map` file into the
 # same directory as the `.js` file.
-writeJs = (base, sourcePath, js, generatedSourceMap = null) ->
-  jsPath = outputPath sourcePath, base
+writeJs = (base, sourcePath, js, jsPath, generatedSourceMap = null) ->
   sourceMapPath = outputPath sourcePath, base, ".map"
   jsDir  = path.dirname jsPath
   compile = ->
@@ -323,14 +322,17 @@ parseOptions = ->
   return
 
 # The compile-time options to pass to the CoffeeScript compiler.
-compileOptions = (filename) ->
+compileOptions = (filename, base) ->
   {
     filename
     literate: helpers.isLiterate(filename)
     bare: opts.bare
     header: opts.compile
     sourceMap: opts.map
+    jsPath: if (filename isnt null and base isnt null) then (outputPath filename, base) else null
   }
+
+
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
 # the `node` binary, preserving the other options.

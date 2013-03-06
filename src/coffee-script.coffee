@@ -30,6 +30,30 @@ exports.VERSION = '1.6.1'
 # Expose helpers for testing.
 exports.helpers = helpers
 
+generateV3SourceMapOptions = (options = {}) ->
+  if !options.filename
+    return {}
+  else
+    if options.jsPath
+      # jsPath is relative to the CWD.  Construct a sourceRoot that gets us back to the CWD.
+      pathDepth = options.jsPath.split('/').length-1
+      sourceRoot = ""
+      if (pathDepth > 0) then for [0...pathDepth]
+        sourceRoot += "../"
+
+      return {
+        sourceRoot,
+        sourceFile: options.filename,
+        generatedFile: helpers.baseFileName(options.jsPath)
+      }
+    else
+      return {
+        sourceRoot: "",
+        sourceFile: helpers.baseFileName options.filename,
+        generatedFile: helpers.baseFileName(options.filename, yes) + ".js"
+      }
+
+
 # Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
 #
 # If `options.sourceMap` is specified, then `options.filename` must also be specified.
@@ -43,8 +67,6 @@ exports.compile = compile = (code, options = {}) ->
   try
 
     if options.sourceMap
-      coffeeFile = helpers.baseFileName options.filename
-      jsFile = helpers.baseFileName(options.filename, yes) + ".js"
       sourceMap = new sourcemap.SourceMap()
 
     fragments = (parser.parse lexer.tokenize(code, options)).compileToFragments options
@@ -80,7 +102,8 @@ exports.compile = compile = (code, options = {}) ->
     answer = {js}
     if sourceMap
       answer.sourceMap = sourceMap
-      answer.v3SourceMap = sourcemap.generateV3SourceMap sourceMap, coffeeFile, jsFile
+      v3Options = generateV3SourceMapOptions options
+      answer.v3SourceMap = sourcemap.generateV3SourceMap(sourceMap, v3Options)
     answer
   else
     js
