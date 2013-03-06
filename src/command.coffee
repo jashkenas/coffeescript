@@ -330,6 +330,7 @@ compileOptions = (filename, base) ->
     header: opts.compile
     sourceMap: opts.map
     jsPath: if (filename isnt null and base isnt null) then (outputPath filename, base) else null
+    workingDirectory: process.cwd()
   }
 
 

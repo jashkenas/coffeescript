@@ -120,3 +120,62 @@ exports.isCoffee = (file) -> /\.((lit)?coffee|coffee\.md)$/.test file
 exports.isLiterate = (file) -> /\.(litcoffee|coffee\.md)$/.test file
 
 
+# Remove any "." components in a path, any ".."s in the middle of a path.  Leaves a trailing '/'
+# if present, unless removeTrailingSlash is set.
+exports.normalizePath = normalizePath = (path, removeTrailingSlash=no) ->
+  root = no # Does this path start with the root?
+  parts = path.split '/'
+  i = 0
+  # If the path started with a '/', set the root flag.
+  if parts.length > 1 and parts[i] == ''
+    parts.splice i, 1
+    root = yes
+  while i < parts.length
+    if parts[i] in ['.', '']
+      if (i is parts.length - 1) and not removeTrailingSlash
+        # Leave the trailing '/''
+        parts[i] = ''
+        i++
+      else
+        # Remove the empty element
+        parts.splice i, 1
+    else if parts[i] is '..'
+      if i is 0 or (i and parts[i-1] is '..')
+        # Leave the ".."
+        i++
+      else
+        # Remove the '..' and the previous element
+        parts.splice i-1, 2
+        i--
+    else
+      i++
+  if root
+    if parts.length == 0 then return '/'
+    if parts.length[0] is '..'
+      # Uhh...  This doesn't make any sense.
+      throw new Error "Invalid path: #{path}"
+    parts.unshift '' # Add back the leading "/"
+  parts.join '/'
+
+# Solve the relative path from `from` to `to`.
+#
+# This is the same as node's `path.relative()`, but can be used even if we're not running in node.
+# If paths are relative (don't have a leading '/') then we assume they are both relative to to
+# same working directory.
+#
+# If `from` is a relative path that starts with '..', then `cwd` must be provided to resolve
+# parent path names.
+exports.relativePath = (from, to, cwd=null) ->
+  if cwd
+    from = cwd + "/" + from
+    to = cwd + "/" + to
+  from = (normalizePath from).split '/'
+  to = (normalizePath to).split '/'
+  while from.length > 0 and to.length > 0 and from[0] == to[0]
+    from.shift()
+    to.shift()
+  if from.length and from[0] is ".." then throw new Error "'cwd' must be specified if 'from' references parent directory: #{from.join '/'} -> #{to.join '/'}"
+  answer = ""
+  if from.length > 1 then for [0...(from.length - 1)]
+    answer += "../"
+  answer + "#{to.join '/'}"
