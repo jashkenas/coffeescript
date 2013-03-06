@@ -11,6 +11,16 @@ exports.ends = (string, literal, back) ->
   len = literal.length
   literal is string.substr string.length - len - (back or 0), len
 
+# Repeat a string `n` times.
+exports.repeat = repeat = (str, n) ->
+  # Use clever algorithm to have O(log(n)) string concatenation operations.
+  res = ''
+  while n > 0
+    res += str if n & 1
+    n >>>= 1
+    str += str
+  res
+
 # Trim out all falsy values from an array.
 exports.compact = (array) ->
   item for item in array when item
@@ -53,7 +63,7 @@ exports.del = (obj, key) ->
   val
 
 # Gets the last item of an array(-like) object.
-exports.last = (array, back) -> array[array.length - (back or 0) - 1]
+exports.last = last = (array, back) -> array[array.length - (back or 0) - 1]
 
 # Typical Array::some
 exports.some = Array::some ? (fn) ->
@@ -125,37 +135,34 @@ exports.isLiterate = (file) -> /\.(litcoffee|coffee\.md)$/.test file
 exports.normalizePath = normalizePath = (path, removeTrailingSlash=no) ->
   root = no # Does this path start with the root?
   parts = path.split '/'
+  newParts = []
   i = 0
   # If the path started with a '/', set the root flag.
-  if parts.length > 1 and parts[i] == ''
-    parts.splice i, 1
+  if parts.length > 1 and parts[0] == ''
+    parts.shift()
     root = yes
-  while i < parts.length
-    if parts[i] in ['.', '']
+  for part, i in parts
+    if part in ['.', '']
       if (i is parts.length - 1) and not removeTrailingSlash
-        # Leave the trailing '/''
-        parts[i] = ''
-        i++
-      else
-        # Remove the empty element
-        parts.splice i, 1
-    else if parts[i] is '..'
-      if i is 0 or (i and parts[i-1] is '..')
+        # Leave the trailing '/'.  Note that we're pushing a '', but because we join with '/'s
+        # later, this will become a '/'.
+        newParts.push ''
+    else if part is '..'
+      if newParts.length is 0 or (newParts.length and last newParts is '..')
         # Leave the ".."
-        i++
+        newParts.push '..'
       else
-        # Remove the '..' and the previous element
-        parts.splice i-1, 2
-        i--
+        # Drop the '..' and remote the previous element
+        newParts.pop()
     else
-      i++
+      newParts.push part
   if root
-    if parts.length == 0 then return '/'
-    if parts.length[0] is '..'
+    if newParts.length is 0 then return '/'
+    if newParts.length[0] is '..'
       # Uhh...  This doesn't make any sense.
       throw new Error "Invalid path: #{path}"
-    parts.unshift '' # Add back the leading "/"
-  parts.join '/'
+    newParts.unshift '' # Add back the leading "/"
+  newParts.join '/'
 
 # Solve the relative path from `from` to `to`.
 #
@@ -169,13 +176,11 @@ exports.relativePath = (from, to, cwd=null) ->
   if cwd
     from = cwd + "/" + from
     to = cwd + "/" + to
-  from = (normalizePath from).split '/'
-  to = (normalizePath to).split '/'
+  from = normalizePath(from).split '/'
+  to = normalizePath(to).split '/'
   while from.length > 0 and to.length > 0 and from[0] == to[0]
     from.shift()
     to.shift()
   if from.length and from[0] is ".." then throw new Error "'cwd' must be specified if 'from' references parent directory: #{from.join '/'} -> #{to.join '/'}"
-  answer = ""
-  if from.length > 1 then for [0...(from.length - 1)]
-    answer += "../"
+  answer = repeat "../", from.length - 1
   answer + "#{to.join '/'}"
