@@ -2,7 +2,7 @@
 # -------
 
 # pull the helpers from `CoffeeScript.helpers` into local variables
-{starts, ends, compact, count, merge, extend, flatten, del, last} = CoffeeScript.helpers
+{starts, ends, compact, count, merge, extend, flatten, del, last, baseFileName} = CoffeeScript.helpers
 
 
 # `starts`
@@ -94,3 +94,25 @@ test "the `last` helper returns the last item of an array-like object", ->
 test "the `last` helper allows one to specify an optional offset", ->
   ary = [0, 1, 2, 3, 4]
   eq 2, last(ary, 2)
+
+
+# `baseFileName`
+
+test "the `baseFileName` helper returns the file name to write to", ->
+  ext = '.js'
+  sourceToCompiled =
+    'a.coffee': 'a' + ext
+    'b.coffee': 'b' + ext
+    'a.litcoffee': 'a' + ext
+    'b.litcoffee': 'b' + ext
+    'a.lit': 'a' + ext
+    'b.lit': 'b' + ext
+    'a.coffee.md': 'a' + ext
+    'b.coffee.md': 'b' + ext
+    'coffee.coffee': 'coffee' + ext
+
+  for sourceFileName, expectedFileName of sourceToCompiled
+    name = baseFileName sourceFileName, yes
+    filename = name + ext
+    eq filename, expectedFileName
+
