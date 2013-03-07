@@ -110,7 +110,7 @@ exports.baseFileName = (file, stripExt = no) ->
   return file unless stripExt
   parts = file.split('.')
   parts.pop()
-  parts.pop() if parts[parts.length - 1] is 'coffee'
+  parts.pop() if parts[parts.length - 1] is 'coffee' and parts.length > 1
   parts.join('.')
 
 # Determine if a filename represents a CoffeeScript file.
