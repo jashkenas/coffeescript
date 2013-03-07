@@ -987,7 +987,7 @@ exports.Class = class Class extends Base
       o.scope.assign '_this', 'this'
       for [name, func] in @boundFuncs
         lhs = new Value (new Literal "this"), [new Access name]
-        body = new Block [new Return new Literal "#{@ctor.name}.prototype.#{name.value}.apply(_this, arguments)"]
+        body = new Block [new Return new Literal "#{@ctor.name}.prototype[\"#{name.value}\"].apply(_this, arguments)"]
         rhs = new Code func.params, body, 'boundfunc'
         bound = new Assign lhs, rhs
         @ctor.body.push bound
