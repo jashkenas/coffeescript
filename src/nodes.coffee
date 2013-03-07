@@ -983,14 +983,9 @@ exports.Class = class Class extends Base
   # Ensure that all functions bound to the instance are proxied in the
   # constructor.
   addBoundFunctions: (o) ->
-    if @boundFuncs.length
-      o.scope.assign '_this', 'this'
-      for [name, func] in @boundFuncs
-        lhs = new Value (new Literal "this"), [new Access name]
-        body = new Block [new Return new Literal "#{@ctor.name}.prototype.#{name.value}.apply(_this, arguments)"]
-        rhs = new Code func.params, body, 'boundfunc'
-        bound = new Assign lhs, rhs
-        @ctor.body.push bound
+    for bvar in @boundFuncs
+      lhs = (new Value (new Literal "this"), [new Access bvar]).compile o
+      @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
     return
 
   # Merge the properties from a top-level object as prototypal properties
@@ -1020,7 +1015,7 @@ exports.Class = class Class extends Base
           else
             assign.variable = new Value(new Literal(name), [(new Access new Literal 'prototype'), new Access base ])
             if func instanceof Code and func.bound
-              @boundFuncs.push [base, func]
+              @boundFuncs.push base
               func.bound = no
       assign
     compact exprs
@@ -2121,6 +2116,11 @@ UTILITIES =
   extends: -> """
     function(child, parent) { for (var key in parent) { if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; }
   """
+
+  # Create a function bound to the current value of "this".
+  bind: -> '''
+    function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
+  '''
 
   # Discover if an item is in an array.
   indexOf: -> """

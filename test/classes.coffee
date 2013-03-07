@@ -730,23 +730,27 @@ test "#2359: extending native objects that use other typed constructors requires
   eq 'yes!', workingArray.method()
 
 
-test "#2489: removing __bind", ->
+test "#2782: non-alphanumeric-named bound functions", ->
+  class A
+    'b:c': =>
+      'd'
 
-  class Thing
-    foo: (a, b, c) ->
-    bar: (a, b, c) =>
-
-  thing = new Thing
-
-  eq thing.foo.length, 3
-  eq thing.bar.length, 3
+  eq (new A)['b:c'](), 'd'
 
 
-test "#2773: overriding bound functions", ->
-  class Foo
-    method: => 'Foo'
+test "#2781: overriding bound functions", ->
+  class A
+    a: ->
+        @b()
+    b: =>
+        1
 
-  class Bar extends Foo
-    method: => 'Bar'
+  class B extends A
+    b: =>
+        2
 
-  eq (new Bar).method(), 'Bar'
+  b = (new A).b
+  eq b(), 1
+
+  b = (new B).b
+  eq b(), 2
