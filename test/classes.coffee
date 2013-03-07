@@ -754,3 +754,10 @@ test "#2781: overriding bound functions", ->
 
   b = (new B).b
   eq b(), 2
+
+
+test "#2791: bound function with destructured argument", ->
+  class Foo
+    method: ({a}) => 'Bar'
+
+  eq (new Foo).method({a: 'Bar'}), 'Bar'
