@@ -101,15 +101,23 @@ test "the `last` helper allows one to specify an optional offset", ->
 test "the `baseFileName` helper returns the file name to write to", ->
   ext = '.js'
   sourceToCompiled =
+    '.coffee': '.js'
+
     'a.coffee': 'a' + ext
     'b.coffee': 'b' + ext
+    'coffee.coffee': 'coffee' + ext
+
     'a.litcoffee': 'a' + ext
     'b.litcoffee': 'b' + ext
+    'coffee.litcoffee': 'coffee' + ext
+
     'a.lit': 'a' + ext
     'b.lit': 'b' + ext
+    'coffee.lit': 'coffee' + ext
+
     'a.coffee.md': 'a' + ext
     'b.coffee.md': 'b' + ext
-    'coffee.coffee': 'coffee' + ext
+    'coffee.coffee.md': 'coffee' + ext
 
   for sourceFileName, expectedFileName of sourceToCompiled
     name = baseFileName sourceFileName, yes
