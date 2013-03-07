@@ -761,3 +761,21 @@ test "#2791: bound function with destructured argument", ->
     method: ({a}) => 'Bar'
 
   eq (new Foo).method({a: 'Bar'}), 'Bar'
+
+
+test "#2796: ditto, ditto, ditto", ->
+  answer = null
+
+  outsideMethod = (func) ->
+    func.call message: 'wrong!'
+
+  class Base
+    constructor: ->
+      @message = 'right!'
+      outsideMethod @echo
+
+    echo: =>
+      answer = @message
+
+  new Base
+  eq answer, 'right!'
