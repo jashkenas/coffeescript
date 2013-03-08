@@ -2,7 +2,7 @@
 # -------
 
 # pull the helpers from `CoffeeScript.helpers` into local variables
-{starts, ends, compact, count, merge, extend, flatten, del, last, normalizePath, relativePath} = CoffeeScript.helpers
+{starts, ends, compact, count, merge, extend, flatten, del, last} = CoffeeScript.helpers
 
 
 # `starts`
