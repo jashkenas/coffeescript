@@ -30,41 +30,10 @@ exports.VERSION = '1.6.1'
 # Expose helpers for testing.
 exports.helpers = helpers
 
-# Generate v3 Source Map options from compile options.
-#
-# options.filename is required, and is the path and filename of the file being compiled,
-# relative to the current working directory.
-#
-# `options.jsPath` and `options.workingDirectory` may also be specified to customize the output
-# in the resulting v3 source map, where `options.jsPath` is the path where the .js file will be
-# written relative to the current working directory, and `options.workingDirectory` is the absolute
-# path of the current working directory (required if jsPath references a parent directory.)  If
-# these options are provided, then "sourceRoot" in the output will be a relative path to the
-# current working directory, and source files will be given relative to the "sourceRoot".
-#
-generateV3SourceMapOptions = (options = {}) ->
-  console.log "Generating v3 source map"
-  cwd = options.workingDirectory
-  return {} unless options.filename
-  if options.jsPath
-    sourceRoot = helpers.relativePath options.jsPath, ".", cwd
-    return {
-      sourceRoot
-      sourceFile: helpers.relativePath ".", options.filename, cwd
-      generatedFile: helpers.baseFileName(options.jsPath)
-    }
-  {
-    sourceRoot: ""
-    sourceFile: helpers.baseFileName options.filename
-    generatedFile: helpers.baseFileName(options.filename, yes) + ".js"
-  }
-
-
 # Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
 #
-# If `options.sourceMap` is specified, then `options.filename` must also be specified.  See
-# `generateV3SourceMapOptions()` for other options that can be passed to control source map
-# generation.
+# If `options.sourceMap` is specified, then `options.filename` must also be specified.  All
+# options that can be passed to `generateV3SourceMap()` may also be passed here.
 #
 # This returns a javascript string, unless `options.sourceMap` is passed,
 # in which case this returns a `{js, v3SourceMap, sourceMap}
@@ -110,8 +79,7 @@ exports.compile = compile = (code, options = {}) ->
     answer = {js}
     if sourceMap
       answer.sourceMap = sourceMap
-      v3Options = generateV3SourceMapOptions options
-      answer.v3SourceMap = sourcemap.generateV3SourceMap(sourceMap, v3Options)
+      answer.v3SourceMap = sourcemap.generateV3SourceMap(sourceMap, options)
     answer
   else
     js
