@@ -2,6 +2,9 @@
 # the **Lexer**, **Rewriter**, and the **Nodes**. Merge objects, flatten
 # arrays, count characters, that sort of thing.
 
+# External dependencies.
+pathSep              = (require 'path').sep
+
 # Peek at the beginning of a given string to see if it matches a sequence.
 exports.starts = (string, literal, start) ->
   literal is string.substr start, literal.length
@@ -115,10 +118,10 @@ exports.locationDataToString = (obj) ->
 
 # A `.coffee.md` compatible version of `basename`, that returns the file sans-extension.
 exports.baseFileName = (file, stripExt = no) ->
-  parts = file.split('/')
+  parts = file.split(pathSep)
   file = parts[parts.length - 1]
   return file unless stripExt
-  parts = file.split('.')
+  parts = file.split '.'
   parts.pop()
   parts.pop() if parts[parts.length - 1] is 'coffee' and parts.length > 1
   parts.join('.')
@@ -134,7 +137,7 @@ exports.isLiterate = (file) -> /\.(litcoffee|coffee\.md)$/.test file
 # if present, unless removeTrailingSlash is set.
 exports.normalizePath = normalizePath = (path, removeTrailingSlash=no) ->
   root = no # Does this path start with the root?
-  parts = path.split '/'
+  parts = path.split pathSep
   newParts = []
   i = 0
   # If the path started with a '/', set the root flag.
@@ -157,12 +160,12 @@ exports.normalizePath = normalizePath = (path, removeTrailingSlash=no) ->
     else
       newParts.push part
   if root
-    if newParts.length is 0 then return '/'
+    if newParts.length is 0 then return pathSep
     if newParts.length[0] is '..'
       # Uhh...  This doesn't make any sense.
       throw new Error "Invalid path: #{path}"
     newParts.unshift '' # Add back the leading "/"
-  newParts.join '/'
+  newParts.join pathSep
 
 # Solve the relative path from `from` to `to`.
 #
@@ -174,13 +177,14 @@ exports.normalizePath = normalizePath = (path, removeTrailingSlash=no) ->
 # parent path names.
 exports.relativePath = (from, to, cwd=null) ->
   if cwd
-    from = cwd + "/" + from
-    to = cwd + "/" + to
-  from = normalizePath(from).split '/'
-  to = normalizePath(to).split '/'
+    from = cwd + pathSep + from
+    to = cwd + pathSep + to
+  from = normalizePath(from).split pathSep
+  to = normalizePath(to).split pathSep
   while from.length > 0 and to.length > 0 and from[0] == to[0]
     from.shift()
     to.shift()
   if from.length and from[0] is ".." then throw new Error "'cwd' must be specified if 'from' references parent directory: #{from.join '/'} -> #{to.join '/'}"
-  answer = repeat "../", from.length - 1
-  answer + "#{to.join '/'}"
+  answer = repeat "..#{pathSep}", from.length - 1
+  answer + "#{to.join pathSep}"
+

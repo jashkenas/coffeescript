@@ -171,3 +171,4 @@ test "various tests for relativePath", ->
   throws -> relativePath "../o/foo.js", "foo.coffee"
   # With the CWD, this should pass.
   eq "../src/foo.coffee", relativePath "../o/foo.js", "foo.coffee", "/work/src"
+
