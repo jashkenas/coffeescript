@@ -323,17 +323,30 @@ parseOptions = ->
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (filename, base) ->
-  {
+  answer = {
     filename
     literate: helpers.isLiterate(filename)
     bare: opts.bare
     header: opts.compile
     sourceMap: opts.map
-    jsPath: if (filename isnt null and base isnt null) then (outputPath filename, base) else null
-    workingDirectory: process.cwd()
   }
-
-
+  if filename
+    if base
+      cwd = process.cwd()
+      jsPath = outputPath filename, base
+      jsDir = path.dirname jsPath
+      answer = helpers.merge answer, {
+        jsPath
+        sourceRoot: path.relative jsDir, cwd
+        sourceFiles: [path.relative cwd, filename]
+        generatedFile: helpers.baseFileName(jsPath)
+      }
+    else
+      answer = helpers.merge answer,
+        sourceRoot: ""
+        sourceFiles: [helpers.baseFileName filename]
+        generatedFile: helpers.baseFileName(filename, yes) + ".js"
+  answer
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
 # the `node` binary, preserving the other options.
