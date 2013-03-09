@@ -512,15 +512,6 @@ grammar =
   IfBlock: [
     o 'IF Expression Block',                    -> new If $2, $3, type: $1
     o 'IfBlock ELSE IF Expression Block',       -> $1.addElse new If $4, $5, type: $3
-    o 'IF INDENT GuardBlock OUTDENT',           -> $3.type = $1; $3
-    o 'IF INDENT GuardBlock ELSE Block OUTDENT',-> $3.type = $1; $3.addElse $5; $3
-  ]
-
-  # The guard-style form of *if*, where each expression serves as the truthy
-  # conditional.
-  GuardBlock: [
-    o 'Expression Block',                       -> new If $1, $2
-    o 'GuardBlock TERMINATOR Expression Block', -> $1.addElse new If $3, $4
   ]
 
   # The full complement of *if* expressions, including postfix one-liner

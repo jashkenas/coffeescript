@@ -63,17 +63,15 @@ optionParser = null
 # `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run = ->
   parseOptions()
-  if
-    opts.nodejs      then forkNode
-    opts.help        then usage
-    opts.version     then version
-    opts.stdio       then compileStdio
-    opts.eval        then compileScript null, sources[0]
-    opts.interactive then require('./repl').start()
-    else runScripts
-
-# Run passed CoffeeScript files by evaluating them, in order.
-runScripts = ->
+  return forkNode()                      if opts.nodejs
+  return usage()                         if opts.help
+  return version()                       if opts.version
+  return require('./repl').start()       if opts.interactive
+  if opts.watch and !fs.watch
+    return printWarn "The --watch feature depends on Node v0.6.0+. You are running #{process.version}."
+  return compileStdio()                  if opts.stdio
+  return compileScript null, sources[0]  if opts.eval
+  return require('./repl').start()       unless sources.length
   literals = if opts.run then sources.splice 1 else []
   process.argv = process.argv[0..1].concat literals
   process.argv[0] = 'coffee'
@@ -110,6 +108,7 @@ compilePath = (source, topLevel, base) ->
       notSources[source] = yes
       removeSource source, base
 
+
 # Compile a single source script, containing the given code, according to the
 # requested options. If evaluating the script directly sets `__filename`,
 # `__dirname` and `module.filename` to be correct relative to the script's path.
@@ -119,31 +118,27 @@ compileScript = (file, input, base=null) ->
   try
     t = task = {file, input, options}
     CoffeeScript.emit 'compile', task
-    if
-      o.tokens
-        printTokens CoffeeScript.tokens t.input, t.options
-      o.nodes
-        printLine CoffeeScript.nodes(t.input, t.options).toString().trim()
-      o.run
-        CoffeeScript.run t.input, t.options
-      o.join and t.file isnt o.join
-        t.input = helpers.invertLiterate t.input if helpers.isLiterate file
-        sourceCode[sources.indexOf(t.file)] = t.input
-        compileJoin()
-      else
-        compiled = CoffeeScript.compile t.input, t.options
-        t.output = compiled
-        if o.map
-          t.output = compiled.js
-          t.sourceMap = compiled.v3SourceMap
-        CoffeeScript.emit 'success', task
-        if
-          o.print
-            printLine t.output.trim()
-          o.compile or o.map
-            writeJs base, t.file, t.output, options.jsPath, t.sourceMap
-          o.lint
-            lint t.file, t.output
+    if      o.tokens      then printTokens CoffeeScript.tokens t.input, t.options
+    else if o.nodes       then printLine CoffeeScript.nodes(t.input, t.options).toString().trim()
+    else if o.run         then CoffeeScript.run t.input, t.options
+    else if o.join and t.file isnt o.join
+      t.input = helpers.invertLiterate t.input if helpers.isLiterate file
+      sourceCode[sources.indexOf(t.file)] = t.input
+      compileJoin()
+    else
+      compiled = CoffeeScript.compile t.input, t.options
+      t.output = compiled
+      if o.map
+        t.output = compiled.js
+        t.sourceMap = compiled.v3SourceMap
+
+      CoffeeScript.emit 'success', task
+      if o.print
+        printLine t.output.trim()
+      else if o.compile || o.map
+        writeJs base, t.file, t.output, options.jsPath, t.sourceMap
+      else if o.lint
+        lint t.file, t.output
   catch err
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
@@ -323,7 +318,6 @@ parseOptions = ->
   o.run         = not (o.compile or o.print or o.lint or o.map)
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
   sources       = o.arguments
-  o.interactive or= sources.length is 0
   sourceCode[i] = null for source, i in sources
   return
 
