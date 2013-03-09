@@ -63,15 +63,17 @@ optionParser = null
 # `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run = ->
   parseOptions()
-  return forkNode()                      if opts.nodejs
-  return usage()                         if opts.help
-  return version()                       if opts.version
-  return require('./repl').start()       if opts.interactive
-  if opts.watch and !fs.watch
-    return printWarn "The --watch feature depends on Node v0.6.0+. You are running #{process.version}."
-  return compileStdio()                  if opts.stdio
-  return compileScript null, sources[0]  if opts.eval
-  return require('./repl').start()       unless sources.length
+  if
+    opts.nodejs      then forkNode
+    opts.help        then usage
+    opts.version     then version
+    opts.stdio       then compileStdio
+    opts.eval        then compileScript null, sources[0]
+    opts.interactive then require('./repl').start()
+    else runScripts
+
+# Run passed CoffeeScript files by evaluating them, in order.
+runScripts = ->
   literals = if opts.run then sources.splice 1 else []
   process.argv = process.argv[0..1].concat literals
   process.argv[0] = 'coffee'
@@ -107,7 +109,6 @@ compilePath = (source, topLevel, base) ->
     else
       notSources[source] = yes
       removeSource source, base
-
 
 # Compile a single source script, containing the given code, according to the
 # requested options. If evaluating the script directly sets `__filename`,
@@ -318,6 +319,7 @@ parseOptions = ->
   o.run         = not (o.compile or o.print or o.lint or o.map)
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
   sources       = o.arguments
+  o.interactive or= sources.length is 0
   sourceCode[i] = null for source, i in sources
   return
 
