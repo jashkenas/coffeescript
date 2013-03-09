@@ -427,3 +427,23 @@ test "Throw should be usable as an expression.", ->
     throw new Error 'failed'
   catch e
     ok e is 'up'
+
+
+test "#2490. Block-style, guard-style if/else chain.", ->
+  result = if
+    1 - 1
+      false
+    process.someUndefinedThing
+      false
+    1 + 1
+      'correct'
+
+  eq result, 'correct'
+
+  func = -> if
+    null
+      false
+    else
+      'correct'
+
+  eq func(), 'correct'
