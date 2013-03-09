@@ -119,27 +119,31 @@ compileScript = (file, input, base=null) ->
   try
     t = task = {file, input, options}
     CoffeeScript.emit 'compile', task
-    if      o.tokens      then printTokens CoffeeScript.tokens t.input, t.options
-    else if o.nodes       then printLine CoffeeScript.nodes(t.input, t.options).toString().trim()
-    else if o.run         then CoffeeScript.run t.input, t.options
-    else if o.join and t.file isnt o.join
-      t.input = helpers.invertLiterate t.input if helpers.isLiterate file
-      sourceCode[sources.indexOf(t.file)] = t.input
-      compileJoin()
-    else
-      compiled = CoffeeScript.compile t.input, t.options
-      t.output = compiled
-      if o.map
-        t.output = compiled.js
-        t.sourceMap = compiled.v3SourceMap
-
-      CoffeeScript.emit 'success', task
-      if o.print
-        printLine t.output.trim()
-      else if o.compile || o.map
-        writeJs base, t.file, t.output, options.jsPath, t.sourceMap
-      else if o.lint
-        lint t.file, t.output
+    if
+      o.tokens
+        printTokens CoffeeScript.tokens t.input, t.options
+      o.nodes
+        printLine CoffeeScript.nodes(t.input, t.options).toString().trim()
+      o.run
+        CoffeeScript.run t.input, t.options
+      o.join and t.file isnt o.join
+        t.input = helpers.invertLiterate t.input if helpers.isLiterate file
+        sourceCode[sources.indexOf(t.file)] = t.input
+        compileJoin()
+      else
+        compiled = CoffeeScript.compile t.input, t.options
+        t.output = compiled
+        if o.map
+          t.output = compiled.js
+          t.sourceMap = compiled.v3SourceMap
+        CoffeeScript.emit 'success', task
+        if
+          o.print
+            printLine t.output.trim()
+          o.compile or o.map
+            writeJs base, t.file, t.output, options.jsPath, t.sourceMap
+          o.lint
+            lint t.file, t.output
   catch err
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
