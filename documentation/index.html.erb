@@ -1942,8 +1942,10 @@ Expressions
         else
           $(el).text window.compiledJS
         $('#error').hide()
-      catch error
-        $('#error').text(error.message).show()
+      catch {location, message}
+        if location?
+          message = "Error on line #{location.first_line + 1}: #{message}"
+        $('#error').text(message).show()
 
       # Update permalink
       $('#repl_permalink').attr 'href', "##{sourceFragment}#{encodeURIComponent source}"

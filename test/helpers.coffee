@@ -2,7 +2,7 @@
 # -------
 
 # pull the helpers from `CoffeeScript.helpers` into local variables
-{starts, ends, compact, count, merge, extend, flatten, del, last, baseFileName} = CoffeeScript.helpers
+{starts, ends, repeat, compact, count, merge, extend, flatten, del, last, baseFileName} = CoffeeScript.helpers
 
 
 # `starts`
@@ -25,6 +25,15 @@ test "the `ends` helper tests if a string ends with another string", ->
 test "the `ends` helper can take an optional offset", ->
   ok     ends('01234', '012', 2)
   ok not ends('01234', '234', 6)
+
+
+# `repeat`
+
+test "the `repeat` helper concatenates a given number of times", ->
+  eq 'asdasdasd', repeat('asd', 3)
+
+test "`repeat`ing a string 0 times always returns the empty string", ->
+  eq '', repeat('whatever', 0)
 
 
 # `compact`

@@ -92,8 +92,9 @@ buildLocationData = (first, last) ->
     last_line: last.last_line
     last_column: last.last_column
 
-# This returns a function which takes an object as a parameter, and if that object is an AST node,
-# updates that object's locationData.  The object is returned either way.
+# This returns a function which takes an object as a parameter, and if that
+# object is an AST node, updates that object's locationData.
+# The object is returned either way.
 exports.addLocationDataFn = (first, last) ->
     (obj) ->
       if ((typeof obj) is 'object') and (!!obj['updateLocationDataIfMissing'])
@@ -128,3 +129,41 @@ exports.isCoffee = (file) -> /\.((lit)?coffee|coffee\.md)$/.test file
 
 # Determine if a filename represents a Literate CoffeeScript file.
 exports.isLiterate = (file) -> /\.(litcoffee|coffee\.md)$/.test file
+
+# Throws a SyntaxError with a source file location data attached to it in a
+# property called `location`.
+exports.throwSyntaxError = (message, location) ->
+  location.last_line ?= location.first_line
+  location.last_column ?= location.first_column
+  error = new SyntaxError message
+  error.location = location
+  throw error
+
+# Creates a nice error message like, following the "standard" format
+# <filename>:<line>:<col>: <message> plus the line with the error and a marker
+# showing where the error is.
+exports.prettyErrorMessage = (error, fileName, code, useColors) ->
+  return error.stack or "#{error}" unless error.location
+
+  {first_line, first_column, last_line, last_column} = error.location
+  codeLine = code.split('\n')[first_line]
+  start    = first_column
+  # Show only the first line on multi-line errors.
+  end      = if first_line is last_line then last_column + 1 else codeLine.length
+  marker   = repeat(' ', start) + repeat('^', end - start)
+
+  if useColors
+    colorize  = (str) -> "\x1B[1;31m#{str}\x1B[0m"
+    codeLine = codeLine[...start] + colorize(codeLine[start...end]) + codeLine[end..]
+    marker    = colorize marker
+
+  message = """
+  #{fileName}:#{first_line + 1}:#{first_column + 1}: error: #{error.message}
+  #{codeLine}
+  #{marker}
+            """
+
+  # Uncomment to add stacktrace.
+  #message += "\n#{error.stack}"
+
+  message

@@ -5,13 +5,13 @@
 # interactive REPL.
 
 # External dependencies.
-fs                = require 'fs'
-path              = require 'path'
-helpers           = require './helpers'
-optparse          = require './optparse'
-CoffeeScript      = require './coffee-script'
-{spawn, exec}     = require 'child_process'
-{EventEmitter}    = require 'events'
+fs             = require 'fs'
+path           = require 'path'
+helpers        = require './helpers'
+optparse       = require './optparse'
+CoffeeScript   = require './coffee-script'
+{spawn, exec}  = require 'child_process'
+{EventEmitter} = require 'events'
 
 exists         = fs.exists or path.exists
 
@@ -142,9 +142,13 @@ compileScript = (file, input, base=null) ->
   catch err
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
-    return printLine err.message + '\x07' if o.watch
-    printWarn err instanceof Error and err.stack or "ERROR: #{err}"
-    process.exit 1
+    useColors = process.stdout.isTTY and not process.env.NODE_DISABLE_COLORS
+    message = helpers.prettyErrorMessage err, file or '[stdin]', input, useColors
+    if o.watch
+      printLine message + '\x07'
+    else
+      printWarn message
+      process.exit 1
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
 # and write them back to **stdout**.

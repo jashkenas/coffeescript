@@ -1,23 +1,32 @@
 vm = require 'vm'
 nodeREPL = require 'repl'
 CoffeeScript = require './coffee-script'
-{merge} = require './helpers'
+{merge, prettyErrorMessage} = require './helpers'
 
 replDefaults =
   prompt: 'coffee> ',
   eval: (input, context, filename, cb) ->
-    # XXX: multiline hack
+    # XXX: multiline hack.
     input = input.replace /\uFF00/g, '\n'
-    # strip single-line comments
-    input = input.replace /(^|[\r\n]+)(\s*)##?(?:[^#\r\n][^\r\n]*|)($|[\r\n])/, '$1$2$3'
-    # empty command
-    return cb null if /^(\s*|\(\s*\))$/.test input
+    # Node's REPL sends the input ending with a newline and then wrapped in
+    # parens. Unwrap all that.
+    input = input.replace /^\(([\s\S]*)\n\)$/m, '$1'
+
+    # Require AST nodes to do some AST manipulation.
+    {Block, Assign, Value, Literal} = require './nodes'
+
     # TODO: fix #1829: pass in-scope vars and avoid accidentally shadowing them by omitting those declarations
     try
-      js = CoffeeScript.compile "_=(#{input}\n)", {filename, bare: yes}
-      cb null, vm.runInContext(js, context, filename)
+      # Generate the AST of the clean input.
+      ast = CoffeeScript.nodes input
+      # Add assignment to `_` variable to force the input to be an expression.
+      ast = new Block [
+        new Assign (new Value new Literal '_'), ast, '='
+      ]
+      js = ast.compile bare: yes
     catch err
-      cb err
+      console.log prettyErrorMessage err, filename, input, yes
+    cb null, vm.runInContext(js, context, filename)
 
 addMultilineHandler = (repl) ->
   {rli, inputStream, outputStream} = repl
