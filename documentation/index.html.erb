@@ -292,13 +292,6 @@ sudo bin/cake install</pre>
         </td>
       </tr>
       <tr>
-        <td><code>-r, --require</code></td>
-        <td>
-          Load a library before compiling or executing your script. Can be used
-          to hook in to the compiler (to add Growl notifications, for example).
-        </td>
-      </tr>
-      <tr>
         <td><code>-b, --bare</code></td>
         <td>
           Compile the JavaScript without the
@@ -813,7 +806,7 @@ Expressions
     </p>
     <%= code_for('patterns_and_splats', 'contents.join("")') %>
     <p>
-      Destructuring assignment is also useful when combined with class constructors 
+      Destructuring assignment is also useful when combined with class constructors
       to assign propeties to your instance from an options object passed to the constructor.
     </p>
     <%= code_for('constructor_destructuring', 'contents.join("")') %>
