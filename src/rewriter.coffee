@@ -213,7 +213,7 @@ class exports.Rewriter
 
       # Recognize standard implicit calls like
       # f a, f() b, f? c, h[0] d etc.
-      if (tag in IMPLICIT_FUNC and token.spaced or
+      if (tag in IMPLICIT_FUNC and token.spaced and not token.stringEnd or
           tag is '?' and i > 0 and not tokens[i - 1].spaced) and
          (nextTag in IMPLICIT_CALL or
           nextTag in IMPLICIT_UNSPACED_CALL and

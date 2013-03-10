@@ -12,7 +12,8 @@
 {Rewriter, INVERSES} = require './rewriter'
 
 # Import the helpers we need.
-{count, starts, compact, last, locationDataToString, throwSyntaxError} = require './helpers'
+{count, starts, compact, last, invertLiterate, locationDataToString, 
+throwSyntaxError} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -84,13 +85,7 @@ exports.Lexer = class Lexer
     if WHITESPACE.test code
         code = "\n#{code}"
         @chunkLine--
-    if @literate
-      lines = for line in code.split('\n')
-        if match = LITERATE.exec line
-          line[match[0].length..]
-        else
-          '# ' + line
-      code = lines.join '\n'
+    code = invertLiterate code if @literate
     code
 
   # Tokenizers
@@ -595,7 +590,10 @@ exports.Lexer = class Lexer
         @tokens.push token
       else
         @error "Unexpected #{tag}"
-    @token ')', ')', offsetInChunk + lexedLength, 0 if interpolated
+    if interpolated
+      rparen = @makeToken ')', ')', offsetInChunk + lexedLength, 0
+      rparen.stringEnd = true
+      @tokens.push rparen
     tokens
 
   # Pairs up a closing token, ensuring that all listed pairs of tokens are
@@ -778,8 +776,6 @@ OPERATOR   = /// ^ (
 WHITESPACE = /^[^\n\S]+/
 
 COMMENT    = /^###([^#][\s\S]*?)(?:###[^\n\S]*|(?:###)$)|^(?:\s*#(?!##[^#]).*)+/
-
-LITERATE   = /^([ ]{4}|\t)/
 
 CODE       = /^[-=]>/
 

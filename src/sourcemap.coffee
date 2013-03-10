@@ -91,8 +91,16 @@ class exports.SourceMap
 
 # Builds a V3 source map from a SourceMap object.
 # Returns the generated JSON as a string.
+#
+# `options.sourceRoot` may be used to specify the sourceRoot written to the source map.  Also,
+# `options.sourceFiles` and `options.generatedFile` may be passed to set "sources" and "file",
+# respectively.  Note that `sourceFiles` must be an array.
 
-exports.generateV3SourceMap = (sourceMap, sourceFile=null, generatedFile=null) ->
+exports.generateV3SourceMap = (sourceMap, options={}) ->
+  sourceRoot = options.sourceRoot or ""
+  sourceFiles = options.sourceFiles or [""]
+  generatedFile = options.generatedFile or ""
+
   writingGeneratedLine = 0
   lastGeneratedColumnWritten = 0
   lastSourceLineWritten = 0
@@ -146,8 +154,8 @@ exports.generateV3SourceMap = (sourceMap, sourceFile=null, generatedFile=null) -
   answer = {
     version: 3
     file: generatedFile
-    sourceRoot: ""
-    sources: if sourceFile then [sourceFile] else []
+    sourceRoot
+    sources: sourceFiles
     names: []
     mappings
   }

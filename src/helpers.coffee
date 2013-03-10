@@ -63,12 +63,23 @@ exports.del = (obj, key) ->
   val
 
 # Gets the last item of an array(-like) object.
-exports.last = (array, back) -> array[array.length - (back or 0) - 1]
+exports.last = last = (array, back) -> array[array.length - (back or 0) - 1]
 
 # Typical Array::some
 exports.some = Array::some ? (fn) ->
   return true for e in this when fn e
   false
+
+# Simple function for inverting Literate CoffeeScript code by putting the
+# documentation in comments, and bumping the actual code back out to the edge ...
+# producing a string of CoffeeScript code that can be compiled "normally".
+exports.invertLiterate = (code) ->
+  lines = for line in code.split('\n')
+    if match = (/^([ ]{4}|\t)/).exec line
+      line[match[0].length..]
+    else
+      '# ' + line
+  lines.join '\n'
 
 # Merge two jison-style location data objects together.
 # If `last` is not provided, this will simply return `first`.
@@ -110,7 +121,7 @@ exports.baseFileName = (file, stripExt = no) ->
   return file unless stripExt
   parts = file.split('.')
   parts.pop()
-  parts.pop() if parts[parts.length - 1] is 'coffee'
+  parts.pop() if parts[parts.length - 1] is 'coffee' and parts.length > 1
   parts.join('.')
 
 # Determine if a filename represents a CoffeeScript file.

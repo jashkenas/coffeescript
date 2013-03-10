@@ -292,13 +292,6 @@ sudo bin/cake install</pre>
         </td>
       </tr>
       <tr>
-        <td><code>-r, --require</code></td>
-        <td>
-          Load a library before compiling or executing your script. Can be used
-          to hook in to the compiler (to add Growl notifications, for example).
-        </td>
-      </tr>
-      <tr>
         <td><code>-b, --bare</code></td>
         <td>
           Compile the JavaScript without the
@@ -812,6 +805,11 @@ Expressions
       Destructuring assignment can even be combined with splats.
     </p>
     <%= code_for('patterns_and_splats', 'contents.join("")') %>
+    <p>
+      Destructuring assignment is also useful when combined with class constructors
+      to assign propeties to your instance from an options object passed to the constructor.
+    </p>
+    <%= code_for('constructor_destructuring', 'contents.join("")') %>
 
     <p>
       <span id="fat-arrow" class="bookmark"></span>
@@ -870,6 +868,11 @@ Expressions
     <%= code_for('switch') %>
 
     <p>
+      Switch statements can also be used without a control expression, turning them in to a cleaner alternative to if/else chains.
+    </p>
+    <%= code_for('switch_with_no_expression') %>
+
+    <p>
       <span id="try" class="bookmark"></span>
       <b class="header">Try/Catch/Finally</b>
       Try/catch statements are just about the same as JavaScript (although
@@ -922,7 +925,7 @@ Expressions
       <b class="header">Block Regular Expressions</b>
       Similar to block strings and comments, CoffeeScript supports block regexes &mdash;
       extended regular expressions that ignore internal whitespace and can contain
-      comments and interpolation. Modeled after Perl's <tt>/x</tt> modifier, CoffeeSctipt's
+      comments and interpolation. Modeled after Perl's <tt>/x</tt> modifier, CoffeeScript's
       block regexes are delimited by <tt>///</tt> and go a long way towards making complex
       regular expressions readable. To quote from the CoffeeScript source:
     </p>
