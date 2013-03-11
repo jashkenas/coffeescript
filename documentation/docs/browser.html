@@ -1,9 +1,191 @@
-<!DOCTYPE html>  <html> <head>   <title>browser.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="browser.html">                 browser.coffee               </a>                                           <a class="source" href="cake.html">                 cake.coffee               </a>                                           <a class="source" href="coffee-script.html">                 coffee-script.coffee               </a>                                           <a class="source" href="command.html">                 command.coffee               </a>                                           <a class="source" href="grammar.html">                 grammar.coffee               </a>                                           <a class="source" href="helpers.html">                 helpers.coffee               </a>                                           <a class="source" href="index.html">                 index.coffee               </a>                                           <a class="source" href="lexer.html">                 lexer.coffee               </a>                                           <a class="source" href="nodes.html">                 nodes.coffee               </a>                                           <a class="source" href="optparse.html">                 optparse.coffee               </a>                                           <a class="source" href="repl.html">                 repl.coffee               </a>                                           <a class="source" href="rewriter.html">                 rewriter.coffee               </a>                                           <a class="source" href="sourcemap.html">                 sourcemap.coffee               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               browser.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>               <p>Override exported methods for non-Node.js engines.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">CoffeeScript = </span><span class="nx">require</span> <span class="s">&#39;./coffee-script&#39;</span>
-<span class="nv">CoffeeScript.require = </span><span class="nx">require</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>Use standard JavaScript <code>eval</code> to eval code.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">CoffeeScript.eval = </span><span class="nf">(code, options = {}) -&gt;</span>
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>browser.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="browser.html">
+                browser.coffee
+              </a>
+            
+              
+              <a class="source" href="cake.html">
+                cake.coffee
+              </a>
+            
+              
+              <a class="source" href="coffee-script.html">
+                coffee-script.coffee
+              </a>
+            
+              
+              <a class="source" href="command.html">
+                command.coffee
+              </a>
+            
+              
+              <a class="source" href="grammar.html">
+                grammar.coffee
+              </a>
+            
+              
+              <a class="source" href="helpers.html">
+                helpers.coffee
+              </a>
+            
+              
+              <a class="source" href="index.html">
+                index.coffee
+              </a>
+            
+              
+              <a class="source" href="lexer.html">
+                lexer.coffee
+              </a>
+            
+              
+              <a class="source" href="nodes.html">
+                nodes.coffee
+              </a>
+            
+              
+              <a class="source" href="optparse.html">
+                optparse.coffee
+              </a>
+            
+              
+              <a class="source" href="repl.html">
+                repl.coffee
+              </a>
+            
+              
+              <a class="source" href="rewriter.html">
+                rewriter.coffee
+              </a>
+            
+              
+              <a class="source" href="scope.html">
+                scope.litcoffee
+              </a>
+            
+              
+              <a class="source" href="sourcemap.html">
+                sourcemap.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">  
+        <li id="title">
+            <div class="annotation">
+                <h1>browser.coffee</h1>
+            </div>
+        </li>
+        
+           
+        <li id="section-1">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>            
+              <p>Override exported methods for non-Node.js engines.
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">CoffeeScript = </span><span class="nx">require</span> <span class="s">&#39;./coffee-script&#39;</span>
+<span class="nv">CoffeeScript.require = </span><span class="nx">require</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-2">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>            
+              
+<p>Use standard JavaScript <code>eval</code> to eval code.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">CoffeeScript.eval = </span><span class="nf">(code, options = {}) -&gt;</span>
   <span class="nx">options</span><span class="p">.</span><span class="nx">bare</span> <span class="o">?=</span> <span class="kc">on</span>
-  <span class="nb">eval</span> <span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">compile</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>Running code does not provide access to this scope.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">CoffeeScript.run = </span><span class="nf">(code, options = {}) -&gt;</span>
+  <span class="nb">eval</span> <span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">compile</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">options</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-3">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>            
+              
+<p>Running code does not provide access to this scope.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">CoffeeScript.run = </span><span class="nf">(code, options = {}) -&gt;</span>
   <span class="nv">options.bare = </span><span class="kc">on</span>
-  <span class="nb">Function</span><span class="p">(</span><span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">compile</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">options</span><span class="p">)()</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>If we're not in a browser environment, we're finished with the public API.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">return</span> <span class="k">unless</span> <span class="nb">window</span><span class="o">?</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p>Load a remote script from the current domain via XHR.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">CoffeeScript.load = </span><span class="nf">(url, callback, options = {}) -&gt;</span>
+  <span class="nb">Function</span><span class="p">(</span><span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">compile</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">options</span><span class="p">)()</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-4">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>            
+              
+<p>If we&#39;re not in a browser environment, we&#39;re finished with the public API.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="k">return</span> <span class="k">unless</span> <span class="nb">window</span><span class="o">?</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-5">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>            
+              
+<p>Load a remote script from the current domain via XHR.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">CoffeeScript.load = </span><span class="nf">(url, callback, options = {}) -&gt;</span>
   <span class="nv">xhr = </span><span class="k">if</span> <span class="nb">window</span><span class="p">.</span><span class="nx">ActiveXObject</span>
     <span class="k">new</span> <span class="nb">window</span><span class="p">.</span><span class="nx">ActiveXObject</span><span class="p">(</span><span class="s">&#39;Microsoft.XMLHTTP&#39;</span><span class="p">)</span>
   <span class="k">else</span>
@@ -17,9 +199,26 @@
       <span class="k">else</span>
         <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span> <span class="s">&quot;Could not load </span><span class="si">#{</span><span class="nx">url</span><span class="si">}</span><span class="s">&quot;</span>
       <span class="nx">callback</span><span class="p">()</span> <span class="k">if</span> <span class="nx">callback</span>
-  <span class="nx">xhr</span><span class="p">.</span><span class="nx">send</span> <span class="kc">null</span></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <p>Activate CoffeeScript in the browser by having it compile and evaluate
+  <span class="nx">xhr</span><span class="p">.</span><span class="nx">send</span> <span class="kc">null</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-6">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>            
+              
+<p>Activate CoffeeScript in the browser by having it compile and evaluate
 all script tags with a content-type of <code>text/coffeescript</code>.
-This happens on page load.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">runScripts = </span><span class="nf">-&gt;</span>
+This happens on page load.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">runScripts = </span><span class="nf">-&gt;</span>
   <span class="nv">scripts = </span><span class="nb">document</span><span class="p">.</span><span class="nx">getElementsByTagName</span> <span class="s">&#39;script&#39;</span>
   <span class="nv">coffeetypes = </span><span class="p">[</span><span class="s">&#39;text/coffeescript&#39;</span><span class="p">,</span> <span class="s">&#39;text/literate-coffeescript&#39;</span><span class="p">]</span>
   <span class="nv">coffees = </span><span class="p">(</span><span class="nx">s</span> <span class="k">for</span> <span class="nx">s</span> <span class="k">in</span> <span class="nx">scripts</span> <span class="k">when</span> <span class="nx">s</span><span class="p">.</span><span class="nx">type</span> <span class="k">in</span> <span class="nx">coffeetypes</span><span class="p">)</span>
@@ -35,9 +234,32 @@ This happens on page load.</p>             </td>             <td class="code">  
       <span class="k">else</span>
         <span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">run</span> <span class="nx">script</span><span class="p">.</span><span class="nx">innerHTML</span><span class="p">,</span> <span class="nx">options</span>
         <span class="nx">execute</span><span class="p">()</span>
-  <span class="kc">null</span></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <p>Listen for window load, both in browsers and in IE.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">if</span> <span class="nb">window</span><span class="p">.</span><span class="nx">addEventListener</span>
+  <span class="kc">null</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-7">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>            
+              
+<p>Listen for window load, both in browsers and in IE.
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="k">if</span> <span class="nb">window</span><span class="p">.</span><span class="nx">addEventListener</span>
   <span class="nx">addEventListener</span> <span class="s">&#39;DOMContentLoaded&#39;</span><span class="p">,</span> <span class="nx">runScripts</span><span class="p">,</span> <span class="kc">no</span>
 <span class="k">else</span>
   <span class="nx">attachEvent</span> <span class="s">&#39;onload&#39;</span><span class="p">,</span> <span class="nx">runScripts</span>
 
-</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 
+</pre></div></div>
+            
+        </li>
+        
+    </ul> 
+  </div>
+</body>
+</html>

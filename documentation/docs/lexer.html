@@ -1,41 +1,226 @@
-<!DOCTYPE html>  <html> <head>   <title>lexer.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="browser.html">                 browser.coffee               </a>                                           <a class="source" href="cake.html">                 cake.coffee               </a>                                           <a class="source" href="coffee-script.html">                 coffee-script.coffee               </a>                                           <a class="source" href="command.html">                 command.coffee               </a>                                           <a class="source" href="grammar.html">                 grammar.coffee               </a>                                           <a class="source" href="helpers.html">                 helpers.coffee               </a>                                           <a class="source" href="index.html">                 index.coffee               </a>                                           <a class="source" href="lexer.html">                 lexer.coffee               </a>                                           <a class="source" href="nodes.html">                 nodes.coffee               </a>                                           <a class="source" href="optparse.html">                 optparse.coffee               </a>                                           <a class="source" href="repl.html">                 repl.coffee               </a>                                           <a class="source" href="rewriter.html">                 rewriter.coffee               </a>                                           <a class="source" href="sourcemap.html">                 sourcemap.coffee               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               lexer.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>               <p>The CoffeeScript Lexer. Uses a series of token-matching regexes to attempt
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>lexer.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="browser.html">
+                browser.coffee
+              </a>
+            
+              
+              <a class="source" href="cake.html">
+                cake.coffee
+              </a>
+            
+              
+              <a class="source" href="coffee-script.html">
+                coffee-script.coffee
+              </a>
+            
+              
+              <a class="source" href="command.html">
+                command.coffee
+              </a>
+            
+              
+              <a class="source" href="grammar.html">
+                grammar.coffee
+              </a>
+            
+              
+              <a class="source" href="helpers.html">
+                helpers.coffee
+              </a>
+            
+              
+              <a class="source" href="index.html">
+                index.coffee
+              </a>
+            
+              
+              <a class="source" href="lexer.html">
+                lexer.coffee
+              </a>
+            
+              
+              <a class="source" href="nodes.html">
+                nodes.coffee
+              </a>
+            
+              
+              <a class="source" href="optparse.html">
+                optparse.coffee
+              </a>
+            
+              
+              <a class="source" href="repl.html">
+                repl.coffee
+              </a>
+            
+              
+              <a class="source" href="rewriter.html">
+                rewriter.coffee
+              </a>
+            
+              
+              <a class="source" href="scope.html">
+                scope.litcoffee
+              </a>
+            
+              
+              <a class="source" href="sourcemap.html">
+                sourcemap.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">  
+        <li id="title">
+            <div class="annotation">
+                <h1>lexer.coffee</h1>
+            </div>
+        </li>
+        
+           
+        <li id="section-1">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>            
+              <p>The CoffeeScript Lexer. Uses a series of token-matching regexes to attempt
 matches against the beginning of the source code. When a match is found,
 a token is produced, we consume the match, and start again. Tokens are in the
-form:</p>
+form:
 
-<pre><code>[tag, value, locationData]
-</code></pre>
-
-<p>where locationData is {first<em>line, first</em>column, last<em>line, last</em>column}, which is a
+</p>
+<pre><code>[tag, value, locationData]</code></pre>
+<p>where locationData is {first_line, first_column, last_line, last_column}, which is a
 format that can be fed directly into <a href="http://github.com/zaach/jison">Jison</a>.  These
-are read by jison in the <code>parser.lexer</code> function defined in coffee-script.coffee.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="p">{</span><span class="nx">Rewriter</span><span class="p">,</span> <span class="nx">INVERSES</span><span class="p">}</span> <span class="o">=</span> <span class="nx">require</span> <span class="s">&#39;./rewriter&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>Import the helpers we need.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="p">{</span><span class="nx">count</span><span class="p">,</span> <span class="nx">starts</span><span class="p">,</span> <span class="nx">compact</span><span class="p">,</span> <span class="nx">last</span><span class="p">,</span> <span class="nx">locationDataToString</span><span class="p">}</span> <span class="o">=</span> <span class="nx">require</span> <span class="s">&#39;./helpers&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <h2>The Lexer Class</h2>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>The Lexer class reads a stream of CoffeeScript and divvies it up into tagged
+are read by jison in the <code>parser.lexer</code> function defined in coffee-script.coffee.
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="p">{</span><span class="nx">Rewriter</span><span class="p">,</span> <span class="nx">INVERSES</span><span class="p">}</span> <span class="o">=</span> <span class="nx">require</span> <span class="s">&#39;./rewriter&#39;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-2">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>            
+              
+<p>Import the helpers we need.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="p">{</span><span class="nx">count</span><span class="p">,</span> <span class="nx">starts</span><span class="p">,</span> <span class="nx">compact</span><span class="p">,</span> <span class="nx">last</span><span class="p">,</span> <span class="nx">invertLiterate</span><span class="p">,</span> <span class="nx">locationDataToString</span><span class="p">,</span> 
+<span class="nx">throwSyntaxError</span><span class="p">}</span> <span class="o">=</span> <span class="nx">require</span> <span class="s">&#39;./helpers&#39;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-3">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>            
+              
+<h2>The Lexer Class</h2>
+<p>The Lexer class reads a stream of CoffeeScript and divvies it up into tagged
 tokens. Some potential ambiguity in the grammar has been avoided by
-pushing some extra smarts into the Lexer.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">exports.Lexer = </span><span class="k">class</span> <span class="nx">Lexer</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p><strong>tokenize</strong> is the Lexer's main method. Scan by attempting to match tokens
+pushing some extra smarts into the Lexer.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">exports.Lexer = </span><span class="k">class</span> <span class="nx">Lexer</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-4">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>            
+              
+<p><strong>tokenize</strong> is the Lexer&#39;s main method. Scan by attempting to match tokens
 one at a time, using a regular expression anchored at the start of the
 remaining code, or a custom recursive token-matching method
 (for interpolations). When the next token has been recorded, we move forward
-within the code past the token, and begin again.</p>
+within the code past the token, and begin again.
 
+</p>
 <p>Each tokenizing method is responsible for returning the number of characters
-it has consumed.</p>
+it has consumed.
 
+</p>
 <p>Before returning the token stream, run it through the <a href="rewriter.html">Rewriter</a>
-unless explicitly asked not to.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">tokenize: </span><span class="nf">(code, opts = {}) -&gt;</span>
+unless explicitly asked not to.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">tokenize: </span><span class="nf">(code, opts = {}) -&gt;</span>
     <span class="vi">@literate = </span><span class="nx">opts</span><span class="p">.</span><span class="nx">literate</span>  <span class="c1"># Are we lexing literate CoffeeScript?</span>
     <span class="vi">@indent   = </span><span class="mi">0</span>              <span class="c1"># The current indentation level.</span>
     <span class="vi">@indebt   = </span><span class="mi">0</span>              <span class="c1"># The over-indentation at the current level.</span>
     <span class="vi">@outdebt  = </span><span class="mi">0</span>              <span class="c1"># The under-outdentation at the current level.</span>
     <span class="vi">@indents  = </span><span class="p">[]</span>             <span class="c1"># The stack of all current indentation levels.</span>
     <span class="vi">@ends     = </span><span class="p">[]</span>             <span class="c1"># The stack for pairing up tokens.</span>
-    <span class="vi">@tokens   = </span><span class="p">[]</span>             <span class="c1"># Stream of parsed tokens in the form `[&#39;TYPE&#39;, value, line]`.</span>
+    <span class="vi">@tokens   = </span><span class="p">[]</span>             <span class="c1"># Stream of parsed tokens in the form `[&#39;TYPE&#39;, value, location data]`.</span>
 
     <span class="vi">@chunkLine =</span>
         <span class="nx">opts</span><span class="p">.</span><span class="nx">line</span> <span class="o">or</span> <span class="mi">0</span>         <span class="c1"># The start line for the current @chunk.</span>
     <span class="vi">@chunkColumn =</span>
         <span class="nx">opts</span><span class="p">.</span><span class="nx">column</span> <span class="o">or</span> <span class="mi">0</span>       <span class="c1"># The start column of the current @chunk.</span>
-    <span class="nv">code = </span><span class="nx">@clean</span> <span class="nx">code</span>         <span class="c1"># The stripped, cleaned original source code.</span></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <p>At every position, run through this list of attempted matches,
+    <span class="nv">code = </span><span class="nx">@clean</span> <span class="nx">code</span>         <span class="c1"># The stripped, cleaned original source code.</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-5">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>            
+              
+<p>At every position, run through this list of attempted matches,
 short-circuiting if any of them succeed. Their order determines precedence:
-<code>@literalToken</code> is the fallback catch-all.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">i = </span><span class="mi">0</span>
+<code>@literalToken</code> is the fallback catch-all.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="nv">i = </span><span class="mi">0</span>
     <span class="k">while</span> <span class="vi">@chunk = </span><span class="nx">code</span><span class="p">[</span><span class="nx">i</span><span class="p">..]</span>
       <span class="nv">consumed = </span><span class="o">\</span>
            <span class="nx">@identifierToken</span><span class="p">()</span> <span class="o">or</span>
@@ -47,36 +232,99 @@ short-circuiting if any of them succeed. Their order determines precedence:
            <span class="nx">@numberToken</span><span class="p">()</span>     <span class="o">or</span>
            <span class="nx">@regexToken</span><span class="p">()</span>      <span class="o">or</span>
            <span class="nx">@jsToken</span><span class="p">()</span>         <span class="o">or</span>
-           <span class="nx">@literalToken</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <p>Update position</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="p">[</span><span class="nx">@chunkLine</span><span class="p">,</span> <span class="nx">@chunkColumn</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@getLineAndColumnFromChunk</span> <span class="nx">consumed</span>
+           <span class="nx">@literalToken</span><span class="p">()</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-6">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>            
+              
+<p>Update position
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>      <span class="p">[</span><span class="nx">@chunkLine</span><span class="p">,</span> <span class="nx">@chunkColumn</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@getLineAndColumnFromChunk</span> <span class="nx">consumed</span>
 
       <span class="nx">i</span> <span class="o">+=</span> <span class="nx">consumed</span>
 
     <span class="nx">@closeIndentation</span><span class="p">()</span>
     <span class="nx">@error</span> <span class="s">&quot;missing </span><span class="si">#{</span><span class="nx">tag</span><span class="si">}</span><span class="s">&quot;</span> <span class="k">if</span> <span class="nv">tag = </span><span class="nx">@ends</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span>
     <span class="k">return</span> <span class="nx">@tokens</span> <span class="k">if</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">rewrite</span> <span class="o">is</span> <span class="kc">off</span>
-    <span class="p">(</span><span class="k">new</span> <span class="nx">Rewriter</span><span class="p">).</span><span class="nx">rewrite</span> <span class="nx">@tokens</span></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <p>Preprocess the code to remove leading and trailing whitespace, carriage
-returns, etc. If we're lexing literate CoffeeScript, strip external Markdown
-by removing all lines that aren't indented by at least four spaces or a tab.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">clean: </span><span class="nf">(code) -&gt;</span>
+    <span class="p">(</span><span class="k">new</span> <span class="nx">Rewriter</span><span class="p">).</span><span class="nx">rewrite</span> <span class="nx">@tokens</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-7">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>            
+              
+<p>Preprocess the code to remove leading and trailing whitespace, carriage
+returns, etc. If we&#39;re lexing literate CoffeeScript, strip external Markdown
+by removing all lines that aren&#39;t indented by at least four spaces or a tab.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">clean: </span><span class="nf">(code) -&gt;</span>
     <span class="nv">code = </span><span class="nx">code</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="nx">code</span><span class="p">.</span><span class="nx">charCodeAt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">is</span> <span class="nx">BOM</span>
     <span class="nv">code = </span><span class="nx">code</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/\r/g</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">).</span><span class="nx">replace</span> <span class="nx">TRAILING_SPACES</span><span class="p">,</span> <span class="s">&#39;&#39;</span>
     <span class="k">if</span> <span class="nx">WHITESPACE</span><span class="p">.</span><span class="nx">test</span> <span class="nx">code</span>
         <span class="nv">code = </span><span class="s">&quot;\n</span><span class="si">#{</span><span class="nx">code</span><span class="si">}</span><span class="s">&quot;</span>
         <span class="nx">@chunkLine</span><span class="o">--</span>
-    <span class="k">if</span> <span class="nx">@literate</span>
-      <span class="nv">lines = </span><span class="k">for</span> <span class="nx">line</span> <span class="k">in</span> <span class="nx">code</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s">&#39;\n&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nv">match = </span><span class="nx">LITERATE</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">line</span>
-          <span class="nx">line</span><span class="p">[</span><span class="nx">match</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">length</span><span class="p">..]</span>
-        <span class="k">else</span>
-          <span class="s">&#39;# &#39;</span> <span class="o">+</span> <span class="nx">line</span>
-      <span class="nv">code = </span><span class="nx">lines</span><span class="p">.</span><span class="nx">join</span> <span class="s">&#39;\n&#39;</span>
-    <span class="nx">code</span></pre></div>             </td>           </tr>                               <tr id="section-9">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-9">&#182;</a>               </div>               <h2>Tokenizers</h2>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-10">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-10">&#182;</a>               </div>               <p>Matches identifying literals: variables, keywords, method names, etc.
-Check to ensure that JavaScript reserved words aren't being used as
+    <span class="nv">code = </span><span class="nx">invertLiterate</span> <span class="nx">code</span> <span class="k">if</span> <span class="nx">@literate</span>
+    <span class="nx">code</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-8">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>            
+              
+<h2>Tokenizers</h2>
+<p>Matches identifying literals: variables, keywords, method names, etc.
+Check to ensure that JavaScript reserved words aren&#39;t being used as
 identifiers. Because CoffeeScript reserves a handful of keywords that are
-allowed in JavaScript, we're careful not to tag them as keywords when
+allowed in JavaScript, we&#39;re careful not to tag them as keywords when
 referenced as property names here, so you can still do <code>jQuery.is()</code> even
-though <code>is</code> means <code>===</code> otherwise.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">identifierToken: </span><span class="nf">-&gt;</span>
+though <code>is</code> means <code>===</code> otherwise.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">identifierToken: </span><span class="nf">-&gt;</span>
     <span class="k">return</span> <span class="mi">0</span> <span class="k">unless</span> <span class="nv">match = </span><span class="nx">IDENTIFIER</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">@chunk</span>
-    <span class="p">[</span><span class="nx">input</span><span class="p">,</span> <span class="nx">id</span><span class="p">,</span> <span class="nx">colon</span><span class="p">]</span> <span class="o">=</span> <span class="nx">match</span></pre></div>             </td>           </tr>                               <tr id="section-11">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-11">&#182;</a>               </div>               <p>Preserve length of id for location data</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">idLength = </span><span class="nx">id</span><span class="p">.</span><span class="nx">length</span>
+    <span class="p">[</span><span class="nx">input</span><span class="p">,</span> <span class="nx">id</span><span class="p">,</span> <span class="nx">colon</span><span class="p">]</span> <span class="o">=</span> <span class="nx">match</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-9">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>            
+              
+<p>Preserve length of id for location data
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="nv">idLength = </span><span class="nx">id</span><span class="p">.</span><span class="nx">length</span>
     <span class="nv">poppedToken = </span><span class="kc">undefined</span>
 
     <span class="k">if</span> <span class="nx">id</span> <span class="o">is</span> <span class="s">&#39;own&#39;</span> <span class="o">and</span> <span class="nx">@tag</span><span class="p">()</span> <span class="o">is</span> <span class="s">&#39;FOR&#39;</span>
@@ -133,8 +381,25 @@ though <code>is</code> means <code>===</code> otherwise.</p>             </td>  
       <span class="nv">colonOffset = </span><span class="nx">input</span><span class="p">.</span><span class="nx">lastIndexOf</span> <span class="s">&#39;:&#39;</span>
       <span class="nx">@token</span> <span class="s">&#39;:&#39;</span><span class="p">,</span> <span class="s">&#39;:&#39;</span><span class="p">,</span> <span class="nx">colonOffset</span><span class="p">,</span> <span class="nx">colon</span><span class="p">.</span><span class="nx">length</span>
 
-    <span class="nx">input</span><span class="p">.</span><span class="nx">length</span></pre></div>             </td>           </tr>                               <tr id="section-12">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-12">&#182;</a>               </div>               <p>Matches numbers, including decimals, hex, and exponential notation.
-Be careful not to interfere with ranges-in-progress.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">numberToken: </span><span class="nf">-&gt;</span>
+    <span class="nx">input</span><span class="p">.</span><span class="nx">length</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-10">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>            
+              
+<p>Matches numbers, including decimals, hex, and exponential notation.
+Be careful not to interfere with ranges-in-progress.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">numberToken: </span><span class="nf">-&gt;</span>
     <span class="k">return</span> <span class="mi">0</span> <span class="k">unless</span> <span class="nv">match = </span><span class="nx">NUMBER</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">@chunk</span>
     <span class="nv">number = </span><span class="nx">match</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">if</span> <span class="sr">/^0[BOX]/</span><span class="p">.</span><span class="nx">test</span> <span class="nx">number</span>
@@ -151,8 +416,25 @@ Be careful not to interfere with ranges-in-progress.</p>             </td>      
     <span class="k">if</span> <span class="nv">binaryLiteral = </span><span class="sr">/^0b([01]+)/</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">number</span>
       <span class="nv">number = </span><span class="s">&#39;0x&#39;</span> <span class="o">+</span> <span class="p">(</span><span class="nb">parseInt</span> <span class="nx">binaryLiteral</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">2</span><span class="p">).</span><span class="nx">toString</span> <span class="mi">16</span>
     <span class="nx">@token</span> <span class="s">&#39;NUMBER&#39;</span><span class="p">,</span> <span class="nx">number</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">lexedLength</span>
-    <span class="nx">lexedLength</span></pre></div>             </td>           </tr>                               <tr id="section-13">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-13">&#182;</a>               </div>               <p>Matches strings, including multi-line strings. Ensures that quotation marks
-are balanced within the string's contents, and within nested interpolations.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">stringToken: </span><span class="nf">-&gt;</span>
+    <span class="nx">lexedLength</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-11">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>            
+              
+<p>Matches strings, including multi-line strings. Ensures that quotation marks
+are balanced within the string&#39;s contents, and within nested interpolations.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">stringToken: </span><span class="nf">-&gt;</span>
     <span class="k">switch</span> <span class="nx">@chunk</span><span class="p">.</span><span class="nx">charAt</span> <span class="mi">0</span>
       <span class="k">when</span> <span class="s">&quot;&#39;&quot;</span>
         <span class="k">return</span> <span class="mi">0</span> <span class="k">unless</span> <span class="nv">match = </span><span class="nx">SIMPLESTR</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">@chunk</span>
@@ -168,8 +450,25 @@ are balanced within the string's contents, and within nested interpolations.</p>
         <span class="k">return</span> <span class="mi">0</span>
     <span class="k">if</span> <span class="nv">octalEsc = </span><span class="sr">/^(?:\\.|[^\\])*\\(?:0[0-7]|[1-7])/</span><span class="p">.</span><span class="nx">test</span> <span class="nx">string</span>
       <span class="nx">@error</span> <span class="s">&quot;octal escape sequences </span><span class="si">#{</span><span class="nx">string</span><span class="si">}</span><span class="s"> are not allowed&quot;</span>
-    <span class="nx">string</span><span class="p">.</span><span class="nx">length</span></pre></div>             </td>           </tr>                               <tr id="section-14">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-14">&#182;</a>               </div>               <p>Matches heredocs, adjusting indentation to the correct level, as heredocs
-preserve whitespace, but ignore indentation to the left.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">heredocToken: </span><span class="nf">-&gt;</span>
+    <span class="nx">string</span><span class="p">.</span><span class="nx">length</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-12">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>            
+              
+<p>Matches heredocs, adjusting indentation to the correct level, as heredocs
+preserve whitespace, but ignore indentation to the left.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">heredocToken: </span><span class="nf">-&gt;</span>
     <span class="k">return</span> <span class="mi">0</span> <span class="k">unless</span> <span class="nv">match = </span><span class="nx">HEREDOC</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">@chunk</span>
     <span class="nv">heredoc = </span><span class="nx">match</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="nv">quote = </span><span class="nx">heredoc</span><span class="p">.</span><span class="nx">charAt</span> <span class="mi">0</span>
@@ -178,7 +477,24 @@ preserve whitespace, but ignore indentation to the left.</p>             </td>  
       <span class="nx">@interpolateString</span> <span class="nx">doc</span><span class="p">,</span> <span class="nv">heredoc: </span><span class="kc">yes</span><span class="p">,</span> <span class="nv">strOffset: </span><span class="mi">3</span><span class="p">,</span> <span class="nv">lexedLength: </span><span class="nx">heredoc</span><span class="p">.</span><span class="nx">length</span>
     <span class="k">else</span>
       <span class="nx">@token</span> <span class="s">&#39;STRING&#39;</span><span class="p">,</span> <span class="nx">@makeString</span><span class="p">(</span><span class="nx">doc</span><span class="p">,</span> <span class="nx">quote</span><span class="p">,</span> <span class="kc">yes</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">heredoc</span><span class="p">.</span><span class="nx">length</span>
-    <span class="nx">heredoc</span><span class="p">.</span><span class="nx">length</span></pre></div>             </td>           </tr>                               <tr id="section-15">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-15">&#182;</a>               </div>               <p>Matches and consumes comments.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">commentToken: </span><span class="nf">-&gt;</span>
+    <span class="nx">heredoc</span><span class="p">.</span><span class="nx">length</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-13">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>            
+              
+<p>Matches and consumes comments.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">commentToken: </span><span class="nf">-&gt;</span>
     <span class="k">return</span> <span class="mi">0</span> <span class="k">unless</span> <span class="nv">match = </span><span class="nx">@chunk</span><span class="p">.</span><span class="nx">match</span> <span class="nx">COMMENT</span>
     <span class="p">[</span><span class="nx">comment</span><span class="p">,</span> <span class="nx">here</span><span class="p">]</span> <span class="o">=</span> <span class="nx">match</span>
     <span class="k">if</span> <span class="nx">here</span>
@@ -186,12 +502,46 @@ preserve whitespace, but ignore indentation to the left.</p>             </td>  
         <span class="p">(</span><span class="nx">@sanitizeHeredoc</span> <span class="nx">here</span><span class="p">,</span>
           <span class="nv">herecomment: </span><span class="kc">true</span><span class="p">,</span> <span class="nv">indent: </span><span class="nb">Array</span><span class="p">(</span><span class="nx">@indent</span> <span class="o">+</span> <span class="mi">1</span><span class="p">).</span><span class="nx">join</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)),</span>
         <span class="mi">0</span><span class="p">,</span> <span class="nx">comment</span><span class="p">.</span><span class="nx">length</span>
-    <span class="nx">comment</span><span class="p">.</span><span class="nx">length</span></pre></div>             </td>           </tr>                               <tr id="section-16">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-16">&#182;</a>               </div>               <p>Matches JavaScript interpolated directly into the source via backticks.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">jsToken: </span><span class="nf">-&gt;</span>
+    <span class="nx">comment</span><span class="p">.</span><span class="nx">length</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-14">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>            
+              
+<p>Matches JavaScript interpolated directly into the source via backticks.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">jsToken: </span><span class="nf">-&gt;</span>
     <span class="k">return</span> <span class="mi">0</span> <span class="k">unless</span> <span class="nx">@chunk</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">is</span> <span class="s">&#39;`&#39;</span> <span class="o">and</span> <span class="nv">match = </span><span class="nx">JSTOKEN</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">@chunk</span>
     <span class="nx">@token</span> <span class="s">&#39;JS&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nv">script = </span><span class="nx">match</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">1</span><span class="p">...</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">script</span><span class="p">.</span><span class="nx">length</span>
-    <span class="nx">script</span><span class="p">.</span><span class="nx">length</span></pre></div>             </td>           </tr>                               <tr id="section-17">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-17">&#182;</a>               </div>               <p>Matches regular expression literals. Lexing regular expressions is difficult
+    <span class="nx">script</span><span class="p">.</span><span class="nx">length</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-15">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>            
+              
+<p>Matches regular expression literals. Lexing regular expressions is difficult
 to distinguish from division, so we borrow some basic heuristics from
-JavaScript and Ruby.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">regexToken: </span><span class="nf">-&gt;</span>
+JavaScript and Ruby.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">regexToken: </span><span class="nf">-&gt;</span>
     <span class="k">return</span> <span class="mi">0</span> <span class="k">if</span> <span class="nx">@chunk</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">isnt</span> <span class="s">&#39;/&#39;</span>
     <span class="k">if</span> <span class="nv">match = </span><span class="nx">HEREGEX</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">@chunk</span>
       <span class="nv">length = </span><span class="nx">@heregexToken</span> <span class="nx">match</span>
@@ -204,7 +554,24 @@ JavaScript and Ruby.</p>             </td>             <td class="code">        
     <span class="k">if</span> <span class="nx">regex</span><span class="p">[..</span><span class="mi">1</span><span class="p">]</span> <span class="o">is</span> <span class="s">&#39;/*&#39;</span> <span class="k">then</span> <span class="nx">@error</span> <span class="s">&#39;regular expressions cannot begin with `*`&#39;</span>
     <span class="k">if</span> <span class="nx">regex</span> <span class="o">is</span> <span class="s">&#39;//&#39;</span> <span class="k">then</span> <span class="nv">regex = </span><span class="s">&#39;/(?:)/&#39;</span>
     <span class="nx">@token</span> <span class="s">&#39;REGEX&#39;</span><span class="p">,</span> <span class="s">&quot;</span><span class="si">#{</span><span class="nx">regex</span><span class="si">}#{</span><span class="nx">flags</span><span class="si">}</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">match</span><span class="p">.</span><span class="nx">length</span>
-    <span class="nx">match</span><span class="p">.</span><span class="nx">length</span></pre></div>             </td>           </tr>                               <tr id="section-18">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-18">&#182;</a>               </div>               <p>Matches multiline extended regular expressions.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">heregexToken: </span><span class="nf">(match) -&gt;</span>
+    <span class="nx">match</span><span class="p">.</span><span class="nx">length</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-16">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>            
+              
+<p>Matches multiline extended regular expressions.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">heregexToken: </span><span class="nf">(match) -&gt;</span>
     <span class="p">[</span><span class="nx">heregex</span><span class="p">,</span> <span class="nx">body</span><span class="p">,</span> <span class="nx">flags</span><span class="p">]</span> <span class="o">=</span> <span class="nx">match</span>
     <span class="k">if</span> <span class="mi">0</span> <span class="o">&gt;</span> <span class="nx">body</span><span class="p">.</span><span class="nx">indexOf</span> <span class="s">&#39;#{&#39;</span>
       <span class="nv">re = </span><span class="nx">body</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="nx">HEREGEX_OMIT</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">).</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/\//g</span><span class="p">,</span> <span class="s">&#39;\\/&#39;</span><span class="p">)</span>
@@ -219,7 +586,24 @@ JavaScript and Ruby.</p>             </td>             <td class="code">        
       <span class="k">if</span> <span class="nx">tag</span> <span class="o">is</span> <span class="s">&#39;TOKENS&#39;</span>
         <span class="nx">tokens</span><span class="p">.</span><span class="nx">push</span> <span class="nx">value</span><span class="p">...</span>
       <span class="k">else</span> <span class="k">if</span> <span class="nx">tag</span> <span class="o">is</span> <span class="s">&#39;NEOSTRING&#39;</span>
-        <span class="k">continue</span> <span class="k">unless</span> <span class="nv">value = </span><span class="nx">value</span><span class="p">.</span><span class="nx">replace</span> <span class="nx">HEREGEX_OMIT</span><span class="p">,</span> <span class="s">&#39;&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-19">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-19">&#182;</a>               </div>               <p>Convert NEOSTRING into STRING</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="nv">value = </span><span class="nx">value</span><span class="p">.</span><span class="nx">replace</span> <span class="sr">/\\/g</span><span class="p">,</span> <span class="s">&#39;\\\\&#39;</span>
+        <span class="k">continue</span> <span class="k">unless</span> <span class="nv">value = </span><span class="nx">value</span><span class="p">.</span><span class="nx">replace</span> <span class="nx">HEREGEX_OMIT</span><span class="p">,</span> <span class="s">&#39;&#39;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-17">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>            
+              
+<p>Convert NEOSTRING into STRING
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>        <span class="nv">value = </span><span class="nx">value</span><span class="p">.</span><span class="nx">replace</span> <span class="sr">/\\/g</span><span class="p">,</span> <span class="s">&#39;\\\\&#39;</span>
         <span class="nx">token</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;STRING&#39;</span>
         <span class="nx">token</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@makeString</span><span class="p">(</span><span class="nx">value</span><span class="p">,</span> <span class="s">&#39;&quot;&#39;</span><span class="p">,</span> <span class="kc">yes</span><span class="p">)</span>
         <span class="nx">tokens</span><span class="p">.</span><span class="nx">push</span> <span class="nx">token</span>
@@ -229,29 +613,79 @@ JavaScript and Ruby.</p>             </td>             <td class="code">        
       <span class="nv">prev = </span><span class="nx">last</span> <span class="nx">@tokens</span>
       <span class="nv">plusToken = </span><span class="p">[</span><span class="s">&#39;+&#39;</span><span class="p">,</span> <span class="s">&#39;+&#39;</span><span class="p">]</span>
       <span class="nx">plusToken</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nx">prev</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="c1"># Copy location data</span>
-      <span class="nx">tokens</span><span class="p">.</span><span class="nx">push</span> <span class="nx">plusToken</span></pre></div>             </td>           </tr>                               <tr id="section-20">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-20">&#182;</a>               </div>               <p>Remove the extra "+"</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">tokens</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span>
+      <span class="nx">tokens</span><span class="p">.</span><span class="nx">push</span> <span class="nx">plusToken</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-18">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>            
+              
+<p>Remove the extra &quot;+&quot;
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="nx">tokens</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span>
 
     <span class="k">unless</span> <span class="nx">tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">?</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="s">&#39;STRING&#39;</span>
       <span class="nx">@token</span> <span class="s">&#39;STRING&#39;</span><span class="p">,</span> <span class="s">&#39;&quot;&quot;&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
       <span class="nx">@token</span> <span class="s">&#39;+&#39;</span><span class="p">,</span> <span class="s">&#39;+&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
     <span class="nx">@tokens</span><span class="p">.</span><span class="nx">push</span> <span class="nx">tokens</span><span class="p">...</span>
 
-    <span class="k">if</span> <span class="nx">flags</span></pre></div>             </td>           </tr>                               <tr id="section-21">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-21">&#182;</a>               </div>               <p>Find the flags in the heregex</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nv">flagsOffset = </span><span class="nx">heregex</span><span class="p">.</span><span class="nx">lastIndexOf</span> <span class="nx">flags</span>
+    <span class="k">if</span> <span class="nx">flags</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-19">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>            
+              
+<p>Find the flags in the heregex
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>      <span class="nv">flagsOffset = </span><span class="nx">heregex</span><span class="p">.</span><span class="nx">lastIndexOf</span> <span class="nx">flags</span>
       <span class="nx">@token</span> <span class="s">&#39;,&#39;</span><span class="p">,</span> <span class="s">&#39;,&#39;</span><span class="p">,</span> <span class="nx">flagsOffset</span><span class="p">,</span> <span class="mi">0</span>
       <span class="nx">@token</span> <span class="s">&#39;STRING&#39;</span><span class="p">,</span> <span class="s">&#39;&quot;&#39;</span> <span class="o">+</span> <span class="nx">flags</span> <span class="o">+</span> <span class="s">&#39;&quot;&#39;</span><span class="p">,</span> <span class="nx">flagsOffset</span><span class="p">,</span> <span class="nx">flags</span><span class="p">.</span><span class="nx">length</span>
 
     <span class="nx">@token</span> <span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="nx">heregex</span><span class="p">.</span><span class="nx">length</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>
-    <span class="nx">heregex</span><span class="p">.</span><span class="nx">length</span></pre></div>             </td>           </tr>                               <tr id="section-22">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-22">&#182;</a>               </div>               <p>Matches newlines, indents, and outdents, and determines which is which.
+    <span class="nx">heregex</span><span class="p">.</span><span class="nx">length</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-20">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>            
+              
+<p>Matches newlines, indents, and outdents, and determines which is which.
 If we can detect that the current line is continued onto the the next line,
-then the newline is suppressed:</p>
+then the newline is suppressed:
 
+</p>
 <pre><code>elements
   .each( ... )
-  .map( ... )
-</code></pre>
-
+  .map( ... )</code></pre>
 <p>Keeps track of the level of indentation, because a single outdent token
-can close multiple indents, so we need to know how far in we happen to be.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">lineToken: </span><span class="nf">-&gt;</span>
+can close multiple indents, so we need to know how far in we happen to be.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">lineToken: </span><span class="nf">-&gt;</span>
     <span class="k">return</span> <span class="mi">0</span> <span class="k">unless</span> <span class="nv">match = </span><span class="nx">MULTI_DENT</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">@chunk</span>
     <span class="nv">indent = </span><span class="nx">match</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="vi">@seenFor = </span><span class="kc">no</span>
@@ -267,7 +701,7 @@ can close multiple indents, so we need to know how far in we happen to be.</p>  
         <span class="nx">@suppressNewlines</span><span class="p">()</span>
         <span class="k">return</span> <span class="nx">indent</span><span class="p">.</span><span class="nx">length</span>
       <span class="nv">diff = </span><span class="nx">size</span> <span class="o">-</span> <span class="nx">@indent</span> <span class="o">+</span> <span class="nx">@outdebt</span>
-      <span class="nx">@token</span> <span class="s">&#39;INDENT&#39;</span><span class="p">,</span> <span class="nx">diff</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">indent</span><span class="p">.</span><span class="nx">length</span>
+      <span class="nx">@token</span> <span class="s">&#39;INDENT&#39;</span><span class="p">,</span> <span class="nx">diff</span><span class="p">,</span> <span class="nx">indent</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="nx">size</span><span class="p">,</span> <span class="nx">size</span>
       <span class="nx">@indents</span><span class="p">.</span><span class="nx">push</span> <span class="nx">diff</span>
       <span class="nx">@ends</span><span class="p">.</span><span class="nx">push</span> <span class="s">&#39;OUTDENT&#39;</span>
       <span class="vi">@outdebt = @indebt = </span><span class="mi">0</span>
@@ -275,8 +709,25 @@ can close multiple indents, so we need to know how far in we happen to be.</p>  
       <span class="vi">@indebt = </span><span class="mi">0</span>
       <span class="nx">@outdentToken</span> <span class="nx">@indent</span> <span class="o">-</span> <span class="nx">size</span><span class="p">,</span> <span class="nx">noNewlines</span><span class="p">,</span> <span class="nx">indent</span><span class="p">.</span><span class="nx">length</span>
     <span class="vi">@indent = </span><span class="nx">size</span>
-    <span class="nx">indent</span><span class="p">.</span><span class="nx">length</span></pre></div>             </td>           </tr>                               <tr id="section-23">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-23">&#182;</a>               </div>               <p>Record an outdent token or multiple tokens, if we happen to be moving back
-inwards past several recorded indents.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">outdentToken: </span><span class="nf">(moveOut, noNewlines, outdentLength) -&gt;</span>
+    <span class="nx">indent</span><span class="p">.</span><span class="nx">length</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-21">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>            
+              
+<p>Record an outdent token or multiple tokens, if we happen to be moving back
+inwards past several recorded indents.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">outdentToken: </span><span class="nf">(moveOut, noNewlines, outdentLength) -&gt;</span>
     <span class="k">while</span> <span class="nx">moveOut</span> <span class="o">&gt;</span> <span class="mi">0</span>
       <span class="nv">len = </span><span class="nx">@indents</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span>
       <span class="k">if</span> <span class="nx">@indents</span><span class="p">[</span><span class="nx">len</span><span class="p">]</span> <span class="o">is</span> <span class="kc">undefined</span>
@@ -297,23 +748,91 @@ inwards past several recorded indents.</p>             </td>             <td cla
     <span class="nx">@tokens</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span> <span class="k">while</span> <span class="nx">@value</span><span class="p">()</span> <span class="o">is</span> <span class="s">&#39;;&#39;</span>
 
     <span class="nx">@token</span> <span class="s">&#39;TERMINATOR&#39;</span><span class="p">,</span> <span class="s">&#39;\n&#39;</span><span class="p">,</span> <span class="nx">outdentLength</span><span class="p">,</span> <span class="mi">0</span> <span class="k">unless</span> <span class="nx">@tag</span><span class="p">()</span> <span class="o">is</span> <span class="s">&#39;TERMINATOR&#39;</span> <span class="o">or</span> <span class="nx">noNewlines</span>
-    <span class="k">this</span></pre></div>             </td>           </tr>                               <tr id="section-24">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-24">&#182;</a>               </div>               <p>Matches and consumes non-meaningful whitespace. Tag the previous token
-as being "spaced", because there are some cases where it makes a difference.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">whitespaceToken: </span><span class="nf">-&gt;</span>
+    <span class="k">this</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-22">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>            
+              
+<p>Matches and consumes non-meaningful whitespace. Tag the previous token
+as being &quot;spaced&quot;, because there are some cases where it makes a difference.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">whitespaceToken: </span><span class="nf">-&gt;</span>
     <span class="k">return</span> <span class="mi">0</span> <span class="k">unless</span> <span class="p">(</span><span class="nv">match = </span><span class="nx">WHITESPACE</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">@chunk</span><span class="p">)</span> <span class="o">or</span>
                     <span class="p">(</span><span class="nv">nline = </span><span class="nx">@chunk</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">is</span> <span class="s">&#39;\n&#39;</span><span class="p">)</span>
     <span class="nv">prev = </span><span class="nx">last</span> <span class="nx">@tokens</span>
     <span class="nx">prev</span><span class="p">[</span><span class="k">if</span> <span class="nx">match</span> <span class="k">then</span> <span class="s">&#39;spaced&#39;</span> <span class="k">else</span> <span class="s">&#39;newLine&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">true</span> <span class="k">if</span> <span class="nx">prev</span>
-    <span class="k">if</span> <span class="nx">match</span> <span class="k">then</span> <span class="nx">match</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">length</span> <span class="k">else</span> <span class="mi">0</span></pre></div>             </td>           </tr>                               <tr id="section-25">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-25">&#182;</a>               </div>               <p>Generate a newline token. Consecutive newlines get merged together.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">newlineToken: </span><span class="nf">(offset) -&gt;</span>
+    <span class="k">if</span> <span class="nx">match</span> <span class="k">then</span> <span class="nx">match</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">length</span> <span class="k">else</span> <span class="mi">0</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-23">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>            
+              
+<p>Generate a newline token. Consecutive newlines get merged together.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">newlineToken: </span><span class="nf">(offset) -&gt;</span>
     <span class="nx">@tokens</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span> <span class="k">while</span> <span class="nx">@value</span><span class="p">()</span> <span class="o">is</span> <span class="s">&#39;;&#39;</span>
     <span class="nx">@token</span> <span class="s">&#39;TERMINATOR&#39;</span><span class="p">,</span> <span class="s">&#39;\n&#39;</span><span class="p">,</span> <span class="nx">offset</span><span class="p">,</span> <span class="mi">0</span> <span class="k">unless</span> <span class="nx">@tag</span><span class="p">()</span> <span class="o">is</span> <span class="s">&#39;TERMINATOR&#39;</span>
-    <span class="k">this</span></pre></div>             </td>           </tr>                               <tr id="section-26">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-26">&#182;</a>               </div>               <p>Use a <code>\</code> at a line-ending to suppress the newline.
-The slash is removed here once its job is done.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">suppressNewlines: </span><span class="nf">-&gt;</span>
+    <span class="k">this</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-24">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>            
+              
+<p>Use a <code>\</code> at a line-ending to suppress the newline.
+The slash is removed here once its job is done.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">suppressNewlines: </span><span class="nf">-&gt;</span>
     <span class="nx">@tokens</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span> <span class="k">if</span> <span class="nx">@value</span><span class="p">()</span> <span class="o">is</span> <span class="s">&#39;\\&#39;</span>
-    <span class="k">this</span></pre></div>             </td>           </tr>                               <tr id="section-27">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-27">&#182;</a>               </div>               <p>We treat all other single characters as a token. E.g.: <code>( ) , . !</code>
+    <span class="k">this</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-25">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>            
+              
+<p>We treat all other single characters as a token. E.g.: <code>( ) , . !</code>
 Multi-character operators are also literal tokens, so that Jison can assign
 the proper order of operations. There are some symbols that we tag specially
 here. <code>;</code> and newlines are both treated as a <code>TERMINATOR</code>, we distinguish
-parentheses that indicate a method call from regular parentheses, and so on.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">literalToken: </span><span class="nf">-&gt;</span>
+parentheses that indicate a method call from regular parentheses, and so on.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">literalToken: </span><span class="nf">-&gt;</span>
     <span class="k">if</span> <span class="nv">match = </span><span class="nx">OPERATOR</span><span class="p">.</span><span class="nx">exec</span> <span class="nx">@chunk</span>
       <span class="p">[</span><span class="nx">value</span><span class="p">]</span> <span class="o">=</span> <span class="nx">match</span>
       <span class="nx">@tagParameters</span><span class="p">()</span> <span class="k">if</span> <span class="nx">CODE</span><span class="p">.</span><span class="nx">test</span> <span class="nx">value</span>
@@ -349,8 +868,26 @@ parentheses that indicate a method call from regular parentheses, and so on.</p>
       <span class="k">when</span> <span class="s">&#39;(&#39;</span><span class="p">,</span> <span class="s">&#39;{&#39;</span><span class="p">,</span> <span class="s">&#39;[&#39;</span> <span class="k">then</span> <span class="nx">@ends</span><span class="p">.</span><span class="nx">push</span> <span class="nx">INVERSES</span><span class="p">[</span><span class="nx">value</span><span class="p">]</span>
       <span class="k">when</span> <span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="s">&#39;}&#39;</span><span class="p">,</span> <span class="s">&#39;]&#39;</span> <span class="k">then</span> <span class="nx">@pair</span> <span class="nx">value</span>
     <span class="nx">@token</span> <span class="nx">tag</span><span class="p">,</span> <span class="nx">value</span>
-    <span class="nx">value</span><span class="p">.</span><span class="nx">length</span></pre></div>             </td>           </tr>                               <tr id="section-28">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-28">&#182;</a>               </div>               <h2>Token Manipulators</h2>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-29">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-29">&#182;</a>               </div>               <p>Sanitize a heredoc or herecomment by
-erasing all external indentation on the left-hand side.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">sanitizeHeredoc: </span><span class="nf">(doc, options) -&gt;</span>
+    <span class="nx">value</span><span class="p">.</span><span class="nx">length</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-26">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>            
+              
+<h2>Token Manipulators</h2>
+<p>Sanitize a heredoc or herecomment by
+erasing all external indentation on the left-hand side.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">sanitizeHeredoc: </span><span class="nf">(doc, options) -&gt;</span>
     <span class="p">{</span><span class="nx">indent</span><span class="p">,</span> <span class="nx">herecomment</span><span class="p">}</span> <span class="o">=</span> <span class="nx">options</span>
     <span class="k">if</span> <span class="nx">herecomment</span>
       <span class="k">if</span> <span class="nx">HEREDOC_ILLEGAL</span><span class="p">.</span><span class="nx">test</span> <span class="nx">doc</span>
@@ -363,9 +900,26 @@ erasing all external indentation on the left-hand side.</p>             </td>   
     <span class="nv">doc = </span><span class="nx">doc</span><span class="p">.</span><span class="nx">replace</span> <span class="sr">/// \n </span><span class="si">#{</span><span class="nx">indent</span><span class="si">}</span><span class="sr"> ///g</span><span class="p">,</span> <span class="s">&#39;\n&#39;</span> <span class="k">if</span> <span class="nx">indent</span>
     <span class="nv">doc = </span><span class="nx">doc</span><span class="p">.</span><span class="nx">replace</span> <span class="sr">/\n# \n/g</span><span class="p">,</span> <span class="s">&#39;\n\n&#39;</span> <span class="k">if</span> <span class="nx">@literate</span>
     <span class="nv">doc = </span><span class="nx">doc</span><span class="p">.</span><span class="nx">replace</span> <span class="sr">/^\n/</span><span class="p">,</span> <span class="s">&#39;&#39;</span> <span class="k">unless</span> <span class="nx">herecomment</span>
-    <span class="nx">doc</span></pre></div>             </td>           </tr>                               <tr id="section-30">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-30">&#182;</a>               </div>               <p>A source of ambiguity in our grammar used to be parameter lists in function
+    <span class="nx">doc</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-27">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>            
+              
+<p>A source of ambiguity in our grammar used to be parameter lists in function
 definitions versus argument lists in function calls. Walk backwards, tagging
-parameters specially in order to make things easier for the parser.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">tagParameters: </span><span class="nf">-&gt;</span>
+parameters specially in order to make things easier for the parser.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">tagParameters: </span><span class="nf">-&gt;</span>
     <span class="k">return</span> <span class="k">this</span> <span class="k">if</span> <span class="nx">@tag</span><span class="p">()</span> <span class="o">isnt</span> <span class="s">&#39;)&#39;</span>
     <span class="nv">stack = </span><span class="p">[]</span>
     <span class="p">{</span><span class="nx">tokens</span><span class="p">}</span> <span class="o">=</span> <span class="k">this</span>
@@ -381,11 +935,45 @@ parameters specially in order to make things easier for the parser.</p>         
             <span class="nx">tok</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;PARAM_START&#39;</span>
             <span class="k">return</span> <span class="k">this</span>
           <span class="k">else</span> <span class="k">return</span> <span class="k">this</span>
-    <span class="k">this</span></pre></div>             </td>           </tr>                               <tr id="section-31">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-31">&#182;</a>               </div>               <p>Close up all remaining open blocks at the end of the file.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">closeIndentation: </span><span class="nf">-&gt;</span>
-    <span class="nx">@outdentToken</span> <span class="nx">@indent</span></pre></div>             </td>           </tr>                               <tr id="section-32">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-32">&#182;</a>               </div>               <p>Matches a balanced group such as a single or double-quoted string. Pass in
+    <span class="k">this</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-28">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>            
+              
+<p>Close up all remaining open blocks at the end of the file.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">closeIndentation: </span><span class="nf">-&gt;</span>
+    <span class="nx">@outdentToken</span> <span class="nx">@indent</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-29">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>            
+              
+<p>Matches a balanced group such as a single or double-quoted string. Pass in
 a series of delimiters, all of which must be nested correctly within the
 contents of the string. This method allows us to have strings within
-interpolations within strings, ad infinitum.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">balancedString: </span><span class="nf">(str, end) -&gt;</span>
+interpolations within strings, ad infinitum.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">balancedString: </span><span class="nf">(str, end) -&gt;</span>
     <span class="nv">continueCount = </span><span class="mi">0</span>
     <span class="nv">stack = </span><span class="p">[</span><span class="nx">end</span><span class="p">]</span>
     <span class="k">for</span> <span class="nx">i</span> <span class="k">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">...</span><span class="nx">str</span><span class="p">.</span><span class="nx">length</span><span class="p">]</span>
@@ -411,33 +999,82 @@ interpolations within strings, ad infinitum.</p>             </td>             <
       <span class="k">else</span> <span class="k">if</span> <span class="nx">end</span> <span class="o">is</span> <span class="s">&#39;&quot;&#39;</span> <span class="o">and</span> <span class="nx">prev</span> <span class="o">is</span> <span class="s">&#39;#&#39;</span> <span class="o">and</span> <span class="nx">letter</span> <span class="o">is</span> <span class="s">&#39;{&#39;</span>
         <span class="nx">stack</span><span class="p">.</span><span class="nx">push</span> <span class="nv">end = </span><span class="s">&#39;}&#39;</span>
       <span class="nv">prev = </span><span class="nx">letter</span>
-    <span class="nx">@error</span> <span class="s">&quot;missing </span><span class="si">#{</span> <span class="nx">stack</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span> <span class="si">}</span><span class="s">, starting&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-33">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-33">&#182;</a>               </div>               <p>Expand variables and expressions inside double-quoted strings using
-Ruby-like notation for substitution of arbitrary expressions.</p>
+    <span class="nx">@error</span> <span class="s">&quot;missing </span><span class="si">#{</span> <span class="nx">stack</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span> <span class="si">}</span><span class="s">, starting&quot;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-30">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>            
+              
+<p>Expand variables and expressions inside double-quoted strings using
+Ruby-like notation for substitution of arbitrary expressions.
 
-<pre><code>"Hello #{name.capitalize()}."
-</code></pre>
-
+</p>
+<pre><code>&quot;Hello #{name.capitalize()}.&quot;</code></pre>
 <p>If it encounters an interpolation, this method will recursively create a
 new Lexer, tokenize the interpolated contents, and merge them into the
-token stream.</p>
+token stream.
 
+</p>
 <ul>
-<li><code>str</code> is the start of the string contents (IE with the " or """ stripped
+<li><code>str</code> is the start of the string contents (IE with the &quot; or &quot;&quot;&quot; stripped
 off.)</li>
 <li><code>options.offsetInChunk</code> is the start of the interpolated string in the
-current chunk, including the " or """, etc...  If not provided, this is
+current chunk, including the &quot; or &quot;&quot;&quot;, etc...  If not provided, this is
 assumed to be 0.  <code>options.lexedLength</code> is the length of the
 interpolated string, including both the start and end quotes.  Both of these
 values are ignored if <code>options.regex</code> is true.</li>
 <li><code>options.strOffset</code> is the offset of str, relative to the start of the
 current chunk.</li>
-</ul>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">interpolateString: </span><span class="nf">(str, options = {}) -&gt;</span>
+</ul>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">interpolateString: </span><span class="nf">(str, options = {}) -&gt;</span>
     <span class="p">{</span><span class="nx">heredoc</span><span class="p">,</span> <span class="nx">regex</span><span class="p">,</span> <span class="nx">offsetInChunk</span><span class="p">,</span> <span class="nx">strOffset</span><span class="p">,</span> <span class="nx">lexedLength</span><span class="p">}</span> <span class="o">=</span> <span class="nx">options</span>
     <span class="nv">offsetInChunk = </span><span class="nx">offsetInChunk</span> <span class="o">||</span> <span class="mi">0</span>
     <span class="nv">strOffset = </span><span class="nx">strOffset</span> <span class="o">||</span> <span class="mi">0</span>
-    <span class="nv">lexedLength = </span><span class="nx">lexedLength</span> <span class="o">||</span> <span class="nx">str</span><span class="p">.</span><span class="nx">length</span></pre></div>             </td>           </tr>                               <tr id="section-34">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-34">&#182;</a>               </div>               <p>Clip leading \n from heredoc</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="k">if</span> <span class="nx">heredoc</span> <span class="o">and</span> <span class="nx">str</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">and</span> <span class="nx">str</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;\n&#39;</span>
+    <span class="nv">lexedLength = </span><span class="nx">lexedLength</span> <span class="o">||</span> <span class="nx">str</span><span class="p">.</span><span class="nx">length</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-31">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>            
+              
+<p>Clip leading \n from heredoc
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="k">if</span> <span class="nx">heredoc</span> <span class="o">and</span> <span class="nx">str</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">and</span> <span class="nx">str</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;\n&#39;</span>
       <span class="nv">str = </span><span class="nx">str</span><span class="p">[</span><span class="mi">1</span><span class="p">...]</span>
-      <span class="nx">strOffset</span><span class="o">++</span></pre></div>             </td>           </tr>                               <tr id="section-35">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-35">&#182;</a>               </div>               <p>Parse the string.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">tokens = </span><span class="p">[]</span>
+      <span class="nx">strOffset</span><span class="o">++</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-32">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>            
+              
+<p>Parse the string.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="nv">tokens = </span><span class="p">[]</span>
     <span class="nv">pi = </span><span class="mi">0</span>
     <span class="nv">i  = </span><span class="o">-</span><span class="mi">1</span>
     <span class="k">while</span> <span class="nv">letter = </span><span class="nx">str</span><span class="p">.</span><span class="nx">charAt</span> <span class="nx">i</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -446,7 +1083,24 @@ current chunk.</li>
         <span class="k">continue</span>
       <span class="k">unless</span> <span class="nx">letter</span> <span class="o">is</span> <span class="s">&#39;#&#39;</span> <span class="o">and</span> <span class="nx">str</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="nx">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">is</span> <span class="s">&#39;{&#39;</span> <span class="o">and</span>
              <span class="p">(</span><span class="nv">expr = </span><span class="nx">@balancedString</span> <span class="nx">str</span><span class="p">[</span><span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">..],</span> <span class="s">&#39;}&#39;</span><span class="p">)</span>
-        <span class="k">continue</span></pre></div>             </td>           </tr>                               <tr id="section-36">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-36">&#182;</a>               </div>               <p>NEOSTRING is a fake token.  This will be converted to a string below.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nx">tokens</span><span class="p">.</span><span class="nx">push</span> <span class="nx">@makeToken</span><span class="p">(</span><span class="s">&#39;NEOSTRING&#39;</span><span class="p">,</span> <span class="nx">str</span><span class="p">[</span><span class="nx">pi</span><span class="p">...</span><span class="nx">i</span><span class="p">],</span> <span class="nx">strOffset</span> <span class="o">+</span> <span class="nx">pi</span><span class="p">)</span> <span class="k">if</span> <span class="nx">pi</span> <span class="o">&lt;</span> <span class="nx">i</span>
+        <span class="k">continue</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-33">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>            
+              
+<p>NEOSTRING is a fake token.  This will be converted to a string below.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>      <span class="nx">tokens</span><span class="p">.</span><span class="nx">push</span> <span class="nx">@makeToken</span><span class="p">(</span><span class="s">&#39;NEOSTRING&#39;</span><span class="p">,</span> <span class="nx">str</span><span class="p">[</span><span class="nx">pi</span><span class="p">...</span><span class="nx">i</span><span class="p">],</span> <span class="nx">strOffset</span> <span class="o">+</span> <span class="nx">pi</span><span class="p">)</span> <span class="k">if</span> <span class="nx">pi</span> <span class="o">&lt;</span> <span class="nx">i</span>
       <span class="nv">inner = </span><span class="nx">expr</span><span class="p">[</span><span class="mi">1</span><span class="p">...</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
       <span class="k">if</span> <span class="nx">inner</span><span class="p">.</span><span class="nx">length</span>
         <span class="p">[</span><span class="nx">line</span><span class="p">,</span> <span class="nx">column</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@getLineAndColumnFromChunk</span><span class="p">(</span><span class="nx">strOffset</span> <span class="o">+</span> <span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
@@ -456,41 +1110,231 @@ current chunk.</li>
         <span class="k">if</span> <span class="nv">len = </span><span class="nx">nested</span><span class="p">.</span><span class="nx">length</span>
           <span class="k">if</span> <span class="nx">len</span> <span class="o">&gt;</span> <span class="mi">1</span>
             <span class="nx">nested</span><span class="p">.</span><span class="nx">unshift</span> <span class="nx">@makeToken</span> <span class="s">&#39;(&#39;</span><span class="p">,</span> <span class="s">&#39;(&#39;</span><span class="p">,</span> <span class="nx">strOffset</span> <span class="o">+</span> <span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>
-            <span class="nx">nested</span><span class="p">.</span><span class="nx">push</span>    <span class="nx">@makeToken</span> <span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="nx">strOffset</span> <span class="o">+</span> <span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="nx">inner</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span> <span class="mi">0</span></pre></div>             </td>           </tr>                               <tr id="section-37">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-37">&#182;</a>               </div>               <p>Push a fake 'TOKENS' token, which will get turned into real tokens below.</p>             </td>             <td class="code">               <div class="highlight"><pre>          <span class="nx">tokens</span><span class="p">.</span><span class="nx">push</span> <span class="p">[</span><span class="s">&#39;TOKENS&#39;</span><span class="p">,</span> <span class="nx">nested</span><span class="p">]</span>
+            <span class="nx">nested</span><span class="p">.</span><span class="nx">push</span>    <span class="nx">@makeToken</span> <span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="nx">strOffset</span> <span class="o">+</span> <span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="nx">inner</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span> <span class="mi">0</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-34">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>            
+              
+<p>Push a fake &#39;TOKENS&#39; token, which will get turned into real tokens below.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>          <span class="nx">tokens</span><span class="p">.</span><span class="nx">push</span> <span class="p">[</span><span class="s">&#39;TOKENS&#39;</span><span class="p">,</span> <span class="nx">nested</span><span class="p">]</span>
       <span class="nx">i</span> <span class="o">+=</span> <span class="nx">expr</span><span class="p">.</span><span class="nx">length</span>
       <span class="nv">pi = </span><span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span>
-    <span class="nx">tokens</span><span class="p">.</span><span class="nx">push</span> <span class="nx">@makeToken</span><span class="p">(</span><span class="s">&#39;NEOSTRING&#39;</span><span class="p">,</span> <span class="nx">str</span><span class="p">[</span><span class="nx">pi</span><span class="p">..],</span> <span class="nx">strOffset</span> <span class="o">+</span> <span class="nx">pi</span><span class="p">)</span> <span class="k">if</span> <span class="nx">i</span> <span class="o">&gt;</span> <span class="nx">pi</span> <span class="o">&lt;</span> <span class="nx">str</span><span class="p">.</span><span class="nx">length</span></pre></div>             </td>           </tr>                               <tr id="section-38">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-38">&#182;</a>               </div>               <p>If regex, then return now and let the regex code deal with all these fake tokens</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="k">return</span> <span class="nx">tokens</span> <span class="k">if</span> <span class="nx">regex</span></pre></div>             </td>           </tr>                               <tr id="section-39">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-39">&#182;</a>               </div>               <p>If we didn't find any tokens, then just return an empty string.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="k">return</span> <span class="nx">@token</span> <span class="s">&#39;STRING&#39;</span><span class="p">,</span> <span class="s">&#39;&quot;&quot;&#39;</span><span class="p">,</span> <span class="nx">offsetInChunk</span><span class="p">,</span> <span class="nx">lexedLength</span> <span class="k">unless</span> <span class="nx">tokens</span><span class="p">.</span><span class="nx">length</span></pre></div>             </td>           </tr>                               <tr id="section-40">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-40">&#182;</a>               </div>               <p>If the first token is not a string, add a fake empty string to the beginning.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">tokens</span><span class="p">.</span><span class="nx">unshift</span> <span class="nx">@makeToken</span><span class="p">(</span><span class="s">&#39;NEOSTRING&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="nx">offsetInChunk</span><span class="p">)</span> <span class="k">unless</span> <span class="nx">tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="s">&#39;NEOSTRING&#39;</span>
+    <span class="nx">tokens</span><span class="p">.</span><span class="nx">push</span> <span class="nx">@makeToken</span><span class="p">(</span><span class="s">&#39;NEOSTRING&#39;</span><span class="p">,</span> <span class="nx">str</span><span class="p">[</span><span class="nx">pi</span><span class="p">..],</span> <span class="nx">strOffset</span> <span class="o">+</span> <span class="nx">pi</span><span class="p">)</span> <span class="k">if</span> <span class="nx">i</span> <span class="o">&gt;</span> <span class="nx">pi</span> <span class="o">&lt;</span> <span class="nx">str</span><span class="p">.</span><span class="nx">length</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-35">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>            
+              
+<p>If regex, then return now and let the regex code deal with all these fake tokens
 
-    <span class="nx">@token</span> <span class="s">&#39;(&#39;</span><span class="p">,</span> <span class="s">&#39;(&#39;</span><span class="p">,</span> <span class="nx">offsetInChunk</span><span class="p">,</span> <span class="mi">0</span> <span class="k">if</span> <span class="nv">interpolated = </span><span class="nx">tokens</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">1</span></pre></div>             </td>           </tr>                               <tr id="section-41">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-41">&#182;</a>               </div>               <p>Push all the tokens</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="k">for</span> <span class="nx">token</span><span class="p">,</span> <span class="nx">i</span> <span class="k">in</span> <span class="nx">tokens</span>
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="k">return</span> <span class="nx">tokens</span> <span class="k">if</span> <span class="nx">regex</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-36">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>            
+              
+<p>If we didn&#39;t find any tokens, then just return an empty string.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="k">return</span> <span class="nx">@token</span> <span class="s">&#39;STRING&#39;</span><span class="p">,</span> <span class="s">&#39;&quot;&quot;&#39;</span><span class="p">,</span> <span class="nx">offsetInChunk</span><span class="p">,</span> <span class="nx">lexedLength</span> <span class="k">unless</span> <span class="nx">tokens</span><span class="p">.</span><span class="nx">length</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-37">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>            
+              
+<p>If the first token is not a string, add a fake empty string to the beginning.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="nx">tokens</span><span class="p">.</span><span class="nx">unshift</span> <span class="nx">@makeToken</span><span class="p">(</span><span class="s">&#39;NEOSTRING&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="nx">offsetInChunk</span><span class="p">)</span> <span class="k">unless</span> <span class="nx">tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="s">&#39;NEOSTRING&#39;</span>
+
+    <span class="nx">@token</span> <span class="s">&#39;(&#39;</span><span class="p">,</span> <span class="s">&#39;(&#39;</span><span class="p">,</span> <span class="nx">offsetInChunk</span><span class="p">,</span> <span class="mi">0</span> <span class="k">if</span> <span class="nv">interpolated = </span><span class="nx">tokens</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">1</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-38">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-38">&#182;</a>
+              </div>            
+              
+<p>Push all the tokens
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="k">for</span> <span class="nx">token</span><span class="p">,</span> <span class="nx">i</span> <span class="k">in</span> <span class="nx">tokens</span>
       <span class="p">[</span><span class="nx">tag</span><span class="p">,</span> <span class="nx">value</span><span class="p">]</span> <span class="o">=</span> <span class="nx">token</span>
-      <span class="k">if</span> <span class="nx">i</span></pre></div>             </td>           </tr>                               <tr id="section-42">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-42">&#182;</a>               </div>               <p>Create a 0-length "+" token.</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="nv">plusToken = </span><span class="nx">@token</span> <span class="s">&#39;+&#39;</span><span class="p">,</span> <span class="s">&#39;+&#39;</span> <span class="k">if</span> <span class="nx">i</span>
+      <span class="k">if</span> <span class="nx">i</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-39">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-39">&#182;</a>
+              </div>            
+              
+<p>Create a 0-length &quot;+&quot; token.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>        <span class="nv">plusToken = </span><span class="nx">@token</span> <span class="s">&#39;+&#39;</span><span class="p">,</span> <span class="s">&#39;+&#39;</span> <span class="k">if</span> <span class="nx">i</span>
         <span class="nv">locationToken = </span><span class="k">if</span> <span class="nx">tag</span> <span class="o">==</span> <span class="s">&#39;TOKENS&#39;</span> <span class="k">then</span> <span class="nx">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">else</span> <span class="nx">token</span>
         <span class="nx">plusToken</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span>
           <span class="nv">first_line: </span><span class="nx">locationToken</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="nx">first_line</span>
           <span class="nv">first_column: </span><span class="nx">locationToken</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="nx">first_column</span>
           <span class="nv">last_line: </span><span class="nx">locationToken</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="nx">first_line</span>
           <span class="nv">last_column: </span><span class="nx">locationToken</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="nx">first_column</span>
-      <span class="k">if</span> <span class="nx">tag</span> <span class="o">is</span> <span class="s">&#39;TOKENS&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-43">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-43">&#182;</a>               </div>               <p>Push all the tokens in the fake 'TOKENS' token.  These already have
-sane location data.</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="nx">@tokens</span><span class="p">.</span><span class="nx">push</span> <span class="nx">value</span><span class="p">...</span>
-      <span class="k">else</span> <span class="k">if</span> <span class="nx">tag</span> <span class="o">is</span> <span class="s">&#39;NEOSTRING&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-44">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-44">&#182;</a>               </div>               <p>Convert NEOSTRING into STRING</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="nx">token</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;STRING&#39;</span>
+      <span class="k">if</span> <span class="nx">tag</span> <span class="o">is</span> <span class="s">&#39;TOKENS&#39;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-40">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-40">&#182;</a>
+              </div>            
+              
+<p>Push all the tokens in the fake &#39;TOKENS&#39; token.  These already have
+sane location data.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>        <span class="nx">@tokens</span><span class="p">.</span><span class="nx">push</span> <span class="nx">value</span><span class="p">...</span>
+      <span class="k">else</span> <span class="k">if</span> <span class="nx">tag</span> <span class="o">is</span> <span class="s">&#39;NEOSTRING&#39;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-41">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-41">&#182;</a>
+              </div>            
+              
+<p>Convert NEOSTRING into STRING
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>        <span class="nx">token</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;STRING&#39;</span>
         <span class="nx">token</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@makeString</span> <span class="nx">value</span><span class="p">,</span> <span class="s">&#39;&quot;&#39;</span><span class="p">,</span> <span class="nx">heredoc</span>
         <span class="nx">@tokens</span><span class="p">.</span><span class="nx">push</span> <span class="nx">token</span>
       <span class="k">else</span>
         <span class="nx">@error</span> <span class="s">&quot;Unexpected </span><span class="si">#{</span><span class="nx">tag</span><span class="si">}</span><span class="s">&quot;</span>
-    <span class="nx">@token</span> <span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="nx">offsetInChunk</span> <span class="o">+</span> <span class="nx">lexedLength</span><span class="p">,</span> <span class="mi">0</span> <span class="k">if</span> <span class="nx">interpolated</span>
-    <span class="nx">tokens</span></pre></div>             </td>           </tr>                               <tr id="section-45">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-45">&#182;</a>               </div>               <p>Pairs up a closing token, ensuring that all listed pairs of tokens are
-correctly balanced throughout the course of the token stream.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">pair: </span><span class="nf">(tag) -&gt;</span>
-    <span class="k">unless</span> <span class="nx">tag</span> <span class="o">is</span> <span class="nv">wanted = </span><span class="nx">last</span> <span class="nx">@ends</span>
-      <span class="nx">@error</span> <span class="s">&quot;unmatched </span><span class="si">#{</span><span class="nx">tag</span><span class="si">}</span><span class="s">&quot;</span> <span class="k">unless</span> <span class="s">&#39;OUTDENT&#39;</span> <span class="o">is</span> <span class="nx">wanted</span></pre></div>             </td>           </tr>                               <tr id="section-46">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-46">&#182;</a>               </div>               <p>Auto-close INDENT to support syntax like this:</p>
+    <span class="k">if</span> <span class="nx">interpolated</span>
+      <span class="nv">rparen = </span><span class="nx">@makeToken</span> <span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="nx">offsetInChunk</span> <span class="o">+</span> <span class="nx">lexedLength</span><span class="p">,</span> <span class="mi">0</span>
+      <span class="nv">rparen.stringEnd = </span><span class="kc">true</span>
+      <span class="nx">@tokens</span><span class="p">.</span><span class="nx">push</span> <span class="nx">rparen</span>
+    <span class="nx">tokens</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-42">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-42">&#182;</a>
+              </div>            
+              
+<p>Pairs up a closing token, ensuring that all listed pairs of tokens are
+correctly balanced throughout the course of the token stream.
 
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">pair: </span><span class="nf">(tag) -&gt;</span>
+    <span class="k">unless</span> <span class="nx">tag</span> <span class="o">is</span> <span class="nv">wanted = </span><span class="nx">last</span> <span class="nx">@ends</span>
+      <span class="nx">@error</span> <span class="s">&quot;unmatched </span><span class="si">#{</span><span class="nx">tag</span><span class="si">}</span><span class="s">&quot;</span> <span class="k">unless</span> <span class="s">&#39;OUTDENT&#39;</span> <span class="o">is</span> <span class="nx">wanted</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-43">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-43">&#182;</a>
+              </div>            
+              
+<p>Auto-close INDENT to support syntax like this:
+
+</p>
 <pre><code>el.click((event) -&gt;
-  el.hide())
-</code></pre>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nx">@indent</span> <span class="o">-=</span> <span class="nv">size = </span><span class="nx">last</span> <span class="nx">@indents</span>
+  el.hide())</code></pre>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>      <span class="nx">@indent</span> <span class="o">-=</span> <span class="nv">size = </span><span class="nx">last</span> <span class="nx">@indents</span>
       <span class="nx">@outdentToken</span> <span class="nx">size</span><span class="p">,</span> <span class="kc">true</span>
       <span class="k">return</span> <span class="nx">@pair</span> <span class="nx">tag</span>
-    <span class="nx">@ends</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-47">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-47">&#182;</a>               </div>               <h2>Helpers</h2>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-48">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-48">&#182;</a>               </div>               <p>Returns the line and column number from an offset into the current chunk.</p>
+    <span class="nx">@ends</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-44">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-44">&#182;</a>
+              </div>            
+              
+<h2>Helpers</h2>
+<p>Returns the line and column number from an offset into the current chunk.
 
-<p><code>offset</code> is a number of characters into @chunk.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">getLineAndColumnFromChunk: </span><span class="nf">(offset) -&gt;</span>
+</p>
+<p><code>offset</code> is a number of characters into @chunk.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">getLineAndColumnFromChunk: </span><span class="nf">(offset) -&gt;</span>
     <span class="k">if</span> <span class="nx">offset</span> <span class="o">is</span> <span class="mi">0</span>
       <span class="k">return</span> <span class="p">[</span><span class="nx">@chunkLine</span><span class="p">,</span> <span class="nx">@chunkColumn</span><span class="p">]</span>
 
@@ -508,44 +1352,250 @@ correctly balanced throughout the course of the token stream.</p>             </
     <span class="k">else</span>
       <span class="nx">column</span> <span class="o">+=</span> <span class="nx">string</span><span class="p">.</span><span class="nx">length</span>
 
-    <span class="p">[</span><span class="nx">@chunkLine</span> <span class="o">+</span> <span class="nx">lineCount</span><span class="p">,</span> <span class="nx">column</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-49">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-49">&#182;</a>               </div>               <p>Same as "token", exception this just returns the token without adding it
-to the results.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">makeToken: </span><span class="nf">(tag, value, offsetInChunk = 0, length = value.length) -&gt;</span>
+    <span class="p">[</span><span class="nx">@chunkLine</span> <span class="o">+</span> <span class="nx">lineCount</span><span class="p">,</span> <span class="nx">column</span><span class="p">]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-45">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-45">&#182;</a>
+              </div>            
+              
+<p>Same as &quot;token&quot;, exception this just returns the token without adding it
+to the results.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">makeToken: </span><span class="nf">(tag, value, offsetInChunk = 0, length = value.length) -&gt;</span>
     <span class="nv">locationData = </span><span class="p">{}</span>
     <span class="p">[</span><span class="nx">locationData</span><span class="p">.</span><span class="nx">first_line</span><span class="p">,</span> <span class="nx">locationData</span><span class="p">.</span><span class="nx">first_column</span><span class="p">]</span> <span class="o">=</span>
-      <span class="nx">@getLineAndColumnFromChunk</span> <span class="nx">offsetInChunk</span></pre></div>             </td>           </tr>                               <tr id="section-50">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-50">&#182;</a>               </div>               <p>Use length - 1 for the final offset - we're supplying the last<em>line and the last</em>column,
-so if last<em>column == first</em>column, then we're looking at a character of length 1.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">lastCharacter = </span><span class="nb">Math</span><span class="p">.</span><span class="nx">max</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span>
+      <span class="nx">@getLineAndColumnFromChunk</span> <span class="nx">offsetInChunk</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-46">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-46">&#182;</a>
+              </div>            
+              
+<p>Use length - 1 for the final offset - we&#39;re supplying the last_line and the last_column,
+so if last_column == first_column, then we&#39;re looking at a character of length 1.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="nv">lastCharacter = </span><span class="nb">Math</span><span class="p">.</span><span class="nx">max</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span>
     <span class="p">[</span><span class="nx">locationData</span><span class="p">.</span><span class="nx">last_line</span><span class="p">,</span> <span class="nx">locationData</span><span class="p">.</span><span class="nx">last_column</span><span class="p">]</span> <span class="o">=</span>
-      <span class="nx">@getLineAndColumnFromChunk</span> <span class="nx">offsetInChunk</span> <span class="o">+</span> <span class="p">(</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+      <span class="nx">@getLineAndColumnFromChunk</span> <span class="nx">offsetInChunk</span> <span class="o">+</span> <span class="p">(</span><span class="nx">lastCharacter</span><span class="p">)</span>
 
     <span class="nv">token = </span><span class="p">[</span><span class="nx">tag</span><span class="p">,</span> <span class="nx">value</span><span class="p">,</span> <span class="nx">locationData</span><span class="p">]</span>
 
-    <span class="nx">token</span></pre></div>             </td>           </tr>                               <tr id="section-51">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-51">&#182;</a>               </div>               <p>Add a token to the results.
+    <span class="nx">token</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-47">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-47">&#182;</a>
+              </div>            
+              
+<p>Add a token to the results.
 <code>offset</code> is the offset into the current @chunk where the token starts.
 <code>length</code> is the length of the token in the @chunk, after the offset.  If
-not specified, the length of <code>value</code> will be used.</p>
+not specified, the length of <code>value</code> will be used.
 
-<p>Returns the new token.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">token: </span><span class="nf">(tag, value, offsetInChunk, length) -&gt;</span>
+</p>
+<p>Returns the new token.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">token: </span><span class="nf">(tag, value, offsetInChunk, length) -&gt;</span>
     <span class="nv">token = </span><span class="nx">@makeToken</span> <span class="nx">tag</span><span class="p">,</span> <span class="nx">value</span><span class="p">,</span> <span class="nx">offsetInChunk</span><span class="p">,</span> <span class="nx">length</span>
     <span class="nx">@tokens</span><span class="p">.</span><span class="nx">push</span> <span class="nx">token</span>
-    <span class="nx">token</span></pre></div>             </td>           </tr>                               <tr id="section-52">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-52">&#182;</a>               </div>               <p>Peek at a tag in the current token stream.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">tag: </span><span class="nf">(index, tag) -&gt;</span>
-    <span class="p">(</span><span class="nv">tok = </span><span class="nx">last</span> <span class="nx">@tokens</span><span class="p">,</span> <span class="nx">index</span><span class="p">)</span> <span class="o">and</span> <span class="k">if</span> <span class="nx">tag</span> <span class="k">then</span> <span class="nx">tok</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nx">tag</span> <span class="k">else</span> <span class="nx">tok</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-53">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-53">&#182;</a>               </div>               <p>Peek at a value in the current token stream.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">value: </span><span class="nf">(index, val) -&gt;</span>
-    <span class="p">(</span><span class="nv">tok = </span><span class="nx">last</span> <span class="nx">@tokens</span><span class="p">,</span> <span class="nx">index</span><span class="p">)</span> <span class="o">and</span> <span class="k">if</span> <span class="nx">val</span> <span class="k">then</span> <span class="nx">tok</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nx">val</span> <span class="k">else</span> <span class="nx">tok</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-54">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-54">&#182;</a>               </div>               <p>Are we in the midst of an unfinished expression?</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">unfinished: </span><span class="nf">-&gt;</span>
+    <span class="nx">token</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-48">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-48">&#182;</a>
+              </div>            
+              
+<p>Peek at a tag in the current token stream.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">tag: </span><span class="nf">(index, tag) -&gt;</span>
+    <span class="p">(</span><span class="nv">tok = </span><span class="nx">last</span> <span class="nx">@tokens</span><span class="p">,</span> <span class="nx">index</span><span class="p">)</span> <span class="o">and</span> <span class="k">if</span> <span class="nx">tag</span> <span class="k">then</span> <span class="nx">tok</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nx">tag</span> <span class="k">else</span> <span class="nx">tok</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-49">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-49">&#182;</a>
+              </div>            
+              
+<p>Peek at a value in the current token stream.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">value: </span><span class="nf">(index, val) -&gt;</span>
+    <span class="p">(</span><span class="nv">tok = </span><span class="nx">last</span> <span class="nx">@tokens</span><span class="p">,</span> <span class="nx">index</span><span class="p">)</span> <span class="o">and</span> <span class="k">if</span> <span class="nx">val</span> <span class="k">then</span> <span class="nx">tok</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nx">val</span> <span class="k">else</span> <span class="nx">tok</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-50">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-50">&#182;</a>
+              </div>            
+              
+<p>Are we in the midst of an unfinished expression?
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">unfinished: </span><span class="nf">-&gt;</span>
     <span class="nx">LINE_CONTINUER</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">@chunk</span><span class="p">)</span> <span class="o">or</span>
     <span class="nx">@tag</span><span class="p">()</span> <span class="k">in</span> <span class="p">[</span><span class="s">&#39;\\&#39;</span><span class="p">,</span> <span class="s">&#39;.&#39;</span><span class="p">,</span> <span class="s">&#39;?.&#39;</span><span class="p">,</span> <span class="s">&#39;?::&#39;</span><span class="p">,</span> <span class="s">&#39;UNARY&#39;</span><span class="p">,</span> <span class="s">&#39;MATH&#39;</span><span class="p">,</span> <span class="s">&#39;+&#39;</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="s">&#39;SHIFT&#39;</span><span class="p">,</span> <span class="s">&#39;RELATION&#39;</span>
-               <span class="s">&#39;COMPARE&#39;</span><span class="p">,</span> <span class="s">&#39;LOGIC&#39;</span><span class="p">,</span> <span class="s">&#39;THROW&#39;</span><span class="p">,</span> <span class="s">&#39;EXTENDS&#39;</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-55">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-55">&#182;</a>               </div>               <p>Converts newlines for string literals.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">escapeLines: </span><span class="nf">(str, heredoc) -&gt;</span>
-    <span class="nx">str</span><span class="p">.</span><span class="nx">replace</span> <span class="nx">MULTILINER</span><span class="p">,</span> <span class="k">if</span> <span class="nx">heredoc</span> <span class="k">then</span> <span class="s">&#39;\\n&#39;</span> <span class="k">else</span> <span class="s">&#39;&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-56">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-56">&#182;</a>               </div>               <p>Constructs a string token by escaping quotes and newlines.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">makeString: </span><span class="nf">(body, quote, heredoc) -&gt;</span>
+               <span class="s">&#39;COMPARE&#39;</span><span class="p">,</span> <span class="s">&#39;LOGIC&#39;</span><span class="p">,</span> <span class="s">&#39;THROW&#39;</span><span class="p">,</span> <span class="s">&#39;EXTENDS&#39;</span><span class="p">]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-51">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-51">&#182;</a>
+              </div>            
+              
+<p>Converts newlines for string literals.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">escapeLines: </span><span class="nf">(str, heredoc) -&gt;</span>
+    <span class="nx">str</span><span class="p">.</span><span class="nx">replace</span> <span class="nx">MULTILINER</span><span class="p">,</span> <span class="k">if</span> <span class="nx">heredoc</span> <span class="k">then</span> <span class="s">&#39;\\n&#39;</span> <span class="k">else</span> <span class="s">&#39;&#39;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-52">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-52">&#182;</a>
+              </div>            
+              
+<p>Constructs a string token by escaping quotes and newlines.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">makeString: </span><span class="nf">(body, quote, heredoc) -&gt;</span>
     <span class="k">return</span> <span class="nx">quote</span> <span class="o">+</span> <span class="nx">quote</span> <span class="k">unless</span> <span class="nx">body</span>
     <span class="nv">body = </span><span class="nx">body</span><span class="p">.</span><span class="nx">replace</span> <span class="sr">/\\([\s\S])/g</span><span class="p">,</span> <span class="nf">(match, contents) -&gt;</span>
       <span class="k">if</span> <span class="nx">contents</span> <span class="k">in</span> <span class="p">[</span><span class="s">&#39;\n&#39;</span><span class="p">,</span> <span class="nx">quote</span><span class="p">]</span> <span class="k">then</span> <span class="nx">contents</span> <span class="k">else</span> <span class="nx">match</span>
     <span class="nv">body = </span><span class="nx">body</span><span class="p">.</span><span class="nx">replace</span> <span class="sr">/// </span><span class="si">#{</span><span class="nx">quote</span><span class="si">}</span><span class="sr"> ///g</span><span class="p">,</span> <span class="s">&#39;\\$&amp;&#39;</span>
-    <span class="nx">quote</span> <span class="o">+</span> <span class="nx">@escapeLines</span><span class="p">(</span><span class="nx">body</span><span class="p">,</span> <span class="nx">heredoc</span><span class="p">)</span> <span class="o">+</span> <span class="nx">quote</span></pre></div>             </td>           </tr>                               <tr id="section-57">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-57">&#182;</a>               </div>               <p>Throws a syntax error on the current <code>@line</code>.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">error: </span><span class="nf">(message) -&gt;</span></pre></div>             </td>           </tr>                               <tr id="section-58">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-58">&#182;</a>               </div>               <p>TODO: Are there some cases we could improve the error line number by
-passing the offset in the chunk where the error happened?</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="k">throw</span> <span class="nx">SyntaxError</span> <span class="s">&quot;</span><span class="si">#{</span><span class="nx">message</span><span class="si">}</span><span class="s"> on line </span><span class="si">#{</span> <span class="nx">@chunkLine</span> <span class="o">+</span> <span class="mi">1</span> <span class="si">}</span><span class="s">&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-59">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-59">&#182;</a>               </div>               <h2>Constants</h2>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-60">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-60">&#182;</a>               </div>               <p>Keywords that CoffeeScript shares in common with JavaScript.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">JS_KEYWORDS = </span><span class="p">[</span>
+    <span class="nx">quote</span> <span class="o">+</span> <span class="nx">@escapeLines</span><span class="p">(</span><span class="nx">body</span><span class="p">,</span> <span class="nx">heredoc</span><span class="p">)</span> <span class="o">+</span> <span class="nx">quote</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-53">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-53">&#182;</a>
+              </div>            
+              
+<p>Throws a compiler error on the current position.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">error: </span><span class="nf">(message) -&gt;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-54">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-54">&#182;</a>
+              </div>            
+              
+<p>TODO: Are there some cases we could improve the error line number by
+passing the offset in the chunk where the error happened?
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="nx">throwSyntaxError</span> <span class="nx">message</span><span class="p">,</span> <span class="nv">first_line: </span><span class="nx">@chunkLine</span><span class="p">,</span> <span class="nv">first_column: </span><span class="nx">@chunkColumn</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-55">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-55">&#182;</a>
+              </div>            
+              
+<h2>Constants</h2>
+<p>Keywords that CoffeeScript shares in common with JavaScript.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">JS_KEYWORDS = </span><span class="p">[</span>
   <span class="s">&#39;true&#39;</span><span class="p">,</span> <span class="s">&#39;false&#39;</span><span class="p">,</span> <span class="s">&#39;null&#39;</span><span class="p">,</span> <span class="s">&#39;this&#39;</span>
   <span class="s">&#39;new&#39;</span><span class="p">,</span> <span class="s">&#39;delete&#39;</span><span class="p">,</span> <span class="s">&#39;typeof&#39;</span><span class="p">,</span> <span class="s">&#39;in&#39;</span><span class="p">,</span> <span class="s">&#39;instanceof&#39;</span>
   <span class="s">&#39;return&#39;</span><span class="p">,</span> <span class="s">&#39;throw&#39;</span><span class="p">,</span> <span class="s">&#39;break&#39;</span><span class="p">,</span> <span class="s">&#39;continue&#39;</span><span class="p">,</span> <span class="s">&#39;debugger&#39;</span>
   <span class="s">&#39;if&#39;</span><span class="p">,</span> <span class="s">&#39;else&#39;</span><span class="p">,</span> <span class="s">&#39;switch&#39;</span><span class="p">,</span> <span class="s">&#39;for&#39;</span><span class="p">,</span> <span class="s">&#39;while&#39;</span><span class="p">,</span> <span class="s">&#39;do&#39;</span><span class="p">,</span> <span class="s">&#39;try&#39;</span><span class="p">,</span> <span class="s">&#39;catch&#39;</span><span class="p">,</span> <span class="s">&#39;finally&#39;</span>
   <span class="s">&#39;class&#39;</span><span class="p">,</span> <span class="s">&#39;extends&#39;</span><span class="p">,</span> <span class="s">&#39;super&#39;</span>
-<span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-61">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-61">&#182;</a>               </div>               <p>CoffeeScript-only keywords.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">COFFEE_KEYWORDS = </span><span class="p">[</span><span class="s">&#39;undefined&#39;</span><span class="p">,</span> <span class="s">&#39;then&#39;</span><span class="p">,</span> <span class="s">&#39;unless&#39;</span><span class="p">,</span> <span class="s">&#39;until&#39;</span><span class="p">,</span> <span class="s">&#39;loop&#39;</span><span class="p">,</span> <span class="s">&#39;of&#39;</span><span class="p">,</span> <span class="s">&#39;by&#39;</span><span class="p">,</span> <span class="s">&#39;when&#39;</span><span class="p">]</span>
+<span class="p">]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-56">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-56">&#182;</a>
+              </div>            
+              
+<p>CoffeeScript-only keywords.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">COFFEE_KEYWORDS = </span><span class="p">[</span><span class="s">&#39;undefined&#39;</span><span class="p">,</span> <span class="s">&#39;then&#39;</span><span class="p">,</span> <span class="s">&#39;unless&#39;</span><span class="p">,</span> <span class="s">&#39;until&#39;</span><span class="p">,</span> <span class="s">&#39;loop&#39;</span><span class="p">,</span> <span class="s">&#39;of&#39;</span><span class="p">,</span> <span class="s">&#39;by&#39;</span><span class="p">,</span> <span class="s">&#39;when&#39;</span><span class="p">]</span>
 
 <span class="nv">COFFEE_ALIAS_MAP =</span>
   <span class="o">and</span>  <span class="o">:</span> <span class="s">&#39;&amp;&amp;&#39;</span>
@@ -559,20 +1609,88 @@ passing the offset in the chunk where the error happened?</p>             </td> 
   <span class="kc">off</span>  <span class="o">:</span> <span class="s">&#39;false&#39;</span>
 
 <span class="nv">COFFEE_ALIASES  = </span><span class="p">(</span><span class="nx">key</span> <span class="k">for</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">COFFEE_ALIAS_MAP</span><span class="p">)</span>
-<span class="nv">COFFEE_KEYWORDS = </span><span class="nx">COFFEE_KEYWORDS</span><span class="p">.</span><span class="nx">concat</span> <span class="nx">COFFEE_ALIASES</span></pre></div>             </td>           </tr>                               <tr id="section-62">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-62">&#182;</a>               </div>               <p>The list of keywords that are reserved by JavaScript, but not used, or are
+<span class="nv">COFFEE_KEYWORDS = </span><span class="nx">COFFEE_KEYWORDS</span><span class="p">.</span><span class="nx">concat</span> <span class="nx">COFFEE_ALIASES</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-57">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-57">&#182;</a>
+              </div>            
+              
+<p>The list of keywords that are reserved by JavaScript, but not used, or are
 used by CoffeeScript internally. We throw an error when these are encountered,
-to avoid having a JavaScript error at runtime.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">RESERVED = </span><span class="p">[</span>
+to avoid having a JavaScript error at runtime.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">RESERVED = </span><span class="p">[</span>
   <span class="s">&#39;case&#39;</span><span class="p">,</span> <span class="s">&#39;default&#39;</span><span class="p">,</span> <span class="s">&#39;function&#39;</span><span class="p">,</span> <span class="s">&#39;var&#39;</span><span class="p">,</span> <span class="s">&#39;void&#39;</span><span class="p">,</span> <span class="s">&#39;with&#39;</span><span class="p">,</span> <span class="s">&#39;const&#39;</span><span class="p">,</span> <span class="s">&#39;let&#39;</span><span class="p">,</span> <span class="s">&#39;enum&#39;</span>
   <span class="s">&#39;export&#39;</span><span class="p">,</span> <span class="s">&#39;import&#39;</span><span class="p">,</span> <span class="s">&#39;native&#39;</span><span class="p">,</span> <span class="s">&#39;__hasProp&#39;</span><span class="p">,</span> <span class="s">&#39;__extends&#39;</span><span class="p">,</span> <span class="s">&#39;__slice&#39;</span><span class="p">,</span> <span class="s">&#39;__bind&#39;</span>
   <span class="s">&#39;__indexOf&#39;</span><span class="p">,</span> <span class="s">&#39;implements&#39;</span><span class="p">,</span> <span class="s">&#39;interface&#39;</span><span class="p">,</span> <span class="s">&#39;package&#39;</span><span class="p">,</span> <span class="s">&#39;private&#39;</span><span class="p">,</span> <span class="s">&#39;protected&#39;</span>
   <span class="s">&#39;public&#39;</span><span class="p">,</span> <span class="s">&#39;static&#39;</span><span class="p">,</span> <span class="s">&#39;yield&#39;</span>
 <span class="p">]</span>
 
-<span class="nv">STRICT_PROSCRIBED = </span><span class="p">[</span><span class="s">&#39;arguments&#39;</span><span class="p">,</span> <span class="s">&#39;eval&#39;</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-63">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-63">&#182;</a>               </div>               <p>The superset of both JavaScript keywords and reserved words, none of which may
-be used as identifiers or properties.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">JS_FORBIDDEN = </span><span class="nx">JS_KEYWORDS</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">RESERVED</span><span class="p">).</span><span class="nx">concat</span><span class="p">(</span><span class="nx">STRICT_PROSCRIBED</span><span class="p">)</span>
+<span class="nv">STRICT_PROSCRIBED = </span><span class="p">[</span><span class="s">&#39;arguments&#39;</span><span class="p">,</span> <span class="s">&#39;eval&#39;</span><span class="p">]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-58">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-58">&#182;</a>
+              </div>            
+              
+<p>The superset of both JavaScript keywords and reserved words, none of which may
+be used as identifiers or properties.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">JS_FORBIDDEN = </span><span class="nx">JS_KEYWORDS</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">RESERVED</span><span class="p">).</span><span class="nx">concat</span><span class="p">(</span><span class="nx">STRICT_PROSCRIBED</span><span class="p">)</span>
 
 <span class="nv">exports.RESERVED = </span><span class="nx">RESERVED</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">JS_KEYWORDS</span><span class="p">).</span><span class="nx">concat</span><span class="p">(</span><span class="nx">COFFEE_KEYWORDS</span><span class="p">).</span><span class="nx">concat</span><span class="p">(</span><span class="nx">STRICT_PROSCRIBED</span><span class="p">)</span>
-<span class="nv">exports.STRICT_PROSCRIBED = </span><span class="nx">STRICT_PROSCRIBED</span></pre></div>             </td>           </tr>                               <tr id="section-64">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-64">&#182;</a>               </div>               <p>The character code of the nasty Microsoft madness otherwise known as the BOM.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">BOM = </span><span class="mi">65279</span></pre></div>             </td>           </tr>                               <tr id="section-65">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-65">&#182;</a>               </div>               <p>Token matching regexes.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">IDENTIFIER = </span><span class="sr">/// ^</span>
+<span class="nv">exports.STRICT_PROSCRIBED = </span><span class="nx">STRICT_PROSCRIBED</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-59">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-59">&#182;</a>
+              </div>            
+              
+<p>The character code of the nasty Microsoft madness otherwise known as the BOM.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">BOM = </span><span class="mi">65279</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-60">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-60">&#182;</a>
+              </div>            
+              
+<p>Token matching regexes.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">IDENTIFIER = </span><span class="sr">/// ^</span>
 <span class="sr">  ( [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]* )</span>
 <span class="sr">  ( [^\n\S]* : (?!:) )?  # Is this a property name?</span>
 <span class="sr">///</span>
@@ -600,15 +1718,30 @@ be used as identifiers or properties.</p>             </td>             <td clas
 
 <span class="nv">COMMENT    = </span><span class="sr">/^###([^#][\s\S]*?)(?:###[^\n\S]*|(?:###)$)|^(?:\s*#(?!##[^#]).*)+/</span>
 
-<span class="nv">LITERATE   = </span><span class="sr">/^([ ]{4}|\t)/</span>
-
 <span class="nv">CODE       = </span><span class="sr">/^[-=]&gt;/</span>
 
 <span class="nv">MULTI_DENT = </span><span class="sr">/^(?:\n[^\n\S]*)+/</span>
 
 <span class="nv">SIMPLESTR  = </span><span class="sr">/^&#39;[^\\&#39;]*(?:\\.[^\\&#39;]*)*&#39;/</span>
 
-<span class="nv">JSTOKEN    = </span><span class="sr">/^`[^\\`]*(?:\\.[^\\`]*)*`/</span></pre></div>             </td>           </tr>                               <tr id="section-66">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-66">&#182;</a>               </div>               <p>Regex-matching-regexes.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">REGEX = </span><span class="sr">/// ^</span>
+<span class="nv">JSTOKEN    = </span><span class="sr">/^`[^\\`]*(?:\\.[^\\`]*)*`/</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-61">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-61">&#182;</a>
+              </div>            
+              
+<p>Regex-matching-regexes.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">REGEX = </span><span class="sr">/// ^</span>
 <span class="sr">  (/ (?! [\s=] )   # disallow leading whitespace or equals signs</span>
 <span class="sr">  [^ [ / \n \\ ]*  # every other thing</span>
 <span class="sr">  (?:</span>
@@ -624,7 +1757,24 @@ be used as identifiers or properties.</p>             </td>             <td clas
 
 <span class="nv">HEREGEX      = </span><span class="sr">/// ^ /{3} ([\s\S]+?) /{3} ([imgy]{0,4}) (?!\w) ///</span>
 
-<span class="nv">HEREGEX_OMIT = </span><span class="sr">/\s+(?:#.*)?/g</span></pre></div>             </td>           </tr>                               <tr id="section-67">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-67">&#182;</a>               </div>               <p>Token cleaning regexes.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">MULTILINER      = </span><span class="sr">/\n/g</span>
+<span class="nv">HEREGEX_OMIT = </span><span class="sr">/\s+(?:#.*)?/g</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-62">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-62">&#182;</a>
+              </div>            
+              
+<p>Token cleaning regexes.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">MULTILINER      = </span><span class="sr">/\n/g</span>
 
 <span class="nv">HEREDOC_INDENT  = </span><span class="sr">/\n+([^\n\S]*)/g</span>
 
@@ -632,19 +1782,231 @@ be used as identifiers or properties.</p>             </td>             <td clas
 
 <span class="nv">LINE_CONTINUER  = </span><span class="sr">/// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///</span>
 
-<span class="nv">TRAILING_SPACES = </span><span class="sr">/\s+$/</span></pre></div>             </td>           </tr>                               <tr id="section-68">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-68">&#182;</a>               </div>               <p>Compound assignment tokens.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">COMPOUND_ASSIGN = </span><span class="p">[</span>
+<span class="nv">TRAILING_SPACES = </span><span class="sr">/\s+$/</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-63">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-63">&#182;</a>
+              </div>            
+              
+<p>Compound assignment tokens.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">COMPOUND_ASSIGN = </span><span class="p">[</span>
   <span class="s">&#39;-=&#39;</span><span class="p">,</span> <span class="s">&#39;+=&#39;</span><span class="p">,</span> <span class="s">&#39;/=&#39;</span><span class="p">,</span> <span class="s">&#39;*=&#39;</span><span class="p">,</span> <span class="s">&#39;%=&#39;</span><span class="p">,</span> <span class="s">&#39;||=&#39;</span><span class="p">,</span> <span class="s">&#39;&amp;&amp;=&#39;</span><span class="p">,</span> <span class="s">&#39;?=&#39;</span><span class="p">,</span> <span class="s">&#39;&lt;&lt;=&#39;</span><span class="p">,</span> <span class="s">&#39;&gt;&gt;=&#39;</span><span class="p">,</span> <span class="s">&#39;&gt;&gt;&gt;=&#39;</span><span class="p">,</span> <span class="s">&#39;&amp;=&#39;</span><span class="p">,</span> <span class="s">&#39;^=&#39;</span><span class="p">,</span> <span class="s">&#39;|=&#39;</span>
-<span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-69">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-69">&#182;</a>               </div>               <p>Unary tokens.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">UNARY   = </span><span class="p">[</span><span class="s">&#39;!&#39;</span><span class="p">,</span> <span class="s">&#39;~&#39;</span><span class="p">,</span> <span class="s">&#39;NEW&#39;</span><span class="p">,</span> <span class="s">&#39;TYPEOF&#39;</span><span class="p">,</span> <span class="s">&#39;DELETE&#39;</span><span class="p">,</span> <span class="s">&#39;DO&#39;</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-70">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-70">&#182;</a>               </div>               <p>Logical tokens.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">LOGIC   = </span><span class="p">[</span><span class="s">&#39;&amp;&amp;&#39;</span><span class="p">,</span> <span class="s">&#39;||&#39;</span><span class="p">,</span> <span class="s">&#39;&amp;&#39;</span><span class="p">,</span> <span class="s">&#39;|&#39;</span><span class="p">,</span> <span class="s">&#39;^&#39;</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-71">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-71">&#182;</a>               </div>               <p>Bit-shifting tokens.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">SHIFT   = </span><span class="p">[</span><span class="s">&#39;&lt;&lt;&#39;</span><span class="p">,</span> <span class="s">&#39;&gt;&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;&gt;&gt;&gt;&#39;</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-72">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-72">&#182;</a>               </div>               <p>Comparison tokens.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">COMPARE = </span><span class="p">[</span><span class="s">&#39;==&#39;</span><span class="p">,</span> <span class="s">&#39;!=&#39;</span><span class="p">,</span> <span class="s">&#39;&lt;&#39;</span><span class="p">,</span> <span class="s">&#39;&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;&lt;=&#39;</span><span class="p">,</span> <span class="s">&#39;&gt;=&#39;</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-73">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-73">&#182;</a>               </div>               <p>Mathematical tokens.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">MATH    = </span><span class="p">[</span><span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="s">&#39;/&#39;</span><span class="p">,</span> <span class="s">&#39;%&#39;</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-74">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-74">&#182;</a>               </div>               <p>Relational tokens that are negatable with <code>not</code> prefix.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">RELATION = </span><span class="p">[</span><span class="s">&#39;IN&#39;</span><span class="p">,</span> <span class="s">&#39;OF&#39;</span><span class="p">,</span> <span class="s">&#39;INSTANCEOF&#39;</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-75">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-75">&#182;</a>               </div>               <p>Boolean tokens.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">BOOL = </span><span class="p">[</span><span class="s">&#39;TRUE&#39;</span><span class="p">,</span> <span class="s">&#39;FALSE&#39;</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-76">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-76">&#182;</a>               </div>               <p>Tokens which a regular expression will never immediately follow, but which
-a division operator might.</p>
+<span class="p">]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-64">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-64">&#182;</a>
+              </div>            
+              
+<p>Unary tokens.
 
-<p>See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions</p>
+</p>
 
-<p>Our list is shorter, due to sans-parentheses method calls.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">NOT_REGEX = </span><span class="p">[</span><span class="s">&#39;NUMBER&#39;</span><span class="p">,</span> <span class="s">&#39;REGEX&#39;</span><span class="p">,</span> <span class="s">&#39;BOOL&#39;</span><span class="p">,</span> <span class="s">&#39;NULL&#39;</span><span class="p">,</span> <span class="s">&#39;UNDEFINED&#39;</span><span class="p">,</span> <span class="s">&#39;++&#39;</span><span class="p">,</span> <span class="s">&#39;--&#39;</span><span class="p">,</span> <span class="s">&#39;]&#39;</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-77">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-77">&#182;</a>               </div>               <p>If the previous token is not spaced, there are more preceding tokens that
-force a division parse:</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">NOT_SPACED_REGEX = </span><span class="nx">NOT_REGEX</span><span class="p">.</span><span class="nx">concat</span> <span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="s">&#39;}&#39;</span><span class="p">,</span> <span class="s">&#39;THIS&#39;</span><span class="p">,</span> <span class="s">&#39;IDENTIFIER&#39;</span><span class="p">,</span> <span class="s">&#39;STRING&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-78">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-78">&#182;</a>               </div>               <p>Tokens which could legitimately be invoked or indexed. An opening
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">UNARY   = </span><span class="p">[</span><span class="s">&#39;!&#39;</span><span class="p">,</span> <span class="s">&#39;~&#39;</span><span class="p">,</span> <span class="s">&#39;NEW&#39;</span><span class="p">,</span> <span class="s">&#39;TYPEOF&#39;</span><span class="p">,</span> <span class="s">&#39;DELETE&#39;</span><span class="p">,</span> <span class="s">&#39;DO&#39;</span><span class="p">]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-65">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-65">&#182;</a>
+              </div>            
+              
+<p>Logical tokens.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">LOGIC   = </span><span class="p">[</span><span class="s">&#39;&amp;&amp;&#39;</span><span class="p">,</span> <span class="s">&#39;||&#39;</span><span class="p">,</span> <span class="s">&#39;&amp;&#39;</span><span class="p">,</span> <span class="s">&#39;|&#39;</span><span class="p">,</span> <span class="s">&#39;^&#39;</span><span class="p">]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-66">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-66">&#182;</a>
+              </div>            
+              
+<p>Bit-shifting tokens.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">SHIFT   = </span><span class="p">[</span><span class="s">&#39;&lt;&lt;&#39;</span><span class="p">,</span> <span class="s">&#39;&gt;&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;&gt;&gt;&gt;&#39;</span><span class="p">]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-67">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-67">&#182;</a>
+              </div>            
+              
+<p>Comparison tokens.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">COMPARE = </span><span class="p">[</span><span class="s">&#39;==&#39;</span><span class="p">,</span> <span class="s">&#39;!=&#39;</span><span class="p">,</span> <span class="s">&#39;&lt;&#39;</span><span class="p">,</span> <span class="s">&#39;&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;&lt;=&#39;</span><span class="p">,</span> <span class="s">&#39;&gt;=&#39;</span><span class="p">]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-68">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-68">&#182;</a>
+              </div>            
+              
+<p>Mathematical tokens.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">MATH    = </span><span class="p">[</span><span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="s">&#39;/&#39;</span><span class="p">,</span> <span class="s">&#39;%&#39;</span><span class="p">]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-69">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-69">&#182;</a>
+              </div>            
+              
+<p>Relational tokens that are negatable with <code>not</code> prefix.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">RELATION = </span><span class="p">[</span><span class="s">&#39;IN&#39;</span><span class="p">,</span> <span class="s">&#39;OF&#39;</span><span class="p">,</span> <span class="s">&#39;INSTANCEOF&#39;</span><span class="p">]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-70">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-70">&#182;</a>
+              </div>            
+              
+<p>Boolean tokens.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">BOOL = </span><span class="p">[</span><span class="s">&#39;TRUE&#39;</span><span class="p">,</span> <span class="s">&#39;FALSE&#39;</span><span class="p">]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-71">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-71">&#182;</a>
+              </div>            
+              
+<p>Tokens which a regular expression will never immediately follow, but which
+a division operator might.
+
+</p>
+<p>See: <a href="http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions">http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions</a>
+
+</p>
+<p>Our list is shorter, due to sans-parentheses method calls.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">NOT_REGEX = </span><span class="p">[</span><span class="s">&#39;NUMBER&#39;</span><span class="p">,</span> <span class="s">&#39;REGEX&#39;</span><span class="p">,</span> <span class="s">&#39;BOOL&#39;</span><span class="p">,</span> <span class="s">&#39;NULL&#39;</span><span class="p">,</span> <span class="s">&#39;UNDEFINED&#39;</span><span class="p">,</span> <span class="s">&#39;++&#39;</span><span class="p">,</span> <span class="s">&#39;--&#39;</span><span class="p">,</span> <span class="s">&#39;]&#39;</span><span class="p">]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-72">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-72">&#182;</a>
+              </div>            
+              
+<p>If the previous token is not spaced, there are more preceding tokens that
+force a division parse:
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">NOT_SPACED_REGEX = </span><span class="nx">NOT_REGEX</span><span class="p">.</span><span class="nx">concat</span> <span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="s">&#39;}&#39;</span><span class="p">,</span> <span class="s">&#39;THIS&#39;</span><span class="p">,</span> <span class="s">&#39;IDENTIFIER&#39;</span><span class="p">,</span> <span class="s">&#39;STRING&#39;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-73">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-73">&#182;</a>
+              </div>            
+              
+<p>Tokens which could legitimately be invoked or indexed. An opening
 parentheses or bracket following these tokens will be recorded as the start
-of a function invocation or indexing operation.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">CALLABLE  = </span><span class="p">[</span><span class="s">&#39;IDENTIFIER&#39;</span><span class="p">,</span> <span class="s">&#39;STRING&#39;</span><span class="p">,</span> <span class="s">&#39;REGEX&#39;</span><span class="p">,</span> <span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="s">&#39;]&#39;</span><span class="p">,</span> <span class="s">&#39;}&#39;</span><span class="p">,</span> <span class="s">&#39;?&#39;</span><span class="p">,</span> <span class="s">&#39;::&#39;</span><span class="p">,</span> <span class="s">&#39;@&#39;</span><span class="p">,</span> <span class="s">&#39;THIS&#39;</span><span class="p">,</span> <span class="s">&#39;SUPER&#39;</span><span class="p">]</span>
-<span class="nv">INDEXABLE = </span><span class="nx">CALLABLE</span><span class="p">.</span><span class="nx">concat</span> <span class="s">&#39;NUMBER&#39;</span><span class="p">,</span> <span class="s">&#39;BOOL&#39;</span><span class="p">,</span> <span class="s">&#39;NULL&#39;</span><span class="p">,</span> <span class="s">&#39;UNDEFINED&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-79">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-79">&#182;</a>               </div>               <p>Tokens that, when immediately preceding a <code>WHEN</code>, indicate that the <code>WHEN</code>
-occurs at the start of a line. We disambiguate these from trailing whens to
-avoid an ambiguity in the grammar.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">LINE_BREAK = </span><span class="p">[</span><span class="s">&#39;INDENT&#39;</span><span class="p">,</span> <span class="s">&#39;OUTDENT&#39;</span><span class="p">,</span> <span class="s">&#39;TERMINATOR&#39;</span><span class="p">]</span>
+of a function invocation or indexing operation.
 
-</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">CALLABLE  = </span><span class="p">[</span><span class="s">&#39;IDENTIFIER&#39;</span><span class="p">,</span> <span class="s">&#39;STRING&#39;</span><span class="p">,</span> <span class="s">&#39;REGEX&#39;</span><span class="p">,</span> <span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="s">&#39;]&#39;</span><span class="p">,</span> <span class="s">&#39;}&#39;</span><span class="p">,</span> <span class="s">&#39;?&#39;</span><span class="p">,</span> <span class="s">&#39;::&#39;</span><span class="p">,</span> <span class="s">&#39;@&#39;</span><span class="p">,</span> <span class="s">&#39;THIS&#39;</span><span class="p">,</span> <span class="s">&#39;SUPER&#39;</span><span class="p">]</span>
+<span class="nv">INDEXABLE = </span><span class="nx">CALLABLE</span><span class="p">.</span><span class="nx">concat</span> <span class="s">&#39;NUMBER&#39;</span><span class="p">,</span> <span class="s">&#39;BOOL&#39;</span><span class="p">,</span> <span class="s">&#39;NULL&#39;</span><span class="p">,</span> <span class="s">&#39;UNDEFINED&#39;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-74">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-74">&#182;</a>
+              </div>            
+              
+<p>Tokens that, when immediately preceding a <code>WHEN</code>, indicate that the <code>WHEN</code>
+occurs at the start of a line. We disambiguate these from trailing whens to
+avoid an ambiguity in the grammar.
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">LINE_BREAK = </span><span class="p">[</span><span class="s">&#39;INDENT&#39;</span><span class="p">,</span> <span class="s">&#39;OUTDENT&#39;</span><span class="p">,</span> <span class="s">&#39;TERMINATOR&#39;</span><span class="p">]</span>
+
+</pre></div></div>
+            
+        </li>
+        
+    </ul> 
+  </div>
+</body>
+</html>

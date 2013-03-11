@@ -1,8 +1,174 @@
-<!DOCTYPE html>  <html> <head>   <title>sourcemap.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="browser.html">                 browser.coffee               </a>                                           <a class="source" href="cake.html">                 cake.coffee               </a>                                           <a class="source" href="coffee-script.html">                 coffee-script.coffee               </a>                                           <a class="source" href="command.html">                 command.coffee               </a>                                           <a class="source" href="grammar.html">                 grammar.coffee               </a>                                           <a class="source" href="helpers.html">                 helpers.coffee               </a>                                           <a class="source" href="index.html">                 index.coffee               </a>                                           <a class="source" href="lexer.html">                 lexer.coffee               </a>                                           <a class="source" href="nodes.html">                 nodes.coffee               </a>                                           <a class="source" href="optparse.html">                 optparse.coffee               </a>                                           <a class="source" href="repl.html">                 repl.coffee               </a>                                           <a class="source" href="rewriter.html">                 rewriter.coffee               </a>                                           <a class="source" href="sourcemap.html">                 sourcemap.coffee               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               sourcemap.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>               <h3>LineMapping</h3>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>Hold data about mappings for one line of generated source code.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">LineMapping</span>
-  <span class="nv">constructor: </span><span class="nf">(@generatedLine) -&gt;</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>columnMap keeps track of which columns we've already mapped.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="vi">@columnMap = </span><span class="p">{}</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>columnMappings is an array of all column mappings, sorted by generated-column.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="vi">@columnMappings = </span><span class="p">[]</span>
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>sourcemap.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="browser.html">
+                browser.coffee
+              </a>
+            
+              
+              <a class="source" href="cake.html">
+                cake.coffee
+              </a>
+            
+              
+              <a class="source" href="coffee-script.html">
+                coffee-script.coffee
+              </a>
+            
+              
+              <a class="source" href="command.html">
+                command.coffee
+              </a>
+            
+              
+              <a class="source" href="grammar.html">
+                grammar.coffee
+              </a>
+            
+              
+              <a class="source" href="helpers.html">
+                helpers.coffee
+              </a>
+            
+              
+              <a class="source" href="index.html">
+                index.coffee
+              </a>
+            
+              
+              <a class="source" href="lexer.html">
+                lexer.coffee
+              </a>
+            
+              
+              <a class="source" href="nodes.html">
+                nodes.coffee
+              </a>
+            
+              
+              <a class="source" href="optparse.html">
+                optparse.coffee
+              </a>
+            
+              
+              <a class="source" href="repl.html">
+                repl.coffee
+              </a>
+            
+              
+              <a class="source" href="rewriter.html">
+                rewriter.coffee
+              </a>
+            
+              
+              <a class="source" href="scope.html">
+                scope.litcoffee
+              </a>
+            
+              
+              <a class="source" href="sourcemap.html">
+                sourcemap.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">  
+        <li id="title">
+            <div class="annotation">
+                <h1>sourcemap.coffee</h1>
+            </div>
+        </li>
+        
+           
+        <li id="section-1">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>            
+              <h3>LineMapping</h3>
+<p>Hold data about mappings for one line of generated source code.
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="k">class</span> <span class="nx">LineMapping</span>
+  <span class="nv">constructor: </span><span class="nf">(@generatedLine) -&gt;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-2">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>            
+              
+<p>columnMap keeps track of which columns we&#39;ve already mapped.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="vi">@columnMap = </span><span class="p">{}</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-3">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>            
+              
+<p>columnMappings is an array of all column mappings, sorted by generated-column.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="vi">@columnMappings = </span><span class="p">[]</span>
 
   <span class="nv">addMapping: </span><span class="nf">(generatedColumn, [sourceLine, sourceColumn], options={}) -&gt;</span>
-    <span class="k">if</span> <span class="nx">@columnMap</span><span class="p">[</span><span class="nx">generatedColumn</span><span class="p">]</span> <span class="o">and</span> <span class="nx">options</span><span class="p">.</span><span class="nx">noReplace</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p>We already have a mapping for this column.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="k">return</span>
+    <span class="k">if</span> <span class="nx">@columnMap</span><span class="p">[</span><span class="nx">generatedColumn</span><span class="p">]</span> <span class="o">and</span> <span class="nx">options</span><span class="p">.</span><span class="nx">noReplace</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-4">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>            
+              
+<p>We already have a mapping for this column.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>      <span class="k">return</span>
 
     <span class="nx">@columnMap</span><span class="p">[</span><span class="nx">generatedColumn</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
       <span class="nv">generatedLine: </span><span class="nx">@generatedLine</span>
@@ -23,38 +189,173 @@
       <span class="k">else</span>
         <span class="nv">lastColumnMapping = </span><span class="nx">columnMapping</span>
     <span class="k">if</span> <span class="nx">lastColumnMapping</span>
-      <span class="nv">answer = </span><span class="p">[</span><span class="nx">lastColumnMapping</span><span class="p">.</span><span class="nx">sourceLine</span><span class="p">,</span> <span class="nx">lastColumnMapping</span><span class="p">.</span><span class="nx">sourceColumn</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <h3>SourceMap</h3>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <p>Maps locations in a generated source file back to locations in the original source file.</p>
+      <span class="nv">answer = </span><span class="p">[</span><span class="nx">lastColumnMapping</span><span class="p">.</span><span class="nx">sourceLine</span><span class="p">,</span> <span class="nx">lastColumnMapping</span><span class="p">.</span><span class="nx">sourceColumn</span><span class="p">]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-5">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>            
+              
+<h3>SourceMap</h3>
+<p>Maps locations in a generated source file back to locations in the original source file.
 
+</p>
 <p>This is intentionally agnostic towards how a source map might be represented on disk.  A
-SourceMap can be converted to a "v3" style sourcemap with <code>#generateV3SourceMap()</code>, for example
-but the SourceMap class itself knows nothing about v3 source maps.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">exports</span><span class="p">.</span><span class="nx">SourceMap</span>
-  <span class="nv">constructor: </span><span class="p">()</span> <span class="nf">-&gt;</span></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <p><code>generatedLines</code> is an array of LineMappings, one per generated line.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="vi">@generatedLines = </span><span class="p">[]</span></pre></div>             </td>           </tr>                               <tr id="section-9">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-9">&#182;</a>               </div>               <p>Adds a mapping to this SourceMap.</p>
+SourceMap can be converted to a &quot;v3&quot; style sourcemap with <code>#generateV3SourceMap()</code>, for example
+but the SourceMap class itself knows nothing about v3 source maps.
 
-<p><code>sourceLocation</code> and <code>generatedLocation</code> are both [line, column] arrays.</p>
 
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="k">class</span> <span class="nx">exports</span><span class="p">.</span><span class="nx">SourceMap</span>
+  <span class="nv">constructor: </span><span class="p">()</span> <span class="nf">-&gt;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-6">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>            
+              
+<p><code>generatedLines</code> is an array of LineMappings, one per generated line.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="vi">@generatedLines = </span><span class="p">[]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-7">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>            
+              
+<p>Adds a mapping to this SourceMap.
+
+</p>
+<p><code>sourceLocation</code> and <code>generatedLocation</code> are both [line, column] arrays.
+
+</p>
 <p>If <code>options.noReplace</code> is true, then if there is already a mapping for
-the specified <code>generatedLine</code> and <code>generatedColumn</code>, this will have no effect.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">addMapping: </span><span class="nf">(sourceLocation, generatedLocation, options={}) -&gt;</span>
+the specified <code>generatedLine</code> and <code>generatedColumn</code>, this will have no effect.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">addMapping: </span><span class="nf">(sourceLocation, generatedLocation, options={}) -&gt;</span>
     <span class="p">[</span><span class="nx">generatedLine</span><span class="p">,</span> <span class="nx">generatedColumn</span><span class="p">]</span> <span class="o">=</span> <span class="nx">generatedLocation</span>
 
     <span class="nv">lineMapping = </span><span class="nx">@generatedLines</span><span class="p">[</span><span class="nx">generatedLine</span><span class="p">]</span>
     <span class="k">if</span> <span class="o">not</span> <span class="nx">lineMapping</span>
       <span class="nv">lineMapping = </span><span class="nx">@generatedLines</span><span class="p">[</span><span class="nx">generatedLine</span><span class="p">]</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">LineMapping</span><span class="p">(</span><span class="nx">generatedLine</span><span class="p">)</span>
 
-    <span class="nx">lineMapping</span><span class="p">.</span><span class="nx">addMapping</span> <span class="nx">generatedColumn</span><span class="p">,</span> <span class="nx">sourceLocation</span><span class="p">,</span> <span class="nx">options</span></pre></div>             </td>           </tr>                               <tr id="section-10">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-10">&#182;</a>               </div>               <p>Returns [sourceLine, sourceColumn], or null if no mapping could be found.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">getSourcePosition: </span><span class="nf">([generatedLine, generatedColumn]) -&gt;</span>
+    <span class="nx">lineMapping</span><span class="p">.</span><span class="nx">addMapping</span> <span class="nx">generatedColumn</span><span class="p">,</span> <span class="nx">sourceLocation</span><span class="p">,</span> <span class="nx">options</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-8">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>            
+              
+<p>Returns [sourceLine, sourceColumn], or null if no mapping could be found.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">getSourcePosition: </span><span class="nf">([generatedLine, generatedColumn]) -&gt;</span>
     <span class="nv">answer = </span><span class="kc">null</span>
     <span class="nv">lineMapping = </span><span class="nx">@generatedLines</span><span class="p">[</span><span class="nx">generatedLine</span><span class="p">]</span>
-    <span class="k">if</span> <span class="o">not</span> <span class="nx">lineMapping</span></pre></div>             </td>           </tr>                               <tr id="section-11">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-11">&#182;</a>               </div>               <p>TODO: Search backwards for the line?</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="k">else</span>
+    <span class="k">if</span> <span class="o">not</span> <span class="nx">lineMapping</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-9">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>            
+              
+<p>TODO: Search backwards for the line?
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="k">else</span>
       <span class="nv">answer = </span><span class="nx">lineMapping</span><span class="p">.</span><span class="nx">getSourcePosition</span> <span class="nx">generatedColumn</span>
 
-    <span class="nx">answer</span></pre></div>             </td>           </tr>                               <tr id="section-12">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-12">&#182;</a>               </div>               <p><code>fn</code> will be called once for every recorded mapping, in the order in
+    <span class="nx">answer</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-10">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>            
+              
+<p><code>fn</code> will be called once for every recorded mapping, in the order in
 which they occur in the generated source.  <code>fn</code> will be passed an object
 with four properties: sourceLine, sourceColumn, generatedLine, and
-generatedColumn.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">forEachMapping: </span><span class="nf">(fn) -&gt;</span>
+generatedColumn.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">forEachMapping: </span><span class="nf">(fn) -&gt;</span>
     <span class="k">for</span> <span class="nx">lineMapping</span><span class="p">,</span> <span class="nx">generatedLineNumber</span> <span class="k">in</span> <span class="nx">@generatedLines</span>
       <span class="k">if</span> <span class="nx">lineMapping</span>
         <span class="k">for</span> <span class="nx">columnMapping</span> <span class="k">in</span> <span class="nx">lineMapping</span><span class="p">.</span><span class="nx">columnMappings</span>
-          <span class="nx">fn</span><span class="p">(</span><span class="nx">columnMapping</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-13">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-13">&#182;</a>               </div>               <h3>generateV3SourceMap</h3>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-14">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-14">&#182;</a>               </div>               <p>Builds a V3 source map from a SourceMap object.
-Returns the generated JSON as a string.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">exports.generateV3SourceMap = </span><span class="nf">(sourceMap, sourceFile=null, generatedFile=null) -&gt;</span>
+          <span class="nx">fn</span><span class="p">(</span><span class="nx">columnMapping</span><span class="p">)</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-11">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>            
+              
+<h3>generateV3SourceMap</h3>
+<p>Builds a V3 source map from a SourceMap object.
+Returns the generated JSON as a string.
+
+</p>
+<p><code>options.sourceRoot</code> may be used to specify the sourceRoot written to the source map.  Also,
+<code>options.sourceFiles</code> and <code>options.generatedFile</code> may be passed to set &quot;sources&quot; and &quot;file&quot;,
+respectively.  Note that <code>sourceFiles</code> must be an array.
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">exports.generateV3SourceMap = </span><span class="nf">(sourceMap, options={}) -&gt;</span>
+  <span class="nv">sourceRoot = </span><span class="nx">options</span><span class="p">.</span><span class="nx">sourceRoot</span> <span class="o">or</span> <span class="s">&quot;&quot;</span>
+  <span class="nv">sourceFiles = </span><span class="nx">options</span><span class="p">.</span><span class="nx">sourceFiles</span> <span class="o">or</span> <span class="p">[</span><span class="s">&quot;&quot;</span><span class="p">]</span>
+  <span class="nv">generatedFile = </span><span class="nx">options</span><span class="p">.</span><span class="nx">generatedFile</span> <span class="o">or</span> <span class="s">&quot;&quot;</span>
+
   <span class="nv">writingGeneratedLine = </span><span class="mi">0</span>
   <span class="nv">lastGeneratedColumnWritten = </span><span class="mi">0</span>
   <span class="nv">lastSourceLineWritten = </span><span class="mi">0</span>
@@ -68,33 +369,172 @@ Returns the generated JSON as a string.</p>             </td>             <td cl
       <span class="nv">lastGeneratedColumnWritten = </span><span class="mi">0</span>
       <span class="nv">needComma = </span><span class="kc">no</span>
       <span class="nx">mappings</span> <span class="o">+=</span> <span class="s">&quot;;&quot;</span>
-      <span class="nx">writingGeneratedLine</span><span class="o">++</span></pre></div>             </td>           </tr>                               <tr id="section-15">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-15">&#182;</a>               </div>               <p>Write a comma if we've already written a segment on this line.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="k">if</span> <span class="nx">needComma</span>
-      <span class="nx">mappings</span> <span class="o">+=</span> <span class="s">&quot;,&quot;</span>
-      <span class="nv">needComma = </span><span class="kc">no</span></pre></div>             </td>           </tr>                               <tr id="section-16">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-16">&#182;</a>               </div>               <p>Write the next segment.
-Segments can be 1, 4, or 5 values.  If just one, then it is a generated column which
-doesn't match anything in the source code.</p>
+      <span class="nx">writingGeneratedLine</span><span class="o">++</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-12">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>            
+              
+<p>Write a comma if we&#39;ve already written a segment on this line.
 
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="k">if</span> <span class="nx">needComma</span>
+      <span class="nx">mappings</span> <span class="o">+=</span> <span class="s">&quot;,&quot;</span>
+      <span class="nv">needComma = </span><span class="kc">no</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-13">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>            
+              
+<p>Write the next segment.
+Segments can be 1, 4, or 5 values.  If just one, then it is a generated column which
+doesn&#39;t match anything in the source code.
+
+</p>
 <p>Fields are all zero-based, and relative to the previous occurence unless otherwise noted:
- * starting-column in generated source, relative to previous occurence for the current line.
- * index into the "sources" list
- * starting line in the original source
- * starting column in the original source
- * index into the "names" list associated with this segment.</p>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-17">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-17">&#182;</a>               </div>               <p>Add the generated start-column</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">mappings</span> <span class="o">+=</span> <span class="nx">exports</span><span class="p">.</span><span class="nx">vlqEncodeValue</span><span class="p">(</span><span class="nx">mapping</span><span class="p">.</span><span class="nx">generatedColumn</span> <span class="o">-</span> <span class="nx">lastGeneratedColumnWritten</span><span class="p">)</span>
-    <span class="nv">lastGeneratedColumnWritten = </span><span class="nx">mapping</span><span class="p">.</span><span class="nx">generatedColumn</span></pre></div>             </td>           </tr>                               <tr id="section-18">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-18">&#182;</a>               </div>               <p>Add the index into the sources list</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">mappings</span> <span class="o">+=</span> <span class="nx">exports</span><span class="p">.</span><span class="nx">vlqEncodeValue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-19">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-19">&#182;</a>               </div>               <p>Add the source start-line</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">mappings</span> <span class="o">+=</span> <span class="nx">exports</span><span class="p">.</span><span class="nx">vlqEncodeValue</span><span class="p">(</span><span class="nx">mapping</span><span class="p">.</span><span class="nx">sourceLine</span> <span class="o">-</span> <span class="nx">lastSourceLineWritten</span><span class="p">)</span>
-    <span class="nv">lastSourceLineWritten = </span><span class="nx">mapping</span><span class="p">.</span><span class="nx">sourceLine</span></pre></div>             </td>           </tr>                               <tr id="section-20">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-20">&#182;</a>               </div>               <p>Add the source start-column</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">mappings</span> <span class="o">+=</span> <span class="nx">exports</span><span class="p">.</span><span class="nx">vlqEncodeValue</span><span class="p">(</span><span class="nx">mapping</span><span class="p">.</span><span class="nx">sourceColumn</span> <span class="o">-</span> <span class="nx">lastSourceColumnWritten</span><span class="p">)</span>
-    <span class="nv">lastSourceColumnWritten = </span><span class="nx">mapping</span><span class="p">.</span><span class="nx">sourceColumn</span></pre></div>             </td>           </tr>                               <tr id="section-21">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-21">&#182;</a>               </div>               <p>TODO: Do we care about symbol names for CoffeeScript? Probably not.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">needComma = </span><span class="kc">yes</span>
+ <em> starting-column in generated source, relative to previous occurence for the current line.
+ </em> index into the &quot;sources&quot; list
+ <em> starting line in the original source
+ </em> starting column in the original source
+ * index into the &quot;names&quot; list associated with this segment.
+
+</p>
+<p>Add the generated start-column
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="nx">mappings</span> <span class="o">+=</span> <span class="nx">exports</span><span class="p">.</span><span class="nx">vlqEncodeValue</span><span class="p">(</span><span class="nx">mapping</span><span class="p">.</span><span class="nx">generatedColumn</span> <span class="o">-</span> <span class="nx">lastGeneratedColumnWritten</span><span class="p">)</span>
+    <span class="nv">lastGeneratedColumnWritten = </span><span class="nx">mapping</span><span class="p">.</span><span class="nx">generatedColumn</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-14">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>            
+              
+<p>Add the index into the sources list
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="nx">mappings</span> <span class="o">+=</span> <span class="nx">exports</span><span class="p">.</span><span class="nx">vlqEncodeValue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-15">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>            
+              
+<p>Add the source start-line
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="nx">mappings</span> <span class="o">+=</span> <span class="nx">exports</span><span class="p">.</span><span class="nx">vlqEncodeValue</span><span class="p">(</span><span class="nx">mapping</span><span class="p">.</span><span class="nx">sourceLine</span> <span class="o">-</span> <span class="nx">lastSourceLineWritten</span><span class="p">)</span>
+    <span class="nv">lastSourceLineWritten = </span><span class="nx">mapping</span><span class="p">.</span><span class="nx">sourceLine</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-16">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>            
+              
+<p>Add the source start-column
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="nx">mappings</span> <span class="o">+=</span> <span class="nx">exports</span><span class="p">.</span><span class="nx">vlqEncodeValue</span><span class="p">(</span><span class="nx">mapping</span><span class="p">.</span><span class="nx">sourceColumn</span> <span class="o">-</span> <span class="nx">lastSourceColumnWritten</span><span class="p">)</span>
+    <span class="nv">lastSourceColumnWritten = </span><span class="nx">mapping</span><span class="p">.</span><span class="nx">sourceColumn</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-17">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>            
+              
+<p>TODO: Do we care about symbol names for CoffeeScript? Probably not.
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="nv">needComma = </span><span class="kc">yes</span>
 
   <span class="nv">answer = </span><span class="p">{</span>
     <span class="nv">version: </span><span class="mi">3</span>
     <span class="nv">file: </span><span class="nx">generatedFile</span>
-    <span class="nv">sourceRoot: </span><span class="s">&quot;&quot;</span>
-    <span class="nv">sources: </span><span class="k">if</span> <span class="nx">sourceFile</span> <span class="k">then</span> <span class="p">[</span><span class="nx">sourceFile</span><span class="p">]</span> <span class="k">else</span> <span class="p">[]</span>
+    <span class="nx">sourceRoot</span>
+    <span class="nv">sources: </span><span class="nx">sourceFiles</span>
     <span class="nv">names: </span><span class="p">[]</span>
     <span class="nx">mappings</span>
   <span class="p">}</span>
 
-  <span class="k">return</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span> <span class="nx">answer</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="mi">2</span></pre></div>             </td>           </tr>                               <tr id="section-22">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-22">&#182;</a>               </div>               <p>Load a SourceMap from a JSON string.  Returns the SourceMap object.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">exports.loadV3SourceMap = </span><span class="nf">(sourceMap) -&gt;</span>
-  <span class="nx">todo</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-23">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-23">&#182;</a>               </div>               <h3>Base64 encoding helpers</h3>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">BASE64_CHARS = </span><span class="s">&#39;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/&#39;</span>
+  <span class="k">return</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span> <span class="nx">answer</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="mi">2</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-18">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>            
+              
+<p>Load a SourceMap from a JSON string.  Returns the SourceMap object.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">exports.loadV3SourceMap = </span><span class="nf">(sourceMap) -&gt;</span>
+  <span class="nx">todo</span><span class="p">()</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-19">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>            
+              
+<h3>Base64 encoding helpers</h3>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">BASE64_CHARS = </span><span class="s">&#39;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/&#39;</span>
 <span class="nv">MAX_BASE64_VALUE = </span><span class="nx">BASE64_CHARS</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span>
 
 <span class="nv">encodeBase64Char = </span><span class="nf">(value) -&gt;</span>
@@ -108,15 +548,102 @@ doesn't match anything in the source code.</p>
   <span class="nv">value = </span><span class="nx">BASE64_CHARS</span><span class="p">.</span><span class="nx">indexOf</span> <span class="nx">char</span>
   <span class="k">if</span> <span class="nx">value</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span>
     <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span> <span class="s">&quot;Invalid Base 64 character: </span><span class="si">#{</span><span class="nx">char</span><span class="si">}</span><span class="s">&quot;</span>
-  <span class="nx">value</span></pre></div>             </td>           </tr>                               <tr id="section-24">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-24">&#182;</a>               </div>               <h3>Base 64 VLQ encoding/decoding helpers</h3>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-25">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-25">&#182;</a>               </div>               <p>Note that SourceMap VLQ encoding is "backwards".  MIDI style VLQ encoding puts the
+  <span class="nx">value</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-20">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>            
+              
+<h3>Base 64 VLQ encoding/decoding helpers</h3>
+<p>Note that SourceMap VLQ encoding is &quot;backwards&quot;.  MIDI style VLQ encoding puts the
 most-significant-bit (MSB) from the original value into the MSB of the VLQ encoded value
-(see http://en.wikipedia.org/wiki/File:Uintvar_coding.svg).  SourceMap VLQ does things
+(see <a href="http://en.wikipedia.org/wiki/File:Uintvar_coding.svg">http://en.wikipedia.org/wiki/File:Uintvar_coding.svg</a>).  SourceMap VLQ does things
 the other way around, with the least significat four bits of the original value encoded
-into the first byte of the VLQ encoded value.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">VLQ_SHIFT      = </span><span class="mi">5</span>
-<span class="nv">VLQ_CONTINUATION_BIT = </span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="nx">VLQ_SHIFT</span> <span class="c1"># 0010 0000</span>
-<span class="nv">VLQ_VALUE_MASK       = </span><span class="nx">VLQ_CONTINUATION_BIT</span> <span class="o">-</span> <span class="mi">1</span> <span class="c1"># 0001 1111</span></pre></div>             </td>           </tr>                               <tr id="section-26">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-26">&#182;</a>               </div>               <p>Encode a value as Base 64 VLQ.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">exports.vlqEncodeValue = </span><span class="nf">(value) -&gt;</span></pre></div>             </td>           </tr>                               <tr id="section-27">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-27">&#182;</a>               </div>               <p>Least significant bit represents the sign.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">signBit = </span><span class="k">if</span> <span class="nx">value</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">then</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">0</span></pre></div>             </td>           </tr>                               <tr id="section-28">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-28">&#182;</a>               </div>               <p>Next bits are the actual value</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">valueToEncode = </span><span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nx">signBit</span>
+into the first byte of the VLQ encoded value.
 
-  <span class="nv">answer = </span><span class="s">&quot;&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-29">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-29">&#182;</a>               </div>               <p>Make sure we encode at least one character, even if valueToEncode is 0.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="k">while</span> <span class="nx">valueToEncode</span> <span class="o">||</span> <span class="o">!</span><span class="nx">answer</span>
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">VLQ_SHIFT      = </span><span class="mi">5</span>
+<span class="nv">VLQ_CONTINUATION_BIT = </span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="nx">VLQ_SHIFT</span> <span class="c1"># 0010 0000</span>
+<span class="nv">VLQ_VALUE_MASK       = </span><span class="nx">VLQ_CONTINUATION_BIT</span> <span class="o">-</span> <span class="mi">1</span> <span class="c1"># 0001 1111</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-21">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>            
+              
+<p>Encode a value as Base 64 VLQ.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">exports.vlqEncodeValue = </span><span class="nf">(value) -&gt;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-22">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>            
+              
+<p>Least significant bit represents the sign.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">signBit = </span><span class="k">if</span> <span class="nx">value</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">then</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">0</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-23">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>            
+              
+<p>Next bits are the actual value
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">valueToEncode = </span><span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nx">signBit</span>
+
+  <span class="nv">answer = </span><span class="s">&quot;&quot;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-24">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>            
+              
+<p>Make sure we encode at least one character, even if valueToEncode is 0.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="k">while</span> <span class="nx">valueToEncode</span> <span class="o">||</span> <span class="o">!</span><span class="nx">answer</span>
     <span class="nv">nextVlqChunk = </span><span class="nx">valueToEncode</span> <span class="o">&amp;</span> <span class="nx">VLQ_VALUE_MASK</span>
     <span class="nv">valueToEncode = </span><span class="nx">valueToEncode</span> <span class="o">&gt;&gt;</span> <span class="nx">VLQ_SHIFT</span>
 
@@ -125,10 +652,28 @@ into the first byte of the VLQ encoded value.</p>             </td>             
 
     <span class="nx">answer</span> <span class="o">+=</span> <span class="nx">encodeBase64Char</span><span class="p">(</span><span class="nx">nextVlqChunk</span><span class="p">)</span>
 
-  <span class="k">return</span> <span class="nx">answer</span></pre></div>             </td>           </tr>                               <tr id="section-30">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-30">&#182;</a>               </div>               <p>Decode a Base 64 VLQ value.</p>
+  <span class="k">return</span> <span class="nx">answer</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-25">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>            
+              
+<p>Decode a Base 64 VLQ value.
 
+</p>
 <p>Returns <code>[value, consumed]</code> where <code>value</code> is the decoded value, and <code>consumed</code> is the number
-of characters consumed from <code>str</code>.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">exports.vlqDecodeValue = </span><span class="nf">(str, offset=0) -&gt;</span>
+of characters consumed from <code>str</code>.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">exports.vlqDecodeValue = </span><span class="nf">(str, offset=0) -&gt;</span>
   <span class="nv">position = </span><span class="nx">offset</span>
   <span class="nv">done = </span><span class="kc">false</span>
 
@@ -142,14 +687,71 @@ of characters consumed from <code>str</code>.</p>             </td>             
     <span class="nv">nextChunkValue = </span><span class="nx">nextVlqChunk</span> <span class="o">&amp;</span> <span class="nx">VLQ_VALUE_MASK</span>
     <span class="nx">value</span> <span class="o">+=</span> <span class="p">(</span><span class="nx">nextChunkValue</span> <span class="o">&lt;&lt;</span> <span class="nx">continuationShift</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="o">!</span><span class="p">(</span><span class="nx">nextVlqChunk</span> <span class="o">&amp;</span> <span class="nx">VLQ_CONTINUATION_BIT</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-31">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-31">&#182;</a>               </div>               <p>We'll be done after this character.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nv">done = </span><span class="kc">true</span></pre></div>             </td>           </tr>                               <tr id="section-32">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-32">&#182;</a>               </div>               <p>Bits are encoded least-significant first (opposite of MIDI VLQ).  Increase the
-continuationShift, so the next byte will end up where it should in the value.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nx">continuationShift</span> <span class="o">+=</span> <span class="nx">VLQ_SHIFT</span>
+    <span class="k">if</span> <span class="o">!</span><span class="p">(</span><span class="nx">nextVlqChunk</span> <span class="o">&amp;</span> <span class="nx">VLQ_CONTINUATION_BIT</span><span class="p">)</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-26">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>            
+              
+<p>We&#39;ll be done after this character.
 
-  <span class="nv">consumed = </span><span class="nx">position</span> <span class="o">-</span> <span class="nx">offset</span></pre></div>             </td>           </tr>                               <tr id="section-33">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-33">&#182;</a>               </div>               <p>Least significant bit represents the sign.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">signBit = </span><span class="nx">value</span> <span class="o">&amp;</span> <span class="mi">1</span>
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>      <span class="nv">done = </span><span class="kc">true</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-27">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>            
+              
+<p>Bits are encoded least-significant first (opposite of MIDI VLQ).  Increase the
+continuationShift, so the next byte will end up where it should in the value.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="nx">continuationShift</span> <span class="o">+=</span> <span class="nx">VLQ_SHIFT</span>
+
+  <span class="nv">consumed = </span><span class="nx">position</span> <span class="o">-</span> <span class="nx">offset</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-28">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>            
+              
+<p>Least significant bit represents the sign.
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">signBit = </span><span class="nx">value</span> <span class="o">&amp;</span> <span class="mi">1</span>
   <span class="nv">value = </span><span class="nx">value</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span>
 
   <span class="k">if</span> <span class="nx">signBit</span> <span class="k">then</span> <span class="nv">value = </span><span class="o">-</span><span class="nx">value</span>
 
   <span class="k">return</span> <span class="p">[</span><span class="nx">value</span><span class="p">,</span> <span class="nx">consumed</span><span class="p">]</span>
 
-</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 
+</pre></div></div>
+            
+        </li>
+        
+    </ul> 
+  </div>
+</body>
+</html>

@@ -1,58 +1,433 @@
-<!DOCTYPE html>  <html> <head>   <title>scope.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="browser.html">                 browser.coffee               </a>                                           <a class="source" href="cake.html">                 cake.coffee               </a>                                           <a class="source" href="coffee-script.html">                 coffee-script.coffee               </a>                                           <a class="source" href="command.html">                 command.coffee               </a>                                           <a class="source" href="grammar.html">                 grammar.coffee               </a>                                           <a class="source" href="helpers.html">                 helpers.coffee               </a>                                           <a class="source" href="index.html">                 index.coffee               </a>                                           <a class="source" href="lexer.html">                 lexer.coffee               </a>                                           <a class="source" href="nodes.html">                 nodes.coffee               </a>                                           <a class="source" href="optparse.html">                 optparse.coffee               </a>                                           <a class="source" href="repl.html">                 repl.coffee               </a>                                           <a class="source" href="rewriter.html">                 rewriter.coffee               </a>                                           <a class="source" href="scope.html">                 scope.coffee               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               scope.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>               <p>The <strong>Scope</strong> class regulates lexical scoping within CoffeeScript. As you
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>scope.litcoffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="browser.html">
+                browser.coffee
+              </a>
+            
+              
+              <a class="source" href="cake.html">
+                cake.coffee
+              </a>
+            
+              
+              <a class="source" href="coffee-script.html">
+                coffee-script.coffee
+              </a>
+            
+              
+              <a class="source" href="command.html">
+                command.coffee
+              </a>
+            
+              
+              <a class="source" href="grammar.html">
+                grammar.coffee
+              </a>
+            
+              
+              <a class="source" href="helpers.html">
+                helpers.coffee
+              </a>
+            
+              
+              <a class="source" href="index.html">
+                index.coffee
+              </a>
+            
+              
+              <a class="source" href="lexer.html">
+                lexer.coffee
+              </a>
+            
+              
+              <a class="source" href="nodes.html">
+                nodes.coffee
+              </a>
+            
+              
+              <a class="source" href="optparse.html">
+                optparse.coffee
+              </a>
+            
+              
+              <a class="source" href="repl.html">
+                repl.coffee
+              </a>
+            
+              
+              <a class="source" href="rewriter.html">
+                rewriter.coffee
+              </a>
+            
+              
+              <a class="source" href="scope.html">
+                scope.litcoffee
+              </a>
+            
+              
+              <a class="source" href="sourcemap.html">
+                sourcemap.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">  
+        <li id="title">
+            <div class="annotation">
+                <h1>scope.litcoffee</h1>
+            </div>
+        </li>
+        
+           
+        <li id="section-1">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>            
+              <p>The <strong>Scope</strong> class regulates lexical scoping within CoffeeScript. As you
 generate code, you create a tree of scopes in the same shape as the nested
 function bodies. Each scope knows about the variables declared within it,
 and has a reference to its parent enclosing scope. In this way, we know which
 variables are new and need to be declared with <code>var</code>, and which are shared
-with the outside.</p>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>Import the helpers we plan to use.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="p">{</span><span class="nx">extend</span><span class="p">,</span> <span class="nx">last</span><span class="p">}</span> <span class="o">=</span> <span class="nx">require</span> <span class="s">&#39;./helpers&#39;</span>
+with external scopes.
 
-<span class="nv">exports.Scope = </span><span class="k">class</span> <span class="nx">Scope</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>The top-level <strong>Scope</strong> object.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="vi">@root: </span><span class="kc">null</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>Initialize a scope with its parent, for lookups up the chain,
+</p>
+<p>Import the helpers we plan to use.
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="p">{</span><span class="nx">extend</span><span class="p">,</span> <span class="nx">last</span><span class="p">}</span> <span class="o">=</span> <span class="nx">require</span> <span class="s">&#39;./helpers&#39;</span>
+
+<span class="nv">exports.Scope = </span><span class="k">class</span> <span class="nx">Scope</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-2">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>            
+              
+<p>The <code>root</code> is the top-level <strong>Scope</strong> object for a given file.
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="vi">@root: </span><span class="kc">null</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-3">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>            
+              
+<p>Initialize a scope with its parent, for lookups up the chain,
 as well as a reference to the <strong>Block</strong> node it belongs to, which is
 where it should declare its variables, and a reference to the function that
-it wraps.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">constructor: </span><span class="nf">(@parent, @expressions, @method) -&gt;</span>
+it belongs to.
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">constructor: </span><span class="nf">(@parent, @expressions, @method) -&gt;</span>
     <span class="vi">@variables = </span><span class="p">[{</span><span class="nv">name: </span><span class="s">&#39;arguments&#39;</span><span class="p">,</span> <span class="nv">type: </span><span class="s">&#39;arguments&#39;</span><span class="p">}]</span>
     <span class="vi">@positions = </span><span class="p">{}</span>
-    <span class="nv">Scope.root = </span><span class="k">this</span> <span class="k">unless</span> <span class="nx">@parent</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p>Adds a new variable or overrides an existing one.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">add: </span><span class="nf">(name, type, immediate) -&gt;</span>
+    <span class="nv">Scope.root = </span><span class="k">this</span> <span class="k">unless</span> <span class="nx">@parent</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-4">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>            
+              
+<p>Adds a new variable or overrides an existing one.
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">add: </span><span class="nf">(name, type, immediate) -&gt;</span>
     <span class="k">return</span> <span class="nx">@parent</span><span class="p">.</span><span class="nx">add</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">type</span><span class="p">,</span> <span class="nx">immediate</span> <span class="k">if</span> <span class="nx">@shared</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">immediate</span>
     <span class="k">if</span> <span class="nb">Object</span><span class="o">::</span><span class="nx">hasOwnProperty</span><span class="p">.</span><span class="nx">call</span> <span class="nx">@positions</span><span class="p">,</span> <span class="nx">name</span>
       <span class="nx">@variables</span><span class="p">[</span><span class="nx">@positions</span><span class="p">[</span><span class="nx">name</span><span class="p">]].</span><span class="nv">type = </span><span class="nx">type</span>
     <span class="k">else</span>
-      <span class="nx">@positions</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@variables</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span><span class="nx">name</span><span class="p">,</span> <span class="nx">type</span><span class="p">})</span> <span class="o">-</span> <span class="mi">1</span></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <p>When <code>super</code> is called, we need to find the name of the current method we're 
-in, so that we know how to invoke the same method of the parent class. This 
-can get complicated if super is being called from an inner function. 
-<code>namedMethod</code> will walk up the scope tree until it either finds the first 
-function object that has a name filled in, or bottoms out.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">namedMethod: </span><span class="nf">-&gt;</span>
-    <span class="k">return</span> <span class="nx">@method</span> <span class="k">if</span> <span class="nx">@method</span><span class="p">.</span><span class="nx">name</span> <span class="o">or</span> <span class="o">!</span><span class="nx">@parent</span>
-    <span class="nx">@parent</span><span class="p">.</span><span class="nx">namedMethod</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <p>Look up a variable name in lexical scope, and declare it if it does not
-already exist.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">find: </span><span class="nf">(name) -&gt;</span>
+      <span class="nx">@positions</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@variables</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span><span class="nx">name</span><span class="p">,</span> <span class="nx">type</span><span class="p">})</span> <span class="o">-</span> <span class="mi">1</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-5">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>            
+              
+<p>When <code>super</code> is called, we need to find the name of the current method we&#39;re
+in, so that we know how to invoke the same method of the parent class. This
+can get complicated if super is being called from an inner function.
+<code>namedMethod</code> will walk up the scope tree until it either finds the first
+function object that has a name filled in, or bottoms out.
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">namedMethod: </span><span class="nf">-&gt;</span>
+    <span class="k">return</span> <span class="nx">@method</span> <span class="k">if</span> <span class="nx">@method</span><span class="o">?</span><span class="p">.</span><span class="nx">name</span> <span class="o">or</span> <span class="o">!</span><span class="nx">@parent</span>
+    <span class="nx">@parent</span><span class="p">.</span><span class="nx">namedMethod</span><span class="p">()</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-6">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>            
+              
+<p>Look up a variable name in lexical scope, and declare it if it does not
+already exist.
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">find: </span><span class="nf">(name) -&gt;</span>
     <span class="k">return</span> <span class="kc">yes</span> <span class="k">if</span> <span class="nx">@check</span> <span class="nx">name</span>
     <span class="nx">@add</span> <span class="nx">name</span><span class="p">,</span> <span class="s">&#39;var&#39;</span>
-    <span class="kc">no</span></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <p>Reserve a variable name as originating from a function parameter for this
-scope. No <code>var</code> required for internal references.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">parameter: </span><span class="nf">(name) -&gt;</span>
+    <span class="kc">no</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-7">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>            
+              
+<p>Reserve a variable name as originating from a function parameter for this
+scope. No <code>var</code> required for internal references.
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">parameter: </span><span class="nf">(name) -&gt;</span>
     <span class="k">return</span> <span class="k">if</span> <span class="nx">@shared</span> <span class="o">and</span> <span class="nx">@parent</span><span class="p">.</span><span class="nx">check</span> <span class="nx">name</span><span class="p">,</span> <span class="kc">yes</span>
-    <span class="nx">@add</span> <span class="nx">name</span><span class="p">,</span> <span class="s">&#39;param&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-9">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-9">&#182;</a>               </div>               <p>Just check to see if a variable has already been declared, without reserving,
-walks up to the root scope.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">check: </span><span class="nf">(name) -&gt;</span>
-    <span class="o">!!</span><span class="p">(</span><span class="nx">@type</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="o">or</span> <span class="nx">@parent</span><span class="o">?</span><span class="p">.</span><span class="nx">check</span><span class="p">(</span><span class="nx">name</span><span class="p">))</span></pre></div>             </td>           </tr>                               <tr id="section-10">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-10">&#182;</a>               </div>               <p>Generate a temporary variable name at the given index.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">temporary: </span><span class="nf">(name, index) -&gt;</span>
+    <span class="nx">@add</span> <span class="nx">name</span><span class="p">,</span> <span class="s">&#39;param&#39;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-8">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>            
+              
+<p>Just check to see if a variable has already been declared, without reserving,
+walks up to the root scope.
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">check: </span><span class="nf">(name) -&gt;</span>
+    <span class="o">!!</span><span class="p">(</span><span class="nx">@type</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="o">or</span> <span class="nx">@parent</span><span class="o">?</span><span class="p">.</span><span class="nx">check</span><span class="p">(</span><span class="nx">name</span><span class="p">))</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-9">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>            
+              
+<p>Generate a temporary variable name at the given index.
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">temporary: </span><span class="nf">(name, index) -&gt;</span>
     <span class="k">if</span> <span class="nx">name</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">1</span>
       <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="nx">name</span> <span class="o">+</span> <span class="k">if</span> <span class="nx">index</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">then</span> <span class="nx">index</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
     <span class="k">else</span>
-      <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="p">(</span><span class="nx">index</span> <span class="o">+</span> <span class="nb">parseInt</span> <span class="nx">name</span><span class="p">,</span> <span class="mi">36</span><span class="p">).</span><span class="nx">toString</span><span class="p">(</span><span class="mi">36</span><span class="p">).</span><span class="nx">replace</span> <span class="sr">/\d/g</span><span class="p">,</span> <span class="s">&#39;a&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-11">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-11">&#182;</a>               </div>               <p>Gets the type of a variable.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">type: </span><span class="nf">(name) -&gt;</span>
+      <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="p">(</span><span class="nx">index</span> <span class="o">+</span> <span class="nb">parseInt</span> <span class="nx">name</span><span class="p">,</span> <span class="mi">36</span><span class="p">).</span><span class="nx">toString</span><span class="p">(</span><span class="mi">36</span><span class="p">).</span><span class="nx">replace</span> <span class="sr">/\d/g</span><span class="p">,</span> <span class="s">&#39;a&#39;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-10">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>            
+              
+<p>Gets the type of a variable.
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">type: </span><span class="nf">(name) -&gt;</span>
     <span class="k">return</span> <span class="nx">v</span><span class="p">.</span><span class="nx">type</span> <span class="k">for</span> <span class="nx">v</span> <span class="k">in</span> <span class="nx">@variables</span> <span class="k">when</span> <span class="nx">v</span><span class="p">.</span><span class="nx">name</span> <span class="o">is</span> <span class="nx">name</span>
-    <span class="kc">null</span></pre></div>             </td>           </tr>                               <tr id="section-12">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-12">&#182;</a>               </div>               <p>If we need to store an intermediate result, find an available name for a
-compiler-generated variable. <code>_var</code>, <code>_var2</code>, and so on...</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">freeVariable: </span><span class="nf">(name, reserve=true) -&gt;</span>
+    <span class="kc">null</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-11">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>            
+              
+<p>If we need to store an intermediate result, find an available name for a
+compiler-generated variable. <code>_var</code>, <code>_var2</code>, and so on...
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">freeVariable: </span><span class="nf">(name, reserve=true) -&gt;</span>
     <span class="nv">index = </span><span class="mi">0</span>
     <span class="nx">index</span><span class="o">++</span> <span class="k">while</span> <span class="nx">@check</span><span class="p">((</span><span class="nv">temp = </span><span class="nx">@temporary</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">index</span><span class="p">))</span>
     <span class="nx">@add</span> <span class="nx">temp</span><span class="p">,</span> <span class="s">&#39;var&#39;</span><span class="p">,</span> <span class="kc">yes</span> <span class="k">if</span> <span class="nx">reserve</span>
-    <span class="nx">temp</span></pre></div>             </td>           </tr>                               <tr id="section-13">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-13">&#182;</a>               </div>               <p>Ensure that an assignment is made at the top of this scope
-(or at the top-level scope, if requested).</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">assign: </span><span class="nf">(name, value) -&gt;</span>
+    <span class="nx">temp</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-12">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>            
+              
+<p>Ensure that an assignment is made at the top of this scope
+(or at the top-level scope, if requested).
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">assign: </span><span class="nf">(name, value) -&gt;</span>
     <span class="nx">@add</span> <span class="nx">name</span><span class="p">,</span> <span class="p">{</span><span class="nx">value</span><span class="p">,</span> <span class="nv">assigned: </span><span class="kc">yes</span><span class="p">},</span> <span class="kc">yes</span>
-    <span class="vi">@hasAssignments = </span><span class="kc">yes</span></pre></div>             </td>           </tr>                               <tr id="section-14">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-14">&#182;</a>               </div>               <p>Does this scope have any declared variables?</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">hasDeclarations: </span><span class="nf">-&gt;</span>
-    <span class="o">!!</span><span class="nx">@declaredVariables</span><span class="p">().</span><span class="nx">length</span></pre></div>             </td>           </tr>                               <tr id="section-15">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-15">&#182;</a>               </div>               <p>Return the list of variables first declared in this scope.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">declaredVariables: </span><span class="nf">-&gt;</span>
+    <span class="vi">@hasAssignments = </span><span class="kc">yes</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-13">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>            
+              
+<p>Does this scope have any declared variables?
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">hasDeclarations: </span><span class="nf">-&gt;</span>
+    <span class="o">!!</span><span class="nx">@declaredVariables</span><span class="p">().</span><span class="nx">length</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-14">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>            
+              
+<p>Return the list of variables first declared in this scope.
+
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">declaredVariables: </span><span class="nf">-&gt;</span>
     <span class="nv">realVars = </span><span class="p">[]</span>
     <span class="nv">tempVars = </span><span class="p">[]</span>
     <span class="k">for</span> <span class="nx">v</span> <span class="k">in</span> <span class="nx">@variables</span> <span class="k">when</span> <span class="nx">v</span><span class="p">.</span><span class="nx">type</span> <span class="o">is</span> <span class="s">&#39;var&#39;</span>
       <span class="p">(</span><span class="k">if</span> <span class="nx">v</span><span class="p">.</span><span class="nx">name</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">is</span> <span class="s">&#39;_&#39;</span> <span class="k">then</span> <span class="nx">tempVars</span> <span class="k">else</span> <span class="nx">realVars</span><span class="p">).</span><span class="nx">push</span> <span class="nx">v</span><span class="p">.</span><span class="nx">name</span>
-    <span class="nx">realVars</span><span class="p">.</span><span class="nx">sort</span><span class="p">().</span><span class="nx">concat</span> <span class="nx">tempVars</span><span class="p">.</span><span class="nx">sort</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-16">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-16">&#182;</a>               </div>               <p>Return the list of assignments that are supposed to be made at the top
-of this scope.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">assignedVariables: </span><span class="nf">-&gt;</span>
+    <span class="nx">realVars</span><span class="p">.</span><span class="nx">sort</span><span class="p">().</span><span class="nx">concat</span> <span class="nx">tempVars</span><span class="p">.</span><span class="nx">sort</span><span class="p">()</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-15">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>            
+              
+<p>Return the list of assignments that are supposed to be made at the top
+of this scope.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">assignedVariables: </span><span class="nf">-&gt;</span>
     <span class="s">&quot;</span><span class="si">#{</span><span class="nx">v</span><span class="p">.</span><span class="nx">name</span><span class="si">}</span><span class="s"> = </span><span class="si">#{</span><span class="nx">v</span><span class="p">.</span><span class="nx">type</span><span class="p">.</span><span class="nx">value</span><span class="si">}</span><span class="s">&quot;</span> <span class="k">for</span> <span class="nx">v</span> <span class="k">in</span> <span class="nx">@variables</span> <span class="k">when</span> <span class="nx">v</span><span class="p">.</span><span class="nx">type</span><span class="p">.</span><span class="nx">assigned</span>
 
-</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 
+</pre></div></div>
+            
+        </li>
+        
+    </ul> 
+  </div>
+</body>
+</html>

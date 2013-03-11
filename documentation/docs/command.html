@@ -1,8 +1,124 @@
-<!DOCTYPE html>  <html> <head>   <title>command.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="browser.html">                 browser.coffee               </a>                                           <a class="source" href="cake.html">                 cake.coffee               </a>                                           <a class="source" href="coffee-script.html">                 coffee-script.coffee               </a>                                           <a class="source" href="command.html">                 command.coffee               </a>                                           <a class="source" href="grammar.html">                 grammar.coffee               </a>                                           <a class="source" href="helpers.html">                 helpers.coffee               </a>                                           <a class="source" href="index.html">                 index.coffee               </a>                                           <a class="source" href="lexer.html">                 lexer.coffee               </a>                                           <a class="source" href="nodes.html">                 nodes.coffee               </a>                                           <a class="source" href="optparse.html">                 optparse.coffee               </a>                                           <a class="source" href="repl.html">                 repl.coffee               </a>                                           <a class="source" href="rewriter.html">                 rewriter.coffee               </a>                                           <a class="source" href="sourcemap.html">                 sourcemap.coffee               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               command.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>               <p>The <code>coffee</code> utility. Handles command-line compilation of CoffeeScript
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>command.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="browser.html">
+                browser.coffee
+              </a>
+            
+              
+              <a class="source" href="cake.html">
+                cake.coffee
+              </a>
+            
+              
+              <a class="source" href="coffee-script.html">
+                coffee-script.coffee
+              </a>
+            
+              
+              <a class="source" href="command.html">
+                command.coffee
+              </a>
+            
+              
+              <a class="source" href="grammar.html">
+                grammar.coffee
+              </a>
+            
+              
+              <a class="source" href="helpers.html">
+                helpers.coffee
+              </a>
+            
+              
+              <a class="source" href="index.html">
+                index.coffee
+              </a>
+            
+              
+              <a class="source" href="lexer.html">
+                lexer.coffee
+              </a>
+            
+              
+              <a class="source" href="nodes.html">
+                nodes.coffee
+              </a>
+            
+              
+              <a class="source" href="optparse.html">
+                optparse.coffee
+              </a>
+            
+              
+              <a class="source" href="repl.html">
+                repl.coffee
+              </a>
+            
+              
+              <a class="source" href="rewriter.html">
+                rewriter.coffee
+              </a>
+            
+              
+              <a class="source" href="scope.html">
+                scope.litcoffee
+              </a>
+            
+              
+              <a class="source" href="sourcemap.html">
+                sourcemap.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">  
+        <li id="title">
+            <div class="annotation">
+                <h1>command.coffee</h1>
+            </div>
+        </li>
+        
+           
+        <li id="section-1">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>            
+              <p>The <code>coffee</code> utility. Handles command-line compilation of CoffeeScript
 into various forms: saved into <code>.js</code> files or printed to stdout, piped to
 <a href="http://javascriptlint.com/">JavaScript Lint</a> or recompiled every time the source is
 saved, printed as a token stream or as the syntax tree, or launch an
-interactive REPL.</p>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>External dependencies.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">fs             = </span><span class="nx">require</span> <span class="s">&#39;fs&#39;</span>
+interactive REPL.
+
+</p>
+<p>External dependencies.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">fs             = </span><span class="nx">require</span> <span class="s">&#39;fs&#39;</span>
 <span class="nv">path           = </span><span class="nx">require</span> <span class="s">&#39;path&#39;</span>
 <span class="nv">helpers        = </span><span class="nx">require</span> <span class="s">&#39;./helpers&#39;</span>
 <span class="nv">optparse       = </span><span class="nx">require</span> <span class="s">&#39;./optparse&#39;</span>
@@ -10,16 +126,67 @@ interactive REPL.</p>             </td>             <td class="code">           
 <span class="p">{</span><span class="nx">spawn</span><span class="p">,</span> <span class="nx">exec</span><span class="p">}</span>  <span class="o">=</span> <span class="nx">require</span> <span class="s">&#39;child_process&#39;</span>
 <span class="p">{</span><span class="nx">EventEmitter</span><span class="p">}</span> <span class="o">=</span> <span class="nx">require</span> <span class="s">&#39;events&#39;</span>
 
-<span class="nv">exists         = </span><span class="nx">fs</span><span class="p">.</span><span class="nx">exists</span> <span class="o">or</span> <span class="nx">path</span><span class="p">.</span><span class="nx">exists</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>Allow CoffeeScript to emit Node.js events.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">helpers</span><span class="p">.</span><span class="nx">extend</span> <span class="nx">CoffeeScript</span><span class="p">,</span> <span class="k">new</span> <span class="nx">EventEmitter</span>
+<span class="nv">exists         = </span><span class="nx">fs</span><span class="p">.</span><span class="nx">exists</span> <span class="o">or</span> <span class="nx">path</span><span class="p">.</span><span class="nx">exists</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-2">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>            
+              
+<p>Allow CoffeeScript to emit Node.js events.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nx">helpers</span><span class="p">.</span><span class="nx">extend</span> <span class="nx">CoffeeScript</span><span class="p">,</span> <span class="k">new</span> <span class="nx">EventEmitter</span>
 
 <span class="nv">printLine = </span><span class="nf">(line) -&gt;</span> <span class="nx">process</span><span class="p">.</span><span class="nx">stdout</span><span class="p">.</span><span class="nx">write</span> <span class="nx">line</span> <span class="o">+</span> <span class="s">&#39;\n&#39;</span>
 <span class="nv">printWarn = </span><span class="nf">(line) -&gt;</span> <span class="nx">process</span><span class="p">.</span><span class="nx">stderr</span><span class="p">.</span><span class="nx">write</span> <span class="nx">line</span> <span class="o">+</span> <span class="s">&#39;\n&#39;</span>
 
-<span class="nv">hidden = </span><span class="nf">(file) -&gt;</span> <span class="o">/^</span><span class="err">\</span><span class="p">.</span><span class="o">|~</span><span class="nx">$</span><span class="o">/</span><span class="p">.</span><span class="nx">test</span> <span class="nx">file</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>The help banner that is printed when <code>coffee</code> is called without arguments.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">BANNER = </span><span class="s">&#39;&#39;&#39;</span>
+<span class="nv">hidden = </span><span class="nf">(file) -&gt;</span> <span class="o">/^</span><span class="err">\</span><span class="p">.</span><span class="o">|~</span><span class="nx">$</span><span class="o">/</span><span class="p">.</span><span class="nx">test</span> <span class="nx">file</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-3">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>            
+              
+<p>The help banner that is printed when <code>coffee</code> is called without arguments.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">BANNER = </span><span class="s">&#39;&#39;&#39;</span>
 <span class="s">  Usage: coffee [options] path/to/script.coffee -- [args]</span>
 
 <span class="s">  If called without options, `coffee` will run your script.</span>
-<span class="s">&#39;&#39;&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p>The list of all the valid option flags that <code>coffee</code> knows how to handle.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">SWITCHES = </span><span class="p">[</span>
+<span class="s">&#39;&#39;&#39;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-4">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>            
+              
+<p>The list of all the valid option flags that <code>coffee</code> knows how to handle.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">SWITCHES = </span><span class="p">[</span>
   <span class="p">[</span><span class="s">&#39;-b&#39;</span><span class="p">,</span> <span class="s">&#39;--bare&#39;</span><span class="p">,</span>            <span class="s">&#39;compile without a top-level function wrapper&#39;</span><span class="p">]</span>
   <span class="p">[</span><span class="s">&#39;-c&#39;</span><span class="p">,</span> <span class="s">&#39;--compile&#39;</span><span class="p">,</span>         <span class="s">&#39;compile to JavaScript and save as .js files&#39;</span><span class="p">]</span>
   <span class="p">[</span><span class="s">&#39;-e&#39;</span><span class="p">,</span> <span class="s">&#39;--eval&#39;</span><span class="p">,</span>            <span class="s">&#39;pass a string from the command line as input&#39;</span><span class="p">]</span>
@@ -36,14 +203,48 @@ interactive REPL.</p>             </td>             <td class="code">           
   <span class="p">[</span><span class="s">&#39;-t&#39;</span><span class="p">,</span> <span class="s">&#39;--tokens&#39;</span><span class="p">,</span>          <span class="s">&#39;print out the tokens that the lexer/rewriter produce&#39;</span><span class="p">]</span>
   <span class="p">[</span><span class="s">&#39;-v&#39;</span><span class="p">,</span> <span class="s">&#39;--version&#39;</span><span class="p">,</span>         <span class="s">&#39;display the version number&#39;</span><span class="p">]</span>
   <span class="p">[</span><span class="s">&#39;-w&#39;</span><span class="p">,</span> <span class="s">&#39;--watch&#39;</span><span class="p">,</span>           <span class="s">&#39;watch scripts for changes and rerun commands&#39;</span><span class="p">]</span>
-<span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <p>Top-level objects shared by all the functions.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">opts         = </span><span class="p">{}</span>
+<span class="p">]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-5">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>            
+              
+<p>Top-level objects shared by all the functions.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">opts         = </span><span class="p">{}</span>
 <span class="nv">sources      = </span><span class="p">[]</span>
 <span class="nv">sourceCode   = </span><span class="p">[]</span>
 <span class="nv">notSources   = </span><span class="p">{}</span>
 <span class="nv">watchers     = </span><span class="p">{}</span>
-<span class="nv">optionParser = </span><span class="kc">null</span></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <p>Run <code>coffee</code> by parsing passed options and determining what action to take.
+<span class="nv">optionParser = </span><span class="kc">null</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-6">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>            
+              
+<p>Run <code>coffee</code> by parsing passed options and determining what action to take.
 Many flags cause us to divert before compiling anything. Flags passed after
-<code>--</code> will be passed verbatim to your script as arguments in <code>process.argv</code></p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">exports.run = </span><span class="nf">-&gt;</span>
+<code>--</code> will be passed verbatim to your script as arguments in <code>process.argv</code>
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">exports.run = </span><span class="nf">-&gt;</span>
   <span class="nx">parseOptions</span><span class="p">()</span>
   <span class="k">return</span> <span class="nx">forkNode</span><span class="p">()</span>                      <span class="k">if</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">nodejs</span>
   <span class="k">return</span> <span class="nx">usage</span><span class="p">()</span>                         <span class="k">if</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">help</span>
@@ -58,9 +259,26 @@ Many flags cause us to divert before compiling anything. Flags passed after
   <span class="nv">process.argv = </span><span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">..</span><span class="mi">1</span><span class="p">].</span><span class="nx">concat</span> <span class="nx">literals</span>
   <span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;coffee&#39;</span>
   <span class="k">for</span> <span class="nx">source</span> <span class="k">in</span> <span class="nx">sources</span>
-    <span class="nx">compilePath</span> <span class="nx">source</span><span class="p">,</span> <span class="kc">yes</span><span class="p">,</span> <span class="nx">path</span><span class="p">.</span><span class="nx">normalize</span> <span class="nx">source</span></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <p>Compile a path, which could be a script or a directory. If a directory
-is passed, recursively compile all '.coffee', '.litcoffee', and '.coffee.md'
-extension source files in it and all subdirectories.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">compilePath = </span><span class="nf">(source, topLevel, base) -&gt;</span>
+    <span class="nx">compilePath</span> <span class="nx">source</span><span class="p">,</span> <span class="kc">yes</span><span class="p">,</span> <span class="nx">path</span><span class="p">.</span><span class="nx">normalize</span> <span class="nx">source</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-7">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>            
+              
+<p>Compile a path, which could be a script or a directory. If a directory
+is passed, recursively compile all &#39;.coffee&#39;, &#39;.litcoffee&#39;, and &#39;.coffee.md&#39;
+extension source files in it and all subdirectories.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">compilePath = </span><span class="nf">(source, topLevel, base) -&gt;</span>
   <span class="nx">fs</span><span class="p">.</span><span class="nx">stat</span> <span class="nx">source</span><span class="p">,</span> <span class="nf">(err, stats) -&gt;</span>
     <span class="k">throw</span> <span class="nx">err</span> <span class="k">if</span> <span class="nx">err</span> <span class="o">and</span> <span class="nx">err</span><span class="p">.</span><span class="nx">code</span> <span class="o">isnt</span> <span class="s">&#39;ENOENT&#39;</span>
     <span class="k">if</span> <span class="nx">err</span><span class="o">?</span><span class="p">.</span><span class="nx">code</span> <span class="o">is</span> <span class="s">&#39;ENOENT&#39;</span>
@@ -85,11 +303,28 @@ extension source files in it and all subdirectories.</p>             </td>      
         <span class="nx">compileScript</span><span class="p">(</span><span class="nx">source</span><span class="p">,</span> <span class="nx">code</span><span class="p">.</span><span class="nx">toString</span><span class="p">(),</span> <span class="nx">base</span><span class="p">)</span>
     <span class="k">else</span>
       <span class="nx">notSources</span><span class="p">[</span><span class="nx">source</span><span class="p">]</span> <span class="o">=</span> <span class="kc">yes</span>
-      <span class="nx">removeSource</span> <span class="nx">source</span><span class="p">,</span> <span class="nx">base</span></pre></div>             </td>           </tr>                               <tr id="section-9">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-9">&#182;</a>               </div>               <p>Compile a single source script, containing the given code, according to the
+      <span class="nx">removeSource</span> <span class="nx">source</span><span class="p">,</span> <span class="nx">base</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-8">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>            
+              
+<p>Compile a single source script, containing the given code, according to the
 requested options. If evaluating the script directly sets <code>__filename</code>,
-<code>__dirname</code> and <code>module.filename</code> to be correct relative to the script's path.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">compileScript = </span><span class="nf">(file, input, base) -&gt;</span>
+<code>__dirname</code> and <code>module.filename</code> to be correct relative to the script&#39;s path.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">compileScript = </span><span class="nf">(file, input, base=null) -&gt;</span>
   <span class="nv">o = </span><span class="nx">opts</span>
-  <span class="nv">options = </span><span class="nx">compileOptions</span> <span class="nx">file</span>
+  <span class="nv">options = </span><span class="nx">compileOptions</span> <span class="nx">file</span><span class="p">,</span> <span class="nx">base</span>
   <span class="k">try</span>
     <span class="nv">t = task = </span><span class="p">{</span><span class="nx">file</span><span class="p">,</span> <span class="nx">input</span><span class="p">,</span> <span class="nx">options</span><span class="p">}</span>
     <span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">emit</span> <span class="s">&#39;compile&#39;</span><span class="p">,</span> <span class="nx">task</span>
@@ -97,6 +332,7 @@ requested options. If evaluating the script directly sets <code>__filename</code
     <span class="k">else</span> <span class="k">if</span> <span class="nx">o</span><span class="p">.</span><span class="nx">nodes</span>       <span class="k">then</span> <span class="nx">printLine</span> <span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">nodes</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">input</span><span class="p">,</span> <span class="nx">t</span><span class="p">.</span><span class="nx">options</span><span class="p">).</span><span class="nx">toString</span><span class="p">().</span><span class="nx">trim</span><span class="p">()</span>
     <span class="k">else</span> <span class="k">if</span> <span class="nx">o</span><span class="p">.</span><span class="nx">run</span>         <span class="k">then</span> <span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">run</span> <span class="nx">t</span><span class="p">.</span><span class="nx">input</span><span class="p">,</span> <span class="nx">t</span><span class="p">.</span><span class="nx">options</span>
     <span class="k">else</span> <span class="k">if</span> <span class="nx">o</span><span class="p">.</span><span class="nx">join</span> <span class="o">and</span> <span class="nx">t</span><span class="p">.</span><span class="nx">file</span> <span class="o">isnt</span> <span class="nx">o</span><span class="p">.</span><span class="nx">join</span>
+      <span class="nv">t.input = </span><span class="nx">helpers</span><span class="p">.</span><span class="nx">invertLiterate</span> <span class="nx">t</span><span class="p">.</span><span class="nx">input</span> <span class="k">if</span> <span class="nx">helpers</span><span class="p">.</span><span class="nx">isLiterate</span> <span class="nx">file</span>
       <span class="nx">sourceCode</span><span class="p">[</span><span class="nx">sources</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">file</span><span class="p">)]</span> <span class="o">=</span> <span class="nx">t</span><span class="p">.</span><span class="nx">input</span>
       <span class="nx">compileJoin</span><span class="p">()</span>
     <span class="k">else</span>
@@ -110,31 +346,86 @@ requested options. If evaluating the script directly sets <code>__filename</code
       <span class="k">if</span> <span class="nx">o</span><span class="p">.</span><span class="nx">print</span>
         <span class="nx">printLine</span> <span class="nx">t</span><span class="p">.</span><span class="nx">output</span><span class="p">.</span><span class="nx">trim</span><span class="p">()</span>
       <span class="k">else</span> <span class="k">if</span> <span class="nx">o</span><span class="p">.</span><span class="nx">compile</span> <span class="o">||</span> <span class="nx">o</span><span class="p">.</span><span class="nx">map</span>
-        <span class="nx">writeJs</span> <span class="nx">base</span><span class="p">,</span> <span class="nx">t</span><span class="p">.</span><span class="nx">file</span><span class="p">,</span> <span class="nx">t</span><span class="p">.</span><span class="nx">output</span><span class="p">,</span> <span class="nx">t</span><span class="p">.</span><span class="nx">sourceMap</span>
+        <span class="nx">writeJs</span> <span class="nx">base</span><span class="p">,</span> <span class="nx">t</span><span class="p">.</span><span class="nx">file</span><span class="p">,</span> <span class="nx">t</span><span class="p">.</span><span class="nx">output</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">jsPath</span><span class="p">,</span> <span class="nx">t</span><span class="p">.</span><span class="nx">sourceMap</span>
       <span class="k">else</span> <span class="k">if</span> <span class="nx">o</span><span class="p">.</span><span class="nx">lint</span>
         <span class="nx">lint</span> <span class="nx">t</span><span class="p">.</span><span class="nx">file</span><span class="p">,</span> <span class="nx">t</span><span class="p">.</span><span class="nx">output</span>
   <span class="k">catch</span> <span class="nx">err</span>
     <span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">emit</span> <span class="s">&#39;failure&#39;</span><span class="p">,</span> <span class="nx">err</span><span class="p">,</span> <span class="nx">task</span>
     <span class="k">return</span> <span class="k">if</span> <span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">listeners</span><span class="p">(</span><span class="s">&#39;failure&#39;</span><span class="p">).</span><span class="nx">length</span>
-    <span class="k">return</span> <span class="nx">printLine</span> <span class="nx">err</span><span class="p">.</span><span class="nx">message</span> <span class="o">+</span> <span class="s">&#39;\x07&#39;</span> <span class="k">if</span> <span class="nx">o</span><span class="p">.</span><span class="nx">watch</span>
-    <span class="nx">printWarn</span> <span class="nx">err</span> <span class="k">instanceof</span> <span class="nb">Error</span> <span class="o">and</span> <span class="nx">err</span><span class="p">.</span><span class="nx">stack</span> <span class="o">or</span> <span class="s">&quot;ERROR: </span><span class="si">#{</span><span class="nx">err</span><span class="si">}</span><span class="s">&quot;</span>
-    <span class="nx">process</span><span class="p">.</span><span class="nx">exit</span> <span class="mi">1</span></pre></div>             </td>           </tr>                               <tr id="section-10">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-10">&#182;</a>               </div>               <p>Attach the appropriate listeners to compile scripts incoming over <strong>stdin</strong>,
-and write them back to <strong>stdout</strong>.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">compileStdio = </span><span class="nf">-&gt;</span>
+    <span class="nv">useColors = </span><span class="nx">process</span><span class="p">.</span><span class="nx">stdout</span><span class="p">.</span><span class="nx">isTTY</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_DISABLE_COLORS</span>
+    <span class="nv">message = </span><span class="nx">helpers</span><span class="p">.</span><span class="nx">prettyErrorMessage</span> <span class="nx">err</span><span class="p">,</span> <span class="nx">file</span> <span class="o">or</span> <span class="s">&#39;[stdin]&#39;</span><span class="p">,</span> <span class="nx">input</span><span class="p">,</span> <span class="nx">useColors</span>
+    <span class="k">if</span> <span class="nx">o</span><span class="p">.</span><span class="nx">watch</span>
+      <span class="nx">printLine</span> <span class="nx">message</span> <span class="o">+</span> <span class="s">&#39;\x07&#39;</span>
+    <span class="k">else</span>
+      <span class="nx">printWarn</span> <span class="nx">message</span>
+      <span class="nx">process</span><span class="p">.</span><span class="nx">exit</span> <span class="mi">1</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-9">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>            
+              
+<p>Attach the appropriate listeners to compile scripts incoming over <strong>stdin</strong>,
+and write them back to <strong>stdout</strong>.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">compileStdio = </span><span class="nf">-&gt;</span>
   <span class="nv">code = </span><span class="s">&#39;&#39;</span>
   <span class="nv">stdin = </span><span class="nx">process</span><span class="p">.</span><span class="nx">openStdin</span><span class="p">()</span>
   <span class="nx">stdin</span><span class="p">.</span><span class="nx">on</span> <span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="nf">(buffer) -&gt;</span>
     <span class="nx">code</span> <span class="o">+=</span> <span class="nx">buffer</span><span class="p">.</span><span class="nx">toString</span><span class="p">()</span> <span class="k">if</span> <span class="nx">buffer</span>
   <span class="nx">stdin</span><span class="p">.</span><span class="nx">on</span> <span class="s">&#39;end&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
-    <span class="nx">compileScript</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">code</span></pre></div>             </td>           </tr>                               <tr id="section-11">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-11">&#182;</a>               </div>               <p>If all of the source files are done being read, concatenate and compile
-them together.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">joinTimeout = </span><span class="kc">null</span>
+    <span class="nx">compileScript</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">code</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-10">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>            
+              
+<p>If all of the source files are done being read, concatenate and compile
+them together.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">joinTimeout = </span><span class="kc">null</span>
 <span class="nv">compileJoin = </span><span class="nf">-&gt;</span>
   <span class="k">return</span> <span class="k">unless</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">join</span>
   <span class="k">unless</span> <span class="nx">sourceCode</span><span class="p">.</span><span class="nx">some</span><span class="p">(</span><span class="nf">(code) -&gt;</span> <span class="nx">code</span> <span class="o">is</span> <span class="kc">null</span><span class="p">)</span>
     <span class="nx">clearTimeout</span> <span class="nx">joinTimeout</span>
     <span class="nv">joinTimeout = </span><span class="nx">wait</span> <span class="mi">100</span><span class="p">,</span> <span class="nf">-&gt;</span>
-      <span class="nx">compileScript</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">join</span><span class="p">,</span> <span class="nx">sourceCode</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s">&#39;\n&#39;</span><span class="p">),</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">join</span></pre></div>             </td>           </tr>                               <tr id="section-12">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-12">&#182;</a>               </div>               <p>Watch a source CoffeeScript file using <code>fs.watch</code>, recompiling it every
+      <span class="nx">compileScript</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">join</span><span class="p">,</span> <span class="nx">sourceCode</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s">&#39;\n&#39;</span><span class="p">),</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">join</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-11">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>            
+              
+<p>Watch a source CoffeeScript file using <code>fs.watch</code>, recompiling it every
 time the file is updated. May be used in combination with other options,
-such as <code>--lint</code> or <code>--print</code>.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">watch = </span><span class="nf">(source, base) -&gt;</span>
+such as <code>--lint</code> or <code>--print</code>.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">watch = </span><span class="nf">(source, base) -&gt;</span>
 
   <span class="nv">prevStats = </span><span class="kc">null</span>
   <span class="nv">compileTimeout = </span><span class="kc">null</span>
@@ -170,7 +461,24 @@ such as <code>--lint</code> or <code>--print</code>.</p>             </td>      
 
   <span class="nv">rewatch = </span><span class="nf">-&gt;</span>
     <span class="nx">watcher</span><span class="o">?</span><span class="p">.</span><span class="nx">close</span><span class="p">()</span>
-    <span class="nv">watcher = </span><span class="nx">fs</span><span class="p">.</span><span class="nx">watch</span> <span class="nx">source</span><span class="p">,</span> <span class="nx">compile</span></pre></div>             </td>           </tr>                               <tr id="section-13">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-13">&#182;</a>               </div>               <p>Watch a directory of files for new additions.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">watchDir = </span><span class="nf">(source, base) -&gt;</span>
+    <span class="nv">watcher = </span><span class="nx">fs</span><span class="p">.</span><span class="nx">watch</span> <span class="nx">source</span><span class="p">,</span> <span class="nx">compile</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-12">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>            
+              
+<p>Watch a directory of files for new additions.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">watchDir = </span><span class="nf">(source, base) -&gt;</span>
   <span class="nv">readdirTimeout = </span><span class="kc">null</span>
   <span class="k">try</span>
     <span class="nv">watcher = </span><span class="nx">fs</span><span class="p">.</span><span class="nx">watch</span> <span class="nx">source</span><span class="p">,</span> <span class="nf">-&gt;</span>
@@ -195,8 +503,25 @@ such as <code>--lint</code> or <code>--print</code>.</p>             </td>      
   <span class="nv">toRemove = </span><span class="p">(</span><span class="nx">file</span> <span class="k">for</span> <span class="nx">file</span> <span class="k">in</span> <span class="nx">sources</span> <span class="k">when</span> <span class="nx">file</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">source</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
   <span class="nx">removeSource</span> <span class="nx">file</span><span class="p">,</span> <span class="nx">base</span><span class="p">,</span> <span class="kc">yes</span> <span class="k">for</span> <span class="nx">file</span> <span class="k">in</span> <span class="nx">toRemove</span>
   <span class="k">return</span> <span class="k">unless</span> <span class="nx">sources</span><span class="p">.</span><span class="nx">some</span> <span class="nf">(s, i) -&gt;</span> <span class="nx">prevSources</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">isnt</span> <span class="nx">s</span>
-  <span class="nx">compileJoin</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-14">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-14">&#182;</a>               </div>               <p>Remove a file from our source list, and source code cache. Optionally remove
-the compiled JS version as well.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">removeSource = </span><span class="nf">(source, base, removeJs) -&gt;</span>
+  <span class="nx">compileJoin</span><span class="p">()</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-13">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>            
+              
+<p>Remove a file from our source list, and source code cache. Optionally remove
+the compiled JS version as well.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">removeSource = </span><span class="nf">(source, base, removeJs) -&gt;</span>
   <span class="nv">index = </span><span class="nx">sources</span><span class="p">.</span><span class="nx">indexOf</span> <span class="nx">source</span>
   <span class="nx">sources</span><span class="p">.</span><span class="nx">splice</span> <span class="nx">index</span><span class="p">,</span> <span class="mi">1</span>
   <span class="nx">sourceCode</span><span class="p">.</span><span class="nx">splice</span> <span class="nx">index</span><span class="p">,</span> <span class="mi">1</span>
@@ -206,24 +531,58 @@ the compiled JS version as well.</p>             </td>             <td class="co
       <span class="k">if</span> <span class="nx">itExists</span>
         <span class="nx">fs</span><span class="p">.</span><span class="nx">unlink</span> <span class="nx">jsPath</span><span class="p">,</span> <span class="nf">(err) -&gt;</span>
           <span class="k">throw</span> <span class="nx">err</span> <span class="k">if</span> <span class="nx">err</span> <span class="o">and</span> <span class="nx">err</span><span class="p">.</span><span class="nx">code</span> <span class="o">isnt</span> <span class="s">&#39;ENOENT&#39;</span>
-          <span class="nx">timeLog</span> <span class="s">&quot;removed </span><span class="si">#{</span><span class="nx">source</span><span class="si">}</span><span class="s">&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-15">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-15">&#182;</a>               </div>               <p>Get the corresponding output JavaScript path for a source file.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">outputPath = </span><span class="nf">(source, base, extension=&quot;.js&quot;) -&gt;</span>
+          <span class="nx">timeLog</span> <span class="s">&quot;removed </span><span class="si">#{</span><span class="nx">source</span><span class="si">}</span><span class="s">&quot;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-14">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>            
+              
+<p>Get the corresponding output JavaScript path for a source file.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">outputPath = </span><span class="nf">(source, base, extension=&quot;.js&quot;) -&gt;</span>
   <span class="nv">basename  = </span><span class="nx">helpers</span><span class="p">.</span><span class="nx">baseFileName</span> <span class="nx">source</span><span class="p">,</span> <span class="kc">yes</span>
   <span class="nv">srcDir    = </span><span class="nx">path</span><span class="p">.</span><span class="nx">dirname</span> <span class="nx">source</span>
   <span class="nv">baseDir   = </span><span class="k">if</span> <span class="nx">base</span> <span class="o">is</span> <span class="s">&#39;.&#39;</span> <span class="k">then</span> <span class="nx">srcDir</span> <span class="k">else</span> <span class="nx">srcDir</span><span class="p">.</span><span class="nx">substring</span> <span class="nx">base</span><span class="p">.</span><span class="nx">length</span>
   <span class="nv">dir       = </span><span class="k">if</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">output</span> <span class="k">then</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">output</span><span class="p">,</span> <span class="nx">baseDir</span> <span class="k">else</span> <span class="nx">srcDir</span>
-  <span class="nx">path</span><span class="p">.</span><span class="nx">join</span> <span class="nx">dir</span><span class="p">,</span> <span class="nx">basename</span> <span class="o">+</span> <span class="nx">extension</span></pre></div>             </td>           </tr>                               <tr id="section-16">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-16">&#182;</a>               </div>               <p>Write out a JavaScript source file with the compiled code. By default, files
+  <span class="nx">path</span><span class="p">.</span><span class="nx">join</span> <span class="nx">dir</span><span class="p">,</span> <span class="nx">basename</span> <span class="o">+</span> <span class="nx">extension</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-15">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>            
+              
+<p>Write out a JavaScript source file with the compiled code. By default, files
 are written out in <code>cwd</code> as <code>.js</code> files with the same name, but the output
-directory can be customized with <code>--output</code>.</p>
+directory can be customized with <code>--output</code>.
 
+</p>
 <p>If <code>generatedSourceMap</code> is provided, this will write a <code>.map</code> file into the
-same directory as the <code>.js</code> file.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">writeJs = </span><span class="nf">(base, sourcePath, js, generatedSourceMap = null) -&gt;</span>
-  <span class="nv">jsPath = </span><span class="nx">outputPath</span> <span class="nx">sourcePath</span><span class="p">,</span> <span class="nx">base</span>
+same directory as the <code>.js</code> file.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">writeJs = </span><span class="nf">(base, sourcePath, js, jsPath, generatedSourceMap = null) -&gt;</span>
   <span class="nv">sourceMapPath = </span><span class="nx">outputPath</span> <span class="nx">sourcePath</span><span class="p">,</span> <span class="nx">base</span><span class="p">,</span> <span class="s">&quot;.map&quot;</span>
   <span class="nv">jsDir  = </span><span class="nx">path</span><span class="p">.</span><span class="nx">dirname</span> <span class="nx">jsPath</span>
   <span class="nv">compile = </span><span class="nf">-&gt;</span>
     <span class="k">if</span> <span class="nx">opts</span><span class="p">.</span><span class="nx">compile</span>
       <span class="nv">js = </span><span class="s">&#39; &#39;</span> <span class="k">if</span> <span class="nx">js</span><span class="p">.</span><span class="nx">length</span> <span class="o">&lt;=</span> <span class="mi">0</span>
-      <span class="k">if</span> <span class="nx">generatedSourceMap</span> <span class="k">then</span> <span class="nv">js = </span><span class="s">&quot;//@ sourceMappingURL=</span><span class="si">#{</span><span class="nx">helpers</span><span class="p">.</span><span class="nx">baseFileName</span> <span class="nx">sourceMapPath</span><span class="si">}</span><span class="s">\n</span><span class="si">#{</span><span class="nx">js</span><span class="si">}</span><span class="s">&quot;</span>
+      <span class="k">if</span> <span class="nx">generatedSourceMap</span> <span class="k">then</span> <span class="nv">js = </span><span class="s">&quot;</span><span class="si">#{</span><span class="nx">js</span><span class="si">}</span><span class="s">\n/*\n//@ sourceMappingURL=</span><span class="si">#{</span><span class="nx">helpers</span><span class="p">.</span><span class="nx">baseFileName</span> <span class="nx">sourceMapPath</span><span class="si">}</span><span class="s">\n*/\n&quot;</span>
       <span class="nx">fs</span><span class="p">.</span><span class="nx">writeFile</span> <span class="nx">jsPath</span><span class="p">,</span> <span class="nx">js</span><span class="p">,</span> <span class="nf">(err) -&gt;</span>
         <span class="k">if</span> <span class="nx">err</span>
           <span class="nx">printLine</span> <span class="nx">err</span><span class="p">.</span><span class="nx">message</span>
@@ -234,22 +593,107 @@ same directory as the <code>.js</code> file.</p>             </td>             <
         <span class="k">if</span> <span class="nx">err</span>
           <span class="nx">printLine</span> <span class="s">&quot;Could not write source map: </span><span class="si">#{</span><span class="nx">err</span><span class="p">.</span><span class="nx">message</span><span class="si">}</span><span class="s">&quot;</span>
   <span class="nx">exists</span> <span class="nx">jsDir</span><span class="p">,</span> <span class="nf">(itExists) -&gt;</span>
-    <span class="k">if</span> <span class="nx">itExists</span> <span class="k">then</span> <span class="nx">compile</span><span class="p">()</span> <span class="k">else</span> <span class="nx">exec</span> <span class="s">&quot;mkdir -p </span><span class="si">#{</span><span class="nx">jsDir</span><span class="si">}</span><span class="s">&quot;</span><span class="p">,</span> <span class="nx">compile</span></pre></div>             </td>           </tr>                               <tr id="section-17">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-17">&#182;</a>               </div>               <p>Convenience for cleaner setTimeouts.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">wait = </span><span class="nf">(milliseconds, func) -&gt;</span> <span class="nx">setTimeout</span> <span class="nx">func</span><span class="p">,</span> <span class="nx">milliseconds</span></pre></div>             </td>           </tr>                               <tr id="section-18">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-18">&#182;</a>               </div>               <p>When watching scripts, it's useful to log changes with the timestamp.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">timeLog = </span><span class="nf">(message) -&gt;</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&quot;</span><span class="si">#{</span><span class="p">(</span><span class="k">new</span> <span class="nb">Date</span><span class="p">).</span><span class="nx">toLocaleTimeString</span><span class="p">()</span><span class="si">}</span><span class="s"> - </span><span class="si">#{</span><span class="nx">message</span><span class="si">}</span><span class="s">&quot;</span></pre></div>             </td>           </tr>                               <tr id="section-19">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-19">&#182;</a>               </div>               <p>Pipe compiled JS through JSLint (requires a working <code>jsl</code> command), printing
-any errors or warnings that arise.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">lint = </span><span class="nf">(file, js) -&gt;</span>
+    <span class="k">if</span> <span class="nx">itExists</span> <span class="k">then</span> <span class="nx">compile</span><span class="p">()</span> <span class="k">else</span> <span class="nx">exec</span> <span class="s">&quot;mkdir -p </span><span class="si">#{</span><span class="nx">jsDir</span><span class="si">}</span><span class="s">&quot;</span><span class="p">,</span> <span class="nx">compile</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-16">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>            
+              
+<p>Convenience for cleaner setTimeouts.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">wait = </span><span class="nf">(milliseconds, func) -&gt;</span> <span class="nx">setTimeout</span> <span class="nx">func</span><span class="p">,</span> <span class="nx">milliseconds</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-17">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>            
+              
+<p>When watching scripts, it&#39;s useful to log changes with the timestamp.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">timeLog = </span><span class="nf">(message) -&gt;</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&quot;</span><span class="si">#{</span><span class="p">(</span><span class="k">new</span> <span class="nb">Date</span><span class="p">).</span><span class="nx">toLocaleTimeString</span><span class="p">()</span><span class="si">}</span><span class="s"> - </span><span class="si">#{</span><span class="nx">message</span><span class="si">}</span><span class="s">&quot;</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-18">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>            
+              
+<p>Pipe compiled JS through JSLint (requires a working <code>jsl</code> command), printing
+any errors or warnings that arise.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">lint = </span><span class="nf">(file, js) -&gt;</span>
   <span class="nv">printIt = </span><span class="nf">(buffer) -&gt;</span> <span class="nx">printLine</span> <span class="nx">file</span> <span class="o">+</span> <span class="s">&#39;:\t&#39;</span> <span class="o">+</span> <span class="nx">buffer</span><span class="p">.</span><span class="nx">toString</span><span class="p">().</span><span class="nx">trim</span><span class="p">()</span>
   <span class="nv">conf = </span><span class="nx">__dirname</span> <span class="o">+</span> <span class="s">&#39;/../../extras/jsl.conf&#39;</span>
   <span class="nv">jsl = </span><span class="nx">spawn</span> <span class="s">&#39;jsl&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;-nologo&#39;</span><span class="p">,</span> <span class="s">&#39;-stdin&#39;</span><span class="p">,</span> <span class="s">&#39;-conf&#39;</span><span class="p">,</span> <span class="nx">conf</span><span class="p">]</span>
   <span class="nx">jsl</span><span class="p">.</span><span class="nx">stdout</span><span class="p">.</span><span class="nx">on</span> <span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="nx">printIt</span>
   <span class="nx">jsl</span><span class="p">.</span><span class="nx">stderr</span><span class="p">.</span><span class="nx">on</span> <span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="nx">printIt</span>
   <span class="nx">jsl</span><span class="p">.</span><span class="nx">stdin</span><span class="p">.</span><span class="nx">write</span> <span class="nx">js</span>
-  <span class="nx">jsl</span><span class="p">.</span><span class="nx">stdin</span><span class="p">.</span><span class="nx">end</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-20">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-20">&#182;</a>               </div>               <p>Pretty-print a stream of tokens, sans location data.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">printTokens = </span><span class="nf">(tokens) -&gt;</span>
+  <span class="nx">jsl</span><span class="p">.</span><span class="nx">stdin</span><span class="p">.</span><span class="nx">end</span><span class="p">()</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-19">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>            
+              
+<p>Pretty-print a stream of tokens, sans location data.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">printTokens = </span><span class="nf">(tokens) -&gt;</span>
   <span class="nv">strings = </span><span class="k">for</span> <span class="nx">token</span> <span class="k">in</span> <span class="nx">tokens</span>
     <span class="nv">tag = </span><span class="nx">token</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="nv">value = </span><span class="nx">token</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">toString</span><span class="p">().</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/\n/</span><span class="p">,</span> <span class="s">&#39;\\n&#39;</span><span class="p">)</span>
     <span class="s">&quot;[</span><span class="si">#{</span><span class="nx">tag</span><span class="si">}</span><span class="s"> </span><span class="si">#{</span><span class="nx">value</span><span class="si">}</span><span class="s">]&quot;</span>
-  <span class="nx">printLine</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-21">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-21">&#182;</a>               </div>               <p>Use the <a href="optparse.html">OptionParser module</a> to extract all options from
-<code>process.argv</code> that are specified in <code>SWITCHES</code>.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">parseOptions = </span><span class="nf">-&gt;</span>
+  <span class="nx">printLine</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-20">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>            
+              
+<p>Use the <a href="optparse.html">OptionParser module</a> to extract all options from
+<code>process.argv</code> that are specified in <code>SWITCHES</code>.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">parseOptions = </span><span class="nf">-&gt;</span>
   <span class="nv">optionParser  = </span><span class="k">new</span> <span class="nx">optparse</span><span class="p">.</span><span class="nx">OptionParser</span> <span class="nx">SWITCHES</span><span class="p">,</span> <span class="nx">BANNER</span>
   <span class="nv">o = opts      = </span><span class="nx">optionParser</span><span class="p">.</span><span class="nx">parse</span> <span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">..]</span>
   <span class="nx">o</span><span class="p">.</span><span class="nx">compile</span>     <span class="o">or=</span>  <span class="o">!!</span><span class="nx">o</span><span class="p">.</span><span class="nx">output</span>
@@ -257,24 +701,115 @@ any errors or warnings that arise.</p>             </td>             <td class="
   <span class="nv">o.print       = </span><span class="o">!!</span>  <span class="p">(</span><span class="nx">o</span><span class="p">.</span><span class="nx">print</span> <span class="o">or</span> <span class="p">(</span><span class="nx">o</span><span class="p">.</span><span class="nb">eval</span> <span class="o">or</span> <span class="nx">o</span><span class="p">.</span><span class="nx">stdio</span> <span class="o">and</span> <span class="nx">o</span><span class="p">.</span><span class="nx">compile</span><span class="p">))</span>
   <span class="nv">sources       = </span><span class="nx">o</span><span class="p">.</span><span class="nx">arguments</span>
   <span class="nx">sourceCode</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="kc">null</span> <span class="k">for</span> <span class="nx">source</span><span class="p">,</span> <span class="nx">i</span> <span class="k">in</span> <span class="nx">sources</span>
-  <span class="k">return</span></pre></div>             </td>           </tr>                               <tr id="section-22">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-22">&#182;</a>               </div>               <p>The compile-time options to pass to the CoffeeScript compiler.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">compileOptions = </span><span class="nf">(filename) -&gt;</span>
-  <span class="p">{</span>
+  <span class="k">return</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-21">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>            
+              
+<p>The compile-time options to pass to the CoffeeScript compiler.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">compileOptions = </span><span class="nf">(filename, base) -&gt;</span>
+  <span class="nv">answer = </span><span class="p">{</span>
     <span class="nx">filename</span>
     <span class="nv">literate: </span><span class="nx">helpers</span><span class="p">.</span><span class="nx">isLiterate</span><span class="p">(</span><span class="nx">filename</span><span class="p">)</span>
     <span class="nv">bare: </span><span class="nx">opts</span><span class="p">.</span><span class="nx">bare</span>
     <span class="nv">header: </span><span class="nx">opts</span><span class="p">.</span><span class="nx">compile</span>
     <span class="nv">sourceMap: </span><span class="nx">opts</span><span class="p">.</span><span class="nx">map</span>
-  <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-23">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-23">&#182;</a>               </div>               <p>Start up a new Node.js instance with the arguments in <code>--nodejs</code> passed to
-the <code>node</code> binary, preserving the other options.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">forkNode = </span><span class="nf">-&gt;</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="nx">filename</span>
+    <span class="k">if</span> <span class="nx">base</span>
+      <span class="nv">cwd = </span><span class="nx">process</span><span class="p">.</span><span class="nx">cwd</span><span class="p">()</span>
+      <span class="nv">jsPath = </span><span class="nx">outputPath</span> <span class="nx">filename</span><span class="p">,</span> <span class="nx">base</span>
+      <span class="nv">jsDir = </span><span class="nx">path</span><span class="p">.</span><span class="nx">dirname</span> <span class="nx">jsPath</span>
+      <span class="nv">answer = </span><span class="nx">helpers</span><span class="p">.</span><span class="nx">merge</span> <span class="nx">answer</span><span class="p">,</span> <span class="p">{</span>
+        <span class="nx">jsPath</span>
+        <span class="nv">sourceRoot: </span><span class="nx">path</span><span class="p">.</span><span class="nx">relative</span> <span class="nx">jsDir</span><span class="p">,</span> <span class="nx">cwd</span>
+        <span class="nv">sourceFiles: </span><span class="p">[</span><span class="nx">path</span><span class="p">.</span><span class="nx">relative</span> <span class="nx">cwd</span><span class="p">,</span> <span class="nx">filename</span><span class="p">]</span>
+        <span class="nv">generatedFile: </span><span class="nx">helpers</span><span class="p">.</span><span class="nx">baseFileName</span><span class="p">(</span><span class="nx">jsPath</span><span class="p">)</span>
+      <span class="p">}</span>
+    <span class="k">else</span>
+      <span class="nv">answer = </span><span class="nx">helpers</span><span class="p">.</span><span class="nx">merge</span> <span class="nx">answer</span><span class="p">,</span>
+        <span class="nv">sourceRoot: </span><span class="s">&quot;&quot;</span>
+        <span class="nv">sourceFiles: </span><span class="p">[</span><span class="nx">helpers</span><span class="p">.</span><span class="nx">baseFileName</span> <span class="nx">filename</span><span class="p">]</span>
+        <span class="nv">generatedFile: </span><span class="nx">helpers</span><span class="p">.</span><span class="nx">baseFileName</span><span class="p">(</span><span class="nx">filename</span><span class="p">,</span> <span class="kc">yes</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.js&quot;</span>
+  <span class="nx">answer</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-22">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>            
+              
+<p>Start up a new Node.js instance with the arguments in <code>--nodejs</code> passed to
+the <code>node</code> binary, preserving the other options.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">forkNode = </span><span class="nf">-&gt;</span>
   <span class="nv">nodeArgs = </span><span class="nx">opts</span><span class="p">.</span><span class="nx">nodejs</span><span class="p">.</span><span class="nx">split</span> <span class="sr">/\s+/</span>
   <span class="nv">args     = </span><span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">..]</span>
   <span class="nx">args</span><span class="p">.</span><span class="nx">splice</span> <span class="nx">args</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="s">&#39;--nodejs&#39;</span><span class="p">),</span> <span class="mi">2</span>
   <span class="nx">spawn</span> <span class="nx">process</span><span class="p">.</span><span class="nx">execPath</span><span class="p">,</span> <span class="nx">nodeArgs</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">args</span><span class="p">),</span>
     <span class="nv">cwd: </span>       <span class="nx">process</span><span class="p">.</span><span class="nx">cwd</span><span class="p">()</span>
     <span class="nv">env: </span>       <span class="nx">process</span><span class="p">.</span><span class="nx">env</span>
-    <span class="nv">customFds: </span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span></pre></div>             </td>           </tr>                               <tr id="section-24">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-24">&#182;</a>               </div>               <p>Print the <code>--help</code> usage message and exit. Deprecated switches are not
-shown.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">usage = </span><span class="nf">-&gt;</span>
-  <span class="nx">printLine</span> <span class="p">(</span><span class="k">new</span> <span class="nx">optparse</span><span class="p">.</span><span class="nx">OptionParser</span> <span class="nx">SWITCHES</span><span class="p">,</span> <span class="nx">BANNER</span><span class="p">).</span><span class="nx">help</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-25">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-25">&#182;</a>               </div>               <p>Print the <code>--version</code> message and exit.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">version = </span><span class="nf">-&gt;</span>
+    <span class="nv">customFds: </span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-23">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>            
+              
+<p>Print the <code>--help</code> usage message and exit. Deprecated switches are not
+shown.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">usage = </span><span class="nf">-&gt;</span>
+  <span class="nx">printLine</span> <span class="p">(</span><span class="k">new</span> <span class="nx">optparse</span><span class="p">.</span><span class="nx">OptionParser</span> <span class="nx">SWITCHES</span><span class="p">,</span> <span class="nx">BANNER</span><span class="p">).</span><span class="nx">help</span><span class="p">()</span></pre></div></div>
+            
+        </li>
+        
+           
+        <li id="section-24">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>            
+              
+<p>Print the <code>--version</code> message and exit.
+</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">version = </span><span class="nf">-&gt;</span>
   <span class="nx">printLine</span> <span class="s">&quot;CoffeeScript version </span><span class="si">#{</span><span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">VERSION</span><span class="si">}</span><span class="s">&quot;</span>
 
-</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 
+</pre></div></div>
+            
+        </li>
+        
+    </ul> 
+  </div>
+</body>
+</html>
