@@ -303,9 +303,12 @@ exports.Block = class Block extends Base
   # clean up obvious double-parentheses.
   compileRoot: (o) ->
     o.indent  = if o.bare then '' else TAB
-    o.scope   = new Scope null, this, null
     o.level   = LEVEL_TOP
     @spaced   = yes
+    o.scope   = new Scope null, this, null
+    # Mark given local variables in the root scope as parameters so they don't
+    # end up being declared on this block.
+    o.scope.parameter name for name in o.locals or []
     prelude   = []
     unless o.bare
       preludeExps = for exp, i in @expressions
