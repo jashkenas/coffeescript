@@ -15,7 +15,6 @@ replDefaults =
     # Require AST nodes to do some AST manipulation.
     {Block, Assign, Value, Literal} = require './nodes'
 
-    # TODO: fix #1829: pass in-scope vars and avoid accidentally shadowing them by omitting those declarations
     try
       # Generate the AST of the clean input.
       ast = CoffeeScript.nodes input
@@ -23,7 +22,7 @@ replDefaults =
       ast = new Block [
         new Assign (new Value new Literal '_'), ast, '='
       ]
-      js = ast.compile bare: yes
+      js = ast.compile bare: yes, locals: Object.keys(context)
     catch err
       console.log prettyErrorMessage err, filename, input, yes
     cb null, vm.runInContext(js, context, filename)
