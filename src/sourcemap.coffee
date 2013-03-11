@@ -1,5 +1,3 @@
-#### LineMapping
-
 # Hold data about mappings for one line of generated source code.
 
 class LineMapping
