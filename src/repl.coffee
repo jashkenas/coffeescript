@@ -23,9 +23,9 @@ replDefaults =
         new Assign (new Value new Literal '_'), ast, '='
       ]
       js = ast.compile bare: yes, locals: Object.keys(context)
+      cb null, vm.runInContext(js, context, filename)
     catch err
-      console.log prettyErrorMessage err, filename, input, yes
-    cb null, vm.runInContext(js, context, filename)
+      cb prettyErrorMessage(err, filename, input, yes)
 
 addMultilineHandler = (repl) ->
   {rli, inputStream, outputStream} = repl
