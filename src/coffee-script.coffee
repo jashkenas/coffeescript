@@ -96,7 +96,7 @@ exports.nodes = (source, options) ->
 # setting `__filename`, `__dirname`, and relative `require()`.
 exports.run = (code, options = {}) ->
   mainModule = require.main
-  options.sourceMap = true
+  options.sourceMap ?= true
   # Set the filename.
   mainModule.filename = process.argv[1] =
       if options.filename then fs.realpathSync(options.filename) else '.'
