@@ -87,7 +87,7 @@ testRepl "variables in scope are preserved", (input, output) ->
   input.emitLine 'a'
   eq '2', output.lastWrite()
 
-testRepl "existencial assignment of previously declared variable", (input, output) ->
+testRepl "existential assignment of previously declared variable", (input, output) ->
   input.emitLine 'a = null'
   input.emitLine 'a ?= 42'
   eq '42', output.lastWrite()
