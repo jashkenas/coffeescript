@@ -278,3 +278,4 @@ formatSourcePosition = (frame, getSourceMapping) ->
     "#{functionName} (#{fileLocation})"
   else
     fileLocation
+
