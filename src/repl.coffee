@@ -78,10 +78,10 @@ addMultilineHandler = (repl) ->
 
 module.exports =
   start: (opts = {}) ->
-    [major, minor, build] = process.version[1..].split('.').map (n) -> parseInt(n)
+    [major, minor, build] = process.versions.node.split('.').map (n) -> parseInt(n)
 
-    if major is 0 and minor <= 7
-      console.warn "Node 0.8.0+ required for coffeescript REPL"
+    if major is 0 and minor < 8
+      console.warn "Node 0.8.0+ required for CoffeeScript REPL"
       process.exit 1
 
     opts = merge replDefaults, opts
