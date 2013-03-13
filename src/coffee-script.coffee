@@ -193,18 +193,12 @@ parser.yy.parseError = (message, {token}) ->
 # sourceMap, so we must monkey-patch Error to display CoffeeScript source
 # positions.
 
-# Ideally, this would happen in a way that is scalable to multiple compile-to-
-# JS languages trying to do the same thing in the same NodeJS process. We can
-# implement it as if there were an API, and then patch in support for that
-# API. The following maybe should be in its own npm module that multiple
-# compilers can include.
-
 patched = false
 patchStackTrace = ->
   return if patched
   patched = true
   mainModule = require.main
-  # Map of filenames -> functions that return a sourceMap string.
+  # Map of filenames -> sourceMap object.
   mainModule._sourceMaps = {}
 
   # (Assigning to a property of the Module object in the normal module cache is
@@ -216,7 +210,14 @@ patchStackTrace = ->
 
     getSourceMapping = (filename, line, column) ->
       sourceMap = mainModule._sourceMaps[filename]
-      answer = sourceMap.getSourcePosition [line, column] if sourceMap
+      answer = sourceMap.getSourcePosition [line - 1, column] if sourceMap
+      if answer
+        answer[0] += 1
+        # # un-comment to dirty patch the column number, not very accurate
+        # if answer[1] > 3
+        #   answer[1] -= 3
+        # else
+        #   answer[1] = 0
       answer
 
     frames = for frame in stack
