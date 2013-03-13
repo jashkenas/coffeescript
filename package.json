@@ -9,7 +9,7 @@
     "url":        "https://raw.github.com/jashkenas/coffee-script/master/LICENSE"
   }],
   "engines":      {
-    "node":       ">=0.4.0"
+    "node":       ">=0.8.0"
   },
   "directories" : {
     "lib" : "./lib/coffee-script"
