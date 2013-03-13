@@ -4,129 +4,111 @@
 <head>
   <title>cake.coffee</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <link rel="stylesheet" media="all" href="public/stylesheets/normalize.css" />
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
   <link rel="stylesheet" media="all" href="docco.css" />
 </head>
 <body>
-  <div class="container">
-    <div class="page">
-
-      <div class="header">
-        
-          <h1>cake.coffee</h1>
-        
-
-        
-          <div class="toc">
-            <h3>Table of Contents</h3>
-            <ol>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
               
-                
-                <li>
-                  <a class="source" href="browser.html">
-                    browser.coffee
-                  </a>
-                </li>
+              <a class="source" href="browser.html">
+                browser.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="cake.html">
-                    cake.coffee
-                  </a>
-                </li>
+              <a class="source" href="cake.html">
+                cake.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="coffee-script.html">
-                    coffee-script.coffee
-                  </a>
-                </li>
+              <a class="source" href="coffee-script.html">
+                coffee-script.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="command.html">
-                    command.coffee
-                  </a>
-                </li>
+              <a class="source" href="command.html">
+                command.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="grammar.html">
-                    grammar.coffee
-                  </a>
-                </li>
+              <a class="source" href="grammar.html">
+                grammar.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="helpers.html">
-                    helpers.coffee
-                  </a>
-                </li>
+              <a class="source" href="helpers.html">
+                helpers.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="index.html">
-                    index.coffee
-                  </a>
-                </li>
+              <a class="source" href="index.html">
+                index.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="lexer.html">
-                    lexer.coffee
-                  </a>
-                </li>
+              <a class="source" href="lexer.html">
+                lexer.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="nodes.html">
-                    nodes.coffee
-                  </a>
-                </li>
+              <a class="source" href="nodes.html">
+                nodes.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="optparse.html">
-                    optparse.coffee
-                  </a>
-                </li>
+              <a class="source" href="optparse.html">
+                optparse.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="repl.html">
-                    repl.coffee
-                  </a>
-                </li>
+              <a class="source" href="repl.html">
+                repl.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="rewriter.html">
-                    rewriter.coffee
-                  </a>
-                </li>
+              <a class="source" href="rewriter.html">
+                rewriter.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="scope.html">
-                    scope.litcoffee
-                  </a>
-                </li>
+              <a class="source" href="scope.html">
+                scope.litcoffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="sourcemap.html">
-                    sourcemap.coffee
-                  </a>
-                </li>
-              
-            </ol>
+              <a class="source" href="sourcemap.html">
+                sourcemap.coffee
+              </a>
+            
           </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
         
-      </div>
-
-      
+          <li id="title">
+              <div class="annotation">
+                  <h1>cake.coffee</h1>
+              </div>
+          </li>
         
-        <p><code>cake</code> is a simplified version of <a href="http://www.gnu.org/software/make/">Make</a>
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p><code>cake</code> is a simplified version of <a href="http://www.gnu.org/software/make/">Make</a>
 (<a href="http://rake.rubyforge.org/">Rake</a>, <a href="http://github.com/280north/jake">Jake</a>)
 for CoffeeScript. You define tasks with names and descriptions in a Cakefile,
 and can call them from the command line, or invoke them from other tasks.
@@ -140,79 +122,127 @@ current directory&#39;s Cakefile.
 
 </p>
 
-        
-          <div class="highlight"><pre><span class="nv">fs           = </span><span class="nx">require</span> <span class="s">&#39;fs&#39;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">fs           = </span><span class="nx">require</span> <span class="s">&#39;fs&#39;</span>
 <span class="nv">path         = </span><span class="nx">require</span> <span class="s">&#39;path&#39;</span>
 <span class="nv">helpers      = </span><span class="nx">require</span> <span class="s">&#39;./helpers&#39;</span>
 <span class="nv">optparse     = </span><span class="nx">require</span> <span class="s">&#39;./optparse&#39;</span>
 <span class="nv">CoffeeScript = </span><span class="nx">require</span> <span class="s">&#39;./coffee-script&#39;</span>
 
-<span class="nv">existsSync   = </span><span class="nx">fs</span><span class="p">.</span><span class="nx">existsSync</span> <span class="o">or</span> <span class="nx">path</span><span class="p">.</span><span class="nx">existsSync</span></pre></div>
+<span class="nv">existsSync   = </span><span class="nx">fs</span><span class="p">.</span><span class="nx">existsSync</span> <span class="o">or</span> <span class="nx">path</span><span class="p">.</span><span class="nx">existsSync</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              
 <p>Keep track of the list of defined tasks, the accepted options, and so on.
 
 </p>
 
-        
-          <div class="highlight"><pre><span class="nv">tasks     = </span><span class="p">{}</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">tasks     = </span><span class="p">{}</span>
 <span class="nv">options   = </span><span class="p">{}</span>
 <span class="nv">switches  = </span><span class="p">[]</span>
-<span class="nv">oparse    = </span><span class="kc">null</span></pre></div>
+<span class="nv">oparse    = </span><span class="kc">null</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              
 <p>Mixin the top-level Cake functions for Cakefiles to use directly.
 
 </p>
 
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nx">helpers</span><span class="p">.</span><span class="nx">extend</span> <span class="nx">global</span><span class="p">,</span></pre></div></div>
+            
+        </li>
         
-          <div class="highlight"><pre><span class="nx">helpers</span><span class="p">.</span><span class="nx">extend</span> <span class="nx">global</span><span class="p">,</span></pre></div>
         
-      
-        
-        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              
 <p>Define a Cake task with a short name, an optional sentence description,
 and the function to run as the action itself.
 
 </p>
 
-        
-          <div class="highlight"><pre>  <span class="nv">task: </span><span class="nf">(name, description, action) -&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">task: </span><span class="nf">(name, description, action) -&gt;</span>
     <span class="p">[</span><span class="nx">action</span><span class="p">,</span> <span class="nx">description</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nx">description</span><span class="p">,</span> <span class="nx">action</span><span class="p">]</span> <span class="k">unless</span> <span class="nx">action</span>
-    <span class="nx">tasks</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="nx">name</span><span class="p">,</span> <span class="nx">description</span><span class="p">,</span> <span class="nx">action</span><span class="p">}</span></pre></div>
+    <span class="nx">tasks</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="nx">name</span><span class="p">,</span> <span class="nx">description</span><span class="p">,</span> <span class="nx">action</span><span class="p">}</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              
 <p>Define an option that the Cakefile accepts. The parsed options hash,
 containing all of the command-line options passed, will be made available
 as the first argument to the action.
 
 </p>
 
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">option: </span><span class="nf">(letter, flag, description) -&gt;</span>
+    <span class="nx">switches</span><span class="p">.</span><span class="nx">push</span> <span class="p">[</span><span class="nx">letter</span><span class="p">,</span> <span class="nx">flag</span><span class="p">,</span> <span class="nx">description</span><span class="p">]</span></pre></div></div>
+            
+        </li>
         
-          <div class="highlight"><pre>  <span class="nv">option: </span><span class="nf">(letter, flag, description) -&gt;</span>
-    <span class="nx">switches</span><span class="p">.</span><span class="nx">push</span> <span class="p">[</span><span class="nx">letter</span><span class="p">,</span> <span class="nx">flag</span><span class="p">,</span> <span class="nx">description</span><span class="p">]</span></pre></div>
         
-      
-        
-        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              
 <p>Invoke another task in the current Cakefile.
 
 </p>
 
-        
-          <div class="highlight"><pre>  <span class="nv">invoke: </span><span class="nf">(name) -&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">invoke: </span><span class="nf">(name) -&gt;</span>
     <span class="nx">missingTask</span> <span class="nx">name</span> <span class="k">unless</span> <span class="nx">tasks</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span>
-    <span class="nx">tasks</span><span class="p">[</span><span class="nx">name</span><span class="p">].</span><span class="nx">action</span> <span class="nx">options</span></pre></div>
+    <span class="nx">tasks</span><span class="p">[</span><span class="nx">name</span><span class="p">].</span><span class="nx">action</span> <span class="nx">options</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              
 <p>Run <code>cake</code>. Executes all of the tasks you pass, in order. Note that Node&#39;s
 asynchrony may cause tasks to execute in a different order than you&#39;d expect.
 If no tasks are passed, print the help screen. Keep a reference to the
@@ -220,8 +250,9 @@ original directory name, when running Cake tasks from subdirectories.
 
 </p>
 
-        
-          <div class="highlight"><pre><span class="nv">exports.run = </span><span class="nf">-&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">exports.run = </span><span class="nf">-&gt;</span>
   <span class="nv">global.__originalDirname = </span><span class="nx">fs</span><span class="p">.</span><span class="nx">realpathSync</span> <span class="s">&#39;.&#39;</span>
   <span class="nx">process</span><span class="p">.</span><span class="nx">chdir</span> <span class="nx">cakefileDirectory</span> <span class="nx">__originalDirname</span>
   <span class="nv">args = </span><span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">..]</span>
@@ -232,17 +263,25 @@ original directory name, when running Cake tasks from subdirectories.
     <span class="nv">options = </span><span class="nx">oparse</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">args</span><span class="p">)</span>
   <span class="k">catch</span> <span class="nx">e</span>
     <span class="k">return</span> <span class="nx">fatalError</span> <span class="s">&quot;</span><span class="si">#{</span><span class="nx">e</span><span class="si">}</span><span class="s">&quot;</span>
-  <span class="nx">invoke</span> <span class="nx">arg</span> <span class="k">for</span> <span class="nx">arg</span> <span class="k">in</span> <span class="nx">options</span><span class="p">.</span><span class="nx">arguments</span></pre></div>
+  <span class="nx">invoke</span> <span class="nx">arg</span> <span class="k">for</span> <span class="nx">arg</span> <span class="k">in</span> <span class="nx">options</span><span class="p">.</span><span class="nx">arguments</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              
 <p>Display the list of Cake tasks in a format similar to <code>rake -T</code>
 
 </p>
 
-        
-          <div class="highlight"><pre><span class="nv">printTasks = </span><span class="nf">-&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">printTasks = </span><span class="nf">-&gt;</span>
   <span class="nv">relative = </span><span class="nx">path</span><span class="p">.</span><span class="nx">relative</span> <span class="o">or</span> <span class="nx">path</span><span class="p">.</span><span class="nx">resolve</span>
   <span class="nv">cakefilePath = </span><span class="nx">path</span><span class="p">.</span><span class="nx">join</span> <span class="nx">relative</span><span class="p">(</span><span class="nx">__originalDirname</span><span class="p">,</span> <span class="nx">process</span><span class="p">.</span><span class="nx">cwd</span><span class="p">()),</span> <span class="s">&#39;Cakefile&#39;</span>
   <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&quot;</span><span class="si">#{</span><span class="nx">cakefilePath</span><span class="si">}</span><span class="s"> defines the following tasks:\n&quot;</span>
@@ -251,42 +290,58 @@ original directory name, when running Cake tasks from subdirectories.
     <span class="nv">spaces = </span><span class="k">if</span> <span class="nx">spaces</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">then</span> <span class="nb">Array</span><span class="p">(</span><span class="nx">spaces</span> <span class="o">+</span> <span class="mi">1</span><span class="p">).</span><span class="nx">join</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
     <span class="nv">desc   = </span><span class="k">if</span> <span class="nx">task</span><span class="p">.</span><span class="nx">description</span> <span class="k">then</span> <span class="s">&quot;</span><span class="err">#</span><span class="s"> </span><span class="si">#{</span><span class="nx">task</span><span class="p">.</span><span class="nx">description</span><span class="si">}</span><span class="s">&quot;</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
     <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&quot;cake </span><span class="si">#{</span><span class="nx">name</span><span class="si">}#{</span><span class="nx">spaces</span><span class="si">}</span><span class="s"> </span><span class="si">#{</span><span class="nx">desc</span><span class="si">}</span><span class="s">&quot;</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="nx">oparse</span><span class="p">.</span><span class="nx">help</span><span class="p">()</span> <span class="k">if</span> <span class="nx">switches</span><span class="p">.</span><span class="nx">length</span></pre></div>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="nx">oparse</span><span class="p">.</span><span class="nx">help</span><span class="p">()</span> <span class="k">if</span> <span class="nx">switches</span><span class="p">.</span><span class="nx">length</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              
 <p>Print an error and exit when attempting to use an invalid task/option.
 
 </p>
 
-        
-          <div class="highlight"><pre><span class="nv">fatalError = </span><span class="nf">(message) -&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">fatalError = </span><span class="nf">(message) -&gt;</span>
   <span class="nx">console</span><span class="p">.</span><span class="nx">error</span> <span class="nx">message</span> <span class="o">+</span> <span class="s">&#39;\n&#39;</span>
   <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&#39;To see a list of all tasks/options, run &quot;cake&quot;&#39;</span>
   <span class="nx">process</span><span class="p">.</span><span class="nx">exit</span> <span class="mi">1</span>
 
-<span class="nv">missingTask = </span><span class="nf">(task) -&gt;</span> <span class="nx">fatalError</span> <span class="s">&quot;No such task: </span><span class="si">#{</span><span class="nx">task</span><span class="si">}</span><span class="s">&quot;</span></pre></div>
+<span class="nv">missingTask = </span><span class="nf">(task) -&gt;</span> <span class="nx">fatalError</span> <span class="s">&quot;No such task: </span><span class="si">#{</span><span class="nx">task</span><span class="si">}</span><span class="s">&quot;</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              
 <p>When <code>cake</code> is invoked, search in the current and all parent directories
 to find the relevant Cakefile.
 </p>
 
-        
-          <div class="highlight"><pre><span class="nv">cakefileDirectory = </span><span class="nf">(dir) -&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">cakefileDirectory = </span><span class="nf">(dir) -&gt;</span>
   <span class="k">return</span> <span class="nx">dir</span> <span class="k">if</span> <span class="nx">existsSync</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span> <span class="nx">dir</span><span class="p">,</span> <span class="s">&#39;Cakefile&#39;</span>
   <span class="nv">parent = </span><span class="nx">path</span><span class="p">.</span><span class="nx">normalize</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span> <span class="nx">dir</span><span class="p">,</span> <span class="s">&#39;..&#39;</span>
   <span class="k">return</span> <span class="nx">cakefileDirectory</span> <span class="nx">parent</span> <span class="k">unless</span> <span class="nx">parent</span> <span class="o">is</span> <span class="nx">dir</span>
   <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span> <span class="s">&quot;Cakefile not found in </span><span class="si">#{</span><span class="nx">process</span><span class="p">.</span><span class="nx">cwd</span><span class="p">()</span><span class="si">}</span><span class="s">&quot;</span>
 
-</pre></div>
+</pre></div></div>
+            
+        </li>
         
-      
-      <div class="fleur">h</div>
-    </div>
+    </ul>
   </div>
 </body>
 </html>

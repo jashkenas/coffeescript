@@ -4,129 +4,111 @@
 <head>
   <title>rewriter.coffee</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <link rel="stylesheet" media="all" href="public/stylesheets/normalize.css" />
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
   <link rel="stylesheet" media="all" href="docco.css" />
 </head>
 <body>
-  <div class="container">
-    <div class="page">
-
-      <div class="header">
-        
-          <h1>rewriter.coffee</h1>
-        
-
-        
-          <div class="toc">
-            <h3>Table of Contents</h3>
-            <ol>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
               
-                
-                <li>
-                  <a class="source" href="browser.html">
-                    browser.coffee
-                  </a>
-                </li>
+              <a class="source" href="browser.html">
+                browser.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="cake.html">
-                    cake.coffee
-                  </a>
-                </li>
+              <a class="source" href="cake.html">
+                cake.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="coffee-script.html">
-                    coffee-script.coffee
-                  </a>
-                </li>
+              <a class="source" href="coffee-script.html">
+                coffee-script.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="command.html">
-                    command.coffee
-                  </a>
-                </li>
+              <a class="source" href="command.html">
+                command.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="grammar.html">
-                    grammar.coffee
-                  </a>
-                </li>
+              <a class="source" href="grammar.html">
+                grammar.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="helpers.html">
-                    helpers.coffee
-                  </a>
-                </li>
+              <a class="source" href="helpers.html">
+                helpers.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="index.html">
-                    index.coffee
-                  </a>
-                </li>
+              <a class="source" href="index.html">
+                index.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="lexer.html">
-                    lexer.coffee
-                  </a>
-                </li>
+              <a class="source" href="lexer.html">
+                lexer.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="nodes.html">
-                    nodes.coffee
-                  </a>
-                </li>
+              <a class="source" href="nodes.html">
+                nodes.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="optparse.html">
-                    optparse.coffee
-                  </a>
-                </li>
+              <a class="source" href="optparse.html">
+                optparse.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="repl.html">
-                    repl.coffee
-                  </a>
-                </li>
+              <a class="source" href="repl.html">
+                repl.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="rewriter.html">
-                    rewriter.coffee
-                  </a>
-                </li>
+              <a class="source" href="rewriter.html">
+                rewriter.coffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="scope.html">
-                    scope.litcoffee
-                  </a>
-                </li>
+              <a class="source" href="scope.html">
+                scope.litcoffee
+              </a>
+            
               
-                
-                <li>
-                  <a class="source" href="sourcemap.html">
-                    sourcemap.coffee
-                  </a>
-                </li>
-              
-            </ol>
+              <a class="source" href="sourcemap.html">
+                sourcemap.coffee
+              </a>
+            
           </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
         
-      </div>
-
-      
+          <li id="title">
+              <div class="annotation">
+                  <h1>rewriter.coffee</h1>
+              </div>
+          </li>
         
-        <p>The CoffeeScript language has a good deal of optional syntax, implicit syntax,
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p>The CoffeeScript language has a good deal of optional syntax, implicit syntax,
 and shorthand syntax. This can greatly complicate a grammar and bloat
 the resulting parse table. Instead of making the parser handle it all, we take
 a series of passes over the token stream, using this <strong>Rewriter</strong> to convert
@@ -138,26 +120,42 @@ parentheses, and generally clean things up.
 
 </p>
 
-        
-          <div class="highlight"><pre><span class="nv">generate = </span><span class="nf">(tag, value) -&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">generate = </span><span class="nf">(tag, value) -&gt;</span>
     <span class="nv">tok = </span><span class="p">[</span><span class="nx">tag</span><span class="p">,</span> <span class="nx">value</span><span class="p">]</span>
     <span class="nv">tok.generated = </span><span class="kc">yes</span>
-    <span class="nx">tok</span></pre></div>
+    <span class="nx">tok</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              
 <p>The <strong>Rewriter</strong> class is used by the <a href="lexer.html">Lexer</a>, directly against
 its internal array of tokens.
 
 </p>
 
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="k">class</span> <span class="nx">exports</span><span class="p">.</span><span class="nx">Rewriter</span></pre></div></div>
+            
+        </li>
         
-          <div class="highlight"><pre><span class="k">class</span> <span class="nx">exports</span><span class="p">.</span><span class="nx">Rewriter</span></pre></div>
         
-      
-        
-        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              
 <p>Helpful snippet for debugging:
     console.log (t[0] + &#39;/&#39; + t[1] for t in @tokens).join &#39; &#39;
 
@@ -170,8 +168,9 @@ corrected before implicit parentheses can be wrapped around blocks of code.
 
 </p>
 
-        
-          <div class="highlight"><pre>  <span class="nv">rewrite: </span><span class="nf">(@tokens) -&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">rewrite: </span><span class="nf">(@tokens) -&gt;</span>
     <span class="nx">@removeLeadingNewlines</span><span class="p">()</span>
     <span class="nx">@removeMidExpressionNewlines</span><span class="p">()</span>
     <span class="nx">@closeOpenCalls</span><span class="p">()</span>
@@ -180,11 +179,18 @@ corrected before implicit parentheses can be wrapped around blocks of code.
     <span class="nx">@tagPostfixConditionals</span><span class="p">()</span>
     <span class="nx">@addImplicitBracesAndParens</span><span class="p">()</span>
     <span class="nx">@addLocationDataToGeneratedTokens</span><span class="p">()</span>
-    <span class="nx">@tokens</span></pre></div>
+    <span class="nx">@tokens</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              
 <p>Rewrite the token stream, looking one token ahead and behind.
 Allow the return value of the block to tell us how many tokens to move
 forwards (or backwards) in the stream, to make sure we don&#39;t miss anything
@@ -193,8 +199,9 @@ our feet.
 
 </p>
 
-        
-          <div class="highlight"><pre>  <span class="nv">scanTokens: </span><span class="nf">(block) -&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">scanTokens: </span><span class="nf">(block) -&gt;</span>
     <span class="p">{</span><span class="nx">tokens</span><span class="p">}</span> <span class="o">=</span> <span class="k">this</span>
     <span class="nv">i = </span><span class="mi">0</span>
     <span class="nx">i</span> <span class="o">+=</span> <span class="nx">block</span><span class="p">.</span><span class="nx">call</span> <span class="k">this</span><span class="p">,</span> <span class="nx">token</span><span class="p">,</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">tokens</span> <span class="k">while</span> <span class="nv">token = </span><span class="nx">tokens</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span>
@@ -211,47 +218,71 @@ our feet.
       <span class="k">else</span> <span class="k">if</span> <span class="nx">token</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">in</span> <span class="nx">EXPRESSION_END</span>
         <span class="nx">levels</span> <span class="o">-=</span> <span class="mi">1</span>
       <span class="nx">i</span> <span class="o">+=</span> <span class="mi">1</span>
-    <span class="nx">i</span> <span class="o">-</span> <span class="mi">1</span></pre></div>
+    <span class="nx">i</span> <span class="o">-</span> <span class="mi">1</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              
 <p>Leading newlines would introduce an ambiguity in the grammar, so we
 dispatch them here.
 
 </p>
 
-        
-          <div class="highlight"><pre>  <span class="nv">removeLeadingNewlines: </span><span class="nf">-&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">removeLeadingNewlines: </span><span class="nf">-&gt;</span>
     <span class="k">break</span> <span class="k">for</span> <span class="p">[</span><span class="nx">tag</span><span class="p">],</span> <span class="nx">i</span> <span class="k">in</span> <span class="nx">@tokens</span> <span class="k">when</span> <span class="nx">tag</span> <span class="o">isnt</span> <span class="s">&#39;TERMINATOR&#39;</span>
-    <span class="nx">@tokens</span><span class="p">.</span><span class="nx">splice</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">i</span> <span class="k">if</span> <span class="nx">i</span></pre></div>
+    <span class="nx">@tokens</span><span class="p">.</span><span class="nx">splice</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">i</span> <span class="k">if</span> <span class="nx">i</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              
 <p>Some blocks occur in the middle of expressions -- when we&#39;re expecting
 this, remove their trailing newlines.
 
 </p>
 
-        
-          <div class="highlight"><pre>  <span class="nv">removeMidExpressionNewlines: </span><span class="nf">-&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">removeMidExpressionNewlines: </span><span class="nf">-&gt;</span>
     <span class="nx">@scanTokens</span> <span class="nf">(token, i, tokens) -&gt;</span>
       <span class="k">return</span> <span class="mi">1</span> <span class="k">unless</span> <span class="nx">token</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="s">&#39;TERMINATOR&#39;</span> <span class="o">and</span> <span class="nx">@tag</span><span class="p">(</span><span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">in</span> <span class="nx">EXPRESSION_CLOSE</span>
       <span class="nx">tokens</span><span class="p">.</span><span class="nx">splice</span> <span class="nx">i</span><span class="p">,</span> <span class="mi">1</span>
-      <span class="mi">0</span></pre></div>
+      <span class="mi">0</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              
 <p>The lexer has tagged the opening parenthesis of a method call. Match it with
 its paired close. We have the mis-nested outdent case included here for
 calls that close on the same line, just before their outdent.
 
 </p>
 
-        
-          <div class="highlight"><pre>  <span class="nv">closeOpenCalls: </span><span class="nf">-&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">closeOpenCalls: </span><span class="nf">-&gt;</span>
     <span class="nv">condition = </span><span class="nf">(token, i) -&gt;</span>
       <span class="nx">token</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">in</span> <span class="p">[</span><span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="s">&#39;CALL_END&#39;</span><span class="p">]</span> <span class="o">or</span>
       <span class="nx">token</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="s">&#39;OUTDENT&#39;</span> <span class="o">and</span> <span class="nx">@tag</span><span class="p">(</span><span class="nx">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">is</span> <span class="s">&#39;)&#39;</span>
@@ -261,18 +292,26 @@ calls that close on the same line, just before their outdent.
 
     <span class="nx">@scanTokens</span> <span class="nf">(token, i) -&gt;</span>
       <span class="nx">@detectEnd</span> <span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">condition</span><span class="p">,</span> <span class="nx">action</span> <span class="k">if</span> <span class="nx">token</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="s">&#39;CALL_START&#39;</span>
-      <span class="mi">1</span></pre></div>
+      <span class="mi">1</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              
 <p>The lexer has tagged the opening parenthesis of an indexing operation call.
 Match it with its paired close.
 
 </p>
 
-        
-          <div class="highlight"><pre>  <span class="nv">closeOpenIndexes: </span><span class="nf">-&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">closeOpenIndexes: </span><span class="nf">-&gt;</span>
     <span class="nv">condition = </span><span class="nf">(token, i) -&gt;</span>
       <span class="nx">token</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">in</span> <span class="p">[</span><span class="s">&#39;]&#39;</span><span class="p">,</span> <span class="s">&#39;INDEX_END&#39;</span><span class="p">]</span>
 
@@ -281,50 +320,74 @@ Match it with its paired close.
 
     <span class="nx">@scanTokens</span> <span class="nf">(token, i) -&gt;</span>
       <span class="nx">@detectEnd</span> <span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">condition</span><span class="p">,</span> <span class="nx">action</span> <span class="k">if</span> <span class="nx">token</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="s">&#39;INDEX_START&#39;</span>
-      <span class="mi">1</span></pre></div>
+      <span class="mi">1</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              
 <p>Match tags in token stream starting at i with pattern, skipping HERECOMMENTs
 Pattern may consist of strings (equality), an array of strings (one of)
 or null (wildcard)
 
 </p>
 
-        
-          <div class="highlight"><pre>  <span class="nv">matchTags: </span><span class="nf">(i, pattern...) -&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">matchTags: </span><span class="nf">(i, pattern...) -&gt;</span>
     <span class="nv">fuzz = </span><span class="mi">0</span>
     <span class="k">for</span> <span class="nx">j</span> <span class="k">in</span> <span class="p">[</span><span class="mi">0</span> <span class="p">...</span> <span class="nx">pattern</span><span class="p">.</span><span class="nx">length</span><span class="p">]</span>
       <span class="nx">fuzz</span> <span class="o">+=</span> <span class="mi">2</span> <span class="k">while</span> <span class="nx">@tag</span><span class="p">(</span><span class="nx">i</span> <span class="o">+</span> <span class="nx">j</span> <span class="o">+</span> <span class="nx">fuzz</span><span class="p">)</span> <span class="o">is</span> <span class="s">&#39;HERECOMMENT&#39;</span>
       <span class="k">continue</span> <span class="k">if</span> <span class="o">not</span> <span class="nx">pattern</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span><span class="o">?</span>
       <span class="nx">pattern</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nx">pattern</span><span class="p">[</span><span class="nx">j</span><span class="p">]]</span> <span class="k">if</span> <span class="k">typeof</span> <span class="nx">pattern</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="o">is</span> <span class="s">&#39;string&#39;</span>
       <span class="k">return</span> <span class="kc">no</span> <span class="k">if</span> <span class="nx">@tag</span><span class="p">(</span><span class="nx">i</span> <span class="o">+</span> <span class="nx">j</span> <span class="o">+</span> <span class="nx">fuzz</span><span class="p">)</span> <span class="o">not</span> <span class="k">in</span> <span class="nx">pattern</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span>
-    <span class="kc">yes</span></pre></div>
+    <span class="kc">yes</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              
 <p>yes iff standing in front of something looking like
 @<x>: or <x>:, skipping over &#39;HERECOMMENT&#39;s
 
 </p>
 
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">looksObjectish: </span><span class="nf">(j) -&gt;</span>
+    <span class="nx">@matchTags</span><span class="p">(</span><span class="nx">j</span><span class="p">,</span> <span class="s">&#39;@&#39;</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="s">&#39;:&#39;</span><span class="p">)</span> <span class="o">or</span> <span class="nx">@matchTags</span><span class="p">(</span><span class="nx">j</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="s">&#39;:&#39;</span><span class="p">)</span></pre></div></div>
+            
+        </li>
         
-          <div class="highlight"><pre>  <span class="nv">looksObjectish: </span><span class="nf">(j) -&gt;</span>
-    <span class="nx">@matchTags</span><span class="p">(</span><span class="nx">j</span><span class="p">,</span> <span class="s">&#39;@&#39;</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="s">&#39;:&#39;</span><span class="p">)</span> <span class="o">or</span> <span class="nx">@matchTags</span><span class="p">(</span><span class="nx">j</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="s">&#39;:&#39;</span><span class="p">)</span></pre></div>
         
-      
-        
-        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              
 <p>yes iff current line of tokens contain an element of tags on same
 expression level. Stop searching at LINEBREAKS or explicit start of
 containing balanced expression.
 
 </p>
 
-        
-          <div class="highlight"><pre>  <span class="nv">findTagsBackwards: </span><span class="nf">(i, tags) -&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">findTagsBackwards: </span><span class="nf">(i, tags) -&gt;</span>
     <span class="nv">backStack = </span><span class="p">[]</span>
     <span class="k">while</span> <span class="nx">i</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">and</span> <span class="p">(</span><span class="nx">backStack</span><span class="p">.</span><span class="nx">length</span> <span class="o">or</span>
           <span class="nx">@tag</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span> <span class="o">not</span> <span class="k">in</span> <span class="nx">tags</span> <span class="o">and</span>
@@ -333,69 +396,109 @@ containing balanced expression.
       <span class="nx">backStack</span><span class="p">.</span><span class="nx">push</span> <span class="nx">@tag</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span> <span class="k">if</span> <span class="nx">@tag</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span> <span class="k">in</span> <span class="nx">EXPRESSION_END</span>
       <span class="nx">backStack</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span> <span class="k">if</span> <span class="nx">@tag</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span> <span class="k">in</span> <span class="nx">EXPRESSION_START</span> <span class="o">and</span> <span class="nx">backStack</span><span class="p">.</span><span class="nx">length</span>
       <span class="nx">i</span> <span class="o">-=</span> <span class="mi">1</span>
-    <span class="nx">@tag</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span> <span class="k">in</span> <span class="nx">tags</span></pre></div>
+    <span class="nx">@tag</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span> <span class="k">in</span> <span class="nx">tags</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              
 <p>Look for signs of implicit calls and objects in the token stream and
 add them.
 
 </p>
 
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">addImplicitBracesAndParens: </span><span class="nf">-&gt;</span></pre></div></div>
+            
+        </li>
         
-          <div class="highlight"><pre>  <span class="nv">addImplicitBracesAndParens: </span><span class="nf">-&gt;</span></pre></div>
         
-      
-        
-        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              
 <p>Track current balancing depth (both implicit and explicit) on stack.
 
 </p>
 
-        
-          <div class="highlight"><pre>    <span class="nv">stack = </span><span class="p">[]</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>    <span class="nv">stack = </span><span class="p">[]</span>
 
     <span class="nx">@scanTokens</span> <span class="nf">(token, i, tokens) -&gt;</span>
       <span class="p">[</span><span class="nx">tag</span><span class="p">]</span>     <span class="o">=</span> <span class="nx">token</span>
       <span class="p">[</span><span class="nx">prevTag</span><span class="p">]</span> <span class="o">=</span> <span class="k">if</span> <span class="nx">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">then</span> <span class="nx">tokens</span><span class="p">[</span><span class="nx">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="p">[]</span>
       <span class="p">[</span><span class="nx">nextTag</span><span class="p">]</span> <span class="o">=</span> <span class="k">if</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">tokens</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">then</span> <span class="nx">tokens</span><span class="p">[</span><span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="p">[]</span>
       <span class="nv">stackTop  = </span><span class="nf">-&gt;</span> <span class="nx">stack</span><span class="p">[</span><span class="nx">stack</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-      <span class="nv">startIdx  = </span><span class="nx">i</span></pre></div>
+      <span class="nv">startIdx  = </span><span class="nx">i</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              
 <p>Helper function, used for keeping track of the number of tokens consumed
 and spliced, when returning for getting a new token.
 
 </p>
 
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>      <span class="nv">forward   = </span><span class="nf">(n) -&gt;</span> <span class="nx">i</span> <span class="o">-</span> <span class="nx">startIdx</span> <span class="o">+</span> <span class="nx">n</span></pre></div></div>
+            
+        </li>
         
-          <div class="highlight"><pre>      <span class="nv">forward   = </span><span class="nf">(n) -&gt;</span> <span class="nx">i</span> <span class="o">-</span> <span class="nx">startIdx</span> <span class="o">+</span> <span class="nx">n</span></pre></div>
         
-      
-        
-        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              
 <p>Helper functions
 
 </p>
 
-        
-          <div class="highlight"><pre>      <span class="nv">inImplicit        = </span><span class="nf">-&gt;</span> <span class="nx">stackTop</span><span class="p">()</span><span class="o">?</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">?</span><span class="p">.</span><span class="nx">ours</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>      <span class="nv">inImplicit        = </span><span class="nf">-&gt;</span> <span class="nx">stackTop</span><span class="p">()</span><span class="o">?</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">?</span><span class="p">.</span><span class="nx">ours</span>
       <span class="nv">inImplicitCall    = </span><span class="nf">-&gt;</span> <span class="nx">inImplicit</span><span class="p">()</span> <span class="o">and</span> <span class="nx">stackTop</span><span class="p">()</span><span class="o">?</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="s">&#39;(&#39;</span>
-      <span class="nv">inImplicitObject  = </span><span class="nf">-&gt;</span> <span class="nx">inImplicit</span><span class="p">()</span> <span class="o">and</span> <span class="nx">stackTop</span><span class="p">()</span><span class="o">?</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="s">&#39;{&#39;</span></pre></div>
+      <span class="nv">inImplicitObject  = </span><span class="nf">-&gt;</span> <span class="nx">inImplicit</span><span class="p">()</span> <span class="o">and</span> <span class="nx">stackTop</span><span class="p">()</span><span class="o">?</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="s">&#39;{&#39;</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              
 <p>Unclosed control statement inside implicit parens (like
 class declaration or if-conditionals)
 
 </p>
 
-        
-          <div class="highlight"><pre>      <span class="nv">inImplicitControl = </span><span class="nf">-&gt;</span> <span class="nx">inImplicit</span> <span class="o">and</span> <span class="nx">stackTop</span><span class="p">()</span><span class="o">?</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="s">&#39;CONTROL&#39;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>      <span class="nv">inImplicitControl = </span><span class="nf">-&gt;</span> <span class="nx">inImplicit</span> <span class="o">and</span> <span class="nx">stackTop</span><span class="p">()</span><span class="o">?</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="s">&#39;CONTROL&#39;</span>
 
       <span class="nv">startImplicitCall = </span><span class="nf">(j) -&gt;</span>
         <span class="nv">idx = </span><span class="nx">j</span> <span class="o">?</span> <span class="nx">i</span>
@@ -418,60 +521,92 @@ class declaration or if-conditionals)
         <span class="nv">j = </span><span class="nx">j</span> <span class="o">?</span> <span class="nx">i</span>
         <span class="nx">stack</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span>
         <span class="nx">tokens</span><span class="p">.</span><span class="nx">splice</span> <span class="nx">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">generate</span> <span class="s">&#39;}&#39;</span><span class="p">,</span> <span class="s">&#39;}&#39;</span>
-        <span class="nx">i</span> <span class="o">+=</span> <span class="mi">1</span></pre></div>
+        <span class="nx">i</span> <span class="o">+=</span> <span class="mi">1</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              
 <p>Don&#39;t end an implicit call on next indent if any of these are in an argument
 
 </p>
 
-        
-          <div class="highlight"><pre>      <span class="k">if</span> <span class="nx">inImplicitCall</span><span class="p">()</span> <span class="o">and</span> <span class="nx">tag</span> <span class="k">in</span> <span class="p">[</span><span class="s">&#39;IF&#39;</span><span class="p">,</span> <span class="s">&#39;TRY&#39;</span><span class="p">,</span> <span class="s">&#39;FINALLY&#39;</span><span class="p">,</span> <span class="s">&#39;CATCH&#39;</span><span class="p">,</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>      <span class="k">if</span> <span class="nx">inImplicitCall</span><span class="p">()</span> <span class="o">and</span> <span class="nx">tag</span> <span class="k">in</span> <span class="p">[</span><span class="s">&#39;IF&#39;</span><span class="p">,</span> <span class="s">&#39;TRY&#39;</span><span class="p">,</span> <span class="s">&#39;FINALLY&#39;</span><span class="p">,</span> <span class="s">&#39;CATCH&#39;</span><span class="p">,</span>
         <span class="s">&#39;CLASS&#39;</span><span class="p">,</span> <span class="s">&#39;SWITCH&#39;</span><span class="p">]</span>
         <span class="nx">stack</span><span class="p">.</span><span class="nx">push</span> <span class="p">[</span><span class="s">&#39;CONTROL&#39;</span><span class="p">,</span> <span class="nx">i</span><span class="p">,</span> <span class="nv">ours: </span><span class="kc">true</span><span class="p">]</span>
         <span class="k">return</span> <span class="nx">forward</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-      <span class="k">if</span> <span class="nx">tag</span> <span class="o">is</span> <span class="s">&#39;INDENT&#39;</span> <span class="o">and</span> <span class="nx">inImplicit</span><span class="p">()</span></pre></div>
+      <span class="k">if</span> <span class="nx">tag</span> <span class="o">is</span> <span class="s">&#39;INDENT&#39;</span> <span class="o">and</span> <span class="nx">inImplicit</span><span class="p">()</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              
 <p>An INDENT closes an implicit call unless
 1. We have seen a CONTROL argument on the line.
 2. The last token before the indent is part of the list below
 
 </p>
 
-        
-          <div class="highlight"><pre>        <span class="k">if</span> <span class="nx">prevTag</span> <span class="o">not</span> <span class="k">in</span> <span class="p">[</span><span class="s">&#39;=&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;[&#39;</span><span class="p">,</span> <span class="s">&#39;(&#39;</span><span class="p">,</span> <span class="s">&#39;,&#39;</span><span class="p">,</span> <span class="s">&#39;{&#39;</span><span class="p">,</span> <span class="s">&#39;TRY&#39;</span><span class="p">,</span> <span class="s">&#39;ELSE&#39;</span><span class="p">,</span> <span class="s">&#39;=&#39;</span><span class="p">]</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>        <span class="k">if</span> <span class="nx">prevTag</span> <span class="o">not</span> <span class="k">in</span> <span class="p">[</span><span class="s">&#39;=&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;[&#39;</span><span class="p">,</span> <span class="s">&#39;(&#39;</span><span class="p">,</span> <span class="s">&#39;,&#39;</span><span class="p">,</span> <span class="s">&#39;{&#39;</span><span class="p">,</span> <span class="s">&#39;TRY&#39;</span><span class="p">,</span> <span class="s">&#39;ELSE&#39;</span><span class="p">,</span> <span class="s">&#39;=&#39;</span><span class="p">]</span>
           <span class="nx">endImplicitCall</span><span class="p">()</span> <span class="k">while</span> <span class="nx">inImplicitCall</span><span class="p">()</span>
         <span class="nx">stack</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span> <span class="k">if</span> <span class="nx">inImplicitControl</span><span class="p">()</span>
         <span class="nx">stack</span><span class="p">.</span><span class="nx">push</span> <span class="p">[</span><span class="nx">tag</span><span class="p">,</span> <span class="nx">i</span><span class="p">]</span>
-        <span class="k">return</span> <span class="nx">forward</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></pre></div>
+        <span class="k">return</span> <span class="nx">forward</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              
 <p>Straightforward start of explicit expression
 
 </p>
 
-        
-          <div class="highlight"><pre>      <span class="k">if</span> <span class="nx">tag</span> <span class="k">in</span> <span class="nx">EXPRESSION_START</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>      <span class="k">if</span> <span class="nx">tag</span> <span class="k">in</span> <span class="nx">EXPRESSION_START</span>
         <span class="nx">stack</span><span class="p">.</span><span class="nx">push</span> <span class="p">[</span><span class="nx">tag</span><span class="p">,</span> <span class="nx">i</span><span class="p">]</span>
-        <span class="k">return</span> <span class="nx">forward</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></pre></div>
+        <span class="k">return</span> <span class="nx">forward</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              
 <p>Close all implicit expressions inside of explicitly closed expressions.
 
 </p>
 
-        
-          <div class="highlight"><pre>      <span class="k">if</span> <span class="nx">tag</span> <span class="k">in</span> <span class="nx">EXPRESSION_END</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>      <span class="k">if</span> <span class="nx">tag</span> <span class="k">in</span> <span class="nx">EXPRESSION_END</span>
         <span class="k">while</span> <span class="nx">inImplicit</span><span class="p">()</span>
           <span class="k">if</span> <span class="nx">inImplicitCall</span><span class="p">()</span>
             <span class="nx">endImplicitCall</span><span class="p">()</span>
@@ -479,29 +614,44 @@ class declaration or if-conditionals)
             <span class="nx">endImplicitObject</span><span class="p">()</span>
           <span class="k">else</span>
             <span class="nx">stack</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span>
-        <span class="nx">stack</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span></pre></div>
+        <span class="nx">stack</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              
 <p>Recognize standard implicit calls like
 f a, f() b, f? c, h[0] d etc.
 
 </p>
 
-        
-          <div class="highlight"><pre>      <span class="k">if</span> <span class="p">(</span><span class="nx">tag</span> <span class="k">in</span> <span class="nx">IMPLICIT_FUNC</span> <span class="o">and</span> <span class="nx">token</span><span class="p">.</span><span class="nx">spaced</span> <span class="o">or</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>      <span class="k">if</span> <span class="p">(</span><span class="nx">tag</span> <span class="k">in</span> <span class="nx">IMPLICIT_FUNC</span> <span class="o">and</span> <span class="nx">token</span><span class="p">.</span><span class="nx">spaced</span> <span class="o">or</span>
           <span class="nx">tag</span> <span class="o">is</span> <span class="s">&#39;?&#39;</span> <span class="o">and</span> <span class="nx">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">tokens</span><span class="p">[</span><span class="nx">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">].</span><span class="nx">spaced</span><span class="p">)</span> <span class="o">and</span>
          <span class="p">(</span><span class="nx">nextTag</span> <span class="k">in</span> <span class="nx">IMPLICIT_CALL</span> <span class="o">or</span>
           <span class="nx">nextTag</span> <span class="k">in</span> <span class="nx">IMPLICIT_UNSPACED_CALL</span> <span class="o">and</span>
           <span class="o">not</span> <span class="nx">tokens</span><span class="p">[</span><span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">?</span><span class="p">.</span><span class="nx">spaced</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">tokens</span><span class="p">[</span><span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">?</span><span class="p">.</span><span class="nx">newLine</span><span class="p">)</span>
         <span class="nv">tag = </span><span class="nx">token</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;FUNC_EXIST&#39;</span> <span class="k">if</span> <span class="nx">tag</span> <span class="o">is</span> <span class="s">&#39;?&#39;</span>
         <span class="nx">startImplicitCall</span> <span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="k">return</span> <span class="nx">forward</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span></pre></div>
+        <span class="k">return</span> <span class="nx">forward</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              
 <p>Implicit call taking an implicit indented object as first argument.
 f
   a: b
@@ -523,57 +673,89 @@ that creates grammatical ambiguities.
 
 </p>
 
-        
-          <div class="highlight"><pre>      <span class="k">if</span> <span class="nx">@matchTags</span><span class="p">(</span><span class="nx">i</span><span class="p">,</span> <span class="nx">IMPLICIT_FUNC</span><span class="p">,</span> <span class="s">&#39;INDENT&#39;</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="s">&#39;:&#39;</span><span class="p">)</span> <span class="o">and</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>      <span class="k">if</span> <span class="nx">@matchTags</span><span class="p">(</span><span class="nx">i</span><span class="p">,</span> <span class="nx">IMPLICIT_FUNC</span><span class="p">,</span> <span class="s">&#39;INDENT&#39;</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="s">&#39;:&#39;</span><span class="p">)</span> <span class="o">and</span>
          <span class="o">not</span> <span class="nx">@findTagsBackwards</span><span class="p">(</span><span class="nx">i</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;CLASS&#39;</span><span class="p">,</span> <span class="s">&#39;EXTENDS&#39;</span><span class="p">,</span> <span class="s">&#39;IF&#39;</span><span class="p">,</span> <span class="s">&#39;CATCH&#39;</span><span class="p">,</span>
           <span class="s">&#39;SWITCH&#39;</span><span class="p">,</span> <span class="s">&#39;LEADING_WHEN&#39;</span><span class="p">,</span> <span class="s">&#39;FOR&#39;</span><span class="p">,</span> <span class="s">&#39;WHILE&#39;</span><span class="p">,</span> <span class="s">&#39;UNTIL&#39;</span><span class="p">])</span>
         <span class="nx">startImplicitCall</span> <span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="nx">stack</span><span class="p">.</span><span class="nx">push</span> <span class="p">[</span><span class="s">&#39;INDENT&#39;</span><span class="p">,</span> <span class="nx">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
-        <span class="k">return</span> <span class="nx">forward</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span></pre></div>
+        <span class="k">return</span> <span class="nx">forward</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              
 <p>Implicit objects start here
 
 </p>
 
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>      <span class="k">if</span> <span class="nx">tag</span> <span class="o">is</span> <span class="s">&#39;:&#39;</span></pre></div></div>
+            
+        </li>
         
-          <div class="highlight"><pre>      <span class="k">if</span> <span class="nx">tag</span> <span class="o">is</span> <span class="s">&#39;:&#39;</span></pre></div>
         
-      
-        
-        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              
 <p>Go back to the (implicit) start of the object
 
 </p>
 
-        
-          <div class="highlight"><pre>        <span class="k">if</span> <span class="nx">@tag</span><span class="p">(</span><span class="nx">i</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">is</span> <span class="s">&#39;@&#39;</span> <span class="k">then</span> <span class="nv">s = </span><span class="nx">i</span> <span class="o">-</span> <span class="mi">2</span> <span class="k">else</span> <span class="nv">s = </span><span class="nx">i</span> <span class="o">-</span> <span class="mi">1</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>        <span class="k">if</span> <span class="nx">@tag</span><span class="p">(</span><span class="nx">i</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">is</span> <span class="s">&#39;@&#39;</span> <span class="k">then</span> <span class="nv">s = </span><span class="nx">i</span> <span class="o">-</span> <span class="mi">2</span> <span class="k">else</span> <span class="nv">s = </span><span class="nx">i</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="nx">s</span> <span class="o">-=</span> <span class="mi">2</span> <span class="k">while</span> <span class="nx">@tag</span><span class="p">(</span><span class="nx">s</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">is</span> <span class="s">&#39;HERECOMMENT&#39;</span>
 
-        <span class="nv">startsLine = </span><span class="nx">s</span> <span class="o">is</span> <span class="mi">0</span> <span class="o">or</span> <span class="nx">@tag</span><span class="p">(</span><span class="nx">s</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="k">in</span> <span class="nx">LINEBREAKS</span> <span class="o">or</span> <span class="nx">tokens</span><span class="p">[</span><span class="nx">s</span> <span class="o">-</span> <span class="mi">1</span><span class="p">].</span><span class="nx">newLine</span></pre></div>
+        <span class="nv">startsLine = </span><span class="nx">s</span> <span class="o">is</span> <span class="mi">0</span> <span class="o">or</span> <span class="nx">@tag</span><span class="p">(</span><span class="nx">s</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="k">in</span> <span class="nx">LINEBREAKS</span> <span class="o">or</span> <span class="nx">tokens</span><span class="p">[</span><span class="nx">s</span> <span class="o">-</span> <span class="mi">1</span><span class="p">].</span><span class="nx">newLine</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              
 <p>Are we just continuing an already declared object?
 
 </p>
 
-        
-          <div class="highlight"><pre>        <span class="k">if</span> <span class="nx">stackTop</span><span class="p">()</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>        <span class="k">if</span> <span class="nx">stackTop</span><span class="p">()</span>
           <span class="p">[</span><span class="nx">stackTag</span><span class="p">,</span> <span class="nx">stackIdx</span><span class="p">]</span> <span class="o">=</span> <span class="nx">stackTop</span><span class="p">()</span>
           <span class="k">if</span> <span class="p">(</span><span class="nx">stackTag</span> <span class="o">is</span> <span class="s">&#39;{&#39;</span> <span class="o">or</span> <span class="nx">stackTag</span> <span class="o">is</span> <span class="s">&#39;INDENT&#39;</span> <span class="o">and</span> <span class="nx">@tag</span><span class="p">(</span><span class="nx">stackIdx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">is</span> <span class="s">&#39;{&#39;</span><span class="p">)</span> <span class="o">and</span>
              <span class="p">(</span><span class="nx">startsLine</span> <span class="o">or</span> <span class="nx">@tag</span><span class="p">(</span><span class="nx">s</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">is</span> <span class="s">&#39;,&#39;</span> <span class="o">or</span> <span class="nx">@tag</span><span class="p">(</span><span class="nx">s</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">is</span> <span class="s">&#39;{&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="nx">forward</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="nx">startImplicitObject</span><span class="p">(</span><span class="nx">s</span><span class="p">,</span> <span class="o">!!</span><span class="nx">startsLine</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nx">forward</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span></pre></div>
+        <span class="k">return</span> <span class="nx">forward</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              
 <p>End implicit calls when chaining method calls
 like e.g.:
 f -&gt;
@@ -584,8 +766,9 @@ f -&gt;
 
 </p>
 
-        
-          <div class="highlight"><pre>      <span class="k">if</span> <span class="nx">prevTag</span> <span class="o">is</span> <span class="s">&#39;OUTDENT&#39;</span> <span class="o">and</span> <span class="nx">inImplicitCall</span><span class="p">()</span> <span class="o">and</span> <span class="nx">tag</span> <span class="k">in</span> <span class="p">[</span><span class="s">&#39;.&#39;</span><span class="p">,</span> <span class="s">&#39;?.&#39;</span><span class="p">,</span> <span class="s">&#39;::&#39;</span><span class="p">,</span> <span class="s">&#39;?::&#39;</span><span class="p">]</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>      <span class="k">if</span> <span class="nx">prevTag</span> <span class="o">is</span> <span class="s">&#39;OUTDENT&#39;</span> <span class="o">and</span> <span class="nx">inImplicitCall</span><span class="p">()</span> <span class="o">and</span> <span class="nx">tag</span> <span class="k">in</span> <span class="p">[</span><span class="s">&#39;.&#39;</span><span class="p">,</span> <span class="s">&#39;?.&#39;</span><span class="p">,</span> <span class="s">&#39;::&#39;</span><span class="p">,</span> <span class="s">&#39;?::&#39;</span><span class="p">]</span>
         <span class="nx">endImplicitCall</span><span class="p">()</span>
         <span class="k">return</span> <span class="nx">forward</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
@@ -593,50 +776,81 @@ f -&gt;
 
       <span class="k">if</span> <span class="nx">tag</span> <span class="k">in</span> <span class="nx">IMPLICIT_END</span>
         <span class="k">while</span> <span class="nx">inImplicit</span><span class="p">()</span>
-          <span class="p">[</span><span class="nx">stackTag</span><span class="p">,</span> <span class="nx">stackIdx</span><span class="p">,</span> <span class="p">{</span><span class="nx">sameLine</span><span class="p">,</span> <span class="nx">startsLine</span><span class="p">}]</span> <span class="o">=</span> <span class="nx">stackTop</span><span class="p">()</span></pre></div>
+          <span class="p">[</span><span class="nx">stackTag</span><span class="p">,</span> <span class="nx">stackIdx</span><span class="p">,</span> <span class="p">{</span><span class="nx">sameLine</span><span class="p">,</span> <span class="nx">startsLine</span><span class="p">}]</span> <span class="o">=</span> <span class="nx">stackTop</span><span class="p">()</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              
 <p>Close implicit calls when reached end of argument list
 
 </p>
 
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>          <span class="k">if</span> <span class="nx">inImplicitCall</span><span class="p">()</span> <span class="o">and</span> <span class="nx">prevTag</span> <span class="o">isnt</span> <span class="s">&#39;,&#39;</span>
+            <span class="nx">endImplicitCall</span><span class="p">()</span></pre></div></div>
+            
+        </li>
         
-          <div class="highlight"><pre>          <span class="k">if</span> <span class="nx">inImplicitCall</span><span class="p">()</span> <span class="o">and</span> <span class="nx">prevTag</span> <span class="o">isnt</span> <span class="s">&#39;,&#39;</span>
-            <span class="nx">endImplicitCall</span><span class="p">()</span></pre></div>
         
-      
-        
-        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              
 <p>Close implicit objects such as:
 return a: 1, b: 2 unless true
 
 </p>
 
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>          <span class="k">else</span> <span class="k">if</span> <span class="nx">inImplicitObject</span><span class="p">()</span> <span class="o">and</span> <span class="nx">sameLine</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">startsLine</span>
+            <span class="nx">endImplicitObject</span><span class="p">()</span></pre></div></div>
+            
+        </li>
         
-          <div class="highlight"><pre>          <span class="k">else</span> <span class="k">if</span> <span class="nx">inImplicitObject</span><span class="p">()</span> <span class="o">and</span> <span class="nx">sameLine</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">startsLine</span>
-            <span class="nx">endImplicitObject</span><span class="p">()</span></pre></div>
         
-      
-        
-        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              
 <p>Close implicit objects when at end of line, line didn&#39;t end with a comma
 and the implicit object didn&#39;t start the line or the next line doesn&#39;t look like
 the continuation of an object.
 
 </p>
 
-        
-          <div class="highlight"><pre>          <span class="k">else</span> <span class="k">if</span> <span class="nx">inImplicitObject</span><span class="p">()</span> <span class="o">and</span> <span class="nx">tag</span> <span class="o">is</span> <span class="s">&#39;TERMINATOR&#39;</span> <span class="o">and</span> <span class="nx">prevTag</span> <span class="o">isnt</span> <span class="s">&#39;,&#39;</span> <span class="o">and</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>          <span class="k">else</span> <span class="k">if</span> <span class="nx">inImplicitObject</span><span class="p">()</span> <span class="o">and</span> <span class="nx">tag</span> <span class="o">is</span> <span class="s">&#39;TERMINATOR&#39;</span> <span class="o">and</span> <span class="nx">prevTag</span> <span class="o">isnt</span> <span class="s">&#39;,&#39;</span> <span class="o">and</span>
                   <span class="o">not</span> <span class="p">(</span><span class="nx">startsLine</span> <span class="o">and</span> <span class="nx">@looksObjectish</span><span class="p">(</span><span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
             <span class="nx">endImplicitObject</span><span class="p">()</span>
           <span class="k">else</span>
-            <span class="k">break</span></pre></div>
+            <span class="k">break</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              
 <p>Close implicit object if comma is the last character
 and what comes after doesn&#39;t look like it belongs.
 This is used for trailing commas and calls, like:
@@ -653,13 +867,21 @@ e = 2
 
 </p>
 
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>      <span class="k">if</span> <span class="nx">tag</span> <span class="o">is</span> <span class="s">&#39;,&#39;</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">@looksObjectish</span><span class="p">(</span><span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">and</span> <span class="nx">inImplicitObject</span><span class="p">()</span> <span class="o">and</span>
+         <span class="p">(</span><span class="nx">nextTag</span> <span class="o">isnt</span> <span class="s">&#39;TERMINATOR&#39;</span> <span class="o">or</span> <span class="o">not</span> <span class="nx">@looksObjectish</span><span class="p">(</span><span class="nx">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">))</span></pre></div></div>
+            
+        </li>
         
-          <div class="highlight"><pre>      <span class="k">if</span> <span class="nx">tag</span> <span class="o">is</span> <span class="s">&#39;,&#39;</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">@looksObjectish</span><span class="p">(</span><span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">and</span> <span class="nx">inImplicitObject</span><span class="p">()</span> <span class="o">and</span>
-         <span class="p">(</span><span class="nx">nextTag</span> <span class="o">isnt</span> <span class="s">&#39;TERMINATOR&#39;</span> <span class="o">or</span> <span class="o">not</span> <span class="nx">@looksObjectish</span><span class="p">(</span><span class="nx">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">))</span></pre></div>
         
-      
-        
-        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              
 <p>When nextTag is OUTDENT the comma is insignificant and
 should just be ignored so embed it in the implicit object.
 
@@ -670,21 +892,30 @@ array further up the stack, so give it a chance.
 
 </p>
 
-        
-          <div class="highlight"><pre>        <span class="nv">offset = </span><span class="k">if</span> <span class="nx">nextTag</span> <span class="o">is</span> <span class="s">&#39;OUTDENT&#39;</span> <span class="k">then</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">0</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>        <span class="nv">offset = </span><span class="k">if</span> <span class="nx">nextTag</span> <span class="o">is</span> <span class="s">&#39;OUTDENT&#39;</span> <span class="k">then</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">0</span>
         <span class="k">while</span> <span class="nx">inImplicitObject</span><span class="p">()</span>
           <span class="nx">endImplicitObject</span> <span class="nx">i</span> <span class="o">+</span> <span class="nx">offset</span>
-      <span class="k">return</span> <span class="nx">forward</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></pre></div>
+      <span class="k">return</span> <span class="nx">forward</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              
 <p>Add location data to all tokens generated by the rewriter.
 
 </p>
 
-        
-          <div class="highlight"><pre>  <span class="nv">addLocationDataToGeneratedTokens: </span><span class="nf">-&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">addLocationDataToGeneratedTokens: </span><span class="nf">-&gt;</span>
     <span class="nx">@scanTokens</span> <span class="nf">(token, i, tokens) -&gt;</span>
       <span class="k">return</span> <span class="mi">1</span> <span class="k">if</span>     <span class="nx">token</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
       <span class="k">return</span> <span class="mi">1</span> <span class="k">unless</span> <span class="nx">token</span><span class="p">.</span><span class="nx">generated</span> <span class="o">or</span> <span class="nx">token</span><span class="p">.</span><span class="nx">explicit</span>
@@ -694,11 +925,18 @@ array further up the stack, so give it a chance.
         <span class="nv">first_column: </span><span class="nx">last_column</span>
         <span class="nv">last_line: </span>   <span class="nx">last_line</span>
         <span class="nv">last_column: </span> <span class="nx">last_column</span>
-      <span class="mi">1</span></pre></div>
+      <span class="mi">1</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>
+              
 <p>Because our grammar is LALR(1), it can&#39;t handle some single-line
 expressions that lack ending delimiters. The <strong>Rewriter</strong> adds the implicit
 blocks, so it doesn&#39;t need to. &#39;)&#39; can close a single-line block,
@@ -706,8 +944,9 @@ but we need to make sure it&#39;s balanced.
 
 </p>
 
-        
-          <div class="highlight"><pre>  <span class="nv">addImplicitIndentation: </span><span class="nf">-&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">addImplicitIndentation: </span><span class="nf">-&gt;</span>
     <span class="nv">starter = indent = outdent = </span><span class="kc">null</span>
 
     <span class="nv">condition = </span><span class="nf">(token, i) -&gt;</span>
@@ -737,18 +976,26 @@ but we need to make sure it&#39;s balanced.
         <span class="nx">@detectEnd</span> <span class="nx">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="nx">condition</span><span class="p">,</span> <span class="nx">action</span>
         <span class="nx">tokens</span><span class="p">.</span><span class="nx">splice</span> <span class="nx">i</span><span class="p">,</span> <span class="mi">1</span> <span class="k">if</span> <span class="nx">tag</span> <span class="o">is</span> <span class="s">&#39;THEN&#39;</span>
         <span class="k">return</span> <span class="mi">1</span>
-      <span class="k">return</span> <span class="mi">1</span></pre></div>
+      <span class="k">return</span> <span class="mi">1</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              
 <p>Tag postfix conditionals as such, so that we can parse them with a
 different precedence.
 
 </p>
 
-        
-          <div class="highlight"><pre>  <span class="nv">tagPostfixConditionals: </span><span class="nf">-&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">tagPostfixConditionals: </span><span class="nf">-&gt;</span>
 
     <span class="nv">original = </span><span class="kc">null</span>
 
@@ -763,50 +1010,82 @@ different precedence.
       <span class="k">return</span> <span class="mi">1</span> <span class="k">unless</span> <span class="nx">token</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">is</span> <span class="s">&#39;IF&#39;</span>
       <span class="nv">original = </span><span class="nx">token</span>
       <span class="nx">@detectEnd</span> <span class="nx">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">condition</span><span class="p">,</span> <span class="nx">action</span>
-      <span class="mi">1</span></pre></div>
+      <span class="mi">1</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>
+              
 <p>Generate the indentation tokens, based on another token on the same line.
 
 </p>
 
-        
-          <div class="highlight"><pre>  <span class="nv">indentation: </span><span class="nf">(token, implicit = no) -&gt;</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">indentation: </span><span class="nf">(token, implicit = no) -&gt;</span>
     <span class="nv">indent  = </span><span class="p">[</span><span class="s">&#39;INDENT&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
     <span class="nv">outdent = </span><span class="p">[</span><span class="s">&#39;OUTDENT&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
     <span class="nv">indent.generated = outdent.generated = </span><span class="kc">yes</span> <span class="k">if</span> <span class="nx">implicit</span>
     <span class="nv">indent.explicit = outdent.explicit = </span><span class="kc">yes</span> <span class="k">if</span> <span class="o">not</span> <span class="nx">implicit</span>
     <span class="p">[</span><span class="nx">indent</span><span class="p">,</span> <span class="nx">outdent</span><span class="p">]</span>
 
-  <span class="nv">generate: </span><span class="nx">generate</span></pre></div>
+  <span class="nv">generate: </span><span class="nx">generate</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>
+              
 <p>Look up a tag by token index.
 
 </p>
 
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>  <span class="nv">tag: </span><span class="nf">(i) -&gt;</span> <span class="nx">@tokens</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span><span class="o">?</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></pre></div></div>
+            
+        </li>
         
-          <div class="highlight"><pre>  <span class="nv">tag: </span><span class="nf">(i) -&gt;</span> <span class="nx">@tokens</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span><span class="o">?</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></pre></div>
         
-      
-        
-        
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>
+              
 <h2>Constants</h2>
 
+            </div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
+              </div>
+              
 <p>List of the token pairs that must be balanced.
 
 </p>
 
-        
-          <div class="highlight"><pre><span class="nv">BALANCED_PAIRS = </span><span class="p">[</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">BALANCED_PAIRS = </span><span class="p">[</span>
   <span class="p">[</span><span class="s">&#39;(&#39;</span><span class="p">,</span> <span class="s">&#39;)&#39;</span><span class="p">]</span>
   <span class="p">[</span><span class="s">&#39;[&#39;</span><span class="p">,</span> <span class="s">&#39;]&#39;</span><span class="p">]</span>
   <span class="p">[</span><span class="s">&#39;{&#39;</span><span class="p">,</span> <span class="s">&#39;}&#39;</span><span class="p">]</span>
@@ -814,117 +1093,189 @@ different precedence.
   <span class="p">[</span><span class="s">&#39;CALL_START&#39;</span><span class="p">,</span> <span class="s">&#39;CALL_END&#39;</span><span class="p">]</span>
   <span class="p">[</span><span class="s">&#39;PARAM_START&#39;</span><span class="p">,</span> <span class="s">&#39;PARAM_END&#39;</span><span class="p">]</span>
   <span class="p">[</span><span class="s">&#39;INDEX_START&#39;</span><span class="p">,</span> <span class="s">&#39;INDEX_END&#39;</span><span class="p">]</span>
-<span class="p">]</span></pre></div>
+<span class="p">]</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-39">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-39">&#182;</a>
+              </div>
+              
 <p>The inverse mappings of <code>BALANCED_PAIRS</code> we&#39;re trying to fix up, so we can
 look things up from either end.
 
 </p>
 
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">exports.INVERSES = INVERSES = </span><span class="p">{}</span></pre></div></div>
+            
+        </li>
         
-          <div class="highlight"><pre><span class="nv">exports.INVERSES = INVERSES = </span><span class="p">{}</span></pre></div>
         
-      
-        
-        
+        <li id="section-40">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-40">&#182;</a>
+              </div>
+              
 <p>The tokens that signal the start/end of a balanced pair.
 
 </p>
 
-        
-          <div class="highlight"><pre><span class="nv">EXPRESSION_START = </span><span class="p">[]</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">EXPRESSION_START = </span><span class="p">[]</span>
 <span class="nv">EXPRESSION_END   = </span><span class="p">[]</span>
 
 <span class="k">for</span> <span class="p">[</span><span class="nx">left</span><span class="p">,</span> <span class="nx">rite</span><span class="p">]</span> <span class="k">in</span> <span class="nx">BALANCED_PAIRS</span>
   <span class="nx">EXPRESSION_START</span><span class="p">.</span><span class="nx">push</span> <span class="nx">INVERSES</span><span class="p">[</span><span class="nx">rite</span><span class="p">]</span> <span class="o">=</span> <span class="nx">left</span>
-  <span class="nx">EXPRESSION_END</span>  <span class="p">.</span><span class="nx">push</span> <span class="nx">INVERSES</span><span class="p">[</span><span class="nx">left</span><span class="p">]</span> <span class="o">=</span> <span class="nx">rite</span></pre></div>
+  <span class="nx">EXPRESSION_END</span>  <span class="p">.</span><span class="nx">push</span> <span class="nx">INVERSES</span><span class="p">[</span><span class="nx">left</span><span class="p">]</span> <span class="o">=</span> <span class="nx">rite</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-41">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-41">&#182;</a>
+              </div>
+              
 <p>Tokens that indicate the close of a clause of an expression.
 
 </p>
 
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">EXPRESSION_CLOSE = </span><span class="p">[</span><span class="s">&#39;CATCH&#39;</span><span class="p">,</span> <span class="s">&#39;WHEN&#39;</span><span class="p">,</span> <span class="s">&#39;ELSE&#39;</span><span class="p">,</span> <span class="s">&#39;FINALLY&#39;</span><span class="p">].</span><span class="nx">concat</span> <span class="nx">EXPRESSION_END</span></pre></div></div>
+            
+        </li>
         
-          <div class="highlight"><pre><span class="nv">EXPRESSION_CLOSE = </span><span class="p">[</span><span class="s">&#39;CATCH&#39;</span><span class="p">,</span> <span class="s">&#39;WHEN&#39;</span><span class="p">,</span> <span class="s">&#39;ELSE&#39;</span><span class="p">,</span> <span class="s">&#39;FINALLY&#39;</span><span class="p">].</span><span class="nx">concat</span> <span class="nx">EXPRESSION_END</span></pre></div>
         
-      
-        
-        
+        <li id="section-42">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-42">&#182;</a>
+              </div>
+              
 <p>Tokens that, if followed by an <code>IMPLICIT_CALL</code>, indicate a function invocation.
 
 </p>
 
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">IMPLICIT_FUNC    = </span><span class="p">[</span><span class="s">&#39;IDENTIFIER&#39;</span><span class="p">,</span> <span class="s">&#39;SUPER&#39;</span><span class="p">,</span> <span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="s">&#39;CALL_END&#39;</span><span class="p">,</span> <span class="s">&#39;]&#39;</span><span class="p">,</span> <span class="s">&#39;INDEX_END&#39;</span><span class="p">,</span> <span class="s">&#39;@&#39;</span><span class="p">,</span> <span class="s">&#39;THIS&#39;</span><span class="p">]</span></pre></div></div>
+            
+        </li>
         
-          <div class="highlight"><pre><span class="nv">IMPLICIT_FUNC    = </span><span class="p">[</span><span class="s">&#39;IDENTIFIER&#39;</span><span class="p">,</span> <span class="s">&#39;SUPER&#39;</span><span class="p">,</span> <span class="s">&#39;)&#39;</span><span class="p">,</span> <span class="s">&#39;CALL_END&#39;</span><span class="p">,</span> <span class="s">&#39;]&#39;</span><span class="p">,</span> <span class="s">&#39;INDEX_END&#39;</span><span class="p">,</span> <span class="s">&#39;@&#39;</span><span class="p">,</span> <span class="s">&#39;THIS&#39;</span><span class="p">]</span></pre></div>
         
-      
-        
-        
+        <li id="section-43">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-43">&#182;</a>
+              </div>
+              
 <p>If preceded by an <code>IMPLICIT_FUNC</code>, indicates a function invocation.
 
 </p>
 
-        
-          <div class="highlight"><pre><span class="nv">IMPLICIT_CALL    = </span><span class="p">[</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">IMPLICIT_CALL    = </span><span class="p">[</span>
   <span class="s">&#39;IDENTIFIER&#39;</span><span class="p">,</span> <span class="s">&#39;NUMBER&#39;</span><span class="p">,</span> <span class="s">&#39;STRING&#39;</span><span class="p">,</span> <span class="s">&#39;JS&#39;</span><span class="p">,</span> <span class="s">&#39;REGEX&#39;</span><span class="p">,</span> <span class="s">&#39;NEW&#39;</span><span class="p">,</span> <span class="s">&#39;PARAM_START&#39;</span><span class="p">,</span> <span class="s">&#39;CLASS&#39;</span>
   <span class="s">&#39;IF&#39;</span><span class="p">,</span> <span class="s">&#39;TRY&#39;</span><span class="p">,</span> <span class="s">&#39;SWITCH&#39;</span><span class="p">,</span> <span class="s">&#39;THIS&#39;</span><span class="p">,</span> <span class="s">&#39;BOOL&#39;</span><span class="p">,</span> <span class="s">&#39;NULL&#39;</span><span class="p">,</span> <span class="s">&#39;UNDEFINED&#39;</span><span class="p">,</span> <span class="s">&#39;UNARY&#39;</span><span class="p">,</span> <span class="s">&#39;SUPER&#39;</span>
   <span class="s">&#39;@&#39;</span><span class="p">,</span> <span class="s">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;=&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;[&#39;</span><span class="p">,</span> <span class="s">&#39;(&#39;</span><span class="p">,</span> <span class="s">&#39;{&#39;</span><span class="p">,</span> <span class="s">&#39;--&#39;</span><span class="p">,</span> <span class="s">&#39;++&#39;</span>
 <span class="p">]</span>
 
-<span class="nv">IMPLICIT_UNSPACED_CALL = </span><span class="p">[</span><span class="s">&#39;+&#39;</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">]</span></pre></div>
+<span class="nv">IMPLICIT_UNSPACED_CALL = </span><span class="p">[</span><span class="s">&#39;+&#39;</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">]</span></pre></div></div>
+            
+        </li>
         
-      
         
-        
+        <li id="section-44">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-44">&#182;</a>
+              </div>
+              
 <p>Tokens indicating that the implicit call must enclose a block of expressions.
 
 </p>
 
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">IMPLICIT_BLOCK   = </span><span class="p">[</span><span class="s">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;=&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;{&#39;</span><span class="p">,</span> <span class="s">&#39;[&#39;</span><span class="p">,</span> <span class="s">&#39;,&#39;</span><span class="p">]</span></pre></div></div>
+            
+        </li>
         
-          <div class="highlight"><pre><span class="nv">IMPLICIT_BLOCK   = </span><span class="p">[</span><span class="s">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;=&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;{&#39;</span><span class="p">,</span> <span class="s">&#39;[&#39;</span><span class="p">,</span> <span class="s">&#39;,&#39;</span><span class="p">]</span></pre></div>
         
-      
-        
-        
+        <li id="section-45">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-45">&#182;</a>
+              </div>
+              
 <p>Tokens that always mark the end of an implicit call for single-liners.
 
 </p>
 
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">IMPLICIT_END     = </span><span class="p">[</span><span class="s">&#39;POST_IF&#39;</span><span class="p">,</span> <span class="s">&#39;FOR&#39;</span><span class="p">,</span> <span class="s">&#39;WHILE&#39;</span><span class="p">,</span> <span class="s">&#39;UNTIL&#39;</span><span class="p">,</span> <span class="s">&#39;WHEN&#39;</span><span class="p">,</span> <span class="s">&#39;BY&#39;</span><span class="p">,</span>
+  <span class="s">&#39;LOOP&#39;</span><span class="p">,</span> <span class="s">&#39;TERMINATOR&#39;</span><span class="p">]</span></pre></div></div>
+            
+        </li>
         
-          <div class="highlight"><pre><span class="nv">IMPLICIT_END     = </span><span class="p">[</span><span class="s">&#39;POST_IF&#39;</span><span class="p">,</span> <span class="s">&#39;FOR&#39;</span><span class="p">,</span> <span class="s">&#39;WHILE&#39;</span><span class="p">,</span> <span class="s">&#39;UNTIL&#39;</span><span class="p">,</span> <span class="s">&#39;WHEN&#39;</span><span class="p">,</span> <span class="s">&#39;BY&#39;</span><span class="p">,</span>
-  <span class="s">&#39;LOOP&#39;</span><span class="p">,</span> <span class="s">&#39;TERMINATOR&#39;</span><span class="p">]</span></pre></div>
         
-      
-        
-        
+        <li id="section-46">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-46">&#182;</a>
+              </div>
+              
 <p>Single-line flavors of block expressions that have unclosed endings.
 The grammar can&#39;t disambiguate them, so we insert the implicit indentation.
 
 </p>
 
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">SINGLE_LINERS    = </span><span class="p">[</span><span class="s">&#39;ELSE&#39;</span><span class="p">,</span> <span class="s">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;=&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;TRY&#39;</span><span class="p">,</span> <span class="s">&#39;FINALLY&#39;</span><span class="p">,</span> <span class="s">&#39;THEN&#39;</span><span class="p">]</span>
+<span class="nv">SINGLE_CLOSERS   = </span><span class="p">[</span><span class="s">&#39;TERMINATOR&#39;</span><span class="p">,</span> <span class="s">&#39;CATCH&#39;</span><span class="p">,</span> <span class="s">&#39;FINALLY&#39;</span><span class="p">,</span> <span class="s">&#39;ELSE&#39;</span><span class="p">,</span> <span class="s">&#39;OUTDENT&#39;</span><span class="p">,</span> <span class="s">&#39;LEADING_WHEN&#39;</span><span class="p">]</span></pre></div></div>
+            
+        </li>
         
-          <div class="highlight"><pre><span class="nv">SINGLE_LINERS    = </span><span class="p">[</span><span class="s">&#39;ELSE&#39;</span><span class="p">,</span> <span class="s">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;=&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;TRY&#39;</span><span class="p">,</span> <span class="s">&#39;FINALLY&#39;</span><span class="p">,</span> <span class="s">&#39;THEN&#39;</span><span class="p">]</span>
-<span class="nv">SINGLE_CLOSERS   = </span><span class="p">[</span><span class="s">&#39;TERMINATOR&#39;</span><span class="p">,</span> <span class="s">&#39;CATCH&#39;</span><span class="p">,</span> <span class="s">&#39;FINALLY&#39;</span><span class="p">,</span> <span class="s">&#39;ELSE&#39;</span><span class="p">,</span> <span class="s">&#39;OUTDENT&#39;</span><span class="p">,</span> <span class="s">&#39;LEADING_WHEN&#39;</span><span class="p">]</span></pre></div>
         
-      
-        
-        
+        <li id="section-47">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-47">&#182;</a>
+              </div>
+              
 <p>Tokens that end a line.
 </p>
 
-        
-          <div class="highlight"><pre><span class="nv">LINEBREAKS       = </span><span class="p">[</span><span class="s">&#39;TERMINATOR&#39;</span><span class="p">,</span> <span class="s">&#39;INDENT&#39;</span><span class="p">,</span> <span class="s">&#39;OUTDENT&#39;</span><span class="p">]</span>
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="nv">LINEBREAKS       = </span><span class="p">[</span><span class="s">&#39;TERMINATOR&#39;</span><span class="p">,</span> <span class="s">&#39;INDENT&#39;</span><span class="p">,</span> <span class="s">&#39;OUTDENT&#39;</span><span class="p">]</span>
 
-</pre></div>
+</pre></div></div>
+            
+        </li>
         
-      
-      <div class="fleur">h</div>
-    </div>
+    </ul>
   </div>
 </body>
 </html>
