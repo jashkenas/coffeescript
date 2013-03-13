@@ -91,3 +91,9 @@ testRepl "existential assignment of previously declared variable", (input, outpu
   input.emitLine 'a = null'
   input.emitLine 'a ?= 42'
   eq '42', output.lastWrite()
+
+testRepl "keeps running after runtime error", (input, output) ->
+  input.emitLine 'a = b'
+  eq 0, output.lastWrite().indexOf 'ReferenceError: b is not defined'
+  input.emitLine 'a'
+  eq 'undefined', output.lastWrite()
