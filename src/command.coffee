@@ -256,7 +256,7 @@ removeSource = (source, base, removeJs) ->
 
 # Get the corresponding output JavaScript path for a source file.
 outputPath = (source, base, extension=".js") ->
-  basename  = helpers.baseFileName source, yes
+  basename  = helpers.baseFileName source, yes, path.sep
   srcDir    = path.dirname source
   baseDir   = if base is '.' then srcDir else srcDir.substring base.length
   dir       = if opts.output then path.join opts.output, baseDir else srcDir
@@ -274,7 +274,7 @@ writeJs = (base, sourcePath, js, jsPath, generatedSourceMap = null) ->
   compile = ->
     if opts.compile
       js = ' ' if js.length <= 0
-      if generatedSourceMap then js = "#{js}\n/*\n//@ sourceMappingURL=#{helpers.baseFileName sourceMapPath}\n*/\n"
+      if generatedSourceMap then js = "#{js}\n/*\n//@ sourceMappingURL=#{helpers.baseFileName sourceMapPath, no, path.sep}\n*/\n"
       fs.writeFile jsPath, js, (err) ->
         if err
           printLine err.message
@@ -343,13 +343,13 @@ compileOptions = (filename, base) ->
         jsPath
         sourceRoot: path.relative jsDir, cwd
         sourceFiles: [path.relative cwd, filename]
-        generatedFile: helpers.baseFileName(jsPath)
+        generatedFile: helpers.baseFileName(jsPath, no, path.sep)
       }
     else
       answer = helpers.merge answer,
         sourceRoot: ""
-        sourceFiles: [helpers.baseFileName filename]
-        generatedFile: helpers.baseFileName(filename, yes) + ".js"
+        sourceFiles: [helpers.baseFileName filename, no, path.sep]
+        generatedFile: helpers.baseFileName(filename, yes, path.sep) + ".js"
   answer
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to
