@@ -17,6 +17,15 @@ now with a...
 ... nested block.
 
         ok yes
+
+Code must be separated from text by a blank line.
+
+    test "code blocks must be preceded by a blank line", ->
+
+The next line is part of the text and will not be executed.
+      fail()
+
+      ok yes        
         
 Code in `backticks is not parsed` and...
 
