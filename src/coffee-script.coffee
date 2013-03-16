@@ -74,7 +74,7 @@ exports.compile = compile = (code, options = {}) ->
     answer = {js}
     if sourceMap
       answer.sourceMap = sourceMap
-      answer.v3SourceMap = sourcemap.generateV3SourceMap(sourceMap, options)
+      answer.v3SourceMap = sourcemap.generateV3SourceMap(sourceMap, options, code)
     answer
   else
     js
