@@ -381,7 +381,9 @@ class exports.Rewriter
     original = null
 
     condition = (token, i) ->
-      token[0] in ['TERMINATOR', 'INDENT']
+      [tag] = token
+      [prevTag] = @tokens[i - 1]
+      tag is 'TERMINATOR' or (tag is 'INDENT' and prevTag not in SINGLE_LINERS)
 
     action = (token, i) ->
       if token[0] isnt 'INDENT' or (token.generated and not token.fromThen)

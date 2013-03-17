@@ -427,3 +427,14 @@ test "Throw should be usable as an expression.", ->
     throw new Error 'failed'
   catch e
     ok e is 'up'
+
+
+test "#2555, strange function if bodies", ->
+  success = -> ok true
+  failure = -> ok false
+
+  success() if do ->
+    yes
+
+  failure() if try
+    false
