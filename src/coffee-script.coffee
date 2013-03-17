@@ -210,8 +210,8 @@ patchStackTrace = ->
 
     getSourceMapping = (filename, line, column) ->
       sourceMap = mainModule._sourceMaps[filename]
-      answer = sourceMap.getSourcePosition [line-1, column-1] if sourceMap
-      if answer then [answer[0]+1, answer[1]+1] else null
+      answer = sourceMap.getSourcePosition [line - 1, column - 1] if sourceMap
+      if answer then [answer[0] + 1, answer[1] + 1] else null
 
     frames = for frame in stack
       break if frame.getFunction() is exports.run
