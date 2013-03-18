@@ -139,7 +139,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/1.6.1">1.6.1</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.6.2">1.6.2</a>
     </p>
 
     <pre>
@@ -1201,6 +1201,35 @@ Expressions
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <b class="header" style="margin-top: 20px;">
+        <a href="https://github.com/jashkenas/coffee-script/compare/1.6.1...1.6.2">1.6.2</a>
+        <span class="timestamp"> &ndash; <small>March 18, 2013</small></span>
+      </b>
+      <ul>
+        <li>
+          Source maps have been used to provide automatic line-mapping when
+          running CoffeeScript directly via the <tt>coffee</tt> command, and
+          for automatic line-mapping when running CoffeeScript directly in the
+          browser. Also, to provide better error messages for semantic errors
+          thrown by the compiler &mdash;
+          <a href="http://cl.ly/NdOA">with colors, even</a>.
+        </li>
+        <li>
+          Improved support for mixed literate/vanilla-style CoffeeScript projects,
+          and generating source maps for both at the same time.
+        </li>
+        <li>
+          Fixes for <b>1.6.x</b> regressions with overriding inherited bound
+          functions, and for Windows file path management.
+        </li>
+        <li>
+          The <tt>coffee</tt> command can now correctly <tt>fork()</tt>
+          both <tt>.coffee</tt> and <tt>.js</tt> files. (Requires Node.js 0.9+)
+        </li>
+      </ul>
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">

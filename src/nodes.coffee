@@ -288,7 +288,7 @@ exports.Block = class Block extends Base
         compiledNodes.push node.compileToFragments o, LEVEL_LIST
     if top
       if @spaced
-        return [].concat @makeCode("\n"), @joinFragmentArrays(compiledNodes, '\n\n'), @makeCode("\n")
+        return [].concat @joinFragmentArrays(compiledNodes, '\n\n'), @makeCode("\n")
       else
         return @joinFragmentArrays(compiledNodes, '\n')
     if compiledNodes.length
@@ -351,7 +351,7 @@ exports.Block = class Block extends Base
         if assigns
           fragments.push @makeCode ",\n#{@tab + TAB}" if declars
           fragments.push @makeCode (scope.assignedVariables().join ",\n#{@tab + TAB}")
-        fragments.push @makeCode ';\n'
+        fragments.push @makeCode ';\n\n'
     fragments.concat post
 
   # Wrap up the given nodes as a **Block**, unless it already happens
@@ -1343,7 +1343,7 @@ exports.Code = class Code extends Base
 
     return [@makeCode(@tab), answer...] if @ctor
     if @front or (o.level >= LEVEL_ACCESS) then @wrapInBraces answer else answer
-    
+
   eachParamName: (iterator) ->
     param.eachName iterator for param in @params
 

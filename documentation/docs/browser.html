@@ -92,174 +92,197 @@
         </li>
       </ul>
     
-    <ul class="sections">  
-        <li id="title">
-            <div class="annotation">
-                <h1>browser.coffee</h1>
-            </div>
-        </li>
+    <ul class="sections">
         
-           
+          <li id="title">
+              <div class="annotation">
+                  <h1>browser.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
         <li id="section-1">
             <div class="annotation">
-              <div class="pilwrap">
+              
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
-              </div>            
-              <p>Override exported methods for non-Node.js engines.
-
+              </div>
+              <p>This <strong>Browser</strong> compatibility layer extends core CoffeeScript functions
+to make things work smoothly when compiling code directly in the browser.
+We add support for loading remote Coffee scripts via <strong>XHR</strong>, and
+<code>text/coffeescript</code> script tags, source maps via data-URLs, and so on.
 
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">CoffeeScript = </span><span class="nx">require</span> <span class="s">&#39;./coffee-script&#39;</span>
-<span class="nv">CoffeeScript.require = </span><span class="nx">require</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>CoffeeScript = require <span class="string">'./coffee-script'</span>
+CoffeeScript.require = require
+compile = CoffeeScript.compile</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-2">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-2">&#182;</a>
-              </div>            
               
-<p>Use standard JavaScript <code>eval</code> to eval code.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Use standard JavaScript <code>eval</code> to eval code.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">CoffeeScript.eval = </span><span class="nf">(code, options = {}) -&gt;</span>
-  <span class="nx">options</span><span class="p">.</span><span class="nx">bare</span> <span class="o">?=</span> <span class="kc">on</span>
-  <span class="nb">eval</span> <span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">compile</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">options</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>CoffeeScript.<span class="function"><span class="title">eval</span></span> = (code, options = {}) -&gt;
+  options.bare ?= <span class="literal">on</span>
+  eval compile code, options</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-3">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-3">&#182;</a>
-              </div>            
               
-<p>Running code does not provide access to this scope.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Running code does not provide access to this scope.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">CoffeeScript.run = </span><span class="nf">(code, options = {}) -&gt;</span>
-  <span class="nv">options.bare = </span><span class="kc">on</span>
-  <span class="nb">Function</span><span class="p">(</span><span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">compile</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">options</span><span class="p">)()</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>CoffeeScript.<span class="function"><span class="title">run</span></span> = (code, options = {}) -&gt;
+  options.bare = <span class="literal">on</span>
+  Function(compile code, options)()</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-4">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-4">&#182;</a>
-              </div>            
               
-<p>If we&#39;re not in a browser environment, we&#39;re finished with the public API.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>If we&#39;re not in a browser environment, we&#39;re finished with the public API.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="k">return</span> <span class="k">unless</span> <span class="nb">window</span><span class="o">?</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="keyword">return</span> <span class="keyword">unless</span> window?</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-5">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-5">&#182;</a>
-              </div>            
               
-<p>Load a remote script from the current domain via XHR.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Include source maps where possible. If we&#39;ve got a base64 encoder, and a
+JSON serializer, we&#39;re good to go.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">CoffeeScript.load = </span><span class="nf">(url, callback, options = {}) -&gt;</span>
-  <span class="nv">xhr = </span><span class="k">if</span> <span class="nb">window</span><span class="p">.</span><span class="nx">ActiveXObject</span>
-    <span class="k">new</span> <span class="nb">window</span><span class="p">.</span><span class="nx">ActiveXObject</span><span class="p">(</span><span class="s">&#39;Microsoft.XMLHTTP&#39;</span><span class="p">)</span>
-  <span class="k">else</span>
-    <span class="k">new</span> <span class="nx">XMLHttpRequest</span><span class="p">()</span>
-  <span class="nx">xhr</span><span class="p">.</span><span class="nx">open</span> <span class="s">&#39;GET&#39;</span><span class="p">,</span> <span class="nx">url</span><span class="p">,</span> <span class="kc">true</span>
-  <span class="nx">xhr</span><span class="p">.</span><span class="nx">overrideMimeType</span> <span class="s">&#39;text/plain&#39;</span> <span class="k">if</span> <span class="s">&#39;overrideMimeType&#39;</span> <span class="k">of</span> <span class="nx">xhr</span>
-  <span class="nv">xhr.onreadystatechange = </span><span class="nf">-&gt;</span>
-    <span class="k">if</span> <span class="nx">xhr</span><span class="p">.</span><span class="nx">readyState</span> <span class="o">is</span> <span class="mi">4</span>
-      <span class="k">if</span> <span class="nx">xhr</span><span class="p">.</span><span class="nx">status</span> <span class="k">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">]</span>
-        <span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">run</span> <span class="nx">xhr</span><span class="p">.</span><span class="nx">responseText</span><span class="p">,</span> <span class="nx">options</span>
-      <span class="k">else</span>
-        <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span> <span class="s">&quot;Could not load </span><span class="si">#{</span><span class="nx">url</span><span class="si">}</span><span class="s">&quot;</span>
-      <span class="nx">callback</span><span class="p">()</span> <span class="k">if</span> <span class="nx">callback</span>
-  <span class="nx">xhr</span><span class="p">.</span><span class="nx">send</span> <span class="kc">null</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="keyword">if</span> btoa? <span class="keyword">and</span> JSON?
+  <span class="function"><span class="title">compile</span></span> = (code, options = {}) -&gt;
+    options.sourceMap = <span class="literal">true</span>
+    options.inline = <span class="literal">true</span>
+    {js, v3SourceMap} = CoffeeScript.compile code, options
+    <span class="string">"<span class="subst">#{js}</span>\n//@ sourceMappingURL=data:application/json;base64,<span class="subst">#{btoa v3SourceMap}</span>\n//@ sourceURL=coffeescript"</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-6">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-6">&#182;</a>
-              </div>            
               
-<p>Activate CoffeeScript in the browser by having it compile and evaluate
-all script tags with a content-type of <code>text/coffeescript</code>.
-This happens on page load.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Load a remote script from the current domain via XHR.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">runScripts = </span><span class="nf">-&gt;</span>
-  <span class="nv">scripts = </span><span class="nb">document</span><span class="p">.</span><span class="nx">getElementsByTagName</span> <span class="s">&#39;script&#39;</span>
-  <span class="nv">coffeetypes = </span><span class="p">[</span><span class="s">&#39;text/coffeescript&#39;</span><span class="p">,</span> <span class="s">&#39;text/literate-coffeescript&#39;</span><span class="p">]</span>
-  <span class="nv">coffees = </span><span class="p">(</span><span class="nx">s</span> <span class="k">for</span> <span class="nx">s</span> <span class="k">in</span> <span class="nx">scripts</span> <span class="k">when</span> <span class="nx">s</span><span class="p">.</span><span class="nx">type</span> <span class="k">in</span> <span class="nx">coffeetypes</span><span class="p">)</span>
-  <span class="nv">index = </span><span class="mi">0</span>
-  <span class="nv">length = </span><span class="nx">coffees</span><span class="p">.</span><span class="nx">length</span>
-  <span class="nx">do</span> <span class="nv">execute = </span><span class="nf">-&gt;</span>
-    <span class="nv">script = </span><span class="nx">coffees</span><span class="p">[</span><span class="nx">index</span><span class="o">++</span><span class="p">]</span>
-    <span class="nv">mediatype = </span><span class="nx">script</span><span class="o">?</span><span class="p">.</span><span class="nx">type</span>
-    <span class="k">if</span> <span class="nx">mediatype</span> <span class="k">in</span> <span class="nx">coffeetypes</span>
-      <span class="nv">options = </span><span class="p">{</span><span class="nv">literate: </span><span class="nx">mediatype</span> <span class="o">is</span> <span class="s">&#39;text/literate-coffeescript&#39;</span><span class="p">}</span>
-      <span class="k">if</span> <span class="nx">script</span><span class="p">.</span><span class="nx">src</span>
-        <span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">load</span> <span class="nx">script</span><span class="p">.</span><span class="nx">src</span><span class="p">,</span> <span class="nx">execute</span><span class="p">,</span> <span class="nx">options</span>
-      <span class="k">else</span>
-        <span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">run</span> <span class="nx">script</span><span class="p">.</span><span class="nx">innerHTML</span><span class="p">,</span> <span class="nx">options</span>
-        <span class="nx">execute</span><span class="p">()</span>
-  <span class="kc">null</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>CoffeeScript.<span class="function"><span class="title">load</span></span> = (url, callback, options = {}) -&gt;
+  options.sourceFiles = [url]
+  xhr = <span class="keyword">if</span> window.ActiveXObject
+    <span class="keyword">new</span> window.ActiveXObject(<span class="string">'Microsoft.XMLHTTP'</span>)
+  <span class="keyword">else</span>
+    <span class="keyword">new</span> XMLHttpRequest()
+  xhr.open <span class="string">'GET'</span>, url, <span class="literal">true</span>
+  xhr.overrideMimeType <span class="string">'text/plain'</span> <span class="keyword">if</span> <span class="string">'overrideMimeType'</span> <span class="keyword">of</span> xhr
+  xhr.<span class="function"><span class="title">onreadystatechange</span></span> = -&gt;
+    <span class="keyword">if</span> xhr.readyState <span class="keyword">is</span> <span class="number">4</span>
+      <span class="keyword">if</span> xhr.status <span class="keyword">in</span> [<span class="number">0</span>, <span class="number">200</span>]
+        CoffeeScript.run xhr.responseText, options
+      <span class="keyword">else</span>
+        <span class="keyword">throw</span> <span class="keyword">new</span> Error <span class="string">"Could not load <span class="subst">#{url}</span>"</span>
+      callback() <span class="keyword">if</span> callback
+  xhr.send <span class="literal">null</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-7">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-7">&#182;</a>
-              </div>            
               
-<p>Listen for window load, both in browsers and in IE.
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Activate CoffeeScript in the browser by having it compile and evaluate
+all script tags with a content-type of <code>text/coffeescript</code>.
+This happens on page load.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="k">if</span> <span class="nb">window</span><span class="p">.</span><span class="nx">addEventListener</span>
-  <span class="nx">addEventListener</span> <span class="s">&#39;DOMContentLoaded&#39;</span><span class="p">,</span> <span class="nx">runScripts</span><span class="p">,</span> <span class="kc">no</span>
-<span class="k">else</span>
-  <span class="nx">attachEvent</span> <span class="s">&#39;onload&#39;</span><span class="p">,</span> <span class="nx">runScripts</span>
-
-</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">runScripts</span></span> = -&gt;
+  scripts = document.getElementsByTagName <span class="string">'script'</span>
+  coffeetypes = [<span class="string">'text/coffeescript'</span>, <span class="string">'text/literate-coffeescript'</span>]
+  coffees = (s <span class="keyword">for</span> s <span class="keyword">in</span> scripts <span class="keyword">when</span> s.type <span class="keyword">in</span> coffeetypes)
+  index = <span class="number">0</span>
+  length = coffees.length
+  <span class="keyword">do</span> <span class="function"><span class="title">execute</span></span> = -&gt;
+    script = coffees[index++]
+    mediatype = script?.type
+    <span class="keyword">if</span> mediatype <span class="keyword">in</span> coffeetypes
+      options = {literate: mediatype <span class="keyword">is</span> <span class="string">'text/literate-coffeescript'</span>}
+      <span class="keyword">if</span> script.src
+        CoffeeScript.load script.src, execute, options
+      <span class="keyword">else</span>
+        options.sourceFiles = [<span class="string">'embedded'</span>]
+        CoffeeScript.run script.innerHTML, options
+        execute()
+  <span class="literal">null</span></pre></div></div>
             
         </li>
         
-    </ul> 
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Listen for window load, both in decent browsers and in IE.
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="keyword">if</span> window.addEventListener
+  addEventListener <span class="string">'DOMContentLoaded'</span>, runScripts, <span class="literal">no</span>
+<span class="keyword">else</span>
+  attachEvent <span class="string">'onload'</span>, runScripts</pre></div></div>
+            
+        </li>
+        
+    </ul>
   </div>
 </body>
 </html>

@@ -92,289 +92,271 @@
         </li>
       </ul>
     
-    <ul class="sections">  
-        <li id="title">
-            <div class="annotation">
-                <h1>repl.coffee</h1>
-            </div>
-        </li>
+    <ul class="sections">
         
-           
+          <li id="title">
+              <div class="annotation">
+                  <h1>repl.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
         <li id="section-1">
             <div class="annotation">
-              <div class="pilwrap">
+              
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
-              </div>            
+              </div>
               
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">vm = </span><span class="nx">require</span> <span class="s">&#39;vm&#39;</span>
-<span class="nv">nodeREPL = </span><span class="nx">require</span> <span class="s">&#39;repl&#39;</span>
-<span class="nv">CoffeeScript = </span><span class="nx">require</span> <span class="s">&#39;./coffee-script&#39;</span>
-<span class="p">{</span><span class="nx">merge</span><span class="p">,</span> <span class="nx">prettyErrorMessage</span><span class="p">}</span> <span class="o">=</span> <span class="nx">require</span> <span class="s">&#39;./helpers&#39;</span>
+            <div class="content"><div class='highlight'><pre>vm = require <span class="string">'vm'</span>
+nodeREPL = require <span class="string">'repl'</span>
+CoffeeScript = require <span class="string">'./coffee-script'</span>
+{merge, prettyErrorMessage} = require <span class="string">'./helpers'</span>
 
-<span class="nv">replDefaults =</span>
-  <span class="nv">prompt: </span><span class="s">&#39;coffee&gt; &#39;</span><span class="p">,</span>
-  <span class="nb">eval</span><span class="o">:</span> <span class="nf">(input, context, filename, cb) -&gt;</span></pre></div></div>
+replDefaults =
+  prompt: <span class="string">'coffee&gt; '</span>,
+  eval: (input, context, filename, cb) -&gt;</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-2">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-2">&#182;</a>
-              </div>            
               
-<p>XXX: multiline hack.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>XXX: multiline hack.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>    <span class="nv">input = </span><span class="nx">input</span><span class="p">.</span><span class="nx">replace</span> <span class="sr">/\uFF00/g</span><span class="p">,</span> <span class="s">&#39;\n&#39;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>    input = input.replace <span class="regexp">/\uFF00/g</span>, <span class="string">'\n'</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-3">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-3">&#182;</a>
-              </div>            
               
-<p>Node&#39;s REPL sends the input ending with a newline and then wrapped in
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Node&#39;s REPL sends the input ending with a newline and then wrapped in
 parens. Unwrap all that.
-
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>    <span class="nv">input = </span><span class="nx">input</span><span class="p">.</span><span class="nx">replace</span> <span class="sr">/^\(([\s\S]*)\n\)$/m</span><span class="p">,</span> <span class="s">&#39;$1&#39;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>    input = input.replace <span class="regexp">/^\(([\s\S]*)\n\)$/m</span>, <span class="string">'$1'</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-4">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-4">&#182;</a>
-              </div>            
               
-<p>Require AST nodes to do some AST manipulation.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Require AST nodes to do some AST manipulation.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>    <span class="p">{</span><span class="nx">Block</span><span class="p">,</span> <span class="nx">Assign</span><span class="p">,</span> <span class="nx">Value</span><span class="p">,</span> <span class="nx">Literal</span><span class="p">}</span> <span class="o">=</span> <span class="nx">require</span> <span class="s">&#39;./nodes&#39;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>    {Block, Assign, Value, Literal} = require <span class="string">'./nodes'</span>
+
+    <span class="keyword">try</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-5">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-5">&#182;</a>
-              </div>            
               
-<p>TODO: fix #1829: pass in-scope vars and avoid accidentally shadowing them by omitting those declarations
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Generate the AST of the clean input.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>    <span class="k">try</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      ast = CoffeeScript.nodes input</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-6">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-6">&#182;</a>
-              </div>            
               
-<p>Generate the AST of the clean input.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Add assignment to <code>_</code> variable to force the input to be an expression.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>      <span class="nv">ast = </span><span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">nodes</span> <span class="nx">input</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      ast = <span class="keyword">new</span> Block [
+        <span class="keyword">new</span> Assign (<span class="keyword">new</span> Value <span class="keyword">new</span> Literal <span class="string">'_'</span>), ast, <span class="string">'='</span>
+      ]
+      js = ast.compile bare: <span class="literal">yes</span>, locals: Object.keys(context)
+      cb <span class="literal">null</span>, vm.runInContext(js, context, filename)
+    <span class="keyword">catch</span> err
+      cb prettyErrorMessage(err, filename, input, <span class="literal">yes</span>)
+
+<span class="function"><span class="title">addMultilineHandler</span></span> = (repl) -&gt;
+  {rli, inputStream, outputStream} = repl
+
+  multiline =
+    enabled: <span class="literal">off</span>
+    initialPrompt: repl.prompt.replace(<span class="regexp">/^[^&gt; ]*/, (x) -&gt; x.replace /./g</span>, <span class="string">'-'</span>)
+    prompt: repl.prompt.replace(<span class="regexp">/^[^&gt; ]*&gt;?/, (x) -&gt; x.replace /./g</span>, <span class="string">'.'</span>)
+    buffer: <span class="string">''</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-7">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-7">&#182;</a>
-              </div>            
               
-<p>Add assignment to <code>_</code> variable to force the input to be an expression.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Proxy node&#39;s line listener
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>      <span class="nv">ast = </span><span class="k">new</span> <span class="nx">Block</span> <span class="p">[</span>
-        <span class="k">new</span> <span class="nx">Assign</span> <span class="p">(</span><span class="k">new</span> <span class="nx">Value</span> <span class="k">new</span> <span class="nx">Literal</span> <span class="s">&#39;_&#39;</span><span class="p">),</span> <span class="nx">ast</span><span class="p">,</span> <span class="s">&#39;=&#39;</span>
-      <span class="p">]</span>
-      <span class="nv">js = </span><span class="nx">ast</span><span class="p">.</span><span class="nx">compile</span> <span class="nv">bare: </span><span class="kc">yes</span>
-    <span class="k">catch</span> <span class="nx">err</span>
-      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="nx">prettyErrorMessage</span> <span class="nx">err</span><span class="p">,</span> <span class="nx">filename</span><span class="p">,</span> <span class="nx">input</span><span class="p">,</span> <span class="kc">yes</span>
-    <span class="nx">cb</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">vm</span><span class="p">.</span><span class="nx">runInContext</span><span class="p">(</span><span class="nx">js</span><span class="p">,</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">filename</span><span class="p">)</span>
-
-<span class="nv">addMultilineHandler = </span><span class="nf">(repl) -&gt;</span>
-  <span class="p">{</span><span class="nx">rli</span><span class="p">,</span> <span class="nx">inputStream</span><span class="p">,</span> <span class="nx">outputStream</span><span class="p">}</span> <span class="o">=</span> <span class="nx">repl</span>
-
-  <span class="nv">multiline =</span>
-    <span class="nv">enabled: </span><span class="kc">off</span>
-    <span class="nv">initialPrompt: </span><span class="nx">repl</span><span class="p">.</span><span class="nx">prompt</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/^[^&gt; ]*/</span><span class="p">,</span> <span class="nf">(x) -&gt;</span> <span class="nx">x</span><span class="p">.</span><span class="nx">replace</span> <span class="sr">/./g</span><span class="p">,</span> <span class="s">&#39;-&#39;</span><span class="p">)</span>
-    <span class="nv">prompt: </span><span class="nx">repl</span><span class="p">.</span><span class="nx">prompt</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/^[^&gt; ]*&gt;?/</span><span class="p">,</span> <span class="nf">(x) -&gt;</span> <span class="nx">x</span><span class="p">.</span><span class="nx">replace</span> <span class="sr">/./g</span><span class="p">,</span> <span class="s">&#39;.&#39;</span><span class="p">)</span>
-    <span class="nv">buffer: </span><span class="s">&#39;&#39;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  nodeLineListener = rli.listeners(<span class="string">'line'</span>)[<span class="number">0</span>]
+  rli.removeListener <span class="string">'line'</span>, nodeLineListener
+  rli.<span class="literal">on</span> <span class="string">'line'</span>, (cmd) -&gt;
+    <span class="keyword">if</span> multiline.enabled
+      multiline.buffer += <span class="string">"<span class="subst">#{cmd}</span>\n"</span>
+      rli.setPrompt multiline.prompt
+      rli.prompt <span class="literal">true</span>
+    <span class="keyword">else</span>
+      nodeLineListener cmd
+    <span class="keyword">return</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-8">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-8">&#182;</a>
-              </div>            
               
-<p>Proxy node&#39;s line listener
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Handle Ctrl-v
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>  <span class="nv">nodeLineListener = </span><span class="nx">rli</span><span class="p">.</span><span class="nx">listeners</span><span class="p">(</span><span class="s">&#39;line&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-  <span class="nx">rli</span><span class="p">.</span><span class="nx">removeListener</span> <span class="s">&#39;line&#39;</span><span class="p">,</span> <span class="nx">nodeLineListener</span>
-  <span class="nx">rli</span><span class="p">.</span><span class="nx">on</span> <span class="s">&#39;line&#39;</span><span class="p">,</span> <span class="nf">(cmd) -&gt;</span>
-    <span class="k">if</span> <span class="nx">multiline</span><span class="p">.</span><span class="nx">enabled</span>
-      <span class="nx">multiline</span><span class="p">.</span><span class="nx">buffer</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="si">#{</span><span class="nx">cmd</span><span class="si">}</span><span class="s">\n&quot;</span>
-      <span class="nx">rli</span><span class="p">.</span><span class="nx">setPrompt</span> <span class="nx">multiline</span><span class="p">.</span><span class="nx">prompt</span>
-      <span class="nx">rli</span><span class="p">.</span><span class="nx">prompt</span> <span class="kc">true</span>
-    <span class="k">else</span>
-      <span class="nx">nodeLineListener</span> <span class="nx">cmd</span>
-    <span class="k">return</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  inputStream.<span class="literal">on</span> <span class="string">'keypress'</span>, (char, key) -&gt;
+    <span class="keyword">return</span> <span class="keyword">unless</span> key <span class="keyword">and</span> key.ctrl <span class="keyword">and</span> <span class="keyword">not</span> key.meta <span class="keyword">and</span> <span class="keyword">not</span> key.shift <span class="keyword">and</span> key.name <span class="keyword">is</span> <span class="string">'v'</span>
+    <span class="keyword">if</span> multiline.enabled</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-9">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-9">&#182;</a>
-              </div>            
               
-<p>Handle Ctrl-v
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>allow arbitrarily switching between modes any time before multiple lines are entered
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>  <span class="nx">inputStream</span><span class="p">.</span><span class="nx">on</span> <span class="s">&#39;keypress&#39;</span><span class="p">,</span> <span class="nf">(char, key) -&gt;</span>
-    <span class="k">return</span> <span class="k">unless</span> <span class="nx">key</span> <span class="o">and</span> <span class="nx">key</span><span class="p">.</span><span class="nx">ctrl</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">key</span><span class="p">.</span><span class="nx">meta</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">key</span><span class="p">.</span><span class="nx">shift</span> <span class="o">and</span> <span class="nx">key</span><span class="p">.</span><span class="nx">name</span> <span class="o">is</span> <span class="s">&#39;v&#39;</span>
-    <span class="k">if</span> <span class="nx">multiline</span><span class="p">.</span><span class="nx">enabled</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">unless</span> multiline.buffer.match <span class="regexp">/\n/</span>
+        multiline.enabled = <span class="keyword">not</span> multiline.enabled
+        rli.setPrompt repl.prompt
+        rli.prompt <span class="literal">true</span>
+        <span class="keyword">return</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-10">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-10">&#182;</a>
-              </div>            
               
-<p>allow arbitrarily switching between modes any time before multiple lines are entered
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>no-op unless the current line is empty
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>      <span class="k">unless</span> <span class="nx">multiline</span><span class="p">.</span><span class="nx">buffer</span><span class="p">.</span><span class="nx">match</span> <span class="sr">/\n/</span>
-        <span class="nv">multiline.enabled = </span><span class="o">not</span> <span class="nx">multiline</span><span class="p">.</span><span class="nx">enabled</span>
-        <span class="nx">rli</span><span class="p">.</span><span class="nx">setPrompt</span> <span class="nx">repl</span><span class="p">.</span><span class="nx">prompt</span>
-        <span class="nx">rli</span><span class="p">.</span><span class="nx">prompt</span> <span class="kc">true</span>
-        <span class="k">return</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">return</span> <span class="keyword">if</span> rli.line? <span class="keyword">and</span> <span class="keyword">not</span> rli.line.match <span class="regexp">/^\s*$/</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-11">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-11">&#182;</a>
-              </div>            
               
-<p>no-op unless the current line is empty
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>eval, print, loop
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>      <span class="k">return</span> <span class="k">if</span> <span class="nx">rli</span><span class="p">.</span><span class="nx">line</span><span class="o">?</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">rli</span><span class="p">.</span><span class="nx">line</span><span class="p">.</span><span class="nx">match</span> <span class="sr">/^\s*$/</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      multiline.enabled = <span class="keyword">not</span> multiline.enabled
+      rli.line = <span class="string">''</span>
+      rli.cursor = <span class="number">0</span>
+      rli.output.cursorTo <span class="number">0</span>
+      rli.output.clearLine <span class="number">1</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-12">
             <div class="annotation">
-              <div class="pilwrap">
+              
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-12">&#182;</a>
-              </div>            
-              
-<p>eval, print, loop
-
+              </div>
+              <p>XXX: multiline hack
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>      <span class="nv">multiline.enabled = </span><span class="o">not</span> <span class="nx">multiline</span><span class="p">.</span><span class="nx">enabled</span>
-      <span class="nv">rli.line = </span><span class="s">&#39;&#39;</span>
-      <span class="nv">rli.cursor = </span><span class="mi">0</span>
-      <span class="nx">rli</span><span class="p">.</span><span class="nx">output</span><span class="p">.</span><span class="nx">cursorTo</span> <span class="mi">0</span>
-      <span class="nx">rli</span><span class="p">.</span><span class="nx">output</span><span class="p">.</span><span class="nx">clearLine</span> <span class="mi">1</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      multiline.buffer = multiline.buffer.replace <span class="regexp">/\n/g</span>, <span class="string">'\uFF00'</span>
+      rli.emit <span class="string">'line'</span>, multiline.buffer
+      multiline.buffer = <span class="string">''</span>
+    <span class="keyword">else</span>
+      multiline.enabled = <span class="keyword">not</span> multiline.enabled
+      rli.setPrompt multiline.initialPrompt
+      rli.prompt <span class="literal">true</span>
+    <span class="keyword">return</span>
+
+module.exports =
+  start: (opts = {}) -&gt;
+    [major, minor, build] = process.versions.node.split(<span class="string">'.'</span>).map (n) -&gt; parseInt(n)
+
+    <span class="keyword">if</span> major <span class="keyword">is</span> <span class="number">0</span> <span class="keyword">and</span> minor &lt; <span class="number">8</span>
+      console.warn <span class="string">"Node 0.8.0+ required for CoffeeScript REPL"</span>
+      process.exit <span class="number">1</span>
+
+    opts = merge replDefaults, opts
+    repl = nodeREPL.start opts
+    repl.<span class="literal">on</span> <span class="string">'exit'</span>, -&gt; repl.outputStream.write <span class="string">'\n'</span>
+    addMultilineHandler repl
+    repl</pre></div></div>
             
         </li>
         
-           
-        <li id="section-13">
-            <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-13">&#182;</a>
-              </div>            
-              
-<p>XXX: multiline hack
-</p>
-
-            </div>
-            
-            <div class="content"><div class="highlight"><pre>      <span class="nv">multiline.buffer = </span><span class="nx">multiline</span><span class="p">.</span><span class="nx">buffer</span><span class="p">.</span><span class="nx">replace</span> <span class="sr">/\n/g</span><span class="p">,</span> <span class="s">&#39;\uFF00&#39;</span>
-      <span class="nx">rli</span><span class="p">.</span><span class="nx">emit</span> <span class="s">&#39;line&#39;</span><span class="p">,</span> <span class="nx">multiline</span><span class="p">.</span><span class="nx">buffer</span>
-      <span class="nv">multiline.buffer = </span><span class="s">&#39;&#39;</span>
-    <span class="k">else</span>
-      <span class="nv">multiline.enabled = </span><span class="o">not</span> <span class="nx">multiline</span><span class="p">.</span><span class="nx">enabled</span>
-      <span class="nx">rli</span><span class="p">.</span><span class="nx">setPrompt</span> <span class="nx">multiline</span><span class="p">.</span><span class="nx">initialPrompt</span>
-      <span class="nx">rli</span><span class="p">.</span><span class="nx">prompt</span> <span class="kc">true</span>
-    <span class="k">return</span>
-
-<span class="nv">module.exports =</span>
-  <span class="nv">start: </span><span class="nf">(opts = {}) -&gt;</span>
-    <span class="nv">opts = </span><span class="nx">merge</span> <span class="nx">replDefaults</span><span class="p">,</span> <span class="nx">opts</span>
-    <span class="nv">repl = </span><span class="nx">nodeREPL</span><span class="p">.</span><span class="nx">start</span> <span class="nx">opts</span>
-    <span class="nx">repl</span><span class="p">.</span><span class="nx">on</span> <span class="s">&#39;exit&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span> <span class="nx">repl</span><span class="p">.</span><span class="nx">outputStream</span><span class="p">.</span><span class="nx">write</span> <span class="s">&#39;\n&#39;</span>
-    <span class="nx">addMultilineHandler</span> <span class="nx">repl</span>
-    <span class="nx">repl</span>
-
-</pre></div></div>
-            
-        </li>
-        
-    </ul> 
+    </ul>
   </div>
 </body>
 </html>

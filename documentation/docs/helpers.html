@@ -92,510 +92,492 @@
         </li>
       </ul>
     
-    <ul class="sections">  
-        <li id="title">
-            <div class="annotation">
-                <h1>helpers.coffee</h1>
-            </div>
-        </li>
+    <ul class="sections">
         
-           
+          <li id="title">
+              <div class="annotation">
+                  <h1>helpers.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
         <li id="section-1">
             <div class="annotation">
-              <div class="pilwrap">
+              
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
-              </div>            
+              </div>
               <p>This file contains the common helper functions that we&#39;d like to share among
 the <strong>Lexer</strong>, <strong>Rewriter</strong>, and the <strong>Nodes</strong>. Merge objects, flatten
 arrays, count characters, that sort of thing.
 
 </p>
 <p>Peek at the beginning of a given string to see if it matches a sequence.
-
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.starts = </span><span class="nf">(string, literal, start) -&gt;</span>
-  <span class="nx">literal</span> <span class="o">is</span> <span class="nx">string</span><span class="p">.</span><span class="nx">substr</span> <span class="nx">start</span><span class="p">,</span> <span class="nx">literal</span><span class="p">.</span><span class="nx">length</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">starts</span></span> = (string, literal, start) -&gt;
+  literal <span class="keyword">is</span> string.substr start, literal.length</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-2">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-2">&#182;</a>
-              </div>            
               
-<p>Peek at the end of a given string to see if it matches a sequence.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Peek at the end of a given string to see if it matches a sequence.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.ends = </span><span class="nf">(string, literal, back) -&gt;</span>
-  <span class="nv">len = </span><span class="nx">literal</span><span class="p">.</span><span class="nx">length</span>
-  <span class="nx">literal</span> <span class="o">is</span> <span class="nx">string</span><span class="p">.</span><span class="nx">substr</span> <span class="nx">string</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="nx">len</span> <span class="o">-</span> <span class="p">(</span><span class="nx">back</span> <span class="o">or</span> <span class="mi">0</span><span class="p">),</span> <span class="nx">len</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">ends</span></span> = (string, literal, back) -&gt;
+  len = literal.length
+  literal <span class="keyword">is</span> string.substr string.length - len - (back <span class="keyword">or</span> <span class="number">0</span>), len</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-3">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-3">&#182;</a>
-              </div>            
               
-<p>Repeat a string <code>n</code> times.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Repeat a string <code>n</code> times.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.repeat = repeat = </span><span class="nf">(str, n) -&gt;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.repeat = <span class="function"><span class="title">repeat</span></span> = (str, n) -&gt;</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-4">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-4">&#182;</a>
-              </div>            
               
-<p>Use clever algorithm to have O(log(n)) string concatenation operations.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Use clever algorithm to have O(log(n)) string concatenation operations.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>  <span class="nv">res = </span><span class="s">&#39;&#39;</span>
-  <span class="k">while</span> <span class="nx">n</span> <span class="o">&gt;</span> <span class="mi">0</span>
-    <span class="nx">res</span> <span class="o">+=</span> <span class="nx">str</span> <span class="k">if</span> <span class="nx">n</span> <span class="o">&amp;</span> <span class="mi">1</span>
-    <span class="nx">n</span> <span class="o">&gt;&gt;&gt;=</span> <span class="mi">1</span>
-    <span class="nx">str</span> <span class="o">+=</span> <span class="nx">str</span>
-  <span class="nx">res</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  res = <span class="string">''</span>
+  <span class="keyword">while</span> n &gt; <span class="number">0</span>
+    res += str <span class="keyword">if</span> n &amp; <span class="number">1</span>
+    n &gt;&gt;&gt;= <span class="number">1</span>
+    str += str
+  res</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-5">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-5">&#182;</a>
-              </div>            
               
-<p>Trim out all falsy values from an array.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Trim out all falsy values from an array.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.compact = </span><span class="nf">(array) -&gt;</span>
-  <span class="nx">item</span> <span class="k">for</span> <span class="nx">item</span> <span class="k">in</span> <span class="nx">array</span> <span class="k">when</span> <span class="nx">item</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">compact</span></span> = (array) -&gt;
+  item <span class="keyword">for</span> item <span class="keyword">in</span> array <span class="keyword">when</span> item</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-6">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-6">&#182;</a>
-              </div>            
               
-<p>Count the number of occurrences of a string in a string.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Count the number of occurrences of a string in a string.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.count = </span><span class="nf">(string, substr) -&gt;</span>
-  <span class="nv">num = pos = </span><span class="mi">0</span>
-  <span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="mi">0</span> <span class="k">unless</span> <span class="nx">substr</span><span class="p">.</span><span class="nx">length</span>
-  <span class="nx">num</span><span class="o">++</span> <span class="k">while</span> <span class="nv">pos = </span><span class="mi">1</span> <span class="o">+</span> <span class="nx">string</span><span class="p">.</span><span class="nx">indexOf</span> <span class="nx">substr</span><span class="p">,</span> <span class="nx">pos</span>
-  <span class="nx">num</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">count</span></span> = (string, substr) -&gt;
+  num = pos = <span class="number">0</span>
+  <span class="keyword">return</span> <span class="number">1</span>/<span class="number">0</span> <span class="keyword">unless</span> substr.length
+  num++ <span class="keyword">while</span> pos = <span class="number">1</span> + string.indexOf substr, pos
+  num</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-7">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-7">&#182;</a>
-              </div>            
               
-<p>Merge objects, returning a fresh copy with attributes from both sides.
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Merge objects, returning a fresh copy with attributes from both sides.
 Used every time <code>Base#compile</code> is called, to allow properties in the
 options hash to propagate down the tree without polluting other branches.
-
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.merge = </span><span class="nf">(options, overrides) -&gt;</span>
-  <span class="nx">extend</span> <span class="p">(</span><span class="nx">extend</span> <span class="p">{},</span> <span class="nx">options</span><span class="p">),</span> <span class="nx">overrides</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">merge</span></span> = (options, overrides) -&gt;
+  extend (extend {}, options), overrides</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-8">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-8">&#182;</a>
-              </div>            
               
-<p>Extend a source object with the properties of another object (shallow copy).
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Extend a source object with the properties of another object (shallow copy).
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">extend = exports.extend = </span><span class="nf">(object, properties) -&gt;</span>
-  <span class="k">for</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">val</span> <span class="k">of</span> <span class="nx">properties</span>
-    <span class="nx">object</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">val</span>
-  <span class="nx">object</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>extend = exports.<span class="function"><span class="title">extend</span></span> = (object, properties) -&gt;
+  <span class="keyword">for</span> key, val <span class="keyword">of</span> properties
+    object[key] = val
+  object</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-9">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-9">&#182;</a>
-              </div>            
               
-<p>Return a flattened version of an array.
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Return a flattened version of an array.
 Handy for getting a list of <code>children</code> from the nodes.
-
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.flatten = flatten = </span><span class="nf">(array) -&gt;</span>
-  <span class="nv">flattened = </span><span class="p">[]</span>
-  <span class="k">for</span> <span class="nx">element</span> <span class="k">in</span> <span class="nx">array</span>
-    <span class="k">if</span> <span class="nx">element</span> <span class="k">instanceof</span> <span class="nb">Array</span>
-      <span class="nv">flattened = </span><span class="nx">flattened</span><span class="p">.</span><span class="nx">concat</span> <span class="nx">flatten</span> <span class="nx">element</span>
-    <span class="k">else</span>
-      <span class="nx">flattened</span><span class="p">.</span><span class="nx">push</span> <span class="nx">element</span>
-  <span class="nx">flattened</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.flatten = <span class="function"><span class="title">flatten</span></span> = (array) -&gt;
+  flattened = []
+  <span class="keyword">for</span> element <span class="keyword">in</span> array
+    <span class="keyword">if</span> element <span class="keyword">instanceof</span> Array
+      flattened = flattened.concat flatten element
+    <span class="keyword">else</span>
+      flattened.push element
+  flattened</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-10">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-10">&#182;</a>
-              </div>            
               
-<p>Delete a key from an object, returning the value. Useful when a node is
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Delete a key from an object, returning the value. Useful when a node is
 looking for a particular method in an options hash.
-
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.del = </span><span class="nf">(obj, key) -&gt;</span>
-  <span class="nv">val = </span> <span class="nx">obj</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span>
-  <span class="k">delete</span> <span class="nx">obj</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span>
-  <span class="nx">val</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">del</span></span> = (obj, key) -&gt;
+  val =  obj[key]
+  <span class="keyword">delete</span> obj[key]
+  val</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-11">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-11">&#182;</a>
-              </div>            
               
-<p>Gets the last item of an array(-like) object.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Gets the last item of an array(-like) object.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.last = last = </span><span class="nf">(array, back) -&gt;</span> <span class="nx">array</span><span class="p">[</span><span class="nx">array</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="p">(</span><span class="nx">back</span> <span class="o">or</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.last = <span class="function"><span class="title">last</span></span> = (array, back) -&gt; array[array.length - (back <span class="keyword">or</span> <span class="number">0</span>) - <span class="number">1</span>]</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-12">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-12">&#182;</a>
-              </div>            
               
-<p>Typical Array::some
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Typical Array::some
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.some = </span><span class="nb">Array</span><span class="o">::</span><span class="nx">some</span> <span class="o">?</span> <span class="nf">(fn) -&gt;</span>
-  <span class="k">return</span> <span class="kc">true</span> <span class="k">for</span> <span class="nx">e</span> <span class="k">in</span> <span class="k">this</span> <span class="k">when</span> <span class="nx">fn</span> <span class="nx">e</span>
-  <span class="kc">false</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.some = Array::some ? (fn) -&gt;
+  <span class="keyword">return</span> <span class="literal">true</span> <span class="keyword">for</span> e <span class="keyword">in</span> <span class="keyword">this</span> <span class="keyword">when</span> fn e
+  <span class="literal">false</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-13">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-13">&#182;</a>
-              </div>            
               
-<p>Simple function for inverting Literate CoffeeScript code by putting the
-documentation in comments, and bumping the actual code back out to the edge ...
-producing a string of CoffeeScript code that can be compiled &quot;normally&quot;.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Simple function for inverting Literate CoffeeScript code by putting the
+documentation in comments, producing a string of CoffeeScript code that
+can be compiled &quot;normally&quot;.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.invertLiterate = </span><span class="nf">(code) -&gt;</span>
-  <span class="nv">lines = </span><span class="k">for</span> <span class="nx">line</span> <span class="k">in</span> <span class="nx">code</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s">&#39;\n&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nv">match = </span><span class="p">(</span><span class="sr">/^([ ]{4}|\t)/</span><span class="p">).</span><span class="nx">exec</span> <span class="nx">line</span>
-      <span class="nx">line</span><span class="p">[</span><span class="nx">match</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">length</span><span class="p">..]</span>
-    <span class="k">else</span>
-      <span class="s">&#39;# &#39;</span> <span class="o">+</span> <span class="nx">line</span>
-  <span class="nx">lines</span><span class="p">.</span><span class="nx">join</span> <span class="s">&#39;\n&#39;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">invertLiterate</span></span> = (code) -&gt;
+  maybe_code = <span class="literal">true</span>
+  lines = <span class="keyword">for</span> line <span class="keyword">in</span> code.split(<span class="string">'\n'</span>)
+    <span class="keyword">if</span> maybe_code <span class="keyword">and</span> <span class="regexp">/^([ ]{4}|[ ]{0,3}\t)/</span>.test line
+      line
+    <span class="keyword">else</span> <span class="keyword">if</span> maybe_code = <span class="regexp">/^\s*$/</span>.test line
+      line
+    <span class="keyword">else</span>
+      <span class="string">'# '</span> + line
+  lines.join <span class="string">'\n'</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-14">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-14">&#182;</a>
-              </div>            
               
-<p>Merge two jison-style location data objects together.
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Merge two jison-style location data objects together.
 If <code>last</code> is not provided, this will simply return <code>first</code>.
-
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">buildLocationData = </span><span class="nf">(first, last) -&gt;</span>
-  <span class="k">if</span> <span class="o">not</span> <span class="nx">last</span>
-    <span class="nx">first</span>
-  <span class="k">else</span>
-    <span class="nv">first_line: </span><span class="nx">first</span><span class="p">.</span><span class="nx">first_line</span>
-    <span class="nv">first_column: </span><span class="nx">first</span><span class="p">.</span><span class="nx">first_column</span>
-    <span class="nv">last_line: </span><span class="nx">last</span><span class="p">.</span><span class="nx">last_line</span>
-    <span class="nv">last_column: </span><span class="nx">last</span><span class="p">.</span><span class="nx">last_column</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">buildLocationData</span></span> = (first, last) -&gt;
+  <span class="keyword">if</span> <span class="keyword">not</span> last
+    first
+  <span class="keyword">else</span>
+    first_line: first.first_line
+    first_column: first.first_column
+    last_line: last.last_line
+    last_column: last.last_column</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-15">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-15">&#182;</a>
-              </div>            
               
-<p>This returns a function which takes an object as a parameter, and if that
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>This returns a function which takes an object as a parameter, and if that
 object is an AST node, updates that object&#39;s locationData.
 The object is returned either way.
-
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.addLocationDataFn = </span><span class="nf">(first, last) -&gt;</span>
-    <span class="nf">(obj) -&gt;</span>
-      <span class="k">if</span> <span class="p">((</span><span class="k">typeof</span> <span class="nx">obj</span><span class="p">)</span> <span class="o">is</span> <span class="s">&#39;object&#39;</span><span class="p">)</span> <span class="o">and</span> <span class="p">(</span><span class="o">!!</span><span class="nx">obj</span><span class="p">[</span><span class="s">&#39;updateLocationDataIfMissing&#39;</span><span class="p">])</span>
-        <span class="nx">obj</span><span class="p">.</span><span class="nx">updateLocationDataIfMissing</span> <span class="nx">buildLocationData</span><span class="p">(</span><span class="nx">first</span><span class="p">,</span> <span class="nx">last</span><span class="p">)</span>
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">addLocationDataFn</span></span> = (first, last) -&gt;
+    (obj) -&gt;
+      <span class="keyword">if</span> ((<span class="keyword">typeof</span> obj) <span class="keyword">is</span> <span class="string">'object'</span>) <span class="keyword">and</span> (!!obj[<span class="string">'updateLocationDataIfMissing'</span>])
+        obj.updateLocationDataIfMissing buildLocationData(first, last)
 
-      <span class="k">return</span> <span class="nx">obj</span></pre></div></div>
+      <span class="keyword">return</span> obj</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-16">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-16">&#182;</a>
-              </div>            
               
-<p>Convert jison location data to a string.
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Convert jison location data to a string.
 <code>obj</code> can be a token, or a locationData.
-
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.locationDataToString = </span><span class="nf">(obj) -&gt;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="s">&quot;2&quot;</span> <span class="k">of</span> <span class="nx">obj</span><span class="p">)</span> <span class="o">and</span> <span class="p">(</span><span class="s">&quot;first_line&quot;</span> <span class="k">of</span> <span class="nx">obj</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="k">then</span> <span class="nv">locationData = </span><span class="nx">obj</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="s">&quot;first_line&quot;</span> <span class="k">of</span> <span class="nx">obj</span> <span class="k">then</span> <span class="nv">locationData = </span><span class="nx">obj</span>
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">locationDataToString</span></span> = (obj) -&gt;
+    <span class="keyword">if</span> (<span class="string">"2"</span> <span class="keyword">of</span> obj) <span class="keyword">and</span> (<span class="string">"first_line"</span> <span class="keyword">of</span> obj[<span class="number">2</span>]) <span class="keyword">then</span> locationData = obj[<span class="number">2</span>]
+    <span class="keyword">else</span> <span class="keyword">if</span> <span class="string">"first_line"</span> <span class="keyword">of</span> obj <span class="keyword">then</span> locationData = obj
 
-    <span class="k">if</span> <span class="nx">locationData</span>
-      <span class="s">&quot;</span><span class="si">#{</span><span class="nx">locationData</span><span class="p">.</span><span class="nx">first_line</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s">:</span><span class="si">#{</span><span class="nx">locationData</span><span class="p">.</span><span class="nx">first_column</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s">-&quot;</span> <span class="o">+</span>
-      <span class="s">&quot;</span><span class="si">#{</span><span class="nx">locationData</span><span class="p">.</span><span class="nx">last_line</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s">:</span><span class="si">#{</span><span class="nx">locationData</span><span class="p">.</span><span class="nx">last_column</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s">&quot;</span>
-    <span class="k">else</span>
-      <span class="s">&quot;No location data&quot;</span></pre></div></div>
+    <span class="keyword">if</span> locationData
+      <span class="string">"<span class="subst">#{locationData.first_line + <span class="number">1</span>}</span>:<span class="subst">#{locationData.first_column + <span class="number">1</span>}</span>-"</span> +
+      <span class="string">"<span class="subst">#{locationData.last_line + <span class="number">1</span>}</span>:<span class="subst">#{locationData.last_column + <span class="number">1</span>}</span>"</span>
+    <span class="keyword">else</span>
+      <span class="string">"No location data"</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-17">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-17">&#182;</a>
-              </div>            
               
-<p>A <code>.coffee.md</code> compatible version of <code>basename</code>, that returns the file sans-extension.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>A <code>.coffee.md</code> compatible version of <code>basename</code>, that returns the file sans-extension.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.baseFileName = </span><span class="nf">(file, stripExt = no) -&gt;</span>
-  <span class="nv">parts = </span><span class="nx">file</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)</span>
-  <span class="nv">file = </span><span class="nx">parts</span><span class="p">[</span><span class="nx">parts</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-  <span class="k">return</span> <span class="nx">file</span> <span class="k">unless</span> <span class="nx">stripExt</span>
-  <span class="nv">parts = </span><span class="nx">file</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)</span>
-  <span class="nx">parts</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span>
-  <span class="nx">parts</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span> <span class="k">if</span> <span class="nx">parts</span><span class="p">[</span><span class="nx">parts</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">is</span> <span class="s">&#39;coffee&#39;</span> <span class="o">and</span> <span class="nx">parts</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">1</span>
-  <span class="nx">parts</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">baseFileName</span></span> = (file, stripExt = <span class="literal">no</span>, pathSep = <span class="string">'/'</span>) -&gt;
+  parts = file.split(pathSep)
+  file = parts[parts.length - <span class="number">1</span>]
+  <span class="keyword">return</span> file <span class="keyword">unless</span> stripExt
+  parts = file.split(<span class="string">'.'</span>)
+  parts.pop()
+  parts.pop() <span class="keyword">if</span> parts[parts.length - <span class="number">1</span>] <span class="keyword">is</span> <span class="string">'coffee'</span> <span class="keyword">and</span> parts.length &gt; <span class="number">1</span>
+  parts.join(<span class="string">'.'</span>)</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-18">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-18">&#182;</a>
-              </div>            
               
-<p>Determine if a filename represents a CoffeeScript file.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>Determine if a filename represents a CoffeeScript file.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.isCoffee = </span><span class="nf">(file) -&gt;</span> <span class="o">/</span><span class="err">\</span><span class="p">.((</span><span class="nx">lit</span><span class="p">)</span><span class="o">?</span><span class="nx">coffee</span><span class="o">|</span><span class="nx">coffee</span><span class="err">\</span><span class="p">.</span><span class="nx">md</span><span class="p">)</span><span class="nx">$</span><span class="o">/</span><span class="p">.</span><span class="nx">test</span> <span class="nx">file</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">isCoffee</span></span> = (file) -&gt; <span class="regexp">/\.((lit)?coffee|coffee\.md)$/</span>.test file</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-19">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-19">&#182;</a>
-              </div>            
               
-<p>Determine if a filename represents a Literate CoffeeScript file.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>Determine if a filename represents a Literate CoffeeScript file.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.isLiterate = </span><span class="nf">(file) -&gt;</span> <span class="o">/</span><span class="err">\</span><span class="p">.(</span><span class="nx">litcoffee</span><span class="o">|</span><span class="nx">coffee</span><span class="err">\</span><span class="p">.</span><span class="nx">md</span><span class="p">)</span><span class="nx">$</span><span class="o">/</span><span class="p">.</span><span class="nx">test</span> <span class="nx">file</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">isLiterate</span></span> = (file) -&gt; <span class="regexp">/\.(litcoffee|coffee\.md)$/</span>.test file</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-20">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-20">&#182;</a>
-              </div>            
               
-<p>Throws a SyntaxError with a source file location data attached to it in a
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>Throws a SyntaxError with a source file location data attached to it in a
 property called <code>location</code>.
-
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.throwSyntaxError = </span><span class="nf">(message, location) -&gt;</span>
-  <span class="nx">location</span><span class="p">.</span><span class="nx">last_line</span> <span class="o">?=</span> <span class="nx">location</span><span class="p">.</span><span class="nx">first_line</span>
-  <span class="nx">location</span><span class="p">.</span><span class="nx">last_column</span> <span class="o">?=</span> <span class="nx">location</span><span class="p">.</span><span class="nx">first_column</span>
-  <span class="nv">error = </span><span class="k">new</span> <span class="nx">SyntaxError</span> <span class="nx">message</span>
-  <span class="nv">error.location = </span><span class="nx">location</span>
-  <span class="k">throw</span> <span class="nx">error</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">throwSyntaxError</span></span> = (message, location) -&gt;
+  location.last_line ?= location.first_line
+  location.last_column ?= location.first_column
+  error = <span class="keyword">new</span> SyntaxError message
+  error.location = location
+  <span class="keyword">throw</span> error</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-21">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-21">&#182;</a>
-              </div>            
               
-<p>Creates a nice error message like, following the &quot;standard&quot; format
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>Creates a nice error message like, following the &quot;standard&quot; format
 </p>
 <p><filename>:<line>:<col>: <message> plus the line with the error and a marker
 showing where the error is.
-
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.prettyErrorMessage = </span><span class="nf">(error, fileName, code, useColors) -&gt;</span>
-  <span class="k">return</span> <span class="nx">error</span><span class="p">.</span><span class="nx">stack</span> <span class="o">or</span> <span class="s">&quot;</span><span class="si">#{</span><span class="nx">error</span><span class="si">}</span><span class="s">&quot;</span> <span class="k">unless</span> <span class="nx">error</span><span class="p">.</span><span class="nx">location</span>
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">prettyErrorMessage</span></span> = (error, fileName, code, useColors) -&gt;
+  <span class="keyword">return</span> error.stack <span class="keyword">or</span> <span class="string">"<span class="subst">#{error}</span>"</span> <span class="keyword">unless</span> error.location
 
-  <span class="p">{</span><span class="nx">first_line</span><span class="p">,</span> <span class="nx">first_column</span><span class="p">,</span> <span class="nx">last_line</span><span class="p">,</span> <span class="nx">last_column</span><span class="p">}</span> <span class="o">=</span> <span class="nx">error</span><span class="p">.</span><span class="nx">location</span>
-  <span class="nv">codeLine = </span><span class="nx">code</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s">&#39;\n&#39;</span><span class="p">)[</span><span class="nx">first_line</span><span class="p">]</span>
-  <span class="nv">start    = </span><span class="nx">first_column</span></pre></div></div>
+  {first_line, first_column, last_line, last_column} = error.location
+  codeLine = code.split(<span class="string">'\n'</span>)[first_line]
+  start    = first_column</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-22">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-22">&#182;</a>
-              </div>            
               
-<p>Show only the first line on multi-line errors.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>Show only the first line on multi-line errors.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>  <span class="nv">end      = </span><span class="k">if</span> <span class="nx">first_line</span> <span class="o">is</span> <span class="nx">last_line</span> <span class="k">then</span> <span class="nx">last_column</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">else</span> <span class="nx">codeLine</span><span class="p">.</span><span class="nx">length</span>
-  <span class="nv">marker   = </span><span class="nx">repeat</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="nx">start</span><span class="p">)</span> <span class="o">+</span> <span class="nx">repeat</span><span class="p">(</span><span class="s">&#39;^&#39;</span><span class="p">,</span> <span class="nx">end</span> <span class="o">-</span> <span class="nx">start</span><span class="p">)</span>
+            <div class="content"><div class='highlight'><pre>  end      = <span class="keyword">if</span> first_line <span class="keyword">is</span> last_line <span class="keyword">then</span> last_column + <span class="number">1</span> <span class="keyword">else</span> codeLine.length
+  marker   = repeat(<span class="string">' '</span>, start) + repeat(<span class="string">'^'</span>, end - start)
 
-  <span class="k">if</span> <span class="nx">useColors</span>
-    <span class="nv">colorize  = </span><span class="nf">(str) -&gt;</span> <span class="s">&quot;\x1B[1;31m</span><span class="si">#{</span><span class="nx">str</span><span class="si">}</span><span class="s">\x1B[0m&quot;</span>
-    <span class="nv">codeLine = </span><span class="nx">codeLine</span><span class="p">[...</span><span class="nx">start</span><span class="p">]</span> <span class="o">+</span> <span class="nx">colorize</span><span class="p">(</span><span class="nx">codeLine</span><span class="p">[</span><span class="nx">start</span><span class="p">...</span><span class="nx">end</span><span class="p">])</span> <span class="o">+</span> <span class="nx">codeLine</span><span class="p">[</span><span class="nx">end</span><span class="p">..]</span>
-    <span class="nv">marker    = </span><span class="nx">colorize</span> <span class="nx">marker</span>
+  <span class="keyword">if</span> useColors
+    <span class="function"><span class="title">colorize</span></span>  = (str) -&gt; <span class="string">"\x1B[1;31m<span class="subst">#{str}</span>\x1B[0m"</span>
+    codeLine = codeLine[...start] + colorize(codeLine[start...end]) + codeLine[end..]
+    marker    = colorize marker
 
-  <span class="nv">message = </span><span class="s">&quot;&quot;&quot;</span>
-<span class="s">  </span><span class="si">#{</span><span class="nx">fileName</span><span class="si">}</span><span class="s">:</span><span class="si">#{</span><span class="nx">first_line</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s">:</span><span class="si">#{</span><span class="nx">first_column</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s">: error: </span><span class="si">#{</span><span class="nx">error</span><span class="p">.</span><span class="nx">message</span><span class="si">}</span><span class="s"></span>
-<span class="s">  </span><span class="si">#{</span><span class="nx">codeLine</span><span class="si">}</span><span class="s"></span>
-<span class="s">  </span><span class="si">#{</span><span class="nx">marker</span><span class="si">}</span><span class="s"></span>
-<span class="s">            &quot;&quot;&quot;</span></pre></div></div>
+  message = <span class="string">"""
+  <span class="subst">#{fileName}</span>:<span class="subst">#{first_line + <span class="number">1</span>}</span>:<span class="subst">#{first_column + <span class="number">1</span>}</span>: error: <span class="subst">#{error.message}</span>
+  <span class="subst">#{codeLine}</span>
+  <span class="subst">#{marker}</span>
+            """</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-23">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-23">&#182;</a>
-              </div>            
               
-<p>Uncomment to add stacktrace.
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>Uncomment to add stacktrace.
 message += &quot;\n#{error.stack}&quot;
 
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>  <span class="nx">message</span>
-
-</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  message</pre></div></div>
             
         </li>
         
-    </ul> 
+    </ul>
   </div>
 </body>
 </html>

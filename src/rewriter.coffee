@@ -16,6 +16,7 @@ generate = (tag, value) ->
 class exports.Rewriter
 
   # Helpful snippet for debugging:
+  #
   #     console.log (t[0] + '/' + t[1] for t in @tokens).join ' '
 
   # Rewrite the token stream in multiple passes, one logical filter at
@@ -186,9 +187,12 @@ class exports.Rewriter
         return forward(1)
 
       if tag is 'INDENT' and inImplicit()
-        # An INDENT closes an implicit call unless
-        # 1. We have seen a CONTROL argument on the line.
-        # 2. The last token before the indent is part of the list below
+
+        # An `INDENT` closes an implicit call unless
+        #
+        #  1. We have seen a `CONTROL` argument on the line.
+        #  2. The last token before the indent is part of the list below
+        #
         if prevTag not in ['=>', '->', '[', '(', ',', '{', 'TRY', 'ELSE', '=']
           endImplicitCall() while inImplicitCall()
         stack.pop() if inImplicitControl()
@@ -223,20 +227,27 @@ class exports.Rewriter
         return forward(2)
 
       # Implicit call taking an implicit indented object as first argument.
-      # f
-      #   a: b
-      #   c: d
+      #
+      #     f
+      #       a: b
+      #       c: d
+      #
       # and
-      # f
-      #   1
-      #   a: b
-      #   b: c
+      #
+      #     f
+      #       1
+      #       a: b
+      #       b: c
+      #
       # Don't accept implicit calls of this type, when on the same line
       # as the control strucutures below as that may misinterpret constructs like:
-      # if f
-      #    a: 1
+      #
+      #     if f
+      #        a: 1
       # as
-      # if f(a: 1)
+      #
+      #     if f(a: 1)
+      #
       # which is probably always unintended.
       # Furthermore don't allow this in literal arrays, as
       # that creates grammatical ambiguities.
@@ -266,11 +277,13 @@ class exports.Rewriter
 
       # End implicit calls when chaining method calls
       # like e.g.:
-      # f ->
-      #   a
-      # .g b, ->
-      #   c
-      # .h a
+      #
+      #     f ->
+      #       a
+      #     .g b, ->
+      #       c
+      #     .h a
+      #
       if prevTag is 'OUTDENT' and inImplicitCall() and tag in ['.', '?.', '::', '?::']
         endImplicitCall()
         return forward(1)
@@ -299,14 +312,16 @@ class exports.Rewriter
       # Close implicit object if comma is the last character
       # and what comes after doesn't look like it belongs.
       # This is used for trailing commas and calls, like:
-      # x =
-      #     a: b,
-      #     c: d,
-      # e = 2
+      #
+      #     x =
+      #         a: b,
+      #         c: d,
+      #     e = 2
       #
       # and
       #
-      # f a, b: c, d: e, f, g: h: i, j
+      #     f a, b: c, d: e, f, g: h: i, j
+      #
       if tag is ',' and not @looksObjectish(i + 1) and inImplicitObject() and
          (nextTag isnt 'TERMINATOR' or not @looksObjectish(i + 2))
         # When nextTag is OUTDENT the comma is insignificant and
@@ -444,7 +459,7 @@ IMPLICIT_FUNC    = ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@
 IMPLICIT_CALL    = [
   'IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START', 'CLASS'
   'IF', 'TRY', 'SWITCH', 'THIS', 'BOOL', 'NULL', 'UNDEFINED', 'UNARY', 'SUPER'
-  '@', '->', '=>', '[', '(', '{', '--', '++'
+  'THROW', '@', '->', '=>', '[', '(', '{', '--', '++'
 ]
 
 IMPLICIT_UNSPACED_CALL = ['+', '-']

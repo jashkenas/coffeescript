@@ -1,18 +1,11 @@
-# Override exported methods for non-Node.js engines.
+# This **Browser** compatibility layer extends core CoffeeScript functions
+# to make things work smoothly when compiling code directly in the browser.
+# We add support for loading remote Coffee scripts via **XHR**, and
+# `text/coffeescript` script tags, source maps via data-URLs, and so on.
 
 CoffeeScript = require './coffee-script'
 CoffeeScript.require = require
-
-compile =
-  # if we are able, inline the source map using a data URI
-  if btoa? and JSON?
-    (code, options = {}) ->
-      options.sourceMap = true
-      options.inline = true
-      {js, v3SourceMap} = CoffeeScript.compile code, options
-      "#{js}\n//@ sourceMappingURL=data:application/json;base64,#{btoa v3SourceMap}\n//@ sourceURL=coffeescript"
-  else
-    CoffeeScript.compile
+compile = CoffeeScript.compile
 
 # Use standard JavaScript `eval` to eval code.
 CoffeeScript.eval = (code, options = {}) ->
@@ -26,6 +19,15 @@ CoffeeScript.run = (code, options = {}) ->
 
 # If we're not in a browser environment, we're finished with the public API.
 return unless window?
+
+# Include source maps where possible. If we've got a base64 encoder, and a
+# JSON serializer, we're good to go.
+if btoa? and JSON?
+  compile = (code, options = {}) ->
+    options.sourceMap = true
+    options.inline = true
+    {js, v3SourceMap} = CoffeeScript.compile code, options
+    "#{js}\n//@ sourceMappingURL=data:application/json;base64,#{btoa v3SourceMap}\n//@ sourceURL=coffeescript"
 
 # Load a remote script from the current domain via XHR.
 CoffeeScript.load = (url, callback, options = {}) ->
@@ -67,7 +69,7 @@ runScripts = ->
         execute()
   null
 
-# Listen for window load, both in browsers and in IE.
+# Listen for window load, both in decent browsers and in IE.
 if window.addEventListener
   addEventListener 'DOMContentLoaded', runScripts, no
 else

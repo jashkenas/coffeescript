@@ -92,19 +92,22 @@
         </li>
       </ul>
     
-    <ul class="sections">  
-        <li id="title">
-            <div class="annotation">
-                <h1>cake.coffee</h1>
-            </div>
-        </li>
+    <ul class="sections">
         
-           
+          <li id="title">
+              <div class="annotation">
+                  <h1>cake.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
         <li id="section-1">
             <div class="annotation">
-              <div class="pilwrap">
+              
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
-              </div>            
+              </div>
               <p><code>cake</code> is a simplified version of <a href="http://www.gnu.org/software/make/">Make</a>
 (<a href="http://rake.rubyforge.org/">Rake</a>, <a href="http://github.com/280north/jake">Jake</a>)
 for CoffeeScript. You define tasks with names and descriptions in a Cakefile,
@@ -116,220 +119,209 @@ current directory&#39;s Cakefile.
 
 </p>
 <p>External dependencies.
-
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">fs           = </span><span class="nx">require</span> <span class="s">&#39;fs&#39;</span>
-<span class="nv">path         = </span><span class="nx">require</span> <span class="s">&#39;path&#39;</span>
-<span class="nv">helpers      = </span><span class="nx">require</span> <span class="s">&#39;./helpers&#39;</span>
-<span class="nv">optparse     = </span><span class="nx">require</span> <span class="s">&#39;./optparse&#39;</span>
-<span class="nv">CoffeeScript = </span><span class="nx">require</span> <span class="s">&#39;./coffee-script&#39;</span>
+            <div class="content"><div class='highlight'><pre>fs           = require <span class="string">'fs'</span>
+path         = require <span class="string">'path'</span>
+helpers      = require <span class="string">'./helpers'</span>
+optparse     = require <span class="string">'./optparse'</span>
+CoffeeScript = require <span class="string">'./coffee-script'</span>
 
-<span class="nv">existsSync   = </span><span class="nx">fs</span><span class="p">.</span><span class="nx">existsSync</span> <span class="o">or</span> <span class="nx">path</span><span class="p">.</span><span class="nx">existsSync</span></pre></div></div>
+existsSync   = fs.existsSync <span class="keyword">or</span> path.existsSync</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-2">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-2">&#182;</a>
-              </div>            
               
-<p>Keep track of the list of defined tasks, the accepted options, and so on.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Keep track of the list of defined tasks, the accepted options, and so on.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">tasks     = </span><span class="p">{}</span>
-<span class="nv">options   = </span><span class="p">{}</span>
-<span class="nv">switches  = </span><span class="p">[]</span>
-<span class="nv">oparse    = </span><span class="kc">null</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>tasks     = {}
+options   = {}
+switches  = []
+oparse    = <span class="literal">null</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-3">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-3">&#182;</a>
-              </div>            
               
-<p>Mixin the top-level Cake functions for Cakefiles to use directly.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Mixin the top-level Cake functions for Cakefiles to use directly.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nx">helpers</span><span class="p">.</span><span class="nx">extend</span> <span class="nx">global</span><span class="p">,</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>helpers.extend global,</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-4">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-4">&#182;</a>
-              </div>            
               
-<p>Define a Cake task with a short name, an optional sentence description,
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Define a Cake task with a short name, an optional sentence description,
 and the function to run as the action itself.
-
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>  <span class="nv">task: </span><span class="nf">(name, description, action) -&gt;</span>
-    <span class="p">[</span><span class="nx">action</span><span class="p">,</span> <span class="nx">description</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nx">description</span><span class="p">,</span> <span class="nx">action</span><span class="p">]</span> <span class="k">unless</span> <span class="nx">action</span>
-    <span class="nx">tasks</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="nx">name</span><span class="p">,</span> <span class="nx">description</span><span class="p">,</span> <span class="nx">action</span><span class="p">}</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  task: (name, description, action) -&gt;
+    [action, description] = [description, action] <span class="keyword">unless</span> action
+    tasks[name] = {name, description, action}</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-5">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-5">&#182;</a>
-              </div>            
               
-<p>Define an option that the Cakefile accepts. The parsed options hash,
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Define an option that the Cakefile accepts. The parsed options hash,
 containing all of the command-line options passed, will be made available
 as the first argument to the action.
-
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>  <span class="nv">option: </span><span class="nf">(letter, flag, description) -&gt;</span>
-    <span class="nx">switches</span><span class="p">.</span><span class="nx">push</span> <span class="p">[</span><span class="nx">letter</span><span class="p">,</span> <span class="nx">flag</span><span class="p">,</span> <span class="nx">description</span><span class="p">]</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  option: (letter, flag, description) -&gt;
+    switches.push [letter, flag, description]</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-6">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-6">&#182;</a>
-              </div>            
               
-<p>Invoke another task in the current Cakefile.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Invoke another task in the current Cakefile.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>  <span class="nv">invoke: </span><span class="nf">(name) -&gt;</span>
-    <span class="nx">missingTask</span> <span class="nx">name</span> <span class="k">unless</span> <span class="nx">tasks</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span>
-    <span class="nx">tasks</span><span class="p">[</span><span class="nx">name</span><span class="p">].</span><span class="nx">action</span> <span class="nx">options</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  invoke: (name) -&gt;
+    missingTask name <span class="keyword">unless</span> tasks[name]
+    tasks[name].action options</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-7">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-7">&#182;</a>
-              </div>            
               
-<p>Run <code>cake</code>. Executes all of the tasks you pass, in order. Note that Node&#39;s
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Run <code>cake</code>. Executes all of the tasks you pass, in order. Note that Node&#39;s
 asynchrony may cause tasks to execute in a different order than you&#39;d expect.
 If no tasks are passed, print the help screen. Keep a reference to the
 original directory name, when running Cake tasks from subdirectories.
-
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.run = </span><span class="nf">-&gt;</span>
-  <span class="nv">global.__originalDirname = </span><span class="nx">fs</span><span class="p">.</span><span class="nx">realpathSync</span> <span class="s">&#39;.&#39;</span>
-  <span class="nx">process</span><span class="p">.</span><span class="nx">chdir</span> <span class="nx">cakefileDirectory</span> <span class="nx">__originalDirname</span>
-  <span class="nv">args = </span><span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">..]</span>
-  <span class="nx">CoffeeScript</span><span class="p">.</span><span class="nx">run</span> <span class="nx">fs</span><span class="p">.</span><span class="nx">readFileSync</span><span class="p">(</span><span class="s">&#39;Cakefile&#39;</span><span class="p">).</span><span class="nx">toString</span><span class="p">(),</span> <span class="nv">filename: </span><span class="s">&#39;Cakefile&#39;</span>
-  <span class="nv">oparse = </span><span class="k">new</span> <span class="nx">optparse</span><span class="p">.</span><span class="nx">OptionParser</span> <span class="nx">switches</span>
-  <span class="k">return</span> <span class="nx">printTasks</span><span class="p">()</span> <span class="k">unless</span> <span class="nx">args</span><span class="p">.</span><span class="nx">length</span>
-  <span class="k">try</span>
-    <span class="nv">options = </span><span class="nx">oparse</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">args</span><span class="p">)</span>
-  <span class="k">catch</span> <span class="nx">e</span>
-    <span class="k">return</span> <span class="nx">fatalError</span> <span class="s">&quot;</span><span class="si">#{</span><span class="nx">e</span><span class="si">}</span><span class="s">&quot;</span>
-  <span class="nx">invoke</span> <span class="nx">arg</span> <span class="k">for</span> <span class="nx">arg</span> <span class="k">in</span> <span class="nx">options</span><span class="p">.</span><span class="nx">arguments</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">run</span></span> = -&gt;
+  global.__originalDirname = fs.realpathSync <span class="string">'.'</span>
+  process.chdir cakefileDirectory __originalDirname
+  args = process.argv[<span class="number">2.</span>.]
+  CoffeeScript.run fs.readFileSync(<span class="string">'Cakefile'</span>).toString(), filename: <span class="string">'Cakefile'</span>
+  oparse = <span class="keyword">new</span> optparse.OptionParser switches
+  <span class="keyword">return</span> printTasks() <span class="keyword">unless</span> args.length
+  <span class="keyword">try</span>
+    options = oparse.parse(args)
+  <span class="keyword">catch</span> e
+    <span class="keyword">return</span> fatalError <span class="string">"<span class="subst">#{e}</span>"</span>
+  invoke arg <span class="keyword">for</span> arg <span class="keyword">in</span> options.arguments</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-8">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-8">&#182;</a>
-              </div>            
               
-<p>Display the list of Cake tasks in a format similar to <code>rake -T</code>
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Display the list of Cake tasks in a format similar to <code>rake -T</code>
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">printTasks = </span><span class="nf">-&gt;</span>
-  <span class="nv">relative = </span><span class="nx">path</span><span class="p">.</span><span class="nx">relative</span> <span class="o">or</span> <span class="nx">path</span><span class="p">.</span><span class="nx">resolve</span>
-  <span class="nv">cakefilePath = </span><span class="nx">path</span><span class="p">.</span><span class="nx">join</span> <span class="nx">relative</span><span class="p">(</span><span class="nx">__originalDirname</span><span class="p">,</span> <span class="nx">process</span><span class="p">.</span><span class="nx">cwd</span><span class="p">()),</span> <span class="s">&#39;Cakefile&#39;</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&quot;</span><span class="si">#{</span><span class="nx">cakefilePath</span><span class="si">}</span><span class="s"> defines the following tasks:\n&quot;</span>
-  <span class="k">for</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">task</span> <span class="k">of</span> <span class="nx">tasks</span>
-    <span class="nv">spaces = </span><span class="mi">20</span> <span class="o">-</span> <span class="nx">name</span><span class="p">.</span><span class="nx">length</span>
-    <span class="nv">spaces = </span><span class="k">if</span> <span class="nx">spaces</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">then</span> <span class="nb">Array</span><span class="p">(</span><span class="nx">spaces</span> <span class="o">+</span> <span class="mi">1</span><span class="p">).</span><span class="nx">join</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
-    <span class="nv">desc   = </span><span class="k">if</span> <span class="nx">task</span><span class="p">.</span><span class="nx">description</span> <span class="k">then</span> <span class="s">&quot;</span><span class="err">#</span><span class="s"> </span><span class="si">#{</span><span class="nx">task</span><span class="p">.</span><span class="nx">description</span><span class="si">}</span><span class="s">&quot;</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
-    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&quot;cake </span><span class="si">#{</span><span class="nx">name</span><span class="si">}#{</span><span class="nx">spaces</span><span class="si">}</span><span class="s"> </span><span class="si">#{</span><span class="nx">desc</span><span class="si">}</span><span class="s">&quot;</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="nx">oparse</span><span class="p">.</span><span class="nx">help</span><span class="p">()</span> <span class="k">if</span> <span class="nx">switches</span><span class="p">.</span><span class="nx">length</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">printTasks</span></span> = -&gt;
+  relative = path.relative <span class="keyword">or</span> path.resolve
+  cakefilePath = path.join relative(__originalDirname, process.cwd()), <span class="string">'Cakefile'</span>
+  console.log <span class="string">"<span class="subst">#{cakefilePath}</span> defines the following tasks:\n"</span>
+  <span class="keyword">for</span> name, task <span class="keyword">of</span> tasks
+    spaces = <span class="number">20</span> - name.length
+    spaces = <span class="keyword">if</span> spaces &gt; <span class="number">0</span> <span class="keyword">then</span> Array(spaces + <span class="number">1</span>).join(<span class="string">' '</span>) <span class="keyword">else</span> <span class="string">''</span>
+    desc   = <span class="keyword">if</span> task.description <span class="keyword">then</span> <span class="string">"# <span class="subst">#{task.description}</span>"</span> <span class="keyword">else</span> <span class="string">''</span>
+    console.log <span class="string">"cake <span class="subst">#{name}</span><span class="subst">#{spaces}</span> <span class="subst">#{desc}</span>"</span>
+  console.log oparse.help() <span class="keyword">if</span> switches.length</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-9">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-9">&#182;</a>
-              </div>            
               
-<p>Print an error and exit when attempting to use an invalid task/option.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Print an error and exit when attempting to use an invalid task/option.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">fatalError = </span><span class="nf">(message) -&gt;</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">error</span> <span class="nx">message</span> <span class="o">+</span> <span class="s">&#39;\n&#39;</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&#39;To see a list of all tasks/options, run &quot;cake&quot;&#39;</span>
-  <span class="nx">process</span><span class="p">.</span><span class="nx">exit</span> <span class="mi">1</span>
+            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">fatalError</span></span> = (message) -&gt;
+  console.error message + <span class="string">'\n'</span>
+  console.log <span class="string">'To see a list of all tasks/options, run "cake"'</span>
+  process.exit <span class="number">1</span>
 
-<span class="nv">missingTask = </span><span class="nf">(task) -&gt;</span> <span class="nx">fatalError</span> <span class="s">&quot;No such task: </span><span class="si">#{</span><span class="nx">task</span><span class="si">}</span><span class="s">&quot;</span></pre></div></div>
+<span class="function"><span class="title">missingTask</span></span> = (task) -&gt; fatalError <span class="string">"No such task: <span class="subst">#{task}</span>"</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-10">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-10">&#182;</a>
-              </div>            
               
-<p>When <code>cake</code> is invoked, search in the current and all parent directories
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>When <code>cake</code> is invoked, search in the current and all parent directories
 to find the relevant Cakefile.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">cakefileDirectory = </span><span class="nf">(dir) -&gt;</span>
-  <span class="k">return</span> <span class="nx">dir</span> <span class="k">if</span> <span class="nx">existsSync</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span> <span class="nx">dir</span><span class="p">,</span> <span class="s">&#39;Cakefile&#39;</span>
-  <span class="nv">parent = </span><span class="nx">path</span><span class="p">.</span><span class="nx">normalize</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span> <span class="nx">dir</span><span class="p">,</span> <span class="s">&#39;..&#39;</span>
-  <span class="k">return</span> <span class="nx">cakefileDirectory</span> <span class="nx">parent</span> <span class="k">unless</span> <span class="nx">parent</span> <span class="o">is</span> <span class="nx">dir</span>
-  <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span> <span class="s">&quot;Cakefile not found in </span><span class="si">#{</span><span class="nx">process</span><span class="p">.</span><span class="nx">cwd</span><span class="p">()</span><span class="si">}</span><span class="s">&quot;</span>
-
-</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">cakefileDirectory</span></span> = (dir) -&gt;
+  <span class="keyword">return</span> dir <span class="keyword">if</span> existsSync path.join dir, <span class="string">'Cakefile'</span>
+  parent = path.normalize path.join dir, <span class="string">'..'</span>
+  <span class="keyword">return</span> cakefileDirectory parent <span class="keyword">unless</span> parent <span class="keyword">is</span> dir
+  <span class="keyword">throw</span> <span class="keyword">new</span> Error <span class="string">"Cakefile not found in <span class="subst">#{process.cwd()}</span>"</span></pre></div></div>
             
         </li>
         
-    </ul> 
+    </ul>
   </div>
 </body>
 </html>

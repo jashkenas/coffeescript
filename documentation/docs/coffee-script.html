@@ -92,109 +92,82 @@
         </li>
       </ul>
     
-    <ul class="sections">  
-        <li id="title">
-            <div class="annotation">
-                <h1>coffee-script.coffee</h1>
-            </div>
-        </li>
+    <ul class="sections">
         
-           
+          <li id="title">
+              <div class="annotation">
+                  <h1>coffee-script.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
         <li id="section-1">
             <div class="annotation">
-              <div class="pilwrap">
+              
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
-              </div>            
+              </div>
               <p>CoffeeScript can be used both on the server, as a command-line compiler based
-on Node.js/V8, or to run CoffeeScripts directly in the browser. This module
+on Node.js/V8, or to run CoffeeScript directly in the browser. This module
 contains the main entry functions for tokenizing, parsing, and compiling
 source CoffeeScript into JavaScript.
 
 </p>
-<p>If included on a webpage, it will automatically sniff out, compile, and
-execute all scripts present in <code>text/coffeescript</code> tags.
-
-
-</p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">fs        = </span><span class="nx">require</span> <span class="s">&#39;fs&#39;</span>
-<span class="nv">path      = </span><span class="nx">require</span> <span class="s">&#39;path&#39;</span>
-<span class="p">{</span><span class="nx">Lexer</span><span class="p">}</span>   <span class="o">=</span> <span class="nx">require</span> <span class="s">&#39;./lexer&#39;</span>
-<span class="p">{</span><span class="nx">parser</span><span class="p">}</span>  <span class="o">=</span> <span class="nx">require</span> <span class="s">&#39;./parser&#39;</span>
-<span class="nv">helpers   = </span><span class="nx">require</span> <span class="s">&#39;./helpers&#39;</span>
-<span class="nv">vm        = </span><span class="nx">require</span> <span class="s">&#39;vm&#39;</span>
-<span class="nv">sourcemap = </span><span class="nx">require</span> <span class="s">&#39;./sourcemap&#39;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>fs            = require <span class="string">'fs'</span>
+vm            = require <span class="string">'vm'</span>
+path          = require <span class="string">'path'</span>
+child_process = require <span class="string">'child_process'</span>
+{Lexer}       = require <span class="string">'./lexer'</span>
+{parser}      = require <span class="string">'./parser'</span>
+helpers       = require <span class="string">'./helpers'</span>
+sourcemap     = require <span class="string">'./sourcemap'</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-2">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-2">&#182;</a>
-              </div>            
               
-<p>Load and run a CoffeeScript file for Node, stripping any <code>BOM</code>s.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>The current CoffeeScript version number.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">loadFile = </span><span class="nf">(module, filename) -&gt;</span>
-  <span class="nv">raw = </span><span class="nx">fs</span><span class="p">.</span><span class="nx">readFileSync</span> <span class="nx">filename</span><span class="p">,</span> <span class="s">&#39;utf8&#39;</span>
-  <span class="nv">stripped = </span><span class="k">if</span> <span class="nx">raw</span><span class="p">.</span><span class="nx">charCodeAt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">is</span> <span class="mh">0xFEFF</span> <span class="k">then</span> <span class="nx">raw</span><span class="p">.</span><span class="nx">substring</span> <span class="mi">1</span> <span class="k">else</span> <span class="nx">raw</span>
-  <span class="nx">module</span><span class="p">.</span><span class="nx">_compile</span> <span class="nx">compile</span><span class="p">(</span><span class="nx">stripped</span><span class="p">,</span> <span class="p">{</span><span class="nx">filename</span><span class="p">,</span> <span class="nv">literate: </span><span class="nx">helpers</span><span class="p">.</span><span class="nx">isLiterate</span> <span class="nx">filename</span><span class="p">}),</span> <span class="nx">filename</span>
-
-<span class="k">if</span> <span class="nx">require</span><span class="p">.</span><span class="nx">extensions</span>
-  <span class="k">for</span> <span class="nx">ext</span> <span class="k">in</span> <span class="p">[</span><span class="s">&#39;.coffee&#39;</span><span class="p">,</span> <span class="s">&#39;.litcoffee&#39;</span><span class="p">,</span> <span class="s">&#39;.md&#39;</span><span class="p">,</span> <span class="s">&#39;.coffee.md&#39;</span><span class="p">]</span>
-    <span class="nx">require</span><span class="p">.</span><span class="nx">extensions</span><span class="p">[</span><span class="nx">ext</span><span class="p">]</span> <span class="o">=</span> <span class="nx">loadFile</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.VERSION = <span class="string">'1.6.2'</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-3">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-3">&#182;</a>
-              </div>            
               
-<p>The current CoffeeScript version number.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Expose helpers for testing.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.VERSION = </span><span class="s">&#39;1.6.1&#39;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.helpers = helpers</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-4">
             <div class="annotation">
-              <div class="pilwrap">
+              
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
-              </div>            
-              
-<p>Expose helpers for testing.
-
-</p>
-
-            </div>
-            
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.helpers = </span><span class="nx">helpers</span></pre></div></div>
-            
-        </li>
-        
-           
-        <li id="section-5">
-            <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-5">&#182;</a>
-              </div>            
-              
-<p>Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
+              </div>
+              <p>Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
 
 </p>
 <p>If <code>options.sourceMap</code> is specified, then <code>options.filename</code> must also be specified.  All
@@ -205,402 +178,467 @@ options that can be passed to <code>generateV3SourceMap()</code> may also be pas
 in which case this returns a `{js, v3SourceMap, sourceMap}
 object, where sourceMap is a sourcemap.coffee#SourceMap object, handy for doing programatic
 lookups.
-
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.compile = compile = </span><span class="nf">(code, options = {}) -&gt;</span>
-  <span class="p">{</span><span class="nx">merge</span><span class="p">}</span> <span class="o">=</span> <span class="nx">exports</span><span class="p">.</span><span class="nx">helpers</span>
+            <div class="content"><div class='highlight'><pre>exports.compile = <span class="function"><span class="title">compile</span></span> = (code, options = {}) -&gt;
+  {merge} = exports.helpers
 
-  <span class="k">if</span> <span class="nx">options</span><span class="p">.</span><span class="nx">sourceMap</span>
-    <span class="nv">sourceMap = </span><span class="k">new</span> <span class="nx">sourcemap</span><span class="p">.</span><span class="nx">SourceMap</span><span class="p">()</span>
+  <span class="keyword">if</span> options.sourceMap
+    sourceMap = <span class="keyword">new</span> sourcemap.SourceMap()
 
-  <span class="nv">fragments = </span><span class="p">(</span><span class="nx">parser</span><span class="p">.</span><span class="nx">parse</span> <span class="nx">lexer</span><span class="p">.</span><span class="nx">tokenize</span><span class="p">(</span><span class="nx">code</span><span class="p">,</span> <span class="nx">options</span><span class="p">)).</span><span class="nx">compileToFragments</span> <span class="nx">options</span>
+  fragments = (parser.parse lexer.tokenize(code, options)).compileToFragments options
 
-  <span class="nv">currentLine = </span><span class="mi">0</span>
-  <span class="nx">currentLine</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">if</span> <span class="nx">options</span><span class="p">.</span><span class="nx">header</span>
-  <span class="nv">currentColumn = </span><span class="mi">0</span>
-  <span class="nv">js = </span><span class="s">&quot;&quot;</span>
-  <span class="k">for</span> <span class="nx">fragment</span> <span class="k">in</span> <span class="nx">fragments</span></pre></div></div>
+  currentLine = <span class="number">0</span>
+  currentLine += <span class="number">1</span> <span class="keyword">if</span> options.header <span class="keyword">or</span> options.inline
+  currentColumn = <span class="number">0</span>
+  js = <span class="string">""</span>
+  <span class="keyword">for</span> fragment <span class="keyword">in</span> fragments</pre></div></div>
             
         </li>
         
-           
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Update the sourcemap with data from each fragment
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> sourceMap
+      <span class="keyword">if</span> fragment.locationData
+        sourceMap.addMapping(
+          [fragment.locationData.first_line, fragment.locationData.first_column],
+          [currentLine, currentColumn],
+          {noReplace: <span class="literal">true</span>})
+      newLines = helpers.count fragment.code, <span class="string">"\n"</span>
+      currentLine += newLines
+      currentColumn = fragment.code.length - (<span class="keyword">if</span> newLines <span class="keyword">then</span> fragment.code.lastIndexOf <span class="string">"\n"</span> <span class="keyword">else</span> <span class="number">0</span>)</pre></div></div>
+            
+        </li>
+        
+        
         <li id="section-6">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-6">&#182;</a>
-              </div>            
               
-<p>Update the sourcemap with data from each fragment
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Copy the code from each fragment into the final JavaScript.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>    <span class="k">if</span> <span class="nx">sourceMap</span>
-      <span class="k">if</span> <span class="nx">fragment</span><span class="p">.</span><span class="nx">locationData</span>
-        <span class="nx">sourceMap</span><span class="p">.</span><span class="nx">addMapping</span><span class="p">(</span>
-          <span class="p">[</span><span class="nx">fragment</span><span class="p">.</span><span class="nx">locationData</span><span class="p">.</span><span class="nx">first_line</span><span class="p">,</span> <span class="nx">fragment</span><span class="p">.</span><span class="nx">locationData</span><span class="p">.</span><span class="nx">first_column</span><span class="p">],</span>
-          <span class="p">[</span><span class="nx">currentLine</span><span class="p">,</span> <span class="nx">currentColumn</span><span class="p">],</span>
-          <span class="p">{</span><span class="nv">noReplace: </span><span class="kc">true</span><span class="p">})</span>
-      <span class="nv">newLines = </span><span class="nx">helpers</span><span class="p">.</span><span class="nx">count</span> <span class="nx">fragment</span><span class="p">.</span><span class="nx">code</span><span class="p">,</span> <span class="s">&quot;\n&quot;</span>
-      <span class="nx">currentLine</span> <span class="o">+=</span> <span class="nx">newLines</span>
-      <span class="nv">currentColumn = </span><span class="nx">fragment</span><span class="p">.</span><span class="nx">code</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="p">(</span><span class="k">if</span> <span class="nx">newLines</span> <span class="k">then</span> <span class="nx">fragment</span><span class="p">.</span><span class="nx">code</span><span class="p">.</span><span class="nx">lastIndexOf</span> <span class="s">&quot;\n&quot;</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>    js += fragment.code
+
+  <span class="keyword">if</span> options.header
+    header = <span class="string">"Generated by CoffeeScript <span class="subst">#{@VERSION}</span>"</span>
+    js = <span class="string">"// <span class="subst">#{header}</span>\n<span class="subst">#{js}</span>"</span>
+
+  <span class="keyword">if</span> options.sourceMap
+    answer = {js}
+    <span class="keyword">if</span> sourceMap
+      answer.sourceMap = sourceMap
+      answer.v3SourceMap = sourcemap.generateV3SourceMap(sourceMap, options, code)
+    answer
+  <span class="keyword">else</span>
+    js</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-7">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-7">&#182;</a>
-              </div>            
               
-<p>Copy the code from each fragment into the final JavaScript.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Tokenize a string of CoffeeScript code, and return the array of tokens.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>    <span class="nx">js</span> <span class="o">+=</span> <span class="nx">fragment</span><span class="p">.</span><span class="nx">code</span>
-
-  <span class="k">if</span> <span class="nx">options</span><span class="p">.</span><span class="nx">header</span>
-    <span class="nv">header = </span><span class="s">&quot;Generated by CoffeeScript </span><span class="si">#{</span><span class="nx">@VERSION</span><span class="si">}</span><span class="s">&quot;</span>
-    <span class="nv">js = </span><span class="s">&quot;// </span><span class="si">#{</span><span class="nx">header</span><span class="si">}</span><span class="s">\n</span><span class="si">#{</span><span class="nx">js</span><span class="si">}</span><span class="s">&quot;</span>
-
-  <span class="k">if</span> <span class="nx">options</span><span class="p">.</span><span class="nx">sourceMap</span>
-    <span class="nv">answer = </span><span class="p">{</span><span class="nx">js</span><span class="p">}</span>
-    <span class="k">if</span> <span class="nx">sourceMap</span>
-      <span class="nv">answer.sourceMap = </span><span class="nx">sourceMap</span>
-      <span class="nv">answer.v3SourceMap = </span><span class="nx">sourcemap</span><span class="p">.</span><span class="nx">generateV3SourceMap</span><span class="p">(</span><span class="nx">sourceMap</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span>
-    <span class="nx">answer</span>
-  <span class="k">else</span>
-    <span class="nx">js</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">tokens</span></span> = (code, options) -&gt;
+  lexer.tokenize code, options</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-8">
             <div class="annotation">
-              <div class="pilwrap">
+              
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-8">&#182;</a>
-              </div>            
-              
-<p>Tokenize a string of CoffeeScript code, and return the array of tokens.
-
-</p>
-
-            </div>
-            
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.tokens = </span><span class="nf">(code, options) -&gt;</span>
-  <span class="nx">lexer</span><span class="p">.</span><span class="nx">tokenize</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">options</span></pre></div></div>
-            
-        </li>
-        
-           
-        <li id="section-9">
-            <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-9">&#182;</a>
-              </div>            
-              
-<p>Parse a string of CoffeeScript code or an array of lexed tokens, and
+              </div>
+              <p>Parse a string of CoffeeScript code or an array of lexed tokens, and
 return the AST. You can then compile it by calling <code>.compile()</code> on the root,
 or traverse it by using <code>.traverseChildren()</code> with a callback.
-
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.nodes = </span><span class="nf">(source, options) -&gt;</span>
-  <span class="k">if</span> <span class="k">typeof</span> <span class="nx">source</span> <span class="o">is</span> <span class="s">&#39;string&#39;</span>
-    <span class="nx">parser</span><span class="p">.</span><span class="nx">parse</span> <span class="nx">lexer</span><span class="p">.</span><span class="nx">tokenize</span> <span class="nx">source</span><span class="p">,</span> <span class="nx">options</span>
-  <span class="k">else</span>
-    <span class="nx">parser</span><span class="p">.</span><span class="nx">parse</span> <span class="nx">source</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">nodes</span></span> = (source, options) -&gt;
+  <span class="keyword">if</span> <span class="keyword">typeof</span> source <span class="keyword">is</span> <span class="string">'string'</span>
+    parser.parse lexer.tokenize source, options
+  <span class="keyword">else</span>
+    parser.parse source</pre></div></div>
             
         </li>
         
-           
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Compile and execute a string of CoffeeScript (on the server), correctly
+setting <code>__filename</code>, <code>__dirname</code>, and relative <code>require()</code>.
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">run</span></span> = (code, options = {}) -&gt;
+  mainModule = require.main
+  options.sourceMap ?= <span class="literal">true</span></pre></div></div>
+            
+        </li>
+        
+        
         <li id="section-10">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-10">&#182;</a>
-              </div>            
               
-<p>Compile and execute a string of CoffeeScript (on the server), correctly
-setting <code>__filename</code>, <code>__dirname</code>, and relative <code>require()</code>.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Set the filename.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.run = </span><span class="nf">(code, options = {}) -&gt;</span>
-  <span class="nv">mainModule = </span><span class="nx">require</span><span class="p">.</span><span class="nx">main</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  mainModule.filename = process.argv[<span class="number">1</span>] =
+      <span class="keyword">if</span> options.filename <span class="keyword">then</span> fs.realpathSync(options.filename) <span class="keyword">else</span> <span class="string">'.'</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-11">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-11">&#182;</a>
-              </div>            
               
-<p>Set the filename.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Clear the module cache.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>  <span class="nv">mainModule.filename = </span><span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span>
-      <span class="k">if</span> <span class="nx">options</span><span class="p">.</span><span class="nx">filename</span> <span class="k">then</span> <span class="nx">fs</span><span class="p">.</span><span class="nx">realpathSync</span><span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">filename</span><span class="p">)</span> <span class="k">else</span> <span class="s">&#39;.&#39;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  mainModule.moduleCache <span class="keyword">and</span>= {}</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-12">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-12">&#182;</a>
-              </div>            
               
-<p>Clear the module cache.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Assign paths for node_modules loading
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>  <span class="nx">mainModule</span><span class="p">.</span><span class="nx">moduleCache</span> <span class="o">and=</span> <span class="p">{}</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  mainModule.paths = require(<span class="string">'module'</span>)._nodeModulePaths path.dirname fs.realpathSync options.filename <span class="keyword">or</span> <span class="string">'.'</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-13">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-13">&#182;</a>
-              </div>            
               
-<p>Assign paths for node_modules loading
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Compile.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>  <span class="nv">mainModule.paths = </span><span class="nx">require</span><span class="p">(</span><span class="s">&#39;module&#39;</span><span class="p">).</span><span class="nx">_nodeModulePaths</span> <span class="nx">path</span><span class="p">.</span><span class="nx">dirname</span> <span class="nx">fs</span><span class="p">.</span><span class="nx">realpathSync</span> <span class="nx">options</span><span class="p">.</span><span class="nx">filename</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="keyword">if</span> <span class="keyword">not</span> helpers.isCoffee(mainModule.filename) <span class="keyword">or</span> require.extensions
+    answer = compile(code, options)</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-14">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-14">&#182;</a>
-              </div>            
               
-<p>Compile.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Attach sourceMap object to mainModule._sourceMaps[options.filename] so that
+it is accessible by Error.prepareStackTrace.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>  <span class="k">if</span> <span class="o">not</span> <span class="nx">helpers</span><span class="p">.</span><span class="nx">isCoffee</span><span class="p">(</span><span class="nx">mainModule</span><span class="p">.</span><span class="nx">filename</span><span class="p">)</span> <span class="o">or</span> <span class="nx">require</span><span class="p">.</span><span class="nx">extensions</span>
-    <span class="nx">mainModule</span><span class="p">.</span><span class="nx">_compile</span> <span class="nx">compile</span><span class="p">(</span><span class="nx">code</span><span class="p">,</span> <span class="nx">options</span><span class="p">),</span> <span class="nx">mainModule</span><span class="p">.</span><span class="nx">filename</span>
-  <span class="k">else</span>
-    <span class="nx">mainModule</span><span class="p">.</span><span class="nx">_compile</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">mainModule</span><span class="p">.</span><span class="nx">filename</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">do</span> patchStackTrace
+    mainModule._sourceMaps[mainModule.filename] = answer.sourceMap
+    mainModule._compile answer.js, mainModule.filename
+  <span class="keyword">else</span>
+    mainModule._compile code, mainModule.filename</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-15">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-15">&#182;</a>
-              </div>            
               
-<p>Compile and evaluate a string of CoffeeScript (in a Node.js-like environment).
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Compile and evaluate a string of CoffeeScript (in a Node.js-like environment).
 The CoffeeScript REPL uses this to run the input.
-
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">exports.eval = </span><span class="nf">(code, options = {}) -&gt;</span>
-  <span class="k">return</span> <span class="k">unless</span> <span class="nv">code = </span><span class="nx">code</span><span class="p">.</span><span class="nx">trim</span><span class="p">()</span>
-  <span class="nv">Script = </span><span class="nx">vm</span><span class="p">.</span><span class="nx">Script</span>
-  <span class="k">if</span> <span class="nx">Script</span>
-    <span class="k">if</span> <span class="nx">options</span><span class="p">.</span><span class="nx">sandbox</span><span class="o">?</span>
-      <span class="k">if</span> <span class="nx">options</span><span class="p">.</span><span class="nx">sandbox</span> <span class="k">instanceof</span> <span class="nx">Script</span><span class="p">.</span><span class="nx">createContext</span><span class="p">().</span><span class="nx">constructor</span>
-        <span class="nv">sandbox = </span><span class="nx">options</span><span class="p">.</span><span class="nx">sandbox</span>
-      <span class="k">else</span>
-        <span class="nv">sandbox = </span><span class="nx">Script</span><span class="p">.</span><span class="nx">createContext</span><span class="p">()</span>
-        <span class="nx">sandbox</span><span class="p">[</span><span class="nx">k</span><span class="p">]</span> <span class="o">=</span> <span class="nx">v</span> <span class="k">for</span> <span class="k">own</span> <span class="nx">k</span><span class="p">,</span> <span class="nx">v</span> <span class="k">of</span> <span class="nx">options</span><span class="p">.</span><span class="nx">sandbox</span>
-      <span class="nv">sandbox.global = sandbox.root = sandbox.GLOBAL = </span><span class="nx">sandbox</span>
-    <span class="k">else</span>
-      <span class="nv">sandbox = </span><span class="nx">global</span>
-    <span class="nv">sandbox.__filename = </span><span class="nx">options</span><span class="p">.</span><span class="nx">filename</span> <span class="o">||</span> <span class="s">&#39;eval&#39;</span>
-    <span class="nv">sandbox.__dirname  = </span><span class="nx">path</span><span class="p">.</span><span class="nx">dirname</span> <span class="nx">sandbox</span><span class="p">.</span><span class="nx">__filename</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">eval</span></span> = (code, options = {}) -&gt;
+  <span class="keyword">return</span> <span class="keyword">unless</span> code = code.trim()
+  Script = vm.Script
+  <span class="keyword">if</span> Script
+    <span class="keyword">if</span> options.sandbox?
+      <span class="keyword">if</span> options.sandbox <span class="keyword">instanceof</span> Script.createContext().constructor
+        sandbox = options.sandbox
+      <span class="keyword">else</span>
+        sandbox = Script.createContext()
+        sandbox[k] = v <span class="keyword">for</span> own k, v <span class="keyword">of</span> options.sandbox
+      sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
+    <span class="keyword">else</span>
+      sandbox = global
+    sandbox.__filename = options.filename || <span class="string">'eval'</span>
+    sandbox.__dirname  = path.dirname sandbox.__filename</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-16">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-16">&#182;</a>
-              </div>            
               
-<p>define module/require only if they chose not to specify their own
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>define module/require only if they chose not to specify their own
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>    <span class="k">unless</span> <span class="nx">sandbox</span> <span class="o">isnt</span> <span class="nx">global</span> <span class="o">or</span> <span class="nx">sandbox</span><span class="p">.</span><span class="nx">module</span> <span class="o">or</span> <span class="nx">sandbox</span><span class="p">.</span><span class="nx">require</span>
-      <span class="nv">Module = </span><span class="nx">require</span> <span class="s">&#39;module&#39;</span>
-      <span class="nv">sandbox.module  = _module  = </span><span class="k">new</span> <span class="nx">Module</span><span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">modulename</span> <span class="o">||</span> <span class="s">&#39;eval&#39;</span><span class="p">)</span>
-      <span class="nv">sandbox.require = _require = </span><span class="nf">(path) -&gt;</span>  <span class="nx">Module</span><span class="p">.</span><span class="nx">_load</span> <span class="nx">path</span><span class="p">,</span> <span class="nx">_module</span><span class="p">,</span> <span class="kc">true</span>
-      <span class="nv">_module.filename = </span><span class="nx">sandbox</span><span class="p">.</span><span class="nx">__filename</span>
-      <span class="nx">_require</span><span class="p">[</span><span class="nx">r</span><span class="p">]</span> <span class="o">=</span> <span class="nx">require</span><span class="p">[</span><span class="nx">r</span><span class="p">]</span> <span class="k">for</span> <span class="nx">r</span> <span class="k">in</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">getOwnPropertyNames</span> <span class="nx">require</span> <span class="k">when</span> <span class="nx">r</span> <span class="o">isnt</span> <span class="s">&#39;paths&#39;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">unless</span> sandbox <span class="keyword">isnt</span> global <span class="keyword">or</span> sandbox.module <span class="keyword">or</span> sandbox.require
+      Module = require <span class="string">'module'</span>
+      sandbox.module  = _module  = <span class="keyword">new</span> Module(options.modulename || <span class="string">'eval'</span>)
+      sandbox.require = <span class="function"><span class="title">_require</span></span> = (path) -&gt;  Module._load path, _module, <span class="literal">true</span>
+      _module.filename = sandbox.__filename
+      _require[r] = require[r] <span class="keyword">for</span> r <span class="keyword">in</span> Object.getOwnPropertyNames require <span class="keyword">when</span> r <span class="keyword">isnt</span> <span class="string">'paths'</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-17">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-17">&#182;</a>
-              </div>            
               
-<p>use the same hack node currently uses for their own REPL
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>use the same hack node currently uses for their own REPL
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>      <span class="nv">_require.paths = _module.paths = </span><span class="nx">Module</span><span class="p">.</span><span class="nx">_nodeModulePaths</span> <span class="nx">process</span><span class="p">.</span><span class="nx">cwd</span><span class="p">()</span>
-      <span class="nv">_require.resolve = </span><span class="nf">(request) -&gt;</span> <span class="nx">Module</span><span class="p">.</span><span class="nx">_resolveFilename</span> <span class="nx">request</span><span class="p">,</span> <span class="nx">_module</span>
-  <span class="nv">o = </span><span class="p">{}</span>
-  <span class="nx">o</span><span class="p">[</span><span class="nx">k</span><span class="p">]</span> <span class="o">=</span> <span class="nx">v</span> <span class="k">for</span> <span class="k">own</span> <span class="nx">k</span><span class="p">,</span> <span class="nx">v</span> <span class="k">of</span> <span class="nx">options</span>
-  <span class="nv">o.bare = </span><span class="kc">on</span> <span class="c1"># ensure return value</span>
-  <span class="nv">js = </span><span class="nx">compile</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">o</span>
-  <span class="k">if</span> <span class="nx">sandbox</span> <span class="o">is</span> <span class="nx">global</span>
-    <span class="nx">vm</span><span class="p">.</span><span class="nx">runInThisContext</span> <span class="nx">js</span>
-  <span class="k">else</span>
-    <span class="nx">vm</span><span class="p">.</span><span class="nx">runInContext</span> <span class="nx">js</span><span class="p">,</span> <span class="nx">sandbox</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      _require.paths = _module.paths = Module._nodeModulePaths process.cwd()
+      _require.<span class="function"><span class="title">resolve</span></span> = (request) -&gt; Module._resolveFilename request, _module
+  o = {}
+  o[k] = v <span class="keyword">for</span> own k, v <span class="keyword">of</span> options
+  o.bare = <span class="literal">on</span> <span class="comment"># ensure return value</span>
+  js = compile code, o
+  <span class="keyword">if</span> sandbox <span class="keyword">is</span> global
+    vm.runInThisContext js
+  <span class="keyword">else</span>
+    vm.runInContext js, sandbox</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-18">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-18">&#182;</a>
-              </div>            
               
-<p>Instantiate a Lexer for our use here.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>Load and run a CoffeeScript file for Node, stripping any <code>BOM</code>s.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">lexer = </span><span class="k">new</span> <span class="nx">Lexer</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">loadFile</span></span> = (module, filename) -&gt;
+  raw = fs.readFileSync filename, <span class="string">'utf8'</span>
+  stripped = <span class="keyword">if</span> raw.charCodeAt(<span class="number">0</span>) <span class="keyword">is</span> <span class="number">0xFEFF</span> <span class="keyword">then</span> raw.substring <span class="number">1</span> <span class="keyword">else</span> raw
+  module._compile compile(stripped, {filename, literate: helpers.isLiterate filename}), filename</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-19">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-19">&#182;</a>
-              </div>            
               
-<p>The real Lexer produces a generic stream of tokens. This object provides a
-thin wrapper around it, compatible with the Jison API. We can then pass it
-directly as a &quot;Jison lexer&quot;.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>If the installed version of Node supports <code>require.extensions</code>, register
+CoffeeScript as an extension.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">parser.lexer =</span>
-  <span class="nv">lex: </span><span class="nf">-&gt;</span>
-    <span class="nv">token = </span><span class="nx">@tokens</span><span class="p">[</span><span class="nx">@pos</span><span class="o">++</span><span class="p">]</span>
-    <span class="k">if</span> <span class="nx">token</span>
-      <span class="p">[</span><span class="nx">tag</span><span class="p">,</span> <span class="nx">@yytext</span><span class="p">,</span> <span class="nx">@yylloc</span><span class="p">]</span> <span class="o">=</span> <span class="nx">token</span>
-      <span class="vi">@yylineno = </span><span class="nx">@yylloc</span><span class="p">.</span><span class="nx">first_line</span>
-    <span class="k">else</span>
-      <span class="nv">tag = </span><span class="s">&#39;&#39;</span>
-
-    <span class="nx">tag</span>
-  <span class="nv">setInput: </span><span class="nf">(@tokens) -&gt;</span>
-    <span class="vi">@pos = </span><span class="mi">0</span>
-  <span class="nv">upcomingInput: </span><span class="nf">-&gt;</span>
-    <span class="s">&quot;&quot;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="keyword">if</span> require.extensions
+  <span class="keyword">for</span> ext <span class="keyword">in</span> [<span class="string">'.coffee'</span>, <span class="string">'.litcoffee'</span>, <span class="string">'.coffee.md'</span>]
+    require.extensions[ext] = loadFile</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-20">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-20">&#182;</a>
-              </div>            
               
-<p>Make all the AST nodes visible to the parser.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>If we&#39;re on Node, patch <code>child_process.fork</code> so that Coffee scripts are able
+to fork both CoffeeScript files, and JavaScript files, directly.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">parser.yy = </span><span class="nx">require</span> <span class="s">&#39;./nodes&#39;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="keyword">if</span> child_process
+  {fork} = child_process
+  child_process.<span class="function"><span class="title">fork</span></span> = (path, args = [], options = {}) -&gt;
+    execPath = <span class="keyword">if</span> helpers.isCoffee(path) <span class="keyword">then</span> <span class="string">'coffee'</span> <span class="keyword">else</span> <span class="literal">null</span>
+    <span class="keyword">if</span> <span class="keyword">not</span> Array.isArray args
+      args = []
+      options = args <span class="keyword">or</span> {}
+    options.execPath <span class="keyword">or</span>= execPath
+    fork path, args, options</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-21">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-21">&#182;</a>
-              </div>            
               
-<p>Override Jison&#39;s default error handling function.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>Instantiate a Lexer for our use here.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre><span class="nv">parser.yy.parseError = </span><span class="nf">(message, {token}) -&gt;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>lexer = <span class="keyword">new</span> Lexer</pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-22">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-22">&#182;</a>
-              </div>            
               
-<p>Disregard Jison&#39;s message, it contains redundant line numer information.
-
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>The real Lexer produces a generic stream of tokens. This object provides a
+thin wrapper around it, compatible with the Jison API. We can then pass it
+directly as a &quot;Jison lexer&quot;.
 </p>
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>  <span class="nv">message = </span><span class="s">&quot;unexpected </span><span class="si">#{</span><span class="k">if</span> <span class="nx">token</span> <span class="o">is</span> <span class="mi">1</span> <span class="k">then</span> <span class="s">&#39;end of input&#39;</span> <span class="k">else</span> <span class="nx">token</span><span class="si">}</span><span class="s">&quot;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>parser.lexer =
+  lex: -&gt;
+    token = <span class="property">@tokens</span>[<span class="property">@pos</span>++]
+    <span class="keyword">if</span> token
+      [tag, <span class="property">@yytext</span>, <span class="property">@yylloc</span>] = token
+      <span class="property">@yylineno</span> = <span class="property">@yylloc</span>.first_line
+    <span class="keyword">else</span>
+      tag = <span class="string">''</span>
+
+    tag
+  setInput: (<span class="property">@tokens</span>) -&gt;
+    <span class="property">@pos</span> = <span class="number">0</span>
+  upcomingInput: -&gt;
+    <span class="string">""</span></pre></div></div>
             
         </li>
         
-           
+        
         <li id="section-23">
             <div class="annotation">
-              <div class="pilwrap">
-                <a class="pilcrow" href="#section-23">&#182;</a>
-              </div>            
               
-<p>The second argument has a <code>loc</code> property, which should have the location
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>Make all the AST nodes visible to the parser.
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>parser.yy = require <span class="string">'./nodes'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>Override Jison&#39;s default error handling function.
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>parser.yy.<span class="function"><span class="title">parseError</span></span> = (message, {token}) -&gt;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>Disregard Jison&#39;s message, it contains redundant line numer information.
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  message = <span class="string">"unexpected <span class="subst">#{<span class="keyword">if</span> token <span class="keyword">is</span> <span class="number">1</span> <span class="keyword">then</span> 'end <span class="keyword">of</span> input' <span class="keyword">else</span> token}</span>"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>The second argument has a <code>loc</code> property, which should have the location
 data for this token. Unfortunately, Jison seems to send an outdated <code>loc</code>
 (from the previous token), so we take the location information directly
 from the lexer.
@@ -608,13 +646,162 @@ from the lexer.
 
             </div>
             
-            <div class="content"><div class="highlight"><pre>  <span class="nx">helpers</span><span class="p">.</span><span class="nx">throwSyntaxError</span> <span class="nx">message</span><span class="p">,</span> <span class="nx">parser</span><span class="p">.</span><span class="nx">lexer</span><span class="p">.</span><span class="nx">yylloc</span>
-
-</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  helpers.throwSyntaxError message, parser.lexer.yylloc</pre></div></div>
             
         </li>
         
-    </ul> 
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p>Based on <a href="http://goo.gl/ZTx1p">michaelficarra/CoffeeScriptRedux</a>
+NodeJS / V8 have no support for transforming positions in stack traces using
+sourceMap, so we must monkey-patch Error to display CoffeeScript source
+positions.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>patched = <span class="literal">false</span>
+<span class="function"><span class="title">patchStackTrace</span></span> = -&gt;
+  <span class="keyword">return</span> <span class="keyword">if</span> patched
+  patched = <span class="literal">true</span>
+  mainModule = require.main</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>Map of filenames -&gt; sourceMap object.
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  mainModule._sourceMaps = {}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>(Assigning to a property of the Module object in the normal module cache is
+unsuitable, because node deletes those objects from the cache if an
+exception is thrown in the module body.)
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Error.<span class="function"><span class="title">prepareStackTrace</span></span> = (err, stack) -&gt;
+    sourceFiles = {}
+
+    <span class="function"><span class="title">getSourceMapping</span></span> = (filename, line, column) -&gt;
+      sourceMap = mainModule._sourceMaps[filename]
+      answer = sourceMap.getSourcePosition [line - <span class="number">1</span>, column - <span class="number">1</span>] <span class="keyword">if</span> sourceMap
+      <span class="keyword">if</span> answer <span class="keyword">then</span> [answer[<span class="number">0</span>] + <span class="number">1</span>, answer[<span class="number">1</span>] + <span class="number">1</span>] <span class="keyword">else</span> <span class="literal">null</span>
+
+    frames = <span class="keyword">for</span> frame <span class="keyword">in</span> stack
+      <span class="keyword">break</span> <span class="keyword">if</span> frame.getFunction() <span class="keyword">is</span> exports.run
+      <span class="string">"  at <span class="subst">#{formatSourcePosition frame, getSourceMapping}</span>"</span>
+
+    <span class="string">"<span class="subst">#{err.name}</span>: <span class="subst">#{err.message ? ''}</span>\n<span class="subst">#{frames.join '\n'}</span>\n"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <p>Based on <a href="http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js">http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js</a>
+Modified to handle sourceMap
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">formatSourcePosition</span></span> = (frame, getSourceMapping) -&gt;
+  fileName = <span class="literal">undefined</span>
+  fileLocation = <span class="string">''</span>
+
+  <span class="keyword">if</span> frame.isNative()
+    fileLocation = <span class="string">"native"</span>
+  <span class="keyword">else</span>
+    <span class="keyword">if</span> frame.isEval()
+      fileName = frame.getScriptNameOrSourceURL()
+      fileLocation = <span class="string">"<span class="subst">#{frame.getEvalOrigin()}</span>, "</span> <span class="keyword">unless</span> fileName
+    <span class="keyword">else</span>
+      fileName = frame.getFileName()
+
+    fileName <span class="keyword">or</span>= <span class="string">"&lt;anonymous&gt;"</span>
+
+    line = frame.getLineNumber()
+    column = frame.getColumnNumber()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <p>Check for a sourceMap position
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    source = getSourceMapping fileName, line, column
+    fileLocation =
+      <span class="keyword">if</span> source
+        <span class="string">"<span class="subst">#{fileName}</span>:<span class="subst">#{source[<span class="number">0</span>]}</span>:<span class="subst">#{source[<span class="number">1</span>]}</span>, &lt;js&gt;:<span class="subst">#{line}</span>:<span class="subst">#{column}</span>"</span>
+      <span class="keyword">else</span>
+        <span class="string">"<span class="subst">#{fileName}</span>:<span class="subst">#{line}</span>:<span class="subst">#{column}</span>"</span>
+
+
+  functionName = frame.getFunctionName()
+  isConstructor = frame.isConstructor()
+  isMethodCall = <span class="keyword">not</span> (frame.isToplevel() <span class="keyword">or</span> isConstructor)
+
+  <span class="keyword">if</span> isMethodCall
+    methodName = frame.getMethodName()
+    typeName = frame.getTypeName()
+
+    <span class="keyword">if</span> functionName
+      tp = as = <span class="string">''</span>
+      <span class="keyword">if</span> typeName <span class="keyword">and</span> functionName.indexOf typeName
+        tp = <span class="string">"<span class="subst">#{typeName}</span>."</span>
+      <span class="keyword">if</span> methodName <span class="keyword">and</span> functionName.indexOf(<span class="string">".<span class="subst">#{methodName}</span>"</span>) <span class="keyword">isnt</span> functionName.length - methodName.length - <span class="number">1</span>
+        as = <span class="string">" [as <span class="subst">#{methodName}</span>]"</span>
+
+      <span class="string">"<span class="subst">#{tp}</span><span class="subst">#{functionName}</span><span class="subst">#{as}</span> (<span class="subst">#{fileLocation}</span>)"</span>
+    <span class="keyword">else</span>
+      <span class="string">"<span class="subst">#{typeName}</span>.<span class="subst">#{methodName <span class="keyword">or</span> '&lt;anonymous&gt;'}</span> (<span class="subst">#{fileLocation}</span>)"</span>
+  <span class="keyword">else</span> <span class="keyword">if</span> isConstructor
+    <span class="string">"new <span class="subst">#{functionName <span class="keyword">or</span> '&lt;anonymous&gt;'}</span> (<span class="subst">#{fileLocation}</span>)"</span>
+  <span class="keyword">else</span> <span class="keyword">if</span> functionName
+    <span class="string">"<span class="subst">#{functionName}</span> (<span class="subst">#{fileLocation}</span>)"</span>
+  <span class="keyword">else</span>
+    fileLocation</pre></div></div>
+            
+        </li>
+        
+    </ul>
   </div>
 </body>
 </html>

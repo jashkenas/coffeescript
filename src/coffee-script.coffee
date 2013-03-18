@@ -1,10 +1,7 @@
 # CoffeeScript can be used both on the server, as a command-line compiler based
-# on Node.js/V8, or to run CoffeeScripts directly in the browser. This module
+# on Node.js/V8, or to run CoffeeScript directly in the browser. This module
 # contains the main entry functions for tokenizing, parsing, and compiling
 # source CoffeeScript into JavaScript.
-#
-# If included on a webpage, it will automatically sniff out, compile, and
-# execute all scripts present in `text/coffeescript` tags.
 
 fs            = require 'fs'
 vm            = require 'vm'
@@ -16,7 +13,7 @@ helpers       = require './helpers'
 sourcemap     = require './sourcemap'
 
 # The current CoffeeScript version number.
-exports.VERSION = '1.6.1'
+exports.VERSION = '1.6.2'
 
 # Expose helpers for testing.
 exports.helpers = helpers
@@ -157,16 +154,17 @@ if require.extensions
   for ext in ['.coffee', '.litcoffee', '.coffee.md']
     require.extensions[ext] = loadFile
 
-# Patch `child_process.fork` so that Coffee scripts are able to fork both
-# CoffeeScript files, and JavaScript files, directly.
-{fork} = child_process
-child_process.fork = (path, args = [], options = {}) ->
-  execPath = if helpers.isCoffee(path) then 'coffee' else null
-  if not Array.isArray args
-    args = []
-    options = args or {}
-  options.execPath or= execPath
-  fork path, args, options
+# If we're on Node, patch `child_process.fork` so that Coffee scripts are able
+# to fork both CoffeeScript files, and JavaScript files, directly.
+if child_process
+  {fork} = child_process
+  child_process.fork = (path, args = [], options = {}) ->
+    execPath = if helpers.isCoffee(path) then 'coffee' else null
+    if not Array.isArray args
+      args = []
+      options = args or {}
+    options.execPath or= execPath
+    fork path, args, options
 
 # Instantiate a Lexer for our use here.
 lexer = new Lexer
