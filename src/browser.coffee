@@ -3,7 +3,7 @@
 CoffeeScript = require './coffee-script'
 CoffeeScript.require = require
 
-isModernBrowser = if window? then -> true if btoa and JSON else ->
+isModernBrowser = if window? then -> true if btoa? and JSON? else ->
 
 compile = (code, options = {}) ->
   res = undefined
