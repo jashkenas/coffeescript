@@ -12,7 +12,7 @@ compile = (code, options = {}) ->
     options.inline = true
     {js, v3SourceMap} = CoffeeScript.compile code, options
     answer = btoa v3SourceMap
-    res = "#{js}\n//@ sourceMappingURL=data:application/json;base64,#{answer}\n//@ sourceURL=coffeescript.js"
+    res = "#{js}\n//@ sourceMappingURL=data:application/json;base64,#{answer}\n//@ sourceURL=coffeescript"
   else
     res = CoffeeScript.compile code, options
   res
