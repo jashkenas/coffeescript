@@ -58,16 +58,6 @@ code.
         line-- until (lineMap = @lines[line]) or (line <= 0)
         lineMap and lineMap.sourceLocation column
 
-`func` will be called once for every recorded mapping, in the order in
-which they occur in the generated source.  `fn` will be passed an object
-with four properties: sourceLine, sourceColumn, line, and
-column.
-
-      each: (iterator) ->
-        for lineMap, lineNumber in @lines when lineMap
-          for mapping in lineMap.columns when mapping
-            iterator mapping
-
 
 V3 SourceMap Generation
 -----------------------
@@ -85,18 +75,19 @@ set "sources" and "file", respectively.
         needComma         = no
         buffer            = ""
 
-        @each (mapping) =>
-          while writingline < mapping.line
-            lastColumn = 0
-            needComma = no
-            buffer += ";"
-            writingline++
+        for lineMap, lineNumber in @lines when lineMap
+          for mapping in lineMap.columns when mapping
+            while writingline < mapping.line
+              lastColumn = 0
+              needComma = no
+              buffer += ";"
+              writingline++
 
 Write a comma if we've already written a segment on this line.
 
-          if needComma
-            buffer += ","
-            needComma = no
+            if needComma
+              buffer += ","
+              needComma = no
 
 Write the next segment. Segments can be 1, 4, or 5 values.  If just one, then it
 is a generated column which doesn't match anything in the source code.
@@ -104,25 +95,25 @@ is a generated column which doesn't match anything in the source code.
 The starting column in the generated source, relative to any previous recorded
 column for the current line:
 
-          buffer += @encodeVlq mapping.column - lastColumn
-          lastColumn = mapping.column
+            buffer += @encodeVlq mapping.column - lastColumn
+            lastColumn = mapping.column
 
 The index into the list of sources:
 
-          buffer += @encodeVlq 0
+            buffer += @encodeVlq 0
 
 The starting line in the original source, relative to the previous source line.
 
-          buffer += @encodeVlq mapping.sourceLine - lastSourceLine
-          if lastSourceLine isnt mapping.sourceLine
-            lastSourceLine = mapping.sourceLine
-            lastSourceColumn = 0
+            buffer += @encodeVlq mapping.sourceLine - lastSourceLine
+            if lastSourceLine isnt mapping.sourceLine
+              lastSourceLine = mapping.sourceLine
+              lastSourceColumn = 0
 
 The starting column in the original source, relative to the previous column.
 
-          buffer += @encodeVlq mapping.sourceColumn - lastSourceColumn
-          lastSourceColumn = mapping.sourceColumn
-          needComma = yes
+            buffer += @encodeVlq mapping.sourceColumn - lastSourceColumn
+            lastSourceColumn = mapping.sourceColumn
+            needComma = yes
 
 Produce the canonical JSON object format for a "v3" source map.
 
@@ -136,7 +127,7 @@ Produce the canonical JSON object format for a "v3" source map.
 
         v3.sourcesContent = [code] if options.inline
 
-        return JSON.stringify v3, null, 2
+        JSON.stringify v3, null, 2
 
 
 Base64 VLQ Encoding
@@ -168,7 +159,7 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
           nextChunk |= VLQ_CONTINUATION_BIT if valueToEncode
           answer += @encodeBase64 nextChunk
 
-        return answer
+        answer
 
 
 Regular Base64 Encoding

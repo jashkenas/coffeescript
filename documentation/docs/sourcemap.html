@@ -249,31 +249,8 @@ code.
         <li id="section-8">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
-              </div>
-              <p><code>func</code> will be called once for every recorded mapping, in the order in
-which they occur in the generated source.  <code>fn</code> will be passed an object
-with four properties: sourceLine, sourceColumn, line, and
-column.
-
-</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  each: (iterator) -&gt;
-    <span class="keyword">for</span> lineMap, lineNumber <span class="keyword">in</span> <span class="property">@lines</span> <span class="keyword">when</span> lineMap
-      <span class="keyword">for</span> mapping <span class="keyword">in</span> lineMap.columns <span class="keyword">when</span> mapping
-        iterator mapping</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-9">
-            <div class="annotation">
-              
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
               <h2>V3 SourceMap Generation</h2>
 
@@ -282,11 +259,11 @@ column.
         </li>
         
         
-        <li id="section-10">
+        <li id="section-9">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>Builds up a V3 source map, returning the generated JSON as a string.
 <code>options.sourceRoot</code> may be used to specify the sourceRoot written to the source
@@ -305,12 +282,32 @@ set &quot;sources&quot; and &quot;file&quot;, respectively.
     needComma         = <span class="literal">no</span>
     buffer            = <span class="string">""</span>
 
-    <span class="property">@each</span> (mapping) =&gt;
-      <span class="keyword">while</span> writingline &lt; mapping.line
-        lastColumn = <span class="number">0</span>
-        needComma = <span class="literal">no</span>
-        buffer += <span class="string">";"</span>
-        writingline++</pre></div></div>
+    <span class="keyword">for</span> lineMap, lineNumber <span class="keyword">in</span> <span class="property">@lines</span> <span class="keyword">when</span> lineMap
+      <span class="keyword">for</span> mapping <span class="keyword">in</span> lineMap.columns <span class="keyword">when</span> mapping
+        <span class="keyword">while</span> writingline &lt; mapping.line
+          lastColumn = <span class="number">0</span>
+          needComma = <span class="literal">no</span>
+          buffer += <span class="string">";"</span>
+          writingline++</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Write a comma if we&#39;ve already written a segment on this line.
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="keyword">if</span> needComma
+          buffer += <span class="string">","</span>
+          needComma = <span class="literal">no</span></pre></div></div>
             
         </li>
         
@@ -320,25 +317,6 @@ set &quot;sources&quot; and &quot;file&quot;, respectively.
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-11">&#182;</a>
-              </div>
-              <p>Write a comma if we&#39;ve already written a segment on this line.
-
-</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>      <span class="keyword">if</span> needComma
-        buffer += <span class="string">","</span>
-        needComma = <span class="literal">no</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-12">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>Write the next segment. Segments can be 1, 4, or 5 values.  If just one, then it
 is a generated column which doesn&#39;t match anything in the source code.
@@ -351,8 +329,25 @@ column for the current line:
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      buffer += <span class="property">@encodeVlq</span> mapping.column - lastColumn
-      lastColumn = mapping.column</pre></div></div>
+            <div class="content"><div class='highlight'><pre>        buffer += <span class="property">@encodeVlq</span> mapping.column - lastColumn
+        lastColumn = mapping.column</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>The index into the list of sources:
+
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        buffer += <span class="property">@encodeVlq</span> <span class="number">0</span></pre></div></div>
             
         </li>
         
@@ -363,13 +358,16 @@ column for the current line:
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
-              <p>The index into the list of sources:
+              <p>The starting line in the original source, relative to the previous source line.
 
 </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      buffer += <span class="property">@encodeVlq</span> <span class="number">0</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>        buffer += <span class="property">@encodeVlq</span> mapping.sourceLine - lastSourceLine
+        <span class="keyword">if</span> lastSourceLine <span class="keyword">isnt</span> mapping.sourceLine
+          lastSourceLine = mapping.sourceLine
+          lastSourceColumn = <span class="number">0</span></pre></div></div>
             
         </li>
         
@@ -380,16 +378,15 @@ column for the current line:
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
-              <p>The starting line in the original source, relative to the previous source line.
+              <p>The starting column in the original source, relative to the previous column.
 
 </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      buffer += <span class="property">@encodeVlq</span> mapping.sourceLine - lastSourceLine
-      <span class="keyword">if</span> lastSourceLine <span class="keyword">isnt</span> mapping.sourceLine
-        lastSourceLine = mapping.sourceLine
-        lastSourceColumn = <span class="number">0</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>        buffer += <span class="property">@encodeVlq</span> mapping.sourceColumn - lastSourceColumn
+        lastSourceColumn = mapping.sourceColumn
+        needComma = <span class="literal">yes</span></pre></div></div>
             
         </li>
         
@@ -399,25 +396,6 @@ column for the current line:
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-15">&#182;</a>
-              </div>
-              <p>The starting column in the original source, relative to the previous column.
-
-</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>      buffer += <span class="property">@encodeVlq</span> mapping.sourceColumn - lastSourceColumn
-      lastSourceColumn = mapping.sourceColumn
-      needComma = <span class="literal">yes</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-16">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>Produce the canonical JSON object format for a &quot;v3&quot; source map.
 
@@ -435,16 +413,16 @@ column for the current line:
 
     v3.sourcesContent = [code] <span class="keyword">if</span> options.inline
 
-    <span class="keyword">return</span> JSON.stringify v3, <span class="literal">null</span>, <span class="number">2</span></pre></div></div>
+    JSON.stringify v3, <span class="literal">null</span>, <span class="number">2</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-17">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <h2>Base64 VLQ Encoding</h2>
 
@@ -453,11 +431,11 @@ column for the current line:
         </li>
         
         
-        <li id="section-18">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Note that SourceMap VLQ encoding is &quot;backwards&quot;.  MIDI-style VLQ encoding puts
 the most-significant-bit (MSB) from the original value into the MSB of the VLQ
@@ -479,11 +457,11 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
         </li>
         
         
-        <li id="section-19">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Least significant bit represents the sign.
 </p>
@@ -495,11 +473,11 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
         </li>
         
         
-        <li id="section-20">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>The next bits are the actual value.
 </p>
@@ -511,11 +489,11 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
         </li>
         
         
-        <li id="section-21">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Make sure we encode at least one character, even if valueToEncode is 0.
 </p>
@@ -528,16 +506,16 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
       nextChunk |= VLQ_CONTINUATION_BIT <span class="keyword">if</span> valueToEncode
       answer += <span class="property">@encodeBase64</span> nextChunk
 
-    <span class="keyword">return</span> answer</pre></div></div>
+    answer</pre></div></div>
             
         </li>
         
         
-        <li id="section-22">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <h2>Regular Base64 Encoding</h2>
 
@@ -546,11 +524,11 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
         </li>
         
         
-        <li id="section-23">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               
             </div>
@@ -563,11 +541,11 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
         </li>
         
         
-        <li id="section-24">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Our API for source maps is just the <code>SourceMap</code> class.
 
