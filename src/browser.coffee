@@ -3,19 +3,14 @@
 CoffeeScript = require './coffee-script'
 CoffeeScript.require = require
 
-canGenerateDataUris = btoa? and JSON?
-
-compile = (code, options = {}) ->
-  res = undefined
-  if canGenerateDataUris
-    options.sourceMap = true
-    options.inline = true
-    {js, v3SourceMap} = CoffeeScript.compile code, options
-    base64SourceMap = btoa v3SourceMap
-    res = "#{js}\n//@ sourceMappingURL=data:application/json;base64,#{base64SourceMap}\n//@ sourceURL=coffeescript"
-  else
-    res = CoffeeScript.compile code, options
-  res
+compile =
+  if btoa? and JSON?
+    (code, options = {}) ->
+      options.sourceMap = true
+      options.inline = true
+      {js, v3SourceMap} = CoffeeScript.compile code, options
+      "#{js}\n//@ sourceMappingURL=data:application/json;base64,#{btoa v3SourceMap}\n//@ sourceURL=coffeescript"
+  else CoffeeScript.compile
 
 # Use standard JavaScript `eval` to eval code.
 CoffeeScript.eval = (code, options = {}) ->
