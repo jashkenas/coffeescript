@@ -3,21 +3,36 @@
 CoffeeScript = require './coffee-script'
 CoffeeScript.require = require
 
+canGenerateDataUris = btoa? and JSON?
+
+compile = (code, options = {}) ->
+  res = undefined
+  if canGenerateDataUris
+    options.sourceMap = true
+    options.inline = true
+    {js, v3SourceMap} = CoffeeScript.compile code, options
+    base64SourceMap = btoa v3SourceMap
+    res = "#{js}\n//@ sourceMappingURL=data:application/json;base64,#{base64SourceMap}\n//@ sourceURL=coffeescript"
+  else
+    res = CoffeeScript.compile code, options
+  res
+
 # Use standard JavaScript `eval` to eval code.
 CoffeeScript.eval = (code, options = {}) ->
   options.bare ?= on
-  eval CoffeeScript.compile code, options
+  eval compile code, options
 
 # Running code does not provide access to this scope.
 CoffeeScript.run = (code, options = {}) ->
   options.bare = on
-  Function(CoffeeScript.compile code, options)()
+  Function(compile code, options)()
 
 # If we're not in a browser environment, we're finished with the public API.
 return unless window?
 
 # Load a remote script from the current domain via XHR.
 CoffeeScript.load = (url, callback, options = {}) ->
+  options.sourceFiles = [url]
   xhr = if window.ActiveXObject
     new window.ActiveXObject('Microsoft.XMLHTTP')
   else
@@ -50,6 +65,7 @@ runScripts = ->
       if script.src
         CoffeeScript.load script.src, execute, options
       else
+        options.sourceFiles = ['embedded']
         CoffeeScript.run script.innerHTML, options
         execute()
   null

@@ -96,7 +96,7 @@ class exports.SourceMap
 # `options.sourceFiles` and `options.generatedFile` may be passed to set "sources" and "file",
 # respectively.  Note that `sourceFiles` must be an array.
 
-exports.generateV3SourceMap = (sourceMap, options={}) ->
+exports.generateV3SourceMap = (sourceMap, options={}, code) ->
   sourceRoot = options.sourceRoot or ""
   sourceFiles = options.sourceFiles or [""]
   generatedFile = options.generatedFile or ""
@@ -159,6 +159,7 @@ exports.generateV3SourceMap = (sourceMap, options={}) ->
     names: []
     mappings
   }
+  answer.sourcesContent = [code] if options.inline
 
   return JSON.stringify answer, null, 2
 
@@ -252,3 +253,4 @@ exports.vlqDecodeValue = (str, offset=0) ->
   if signBit then value = -value
 
   return [value, consumed]
+

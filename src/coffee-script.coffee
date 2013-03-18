@@ -48,7 +48,7 @@ exports.compile = compile = (code, options = {}) ->
   fragments = (parser.parse lexer.tokenize(code, options)).compileToFragments options
 
   currentLine = 0
-  currentLine += 1 if options.header
+  currentLine += 1 if options.header or options.inline
   currentColumn = 0
   js = ""
   for fragment in fragments
@@ -74,7 +74,7 @@ exports.compile = compile = (code, options = {}) ->
     answer = {js}
     if sourceMap
       answer.sourceMap = sourceMap
-      answer.v3SourceMap = sourcemap.generateV3SourceMap(sourceMap, options)
+      answer.v3SourceMap = sourcemap.generateV3SourceMap(sourceMap, options, code)
     answer
   else
     js
