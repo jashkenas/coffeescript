@@ -85,7 +85,7 @@
             
               
               <a class="source" href="sourcemap.html">
-                sourcemap.coffee
+                sourcemap.litcoffee
               </a>
             
           </div>
@@ -124,7 +124,7 @@ child_process = require <span class="string">'child_process'</span>
 {Lexer}       = require <span class="string">'./lexer'</span>
 {parser}      = require <span class="string">'./parser'</span>
 helpers       = require <span class="string">'./helpers'</span>
-sourcemap     = require <span class="string">'./sourcemap'</span></pre></div></div>
+SourceMap     = require <span class="string">'./sourcemap'</span></pre></div></div>
             
         </li>
         
@@ -171,7 +171,7 @@ sourcemap     = require <span class="string">'./sourcemap'</span></pre></div></d
 
 </p>
 <p>If <code>options.sourceMap</code> is specified, then <code>options.filename</code> must also be specified.  All
-options that can be passed to <code>generateV3SourceMap()</code> may also be passed here.
+options that can be passed to <code>SourceMap#generate</code> may also be passed here.
 
 </p>
 <p>This returns a javascript string, unless <code>options.sourceMap</code> is passed,
@@ -186,7 +186,7 @@ lookups.
   {merge} = exports.helpers
 
   <span class="keyword">if</span> options.sourceMap
-    sourceMap = <span class="keyword">new</span> sourcemap.SourceMap()
+    map = <span class="keyword">new</span> SourceMap
 
   fragments = (parser.parse lexer.tokenize(code, options)).compileToFragments options
 
@@ -210,9 +210,9 @@ lookups.
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> sourceMap
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> options.sourceMap
       <span class="keyword">if</span> fragment.locationData
-        sourceMap.addMapping(
+        map.add(
           [fragment.locationData.first_line, fragment.locationData.first_column],
           [currentLine, currentColumn],
           {noReplace: <span class="literal">true</span>})
@@ -242,9 +242,8 @@ lookups.
 
   <span class="keyword">if</span> options.sourceMap
     answer = {js}
-    <span class="keyword">if</span> sourceMap
-      answer.sourceMap = sourceMap
-      answer.v3SourceMap = sourcemap.generateV3SourceMap(sourceMap, options, code)
+    answer.sourceMap = map
+    answer.v3SourceMap = map.generate(options, code)
     answer
   <span class="keyword">else</span>
     js</pre></div></div>
@@ -710,7 +709,7 @@ exception is thrown in the module body.)
 
     <span class="function"><span class="title">getSourceMapping</span></span> = (filename, line, column) -&gt;
       sourceMap = mainModule._sourceMaps[filename]
-      answer = sourceMap.getSourcePosition [line - <span class="number">1</span>, column - <span class="number">1</span>] <span class="keyword">if</span> sourceMap
+      answer = sourceMap.sourceLocation [line - <span class="number">1</span>, column - <span class="number">1</span>] <span class="keyword">if</span> sourceMap
       <span class="keyword">if</span> answer <span class="keyword">then</span> [answer[<span class="number">0</span>] + <span class="number">1</span>, answer[<span class="number">1</span>] + <span class="number">1</span>] <span class="keyword">else</span> <span class="literal">null</span>
 
     frames = <span class="keyword">for</span> frame <span class="keyword">in</span> stack

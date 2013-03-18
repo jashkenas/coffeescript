@@ -85,7 +85,7 @@
             
               
               <a class="source" href="sourcemap.html">
-                sourcemap.coffee
+                sourcemap.litcoffee
               </a>
             
           </div>
@@ -881,7 +881,7 @@ declarations of all inner variables pushed up to the top.
         <span class="keyword">if</span> assigns
           fragments.push <span class="property">@makeCode</span> <span class="string">",\n<span class="subst">#{@tab + TAB}</span>"</span> <span class="keyword">if</span> declars
           fragments.push <span class="property">@makeCode</span> (scope.assignedVariables().join <span class="string">",\n<span class="subst">#{@tab + TAB}</span>"</span>)
-        fragments.push <span class="property">@makeCode</span> <span class="string">';\n\n'</span>
+        fragments.push <span class="property">@makeCode</span> <span class="string">";\n<span class="subst">#{<span class="keyword">if</span> @spaced <span class="keyword">then</span> '\n' <span class="keyword">else</span> ''}</span>"</span>
     fragments.concat post</pre></div></div>
             
         </li>

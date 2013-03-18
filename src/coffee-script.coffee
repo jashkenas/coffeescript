@@ -10,7 +10,7 @@ child_process = require 'child_process'
 {Lexer}       = require './lexer'
 {parser}      = require './parser'
 helpers       = require './helpers'
-sourcemap     = require './sourcemap'
+SourceMap     = require './sourcemap'
 
 # The current CoffeeScript version number.
 exports.VERSION = '1.6.2'
@@ -21,7 +21,7 @@ exports.helpers = helpers
 # Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
 #
 # If `options.sourceMap` is specified, then `options.filename` must also be specified.  All
-# options that can be passed to `generateV3SourceMap()` may also be passed here.
+# options that can be passed to `SourceMap#generate` may also be passed here.
 #
 # This returns a javascript string, unless `options.sourceMap` is passed,
 # in which case this returns a `{js, v3SourceMap, sourceMap}
@@ -31,7 +31,7 @@ exports.compile = compile = (code, options = {}) ->
   {merge} = exports.helpers
 
   if options.sourceMap
-    sourceMap = new sourcemap.SourceMap()
+    map = new SourceMap
 
   fragments = (parser.parse lexer.tokenize(code, options)).compileToFragments options
 
@@ -41,9 +41,9 @@ exports.compile = compile = (code, options = {}) ->
   js = ""
   for fragment in fragments
     # Update the sourcemap with data from each fragment
-    if sourceMap
+    if options.sourceMap
       if fragment.locationData
-        sourceMap.addMapping(
+        map.add(
           [fragment.locationData.first_line, fragment.locationData.first_column],
           [currentLine, currentColumn],
           {noReplace: true})
@@ -60,9 +60,8 @@ exports.compile = compile = (code, options = {}) ->
 
   if options.sourceMap
     answer = {js}
-    if sourceMap
-      answer.sourceMap = sourceMap
-      answer.v3SourceMap = sourcemap.generateV3SourceMap(sourceMap, options, code)
+    answer.sourceMap = map
+    answer.v3SourceMap = map.generate(options, code)
     answer
   else
     js
@@ -222,7 +221,7 @@ patchStackTrace = ->
 
     getSourceMapping = (filename, line, column) ->
       sourceMap = mainModule._sourceMaps[filename]
-      answer = sourceMap.getSourcePosition [line - 1, column - 1] if sourceMap
+      answer = sourceMap.sourceLocation [line - 1, column - 1] if sourceMap
       if answer then [answer[0] + 1, answer[1] + 1] else null
 
     frames = for frame in stack
