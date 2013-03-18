@@ -3,16 +3,16 @@
 CoffeeScript = require './coffee-script'
 CoffeeScript.require = require
 
-isModernBrowser = if window? then -> true if btoa? and JSON? else ->
+canGenerateDataUris = btoa? and JSON?
 
 compile = (code, options = {}) ->
   res = undefined
-  if isModernBrowser()
+  if canGenerateDataUris
     options.sourceMap = true
     options.inline = true
     {js, v3SourceMap} = CoffeeScript.compile code, options
-    answer = btoa v3SourceMap
-    res = "#{js}\n//@ sourceMappingURL=data:application/json;base64,#{answer}\n//@ sourceURL=coffeescript"
+    base64SourceMap = btoa v3SourceMap
+    res = "#{js}\n//@ sourceMappingURL=data:application/json;base64,#{base64SourceMap}\n//@ sourceURL=coffeescript"
   else
     res = CoffeeScript.compile code, options
   res
