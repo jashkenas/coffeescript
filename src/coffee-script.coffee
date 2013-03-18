@@ -6,23 +6,14 @@
 # If included on a webpage, it will automatically sniff out, compile, and
 # execute all scripts present in `text/coffeescript` tags.
 
-fs        = require 'fs'
-path      = require 'path'
-{Lexer}   = require './lexer'
-{parser}  = require './parser'
-helpers   = require './helpers'
-vm        = require 'vm'
-sourcemap = require './sourcemap'
-
-# Load and run a CoffeeScript file for Node, stripping any `BOM`s.
-loadFile = (module, filename) ->
-  raw = fs.readFileSync filename, 'utf8'
-  stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
-  module._compile compile(stripped, {filename, literate: helpers.isLiterate filename}), filename
-
-if require.extensions
-  for ext in ['.coffee', '.litcoffee', '.md', '.coffee.md']
-    require.extensions[ext] = loadFile
+fs            = require 'fs'
+vm            = require 'vm'
+path          = require 'path'
+child_process = require 'child_process'
+{Lexer}       = require './lexer'
+{parser}      = require './parser'
+helpers       = require './helpers'
+sourcemap     = require './sourcemap'
 
 # The current CoffeeScript version number.
 exports.VERSION = '1.6.1'
@@ -153,6 +144,29 @@ exports.eval = (code, options = {}) ->
     vm.runInThisContext js
   else
     vm.runInContext js, sandbox
+
+# Load and run a CoffeeScript file for Node, stripping any `BOM`s.
+loadFile = (module, filename) ->
+  raw = fs.readFileSync filename, 'utf8'
+  stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
+  module._compile compile(stripped, {filename, literate: helpers.isLiterate filename}), filename
+
+# If the installed version of Node supports `require.extensions`, register
+# CoffeeScript as an extension.
+if require.extensions
+  for ext in ['.coffee', '.litcoffee', '.coffee.md']
+    require.extensions[ext] = loadFile
+
+# Patch `child_process.fork` so that Coffee scripts are able to fork both
+# CoffeeScript files, and JavaScript files, directly.
+{fork} = child_process
+child_process.fork = (path, args = [], options = {}) ->
+  execPath = if helpers.isCoffee(path) then 'coffee' else null
+  if not Array.isArray args
+    args = []
+    options = args or {}
+  options.execPath or= execPath
+  fork path, args, options
 
 # Instantiate a Lexer for our use here.
 lexer = new Lexer
