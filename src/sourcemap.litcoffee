@@ -33,7 +33,7 @@ positions for a single line of output JavaScript code.
 SourceMap
 ---------
 
-Maps locations in for a single generated JavaScript file back to locations in
+Maps locations in a single generated JavaScript file back to locations in
 the original CoffeeScript source file.
 
 This is intentionally agnostic towards how a source map might be represented on
