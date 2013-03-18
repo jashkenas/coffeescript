@@ -4,13 +4,15 @@ CoffeeScript = require './coffee-script'
 CoffeeScript.require = require
 
 compile =
+  # if we are able, inline the source map using a data URI
   if btoa? and JSON?
     (code, options = {}) ->
       options.sourceMap = true
       options.inline = true
       {js, v3SourceMap} = CoffeeScript.compile code, options
       "#{js}\n//@ sourceMappingURL=data:application/json;base64,#{btoa v3SourceMap}\n//@ sourceURL=coffeescript"
-  else CoffeeScript.compile
+  else
+    CoffeeScript.compile
 
 # Use standard JavaScript `eval` to eval code.
 CoffeeScript.eval = (code, options = {}) ->
