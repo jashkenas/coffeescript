@@ -1,18 +1,21 @@
 Source maps allow JavaScript runtimes to match running JavaScript back to
-the original CoffeeScript source code that corresponds to it. In order to
-produce maps, we must keep track of positions (line number, column number)
-for every construct in the syntax tree, and be able to generate a map file
--- which is a compact, VLQ-encoded representation of the JSON serialization
-of this information -- to write out alongside the generated JavaScript.
+the original source code that corresponds to it. This can be minified
+JavaScript, but in our case, we're concerned with mapping pretty-printed
+JavaScript back to CoffeeScript.
 
-    {merge} = require './helpers'
+In order to produce maps, we must keep track of positions (line number, column number)
+that originated every node in the syntax tree, and be able to generate a
+[map file](https://docs.google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k/edit)
+— which is a compact, VLQ-encoded representation of the JSON serialization
+of this information — to write out alongside the generated JavaScript.
 
 
 LineMap
 -------
 
-Keeps track of information about column positions within a single line of
-output JavaScript code. **SourceMap**s are implemented in terms of **LineMap**s.
+A **LineMap** object keeps track of information about original line and column
+positions for a single line of output JavaScript code.
+**SourceMaps** are implemented in terms of **LineMaps**.
 
     class LineMap
       constructor: (@line) ->
