@@ -108,9 +108,7 @@ The index into the list of sources:
 The starting line in the original source, relative to the previous source line.
 
             buffer += @encodeVlq mapping.sourceLine - lastSourceLine
-            if lastSourceLine isnt mapping.sourceLine
-              lastSourceLine = mapping.sourceLine
-              lastSourceColumn = 0
+            lastSourceLine = mapping.sourceLine
 
 The starting column in the original source, relative to the previous column.
 
