@@ -697,8 +697,6 @@ exports.Call = class Call extends Base
 #### Extends
 
 # Node to extend an object's prototype with an ancestor object.
-# After `goog.inherits` from the
-# [Closure Library](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.html).
 exports.Extends = class Extends extends Base
   constructor: (@child, @parent) ->
 
@@ -706,7 +704,9 @@ exports.Extends = class Extends extends Base
 
   # Hooks one constructor into another's prototype chain.
   compileToFragments: (o) ->
-    new Call(new Value(new Literal utility 'extends'), [@child, @parent]).compileToFragments o
+    [@makeCode """
+      (function(child,parent){ var ctor = function #{@child.compile()}(){}; return #{utility 'extends'}(child,parent,ctor) })(#{ @child.compile() }, #{ @parent.compile() })
+      """]
 
 #### Access
 
@@ -2112,7 +2112,7 @@ UTILITIES =
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls, and copies of any static properties.
   extends: -> """
-    function(child, parent) { for (var key in parent) { if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; }
+    function(child, parent, ctor) { for (var key in parent) { if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key]; } child.__super__ = ctor.prototype = parent.prototype; child.prototype = new ctor(); return child.prototype.constructor = child; }
   """
 
   # Create a function bound to the current value of "this".
