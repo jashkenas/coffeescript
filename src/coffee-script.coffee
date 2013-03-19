@@ -33,7 +33,13 @@ exports.compile = compile = (code, options = {}) ->
   if options.sourceMap
     map = new SourceMap
 
-  fragments = (parser.parse lexer.tokenize(code, options)).compileToFragments options
+  try
+    fragments = (parser.parse lexer.tokenize(code, options)).compileToFragments options
+  catch err
+    # Add source file information to error so it can be pretty-printed later.
+    err.filename = options.filename
+    err.code = code
+    throw err
 
   currentLine = 0
   currentLine += 1 if options.header or options.inline
