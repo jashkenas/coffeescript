@@ -21,14 +21,15 @@ CoffeeScript.run = (code, options = {}) ->
 # If we're not in a browser environment, we're finished with the public API.
 return unless window?
 
-# Include source maps where possible. If we've got a base64 encoder, and a
-# JSON serializer, we're good to go.
-if btoa? and JSON?
+# Include source maps where possible. If we've got a base64 encoder, a
+# JSON serializer, and tools for escaping unicode characters, we're good to go.
+# Ported from https://developer.mozilla.org/en-US/docs/DOM/window.btoa
+if btoa? and JSON? and unescape? and encodeURIComponent?
   compile = (code, options = {}) ->
     options.sourceMap = true
     options.inline = true
     {js, v3SourceMap} = CoffeeScript.compile code, options
-    "#{js}\n//@ sourceMappingURL=data:application/json;base64,#{btoa v3SourceMap}\n//@ sourceURL=coffeescript"
+    "#{js}\n//@ sourceMappingURL=data:application/json;base64,#{btoa unescape encodeURIComponent v3SourceMap}\n//@ sourceURL=coffeescript"
 
 # Load a remote script from the current domain via XHR.
 CoffeeScript.load = (url, callback, options = {}) ->
