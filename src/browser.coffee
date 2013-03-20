@@ -15,6 +15,7 @@ CoffeeScript.eval = (code, options = {}) ->
 # Running code does not provide access to this scope.
 CoffeeScript.run = (code, options = {}) ->
   options.bare = on
+  options.shiftLine = on
   Function(compile code, options)()
 
 # If we're not in a browser environment, we're finished with the public API.
@@ -35,7 +36,7 @@ CoffeeScript.load = (url, callback, options = {}) ->
   xhr = if window.ActiveXObject
     new window.ActiveXObject('Microsoft.XMLHTTP')
   else
-    new XMLHttpRequest()
+    new window.XMLHttpRequest()
   xhr.open 'GET', url, true
   xhr.overrideMimeType 'text/plain' if 'overrideMimeType' of xhr
   xhr.onreadystatechange = ->
@@ -51,7 +52,7 @@ CoffeeScript.load = (url, callback, options = {}) ->
 # all script tags with a content-type of `text/coffeescript`.
 # This happens on page load.
 runScripts = ->
-  scripts = document.getElementsByTagName 'script'
+  scripts = window.document.getElementsByTagName 'script'
   coffeetypes = ['text/coffeescript', 'text/literate-coffeescript']
   coffees = (s for s in scripts when s.type in coffeetypes)
   index = 0
@@ -71,6 +72,6 @@ runScripts = ->
 
 # Listen for window load, both in decent browsers and in IE.
 if window.addEventListener
-  addEventListener 'DOMContentLoaded', runScripts, no
+  window.addEventListener 'DOMContentLoaded', runScripts, no
 else
-  attachEvent 'onload', runScripts
+  window.attachEvent 'onload', runScripts
