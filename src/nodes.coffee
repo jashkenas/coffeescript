@@ -704,9 +704,9 @@ exports.Extends = class Extends extends Base
 
   # Hooks one constructor into another's prototype chain.
   compileToFragments: (o) ->
-    [@makeCode """
-      (function(child,parent){ var ctor = function #{@child.compile()}(){}; return #{utility 'extends'}(child,parent,ctor) })(#{ @child.compile() }, #{ @parent.compile() })
-      """]
+    call = Closure.wrap new Call new Value(new Literal utility 'extends'), [].concat
+      @child, @parent, new Value(new Literal "function #{@child.compile()}(){}")
+    call.compileToFragments o
 
 #### Access
 
