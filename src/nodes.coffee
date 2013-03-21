@@ -985,9 +985,21 @@ exports.Class = class Class extends Base
   # Ensure that all functions bound to the instance are proxied in the
   # constructor.
   addBoundFunctions: (o) ->
-    for bvar in @boundFuncs
-      lhs = (new Value (new Literal "this"), [new Access bvar]).compile o
-      @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
+    if @boundFuncs.length
+      # Use a temporary Scope just to create some free variables.
+      # TODO: This is ugly. This should be the @ctor's scope.
+      scope = new Scope o.scope, @ctor.body
+      exprs = []
+      for [name, func] in @boundFuncs
+        varName = scope.freeVariable if IDENTIFIER.test(name.value) then name.value else 'bound'
+        varDecl = new Assign new Literal(varName), new Value(new Literal("this"), [new Access name])
+        exprs.push varDecl
+        lhs = new Value (new Literal "this"), [new Access name]
+        body = new Block [new Return new Literal "#{varName}.apply(_this, arguments)"]
+        rhs = new Code func.params, body, 'boundfunc'
+        bound = new Assign lhs, rhs
+        exprs.push bound
+      @ctor.body.unshift expr for expr in exprs by -1
     return
 
   # Merge the properties from a top-level object as prototypal properties
@@ -1017,7 +1029,7 @@ exports.Class = class Class extends Base
           else
             assign.variable = new Value(new Literal(name), [(new Access new Literal 'prototype'), new Access base ])
             if func instanceof Code and func.bound
-              @boundFuncs.push base
+              @boundFuncs.push [base, func]
               func.bound = no
       assign
     compact exprs
@@ -1292,6 +1304,8 @@ exports.Code = class Code extends Base
     delete o.isExistentialEquals
     params = []
     exprs  = []
+    # Clean params references in case the params where used in other Code nodes.
+    delete param.reference for param in @params
     @eachParamName (name) -> # this step must be performed before the others
       unless o.scope.check name then o.scope.parameter name
     for param in @params when param.splat
@@ -2114,11 +2128,6 @@ UTILITIES =
   extends: -> """
     function(child, parent) { for (var key in parent) { if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; }
   """
-
-  # Create a function bound to the current value of "this".
-  bind: -> '''
-    function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
-  '''
 
   # Discover if an item is in an array.
   indexOf: -> """
