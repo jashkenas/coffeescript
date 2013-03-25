@@ -92,8 +92,6 @@ addHistory = (repl, filename = path.join(process.env.HOME, '.coffee_history')) -
     repl.rli.history = buffer.toString().split('\n').reverse()
     repl.rli.history.shift()
     repl.rli.historyIndex = -1
-  catch e
-    # Fail silently
 
   fd = fs.openSync filename, 'a'
 
