@@ -86,9 +86,9 @@ addHistory = (repl, filename) ->
     stat = fs.statSync filename
     size = Math.min 10240, stat.size
     # Read last `size` bytes from the file
-    fd = fs.openSync filename, 'r'
+    readFd = fs.openSync filename, 'r'
     buffer = new Buffer(size)
-    fs.readSync fd, buffer, 0, size, stat.size - size
+    fs.readSync readFd, buffer, 0, size, stat.size - size
     # Set the history on the interpreter
     repl.rli.history = buffer.toString().split('\n').reverse()
     repl.rli.history.shift()
@@ -99,7 +99,7 @@ addHistory = (repl, filename) ->
   repl.rli.addListener 'line', (code) ->
     if code and code.length and code isnt '.history'
       # Save the latest command in the file
-      fs.write fd, code + '\n'
+      fs.write fd, "#{code}\n"
 
   process.on 'exit', ->
     fs.closeSync fd

@@ -107,5 +107,5 @@ testRepl "keeps running after runtime error", (input, output) ->
   input.emitLine 'a'
   eq 'undefined', output.lastWrite()
 
-testRepl 'remove history file', (input, output) ->
+process.on 'exit', ->
   fs.unlinkSync historyFile
