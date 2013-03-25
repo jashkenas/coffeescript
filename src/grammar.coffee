@@ -546,6 +546,7 @@ grammar =
     o 'Expression -  Expression',               -> new Op '-' , $1, $3
 
     o 'Expression MATH     Expression',         -> new Op $2, $1, $3
+    o 'Expression **       Expression',         -> new Op $2, $1, $3
     o 'Expression SHIFT    Expression',         -> new Op $2, $1, $3
     o 'Expression COMPARE  Expression',         -> new Op $2, $1, $3
     o 'Expression LOGIC    Expression',         -> new Op $2, $1, $3
@@ -582,6 +583,7 @@ operators = [
   ['nonassoc',  '++', '--']
   ['left',      '?']
   ['right',     'UNARY']
+  ['right',     '**']
   ['left',      'MATH']
   ['left',      '+', '-']
   ['left',      'SHIFT']

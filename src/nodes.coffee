@@ -1623,6 +1623,7 @@ exports.Op = class Op extends Base
     return @compileUnary     o if @isUnary()
     return @compileChain     o if isChain
     return @compileExistence o if @operator is '?'
+    return @compilePower     o if @operator is '**'
     answer = [].concat @first.compileToFragments(o, LEVEL_OP), @makeCode(' ' + @operator + ' '),
             @second.compileToFragments(o, LEVEL_OP)
     if o.level <= LEVEL_OP then answer else @wrapInBraces answer
@@ -1665,6 +1666,12 @@ exports.Op = class Op extends Base
       @first = new Parens @first
     parts.push @first.compileToFragments o, LEVEL_OP
     parts.reverse() if @flip
+    @joinFragmentArrays parts, ''
+
+  compilePower: (o) ->
+    left = @first.compileToFragments o, LEVEL_OP
+    right = @second.compileToFragments o, LEVEL_OP
+    parts = [@makeCode('Math.pow('), left, @makeCode(', '), right, @makeCode(')')]
     @joinFragmentArrays parts, ''
 
   toString: (idt) ->
