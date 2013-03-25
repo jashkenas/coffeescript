@@ -406,6 +406,7 @@ exports.Lexer = class Lexer
     else if value in COMPARE         then tag = 'COMPARE'
     else if value in COMPOUND_ASSIGN then tag = 'COMPOUND_ASSIGN'
     else if value in UNARY           then tag = 'UNARY'
+    else if value in UNARY_MATH      then tag = 'UNARY_MATH'
     else if value in SHIFT           then tag = 'SHIFT'
     else if value in LOGIC or value is '?' and prev?.spaced then tag = 'LOGIC'
     else if prev and not prev.spaced
@@ -675,8 +676,8 @@ exports.Lexer = class Lexer
   # Are we in the midst of an unfinished expression?
   unfinished: ->
     LINE_CONTINUER.test(@chunk) or
-    @tag() in ['\\', '.', '?.', '?::', 'UNARY', 'MATH', '+', '-', 'SHIFT', 'RELATION'
-               'COMPARE', 'LOGIC', 'THROW', 'EXTENDS']
+    @tag() in ['\\', '.', '?.', '?::', 'UNARY', 'MATH', 'UNARY_MATH', '+', '-',
+               'SHIFT', 'RELATION', 'COMPARE', 'LOGIC', 'THROW', 'EXTENDS']
 
   # Converts newlines for string literals.
   escapeLines: (str, heredoc) ->
@@ -821,19 +822,21 @@ COMPOUND_ASSIGN = [
 ]
 
 # Unary tokens.
-UNARY   = ['!', '~', 'NEW', 'TYPEOF', 'DELETE', 'DO']
+UNARY = ['NEW', 'TYPEOF', 'DELETE', 'DO']
+
+UNARY_MATH = ['!', '~']
 
 # Logical tokens.
-LOGIC   = ['&&', '||', '&', '|', '^']
+LOGIC = ['&&', '||', '&', '|', '^']
 
 # Bit-shifting tokens.
-SHIFT   = ['<<', '>>', '>>>']
+SHIFT = ['<<', '>>', '>>>']
 
 # Comparison tokens.
 COMPARE = ['==', '!=', '<', '>', '<=', '>=']
 
 # Mathematical tokens.
-MATH    = ['*', '/', '%']
+MATH = ['*', '/', '%']
 
 # Relational tokens that are negatable with `not` prefix.
 RELATION = ['IN', 'OF', 'INSTANCEOF']

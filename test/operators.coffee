@@ -302,6 +302,12 @@ test "power operator", ->
 
 test "power operator has higher precedence than other maths operators", ->
   eq 55, 1 + 3 ** 3 * 2
+  eq -4, -2 ** 2
+  eq false, !2 ** 2
+  eq 0, (!2) ** 2
+  eq -2, ~1 ** 5
+
+#test "power operator has lower precedence than"
 
 test "power operator is right associative", ->
   eq 2, 2 ** 1 ** 3
