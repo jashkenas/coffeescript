@@ -1,3 +1,5 @@
+fs = require 'fs'
+path = require 'path'
 vm = require 'vm'
 nodeREPL = require 'repl'
 CoffeeScript = require './coffee-script'
@@ -76,6 +78,41 @@ addMultilineHandler = (repl) ->
       rli.prompt true
     return
 
+# Store and load command history from a file
+addHistory = (repl, filename = path.join(process.env.HOME, '.coffee_history')) ->
+  try
+    # Get file info and at most 10KB of command history
+    stat = fs.statSync filename
+    size = Math.min 10240, stat.size
+    # Read last `size` bytes from the file
+    fd = fs.openSync filename, 'r'
+    buffer = new Buffer(size)
+    fs.readSync fd, buffer, 0, size, stat.size - size
+    # Set the history on the interpreter
+    repl.rli.history = buffer.toString().split('\n').reverse()
+    repl.rli.history.shift()
+    repl.rli.historyIndex = -1
+  catch e
+    # Fail silently
+
+  fd = fs.openSync filename, 'a'
+
+  repl.rli.addListener 'line', (code) ->
+    if code and code.length and code isnt '.history'
+      # Save the latest command in the file
+      fs.write fd, code + '\n'
+
+  process.on 'exit', ->
+    fs.closeSync fd
+
+  # Add a command to show the history stack
+  repl.commands['.history'] =
+    help: 'Show command history'
+    action: ->
+      out = (repl.rli.history[k] for k in Object.keys(repl.rli.history))
+      repl.outputStream.write out.reverse().join('\n') + '\n'
+      repl.displayPrompt()
+
 module.exports =
   start: (opts = {}) ->
     [major, minor, build] = process.versions.node.split('.').map (n) -> parseInt(n)
@@ -88,4 +125,5 @@ module.exports =
     repl = nodeREPL.start opts
     repl.on 'exit', -> repl.outputStream.write '\n'
     addMultilineHandler repl
+    addHistory repl
     repl
