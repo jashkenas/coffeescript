@@ -76,3 +76,6 @@ test "#1055: invalid keys in real (but not work-product) objects", ->
 
 test "#1066: interpolated strings are not implicit functions", ->
   cantCompile '"int#{er}polated" arg'
+
+test "#2846: while with empty body", ->
+  CoffeeScript.compile 'while 1 then', {sourceMap: true}

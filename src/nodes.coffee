@@ -1504,7 +1504,7 @@ exports.While = class While extends Base
     set      = ''
     {body}   = this
     if body.isEmpty()
-      body = ''
+      body = @makeCode ''
     else
       if @returns
         body.makeReturn rvar = o.scope.freeVariable 'results'
