@@ -1669,10 +1669,9 @@ exports.Op = class Op extends Base
     @joinFragmentArrays parts, ''
 
   compilePower: (o) ->
-    left = @first.compileToFragments o, LEVEL_OP
-    right = @second.compileToFragments o, LEVEL_OP
-    parts = [@makeCode('Math.pow('), left, @makeCode(', '), right, @makeCode(')')]
-    @joinFragmentArrays parts, ''
+    # Make a Math.pow call
+    pow = new Value new Literal('Math'), [new Access new Literal 'pow']
+    new Call(pow, [@first, @second]).compileToFragments o
 
   toString: (idt) ->
     super idt, @constructor.name + ' ' + @operator
