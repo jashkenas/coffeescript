@@ -7,6 +7,7 @@ CoffeeScript = require './coffee-script'
 
 replDefaults =
   prompt: 'coffee> ',
+  historyFile: path.join(process.env.HOME, '.coffee_history')
   eval: (input, context, filename, cb) ->
     # XXX: multiline hack.
     input = input.replace /\uFF00/g, '\n'
@@ -79,7 +80,7 @@ addMultilineHandler = (repl) ->
     return
 
 # Store and load command history from a file
-addHistory = (repl, filename = path.join(process.env.HOME, '.coffee_history')) ->
+addHistory = (repl, filename) ->
   try
     # Get file info and at most 10KB of command history
     stat = fs.statSync filename
@@ -123,5 +124,5 @@ module.exports =
     repl = nodeREPL.start opts
     repl.on 'exit', -> repl.outputStream.write '\n'
     addMultilineHandler repl
-    addHistory repl
+    addHistory repl, opts.historyFile if opts.historyFile
     repl
