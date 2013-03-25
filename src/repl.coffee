@@ -4,6 +4,7 @@ CoffeeScript = require './coffee-script'
 {merge, prettyErrorMessage} = require './helpers'
 
 replDefaults =
+  welcome: "CoffeeScript version #{CoffeeScript.VERSION} on Node #{process.versions.node}\nType '.help' for more information\n"
   prompt: 'coffee> ',
   eval: (input, context, filename, cb) ->
     # XXX: multiline hack.
@@ -85,6 +86,11 @@ module.exports =
       process.exit 1
 
     opts = merge replDefaults, opts
+
+    if opts.welcome
+      outputStream = opts.outputStream or process.stdout
+      outputStream.write opts.welcome
+
     repl = nodeREPL.start opts
     repl.on 'exit', -> repl.outputStream.write '\n'
     addMultilineHandler repl
