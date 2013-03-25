@@ -55,9 +55,3 @@ test "an empty heregex will compile to an empty, non-capturing group", ->
 
 test "#1724: regular expressions beginning with `*`", ->
   throws -> CoffeeScript.compile '/// * ///'
-
-test "empty regular expressions with flags", ->
-  fn = (x) -> x
-  a = "" + //i
-  fn ""
-  eq '/(?:)/i', a

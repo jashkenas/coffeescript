@@ -237,21 +237,21 @@ exports.Lexer = class Lexer
   # JavaScript and Ruby.
   regexToken: ->
     return 0 if @chunk.charAt(0) isnt '/'
-    if match = HEREGEX.exec @chunk
-      length = @heregexToken match
-      return length
+    return length if length = @heregexToken()
 
     prev = last @tokens
     return 0 if prev and (prev[0] in (if prev.spaced then NOT_REGEX else NOT_SPACED_REGEX))
     return 0 unless match = REGEX.exec @chunk
     [match, regex, flags] = match
+    # Avoid conflicts with floor division operator.
+    return 0 if regex is '//'
     if regex[..1] is '/*' then @error 'regular expressions cannot begin with `*`'
-    if regex is '//' then regex = '/(?:)/'
     @token 'REGEX', "#{regex}#{flags}", 0, match.length
     match.length
 
   # Matches multiline extended regular expressions.
-  heregexToken: (match) ->
+  heregexToken: ->
+    return 0 unless match = HEREGEX.exec @chunk
     [heregex, body, flags] = match
     if 0 > body.indexOf '#{'
       re = body.replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
@@ -768,10 +768,9 @@ OPERATOR   = /// ^ (
    | [-+*/%<>&|^!?=]=  # compound assign / compare
    | >>>=?             # zero-fill right shift
    | ([-+:])\1         # doubles
-   | ([&|<>])\2=?      # logic / shift
+   | ([&|<>*/%])\2=?   # logic / shift / power / floor division / modulo
    | \?(\.|::)         # soak access
    | \.{2,3}           # range or splat
-   | \*\*              # power
 ) ///
 
 WHITESPACE = /^[^\n\S]+/
@@ -818,7 +817,8 @@ TRAILING_SPACES = /\s+$/
 
 # Compound assignment tokens.
 COMPOUND_ASSIGN = [
-  '-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=', '<<=', '>>=', '>>>=', '&=', '^=', '|='
+  '-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=', '<<=', '>>=', '>>>='
+  '&=', '^=', '|=', '**=', '//=', '%%='
 ]
 
 # Unary tokens.
@@ -836,7 +836,7 @@ SHIFT = ['<<', '>>', '>>>']
 COMPARE = ['==', '!=', '<', '>', '<=', '>=']
 
 # Mathematical tokens.
-MATH = ['*', '/', '%']
+MATH = ['*', '/', '%', '//', '%%']
 
 # Relational tokens that are negatable with `not` prefix.
 RELATION = ['IN', 'OF', 'INSTANCEOF']
