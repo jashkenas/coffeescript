@@ -10,7 +10,6 @@ child_process = require 'child_process'
 {Lexer}       = require './lexer'
 {parser}      = require './parser'
 helpers       = require './helpers'
-repl          = require './repl'
 SourceMap     = require './sourcemap'
 
 # The current CoffeeScript version number.
@@ -19,8 +18,8 @@ exports.VERSION = '1.6.2'
 # Expose helpers for testing.
 exports.helpers = helpers
 
-# Expose the repl for embedding interactive shells
-exports.repl = repl
+# Expose the repl for embedding interactive shells when not in the browser
+exports.repl = require './repl' unless window?
 
 # Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
 #
