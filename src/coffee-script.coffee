@@ -18,6 +18,9 @@ exports.VERSION = '1.6.2'
 # Expose helpers for testing.
 exports.helpers = helpers
 
+# Expose the repl for embedding interactive shells when not in the browser
+exports.repl = require './repl' unless window?
+
 # Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
 #
 # If `options.sourceMap` is specified, then `options.filename` must also be specified.  All
