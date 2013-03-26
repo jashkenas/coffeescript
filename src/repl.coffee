@@ -108,8 +108,8 @@ addHistory = (repl, filename) ->
   repl.commands['.history'] =
     help: 'Show command history'
     action: ->
-      out = (repl.rli.history[k] for k in Object.keys(repl.rli.history))
-      repl.outputStream.write out.reverse().join('\n') + '\n'
+      history = (repl.rli.history[k] for k in Object.keys(repl.rli.history)).reverse()
+      repl.outputStream.write "#{history.join '\n'}\n"
       repl.displayPrompt()
 
 module.exports =
