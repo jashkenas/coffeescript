@@ -1,7 +1,9 @@
 # Cluster Module
 # ---------
-
-return if testingBrowser?
+# Currently `fork()` for `.coffee` files requires Node.js 0.9+
+# Ignore the test when process.version does not match the requirement.
+[major, minor, build] = process.version[1..].split('.').map (n) -> parseInt(n)
+return if testingBrowser? or (major is 0 and minor < 9)
 
 cluster = require 'cluster'
 
