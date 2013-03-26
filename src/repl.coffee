@@ -8,6 +8,7 @@ CoffeeScript = require './coffee-script'
 replDefaults =
   prompt: 'coffee> ',
   historyFile: path.join(process.env.HOME, '.coffee_history')
+  historyMaxInputSize: 10240
   eval: (input, context, filename, cb) ->
     # XXX: multiline hack.
     input = input.replace /\uFF00/g, '\n'
@@ -80,18 +81,21 @@ addMultilineHandler = (repl) ->
     return
 
 # Store and load command history from a file
-addHistory = (repl, filename) ->
+addHistory = (repl, filename, maxSize) ->
   try
     # Get file info and at most 10KB of command history
     stat = fs.statSync filename
-    size = Math.min 10240, stat.size
+    size = Math.min maxSize, stat.size
     # Read last `size` bytes from the file
     readFd = fs.openSync filename, 'r'
     buffer = new Buffer(size)
     fs.readSync readFd, buffer, 0, size, stat.size - size
     # Set the history on the interpreter
     repl.rli.history = buffer.toString().split('\n').reverse()
-    repl.rli.history.shift()
+    # If the history file was truncated we should pop off a potential partial line
+    repl.rli.history.pop() if size is maxSize
+    # Shift off the final blank newline
+    repl.rli.history.shift() if repl.rli.history[0] is ''
     repl.rli.historyIndex = -1
 
   fd = fs.openSync filename, 'a'
@@ -124,5 +128,5 @@ module.exports =
     repl = nodeREPL.start opts
     repl.on 'exit', -> repl.outputStream.write '\n'
     addMultilineHandler repl
-    addHistory repl, opts.historyFile if opts.historyFile
+    addHistory repl, opts.historyFile, opts.historyMaxInputSize if opts.historyFile
     repl
