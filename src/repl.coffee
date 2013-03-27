@@ -1,3 +1,5 @@
+fs = require 'fs'
+path = require 'path'
 vm = require 'vm'
 nodeREPL = require 'repl'
 CoffeeScript = require './coffee-script'
@@ -5,6 +7,8 @@ CoffeeScript = require './coffee-script'
 
 replDefaults =
   prompt: 'coffee> ',
+  historyFile: path.join(process.env.HOME, '.coffee_history')
+  historyMaxInputSize: 10240
   eval: (input, context, filename, cb) ->
     # XXX: multiline hack.
     input = input.replace /\uFF00/g, '\n'
@@ -76,6 +80,42 @@ addMultilineHandler = (repl) ->
       rli.prompt true
     return
 
+# Store and load command history from a file
+addHistory = (repl, filename, maxSize) ->
+  try
+    # Get file info and at most 10KB of command history
+    stat = fs.statSync filename
+    size = Math.min maxSize, stat.size
+    # Read last `size` bytes from the file
+    readFd = fs.openSync filename, 'r'
+    buffer = new Buffer(size)
+    fs.readSync readFd, buffer, 0, size, stat.size - size
+    # Set the history on the interpreter
+    repl.rli.history = buffer.toString().split('\n').reverse()
+    # If the history file was truncated we should pop off a potential partial line
+    repl.rli.history.pop() if size is maxSize
+    # Shift off the final blank newline
+    repl.rli.history.shift() if repl.rli.history[0] is ''
+    repl.rli.historyIndex = -1
+
+  fd = fs.openSync filename, 'a'
+
+  repl.rli.addListener 'line', (code) ->
+    if code and code.length and code isnt '.history'
+      # Save the latest command in the file
+      fs.write fd, "#{code}\n"
+
+  process.on 'exit', ->
+    fs.closeSync fd
+
+  # Add a command to show the history stack
+  repl.commands['.history'] =
+    help: 'Show command history'
+    action: ->
+      history = (repl.rli.history[k] for k in Object.keys(repl.rli.history)).reverse()
+      repl.outputStream.write "#{history.join '\n'}\n"
+      repl.displayPrompt()
+
 module.exports =
   start: (opts = {}) ->
     [major, minor, build] = process.versions.node.split('.').map (n) -> parseInt(n)
@@ -88,4 +128,5 @@ module.exports =
     repl = nodeREPL.start opts
     repl.on 'exit', -> repl.outputStream.write '\n'
     addMultilineHandler repl
+    addHistory repl, opts.historyFile, opts.historyMaxInputSize if opts.historyFile
     repl
