@@ -46,6 +46,7 @@ SWITCHES = [
   ['-o', '--output [DIR]',    'set the output directory for compiled JavaScript']
   ['-p', '--print',           'print out the compiled JavaScript']
   ['-s', '--stdio',           'listen for and compile scripts over stdio']
+  ['-L', '--literate',        'treat stdio as literate style coffee-script']
   ['-t', '--tokens',          'print out the tokens that the lexer/rewriter produce']
   ['-v', '--version',         'display the version number']
   ['-w', '--watch',           'watch scripts for changes and rerun commands']
@@ -330,7 +331,7 @@ parseOptions = ->
 compileOptions = (filename, base) ->
   answer = {
     filename
-    literate: helpers.isLiterate(filename)
+    literate: opts.literate or helpers.isLiterate(filename)
     bare: opts.bare
     header: opts.compile
     sourceMap: opts.map
