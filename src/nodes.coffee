@@ -2112,7 +2112,7 @@ UTILITIES =
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls, and copies of any static properties.
   extends: -> """
-    function(child, parent) { for (var key in parent) { if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; }
+    function(child, parent) { for (var key in parent) { if (#{utility 'hasES5Properties'}) { if (#{utility 'hasProp'}.call(parent, key)) #{utility 'copyProp'}(child, parent, key); } else child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; }
   """
 
   # Create a function bound to the current value of "this".
@@ -2125,7 +2125,19 @@ UTILITIES =
     [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; }
   """
 
+  # Whether the JS runtime supports ES5 properties on all objects
+  hasES5Properties: -> """
+    (function () { if (!#{utility 'defineProp'} || !#{utility 'getProp'} || !#{utility 'hasProp'}) return false; try { #{utility 'defineProp'} ({}, 'test', {}); #{utility 'getProp'} ({foo:5}, 'foo'); return true; } catch (e) { return false; } })()
+  """
+
+  # Copy an ES5 property
+  copyProp: -> """
+    function(child, parent, key) { var desc = #{utility 'getProp'}(parent, key); #{utility 'defineProp'} (child, key, desc); }
+  """
+
   # Shortcuts to speed up the lookup time for native functions.
+  defineProp: -> 'Object.defineProperty'
+  getProp: -> 'Object.getOwnPropertyDescriptor'
   hasProp: -> '{}.hasOwnProperty'
   slice  : -> '[].slice'
 
