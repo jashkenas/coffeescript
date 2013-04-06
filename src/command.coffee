@@ -14,6 +14,7 @@ CoffeeScript   = require './coffee-script'
 {EventEmitter} = require 'events'
 
 exists         = fs.exists or path.exists
+useWinPathSep  = path.sep is '\\'
 
 # Allow CoffeeScript to emit Node.js events.
 helpers.extend CoffeeScript, new EventEmitter
@@ -256,7 +257,7 @@ removeSource = (source, base, removeJs) ->
 
 # Get the corresponding output JavaScript path for a source file.
 outputPath = (source, base, extension=".js") ->
-  basename  = helpers.baseFileName source, yes, path.sep
+  basename  = helpers.baseFileName source, yes, useWinPathSep
   srcDir    = path.dirname source
   baseDir   = if base is '.' then srcDir else srcDir.substring base.length
   dir       = if opts.output then path.join opts.output, baseDir else srcDir
@@ -274,7 +275,7 @@ writeJs = (base, sourcePath, js, jsPath, generatedSourceMap = null) ->
   compile = ->
     if opts.compile
       js = ' ' if js.length <= 0
-      if generatedSourceMap then js = "#{js}\n/*\n//@ sourceMappingURL=#{helpers.baseFileName sourceMapPath, no, path.sep}\n*/\n"
+      if generatedSourceMap then js = "#{js}\n/*\n//@ sourceMappingURL=#{helpers.baseFileName sourceMapPath, no, useWinPathSep}\n*/\n"
       fs.writeFile jsPath, js, (err) ->
         if err
           printLine err.message
@@ -343,13 +344,13 @@ compileOptions = (filename, base) ->
         jsPath
         sourceRoot: path.relative jsDir, cwd
         sourceFiles: [path.relative cwd, filename]
-        generatedFile: helpers.baseFileName(jsPath, no, path.sep)
+        generatedFile: helpers.baseFileName(jsPath, no, useWinPathSep)
       }
     else
       answer = helpers.merge answer,
         sourceRoot: ""
-        sourceFiles: [helpers.baseFileName filename, no, path.sep]
-        generatedFile: helpers.baseFileName(filename, yes, path.sep) + ".js"
+        sourceFiles: [helpers.baseFileName filename, no, useWinPathSep]
+        generatedFile: helpers.baseFileName(filename, yes, useWinPathSep) + ".js"
   answer
 
 # Start up a new Node.js instance with the arguments in `--nodejs` passed to

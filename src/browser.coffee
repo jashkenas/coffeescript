@@ -15,19 +15,21 @@ CoffeeScript.eval = (code, options = {}) ->
 # Running code does not provide access to this scope.
 CoffeeScript.run = (code, options = {}) ->
   options.bare = on
+  options.shiftLine = on
   Function(compile code, options)()
 
 # If we're not in a browser environment, we're finished with the public API.
 return unless window?
 
-# Include source maps where possible. If we've got a base64 encoder, and a
-# JSON serializer, we're good to go.
-if btoa? and JSON?
+# Include source maps where possible. If we've got a base64 encoder, a
+# JSON serializer, and tools for escaping unicode characters, we're good to go.
+# Ported from https://developer.mozilla.org/en-US/docs/DOM/window.btoa
+if btoa? and JSON? and unescape? and encodeURIComponent?
   compile = (code, options = {}) ->
     options.sourceMap = true
     options.inline = true
     {js, v3SourceMap} = CoffeeScript.compile code, options
-    "#{js}\n//@ sourceMappingURL=data:application/json;base64,#{btoa v3SourceMap}\n//@ sourceURL=coffeescript"
+    "#{js}\n//@ sourceMappingURL=data:application/json;base64,#{btoa unescape encodeURIComponent v3SourceMap}\n//@ sourceURL=coffeescript"
 
 # Load a remote script from the current domain via XHR.
 CoffeeScript.load = (url, callback, options = {}) ->
@@ -35,7 +37,7 @@ CoffeeScript.load = (url, callback, options = {}) ->
   xhr = if window.ActiveXObject
     new window.ActiveXObject('Microsoft.XMLHTTP')
   else
-    new XMLHttpRequest()
+    new window.XMLHttpRequest()
   xhr.open 'GET', url, true
   xhr.overrideMimeType 'text/plain' if 'overrideMimeType' of xhr
   xhr.onreadystatechange = ->
@@ -51,7 +53,7 @@ CoffeeScript.load = (url, callback, options = {}) ->
 # all script tags with a content-type of `text/coffeescript`.
 # This happens on page load.
 runScripts = ->
-  scripts = document.getElementsByTagName 'script'
+  scripts = window.document.getElementsByTagName 'script'
   coffeetypes = ['text/coffeescript', 'text/literate-coffeescript']
   coffees = (s for s in scripts when s.type in coffeetypes)
   index = 0
@@ -71,6 +73,6 @@ runScripts = ->
 
 # Listen for window load, both in decent browsers and in IE.
 if window.addEventListener
-  addEventListener 'DOMContentLoaded', runScripts, no
+  window.addEventListener 'DOMContentLoaded', runScripts, no
 else
-  attachEvent 'onload', runScripts
+  window.attachEvent 'onload', runScripts
