@@ -146,8 +146,8 @@ exports.Base = class Base
 
   traverseChildren: (crossScope, func) ->
     @eachChild (child) ->
-      return false if func(child) is false
-      child.traverseChildren crossScope, func
+      recur = func(child)
+      child.traverseChildren(crossScope, func) unless recur is no
 
   invert: ->
     new Op '!', this

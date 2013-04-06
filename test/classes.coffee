@@ -337,6 +337,18 @@ test "#2502: parenthesizing inner object values", ->
   eq (new A).sections.default, 0
 
 
+test "conditional prototype property assignment", ->
+  debug = false
+
+  class Person
+    if debug
+      age: -> 10
+    else
+      age: -> 20
+
+  eq (new Person).age(), 20
+
+
 test "mild metaprogramming", ->
 
   class Base
