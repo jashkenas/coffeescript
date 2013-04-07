@@ -106,7 +106,7 @@ addHistory = (repl, filename, maxSize) ->
     if code and code.length and code isnt '.history' and lastLine isnt code
       # Save the latest command in the file
       fs.write fd, "#{code}\n"
-    lastLine = code
+      lastLine = code
 
   process.on 'exit', ->
     fs.closeSync fd
