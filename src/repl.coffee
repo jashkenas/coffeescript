@@ -82,8 +82,9 @@ addMultilineHandler = (repl) ->
 
 # Store and load command history from a file
 addHistory = (repl, filename, maxSize) ->
+  lastLine = null
   try
-    # Get file info and at most 10KB of command history
+    # Get file info and at most maxSize of command history
     stat = fs.statSync filename
     size = Math.min maxSize, stat.size
     # Read last `size` bytes from the file
@@ -93,17 +94,19 @@ addHistory = (repl, filename, maxSize) ->
     # Set the history on the interpreter
     repl.rli.history = buffer.toString().split('\n').reverse()
     # If the history file was truncated we should pop off a potential partial line
-    repl.rli.history.pop() if size is maxSize
+    repl.rli.history.pop() if stat.size > maxSize
     # Shift off the final blank newline
     repl.rli.history.shift() if repl.rli.history[0] is ''
     repl.rli.historyIndex = -1
+    lastLine = repl.rli.history[0]
 
   fd = fs.openSync filename, 'a'
 
   repl.rli.addListener 'line', (code) ->
-    if code and code.length and code isnt '.history'
+    if code and code.length and code isnt '.history' and lastLine isnt code
       # Save the latest command in the file
       fs.write fd, "#{code}\n"
+      lastLine = code
 
   process.on 'exit', ->
     fs.closeSync fd
@@ -112,8 +115,7 @@ addHistory = (repl, filename, maxSize) ->
   repl.commands['.history'] =
     help: 'Show command history'
     action: ->
-      history = (repl.rli.history[k] for k in Object.keys(repl.rli.history)).reverse()
-      repl.outputStream.write "#{history.join '\n'}\n"
+      repl.outputStream.write "#{repl.rli.history[..].reverse().join '\n'}\n"
       repl.displayPrompt()
 
 module.exports =
