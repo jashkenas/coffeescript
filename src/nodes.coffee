@@ -1733,11 +1733,8 @@ exports.Try = class Try extends Base
 
     catchPart = if @recovery
       placeholder = new Literal '_error'
-      @recovery.unshift new Assign @errorVariable, placeholder
-      @errorVariable = placeholder
-      if @errorVariable.value in STRICT_PROSCRIBED
-        @errorVariable.error "catch variable may not be \"#{@errorVariable.value}\""
-      [].concat @makeCode(" catch ("), @errorVariable.compileToFragments(o), @makeCode(") {\n"),
+      @recovery.unshift new Assign @errorVariable, placeholder if @errorVariable
+      [].concat @makeCode(" catch ("), placeholder.compileToFragments(o), @makeCode(") {\n"),
         @recovery.compileToFragments(o, LEVEL_TOP), @makeCode("\n#{@tab}}")
     else unless @ensure or @recovery
       [@makeCode(' catch (_error) {}')]
