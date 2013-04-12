@@ -401,6 +401,7 @@ grammar =
   Catch: [
     o 'CATCH Identifier Block',                 -> [$2, $3]
     o 'CATCH Object Block',                     -> [LOC(2)(new Value($2)), $3]
+    o 'CATCH Block',                            -> [null, $2]
   ]
 
   # Throw an exception object.
