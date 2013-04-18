@@ -185,6 +185,7 @@ exports.Lexer = class Lexer
   # Matches strings, including multi-line strings. Ensures that quotation marks
   # are balanced within the string's contents, and within nested interpolations.
   stringToken: ->
+    lexedLength = null
     switch @chunk.charAt 0
       when "'"
         return 0 unless match = SIMPLESTR.exec @chunk
@@ -196,11 +197,17 @@ exports.Lexer = class Lexer
           @interpolateString string[1...-1], strOffset: 1, lexedLength: string.length
         else
           @token 'STRING', @escapeLines string, 0, string.length
+      when ':'
+        return 0 unless match = SYMBOLSTR.exec @chunk
+        symbol = match[0]
+        string = "'#{symbol[1..]}'"
+        lexedLength = symbol.length
+        @token 'STRING', string, 0, lexedLength
       else
         return 0
     if octalEsc = /^(?:\\.|[^\\])*\\(?:0[0-7]|[1-7])/.test string
       @error "octal escape sequences #{string} are not allowed"
-    string.length
+    lexedLength ? string.length
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
   # preserve whitespace, but ignore indentation to the left.
@@ -750,7 +757,7 @@ BOM = 65279
 # Token matching regexes.
 IDENTIFIER = /// ^
   ( [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]* )
-  ( [^\n\S]* : (?!:) )?  # Is this a property name?
+  ( ([^\n\S]* : (?!\S)) | (: (?!:)) )?  # Is this a property name?
 ///
 
 NUMBER     = ///
@@ -781,6 +788,8 @@ CODE       = /^[-=]>/
 MULTI_DENT = /^(?:\n[^\n\S]*)+/
 
 SIMPLESTR  = /^'[^\\']*(?:\\.[^\\']*)*'/
+
+SYMBOLSTR  = /^:[a-z_]\w*/i
 
 JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
