@@ -105,3 +105,12 @@ eq '''  <- keep these spaces ->  ''', '  <- keep these spaces ->  '
 
 test "#1046, empty string interpolations", ->
   eq "#{ }", ''
+
+test 'symbols', ->
+  eq 'a', :a
+  eq 'a', (x: :a).x
+  eq 'a', (x : :a).x
+  b = :a
+  eq 'a', (x:b).x
+  f = (x) -> x
+  eq 'a', f :a
