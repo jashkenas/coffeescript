@@ -174,7 +174,7 @@ Regular Base64 Encoding
 
 Our API for source maps is just the `SourceMap` class.
 
-    module.exports = SourceMap
+    exports.SourceMap = SourceMap
 
 
 

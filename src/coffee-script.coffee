@@ -10,7 +10,7 @@ child_process = require 'child_process'
 {Lexer}       = require './lexer'
 {parser}      = require './parser'
 helpers       = require './helpers'
-SourceMap     = require './sourcemap'
+SourceMap     = require('./sourcemap').SourceMap
 
 # The current CoffeeScript version number.
 exports.VERSION = '1.6.2'
