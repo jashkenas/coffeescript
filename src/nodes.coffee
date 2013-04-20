@@ -352,6 +352,8 @@ exports.Block = class Block extends Base
           fragments.push @makeCode ",\n#{@tab + TAB}" if declars
           fragments.push @makeCode (scope.assignedVariables().join ",\n#{@tab + TAB}")
         fragments.push @makeCode ";\n#{if @spaced then '\n' else ''}"
+      else if fragments.length and post.length
+        fragments.push @makeCode "\n"
     fragments.concat post
 
   # Wrap up the given nodes as a **Block**, unless it already happens
