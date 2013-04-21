@@ -5,9 +5,13 @@ nodeREPL = require 'repl'
 CoffeeScript = require './coffee-script'
 {merge, prettyErrorMessage} = require './helpers'
 
+historyFile = if process.env.HOME
+  path.join process.env.HOME, '.coffee_history'
+else ''
+
 replDefaults =
-  prompt: 'coffee> ',
-  historyFile: path.join(process.env.HOME, '.coffee_history')
+  prompt: 'coffee> '
+  historyFile: historyFile
   historyMaxInputSize: 10240
   eval: (input, context, filename, cb) ->
     # XXX: multiline hack.
