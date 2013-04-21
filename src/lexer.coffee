@@ -846,11 +846,11 @@ BOOL = ['TRUE', 'FALSE']
 # See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
 #
 # Our list is shorter, due to sans-parentheses method calls.
-NOT_REGEX = ['NUMBER', 'REGEX', 'BOOL', 'NULL', 'UNDEFINED', '++', '--', ']']
+NOT_REGEX = ['NUMBER', 'REGEX', 'BOOL', 'NULL', 'UNDEFINED', '++', '--']
 
 # If the previous token is not spaced, there are more preceding tokens that
 # force a division parse:
-NOT_SPACED_REGEX = NOT_REGEX.concat ')', '}', 'THIS', 'IDENTIFIER', 'STRING'
+NOT_SPACED_REGEX = NOT_REGEX.concat ')', '}', 'THIS', 'IDENTIFIER', 'STRING', ']'
 
 # Tokens which could legitimately be invoked or indexed. An opening
 # parentheses or bracket following these tokens will be recorded as the start

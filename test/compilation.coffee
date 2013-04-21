@@ -79,3 +79,6 @@ test "#1066: interpolated strings are not implicit functions", ->
 
 test "#2846: while with empty body", ->
   CoffeeScript.compile 'while 1 then', {sourceMap: true}
+
+test "#2944: implicit call with a regex argument", ->
+  CoffeeScript.compile 'o[key] /regex/'
