@@ -7,7 +7,7 @@ CoffeeScript = require './coffee-script'
 
 replDefaults =
   prompt: 'coffee> ',
-  historyFile: path.join(process.env.HOME, '.coffee_history')
+  historyFile: path.join process.env.HOME, '.coffee_history' if process.env.HOME
   historyMaxInputSize: 10240
   eval: (input, context, filename, cb) ->
     # XXX: multiline hack.
