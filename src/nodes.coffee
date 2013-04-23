@@ -1261,7 +1261,8 @@ exports.Assign = class Assign extends Base
     else
       fromDecl = fromRef = '0'
     if to
-      if from?.isSimpleNumber() and to.isSimpleNumber()
+      if from and from instanceof Value and from?.isSimpleNumber() and
+                    to instanceof Value and to.isSimpleNumber()
         to = +to.compile(o) - +fromRef
         to += 1 unless exclusive
       else
