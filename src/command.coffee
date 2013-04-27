@@ -68,7 +68,7 @@ exports.run = ->
   return usage()                         if opts.help
   return version()                       if opts.version
   return require('./repl').start()       if opts.interactive
-  if opts.watch and !fs.watch
+  if opts.watch and not fs.watch
     return printWarn "The --watch feature depends on Node v0.6.0+. You are running #{process.version}."
   return compileStdio()                  if opts.stdio
   return compileScript null, sources[0]  if opts.eval
@@ -104,7 +104,7 @@ compilePath = (source, topLevel, base) ->
       fs.readFile source, (err, code) ->
         throw err if err and err.code isnt 'ENOENT'
         return if err?.code is 'ENOENT'
-        compileScript(source, code.toString(), base)
+        compileScript source, code.toString(), base
     else
       notSources[source] = yes
       removeSource source, base
@@ -124,7 +124,7 @@ compileScript = (file, input, base=null) ->
     else if o.run         then CoffeeScript.run t.input, t.options
     else if o.join and t.file isnt o.join
       t.input = helpers.invertLiterate t.input if helpers.isLiterate file
-      sourceCode[sources.indexOf(t.file)] = t.input
+      sourceCode[sources.indexOf t.file] = t.input
       compileJoin()
     else
       compiled = CoffeeScript.compile t.input, t.options
@@ -136,7 +136,7 @@ compileScript = (file, input, base=null) ->
       CoffeeScript.emit 'success', task
       if o.print
         printLine t.output.trim()
-      else if o.compile || o.map
+      else if o.compile or o.map
         writeJs base, t.file, t.output, options.jsPath, t.sourceMap
   catch err
     CoffeeScript.emit 'failure', err, task
@@ -198,7 +198,7 @@ watch = (source, base) ->
         prevStats = stats
         fs.readFile source, (err, code) ->
           return watchErr err if err
-          compileScript(source, code.toString(), base)
+          compileScript source, code.toString(), base
           rewatch()
 
   try
@@ -291,7 +291,7 @@ wait = (milliseconds, func) -> setTimeout func, milliseconds
 
 # When watching scripts, it's useful to log changes with the timestamp.
 timeLog = (message) ->
-  console.log "#{(new Date).toLocaleTimeString()} - #{message}"
+  console.log "#{new Date().toLocaleTimeString()} - #{message}"
 
 # Pretty-print a stream of tokens, sans location data.
 printTokens = (tokens) ->
@@ -299,7 +299,7 @@ printTokens = (tokens) ->
     tag = token[0]
     value = token[1].toString().replace(/\n/, '\\n')
     "[#{tag} #{value}]"
-  printLine strings.join(' ')
+  printLine strings.join ' '
 
 # Use the [OptionParser module](optparse.html) to extract all options from
 # `process.argv` that are specified in `SWITCHES`.
@@ -354,7 +354,7 @@ forkNode = ->
 # Print the `--help` usage message and exit. Deprecated switches are not
 # shown.
 usage = ->
-  printLine (new optparse.OptionParser SWITCHES, BANNER).help()
+  printLine new optparse.OptionParser(SWITCHES, BANNER).help()
 
 # Print the `--version` message and exit.
 version = ->

@@ -28,12 +28,12 @@ exports.helpers = helpers
 # object, where sourceMap is a sourcemap.coffee#SourceMap object, handy for doing programatic
 # lookups.
 exports.compile = compile = (code, options = {}) ->
-  {merge} = exports.helpers
+  {merge} = helpers
 
   if options.sourceMap
     map = new SourceMap
 
-  fragments = (parser.parse lexer.tokenize(code, options)).compileToFragments options
+  fragments = parser.parse(lexer.tokenize code, options).compileToFragments options
 
   currentLine = 0
   currentLine += 1 if options.header
@@ -45,9 +45,9 @@ exports.compile = compile = (code, options = {}) ->
     if options.sourceMap
       if fragment.locationData
         map.add(
-          [fragment.locationData.first_line, fragment.locationData.first_column],
-          [currentLine, currentColumn],
-          {noReplace: true})
+          [fragment.locationData.first_line, fragment.locationData.first_column]
+          [currentLine, currentColumn]
+          noReplace: true)
       newLines = helpers.count fragment.code, "\n"
       currentLine += newLines
       currentColumn = fragment.code.length - (if newLines then fragment.code.lastIndexOf "\n" else 0)
@@ -87,7 +87,7 @@ exports.run = (code, options = {}) ->
   options.sourceMap ?= true
   # Set the filename.
   mainModule.filename = process.argv[1] =
-      if options.filename then fs.realpathSync(options.filename) else '.'
+    if options.filename then fs.realpathSync(options.filename) else '.'
 
   # Clear the module cache.
   mainModule.moduleCache and= {}

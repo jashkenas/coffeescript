@@ -35,7 +35,7 @@ if btoa? and JSON? and unescape? and encodeURIComponent?
 CoffeeScript.load = (url, callback, options = {}) ->
   options.sourceFiles = [url]
   xhr = if window.ActiveXObject
-    new window.ActiveXObject('Microsoft.XMLHTTP')
+    new window.ActiveXObject 'Microsoft.XMLHTTP'
   else
     new window.XMLHttpRequest()
   xhr.open 'GET', url, true

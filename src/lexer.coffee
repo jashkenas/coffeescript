@@ -12,8 +12,8 @@
 {Rewriter, INVERSES} = require './rewriter'
 
 # Import the helpers we need.
-{count, starts, compact, last, invertLiterate, locationDataToString, 
-throwSyntaxError} = require './helpers'
+{count, starts, compact, last, repeat, invertLiterate,
+locationDataToString,  throwSyntaxError} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -74,13 +74,13 @@ exports.Lexer = class Lexer
     @closeIndentation()
     @error "missing #{tag}" if tag = @ends.pop()
     return @tokens if opts.rewrite is off
-    (new Rewriter).rewrite @tokens
+    new Rewriter().rewrite @tokens
 
   # Preprocess the code to remove leading and trailing whitespace, carriage
   # returns, etc. If we're lexing literate CoffeeScript, strip external Markdown
   # by removing all lines that aren't indented by at least four spaces or a tab.
   clean: (code) ->
-    code = code.slice(1) if code.charCodeAt(0) is BOM
+    code = code.slice 1 if code.charCodeAt(0) is BOM
     code = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
     if WHITESPACE.test code
         code = "\n#{code}"
@@ -176,9 +176,9 @@ exports.Lexer = class Lexer
       @error "octal literal '#{number}' must be prefixed with '0o'"
     lexedLength = number.length
     if octalLiteral = /^0o([0-7]+)/.exec number
-      number = '0x' + (parseInt octalLiteral[1], 8).toString 16
+      number = '0x' + parseInt(octalLiteral[1], 8).toString 16
     if binaryLiteral = /^0b([01]+)/.exec number
-      number = '0x' + (parseInt binaryLiteral[1], 2).toString 16
+      number = '0x' + parseInt(binaryLiteral[1], 2).toString 16
     @token 'NUMBER', number, 0, lexedLength
     lexedLength
 
@@ -221,8 +221,8 @@ exports.Lexer = class Lexer
     [comment, here] = match
     if here
       @token 'HERECOMMENT',
-        (@sanitizeHeredoc here,
-          herecomment: true, indent: Array(@indent + 1).join(' ')),
+        @sanitizeHeredoc(here,
+          herecomment: true, indent: repeat ' ', @indent),
         0, comment.length
     comment.length
 
@@ -254,7 +254,7 @@ exports.Lexer = class Lexer
   heregexToken: (match) ->
     [heregex, body, flags] = match
     if 0 > body.indexOf '#{'
-      re = body.replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
+      re = body.replace(HEREGEX_OMIT, '').replace /\//g, '\\/'
       if re.match /^\*/ then @error 'regular expressions cannot begin with `*`'
       @token 'REGEX', "/#{ re or '(?:)' }/#{flags}", 0, heregex.length
       return heregex.length
@@ -270,7 +270,7 @@ exports.Lexer = class Lexer
         # Convert NEOSTRING into STRING
         value = value.replace /\\/g, '\\\\'
         token[0] = 'STRING'
-        token[1] = @makeString(value, '"', yes)
+        token[1] = @makeString value, '"', yes
         tokens.push token
       else
         @error "Unexpected #{tag}"
@@ -542,7 +542,7 @@ exports.Lexer = class Lexer
       tokens.push @makeToken('NEOSTRING', str[pi...i], strOffset + pi) if pi < i
       inner = expr[1...-1]
       if inner.length
-        [line, column] = @getLineAndColumnFromChunk(strOffset + i + 1)
+        [line, column] = @getLineAndColumnFromChunk strOffset + i + 1
         nested = new Lexer().tokenize inner, line: line, column: column, rewrite: off
         popped = nested.pop()
         popped = nested.shift() if nested[0]?[0] is 'TERMINATOR'
@@ -630,7 +630,7 @@ exports.Lexer = class Lexer
     column = @chunkColumn
     if lineCount > 0
       lines = string.split '\n'
-      column = (last lines).length
+      column = last(lines).length
     else
       column += string.length
 
@@ -647,7 +647,7 @@ exports.Lexer = class Lexer
     # so if last_column == first_column, then we're looking at a character of length 1.
     lastCharacter = Math.max 0, length - 1
     [locationData.last_line, locationData.last_column] =
-      @getLineAndColumnFromChunk offsetInChunk + (lastCharacter)
+      @getLineAndColumnFromChunk offsetInChunk + lastCharacter
 
     token = [tag, value, locationData]
 
@@ -739,9 +739,9 @@ STRICT_PROSCRIBED = ['arguments', 'eval']
 
 # The superset of both JavaScript keywords and reserved words, none of which may
 # be used as identifiers or properties.
-JS_FORBIDDEN = JS_KEYWORDS.concat(RESERVED).concat(STRICT_PROSCRIBED)
+JS_FORBIDDEN = JS_KEYWORDS.concat(RESERVED).concat STRICT_PROSCRIBED
 
-exports.RESERVED = RESERVED.concat(JS_KEYWORDS).concat(COFFEE_KEYWORDS).concat(STRICT_PROSCRIBED)
+exports.RESERVED = RESERVED.concat(JS_KEYWORDS).concat(COFFEE_KEYWORDS).concat STRICT_PROSCRIBED
 exports.STRICT_PROSCRIBED = STRICT_PROSCRIBED
 
 # The character code of the nasty Microsoft madness otherwise known as the BOM.
