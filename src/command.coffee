@@ -39,13 +39,14 @@ SWITCHES = [
   ['-h', '--help',            'display this help message']
   ['-i', '--interactive',     'run an interactive CoffeeScript REPL']
   ['-j', '--join [FILE]',     'concatenate the source CoffeeScript before compiling']
-  ['-l', '--lint',            'pipe the compiled JavaScript through JavaScript Lint']
+  [      '--lint',            'pipe the compiled JavaScript through JavaScript Lint']
   ['-m', '--map',             'generate source map and save as .map files']
   ['-n', '--nodes',           'print out the parse tree that the parser produces']
   [      '--nodejs [ARGS]',   'pass options directly to the "node" binary']
   ['-o', '--output [DIR]',    'set the output directory for compiled JavaScript']
   ['-p', '--print',           'print out the compiled JavaScript']
   ['-s', '--stdio',           'listen for and compile scripts over stdio']
+  ['-l', '--literate',        'treat stdio as literate style coffee-script']
   ['-t', '--tokens',          'print out the tokens that the lexer/rewriter produce']
   ['-v', '--version',         'display the version number']
   ['-w', '--watch',           'watch scripts for changes and rerun commands']
@@ -330,7 +331,7 @@ parseOptions = ->
 compileOptions = (filename, base) ->
   answer = {
     filename
-    literate: helpers.isLiterate(filename)
+    literate: opts.literate or helpers.isLiterate(filename)
     bare: opts.bare
     header: opts.compile
     sourceMap: opts.map
