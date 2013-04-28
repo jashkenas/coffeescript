@@ -74,7 +74,7 @@ exports.Lexer = class Lexer
     @closeIndentation()
     @error "missing #{tag}" if tag = @ends.pop()
     return @tokens if opts.rewrite is off
-    new Rewriter().rewrite @tokens
+    (new Rewriter).rewrite @tokens
 
   # Preprocess the code to remove leading and trailing whitespace, carriage
   # returns, etc. If we're lexing literate CoffeeScript, strip external Markdown

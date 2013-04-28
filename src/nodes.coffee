@@ -588,7 +588,7 @@ exports.Call = class Call extends Base
       accesses = [new Access(new Literal '__super__')]
       accesses.push new Access new Literal 'constructor' if method.static
       accesses.push new Access new Literal method.name
-      new Value(new Literal(method.klass), accesses).compile o
+      (new Value (new Literal method.klass), accesses).compile o
     else if method?.ctor
       "#{method.name}.__super__.constructor"
     else
@@ -988,7 +988,7 @@ exports.Class = class Class extends Base
   # constructor.
   addBoundFunctions: (o) ->
     for bvar in @boundFuncs
-      lhs = new Value(new Literal("this"), [new Access bvar]).compile o
+      lhs = (new Value (new Literal "this"), [new Access bvar]).compile o
       @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
     return
 
@@ -1017,7 +1017,7 @@ exports.Class = class Class extends Base
             if func.bound
               func.context = name
           else
-            assign.variable = new Value(new Literal(name), [new Access(new Literal 'prototype'), new Access base])
+            assign.variable = new Value(new Literal(name), [(new Access new Literal 'prototype'), new Access base])
             if func instanceof Code and func.bound
               @boundFuncs.push base
               func.bound = no
@@ -1901,7 +1901,7 @@ exports.For = class For extends While
       body.makeReturn rvar
     if @guard
       if body.expressions.length > 1
-        body.expressions.unshift new If new Parens(@guard).invert(), new Literal "continue"
+        body.expressions.unshift new If (new Parens @guard).invert(), new Literal "continue"
       else
         body = Block.wrap [new If @guard, body] if @guard
     if @pattern
@@ -1935,7 +1935,7 @@ exports.For = class For extends While
       if val.base
         [val.base, base] = [base, val]
       body.expressions[idx] = new Call base, expr.args
-      defs = defs.concat @makeCode(@tab), new Assign(ref, fn).compileToFragments(o, LEVEL_TOP), @makeCode(';\n')
+      defs = defs.concat @makeCode(@tab), (new Assign(ref, fn).compileToFragments(o, LEVEL_TOP)), @makeCode(';\n')
     defs
 
 #### Switch

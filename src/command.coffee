@@ -291,7 +291,7 @@ wait = (milliseconds, func) -> setTimeout func, milliseconds
 
 # When watching scripts, it's useful to log changes with the timestamp.
 timeLog = (message) ->
-  console.log "#{new Date().toLocaleTimeString()} - #{message}"
+  console.log "#{(new Date).toLocaleTimeString()} - #{message}"
 
 # Pretty-print a stream of tokens, sans location data.
 printTokens = (tokens) ->
@@ -354,7 +354,7 @@ forkNode = ->
 # Print the `--help` usage message and exit. Deprecated switches are not
 # shown.
 usage = ->
-  printLine new optparse.OptionParser(SWITCHES, BANNER).help()
+  printLine (new optparse.OptionParser SWITCHES, BANNER).help()
 
 # Print the `--version` message and exit.
 version = ->
