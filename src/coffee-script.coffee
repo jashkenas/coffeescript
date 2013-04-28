@@ -47,7 +47,7 @@ exports.compile = compile = (code, options = {}) ->
         map.add(
           [fragment.locationData.first_line, fragment.locationData.first_column]
           [currentLine, currentColumn]
-          noReplace: true)
+          {noReplace: true})
       newLines = helpers.count fragment.code, "\n"
       currentLine += newLines
       currentColumn = fragment.code.length - (if newLines then fragment.code.lastIndexOf "\n" else 0)

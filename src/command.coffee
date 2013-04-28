@@ -104,7 +104,7 @@ compilePath = (source, topLevel, base) ->
       fs.readFile source, (err, code) ->
         throw err if err and err.code isnt 'ENOENT'
         return if err?.code is 'ENOENT'
-        compileScript source, code.toString(), base
+        compileScript(source, code.toString(), base)
     else
       notSources[source] = yes
       removeSource source, base
@@ -124,7 +124,7 @@ compileScript = (file, input, base=null) ->
     else if o.run         then CoffeeScript.run t.input, t.options
     else if o.join and t.file isnt o.join
       t.input = helpers.invertLiterate t.input if helpers.isLiterate file
-      sourceCode[sources.indexOf t.file] = t.input
+      sourceCode[sources.indexOf(t.file)] = t.input
       compileJoin()
     else
       compiled = CoffeeScript.compile t.input, t.options
@@ -198,7 +198,7 @@ watch = (source, base) ->
         prevStats = stats
         fs.readFile source, (err, code) ->
           return watchErr err if err
-          compileScript source, code.toString(), base
+          compileScript(source, code.toString(), base)
           rewatch()
 
   try
@@ -299,7 +299,7 @@ printTokens = (tokens) ->
     tag = token[0]
     value = token[1].toString().replace(/\n/, '\\n')
     "[#{tag} #{value}]"
-  printLine strings.join ' '
+  printLine strings.join(' ')
 
 # Use the [OptionParser module](optparse.html) to extract all options from
 # `process.argv` that are specified in `SWITCHES`.

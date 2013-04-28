@@ -49,8 +49,8 @@ o = (patternString, action, options) ->
     else
       "yy.addLocationDataFn(@#{first}, @#{last})"
 
-  action = action.replace /LOC\(([0-9]*)\)/g, addLocationDataFn '$1'
-  action = action.replace /LOC\(([0-9]*),\s*([0-9]*)\)/g, addLocationDataFn '$1', '$2'
+  action = action.replace /LOC\(([0-9]*)\)/g, addLocationDataFn('$1')
+  action = action.replace /LOC\(([0-9]*),\s*([0-9]*)\)/g, addLocationDataFn('$1', '$2')
 
   [patternString, "$$ = #{addLocationDataFn(1, patternCount)}(#{action});", options]
 
@@ -159,9 +159,9 @@ grammar =
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
     o 'ObjAssignable',                          -> new Value $1
-    o 'ObjAssignable : Expression',             -> new Assign LOC(1)(new Value $1), $3, 'object'
+    o 'ObjAssignable : Expression',             -> new Assign LOC(1)(new Value($1)), $3, 'object'
     o 'ObjAssignable :
-       INDENT Expression OUTDENT',              -> new Assign LOC(1)(new Value $1), $4, 'object'
+       INDENT Expression OUTDENT',              -> new Assign LOC(1)(new Value($1)), $4, 'object'
     o 'Comment'
   ]
 
@@ -336,7 +336,7 @@ grammar =
 
   # A reference to a property on *this*.
   ThisProperty: [
-    o '@ Identifier',                           -> new Value LOC(1)(new Literal 'this'), [LOC(2)(new Access $2)], 'this'
+    o '@ Identifier',                           -> new Value LOC(1)(new Literal('this')), [LOC(2)(new Access($2))], 'this'
   ]
 
   # The array literal.
@@ -400,7 +400,7 @@ grammar =
   # A catch clause names its error and runs a block of code.
   Catch: [
     o 'CATCH Identifier Block',                 -> [$2, $3]
-    o 'CATCH Object Block',                     -> [LOC(2)(new Value $2), $3]
+    o 'CATCH Object Block',                     -> [LOC(2)(new Value($2)), $3]
     o 'CATCH Block',                            -> [null, $2]
   ]
 

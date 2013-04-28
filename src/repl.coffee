@@ -89,7 +89,7 @@ addHistory = (repl, filename, maxSize) ->
     size = Math.min maxSize, stat.size
     # Read last `size` bytes from the file
     readFd = fs.openSync filename, 'r'
-    buffer = new Buffer size
+    buffer = new Buffer(size)
     fs.readSync readFd, buffer, 0, size, stat.size - size
     # Set the history on the interpreter
     repl.rli.history = buffer.toString().split('\n').reverse()

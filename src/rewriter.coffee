@@ -171,7 +171,7 @@ class exports.Rewriter
       startImplicitObject = (j, startsLine = yes) ->
         idx = j ? i
         stack.push ['{', idx, sameLine: yes, startsLine: startsLine, ours: yes]
-        tokens.splice idx, 0, generate '{', generate new String '{'
+        tokens.splice idx, 0, generate '{', generate(new String('{'))
         i += 1 if not j?
 
       endImplicitObject = (j) ->
@@ -202,7 +202,7 @@ class exports.Rewriter
       # Straightforward start of explicit expression
       if tag in EXPRESSION_START
         stack.push [tag, i]
-        return forward 1
+        return forward(1)
 
       # Close all implicit expressions inside of explicitly closed expressions.
       if tag in EXPRESSION_END
@@ -270,10 +270,10 @@ class exports.Rewriter
           [stackTag, stackIdx] = stackTop()
           if (stackTag is '{' or stackTag is 'INDENT' and @tag(stackIdx - 1) is '{') and
              (startsLine or @tag(s - 1) is ',' or @tag(s - 1) is '{')
-            return forward 1
+            return forward(1)
 
-        startImplicitObject s, !!startsLine
-        return forward 2
+        startImplicitObject(s, !!startsLine)
+        return forward(2)
 
       # End implicit calls when chaining method calls
       # like e.g.:
