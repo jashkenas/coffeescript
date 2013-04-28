@@ -68,7 +68,7 @@ exports.run = ->
   return usage()                         if opts.help
   return version()                       if opts.version
   return require('./repl').start()       if opts.interactive
-  if opts.watch and !fs.watch
+  if opts.watch and not fs.watch
     return printWarn "The --watch feature depends on Node v0.6.0+. You are running #{process.version}."
   return compileStdio()                  if opts.stdio
   return compileScript null, sources[0]  if opts.eval
@@ -136,7 +136,7 @@ compileScript = (file, input, base=null) ->
       CoffeeScript.emit 'success', task
       if o.print
         printLine t.output.trim()
-      else if o.compile || o.map
+      else if o.compile or o.map
         writeJs base, t.file, t.output, options.jsPath, t.sourceMap
   catch err
     CoffeeScript.emit 'failure', err, task

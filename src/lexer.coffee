@@ -12,8 +12,8 @@
 {Rewriter, INVERSES} = require './rewriter'
 
 # Import the helpers we need.
-{count, starts, compact, last, invertLiterate, locationDataToString, 
-throwSyntaxError} = require './helpers'
+{count, starts, compact, last, repeat, invertLiterate,
+locationDataToString,  throwSyntaxError} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -176,9 +176,9 @@ exports.Lexer = class Lexer
       @error "octal literal '#{number}' must be prefixed with '0o'"
     lexedLength = number.length
     if octalLiteral = /^0o([0-7]+)/.exec number
-      number = '0x' + (parseInt octalLiteral[1], 8).toString 16
+      number = '0x' + parseInt(octalLiteral[1], 8).toString 16
     if binaryLiteral = /^0b([01]+)/.exec number
-      number = '0x' + (parseInt binaryLiteral[1], 2).toString 16
+      number = '0x' + parseInt(binaryLiteral[1], 2).toString 16
     @token 'NUMBER', number, 0, lexedLength
     lexedLength
 
@@ -222,7 +222,7 @@ exports.Lexer = class Lexer
     if here
       @token 'HERECOMMENT',
         (@sanitizeHeredoc here,
-          herecomment: true, indent: Array(@indent + 1).join(' ')),
+          herecomment: true, indent: repeat ' ', @indent),
         0, comment.length
     comment.length
 
@@ -630,7 +630,7 @@ exports.Lexer = class Lexer
     column = @chunkColumn
     if lineCount > 0
       lines = string.split '\n'
-      column = (last lines).length
+      column = last(lines).length
     else
       column += string.length
 
@@ -647,7 +647,7 @@ exports.Lexer = class Lexer
     # so if last_column == first_column, then we're looking at a character of length 1.
     lastCharacter = Math.max 0, length - 1
     [locationData.last_line, locationData.last_column] =
-      @getLineAndColumnFromChunk offsetInChunk + (lastCharacter)
+      @getLineAndColumnFromChunk offsetInChunk + lastCharacter
 
     token = [tag, value, locationData]
 

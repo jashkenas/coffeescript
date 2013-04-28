@@ -36,8 +36,8 @@ addMultilineHandler = (repl) ->
 
   multiline =
     enabled: off
-    initialPrompt: repl.prompt.replace(/^[^> ]*/, (x) -> x.replace /./g, '-')
-    prompt: repl.prompt.replace(/^[^> ]*>?/, (x) -> x.replace /./g, '.')
+    initialPrompt: repl.prompt.replace /^[^> ]*/, (x) -> x.replace /./g, '-'
+    prompt: repl.prompt.replace /^[^> ]*>?/, (x) -> x.replace /./g, '.'
     buffer: ''
 
   # Proxy node's line listener
