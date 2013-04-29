@@ -7,7 +7,7 @@ CoffeeScript = require './coffee-script'
 
 replDefaults =
   prompt: 'coffee> ',
-  historyFile: path.join(process.env.HOME, '.coffee_history')
+  historyFile: path.join process.env.HOME, '.coffee_history' if process.env.HOME
   historyMaxInputSize: 10240
   eval: (input, context, filename, cb) ->
     # XXX: multiline hack.
@@ -36,8 +36,8 @@ addMultilineHandler = (repl) ->
 
   multiline =
     enabled: off
-    initialPrompt: repl.prompt.replace(/^[^> ]*/, (x) -> x.replace /./g, '-')
-    prompt: repl.prompt.replace(/^[^> ]*>?/, (x) -> x.replace /./g, '.')
+    initialPrompt: repl.prompt.replace /^[^> ]*/, (x) -> x.replace /./g, '-'
+    prompt: repl.prompt.replace /^[^> ]*>?/, (x) -> x.replace /./g, '.'
     buffer: ''
 
   # Proxy node's line listener
@@ -108,8 +108,7 @@ addHistory = (repl, filename, maxSize) ->
       fs.write fd, "#{code}\n"
       lastLine = code
 
-  process.on 'exit', ->
-    fs.closeSync fd
+  repl.rli.on 'exit', -> fs.close fd
 
   # Add a command to show the history stack
   repl.commands['.history'] =

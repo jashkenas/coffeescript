@@ -351,7 +351,7 @@ class exports.Rewriter
         first_column: column
         last_line:    line
         last_column:  column
-      1
+      return 1
 
   # Because our grammar is LALR(1), it can't handle some single-line
   # expressions that lack ending delimiters. The **Rewriter** adds the implicit
@@ -409,7 +409,7 @@ class exports.Rewriter
       return 1 unless token[0] is 'IF'
       original = token
       @detectEnd i + 1, condition, action
-      1
+      return 1
 
   # Generate the indentation tokens, based on another token on the same line.
   indentation: (implicit = no) ->
