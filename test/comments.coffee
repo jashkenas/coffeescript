@@ -205,3 +205,9 @@ test "block comments inside class bodies", ->
 
 test "#2037: herecomments shouldn't imply line terminators", ->
   do (-> ### ###; fail)
+
+test "#2916: block comment before implicit call with implicit object", ->
+  fn = (obj) -> ok obj.a
+  ### ###
+  fn
+    a: yes
