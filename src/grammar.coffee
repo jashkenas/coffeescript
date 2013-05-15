@@ -72,6 +72,11 @@ grammar =
   # The **Root** is the top-level node in the syntax tree. Since we parse bottom-up,
   # all parsing must end here.
   Root: [
+    o 'RootContent EOF'
+  ]
+
+  # Top-level block of code.
+  RootContent: [
     o '',                                       -> new Block
     o 'Body'
     o 'Block TERMINATOR'
