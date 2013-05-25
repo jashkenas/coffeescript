@@ -159,7 +159,7 @@ if require.extensions
     NATIVELOAD = "function(filename){debug('load'+JSON.stringify(filename)+'formodule'+JSON.stringify(this.id));assert(!this.loaded);this.filename=filename;this.paths=Module._nodeModulePaths(path.dirname(filename));varextension=path.extname(filename)||'.js';if(!Module._extensions[extension])extension='.js';Module._extensions[extension](this,filename);this.loaded=true;}"
 
     # Only keep going if we're sure module.prototype.load is what we expect
-    if module.prototype.load.toString().replace(/\s+/g,"") == NATIVELOAD
+    if module.prototype.load.toString().replace(/\s+/g, "") is NATIVELOAD
       findExtension = (filename) ->
         extension = null
         extensions = path.basename(filename).split '.'
@@ -169,9 +169,9 @@ if require.extensions
 
         # Start with the longest extension and work our way shortwards
         while extensions.shift()
-          thisExtension = '.' + extensions.join '.'
-          if module._extensions[thisExtension]
-            extension = thisExtension
+          curExtension = '.' + extensions.join '.'
+          if module._extensions[curExtension]
+            extension = curExtension
             break
 
         return extension || '.js'
