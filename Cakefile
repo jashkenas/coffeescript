@@ -224,7 +224,7 @@ runTests = (CoffeeScript) ->
 
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
-  for file in files when file.match /\.(lit)?coffee$/i
+  for file in files when file.match(/\.(lit)?coffee$/i) or file.match(/\.coffee\.md$/i)
     literate = helpers.isLiterate file
     currentFile = filename = path.join 'test', file
     code = fs.readFileSync filename
