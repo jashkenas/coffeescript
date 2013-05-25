@@ -473,7 +473,7 @@ test "#1910: loop index should be mutable within a loop iteration and immutable 
 
   arr = ([v, v + 1] for v in [0..5])
   iterations = 0
-  for own [v0, v1], k in arr when v0
+  for [v0, v1], k in arr when v0
     k += 3
     ++iterations
   eq 6, k
