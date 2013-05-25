@@ -178,9 +178,9 @@ if require.extensions
 
       module.prototype.load = (filename) ->
         @filename = filename
-        @paths = module._nodeModulePaths(path.dirname(filename))
+        @paths = module._nodeModulePaths path.dirname filename
 
-        extension = findExtension(filename)
+        extension = findExtension filename
         module._extensions[extension](this, filename)
         @loaded = true
 
