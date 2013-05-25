@@ -159,30 +159,28 @@ if require.extensions
     NATIVELOAD = "function(filename){debug('load'+JSON.stringify(filename)+'formodule'+JSON.stringify(this.id));assert(!this.loaded);this.filename=filename;this.paths=Module._nodeModulePaths(path.dirname(filename));varextension=path.extname(filename)||'.js';if(!Module._extensions[extension])extension='.js';Module._extensions[extension](this,filename);this.loaded=true;}"
 
     # Only keep going if we're sure module.prototype.load is what we expect
-    if module.prototype.load.toString().replace(/\s+/g, "") is NATIVELOAD
-      findExtension = (filename) ->
-        extension = null
-        extensions = path.basename(filename).split '.'
+    return unless module::load.toString().replace(/\s+/g, "") is NATIVELOAD
 
-        # Remove initial dot from dotfiles
-        extensions.shift() if extensions[0] is ''
+    findExtension = (filename) ->
+      extensions = path.basename(filename).split '.'
 
-        # Start with the longest extension and work our way shortwards
-        while extensions.shift()
-          curExtension = '.' + extensions.join '.'
-          if module._extensions[curExtension]
-            extension = curExtension
-            break
+      # Remove initial dot from dotfiles
+      extensions.shift() if extensions[0] is ''
 
-        return extension || '.js'
+      # Start with the longest extension and work our way shortwards
+      while extensions.shift()
+        curExtension = '.' + extensions.join '.'
+        return curExtension if module._extensions[curExtension]
 
-      module.prototype.load = (filename) ->
-        @filename = filename
-        @paths = module._nodeModulePaths path.dirname filename
+      '.js'
 
-        extension = findExtension filename
-        module._extensions[extension](this, filename)
-        @loaded = true
+    module::load = (filename) ->
+      @filename = filename
+      @paths = module._nodeModulePaths path.dirname filename
+
+      extension = findExtension filename
+      module._extensions[extension](this, filename)
+      @loaded = true
 
 
 # If we're on Node, patch `child_process.fork` so that Coffee scripts are able
