@@ -82,3 +82,6 @@ test "#2846: while with empty body", ->
 
 test "#2944: implicit call with a regex argument", ->
   CoffeeScript.compile 'o[key] /regex/'
+
+test "#3001: `own` shouldn't be allowed in a `for`-`in` loop", ->
+  cantCompile "a for own b in c"
