@@ -155,11 +155,11 @@ if require.extensions
     require.extensions[ext] = loadFile
 
   # Patch Node's module loader to be able to handle .coffee.md in require.extensions
-  do (module = require 'module') ->
+  do (Module = require 'module') ->
     NATIVELOAD = "function(filename){debug('load'+JSON.stringify(filename)+'formodule'+JSON.stringify(this.id));assert(!this.loaded);this.filename=filename;this.paths=Module._nodeModulePaths(path.dirname(filename));varextension=path.extname(filename)||'.js';if(!Module._extensions[extension])extension='.js';Module._extensions[extension](this,filename);this.loaded=true;}"
 
     # Only keep going if we're sure module.prototype.load is what we expect
-    return unless module::load.toString().replace(/\s+/g, "") is NATIVELOAD
+    return unless Module::load.toString().replace(/\s+/g, '') is NATIVELOAD
 
     findExtension = (filename) ->
       extensions = path.basename(filename).split '.'
@@ -170,16 +170,16 @@ if require.extensions
       # Start with the longest extension and work our way shortwards
       while extensions.shift()
         curExtension = '.' + extensions.join '.'
-        return curExtension if module._extensions[curExtension]
+        return curExtension if Module._extensions[curExtension]
 
       '.js'
 
-    module::load = (filename) ->
+    Module::load = (filename) ->
       @filename = filename
-      @paths = module._nodeModulePaths path.dirname filename
+      @paths = Module._nodeModulePaths path.dirname filename
 
       extension = findExtension filename
-      module._extensions[extension](this, filename)
+      Module._extensions[extension](this, filename)
       @loaded = true
 
 
