@@ -68,9 +68,7 @@ runScripts = ->
 
   for script, index in coffees
     do (script, index) ->
-      mediatype = script?.type
-      return unless mediatype in coffeetypes
-      options = {literate: mediatype is coffeetypes[1]}
+      options = literate: script.type is coffeetypes[1]
       if script.src
         CoffeeScript.load script.src,
           (run) ->
