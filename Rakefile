@@ -4,6 +4,14 @@ require 'fileutils'
 require 'rake/testtask'
 require 'json'
 
+def load_gem(gem_name)
+  begin
+    gem gem_name
+  rescue Gem::LoadError
+    raise "Could not load the #{gem_name} gem. Install it with `gem install #{gem_name}`."
+  end
+end
+
 desc "Build the documentation page"
 task :doc do
   source = 'documentation/index.html.erb'
@@ -19,6 +27,28 @@ task :doc do
     @mtime = mtime
     sleep 1
   end
+end
+
+desc "install coffeescript.syntax into ultraviolet gem"
+task :install_coffeescript_syntax do
+  require 'yaml'
+  require 'open-uri'
+  if RUBY_VERSION.to_f >= 1.9
+    ultraviolet_gem = 'spox-ultraviolet'
+    plist_gem = 'spox-plist'
+  else
+    ultraviolet_gem = 'ultraviolet'
+    plist_gem = 'plist'
+  end
+  load_gem ultraviolet_gem
+  load_gem plist_gem
+  require 'plist'
+  cs_tm_language_url = "https://raw.github.com/jashkenas/coffee-script-tmbundle/master/Syntaxes/CoffeeScript.tmLanguage"
+  cs_tm_language = open(cs_tm_language_url).read
+  result = Plist::parse_xml(cs_tm_language)
+  ultraviolet_coffeescript_syntax_path = File.join(Gem.loaded_specs[ultraviolet_gem].full_gem_path, "syntax", "coffeescript.yaml")
+  File.open(ultraviolet_coffeescript_syntax_path, "w" ) { |f| YAML.dump( result, f ) }
+  puts "wrote coffeescript syntax to: #{ultraviolet_coffeescript_syntax_path}"
 end
 
 desc "Build coffee-script-source gem"
