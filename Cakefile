@@ -85,12 +85,6 @@ task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   fs.writeFile 'lib/coffee-script/parser.js', parser.generate()
 
 
-task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter', ->
-  exec 'plist2syntax ../coffee-script-tmbundle/Syntaxes/CoffeeScript.tmLanguage', (err) ->
-    throw err if err
-    exec 'sudo mv coffeescript.yaml /usr/local/lib/ruby/gems/1.8/gems/ultraviolet-0.10.2/syntax/coffeescript.syntax'
-
-
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
   code = ''
   for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'nodes', 'sourcemap', 'coffee-script', 'browser']
