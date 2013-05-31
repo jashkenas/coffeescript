@@ -32,7 +32,7 @@ if btoa? and JSON? and unescape? and encodeURIComponent?
     "#{js}\n//@ sourceMappingURL=data:application/json;base64,#{btoa unescape encodeURIComponent v3SourceMap}\n//@ sourceURL=coffeescript"
 
 # Load a remote script from the current domain via XHR.
-CoffeeScript.load = (url, callback, options = {}) ->
+CoffeeScript.load = (url, callback = (->), options = {}, hold = false) ->
   options.sourceFiles = [url]
   xhr = if window.ActiveXObject
     new window.ActiveXObject('Microsoft.XMLHTTP')
@@ -43,10 +43,13 @@ CoffeeScript.load = (url, callback, options = {}) ->
   xhr.onreadystatechange = ->
     if xhr.readyState is 4
       if xhr.status in [0, 200]
-        CoffeeScript.run xhr.responseText, options
+        run = ->
+          CoffeeScript.run xhr.responseText, options
+          null
       else
         throw new Error "Could not load #{url}"
-      callback() if callback
+      run() unless hold
+      callback run
   xhr.send null
 
 # Activate CoffeeScript in the browser by having it compile and evaluate
@@ -56,19 +59,32 @@ runScripts = ->
   scripts = window.document.getElementsByTagName 'script'
   coffeetypes = ['text/coffeescript', 'text/literate-coffeescript']
   coffees = (s for s in scripts when s.type in coffeetypes)
-  index = 0
-  length = coffees.length
-  do execute = ->
-    script = coffees[index++]
-    mediatype = script?.type
-    if mediatype in coffeetypes
-      options = {literate: mediatype is 'text/literate-coffeescript'}
+
+  check = ->
+    for run, index in coffees
+      continue unless run
+      return unless run instanceof Function
+      coffees[index] = run()
+
+  for script, index in coffees
+    do (script, index) ->
+      mediatype = script?.type
+      return unless mediatype in coffeetypes
+      options = {literate: mediatype is coffeetypes[1]}
       if script.src
-        CoffeeScript.load script.src, execute, options
+        CoffeeScript.load script.src,
+          (run) ->
+            coffees[index] = run
+            check()
+          options
+          true
       else
         options.sourceFiles = ['embedded']
-        CoffeeScript.run script.innerHTML, options
-        execute()
+        coffees[index] = ->
+          CoffeeScript.run script.innerHTML, options
+          null
+
+  check()
   null
 
 # Listen for window load, both in decent browsers and in IE.
