@@ -438,3 +438,7 @@ test "#2555, strange function if bodies", ->
 
   failure() if try
     false
+
+test "#1057: `catch` or `finally` in single-line functions", ->
+  ok do -> try throw 'up' catch then yes
+  ok do -> try yes finally 'nothing'
