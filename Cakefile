@@ -89,10 +89,11 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
   code = ''
   for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'nodes', 'sourcemap', 'coffee-script', 'browser']
     code += """
-      require['./#{name}'] = new function() {
-        var exports = this;
+      require['./#{name}'] = return function() {
+        var exports = {}, module = {exports: exports};
         #{fs.readFileSync "lib/coffee-script/#{name}.js"}
-      };
+        return module.exports;
+      }();
     """
   code = """
     (function(root) {
