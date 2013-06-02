@@ -73,6 +73,7 @@ exports.Lexer = class Lexer
 
     @closeIndentation()
     @error "missing #{tag}" if tag = @ends.pop()
+    @token 'EOF', 'EOF'
     return @tokens if opts.rewrite is off
     (new Rewriter).rewrite @tokens
 
