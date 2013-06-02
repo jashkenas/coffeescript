@@ -206,14 +206,9 @@ runTests = (CoffeeScript) ->
     log "failed #{failures.length} and #{message}", red
     for fail in failures
       {error, filename, description, source}  = fail
-      jsFilename         = filename.replace(/\.coffee$/,'.js')
-      match              = error.stack?.match(new RegExp(fail.file+":(\\d+):(\\d+)"))
-      match              = error.stack?.match(/on line (\d+):/) unless match
-      [match, line, col] = match if match
       console.log ''
       log "  #{description}", red if description
       log "  #{error.stack}", red
-      log "  #{jsFilename}: line #{line ? 'unknown'}, column #{col ? 'unknown'}", red
       console.log "  #{source}" if source
     return
 
