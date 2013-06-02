@@ -98,10 +98,10 @@ exports.run = (code, options = {}) ->
   # Compile.
   if not helpers.isCoffee(mainModule.filename) or require.extensions
     answer = compile(code, options)
-    # Attach sourceMap object to mainModule._sourceMaps[options.filename] so that
+    # Attach sourceMap object to sourceMaps[options.filename] so that
     # it is accessible by Error.prepareStackTrace.
     do patchStackTrace
-    mainModule._sourceMaps[mainModule.filename] = answer.sourceMap
+    sourceMaps[mainModule.filename] = answer.sourceMap
     mainModule._compile answer.js, mainModule.filename
   else
     mainModule._compile code, mainModule.filename
@@ -146,7 +146,9 @@ exports.eval = (code, options = {}) ->
 loadFile = (module, filename) ->
   raw = fs.readFileSync filename, 'utf8'
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
-  module._compile compile(stripped, {filename, literate: helpers.isLiterate filename}), filename
+  answer = compile(stripped, {filename, sourceMap: true, literate: helpers.isLiterate filename})
+  sourceMaps[filename] = answer.sourceMap
+  module._compile answer.js, filename
 
 # If the installed version of Node supports `require.extensions`, register
 # CoffeeScript as an extension.
@@ -229,12 +231,14 @@ parser.yy.parseError = (message, {token}) ->
 # positions.
 
 patched = false
+
+# Map of filenames -> sourceMap object.
+sourceMaps = {}
+
 patchStackTrace = ->
   return if patched
   patched = true
   mainModule = require.main
-  # Map of filenames -> sourceMap object.
-  mainModule._sourceMaps = {}
 
   # (Assigning to a property of the Module object in the normal module cache is
   # unsuitable, because node deletes those objects from the cache if an
@@ -244,7 +248,7 @@ patchStackTrace = ->
     sourceFiles = {}
 
     getSourceMapping = (filename, line, column) ->
-      sourceMap = mainModule._sourceMaps[filename]
+      sourceMap = sourceMaps[filename]
       answer = sourceMap.sourceLocation [line - 1, column - 1] if sourceMap
       if answer then [answer[0] + 1, answer[1] + 1] else null
 
