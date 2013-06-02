@@ -108,15 +108,13 @@
       compiles one-to-one into the equivalent JS, and there is
       no interpretation at runtime. You can use any existing JavaScript library
       seamlessly from CoffeeScript (and vice-versa). The compiled output is
-      readable and pretty-printed, passes through
-      <a href="http://www.javascriptlint.com/">JavaScript Lint</a>
-      without warnings, will work in every JavaScript runtime, and tends
+      readable and pretty-printed, will work in every JavaScript runtime, and tends
       to run as fast or faster than the equivalent handwritten JavaScript.
     </p>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/1.6.2">1.6.2</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.6.3">1.6.3</a>
     </p>
 
     <pre>
@@ -184,7 +182,6 @@ math <span class="Keyword">=</span> {
 
 <span class="FunctionName">race</span> = <span class="Storage">function</span>() {
   <span class="Storage">var</span> runners, winner;
-
   winner <span class="Keyword">=</span> arguments[<span class="Number">0</span>], runners <span class="Keyword">=</span> <span class="Number">2</span> <span class="Keyword">&lt;=</span> arguments.<span class="LibraryConstant">length</span> ? __slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">1</span>) : [];
   <span class="Keyword">return</span> <span class="LibraryFunction">print</span>(winner, runners);
 };
@@ -195,7 +192,6 @@ math <span class="Keyword">=</span> {
 
 cubes <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   <span class="Storage">var</span> _i, _len, _results;
-
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">for</span> (_i <span class="Keyword">=</span> <span class="Number">0</span>, _len <span class="Keyword">=</span> list.<span class="LibraryConstant">length</span>; _i <span class="Keyword">&lt;</span> _len; _i<span class="Keyword">++</span>) {
     num <span class="Keyword">=</span> list[_i];
@@ -230,7 +226,6 @@ math = {
 
 race = function() {
   var runners, winner;
-
   winner = arguments[0], runners = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
   return print(winner, runners);
 };
@@ -241,7 +236,6 @@ if (typeof elvis !== "undefined" && elvis !== null) {
 
 cubes = (function() {
   var _i, _len, _results;
-
   _results = [];
   for (_i = 0, _len = list.length; _i < _len; _i++) {
     num = list[_i];
@@ -364,17 +358,19 @@ sudo bin/cake install</pre>
         </td>
       </tr>
       <tr>
-        <td><code>-l, --literate</code></td>
-        <td>
-          Parses the code as Literate CoffeeScript.
-        </td>
-      </tr>
-      <tr>
         <td><code>-s, --stdio</code></td>
         <td>
           Pipe in CoffeeScript to STDIN and get back JavaScript over STDOUT.
           Good for use with processes written in other languages. An example:<br />
           <tt>cat src/cake.coffee | coffee -sc</tt>
+        </td>
+      </tr>
+      <tr>
+        <td><code>-l, --literate</code></td>
+        <td>
+          Parses the code as Literate CoffeeScript. You only need to specify
+          this when passing in code directly over <b>stdio</b>, or using some sort
+          of extension-less file name.
         </td>
       </tr>
       <tr>
@@ -689,7 +685,6 @@ outer <span class="Keyword">=</span> <span class="Number">1</span>;
 
 <span class="FunctionName">changeNumbers</span> = <span class="Storage">function</span>() {
   <span class="Storage">var</span> inner;
-
   inner <span class="Keyword">=</span> <span class="Keyword">-</span><span class="Number">1</span>;
   <span class="Keyword">return</span> outer <span class="Keyword">=</span> <span class="Number">10</span>;
 };
@@ -701,7 +696,6 @@ outer = 1;
 
 changeNumbers = function() {
   var inner;
-
   inner = -1;
   return outer = 10;
 };
@@ -822,7 +816,6 @@ gold <span class="Keyword">=</span> silver <span class="Keyword">=</span> rest <
 
 <span class="FunctionName">awardMedals</span> = <span class="Storage">function</span>() {
   <span class="Storage">var</span> first, others, second;
-
   first <span class="Keyword">=</span> arguments[<span class="Number">0</span>], second <span class="Keyword">=</span> arguments[<span class="Number">1</span>], others <span class="Keyword">=</span> <span class="Number">3</span> <span class="Keyword">&lt;=</span> arguments.<span class="LibraryConstant">length</span> ? __slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">2</span>) : [];
   gold <span class="Keyword">=</span> first;
   silver <span class="Keyword">=</span> second;
@@ -845,7 +838,6 @@ gold = silver = rest = "unknown";
 
 awardMedals = function() {
   var first, others, second;
-
   first = arguments[0], second = arguments[1], others = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
   gold = first;
   silver = second;
@@ -920,7 +912,6 @@ foods <span class="Keyword">=</span> [<span class="String"><span class="String">
 
 countdown <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   <span class="Storage">var</span> _i, _results;
-
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">for</span> (num <span class="Keyword">=</span> _i <span class="Keyword">=</span> <span class="Number">10</span>; _i <span class="Keyword">&gt;=</span> <span class="Number">1</span>; num <span class="Keyword">=</span> <span class="Keyword">--</span>_i) {
     _results.<span class="LibraryFunction">push</span>(num);
@@ -931,7 +922,6 @@ countdown <span class="Keyword">=</span> (<span class="Storage">function</span>(
 
 countdown = (function() {
   var _i, _results;
-
   _results = [];
   for (num = _i = 10; _i >= 1; num = --_i) {
     _results.push(num);
@@ -972,7 +962,6 @@ yearsOld <span class="Keyword">=</span> {
 
 ages <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   <span class="Storage">var</span> _results;
-
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">for</span> (child <span class="Keyword">in</span> yearsOld) {
     age <span class="Keyword">=</span> yearsOld[child];
@@ -990,7 +979,6 @@ yearsOld = {
 
 ages = (function() {
   var _results;
-
   _results = [];
   for (child in yearsOld) {
     age = yearsOld[child];
@@ -1036,7 +1024,6 @@ num <span class="Keyword">=</span> <span class="Number">6</span>;
 
 lyrics <span class="Keyword">=</span> (<span class="Storage">function</span>() {
   <span class="Storage">var</span> _results;
-
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">while</span> (num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>) {
     _results.<span class="LibraryFunction">push</span>(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed.    One fell out and bumped his head.<span class="String">&quot;</span></span>);
@@ -1058,7 +1045,6 @@ num = 6;
 
 lyrics = (function() {
   var _results;
-
   _results = [];
   while (num -= 1) {
     _results.push("" + num + " little monkeys, jumping on the bed.    One fell out and bumped his head.");
@@ -1246,7 +1232,6 @@ globals <span class="Keyword">=</span> (name <span class="Keyword">for</span> na
 
 globals <span class="Keyword">=</span> ((<span class="Storage">function</span>() {
   <span class="Storage">var</span> _results;
-
   _results <span class="Keyword">=</span> [];
   <span class="Keyword">for</span> (name <span class="Keyword">in</span> <span class="LibraryClassType">window</span>) {
     _results.<span class="LibraryFunction">push</span>(name);
@@ -1257,7 +1242,6 @@ globals <span class="Keyword">=</span> ((<span class="Storage">function</span>()
 
 globals = ((function() {
   var _results;
-
   _results = [];
   for (name in window) {
     _results.push(name);
@@ -1793,7 +1777,7 @@ _ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? __slice.call
 ;alert(contents.join(""));'>run: contents.join("")</div><br class='clear' /></div>
     <p>
       Destructuring assignment is also useful when combined with class constructors
-      to assign propeties to your instance from an options object passed to the constructor.
+      to assign properties to your instance from an options object passed to the constructor.
     </p>
     <div class='code'><pre class="idle"><span class="Storage">class</span> <span class="TypeName">Person</span>
   <span class="FunctionName">constructor</span><span class="Keyword">:</span> <span class="FunctionArgument">(options)</span> <span class="Storage">-&gt;</span> 
@@ -1849,7 +1833,6 @@ Person = (function() {
 
 <span class="FunctionName">Account</span> = <span class="Storage">function</span>(<span class="FunctionArgument">customer, cart</span>) {
   <span class="Storage">var</span> _this <span class="Keyword">=</span> <span class="Variable">this</span>;
-
   <span class="Variable">this</span>.customer <span class="Keyword">=</span> customer;
   <span class="Variable">this</span>.cart <span class="Keyword">=</span> cart;
   <span class="Keyword">return</span> <span class="Keyword">$</span>(<span class="String"><span class="String">'</span>.shopping_cart<span class="String">'</span></span>).bind(<span class="String"><span class="String">'</span>click<span class="String">'</span></span>, <span class="Storage">function</span>(<span class="LibraryClassType">event</span>) {
@@ -2114,6 +2097,7 @@ html = "<strong>\n  cup of coffeescript\n</strong>";
 <span class="Comment">Released under the MIT License</span>
 <span class="Comment"><span class="Comment">*/</span></span>
 
+
 </pre><script>window.example39 = "###\nSkinnyMochaHalfCaffScript Compiler v1.0\nReleased under the MIT License\n###\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example39);'>load</div><br class='clear' /></div>
 
     <p>
@@ -2182,7 +2166,6 @@ option(<span class="String"><span class="String">'</span>-o<span class="String">
 
 task(<span class="String"><span class="String">'</span>build:parser<span class="String">'</span></span>, <span class="String"><span class="String">'</span>rebuild the Jison parser<span class="String">'</span></span>, <span class="Storage">function</span>(options) {
   <span class="Storage">var</span> code, dir;
-
   require(<span class="String"><span class="String">'</span>jison<span class="String">'</span></span>);
   code <span class="Keyword">=</span> require(<span class="String"><span class="String">'</span>./lib/grammar<span class="String">'</span></span>).parser.generate();
   dir <span class="Keyword">=</span> options.output <span class="Keyword">||</span> <span class="String"><span class="String">'</span>lib<span class="String">'</span></span>;
@@ -2434,6 +2417,35 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <b class="header" style="margin-top: 20px;">
+        <a href="https://github.com/jashkenas/coffee-script/compare/1.6.2...1.6.3">1.6.3</a>
+        <span class="timestamp"> &ndash; <small>June 2, 2013</small></span>
+      </b>
+      <ul>
+        <li>
+          The CoffeeScript REPL now remembers your history between sessions.
+          Just like a proper REPL should.
+        </li>
+        <li>
+          You can now use <tt>require</tt> in Node to load <tt>.coffee.md</tt>
+          Literate CoffeeScript files. In the browser,
+          <tt>text/literate-coffeescript</tt> script tags.
+        </li>
+        <li>
+          The old <tt>coffee --lint</tt> command has been removed. It was useful
+          while originally working on the compiler, but has been surpassed by
+          JSHint. You may now use <tt>-l</tt> to pass literate files in over
+          <b>stdio</b>.
+        </li>
+        <li>
+          Bugfixes for Windows path separators, <tt>catch</tt> without naming
+          the error, and executable-class-bodies-with-
+          prototypal-property-attachment.
+        </li>
+      </ul>
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">

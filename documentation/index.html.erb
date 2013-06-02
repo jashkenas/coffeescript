@@ -137,7 +137,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/1.6.2">1.6.2</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.6.3">1.6.3</a>
     </p>
 
     <pre>
@@ -265,17 +265,19 @@ sudo bin/cake install</pre>
         </td>
       </tr>
       <tr>
-        <td><code>-l, --literate</code></td>
-        <td>
-          Parses the code as Literate CoffeeScript.
-        </td>
-      </tr>
-      <tr>
         <td><code>-s, --stdio</code></td>
         <td>
           Pipe in CoffeeScript to STDIN and get back JavaScript over STDOUT.
           Good for use with processes written in other languages. An example:<br />
           <tt>cat src/cake.coffee | coffee -sc</tt>
+        </td>
+      </tr>
+      <tr>
+        <td><code>-l, --literate</code></td>
+        <td>
+          Parses the code as Literate CoffeeScript. You only need to specify
+          this when passing in code directly over <b>stdio</b>, or using some sort
+          of extension-less file name.
         </td>
       </tr>
       <tr>
@@ -1195,6 +1197,35 @@ Expressions
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <b class="header" style="margin-top: 20px;">
+        <a href="https://github.com/jashkenas/coffee-script/compare/1.6.2...1.6.3">1.6.3</a>
+        <span class="timestamp"> &ndash; <small>June 2, 2013</small></span>
+      </b>
+      <ul>
+        <li>
+          The CoffeeScript REPL now remembers your history between sessions.
+          Just like a proper REPL should.
+        </li>
+        <li>
+          You can now use <tt>require</tt> in Node to load <tt>.coffee.md</tt>
+          Literate CoffeeScript files. In the browser,
+          <tt>text/literate-coffeescript</tt> script tags.
+        </li>
+        <li>
+          The old <tt>coffee --lint</tt> command has been removed. It was useful
+          while originally working on the compiler, but has been surpassed by
+          JSHint. You may now use <tt>-l</tt> to pass literate files in over
+          <b>stdio</b>.
+        </li>
+        <li>
+          Bugfixes for Windows path separators, <tt>catch</tt> without naming
+          the error, and executable-class-bodies-with-
+          prototypal-property-attachment.
+        </li>
+      </ul>
+    </p>
 
     <p>
       <b class="header" style="margin-top: 20px;">

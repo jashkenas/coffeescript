@@ -399,7 +399,8 @@ pre .css .rule .keyword,
 pre .winutils,
 pre .javascript .title,
 pre .lisp .title,
-pre .subst {
+pre .subst,
+pre .reserved {
   color: #954121;
   /*font-weight: bold*/
 }

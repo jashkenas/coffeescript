@@ -108,6 +108,20 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>{repeat} = require <span class="string">'./helpers'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
               <p>A simple <strong>OptionParser</strong> class to parse option flags from the command-line.
 Use it like so:
 
@@ -125,11 +139,11 @@ option) list, and all subsequent arguments are left unparsed.
         </li>
         
         
-        <li id="section-2">
+        <li id="section-3">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-2">&#182;</a>
+                <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
               <p>Initialize with a list of valid options, in the form:
 
@@ -146,11 +160,11 @@ option) list, and all subsequent arguments are left unparsed.
         </li>
         
         
-        <li id="section-3">
+        <li id="section-4">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-3">&#182;</a>
+                <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
               <p>Parse the list of arguments, populating an <code>options</code> object with all of the
 specified options, and return it. Options after the first non-option
@@ -180,11 +194,11 @@ you&#39;re responsible for interpreting the options object.
         </li>
         
         
-        <li id="section-4">
+        <li id="section-5">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
+                <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
               <p>the CS option parser is a little odd; options after the first
 non-option argument are treated as non-option arguments themselves
@@ -212,11 +226,11 @@ non-option argument are treated as non-option arguments themselves
         </li>
         
         
-        <li id="section-5">
+        <li id="section-6">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+                <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
               <p>Return the help text for this <strong>OptionParser</strong>, listing and describing all
 of the valid options, for <code>--help</code> and such.
@@ -229,7 +243,7 @@ of the valid options, for <code>--help</code> and such.
     lines.unshift <span class="string">"<span class="subst">#{@banner}</span>\n"</span> <span class="keyword">if</span> <span class="property">@banner</span>
     <span class="keyword">for</span> rule <span class="keyword">in</span> <span class="property">@rules</span>
       spaces  = <span class="number">15</span> - rule.longFlag.length
-      spaces  = <span class="keyword">if</span> spaces &gt; <span class="number">0</span> <span class="keyword">then</span> Array(spaces + <span class="number">1</span>).join(<span class="string">' '</span>) <span class="keyword">else</span> <span class="string">''</span>
+      spaces  = <span class="keyword">if</span> spaces &gt; <span class="number">0</span> <span class="keyword">then</span> repeat <span class="string">' '</span>, spaces <span class="keyword">else</span> <span class="string">''</span>
       letPart = <span class="keyword">if</span> rule.shortFlag <span class="keyword">then</span> rule.shortFlag + <span class="string">', '</span> <span class="keyword">else</span> <span class="string">'    '</span>
       lines.push <span class="string">'  '</span> + letPart + rule.longFlag + spaces + rule.description
     <span class="string">"\n<span class="subst">#{ lines.join('\n') }</span>\n"</span></pre></div></div>
@@ -237,11 +251,11 @@ of the valid options, for <code>--help</code> and such.
         </li>
         
         
-        <li id="section-6">
+        <li id="section-7">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+                <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
               <h2>Helpers</h2>
 
@@ -250,11 +264,23 @@ of the valid options, for <code>--help</code> and such.
         </li>
         
         
-        <li id="section-7">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>Regex matchers for option flags.
 </p>
@@ -269,11 +295,11 @@ OPTIONAL   = <span class="regexp">/\[(\w+(\*?))\]/</span></pre></div></div>
         </li>
         
         
-        <li id="section-8">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>Build and return the list of option rules. If the optional <em>short-flag</em> is
 unspecified, leave it out by padding with <code>null</code>.
@@ -289,11 +315,11 @@ unspecified, leave it out by padding with <code>null</code>.
         </li>
         
         
-        <li id="section-9">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Build a rule from a <code>-o</code> short flag, a <code>--output [DIR]</code> long flag, and the
 description of what the option does.
@@ -316,11 +342,11 @@ description of what the option does.
         </li>
         
         
-        <li id="section-10">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>Normalize arguments by expanding merged flags into multiple flags. This allows
 you to have <code>-wl</code> be the same as <code>--watch --lint</code>.
