@@ -257,7 +257,7 @@ removeSource = (source, base, removeJs) ->
 outputPath = (source, base, extension=".js") ->
   basename  = helpers.baseFileName source, yes, useWinPathSep
   srcDir    = path.dirname source
-  baseDir   = if base is '.' then srcDir else srcDir.substring base.length
+  baseDir   = if base in ['.', './'] then srcDir else srcDir.substring base.length
   dir       = if opts.output then path.join opts.output, baseDir else srcDir
   path.join dir, basename + extension
 
