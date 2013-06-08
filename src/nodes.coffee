@@ -1552,6 +1552,11 @@ exports.Op = class Op extends Base
     '!==': '==='
     '===': '!=='
 
+  COMBINED_COMPARISON_VALUES =
+    eq: new Value new Literal 0
+    lt: new Value new Literal -1
+    gt: new Value new Literal 1
+
   children: ['first', 'second']
 
   isSimpleNumber: NO
@@ -1625,6 +1630,7 @@ exports.Op = class Op extends Base
     return @compileUnary     o if @isUnary()
     return @compileChain     o if isChain
     return @compileExistence o if @operator is '?'
+    return @compileCombinedComparison o if @operator is "<=>"
     answer = [].concat @first.compileToFragments(o, LEVEL_OP), @makeCode(' ' + @operator + ' '),
             @second.compileToFragments(o, LEVEL_OP)
     if o.level <= LEVEL_OP then answer else @wrapInBraces answer
@@ -1650,6 +1656,30 @@ exports.Op = class Op extends Base
       fst = @first
       ref = fst
     new If(new Existence(fst), ref, type: 'if').addElse(@second).compileToFragments o
+
+  # Ruby's combined comparison operator. For example:
+  #
+  #     bin/coffee
+  #     coffee> 0 <=> 1
+  #     -1
+  #     coffee> 1 <=> 1
+  #     0
+  #     coffee> 2 <=> 1
+  #     1
+  compileCombinedComparison: (o) ->
+    left = @first.compile o, LEVEL_OP
+    right = @second.compile o, LEVEL_OP
+
+    eqCondition = new Literal "#{left} === #{right}"
+    ltCondition = new Literal "#{left} < #{right}"
+
+    eqIf = new If eqCondition, COMBINED_COMPARISON_VALUES.eq
+    ltIf = new If ltCondition, COMBINED_COMPARISON_VALUES.lt
+
+    eqIf.addElse ltIf
+    ltIf.addElse COMBINED_COMPARISON_VALUES.gt
+
+    eqIf.compileExpression o
 
   # Compile a unary **Op**.
   compileUnary: (o) ->

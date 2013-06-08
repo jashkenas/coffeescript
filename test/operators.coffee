@@ -233,6 +233,11 @@ test "different comparison operators (`>`,`<`,`is`,etc.) may be combined", ->
   ok 1 < 2 > 1
   ok 10 < 20 > 2+3 is 5
 
+test "combined comparison operator", ->
+  ok 1 <=> 1 is 0
+  ok 1 <=> 2 is -1
+  ok 2 <=> 1 is 1
+
 test "some chainable operators can be negated by `unless`", ->
   ok (true unless 0==10!=100)
 

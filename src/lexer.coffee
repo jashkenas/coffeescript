@@ -764,6 +764,7 @@ HEREDOC    = /// ^ ("""|''') ([\s\S]*?) (?:\n[^\n\S]*)? \1 ///
 
 OPERATOR   = /// ^ (
   ?: [-=]>             # function
+   | <=>
    | [-+*/%<>&|^!?=]=  # compound assign / compare
    | >>>=?             # zero-fill right shift
    | ([-+:])\1         # doubles
@@ -829,7 +830,7 @@ LOGIC   = ['&&', '||', '&', '|', '^']
 SHIFT   = ['<<', '>>', '>>>']
 
 # Comparison tokens.
-COMPARE = ['==', '!=', '<', '>', '<=', '>=']
+COMPARE = ['<=>', '==', '!=', '<', '>', '<=', '>=']
 
 # Mathematical tokens.
 MATH    = ['*', '/', '%']
