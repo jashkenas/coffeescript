@@ -251,7 +251,7 @@ class exports.Rewriter
       # which is probably always unintended.
       # Furthermore don't allow this in literal arrays, as
       # that creates grammatical ambiguities.
-      if @matchTags(i, IMPLICIT_FUNC, 'INDENT', null, ':') and
+      if tag in IMPLICIT_FUNC and @matchTags(i + 1, 'INDENT', null, ':') and
          not @findTagsBackwards(i, ['CLASS', 'EXTENDS', 'IF', 'CATCH',
           'SWITCH', 'LEADING_WHEN', 'FOR', 'WHILE', 'UNTIL'])
         startImplicitCall i + 1
@@ -351,7 +351,7 @@ class exports.Rewriter
         first_column: column
         last_line:    line
         last_column:  column
-      1
+      return 1
 
   # Because our grammar is LALR(1), it can't handle some single-line
   # expressions that lack ending delimiters. The **Rewriter** adds the implicit
@@ -362,7 +362,8 @@ class exports.Rewriter
 
     condition = (token, i) ->
       token[1] isnt ';' and token[0] in SINGLE_CLOSERS and
-      not (token[0] is 'ELSE' and starter not in ['IF', 'THEN'])
+      not (token[0] is 'ELSE' and starter isnt 'THEN') and
+      not (token[0] in ['CATCH', 'FINALLY'] and starter in ['->', '=>'])
 
     action = (token, i) ->
       @tokens.splice (if @tag(i - 1) is ',' then i - 1 else i), 0, outdent
@@ -375,9 +376,10 @@ class exports.Rewriter
       if tag is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
         tokens.splice i, 0, @indentation()...
         return 2
-      if tag is 'CATCH' and @tag(i + 2) in ['OUTDENT', 'TERMINATOR', 'FINALLY']
-        tokens.splice i + 2, 0, @indentation()...
-        return 4
+      if tag is 'CATCH'
+        for j in [1..2] when @tag(i + j) in ['OUTDENT', 'TERMINATOR', 'FINALLY']
+          tokens.splice i + j, 0, @indentation()...
+          return 2 + j
       if tag in SINGLE_LINERS and @tag(i + 1) isnt 'INDENT' and
          not (tag is 'ELSE' and @tag(i + 1) is 'IF')
         starter = tag
@@ -408,7 +410,7 @@ class exports.Rewriter
       return 1 unless token[0] is 'IF'
       original = token
       @detectEnd i + 1, condition, action
-      1
+      return 1
 
   # Generate the indentation tokens, based on another token on the same line.
   indentation: (implicit = no) ->
@@ -463,9 +465,6 @@ IMPLICIT_CALL    = [
 ]
 
 IMPLICIT_UNSPACED_CALL = ['+', '-']
-
-# Tokens indicating that the implicit call must enclose a block of expressions.
-IMPLICIT_BLOCK   = ['->', '=>', '{', '[', ',']
 
 # Tokens that always mark the end of an implicit call for single-liners.
 IMPLICIT_END     = ['POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY',

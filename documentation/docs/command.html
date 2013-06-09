@@ -109,13 +109,24 @@
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
               <p>The <code>coffee</code> utility. Handles command-line compilation of CoffeeScript
-into various forms: saved into <code>.js</code> files or printed to stdout, piped to
-<a href="http://javascriptlint.com/">JavaScript Lint</a> or recompiled every time the source is
-saved, printed as a token stream or as the syntax tree, or launch an
+into various forms: saved into <code>.js</code> files or printed to stdout
+or recompiled every time the source is saved,
+printed as a token stream or as the syntax tree, or launch an
 interactive REPL.
-
 </p>
-<p>External dependencies.
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>External dependencies.
 </p>
 
             </div>
@@ -128,16 +139,17 @@ CoffeeScript   = require <span class="string">'./coffee-script'</span>
 {spawn, exec}  = require <span class="string">'child_process'</span>
 {EventEmitter} = require <span class="string">'events'</span>
 
-exists         = fs.exists <span class="keyword">or</span> path.exists</pre></div></div>
+exists         = fs.exists <span class="keyword">or</span> path.exists
+useWinPathSep  = path.sep <span class="keyword">is</span> <span class="string">'\\'</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-2">
+        <li id="section-3">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-2">&#182;</a>
+                <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
               <p>Allow CoffeeScript to emit Node.js events.
 </p>
@@ -154,11 +166,11 @@ exists         = fs.exists <span class="keyword">or</span> path.exists</pre></di
         </li>
         
         
-        <li id="section-3">
+        <li id="section-4">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-3">&#182;</a>
+                <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
               <p>The help banner that is printed when <code>coffee</code> is called without arguments.
 </p>
@@ -174,11 +186,11 @@ exists         = fs.exists <span class="keyword">or</span> path.exists</pre></di
         </li>
         
         
-        <li id="section-4">
+        <li id="section-5">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
+                <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
               <p>The list of all the valid option flags that <code>coffee</code> knows how to handle.
 </p>
@@ -192,13 +204,13 @@ exists         = fs.exists <span class="keyword">or</span> path.exists</pre></di
   [<span class="string">'-h'</span>, <span class="string">'--help'</span>,            <span class="string">'display this help message'</span>]
   [<span class="string">'-i'</span>, <span class="string">'--interactive'</span>,     <span class="string">'run an interactive CoffeeScript REPL'</span>]
   [<span class="string">'-j'</span>, <span class="string">'--join [FILE]'</span>,     <span class="string">'concatenate the source CoffeeScript before compiling'</span>]
-  [<span class="string">'-l'</span>, <span class="string">'--lint'</span>,            <span class="string">'pipe the compiled JavaScript through JavaScript Lint'</span>]
   [<span class="string">'-m'</span>, <span class="string">'--map'</span>,             <span class="string">'generate source map and save as .map files'</span>]
   [<span class="string">'-n'</span>, <span class="string">'--nodes'</span>,           <span class="string">'print out the parse tree that the parser produces'</span>]
   [      <span class="string">'--nodejs [ARGS]'</span>,   <span class="string">'pass options directly to the "node" binary'</span>]
   [<span class="string">'-o'</span>, <span class="string">'--output [DIR]'</span>,    <span class="string">'set the output directory for compiled JavaScript'</span>]
   [<span class="string">'-p'</span>, <span class="string">'--print'</span>,           <span class="string">'print out the compiled JavaScript'</span>]
   [<span class="string">'-s'</span>, <span class="string">'--stdio'</span>,           <span class="string">'listen for and compile scripts over stdio'</span>]
+  [<span class="string">'-l'</span>, <span class="string">'--literate'</span>,        <span class="string">'treat stdio as literate style coffee-script'</span>]
   [<span class="string">'-t'</span>, <span class="string">'--tokens'</span>,          <span class="string">'print out the tokens that the lexer/rewriter produce'</span>]
   [<span class="string">'-v'</span>, <span class="string">'--version'</span>,         <span class="string">'display the version number'</span>]
   [<span class="string">'-w'</span>, <span class="string">'--watch'</span>,           <span class="string">'watch scripts for changes and rerun commands'</span>]
@@ -207,11 +219,11 @@ exists         = fs.exists <span class="keyword">or</span> path.exists</pre></di
         </li>
         
         
-        <li id="section-5">
+        <li id="section-6">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+                <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
               <p>Top-level objects shared by all the functions.
 </p>
@@ -228,11 +240,11 @@ optionParser = <span class="literal">null</span></pre></div></div>
         </li>
         
         
-        <li id="section-6">
+        <li id="section-7">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+                <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
               <p>Run <code>coffee</code> by parsing passed options and determining what action to take.
 Many flags cause us to divert before compiling anything. Flags passed after
@@ -247,7 +259,7 @@ Many flags cause us to divert before compiling anything. Flags passed after
   <span class="keyword">return</span> usage()                         <span class="keyword">if</span> opts.help
   <span class="keyword">return</span> version()                       <span class="keyword">if</span> opts.version
   <span class="keyword">return</span> require(<span class="string">'./repl'</span>).start()       <span class="keyword">if</span> opts.interactive
-  <span class="keyword">if</span> opts.watch <span class="keyword">and</span> !fs.watch
+  <span class="keyword">if</span> opts.watch <span class="keyword">and</span> <span class="keyword">not</span> fs.watch
     <span class="keyword">return</span> printWarn <span class="string">"The --watch feature depends on Node v0.6.0+. You are running <span class="subst">#{process.version}</span>."</span>
   <span class="keyword">return</span> compileStdio()                  <span class="keyword">if</span> opts.stdio
   <span class="keyword">return</span> compileScript <span class="literal">null</span>, sources[<span class="number">0</span>]  <span class="keyword">if</span> opts.eval
@@ -261,11 +273,11 @@ Many flags cause us to divert before compiling anything. Flags passed after
         </li>
         
         
-        <li id="section-7">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
               <p>Compile a path, which could be a script or a directory. If a directory
 is passed, recursively compile all &#39;.coffee&#39;, &#39;.litcoffee&#39;, and &#39;.coffee.md&#39;
@@ -304,11 +316,11 @@ extension source files in it and all subdirectories.
         </li>
         
         
-        <li id="section-8">
+        <li id="section-9">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>Compile a single source script, containing the given code, according to the
 requested options. If evaluating the script directly sets <code>__filename</code>,
@@ -340,10 +352,8 @@ requested options. If evaluating the script directly sets <code>__filename</code
       CoffeeScript.emit <span class="string">'success'</span>, task
       <span class="keyword">if</span> o.print
         printLine t.output.trim()
-      <span class="keyword">else</span> <span class="keyword">if</span> o.compile || o.map
+      <span class="keyword">else</span> <span class="keyword">if</span> o.compile <span class="keyword">or</span> o.map
         writeJs base, t.file, t.output, options.jsPath, t.sourceMap
-      <span class="keyword">else</span> <span class="keyword">if</span> o.lint
-        lint t.file, t.output
   <span class="keyword">catch</span> err
     CoffeeScript.emit <span class="string">'failure'</span>, err, task
     <span class="keyword">return</span> <span class="keyword">if</span> CoffeeScript.listeners(<span class="string">'failure'</span>).length
@@ -358,11 +368,11 @@ requested options. If evaluating the script directly sets <code>__filename</code
         </li>
         
         
-        <li id="section-9">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>Attach the appropriate listeners to compile scripts incoming over <strong>stdin</strong>,
 and write them back to <strong>stdout</strong>.
@@ -381,11 +391,11 @@ and write them back to <strong>stdout</strong>.
         </li>
         
         
-        <li id="section-10">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>If all of the source files are done being read, concatenate and compile
 them together.
@@ -404,15 +414,15 @@ them together.
         </li>
         
         
-        <li id="section-11">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>Watch a source CoffeeScript file using <code>fs.watch</code>, recompiling it every
 time the file is updated. May be used in combination with other options,
-such as <code>--lint</code> or <code>--print</code>.
+such as <code>--print</code>.
 </p>
 
             </div>
@@ -458,11 +468,11 @@ such as <code>--lint</code> or <code>--print</code>.
         </li>
         
         
-        <li id="section-12">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p>Watch a directory of files for new additions.
 </p>
@@ -499,11 +509,11 @@ such as <code>--lint</code> or <code>--print</code>.
         </li>
         
         
-        <li id="section-13">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>Remove a file from our source list, and source code cache. Optionally remove
 the compiled JS version as well.
@@ -526,11 +536,11 @@ the compiled JS version as well.
         </li>
         
         
-        <li id="section-14">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Get the corresponding output JavaScript path for a source file.
 </p>
@@ -538,7 +548,7 @@ the compiled JS version as well.
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="function"><span class="title">outputPath</span></span> = (source, base, extension=<span class="string">".js"</span>) -&gt;
-  basename  = helpers.baseFileName source, <span class="literal">yes</span>, path.sep
+  basename  = helpers.baseFileName source, <span class="literal">yes</span>, useWinPathSep
   srcDir    = path.dirname source
   baseDir   = <span class="keyword">if</span> base <span class="keyword">is</span> <span class="string">'.'</span> <span class="keyword">then</span> srcDir <span class="keyword">else</span> srcDir.substring base.length
   dir       = <span class="keyword">if</span> opts.output <span class="keyword">then</span> path.join opts.output, baseDir <span class="keyword">else</span> srcDir
@@ -547,11 +557,11 @@ the compiled JS version as well.
         </li>
         
         
-        <li id="section-15">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>Write out a JavaScript source file with the compiled code. By default, files
 are written out in <code>cwd</code> as <code>.js</code> files with the same name, but the output
@@ -570,7 +580,7 @@ same directory as the <code>.js</code> file.
   <span class="function"><span class="title">compile</span></span> = -&gt;
     <span class="keyword">if</span> opts.compile
       js = <span class="string">' '</span> <span class="keyword">if</span> js.length &lt;= <span class="number">0</span>
-      <span class="keyword">if</span> generatedSourceMap <span class="keyword">then</span> js = <span class="string">"<span class="subst">#{js}</span>\n/*\n//@ sourceMappingURL=<span class="subst">#{helpers.baseFileName sourceMapPath, <span class="literal">no</span>, path.sep}</span>\n*/\n"</span>
+      <span class="keyword">if</span> generatedSourceMap <span class="keyword">then</span> js = <span class="string">"<span class="subst">#{js}</span>\n/*\n//@ sourceMappingURL=<span class="subst">#{helpers.baseFileName sourceMapPath, <span class="literal">no</span>, useWinPathSep}</span>\n*/\n"</span>
       fs.writeFile jsPath, js, (err) -&gt;
         <span class="keyword">if</span> err
           printLine err.message
@@ -586,11 +596,11 @@ same directory as the <code>.js</code> file.
         </li>
         
         
-        <li id="section-16">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Convenience for cleaner setTimeouts.
 </p>
@@ -602,11 +612,11 @@ same directory as the <code>.js</code> file.
         </li>
         
         
-        <li id="section-17">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>When watching scripts, it&#39;s useful to log changes with the timestamp.
 </p>
@@ -615,30 +625,6 @@ same directory as the <code>.js</code> file.
             
             <div class="content"><div class='highlight'><pre><span class="function"><span class="title">timeLog</span></span> = (message) -&gt;
   console.log <span class="string">"<span class="subst">#{(<span class="keyword">new</span> Date).toLocaleTimeString()}</span> - <span class="subst">#{message}</span>"</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-18">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
-              </div>
-              <p>Pipe compiled JS through JSLint (requires a working <code>jsl</code> command), printing
-any errors or warnings that arise.
-</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">lint</span></span> = (file, js) -&gt;
-  <span class="function"><span class="title">printIt</span></span> = (buffer) -&gt; printLine file + <span class="string">':\t'</span> + buffer.toString().trim()
-  conf = __dirname + <span class="string">'/../../extras/jsl.conf'</span>
-  jsl = spawn <span class="string">'jsl'</span>, [<span class="string">'-nologo'</span>, <span class="string">'-stdin'</span>, <span class="string">'-conf'</span>, conf]
-  jsl.stdout.<span class="literal">on</span> <span class="string">'data'</span>, printIt
-  jsl.stderr.<span class="literal">on</span> <span class="string">'data'</span>, printIt
-  jsl.stdin.write js
-  jsl.stdin.end()</pre></div></div>
             
         </li>
         
@@ -680,7 +666,7 @@ any errors or warnings that arise.
   optionParser  = <span class="keyword">new</span> optparse.OptionParser SWITCHES, BANNER
   o = opts      = optionParser.parse process.argv[<span class="number">2.</span>.]
   o.compile     <span class="keyword">or</span>=  !!o.output
-  o.run         = <span class="keyword">not</span> (o.compile <span class="keyword">or</span> o.print <span class="keyword">or</span> o.lint <span class="keyword">or</span> o.map)
+  o.run         = <span class="keyword">not</span> (o.compile <span class="keyword">or</span> o.print <span class="keyword">or</span> o.map)
   o.print       = !!  (o.print <span class="keyword">or</span> (o.eval <span class="keyword">or</span> o.stdio <span class="keyword">and</span> o.compile))
   sources       = o.arguments
   sourceCode[i] = <span class="literal">null</span> <span class="keyword">for</span> source, i <span class="keyword">in</span> sources
@@ -703,7 +689,7 @@ any errors or warnings that arise.
             <div class="content"><div class='highlight'><pre><span class="function"><span class="title">compileOptions</span></span> = (filename, base) -&gt;
   answer = {
     filename
-    literate: helpers.isLiterate(filename)
+    literate: opts.literate <span class="keyword">or</span> helpers.isLiterate(filename)
     bare: opts.bare
     header: opts.compile
     sourceMap: opts.map
@@ -717,13 +703,13 @@ any errors or warnings that arise.
         jsPath
         sourceRoot: path.relative jsDir, cwd
         sourceFiles: [path.relative cwd, filename]
-        generatedFile: helpers.baseFileName(jsPath, <span class="literal">no</span>, path.sep)
+        generatedFile: helpers.baseFileName(jsPath, <span class="literal">no</span>, useWinPathSep)
       }
     <span class="keyword">else</span>
       answer = helpers.merge answer,
         sourceRoot: <span class="string">""</span>
-        sourceFiles: [helpers.baseFileName filename, <span class="literal">no</span>, path.sep]
-        generatedFile: helpers.baseFileName(filename, <span class="literal">yes</span>, path.sep) + <span class="string">".js"</span>
+        sourceFiles: [helpers.baseFileName filename, <span class="literal">no</span>, useWinPathSep]
+        generatedFile: helpers.baseFileName(filename, <span class="literal">yes</span>, useWinPathSep) + <span class="string">".js"</span>
   answer</pre></div></div>
             
         </li>

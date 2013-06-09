@@ -13,7 +13,7 @@ helpers       = require './helpers'
 SourceMap     = require './sourcemap'
 
 # The current CoffeeScript version number.
-exports.VERSION = '1.6.2'
+exports.VERSION = '1.6.3'
 
 # Expose helpers for testing.
 exports.helpers = helpers
@@ -24,17 +24,17 @@ exports.helpers = helpers
 # options that can be passed to `SourceMap#generate` may also be passed here.
 #
 # This returns a javascript string, unless `options.sourceMap` is passed,
-# in which case this returns a `{js, v3SourceMap, sourceMap}
+# in which case this returns a `{js, v3SourceMap, sourceMap}`
 # object, where sourceMap is a sourcemap.coffee#SourceMap object, handy for doing programatic
 # lookups.
 exports.compile = compile = (code, options = {}) ->
-  {merge} = exports.helpers
+  {merge} = helpers
 
   if options.sourceMap
     map = new SourceMap
 
   try
-    fragments = (parser.parse lexer.tokenize(code, options)).compileToFragments options
+    fragments = parser.parse(lexer.tokenize code, options).compileToFragments options
   catch err
     # Add source file information to error so it can be pretty-printed later.
     err.filename = options.filename
@@ -42,7 +42,8 @@ exports.compile = compile = (code, options = {}) ->
     throw err
 
   currentLine = 0
-  currentLine += 1 if options.header or options.inline
+  currentLine += 1 if options.header
+  currentLine += 1 if options.shiftLine
   currentColumn = 0
   js = ""
   for fragment in fragments
@@ -50,8 +51,8 @@ exports.compile = compile = (code, options = {}) ->
     if options.sourceMap
       if fragment.locationData
         map.add(
-          [fragment.locationData.first_line, fragment.locationData.first_column],
-          [currentLine, currentColumn],
+          [fragment.locationData.first_line, fragment.locationData.first_column]
+          [currentLine, currentColumn]
           {noReplace: true})
       newLines = helpers.count fragment.code, "\n"
       currentLine += newLines
@@ -92,7 +93,7 @@ exports.run = (code, options = {}) ->
   options.sourceMap ?= true
   # Set the filename.
   mainModule.filename = process.argv[1] =
-      if options.filename then fs.realpathSync(options.filename) else '.'
+    if options.filename then fs.realpathSync(options.filename) else '.'
 
   # Clear the module cache.
   mainModule.moduleCache and= {}
@@ -103,10 +104,10 @@ exports.run = (code, options = {}) ->
   # Compile.
   if not helpers.isCoffee(mainModule.filename) or require.extensions
     answer = compile(code, options)
-    # Attach sourceMap object to mainModule._sourceMaps[options.filename] so that
+    # Attach sourceMap object to sourceMaps[options.filename] so that
     # it is accessible by Error.prepareStackTrace.
     do patchStackTrace
-    mainModule._sourceMaps[mainModule.filename] = answer.sourceMap
+    sourceMaps[mainModule.filename] = answer.sourceMap
     mainModule._compile answer.js, mainModule.filename
   else
     mainModule._compile code, mainModule.filename
@@ -151,13 +152,38 @@ exports.eval = (code, options = {}) ->
 loadFile = (module, filename) ->
   raw = fs.readFileSync filename, 'utf8'
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
-  module._compile compile(stripped, {filename, literate: helpers.isLiterate filename}), filename
+  answer = compile(stripped, {filename, sourceMap: true, literate: helpers.isLiterate filename})
+  sourceMaps[filename] = answer.sourceMap
+  module._compile answer.js, filename
 
 # If the installed version of Node supports `require.extensions`, register
 # CoffeeScript as an extension.
 if require.extensions
   for ext in ['.coffee', '.litcoffee', '.coffee.md']
     require.extensions[ext] = loadFile
+
+  # Patch Node's module loader to be able to handle mult-dot extensions.
+  # This is a horrible thing that should not be required. Perhaps, one day,
+  # when a truly benevolent dictator comes to rule over the Republik of Node,
+  # it won't be.
+  Module = require 'module'
+
+  findExtension = (filename) ->
+    extensions = path.basename(filename).split '.'
+    # Remove the initial dot from dotfiles.
+    extensions.shift() if extensions[0] is ''
+    # Start with the longest possible extension and work our way shortwards.
+    while extensions.shift()
+      curExtension = '.' + extensions.join '.'
+      return curExtension if Module._extensions[curExtension]
+    '.js'
+
+  Module::load = (filename) ->
+    @filename = filename
+    @paths = Module._nodeModulePaths path.dirname filename
+    extension = findExtension filename
+    Module._extensions[extension](this, filename)
+    @loaded = true
 
 # If we're on Node, patch `child_process.fork` so that Coffee scripts are able
 # to fork both CoffeeScript files, and JavaScript files, directly.
@@ -211,12 +237,14 @@ parser.yy.parseError = (message, {token}) ->
 # positions.
 
 patched = false
+
+# Map of filenames -> sourceMap object.
+sourceMaps = {}
+
 patchStackTrace = ->
   return if patched
   patched = true
   mainModule = require.main
-  # Map of filenames -> sourceMap object.
-  mainModule._sourceMaps = {}
 
   # (Assigning to a property of the Module object in the normal module cache is
   # unsuitable, because node deletes those objects from the cache if an
@@ -226,7 +254,7 @@ patchStackTrace = ->
     sourceFiles = {}
 
     getSourceMapping = (filename, line, column) ->
-      sourceMap = mainModule._sourceMaps[filename]
+      sourceMap = sourceMaps[filename]
       answer = sourceMap.sourceLocation [line - 1, column - 1] if sourceMap
       if answer then [answer[0] + 1, answer[1] + 1] else null
 

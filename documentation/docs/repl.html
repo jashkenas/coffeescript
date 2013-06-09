@@ -111,13 +111,17 @@
               
             </div>
             
-            <div class="content"><div class='highlight'><pre>vm = require <span class="string">'vm'</span>
+            <div class="content"><div class='highlight'><pre>fs = require <span class="string">'fs'</span>
+path = require <span class="string">'path'</span>
+vm = require <span class="string">'vm'</span>
 nodeREPL = require <span class="string">'repl'</span>
 CoffeeScript = require <span class="string">'./coffee-script'</span>
 {merge, prettyErrorMessage} = require <span class="string">'./helpers'</span>
 
 replDefaults =
   prompt: <span class="string">'coffee&gt; '</span>,
+  historyFile: path.join process.env.HOME, <span class="string">'.coffee_history'</span> <span class="keyword">if</span> process.env.HOME
+  historyMaxInputSize: <span class="number">10240</span>
   eval: (input, context, filename, cb) -&gt;</pre></div></div>
             
         </li>
@@ -214,8 +218,8 @@ parens. Unwrap all that.
 
   multiline =
     enabled: <span class="literal">off</span>
-    initialPrompt: repl.prompt.replace(<span class="regexp">/^[^&gt; ]*/, (x) -&gt; x.replace /./g</span>, <span class="string">'-'</span>)
-    prompt: repl.prompt.replace(<span class="regexp">/^[^&gt; ]*&gt;?/, (x) -&gt; x.replace /./g</span>, <span class="string">'.'</span>)
+    initialPrompt: repl.prompt.replace <span class="regexp">/^[^&gt; ]*/, (x) -&gt; x.replace /./g</span>, <span class="string">'-'</span>
+    prompt: repl.prompt.replace <span class="regexp">/^[^&gt; ]*&gt;?/, (x) -&gt; x.replace /./g</span>, <span class="string">'.'</span>
     buffer: <span class="string">''</span></pre></div></div>
             
         </li>
@@ -338,7 +342,154 @@ parens. Unwrap all that.
       multiline.enabled = <span class="keyword">not</span> multiline.enabled
       rli.setPrompt multiline.initialPrompt
       rli.prompt <span class="literal">true</span>
-    <span class="keyword">return</span>
+    <span class="keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Store and load command history from a file
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">addHistory</span></span> = (repl, filename, maxSize) -&gt;
+  lastLine = <span class="literal">null</span>
+  <span class="keyword">try</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Get file info and at most maxSize of command history
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    stat = fs.statSync filename
+    size = Math.min maxSize, stat.size</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Read last <code>size</code> bytes from the file
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    readFd = fs.openSync filename, <span class="string">'r'</span>
+    buffer = <span class="keyword">new</span> Buffer(size)
+    fs.readSync readFd, buffer, <span class="number">0</span>, size, stat.size - size</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Set the history on the interpreter
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    repl.rli.history = buffer.toString().split(<span class="string">'\n'</span>).reverse()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>If the history file was truncated we should pop off a potential partial line
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    repl.rli.history.pop() <span class="keyword">if</span> stat.size &gt; maxSize</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>Shift off the final blank newline
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    repl.rli.history.shift() <span class="keyword">if</span> repl.rli.history[<span class="number">0</span>] <span class="keyword">is</span> <span class="string">''</span>
+    repl.rli.historyIndex = -<span class="number">1</span>
+    lastLine = repl.rli.history[<span class="number">0</span>]
+
+  fd = fs.openSync filename, <span class="string">'a'</span>
+
+  repl.rli.addListener <span class="string">'line'</span>, (code) -&gt;
+    <span class="keyword">if</span> code <span class="keyword">and</span> code.length <span class="keyword">and</span> code <span class="keyword">isnt</span> <span class="string">'.history'</span> <span class="keyword">and</span> lastLine <span class="keyword">isnt</span> code</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>Save the latest command in the file
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      fs.write fd, <span class="string">"<span class="subst">#{code}</span>\n"</span>
+      lastLine = code
+
+  repl.rli.<span class="literal">on</span> <span class="string">'exit'</span>, -&gt; fs.close fd</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>Add a command to show the history stack
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  repl.commands[<span class="string">'.history'</span>] =
+    help: <span class="string">'Show command history'</span>
+    action: -&gt;
+      repl.outputStream.write <span class="string">"<span class="subst">#{repl.rli.history[..].reverse().join '\n'}</span>\n"</span>
+      repl.displayPrompt()
 
 module.exports =
   start: (opts = {}) -&gt;
@@ -352,6 +503,7 @@ module.exports =
     repl = nodeREPL.start opts
     repl.<span class="literal">on</span> <span class="string">'exit'</span>, -&gt; repl.outputStream.write <span class="string">'\n'</span>
     addMultilineHandler repl
+    addHistory repl, opts.historyFile, opts.historyMaxInputSize <span class="keyword">if</span> opts.historyFile
     repl</pre></div></div>
             
         </li>
