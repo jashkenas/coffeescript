@@ -7,7 +7,7 @@
 {prettyErrorMessage} = CoffeeScript.helpers
 
 assertErrorFormat = (code, expectedErrorFormat) ->
-  throws (-> CoffeeScript.compile code), (err) ->
+  throws (-> CoffeeScript.run code), (err) ->
     message = prettyErrorMessage err, 'test.coffee', code
     eq expectedErrorFormat, message
     yes
@@ -42,3 +42,22 @@ test "compiler error formatting", ->
     evil = (foo, eval, bar) ->
                  ^^^^
   '''
+
+fs = require 'fs'
+
+test "#2849: compilation error in a require()d file", ->
+  # Create a temporary file to require().
+  ok not fs.existsSync 'test/syntax-error.coffee'
+  fs.writeFileSync 'test/syntax-error.coffee', 'foo in bar or in baz'
+
+  try
+    assertErrorFormat '''
+      require './test/syntax-error'
+    ''',
+    """
+      #{__dirname}/syntax-error.coffee:1:15: error: unexpected RELATION
+      foo in bar or in baz
+                    ^^
+    """
+  finally
+    fs.unlink 'test/syntax-error.coffee'

@@ -146,8 +146,12 @@ exports.throwSyntaxError = (message, location) ->
 # Creates a nice error message like, following the "standard" format
 # <filename>:<line>:<col>: <message> plus the line with the error and a marker
 # showing where the error is.
-exports.prettyErrorMessage = (error, fileName, code, useColors) ->
+exports.prettyErrorMessage = (error, filename, code, useColors) ->
   return error.stack or "#{error}" unless error.location
+
+  # Prefer original source file information stored in the error if present.
+  filename = error.filename or filename
+  code     = error.code or code
 
   {first_line, first_column, last_line, last_column} = error.location
   codeLine = code.split('\n')[first_line]
@@ -157,15 +161,15 @@ exports.prettyErrorMessage = (error, fileName, code, useColors) ->
   marker   = repeat(' ', start) + repeat('^', end - start)
 
   if useColors
-    colorize  = (str) -> "\x1B[1;31m#{str}\x1B[0m"
+    colorize = (str) -> "\x1B[1;31m#{str}\x1B[0m"
     codeLine = codeLine[...start] + colorize(codeLine[start...end]) + codeLine[end..]
-    marker    = colorize marker
+    marker   = colorize marker
 
   message = """
-  #{fileName}:#{first_line + 1}:#{first_column + 1}: error: #{error.message}
-  #{codeLine}
-  #{marker}
-            """
+    #{filename}:#{first_line + 1}:#{first_column + 1}: error: #{error.message}
+    #{codeLine}
+    #{marker}
+  """
 
   # Uncomment to add stacktrace.
   #message += "\n#{error.stack}"
