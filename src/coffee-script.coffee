@@ -33,13 +33,7 @@ exports.compile = compile = (code, options = {}) ->
   if options.sourceMap
     map = new SourceMap
 
-  try
-    fragments = parser.parse(lexer.tokenize code, options).compileToFragments options
-  catch err
-    # Add source file information to error so it can be pretty-printed later.
-    err.filename = options.filename
-    err.code = code
-    throw err
+  fragments = parser.parse(lexer.tokenize code, options).compileToFragments options
 
   currentLine = 0
   currentLine += 1 if options.header
@@ -152,7 +146,15 @@ exports.eval = (code, options = {}) ->
 loadFile = (module, filename) ->
   raw = fs.readFileSync filename, 'utf8'
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
-  answer = compile(stripped, {filename, sourceMap: true, literate: helpers.isLiterate filename})
+  try
+    answer = compile(stripped, {filename, sourceMap: true, literate: helpers.isLiterate filename})
+  catch err
+    # As the filename and code of a dynamically loaded file will be different
+    # from the original file compiled with CoffeeScript.run, add that
+    # information to error so it can be pretty-printed later.
+    err.filename = filename
+    err.code = stripped
+    throw err
   sourceMaps[filename] = answer.sourceMap
   module._compile answer.js, filename
 
