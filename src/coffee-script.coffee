@@ -246,7 +246,6 @@ sourceMaps = {}
 patchStackTrace = ->
   return if patched
   patched = true
-  mainModule = require.main
 
   # (Assigning to a property of the Module object in the normal module cache is
   # unsuitable, because node deletes those objects from the cache if an
