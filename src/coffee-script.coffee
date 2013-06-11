@@ -15,6 +15,8 @@ SourceMap     = require './sourcemap'
 # The current CoffeeScript version number.
 exports.VERSION = '1.6.3'
 
+extensions = ['.coffee', '.litcoffee', '.coffee.md']
+
 # Expose helpers for testing.
 exports.helpers = helpers
 
@@ -84,7 +86,7 @@ exports.nodes = (source, options) ->
 # setting `__filename`, `__dirname`, and relative `require()`.
 exports.run = (code, options = {}) ->
   mainModule = require.main
-  options.sourceMap ?= true
+
   # Set the filename.
   mainModule.filename = process.argv[1] =
     if options.filename then fs.realpathSync(options.filename) else '.'
@@ -97,14 +99,11 @@ exports.run = (code, options = {}) ->
 
   # Compile.
   if not helpers.isCoffee(mainModule.filename) or require.extensions
-    answer = compile(code, options)
-    # Attach sourceMap object to sourceMaps[options.filename] so that
-    # it is accessible by Error.prepareStackTrace.
-    do patchStackTrace
-    sourceMaps[mainModule.filename] = answer.sourceMap
-    mainModule._compile answer.js, mainModule.filename
-  else
-    mainModule._compile code, mainModule.filename
+    answer = compile code, options
+    patchStackTrace()
+    code = answer.js? and answer.js or answer
+
+  mainModule._compile code, mainModule.filename
 
 # Compile and evaluate a string of CoffeeScript (in a Node.js-like environment).
 # The CoffeeScript REPL uses this to run the input.
@@ -142,12 +141,12 @@ exports.eval = (code, options = {}) ->
   else
     vm.runInContext js, sandbox
 
-# Load and run a CoffeeScript file for Node, stripping any `BOM`s.
-loadFile = (module, filename) ->
+compileFile = (filename, sourceMap) ->
   raw = fs.readFileSync filename, 'utf8'
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
+
   try
-    answer = compile(stripped, {filename, sourceMap: true, literate: helpers.isLiterate filename})
+    answer = compile(stripped, {filename, sourceMap, literate: helpers.isLiterate filename})
   catch err
     # As the filename and code of a dynamically loaded file will be different
     # from the original file compiled with CoffeeScript.run, add that
@@ -155,13 +154,24 @@ loadFile = (module, filename) ->
     err.filename = filename
     err.code = stripped
     throw err
+
+  answer
+
+getSourceMap = (filename) ->
+  return sourceMaps[filename] if sourceMaps[filename]
+  return unless path.extname(filename) in extensions
+  answer = compileFile filename, true
   sourceMaps[filename] = answer.sourceMap
-  module._compile answer.js, filename
+
+# Load and run a CoffeeScript file for Node, stripping any `BOM`s.
+loadFile = (module, filename) ->
+  answer = compileFile filename, false
+  module._compile answer, filename
 
 # If the installed version of Node supports `require.extensions`, register
 # CoffeeScript as an extension.
 if require.extensions
-  for ext in ['.coffee', '.litcoffee', '.coffee.md']
+  for ext in extensions
     require.extensions[ext] = loadFile
 
   # Patch Node's module loader to be able to handle mult-dot extensions.
@@ -239,23 +249,29 @@ parser.yy.parseError = (message, {token}) ->
 # positions.
 
 patched = false
+originalPrepareStackTrace = null
 
 # Map of filenames -> sourceMap object.
 sourceMaps = {}
 
-patchStackTrace = ->
+exports.unpatchStackTrace = ->
+  return unless patched
+  patched = false
+  Error.prepareStackTrace = originalPrepareStackTrace
+
+exports.patchStackTrace = patchStackTrace = ->
   return if patched
   patched = true
+
+  originalPrepareStackTrace = Error.prepareStackTrace
 
   # (Assigning to a property of the Module object in the normal module cache is
   # unsuitable, because node deletes those objects from the cache if an
   # exception is thrown in the module body.)
 
   Error.prepareStackTrace = (err, stack) ->
-    sourceFiles = {}
-
     getSourceMapping = (filename, line, column) ->
-      sourceMap = sourceMaps[filename]
+      sourceMap = getSourceMap filename
       answer = sourceMap.sourceLocation [line - 1, column - 1] if sourceMap
       if answer then [answer[0] + 1, answer[1] + 1] else null
 
