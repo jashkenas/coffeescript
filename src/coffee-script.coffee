@@ -100,7 +100,7 @@ exports.run = (code, options = {}) ->
   # Compile.
   if not helpers.isCoffee(mainModule.filename) or require.extensions
     answer = compile code, options
-    code = answer.js? and answer.js or answer
+    code = answer.js ? answer
 
   mainModule._compile code, mainModule.filename
 
