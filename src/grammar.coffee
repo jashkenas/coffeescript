@@ -74,7 +74,6 @@ grammar =
   Root: [
     o '',                                       -> new Block
     o 'Body'
-    o 'Block TERMINATOR'
   ]
 
   # Any list of statements and expressions, separated by line breaks or semicolons.

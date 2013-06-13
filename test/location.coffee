@@ -41,8 +41,8 @@ test "Verify location of generated tokens", ->
 test "Verify location of generated tokens (with indented first line)", ->
   tokens = CoffeeScript.tokens "  a = 83"
 
-  eq tokens.length, 6
-  [IndentToken, aToken, equalsToken, numberToken] = tokens
+  eq tokens.length, 4
+  [aToken, equalsToken, numberToken] = tokens
 
   eq aToken[2].first_line, 0
   eq aToken[2].first_column, 2
