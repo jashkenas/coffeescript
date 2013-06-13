@@ -35,13 +35,14 @@ exports.Lexer = class Lexer
   # Before returning the token stream, run it through the [Rewriter](rewriter.html)
   # unless explicitly asked not to.
   tokenize: (code, opts = {}) ->
-    @literate = opts.literate  # Are we lexing literate CoffeeScript?
-    @indent   = 0              # The current indentation level.
-    @indebt   = 0              # The over-indentation at the current level.
-    @outdebt  = 0              # The under-outdentation at the current level.
-    @indents  = []             # The stack of all current indentation levels.
-    @ends     = []             # The stack for pairing up tokens.
-    @tokens   = []             # Stream of parsed tokens in the form `['TYPE', value, location data]`.
+    @literate   = opts.literate  # Are we lexing literate CoffeeScript?
+    @indent     = 0              # The current indentation level.
+    @baseIndent = 0              # The overall minimum indentation level
+    @indebt     = 0              # The over-indentation at the current level.
+    @outdebt    = 0              # The under-outdentation at the current level.
+    @indents    = []             # The stack of all current indentation levels.
+    @ends       = []             # The stack for pairing up tokens.
+    @tokens     = []             # Stream of parsed tokens in the form `['TYPE', value, location data]`.
 
     @chunkLine =
         opts.line or 0         # The start line for the current @chunk.
@@ -322,11 +323,16 @@ exports.Lexer = class Lexer
         @indebt = size - @indent
         @suppressNewlines()
         return indent.length
+      unless @tokens.length
+        @baseIndent = @indent = size
+        return indent.length
       diff = size - @indent + @outdebt
       @token 'INDENT', diff, indent.length - size, size
       @indents.push diff
       @ends.push 'OUTDENT'
       @outdebt = @indebt = 0
+    else if size < @baseIndent
+      @error 'missing indentation', indent.length
     else
       @indebt = 0
       @outdentToken @indent - size, noNewlines, indent.length
@@ -691,10 +697,11 @@ exports.Lexer = class Lexer
     quote + @escapeLines(body, heredoc) + quote
 
   # Throws a compiler error on the current position.
-  error: (message) ->
+  error: (message, offset = 0) ->
     # TODO: Are there some cases we could improve the error line number by
     # passing the offset in the chunk where the error happened?
-    throwSyntaxError message, first_line: @chunkLine, first_column: @chunkColumn
+    [first_line, first_column] = @getLineAndColumnFromChunk offset
+    throwSyntaxError message, {first_line, first_column}
 
 # Constants
 # ---------
