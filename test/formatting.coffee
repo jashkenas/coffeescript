@@ -144,3 +144,10 @@ test "#1299: Disallow token misnesting", ->
     ok no
   catch e
     eq 'unmatched ]', e.message
+
+test "#2981: Enforce initial indentation", ->
+  try
+    CoffeeScript.compile '  a\nb'
+    ok no
+  catch e
+    eq 'missing indentation', e.message
