@@ -176,7 +176,8 @@ exports.Base = class Base
   # For this node and all descendents, set the location data to `locationData`
   # if the location data is not already set.
   updateLocationDataIfMissing: (locationData) ->
-    @locationData or= locationData
+    return this if @locationData
+    @locationData = locationData
 
     @eachChild (child) ->
       child.updateLocationDataIfMissing locationData
@@ -2006,6 +2007,7 @@ exports.If = class If extends Base
     else
       @isChain  = elseBody instanceof If
       @elseBody = @ensureBlock elseBody
+      @elseBody.updateLocationDataIfMissing elseBody.locationData
     this
 
   # The **If** only compiles into a statement if either of its bodies needs
