@@ -294,7 +294,7 @@ sourceMaps = {}
 # Generates the source map for a coffee file and stores it in the local cache variable.
 getSourceMap = (filename) ->
   return sourceMaps[filename] if sourceMaps[filename]
-  return unless path.extname(filename) in extensions
+  return unless path?.extname(filename) in extensions
   answer = compileFile filename, true
   sourceMaps[filename] = answer.sourceMap
 
