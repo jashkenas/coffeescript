@@ -3,6 +3,7 @@
 # We add support for loading remote Coffee scripts via **XHR**, and
 # `text/coffeescript` script tags, source maps via data-URLs, and so on.
 
+helpers      = require './helpers'
 CoffeeScript = require './coffee-script'
 CoffeeScript.require = require
 compile = CoffeeScript.compile
@@ -62,7 +63,8 @@ runScripts = ->
     script = coffees[index++]
     mediatype = script?.type
     if mediatype in coffeetypes
-      options = {literate: mediatype is 'text/literate-coffeescript'}
+      options =
+        literate: mediatype is coffeetypes[1] or helpers.isLiterate(script.src)
       if script.src
         CoffeeScript.load script.src, execute, options
       else
