@@ -15,7 +15,7 @@ SourceMap     = require './sourcemap'
 # The current CoffeeScript version number.
 exports.VERSION = '1.6.3'
 
-extensions = ['.coffee', '.litcoffee', '.coffee.md']
+fileExtensions = ['.coffee', '.litcoffee', '.coffee.md']
 
 # Expose helpers for testing.
 exports.helpers = helpers
@@ -164,7 +164,7 @@ loadFile = (module, filename) ->
 # If the installed version of Node supports `require.extensions`, register
 # CoffeeScript as an extension.
 if require.extensions
-  for ext in extensions
+  for ext in fileExtensions
     require.extensions[ext] = loadFile
 
   # Patch Node's module loader to be able to handle mult-dot extensions.
@@ -294,7 +294,7 @@ sourceMaps = {}
 # Generates the source map for a coffee file and stores it in the local cache variable.
 getSourceMap = (filename) ->
   return sourceMaps[filename] if sourceMaps[filename]
-  return unless path?.extname(filename) in extensions
+  return unless path?.extname(filename) in fileExtensions
   answer = compileFile filename, true
   sourceMaps[filename] = answer.sourceMap
 
