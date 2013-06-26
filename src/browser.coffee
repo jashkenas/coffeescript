@@ -29,7 +29,7 @@ if btoa? and JSON? and unescape? and encodeURIComponent?
     options.sourceMap = true
     options.inline = true
     {js, v3SourceMap} = CoffeeScript.compile code, options
-    "#{js}\n//@ sourceMappingURL=data:application/json;base64,#{btoa unescape encodeURIComponent v3SourceMap}\n//@ sourceURL=coffeescript"
+    "#{js}\n//# sourceMappingURL=data:application/json;base64,#{btoa unescape encodeURIComponent v3SourceMap}\n//# sourceURL=coffeescript"
 
 # Load a remote script from the current domain via XHR.
 CoffeeScript.load = (url, callback, options = {}) ->
