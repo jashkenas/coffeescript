@@ -205,10 +205,12 @@ div.code {
       }
     .navigation .contents {
       display: none;
-      position: absolute;
+      position: fixed;
       background: #fff;
       opacity: 0.97;
-      top: 51px; left: 0;
+      top: 77px; left: 294px;
+      overflow-y:scroll;
+      max-height:80%;
       padding: 5px 0;
       margin-left: -1px;
       border: 1px solid #aaa;
