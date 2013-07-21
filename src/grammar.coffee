@@ -77,6 +77,7 @@ grammar =
   # Pure statements which cannot be expressions.
   Statement: [
     o 'Return'
+    o 'YieldFrom'
     o 'Comment'
     o 'STATEMENT',                              -> new Literal $1
   ]
@@ -162,10 +163,16 @@ grammar =
     o 'RETURN',                                 -> new Return
   ]
 
-  # A yield statement from a generator function body.
+  # A yield keyword from a generator function body.
   Yield: [
     o 'YIELD Expression',                      -> new Yield $2
     o 'YIELD',                                 -> new Yield
+  ]
+
+  # A yieldfrom statement from a generator function body.
+  YieldFrom: [
+    o 'YIELDFROM Expression',                      -> new YieldFrom $2
+    o 'YIELDFROM',                                 -> new YieldFrom
   ]
 
   # A block comment.
@@ -576,7 +583,7 @@ operators = [
   ['left',      'COMPARE']
   ['left',      'LOGIC']
   ['nonassoc',  'INDENT', 'OUTDENT']
-  ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'YIELD', 'THROW', 'EXTENDS']
+  ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'YIELD', 'YIELDFROM', 'THROW', 'EXTENDS']
   ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
   ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
   ['right',     'POST_IF']

@@ -381,16 +381,27 @@ exports.Yield = class Yield extends Base
 
   children: ['expression']
 
-  isStatement:     NO
-  makeReturn:      THIS
-  jumps:           NO
-
-  compile: (o, level) ->
-    expr = @expression?.makeReturn()
-    if expr and expr not instanceof Return then expr.compile o, level else super o, level
-
   compileNode: (o) ->
     "yield#{[" #{@expression.compile o, LEVEL_PAREN}" if @expression]}"
+
+exports.YieldFrom = class YieldFrom extends Base
+  constructor: (expr) ->
+    @expression = expr if expr and not expr.unwrap().isUndefined
+
+  children: ['expression']
+
+  compileNode: (o) ->
+    sendvar = o.scope.freeVariable 'send'
+    resvar = o.scope.freeVariable 'result'
+    refvar = o.scope.freeVariable 'ref'
+
+    code  = "var #{refvar} = #{[" #{@expression.compile o, LEVEL_PAREN}" if @expression]};\n"
+    code += "#{@tab}var #{sendvar}, #{resvar} = {};\n"
+    code += "#{@tab}while(!#{resvar}.done) {\n"
+    code += "#{@tab + TAB}#{resvar} = #{refvar}.send(#{sendvar});\n"
+    code += "#{@tab + TAB}#{sendvar} = yield #{resvar}.value;\n"
+    code += "#{@tab}}"
+    return code
 
 #### Value
 
