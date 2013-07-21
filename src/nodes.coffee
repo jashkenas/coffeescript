@@ -1730,9 +1730,10 @@ exports.Parens = class Parens extends Base
 exports.For = class For extends While
   constructor: (body, source) ->
     {@source, @guard, @step, @name, @index} = source
-    @body    = Block.wrap [body]
-    @own     = !!source.own
-    @object  = !!source.object
+    @body      = Block.wrap [body]
+    @own       = !!source.own
+    @object    = !!source.object
+    @generator = !!source.generator
     [@name, @index] = [@index, @name] if @object
     throw SyntaxError 'index cannot be a pattern matching expression' if @index instanceof Value
     @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length
@@ -1758,7 +1759,7 @@ exports.For = class For extends While
     scope.find(name)  if name and not @pattern
     scope.find(index) if index
     rvar      = scope.freeVariable 'results' if @returns
-    ivar      = (@object and index) or scope.freeVariable 'i'
+    ivar      = ((@object or @generator) and index) or scope.freeVariable 'i'
     kvar      = (@range and name) or index or ivar
     kvarAssign = if kvar isnt ivar then "#{kvar} = " else ""
     # the `_by` variable is created twice in `Range`s if we don't prevent it from being declared here
@@ -1766,8 +1767,11 @@ exports.For = class For extends While
     name      = ivar if @pattern
     varPart   = ''
     guardPart = ''
+    topPart   = ''
     defPart   = ''
     idt1      = @tab + TAB
+    loopType = 'for'
+    loopType = 'while' if @generator
     if @range
       forPart = source.compile merge(o, {index: ivar, name, @step})
     else
@@ -1775,9 +1779,9 @@ exports.For = class For extends While
       if (name or @own) and not IDENTIFIER.test svar
         defPart    = "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
         svar       = ref
-      if name and not @pattern
+      if name and not @pattern and not @generator
         namePart   = "#{name} = #{svar}[#{kvar}]"
-      unless @object
+      unless @object or @generator
         lvar       = scope.freeVariable 'len'
         forVarPart = "#{kvarAssign}#{ivar} = 0, #{lvar} = #{svar}.length"
         forVarPart += ", #{stepvar} = #{@step.compile o, LEVEL_OP}" if @step
@@ -1792,17 +1796,23 @@ exports.For = class For extends While
         body.expressions.unshift new If (new Parens @guard).invert(), new Literal "continue"
       else
         body = Block.wrap [new If @guard, body] if @guard
-    if @pattern
+    if @pattern and not @generator
       body.expressions.unshift new Assign @name, new Literal "#{svar}[#{kvar}]"
     defPart     += @pluckDirectCall o, body
     varPart     = "\n#{idt1}#{namePart};" if namePart
-    if @object
+    if @generator
+      resultvar = scope.freeVariable 'result'
+      defPart += "#{@tab}var #{resultvar} = {};\n"
+      forPart = "!#{resultvar}.done"
+      assign = (new Assign @name, new Literal "#{resultvar}.value").compile o, LEVEL_TOP
+      topPart = "\n#{@tab + TAB}#{resultvar} = #{svar}.next();\n#{@tab + TAB}#{assign};"
+    else if @object
       forPart   = "#{kvar} in #{svar}"
       guardPart = "\n#{idt1}if (!#{utility 'hasProp'}.call(#{svar}, #{kvar})) continue;" if @own
     body        = body.compile merge(o, indent: idt1), LEVEL_TOP
     body        = '\n' + body + '\n' if body
     """
-    #{defPart}#{resultPart or ''}#{@tab}for (#{forPart}) {#{guardPart}#{varPart}#{body}#{@tab}}#{returnResult or ''}
+    #{defPart}#{resultPart or ''}#{@tab}#{loopType} (#{forPart}) {#{topPart}#{guardPart}#{varPart}#{body}#{@tab}}#{returnResult or ''}
     """
 
   pluckDirectCall: (o, body) ->

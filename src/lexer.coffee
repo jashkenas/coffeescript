@@ -96,6 +96,9 @@ exports.Lexer = class Lexer
         tag = 'IF'
       else if tag in UNARY
         tag = 'UNARY'
+      else if tag is 'OUTOF' and @seenFor
+        tag = 'FOROUTOF'
+        @seenFor = no
       else if tag in RELATION
         if tag isnt 'INSTANCEOF' and @seenFor
           tag = 'FOR' + tag
@@ -556,7 +559,7 @@ JS_KEYWORDS = [
 ]
 
 # CoffeeScript-only keywords.
-COFFEE_KEYWORDS = ['undefined', 'then', 'unless', 'until', 'loop', 'of', 'by', 'when', 'yieldfrom']
+COFFEE_KEYWORDS = ['undefined', 'then', 'unless', 'until', 'loop', 'of', 'by', 'when', 'yieldfrom', 'outof']
 
 COFFEE_ALIAS_MAP =
   and  : '&&'
