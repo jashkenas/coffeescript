@@ -87,6 +87,7 @@ grammar =
   # them somewhat circular.
   Expression: [
     o 'Value'
+    o 'Yield'
     o 'Invocation'
     o 'Code'
     o 'Operation'
@@ -159,6 +160,12 @@ grammar =
   Return: [
     o 'RETURN Expression',                      -> new Return $2
     o 'RETURN',                                 -> new Return
+  ]
+
+  # A yield statement from a generator function body.
+  Yield: [
+    o 'YIELD Expression',                      -> new Yield $2
+    o 'YIELD',                                 -> new Yield
   ]
 
   # A block comment.
@@ -569,7 +576,7 @@ operators = [
   ['left',      'COMPARE']
   ['left',      'LOGIC']
   ['nonassoc',  'INDENT', 'OUTDENT']
-  ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
+  ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'YIELD', 'THROW', 'EXTENDS']
   ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
   ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
   ['right',     'POST_IF']

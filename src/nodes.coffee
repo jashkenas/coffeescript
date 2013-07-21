@@ -374,6 +374,24 @@ exports.Return = class Return extends Base
   compileNode: (o) ->
     @tab + "return#{[" #{@expression.compile o, LEVEL_PAREN}" if @expression]};"
 
+
+exports.Yield = class Yield extends Base
+  constructor: (expr) ->
+    @expression = expr if expr and not expr.unwrap().isUndefined
+
+  children: ['expression']
+
+  isStatement:     NO
+  makeReturn:      THIS
+  jumps:           NO
+
+  compile: (o, level) ->
+    expr = @expression?.makeReturn()
+    if expr and expr not instanceof Return then expr.compile o, level else super o, level
+
+  compileNode: (o) ->
+    "yield#{[" #{@expression.compile o, LEVEL_PAREN}" if @expression]}"
+
 #### Value
 
 # A value, variable or literal or parenthesized, indexed or dotted into,
@@ -1129,7 +1147,7 @@ exports.Assign = class Assign extends Base
   compileConditional: (o) ->
     [left, right] = @variable.cacheReference o
     # Disallow conditional assignment of undefined variables.
-    if not left.properties.length and left.base instanceof Literal and 
+    if not left.properties.length and left.base instanceof Literal and
            left.base.value != "this" and not o.scope.check left.base.value
       throw new Error "the variable \"#{left.base.value}\" can't be assigned with #{@context} because it has not been defined."
     if "?" in @context then o.isExistentialEquals = true
@@ -1221,7 +1239,10 @@ exports.Code = class Code extends Base
       else if not @static
         o.scope.parent.assign '_this', 'this'
     idt   = o.indent
+    isGenerator = @body.containsType(Yield)
+
     code  = 'function'
+    code += '*' if isGenerator
     code  += ' ' + @name if @ctor
     code  += '(' + params.join(', ') + ') {'
     code  += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
