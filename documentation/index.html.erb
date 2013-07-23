@@ -476,11 +476,13 @@ Expressions
       therefore has a declaration of its own.
     </p>
     <p>
-      This behavior is effectively identical to Ruby's scope for local variables.
-      Because you don't have direct access to the <tt>var</tt> keyword,
-      it's impossible to shadow an outer variable on purpose, you may only refer
-      to it. So be careful that you're not reusing the name of an external
-      variable accidentally, if you're writing a deeply nested function.
+      This behavior is similar to Ruby's scope for local variables.
+      It differs in that it is still possible to access variables
+      from the outer scope.  In fact, because you don't have direct
+      access to the <tt>var</tt> keyword, it's impossible to shadow an
+      outer variable on purpose, you may only refer to it. So be
+      careful that you're not reusing the name of an external variable
+      accidentally, if you're writing a deeply nested function.
     </p>
     <p>
       Although suppressed within this documentation for clarity, all
