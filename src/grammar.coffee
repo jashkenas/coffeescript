@@ -25,34 +25,41 @@
 # wrapper and just returning the value directly.
 unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 
+# Returns a function which adds location data to the first parameter passed
+# in, and returns the parameter.  If the parameter is not a node, it will
+# just be passed through unaffected.
+addLocationDataFn = (first, last) ->
+  if not last
+    "yy.addLocationDataFn(@#{first})"
+  else
+    "yy.addLocationDataFn(@#{first}, @#{last})"
+
 # Our handy DSL for Jison grammar generation, thanks to
 # [Tim Caswell](http://github.com/creationix). For every rule in the grammar,
 # we pass the pattern-defining string, the action to run, and extra options,
 # optionally. If no action is specified, we simply pass the value of the
 # previous nonterminal.
+ditto = {}
+last = ''
+
 o = (patternString, action, options) ->
   patternString = patternString.replace /\s{2,}/g, ' '
   patternCount = patternString.split(' ').length
-  return [patternString, '$$ = $1;', options] unless action
-  action = if match = unwrap.exec action then match[1] else "(#{action}())"
+  return [patternString, last = '$$ = $1;', options] unless action
 
-  # All runtime functions we need are defined on "yy"
-  action = action.replace /\bnew /g, '$&yy.'
-  action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
+  if action is ditto
+    action = last
+  else
+    action = if match = unwrap.exec action then match[1] else "(#{action}())"
 
-  # Returns a function which adds location data to the first parameter passed
-  # in, and returns the parameter.  If the parameter is not a node, it will
-  # just be passed through unaffected.
-  addLocationDataFn = (first, last) ->
-    if not last
-      "yy.addLocationDataFn(@#{first})"
-    else
-      "yy.addLocationDataFn(@#{first}, @#{last})"
+    # All runtime functions we need are defined on "yy"
+    action = action.replace /\bnew /g, '$&yy.'
+    action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
 
-  action = action.replace /LOC\(([0-9]*)\)/g, addLocationDataFn('$1')
-  action = action.replace /LOC\(([0-9]*),\s*([0-9]*)\)/g, addLocationDataFn('$1', '$2')
+    action = action.replace /LOC\(([0-9]*)\)/g, addLocationDataFn('$1')
+    action = action.replace /LOC\(([0-9]*),\s*([0-9]*)\)/g, addLocationDataFn('$1', '$2')
 
-  [patternString, "$$ = #{addLocationDataFn(1, patternCount)}(#{action});", options]
+  [patternString, last = "$$ = #{addLocationDataFn(1, patternCount)}(#{action});", options]
 
 # Grammatical Rules
 # -----------------
@@ -131,17 +138,17 @@ grammar =
   # Alphanumerics are separated from the other **Literal** matchers because
   # they can also serve as keys in object literals.
   AlphaNumeric: [
-    o 'NUMBER',                                 -> new Literal $1
-    o 'STRING',                                 -> new Literal $1
+    o 'NUMBER',                                 ditto
+    o 'STRING',                                 ditto
   ]
 
   # All of our immediate values. Generally these can be passed straight
   # through and printed to JavaScript.
   Literal: [
     o 'AlphaNumeric'
-    o 'JS',                                     -> new Literal $1
-    o 'REGEX',                                  -> new Literal $1
-    o 'DEBUGGER',                               -> new Literal $1
+    o 'JS',                                     ditto
+    o 'REGEX',                                  ditto
+    o 'DEBUGGER',                               ditto
     o 'UNDEFINED',                              -> new Undefined
     o 'NULL',                                   -> new Null
     o 'BOOL',                                   -> new Bool $1
@@ -150,8 +157,8 @@ grammar =
   # Assignment of a variable, property, or index to a value.
   Assign: [
     o 'Assignable = Expression',                -> new Assign $1, $3
-    o 'Assignable = TERMINATOR Expression',     -> new Assign $1, $4
-    o 'Assignable = INDENT Expression OUTDENT', -> new Assign $1, $4
+    o 'Assignable = TERMINATOR Expression',     ditto
+    o 'Assignable = INDENT Expression OUTDENT', ditto
   ]
 
   # Assignment when it happens within an object literal. The difference from
@@ -244,16 +251,16 @@ grammar =
   Assignable: [
     o 'SimpleAssignable'
     o 'Array',                                  -> new Value $1
-    o 'Object',                                 -> new Value $1
+    o 'Object',                                 ditto
   ]
 
   # The types of things that can be treated as values -- assigned to, invoked
   # as functions, indexed into, named as a class, etc.
   Value: [
     o 'Assignable'
-    o 'Literal',                                -> new Value $1
-    o 'Parenthetical',                          -> new Value $1
-    o 'Range',                                  -> new Value $1
+    o 'Literal',                                ditto
+    o 'Parenthetical',                          ditto
+    o 'Range',                                  ditto
     o 'This'
   ]
 
@@ -444,7 +451,7 @@ grammar =
   # or postfix, with a single expression.
   For: [
     o 'Statement  ForBody',                     -> new For $1, $2
-    o 'Expression ForBody',                     -> new For $1, $2
+    o 'Expression ForBody',                     ditto
     o 'ForBody    Block',                       -> new For $2, $1
   ]
 
@@ -464,7 +471,7 @@ grammar =
     o 'Identifier'
     o 'ThisProperty'
     o 'Array',                                  -> new Value $1
-    o 'Object',                                 -> new Value $1
+    o 'Object',                                 ditto
   ]
 
   # An array or range comprehension has variables for the current element
@@ -546,9 +553,9 @@ grammar =
     o 'Expression -  Expression',               -> new Op '-' , $1, $3
 
     o 'Expression MATH     Expression',         -> new Op $2, $1, $3
-    o 'Expression SHIFT    Expression',         -> new Op $2, $1, $3
-    o 'Expression COMPARE  Expression',         -> new Op $2, $1, $3
-    o 'Expression LOGIC    Expression',         -> new Op $2, $1, $3
+    o 'Expression SHIFT    Expression',         ditto
+    o 'Expression COMPARE  Expression',         ditto
+    o 'Expression LOGIC    Expression',         ditto
     o 'Expression RELATION Expression',         ->
       if $2.charAt(0) is '!'
         new Op($2[1..], $1, $3).invert()
@@ -558,9 +565,9 @@ grammar =
     o 'SimpleAssignable COMPOUND_ASSIGN
        Expression',                             -> new Assign $1, $3, $2
     o 'SimpleAssignable COMPOUND_ASSIGN
-       INDENT Expression OUTDENT',              -> new Assign $1, $4, $2
+       INDENT Expression OUTDENT',              ditto
     o 'SimpleAssignable COMPOUND_ASSIGN TERMINATOR
-       Expression',                             -> new Assign $1, $4, $2
+       Expression',                             ditto
     o 'SimpleAssignable EXTENDS Expression',    -> new Extends $1, $3
   ]
 
