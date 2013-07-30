@@ -355,8 +355,7 @@ class exports.Rewriter
 
   # Because our grammar is LALR(1), it can't handle some single-line
   # expressions that lack ending delimiters. The **Rewriter** adds the implicit
-  # blocks, so it doesn't need to. ')' can close a single-line block,
-  # but we need to make sure it's balanced.
+  # blocks, so it doesn't need to.
   addImplicitIndentation: ->
     starter = indent = outdent = null
 
@@ -370,12 +369,13 @@ class exports.Rewriter
 
     @scanTokens (token, i, tokens) ->
       [tag] = token
-      if tag is 'TERMINATOR' and @tag(i + 1) is 'THEN'
-        tokens.splice i, 1
-        return 0
-      if tag is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
-        tokens.splice i, 0, @indentation()...
-        return 2
+      if tag is 'TERMINATOR'
+        if @tag(i + 1) is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
+          tokens.splice i, 1, @indentation()...
+          return 1
+        if @tag(i + 1) in ['THEN', 'ELSE']
+          tokens.splice i, 1
+          return 0
       if tag is 'CATCH'
         for j in [1..2] when @tag(i + j) in ['OUTDENT', 'TERMINATOR', 'FINALLY']
           tokens.splice i + j, 0, @indentation()...
@@ -452,7 +452,7 @@ for [left, rite] in BALANCED_PAIRS
   EXPRESSION_END  .push INVERSES[left] = rite
 
 # Tokens that indicate the close of a clause of an expression.
-EXPRESSION_CLOSE = ['CATCH', 'WHEN', 'ELSE', 'FINALLY'].concat EXPRESSION_END
+EXPRESSION_CLOSE = ['CATCH', 'FINALLY'].concat EXPRESSION_END
 
 # Tokens that, if followed by an `IMPLICIT_CALL`, indicate a function invocation.
 IMPLICIT_FUNC    = ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@', 'THIS']
