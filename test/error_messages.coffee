@@ -8,6 +8,7 @@ assertErrorFormat = (code, expectedErrorFormat) ->
   throws (-> CoffeeScript.run code), (err) ->
     err.colorful = no
     eq expectedErrorFormat, "#{err}"
+    eq expectedErrorFormat, err.stack
     yes
 
 test "lexer errors formating", ->

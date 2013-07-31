@@ -143,8 +143,10 @@ exports.throwSyntaxError = (message, location) ->
   error.location = location
   error.toString = syntaxErrorToString
 
-  # Prevent compiler error from showing the compiler's stacktrace.
-  delete error.stack
+  # Instead of showing the compiler's stacktrace, show our custom error message
+  # (this is useful when the error bubbles up in Node.js applications that
+  # compile CoffeeScript for example).
+  Object.defineProperty? error, 'stack', get: -> @toString()
 
   throw error
 
