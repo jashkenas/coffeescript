@@ -361,6 +361,7 @@ class exports.Rewriter
 
     condition = (token, i) ->
       token[1] isnt ';' and token[0] in SINGLE_CLOSERS and
+      not (token[0] is 'TERMINATOR' and @tag(i + 1) in ['THEN', 'ELSE']) and
       not (token[0] is 'ELSE' and starter isnt 'THEN') and
       not (token[0] in ['CATCH', 'FINALLY'] and starter in ['->', '=>'])
 
