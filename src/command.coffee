@@ -141,8 +141,7 @@ compileScript = (file, input, base=null) ->
   catch err
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
-    useColors = process.stdout.isTTY and not process.env.NODE_DISABLE_COLORS
-    message = helpers.prettyErrorMessage err, file or '[stdin]', input, useColors
+    message = err.stack or "#{err}"
     if o.watch
       printLine message + '\x07'
     else

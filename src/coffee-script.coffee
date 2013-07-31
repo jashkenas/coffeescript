@@ -20,6 +20,17 @@ fileExtensions = ['.coffee', '.litcoffee', '.coffee.md']
 # Expose helpers for testing.
 exports.helpers = helpers
 
+# Function wrapper to add source file information to SyntaxErrors thrown by the
+# lexer/parser/compiler.
+withPrettyErrors = (fn) ->
+  (code, options = {}) ->
+    try
+      fn.call @, code, options
+    catch err
+      err.code or= code
+      err.filename or= options.filename
+      throw err
+
 # Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
 #
 # If `options.sourceMap` is specified, then `options.filename` must also be specified.  All
@@ -29,7 +40,7 @@ exports.helpers = helpers
 # in which case this returns a `{js, v3SourceMap, sourceMap}`
 # object, where sourceMap is a sourcemap.coffee#SourceMap object, handy for doing programatic
 # lookups.
-exports.compile = compile = (code, options = {}) ->
+exports.compile = compile = withPrettyErrors (code, options) ->
   {merge} = helpers
 
   if options.sourceMap
@@ -70,13 +81,13 @@ exports.compile = compile = (code, options = {}) ->
     js
 
 # Tokenize a string of CoffeeScript code, and return the array of tokens.
-exports.tokens = (code, options) ->
+exports.tokens = withPrettyErrors (code, options) ->
   lexer.tokenize code, options
 
 # Parse a string of CoffeeScript code or an array of lexed tokens, and
 # return the AST. You can then compile it by calling `.compile()` on the root,
 # or traverse it by using `.traverseChildren()` with a callback.
-exports.nodes = (source, options) ->
+exports.nodes = withPrettyErrors (source, options) ->
   if typeof source is 'string'
     parser.parse lexer.tokenize source, options
   else
@@ -150,8 +161,8 @@ compileFile = (filename, sourceMap) ->
     # As the filename and code of a dynamically loaded file will be different
     # from the original file compiled with CoffeeScript.run, add that
     # information to error so it can be pretty-printed later.
-    err.filename = filename
-    err.code = stripped
+    err.filename or= filename
+    err.code or= stripped
     throw err
 
   answer
