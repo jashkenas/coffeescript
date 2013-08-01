@@ -31,5 +31,8 @@
   "devDependencies": {
     "uglify-js":  "~2.2",
     "jison":      ">=0.2.0"
+  },
+  "dependencies": {
+    "mkdirp": "~0.3.5"
   }
 }
