@@ -286,8 +286,11 @@ writeJs = (base, sourcePath, js, jsPath, generatedSourceMap = null) ->
           printLine "Could not write source map: #{err.message}"
   exists jsDir, (itExists) ->
     if itExists then compile() else mkdirp jsDir, (err) => 
-      if err then printLine "Error while creating dir #{jsDir}: #{err}"; exec "mkdir -p #{jsDir}"
-      compile()
+      if err 
+        printLine "Error while creating dir #{jsDir}: #{err}"
+        exec "mkdir -p #{jsDir}", compile
+      else
+        compile()
 
 # Convenience for cleaner setTimeouts.
 wait = (milliseconds, func) -> setTimeout func, milliseconds
