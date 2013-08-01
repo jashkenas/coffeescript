@@ -10,6 +10,7 @@ path           = require 'path'
 helpers        = require './helpers'
 optparse       = require './optparse'
 CoffeeScript   = require './coffee-script'
+mkdirp         = require 'mkdirp'
 {spawn, exec}  = require 'child_process'
 {EventEmitter} = require 'events'
 
@@ -284,7 +285,9 @@ writeJs = (base, sourcePath, js, jsPath, generatedSourceMap = null) ->
         if err
           printLine "Could not write source map: #{err.message}"
   exists jsDir, (itExists) ->
-    if itExists then compile() else exec "mkdir -p #{jsDir}", compile
+    if itExists then compile() else mkdirp jsDir, (err) => 
+      if err then printLine "Error while creating dir #{jsDir}: #{err}"; exec "mkdir -p #{jsDir}"
+      compile()
 
 # Convenience for cleaner setTimeouts.
 wait = (milliseconds, func) -> setTimeout func, milliseconds
