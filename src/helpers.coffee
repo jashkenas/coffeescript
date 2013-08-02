@@ -146,9 +146,19 @@ exports.throwSyntaxError = (message, location) ->
   # Instead of showing the compiler's stacktrace, show our custom error message
   # (this is useful when the error bubbles up in Node.js applications that
   # compile CoffeeScript for example).
-  Object.defineProperty? error, 'stack', get: -> @toString()
+  error.stack = error.toString()
 
   throw error
+
+# Update a compiler SyntaxError with source code information if it didn't have
+# it already.
+exports.updateSyntaxError = (error, code, filename) ->
+  # Avoid screwing up the `stack` property of other errors (i.e. possible bugs).
+  if error.toString is syntaxErrorToString
+    error.code or= code
+    error.filename or= filename
+    error.stack = error.toString()
+  error
 
 syntaxErrorToString = ->
   return Error::toString.call @ unless @code and @location

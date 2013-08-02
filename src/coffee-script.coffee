@@ -27,9 +27,7 @@ withPrettyErrors = (fn) ->
     try
       fn.call @, code, options
     catch err
-      err.code or= code
-      err.filename or= options.filename
-      throw err
+      throw helpers.updateSyntaxError err, code, options.filename
 
 # Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
 #
@@ -161,9 +159,7 @@ compileFile = (filename, sourceMap) ->
     # As the filename and code of a dynamically loaded file will be different
     # from the original file compiled with CoffeeScript.run, add that
     # information to error so it can be pretty-printed later.
-    err.filename or= filename
-    err.code or= stripped
-    throw err
+    throw helpers.updateSyntaxError err, stripped, filename
 
   answer
 
