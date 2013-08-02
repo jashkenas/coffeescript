@@ -15,6 +15,7 @@ SourceMap     = require './sourcemap'
 # The current CoffeeScript version number.
 exports.VERSION = '1.6.3'
 
+binary = require.resolve '../../bin/coffee'
 fileExtensions = ['.coffee', '.litcoffee', '.coffee.md']
 
 # Expose helpers for testing.
@@ -202,7 +203,7 @@ if require.extensions
 if child_process
   {fork} = child_process
   child_process.fork = (path, args = [], options = {}) ->
-    execPath = if helpers.isCoffee(path) then 'coffee' else null
+    execPath = if helpers.isCoffee(path) then binary else null
     if not Array.isArray args
       args = []
       options = args or {}
