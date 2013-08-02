@@ -134,44 +134,57 @@ exports.isCoffee = (file) -> /\.((lit)?coffee|coffee\.md)$/.test file
 # Determine if a filename represents a Literate CoffeeScript file.
 exports.isLiterate = (file) -> /\.(litcoffee|coffee\.md)$/.test file
 
-# Throws a SyntaxError with a source file location data attached to it in a
-# property called `location`.
+# Throws a SyntaxError from a given location.
+# The error's `toString` will return an error message following the "standard"
+# format <filename>:<line>:<col>: <message> plus the line with the error and a
+# marker showing where the error is.
 exports.throwSyntaxError = (message, location) ->
-  location.last_line ?= location.first_line
-  location.last_column ?= location.first_column
   error = new SyntaxError message
   error.location = location
+  error.toString = syntaxErrorToString
+
+  # Instead of showing the compiler's stacktrace, show our custom error message
+  # (this is useful when the error bubbles up in Node.js applications that
+  # compile CoffeeScript for example).
+  error.stack = error.toString()
+
   throw error
 
-# Creates a nice error message like, following the "standard" format
-# <filename>:<line>:<col>: <message> plus the line with the error and a marker
-# showing where the error is.
-exports.prettyErrorMessage = (error, filename, code, useColors) ->
-  return error.stack or "#{error}" unless error.location
+# Update a compiler SyntaxError with source code information if it didn't have
+# it already.
+exports.updateSyntaxError = (error, code, filename) ->
+  # Avoid screwing up the `stack` property of other errors (i.e. possible bugs).
+  if error.toString is syntaxErrorToString
+    error.code or= code
+    error.filename or= filename
+    error.stack = error.toString()
+  error
 
-  # Prefer original source file information stored in the error if present.
-  filename = error.filename or filename
-  code     = error.code or code
+syntaxErrorToString = ->
+  return Error::toString.call @ unless @code and @location
 
-  {first_line, first_column, last_line, last_column} = error.location
-  codeLine = code.split('\n')[first_line]
+  {first_line, first_column, last_line, last_column} = @location
+  last_line ?= first_line
+  last_column ?= first_column
+
+  filename = @filename or '[stdin]'
+  codeLine = @code.split('\n')[first_line]
   start    = first_column
   # Show only the first line on multi-line errors.
   end      = if first_line is last_line then last_column + 1 else codeLine.length
   marker   = repeat(' ', start) + repeat('^', end - start)
 
-  if useColors
+  # Check to see if we're running on a color-enabled TTY.
+  if process?
+    colorsEnabled = process.stdout.isTTY and not process.env.NODE_DISABLE_COLORS
+
+  if @colorful ? colorsEnabled
     colorize = (str) -> "\x1B[1;31m#{str}\x1B[0m"
     codeLine = codeLine[...start] + colorize(codeLine[start...end]) + codeLine[end..]
     marker   = colorize marker
 
-  message = """
-    #{filename}:#{first_line + 1}:#{first_column + 1}: error: #{error.message}
+  """
+    #{filename}:#{first_line + 1}:#{first_column + 1}: error: #{@message}
     #{codeLine}
     #{marker}
   """
-
-  # Uncomment to add stacktrace.
-  #message += "\n#{error.stack}"
-
-  message
