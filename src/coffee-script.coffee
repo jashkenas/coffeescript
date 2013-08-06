@@ -62,7 +62,10 @@ exports.compile = compile = withPrettyErrors (code, options) ->
           {noReplace: true})
       newLines = helpers.count fragment.code, "\n"
       currentLine += newLines
-      currentColumn = fragment.code.length - (if newLines then fragment.code.lastIndexOf "\n" else 0)
+      if newLines
+        currentColumn = fragment.code.length - (fragment.code.lastIndexOf("\n") + 1)
+      else
+        currentColumn += fragment.code.length
 
     # Copy the code from each fragment into the final JavaScript.
     js += fragment.code
