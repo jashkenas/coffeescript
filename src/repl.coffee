@@ -9,6 +9,8 @@ replDefaults =
   prompt: 'coffee> ',
   historyFile: path.join process.env.HOME, '.coffee_history' if process.env.HOME
   historyMaxInputSize: 10240
+  # Make the REPL use the global context by default so as to (a) be consistent with the `node` REPL and, therefore, (b) make packages that modify prototypes - e.g., 'colors', 'sugar' - work as expected.
+  useGlobal: yes
   eval: (input, context, filename, cb) ->
     # XXX: multiline hack.
     input = input.replace /\uFF00/g, '\n'
@@ -27,7 +29,7 @@ replDefaults =
         new Assign (new Value new Literal '_'), ast, '='
       ]
       js = ast.compile bare: yes, locals: Object.keys(context)
-      cb null, vm.runInContext(js, context, filename)
+      cb null, if context is global then vm.runInThisContext(js, filename) else vm.runInContext(js, context, filename)
     catch err
       # AST's `compile` does not add source code information to syntax errors.
       updateSyntaxError err, input

@@ -102,10 +102,11 @@ testRepl "existential assignment of previously declared variable", (input, outpu
   eq '42', output.lastWrite()
 
 testRepl "keeps running after runtime error", (input, output) ->
+  input.emitLine 'a = 0'  # Note: with the REPL option `useGlobal` set to true, variables are retained across tests.
   input.emitLine 'a = b'
   eq 0, output.lastWrite().indexOf 'ReferenceError: b is not defined'
   input.emitLine 'a'
-  eq 'undefined', output.lastWrite()
+  eq '0', output.lastWrite()
 
 process.on 'exit', ->
   fs.unlinkSync historyFile
