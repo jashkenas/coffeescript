@@ -25,7 +25,7 @@ printWarn = (line) -> process.stderr.write line + '\n'
 
 hidden = (file) -> /^\.|~$/.test file
 
-# The help banner that is printed when `coffee` is called without arguments.
+# The help banner that is printed in conjunction with `-h`/`--help`.
 BANNER = '''
   Usage: coffee [options] path/to/script.coffee -- [args]
 
@@ -65,15 +65,19 @@ optionParser = null
 # `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run = ->
   parseOptions()
-  return forkNode()                      if opts.nodejs
-  return usage()                         if opts.help
-  return version()                       if opts.version
-  return require('./repl').start()       if opts.interactive
+  # Make the REPL *CLI* use the global context so as to (a) be consistent with the 
+  # `node` REPL CLI and, therefore, (b) make packages that modify native prototypes
+  # (such as 'colors' and 'sugar') work as expected.
+  replCliOpts = useGlobal: yes
+  return forkNode()                             if opts.nodejs
+  return usage()                                if opts.help
+  return version()                              if opts.version
+  return require('./repl').start(replCliOpts)   if opts.interactive
   if opts.watch and not fs.watch
     return printWarn "The --watch feature depends on Node v0.6.0+. You are running #{process.version}."
-  return compileStdio()                  if opts.stdio
-  return compileScript null, sources[0]  if opts.eval
-  return require('./repl').start()       unless sources.length
+  return compileStdio()                         if opts.stdio
+  return compileScript null, sources[0]         if opts.eval
+  return require('./repl').start(replCliOpts)   unless sources.length
   literals = if opts.run then sources.splice 1 else []
   process.argv = process.argv[0..1].concat literals
   process.argv[0] = 'coffee'
