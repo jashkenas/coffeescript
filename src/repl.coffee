@@ -27,7 +27,11 @@ replDefaults =
         new Assign (new Value new Literal '_'), ast, '='
       ]
       js = ast.compile bare: yes, locals: Object.keys(context)
-      cb null, if context is global then vm.runInThisContext(js, filename) else vm.runInContext(js, context, filename)
+      result = if context is global
+        vm.runInThisContext js, filename 
+      else
+        vm.runInContext js, context, filename
+      cb null, result
     catch err
       # AST's `compile` does not add source code information to syntax errors.
       updateSyntaxError err, input
