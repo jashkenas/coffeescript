@@ -4,10 +4,7 @@
   "keywords":     ["javascript", "language", "coffeescript", "compiler"],
   "author":       "Jeremy Ashkenas",
   "version":      "1.6.3",
-  "licenses":     [{
-    "type":       "MIT",
-    "url":        "https://raw.github.com/jashkenas/coffee-script/master/LICENSE"
-  }],
+  "license":      "MIT",
   "engines":      {
     "node":       ">=0.8.0"
   },
