@@ -211,3 +211,66 @@ test "#2916: block comment before implicit call with implicit object", ->
   ### ###
   fn
     a: yes
+
+test "#3132: Format multi-line block comment nicely", ->
+  input = """
+  ###
+  # Multi-line
+  # block
+  # comment
+  ###"""
+
+  result = """
+
+  /*
+   * Multi-line
+   * block
+   * comment
+   */
+
+
+  """
+  eq CoffeeScript.compile(input, bare: on), result
+
+test "#3132: Format simple block comment nicely", ->
+  input = """
+  ###
+  No
+  Preceding hash
+  ###"""
+
+  result = """
+
+  /*
+  No
+  Preceding hash
+   */
+
+
+  """
+
+  eq CoffeeScript.compile(input, bare: on), result
+
+test "#3132: Format indented block-comment nicely", ->
+  input = """
+  fn = () ->
+    ###
+    # Indented
+    Multiline
+    ###
+    1"""
+
+  result = """
+  var fn;
+
+  fn = function() {
+
+    /*
+     * Indented
+    Multiline
+     */
+    return 1;
+  };
+
+  """
+  eq CoffeeScript.compile(input, bare: on), result
