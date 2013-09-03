@@ -45,9 +45,9 @@ exports.Lexer = class Lexer
     @tokens     = []             # Stream of parsed tokens in the form `['TYPE', value, location data]`.
 
     @chunkLine =
-        opts.line or 0         # The start line for the current @chunk.
+      opts.line or 0         # The start line for the current @chunk.
     @chunkColumn =
-        opts.column or 0       # The start column of the current @chunk.
+      opts.column or 0       # The start column of the current @chunk.
     code = @clean code         # The stripped, cleaned original source code.
 
     # At every position, run through this list of attempted matches,
@@ -84,8 +84,8 @@ exports.Lexer = class Lexer
     code = code.slice(1) if code.charCodeAt(0) is BOM
     code = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
     if WHITESPACE.test code
-        code = "\n#{code}"
-        @chunkLine--
+      code = "\n#{code}"
+      @chunkLine--
     code = invertLiterate code if @literate
     code
 
