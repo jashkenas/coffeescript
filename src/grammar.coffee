@@ -219,7 +219,7 @@ grammar =
     o 'ParamVar = Expression',                  -> new Param $1, $3
   ]
 
- # Function Parameters
+  # Function Parameters
   ParamVar: [
     o 'Identifier'
     o 'ThisProperty'

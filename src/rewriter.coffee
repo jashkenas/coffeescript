@@ -7,9 +7,9 @@
 
 # Create a generated token: one that exists due to a use of implicit syntax.
 generate = (tag, value) ->
-    tok = [tag, value]
-    tok.generated = yes
-    tok
+  tok = [tag, value]
+  tok.generated = yes
+  tok
 
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
 # its internal array of tokens.
@@ -341,11 +341,11 @@ class exports.Rewriter
       return 1 if     token[2]
       return 1 unless token.generated or token.explicit
       if token[0] is '{' and nextLocation=tokens[i + 1]?[2]
-          {first_line: line, first_column: column} = nextLocation
+        {first_line: line, first_column: column} = nextLocation
       else if prevLocation = tokens[i - 1]?[2]
-          {last_line: line, last_column: column} = prevLocation
+        {last_line: line, last_column: column} = prevLocation
       else
-          line = column = 0
+        line = column = 0
       token[2] =
         first_line:   line
         first_column: column
