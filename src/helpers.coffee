@@ -99,23 +99,23 @@ buildLocationData = (first, last) ->
 # object is an AST node, updates that object's locationData.
 # The object is returned either way.
 exports.addLocationDataFn = (first, last) ->
-    (obj) ->
-      if ((typeof obj) is 'object') and (!!obj['updateLocationDataIfMissing'])
-        obj.updateLocationDataIfMissing buildLocationData(first, last)
+  (obj) ->
+    if ((typeof obj) is 'object') and (!!obj['updateLocationDataIfMissing'])
+      obj.updateLocationDataIfMissing buildLocationData(first, last)
 
-      return obj
+    return obj
 
 # Convert jison location data to a string.
 # `obj` can be a token, or a locationData.
 exports.locationDataToString = (obj) ->
-    if ("2" of obj) and ("first_line" of obj[2]) then locationData = obj[2]
-    else if "first_line" of obj then locationData = obj
+  if ("2" of obj) and ("first_line" of obj[2]) then locationData = obj[2]
+  else if "first_line" of obj then locationData = obj
 
-    if locationData
-      "#{locationData.first_line + 1}:#{locationData.first_column + 1}-" +
-      "#{locationData.last_line + 1}:#{locationData.last_column + 1}"
-    else
-      "No location data"
+  if locationData
+    "#{locationData.first_line + 1}:#{locationData.first_column + 1}-" +
+    "#{locationData.last_line + 1}:#{locationData.last_column + 1}"
+  else
+    "No location data"
 
 # A `.coffee.md` compatible version of `basename`, that returns the file sans-extension.
 exports.baseFileName = (file, stripExt = no, useWinPathSep = no) ->
