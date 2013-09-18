@@ -11,6 +11,7 @@ child_process = require 'child_process'
 {parser}      = require './parser'
 helpers       = require './helpers'
 SourceMap     = require './sourcemap'
+Macro         = require './macro'
 
 # The current CoffeeScript version number.
 exports.VERSION = '1.6.3'
@@ -45,7 +46,9 @@ exports.compile = compile = withPrettyErrors (code, options) ->
   if options.sourceMap
     map = new SourceMap
 
-  fragments = parser.parse(lexer.tokenize code, options).compileToFragments options
+  nodes = parser.parse lexer.tokenize code, options
+  nodes = Macro.expand nodes, lexer, parser, options if options.macro
+  fragments = nodes.compileToFragments options
 
   currentLine = 0
   currentLine += 1 if options.header
@@ -91,9 +94,8 @@ exports.tokens = withPrettyErrors (code, options) ->
 # or traverse it by using `.traverseChildren()` with a callback.
 exports.nodes = withPrettyErrors (source, options) ->
   if typeof source is 'string'
-    parser.parse lexer.tokenize source, options
-  else
-    parser.parse source
+    source = lexer.tokenize source, options
+  parser.parse source
 
 # Compile and execute a string of CoffeeScript (on the server), correctly
 # setting `__filename`, `__dirname`, and relative `require()`.

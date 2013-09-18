@@ -141,6 +141,7 @@ exports.isLiterate = (file) -> /\.(litcoffee|coffee\.md)$/.test file
 exports.throwSyntaxError = (message, location) ->
   error = new SyntaxError message
   error.location = location
+  error.filename = location.file if location?.file
   error.toString = syntaxErrorToString
 
   # Instead of showing the compiler's stacktrace, show our custom error message
