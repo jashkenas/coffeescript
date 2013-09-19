@@ -10,6 +10,9 @@ that originated every node in the syntax tree, and be able to generate a
 of this information — to write out alongside the generated JavaScript.
 
 
+    helpers = require './helpers'
+   
+
 LineMap
 -------
 
@@ -21,13 +24,13 @@ positions for a single line of output JavaScript code.
       constructor: (@line) ->
         @columns = []
 
-      add: (column, [sourceLine, sourceColumn], options={}) ->
+      add: (column, loc, options={}) ->
         return if @columns[column] and options.noReplace
-        @columns[column] = {line: @line, column, sourceLine, sourceColumn}
+        @columns[column] = loc
 
       sourceLocation: (column) ->
-        column-- until (mapping = @columns[column]) or (column <= 0)
-        mapping and [mapping.sourceLine, mapping.sourceColumn]
+        column-- until (loc = @columns[column]) or (column <= 0)
+        loc
 
 
 SourceMap
@@ -41,23 +44,34 @@ disk. Once the compiler is ready to produce a "v3"-style source map, we can walk
 through the arrays of line and column buffer to produce it.
 
     class SourceMap
-      constructor: ->
+      constructor: (fragments,options={}) ->
         @lines = []
+        return if !fragments
+  
+        currentLine = 0
+        currentLine += 1 if options.header
+        currentLine += 1 if options.shiftLine
+        currentColumn = 0
+        for fragment in fragments
+          # Update the sourcemap with data from each fragment
+          if loc = fragment.locationData
+            lineMap = (@lines[currentLine] or= new LineMap(currentLine))
+            lineMap.add currentColumn, loc, options
 
-Adds a mapping to this SourceMap. `sourceLocation` and `generatedLocation`
-are both `[line, column]` arrays. If `options.noReplace` is true, then if there
-is already a mapping for the specified `line` and `column`, this will have no
-effect.
+          code = fragment.code
+          newLines = pos = 0
+          newLines++ while pos = 1 + code.indexOf "\n", pos
+          if newLines
+            currentLine += newLines
+            currentColumn = code.length - (code.lastIndexOf("\n") + 1)
+          else
+            currentColumn += code.length
 
-      add: (sourceLocation, generatedLocation, options = {}) ->
-        [line, column] = generatedLocation
-        lineMap = (@lines[line] or= new LineMap(line))
-        lineMap.add column, sourceLocation, options
 
 Look up the original position of a given `line` and `column` in the generated
 code.
 
-      sourceLocation: ([line, column]) ->
+      sourceLocation: (line, column) ->
         line-- until (lineMap = @lines[line]) or (line <= 0)
         lineMap and lineMap.sourceLocation column
 
@@ -67,10 +81,9 @@ V3 SourceMap Generation
 
 Builds up a V3 source map, returning the generated JSON as a string.
 `options.sourceRoot` may be used to specify the sourceRoot written to the source
-map.  Also, `options.sourceFiles` and `options.generatedFile` may be passed to
-set "sources" and "file", respectively.
+map.  Also, `options.generatedFile` may be passed to "file".
 
-      generate: (options = {}, code = null) ->
+      generate: (options = {}) ->
         writingline       = 0
         lastColumn        = 0
         lastSourceLine    = 0
@@ -78,9 +91,9 @@ set "sources" and "file", respectively.
         needComma         = no
         buffer            = ""
 
-        for lineMap, lineNumber in @lines when lineMap
-          for mapping in lineMap.columns when mapping
-            while writingline < mapping.line
+        for lineMap, dstLine in @lines when lineMap
+          for loc, dstColumn in lineMap.columns when loc
+            while writingline < dstLine
               lastColumn = 0
               needComma = no
               buffer += ";"
@@ -98,22 +111,22 @@ is a generated column which doesn't match anything in the source code.
 The starting column in the generated source, relative to any previous recorded
 column for the current line:
 
-            buffer += @encodeVlq mapping.column - lastColumn
-            lastColumn = mapping.column
+            buffer += @encodeVlq dstColumn - lastColumn
+            lastColumn = dstColumn
 
 The index into the list of sources:
 
-            buffer += @encodeVlq 0
+            buffer += @encodeVlq loc.file_num||0
 
 The starting line in the original source, relative to the previous source line.
 
-            buffer += @encodeVlq mapping.sourceLine - lastSourceLine
-            lastSourceLine = mapping.sourceLine
+            buffer += @encodeVlq loc.first_line - lastSourceLine
+            lastSourceLine = loc.first_line
 
 The starting column in the original source, relative to the previous column.
 
-            buffer += @encodeVlq mapping.sourceColumn - lastSourceColumn
-            lastSourceColumn = mapping.sourceColumn
+            buffer += @encodeVlq loc.first_column - lastSourceColumn
+            lastSourceColumn = loc.first_column
             needComma = yes
 
 Produce the canonical JSON object format for a "v3" source map.
@@ -122,11 +135,12 @@ Produce the canonical JSON object format for a "v3" source map.
           version:    3
           file:       options.generatedFile or ''
           sourceRoot: options.sourceRoot or ''
-          sources:    options.sourceFiles or ['']
+          sources:    helpers.filenames || []
           names:      []
           mappings:   buffer
 
-        v3.sourcesContent = [code] if options.inline
+        if options.inline
+            v3.sourcesContent = helpers.scripts || []
 
         JSON.stringify v3, null, 2
 

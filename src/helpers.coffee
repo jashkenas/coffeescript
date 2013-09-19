@@ -25,13 +25,6 @@ exports.repeat = repeat = (str, n) ->
 exports.compact = (array) ->
   item for item in array when item
 
-# Count the number of occurrences of a string in a string.
-exports.count = (string, substr) ->
-  num = pos = 0
-  return 1/0 unless substr.length
-  num++ while pos = 1 + string.indexOf substr, pos
-  num
-
 # Merge objects, returning a fresh copy with attributes from both sides.
 # Used every time `Base#compile` is called, to allow properties in the
 # options hash to propagate down the tree without polluting other branches.
@@ -94,6 +87,7 @@ buildLocationData = (first, last) ->
     first_column: first.first_column
     last_line: last.last_line
     last_column: last.last_column
+    file_num: last.file_num
 
 # This returns a function which takes an object as a parameter, and if that
 # object is an AST node, updates that object's locationData.
@@ -112,6 +106,8 @@ exports.locationDataToString = (obj) ->
   else if "first_line" of obj then locationData = obj
 
   if locationData
+    filename = filenames[locationData.file_num ? filenames.length-1]
+    (if filename then filename+" " else "") +
     "#{locationData.first_line + 1}:#{locationData.first_column + 1}-" +
     "#{locationData.last_line + 1}:#{locationData.last_column + 1}"
   else
@@ -141,7 +137,6 @@ exports.isLiterate = (file) -> /\.(litcoffee|coffee\.md)$/.test file
 exports.throwSyntaxError = (message, location) ->
   error = new SyntaxError message
   error.location = location
-  error.filename = location.file if location?.file
   error.toString = syntaxErrorToString
 
   # Instead of showing the compiler's stacktrace, show our custom error message
@@ -151,25 +146,30 @@ exports.throwSyntaxError = (message, location) ->
 
   throw error
 
-# Update a compiler SyntaxError with source code information if it didn't have
-# it already.
-exports.updateSyntaxError = (error, code, filename) ->
-  # Avoid screwing up the `stack` property of other errors (i.e. possible bugs).
-  if error.toString is syntaxErrorToString
-    error.code or= code
-    error.filename or= filename
-    error.stack = error.toString()
-  error
+
+# Lists of coffeescript sources and filenames, for every bit of code that is
+# tokenized. It's indexed by `file_num`, which is set on each of the parser 
+# nodes and is passed to the lexer.
+exports.scripts = scripts = []
+exports.filenames = filenames = []
+
+exports.getFileNum = (source, filename) ->
+  fileNum = scripts.length
+  scripts[fileNum] = source
+  filenames[fileNum] = filename
+  fileNum
+
 
 syntaxErrorToString = ->
-  return Error::toString.call @ unless @code and @location
+  return Error::toString.call @ unless @location
 
-  {first_line, first_column, last_line, last_column} = @location
+  {first_line, first_column, last_line, last_column, file_num} = @location
+  file_num ?= scripts.length-1 # we're parsing/lexing the most recent script
   last_line ?= first_line
   last_column ?= first_column
 
-  filename = @filename or '[stdin]'
-  codeLine = @code.split('\n')[first_line] || ''
+  filename = filenames[file_num] or '[stdin]'
+  codeLine = scripts[file_num]?.split('\n')[first_line] || ''
   start    = first_column
   # Show only the first line on multi-line errors.
   end      = if first_line is last_line then last_column + 1 else codeLine.length

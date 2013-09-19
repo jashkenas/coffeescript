@@ -332,13 +332,13 @@ compileOptions = (filename, base) ->
       answer = helpers.merge answer, {
         jsPath
         sourceRoot: path.relative jsDir, cwd
-        sourceFiles: [path.relative cwd, filename]
+        filename: path.relative cwd, filename
         generatedFile: helpers.baseFileName(jsPath, no, useWinPathSep)
       }
     else
       answer = helpers.merge answer,
         sourceRoot: ""
-        sourceFiles: [helpers.baseFileName filename, no, useWinPathSep]
+        filename: helpers.baseFileName filename, no, useWinPathSep
         generatedFile: helpers.baseFileName(filename, yes, useWinPathSep) + ".js"
   answer
 

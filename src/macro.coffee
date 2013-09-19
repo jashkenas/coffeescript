@@ -42,36 +42,7 @@ callFunc = (func, node, utils, args=[]) ->
 # structure will be modified and returned). 
 # `csToNodes` is the exports.nodes function of `coffee-script.coffee`. It
 # needs to be passed in order to prevent circular requires.
-# `options` is a compile options object. The optional `filename` property
-# is copied onto each of the nodes, for proper filenames in error reporting.
-exports.expand = (ast, csToNodes, options) ->
-  # Recursively calls `visit` for every child of `node`. When `visit` returns 
-  # `false`, the node is removed from the tree (or replaced by `undefined` if
-  # that is not possible). When a node is returned, it is used to replace the
-  # original node, and `visit` is called again for the replacing node.
-  walkNodes = (node, visit) ->
-    return unless node.children
-    for name in node.children
-      continue unless child = node[name]
-      if child instanceof Array
-        i = 0
-        while item = child[i++]
-          res = visit item
-          if res # replace (and walk it again)
-            child[--i] = res
-          else if res==false # delete
-            child.splice --i, 1
-          else # keep
-            walkNodes item, visit
-      else
-        while (res = visit child) # replace (and walk it again)
-          child = node[name] = res
-        if res==false # delete (but some node is required)
-          node[name] = new nodeTypes.Undefined()
-        else # keep
-          walkNodes child, visit
-    node
-
+exports.expand = (ast, csToNodes) ->
   # Define some helper functions, that can be used by the macros. They will
   # get the object as `this`.
   utils =
@@ -99,7 +70,7 @@ exports.expand = (ast, csToNodes, options) ->
         @csToNode code, filename
     # Walk the node tree, replacing all identifiers that are a key in the `replacements` object, with the value (a node).
     # This is probably still a bit fragile...
-    substitute: (node,replacements) -> walkNodes cloneNode(node), (n) ->
+    substitute: (node,replacements) -> nodeTypes.walk cloneNode(node), (n) ->
       for i,type in ['index','name','source']
         n[type].value = ss if (i or n.source?) and (ss=n[type]?.value) and (ss=replacements[ss])
       ss if (ss=(n.variable?.base?.value || n.base?.value)) and (ss=replacements[ss])?
@@ -108,11 +79,7 @@ exports.expand = (ast, csToNodes, options) ->
 
   # And now we'll start the actual work.
   macros = {}
-  walkNodes ast, (n) ->
-    # If we got a filename in our options, attach it to all nodes.
-    if options.filename and typeof n.locationData=='object' and !n.locationData.file
-      n.locationData.file = options.filename
-
+  nodeTypes.walk ast, (n) ->
     name = n.variable?.base?.value
     if name == 'macro' and n.args?.length==1
       if (m = n.args[0]).body

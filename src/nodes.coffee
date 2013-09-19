@@ -2179,3 +2179,34 @@ utility = (name) ->
 multident = (code, tab) ->
   code = code.replace /\n/g, '$&' + tab
   code.replace /\s+$/, ''
+
+
+# Recursively calls `visit` for every child of `node`. When `visit` returns 
+# `false`, the node is removed from the tree (or replaced by `undefined` if
+# that is not possible). When a node is returned, it is used to replace the
+# original node, and `visit` is called again for the replacing node.
+exports.walk = walk = (node, visit) ->
+  return unless node.children
+  for name in node.children
+    continue unless child = node[name]
+    if child instanceof Array
+      i = 0
+      while item = child[i++]
+        res = visit item
+        if res # replace (and walk it again)
+          res.updateLocationDataIfMissing child[--i].locationData
+          child[i] = res
+        else if res==false # delete
+          child.splice --i, 1
+        else # keep
+          walk item, visit
+    else
+      while (res = visit child) # replace (and walk it again)
+        res.updateLocationDataIfMissing child.locationData
+        child = node[name] = res
+      if res==false # delete (but some node is required)
+        node[name] = new exports.Undefined()
+      else # keep
+        walk child, visit
+  node
+
