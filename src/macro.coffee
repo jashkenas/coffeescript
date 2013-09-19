@@ -2,6 +2,8 @@
 # ------
 
 fs = require 'fs'
+{throwSyntaxError} = require './helpers'
+nodeTypes = require './nodes'
 
 # Compatibility method (IE < 10)
 createObject = Object.create
@@ -27,14 +29,22 @@ cloneNode = (src) ->
 
 # Calling `eval` using an alias, causes the code to run outside the callers lexical scope.
 evalAlias = eval
+getFunc = (func) -> evalAlias "("+func.compile(indent:"")+")"
+callFunc = (func, node, utils, args=[]) ->
+  try
+    return func.apply utils, args
+  catch e
+    throwSyntaxError "exception in macro: #{e.stack||e}\n\n#{func}\n", node.locationData
 
 
 # The main work horse.
-exports.expand = (ast, lexer, parser, options) ->
-  # We must take care to refer to the same instances of the node classes as
-  # the ast is using, because we want to be able to compare with `instanceof`.
-  nodeTypes = parser.yy
-
+# `ast` is the node tree for which macro expansion is to be done (the original
+# structure will be modified and returned). 
+# `csToNodes` is the exports.nodes function of `coffee-script.coffee`. It
+# needs to be passed in order to prevent circular requires.
+# `options` is a compile options object. The optional `filename` property
+# is copied onto each of the nodes, for proper filenames in error reporting.
+exports.expand = (ast, csToNodes, options) ->
   # Recursively calls `visit` for every child of `node`. When `visit` returns 
   # `false`, the node is removed from the tree (or replaced by `undefined` if
   # that is not possible). When a node is returned, it is used to replace the
@@ -65,14 +75,16 @@ exports.expand = (ast, lexer, parser, options) ->
   # Define some helper functions, that can be used by the macros. They will
   # get the object as `this`.
   utils =
+    # allow access to modules and the environment
+    require: require
     # get compiled javascript:
-    nodeToJs: (node) -> node.compile(indent:'')
+    nodeToJs: (node) -> node.compile(indent:'') if node
     # try to compile and evaluate the node (at compile time) and get the value:
     nodeToVal: (node) -> evalAlias '('+@nodeToJs(node)+')'
     # if the node is a plain identifier, return it as a string:
     nodeToId: (node) -> node.base.value if node.base instanceof nodeTypes.Literal and node.isAssignable() and !node.properties?.length
     # parse `code` as coffeescript (`filename` is for error reporting):
-    csToNode: (code,filename) -> parser.parse lexer.tokenize code, {filename}
+    csToNode: (code,filename) -> csToNodes code, {filename}
     # create a node that includes `code` as a javascript literal (`substitute` will not work on this):
     jsToNode: (code) -> new nodeTypes.Literal code || "void 0"
     # convert `expr` to a node (only works for jsonable expressions):
@@ -105,16 +117,16 @@ exports.expand = (ast, lexer, parser, options) ->
     if name == 'macro' and n.args?.length==1
       if (m = n.args[0]).body
         # execute now: `macro -> console.log 'compiling...'`
-        res = new Function([],"return "+m.compile(indent:""))().call(utils)
+        res = callFunc getFunc(m), m, utils
         return (if res instanceof nodeTypes.Base then res else false) # delete if not a node
 
       if (name = m.variable?.base?.value) and m.args?.length==1 and (funcNode = m.args[0]).body
         # define a macro: `macro someName (a+b) -> a+b`
-        macros[name] = new Function([], "return " + funcNode.compile(indent:""))()
+        macros[name] = getFunc(funcNode)
         return false # delete the node
 
     if (func = macros[name]) and n.args?.length?
       # execute a macro function.
-      res = func.apply utils, (cloneNode arg for arg in n.args)
+      res = callFunc func, n, utils, (cloneNode arg for arg in n.args)
       return (if res instanceof nodeTypes.Base then res else false) # delete if not a node
 

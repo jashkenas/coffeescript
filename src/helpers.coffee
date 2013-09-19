@@ -169,7 +169,7 @@ syntaxErrorToString = ->
   last_column ?= first_column
 
   filename = @filename or '[stdin]'
-  codeLine = @code.split('\n')[first_line]
+  codeLine = @code.split('\n')[first_line] || ''
   start    = first_column
   # Show only the first line on multi-line errors.
   end      = if first_line is last_line then last_column + 1 else codeLine.length

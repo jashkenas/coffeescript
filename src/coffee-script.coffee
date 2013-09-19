@@ -46,9 +46,9 @@ exports.compile = compile = withPrettyErrors (code, options) ->
   if options.sourceMap
     map = new SourceMap
 
-  nodes = parser.parse lexer.tokenize code, options
-  nodes = Macro.expand nodes, lexer, parser, options if options.macro
-  fragments = nodes.compileToFragments options
+  ast = parser.parse lexer.tokenize code, options
+  ast = Macro.expand ast, exports.nodes, options if options.macro
+  fragments = ast.compileToFragments options
 
   currentLine = 0
   currentLine += 1 if options.header
