@@ -769,8 +769,8 @@ exports.Range = class Range extends Base
     [@fromC, @fromVar]  =  @cacheToCodeFragments @from.cache o, LEVEL_LIST
     [@toC, @toVar]      =  @cacheToCodeFragments @to.cache o, LEVEL_LIST
     [@step, @stepVar]   =  @cacheToCodeFragments step.cache o, LEVEL_LIST if step = del o, 'step'
-    [@fromNum, @toNum]  = [@fromVar.match(SIMPLENUM), @toVar.match(SIMPLENUM)]
-    @stepNum            = @stepVar.match(SIMPLENUM) if @stepVar
+    [@fromNum, @toNum]  = [@fromVar.match(NUMBER), @toVar.match(NUMBER)]
+    @stepNum            = @stepVar.match(NUMBER) if @stepVar
 
   # When compiled normally, the range returns the contents of the *for loop*
   # needed to iterate over the values in the range. Used by comprehensions.
@@ -2148,6 +2148,13 @@ TAB = '  '
 IDENTIFIER_STR = "[$A-Za-z_\\x7f-\\uffff][$\\w\\x7f-\\uffff]*"
 IDENTIFIER = /// ^ #{IDENTIFIER_STR} $ ///
 SIMPLENUM  = /^[+-]?\d+$/
+NUMBER    = ///^[+-]?(?:
+  0b[01]+    |              # binary
+  0o[0-7]+   |              # octal
+  0x[\da-f]+ |              # hex
+  \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
+)$///i
+
 METHOD_DEF = ///
   ^
     (?:
