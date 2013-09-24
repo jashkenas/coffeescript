@@ -136,15 +136,14 @@ exports.Base = class Base
     @eachChild (node) -> tree += node.toString idt + TAB
     tree
 
-  # Recursively search the tree for occurances of the keys of `replacements`
-  # as identifiers, and replace them in-place with the value nodes.
+  # Returns a deep copy of the node, with occurances of the keys of
+  # `replacements` as identifiers recursively replace by the value nodes.
   # This method is not used by CoffeeScript itself, but can be used by macros.
   subst: (replacements) ->
-    exports.walk @, (n) ->
+    exports.walk cloneNode(@), (n) ->
       for i,type in ['index','name','source']
         n[type].value = tmp if (i or n.source?) and (tmp=n[type]?.value) and (tmp=replacements[tmp])
       tmp if (tmp=(n.variable?.base?.value || n.base?.value)) and (tmp=replacements[tmp])?
-    @
 
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
@@ -2190,6 +2189,25 @@ multident = (code, tab) ->
   code = code.replace /\n/g, '$&' + tab
   code.replace /\s+$/, ''
 
+# Compatibility method (IE < 10)
+createObject = Object.create
+if typeof createObject != 'function'
+  createObject = (proto) ->
+    f = ->
+    f.prototype = proto
+    f
+
+# Deep copy a (part of the) AST. Actually, this is just a pretty generic
+# ECMAScript 3 expression cloner. (Browser special cases are not supported.)
+cloneNode = (src) ->
+  return src if typeof src != 'object' || src==null
+  return (cloneNode(x) for x in src) if src instanceof Array
+
+  # It's an object, find the prototype and construct an object with it.
+  ret = createObject (Object.getPrototypeOf?(src) || src.__proto__  || src.constructor.prototype)
+  # And finish by deep copying all own properties.
+  ret[key] = cloneNode(val) for own key,val of src
+  ret
 
 # Recursively calls `visit` for every child of `node`. When `visit` returns 
 # `false`, the node is removed from the tree (or replaced by `undefined` if

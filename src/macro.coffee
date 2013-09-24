@@ -5,28 +5,6 @@ fs = require 'fs'
 {throwSyntaxError} = require './helpers'
 nodeTypes = require './nodes'
 
-# Compatibility method (IE < 10)
-createObject = Object.create
-if typeof createObject != 'function'
-  createObject = (proto) ->
-    f = ->
-    f.prototype = proto
-    f
-
-
-# Deep copy a (part of the) AST. Actually, this is just a pretty generic
-# ECMAScript 3 expression cloner. (Browser special cases are not supported.)
-cloneNode = (src) ->
-  return src if typeof src != 'object' || src==null
-  return (cloneNode(x) for x in src) if src instanceof Array
-
-  # It's an object, find the prototype and construct an object with it.
-  ret = createObject (Object.getPrototypeOf?(src) || src.__proto__  || src.constructor.prototype)
-  # And finish by deep copying all own properties.
-  ret[key] = cloneNode(val) for own key,val of src
-  ret
-
-
 # Calling `eval` using an alias, causes the code to run outside the callers lexical scope.
 evalAlias = eval
 getFunc = (func) -> evalAlias "("+func.compile(indent:"")+")"
@@ -69,7 +47,7 @@ exports.expand = (ast, csToNodes) ->
         @jsToNode code
       else
         @csToNode code, filename
-    bodyNodes: []
+    _codeNodes: []
   # Copy all node classes, so macros can do things like `new @Literal(2)`.
   helpers[k] = v for k,v of nodeTypes
   root.macro = helpers
@@ -80,8 +58,10 @@ exports.expand = (ast, csToNodes) ->
       name
 
   # Define our lookup-table of macros. We'll start with just these two.
-  helpers.macros =
-    "macro": (arg) ->
+  helpers._macros =
+
+    # The `macro` keyword itself is implemented as a predefined macro.
+    macro: (arg) ->
       if arguments.length==1
         if arg instanceof nodeTypes.Code
           # execute now: `macro -> console.log 'compiling...'`
@@ -89,19 +69,26 @@ exports.expand = (ast, csToNodes) ->
           return (if res instanceof nodeTypes.Base then res else false) # delete if not a node
         if (name = getCalleeName(arg)) and arg.args.length==1 and arg.args[0] instanceof nodeTypes.Code
           # define a macro: `macro someName (a,b) -> a+b`
-          helpers.macros[name] = getFunc arg.args[0]
+          helpers._macros[name] = getFunc arg.args[0]
           return false # delete the node
       throw new Error("invalid use of 'macro'")
+
+    # `macro.codeToNode` cannot be implemented like the other compile-time
+    # helper methods, because it needs to capture the AST of its argument,
+    # instead of the value.
+	# Although there is currently nothing to prevent calling this helper
+	# from outside a macro definition, doing so makes no sense.
     "macro.codeToNode": (func) ->
-      throw new Error 'macro.codeToNode expects a function (without arguments)' if func not instanceof helpers.Code or func.params.length
-      num = helpers.bodyNodes.length
-      helpers.bodyNodes[num] = func.body
-      helpers.jsToNode "macro.bodyNodes[#{num}]"
+      if func not instanceof helpers.Code or func.params.length
+        throw new Error 'macro.codeToNode expects a function (without arguments)'
+      num = helpers._codeNodes.length
+      helpers._codeNodes.push func.body
+      helpers.jsToNode "macro._codeNodes[#{num}]"
   
   # And now we'll start the actual work.
   nodeTypes.walk ast, (n) ->
-    if (name = getCalleeName(n)) and (func = helpers.macros[name])
+    if (name = getCalleeName(n)) and (func = helpers._macros[name])
       # execute a macro function.
-      res = callFunc func, n, context, (cloneNode arg for arg in n.args)
+      res = callFunc func, n, context, n.args
       return (if res instanceof nodeTypes.Base then res else false) # delete if not a node
 

@@ -45,11 +45,12 @@ test "macro subst", ->
   tst2 = -> 4
   macro CALC (c1,c2,c3,c4) ->
     func = macro.codeToNode ->
-        x = (a) -> tst(a,c1) * c2
-        x(c3) + x(c4)
+      x = (a) -> tst(a,c1) * c2
+      x(c3) + x(c4)
     func.subst {c1,c2,c3,c4}
   eq 144, CALC 6, 3, 5, 3
-  eq 144, CALC (macro -> macro.codeToNode -> tst2()+2), 3, 5, 3
+  eq 96, CALC 6, 2, 5, 3
+  eq -70, CALC (macro -> macro.codeToNode -> tst2()+3), -1, 6, 4
 
 test "macro contexts", ->
   macro -> @a = 42
