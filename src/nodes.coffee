@@ -769,8 +769,8 @@ exports.Range = class Range extends Base
     [@fromC, @fromVar]  =  @cacheToCodeFragments @from.cache o, LEVEL_LIST
     [@toC, @toVar]      =  @cacheToCodeFragments @to.cache o, LEVEL_LIST
     [@step, @stepVar]   =  @cacheToCodeFragments step.cache o, LEVEL_LIST if step = del o, 'step'
-    [@fromNum, @toNum]  = [@fromVar.match(SIMPLENUM), @toVar.match(SIMPLENUM)]
-    @stepNum            = @stepVar.match(SIMPLENUM) if @stepVar
+    [@fromNum, @toNum]  = [@fromVar.match(NUMBER), @toVar.match(NUMBER)]
+    @stepNum            = @stepVar.match(NUMBER) if @stepVar
 
   # When compiled normally, the range returns the contents of the *for loop*
   # needed to iterate over the values in the range. Used by comprehensions.
@@ -790,9 +790,9 @@ exports.Range = class Range extends Base
 
     # Generate the condition.
     condPart = if @stepNum
-      if +@stepNum > 0 then "#{lt} #{@toVar}" else "#{gt} #{@toVar}"
+      if parseNum(@stepNum[0]) > 0 then "#{lt} #{@toVar}" else "#{gt} #{@toVar}"
     else if known
-      [from, to] = [+@fromNum, +@toNum]
+      [from, to] = [parseNum(@fromNum[0]), parseNum(@toNum[0])]
       if from <= to then "#{lt} #{to}" else "#{gt} #{to}"
     else
       cond = if @stepVar then "#{@stepVar} > 0" else "#{@fromVar} <= #{@toVar}"
@@ -1863,7 +1863,7 @@ exports.For = class For extends While
     kvarAssign = if kvar isnt ivar then "#{kvar} = " else ""
     if @step and not @range
       [step, stepVar] = @cacheToCodeFragments @step.cache o, LEVEL_LIST
-      stepNum = stepVar.match SIMPLENUM
+      stepNum = stepVar.match NUMBER
     name      = ivar if @pattern
     varPart   = ''
     guardPart = ''
@@ -1880,7 +1880,7 @@ exports.For = class For extends While
         namePart   = "#{name} = #{svar}[#{kvar}]"
       if not @object
         defPart += "#{@tab}#{step};\n" if step isnt stepVar
-        lvar = scope.freeVariable 'len' unless @step and stepNum and down = (+stepNum < 0)
+        lvar = scope.freeVariable 'len' unless @step and stepNum and down = (parseNum(stepNum[0]) < 0)
         declare = "#{kvarAssign}#{ivar} = 0, #{lvar} = #{svar}.length"
         declareDown = "#{kvarAssign}#{ivar} = #{svar}.length - 1"
         compare = "#{ivar} < #{lvar}"
@@ -2148,6 +2148,12 @@ TAB = '  '
 IDENTIFIER_STR = "[$A-Za-z_\\x7f-\\uffff][$\\w\\x7f-\\uffff]*"
 IDENTIFIER = /// ^ #{IDENTIFIER_STR} $ ///
 SIMPLENUM  = /^[+-]?\d+$/
+HEXNUM = /^[+-]?0x[\da-f]+/i
+NUMBER    = ///^[+-]?(?:
+  0x[\da-f]+ |              # hex
+  \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
+)$///i
+
 METHOD_DEF = ///
   ^
     (?:
@@ -2179,3 +2185,13 @@ utility = (name) ->
 multident = (code, tab) ->
   code = code.replace /\n/g, '$&' + tab
   code.replace /\s+$/, ''
+
+# Parse a number (+- decimal/hexadecimal)
+# Examples: 0, -1, 1, 2e3, 2e-3, -0xfe, 0xfe
+parseNum = (x) ->
+  if not x?
+    0
+  else if x.match HEXNUM
+    parseInt x, 16
+  else
+    parseFloat x
