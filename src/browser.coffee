@@ -33,7 +33,7 @@ if btoa? and JSON? and unescape? and encodeURIComponent?
 
 # Load a remote script from the current domain via XHR.
 CoffeeScript.load = (url, callback, options = {}) ->
-  options.sourceFiles = [url]
+  options.filename = url
   xhr = if window.ActiveXObject
     new window.ActiveXObject('Microsoft.XMLHTTP')
   else
@@ -66,7 +66,7 @@ runScripts = ->
       if script.src
         CoffeeScript.load script.src, execute, options
       else
-        options.sourceFiles = ['embedded']
+        options.filename = 'embedded'
         CoffeeScript.run script.innerHTML, options
         execute()
   null

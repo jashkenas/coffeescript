@@ -12,7 +12,7 @@
 {Rewriter, INVERSES} = require './rewriter'
 
 # Import the helpers we need.
-{count, starts, compact, last, repeat, invertLiterate,
+{starts, compact, last, repeat, invertLiterate,
 locationDataToString,  throwSyntaxError} = require './helpers'
 
 # The Lexer Class
@@ -631,7 +631,8 @@ exports.Lexer = class Lexer
     else
       string = @chunk[..offset-1]
 
-    lineCount = count string, '\n'
+    lineCount = pos = 0
+    lineCount++ while pos = 1 + string.indexOf "\n", pos
 
     column = @chunkColumn
     if lineCount > 0

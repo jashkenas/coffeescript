@@ -2,7 +2,7 @@
 # -------
 
 # pull the helpers from `CoffeeScript.helpers` into local variables
-{starts, ends, repeat, compact, count, merge, extend, flatten, del, last, baseFileName} = CoffeeScript.helpers
+{starts, ends, repeat, compact, merge, extend, flatten, del, last, baseFileName} = CoffeeScript.helpers
 
 
 # `starts`
@@ -42,17 +42,6 @@ test "the `compact` helper removes falsey values from an array, preserves truthy
   allValues = [1, 0, false, obj={}, [], '', ' ', -1, null, undefined, true]
   truthyValues = [1, obj, [], ' ', -1, true]
   arrayEq truthyValues, compact(allValues)
-
-
-# `count`
-
-test "the `count` helper counts the number of occurances of a string in another string", ->
-  eq 1/0, count('abc', '')
-  eq 0, count('abc', 'z')
-  eq 1, count('abc', 'a')
-  eq 1, count('abc', 'b')
-  eq 2, count('abcdc', 'c')
-  eq 2, count('abcdabcd','abc')
 
 
 # `merge`

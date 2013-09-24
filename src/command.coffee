@@ -34,6 +34,7 @@ BANNER = '''
 
 # The list of all the valid option flags that `coffee` knows how to handle.
 SWITCHES = [
+  ['-a', '--macro',           'enable macro support']
   ['-b', '--bare',            'compile without a top-level function wrapper']
   ['-c', '--compile',         'compile to JavaScript and save as .js files']
   ['-e', '--eval',            'pass a string from the command line as input']
@@ -319,6 +320,7 @@ compileOptions = (filename, base) ->
     filename
     literate: opts.literate or helpers.isLiterate(filename)
     bare: opts.bare
+    macro: opts.macro
     header: opts.compile
     sourceMap: opts.map
   }
@@ -330,13 +332,13 @@ compileOptions = (filename, base) ->
       answer = helpers.merge answer, {
         jsPath
         sourceRoot: path.relative jsDir, cwd
-        sourceFiles: [path.relative cwd, filename]
+        filename: path.relative cwd, filename
         generatedFile: helpers.baseFileName(jsPath, no, useWinPathSep)
       }
     else
       answer = helpers.merge answer,
         sourceRoot: ""
-        sourceFiles: [helpers.baseFileName filename, no, useWinPathSep]
+        filename: helpers.baseFileName filename, no, useWinPathSep
         generatedFile: helpers.baseFileName(filename, yes, useWinPathSep) + ".js"
   answer
 
