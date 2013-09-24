@@ -30,9 +30,9 @@ cloneNode = (src) ->
 # Calling `eval` using an alias, causes the code to run outside the callers lexical scope.
 evalAlias = eval
 getFunc = (func) -> evalAlias "("+func.compile(indent:"")+")"
-callFunc = (func, node, utils, args=[]) ->
+callFunc = (func, node, context, args=[]) ->
   try
-    return func.apply utils, args
+    return func.apply context, args
   catch e
     throwSyntaxError "exception in macro: #{e.stack||e}\n\n#{func}\n", node.locationData
 
@@ -43,20 +43,21 @@ callFunc = (func, node, utils, args=[]) ->
 # `csToNodes` is the exports.nodes function of `coffee-script.coffee`. It
 # needs to be passed in order to prevent circular requires.
 exports.expand = (ast, csToNodes) ->
+  # The `context` is the this-object passed to all compile-time executions.
+  # It can be used to define compile-time functions or state.
+  context = {}
   # Define some helper functions, that can be used by the macros. They will
-  # get the object as `this`.
-  utils =
+  # be accessible through `root.macro`.
+  helpers =
     # allow access to modules and the environment
     require: require
-    # get compiled javascript:
-    nodeToJs: (node) -> node.compile(indent:'') if node
-    # try to compile and evaluate the node (at compile time) and get the value:
-    nodeToVal: (node) -> evalAlias '('+@nodeToJs(node)+')'
+    # try to expand macros, compile and evaluate the node (at compile time) and get the value:
+    nodeToVal: (node) -> callFunc getFunc(new @Code([], new @Block([node]))), node, context if node
     # if the node is a plain identifier, return it as a string:
     nodeToId: (node) -> node.base.value if node.base instanceof nodeTypes.Literal and node.isAssignable() and !node.properties?.length
     # parse `code` as coffeescript (`filename` is for error reporting):
     csToNode: (code,filename) -> csToNodes code, {filename}
-    # create a node that includes `code` as a javascript literal (`substitute` will not work on this):
+    # create a node that includes `code` as a javascript literal
     jsToNode: (code) -> new nodeTypes.Literal code || "void 0"
     # convert `expr` to a node (only works for jsonable expressions):
     valToNode: (expr) -> @jsToNode JSON.stringify expr
@@ -68,32 +69,39 @@ exports.expand = (ast, csToNodes) ->
         @jsToNode code
       else
         @csToNode code, filename
-    # Walk the node tree, replacing all identifiers that are a key in the `replacements` object, with the value (a node).
-    # This is probably still a bit fragile...
-    substitute: (node,replacements) -> nodeTypes.walk cloneNode(node), (n) ->
-      for i,type in ['index','name','source']
-        n[type].value = ss if (i or n.source?) and (ss=n[type]?.value) and (ss=replacements[ss])
-      ss if (ss=(n.variable?.base?.value || n.base?.value)) and (ss=replacements[ss])?
+    bodyNodes: []
   # Copy all node classes, so macros can do things like `new @Literal(2)`.
-  utils[k] = v for k,v of nodeTypes
+  helpers[k] = v for k,v of nodeTypes
+  root.macro = helpers
 
+  getCalleeName = (node) ->
+    if node instanceof nodeTypes.Call and (name = node.variable?.base?.value)
+      name += '.'+prop?.name?.value for prop in node.variable.properties
+      name
+
+  # Define our lookup-table of macros. We'll start with just these two.
+  helpers.macros =
+    "macro": (arg) ->
+      if arguments.length==1
+        if arg instanceof nodeTypes.Code
+          # execute now: `macro -> console.log 'compiling...'`
+          res = callFunc getFunc(arg), arg, context
+          return (if res instanceof nodeTypes.Base then res else false) # delete if not a node
+        if (name = getCalleeName(arg)) and arg.args.length==1 and arg.args[0] instanceof nodeTypes.Code
+          # define a macro: `macro someName (a,b) -> a+b`
+          helpers.macros[name] = getFunc arg.args[0]
+          return false # delete the node
+      throw new Error("invalid use of 'macro'")
+    "macro.codeToNode": (func) ->
+      throw new Error 'macro.codeToNode expects a function (without arguments)' if func not instanceof helpers.Code or func.params.length
+      num = helpers.bodyNodes.length
+      helpers.bodyNodes[num] = func.body
+      helpers.jsToNode "macro.bodyNodes[#{num}]"
+  
   # And now we'll start the actual work.
-  macros = {}
   nodeTypes.walk ast, (n) ->
-    name = n.variable?.base?.value
-    if name == 'macro' and n.args?.length==1
-      if (m = n.args[0]).body
-        # execute now: `macro -> console.log 'compiling...'`
-        res = callFunc getFunc(m), m, utils
-        return (if res instanceof nodeTypes.Base then res else false) # delete if not a node
-
-      if (name = m.variable?.base?.value) and m.args?.length==1 and (funcNode = m.args[0]).body
-        # define a macro: `macro someName (a+b) -> a+b`
-        macros[name] = getFunc(funcNode)
-        return false # delete the node
-
-    if (func = macros[name]) and n.args?.length?
+    if (name = getCalleeName(n)) and (func = helpers.macros[name])
       # execute a macro function.
-      res = callFunc func, n, utils, (cloneNode arg for arg in n.args)
+      res = callFunc func, n, context, (cloneNode arg for arg in n.args)
       return (if res instanceof nodeTypes.Base then res else false) # delete if not a node
 

@@ -136,6 +136,16 @@ exports.Base = class Base
     @eachChild (node) -> tree += node.toString idt + TAB
     tree
 
+  # Recursively search the tree for occurances of the keys of `replacements`
+  # as identifiers, and replace them in-place with the value nodes.
+  # This method is not used by CoffeeScript itself, but can be used by macros.
+  subst: (replacements) ->
+    exports.walk @, (n) ->
+      for i,type in ['index','name','source']
+        n[type].value = tmp if (i or n.source?) and (tmp=n[type]?.value) and (tmp=replacements[tmp])
+      tmp if (tmp=(n.variable?.base?.value || n.base?.value)) and (tmp=replacements[tmp])?
+    @
+
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
     return this unless @children
@@ -2186,27 +2196,24 @@ multident = (code, tab) ->
 # that is not possible). When a node is returned, it is used to replace the
 # original node, and `visit` is called again for the replacing node.
 exports.walk = walk = (node, visit) ->
-  return unless node.children
-  for name in node.children
+  for name in node.children||[]
     continue unless child = node[name]
     if child instanceof Array
       i = 0
       while item = child[i++]
-        res = visit item
+        res = visit walk(item, visit)
         if res # replace (and walk it again)
           res.updateLocationDataIfMissing child[--i].locationData
           child[i] = res
         else if res==false # delete
           child.splice --i, 1
-        else # keep
-          walk item, visit
+        # else keep
     else
-      while (res = visit child) # replace (and walk it again)
+      while (res = visit walk(child,visit)) # replace (and walk it again)
         res.updateLocationDataIfMissing child.locationData
         child = node[name] = res
       if res==false # delete (but some node is required)
         node[name] = new exports.Undefined()
-      else # keep
-        walk child, visit
+        # else keep
   node
 
