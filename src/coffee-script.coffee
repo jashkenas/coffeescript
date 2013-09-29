@@ -15,7 +15,6 @@ SourceMap     = require './sourcemap'
 # The current CoffeeScript version number.
 exports.VERSION = '1.6.3'
 
-binary = require.resolve '../../bin/coffee'
 fileExtensions = ['.coffee', '.litcoffee', '.coffee.md']
 
 # Expose helpers for testing.
@@ -205,6 +204,7 @@ if require.extensions
 # to fork both CoffeeScript files, and JavaScript files, directly.
 if child_process
   {fork} = child_process
+  binary = require.resolve '../../bin/coffee'
   child_process.fork = (path, args = [], options = {}) ->
     execPath = if helpers.isCoffee(path) then binary else null
     if not Array.isArray args
