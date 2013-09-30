@@ -101,17 +101,12 @@ exports.addLocationDataFn = (first, last) ->
 
 # Convert jison location data to a string.
 # `obj` can be a token, or a locationData.
-exports.locationDataToString = (obj) ->
-  if ("2" of obj) and ("first_line" of obj[2]) then locationData = obj[2]
-  else if "first_line" of obj then locationData = obj
-
-  if locationData
-    filename = filenames[locationData.file_num ? filenames.length-1]
-    (if filename then filename+" " else "") +
-    "#{locationData.first_line + 1}:#{locationData.first_column + 1}-" +
-    "#{locationData.last_line + 1}:#{locationData.last_column + 1}"
-  else
-    "No location data"
+exports.locationDataToString = (ld) ->
+  return '<unknown location>' if not ld
+  loc = (filenames[ld.file_num ? filenames.length-1] || '<unknown file>') +
+        "#{ld.first_line + 1}:#{ld.first_column + 1}"
+  loc += "-#{ld.last_line + 1}:#{ld.last_column + 1}" if ld.last_line
+  loc
 
 # A `.coffee.md` compatible version of `basename`, that returns the file sans-extension.
 exports.baseFileName = (file, stripExt = no, useWinPathSep = no) ->

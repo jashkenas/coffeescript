@@ -2,17 +2,12 @@
 # ------
 
 fs = require 'fs'
-{throwSyntaxError} = require './helpers'
+{throwSyntaxError,locationDataToString} = require './helpers'
 nodeTypes = require './nodes'
 
 # Calling `eval` using an alias, causes the code to run outside the callers lexical scope.
 evalAlias = eval
 getFunc = (func) -> evalAlias "("+func.compile(indent:"")+")"
-callFunc = (func, node, context, args=[]) ->
-  try
-    return func.apply context, args
-  catch e
-    throwSyntaxError "exception in macro: #{e.stack||e}\n\n#{func}\n", node.locationData
 
 
 # The main work horse.
@@ -23,14 +18,14 @@ callFunc = (func, node, context, args=[]) ->
 exports.expand = (ast, csToNodes) ->
   # The `context` is the this-object passed to all compile-time executions.
   # It can be used to define compile-time functions or state.
-  context = {}
+  root.cfg = context = {}
   # Define some helper functions, that can be used by the macros. They will
   # be accessible through `root.macro`.
-  helpers =
+  root.macro = utils =
     # allow access to modules and the environment
     require: require
     # try to expand macros, compile and evaluate the node (at compile time) and get the value:
-    nodeToVal: (node) -> callFunc getFunc(new @Code([], new @Block([node]))), node, context if node
+    nodeToVal: (node) -> getFunc(new @Code([], new @Block([node]))).call context if node
     # if the node is a plain identifier, return it as a string:
     nodeToId: (node) -> node.base.value if node.base instanceof nodeTypes.Literal and node.isAssignable() and !node.properties?.length
     # parse `code` as coffeescript (`filename` is for error reporting):
@@ -49,8 +44,7 @@ exports.expand = (ast, csToNodes) ->
         @csToNode code, filename
     _codeNodes: []
   # Copy all node classes, so macros can do things like `new @Literal(2)`.
-  helpers[k] = v for k,v of nodeTypes
-  root.macro = helpers
+  utils[k] = v for k,v of nodeTypes
 
   getCalleeName = (node) ->
     if node instanceof nodeTypes.Call and (name = node.variable?.base?.value)
@@ -58,20 +52,21 @@ exports.expand = (ast, csToNodes) ->
       name
 
   # Define our lookup-table of macros. We'll start with just these two.
-  helpers._macros =
+  utils._macros =
 
     # The `macro` keyword itself is implemented as a predefined macro.
     macro: (arg) ->
-      if arguments.length==1
-        if arg instanceof nodeTypes.Code
-          # execute now: `macro -> console.log 'compiling...'`
-          res = callFunc getFunc(arg), arg, context
-          return (if res instanceof nodeTypes.Base then res else false) # delete if not a node
-        if (name = getCalleeName(arg)) and arg.args.length==1 and arg.args[0] instanceof nodeTypes.Code
-          # define a macro: `macro someName (a,b) -> a+b`
-          helpers._macros[name] = getFunc arg.args[0]
-          return false # delete the node
-      throw new Error("invalid use of 'macro'")
+      throw new Error("macro expects 1 argument, got #{arguments.length}") unless arguments.length==1
+      if arg instanceof nodeTypes.Code
+        # execute now: `macro -> console.log 'compiling...'`
+        throw new Error 'macro expects a closure without parameters' if arg.params.length
+        return getFunc(arg).call context
+      if (name = getCalleeName(arg))
+        # define a macro: `macro someName (a,b) -> a+b`
+        throw new Error("macro expects a closure after identifier") unless arg.args.length==1 and arg.args[0] instanceof nodeTypes.Code
+        utils._macros[name] = getFunc arg.args[0]
+        return
+      throw new Error("macro expects a closure or identifier")
 
     # `macro.codeToNode` cannot be implemented like the other compile-time
     # helper methods, because it needs to capture the AST of its argument,
@@ -79,16 +74,20 @@ exports.expand = (ast, csToNodes) ->
 	# Although there is currently nothing to prevent calling this helper
 	# from outside a macro definition, doing so makes no sense.
     "macro.codeToNode": (func) ->
-      if func not instanceof helpers.Code or func.params.length
+      if func not instanceof nodeTypes.Code or func.params.length
         throw new Error 'macro.codeToNode expects a function (without arguments)'
-      num = helpers._codeNodes.length
-      helpers._codeNodes.push func.body
-      helpers.jsToNode "macro._codeNodes[#{num}]"
+      num = utils._codeNodes.length
+      utils._codeNodes.push func.body
+      utils.jsToNode "macro._codeNodes[#{num}]"
   
   # And now we'll start the actual work.
   nodeTypes.walk ast, (n) ->
-    if (name = getCalleeName(n)) and (func = helpers._macros[name])
+    if (name = getCalleeName(n)) and (func = utils._macros[name])
       # execute a macro function.
-      res = callFunc func, n, context, n.args
+      try
+        utils.caller = locationDataToString n.locationData
+        res = func.apply context, n.args
+      catch e
+        throwSyntaxError e.message, n.locationData
       return (if res instanceof nodeTypes.Base then res else false) # delete if not a node
 
