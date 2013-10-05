@@ -41,10 +41,7 @@ exports.compile = compile = (code, options = {}) ->
 
   if options.sourceMap
     sourceMap = new SourceMap fragments, options
-    answer = {js, sourceMap}
-    answer.sourceMap = sourceMap
-    answer.v3SourceMap = sourceMap.generate(options, code)
-    answer
+    {js, sourceMap, v3SourceMap: sourceMap.generate(options)}
   else
     js
 
@@ -90,6 +87,8 @@ exports.run = (code, options = {}) ->
     code = answer.js ? answer
 
   mainModule._compile code, mainModule.filename
+
+exports.run.stopStackTrace = true
 
 # Compile and evaluate a string of CoffeeScript (in a Node.js-like environment).
 # The CoffeeScript REPL uses this to run the input.
@@ -213,7 +212,7 @@ parser.yy.parseError = (message, {token}) ->
 
 # Based on http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js
 # Modified to handle sourceMap
-formatSourcePosition = (frame, getSourceMapping) ->
+formatSourcePosition = (frame, defSrcMap) ->
   fileName = undefined
   fileLocation = ''
 
@@ -222,22 +221,23 @@ formatSourcePosition = (frame, getSourceMapping) ->
   else
     if frame.isEval()
       fileName = frame.getScriptNameOrSourceURL()
-      fileLocation = "#{frame.getEvalOrigin()}, " unless fileName
     else
       fileName = frame.getFileName()
-
-    fileName or= "<anonymous>"
 
     line = frame.getLineNumber()
     column = frame.getColumnNumber()
 
-    # Check for a sourceMap position
-    source = getSourceMapping fileName, line, column
-    fileLocation =
-      if source
-        "#{fileName}:#{source[0]}:#{source[1]}"
-      else
-        "#{fileName}:#{line}:#{column}"
+    if fileName
+      # Check for a sourceMap position
+      sourceMap = getSourceMap fileName
+    else
+      sourceMap = defSrcMap
+
+    if sourceMap
+      source = sourceMap.sourceLocation line - 1, column - 1
+      fileLocation = helpers.locationDataToString source if source
+    
+    fileLocation = "#{fileName||'<anonymous>'}:#{line}:#{column}" if not fileLocation
 
   functionName = frame.getFunctionName()
   isConstructor = frame.isConstructor()
@@ -279,14 +279,9 @@ getSourceMap = (filename) ->
 # sourceMap, so we must monkey-patch Error to display CoffeeScript source
 # positions.
 Error.prepareStackTrace = (err, stack) ->
-  getSourceMapping = (filename, line, column) ->
-    sourceMap = getSourceMap filename
-    answer = sourceMap.sourceLocation line - 1, column - 1 if sourceMap
-    if answer then [answer.first_line + 1, answer.first_column + 1] else null
-
   frames = for frame in stack
-    break if frame.getFunction() is exports.run
-    "  at #{formatSourcePosition frame, getSourceMapping}"
+    break if frame.getFunction()?.stopStackTrace
+    "  at #{formatSourcePosition frame, err.srcMap}"
 
   "#{err.name}: #{err.message ? ''}\n#{frames.join '\n'}\n"
 

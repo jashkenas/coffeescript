@@ -2,13 +2,26 @@
 # ------
 
 fs = require 'fs'
-{throwSyntaxError,locationDataToString} = require './helpers'
+helpers = require './helpers'
 nodeTypes = require './nodes'
+SourceMap = require './sourcemap'
 
 # Calling `eval` using an alias, causes the code to run outside the callers lexical scope.
 evalAlias = eval
-getFunc = (func) -> evalAlias "("+func.compile(indent:"")+")"
+getFunc = (funcNode) ->
+  fragments = funcNode.compileToFragments {indent:''}
+  func = evalAlias '(' + (fragment.code for fragment in fragments).join('') + ')'
+  func.srcMap = new SourceMap fragments
+  func
+callFunc = (func, obj, args = [], useLocation) ->
+  try
+    return func.apply obj, args
+  catch e
+    throw e if e instanceof SyntaxError
+    e.srcMap = func.srcMap
+    helpers.throwSyntaxError "run-time error in macro:\n"+e.stack, useLocation
 
+callFunc.stopStackTrace = true
 
 # The main work horse.
 # `ast` is the node tree for which macro expansion is to be done (the original
@@ -25,7 +38,7 @@ exports.expand = (ast, csToNodes) ->
     # allow access to modules and the environment
     require: require
     # try to expand macros, compile and evaluate the node (at compile time) and get the value:
-    nodeToVal: (node) -> getFunc(new @Code([], new @Block([node]))).call context if node
+    nodeToVal: (node) -> callFunc getFunc(new @Code([], new @Block([node]))), context if node
     # if the node is a plain identifier, return it as a string:
     nodeToId: (node) -> node.base.value if node.base instanceof nodeTypes.Literal and node.isAssignable() and !node.properties?.length
     # parse `code` as coffeescript (`filename` is for error reporting):
@@ -60,7 +73,7 @@ exports.expand = (ast, csToNodes) ->
       if arg instanceof nodeTypes.Code
         # execute now: `macro -> console.log 'compiling...'`
         throw new Error 'macro expects a closure without parameters' if arg.params.length
-        return getFunc(arg).call context
+        return callFunc getFunc(arg), context
       if (name = getCalleeName(arg))
         # define a macro: `macro someName (a,b) -> a+b`
         throw new Error("macro expects a closure after identifier") unless arg.args.length==1 and arg.args[0] instanceof nodeTypes.Code
@@ -84,10 +97,9 @@ exports.expand = (ast, csToNodes) ->
   nodeTypes.walk ast, (n) ->
     if (name = getCalleeName(n)) and (func = utils._macros[name])
       # execute a macro function.
-      try
-        utils.caller = locationDataToString n.locationData
-        res = func.apply context, n.args
-      catch e
-        throwSyntaxError e.message, n.locationData
+      ld = n.locationData
+      utils.file = ld && helpers.filenames[ld.file_num]
+      utils.line = ld && 1+ld.first_line
+      res = callFunc func, context, n.args, ld
       return (if res instanceof nodeTypes.Base then res else false) # delete if not a node
 

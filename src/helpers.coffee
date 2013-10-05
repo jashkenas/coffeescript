@@ -103,10 +103,10 @@ exports.addLocationDataFn = (first, last) ->
 # `obj` can be a token, or a locationData.
 exports.locationDataToString = (ld) ->
   return '<unknown location>' if not ld
-  loc = (filenames[ld.file_num ? filenames.length-1] || '<unknown file>') +
-        "#{ld.first_line + 1}:#{ld.first_column + 1}"
-  loc += "-#{ld.last_line + 1}:#{ld.last_column + 1}" if ld.last_line
-  loc
+  loc = ''
+  if filename = filenames[ld.file_num ? filenames.length-1]
+    loc += filename+':'
+  loc += (ld.first_line + 1) + ':' + (ld.first_column + 1)
 
 # A `.coffee.md` compatible version of `basename`, that returns the file sans-extension.
 exports.baseFileName = (file, stripExt = no, useWinPathSep = no) ->
@@ -130,16 +130,14 @@ exports.isLiterate = (file) -> /\.(litcoffee|coffee\.md)$/.test file
 # format <filename>:<line>:<col>: <message> plus the line with the error and a
 # marker showing where the error is.
 exports.throwSyntaxError = (message, location) ->
-  error = new SyntaxError message
-  error.location = location
-  error.toString = syntaxErrorToString
-
+  err = new SyntaxError message
+  err.location = location
   # Instead of showing the compiler's stacktrace, show our custom error message
   # (this is useful when the error bubbles up in Node.js applications that
   # compile CoffeeScript for example).
-  error.stack = error.toString()
-
-  throw error
+  err.toString = syntaxErrorToString
+  err.stack = err.toString()
+  throw err
 
 
 # Lists of coffeescript sources and filenames, for every bit of code that is
@@ -168,7 +166,7 @@ syntaxErrorToString = ->
   start    = first_column
   # Show only the first line on multi-line errors.
   end      = if first_line is last_line then last_column + 1 else codeLine.length
-  marker   = repeat(' ', start) + repeat('^', end - start)
+  marker   = codeLine.substr(0,start).replace(/[^\t]/g,' ') + codeLine.substring(start,end).replace(/[^\t]/g,'^')
 
   # Check to see if we're running on a color-enabled TTY.
   if process?
