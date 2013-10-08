@@ -3,6 +3,8 @@ path          = require 'path'
 CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 helpers       = require './lib/coffee-script/helpers'
+eco           = require 'eco' 
+hljs          = require 'highlight.js'
 
 # ANSI Terminal Colors.
 bold = red = green = reset = ''
@@ -40,6 +42,27 @@ run = (args, cb) ->
 # Log a message with a color.
 log = (message, color, explanation) ->
   console.log color + message + reset + ' ' + (explanation or '')
+
+# Render code into site
+code_for = (file, executable = false, show_load = true) ->
+  ++@counter
+  return '' unless fs.existsSync "documentation/js/#{file}.js"
+  cs = fs.readFileSync "documentation/coffee/#{file}.coffee", 'utf-8'
+  js = fs.readFileSync "documentation/js/#{file}.js", 'utf-8'
+  js = js.replace /^\/\/\s*generated.*?\n/i, ''
+  cshtml  = hljs.highlight('coffeescript', cs).value
+  jshtml  = hljs.highlight('coffeescript', js).value
+  cshtml  = "<pre><code>#{cshtml}</code></pre>"
+  jshtml  = "<pre><code>#{jshtml}</code></pre>"
+  append  = if executable is true then '' else "alert(#{executable});"
+  if executable? and executable isnt true
+    cs    = cs.replace /(\S)\s*\Z/m, "\\1\n\nalert #{executable}"
+  run     = if executable is true then 'run' else "run: #{executable}"
+  name    = "example#{@counter}"
+  script  = "<script>window.#{name} = #{JSON.stringify(cs)}</script>"
+  _import = if show_load then "<div class='minibutton load' onclick='javascript: loadConsole(#{name});'>load</div>" else ''
+  button  = if executable? then "<div class='minibutton ok' onclick='javascript: #{js};#{append}'>#{run}</div>" else ''
+  "<div class='code'>#{cshtml}#{jshtml}#{script}#{_import}#{button}<br class='clear' /></div>"
 
 option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
 
@@ -118,8 +141,17 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
-  exec 'rake doc', (err) ->
+  source = "documentation/index.html"
+  exec "bin/coffee -bcw -o documentation/js documentation/coffee/*.coffee", (err) ->
     throw err if err
+  do renderDocuments = ->
+    rendered = eco.render (fs.readFileSync source, 'utf-8'),
+      counter: 0
+      code_for: code_for
+    fs.writeFileSync 'index.html', rendered
+    console.log "compiled doc:site"
+  fs.watchFile source, internal: 200, renderDocuments
+  console.log "watching..."
 
 
 task 'doc:source', 'rebuild the internal documentation', ->

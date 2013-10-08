@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -8,7 +5,7 @@
   <title>CoffeeScript</title>
   <link rel="canonical" href="http://coffeescript.org" />
   <link rel="stylesheet" type="text/css" href="documentation/css/docs.css" />
-  <link rel="stylesheet" type="text/css" href="documentation/css/idle.css" />
+  <link rel="stylesheet" type="text/css" href="documentation/css/tomorrow.css" />
   <link rel="shortcut icon" href="documentation/images/favicon.ico" />
 </head>
 <body>
@@ -127,79 +124,79 @@ sudo npm install -g coffee-script</pre>
 
     <p><i>CoffeeScript on the left, compiled JavaScript output on the right.</i></p>
 
-    <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> Assignment:</span>
-number   <span class="Keyword">=</span> <span class="Number">42</span>
-opposite <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>
+    <div class='code'><pre><code><span class="comment"># Assignment:</span>
+number   = <span class="number">42</span>
+opposite = <span class="literal">true</span>
 
-<span class="Comment"><span class="Comment">#</span> Conditions:</span>
-number <span class="Keyword">=</span> <span class="Keyword">-</span><span class="Number">42</span> <span class="Keyword">if</span> opposite
+<span class="comment"># Conditions:</span>
+number = -<span class="number">42</span> <span class="keyword">if</span> opposite
 
-<span class="Comment"><span class="Comment">#</span> Functions:</span>
-<span class="FunctionName">square </span><span class="Keyword">=</span> <span class="FunctionArgument">(x)</span> <span class="Storage">-&gt;</span> x <span class="Keyword">*</span> x
+<span class="comment"># Functions:</span>
+<span class="function"><span class="title">square</span></span> = (x) -&gt; x * x
 
-<span class="Comment"><span class="Comment">#</span> Arrays:</span>
-list <span class="Keyword">=</span> [<span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>]
+<span class="comment"># Arrays:</span>
+list = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]
 
-<span class="Comment"><span class="Comment">#</span> Objects:</span>
-math <span class="Keyword">=</span>
+<span class="comment"># Objects:</span>
+math =
   root:   Math.sqrt
   square: square
-  <span class="FunctionName">cube</span><span class="Keyword">:</span>   <span class="FunctionArgument">(x)</span> <span class="Storage">-&gt;</span> x <span class="Keyword">*</span> square x
+  cube:   (x) -&gt; x * square x
 
-<span class="Comment"><span class="Comment">#</span> Splats:</span>
-<span class="FunctionName">race </span><span class="Keyword">=</span> <span class="FunctionArgument">(winner, runners...)</span> <span class="Storage">-&gt;</span>
+<span class="comment"># Splats:</span>
+<span class="function"><span class="title">race</span></span> = (winner, runners...) -&gt;
   print winner, runners
 
-<span class="Comment"><span class="Comment">#</span> Existence:</span>
-alert <span class="String"><span class="String">&quot;</span>I knew it!<span class="String">&quot;</span></span> <span class="Keyword">if</span> elvis<span class="Keyword">?</span>
+<span class="comment"># Existence:</span>
+alert <span class="string">"I knew it!"</span> <span class="keyword">if</span> elvis?
 
-<span class="Comment"><span class="Comment">#</span> Array comprehensions:</span>
-cubes <span class="Keyword">=</span> (math.cube num <span class="Keyword">for</span> num <span class="Keyword">in</span> list)
-</pre><pre class="idle"><span class="Storage">var</span> cubes, list, math, num, number, opposite, race, square,
-  __slice <span class="Keyword">=</span> [].slice;
+<span class="comment"># Array comprehensions:</span>
+cubes = (math.cube num <span class="keyword">for</span> num <span class="keyword">in</span> list)
+</code></pre><pre><code><span class="reserved">var</span> cubes, list, math, num, number, opposite, race, square,
+  __slice = [].slice;
 
-number <span class="Keyword">=</span> <span class="Number">42</span>;
+number = <span class="number">42</span>;
 
-opposite <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
+opposite = <span class="literal">true</span>;
 
-<span class="Keyword">if</span> (opposite) {
-  number <span class="Keyword">=</span> <span class="Keyword">-</span><span class="Number">42</span>;
+<span class="keyword">if</span> (opposite) {
+  number = -<span class="number">42</span>;
 }
 
-<span class="FunctionName">square</span> = <span class="Storage">function</span>(<span class="FunctionArgument">x</span>) {
-  <span class="Keyword">return</span> x <span class="Keyword">*</span> x;
+square = <span class="reserved">function</span>(x) {
+  <span class="keyword">return</span> x * x;
 };
 
-list <span class="Keyword">=</span> [<span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>];
+list = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];
 
-math <span class="Keyword">=</span> {
-  root: <span class="LibraryClassType">Math</span>.sqrt,
+math = {
+  root: Math.sqrt,
   square: square,
-  <span class="FunctionName">cube</span>: <span class="Storage">function</span>(<span class="FunctionArgument">x</span>) {
-    <span class="Keyword">return</span> x <span class="Keyword">*</span> square(x);
+  cube: <span class="reserved">function</span>(x) {
+    <span class="keyword">return</span> x * square(x);
   }
 };
 
-<span class="FunctionName">race</span> = <span class="Storage">function</span>() {
-  <span class="Storage">var</span> runners, winner;
-  winner <span class="Keyword">=</span> arguments[<span class="Number">0</span>], runners <span class="Keyword">=</span> <span class="Number">2</span> <span class="Keyword">&lt;=</span> arguments.<span class="LibraryConstant">length</span> ? __slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">1</span>) : [];
-  <span class="Keyword">return</span> <span class="LibraryFunction">print</span>(winner, runners);
+race = <span class="reserved">function</span>() {
+  <span class="reserved">var</span> runners, winner;
+  winner = arguments[<span class="number">0</span>], runners = <span class="number">2</span> &lt;= arguments.length ? __slice.call(arguments, <span class="number">1</span>) : [];
+  <span class="keyword">return</span> print(winner, runners);
 };
 
-<span class="Keyword">if</span> (<span class="Keyword">typeof</span> elvis <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> elvis <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) {
-  <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>I knew it!<span class="String">&quot;</span></span>);
+<span class="keyword">if</span> (<span class="keyword">typeof</span> elvis !== <span class="string">"undefined"</span> &amp;&amp; elvis !== <span class="literal">null</span>) {
+  alert(<span class="string">"I knew it!"</span>);
 }
 
-cubes <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  <span class="Storage">var</span> _i, _len, _results;
-  _results <span class="Keyword">=</span> [];
-  <span class="Keyword">for</span> (_i <span class="Keyword">=</span> <span class="Number">0</span>, _len <span class="Keyword">=</span> list.<span class="LibraryConstant">length</span>; _i <span class="Keyword">&lt;</span> _len; _i<span class="Keyword">++</span>) {
-    num <span class="Keyword">=</span> list[_i];
-    _results.<span class="LibraryFunction">push</span>(math.cube(num));
+cubes = (<span class="reserved">function</span>() {
+  <span class="reserved">var</span> _i, _len, _results;
+  _results = [];
+  <span class="keyword">for</span> (_i = <span class="number">0</span>, _len = list.length; _i &lt; _len; _i++) {
+    num = list[_i];
+    _results.push(math.cube(num));
   }
-  <span class="Keyword">return</span> _results;
+  <span class="keyword">return</span> _results;
 })();
-</pre><script>window.example1 = "# Assignment:\nnumber   = 42\nopposite = true\n\n# Conditions:\nnumber = -42 if opposite\n\n# Functions:\nsquare = (x) -> x * x\n\n# Arrays:\nlist = [1, 2, 3, 4, 5]\n\n# Objects:\nmath =\n  root:   Math.sqrt\n  square: square\n  cube:   (x) -> x * square x\n\n# Splats:\nrace = (winner, runners...) ->\n  print winner, runners\n\n# Existence:\nalert \"I knew it!\" if elvis?\n\n# Array comprehensions:\ncubes = (math.cube num for num in list)\n\nalert cubes"</script><div class='minibutton ok' onclick='javascript: var cubes, list, math, num, number, opposite, race, square,
+</code></pre><script>window.example1 = "# Assignment:\nnumber   = 42\nopposite = true\n\n# Conditions:\nnumber = -42 if opposite\n\n# Functions:\nsquare = (x) -> x * x\n\n# Arrays:\nlist = [1, 2, 3, 4, 5]\n\n# Objects:\nmath =\n  root:   Math.sqrt\n  square: square\n  cube:   (x) -> x * square x\n\n# Splats:\nrace = (winner, runners...) ->\n  print winner, runners\n\n# Existence:\nalert \"I knew it!\" if elvis?\n\n# Array comprehensions:\ncubes = (math.cube num for num in list)\n"</script><div class='minibutton ok' onclick='javascript: var cubes, list, math, num, number, opposite, race, square,
   __slice = [].slice;
 
 number = 42;
@@ -528,18 +525,18 @@ Expressions
       an arrow, and the function body. The empty function looks like this:
       <tt>-></tt>
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">square </span><span class="Keyword">=</span> <span class="FunctionArgument">(x)</span> <span class="Storage">-&gt;</span> x <span class="Keyword">*</span> x
-<span class="FunctionName">cube   </span><span class="Keyword">=</span> <span class="FunctionArgument">(x)</span> <span class="Storage">-&gt;</span> square(x) <span class="Keyword">*</span> x
-</pre><pre class="idle"><span class="Storage">var</span> cube, square;
+    <div class='code'><pre><code><span class="function"><span class="title">square</span></span> = (x) -&gt; x * x
+<span class="function"><span class="title">cube</span></span>   = (x) -&gt; square(x) * x
+</code></pre><pre><code><span class="reserved">var</span> cube, square;
 
-<span class="FunctionName">square</span> = <span class="Storage">function</span>(<span class="FunctionArgument">x</span>) {
-  <span class="Keyword">return</span> x <span class="Keyword">*</span> x;
+square = <span class="reserved">function</span>(x) {
+  <span class="keyword">return</span> x * x;
 };
 
-<span class="FunctionName">cube</span> = <span class="Storage">function</span>(<span class="FunctionArgument">x</span>) {
-  <span class="Keyword">return</span> square(x) <span class="Keyword">*</span> x;
+cube = <span class="reserved">function</span>(x) {
+  <span class="keyword">return</span> square(x) * x;
 };
-</pre><script>window.example2 = "square = (x) -> x * x\ncube   = (x) -> square(x) * x\n\nalert cube(5)"</script><div class='minibutton load' onclick='javascript: loadConsole(example2);'>load</div><div class='minibutton ok' onclick='javascript: var cube, square;
+</code></pre><script>window.example2 = "square = (x) -> x * x\ncube   = (x) -> square(x) * x\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example2);'>load</div><div class='minibutton ok' onclick='javascript: var cube, square;
 
 square = function(x) {
   return x * x;
@@ -553,23 +550,23 @@ cube = function(x) {
       Functions may also have default values for arguments. Override the default
       value by passing a non-null argument.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">fill </span><span class="Keyword">=</span> <span class="FunctionArgument">(container, liquid = &quot;coffee&quot;)</span> <span class="Storage">-&gt;</span>
-  <span class="String"><span class="String">&quot;</span>Filling the <span class="String"><span class="String">#{</span>container<span class="String">}</span></span> with <span class="String"><span class="String">#{</span>liquid<span class="String">}</span></span>...<span class="String">&quot;</span></span>
+    <div class='code'><pre><code><span class="function"><span class="title">fill</span></span> = (container, liquid = <span class="string">"coffee"</span>) -&gt;
+  <span class="string">"Filling the <span class="subst">#{container}</span> with <span class="subst">#{liquid}</span>..."</span>
 
 
 
 
 
 
-</pre><pre class="idle"><span class="Storage">var</span> fill;
+</code></pre><pre><code><span class="reserved">var</span> fill;
 
-<span class="FunctionName">fill</span> = <span class="Storage">function</span>(<span class="FunctionArgument">container, liquid</span>) {
-  <span class="Keyword">if</span> (liquid <span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) {
-    liquid <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>coffee<span class="String">&quot;</span></span>;
+fill = <span class="reserved">function</span>(container, liquid) {
+  <span class="keyword">if</span> (liquid == <span class="literal">null</span>) {
+    liquid = <span class="string">"coffee"</span>;
   }
-  <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>Filling the <span class="String">&quot;</span></span> <span class="Keyword">+</span> container <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> with <span class="String">&quot;</span></span> <span class="Keyword">+</span> liquid <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>...<span class="String">&quot;</span></span>;
+  <span class="keyword">return</span> <span class="string">"Filling the "</span> + container + <span class="string">" with "</span> + liquid + <span class="string">"..."</span>;
 };
-</pre><script>window.example3 = "fill = (container, liquid = \"coffee\") ->\n  \"Filling the #{container} with #{liquid}...\"\n\nalert fill(\"cup\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example3);'>load</div><div class='minibutton ok' onclick='javascript: var fill;
+</code></pre><script>window.example3 = "fill = (container, liquid = \"coffee\") ->\n  \"Filling the #{container} with #{liquid}...\"\n\n\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example3);'>load</div><div class='minibutton ok' onclick='javascript: var fill;
 
 fill = function(container, liquid) {
   if (liquid == null) {
@@ -587,47 +584,47 @@ fill = function(container, liquid) {
       the commas are optional. Objects may be created using indentation instead
       of explicit braces, similar to <a href="http://yaml.org">YAML</a>.
     </p>
-    <div class='code'><pre class="idle">song <span class="Keyword">=</span> [<span class="String"><span class="String">&quot;</span>do<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>re<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>mi<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>fa<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>so<span class="String">&quot;</span></span>]
+    <div class='code'><pre><code>song = [<span class="string">"do"</span>, <span class="string">"re"</span>, <span class="string">"mi"</span>, <span class="string">"fa"</span>, <span class="string">"so"</span>]
 
-singers <span class="Keyword">=</span> {Jagger: <span class="String"><span class="String">&quot;</span>Rock<span class="String">&quot;</span></span>, Elvis: <span class="String"><span class="String">&quot;</span>Roll<span class="String">&quot;</span></span>}
+singers = {Jagger: <span class="string">"Rock"</span>, Elvis: <span class="string">"Roll"</span>}
 
-bitlist <span class="Keyword">=</span> [
-  <span class="Number">1</span>, <span class="Number">0</span>, <span class="Number">1</span>
-  <span class="Number">0</span>, <span class="Number">0</span>, <span class="Number">1</span>
-  <span class="Number">1</span>, <span class="Number">1</span>, <span class="Number">0</span>
+bitlist = [
+  <span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>
+  <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>
+  <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>
 ]
 
-kids <span class="Keyword">=</span>
+kids =
   brother:
-    name: <span class="String"><span class="String">&quot;</span>Max<span class="String">&quot;</span></span>
-    age:  <span class="Number">11</span>
+    name: <span class="string">"Max"</span>
+    age:  <span class="number">11</span>
   sister:
-    name: <span class="String"><span class="String">&quot;</span>Ida<span class="String">&quot;</span></span>
-    age:  <span class="Number">9</span>
+    name: <span class="string">"Ida"</span>
+    age:  <span class="number">9</span>
 
 
-</pre><pre class="idle"><span class="Storage">var</span> bitlist, kids, singers, song;
+</code></pre><pre><code><span class="reserved">var</span> bitlist, kids, singers, song;
 
-song <span class="Keyword">=</span> [<span class="String"><span class="String">&quot;</span>do<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>re<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>mi<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>fa<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>so<span class="String">&quot;</span></span>];
+song = [<span class="string">"do"</span>, <span class="string">"re"</span>, <span class="string">"mi"</span>, <span class="string">"fa"</span>, <span class="string">"so"</span>];
 
-singers <span class="Keyword">=</span> {
-  Jagger: <span class="String"><span class="String">&quot;</span>Rock<span class="String">&quot;</span></span>,
-  Elvis: <span class="String"><span class="String">&quot;</span>Roll<span class="String">&quot;</span></span>
+singers = {
+  Jagger: <span class="string">"Rock"</span>,
+  Elvis: <span class="string">"Roll"</span>
 };
 
-bitlist <span class="Keyword">=</span> [<span class="Number">1</span>, <span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">0</span>, <span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">1</span>, <span class="Number">1</span>, <span class="Number">0</span>];
+bitlist = [<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>];
 
-kids <span class="Keyword">=</span> {
+kids = {
   brother: {
-    name: <span class="String"><span class="String">&quot;</span>Max<span class="String">&quot;</span></span>,
-    age: <span class="Number">11</span>
+    name: <span class="string">"Max"</span>,
+    age: <span class="number">11</span>
   },
   sister: {
-    name: <span class="String"><span class="String">&quot;</span>Ida<span class="String">&quot;</span></span>,
-    age: <span class="Number">9</span>
+    name: <span class="string">"Ida"</span>,
+    age: <span class="number">9</span>
   }
 };
-</pre><script>window.example4 = "song = [\"do\", \"re\", \"mi\", \"fa\", \"so\"]\n\nsingers = {Jagger: \"Rock\", Elvis: \"Roll\"}\n\nbitlist = [\n  1, 0, 1\n  0, 0, 1\n  1, 1, 0\n]\n\nkids =\n  brother:\n    name: \"Max\"\n    age:  11\n  sister:\n    name: \"Ida\"\n    age:  9\n\nalert song.join(\" ... \")"</script><div class='minibutton load' onclick='javascript: loadConsole(example4);'>load</div><div class='minibutton ok' onclick='javascript: var bitlist, kids, singers, song;
+</code></pre><script>window.example4 = "song = [\"do\", \"re\", \"mi\", \"fa\", \"so\"]\n\nsingers = {Jagger: \"Rock\", Elvis: \"Roll\"}\n\nbitlist = [\n  1, 0, 1\n  0, 0, 1\n  1, 1, 0\n]\n\nkids =\n  brother:\n    name: \"Max\"\n    age:  11\n  sister:\n    name: \"Ida\"\n    age:  9\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example4);'>load</div><div class='minibutton ok' onclick='javascript: var bitlist, kids, singers, song;
 
 song = ["do", "re", "mi", "fa", "so"];
 
@@ -655,17 +652,22 @@ kids = {
       used as keys in objects and quotes them for you, so you don't have to worry
       about it (say, when using jQuery).
     </p>
-    <div class='code'><pre class="idle">$(<span class="String"><span class="String">'</span>.account<span class="String">'</span></span>).attr class: <span class="String"><span class="String">'</span>active<span class="String">'</span></span>
+    <div class='code'><pre><code>$(<span class="string">'.account'</span>).attr class: <span class="string">'active'</span>
 
-log object.<span class="Storage">class</span>
+log object.<span class="class"><span class="keyword">class</span>
+</span>
 
-
-</pre><pre class="idle"><span class="Keyword">$</span>(<span class="String"><span class="String">'</span>.account<span class="String">'</span></span>).attr({
-  <span class="String"><span class="String">&quot;</span>class<span class="String">&quot;</span></span>: <span class="String"><span class="String">'</span>active<span class="String">'</span></span>
+</code></pre><pre><code>$(<span class="string">'.account'</span>).attr({
+  <span class="string">"class"</span>: <span class="string">'active'</span>
 });
 
-<span class="LibraryFunction">log</span>(object[<span class="String"><span class="String">&quot;</span>class<span class="String">&quot;</span></span>]);
-</pre><script>window.example5 = "$('.account').attr class: 'active'\n\nlog object.class\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example5);'>load</div><br class='clear' /></div>
+log(object[<span class="string">"class"</span>]);
+</code></pre><script>window.example5 = "$('.account').attr class: 'active'\n\nlog object.class\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example5);'>load</div><div class='minibutton ok' onclick='javascript: $('.account').attr({
+  "class": 'active'
+});
+
+log(object["class"]);
+;alert(false);'>run: false</div><br class='clear' /></div>
 
     <p>
       <span id="lexical-scope" class="bookmark"></span>
@@ -674,23 +676,22 @@ log object.<span class="Storage">class</span>
       are properly declared within lexical scope &mdash; you never need to write
       <tt>var</tt> yourself.
     </p>
-    <div class='code'><pre class="idle">outer <span class="Keyword">=</span> <span class="Number">1</span>
-<span class="FunctionName">changeNumbers </span><span class="Keyword">=</span> <span class="Keyword">-</span><span class="Keyword">&gt;</span>
-  inner <span class="Keyword">=</span> <span class="Keyword">-</span><span class="Number">1</span>
-  outer <span class="Keyword">=</span> <span class="Number">10</span>
-inner <span class="Keyword">=</span> changeNumbers()
-</pre><pre class="idle"><span class="Storage">var</span> changeNumbers, inner, outer;
+    <div class='code'><pre><code>outer = <span class="number">1</span>
+<span class="function"><span class="title">changeNumbers</span></span> = -&gt;
+  inner = -<span class="number">1</span>
+  outer = <span class="number">10</span>
+inner = changeNumbers()</code></pre><pre><code><span class="reserved">var</span> changeNumbers, inner, outer;
 
-outer <span class="Keyword">=</span> <span class="Number">1</span>;
+outer = <span class="number">1</span>;
 
-<span class="FunctionName">changeNumbers</span> = <span class="Storage">function</span>() {
-  <span class="Storage">var</span> inner;
-  inner <span class="Keyword">=</span> <span class="Keyword">-</span><span class="Number">1</span>;
-  <span class="Keyword">return</span> outer <span class="Keyword">=</span> <span class="Number">10</span>;
+changeNumbers = <span class="reserved">function</span>() {
+  <span class="reserved">var</span> inner;
+  inner = -<span class="number">1</span>;
+  <span class="keyword">return</span> outer = <span class="number">10</span>;
 };
 
-inner <span class="Keyword">=</span> changeNumbers();
-</pre><script>window.example6 = "outer = 1\nchangeNumbers = ->\n  inner = -1\n  outer = 10\ninner = changeNumbers()\n\nalert inner"</script><div class='minibutton load' onclick='javascript: loadConsole(example6);'>load</div><div class='minibutton ok' onclick='javascript: var changeNumbers, inner, outer;
+inner = changeNumbers();
+</code></pre><script>window.example6 = "outer = 1\nchangeNumbers = ->\n  inner = -1\n  outer = 10\ninner = changeNumbers()"</script><div class='minibutton load' onclick='javascript: loadConsole(example6);'>load</div><div class='minibutton ok' onclick='javascript: var changeNumbers, inner, outer;
 
 outer = 1;
 
@@ -746,33 +747,47 @@ inner = changeNumbers();
       is no explicit ternary statement in CoffeeScript &mdash; you simply use
       a regular <b>if</b> statement on a single line.
     </p>
-    <div class='code'><pre class="idle">mood <span class="Keyword">=</span> greatlyImproved <span class="Keyword">if</span> singing
+    <div class='code'><pre><code>mood = greatlyImproved <span class="keyword">if</span> singing
 
-<span class="Keyword">if</span> happy <span class="Keyword">and</span> knowsIt
+<span class="keyword">if</span> happy <span class="keyword">and</span> knowsIt
   clapsHands()
   chaChaCha()
-<span class="Keyword">else</span>
+<span class="keyword">else</span>
   showIt()
 
-date <span class="Keyword">=</span> <span class="Keyword">if</span> friday <span class="Keyword">then</span> sue <span class="Keyword">else</span> jill
+date = <span class="keyword">if</span> friday <span class="keyword">then</span> sue <span class="keyword">else</span> jill
 
 
 
-</pre><pre class="idle"><span class="Storage">var</span> date, mood;
+</code></pre><pre><code><span class="reserved">var</span> date, mood;
 
-<span class="Keyword">if</span> (singing) {
-  mood <span class="Keyword">=</span> greatlyImproved;
+<span class="keyword">if</span> (singing) {
+  mood = greatlyImproved;
 }
 
-<span class="Keyword">if</span> (happy <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> knowsIt) {
+<span class="keyword">if</span> (happy &amp;&amp; knowsIt) {
   clapsHands();
   chaChaCha();
-} <span class="Keyword">else</span> {
+} <span class="keyword">else</span> {
   showIt();
 }
 
-date <span class="Keyword">=</span> friday ? sue : jill;
-</pre><script>window.example7 = "mood = greatlyImproved if singing\n\nif happy and knowsIt\n  clapsHands()\n  chaChaCha()\nelse\n  showIt()\n\ndate = if friday then sue else jill\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example7);'>load</div><br class='clear' /></div>
+date = friday ? sue : jill;
+</code></pre><script>window.example7 = "mood = greatlyImproved if singing\n\nif happy and knowsIt\n  clapsHands()\n  chaChaCha()\nelse\n  showIt()\n\ndate = if friday then sue else jill\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example7);'>load</div><div class='minibutton ok' onclick='javascript: var date, mood;
+
+if (singing) {
+  mood = greatlyImproved;
+}
+
+if (happy && knowsIt) {
+  clapsHands();
+  chaChaCha();
+} else {
+  showIt();
+}
+
+date = friday ? sue : jill;
+;alert(false);'>run: false</div><br class='clear' /></div>
 
     <p>
       <span id="splats" class="bookmark"></span>
@@ -782,56 +797,56 @@ date <span class="Keyword">=</span> friday ? sue : jill;
       splats <tt>...</tt>, both for function definition as well as invocation,
       making variable numbers of arguments a little bit more palatable.
     </p>
-    <div class='code'><pre class="idle">gold <span class="Keyword">=</span> silver <span class="Keyword">=</span> rest <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>unknown<span class="String">&quot;</span></span>
+    <div class='code'><pre><code>gold = silver = rest = <span class="string">"unknown"</span>
 
-<span class="FunctionName">awardMedals </span><span class="Keyword">=</span> <span class="FunctionArgument">(first, second, others...)</span> <span class="Storage">-&gt;</span>
-  gold   <span class="Keyword">=</span> first
-  silver <span class="Keyword">=</span> second
-  rest   <span class="Keyword">=</span> others
+<span class="function"><span class="title">awardMedals</span></span> = (first, second, others...) -&gt;
+  gold   = first
+  silver = second
+  rest   = others
 
-contenders <span class="Keyword">=</span> [
-  <span class="String"><span class="String">&quot;</span>Michael Phelps<span class="String">&quot;</span></span>
-  <span class="String"><span class="String">&quot;</span>Liu Xiang<span class="String">&quot;</span></span>
-  <span class="String"><span class="String">&quot;</span>Yao Ming<span class="String">&quot;</span></span>
-  <span class="String"><span class="String">&quot;</span>Allyson Felix<span class="String">&quot;</span></span>
-  <span class="String"><span class="String">&quot;</span>Shawn Johnson<span class="String">&quot;</span></span>
-  <span class="String"><span class="String">&quot;</span>Roman Sebrle<span class="String">&quot;</span></span>
-  <span class="String"><span class="String">&quot;</span>Guo Jingjing<span class="String">&quot;</span></span>
-  <span class="String"><span class="String">&quot;</span>Tyson Gay<span class="String">&quot;</span></span>
-  <span class="String"><span class="String">&quot;</span>Asafa Powell<span class="String">&quot;</span></span>
-  <span class="String"><span class="String">&quot;</span>Usain Bolt<span class="String">&quot;</span></span>
+contenders = [
+  <span class="string">"Michael Phelps"</span>
+  <span class="string">"Liu Xiang"</span>
+  <span class="string">"Yao Ming"</span>
+  <span class="string">"Allyson Felix"</span>
+  <span class="string">"Shawn Johnson"</span>
+  <span class="string">"Roman Sebrle"</span>
+  <span class="string">"Guo Jingjing"</span>
+  <span class="string">"Tyson Gay"</span>
+  <span class="string">"Asafa Powell"</span>
+  <span class="string">"Usain Bolt"</span>
 ]
 
 awardMedals contenders...
 
-alert <span class="String"><span class="String">&quot;</span>Gold: <span class="String">&quot;</span></span> <span class="Keyword">+</span> gold
-alert <span class="String"><span class="String">&quot;</span>Silver: <span class="String">&quot;</span></span> <span class="Keyword">+</span> silver
-alert <span class="String"><span class="String">&quot;</span>The Field: <span class="String">&quot;</span></span> <span class="Keyword">+</span> rest
+alert <span class="string">"Gold: "</span> + gold
+alert <span class="string">"Silver: "</span> + silver
+alert <span class="string">"The Field: "</span> + rest
 
 
-</pre><pre class="idle"><span class="Storage">var</span> awardMedals, contenders, gold, rest, silver,
-  __slice <span class="Keyword">=</span> [].slice;
+</code></pre><pre><code><span class="reserved">var</span> awardMedals, contenders, gold, rest, silver,
+  __slice = [].slice;
 
-gold <span class="Keyword">=</span> silver <span class="Keyword">=</span> rest <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>unknown<span class="String">&quot;</span></span>;
+gold = silver = rest = <span class="string">"unknown"</span>;
 
-<span class="FunctionName">awardMedals</span> = <span class="Storage">function</span>() {
-  <span class="Storage">var</span> first, others, second;
-  first <span class="Keyword">=</span> arguments[<span class="Number">0</span>], second <span class="Keyword">=</span> arguments[<span class="Number">1</span>], others <span class="Keyword">=</span> <span class="Number">3</span> <span class="Keyword">&lt;=</span> arguments.<span class="LibraryConstant">length</span> ? __slice.<span class="LibraryFunction">call</span>(arguments, <span class="Number">2</span>) : [];
-  gold <span class="Keyword">=</span> first;
-  silver <span class="Keyword">=</span> second;
-  <span class="Keyword">return</span> rest <span class="Keyword">=</span> others;
+awardMedals = <span class="reserved">function</span>() {
+  <span class="reserved">var</span> first, others, second;
+  first = arguments[<span class="number">0</span>], second = arguments[<span class="number">1</span>], others = <span class="number">3</span> &lt;= arguments.length ? __slice.call(arguments, <span class="number">2</span>) : [];
+  gold = first;
+  silver = second;
+  <span class="keyword">return</span> rest = others;
 };
 
-contenders <span class="Keyword">=</span> [<span class="String"><span class="String">&quot;</span>Michael Phelps<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Liu Xiang<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Yao Ming<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Allyson Felix<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Shawn Johnson<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Roman Sebrle<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Guo Jingjing<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Tyson Gay<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Asafa Powell<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Usain Bolt<span class="String">&quot;</span></span>];
+contenders = [<span class="string">"Michael Phelps"</span>, <span class="string">"Liu Xiang"</span>, <span class="string">"Yao Ming"</span>, <span class="string">"Allyson Felix"</span>, <span class="string">"Shawn Johnson"</span>, <span class="string">"Roman Sebrle"</span>, <span class="string">"Guo Jingjing"</span>, <span class="string">"Tyson Gay"</span>, <span class="string">"Asafa Powell"</span>, <span class="string">"Usain Bolt"</span>];
 
-awardMedals.<span class="LibraryFunction">apply</span>(<span class="BuiltInConstant">null</span>, contenders);
+awardMedals.apply(<span class="literal">null</span>, contenders);
 
-<span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Gold: <span class="String">&quot;</span></span> <span class="Keyword">+</span> gold);
+alert(<span class="string">"Gold: "</span> + gold);
 
-<span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Silver: <span class="String">&quot;</span></span> <span class="Keyword">+</span> silver);
+alert(<span class="string">"Silver: "</span> + silver);
 
-<span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>The Field: <span class="String">&quot;</span></span> <span class="Keyword">+</span> rest);
-</pre><script>window.example8 = "gold = silver = rest = \"unknown\"\n\nawardMedals = (first, second, others...) ->\n  gold   = first\n  silver = second\n  rest   = others\n\ncontenders = [\n  \"Michael Phelps\"\n  \"Liu Xiang\"\n  \"Yao Ming\"\n  \"Allyson Felix\"\n  \"Shawn Johnson\"\n  \"Roman Sebrle\"\n  \"Guo Jingjing\"\n  \"Tyson Gay\"\n  \"Asafa Powell\"\n  \"Usain Bolt\"\n]\n\nawardMedals contenders...\n\nalert \"Gold: \" + gold\nalert \"Silver: \" + silver\nalert \"The Field: \" + rest\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example8);'>load</div><div class='minibutton ok' onclick='javascript: var awardMedals, contenders, gold, rest, silver,
+alert(<span class="string">"The Field: "</span> + rest);
+</code></pre><script>window.example8 = "gold = silver = rest = \"unknown\"\n\nawardMedals = (first, second, others...) ->\n  gold   = first\n  silver = second\n  rest   = others\n\ncontenders = [\n  \"Michael Phelps\"\n  \"Liu Xiang\"\n  \"Yao Ming\"\n  \"Allyson Felix\"\n  \"Shawn Johnson\"\n  \"Roman Sebrle\"\n  \"Guo Jingjing\"\n  \"Tyson Gay\"\n  \"Asafa Powell\"\n  \"Usain Bolt\"\n]\n\nawardMedals contenders...\n\nalert \"Gold: \" + gold\nalert \"Silver: \" + silver\nalert \"The Field: \" + rest\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example8);'>load</div><div class='minibutton ok' onclick='javascript: var awardMedals, contenders, gold, rest, silver,
   __slice = [].slice;
 
 gold = silver = rest = "unknown";
@@ -864,40 +879,63 @@ alert("The Field: " + rest);
       Unlike for loops, array comprehensions are expressions, and can be returned
       and assigned.
     </p>
-    <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> Eat lunch.</span>
-eat food <span class="Keyword">for</span> food <span class="Keyword">in</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>]
+    <div class='code'><pre><code><span class="comment"># Eat lunch.</span>
+eat food <span class="keyword">for</span> food <span class="keyword">in</span> [<span class="string">'toast'</span>, <span class="string">'cheese'</span>, <span class="string">'wine'</span>]
 
-<span class="Comment"><span class="Comment">#</span> Fine five course dining.</span>
-courses <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>greens<span class="String">'</span></span>, <span class="String"><span class="String">'</span>caviar<span class="String">'</span></span>, <span class="String"><span class="String">'</span>truffles<span class="String">'</span></span>, <span class="String"><span class="String">'</span>roast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cake<span class="String">'</span></span>]
-menu i <span class="Keyword">+</span> <span class="Number">1</span>, dish <span class="Keyword">for</span> dish, i <span class="Keyword">in</span> courses
+<span class="comment"># Fine five course dining.</span>
+courses = [<span class="string">'greens'</span>, <span class="string">'caviar'</span>, <span class="string">'truffles'</span>, <span class="string">'roast'</span>, <span class="string">'cake'</span>]
+menu i + <span class="number">1</span>, dish <span class="keyword">for</span> dish, i <span class="keyword">in</span> courses
 
-<span class="Comment"><span class="Comment">#</span> Health conscious meal.</span>
-foods <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>broccoli<span class="String">'</span></span>, <span class="String"><span class="String">'</span>spinach<span class="String">'</span></span>, <span class="String"><span class="String">'</span>chocolate<span class="String">'</span></span>]
-eat food <span class="Keyword">for</span> food <span class="Keyword">in</span> foods <span class="Keyword">when</span> food <span class="Keyword">isnt</span> <span class="String"><span class="String">'</span>chocolate<span class="String">'</span></span>
-</pre><pre class="idle"><span class="Storage">var</span> courses, dish, food, foods, i, _i, _j, _k, _len, _len1, _len2, _ref;
+<span class="comment"># Health conscious meal.</span>
+foods = [<span class="string">'broccoli'</span>, <span class="string">'spinach'</span>, <span class="string">'chocolate'</span>]
+eat food <span class="keyword">for</span> food <span class="keyword">in</span> foods <span class="keyword">when</span> food <span class="keyword">isnt</span> <span class="string">'chocolate'</span>
+</code></pre><pre><code><span class="reserved">var</span> courses, dish, food, foods, i, _i, _j, _k, _len, _len1, _len2, _ref;
 
-_ref <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>toast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cheese<span class="String">'</span></span>, <span class="String"><span class="String">'</span>wine<span class="String">'</span></span>];
-<span class="Keyword">for</span> (_i <span class="Keyword">=</span> <span class="Number">0</span>, _len <span class="Keyword">=</span> _ref.<span class="LibraryConstant">length</span>; _i <span class="Keyword">&lt;</span> _len; _i<span class="Keyword">++</span>) {
-  food <span class="Keyword">=</span> _ref[_i];
+_ref = [<span class="string">'toast'</span>, <span class="string">'cheese'</span>, <span class="string">'wine'</span>];
+<span class="keyword">for</span> (_i = <span class="number">0</span>, _len = _ref.length; _i &lt; _len; _i++) {
+  food = _ref[_i];
   eat(food);
 }
 
-courses <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>greens<span class="String">'</span></span>, <span class="String"><span class="String">'</span>caviar<span class="String">'</span></span>, <span class="String"><span class="String">'</span>truffles<span class="String">'</span></span>, <span class="String"><span class="String">'</span>roast<span class="String">'</span></span>, <span class="String"><span class="String">'</span>cake<span class="String">'</span></span>];
+courses = [<span class="string">'greens'</span>, <span class="string">'caviar'</span>, <span class="string">'truffles'</span>, <span class="string">'roast'</span>, <span class="string">'cake'</span>];
 
-<span class="Keyword">for</span> (i <span class="Keyword">=</span> _j <span class="Keyword">=</span> <span class="Number">0</span>, _len1 <span class="Keyword">=</span> courses.<span class="LibraryConstant">length</span>; _j <span class="Keyword">&lt;</span> _len1; i <span class="Keyword">=</span> <span class="Keyword">++</span>_j) {
-  dish <span class="Keyword">=</span> courses[i];
-  menu(i <span class="Keyword">+</span> <span class="Number">1</span>, dish);
+<span class="keyword">for</span> (i = _j = <span class="number">0</span>, _len1 = courses.length; _j &lt; _len1; i = ++_j) {
+  dish = courses[i];
+  menu(i + <span class="number">1</span>, dish);
 }
 
-foods <span class="Keyword">=</span> [<span class="String"><span class="String">'</span>broccoli<span class="String">'</span></span>, <span class="String"><span class="String">'</span>spinach<span class="String">'</span></span>, <span class="String"><span class="String">'</span>chocolate<span class="String">'</span></span>];
+foods = [<span class="string">'broccoli'</span>, <span class="string">'spinach'</span>, <span class="string">'chocolate'</span>];
 
-<span class="Keyword">for</span> (_k <span class="Keyword">=</span> <span class="Number">0</span>, _len2 <span class="Keyword">=</span> foods.<span class="LibraryConstant">length</span>; _k <span class="Keyword">&lt;</span> _len2; _k<span class="Keyword">++</span>) {
-  food <span class="Keyword">=</span> foods[_k];
-  <span class="Keyword">if</span> (food <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">'</span>chocolate<span class="String">'</span></span>) {
+<span class="keyword">for</span> (_k = <span class="number">0</span>, _len2 = foods.length; _k &lt; _len2; _k++) {
+  food = foods[_k];
+  <span class="keyword">if</span> (food !== <span class="string">'chocolate'</span>) {
     eat(food);
   }
 }
-</pre><script>window.example9 = "# Eat lunch.\neat food for food in ['toast', 'cheese', 'wine']\n\n# Fine five course dining.\ncourses = ['greens', 'caviar', 'truffles', 'roast', 'cake']\nmenu i + 1, dish for dish, i in courses\n\n# Health conscious meal.\nfoods = ['broccoli', 'spinach', 'chocolate']\neat food for food in foods when food isnt 'chocolate'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example9);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example9 = "# Eat lunch.\neat food for food in ['toast', 'cheese', 'wine']\n\n# Fine five course dining.\ncourses = ['greens', 'caviar', 'truffles', 'roast', 'cake']\nmenu i + 1, dish for dish, i in courses\n\n# Health conscious meal.\nfoods = ['broccoli', 'spinach', 'chocolate']\neat food for food in foods when food isnt 'chocolate'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example9);'>load</div><div class='minibutton ok' onclick='javascript: var courses, dish, food, foods, i, _i, _j, _k, _len, _len1, _len2, _ref;
+
+_ref = ['toast', 'cheese', 'wine'];
+for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+  food = _ref[_i];
+  eat(food);
+}
+
+courses = ['greens', 'caviar', 'truffles', 'roast', 'cake'];
+
+for (i = _j = 0, _len1 = courses.length; _j < _len1; i = ++_j) {
+  dish = courses[i];
+  menu(i + 1, dish);
+}
+
+foods = ['broccoli', 'spinach', 'chocolate'];
+
+for (_k = 0, _len2 = foods.length; _k < _len2; _k++) {
+  food = foods[_k];
+  if (food !== 'chocolate') {
+    eat(food);
+  }
+}
+;alert(false);'>run: false</div><br class='clear' /></div>
     <p>
       Comprehensions should be able to handle most places where you otherwise
       would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>, for example:
@@ -906,19 +944,19 @@ foods <span class="Keyword">=</span> [<span class="String"><span class="String">
       in fixed-size increments, you can use a range to specify the start and
       end of your comprehension.
     </p>
-    <div class='code'><pre class="idle">countdown <span class="Keyword">=</span> (num <span class="Keyword">for</span> num <span class="Keyword">in</span> [<span class="Number">10</span>..<span class="Number">1</span>])
+    <div class='code'><pre><code>countdown = (num <span class="keyword">for</span> num <span class="keyword">in</span> [<span class="number">10.</span><span class="number">.1</span>])
 
-</pre><pre class="idle"><span class="Storage">var</span> countdown, num;
+</code></pre><pre><code><span class="reserved">var</span> countdown, num;
 
-countdown <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  <span class="Storage">var</span> _i, _results;
-  _results <span class="Keyword">=</span> [];
-  <span class="Keyword">for</span> (num <span class="Keyword">=</span> _i <span class="Keyword">=</span> <span class="Number">10</span>; _i <span class="Keyword">&gt;=</span> <span class="Number">1</span>; num <span class="Keyword">=</span> <span class="Keyword">--</span>_i) {
-    _results.<span class="LibraryFunction">push</span>(num);
+countdown = (<span class="reserved">function</span>() {
+  <span class="reserved">var</span> _i, _results;
+  _results = [];
+  <span class="keyword">for</span> (num = _i = <span class="number">10</span>; _i &gt;= <span class="number">1</span>; num = --_i) {
+    _results.push(num);
   }
-  <span class="Keyword">return</span> _results;
+  <span class="keyword">return</span> _results;
 })();
-</pre><script>window.example10 = "countdown = (num for num in [10..1])\n\nalert countdown"</script><div class='minibutton load' onclick='javascript: loadConsole(example10);'>load</div><div class='minibutton ok' onclick='javascript: var countdown, num;
+</code></pre><script>window.example10 = "countdown = (num for num in [10..1])\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example10);'>load</div><div class='minibutton ok' onclick='javascript: var countdown, num;
 
 countdown = (function() {
   var _i, _results;
@@ -948,28 +986,28 @@ countdown = (function() {
       an object. Use <tt>of</tt> to signal comprehension over the properties of
       an object instead of the values in an array.
     </p>
-    <div class='code'><pre class="idle">yearsOld <span class="Keyword">=</span> max: <span class="Number">10</span>, ida: <span class="Number">9</span>, tim: <span class="Number">11</span>
+    <div class='code'><pre><code>yearsOld = max: <span class="number">10</span>, ida: <span class="number">9</span>, tim: <span class="number">11</span>
 
-ages <span class="Keyword">=</span> <span class="Keyword">for</span> child, age <span class="Keyword">of</span> yearsOld
-  <span class="String"><span class="String">&quot;</span><span class="String"><span class="String">#{</span>child<span class="String">}</span></span> is <span class="String"><span class="String">#{</span>age<span class="String">}</span></span><span class="String">&quot;</span></span>
-</pre><pre class="idle"><span class="Storage">var</span> age, ages, child, yearsOld;
+ages = <span class="keyword">for</span> child, age <span class="keyword">of</span> yearsOld
+  <span class="string">"<span class="subst">#{child}</span> is <span class="subst">#{age}</span>"</span>
+</code></pre><pre><code><span class="reserved">var</span> age, ages, child, yearsOld;
 
-yearsOld <span class="Keyword">=</span> {
-  max: <span class="Number">10</span>,
-  ida: <span class="Number">9</span>,
-  tim: <span class="Number">11</span>
+yearsOld = {
+  max: <span class="number">10</span>,
+  ida: <span class="number">9</span>,
+  tim: <span class="number">11</span>
 };
 
-ages <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  <span class="Storage">var</span> _results;
-  _results <span class="Keyword">=</span> [];
-  <span class="Keyword">for</span> (child <span class="Keyword">in</span> yearsOld) {
-    age <span class="Keyword">=</span> yearsOld[child];
-    _results.<span class="LibraryFunction">push</span>(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> child <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is <span class="String">&quot;</span></span> <span class="Keyword">+</span> age);
+ages = (<span class="reserved">function</span>() {
+  <span class="reserved">var</span> _results;
+  _results = [];
+  <span class="keyword">for</span> (child <span class="keyword">in</span> yearsOld) {
+    age = yearsOld[child];
+    _results.push(<span class="string">""</span> + child + <span class="string">" is "</span> + age);
   }
-  <span class="Keyword">return</span> _results;
+  <span class="keyword">return</span> _results;
 })();
-</pre><script>window.example11 = "yearsOld = max: 10, ida: 9, tim: 11\n\nages = for child, age of yearsOld\n  \"#{child} is #{age}\"\n\nalert ages.join(\", \")"</script><div class='minibutton load' onclick='javascript: loadConsole(example11);'>load</div><div class='minibutton ok' onclick='javascript: var age, ages, child, yearsOld;
+</code></pre><script>window.example11 = "yearsOld = max: 10, ida: 9, tim: 11\n\nages = for child, age of yearsOld\n  \"#{child} is #{age}\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example11);'>load</div><div class='minibutton ok' onclick='javascript: var age, ages, child, yearsOld;
 
 yearsOld = {
   max: 10,
@@ -999,38 +1037,38 @@ ages = (function() {
       as an expression, returning an array containing the result of each iteration
       through the loop.
     </p>
-    <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> Econ 101</span>
-<span class="Keyword">if</span> <span class="Variable">this</span>.studyingEconomics
-  buy()  <span class="Keyword">while</span> supply <span class="Keyword">&gt;</span> demand
-  sell() <span class="Keyword">until</span> supply <span class="Keyword">&gt;</span> demand
+    <div class='code'><pre><code><span class="comment"># Econ 101</span>
+<span class="keyword">if</span> <span class="keyword">this</span>.studyingEconomics
+  buy()  <span class="keyword">while</span> supply &gt; demand
+  sell() <span class="keyword">until</span> supply &gt; demand
 
-<span class="Comment"><span class="Comment">#</span> Nursery Rhyme</span>
-num <span class="Keyword">=</span> <span class="Number">6</span>
-lyrics <span class="Keyword">=</span> <span class="Keyword">while</span> num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>
-  <span class="String"><span class="String">&quot;</span><span class="String"><span class="String">#{</span>num<span class="String">}</span></span> little monkeys, jumping on the bed.</span>
-<span class="String">    One fell out and bumped his head.<span class="String">&quot;</span></span>
-</pre><pre class="idle"><span class="Storage">var</span> lyrics, num;
+<span class="comment"># Nursery Rhyme</span>
+num = <span class="number">6</span>
+lyrics = <span class="keyword">while</span> num -= <span class="number">1</span>
+  <span class="string">"<span class="subst">#{num}</span> little monkeys, jumping on the bed.
+    One fell out and bumped his head."</span>
+</code></pre><pre><code><span class="reserved">var</span> lyrics, num;
 
-<span class="Keyword">if</span> (<span class="Variable">this</span>.studyingEconomics) {
-  <span class="Keyword">while</span> (supply <span class="Keyword">&gt;</span> demand) {
+<span class="keyword">if</span> (<span class="keyword">this</span>.studyingEconomics) {
+  <span class="keyword">while</span> (supply &gt; demand) {
     buy();
   }
-  <span class="Keyword">while</span> (<span class="Keyword">!</span>(supply <span class="Keyword">&gt;</span> demand)) {
+  <span class="keyword">while</span> (!(supply &gt; demand)) {
     sell();
   }
 }
 
-num <span class="Keyword">=</span> <span class="Number">6</span>;
+num = <span class="number">6</span>;
 
-lyrics <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  <span class="Storage">var</span> _results;
-  _results <span class="Keyword">=</span> [];
-  <span class="Keyword">while</span> (num <span class="Keyword">-</span><span class="Keyword">=</span> <span class="Number">1</span>) {
-    _results.<span class="LibraryFunction">push</span>(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> num <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> little monkeys, jumping on the bed.    One fell out and bumped his head.<span class="String">&quot;</span></span>);
+lyrics = (<span class="reserved">function</span>() {
+  <span class="reserved">var</span> _results;
+  _results = [];
+  <span class="keyword">while</span> (num -= <span class="number">1</span>) {
+    _results.push(<span class="string">""</span> + num + <span class="string">" little monkeys, jumping on the bed.    One fell out and bumped his head."</span>);
   }
-  <span class="Keyword">return</span> _results;
+  <span class="keyword">return</span> _results;
 })();
-</pre><script>window.example12 = "# Econ 101\nif this.studyingEconomics\n  buy()  while supply > demand\n  sell() until supply > demand\n\n# Nursery Rhyme\nnum = 6\nlyrics = while num -= 1\n  \"#{num} little monkeys, jumping on the bed.\n    One fell out and bumped his head.\"\n\nalert lyrics.join(\"\\n\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example12);'>load</div><div class='minibutton ok' onclick='javascript: var lyrics, num;
+</code></pre><script>window.example12 = "# Econ 101\nif this.studyingEconomics\n  buy()  while supply > demand\n  sell() until supply > demand\n\n# Nursery Rhyme\nnum = 6\nlyrics = while num -= 1\n  \"#{num} little monkeys, jumping on the bed.\n    One fell out and bumped his head.\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example12);'>load</div><div class='minibutton ok' onclick='javascript: var lyrics, num;
 
 if (this.studyingEconomics) {
   while (supply > demand) {
@@ -1051,7 +1089,9 @@ lyrics = (function() {
   }
   return _results;
 })();
-;alert(lyrics.join("\n"));'>run: lyrics.join("\n")</div><br class='clear' /></div>
+;alert(lyrics.join("
+"));'>run: lyrics.join("
+")</div><br class='clear' /></div>
     <p>
       For readability, the <b>until</b> keyword is equivalent to <tt>while not</tt>,
       and the <b>loop</b> keyword is equivalent to <tt>while true</tt>.
@@ -1063,22 +1103,32 @@ lyrics = (function() {
       provides the <tt>do</tt> keyword, which immediately invokes a passed function,
       forwarding any arguments.
     </p>
-    <div class='code'><pre class="idle"><span class="Keyword">for</span> filename <span class="Keyword">in</span> list
-  <span class="Keyword">do</span> <span class="FunctionArgument">(filename)</span> <span class="Storage">-&gt;</span>
-    fs.readFile filename, <span class="FunctionArgument">(err, contents)</span> <span class="Storage">-&gt;</span>
-      compile filename, contents.toString()
-</pre><pre class="idle"><span class="Storage">var</span> filename, _fn, _i, _len;
+    <div class='code'><pre><code><span class="keyword">for</span> filename <span class="keyword">in</span> list
+  <span class="keyword">do</span> (filename) -&gt;
+    fs.readFile filename, (err, contents) -&gt;
+      compile filename, contents.toString()</code></pre><pre><code><span class="reserved">var</span> filename, _fn, _i, _len;
 
-<span class="FunctionName">_fn</span> = <span class="Storage">function</span>(<span class="FunctionArgument">filename</span>) {
-  <span class="Keyword">return</span> fs.readFile(filename, <span class="Storage">function</span>(err, contents) {
-    <span class="Keyword">return</span> <span class="LibraryFunction">compile</span>(filename, contents.<span class="LibraryFunction">toString</span>());
+_fn = <span class="reserved">function</span>(filename) {
+  <span class="keyword">return</span> fs.readFile(filename, <span class="reserved">function</span>(err, contents) {
+    <span class="keyword">return</span> compile(filename, contents.toString());
   });
 };
-<span class="Keyword">for</span> (_i <span class="Keyword">=</span> <span class="Number">0</span>, _len <span class="Keyword">=</span> list.<span class="LibraryConstant">length</span>; _i <span class="Keyword">&lt;</span> _len; _i<span class="Keyword">++</span>) {
-  filename <span class="Keyword">=</span> list[_i];
+<span class="keyword">for</span> (_i = <span class="number">0</span>, _len = list.length; _i &lt; _len; _i++) {
+  filename = list[_i];
   _fn(filename);
 }
-</pre><script>window.example13 = "for filename in list\n  do (filename) ->\n    fs.readFile filename, (err, contents) ->\n      compile filename, contents.toString()"</script><div class='minibutton load' onclick='javascript: loadConsole(example13);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example13 = "for filename in list\n  do (filename) ->\n    fs.readFile filename, (err, contents) ->\n      compile filename, contents.toString()"</script><div class='minibutton load' onclick='javascript: loadConsole(example13);'>load</div><div class='minibutton ok' onclick='javascript: var filename, _fn, _i, _len;
+
+_fn = function(filename) {
+  return fs.readFile(filename, function(err, contents) {
+    return compile(filename, contents.toString());
+  });
+};
+for (_i = 0, _len = list.length; _i < _len; _i++) {
+  filename = list[_i];
+  _fn(filename);
+}
+;alert(false);'>run: false</div><br class='clear' /></div>
 
     <p>
       <span id="slices" class="bookmark"></span>
@@ -1089,27 +1139,27 @@ lyrics = (function() {
       Slices indices have useful defaults. An omitted first index defaults to
       zero and an omitted second index defaults to the size of the array.
     </p>
-    <div class='code'><pre class="idle">numbers <span class="Keyword">=</span> [<span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>]
+    <div class='code'><pre><code>numbers = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>]
 
-start   <span class="Keyword">=</span> numbers[<span class="Number">0</span>..<span class="Number">2</span>]
+start   = numbers[<span class="number">0.</span><span class="number">.2</span>]
 
-middle  <span class="Keyword">=</span> numbers[<span class="Number">3</span>...<span class="Number">6</span>]
+middle  = numbers[<span class="number">3.</span>.<span class="number">.6</span>]
 
-end     <span class="Keyword">=</span> numbers[<span class="Number">6</span>..]
+end     = numbers[<span class="number">6.</span>.]
 
-copy    <span class="Keyword">=</span> numbers[..]
-</pre><pre class="idle"><span class="Storage">var</span> copy, end, middle, numbers, start;
+copy    = numbers[..]
+</code></pre><pre><code><span class="reserved">var</span> copy, end, middle, numbers, start;
 
-numbers <span class="Keyword">=</span> [<span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
+numbers = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>];
 
-start <span class="Keyword">=</span> numbers.<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">3</span>);
+start = numbers.slice(<span class="number">0</span>, <span class="number">3</span>);
 
-middle <span class="Keyword">=</span> numbers.<span class="LibraryFunction">slice</span>(<span class="Number">3</span>, <span class="Number">6</span>);
+middle = numbers.slice(<span class="number">3</span>, <span class="number">6</span>);
 
-end <span class="Keyword">=</span> numbers.<span class="LibraryFunction">slice</span>(<span class="Number">6</span>);
+end = numbers.slice(<span class="number">6</span>);
 
-copy <span class="Keyword">=</span> numbers.<span class="LibraryFunction">slice</span>(<span class="Number">0</span>);
-</pre><script>window.example14 = "numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nstart   = numbers[0..2]\n\nmiddle  = numbers[3...6]\n\nend     = numbers[6..]\n\ncopy    = numbers[..]\n\nalert middle"</script><div class='minibutton load' onclick='javascript: loadConsole(example14);'>load</div><div class='minibutton ok' onclick='javascript: var copy, end, middle, numbers, start;
+copy = numbers.slice(<span class="number">0</span>);
+</code></pre><script>window.example14 = "numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nstart   = numbers[0..2]\n\nmiddle  = numbers[3...6]\n\nend     = numbers[6..]\n\ncopy    = numbers[..]\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example14);'>load</div><div class='minibutton ok' onclick='javascript: var copy, end, middle, numbers, start;
 
 numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -1125,19 +1175,18 @@ copy = numbers.slice(0);
       The same syntax can be used with assignment to replace a segment of an array
       with new values, splicing it.
     </p>
-    <div class='code'><pre class="idle">numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>]
+    <div class='code'><pre><code>numbers = [<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>]
 
-numbers[<span class="Number">3</span>..<span class="Number">6</span>] <span class="Keyword">=</span> [<span class="Keyword">-</span><span class="Number">3</span>, <span class="Keyword">-</span><span class="Number">4</span>, <span class="Keyword">-</span><span class="Number">5</span>, <span class="Keyword">-</span><span class="Number">6</span>]
+numbers[<span class="number">3.</span><span class="number">.6</span>] = [-<span class="number">3</span>, -<span class="number">4</span>, -<span class="number">5</span>, -<span class="number">6</span>]
 
 
 
- 
-</pre><pre class="idle"><span class="Storage">var</span> numbers, _ref;
+ </code></pre><pre><code><span class="reserved">var</span> numbers, _ref;
 
-numbers <span class="Keyword">=</span> [<span class="Number">0</span>, <span class="Number">1</span>, <span class="Number">2</span>, <span class="Number">3</span>, <span class="Number">4</span>, <span class="Number">5</span>, <span class="Number">6</span>, <span class="Number">7</span>, <span class="Number">8</span>, <span class="Number">9</span>];
+numbers = [<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>];
 
-[].splice.<span class="LibraryFunction">apply</span>(numbers, [<span class="Number">3</span>, <span class="Number">4</span>].<span class="LibraryFunction">concat</span>(_ref <span class="Keyword">=</span> [<span class="Keyword">-</span><span class="Number">3</span>, <span class="Keyword">-</span><span class="Number">4</span>, <span class="Keyword">-</span><span class="Number">5</span>, <span class="Keyword">-</span><span class="Number">6</span>])), _ref;
-</pre><script>window.example15 = "numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nnumbers[3..6] = [-3, -4, -5, -6]\n\nalert numbers"</script><div class='minibutton load' onclick='javascript: loadConsole(example15);'>load</div><div class='minibutton ok' onclick='javascript: var numbers, _ref;
+[].splice.apply(numbers, [<span class="number">3</span>, <span class="number">4</span>].concat(_ref = [-<span class="number">3</span>, -<span class="number">4</span>, -<span class="number">5</span>, -<span class="number">6</span>])), _ref;
+</code></pre><script>window.example15 = "numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nnumbers[3..6] = [-3, -4, -5, -6]\n\n\n\n "</script><div class='minibutton load' onclick='javascript: loadConsole(example15);'>load</div><div class='minibutton ok' onclick='javascript: var numbers, _ref;
 
 numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -1156,33 +1205,32 @@ numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       pushed down into each possible branch of execution in the function
       below.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">grade </span><span class="Keyword">=</span> <span class="FunctionArgument">(student)</span> <span class="Storage">-&gt;</span>
-  <span class="Keyword">if</span> student.excellentWork
-    <span class="String"><span class="String">&quot;</span>A+<span class="String">&quot;</span></span>
-  <span class="Keyword">else</span> <span class="Keyword">if</span> student.okayStuff
-    <span class="Keyword">if</span> student.triedHard <span class="Keyword">then</span> <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span> <span class="Keyword">else</span> <span class="String"><span class="String">&quot;</span>B-<span class="String">&quot;</span></span>
-  <span class="Keyword">else</span>
-    <span class="String"><span class="String">&quot;</span>C<span class="String">&quot;</span></span>
+    <div class='code'><pre><code><span class="function"><span class="title">grade</span></span> = (student) -&gt;
+  <span class="keyword">if</span> student.excellentWork
+    <span class="string">"A+"</span>
+  <span class="keyword">else</span> <span class="keyword">if</span> student.okayStuff
+    <span class="keyword">if</span> student.triedHard <span class="keyword">then</span> <span class="string">"B"</span> <span class="keyword">else</span> <span class="string">"B-"</span>
+  <span class="keyword">else</span>
+    <span class="string">"C"</span>
 
-eldest <span class="Keyword">=</span> <span class="Keyword">if</span> <span class="Number">24</span> <span class="Keyword">&gt;</span> <span class="Number">21</span> <span class="Keyword">then</span> <span class="String"><span class="String">&quot;</span>Liz<span class="String">&quot;</span></span> <span class="Keyword">else</span> <span class="String"><span class="String">&quot;</span>Ike<span class="String">&quot;</span></span>
-</pre><pre class="idle"><span class="Storage">var</span> eldest, grade;
+eldest = <span class="keyword">if</span> <span class="number">24</span> &gt; <span class="number">21</span> <span class="keyword">then</span> <span class="string">"Liz"</span> <span class="keyword">else</span> <span class="string">"Ike"</span></code></pre><pre><code><span class="reserved">var</span> eldest, grade;
 
-<span class="FunctionName">grade</span> = <span class="Storage">function</span>(<span class="FunctionArgument">student</span>) {
-  <span class="Keyword">if</span> (student.excellentWork) {
-    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>A+<span class="String">&quot;</span></span>;
-  } <span class="Keyword">else</span> <span class="Keyword">if</span> (student.okayStuff) {
-    <span class="Keyword">if</span> (student.triedHard) {
-      <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>B<span class="String">&quot;</span></span>;
-    } <span class="Keyword">else</span> {
-      <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>B-<span class="String">&quot;</span></span>;
+grade = <span class="reserved">function</span>(student) {
+  <span class="keyword">if</span> (student.excellentWork) {
+    <span class="keyword">return</span> <span class="string">"A+"</span>;
+  } <span class="keyword">else</span> <span class="keyword">if</span> (student.okayStuff) {
+    <span class="keyword">if</span> (student.triedHard) {
+      <span class="keyword">return</span> <span class="string">"B"</span>;
+    } <span class="keyword">else</span> {
+      <span class="keyword">return</span> <span class="string">"B-"</span>;
     }
-  } <span class="Keyword">else</span> {
-    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>C<span class="String">&quot;</span></span>;
+  } <span class="keyword">else</span> {
+    <span class="keyword">return</span> <span class="string">"C"</span>;
   }
 };
 
-eldest <span class="Keyword">=</span> <span class="Number">24</span> <span class="Keyword">&gt;</span> <span class="Number">21</span> ? <span class="String"><span class="String">&quot;</span>Liz<span class="String">&quot;</span></span> : <span class="String"><span class="String">&quot;</span>Ike<span class="String">&quot;</span></span>;
-</pre><script>window.example16 = "grade = (student) ->\n  if student.excellentWork\n    \"A+\"\n  else if student.okayStuff\n    if student.triedHard then \"B\" else \"B-\"\n  else\n    \"C\"\n\neldest = if 24 > 21 then \"Liz\" else \"Ike\"\n\nalert eldest"</script><div class='minibutton load' onclick='javascript: loadConsole(example16);'>load</div><div class='minibutton ok' onclick='javascript: var eldest, grade;
+eldest = <span class="number">24</span> &gt; <span class="number">21</span> ? <span class="string">"Liz"</span> : <span class="string">"Ike"</span>;
+</code></pre><script>window.example16 = "grade = (student) ->\n  if student.excellentWork\n    \"A+\"\n  else if student.okayStuff\n    if student.triedHard then \"B\" else \"B-\"\n  else\n    \"C\"\n\neldest = if 24 > 21 then \"Liz\" else \"Ike\""</script><div class='minibutton load' onclick='javascript: loadConsole(example16);'>load</div><div class='minibutton ok' onclick='javascript: var eldest, grade;
 
 grade = function(student) {
   if (student.excellentWork) {
@@ -1209,13 +1257,13 @@ eldest = 24 > 21 ? "Liz" : "Ike";
       Because variable declarations occur at the top of scope, assignment can
       be used within expressions, even for variables that haven't been seen before:
     </p>
-    <div class='code'><pre class="idle">six <span class="Keyword">=</span> (one <span class="Keyword">=</span> <span class="Number">1</span>) <span class="Keyword">+</span> (two <span class="Keyword">=</span> <span class="Number">2</span>) <span class="Keyword">+</span> (three <span class="Keyword">=</span> <span class="Number">3</span>)
+    <div class='code'><pre><code>six = (one = <span class="number">1</span>) + (two = <span class="number">2</span>) + (three = <span class="number">3</span>)
 
 
-</pre><pre class="idle"><span class="Storage">var</span> one, six, three, two;
+</code></pre><pre><code><span class="reserved">var</span> one, six, three, two;
 
-six <span class="Keyword">=</span> (one <span class="Keyword">=</span> <span class="Number">1</span>) <span class="Keyword">+</span> (two <span class="Keyword">=</span> <span class="Number">2</span>) <span class="Keyword">+</span> (three <span class="Keyword">=</span> <span class="Number">3</span>);
-</pre><script>window.example17 = "six = (one = 1) + (two = 2) + (three = 3)\n\nalert six"</script><div class='minibutton load' onclick='javascript: loadConsole(example17);'>load</div><div class='minibutton ok' onclick='javascript: var one, six, three, two;
+six = (one = <span class="number">1</span>) + (two = <span class="number">2</span>) + (three = <span class="number">3</span>);
+</code></pre><script>window.example17 = "six = (one = 1) + (two = 2) + (three = 3)\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example17);'>load</div><div class='minibutton ok' onclick='javascript: var one, six, three, two;
 
 six = (one = 1) + (two = 2) + (three = 3);
 ;alert(six);'>run: six</div><br class='clear' /></div>
@@ -1225,20 +1273,19 @@ six = (one = 1) + (two = 2) + (three = 3);
       by wrapping them in a closure. This lets you do useful things, like assign
       the result of a comprehension to a variable:
     </p>
-    <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">#</span> The first ten global properties.</span>
+    <div class='code'><pre><code><span class="comment"># The first ten global properties.</span>
 
-globals <span class="Keyword">=</span> (name <span class="Keyword">for</span> name <span class="Keyword">of</span> window)[<span class="Number">0</span>...<span class="Number">10</span>]
-</pre><pre class="idle"><span class="Storage">var</span> globals, name;
+globals = (name <span class="keyword">for</span> name <span class="keyword">of</span> window)[<span class="number">0.</span>.<span class="number">.10</span>]</code></pre><pre><code><span class="reserved">var</span> globals, name;
 
-globals <span class="Keyword">=</span> ((<span class="Storage">function</span>() {
-  <span class="Storage">var</span> _results;
-  _results <span class="Keyword">=</span> [];
-  <span class="Keyword">for</span> (name <span class="Keyword">in</span> <span class="LibraryClassType">window</span>) {
-    _results.<span class="LibraryFunction">push</span>(name);
+globals = ((<span class="reserved">function</span>() {
+  <span class="reserved">var</span> _results;
+  _results = [];
+  <span class="keyword">for</span> (name <span class="keyword">in</span> window) {
+    _results.push(name);
   }
-  <span class="Keyword">return</span> _results;
-})()).<span class="LibraryFunction">slice</span>(<span class="Number">0</span>, <span class="Number">10</span>);
-</pre><script>window.example18 = "# The first ten global properties.\n\nglobals = (name for name of window)[0...10]\n\nalert globals"</script><div class='minibutton load' onclick='javascript: loadConsole(example18);'>load</div><div class='minibutton ok' onclick='javascript: var globals, name;
+  <span class="keyword">return</span> _results;
+})()).slice(<span class="number">0</span>, <span class="number">10</span>);
+</code></pre><script>window.example18 = "# The first ten global properties.\n\nglobals = (name for name of window)[0...10]"</script><div class='minibutton load' onclick='javascript: loadConsole(example18);'>load</div><div class='minibutton ok' onclick='javascript: var globals, name;
 
 globals = ((function() {
   var _results;
@@ -1253,24 +1300,24 @@ globals = ((function() {
       As well as silly things, like passing a <b>try/catch</b> statement directly
       into a function call:
     </p>
-    <div class='code'><pre class="idle">alert(
-  <span class="Keyword">try</span>
-    nonexistent <span class="Keyword">/</span> <span class="BuiltInConstant">undefined</span>
-  <span class="Keyword">catch</span> error
-    <span class="String"><span class="String">&quot;</span>And the error is ... <span class="String"><span class="String">#{</span>error<span class="String">}</span></span><span class="String">&quot;</span></span>
+    <div class='code'><pre><code>alert(
+  <span class="keyword">try</span>
+    nonexistent / <span class="literal">undefined</span>
+  <span class="keyword">catch</span> error
+    <span class="string">"And the error is ... <span class="subst">#{error}</span>"</span>
 )
 
-</pre><pre class="idle"><span class="Storage">var</span> error;
+</code></pre><pre><code><span class="reserved">var</span> error;
 
-<span class="LibraryFunction">alert</span>((<span class="Storage">function</span>() {
-  <span class="Keyword">try</span> {
-    <span class="Keyword">return</span> nonexistent / <span class="Storage">void</span> <span class="Number">0</span>;
-  } <span class="Keyword">catch</span> (_error) {
-    error <span class="Keyword">=</span> _error;
-    <span class="Keyword">return</span> <span class="String"><span class="String">&quot;</span>And the error is ... <span class="String">&quot;</span></span> <span class="Keyword">+</span> error;
+alert((<span class="reserved">function</span>() {
+  <span class="keyword">try</span> {
+    <span class="keyword">return</span> nonexistent / <span class="reserved">void</span> <span class="number">0</span>;
+  } <span class="keyword">catch</span> (_error) {
+    error = _error;
+    <span class="keyword">return</span> <span class="string">"And the error is ... "</span> + error;
   }
 })());
-</pre><script>window.example19 = "alert(\n  try\n    nonexistent / undefined\n  catch error\n    \"And the error is ... #{error}\"\n)\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example19);'>load</div><div class='minibutton ok' onclick='javascript: var error;
+</code></pre><script>window.example19 = "alert(\n  try\n    nonexistent / undefined\n  catch error\n    \"And the error is ... #{error}\"\n)\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example19);'>load</div><div class='minibutton ok' onclick='javascript: var error;
 
 alert((function() {
   try {
@@ -1343,41 +1390,64 @@ alert((function() {
       <tr><td><tt>in</tt></td><td><i><small>no JS equivalent</small></i></td></tr>
     </table>
 
-    <div class='code'><pre class="idle">launch() <span class="Keyword">if</span> ignition <span class="Keyword">is</span> <span class="BuiltInConstant">on</span>
+    <div class='code'><pre><code>launch() <span class="keyword">if</span> ignition <span class="keyword">is</span> <span class="literal">on</span>
 
-volume <span class="Keyword">=</span> <span class="Number">10</span> <span class="Keyword">if</span> band <span class="Keyword">isnt</span> SpinalTap
+volume = <span class="number">10</span> <span class="keyword">if</span> band <span class="keyword">isnt</span> SpinalTap
 
-letTheWildRumpusBegin() <span class="Keyword">unless</span> answer <span class="Keyword">is</span> <span class="BuiltInConstant">no</span>
+letTheWildRumpusBegin() <span class="keyword">unless</span> answer <span class="keyword">is</span> <span class="literal">no</span>
 
-<span class="Keyword">if</span> car.speed <span class="Keyword">&lt;</span> limit <span class="Keyword">then</span> accelerate()
+<span class="keyword">if</span> car.speed &lt; limit <span class="keyword">then</span> accelerate()
 
-winner <span class="Keyword">=</span> <span class="BuiltInConstant">yes</span> <span class="Keyword">if</span> pick <span class="Keyword">in</span> [<span class="Number">47</span>, <span class="Number">92</span>, <span class="Number">13</span>]
+winner = <span class="literal">yes</span> <span class="keyword">if</span> pick <span class="keyword">in</span> [<span class="number">47</span>, <span class="number">92</span>, <span class="number">13</span>]
 
-print inspect <span class="String"><span class="String">&quot;</span>My name is <span class="String"><span class="String">#{</span><span class="Variable">@name</span><span class="String">}</span></span><span class="String">&quot;</span></span>
-</pre><pre class="idle"><span class="Storage">var</span> volume, winner;
+print inspect <span class="string">"My name is <span class="subst">#{@name}</span>"</span>
+</code></pre><pre><code><span class="reserved">var</span> volume, winner;
 
-<span class="Keyword">if</span> (ignition <span class="Keyword">===</span> <span class="BuiltInConstant">true</span>) {
+<span class="keyword">if</span> (ignition === <span class="literal">true</span>) {
   launch();
 }
 
-<span class="Keyword">if</span> (band <span class="Keyword">!</span><span class="Keyword">==</span> SpinalTap) {
-  volume <span class="Keyword">=</span> <span class="Number">10</span>;
+<span class="keyword">if</span> (band !== SpinalTap) {
+  volume = <span class="number">10</span>;
 }
 
-<span class="Keyword">if</span> (answer <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">false</span>) {
+<span class="keyword">if</span> (answer !== <span class="literal">false</span>) {
   letTheWildRumpusBegin();
 }
 
-<span class="Keyword">if</span> (car.speed <span class="Keyword">&lt;</span> limit) {
+<span class="keyword">if</span> (car.speed &lt; limit) {
   accelerate();
 }
 
-<span class="Keyword">if</span> (pick <span class="Keyword">===</span> <span class="Number">47</span> <span class="Keyword">||</span> pick <span class="Keyword">===</span> <span class="Number">92</span> <span class="Keyword">||</span> pick <span class="Keyword">===</span> <span class="Number">13</span>) {
-  winner <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
+<span class="keyword">if</span> (pick === <span class="number">47</span> || pick === <span class="number">92</span> || pick === <span class="number">13</span>) {
+  winner = <span class="literal">true</span>;
 }
 
-<span class="LibraryFunction">print</span>(inspect(<span class="String"><span class="String">&quot;</span>My name is <span class="String">&quot;</span></span> <span class="Keyword">+</span> <span class="Variable">this</span>.<span class="LibraryConstant">name</span>));
-</pre><script>window.example20 = "launch() if ignition is on\n\nvolume = 10 if band isnt SpinalTap\n\nletTheWildRumpusBegin() unless answer is no\n\nif car.speed < limit then accelerate()\n\nwinner = yes if pick in [47, 92, 13]\n\nprint inspect \"My name is #{@name}\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example20);'>load</div><br class='clear' /></div>
+print(inspect(<span class="string">"My name is "</span> + <span class="keyword">this</span>.name));
+</code></pre><script>window.example20 = "launch() if ignition is on\n\nvolume = 10 if band isnt SpinalTap\n\nletTheWildRumpusBegin() unless answer is no\n\nif car.speed < limit then accelerate()\n\nwinner = yes if pick in [47, 92, 13]\n\nprint inspect \"My name is #{@name}\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example20);'>load</div><div class='minibutton ok' onclick='javascript: var volume, winner;
+
+if (ignition === true) {
+  launch();
+}
+
+if (band !== SpinalTap) {
+  volume = 10;
+}
+
+if (answer !== false) {
+  letTheWildRumpusBegin();
+}
+
+if (car.speed < limit) {
+  accelerate();
+}
+
+if (pick === 47 || pick === 92 || pick === 13) {
+  winner = true;
+}
+
+print(inspect("My name is " + this.name));
+;alert(false);'>run: false</div><br class='clear' /></div>
 
     <p>
       <b class="header">The Existential Operator</b>
@@ -1391,33 +1461,32 @@ print inspect <span class="String"><span class="String">&quot;</span>My name is 
       It can also be used for safer conditional assignment than <tt>||=</tt>
       provides, for cases where you may be handling numbers or strings.
     </p>
-    <div class='code'><pre class="idle">solipsism <span class="Keyword">=</span> <span class="BuiltInConstant">true</span> <span class="Keyword">if</span> mind<span class="Keyword">?</span> <span class="Keyword">and</span> <span class="Keyword">not</span> world<span class="Keyword">?</span>
+    <div class='code'><pre><code>solipsism = <span class="literal">true</span> <span class="keyword">if</span> mind? <span class="keyword">and</span> <span class="keyword">not</span> world?
 
-speed <span class="Keyword">=</span> <span class="Number">0</span>
-speed <span class="Keyword">?</span><span class="Keyword">=</span> <span class="Number">15</span>
+speed = <span class="number">0</span>
+speed ?= <span class="number">15</span>
 
-footprints <span class="Keyword">=</span> yeti <span class="Keyword">?</span> <span class="String"><span class="String">&quot;</span>bear<span class="String">&quot;</span></span>
-
-
+footprints = yeti ? <span class="string">"bear"</span>
 
 
 
 
- 
-</pre><pre class="idle"><span class="Storage">var</span> footprints, solipsism, speed;
 
-<span class="Keyword">if</span> ((<span class="Keyword">typeof</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> mind <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> (<span class="Keyword">typeof</span> world <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">||</span> world <span class="Keyword">===</span> <span class="BuiltInConstant">null</span>)) {
-  solipsism <span class="Keyword">=</span> <span class="BuiltInConstant">true</span>;
+
+ </code></pre><pre><code><span class="reserved">var</span> footprints, solipsism, speed;
+
+<span class="keyword">if</span> ((<span class="keyword">typeof</span> mind !== <span class="string">"undefined"</span> &amp;&amp; mind !== <span class="literal">null</span>) &amp;&amp; (<span class="keyword">typeof</span> world === <span class="string">"undefined"</span> || world === <span class="literal">null</span>)) {
+  solipsism = <span class="literal">true</span>;
 }
 
-speed <span class="Keyword">=</span> <span class="Number">0</span>;
+speed = <span class="number">0</span>;
 
-<span class="Keyword">if</span> (speed <span class="Keyword">==</span> <span class="BuiltInConstant">null</span>) {
-  speed <span class="Keyword">=</span> <span class="Number">15</span>;
+<span class="keyword">if</span> (speed == <span class="literal">null</span>) {
+  speed = <span class="number">15</span>;
 }
 
-footprints <span class="Keyword">=</span> <span class="Keyword">typeof</span> yeti <span class="Keyword">!</span><span class="Keyword">==</span> <span class="String"><span class="String">&quot;</span>undefined<span class="String">&quot;</span></span> <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> yeti <span class="Keyword">!</span><span class="Keyword">==</span> <span class="BuiltInConstant">null</span> ? yeti : <span class="String"><span class="String">&quot;</span>bear<span class="String">&quot;</span></span>;
-</pre><script>window.example21 = "solipsism = true if mind? and not world?\n\nspeed = 0\nspeed ?= 15\n\nfootprints = yeti ? \"bear\"\n\nalert footprints"</script><div class='minibutton load' onclick='javascript: loadConsole(example21);'>load</div><div class='minibutton ok' onclick='javascript: var footprints, solipsism, speed;
+footprints = <span class="keyword">typeof</span> yeti !== <span class="string">"undefined"</span> &amp;&amp; yeti !== <span class="literal">null</span> ? yeti : <span class="string">"bear"</span>;
+</code></pre><script>window.example21 = "solipsism = true if mind? and not world?\n\nspeed = 0\nspeed ?= 15\n\nfootprints = yeti ? \"bear\"\n\n\n\n\n\n\n "</script><div class='minibutton load' onclick='javascript: loadConsole(example21);'>load</div><div class='minibutton ok' onclick='javascript: var footprints, solipsism, speed;
 
 if ((typeof mind !== "undefined" && mind !== null) && (typeof world === "undefined" || world === null)) {
   solipsism = true;
@@ -1439,11 +1508,14 @@ footprints = typeof yeti !== "undefined" && yeti !== null ? yeti : "bear";
       result, if the chain is broken, <b>undefined</b> is returned instead of
       the <b>TypeError</b> that would be raised otherwise.
     </p>
-    <div class='code'><pre class="idle">zip <span class="Keyword">=</span> lottery.drawWinner<span class="Keyword">?</span>().address<span class="Keyword">?</span>.zipcode
-</pre><pre class="idle"><span class="Storage">var</span> zip, _ref;
+    <div class='code'><pre><code>zip = lottery.drawWinner?().address?.zipcode
+</code></pre><pre><code><span class="reserved">var</span> zip, _ref;
 
-zip <span class="Keyword">=</span> <span class="Keyword">typeof</span> lottery.drawWinner <span class="Keyword">===</span> <span class="String"><span class="String">&quot;</span>function<span class="String">&quot;</span></span> ? (_ref <span class="Keyword">=</span> lottery.drawWinner().address) <span class="Keyword">!</span><span class="Keyword">=</span> <span class="BuiltInConstant">null</span> ? _ref.zipcode : <span class="Storage">void</span> <span class="Number">0</span> : <span class="Storage">void</span> <span class="Number">0</span>;
-</pre><script>window.example22 = "zip = lottery.drawWinner?().address?.zipcode\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example22);'>load</div><br class='clear' /></div>
+zip = <span class="keyword">typeof</span> lottery.drawWinner === <span class="string">"function"</span> ? (_ref = lottery.drawWinner().address) != <span class="literal">null</span> ? _ref.zipcode : <span class="reserved">void</span> <span class="number">0</span> : <span class="reserved">void</span> <span class="number">0</span>;
+</code></pre><script>window.example22 = "zip = lottery.drawWinner?().address?.zipcode\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example22);'>load</div><div class='minibutton ok' onclick='javascript: var zip, _ref;
+
+zip = typeof lottery.drawWinner === "function" ? (_ref = lottery.drawWinner().address) != null ? _ref.zipcode : void 0 : void 0;
+;alert(false);'>run: false</div><br class='clear' /></div>
     <p>
       Soaking up nulls is similar to Ruby's
       <a href="http://andand.rubyforge.org/">andand gem</a>, and to the
@@ -1476,24 +1548,24 @@ zip <span class="Keyword">=</span> <span class="Keyword">typeof</span> lottery.d
       Constructor functions are named, to better support helpful stack traces.
       In the first class in the example below, <tt>this.constructor.name is "Animal"</tt>.
     </p>
-    <div class='code'><pre class="idle"><span class="Storage">class</span> <span class="TypeName">Animal</span>
-  <span class="FunctionName">constructor</span><span class="Keyword">:</span> <span class="FunctionArgument">(@name)</span> <span class="Storage">-&gt;</span>
+    <div class='code'><pre><code><span class="class"><span class="keyword">class</span> <span class="title">Animal</span></span>
+  constructor: (<span class="property">@name</span>) -&gt;
 
-  <span class="FunctionName">move</span><span class="Keyword">:</span> <span class="FunctionArgument">(meters)</span> <span class="Storage">-&gt;</span>
-    alert <span class="Variable">@name</span> <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> moved <span class="String"><span class="String">#{</span>meters<span class="String">}</span></span>m.<span class="String">&quot;</span></span>
+  move: (meters) -&gt;
+    alert <span class="property">@name</span> + <span class="string">" moved <span class="subst">#{meters}</span>m."</span>
 
-<span class="Storage">class</span> <span class="TypeName">Snake</span><span class="InheritedClass"> <span class="Keyword">extends</span> Animal</span>
-  <span class="FunctionName">move</span><span class="Keyword">:</span> <span class="Keyword">-</span><span class="Keyword">&gt;</span>
-    alert <span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>
-    <span class="Variable">super</span> <span class="Number">5</span>
+<span class="class"><span class="keyword">class</span> <span class="title">Snake</span> <span class="keyword">extends</span> <span class="title">Animal</span></span>
+  move: -&gt;
+    alert <span class="string">"Slithering..."</span>
+    <span class="keyword">super</span> <span class="number">5</span>
 
-<span class="Storage">class</span> <span class="TypeName">Horse</span><span class="InheritedClass"> <span class="Keyword">extends</span> Animal</span>
-  <span class="FunctionName">move</span><span class="Keyword">:</span> <span class="Keyword">-</span><span class="Keyword">&gt;</span>
-    alert <span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>
-    <span class="Variable">super</span> <span class="Number">45</span>
+<span class="class"><span class="keyword">class</span> <span class="title">Horse</span> <span class="keyword">extends</span> <span class="title">Animal</span></span>
+  move: -&gt;
+    alert <span class="string">"Galloping..."</span>
+    <span class="keyword">super</span> <span class="number">45</span>
 
-sam <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Snake</span> <span class="String"><span class="String">&quot;</span>Sammy the Python<span class="String">&quot;</span></span>
-tom <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span> <span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>
+sam = <span class="keyword">new</span> Snake <span class="string">"Sammy the Python"</span>
+tom = <span class="keyword">new</span> Horse <span class="string">"Tommy the Palomino"</span>
 
 sam.move()
 tom.move()
@@ -1501,65 +1573,65 @@ tom.move()
 
 
 
-</pre><pre class="idle"><span class="Storage">var</span> Animal, Horse, Snake, sam, tom, _ref, _ref1,
-  __hasProp <span class="Keyword">=</span> {}.hasOwnProperty,
-  <span class="FunctionName">__extends</span> = <span class="Storage">function</span>(<span class="FunctionArgument">child, parent</span>) { <span class="Keyword">for</span> (<span class="Storage">var</span> key <span class="Keyword">in</span> parent) { <span class="Keyword">if</span> (__hasProp.<span class="LibraryFunction">call</span>(parent, key)) child[key] <span class="Keyword">=</span> parent[key]; } <span class="Storage">function</span> <span class="FunctionName">ctor</span>() { <span class="Variable">this</span>.<span class="LibraryConstant">constructor</span> <span class="Keyword">=</span> child; } <span class="LibraryClassType">ctor</span>.<span class="LibraryConstant">prototype</span> = parent.<span class="LibraryConstant">prototype</span>; <span class="LibraryClassType">child</span>.<span class="LibraryConstant">prototype</span> = <span class="Keyword">new</span> <span class="TypeName">ctor</span>(); child.__super__ <span class="Keyword">=</span> parent.<span class="LibraryConstant">prototype</span>; <span class="Keyword">return</span> child; };
+</code></pre><pre><code><span class="reserved">var</span> Animal, Horse, Snake, sam, tom, _ref, _ref1,
+  __hasProp = {}.hasOwnProperty,
+  __extends = <span class="reserved">function</span>(child, parent) { <span class="keyword">for</span> (<span class="reserved">var</span> key <span class="keyword">in</span> parent) { <span class="keyword">if</span> (__hasProp.call(parent, key)) child[key] = parent[key]; } <span class="reserved">function</span> ctor() { <span class="keyword">this</span>.constructor = child; } ctor.prototype = parent.prototype; child.prototype = <span class="keyword">new</span> ctor(); child.__super__ = parent.prototype; <span class="keyword">return</span> child; };
 
-Animal <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  <span class="Storage">function</span> <span class="FunctionName">Animal</span>(<span class="FunctionArgument">name</span>) {
-    <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> name;
+Animal = (<span class="reserved">function</span>() {
+  <span class="reserved">function</span> Animal(name) {
+    <span class="keyword">this</span>.name = name;
   }
 
-  <span class="LibraryClassType">Animal</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>(<span class="FunctionArgument">meters</span>) {
-    <span class="Keyword">return</span> <span class="LibraryFunction">alert</span>(<span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">+</span> (<span class="String"><span class="String">&quot;</span> moved <span class="String">&quot;</span></span> <span class="Keyword">+</span> meters <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>m.<span class="String">&quot;</span></span>));
+  Animal.prototype.move = <span class="reserved">function</span>(meters) {
+    <span class="keyword">return</span> alert(<span class="keyword">this</span>.name + (<span class="string">" moved "</span> + meters + <span class="string">"m."</span>));
   };
 
-  <span class="Keyword">return</span> Animal;
+  <span class="keyword">return</span> Animal;
 
 })();
 
-Snake <span class="Keyword">=</span> (<span class="Storage">function</span>(_super) {
-  __extends(Snake, _super);
+Snake = (<span class="reserved">function</span>(_<span class="keyword">super</span>) {
+  __extends(Snake, _<span class="keyword">super</span>);
 
-  <span class="Storage">function</span> <span class="FunctionName">Snake</span>() {
-    _ref <span class="Keyword">=</span> Snake.__super__.<span class="LibraryConstant">constructor</span>.<span class="LibraryFunction">apply</span>(<span class="Variable">this</span>, arguments);
-    <span class="Keyword">return</span> _ref;
+  <span class="reserved">function</span> Snake() {
+    _ref = Snake.__super__.constructor.apply(<span class="keyword">this</span>, arguments);
+    <span class="keyword">return</span> _ref;
   }
 
-  <span class="LibraryClassType">Snake</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>() {
-    <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Slithering...<span class="String">&quot;</span></span>);
-    <span class="Keyword">return</span> Snake.__super__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">5</span>);
+  Snake.prototype.move = <span class="reserved">function</span>() {
+    alert(<span class="string">"Slithering..."</span>);
+    <span class="keyword">return</span> Snake.__super__.move.call(<span class="keyword">this</span>, <span class="number">5</span>);
   };
 
-  <span class="Keyword">return</span> Snake;
+  <span class="keyword">return</span> Snake;
 
 })(Animal);
 
-Horse <span class="Keyword">=</span> (<span class="Storage">function</span>(_super) {
-  __extends(Horse, _super);
+Horse = (<span class="reserved">function</span>(_<span class="keyword">super</span>) {
+  __extends(Horse, _<span class="keyword">super</span>);
 
-  <span class="Storage">function</span> <span class="FunctionName">Horse</span>() {
-    _ref1 <span class="Keyword">=</span> Horse.__super__.<span class="LibraryConstant">constructor</span>.<span class="LibraryFunction">apply</span>(<span class="Variable">this</span>, arguments);
-    <span class="Keyword">return</span> _ref1;
+  <span class="reserved">function</span> Horse() {
+    _ref1 = Horse.__super__.constructor.apply(<span class="keyword">this</span>, arguments);
+    <span class="keyword">return</span> _ref1;
   }
 
-  <span class="LibraryClassType">Horse</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">move</span> = <span class="Storage">function</span>() {
-    <span class="LibraryFunction">alert</span>(<span class="String"><span class="String">&quot;</span>Galloping...<span class="String">&quot;</span></span>);
-    <span class="Keyword">return</span> Horse.__super__.move.<span class="LibraryFunction">call</span>(<span class="Variable">this</span>, <span class="Number">45</span>);
+  Horse.prototype.move = <span class="reserved">function</span>() {
+    alert(<span class="string">"Galloping..."</span>);
+    <span class="keyword">return</span> Horse.__super__.move.call(<span class="keyword">this</span>, <span class="number">45</span>);
   };
 
-  <span class="Keyword">return</span> Horse;
+  <span class="keyword">return</span> Horse;
 
 })(Animal);
 
-sam <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Snake</span>(<span class="String"><span class="String">&quot;</span>Sammy the Python<span class="String">&quot;</span></span>);
+sam = <span class="keyword">new</span> Snake(<span class="string">"Sammy the Python"</span>);
 
-tom <span class="Keyword">=</span> <span class="Keyword">new</span> <span class="TypeName">Horse</span>(<span class="String"><span class="String">&quot;</span>Tommy the Palomino<span class="String">&quot;</span></span>);
+tom = <span class="keyword">new</span> Horse(<span class="string">"Tommy the Palomino"</span>);
 
 sam.move();
 
 tom.move();
-</pre><script>window.example23 = "class Animal\n  constructor: (@name) ->\n\n  move: (meters) ->\n    alert @name + \" moved #{meters}m.\"\n\nclass Snake extends Animal\n  move: ->\n    alert \"Slithering...\"\n    super 5\n\nclass Horse extends Animal\n  move: ->\n    alert \"Galloping...\"\n    super 45\n\nsam = new Snake \"Sammy the Python\"\ntom = new Horse \"Tommy the Palomino\"\n\nsam.move()\ntom.move()\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example23);'>load</div><div class='minibutton ok' onclick='javascript: var Animal, Horse, Snake, sam, tom, _ref, _ref1,
+</code></pre><script>window.example23 = "class Animal\n  constructor: (@name) ->\n\n  move: (meters) ->\n    alert @name + \" moved #{meters}m.\"\n\nclass Snake extends Animal\n  move: ->\n    alert \"Slithering...\"\n    super 5\n\nclass Horse extends Animal\n  move: ->\n    alert \"Galloping...\"\n    super 45\n\nsam = new Snake \"Sammy the Python\"\ntom = new Horse \"Tommy the Palomino\"\n\nsam.move()\ntom.move()\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example23);'>load</div><div class='minibutton ok' onclick='javascript: var Animal, Horse, Snake, sam, tom, _ref, _ref1,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1626,13 +1698,13 @@ tom.move();
       quick access to an object's prototype; and <tt>super()</tt>
       is converted into a call against the immediate ancestor's method of the same name.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">String::dasherize </span><span class="Keyword">=</span> <span class="Keyword">-</span><span class="Keyword">&gt;</span>
-  <span class="Variable">this</span>.replace <span class="String">/_/g</span>, <span class="String"><span class="String">&quot;</span>-<span class="String">&quot;</span></span>
+    <div class='code'><pre><code>String::<span class="function"><span class="title">dasherize</span></span> = -&gt;
+  <span class="keyword">this</span>.replace <span class="regexp">/_/g</span>, <span class="string">"-"</span>
 
-</pre><pre class="idle"><span class="LibraryClassType">String</span>.<span class="LibraryConstant">prototype</span>.<span class="FunctionName">dasherize</span> = <span class="Storage">function</span>() {
-  <span class="Keyword">return</span> <span class="Variable">this</span>.<span class="LibraryFunction">replace</span>(<span class="String"><span class="String">/</span>_<span class="String">/</span>g</span>, <span class="String"><span class="String">&quot;</span>-<span class="String">&quot;</span></span>);
+</code></pre><pre><code>String.prototype.dasherize = <span class="reserved">function</span>() {
+  <span class="keyword">return</span> <span class="keyword">this</span>.replace(<span class="regexp">/_/g</span>, <span class="string">"-"</span>);
 };
-</pre><script>window.example24 = "String::dasherize = ->\n  this.replace /_/g, \"-\"\n\nalert \"one_two\".dasherize()"</script><div class='minibutton load' onclick='javascript: loadConsole(example24);'>load</div><div class='minibutton ok' onclick='javascript: String.prototype.dasherize = function() {
+</code></pre><script>window.example24 = "String::dasherize = ->\n  this.replace /_/g, \"-\"\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example24);'>load</div><div class='minibutton ok' onclick='javascript: String.prototype.dasherize = function() {
   return this.replace(/_/g, "-");
 };
 ;alert("one_two".dasherize());'>run: "one_two".dasherize()</div><br class='clear' /></div>
@@ -1655,23 +1727,22 @@ tom.move();
       on the right to the variables on the left. In the simplest case, it can be
       used for parallel assignment:
     </p>
-    <div class='code'><pre class="idle">theBait   <span class="Keyword">=</span> <span class="Number">1000</span>
-theSwitch <span class="Keyword">=</span> <span class="Number">0</span>
+    <div class='code'><pre><code>theBait   = <span class="number">1000</span>
+theSwitch = <span class="number">0</span>
 
-<span class="Keyword">[</span>theBait, theSwitch<span class="Keyword">] =</span> [theSwitch, theBait]
-
-
+[theBait, theSwitch] = [theSwitch, theBait]
 
 
- 
-</pre><pre class="idle"><span class="Storage">var</span> theBait, theSwitch, _ref;
 
-theBait <span class="Keyword">=</span> <span class="Number">1000</span>;
 
-theSwitch <span class="Keyword">=</span> <span class="Number">0</span>;
+ </code></pre><pre><code><span class="reserved">var</span> theBait, theSwitch, _ref;
 
-_ref <span class="Keyword">=</span> [theSwitch, theBait], theBait <span class="Keyword">=</span> _ref[<span class="Number">0</span>], theSwitch <span class="Keyword">=</span> _ref[<span class="Number">1</span>];
-</pre><script>window.example25 = "theBait   = 1000\ntheSwitch = 0\n\n[theBait, theSwitch] = [theSwitch, theBait]\n\nalert theBait"</script><div class='minibutton load' onclick='javascript: loadConsole(example25);'>load</div><div class='minibutton ok' onclick='javascript: var theBait, theSwitch, _ref;
+theBait = <span class="number">1000</span>;
+
+theSwitch = <span class="number">0</span>;
+
+_ref = [theSwitch, theBait], theBait = _ref[<span class="number">0</span>], theSwitch = _ref[<span class="number">1</span>];
+</code></pre><script>window.example25 = "theBait   = 1000\ntheSwitch = 0\n\n[theBait, theSwitch] = [theSwitch, theBait]\n\n\n\n\n "</script><div class='minibutton load' onclick='javascript: loadConsole(example25);'>load</div><div class='minibutton ok' onclick='javascript: var theBait, theSwitch, _ref;
 
 theBait = 1000;
 
@@ -1683,23 +1754,23 @@ _ref = [theSwitch, theBait], theBait = _ref[0], theSwitch = _ref[1];
       But it's also helpful for dealing with functions that return multiple
       values.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">weatherReport </span><span class="Keyword">=</span> <span class="FunctionArgument">(location)</span> <span class="Storage">-&gt;</span>
-  <span class="Comment"><span class="Comment">#</span> Make an Ajax request to fetch the weather...</span>
-  [location, <span class="Number">72</span>, <span class="String"><span class="String">&quot;</span>Mostly Sunny<span class="String">&quot;</span></span>]
+    <div class='code'><pre><code><span class="function"><span class="title">weatherReport</span></span> = (location) -&gt;
+  <span class="comment"># Make an Ajax request to fetch the weather...</span>
+  [location, <span class="number">72</span>, <span class="string">"Mostly Sunny"</span>]
 
-<span class="Keyword">[</span>city, temp, forecast<span class="Keyword">] =</span> weatherReport <span class="String"><span class="String">&quot;</span>Berkeley, CA<span class="String">&quot;</span></span>
-
-
+[city, temp, forecast] = weatherReport <span class="string">"Berkeley, CA"</span>
 
 
-</pre><pre class="idle"><span class="Storage">var</span> city, forecast, temp, weatherReport, _ref;
 
-<span class="FunctionName">weatherReport</span> = <span class="Storage">function</span>(<span class="FunctionArgument">location</span>) {
-  <span class="Keyword">return</span> [location, <span class="Number">72</span>, <span class="String"><span class="String">&quot;</span>Mostly Sunny<span class="String">&quot;</span></span>];
+
+</code></pre><pre><code><span class="reserved">var</span> city, forecast, temp, weatherReport, _ref;
+
+weatherReport = <span class="reserved">function</span>(location) {
+  <span class="keyword">return</span> [location, <span class="number">72</span>, <span class="string">"Mostly Sunny"</span>];
 };
 
-_ref <span class="Keyword">=</span> weatherReport(<span class="String"><span class="String">&quot;</span>Berkeley, CA<span class="String">&quot;</span></span>), city <span class="Keyword">=</span> _ref[<span class="Number">0</span>], temp <span class="Keyword">=</span> _ref[<span class="Number">1</span>], forecast <span class="Keyword">=</span> _ref[<span class="Number">2</span>];
-</pre><script>window.example26 = "weatherReport = (location) ->\n  # Make an Ajax request to fetch the weather...\n  [location, 72, \"Mostly Sunny\"]\n\n[city, temp, forecast] = weatherReport \"Berkeley, CA\"\n\nalert forecast"</script><div class='minibutton load' onclick='javascript: loadConsole(example26);'>load</div><div class='minibutton ok' onclick='javascript: var city, forecast, temp, weatherReport, _ref;
+_ref = weatherReport(<span class="string">"Berkeley, CA"</span>), city = _ref[<span class="number">0</span>], temp = _ref[<span class="number">1</span>], forecast = _ref[<span class="number">2</span>];
+</code></pre><script>window.example26 = "weatherReport = (location) ->\n  # Make an Ajax request to fetch the weather...\n  [location, 72, \"Mostly Sunny\"]\n\n[city, temp, forecast] = weatherReport \"Berkeley, CA\"\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example26);'>load</div><div class='minibutton ok' onclick='javascript: var city, forecast, temp, weatherReport, _ref;
 
 weatherReport = function(location) {
   return [location, 72, "Mostly Sunny"];
@@ -1711,33 +1782,33 @@ _ref = weatherReport("Berkeley, CA"), city = _ref[0], temp = _ref[1], forecast =
       Destructuring assignment can be used with any depth of array and object nesting,
       to help pull out deeply nested properties.
     </p>
-    <div class='code'><pre class="idle">futurists <span class="Keyword">=</span>
-  sculptor: <span class="String"><span class="String">&quot;</span>Umberto Boccioni<span class="String">&quot;</span></span>
-  painter:  <span class="String"><span class="String">&quot;</span>Vladimir Burliuk<span class="String">&quot;</span></span>
+    <div class='code'><pre><code>futurists =
+  sculptor: <span class="string">"Umberto Boccioni"</span>
+  painter:  <span class="string">"Vladimir Burliuk"</span>
   poet:
-    name:   <span class="String"><span class="String">&quot;</span>F.T. Marinetti<span class="String">&quot;</span></span>
+    name:   <span class="string">"F.T. Marinetti"</span>
     address: [
-      <span class="String"><span class="String">&quot;</span>Via Roma 42R<span class="String">&quot;</span></span>
-      <span class="String"><span class="String">&quot;</span>Bellagio, Italy 22021<span class="String">&quot;</span></span>
+      <span class="string">"Via Roma 42R"</span>
+      <span class="string">"Bellagio, Italy 22021"</span>
     ]
 
-<span class="Keyword">{</span>poet: {name, address: [street, city]}<span class="Keyword">} =</span> futurists
+{poet: {name, address: [street, city]}} = futurists
 
 
 
-</pre><pre class="idle"><span class="Storage">var</span> city, futurists, name, street, _ref, _ref1;
+</code></pre><pre><code><span class="reserved">var</span> city, futurists, name, street, _ref, _ref1;
 
-futurists <span class="Keyword">=</span> {
-  sculptor: <span class="String"><span class="String">&quot;</span>Umberto Boccioni<span class="String">&quot;</span></span>,
-  painter: <span class="String"><span class="String">&quot;</span>Vladimir Burliuk<span class="String">&quot;</span></span>,
+futurists = {
+  sculptor: <span class="string">"Umberto Boccioni"</span>,
+  painter: <span class="string">"Vladimir Burliuk"</span>,
   poet: {
-    name: <span class="String"><span class="String">&quot;</span>F.T. Marinetti<span class="String">&quot;</span></span>,
-    address: [<span class="String"><span class="String">&quot;</span>Via Roma 42R<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Bellagio, Italy 22021<span class="String">&quot;</span></span>]
+    name: <span class="string">"F.T. Marinetti"</span>,
+    address: [<span class="string">"Via Roma 42R"</span>, <span class="string">"Bellagio, Italy 22021"</span>]
   }
 };
 
-_ref <span class="Keyword">=</span> futurists.poet, name <span class="Keyword">=</span> _ref.<span class="LibraryConstant">name</span>, (_ref1 <span class="Keyword">=</span> _ref.address, street <span class="Keyword">=</span> _ref1[<span class="Number">0</span>], city <span class="Keyword">=</span> _ref1[<span class="Number">1</span>]);
-</pre><script>window.example27 = "futurists =\n  sculptor: \"Umberto Boccioni\"\n  painter:  \"Vladimir Burliuk\"\n  poet:\n    name:   \"F.T. Marinetti\"\n    address: [\n      \"Via Roma 42R\"\n      \"Bellagio, Italy 22021\"\n    ]\n\n{poet: {name, address: [street, city]}} = futurists\n\nalert name + \" — \" + street"</script><div class='minibutton load' onclick='javascript: loadConsole(example27);'>load</div><div class='minibutton ok' onclick='javascript: var city, futurists, name, street, _ref, _ref1;
+_ref = futurists.poet, name = _ref.name, (_ref1 = _ref.address, street = _ref1[<span class="number">0</span>], city = _ref1[<span class="number">1</span>]);
+</code></pre><script>window.example27 = "futurists =\n  sculptor: \"Umberto Boccioni\"\n  painter:  \"Vladimir Burliuk\"\n  poet:\n    name:   \"F.T. Marinetti\"\n    address: [\n      \"Via Roma 42R\"\n      \"Bellagio, Italy 22021\"\n    ]\n\n{poet: {name, address: [street, city]}} = futurists\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example27);'>load</div><div class='minibutton ok' onclick='javascript: var city, futurists, name, street, _ref, _ref1;
 
 futurists = {
   sculptor: "Umberto Boccioni",
@@ -1753,22 +1824,22 @@ _ref = futurists.poet, name = _ref.name, (_ref1 = _ref.address, street = _ref1[0
     <p>
       Destructuring assignment can even be combined with splats.
     </p>
-    <div class='code'><pre class="idle">tag <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>&lt;impossible&gt;<span class="String">&quot;</span></span>
+    <div class='code'><pre><code>tag = <span class="string">"&lt;impossible&gt;"</span>
 
-<span class="Keyword">[</span>open, contents..., close<span class="Keyword">] =</span> tag.split(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span>)
-
-
+[open, contents..., close] = tag.split(<span class="string">""</span>)
 
 
 
 
-</pre><pre class="idle"><span class="Storage">var</span> close, contents, open, tag, _i, _ref,
-  __slice <span class="Keyword">=</span> [].slice;
 
-tag <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>&lt;impossible&gt;<span class="String">&quot;</span></span>;
 
-_ref <span class="Keyword">=</span> tag.<span class="LibraryFunction">split</span>(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span>), open <span class="Keyword">=</span> _ref[<span class="Number">0</span>], contents <span class="Keyword">=</span> <span class="Number">3</span> <span class="Keyword">&lt;=</span> _ref.<span class="LibraryConstant">length</span> ? __slice.<span class="LibraryFunction">call</span>(_ref, <span class="Number">1</span>, _i <span class="Keyword">=</span> _ref.<span class="LibraryConstant">length</span> <span class="Keyword">-</span> <span class="Number">1</span>) : (_i <span class="Keyword">=</span> <span class="Number">1</span>, []), close <span class="Keyword">=</span> _ref[_i<span class="Keyword">++</span>];
-</pre><script>window.example28 = "tag = \"<impossible>\"\n\n[open, contents..., close] = tag.split(\"\")\n\nalert contents.join(\"\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example28);'>load</div><div class='minibutton ok' onclick='javascript: var close, contents, open, tag, _i, _ref,
+</code></pre><pre><code><span class="reserved">var</span> close, contents, open, tag, _i, _ref,
+  __slice = [].slice;
+
+tag = <span class="string">"&lt;impossible&gt;"</span>;
+
+_ref = tag.split(<span class="string">""</span>), open = _ref[<span class="number">0</span>], contents = <span class="number">3</span> &lt;= _ref.length ? __slice.call(_ref, <span class="number">1</span>, _i = _ref.length - <span class="number">1</span>) : (_i = <span class="number">1</span>, []), close = _ref[_i++];
+</code></pre><script>window.example28 = "tag = \"<impossible>\"\n\n[open, contents..., close] = tag.split(\"\")\n\n\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example28);'>load</div><div class='minibutton ok' onclick='javascript: var close, contents, open, tag, _i, _ref,
   __slice = [].slice;
 
 tag = "<impossible>";
@@ -1779,21 +1850,21 @@ _ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? __slice.call
       Destructuring assignment is also useful when combined with class constructors
       to assign properties to your instance from an options object passed to the constructor.
     </p>
-    <div class='code'><pre class="idle"><span class="Storage">class</span> <span class="TypeName">Person</span>
-  <span class="FunctionName">constructor</span><span class="Keyword">:</span> <span class="FunctionArgument">(options)</span> <span class="Storage">-&gt;</span> 
-    <span class="Keyword">{</span><span class="Variable">@name</span>, <span class="Variable">@age</span>, <span class="Variable">@height</span><span class="Keyword">} =</span> options
+    <div class='code'><pre><code><span class="class"><span class="keyword">class</span> <span class="title">Person</span></span>
+  constructor: (options) -&gt; 
+    {<span class="property">@name</span>, <span class="property">@age</span>, <span class="property">@height</span>} = options
 
-</pre><pre class="idle"><span class="Storage">var</span> Person;
+</code></pre><pre><code><span class="reserved">var</span> Person;
 
-Person <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  <span class="Storage">function</span> <span class="FunctionName">Person</span>(<span class="FunctionArgument">options</span>) {
-    <span class="Variable">this</span>.<span class="LibraryConstant">name</span> <span class="Keyword">=</span> options.<span class="LibraryConstant">name</span>, <span class="Variable">this</span>.age <span class="Keyword">=</span> options.age, <span class="Variable">this</span>.<span class="LibraryConstant">height</span> <span class="Keyword">=</span> options.<span class="LibraryConstant">height</span>;
+Person = (<span class="reserved">function</span>() {
+  <span class="reserved">function</span> Person(options) {
+    <span class="keyword">this</span>.name = options.name, <span class="keyword">this</span>.age = options.age, <span class="keyword">this</span>.height = options.height;
   }
 
-  <span class="Keyword">return</span> Person;
+  <span class="keyword">return</span> Person;
 
 })();
-</pre><script>window.example29 = "class Person\n  constructor: (options) -> \n    {@name, @age, @height} = options\n\nalert contents.join(\"\")"</script><div class='minibutton load' onclick='javascript: loadConsole(example29);'>load</div><div class='minibutton ok' onclick='javascript: var Person;
+</code></pre><script>window.example29 = "class Person\n  constructor: (options) -> \n    {@name, @age, @height} = options\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example29);'>load</div><div class='minibutton ok' onclick='javascript: var Person;
 
 Person = (function() {
   function Person(options) {
@@ -1823,23 +1894,32 @@ Person = (function() {
       to use with <tt>bind</tt>. Functions created with the fat arrow are able to access
       properties of the <tt>this</tt> where they're defined.
     </p>
-    <div class='code'><pre class="idle"><span class="FunctionName">Account </span><span class="Keyword">=</span> <span class="FunctionArgument">(customer, cart)</span> <span class="Storage">-&gt;</span>
-  <span class="Variable">@customer</span> <span class="Keyword">=</span> customer
-  <span class="Variable">@cart</span> <span class="Keyword">=</span> cart
+    <div class='code'><pre><code><span class="function"><span class="title">Account</span></span> = (customer, cart) -&gt;
+  <span class="property">@customer</span> = customer
+  <span class="property">@cart</span> = cart
 
-  $(<span class="String"><span class="String">'</span>.shopping_cart<span class="String">'</span></span>).bind <span class="String"><span class="String">'</span>click<span class="String">'</span></span>, <span class="FunctionArgument">(event)</span> <span class="Storage">=&gt;</span>
-    <span class="Variable">@customer</span>.purchase <span class="Variable">@cart</span>
-</pre><pre class="idle"><span class="Storage">var</span> Account;
+  $(<span class="string">'.shopping_cart'</span>).bind <span class="string">'click'</span>, (event) =&gt;
+    <span class="property">@customer</span>.purchase <span class="property">@cart</span></code></pre><pre><code><span class="reserved">var</span> Account;
 
-<span class="FunctionName">Account</span> = <span class="Storage">function</span>(<span class="FunctionArgument">customer, cart</span>) {
-  <span class="Storage">var</span> _this <span class="Keyword">=</span> <span class="Variable">this</span>;
-  <span class="Variable">this</span>.customer <span class="Keyword">=</span> customer;
-  <span class="Variable">this</span>.cart <span class="Keyword">=</span> cart;
-  <span class="Keyword">return</span> <span class="Keyword">$</span>(<span class="String"><span class="String">'</span>.shopping_cart<span class="String">'</span></span>).bind(<span class="String"><span class="String">'</span>click<span class="String">'</span></span>, <span class="Storage">function</span>(<span class="LibraryClassType">event</span>) {
-    <span class="Keyword">return</span> _this.customer.purchase(_this.cart);
+Account = <span class="reserved">function</span>(customer, cart) {
+  <span class="reserved">var</span> _<span class="keyword">this</span> = <span class="keyword">this</span>;
+  <span class="keyword">this</span>.customer = customer;
+  <span class="keyword">this</span>.cart = cart;
+  <span class="keyword">return</span> $(<span class="string">'.shopping_cart'</span>).bind(<span class="string">'click'</span>, <span class="reserved">function</span>(event) {
+    <span class="keyword">return</span> _<span class="keyword">this</span>.customer.purchase(_<span class="keyword">this</span>.cart);
   });
 };
-</pre><script>window.example30 = "Account = (customer, cart) ->\n  @customer = customer\n  @cart = cart\n\n  $('.shopping_cart').bind 'click', (event) =>\n    @customer.purchase @cart"</script><div class='minibutton load' onclick='javascript: loadConsole(example30);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example30 = "Account = (customer, cart) ->\n  @customer = customer\n  @cart = cart\n\n  $('.shopping_cart').bind 'click', (event) =>\n    @customer.purchase @cart"</script><div class='minibutton load' onclick='javascript: loadConsole(example30);'>load</div><div class='minibutton ok' onclick='javascript: var Account;
+
+Account = function(customer, cart) {
+  var _this = this;
+  this.customer = customer;
+  this.cart = cart;
+  return $('.shopping_cart').bind('click', function(event) {
+    return _this.customer.purchase(_this.cart);
+  });
+};
+;alert(false);'>run: false</div><br class='clear' /></div>
     <p>
       If we had used <tt>-&gt;</tt> in the callback above, <tt>@customer</tt> would
       have referred to the undefined "customer" property of the DOM element,
@@ -1858,18 +1938,18 @@ Person = (function() {
       snippets of JavaScript within your CoffeeScript, you can
       use backticks to pass it straight through.
     </p>
-    <div class='code'><pre class="idle">hi <span class="Keyword">=</span> <span class="String"><span class="String">`</span>function() {</span>
-<span class="String">  return [document.title, &quot;Hello JavaScript&quot;].join(&quot;: &quot;);</span>
-<span class="String">}<span class="String">`</span></span>
+    <div class='code'><pre><code>hi = `<span class="javascript"><span class="keyword">function</span>() {
+  <span class="keyword">return</span> [document.title, <span class="string">"Hello JavaScript"</span>].join(<span class="string">": "</span>);
+}</span>`
 
 
 
-</pre><pre class="idle"><span class="Storage">var</span> hi;
+</code></pre><pre><code><span class="reserved">var</span> hi;
 
-<span class="FunctionName">hi</span> = <span class="Storage">function</span>() {
-  <span class="Keyword">return</span> [<span class="LibraryClassType">document</span>.<span class="LibraryConstant">title</span>, <span class="String"><span class="String">&quot;</span>Hello JavaScript<span class="String">&quot;</span></span>].<span class="LibraryFunction">join</span>(<span class="String"><span class="String">&quot;</span>: <span class="String">&quot;</span></span>);
+hi = <span class="reserved">function</span>() {
+  <span class="keyword">return</span> [document.title, <span class="string">"Hello JavaScript"</span>].join(<span class="string">": "</span>);
 };
-</pre><script>window.example31 = "hi = `function() {\n  return [document.title, \"Hello JavaScript\"].join(\": \");\n}`\n\nalert hi()"</script><div class='minibutton load' onclick='javascript: loadConsole(example31);'>load</div><div class='minibutton ok' onclick='javascript: var hi;
+</code></pre><script>window.example31 = "hi = `function() {\n  return [document.title, \"Hello JavaScript\"].join(\": \");\n}`\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example31);'>load</div><div class='minibutton ok' onclick='javascript: var hi;
 
 hi = function() {
   return [document.title, "Hello JavaScript"].join(": ");
@@ -1891,71 +1971,111 @@ hi = function() {
       values for each <b>when</b> clause. If any of the values match, the clause
       runs.
     </p>
-    <div class='code'><pre class="idle"><span class="Keyword">switch</span> day
-  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Mon<span class="String">&quot;</span></span> <span class="Keyword">then</span> go work
-  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Tue<span class="String">&quot;</span></span> <span class="Keyword">then</span> go relax
-  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Thu<span class="String">&quot;</span></span> <span class="Keyword">then</span> go iceFishing
-  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Fri<span class="String">&quot;</span></span>, <span class="String"><span class="String">&quot;</span>Sat<span class="String">&quot;</span></span>
-    <span class="Keyword">if</span> day <span class="Keyword">is</span> bingoDay
+    <div class='code'><pre><code><span class="keyword">switch</span> day
+  <span class="keyword">when</span> <span class="string">"Mon"</span> <span class="keyword">then</span> go work
+  <span class="keyword">when</span> <span class="string">"Tue"</span> <span class="keyword">then</span> go relax
+  <span class="keyword">when</span> <span class="string">"Thu"</span> <span class="keyword">then</span> go iceFishing
+  <span class="keyword">when</span> <span class="string">"Fri"</span>, <span class="string">"Sat"</span>
+    <span class="keyword">if</span> day <span class="keyword">is</span> bingoDay
       go bingo
       go dancing
-  <span class="Keyword">when</span> <span class="String"><span class="String">&quot;</span>Sun<span class="String">&quot;</span></span> <span class="Keyword">then</span> go church
-  <span class="Keyword">else</span> go work
-</pre><pre class="idle"><span class="Keyword">switch</span> (day) {
-  <span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Mon<span class="String">&quot;</span></span>:
-    <span class="LibraryFunction">go</span>(work);
-    <span class="Keyword">break</span>;
-  <span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Tue<span class="String">&quot;</span></span>:
-    <span class="LibraryFunction">go</span>(relax);
-    <span class="Keyword">break</span>;
-  <span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Thu<span class="String">&quot;</span></span>:
-    <span class="LibraryFunction">go</span>(iceFishing);
-    <span class="Keyword">break</span>;
-  <span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Fri<span class="String">&quot;</span></span>:
-  <span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Sat<span class="String">&quot;</span></span>:
-    <span class="Keyword">if</span> (day <span class="Keyword">===</span> bingoDay) {
-      <span class="LibraryFunction">go</span>(bingo);
-      <span class="LibraryFunction">go</span>(dancing);
+  <span class="keyword">when</span> <span class="string">"Sun"</span> <span class="keyword">then</span> go church
+  <span class="keyword">else</span> go work</code></pre><pre><code><span class="keyword">switch</span> (day) {
+  <span class="reserved">case</span> <span class="string">"Mon"</span>:
+    go(work);
+    <span class="keyword">break</span>;
+  <span class="reserved">case</span> <span class="string">"Tue"</span>:
+    go(relax);
+    <span class="keyword">break</span>;
+  <span class="reserved">case</span> <span class="string">"Thu"</span>:
+    go(iceFishing);
+    <span class="keyword">break</span>;
+  <span class="reserved">case</span> <span class="string">"Fri"</span>:
+  <span class="reserved">case</span> <span class="string">"Sat"</span>:
+    <span class="keyword">if</span> (day === bingoDay) {
+      go(bingo);
+      go(dancing);
     }
-    <span class="Keyword">break</span>;
-  <span class="Keyword">case</span> <span class="String"><span class="String">&quot;</span>Sun<span class="String">&quot;</span></span>:
-    <span class="LibraryFunction">go</span>(church);
-    <span class="Keyword">break</span>;
-  <span class="Keyword">default</span>:
-    <span class="LibraryFunction">go</span>(work);
+    <span class="keyword">break</span>;
+  <span class="reserved">case</span> <span class="string">"Sun"</span>:
+    go(church);
+    <span class="keyword">break</span>;
+  <span class="reserved">default</span>:
+    go(work);
 }
-</pre><script>window.example32 = "switch day\n  when \"Mon\" then go work\n  when \"Tue\" then go relax\n  when \"Thu\" then go iceFishing\n  when \"Fri\", \"Sat\"\n    if day is bingoDay\n      go bingo\n      go dancing\n  when \"Sun\" then go church\n  else go work"</script><div class='minibutton load' onclick='javascript: loadConsole(example32);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example32 = "switch day\n  when \"Mon\" then go work\n  when \"Tue\" then go relax\n  when \"Thu\" then go iceFishing\n  when \"Fri\", \"Sat\"\n    if day is bingoDay\n      go bingo\n      go dancing\n  when \"Sun\" then go church\n  else go work"</script><div class='minibutton load' onclick='javascript: loadConsole(example32);'>load</div><div class='minibutton ok' onclick='javascript: switch (day) {
+  case "Mon":
+    go(work);
+    break;
+  case "Tue":
+    go(relax);
+    break;
+  case "Thu":
+    go(iceFishing);
+    break;
+  case "Fri":
+  case "Sat":
+    if (day === bingoDay) {
+      go(bingo);
+      go(dancing);
+    }
+    break;
+  case "Sun":
+    go(church);
+    break;
+  default:
+    go(work);
+}
+;alert(false);'>run: false</div><br class='clear' /></div>
 
     <p>
       Switch statements can also be used without a control expression, turning them in to a cleaner alternative to if/else chains.
     </p>
-    <div class='code'><pre class="idle">score <span class="Keyword">=</span> <span class="Number">76</span>
-grade <span class="Keyword">=</span> <span class="Keyword">switch</span>
-  <span class="Keyword">when</span> score <span class="Keyword">&lt;</span> <span class="Number">60</span> <span class="Keyword">then</span> <span class="String"><span class="String">'</span>F<span class="String">'</span></span>
-  <span class="Keyword">when</span> score <span class="Keyword">&lt;</span> <span class="Number">70</span> <span class="Keyword">then</span> <span class="String"><span class="String">'</span>D<span class="String">'</span></span>
-  <span class="Keyword">when</span> score <span class="Keyword">&lt;</span> <span class="Number">80</span> <span class="Keyword">then</span> <span class="String"><span class="String">'</span>C<span class="String">'</span></span>
-  <span class="Keyword">when</span> score <span class="Keyword">&lt;</span> <span class="Number">90</span> <span class="Keyword">then</span> <span class="String"><span class="String">'</span>B<span class="String">'</span></span>
-  <span class="Keyword">else</span> <span class="String"><span class="String">'</span>A<span class="String">'</span></span>
-<span class="Comment"><span class="Comment">#</span> grade == 'C'</span>
-</pre><pre class="idle"><span class="Storage">var</span> grade, score;
+    <div class='code'><pre><code>score = <span class="number">76</span>
+grade = <span class="keyword">switch</span>
+  <span class="keyword">when</span> score &lt; <span class="number">60</span> <span class="keyword">then</span> <span class="string">'F'</span>
+  <span class="keyword">when</span> score &lt; <span class="number">70</span> <span class="keyword">then</span> <span class="string">'D'</span>
+  <span class="keyword">when</span> score &lt; <span class="number">80</span> <span class="keyword">then</span> <span class="string">'C'</span>
+  <span class="keyword">when</span> score &lt; <span class="number">90</span> <span class="keyword">then</span> <span class="string">'B'</span>
+  <span class="keyword">else</span> <span class="string">'A'</span>
+<span class="comment"># grade == 'C'</span>
+</code></pre><pre><code><span class="reserved">var</span> grade, score;
 
-score <span class="Keyword">=</span> <span class="Number">76</span>;
+score = <span class="number">76</span>;
 
-grade <span class="Keyword">=</span> (<span class="Storage">function</span>() {
-  <span class="Keyword">switch</span> (<span class="BuiltInConstant">false</span>) {
-    <span class="Keyword">case</span> <span class="Keyword">!</span>(score <span class="Keyword">&lt;</span> <span class="Number">60</span>):
-      <span class="Keyword">return</span> <span class="String"><span class="String">'</span>F<span class="String">'</span></span>;
-    <span class="Keyword">case</span> <span class="Keyword">!</span>(score <span class="Keyword">&lt;</span> <span class="Number">70</span>):
-      <span class="Keyword">return</span> <span class="String"><span class="String">'</span>D<span class="String">'</span></span>;
-    <span class="Keyword">case</span> <span class="Keyword">!</span>(score <span class="Keyword">&lt;</span> <span class="Number">80</span>):
-      <span class="Keyword">return</span> <span class="String"><span class="String">'</span>C<span class="String">'</span></span>;
-    <span class="Keyword">case</span> <span class="Keyword">!</span>(score <span class="Keyword">&lt;</span> <span class="Number">90</span>):
-      <span class="Keyword">return</span> <span class="String"><span class="String">'</span>B<span class="String">'</span></span>;
-    <span class="Keyword">default</span>:
-      <span class="Keyword">return</span> <span class="String"><span class="String">'</span>A<span class="String">'</span></span>;
+grade = (<span class="reserved">function</span>() {
+  <span class="keyword">switch</span> (<span class="literal">false</span>) {
+    <span class="reserved">case</span> !(score &lt; <span class="number">60</span>):
+      <span class="keyword">return</span> <span class="string">'F'</span>;
+    <span class="reserved">case</span> !(score &lt; <span class="number">70</span>):
+      <span class="keyword">return</span> <span class="string">'D'</span>;
+    <span class="reserved">case</span> !(score &lt; <span class="number">80</span>):
+      <span class="keyword">return</span> <span class="string">'C'</span>;
+    <span class="reserved">case</span> !(score &lt; <span class="number">90</span>):
+      <span class="keyword">return</span> <span class="string">'B'</span>;
+    <span class="reserved">default</span>:
+      <span class="keyword">return</span> <span class="string">'A'</span>;
   }
 })();
-</pre><script>window.example33 = "score = 76\ngrade = switch\n  when score < 60 then 'F'\n  when score < 70 then 'D'\n  when score < 80 then 'C'\n  when score < 90 then 'B'\n  else 'A'\n# grade == 'C'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example33);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example33 = "score = 76\ngrade = switch\n  when score < 60 then 'F'\n  when score < 70 then 'D'\n  when score < 80 then 'C'\n  when score < 90 then 'B'\n  else 'A'\n# grade == 'C'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example33);'>load</div><div class='minibutton ok' onclick='javascript: var grade, score;
+
+score = 76;
+
+grade = (function() {
+  switch (false) {
+    case !(score < 60):
+      return 'F';
+    case !(score < 70):
+      return 'D';
+    case !(score < 80):
+      return 'C';
+    case !(score < 90):
+      return 'B';
+    default:
+      return 'A';
+  }
+})();
+;alert(false);'>run: false</div><br class='clear' /></div>
 
     <p>
       <span id="try" class="bookmark"></span>
@@ -1963,26 +2083,37 @@ grade <span class="Keyword">=</span> (<span class="Storage">function</span>() {
       Try/catch statements are just about the same as JavaScript (although
       they work as expressions).
     </p>
-    <div class='code'><pre class="idle"><span class="Keyword">try</span>
+    <div class='code'><pre><code><span class="keyword">try</span>
   allHellBreaksLoose()
   catsAndDogsLivingTogether()
-<span class="Keyword">catch</span> error
+<span class="keyword">catch</span> error
   print error
-<span class="Keyword">finally</span>
+<span class="keyword">finally</span>
   cleanUp()
 
-</pre><pre class="idle"><span class="Storage">var</span> error;
+</code></pre><pre><code><span class="reserved">var</span> error;
 
-<span class="Keyword">try</span> {
+<span class="keyword">try</span> {
   allHellBreaksLoose();
   catsAndDogsLivingTogether();
-} <span class="Keyword">catch</span> (_error) {
-  error <span class="Keyword">=</span> _error;
-  <span class="LibraryFunction">print</span>(error);
-} <span class="Keyword">finally</span> {
+} <span class="keyword">catch</span> (_error) {
+  error = _error;
+  print(error);
+} <span class="keyword">finally</span> {
   cleanUp();
 }
-</pre><script>window.example34 = "try\n  allHellBreaksLoose()\n  catsAndDogsLivingTogether()\ncatch error\n  print error\nfinally\n  cleanUp()\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example34);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example34 = "try\n  allHellBreaksLoose()\n  catsAndDogsLivingTogether()\ncatch error\n  print error\nfinally\n  cleanUp()\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example34);'>load</div><div class='minibutton ok' onclick='javascript: var error;
+
+try {
+  allHellBreaksLoose();
+  catsAndDogsLivingTogether();
+} catch (_error) {
+  error = _error;
+  print(error);
+} finally {
+  cleanUp();
+}
+;alert(false);'>run: false</div><br class='clear' /></div>
 
     <p>
       <span id="comparisons" class="bookmark"></span>
@@ -1992,17 +2123,17 @@ grade <span class="Keyword">=</span> (<span class="Storage">function</span>() {
       from Python &mdash; making it easy to test if a value falls within a
       certain range.
     </p>
-    <div class='code'><pre class="idle">cholesterol <span class="Keyword">=</span> <span class="Number">127</span>
+    <div class='code'><pre><code>cholesterol = <span class="number">127</span>
 
-healthy <span class="Keyword">=</span> <span class="Number">200</span> <span class="Keyword">&gt;</span> cholesterol <span class="Keyword">&gt;</span> <span class="Number">60</span>
+healthy = <span class="number">200</span> &gt; cholesterol &gt; <span class="number">60</span>
 
 
-</pre><pre class="idle"><span class="Storage">var</span> cholesterol, healthy;
+</code></pre><pre><code><span class="reserved">var</span> cholesterol, healthy;
 
-cholesterol <span class="Keyword">=</span> <span class="Number">127</span>;
+cholesterol = <span class="number">127</span>;
 
-healthy <span class="Keyword">=</span> (<span class="Number">200</span> <span class="Keyword">&gt;</span> cholesterol <span class="Keyword">&amp;</span><span class="Keyword">&amp;</span> cholesterol <span class="Keyword">&gt;</span> <span class="Number">60</span>);
-</pre><script>window.example35 = "cholesterol = 127\n\nhealthy = 200 > cholesterol > 60\n\nalert healthy"</script><div class='minibutton load' onclick='javascript: loadConsole(example35);'>load</div><div class='minibutton ok' onclick='javascript: var cholesterol, healthy;
+healthy = (<span class="number">200</span> &gt; cholesterol &amp;&amp; cholesterol &gt; <span class="number">60</span>);
+</code></pre><script>window.example35 = "cholesterol = 127\n\nhealthy = 200 > cholesterol > 60\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example35);'>load</div><div class='minibutton ok' onclick='javascript: var cholesterol, healthy;
 
 cholesterol = 127;
 
@@ -2016,23 +2147,23 @@ healthy = (200 > cholesterol && cholesterol > 60);
       strings allow for interpolated values, using <tt>#{ ... }</tt>,
       and single-quoted strings are literal.
     </p>
-    <div class='code'><pre class="idle">author <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Wittgenstein<span class="String">&quot;</span></span>
-quote  <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String"><span class="String">#{</span> author <span class="String">}</span></span><span class="String">&quot;</span></span>
+    <div class='code'><pre><code>author = <span class="string">"Wittgenstein"</span>
+quote  = <span class="string">"A picture is a fact. -- <span class="subst">#{ author }</span>"</span>
 
-sentence <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span><span class="String"><span class="String">#{</span> <span class="Number">22</span> <span class="Keyword">/</span> <span class="Number">7</span> <span class="String">}</span></span> is a decent approximation of π<span class="String">&quot;</span></span>
-
-
+sentence = <span class="string">"<span class="subst">#{ <span class="number">22</span> / <span class="number">7</span> }</span> is a decent approximation of π"</span>
 
 
 
-</pre><pre class="idle"><span class="Storage">var</span> author, quote, sentence;
 
-author <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Wittgenstein<span class="String">&quot;</span></span>;
 
-quote <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>A picture is a fact. -- <span class="String">&quot;</span></span> <span class="Keyword">+</span> author;
+</code></pre><pre><code><span class="reserved">var</span> author, quote, sentence;
 
-sentence <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> (<span class="Number">22</span> / <span class="Number">7</span>) <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span> is a decent approximation of π<span class="String">&quot;</span></span>;
-</pre><script>window.example36 = "author = \"Wittgenstein\"\nquote  = \"A picture is a fact. -- #{ author }\"\n\nsentence = \"#{ 22 / 7 } is a decent approximation of π\"\n\nalert sentence"</script><div class='minibutton load' onclick='javascript: loadConsole(example36);'>load</div><div class='minibutton ok' onclick='javascript: var author, quote, sentence;
+author = <span class="string">"Wittgenstein"</span>;
+
+quote = <span class="string">"A picture is a fact. -- "</span> + author;
+
+sentence = <span class="string">""</span> + (<span class="number">22</span> / <span class="number">7</span>) + <span class="string">" is a decent approximation of π"</span>;
+</code></pre><script>window.example36 = "author = \"Wittgenstein\"\nquote  = \"A picture is a fact. -- #{ author }\"\n\nsentence = \"#{ 22 / 7 } is a decent approximation of π\"\n\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example36);'>load</div><div class='minibutton ok' onclick='javascript: var author, quote, sentence;
 
 author = "Wittgenstein";
 
@@ -2043,18 +2174,18 @@ sentence = "" + (22 / 7) + " is a decent approximation of π";
     <p>
       Multiline strings are allowed in CoffeeScript.
     </p>
-    <div class='code'><pre class="idle">mobyDick <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago --</span>
-<span class="String"> never mind how long precisely -- having little</span>
-<span class="String"> or no money in my purse, and nothing particular</span>
-<span class="String"> to interest me on shore, I thought I would sail</span>
-<span class="String"> about a little and see the watery part of the</span>
-<span class="String"> world...<span class="String">&quot;</span></span>
+    <div class='code'><pre><code>mobyDick = <span class="string">"Call me Ishmael. Some years ago --
+ never mind how long precisely -- having little
+ or no money in my purse, and nothing particular
+ to interest me on shore, I thought I would sail
+ about a little and see the watery part of the
+ world..."</span>
 
 
-</pre><pre class="idle"><span class="Storage">var</span> mobyDick;
+</code></pre><pre><code><span class="reserved">var</span> mobyDick;
 
-mobyDick <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...<span class="String">&quot;</span></span>;
-</pre><script>window.example37 = "mobyDick = \"Call me Ishmael. Some years ago --\n never mind how long precisely -- having little\n or no money in my purse, and nothing particular\n to interest me on shore, I thought I would sail\n about a little and see the watery part of the\n world...\"\n\nalert mobyDick"</script><div class='minibutton load' onclick='javascript: loadConsole(example37);'>load</div><div class='minibutton ok' onclick='javascript: var mobyDick;
+mobyDick = <span class="string">"Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world..."</span>;
+</code></pre><script>window.example37 = "mobyDick = \"Call me Ishmael. Some years ago --\n never mind how long precisely -- having little\n or no money in my purse, and nothing particular\n to interest me on shore, I thought I would sail\n about a little and see the watery part of the\n world...\"\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example37);'>load</div><div class='minibutton ok' onclick='javascript: var mobyDick;
 
 mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...";
 ;alert(mobyDick);'>run: mobyDick</div><br class='clear' /></div>
@@ -2064,16 +2195,16 @@ mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- 
       indentation level that begins the block is maintained throughout, so
       you can keep it all aligned with the body of your code.
     </p>
-    <div class='code'><pre class="idle">html <span class="Keyword">=</span> <span class="String"><span class="String">&quot;&quot;&quot;</span></span>
-<span class="String">       &lt;strong&gt;</span>
-<span class="String">         cup of coffeescript</span>
-<span class="String">       &lt;/strong&gt;</span>
-<span class="String">       <span class="String">&quot;&quot;&quot;</span></span>
+    <div class='code'><pre><code>html = <span class="string">"""
+       &lt;strong&gt;
+         cup of coffeescript
+       &lt;/strong&gt;
+       """</span>
        
-</pre><pre class="idle"><span class="Storage">var</span> html;
+</code></pre><pre><code><span class="reserved">var</span> html;
 
-html <span class="Keyword">=</span> <span class="String"><span class="String">&quot;</span>&lt;strong&gt;<span class="UserDefinedConstant">\n</span>  cup of coffeescript<span class="UserDefinedConstant">\n</span>&lt;/strong&gt;<span class="String">&quot;</span></span>;
-</pre><script>window.example38 = "html = \"\"\"\n       <strong>\n         cup of coffeescript\n       </strong>\n       \"\"\"\n\nalert html"</script><div class='minibutton load' onclick='javascript: loadConsole(example38);'>load</div><div class='minibutton ok' onclick='javascript: var html;
+html = <span class="string">"&lt;strong&gt;\n  cup of coffeescript\n&lt;/strong&gt;"</span>;
+</code></pre><script>window.example38 = "html = \"\"\"\n       <strong>\n         cup of coffeescript\n       </strong>\n       \"\"\"\n       \n"</script><div class='minibutton load' onclick='javascript: loadConsole(example38);'>load</div><div class='minibutton ok' onclick='javascript: var html;
 
 html = "<strong>\n  cup of coffeescript\n</strong>";
 ;alert(html);'>run: html</div><br class='clear' /></div>
@@ -2086,19 +2217,25 @@ html = "<strong>\n  cup of coffeescript\n</strong>";
       the top of a file. Block comments, which mirror the syntax for block strings,
       are preserved in the generated code.
     </p>
-    <div class='code'><pre class="idle"><span class="Comment"><span class="Comment">###</span></span>
-<span class="Comment">SkinnyMochaHalfCaffScript Compiler v1.0</span>
-<span class="Comment">Released under the MIT License</span>
-<span class="Comment"><span class="Comment">###</span></span>
+    <div class='code'><pre><code><span class="comment">###
+SkinnyMochaHalfCaffScript Compiler v1.0
+Released under the MIT License
+###</span>
 
 
-</pre><pre class="idle"><span class="Comment"><span class="Comment">/*</span></span>
-<span class="Comment">SkinnyMochaHalfCaffScript Compiler v1.0</span>
-<span class="Comment">Released under the MIT License</span>
-<span class="Comment"><span class="Comment">*/</span></span>
+</code></pre><pre><code>/*
+SkinnyMochaHalfCaffScript Compiler v1<span class="number">.0</span>
+Released under the MIT License
+*/
 
 
-</pre><script>window.example39 = "###\nSkinnyMochaHalfCaffScript Compiler v1.0\nReleased under the MIT License\n###\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example39);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example39 = "###\nSkinnyMochaHalfCaffScript Compiler v1.0\nReleased under the MIT License\n###\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example39);'>load</div><div class='minibutton ok' onclick='javascript: /*
+SkinnyMochaHalfCaffScript Compiler v1.0
+Released under the MIT License
+*/
+
+
+;alert(false);'>run: false</div><br class='clear' /></div>
 
     <p>
       <span id="regexes" class="bookmark"></span>
@@ -2109,21 +2246,24 @@ html = "<strong>\n  cup of coffeescript\n</strong>";
       block regexes are delimited by <tt>///</tt> and go a long way towards making complex
       regular expressions readable. To quote from the CoffeeScript source:
     </p>
-    <div class='code'><pre class="idle">OPERATOR <span class="Keyword">=</span> <span class="String">/// ^ (</span>
-<span class="String">  ?: [-=]&gt;             <span class="Comment"><span class="Comment">#</span> function</span></span>
-<span class="String">   | [-+*/%&lt;&gt;&amp;|^!?=]=  <span class="Comment"><span class="Comment">#</span> compound assign / compare</span></span>
-<span class="String">   | &gt;&gt;&gt;=?             <span class="Comment"><span class="Comment">#</span> zero-fill right shift</span></span>
-<span class="String">   | ([-+:])\1         <span class="Comment"><span class="Comment">#</span> doubles</span></span>
-<span class="String">   | ([&amp;|&lt;&gt;])\2=?      <span class="Comment"><span class="Comment">#</span> logic / shift</span></span>
-<span class="String">   | \?\.              <span class="Comment"><span class="Comment">#</span> soak access</span></span>
-<span class="String">   | \.{2,3}           <span class="Comment"><span class="Comment">#</span> range or splat</span></span>
-<span class="String">) ///</span>
+    <div class='code'><pre><code>OPERATOR = <span class="regexp">/// ^ (
+  ?: [-=]&gt;             <span class="comment"># function</span>
+   | [-+*/%&lt;&gt;&amp;|^!?=]=  <span class="comment"># compound assign / compare</span>
+   | &gt;&gt;&gt;=?             <span class="comment"># zero-fill right shift</span>
+   | ([-+:])\1         <span class="comment"># doubles</span>
+   | ([&amp;|&lt;&gt;])\2=?      <span class="comment"># logic / shift</span>
+   | \?\.              <span class="comment"># soak access</span>
+   | \.{2,3}           <span class="comment"># range or splat</span>
+) ///</span>
 
 
-</pre><pre class="idle"><span class="Storage">var</span> OPERATOR;
+</code></pre><pre><code><span class="reserved">var</span> OPERATOR;
 
-OPERATOR <span class="Keyword">=</span><span class="String"> <span class="String">/</span>^(?:[-=]&gt;|[-+*<span class="UserDefinedConstant">\/</span>%&lt;&gt;&amp;|^!?=]=|&gt;&gt;&gt;=?|([-+:])<span class="UserDefinedConstant">\1</span>|([&amp;|&lt;&gt;])<span class="UserDefinedConstant">\2</span>=?|<span class="UserDefinedConstant">\?</span><span class="UserDefinedConstant">\.</span>|<span class="UserDefinedConstant">\.</span>{2,3})<span class="String">/</span></span>;
-</pre><script>window.example40 = "OPERATOR = /// ^ (\n  ?: [-=]>             # function\n   | [-+*/%<>&|^!?=]=  # compound assign / compare\n   | >>>=?             # zero-fill right shift\n   | ([-+:])\\1         # doubles\n   | ([&|<>])\\2=?      # logic / shift\n   | \\?\\.              # soak access\n   | \\.{2,3}           # range or splat\n) ///\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example40);'>load</div><br class='clear' /></div>
+OPERATOR = <span class="regexp">/^(?:[-=]&gt;|[-+*\/%&lt;&gt;&amp;|^!?=]=|&gt;&gt;&gt;=?|([-+:])\1|([&amp;|&lt;&gt;])\2=?|\?\.|\.{2,3})/</span>;
+</code></pre><script>window.example40 = "OPERATOR = /// ^ (\n  ?: [-=]>             # function\n   | [-+*/%<>&|^!?=]=  # compound assign / compare\n   | >>>=?             # zero-fill right shift\n   | ([-+:])\\1         # doubles\n   | ([&|<>])\\2=?      # logic / shift\n   | \\?\\.              # soak access\n   | \\.{2,3}           # range or splat\n) ///\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example40);'>load</div><div class='minibutton ok' onclick='javascript: var OPERATOR;
+
+OPERATOR = /^(?:[-=]>|[-+*\/%<>&|^!?=]=|>>>=?|([-+:])\1|([&|<>])\2=?|\?\.|\.{2,3})/;
+;alert(false);'>run: false</div><br class='clear' /></div>
 
 
     <h2>
@@ -2149,29 +2289,41 @@ OPERATOR <span class="Keyword">=</span><span class="String"> <span class="String
       be made available in the <tt>options</tt> object. Here's a task that uses
       the Node.js API to rebuild CoffeeScript's parser:
     </p>
-    <div class='code'><pre class="idle">fs <span class="Keyword">=</span> require <span class="String"><span class="String">'</span>fs<span class="String">'</span></span>
+    <div class='code'><pre><code>fs = require <span class="string">'fs'</span>
 
-option <span class="String"><span class="String">'</span>-o<span class="String">'</span></span>, <span class="String"><span class="String">'</span>--output [DIR]<span class="String">'</span></span>, <span class="String"><span class="String">'</span>directory for compiled code<span class="String">'</span></span>
+option <span class="string">'-o'</span>, <span class="string">'--output [DIR]'</span>, <span class="string">'directory for compiled code'</span>
 
-task <span class="String"><span class="String">'</span>build:parser<span class="String">'</span></span>, <span class="String"><span class="String">'</span>rebuild the Jison parser<span class="String">'</span></span>, <span class="FunctionArgument">(options)</span> <span class="Storage">-&gt;</span>
-  require <span class="String"><span class="String">'</span>jison<span class="String">'</span></span>
-  code <span class="Keyword">=</span> require(<span class="String"><span class="String">'</span>./lib/grammar<span class="String">'</span></span>).parser.generate()
-  dir  <span class="Keyword">=</span> options.output <span class="Keyword">or</span> <span class="String"><span class="String">'</span>lib<span class="String">'</span></span>
-  fs.writeFile <span class="String"><span class="String">&quot;</span><span class="String"><span class="String">#{</span>dir<span class="String">}</span></span>/parser.js<span class="String">&quot;</span></span>, code
-</pre><pre class="idle"><span class="Storage">var</span> fs;
+task <span class="string">'build:parser'</span>, <span class="string">'rebuild the Jison parser'</span>, (options) -&gt;
+  require <span class="string">'jison'</span>
+  code = require(<span class="string">'./lib/grammar'</span>).parser.generate()
+  dir  = options.output <span class="keyword">or</span> <span class="string">'lib'</span>
+  fs.writeFile <span class="string">"<span class="subst">#{dir}</span>/parser.js"</span>, code</code></pre><pre><code><span class="reserved">var</span> fs;
 
-fs <span class="Keyword">=</span> require(<span class="String"><span class="String">'</span>fs<span class="String">'</span></span>);
+fs = require(<span class="string">'fs'</span>);
 
-option(<span class="String"><span class="String">'</span>-o<span class="String">'</span></span>, <span class="String"><span class="String">'</span>--output [DIR]<span class="String">'</span></span>, <span class="String"><span class="String">'</span>directory for compiled code<span class="String">'</span></span>);
+option(<span class="string">'-o'</span>, <span class="string">'--output [DIR]'</span>, <span class="string">'directory for compiled code'</span>);
 
-task(<span class="String"><span class="String">'</span>build:parser<span class="String">'</span></span>, <span class="String"><span class="String">'</span>rebuild the Jison parser<span class="String">'</span></span>, <span class="Storage">function</span>(options) {
-  <span class="Storage">var</span> code, dir;
-  require(<span class="String"><span class="String">'</span>jison<span class="String">'</span></span>);
-  code <span class="Keyword">=</span> require(<span class="String"><span class="String">'</span>./lib/grammar<span class="String">'</span></span>).parser.generate();
-  dir <span class="Keyword">=</span> options.output <span class="Keyword">||</span> <span class="String"><span class="String">'</span>lib<span class="String">'</span></span>;
-  <span class="Keyword">return</span> fs.writeFile(<span class="String"><span class="String">&quot;</span><span class="String">&quot;</span></span> <span class="Keyword">+</span> dir <span class="Keyword">+</span> <span class="String"><span class="String">&quot;</span>/parser.js<span class="String">&quot;</span></span>, code);
+task(<span class="string">'build:parser'</span>, <span class="string">'rebuild the Jison parser'</span>, <span class="reserved">function</span>(options) {
+  <span class="reserved">var</span> code, dir;
+  require(<span class="string">'jison'</span>);
+  code = require(<span class="string">'./lib/grammar'</span>).parser.generate();
+  dir = options.output || <span class="string">'lib'</span>;
+  <span class="keyword">return</span> fs.writeFile(<span class="string">""</span> + dir + <span class="string">"/parser.js"</span>, code);
 });
-</pre><script>window.example41 = "fs = require 'fs'\n\noption '-o', '--output [DIR]', 'directory for compiled code'\n\ntask 'build:parser', 'rebuild the Jison parser', (options) ->\n  require 'jison'\n  code = require('./lib/grammar').parser.generate()\n  dir  = options.output or 'lib'\n  fs.writeFile \"#{dir}/parser.js\", code"</script><div class='minibutton load' onclick='javascript: loadConsole(example41);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example41 = "fs = require 'fs'\n\noption '-o', '--output [DIR]', 'directory for compiled code'\n\ntask 'build:parser', 'rebuild the Jison parser', (options) ->\n  require 'jison'\n  code = require('./lib/grammar').parser.generate()\n  dir  = options.output or 'lib'\n  fs.writeFile \"#{dir}/parser.js\", code"</script><div class='minibutton load' onclick='javascript: loadConsole(example41);'>load</div><div class='minibutton ok' onclick='javascript: var fs;
+
+fs = require('fs');
+
+option('-o', '--output [DIR]', 'directory for compiled code');
+
+task('build:parser', 'rebuild the Jison parser', function(options) {
+  var code, dir;
+  require('jison');
+  code = require('./lib/grammar').parser.generate();
+  dir = options.output || 'lib';
+  return fs.writeFile("" + dir + "/parser.js", code);
+});
+;alert(false);'>run: false</div><br class='clear' /></div>
     <p>
       If you need to invoke one task before another &mdash; for example, running
       <tt>build</tt> before <tt>test</tt>, you can use the <tt>invoke</tt> function:
@@ -2278,11 +2430,6 @@ task(<span class="String"><span class="String">'</span>build:parser<span class="
         <a href="https://efendibooks.com/minibooks/testing-with-coffeescript">Testing with CoffeeScript</a>
         is a succinct and freely downloadable guide to building testable
         applications with CoffeeScript and Jasmine.
-      </li>
-      <li>
-        <a href="http://www.packtpub.com/coffeescript-application-development/book">CoffeeScript Application Development</a>
-        is a new book from Packt Publishing that introduces CoffeeScript while 
-        walking through the process of building a demonstration web application.
       </li>
     </ul>
 
