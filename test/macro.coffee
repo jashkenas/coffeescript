@@ -52,6 +52,14 @@ test "macro subst", ->
   eq 96, CALC 6, 2, 5, 3
   eq -70, CALC (macro -> macro.codeToNode -> tst2()+3), -1, 6, 4
 
+  a = "12345"
+  macro LEN (x) -> (macro.codeToNode -> x.length).subst {x}
+  eq a.length, LEN a
+  macro THIRD (x) -> (macro.codeToNode -> x[3]).subst {x}
+  eq "4", THIRD a
+  macro IDX (x) -> (macro.codeToNode -> {12345:321}[x]).subst {x}
+  eq 321, IDX a
+
 test "macro contexts", ->
   macro -> @a = 42
   eq 42, macro -> macro.valToNode @a
