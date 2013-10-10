@@ -17,6 +17,13 @@ test "macro toId", ->
   eq undefined, STRINGIFY {}
   eq undefined, STRINGIFY ->
 
+test "macro in switch", ->
+  jsonEq [1], switch STRINGIFY x
+    when "x"
+      TO_ARRAY 1
+    when STRINGIFY z
+      2
+
 test "macro ast construction", ->
   macro -> @i18nDict = waterBottles: "%1 bottle[s] of water"
   injectAndPluralize = (msg,arg) -> msg.replace("%1",arg).replace(/[\[\]]/g,'') # stub
