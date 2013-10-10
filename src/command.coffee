@@ -77,8 +77,30 @@ exports.run = ->
   literals = if opts.run then sources.splice 1 else []
   process.argv = process.argv[0..1].concat literals
   process.argv[0] = 'coffee'
-  for source in sources
-    compilePath source, yes, path.normalize source
+  if opts.print
+    queue = []
+    # XXX: Redefine printLine (called by compileScript) so nothing is
+    # written to stdout until all files have been compiled successfully.
+    originalPrintLine = printLine
+    printLine = (line) -> queue.push line
+    for source in sources
+      try
+        code = fs.readFileSync source
+      catch err then switch err.code
+        when 'ENOENT'
+          printWarn "File not found: #{source}"
+          process.exit 1
+        when 'EISDIR'
+          printWarn 'Directory enumeration would yield nondeterministic --print output'
+          process.exit 1
+        else
+          throw err
+      compileScript source, code.toString(), path.normalize source
+    printLine = originalPrintLine
+    printLine line for line in queue
+  else
+    for source in sources
+      compilePath source, yes, path.normalize source
 
 # Compile a path, which could be a script or a directory. If a directory
 # is passed, recursively compile all '.coffee', '.litcoffee', and '.coffee.md'
