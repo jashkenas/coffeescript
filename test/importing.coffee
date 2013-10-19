@@ -32,3 +32,7 @@ unless window? or testingBrowser?
     # Leading space intentional to check for index.coffee.md
     for module in ' .import.coffee.md import.coffee.md import.litcoffee import.extension.coffee.md'.split ' '
       ok require("./importing/#{module}").value?() is magicVal, module
+
+  test "importing a different version of coffee-script does not overwrite the require.extensions that have already been set", ->
+    require("./importing/dependency_with_coffeescript.js")
+    ok typeof require.extensions['.coffee'] is 'function'
