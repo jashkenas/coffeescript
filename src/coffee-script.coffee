@@ -200,6 +200,18 @@ if require.extensions
     Module._extensions[extension](this, filename)
     @loaded = true
 
+  # Another evil patch:
+  # If we're attempting to load the coffee-script module again, just return
+  # the coffee-script that already exists. (Otherwise, we run the risk of
+  # overwriting the .coffee extensions with an older version of coffee-script
+  # if a dependency uses them.)
+  trueModule_load = Module._load
+  Module._load = (request) ->
+    if request is 'coffee-script'
+      exports
+    else
+      trueModule_load.apply(@, arguments)
+
 # If we're on Node, patch `child_process.fork` so that Coffee scripts are able
 # to fork both CoffeeScript files, and JavaScript files, directly.
 if child_process
