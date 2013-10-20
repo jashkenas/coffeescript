@@ -26,10 +26,9 @@ class exports.Rewriter
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (@tokens) ->
     @removeLeadingNewlines()
-    @removeMidExpressionNewlines()
     @closeOpenCalls()
     @closeOpenIndexes()
-    @addImplicitIndentation()
+    @normalizeLines()
     @tagPostfixConditionals()
     @addImplicitBracesAndParens()
     @addLocationDataToGeneratedTokens()
@@ -64,14 +63,6 @@ class exports.Rewriter
   removeLeadingNewlines: ->
     break for [tag], i in @tokens when tag isnt 'TERMINATOR'
     @tokens.splice 0, i if i
-
-  # Some blocks occur in the middle of expressions -- when we're expecting
-  # this, remove their trailing newlines.
-  removeMidExpressionNewlines: ->
-    @scanTokens (token, i, tokens) ->
-      return 1 unless token[0] is 'TERMINATOR' and @tag(i + 1) in EXPRESSION_CLOSE
-      tokens.splice i, 1
-      0
 
   # The lexer has tagged the opening parenthesis of a method call. Match it with
   # its paired close. We have the mis-nested outdent case included here for
@@ -355,13 +346,15 @@ class exports.Rewriter
 
   # Because our grammar is LALR(1), it can't handle some single-line
   # expressions that lack ending delimiters. The **Rewriter** adds the implicit
-  # blocks, so it doesn't need to. ')' can close a single-line block,
-  # but we need to make sure it's balanced.
-  addImplicitIndentation: ->
+  # blocks, so it doesn't need to. To keep the grammar clean and tidy, trailing
+  # newlines within expressions are removed and the indentation tokens of empty
+  # blocks are added.
+  normalizeLines: ->
     starter = indent = outdent = null
 
     condition = (token, i) ->
       token[1] isnt ';' and token[0] in SINGLE_CLOSERS and
+      not (token[0] is 'TERMINATOR' and @tag(i + 1) in EXPRESSION_CLOSE) and
       not (token[0] is 'ELSE' and starter isnt 'THEN') and
       not (token[0] in ['CATCH', 'FINALLY'] and starter in ['->', '=>'])
 
@@ -370,12 +363,13 @@ class exports.Rewriter
 
     @scanTokens (token, i, tokens) ->
       [tag] = token
-      if tag is 'TERMINATOR' and @tag(i + 1) is 'THEN'
-        tokens.splice i, 1
-        return 0
-      if tag is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
-        tokens.splice i, 0, @indentation()...
-        return 2
+      if tag is 'TERMINATOR'
+        if @tag(i + 1) is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
+          tokens.splice i, 1, @indentation()...
+          return 1
+        if @tag(i + 1) in EXPRESSION_CLOSE
+          tokens.splice i, 1
+          return 0
       if tag is 'CATCH'
         for j in [1..2] when @tag(i + j) in ['OUTDENT', 'TERMINATOR', 'FINALLY']
           tokens.splice i + j, 0, @indentation()...
@@ -452,7 +446,7 @@ for [left, rite] in BALANCED_PAIRS
   EXPRESSION_END  .push INVERSES[left] = rite
 
 # Tokens that indicate the close of a clause of an expression.
-EXPRESSION_CLOSE = ['CATCH', 'WHEN', 'ELSE', 'FINALLY'].concat EXPRESSION_END
+EXPRESSION_CLOSE = ['CATCH', 'THEN', 'ELSE', 'FINALLY'].concat EXPRESSION_END
 
 # Tokens that, if followed by an `IMPLICIT_CALL`, indicate a function invocation.
 IMPLICIT_FUNC    = ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@', 'THIS']

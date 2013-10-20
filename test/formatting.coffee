@@ -151,3 +151,12 @@ test "#2981: Enforce initial indentation", ->
     ok no
   catch e
     eq 'missing indentation', e.message
+
+test "'single-line' expression containing multiple lines", ->
+  doesNotThrow -> CoffeeScript.compile """
+    (a, b) -> if a
+      -a
+    else if b
+    then -b
+    else null
+  """
