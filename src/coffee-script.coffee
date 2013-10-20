@@ -6,7 +6,6 @@
 fs            = require 'fs'
 vm            = require 'vm'
 path          = require 'path'
-child_process = require 'child_process'
 {Lexer}       = require './lexer'
 {parser}      = require './parser'
 helpers       = require './helpers'
@@ -15,7 +14,7 @@ SourceMap     = require './sourcemap'
 # The current CoffeeScript version number.
 exports.VERSION = '1.6.3'
 
-fileExtensions = ['.coffee', '.litcoffee', '.coffee.md']
+exports.FILE_EXTENSIONS = ['.coffee', '.litcoffee', '.coffee.md']
 
 # Expose helpers for testing.
 exports.helpers = helpers
@@ -152,7 +151,7 @@ exports.eval = (code, options = {}) ->
   else
     vm.runInContext js, sandbox
 
-compileFile = (filename, sourceMap) ->
+exports._compileFile = (filename, sourceMap = no) ->
   raw = fs.readFileSync filename, 'utf8'
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
 
@@ -165,53 +164,6 @@ compileFile = (filename, sourceMap) ->
     throw helpers.updateSyntaxError err, stripped, filename
 
   answer
-
-# Load and run a CoffeeScript file for Node, stripping any `BOM`s.
-loadFile = (module, filename) ->
-  answer = compileFile filename, false
-  module._compile answer, filename
-
-# If the installed version of Node supports `require.extensions`, register
-# CoffeeScript as an extension.
-if require.extensions
-  for ext in fileExtensions
-    require.extensions[ext] = loadFile
-
-  # Patch Node's module loader to be able to handle mult-dot extensions.
-  # This is a horrible thing that should not be required. Perhaps, one day,
-  # when a truly benevolent dictator comes to rule over the Republik of Node,
-  # it won't be.
-  Module = require 'module'
-
-  findExtension = (filename) ->
-    extensions = path.basename(filename).split '.'
-    # Remove the initial dot from dotfiles.
-    extensions.shift() if extensions[0] is ''
-    # Start with the longest possible extension and work our way shortwards.
-    while extensions.shift()
-      curExtension = '.' + extensions.join '.'
-      return curExtension if Module._extensions[curExtension]
-    '.js'
-
-  Module::load = (filename) ->
-    @filename = filename
-    @paths = Module._nodeModulePaths path.dirname filename
-    extension = findExtension filename
-    Module._extensions[extension](this, filename)
-    @loaded = true
-
-# If we're on Node, patch `child_process.fork` so that Coffee scripts are able
-# to fork both CoffeeScript files, and JavaScript files, directly.
-if child_process
-  {fork} = child_process
-  binary = require.resolve '../../bin/coffee'
-  child_process.fork = (path, args = [], options = {}) ->
-    execPath = if helpers.isCoffee(path) then binary else null
-    if not Array.isArray args
-      args = []
-      options = args or {}
-    options.execPath or= execPath
-    fork path, args, options
 
 # Instantiate a Lexer for our use here.
 lexer = new Lexer
@@ -305,8 +257,8 @@ sourceMaps = {}
 # Generates the source map for a coffee file and stores it in the local cache variable.
 getSourceMap = (filename) ->
   return sourceMaps[filename] if sourceMaps[filename]
-  return unless path?.extname(filename) in fileExtensions
-  answer = compileFile filename, true
+  return unless path?.extname(filename) in exports.FILE_EXTENSIONS
+  answer = exports._compileFile filename, true
   sourceMaps[filename] = answer.sourceMap
 
 # Based on [michaelficarra/CoffeeScriptRedux](http://goo.gl/ZTx1p)
