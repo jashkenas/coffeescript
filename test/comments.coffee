@@ -211,3 +211,191 @@ test "#2916: block comment before implicit call with implicit object", ->
   ### ###
   fn
     a: yes
+
+test "#3132: Format single-line block comment nicely", ->
+  input = """
+  ### Single-line block comment without additional space here => ###"""
+
+  result = """
+
+  /* Single-line block comment without additional space here => */
+
+
+  """
+  eq CoffeeScript.compile(input, bare: on), result
+
+test "#3132: Format multi-line block comment nicely", ->
+  input = """
+  ###
+  # Multi-line
+  # block
+  # comment
+  ###"""
+
+  result = """
+
+  /*
+   * Multi-line
+   * block
+   * comment
+   */
+
+
+  """
+  eq CoffeeScript.compile(input, bare: on), result
+
+test "#3132: Format simple block comment nicely", ->
+  input = """
+  ###
+  No
+  Preceding hash
+  ###"""
+
+  result = """
+
+  /*
+  No
+  Preceding hash
+   */
+
+
+  """
+
+  eq CoffeeScript.compile(input, bare: on), result
+
+test "#3132: Format indented block-comment nicely", ->
+  input = """
+  fn = () ->
+    ###
+    # Indented
+    Multiline
+    ###
+    1"""
+
+  result = """
+  var fn;
+
+  fn = function() {
+
+    /*
+     * Indented
+    Multiline
+     */
+    return 1;
+  };
+
+  """
+  eq CoffeeScript.compile(input, bare: on), result
+
+# Although adequately working, block comment-placement is not yet perfect.
+# (Considering a case where multiple variables have been declared …)
+test "#3132: Format jsdoc-style block-comment nicely", ->
+  input = """
+  ###*
+  # Multiline for jsdoc-"@doctags"
+  # 
+  # @type {Function}
+  ###
+  fn = () -> 1
+  """
+
+  result = """
+  
+  /**
+   * Multiline for jsdoc-"@doctags"
+   * 
+   * @type {Function}
+   */
+  var fn;
+  
+  fn = function() {
+    return 1;
+  };
+  
+  """
+  eq CoffeeScript.compile(input, bare: on), result
+
+# Although adequately working, block comment-placement is not yet perfect.
+# (Considering a case where multiple variables have been declared …)
+test "#3132: Format hand-made (raw) jsdoc-style block-comment nicely", ->
+  input = """
+  ###*
+   * Multiline for jsdoc-"@doctags"
+   * 
+   * @type {Function}
+  ###
+  fn = () -> 1
+  """
+
+  result = """
+  
+  /**
+   * Multiline for jsdoc-"@doctags"
+   * 
+   * @type {Function}
+   */
+  var fn;
+  
+  fn = function() {
+    return 1;
+  };
+  
+  """
+  eq CoffeeScript.compile(input, bare: on), result
+
+# Although adequately working, block comment-placement is not yet perfect.
+# (Considering a case where multiple variables have been declared …)
+test "#3132: Place block-comments nicely", ->
+  input = """
+  ###*
+  # A dummy class definition
+  # 
+  # @class
+  ###
+  class DummyClass
+    
+    ###*
+    # @constructor
+    ###
+    constructor: ->
+  
+    ###*
+    # Singleton reference
+    # 
+    # @type {DummyClass}
+    ###
+    @instance = new DummyClass()
+  
+  """
+
+  result = """
+  
+  /**
+   * A dummy class definition
+   * 
+   * @class
+   */
+  var DummyClass;
+  
+  DummyClass = (function() {
+  
+    /**
+     * @constructor
+     */
+    function DummyClass() {}
+  
+  
+    /**
+     * Singleton reference
+     * 
+     * @type {DummyClass}
+     */
+  
+    DummyClass.instance = new DummyClass();
+  
+    return DummyClass;
+  
+  })();
+  
+  """
+  eq CoffeeScript.compile(input, bare: on), result
