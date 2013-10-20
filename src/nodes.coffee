@@ -1240,8 +1240,12 @@ exports.Assign = class Assign extends Base
     if not left.properties.length and left.base instanceof Literal and
            left.base.value != "this" and not o.scope.check left.base.value
       @variable.error "the variable \"#{left.base.value}\" can't be assigned with #{@context} because it has not been declared before"
-    if "?" in @context then o.isExistentialEquals = true
-    new Op(@context[...-1], left, new Assign(right, @value, '=')).compileToFragments o
+    if "?" in @context
+      o.isExistentialEquals = true
+      new If(new Existence(left), right, type: 'if').addElse(new Assign(right, @value, '=')).compileToFragments o
+    else
+      fragments = new Op(@context[...-1], left, new Assign(right, @value, '=')).compileToFragments o
+      if o.level <= LEVEL_LIST then fragments else @wrapInBraces fragments
 
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
@@ -1652,7 +1656,7 @@ exports.Op = class Op extends Base
 
   # Keep reference to the left expression, unless this an existential assignment
   compileExistence: (o) ->
-    if !o.isExistentialEquals and @first.isComplex()
+    if @first.isComplex()
       ref = new Literal o.scope.freeVariable 'ref'
       fst = new Parens new Assign ref, @first
     else

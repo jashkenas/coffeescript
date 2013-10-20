@@ -81,6 +81,9 @@ test "compound assignment should be careful about caching variables", ->
   eq 5, base.five
   eq 5, count
 
+  eq 5, base().five ?= 6
+  eq 6, count
+
 test "compound assignment with implicit objects", ->
   obj = undefined
   obj ?=
@@ -380,3 +383,9 @@ test "#2613: parens on LHS of destructuring", ->
   a = {}
   [(a).b] = [1, 2, 3]
   eq a.b, 1
+
+test "#2181: conditional assignment as a subexpression", ->
+  a = false
+  false && a or= true
+  eq false, a
+  eq false, not a or= true
