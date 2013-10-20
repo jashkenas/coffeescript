@@ -1381,6 +1381,7 @@ exports.Param = class Param extends Base
       node = new Literal o.scope.freeVariable 'arg'
     node = new Value node
     node = new Splat node if @splat
+    node.updateLocationDataIfMissing @locationData
     @reference = node
 
   isComplex: ->
