@@ -1092,7 +1092,7 @@ exports.Class = class Class extends Base
 
     call  = Closure.wrap @body
 
-    if @parent
+    if @parent and call.args
       @superClass = new Literal o.scope.freeVariable 'super', no
       @body.expressions.unshift new Extends lname, @superClass
       call.args.push @parent
