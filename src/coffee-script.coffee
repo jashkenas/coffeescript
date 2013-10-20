@@ -38,7 +38,8 @@ withPrettyErrors = (fn) ->
 # object, where sourceMap is a sourcemap.coffee#SourceMap object, handy for doing programatic
 # lookups.
 exports.compile = compile = withPrettyErrors (code, options) ->
-  {merge} = helpers
+  {merge, extend} = helpers
+  options = extend {}, options
 
   if options.sourceMap
     map = new SourceMap

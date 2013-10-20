@@ -9,6 +9,11 @@ cantCompile = (code) ->
 test "ensure that carriage returns don't break compilation on Windows", ->
   doesNotThrow -> CoffeeScript.compile 'one\r\ntwo', bare: on
 
+test "#3089 - don't mutate passed in options to compile", ->
+  opts = {}
+  CoffeeScript.compile '1 + 1', opts
+  ok !opts.scope 
+
 test "--bare", ->
   eq -1, CoffeeScript.compile('x = y', bare: on).indexOf 'function'
   ok 'passed' is CoffeeScript.eval '"passed"', bare: on, filename: 'test'
