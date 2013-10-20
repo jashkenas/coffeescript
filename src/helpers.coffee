@@ -122,7 +122,7 @@ exports.baseFileName = (file, stripExt = no, useWinPathSep = no) ->
   pathSep = if useWinPathSep then /\\|\// else /\//
   parts = file.split(pathSep)
   file = parts[parts.length - 1]
-  return file unless stripExt
+  return file unless stripExt and file.indexOf('.') >= 0
   parts = file.split('.')
   parts.pop()
   parts.pop() if parts[parts.length - 1] is 'coffee' and parts.length > 1

@@ -119,7 +119,7 @@ compilePath = (source, topLevel, base) ->
 # Compile a single source script, containing the given code, according to the
 # requested options. If evaluating the script directly sets `__filename`,
 # `__dirname` and `module.filename` to be correct relative to the script's path.
-compileScript = (file, input, base=null) ->
+compileScript = (file, input, base = null) ->
   o = opts
   options = compileOptions file, base
   try
