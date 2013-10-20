@@ -1288,6 +1288,15 @@ exports.Code = class Code extends Base
   # arrow, generates a wrapper that saves the current value of `this` through
   # a closure.
   compileNode: (o) ->
+
+    # Handle bound functions early.
+    if @bound and not @wrapped and not @static
+      @wrapped = yes
+      wrapper = new Code [new Param new Literal '_this'], new Block [this]
+      boundfunc = new Call(wrapper, [new Literal 'this'])
+      boundfunc.updateLocationDataIfMissing @locationData
+      return boundfunc.compileNode(o)
+
     o.scope         = new Scope o.scope, @body, this
     o.scope.shared  = del(o, 'sharedScope')
     o.indent        += TAB
@@ -1327,11 +1336,8 @@ exports.Code = class Code extends Base
       node.error "multiple parameters named '#{name}'" if name in uniqs
       uniqs.push name
     @body.makeReturn() unless wasEmpty or @noReturn
-    if @bound
-      if o.scope.parent.method?.bound
-        @bound = @context = o.scope.parent.method.context
-      else if not @static
-        o.scope.parent.assign '_this', 'this'
+    if @bound and o.scope.parent.method?.bound
+      @bound = @context = o.scope.parent.method.context
     idt   = o.indent
     code  = 'function'
     code  += ' ' + @name if @ctor
