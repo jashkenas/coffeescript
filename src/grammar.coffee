@@ -189,11 +189,13 @@ grammar =
     o 'FuncGlyph Block',                        -> new Code [], $2, $1
   ]
 
-  # CoffeeScript has two different symbols for functions. `->` is for ordinary
-  # functions, and `=>` is for functions bound to the current value of *this*.
+  # CoffeeScript has three different symbols for functions. `->` is for ordinary
+  # functions, `=>` is for functions bound to the current value of *this*, and
+  # `-->` is for functions that return nothing.
   FuncGlyph: [
     o '->',                                     -> 'func'
     o '=>',                                     -> 'boundfunc'
+    o '-->',                                    -> 'nrfunc'
   ]
 
   # An optional, trailing comma.

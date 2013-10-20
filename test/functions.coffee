@@ -225,3 +225,6 @@ test "#1435 Indented property access", ->
             rec.rec()
           .rec()
     1
+
+test "#3209 Non-returning funcitons", ->
+  eq undefined, do --> 'a defined value'
