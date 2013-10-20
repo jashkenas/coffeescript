@@ -226,5 +226,5 @@ test "#1435 Indented property access", ->
           .rec()
     1
 
-test "#3209 Non-returning funcitons", ->
+test "#3209 Non-auto-returning funcitons", ->
   eq undefined, do --> 'a defined value'
