@@ -132,6 +132,7 @@ module.exports =
       process.exit 1
 
     require './extensions'
+    process.argv = ['coffee'].concat process.argv[2..]
     opts = merge replDefaults, opts
     repl = nodeREPL.start opts
     repl.on 'exit', -> repl.outputStream.write '\n'
