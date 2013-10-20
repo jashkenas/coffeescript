@@ -469,16 +469,24 @@ exports.Value = class Value extends Base
   hasProperties: ->
     !!@properties.length
 
+  bareLiteral: (type) ->
+    not @properties.length and @base instanceof type
+
   # Some boolean checks for the benefit of other nodes.
-  isArray        : -> not @properties.length and @base instanceof Arr
+  isArray        : -> @bareLiteral(Arr)
+  isRange        : -> @bareLiteral(Range)
   isComplex      : -> @hasProperties() or @base.isComplex()
   isAssignable   : -> @hasProperties() or @base.isAssignable()
-  isSimpleNumber : -> @base instanceof Literal and SIMPLENUM.test @base.value
-  isString       : -> @base instanceof Literal and IS_STRING.test @base.value
+  isSimpleNumber : -> @bareLiteral(Literal) and SIMPLENUM.test @base.value
+  isString       : -> @bareLiteral(Literal) and IS_STRING.test @base.value
+  isRegex        : -> @bareLiteral(Literal) and IS_REGEX.test @base.value
   isAtomic       : ->
     for node in @properties.concat @base
       return no if node.soak or node instanceof Call
     yes
+
+  isNotCallable  : -> @isSimpleNumber() or @isString() or @isRegex() or
+                      @isArray() or @isRange() or @isSplice() or @isObject()
 
   isStatement : (o)    -> not @properties.length and @base.isStatement o
   assigns     : (name) -> not @properties.length and @base.assigns name
@@ -570,6 +578,8 @@ exports.Call = class Call extends Base
     @isNew    = false
     @isSuper  = variable is 'super'
     @variable = if @isSuper then null else variable
+    if variable instanceof Value and variable.isNotCallable()
+      variable.error "literal is not a function"
 
   children: ['variable', 'args']
 
@@ -1257,7 +1267,8 @@ exports.Assign = class Assign extends Base
     else
       fromDecl = fromRef = '0'
     if to
-      if from?.isSimpleNumber() and to.isSimpleNumber()
+      if from and from instanceof Value and from?.isSimpleNumber() and
+                    to instanceof Value and to.isSimpleNumber()
         to = +to.compile(o) - +fromRef
         to += 1 unless exclusive
       else
@@ -2182,8 +2193,9 @@ METHOD_DEF = ///
   $
 ///
 
-# Is a literal value a string?
+# Is a literal value a string/regex?
 IS_STRING = /^['"]/
+IS_REGEX = /^\//
 
 # Utility Functions
 # -----------------

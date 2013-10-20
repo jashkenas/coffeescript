@@ -9,6 +9,9 @@
 # shared identity function
 id = (_) -> if arguments.length is 1 then _ else [arguments...]
 
+# helper to assert that a string should fail compilation
+cantCompile = (code) ->
+  throws -> CoffeeScript.compile code
 
 test "basic argument passing", ->
 
@@ -649,3 +652,25 @@ test "Loose tokens inside of explicit call lists", ->
   bar = first( first
                one: 1)
   eq bar.one, 1
+
+test "Non-callable literals shouldn't compile", ->
+  cantCompile '1(2)'
+  cantCompile '1 2'
+  cantCompile '/t/(2)'
+  cantCompile '/t/ 2'
+  cantCompile '///t///(2)'
+  cantCompile '///t/// 2'
+  cantCompile "''(2)"
+  cantCompile "'' 2"
+  cantCompile '""(2)'
+  cantCompile '"" 2'
+  cantCompile '""""""(2)'
+  cantCompile '"""""" 2'
+  cantCompile '{}(2)'
+  cantCompile '{} 2'
+  cantCompile '[](2)'
+  cantCompile '[] 2'
+  cantCompile '[2..9] 2'
+  cantCompile '[2..9](2)'
+  cantCompile '[1..10][2..9] 2'
+  cantCompile '[1..10][2..9](2)'
