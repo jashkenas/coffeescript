@@ -131,6 +131,7 @@ module.exports =
       console.warn "Node 0.8.0+ required for CoffeeScript REPL"
       process.exit 1
 
+    require './extensions'
     opts = merge replDefaults, opts
     repl = nodeREPL.start opts
     repl.on 'exit', -> repl.outputStream.write '\n'
