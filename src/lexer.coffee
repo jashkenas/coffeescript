@@ -255,7 +255,7 @@ exports.Lexer = class Lexer
   heregexToken: (match) ->
     [heregex, body, flags] = match
     if 0 > body.indexOf '#{'
-      re = body.replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
+      re = body.replace(HEREGEX_OMIT, '$1$2').replace(/\//g, '\\/')
       if re.match /^\*/ then @error 'regular expressions cannot begin with `*`'
       @token 'REGEX', "/#{ re or '(?:)' }/#{flags}", 0, heregex.length
       return heregex.length
@@ -267,7 +267,7 @@ exports.Lexer = class Lexer
       if tag is 'TOKENS'
         tokens.push value...
       else if tag is 'NEOSTRING'
-        continue unless value = value.replace HEREGEX_OMIT, ''
+        continue unless value = value.replace HEREGEX_OMIT, '$1$2'
         # Convert NEOSTRING into STRING
         value = value.replace /\\/g, '\\\\'
         token[0] = 'STRING'
@@ -806,9 +806,13 @@ REGEX = /// ^
   /) ([imgy]{0,4}) (?!\w)
 ///
 
-HEREGEX      = /// ^ /{3} ([\s\S]+?) /{3} ([imgy]{0,4}) (?!\w) ///
+HEREGEX      = /// ^ /{3} ((?:\\?[\s\S])+?) /{3} ([imgy]{0,4}) (?!\w) ///
 
-HEREGEX_OMIT = /\s+(?:#.*)?/g
+HEREGEX_OMIT = ///
+    ((?:\\\\)+)     # consume (and preserve) an even number of backslashes
+  | \\([^\n\S]|/)   # preserve escaped spaces and "de-escape" slashes
+  | \s+(?:#.*)?     # remove whitespace and comments
+///g
 
 # Token cleaning regexes.
 MULTILINER      = /\n/g
