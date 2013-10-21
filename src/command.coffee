@@ -51,6 +51,7 @@ SWITCHES = [
   ['-t', '--tokens',          'print out the tokens that the lexer/rewriter produce']
   ['-v', '--version',         'display the version number']
   ['-w', '--watch',           'watch scripts for changes and rerun commands']
+  ['-g', '--polling [SPAN]',  'use the state polling watch mode']
 ]
 
 # Top-level objects shared by all the functions.
@@ -207,26 +208,43 @@ watch = (source, base) ->
           rewatch()
 
   try
-    watcher = fs.watch source, compile
+    # If state polling mode is enabled, use it.
+    # Else use the native api.
+    #
+    # This is useful while watching remote directory.
+    # Such as the `fs.watch` won't catch the SMB server's file change event.
+    if opts.polling
+      fs.watchFile source, { interval: parseInt(opts.polling) }, compile
+    else
+      watcher = fs.watch source, compile
   catch e
     watchErr e
 
   rewatch = ->
-    watcher?.close()
-    watcher = fs.watch source, compile
+    if opts.polling
+      fs.unwatchFile source
+      fs.watchFile source, { interval: parseInt(opts.polling) }, compile
+    else
+      watcher?.close()
+      watcher = fs.watch source, compile
 
 
 # Watch a directory of files for new additions.
 watchDir = (source, base) ->
   readdirTimeout = null
   try
-    watcher = fs.watch source, ->
+    compile = ->
       clearTimeout readdirTimeout
       readdirTimeout = wait 25, ->
         fs.readdir source, (err, files) ->
           if err
             throw err unless err.code is 'ENOENT'
-            watcher.close()
+
+            if opts.polling
+              fs.unwatchFile source
+            else
+              watcher.close()
+
             return unwatchDir source, base
           for file in files when not hidden(file) and not notSources[file]
             file = path.join source, file
@@ -234,6 +252,12 @@ watchDir = (source, base) ->
             sources.push file
             sourceCode.push null
             compilePath file, no, base
+
+    if opts.polling
+      fs.watchFile source, { interval: parseInt(opts.polling) }, compile
+    else
+      watcher = fs.watch source, compile
+
   catch e
     throw e unless e.code is 'ENOENT'
 
