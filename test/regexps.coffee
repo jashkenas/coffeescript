@@ -61,3 +61,14 @@ test "empty regular expressions with flags", ->
   a = "" + //i
   fn ""
   eq '/(?:)/i', a
+
+test "#3059: don't remove escaped whitespace", ->
+  eq  /// One\ cannot [\ ] escape \  \destiny. ///.source,
+      /One cannot[ ]escape \destiny./.source
+
+test "#2238: don't escape already escaped slashes", ->
+  eq /// \\\/ \/ ///.source, /\\\/\//.source
+
+test "escaped slashes don't close heregex", ->
+  eq /// \/// ///.source, /\/\/\//.source
+  eq /// \\\////.source, /\\\//.source
