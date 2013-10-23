@@ -72,3 +72,8 @@ test "#2238: don't escape already escaped slashes", ->
 test "escaped slashes don't close heregex", ->
   eq /// \/// ///.source, /\/\/\//.source
   eq /// \\\////.source, /\\\//.source
+
+test "escaped linebreaks", ->
+  eq  /// \n\
+      \
+      ///.source, /\n\n\n/.source
