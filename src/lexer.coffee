@@ -196,7 +196,7 @@ exports.Lexer = class Lexer
         if 0 < string.indexOf '#{', 1
           @interpolateString string[1...-1], strOffset: 1, lexedLength: string.length
         else
-          @token 'STRING', @escapeLines string, 0, string.length
+          @token 'STRING', @escapeLines(string), 0, string.length
       else
         return 0
     if octalEsc = /^(?:\\.|[^\\])*\\(?:0[0-7]|[1-7])/.test string
