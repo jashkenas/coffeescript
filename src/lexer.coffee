@@ -255,7 +255,7 @@ exports.Lexer = class Lexer
   heregexToken: (match) ->
     [heregex, body, flags] = match
     if 0 > body.indexOf '#{'
-      re = body.replace(HEREGEX_OMIT, '$1$2').replace(/\//g, '\\/')
+      re = @escapeLines body.replace(HEREGEX_OMIT, '$1$2').replace(/\//g, '\\/'), yes
       if re.match /^\*/ then @error 'regular expressions cannot begin with `*`'
       @token 'REGEX', "/#{ re or '(?:)' }/#{flags}", 0, heregex.length
       return heregex.length
@@ -810,7 +810,7 @@ HEREGEX      = /// ^ /{3} ((?:\\?[\s\S])+?) /{3} ([imgy]{0,4}) (?!\w) ///
 
 HEREGEX_OMIT = ///
     ((?:\\\\)+)     # consume (and preserve) an even number of backslashes
-  | \\([^\n\S]|/)   # preserve escaped spaces and "de-escape" slashes
+  | \\(\s|/)        # preserve escaped whitespace and "de-escape" slashes
   | \s+(?:#.*)?     # remove whitespace and comments
 ///g
 
