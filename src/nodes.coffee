@@ -1098,7 +1098,6 @@ exports.Class = class Class extends Base
     @body.spaced = yes
     @body.expressions.unshift @ctor unless @ctor instanceof Code
     @body.expressions.push lname
-    @body.expressions.unshift @directives...
 
     call  = Closure.wrap @body
 
@@ -1108,6 +1107,8 @@ exports.Class = class Class extends Base
       call.args.push @parent
       params = call.variable.params or call.variable.base.params
       params.push new Param @superClass
+
+    @body.expressions.unshift @directives...
 
     klass = new Parens call, yes
     klass = new Assign @variable, klass if @variable
