@@ -213,17 +213,17 @@ watch = (source, base) ->
     #
     # This is useful while watching remote directory.
     # Such as the `fs.watch` won't catch the SMB server's file change event.
-    if opts.polling
-      fs.watchFile source, { interval: parseInt(opts.polling) }, compile
+    if opts['watch-polling']
+      fs.watchFile source, { interval: parseInt(opts['watch-polling']) }, compile
     else
       watcher = fs.watch source, compile
   catch e
     watchErr e
 
   rewatch = ->
-    if opts.polling
+    if opts['watch-polling']
       fs.unwatchFile source
-      fs.watchFile source, { interval: parseInt(opts.polling) }, compile
+      fs.watchFile source, { interval: parseInt(opts['watch-polling']) }, compile
     else
       watcher?.close()
       watcher = fs.watch source, compile
@@ -240,7 +240,7 @@ watchDir = (source, base) ->
           if err
             throw err unless err.code is 'ENOENT'
 
-            if opts.polling
+            if opts['watch-polling']
               fs.unwatchFile source
             else
               watcher.close()
@@ -253,8 +253,8 @@ watchDir = (source, base) ->
             sourceCode.push null
             compilePath file, no, base
 
-    if opts.polling
-      fs.watchFile source, { interval: parseInt(opts.polling) }, compile
+    if opts['watch-polling']
+      fs.watchFile source, { interval: parseInt(opts['watch-polling']) }, compile
     else
       watcher = fs.watch source, compile
 
