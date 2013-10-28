@@ -1061,40 +1061,32 @@ exports.Class = class Class extends Base
 
   # Make sure that a constructor is defined for the class, and properly
   # configured.
-  ensureConstructor: (name, o) ->
-    missing = not @ctor
-    @ctor or= new Code
+  ensureConstructor: (name) ->
+    if not @ctor
+      @ctor = new Code
+      if @externalCtor
+        @ctor.body.push new Literal "#{@externalCtor}.apply(this, arguments)"
+      else if @parent
+        @ctor.body.push new Literal "#{name}.__super__.constructor.apply(this, arguments)"
+      @ctor.body.makeReturn()
+      @body.expressions.unshift @ctor
     @ctor.ctor = @ctor.name = name
     @ctor.klass = null
     @ctor.noReturn = yes
-    if missing
-      superCall = new Literal "#{name}.__super__.constructor.apply(this, arguments)" if @parent
-      superCall = new Literal "#{@externalCtor}.apply(this, arguments)" if @externalCtor
-      if superCall
-        ref = new Literal o.scope.freeVariable 'ref'
-        @ctor.body.unshift new Assign ref, superCall
-      @addBoundFunctions o
-      if superCall
-        @ctor.body.push ref
-        @ctor.body.makeReturn()
-      @body.expressions.unshift @ctor
-    else
-      @addBoundFunctions o
-
 
   # Instead of generating the JavaScript string directly, we build up the
   # equivalent syntax tree and compile that, in pieces. You can see the
   # constructor, property assignments, and inheritance getting built out below.
   compileNode: (o) ->
-    decl  = @determineName()
-    name  = decl or '_Class'
+    name  = @determineName() or '_Class'
     name = "_#{name}" if name.reserved
     lname = new Literal name
 
     @hoistDirectivePrologue()
     @setContext name
     @walkBody name, o
-    @ensureConstructor name, o
+    @ensureConstructor name
+    @addBoundFunctions o
     @body.spaced = yes
     @body.expressions.unshift @ctor unless @ctor instanceof Code
     @body.expressions.push lname
