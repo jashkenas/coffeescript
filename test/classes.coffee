@@ -699,6 +699,15 @@ test "#2052: classes should work in strict mode", ->
   catch e
     ok no
 
+test "directives in class with extends ", ->
+  strictTest = """
+    class extends Object
+      ### comment ###
+      'use strict'
+      do -> eq this, undefined
+  """
+  CoffeeScript.run strictTest, bare: yes
+
 test "#2630: class bodies can't reference arguments", ->
   throws ->
     CoffeeScript.compile('class Test then arguments')
