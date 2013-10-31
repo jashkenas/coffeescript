@@ -800,3 +800,10 @@ test "#2796: ditto, ditto, ditto", ->
 
   new Base
   eq answer, 'right!'
+
+test "#3063: Class bodies cannot contain pure statements", ->
+  throws -> CoffeeScript.compile """
+    class extends S
+      return if S.f
+      @f: => this
+  """

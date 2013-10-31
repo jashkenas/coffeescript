@@ -79,7 +79,17 @@ exports.Base = class Base
     if jumpNode = @jumps()
       jumpNode.error 'cannot use a pure statement in an expression'
     o.sharedScope = yes
-    Closure.wrap(this).compileNode o
+    func = new Code [], Block.wrap [this]
+    args = []
+    if (argumentsNode = @contains isLiteralArguments) or @contains isLiteralThis
+      args = [new Literal 'this']
+      if argumentsNode
+        meth = 'apply'
+        args.push new Literal 'arguments'
+      else
+        meth = 'call'
+      func = new Value func, [new Access new Literal meth]
+    (new Call func, args).compileNode o
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -848,7 +858,7 @@ exports.Range = class Range extends Base
       cond    = "#{@fromVar} <= #{@toVar}"
       body    = "var #{vars}; #{cond} ? #{i} <#{@equals} #{@toVar} : #{i} >#{@equals} #{@toVar}; #{cond} ? #{i}++ : #{i}--"
     post   = "{ #{result}.push(#{i}); }\n#{idt}return #{result};\n#{o.indent}"
-    hasArgs = (node) -> node?.contains (n) -> n instanceof Literal and n.value is 'arguments' and not n.asKey
+    hasArgs = (node) -> node?.contains isLiteralArguments
     args   = ', arguments' if hasArgs(@from) or hasArgs(@to)
     [@makeCode "(function() {#{pre}\n#{idt}for (#{body})#{post}}).apply(this#{args ? ''})"]
 
@@ -1078,9 +1088,16 @@ exports.Class = class Class extends Base
   # equivalent syntax tree and compile that, in pieces. You can see the
   # constructor, property assignments, and inheritance getting built out below.
   compileNode: (o) ->
+    if jumpNode = @body.jumps()
+      jumpNode.error 'Class bodies cannot contain pure statements'
+    if argumentsNode = @body.contains isLiteralArguments
+      argumentsNode.error "Class bodies shouldn't reference arguments"
+
     name  = @determineName() or '_Class'
-    name = "_#{name}" if name.reserved
+    name  = "_#{name}" if name.reserved
     lname = new Literal name
+    func  = new Code [], Block.wrap [@body]
+    args  = []
 
     @hoistDirectivePrologue()
     @setContext name
@@ -1091,18 +1108,15 @@ exports.Class = class Class extends Base
     @body.expressions.unshift @ctor unless @ctor instanceof Code
     @body.expressions.push lname
 
-    call  = Closure.wrap @body
-
-    if @parent and call.args
-      @superClass = new Literal o.scope.freeVariable 'super', no
-      @body.expressions.unshift new Extends lname, @superClass
-      call.args.push @parent
-      params = call.variable.params or call.variable.base.params
-      params.push new Param @superClass
+    if @parent
+      superClass = new Literal o.scope.freeVariable 'super', no
+      @body.expressions.unshift new Extends lname, superClass
+      func.params.push new Param superClass
+      args.push @parent
 
     @body.expressions.unshift @directives...
 
-    klass = new Parens call, yes
+    klass = new Parens new Call func, args
     klass = new Assign @variable, klass if @variable
     klass.compileToFragments o
 
@@ -2080,50 +2094,6 @@ exports.If = class If extends Base
   unfoldSoak: ->
     @soak and this
 
-# Faux-Nodes
-# ----------
-# Faux-nodes are never created by the grammar, but are used during code
-# generation to generate other combinations of nodes.
-
-#### Closure
-
-# A faux-node used to wrap an expressions body in a closure.
-Closure =
-
-  # Wrap the expressions body, unless it contains a pure statement,
-  # in which case, no dice. If the body mentions `this` or `arguments`,
-  # then make sure that the closure wrapper preserves the original values.
-  wrap: (expressions, statement, noReturn) ->
-    return expressions if expressions.jumps()
-    func = new Code [], Block.wrap [expressions]
-    args = []
-    argumentsNode = expressions.contains @isLiteralArguments
-    if argumentsNode and expressions.classBody
-      argumentsNode.error "Class bodies shouldn't reference arguments"
-    if argumentsNode or expressions.contains @isLiteralThis
-      meth = new Literal if argumentsNode then 'apply' else 'call'
-      args = [new Literal 'this']
-      args.push new Literal 'arguments' if argumentsNode
-      func = new Value func, [new Access meth]
-    func.noReturn = noReturn
-    call = new Call func, args
-    if statement then Block.wrap [call] else call
-
-  isLiteralArguments: (node) ->
-    node instanceof Literal and node.value is 'arguments' and not node.asKey
-
-  isLiteralThis: (node) ->
-    (node instanceof Literal and node.value is 'this' and not node.asKey) or
-      (node instanceof Code and node.bound) or
-      (node instanceof Call and node.isSuper)
-
-# Unfold a node's child if soak, then tuck the node under created `If`
-unfoldSoak = (o, parent, name) ->
-  return unless ifn = parent[name].unfoldSoak o
-  parent[name] = ifn.body
-  ifn.body = new Value parent
-  ifn
-
 # Constants
 # ---------
 
@@ -2190,8 +2160,8 @@ METHOD_DEF = ///
 IS_STRING = /^['"]/
 IS_REGEX = /^\//
 
-# Utility Functions
-# -----------------
+# Helper Functions
+# ----------------
 
 # Helper for ensuring that utility functions are assigned at the top level.
 utility = (name) ->
@@ -2212,3 +2182,18 @@ parseNum = (x) ->
     parseInt x, 16
   else
     parseFloat x
+
+isLiteralArguments = (node) ->
+  node instanceof Literal and node.value is 'arguments' and not node.asKey
+
+isLiteralThis = (node) ->
+  (node instanceof Literal and node.value is 'this' and not node.asKey) or
+    (node instanceof Code and node.bound) or
+    (node instanceof Call and node.isSuper)
+
+# Unfold a node's child if soak, then tuck the node under created `If`
+unfoldSoak = (o, parent, name) ->
+  return unless ifn = parent[name].unfoldSoak o
+  parent[name] = ifn.body
+  ifn.body = new Value parent
+  ifn
