@@ -1031,7 +1031,7 @@ exports.Class = class Class extends Base
           if func instanceof Code
             assign = @ctor = func
           else
-            @externalCtor = o.scope.freeVariable 'class'
+            @externalCtor = o.classScope.freeVariable 'class'
             assign = new Assign new Literal(@externalCtor), func
         else
           if assign.variable.this
@@ -1098,6 +1098,7 @@ exports.Class = class Class extends Base
     lname = new Literal name
     func  = new Code [], Block.wrap [@body]
     args  = []
+    o.classScope = func.makeScope o.scope
 
     @hoistDirectivePrologue()
     @setContext name
@@ -1105,11 +1106,10 @@ exports.Class = class Class extends Base
     @ensureConstructor name
     @addBoundFunctions o
     @body.spaced = yes
-    @body.expressions.unshift @ctor unless @ctor instanceof Code
     @body.expressions.push lname
 
     if @parent
-      superClass = new Literal o.scope.freeVariable 'super', no
+      superClass = new Literal o.classScope.freeVariable 'super', no
       @body.expressions.unshift new Extends lname, superClass
       func.params.push new Param superClass
       args.push @parent
@@ -1305,6 +1305,8 @@ exports.Code = class Code extends Base
 
   jumps: NO
 
+  makeScope: (parentScope) -> new Scope parentScope, @body, this
+
   # Compilation creates a new scope unless explicitly asked to share with the
   # outer scope. Handles splat parameters in the parameter list by peeking at
   # the JavaScript `arguments` object. If the function is bound with the `=>`
@@ -1320,7 +1322,7 @@ exports.Code = class Code extends Base
       boundfunc.updateLocationDataIfMissing @locationData
       return boundfunc.compileNode(o)
 
-    o.scope         = new Scope o.scope, @body, this
+    o.scope         = del(o, 'classScope') or @makeScope o.scope
     o.scope.shared  = del(o, 'sharedScope')
     o.indent        += TAB
     delete o.bare
