@@ -1297,7 +1297,6 @@ exports.Code = class Code extends Base
     @params  = params or []
     @body    = body or new Block
     @bound   = tag is 'boundfunc'
-    @context = '_this' if @bound
 
   children: ['params', 'body']
 
@@ -1314,10 +1313,13 @@ exports.Code = class Code extends Base
   # a closure.
   compileNode: (o) ->
 
+    if @bound and o.scope.method?.bound
+      @context = o.scope.method.context
+
     # Handle bound functions early.
-    if @bound and not @wrapped and not @static
-      @wrapped = yes
-      wrapper = new Code [new Param new Literal '_this'], new Block [this]
+    if @bound and not @context
+      @context = '_this'
+      wrapper = new Code [new Param new Literal @context], new Block [this]
       boundfunc = new Call(wrapper, [new Literal 'this'])
       boundfunc.updateLocationDataIfMissing @locationData
       return boundfunc.compileNode(o)
@@ -1361,9 +1363,6 @@ exports.Code = class Code extends Base
       node.error "multiple parameters named '#{name}'" if name in uniqs
       uniqs.push name
     @body.makeReturn() unless wasEmpty or @noReturn
-    if @bound and o.scope.parent.method?.bound
-      @bound = @context = o.scope.parent.method.context
-    idt   = o.indent
     code  = 'function'
     code  += ' ' + @name if @ctor
     code  += '('
