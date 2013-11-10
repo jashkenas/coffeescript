@@ -1276,7 +1276,7 @@ exports.Assign = class Assign extends Base
     if to
       if from instanceof Value and from.isSimpleNumber() and
          to instanceof Value and to.isSimpleNumber()
-        to = +to.compile(o) - +fromRef
+        to = to.compile(o) - fromRef
         to += 1 unless exclusive
       else
         to = to.compile(o, LEVEL_ACCESS) + ' - ' + fromRef
