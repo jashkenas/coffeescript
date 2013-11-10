@@ -58,7 +58,6 @@ opts         = {}
 sources      = []
 sourceCode   = []
 notSources   = {}
-watchers     = {}
 optionParser = null
 
 # Run `coffee` by parsing passed options and determining what action to take.
@@ -89,31 +88,35 @@ exports.run = ->
 # is passed, recursively compile all '.coffee', '.litcoffee', and '.coffee.md'
 # extension source files in it and all subdirectories.
 compilePath = (source, topLevel, base) ->
-  fs.stat source, (err, stats) ->
-    throw err if err and err.code isnt 'ENOENT'
-    if err?.code is 'ENOENT'
+  try
+    stats = fs.statSync source
+  catch err
+    if err.code is 'ENOENT'
       console.error "File not found: #{source}"
       process.exit 1
-    if stats.isDirectory() and path.dirname(source) isnt 'node_modules'
-      watchDir source, base if opts.watch
-      fs.readdir source, (err, files) ->
-        throw err if err and err.code isnt 'ENOENT'
-        return if err?.code is 'ENOENT'
-        index = sources.indexOf source
-        files = files.filter (file) -> not hidden file
-        sources[index..index] = (path.join source, file for file in files)
-        sourceCode[index..index] = files.map -> null
-        files.forEach (file) ->
-          compilePath (path.join source, file), no, base
-    else if topLevel or helpers.isCoffee source
-      watch source, base if opts.watch
-      fs.readFile source, (err, code) ->
-        throw err if err and err.code isnt 'ENOENT'
-        return if err?.code is 'ENOENT'
-        compileScript(source, code.toString(), base)
-    else
-      notSources[source] = yes
-      removeSource source, base
+    throw err
+  if stats.isDirectory() and path.dirname(source) isnt 'node_modules'
+    watchDir source, base if opts.watch
+    try
+      files = fs.readdirSync source
+    catch err
+      if err.code is 'ENOENT' then return else throw err
+    index = sources.indexOf source
+    files = files.filter (file) -> not hidden file
+    sources[index..index] = (path.join source, file for file in files)
+    sourceCode[index..index] = files.map -> null
+    files.forEach (file) ->
+      compilePath (path.join source, file), no, base
+  else if topLevel or helpers.isCoffee source
+    watch source, base if opts.watch
+    try
+      code = fs.readFileSync source
+    catch err
+      if err.code is 'ENOENT' then return else throw err
+    compileScript(source, code.toString(), base)
+  else
+    notSources[source] = yes
+    removeSource source, base
 
 
 # Compile a single source script, containing the given code, according to the
