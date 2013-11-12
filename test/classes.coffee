@@ -816,3 +816,15 @@ test "#2949: super in static method with reserved name", ->
     @static: -> super
 
   eq Bar.static(), 'baz'
+
+test "#3232: super in static methods (not object-assigned)", ->
+  class Foo
+    @baz = -> true
+    @qux = -> true
+
+  class Bar extends Foo
+    @baz = -> super
+    Bar.qux = -> super
+
+  ok Bar.baz()
+  ok Bar.qux()

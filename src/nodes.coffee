@@ -509,6 +509,10 @@ exports.Value = class Value extends Base
   isSplice: ->
     last(@properties) instanceof Slice
 
+  looksStatic: (className) ->
+    @base.value is className and @properties.length and
+      @properties[0].name?.value isnt 'prototype'
+
   # The value can be unwrapped as its inner node, if there are no attached
   # properties.
   unwrap: ->
@@ -1036,8 +1040,6 @@ exports.Class = class Class extends Base
         else
           if assign.variable.this
             func.static = yes
-            if func.bound
-              func.context = name
           else
             assign.variable = new Value(new Literal(name), [(new Access new Literal 'prototype'), new Access base])
             if func instanceof Code and func.bound
@@ -1046,14 +1048,17 @@ exports.Class = class Class extends Base
       assign
     compact exprs
 
-  # Walk the body of the class, looking for prototype properties to be converted.
+  # Walk the body of the class, looking for prototype properties to be converted
+  # and tagging static assignments.
   walkBody: (name, o) ->
     @traverseChildren false, (child) =>
       cont = true
       return false if child instanceof Class
       if child instanceof Block
         for node, i in exps = child.expressions
-          if node instanceof Value and node.isObject(true)
+          if node instanceof Assign and node.variable.looksStatic name
+            node.value.static = yes
+          else if node instanceof Value and node.isObject(true)
             cont = false
             exps[i] = @addProperties node, name, o
         child.expressions = exps = flatten exps
