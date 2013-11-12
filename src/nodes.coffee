@@ -1164,8 +1164,8 @@ exports.Assign = class Assign extends Base
         else
           o.scope.find name
     if @value instanceof Code and match = METHOD_DEF.exec name
-      @value.klass = match[1] if match[1]
-      @value.name  = match[2] ? match[3] ? match[4] ? match[5]
+      @value.klass = match[1] if match[2]
+      @value.name  = match[3] ? match[4] ? match[5]
     val = @value.compileToFragments o, LEVEL_LIST
     return (compiledName.concat @makeCode(": "), val) if @context is 'object'
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
@@ -2141,21 +2141,14 @@ NUMBER    = ///^[+-]?(?:
   \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
 )$///i
 
-METHOD_DEF = ///
-  ^
-    (?:
-      (#{IDENTIFIER_STR})
-      \.prototype
-      (?:
-        \.(#{IDENTIFIER_STR})
-      | \[("(?:[^\\"\r\n]|\\.)*"|'(?:[^\\'\r\n]|\\.)*')\]
-      | \[(0x[\da-fA-F]+ | \d*\.?\d+ (?:[eE][+-]?\d+)?)\]
-      )
-    )
-  |
-    (#{IDENTIFIER_STR})
-  $
-///
+METHOD_DEF = /// ^
+  (#{IDENTIFIER_STR})
+  (\.prototype)?
+  (?: \.(#{IDENTIFIER_STR})
+    | \[("(?:[^\\"\r\n]|\\.)*"|'(?:[^\\'\r\n]|\\.)*')\]
+    | \[(0x[\da-fA-F]+ | \d*\.?\d+ (?:[eE][+-]?\d+)?)\]
+  )
+$ ///
 
 # Is a literal value a string/regex?
 IS_STRING = /^['"]/

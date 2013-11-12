@@ -807,3 +807,12 @@ test "#3063: Class bodies cannot contain pure statements", ->
       return if S.f
       @f: => this
   """
+
+test "#2949: super in static method with reserved name", ->
+  class Foo
+    @static: -> 'baz'
+
+  class Bar extends Foo
+    @static: -> super
+
+  eq Bar.static(), 'baz'
