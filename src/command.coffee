@@ -73,8 +73,6 @@ exports.run = ->
   return usage()                                if opts.help
   return version()                              if opts.version
   return require('./repl').start(replCliOpts)   if opts.interactive
-  if opts.watch and not fs.watch
-    return printWarn "The --watch feature depends on Node v0.6.0+. You are running #{process.version}."
   return compileStdio()                         if opts.stdio
   return compileScript null, sources[0]         if opts.eval
   return require('./repl').start(replCliOpts)   unless sources.length
