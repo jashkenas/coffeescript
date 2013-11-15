@@ -442,3 +442,15 @@ test "#2555, strange function if bodies", ->
 test "#1057: `catch` or `finally` in single-line functions", ->
   ok do -> try throw 'up' catch then yes
   ok do -> try yes finally 'nothing'
+
+test "#2367: super in for-loop", ->
+  class Foo
+    sum: 0
+    add: (val) -> @sum += val
+
+  class Bar extends Foo
+    add: (vals...) ->
+      super val for val in vals
+      @sum
+
+  eq 10, (new Bar).add 2, 3, 5
