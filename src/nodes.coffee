@@ -456,7 +456,6 @@ exports.Return = class Return extends Base
     answer.push @makeCode ";"
     return answer
 
-
 #### Value
 
 # A value, variable or literal or parenthesized, indexed or dotted into,
@@ -1302,6 +1301,9 @@ exports.Code = class Code extends Base
     @params  = params or []
     @body    = body or new Block
     @bound   = tag is 'boundfunc'
+    @isGenerator = false
+    @body.traverseChildren false, (child) =>
+      @isGenerator = true if child.operator is 'yield'
 
   children: ['params', 'body']
 
@@ -1369,6 +1371,7 @@ exports.Code = class Code extends Base
       uniqs.push name
     @body.makeReturn() unless wasEmpty or @noReturn
     code  = 'function'
+    code += '*' if @isGenerator
     code  += ' ' + @name if @ctor
     code  += '('
     answer = [@makeCode(code)]
