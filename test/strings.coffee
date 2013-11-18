@@ -18,6 +18,38 @@ eq "four five", 'four
 
  five'
 
+test "#3229, multine strings", ->
+  eq 'one
+      two', 'one two'
+  eq "one
+      two", 'one two'
+  eq 'a \
+      b\
+      c  \
+      d', 'a bc  d'
+  eq "a \
+      b\
+      c  \
+      d", 'a bc  d'
+  eq 'one
+
+        two', 'one two'
+  eq "one
+
+        two", 'one two'
+  eq '
+        a
+        b
+    ', 'a b'
+  eq "
+        a
+        b
+    ", 'a b'
+  eq "interpolation #{1}
+      follows #{2}  \
+      too #{3}\
+      !", 'interpolation 1 follows 2  too 3!'
+
 #647
 eq "''Hello, World\\''", '''
 '\'Hello, World\\\''
@@ -91,10 +123,9 @@ ok a is "one\ntwo\n"
 eq ''' line 0
   should not be relevant
     to the indent level
-''', '
- line 0\n
-should not be relevant\n
-  to the indent level
+''', ' line 0\n\
+      should not be relevant\n  \
+      to the indent level
 '
 
 eq ''' '\\\' ''', " '\\' "
