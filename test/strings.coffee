@@ -131,10 +131,7 @@ ok a is "one\ntwo\n"
 eq ''' line 0
   should not be relevant
     to the indent level
-''', ' line 0\n\
-      should not be relevant\n  \
-      to the indent level
-'
+''', ' line 0\nshould not be relevant\n  to the indent level'
 
 eq ''' '\\\' ''', " '\\' "
 eq """ "\\\" """, ' "\\" '
