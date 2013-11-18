@@ -49,6 +49,14 @@ test "#3229, multine strings", ->
       follows #{2}  \
       too #{3}\
       !", 'interpolation 1 follows 2  too 3!'
+  eq "a #{
+    'string ' + "inside
+                 interpolation"
+    }", "a string inside interpolation"
+  eq '
+    indentation
+      doesn\'t
+  matter', 'indentation doesn\'t matter'
 
 #647
 eq "''Hello, World\\''", '''
