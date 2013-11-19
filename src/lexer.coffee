@@ -694,7 +694,9 @@ exports.Lexer = class Lexer
     if heredoc
       str.replace MULTILINER, '\\n'
     else
-      str.replace(/\\\n\s*/g, '').replace(/\s*\n\s*/g, ' ')
+      str.replace(/((^|[^\\])\\\\)\n/g, '$1 \\\n') #escaped backslash
+         .replace(/\\\s*\n\s*/g, '') # backslash at EOL
+         .replace(/\s*\n\s*/g, ' ')
 
   # Constructs a string token by escaping quotes and newlines.
   makeString: (body, quote, heredoc) ->
