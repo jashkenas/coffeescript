@@ -82,8 +82,12 @@ test "#3229, multiline strings", ->
       next line', 'escaped backslash before slash\\  next line'
   eq 'triple backslash\\\
       next line', 'triple backslash\\next line'
+  eq 'several escaped backslashes\\\\\\
+      ok', 'several escaped backslashes\\\\\\ ok'
+  eq 'several escaped backslashes\\\\\\\
+      ok', 'several escaped backslashes\\\\\\ok'
 
-  # Use backslashes at beginning of a line to specify whitespace between lines.
+  # Backslashes at beginning of lines.
   eq 'first line
       \   backslash at BOL', 'first line \   backslash at BOL'
   eq 'first line\
