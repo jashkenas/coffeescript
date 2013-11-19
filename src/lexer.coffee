@@ -190,13 +190,13 @@ exports.Lexer = class Lexer
       when "'"
         return 0 unless match = SIMPLESTR.exec @chunk
         string = match[0]
-        @token 'STRING', string.replace(MULTILINER, '\\\n'), 0, string.length
+        @token 'STRING', @removeNewlines(string), 0, string.length
       when '"'
         return 0 unless string = @balancedString @chunk, '"'
         if 0 < string.indexOf '#{', 1
           @interpolateString string[1...-1], strOffset: 1, lexedLength: string.length
         else
-          @token 'STRING', @escapeLines(string), 0, string.length
+          @token 'STRING', @removeNewlines(string), 0, string.length
       else
         return 0
     if octalEsc = /^(?:\\.|[^\\])*\\(?:0[0-7]|[1-7])/.test string
@@ -684,15 +684,25 @@ exports.Lexer = class Lexer
     @tag() in ['\\', '.', '?.', '?::', 'UNARY', 'MATH', '+', '-', 'SHIFT', 'RELATION'
                'COMPARE', 'LOGIC', 'THROW', 'EXTENDS']
 
+  # Remove newlines from beginning and end of string literals.
+  # `str` includes quotes.
+  removeNewlines: (str) ->
+    @escapeLines str.replace(/^(.)\s*\n\s*/, '$1').replace(/\s*\n\s*(.)$/, '$1')
+
   # Converts newlines for string literals.
   escapeLines: (str, heredoc) ->
-    str.replace MULTILINER, if heredoc then '\\n' else ''
+    if heredoc
+      str.replace MULTILINER, '\\n'
+    else
+      str.replace(/((^|[^\\])\\\\)\n/g, '$1 \\\n') #escaped backslash
+         .replace(/\\\s*\n\s*/g, '') # backslash at EOL
+         .replace(/\s*\n\s*/g, ' ')
 
   # Constructs a string token by escaping quotes and newlines.
   makeString: (body, quote, heredoc) ->
     return quote + quote unless body
     body = body.replace /\\([\s\S])/g, (match, contents) ->
-      if contents in ['\n', quote] then contents else match
+      if contents is quote or heredoc and contents is '\n' then contents else match
     body = body.replace /// #{quote} ///g, '\\$&'
     quote + @escapeLines(body, heredoc) + quote
 
@@ -787,7 +797,7 @@ CODE       = /^[-=]>/
 
 MULTI_DENT = /^(?:\n[^\n\S]*)+/
 
-SIMPLESTR  = /^'[^\\']*(?:\\.[^\\']*)*'/
+SIMPLESTR  = /^'[^\\']*(?:\\[\s\S][^\\']*)*'/
 
 JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 

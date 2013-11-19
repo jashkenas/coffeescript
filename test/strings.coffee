@@ -18,6 +18,85 @@ eq "four five", 'four
 
  five'
 
+test "#3229, multiline strings", ->
+  # Separate lines by default by a single space in literal strings.
+  eq 'one
+      two', 'one two'
+  eq "one
+      two", 'one two'
+  eq '
+        a
+        b
+    ', 'a b'
+  eq "
+        a
+        b
+    ", 'a b'
+  eq 'one
+
+        two', 'one two'
+  eq "one
+
+        two", 'one two'
+  eq '
+    indentation
+      doesn\'t
+  matter', 'indentation doesn\'t matter'
+
+  # Use backslashes at the end of a line to specify whitespace between lines.
+  eq 'a \
+      b\
+      c  \
+      d', 'a bc  d'
+  eq "a \
+      b\
+      c  \
+      d", 'a bc  d'
+  eq 'ignore  \  
+      trailing whitespace', 'ignore  trailing whitespace'
+
+  # Backslash at the beginning of a literal string.
+  eq '\
+      ok', 'ok'
+  eq '  \
+      ok', '  ok'
+
+  # Same behavior in interpolated strings.
+  eq "interpolation #{1}
+      follows #{2}  \
+      too #{3}\
+      !", 'interpolation 1 follows 2  too 3!'
+  eq "a #{
+    'string ' + "inside
+                 interpolation"
+    }", "a string inside interpolation"
+
+  # Handle escaped backslashes correctly.
+  eq 'escaped backslash at EOL\\
+      next line', 'escaped backslash at EOL\\ next line'
+  eq '\\
+      next line', '\\ next line'
+  eq "#{1}\\
+      after interpolation", '1\\ after interpolation'
+  eq 'escaped backslash before slash\\  \
+      next line', 'escaped backslash before slash\\  next line'
+  eq 'triple backslash\\\
+      next line', 'triple backslash\\next line'
+
+  # Use backslashes at beginning of a line to specify whitespace between lines.
+  eq 'first line
+      \   backslash at BOL', 'first line \   backslash at BOL'
+  eq 'first line\
+      \   backslash at BOL', 'first line\   backslash at BOL'
+
+  # Edge case.
+  eq 'lone
+
+        \
+
+        backslash', 'lone backslash'
+
+
 #647
 eq "''Hello, World\\''", '''
 '\'Hello, World\\\''
@@ -91,11 +170,7 @@ ok a is "one\ntwo\n"
 eq ''' line 0
   should not be relevant
     to the indent level
-''', '
- line 0\n
-should not be relevant\n
-  to the indent level
-'
+''', ' line 0\nshould not be relevant\n  to the indent level'
 
 eq ''' '\\\' ''', " '\\' "
 eq """ "\\\" """, ' "\\" '
