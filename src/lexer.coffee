@@ -694,7 +694,7 @@ exports.Lexer = class Lexer
     if heredoc
       str.replace MULTILINER, '\\n'
     else
-      str.replace(/((^|[^\\])\\\\)\n/g, '$1 \\\n') #escaped backslash
+      str.replace(/((^|[^\\])(\\\\)+)\n/g, '$1 \\\n') # escaped backslashes
          .replace(/\\\s*\n\s*/g, '') # backslash at EOL
          .replace(/\s*\n\s*/g, ' ')
 
