@@ -229,17 +229,18 @@ watchDir = (source, base) ->
     watcher = fs.watch source, ->
       clearTimeout readdirTimeout
       readdirTimeout = wait 25, ->
-        fs.readdir source, (err, files) ->
-          if err
-            throw err unless err.code is 'ENOENT'
-            watcher.close()
-            return unwatchDir source, base
-          for file in files when not hidden(file) and not notSources[file]
-            file = path.join source, file
-            continue if file in sources or watchedDirs[file]
-            sources.push file
-            sourceCode.push null
-            compilePath file, no, base
+        try
+          files = fs.readdirSync source
+        catch err
+          throw err unless err.code is 'ENOENT'
+          watcher.close()
+          return unwatchDir source, base
+        for file in files when not hidden(file) and not notSources[file]
+          file = path.join source, file
+          continue if file in sources or watchedDirs[file]
+          sources.push file
+          sourceCode.push null
+          compilePath file, no, base
   catch e
     throw e unless e.code is 'ENOENT'
 
