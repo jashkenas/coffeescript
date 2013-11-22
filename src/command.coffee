@@ -14,7 +14,6 @@ mkdirp         = require 'mkdirp'
 {spawn, exec}  = require 'child_process'
 {EventEmitter} = require 'events'
 
-exists         = fs.exists or path.exists
 useWinPathSep  = path.sep is '\\'
 
 # Allow CoffeeScript to emit Node.js events.
@@ -260,7 +259,7 @@ removeSource = (source, base, removeJs) ->
   sourceCode.splice index, 1
   if removeJs and not opts.join
     jsPath = outputPath source, base
-    exists jsPath, (itExists) ->
+    fs.exists jsPath, (itExists) ->
       if itExists
         fs.unlink jsPath, (err) ->
           throw err if err and err.code isnt 'ENOENT'
@@ -300,7 +299,7 @@ writeJs = (base, sourcePath, js, jsPath, generatedSourceMap = null) ->
       fs.writeFile sourceMapPath, generatedSourceMap, (err) ->
         if err
           printLine "Could not write source map: #{err.message}"
-  exists jsDir, (itExists) ->
+  fs.exists jsDir, (itExists) ->
     if itExists then compile() else mkdirp jsDir, compile
 
 # Convenience for cleaner setTimeouts.
