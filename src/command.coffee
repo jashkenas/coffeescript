@@ -74,15 +74,15 @@ exports.run = ->
   return version()                              if opts.version
   return require('./repl').start(replCliOpts)   if opts.interactive
   return compileStdio()                         if opts.stdio
-  return compileScript null, sources[0]         if opts.eval
-  return require('./repl').start(replCliOpts)   unless sources.length
-  literals = if opts.run then sources.splice 1 else []
+  return compileScript null, opts.arguments[0]  if opts.eval
+  return require('./repl').start(replCliOpts)   unless opts.arguments.length
+  literals = if opts.run then opts.arguments.splice 1 else []
   process.argv = process.argv[0..1].concat literals
   process.argv[0] = 'coffee'
 
   opts.output = path.resolve opts.output  if opts.output
   opts.join   = path.resolve opts.join    if opts.join
-  for source in sources
+  for source in opts.arguments
     source = path.resolve source
     compilePath source, yes, source
 
@@ -90,6 +90,9 @@ exports.run = ->
 # is passed, recursively compile all '.coffee', '.litcoffee', and '.coffee.md'
 # extension source files in it and all subdirectories.
 compilePath = (source, topLevel, base) ->
+  return if source in sources   or
+            watchedDirs[source] or
+            not topLevel and (notSources[source] or hidden source)
   try
     stats = fs.statSync source
   catch err
@@ -97,19 +100,21 @@ compilePath = (source, topLevel, base) ->
       console.error "File not found: #{source}"
       process.exit 1
     throw err
-  if stats.isDirectory() and path.dirname(source) isnt 'node_modules'
+  if stats.isDirectory()
+    if path.basename(source) is 'node_modules'
+      notSources[source] = yes
+      return
     watchDir source, base if opts.watch
     try
       files = fs.readdirSync source
     catch err
       if err.code is 'ENOENT' then return else throw err
-    index = sources.indexOf source
-    files = files.filter (file) -> not hidden file
-    sources[index..index] = (path.join source, file for file in files)
-    sourceCode[index..index] = files.map -> null
-    files.forEach (file) ->
+    for file in files
       compilePath (path.join source, file), no, base
   else if topLevel or helpers.isCoffee source
+    sources.push source
+    sourceCode.push null
+    delete notSources[source]
     watch source, base if opts.watch
     try
       code = fs.readFileSync source
@@ -118,8 +123,6 @@ compilePath = (source, topLevel, base) ->
     compileScript(source, code.toString(), base)
   else
     notSources[source] = yes
-    removeSource source, base
-
 
 # Compile a single source script, containing the given code, according to the
 # requested options. If evaluating the script directly sets `__filename`,
@@ -235,12 +238,8 @@ watchDir = (source, base) ->
           throw err unless err.code is 'ENOENT'
           watcher.close()
           return removeSourceDir source, base
-        for file in files when not hidden(file) and not notSources[file]
-          file = path.join source, file
-          continue if file in sources or watchedDirs[file]
-          sources.push file
-          sourceCode.push null
-          compilePath file, no, base
+        for file in files
+          compilePath (path.join source, file), no, base
   catch e
     throw e unless e.code is 'ENOENT'
 
@@ -326,9 +325,6 @@ parseOptions = ->
   o.compile     or=  !!o.output
   o.run         = not (o.compile or o.print or o.map)
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
-  sources       = o.arguments
-  sourceCode[i] = null for source, i in sources
-  return
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (filename, base) ->
