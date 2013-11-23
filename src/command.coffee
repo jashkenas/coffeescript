@@ -58,6 +58,7 @@ opts         = {}
 sources      = []
 sourceCode   = []
 notSources   = {}
+watchedDirs  = {}
 optionParser = null
 
 # Run `coffee` by parsing passed options and determining what action to take.
@@ -79,8 +80,12 @@ exports.run = ->
   literals = if opts.run then sources.splice 1 else []
   process.argv = process.argv[0..1].concat literals
   process.argv[0] = 'coffee'
+
+  opts.output = path.resolve opts.output  if opts.output
+  opts.join   = path.resolve opts.join    if opts.join
   for source in sources
-    compilePath source, yes, path.normalize source
+    source = path.resolve source
+    compilePath source, yes, source
 
 # Compile a path, which could be a script or a directory. If a directory
 # is passed, recursively compile all '.coffee', '.litcoffee', and '.coffee.md'
@@ -221,6 +226,7 @@ watch = (source, base) ->
 watchDir = (source, base) ->
   readdirTimeout = null
   try
+    watchedDirs[source] = yes
     watcher = fs.watch source, ->
       clearTimeout readdirTimeout
       readdirTimeout = wait 25, ->
@@ -231,7 +237,7 @@ watchDir = (source, base) ->
             return unwatchDir source, base
           for file in files when not hidden(file) and not notSources[file]
             file = path.join source, file
-            continue if sources.some (s) -> s.indexOf(file) >= 0
+            continue if file in sources or watchedDirs[file]
             sources.push file
             sourceCode.push null
             compilePath file, no, base
@@ -239,8 +245,9 @@ watchDir = (source, base) ->
     throw e unless e.code is 'ENOENT'
 
 unwatchDir = (source, base) ->
+  delete watchedDirs[source]
   prevSources = sources[..]
-  toRemove = (file for file in sources when file.indexOf(source) >= 0)
+  toRemove = (file for file in sources when source is path.dirname file)
   removeSource file, base, yes for file in toRemove
   return unless sources.some (s, i) -> prevSources[i] isnt s
   compileJoin()
@@ -263,8 +270,12 @@ removeSource = (source, base, removeJs) ->
 outputPath = (source, base, extension=".js") ->
   basename  = helpers.baseFileName source, yes, useWinPathSep
   srcDir    = path.dirname source
-  baseDir   = if base in ['.', './'] then srcDir else srcDir.substring base.length
-  dir       = if opts.output then path.join opts.output, baseDir else srcDir
+  if not opts.output
+    dir = srcDir
+  else if source is base
+    dir = opts.output
+  else
+    dir = path.join opts.output, path.relative base, srcDir
   path.join dir, basename + extension
 
 # Write out a JavaScript source file with the compiled code. By default, files
