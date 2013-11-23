@@ -234,7 +234,7 @@ watchDir = (source, base) ->
         catch err
           throw err unless err.code is 'ENOENT'
           watcher.close()
-          return unwatchDir source, base
+          return removeSourceDir source, base
         for file in files when not hidden(file) and not notSources[file]
           file = path.join source, file
           continue if file in sources or watchedDirs[file]
@@ -244,13 +244,13 @@ watchDir = (source, base) ->
   catch e
     throw e unless e.code is 'ENOENT'
 
-unwatchDir = (source, base) ->
+removeSourceDir = (source, base) ->
   delete watchedDirs[source]
-  prevSources = sources[..]
-  toRemove = (file for file in sources when source is path.dirname file)
-  removeSource file, base, yes for file in toRemove
-  return unless sources.some (s, i) -> prevSources[i] isnt s
-  compileJoin()
+  sourcesChanged = no
+  for file in sources when source is path.dirname file
+    removeSource file, base, yes
+    sourcesChanged = yes
+  compileJoin() if sourcesChanged
 
 # Remove a file from our source list, and source code cache. Optionally remove
 # the compiled JS version as well.
