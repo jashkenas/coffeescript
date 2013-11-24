@@ -691,18 +691,20 @@ exports.Lexer = class Lexer
 
   # Converts newlines for string literals.
   escapeLines: (str, heredoc) ->
+    # Ignore escaped backslashes and remove escaped newlines
+    str = str.replace /\\[^\S\n]*(\n|\\)\s*/g, (escaped, character) ->
+      if character is '\n' then '' else escaped
     if heredoc
       str.replace MULTILINER, '\\n'
     else
-      str.replace(/((^|[^\\])(\\\\)+)\n/g, '$1 \\\n') # escaped backslashes
-         .replace(/\\\s*\n\s*/g, '') # backslash at EOL
-         .replace(/\s*\n\s*/g, ' ')
+      str.replace /\s*\n\s*/g, ' '
 
   # Constructs a string token by escaping quotes and newlines.
   makeString: (body, quote, heredoc) ->
     return quote + quote unless body
-    body = body.replace /\\([\s\S])/g, (match, contents) ->
-      if contents is quote or heredoc and contents is '\n' then contents else match
+    # Ignore escaped backslashes and unescape quotes
+    body = body.replace /// \\( #{quote} | \\ ) ///g, (match, contents) ->
+      if contents is quote then contents else match
     body = body.replace /// #{quote} ///g, '\\$&'
     quote + @escapeLines(body, heredoc) + quote
 
