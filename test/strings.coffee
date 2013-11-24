@@ -42,6 +42,8 @@ test "#3229, multiline strings", ->
     indentation
       doesn\'t
   matter', 'indentation doesn\'t matter'
+  eq 'trailing ws      
+    doesn\'t matter', 'trailing ws doesn\'t matter'
 
   # Use backslashes at the end of a line to specify whitespace between lines.
   eq 'a \
@@ -72,6 +74,7 @@ test "#3229, multiline strings", ->
     }", "a string inside interpolation"
 
   # Handle escaped backslashes correctly.
+  eq '\\', `'\\'`
   eq 'escaped backslash at EOL\\
       next line', 'escaped backslash at EOL\\ next line'
   eq '\\
@@ -84,8 +87,10 @@ test "#3229, multiline strings", ->
       next line', 'triple backslash\\next line'
   eq 'several escaped backslashes\\\\\\
       ok', 'several escaped backslashes\\\\\\ ok'
-  eq 'several escaped backslashes\\\\\\\
-      ok', 'several escaped backslashes\\\\\\ok'
+  eq 'several escaped backslashes slash\\\\\\\
+      ok', 'several escaped backslashes slash\\\\\\ok'
+  eq 'several escaped backslashes with trailing ws \\\\\\   
+      ok', 'several escaped backslashes with trailing ws \\\\\\ ok'
 
   # Backslashes at beginning of lines.
   eq 'first line
@@ -100,6 +105,67 @@ test "#3229, multiline strings", ->
 
         backslash', 'lone backslash'
 
+test "#3249, escape newlines in heredocs with backslashes", ->
+  # Ignore escaped newlines
+  eq '''
+    Set whitespace      \
+       <- this is ignored\  
+           none
+      normal indentation
+    ''', 'Set whitespace      <- this is ignorednone\n  normal indentation'
+  eq """
+    Set whitespace      \
+       <- this is ignored\  
+           none
+      normal indentation
+    """, 'Set whitespace      <- this is ignorednone\n  normal indentation'
+
+  # Changed from #647
+  eq '''
+  Hello, World\
+
+  ''', 'Hello, World'
+
+  # Backslash at the beginning of a literal string.
+  eq '''\
+      ok''', 'ok'
+  eq '''  \
+      ok''', '  ok'
+
+  # Same behavior in interpolated strings.
+  eq """
+    interpolation #{1}
+      follows #{2}  \
+        too #{3}\
+    !
+  """, 'interpolation 1\n  follows 2  too 3!'
+
+  # TODO: uncomment when #2388 is fixed
+  # eq """a heredoc #{
+  #     "inside \
+  #       interpolation"
+  #   }""", "a heredoc inside interpolation"
+
+  # Handle escaped backslashes correctly.
+  eq '''
+    escaped backslash at EOL\\
+      next line
+  ''', 'escaped backslash at EOL\\\n  next line'
+
+  # Backslashes at beginning of lines.
+  eq '''first line
+      \   backslash at BOL''', 'first line\n\   backslash at BOL'
+  eq """first line\
+      \   backslash at BOL""", 'first line\   backslash at BOL'
+
+# Edge case.
+  eq '''lone
+
+          \
+
+
+
+        backslash''', 'lone\n\n  backslash'
 
 #647
 eq "''Hello, World\\''", '''
@@ -108,10 +174,6 @@ eq "''Hello, World\\''", '''
 eq '""Hello, World\\""', """
 "\"Hello, World\\\""
 """
-eq 'Hello, World\n', '''
-Hello, World\
-
-'''
 
 a = """
     basic heredoc
