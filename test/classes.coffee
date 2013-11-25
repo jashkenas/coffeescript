@@ -205,6 +205,21 @@ test "a bound function in a bound function", ->
   eq (func() for func in m.generate()).join(' '), '10 10 10'
 
 
+test "bound functions in a class do perserve arities", ->
+  class Mini
+    unary_func: (a0)=>
+    binary_func: (a0, a1)=>
+    tinary_func: (a0, a1, a2)=>
+  obj = new Mini
+  obj2 =
+    unary_func: obj.unary_func
+    binary_func: obj.binary_func
+    tinary_func: obj.tinary_func
+
+  eq obj2.unary_func.length, 1
+  eq obj2.binary_func.length, 2
+  eq obj2.tinary_func.length, 3
+
 test "contructor called with varargs", ->
 
   class Connection
