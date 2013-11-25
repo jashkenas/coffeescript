@@ -1013,9 +1013,9 @@ exports.Class = class Class extends Base
   # Ensure that all functions bound to the instance are proxied in the
   # constructor.
   addBoundFunctions: (o) ->
-    for bvar in @boundFuncs
+    for [bvar, func] in @boundFuncs
       lhs = (new Value (new Literal "this"), [new Access bvar]).compile o
-      @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
+      @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind', func.params.length}(#{lhs}, this)"
     return
 
   # Merge the properties from a top-level object as prototypal properties
@@ -1043,7 +1043,7 @@ exports.Class = class Class extends Base
           else
             assign.variable = new Value(new Literal(name), [(new Access new Literal 'prototype'), new Access base])
             if func instanceof Code and func.bound
-              @boundFuncs.push base
+              @boundFuncs.push [base, func]
               func.bound = no
       assign
     compact exprs
@@ -2112,9 +2112,9 @@ UTILITIES =
   """
 
   # Create a function bound to the current value of "this".
-  bind: -> '''
-    function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
-  '''
+  bind: (length)-> """
+    function(fn, me){ return function(#{[0..length][1..].map((i)-> '__bind_arg_' + i).join ', '}){ return fn.apply(me, arguments); }; }
+  """
 
   # Discover if an item is in an array.
   indexOf: -> """
@@ -2163,9 +2163,9 @@ IS_REGEX = /^\//
 # ----------------
 
 # Helper for ensuring that utility functions are assigned at the top level.
-utility = (name) ->
-  ref = "__#{name}"
-  Scope.root.assign ref, UTILITIES[name]()
+utility = (name, args...) ->
+  ref = "__#{name}#{args.map((arg) -> "_#{arg}").join ''}"
+  Scope.root.assign ref, UTILITIES[name] args...
   ref
 
 multident = (code, tab) ->
