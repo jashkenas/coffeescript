@@ -828,3 +828,15 @@ test "#3232: super in static methods (not object-assigned)", ->
 
   ok Bar.baz()
   ok Bar.qux()
+
+test "#2489: preserve bound methods arity", ->
+  class Foo
+    bar: (a, b) =>
+    baz: ([a, b], {c, d:e}) =>
+    qux: (a, d..., [b,c]) =>
+
+  foo = new Foo
+
+  eq foo.bar.length, Foo::bar.length
+  eq foo.baz.length, Foo::baz.length
+  eq foo.qux.length, Foo::qux.length
