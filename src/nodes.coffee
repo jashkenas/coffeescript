@@ -1012,11 +1012,30 @@ exports.Class = class Class extends Base
 
   # Ensure that all functions bound to the instance are proxied in the
   # constructor.
-  addBoundFunctions: (o) ->
-    for bvar in @boundFuncs
-      lhs = (new Value (new Literal "this"), [new Access bvar]).compile o
-      @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
-    return
+  addBoundFunctions: (name, o) ->
+    return unless @boundFuncs.length
+
+    context = new Literal '_this'
+
+    bindMethods = new Code [new Param context]
+    bindMethods.noReturn = yes
+
+    for [bvar, func] in @boundFuncs
+      instFunc  = new Value context, [new Access bvar]
+      protoFunc = new Value (new Literal "#{name}.prototype"), [new Access bvar]
+
+      wrapper = new Code (new Param p.name, null, p.splat for p in func.params)
+      wrapper.fakeSignature = yes
+      wrapper.body.push new Call  (new Value protoFunc,
+                                             [new Access new Literal 'apply']),
+                                  [context, new Literal 'arguments']
+
+      bindMethods.body.push new If  (new Op '==', protoFunc, instFunc),
+                                    new Assign instFunc, wrapper
+
+    bindMethodsRef = new Literal o.classScope.freeVariable 'bindMethods'
+    @body.unshift new Assign bindMethodsRef, bindMethods
+    @ctor.body.unshift new Call bindMethodsRef, [new Literal 'this']
 
   # Merge the properties from a top-level object as prototypal properties
   # on the class.
@@ -1043,7 +1062,7 @@ exports.Class = class Class extends Base
           else
             assign.variable = new Value(new Literal(name), [(new Access new Literal 'prototype'), new Access base])
             if func instanceof Code and func.bound
-              @boundFuncs.push base
+              @boundFuncs.push [base, func]
               func.bound = no
       assign
     compact exprs
@@ -1109,7 +1128,7 @@ exports.Class = class Class extends Base
     @setContext name
     @walkBody name, o
     @ensureConstructor name
-    @addBoundFunctions o
+    @addBoundFunctions name, o
     @body.spaced = yes
     @body.expressions.push lname
 
@@ -1341,7 +1360,7 @@ exports.Code = class Code extends Base
     for param in @params when param.splat
       for {name: p} in @params
         if p.this then p = p.properties[0].name
-        if p.value then o.scope.add p.value, 'var', yes
+        if p.value and not @fakeSignature then o.scope.add p.value, 'var', yes
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
                           new Value new Literal 'arguments'
       break
@@ -1359,7 +1378,7 @@ exports.Code = class Code extends Base
       params.push ref unless splats
     wasEmpty = @body.isEmpty()
     exprs.unshift splats if splats
-    @body.expressions.unshift exprs... if exprs.length
+    @body.expressions.unshift exprs... if exprs.length and not @fakeSignature
     for p, i in params
       params[i] = p.compileToFragments o
       o.scope.parameter fragmentsToText params[i]
@@ -2110,11 +2129,6 @@ UTILITIES =
   extends: -> """
     function(child, parent) { for (var key in parent) { if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; }
   """
-
-  # Create a function bound to the current value of "this".
-  bind: -> '''
-    function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
-  '''
 
   # Discover if an item is in an array.
   indexOf: -> """
