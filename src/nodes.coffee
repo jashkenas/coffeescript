@@ -1336,8 +1336,8 @@ exports.Code = class Code extends Base
     delete o.isExistentialEquals
     params = []
     exprs  = []
-    @eachParamName (name) -> # this step must be performed before the others
-      unless o.scope.check name then o.scope.parameter name
+    for param in @params
+      o.scope.parameter param.asReference o
     for param in @params when param.splat
       for {name: p} in @params
         if p.this then p = p.properties[0].name
