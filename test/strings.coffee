@@ -63,6 +63,15 @@ test "#3229, multiline strings", ->
   eq '  \
       ok', '  ok'
 
+  # #1273, empty strings.
+  eq '\
+     ', ''
+  eq '
+     ', ''
+  eq '
+          ', ''
+  eq '   ', '   '
+
   # Same behavior in interpolated strings.
   eq "interpolation #{1}
       follows #{2}  \
@@ -79,6 +88,10 @@ test "#3229, multiline strings", ->
       next line', 'escaped backslash at EOL\\ next line'
   eq '\\
       next line', '\\ next line'
+  eq '\\
+     ', '\\'
+  eq '\\\\\\
+     ', '\\\\\\'
   eq "#{1}\\
       after interpolation", '1\\ after interpolation'
   eq 'escaped backslash before slash\\  \
@@ -120,11 +133,14 @@ test "#3249, escape newlines in heredocs with backslashes", ->
       normal indentation
     """, 'Set whitespace      <- this is ignorednone\n  normal indentation'
 
-  # Changed from #647
+  # Changed from #647, trailing backslash.
   eq '''
   Hello, World\
 
   ''', 'Hello, World'
+  eq '''
+    \\
+  ''', '\\'
 
   # Backslash at the beginning of a literal string.
   eq '''\
@@ -151,6 +167,9 @@ test "#3249, escape newlines in heredocs with backslashes", ->
     escaped backslash at EOL\\
       next line
   ''', 'escaped backslash at EOL\\\n  next line'
+  eq '''\\
+
+     ''', '\\\n'
 
   # Backslashes at beginning of lines.
   eq '''first line
@@ -158,7 +177,7 @@ test "#3249, escape newlines in heredocs with backslashes", ->
   eq """first line\
       \   backslash at BOL""", 'first line\   backslash at BOL'
 
-# Edge case.
+  # Edge cases.
   eq '''lone
 
           \
@@ -166,6 +185,8 @@ test "#3249, escape newlines in heredocs with backslashes", ->
 
 
         backslash''', 'lone\n\n  backslash'
+  eq '''\
+     ''', ''
 
 #647
 eq "''Hello, World\\''", '''
@@ -174,6 +195,10 @@ eq "''Hello, World\\''", '''
 eq '""Hello, World\\""', """
 "\"Hello, World\\\""
 """
+
+test "#1273, escaping quotes at the end of heredocs.", ->
+  # """\""" no longer compiles
+  eq """\\""", '\\'
 
 a = """
     basic heredoc
