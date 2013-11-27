@@ -81,6 +81,9 @@ test "#3229, multiline strings", ->
     'string ' + "inside
                  interpolation"
     }", "a string inside interpolation"
+  eq "
+      #{1}
+     ", '1'
 
   # Handle escaped backslashes correctly.
   eq '\\', `'\\'`
@@ -155,6 +158,11 @@ test "#3249, escape newlines in heredocs with backslashes", ->
         too #{3}\
     !
   """, 'interpolation 1\n  follows 2  too 3!'
+  eq """
+
+    #{1} #{2}
+
+    """, '\n1 2\n'
 
   # TODO: uncomment when #2388 is fixed
   # eq """a heredoc #{

@@ -186,19 +186,15 @@ exports.Lexer = class Lexer
   # Matches strings, including multi-line strings. Ensures that quotation marks
   # are balanced within the string's contents, and within nested interpolations.
   stringToken: ->
-    switch @chunk.charAt 0
-      when "'"
-        return 0 unless match = SIMPLESTR.exec @chunk
-        string = match[0]
-        @token 'STRING', @escapeLines(string), 0, string.length
-      when '"'
-        return 0 unless string = @balancedString @chunk, '"'
-        if 0 < string.indexOf '#{', 1
-          @interpolateString string[1...-1], strOffset: 1, lexedLength: string.length
-        else
-          @token 'STRING', @escapeLines(string), 0, string.length
-      else
-        return 0
+    switch quote = @chunk.charAt 0
+      when "'" then [string] = SIMPLESTR.exec @chunk
+      when '"' then string = @balancedString @chunk, '"'
+    return 0 unless string
+    trimmed = @removeNewlines string[1...-1]
+    if quote is '"' and 0 < string.indexOf '#{', 1
+      @interpolateString trimmed, strOffset: 1, lexedLength: string.length
+    else
+      @token 'STRING', quote + @escapeLines(trimmed) + quote, 0, string.length
     if octalEsc = /^(?:\\.|[^\\])*\\(?:0[0-7]|[1-7])/.test string
       @error "octal escape sequences #{string} are not allowed"
     string.length
@@ -686,6 +682,11 @@ exports.Lexer = class Lexer
     @tag() in ['\\', '.', '?.', '?::', 'UNARY', 'MATH', '+', '-', 'SHIFT', 'RELATION'
                'COMPARE', 'LOGIC', 'THROW', 'EXTENDS']
 
+  # Remove newlines from beginning and (non escaped) from end of string literals.
+  removeNewlines: (str) ->
+    str.replace(/^\s*\n\s*/, '')
+       .replace(/([^\\]|\\\\)\s*\n\s*$/, '$1')
+
   # Converts newlines for string literals.
   escapeLines: (str, heredoc) ->
     # Ignore escaped backslashes and remove escaped newlines
@@ -695,9 +696,7 @@ exports.Lexer = class Lexer
       str.replace MULTILINER, '\\n'
     else
       # Trim leading and trailing whitespace, string includes quotes
-      str.replace(/^(.)\s*\n\s*/, '$1')
-         .replace(/\s*\n\s*(.)$/, '$1')
-         .replace(/\s*\n\s*/g, ' ')
+      str.replace /\s*\n\s*/g, ' '
 
   # Constructs a string token by escaping quotes and newlines.
   makeString: (body, quote, heredoc) ->
