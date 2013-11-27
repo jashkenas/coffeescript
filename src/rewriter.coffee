@@ -131,7 +131,7 @@ class exports.Rewriter
 
     @scanTokens (token, i, tokens) ->
       [tag]     = token
-      [prevTag] = if i > 0 then tokens[i - 1] else []
+      [prevTag] = prevToken = if i > 0 then tokens[i - 1] else []
       [nextTag] = if i < tokens.length - 1 then tokens[i + 1] else []
       stackTop  = -> stack[stack.length - 1]
       startIdx  = i
@@ -275,7 +275,14 @@ class exports.Rewriter
       #       c
       #     .h a
       #
-      if prevTag is 'OUTDENT' and inImplicitCall() and tag in ['.', '?.', '::', '?::']
+      # and also
+      #
+      #     f a
+      #     .g b
+      #     .h a
+      #
+      if (prevTag is 'OUTDENT' or prevToken.newLine) and inImplicitCall() and
+          tag in ['.', '?.', '::', '?::']
         endImplicitCall()
         return forward(1)
 
