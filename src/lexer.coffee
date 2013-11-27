@@ -526,11 +526,6 @@ exports.Lexer = class Lexer
     strOffset = strOffset || 0
     lexedLength = lexedLength || str.length
 
-    # Clip leading \n from heredoc
-    if heredoc and str.length > 0 and str[0] == '\n'
-      str = str[1...]
-      strOffset++
-
     # Parse the string.
     tokens = []
     pi = 0
@@ -695,7 +690,6 @@ exports.Lexer = class Lexer
     if heredoc
       str.replace MULTILINER, '\\n'
     else
-      # Trim leading and trailing whitespace, string includes quotes
       str.replace /\s*\n\s*/g, ' '
 
   # Constructs a string token by escaping quotes and newlines.
