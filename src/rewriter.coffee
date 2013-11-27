@@ -159,6 +159,10 @@ class exports.Rewriter
         tokens.splice i, 0, generate 'CALL_END', ')'
         i += 1
 
+      endAllImplicitCalls = ->
+        while inImplicitCall()
+          endImplicitCall()
+
       startImplicitObject = (j, startsLine = yes) ->
         idx = j ? i
         stack.push ['{', idx, sameLine: yes, startsLine: startsLine, ours: yes]
@@ -281,10 +285,13 @@ class exports.Rewriter
       #     .g b
       #     .h a
       #
-      if (prevTag is 'OUTDENT' or prevToken.newLine) and inImplicitCall() and
-          tag in ['.', '?.', '::', '?::']
-        endImplicitCall()
-        return forward(1)
+      if inImplicitCall() and tag in CALL_CLOSERS
+        if prevTag is 'OUTDENT'
+          endImplicitCall()
+          return forward(1)
+        if prevToken.newLine
+          endAllImplicitCalls()
+          return forward(1)
 
       stackTop()[2].sameLine = no if inImplicitObject() and tag in LINEBREAKS
 
@@ -363,7 +370,8 @@ class exports.Rewriter
       token[1] isnt ';' and token[0] in SINGLE_CLOSERS and
       not (token[0] is 'TERMINATOR' and @tag(i + 1) in EXPRESSION_CLOSE) and
       not (token[0] is 'ELSE' and starter isnt 'THEN') and
-      not (token[0] in ['CATCH', 'FINALLY'] and starter in ['->', '=>'])
+      not (token[0] in ['CATCH', 'FINALLY'] and starter in ['->', '=>']) or
+      token[0] in CALL_CLOSERS and @tokens[i - 1].newLine
 
     action = (token, i) ->
       @tokens.splice (if @tag(i - 1) is ',' then i - 1 else i), 0, outdent
@@ -478,3 +486,6 @@ SINGLE_CLOSERS   = ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADIN
 
 # Tokens that end a line.
 LINEBREAKS       = ['TERMINATOR', 'INDENT', 'OUTDENT']
+
+# Tokens that close open calls when they follow a newline.
+CALL_CLOSERS = ['.', '?.', '::', '?::']

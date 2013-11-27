@@ -78,11 +78,24 @@ test "#1495, method call chaining", ->
     'aaabbbccc'.replace /(\w)\1\1/g, '$1$1'
                .replace /([abc])\1/g, '$1'
 
-  # Unreadable code, not a real-life use case
-  result = str.split ''.
+  # Nested calls
+  result = [1..3]
+    .slice Math.max 0, 1
+    .concat [3]
+  arrayEq result, [2, 3, 3]
+
+  # Single line function arguments.
+  result = [1..6]
+    .map (x) -> x * x
+    .filter (x) -> x % 2 is 0
+    .reverse()
+  arrayEq result, [36, 16, 4]
+
+  # The parens are forced
+  result = str.split(''.
     split ''
-    .join('')
-    .join ', '
+    .join ''
+  ).join ', '
   eq 'a, b, c', result
 
 # Operators
