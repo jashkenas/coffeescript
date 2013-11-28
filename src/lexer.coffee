@@ -186,19 +186,15 @@ exports.Lexer = class Lexer
   # Matches strings, including multi-line strings. Ensures that quotation marks
   # are balanced within the string's contents, and within nested interpolations.
   stringToken: ->
-    switch @chunk.charAt 0
-      when "'"
-        return 0 unless match = SIMPLESTR.exec @chunk
-        string = match[0]
-        @token 'STRING', @removeNewlines(string), 0, string.length
-      when '"'
-        return 0 unless string = @balancedString @chunk, '"'
-        if 0 < string.indexOf '#{', 1
-          @interpolateString string[1...-1], strOffset: 1, lexedLength: string.length
-        else
-          @token 'STRING', @removeNewlines(string), 0, string.length
-      else
-        return 0
+    switch quote = @chunk.charAt 0
+      when "'" then [string] = SIMPLESTR.exec @chunk
+      when '"' then string = @balancedString @chunk, '"'
+    return 0 unless string
+    trimmed = @removeNewlines string[1...-1]
+    if quote is '"' and 0 < string.indexOf '#{', 1
+      @interpolateString trimmed, strOffset: 1, lexedLength: string.length
+    else
+      @token 'STRING', quote + @escapeLines(trimmed) + quote, 0, string.length
     if octalEsc = /^(?:\\.|[^\\])*\\(?:0[0-7]|[1-7])/.test string
       @error "octal escape sequences #{string} are not allowed"
     string.length
@@ -209,7 +205,9 @@ exports.Lexer = class Lexer
     return 0 unless match = HEREDOC.exec @chunk
     heredoc = match[0]
     quote = heredoc.charAt 0
-    doc = @sanitizeHeredoc match[2], quote: quote, indent: null
+    # Trim last newline if it's not escaped
+    trimmed = match[2].replace /(([^\\]|\\\\)\s*)\n[^\n\S]*$/, '$1'
+    doc = @sanitizeHeredoc trimmed, quote: quote, indent: null
     if quote is '"' and 0 <= doc.indexOf '#{'
       @interpolateString doc, heredoc: yes, strOffset: 3, lexedLength: heredoc.length
     else
@@ -528,11 +526,6 @@ exports.Lexer = class Lexer
     strOffset = strOffset || 0
     lexedLength = lexedLength || str.length
 
-    # Clip leading \n from heredoc
-    if heredoc and str.length > 0 and str[0] == '\n'
-      str = str[1...]
-      strOffset++
-
     # Parse the string.
     tokens = []
     pi = 0
@@ -684,10 +677,10 @@ exports.Lexer = class Lexer
     @tag() in ['\\', '.', '?.', '?::', 'UNARY', 'MATH', '+', '-', 'SHIFT', 'RELATION'
                'COMPARE', 'LOGIC', 'THROW', 'EXTENDS']
 
-  # Remove newlines from beginning and end of string literals.
-  # `str` includes quotes.
+  # Remove newlines from beginning and (non escaped) from end of string literals.
   removeNewlines: (str) ->
-    @escapeLines str.replace(/^(.)\s*\n\s*/, '$1').replace(/\s*\n\s*(.)$/, '$1')
+    str.replace(/^\s*\n\s*/, '')
+       .replace(/([^\\]|\\\\)\s*\n\s*$/, '$1')
 
   # Converts newlines for string literals.
   escapeLines: (str, heredoc) ->
@@ -779,7 +772,7 @@ NUMBER     = ///
   ^ \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
 ///i
 
-HEREDOC    = /// ^ ("""|''') ([\s\S]*?) (?:\n[^\n\S]*)? \1 ///
+HEREDOC    = /// ^ ("""|''') (( [\s\S]*? ([^\\]|\\\\) )?) \1 ///
 
 OPERATOR   = /// ^ (
   ?: [-=]>             # function
@@ -793,7 +786,7 @@ OPERATOR   = /// ^ (
 
 WHITESPACE = /^[^\n\S]+/
 
-COMMENT    = /^###([^#][\s\S]*?)(?:###[^\n\S]*|(?:###)$)|^(?:\s*#(?!##[^#]).*)+/
+COMMENT    = /^###([^#][\s\S]*?)(?:###[^\n\S]*|###$)|^(?:\s*#(?!##[^#]).*)+/
 
 CODE       = /^[-=]>/
 

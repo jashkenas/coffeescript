@@ -68,6 +68,9 @@ test "#1026", ->
 test "#1050", ->
   cantCompile "### */ ###"
 
+test "#1273: escaping quotes at the end of heredocs", ->
+  cantCompile '"""\\"""' # """\"""
+
 test "#1106: __proto__ compilation", ->
   object = eq
   @["__proto__"] = true
