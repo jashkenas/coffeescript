@@ -207,6 +207,7 @@ eq '""Hello, World\\""', """
 test "#1273, escaping quotes at the end of heredocs.", ->
   # """\""" no longer compiles
   eq """\\""", '\\'
+  eq """\\\"""", '\\\"'
 
 a = """
     basic heredoc

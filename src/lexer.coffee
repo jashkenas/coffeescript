@@ -205,9 +205,7 @@ exports.Lexer = class Lexer
     return 0 unless match = HEREDOC.exec @chunk
     heredoc = match[0]
     quote = heredoc.charAt 0
-    # Trim last newline if it's not escaped
-    trimmed = match[2].replace /(([^\\]|\\\\)\s*)\n[^\n\S]*$/, '$1'
-    doc = @sanitizeHeredoc trimmed, quote: quote, indent: null
+    doc = @sanitizeHeredoc match[2], quote: quote, indent: null
     if quote is '"' and 0 <= doc.indexOf '#{'
       @interpolateString doc, heredoc: yes, strOffset: 3, lexedLength: heredoc.length
     else
@@ -772,7 +770,7 @@ NUMBER     = ///
   ^ \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
 ///i
 
-HEREDOC    = /// ^ ("""|''') (( [\s\S]*? ([^\\]|\\\\) )?) \1 ///
+HEREDOC    = /// ^ ("""|''') ((?: \\[\s\S] | [^\\] )*?) (?:\n[^\n\S]*)? \1 ///
 
 OPERATOR   = /// ^ (
   ?: [-=]>             # function
