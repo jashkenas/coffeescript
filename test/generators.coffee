@@ -5,10 +5,9 @@
 
 # ensure that these tests are only run if generators are available
 generatorsAreAvailable = ->
-  for execArg in process.execArgv
-    if execArg.match 'harmony'
-      return 1
-  return 0
+  for execArg in process.execArgv when execArg in ['--harmony', '--harmony-generators']
+    return yes
+  no
 
 if generatorsAreAvailable()
 
