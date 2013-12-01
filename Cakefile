@@ -223,10 +223,10 @@ runTests = (CoffeeScript) ->
   files = fs.readdirSync 'test'
 
   # Ignore generators test file if generators are not available
-  generatorsAreNotAvailable = true
+  generatorsAreAvailable = no
   for execArg in process.execArgv when execArg in ['--harmony', '--harmony-generators']
-    generatorsAreNotAvailable = false
-  files.splice files.indexOf('generators.coffee'), 1 if generatorsAreNotAvailable
+    generatorsAreAvailable = yes
+  files.splice files.indexOf('generators.coffee'), 1 if not generatorsAreAvailable
 
   for file in files when helpers.isCoffee file
     literate = helpers.isLiterate file
