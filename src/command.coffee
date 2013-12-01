@@ -258,12 +258,15 @@ removeSource = (source, base) ->
   sources.splice index, 1
   sourceCode.splice index, 1
   unless opts.join
-    jsPath = outputPath source, base
-    try
-      fs.unlinkSync jsPath
-    catch err
-      throw err unless err.code is 'ENOENT'
+    silentUnlink outputPath source, base
+    silentUnlink outputPath source, base, '.map'
     timeLog "removed #{source}"
+
+silentUnlink = (path) ->
+  try
+    fs.unlinkSync path
+  catch err
+    throw err unless err.code is 'ENOENT'
 
 # Get the corresponding output JavaScript path for a source file.
 outputPath = (source, base, extension=".js") ->
