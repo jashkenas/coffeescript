@@ -197,7 +197,7 @@ watch = (source, base) ->
         rewatch()
         compile()
       catch e
-        removeSource source, base, yes
+        removeSource source, base
         compileJoin()
     else throw e
 
@@ -247,17 +247,17 @@ removeSourceDir = (source, base) ->
   delete watchedDirs[source]
   sourcesChanged = no
   for file in sources when source is path.dirname file
-    removeSource file, base, yes
+    removeSource file, base
     sourcesChanged = yes
   compileJoin() if sourcesChanged
 
 # Remove a file from our source list, and source code cache. Optionally remove
 # the compiled JS version as well.
-removeSource = (source, base, removeJs) ->
+removeSource = (source, base) ->
   index = sources.indexOf source
   sources.splice index, 1
   sourceCode.splice index, 1
-  if removeJs and not opts.join
+  unless opts.join
     jsPath = outputPath source, base
     try
       fs.unlinkSync jsPath
