@@ -186,43 +186,42 @@ compileJoin = ->
 # time the file is updated. May be used in combination with other options,
 # such as `--print`.
 watch = (source, base) ->
-
-  prevStats = null
+  watcher        = null
+  prevStats      = null
   compileTimeout = null
 
-  watchErr = (e) ->
-    if e.code is 'ENOENT'
-      return if sources.indexOf(source) is -1
-      try
-        rewatch()
-        compile()
-      catch e
-        removeSource source, base
-        compileJoin()
-    else throw e
+  watchErr = (err) ->
+    throw err unless err.code is 'ENOENT'
+    return unless source in sources
+    try
+      rewatch()
+      compile()
+    catch
+      removeSource source, base
+      compileJoin()
 
   compile = ->
     clearTimeout compileTimeout
     compileTimeout = wait 25, ->
       fs.stat source, (err, stats) ->
         return watchErr err if err
-        return rewatch() if prevStats and stats.size is prevStats.size and
-          stats.mtime.getTime() is prevStats.mtime.getTime()
+        return rewatch() if prevStats and
+                            stats.size is prevStats.size and
+                            stats.mtime.getTime() is prevStats.mtime.getTime()
         prevStats = stats
         fs.readFile source, (err, code) ->
           return watchErr err if err
           compileScript(source, code.toString(), base)
           rewatch()
 
-  try
-    watcher = fs.watch source, compile
-  catch e
-    watchErr e
-
   rewatch = ->
     watcher?.close()
     watcher = fs.watch source, compile
 
+  try
+    watcher = fs.watch source, compile
+  catch err
+    watchErr err
 
 # Watch a directory of files for new additions.
 watchDir = (source, base) ->
