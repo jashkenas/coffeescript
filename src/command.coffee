@@ -214,33 +214,52 @@ watch = (source, base) ->
           compileScript(source, code.toString(), base)
           rewatch()
 
+  startWatcher = ->
+    watcher = fs.watch source
+    .on 'change', compile
+    .on 'error', (err) ->
+      throw err unless err.code is 'EPERM'
+      removeSource source, base
+
   rewatch = ->
     watcher?.close()
-    watcher = fs.watch source, compile
+    startWatcher()
 
   try
-    watcher = fs.watch source, compile
+    startWatcher()
   catch err
     watchErr err
 
 # Watch a directory of files for new additions.
 watchDir = (source, base) ->
+  watcher        = null
   readdirTimeout = null
-  try
-    watchedDirs[source] = yes
-    watcher = fs.watch source, ->
+
+  startWatcher = ->
+    watcher = fs.watch source
+    .on 'error', (err) ->
+      throw err unless err.code is 'EPERM'
+      stopWatcher()
+    .on 'change', ->
       clearTimeout readdirTimeout
       readdirTimeout = wait 25, ->
         try
           files = fs.readdirSync source
         catch err
           throw err unless err.code is 'ENOENT'
-          watcher.close()
-          return removeSourceDir source, base
+          return stopWatcher()
         for file in files
           compilePath (path.join source, file), no, base
-  catch e
-    throw e unless e.code is 'ENOENT'
+
+  stopWatcher = ->
+    watcher.close()
+    removeSourceDir source, base
+
+  watchedDirs[source] = yes
+  try
+    startWatcher()
+  catch err
+    throw err unless err.code is 'ENOENT'
 
 removeSourceDir = (source, base) ->
   delete watchedDirs[source]
@@ -265,7 +284,7 @@ silentUnlink = (path) ->
   try
     fs.unlinkSync path
   catch err
-    throw err unless err.code is 'ENOENT'
+    throw err unless err.code in ['ENOENT', 'EPERM']
 
 # Get the corresponding output JavaScript path for a source file.
 outputPath = (source, base, extension=".js") ->
