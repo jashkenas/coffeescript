@@ -44,16 +44,59 @@ test "chained accesses split on period/newline, backwards and forwards", ->
     .reverse()
     .reverse()
   arrayEq ['c','b','a'], result
-  arrayEq ['c','b','a'], str
+  arrayEq ['c','b','a'],
+    str
     .split('')
     .reverse()
     .reverse()
     .reverse()
-  arrayEq ['c','b','a'], str.
+  arrayEq ['c','b','a'],
+    str.
     split('')
     .reverse().
     reverse()
     .reverse()
+
+test "#1495, method call chaining", ->
+  str = 'abc'
+
+  result = str.split ''
+              .join ', '
+  eq 'a, b, c', result
+
+  result = str
+  .split ''
+  .join ', '
+  eq 'a, b, c', result
+
+  eq 'a, b, c', (str
+    .split ''
+    .join ', '
+  )
+
+  eq 'abc',
+    'aaabbbccc'.replace /(\w)\1\1/g, '$1$1'
+               .replace /([abc])\1/g, '$1'
+
+  # Nested calls
+  result = [1..3]
+    .slice Math.max 0, 1
+    .concat [3]
+  arrayEq result, [2, 3, 3]
+
+  # Single line function arguments.
+  result = [1..6]
+    .map (x) -> x * x
+    .filter (x) -> x % 2 is 0
+    .reverse()
+  arrayEq result, [36, 16, 4]
+
+  # The parens are forced
+  result = str.split(''.
+    split ''
+    .join ''
+  ).join ', '
+  eq 'a, b, c', result
 
 # Operators
 
@@ -65,9 +108,11 @@ test "newline suppression for operators", ->
   eq 6, six
 
 test "`?.` and `::` should continue lines", ->
-  ok not Date
-  ::
-  ?.foo
+  ok not (
+    Date
+    ::
+    ?.foo
+  )
   #eq Object::toString, Date?.
   #prototype
   #::
