@@ -162,6 +162,7 @@ class exports.Rewriter
       endAllImplicitCalls = ->
         while inImplicitCall()
           endImplicitCall()
+        return
 
       startImplicitObject = (j, startsLine = yes) ->
         idx = j ? i
