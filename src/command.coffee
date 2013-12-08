@@ -186,84 +186,105 @@ compileJoin = ->
 # time the file is updated. May be used in combination with other options,
 # such as `--print`.
 watch = (source, base) ->
-
-  prevStats = null
+  watcher        = null
+  prevStats      = null
   compileTimeout = null
 
-  watchErr = (e) ->
-    if e.code is 'ENOENT'
-      return if sources.indexOf(source) is -1
-      try
-        rewatch()
-        compile()
-      catch e
-        removeSource source, base, yes
-        compileJoin()
-    else throw e
+  watchErr = (err) ->
+    throw err unless err.code is 'ENOENT'
+    return unless source in sources
+    try
+      rewatch()
+      compile()
+    catch
+      removeSource source, base
+      compileJoin()
 
   compile = ->
     clearTimeout compileTimeout
     compileTimeout = wait 25, ->
       fs.stat source, (err, stats) ->
         return watchErr err if err
-        return rewatch() if prevStats and stats.size is prevStats.size and
-          stats.mtime.getTime() is prevStats.mtime.getTime()
+        return rewatch() if prevStats and
+                            stats.size is prevStats.size and
+                            stats.mtime.getTime() is prevStats.mtime.getTime()
         prevStats = stats
         fs.readFile source, (err, code) ->
           return watchErr err if err
           compileScript(source, code.toString(), base)
           rewatch()
 
-  try
-    watcher = fs.watch source, compile
-  catch e
-    watchErr e
+  startWatcher = ->
+    watcher = fs.watch source
+    .on 'change', compile
+    .on 'error', (err) ->
+      throw err unless err.code is 'EPERM'
+      removeSource source, base
 
   rewatch = ->
     watcher?.close()
-    watcher = fs.watch source, compile
+    startWatcher()
 
+  try
+    startWatcher()
+  catch err
+    watchErr err
 
 # Watch a directory of files for new additions.
 watchDir = (source, base) ->
+  watcher        = null
   readdirTimeout = null
-  try
-    watchedDirs[source] = yes
-    watcher = fs.watch source, ->
+
+  startWatcher = ->
+    watcher = fs.watch source
+    .on 'error', (err) ->
+      throw err unless err.code is 'EPERM'
+      stopWatcher()
+    .on 'change', ->
       clearTimeout readdirTimeout
       readdirTimeout = wait 25, ->
         try
           files = fs.readdirSync source
         catch err
           throw err unless err.code is 'ENOENT'
-          watcher.close()
-          return removeSourceDir source, base
+          return stopWatcher()
         for file in files
           compilePath (path.join source, file), no, base
-  catch e
-    throw e unless e.code is 'ENOENT'
+
+  stopWatcher = ->
+    watcher.close()
+    removeSourceDir source, base
+
+  watchedDirs[source] = yes
+  try
+    startWatcher()
+  catch err
+    throw err unless err.code is 'ENOENT'
 
 removeSourceDir = (source, base) ->
   delete watchedDirs[source]
   sourcesChanged = no
   for file in sources when source is path.dirname file
-    removeSource file, base, yes
+    removeSource file, base
     sourcesChanged = yes
   compileJoin() if sourcesChanged
 
 # Remove a file from our source list, and source code cache. Optionally remove
 # the compiled JS version as well.
-removeSource = (source, base, removeJs) ->
+removeSource = (source, base) ->
   index = sources.indexOf source
   sources.splice index, 1
   sourceCode.splice index, 1
-  if removeJs and not opts.join
-    jsPath = outputPath source, base
-    try
-      fs.unlinkSync jsPath
-    catch err
-      throw err unless err.code is 'ENOENT'
+  unless opts.join
+    silentUnlink outputPath source, base
+    silentUnlink outputPath source, base, '.map'
     timeLog "removed #{source}"
+
+silentUnlink = (path) ->
+  try
+    fs.unlinkSync path
+  catch err
+    throw err unless err.code in ['ENOENT', 'EPERM']
 
 # Get the corresponding output JavaScript path for a source file.
 outputPath = (source, base, extension=".js") ->
