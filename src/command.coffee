@@ -133,9 +133,13 @@ compileScript = (file, input, base = null) ->
   try
     t = task = {file, input, options}
     CoffeeScript.emit 'compile', task
-    if      o.tokens      then printTokens CoffeeScript.tokens t.input, t.options
-    else if o.nodes       then printLine CoffeeScript.nodes(t.input, t.options).toString().trim()
-    else if o.run         then CoffeeScript.run t.input, t.options
+    if o.tokens
+      printTokens CoffeeScript.tokens t.input, t.options
+    else if o.nodes
+      printLine CoffeeScript.nodes(t.input, t.options).toString().trim()
+    else if o.run
+      require './register'
+      CoffeeScript.run t.input, t.options
     else if o.join and t.file isnt o.join
       t.input = helpers.invertLiterate t.input if helpers.isLiterate file
       sourceCode[sources.indexOf(t.file)] = t.input
