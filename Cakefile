@@ -161,7 +161,7 @@ task 'bench', 'quick benchmark of compilation time', ->
 
 # Run the CoffeeScript test suite.
 runTests = (CoffeeScript) ->
-  require './lib/coffee-script/register'
+  CoffeeScript.register()
   startTime   = Date.now()
   currentFile = null
   passedTests = 0

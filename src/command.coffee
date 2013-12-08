@@ -138,7 +138,7 @@ compileScript = (file, input, base = null) ->
     else if o.nodes
       printLine CoffeeScript.nodes(t.input, t.options).toString().trim()
     else if o.run
-      require './register'
+      CoffeeScript.register()
       CoffeeScript.run t.input, t.options
     else if o.join and t.file isnt o.join
       t.input = helpers.invertLiterate t.input if helpers.isLiterate file

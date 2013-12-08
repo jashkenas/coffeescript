@@ -156,6 +156,8 @@ exports.eval = (code, options = {}) ->
   else
     vm.runInContext js, sandbox
 
+exports.register = -> require './register'
+
 exports._compileFile = (filename, sourceMap = no) ->
   raw = fs.readFileSync filename, 'utf8'
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
