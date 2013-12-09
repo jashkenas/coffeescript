@@ -1,8 +1,11 @@
 # Examples from the Poignant Guide.
+# These are examples of syntax differences between CoffeeScript and Ruby,
+# they won't run.
 
 # ['toast', 'cheese', 'wine'].each { |food| print food.capitalize }
 
-['toast', 'wine', 'cheese'].each (food) -> print food.capitalize()
+print food.capitalize() for food in ['toast', 'wine', 'cheese']
+
 
 
 
@@ -14,10 +17,10 @@
 # end
 
 LotteryTicket =
-  get_picks:      -> @picks
-  set_picks:      (@picks) ->
-  get_purchased:  -> @purchase
-  set_purchased:  (@purchased) ->
+  get_picks:     -> @picks
+  set_picks:     (@picks) ->
+  get_purchased: -> @purchase
+  set_purchased: (@purchased) ->
 
 
 
@@ -42,13 +45,10 @@ LotteryDraw =
   play: ->
     result  = LotteryTicket.new_random()
     winners = {}
-    this.tickets.each (buyer, ticket_list) ->
-      ticket_list.each (ticket) ->
-        score = ticket.score result
-        return if score is 0
-        winners[buyer] or= []
-        winners[buyer].push [ticket, score]
-    this.tickets = {}
+    for buyer, ticketList of @tickets
+      for ticket in ticketList when (score = ticket.score result) isnt 0
+        (winners[buyer] or= []).push [ticket, score]
+    @tickets = {}
     winners
 
 
@@ -64,7 +64,7 @@ LotteryDraw =
 
 WishScanner =
   scan_for_a_wish: ->
-    wish = this.read().detect (thought) -> thought.index('wish: ') is 0
+    wish = @read().detect (thought) -> thought.indexOf('wish: ') is 0
     wish.replace 'wish: ', ''
 
 
@@ -109,28 +109,28 @@ Creature =
 
   # This method applies a hit taken during a fight.
   hit: (damage) ->
-    p_up = Math.rand this.charisma
+    p_up = Math.rand @charisma
     if p_up % 9 is 7
-      this.life += p_up / 4
-      console.log "[" + this.name + " magick powers up " + p_up + "!]"
-    this.life -= damage
-    if this.life <= 0 then console.log "[" + this.name + " has died.]"
+      @life += p_up / 4
+      console.log "[#{@name} magick powers up #{p_up}!]"
+    @life -= damage
+    if @life <= 0 then console.log "[#{@name} has died.]"
 
   # This method takes one turn in a fight.
   fight: (enemy, weapon) ->
-    if this.life <= 0 then return console.log "[" + this.name + "is too dead to fight!]"
+    return console.log "[#{@name} is too dead to fight!]" if @life <= 0
 
     # Attack the opponent.
-    your_hit = Math.rand this.strength + weapon
-    console.log "[You hit with " + your_hit + "points of damage!]"
+    your_hit = Math.rand @strength + weapon
+    console.log "[You hit with #{your_hit}points of damage!]"
     enemy.hit your_hit
 
     # Retaliation.
     console.log enemy
     if enemy.life > 0
       enemy_hit = Math.rand enemy.strength + enemy.weapon
-      console.log "[Your enemy hit with " + enemy_hit + "points of damage!]"
-      this.hit enemy_hit
+      console.log "[Your enemy hit with #{enemy_hit}points of damage!]"
+      @hit enemy_hit
 
 
 
@@ -156,7 +156,7 @@ code_words.each (real, code) -> idea.replace(real, code)
 # Save the jibberish to a new file
 print "File encoded. Please enter a name for this idea: "
 idea_name = gets().strip()
-File.open "idea-" + idea_name + '.txt', 'w', (file) -> file.write idea
+File.open "idea-#{idea_name}.txt", 'w', (file) -> file.write idea
 
 
 
@@ -174,8 +174,8 @@ File.open "idea-" + idea_name + '.txt', 'w', (file) -> file.write idea
 
 wipe_mutterings_from = (sentence) ->
   throw new Error "cannot wipe mutterings" unless sentence.indexOf
-  while sentence.indexOf('(') >= 0
-    open     = sentence.indexOf('(') - 1
-    close    = sentence.indexOf(')') + 1
-    sentence = sentence.slice(0, open) + sentence.slice(close, sentence.length)
+  while '(' in sentence
+    open     = sentence.indexOf('(')
+    close    = sentence.indexOf(')')
+    sentence = "#{sentence[0...open]}#{sentence[close + 1..]}"
     sentence

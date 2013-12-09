@@ -3,13 +3,12 @@ merge_sort = (list) ->
 
   return list if list.length is 1
 
-  result  = []
   pivot   = Math.floor list.length / 2
   left    = merge_sort list.slice 0, pivot
   right   = merge_sort list.slice pivot
 
-  while left.length and right.length
-    result.push(if left[0] < right[0] then left.shift() else right.shift())
+  result = while left.length and right.length
+    if left[0] < right[0] then left.shift() else right.shift()
 
   result.concat(left).concat(right)
 

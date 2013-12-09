@@ -13,7 +13,7 @@ run_loop = ->
   wait()
 
 # Objects:
-dense_object_literal = {one: 1, two: 2, three: 3}
+dense_object_literal = one: 1, two: 2, three: 3
 
 spaced_out_multiline_object =
   pi: 3.14159
@@ -56,7 +56,7 @@ race = ->
   run()
   walk()
   crawl()
-  if tired then return sleep()
+  return sleep() if tired
   race()
 
 # Conditional assignment:
@@ -64,7 +64,7 @@ good or= evil
 wine and= cheese
 
 # Nested property access and calls.
-((moon.turn(360))).shapes[3].move({x: 45, y: 30}).position['top'].offset('x')
+(moon.turn 360).shapes[3].move(x: 45, y: 30).position['top'].offset('x')
 
 a = b = c = 5
 
@@ -79,7 +79,7 @@ try
   dogs_and_cats_living_together()
   throw "up"
 catch error
-  print(error)
+  print error
 finally
   clean_up()
 
@@ -130,8 +130,8 @@ wednesday = -> eat_breakfast(); go_to_work(); eat_dinner()
 
 # Multiline strings with inner quotes.
 story = "Lorem ipsum dolor \"sit\" amet, consectetuer adipiscing elit,
-sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna
-aliquam erat volutpat. Ut wisi enim ad."
+         sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna
+         aliquam erat volutpat. Ut wisi enim ad."
 
 # Inheritance and calling super.
 class Animal

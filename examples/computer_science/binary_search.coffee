@@ -19,7 +19,7 @@ binary_search = (items, value) ->
 
 
 # Test the function.
-console.log 2 is binary_search [10, 20, 30, 40, 50], 30
-console.log 4 is binary_search [-97, 35, 67, 88, 1200], 1200
-console.log 0 is binary_search [0, 45, 70], 0
-console.log(-1 is binary_search [0, 45, 70], 10)
+console.log  2 is binary_search [10, 20, 30, 40, 50], 30
+console.log  4 is binary_search [-97, 35, 67, 88, 1200], 1200
+console.log  0 is binary_search [0, 45, 70], 0
+console.log -1 is binary_search [0, 45, 70], 10
