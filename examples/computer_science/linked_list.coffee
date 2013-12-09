@@ -1,9 +1,6 @@
 # "Classic" linked list implementation that doesn't keep track of its size.
 class LinkedList
 
-  ->
-    this._head = null # Pointer to the first item in the list.
-
 
   # Appends some data to the end of the list. This method traverses the existing
   # list and places the value at the end in a new node.
