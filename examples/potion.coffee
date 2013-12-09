@@ -45,7 +45,7 @@ foods[2]
 #   (key, ' is a ', val) join print.
 
 for key, val of {dog: 'canine', cat: 'feline', fox: 'vulpine'}
-  print key + ' is a ' + val
+  print "#{key} is a #{val}"
 
 
 # Person = class: /name, /age, /sex.
@@ -54,7 +54,7 @@ for key, val of {dog: 'canine', cat: 'feline', fox: 'vulpine'}
 
 class Person
   print: ->
-    print 'My name is ' + @name + '.'
+    print "My name is #{@name}."
 
 
 # p = Person ()
@@ -74,7 +74,7 @@ class Policeman extends Person
   (@rank) ->
 
   print: ->
-    print 'My name is ' + @name + " and I'm a " + @rank + '.'
+    print "My name is #{@name} and I'm a #{@rank}."
 
 print new Policeman 'Constable'
 
@@ -180,7 +180,7 @@ if 3.gender?
 #   session = url query ? at ('session').
 
 HomePage::get = (url) ->
-  session = url.query.session if url.query?
+  session = url.query?.session
 
 
 # BTree = class: /left, /right.
