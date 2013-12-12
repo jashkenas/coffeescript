@@ -732,9 +732,15 @@ exports.Extends = class Extends extends Base
 
   children: ['child', 'parent']
 
+  utility: 'extends'
+
   # Hooks one constructor into another's prototype chain.
   compileToFragments: (o) ->
-    new Call(new Value(new Literal utility 'extends'), [@child, @parent]).compileToFragments o
+    new Call(new Value(new Literal utility @utility), [@child, @parent]).compileToFragments o
+
+# Node for the "extended" hook after the class body has been wired up.
+exports.Extended = class Extended extends Extends
+  utility: 'extended'
 
 #### Access
 
@@ -1118,6 +1124,7 @@ exports.Class = class Class extends Base
       @body.expressions.unshift new Extends lname, superClass
       func.params.push new Param superClass
       args.push @parent
+      @body.expressions.splice @body.expressions.length - 1, 0, new Extended lname, superClass
 
     @body.expressions.unshift @directives...
 
@@ -2109,6 +2116,10 @@ UTILITIES =
   # to the superclass for `super()` calls, and copies of any static properties.
   extends: -> """
     function(child, parent) { for (var key in parent) { if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; }
+  """
+
+  extended: -> """
+    function(child, parent) { if (typeof parent.extended === "function") { parent.extended(child); } }
   """
 
   # Create a function bound to the current value of "this".
