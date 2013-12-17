@@ -2107,19 +2107,39 @@ UTILITIES =
 
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls, and copies of any static properties.
-  extends: -> """
-    function(child, parent) { for (var key in parent) { if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; }
-  """
+  extends: -> "
+    function(child, parent) {
+      for (var key in parent) {
+        if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key];
+      }
+      function ctor() {
+        this.constructor = child;
+      }
+      ctor.prototype = parent.prototype;
+      child.prototype = new ctor();
+      child.__super__ = parent.prototype;
+      return child;
+    }
+  "
 
   # Create a function bound to the current value of "this".
-  bind: -> '''
-    function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
-  '''
+  bind: -> '
+    function(fn, me){
+      return function(){
+        return fn.apply(me, arguments);
+      };
+    }
+  '
 
   # Discover if an item is in an array.
-  indexOf: -> """
-    [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; }
-  """
+  indexOf: -> "
+    [].indexOf || function(item) {
+      for (var i = 0, l = this.length; i < l; i++) {
+        if (i in this && this[i] === item) return i;
+      }
+      return -1;
+    }
+  "
 
   # Shortcuts to speed up the lookup time for native functions.
   hasProp: -> '{}.hasOwnProperty'
