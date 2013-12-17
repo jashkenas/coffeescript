@@ -198,6 +198,14 @@ test "#748: trailing reserved identifiers", ->
     nonce
   eq nonce, result
 
+# Postfix
+
+test "#3056: multiple postfix conditionals", ->
+  temp = 'initial'
+  temp = 'ignored' unless true if false
+  eq temp, 'initial'
+
+# Loops
 
 test "basic `while` loops", ->
 
@@ -296,6 +304,7 @@ test "break *not* at the top level", ->
     result
   eq 2, someFunc()
 
+# Switch
 
 test "basic `switch`", ->
 
@@ -420,6 +429,7 @@ test "Issue #997. Switch doesn't fallthrough.", ->
 
   eq val, 1
 
+# Throw
 
 test "Throw should be usable as an expression.", ->
   try
