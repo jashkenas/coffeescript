@@ -188,7 +188,8 @@ class exports.Rewriter
         #  1. We have seen a `CONTROL` argument on the line.
         #  2. The last token before the indent is part of the list below
         #
-        if prevTag not in ['=>', '->', '[', '(', ',', '{', 'TRY', 'ELSE', '=']
+        if prevTag not in ['=>', '->', '=>*', '->*', '[', '(', ',', '{',
+          'TRY', 'ELSE', '=']
           endImplicitCall() while inImplicitCall()
         stack.pop() if inImplicitControl()
         stack.push [tag, i]
