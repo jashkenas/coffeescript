@@ -3,10 +3,10 @@
 #
 # * Generator Definition
 
-# Using the keyword yield should not cause a syntax error.
-->* yield 0
+test "generator as argument", ->
+  ok ->* 1
 
-test "Generator Definition", ->
+test "generator definition", ->
   x = ->*
     yield 0
     yield 1
@@ -30,20 +30,15 @@ test "bound generator", ->
     bound: ->
       do =>*
         this
-      .next().value
     unbound: ->
       do ->*
         this
-      .next().value
     nested: ->
       do =>*
         do =>*
           do =>*
             this
-          .next().value
-        .next().value
-      .next().value
 
-  eq obj, obj.bound()
-  ok obj isnt obj.unbound()
-  eq obj, obj.nested()
+  eq obj, obj.bound().next().value
+  ok obj isnt obj.unbound().next().value
+  eq obj, obj.nested().next().value.next().value.next().value
