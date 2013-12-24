@@ -713,7 +713,7 @@ exports.Lexer = class Lexer
 JS_KEYWORDS = [
   'true', 'false', 'null', 'this'
   'new', 'delete', 'typeof', 'in', 'instanceof'
-  'return', 'throw', 'break', 'continue', 'debugger', 'yield'
+  'return', 'throw', 'break', 'continue', 'debugger', 'yield', 'yield*'
   'if', 'else', 'switch', 'for', 'while', 'do', 'try', 'catch', 'finally'
   'class', 'extends', 'super'
 ]
@@ -834,7 +834,7 @@ COMPOUND_ASSIGN = [
 ]
 
 # Unary tokens.
-UNARY   = ['!', '~', 'NEW', 'TYPEOF', 'DELETE', 'DO', 'YIELD']
+UNARY   = ['!', '~', 'NEW', 'TYPEOF', 'DELETE', 'DO', 'YIELD', 'YIELD*']
 
 # Logical tokens.
 LOGIC   = ['&&', '||', '&', '|', '^']

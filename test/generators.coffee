@@ -11,7 +11,8 @@ test "generator definition", ->
     yield 0
     yield 1
     yield 2
-  y = x()
+  y = do ->*
+    yield* x()
   z = y.next()
   eq z.value, 0
   eq z.done, false
