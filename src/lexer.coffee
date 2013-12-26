@@ -404,6 +404,10 @@ exports.Lexer = class Lexer
     if value is ';'
       @seenFor = no
       tag = 'TERMINATOR'
+    else if value is '*' and prev[1] is 'yield' and not prev.spaced
+      poppedToken = @tokens.pop()
+      tag = 'UNARY'
+      value = 'yield*'
     else if value in MATH            then tag = 'MATH'
     else if value in COMPARE         then tag = 'COMPARE'
     else if value in COMPOUND_ASSIGN then tag = 'COMPOUND_ASSIGN'
