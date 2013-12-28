@@ -99,8 +99,9 @@ exports.Lexer = class Lexer
   # referenced as property names here, so you can still do `jQuery.is()` even
   # though `is` means `===` otherwise.
   identifierToken: ->
-    return 0 unless match = IDENTIFIER.exec @chunk
+    return 0 unless match = /^yield\*/.exec(@chunk) or IDENTIFIER.exec @chunk
     [input, id, colon] = match
+    if input is 'yield*' then id = 'yield*'
 
     # Preserve length of id for location data
     idLength = id.length
@@ -404,10 +405,6 @@ exports.Lexer = class Lexer
     if value is ';'
       @seenFor = no
       tag = 'TERMINATOR'
-    else if value is '*' and prev[1] is 'yield' and not prev.spaced
-      poppedToken = @tokens.pop()
-      tag = 'UNARY'
-      value = 'yield*'
     else if value in MATH            then tag = 'MATH'
     else if value in COMPARE         then tag = 'COMPARE'
     else if value in COMPOUND_ASSIGN then tag = 'COMPOUND_ASSIGN'
