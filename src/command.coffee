@@ -104,6 +104,9 @@ compilePath = (source, topLevel, base) ->
     if path.basename(source) is 'node_modules'
       notSources[source] = yes
       return
+    if opts.run
+      compilePath findDirectoryIndex(source), topLevel, base
+      return
     watchDir source, base if opts.watch
     try
       files = fs.readdirSync source
@@ -123,6 +126,16 @@ compilePath = (source, topLevel, base) ->
     compileScript(source, code.toString(), base)
   else
     notSources[source] = yes
+
+findDirectoryIndex = (source) ->
+  for ext in CoffeeScript.FILE_EXTENSIONS
+    index = path.join source, "index#{ext}"
+    try
+      return index if (fs.statSync index).isFile()
+    catch err
+      throw err unless err.code is 'ENOENT'
+  console.error "Missing index.coffee or index.litcoffee in #{source}"
+  process.exit 1
 
 # Compile a single source script, containing the given code, according to the
 # requested options. If evaluating the script directly sets `__filename`,
