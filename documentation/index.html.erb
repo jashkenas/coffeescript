@@ -552,6 +552,10 @@ Expressions
       to the bottom of your function.
     </p>
     <p>
+      To get the array index, you can additionaly add an index variable to the expression:<br />
+    </p>
+    <%= code_for('array_with_index_comprehensions') %>
+    <p>
       To step through a range comprehension in fixed-size chunks,
       use <tt>by</tt>, for example:<br />
       <tt>evens = (x for x in [0..10] by 2)</tt>
