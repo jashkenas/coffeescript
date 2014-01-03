@@ -1117,15 +1117,15 @@ exports.Class = class Class extends Base
     @ensureConstructor name
     @addBoundFunctions o
     @body.spaced = yes
-    @body.expressions.push lname
 
     if @parent
       superClass = new Literal o.classScope.freeVariable 'super', no
       @body.expressions.unshift new Extends lname, superClass
       func.params.push new Param superClass
       args.push @parent
-      @body.expressions.splice @body.expressions.length - 1, 0, new Extended lname, superClass
+      @body.expressions.push new Extended lname, superClass
 
+    @body.expressions.push lname
     @body.expressions.unshift @directives...
 
     klass = new Parens new Call func, args
