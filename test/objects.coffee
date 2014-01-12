@@ -410,3 +410,10 @@ test "#2207: Immediate implicit closes don't close implicit objects", ->
     key: for i in [1, 2, 3] then i
 
   eq func().key.join(' '), '1 2 3'
+
+test 'inline implicit object literals within multiline implicit object literals', ->
+  x =
+    a: aa: 0
+    b: 0
+  eq 0, x.b
+  eq 0, x.a.aa
