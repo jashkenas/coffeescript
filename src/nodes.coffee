@@ -732,9 +732,15 @@ exports.Extends = class Extends extends Base
 
   children: ['child', 'parent']
 
+  utility: 'extends'
+
   # Hooks one constructor into another's prototype chain.
   compileToFragments: (o) ->
-    new Call(new Value(new Literal utility 'extends'), [@child, @parent]).compileToFragments o
+    new Call(new Value(new Literal utility @utility), [@child, @parent]).compileToFragments o
+
+# Node for the "extended" hook after the class body has been wired up.
+exports.Extended = class Extended extends Extends
+  utility: 'extended'
 
 #### Access
 
@@ -1111,14 +1117,15 @@ exports.Class = class Class extends Base
     @ensureConstructor name
     @addBoundFunctions o
     @body.spaced = yes
-    @body.expressions.push lname
 
     if @parent
       superClass = new Literal o.classScope.freeVariable 'super', no
       @body.expressions.unshift new Extends lname, superClass
       func.params.push new Param superClass
       args.push @parent
+      @body.expressions.push new Extended lname, superClass
 
+    @body.expressions.push lname
     @body.expressions.unshift @directives...
 
     klass = new Parens new Call func, args
@@ -2121,6 +2128,10 @@ UTILITIES =
       return child;
     }
   "
+
+  extended: -> """
+    function(child, parent) { if (typeof parent.extended === "function") { parent.extended(child); } }
+  """
 
   # Create a function bound to the current value of "this".
   bind: -> '

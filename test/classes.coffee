@@ -828,3 +828,58 @@ test "#3232: super in static methods (not object-assigned)", ->
 
   ok Bar.baz()
   ok Bar.qux()
+
+test "#3289: extended hook after executable class body", ->
+
+  called = 0
+
+  class Base
+
+    constructor: (@called = []) ->
+
+    @extensionLevel: 0
+
+    @extended: (child) ->
+      called++
+      child.extensionLevel = @extensionLevel + 1
+      for key, fn of child::scopes
+        do (key, fn) ->
+          child::[key] = ->
+            fn.apply(this, arguments)
+            this
+          child[key] = ->
+            obj = if this instanceof child then this else new this()
+            fn.apply(obj, arguments)
+            obj
+
+  class One extends Base
+    name: 'one'
+    scopes:
+      hook: ->
+        @called.push('extending-base')
+      testing: ->
+        @called.push('testing')
+
+  class Two extends One
+    subName: 'two'
+    scopes:
+      hook: ->
+        One.hook.apply(this, arguments)
+        @called.push('extending-child')
+
+  one  = new One
+  two  = new Two
+
+  eq called, 2
+  eq One.extensionLevel, 1
+  eq Two.extensionLevel, 2
+  eq Base.extensionLevel, 0
+
+  eq one.name, 'one'
+  eq two.name, 'one'
+  eq one.subName, undefined
+  eq two.subName, 'two'
+
+  arrayEq One.testing().testing().called,   ['testing', 'testing']
+  arrayEq Two.hook().testing().called, ['extending-base', 'extending-child', 'testing']
+  arrayEq Two.testing().hook().called, ['testing', 'extending-base', 'extending-child']
