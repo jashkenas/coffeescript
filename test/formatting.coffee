@@ -98,6 +98,13 @@ test "#1495, method call chaining", ->
   ).join ', '
   eq 'a, b, c', result
 
+test "chaining after outdent", ->
+  str = 'abc'
+  zero = parseInt str.replace /\w/, (letter) ->
+    0
+  .toString()
+  eq '0', zero
+
 # Operators
 
 test "newline suppression for operators", ->
