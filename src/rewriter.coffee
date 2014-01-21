@@ -286,13 +286,10 @@ class exports.Rewriter
       #     .g b
       #     .h a
       #
-      if inImplicitCall() and tag in CALL_CLOSERS
-        if prevTag is 'OUTDENT'
-          endImplicitCall()
-          return forward(1)
-        if prevToken.newLine
-          endAllImplicitCalls()
-          return forward(1)
+      if inImplicitCall() and tag in CALL_CLOSERS and
+         (prevTag is 'OUTDENT' or prevToken.newLine)
+        endAllImplicitCalls()
+        return forward(1)
 
       stackTop()[2].sameLine = no if inImplicitObject() and tag in LINEBREAKS
 
