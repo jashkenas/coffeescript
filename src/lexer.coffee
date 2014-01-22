@@ -520,9 +520,9 @@ exports.Lexer = class Lexer
   #    current chunk.
   interpolateString: (str, options = {}) ->
     {heredoc, regex, offsetInChunk, strOffset, lexedLength} = options
-    offsetInChunk = offsetInChunk || 0
-    strOffset = strOffset || 0
-    lexedLength = lexedLength || str.length
+    offsetInChunk ||= 0
+    strOffset ||= 0
+    lexedLength ||= str.length
 
     # Parse the string.
     tokens = []
@@ -537,6 +537,8 @@ exports.Lexer = class Lexer
         continue
       # NEOSTRING is a fake token.  This will be converted to a string below.
       tokens.push @makeToken('NEOSTRING', str[pi...i], strOffset + pi) if pi < i
+      unless errorToken
+        errorToken = @makeToken '', 'string interpolation', offsetInChunk + i + 1, 2
       inner = expr[1...-1]
       if inner.length
         [line, column] = @getLineAndColumnFromChunk(strOffset + i + 1)
@@ -562,7 +564,9 @@ exports.Lexer = class Lexer
     # If the first token is not a string, add a fake empty string to the beginning.
     tokens.unshift @makeToken('NEOSTRING', '', offsetInChunk) unless tokens[0][0] is 'NEOSTRING'
 
-    @token '(', '(', offsetInChunk, 0 if interpolated = tokens.length > 1
+    if interpolated = tokens.length > 1
+      @token '(', '(', offsetInChunk, 0, errorToken
+
     # Push all the tokens
     for token, i in tokens
       [tag, value] = token
@@ -656,8 +660,9 @@ exports.Lexer = class Lexer
   # not specified, the length of `value` will be used.
   #
   # Returns the new token.
-  token: (tag, value, offsetInChunk, length) ->
+  token: (tag, value, offsetInChunk, length, origin) ->
     token = @makeToken tag, value, offsetInChunk, length
+    token.origin = origin if origin
     @tokens.push token
     token
 
