@@ -183,6 +183,7 @@ parser.lexer =
     token = @tokens[@pos++]
     if token
       [tag, @yytext, @yylloc] = token
+      @errorToken = token.origin or token
       @yylineno = @yylloc.first_line
     else
       tag = ''
@@ -198,12 +199,21 @@ parser.yy = require './nodes'
 # Override Jison's default error handling function.
 parser.yy.parseError = (message, {token}) ->
   # Disregard Jison's message, it contains redundant line numer information.
-  message = "unexpected #{if token is 1 then 'end of input' else token}"
+  # Disregard the token, we take its value directly from the lexer in case
+  # the error is caused by a generated token which might refer to its origin.
+  {errorToken, tokens} = parser.lexer
+  [ignored, errorText, errorLoc] = errorToken
+
+  errorText = if errorToken is tokens[tokens.length - 1]
+    'end of input'
+  else
+    helpers.nameWhitespaceCharacter errorText
+
   # The second argument has a `loc` property, which should have the location
   # data for this token. Unfortunately, Jison seems to send an outdated `loc`
   # (from the previous token), so we take the location information directly
   # from the lexer.
-  helpers.throwSyntaxError message, parser.lexer.yylloc
+  helpers.throwSyntaxError "unexpected #{errorText}", errorLoc
 
 # Based on http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js
 # Modified to handle sourceMap

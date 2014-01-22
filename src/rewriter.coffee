@@ -6,9 +6,10 @@
 # parentheses, and generally clean things up.
 
 # Create a generated token: one that exists due to a use of implicit syntax.
-generate = (tag, value) ->
+generate = (tag, value, origin) ->
   tok = [tag, value]
   tok.generated = yes
+  tok.origin = origin if origin
   tok
 
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
@@ -167,13 +168,13 @@ class exports.Rewriter
       startImplicitObject = (j, startsLine = yes) ->
         idx = j ? i
         stack.push ['{', idx, sameLine: yes, startsLine: startsLine, ours: yes]
-        tokens.splice idx, 0, generate '{', generate(new String('{'))
+        tokens.splice idx, 0, generate '{', generate(new String('{')), token
         i += 1 if not j?
 
       endImplicitObject = (j) ->
         j = j ? i
         stack.pop()
-        tokens.splice j, 0, generate '}', '}'
+        tokens.splice j, 0, generate '}', '}', token
         i += 1
 
       # Don't end an implicit call on next indent if any of these are in an argument

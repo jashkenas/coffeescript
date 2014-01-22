@@ -188,3 +188,11 @@ syntaxErrorToString = ->
     #{codeLine}
     #{marker}
   """
+
+exports.nameWhitespaceCharacter = (string) ->
+  switch string
+    when ' ' then 'space'
+    when '\n' then 'newline'
+    when '\r' then 'carriage return'
+    when '\t' then 'tab'
+    else string
