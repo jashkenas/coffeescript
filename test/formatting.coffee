@@ -199,7 +199,7 @@ test "#1299: Disallow token misnesting", ->
 
 test "#2981: Enforce initial indentation", ->
   try
-    CoffeeScript.compile '  a\nb'
+    CoffeeScript.compile '  a\nb-'
     ok no
   catch e
     eq 'missing indentation', e.message
@@ -212,3 +212,16 @@ test "'single-line' expression containing multiple lines", ->
     then -b
     else null
   """
+
+test "#1275: allow indentation before closing brackets", ->
+  array = [
+      1
+      2
+      3
+    ]
+  eq array, array
+  do ->
+  (
+    a = 1
+   )
+  eq 1, a

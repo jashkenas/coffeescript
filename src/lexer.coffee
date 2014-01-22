@@ -327,37 +327,43 @@ exports.Lexer = class Lexer
       @indents.push diff
       @ends.push 'OUTDENT'
       @outdebt = @indebt = 0
+      @indent = size
     else if size < @baseIndent
       @error 'missing indentation', indent.length
     else
       @indebt = 0
       @outdentToken @indent - size, noNewlines, indent.length
-    @indent = size
     indent.length
 
   # Record an outdent token or multiple tokens, if we happen to be moving back
-  # inwards past several recorded indents.
+  # inwards past several recorded indents. Sets new @indent value.
   outdentToken: (moveOut, noNewlines, outdentLength) ->
+    decreasedIndent = @indent - moveOut
     while moveOut > 0
-      len = @indents.length - 1
-      if @indents[len] is undefined
+      lastIndent = @indents[@indents.length - 1]
+      if not lastIndent
         moveOut = 0
-      else if @indents[len] is @outdebt
+      else if lastIndent is @outdebt
         moveOut -= @outdebt
         @outdebt = 0
-      else if @indents[len] < @outdebt
-        @outdebt -= @indents[len]
-        moveOut  -= @indents[len]
+      else if lastIndent < @outdebt
+        @outdebt -= lastIndent
+        moveOut  -= lastIndent
       else
         dent = @indents.pop() + @outdebt
-        moveOut -= dent
+        if outdentLength and @chunk[outdentLength] in INDENTABLE_CLOSERS
+          decreasedIndent -= dent - moveOut
+          moveOut = dent
         @outdebt = 0
+        # pair might call outdentToken, so preserve decreasedIndent
         @pair 'OUTDENT'
-        @token 'OUTDENT', dent, 0, outdentLength
+        @token 'OUTDENT', moveOut, 0, outdentLength
+        moveOut -= dent
     @outdebt -= moveOut if dent
     @tokens.pop() while @value() is ';'
 
     @token 'TERMINATOR', '\n', outdentLength, 0 unless @tag() is 'TERMINATOR' or noNewlines
+    @indent = decreasedIndent
     this
 
   # Matches and consumes non-meaningful whitespace. Tag the previous token
@@ -602,8 +608,7 @@ exports.Lexer = class Lexer
       #     el.click((event) ->
       #       el.hide())
       #
-      @indent -= size = last @indents
-      @outdentToken size, true
+      @outdentToken last(@indents), true
       return @pair tag
     @ends.pop()
 
@@ -876,3 +881,6 @@ INDEXABLE = CALLABLE.concat 'NUMBER', 'BOOL', 'NULL', 'UNDEFINED'
 # occurs at the start of a line. We disambiguate these from trailing whens to
 # avoid an ambiguity in the grammar.
 LINE_BREAK = ['INDENT', 'OUTDENT', 'TERMINATOR']
+
+# Additional indent in front of these is ignored.
+INDENTABLE_CLOSERS = [')', '}', ']']
