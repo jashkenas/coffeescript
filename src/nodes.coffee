@@ -1719,7 +1719,7 @@ exports.In = class In extends Base
   invert: NEGATE
 
   compileNode: (o) ->
-    if @array instanceof Value and @array.isArray()
+    if @array instanceof Value and @array.isArray() and @array.base.objects.length
       for obj in @array.base.objects when obj instanceof Splat
         hasSplat = yes
         break
@@ -1728,7 +1728,6 @@ exports.In = class In extends Base
     @compileLoopTest o
 
   compileOrTest: (o) ->
-    return [@makeCode("#{!!@negated}")] if @array.base.objects.length is 0
     [sub, ref] = @object.cache o, LEVEL_OP
     [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
     tests = []
