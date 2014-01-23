@@ -302,7 +302,8 @@ class exports.Rewriter
             endImplicitCall()
           # Close implicit objects such as:
           # return a: 1, b: 2 unless true
-          else if inImplicitObject() and sameLine and not startsLine
+          else if inImplicitObject() and sameLine and
+                  tag isnt 'TERMINATOR' and prevTag isnt ':'
             endImplicitObject()
           # Close implicit objects when at end of line, line didn't end with a comma
           # and the implicit object didn't start the line or the next line doesn't look like
