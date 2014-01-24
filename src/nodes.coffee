@@ -1157,6 +1157,7 @@ exports.Assign = class Assign extends Base
       return @compilePatternMatch o if @variable.isArray() or @variable.isObject()
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
+      return @compileSpecialMath  o if @context in ['**=', '//=', '%%=']
     compiledName = @variable.compileToFragments o, LEVEL_LIST
     name = fragmentsToText compiledName
     unless @context
@@ -1278,6 +1279,12 @@ exports.Assign = class Assign extends Base
     else
       fragments = new Op(@context[...-1], left, new Assign(right, @value, '=')).compileToFragments o
       if o.level <= LEVEL_LIST then fragments else @wrapInBraces fragments
+
+  # Convert special math assignment operators like `a **= b` to the equivalent
+  # extended form `a = a ** b` and then compiles that.
+  compileSpecialMath: (o) ->
+    [left, right] = @variable.cacheReference o
+    new Assign(left, new Op(@context[...-1], right, @value)).compileToFragments o
 
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
@@ -1687,10 +1694,16 @@ exports.Op = class Op extends Base
       @error "cannot increment/decrement \"#{@first.unwrapAll().value}\""
     return @compileUnary     o if @isUnary()
     return @compileChain     o if isChain
-    return @compileExistence o if @operator is '?'
-    answer = [].concat @first.compileToFragments(o, LEVEL_OP), @makeCode(' ' + @operator + ' '),
-            @second.compileToFragments(o, LEVEL_OP)
-    if o.level <= LEVEL_OP then answer else @wrapInBraces answer
+    switch @operator
+      when '?'  then @compileExistence o
+      when '**' then @compilePower o
+      when '//' then @compileFloorDivision o
+      when '%%' then @compileModulo o
+      else
+        lhs = @first.compileToFragments o, LEVEL_OP
+        rhs = @second.compileToFragments o, LEVEL_OP
+        answer = [].concat lhs, @makeCode(" #{@operator} "), rhs
+        if o.level <= LEVEL_OP then answer else @wrapInBraces answer
 
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. For example:
@@ -1732,6 +1745,20 @@ exports.Op = class Op extends Base
     parts.push @first.compileToFragments o, LEVEL_OP
     parts.reverse() if @flip
     @joinFragmentArrays parts, ''
+
+  compilePower: (o) ->
+    # Make a Math.pow call
+    pow = new Value new Literal('Math'), [new Access new Literal 'pow']
+    new Call(pow, [@first, @second]).compileToFragments o
+
+  compileFloorDivision: (o) ->
+    floor = new Value new Literal('Math'), [new Access new Literal 'floor']
+    div = new Op '/', @first, @second
+    new Call(floor, [div]).compileToFragments o
+
+  compileModulo: (o) ->
+    mod = new Value new Literal utility 'modulo'
+    new Call(mod, [@first, @second]).compileToFragments o
 
   toString: (idt) ->
     super idt, @constructor.name + ' ' + @operator
@@ -2165,6 +2192,10 @@ UTILITIES =
       return -1;
     }
   "
+
+  modulo: -> """
+    function(a, b) { return (a % b + +b) % b; }
+  """
 
   # Shortcuts to speed up the lookup time for native functions.
   hasProp: -> '{}.hasOwnProperty'
