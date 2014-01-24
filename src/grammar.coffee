@@ -217,6 +217,7 @@ grammar =
     o 'ParamVar',                               -> new Param $1
     o 'ParamVar ...',                           -> new Param $1, null, on
     o 'ParamVar = Expression',                  -> new Param $1, $3
+    o '...',                                    -> new Expansion
   ]
 
   # Function Parameters
@@ -378,6 +379,7 @@ grammar =
   Arg: [
     o 'Expression'
     o 'Splat'
+    o '...',                                     -> new Expansion
   ]
 
   # Just simple, comma-separated, required arguments (no fancy syntax). We need

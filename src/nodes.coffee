@@ -1203,10 +1203,10 @@ exports.Assign = class Assign extends Base
       if obj.unwrap().value in RESERVED
         obj.error "assignment to a reserved word: #{obj.compile o}"
       return new Assign(obj, value, null, param: @param).compileToFragments o, LEVEL_TOP
-    vvar    = value.compileToFragments o, LEVEL_LIST
+    vvar     = value.compileToFragments o, LEVEL_LIST
     vvarText = fragmentsToText vvar
-    assigns = []
-    splat   = false
+    assigns  = []
+    expandedIdx = false
     # Make vvar into a simple variable if it isn't already.
     if not IDENTIFIER.test(vvarText) or @variable.assigns(vvarText)
       assigns.push [@makeCode("#{ ref = o.scope.freeVariable 'ref' } = "), vvar...]
@@ -1225,7 +1225,7 @@ exports.Assign = class Assign extends Base
             [obj, idx] = new Value(obj.unwrapAll()).cacheReference o
           else
             idx = if obj.this then obj.properties[0].name else obj
-      if not splat and obj instanceof Splat
+      if not expandedIdx and obj instanceof Splat
         name = obj.name.unwrap().value
         obj = obj.unwrap()
         val = "#{olen} <= #{vvarText}.length ? #{ utility 'slice' }.call(#{vvarText}, #{i}"
@@ -1235,13 +1235,23 @@ exports.Assign = class Assign extends Base
         else
           val += ") : []"
         val   = new Literal val
-        splat = "#{ivar}++"
+        expandedIdx = "#{ivar}++"
+      else if not expandedIdx and obj instanceof Expansion
+        if rest = olen - i - 1
+          if rest is 1
+            expandedIdx = "#{vvarText}.length - 1"
+          else
+            ivar = o.scope.freeVariable 'i'
+            val = new Literal "#{ivar} = #{vvarText}.length - #{rest}"
+            expandedIdx = "#{ivar}++"
+            assigns.push val.compileToFragments o, LEVEL_LIST
+        continue
       else
         name = obj.unwrap().value
-        if obj instanceof Splat
-          obj.error "multiple splats are disallowed in an assignment"
+        if obj instanceof Splat or obj instanceof Expansion
+          obj.error "multiple splats/expansions are disallowed in an assignment"
         if typeof idx is 'number'
-          idx = new Literal splat or idx
+          idx = new Literal expandedIdx or idx
           acc = no
         else
           acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
@@ -1336,10 +1346,10 @@ exports.Code = class Code extends Base
     delete o.isExistentialEquals
     params = []
     exprs  = []
-    for param in @params
+    for param in @params when param not instanceof Expansion
       o.scope.parameter param.asReference o
-    for param in @params when param.splat
-      for {name: p} in @params
+    for param in @params when param.splat or param instanceof Expansion
+      for {name: p} in @params when param not instanceof Expansion
         if p.this then p = p.properties[0].name
         if p.value then o.scope.add p.value, 'var', yes
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
@@ -1453,7 +1463,7 @@ exports.Param = class Param extends Base
           atParam obj
         # * simple destructured parameters {foo}
         else iterator obj.base.value, obj.base
-      else
+      else if obj not instanceof Expansion
         obj.error "illegal parameter #{obj.compile()}"
     return
 
@@ -1503,6 +1513,22 @@ exports.Splat = class Splat extends Base
     base = list[0].joinFragmentArrays base, ', '
     concatPart = list[index].joinFragmentArrays args, ', '
     [].concat list[0].makeCode("["), base, list[index].makeCode("].concat("), concatPart, (last list).makeCode(")")
+
+#### Expansion
+
+# Used to skip values inside an array destructuring (pattern matching) or
+# parameter list.
+exports.Expansion = class Expansion extends Base
+
+  isComplex: NO
+
+  compileNode: (o) ->
+    @error 'Expansion must be used inside a destructuring assignment or parameter list'
+
+  asReference: (o) ->
+    this
+
+  eachName: (iterator) ->
 
 #### While
 
