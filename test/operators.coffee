@@ -355,3 +355,8 @@ test "modulo operator compound assignment", ->
   a = -2
   a %%= 5
   eq 3, a
+
+test "modulo operator converts arguments to numbers", ->
+  eq 1, 1 %% '42'
+  eq 1, '1' %% 42
+  eq 1, '1' %% '42'
