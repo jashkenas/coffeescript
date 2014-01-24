@@ -537,7 +537,10 @@ test "#2525, #1187, #1208, #1758, looping over an array backwards", ->
 
   arrayEq (index for i, index in list by ident(-1) * 2), [4, 2, 0]
 
+test "splats in destructuring in comprehensions", ->
+  list = [[0, 1, 2], [2, 3, 4], [4, 5, 6]]
+  arrayEq (seq for [rep, seq...] in list), [[1, 2], [3, 4], [5, 6]]
 
-
-
-
+test "#156: expansion in destructuring in comprehensions", ->
+  list = [[0, 1, 2], [2, 3, 4], [4, 5, 6]]
+  arrayEq (last for [..., last] in list), [2, 4, 6]

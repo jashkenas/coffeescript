@@ -1914,7 +1914,7 @@ exports.For = class For extends While
     @returns  = no if lastJumps and lastJumps instanceof Return
     source    = if @range then @source.base else @source
     scope     = o.scope
-    name      = @name  and (@name.compile o, LEVEL_LIST)
+    name      = @name  and (@name.compile o, LEVEL_LIST) if not @pattern
     index     = @index and (@index.compile o, LEVEL_LIST)
     scope.find(name)  if name and not @pattern
     scope.find(index) if index
