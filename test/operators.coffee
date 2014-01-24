@@ -331,12 +331,9 @@ test "floor division operator compound assignment", ->
 
 test "modulo operator", ->
   check = (a, b, expected) ->
-    res = a %% b
-    # Don't use eq because it treats 0 as different to -0.
-    ok res == expected or isNaN(res) and isNaN(expected),
-      "expected #{a} %%%% #{b} to be #{expected}"
+    eq expected, a %% b, "expected #{a} %%%% #{b} to be #{expected}"
   check 0, 1, 0
-  check 0, -1, 0
+  check 0, -1, -0
   check 1, 0, NaN
   check 1, 2, 1
   check 1, -2, -1
