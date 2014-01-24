@@ -130,5 +130,5 @@ test "soaked constructor invocations with caching and property access", ->
   eq 1, semaphore
 
 test "soaked function invocation safe on non-functions", ->
-  eq undefined, 0?(1)
-  eq undefined, 0? 1, 2
+  eq undefined, (0)?(1)
+  eq undefined, (0)? 1, 2

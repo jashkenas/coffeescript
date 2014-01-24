@@ -1,5 +1,7 @@
 return if global.testingBrowser
 
+fs = require 'fs'
+
 # REPL
 # ----
 Stream = require 'stream'
@@ -25,15 +27,22 @@ class MockOutputStream extends Stream
   lastWrite: (fromEnd = -1) ->
     @written[@written.length - 1 + fromEnd].replace /\n$/, ''
 
+# Create a dummy history file
+historyFile = '.coffee_history_test'
+fs.writeFileSync historyFile, '1 + 2\n'
 
 testRepl = (desc, fn) ->
   input = new MockInputStream
   output = new MockOutputStream
-  Repl.start {input, output}
-  test desc, -> fn input, output
+  repl = Repl.start {input, output, historyFile}
+  test desc, -> fn input, output, repl
 
 ctrlV = { ctrl: true, name: 'v'}
 
+
+testRepl 'reads history file', (input, output, repl) ->
+  input.emitLine repl.rli.history[0]
+  eq '3', output.lastWrite()
 
 testRepl "starts with coffee prompt", (input, output) ->
   eq 'coffee> ', output.lastWrite(0)
@@ -97,3 +106,6 @@ testRepl "keeps running after runtime error", (input, output) ->
   eq 0, output.lastWrite().indexOf 'ReferenceError: b is not defined'
   input.emitLine 'a'
   eq 'undefined', output.lastWrite()
+
+process.on 'exit', ->
+  fs.unlinkSync historyFile

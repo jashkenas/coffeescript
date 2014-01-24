@@ -218,6 +218,10 @@ test "#1714: lexer bug with raw range `for` followed by `in`", ->
 test "#1099: statically determined `not in []` reporting incorrect result", ->
   ok 0 not in []
 
+test "#1099: make sure expression tested gets evaluted when array is empty", ->
+  a = 0
+  (do -> a = 1) in []
+  eq a, 1
 
 # Chained Comparison
 

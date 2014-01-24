@@ -104,3 +104,13 @@ test "#2331: bound super regression", ->
     method: => super
   
   eq (new B).method(), 'A'
+
+test "#3259: leak with @-params within destructured parameters", ->
+  fn = ({@foo}, [@bar], [{@baz}]) ->
+    foo = bar = baz = false
+
+  fn.call {}, {foo: 'foo'}, ['bar'], [{baz: 'baz'}]
+
+  eq 'undefined', typeof foo
+  eq 'undefined', typeof bar
+  eq 'undefined', typeof baz

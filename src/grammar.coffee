@@ -74,7 +74,6 @@ grammar =
   Root: [
     o '',                                       -> new Block
     o 'Body'
-    o 'Block TERMINATOR'
   ]
 
   # Any list of statements and expressions, separated by line breaks or semicolons.
@@ -218,9 +217,10 @@ grammar =
     o 'ParamVar',                               -> new Param $1
     o 'ParamVar ...',                           -> new Param $1, null, on
     o 'ParamVar = Expression',                  -> new Param $1, $3
+    o '...',                                    -> new Expansion
   ]
 
- # Function Parameters
+  # Function Parameters
   ParamVar: [
     o 'Identifier'
     o 'ThisProperty'
@@ -379,6 +379,7 @@ grammar =
   Arg: [
     o 'Expression'
     o 'Splat'
+    o '...',                                     -> new Expansion
   ]
 
   # Just simple, comma-separated, required arguments (no fancy syntax). We need
@@ -401,6 +402,7 @@ grammar =
   Catch: [
     o 'CATCH Identifier Block',                 -> [$2, $3]
     o 'CATCH Object Block',                     -> [LOC(2)(new Value($2)), $3]
+    o 'CATCH Block',                            -> [null, $2]
   ]
 
   # Throw an exception object.
@@ -511,7 +513,7 @@ grammar =
   # ambiguity.
   IfBlock: [
     o 'IF Expression Block',                    -> new If $2, $3, type: $1
-    o 'IfBlock ELSE IF Expression Block',       -> $1.addElse new If $4, $5, type: $3
+    o 'IfBlock ELSE IF Expression Block',       -> $1.addElse LOC(3,5) new If $4, $5, type: $3
   ]
 
   # The full complement of *if* expressions, including postfix one-liner
@@ -596,7 +598,7 @@ operators = [
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
   ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
   ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
-  ['right',     'POST_IF']
+  ['left',      'POST_IF']
 ]
 
 # Wrapping Up

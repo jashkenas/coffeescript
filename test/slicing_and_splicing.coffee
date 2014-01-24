@@ -144,3 +144,12 @@ test "#1723: operator precedence in unbounded splice compilation", ->
   list = [0..9]
   list[..if n then n else 0] = n
   arrayEq [n..9], list
+
+test "#2953: methods on endpoints in assignment from array splice literal", ->
+  list = [0..9]
+
+  Number.prototype.same = -> this
+  list[1.same()...9.same()] = 5
+  delete Number.prototype.same
+
+  arrayEq [0, 5, 9], list

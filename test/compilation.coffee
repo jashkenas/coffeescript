@@ -9,6 +9,11 @@ cantCompile = (code) ->
 test "ensure that carriage returns don't break compilation on Windows", ->
   doesNotThrow -> CoffeeScript.compile 'one\r\ntwo', bare: on
 
+test "#3089 - don't mutate passed in options to compile", ->
+  opts = {}
+  CoffeeScript.compile '1 + 1', opts
+  ok !opts.scope 
+
 test "--bare", ->
   eq -1, CoffeeScript.compile('x = y', bare: on).indexOf 'function'
   ok 'passed' is CoffeeScript.eval '"passed"', bare: on, filename: 'test'
@@ -63,6 +68,10 @@ test "#1026", ->
 test "#1050", ->
   cantCompile "### */ ###"
 
+test "#1273: escaping quotes at the end of heredocs", ->
+  cantCompile '"""\\"""' # """\"""
+  cantCompile '"""\\\\\\"""' # """\\\"""
+
 test "#1106: __proto__ compilation", ->
   object = eq
   @["__proto__"] = true
@@ -76,3 +85,15 @@ test "#1055: invalid keys in real (but not work-product) objects", ->
 
 test "#1066: interpolated strings are not implicit functions", ->
   cantCompile '"int#{er}polated" arg'
+
+test "#2846: while with empty body", ->
+  CoffeeScript.compile 'while 1 then', {sourceMap: true}
+
+test "#2944: implicit call with a regex argument", ->
+  CoffeeScript.compile 'o[key] /regex/'
+
+test "#3001: `own` shouldn't be allowed in a `for`-`in` loop", ->
+  cantCompile "a for own b in c"
+
+test "#2994: single-line `if` requires `then`", ->
+  cantCompile "if b else x"

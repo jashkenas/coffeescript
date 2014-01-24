@@ -1,8 +1,8 @@
 # A bubble sort implementation, sorting the given array in-place.
 bubble_sort = (list) ->
   for i in [0...list.length]
-    for j in [0...list.length - i]
-      [list[j], list[j+1]] = [list[j+1], list[j]] if list[j] > list[j+1]
+    for j in [0...list.length - i] when list[j] > list[j + 1]
+      [list[j], list[j+1]] = [list[j + 1], list[j]]
   list
 
 

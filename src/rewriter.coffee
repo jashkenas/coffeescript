@@ -6,10 +6,11 @@
 # parentheses, and generally clean things up.
 
 # Create a generated token: one that exists due to a use of implicit syntax.
-generate = (tag, value) ->
-    tok = [tag, value]
-    tok.generated = yes
-    tok
+generate = (tag, value, origin) ->
+  tok = [tag, value]
+  tok.generated = yes
+  tok.origin = origin if origin
+  tok
 
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
 # its internal array of tokens.
@@ -26,10 +27,9 @@ class exports.Rewriter
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (@tokens) ->
     @removeLeadingNewlines()
-    @removeMidExpressionNewlines()
     @closeOpenCalls()
     @closeOpenIndexes()
-    @addImplicitIndentation()
+    @normalizeLines()
     @tagPostfixConditionals()
     @addImplicitBracesAndParens()
     @addLocationDataToGeneratedTokens()
@@ -64,14 +64,6 @@ class exports.Rewriter
   removeLeadingNewlines: ->
     break for [tag], i in @tokens when tag isnt 'TERMINATOR'
     @tokens.splice 0, i if i
-
-  # Some blocks occur in the middle of expressions -- when we're expecting
-  # this, remove their trailing newlines.
-  removeMidExpressionNewlines: ->
-    @scanTokens (token, i, tokens) ->
-      return 1 unless token[0] is 'TERMINATOR' and @tag(i + 1) in EXPRESSION_CLOSE
-      tokens.splice i, 1
-      0
 
   # The lexer has tagged the opening parenthesis of a method call. Match it with
   # its paired close. We have the mis-nested outdent case included here for
@@ -140,7 +132,7 @@ class exports.Rewriter
 
     @scanTokens (token, i, tokens) ->
       [tag]     = token
-      [prevTag] = if i > 0 then tokens[i - 1] else []
+      [prevTag] = prevToken = if i > 0 then tokens[i - 1] else []
       [nextTag] = if i < tokens.length - 1 then tokens[i + 1] else []
       stackTop  = -> stack[stack.length - 1]
       startIdx  = i
@@ -168,16 +160,21 @@ class exports.Rewriter
         tokens.splice i, 0, generate 'CALL_END', ')'
         i += 1
 
+      endAllImplicitCalls = ->
+        while inImplicitCall()
+          endImplicitCall()
+        return
+
       startImplicitObject = (j, startsLine = yes) ->
         idx = j ? i
         stack.push ['{', idx, sameLine: yes, startsLine: startsLine, ours: yes]
-        tokens.splice idx, 0, generate '{', generate(new String('{'))
+        tokens.splice idx, 0, generate '{', generate(new String('{')), token
         i += 1 if not j?
 
       endImplicitObject = (j) ->
         j = j ? i
         stack.pop()
-        tokens.splice j, 0, generate '}', '}'
+        tokens.splice j, 0, generate '}', '}', token
         i += 1
 
       # Don't end an implicit call on next indent if any of these are in an argument
@@ -251,7 +248,7 @@ class exports.Rewriter
       # which is probably always unintended.
       # Furthermore don't allow this in literal arrays, as
       # that creates grammatical ambiguities.
-      if @matchTags(i, IMPLICIT_FUNC, 'INDENT', null, ':') and
+      if tag in IMPLICIT_FUNC and @matchTags(i + 1, 'INDENT', null, ':') and
          not @findTagsBackwards(i, ['CLASS', 'EXTENDS', 'IF', 'CATCH',
           'SWITCH', 'LEADING_WHEN', 'FOR', 'WHILE', 'UNTIL'])
         startImplicitCall i + 1
@@ -284,8 +281,15 @@ class exports.Rewriter
       #       c
       #     .h a
       #
-      if prevTag is 'OUTDENT' and inImplicitCall() and tag in ['.', '?.', '::', '?::']
-        endImplicitCall()
+      # and also
+      #
+      #     f a
+      #     .g b
+      #     .h a
+      #
+      if inImplicitCall() and tag in CALL_CLOSERS and
+         (prevTag is 'OUTDENT' or prevToken.newLine)
+        endAllImplicitCalls()
         return forward(1)
 
       stackTop()[2].sameLine = no if inImplicitObject() and tag in LINEBREAKS
@@ -298,7 +302,8 @@ class exports.Rewriter
             endImplicitCall()
           # Close implicit objects such as:
           # return a: 1, b: 2 unless true
-          else if inImplicitObject() and sameLine and not startsLine
+          else if inImplicitObject() and sameLine and
+                  tag isnt 'TERMINATOR' and prevTag isnt ':'
             endImplicitObject()
           # Close implicit objects when at end of line, line didn't end with a comma
           # and the implicit object didn't start the line or the next line doesn't look like
@@ -341,43 +346,49 @@ class exports.Rewriter
       return 1 if     token[2]
       return 1 unless token.generated or token.explicit
       if token[0] is '{' and nextLocation=tokens[i + 1]?[2]
-          {first_line: line, first_column: column} = nextLocation
+        {first_line: line, first_column: column} = nextLocation
       else if prevLocation = tokens[i - 1]?[2]
-          {last_line: line, last_column: column} = prevLocation
+        {last_line: line, last_column: column} = prevLocation
       else
-          line = column = 0
+        line = column = 0
       token[2] =
         first_line:   line
         first_column: column
         last_line:    line
         last_column:  column
-      1
+      return 1
 
   # Because our grammar is LALR(1), it can't handle some single-line
   # expressions that lack ending delimiters. The **Rewriter** adds the implicit
-  # blocks, so it doesn't need to. ')' can close a single-line block,
-  # but we need to make sure it's balanced.
-  addImplicitIndentation: ->
+  # blocks, so it doesn't need to. To keep the grammar clean and tidy, trailing
+  # newlines within expressions are removed and the indentation tokens of empty
+  # blocks are added.
+  normalizeLines: ->
     starter = indent = outdent = null
 
     condition = (token, i) ->
       token[1] isnt ';' and token[0] in SINGLE_CLOSERS and
-      not (token[0] is 'ELSE' and starter not in ['IF', 'THEN'])
+      not (token[0] is 'TERMINATOR' and @tag(i + 1) in EXPRESSION_CLOSE) and
+      not (token[0] is 'ELSE' and starter isnt 'THEN') and
+      not (token[0] in ['CATCH', 'FINALLY'] and starter in ['->', '=>']) or
+      token[0] in CALL_CLOSERS and @tokens[i - 1].newLine
 
     action = (token, i) ->
       @tokens.splice (if @tag(i - 1) is ',' then i - 1 else i), 0, outdent
 
     @scanTokens (token, i, tokens) ->
       [tag] = token
-      if tag is 'TERMINATOR' and @tag(i + 1) is 'THEN'
-        tokens.splice i, 1
-        return 0
-      if tag is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
-        tokens.splice i, 0, @indentation()...
-        return 2
-      if tag is 'CATCH' and @tag(i + 2) in ['OUTDENT', 'TERMINATOR', 'FINALLY']
-        tokens.splice i + 2, 0, @indentation()...
-        return 4
+      if tag is 'TERMINATOR'
+        if @tag(i + 1) is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
+          tokens.splice i, 1, @indentation()...
+          return 1
+        if @tag(i + 1) in EXPRESSION_CLOSE
+          tokens.splice i, 1
+          return 0
+      if tag is 'CATCH'
+        for j in [1..2] when @tag(i + j) in ['OUTDENT', 'TERMINATOR', 'FINALLY']
+          tokens.splice i + j, 0, @indentation()...
+          return 2 + j
       if tag in SINGLE_LINERS and @tag(i + 1) isnt 'INDENT' and
          not (tag is 'ELSE' and @tag(i + 1) is 'IF')
         starter = tag
@@ -408,7 +419,7 @@ class exports.Rewriter
       return 1 unless token[0] is 'IF'
       original = token
       @detectEnd i + 1, condition, action
-      1
+      return 1
 
   # Generate the indentation tokens, based on another token on the same line.
   indentation: (implicit = no) ->
@@ -450,7 +461,7 @@ for [left, rite] in BALANCED_PAIRS
   EXPRESSION_END  .push INVERSES[left] = rite
 
 # Tokens that indicate the close of a clause of an expression.
-EXPRESSION_CLOSE = ['CATCH', 'WHEN', 'ELSE', 'FINALLY'].concat EXPRESSION_END
+EXPRESSION_CLOSE = ['CATCH', 'THEN', 'ELSE', 'FINALLY'].concat EXPRESSION_END
 
 # Tokens that, if followed by an `IMPLICIT_CALL`, indicate a function invocation.
 IMPLICIT_FUNC    = ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@', 'THIS']
@@ -464,9 +475,6 @@ IMPLICIT_CALL    = [
 
 IMPLICIT_UNSPACED_CALL = ['+', '-']
 
-# Tokens indicating that the implicit call must enclose a block of expressions.
-IMPLICIT_BLOCK   = ['->', '=>', '{', '[', ',']
-
 # Tokens that always mark the end of an implicit call for single-liners.
 IMPLICIT_END     = ['POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY',
   'LOOP', 'TERMINATOR']
@@ -478,3 +486,6 @@ SINGLE_CLOSERS   = ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADIN
 
 # Tokens that end a line.
 LINEBREAKS       = ['TERMINATOR', 'INDENT', 'OUTDENT']
+
+# Tokens that close open calls when they follow a newline.
+CALL_CLOSERS = ['.', '?.', '::', '?::']

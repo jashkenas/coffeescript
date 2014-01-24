@@ -53,5 +53,5 @@ and unordered lists, are fine:
 
 Tabs work too:
 
-	test "tabbed code", ->
-		ok yes
+				test "tabbed code", ->
+					ok yes

@@ -129,3 +129,14 @@ test "Try catch finally as implicit arguments", ->
     bar = yes
   catch e
   eq bar, yes
+
+# Catch Should Not Require Param: #2900
+test "parameter-less catch clause", ->
+  try
+    throw new Error 'failed'
+  catch
+    ok true
+
+  try throw new Error 'failed' catch finally ok true
+
+  ok try throw new Error 'failed' catch then true

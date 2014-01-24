@@ -337,6 +337,18 @@ test "#2502: parenthesizing inner object values", ->
   eq (new A).sections.default, 0
 
 
+test "conditional prototype property assignment", ->
+  debug = false
+
+  class Person
+    if debug
+      age: -> 10
+    else
+      age: -> 20
+
+  eq (new Person).age(), 20
+
+
 test "mild metaprogramming", ->
 
   class Base
@@ -687,6 +699,15 @@ test "#2052: classes should work in strict mode", ->
   catch e
     ok no
 
+test "directives in class with extends ", ->
+  strictTest = """
+    class extends Object
+      ### comment ###
+      'use strict'
+      do -> eq this, undefined
+  """
+  CoffeeScript.run strictTest, bare: yes
+
 test "#2630: class bodies can't reference arguments", ->
   throws ->
     CoffeeScript.compile('class Test then arguments')
@@ -779,3 +800,31 @@ test "#2796: ditto, ditto, ditto", ->
 
   new Base
   eq answer, 'right!'
+
+test "#3063: Class bodies cannot contain pure statements", ->
+  throws -> CoffeeScript.compile """
+    class extends S
+      return if S.f
+      @f: => this
+  """
+
+test "#2949: super in static method with reserved name", ->
+  class Foo
+    @static: -> 'baz'
+
+  class Bar extends Foo
+    @static: -> super
+
+  eq Bar.static(), 'baz'
+
+test "#3232: super in static methods (not object-assigned)", ->
+  class Foo
+    @baz = -> true
+    @qux = -> true
+
+  class Bar extends Foo
+    @baz = -> super
+    Bar.qux = -> super
+
+  ok Bar.baz()
+  ok Bar.qux()

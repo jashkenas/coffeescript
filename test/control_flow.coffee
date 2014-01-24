@@ -198,6 +198,14 @@ test "#748: trailing reserved identifiers", ->
     nonce
   eq nonce, result
 
+# Postfix
+
+test "#3056: multiple postfix conditionals", ->
+  temp = 'initial'
+  temp = 'ignored' unless true if false
+  eq temp, 'initial'
+
+# Loops
 
 test "basic `while` loops", ->
 
@@ -296,6 +304,7 @@ test "break *not* at the top level", ->
     result
   eq 2, someFunc()
 
+# Switch
 
 test "basic `switch`", ->
 
@@ -420,6 +429,7 @@ test "Issue #997. Switch doesn't fallthrough.", ->
 
   eq val, 1
 
+# Throw
 
 test "Throw should be usable as an expression.", ->
   try
@@ -438,3 +448,19 @@ test "#2555, strange function if bodies", ->
 
   failure() if try
     false
+
+test "#1057: `catch` or `finally` in single-line functions", ->
+  ok do -> try throw 'up' catch then yes
+  ok do -> try yes finally 'nothing'
+
+test "#2367: super in for-loop", ->
+  class Foo
+    sum: 0
+    add: (val) -> @sum += val
+
+  class Bar extends Foo
+    add: (vals...) ->
+      super val for val in vals
+      @sum
+
+  eq 10, (new Bar).add 2, 3, 5

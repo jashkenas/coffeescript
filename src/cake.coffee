@@ -13,8 +13,6 @@ helpers      = require './helpers'
 optparse     = require './optparse'
 CoffeeScript = require './coffee-script'
 
-existsSync   = fs.existsSync or path.existsSync
-
 # Keep track of the list of defined tasks, the accepted options, and so on.
 tasks     = {}
 options   = {}
@@ -81,7 +79,7 @@ missingTask = (task) -> fatalError "No such task: #{task}"
 # When `cake` is invoked, search in the current and all parent directories
 # to find the relevant Cakefile.
 cakefileDirectory = (dir) ->
-  return dir if existsSync path.join dir, 'Cakefile'
+  return dir if fs.existsSync path.join dir, 'Cakefile'
   parent = path.normalize path.join dir, '..'
   return cakefileDirectory parent unless parent is dir
   throw new Error "Cakefile not found in #{process.cwd()}"

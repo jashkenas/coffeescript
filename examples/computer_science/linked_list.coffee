@@ -1,8 +1,8 @@
 # "Classic" linked list implementation that doesn't keep track of its size.
 class LinkedList
 
-  ->
-    this._head = null # Pointer to the first item in the list.
+  constructor: ->
+    @_head = null # Pointer to the first item in the list.
 
 
   # Appends some data to the end of the list. This method traverses the existing
@@ -12,10 +12,10 @@ class LinkedList
     # Create a new node object to wrap the data.
     node = data: data, next: null
 
-    current = this._head or= node
+    current = @_head or= node
 
-    if this._head isnt node
-      (current = current.next) while current.next
+    if @_head isnt node
+      current = current.next while current.next
       current.next = node
 
     this
@@ -27,11 +27,11 @@ class LinkedList
     # Check for out-of-bounds values.
     return null if index < 0
 
-    current = this._head or null
+    current = @_head or null
     i = -1
 
     # Advance through the list.
-    (current = current.next) while current and index > (i += 1)
+    current = current.next while current and index > ++i
 
     # Return null if we've reached the end.
     current and current.data
@@ -43,16 +43,16 @@ class LinkedList
     # Check for out-of-bounds values.
     return null if index < 0
 
-    current = this._head or null
+    current = @_head or null
     i = -1
 
     # Special case: removing the first item.
     if index is 0
-      this._head = current.next
+      @_head = current.next
     else
 
       # Find the right location.
-      ([previous, current] = [current, current.next]) while index > (i += 1)
+      [previous, current] = [current, current.next] while index > ++i
 
       # Skip over the item to remove.
       previous.next = current.next
@@ -63,7 +63,7 @@ class LinkedList
 
   # Calculate the number of items in the list.
   size: ->
-    current = this._head
+    current = @_head
     count = 0
 
     while current
@@ -76,7 +76,7 @@ class LinkedList
   # Convert the list into an array.
   toArray: ->
     result  = []
-    current = this._head
+    current = @_head
 
     while current
       result.push current.data
@@ -86,7 +86,7 @@ class LinkedList
 
 
   # The string representation of the linked list.
-  toString: -> this.toArray().toString()
+  toString: -> @toArray().toString()
 
 
 # Tests.

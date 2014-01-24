@@ -112,12 +112,12 @@
 to make things work smoothly when compiling code directly in the browser.
 We add support for loading remote Coffee scripts via <strong>XHR</strong>, and
 <code>text/coffeescript</code> script tags, source maps via data-URLs, and so on.
-
 </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>CoffeeScript = require <span class="string">'./coffee-script'</span>
+            <div class="content"><div class='highlight'><pre>
+CoffeeScript = require <span class="string">'./coffee-script'</span>
 CoffeeScript.require = require
 compile = CoffeeScript.compile</pre></div></div>
             
@@ -155,6 +155,7 @@ compile = CoffeeScript.compile</pre></div></div>
             
             <div class="content"><div class='highlight'><pre>CoffeeScript.<span class="function"><span class="title">run</span></span> = (code, options = {}) -&gt;
   options.bare = <span class="literal">on</span>
+  options.shiftLine = <span class="literal">on</span>
   Function(compile code, options)()</pre></div></div>
             
         </li>
@@ -182,18 +183,19 @@ compile = CoffeeScript.compile</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <p>Include source maps where possible. If we&#39;ve got a base64 encoder, and a
-JSON serializer, we&#39;re good to go.
+              <p>Include source maps where possible. If we&#39;ve got a base64 encoder, a
+JSON serializer, and tools for escaping unicode characters, we&#39;re good to go.
+Ported from <a href="https://developer.mozilla.org/en-US/docs/DOM/window.btoa">https://developer.mozilla.org/en-US/docs/DOM/window.btoa</a>
 </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="keyword">if</span> btoa? <span class="keyword">and</span> JSON?
+            <div class="content"><div class='highlight'><pre><span class="keyword">if</span> btoa? <span class="keyword">and</span> JSON? <span class="keyword">and</span> unescape? <span class="keyword">and</span> encodeURIComponent?
   <span class="function"><span class="title">compile</span></span> = (code, options = {}) -&gt;
     options.sourceMap = <span class="literal">true</span>
     options.inline = <span class="literal">true</span>
     {js, v3SourceMap} = CoffeeScript.compile code, options
-    <span class="string">"<span class="subst">#{js}</span>\n//@ sourceMappingURL=data:application/json;base64,<span class="subst">#{btoa v3SourceMap}</span>\n//@ sourceURL=coffeescript"</span></pre></div></div>
+    <span class="string">"<span class="subst">#{js}</span>\n//@ sourceMappingURL=data:application/json;base64,<span class="subst">#{btoa unescape encodeURIComponent v3SourceMap}</span>\n//@ sourceURL=coffeescript"</span></pre></div></div>
             
         </li>
         
@@ -214,7 +216,7 @@ JSON serializer, we&#39;re good to go.
   xhr = <span class="keyword">if</span> window.ActiveXObject
     <span class="keyword">new</span> window.ActiveXObject(<span class="string">'Microsoft.XMLHTTP'</span>)
   <span class="keyword">else</span>
-    <span class="keyword">new</span> XMLHttpRequest()
+    <span class="keyword">new</span> window.XMLHttpRequest()
   xhr.open <span class="string">'GET'</span>, url, <span class="literal">true</span>
   xhr.overrideMimeType <span class="string">'text/plain'</span> <span class="keyword">if</span> <span class="string">'overrideMimeType'</span> <span class="keyword">of</span> xhr
   xhr.<span class="function"><span class="title">onreadystatechange</span></span> = -&gt;
@@ -243,7 +245,7 @@ This happens on page load.
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="function"><span class="title">runScripts</span></span> = -&gt;
-  scripts = document.getElementsByTagName <span class="string">'script'</span>
+  scripts = window.document.getElementsByTagName <span class="string">'script'</span>
   coffeetypes = [<span class="string">'text/coffeescript'</span>, <span class="string">'text/literate-coffeescript'</span>]
   coffees = (s <span class="keyword">for</span> s <span class="keyword">in</span> scripts <span class="keyword">when</span> s.type <span class="keyword">in</span> coffeetypes)
   index = <span class="number">0</span>
@@ -276,9 +278,9 @@ This happens on page load.
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="keyword">if</span> window.addEventListener
-  addEventListener <span class="string">'DOMContentLoaded'</span>, runScripts, <span class="literal">no</span>
+  window.addEventListener <span class="string">'DOMContentLoaded'</span>, runScripts, <span class="literal">no</span>
 <span class="keyword">else</span>
-  attachEvent <span class="string">'onload'</span>, runScripts</pre></div></div>
+  window.attachEvent <span class="string">'onload'</span>, runScripts</pre></div></div>
             
         </li>
         

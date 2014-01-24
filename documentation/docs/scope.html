@@ -114,17 +114,9 @@ function bodies. Each scope knows about the variables declared within it,
 and has a reference to its parent enclosing scope. In this way, we know which
 variables are new and need to be declared with <code>var</code>, and which are shared
 with external scopes.
-
-</p>
-<p>Import the helpers we plan to use.
-
 </p>
 
             </div>
-            
-            <div class="content"><div class='highlight'><pre>{extend, last} = require <span class="string">'./helpers'</span>
-
-exports.Scope = <span class="class"><span class="keyword">class</span> <span class="title">Scope</span></span></pre></div></div>
             
         </li>
         
@@ -135,13 +127,15 @@ exports.Scope = <span class="class"><span class="keyword">class</span> <span cla
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p>The <code>root</code> is the top-level <strong>Scope</strong> object for a given file.
-
+              <p>Import the helpers we plan to use.
 </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="property">@root</span>: <span class="literal">null</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+{extend, last} = require <span class="string">'./helpers'</span>
+
+exports.Scope = <span class="class"><span class="keyword">class</span> <span class="title">Scope</span></span></pre></div></div>
             
         </li>
         
@@ -152,19 +146,13 @@ exports.Scope = <span class="class"><span class="keyword">class</span> <span cla
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>Initialize a scope with its parent, for lookups up the chain,
-as well as a reference to the <strong>Block</strong> node it belongs to, which is
-where it should declare its variables, and a reference to the function that
-it belongs to.
-
+              <p>The <code>root</code> is the top-level <strong>Scope</strong> object for a given file.
 </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  constructor: (<span class="property">@parent</span>, <span class="property">@expressions</span>, <span class="property">@method</span>) -&gt;
-    <span class="property">@variables</span> = [{name: <span class="string">'arguments'</span>, type: <span class="string">'arguments'</span>}]
-    <span class="property">@positions</span> = {}
-    Scope.root = <span class="keyword">this</span> <span class="keyword">unless</span> <span class="property">@parent</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+  <span class="property">@root</span>: <span class="literal">null</span></pre></div></div>
             
         </li>
         
@@ -175,18 +163,19 @@ it belongs to.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>Adds a new variable or overrides an existing one.
-
+              <p>Initialize a scope with its parent, for lookups up the chain,
+as well as a reference to the <strong>Block</strong> node it belongs to, which is
+where it should declare its variables, and a reference to the function that
+it belongs to.
 </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  add: (name, type, immediate) -&gt;
-    <span class="keyword">return</span> <span class="property">@parent</span>.add name, type, immediate <span class="keyword">if</span> <span class="property">@shared</span> <span class="keyword">and</span> <span class="keyword">not</span> immediate
-    <span class="keyword">if</span> Object::hasOwnProperty.call <span class="property">@positions</span>, name
-      <span class="property">@variables</span>[<span class="property">@positions</span>[name]].type = type
-    <span class="keyword">else</span>
-      <span class="property">@positions</span>[name] = <span class="property">@variables</span>.push({name, type}) - <span class="number">1</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+  constructor: (<span class="property">@parent</span>, <span class="property">@expressions</span>, <span class="property">@method</span>) -&gt;
+    <span class="property">@variables</span> = [{name: <span class="string">'arguments'</span>, type: <span class="string">'arguments'</span>}]
+    <span class="property">@positions</span> = {}
+    Scope.root = <span class="keyword">this</span> <span class="keyword">unless</span> <span class="property">@parent</span></pre></div></div>
             
         </li>
         
@@ -197,19 +186,18 @@ it belongs to.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <p>When <code>super</code> is called, we need to find the name of the current method we&#39;re
-in, so that we know how to invoke the same method of the parent class. This
-can get complicated if super is being called from an inner function.
-<code>namedMethod</code> will walk up the scope tree until it either finds the first
-function object that has a name filled in, or bottoms out.
-
+              <p>Adds a new variable or overrides an existing one.
 </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  namedMethod: -&gt;
-    <span class="keyword">return</span> <span class="property">@method</span> <span class="keyword">if</span> <span class="property">@method</span>?.name <span class="keyword">or</span> !<span class="property">@parent</span>
-    <span class="property">@parent</span>.namedMethod()</pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+  add: (name, type, immediate) -&gt;
+    <span class="keyword">return</span> <span class="property">@parent</span>.add name, type, immediate <span class="keyword">if</span> <span class="property">@shared</span> <span class="keyword">and</span> <span class="keyword">not</span> immediate
+    <span class="keyword">if</span> Object::hasOwnProperty.call <span class="property">@positions</span>, name
+      <span class="property">@variables</span>[<span class="property">@positions</span>[name]].type = type
+    <span class="keyword">else</span>
+      <span class="property">@positions</span>[name] = <span class="property">@variables</span>.push({name, type}) - <span class="number">1</span></pre></div></div>
             
         </li>
         
@@ -220,17 +208,19 @@ function object that has a name filled in, or bottoms out.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>Look up a variable name in lexical scope, and declare it if it does not
-already exist.
-
+              <p>When <code>super</code> is called, we need to find the name of the current method we&#39;re
+in, so that we know how to invoke the same method of the parent class. This
+can get complicated if super is being called from an inner function.
+<code>namedMethod</code> will walk up the scope tree until it either finds the first
+function object that has a name filled in, or bottoms out.
 </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  find: (name) -&gt;
-    <span class="keyword">return</span> <span class="literal">yes</span> <span class="keyword">if</span> <span class="property">@check</span> name
-    <span class="property">@add</span> name, <span class="string">'var'</span>
-    <span class="literal">no</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+  namedMethod: -&gt;
+    <span class="keyword">return</span> <span class="property">@method</span> <span class="keyword">if</span> <span class="property">@method</span>?.name <span class="keyword">or</span> !<span class="property">@parent</span>
+    <span class="property">@parent</span>.namedMethod()</pre></div></div>
             
         </li>
         
@@ -241,16 +231,17 @@ already exist.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
-              <p>Reserve a variable name as originating from a function parameter for this
-scope. No <code>var</code> required for internal references.
-
+              <p>Look up a variable name in lexical scope, and declare it if it does not
+already exist.
 </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  parameter: (name) -&gt;
-    <span class="keyword">return</span> <span class="keyword">if</span> <span class="property">@shared</span> <span class="keyword">and</span> <span class="property">@parent</span>.check name, <span class="literal">yes</span>
-    <span class="property">@add</span> name, <span class="string">'param'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+  find: (name) -&gt;
+    <span class="keyword">return</span> <span class="literal">yes</span> <span class="keyword">if</span> <span class="property">@check</span> name
+    <span class="property">@add</span> name, <span class="string">'var'</span>
+    <span class="literal">no</span></pre></div></div>
             
         </li>
         
@@ -261,15 +252,16 @@ scope. No <code>var</code> required for internal references.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
-              <p>Just check to see if a variable has already been declared, without reserving,
-walks up to the root scope.
-
+              <p>Reserve a variable name as originating from a function parameter for this
+scope. No <code>var</code> required for internal references.
 </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  check: (name) -&gt;
-    !!(<span class="property">@type</span>(name) <span class="keyword">or</span> <span class="property">@parent</span>?.check(name))</pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+  parameter: (name) -&gt;
+    <span class="keyword">return</span> <span class="keyword">if</span> <span class="property">@shared</span> <span class="keyword">and</span> <span class="property">@parent</span>.check name, <span class="literal">yes</span>
+    <span class="property">@add</span> name, <span class="string">'param'</span></pre></div></div>
             
         </li>
         
@@ -280,17 +272,15 @@ walks up to the root scope.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
-              <p>Generate a temporary variable name at the given index.
-
+              <p>Just check to see if a variable has already been declared, without reserving,
+walks up to the root scope.
 </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  temporary: (name, index) -&gt;
-    <span class="keyword">if</span> name.length &gt; <span class="number">1</span>
-      <span class="string">'_'</span> + name + <span class="keyword">if</span> index &gt; <span class="number">1</span> <span class="keyword">then</span> index - <span class="number">1</span> <span class="keyword">else</span> <span class="string">''</span>
-    <span class="keyword">else</span>
-      <span class="string">'_'</span> + (index + parseInt name, <span class="number">36</span>).toString(<span class="number">36</span>).replace <span class="regexp">/\d/g</span>, <span class="string">'a'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+  check: (name) -&gt;
+    !!(<span class="property">@type</span>(name) <span class="keyword">or</span> <span class="property">@parent</span>?.check(name))</pre></div></div>
             
         </li>
         
@@ -301,15 +291,17 @@ walks up to the root scope.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
-              <p>Gets the type of a variable.
-
+              <p>Generate a temporary variable name at the given index.
 </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  type: (name) -&gt;
-    <span class="keyword">return</span> v.type <span class="keyword">for</span> v <span class="keyword">in</span> <span class="property">@variables</span> <span class="keyword">when</span> v.name <span class="keyword">is</span> name
-    <span class="literal">null</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+  temporary: (name, index) -&gt;
+    <span class="keyword">if</span> name.length &gt; <span class="number">1</span>
+      <span class="string">'_'</span> + name + <span class="keyword">if</span> index &gt; <span class="number">1</span> <span class="keyword">then</span> index - <span class="number">1</span> <span class="keyword">else</span> <span class="string">''</span>
+    <span class="keyword">else</span>
+      <span class="string">'_'</span> + (index + parseInt name, <span class="number">36</span>).toString(<span class="number">36</span>).replace <span class="regexp">/\d/g</span>, <span class="string">'a'</span></pre></div></div>
             
         </li>
         
@@ -320,18 +312,15 @@ walks up to the root scope.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
-              <p>If we need to store an intermediate result, find an available name for a
-compiler-generated variable. <code>_var</code>, <code>_var2</code>, and so on...
-
+              <p>Gets the type of a variable.
 </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  freeVariable: (name, reserve=<span class="literal">true</span>) -&gt;
-    index = <span class="number">0</span>
-    index++ <span class="keyword">while</span> <span class="property">@check</span>((temp = <span class="property">@temporary</span> name, index))
-    <span class="property">@add</span> temp, <span class="string">'var'</span>, <span class="literal">yes</span> <span class="keyword">if</span> reserve
-    temp</pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+  type: (name) -&gt;
+    <span class="keyword">return</span> v.type <span class="keyword">for</span> v <span class="keyword">in</span> <span class="property">@variables</span> <span class="keyword">when</span> v.name <span class="keyword">is</span> name
+    <span class="literal">null</span></pre></div></div>
             
         </li>
         
@@ -342,16 +331,18 @@ compiler-generated variable. <code>_var</code>, <code>_var2</code>, and so on...
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
-              <p>Ensure that an assignment is made at the top of this scope
-(or at the top-level scope, if requested).
-
+              <p>If we need to store an intermediate result, find an available name for a
+compiler-generated variable. <code>_var</code>, <code>_var2</code>, and so on...
 </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  assign: (name, value) -&gt;
-    <span class="property">@add</span> name, {value, assigned: <span class="literal">yes</span>}, <span class="literal">yes</span>
-    <span class="property">@hasAssignments</span> = <span class="literal">yes</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+  freeVariable: (name, reserve=<span class="literal">true</span>) -&gt;
+    index = <span class="number">0</span>
+    index++ <span class="keyword">while</span> <span class="property">@check</span>((temp = <span class="property">@temporary</span> name, index))
+    <span class="property">@add</span> temp, <span class="string">'var'</span>, <span class="literal">yes</span> <span class="keyword">if</span> reserve
+    temp</pre></div></div>
             
         </li>
         
@@ -362,14 +353,16 @@ compiler-generated variable. <code>_var</code>, <code>_var2</code>, and so on...
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
-              <p>Does this scope have any declared variables?
-
+              <p>Ensure that an assignment is made at the top of this scope
+(or at the top-level scope, if requested).
 </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  hasDeclarations: -&gt;
-    !!<span class="property">@declaredVariables</span>().length</pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+  assign: (name, value) -&gt;
+    <span class="property">@add</span> name, {value, assigned: <span class="literal">yes</span>}, <span class="literal">yes</span>
+    <span class="property">@hasAssignments</span> = <span class="literal">yes</span></pre></div></div>
             
         </li>
         
@@ -380,18 +373,14 @@ compiler-generated variable. <code>_var</code>, <code>_var2</code>, and so on...
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
-              <p>Return the list of variables first declared in this scope.
-
+              <p>Does this scope have any declared variables?
 </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  declaredVariables: -&gt;
-    realVars = []
-    tempVars = []
-    <span class="keyword">for</span> v <span class="keyword">in</span> <span class="property">@variables</span> <span class="keyword">when</span> v.type <span class="keyword">is</span> <span class="string">'var'</span>
-      (<span class="keyword">if</span> v.name.charAt(<span class="number">0</span>) <span class="keyword">is</span> <span class="string">'_'</span> <span class="keyword">then</span> tempVars <span class="keyword">else</span> realVars).push v.name
-    realVars.sort().concat tempVars.sort()</pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+  hasDeclarations: -&gt;
+    !!<span class="property">@declaredVariables</span>().length</pre></div></div>
             
         </li>
         
@@ -402,14 +391,36 @@ compiler-generated variable. <code>_var</code>, <code>_var2</code>, and so on...
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
-              <p>Return the list of assignments that are supposed to be made at the top
-of this scope.
-
+              <p>Return the list of variables first declared in this scope.
 </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  assignedVariables: -&gt;
+            <div class="content"><div class='highlight'><pre>
+  declaredVariables: -&gt;
+    realVars = []
+    tempVars = []
+    <span class="keyword">for</span> v <span class="keyword">in</span> <span class="property">@variables</span> <span class="keyword">when</span> v.type <span class="keyword">is</span> <span class="string">'var'</span>
+      (<span class="keyword">if</span> v.name.charAt(<span class="number">0</span>) <span class="keyword">is</span> <span class="string">'_'</span> <span class="keyword">then</span> tempVars <span class="keyword">else</span> realVars).push v.name
+    realVars.sort().concat tempVars.sort()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Return the list of assignments that are supposed to be made at the top
+of this scope.
+</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+  assignedVariables: -&gt;
     <span class="string">"<span class="subst">#{v.name}</span> = <span class="subst">#{v.type.value}</span>"</span> <span class="keyword">for</span> v <span class="keyword">in</span> <span class="property">@variables</span> <span class="keyword">when</span> v.type.assigned</pre></div></div>
             
         </li>
