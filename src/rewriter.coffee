@@ -160,11 +160,6 @@ class exports.Rewriter
         tokens.splice i, 0, generate 'CALL_END', ')'
         i += 1
 
-      endAllImplicitCalls = ->
-        while inImplicitCall()
-          endImplicitCall()
-        return
-
       startImplicitObject = (j, startsLine = yes) ->
         idx = j ? i
         stack.push ['{', idx, sameLine: yes, startsLine: startsLine, ours: yes]
@@ -289,15 +284,11 @@ class exports.Rewriter
       #     f a
       #     .g b
       #     .h a
-      #
-      if inImplicitCall() and tag in CALL_CLOSERS and
-         (prevTag is 'OUTDENT' or prevToken.newLine)
-        endAllImplicitCalls()
-        return forward(1)
 
       stackTop()[2].sameLine = no if inImplicitObject() and tag in LINEBREAKS
 
-      if tag in IMPLICIT_END
+      newLine = prevTag is 'OUTDENT' or prevToken.newLine
+      if tag in IMPLICIT_END or tag in CALL_CLOSERS and newLine
         while inImplicit()
           [stackTag, stackIdx, {sameLine, startsLine}] = stackTop()
           # Close implicit calls when reached end of argument list
@@ -495,4 +486,4 @@ SINGLE_CLOSERS   = ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADIN
 LINEBREAKS       = ['TERMINATOR', 'INDENT', 'OUTDENT']
 
 # Tokens that close open calls when they follow a newline.
-CALL_CLOSERS = ['.', '?.', '::', '?::']
+CALL_CLOSERS     = ['.', '?.', '::', '?::']
