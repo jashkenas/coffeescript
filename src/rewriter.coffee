@@ -261,6 +261,9 @@ class exports.Rewriter
         if @tag(i - 2) is '@' then s = i - 2 else s = i - 1
         s -= 2 while @tag(s - 2) is 'HERECOMMENT'
 
+        # Mark if the value is a for loop
+        @insideForDeclaration = nextTag is 'FOR'
+
         startsLine = s is 0 or @tag(s - 1) in LINEBREAKS or tokens[s - 1].newLine
         # Are we just continuing an already declared object?
         if stackTop()
@@ -302,8 +305,8 @@ class exports.Rewriter
             endImplicitCall()
           # Close implicit objects such as:
           # return a: 1, b: 2 unless true
-          else if inImplicitObject() and sameLine and
-                  tag isnt 'TERMINATOR' and prevTag isnt ':'
+          else if inImplicitObject() and not @insideForDeclaration and sameLine and
+                  tag isnt 'TERMINATOR' and prevTag isnt ':' and
             endImplicitObject()
           # Close implicit objects when at end of line, line didn't end with a comma
           # and the implicit object didn't start the line or the next line doesn't look like
@@ -328,6 +331,7 @@ class exports.Rewriter
       #     f a, b: c, d: e, f, g: h: i, j
       #
       if tag is ',' and not @looksObjectish(i + 1) and inImplicitObject() and
+         not @insideForDeclaration and
          (nextTag isnt 'TERMINATOR' or not @looksObjectish(i + 2))
         # When nextTag is OUTDENT the comma is insignificant and
         # should just be ignored so embed it in the implicit object.
