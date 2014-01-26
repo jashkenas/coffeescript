@@ -396,7 +396,7 @@ class exports.Rewriter
       if tag in SINGLE_LINERS and @tag(i + 1) isnt 'INDENT' and
          not (tag is 'ELSE' and @tag(i + 1) is 'IF')
         starter = tag
-        [indent, outdent] = @indentation yes
+        [indent, outdent] = @indentation tokens[i]
         indent.fromThen   = true if starter is 'THEN'
         tokens.splice i + 1, 0, indent
         @detectEnd i + 2, condition, action
@@ -426,11 +426,14 @@ class exports.Rewriter
       return 1
 
   # Generate the indentation tokens, based on another token on the same line.
-  indentation: (implicit = no) ->
+  indentation: (origin) ->
     indent  = ['INDENT', 2]
     outdent = ['OUTDENT', 2]
-    indent.generated = outdent.generated = yes if implicit
-    indent.explicit = outdent.explicit = yes if not implicit
+    if origin
+      indent.generated = outdent.generated = yes
+      indent.origin = outdent.origin = origin
+    else
+      indent.explicit = outdent.explicit = yes
     [indent, outdent]
 
   generate: generate

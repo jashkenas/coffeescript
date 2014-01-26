@@ -202,10 +202,12 @@ parser.yy.parseError = (message, {token}) ->
   # Disregard the token, we take its value directly from the lexer in case
   # the error is caused by a generated token which might refer to its origin.
   {errorToken, tokens} = parser.lexer
-  [ignored, errorText, errorLoc] = errorToken
+  [errorTag, errorText, errorLoc] = errorToken
 
   errorText = if errorToken is tokens[tokens.length - 1]
     'end of input'
+  else if errorTag in ['INDENT', 'OUTDENT']
+    'indentation'
   else
     helpers.nameWhitespaceCharacter errorText
 
