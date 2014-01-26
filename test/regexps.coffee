@@ -55,25 +55,3 @@ test "an empty heregex will compile to an empty, non-capturing group", ->
 
 test "#1724: regular expressions beginning with `*`", ->
   throws -> CoffeeScript.compile '/// * ///'
-
-test "empty regular expressions with flags", ->
-  fn = (x) -> x
-  a = "" + //i
-  fn ""
-  eq '/(?:)/i', a
-
-test "#3059: don't remove escaped whitespace", ->
-  eq  /// One\ cannot [\ ] escape \  \destiny. ///.source,
-      /One cannot[ ]escape \destiny./.source
-
-test "#2238: don't escape already escaped slashes", ->
-  eq /// \\\/ \/ ///.source, /\\\/\//.source
-
-test "escaped slashes don't close heregex", ->
-  eq /// \/// ///.source, /\/\/\//.source
-  eq /// \\\////.source, /\\\//.source
-
-test "escaped linebreaks", ->
-  eq  /// \n\
-      \
-      ///.source, /\n\n\n/.source

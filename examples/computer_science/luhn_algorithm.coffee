@@ -7,13 +7,13 @@ is_valid_identifier = (identifier) ->
   sum = 0
   alt = false
 
-  for i in [identifier.length - 1..0] by -1
+  for c in identifier by -1
 
     # Get the next digit.
-    num = parseInt identifier.charAt(i), 10
+    num = parseInt c, 10
 
     # If it's not a valid number, abort.
-    return false if isNaN(num)
+    return false if isNaN num
 
     # If it's an alternate number...
     if alt

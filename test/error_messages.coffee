@@ -26,7 +26,7 @@ test "parser error formating", ->
     foo in bar or in baz
   ''',
   '''
-    [stdin]:1:15: error: unexpected RELATION
+    [stdin]:1:15: error: unexpected in
     foo in bar or in baz
                   ^^
   '''
@@ -58,9 +58,44 @@ test "#2849: compilation error in a require()d file", ->
       require './test/syntax-error'
     ''',
     """
-      #{path.join __dirname, 'syntax-error.coffee'}:1:15: error: unexpected RELATION
+      #{path.join __dirname, 'syntax-error.coffee'}:1:15: error: unexpected in
       foo in bar or in baz
                     ^^
     """
   finally
     fs.unlink 'test/syntax-error.coffee'
+
+test "#1096: unexpected generated tokens", ->
+  # Unexpected interpolation
+  assertErrorFormat '{"#{key}": val}', '''
+    [stdin]:1:3: error: unexpected string interpolation
+    {"#{key}": val}
+      ^^
+  '''
+  # Implicit ends
+  assertErrorFormat 'a:, b', '''
+    [stdin]:1:3: error: unexpected ,
+    a:, b
+      ^
+  '''
+  # Explicit ends
+  assertErrorFormat '(a:)', '''
+    [stdin]:1:4: error: unexpected )
+    (a:)
+       ^
+  '''
+  # Unexpected end of file
+  assertErrorFormat 'a:', '''
+    [stdin]:1:3: error: unexpected end of input
+    a:
+      ^
+  '''
+  # Unexpected implicit object
+  assertErrorFormat '''
+    for i in [1]:
+      1
+  ''', '''
+    [stdin]:1:13: error: unexpected :
+    for i in [1]:
+                ^
+  '''

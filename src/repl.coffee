@@ -131,7 +131,7 @@ module.exports =
       console.warn "Node 0.8.0+ required for CoffeeScript REPL"
       process.exit 1
 
-    require './extensions'
+    CoffeeScript.register()
     process.argv = ['coffee'].concat process.argv[2..]
     opts = merge replDefaults, opts
     repl = nodeREPL.start opts

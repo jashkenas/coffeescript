@@ -387,6 +387,23 @@ test "#1871: Special case for IMPLICIT_END in the middle of an implicit object",
 
   eq result.two.join(' '), '2 2 2'
 
+test "#1871: implicit object closed by IMPLICIT_END in implicit returns", ->
+  ob = do ->
+    a: 1 if no
+  eq ob, undefined
+
+  # instead these return an object
+  func = ->
+    key:
+      i for i in [1, 2, 3]
+
+  eq func().key.join(' '), '1 2 3'
+
+  func = ->
+    key: (i for i in [1, 2, 3])
+
+  eq func().key.join(' '), '1 2 3'
+
 test "#1961, #1974, regression with compound assigning to an implicit object", ->
 
   obj = null
@@ -410,3 +427,10 @@ test "#2207: Immediate implicit closes don't close implicit objects", ->
     key: for i in [1, 2, 3] then i
 
   eq func().key.join(' '), '1 2 3'
+
+test 'inline implicit object literals within multiline implicit object literals', ->
+  x =
+    a: aa: 0
+    b: 0
+  eq 0, x.b
+  eq 0, x.a.aa

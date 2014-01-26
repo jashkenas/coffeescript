@@ -268,6 +268,22 @@ test "#2055: destructuring assignment with `new`", ->
   {length} = new Array
   eq 0, length
 
+test "#156: destructuring with expansion", ->
+  array = [1..5]
+  [first, ..., last] = array
+  eq 1, first
+  eq 5, last
+  [..., lastButOne, last] = array
+  eq 4, lastButOne
+  eq 5, last
+  [first, second, ..., last] = array
+  eq 2, second
+  [..., last] = 'strings as well -> x'
+  eq 'x', last
+  throws (-> CoffeeScript.compile "[1, ..., 3]"),        null, "prohibit expansion outside of assignment"
+  throws (-> CoffeeScript.compile "[..., a, b...] = c"), null, "prohibit expansion and a splat"
+  throws (-> CoffeeScript.compile "[...] = c"),          null, "prohibit lone expansion"
+
 
 # Existential Assignment
 

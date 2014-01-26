@@ -218,6 +218,10 @@ test "#1714: lexer bug with raw range `for` followed by `in`", ->
 test "#1099: statically determined `not in []` reporting incorrect result", ->
   ok 0 not in []
 
+test "#1099: make sure expression tested gets evaluted when array is empty", ->
+  a = 0
+  (do -> a = 1) in []
+  eq a, 1
 
 # Chained Comparison
 
@@ -296,3 +300,60 @@ test "#2567: Optimization of negated existential produces correct result", ->
 test "#2508: Existential access of the prototype", ->
   eq NonExistent?::nothing, undefined
   ok Object?::toString
+
+test "power operator", ->
+  eq 27, 3 ** 3
+
+test "power operator has higher precedence than other maths operators", ->
+  eq 55, 1 + 3 ** 3 * 2
+  eq -4, -2 ** 2
+  eq false, !2 ** 2
+  eq 0, (!2) ** 2
+  eq -2, ~1 ** 5
+
+test "power operator is right associative", ->
+  eq 2, 2 ** 1 ** 3
+
+test "power operator compound assignment", ->
+  a = 2
+  a **= 3
+  eq 8, a
+
+test "floor division operator", ->
+  eq 2, 7 // 3
+  eq -3, -7 // 3
+  eq NaN, 0 // 0
+
+test "floor division operator compound assignment", ->
+  a = 7
+  a //= 2
+  eq 3, a
+
+test "modulo operator", ->
+  check = (a, b, expected) ->
+    eq expected, a %% b, "expected #{a} %%%% #{b} to be #{expected}"
+  check 0, 1, 0
+  check 0, -1, -0
+  check 1, 0, NaN
+  check 1, 2, 1
+  check 1, -2, -1
+  check 1, 3, 1
+  check 2, 3, 2
+  check 3, 3, 0
+  check 4, 3, 1
+  check -1, 3, 2
+  check -2, 3, 1
+  check -3, 3, 0
+  check -4, 3, 2
+  check 5.5, 2.5, 0.5
+  check -5.5, 2.5, 2.0
+
+test "modulo operator compound assignment", ->
+  a = -2
+  a %%= 5
+  eq 3, a
+
+test "modulo operator converts arguments to numbers", ->
+  eq 1, 1 %% '42'
+  eq 1, '1' %% 42
+  eq 1, '1' %% '42'

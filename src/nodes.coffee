@@ -1156,6 +1156,7 @@ exports.Assign = class Assign extends Base
       return @compilePatternMatch o if @variable.isArray() or @variable.isObject()
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
+      return @compileSpecialMath  o if @context in ['**=', '//=', '%%=']
     compiledName = @variable.compileToFragments o, LEVEL_LIST
     name = fragmentsToText compiledName
     unless @context
@@ -1202,10 +1203,10 @@ exports.Assign = class Assign extends Base
       if obj.unwrap().value in RESERVED
         obj.error "assignment to a reserved word: #{obj.compile o}"
       return new Assign(obj, value, null, param: @param).compileToFragments o, LEVEL_TOP
-    vvar    = value.compileToFragments o, LEVEL_LIST
+    vvar     = value.compileToFragments o, LEVEL_LIST
     vvarText = fragmentsToText vvar
-    assigns = []
-    splat   = false
+    assigns  = []
+    expandedIdx = false
     # Make vvar into a simple variable if it isn't already.
     if not IDENTIFIER.test(vvarText) or @variable.assigns(vvarText)
       assigns.push [@makeCode("#{ ref = o.scope.freeVariable 'ref' } = "), vvar...]
@@ -1224,7 +1225,7 @@ exports.Assign = class Assign extends Base
             [obj, idx] = new Value(obj.unwrapAll()).cacheReference o
           else
             idx = if obj.this then obj.properties[0].name else obj
-      if not splat and obj instanceof Splat
+      if not expandedIdx and obj instanceof Splat
         name = obj.name.unwrap().value
         obj = obj.unwrap()
         val = "#{olen} <= #{vvarText}.length ? #{ utility 'slice' }.call(#{vvarText}, #{i}"
@@ -1234,13 +1235,23 @@ exports.Assign = class Assign extends Base
         else
           val += ") : []"
         val   = new Literal val
-        splat = "#{ivar}++"
+        expandedIdx = "#{ivar}++"
+      else if not expandedIdx and obj instanceof Expansion
+        if rest = olen - i - 1
+          if rest is 1
+            expandedIdx = "#{vvarText}.length - 1"
+          else
+            ivar = o.scope.freeVariable 'i'
+            val = new Literal "#{ivar} = #{vvarText}.length - #{rest}"
+            expandedIdx = "#{ivar}++"
+            assigns.push val.compileToFragments o, LEVEL_LIST
+        continue
       else
         name = obj.unwrap().value
-        if obj instanceof Splat
-          obj.error "multiple splats are disallowed in an assignment"
+        if obj instanceof Splat or obj instanceof Expansion
+          obj.error "multiple splats/expansions are disallowed in an assignment"
         if typeof idx is 'number'
-          idx = new Literal splat or idx
+          idx = new Literal expandedIdx or idx
           acc = no
         else
           acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
@@ -1267,6 +1278,12 @@ exports.Assign = class Assign extends Base
     else
       fragments = new Op(@context[...-1], left, new Assign(right, @value, '=')).compileToFragments o
       if o.level <= LEVEL_LIST then fragments else @wrapInBraces fragments
+
+  # Convert special math assignment operators like `a **= b` to the equivalent
+  # extended form `a = a ** b` and then compiles that.
+  compileSpecialMath: (o) ->
+    [left, right] = @variable.cacheReference o
+    new Assign(left, new Op(@context[...-1], right, @value)).compileToFragments o
 
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
@@ -1336,10 +1353,10 @@ exports.Code = class Code extends Base
     delete o.isExistentialEquals
     params = []
     exprs  = []
-    for param in @params
+    for param in @params when param not instanceof Expansion
       o.scope.parameter param.asReference o
-    for param in @params when param.splat
-      for {name: p} in @params
+    for param in @params when param.splat or param instanceof Expansion
+      for {name: p} in @params when param not instanceof Expansion
         if p.this then p = p.properties[0].name
         if p.value then o.scope.add p.value, 'var', yes
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
@@ -1454,7 +1471,7 @@ exports.Param = class Param extends Base
           atParam obj
         # * simple destructured parameters {foo}
         else iterator obj.base.value, obj.base
-      else
+      else if obj not instanceof Expansion
         obj.error "illegal parameter #{obj.compile()}"
     return
 
@@ -1504,6 +1521,22 @@ exports.Splat = class Splat extends Base
     base = list[0].joinFragmentArrays base, ', '
     concatPart = list[index].joinFragmentArrays args, ', '
     [].concat list[0].makeCode("["), base, list[index].makeCode("].concat("), concatPart, (last list).makeCode(")")
+
+#### Expansion
+
+# Used to skip values inside an array destructuring (pattern matching) or
+# parameter list.
+exports.Expansion = class Expansion extends Base
+
+  isComplex: NO
+
+  compileNode: (o) ->
+    @error 'Expansion must be used inside a destructuring assignment or parameter list'
+
+  asReference: (o) ->
+    this
+
+  eachName: (iterator) ->
 
 #### While
 
@@ -1662,10 +1695,16 @@ exports.Op = class Op extends Base
       @error "cannot increment/decrement \"#{@first.unwrapAll().value}\""
     return @compileUnary     o if @isUnary()
     return @compileChain     o if isChain
-    return @compileExistence o if @operator is '?'
-    answer = [].concat @first.compileToFragments(o, LEVEL_OP), @makeCode(' ' + @operator + ' '),
-            @second.compileToFragments(o, LEVEL_OP)
-    if o.level <= LEVEL_OP then answer else @wrapInBraces answer
+    switch @operator
+      when '?'  then @compileExistence o
+      when '**' then @compilePower o
+      when '//' then @compileFloorDivision o
+      when '%%' then @compileModulo o
+      else
+        lhs = @first.compileToFragments o, LEVEL_OP
+        rhs = @second.compileToFragments o, LEVEL_OP
+        answer = [].concat lhs, @makeCode(" #{@operator} "), rhs
+        if o.level <= LEVEL_OP then answer else @wrapInBraces answer
 
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. For example:
@@ -1708,6 +1747,20 @@ exports.Op = class Op extends Base
     parts.reverse() if @flip
     @joinFragmentArrays parts, ''
 
+  compilePower: (o) ->
+    # Make a Math.pow call
+    pow = new Value new Literal('Math'), [new Access new Literal 'pow']
+    new Call(pow, [@first, @second]).compileToFragments o
+
+  compileFloorDivision: (o) ->
+    floor = new Value new Literal('Math'), [new Access new Literal 'floor']
+    div = new Op '/', @first, @second
+    new Call(floor, [div]).compileToFragments o
+
+  compileModulo: (o) ->
+    mod = new Value new Literal utility 'modulo'
+    new Call(mod, [@first, @second]).compileToFragments o
+
   toString: (idt) ->
     super idt, @constructor.name + ' ' + @operator
 
@@ -1720,7 +1773,7 @@ exports.In = class In extends Base
   invert: NEGATE
 
   compileNode: (o) ->
-    if @array instanceof Value and @array.isArray()
+    if @array instanceof Value and @array.isArray() and @array.base.objects.length
       for obj in @array.base.objects when obj instanceof Splat
         hasSplat = yes
         break
@@ -1729,7 +1782,6 @@ exports.In = class In extends Base
     @compileLoopTest o
 
   compileOrTest: (o) ->
-    return [@makeCode("#{!!@negated}")] if @array.base.objects.length is 0
     [sub, ref] = @object.cache o, LEVEL_OP
     [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
     tests = []
@@ -1890,7 +1942,7 @@ exports.For = class For extends While
     @returns  = no if lastJumps and lastJumps instanceof Return
     source    = if @range then @source.base else @source
     scope     = o.scope
-    name      = @name  and (@name.compile o, LEVEL_LIST)
+    name      = @name  and (@name.compile o, LEVEL_LIST) if not @pattern
     index     = @index and (@index.compile o, LEVEL_LIST)
     scope.find(name)  if name and not @pattern
     scope.find(index) if index
@@ -2108,18 +2160,42 @@ UTILITIES =
 
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls, and copies of any static properties.
-  extends: -> """
-    function(child, parent) { for (var key in parent) { if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; }
-  """
+  extends: -> "
+    function(child, parent) {
+      for (var key in parent) {
+        if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key];
+      }
+      function ctor() {
+        this.constructor = child;
+      }
+      ctor.prototype = parent.prototype;
+      child.prototype = new ctor();
+      child.__super__ = parent.prototype;
+      return child;
+    }
+  "
 
   # Create a function bound to the current value of "this".
-  bind: -> '''
-    function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
-  '''
+  bind: -> '
+    function(fn, me){
+      return function(){
+        return fn.apply(me, arguments);
+      };
+    }
+  '
 
   # Discover if an item is in an array.
-  indexOf: -> """
-    [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; }
+  indexOf: -> "
+    [].indexOf || function(item) {
+      for (var i = 0, l = this.length; i < l; i++) {
+        if (i in this && this[i] === item) return i;
+      }
+      return -1;
+    }
+  "
+
+  modulo: -> """
+    function(a, b) { return (a % b + +b) % b; }
   """
 
   # Shortcuts to speed up the lookup time for native functions.

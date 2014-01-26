@@ -104,6 +104,9 @@ compilePath = (source, topLevel, base) ->
     if path.basename(source) is 'node_modules'
       notSources[source] = yes
       return
+    if opts.run
+      compilePath findDirectoryIndex(source), topLevel, base
+      return
     watchDir source, base if opts.watch
     try
       files = fs.readdirSync source
@@ -124,6 +127,16 @@ compilePath = (source, topLevel, base) ->
   else
     notSources[source] = yes
 
+findDirectoryIndex = (source) ->
+  for ext in CoffeeScript.FILE_EXTENSIONS
+    index = path.join source, "index#{ext}"
+    try
+      return index if (fs.statSync index).isFile()
+    catch err
+      throw err unless err.code is 'ENOENT'
+  console.error "Missing index.coffee or index.litcoffee in #{source}"
+  process.exit 1
+
 # Compile a single source script, containing the given code, according to the
 # requested options. If evaluating the script directly sets `__filename`,
 # `__dirname` and `module.filename` to be correct relative to the script's path.
@@ -133,9 +146,13 @@ compileScript = (file, input, base = null) ->
   try
     t = task = {file, input, options}
     CoffeeScript.emit 'compile', task
-    if      o.tokens      then printTokens CoffeeScript.tokens t.input, t.options
-    else if o.nodes       then printLine CoffeeScript.nodes(t.input, t.options).toString().trim()
-    else if o.run         then CoffeeScript.run t.input, t.options
+    if o.tokens
+      printTokens CoffeeScript.tokens t.input, t.options
+    else if o.nodes
+      printLine CoffeeScript.nodes(t.input, t.options).toString().trim()
+    else if o.run
+      CoffeeScript.register()
+      CoffeeScript.run t.input, t.options
     else if o.join and t.file isnt o.join
       t.input = helpers.invertLiterate t.input if helpers.isLiterate file
       sourceCode[sources.indexOf(t.file)] = t.input
@@ -186,84 +203,105 @@ compileJoin = ->
 # time the file is updated. May be used in combination with other options,
 # such as `--print`.
 watch = (source, base) ->
-
-  prevStats = null
+  watcher        = null
+  prevStats      = null
   compileTimeout = null
 
-  watchErr = (e) ->
-    if e.code is 'ENOENT'
-      return if sources.indexOf(source) is -1
-      try
-        rewatch()
-        compile()
-      catch e
-        removeSource source, base, yes
-        compileJoin()
-    else throw e
+  watchErr = (err) ->
+    throw err unless err.code is 'ENOENT'
+    return unless source in sources
+    try
+      rewatch()
+      compile()
+    catch
+      removeSource source, base
+      compileJoin()
 
   compile = ->
     clearTimeout compileTimeout
     compileTimeout = wait 25, ->
       fs.stat source, (err, stats) ->
         return watchErr err if err
-        return rewatch() if prevStats and stats.size is prevStats.size and
-          stats.mtime.getTime() is prevStats.mtime.getTime()
+        return rewatch() if prevStats and
+                            stats.size is prevStats.size and
+                            stats.mtime.getTime() is prevStats.mtime.getTime()
         prevStats = stats
         fs.readFile source, (err, code) ->
           return watchErr err if err
           compileScript(source, code.toString(), base)
           rewatch()
 
-  try
-    watcher = fs.watch source, compile
-  catch e
-    watchErr e
+  startWatcher = ->
+    watcher = fs.watch source
+    .on 'change', compile
+    .on 'error', (err) ->
+      throw err unless err.code is 'EPERM'
+      removeSource source, base
 
   rewatch = ->
     watcher?.close()
-    watcher = fs.watch source, compile
+    startWatcher()
 
+  try
+    startWatcher()
+  catch err
+    watchErr err
 
 # Watch a directory of files for new additions.
 watchDir = (source, base) ->
+  watcher        = null
   readdirTimeout = null
-  try
-    watchedDirs[source] = yes
-    watcher = fs.watch source, ->
+
+  startWatcher = ->
+    watcher = fs.watch source
+    .on 'error', (err) ->
+      throw err unless err.code is 'EPERM'
+      stopWatcher()
+    .on 'change', ->
       clearTimeout readdirTimeout
       readdirTimeout = wait 25, ->
         try
           files = fs.readdirSync source
         catch err
           throw err unless err.code is 'ENOENT'
-          watcher.close()
-          return removeSourceDir source, base
+          return stopWatcher()
         for file in files
           compilePath (path.join source, file), no, base
-  catch e
-    throw e unless e.code is 'ENOENT'
+
+  stopWatcher = ->
+    watcher.close()
+    removeSourceDir source, base
+
+  watchedDirs[source] = yes
+  try
+    startWatcher()
+  catch err
+    throw err unless err.code is 'ENOENT'
 
 removeSourceDir = (source, base) ->
   delete watchedDirs[source]
   sourcesChanged = no
   for file in sources when source is path.dirname file
-    removeSource file, base, yes
+    removeSource file, base
     sourcesChanged = yes
   compileJoin() if sourcesChanged
 
 # Remove a file from our source list, and source code cache. Optionally remove
 # the compiled JS version as well.
-removeSource = (source, base, removeJs) ->
+removeSource = (source, base) ->
   index = sources.indexOf source
   sources.splice index, 1
   sourceCode.splice index, 1
-  if removeJs and not opts.join
-    jsPath = outputPath source, base
-    try
-      fs.unlinkSync jsPath
-    catch err
-      throw err unless err.code is 'ENOENT'
+  unless opts.join
+    silentUnlink outputPath source, base
+    silentUnlink outputPath source, base, '.map'
     timeLog "removed #{source}"
+
+silentUnlink = (path) ->
+  try
+    fs.unlinkSync path
+  catch err
+    throw err unless err.code in ['ENOENT', 'EPERM']
 
 # Get the corresponding output JavaScript path for a source file.
 outputPath = (source, base, extension=".js") ->

@@ -42,10 +42,11 @@ if require.extensions
 if child_process
   {fork} = child_process
   binary = require.resolve '../../bin/coffee'
-  child_process.fork = (path, args = [], options = {}) ->
-    execPath = if helpers.isCoffee(path) then binary else null
-    if not Array.isArray args
-      args = []
-      options = args or {}
-    options.execPath or= execPath
+  child_process.fork = (path, args, options) ->
+    if helpers.isCoffee path
+      unless Array.isArray args
+        options = args or {}
+        args = []
+      args = [path].concat args
+      path = binary
     fork path, args, options

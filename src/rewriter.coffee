@@ -6,9 +6,10 @@
 # parentheses, and generally clean things up.
 
 # Create a generated token: one that exists due to a use of implicit syntax.
-generate = (tag, value) ->
+generate = (tag, value, origin) ->
   tok = [tag, value]
   tok.generated = yes
+  tok.origin = origin if origin
   tok
 
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
@@ -162,17 +163,18 @@ class exports.Rewriter
       endAllImplicitCalls = ->
         while inImplicitCall()
           endImplicitCall()
+        return
 
       startImplicitObject = (j, startsLine = yes) ->
         idx = j ? i
         stack.push ['{', idx, sameLine: yes, startsLine: startsLine, ours: yes]
-        tokens.splice idx, 0, generate '{', generate(new String('{'))
+        tokens.splice idx, 0, generate '{', generate(new String('{')), token
         i += 1 if not j?
 
       endImplicitObject = (j) ->
         j = j ? i
         stack.pop()
-        tokens.splice j, 0, generate '}', '}'
+        tokens.splice j, 0, generate '}', '}', token
         i += 1
 
       # Don't end an implicit call on next indent if any of these are in an argument
@@ -286,13 +288,10 @@ class exports.Rewriter
       #     .g b
       #     .h a
       #
-      if inImplicitCall() and tag in CALL_CLOSERS
-        if prevTag is 'OUTDENT'
-          endImplicitCall()
-          return forward(1)
-        if prevToken.newLine
-          endAllImplicitCalls()
-          return forward(1)
+      if inImplicitCall() and tag in CALL_CLOSERS and
+         (prevTag is 'OUTDENT' or prevToken.newLine)
+        endAllImplicitCalls()
+        return forward(1)
 
       stackTop()[2].sameLine = no if inImplicitObject() and tag in LINEBREAKS
 
@@ -304,7 +303,8 @@ class exports.Rewriter
             endImplicitCall()
           # Close implicit objects such as:
           # return a: 1, b: 2 unless true
-          else if inImplicitObject() and sameLine and not startsLine
+          else if inImplicitObject() and sameLine and
+                  tag isnt 'TERMINATOR' and prevTag isnt ':'
             endImplicitObject()
           # Close implicit objects when at end of line, line didn't end with a comma
           # and the implicit object didn't start the line or the next line doesn't look like
@@ -470,8 +470,8 @@ IMPLICIT_FUNC    = ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL    = [
   'IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START', 'CLASS'
-  'IF', 'TRY', 'SWITCH', 'THIS', 'BOOL', 'NULL', 'UNDEFINED', 'UNARY', 'SUPER'
-  'THROW', '@', '->', '=>', '->*', '=>*', '[', '(', '{', '--', '++'
+  'IF', 'TRY', 'SWITCH', 'THIS', 'BOOL', 'NULL', 'UNDEFINED', 'UNARY',
+  'UNARY_MATH', 'SUPER', 'THROW', '@', '->', '=>', '[', '(', '{', '--', '++'
 ]
 
 IMPLICIT_UNSPACED_CALL = ['+', '-']
