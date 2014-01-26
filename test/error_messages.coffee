@@ -99,3 +99,22 @@ test "#1096: unexpected generated tokens", ->
     for i in [1]:
                 ^
   '''
+
+test "#3325: implicit indentation errors", ->
+  assertErrorFormat '''
+    i for i in a then i
+  ''', '''
+    [stdin]:1:14: error: unexpected then
+    i for i in a then i
+                 ^^^^
+  '''
+
+test "explicit indentation errors", ->
+  assertErrorFormat '''
+    a = b
+      c
+  ''', '''
+    [stdin]:2:1: error: unexpected indentation
+      c
+    ^^
+  '''
