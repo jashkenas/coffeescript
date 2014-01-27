@@ -41,30 +41,33 @@ test "compiler error formatting", ->
                  ^^^^
   '''
 
-test "patchStackTrace line patching", ->
-  err = new Error 'error'
-  ok err.stack.match /test[\/\\]error_messages\.coffee:\d+:\d+\b/
 
-fs   = require 'fs'
-path = require 'path'
+if require?
+  fs   = require 'fs'
+  path = require 'path'
 
-test "#2849: compilation error in a require()d file", ->
-  # Create a temporary file to require().
-  ok not fs.existsSync 'test/syntax-error.coffee'
-  fs.writeFileSync 'test/syntax-error.coffee', 'foo in bar or in baz'
+  test "patchStackTrace line patching", ->
+    err = new Error 'error'
+    ok err.stack.match /test[\/\\]error_messages\.coffee:\d+:\d+\b/
 
-  try
-    assertErrorFormat '''
-      require './test/syntax-error'
-    ''',
-    """
-      #{path.join __dirname, 'syntax-error.coffee'}:1:15: error: unexpected in
-      foo in bar or in baz
-                    ^^
-    """
-  finally
-    fs.unlink 'test/syntax-error.coffee'
+  test "#2849: compilation error in a require()d file", ->
+    # Create a temporary file to require().
+    ok not fs.existsSync 'test/syntax-error.coffee'
+    fs.writeFileSync 'test/syntax-error.coffee', 'foo in bar or in baz'
+  
+    try
+      assertErrorFormat '''
+        require './test/syntax-error'
+      ''',
+      """
+        #{path.join __dirname, 'syntax-error.coffee'}:1:15: error: unexpected in
+        foo in bar or in baz
+                      ^^
+      """
+    finally
+      fs.unlink 'test/syntax-error.coffee'
 
+  
 test "#1096: unexpected generated tokens", ->
   # Unexpected interpolation
   assertErrorFormat '{"#{key}": val}', '''
