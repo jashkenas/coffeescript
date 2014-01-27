@@ -682,7 +682,9 @@ Expressions
       You can use <tt>in</tt> to test for array presence, and <tt>of</tt> to
       test for JavaScript object-key presence.
     </p>
-
+    <p>
+      To simplify math expressions, `**` can be used for exponentiation, `//` performs integer division and `%%` provides true mathematical modulo.
+    </p>
     <p>
       All together now:
     </p>
@@ -699,6 +701,9 @@ Expressions
       <tr><td><tt>@, this</tt></td><td><tt>this</tt></td></tr>
       <tr><td><tt>of</tt></td><td><tt>in</tt></td></tr>
       <tr><td><tt>in</tt></td><td><i><small>no JS equivalent</small></i></td></tr>
+      <tr><td><tt>a ** b</tt></td><td><tt>Math.pow(a, b)</tt></td></tr>
+      <tr><td><tt>a // b</tt></td><td><tt>Math.floor(a / b)</tt></td></tr>
+      <tr><td><tt>a %% b</tt></td><td><tt>(a % b + b) % b</tt></td></tr>
     </table>
 
     <%= code_for('aliases') %>
@@ -796,11 +801,15 @@ Expressions
       Destructuring assignment can be used with any depth of array and object nesting,
       to help pull out deeply nested properties.
     </p>
-    <%= code_for('object_extraction', 'name + " — " + street') %>
+    <%= code_for('object_extraction', '"#{name} - #{street}"') %>
     <p>
       Destructuring assignment can even be combined with splats.
     </p>
     <%= code_for('patterns_and_splats', 'contents.join("")') %>
+    <p>
+      Expansion can be used to retrieve elements from the end of an array without having to assign the rest of its values. It works in the function argument list as well.
+    </p>
+    <%= code_for('expansions', '"#{first} #{last}"') %>
     <p>
       Destructuring assignment is also useful when combined with class constructors
       to assign properties to your instance from an options object passed to the constructor.
@@ -895,7 +904,7 @@ Expressions
     </p>
     <%= code_for('interpolation', 'sentence') %>
     <p>
-      Multiline strings are allowed in CoffeeScript.
+      Multiline strings are allowed in CoffeeScript. Lines are joined by a single space unless they end with a backslash. Indentation is ignored.
     </p>
     <%= code_for('strings', 'mobyDick') %>
     <p>
@@ -1208,6 +1217,45 @@ Expressions
       Change Log
     </h2>
 
+    <p>
+      <b class="header" style="margin-top: 20px;">
+        <a href="https://github.com/jashkenas/coffee-script/compare/1.6.3...1.7.0">1.7.0</a>
+        <span class="timestamp"> &ndash; <small>January 26, 2014</small></span>
+      </b>
+      <ul>
+        <li>
+          When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with <tt>require 'coffee-script/register'</tt> or <tt>CoffeeScript.register()</tt>. Also for configuration such as Mocha's, use 'coffee-script/register'.
+        </li>
+        <li>
+          Improved error messages, source maps and stack traces. Source maps now use the updated <tt>//#</tt> syntax.
+        </li>
+        <li>
+          Leading <tt>.</tt> will now close all open calls, allowing for simpler chaining syntax (see below).
+        </li>
+        <li>
+          Added `**`, `//` and `%%` operators and `...` expansion in paramater lists and destructuring expressions.
+        </li>
+        <li>
+          Multiline strings are now joined by a single space and ignore all indentation. A backslash at the end of a line can denote the amount of whitespace between lines, in both strings and heredocs. Backslashes correctly escape whitespace in block regexes.
+        </li>
+        <li>
+          Closing brackets can now be indented and therefore no longer cause unexpected error.
+        </li>
+        <li>
+          Several breaking compilation fixes. Non-callable literals (strings, numbers etc.) won't compile in a call now and multiple postfix conditionals compile properly. Postfix conditionals and loops always bind object literals. Conditional assignment compiles properly in subexpressions. `super` is disallowed outside of methods and works correctly inside for loops. 
+        </li>
+        <li>
+          Formatting of compiled block comments has been improved.
+        </li>
+        <li>
+          No more -p folders on Windows.
+        </li>
+        <li>
+          The `options` object passed to CoffeeScript is no longer mutated.
+        </li>
+      </ul>
+    </p>
+    <%= code_for('chaining') %>
     <p>
       <b class="header" style="margin-top: 20px;">
         <a href="https://github.com/jashkenas/coffee-script/compare/1.6.2...1.6.3">1.6.3</a>
