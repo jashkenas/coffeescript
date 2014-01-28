@@ -1,5 +1,6 @@
 fs            = require 'fs'
 path          = require 'path'
+_             = require 'underscore'
 CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 helpers       = require './lib/coffee-script/helpers'
@@ -40,6 +41,29 @@ run = (args, cb) ->
 # Log a message with a color.
 log = (message, color, explanation) ->
   console.log color + message + reset + ' ' + (explanation or '')
+
+codeFor = ->
+  counter = 0
+  hljs = require 'highlight.js'
+  hljs.configure classPrefix: ''
+  (file, executable = false, showLoad = true) ->
+    counter++
+    return unless fs.existsSync "documentation/js/#{file}.js"
+    cs = fs.readFileSync "documentation/coffee/#{file}.coffee", 'utf-8'
+    js = fs.readFileSync "documentation/js/#{file}.js", 'utf-8'
+    js = js.replace /^\/\/ generated.*?\n/i, ''
+
+    cshtml = "<pre><code>#{hljs.highlight('coffeescript', cs).value}</code></pre>"
+    jshtml = "<pre><code>#{hljs.highlight('javascript', js).value}</code></pre>"
+    append = if executable is yes then '' else "alert(#{executable});"
+    if executable and executable != yes
+      cs.replace /(\S)\s*\Z/m, "$1\n\nalert #{executable}"
+    run    = if executable is true then 'run' else "run: #{executable}"
+    name   = "example#{counter}"
+    script = "<script>window.#{name} = #{JSON.stringify cs}</script>"
+    load   = if showLoad then "<div class='minibutton load' onclick='javascript: loadConsole(#{name});'>load</div>" else ''
+    button = if executable then "<div class='minibutton ok' onclick='javascript: #{js};#{append}'>#{run}</div>" else ''
+    "<div class='code'>#{cshtml}#{jshtml}#{script}#{load}#{button}<br class='clear' /></div>"
 
 option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
 
@@ -84,13 +108,6 @@ task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   parser = require('./lib/coffee-script/grammar').parser
   fs.writeFile 'lib/coffee-script/parser.js', parser.generate()
 
-
-task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter', ->
-  exec 'plist2syntax ../coffee-script-tmbundle/Syntaxes/CoffeeScript.tmLanguage', (err) ->
-    throw err if err
-    exec 'sudo mv coffeescript.yaml /usr/local/lib/ruby/gems/1.8/gems/ultraviolet-0.10.2/syntax/coffeescript.syntax'
-
-
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
   code = ''
   for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'nodes', 'sourcemap', 'coffee-script', 'browser']
@@ -124,8 +141,17 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
-  exec 'rake doc', (err) ->
-    throw err if err
+  source = 'documentation/index.html.js'
+  exec 'bin/coffee -bc -o documentation/js documentation/coffee/*.coffee'
+
+  do renderIndex = ->
+    codeSnippetCounter = 0
+    rendered = _.template fs.readFileSync(source, 'utf-8'), codeFor: codeFor()
+    fs.writeFileSync 'index.html', rendered
+    log "compiled", green, "#{source}"
+
+  fs.watchFile source, internal: 200, renderIndex
+  log "watching..." , green
 
 
 task 'doc:source', 'rebuild the internal documentation', ->
