@@ -84,13 +84,6 @@ task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   parser = require('./lib/coffee-script/grammar').parser
   fs.writeFile 'lib/coffee-script/parser.js', parser.generate()
 
-
-task 'build:ultraviolet', 'build and install the Ultraviolet syntax highlighter', ->
-  exec 'plist2syntax ../coffee-script-tmbundle/Syntaxes/CoffeeScript.tmLanguage', (err) ->
-    throw err if err
-    exec 'sudo mv coffeescript.yaml /usr/local/lib/ruby/gems/1.8/gems/ultraviolet-0.10.2/syntax/coffeescript.syntax'
-
-
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
   code = ''
   for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'nodes', 'sourcemap', 'coffee-script', 'browser']
@@ -123,9 +116,49 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
   invoke 'test:browser'
 
 
-task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
-  exec 'rake doc', (err) ->
-    throw err if err
+task 'doc:site', 'build the documentation for the website', ->
+  source = 'documentation/index.html.coffee'
+  exec 'bin/coffee -bc -o documentation/js documentation/coffee/*.coffee'
+
+  # _.template for CoffeeScript
+  template = (text, compile) ->
+    escapes =
+      "'":  "'"
+      '\\': '\\'
+      '\r': 'r'
+      '\n': 'n'
+      '\t': 't'
+      '\u2028': 'u2028'
+      '\u2029': 'u2029'
+
+    escaper = /\\|'|\r|\n|\t|\u2028|\u2029/g
+    matcher = /<%=([\s\S]+?)%>|<%([\s\S]+?)%>|$/g
+
+    # Compile the template source, escaping string literals appropriately.
+    index = 0
+    source = ""
+    text.replace matcher, (match, interpolate, evaluate, offset) ->
+      source += text[index...offset].replace escaper, (match) ->
+        "\\#{escapes[match]}"
+      # strip newline and semi-colon from interpolated expression
+      source += "'+\n#{(compile interpolate)[0...-2]}+\n'" if interpolate
+      source += "';\n#{compile evaluate}\n__p+='" if evaluate
+      index = offset + match.length
+      match
+    source = "with(obj){\n__p+='#{source}';\n}\n"
+    source = "var __p='',__j=Array.prototype.join,
+              print=function(){__p+=__j.call(arguments,'');};\n
+              #{source}return __p;\n"
+    try
+      render = new Function 'obj', source
+    catch e
+      e.source = source
+      throw e
+    render require: require
+
+  rendered = template fs.readFileSync(source, 'utf-8'), (code) ->
+    CoffeeScript.compile code, bare: true
+  fs.writeFileSync 'index.html', rendered
 
 
 task 'doc:source', 'rebuild the internal documentation', ->

@@ -1,29 +1,29 @@
 <%
-  require 'uv'
-  require 'json'
-  @counter = 0
-  def code_for(file, executable=false, show_load=true)
-    @counter += 1
-    return '' unless File.exists?("documentation/js/#{file}.js")
-    cs = File.read("documentation/coffee/#{file}.coffee")
-    js = File.read("documentation/js/#{file}.js")
-    js = js.sub(/^\/\/ generated.*?\n/i, '')
-    cshtml = Uv.parse(cs, 'xhtml', 'coffeescript', false, 'idle', false)
-    jshtml = Uv.parse(js, 'xhtml', 'javascript', false, 'idle', false)
-    append = executable  == true ? '' : "alert(#{executable});"
-    if executable and executable != true
-      cs.sub!(/(\S)\s*\Z/m, "\\1\n\nalert #{executable}")
-    end
-    run    = executable  == true ? 'run' : "run: #{executable}"
-    name   = "example#{@counter}"
-    script = "<script>window.#{name} = #{cs.to_json}</script>"
-    import = show_load ? "<div class='minibutton load' onclick='javascript: loadConsole(#{name});'>load</div>" : ''
-    button = executable ? "<div class='minibutton ok' onclick='javascript: #{js};#{append}'>#{run}</div>" : ''
-    "<div class='code'>#{cshtml}#{jshtml}#{script}#{import}#{button}<br class='clear' /></div>"
-  end
+  path = require 'path'
+  fs   = require 'fs'
+  hljs = require 'highlight.js'
+  hljs.configure classPrefix: ''
+
+  counter = 0
+  code_for = (file, executable = false, showLoad = true) ->
+    counter++
+    return unless fs.existsSync "documentation/js/#{file}.js"
+    cs = fs.readFileSync "documentation/coffee/#{file}.coffee", 'utf-8'
+    js = fs.readFileSync "documentation/js/#{file}.js", 'utf-8'
+    js = js.replace /^\/\/ generated.*?\n/i, ''
+
+    cshtml = "<pre><code>#{hljs.highlight('coffeescript', cs).value}</code></pre>"
+    jshtml = "<pre><code>#{hljs.highlight('javascript', js).value}</code></pre>"
+    append = if executable is yes then '' else "alert(#{executable});"
+    if executable and executable != yes
+      cs.replace /(\S)\s*\Z/m, "$1\n\nalert #{executable}"
+    run    = if executable is true then 'run' else "run: #{executable}"
+    name   = "example#{counter}"
+    script = "<script>window.#{name} = #{JSON.stringify cs}</script>"
+    load   = if showLoad then "<div class='minibutton load' onclick='javascript: loadConsole(#{name});'>load</div>" else ''
+    button = if executable then "<div class='minibutton ok' onclick='javascript: #{js};#{append}'>#{run}</div>" else ''
+    "<div class='code'>#{cshtml}#{jshtml}#{script}#{load}#{button}<br class='clear' /></div>"
 %>
-
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -32,6 +32,7 @@
   <link rel="canonical" href="http://coffeescript.org" />
   <link rel="stylesheet" type="text/css" href="documentation/css/docs.css" />
   <link rel="stylesheet" type="text/css" href="documentation/css/idle.css" />
+  <link rel="stylesheet" type="text/css" href="documentation/css/tomorrow.css" />
   <link rel="shortcut icon" href="documentation/images/favicon.ico" />
 </head>
 <body>
@@ -150,7 +151,7 @@ sudo npm install -g coffee-script</pre>
 
     <p><i>CoffeeScript on the left, compiled JavaScript output on the right.</i></p>
 
-    <%= code_for('overview', 'cubes', false) %>
+    <%= code_for 'overview', 'cubes', false %>
 
     <h2>
       <span id="installation" class="bookmark"></span>
@@ -435,12 +436,12 @@ Expressions
       an arrow, and the function body. The empty function looks like this:
       <tt>-></tt>
     </p>
-    <%= code_for('functions', 'cube(5)') %>
+    <%= code_for 'functions', 'cube(5)' %>
     <p>
       Functions may also have default values for arguments, which will be used
       if the incoming argument is missing (<tt>null</tt> or <tt>undefined</tt>).
     </p>
-    <%= code_for('default_args', 'fill("cup")') %>
+    <%= code_for 'default_args', 'fill("cup")' %>
 
     <p>
       <span id="objects_and_arrays" class="bookmark"></span>
@@ -450,14 +451,14 @@ Expressions
       the commas are optional. Objects may be created using indentation instead
       of explicit braces, similar to <a href="http://yaml.org">YAML</a>.
     </p>
-    <%= code_for('objects_and_arrays', 'song.join(" ... ")') %>
+    <%= code_for 'objects_and_arrays', 'song.join(" ... ")' %>
     <p>
       In JavaScript, you can't use reserved words, like <tt>class</tt>, as properties
       of an object, without quoting them as strings. CoffeeScript notices reserved words
       used as keys in objects and quotes them for you, so you don't have to worry
       about it (say, when using jQuery).
     </p>
-    <%= code_for('objects_reserved') %>
+    <%= code_for 'objects_reserved' %>
 
     <p>
       <span id="lexical-scope" class="bookmark"></span>
@@ -466,7 +467,7 @@ Expressions
       are properly declared within lexical scope &mdash; you never need to write
       <tt>var</tt> yourself.
     </p>
-    <%= code_for('scope', 'inner') %>
+    <%= code_for 'scope', 'inner' %>
     <p>
       Notice how all of the variable declarations have been pushed up to
       the top of the closest scope, the first time they appear.
@@ -511,7 +512,7 @@ Expressions
       is no explicit ternary statement in CoffeeScript &mdash; you simply use
       a regular <b>if</b> statement on a single line.
     </p>
-    <%= code_for('conditionals') %>
+    <%= code_for 'conditionals' %>
 
     <p>
       <span id="splats" class="bookmark"></span>
@@ -521,7 +522,7 @@ Expressions
       splats <tt>...</tt>, both for function definition as well as invocation,
       making variable numbers of arguments a little bit more palatable.
     </p>
-    <%= code_for('splats', true) %>
+    <%= code_for 'splats', true %>
 
     <p>
       <span id="loops" class="bookmark"></span>
@@ -532,7 +533,7 @@ Expressions
       Unlike for loops, array comprehensions are expressions, and can be returned
       and assigned.
     </p>
-    <%= code_for('array_comprehensions') %>
+    <%= code_for 'array_comprehensions' %>
     <p>
       Comprehensions should be able to handle most places where you otherwise
       would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>, for example:
@@ -541,7 +542,7 @@ Expressions
       in fixed-size increments, you can use a range to specify the start and
       end of your comprehension.
     </p>
-    <%= code_for('range_comprehensions', 'countdown') %>
+    <%= code_for 'range_comprehensions', 'countdown' %>
     <p>
       Note how because we are assigning the value of the comprehensions to a
       variable in the example above, CoffeeScript is collecting the result of
@@ -561,7 +562,7 @@ Expressions
       an object. Use <tt>of</tt> to signal comprehension over the properties of
       an object instead of the values in an array.
     </p>
-    <%= code_for('object_comprehensions', 'ages.join(", ")') %>
+    <%= code_for 'object_comprehensions', 'ages.join(", ")' %>
     <p>
       If you would like to iterate over just the keys that are defined on the
       object itself, by adding a <tt>hasOwnProperty</tt>
@@ -574,7 +575,7 @@ Expressions
       as an expression, returning an array containing the result of each iteration
       through the loop.
     </p>
-    <%= code_for('while', 'lyrics.join("\n")') %>
+    <%= code_for 'while', 'lyrics.join("\n")' %>
     <p>
       For readability, the <b>until</b> keyword is equivalent to <tt>while not</tt>,
       and the <b>loop</b> keyword is equivalent to <tt>while true</tt>.
@@ -586,7 +587,7 @@ Expressions
       provides the <tt>do</tt> keyword, which immediately invokes a passed function,
       forwarding any arguments.
     </p>
-    <%= code_for('do') %>
+    <%= code_for 'do' %>
 
     <p>
       <span id="slices" class="bookmark"></span>
@@ -597,12 +598,12 @@ Expressions
       Slices indices have useful defaults. An omitted first index defaults to
       zero and an omitted second index defaults to the size of the array.
     </p>
-    <%= code_for('slices', 'middle') %>
+    <%= code_for 'slices', 'middle' %>
     <p>
       The same syntax can be used with assignment to replace a segment of an array
       with new values, splicing it.
     </p>
-    <%= code_for('splices', 'numbers') %>
+    <%= code_for 'splices', 'numbers' %>
     <p>
       Note that JavaScript strings are immutable, and can't be spliced.
     </p>
@@ -616,7 +617,7 @@ Expressions
       pushed down into each possible branch of execution in the function
       below.
     </p>
-    <%= code_for('expressions', 'eldest') %>
+    <%= code_for 'expressions', 'eldest' %>
     <p>
       Even though functions will always return their final value, it's both possible
       and encouraged to return early from a function body writing out the explicit
@@ -626,19 +627,19 @@ Expressions
       Because variable declarations occur at the top of scope, assignment can
       be used within expressions, even for variables that haven't been seen before:
     </p>
-    <%= code_for('expressions_assignment', 'six') %>
+    <%= code_for 'expressions_assignment', 'six' %>
     <p>
       Things that would otherwise be statements in JavaScript, when used
       as part of an expression in CoffeeScript, are converted into expressions
       by wrapping them in a closure. This lets you do useful things, like assign
       the result of a comprehension to a variable:
     </p>
-    <%= code_for('expressions_comprehension', 'globals') %>
+    <%= code_for 'expressions_comprehension', 'globals' %>
     <p>
       As well as silly things, like passing a <b>try/catch</b> statement directly
       into a function call:
     </p>
-    <%= code_for('expressions_try', true) %>
+    <%= code_for 'expressions_try', true %>
     <p>
       There are a handful of statements in JavaScript that can't be meaningfully
       converted into expressions, namely <tt>break</tt>, <tt>continue</tt>,
@@ -706,7 +707,7 @@ Expressions
       <tr><td><tt>a %% b</tt></td><td><tt>(a % b + b) % b</tt></td></tr>
     </table>
 
-    <%= code_for('aliases') %>
+    <%= code_for 'aliases' %>
 
     <p>
       <b class="header">The Existential Operator</b>
@@ -720,7 +721,7 @@ Expressions
       It can also be used for safer conditional assignment than <tt>||=</tt>
       provides, for cases where you may be handling numbers or strings.
     </p>
-    <%= code_for('existence', 'footprints') %>
+    <%= code_for 'existence', 'footprints' %>
     <p>
       The accessor variant of the existential operator <tt>?.</tt> can be used to soak
       up null references in a chain of properties. Use it instead
@@ -729,7 +730,7 @@ Expressions
       result, if the chain is broken, <b>undefined</b> is returned instead of
       the <b>TypeError</b> that would be raised otherwise.
     </p>
-    <%= code_for('soaks') %>
+    <%= code_for 'soaks' %>
     <p>
       Soaking up nulls is similar to Ruby's
       <a href="http://andand.rubyforge.org/">andand gem</a>, and to the
@@ -762,7 +763,7 @@ Expressions
       Constructor functions are named, to better support helpful stack traces.
       In the first class in the example below, <tt>this.constructor.name is "Animal"</tt>.
     </p>
-    <%= code_for('classes', true) %>
+    <%= code_for 'classes', true %>
     <p>
       If structuring your prototypes classically isn't your cup of tea, CoffeeScript
       provides a couple of lower-level conveniences. The <tt>extends</tt> operator
@@ -771,7 +772,7 @@ Expressions
       quick access to an object's prototype; and <tt>super()</tt>
       is converted into a call against the immediate ancestor's method of the same name.
     </p>
-    <%= code_for('prototypes', '"one_two".dasherize()') %>
+    <%= code_for 'prototypes', '"one_two".dasherize()' %>
     <p>
       Finally, class definitions are blocks of executable code, which make for interesting
       metaprogramming possibilities. Because in the context of a class definition,
@@ -791,30 +792,30 @@ Expressions
       on the right to the variables on the left. In the simplest case, it can be
       used for parallel assignment:
     </p>
-    <%= code_for('parallel_assignment', 'theBait') %>
+    <%= code_for 'parallel_assignment', 'theBait' %>
     <p>
       But it's also helpful for dealing with functions that return multiple
       values.
     </p>
-    <%= code_for('multiple_return_values', 'forecast') %>
+    <%= code_for 'multiple_return_values', 'forecast' %>
     <p>
       Destructuring assignment can be used with any depth of array and object nesting,
       to help pull out deeply nested properties.
     </p>
-    <%= code_for('object_extraction', '"#{name} - #{street}"') %>
+    <%= code_for 'object_extraction', '"name + "-" + street"' %>
     <p>
       Destructuring assignment can even be combined with splats.
     </p>
-    <%= code_for('patterns_and_splats', 'contents.join("")') %>
+    <%= code_for 'patterns_and_splats', 'contents.join("")' %>
     <p>
       Expansion can be used to retrieve elements from the end of an array without having to assign the rest of its values. It works in the function argument list as well.
     </p>
-    <%= code_for('expansions', '"#{first} #{last}"') %>
+    <%= code_for 'expansions', '"first + " " + last"' %>
     <p>
       Destructuring assignment is also useful when combined with class constructors
       to assign properties to your instance from an options object passed to the constructor.
     </p>
-    <%= code_for('constructor_destructuring', 'tim.age') %>
+    <%= code_for 'constructor_destructuring', 'tim.age' %>
 
     <p>
       <span id="fat-arrow" class="bookmark"></span>
@@ -834,7 +835,7 @@ Expressions
       to use with <tt>bind</tt>. Functions created with the fat arrow are able to access
       properties of the <tt>this</tt> where they're defined.
     </p>
-    <%= code_for('fat_arrow') %>
+    <%= code_for 'fat_arrow' %>
     <p>
       If we had used <tt>-&gt;</tt> in the callback above, <tt>@customer</tt> would
       have referred to the undefined "customer" property of the DOM element,
@@ -853,7 +854,7 @@ Expressions
       snippets of JavaScript within your CoffeeScript, you can
       use backticks to pass it straight through.
     </p>
-    <%= code_for('embedded', 'hi()') %>
+    <%= code_for 'embedded', 'hi()' %>
 
     <p>
       <span id="switch" class="bookmark"></span>
@@ -870,12 +871,12 @@ Expressions
       values for each <b>when</b> clause. If any of the values match, the clause
       runs.
     </p>
-    <%= code_for('switch') %>
+    <%= code_for 'switch' %>
 
     <p>
       Switch statements can also be used without a control expression, turning them in to a cleaner alternative to if/else chains.
     </p>
-    <%= code_for('switch_with_no_expression') %>
+    <%= code_for 'switch_with_no_expression' %>
 
     <p>
       <span id="try" class="bookmark"></span>
@@ -883,7 +884,7 @@ Expressions
       Try/catch statements are just about the same as JavaScript (although
       they work as expressions).
     </p>
-    <%= code_for('try') %>
+    <%= code_for 'try' %>
 
     <p>
       <span id="comparisons" class="bookmark"></span>
@@ -893,7 +894,7 @@ Expressions
       from Python &mdash; making it easy to test if a value falls within a
       certain range.
     </p>
-    <%= code_for('comparisons', 'healthy') %>
+    <%= code_for 'comparisons', 'healthy' %>
 
     <p>
       <span id="strings" class="bookmark"></span>
@@ -902,18 +903,18 @@ Expressions
       strings allow for interpolated values, using <tt>#{ ... }</tt>,
       and single-quoted strings are literal.
     </p>
-    <%= code_for('interpolation', 'sentence') %>
+    <%= code_for 'interpolation', 'sentence' %>
     <p>
       Multiline strings are allowed in CoffeeScript. Lines are joined by a single space unless they end with a backslash. Indentation is ignored.
     </p>
-    <%= code_for('strings', 'mobyDick') %>
+    <%= code_for 'strings', 'mobyDick' %>
     <p>
       Block strings can be used to hold formatted or indentation-sensitive text
       (or, if you just don't feel like escaping quotes and apostrophes). The
       indentation level that begins the block is maintained throughout, so
       you can keep it all aligned with the body of your code.
     </p>
-    <%= code_for('heredocs', 'html') %>
+    <%= code_for 'heredocs', 'html' %>
     <p>
       Double-quoted block strings, like other double-quoted strings, allow interpolation.
     </p>
@@ -923,7 +924,7 @@ Expressions
       the top of a file. Block comments, which mirror the syntax for block strings,
       are preserved in the generated code.
     </p>
-    <%= code_for('block_comment') %>
+    <%= code_for 'block_comment' %>
 
     <p>
       <span id="regexes" class="bookmark"></span>
@@ -934,7 +935,7 @@ Expressions
       block regexes are delimited by <tt>///</tt> and go a long way towards making complex
       regular expressions readable. To quote from the CoffeeScript source:
     </p>
-    <%= code_for('heregexes') %>
+    <%= code_for 'heregexes' %>
 
 
     <h2>
@@ -960,7 +961,7 @@ Expressions
       be made available in the <tt>options</tt> object. Here's a task that uses
       the Node.js API to rebuild CoffeeScript's parser:
     </p>
-    <%= code_for('cake_tasks') %>
+    <%= code_for 'cake_tasks' %>
     <p>
       If you need to invoke one task before another &mdash; for example, running
       <tt>build</tt> before <tt>test</tt>, you can use the <tt>invoke</tt> function:
@@ -1255,7 +1256,7 @@ Expressions
         </li>
       </ul>
     </p>
-    <%= code_for('chaining') %>
+    <%= code_for 'chaining' %>
     <p>
       <b class="header" style="margin-top: 20px;">
         <a href="https://github.com/jashkenas/coffee-script/compare/1.6.2...1.6.3">1.6.3</a>
