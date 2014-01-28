@@ -33,7 +33,8 @@
   "devDependencies": {
     "uglify-js": "~2.2",
     "jison": ">=0.2.0",
-    "highlight.js": "~8.0.0"
+    "highlight.js": "~8.0.0",
+    "underscore": "~1.5.2"
   },
   "dependencies": {
     "mkdirp": "~0.3.5"

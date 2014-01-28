@@ -1,5 +1,6 @@
 fs            = require 'fs'
 path          = require 'path'
+_             = require 'underscore'
 CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 helpers       = require './lib/coffee-script/helpers'
@@ -40,6 +41,29 @@ run = (args, cb) ->
 # Log a message with a color.
 log = (message, color, explanation) ->
   console.log color + message + reset + ' ' + (explanation or '')
+
+codeFor = ->
+  counter = 0
+  hljs = require 'highlight.js'
+  hljs.configure classPrefix: ''
+  (file, executable = false, showLoad = true) ->
+    counter++
+    return unless fs.existsSync "documentation/js/#{file}.js"
+    cs = fs.readFileSync "documentation/coffee/#{file}.coffee", 'utf-8'
+    js = fs.readFileSync "documentation/js/#{file}.js", 'utf-8'
+    js = js.replace /^\/\/ generated.*?\n/i, ''
+
+    cshtml = "<pre><code>#{hljs.highlight('coffeescript', cs).value}</code></pre>"
+    jshtml = "<pre><code>#{hljs.highlight('javascript', js).value}</code></pre>"
+    append = if executable is yes then '' else "alert(#{executable});"
+    if executable and executable != yes
+      cs.replace /(\S)\s*\Z/m, "$1\n\nalert #{executable}"
+    run    = if executable is true then 'run' else "run: #{executable}"
+    name   = "example#{counter}"
+    script = "<script>window.#{name} = #{JSON.stringify cs}</script>"
+    load   = if showLoad then "<div class='minibutton load' onclick='javascript: loadConsole(#{name});'>load</div>" else ''
+    button = if executable then "<div class='minibutton ok' onclick='javascript: #{js};#{append}'>#{run}</div>" else ''
+    "<div class='code'>#{cshtml}#{jshtml}#{script}#{load}#{button}<br class='clear' /></div>"
 
 option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
 
@@ -116,49 +140,18 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
   invoke 'test:browser'
 
 
-task 'doc:site', 'build the documentation for the website', ->
-  source = 'documentation/index.html.coffee'
+task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
+  source = 'documentation/index.html.js'
   exec 'bin/coffee -bc -o documentation/js documentation/coffee/*.coffee'
 
-  # _.template for CoffeeScript
-  template = (text, compile) ->
-    escapes =
-      "'":  "'"
-      '\\': '\\'
-      '\r': 'r'
-      '\n': 'n'
-      '\t': 't'
-      '\u2028': 'u2028'
-      '\u2029': 'u2029'
+  do renderIndex = ->
+    codeSnippetCounter = 0
+    rendered = _.template fs.readFileSync(source, 'utf-8'), codeFor: codeFor()
+    fs.writeFileSync 'index.html', rendered
+    log "compiled", green, "#{source}"
 
-    escaper = /\\|'|\r|\n|\t|\u2028|\u2029/g
-    matcher = /<%=([\s\S]+?)%>|<%([\s\S]+?)%>|$/g
-
-    # Compile the template source, escaping string literals appropriately.
-    index = 0
-    source = ""
-    text.replace matcher, (match, interpolate, evaluate, offset) ->
-      source += text[index...offset].replace escaper, (match) ->
-        "\\#{escapes[match]}"
-      # strip newline and semi-colon from interpolated expression
-      source += "'+\n#{(compile interpolate)[0...-2]}+\n'" if interpolate
-      source += "';\n#{compile evaluate}\n__p+='" if evaluate
-      index = offset + match.length
-      match
-    source = "with(obj){\n__p+='#{source}';\n}\n"
-    source = "var __p='',__j=Array.prototype.join,
-              print=function(){__p+=__j.call(arguments,'');};\n
-              #{source}return __p;\n"
-    try
-      render = new Function 'obj', source
-    catch e
-      e.source = source
-      throw e
-    render require: require
-
-  rendered = template fs.readFileSync(source, 'utf-8'), (code) ->
-    CoffeeScript.compile code, bare: true
-  fs.writeFileSync 'index.html', rendered
+  fs.watchFile source, internal: 200, renderIndex
+  log "watching..." , green
 
 
 task 'doc:source', 'rebuild the internal documentation', ->
