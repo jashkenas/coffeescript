@@ -5,7 +5,6 @@
   <title>CoffeeScript</title>
   <link rel="canonical" href="http://coffeescript.org" />
   <link rel="stylesheet" type="text/css" href="documentation/css/docs.css" />
-  <link rel="stylesheet" type="text/css" href="documentation/css/idle.css" />
   <link rel="stylesheet" type="text/css" href="documentation/css/tomorrow.css" />
   <link rel="shortcut icon" href="documentation/images/favicon.ico" />
 </head>
