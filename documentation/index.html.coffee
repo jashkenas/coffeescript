@@ -138,7 +138,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/1.6.3">1.6.3</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.7.0">1.7.0</a>
     </p>
 
     <pre>
@@ -808,9 +808,9 @@ Expressions
     </p>
     <%= code_for 'patterns_and_splats', 'contents.join("")' %>
     <p>
-      Expansion can be used to retrieve elements from the end of an array without having to assign the rest of its values. It works in the function argument list as well.
+      Expansion can be used to retrieve elements from the end of an array without having to assign the rest of its values. It works in function parameter lists as well.
     </p>
-    <%= code_for 'expansions', '"first + " " + last"' %>
+    <%= code_for 'expansion', '"first + " " + last"' %>
     <p>
       Destructuring assignment is also useful when combined with class constructors
       to assign properties to your instance from an options object passed to the constructor.
@@ -1221,20 +1221,23 @@ Expressions
     <p>
       <b class="header" style="margin-top: 20px;">
         <a href="https://github.com/jashkenas/coffee-script/compare/1.6.3...1.7.0">1.7.0</a>
-        <span class="timestamp"> &ndash; <small>January 26, 2014</small></span>
+        <span class="timestamp"> &ndash; <small>January 28, 2014</small></span>
       </b>
       <ul>
         <li>
-          When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with <tt>require 'coffee-script/register'</tt> or <tt>CoffeeScript.register()</tt>. Also for configuration such as Mocha's, use 'coffee-script/register'.
+          When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with <tt>require 'coffee-script/register'</tt> or <tt>CoffeeScript.register()</tt>. Also for configuration such as Mocha's, use <b>coffee-script/register</b>.
         </li>
         <li>
           Improved error messages, source maps and stack traces. Source maps now use the updated <tt>//#</tt> syntax.
         </li>
         <li>
-          Leading <tt>.</tt> will now close all open calls, allowing for simpler chaining syntax (see below).
+          Leading <tt>.</tt> now closes all open calls, allowing for simpler chaining syntax.
         </li>
+      </ul>
+      <%= code_for 'chaining' %>
+      <ul>
         <li>
-          Added `**`, `//` and `%%` operators and `...` expansion in paramater lists and destructuring expressions.
+          Added <tt>**</tt>, <tt>//</tt> and <tt>%%</tt> operators and <tt>...</tt> expansion in paramater lists and destructuring expressions.
         </li>
         <li>
           Multiline strings are now joined by a single space and ignore all indentation. A backslash at the end of a line can denote the amount of whitespace between lines, in both strings and heredocs. Backslashes correctly escape whitespace in block regexes.
@@ -1243,20 +1246,19 @@ Expressions
           Closing brackets can now be indented and therefore no longer cause unexpected error.
         </li>
         <li>
-          Several breaking compilation fixes. Non-callable literals (strings, numbers etc.) won't compile in a call now and multiple postfix conditionals compile properly. Postfix conditionals and loops always bind object literals. Conditional assignment compiles properly in subexpressions. `super` is disallowed outside of methods and works correctly inside for loops. 
+          Several breaking compilation fixes. Non-callable literals (strings, numbers etc.) don't compile in a call now and multiple postfix conditionals compile properly. Postfix conditionals and loops always bind object literals. Conditional assignment compiles properly in subexpressions. <tt>super</tt> is disallowed outside of methods and works correctly inside <tt>for</tt> loops. 
         </li>
         <li>
           Formatting of compiled block comments has been improved.
         </li>
         <li>
-          No more -p folders on Windows.
+          No more <tt>-p</tt> folders on Windows.
         </li>
         <li>
-          The `options` object passed to CoffeeScript is no longer mutated.
+          The <tt>options</tt> object passed to CoffeeScript is no longer mutated.
         </li>
       </ul>
     </p>
-    <%= code_for 'chaining' %>
     <p>
       <b class="header" style="margin-top: 20px;">
         <a href="https://github.com/jashkenas/coffee-script/compare/1.6.2...1.6.3">1.6.3</a>

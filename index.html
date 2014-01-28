@@ -113,7 +113,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/1.6.3">1.6.3</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.7.0">1.7.0</a>
     </p>
 
     <pre>
@@ -126,77 +126,77 @@ sudo npm install -g coffee-script</pre>
 
     <p><i>CoffeeScript on the left, compiled JavaScript output on the right.</i></p>
 
-    <div class='code'><pre><code><span class="hljs-comment"># Assignment:</span>
-number   = <span class="hljs-number">42</span>
-opposite = <span class="hljs-literal">true</span>
+    <div class='code'><pre><code><span class="comment"># Assignment:</span>
+number   = <span class="number">42</span>
+opposite = <span class="literal">true</span>
 
-<span class="hljs-comment"># Conditions:</span>
-number = -<span class="hljs-number">42</span> <span class="hljs-keyword">if</span> opposite
+<span class="comment"># Conditions:</span>
+number = -<span class="number">42</span> <span class="keyword">if</span> opposite
 
-<span class="hljs-comment"># Functions:</span>
-<span class="hljs-function"><span class="hljs-title">square</span> = <span class="hljs-params">(x)</span> -&gt;</span> x * x
+<span class="comment"># Functions:</span>
+<span class="function"><span class="title">square</span> = <span class="params">(x)</span> -&gt;</span> x * x
 
-<span class="hljs-comment"># Arrays:</span>
-list = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>]
+<span class="comment"># Arrays:</span>
+list = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]
 
-<span class="hljs-comment"># Objects:</span>
+<span class="comment"># Objects:</span>
 math =
-  <span class="hljs-attribute">root</span>:   Math.sqrt
-  <span class="hljs-attribute">square</span>: square
-  <span class="hljs-attribute">cube</span>:   <span class="hljs-function"><span class="hljs-params">(x)</span> -&gt;</span> x * square x
+  <span class="attribute">root</span>:   Math.sqrt
+  <span class="attribute">square</span>: square
+  <span class="attribute">cube</span>:   <span class="function"><span class="params">(x)</span> -&gt;</span> x * square x
 
-<span class="hljs-comment"># Splats:</span>
-<span class="hljs-function"><span class="hljs-title">race</span> = <span class="hljs-params">(winner, runners...)</span> -&gt;</span>
-  <span class="hljs-built_in">print</span> winner, runners
+<span class="comment"># Splats:</span>
+<span class="function"><span class="title">race</span> = <span class="params">(winner, runners...)</span> -&gt;</span>
+  <span class="built_in">print</span> winner, runners
 
-<span class="hljs-comment"># Existence:</span>
-alert <span class="hljs-string">"I knew it!"</span> <span class="hljs-keyword">if</span> elvis?
+<span class="comment"># Existence:</span>
+alert <span class="string">"I knew it!"</span> <span class="keyword">if</span> elvis?
 
-<span class="hljs-comment"># Array comprehensions:</span>
-cubes = (math.cube num <span class="hljs-keyword">for</span> num <span class="hljs-keyword">in</span> list)
-</code></pre><pre><code><span class="hljs-keyword">var</span> cubes, list, math, num, number, opposite, race, square,
+<span class="comment"># Array comprehensions:</span>
+cubes = (math.cube num <span class="keyword">for</span> num <span class="keyword">in</span> list)
+</code></pre><pre><code><span class="keyword">var</span> cubes, list, math, num, number, opposite, race, square,
   __slice = [].slice;
 
-number = <span class="hljs-number">42</span>;
+number = <span class="number">42</span>;
 
-opposite = <span class="hljs-literal">true</span>;
+opposite = <span class="literal">true</span>;
 
-<span class="hljs-keyword">if</span> (opposite) {
-  number = -<span class="hljs-number">42</span>;
+<span class="keyword">if</span> (opposite) {
+  number = -<span class="number">42</span>;
 }
 
-square = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(x)</span> {</span>
-  <span class="hljs-keyword">return</span> x * x;
+square = <span class="function"><span class="keyword">function</span><span class="params">(x)</span> {</span>
+  <span class="keyword">return</span> x * x;
 };
 
-list = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>];
+list = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];
 
 math = {
-  root: <span class="hljs-built_in">Math</span>.sqrt,
+  root: <span class="built_in">Math</span>.sqrt,
   square: square,
-  cube: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(x)</span> {</span>
-    <span class="hljs-keyword">return</span> x * square(x);
+  cube: <span class="function"><span class="keyword">function</span><span class="params">(x)</span> {</span>
+    <span class="keyword">return</span> x * square(x);
   }
 };
 
-race = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-  <span class="hljs-keyword">var</span> runners, winner;
-  winner = <span class="hljs-built_in">arguments</span>[<span class="hljs-number">0</span>], runners = <span class="hljs-number">2</span> &lt;= <span class="hljs-built_in">arguments</span>.length ? __slice.call(<span class="hljs-built_in">arguments</span>, <span class="hljs-number">1</span>) : [];
-  <span class="hljs-keyword">return</span> print(winner, runners);
+race = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+  <span class="keyword">var</span> runners, winner;
+  winner = <span class="built_in">arguments</span>[<span class="number">0</span>], runners = <span class="number">2</span> &lt;= <span class="built_in">arguments</span>.length ? __slice.call(<span class="built_in">arguments</span>, <span class="number">1</span>) : [];
+  <span class="keyword">return</span> print(winner, runners);
 };
 
-<span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> elvis !== <span class="hljs-string">"undefined"</span> &amp;&amp; elvis !== <span class="hljs-literal">null</span>) {
-  alert(<span class="hljs-string">"I knew it!"</span>);
+<span class="keyword">if</span> (<span class="keyword">typeof</span> elvis !== <span class="string">"undefined"</span> &amp;&amp; elvis !== <span class="literal">null</span>) {
+  alert(<span class="string">"I knew it!"</span>);
 }
 
-cubes = (<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-  <span class="hljs-keyword">var</span> _i, _len, _results;
+cubes = (<span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+  <span class="keyword">var</span> _i, _len, _results;
   _results = [];
-  <span class="hljs-keyword">for</span> (_i = <span class="hljs-number">0</span>, _len = list.length; _i &lt; _len; _i++) {
+  <span class="keyword">for</span> (_i = <span class="number">0</span>, _len = list.length; _i &lt; _len; _i++) {
     num = list[_i];
     _results.push(math.cube(num));
   }
-  <span class="hljs-keyword">return</span> _results;
+  <span class="keyword">return</span> _results;
 })();
 </code></pre><script>window.example1 = "# Assignment:\nnumber   = 42\nopposite = true\n\n# Conditions:\nnumber = -42 if opposite\n\n# Functions:\nsquare = (x) -> x * x\n\n# Arrays:\nlist = [1, 2, 3, 4, 5]\n\n# Objects:\nmath =\n  root:   Math.sqrt\n  square: square\n  cube:   (x) -> x * square x\n\n# Splats:\nrace = (winner, runners...) ->\n  print winner, runners\n\n# Existence:\nalert \"I knew it!\" if elvis?\n\n# Array comprehensions:\ncubes = (math.cube num for num in list)\n"</script><div class='minibutton ok' onclick='javascript: var cubes, list, math, num, number, opposite, race, square,
   __slice = [].slice;
@@ -527,16 +527,16 @@ Expressions
       an arrow, and the function body. The empty function looks like this:
       <tt>-></tt>
     </p>
-    <div class='code'><pre><code><span class="hljs-function"><span class="hljs-title">square</span> = <span class="hljs-params">(x)</span> -&gt;</span> x * x
-<span class="hljs-function"><span class="hljs-title">cube</span>   = <span class="hljs-params">(x)</span> -&gt;</span> square(x) * x
-</code></pre><pre><code><span class="hljs-keyword">var</span> cube, square;
+    <div class='code'><pre><code><span class="function"><span class="title">square</span> = <span class="params">(x)</span> -&gt;</span> x * x
+<span class="function"><span class="title">cube</span>   = <span class="params">(x)</span> -&gt;</span> square(x) * x
+</code></pre><pre><code><span class="keyword">var</span> cube, square;
 
-square = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(x)</span> {</span>
-  <span class="hljs-keyword">return</span> x * x;
+square = <span class="function"><span class="keyword">function</span><span class="params">(x)</span> {</span>
+  <span class="keyword">return</span> x * x;
 };
 
-cube = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(x)</span> {</span>
-  <span class="hljs-keyword">return</span> square(x) * x;
+cube = <span class="function"><span class="keyword">function</span><span class="params">(x)</span> {</span>
+  <span class="keyword">return</span> square(x) * x;
 };
 </code></pre><script>window.example2 = "square = (x) -> x * x\ncube   = (x) -> square(x) * x\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example2);'>load</div><div class='minibutton ok' onclick='javascript: var cube, square;
 
@@ -552,21 +552,21 @@ cube = function(x) {
       Functions may also have default values for arguments, which will be used
       if the incoming argument is missing (<tt>null</tt> or <tt>undefined</tt>).
     </p>
-    <div class='code'><pre><code><span class="hljs-function"><span class="hljs-title">fill</span> = <span class="hljs-params">(container, liquid = <span class="hljs-string">"coffee"</span>)</span> -&gt;</span>
-  <span class="hljs-string">"Filling the <span class="hljs-subst">#{container}</span> with <span class="hljs-subst">#{liquid}</span>..."</span>
+    <div class='code'><pre><code><span class="function"><span class="title">fill</span> = <span class="params">(container, liquid = <span class="string">"coffee"</span>)</span> -&gt;</span>
+  <span class="string">"Filling the <span class="subst">#{container}</span> with <span class="subst">#{liquid}</span>..."</span>
 
 
 
 
 
 
-</code></pre><pre><code><span class="hljs-keyword">var</span> fill;
+</code></pre><pre><code><span class="keyword">var</span> fill;
 
-fill = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(container, liquid)</span> {</span>
-  <span class="hljs-keyword">if</span> (liquid == <span class="hljs-literal">null</span>) {
-    liquid = <span class="hljs-string">"coffee"</span>;
+fill = <span class="function"><span class="keyword">function</span><span class="params">(container, liquid)</span> {</span>
+  <span class="keyword">if</span> (liquid == <span class="literal">null</span>) {
+    liquid = <span class="string">"coffee"</span>;
   }
-  <span class="hljs-keyword">return</span> <span class="hljs-string">"Filling the "</span> + container + <span class="hljs-string">" with "</span> + liquid + <span class="hljs-string">"..."</span>;
+  <span class="keyword">return</span> <span class="string">"Filling the "</span> + container + <span class="string">" with "</span> + liquid + <span class="string">"..."</span>;
 };
 </code></pre><script>window.example3 = "fill = (container, liquid = \"coffee\") ->\n  \"Filling the #{container} with #{liquid}...\"\n\n\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example3);'>load</div><div class='minibutton ok' onclick='javascript: var fill;
 
@@ -586,44 +586,44 @@ fill = function(container, liquid) {
       the commas are optional. Objects may be created using indentation instead
       of explicit braces, similar to <a href="http://yaml.org">YAML</a>.
     </p>
-    <div class='code'><pre><code>song = [<span class="hljs-string">"do"</span>, <span class="hljs-string">"re"</span>, <span class="hljs-string">"mi"</span>, <span class="hljs-string">"fa"</span>, <span class="hljs-string">"so"</span>]
+    <div class='code'><pre><code>song = [<span class="string">"do"</span>, <span class="string">"re"</span>, <span class="string">"mi"</span>, <span class="string">"fa"</span>, <span class="string">"so"</span>]
 
-singers = {<span class="hljs-attribute">Jagger</span>: <span class="hljs-string">"Rock"</span>, <span class="hljs-attribute">Elvis</span>: <span class="hljs-string">"Roll"</span>}
+singers = {<span class="attribute">Jagger</span>: <span class="string">"Rock"</span>, <span class="attribute">Elvis</span>: <span class="string">"Roll"</span>}
 
 bitlist = [
-  <span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>
-  <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>
-  <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>
+  <span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>
+  <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>
+  <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>
 ]
 
 kids =
-  <span class="hljs-attribute">brother</span>:
-    <span class="hljs-attribute">name</span>: <span class="hljs-string">"Max"</span>
-    <span class="hljs-attribute">age</span>:  <span class="hljs-number">11</span>
-  <span class="hljs-attribute">sister</span>:
-    <span class="hljs-attribute">name</span>: <span class="hljs-string">"Ida"</span>
-    <span class="hljs-attribute">age</span>:  <span class="hljs-number">9</span>
+  <span class="attribute">brother</span>:
+    <span class="attribute">name</span>: <span class="string">"Max"</span>
+    <span class="attribute">age</span>:  <span class="number">11</span>
+  <span class="attribute">sister</span>:
+    <span class="attribute">name</span>: <span class="string">"Ida"</span>
+    <span class="attribute">age</span>:  <span class="number">9</span>
 
 
-</code></pre><pre><code><span class="hljs-keyword">var</span> bitlist, kids, singers, song;
+</code></pre><pre><code><span class="keyword">var</span> bitlist, kids, singers, song;
 
-song = [<span class="hljs-string">"do"</span>, <span class="hljs-string">"re"</span>, <span class="hljs-string">"mi"</span>, <span class="hljs-string">"fa"</span>, <span class="hljs-string">"so"</span>];
+song = [<span class="string">"do"</span>, <span class="string">"re"</span>, <span class="string">"mi"</span>, <span class="string">"fa"</span>, <span class="string">"so"</span>];
 
 singers = {
-  Jagger: <span class="hljs-string">"Rock"</span>,
-  Elvis: <span class="hljs-string">"Roll"</span>
+  Jagger: <span class="string">"Rock"</span>,
+  Elvis: <span class="string">"Roll"</span>
 };
 
-bitlist = [<span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>];
+bitlist = [<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>];
 
 kids = {
   brother: {
-    name: <span class="hljs-string">"Max"</span>,
-    age: <span class="hljs-number">11</span>
+    name: <span class="string">"Max"</span>,
+    age: <span class="number">11</span>
   },
   sister: {
-    name: <span class="hljs-string">"Ida"</span>,
-    age: <span class="hljs-number">9</span>
+    name: <span class="string">"Ida"</span>,
+    age: <span class="number">9</span>
   }
 };
 </code></pre><script>window.example4 = "song = [\"do\", \"re\", \"mi\", \"fa\", \"so\"]\n\nsingers = {Jagger: \"Rock\", Elvis: \"Roll\"}\n\nbitlist = [\n  1, 0, 1\n  0, 0, 1\n  1, 1, 0\n]\n\nkids =\n  brother:\n    name: \"Max\"\n    age:  11\n  sister:\n    name: \"Ida\"\n    age:  9\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example4);'>load</div><div class='minibutton ok' onclick='javascript: var bitlist, kids, singers, song;
@@ -659,11 +659,11 @@ kids = {
 log object.class
 
 
-</code></pre><pre><code>$(<span class="hljs-string">'.account'</span>).attr({
-  <span class="hljs-string">"class"</span>: <span class="hljs-string">'active'</span>
+</code></pre><pre><code>$(<span class="string">'.account'</span>).attr({
+  <span class="string">"class"</span>: <span class="string">'active'</span>
 });
 
-log(object[<span class="hljs-string">"class"</span>]);
+log(object[<span class="string">"class"</span>]);
 </code></pre><script>window.example5 = "$('.account').attr class: 'active'\n\nlog object.class\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example5);'>load</div><br class='clear' /></div>
 
     <p>
@@ -673,18 +673,18 @@ log(object[<span class="hljs-string">"class"</span>]);
       are properly declared within lexical scope &mdash; you never need to write
       <tt>var</tt> yourself.
     </p>
-    <div class='code'><pre><code>outer = <span class="hljs-number">1</span>
-<span class="hljs-function"><span class="hljs-title">changeNumbers</span> = -&gt;</span>
-  inner = -<span class="hljs-number">1</span>
-  outer = <span class="hljs-number">10</span>
-inner = changeNumbers()</code></pre><pre><code><span class="hljs-keyword">var</span> changeNumbers, inner, outer;
+    <div class='code'><pre><code>outer = <span class="number">1</span>
+<span class="function"><span class="title">changeNumbers</span> = -&gt;</span>
+  inner = -<span class="number">1</span>
+  outer = <span class="number">10</span>
+inner = changeNumbers()</code></pre><pre><code><span class="keyword">var</span> changeNumbers, inner, outer;
 
-outer = <span class="hljs-number">1</span>;
+outer = <span class="number">1</span>;
 
-changeNumbers = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-  <span class="hljs-keyword">var</span> inner;
-  inner = -<span class="hljs-number">1</span>;
-  <span class="hljs-keyword">return</span> outer = <span class="hljs-number">10</span>;
+changeNumbers = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+  <span class="keyword">var</span> inner;
+  inner = -<span class="number">1</span>;
+  <span class="keyword">return</span> outer = <span class="number">10</span>;
 };
 
 inner = changeNumbers();
@@ -744,28 +744,28 @@ inner = changeNumbers();
       is no explicit ternary statement in CoffeeScript &mdash; you simply use
       a regular <b>if</b> statement on a single line.
     </p>
-    <div class='code'><pre><code>mood = greatlyImproved <span class="hljs-keyword">if</span> singing
+    <div class='code'><pre><code>mood = greatlyImproved <span class="keyword">if</span> singing
 
-<span class="hljs-keyword">if</span> happy <span class="hljs-keyword">and</span> knowsIt
+<span class="keyword">if</span> happy <span class="keyword">and</span> knowsIt
   clapsHands()
   chaChaCha()
-<span class="hljs-keyword">else</span>
+<span class="keyword">else</span>
   showIt()
 
-date = <span class="hljs-keyword">if</span> friday <span class="hljs-keyword">then</span> sue <span class="hljs-keyword">else</span> jill
+date = <span class="keyword">if</span> friday <span class="keyword">then</span> sue <span class="keyword">else</span> jill
 
 
 
-</code></pre><pre><code><span class="hljs-keyword">var</span> date, mood;
+</code></pre><pre><code><span class="keyword">var</span> date, mood;
 
-<span class="hljs-keyword">if</span> (singing) {
+<span class="keyword">if</span> (singing) {
   mood = greatlyImproved;
 }
 
-<span class="hljs-keyword">if</span> (happy &amp;&amp; knowsIt) {
+<span class="keyword">if</span> (happy &amp;&amp; knowsIt) {
   clapsHands();
   chaChaCha();
-} <span class="hljs-keyword">else</span> {
+} <span class="keyword">else</span> {
   showIt();
 }
 
@@ -780,55 +780,55 @@ date = friday ? sue : jill;
       splats <tt>...</tt>, both for function definition as well as invocation,
       making variable numbers of arguments a little bit more palatable.
     </p>
-    <div class='code'><pre><code>gold = silver = rest = <span class="hljs-string">"unknown"</span>
+    <div class='code'><pre><code>gold = silver = rest = <span class="string">"unknown"</span>
 
-<span class="hljs-function"><span class="hljs-title">awardMedals</span> = <span class="hljs-params">(first, second, others...)</span> -&gt;</span>
+<span class="function"><span class="title">awardMedals</span> = <span class="params">(first, second, others...)</span> -&gt;</span>
   gold   = first
   silver = second
   rest   = others
 
 contenders = [
-  <span class="hljs-string">"Michael Phelps"</span>
-  <span class="hljs-string">"Liu Xiang"</span>
-  <span class="hljs-string">"Yao Ming"</span>
-  <span class="hljs-string">"Allyson Felix"</span>
-  <span class="hljs-string">"Shawn Johnson"</span>
-  <span class="hljs-string">"Roman Sebrle"</span>
-  <span class="hljs-string">"Guo Jingjing"</span>
-  <span class="hljs-string">"Tyson Gay"</span>
-  <span class="hljs-string">"Asafa Powell"</span>
-  <span class="hljs-string">"Usain Bolt"</span>
+  <span class="string">"Michael Phelps"</span>
+  <span class="string">"Liu Xiang"</span>
+  <span class="string">"Yao Ming"</span>
+  <span class="string">"Allyson Felix"</span>
+  <span class="string">"Shawn Johnson"</span>
+  <span class="string">"Roman Sebrle"</span>
+  <span class="string">"Guo Jingjing"</span>
+  <span class="string">"Tyson Gay"</span>
+  <span class="string">"Asafa Powell"</span>
+  <span class="string">"Usain Bolt"</span>
 ]
 
 awardMedals contenders...
 
-alert <span class="hljs-string">"Gold: "</span> + gold
-alert <span class="hljs-string">"Silver: "</span> + silver
-alert <span class="hljs-string">"The Field: "</span> + rest
+alert <span class="string">"Gold: "</span> + gold
+alert <span class="string">"Silver: "</span> + silver
+alert <span class="string">"The Field: "</span> + rest
 
 
-</code></pre><pre><code><span class="hljs-keyword">var</span> awardMedals, contenders, gold, rest, silver,
+</code></pre><pre><code><span class="keyword">var</span> awardMedals, contenders, gold, rest, silver,
   __slice = [].slice;
 
-gold = silver = rest = <span class="hljs-string">"unknown"</span>;
+gold = silver = rest = <span class="string">"unknown"</span>;
 
-awardMedals = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-  <span class="hljs-keyword">var</span> first, others, second;
-  first = <span class="hljs-built_in">arguments</span>[<span class="hljs-number">0</span>], second = <span class="hljs-built_in">arguments</span>[<span class="hljs-number">1</span>], others = <span class="hljs-number">3</span> &lt;= <span class="hljs-built_in">arguments</span>.length ? __slice.call(<span class="hljs-built_in">arguments</span>, <span class="hljs-number">2</span>) : [];
+awardMedals = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+  <span class="keyword">var</span> first, others, second;
+  first = <span class="built_in">arguments</span>[<span class="number">0</span>], second = <span class="built_in">arguments</span>[<span class="number">1</span>], others = <span class="number">3</span> &lt;= <span class="built_in">arguments</span>.length ? __slice.call(<span class="built_in">arguments</span>, <span class="number">2</span>) : [];
   gold = first;
   silver = second;
-  <span class="hljs-keyword">return</span> rest = others;
+  <span class="keyword">return</span> rest = others;
 };
 
-contenders = [<span class="hljs-string">"Michael Phelps"</span>, <span class="hljs-string">"Liu Xiang"</span>, <span class="hljs-string">"Yao Ming"</span>, <span class="hljs-string">"Allyson Felix"</span>, <span class="hljs-string">"Shawn Johnson"</span>, <span class="hljs-string">"Roman Sebrle"</span>, <span class="hljs-string">"Guo Jingjing"</span>, <span class="hljs-string">"Tyson Gay"</span>, <span class="hljs-string">"Asafa Powell"</span>, <span class="hljs-string">"Usain Bolt"</span>];
+contenders = [<span class="string">"Michael Phelps"</span>, <span class="string">"Liu Xiang"</span>, <span class="string">"Yao Ming"</span>, <span class="string">"Allyson Felix"</span>, <span class="string">"Shawn Johnson"</span>, <span class="string">"Roman Sebrle"</span>, <span class="string">"Guo Jingjing"</span>, <span class="string">"Tyson Gay"</span>, <span class="string">"Asafa Powell"</span>, <span class="string">"Usain Bolt"</span>];
 
-awardMedals.apply(<span class="hljs-literal">null</span>, contenders);
+awardMedals.apply(<span class="literal">null</span>, contenders);
 
-alert(<span class="hljs-string">"Gold: "</span> + gold);
+alert(<span class="string">"Gold: "</span> + gold);
 
-alert(<span class="hljs-string">"Silver: "</span> + silver);
+alert(<span class="string">"Silver: "</span> + silver);
 
-alert(<span class="hljs-string">"The Field: "</span> + rest);
+alert(<span class="string">"The Field: "</span> + rest);
 </code></pre><script>window.example8 = "gold = silver = rest = \"unknown\"\n\nawardMedals = (first, second, others...) ->\n  gold   = first\n  silver = second\n  rest   = others\n\ncontenders = [\n  \"Michael Phelps\"\n  \"Liu Xiang\"\n  \"Yao Ming\"\n  \"Allyson Felix\"\n  \"Shawn Johnson\"\n  \"Roman Sebrle\"\n  \"Guo Jingjing\"\n  \"Tyson Gay\"\n  \"Asafa Powell\"\n  \"Usain Bolt\"\n]\n\nawardMedals contenders...\n\nalert \"Gold: \" + gold\nalert \"Silver: \" + silver\nalert \"The Field: \" + rest\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example8);'>load</div><div class='minibutton ok' onclick='javascript: var awardMedals, contenders, gold, rest, silver,
   __slice = [].slice;
 
@@ -862,36 +862,36 @@ alert("The Field: " + rest);
       Unlike for loops, array comprehensions are expressions, and can be returned
       and assigned.
     </p>
-    <div class='code'><pre><code><span class="hljs-comment"># Eat lunch.</span>
-eat food <span class="hljs-keyword">for</span> food <span class="hljs-keyword">in</span> [<span class="hljs-string">'toast'</span>, <span class="hljs-string">'cheese'</span>, <span class="hljs-string">'wine'</span>]
+    <div class='code'><pre><code><span class="comment"># Eat lunch.</span>
+eat food <span class="keyword">for</span> food <span class="keyword">in</span> [<span class="string">'toast'</span>, <span class="string">'cheese'</span>, <span class="string">'wine'</span>]
 
-<span class="hljs-comment"># Fine five course dining.</span>
-courses = [<span class="hljs-string">'greens'</span>, <span class="hljs-string">'caviar'</span>, <span class="hljs-string">'truffles'</span>, <span class="hljs-string">'roast'</span>, <span class="hljs-string">'cake'</span>]
-menu i + <span class="hljs-number">1</span>, dish <span class="hljs-keyword">for</span> dish, i <span class="hljs-keyword">in</span> courses
+<span class="comment"># Fine five course dining.</span>
+courses = [<span class="string">'greens'</span>, <span class="string">'caviar'</span>, <span class="string">'truffles'</span>, <span class="string">'roast'</span>, <span class="string">'cake'</span>]
+menu i + <span class="number">1</span>, dish <span class="keyword">for</span> dish, i <span class="keyword">in</span> courses
 
-<span class="hljs-comment"># Health conscious meal.</span>
-foods = [<span class="hljs-string">'broccoli'</span>, <span class="hljs-string">'spinach'</span>, <span class="hljs-string">'chocolate'</span>]
-eat food <span class="hljs-keyword">for</span> food <span class="hljs-keyword">in</span> foods <span class="hljs-keyword">when</span> food <span class="hljs-keyword">isnt</span> <span class="hljs-string">'chocolate'</span>
-</code></pre><pre><code><span class="hljs-keyword">var</span> courses, dish, food, foods, i, _i, _j, _k, _len, _len1, _len2, _ref;
+<span class="comment"># Health conscious meal.</span>
+foods = [<span class="string">'broccoli'</span>, <span class="string">'spinach'</span>, <span class="string">'chocolate'</span>]
+eat food <span class="keyword">for</span> food <span class="keyword">in</span> foods <span class="keyword">when</span> food <span class="keyword">isnt</span> <span class="string">'chocolate'</span>
+</code></pre><pre><code><span class="keyword">var</span> courses, dish, food, foods, i, _i, _j, _k, _len, _len1, _len2, _ref;
 
-_ref = [<span class="hljs-string">'toast'</span>, <span class="hljs-string">'cheese'</span>, <span class="hljs-string">'wine'</span>];
-<span class="hljs-keyword">for</span> (_i = <span class="hljs-number">0</span>, _len = _ref.length; _i &lt; _len; _i++) {
+_ref = [<span class="string">'toast'</span>, <span class="string">'cheese'</span>, <span class="string">'wine'</span>];
+<span class="keyword">for</span> (_i = <span class="number">0</span>, _len = _ref.length; _i &lt; _len; _i++) {
   food = _ref[_i];
   eat(food);
 }
 
-courses = [<span class="hljs-string">'greens'</span>, <span class="hljs-string">'caviar'</span>, <span class="hljs-string">'truffles'</span>, <span class="hljs-string">'roast'</span>, <span class="hljs-string">'cake'</span>];
+courses = [<span class="string">'greens'</span>, <span class="string">'caviar'</span>, <span class="string">'truffles'</span>, <span class="string">'roast'</span>, <span class="string">'cake'</span>];
 
-<span class="hljs-keyword">for</span> (i = _j = <span class="hljs-number">0</span>, _len1 = courses.length; _j &lt; _len1; i = ++_j) {
+<span class="keyword">for</span> (i = _j = <span class="number">0</span>, _len1 = courses.length; _j &lt; _len1; i = ++_j) {
   dish = courses[i];
-  menu(i + <span class="hljs-number">1</span>, dish);
+  menu(i + <span class="number">1</span>, dish);
 }
 
-foods = [<span class="hljs-string">'broccoli'</span>, <span class="hljs-string">'spinach'</span>, <span class="hljs-string">'chocolate'</span>];
+foods = [<span class="string">'broccoli'</span>, <span class="string">'spinach'</span>, <span class="string">'chocolate'</span>];
 
-<span class="hljs-keyword">for</span> (_k = <span class="hljs-number">0</span>, _len2 = foods.length; _k &lt; _len2; _k++) {
+<span class="keyword">for</span> (_k = <span class="number">0</span>, _len2 = foods.length; _k &lt; _len2; _k++) {
   food = foods[_k];
-  <span class="hljs-keyword">if</span> (food !== <span class="hljs-string">'chocolate'</span>) {
+  <span class="keyword">if</span> (food !== <span class="string">'chocolate'</span>) {
     eat(food);
   }
 }
@@ -904,17 +904,17 @@ foods = [<span class="hljs-string">'broccoli'</span>, <span class="hljs-string">
       in fixed-size increments, you can use a range to specify the start and
       end of your comprehension.
     </p>
-    <div class='code'><pre><code>countdown = (num <span class="hljs-keyword">for</span> num <span class="hljs-keyword">in</span> [<span class="hljs-number">10.</span><span class="hljs-number">.1</span>])
+    <div class='code'><pre><code>countdown = (num <span class="keyword">for</span> num <span class="keyword">in</span> [<span class="number">10.</span><span class="number">.1</span>])
 
-</code></pre><pre><code><span class="hljs-keyword">var</span> countdown, num;
+</code></pre><pre><code><span class="keyword">var</span> countdown, num;
 
-countdown = (<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-  <span class="hljs-keyword">var</span> _i, _results;
+countdown = (<span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+  <span class="keyword">var</span> _i, _results;
   _results = [];
-  <span class="hljs-keyword">for</span> (num = _i = <span class="hljs-number">10</span>; _i &gt;= <span class="hljs-number">1</span>; num = --_i) {
+  <span class="keyword">for</span> (num = _i = <span class="number">10</span>; _i &gt;= <span class="number">1</span>; num = --_i) {
     _results.push(num);
   }
-  <span class="hljs-keyword">return</span> _results;
+  <span class="keyword">return</span> _results;
 })();
 </code></pre><script>window.example10 = "countdown = (num for num in [10..1])\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example10);'>load</div><div class='minibutton ok' onclick='javascript: var countdown, num;
 
@@ -946,26 +946,26 @@ countdown = (function() {
       an object. Use <tt>of</tt> to signal comprehension over the properties of
       an object instead of the values in an array.
     </p>
-    <div class='code'><pre><code>yearsOld = <span class="hljs-attribute">max</span>: <span class="hljs-number">10</span>, <span class="hljs-attribute">ida</span>: <span class="hljs-number">9</span>, <span class="hljs-attribute">tim</span>: <span class="hljs-number">11</span>
+    <div class='code'><pre><code>yearsOld = <span class="attribute">max</span>: <span class="number">10</span>, <span class="attribute">ida</span>: <span class="number">9</span>, <span class="attribute">tim</span>: <span class="number">11</span>
 
-ages = <span class="hljs-keyword">for</span> child, age <span class="hljs-keyword">of</span> yearsOld
-  <span class="hljs-string">"<span class="hljs-subst">#{child}</span> is <span class="hljs-subst">#{age}</span>"</span>
-</code></pre><pre><code><span class="hljs-keyword">var</span> age, ages, child, yearsOld;
+ages = <span class="keyword">for</span> child, age <span class="keyword">of</span> yearsOld
+  <span class="string">"<span class="subst">#{child}</span> is <span class="subst">#{age}</span>"</span>
+</code></pre><pre><code><span class="keyword">var</span> age, ages, child, yearsOld;
 
 yearsOld = {
-  max: <span class="hljs-number">10</span>,
-  ida: <span class="hljs-number">9</span>,
-  tim: <span class="hljs-number">11</span>
+  max: <span class="number">10</span>,
+  ida: <span class="number">9</span>,
+  tim: <span class="number">11</span>
 };
 
-ages = (<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-  <span class="hljs-keyword">var</span> _results;
+ages = (<span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+  <span class="keyword">var</span> _results;
   _results = [];
-  <span class="hljs-keyword">for</span> (child <span class="hljs-keyword">in</span> yearsOld) {
+  <span class="keyword">for</span> (child <span class="keyword">in</span> yearsOld) {
     age = yearsOld[child];
-    _results.push(<span class="hljs-string">""</span> + child + <span class="hljs-string">" is "</span> + age);
+    _results.push(<span class="string">""</span> + child + <span class="string">" is "</span> + age);
   }
-  <span class="hljs-keyword">return</span> _results;
+  <span class="keyword">return</span> _results;
 })();
 </code></pre><script>window.example11 = "yearsOld = max: 10, ida: 9, tim: 11\n\nages = for child, age of yearsOld\n  \"#{child} is #{age}\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example11);'>load</div><div class='minibutton ok' onclick='javascript: var age, ages, child, yearsOld;
 
@@ -997,36 +997,36 @@ ages = (function() {
       as an expression, returning an array containing the result of each iteration
       through the loop.
     </p>
-    <div class='code'><pre><code><span class="hljs-comment"># Econ 101</span>
-<span class="hljs-keyword">if</span> <span class="hljs-keyword">this</span>.studyingEconomics
-  buy()  <span class="hljs-keyword">while</span> supply &gt; demand
-  sell() <span class="hljs-keyword">until</span> supply &gt; demand
+    <div class='code'><pre><code><span class="comment"># Econ 101</span>
+<span class="keyword">if</span> <span class="keyword">this</span>.studyingEconomics
+  buy()  <span class="keyword">while</span> supply &gt; demand
+  sell() <span class="keyword">until</span> supply &gt; demand
 
-<span class="hljs-comment"># Nursery Rhyme</span>
-num = <span class="hljs-number">6</span>
-lyrics = <span class="hljs-keyword">while</span> num -= <span class="hljs-number">1</span>
-  <span class="hljs-string">"<span class="hljs-subst">#{num}</span> little monkeys, jumping on the bed.
+<span class="comment"># Nursery Rhyme</span>
+num = <span class="number">6</span>
+lyrics = <span class="keyword">while</span> num -= <span class="number">1</span>
+  <span class="string">"<span class="subst">#{num}</span> little monkeys, jumping on the bed.
     One fell out and bumped his head."</span>
-</code></pre><pre><code><span class="hljs-keyword">var</span> lyrics, num;
+</code></pre><pre><code><span class="keyword">var</span> lyrics, num;
 
-<span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.studyingEconomics) {
-  <span class="hljs-keyword">while</span> (supply &gt; demand) {
+<span class="keyword">if</span> (<span class="keyword">this</span>.studyingEconomics) {
+  <span class="keyword">while</span> (supply &gt; demand) {
     buy();
   }
-  <span class="hljs-keyword">while</span> (!(supply &gt; demand)) {
+  <span class="keyword">while</span> (!(supply &gt; demand)) {
     sell();
   }
 }
 
-num = <span class="hljs-number">6</span>;
+num = <span class="number">6</span>;
 
-lyrics = (<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-  <span class="hljs-keyword">var</span> _results;
+lyrics = (<span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+  <span class="keyword">var</span> _results;
   _results = [];
-  <span class="hljs-keyword">while</span> (num -= <span class="hljs-number">1</span>) {
-    _results.push(<span class="hljs-string">""</span> + num + <span class="hljs-string">" little monkeys, jumping on the bed. One fell out and bumped his head."</span>);
+  <span class="keyword">while</span> (num -= <span class="number">1</span>) {
+    _results.push(<span class="string">""</span> + num + <span class="string">" little monkeys, jumping on the bed. One fell out and bumped his head."</span>);
   }
-  <span class="hljs-keyword">return</span> _results;
+  <span class="keyword">return</span> _results;
 })();
 </code></pre><script>window.example12 = "# Econ 101\nif this.studyingEconomics\n  buy()  while supply > demand\n  sell() until supply > demand\n\n# Nursery Rhyme\nnum = 6\nlyrics = while num -= 1\n  \"#{num} little monkeys, jumping on the bed.\n    One fell out and bumped his head.\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example12);'>load</div><div class='minibutton ok' onclick='javascript: var lyrics, num;
 
@@ -1063,17 +1063,17 @@ lyrics = (function() {
       provides the <tt>do</tt> keyword, which immediately invokes a passed function,
       forwarding any arguments.
     </p>
-    <div class='code'><pre><code><span class="hljs-keyword">for</span> filename <span class="hljs-keyword">in</span> list
-  <span class="hljs-keyword">do</span> <span class="hljs-function"><span class="hljs-params">(filename)</span> -&gt;</span>
-    fs.readFile filename, <span class="hljs-function"><span class="hljs-params">(err, contents)</span> -&gt;</span>
-      compile filename, contents.toString()</code></pre><pre><code><span class="hljs-keyword">var</span> filename, _fn, _i, _len;
+    <div class='code'><pre><code><span class="keyword">for</span> filename <span class="keyword">in</span> list
+  <span class="keyword">do</span> <span class="function"><span class="params">(filename)</span> -&gt;</span>
+    fs.readFile filename, <span class="function"><span class="params">(err, contents)</span> -&gt;</span>
+      compile filename, contents.toString()</code></pre><pre><code><span class="keyword">var</span> filename, _fn, _i, _len;
 
-_fn = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(filename)</span> {</span>
-  <span class="hljs-keyword">return</span> fs.readFile(filename, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(err, contents)</span> {</span>
-    <span class="hljs-keyword">return</span> compile(filename, contents.toString());
+_fn = <span class="function"><span class="keyword">function</span><span class="params">(filename)</span> {</span>
+  <span class="keyword">return</span> fs.readFile(filename, <span class="function"><span class="keyword">function</span><span class="params">(err, contents)</span> {</span>
+    <span class="keyword">return</span> compile(filename, contents.toString());
   });
 };
-<span class="hljs-keyword">for</span> (_i = <span class="hljs-number">0</span>, _len = list.length; _i &lt; _len; _i++) {
+<span class="keyword">for</span> (_i = <span class="number">0</span>, _len = list.length; _i &lt; _len; _i++) {
   filename = list[_i];
   _fn(filename);
 }
@@ -1088,26 +1088,26 @@ _fn = <span class="hljs-function"><span class="hljs-keyword">function</span><spa
       Slices indices have useful defaults. An omitted first index defaults to
       zero and an omitted second index defaults to the size of the array.
     </p>
-    <div class='code'><pre><code>numbers = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>, <span class="hljs-number">6</span>, <span class="hljs-number">7</span>, <span class="hljs-number">8</span>, <span class="hljs-number">9</span>]
+    <div class='code'><pre><code>numbers = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>]
 
-start   = numbers[<span class="hljs-number">0.</span><span class="hljs-number">.2</span>]
+start   = numbers[<span class="number">0.</span><span class="number">.2</span>]
 
-middle  = numbers[<span class="hljs-number">3.</span>..-<span class="hljs-number">2</span>]
+middle  = numbers[<span class="number">3.</span>..-<span class="number">2</span>]
 
-end     = numbers[-<span class="hljs-number">2.</span>.]
+end     = numbers[-<span class="number">2.</span>.]
 
 copy    = numbers[..]
-</code></pre><pre><code><span class="hljs-keyword">var</span> copy, end, middle, numbers, start;
+</code></pre><pre><code><span class="keyword">var</span> copy, end, middle, numbers, start;
 
-numbers = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>, <span class="hljs-number">6</span>, <span class="hljs-number">7</span>, <span class="hljs-number">8</span>, <span class="hljs-number">9</span>];
+numbers = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>];
 
-start = numbers.slice(<span class="hljs-number">0</span>, <span class="hljs-number">3</span>);
+start = numbers.slice(<span class="number">0</span>, <span class="number">3</span>);
 
-middle = numbers.slice(<span class="hljs-number">3</span>, -<span class="hljs-number">2</span>);
+middle = numbers.slice(<span class="number">3</span>, -<span class="number">2</span>);
 
-end = numbers.slice(-<span class="hljs-number">2</span>);
+end = numbers.slice(-<span class="number">2</span>);
 
-copy = numbers.slice(<span class="hljs-number">0</span>);
+copy = numbers.slice(<span class="number">0</span>);
 </code></pre><script>window.example14 = "numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nstart   = numbers[0..2]\n\nmiddle  = numbers[3...-2]\n\nend     = numbers[-2..]\n\ncopy    = numbers[..]\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example14);'>load</div><div class='minibutton ok' onclick='javascript: var copy, end, middle, numbers, start;
 
 numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -1124,17 +1124,17 @@ copy = numbers.slice(0);
       The same syntax can be used with assignment to replace a segment of an array
       with new values, splicing it.
     </p>
-    <div class='code'><pre><code>numbers = [<span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>, <span class="hljs-number">6</span>, <span class="hljs-number">7</span>, <span class="hljs-number">8</span>, <span class="hljs-number">9</span>]
+    <div class='code'><pre><code>numbers = [<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>]
 
-numbers[<span class="hljs-number">3.</span><span class="hljs-number">.6</span>] = [-<span class="hljs-number">3</span>, -<span class="hljs-number">4</span>, -<span class="hljs-number">5</span>, -<span class="hljs-number">6</span>]
+numbers[<span class="number">3.</span><span class="number">.6</span>] = [-<span class="number">3</span>, -<span class="number">4</span>, -<span class="number">5</span>, -<span class="number">6</span>]
 
 
 
- </code></pre><pre><code><span class="hljs-keyword">var</span> numbers, _ref;
+ </code></pre><pre><code><span class="keyword">var</span> numbers, _ref;
 
-numbers = [<span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>, <span class="hljs-number">6</span>, <span class="hljs-number">7</span>, <span class="hljs-number">8</span>, <span class="hljs-number">9</span>];
+numbers = [<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>];
 
-[].splice.apply(numbers, [<span class="hljs-number">3</span>, <span class="hljs-number">4</span>].concat(_ref = [-<span class="hljs-number">3</span>, -<span class="hljs-number">4</span>, -<span class="hljs-number">5</span>, -<span class="hljs-number">6</span>])), _ref;
+[].splice.apply(numbers, [<span class="number">3</span>, <span class="number">4</span>].concat(_ref = [-<span class="number">3</span>, -<span class="number">4</span>, -<span class="number">5</span>, -<span class="number">6</span>])), _ref;
 </code></pre><script>window.example15 = "numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nnumbers[3..6] = [-3, -4, -5, -6]\n\n\n\n "</script><div class='minibutton load' onclick='javascript: loadConsole(example15);'>load</div><div class='minibutton ok' onclick='javascript: var numbers, _ref;
 
 numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -1154,31 +1154,31 @@ numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       pushed down into each possible branch of execution in the function
       below.
     </p>
-    <div class='code'><pre><code><span class="hljs-function"><span class="hljs-title">grade</span> = <span class="hljs-params">(student)</span> -&gt;</span>
-  <span class="hljs-keyword">if</span> student.excellentWork
-    <span class="hljs-string">"A+"</span>
-  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> student.okayStuff
-    <span class="hljs-keyword">if</span> student.triedHard <span class="hljs-keyword">then</span> <span class="hljs-string">"B"</span> <span class="hljs-keyword">else</span> <span class="hljs-string">"B-"</span>
-  <span class="hljs-keyword">else</span>
-    <span class="hljs-string">"C"</span>
+    <div class='code'><pre><code><span class="function"><span class="title">grade</span> = <span class="params">(student)</span> -&gt;</span>
+  <span class="keyword">if</span> student.excellentWork
+    <span class="string">"A+"</span>
+  <span class="keyword">else</span> <span class="keyword">if</span> student.okayStuff
+    <span class="keyword">if</span> student.triedHard <span class="keyword">then</span> <span class="string">"B"</span> <span class="keyword">else</span> <span class="string">"B-"</span>
+  <span class="keyword">else</span>
+    <span class="string">"C"</span>
 
-eldest = <span class="hljs-keyword">if</span> <span class="hljs-number">24</span> &gt; <span class="hljs-number">21</span> <span class="hljs-keyword">then</span> <span class="hljs-string">"Liz"</span> <span class="hljs-keyword">else</span> <span class="hljs-string">"Ike"</span></code></pre><pre><code><span class="hljs-keyword">var</span> eldest, grade;
+eldest = <span class="keyword">if</span> <span class="number">24</span> &gt; <span class="number">21</span> <span class="keyword">then</span> <span class="string">"Liz"</span> <span class="keyword">else</span> <span class="string">"Ike"</span></code></pre><pre><code><span class="keyword">var</span> eldest, grade;
 
-grade = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(student)</span> {</span>
-  <span class="hljs-keyword">if</span> (student.excellentWork) {
-    <span class="hljs-keyword">return</span> <span class="hljs-string">"A+"</span>;
-  } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (student.okayStuff) {
-    <span class="hljs-keyword">if</span> (student.triedHard) {
-      <span class="hljs-keyword">return</span> <span class="hljs-string">"B"</span>;
-    } <span class="hljs-keyword">else</span> {
-      <span class="hljs-keyword">return</span> <span class="hljs-string">"B-"</span>;
+grade = <span class="function"><span class="keyword">function</span><span class="params">(student)</span> {</span>
+  <span class="keyword">if</span> (student.excellentWork) {
+    <span class="keyword">return</span> <span class="string">"A+"</span>;
+  } <span class="keyword">else</span> <span class="keyword">if</span> (student.okayStuff) {
+    <span class="keyword">if</span> (student.triedHard) {
+      <span class="keyword">return</span> <span class="string">"B"</span>;
+    } <span class="keyword">else</span> {
+      <span class="keyword">return</span> <span class="string">"B-"</span>;
     }
-  } <span class="hljs-keyword">else</span> {
-    <span class="hljs-keyword">return</span> <span class="hljs-string">"C"</span>;
+  } <span class="keyword">else</span> {
+    <span class="keyword">return</span> <span class="string">"C"</span>;
   }
 };
 
-eldest = <span class="hljs-number">24</span> &gt; <span class="hljs-number">21</span> ? <span class="hljs-string">"Liz"</span> : <span class="hljs-string">"Ike"</span>;
+eldest = <span class="number">24</span> &gt; <span class="number">21</span> ? <span class="string">"Liz"</span> : <span class="string">"Ike"</span>;
 </code></pre><script>window.example16 = "grade = (student) ->\n  if student.excellentWork\n    \"A+\"\n  else if student.okayStuff\n    if student.triedHard then \"B\" else \"B-\"\n  else\n    \"C\"\n\neldest = if 24 > 21 then \"Liz\" else \"Ike\""</script><div class='minibutton load' onclick='javascript: loadConsole(example16);'>load</div><div class='minibutton ok' onclick='javascript: var eldest, grade;
 
 grade = function(student) {
@@ -1206,12 +1206,12 @@ eldest = 24 > 21 ? "Liz" : "Ike";
       Because variable declarations occur at the top of scope, assignment can
       be used within expressions, even for variables that haven't been seen before:
     </p>
-    <div class='code'><pre><code>six = (one = <span class="hljs-number">1</span>) + (two = <span class="hljs-number">2</span>) + (three = <span class="hljs-number">3</span>)
+    <div class='code'><pre><code>six = (one = <span class="number">1</span>) + (two = <span class="number">2</span>) + (three = <span class="number">3</span>)
 
 
-</code></pre><pre><code><span class="hljs-keyword">var</span> one, six, three, two;
+</code></pre><pre><code><span class="keyword">var</span> one, six, three, two;
 
-six = (one = <span class="hljs-number">1</span>) + (two = <span class="hljs-number">2</span>) + (three = <span class="hljs-number">3</span>);
+six = (one = <span class="number">1</span>) + (two = <span class="number">2</span>) + (three = <span class="number">3</span>);
 </code></pre><script>window.example17 = "six = (one = 1) + (two = 2) + (three = 3)\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example17);'>load</div><div class='minibutton ok' onclick='javascript: var one, six, three, two;
 
 six = (one = 1) + (two = 2) + (three = 3);
@@ -1222,18 +1222,18 @@ six = (one = 1) + (two = 2) + (three = 3);
       by wrapping them in a closure. This lets you do useful things, like assign
       the result of a comprehension to a variable:
     </p>
-    <div class='code'><pre><code><span class="hljs-comment"># The first ten global properties.</span>
+    <div class='code'><pre><code><span class="comment"># The first ten global properties.</span>
 
-globals = (name <span class="hljs-keyword">for</span> name <span class="hljs-keyword">of</span> <span class="hljs-built_in">window</span>)[<span class="hljs-number">0.</span>.<span class="hljs-number">.10</span>]</code></pre><pre><code><span class="hljs-keyword">var</span> globals, name;
+globals = (name <span class="keyword">for</span> name <span class="keyword">of</span> <span class="built_in">window</span>)[<span class="number">0.</span>.<span class="number">.10</span>]</code></pre><pre><code><span class="keyword">var</span> globals, name;
 
-globals = ((<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-  <span class="hljs-keyword">var</span> _results;
+globals = ((<span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+  <span class="keyword">var</span> _results;
   _results = [];
-  <span class="hljs-keyword">for</span> (name <span class="hljs-keyword">in</span> window) {
+  <span class="keyword">for</span> (name <span class="keyword">in</span> window) {
     _results.push(name);
   }
-  <span class="hljs-keyword">return</span> _results;
-})()).slice(<span class="hljs-number">0</span>, <span class="hljs-number">10</span>);
+  <span class="keyword">return</span> _results;
+})()).slice(<span class="number">0</span>, <span class="number">10</span>);
 </code></pre><script>window.example18 = "# The first ten global properties.\n\nglobals = (name for name of window)[0...10]"</script><div class='minibutton load' onclick='javascript: loadConsole(example18);'>load</div><div class='minibutton ok' onclick='javascript: var globals, name;
 
 globals = ((function() {
@@ -1250,20 +1250,20 @@ globals = ((function() {
       into a function call:
     </p>
     <div class='code'><pre><code>alert(
-  <span class="hljs-keyword">try</span>
-    nonexistent / <span class="hljs-literal">undefined</span>
-  <span class="hljs-keyword">catch</span> error
-    <span class="hljs-string">"And the error is ... <span class="hljs-subst">#{error}</span>"</span>
+  <span class="keyword">try</span>
+    nonexistent / <span class="literal">undefined</span>
+  <span class="keyword">catch</span> error
+    <span class="string">"And the error is ... <span class="subst">#{error}</span>"</span>
 )
 
-</code></pre><pre><code><span class="hljs-keyword">var</span> error;
+</code></pre><pre><code><span class="keyword">var</span> error;
 
-alert((<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-  <span class="hljs-keyword">try</span> {
-    <span class="hljs-keyword">return</span> nonexistent / <span class="hljs-keyword">void</span> <span class="hljs-number">0</span>;
-  } <span class="hljs-keyword">catch</span> (_error) {
+alert((<span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+  <span class="keyword">try</span> {
+    <span class="keyword">return</span> nonexistent / <span class="keyword">void</span> <span class="number">0</span>;
+  } <span class="keyword">catch</span> (_error) {
     error = _error;
-    <span class="hljs-keyword">return</span> <span class="hljs-string">"And the error is ... "</span> + error;
+    <span class="keyword">return</span> <span class="string">"And the error is ... "</span> + error;
   }
 })());
 </code></pre><script>window.example19 = "alert(\n  try\n    nonexistent / undefined\n  catch error\n    \"And the error is ... #{error}\"\n)\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example19);'>load</div><div class='minibutton ok' onclick='javascript: var error;
@@ -1344,40 +1344,40 @@ alert((function() {
       <tr><td><tt>a %% b</tt></td><td><tt>(a % b + b) % b</tt></td></tr>
     </table>
 
-    <div class='code'><pre><code>launch() <span class="hljs-keyword">if</span> ignition <span class="hljs-keyword">is</span> <span class="hljs-literal">on</span>
+    <div class='code'><pre><code>launch() <span class="keyword">if</span> ignition <span class="keyword">is</span> <span class="literal">on</span>
 
-volume = <span class="hljs-number">10</span> <span class="hljs-keyword">if</span> band <span class="hljs-keyword">isnt</span> SpinalTap
+volume = <span class="number">10</span> <span class="keyword">if</span> band <span class="keyword">isnt</span> SpinalTap
 
-letTheWildRumpusBegin() <span class="hljs-keyword">unless</span> answer <span class="hljs-keyword">is</span> <span class="hljs-literal">no</span>
+letTheWildRumpusBegin() <span class="keyword">unless</span> answer <span class="keyword">is</span> <span class="literal">no</span>
 
-<span class="hljs-keyword">if</span> car.speed &lt; limit <span class="hljs-keyword">then</span> accelerate()
+<span class="keyword">if</span> car.speed &lt; limit <span class="keyword">then</span> accelerate()
 
-winner = <span class="hljs-literal">yes</span> <span class="hljs-keyword">if</span> pick <span class="hljs-keyword">in</span> [<span class="hljs-number">47</span>, <span class="hljs-number">92</span>, <span class="hljs-number">13</span>]
+winner = <span class="literal">yes</span> <span class="keyword">if</span> pick <span class="keyword">in</span> [<span class="number">47</span>, <span class="number">92</span>, <span class="number">13</span>]
 
-<span class="hljs-built_in">print</span> inspect <span class="hljs-string">"My name is <span class="hljs-subst">#{<span class="hljs-property">@name</span>}</span>"</span>
-</code></pre><pre><code><span class="hljs-keyword">var</span> volume, winner;
+<span class="built_in">print</span> inspect <span class="string">"My name is <span class="subst">#{<span class="property">@name</span>}</span>"</span>
+</code></pre><pre><code><span class="keyword">var</span> volume, winner;
 
-<span class="hljs-keyword">if</span> (ignition === <span class="hljs-literal">true</span>) {
+<span class="keyword">if</span> (ignition === <span class="literal">true</span>) {
   launch();
 }
 
-<span class="hljs-keyword">if</span> (band !== SpinalTap) {
-  volume = <span class="hljs-number">10</span>;
+<span class="keyword">if</span> (band !== SpinalTap) {
+  volume = <span class="number">10</span>;
 }
 
-<span class="hljs-keyword">if</span> (answer !== <span class="hljs-literal">false</span>) {
+<span class="keyword">if</span> (answer !== <span class="literal">false</span>) {
   letTheWildRumpusBegin();
 }
 
-<span class="hljs-keyword">if</span> (car.speed &lt; limit) {
+<span class="keyword">if</span> (car.speed &lt; limit) {
   accelerate();
 }
 
-<span class="hljs-keyword">if</span> (pick === <span class="hljs-number">47</span> || pick === <span class="hljs-number">92</span> || pick === <span class="hljs-number">13</span>) {
-  winner = <span class="hljs-literal">true</span>;
+<span class="keyword">if</span> (pick === <span class="number">47</span> || pick === <span class="number">92</span> || pick === <span class="number">13</span>) {
+  winner = <span class="literal">true</span>;
 }
 
-print(inspect(<span class="hljs-string">"My name is "</span> + <span class="hljs-keyword">this</span>.name));
+print(inspect(<span class="string">"My name is "</span> + <span class="keyword">this</span>.name));
 </code></pre><script>window.example20 = "launch() if ignition is on\n\nvolume = 10 if band isnt SpinalTap\n\nletTheWildRumpusBegin() unless answer is no\n\nif car.speed < limit then accelerate()\n\nwinner = yes if pick in [47, 92, 13]\n\nprint inspect \"My name is #{@name}\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example20);'>load</div><br class='clear' /></div>
 
     <p>
@@ -1392,31 +1392,31 @@ print(inspect(<span class="hljs-string">"My name is "</span> + <span class="hljs
       It can also be used for safer conditional assignment than <tt>||=</tt>
       provides, for cases where you may be handling numbers or strings.
     </p>
-    <div class='code'><pre><code>solipsism = <span class="hljs-literal">true</span> <span class="hljs-keyword">if</span> mind? <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> world?
+    <div class='code'><pre><code>solipsism = <span class="literal">true</span> <span class="keyword">if</span> mind? <span class="keyword">and</span> <span class="keyword">not</span> world?
 
-speed = <span class="hljs-number">0</span>
-speed ?= <span class="hljs-number">15</span>
+speed = <span class="number">0</span>
+speed ?= <span class="number">15</span>
 
-footprints = yeti ? <span class="hljs-string">"bear"</span>
-
-
+footprints = yeti ? <span class="string">"bear"</span>
 
 
 
 
- </code></pre><pre><code><span class="hljs-keyword">var</span> footprints, solipsism, speed;
 
-<span class="hljs-keyword">if</span> ((<span class="hljs-keyword">typeof</span> mind !== <span class="hljs-string">"undefined"</span> &amp;&amp; mind !== <span class="hljs-literal">null</span>) &amp;&amp; (<span class="hljs-keyword">typeof</span> world === <span class="hljs-string">"undefined"</span> || world === <span class="hljs-literal">null</span>)) {
-  solipsism = <span class="hljs-literal">true</span>;
+
+ </code></pre><pre><code><span class="keyword">var</span> footprints, solipsism, speed;
+
+<span class="keyword">if</span> ((<span class="keyword">typeof</span> mind !== <span class="string">"undefined"</span> &amp;&amp; mind !== <span class="literal">null</span>) &amp;&amp; (<span class="keyword">typeof</span> world === <span class="string">"undefined"</span> || world === <span class="literal">null</span>)) {
+  solipsism = <span class="literal">true</span>;
 }
 
-speed = <span class="hljs-number">0</span>;
+speed = <span class="number">0</span>;
 
-<span class="hljs-keyword">if</span> (speed == <span class="hljs-literal">null</span>) {
-  speed = <span class="hljs-number">15</span>;
+<span class="keyword">if</span> (speed == <span class="literal">null</span>) {
+  speed = <span class="number">15</span>;
 }
 
-footprints = <span class="hljs-keyword">typeof</span> yeti !== <span class="hljs-string">"undefined"</span> &amp;&amp; yeti !== <span class="hljs-literal">null</span> ? yeti : <span class="hljs-string">"bear"</span>;
+footprints = <span class="keyword">typeof</span> yeti !== <span class="string">"undefined"</span> &amp;&amp; yeti !== <span class="literal">null</span> ? yeti : <span class="string">"bear"</span>;
 </code></pre><script>window.example21 = "solipsism = true if mind? and not world?\n\nspeed = 0\nspeed ?= 15\n\nfootprints = yeti ? \"bear\"\n\n\n\n\n\n\n "</script><div class='minibutton load' onclick='javascript: loadConsole(example21);'>load</div><div class='minibutton ok' onclick='javascript: var footprints, solipsism, speed;
 
 if ((typeof mind !== "undefined" && mind !== null) && (typeof world === "undefined" || world === null)) {
@@ -1440,9 +1440,9 @@ footprints = typeof yeti !== "undefined" && yeti !== null ? yeti : "bear";
       the <b>TypeError</b> that would be raised otherwise.
     </p>
     <div class='code'><pre><code>zip = lottery.drawWinner?().address?.zipcode
-</code></pre><pre><code><span class="hljs-keyword">var</span> zip, _ref;
+</code></pre><pre><code><span class="keyword">var</span> zip, _ref;
 
-zip = <span class="hljs-keyword">typeof</span> lottery.drawWinner === <span class="hljs-string">"function"</span> ? (_ref = lottery.drawWinner().address) != <span class="hljs-literal">null</span> ? _ref.zipcode : <span class="hljs-keyword">void</span> <span class="hljs-number">0</span> : <span class="hljs-keyword">void</span> <span class="hljs-number">0</span>;
+zip = <span class="keyword">typeof</span> lottery.drawWinner === <span class="string">"function"</span> ? (_ref = lottery.drawWinner().address) != <span class="literal">null</span> ? _ref.zipcode : <span class="keyword">void</span> <span class="number">0</span> : <span class="keyword">void</span> <span class="number">0</span>;
 </code></pre><script>window.example22 = "zip = lottery.drawWinner?().address?.zipcode\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example22);'>load</div><br class='clear' /></div>
     <p>
       Soaking up nulls is similar to Ruby's
@@ -1476,24 +1476,24 @@ zip = <span class="hljs-keyword">typeof</span> lottery.drawWinner === <span clas
       Constructor functions are named, to better support helpful stack traces.
       In the first class in the example below, <tt>this.constructor.name is "Animal"</tt>.
     </p>
-    <div class='code'><pre><code><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Animal</span></span>
-  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@name</span>)</span> -&gt;</span>
+    <div class='code'><pre><code><span class="class"><span class="keyword">class</span> <span class="title">Animal</span></span>
+  <span class="attribute">constructor</span>: <span class="function"><span class="params">(<span class="property">@name</span>)</span> -&gt;</span>
 
-  <span class="hljs-attribute">move</span>: <span class="hljs-function"><span class="hljs-params">(meters)</span> -&gt;</span>
-    alert <span class="hljs-property">@name</span> + <span class="hljs-string">" moved <span class="hljs-subst">#{meters}</span>m."</span>
+  <span class="attribute">move</span>: <span class="function"><span class="params">(meters)</span> -&gt;</span>
+    alert <span class="property">@name</span> + <span class="string">" moved <span class="subst">#{meters}</span>m."</span>
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Snake</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Animal</span></span>
-  <span class="hljs-attribute">move</span>:<span class="hljs-function"> -&gt;</span>
-    alert <span class="hljs-string">"Slithering..."</span>
-    <span class="hljs-keyword">super</span> <span class="hljs-number">5</span>
+<span class="class"><span class="keyword">class</span> <span class="title">Snake</span> <span class="keyword">extends</span> <span class="title">Animal</span></span>
+  <span class="attribute">move</span>:<span class="function"> -&gt;</span>
+    alert <span class="string">"Slithering..."</span>
+    <span class="keyword">super</span> <span class="number">5</span>
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Horse</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Animal</span></span>
-  <span class="hljs-attribute">move</span>:<span class="hljs-function"> -&gt;</span>
-    alert <span class="hljs-string">"Galloping..."</span>
-    <span class="hljs-keyword">super</span> <span class="hljs-number">45</span>
+<span class="class"><span class="keyword">class</span> <span class="title">Horse</span> <span class="keyword">extends</span> <span class="title">Animal</span></span>
+  <span class="attribute">move</span>:<span class="function"> -&gt;</span>
+    alert <span class="string">"Galloping..."</span>
+    <span class="keyword">super</span> <span class="number">45</span>
 
-sam = <span class="hljs-keyword">new</span> Snake <span class="hljs-string">"Sammy the Python"</span>
-tom = <span class="hljs-keyword">new</span> Horse <span class="hljs-string">"Tommy the Palomino"</span>
+sam = <span class="keyword">new</span> Snake <span class="string">"Sammy the Python"</span>
+tom = <span class="keyword">new</span> Horse <span class="string">"Tommy the Palomino"</span>
 
 sam.move()
 tom.move()
@@ -1501,58 +1501,58 @@ tom.move()
 
 
 
-</code></pre><pre><code><span class="hljs-keyword">var</span> Animal, Horse, Snake, sam, tom,
+</code></pre><pre><code><span class="keyword">var</span> Animal, Horse, Snake, sam, tom,
   __hasProp = {}.hasOwnProperty,
-  __extends = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(child, parent)</span> {</span> <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> key <span class="hljs-keyword">in</span> parent) { <span class="hljs-keyword">if</span> (__hasProp.call(parent, key)) child[key] = parent[key]; } <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">ctor</span><span class="hljs-params">()</span> {</span> <span class="hljs-keyword">this</span>.constructor = child; } ctor.prototype = parent.prototype; child.prototype = <span class="hljs-keyword">new</span> ctor(); child.__super__ = parent.prototype; <span class="hljs-keyword">return</span> child; };
+  __extends = <span class="function"><span class="keyword">function</span><span class="params">(child, parent)</span> {</span> <span class="keyword">for</span> (<span class="keyword">var</span> key <span class="keyword">in</span> parent) { <span class="keyword">if</span> (__hasProp.call(parent, key)) child[key] = parent[key]; } <span class="function"><span class="keyword">function</span> <span class="title">ctor</span><span class="params">()</span> {</span> <span class="keyword">this</span>.constructor = child; } ctor.prototype = parent.prototype; child.prototype = <span class="keyword">new</span> ctor(); child.__super__ = parent.prototype; <span class="keyword">return</span> child; };
 
-Animal = (<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Animal</span><span class="hljs-params">(name)</span> {</span>
-    <span class="hljs-keyword">this</span>.name = name;
+Animal = (<span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+  <span class="function"><span class="keyword">function</span> <span class="title">Animal</span><span class="params">(name)</span> {</span>
+    <span class="keyword">this</span>.name = name;
   }
 
-  Animal.prototype.move = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(meters)</span> {</span>
-    <span class="hljs-keyword">return</span> alert(<span class="hljs-keyword">this</span>.name + (<span class="hljs-string">" moved "</span> + meters + <span class="hljs-string">"m."</span>));
+  Animal.prototype.move = <span class="function"><span class="keyword">function</span><span class="params">(meters)</span> {</span>
+    <span class="keyword">return</span> alert(<span class="keyword">this</span>.name + (<span class="string">" moved "</span> + meters + <span class="string">"m."</span>));
   };
 
-  <span class="hljs-keyword">return</span> Animal;
+  <span class="keyword">return</span> Animal;
 
 })();
 
-Snake = (<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(_super)</span> {</span>
+Snake = (<span class="function"><span class="keyword">function</span><span class="params">(_super)</span> {</span>
   __extends(Snake, _super);
 
-  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Snake</span><span class="hljs-params">()</span> {</span>
-    <span class="hljs-keyword">return</span> Snake.__super__.constructor.apply(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">arguments</span>);
+  <span class="function"><span class="keyword">function</span> <span class="title">Snake</span><span class="params">()</span> {</span>
+    <span class="keyword">return</span> Snake.__super__.constructor.apply(<span class="keyword">this</span>, <span class="built_in">arguments</span>);
   }
 
-  Snake.prototype.move = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-    alert(<span class="hljs-string">"Slithering..."</span>);
-    <span class="hljs-keyword">return</span> Snake.__super__.move.call(<span class="hljs-keyword">this</span>, <span class="hljs-number">5</span>);
+  Snake.prototype.move = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+    alert(<span class="string">"Slithering..."</span>);
+    <span class="keyword">return</span> Snake.__super__.move.call(<span class="keyword">this</span>, <span class="number">5</span>);
   };
 
-  <span class="hljs-keyword">return</span> Snake;
+  <span class="keyword">return</span> Snake;
 
 })(Animal);
 
-Horse = (<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(_super)</span> {</span>
+Horse = (<span class="function"><span class="keyword">function</span><span class="params">(_super)</span> {</span>
   __extends(Horse, _super);
 
-  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Horse</span><span class="hljs-params">()</span> {</span>
-    <span class="hljs-keyword">return</span> Horse.__super__.constructor.apply(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">arguments</span>);
+  <span class="function"><span class="keyword">function</span> <span class="title">Horse</span><span class="params">()</span> {</span>
+    <span class="keyword">return</span> Horse.__super__.constructor.apply(<span class="keyword">this</span>, <span class="built_in">arguments</span>);
   }
 
-  Horse.prototype.move = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-    alert(<span class="hljs-string">"Galloping..."</span>);
-    <span class="hljs-keyword">return</span> Horse.__super__.move.call(<span class="hljs-keyword">this</span>, <span class="hljs-number">45</span>);
+  Horse.prototype.move = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+    alert(<span class="string">"Galloping..."</span>);
+    <span class="keyword">return</span> Horse.__super__.move.call(<span class="keyword">this</span>, <span class="number">45</span>);
   };
 
-  <span class="hljs-keyword">return</span> Horse;
+  <span class="keyword">return</span> Horse;
 
 })(Animal);
 
-sam = <span class="hljs-keyword">new</span> Snake(<span class="hljs-string">"Sammy the Python"</span>);
+sam = <span class="keyword">new</span> Snake(<span class="string">"Sammy the Python"</span>);
 
-tom = <span class="hljs-keyword">new</span> Horse(<span class="hljs-string">"Tommy the Palomino"</span>);
+tom = <span class="keyword">new</span> Horse(<span class="string">"Tommy the Palomino"</span>);
 
 sam.move();
 
@@ -1622,11 +1622,11 @@ tom.move();
       quick access to an object's prototype; and <tt>super()</tt>
       is converted into a call against the immediate ancestor's method of the same name.
     </p>
-    <div class='code'><pre><code><span class="hljs-attribute">String</span>::<span class="hljs-function"><span class="hljs-title">dasherize</span> = -&gt;</span>
-  <span class="hljs-keyword">this</span>.replace <span class="hljs-regexp">/_/g</span>, <span class="hljs-string">"-"</span>
+    <div class='code'><pre><code><span class="attribute">String</span>::<span class="function"><span class="title">dasherize</span> = -&gt;</span>
+  <span class="keyword">this</span>.replace <span class="regexp">/_/g</span>, <span class="string">"-"</span>
 
-</code></pre><pre><code><span class="hljs-built_in">String</span>.prototype.dasherize = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.replace(<span class="hljs-regexp">/_/g</span>, <span class="hljs-string">"-"</span>);
+</code></pre><pre><code><span class="built_in">String</span>.prototype.dasherize = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+  <span class="keyword">return</span> <span class="keyword">this</span>.replace(<span class="regexp">/_/g</span>, <span class="string">"-"</span>);
 };
 </code></pre><script>window.example24 = "String::dasherize = ->\n  this.replace /_/g, \"-\"\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example24);'>load</div><div class='minibutton ok' onclick='javascript: String.prototype.dasherize = function() {
   return this.replace(/_/g, "-");
@@ -1651,21 +1651,21 @@ tom.move();
       on the right to the variables on the left. In the simplest case, it can be
       used for parallel assignment:
     </p>
-    <div class='code'><pre><code>theBait   = <span class="hljs-number">1000</span>
-theSwitch = <span class="hljs-number">0</span>
+    <div class='code'><pre><code>theBait   = <span class="number">1000</span>
+theSwitch = <span class="number">0</span>
 
 [theBait, theSwitch] = [theSwitch, theBait]
 
 
 
 
- </code></pre><pre><code><span class="hljs-keyword">var</span> theBait, theSwitch, _ref;
+ </code></pre><pre><code><span class="keyword">var</span> theBait, theSwitch, _ref;
 
-theBait = <span class="hljs-number">1000</span>;
+theBait = <span class="number">1000</span>;
 
-theSwitch = <span class="hljs-number">0</span>;
+theSwitch = <span class="number">0</span>;
 
-_ref = [theSwitch, theBait], theBait = _ref[<span class="hljs-number">0</span>], theSwitch = _ref[<span class="hljs-number">1</span>];
+_ref = [theSwitch, theBait], theBait = _ref[<span class="number">0</span>], theSwitch = _ref[<span class="number">1</span>];
 </code></pre><script>window.example25 = "theBait   = 1000\ntheSwitch = 0\n\n[theBait, theSwitch] = [theSwitch, theBait]\n\n\n\n\n "</script><div class='minibutton load' onclick='javascript: loadConsole(example25);'>load</div><div class='minibutton ok' onclick='javascript: var theBait, theSwitch, _ref;
 
 theBait = 1000;
@@ -1678,22 +1678,22 @@ _ref = [theSwitch, theBait], theBait = _ref[0], theSwitch = _ref[1];
       But it's also helpful for dealing with functions that return multiple
       values.
     </p>
-    <div class='code'><pre><code><span class="hljs-function"><span class="hljs-title">weatherReport</span> = <span class="hljs-params">(location)</span> -&gt;</span>
-  <span class="hljs-comment"># Make an Ajax request to fetch the weather...</span>
-  [location, <span class="hljs-number">72</span>, <span class="hljs-string">"Mostly Sunny"</span>]
+    <div class='code'><pre><code><span class="function"><span class="title">weatherReport</span> = <span class="params">(location)</span> -&gt;</span>
+  <span class="comment"># Make an Ajax request to fetch the weather...</span>
+  [location, <span class="number">72</span>, <span class="string">"Mostly Sunny"</span>]
 
-[city, temp, forecast] = weatherReport <span class="hljs-string">"Berkeley, CA"</span>
-
-
+[city, temp, forecast] = weatherReport <span class="string">"Berkeley, CA"</span>
 
 
-</code></pre><pre><code><span class="hljs-keyword">var</span> city, forecast, temp, weatherReport, _ref;
 
-weatherReport = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(location)</span> {</span>
-  <span class="hljs-keyword">return</span> [location, <span class="hljs-number">72</span>, <span class="hljs-string">"Mostly Sunny"</span>];
+
+</code></pre><pre><code><span class="keyword">var</span> city, forecast, temp, weatherReport, _ref;
+
+weatherReport = <span class="function"><span class="keyword">function</span><span class="params">(location)</span> {</span>
+  <span class="keyword">return</span> [location, <span class="number">72</span>, <span class="string">"Mostly Sunny"</span>];
 };
 
-_ref = weatherReport(<span class="hljs-string">"Berkeley, CA"</span>), city = _ref[<span class="hljs-number">0</span>], temp = _ref[<span class="hljs-number">1</span>], forecast = _ref[<span class="hljs-number">2</span>];
+_ref = weatherReport(<span class="string">"Berkeley, CA"</span>), city = _ref[<span class="number">0</span>], temp = _ref[<span class="number">1</span>], forecast = _ref[<span class="number">2</span>];
 </code></pre><script>window.example26 = "weatherReport = (location) ->\n  # Make an Ajax request to fetch the weather...\n  [location, 72, \"Mostly Sunny\"]\n\n[city, temp, forecast] = weatherReport \"Berkeley, CA\"\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example26);'>load</div><div class='minibutton ok' onclick='javascript: var city, forecast, temp, weatherReport, _ref;
 
 weatherReport = function(location) {
@@ -1707,31 +1707,31 @@ _ref = weatherReport("Berkeley, CA"), city = _ref[0], temp = _ref[1], forecast =
       to help pull out deeply nested properties.
     </p>
     <div class='code'><pre><code>futurists =
-  <span class="hljs-attribute">sculptor</span>: <span class="hljs-string">"Umberto Boccioni"</span>
-  <span class="hljs-attribute">painter</span>:  <span class="hljs-string">"Vladimir Burliuk"</span>
-  <span class="hljs-attribute">poet</span>:
-    <span class="hljs-attribute">name</span>:   <span class="hljs-string">"F.T. Marinetti"</span>
-    <span class="hljs-attribute">address</span>: [
-      <span class="hljs-string">"Via Roma 42R"</span>
-      <span class="hljs-string">"Bellagio, Italy 22021"</span>
+  <span class="attribute">sculptor</span>: <span class="string">"Umberto Boccioni"</span>
+  <span class="attribute">painter</span>:  <span class="string">"Vladimir Burliuk"</span>
+  <span class="attribute">poet</span>:
+    <span class="attribute">name</span>:   <span class="string">"F.T. Marinetti"</span>
+    <span class="attribute">address</span>: [
+      <span class="string">"Via Roma 42R"</span>
+      <span class="string">"Bellagio, Italy 22021"</span>
     ]
 
-{<span class="hljs-attribute">poet</span>: {name, <span class="hljs-attribute">address</span>: [street, city]}} = futurists
+{<span class="attribute">poet</span>: {name, <span class="attribute">address</span>: [street, city]}} = futurists
 
 
 
-</code></pre><pre><code><span class="hljs-keyword">var</span> city, futurists, name, street, _ref, _ref1;
+</code></pre><pre><code><span class="keyword">var</span> city, futurists, name, street, _ref, _ref1;
 
 futurists = {
-  sculptor: <span class="hljs-string">"Umberto Boccioni"</span>,
-  painter: <span class="hljs-string">"Vladimir Burliuk"</span>,
+  sculptor: <span class="string">"Umberto Boccioni"</span>,
+  painter: <span class="string">"Vladimir Burliuk"</span>,
   poet: {
-    name: <span class="hljs-string">"F.T. Marinetti"</span>,
-    address: [<span class="hljs-string">"Via Roma 42R"</span>, <span class="hljs-string">"Bellagio, Italy 22021"</span>]
+    name: <span class="string">"F.T. Marinetti"</span>,
+    address: [<span class="string">"Via Roma 42R"</span>, <span class="string">"Bellagio, Italy 22021"</span>]
   }
 };
 
-_ref = futurists.poet, name = _ref.name, (_ref1 = _ref.address, street = _ref1[<span class="hljs-number">0</span>], city = _ref1[<span class="hljs-number">1</span>]);
+_ref = futurists.poet, name = _ref.name, (_ref1 = _ref.address, street = _ref1[<span class="number">0</span>], city = _ref1[<span class="number">1</span>]);
 </code></pre><script>window.example27 = "futurists =\n  sculptor: \"Umberto Boccioni\"\n  painter:  \"Vladimir Burliuk\"\n  poet:\n    name:   \"F.T. Marinetti\"\n    address: [\n      \"Via Roma 42R\"\n      \"Bellagio, Italy 22021\"\n    ]\n\n{poet: {name, address: [street, city]}} = futurists\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example27);'>load</div><div class='minibutton ok' onclick='javascript: var city, futurists, name, street, _ref, _ref1;
 
 futurists = {
@@ -1748,21 +1748,21 @@ _ref = futurists.poet, name = _ref.name, (_ref1 = _ref.address, street = _ref1[0
     <p>
       Destructuring assignment can even be combined with splats.
     </p>
-    <div class='code'><pre><code>tag = <span class="hljs-string">"&lt;impossible&gt;"</span>
+    <div class='code'><pre><code>tag = <span class="string">"&lt;impossible&gt;"</span>
 
-[open, contents..., close] = tag.split(<span class="hljs-string">""</span>)
-
-
+[open, contents..., close] = tag.split(<span class="string">""</span>)
 
 
 
 
-</code></pre><pre><code><span class="hljs-keyword">var</span> close, contents, open, tag, _i, _ref,
+
+
+</code></pre><pre><code><span class="keyword">var</span> close, contents, open, tag, _i, _ref,
   __slice = [].slice;
 
-tag = <span class="hljs-string">"&lt;impossible&gt;"</span>;
+tag = <span class="string">"&lt;impossible&gt;"</span>;
 
-_ref = tag.split(<span class="hljs-string">""</span>), open = _ref[<span class="hljs-number">0</span>], contents = <span class="hljs-number">3</span> &lt;= _ref.length ? __slice.call(_ref, <span class="hljs-number">1</span>, _i = _ref.length - <span class="hljs-number">1</span>) : (_i = <span class="hljs-number">1</span>, []), close = _ref[_i++];
+_ref = tag.split(<span class="string">""</span>), open = _ref[<span class="number">0</span>], contents = <span class="number">3</span> &lt;= _ref.length ? __slice.call(_ref, <span class="number">1</span>, _i = _ref.length - <span class="number">1</span>) : (_i = <span class="number">1</span>, []), close = _ref[_i++];
 </code></pre><script>window.example28 = "tag = \"<impossible>\"\n\n[open, contents..., close] = tag.split(\"\")\n\n\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example28);'>load</div><div class='minibutton ok' onclick='javascript: var close, contents, open, tag, _i, _ref,
   __slice = [].slice;
 
@@ -1771,32 +1771,49 @@ tag = "<impossible>";
 _ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? __slice.call(_ref, 1, _i = _ref.length - 1) : (_i = 1, []), close = _ref[_i++];
 ;alert(contents.join(""));'>run: contents.join("")</div><br class='clear' /></div>
     <p>
-      Expansion can be used to retrieve elements from the end of an array without having to assign the rest of its values. It works in the function argument list as well.
+      Expansion can be used to retrieve elements from the end of an array without having to assign the rest of its values. It works in function parameter lists as well.
     </p>
-    undefined
+    <div class='code'><pre><code>text = <span class="string">"Every literary critic believes he will
+        outwit history and have the last word"</span>
+
+[first, ..., last] = text.split <span class="string">" "</span>
+
+
+
+</code></pre><pre><code><span class="keyword">var</span> first, last, text, _ref;
+
+text = <span class="string">"Every literary critic believes he will outwit history and have the last word"</span>;
+
+_ref = text.split(<span class="string">" "</span>), first = _ref[<span class="number">0</span>], last = _ref[_ref.length - <span class="number">1</span>];
+</code></pre><script>window.example29 = "text = \"Every literary critic believes he will\n        outwit history and have the last word\"\n\n[first, ..., last] = text.split \" \"\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example29);'>load</div><div class='minibutton ok' onclick='javascript: var first, last, text, _ref;
+
+text = "Every literary critic believes he will outwit history and have the last word";
+
+_ref = text.split(" "), first = _ref[0], last = _ref[_ref.length - 1];
+;alert("first + " " + last");'>run: "first + " " + last"</div><br class='clear' /></div>
     <p>
       Destructuring assignment is also useful when combined with class constructors
       to assign properties to your instance from an options object passed to the constructor.
     </p>
-    <div class='code'><pre><code><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Person</span></span>
-  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(options)</span> -&gt;</span> 
-    {<span class="hljs-property">@name</span>, <span class="hljs-property">@age</span>, <span class="hljs-property">@height</span>} = options
+    <div class='code'><pre><code><span class="class"><span class="keyword">class</span> <span class="title">Person</span></span>
+  <span class="attribute">constructor</span>: <span class="function"><span class="params">(options)</span> -&gt;</span> 
+    {<span class="property">@name</span>, <span class="property">@age</span>, <span class="property">@height</span>} = options
 
-tim = <span class="hljs-keyword">new</span> Person <span class="hljs-attribute">age</span>: <span class="hljs-number">4</span>
+tim = <span class="keyword">new</span> Person <span class="attribute">age</span>: <span class="number">4</span>
 
-</code></pre><pre><code><span class="hljs-keyword">var</span> Person, tim;
+</code></pre><pre><code><span class="keyword">var</span> Person, tim;
 
-Person = (<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Person</span><span class="hljs-params">(options)</span> {</span>
-    <span class="hljs-keyword">this</span>.name = options.name, <span class="hljs-keyword">this</span>.age = options.age, <span class="hljs-keyword">this</span>.height = options.height;
+Person = (<span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+  <span class="function"><span class="keyword">function</span> <span class="title">Person</span><span class="params">(options)</span> {</span>
+    <span class="keyword">this</span>.name = options.name, <span class="keyword">this</span>.age = options.age, <span class="keyword">this</span>.height = options.height;
   }
 
-  <span class="hljs-keyword">return</span> Person;
+  <span class="keyword">return</span> Person;
 
 })();
 
-tim = <span class="hljs-keyword">new</span> Person({
-  age: <span class="hljs-number">4</span>
+tim = <span class="keyword">new</span> Person({
+  age: <span class="number">4</span>
 });
 </code></pre><script>window.example30 = "class Person\n  constructor: (options) -> \n    {@name, @age, @height} = options\n\ntim = new Person age: 4\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example30);'>load</div><div class='minibutton ok' onclick='javascript: var Person, tim;
 
@@ -1832,21 +1849,21 @@ tim = new Person({
       to use with <tt>bind</tt>. Functions created with the fat arrow are able to access
       properties of the <tt>this</tt> where they're defined.
     </p>
-    <div class='code'><pre><code><span class="hljs-function"><span class="hljs-title">Account</span> = <span class="hljs-params">(customer, cart)</span> -&gt;</span>
-  <span class="hljs-property">@customer</span> = customer
-  <span class="hljs-property">@cart</span> = cart
+    <div class='code'><pre><code><span class="function"><span class="title">Account</span> = <span class="params">(customer, cart)</span> -&gt;</span>
+  <span class="property">@customer</span> = customer
+  <span class="property">@cart</span> = cart
 
-  $<span class="hljs-function"><span class="hljs-params">(<span class="hljs-string">'.shopping_cart'</span>)</span>.<span class="hljs-title">bind</span> '<span class="hljs-title">click</span>', <span class="hljs-params">(event)</span> =&gt;</span>
-    <span class="hljs-property">@customer</span>.purchase <span class="hljs-property">@cart</span></code></pre><pre><code><span class="hljs-keyword">var</span> Account;
+  $<span class="function"><span class="params">(<span class="string">'.shopping_cart'</span>)</span>.<span class="title">bind</span> '<span class="title">click</span>', <span class="params">(event)</span> =&gt;</span>
+    <span class="property">@customer</span>.purchase <span class="property">@cart</span></code></pre><pre><code><span class="keyword">var</span> Account;
 
-Account = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(customer, cart)</span> {</span>
-  <span class="hljs-keyword">this</span>.customer = customer;
-  <span class="hljs-keyword">this</span>.cart = cart;
-  <span class="hljs-keyword">return</span> $(<span class="hljs-string">'.shopping_cart'</span>).bind(<span class="hljs-string">'click'</span>, (<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(_this)</span> {</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(event)</span> {</span>
-      <span class="hljs-keyword">return</span> _this.customer.purchase(_this.cart);
+Account = <span class="function"><span class="keyword">function</span><span class="params">(customer, cart)</span> {</span>
+  <span class="keyword">this</span>.customer = customer;
+  <span class="keyword">this</span>.cart = cart;
+  <span class="keyword">return</span> $(<span class="string">'.shopping_cart'</span>).bind(<span class="string">'click'</span>, (<span class="function"><span class="keyword">function</span><span class="params">(_this)</span> {</span>
+    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span><span class="params">(event)</span> {</span>
+      <span class="keyword">return</span> _this.customer.purchase(_this.cart);
     };
-  })(<span class="hljs-keyword">this</span>));
+  })(<span class="keyword">this</span>));
 };
 </code></pre><script>window.example31 = "Account = (customer, cart) ->\n  @customer = customer\n  @cart = cart\n\n  $('.shopping_cart').bind 'click', (event) =>\n    @customer.purchase @cart"</script><div class='minibutton load' onclick='javascript: loadConsole(example31);'>load</div><br class='clear' /></div>
     <p>
@@ -1867,16 +1884,16 @@ Account = <span class="hljs-function"><span class="hljs-keyword">function</span>
       snippets of JavaScript within your CoffeeScript, you can
       use backticks to pass it straight through.
     </p>
-    <div class='code'><pre><code>hi = `<span class="javascript"><span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-  <span class="hljs-keyword">return</span> [document.title, <span class="hljs-string">"Hello JavaScript"</span>].join(<span class="hljs-string">": "</span>);
+    <div class='code'><pre><code>hi = `<span class="javascript"><span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+  <span class="keyword">return</span> [document.title, <span class="string">"Hello JavaScript"</span>].join(<span class="string">": "</span>);
 }</span>`
 
 
 
-</code></pre><pre><code><span class="hljs-keyword">var</span> hi;
+</code></pre><pre><code><span class="keyword">var</span> hi;
 
-hi = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-  <span class="hljs-keyword">return</span> [document.title, <span class="hljs-string">"Hello JavaScript"</span>].join(<span class="hljs-string">": "</span>);
+hi = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+  <span class="keyword">return</span> [document.title, <span class="string">"Hello JavaScript"</span>].join(<span class="string">": "</span>);
 };
 </code></pre><script>window.example32 = "hi = `function() {\n  return [document.title, \"Hello JavaScript\"].join(\": \");\n}`\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example32);'>load</div><div class='minibutton ok' onclick='javascript: var hi;
 
@@ -1900,36 +1917,36 @@ hi = function() {
       values for each <b>when</b> clause. If any of the values match, the clause
       runs.
     </p>
-    <div class='code'><pre><code><span class="hljs-keyword">switch</span> day
-  <span class="hljs-keyword">when</span> <span class="hljs-string">"Mon"</span> <span class="hljs-keyword">then</span> go work
-  <span class="hljs-keyword">when</span> <span class="hljs-string">"Tue"</span> <span class="hljs-keyword">then</span> go relax
-  <span class="hljs-keyword">when</span> <span class="hljs-string">"Thu"</span> <span class="hljs-keyword">then</span> go iceFishing
-  <span class="hljs-keyword">when</span> <span class="hljs-string">"Fri"</span>, <span class="hljs-string">"Sat"</span>
-    <span class="hljs-keyword">if</span> day <span class="hljs-keyword">is</span> bingoDay
+    <div class='code'><pre><code><span class="keyword">switch</span> day
+  <span class="keyword">when</span> <span class="string">"Mon"</span> <span class="keyword">then</span> go work
+  <span class="keyword">when</span> <span class="string">"Tue"</span> <span class="keyword">then</span> go relax
+  <span class="keyword">when</span> <span class="string">"Thu"</span> <span class="keyword">then</span> go iceFishing
+  <span class="keyword">when</span> <span class="string">"Fri"</span>, <span class="string">"Sat"</span>
+    <span class="keyword">if</span> day <span class="keyword">is</span> bingoDay
       go bingo
       go dancing
-  <span class="hljs-keyword">when</span> <span class="hljs-string">"Sun"</span> <span class="hljs-keyword">then</span> go church
-  <span class="hljs-keyword">else</span> go work</code></pre><pre><code><span class="hljs-keyword">switch</span> (day) {
-  <span class="hljs-keyword">case</span> <span class="hljs-string">"Mon"</span>:
+  <span class="keyword">when</span> <span class="string">"Sun"</span> <span class="keyword">then</span> go church
+  <span class="keyword">else</span> go work</code></pre><pre><code><span class="keyword">switch</span> (day) {
+  <span class="keyword">case</span> <span class="string">"Mon"</span>:
     go(work);
-    <span class="hljs-keyword">break</span>;
-  <span class="hljs-keyword">case</span> <span class="hljs-string">"Tue"</span>:
+    <span class="keyword">break</span>;
+  <span class="keyword">case</span> <span class="string">"Tue"</span>:
     go(relax);
-    <span class="hljs-keyword">break</span>;
-  <span class="hljs-keyword">case</span> <span class="hljs-string">"Thu"</span>:
+    <span class="keyword">break</span>;
+  <span class="keyword">case</span> <span class="string">"Thu"</span>:
     go(iceFishing);
-    <span class="hljs-keyword">break</span>;
-  <span class="hljs-keyword">case</span> <span class="hljs-string">"Fri"</span>:
-  <span class="hljs-keyword">case</span> <span class="hljs-string">"Sat"</span>:
-    <span class="hljs-keyword">if</span> (day === bingoDay) {
+    <span class="keyword">break</span>;
+  <span class="keyword">case</span> <span class="string">"Fri"</span>:
+  <span class="keyword">case</span> <span class="string">"Sat"</span>:
+    <span class="keyword">if</span> (day === bingoDay) {
       go(bingo);
       go(dancing);
     }
-    <span class="hljs-keyword">break</span>;
-  <span class="hljs-keyword">case</span> <span class="hljs-string">"Sun"</span>:
+    <span class="keyword">break</span>;
+  <span class="keyword">case</span> <span class="string">"Sun"</span>:
     go(church);
-    <span class="hljs-keyword">break</span>;
-  <span class="hljs-keyword">default</span>:
+    <span class="keyword">break</span>;
+  <span class="keyword">default</span>:
     go(work);
 }
 </code></pre><script>window.example33 = "switch day\n  when \"Mon\" then go work\n  when \"Tue\" then go relax\n  when \"Thu\" then go iceFishing\n  when \"Fri\", \"Sat\"\n    if day is bingoDay\n      go bingo\n      go dancing\n  when \"Sun\" then go church\n  else go work"</script><div class='minibutton load' onclick='javascript: loadConsole(example33);'>load</div><br class='clear' /></div>
@@ -1937,30 +1954,30 @@ hi = function() {
     <p>
       Switch statements can also be used without a control expression, turning them in to a cleaner alternative to if/else chains.
     </p>
-    <div class='code'><pre><code>score = <span class="hljs-number">76</span>
-grade = <span class="hljs-keyword">switch</span>
-  <span class="hljs-keyword">when</span> score &lt; <span class="hljs-number">60</span> <span class="hljs-keyword">then</span> <span class="hljs-string">'F'</span>
-  <span class="hljs-keyword">when</span> score &lt; <span class="hljs-number">70</span> <span class="hljs-keyword">then</span> <span class="hljs-string">'D'</span>
-  <span class="hljs-keyword">when</span> score &lt; <span class="hljs-number">80</span> <span class="hljs-keyword">then</span> <span class="hljs-string">'C'</span>
-  <span class="hljs-keyword">when</span> score &lt; <span class="hljs-number">90</span> <span class="hljs-keyword">then</span> <span class="hljs-string">'B'</span>
-  <span class="hljs-keyword">else</span> <span class="hljs-string">'A'</span>
-<span class="hljs-comment"># grade == 'C'</span>
-</code></pre><pre><code><span class="hljs-keyword">var</span> grade, score;
+    <div class='code'><pre><code>score = <span class="number">76</span>
+grade = <span class="keyword">switch</span>
+  <span class="keyword">when</span> score &lt; <span class="number">60</span> <span class="keyword">then</span> <span class="string">'F'</span>
+  <span class="keyword">when</span> score &lt; <span class="number">70</span> <span class="keyword">then</span> <span class="string">'D'</span>
+  <span class="keyword">when</span> score &lt; <span class="number">80</span> <span class="keyword">then</span> <span class="string">'C'</span>
+  <span class="keyword">when</span> score &lt; <span class="number">90</span> <span class="keyword">then</span> <span class="string">'B'</span>
+  <span class="keyword">else</span> <span class="string">'A'</span>
+<span class="comment"># grade == 'C'</span>
+</code></pre><pre><code><span class="keyword">var</span> grade, score;
 
-score = <span class="hljs-number">76</span>;
+score = <span class="number">76</span>;
 
-grade = (<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-  <span class="hljs-keyword">switch</span> (<span class="hljs-literal">false</span>) {
-    <span class="hljs-keyword">case</span> !(score &lt; <span class="hljs-number">60</span>):
-      <span class="hljs-keyword">return</span> <span class="hljs-string">'F'</span>;
-    <span class="hljs-keyword">case</span> !(score &lt; <span class="hljs-number">70</span>):
-      <span class="hljs-keyword">return</span> <span class="hljs-string">'D'</span>;
-    <span class="hljs-keyword">case</span> !(score &lt; <span class="hljs-number">80</span>):
-      <span class="hljs-keyword">return</span> <span class="hljs-string">'C'</span>;
-    <span class="hljs-keyword">case</span> !(score &lt; <span class="hljs-number">90</span>):
-      <span class="hljs-keyword">return</span> <span class="hljs-string">'B'</span>;
-    <span class="hljs-keyword">default</span>:
-      <span class="hljs-keyword">return</span> <span class="hljs-string">'A'</span>;
+grade = (<span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+  <span class="keyword">switch</span> (<span class="literal">false</span>) {
+    <span class="keyword">case</span> !(score &lt; <span class="number">60</span>):
+      <span class="keyword">return</span> <span class="string">'F'</span>;
+    <span class="keyword">case</span> !(score &lt; <span class="number">70</span>):
+      <span class="keyword">return</span> <span class="string">'D'</span>;
+    <span class="keyword">case</span> !(score &lt; <span class="number">80</span>):
+      <span class="keyword">return</span> <span class="string">'C'</span>;
+    <span class="keyword">case</span> !(score &lt; <span class="number">90</span>):
+      <span class="keyword">return</span> <span class="string">'B'</span>;
+    <span class="keyword">default</span>:
+      <span class="keyword">return</span> <span class="string">'A'</span>;
   }
 })();
 </code></pre><script>window.example34 = "score = 76\ngrade = switch\n  when score < 60 then 'F'\n  when score < 70 then 'D'\n  when score < 80 then 'C'\n  when score < 90 then 'B'\n  else 'A'\n# grade == 'C'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example34);'>load</div><br class='clear' /></div>
@@ -1971,23 +1988,23 @@ grade = (<span class="hljs-function"><span class="hljs-keyword">function</span><
       Try/catch statements are just about the same as JavaScript (although
       they work as expressions).
     </p>
-    <div class='code'><pre><code><span class="hljs-keyword">try</span>
+    <div class='code'><pre><code><span class="keyword">try</span>
   allHellBreaksLoose()
   catsAndDogsLivingTogether()
-<span class="hljs-keyword">catch</span> error
-  <span class="hljs-built_in">print</span> error
-<span class="hljs-keyword">finally</span>
+<span class="keyword">catch</span> error
+  <span class="built_in">print</span> error
+<span class="keyword">finally</span>
   cleanUp()
 
-</code></pre><pre><code><span class="hljs-keyword">var</span> error;
+</code></pre><pre><code><span class="keyword">var</span> error;
 
-<span class="hljs-keyword">try</span> {
+<span class="keyword">try</span> {
   allHellBreaksLoose();
   catsAndDogsLivingTogether();
-} <span class="hljs-keyword">catch</span> (_error) {
+} <span class="keyword">catch</span> (_error) {
   error = _error;
   print(error);
-} <span class="hljs-keyword">finally</span> {
+} <span class="keyword">finally</span> {
   cleanUp();
 }
 </code></pre><script>window.example35 = "try\n  allHellBreaksLoose()\n  catsAndDogsLivingTogether()\ncatch error\n  print error\nfinally\n  cleanUp()\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example35);'>load</div><br class='clear' /></div>
@@ -2000,16 +2017,16 @@ grade = (<span class="hljs-function"><span class="hljs-keyword">function</span><
       from Python &mdash; making it easy to test if a value falls within a
       certain range.
     </p>
-    <div class='code'><pre><code>cholesterol = <span class="hljs-number">127</span>
+    <div class='code'><pre><code>cholesterol = <span class="number">127</span>
 
-healthy = <span class="hljs-number">200</span> &gt; cholesterol &gt; <span class="hljs-number">60</span>
+healthy = <span class="number">200</span> &gt; cholesterol &gt; <span class="number">60</span>
 
 
-</code></pre><pre><code><span class="hljs-keyword">var</span> cholesterol, healthy;
+</code></pre><pre><code><span class="keyword">var</span> cholesterol, healthy;
 
-cholesterol = <span class="hljs-number">127</span>;
+cholesterol = <span class="number">127</span>;
 
-healthy = (<span class="hljs-number">200</span> &gt; cholesterol &amp;&amp; cholesterol &gt; <span class="hljs-number">60</span>);
+healthy = (<span class="number">200</span> &gt; cholesterol &amp;&amp; cholesterol &gt; <span class="number">60</span>);
 </code></pre><script>window.example36 = "cholesterol = 127\n\nhealthy = 200 > cholesterol > 60\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example36);'>load</div><div class='minibutton ok' onclick='javascript: var cholesterol, healthy;
 
 cholesterol = 127;
@@ -2024,22 +2041,22 @@ healthy = (200 > cholesterol && cholesterol > 60);
       strings allow for interpolated values, using <tt>#{ ... }</tt>,
       and single-quoted strings are literal.
     </p>
-    <div class='code'><pre><code>author = <span class="hljs-string">"Wittgenstein"</span>
-quote  = <span class="hljs-string">"A picture is a fact. -- <span class="hljs-subst">#{ author }</span>"</span>
+    <div class='code'><pre><code>author = <span class="string">"Wittgenstein"</span>
+quote  = <span class="string">"A picture is a fact. -- <span class="subst">#{ author }</span>"</span>
 
-sentence = <span class="hljs-string">"<span class="hljs-subst">#{ <span class="hljs-number">22</span> / <span class="hljs-number">7</span> }</span> is a decent approximation of π"</span>
-
-
+sentence = <span class="string">"<span class="subst">#{ <span class="number">22</span> / <span class="number">7</span> }</span> is a decent approximation of π"</span>
 
 
 
-</code></pre><pre><code><span class="hljs-keyword">var</span> author, quote, sentence;
 
-author = <span class="hljs-string">"Wittgenstein"</span>;
 
-quote = <span class="hljs-string">"A picture is a fact. -- "</span> + author;
+</code></pre><pre><code><span class="keyword">var</span> author, quote, sentence;
 
-sentence = <span class="hljs-string">""</span> + (<span class="hljs-number">22</span> / <span class="hljs-number">7</span>) + <span class="hljs-string">" is a decent approximation of π"</span>;
+author = <span class="string">"Wittgenstein"</span>;
+
+quote = <span class="string">"A picture is a fact. -- "</span> + author;
+
+sentence = <span class="string">""</span> + (<span class="number">22</span> / <span class="number">7</span>) + <span class="string">" is a decent approximation of π"</span>;
 </code></pre><script>window.example37 = "author = \"Wittgenstein\"\nquote  = \"A picture is a fact. -- #{ author }\"\n\nsentence = \"#{ 22 / 7 } is a decent approximation of π\"\n\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example37);'>load</div><div class='minibutton ok' onclick='javascript: var author, quote, sentence;
 
 author = "Wittgenstein";
@@ -2051,15 +2068,15 @@ sentence = "" + (22 / 7) + " is a decent approximation of π";
     <p>
       Multiline strings are allowed in CoffeeScript. Lines are joined by a single space unless they end with a backslash. Indentation is ignored.
     </p>
-    <div class='code'><pre><code>mobyDick = <span class="hljs-string">"Call me Ishmael. Some years ago --
+    <div class='code'><pre><code>mobyDick = <span class="string">"Call me Ishmael. Some years ago --
   never mind how long precisely -- having little
   or no money in my purse, and nothing particular
   to interest me on shore, I thought I would sail
   about a little and see the watery part of the
   world..."</span>
-</code></pre><pre><code><span class="hljs-keyword">var</span> mobyDick;
+</code></pre><pre><code><span class="keyword">var</span> mobyDick;
 
-mobyDick = <span class="hljs-string">"Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world..."</span>;
+mobyDick = <span class="string">"Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world..."</span>;
 </code></pre><script>window.example38 = "mobyDick = \"Call me Ishmael. Some years ago --\n  never mind how long precisely -- having little\n  or no money in my purse, and nothing particular\n  to interest me on shore, I thought I would sail\n  about a little and see the watery part of the\n  world...\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example38);'>load</div><div class='minibutton ok' onclick='javascript: var mobyDick;
 
 mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...";
@@ -2070,15 +2087,15 @@ mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- 
       indentation level that begins the block is maintained throughout, so
       you can keep it all aligned with the body of your code.
     </p>
-    <div class='code'><pre><code>html = <span class="hljs-string">"""
+    <div class='code'><pre><code>html = <span class="string">"""
        &lt;strong&gt;
          cup of coffeescript
        &lt;/strong&gt;
        """</span>
        
-</code></pre><pre><code><span class="hljs-keyword">var</span> html;
+</code></pre><pre><code><span class="keyword">var</span> html;
 
-html = <span class="hljs-string">"&lt;strong&gt;\n  cup of coffeescript\n&lt;/strong&gt;"</span>;
+html = <span class="string">"&lt;strong&gt;\n  cup of coffeescript\n&lt;/strong&gt;"</span>;
 </code></pre><script>window.example39 = "html = \"\"\"\n       <strong>\n         cup of coffeescript\n       </strong>\n       \"\"\"\n       \n"</script><div class='minibutton load' onclick='javascript: loadConsole(example39);'>load</div><div class='minibutton ok' onclick='javascript: var html;
 
 html = "<strong>\n  cup of coffeescript\n</strong>";
@@ -2092,14 +2109,14 @@ html = "<strong>\n  cup of coffeescript\n</strong>";
       the top of a file. Block comments, which mirror the syntax for block strings,
       are preserved in the generated code.
     </p>
-    <div class='code'><pre><code><span class="hljs-comment">###
+    <div class='code'><pre><code><span class="comment">###
 SkinnyMochaHalfCaffScript Compiler v1.0
 Released under the MIT License
 ###</span>
 
 
 </code></pre><pre><code>
-<span class="hljs-comment">/*
+<span class="comment">/*
 SkinnyMochaHalfCaffScript Compiler v1.0
 Released under the MIT License
  */</span>
@@ -2115,20 +2132,20 @@ Released under the MIT License
       block regexes are delimited by <tt>///</tt> and go a long way towards making complex
       regular expressions readable. To quote from the CoffeeScript source:
     </p>
-    <div class='code'><pre><code>OPERATOR = <span class="hljs-regexp">/// ^ (
-  ?: [-=]&gt;             <span class="hljs-comment"># function</span>
-   | [-+*/%&lt;&gt;&amp;|^!?=]=  <span class="hljs-comment"># compound assign / compare</span>
-   | &gt;&gt;&gt;=?             <span class="hljs-comment"># zero-fill right shift</span>
-   | ([-+:])\1         <span class="hljs-comment"># doubles</span>
-   | ([&amp;|&lt;&gt;])\2=?      <span class="hljs-comment"># logic / shift</span>
-   | \?\.              <span class="hljs-comment"># soak access</span>
-   | \.{2,3}           <span class="hljs-comment"># range or splat</span>
+    <div class='code'><pre><code>OPERATOR = <span class="regexp">/// ^ (
+  ?: [-=]&gt;             <span class="comment"># function</span>
+   | [-+*/%&lt;&gt;&amp;|^!?=]=  <span class="comment"># compound assign / compare</span>
+   | &gt;&gt;&gt;=?             <span class="comment"># zero-fill right shift</span>
+   | ([-+:])\1         <span class="comment"># doubles</span>
+   | ([&amp;|&lt;&gt;])\2=?      <span class="comment"># logic / shift</span>
+   | \?\.              <span class="comment"># soak access</span>
+   | \.{2,3}           <span class="comment"># range or splat</span>
 ) ///</span>
 
 
-</code></pre><pre><code><span class="hljs-keyword">var</span> OPERATOR;
+</code></pre><pre><code><span class="keyword">var</span> OPERATOR;
 
-OPERATOR = <span class="hljs-regexp">/^(?:[-=]&gt;|[-+*\/%&lt;&gt;&amp;|^!?=]=|&gt;&gt;&gt;=?|([-+:])\1|([&amp;|&lt;&gt;])\2=?|\?\.|\.{2,3})/</span>;
+OPERATOR = <span class="regexp">/^(?:[-=]&gt;|[-+*\/%&lt;&gt;&amp;|^!?=]=|&gt;&gt;&gt;=?|([-+:])\1|([&amp;|&lt;&gt;])\2=?|\?\.|\.{2,3})/</span>;
 </code></pre><script>window.example41 = "OPERATOR = /// ^ (\n  ?: [-=]>             # function\n   | [-+*/%<>&|^!?=]=  # compound assign / compare\n   | >>>=?             # zero-fill right shift\n   | ([-+:])\\1         # doubles\n   | ([&|<>])\\2=?      # logic / shift\n   | \\?\\.              # soak access\n   | \\.{2,3}           # range or splat\n) ///\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example41);'>load</div><br class='clear' /></div>
 
 
@@ -2155,26 +2172,26 @@ OPERATOR = <span class="hljs-regexp">/^(?:[-=]&gt;|[-+*\/%&lt;&gt;&amp;|^!?=]=|&
       be made available in the <tt>options</tt> object. Here's a task that uses
       the Node.js API to rebuild CoffeeScript's parser:
     </p>
-    <div class='code'><pre><code>fs = <span class="hljs-built_in">require</span> <span class="hljs-string">'fs'</span>
+    <div class='code'><pre><code>fs = <span class="built_in">require</span> <span class="string">'fs'</span>
 
-option <span class="hljs-string">'-o'</span>, <span class="hljs-string">'--output [DIR]'</span>, <span class="hljs-string">'directory for compiled code'</span>
+option <span class="string">'-o'</span>, <span class="string">'--output [DIR]'</span>, <span class="string">'directory for compiled code'</span>
 
-task <span class="hljs-string">'build:parser'</span>, <span class="hljs-string">'rebuild the Jison parser'</span>, <span class="hljs-function"><span class="hljs-params">(options)</span> -&gt;</span>
-  <span class="hljs-built_in">require</span> <span class="hljs-string">'jison'</span>
-  code = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./lib/grammar'</span>).parser.generate()
-  dir  = options.output <span class="hljs-keyword">or</span> <span class="hljs-string">'lib'</span>
-  fs.writeFile <span class="hljs-string">"<span class="hljs-subst">#{dir}</span>/parser.js"</span>, code</code></pre><pre><code><span class="hljs-keyword">var</span> fs;
+task <span class="string">'build:parser'</span>, <span class="string">'rebuild the Jison parser'</span>, <span class="function"><span class="params">(options)</span> -&gt;</span>
+  <span class="built_in">require</span> <span class="string">'jison'</span>
+  code = <span class="built_in">require</span>(<span class="string">'./lib/grammar'</span>).parser.generate()
+  dir  = options.output <span class="keyword">or</span> <span class="string">'lib'</span>
+  fs.writeFile <span class="string">"<span class="subst">#{dir}</span>/parser.js"</span>, code</code></pre><pre><code><span class="keyword">var</span> fs;
 
-fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
+fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);
 
-option(<span class="hljs-string">'-o'</span>, <span class="hljs-string">'--output [DIR]'</span>, <span class="hljs-string">'directory for compiled code'</span>);
+option(<span class="string">'-o'</span>, <span class="string">'--output [DIR]'</span>, <span class="string">'directory for compiled code'</span>);
 
-task(<span class="hljs-string">'build:parser'</span>, <span class="hljs-string">'rebuild the Jison parser'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(options)</span> {</span>
-  <span class="hljs-keyword">var</span> code, dir;
-  <span class="hljs-built_in">require</span>(<span class="hljs-string">'jison'</span>);
-  code = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./lib/grammar'</span>).parser.generate();
-  dir = options.output || <span class="hljs-string">'lib'</span>;
-  <span class="hljs-keyword">return</span> fs.writeFile(<span class="hljs-string">""</span> + dir + <span class="hljs-string">"/parser.js"</span>, code);
+task(<span class="string">'build:parser'</span>, <span class="string">'rebuild the Jison parser'</span>, <span class="function"><span class="keyword">function</span><span class="params">(options)</span> {</span>
+  <span class="keyword">var</span> code, dir;
+  <span class="built_in">require</span>(<span class="string">'jison'</span>);
+  code = <span class="built_in">require</span>(<span class="string">'./lib/grammar'</span>).parser.generate();
+  dir = options.output || <span class="string">'lib'</span>;
+  <span class="keyword">return</span> fs.writeFile(<span class="string">""</span> + dir + <span class="string">"/parser.js"</span>, code);
 });
 </code></pre><script>window.example42 = "fs = require 'fs'\n\noption '-o', '--output [DIR]', 'directory for compiled code'\n\ntask 'build:parser', 'rebuild the Jison parser', (options) ->\n  require 'jison'\n  code = require('./lib/grammar').parser.generate()\n  dir  = options.output or 'lib'\n  fs.writeFile \"#{dir}/parser.js\", code"</script><div class='minibutton load' onclick='javascript: loadConsole(example42);'>load</div><br class='clear' /></div>
     <p>
@@ -2436,20 +2453,34 @@ task(<span class="hljs-string">'build:parser'</span>, <span class="hljs-string">
     <p>
       <b class="header" style="margin-top: 20px;">
         <a href="https://github.com/jashkenas/coffee-script/compare/1.6.3...1.7.0">1.7.0</a>
-        <span class="timestamp"> &ndash; <small>January 26, 2014</small></span>
+        <span class="timestamp"> &ndash; <small>January 28, 2014</small></span>
       </b>
       <ul>
         <li>
-          When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with <tt>require 'coffee-script/register'</tt> or <tt>CoffeeScript.register()</tt>. Also for configuration such as Mocha's, use 'coffee-script/register'.
+          When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with <tt>require 'coffee-script/register'</tt> or <tt>CoffeeScript.register()</tt>. Also for configuration such as Mocha's, use <b>coffee-script/register</b>.
         </li>
         <li>
           Improved error messages, source maps and stack traces. Source maps now use the updated <tt>//#</tt> syntax.
         </li>
         <li>
-          Leading <tt>.</tt> will now close all open calls, allowing for simpler chaining syntax (see below).
+          Leading <tt>.</tt> now closes all open calls, allowing for simpler chaining syntax.
         </li>
+      </ul>
+      <div class='code'><pre><code>$ <span class="string">'body'</span>
+.click <span class="function"><span class="params">(e)</span> -&gt;</span>
+  $ <span class="string">'.box'</span>
+  .fadeIn <span class="string">'fast'</span>
+  .addClass <span class="string">'.active'</span>
+.css <span class="string">'background'</span>, <span class="string">'white'</span>
+
+
+</code></pre><pre><code>$(<span class="string">'body'</span>).click(<span class="function"><span class="keyword">function</span><span class="params">(e)</span> {</span>
+  <span class="keyword">return</span> $(<span class="string">'.box'</span>).fadeIn(<span class="string">'fast'</span>).addClass(<span class="string">'.active'</span>);
+}).css(<span class="string">'background'</span>, <span class="string">'white'</span>);
+</code></pre><script>window.example43 = "$ 'body'\n.click (e) ->\n  $ '.box'\n  .fadeIn 'fast'\n  .addClass '.active'\n.css 'background', 'white'\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example43);'>load</div><br class='clear' /></div>
+      <ul>
         <li>
-          Added `**`, `//` and `%%` operators and `...` expansion in paramater lists and destructuring expressions.
+          Added <tt>**</tt>, <tt>//</tt> and <tt>%%</tt> operators and <tt>...</tt> expansion in paramater lists and destructuring expressions.
         </li>
         <li>
           Multiline strings are now joined by a single space and ignore all indentation. A backslash at the end of a line can denote the amount of whitespace between lines, in both strings and heredocs. Backslashes correctly escape whitespace in block regexes.
@@ -2458,29 +2489,19 @@ task(<span class="hljs-string">'build:parser'</span>, <span class="hljs-string">
           Closing brackets can now be indented and therefore no longer cause unexpected error.
         </li>
         <li>
-          Several breaking compilation fixes. Non-callable literals (strings, numbers etc.) won't compile in a call now and multiple postfix conditionals compile properly. Postfix conditionals and loops always bind object literals. Conditional assignment compiles properly in subexpressions. `super` is disallowed outside of methods and works correctly inside for loops. 
+          Several breaking compilation fixes. Non-callable literals (strings, numbers etc.) don't compile in a call now and multiple postfix conditionals compile properly. Postfix conditionals and loops always bind object literals. Conditional assignment compiles properly in subexpressions. <tt>super</tt> is disallowed outside of methods and works correctly inside <tt>for</tt> loops. 
         </li>
         <li>
           Formatting of compiled block comments has been improved.
         </li>
         <li>
-          No more -p folders on Windows.
+          No more <tt>-p</tt> folders on Windows.
         </li>
         <li>
-          The `options` object passed to CoffeeScript is no longer mutated.
+          The <tt>options</tt> object passed to CoffeeScript is no longer mutated.
         </li>
       </ul>
     </p>
-    <div class='code'><pre><code>$ <span class="hljs-string">'body'</span>
-.click <span class="hljs-function"><span class="hljs-params">(e)</span> -&gt;</span>
-  $ <span class="hljs-string">'.box'</span>
-  .fadeIn <span class="hljs-string">'fast'</span>
-  .addClass <span class="hljs-string">'.active'</span>
-.css <span class="hljs-string">'background'</span>, <span class="hljs-string">'white'</span>
-</code></pre><pre><code>$(<span class="hljs-string">'body'</span>).click(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(e)</span> {</span>
-  <span class="hljs-keyword">return</span> $(<span class="hljs-string">'.box'</span>).fadeIn(<span class="hljs-string">'fast'</span>).addClass(<span class="hljs-string">'.active'</span>);
-}).css(<span class="hljs-string">'background'</span>, <span class="hljs-string">'white'</span>);
-</code></pre><script>window.example43 = "$ 'body'\n.click (e) ->\n  $ '.box'\n  .fadeIn 'fast'\n  .addClass '.active'\n.css 'background', 'white'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example43);'>load</div><br class='clear' /></div>
     <p>
       <b class="header" style="margin-top: 20px;">
         <a href="https://github.com/jashkenas/coffee-script/compare/1.6.2...1.6.3">1.6.3</a>
