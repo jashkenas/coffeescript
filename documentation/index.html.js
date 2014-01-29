@@ -670,8 +670,8 @@ Expressions
       <tr><td><tt>not</tt></td><td><tt>!</tt></td></tr>
       <tr><td><tt>and</tt></td><td><tt>&amp;&amp;</tt></td></tr>
       <tr><td><tt>or</tt></td><td><tt>||</tt></td></tr>
-      <tr><td><tt>true, yes, on</tt></td><td><tt>true</tt></td></tr>
-      <tr><td><tt>false, no, off</tt></td><td><tt>false</tt></td></tr>
+      <tr><td><tt>true</tt>, <tt>yes</tt>, <tt>on</tt></td><td><tt>true</tt></td></tr>
+      <tr><td><tt>false</tt>, <tt>no</tt>, <tt>off</tt></td><td><tt>false</tt></td></tr>
       <tr><td><tt>@, this</tt></td><td><tt>this</tt></td></tr>
       <tr><td><tt>of</tt></td><td><tt>in</tt></td></tr>
       <tr><td><tt>in</tt></td><td><i><small>no JS equivalent</small></i></td></tr>
