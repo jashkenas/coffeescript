@@ -657,7 +657,7 @@ Expressions
       test for JavaScript object-key presence.
     </p>
     <p>
-      To simplify math expressions, `**` can be used for exponentiation, `//` performs integer division and `%%` provides true mathematical modulo.
+      To simplify math expressions, <tt>**</tt> can be used for exponentiation, <tt>//</tt> performs integer division and <tt>%%</tt> provides true mathematical modulo.
     </p>
     <p>
       All together now:
