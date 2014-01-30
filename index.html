@@ -111,7 +111,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/1.7.0">1.7.0</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.7.1">1.7.1</a>
     </p>
 
     <pre>
