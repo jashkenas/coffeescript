@@ -295,6 +295,14 @@ test "break at the top level", ->
       break
   eq 2, result
 
+
+test "function invokation", ->
+
+  items = [1,2,3]
+  items..toFixed(1)
+
+  eq items.join(', '), '2.0, 3.0, 4.0'
+
 test "break *not* at the top level", ->
   someFunc = ->
     i = 0
