@@ -111,7 +111,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffee-script/tarball/1.7.0">1.7.0</a>
+      <a href="http://github.com/jashkenas/coffee-script/tarball/1.7.1">1.7.1</a>
     </p>
 
     <pre>
@@ -1191,6 +1191,17 @@ Expressions
       Change Log
     </h2>
 
+    <p>
+      <b class="header" style="margin-top: 20px;">
+        <a href="https://github.com/jashkenas/coffee-script/compare/1.7.0...1.7.1">1.7.1</a>
+        <span class="timestamp"> &ndash; <small>January 29, 2014</small></span>
+      </b>
+      <ul>
+        <li>
+          Fixed a typo that broke node module lookup when running a script directly with the <tt>coffee</tt> binary.
+        </li>
+      </ul>
+    </p>
     <p>
       <b class="header" style="margin-top: 20px;">
         <a href="https://github.com/jashkenas/coffee-script/compare/1.6.3...1.7.0">1.7.0</a>
