@@ -6,6 +6,7 @@
   <link rel="canonical" href="http://coffeescript.org" />
   <link rel="stylesheet" type="text/css" href="documentation/css/docs.css" />
   <link rel="stylesheet" type="text/css" href="documentation/css/tomorrow.css" />
+  <link rel="stylesheet" type="text/css" href="documentation/vendor/CodeMirror/lib/codemirror.css" />
   <link rel="shortcut icon" href="documentation/images/favicon.ico" />
 </head>
 <body>
@@ -52,21 +53,6 @@
         Try CoffeeScript
         <div class="repl_bridge"></div>
       </div>
-      <div class="contents repl_wrapper">
-        <div class="code">
-          <div class="screenshadow tl"></div>
-          <div class="screenshadow tr"></div>
-          <div class="screenshadow bl"></div>
-          <div class="screenshadow br"></div>
-          <div id="repl_source_wrap">
-            <textarea id="repl_source" rows="100" spellcheck="false">alert "Hello CoffeeScript!"</textarea>
-          </div>
-          <div id="repl_results_wrap"><pre id="repl_results"></pre></div>
-          <div class="minibutton dark run" title="Ctrl-Enter">Run</div>
-          <a class="minibutton permalink" id="repl_permalink">Link</a>
-          <br class="clear" />
-        </div>
-      </div>
     </div>
     <div class="navigation annotated">
       <div class="button">
@@ -89,7 +75,23 @@
     </div>
     <div id="error" style="display:none;"></div>
   </div>
-
+  <div class="contents repl_wrapper"><!-- 
+    <div class="code">
+      <div class="screenshadow tl"></div>
+      <div class="screenshadow tr"></div>
+      <div class="screenshadow bl"></div>
+      <div class="screenshadow br"></div> -->
+      <div id="repl_source_wrap">
+        <textarea id="cm_repl_source">alert "Hello CoffeeScript!"</textarea>
+      </div>
+      <div id="repl_results_wrap">
+        <textarea id="cm_repl_results"></textarea>
+      </div>
+      <div class="minibutton dark run" title="Ctrl-Enter">Run</div>
+      <a class="minibutton permalink" id="repl_permalink">Link</a>
+      <br class="clear" />
+    <!-- </div> -->
+  </div>
   <div class="container">
     <span class="bookmark" id="top"></span>
 
@@ -2024,18 +2026,34 @@ Expressions
 
   <script type="text/coffeescript">
     sourceFragment = "try:"
+    
+    window.editor = {}
+    initCodeMirror = ->
+      # Initiallize CodeMirror
+      editor.coffeescript = CodeMirror.fromTextArea document.getElementById("cm_repl_source"), {
+        mode: "coffeescript"
+        tabMode: "indent"
+        indentUnit:2
+        styleSelectedText: true
+        lineNumbers: true
+        autoCloseBrackets: true
+        showCursorWhenSelecting: true
+      }
+
+      editor.javascript = CodeMirror.fromTextArea document.getElementById("cm_repl_results"), {
+        mode: "javascript"
+        readOnly: true
+      }
+      # Listen for changes and recompile.
+      editor.coffeescript.on 'change', -> compileSource()
 
     # Set up the compilation function, to run when you stop typing.
     compileSource = ->
-      source = $('#repl_source').val()
+      source = editor.coffeescript.getValue()
       window.compiledJS = ''
       try
         window.compiledJS = CoffeeScript.compile source, bare: on
-        el = $('#repl_results')[0]
-        if el.innerText
-          el.innerText = window.compiledJS
-        else
-          $(el).text window.compiledJS
+        editor.javascript.setValue window.compiledJS
         $('#error').hide()
       catch {location, message}
         if location?
@@ -2045,9 +2063,6 @@ Expressions
       # Update permalink
       $('#repl_permalink').attr 'href', "##{sourceFragment}#{encodeURIComponent source}"
 
-    # Listen for keypresses and recompile.
-    $('#repl_source').keyup -> compileSource()
-
     # Eval the compiled js.
     evalJS = ->
       try
@@ -2056,26 +2071,36 @@ Expressions
 
     # Load the console with a string of CoffeeScript.
     window.loadConsole = (coffee) ->
-      $('#repl_source').val coffee
+      editor.coffeescript.setValue coffee
       compileSource()
-      $('.navigation.try').addClass('active')
+      openConsole()
       false
 
     # Helper to hide the menus.
     closeMenus = ->
       $('.navigation.active').removeClass 'active'
+      $('.repl_wrapper').removeClass 'active'
+
+    # Helper to open CodeMirror Editor
+    openConsole = ->
+      $('.navigation.try').addClass 'active'
+      $('.repl_wrapper').addClass 'active'
+      for k, cm of editor
+        cm.refresh()
 
     $('.minibutton.run').click -> evalJS()
 
     # Bind navigation buttons to open the menus.
     $('.navigation').click (e) ->
       return if e.target.tagName.toLowerCase() is 'a'
+      console.log $(e.target).parent '.CodeMirror'
       return false if $(e.target).closest('.repl_wrapper').length
       if $(this).hasClass('active')
         closeMenus()
       else
         closeMenus()
         $(this).addClass 'active'
+        openConsole() if $(this).hasClass 'try'
       false
 
     # Dismiss console if Escape pressed or click falls outside console
@@ -2084,9 +2109,6 @@ Expressions
       .keydown (e) ->
         closeMenus() if e.which == 27
         evalJS() if e.which == 13 and (e.metaKey or e.ctrlKey) and $('.minibutton.run:visible').length
-      .click (e) ->
-        return false if $(e.target).hasClass('minibutton')
-        closeMenus()
 
     $('#open_webchat').click ->
       $(this).replaceWith $('<iframe src="http://webchat.freenode.net/?channels=coffeescript" width="625" height="400"></iframe>')
@@ -2101,11 +2123,15 @@ Expressions
         src = hash.substr sourceFragment.length
         loadConsole src
 
+    initCodeMirror()
     compileSource()
 
   </script>
 
   <script src="documentation/vendor/jquery-1.6.4.js"></script>
+  <script src="documentation/vendor/CodeMirror/lib/codemirror.js"></script>
+  <script src="documentation/vendor/CodeMirror/mode/coffeescript/coffeescript.js"></script>
+  <script src="documentation/vendor/CodeMirror/mode/javascript/javascript.js"></script>
   <script src="extras/coffee-script.js"></script>
 
 </body>

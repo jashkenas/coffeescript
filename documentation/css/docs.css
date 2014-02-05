@@ -277,7 +277,29 @@ div.code {
   position: relative;
   top: -90px;
 }
-
+.repl_wrapper {
+  z-index:5;
+  position:fixed;
+  top:100px;
+  left:0;
+  right:0;
+  bottom:0;
+  display:none;
+}
+.repl_wrapper.active {
+  display:block;
+}
+  #repl_source_wrap {
+    position:absolute;
+    left:0;
+    width:50%;
+  }
+  #repl_results_wrap {
+    position:absolute;
+    right:0;
+    width:50%;
+  }
+/*
 .navigation .contents.repl_wrapper .code {
   cursor: text;
   -webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none;
@@ -343,7 +365,7 @@ div.code {
         left: 50%;
         border-left-color: #555;
       }
-
+*/
 /*----------------------------- Mini Buttons ---------------------------------*/
 .minibutton {
   cursor: pointer;
