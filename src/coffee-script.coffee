@@ -294,5 +294,5 @@ Error.prepareStackTrace = (err, stack) ->
     break if frame.getFunction() is exports.run
     "  at #{formatSourcePosition frame, getSourceMapping}"
 
-  "#{err.name}: #{err.message ? ''}\n#{frames.join '\n'}\n"
+  "#{err.toString()}\n#{frames.join '\n'}\n"
 
