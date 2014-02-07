@@ -145,15 +145,18 @@ sudo npm install -g coffee-script</pre>
     <p>
       To install, first make sure you have a working copy of the latest stable version of
       <a href="http://nodejs.org/">Node.js</a>, and <a href="http://npmjs.org">npm</a>
-      (the Node Package Manager). You can then install CoffeeScript with npm:
+      (the Node Package Manager). You can then install CoffeeScript globally with npm:
     </p>
 
     <pre>
 npm install -g coffee-script</pre>
 
     <p>
-      (Leave off the <tt>-g</tt> if you don't wish to install globally.)
+      When you need CoffeeScript as a dependency, install it locally:
     </p>
+
+    <pre>
+npm install --save coffee-script</pre>
 
     <p>
       If you'd prefer to install the latest <b>master</b> version of CoffeeScript, you
@@ -165,7 +168,7 @@ npm install -g coffee-script</pre>
     </p>
 
 <pre>
-npm install -g http://github.com/jashkenas/coffee-script/tarball/master</pre>
+npm install -g jashkenas/coffee-script</pre>
 
     <p>
       Or, if you want to install to <tt>/usr/local</tt>, and don't want to use
@@ -1230,7 +1233,7 @@ Expressions
           Closing brackets can now be indented and therefore no longer cause unexpected error.
         </li>
         <li>
-          Several breaking compilation fixes. Non-callable literals (strings, numbers etc.) don't compile in a call now and multiple postfix conditionals compile properly. Postfix conditionals and loops always bind object literals. Conditional assignment compiles properly in subexpressions. <tt>super</tt> is disallowed outside of methods and works correctly inside <tt>for</tt> loops. 
+          Several breaking compilation fixes. Non-callable literals (strings, numbers etc.) don't compile in a call now and multiple postfix conditionals compile properly. Postfix conditionals and loops always bind object literals. Conditional assignment compiles properly in subexpressions. <tt>super</tt> is disallowed outside of methods and works correctly inside <tt>for</tt> loops.
         </li>
         <li>
           Formatting of compiled block comments has been improved.
