@@ -357,3 +357,9 @@ test "modulo operator converts arguments to numbers", ->
   eq 1, 1 %% '42'
   eq 1, '1' %% 42
   eq 1, '1' %% '42'
+
+test "#3361: Modulo operator coerces right operand once", ->
+  count = 0
+  res = 42 %% valueOf: -> count += 1
+  eq 1, count
+  eq 0, res
