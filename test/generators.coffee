@@ -4,10 +4,10 @@
 # * Generator Definition
 
 test "generator as argument", ->
-  ok --> 1
+  ok ->> 1
 
 test "generator definition", ->
-  gen = --> yield i for i in [0..2]
+  gen = ->> yield i for i in [0..2]
   list = gen()
   {value, done} = list.next()
   eq value, 0
@@ -22,10 +22,10 @@ test "generator definition", ->
   eq done, yes
 
 test "yield from", ->
-  first = -->
+  first = ->>
     i = 0
     yield i++ while true
-  second = -->
+  second = ->>
     yield from first()
   list = second()
   for i in [0..3]
@@ -35,13 +35,13 @@ test "yield from", ->
 test "bound generator", ->
   obj =
     bound: ->
-      do ==> yield this
+      do =>> yield this
     unbound: ->
-      do --> yield this
+      do ->> yield this
     nested: ->
-      do ==>
-        yield do ==>
-          yield do ==>
+      do =>>
+        yield do =>>
+          yield do =>>
             yield this
 
   eq obj, obj.bound().next().value

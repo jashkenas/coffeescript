@@ -192,12 +192,12 @@ grammar =
 
   # CoffeeScript has two different symbols for functions. `->` is for ordinary
   # functions, and `=>` is for functions bound to the current value of *this*.
-  # Double arrow denotes a generator, i.e. --> and ==>.
+  # Double greater-than sign denotes a generator, i.e. ->> and =>>.
   FuncGlyph: [
     o '->',                                     -> 'func'
-    o '-->',                                    -> 'generator'
+    o '->>',                                    -> 'generator'
     o '=>',                                     -> 'boundfunc'
-    o '==>',                                    -> 'boundgenerator'
+    o '=>>',                                    -> 'boundgenerator'
   ]
 
   # An optional, trailing comma.

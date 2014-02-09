@@ -787,11 +787,11 @@ NUMBER     = ///
 HEREDOC    = /// ^ ("""|''') ((?: \\[\s\S] | [^\\] )*?) (?:\n[^\n\S]*)? \1 ///
 
 OPERATOR   = /// ^ (
-  ?: (-|=)\1?>         # function
+  ?: [-=]>{1,2}        # function
    | [-+*/%<>&|^!?=]=  # compound assign / compare
    | >>>=?             # zero-fill right shift
-   | ([-+:])\2         # doubles
-   | ([&|<>*/%])\3=?   # logic / shift / power / floor division / modulo
+   | ([-+:])\1         # doubles
+   | ([&|<>*/%])\2=?   # logic / shift / power / floor division / modulo
    | \?(\.|::)         # soak access
    | \.{2,3}           # range or splat
 ) ///
@@ -800,7 +800,7 @@ WHITESPACE = /^[^\n\S]+/
 
 COMMENT    = /^###([^#][\s\S]*?)(?:###[^\n\S]*|###$)|^(?:\s*#(?!##[^#]).*)+/
 
-CODE       = /^(-|=)\1?>/
+CODE       = /^[-=]>{1,2}/
 
 MULTI_DENT = /^(?:\n[^\n\S]*)+/
 
