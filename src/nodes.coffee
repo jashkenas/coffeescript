@@ -2194,7 +2194,7 @@ UTILITIES =
   "
 
   modulo: -> """
-    function(a, b) { b = +b; return (a % b + b) % b; }
+    function(a, b) { return (+a % (b = +b) + b) % b; }
   """
 
   # Shortcuts to speed up the lookup time for native functions.

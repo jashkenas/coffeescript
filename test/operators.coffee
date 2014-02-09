@@ -363,3 +363,10 @@ test "#3361: Modulo operator coerces right operand once", ->
   res = 42 %% valueOf: -> count += 1
   eq 1, count
   eq 0, res
+
+test "#3363: Modulo operator coercing order", ->
+  count = 2
+  a = valueOf: -> count *= 2
+  b = valueOf: -> count += 1
+  eq 4, a %% b
+  eq 5, count
