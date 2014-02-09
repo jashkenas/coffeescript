@@ -140,7 +140,7 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
   tryCatch = (keyword, check = strict) ->
     check "try new Error catch #{keyword}"
 
-  future = 'implements interface let package private protected public static yield'.split ' '
+  future = 'implements interface let package private protected public static'.split ' '
   for keyword in future
     access   keyword
     assign   keyword

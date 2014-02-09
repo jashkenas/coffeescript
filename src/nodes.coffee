@@ -1316,9 +1316,11 @@ exports.Assign = class Assign extends Base
 # has no *children* -- they're within the inner scope.
 exports.Code = class Code extends Base
   constructor: (params, body, tag) ->
-    @params  = params or []
-    @body    = body or new Block
-    @bound   = tag is 'boundfunc'
+    @params    = params or []
+    @body      = body or new Block
+    @bound     = tag is 'boundfunc' or tag is 'boundgenerator'
+    @generator = tag is 'generator' or tag is 'boundgenerator'
+    @noReturn = @generator
 
   children: ['params', 'body']
 
@@ -1385,9 +1387,10 @@ exports.Code = class Code extends Base
       node.error "multiple parameters named '#{name}'" if name in uniqs
       uniqs.push name
     @body.makeReturn() unless wasEmpty or @noReturn
-    code  = 'function'
-    code  += ' ' + @name if @ctor
-    code  += '('
+    code = 'function'
+    code += '*' if @generator
+    code += ' ' + @name if @ctor
+    code += '('
     answer = [@makeCode(code)]
     for p, i in params
       if i then answer.push @makeCode ", "
@@ -1799,6 +1802,16 @@ exports.In = class In extends Base
 
   toString: (idt) ->
     super idt, @constructor.name + if @negated then '!' else ''
+
+#### Yield 
+exports.Yield = class Yield extends Base
+  constructor: (@expression, @from) ->
+
+  compileNode: (o) ->
+    code = 'yield'
+    code += '*' if @from
+    code += ' '
+    [@makeCode code].concat @expression.compileToFragments o, LEVEL_OP
 
 #### Try
 
