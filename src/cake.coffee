@@ -13,6 +13,9 @@ helpers      = require './helpers'
 optparse     = require './optparse'
 CoffeeScript = require './coffee-script'
 
+# Register .coffee extension
+CoffeeScript.register()
+
 # Keep track of the list of defined tasks, the accepted options, and so on.
 tasks     = {}
 options   = {}
