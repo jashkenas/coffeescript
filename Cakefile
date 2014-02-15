@@ -65,6 +65,33 @@ codeFor = ->
     button = if executable then "<div class='minibutton ok' onclick='javascript: #{js};#{append}'>#{run}</div>" else ''
     "<div class='code'>#{cshtml}#{jshtml}#{script}#{load}#{button}<br class='clear' /></div>"
 
+monthNames = [
+  'January'
+  'February'
+  'March'
+  'April'
+  'May'
+  'June'
+  'July'
+  'August'
+  'September'
+  'October'
+  'November'
+  'December'
+]
+
+formatDate = (date) ->
+  date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
+    "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
+
+releaseHeader = (date, version, prevVersion) -> """
+  <div class="anchor" id="#{version}"></div>
+  <b class="header" style="margin-top: 20px;">
+    #{prevVersion and "<a href=\"https://github.com/jashkenas/coffee-script/compare/#{prevVersion}...#{version}\">#{version}</a>" or version}
+    <span class="timestamp"> &ndash; <small>#{formatDate date}</small></span>
+  </b>
+"""
+
 option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
 
 task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) ->
@@ -146,7 +173,9 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
 
   do renderIndex = ->
     codeSnippetCounter = 0
-    rendered = _.template fs.readFileSync(source, 'utf-8'), codeFor: codeFor()
+    rendered = _.template fs.readFileSync(source, 'utf-8'),
+      codeFor: codeFor()
+      releaseHeader: releaseHeader
     fs.writeFileSync 'index.html', rendered
     log "compiled", green, "#{source}"
 
