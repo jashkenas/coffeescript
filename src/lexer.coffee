@@ -187,7 +187,7 @@ exports.Lexer = class Lexer
   # are balanced within the string's contents, and within nested interpolations.
   stringToken: ->
     switch quote = @chunk.charAt 0
-      when "'" then [string] = SIMPLESTR.exec @chunk
+      when "'" then [string] = SIMPLESTR.exec(@chunk) || []
       when '"' then string = @balancedString @chunk, '"'
     return 0 unless string
     trimmed = @removeNewlines string[1...-1]
