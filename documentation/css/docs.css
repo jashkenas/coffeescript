@@ -81,14 +81,10 @@ code, pre, tt, textarea {
       padding-left: 0;
     }
 .timestamp {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: normal;
-  color: black;
+  text-transform: uppercase;
 }
-  .timestamp small {
-    font-size: 11px;
-    text-transform: uppercase;
-  }
 div.anchor {
   position: relative;
   top: -90px;
