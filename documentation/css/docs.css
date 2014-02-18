@@ -92,6 +92,7 @@ code, pre, tt, textarea {
 div.anchor {
   position: relative;
   top: -90px;
+  margin: 0 0 -20px;
 }
 div.code {
   position: relative;

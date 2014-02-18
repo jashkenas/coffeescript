@@ -86,7 +86,7 @@ formatDate = (date) ->
 
 releaseHeader = (date, version, prevVersion) -> """
   <div class="anchor" id="#{version}"></div>
-  <b class="header" style="margin-top: 20px;">
+  <b class="header">
     #{prevVersion and "<a href=\"https://github.com/jashkenas/coffee-script/compare/#{prevVersion}...#{version}\">#{version}</a>" or version}
     <span class="timestamp"> &ndash; <small>#{formatDate date}</small></span>
   </b>
