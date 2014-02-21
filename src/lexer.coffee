@@ -36,6 +36,7 @@ exports.Lexer = class Lexer
   # unless explicitly asked not to.
   tokenize: (code, opts = {}) ->
     @literate   = opts.literate  # Are we lexing literate CoffeeScript?
+    @comment    = opts.comment   # Should we include comment tokens?
     @indent     = 0              # The current indentation level.
     @baseIndent = 0              # The overall minimum indentation level
     @indebt     = 0              # The over-indentation at the current level.
@@ -221,6 +222,10 @@ exports.Lexer = class Lexer
         (@sanitizeHeredoc here,
           herecomment: true, indent: repeat ' ', @indent),
         0, comment.length
+    else if @comment and comment
+      offset = comment.indexOf('#') # trim leading whitespace
+      offset = 0 if offset < 0
+      @token 'COMMENT', comment.slice(offset), offset, comment.length - offset
     comment.length
 
   # Matches JavaScript interpolated directly into the source via backticks.

@@ -10,6 +10,7 @@ path          = require 'path'
 {parser}      = require './parser'
 helpers       = require './helpers'
 SourceMap     = require './sourcemap'
+nodes         = require './nodes'
 
 # The current CoffeeScript version number.
 exports.VERSION = '1.7.1'
@@ -89,10 +90,30 @@ exports.tokens = withPrettyErrors (code, options) ->
 # return the AST. You can then compile it by calling `.compile()` on the root,
 # or traverse it by using `.traverseChildren()` with a callback.
 exports.nodes = withPrettyErrors (source, options) ->
-  if typeof source is 'string'
-    parser.parse lexer.tokenize source, options
+  tokens = if typeof source is 'string'
+    lexer.tokenize source, options
   else
-    parser.parse source
+    source
+
+  if options.comment
+    comments = []
+    others = []
+    for token in tokens
+      if token[0] is 'COMMENT'
+        comments.push(token)
+      else
+        others.push(token)
+    tokens = others
+
+  ast = parser.parse tokens
+
+  if options.comment
+    ast.comments = comments.map ([_, comment, locationData]) ->
+      commentNode = new nodes.LineComment(comment)
+      commentNode.locationData = locationData
+      return commentNode
+
+  return ast
 
 # Compile and execute a string of CoffeeScript (on the server), correctly
 # setting `__filename`, `__dirname`, and relative `require()`.
@@ -194,7 +215,7 @@ parser.lexer =
   upcomingInput: ->
     ""
 # Make all the AST nodes visible to the parser.
-parser.yy = require './nodes'
+parser.yy = nodes
 
 # Override Jison's default error handling function.
 parser.yy.parseError = (message, {token}) ->

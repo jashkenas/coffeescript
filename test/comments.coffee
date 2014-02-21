@@ -399,3 +399,24 @@ test "#3132: Place block-comments nicely", ->
   
   """
   eq CoffeeScript.compile(input, bare: on), result
+
+test "line comments in AST", ->
+  input = "1 + 2 # => 3"
+
+  tokens = CoffeeScript.tokens(input, comment: on)
+  eq tokens.length, 5
+  eq tokens[3][0], 'COMMENT'
+  eq tokens[3][1], '# => 3'
+  eq tokens[3][2].first_line, 0
+  eq tokens[3][2].first_column, 6
+  eq tokens[3][2].last_line, 0
+  eq tokens[3][2].last_column, 11
+
+  ast = CoffeeScript.nodes(input, comment: on)
+  eq ast.comments.length, 1
+  node = ast.comments[0]
+  eq node.comment, "# => 3"
+  eq node.locationData.first_line, 0
+  eq node.locationData.first_column, 6
+  eq node.locationData.last_line, 0
+  eq node.locationData.last_column, 11

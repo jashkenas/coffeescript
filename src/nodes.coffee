@@ -583,6 +583,16 @@ exports.Comment = class Comment extends Base
     code = o.indent + code if (level or o.level) is LEVEL_TOP
     [@makeCode("\n"), @makeCode(code)]
 
+# CoffeeScript ignores line comments and does not pass them through at all.
+exports.LineComment = class LineComment extends Base
+  constructor: (@comment) ->
+
+  isStatement: YES
+  makeReturn:  THIS
+
+  compileNode: (o, level) ->
+    ['', '']
+
 #### Call
 
 # Node for a function invocation. Takes care of converting `super()` calls into
