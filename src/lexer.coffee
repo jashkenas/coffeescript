@@ -223,8 +223,7 @@ exports.Lexer = class Lexer
           herecomment: true, indent: repeat ' ', @indent),
         0, comment.length
     else if @comment and comment
-      offset = comment.indexOf('#') # trim leading whitespace
-      offset = 0 if offset < 0
+      offset = Math.max 0, comment.indexOf('#') # trim leading whitespace
       @token 'COMMENT', comment.slice(offset), offset, comment.length - offset
     comment.length
 
