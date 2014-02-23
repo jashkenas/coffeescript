@@ -158,6 +158,14 @@ exports.eval = (code, options = {}) ->
 
 exports.register = -> require './register'
 
+# Throw error with deprecation warning when depending upon implicit `require.extensions` registration
+if require.extensions
+  for ext in @FILE_EXTENSIONS
+    require.extensions[ext] ?= ->
+      throw new Error """
+      Use CoffeeScript.register() or require the coffee-script/register module to require #{ext} files.
+      """
+
 exports._compileFile = (filename, sourceMap = no) ->
   raw = fs.readFileSync filename, 'utf8'
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
