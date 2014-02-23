@@ -15,9 +15,7 @@ if require.extensions
     require.extensions[ext] = loadFile
 
   # Patch Node's module loader to be able to handle multi-dot extensions.
-  # This is a horrible thing that should not be required. Perhaps, one day,
-  # when a truly benevolent dictator comes to rule over the Republik of Node,
-  # it won't be.
+  # This is a horrible thing that should not be required.
   Module = require 'module'
 
   findExtension = (filename) ->
