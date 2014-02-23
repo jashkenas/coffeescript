@@ -158,6 +158,14 @@ exports.eval = (code, options = {}) ->
 
 exports.register = -> require './register'
 
+# Throw Error to register extension explicitly.
+if require.extensions
+  for ext in @FILE_EXTENSIONS
+    unless require.extensions[ext]?
+      require.extensions[ext] = ->
+        throw new Error('''Use CoffeeScript.register() or the coffee-script/register module \
+          to dynamically load CoffeeScript files''')
+
 exports._compileFile = (filename, sourceMap = no) ->
   raw = fs.readFileSync filename, 'utf8'
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
