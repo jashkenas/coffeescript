@@ -187,7 +187,7 @@ exports.Lexer = class Lexer
   # are balanced within the string's contents, and within nested interpolations.
   stringToken: ->
     switch quote = @chunk.charAt 0
-      when "'" then [string] = SIMPLESTR.exec(@chunk) || []
+      when "'" then [string] = SIMPLESTR.exec(@chunk) || @error "missing '", @chunk.length
       when '"' then string = @balancedString @chunk, '"'
     return 0 unless string
     trimmed = @removeNewlines string[1...-1]
@@ -505,7 +505,7 @@ exports.Lexer = class Lexer
       else if end is '"' and prev is '#' and letter is '{'
         stack.push end = '}'
       prev = letter
-    @error "missing #{ stack.pop() }, starting"
+    @error "missing #{ stack.pop() }", str.length
 
   # Expand variables and expressions inside double-quoted strings using
   # Ruby-like notation for substitution of arbitrary expressions.

@@ -128,3 +128,93 @@ test "explicit indentation errors", ->
       c
     ^^
   '''
+
+test "unterminated strings", ->
+  assertErrorFormat '''
+    '
+  ''', '''
+    [stdin]:1:2: error: missing '
+    '
+     ^
+  '''
+  assertErrorFormat '''
+    "
+  ''', '''
+    [stdin]:1:2: error: missing "
+    "
+     ^
+  '''
+  assertErrorFormat '''
+    console.log 'foo
+  ''', '''
+    [stdin]:1:17: error: missing '
+    console.log 'foo
+                    ^
+  '''
+  assertErrorFormat '''
+    console.log "foo
+  ''', '''
+    [stdin]:1:17: error: missing "
+    console.log "foo
+                    ^
+  '''
+  assertErrorFormat '''
+    console.log 'foo
+    console.log "bar"
+  ''', '''
+    [stdin]:2:18: error: missing '
+    console.log "bar"
+                     ^
+  '''
+  assertErrorFormat '''
+    console.log "foo
+    console.log 'bar'
+  ''', '''
+    [stdin]:2:18: error: missing "
+    console.log 'bar'
+                     ^
+  '''
+  # assertErrorFormat '''
+  #   console.log 'foo
+  #   console.log 'bar'
+  # ''', '''
+  #   [stdin]:2:14: error: unexpected bar
+  #   console.log 'bar'
+  #                ^^^
+  # '''
+  # assertErrorFormat '''
+  #   console.log "foo
+  #   console.log "bar"
+  # ''', '''
+  #   [stdin]:2:14: error: unexpected bar
+  #   console.log "bar"
+  #                ^^^
+  # '''
+  assertErrorFormat '''
+    "#{'}"
+  ''', '''
+    [stdin]:1:7: error: missing '
+    "#{'}"
+          ^
+  '''
+  assertErrorFormat '''
+    "#{"}"
+  ''', '''
+    [stdin]:1:7: error: missing }
+    "#{"}"
+          ^
+  '''
+  assertErrorFormat '''
+    "#{foo '}"
+  ''', '''
+    [stdin]:1:11: error: missing '
+    "#{foo '}"
+              ^
+  '''
+  assertErrorFormat '''
+    "#{foo "}"
+  ''', '''
+    [stdin]:1:11: error: missing }
+    "#{foo "}"
+              ^
+  '''
