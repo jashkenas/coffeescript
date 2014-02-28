@@ -55,10 +55,10 @@ coffee -c /path/to/script.coffee
 
 For documentation, usage, and examples, see: http://coffeescript.org/
 
-To suggest a feature, report a bug, or general discussion: http://github.com/jashkenas/coffee-script/issues
+To suggest a feature or report a bug: http://github.com/jashkenas/coffee-script/issues
 
-If you'd like to chat, drop by #coffeescript on Freenode IRC, or on http://webchat.freenode.net.
+If you'd like to chat, drop by #coffeescript on Freenode IRC.
 
 The source repository: https://github.com/jashkenas/coffee-script.git
 
-Top 100 contributors are listed here: http://github.com/jashkenas/coffee-script/contributors
+Our lovely and talented contributors are listed here: http://github.com/jashkenas/coffee-script/contributors
