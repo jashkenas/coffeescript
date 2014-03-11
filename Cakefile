@@ -179,7 +179,7 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
     fs.writeFileSync 'index.html', rendered
     log "compiled", green, "#{source}"
 
-  fs.watchFile source, internal: 200, renderIndex
+  fs.watchFile source, interval: 200, renderIndex
   log "watching..." , green
 
 
