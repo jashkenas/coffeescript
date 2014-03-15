@@ -434,8 +434,7 @@ class exports.Bool extends Base
 # A `return` is a *pureStatement* -- wrapping it in a closure wouldn't
 # make sense.
 exports.Return = class Return extends Base
-  constructor: (expr) ->
-    @expression = expr if expr and not expr.unwrap().isUndefined
+  constructor: (@expression) ->
 
   children: ['expression']
 
