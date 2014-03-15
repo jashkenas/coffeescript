@@ -21,6 +21,7 @@
     "coffee": "./bin/coffee",
     "cake": "./bin/cake"
   },
+  "preferGlobal": true,
   "scripts": {
     "test": "node ./bin/cake test"
   },
