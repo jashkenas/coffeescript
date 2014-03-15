@@ -520,13 +520,12 @@ Expressions
     </p>
     <%= codeFor('range_comprehensions', 'countdown') %>
     <p>
-      Note how because we are assigning the value of the comprehensions to a
-      variable in the example above, CoffeeScript is collecting the result of
-      each iteration into an array. Sometimes functions end with loops that are
-      intended to run only for their side-effects. Be careful that you're not
-      accidentally returning the results of the comprehension in these cases,
-      by adding a meaningful return value &mdash; like <tt>true</tt> &mdash; or <tt>null</tt>,
-      to the bottom of your function.
+      In this example, note how CoffeeScript collects into an array each iteration's result and how it
+      assigns the value of the comprehensions to a variable; indeed, sometimes functions end with loops 
+      intended to run only for their side-effects. Though in these cases, be careful to avoid returning 
+      accidentally the results of the comprehension, e.g. by adding to the bottom of your function a 
+      meaningful return value &mdash; like <tt>true</tt> &mdash; or <tt>null</tt>.
+      
     </p>
     <p>
       To step through a range comprehension in fixed-size chunks,
