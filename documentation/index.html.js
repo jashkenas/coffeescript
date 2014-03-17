@@ -778,7 +778,7 @@ Expressions
       Destructuring assignment can be used with any depth of array and object nesting,
       to help pull out deeply nested properties.
     </p>
-    <%= codeFor('object_extraction', '"name + "-" + street"') %>
+    <%= codeFor('object_extraction', 'name + "-" + street') %>
     <p>
       Destructuring assignment can even be combined with splats.
     </p>
@@ -786,7 +786,7 @@ Expressions
     <p>
       Expansion can be used to retrieve elements from the end of an array without having to assign the rest of its values. It works in function parameter lists as well.
     </p>
-    <%= codeFor('expansion', '"first + " " + last"') %>
+    <%= codeFor('expansion', 'first + " " + last') %>
     <p>
       Destructuring assignment is also useful when combined with class constructors
       to assign properties to your instance from an options object passed to the constructor.
