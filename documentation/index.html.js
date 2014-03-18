@@ -87,7 +87,6 @@
         <a href="documentation/docs/sourcemap.html">Source Maps &mdash; src/sourcemap</a>
       </div>
     </div>
-    <div id="error" style="display:none;"></div>
   </div>
 
   <div class="container">
@@ -1926,19 +1925,22 @@ Expressions
     # Set up the compilation function, to run when you stop typing.
     compileSource = ->
       source = $('#repl_source').val()
+      results = $('#repl_results')
       window.compiledJS = ''
       try
         window.compiledJS = CoffeeScript.compile source, bare: on
-        el = $('#repl_results')[0]
+        el = results[0]
         if el.innerText
           el.innerText = window.compiledJS
         else
-          $(el).text window.compiledJS
-        $('#error').hide()
+          results.text(window.compiledJS)
+        results.removeClass 'error'
+        $('.minibutton.run').removeClass 'error'
       catch {location, message}
         if location?
           message = "Error on line #{location.first_line + 1}: #{message}"
-        $('#error').text(message).show()
+        results.text(message).addClass 'error'
+        $('.minibutton.run').addClass 'error'
 
       # Update permalink
       $('#repl_permalink').attr 'href', "##{sourceFragment}#{encodeURIComponent source}"
