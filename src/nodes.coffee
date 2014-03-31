@@ -333,7 +333,8 @@ exports.Block = class Block extends Base
       @expressions = rest
     fragments = @compileWithDeclarations o
     return fragments if o.bare
-    [].concat prelude, @makeCode("(function() {\n"), fragments, @makeCode("\n}).call(this);\n")
+    strictStatement = @makeCode if o.strict then "#{@tab}\"use strict\";\n\n" else ''
+    [].concat prelude, @makeCode("(function() {\n"), strictStatement, fragments, @makeCode("\n}).call(this);\n")
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
