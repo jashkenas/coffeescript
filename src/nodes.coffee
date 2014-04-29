@@ -1323,6 +1323,8 @@ exports.Code = class Code extends Base
 
   isStatement: -> !!@ctor
 
+  isGenerator: -> @body?.contains isYieldType
+
   jumps: NO
 
   makeScope: (parentScope) -> new Scope parentScope, @body, this
@@ -1385,6 +1387,7 @@ exports.Code = class Code extends Base
       uniqs.push name
     @body.makeReturn() unless wasEmpty or @noReturn
     code  = 'function'
+    code  += '*' if @isGenerator()
     code  += ' ' + @name if @ctor
     code  += '('
     answer = [@makeCode(code)]
@@ -1612,9 +1615,10 @@ exports.Op = class Op extends Base
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
   CONVERSIONS =
-    '==': '==='
-    '!=': '!=='
-    'of': 'in'
+    '=='        : '==='
+    '!='        : '!=='
+    'of'        : 'in'
+    'yield_from': 'yield*'
 
   # The map of invertible operators.
   INVERSIONS =
@@ -1624,6 +1628,9 @@ exports.Op = class Op extends Base
   children: ['first', 'second']
 
   isSimpleNumber: NO
+
+  makeReturn: (res) ->
+    if @operator in ['yield', 'yield*'] then this else super
 
   isUnary: ->
     not @second
@@ -1730,6 +1737,10 @@ exports.Op = class Op extends Base
   compileUnary: (o) ->
     parts = []
     op = @operator
+
+    if op in ['yield', 'yield*'] and not o.scope.parent?
+      @error "yield statements must occur within a function generator."
+
     parts.push [@makeCode op]
     if op is '!' and @first instanceof Existence
       @first.negated = not @first.negated
@@ -1737,7 +1748,7 @@ exports.Op = class Op extends Base
     if o.level >= LEVEL_ACCESS
       return (new Parens this).compileToFragments o
     plusMinus = op in ['+', '-']
-    parts.push [@makeCode(' ')] if op in ['new', 'typeof', 'delete'] or
+    parts.push [@makeCode(' ')] if op in ['new', 'typeof', 'delete', 'yield', 'yield*'] or
                       plusMinus and @first instanceof Op and @first.operator is op
     if (plusMinus and @first instanceof Op) or (op is 'new' and @first.isStatement o)
       @first = new Parens @first
@@ -2256,6 +2267,9 @@ parseNum = (x) ->
     parseInt x, 16
   else
     parseFloat x
+
+isYieldType = (node) ->
+  node instanceof Op and node.operator in ['yield', 'yield*']
 
 isLiteralArguments = (node) ->
   node instanceof Literal and node.value is 'arguments' and not node.asKey
