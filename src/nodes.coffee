@@ -1314,16 +1314,15 @@ exports.Assign = class Assign extends Base
 # When for the purposes of walking the contents of a function body, the Code
 # has no *children* -- they're within the inner scope.
 exports.Code = class Code extends Base
-  constructor: (params, body, tag) ->
-    @params  = params or []
-    @body    = body or new Block
-    @bound   = tag is 'boundfunc'
+  constructor: (params, body, tags) ->
+    @params    = params or []
+    @body      = body or new Block
+    @bound     = tags?.bound ? false
+    @generator = tags?.generator ? false
 
   children: ['params', 'body']
 
   isStatement: -> !!@ctor
-
-  isGenerator: -> @body?.contains isYieldType
 
   jumps: NO
 
@@ -1387,7 +1386,7 @@ exports.Code = class Code extends Base
       uniqs.push name
     @body.makeReturn() unless wasEmpty or @noReturn
     code  = 'function'
-    code  += '*' if @isGenerator()
+    code  += '*' if @generator
     code  += ' ' + @name if @ctor
     code  += '('
     answer = [@makeCode(code)]
@@ -1618,7 +1617,7 @@ exports.Op = class Op extends Base
     '=='        : '==='
     '!='        : '!=='
     'of'        : 'in'
-    'yield_from': 'yield*'
+    'yieldfrom': 'yield*'
 
   # The map of invertible operators.
   INVERSIONS =
@@ -1630,6 +1629,9 @@ exports.Op = class Op extends Base
   isSimpleNumber: NO
 
   makeReturn: (res) ->
+    if @operator in ['yield', 'yield*'] then this else super
+
+  jumps: (o) ->
     if @operator in ['yield', 'yield*'] then this else super
 
   isUnary: ->
@@ -1737,9 +1739,6 @@ exports.Op = class Op extends Base
   compileUnary: (o) ->
     parts = []
     op = @operator
-
-    if op in ['yield', 'yield*'] and not o.scope.parent?
-      @error "yield statements must occur within a function generator."
 
     parts.push [@makeCode op]
     if op is '!' and @first instanceof Existence

@@ -192,8 +192,10 @@ grammar =
   # CoffeeScript has two different symbols for functions. `->` is for ordinary
   # functions, and `=>` is for functions bound to the current value of *this*.
   FuncGlyph: [
-    o '->',                                     -> 'func'
-    o '=>',                                     -> 'boundfunc'
+    o '->',                                     -> {bound: no, generator: no}
+    o '=>',                                     -> {bound: yes, generator: no}
+    o 'GENERATOR',                              -> {bound: no, generator: yes}
+    o 'BOUND_GENERATOR',                        -> {bound: yes, generator: yes}                       
   ]
 
   # An optional, trailing comma.
@@ -536,6 +538,9 @@ grammar =
     o 'UNARY_MATH Expression',                  -> new Op $1 , $2
     o '-     Expression',                      (-> new Op '-', $2), prec: 'UNARY_MATH'
     o '+     Expression',                      (-> new Op '+', $2), prec: 'UNARY_MATH'
+    o 'YIELD Expression',                       -> new Op $1 , $2
+    o 'YIELD FROM Expression',                  -> new Op $1.concat $2 , $3
+    o 'YIELD',                                  -> new Return
 
     o '-- SimpleAssignable',                    -> new Op '--', $2
     o '++ SimpleAssignable',                    -> new Op '++', $2
@@ -585,7 +590,7 @@ operators = [
   ['left',      'CALL_START', 'CALL_END']
   ['nonassoc',  '++', '--']
   ['left',      '?']
-  ['right',     'UNARY']
+  ['right',     'UNARY', 'YIELD']
   ['right',     '**']
   ['right',     'UNARY_MATH']
   ['left',      'MATH']

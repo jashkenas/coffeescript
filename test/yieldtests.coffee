@@ -1,13 +1,46 @@
+a = -> @html = 'Hello World!'; yield
+
+b = -> 
+  @html = 'Hello World!'
+  yield
+
+a = -> 
+  @html = 'Hello World!'
+  yield
+
+b = -> loop yield 1
+
+b = ->
+  loop
+    yield 1
+
+b = ->
+  x = yield 1 for i in [1..100]
+
+f1 = ->
+
+# f1 = -> yield from
+
 # SHOULD RETURN AN EMPTY GENERATOR
-# f1 = -> yield
+f1 = -> yield
+
+f1 = -> 
+  alert null
+  yield
+
+f1 = -> alert null; yield
 
 # SHOULD ERROR (non-terminating yield without identifier)
 # f11 = -> yield; return
 
 # TODO: FIX
 # SHOULD RETURN AN EMPTY GENERATOR
-# f1point5 = ->
-#   yield
+f1point5 = ->
+  yield
+
+f = (num) ->
+  for item in [1...10]
+    if item > 5 then return else yield num
 
 f2 = -> yield 1
 
