@@ -138,4 +138,6 @@ module.exports =
     repl.on 'exit', -> repl.outputStream.write '\n'
     addMultilineHandler repl
     addHistory repl, opts.historyFile, opts.historyMaxInputSize if opts.historyFile
+    # Correct the description inherited from the node REPL
+    repl.commands['.load'].help = 'Load code from a file into this REPL session'
     repl
