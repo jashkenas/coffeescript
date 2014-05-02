@@ -1,78 +1,94 @@
-a = -> @html = 'Hello World!'; yield
+getChildCandidates = (self, distance, min_dist, max_dist) ->
+  yield self.leftchild if self?.leftchild? and distance - max_dist < self.median
+  yield self.rightchild if self?.rightchild? and distance + max_dist >= self.median
 
-b = -> 
-  @html = 'Hello World!'
-  yield
+result = []
+candidates = [self]
 
-a = -> 
-  @html = 'Hello World!'
-  yield
+while node = candidates.pop()
+  distance = node.getDist(obj)
+  result.extend node.values if min_dist <= distance <= max_dist
+  candidates.extend (node.getChildCandidates distance, min_dist, max_dist)
 
-b = -> loop yield 1
 
-b = ->
-  loop
-    yield 1
+class BinaryTree
+  nodes = []
+  if()
+# a = -> @html = 'Hello World!'; yield
 
-b = ->
-  x = yield 1 for i in [1..100]
+# b = -> 
+#   @html = 'Hello World!'
+#   yield
 
-f1 = ->
+# a = -> 
+#   @html = 'Hello World!'
+#   yield
 
-# f1 = -> yield from
+# b = -> loop yield 1
 
-# SHOULD RETURN AN EMPTY GENERATOR
-f1 = -> yield
+# b = ->
+#   loop
+#     yield 1
 
-f1 = -> 
-  alert null
-  yield
+# b = ->
+#   x = yield 1 for i in [1..100]
 
-f1 = -> alert null; yield
+# f1 = ->
 
-# SHOULD ERROR (non-terminating yield without identifier)
-# f11 = -> yield; return
+# # f1 = -> yield from
 
-# TODO: FIX
-# SHOULD RETURN AN EMPTY GENERATOR
-f1point5 = ->
-  yield
+# # SHOULD RETURN AN EMPTY GENERATOR
+# f1 = -> yield
 
-f = (num) ->
-  for item in [1...10]
-    if item > 5 then return else yield num
+# f1 = -> 
+#   alert null
+#   yield
 
-f2 = -> yield 1
+# f1 = -> alert null; yield
 
-f21 = ->
-  yield 1
-  return
+# # SHOULD ERROR (non-terminating yield without identifier)
+# # f11 = -> yield; return
 
-f3 = (arg1, arg2) ->
-  for i in [arg1..arg2]
-    yield i
+# # TODO: FIX
+# # SHOULD RETURN AN EMPTY GENERATOR
+# f1point5 = ->
+#   yield
 
-f3 = (arg1, arg2) ->
-  for i in [arg1..arg2]
-    yield null
-  return 1
+# f = (num) ->
+#   for item in [1...10]
+#     if item > 5 then return else yield num
 
-# alternatively...
+# f2 = -> yield 1
 
-f3 = (arg1, arg2) ->
-  yield i for i in [arg1..arg2]
-  return 1
+# f21 = ->
+#   yield 1
+#   return
 
-f4 = (arg1, arg2) ->
-  for i in [arg1..arg2]
-    if (x = yield i) is 7 
-      return
-  return 1
+# f3 = (arg1, arg2) ->
+#   for i in [arg1..arg2]
+#     yield i
+
+# f3 = (arg1, arg2) ->
+#   for i in [arg1..arg2]
+#     yield null
+#   return 1
+
+# # alternatively...
+
+# f3 = (arg1, arg2) ->
+#   yield i for i in [arg1..arg2]
+#   return 1
+
+# f4 = (arg1, arg2) ->
+#   for i in [arg1..arg2]
+#     if (x = yield i) is 7 
+#       return
+#   return 1
   
-# alternatively...
+# # alternatively...
 
-f4 = (arg1, arg2) ->
-  for i in [arg1..arg2]
-    return if (x = yield i) is 7 
-  return 1
+# f4 = (arg1, arg2) ->
+#   for i in [arg1..arg2]
+#     return if (x = yield i) is 7 
+#   return 1
 

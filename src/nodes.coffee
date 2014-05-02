@@ -1740,6 +1740,10 @@ exports.Op = class Op extends Base
     parts = []
     op = @operator
 
+    # Error on yield if --generators flag is not set
+    if op in ['yield', 'yield*'] and not o.generators
+      @error 'yield statement found without generator support. use coffee -g to enable generators.'
+    
     parts.push [@makeCode op]
     if op is '!' and @first instanceof Existence
       @first.negated = not @first.negated
@@ -2266,9 +2270,6 @@ parseNum = (x) ->
     parseInt x, 16
   else
     parseFloat x
-
-isYieldType = (node) ->
-  node instanceof Op and node.operator in ['yield', 'yield*']
 
 isLiteralArguments = (node) ->
   node instanceof Literal and node.value is 'arguments' and not node.asKey
