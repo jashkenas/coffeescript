@@ -24,6 +24,8 @@ header = """
    */
 """
 
+global.generators = '--harmony' in process.execArgv or '--harmony-generators' in process.execArgv
+
 # Build the CoffeeScript language from source.
 build = (cb) ->
   files = fs.readdirSync 'src'

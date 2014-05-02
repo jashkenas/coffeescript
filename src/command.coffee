@@ -72,7 +72,8 @@ exports.run = ->
   replCliOpts = useGlobal: yes
 
   # Fork node with generator support if generator flag is set
-  if opts.generators and not (('--harmony-generators' or '--harmony') in process.execArgv)
+  if opts.generators and 
+  not ('--harmony-generators' in process.execArgv or '--harmony' in process.execArgv)
     opts.nodejs ?= ''
     opts.nodejs += (if opts.nodejs.length then ' ' else '') + '--harmony-generators'
     process.argv.splice 2, 0, '--nodejs', '--harmony-generators'

@@ -1741,8 +1741,9 @@ exports.Op = class Op extends Base
     op = @operator
 
     # Error on yield if --generators flag is not set
-    if op in ['yield', 'yield*'] and not o.generators
-      @error 'yield statement found without generator support. use coffee -g to enable generators.'
+    if op in ['yield', 'yield*'] and 
+    not ('--harmony' in process.execArgv or '--harmony-generators' in process.execArgv)
+      @error 'yield statement found without generator support. use `coffee -g` to enable generators.'
     
     parts.push [@makeCode op]
     if op is '!' and @first instanceof Existence
