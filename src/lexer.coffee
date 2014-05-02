@@ -129,8 +129,6 @@ exports.Lexer = class Lexer
         tag = 'IF'
       else if tag in UNARY
         tag = 'UNARY'
-      else if tag is 'YIELD'
-        tag = 'YIELD'
       else if tag in RELATION
         if tag isnt 'INSTANCEOF' and @seenFor
           tag = 'FOR' + tag
