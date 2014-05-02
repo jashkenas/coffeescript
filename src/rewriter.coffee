@@ -433,15 +433,6 @@ class exports.Rewriter
   # Look up a tag by token index.
   tag: (i) -> @tokens[i]?[0]
 
-  # removePseudoYields: ->
-
-  #   @scanTokens (token, i) ->
-  #     return 1 unless token[0] is 'UNARY_YIELD' and token[1] is 'yield'
-  #     [tag, id] = @tokens[i]
-  #     [nextTag] = @tokens[i + 1]
-  #     @tokens.splice i, 1 if id is 'yield' and nextTag is 'OUTDENT'
-  #     return 1
-
 
 # Constants
 # ---------
