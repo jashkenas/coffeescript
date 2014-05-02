@@ -434,7 +434,7 @@ class exports.Bool extends Base
 # A `return` is a *pureStatement* -- wrapping it in a closure wouldn't
 # make sense.
 exports.Return = class Return extends Base
-  constructor: (@expression) ->
+  constructor: (@expression, @makeGenerator = no) ->
 
   children: ['expression']
 
@@ -447,6 +447,9 @@ exports.Return = class Return extends Base
     if expr and expr not instanceof Return then expr.compileToFragments o, level else super o, level
 
   compileNode: (o) ->
+    for siblingExpression in o.scope.expressions.expressions
+      if siblingExpression.makeGenerator is true
+        @error 'unexpected POST_YIELD'
     answer = []
     # TODO: If we call expression.compile() here twice, we'll sometimes get back different results!
     answer.push @makeCode @tab + "return#{if @expression then " " else ""}"
@@ -1314,13 +1317,18 @@ exports.Assign = class Assign extends Base
 # When for the purposes of walking the contents of a function body, the Code
 # has no *children* -- they're within the inner scope.
 exports.Code = class Code extends Base
-  constructor: (params, body, tags) ->
+  constructor: (params, body, tag) ->
     @params    = params or []
     @body      = body or new Block
-    @bound     = tags?.bound ? false
-    @generator = tags?.generator ? false
+    @bound     = tag is 'boundfunc'
+    @generator = @isGenerator()
 
   children: ['params', 'body']
+
+  isGenerator: -> 
+    @body.contains (node) ->
+      (node instanceof Op and node.operator in ['yield', 'yield*']) or
+        (node instanceof Return and node.makeGenerator)
 
   isStatement: -> !!@ctor
 
@@ -1741,9 +1749,11 @@ exports.Op = class Op extends Base
     op = @operator
 
     # Error on yield if --generators flag is not set
-    if op in ['yield', 'yield*'] and 
-    not ('--harmony' in process.execArgv or '--harmony-generators' in process.execArgv)
-      @error 'yield statement found without generator support. use `coffee -g` to enable generators.'
+    if op in ['yield', 'yield*']
+      if not ('--harmony' in process.execArgv or '--harmony-generators' in process.execArgv)
+        @error 'yield statement found without generator support. use `coffee -g` to enable generators.'
+      if not o.scope.parent?
+        @error 'yield statements must occur within a function generator.'
     
     parts.push [@makeCode op]
     if op is '!' and @first instanceof Existence

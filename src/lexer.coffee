@@ -130,7 +130,7 @@ exports.Lexer = class Lexer
       else if tag in UNARY
         tag = 'UNARY'
       else if tag is 'YIELD'
-        @tagGenerator()
+        tag = 'YIELD'
       else if tag in RELATION
         if tag isnt 'INSTANCEOF' and @seenFor
           tag = 'FOR' + tag
@@ -476,22 +476,6 @@ exports.Lexer = class Lexer
             tok[0] = 'PARAM_START'
             return this
           else return this
-    this
-
-  # Runs whenever we encounter a yield expression 
-  # in order to turn its containing function into a generator.
-  tagGenerator: ->
-    stack = []
-    {tokens} = this
-    for tok in tokens by -1
-      switch tok[0]
-        when '->', 'GENERATOR'
-          tok[0] = 'GENERATOR'
-          return this
-        when '=>', 'BOUND_GENERATOR'
-          tok[0] = 'BOUND_GENERATOR'
-          return this
-    @error 'yield operations must occur within a generator function.'
     this
 
   # Close up all remaining open blocks at the end of the file.
