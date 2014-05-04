@@ -36,7 +36,6 @@ SWITCHES = [
   ['-b', '--bare',            'compile without a top-level function wrapper']
   ['-c', '--compile',         'compile to JavaScript and save as .js files']
   ['-e', '--eval',            'pass a string from the command line as input']
-  ['-g', '--generators',      'compile with Harmony generator support']
   ['-h', '--help',            'display this help message']
   ['-i', '--interactive',     'run an interactive CoffeeScript REPL']
   ['-j', '--join [FILE]',     'concatenate the source CoffeeScript before compiling']
@@ -70,13 +69,6 @@ exports.run = ->
   # `node` REPL CLI and, therefore, (b) make packages that modify native prototypes
   # (such as 'colors' and 'sugar') work as expected.
   replCliOpts = useGlobal: yes
-
-  # Fork node with generator support if generator flag is set
-  if opts.generators and 
-  not ('--harmony-generators' in process.execArgv or '--harmony' in process.execArgv)
-    opts.nodejs ?= ''
-    opts.nodejs += (if opts.nodejs.length then ' ' else '') + '--harmony-generators'
-    process.argv.splice 2, 0, '--nodejs', '--harmony-generators'
 
   return forkNode()                             if opts.nodejs
   return usage()                                if opts.help

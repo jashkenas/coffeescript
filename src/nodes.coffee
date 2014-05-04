@@ -1748,11 +1748,8 @@ exports.Op = class Op extends Base
     parts = []
     op = @operator
 
-    # Error on yield if --generators flag is not set
-    if op in ['yield', 'yield*']
-      if not ('--harmony' in process.execArgv or '--harmony-generators' in process.execArgv)
-        @error 'yield statement found without generator support. use `coffee -g` to enable generators.'
-      if not o.scope.parent?
+    # Error on yield if not found inside a function
+    if op in ['yield', 'yield*'] and not o.scope.parent?
         @error 'yield statements must occur within a function generator.'
     
     parts.push [@makeCode op]
