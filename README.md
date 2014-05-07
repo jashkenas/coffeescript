@@ -56,13 +56,13 @@ sudo coffee-script/bin/cake install
 Execute a script:
 
 ```shell
-coffee /path/to/script.coffee
+coffee /path/to/script.crap
 ```
 
 Compile a script:
 
 ```shell
-coffee -c /path/to/script.coffee
+coffee -c /path/to/script.crap
 ```
 
 For documentation, usage, and examples, see: http://coffeescript.org/
