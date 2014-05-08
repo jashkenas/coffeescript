@@ -25,10 +25,10 @@
     "test": "node ./bin/cake test"
   },
   "homepage": "http://coffeescript.org",
-  "bugs": "https://github.com/jashkenas/coffee-script/issues",
+  "bugs": "https://github.com/jashkenas/coffeescript/issues",
   "repository": {
     "type": "git",
-    "url": "git://github.com/jashkenas/coffee-script.git"
+    "url": "git://github.com/jashkenas/coffeescript.git"
   },
   "devDependencies": {
     "uglify-js": "~2.2",

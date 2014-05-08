@@ -65,6 +65,33 @@ codeFor = ->
     button = if executable then "<div class='minibutton ok' onclick='javascript: #{js};#{append}'>#{run}</div>" else ''
     "<div class='code'>#{cshtml}#{jshtml}#{script}#{load}#{button}<br class='clear' /></div>"
 
+monthNames = [
+  'January'
+  'February'
+  'March'
+  'April'
+  'May'
+  'June'
+  'July'
+  'August'
+  'September'
+  'October'
+  'November'
+  'December'
+]
+
+formatDate = (date) ->
+  date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
+    "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
+
+releaseHeader = (date, version, prevVersion) -> """
+  <div class="anchor" id="#{version}"></div>
+  <b class="header">
+    #{prevVersion and "<a href=\"https://github.com/jashkenas/coffeescript/compare/#{prevVersion}...#{version}\">#{version}</a>" or version}
+    <span class="timestamp"> &mdash; <time datetime="#{date}">#{formatDate date}</time></span>
+  </b>
+"""
+
 option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
 
 task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) ->
@@ -160,7 +187,7 @@ task 'doc:source', 'rebuild the internal documentation', ->
 
 
 task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
-  exec 'docco examples/underscore.coffee && cp -rf docs documentation && rm -r docs', (err) ->
+  exec 'node_modules/.bin/docco examples/underscore.coffee && cp -rf docs documentation && rm -r docs', (err) ->
     throw err if err
 
 task 'bench', 'quick benchmark of compilation time', ->
