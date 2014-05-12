@@ -81,7 +81,22 @@ exports.run = ->
   process.argv[0] = 'coffee'
 
   opts.output = path.resolve opts.output  if opts.output
-  opts.join   = path.resolve opts.join    if opts.join
+  if opts.join
+    opts.join = path.resolve opts.join
+    console.error '''
+
+    The --join option is deprecated and will be removed in a future version.
+
+    If for some reason it's necessary to share local variables between files,
+    replace...
+
+        $ coffee --compile --join bundle.js -- a.coffee b.coffee c.coffee
+
+    with...
+
+        $ cat a.coffee b.coffee c.coffee | coffee --compile --stdio > bundle.js
+
+    '''
   for source in opts.arguments
     source = path.resolve source
     compilePath source, yes, source
