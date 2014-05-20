@@ -1032,7 +1032,7 @@ Expressions
         size (Rails, Node).
       </li>
       <li>
-        <a href="http://ristrettolo.gy">CoffeeScript Ristretto</a>
+        <a href="https://leanpub.com/coffeescript-ristretto/read">CoffeeScript Ristretto</a>
         is a deep dive into CoffeeScript's semantics from simple functions up through
         closures, higher-order functions, objects, classes, combinators, and decorators.
         By <a href="http://braythwayt.com/">Reg Braithwaite</a>.
