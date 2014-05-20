@@ -47,9 +47,9 @@ function object that has a name filled in, or bottoms out.
 Look up a variable name in lexical scope, and declare it if it does not
 already exist.
 
-      find: (name) ->
+      find: (name, immediate) ->
         return yes if @check name
-        @add name, 'var'
+        @add name, 'var', immediate
         no
 
 Reserve a variable name as originating from a function parameter for this
