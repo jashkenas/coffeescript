@@ -35,7 +35,7 @@ test "catch statements should introduce their argument to scope", ->
 
 test "loop variable should be accessible after for-of loop", ->
   d = (x for x of {1:'a',2:'b'})
-  eq x, '2'
+  ok x in ['1','2']
 
 test "loop variable should be accessible after for-in loop", ->
   d = (x for x in [1,2])
