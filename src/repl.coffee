@@ -39,11 +39,13 @@ replDefaults =
 
 addMultilineHandler = (repl) ->
   {rli, inputStream, outputStream} = repl
+  # Node 0.11.12 changed API, prompt is now _prompt.
+  origPrompt = repl._prompt ? repl.prompt
 
   multiline =
     enabled: off
-    initialPrompt: repl.prompt.replace /^[^> ]*/, (x) -> x.replace /./g, '-'
-    prompt: repl.prompt.replace /^[^> ]*>?/, (x) -> x.replace /./g, '.'
+    initialPrompt: origPrompt.replace /^[^> ]*/, (x) -> x.replace /./g, '-'
+    prompt: origPrompt.replace /^[^> ]*>?/, (x) -> x.replace /./g, '.'
     buffer: ''
 
   # Proxy node's line listener
@@ -55,6 +57,7 @@ addMultilineHandler = (repl) ->
       rli.setPrompt multiline.prompt
       rli.prompt true
     else
+      rli.setPrompt origPrompt
       nodeLineListener cmd
     return
 
@@ -65,7 +68,7 @@ addMultilineHandler = (repl) ->
       # allow arbitrarily switching between modes any time before multiple lines are entered
       unless multiline.buffer.match /\n/
         multiline.enabled = not multiline.enabled
-        rli.setPrompt repl.prompt
+        rli.setPrompt origPrompt
         rli.prompt true
         return
       # no-op unless the current line is empty
