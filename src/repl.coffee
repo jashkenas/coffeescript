@@ -28,7 +28,7 @@ replDefaults =
       ]
       js = ast.compile bare: yes, locals: Object.keys(context)
       result = if context is global
-        vm.runInThisContext js, filename 
+        vm.runInThisContext js, filename
       else
         vm.runInContext js, context, filename
       cb null, result
@@ -111,8 +111,9 @@ addHistory = (repl, filename, maxSize) ->
 
   fd = fs.openSync filename, 'a'
 
+  historyCommand = if repl.commandsWithLeadingDot() then '.history' else 'history'
   repl.rli.addListener 'line', (code) ->
-    if code and code.length and code isnt '.history' and lastLine isnt code
+    if code and code.length and code isnt historyCommand and lastLine isnt code
       # Save the latest command in the file
       fs.write fd, "#{code}\n"
       lastLine = code
@@ -120,11 +121,16 @@ addHistory = (repl, filename, maxSize) ->
   repl.rli.on 'exit', -> fs.close fd
 
   # Add a command to show the history stack
-  repl.commands['.history'] =
+  repl.commands[historyCommand] =
     help: 'Show command history'
     action: ->
       repl.outputStream.write "#{repl.rli.history[..].reverse().join '\n'}\n"
       repl.displayPrompt()
+
+# Adapt load help inherited from the node REPL
+correctLoadHelp = (repl) ->
+  loadCommand = if repl.commandsWithLeadingDot() then '.load' else 'load'
+  repl.commands[loadCommand].help = 'Load code from a file into this REPL session'
 
 module.exports =
   start: (opts = {}) ->
@@ -139,8 +145,8 @@ module.exports =
     opts = merge replDefaults, opts
     repl = nodeREPL.start opts
     repl.on 'exit', -> repl.outputStream.write '\n'
+    repl.commandsWithLeadingDot = -> ! @commands.help
     addMultilineHandler repl
     addHistory repl, opts.historyFile, opts.historyMaxInputSize if opts.historyFile
-    # Correct the description inherited from the node REPL
-    repl.commands['.load'].help = 'Load code from a file into this REPL session'
+    correctLoadHelp repl
     repl
