@@ -120,7 +120,7 @@ addHistory = (repl, filename, maxSize) ->
   repl.rli.on 'exit', -> fs.close fd
 
   # Add a command to show the history stack
-  repl.commands[getCommandId(repl, '.history')] =
+  repl.commands[getCommandId(repl, 'history')] =
     help: 'Show command history'
     action: ->
       repl.outputStream.write "#{repl.rli.history[..].reverse().join '\n'}\n"
@@ -128,8 +128,8 @@ addHistory = (repl, filename, maxSize) ->
 
 getCommandId = (repl, commandName) ->
   # Node 0.11 changed API, a command such as '.help' is now stored as 'help'
-  commandsHaveLeadingDot = ! repl.commands['help']
-  if commandsHaveLeadingDot then commandName else commandName[1..]
+  commandsHaveLeadingDot = repl.commands['.help']?
+  if commandsHaveLeadingDot then ".#{commandName}" else commandName
 
 module.exports =
   start: (opts = {}) ->
@@ -147,5 +147,5 @@ module.exports =
     addMultilineHandler repl
     addHistory repl, opts.historyFile, opts.historyMaxInputSize if opts.historyFile
     # Adapt help inherited from the node REPL
-    repl.commands[getCommandId(repl, '.load')].help = 'Load code from a file into this REPL session'
+    repl.commands[getCommandId(repl, 'load')].help = 'Load code from a file into this REPL session'
     repl
