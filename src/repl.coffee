@@ -111,9 +111,8 @@ addHistory = (repl, filename, maxSize) ->
 
   fd = fs.openSync filename, 'a'
 
-  historyCommand = if repl.commandsWithLeadingDot() then '.history' else 'history'
   repl.rli.addListener 'line', (code) ->
-    if code and code.length and code isnt historyCommand and lastLine isnt code
+    if code and code.length and code isnt '.history' and lastLine isnt code
       # Save the latest command in the file
       fs.write fd, "#{code}\n"
       lastLine = code
@@ -121,16 +120,16 @@ addHistory = (repl, filename, maxSize) ->
   repl.rli.on 'exit', -> fs.close fd
 
   # Add a command to show the history stack
-  repl.commands[historyCommand] =
+  repl.commands[getCommandId(repl, '.history')] =
     help: 'Show command history'
     action: ->
       repl.outputStream.write "#{repl.rli.history[..].reverse().join '\n'}\n"
       repl.displayPrompt()
 
-# Adapt load help inherited from the node REPL
-correctLoadHelp = (repl) ->
-  loadCommand = if repl.commandsWithLeadingDot() then '.load' else 'load'
-  repl.commands[loadCommand].help = 'Load code from a file into this REPL session'
+getCommandId = (repl, commandName) ->
+  # Node 0.11 changed API, a command such as '.help' is now stored as 'help'
+  commandsHaveLeadingDot = ! repl.commands['help']
+  if commandsHaveLeadingDot then commandName else commandName[1..]
 
 module.exports =
   start: (opts = {}) ->
@@ -145,8 +144,8 @@ module.exports =
     opts = merge replDefaults, opts
     repl = nodeREPL.start opts
     repl.on 'exit', -> repl.outputStream.write '\n'
-    repl.commandsWithLeadingDot = -> ! @commands.help
     addMultilineHandler repl
     addHistory repl, opts.historyFile, opts.historyMaxInputSize if opts.historyFile
-    correctLoadHelp repl
+    # Adapt help inherited from the node REPL
+    repl.commands[getCommandId(repl, '.load')].help = 'Load code from a file into this REPL session'
     repl
