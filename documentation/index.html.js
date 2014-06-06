@@ -11,7 +11,7 @@
 <body>
 
   <div id="fadeout"></div>
-
+p
   <div id="flybar">
     <a id="logo" href="#top"><img src="documentation/images/logo.png" width="225" height="39" alt="CoffeeScript" /></a>
     <div class="navigation toc">
@@ -113,8 +113,7 @@
       <a href="http://github.com/jashkenas/coffeescript/tarball/1.7.1">1.7.1</a>
     </p>
 
-    <pre>
-sudo npm install -g coffee-script</pre>
+    <pre>npm install -g coffee-script</pre>
 
     <h2>
       <span id="overview" class="bookmark"></span>
