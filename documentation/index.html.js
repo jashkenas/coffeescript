@@ -11,7 +11,7 @@
 <body>
 
   <div id="fadeout"></div>
-p
+
   <div id="flybar">
     <a id="logo" href="#top"><img src="documentation/images/logo.png" width="225" height="39" alt="CoffeeScript" /></a>
     <div class="navigation toc">
