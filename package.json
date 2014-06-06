@@ -36,10 +36,9 @@
     "jison": ">=0.2.0",
     "highlight.js": "~8.0.0",
     "underscore": "~1.5.2",
-    "docco": "0.6.x"
+    "docco": "~0.6.2"
   },
   "dependencies": {
-    "mkdirp": "~0.3.5",
-    "docco": "~0.6.2"
+    "mkdirp": "~0.3.5"
   }
 }
