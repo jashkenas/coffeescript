@@ -548,7 +548,7 @@ exports.Lexer = class Lexer
         errorToken = @makeToken '', 'string interpolation', offsetInChunk + i + 1, 2
       inner = expr[1...-1]
       if inner.length
-        [line, column] = @getLineAndColumnFromChunk(strOffset + i + 1)
+        [line, column] = @getLineAndColumnFromChunk(strOffset + i + 2)
         nested = new Lexer().tokenize inner, line: line, column: column, rewrite: off
         popped = nested.pop()
         popped = nested.shift() if nested[0]?[0] is 'TERMINATOR'
