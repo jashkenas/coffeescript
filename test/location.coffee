@@ -59,6 +59,27 @@ test "Verify location of generated tokens (with indented first line)", ->
   eq numberToken[2].last_line, 0
   eq numberToken[2].last_column, 7
 
+test "Verify locations in string interpolation", ->
+  tokens = CoffeeScript.tokens '"a#{b}c"'
+
+  eq tokens.length, 8
+  [openParen, a, firstPlus, b, secondPlus, c, closeParen] = tokens
+
+  eq a[2].first_line, 0
+  eq a[2].first_column, 1
+  eq a[2].last_line, 0
+  eq a[2].last_column, 1
+
+  eq b[2].first_line, 0
+  eq b[2].first_column, 4
+  eq b[2].last_line, 0
+  eq b[2].last_column, 4
+
+  eq c[2].first_line, 0
+  eq c[2].first_column, 6
+  eq c[2].last_line, 0
+  eq c[2].last_column, 6
+
 test "Verify all tokens get a location", ->
   doesNotThrow ->
     tokens = CoffeeScript.tokens testScript
