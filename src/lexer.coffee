@@ -207,7 +207,8 @@ exports.Lexer = class Lexer
     quote = heredoc.charAt 0
     doc = @sanitizeHeredoc match[2], quote: quote, indent: null
     if quote is '"' and 0 <= doc.indexOf '#{'
-      @interpolateString doc, heredoc: yes, strOffset: 3, lexedLength: heredoc.length
+      strOffset = if match[2].charAt(0) is '\n' then 4 else 3
+      @interpolateString doc, heredoc: yes, strOffset: strOffset, lexedLength: heredoc.length
     else
       @token 'STRING', @makeString(doc, quote, yes), 0, heredoc.length
     heredoc.length
