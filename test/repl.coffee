@@ -103,6 +103,7 @@ testRepl "existential assignment of previously declared variable", (input, outpu
 
 testRepl "keeps running after runtime error", (input, output) ->
   input.emitLine 'a = b'
+  console.log output
   eq 0, output.lastWrite().indexOf 'ReferenceError: b is not defined'
   input.emitLine 'a'
   eq 'undefined', output.lastWrite()
