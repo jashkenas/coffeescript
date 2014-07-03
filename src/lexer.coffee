@@ -190,9 +190,13 @@ exports.Lexer = class Lexer
       when "'" then [string] = SIMPLESTR.exec(@chunk) || []
       when '"' then string = @balancedString @chunk, '"'
     return 0 unless string
-    trimmed = @removeNewlines string[1...-1]
+    inner = string[1...-1]
+    trimmed = @removeNewlines inner
     if quote is '"' and 0 < string.indexOf '#{', 1
-      @interpolateString trimmed, strOffset: 1, lexedLength: string.length
+      numBreak = pos = 0
+      innerLen = inner.length
+      numBreak++ while inner.charAt(pos++) is '\n' and pos < innerLen
+      @interpolateString trimmed, strOffset: 1 + numBreak, lexedLength: string.length
     else
       @token 'STRING', quote + @escapeLines(trimmed) + quote, 0, string.length
     if octalEsc = /^(?:\\.|[^\\])*\\(?:0[0-7]|[1-7])/.test string

@@ -59,7 +59,7 @@ test "Verify location of generated tokens (with indented first line)", ->
   eq numberToken[2].last_line, 0
   eq numberToken[2].last_column, 7
 
-test "Verify locations in string interpolation", ->
+test 'Verify locations in string interpolation (in "string")', ->
   tokens = CoffeeScript.tokens '"a#{b}c"'
 
   eq tokens.length, 8
@@ -80,7 +80,7 @@ test "Verify locations in string interpolation", ->
   eq c[2].last_line, 0
   eq c[2].last_column, 6
 
-test "Verify locations in string interpolation (single line with multiple interpolation)", ->
+test 'Verify locations in string interpolation (in "string", multiple interpolation)', ->
   tokens = CoffeeScript.tokens '"#{a}b#{c}"'
 
   eq tokens.length, 10
@@ -101,7 +101,95 @@ test "Verify locations in string interpolation (single line with multiple interp
   eq c[2].last_line, 0
   eq c[2].last_column, 8
 
-test "Verify locations in string interpolation (multiline)", ->
+test 'Verify locations in string interpolation (in "string", multiple interpolation and line breaks)', ->
+  tokens = CoffeeScript.tokens '"#{a}\nb\n#{c}"'
+
+  eq tokens.length, 10
+  [{}, {}, {}, a, {}, b, {}, c] = tokens
+
+  eq a[2].first_line, 0
+  eq a[2].first_column, 3
+  eq a[2].last_line, 0
+  eq a[2].last_column, 3
+
+  eq b[2].first_line, 0
+  eq b[2].first_column, 5
+  eq b[2].last_line, 1
+  eq b[2].last_column, 1
+
+  eq c[2].first_line, 2
+  eq c[2].first_column, 2
+  eq c[2].last_line, 2
+  eq c[2].last_column, 2
+
+test 'Verify locations in string interpolation (in "string", multiple interpolation and starting with line breaks)', ->
+  tokens = CoffeeScript.tokens '"\n#{a}\nb\n#{c}"'
+
+  eq tokens.length, 10
+  [{}, {}, {}, a, {}, b, {}, c] = tokens
+
+  console.log a
+  console.log b
+  console.log c
+
+  eq a[2].first_line, 1
+  eq a[2].first_column, 2
+  eq a[2].last_line, 1
+  eq a[2].last_column, 2
+
+  eq b[2].first_line, 1
+  eq b[2].first_column, 4
+  eq b[2].last_line, 2
+  eq b[2].last_column, 1
+
+  eq c[2].first_line, 3
+  eq c[2].first_column, 2
+  eq c[2].last_line, 3
+  eq c[2].last_column, 2
+
+test 'Verify locations in string interpolation (in "string", multiple interpolation and starting with line breaks)', ->
+  tokens = CoffeeScript.tokens '"\n\n#{a}\n\nb\n\n#{c}"'
+
+  eq tokens.length, 10
+  [{}, {}, {}, a, {}, b, {}, c] = tokens
+
+  eq a[2].first_line, 2
+  eq a[2].first_column, 2
+  eq a[2].last_line, 2
+  eq a[2].last_column, 2
+
+  eq b[2].first_line, 2
+  eq b[2].first_column, 4
+  eq b[2].last_line, 5
+  eq b[2].last_column, 0
+
+  eq c[2].first_line, 6
+  eq c[2].first_column, 2
+  eq c[2].last_line, 6
+  eq c[2].last_column, 2
+
+test 'Verify locations in string interpolation (in "string", multiple interpolation and starting with line breaks)', ->
+  tokens = CoffeeScript.tokens '"\n\n\n#{a}\n\n\nb\n\n\n#{c}"'
+
+  eq tokens.length, 10
+  [{}, {}, {}, a, {}, b, {}, c] = tokens
+
+  eq a[2].first_line, 3
+  eq a[2].first_column, 2
+  eq a[2].last_line, 3
+  eq a[2].last_column, 2
+
+  eq b[2].first_line, 3
+  eq b[2].first_column, 4
+  eq b[2].last_line, 8
+  eq b[2].last_column, 0
+
+  eq c[2].first_line, 9
+  eq c[2].first_column, 2
+  eq c[2].last_line, 9
+  eq c[2].last_column, 2
+
+test 'Verify locations in string interpolation (in """string""", line breaks)', ->
   tokens = CoffeeScript.tokens '"""a\n#{b}\nc"""'
 
   eq tokens.length, 8
@@ -122,7 +210,7 @@ test "Verify locations in string interpolation (multiline)", ->
   eq c[2].last_line, 2
   eq c[2].last_column, 0
 
-test "Verify locations in string interpolation (multiline starting with a line break)", ->
+test 'Verify locations in string interpolation (in """string""", starting with a line break)', ->
   tokens = CoffeeScript.tokens '"""\n#{b}\nc"""'
 
   eq tokens.length, 8
@@ -143,7 +231,7 @@ test "Verify locations in string interpolation (multiline starting with a line b
   eq c[2].last_line, 2
   eq c[2].last_column, 0
 
-test "Verify locations in string interpolation (multiline starting with line breaks)", ->
+test 'Verify locations in string interpolation (in """string""", starting with line breaks)', ->
   tokens = CoffeeScript.tokens '"""\n\n#{b}\nc"""'
 
   eq tokens.length, 8
@@ -164,7 +252,7 @@ test "Verify locations in string interpolation (multiline starting with line bre
   eq c[2].last_line, 3
   eq c[2].last_column, 0
 
-test "Verify locations in string interpolation (multiline with multiple interpolation)", ->
+test 'Verify locations in string interpolation (in """string""", multiple interpolation)', ->
   tokens = CoffeeScript.tokens '"""#{a}\nb\n#{c}"""'
 
   eq tokens.length, 10
@@ -185,8 +273,8 @@ test "Verify locations in string interpolation (multiline with multiple interpol
   eq c[2].last_line, 2
   eq c[2].last_column, 2
 
-test "Verify locations in string interpolation (multiline starting with multiple interpolation and line breaks)", ->
-  tokens = CoffeeScript.tokens '"""\n\n#{a}\nb\n#{c}"""'
+test 'Verify locations in string interpolation (in """string""", multiple interpolation, and starting with line breaks)', ->
+  tokens = CoffeeScript.tokens '"""\n\n#{a}\n\nb\n\n#{c}"""'
 
   eq tokens.length, 10
   [{}, {}, {}, a, {}, b, {}, c] = tokens
@@ -198,12 +286,33 @@ test "Verify locations in string interpolation (multiline starting with multiple
 
   eq b[2].first_line, 2
   eq b[2].first_column, 4
-  eq b[2].last_line, 3
-  eq b[2].last_column, 1
+  eq b[2].last_line, 5
+  eq b[2].last_column, 0
 
-  eq c[2].first_line, 4
+  eq c[2].first_line, 6
   eq c[2].first_column, 2
-  eq c[2].last_line, 4
+  eq c[2].last_line, 6
+  eq c[2].last_column, 2
+
+test 'Verify locations in string interpolation (in """string""", multiple interpolation, and starting with line breaks)', ->
+  tokens = CoffeeScript.tokens '"""\n\n\n#{a}\n\n\nb\n\n\n#{c}"""'
+
+  eq tokens.length, 10
+  [{}, {}, {}, a, {}, b, {}, c] = tokens
+
+  eq a[2].first_line, 3
+  eq a[2].first_column, 2
+  eq a[2].last_line, 3
+  eq a[2].last_column, 2
+
+  eq b[2].first_line, 3
+  eq b[2].first_column, 4
+  eq b[2].last_line, 8
+  eq b[2].last_column, 0
+
+  eq c[2].first_line, 9
+  eq c[2].first_column, 2
+  eq c[2].last_line, 9
   eq c[2].last_column, 2
 
 test "Verify all tokens get a location", ->
