@@ -2161,7 +2161,7 @@ UTILITIES =
   extends: -> "
     function(child, parent) {
       for (var key in parent) {
-        if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key];
+        if (#{utility 'hasProp'}.call(parent, key)) #{utility 'defProp'}(child, key, #{utility 'getProp'}(parent, key));
       }
       function ctor() {
         this.constructor = child;
@@ -2198,6 +2198,8 @@ UTILITIES =
 
   # Shortcuts to speed up the lookup time for native functions.
   hasProp: -> '{}.hasOwnProperty'
+  defProp: -> '{}.__proto__.constructor.defineProperty'
+  getProp: -> '{}.__proto__.constructor.getOwnPropertyDescriptor'
   slice  : -> '[].slice'
 
 # Levels indicate a node's position in the AST. Useful for knowing if

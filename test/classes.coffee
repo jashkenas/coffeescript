@@ -828,3 +828,20 @@ test "#3232: super in static methods (not object-assigned)", ->
 
   ok Bar.baz()
   ok Bar.qux()
+
+test "inheriting setters and getters", ->
+  class Foo
+    @__prop: 3
+
+  Object.defineProperty Foo, 'prop',
+    get: ( ) -> @__prop
+    set: (v) -> @__prop = v
+
+  class Bar extends Foo
+
+  eq Bar.prop, 3
+  Bar.prop = 5
+  eq Bar.prop, 5
+  eq Foo.prop, 3
+  eq Bar.__prop, 5
+  eq Foo.__prop, 3
