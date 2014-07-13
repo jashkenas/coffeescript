@@ -128,10 +128,6 @@ test 'Verify locations in string interpolation (in "string", multiple interpolat
   eq tokens.length, 10
   [{}, {}, {}, a, {}, b, {}, c] = tokens
 
-  console.log a
-  console.log b
-  console.log c
-
   eq a[2].first_line, 1
   eq a[2].first_column, 2
   eq a[2].last_line, 1
@@ -314,6 +310,174 @@ test 'Verify locations in string interpolation (in """string""", multiple interp
   eq c[2].first_column, 2
   eq c[2].last_line, 9
   eq c[2].last_column, 2
+
+test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation)', ->
+  tokens = CoffeeScript.tokens '///#{a}b#{c}///'
+
+  eq tokens.length, 11
+  [{}, {}, {}, {}, a, {}, b, {}, c] = tokens
+
+  eq a[2].first_line, 0
+  eq a[2].first_column, 5
+  eq a[2].last_line, 0
+  eq a[2].last_column, 5
+
+  eq b[2].first_line, 0
+  eq b[2].first_column, 7
+  eq b[2].last_line, 0
+  eq b[2].last_column, 7
+
+  eq c[2].first_line, 0
+  eq c[2].first_column, 10
+  eq c[2].last_line, 0
+  eq c[2].last_column, 10
+
+test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation)', ->
+  tokens = CoffeeScript.tokens '///a#{b}c///'
+
+  eq tokens.length, 9
+  [{}, {}, a, {}, b, {}, c] = tokens
+
+  eq a[2].first_line, 0
+  eq a[2].first_column, 3
+  eq a[2].last_line, 0
+  eq a[2].last_column, 3
+
+  eq b[2].first_line, 0
+  eq b[2].first_column, 6
+  eq b[2].last_line, 0
+  eq b[2].last_column, 6
+
+  eq c[2].first_line, 0
+  eq c[2].first_column, 8
+  eq c[2].last_line, 0
+  eq c[2].last_column, 8
+
+test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks)', ->
+  tokens = CoffeeScript.tokens '///#{a}\nb\n#{c}///'
+
+  eq tokens.length, 11
+  [{}, {}, {}, {}, a, {}, b, {}, c] = tokens
+
+  eq a[2].first_line, 0
+  eq a[2].first_column, 5
+  eq a[2].last_line, 0
+  eq a[2].last_column, 5
+
+  eq b[2].first_line, 0
+  eq b[2].first_column, 7
+  eq b[2].last_line, 1
+  eq b[2].last_column, 1
+
+  eq c[2].first_line, 2
+  eq c[2].first_column, 2
+  eq c[2].last_line, 2
+  eq c[2].last_column, 2
+
+test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks)', ->
+  tokens = CoffeeScript.tokens '///#{a}\n\n\nb\n\n\n#{c}///'
+
+  eq tokens.length, 11
+  [{}, {}, {}, {}, a, {}, b, {}, c] = tokens
+
+  eq a[2].first_line, 0
+  eq a[2].first_column, 5
+  eq a[2].last_line, 0
+  eq a[2].last_column, 5
+
+  eq b[2].first_line, 0
+  eq b[2].first_column, 7
+  eq b[2].last_line, 5
+  eq b[2].last_column, 0
+
+  eq c[2].first_line, 6
+  eq c[2].first_column, 2
+  eq c[2].last_line, 6
+  eq c[2].last_column, 2
+
+test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks)', ->
+  tokens = CoffeeScript.tokens '///a\n\n\n#{b}\n\n\nc///'
+
+  eq tokens.length, 9
+  [{}, {}, a, {}, b, {}, c] = tokens
+
+  eq a[2].first_line, 0
+  eq a[2].first_column, 3
+  eq a[2].last_line, 2
+  eq a[2].last_column, 0
+
+  eq b[2].first_line, 3
+  eq b[2].first_column, 2
+  eq b[2].last_line, 3
+  eq b[2].last_column, 2
+
+  eq c[2].first_line, 3
+  eq c[2].first_column, 4
+  eq c[2].last_line, 6
+  eq c[2].last_column, 0
+
+test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and stating with linebreak)', ->
+  tokens = CoffeeScript.tokens '///\n#{a}\nb\n#{c}///'
+
+  eq tokens.length, 11
+  [{}, {}, {}, {}, a, {}, b, {}, c] = tokens
+
+  eq a[2].first_line, 1
+  eq a[2].first_column, 2
+  eq a[2].last_line, 1
+  eq a[2].last_column, 2
+
+  eq b[2].first_line, 1
+  eq b[2].first_column, 4
+  eq b[2].last_line, 2
+  eq b[2].last_column, 1
+
+  eq c[2].first_line, 3
+  eq c[2].first_column, 2
+  eq c[2].last_line, 3
+  eq c[2].last_column, 2
+
+test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and stating with linebreak)', ->
+  tokens = CoffeeScript.tokens '///\n\n\n#{a}\n\n\nb\n\n\n#{c}///'
+
+  eq tokens.length, 11
+  [{}, {}, {}, {}, a, {}, b, {}, c] = tokens
+
+  eq a[2].first_line, 3
+  eq a[2].first_column, 2
+  eq a[2].last_line, 3
+  eq a[2].last_column, 2
+
+  eq b[2].first_line, 3
+  eq b[2].first_column, 4
+  eq b[2].last_line, 8
+  eq b[2].last_column, 0
+
+  eq c[2].first_line, 9
+  eq c[2].first_column, 2
+  eq c[2].last_line, 9
+  eq c[2].last_column, 2
+
+test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and stating with linebreak)', ->
+  tokens = CoffeeScript.tokens '///\n\n\na\n\n\n#{b}\n\n\nc///'
+
+  eq tokens.length, 9
+  [{}, {}, a, {}, b, {}, c] = tokens
+
+  eq a[2].first_line, 0
+  eq a[2].first_column, 3
+  eq a[2].last_line, 5
+  eq a[2].last_column, 0
+
+  eq b[2].first_line, 6
+  eq b[2].first_column, 2
+  eq b[2].last_line, 6
+  eq b[2].last_column, 2
+
+  eq c[2].first_line, 6
+  eq c[2].first_column, 4
+  eq c[2].last_line, 9
+  eq c[2].last_column, 0
 
 test "Verify all tokens get a location", ->
   doesNotThrow ->
