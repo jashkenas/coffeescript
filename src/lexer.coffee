@@ -263,7 +263,7 @@ exports.Lexer = class Lexer
     @token 'IDENTIFIER', 'RegExp', 0, 0
     @token 'CALL_START', '(', 0, 0
     tokens = []
-    for token in @interpolateString(body, regex: yes)
+    for token in @interpolateString(body, regex: yes, strOffset: 3)
       [tag, value] = token
       if tag is 'TOKENS'
         tokens.push value...
