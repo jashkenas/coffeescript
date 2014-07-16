@@ -172,7 +172,7 @@ syntaxErrorToString = ->
   start    = first_column
   # Show only the first line on multi-line errors.
   end      = if first_line is last_line then last_column + 1 else codeLine.length
-  marker   = repeat(' ', start) + repeat('^', end - start)
+  marker   = codeLine[...start].replace(/[^\s]/g, ' ') + repeat('^', end - start)
 
   # Check to see if we're running on a color-enabled TTY.
   if process?

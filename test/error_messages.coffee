@@ -41,6 +41,17 @@ test "compiler error formatting", ->
                  ^^^^
   '''
 
+test "compiler error formatting with mixed tab and space", ->
+  assertErrorFormat """
+    \t  if a
+    \t  test
+  """,
+  '''
+    [stdin]:1:4: error: unexpected if
+    \t  if a
+    \t  ^^
+  '''
+
 
 if require?
   fs   = require 'fs'
