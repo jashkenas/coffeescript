@@ -32,7 +32,7 @@ Leave off the `-g` if you don't wish to install globally. If you don't wish to u
 
 ```shell
 git clone https://github.com/jashkenas/coffeescript.git
-sudo coffee-script/bin/cake install
+sudo coffeescript/bin/cake install
 ```
 
 ## Getting Started
