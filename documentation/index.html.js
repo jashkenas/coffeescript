@@ -1082,7 +1082,7 @@ Expressions
     </h2>
 
     <p>
-      The <a href="https://github.com/languages/coffeescript">best list of
+      The <a href="https://github.com/trending?l=coffeescript&amp;since=monthly">best list of
       open-source CoffeeScript examples</a> can be found on GitHub. But just
       to throw out few more:
     </p>
