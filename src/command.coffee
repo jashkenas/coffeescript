@@ -34,6 +34,7 @@ BANNER = '''
 # The list of all the valid option flags that `coffee` knows how to handle.
 SWITCHES = [
   ['-b', '--bare',            'compile without a top-level function wrapper']
+  [      '--strict',          'add "use strict" statement when not in bare mode']
   ['-c', '--compile',         'compile to JavaScript and save as .js files']
   ['-e', '--eval',            'pass a string from the command line as input']
   ['-h', '--help',            'display this help message']
@@ -65,7 +66,7 @@ optionParser = null
 # `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run = ->
   parseOptions()
-  # Make the REPL *CLI* use the global context so as to (a) be consistent with the 
+  # Make the REPL *CLI* use the global context so as to (a) be consistent with the
   # `node` REPL CLI and, therefore, (b) make packages that modify native prototypes
   # (such as 'colors' and 'sugar') work as expected.
   replCliOpts = useGlobal: yes
@@ -385,6 +386,7 @@ compileOptions = (filename, base) ->
     filename
     literate: opts.literate or helpers.isLiterate(filename)
     bare: opts.bare
+    strict: opts.strict
     header: opts.compile and not opts['no-header']
     sourceMap: opts.map
   }
