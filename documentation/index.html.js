@@ -707,7 +707,7 @@ Expressions
     <%= codeFor('soaks') %>
     <p>
       Soaking up nulls is similar to Ruby's
-      <a href="http://andand.rubyforge.org/">andand gem</a>, and to the
+      <a href="https://github.com/raganwald/andand">andand gem</a>, and to the
       <a href="http://groovy.codehaus.org/Operators#Operators-SafeNavigationOperator%28%3F.%29">safe navigation operator</a>
       in Groovy.
     </p>
@@ -920,7 +920,7 @@ Expressions
     <p>
       CoffeeScript includes a (very) simple build system similar to
       <a href="http://www.gnu.org/software/make/">Make</a> and
-      <a href="http://rake.rubyforge.org/">Rake</a>. Naturally,
+      <a href="https://github.com/jimweirich/rake">Rake</a>. Naturally,
       it's called Cake, and is used for the tasks that build and test the CoffeeScript
       language itself. Tasks are defined in a file named <tt>Cakefile</tt>, and
       can be invoked by running <tt>cake [task]</tt> from within the directory.
@@ -1116,7 +1116,7 @@ Expressions
       </li>
       <li>
         <b>josh</b>'s <a href="http://josh.github.com/nack/">nack</a>, a Node.js-powered
-        <a href="http://rack.rubyforge.org/">Rack</a> server.
+        <a href="http://rack.github.io">Rack</a> server.
       </li>
     </ul>
 
