@@ -1,4 +1,6 @@
-for filename in list
-  do (filename) ->
-    fs.readFile filename, (err, contents) ->
-      compile filename, contents.toString()
+multipliers = [1, 2, 3]
+multiples = for j in multipliers
+  do (j) ->
+    (x) -> x * j
+
+alert(f(2) for f in multiples)
