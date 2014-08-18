@@ -65,7 +65,7 @@ optionParser = null
 # `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run = ->
   parseOptions()
-  # Make the REPL *CLI* use the global context so as to (a) be consistent with the 
+  # Make the REPL *CLI* use the global context so as to (a) be consistent with the
   # `node` REPL CLI and, therefore, (b) make packages that modify native prototypes
   # (such as 'colors' and 'sugar') work as expected.
   replCliOpts = useGlobal: yes
@@ -346,12 +346,14 @@ writeJs = (base, sourcePath, js, jsPath, generatedSourceMap = null) ->
       fs.writeFile jsPath, js, (err) ->
         if err
           printLine err.message
+          process.exit 1
         else if opts.compile and opts.watch
           timeLog "compiled #{sourcePath}"
     if generatedSourceMap
       fs.writeFile sourceMapPath, generatedSourceMap, (err) ->
         if err
           printLine "Could not write source map: #{err.message}"
+          process.exit 1
   fs.exists jsDir, (itExists) ->
     if itExists then compile() else mkdirp jsDir, compile
 
