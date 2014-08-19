@@ -69,6 +69,7 @@ exports.run = ->
   # `node` REPL CLI and, therefore, (b) make packages that modify native prototypes
   # (such as 'colors' and 'sugar') work as expected.
   replCliOpts = useGlobal: yes
+
   return forkNode()                             if opts.nodejs
   return usage()                                if opts.help
   return version()                              if opts.version
@@ -384,6 +385,7 @@ compileOptions = (filename, base) ->
   answer = {
     filename
     literate: opts.literate or helpers.isLiterate(filename)
+    generators: opts.generators
     bare: opts.bare
     header: opts.compile and not opts['no-header']
     sourceMap: opts.map

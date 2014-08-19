@@ -434,7 +434,7 @@ class exports.Bool extends Base
 # A `return` is a *pureStatement* -- wrapping it in a closure wouldn't
 # make sense.
 exports.Return = class Return extends Base
-  constructor: (@expression) ->
+  constructor: (@expression, @makeGenerator = no) ->
 
   children: ['expression']
 
@@ -447,6 +447,9 @@ exports.Return = class Return extends Base
     if expr and expr not instanceof Return then expr.compileToFragments o, level else super o, level
 
   compileNode: (o) ->
+    for siblingExpression in o.scope.expressions.expressions
+      if siblingExpression.makeGenerator is true
+        @error 'unexpected POST_YIELD'
     answer = []
     # TODO: If we call expression.compile() here twice, we'll sometimes get back different results!
     answer.push @makeCode @tab + "return#{if @expression then " " else ""}"
@@ -1315,11 +1318,17 @@ exports.Assign = class Assign extends Base
 # has no *children* -- they're within the inner scope.
 exports.Code = class Code extends Base
   constructor: (params, body, tag) ->
-    @params  = params or []
-    @body    = body or new Block
-    @bound   = tag is 'boundfunc'
+    @params    = params or []
+    @body      = body or new Block
+    @bound     = tag is 'boundfunc'
+    @generator = @isGenerator()
 
   children: ['params', 'body']
+
+  isGenerator: -> 
+    @body.contains (node) ->
+      (node instanceof Op and node.operator in ['yield', 'yield*']) or
+        (node instanceof Return and node.makeGenerator)
 
   isStatement: -> !!@ctor
 
@@ -1385,6 +1394,7 @@ exports.Code = class Code extends Base
       uniqs.push name
     @body.makeReturn() unless wasEmpty or @noReturn
     code  = 'function'
+    code  += '*' if @generator
     code  += ' ' + @name if @ctor
     code  += '('
     answer = [@makeCode(code)]
@@ -1612,9 +1622,10 @@ exports.Op = class Op extends Base
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
   CONVERSIONS =
-    '==': '==='
-    '!=': '!=='
-    'of': 'in'
+    '=='        : '==='
+    '!='        : '!=='
+    'of'        : 'in'
+    'yieldfrom': 'yield*'
 
   # The map of invertible operators.
   INVERSIONS =
@@ -1624,6 +1635,12 @@ exports.Op = class Op extends Base
   children: ['first', 'second']
 
   isSimpleNumber: NO
+
+  makeReturn: (res) ->
+    if @operator in ['yield', 'yield*'] then this else super
+
+  jumps: (o) ->
+    if @operator in ['yield', 'yield*'] then this else super
 
   isUnary: ->
     not @second
@@ -1730,6 +1747,11 @@ exports.Op = class Op extends Base
   compileUnary: (o) ->
     parts = []
     op = @operator
+
+    # Error on yield if not found inside a function
+    if op in ['yield', 'yield*'] and not o.scope.parent?
+        @error 'yield statements must occur within a function generator.'
+    
     parts.push [@makeCode op]
     if op is '!' and @first instanceof Existence
       @first.negated = not @first.negated
@@ -1737,7 +1759,7 @@ exports.Op = class Op extends Base
     if o.level >= LEVEL_ACCESS
       return (new Parens this).compileToFragments o
     plusMinus = op in ['+', '-']
-    parts.push [@makeCode(' ')] if op in ['new', 'typeof', 'delete'] or
+    parts.push [@makeCode(' ')] if op in ['new', 'typeof', 'delete', 'yield', 'yield*'] or
                       plusMinus and @first instanceof Op and @first.operator is op
     if (plusMinus and @first instanceof Op) or (op is 'new' and @first.isStatement o)
       @first = new Parens @first
