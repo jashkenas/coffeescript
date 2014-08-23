@@ -120,7 +120,8 @@ We add support for loading remote Coffee scripts via <strong>XHR</strong>, and
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>CoffeeScript = <span class="hljs-built_in">require</span> <span class="hljs-string">'./coffee-script'</span>
+            <div class="content"><div class='highlight'><pre>
+CoffeeScript = <span class="hljs-built_in">require</span> <span class="hljs-string">'./coffee-script'</span>
 CoffeeScript.<span class="hljs-built_in">require</span> = <span class="hljs-built_in">require</span>
 compile = CoffeeScript.compile</pre></div></div>
             
@@ -168,7 +169,7 @@ compile = CoffeeScript.compile</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>If we&#39;re not in a browser environment, we&#39;re finished with the public API.</p>
+              <p>If we’re not in a browser environment, we’re finished with the public API.</p>
 
             </div>
             
@@ -183,8 +184,8 @@ compile = CoffeeScript.compile</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <p>Include source maps where possible. If we&#39;ve got a base64 encoder, a
-JSON serializer, and tools for escaping unicode characters, we&#39;re good to go.
+              <p>Include source maps where possible. If we’ve got a base64 encoder, a
+JSON serializer, and tools for escaping unicode characters, we’re good to go.
 Ported from <a href="https://developer.mozilla.org/en-US/docs/DOM/window.btoa">https://developer.mozilla.org/en-US/docs/DOM/window.btoa</a></p>
 
             </div>
