@@ -2450,6 +2450,49 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
     </h2>
 
     <p>
+      <div class="anchor" id="1.8.0"></div>
+<b class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.7.1...1.8.0">1.8.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2014-08-26">August 26, 2014</time></span>
+</b>
+      <ul>
+        <li>
+          The <tt>--join</tt> option of the CLI is now deprecated.
+        </li>
+        <li>
+          Source maps now use <tt>.js.map</tt> as file extension, instead of just <tt>.map</tt>.
+        </li>
+        <li>
+          The CLI now exits with the exit code 1 when it fails to write a file to disk.
+        </li>
+        <li>
+          The compiler no longer crashes on unterminated, single-quoted strings.
+        </li>
+        <li>
+          Fixed location data for string interpolations, which made source maps out of sync.
+        </li>
+        <li>
+          The error marker in error messages is now correctly positioned if the code is indented with tabs.
+        </li>
+        <li>
+          Fixed a slight formatting error in CoffeeScript’s source map-patched stack traces.
+        </li>
+        <li>
+          The <tt>%%</tt> operator now coerces its right operand only once.
+        </li>
+        <li>
+          It is now possible to require CoffeeScript files from Cakefiles without having to register the compiler first.
+        </li>
+        <li>
+          The CoffeeScript REPL is now exported and can be required using <tt>require 'coffee-script/repl'</tt>.
+        </li>
+        <li>
+          Fixes for the REPL in Node 0.11.
+        </li>
+      </ul>
+    </p>
+
+    <p>
       <div class="anchor" id="1.7.1"></div>
 <b class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/1.7.0...1.7.1">1.7.1</a>
